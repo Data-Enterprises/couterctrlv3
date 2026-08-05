@@ -20,6 +20,12 @@ export default {
         portal_mid: { max: "1080px" }, // art falls behind the copy
         portal_stack: { max: "900px" }, // single column
         portal_narrow: { max: "460px" }, // phone
+        // Perspectives strip only. The full label is too wide to sit beside
+        // three pills under 1200px, and between 901 and 1000 there is no room
+        // for a label at all — the pills go it alone rather than wrapping to a
+        // second line and growing the band.
+        portal_persp_label: { max: "1200px" },
+        portal_persp_squeeze: { raw: "(min-width: 901px) and (max-width: 1000px)" },
         // Height matters as much as width here: the stage is a full-viewport
         // layout with fixed vertical offsets, so a short laptop window clips
         // before a narrow one does.

@@ -117,7 +117,18 @@ const StageCarousel = ({ onOpenNotes, paused: externallyPaused = false }: Props)
               mostly empty on the left where the text crosses them. The
               opaque-screenshot slide that needed a narrower cap was cut in the
               Aug 2026 revision. */}
-          <div className="absolute inset-0 flex flex-col items-start justify-center z-[2] pt-[236px] pb-[104px] px-[clamp(30px,4.4vw,72px)] max-w-[min(640px,56%)] portal_short:pt-[206px] portal_short:pb-[88px] portal_shorter:pt-[190px] portal_shorter:pb-[76px] portal_wide:max-w-[56%] portal_mid:max-w-[88%] portal_stack:static portal_stack:max-w-full portal_stack:pt-[54px] portal_stack:pb-[110px] portal_stack:px-[26px] portal_narrow:pt-[34px]">
+          {/* Top padding clears the band stack — measured, not fixed. Stage
+              publishes --band-h from the stack's real bottom edge; the clamp
+              is the breathing room under it. This was three hard-coded
+              paddings, which held only while the stack's height was known and
+              broke the moment the Perspectives strip was added beneath the
+              mission band. */}
+          <div
+            style={{
+              paddingTop: "calc(var(--band-h, 190px) + clamp(14px,3.4vh,46px))",
+            }}
+            className="absolute inset-0 flex flex-col items-start justify-center z-[2] pb-[104px] px-[clamp(30px,4.4vw,72px)] max-w-[min(640px,56%)] portal_short:pb-[88px] portal_shorter:pb-[76px] portal_wide:max-w-[56%] portal_mid:max-w-[88%] portal_stack:static portal_stack:max-w-full portal_stack:!pt-[54px] portal_stack:pb-[110px] portal_stack:px-[26px] portal_narrow:!pt-[34px]"
+          >
             <span className="inline-flex items-center gap-3 font-mono text-[10px] font-semibold tracking-[0.2em] uppercase text-brand_green_dark before:content-[''] before:w-7 before:h-0.5 before:bg-brand_green">
               {s.eyebrow}
             </span>

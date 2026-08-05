@@ -14,6 +14,7 @@
  *   posts.json (in S3)     the panel fetches it | this generates 17 pages
  *   aboutContent.ts        the panel renders it | this generates /about.html
  *   walkthroughContent.ts  the panel renders it | this generates /walkthrough.html
+ *   perspectivesContent.ts the panel renders it | this generates 4 seat pages
  *
  * Posts are fetched from the bucket, not read from disk, because that is where
  * they are published. Building from the bundled copy would silently omit
@@ -53,6 +54,8 @@ const ABOUT = "about.html";
 const WALKTHROUGH = "walkthrough.html";
 const TERMS = "terms.html";
 const PRIVACY = "privacy-policy.html";
+const PERSPECTIVES = "perspectives.html";
+const PERSP_DIR = "perspectives";
 
 /** Images for these pages are copied unhashed. Kept out of /assets/ so they
  *  can't be confused with Vite's fingerprinted build output. */
@@ -183,7 +186,8 @@ async function loadPortalContent() {
   await writeFile(
     entry,
     `export * from ${p("src/pages/home/portal/about/aboutContent.ts")};\n` +
-      `export * from ${p("src/pages/home/portal/walkthrough/walkthroughContent.ts")};\n`,
+      `export * from ${p("src/pages/home/portal/walkthrough/walkthroughContent.ts")};\n` +
+      `export * from ${p("src/pages/home/portal/perspectives/perspectivesContent.ts")};\n`,
     "utf8",
   );
 
@@ -258,6 +262,7 @@ const nav = `
   <nav aria-label="Main">
     <a href="/${ARCHIVE}">Field Notes</a>
     <a href="/${ABOUT}">About</a>
+    <a href="/${PERSPECTIVES}">Perspectives</a>
     <a class="secondary" href="/${TERMS}">Terms</a>
     <a class="secondary" href="/${PRIVACY}">Privacy</a>
     <a href="/">Sign in</a>
@@ -570,6 +575,141 @@ ${script}`;
   );
 
   track(url, today, "0.9");
+}
+
+/* ---- perspectives ---------------------------------------------------- */
+
+/** One page per seat, plus a hub.
+ *
+ *  Three pages rather than one because each seat answers a different search:
+ *  an owner and a loss prevention manager are not looking for the same thing,
+ *  and one URL can only rank for one of them — the same reasoning that put the
+ *  blog on separate addresses in the first place.
+ *
+ *  Every seat is literally a question and its answer, so each page carries
+ *  FAQPage markup. That is the one schema type here with a real chance of
+ *  surfacing the answer text directly in a result.
+ *
+ *  Uses only classes the stylesheet already has — .kicker, .lede, .about-defs,
+ *  .chip, .cta-box — so nothing new had to be added to the CSS for these. */
+async function buildPerspectives(c) {
+  const seats = c.PERSPECTIVE_SEATS;
+  const panel = c.PERSPECTIVES_PANEL;
+  const lead = `${panel.lead}${panel.leadEmphasis}${panel.leadTail}`;
+  const hubUrl = `${BASE}/${PERSPECTIVES}`;
+
+  for (const seat of seats) {
+    const url = `${BASE}/${PERSP_DIR}/${seat.slug}.html`;
+    const question = plain(seat.question);
+    const answer = plain(seat.answer);
+
+    const groups = seat.groups
+      .map(
+        (g) => `  <section class="about-sec">
+${g.role ? `    <p class="kicker">${esc(plain(g.role))}</p>` : ""}
+    <dl class="about-defs">
+${g.items.map((it) => `      <dt>${esc(plain(it.title))}</dt>\n      <dd>${esc(plain(it.body))}</dd>`).join("\n")}
+    </dl>
+  </section>`,
+      )
+      .join("\n");
+
+    const body = `
+${nav}
+<main>
+<article class="about">
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="/">Home</a> › <a href="/${PERSPECTIVES}">Perspectives</a> › <span>${esc(plain(seat.tabLabel))}</span>
+  </nav>
+  <p class="kicker">${esc(plain(seat.eyebrow))}</p>
+  <h1>${esc(question)}</h1>
+  <p class="lede">${esc(answer)}</p>
+${groups}
+  <p class="cats">${seat.where.map((w) => `<span class="chip">${esc(plain(w))}</span>`).join(" ")}</p>
+  <p><a href="/${PERSPECTIVES}">See the other perspectives →</a></p>
+${ctaBox}
+</article>
+</main>
+${foot}`;
+
+    await write(
+      join(OUT, PERSP_DIR, `${seat.slug}.html`),
+      head({
+        title: `${plain(seat.tabLabel)} — ${SITE}`,
+        description: answer.slice(0, 155),
+        canonical: url,
+        jsonld: {
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          name: question,
+          url,
+          publisher: orgJsonLd,
+          mainEntity: [
+            {
+              "@type": "Question",
+              name: question,
+              acceptedAnswer: { "@type": "Answer", text: answer },
+            },
+            ...seat.groups.flatMap((g) =>
+              g.items.map((it) => ({
+                "@type": "Question",
+                name: `${plain(it.title)}${g.role ? ` — ${plain(g.role).replace(/^If I am (in )?/, "")}` : ""}`,
+                acceptedAnswer: { "@type": "Answer", text: plain(it.body) },
+              })),
+            ),
+          ],
+        },
+      }) + body,
+    );
+
+    track(url, today, "0.7");
+  }
+
+  const hub = `
+${nav}
+<main>
+<article class="about">
+  <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a> › <span>Perspectives</span></nav>
+  <p class="kicker">${esc(plain(panel.footer))}</p>
+  <h1>${esc(plain(panel.title))}</h1>
+  <p class="lede">${esc(plain(lead))}</p>
+${seats
+  .map(
+    (seat) => `  <section class="about-sec">
+    <p class="kicker">${esc(plain(seat.eyebrow))}</p>
+    <h2><a href="/${PERSP_DIR}/${seat.slug}.html">${esc(plain(seat.question))}</a></h2>
+    <p>${esc(plain(seat.answer))}</p>
+  </section>`,
+  )
+  .join("\n")}
+${ctaBox}
+</article>
+</main>
+${foot}`;
+
+  await write(
+    join(OUT, PERSPECTIVES),
+    head({
+      title: `Perspectives — Who ${SITE} Is For | ${ORG}`,
+      description: plain(lead).slice(0, 155),
+      canonical: hubUrl,
+      jsonld: {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        name: `Perspectives — ${SITE}`,
+        url: hubUrl,
+        publisher: orgJsonLd,
+        mainEntity: seats.map((seat) => ({
+          "@type": "Question",
+          name: plain(seat.question),
+          acceptedAnswer: { "@type": "Answer", text: plain(seat.answer) },
+        })),
+      },
+    }) + hub,
+  );
+
+  track(hubUrl, today, "0.8");
+  return seats.length;
 }
 
 /* ---- legal pages ----------------------------------------------------- */
@@ -919,6 +1059,7 @@ async function main() {
 
   await buildWalkthrough(content);
   await buildAbout(content);
+  const seatCount = await buildPerspectives(content);
   const termsCount = await buildTerms();
   const privacyCount = await buildPrivacy();
   await buildBlog(posts);
@@ -962,6 +1103,7 @@ Wrote to public/
   ${posts.length} posts        public/${BLOG_DIR}/*.html
   1 archive          public/${ARCHIVE}
   1 about            public/${ABOUT}
+  ${seatCount} seats + 1 hub    public/${PERSP_DIR}/*.html
   1 walkthrough      public/${WALKTHROUGH}
   ${termsCount} terms sections   public/${TERMS}
   ${privacyCount} privacy sections public/${PRIVACY}
