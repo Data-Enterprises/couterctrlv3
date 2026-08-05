@@ -1,4 +1,5 @@
 import { useCallback, useRef } from "react";
+import { useToast } from "../../../../components/toasts/hooks/useToast";
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
 import { getItemLookupSingleStore } from "../../../../api/itemLookup";
 import {
@@ -37,6 +38,7 @@ const MAX_CONCURRENT = 15;
 
 export const useLookupQueue = () => {
   const dispatch = useAppDispatch();
+  const toast = useToast();
   const { url, token } = useAppSelector((s) => s.app);
   const {
     lookupQueue: queue,
@@ -67,6 +69,9 @@ export const useLookupQueue = () => {
       scopeRef.current = null;
       rawHistoryRef.current = {};
       let discovered = false;
+      // First backend fault of the run. Batches are unbounded and 15 fly at
+      // once, so a toast per failure would bury the screen — one per batch.
+      let fault: string | null = null;
 
       let index = 0;
       const next = async (): Promise<void> => {
@@ -115,10 +120,24 @@ export const useLookupQueue = () => {
               dispatch(setLookupSelectedUpc(upc));
             }
           } else {
-            dispatch(updateLookupQueueItem({ upc, patch: { status: "error", errorMessage: "Not found at this store" } }));
+            // The request failed, so nothing is known about this store's
+            // stock — the row says so plainly instead of claiming absence.
+            fault = fault ?? j.msg ?? null;
+            dispatch(
+              updateLookupQueueItem({
+                upc,
+                patch: { status: "error", errorMessage: "There was an issue finding this item" },
+              }),
+            );
           }
         } catch {
-          dispatch(updateLookupQueueItem({ upc, patch: { status: "error", errorMessage: "Not found at this store" } }));
+          // Network or parse failure — the store was never asked.
+          dispatch(
+            updateLookupQueueItem({
+              upc,
+              patch: { status: "error", errorMessage: "There was an issue finding this item" },
+            }),
+          );
         }
 
         return next();
@@ -127,6 +146,8 @@ export const useLookupQueue = () => {
       await Promise.all(
         Array.from({ length: Math.min(MAX_CONCURRENT, upcs.length) }, () => next()),
       );
+
+      if (fault) toast.error(fault);
     },
     [url, token, dispatch],
   );
