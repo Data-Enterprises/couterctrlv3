@@ -24,7 +24,7 @@ export const VENDORS_INFO: {
     },
     {
       term: "Threshold",
-      desc: "How far a decline has to go before a vendor is flagged Crit. The Items tab has its own separate threshold, since a single UPC moving is a smaller thing than a whole vendor moving.",
+      desc: "How far a decline has to go before a vendor is flagged Crit — points in margin mode, percent in sales mode. The Items tab has its own separate threshold, since a single UPC moving is a smaller thing than a whole vendor moving.",
     },
     {
       term: "No vendor",
@@ -39,16 +39,16 @@ export const VENDORS_INFO: {
       desc: "Every UPC this vendor supplied, graded the same way the vendors are. Selecting one shows its margin, contribution and day-of-week pattern. Department-level breakdowns live on Sub Dept Margins rather than being repeated here.",
     },
     {
-      term: "Sales vs Qty",
-      desc: "Swaps the whole page from dollars to units sold, including every KPI and every grade — vendors and items alike.",
+      term: "Margin vs Sales",
+      desc: "Swaps the whole page between gross margin and dollars, including every KPI and every grade — vendors and items alike. Margin moves are shown in POINTS, sales moves in percent; a two-point margin change is not a two percent change.",
     },
     {
       term: "vs LW / vs LY",
       desc: "Only compares days present in both periods, so a week still in progress isn't dragged down by days that haven't happened yet. A dash means there's no comparable period at all.",
     },
     {
-      term: "Net sales",
-      desc: "Sales less tax, the same figure Sub Dept Margins and Item Lookup compare on — so a vendor's total here reconciles with the departments it sits in.",
+      term: "Net sales and margin",
+      desc: "Sales are net of tax and margin uses the same cost helper as Sub Dept Margins — net_cost before list, weight before scan count — so a vendor reconciles with the departments it sits in. The store figure in the header is weighted: dollars over dollars, not an average of the vendors' percentages.",
     },
     {
       term: "Where the data comes from",

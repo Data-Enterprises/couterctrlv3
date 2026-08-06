@@ -1,4 +1,5 @@
 import type { SubDeptMargin } from "../../interfaces";
+import { calculateCogs } from "../subDepts";
 import {
   LW_OFFSET,
   LY_OFFSET,
@@ -9,8 +10,10 @@ import {
   type Tier,
 } from "../../utils/grading";
 
-/** Sales or units — the page-wide toggle, same contract as Categories. */
-export type VendorMetric = "sales" | "qty";
+/** Margin or sales — the page-wide toggle, the same contract Sub Dept Margins
+ *  uses. Vendors reads the same `subs/subs` rows, just grouped by vendor rather
+ *  than by department, so margin is available on exactly the same basis. */
+export type VendorMetric = "margin" | "sales";
 export type VendorTier = Tier;
 
 /** One TW day for one vendor, with its aligned comparisons.
@@ -22,11 +25,20 @@ export interface VendorDay {
   date: string;
   twNet: number;
   twQty: number;
+  twCogs: number;
   lwNet: number | null;
   lwQty: number | null;
+  lwCogs: number | null;
   lyNet: number | null;
   lyQty: number | null;
+  lyCogs: number | null;
 }
+
+/** Margin percentage from a net/COGS pair. Zero net means there is nothing to
+ *  take a margin on — 0 rather than a divide-by-zero, matching Sub Dept
+ *  Margins. */
+export const marginPct = (net: number, cogs: number) =>
+  net > 0 ? ((net - cogs) / net) * 100 : 0;
 
 /** Rows with no supplier — coupon (CPN) lines and anything else the POS books
  *  without a vendor — collect here rather than being dropped.
@@ -53,17 +65,29 @@ export interface VendorRow {
    *  full TW against a partial LY is the error these fields exist to prevent. */
   twNet: number;
   twQty: number;
+  twCogs: number;
   lwNet: number;
   lwQty: number;
+  lwCogs: number;
   twNetForLW: number;
   twQtyForLW: number;
+  twCogsForLW: number;
   lyNet: number;
   lyQty: number;
+  lyCogs: number;
   twNetForLY: number;
   twQtyForLY: number;
+  twCogsForLY: number;
   hasLW: boolean;
   hasLY: boolean;
 
+  /** Margin points, computed from the DAY-MATCHED subtotals so a partial week
+   *  isn't compared against a full one. Positive means margin improved. */
+  tyMarginPct: number;
+  lwMarginPct: number;
+  lyMarginPct: number;
+  lwPtsDelta: number;
+  lyPtsDelta: number;
 }
 
 /** Net of tax, matching Sub Dept Margins and the Item Lookup fix. `net_sales`
@@ -74,8 +98,9 @@ const netOf = (m: SubDeptMargin) => m.total_sales - m.total_tax;
 interface Bucket {
   net: number;
   qty: number;
+  cogs: number;
 }
-const empty = (): Bucket => ({ net: 0, qty: 0 });
+const empty = (): Bucket => ({ net: 0, qty: 0, cogs: 0 });
 
 /** vendorId -> date -> totals, plus the vendor's display name and reach. */
 interface VendorAgg {
@@ -116,6 +141,10 @@ const collect = (rows: SubDeptMargin[]) => {
     const b = v.byDate.get(d) ?? empty();
     b.net += netOf(m);
     b.qty += m.qty;
+    // The canonical helper — net_cost before cost, weight before qty. Costing a
+    // promoted item at list, or a scale item by scan count, is what it exists
+    // to prevent; see the note on calculateCogs.
+    b.cogs += calculateCogs(m.net_cost, m.cost, m.case_size, m.qty, m.weight);
     v.byDate.set(d, b);
   }
   return map;
@@ -153,35 +182,45 @@ export const buildVendorRows = (
         date,
         twNet: t.net,
         twQty: t.qty,
+        twCogs: t.cogs,
         lwNet: l ? l.net : null,
         lwQty: l ? l.qty : null,
+        lwCogs: l ? l.cogs : null,
         lyNet: y ? y.net : null,
         lyQty: y ? y.qty : null,
+        lyCogs: y ? y.cogs : null,
       };
     });
 
-    let twNet = 0, twQty = 0;
-    let lwNet = 0, lwQty = 0, twNetForLW = 0, twQtyForLW = 0;
-    let lyNet = 0, lyQty = 0, twNetForLY = 0, twQtyForLY = 0;
+    let twNet = 0, twQty = 0, twCogs = 0;
+    let lwNet = 0, lwQty = 0, lwCogs = 0;
+    let twNetForLW = 0, twQtyForLW = 0, twCogsForLW = 0;
+    let lyNet = 0, lyQty = 0, lyCogs = 0;
+    let twNetForLY = 0, twQtyForLY = 0, twCogsForLY = 0;
     let hasLW = false, hasLY = false;
 
     for (const d of days) {
       twNet += d.twNet;
       twQty += d.twQty;
+      twCogs += d.twCogs;
       // A day only joins a comparison when both sides have it, and when it does
       // it joins BOTH sides.
       if (d.lwNet !== null) {
         lwNet += d.lwNet;
         lwQty += d.lwQty ?? 0;
+        lwCogs += d.lwCogs ?? 0;
         twNetForLW += d.twNet;
         twQtyForLW += d.twQty;
+        twCogsForLW += d.twCogs;
         hasLW = true;
       }
       if (d.lyNet !== null) {
         lyNet += d.lyNet;
         lyQty += d.lyQty ?? 0;
+        lyCogs += d.lyCogs ?? 0;
         twNetForLY += d.twNet;
         twQtyForLY += d.twQty;
+        twCogsForLY += d.twCogs;
         hasLY = true;
       }
     }
@@ -191,34 +230,41 @@ export const buildVendorRows = (
       vendorName: agg.name,
       noVendor: id === NO_VENDOR_ID,
       days,
-      twNet, twQty,
-      lwNet, lwQty, twNetForLW, twQtyForLW,
-      lyNet, lyQty, twNetForLY, twQtyForLY,
+      twNet, twQty, twCogs,
+      lwNet, lwQty, lwCogs, twNetForLW, twQtyForLW, twCogsForLW,
+      lyNet, lyQty, lyCogs, twNetForLY, twQtyForLY, twCogsForLY,
       hasLW, hasLY,
+      tyMarginPct: marginPct(twNet, twCogs),
+      lwMarginPct: marginPct(lwNet, lwCogs),
+      lyMarginPct: marginPct(lyNet, lyCogs),
+      // Both sides of a points delta come from the SAME matched days, so a
+      // week still in progress isn't measured against a full prior one.
+      lwPtsDelta: marginPct(twNetForLW, twCogsForLW) - marginPct(lwNet, lwCogs),
+      lyPtsDelta: marginPct(twNetForLY, twCogsForLY) - marginPct(lyNet, lyCogs),
     });
   }
 
   return rows;
 };
 
-/** The figure a vendor is graded on — last year, or last week when there is no
- *  matching week a year ago. */
+/**
+ * The figure a vendor is graded on — last year, or last week when there is no
+ * matching week a year ago.
+ *
+ * Margin returns POINTS, sales returns PERCENT. They aren't interchangeable and
+ * the caller has to format accordingly, which is the same contract
+ * getGradeDelta has on Sub Dept Margins.
+ */
 export const vendorDelta = (
   row: VendorRow,
   metric: VendorMetric,
 ): number | null => {
-  const isQty = metric === "qty";
+  const isMargin = metric === "margin";
   if (row.hasLY) {
-    return pctChange(
-      isQty ? row.twQtyForLY : row.twNetForLY,
-      isQty ? row.lyQty : row.lyNet,
-    );
+    return isMargin ? row.lyPtsDelta : pctChange(row.twNetForLY, row.lyNet);
   }
   if (row.hasLW) {
-    return pctChange(
-      isQty ? row.twQtyForLW : row.twNetForLW,
-      isQty ? row.lwQty : row.lwNet,
-    );
+    return isMargin ? row.lwPtsDelta : pctChange(row.twNetForLW, row.lwNet);
   }
   return null;
 };

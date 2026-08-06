@@ -13,9 +13,8 @@ import Home from "./pages/home/Home.tsx";
 import CouponSales from "./pages/couponSales/CouponSales.tsx";
 import Categories from "./pages/categories/Categories.tsx";
 import Vendors from "./pages/vendors/Vendors.tsx";
-import { SalesPage, LossPreventionPage, OrdersPage, CouponsPage, ReceiversPage, CashiersPage, UpcPage, ItemLookupPage, AdminPage, GroupsPage, OrganizationPage } from "./DevPages.tsx";
+import { SalesPage, LossPreventionPage, OrdersPage, CouponsPage, ReceiversPage, CashiersPage, UpcPage, ItemLookupPage, AdminPage, GroupsPage, OrganizationPage, ForecastPage } from "./DevPages.tsx";
 import Settings from "./pages/settings/Settings.tsx";
-import Forecasting from "./pages/forecast/Forecasting.tsx";
 import Dashboard from "./pages/quicksight/Dashboard.tsx";
 import SubDeptMargins from "./pages/subDepts/SubDeptMargins.tsx";
 import Tickets from "./pages/tickets/Tickets.tsx";
@@ -37,7 +36,7 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="settings" element={<Settings />} />
                 <Route path="upc-upload" element={<UpcPage />} />
                 <Route path="item-lookup" element={<ItemLookupPage />} />
-                <Route path="forecasting" element={<Forecasting />} />
+                <Route path="forecasting" element={<ForecastPage />} />
                 <Route path="quicksight" element={<Dashboard />} />
                 <Route path="receivers" element={<ReceiversPage />} />
                 <Route path="coupons" element={<CouponsPage />} />

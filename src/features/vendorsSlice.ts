@@ -58,7 +58,7 @@ const initialState: VendorsState = {
   storeName: "",
   twStart: "",
   twEnd: "",
-  metric: "sales",
+  metric: "margin",
   threshold: VENDOR_THRESHOLD_DEFAULT,
   tierFilter: "all",
   textFilter: "",

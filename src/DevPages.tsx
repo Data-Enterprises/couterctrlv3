@@ -24,6 +24,8 @@ import TitleBar from "./components/navigation/TitleBar.tsx";
 import TitleBarLegacy from "./components/navigation/TitleBarLegacy.tsx";
 import SideBarLegacy from "./components/navigation/SideBarLegacy.tsx";
 import UpcListDev from "./pages/upc/dev/UpcListDev.tsx";
+import ForecastDev from "./pages/forecast/dev/ForecastDev.tsx";
+import Forecasting from "./pages/forecast/Forecasting.tsx";
 
 export const NavSwitch = () => {
   const devMode = useAppSelector((s) => s.app.devMode);
@@ -80,6 +82,11 @@ export const ItemLookupPage = () => {
 export const AdminPage = () => {
   const devMode = useAppSelector((s) => s.app.devMode);
   return devMode ? <Admin /> : <AdminLegacy />;
+};
+
+export const ForecastPage = () => {
+  const devMode = useAppSelector((s) => s.app.devMode);
+  return devMode ? <ForecastDev /> : <Forecasting />;
 };
 
 export const GroupsPage = () => {

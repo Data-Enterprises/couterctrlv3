@@ -10,11 +10,7 @@ import ThresholdFilter, {
 import InfoPopover from "../../components/InfoPopover";
 import SortHeader, { PERF_SORT_HEADER } from "../../components/SortHeader";
 import { useTriStateSort } from "../../utils/useTriStateSort";
-import {
-  formatCurrency2,
-  formatCurrencyCompact,
-  formatBigNumber,
-} from "../../utils";
+import { formatCurrency2, formatCurrencyCompact } from "../../utils";
 import { fmtCompactRange } from "../../utils/dateLabels";
 import {
   severityDotClass,
@@ -33,12 +29,21 @@ import {
   setThreshold,
   VENDOR_THRESHOLD_DEFAULT,
 } from "../../features/vendorsSlice";
-import { getVendorTier, vendorDelta } from "./vendorsUtils";
+import { getVendorTier, vendorDelta, marginPct } from "./vendorsUtils";
 
 const TOGGLE_OPTS = [
+  { key: "margin" as const, label: "Margin" },
   { key: "sales" as const, label: "Sales" },
-  { key: "qty" as const, label: "Qty" },
 ];
+
+/** Margin deltas are POINTS, sales deltas are PERCENT — never interchangeable,
+ *  so the suffix is part of the number. Same split Sub Dept Margins makes. */
+const fmtDelta = (d: number | null, isMargin: boolean) =>
+  d === null
+    ? "—"
+    : isMargin
+      ? `${d >= 0 ? "+" : ""}${d.toFixed(2)} pts`
+      : formatPct(d);
 
 /** Ungraded has no severity equivalent, so it falls back to the neutral dot
  *  rather than borrowing a colour that would imply a verdict. */
@@ -86,24 +91,38 @@ const VendorListPanel = ({ onSearchOpen }: Props) => {
   const base = useMemo(
     () =>
       rows.map((r) => {
-        const isQty = metric === "qty";
+        const isMargin = metric === "margin";
+        // Both already day-matched upstream — the points deltas come from the
+        // matched subtotals, not from the full week.
         const lwPct = r.hasLW
-          ? pctChange(isQty ? r.twQtyForLW : r.twNetForLW, isQty ? r.lwQty : r.lwNet)
+          ? isMargin
+            ? r.lwPtsDelta
+            : pctChange(r.twNetForLW, r.lwNet)
           : null;
         const lyPct = r.hasLY
-          ? pctChange(isQty ? r.twQtyForLY : r.twNetForLY, isQty ? r.lyQty : r.lyNet)
+          ? isMargin
+            ? r.lyPtsDelta
+            : pctChange(r.twNetForLY, r.lyNet)
           : null;
-        const f = (n: number) => (isQty ? formatBigNumber(n) : formatCurrency2(n));
+        const pct = (n: number) => `${n.toFixed(2)}%`;
         return {
           ...r,
           delta: vendorDelta(r, metric),
           lwPct,
           lyPct,
-          twText: f(isQty ? r.twQty : r.twNet),
-          lwText: r.hasLW ? f(isQty ? r.lwQty : r.lwNet) : "—",
-          lyText: r.hasLY ? f(isQty ? r.lyQty : r.lyNet) : "—",
-          lwPctText: lwPct === null ? "—" : formatPct(lwPct),
-          lyPctText: lyPct === null ? "—" : formatPct(lyPct),
+          twText: isMargin ? pct(r.tyMarginPct) : formatCurrency2(r.twNet),
+          lwText: r.hasLW
+            ? isMargin
+              ? pct(r.lwMarginPct)
+              : formatCurrency2(r.lwNet)
+            : "—",
+          lyText: r.hasLY
+            ? isMargin
+              ? pct(r.lyMarginPct)
+              : formatCurrency2(r.lyNet)
+            : "—",
+          lwPctText: fmtDelta(lwPct, isMargin),
+          lyPctText: fmtDelta(lyPct, isMargin),
         };
       }),
     [rows, metric],
@@ -144,12 +163,14 @@ const VendorListPanel = ({ onSearchOpen }: Props) => {
     });
     // applySort hands the rows straight back when nothing is sorted, so the
     // grade order stays the default.
+    // Size orders within a tier regardless of metric — a big vendor slipping
+    // matters more than a small one, whichever number is on screen.
     return applySort(
-      sortGraded(filtered, (g) => (metric === "qty" ? g.twQty : g.twNet)),
+      sortGraded(filtered, (g) => g.twNet),
       (g, col) =>
         col === "ty"
-          ? metric === "qty"
-            ? g.twQty
+          ? metric === "margin"
+            ? g.tyMarginPct
             : g.twNet
           : col === "lw"
             ? g.lwPct
@@ -161,16 +182,34 @@ const VendorListPanel = ({ onSearchOpen }: Props) => {
   const totals = useMemo(() => {
     const sum = (pick: (g: (typeof graded)[number]) => number) =>
       graded.reduce((a, g) => a + pick(g), 0);
-    const isQty = metric === "qty";
-    const tw = sum((g) => (isQty ? g.twQty : g.twNet));
-    const twLW = sum((g) => (isQty ? g.twQtyForLW : g.twNetForLW));
-    const lw = sum((g) => (isQty ? g.lwQty : g.lwNet));
-    const twLY = sum((g) => (isQty ? g.twQtyForLY : g.twNetForLY));
-    const ly = sum((g) => (isQty ? g.lyQty : g.lyNet));
+    const isMargin = metric === "margin";
+    const twNet = sum((g) => g.twNet);
+    const twCogs = sum((g) => g.twCogs);
+    const twNetLW = sum((g) => g.twNetForLW);
+    const twCogsLW = sum((g) => g.twCogsForLW);
+    const lwNet = sum((g) => g.lwNet);
+    const lwCogs = sum((g) => g.lwCogs);
+    const twNetLY = sum((g) => g.twNetForLY);
+    const twCogsLY = sum((g) => g.twCogsForLY);
+    const lyNet = sum((g) => g.lyNet);
+    const lyCogs = sum((g) => g.lyCogs);
     return {
-      tw,
-      lwPct: lw > 0 ? pctChange(twLW, lw) : null,
-      lyPct: ly > 0 ? pctChange(twLY, ly) : null,
+      // Store margin is WEIGHTED — dollars over dollars, not a mean of the
+      // vendors' percentages, which would let a $5 supplier count as much as
+      // the wholesaler behind half the shelves.
+      tw: isMargin ? marginPct(twNet, twCogs) : twNet,
+      lwPct:
+        lwNet > 0
+          ? isMargin
+            ? marginPct(twNetLW, twCogsLW) - marginPct(lwNet, lwCogs)
+            : pctChange(twNetLW, lwNet)
+          : null,
+      lyPct:
+        lyNet > 0
+          ? isMargin
+            ? marginPct(twNetLY, twCogsLY) - marginPct(lyNet, lyCogs)
+            : pctChange(twNetLY, lyNet)
+          : null,
     };
   }, [graded, metric]);
 
@@ -181,20 +220,18 @@ const VendorListPanel = ({ onSearchOpen }: Props) => {
     const rows = graded.filter((g) => g.noVendor);
     return {
       count: rows.length,
-      value: rows.reduce(
-        (a, g) => a + (metric === "qty" ? g.twQty : g.twNet),
-        0,
-      ),
+      // Always dollars — a margin percentage on the coupon bucket is
+      // meaningless, and the point of the notice is the size of the hole.
+      value: rows.reduce((a, g) => a + g.twNet, 0),
     };
   }, [graded, metric]);
 
-  const fmt = (n: number) =>
-    metric === "qty" ? formatBigNumber(n) : formatCurrency2(n);
+  const fmt = (n: number) => formatCurrency2(n);
 
-  /** The header total only — abbreviated ($1.2K) so a store-wide figure can't
-   *  crowd the pills beside it, matching Sales. Rows keep the exact amount. */
+  /** The header figure — a margin percentage, or an abbreviated total ($1.2K)
+   *  so a store-wide number can't crowd the pills beside it. */
   const fmtHeader = (n: number) =>
-    metric === "qty" ? formatBigNumber(n, 0) : formatCurrencyCompact(n);
+    metric === "margin" ? `${n.toFixed(2)}%` : formatCurrencyCompact(n);
 
   const dateRange =
     vend.twStart && vend.twEnd ? fmtCompactRange(vend.twStart, vend.twEnd) : "";
@@ -249,7 +286,7 @@ const VendorListPanel = ({ onSearchOpen }: Props) => {
                       : "bg-red-300/15 text-red-300"
                   }`}
                 >
-                  LW {formatPct(totals.lwPct)}
+                  LW {fmtDelta(totals.lwPct, metric === "margin")}
                 </span>
               )}
               {totals.lyPct !== null && (
@@ -260,7 +297,7 @@ const VendorListPanel = ({ onSearchOpen }: Props) => {
                       : "bg-red-300/15 text-red-300"
                   }`}
                 >
-                  LY {formatPct(totals.lyPct)}
+                  LY {fmtDelta(totals.lyPct, metric === "margin")}
                 </span>
               )}
             </>

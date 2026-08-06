@@ -18,6 +18,7 @@ import upcModalReducer from "../features/upcModalSlice";
 import ctxMenuReducer from "../features/ctxMenuSlice";
 import quickSightReducer from "../features/qsSlice";
 import forecastReducer from "../features/forecastSlice";
+import forecastDevReducer from "../features/forecastDevSlice";
 import priceSimReducer from "../features/priceSimSlice";
 import upcUploadReducer from "../features/upcUploadSlice";
 import receiversReducer from "../features/receiversSlice";
@@ -68,6 +69,7 @@ export const setupStore = () =>
       ctxMenu: ctxMenuReducer,
       quicksight: quickSightReducer,
       forecast: forecastReducer,
+      forecastDev: forecastDevReducer,
       priceSim: priceSimReducer,
       upcs: upcUploadReducer,
       receivers: receiversReducer,

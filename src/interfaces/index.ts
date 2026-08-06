@@ -660,6 +660,8 @@ export interface PriceHistoryResult {
 export interface PriceHistoryFromListResp {
   error: number;
   success: boolean;
+  /** Only present when error === 1 — carries the backend's own reason. */
+  msg?: string;
   end_date: string;
   total_stores: number;
   upc_count: number;

@@ -2,17 +2,7 @@ import { useState } from "react";
 import type { PriceHistory } from "../../interfaces";
 import type { ForecastOutlierRow } from "../../features/forecastSlice";
 import { formatCurrency2 } from "../../utils";
-import { calcFcstQty, estimateDaysActive, forecastUnits } from "./utils";
-
-interface ScenarioRow {
-  price: number;
-  histQty: number | null;
-  daysAtPrice: number;
-  adFcst: number;
-  revenue: number;
-  markdown: number;
-  isCustom: boolean;
-}
+import { buildScenarioRows } from "./scenarioRows";
 
 interface ScenarioTableProps {
   pricesWithQty: number[][];
@@ -46,38 +36,17 @@ const ScenarioTable = ({
     liveAdDays > 0 ? liveAdDays.toString() : "",
   );
 
-  const buildRow = (price: number, isCustom: boolean): ScenarioRow => {
-    const histEntry = priceHistory.find((ph) => parseFloat(ph.price) === price);
-    const histQty = histEntry ? histEntry.qty : null;
-    const daysAtPrice = histEntry
-      ? histEntry.days_active
-      : estimateDaysActive(priceHistory, price);
-
-    const fcstQty = calcFcstQty(pricesWithQty, price);
-    const adFcst = forecastUnits(
-      price,
-      overallUnits,
-      fcstQty,
-      selectedRow.daysActive,
-      90,
-      daysAtPrice,
-      selectedRow.forecastWindow,
-      pricesWithQty,
-      liveAdDays > 0 ? liveAdDays : undefined,
-    );
-    const revenue = price * adFcst;
-    const markdown = (regularRetail - price) * adFcst;
-
-    return { price, histQty, daysAtPrice, adFcst, revenue, markdown, isCustom };
-  };
-
+  /** Shared with the dev modal — see `scenarioRows.ts`. */
+  const allPrices = buildScenarioRows({
+    pricesWithQty,
+    priceHistory,
+    regularRetail,
+    selectedRow,
+    overallUnits,
+    liveAdDays,
+    customPrices,
+  });
   const historicalPrices = pricesWithQty.map((pq) => pq[0]);
-  const allPrices = [
-    ...historicalPrices
-      .filter((p) => !customPrices.some((cp) => Math.abs(cp - p) < 0.001))
-      .map((p) => buildRow(p, false)),
-    ...customPrices.map((p) => buildRow(p, true)),
-  ].sort((a, b) => a.price - b.price);
 
   const handleAdd = () => {
     const val = parseFloat(customInput);
