@@ -114,15 +114,6 @@ export const TIER_STRIPE: Record<Tier, string> = {
   C: "border-l-[#dfe2e9]",
 };
 
-/** On a light row. Filled so the letter reads at 10px. */
-export const TIER_CHIP: Record<Tier, string> = {
-  A: "bg-[#1e2a4a] text-custom-white",
-  B: "bg-[#8a93a8] text-custom-white",
-  C: "bg-[#dfe2e9] text-content",
-};
-
-/** On the navy band bar, where the light chips would disappear — inverted so
- *  every band's letter has the same weight against its own background. */
 /**
  * Filter-chip treatment, borrowed from the Performance pages' severity chips:
  * a tinted fill always, a ring on the active one. Same shape and behaviour,
@@ -140,6 +131,7 @@ export const TIER_CHIP_ON: Record<Tier, string> = {
   C: "ring-2 ring-[#8a93a8]/45 shadow-sm",
 };
 
+/** On the navy band bar, where a light chip would disappear. */
 export const TIER_CHIP_ON_NAVY: Record<Tier, string> = {
   A: "bg-custom-white text-[#1e2a4a]",
   B: "bg-custom-white text-[#1e2a4a]",
@@ -150,18 +142,6 @@ export const tierCounts = (ranks: Map<string, RankEntry>) => {
   const counts: Record<Tier, number> = { A: 0, B: 0, C: 0 };
   for (const entry of ranks.values()) counts[entry.tier] += 1;
   return counts;
-};
-
-/** The last row still inside the A cut — where the grid draws its divider. */
-export const lastATierUpc = (
-  rows: ForecastOutlierRow[],
-  ranks: Map<string, RankEntry>,
-): string | null => {
-  let last: string | null = null;
-  for (const row of rows) {
-    if (ranks.get(row.upc)?.tier === "A") last = row.upc;
-  }
-  return last;
 };
 
 export type ExceptionKind = "thin" | "untested" | "costly" | "record";

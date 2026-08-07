@@ -6,6 +6,35 @@ import { exportData } from "../../../utils/export";
 import { formatCurrency2 } from "../../../utils";
 import type { ForecastOutlierRow } from "../../../features/forecastSlice";
 import { rankRows, TIER_LABEL, type Tier } from "./forecastRanking";
+import type { RankEntry } from "./forecastRanking";
+
+/** A row plus its ranking, flattened so `exportData` can read them as fields. */
+type RankedRow = ForecastOutlierRow & {
+  rank: number | "";
+  tier: string;
+  sharePct: string;
+};
+
+/**
+ * The grid's whole organising idea is the ranking, so a CSV that drops it
+ * arrives as an unordered list of items. Rows are sorted by contribution and
+ * carry their rank, band and share.
+ */
+const withRank = (
+  rows: ForecastOutlierRow[],
+  ranks: Map<string, RankEntry>,
+): RankedRow[] =>
+  [...rows]
+    .sort((a, b) => b.fcstTotal - a.fcstTotal)
+    .map((row) => {
+      const entry = ranks.get(row.upc);
+      return {
+        ...row,
+        rank: entry?.rank ?? "",
+        tier: entry ? TIER_LABEL[entry.tier] : "",
+        sharePct: entry ? (entry.share * 100).toFixed(1) : "",
+      };
+    });
 
 /**
  * Forecast export.
@@ -20,6 +49,9 @@ import { rankRows, TIER_LABEL, type Tier } from "./forecastRanking";
 type ModalMode = "presets" | "custom";
 type PresetId = "selected" | "all" | "notFound";
 type ColKey =
+  | "rank"
+  | "tier"
+  | "sharePct"
   | "upc"
   | "description"
   | "notes"
@@ -34,6 +66,9 @@ type ColKey =
   | "markdownDollars";
 
 const COLS: { key: ColKey; label: string }[] = [
+  { key: "rank", label: "Rank" },
+  { key: "tier", label: "Band" },
+  { key: "sharePct", label: "Share %" },
   { key: "upc", label: "UPC" },
   { key: "description", label: "Description" },
   { key: "notes", label: "Notes" },
@@ -66,8 +101,14 @@ const SECTION_LABEL =
 const DOWNLOAD_BTN =
   "flex items-center gap-1.5 bg-[#1e2a4a] hover:bg-[#1e2a4a]/85 disabled:opacity-40 text-custom-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors";
 
-const cell = (row: ForecastOutlierRow, key: ColKey) => {
+const cell = (row: RankedRow, key: ColKey) => {
   switch (key) {
+    case "rank":
+      return String(row.rank);
+    case "tier":
+      return row.tier;
+    case "sharePct":
+      return `${row.sharePct}%`;
     case "notes":
       return row.notes ?? "";
     case "daysActive":
@@ -135,15 +176,23 @@ const ForecastExportModal = ({ onClose }: { onClose: () => void }) => {
     [ranks, tiers],
   );
 
-  const selectedRows = useMemo(() => ticked.filter(inTier), [ticked, inTier]);
+  const selectedRows = useMemo(
+    () => withRank(ticked.filter(inTier), ranks),
+    [ticked, inTier, ranks],
+  );
 
   const allRows = useMemo(() => {
-    if (tiers.length === 0) return rowData;
+    // Ranked over everything, not over the ticked subset — "All items" is a
+    // different population, so a row's band can legitimately differ here.
     const allRanks = rankRows(rowData);
-    return rowData.filter((r) => {
-      const tier = allRanks.get(r.upc)?.tier;
-      return tier ? tiers.includes(tier) : false;
-    });
+    const inScope =
+      tiers.length === 0
+        ? rowData
+        : rowData.filter((r) => {
+            const tier = allRanks.get(r.upc)?.tier;
+            return tier ? tiers.includes(tier) : false;
+          });
+    return withRank(inScope, allRanks);
   }, [rowData, tiers]);
 
   const tierCountsFor = useMemo(() => {

@@ -540,7 +540,9 @@ const ForecastRowsTable = ({
 
           {sorted.length === 0 ? (
             <div className="text-[12px] text-content/85 py-6 text-center">
-              Nothing selected — tick items in the list on the left.
+              {rows.length === 0
+                ? "Nothing selected — tick items in the list on the left."
+                : "No items match the current band or search filters."}
             </div>
           ) : (
             sorted.map((row) => {
