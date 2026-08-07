@@ -11,6 +11,10 @@ interface Props {
    *  word (see AssociationItemsTable). */
   activeValue?: string;
   align?: "left" | "right";
+  /** The label's type size. Defaults to the 11px this component shipped with;
+   *  the Performance item tables render theirs at 9px, so callers matching that
+   *  header pass it in rather than forking the component. */
+  labelSize?: string;
   onApply: () => void;
   onClear?: () => void;
   children: React.ReactNode;
@@ -21,14 +25,24 @@ interface Props {
 // and others — centralized here instead of adding a 7th copy. Label toggles
 // an absolutely-positioned popover holding whatever filter control is passed
 // as children (typically a text input), with built-in Apply/Clear.
-const ColFilter = ({ label, active, activeValue, align = "left", onApply, onClear, children }: Props) => {
+const ColFilter = ({
+  label,
+  active,
+  activeValue,
+  align = "left",
+  labelSize = "text-[11px]",
+  onApply,
+  onClear,
+  children,
+}: Props) => {
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!open) return;
     const close = (e: MouseEvent) => {
-      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpen(false);
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node))
+        setOpen(false);
     };
     document.addEventListener("mousedown", close);
     return () => document.removeEventListener("mousedown", close);
@@ -38,7 +52,7 @@ const ColFilter = ({ label, active, activeValue, align = "left", onApply, onClea
     <div ref={wrapRef} className="relative flex items-center gap-1 min-w-0">
       <button
         onClick={() => setOpen((v) => !v)}
-        className={`flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wide transition-colors select-none min-w-0 ${
+        className={`flex items-center gap-1 ${labelSize} font-semibold uppercase tracking-wide transition-colors select-none min-w-0 ${
           active ? "text-[#1e2a4a]" : "text-content"
         }`}
       >
@@ -55,7 +69,9 @@ const ColFilter = ({ label, active, activeValue, align = "left", onApply, onClea
             <span className="w-1 h-1 rounded-full bg-[#1e2a4a] flex-shrink-0" />
           ))}
       </button>
-      {open && <div className="fixed inset-0 z-[199]" onClick={() => setOpen(false)} />}
+      {open && (
+        <div className="fixed inset-0 z-[199]" onClick={() => setOpen(false)} />
+      )}
       {open && (
         <div
           className="bg-custom-white"

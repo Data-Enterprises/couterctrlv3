@@ -5,6 +5,7 @@ import ResizableModalShell from "../../../components/modals/ResizableModalShell"
 import { exportData } from "../../../utils/export";
 import { formatCurrency2 } from "../../../utils";
 import type { ForecastOutlierRow } from "../../../features/forecastSlice";
+import { rankRows, TIER_LABEL, type Tier } from "./forecastRanking";
 
 /**
  * Forecast export.
@@ -58,8 +59,7 @@ const PREVIEW_ROWS = 8;
 
 const CHECKBOX =
   "mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-[#1e2a4a] cursor-pointer flex-shrink-0 disabled:cursor-not-allowed";
-const CUSTOM_CHECKBOX =
-  "accent-[#1e2a4a] h-3.5 w-3.5 rounded flex-shrink-0";
+const CUSTOM_CHECKBOX = "accent-[#1e2a4a] h-3.5 w-3.5 rounded flex-shrink-0";
 const CUSTOM_RADIO = "accent-[#1e2a4a] h-3.5 w-3.5";
 const SECTION_LABEL =
   "text-[10px] font-semibold uppercase tracking-wide text-content mb-2";
@@ -88,8 +88,14 @@ const cell = (row: ForecastOutlierRow, key: ColKey) => {
 };
 
 const ForecastExportModal = ({ onClose }: { onClose: () => void }) => {
-  const { rowData, checkedUpcs, notFoundUpcs, adListRows, storeids } =
-    useAppSelector((s) => s.forecastDev);
+  const {
+    rowData,
+    checkedUpcs,
+    notFoundUpcs,
+    adListRows,
+    storeids,
+    tierFilter,
+  } = useAppSelector((s) => s.forecastDev);
   const singleDate = useAppSelector((s) => s.search.singleDate);
 
   const [mode, setMode] = useState<ModalMode>("presets");
@@ -99,11 +105,75 @@ const ForecastExportModal = ({ onClose }: { onClose: () => void }) => {
   const [cols, setCols] = useState<Set<ColKey>>(
     () => new Set(COLS.map((c) => c.key)),
   );
-  const [customScope, setCustomScope] = useState<"selected" | "all">("selected");
+  const [customScope, setCustomScope] = useState<"selected" | "all">(
+    "selected",
+  );
+  /** Seeded from the grid, then editable here — the download should match what
+   *  you were looking at, without being locked to it. */
+  const [tiers, setTiers] = useState<Tier[]>(tierFilter);
 
-  const selectedRows = useMemo(
+  const toggleTier = (tier: Tier) =>
+    setTiers((prev) =>
+      prev.includes(tier) ? prev.filter((x) => x !== tier) : [...prev, tier],
+    );
+
+  const ticked = useMemo(
     () => rowData.filter((r) => checkedUpcs.includes(r.upc)),
     [rowData, checkedUpcs],
+  );
+
+  /** Ranked over the ticked set, exactly as the grid does, so a tier means the
+   *  same thing in both places. */
+  const ranks = useMemo(() => rankRows(ticked), [ticked]);
+
+  const inTier = useMemo(
+    () => (row: ForecastOutlierRow) => {
+      if (tiers.length === 0) return true;
+      const tier = ranks.get(row.upc)?.tier;
+      return tier ? tiers.includes(tier) : false;
+    },
+    [ranks, tiers],
+  );
+
+  const selectedRows = useMemo(() => ticked.filter(inTier), [ticked, inTier]);
+
+  const allRows = useMemo(() => {
+    if (tiers.length === 0) return rowData;
+    const allRanks = rankRows(rowData);
+    return rowData.filter((r) => {
+      const tier = allRanks.get(r.upc)?.tier;
+      return tier ? tiers.includes(tier) : false;
+    });
+  }, [rowData, tiers]);
+
+  const tierCountsFor = useMemo(() => {
+    const out: Record<Tier, number> = { A: 0, B: 0, C: 0 };
+    for (const entry of ranks.values()) out[entry.tier] += 1;
+    return out;
+  }, [ranks]);
+
+  const tierChips = (
+    <div className="flex items-center gap-1.5 flex-wrap">
+      {(["A", "B", "C"] as const).map((tier) => {
+        const on = tiers.includes(tier);
+        return (
+          <button
+            key={tier}
+            onClick={() => toggleTier(tier)}
+            className={`px-2 py-0.5 rounded-full text-[10px] font-medium border transition-colors ${
+              on
+                ? "bg-[#1e2a4a] border-[#1e2a4a] text-custom-white"
+                : "bg-custom-white border-gray-200 text-content"
+            }`}
+          >
+            {TIER_LABEL[tier]} ({tierCountsFor[tier]})
+          </button>
+        );
+      })}
+      <span className="text-[10px] text-content">
+        {tiers.length === 0 ? "All tiers" : `${tiers.join(" + ")} only`}
+      </span>
+    </div>
   );
 
   const togglePreset = (id: PresetId) =>
@@ -123,7 +193,7 @@ const ForecastExportModal = ({ onClose }: { onClose: () => void }) => {
     });
 
   const activeCols = COLS.filter((c) => cols.has(c.key));
-  const customRows = customScope === "selected" ? selectedRows : rowData;
+  const customRows = customScope === "selected" ? selectedRows : allRows;
   const stamp = singleDate.replace(/\//g, "-");
   const allHeaders = COLS.map((c) => ({ headerName: c.label, field: c.key }));
 
@@ -142,8 +212,8 @@ const ForecastExportModal = ({ onClose }: { onClose: () => void }) => {
     {
       id: "all",
       label: "All items",
-      description: `Everything the search returned (${rowData.length})`,
-      disabled: rowData.length === 0,
+      description: `Everything the search returned (${allRows.length})`,
+      disabled: allRows.length === 0,
     },
     {
       id: "notFound",
@@ -160,7 +230,7 @@ const ForecastExportModal = ({ onClose }: { onClose: () => void }) => {
     if (selected.has("selected"))
       exportData(selectedRows, allHeaders, `forecast_selected_${stamp}.csv`);
     if (selected.has("all"))
-      exportData(rowData, allHeaders, `forecast_all_${stamp}.csv`);
+      exportData(allRows, allHeaders, `forecast_all_${stamp}.csv`);
     if (selected.has("notFound"))
       exportData(
         notFoundUpcs.map((upc) => ({
@@ -235,6 +305,11 @@ const ForecastExportModal = ({ onClose }: { onClose: () => void }) => {
             <p className="text-[11px] text-content uppercase tracking-wide font-medium">
               Select data to include
             </p>
+
+            {/* Contribution scope. Sits above the datasets because it changes
+                what every one of them contains — cleared means all tiers,
+                rather than an extra toggle that could contradict them. */}
+            {tierChips}
 
             {presetDatasets.map(({ id, label, description, disabled }) => (
               <label
@@ -316,6 +391,11 @@ const ForecastExportModal = ({ onClose }: { onClose: () => void }) => {
                 <p className="text-[10px] text-content mt-2 leading-relaxed">
                   Selected follows the ticks in the item panel.
                 </p>
+              </div>
+
+              <div>
+                <p className={SECTION_LABEL}>Tiers</p>
+                {tierChips}
               </div>
 
               <div>

@@ -1,16 +1,38 @@
-import { useMemo, useState } from "react";
-import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
+import { Fragment, useMemo, useState } from "react";
+import {
+  ArrowDownTrayIcon,
+  ChevronDownIcon,
+  ChevronRightIcon,
+} from "@heroicons/react/24/outline";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
 import {
   setSelectedUpc,
   setBatchAdDaysRows,
   setBatchPriceRows,
   setBatchNotesRows,
+  toggleTierFilter,
+  clearTierFilter,
+  resetRowValues,
 } from "../../../features/forecastDevSlice";
 import type { ForecastOutlierRow } from "../../../features/forecastSlice";
 import { formatCurrency2 } from "../../../utils";
 import { useTriStateSort } from "../../../utils/useTriStateSort";
 import SortHeader, { PERF_SORT_HEADER } from "../../../components/SortHeader";
+import ColFilter from "../../upc/dev/components/ColFilter";
+import { colFilterInputStyle } from "../../upc/dev/components/colFilterInputStyle";
+import {
+  rankRows,
+  tierCounts,
+  tierSummary,
+  exceptionsFor,
+  EXCEPTION_LABEL,
+  TIER_LABEL,
+  TIER_STRIPE,
+  TIER_CHIP_ON_NAVY,
+  TIER_CHIP_BASE,
+  TIER_CHIP_ON,
+  type Tier,
+} from "./forecastRanking";
 
 /**
  * The forecast grid.
@@ -26,19 +48,14 @@ import SortHeader, { PERF_SORT_HEADER } from "../../../components/SortHeader";
  * across every ticked row, or per item in that popup.
  */
 
-/** Item | notes | qty | active | at price | forecast | ad days | price | fcst | total | markdown */
-const COLS =
-  "1fr 120px 66px 58px 58px 62px 58px 66px 58px 82px 82px";
+/** Item | notes | qty | active | at price | forecast | ad days | price | fcst | total | share | markdown */
+const COLS = "1fr 109px 66px 58px 58px 62px 58px 64px 58px 80px 50px 80px";
 
 const HEAD =
-  "sticky top-0 z-10 bg-custom-white grid gap-1.5 px-2 py-1.5 border-b border-[#1e2a4a]/15";
+  "sticky top-0 z-10 bg-custom-white grid items-center gap-2.5 px-2 py-1.5 border-b border-[#1e2a4a]/15";
 
 type SortCol =
-  | "qtySold"
-  | "adFcst"
-  | "fcstTotal"
-  | "markdownDollars"
-  | "fcstPrice";
+  "qtySold" | "adFcst" | "fcstTotal" | "markdownDollars" | "fcstPrice";
 
 const sortValue = (row: ForecastOutlierRow, col: SortCol) => row[col];
 
@@ -55,6 +72,7 @@ const HEAD_CELLS: { col?: SortCol; label: string }[] = [
   { col: "fcstPrice", label: "Price" },
   { col: "adFcst", label: "Ad fcst" },
   { col: "fcstTotal", label: "Total" },
+  { label: "Share" },
   { col: "markdownDollars", label: "Markdown" },
 ];
 
@@ -71,6 +89,8 @@ const ForecastRowsTable = ({
     notFoundUpcs,
     adListRows,
     forecastResults,
+    tierFilter,
+    initialRowData,
   } = useAppSelector((s) => s.forecastDev);
   const singleDate = useAppSelector((s) => s.search.singleDate);
 
@@ -78,6 +98,12 @@ const ForecastRowsTable = ({
   const [batchPrice, setBatchPrice] = useState("");
   const [batchNotes, setBatchNotes] = useState("");
   const [notFoundOpen, setNotFoundOpen] = useState(false);
+  const [draftUpc, setDraftUpc] = useState("");
+  const [appliedUpc, setAppliedUpc] = useState("");
+  const [draftDesc, setDraftDesc] = useState("");
+  const [appliedDesc, setAppliedDesc] = useState("");
+  /** Collapsed bands are pure presentation, so they stay local. */
+  const [collapsed, setCollapsed] = useState<Set<Tier>>(() => new Set());
   const { sort, handleSort, applySort } = useTriStateSort<SortCol>();
 
   /** The item panel decides what this covers — the grid never filters itself. */
@@ -85,10 +111,73 @@ const ForecastRowsTable = ({
     () => rowData.filter((r) => checkedUpcs.includes(r.upc)),
     [rowData, checkedUpcs],
   );
-  const sorted = useMemo(
-    () => applySort(rows, sortValue),
-    [rows, sort],
+  /** Ranked across the whole selection, not the tier-filtered view — so a
+   *  share doesn't change meaning the moment you click a chip. */
+  const ranks = useMemo(() => rankRows(rows), [rows]);
+  const counts = useMemo(() => tierCounts(ranks), [ranks]);
+  const summary = useMemo(() => tierSummary(ranks), [ranks]);
+
+  /** Empty selection means every tier — the chips are additive, not exclusive. */
+  const visible = useMemo(
+    () =>
+      tierFilter.length === 0
+        ? rows
+        : rows.filter((r) => {
+            const tier = ranks.get(r.upc)?.tier;
+            return tier ? tierFilter.includes(tier) : false;
+          }),
+    [rows, ranks, tierFilter],
   );
+
+  /** Column filters narrow what the tier chips left. Ranks are untouched, so a
+   *  share still means share-of-the-whole-selection while you're searching. */
+  const searched = useMemo(() => {
+    if (!appliedUpc && !appliedDesc) return visible;
+    const u = appliedUpc.toLowerCase();
+    const d = appliedDesc.toLowerCase();
+    return visible.filter(
+      (r) =>
+        (!u || r.upc.toLowerCase().includes(u)) &&
+        (!d || r.description.toLowerCase().includes(d)),
+    );
+  }, [visible, appliedUpc, appliedDesc]);
+
+  /** Contribution order is the default: biggest first, because on a list of any
+   *  size the top handful IS the ad. A user sort replaces it entirely. */
+  const sorted = useMemo(
+    () =>
+      sort
+        ? applySort(searched, sortValue)
+        : [...searched].sort((a, b) => b.fcstTotal - a.fcstTotal),
+    [searched, sort],
+  );
+
+  /**
+   * The row that opens each tier band. Bands only make sense while the list is
+   * in contribution order — a user sort scatters the tiers, and a tier filter
+   * means the chip is already saying which band you're in.
+   */
+  const bandStarts = useMemo(() => {
+    if (sort) return new Map<string, Tier>();
+    const out = new Map<string, Tier>();
+    const seen = new Set<Tier>();
+    for (const row of sorted) {
+      const tier = ranks.get(row.upc)?.tier;
+      if (!tier || seen.has(tier)) continue;
+      seen.add(tier);
+      out.set(row.upc, tier);
+    }
+    return out;
+  }, [sorted, ranks, sort]);
+
+  const coverage = useMemo(() => {
+    const aRows = rows.filter((r) => ranks.get(r.upc)?.tier === "A");
+    const share = aRows.reduce(
+      (sum, r) => sum + (ranks.get(r.upc)?.share ?? 0),
+      0,
+    );
+    return { count: aRows.length, share };
+  }, [rows, ranks]);
 
   /**
    * UPCs whose applied price was typed rather than drawn from history.
@@ -112,6 +201,25 @@ const ForecastRowsTable = ({
     return set;
   }, [rowData, forecastResults]);
 
+  const hasNotes = useMemo(
+    () => searched.some((r) => (r.notes ?? "").trim() !== ""),
+    [searched],
+  );
+
+  /** Reset only means something once something has been changed. Compared on
+   *  the two fields the toolbar writes, so a note doesn't light it up. */
+  const isEdited = useMemo(
+    () =>
+      searched.some((row) => {
+        const original = initialRowData.find((r) => r.upc === row.upc);
+        if (!original) return false;
+        return (
+          original.fcstPrice !== row.fcstPrice || original.adDays !== row.adDays
+        );
+      }),
+    [searched, initialRowData],
+  );
+
   const totals = useMemo(
     () =>
       rows.reduce(
@@ -125,10 +233,16 @@ const ForecastRowsTable = ({
     [rows],
   );
 
-  /** Writes to every ticked row. Single-price rows are excluded, as in legacy —
-   *  one price point can't be refitted to a new one. */
+  /**
+   * Writes to the rows actually on screen — after the tier chips and the column
+   * filters, not the whole ticked selection. Filtering to Tail and hitting
+   * Apply has to mean "these ones", or the filters would be a lie.
+   *
+   * Single-price rows are excluded from price and ad days, as in legacy: one
+   * price point can't be refitted to a new one.
+   */
   const handleSetBatch = () => {
-    const upcs = rows.filter((r) => !r.singlePrice).map((r) => r.upc);
+    const upcs = searched.filter((r) => !r.singlePrice).map((r) => r.upc);
     if (!upcs.length) return;
     const days = parseInt(batchAdDays);
     const price = parseFloat(batchPrice);
@@ -140,7 +254,7 @@ const ForecastRowsTable = ({
     if (batchNotes.trim())
       dispatch(
         setBatchNotesRows({
-          upcs: rows.map((r) => r.upc),
+          upcs: searched.map((r) => r.upc),
           notes: batchNotes.trim(),
         }),
       );
@@ -182,10 +296,56 @@ const ForecastRowsTable = ({
           ))}
         </div>
 
+        {/* Contribution tiers. Not a grade — A items are simply the ones the
+            ad's numbers rest on. The coverage line is the point of the whole
+            thing on a list of any real size. */}
+        <div className="flex items-center gap-1.5 px-3 py-2 bg-custom-white border-b border-gray-100 flex-shrink-0">
+          {(
+            [
+              ["A", counts.A],
+              ["B", counts.B],
+              ["C", counts.C],
+            ] as const
+          ).map(([tier, n]) => {
+            const on = tierFilter.includes(tier);
+            return (
+              <button
+                key={tier}
+                onClick={() => dispatch(toggleTierFilter(tier))}
+                title={
+                  tier === "A"
+                    ? "Together the first 80% of the forecast"
+                    : tier === "B"
+                      ? "The next 15%"
+                      : "The tail — the last 5%"
+                }
+                className={`text-[12px] font-semibold px-2 py-1 rounded-full transition-shadow ${
+                  TIER_CHIP_BASE[tier]
+                } ${on ? TIER_CHIP_ON[tier] : ""}`}
+              >
+                {TIER_LABEL[tier]} ({n})
+              </button>
+            );
+          })}
+          {tierFilter.length > 0 && (
+            <button
+              onClick={() => dispatch(clearTierFilter())}
+              className="text-[11px] font-medium text-[#1e2a4a] hover:underline px-1"
+            >
+              Clear
+            </button>
+          )}
+          <span className="ml-auto text-[11px] text-content/85">
+            {coverage.count} item{coverage.count === 1 ? "" : "s"} ={" "}
+            {(coverage.share * 100).toFixed(0)}% of the forecast
+          </span>
+        </div>
+
         {/* batch setter — writes to every ticked row, so the count is named */}
         <div className="flex items-center gap-1.5 px-3 py-2 bg-gray-50 border-b border-gray-100 flex-shrink-0">
           <span className="text-[11px] font-semibold uppercase tracking-wide text-content/85">
-            Set for {rows.length} selected
+            Set for {searched.length}
+            {searched.length === rows.length ? " selected" : " shown"}
           </span>
           <input
             type="number"
@@ -219,12 +379,46 @@ const ForecastRowsTable = ({
           <button
             onClick={handleSetBatch}
             disabled={
-              !rows.length ||
+              !searched.length ||
               (!batchAdDays && !batchPrice && !batchNotes.trim())
             }
             className="text-[11px] font-semibold px-2.5 py-1 rounded bg-[#1e2a4a] text-custom-white hover:bg-[#2a3a63] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
           >
             Apply
+          </button>
+          {/* Undoes price and ad days on the same rows Apply writes to, back to
+              what the search returned. Notes survive it — see the reducer. */}
+          <button
+            onClick={() => {
+              dispatch(resetRowValues(searched.map((r) => r.upc)));
+              setBatchAdDays("");
+              setBatchPrice("");
+            }}
+            disabled={!isEdited}
+            title="Put price and ad days back to what the search returned"
+            className="text-[11px] font-semibold px-2.5 py-1 rounded border border-gray-200 text-content hover:bg-gray-100 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            Reset
+          </button>
+          {/* Notes are deliberately outside Reset — authored text shouldn't
+              disappear as a side effect of undoing a price. Clearing them is
+              its own action, and the batch field can't do it (an empty note
+              submits nothing, by design). */}
+          <button
+            onClick={() => {
+              dispatch(
+                setBatchNotesRows({
+                  upcs: searched.map((r) => r.upc),
+                  notes: "",
+                }),
+              );
+              setBatchNotes("");
+            }}
+            disabled={!hasNotes}
+            title="Remove the note from every selected row"
+            className="text-[11px] font-semibold px-2.5 py-1 rounded border border-gray-200 text-content hover:bg-gray-100 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            Clear notes
           </button>
           <span className="text-[10.5px] text-content/85 ml-auto">
             Double-click a row for the calculator
@@ -278,7 +472,50 @@ const ForecastRowsTable = ({
         {/* rows */}
         <div className="flex-1 overflow-y-auto thin-scrollbar min-h-0">
           <div className={HEAD} style={{ gridTemplateColumns: COLS }}>
-            {HEAD_CELLS.map((cell, i) =>
+            {/* Same construction as ItemMarginsTable's header: the column
+                name, then the two filter labels beside it. */}
+            <span
+              className={`${PERF_SORT_HEADER} flex-1 flex items-center gap-2 min-w-0`}
+            >
+              Item
+              <ColFilter
+                label="UPC"
+                labelSize="text-[9px]"
+                active={!!appliedUpc}
+                onApply={() => setAppliedUpc(draftUpc)}
+                onClear={() => {
+                  setAppliedUpc("");
+                  setDraftUpc("");
+                }}
+              >
+                <input
+                  autoFocus
+                  style={colFilterInputStyle}
+                  placeholder="Search UPC…"
+                  value={draftUpc}
+                  onChange={(e) => setDraftUpc(e.target.value)}
+                />
+              </ColFilter>
+              <ColFilter
+                label="Desc"
+                labelSize="text-[9px]"
+                active={!!appliedDesc}
+                onApply={() => setAppliedDesc(draftDesc)}
+                onClear={() => {
+                  setAppliedDesc("");
+                  setDraftDesc("");
+                }}
+              >
+                <input
+                  autoFocus
+                  style={colFilterInputStyle}
+                  placeholder="Search description…"
+                  value={draftDesc}
+                  onChange={(e) => setDraftDesc(e.target.value)}
+                />
+              </ColFilter>
+            </span>
+            {HEAD_CELLS.slice(1).map((cell) =>
               cell.col ? (
                 <SortHeader
                   key={cell.label}
@@ -291,7 +528,9 @@ const ForecastRowsTable = ({
               ) : (
                 <span
                   key={cell.label}
-                  className={`${PERF_SORT_HEADER} ${i < 2 ? "" : "text-right"}`}
+                  className={`${PERF_SORT_HEADER} ${
+                    cell.label === "Notes" ? "" : "text-right"
+                  }`}
                 >
                   {cell.label}
                 </span>
@@ -304,79 +543,158 @@ const ForecastRowsTable = ({
               Nothing selected — tick items in the list on the left.
             </div>
           ) : (
-            sorted.map((row) => (
-              <div
-                key={row.upc}
-                onDoubleClick={() =>
-                  !row.singlePrice && dispatch(setSelectedUpc(row.upc))
-                }
-                title={
-                  row.singlePrice
-                    ? "Only one price point — nothing to model"
-                    : "Double-click for the calculator"
-                }
-                className={`grid gap-1.5 items-center px-2 py-[7px] border-b border-[#1e2a4a]/15 last:border-b-0 even:bg-row_stripe hover:bg-gray-50 ${
-                  row.singlePrice ? "" : "cursor-pointer"
-                }`}
-                style={{ gridTemplateColumns: COLS }}
-              >
-                <div className="min-w-0">
-                  <div className="text-[12.5px] font-medium text-content truncate flex items-center gap-1">
-                    <span className="truncate">{row.description}</span>
-                    {row.adListData && (
-                      <span className="shrink-0 text-[9px] bg-blue-500 text-custom-white rounded px-0.5 font-medium">
-                        AD
+            sorted.map((row) => {
+              const flags = exceptionsFor(
+                row,
+                ranks.get(row.upc),
+                forecastResults.find((r) => r.upc === row.upc),
+                customPriced.has(row.upc),
+              );
+              const entry = ranks.get(row.upc);
+              const band = bandStarts.get(row.upc);
+              // A collapsed band keeps its header and drops its rows.
+              const isHidden = entry ? collapsed.has(entry.tier) : false;
+              return (
+                <Fragment key={row.upc}>
+                  {band && (
+                    <button
+                      onClick={() =>
+                        setCollapsed((prev) => {
+                          const next = new Set(prev);
+                          if (next.has(band)) next.delete(band);
+                          else next.add(band);
+                          return next;
+                        })
+                      }
+                      title={
+                        collapsed.has(band)
+                          ? `Show the ${band} band`
+                          : `Collapse the ${band} band`
+                      }
+                      className="w-full flex items-center gap-2.5 px-2 py-2 bg-[#1e2a4ad9] hover:bg-[#1e2a4a] transition-colors"
+                    >
+                      {collapsed.has(band) ? (
+                        <ChevronRightIcon className="w-3.5 h-3.5 text-custom-white flex-shrink-0" />
+                      ) : (
+                        <ChevronDownIcon className="w-3.5 h-3.5 text-custom-white flex-shrink-0" />
+                      )}
+                      <span
+                        className={`w-6 h-6 rounded flex items-center justify-center text-[13px] font-bold flex-shrink-0 ${TIER_CHIP_ON_NAVY[band]}`}
+                      >
+                        {band}
                       </span>
-                    )}
-                    {row.singlePrice && (
-                      <span className="shrink-0 text-[9px] bg-yellow-200 text-yellow-700 rounded px-0.5 font-medium">
-                        1pt
+                      <span className="text-[12px] font-bold uppercase tracking-wide text-custom-white">
+                        {TIER_LABEL[band]}
                       </span>
-                    )}
-                  </div>
-                  <div className="text-[11px] font-medium text-content/85 tabular-nums">
-                    {row.upc}
-                  </div>
-                </div>
-                <span
-                  className="text-[11px] font-medium text-content/85 truncate"
-                  title={row.notes || ""}
-                >
-                  {row.notes || ""}
-                </span>
-                <span className="text-right text-[12px] font-medium tabular-nums text-content">
-                  {customPriced.has(row.upc)
-                    ? "—"
-                    : row.qtySold.toLocaleString()}
-                </span>
-                <span className="text-right text-[12px] font-medium tabular-nums text-content/85">
-                  {row.daysActive}/90
-                </span>
-                <span className="text-right text-[12px] font-medium tabular-nums text-content/85">
-                  {customPriced.has(row.upc)
-                    ? "—"
-                    : `${row.daysAtPrice}/${row.daysActive}`}
-                </span>
-                <span className="text-right text-[12px] font-medium tabular-nums text-content/85">
-                  {row.forecastWindow}
-                </span>
-                <span className="text-right text-[12px] font-medium tabular-nums text-content">
-                  {row.adDays === 0 ? "—" : row.adDays}
-                </span>
-                <span className="text-right text-[12px] font-medium tabular-nums text-content">
-                  {formatCurrency2(row.fcstPrice)}
-                </span>
-                <span className="text-right text-[12px] font-medium tabular-nums text-content">
-                  {row.adFcst.toLocaleString()}
-                </span>
-                <span className="text-right text-[13px] font-bold tabular-nums text-content">
-                  {formatCurrency2(row.fcstTotal)}
-                </span>
-                <span className="text-right text-[12px] font-medium tabular-nums text-content">
-                  {formatCurrency2(Math.max(0, row.markdownDollars))}
-                </span>
-              </div>
-            ))
+                      <span className="flex-1 h-px bg-custom-white/20" />
+                      <span className="text-[12px] font-bold text-custom-white tabular-nums flex-shrink-0">
+                        {summary[band].count} item
+                        {summary[band].count === 1 ? "" : "s"} ·{" "}
+                        {(summary[band].share * 100).toFixed(0)}%
+                      </span>
+                    </button>
+                  )}
+                  {!isHidden && (
+                    <div
+                      onDoubleClick={() =>
+                        !row.singlePrice && dispatch(setSelectedUpc(row.upc))
+                      }
+                      title={
+                        row.singlePrice
+                          ? "Only one price point — nothing to model"
+                          : "Double-click for the calculator"
+                      }
+                      className={`grid gap-2.5 items-center pl-1.5 pr-2 py-[7px] border-b border-[#1e2a4a]/15 last:border-b-0 border-l-4 ${
+                        entry ? TIER_STRIPE[entry.tier] : "border-l-transparent"
+                      } ${row.singlePrice ? "" : "even:bg-row_stripe hover:bg-gray-50"}`}
+                      style={{ gridTemplateColumns: COLS }}
+                    >
+                      <div className="min-w-0 flex items-baseline gap-2">
+                        <span className="flex items-baseline gap-1.5 flex-shrink-0">
+                          <span className="text-[14px] font-bold tabular-nums text-content w-6 text-right">
+                            {entry?.rank ?? ""}
+                          </span>
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <div className="text-[12.5px] font-medium text-content truncate flex items-center gap-1">
+                            <span className="truncate">{row.description}</span>
+                            {row.adListData && (
+                              <span className="shrink-0 text-[9px] bg-blue-500 text-custom-white rounded px-0.5 font-medium">
+                                AD
+                              </span>
+                            )}
+                          </div>
+                          {/* The badges sit on the UPC line at UPC size —
+                              the description keeps the full width for the
+                              thing people actually read the row by. */}
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <span className="text-[11px] font-medium text-content/85 tabular-nums flex-shrink-0">
+                              {row.upc}
+                            </span>
+                            {row.singlePrice && (
+                              <span className="flex-shrink-0 text-[11px] bg-yellow-200 text-yellow-700 rounded px-1 font-medium">
+                                1pt
+                              </span>
+                            )}
+                            {flags.length > 0 && (
+                              <span
+                                title={flags.map((f) => f.detail).join("\n")}
+                                className="truncate text-[11px] bg-severity_watch_bg text-severity_watch_text rounded px-1 font-medium"
+                              >
+                                {EXCEPTION_LABEL[flags[0].kind]}
+                                {flags.length > 1
+                                  ? ` +${flags.length - 1}`
+                                  : ""}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <span
+                        className="text-[11px] font-medium text-content/85 truncate"
+                        title={row.notes || ""}
+                      >
+                        {row.notes || ""}
+                      </span>
+                      <span className="text-right text-[12px] font-medium tabular-nums text-content">
+                        {customPriced.has(row.upc)
+                          ? "—"
+                          : row.qtySold.toLocaleString()}
+                      </span>
+                      <span className="text-right text-[12px] font-medium tabular-nums text-content/85">
+                        {row.daysActive}/90
+                      </span>
+                      <span className="text-right text-[12px] font-medium tabular-nums text-content/85">
+                        {customPriced.has(row.upc)
+                          ? "—"
+                          : `${row.daysAtPrice}/${row.daysActive}`}
+                      </span>
+                      <span className="text-right text-[12px] font-medium tabular-nums text-content/85">
+                        {row.forecastWindow}
+                      </span>
+                      <span className="text-right text-[12px] font-medium tabular-nums text-content">
+                        {row.adDays === 0 ? "—" : row.adDays}
+                      </span>
+                      <span className="text-right text-[12px] font-medium tabular-nums text-content">
+                        {formatCurrency2(row.fcstPrice)}
+                      </span>
+                      <span className="text-right text-[12px] font-medium tabular-nums text-content">
+                        {row.adFcst.toLocaleString()}
+                      </span>
+                      <span className="text-right text-[13px] font-bold tabular-nums text-content">
+                        {formatCurrency2(row.fcstTotal)}
+                      </span>
+                      <span className="text-right text-[12px] font-medium tabular-nums text-content/85">
+                        {((ranks.get(row.upc)?.share ?? 0) * 100).toFixed(1)}%
+                      </span>
+                      <span className="text-right text-[12px] font-medium tabular-nums text-content">
+                        {formatCurrency2(Math.max(0, row.markdownDollars))}
+                      </span>
+                    </div>
+                  )}
+                </Fragment>
+              );
+            })
           )}
         </div>
       </div>

@@ -1,6 +1,7 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { ForecastItem, PriceHistoryResult } from "../interfaces";
 import type { AdListRow } from "./adListSlice";
+import type { Tier } from "../pages/forecast/dev/forecastRanking";
 import type { ForecastOutlierRow } from "./forecastSlice";
 import { calcFcstQty, estimateDaysActive } from "../pages/forecast/utils";
 import { forecastUnits } from "../pages/forecast/utils";
@@ -53,10 +54,16 @@ interface ForecastDevState {
   singlePriceResults: PriceHistoryResult[];
   /** The editable grid. */
   rowData: ForecastOutlierRow[];
+  /** The rows exactly as the search produced them. Kept only so a price or
+   *  ad-days edit can be undone — nothing renders from it. */
+  initialRowData: ForecastOutlierRow[];
   /** Ticked in the item panel — what the grid and the KPI strip cover. Every
    *  row starts ticked, so the page opens on the whole search. */
   checkedUpcs: string[];
   listFilter: string;
+  /** Contribution tiers on show. Empty means all of them — the grid and the
+   *  export read the same field so a download matches what's on screen. */
+  tierFilter: Tier[];
 
   /** UPC whose calculator is open; "" is closed. Replaces legacy's per-row
    *  `calcNow` flag — a modal has one subject, so one field says which. */
@@ -79,8 +86,10 @@ const initialState: ForecastDevState = {
   forecastResults: [],
   singlePriceResults: [],
   rowData: [],
+  initialRowData: [],
   checkedUpcs: [],
   listFilter: "",
+  tierFilter: [],
   selectedUpc: "",
   globalFcstPrice: "",
   globalAdDays: "",
@@ -152,7 +161,24 @@ const forecastDevSlice = createSlice({
     },
     setRowData: (state, action: PayloadAction<ForecastOutlierRow[]>) => {
       state.rowData = action.payload;
+      state.initialRowData = action.payload;
       state.checkedUpcs = action.payload.map((r) => r.upc);
+    },
+    /**
+     * Put the given rows back to the price and ad days the search returned,
+     * along with everything derived from them.
+     *
+     * Notes are deliberately left alone — they're the user's own writing, not
+     * an edit to the forecast, and losing them to a price undo would be its
+     * own small disaster.
+     */
+    resetRowValues: (state, action: PayloadAction<string[]>) => {
+      const upcs = new Set(action.payload);
+      state.rowData = state.rowData.map((row) => {
+        if (!upcs.has(row.upc)) return row;
+        const original = state.initialRowData.find((r) => r.upc === row.upc);
+        return original ? { ...original, notes: row.notes } : row;
+      });
     },
     toggleCheckedUpc: (state, action: PayloadAction<string>) => {
       state.checkedUpcs = state.checkedUpcs.includes(action.payload)
@@ -164,6 +190,14 @@ const forecastDevSlice = createSlice({
     },
     setListFilter: (state, action: PayloadAction<string>) => {
       state.listFilter = action.payload;
+    },
+    toggleTierFilter: (state, action: PayloadAction<Tier>) => {
+      state.tierFilter = state.tierFilter.includes(action.payload)
+        ? state.tierFilter.filter((t) => t !== action.payload)
+        : [...state.tierFilter, action.payload];
+    },
+    clearTierFilter: (state) => {
+      state.tierFilter = [];
     },
     /** Second batch of 500 lands on top of the first rather than replacing it. */
     appendBatchResults: (
@@ -177,6 +211,7 @@ const forecastDevSlice = createSlice({
     ) => {
       const { rows, results, singleResults, items } = action.payload;
       state.rowData = [...state.rowData, ...rows];
+      state.initialRowData = [...state.initialRowData, ...rows];
       // The second batch arrives ticked too — it's part of the same search.
       state.checkedUpcs = [
         ...state.checkedUpcs,
@@ -446,8 +481,10 @@ const forecastDevSlice = createSlice({
      *  re-run against the same stores doesn't mean re-picking them. */
     reQuery: (state) => {
       state.rowData = [];
+      state.initialRowData = [];
       state.checkedUpcs = [];
       state.listFilter = "";
+      state.tierFilter = [];
       state.forecastResults = [];
       state.singlePriceResults = [];
       state.items = [];
@@ -474,9 +511,12 @@ export const {
   setForecastResults,
   setSingleResults,
   setRowData,
+  resetRowValues,
   toggleCheckedUpc,
   setCheckedUpcs,
   setListFilter,
+  toggleTierFilter,
+  clearTierFilter,
   appendBatchResults,
   setSelectedUpc,
   setNewRowAdDaysValue,
