@@ -1,5 +1,4 @@
 import { useMemo, useRef, useState } from "react";
-import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import {
   setThreshold,
@@ -10,6 +9,7 @@ import {
 import type { SevFilter } from "../../../features/salesLedgerSlice";
 import ThresholdFilter from "../../../components/filters/ThresholdFilter";
 import SevChips from "../../../components/SevChips";
+import MobilePerfHeader from "../../../components/mobile/MobilePerfHeader";
 import MobileKpiStrip from "../../../components/mobile/MobileKpiStrip";
 import MobileDayStrip from "../../../components/mobile/MobileDayStrip";
 import MobileSignalRow from "../../../components/mobile/MobileSignalRow";
@@ -22,6 +22,7 @@ import {
   LY_OFFSET,
 } from "../../../utils/grading";
 import { getVendorTier, marginPct, NO_VENDOR_LABEL } from "../vendorsUtils";
+import { VENDORS_INFO } from "../vendorsInfo";
 
 /**
  * The graded vendor list — the mobile equivalent of `VendorListPanel`.
@@ -230,64 +231,24 @@ const VendorListMobile = ({ onSearch }: { onSearch: () => void }) => {
 
   return (
     <div className="flex flex-col h-[calc(100dvh-3rem)] bg-gray-50 overflow-hidden">
-      {/* Navy header — unchanged */}
-      <div
-        className="flex-shrink-0 px-3 pt-2 pb-2.5"
-        style={{ background: "#1e2a4a" }}
-      >
-        <div className="flex items-start justify-between">
-          <div className="min-w-0">
-            <div className="text-[13px] font-semibold text-custom-white truncate">
-              {storeName}
-            </div>
-            <div className="text-[11px] mt-0.5 text-custom-white/85">
-              {fmtRangeLabel(twStart, twEnd)}
-            </div>
-          </div>
-          <button
-            onClick={onSearch}
-            aria-label="New search"
-            className="w-[30px] h-[30px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/85 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0 mt-0.5"
-          >
-            <MagnifyingGlassIcon className="w-4 h-4" />
-          </button>
-        </div>
-
-        <div className="flex items-center justify-between mt-2">
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1">
-              <div className="w-[7px] h-[7px] rounded-[2px] bg-red-200 flex-shrink-0" />
-              <span className="text-custom-white/85 text-[10px]">
-                Critical &gt;{activeThreshold} {unit}
-              </span>
-            </div>
-            <div className="flex items-center gap-1">
-              <div className="w-[7px] h-[7px] rounded-[2px] bg-amber-200 flex-shrink-0" />
-              <span className="text-custom-white/85 text-[10px]">
-                Watch ≤{activeThreshold} {unit}
-              </span>
-            </div>
-            <div className="flex items-center gap-1">
-              <div className="w-[7px] h-[7px] rounded-[2px] bg-emerald-200 flex-shrink-0" />
-              <span className="text-custom-white/85 text-[10px]">Healthy</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-1.5 flex-shrink-0">
-            <span className="text-[10px] text-custom-white/85">Threshold</span>
-            <ThresholdFilter
-              value={
-                threshold === null ? null : { op: "gt", amount: threshold }
-              }
-              onChange={(v) => dispatch(setThreshold(v?.amount ?? null))}
-              suffix={unit}
-              showOp={false}
-              showClear={false}
-              inputWidth={40}
-              variant="dark"
-            />
-          </div>
-        </div>
-      </div>
+      <MobilePerfHeader
+        pageName="Vendors"
+        dateRange={fmtRangeLabel(twStart, twEnd)}
+        storeName={storeName}
+        onSearch={onSearch}
+        info={VENDORS_INFO}
+        threshold={
+          <ThresholdFilter
+            value={threshold === null ? null : { op: "gt", amount: threshold }}
+            onChange={(v) => dispatch(setThreshold(v?.amount ?? null))}
+            suffix={unit}
+            showOp={false}
+            showClear={false}
+            inputWidth={40}
+            variant="dark"
+          />
+        }
+      />
 
       <MobileKpiStrip
         cells={[
