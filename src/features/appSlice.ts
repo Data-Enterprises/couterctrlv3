@@ -20,9 +20,20 @@ interface AppState {
   devToken: string;
 }
 
+/**
+ * Whether the LIVE/PREVIEW switch is offered in the title bars.
+ *
+ * Off for the cutover to the new UI: everyone runs Preview against the dev API
+ * exclusively. Nothing is deleted — `toggleDevMode` and both title-bar controls
+ * are intact, so flipping this back to `true` restores the switch as it was.
+ */
+export const SHOW_ENV_TOGGLE = false;
+
 export const initialState: AppState = {
   // Check the build/deploy commands in package.json if changes are needed
-  url: import.meta.env.VITE_API_URL_PROD,
+  // Dev while SHOW_ENV_TOGGLE is off — must stay in step with `devMode` below,
+  // since `toggleDevMode` is what normally keeps url/token/devMode aligned.
+  url: import.meta.env.VITE_API_URL_DEV,
   miktoUrl: import.meta.env.VITE_MIKTO_API_URL,
   // url: "https://y9v6viv36h.execute-api.us-east-1.amazonaws.com/Prod/",
   // miktoUrl: "https://goliathai.casa/",
@@ -38,7 +49,7 @@ export const initialState: AppState = {
   isTablet: false,
   isDesktop: true,
   fetchingCredentials: false,
-  devMode: false,
+  devMode: true,
   prodToken: "",
   devToken: "",
 };
@@ -76,7 +87,9 @@ export const appSlice = createSlice({
     },
     toggleDevMode: (state) => {
       state.devMode = !state.devMode;
-      state.url   = state.devMode ? import.meta.env.VITE_API_URL_DEV  : import.meta.env.VITE_API_URL_PROD;
+      state.url = state.devMode
+        ? import.meta.env.VITE_API_URL_DEV
+        : import.meta.env.VITE_API_URL_PROD;
       state.token = state.devMode ? state.devToken : state.prodToken;
     },
     resetAppSlice: () => initialState,
@@ -98,4 +111,3 @@ export const {
 } = appSlice.actions;
 
 export default appSlice.reducer;
-

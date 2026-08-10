@@ -1,9 +1,39 @@
 import type { Store } from "../interfaces";
 import { getHolidayLastYear } from "./holidays";
 
-export const getStoreName = (assignedStores: Store[], storeid: number, fallback?: string): string => {
+export const getStoreName = (
+  assignedStores: Store[],
+  storeid: number,
+  fallback?: string,
+): string => {
   const match = assignedStores.find((s) => s.storeid === storeid);
   return match?.store_name ?? fallback ?? String(storeid);
+};
+
+/**
+ * `getStoreName`, widened to the group case.
+ *
+ * A group search can return stores the user isn't personally assigned to, so
+ * `assignedStores` alone leaves those rows showing a bare id. `selectedGroupStores`
+ * is populated by whichever page ran the group search and covers exactly that
+ * gap. Order matters: assigned first, because that's the name the user knows
+ * the store by.
+ *
+ * Still never reads a name off an API payload — see the store-name rule.
+ */
+export const resolveStoreName = (
+  assignedStores: Store[],
+  groupStores: Store[],
+  storeid: number,
+  fallback?: string,
+): string => {
+  const id = Number(storeid);
+  return (
+    assignedStores.find((s) => s.storeid === id)?.store_name ??
+    groupStores.find((s) => s.storeid === id)?.store_name ??
+    fallback ??
+    String(storeid)
+  );
 };
 
 export const formatDate = (date: string) => {
@@ -63,7 +93,7 @@ export const formatCurrencyCompact = (x: number) => {
 export const formatBigNumber = (
   value: number,
   decimals: number = 2,
-  locale: string = "en-US"
+  locale: string = "en-US",
 ): string => {
   if (!Number.isFinite(value)) return "N/A";
   const options: Intl.NumberFormatOptions = {};
@@ -99,8 +129,8 @@ export const handleRipple = (e: React.MouseEvent<HTMLDivElement>) => {
     text === "Inactive"
       ? "bg-emerald-500/40"
       : text === "Active"
-      ? "bg-orange-500/40"
-      : "bg-slate-50/75";
+        ? "bg-orange-500/40"
+        : "bg-slate-50/75";
 
   // then create the ripple element to append
   const circle = document.createElement("span");
@@ -145,7 +175,7 @@ export const handleRipple = (e: React.MouseEvent<HTMLDivElement>) => {
   parent.appendChild(circle);
 };
 
-// This will be used to determine how we get last year's data 
+// This will be used to determine how we get last year's data
 const days = [
   "Sunday",
   "Monday",

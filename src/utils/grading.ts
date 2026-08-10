@@ -97,3 +97,21 @@ export const sortGraded = <T extends { tier: Tier }>(
     if (rank !== 0) return rank;
     return weight(b) - weight(a);
   });
+
+/**
+ * Soft-fill pill colours for a delta against a comparison period, on the same
+ * boundaries `tierOfDelta` grades on: past the threshold is critical, any
+ * decline is watch, level or better is healthy.
+ *
+ * Null means there was no comparison to make — grey, never green. Every
+ * Performance page had its own copy of this before it moved here.
+ */
+export const deltaPillClass = (
+  delta: number | null,
+  threshold: number,
+): string => {
+  if (delta === null) return "bg-gray-100 text-gray-500";
+  if (delta < -threshold) return "bg-red-100 text-red-800";
+  if (delta < 0) return "bg-amber-100 text-amber-800";
+  return "bg-emerald-100 text-emerald-800";
+};

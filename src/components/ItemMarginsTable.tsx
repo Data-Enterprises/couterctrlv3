@@ -301,16 +301,33 @@ const ItemMarginsTable = ({
 
   const allUpcs = useMemo(() => rawRows.map((r) => r.productCode), [rawRows]);
 
-  const activeMetric: RowMetricKey = gradingMetric === "qty" ? "qty" : "sales";
+  /** What the rows SHOW. Every grading metric has a row metric of the same
+   *  name, so the two track each other — grading on margin while displaying
+   *  sales is the mismatch this used to have. */
+  const activeMetric: RowMetricKey = gradingMetric;
 
-  /** The trend the page grades on. 999 parks an ungraded item at the bottom of
-   *  a worst-first sort rather than the top, which is where a null would land. */
+  /** The trend the page grades on. Margin is measured in POINTS against LY,
+   *  falling back to LW — the same basis getItemSeverity uses, so the sort
+   *  order and the severity badge can't disagree. 999 parks an ungraded item
+   *  at the bottom of a worst-first sort rather than the top, which is where a
+   *  null would land. */
   const gradedTrend = (r: ItemMarginRow) =>
-    (gradingMetric === "qty" ? r.qtyTrendPct : r.salesTrendPct) ?? 999;
+    (gradingMetric === "qty"
+      ? r.qtyTrendPct
+      : gradingMetric === "margin"
+        ? r.marginTrendPct
+        : r.salesTrendPct) ?? 999;
 
   const getColSortValue = (item: ItemMarginRow, col: "ty" | "lw" | "ly") => {
     if (activeMetric === "qty") {
       return col === "ty" ? item.qty : col === "lw" ? (item.lwQty ?? -999) : (item.lyQty ?? -999);
+    }
+    if (activeMetric === "margin") {
+      return col === "ty"
+        ? item.tyMarginPct
+        : col === "lw"
+          ? (item.lwMarginPct ?? -999)
+          : (item.lyMarginPct ?? -999);
     }
     return col === "ty"
       ? item.grossSales

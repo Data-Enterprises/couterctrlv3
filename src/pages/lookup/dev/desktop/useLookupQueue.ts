@@ -1,4 +1,5 @@
 import { useCallback, useRef } from "react";
+import { useToast } from "../../../../components/toasts/hooks/useToast";
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
 import { getItemLookupSingleStore } from "../../../../api/itemLookup";
 import {
@@ -10,7 +11,10 @@ import {
   setLookupSelectedStoreNumber,
 } from "../../../../features/itemLookupSlice";
 import { computeMargin } from "../lookupMetrics";
-import { scopeToStoreNumber, storeNumbersIn } from "../../../../utils/storeIdentity";
+import {
+  scopeToStoreNumber,
+  storeNumbersIn,
+} from "../../../../utils/storeIdentity";
 import type { ItemLookupHistory } from "../../../../features/itemLookupSlice";
 
 // The lookup is fetched by storeid, so a co-located storeid returns both
@@ -29,7 +33,9 @@ const deriveTotals = (
     totalSales,
     totalQty,
     daysSold,
-    marginPct: computeMargin(rows, totalSales, totalQty).marginPct,
+    ...(({ marginPct, unitCost }) => ({ marginPct, unitCost }))(
+      computeMargin(rows, totalSales, totalQty),
+    ),
   };
 };
 
@@ -37,6 +43,7 @@ const MAX_CONCURRENT = 15;
 
 export const useLookupQueue = () => {
   const dispatch = useAppDispatch();
+  const toast = useToast();
   const { url, token } = useAppSelector((s) => s.app);
   const {
     lookupQueue: queue,
@@ -59,7 +66,9 @@ export const useLookupQueue = () => {
 
   const runBatch = useCallback(
     async (upcs: string[], storeId: number) => {
-      dispatch(setLookupQueue(upcs.map((upc) => ({ upc, status: "queued" as const }))));
+      dispatch(
+        setLookupQueue(upcs.map((upc) => ({ upc, status: "queued" as const }))),
+      );
       dispatch(setLookupSelectedUpc(null));
       dispatch(setLookupStoreNumbers([]));
       dispatch(setLookupSelectedStoreNumber(null));
@@ -67,6 +76,9 @@ export const useLookupQueue = () => {
       scopeRef.current = null;
       rawHistoryRef.current = {};
       let discovered = false;
+      // First backend fault of the run. Batches are unbounded and 15 fly at
+      // once, so a toast per failure would bury the screen — one per batch.
+      let fault: string | null = null;
 
       let index = 0;
       const next = async (): Promise<void> => {
@@ -76,7 +88,13 @@ export const useLookupQueue = () => {
         dispatch(updateLookupQueueItem({ upc, patch: { status: "loading" } }));
 
         try {
-          const resp = await getItemLookupSingleStore(url, token, upc, storeId, 14);
+          const resp = await getItemLookupSingleStore(
+            url,
+            token,
+            upc,
+            storeId,
+            14,
+          );
           const j = resp.data;
           if (j.error === 0) {
             rawHistoryRef.current[upc] = j.history;
@@ -108,6 +126,9 @@ export const useLookupQueue = () => {
                 productCode: j.product_code,
                 description: j.description,
                 marginPct: totals.marginPct,
+                qty: totals.totalQty,
+                revenue: totals.totalSales,
+                unitCost: totals.unitCost,
               }),
             );
             if (!selectionMadeRef.current) {
@@ -115,18 +136,42 @@ export const useLookupQueue = () => {
               dispatch(setLookupSelectedUpc(upc));
             }
           } else {
-            dispatch(updateLookupQueueItem({ upc, patch: { status: "error", errorMessage: "Not found at this store" } }));
+            // The request failed, so nothing is known about this store's
+            // stock — the row says so plainly instead of claiming absence.
+            fault = fault ?? j.msg ?? null;
+            dispatch(
+              updateLookupQueueItem({
+                upc,
+                patch: {
+                  status: "error",
+                  errorMessage: "There was an issue finding this item",
+                },
+              }),
+            );
           }
         } catch {
-          dispatch(updateLookupQueueItem({ upc, patch: { status: "error", errorMessage: "Not found at this store" } }));
+          // Network or parse failure — the store was never asked.
+          dispatch(
+            updateLookupQueueItem({
+              upc,
+              patch: {
+                status: "error",
+                errorMessage: "There was an issue finding this item",
+              },
+            }),
+          );
         }
 
         return next();
       };
 
       await Promise.all(
-        Array.from({ length: Math.min(MAX_CONCURRENT, upcs.length) }, () => next()),
+        Array.from({ length: Math.min(MAX_CONCURRENT, upcs.length) }, () =>
+          next(),
+        ),
       );
+
+      if (fault) toast.error(fault);
     },
     [url, token, dispatch],
   );

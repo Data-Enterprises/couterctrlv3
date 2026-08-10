@@ -4,6 +4,7 @@ import { useOrdersCtx } from "../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { getAllOrders, getAvailableOrders } from "../../../api/orders";
 import { getStoresAssignedToUserGroup } from "../../../api/groups";
+import { setSelectedGroupStores } from "../../../features/userSlice";
 import {
   setAllOrders,
   setAvailableOrders,
@@ -19,7 +20,7 @@ import {
 } from "../../../features/ordersSlice";
 import type { AllOrderResp, AvailableOrderResp, JsonError, Store } from "../../../interfaces";
 import { getCogs, getERet } from "..";
-import { formatGoliathDate } from "../../../utils";
+import { formatGoliathDate, resolveStoreName } from "../../../utils";
 import SearchCard from "../../../components/SearchCard";
 import BottomSheet from "../../../components/BottomSheet";
 import OrdersAvailableScreen from "./OrdersAvailableScreen";
@@ -52,10 +53,13 @@ const OrdersMobile = () => {
         .then((resp) => {
           const j = resp.data;
           if (j.error === 0) {
-            const storeids: number[] = j.stores
-              .filter((s: any) => s.active)
-              .map((s: Store) => s.storeid);
-            fetchAvailable(storeids);
+            const activeStores = j.stores.filter((s: any) => s.active);
+            // Desktop files these too — they're how store names resolve for
+            // stores in the group the user isn't personally assigned to.
+            ctx.dispatch(setSelectedGroupStores(activeStores));
+            fetchAvailable(activeStores.map((s: Store) => s.storeid));
+          } else {
+            toast.warn(j.msg);
           }
         })
         .catch((err: JsonError) => toast.error(err.message));
@@ -79,6 +83,10 @@ const OrdersMobile = () => {
     getAvailableOrders(ctx.url, ctx.token, start, end, storeids)
       .then((resp) => {
         const j: AvailableOrderResp = resp.data;
+        if (j.error !== 0) {
+          toast.warn(j.msg);
+          return;
+        }
         if (j.error === 0) {
           setNotice(
             j.orders.length === 0
@@ -145,7 +153,16 @@ const OrdersMobile = () => {
     getAllOrders(ctx.url, ctx.token, start_date, end_date, storeids)
       .then((resp) => {
         const j: AllOrderResp = resp.data;
+        if (j.error !== 0) {
+          toast.warn(j.msg);
+          return;
+        }
         if (j.error === 0) {
+          if (j.orders.length === 0) {
+            // Without this the screen advances to an empty list with nothing
+            // saying why.
+            toast.warn("No orders came back for this search.");
+          }
           // Fetched by storeid — a co-located storeid returns both locations.
           const scopedOrders = storenumbers
             ? j.orders.filter((o) => storenumbers.includes(o.storenumber))
@@ -175,16 +192,19 @@ const OrdersMobile = () => {
           ctx.dispatch(setUniqueSubs(uniqueSubs));
           ctx.dispatch(setAllOrders(ordersWERet));
 
-          // Auto-advance to list; if single order open the sheet immediately
+          // Auto-advance to list; if there's only one order open the sheet
+          // immediately. Keyed on storeid + storenumber + order_id, matching
+          // OrderReportPanel — the same order_id can exist at two stores, and
+          // counting by id alone would call that one order and skip the list.
           const filtered = ordersWERet.filter((o) => o.order_type === order_type);
-          const ids = Array.from(new Set(filtered.map((o) => o.order_id)));
-          if (ids.length === 1) {
-            const first = filtered.find((o) => o.order_id === ids[0]);
-            ctx.dispatch(setSelectedOrder({
-              storeid: first?.storeid ?? storeids[0],
-              storenumber: first?.storenumber ?? "",
-              orderId: ids[0],
-            }));
+          const keys = new Map<string, { storeid: number; storenumber: string; orderId: number }>();
+          filtered.forEach((o) => {
+            const key = `${o.storeid}__${o.storenumber}:${o.order_id}`;
+            if (!keys.has(key))
+              keys.set(key, { storeid: o.storeid, storenumber: o.storenumber, orderId: o.order_id });
+          });
+          if (keys.size === 1) {
+            ctx.dispatch(setSelectedOrder([...keys.values()][0]));
             setSheetOpen(true);
           } else {
             setStep("list");
@@ -208,20 +228,18 @@ const OrdersMobile = () => {
     }
   };
 
-  const handleSelectOrderId = (id: number | null) => {
-    if (id === null) {
+  // The list hands back the order's own store, not just its id — with "select
+  // all stores" an order can belong to any store in the selection, and two of
+  // them can share an order_id.
+  const handleSelectOrder = (
+    sel: { storeid: number; storenumber: string; orderId: number } | null,
+  ) => {
+    if (sel === null) {
       ctx.dispatch(setSelectedOrder(null));
       return;
     }
-    // Look the storeid up from the order itself rather than assuming
-    // storeids[0] — with "select all stores", an order can belong to any
-    // store in the selection, not just the first one.
-    const row = ctx.allOrders.find((o) => o.order_id === id);
-    const storeid = row?.storeid ?? ctx.selectedOrderKey?.storeids[0];
-    if (storeid !== undefined) {
-      ctx.dispatch(setSelectedOrder({ storeid, storenumber: row?.storenumber ?? "", orderId: id }));
-      setSheetOpen(true);
-    }
+    ctx.dispatch(setSelectedOrder(sel));
+    setSheetOpen(true);
   };
 
   const hasData = ctx.groupedAvailableOrders.length > 0;
@@ -237,8 +255,8 @@ const OrdersMobile = () => {
 
   // ── Export sheet data — mirrors desktop's OrderReportPanel.tsx computations ──
   const storeNames = ctx.selectedOrderKey
-    ? ctx.selectedOrderKey.storeids.map(
-        (id) => ctx.assignedStores.find((s) => s.storeid === id)?.store_name ?? `Store ${id}`,
+    ? ctx.selectedOrderKey.storeids.map((id) =>
+        resolveStoreName(ctx.assignedStores, ctx.selectedGroupStores, id, `Store ${id}`),
       )
     : [];
 
@@ -252,8 +270,15 @@ const OrdersMobile = () => {
     ? ctx.allOrders.filter((o) => o.order_type === ctx.selectedOrderKey!.order_type)
     : ctx.allOrders;
 
+  // storenumber included — see OrderReportPanel's orderItems. Without it a
+  // co-located storeid exports both locations' lines as one order.
   const selectedOrderItems = ctx.selectedOrder !== null
-    ? filteredOrders.filter((o) => o.order_id === ctx.selectedOrder!.orderId && o.storeid === ctx.selectedOrder!.storeid)
+    ? filteredOrders.filter(
+        (o) =>
+          o.order_id === ctx.selectedOrder!.orderId &&
+          o.storeid === ctx.selectedOrder!.storeid &&
+          o.storenumber === ctx.selectedOrder!.storenumber,
+      )
     : [];
 
   return (
@@ -304,8 +329,9 @@ const OrdersMobile = () => {
               loading={ctx.loadingAllOrders}
               selectedKey={ctx.selectedOrderKey}
               assignedStores={ctx.assignedStores}
+              groupStores={ctx.selectedGroupStores}
               onBack={() => setStep("available")}
-              onSelectOrderId={handleSelectOrderId}
+              onSelectOrder={handleSelectOrder}
               onExport={() => ctx.dispatch(setOrdersExportModalOpen(true))}
             />
           )}
@@ -317,9 +343,9 @@ const OrdersMobile = () => {
           <OrdersLineItemsScreen
             orders={ctx.allOrders}
             selectedKey={ctx.selectedOrderKey}
-            selectedOrderId={ctx.selectedOrder.orderId}
-            selectedStoreId={ctx.selectedOrder.storeid}
+            selectedOrder={ctx.selectedOrder}
             assignedStores={ctx.assignedStores}
+            groupStores={ctx.selectedGroupStores}
             onExport={() => ctx.dispatch(setOrdersExportModalOpen(true))}
           />
         </BottomSheet>

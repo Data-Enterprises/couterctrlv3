@@ -1,23 +1,12 @@
 import { useState } from "react";
-import { useAppSelector, useAppDispatch } from "../../hooks";
-import { useToast } from "../../components/toasts/hooks/useToast";
+import { useAppSelector } from "../../hooks";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
 import SingleStoreSearchCard from "../../components/SingleStoreSearchCard";
 import SingleDatePicker from "../../components/datePickers/SingleDatePicker";
-import { formatGoliathDate, getStoreName } from "../../utils";
-import {
-  setRows,
-  setRaw,
-  setLoading,
-  setLoadingMessage,
-  setStore,
-  setRange,
-  reQuery,
-} from "../../features/vendorsSlice";
-import { fetchVendorPeriods } from "./vendorsData";
-import { buildVendorRows, datesOf } from "./vendorsUtils";
+import { useVendorSearch } from "./useVendorSearch";
 import VendorListPanel from "./VendorListPanel";
 import VendorDetailPanel from "./VendorDetailPanel";
+import VendorsMobile from "./mobile/VendorsMobile";
 
 /**
  * Vendors — Performance.
@@ -31,70 +20,14 @@ import VendorDetailPanel from "./VendorDetailPanel";
  * render what the container loaded and never reach for data themselves.
  */
 const Vendors = () => {
-  const dispatch = useAppDispatch();
-  const toast = useToast();
   const context = useAppSelector((s) => s.app);
   const search = useAppSelector((s) => s.search);
   const user = useAppSelector((s) => s.user);
   const vend = useAppSelector((s) => s.vendors);
+  const { runSearch } = useVendorSearch();
 
   const [searchOpen, setSearchOpen] = useState(false);
   const [storeId, setStoreId] = useState(search.lastStore || 0);
-
-  const runSearch = async () => {
-    if (!storeId) {
-      toast.error("Pick a store first.");
-      return;
-    }
-
-    // The week runs backwards from the chosen date, matching every other
-    // Performance page — the picker names the end of the week, not the start.
-    const end = formatGoliathDate(search.singleDate);
-    const [y, m, d] = end.split("-").map(Number);
-    const startDt = new Date(Date.UTC(y, m - 1, d - 6));
-    const start = startDt.toISOString().slice(0, 10);
-
-    dispatch(reQuery());
-    dispatch(setLoading(true));
-    dispatch(setLoadingMessage("Finding vendors…"));
-    dispatch(setRange({ start, end }));
-    dispatch(
-      setStore({
-        storeid: storeId,
-        storeName: getStoreName(user.assignedStores, storeId),
-      }),
-    );
-
-    try {
-      const { tw, lw, ly, subDeptIds } = await fetchVendorPeriods(
-        { url: context.url, token: context.token, storeid: storeId },
-        start,
-        end,
-        // Two steps, not a counter. Vendor lives on item rows that arrive one
-        // department at a time, so any count here is departments x periods —
-        // which reads as a vendor count and isn't one.
-        () => dispatch(setLoadingMessage("Loading vendors…")),
-      );
-
-      if (subDeptIds.length === 0) {
-        toast.error("No sub departments returned for that store and week.");
-        return;
-      }
-
-      dispatch(setRaw({ tw, lw, ly }));
-      const rows = buildVendorRows(tw, lw, ly, datesOf(tw));
-      dispatch(setRows(rows));
-
-      if (rows.length === 0) {
-        toast.error("No vendor sales returned for that store and week.");
-      }
-    } catch {
-      toast.error("Couldn't load vendors. Try again in a moment.");
-    } finally {
-      dispatch(setLoading(false));
-      dispatch(setLoadingMessage(""));
-    }
-  };
 
   const entry = (
     <SingleStoreSearchCard
@@ -106,7 +39,7 @@ const Vendors = () => {
       onStoreSelect={setStoreId}
       onSearch={() => {
         setSearchOpen(false);
-        runSearch();
+        runSearch(storeId);
       }}
       loading={vend.loading}
       loadingMessage={vend.loadingMessage}
@@ -114,10 +47,16 @@ const Vendors = () => {
     />
   );
 
+  // Mobile gets its own screens; the desktop two-panel layout below never
+  // renders on a phone. Placed after the hooks so hook order stays stable.
+  if (context.isMobile) return <VendorsMobile />;
+
   if (vend.loading) {
     return (
       <div className="w-full select-none min-h-[calc(100vh-3rem)] relative">
-        <LoadingIndicator message={vend.loadingMessage || "Loading vendors..."} />
+        <LoadingIndicator
+          message={vend.loadingMessage || "Loading vendors..."}
+        />
       </div>
     );
   }

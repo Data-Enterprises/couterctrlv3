@@ -21,7 +21,7 @@ import {
 import { fmtDayLabel } from "../../utils/dateLabels";
 import type { SubDeptMargin } from "../../interfaces";
 import type { VendorMetric, VendorRow } from "./vendorsUtils";
-import { getVendorTier } from "./vendorsUtils";
+import { getVendorTier, marginPct } from "./vendorsUtils";
 
 /**
  * CSV export for Vendors.
@@ -88,44 +88,66 @@ const buildVendorsCsv = (
   threshold: number,
   days: Set<string>,
 ) => {
-  const isQty = metric === "qty";
+  const isMargin = metric === "margin";
   const headers = [
     "Vendor ID",
     "Vendor",
     "Grade",
-    isQty ? "TY Qty" : "TY Net Sales",
-    isQty ? "LW Qty" : "LW Net Sales",
-    "vs LW %",
-    isQty ? "LY Qty" : "LY Net Sales",
-    "vs LY %",
+    isMargin ? "TY Margin %" : "TY Net Sales",
+    isMargin ? "LW Margin %" : "LW Net Sales",
+    // Points, not percent — a 2-point margin move is not a 2% move, and
+    // labelling it "%" in a spreadsheet is how that gets misread downstream.
+    isMargin ? "vs LW pts" : "vs LW %",
+    isMargin ? "LY Margin %" : "LY Net Sales",
+    isMargin ? "vs LY pts" : "vs LY %",
   ];
   const wholeWeek = days.size === 0;
   const out: (string | number)[][] = [];
 
+  type Pair = { net: number; cogs: number };
+  const value = (p: Pair) => (isMargin ? marginPct(p.net, p.cogs) : p.net);
+  const delta = (twP: Pair, base: Pair) =>
+    isMargin
+      ? marginPct(twP.net, twP.cogs) - marginPct(base.net, base.cogs)
+      : pctChange(twP.net, base.net);
+
   for (const r of rows) {
-    let tw: number, lw: number | null, ly: number | null;
-    let twForLW: number, twForLY: number;
+    let tw: Pair, lw: Pair | null, ly: Pair | null;
+    let twForLW: Pair, twForLY: Pair;
 
     if (wholeWeek) {
-      tw = isQty ? r.twQty : r.twNet;
-      lw = r.hasLW ? (isQty ? r.lwQty : r.lwNet) : null;
-      ly = r.hasLY ? (isQty ? r.lyQty : r.lyNet) : null;
-      twForLW = isQty ? r.twQtyForLW : r.twNetForLW;
-      twForLY = isQty ? r.twQtyForLY : r.twNetForLY;
+      tw = { net: r.twNet, cogs: r.twCogs };
+      lw = r.hasLW ? { net: r.lwNet, cogs: r.lwCogs } : null;
+      ly = r.hasLY ? { net: r.lyNet, cogs: r.lyCogs } : null;
+      twForLW = { net: r.twNetForLW, cogs: r.twCogsForLW };
+      twForLY = { net: r.twNetForLY, cogs: r.twCogsForLY };
     } else {
       const sel = r.days.filter((d) => days.has(d.date));
       if (sel.length === 0) continue;
-      tw = sel.reduce((s, d) => s + (isQty ? d.twQty : d.twNet), 0);
+      tw = sel.reduce(
+        (a, d) => ({ net: a.net + d.twNet, cogs: a.cogs + d.twCogs }),
+        { net: 0, cogs: 0 } as Pair,
+      );
       // Still day-matched over a subset: a day only joins a comparison when
-      // both sides have it, and it joins both sides or neither.
-      let lwSum = 0, twLW = 0, lwSeen = false;
-      let lySum = 0, twLY = 0, lySeen = false;
+      // both sides have it, and it joins both sides or neither. COGS travels
+      // with the net or the margin gets taken over a different set of days
+      // than the cost it is measured against.
+      const lwSum: Pair = { net: 0, cogs: 0 };
+      const twLW: Pair = { net: 0, cogs: 0 };
+      const lySum: Pair = { net: 0, cogs: 0 };
+      const twLY: Pair = { net: 0, cogs: 0 };
+      let lwSeen = false, lySeen = false;
       for (const d of sel) {
-        const t = isQty ? d.twQty : d.twNet;
-        const l = isQty ? d.lwQty : d.lwNet;
-        const y = isQty ? d.lyQty : d.lyNet;
-        if (l !== null) { lwSum += l; twLW += t; lwSeen = true; }
-        if (y !== null) { lySum += y; twLY += t; lySeen = true; }
+        if (d.lwNet !== null) {
+          lwSum.net += d.lwNet; lwSum.cogs += d.lwCogs ?? 0;
+          twLW.net += d.twNet; twLW.cogs += d.twCogs;
+          lwSeen = true;
+        }
+        if (d.lyNet !== null) {
+          lySum.net += d.lyNet; lySum.cogs += d.lyCogs ?? 0;
+          twLY.net += d.twNet; twLY.cogs += d.twCogs;
+          lySeen = true;
+        }
       }
       lw = lwSeen ? lwSum : null;
       ly = lySeen ? lySum : null;
@@ -133,8 +155,8 @@ const buildVendorsCsv = (
       twForLY = twLY;
     }
 
-    const lwPct = lw === null || lw === 0 ? null : pctChange(twForLW, lw);
-    const lyPct = ly === null || ly === 0 ? null : pctChange(twForLY, ly);
+    const lwPct = lw === null || lw.net === 0 ? null : delta(twForLW, lw);
+    const lyPct = ly === null || ly.net === 0 ? null : delta(twForLY, ly);
     const grade = wholeWeek
       ? TIER_LABEL[getVendorTier(r, threshold, metric)]
       : TIER_LABEL[tierOfDelta(lyPct ?? lwPct, threshold)];
@@ -143,10 +165,10 @@ const buildVendorsCsv = (
       r.vendorId,
       r.vendorName,
       grade ?? "",
-      fmtNum(tw),
-      lw === null ? "" : fmtNum(lw),
+      fmtNum(value(tw)),
+      lw === null ? "" : fmtNum(value(lw)),
       lwPct === null ? "" : fmtNum(lwPct),
-      ly === null ? "" : fmtNum(ly),
+      ly === null ? "" : fmtNum(value(ly)),
       lyPct === null ? "" : fmtNum(lyPct),
     ]);
   }
@@ -311,7 +333,7 @@ const VendorExportModal = ({
     () => new Set(selectedDay ? [selectedDay] : []),
   );
 
-  const gradingMetric: ItemGradingMetric = metric === "qty" ? "qty" : "sales";
+  const gradingMetric: ItemGradingMetric = metric === "margin" ? "margin" : "sales";
 
   /** Items narrowed to the chosen days — TW to those dates, LW/LY to the same
    *  dates shifted, exactly as the Items tab narrows them. */
@@ -640,9 +662,7 @@ const VendorExportModal = ({
                 <p className="text-[13px] font-medium text-content">Items Graded</p>
                 <p className="text-[11px] text-content mt-0.5 mb-1.5">
                   {hasItems
-                    ? `TY vs LW vs LY per item, graded on ${
-                        gradingMetric === "qty" ? "qty" : "sales"
-                      } at ${itemThreshold}%`
+                    ? `TY vs LW vs LY per item, graded on ${gradingMetric} at ${itemThreshold}%`
                     : "Nothing from this vendor in the selected days"}
                 </p>
                 <div className="flex gap-1.5 flex-wrap">

@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
 import { useAppSelector, useAppDispatch } from "../../hooks";
-import { formatCurrency2, formatBigNumber } from "../../utils";
+import { formatCurrency2 } from "../../utils";
 import {
   pillClass,
   formatPct,
@@ -25,7 +25,7 @@ import {
   VENDOR_THRESHOLD_DEFAULT,
   VENDOR_ITEM_THRESHOLD_DEFAULT,
 } from "../../features/vendorsSlice";
-import { getVendorTier, rowsForVendor } from "./vendorsUtils";
+import { getVendorTier, rowsForVendor, marginPct } from "./vendorsUtils";
 
 /** Ungraded has no severity colour of its own, so the header falls back to the
  *  navy every other panel uses rather than borrowing a verdict colour. */
@@ -78,8 +78,26 @@ const VendorDetailPanel = () => {
   const [exportOpen, setExportOpen] = useState(false);
 
   const activeThreshold = threshold ?? VENDOR_THRESHOLD_DEFAULT;
-  const isQty = metric === "qty";
-  const fmt = (n: number) => (isQty ? formatBigNumber(n, 0) : formatCurrency2(n));
+  const isMargin = metric === "margin";
+
+  /** A net/COGS pair reduced to whichever number the toggle is showing, and the
+   *  string for it. Margin is a percentage, sales are dollars — they never
+   *  share a formatter. */
+  const valueOf = (net: number, cogs: number) =>
+    isMargin ? marginPct(net, cogs) : net;
+  const fmt = (v: number) => (isMargin ? `${v.toFixed(2)}%` : formatCurrency2(v));
+
+  /** Points in margin mode, percent in sales mode — the same contract
+   *  vendorDelta has, and the reason the two can't share a formatter either. */
+  const deltaOf = (
+    twNet: number,
+    twCogs: number,
+    baseNet: number,
+    baseCogs: number,
+  ) =>
+    isMargin
+      ? marginPct(twNet, twCogs) - marginPct(baseNet, baseCogs)
+      : pctChange(twNet, baseNet);
 
   const row = useMemo(
     () => rows.find((r) => r.vendorId === selectedVendor) ?? null,
@@ -119,25 +137,42 @@ const VendorDetailPanel = () => {
     ? (row.days.find((d) => d.date === selectedDay) ?? null)
     : null;
 
-  const dayTw = (d: typeof row.days[number]) => (isQty ? d.twQty : d.twNet);
-  const dayLw = (d: typeof row.days[number]) => (isQty ? d.lwQty : d.lwNet);
-  const dayLy = (d: typeof row.days[number]) => (isQty ? d.lyQty : d.lyNet);
+  type Day = (typeof row.days)[number];
+  const dayTw = (d: Day) => valueOf(d.twNet, d.twCogs);
+  const dayLw = (d: Day) =>
+    d.lwNet === null ? null : valueOf(d.lwNet, d.lwCogs ?? 0);
+  const dayLy = (d: Day) =>
+    d.lyNet === null ? null : valueOf(d.lyNet, d.lyCogs ?? 0);
+  const dayDelta = (d: Day, base: "lw" | "ly") => {
+    const bn = base === "lw" ? d.lwNet : d.lyNet;
+    if (bn === null || bn === 0) return null;
+    const bc = (base === "lw" ? d.lwCogs : d.lyCogs) ?? 0;
+    return deltaOf(d.twNet, d.twCogs, bn, bc);
+  };
 
-  const twValue = activeDay ? dayTw(activeDay) : isQty ? row.twQty : row.twNet;
+  const twValue = activeDay
+    ? dayTw(activeDay)
+    : valueOf(row.twNet, row.twCogs);
   const lwValue = activeDay
     ? dayLw(activeDay)
     : row.hasLW
-      ? (isQty ? row.lwQty : row.lwNet)
+      ? valueOf(row.lwNet, row.lwCogs)
       : null;
   const lyValue = activeDay
     ? dayLy(activeDay)
     : row.hasLY
-      ? (isQty ? row.lyQty : row.lyNet)
+      ? valueOf(row.lyNet, row.lyCogs)
       : null;
-  const twForLW = activeDay ? dayTw(activeDay) : isQty ? row.twQtyForLW : row.twNetForLW;
-  const twForLY = activeDay ? dayTw(activeDay) : isQty ? row.twQtyForLY : row.twNetForLY;
-  const lwPct = lwValue === null || lwValue === 0 ? null : pctChange(twForLW, lwValue);
-  const lyPct = lyValue === null || lyValue === 0 ? null : pctChange(twForLY, lyValue);
+  const lwPct = activeDay
+    ? dayDelta(activeDay, "lw")
+    : row.hasLW && row.lwNet > 0
+      ? deltaOf(row.twNetForLW, row.twCogsForLW, row.lwNet, row.lwCogs)
+      : null;
+  const lyPct = activeDay
+    ? dayDelta(activeDay, "ly")
+    : row.hasLY && row.lyNet > 0
+      ? deltaOf(row.twNetForLY, row.twCogsForLY, row.lyNet, row.lyCogs)
+      : null;
 
   const twLabel = selectedDay
     ? fmtDayLabel(selectedDay)
@@ -154,8 +189,8 @@ const VendorDetailPanel = () => {
   const dayCards: DayCardEntry[] = row.days.map((d) => {
     const l = dayLw(d);
     const y = dayLy(d);
-    const lp = l === null || l === 0 ? null : pctChange(dayTw(d), l);
-    const yp = y === null || y === 0 ? null : pctChange(dayTw(d), y);
+    const lp = dayDelta(d, "lw");
+    const yp = dayDelta(d, "ly");
     return {
       iso: d.date,
       value: fmt(dayTw(d)),
@@ -171,12 +206,12 @@ const VendorDetailPanel = () => {
   });
 
   const weekLwPct =
-    row.hasLW && (isQty ? row.lwQty : row.lwNet) > 0
-      ? pctChange(isQty ? row.twQtyForLW : row.twNetForLW, isQty ? row.lwQty : row.lwNet)
+    row.hasLW && row.lwNet > 0
+      ? deltaOf(row.twNetForLW, row.twCogsForLW, row.lwNet, row.lwCogs)
       : null;
   const weekLyPct =
-    row.hasLY && (isQty ? row.lyQty : row.lyNet) > 0
-      ? pctChange(isQty ? row.twQtyForLY : row.twNetForLY, isQty ? row.lyQty : row.lyNet)
+    row.hasLY && row.lyNet > 0
+      ? deltaOf(row.twNetForLY, row.twCogsForLY, row.lyNet, row.lyCogs)
       : null;
 
   return (
@@ -219,7 +254,7 @@ const VendorDetailPanel = () => {
       {/* KPI metric strip — values and date labels update with day selection */}
       <div className="grid grid-cols-3 divide-x divide-gray-100 border-b border-gray-100 bg-gray-50 flex-shrink-0">
         <Kpi
-          title={isQty ? "TY Qty" : "TY Net Sales"}
+          title={isMargin ? "TY Margin" : "TY Net Sales"}
           dateLabel={twLabel}
           value={fmt(twValue)}
           threshold={activeThreshold}
@@ -243,7 +278,7 @@ const VendorDetailPanel = () => {
       {/* Day strip — sales/qty rising is good here, so higherIsWorse is off. */}
       <DayCardStrip
         days={dayCards}
-        weekValue={fmt(isQty ? row.twQty : row.twNet)}
+        weekValue={fmt(valueOf(row.twNet, row.twCogs))}
         weekDelta={weekLyPct ?? weekLwPct}
         weekDeltaBasis={weekLyPct !== null ? "LY" : weekLwPct !== null ? "LW" : undefined}
         selected={selectedDay ?? ""}
@@ -256,7 +291,7 @@ const VendorDetailPanel = () => {
           breakdowns live on Sub Dept Margins, not repeated per vendor. */}
       <ItemMarginsTable
         items={vendorRaw}
-        gradingMetric={isQty ? "qty" : "sales"}
+        gradingMetric={isMargin ? "margin" : "sales"}
         threshold={itemThreshold}
         thresholdDefault={VENDOR_ITEM_THRESHOLD_DEFAULT}
         onThresholdChange={(v) => dispatch(setItemThreshold(v))}

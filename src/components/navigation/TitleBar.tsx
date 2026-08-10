@@ -5,7 +5,11 @@ import { ChevronDownIcon } from "@heroicons/react/16/solid";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { categories } from "./utils";
 import { resetNav, setIsNavOpen, setLastRoute } from "../../features/navSlice";
-import { resetAppSlice, toggleDevMode } from "../../features/appSlice";
+import {
+  resetAppSlice,
+  toggleDevMode,
+  SHOW_ENV_TOGGLE,
+} from "../../features/appSlice";
 import { resetUserSlice } from "../../features/userSlice";
 import { resetSalesSlice } from "../../features/salesSlice";
 import { resetSalesLegacySlice } from "../../features/salesLegacySlice";
@@ -383,8 +387,9 @@ const TitleBar = () => {
 
         <div className="flex-1" />
 
-        {/* DEV/PROD toggle — programmer/admin only */}
-        {user.role === 9 || user.userLevel >= 2 ? (
+        {/* DEV/PROD toggle — programmer/admin only. Hidden for the cutover;
+            see SHOW_ENV_TOGGLE. */}
+        {SHOW_ENV_TOGGLE && (user.role === 9 || user.userLevel >= 2) ? (
           <div className="flex items-center px-3 border-r border-custom-white/10">
             <button
               onClick={() => dispatch(toggleDevMode())}

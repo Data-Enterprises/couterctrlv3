@@ -87,6 +87,11 @@ interface SubMarginState {
   // department id in the data, and using it as the sentinel made it
   // unselectable.
   selectedSubDeptId: number | null;
+  /** The day the mobile list and report are both scoped to, or null for the
+   *  whole week. In the slice rather than local state so opening a sub dept
+   *  keeps whichever day was picked on the list behind it — the same way
+   *  Sales' sheet inherits the day from the store report. */
+  selectedDay: string | null;
   // Tracks which sub dept + date range + search the week 2-4 trend data
   // below was fetched for, so remounting SubDeptMarginsDev (e.g. after
   // navigating away and back) doesn't blank and re-fire those fetches.
@@ -172,6 +177,7 @@ const initialState: SubMarginState = {
   weekFourMarginsLW: [],
   filteredMargins: [],
   selectedSubDeptId: null,
+  selectedDay: null,
   lastFetchedTrendKey: null,
   subDeptFitlerText: "",
   loadingSubDepts: false,
@@ -246,6 +252,9 @@ const subMarginSlice = createSlice({
     setSelectedSubDeptId: (state, action: PayloadAction<number | null>) => {
       state.selectedSubDeptId = action.payload;
     },
+    setSubMarginSelectedDay: (state, action: PayloadAction<string | null>) => {
+      state.selectedDay = action.payload;
+    },
     setLastFetchedTrendKey: (state, action: PayloadAction<string | null>) => {
       state.lastFetchedTrendKey = action.payload;
     },
@@ -296,7 +305,8 @@ const subMarginSlice = createSlice({
       state,
       action: PayloadAction<{ data: SubDeptMargin[]; week: number }>,
     ) => {
-      if (action.payload.week === 4) state.weekFourMarginsLW = action.payload.data;
+      if (action.payload.week === 4)
+        state.weekFourMarginsLW = action.payload.data;
     },
     setSubDeptFilterText: (state, action: PayloadAction<string>) => {
       state.subDeptFitlerText = action.payload;
@@ -307,7 +317,10 @@ const subMarginSlice = createSlice({
     setLoadingMargins: (state, action: PayloadAction<boolean>) => {
       state.loadingMargins = action.payload;
     },
-    setSubDeptGrade(state, action: PayloadAction<{ id: number; grade: SubDeptGrade }>) {
+    setSubDeptGrade(
+      state,
+      action: PayloadAction<{ id: number; grade: SubDeptGrade }>,
+    ) {
       state.subDeptGrades[action.payload.id] = action.payload.grade;
     },
     // Switching co-located locations re-grades from cached raw data. The
@@ -348,6 +361,7 @@ const subMarginSlice = createSlice({
       state.weekFourMarginsLW = [];
       state.filteredMargins = [];
       state.selectedSubDeptId = null;
+      state.selectedDay = null;
       state.lastFetchedTrendKey = null;
       state.subDeptFitlerText = "";
       state.selectedWeek = 0;
@@ -578,6 +592,7 @@ export const {
   setMargins,
   setSearchValue,
   setSelectedSubDeptId,
+  setSubMarginSelectedDay,
   setLastFetchedTrendKey,
   setSelectedWeek,
   setSubDepts,

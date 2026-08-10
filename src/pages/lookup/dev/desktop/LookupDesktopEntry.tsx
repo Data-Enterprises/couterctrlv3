@@ -57,9 +57,14 @@ const LookupDesktopEntry = ({ onSearch }: LookupDesktopEntryProps) => {
       />
 
       <div>
-        <label className="text-[11px] font-medium text-content/60 ml-0.5">
-          UPCs
-        </label>
+        <div className="flex items-baseline justify-between gap-2">
+          <label className="text-[11px] font-medium text-content/60 ml-0.5">
+            UPCs
+          </label>
+          <span className="text-[10.5px] text-content/60">
+            Separate by comma or new lines
+          </span>
+        </div>
         <textarea
           value={rawUpcs}
           onChange={(e) => setRawUpcs(e.target.value)}
@@ -68,9 +73,6 @@ const LookupDesktopEntry = ({ onSearch }: LookupDesktopEntryProps) => {
           className="basic-input bg-custom-white w-full mt-1 py-2 px-2.5 text-[13px] resize-none"
           style={{ outline: "none" }}
         />
-        <p className="text-[10.5px] text-content/45 mt-1">
-          Separate multiple UPCs with commas or new lines
-        </p>
       </div>
 
       <button

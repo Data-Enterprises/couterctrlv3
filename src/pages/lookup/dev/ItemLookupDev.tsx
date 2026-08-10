@@ -1,5 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { applyStoreNumberToName, scopeToStoreNumber, storeNumbersIn } from "../../../utils/storeIdentity";
+import {
+  applyStoreNumberToName,
+  scopeToStoreNumber,
+  storeNumbersIn,
+} from "../../../utils/storeIdentity";
 import { useAppDispatch, useAppSelector, useStoreName } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { getItemLookupSingleStore } from "../../../api/itemLookup";
@@ -22,7 +26,7 @@ import { setError } from "../../../features/itemScanSlice";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import LookupEntryScreen from "./LookupEntryScreen";
 import LookupResultScreen from "./LookupResultScreen";
-import { buildDayBuckets, computeMargin, computeTrend, findGaps } from "./lookupMetrics";
+import { buildDayBuckets, computeMargin, computeTrend } from "./lookupMetrics";
 
 const ItemLookupDev = () => {
   const dispatch = useAppDispatch();
@@ -38,11 +42,12 @@ const ItemLookupDev = () => {
     itemLookupHistory,
     totalSales,
     totalQty,
-    daysSold,
   } = useAppSelector((s) => s.item);
   const [isLoading, setIsLoading] = useState(false);
   const resolvedStoreName = useStoreName(selectedStore);
-  const availableStoreNumbers = useAppSelector((s) => s.item.availableStoreNumbers);
+  const availableStoreNumbers = useAppSelector(
+    (s) => s.item.availableStoreNumbers,
+  );
   const selectedStoreNumber = useAppSelector((s) => s.item.selectedStoreNumber);
   // Co-located stores resolve to one assignedStores record — rewrite the
   // embedded number to the location on screen. See utils/storeIdentity.
@@ -57,8 +62,13 @@ const ItemLookupDev = () => {
 
   // The lookup is by storeid, so its history covers both locations. Every
   // headline figure is derived from those rows, so scoping re-derives all.
-  const applyScope = (history: ItemLookupHistory[], storeNumber: string | null) => {
-    const rows = storeNumber ? scopeToStoreNumber(history, storeNumber) : history;
+  const applyScope = (
+    history: ItemLookupHistory[],
+    storeNumber: string | null,
+  ) => {
+    const rows = storeNumber
+      ? scopeToStoreNumber(history, storeNumber)
+      : history;
     const totalSales = rows.reduce((acc, h) => acc + h.total_sales, 0);
     const totalQty = rows.reduce((acc, h) => acc + h.qty, 0);
     dispatch(setItemLookupHistory(rows));
@@ -119,12 +129,20 @@ const ItemLookupDev = () => {
               productCode: j.product_code,
               description: j.description,
               marginPct: margin.marginPct,
+              qty: scopedResult.totalQty,
+              revenue: scopedResult.totalSales,
+              unitCost: margin.unitCost,
             }),
           );
         } else {
-          dispatch(
-            setError(`We're sorry, that item was not found in your inventory`),
-          );
+          // A non-zero error means the lookup did not complete — `"'product_code'"`
+          // is a Python KeyError leaking through — so nothing was learned about
+          // whether the store stocks this item. The old copy asserted it wasn't
+          // in inventory, sending people to hunt a stocking problem that may not
+          // exist. The toast carries whatever the server said; the panel stays
+          // deliberately vague, because vague and true beats specific and wrong.
+          toast.error(j.msg || "There was an issue finding this item");
+          dispatch(setError("There was an issue finding this item"));
           dispatch(setItemsLoaded(false));
           dispatch(reQueryUpc({ isResettingUpcCode: true }));
           dispatch(setPause(true));
@@ -143,7 +161,6 @@ const ItemLookupDev = () => {
       <div className="relative">
         {isLoading && <LoadingIndicator message="Looking up item..." />}
         <LookupEntryScreen
-          storeName={storeName}
           onSearch={handleSearch}
           onSelectRecent={handleSearch}
         />
@@ -167,11 +184,8 @@ const ItemLookupDev = () => {
         onBack={handleBack}
         onSelectRecent={handleSearch}
         margin={computeMargin(itemLookupHistory, totalSales, totalQty)}
-        totalQty={totalQty}
-        daysSold={daysSold}
         buckets={buckets}
         trend={computeTrend(buckets)}
-        gaps={findGaps(buckets)}
       />
     </div>
   );

@@ -160,7 +160,7 @@ const LookupQueuePanel = ({
                 </div>
                 <div className="pl-[18px] mt-0.5">
                   <span className="text-[10.5px] text-red-600">
-                    {item.errorMessage ?? "Not found at this store"}
+                    {item.errorMessage ?? "There was an issue finding this item"}
                   </span>
                 </div>
               </div>

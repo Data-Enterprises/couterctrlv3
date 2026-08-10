@@ -12,7 +12,8 @@ interface SingleStoreSearchCardProps {
   onStoreSelect: (id: number) => void;
   onSearch: () => void;
   loading?: boolean;
-  datePicker: ReactNode;
+  /** Optional: Item Lookup searches a UPC, not a date. */
+  datePicker?: ReactNode;
   children?: ReactNode;
   notice?: string;
   /** Shown while the search runs. Worth naming what is being fetched. */

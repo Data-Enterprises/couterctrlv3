@@ -11,12 +11,15 @@ import type { SevFilter } from "../../../features/salesLedgerSlice";
 import ThresholdFilter from "../../../components/filters/ThresholdFilter";
 import type { LedgerRowData } from "../components/LedgerRow";
 import { addDays, formatGoliathDate } from "../../../utils";
-import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
-import SevChips from "./components/SevChips";
+import SevChips from "../../../components/SevChips";
+import MobilePerfHeader from "../../../components/mobile/MobilePerfHeader";
+import { SALES_LEDGER_INFO } from "../salesInfo";
+import { useSearchScopeLabel } from "../../../hooks/useSearchScopeLabel";
 import StoreRow from "./components/StoreRow";
 
 const LedgerStoreList = () => {
   const dispatch = useAppDispatch();
+  const scopeLabel = useSearchScopeLabel();
   const search = useAppSelector((s) => s.search);
   const { weeklySales, weeklySalesLastWeek, weeklySalesLastYear } =
     useAppSelector((s) => s.sales);
@@ -93,65 +96,32 @@ const LedgerStoreList = () => {
 
   return (
     <div className="flex flex-col h-[calc(100dvh-3rem)] bg-gray-50 overflow-hidden">
-      <div className="bg-[#1e2a4a] px-4 pt-3 pb-4 flex-shrink-0">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <div className="text-custom-white font-semibold text-[13px]">
-              Weekly performance
-            </div>
-            <div className="text-custom-white/85 text-[11px] mt-0.5">
-              {weekLabel}
-            </div>
-          </div>
-          <button
-            onClick={() => dispatch(setHasSearched(false))}
-            aria-label="New search"
-            className="flex-shrink-0 w-[28px] h-[28px] flex items-center justify-center rounded-md border border-custom-white/25 text-custom-white/85 hover:text-custom-white hover:border-custom-white/45 transition-colors"
-          >
-            <MagnifyingGlassIcon className="w-4 h-4" />
-          </button>
-        </div>
-        <div className="flex items-center justify-between gap-3 mt-2">
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1">
-              <div className="w-[7px] h-[7px] rounded-[2px] bg-red-200 flex-shrink-0" />
-              <span className="text-custom-white/85 text-[10px]">
-                {threshold ? `Critical >${threshold.amount}%` : "Critical"}
-              </span>
-            </div>
-            <div className="flex items-center gap-1">
-              <div className="w-[7px] h-[7px] rounded-[2px] bg-amber-200 flex-shrink-0" />
-              <span className="text-custom-white/85 text-[10px]">
-                {threshold ? `Watch ≤${threshold.amount}%` : "Watch"}
-              </span>
-            </div>
-            <div className="flex items-center gap-1">
-              <div className="w-[7px] h-[7px] rounded-[2px] bg-emerald-200 flex-shrink-0" />
-              <span className="text-custom-white/85 text-[10px]">Healthy</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-1.5 flex-shrink-0">
-            <span className="text-[10px] text-custom-white/85">Threshold</span>
-            <ThresholdFilter
-              value={threshold}
-              onChange={(v) => dispatch(setThreshold(v))}
-              suffix="%"
-              showOp={false}
-              inputWidth={40}
-              variant="dark"
-            />
-          </div>
-        </div>
-      </div>
+      <MobilePerfHeader
+        pageName="Weekly Sales"
+        dateRange={weekLabel}
+        storeName={scopeLabel}
+        onSearch={() => dispatch(setHasSearched(false))}
+        info={SALES_LEDGER_INFO}
+        threshold={
+          <ThresholdFilter
+            value={threshold}
+            onChange={(v) => dispatch(setThreshold(v))}
+            suffix="%"
+            showOp={false}
+            inputWidth={40}
+            variant="dark"
+          />
+        }
+      />
       <SevChips
         active={listSevFilter}
         counts={counts}
         onChange={(f) => dispatch(setListSevFilter(f))}
       />
-      <div
-        className="flex-1 overflow-y-auto"
-        style={{ paddingBottom: "env(safe-area-inset-bottom, 16px)" }}
-      >
+      {/* pb-14 clears the fixed bottom tab bar, which is outside document
+          flow and would otherwise hide the last row. 56px, matching its
+          height exactly. */}
+      <div className="flex-1 overflow-y-auto pb-14">
         {critRows.map((r) => (
           <StoreRow
             key={`${r.storeid}__${r.store_number}`}

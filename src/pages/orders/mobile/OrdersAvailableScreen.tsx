@@ -1,8 +1,11 @@
 import { useState, useMemo } from "react";
-import { MagnifyingGlassIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
+import { ChevronRightIcon } from "@heroicons/react/20/solid";
 import type { GroupedOrderCard, SelectedOrderKey } from "../../../features/ordersSlice";
 import TextFilter from "../../../components/filters/TextFilter";
 import SelectFilter, { type SelectFilterOption } from "../../../components/filters/SelectFilter";
+import MobilePerfHeader from "../../../components/mobile/MobilePerfHeader";
+import { ORDERS_INFO } from "../ordersInfo";
+import { useSearchScopeLabel } from "../../../hooks/useSearchScopeLabel";
 
 interface Props {
   cards: GroupedOrderCard[];
@@ -34,6 +37,9 @@ const OrdersAvailableScreen = ({
   const [storeFilter, setStoreFilter] = useState("");
   const [dateFilter, setDateFilter] = useState("");
   const [openTypes, setOpenTypes] = useState<Set<string>>(new Set());
+  // What was searched, not what came back — the same label the multi-store
+  // Performance pages carry.
+  const scopeLabel = useSearchScopeLabel();
 
   const toggleType = (type: string) =>
     setOpenTypes((prev) => { const s = new Set(prev); s.has(type) ? s.delete(type) : s.add(type); return s; });
@@ -89,22 +95,13 @@ const OrdersAvailableScreen = ({
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="bg-[#1e2a4a] px-4 pt-3 pb-4 flex-shrink-0">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <div className="text-custom-white font-semibold text-[13px]">Available Orders</div>
-            <div className="text-custom-white text-[11px] mt-0.5">{weekLabel}</div>
-          </div>
-          <button
-            onClick={onOpenSearch}
-            aria-label="New search"
-            className="flex-shrink-0 w-[28px] h-[28px] flex items-center justify-center rounded-md border border-custom-white/25 text-custom-white/85 hover:text-custom-white hover:border-custom-white/45 transition-colors"
-          >
-            <MagnifyingGlassIcon className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
+      <MobilePerfHeader
+        pageName="Orders"
+        storeName={scopeLabel}
+        dateRange={weekLabel}
+        onSearch={onOpenSearch}
+        info={ORDERS_INFO}
+      />
 
       {/* Type tabs */}
       {cards.length > 0 && (
@@ -156,8 +153,8 @@ const OrdersAvailableScreen = ({
         </div>
       )}
 
-      {/* List */}
-      <div className="flex-1 overflow-y-auto thin-scrollbar">
+      {/* List — pb-14 clears the fixed bottom tab bar. */}
+      <div className="flex-1 overflow-y-auto thin-scrollbar pb-14">
         {loading && (
           <div className="flex items-center justify-center py-16 text-[12px] text-content">Loading…</div>
         )}

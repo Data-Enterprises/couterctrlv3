@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { scopeToStoreNumber, storeNumbersIn } from "../../../../utils/storeIdentity";
+import {
+  scopeToStoreNumber,
+  storeNumbersIn,
+} from "../../../../utils/storeIdentity";
 import { useSubMarginCtx, useParams } from "../../hooks";
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
 import { useSubMarginActions } from "../../hooks/useSubMarginActions";
@@ -26,7 +29,7 @@ import { ArrowLeftIcon } from "@heroicons/react/20/solid";
 import SingleStoreSearchCard from "../../../../components/SingleStoreSearchCard";
 import SingleDatePicker from "../../../../components/datePickers/SingleDatePicker";
 import SubDeptListMobile from "./SubDeptListMobile";
-import SubDeptReportMobile from "./SubDeptReportMobile";
+import SubDeptItemsSheet from "./SubDeptItemsSheet";
 
 const fetchAllPages = async (
   url: string,
@@ -138,8 +141,7 @@ const computeSubDeptGrade = (
   for (const m of tyMargins) {
     if (!seen.has(m.product_code)) {
       seen.add(m.product_code);
-      if (hasNoUsableCost(m))
-        noCostCount++;
+      if (hasNoUsableCost(m)) noCostCount++;
     }
   }
   const vsLYSalesPct = lySales > 0 ? ((tySales - lySales) / lySales) * 100 : 0;
@@ -185,9 +187,14 @@ const SubDeptMarginsMobile = () => {
   // re-derives instantly instead of refetching 1 + 3xN calls.
   const rawRef = useRef<{
     subSales: SubSale[];
-    margins: Record<number, { ty: SubDeptMargin[]; ly: SubDeptMargin[]; lw: SubDeptMargin[] }>;
+    margins: Record<
+      number,
+      { ty: SubDeptMargin[]; ly: SubDeptMargin[]; lw: SubDeptMargin[] }
+    >;
   }>({ subSales: [], margins: {} });
-  const selectedStoreNumber = useAppSelector((s) => s.subMargin.selectedStoreNumber);
+  const selectedStoreNumber = useAppSelector(
+    (s) => s.subMargin.selectedStoreNumber,
+  );
   const scopeRef = useRef<string | null>(selectedStoreNumber);
   scopeRef.current = selectedStoreNumber;
   const scoped = <T extends { store_number: string }>(rows: T[]): T[] =>
@@ -214,7 +221,10 @@ const SubDeptMarginsMobile = () => {
     const subDepts = scoped(raw.subSales)
       .reduce((acc: SubDept[], curr) => {
         if (!acc.some((sd) => sd.id === curr.sub_department)) {
-          acc.push({ id: curr.sub_department, desc: curr.sub_department_description });
+          acc.push({
+            id: curr.sub_department,
+            desc: curr.sub_department_description,
+          });
         }
         return acc;
       }, [])
@@ -272,7 +282,8 @@ const SubDeptMarginsMobile = () => {
         dispatch(setAvailableStoreNumbers(numbers));
         if (numbers.length > 1) {
           const wanted =
-            preferredNumber !== undefined && preferredNumber !== null &&
+            preferredNumber !== undefined &&
+            preferredNumber !== null &&
             numbers.includes(preferredNumber)
               ? preferredNumber
               : preferredNumber === null
@@ -355,7 +366,11 @@ const SubDeptMarginsMobile = () => {
             ),
           ])
             .then(([tyData, lyData, lwData]) => {
-              rawRef.current.margins[sd.id] = { ty: tyData, ly: lyData, lw: lwData };
+              rawRef.current.margins[sd.id] = {
+                ty: tyData,
+                ly: lyData,
+                lw: lwData,
+              };
               // A dept that only trades at the other location has nothing to
               // show under the current scope.
               if (!subDepts.some((d) => d.id === sd.id)) return;
@@ -384,24 +399,22 @@ const SubDeptMarginsMobile = () => {
       .finally(() => dispatch(actions.setLoadingSubDepts(false)));
   };
 
-  if (ctx.selectedSubDeptId != null) {
-    return (
-      <SubDeptReportMobile
-        // null, not 0 — 0 is a real sub department id, so resetting to it
-        // leaves this guard true and re-renders the report for a dept that
-        // has no grade (blank screen). See selectedSubDeptId in subMarginSlice.
-        onBack={() => dispatch(actions.setSelectedSubDeptId(null))}
-      />
-    );
-  }
-
   if (ctx.subDepts.length > 0 && !showSearch) {
     return (
-      <SubDeptListMobile
-        onSearch={() => setShowSearch(true)}
-        gradingProgress={gradingProgress}
-        onStoreNumberChange={handleStoreNumberChange}
-      />
+      <>
+        <SubDeptListMobile
+          onSearch={() => setShowSearch(true)}
+          gradingProgress={gradingProgress}
+          onStoreNumberChange={handleStoreNumberChange}
+        />
+        {/* null, not 0 — 0 is a real sub department id, so a truthiness test
+            would never open it. See selectedSubDeptId in subMarginSlice. */}
+        {ctx.selectedSubDeptId != null && (
+          <SubDeptItemsSheet
+            onBack={() => dispatch(actions.setSelectedSubDeptId(null))}
+          />
+        )}
+      </>
     );
   }
 

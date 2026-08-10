@@ -30,12 +30,8 @@ import LoadingIndicator from "../../components/loading/LoadingIndicator";
 import ExplorerSearch from "./explorer/ExplorerSearch";
 import LensPanel from "./explorer/LensPanel";
 import SignalDetail from "./explorer/SignalDetail";
-import {
-  buildTransactionLengths,
-  buildSignals,
-  buildTotals,
-} from "./explorer/lensUtils";
 import CashiersMobile from "./mobile/CashiersMobile";
+import { useCashierSignals } from "./useCashierSignals";
 
 // LP grades against "the prior 2 weeks" (see lossPrevention/lpInfo.ts), so the
 // explorer uses the same ceiling rather than inventing a second notion of
@@ -243,28 +239,8 @@ const Cashiers = () => {
     }
   };
 
-  const transactionLengths = useMemo(
-    () => buildTransactionLengths(explorerAllRows),
-    [explorerAllRows],
-  );
-
-  // transaction_list hands back whole receipts, so the signal maths has to run
-  // on just the lines matching the exception the user picked.
-  const exceptionRows = useMemo(
-    () =>
-      explorerAllRows.filter((r) => r.sale_type === explorerFetchedException),
-    [explorerAllRows, explorerFetchedException],
-  );
-
-  const totals = useMemo(() => buildTotals(exceptionRows), [exceptionRows]);
-
-  const signals = useMemo(
-    () =>
-      buildSignals(exceptionRows, transactionLengths, explorerLens, (id, fb) =>
-        getStoreName(assignedStores, id, fb),
-      ),
-    [exceptionRows, transactionLengths, explorerLens, assignedStores],
-  );
+  const { exceptionRows, transactionLengths, totals, signals } =
+    useCashierSignals();
 
   const visibleSignals = useMemo(() => {
     if (!signalSearch.trim()) return signals;

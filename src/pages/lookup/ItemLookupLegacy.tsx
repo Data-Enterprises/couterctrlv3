@@ -66,10 +66,14 @@ const ItemLookupLegacy = () => {
             dispatch(setILView("history"));
           }
         } else {
-          // If item is not found
-          dispatch(
-            setError(`We're sorry, that item was not found in your inventory`),
-          );
+          // A non-zero error means the lookup did not complete — `"'product_code'"`
+          // is a Python KeyError leaking through — so nothing was learned about
+          // whether the store stocks this item. The old copy asserted it wasn't
+          // in inventory, sending people to hunt a stocking problem that may not
+          // exist. The toast carries whatever the server said; the panel stays
+          // deliberately vague, because vague and true beats specific and wrong.
+          toast.error(j.msg || "There was an issue finding this item");
+          dispatch(setError("There was an issue finding this item"));
           dispatch(setItemsLoaded(false));
           dispatch(reQueryUpc({ isResettingUpcCode: !isDesktop }));
           dispatch(setPause(true));

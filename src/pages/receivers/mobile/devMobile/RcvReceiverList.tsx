@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
 import LocationTabs from "../../../../components/filters/LocationTabs";
-import { MagnifyingGlassIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
+import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
+import MobilePerfHeader from "../../../../components/mobile/MobilePerfHeader";
+import { RECEIVERS_INFO } from "../../receiversInfo";
 import { useAppSelector } from "../../../../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 import { getReceiverDetails } from "../../../../api/receivers";
@@ -172,27 +174,13 @@ const RcvReceiverList = ({
 
   return (
     <div className="flex flex-col h-[calc(100dvh-3rem)] overflow-hidden bg-gray-50">
-      <div
-        className="flex-shrink-0 px-3 pt-2 pb-2.5"
-        style={{ background: "#1e2a4a" }}
-      >
-        <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0">
-            <div className="text-[13px] font-semibold text-custom-white truncate">
-              {storeName}
-            </div>
-            <div className="text-[10px] mt-0.5 text-custom-white/85">
-              {dateRangeLabel}
-            </div>
-          </div>
-          <button
-            onClick={onSearch}
-            className="w-[28px] h-[28px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/85 flex-shrink-0"
-          >
-            <MagnifyingGlassIcon className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
+      <MobilePerfHeader
+        pageName="Receivers"
+        storeName={storeName}
+        dateRange={dateRangeLabel}
+        onSearch={onSearch}
+        info={RECEIVERS_INFO}
+      />
 
       <div className="flex-shrink-0 grid grid-cols-4 bg-custom-white border-b border-gray-100">
         {[
@@ -353,16 +341,18 @@ const RcvReceiverList = ({
 
               <div
                 className="grid px-3 py-1.5 bg-gray-50 border-b border-gray-100"
-                style={{ gridTemplateColumns: "1fr 30px 30px 48px 32px" }}
+                style={{ gridTemplateColumns: "1fr 38px 38px 50px 34px" }}
               >
-                {["Description", "Cs", "Un", "Cost", "GM%"].map((h, i) => (
-                  <div
-                    key={h}
-                    className={`text-[10px] font-semibold uppercase tracking-wide text-content/85 ${i > 0 ? "text-right" : ""}`}
-                  >
-                    {h}
-                  </div>
-                ))}
+                {["Description", "Cases", "Units", "Cost", "GM%"].map(
+                  (h, i) => (
+                    <div
+                      key={h}
+                      className={`text-[10px] font-semibold uppercase tracking-wide text-content/85 ${i > 0 ? "text-right" : ""}`}
+                    >
+                      {h}
+                    </div>
+                  ),
+                )}
               </div>
 
               <div className="overflow-y-auto max-h-[320px]">
@@ -370,7 +360,7 @@ const RcvReceiverList = ({
                   <div
                     key={i}
                     className="grid px-3 py-1.5 border-b border-gray-50 items-center"
-                    style={{ gridTemplateColumns: "1fr 30px 30px 48px 32px" }}
+                    style={{ gridTemplateColumns: "1fr 38px 38px 50px 34px" }}
                   >
                     <div className="min-w-0 pr-1">
                       <div className="text-[10px] text-content truncate">

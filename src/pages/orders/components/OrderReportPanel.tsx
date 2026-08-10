@@ -12,7 +12,8 @@ import type {
   SelectedOrder,
 } from "../../../features/ordersSlice";
 import type { Store } from "../../../interfaces";
-import { formatCurrency2 } from "../../../utils";
+import { formatCurrency2, resolveStoreName } from "../../../utils";
+import { useAppSelector } from "../../../hooks";
 import OrdersExportModal from "./OrdersExportModal";
 
 interface Props {
@@ -252,6 +253,7 @@ const OrderReportPanel = ({
   assignedStores,
   onSelectOrder,
 }: Props) => {
+  const groupStores = useAppSelector((s) => s.user.selectedGroupStores);
   const [subDeptFilter, setSubDeptFilter] = useState<string>("");
   const [exportOpen, setExportOpen] = useState(false);
 
@@ -269,16 +271,16 @@ const OrderReportPanel = ({
     setAppliedSubDept("");
   }, [selectedOrder]);
 
+  // groupStores covers stores in the searched group the user isn't personally
+  // assigned to — without it those rows showed a bare "Store 412".
   const storeNames = useMemo(
     () =>
       selectedKey
-        ? selectedKey.storeids.map(
-            (id) =>
-              assignedStores.find((s) => s.storeid === id)?.store_name ??
-              `Store ${id}`,
+        ? selectedKey.storeids.map((id) =>
+            resolveStoreName(assignedStores, groupStores, id, `Store ${id}`),
           )
         : [],
-    [selectedKey, assignedStores],
+    [selectedKey, assignedStores, groupStores],
   );
 
   const dateLabel = selectedKey
@@ -508,8 +510,12 @@ const OrderReportPanel = ({
                       </div>
                       {storeNames.length > 1 && (
                         <span className="text-[11px] text-content truncate font-medium">
-                          {assignedStores.find((s) => s.storeid === storeid)
-                            ?.store_name ?? `Store ${storeid}`}
+                          {resolveStoreName(
+                            assignedStores,
+                            groupStores,
+                            storeid,
+                            `Store ${storeid}`,
+                          )}
                         </span>
                       )}
                       <div className="flex flex-col gap-1">
