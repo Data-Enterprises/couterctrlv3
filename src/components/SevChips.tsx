@@ -56,7 +56,11 @@ const LABELS: Record<SevFilter, (counts: Record<SevFilter, number>) => string> =
   };
 
 const SevChips = ({ active, counts, onChange, extra }: SevChipsProps) => (
-  <div className="flex gap-2 px-3 py-2 bg-custom-white border-b border-gray-100 flex-shrink-0 overflow-x-auto">
+  // `pl-3`, not `px-3`: Chrome and Safari drop a flex scroll container's
+  // padding-right at the end of its scroll range, so with five chips the last
+  // one stays clipped however far you scroll. The spacer at the end of the row
+  // is real content, counts toward scrollWidth, and gives the same 12px gutter.
+  <div className="flex gap-2 pl-3 py-2 bg-custom-white border-b border-gray-100 flex-shrink-0 overflow-x-auto">
     {(["all", "critical", "watch", "healthy"] as SevFilter[]).map((f) => (
       <button
         key={f}
@@ -80,6 +84,8 @@ const SevChips = ({ active, counts, onChange, extra }: SevChipsProps) => (
         {extra.label} ({extra.count})
       </button>
     )}
+    {/* Trailing gutter — see the note on the container. */}
+    <div className="w-3 flex-shrink-0" aria-hidden="true" />
   </div>
 );
 
