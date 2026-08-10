@@ -1,4 +1,8 @@
-import type { TransactionOverview, UniqueCashier, CashierDetails } from "../../interfaces";
+import type {
+  TransactionOverview,
+  UniqueCashier,
+  CashierDetails,
+} from "../../interfaces";
 import type { Severity } from "../../utils/severity";
 
 export type CashierSeverity = "critical" | "watch" | "ok" | "ungraded";
@@ -78,15 +82,15 @@ export const storeSeverity = (
   const b = baselineDetails.find((x) => x.storeid === detail.storeid);
   if (!b) return "healthy"; // no baseline = can't grade
 
-  const bTrans  = b.transaction_count / 2;
-  const bItems  = b.total_items / 2;
+  const bTrans = b.transaction_count / 2;
+  const bItems = b.total_items / 2;
   const bAmount = Math.abs(b.amount) / 2;
-  const bAvg    = Math.abs(b.average_dollars);
+  const bAvg = Math.abs(b.average_dollars);
 
   if (isNoDollarType(saleType)) {
     const score = [
       detail.transaction_count <= bTrans,
-      detail.total_items       <= bItems,
+      detail.total_items <= bItems,
     ].filter(Boolean).length;
     if (score === 2) return "healthy";
     if (score === 1) return "watch";
@@ -94,9 +98,9 @@ export const storeSeverity = (
   }
 
   const score = [
-    detail.transaction_count         <= bTrans,
-    detail.total_items               <= bItems,
-    Math.abs(detail.amount)          <= bAmount,
+    detail.transaction_count <= bTrans,
+    detail.total_items <= bItems,
+    Math.abs(detail.amount) <= bAmount,
     Math.abs(detail.average_dollars) <= bAvg,
   ].filter(Boolean).length;
   if (score >= 3) return "healthy";
@@ -111,12 +115,17 @@ export const directionalPillClass = (pct: number) =>
     ? "bg-severity_critical_bg text-severity_critical_text"
     : "bg-severity_healthy_bg text-severity_healthy_text";
 
-// Solid-fill pass/fail chip color — mirrors the literal red-500/emerald-500
-// palette used by Sales mobile's SevBadge (mobile dev convention), not the
-// CSS-variable-based severity_* tokens above.
+// Pass/fail chip colour for the Store and Cashier rows on LP mobile. Literal
+// Tailwind shades rather than the CSS-variable severity_* tokens above, which
+// is the mobile dev convention.
 export const passFailChipClass = (isPass: boolean | null): string => {
-  if (isPass === null) return "bg-gray-200 text-gray-500";
-  return isPass ? "bg-emerald-500 text-custom-white" : "bg-red-500 text-custom-white";
+  // Soft fill with dark text, the same register every other graded pill uses
+  // (Sales, Sub Dept Margins, Vendors, Categories). The saturated fill with
+  // white text this used to return was the only place in the app shouting a
+  // pass/fail at full strength, and on a row of four chips it read as an alarm
+  // rather than a grade.
+  if (isPass === null) return "bg-gray-100 text-gray-500";
+  return isPass ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-800";
 };
 
 // Soft-tint trend pill — same palette, used for up/down % badges (up = worse
@@ -211,10 +220,11 @@ export const buildCashierStats = (
 export const computePeerAverages = (stats: RawCashierStats[]): PeerAverages => {
   if (stats.length === 0) return { trans: 0, qty: 0, sales: 0, avgTicket: 0 };
   const n = stats.length;
-  const trans     = stats.reduce((s, c) => s + c.trans, 0) / n;
-  const qty       = stats.reduce((s, c) => s + c.qty, 0) / n;
-  const sales     = stats.reduce((s, c) => s + c.sales, 0) / n;
-  const avgTicket = stats.reduce((s, c) => s + (c.trans > 0 ? c.sales / c.trans : 0), 0) / n;
+  const trans = stats.reduce((s, c) => s + c.trans, 0) / n;
+  const qty = stats.reduce((s, c) => s + c.qty, 0) / n;
+  const sales = stats.reduce((s, c) => s + c.sales, 0) / n;
+  const avgTicket =
+    stats.reduce((s, c) => s + (c.trans > 0 ? c.sales / c.trans : 0), 0) / n;
   return { trans, qty, sales, avgTicket };
 };
 
@@ -227,10 +237,14 @@ const isNoSaleType = (saleType: string) =>
  * useAbs: compare |value| vs |avg| — required for dollar metrics on refund
  * types where both sides are negative.
  */
-const makeMetric = (value: number, avg: number, useAbs = false): CashierMetric => {
+const makeMetric = (
+  value: number,
+  avg: number,
+  useAbs = false,
+): CashierMetric => {
   const v = useAbs ? Math.abs(value) : value;
-  const a = useAbs ? Math.abs(avg)   : avg;
-  const pct    = a !== 0 ? ((v - a) / a) * 100 : 0;
+  const a = useAbs ? Math.abs(avg) : avg;
+  const pct = a !== 0 ? ((v - a) / a) * 100 : 0;
   const isPass = v <= a;
   return { value, avg, pct, isPass };
 };
@@ -243,21 +257,26 @@ export const gradeCashier = (
   baselineWeeks: number,
   saleType: string,
 ): CashierGrade => {
-  const noSale     = isNoSaleType(saleType);
+  const noSale = isNoSaleType(saleType);
   const hasBaseline = baselineStats !== null && baselineStats.trans > 0;
 
   // Normalize baseline to per-week so it's on the same scale as the 1-week current period
-  const bTrans     = hasBaseline ? Math.round(baselineStats!.trans / baselineWeeks) : 0;
-  const bQty       = hasBaseline ? Math.round(baselineStats!.qty / baselineWeeks)   : 0;
-  const bSales     = hasBaseline ? baselineStats!.sales / baselineWeeks : 0;
-  const bAvgTicket = hasBaseline ? baselineStats!.sales / baselineStats!.trans : 0;
+  const bTrans = hasBaseline
+    ? Math.round(baselineStats!.trans / baselineWeeks)
+    : 0;
+  const bQty = hasBaseline ? Math.round(baselineStats!.qty / baselineWeeks) : 0;
+  const bSales = hasBaseline ? baselineStats!.sales / baselineWeeks : 0;
+  const bAvgTicket = hasBaseline
+    ? baselineStats!.sales / baselineStats!.trans
+    : 0;
 
-  const currentAvgTicket = currentStats.trans > 0 ? currentStats.sales / currentStats.trans : 0;
+  const currentAvgTicket =
+    currentStats.trans > 0 ? currentStats.sales / currentStats.trans : 0;
 
-  const trans     = makeMetric(currentStats.trans,  bTrans,     false);
-  const qty       = makeMetric(currentStats.qty,    bQty,       !noSale);
-  const sales     = makeMetric(currentStats.sales,  bSales,     !noSale);
-  const avgTicket = makeMetric(currentAvgTicket,    bAvgTicket, !noSale);
+  const trans = makeMetric(currentStats.trans, bTrans, false);
+  const qty = makeMetric(currentStats.qty, bQty, !noSale);
+  const sales = makeMetric(currentStats.sales, bSales, !noSale);
+  const avgTicket = makeMetric(currentAvgTicket, bAvgTicket, !noSale);
 
   // No Sale grades only trans + qty (2-metric scale)
   const gradedMetrics = noSale ? [trans, qty] : [trans, qty, sales, avgTicket];
@@ -267,13 +286,21 @@ export const gradeCashier = (
   const severity: CashierSeverity = !hasBaseline
     ? "ungraded"
     : noSale
-    ? passes === 2 ? "ok" : passes === 1 ? "watch" : "critical"
-    : passes >= 3  ? "ok" : passes === 2 ? "watch" : "critical";
+      ? passes === 2
+        ? "ok"
+        : passes === 1
+          ? "watch"
+          : "critical"
+      : passes >= 3
+        ? "ok"
+        : passes === 2
+          ? "watch"
+          : "critical";
 
   return {
     cashier_number: currentStats.cashier_number,
-    cashier_name:   currentStats.cashier_name,
-    store_number:   currentStats.store_number,
+    cashier_name: currentStats.cashier_name,
+    store_number: currentStats.store_number,
     trans,
     qty,
     sales,
@@ -286,7 +313,12 @@ export const gradeCashier = (
 
 // ── Convenience: grade all cashiers, sorted Critical → Watch → OK ────────────
 
-const SEVERITY_RANK: Record<CashierSeverity, number> = { critical: 0, watch: 1, ok: 2, ungraded: 3 };
+const SEVERITY_RANK: Record<CashierSeverity, number> = {
+  critical: 0,
+  watch: 1,
+  ok: 2,
+  ungraded: 3,
+};
 
 /** YYYY-MM-DD → weekday index, parsed as UTC so the day can't shift by one for
  *  anyone west of Greenwich. */
@@ -336,9 +368,9 @@ export const gradeAllCashiers = (
   saleType: string,
   baselinePeriods = 2,
 ): CashierGrade[] => {
-  const currentStats  = buildCashierStats(currentOverviews, cashiers);
+  const currentStats = buildCashierStats(currentOverviews, cashiers);
   const baselineStats = buildCashierStats(baselineOverviews, []);
-  const baselineMap   = new Map(baselineStats.map((s) => [s.cashier_number, s]));
+  const baselineMap = new Map(baselineStats.map((s) => [s.cashier_number, s]));
 
   return currentStats
     .map((s) =>

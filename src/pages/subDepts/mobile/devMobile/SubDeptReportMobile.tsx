@@ -6,10 +6,18 @@ import {
   ExclamationCircleIcon,
   CheckCircleIcon,
 } from "@heroicons/react/20/solid";
-import { useAppSelector } from "../../../../hooks";
+import { useAppDispatch, useAppSelector } from "../../../../hooks";
 import { useSubMarginCtx, useParams } from "../../hooks";
-import { calculateCogs, hasNoUsableCost, buildDayComparisons } from "../..";
+import {
+  calculateCogs,
+  hasNoUsableCost,
+  buildDayComparisons,
+  getLYDate,
+  setDates,
+} from "../..";
+import { fmtDayLabel, fmtRangeLabel } from "../../../../utils/dateLabels";
 import { formatCurrency2 } from "../../../../utils";
+import { setSubMarginSelectedDay } from "../../../../features/subMarginSlice";
 import type { MarginTier } from "../../../../features/subMarginSlice";
 import type { SevFilter } from "../../../../features/salesLedgerSlice";
 import type { SubDeptMargin } from "../../../../interfaces";
@@ -60,7 +68,9 @@ const computeMarginPct = (net: number, cogs: number) =>
   net > 0 ? ((net - cogs) / net) * 100 : 0;
 
 const fmt1 = (n: number) => n.toFixed(2);
-const fmtPts = (n: number) => `${n >= 0 ? "+" : ""}${fmt1(n)} pts`;
+// Margin deltas are percentage points, shown with a % sign to match the
+// rest of mobile.
+const fmtPts = (n: number) => `${n >= 0 ? "+" : ""}${fmt1(n)}%`;
 
 const SubDeptReportMobile = ({ onBack }: Props) => {
   const ctx = useSubMarginCtx();
@@ -69,7 +79,12 @@ const SubDeptReportMobile = ({ onBack }: Props) => {
   const gradingThreshold = useAppSelector((s) => s.subMargin.gradingThreshold);
   const gradingMetric = useAppSelector((s) => s.subMargin.gradingMetric);
 
-  const [selectedDay, setSelectedDay] = useState<string | null>(null);
+  const dispatch = useAppDispatch();
+  // The day comes from the slice so it survives opening a sub dept from a
+  // day-scoped list — see `selectedDay` in subMarginSlice.
+  const selectedDay = useAppSelector((s) => s.subMargin.selectedDay);
+  const setSelectedDay = (d: string | null) =>
+    dispatch(setSubMarginSelectedDay(d));
   const [sevFilter, setSevFilter] = useState<SevFilter>("all");
   const [rawItemThreshold, setRawItemThreshold] = useState<number | null>(
     gradingThreshold,
@@ -127,6 +142,10 @@ const SubDeptReportMobile = ({ onBack }: Props) => {
         tyMarginPct: grade.tyMarginPct,
         ptsDelta: grade.ptsDelta,
         lwPtsDelta: grade.lwPtsDelta,
+        lwMarginPct: grade.lwMarginPct,
+        lyMarginPct: grade.lyMarginPct,
+        hasLW: grade.lwSales > 0,
+        hasLY: grade.lySales > 0,
       };
     }
     const tyDay = grade.tyWeekOneMargins.filter(
@@ -166,6 +185,12 @@ const SubDeptReportMobile = ({ onBack }: Props) => {
       tyMarginPct: tyM,
       ptsDelta: lyM > 0 ? tyM - lyM : 0,
       lwPtsDelta: lwM > 0 ? tyM - lwM : 0,
+      lwMarginPct: lwM,
+      lyMarginPct: lyM,
+      // Net, not margin: a day can genuinely post a 0% margin, which is a real
+      // figure. No net at all is what means "nothing to compare against".
+      hasLW: lwNet > 0,
+      hasLY: lyNet > 0,
     };
   }, [grade, selectedDay]);
 
@@ -282,6 +307,25 @@ const SubDeptReportMobile = ({ onBack }: Props) => {
   const visibleItems =
     sevFilter === "all" ? items : items.filter((i) => i.tier === sevFilter);
 
+  /** Each KPI cell names the window it is actually reporting, matching the
+   *  Sales strip — "vs LW" alone leaves the reader to work out which seven
+   *  days that was, and it changes with the day strip.
+   *
+   *  Built from the very expressions the fetch used (`getLYDate`, `setDates`),
+   *  not re-derived, so a label can never disagree with the figure beside it:
+   *  LY is day-of-week preserving rather than a flat -365. */
+  const lwStart = setDates(new Date(params.end), 13);
+  const lwEnd = setDates(new Date(params.end), 7);
+  const tyLabel = selectedDay
+    ? fmtDayLabel(selectedDay)
+    : fmtRangeLabel(params.start, params.end);
+  const lwLabel = selectedDay
+    ? fmtDayLabel(setDates(new Date(selectedDay), 7))
+    : fmtRangeLabel(lwStart, lwEnd);
+  const lyLabel = selectedDay
+    ? fmtDayLabel(getLYDate(selectedDay))
+    : fmtRangeLabel(getLYDate(params.start), getLYDate(params.end));
+
   const endLabel = new Date(params.end + "T00:00:00").toLocaleDateString(
     "en-US",
     {
@@ -326,6 +370,7 @@ const SubDeptReportMobile = ({ onBack }: Props) => {
             <div className="text-[10px] font-semibold uppercase tracking-wide text-content/85">
               TY Margin
             </div>
+            <div className="text-[10px] text-content/85 mt-0.5">{tyLabel}</div>
             <div className="text-[14px] font-bold text-content mt-0.5">
               {fmt1(kpi.tyMarginPct)}%
             </div>
@@ -334,20 +379,36 @@ const SubDeptReportMobile = ({ onBack }: Props) => {
             <div className="text-[10px] font-semibold uppercase tracking-wide text-content/85">
               vs LW
             </div>
-            <div
-              className={`text-[13px] font-bold mt-0.5 ${kpi.lwPtsDelta >= 0 ? "text-emerald-600" : "text-red-600"}`}
-            >
-              {fmtPts(kpi.lwPtsDelta)}
+            <div className="text-[10px] text-content/85 mt-0.5">{lwLabel}</div>
+            <div className="flex items-baseline gap-1.5 mt-0.5">
+              <span className="text-[13px] font-bold text-content">
+                {kpi.hasLW ? `${fmt1(kpi.lwMarginPct)}%` : "—"}
+              </span>
+              {kpi.hasLW && (
+                <span
+                  className={`text-[10px] font-semibold ${kpi.lwPtsDelta >= 0 ? "text-emerald-600" : "text-red-600"}`}
+                >
+                  {fmtPts(kpi.lwPtsDelta)}
+                </span>
+              )}
             </div>
           </div>
           <div className="px-3 py-2">
             <div className="text-[10px] font-semibold uppercase tracking-wide text-content/85">
               vs LY
             </div>
-            <div
-              className={`text-[13px] font-bold mt-0.5 ${kpi.ptsDelta >= 0 ? "text-emerald-600" : "text-red-600"}`}
-            >
-              {fmtPts(kpi.ptsDelta)}
+            <div className="text-[10px] text-content/85 mt-0.5">{lyLabel}</div>
+            <div className="flex items-baseline gap-1.5 mt-0.5">
+              <span className="text-[13px] font-bold text-content">
+                {kpi.hasLY ? `${fmt1(kpi.lyMarginPct)}%` : "—"}
+              </span>
+              {kpi.hasLY && (
+                <span
+                  className={`text-[10px] font-semibold ${kpi.ptsDelta >= 0 ? "text-emerald-600" : "text-red-600"}`}
+                >
+                  {fmtPts(kpi.ptsDelta)}
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -454,7 +515,7 @@ const SubDeptReportMobile = ({ onBack }: Props) => {
             }}
             min={0}
           />
-          <span>pts</span>
+          <span>%</span>
         </div>
       </div>
 

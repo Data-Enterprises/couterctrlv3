@@ -4,7 +4,7 @@ import { useAppSelector } from "../../../hooks";
 import SingleStoreSearchCard from "../../../components/SingleStoreSearchCard";
 import SingleDatePicker from "../../../components/datePickers/SingleDatePicker";
 import CategoryListMobile from "./CategoryListMobile";
-import CategoryReportMobile from "./CategoryReportMobile";
+import CategoryItemsSheet from "./CategoryItemsSheet";
 
 /**
  * Categories on mobile — entry card, graded list, one category's week.
@@ -14,7 +14,9 @@ import CategoryReportMobile from "./CategoryReportMobile";
  * installs the item-loading effect, so calling it here too would fire every
  * item fetch twice.
  *
- * `selectedCategory` in the slice doubles as "am I on the report screen".
+ * Picking a category opens a BottomSheet over the list rather than pushing a
+ * screen — the category list IS the screen it was picked from. Same treatment
+ * Sales gives a sub department.
  */
 
 interface Props {
@@ -43,14 +45,17 @@ const CategoriesMobile = ({ runSearch, onLoadHourly }: Props) => {
 
   const hasData = cats.rows.length > 0;
 
-  // `selectedCategory` can legitimately be 0 — an explicit null check, not a
-  // truthiness test, or category 0 would never open.
-  if (cats.selectedCategory !== null && !showSearch) {
-    return <CategoryReportMobile onLoadHourly={onLoadHourly} />;
-  }
-
   if (hasData && !showSearch) {
-    return <CategoryListMobile onSearch={() => setShowSearch(true)} />;
+    return (
+      <>
+        <CategoryListMobile onSearch={() => setShowSearch(true)} />
+        {/* `selectedCategory` can legitimately be 0 — an explicit null check,
+            not a truthiness test, or category 0 would never open. */}
+        {cats.selectedCategory !== null && (
+          <CategoryItemsSheet onLoadHourly={onLoadHourly} />
+        )}
+      </>
+    );
   }
 
   return (

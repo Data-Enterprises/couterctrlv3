@@ -5,7 +5,7 @@ import SingleStoreSearchCard from "../../../components/SingleStoreSearchCard";
 import SingleDatePicker from "../../../components/datePickers/SingleDatePicker";
 import { useVendorSearch } from "../useVendorSearch";
 import VendorListMobile from "./VendorListMobile";
-import VendorReportMobile from "./VendorReportMobile";
+import VendorItemsSheet from "./VendorItemsSheet";
 
 /**
  * Vendors on mobile — entry card, graded list, one vendor's week.
@@ -13,9 +13,10 @@ import VendorReportMobile from "./VendorReportMobile";
  * Owns only screen routing and the body-scroll lock; the search itself is
  * `useVendorSearch`, shared with the desktop container so the two can't drift.
  *
- * `selectedVendor` in the slice doubles as "am I on the report screen", the
- * same way `selectedSubDeptId` does on Sub Dept Margins — no separate screen
- * enum to keep in step with it.
+ * Picking a vendor opens a BottomSheet over the list rather than pushing a
+ * screen — the vendor list IS the screen it was picked from, so a separate
+ * report view would just be the sheet's contents with an extra back button.
+ * Same treatment Sales gives a sub department.
  */
 const VendorsMobile = () => {
   const user = useAppSelector((s) => s.user);
@@ -39,10 +40,13 @@ const VendorsMobile = () => {
 
   const hasData = vend.rows.length > 0;
 
-  if (vend.selectedVendor && !showSearch) return <VendorReportMobile />;
-
   if (hasData && !showSearch) {
-    return <VendorListMobile onSearch={() => setShowSearch(true)} />;
+    return (
+      <>
+        <VendorListMobile onSearch={() => setShowSearch(true)} />
+        {vend.selectedVendor && <VendorItemsSheet />}
+      </>
+    );
   }
 
   return (
