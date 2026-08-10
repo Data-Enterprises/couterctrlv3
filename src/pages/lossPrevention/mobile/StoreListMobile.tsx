@@ -516,14 +516,19 @@ const StoreListMobile = ({ onOpenSearch, onStoreSelected }: Props) => {
                 key={`${d.storeid}__${d.store_number}`}
                 onClick={() => handleStoreClick(d.storeid, d.store_number)}
                 disabled={lp.fetchingCashierTransactions}
-                className="w-full px-4 py-3 border-b border-gray-100 text-left hover:bg-gray-50 active:bg-gray-100 transition-colors"
+                aria-busy={isLoading}
+                // Dim the row while its cashiers load rather than pulling
+                // anything out of it — see the badge below.
+                className={`w-full px-4 py-3 border-b border-gray-100 text-left hover:bg-gray-50 active:bg-gray-100 transition-opacity transition-colors ${
+                  isLoading ? "opacity-60" : ""
+                }`}
               >
                 <div className="flex items-center gap-2.5 mb-2">
-                  {isLoading ? (
-                    <div className="w-[22px] h-[22px] flex-shrink-0" />
-                  ) : (
-                    <SevBadge sev={d.sev} />
-                  )}
+                  {/* Always rendered. Swapping the badge for an empty box
+                      while the cashiers load made the row's grade blink out
+                      and leave a hole at the moment of tapping it — the row
+                      dims instead, and the severity stays put. */}
+                  <SevBadge sev={d.sev} />
                   <div className="text-[13px] font-medium text-content truncate">
                     {storeName}
                   </div>

@@ -128,10 +128,15 @@ export const passFailChipClass = (isPass: boolean | null): string => {
   return isPass ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-800";
 };
 
-// Soft-tint trend pill — same palette, used for up/down % badges (up = worse
-// = red, down = better = green, matching LP's "lower vs baseline is good").
+// Trend pill for the KPI strips — the same soft fill and dark text
+// `passFailChipClass` gives the Store and Cashier rows, so a strip and the rows
+// beneath it read as one grading scale rather than two. It was a saturated
+// tint-on-tint before, which made the strip look like a different system.
+//
+// Up is worse here: LP grades exceptions, where staying under the baseline is
+// the good outcome.
 export const trendPillClass = (pct: number): string =>
-  pct > 0 ? "bg-red-500/10 text-red-500" : "bg-emerald-500/10 text-emerald-500";
+  pct > 0 ? "bg-red-100 text-red-800" : "bg-emerald-100 text-emerald-800";
 
 export interface CashierMetric {
   value: number;
