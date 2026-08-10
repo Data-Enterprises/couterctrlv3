@@ -1,158 +1,99 @@
 import { useState } from "react";
-import { useCashierCtx } from "..";
-import { useToast } from "../../../components/toasts/hooks/useToast";
-import { formatGoliathDate } from "../../../utils";
-import { getStoreCards, getCashierCards } from "../../../api/cashiers";
-import type { CashierCard, CashierCardResp, JsonError, StoreCard, StoreCardResp } from "../../../interfaces";
-import { useCashiersActions } from "../hooks/useCashiersActions";
+import { useAppSelector } from "../../../hooks";
 import SearchCard from "../../../components/SearchCard";
-import StoresMobile from "./StoresMobile";
-import StoreOverviewMobile from "./StoreOverviewMobile";
-import CashiersMobileList from "./CashiersMobileList";
-import CashierOverviewMobile from "./CashierOverviewMobile";
-import TransactionsMobileScreen from "./TransactionsMobileScreen";
+import { useCashierExplorer } from "../useCashierExplorer";
+import SignalListMobile from "./SignalListMobile";
+import SignalTransactionsMobile from "./SignalTransactionsMobile";
 
+/**
+ * Cashiers on mobile — the signal explorer, not the old card drill-down.
+ *
+ * The previous version was built before the desktop was rebuilt as an explorer,
+ * and answered a different question ("which store, then which cashier?") off a
+ * different pipeline (`getStoreCards`/`getCashierCards`). This runs the same
+ * two-stage fetch the desktop does, via `useCashierExplorer`, and derives the
+ * same signals via `useCashierSignals` — so the two views can't disagree.
+ *
+ * Walkthrough, mirroring Loss Prevention but with no severity grading, because
+ * nothing here is graded:
+ *
+ *   search (scope + week) → preflight picks the exception
+ *     → signal list (lens picker)
+ *       → that signal's transactions
+ *         → receipt sheet
+ */
 const CashiersMobile = () => {
-  const toast = useToast();
-  const ctx = useCashierCtx();
-  const actions = useCashiersActions();
-  const [selectedStore, setSelectedStore] = useState<StoreCard | null>(null);
-  const [selectedCashier, setSelectedCashier] = useState<CashierCard | null>(null);
-  const [searchModalOpen, setSearchModalOpen] = useState(false);
+  const {
+    explorerLoading,
+    explorerMessage,
+    explorerSaleTypes,
+    explorerAllRows,
+  } = useAppSelector((s) => s.cashier);
+  const { runPreflight, runExplore, scopeArgs } = useCashierExplorer();
 
-  const getSCards = () => {
-    ctx.dispatch(actions.reQueryStepOne());
-    ctx.dispatch(actions.setLoadingStores(true));
-    ctx.dispatch(actions.setDataView("stores"));
-    setSelectedStore(null);
-    setSelectedCashier(null);
+  const [screen, setScreen] = useState<"signals" | "transactions">("signals");
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [notice, setNotice] = useState<string | undefined>(undefined);
 
-    const start = formatGoliathDate(ctx.startDate);
-    const end = formatGoliathDate(ctx.endDate);
-    const useGroups = ctx.type === "Group" ? 1 : 0;
-    const singleStore = ctx.type === "Store" ? 1 : 0;
-    const searchValue = ctx.type === "Group" ? ctx.lastGroup : ctx.lastStore;
+  const { start, end } = scopeArgs();
+  const hasData = explorerAllRows.length > 0;
 
-    getStoreCards(ctx.miktoUrl, ctx.userid, start, end, useGroups, searchValue, singleStore, ctx.apiKey)
-      .then((resp) => {
-        const j: StoreCardResp = resp.data;
-        if (j.error === 0) {
-          ctx.dispatch(actions.setNoStoresFound(j.stores.length === 0));
-          ctx.dispatch(actions.setStoreCards(j.stores));
-        }
-      })
-      .catch((err: JsonError) => {
-        toast.error(err.message);
-        ctx.dispatch(actions.setDataView(""));
-      })
-      .finally(() => ctx.dispatch(actions.setLoadingStores(false)));
+  /** Both stages in one go: the user picked a scope and a week, and the
+   *  exception they'd most likely want is derivable — making them choose it in
+   *  a second step would be asking a question we can already answer. */
+  const handleSearch = async () => {
+    setNotice(undefined);
+    const { types, fallback } = await runPreflight();
+    if (types.length === 0) {
+      setNotice("No exceptions were recorded for that store and week.");
+      return;
+    }
+    await runExplore(fallback);
+    setScreen("signals");
+    setSearchOpen(false);
   };
 
-  const handleStoreSelect = (store: StoreCard) => {
-    ctx.dispatch(actions.setSelectedStoreCard(store.storeid));
-    setSelectedStore(store);
+  /** Changing the exception refetches — unlike LP, each one is its own
+   *  `cashier_table` call, so this can't be a client-side filter. */
+  const handleExceptionChange = async (saleType: string) => {
+    setScreen("signals");
+    await runExplore(saleType);
   };
 
-  const handleViewCashiers = (store: StoreCard) => {
-    ctx.dispatch(actions.setCashierFilterType(""));
-    ctx.dispatch(actions.setSelectedStoreCard(store.storeid));
-    ctx.dispatch(actions.reQueryStepTwo());
-    ctx.dispatch(actions.setLoadingCashiers(true));
-    ctx.dispatch(actions.setDataView("cashiers"));
-    setSelectedCashier(null);
-
-    const start = formatGoliathDate(ctx.startDate);
-    const end = formatGoliathDate(ctx.endDate);
-    getCashierCards(ctx.miktoUrl, ctx.userid, start, end, 0, store.storeid, 1, ctx.apiKey)
-      .then((resp) => {
-        const j: CashierCardResp = resp.data;
-        if (j.error === 0) ctx.dispatch(actions.setCashierCards(j.stores));
-      })
-      .catch((err: JsonError) => {
-        ctx.dispatch(actions.setDataView("stores"));
-        toast.error("Error fetching cashiers: " + err.message);
-      })
-      .finally(() => ctx.dispatch(actions.setLoadingCashiers(false)));
-  };
-
-  const handleBackToStoreDetail = () => {
-    ctx.dispatch(actions.setDataView("stores"));
-    setSelectedCashier(null);
-  };
-
-  const hasData = ctx.storeCards.length > 0 || ctx.loadingStores;
-
-  // Initial search — full-screen SearchCard
-  if (!hasData) {
+  if (!hasData || searchOpen) {
     return (
-      <SearchCard
-        title="Cashier exceptions"
-        description="Select a store or group and date range to view cashier exception activity."
-        buttonLabel="Load exceptions"
-        onSearch={getSCards}
-        loading={ctx.loadingStores}
-        loadingMessage="Finding cashier activity..."
-      />
+      <div className="h-[calc(100dvh-3rem)] overflow-y-auto">
+        <div className="mx-4 pt-4 pb-2">
+          <SearchCard
+            top
+            title="Cashiers"
+            description="Pick a store or group and a week."
+            buttonLabel="Find exceptions"
+            singleDate
+            onSearch={handleSearch}
+            loading={explorerLoading}
+            loadingMessage={explorerMessage || "Finding exceptions..."}
+            notice={notice}
+            onBack={hasData ? () => setSearchOpen(false) : undefined}
+          />
+        </div>
+      </div>
     );
   }
 
-  return (
-    <div className="h-[calc(100vh-3rem)] overflow-hidden flex flex-col bg-custom-white">
-      {/* Transactions screen */}
-      {ctx.dataView === "transactions" ? (
-        <TransactionsMobileScreen
-          onBack={() => ctx.dispatch(actions.setDataView(selectedCashier ? "cashiers" : "stores"))}
-          onOpenSearch={() => setSearchModalOpen(true)}
-          cashierName={selectedCashier?.cashier_name}
-          storeName={selectedStore?.store_name}
-        />
-      ) : ctx.dataView === "cashiers" && selectedCashier ? (
-        <CashierOverviewMobile
-          cashier={selectedCashier}
-          onBack={() => setSelectedCashier(null)}
-          onOpenSearch={() => setSearchModalOpen(true)}
-        />
-      ) : ctx.dataView === "cashiers" ? (
-        <CashiersMobileList
-          selectedCashier={selectedCashier}
-          onCashierSelect={setSelectedCashier}
-          onBackToStoreDetail={handleBackToStoreDetail}
-          onOpenSearch={() => setSearchModalOpen(true)}
-          store={selectedStore}
-        />
-      ) : ctx.dataView === "stores" && selectedStore ? (
-        <StoreOverviewMobile
-          store={selectedStore}
-          onBack={() => setSelectedStore(null)}
-          onViewCashiers={() => handleViewCashiers(selectedStore)}
-          onOpenSearch={() => setSearchModalOpen(true)}
-        />
-      ) : (
-        <StoresMobile
-          onStoreSelect={handleStoreSelect}
-          onOpenSearch={() => setSearchModalOpen(true)}
-        />
-      )}
+  if (screen === "transactions") {
+    return <SignalTransactionsMobile onBack={() => setScreen("signals")} />;
+  }
 
-      {/* Re-search overlay */}
-      {searchModalOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-          onClick={() => setSearchModalOpen(false)}
-        >
-          <div className="w-full max-w-sm mx-4" onClick={(e) => e.stopPropagation()}>
-            <SearchCard
-              title="Cashier exceptions"
-              description="Select a store or group and date range to view cashier exception activity."
-              buttonLabel="Load exceptions"
-              onSearch={() => { setSearchModalOpen(false); getSCards(); }}
-              loading={ctx.loadingStores}
-              loadingMessage="Finding cashier activity..."
-            />
-          </div>
-        </div>
-      )}
-    </div>
+  return (
+    <SignalListMobile
+      saleTypes={explorerSaleTypes}
+      onExceptionChange={handleExceptionChange}
+      onSelectSignal={() => setScreen("transactions")}
+      onSearch={() => setSearchOpen(true)}
+      start={start}
+      end={end}
+    />
   );
 };
 

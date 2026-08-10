@@ -32,7 +32,9 @@ interface Props {
    *  Prevention, which grades against each cashier's own baseline rather
    *  than a number the user dials in. */
   threshold?: ReactNode;
-  info: { title: string; purpose: string; glossary: InfoGlossaryEntry[] };
+  /** Optional: a page with no `*_INFO` content hides the "?" rather than
+   *  opening an empty card. Cashiers has none yet. */
+  info?: { title: string; purpose: string; glossary: InfoGlossaryEntry[] };
 }
 
 const MobilePerfHeader = ({
@@ -90,14 +92,16 @@ const MobilePerfHeader = ({
               {threshold}
             </div>
           )}
-          <InfoButton
-            onClick={() => setInfoOpen((prev) => !prev)}
-            title={`About ${pageName}`}
-          />
+          {info && (
+            <InfoButton
+              onClick={() => setInfoOpen((prev) => !prev)}
+              title={`About ${pageName}`}
+            />
+          )}
         </div>
       </div>
 
-      {infoOpen && (
+      {infoOpen && info && (
         <InfoPopover
           title={info.title}
           purpose={info.purpose}
