@@ -442,7 +442,7 @@ const TransactionsMobile = ({ onBack }: Props) => {
                 No line items found.
               </div>
             ) : (
-              <Transaction trans={receipt} />
+              <Transaction trans={receipt} compact />
             )}
           </div>
         </BottomSheet>
