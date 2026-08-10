@@ -4,6 +4,9 @@ import type {
   CashierDetails,
 } from "../../interfaces";
 import type { Severity } from "../../utils/severity";
+// Re-exported so LP's existing imports keep working; the helper itself is
+// shared with Cashiers now. See utils/saleTypes.
+export { pickDefaultSaleType } from "../../utils/saleTypes";
 
 export type CashierSeverity = "critical" | "watch" | "ok" | "ungraded";
 
@@ -34,42 +37,6 @@ export const weekRangeFilename = (singleDate: string): string =>
   `${weekStartDate(singleDate)}–${singleDate}`;
 
 // ── Store-level severity (LPStorePanel + LPTransactionPanel header) ─────────
-
-/** Exception types that are valid but usually come back empty. Never the
- *  auto-selected landing tab unless nothing else was returned — landing on one
- *  makes a working page look broken before the user has touched anything. */
-const DEPRIORITIZED_DEFAULTS = ["Backup"];
-
-/** Preferred landing tabs, best first. Matched as normalized prefixes rather
- *  than exact strings so "Refund"/"Refunded" and "Void"/"Voided" both hit —
- *  the backend's exact wording isn't guaranteed, and a near-miss here would
- *  silently fall through to the generic scan instead of erroring. */
-const PREFERRED_DEFAULTS = ["refund", "void"];
-
-const normalizeSaleType = (saleType: string) =>
-  saleType.toLowerCase().replace(/[^a-z]/g, "");
-
-/** The exception type to land on after a search. Description and Tender have
- *  no tab, so selecting them would leave nothing highlighted. */
-export const pickDefaultSaleType = <T extends { sale_type: string }>(
-  saleTypes: T[],
-): T | undefined => {
-  const visible = saleTypes.filter(
-    (st) => st.sale_type !== "Description" && st.sale_type !== "Tender",
-  );
-
-  for (const preferred of PREFERRED_DEFAULTS) {
-    const match = visible.find((st) =>
-      normalizeSaleType(st.sale_type).startsWith(preferred),
-    );
-    if (match) return match;
-  }
-
-  return (
-    visible.find((st) => !DEPRIORITIZED_DEFAULTS.includes(st.sale_type)) ??
-    visible[0]
-  );
-};
 
 export const isNoDollarType = (saleType: string) =>
   saleType.toLowerCase().replace(/[^a-z]/g, "") === "nosale";
