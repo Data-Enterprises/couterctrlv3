@@ -55,6 +55,12 @@ export interface RecentLookup {
   productCode: string;
   description: string;
   marginPct: number | null;
+  /** The window's totals and unit cost as of the lookup, so the recent list
+   *  can carry the same columns as the item's own breakdown rather than just
+   *  asserting a margin. */
+  qty: number;
+  revenue: number;
+  unitCost: number;
 }
 
 export type QueueItemStatus = "queued" | "loading" | "loaded" | "error";
@@ -285,7 +291,10 @@ const itemLookupSlice = createSlice({
     setLookupStoreNumbers: (state, action: PayloadAction<string[]>) => {
       state.availableStoreNumbers = action.payload;
     },
-    setLookupSelectedStoreNumber: (state, action: PayloadAction<string | null>) => {
+    setLookupSelectedStoreNumber: (
+      state,
+      action: PayloadAction<string | null>,
+    ) => {
       state.selectedStoreNumber = action.payload;
     },
   },

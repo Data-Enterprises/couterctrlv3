@@ -34,7 +34,9 @@ const DevUpcScanner = ({ handleScan, retryKey }: DevUpcScannerProps) => {
           d.label.toLowerCase().includes("environment") ||
           d.label.toLowerCase().includes("rear"),
       );
-      const selectedDeviceId = backCamera ? backCamera.deviceId : devices[1]?.deviceId;
+      const selectedDeviceId = backCamera
+        ? backCamera.deviceId
+        : devices[1]?.deviceId;
       if (selectedDeviceId) dispatch(setDeviceId(selectedDeviceId));
     }
   }, [devices]);
@@ -74,7 +76,11 @@ const DevUpcScanner = ({ handleScan, retryKey }: DevUpcScannerProps) => {
           Quagga.start();
           dispatch(setPause(false));
         } else {
-          dispatch(setError("Couldn't access the camera. Enter the code below instead."));
+          dispatch(
+            setError(
+              "Couldn't access the camera. Enter the code below instead.",
+            ),
+          );
         }
       },
     );
@@ -96,8 +102,20 @@ const DevUpcScanner = ({ handleScan, retryKey }: DevUpcScannerProps) => {
   }, [state.deviceId, retryKey]);
 
   return (
-    <div style={{ position: "relative", background: "#1a1a1a", borderRadius: 12, height: 200, overflow: "hidden" }}>
-      <div ref={ref} className="dev-scanner-container" style={{ position: "absolute", inset: 0 }} />
+    <div
+      style={{
+        position: "relative",
+        background: "#1a1a1a",
+        borderRadius: 12,
+        height: 200,
+        overflow: "hidden",
+      }}
+    >
+      <div
+        ref={ref}
+        className="dev-scanner-container"
+        style={{ position: "absolute", inset: 0 }}
+      />
       <div
         style={{
           position: "absolute",
@@ -113,7 +131,9 @@ const DevUpcScanner = ({ handleScan, retryKey }: DevUpcScannerProps) => {
       />
       <div className="absolute bottom-2.5 left-0 right-0 flex items-center justify-center gap-1.5">
         <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-        <span className="text-[11px] text-custom-white/85">Scanning for a barcode</span>
+        <span className="text-[11px] text-custom-white/85">
+          Scanning for a barcode
+        </span>
       </div>
     </div>
   );

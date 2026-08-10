@@ -11,7 +11,10 @@ import {
   setLookupSelectedStoreNumber,
 } from "../../../../features/itemLookupSlice";
 import { computeMargin } from "../lookupMetrics";
-import { scopeToStoreNumber, storeNumbersIn } from "../../../../utils/storeIdentity";
+import {
+  scopeToStoreNumber,
+  storeNumbersIn,
+} from "../../../../utils/storeIdentity";
 import type { ItemLookupHistory } from "../../../../features/itemLookupSlice";
 
 // The lookup is fetched by storeid, so a co-located storeid returns both
@@ -30,7 +33,9 @@ const deriveTotals = (
     totalSales,
     totalQty,
     daysSold,
-    marginPct: computeMargin(rows, totalSales, totalQty).marginPct,
+    ...(({ marginPct, unitCost }) => ({ marginPct, unitCost }))(
+      computeMargin(rows, totalSales, totalQty),
+    ),
   };
 };
 
@@ -61,7 +66,9 @@ export const useLookupQueue = () => {
 
   const runBatch = useCallback(
     async (upcs: string[], storeId: number) => {
-      dispatch(setLookupQueue(upcs.map((upc) => ({ upc, status: "queued" as const }))));
+      dispatch(
+        setLookupQueue(upcs.map((upc) => ({ upc, status: "queued" as const }))),
+      );
       dispatch(setLookupSelectedUpc(null));
       dispatch(setLookupStoreNumbers([]));
       dispatch(setLookupSelectedStoreNumber(null));
@@ -81,7 +88,13 @@ export const useLookupQueue = () => {
         dispatch(updateLookupQueueItem({ upc, patch: { status: "loading" } }));
 
         try {
-          const resp = await getItemLookupSingleStore(url, token, upc, storeId, 14);
+          const resp = await getItemLookupSingleStore(
+            url,
+            token,
+            upc,
+            storeId,
+            14,
+          );
           const j = resp.data;
           if (j.error === 0) {
             rawHistoryRef.current[upc] = j.history;
@@ -113,6 +126,9 @@ export const useLookupQueue = () => {
                 productCode: j.product_code,
                 description: j.description,
                 marginPct: totals.marginPct,
+                qty: totals.totalQty,
+                revenue: totals.totalSales,
+                unitCost: totals.unitCost,
               }),
             );
             if (!selectionMadeRef.current) {
@@ -126,7 +142,10 @@ export const useLookupQueue = () => {
             dispatch(
               updateLookupQueueItem({
                 upc,
-                patch: { status: "error", errorMessage: "There was an issue finding this item" },
+                patch: {
+                  status: "error",
+                  errorMessage: "There was an issue finding this item",
+                },
               }),
             );
           }
@@ -135,7 +154,10 @@ export const useLookupQueue = () => {
           dispatch(
             updateLookupQueueItem({
               upc,
-              patch: { status: "error", errorMessage: "There was an issue finding this item" },
+              patch: {
+                status: "error",
+                errorMessage: "There was an issue finding this item",
+              },
             }),
           );
         }
@@ -144,7 +166,9 @@ export const useLookupQueue = () => {
       };
 
       await Promise.all(
-        Array.from({ length: Math.min(MAX_CONCURRENT, upcs.length) }, () => next()),
+        Array.from({ length: Math.min(MAX_CONCURRENT, upcs.length) }, () =>
+          next(),
+        ),
       );
 
       if (fault) toast.error(fault);
