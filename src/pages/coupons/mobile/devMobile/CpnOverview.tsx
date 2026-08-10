@@ -1,13 +1,13 @@
 import { useMemo, useState } from "react";
-import {
-  MagnifyingGlassIcon,
-  ChevronLeftIcon,
-  ArrowDownTrayIcon,
-} from "@heroicons/react/20/solid";
+import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import { formatCurrency2 } from "../../../../utils";
 import type { CouponItem } from "../../../../interfaces";
 import type { GroupTab } from "./CouponsMobileDev";
+import MobilePerfHeader from "../../../../components/mobile/MobilePerfHeader";
+import HeaderIconButton from "../../../../components/HeaderIconButton";
+import { COUPONS_INFO } from "../../couponsInfo";
 import CpnExportSheet from "./CpnExportSheet";
+import CpnSortToggle from "./CpnSortToggle";
 import { sumCouponAmount } from "../../../../utils/couponValue";
 
 interface Props {
@@ -106,67 +106,28 @@ const CpnOverview = ({
 
   return (
     <div className="flex flex-col h-[calc(100dvh-3rem)] overflow-hidden">
-      <div
-        className="flex-shrink-0 px-3 pt-2 pb-2.5"
-        style={{ background: "#1e2a4a" }}
-      >
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex items-start gap-1.5 min-w-0">
-            <button
-              onClick={onBack}
-              className="text-custom-white/85 hover:text-custom-white transition-colors flex-shrink-0 mt-0.5"
-            >
-              <ChevronLeftIcon className="w-4 h-4" />
-            </button>
-            <div className="min-w-0">
-              <div className="text-[13px] font-semibold text-custom-white truncate">
-                {storeName}
-              </div>
-              <div className="text-[10px] mt-0.5 text-custom-white/85">
-                {dateRangeLabel}
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <div className="flex border border-custom-white/20 rounded overflow-hidden">
-              {(["amount", "qty"] as const).map((m) => (
-                <button
-                  key={m}
-                  onClick={() => onSortMetric(m)}
-                  className={`px-2 py-1 text-[10px] font-medium ${
-                    sortMetric === m
-                      ? "bg-custom-white/20 text-custom-white"
-                      : "text-custom-white/85"
-                  }`}
-                >
-                  {m === "amount" ? "Amt" : "Qty"}
-                </button>
-              ))}
-            </div>
-            <button
+      <MobilePerfHeader
+        pageName="Coupons"
+        storeName={storeName}
+        dateRange={dateRangeLabel}
+        onBack={onBack}
+        // Single-store searches have no store list behind them, so back already
+        // lands on the search card — a second button to the same place would
+        // just be noise.
+        onSearch={isGroup ? onSearch : undefined}
+        info={COUPONS_INFO}
+        actions={
+          <>
+            <CpnSortToggle value={sortMetric} onChange={onSortMetric} />
+            <HeaderIconButton
               onClick={() => setExportOpen(true)}
-              className="w-[28px] h-[28px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/85"
+              title="Export CSV"
             >
-              <ArrowDownTrayIcon className="w-4 h-4" />
-            </button>
-            {isGroup && (
-              <button
-                onClick={onSearch}
-                className="w-[28px] h-[28px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/85"
-              >
-                <MagnifyingGlassIcon className="w-4 h-4" />
-              </button>
-            )}
-          </div>
-        </div>
-        {/* <div className="flex items-baseline gap-3 mt-2 pt-1.5 border-t border-custom-white/[0.08]">
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-[10px] uppercase tracking-wide text-custom-white/85">Records</span>
-            <span className="text-[12px] font-semibold text-custom-white">{coupons.length}</span>
-          </div>
-          <span className="text-[10px] font-medium text-custom-white/85">{formatCurrency2(totalAmount)} total</span>
-        </div> */}
-      </div>
+              <ArrowDownTrayIcon className="w-3.5 h-3.5" />
+            </HeaderIconButton>
+          </>
+        }
+      />
 
       {/* KPI strip */}
       <div className="flex-shrink-0 grid grid-cols-4 bg-custom-white border-b border-gray-100">
@@ -207,8 +168,8 @@ const CpnOverview = ({
         ))}
       </div>
 
-      {/* Section list */}
-      <div className="flex-1 overflow-y-auto bg-gray-50">
+      {/* Section list — pb-14 clears the fixed bottom tab bar. */}
+      <div className="flex-1 overflow-y-auto bg-gray-50 pb-14">
         {sections.map(({ key, label, count, total }) => (
           <button
             key={key}

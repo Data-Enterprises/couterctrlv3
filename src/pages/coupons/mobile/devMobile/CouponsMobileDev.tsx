@@ -4,8 +4,15 @@ import { useCouponContext } from "../..";
 import { useCouponActions } from "../../hooks/useCouponActions";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 import { getCoupons } from "../../../../api/coupons";
-import { formatGoliathDate } from "../../../../utils";
-import type { CouponsResponse, CouponItem, JsonError } from "../../../../interfaces";
+import { getStoresAssignedToUserGroup } from "../../../../api/groups";
+import { setSelectedGroupStores } from "../../../../features/userSlice";
+import { formatGoliathDate, resolveStoreName } from "../../../../utils";
+import { applyStoreNumberToName } from "../../../../utils/storeIdentity";
+import type {
+  CouponsResponse,
+  CouponItem,
+  JsonError,
+} from "../../../../interfaces";
 import StorePicker from "../../../../components/storePicker/StorePicker";
 import DatePickers from "../../../../components/datePickers/DatePickers";
 import CpnStoreList from "./CpnStoreList";
@@ -18,7 +25,9 @@ type Screen = "entry" | "stores" | "overview" | "detail";
 
 const fmtSearchDate = (mdy: string) => {
   const [m, d, y] = mdy.split("/");
-  return new Date(`${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}T12:00:00`).toLocaleDateString("en-US", {
+  return new Date(
+    `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}T12:00:00`,
+  ).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
   });
@@ -30,13 +39,22 @@ const CouponsMobileDev = () => {
   const actions = useCouponActions();
   const toast = useToast();
   const selectedGroup = useAppSelector((s) => s.search.selectedGroup);
+  const userid = useAppSelector((s) => s.user.userid);
+  const assignedStores = useAppSelector((s) => s.user.assignedStores);
+  const groupStores = useAppSelector((s) => s.user.selectedGroupStores);
 
   const [screen, setScreen] = useState<Screen>("entry");
+  // null in group mode means "All stores" — the whole group, unscoped.
   const [selectedStoreId, setSelectedStoreId] = useState<number | null>(null);
   // Co-located stores share a storeid — the number is what picks the location.
-  const [selectedStoreNumber, setSelectedStoreNumber] = useState<string | null>(null);
+  const [selectedStoreNumber, setSelectedStoreNumber] = useState<string | null>(
+    null,
+  );
   const [selectedTab, setSelectedTab] = useState<GroupTab>("subdept");
-  const [selectedSection, setSelectedSection] = useState<{ key: string; label: string } | null>(null);
+  const [selectedSection, setSelectedSection] = useState<{
+    key: string;
+    label: string;
+  } | null>(null);
   const [sortMetric, setSortMetric] = useState<"amount" | "qty">("amount");
 
   useEffect(() => {
@@ -57,13 +75,39 @@ const CouponsMobileDev = () => {
     dispatch(actions.setCoupons([]));
     dispatch(actions.setIsFetching(true));
     dispatch(actions.setNoCouponsFound(false));
+    // A group search can return stores this user isn't personally assigned to.
+    // Desktop loads them here so store names resolve for those rows; without
+    // it mobile fell back to the coupon payload's own store_name.
+    if (ctx.type === "Group") {
+      getStoresAssignedToUserGroup(ctx.url, ctx.token, userid, ctx.lastGroup)
+        .then((resp) => {
+          if (resp.data.error === 0) {
+            dispatch(
+              setSelectedGroupStores(
+                resp.data.stores.filter((s: { active: boolean }) => s.active),
+              ),
+            );
+          } else {
+            toast.warn(resp.data.msg);
+          }
+        })
+        .catch(() => {});
+    }
     const useGroups = ctx.type === "Group" ? 1 : 0;
     const singleStore = ctx.type === "Store" ? 1 : 0;
     const searchValue = ctx.type === "Group" ? ctx.lastGroup : ctx.lastStore;
     const start = formatGoliathDate(ctx.startDate);
     const end = formatGoliathDate(ctx.endDate);
 
-    getCoupons(ctx.url, ctx.token, start, end, useGroups, singleStore, searchValue)
+    getCoupons(
+      ctx.url,
+      ctx.token,
+      start,
+      end,
+      useGroups,
+      singleStore,
+      searchValue,
+    )
       .then((resp) => {
         const j: CouponsResponse = resp.data;
         if (j.error !== 0) {
@@ -93,35 +137,68 @@ const CouponsMobileDev = () => {
     return ctx.coupons.filter(
       (c) =>
         c.storeid === selectedStoreId &&
-        (selectedStoreNumber === null || c.store_number === selectedStoreNumber),
+        (selectedStoreNumber === null ||
+          c.store_number === selectedStoreNumber),
     );
   }, [ctx.coupons, selectedStoreId, selectedStoreNumber]);
 
   const sectionCoupons = useMemo<CouponItem[]>(() => {
     if (!selectedSection) return filteredCoupons;
     if (selectedTab === "subdept")
-      return filteredCoupons.filter((c) => c.sub_department_description === selectedSection.key);
+      return filteredCoupons.filter(
+        (c) => c.sub_department_description === selectedSection.key,
+      );
     if (selectedTab === "date")
-      return filteredCoupons.filter((c) => c.sale_date.split("T")[0] === selectedSection.key);
+      return filteredCoupons.filter(
+        (c) => c.sale_date.split("T")[0] === selectedSection.key,
+      );
     if (selectedTab === "cashier")
-      return filteredCoupons.filter((c) => (c.cashier_name || "unknown") === selectedSection.key);
+      return filteredCoupons.filter(
+        (c) => (c.cashier_name || "unknown") === selectedSection.key,
+      );
     return filteredCoupons;
   }, [filteredCoupons, selectedSection, selectedTab]);
 
+  // Names come from assignedStores/groupStores, never the coupon payload, then
+  // get the on-screen location's number written back in — co-located stores
+  // share one storeid and therefore one assignedStores record.
   const storeName = useMemo(() => {
-    if (isGroup) {
-      if (selectedStoreId !== null) {
-        return ctx.coupons.find((c) => c.storeid === selectedStoreId)?.store_name ?? String(selectedStoreId);
-      }
-      return (selectedGroup as any)?.group_name ?? "Group";
-    }
-    return ctx.coupons[0]?.store_name ?? "";
-  }, [ctx.coupons, selectedStoreId, isGroup, selectedGroup]);
+    // Group mode with nothing picked is the "All stores" view, so the group is
+    // the subject. A single-store search has no store list to pick from, so the
+    // scope is whatever was searched.
+    const storeid = selectedStoreId ?? (isGroup ? null : Number(ctx.lastStore));
+    if (storeid === null) return (selectedGroup as any)?.group_name ?? "Group";
 
-  const sectionSub = useMemo(() => {
-    const tabLabel = selectedTab === "subdept" ? "Sub dept" : selectedTab === "date" ? "Date" : "Cashier";
-    return `${tabLabel} · ${dateRangeLabel}`;
-  }, [selectedTab, dateRangeLabel]);
+    const resolved = resolveStoreName(assignedStores, groupStores, storeid);
+    const numbers = [
+      ...new Set(
+        ctx.coupons
+          .filter((c) => c.storeid === storeid)
+          .map((c) => c.store_number),
+      ),
+    ];
+    return applyStoreNumberToName(
+      resolved,
+      selectedStoreNumber ?? "",
+      selectedStoreNumber ? numbers : [],
+    );
+  }, [
+    ctx.coupons,
+    ctx.lastStore,
+    selectedStoreId,
+    selectedStoreNumber,
+    isGroup,
+    selectedGroup,
+    assignedStores,
+    groupStores,
+  ]);
+
+  const tabLabel =
+    selectedTab === "subdept"
+      ? "Sub dept"
+      : selectedTab === "date"
+        ? "Date"
+        : "Cashier";
 
   if (screen === "stores") {
     return (
@@ -174,7 +251,8 @@ const CouponsMobileDev = () => {
       <CpnSectionDetail
         coupons={sectionCoupons}
         sectionLabel={selectedSection.label}
-        sectionSub={sectionSub}
+        tabLabel={tabLabel}
+        dateRangeLabel={dateRangeLabel}
         sortMetric={sortMetric}
         onBack={() => setScreen("overview")}
       />

@@ -1,15 +1,16 @@
 import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import type { AllOrder } from "../../../interfaces";
-import type { SelectedOrderKey } from "../../../features/ordersSlice";
+import type { SelectedOrderKey, SelectedOrder } from "../../../features/ordersSlice";
 import type { Store } from "../../../interfaces";
-import { formatCurrency2 } from "../../../utils";
+import { formatCurrency2, resolveStoreName } from "../../../utils";
 
 interface Props {
   orders: AllOrder[];
   selectedKey: SelectedOrderKey;
-  selectedOrderId: number;
-  selectedStoreId?: number;
+  /** The full identity — id alone doesn't identify an order across stores. */
+  selectedOrder: NonNullable<SelectedOrder>;
   assignedStores: Store[];
+  groupStores: Store[];
   onExport: () => void;
 }
 
@@ -23,18 +24,28 @@ const chipStyle = {
   boxShadow: "inset 0 1px 2px rgba(30,42,74,0.08)",
 };
 
-const OrdersLineItemsScreen = ({ orders, selectedKey, selectedOrderId, selectedStoreId, assignedStores, onExport }: Props) => {
+const OrdersLineItemsScreen = ({ orders, selectedKey, selectedOrder, assignedStores, groupStores, onExport }: Props) => {
   // The order's own store, not selectedKey.storeids[0] — with "select all
   // stores" a selected order can belong to any store in the selection.
-  const storeid = selectedStoreId ?? selectedKey?.storeids[0];
-  const storeName = storeid !== undefined
-    ? (assignedStores.find((s) => s.storeid === storeid)?.store_name ?? `Store ${storeid}`)
-    : "";
-
-  const items = [...orders.filter((o) => o.order_id === selectedOrderId)].sort(
-    (a, b) => a.line_number - b.line_number
+  const storeName = resolveStoreName(
+    assignedStores,
+    groupStores,
+    selectedOrder.storeid,
   );
 
+  // Scoped to the order's store *and* location, matching OrderReportPanel's
+  // orderItems. Filtering on order_id alone pulled in every other store's
+  // lines that happened to share the number, inflating both totals below.
+  const items = [
+    ...orders.filter(
+      (o) =>
+        o.order_id === selectedOrder.orderId &&
+        o.storeid === selectedOrder.storeid &&
+        o.storenumber === selectedOrder.storenumber,
+    ),
+  ].sort((a, b) => a.line_number - b.line_number);
+
+  const orderDate = items[0]?.order_date ?? selectedKey?.order_date ?? "";
   const totalExtRetail = items.reduce((s, o) => s + (o.e_ret ?? 0), 0);
   const totalCost = items.reduce((s, o) => s + (o.cogs ?? 0), 0);
 
@@ -45,8 +56,12 @@ const OrdersLineItemsScreen = ({ orders, selectedKey, selectedOrderId, selectedS
         <div className="flex items-start justify-between gap-2 mb-1">
           <div>
             <div className="text-[13px] font-medium text-[#1e2a4a]">{storeName}</div>
+            {/* The order's own date, not selectedKey.order_date — that's the
+                start of the fetched range, and "select all stores" with no
+                date filter spans the whole search window. */}
             <div className="text-[11px] text-content mt-0.5">
-              #{selectedOrderId}{selectedKey ? ` · ${fmtDate(selectedKey.order_date)}` : ""}
+              #{selectedOrder.orderId}
+              {orderDate ? ` · ${fmtDate(orderDate)}` : ""}
             </div>
           </div>
           <button

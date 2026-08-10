@@ -1,10 +1,11 @@
 import { useMemo, useState } from "react";
 import {
-  ChevronLeftIcon,
   ChevronRightIcon,
   ChevronDownIcon,
   ArrowDownTrayIcon,
 } from "@heroicons/react/20/solid";
+import MobilePerfHeader from "../../../../components/mobile/MobilePerfHeader";
+import { COUPONS_INFO } from "../../couponsInfo";
 import { useAppSelector } from "../../../../hooks";
 import { useAppDispatch } from "../../../../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
@@ -18,7 +19,9 @@ import { couponValueOf, sumCouponAmount } from "../../../../utils/couponValue";
 interface Props {
   coupons: CouponItem[];
   sectionLabel: string;
-  sectionSub: string;
+  /** "Sub dept" | "Date" | "Cashier" — the tab this section came from. */
+  tabLabel: string;
+  dateRangeLabel: string;
   sortMetric: "amount" | "qty";
   onBack: () => void;
 }
@@ -49,7 +52,8 @@ const buildSaleId = (row: CouponItem) => {
 const CpnSectionDetail = ({
   coupons,
   sectionLabel,
-  sectionSub,
+  tabLabel,
+  dateRangeLabel,
   sortMetric,
   onBack,
 }: Props) => {
@@ -68,9 +72,13 @@ const CpnSectionDetail = ({
   const aggRows = useMemo((): AggRow[] => {
     const map = new Map<string, AggRow>();
     coupons.forEach((c) => {
-      const key = c.product_code
-        ? String(Math.round(Number(c.product_code)))
-        : c.product_description;
+      // `!= null`, not truthiness — matching CouponDetailPanel. A product_code
+      // of 0 is a real code; a falsy check silently regroups those rows under
+      // their description instead, splitting one UPC across two rows.
+      const key =
+        c.product_code != null
+          ? String(Math.round(Number(c.product_code)))
+          : c.product_description;
       if (!map.has(key)) {
         map.set(key, {
           product_code: key,
@@ -199,28 +207,15 @@ const CpnSectionDetail = ({
 
   return (
     <div className="flex flex-col h-[calc(100dvh-3rem)] overflow-hidden bg-gray-50">
-      {/* Header */}
-      <div
-        className="flex-shrink-0 px-3 pt-2 pb-2.5"
-        style={{ background: "#1e2a4a" }}
-      >
-        <div className="flex items-center gap-2">
-          <button
-            onClick={onBack}
-            className="text-custom-white/85 hover:text-custom-white transition-colors flex-shrink-0 -ml-1"
-          >
-            <ChevronLeftIcon className="w-5 h-5" />
-          </button>
-          <div>
-            <div className="text-[13px] font-semibold text-custom-white">
-              {sectionLabel}
-            </div>
-            <div className="text-[10px] mt-0.5 text-custom-white/85">
-              {sectionSub}
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* The section is the subject here, so it takes row one's slot; the tab
+          it came from is the "page" you are inside. */}
+      <MobilePerfHeader
+        pageName={tabLabel}
+        storeName={sectionLabel}
+        dateRange={dateRangeLabel}
+        onBack={onBack}
+        info={COUPONS_INFO}
+      />
 
       {/* KPI strip */}
       <div className="flex-shrink-0 grid grid-cols-4 bg-custom-white border-b border-gray-100">
@@ -244,11 +239,9 @@ const CpnSectionDetail = ({
         ))}
       </div>
 
-      {/* Product rows */}
-      <div
-        className="flex-1 overflow-y-auto"
-        style={{ paddingBottom: "env(safe-area-inset-bottom, 16px)" }}
-      >
+      {/* Product rows — pb-14, not the safe-area inset: the inset reserves
+          about 34px, and the tab bar covering this list is 56px. */}
+      <div className="flex-1 overflow-y-auto pb-14">
         {aggRows.map((agg) => {
           const isExp = expanded.has(agg.product_code);
           return (

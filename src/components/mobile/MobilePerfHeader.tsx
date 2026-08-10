@@ -1,19 +1,27 @@
 import { useState, type ReactNode } from "react";
-import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
+import {
+  MagnifyingGlassIcon,
+  ChevronLeftIcon,
+} from "@heroicons/react/20/solid";
 import InfoButton from "../InfoButton";
+import HeaderIconButton from "../HeaderIconButton";
 import InfoPopover, { type InfoGlossaryEntry } from "../InfoPopover";
 
 /**
- * The navy header on the single-store Performance pages — Sub Dept Margins,
- * Vendors and Categories.
+ * The navy header shared by every mobile report — the Performance pages (Sub
+ * Dept Margins, Vendors, Categories, Sales, Cashiers) and the Data pages
+ * (Orders, Receivers, Coupons).
  *
  * Two rows:
- *   1. the store on the left, the week it covers on the right
- *   2. re-search and the page name on the left, threshold and "?" on the right
+ *   1. the store or scope on the left, the range it covers on the right
+ *   2. back / re-search and the page name on the left, page controls,
+ *      threshold and "?" on the right
  *
- * The page name is the point. These three pages are now laid out identically —
+ * The page name is the point. The Performance pages are laid out identically —
  * same KPI strip, same day cards, same rows — so without a name in the chrome
- * there was nothing on screen telling you which one you were looking at.
+ * there was nothing on screen telling you which one you were looking at. The
+ * Data pages have the same problem one level down: their drill-downs are all
+ * "a list of things under a heading", so each screen names what it is showing.
  *
  * The "?" opens the same `InfoPopover` desktop uses, from the same per-page
  * content file, which is also what replaced the severity legend that used to
@@ -22,18 +30,29 @@ import InfoPopover, { type InfoGlossaryEntry } from "../InfoPopover";
  */
 
 interface Props {
-  /** e.g. "Vendors" — the right end of row one. */
+  /** e.g. "Vendors" — the left of row two. */
   pageName: string;
   /** e.g. "Aug 4 – Aug 10". */
   dateRange: string;
   storeName: string;
-  onSearch: () => void;
+  /** Omitted where re-searching isn't reachable from this screen — a Coupons
+   *  drill-down leaves via back, and offering both is the same destination
+   *  twice. */
+  onSearch?: () => void;
+  /** Drill-down screens only. Renders the chevron ahead of the search button,
+   *  in the order the two are used. */
+  onBack?: () => void;
+  /** Page-specific controls — a sort toggle, an export button. Sits left of
+   *  the threshold and the "?" so those two stay in the same place on every
+   *  page. */
+  actions?: ReactNode;
   /** The page's own `ThresholdFilter`, units and all. Omitted on Loss
    *  Prevention, which grades against each cashier's own baseline rather
-   *  than a number the user dials in. */
+   *  than a number the user dials in, and on the Data pages, which don't
+   *  grade at all. */
   threshold?: ReactNode;
   /** Optional: a page with no `*_INFO` content hides the "?" rather than
-   *  opening an empty card. Cashiers has none yet. */
+   *  opening an empty card. */
   info?: { title: string; purpose: string; glossary: InfoGlossaryEntry[] };
 }
 
@@ -42,6 +61,8 @@ const MobilePerfHeader = ({
   dateRange,
   storeName,
   onSearch,
+  onBack,
+  actions,
   threshold,
   info,
 }: Props) => {
@@ -65,23 +86,27 @@ const MobilePerfHeader = ({
         </span>
       </div>
 
-      {/* Row 2 — re-search and the page you're on, then threshold and "?" */}
+      {/* Row 2 — back / re-search and the page you're on, then the page's own
+          controls, threshold and "?" */}
       <div className="flex items-center justify-between gap-2 mt-2">
         <div className="flex items-center gap-2 min-w-0">
-          <button
-            onClick={onSearch}
-            title="New search"
-            aria-label="New search"
-            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/75 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
-          >
-            <MagnifyingGlassIcon className="w-3.5 h-3.5" />
-          </button>
+          {onBack && (
+            <HeaderIconButton onClick={onBack} title="Back">
+              <ChevronLeftIcon className="w-3.5 h-3.5" />
+            </HeaderIconButton>
+          )}
+          {onSearch && (
+            <HeaderIconButton onClick={onSearch} title="New search">
+              <MagnifyingGlassIcon className="w-3.5 h-3.5" />
+            </HeaderIconButton>
+          )}
           <span className="text-[12px] font-semibold text-custom-white truncate">
             {pageName}
           </span>
         </div>
 
         <div className="flex items-center gap-2 flex-shrink-0">
+          {actions}
           {threshold && (
             <div className="flex items-center gap-1.5">
               {/* Generic label, matching desktop — the page name beside it
