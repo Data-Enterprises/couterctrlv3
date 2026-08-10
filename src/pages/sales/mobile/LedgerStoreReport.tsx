@@ -924,7 +924,7 @@ const LedgerStoreReport = () => {
         />
 
         {/* Signal list */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto pb-14">
           {reportLoading ? (
             <div className="flex items-center justify-center py-16 text-[12px] text-content/85">
               Loading…

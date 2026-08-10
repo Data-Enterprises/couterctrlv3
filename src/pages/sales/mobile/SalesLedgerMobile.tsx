@@ -113,7 +113,7 @@ const SalesLedgerMobile = () => {
       {!hasSearched || (!ledgerLoading && weeklySales.length === 0) ? (
         <SearchCard
           top
-          title="Weekly Performance"
+          title="Weekly Sales"
           description="Select a store or group and end date."
           buttonLabel="Load stores"
           singleDate

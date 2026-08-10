@@ -28,8 +28,10 @@ interface Props {
   dateRange: string;
   storeName: string;
   onSearch: () => void;
-  /** The page's own `ThresholdFilter`, units and all. */
-  threshold: ReactNode;
+  /** The page's own `ThresholdFilter`, units and all. Omitted on Loss
+   *  Prevention, which grades against each cashier's own baseline rather
+   *  than a number the user dials in. */
+  threshold?: ReactNode;
   info: { title: string; purpose: string; glossary: InfoGlossaryEntry[] };
 }
 
@@ -78,12 +80,16 @@ const MobilePerfHeader = ({
         </div>
 
         <div className="flex items-center gap-2 flex-shrink-0">
-          <div className="flex items-center gap-1.5">
-            {/* Generic label, matching desktop — the page name beside it
-                already says what is being graded. */}
-            <span className="text-[10px] text-custom-white/85">Threshold</span>
-            {threshold}
-          </div>
+          {threshold && (
+            <div className="flex items-center gap-1.5">
+              {/* Generic label, matching desktop — the page name beside it
+                  already says what is being graded. */}
+              <span className="text-[10px] text-custom-white/85">
+                Threshold
+              </span>
+              {threshold}
+            </div>
+          )}
           <InfoButton
             onClick={() => setInfoOpen((prev) => !prev)}
             title={`About ${pageName}`}

@@ -317,15 +317,15 @@ const TransactionsMobile = ({ onBack }: Props) => {
       {/* {peerAvgs && (
         <>
           <div className="flex-shrink-0 px-3 py-[9px] bg-gray-100 border-b border-gray-200 flex items-center">
-            <span className="text-[9px] font-semibold uppercase tracking-wide text-content/85">Store Averages</span>
+            <span className="text-[10px] font-semibold uppercase tracking-wide text-content/85">Store Averages</span>
           </div>
           <div className="flex-shrink-0 grid divide-x divide-gray-100 bg-custom-white border-b border-gray-100"
             style={{ gridTemplateColumns: noSale ? "repeat(2, 1fr)" : "repeat(4, 1fr)" }}
           >
-            <div className="px-3 py-2"><div className="text-[9px] font-medium uppercase tracking-wide text-content/85">Trans</div><div className="text-[12px] font-semibold text-content mt-0.5">{Math.round(peerAvgs.trans).toLocaleString()}</div></div>
-            <div className="px-3 py-2"><div className="text-[9px] font-medium uppercase tracking-wide text-content/85">Items</div><div className="text-[12px] font-semibold text-content mt-0.5">{Math.round(peerAvgs.qty).toLocaleString()}</div></div>
-            {!noSale && <div className="px-3 py-2"><div className="text-[9px] font-medium uppercase tracking-wide text-content/85">Total</div><div className="text-[12px] font-semibold text-content mt-0.5">{formatCurrency2(Math.abs(peerAvgs.sales))}</div></div>}
-            {!noSale && <div className="px-3 py-2"><div className="text-[9px] font-medium uppercase tracking-wide text-content/85">Avg ticket</div><div className="text-[12px] font-semibold text-content mt-0.5">{formatCurrency2(Math.abs(peerAvgs.avgTicket))}</div></div>}
+            <div className="px-3 py-2"><div className="text-[10px] font-medium uppercase tracking-wide text-content/85">Trans</div><div className="text-[12px] font-semibold text-content mt-0.5">{Math.round(peerAvgs.trans).toLocaleString()}</div></div>
+            <div className="px-3 py-2"><div className="text-[10px] font-medium uppercase tracking-wide text-content/85">Items</div><div className="text-[12px] font-semibold text-content mt-0.5">{Math.round(peerAvgs.qty).toLocaleString()}</div></div>
+            {!noSale && <div className="px-3 py-2"><div className="text-[10px] font-medium uppercase tracking-wide text-content/85">Total</div><div className="text-[12px] font-semibold text-content mt-0.5">{formatCurrency2(Math.abs(peerAvgs.sales))}</div></div>}
+            {!noSale && <div className="px-3 py-2"><div className="text-[10px] font-medium uppercase tracking-wide text-content/85">Avg ticket</div><div className="text-[12px] font-semibold text-content mt-0.5">{formatCurrency2(Math.abs(peerAvgs.avgTicket))}</div></div>}
           </div>
         </>
       )} */}
@@ -388,7 +388,7 @@ const TransactionsMobile = ({ onBack }: Props) => {
       </div>
 
       {/* Rows */}
-      <div className="flex-1 overflow-y-auto thin-scrollbar">
+      <div className="flex-1 overflow-y-auto pb-14 thin-scrollbar">
         {lp.fetchingCashierTransactions && (
           <div className="flex items-center justify-center py-16 text-[12px] text-content/85">
             {lp.transactionLoadingMessage || "Loading…"}

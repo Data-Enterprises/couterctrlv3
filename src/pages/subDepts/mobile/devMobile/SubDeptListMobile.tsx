@@ -274,7 +274,7 @@ const SubDeptListMobile = ({
 
       <SevChips active={sevFilter} counts={counts} onChange={setSevFilter} />
 
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto pb-14">
         {visible.map(({ sd, grade, tier }) => (
           <MobileSignalRow
             key={sd.id}
