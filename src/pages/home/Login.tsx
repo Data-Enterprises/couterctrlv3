@@ -13,6 +13,7 @@ import {
   setFetchingCredentials,
   setProdToken,
   setDevToken,
+  SHOW_ENV_TOGGLE,
 } from "../../features/appSlice";
 import {
   setUsername,
@@ -117,14 +118,18 @@ const Login = () => {
           if (incoming.length) setPosts(incoming);
         });
       })
-      .catch(() => { /* bundled copy stands; never blank out the panel */ });
+      .catch(() => {
+        /* bundled copy stands; never blank out the panel */
+      });
   };
 
   /** Sign-in failures now render in the rail's alert region rather than a
    *  toast — a locked-out user needs the reason to persist while they retype. */
   /** "Remember me". Seeded from localStorage so the box reflects reality on
    *  arrival rather than defaulting to off next to a prefilled username. */
-  const [remember, setRemember] = useState<boolean>(() => !!readRememberedUsername());
+  const [remember, setRemember] = useState<boolean>(
+    () => !!readRememberedUsername(),
+  );
 
   // Prefill on landing. Runs once; if nothing is stored this is a no-op and
   // the field stays empty.
@@ -142,8 +147,9 @@ const Login = () => {
   };
 
   const [authError, setAuthError] = useState<string | null>(null);
-  const [invalidField, setInvalidField] =
-    useState<"username" | "password" | null>(null);
+  const [invalidField, setInvalidField] = useState<
+    "username" | "password" | null
+  >(null);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -176,7 +182,15 @@ const Login = () => {
         const j = resp.data;
         if (j.error == 0) {
           dispatch(setToken(j.access_token));
-          dispatch(setProdToken(j.access_token));
+          // Login runs against `context.url`, which is the dev API while
+          // SHOW_ENV_TOGGLE is off — so this token is a dev token, and it has
+          // to land in devToken or `useDevApi` (AccountSetupModal) carries an
+          // empty string and 401s for everyone below role 9.
+          dispatch(
+            context.devMode
+              ? setDevToken(j.access_token)
+              : setProdToken(j.access_token),
+          );
           dispatch(setFirstName(j.first_name));
           dispatch(setLastName(j.last_name));
           dispatch(setEmail(j.email));
@@ -189,14 +203,31 @@ const Login = () => {
           // is worth prefilling next time.
           if (remember) saveRememberedUsername(state.username);
           setUseImpersonation(0);
-          if (j.role === 9 || j.user_level >= 2) {
-            login(import.meta.env.VITE_API_URL_DEV, state.username, state.password, 0)
-              .then((devResp) => {
-                if (devResp.data.error === 0) {
-                  dispatch(setDevToken(devResp.data.access_token));
+          // The other environment's token, purely so the LIVE/PREVIEW switch
+          // works the instant it's offered. Skipped entirely while
+          // SHOW_ENV_TOGGLE is off: with no way to switch environments, this
+          // is a second sign-in against an endpoint we're moving off, and a
+          // slow or down prod would delay every login for nothing.
+          //
+          // No role gate. When the switch comes back it comes back for whoever
+          // can see it, which the title bars already decide on their own.
+          if (SHOW_ENV_TOGGLE) {
+            const otherUrl = context.devMode
+              ? import.meta.env.VITE_API_URL_PROD
+              : import.meta.env.VITE_API_URL_DEV;
+            login(otherUrl, state.username, state.password, 0)
+              .then((otherResp) => {
+                if (otherResp.data.error === 0) {
+                  dispatch(
+                    context.devMode
+                      ? setProdToken(otherResp.data.access_token)
+                      : setDevToken(otherResp.data.access_token),
+                  );
                 }
               })
-              .catch(() => { /* dev login failure is non-fatal */ });
+              .catch(() => {
+                /* cross-environment login failure is non-fatal */
+              });
           }
         } else {
           dispatch(setFetchingCredentials(false));

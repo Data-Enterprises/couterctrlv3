@@ -65,8 +65,8 @@ import {
   ChevronRightIcon,
 } from "@heroicons/react/20/solid";
 import BottomSheet from "../../../components/BottomSheet";
-import SevBadge from "./components/SevBadge";
-import SevChips from "./components/SevChips";
+import SevBadge from "../../../components/SevBadge";
+import SevChips from "../../../components/SevChips";
 // import DataGapReport from "./components/DataGapReport";
 
 const LedgerStoreReport = () => {
@@ -958,13 +958,13 @@ const LedgerStoreReport = () => {
                 <div className="flex gap-2 mt-1.5 justify-end">
                   {item.hasLW && (
                     <span
-                      className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${pillClass(item.vsLWPct)}`}
+                      className={`text-[11px] font-medium px-1.5 py-0.5 rounded ${pillClass(item.vsLWPct)}`}
                     >
                       LW {formatPct(item.vsLWPct)}
                     </span>
                   )}
                   <span
-                    className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${pillClass(item.hasLY ? item.vsLYPct : null)}`}
+                    className={`text-[11px] font-medium px-1.5 py-0.5 rounded ${pillClass(item.hasLY ? item.vsLYPct : null)}`}
                   >
                     LY {item.hasLY ? formatPct(item.vsLYPct) : "—"}
                   </span>
@@ -1137,7 +1137,7 @@ const LedgerStoreReport = () => {
                         <div className="flex items-center gap-2 mt-1.5 justify-end">
                           {lwTransPct !== null && (
                             <span
-                              className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${pillClass(lwTransPct)}`}
+                              className={`text-[11px] font-medium px-1.5 py-0.5 rounded ${pillClass(lwTransPct)}`}
                             >
                               LW {sheetHour.lwTrans.toLocaleString()}{" "}
                               {formatPct(lwTransPct)}
@@ -1145,7 +1145,7 @@ const LedgerStoreReport = () => {
                           )}
                           {lyTransPct !== null && (
                             <span
-                              className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${pillClass(lyTransPct)}`}
+                              className={`text-[11px] font-medium px-1.5 py-0.5 rounded ${pillClass(lyTransPct)}`}
                             >
                               LY {sheetHour.lyTrans.toLocaleString()}{" "}
                               {formatPct(lyTransPct)}

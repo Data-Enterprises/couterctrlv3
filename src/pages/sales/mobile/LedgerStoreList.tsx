@@ -12,7 +12,7 @@ import ThresholdFilter from "../../../components/filters/ThresholdFilter";
 import type { LedgerRowData } from "../components/LedgerRow";
 import { addDays, formatGoliathDate } from "../../../utils";
 import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
-import SevChips from "./components/SevChips";
+import SevChips from "../../../components/SevChips";
 import StoreRow from "./components/StoreRow";
 
 const LedgerStoreList = () => {

@@ -3,7 +3,7 @@ import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
 import { useCashierCtx } from "..";
 import type { StoreCard } from "../../../interfaces";
 import { formatBigNumber, formatCurrency2 } from "../../../utils";
-import SevChips from "../../sales/mobile/components/SevChips";
+import SevChips from "../../../components/SevChips";
 import type { SevFilter } from "../../../features/salesLedgerSlice";
 
 interface Props {

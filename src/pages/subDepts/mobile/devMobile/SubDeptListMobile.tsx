@@ -9,7 +9,7 @@ import type { SevFilter } from "../../../../features/salesLedgerSlice";
 import { fmtDate } from "../../../sales/shared/ledgerUtils";
 import { getTier } from "../..";
 import ThresholdFilter from "../../../../components/filters/ThresholdFilter";
-import SevChips from "../../../sales/mobile/components/SevChips";
+import SevChips from "../../../../components/SevChips";
 import LocationTabs from "../../../../components/filters/LocationTabs";
 import SubDeptRowMobile from "./SubDeptRowMobile";
 import type { GradingProgress } from "./SubDeptMarginsMobile";
@@ -22,9 +22,17 @@ interface Props {
   onStoreNumberChange: (storeNumber: string | null) => void;
 }
 
-const TIER_ORDER: Record<MarginTier, number> = { critical: 0, watch: 1, healthy: 2 };
+const TIER_ORDER: Record<MarginTier, number> = {
+  critical: 0,
+  watch: 1,
+  healthy: 2,
+};
 
-const SubDeptListMobile = ({ onSearch, gradingProgress, onStoreNumberChange }: Props) => {
+const SubDeptListMobile = ({
+  onSearch,
+  gradingProgress,
+  onStoreNumberChange,
+}: Props) => {
   const dispatch = useAppDispatch();
   const ctx = useSubMarginCtx();
   const params = useParams();
@@ -33,26 +41,37 @@ const SubDeptListMobile = ({ onSearch, gradingProgress, onStoreNumberChange }: P
 
   const subDeptGrades = useAppSelector((s) => s.subMargin.subDeptGrades);
   const loadingGrades = useAppSelector((s) => s.subMargin.loadingGrades);
-  const availableStoreNumbers = useAppSelector((s) => s.subMargin.availableStoreNumbers);
-  const selectedStoreNumber = useAppSelector((s) => s.subMargin.selectedStoreNumber);
-  const rawGradingThreshold = useAppSelector((s) => s.subMargin.gradingThreshold);
+  const availableStoreNumbers = useAppSelector(
+    (s) => s.subMargin.availableStoreNumbers,
+  );
+  const selectedStoreNumber = useAppSelector(
+    (s) => s.subMargin.selectedStoreNumber,
+  );
+  const rawGradingThreshold = useAppSelector(
+    (s) => s.subMargin.gradingThreshold,
+  );
   const gradingMetric = useAppSelector((s) => s.subMargin.gradingMetric);
 
   // Grading should never move sub depts around on its own when the threshold
   // input is cleared — keep grading against the last valid amount so tier
   // placement stays exactly where it was until a new number is typed.
   const gradingThresholdRef = useRef<number>(rawGradingThreshold ?? 9);
-  if (rawGradingThreshold != null) gradingThresholdRef.current = rawGradingThreshold;
+  if (rawGradingThreshold != null)
+    gradingThresholdRef.current = rawGradingThreshold;
   const gradingThreshold = gradingThresholdRef.current;
 
-  const store = ctx.assignedStores.find((s) => s.storeid === params.searchValue);
+  const store = ctx.assignedStores.find(
+    (s) => s.storeid === params.searchValue,
+  );
   const storeName = store?.store_name ?? "";
 
   const weekLabel = `${fmtDate(params.start)} – ${fmtDate(params.end)}, ${new Date(params.end + "T12:00:00").getFullYear()}`;
 
   const graded = ctx.subDepts.map((sd) => {
     const grade = subDeptGrades[sd.id];
-    const tier = grade ? getTier(grade, gradingThreshold, gradingMetric) : ("healthy" as MarginTier);
+    const tier = grade
+      ? getTier(grade, gradingThreshold, gradingMetric)
+      : ("healthy" as MarginTier);
     return { sd, grade, tier };
   });
 
@@ -70,10 +89,15 @@ const SubDeptListMobile = ({ onSearch, gradingProgress, onStoreNumberChange }: P
   return (
     <div className="flex flex-col h-[calc(100dvh-3rem)] overflow-hidden">
       {/* Navy header */}
-      <div className="flex-shrink-0 px-3 pt-2 pb-2.5" style={{ background: "#1e2a4a" }}>
+      <div
+        className="flex-shrink-0 px-3 pt-2 pb-2.5"
+        style={{ background: "#1e2a4a" }}
+      >
         <div className="flex items-start justify-between">
           <div>
-            <div className="text-[13px] font-semibold text-custom-white">{storeName}</div>
+            <div className="text-[13px] font-semibold text-custom-white">
+              {storeName}
+            </div>
             <div className="text-[11px] mt-0.5 text-custom-white/85">
               {weekLabel}
             </div>
@@ -91,11 +115,15 @@ const SubDeptListMobile = ({ onSearch, gradingProgress, onStoreNumberChange }: P
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1">
               <div className="w-[7px] h-[7px] rounded-[2px] bg-red-200 flex-shrink-0" />
-              <span className="text-custom-white/85 text-[10px]">Critical &gt;{gradingThreshold} pts</span>
+              <span className="text-custom-white/85 text-[10px]">
+                Critical &gt;{gradingThreshold} pts
+              </span>
             </div>
             <div className="flex items-center gap-1">
               <div className="w-[7px] h-[7px] rounded-[2px] bg-amber-200 flex-shrink-0" />
-              <span className="text-custom-white/85 text-[10px]">Watch ≤{gradingThreshold} pts</span>
+              <span className="text-custom-white/85 text-[10px]">
+                Watch ≤{gradingThreshold} pts
+              </span>
             </div>
             <div className="flex items-center gap-1">
               <div className="w-[7px] h-[7px] rounded-[2px] bg-emerald-200 flex-shrink-0" />
@@ -105,7 +133,11 @@ const SubDeptListMobile = ({ onSearch, gradingProgress, onStoreNumberChange }: P
           <div className="flex items-center gap-1.5 flex-shrink-0">
             <span className="text-[10px] text-custom-white/85">Threshold</span>
             <ThresholdFilter
-              value={rawGradingThreshold === null ? null : { op: "gt", amount: rawGradingThreshold }}
+              value={
+                rawGradingThreshold === null
+                  ? null
+                  : { op: "gt", amount: rawGradingThreshold }
+              }
               onChange={(v) => dispatch(setGradingThreshold(v?.amount ?? null))}
               suffix="pts"
               showOp={false}

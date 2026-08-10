@@ -272,9 +272,7 @@ export const categories: NavCategory[] = [
         name: "Categories",
         href: "categories",
         icon: Squares2X2Icon,
-        // Desktop only until a mobile view exists — a 700-row graded list
-        // needs its own treatment rather than a squeezed desktop panel.
-        mobile: false,
+        mobile: true,
         children: [],
         childOpen: false,
         userLevels: ["*"],
@@ -285,8 +283,7 @@ export const categories: NavCategory[] = [
         name: "Vendors",
         href: "vendors",
         icon: TruckIcon,
-        // Desktop only until a mobile view exists, same as Categories.
-        mobile: false,
+        mobile: true,
         children: [],
         childOpen: false,
         userLevels: ["*"],

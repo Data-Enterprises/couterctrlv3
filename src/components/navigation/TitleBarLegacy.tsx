@@ -2,7 +2,7 @@ import logo from "../../assets/portal/logo.webp";
 import { ChevronDownIcon } from "@heroicons/react/16/solid";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { setIsNavOpen } from "../../features/navSlice";
-import { toggleDevMode } from "../../features/appSlice";
+import { toggleDevMode, SHOW_ENV_TOGGLE } from "../../features/appSlice";
 
 const TitleBarLegacy = () => {
   const dispatch = useAppDispatch();
@@ -47,7 +47,8 @@ const TitleBarLegacy = () => {
           </div>
         ) : null}
         <div className="flex items-center h-full gap-2 pr-2">
-          {user.role === 9 || user.userLevel >= 2 ? (
+          {/* Hidden for the cutover; see SHOW_ENV_TOGGLE. */}
+          {SHOW_ENV_TOGGLE && (user.role === 9 || user.userLevel >= 2) ? (
             <button
               onClick={() => dispatch(toggleDevMode())}
               className="flex items-center gap-0 rounded-full overflow-hidden border border-content/20 text-[10px] font-bold select-none"

@@ -1,7 +1,7 @@
 ﻿import { formatPct, applyStoreNumberToName } from "../../shared/ledgerUtils";
 import { formatCurrency2 } from "../../../../utils";
 import type { LedgerRowData } from "../../components/LedgerRow";
-import SevBadge from "./SevBadge";
+import SevBadge from "../../../../components/SevBadge";
 
 interface StoreRowProps {
   row: LedgerRowData;
@@ -9,7 +9,9 @@ interface StoreRowProps {
 }
 
 const StoreRow = ({ row, onClick }: StoreRowProps) => {
-  const sortedDays = [...row.days].sort((a, b) => a.sale_date.localeCompare(b.sale_date));
+  const sortedDays = [...row.days].sort((a, b) =>
+    a.sale_date.localeCompare(b.sale_date),
+  );
   // Co-located stores share a name — swap the embedded number for this row's.
   const displayName = applyStoreNumberToName(
     row.store_name,
@@ -24,22 +26,48 @@ const StoreRow = ({ row, onClick }: StoreRowProps) => {
     >
       <SevBadge sev={row.severity} />
       <div className="flex-1 min-w-0">
-        <div className="text-[12px] font-medium text-content truncate mb-1.5">{displayName}</div>
+        <div className="text-[12px] font-medium text-content truncate mb-1.5">
+          {displayName}
+        </div>
         <div className="grid grid-cols-3 mb-1.5">
           <div className="px-1.5 py-1">
-            <div className="text-[10px] text-content/85 uppercase tracking-wide">TY</div>
-            <div className="text-[11px] font-medium text-content mt-0.5">{formatCurrency2(row.twTotal)}</div>
-            <div className="text-[10px] text-content/85 mt-0.5">—</div>
+            <div className="text-[11px] text-content/85 uppercase tracking-wide">
+              TY
+            </div>
+            <div className="text-[11px] font-medium text-content mt-0.5">
+              {formatCurrency2(row.twTotal)}
+            </div>
+            <div className="text-[11px] text-content/85 mt-0.5">—</div>
           </div>
           <div className="px-1.5 py-1">
-            <div className="text-[10px] text-content/85 uppercase tracking-wide">LW</div>
-            <div className="text-[11px] font-medium text-content mt-0.5">{row.hasLW ? formatCurrency2(row.lwTotal) : "—"}</div>
-            {row.hasLW && <div className={`text-[10px] font-medium mt-0.5 ${row.vsLWPct >= 0 ? "text-emerald-600" : "text-red-500"}`}>{formatPct(row.vsLWPct)}</div>}
+            <div className="text-[11px] text-content/85 uppercase tracking-wide">
+              LW
+            </div>
+            <div className="text-[11px] font-medium text-content mt-0.5">
+              {row.hasLW ? formatCurrency2(row.lwTotal) : "—"}
+            </div>
+            {row.hasLW && (
+              <div
+                className={`text-[11px] font-medium mt-0.5 ${row.vsLWPct >= 0 ? "text-emerald-600" : "text-red-500"}`}
+              >
+                {formatPct(row.vsLWPct)}
+              </div>
+            )}
           </div>
           <div className="px-1.5 py-1">
-            <div className="text-[10px] text-content/85 uppercase tracking-wide">LY</div>
-            <div className="text-[11px] font-medium text-content mt-0.5">{row.hasLY ? formatCurrency2(row.lyTotal) : "—"}</div>
-            {row.hasLY && <div className={`text-[10px] font-medium mt-0.5 ${row.vsLYPct >= 0 ? "text-emerald-600" : "text-red-500"}`}>{formatPct(row.vsLYPct)}</div>}
+            <div className="text-[11px] text-content/85 uppercase tracking-wide">
+              LY
+            </div>
+            <div className="text-[11px] font-medium text-content mt-0.5">
+              {row.hasLY ? formatCurrency2(row.lyTotal) : "—"}
+            </div>
+            {row.hasLY && (
+              <div
+                className={`text-[11px] font-medium mt-0.5 ${row.vsLYPct >= 0 ? "text-emerald-600" : "text-red-500"}`}
+              >
+                {formatPct(row.vsLYPct)}
+              </div>
+            )}
           </div>
         </div>
         <div className="flex gap-0.5">
@@ -50,14 +78,22 @@ const StoreRow = ({ row, onClick }: StoreRowProps) => {
               .slice(0, 1);
             const hasLY = d.lyNet !== null && d.lyNet > 0;
             const hasLW = d.lwNet !== null && d.lwNet > 0;
-            const ref = hasLY ? (d.lyNet as number) : hasLW ? (d.lwNet as number) : 0;
+            const ref = hasLY
+              ? (d.lyNet as number)
+              : hasLW
+                ? (d.lwNet as number)
+                : 0;
             const hasRef = hasLY || hasLW;
             const isPos = hasRef ? d.twNet >= ref : true;
             return (
               <div
                 key={d.sale_date}
                 className={`w-6 h-[18px] rounded text-[10px] font-bold flex items-center justify-center ${
-                  !hasRef ? "bg-gray-200 text-gray-400" : isPos ? "bg-emerald-400 text-custom-white" : "bg-red-400 text-custom-white"
+                  !hasRef
+                    ? "bg-gray-200 text-gray-400"
+                    : isPos
+                      ? "bg-emerald-400 text-custom-white"
+                      : "bg-red-400 text-custom-white"
                 }`}
               >
                 {dayLabel}

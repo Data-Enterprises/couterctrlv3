@@ -13,9 +13,9 @@ import { formatCurrency2 } from "../../../../utils";
 import type { MarginTier } from "../../../../features/subMarginSlice";
 import type { SevFilter } from "../../../../features/salesLedgerSlice";
 import type { SubDeptMargin } from "../../../../interfaces";
-import SevBadge from "../../../sales/mobile/components/SevBadge";
+import SevBadge from "../../../../components/SevBadge";
 import { BADGE_BG, BADGE_COLOR } from "../../../sales/shared/ledgerUtils";
-import SevChips from "../../../sales/mobile/components/SevChips";
+import SevChips from "../../../../components/SevChips";
 import BottomSheet from "../../../../components/BottomSheet";
 
 interface Props {
@@ -86,7 +86,7 @@ const SubDeptReportMobile = ({ onBack }: Props) => {
   const itemThreshold = itemThresholdRef.current;
 
   const pillClass = (pts: number | null) => {
-    const base = "text-[10px] font-semibold px-1.5 py-0.5 rounded";
+    const base = "text-[11px] font-semibold px-1.5 py-0.5 rounded";
     if (pts === null) return `${base} bg-gray-100 text-gray-500`;
     if (pts < -itemThreshold) return `${base} bg-red-100 text-red-800`;
     if (pts < 0) return `${base} bg-amber-100 text-amber-800`;

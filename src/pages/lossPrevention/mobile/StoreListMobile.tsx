@@ -9,8 +9,8 @@ import { useLPState } from "../hooks/useLPState";
 import { useLPActions } from "../hooks/useLPActions";
 import type { JsonError, TransactionListItem, TransactionOverview, UniqueCashier } from "../../../interfaces";
 import { formatCurrency2 } from "../../../utils";
-import SevChips from "../../sales/mobile/components/SevChips";
-import SevBadge from "../../sales/mobile/components/SevBadge";
+import SevChips from "../../../components/SevChips";
+import SevBadge from "../../../components/SevBadge";
 import type { SevFilter } from "../../../features/salesLedgerSlice";
 import SelectFilter from "../../../components/filters/SelectFilter";
 import {
