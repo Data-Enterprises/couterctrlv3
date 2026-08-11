@@ -15,6 +15,7 @@ import Categories from "./pages/categories/Categories.tsx";
 import Vendors from "./pages/vendors/Vendors.tsx";
 import InventorySubDept from "./pages/inventory/InventorySubDept.tsx";
 import InventoryVendor from "./pages/inventory/InventoryVendor.tsx";
+import ItemReport from "./pages/itemReport/ItemReport.tsx";
 import {
   SalesPage,
   LossPreventionPage,
@@ -62,6 +63,7 @@ createRoot(document.getElementById("root")!).render(
                   element={<InventorySubDept />}
                 />
                 <Route path="inventory-vendor" element={<InventoryVendor />} />
+                <Route path="item-report" element={<ItemReport />} />
                 <Route path="forecasting" element={<ForecastPage />} />
                 <Route path="quicksight" element={<Dashboard />} />
                 <Route path="receivers" element={<ReceiversPage />} />
