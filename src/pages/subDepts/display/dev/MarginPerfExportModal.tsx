@@ -313,6 +313,58 @@ const AGG_OPTIONS: { value: AggFn; label: string }[] = [
 
 const PREVIEW_ROWS = 5;
 
+const SEV_CHIP: { sev: ItemSev; label: string; activeClass: string }[] = [
+  { sev: "critical", label: "Critical", activeClass: "bg-red-600 border-red-600 text-custom-white" },
+  { sev: "watch",    label: "Watch",    activeClass: "bg-amber-500 border-amber-500 text-custom-white" },
+  { sev: "healthy",  label: "Healthy",  activeClass: "bg-emerald-600 border-emerald-600 text-custom-white" },
+];
+
+/**
+ * Severity chips for one preset. Filter only.
+ *
+ * Clicking a chip never checks or unchecks its dataset. The two used to be
+ * bound together — a chip that emptied the set also cleared the checkbox, and
+ * seeding on check re-lit a chip the user had just turned off — so clicking
+ * "Critical" on a preset whose Critical chip was already lit silently dropped
+ * the whole dataset from the download. From the outside that read as the
+ * severity filter doing nothing.
+ *
+ * One component for all three chip rows rather than three copies, so they can't
+ * drift apart again.
+ */
+const SevChips = ({
+  value,
+  onToggle,
+  hint,
+}: {
+  value: Set<ItemSev>;
+  onToggle: (sev: ItemSev) => void;
+  /** Shown when the dataset is selected but no severity is — that combination
+   *  produces an empty section, and saying so beats a silently missing file. */
+  hint?: boolean;
+}) => (
+  <>
+    <div className="flex gap-1.5 flex-wrap">
+      {SEV_CHIP.map(({ sev, label, activeClass }) => (
+        <button
+          key={sev}
+          onClick={() => onToggle(sev)}
+          className={`px-2 py-0.5 rounded-full text-[10px] font-medium border transition-colors ${
+            value.has(sev) ? activeClass : "bg-custom-white border-gray-200 text-content"
+          }`}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
+    {hint && (
+      <p className="text-[10px] text-amber-800 mt-1">
+        Pick at least one severity or this dataset exports nothing.
+      </p>
+    )}
+  </>
+);
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 const MarginPerfExportModal = ({
@@ -378,40 +430,31 @@ const MarginPerfExportModal = ({
 
   // Selecting a severity chip activates the "Items vs Last Year" preset (and
   // clearing them all back out deactivates it), so the two stay in sync.
-  const toggleItemSev = (sev: ItemSev) => {
-    const next = new Set(itemSevs);
-    next.has(sev) ? next.delete(sev) : next.add(sev);
-    setItemSevs(next);
-    setSelected((prev) => {
-      const n = new Set(prev);
-      if (next.size > 0) n.add("items_vs_ly"); else n.delete("items_vs_ly");
-      return n;
+  const toggleItemSev = (sev: ItemSev) =>
+    setItemSevs((prev) => {
+      const next = new Set(prev);
+      if (next.has(sev)) next.delete(sev);
+      else next.add(sev);
+      return next;
     });
-  };
 
   // Same two-way tie as the Items vs Last Year chips: clearing every severity
   // is the same statement as unchecking the preset, so they move together.
-  const toggleDeptSev = (sev: ItemSev) => {
-    const next = new Set(deptSevs);
-    next.has(sev) ? next.delete(sev) : next.add(sev);
-    setDeptSevs(next);
-    setSelected((prev) => {
-      const n = new Set(prev);
-      if (next.size > 0) n.add("all_depts"); else n.delete("all_depts");
-      return n;
+  const toggleDeptSev = (sev: ItemSev) =>
+    setDeptSevs((prev) => {
+      const next = new Set(prev);
+      if (next.has(sev)) next.delete(sev);
+      else next.add(sev);
+      return next;
     });
-  };
 
-  const toggleUpcSev = (sev: ItemSev) => {
-    const next = new Set(upcSevs);
-    next.has(sev) ? next.delete(sev) : next.add(sev);
-    setUpcSevs(next);
-    setSelected((prev) => {
-      const n = new Set(prev);
-      if (next.size > 0) n.add("upc_list"); else n.delete("upc_list");
-      return n;
+  const toggleUpcSev = (sev: ItemSev) =>
+    setUpcSevs((prev) => {
+      const next = new Set(prev);
+      if (next.has(sev)) next.delete(sev);
+      else next.add(sev);
+      return next;
     });
-  };
 
   const gradedCount = subDepts.filter((s) => grades[s.id]).length;
 
@@ -474,12 +517,6 @@ const MarginPerfExportModal = ({
     { id: "items",  label: "Items Report",  description: "TY net sales, qty, COGS, and margin % aggregated by item" },
     { id: "cost",   label: "Cost Analysis", description: "Cost, net cost, case size, and COGS breakdown per item" },
     { id: "nocost", label: "No Cost Items", description: "Items flagged for missing cost data" },
-  ];
-
-  const SEV_CHIP: { sev: ItemSev; label: string; activeClass: string }[] = [
-    { sev: "critical", label: "Critical", activeClass: "bg-red-600 border-red-600 text-custom-white" },
-    { sev: "watch",    label: "Watch",    activeClass: "bg-amber-500 border-amber-500 text-custom-white" },
-    { sev: "healthy",  label: "Healthy",  activeClass: "bg-emerald-600 border-emerald-600 text-custom-white" },
   ];
 
   const safeName = (storeName + "_" + subDeptName).replace(/[^a-z0-9]/gi, "_");
@@ -578,11 +615,10 @@ const MarginPerfExportModal = ({
                   checked={selected.has("items_vs_ly")}
                   onChange={() => {
                     const checking = !selected.has("items_vs_ly");
-                    if (checking) {
-                      if (itemSevs.size === 0) setItemSevs(new Set(["critical", "watch", "healthy"]));
-                    } else {
-                      setItemSevs(new Set());
-                    }
+                    // Seeds only when nothing is chosen, and never clears on
+                    // uncheck — a severity the user picked survives them
+                    // toggling the dataset off and back on.
+                    if (checking && itemSevs.size === 0) setItemSevs(new Set(["critical", "watch", "healthy"]));
                     setSelected((prev) => { const n = new Set(prev); checking ? n.add("items_vs_ly") : n.delete("items_vs_ly"); return n; });
                   }}
                   className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-[#1e2a4a] cursor-pointer flex-shrink-0"
@@ -590,19 +626,11 @@ const MarginPerfExportModal = ({
                 <div className="flex-1 min-w-0">
                   <p className="text-[13px] font-medium text-content">Items vs Last Year</p>
                   <p className="text-[11px] text-content mt-0.5 mb-1.5">Side-by-side TY vs LY per item with margin pts Δ</p>
-                  <div className="flex gap-1.5 flex-wrap">
-                    {SEV_CHIP.map(({ sev, label, activeClass }) => (
-                      <button
-                        key={sev}
-                        onClick={() => toggleItemSev(sev)}
-                        className={`px-2 py-0.5 rounded-full text-[10px] font-medium border transition-colors ${
-                          itemSevs.has(sev) ? activeClass : "bg-custom-white border-gray-200 text-content"
-                        }`}
-                      >
-                        {label}
-                      </button>
-                    ))}
-                  </div>
+                  <SevChips
+                    value={itemSevs}
+                    onToggle={toggleItemSev}
+                    hint={selected.has("items_vs_ly") && itemSevs.size === 0}
+                  />
                 </div>
               </div>
 
@@ -615,11 +643,10 @@ const MarginPerfExportModal = ({
                   checked={selected.has("all_depts")}
                   onChange={() => {
                     const checking = !selected.has("all_depts");
-                    if (checking) {
-                      if (deptSevs.size === 0) setDeptSevs(new Set(["critical"]));
-                    } else {
-                      setDeptSevs(new Set());
-                    }
+                    // Seeds only when nothing is chosen, and never clears on
+                    // uncheck — a severity the user picked survives them
+                    // toggling the dataset off and back on.
+                    if (checking && deptSevs.size === 0) setDeptSevs(new Set(["critical"]));
                     setSelected((prev) => { const n = new Set(prev); checking ? n.add("all_depts") : n.delete("all_depts"); return n; });
                   }}
                   className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-[#1e2a4a] cursor-pointer flex-shrink-0"
@@ -631,19 +658,11 @@ const MarginPerfExportModal = ({
                     severity. Graded on {METRIC_LABEL[gradingMetric]} at a{" "}
                     {threshold} threshold — the same as the items list.
                   </p>
-                  <div className="flex gap-1.5 flex-wrap">
-                    {SEV_CHIP.map(({ sev, label, activeClass }) => (
-                      <button
-                        key={sev}
-                        onClick={() => toggleDeptSev(sev)}
-                        className={`px-2 py-0.5 rounded-full text-[10px] font-medium border transition-colors ${
-                          deptSevs.has(sev) ? activeClass : "bg-custom-white border-gray-200 text-content"
-                        }`}
-                      >
-                        {label}
-                      </button>
-                    ))}
-                  </div>
+                  <SevChips
+                    value={deptSevs}
+                    onToggle={toggleDeptSev}
+                    hint={selected.has("all_depts") && deptSevs.size === 0}
+                  />
                   {/* Departments grade in one at a time, so an export taken
                       early would silently be a partial store. */}
                   <p className="text-[10px] text-content mt-1.5">
@@ -664,11 +683,10 @@ const MarginPerfExportModal = ({
                   checked={selected.has("upc_list")}
                   onChange={() => {
                     const checking = !selected.has("upc_list");
-                    if (checking) {
-                      if (upcSevs.size === 0) setUpcSevs(new Set(["critical"]));
-                    } else {
-                      setUpcSevs(new Set());
-                    }
+                    // Seeds only when nothing is chosen, and never clears on
+                    // uncheck — a severity the user picked survives them
+                    // toggling the dataset off and back on.
+                    if (checking && upcSevs.size === 0) setUpcSevs(new Set(["critical"]));
                     setSelected((prev) => { const n = new Set(prev); checking ? n.add("upc_list") : n.delete("upc_list"); return n; });
                   }}
                   className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-[#1e2a4a] cursor-pointer flex-shrink-0"
@@ -679,19 +697,11 @@ const MarginPerfExportModal = ({
                     Just the UPCs from every department, one per row, ready to
                     load into another page.
                   </p>
-                  <div className="flex gap-1.5 flex-wrap">
-                    {SEV_CHIP.map(({ sev, label, activeClass }) => (
-                      <button
-                        key={sev}
-                        onClick={() => toggleUpcSev(sev)}
-                        className={`px-2 py-0.5 rounded-full text-[10px] font-medium border transition-colors ${
-                          upcSevs.has(sev) ? activeClass : "bg-custom-white border-gray-200 text-content"
-                        }`}
-                      >
-                        {label}
-                      </button>
-                    ))}
-                  </div>
+                  <SevChips
+                    value={upcSevs}
+                    onToggle={toggleUpcSev}
+                    hint={selected.has("upc_list") && upcSevs.size === 0}
+                  />
                 </div>
               </div>
             </div>

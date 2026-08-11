@@ -456,6 +456,63 @@ const fmtDate = (d: string) =>
     year: "numeric",
   });
 
+const SEV_CHIP: { sev: GradedSev; label: string; activeClass: string }[] = [
+  { sev: "critical", label: "Critical", activeClass: "bg-red-600 border-red-600 text-custom-white" },
+  { sev: "watch", label: "Watch", activeClass: "bg-amber-500 border-amber-500 text-custom-white" },
+  { sev: "healthy", label: "Healthy", activeClass: "bg-emerald-600 border-emerald-600 text-custom-white" },
+];
+
+/**
+ * Severity chips for one preset. Filter only.
+ *
+ * Clicking a chip never checks or unchecks its dataset. The two used to be
+ * bound together — a chip that emptied the set also cleared the checkbox, and
+ * seeding on check re-lit a chip the user had just turned off — so clicking
+ * "Critical" on a preset whose Critical chip was already lit silently dropped
+ * the whole dataset from the download. From the outside that read as the
+ * severity filter doing nothing.
+ *
+ * One component for all three chip rows rather than three copies, so they can't
+ * drift apart again.
+ */
+const SevChips = ({
+  value,
+  onToggle,
+  disabled,
+  hint,
+}: {
+  value: Set<GradedSev>;
+  onToggle: (sev: GradedSev) => void;
+  disabled?: boolean;
+  /** Shown when the dataset is selected but no severity is — that combination
+   *  produces an empty section, and saying so beats a silently missing file. */
+  hint?: boolean;
+}) => (
+  <>
+    <div className="flex gap-1.5 flex-wrap">
+      {SEV_CHIP.map(({ sev, label, activeClass }) => (
+        <button
+          key={sev}
+          disabled={disabled}
+          onClick={() => onToggle(sev)}
+          className={`px-2 py-0.5 rounded-full text-[10px] font-medium border transition-colors disabled:cursor-not-allowed ${
+            value.has(sev)
+              ? activeClass
+              : "bg-custom-white border-gray-200 text-content"
+          }`}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
+    {hint && (
+      <p className="text-[10px] text-amber-800 mt-1">
+        Pick at least one severity or this dataset exports nothing.
+      </p>
+    )}
+  </>
+);
+
 /* ── component ───────────────────────────────────────────────────────────── */
 
 const VendorExportModal = ({
@@ -547,44 +604,29 @@ const VendorExportModal = ({
 
   // Picking a severity chip activates the graded preset, and clearing them all
   // deactivates it, so the checkbox and the chips can never disagree.
-  const toggleItemSev = (sev: GradedSev) => {
-    const next = new Set(itemSevs);
-    if (next.has(sev)) next.delete(sev);
-    else next.add(sev);
-    setItemSevs(next);
-    setSelected((prev) => {
-      const n = new Set(prev);
-      if (next.size > 0) n.add("items_graded");
-      else n.delete("items_graded");
-      return n;
+  const toggleItemSev = (sev: GradedSev) =>
+    setItemSevs((prev) => {
+      const next = new Set(prev);
+      if (next.has(sev)) next.delete(sev);
+      else next.add(sev);
+      return next;
     });
-  };
 
-  const toggleAllSev = (sev: GradedSev) => {
-    const next = new Set(allSevs);
-    if (next.has(sev)) next.delete(sev);
-    else next.add(sev);
-    setAllSevs(next);
-    setSelected((prev) => {
-      const n = new Set(prev);
-      if (next.size > 0) n.add("all_vendors");
-      else n.delete("all_vendors");
-      return n;
+  const toggleAllSev = (sev: GradedSev) =>
+    setAllSevs((prev) => {
+      const next = new Set(prev);
+      if (next.has(sev)) next.delete(sev);
+      else next.add(sev);
+      return next;
     });
-  };
 
-  const toggleUpcSev = (sev: GradedSev) => {
-    const next = new Set(upcSevs);
-    if (next.has(sev)) next.delete(sev);
-    else next.add(sev);
-    setUpcSevs(next);
-    setSelected((prev) => {
-      const n = new Set(prev);
-      if (next.size > 0) n.add("upc_list");
-      else n.delete("upc_list");
-      return n;
+  const toggleUpcSev = (sev: GradedSev) =>
+    setUpcSevs((prev) => {
+      const next = new Set(prev);
+      if (next.has(sev)) next.delete(sev);
+      else next.add(sev);
+      return next;
     });
-  };
 
   const hasAllItems = scopedAll.tw.length > 0;
 
@@ -661,12 +703,6 @@ const VendorExportModal = ({
         : "Nothing from this vendor in the selected days",
       disabled: !hasItems,
     },
-  ];
-
-  const SEV_CHIP: { sev: GradedSev; label: string; activeClass: string }[] = [
-    { sev: "critical", label: "Critical", activeClass: "bg-red-600 border-red-600 text-custom-white" },
-    { sev: "watch", label: "Watch", activeClass: "bg-amber-500 border-amber-500 text-custom-white" },
-    { sev: "healthy", label: "Healthy", activeClass: "bg-emerald-600 border-emerald-600 text-custom-white" },
   ];
 
   const safeName = `${storeName}_${vendorName}`.replace(/[^a-z0-9]/gi, "_");
@@ -838,12 +874,10 @@ const VendorExportModal = ({
                 checked={selected.has("items_graded")}
                 onChange={() => {
                   const checking = !selected.has("items_graded");
-                  if (checking) {
-                    if (itemSevs.size === 0)
-                      setItemSevs(new Set(["critical", "watch", "healthy"]));
-                  } else {
-                    setItemSevs(new Set());
-                  }
+                  // Seeds only when nothing is chosen, and never clears on
+                  // uncheck — a severity the user picked survives them toggling
+                  // the dataset off and back on.
+                  if (checking && itemSevs.size === 0) setItemSevs(new Set(["critical", "watch", "healthy"]));
                   setSelected((prev) => {
                     const n = new Set(prev);
                     if (checking) n.add("items_graded");
@@ -860,22 +894,12 @@ const VendorExportModal = ({
                     ? `TY vs LW vs LY per item, graded on ${gradingMetric} at ${itemThreshold}%`
                     : "Nothing from this vendor in the selected days"}
                 </p>
-                <div className="flex gap-1.5 flex-wrap">
-                  {SEV_CHIP.map(({ sev, label, activeClass }) => (
-                    <button
-                      key={sev}
-                      disabled={!hasItems}
-                      onClick={() => toggleItemSev(sev)}
-                      className={`px-2 py-0.5 rounded-full text-[10px] font-medium border transition-colors disabled:cursor-not-allowed ${
-                        itemSevs.has(sev)
-                          ? activeClass
-                          : "bg-custom-white border-gray-200 text-content"
-                      }`}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
+                <SevChips
+                  value={itemSevs}
+                  onToggle={toggleItemSev}
+                  disabled={!hasItems}
+                  hint={selected.has("items_graded") && itemSevs.size === 0}
+                />
               </div>
             </div>
 
@@ -890,12 +914,10 @@ const VendorExportModal = ({
                 checked={selected.has("all_vendors")}
                 onChange={() => {
                   const checking = !selected.has("all_vendors");
-                  if (checking) {
-                    if (allSevs.size === 0)
-                      setAllSevs(new Set(["critical", "watch", "healthy"]));
-                  } else {
-                    setAllSevs(new Set());
-                  }
+                  // Seeds only when nothing is chosen, and never clears on
+                  // uncheck — a severity the user picked survives them toggling
+                  // the dataset off and back on.
+                  if (checking && allSevs.size === 0) setAllSevs(new Set(["critical", "watch", "healthy"]));
                   setSelected((prev) => {
                     const n = new Set(prev);
                     if (checking) n.add("all_vendors");
@@ -914,22 +936,12 @@ const VendorExportModal = ({
                     ? `Every item across all ${rows.length} vendors, tagged with its vendor, graded on ${gradingMetric} at ${itemThreshold}%`
                     : "Nothing sold in the selected days"}
                 </p>
-                <div className="flex gap-1.5 flex-wrap">
-                  {SEV_CHIP.map(({ sev, label, activeClass }) => (
-                    <button
-                      key={sev}
-                      disabled={!hasAllItems}
-                      onClick={() => toggleAllSev(sev)}
-                      className={`px-2 py-0.5 rounded-full text-[10px] font-medium border transition-colors disabled:cursor-not-allowed ${
-                        allSevs.has(sev)
-                          ? activeClass
-                          : "bg-custom-white border-gray-200 text-content"
-                      }`}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
+                <SevChips
+                  value={allSevs}
+                  onToggle={toggleAllSev}
+                  disabled={!hasAllItems}
+                  hint={selected.has("all_vendors") && allSevs.size === 0}
+                />
               </div>
             </div>
 
@@ -945,11 +957,11 @@ const VendorExportModal = ({
                 checked={selected.has("upc_list")}
                 onChange={() => {
                   const checking = !selected.has("upc_list");
-                  if (checking) {
-                    if (upcSevs.size === 0) setUpcSevs(new Set(["critical"]));
-                  } else {
-                    setUpcSevs(new Set());
-                  }
+                  // Seeds only when nothing is chosen, and never clears on
+                  // uncheck — a severity the user picked survives them toggling
+                  // the dataset off and back on.
+                  if (checking && upcSevs.size === 0)
+                    setUpcSevs(new Set(["critical"]));
                   setSelected((prev) => {
                     const n = new Set(prev);
                     if (checking) n.add("upc_list");
@@ -966,22 +978,12 @@ const VendorExportModal = ({
                     ? "Just the UPCs from every vendor, one per row, ready to load into another page."
                     : "Nothing sold in the selected days"}
                 </p>
-                <div className="flex gap-1.5 flex-wrap">
-                  {SEV_CHIP.map(({ sev, label, activeClass }) => (
-                    <button
-                      key={sev}
-                      disabled={!hasAllItems}
-                      onClick={() => toggleUpcSev(sev)}
-                      className={`px-2 py-0.5 rounded-full text-[10px] font-medium border transition-colors disabled:cursor-not-allowed ${
-                        upcSevs.has(sev)
-                          ? activeClass
-                          : "bg-custom-white border-gray-200 text-content"
-                      }`}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
+                <SevChips
+                  value={upcSevs}
+                  onToggle={toggleUpcSev}
+                  disabled={!hasAllItems}
+                  hint={selected.has("upc_list") && upcSevs.size === 0}
+                />
               </div>
             </div>
           </div>
