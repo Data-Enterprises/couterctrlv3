@@ -224,6 +224,8 @@ const VendorDetailPanel = () => {
           dateRange={fmtRangeLabel(vend.twStart, vend.twEnd)}
           rows={rows}
           vendorRaw={vendorRaw}
+          // Unsliced — the all-vendors preset splits it by vendor itself.
+          allRaw={raw}
           metric={metric}
           threshold={activeThreshold}
           itemThreshold={itemThreshold ?? VENDOR_ITEM_THRESHOLD_DEFAULT}

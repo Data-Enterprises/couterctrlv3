@@ -228,6 +228,30 @@ export const buildItemRows = (
   return rows;
 };
 
+/**
+ * The number an item's severity is read off, in whatever unit the page's toggle
+ * selects — margin points against LY (falling back to LW), or percent change in
+ * sales or qty. Null when the item has no counterpart period to compare
+ * against, which is what makes it ungraded rather than healthy.
+ *
+ * Exported so an export can print the figure a severity was derived from
+ * instead of recomputing it a second, subtly different way — a CSV that says
+ * "Critical" without showing the delta is unarguable with.
+ */
+export const gradedDelta = (
+  row: ItemMarginRow,
+  gradingMetric: ItemGradingMetric,
+): number | null =>
+  gradingMetric === "sales"
+    ? row.salesTrendPct
+    : gradingMetric === "qty"
+      ? row.qtyTrendPct
+      : row.lyMarginPct !== null
+        ? row.tyMarginPct - row.lyMarginPct
+        : row.lwMarginPct !== null
+          ? row.tyMarginPct - row.lwMarginPct
+          : null;
+
 /** Grades on whichever metric the page's Margin/Sales toggle selects, so
  *  flipping that toggle re-grades the item list and not just the parent rows. */
 export const getItemSeverity = (
@@ -235,16 +259,7 @@ export const getItemSeverity = (
   threshold: number,
   gradingMetric: ItemGradingMetric,
 ): ItemSeverity => {
-  const raw =
-    gradingMetric === "sales"
-      ? row.salesTrendPct
-      : gradingMetric === "qty"
-        ? row.qtyTrendPct
-        : row.lyMarginPct !== null
-          ? row.tyMarginPct - row.lyMarginPct
-          : row.lwMarginPct !== null
-            ? row.tyMarginPct - row.lwMarginPct
-            : null;
+  const raw = gradedDelta(row, gradingMetric);
   if (raw === null) return "ungraded";
   const delta = Math.round(raw * 10) / 10;
   if (delta < -threshold) return "critical";

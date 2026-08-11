@@ -31,6 +31,7 @@ const MarginPerfRightPanel = () => {
 
   const gradingMetric = useAppSelector((s) => s.subMargin.gradingMetric);
   const subDeptGrades = useAppSelector((s) => s.subMargin.subDeptGrades);
+  const loadingGrades = useAppSelector((s) => s.subMargin.loadingGrades);
   const subDeptName = ctx.subDepts.find((s) => s.id === ctx.selectedSubDeptId)?.desc ?? "";
   const availableStoreNumbers = useAppSelector(
     (s) => s.subMargin.availableStoreNumbers,
@@ -387,6 +388,12 @@ const MarginPerfRightPanel = () => {
           tyMargins={ctx.weekOneMargins}
           lyMargins={ctx.weekOneMarginsLY}
           threshold={gradingThreshold}
+          // The all-departments preset reads item rows straight off the
+          // grades, so it costs nothing beyond what grading already fetched.
+          subDepts={ctx.subDepts}
+          grades={subDeptGrades}
+          gradingMetric={gradingMetric}
+          loadingGrades={loadingGrades}
         />
       )}
     </div>

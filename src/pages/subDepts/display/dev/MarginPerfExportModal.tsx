@@ -1,14 +1,28 @@
 import { useState, useMemo } from "react";
 import ResizableModalShell from "../../../../components/modals/ResizableModalShell";
 import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
-import type { SubDeptMargin } from "../../../../interfaces";
+import type { SubDept, SubDeptMargin } from "../../../../interfaces";
+import type { SubDeptGrade } from "../../../../features/subMarginSlice";
 import { calculateCogs, hasNoUsableCost } from "../..";
 import { fmtNum, rowsToCsv, downloadCsv, aggregateRows } from "../../../../utils/csvExport";
 import type { AggFn, AggRow } from "../../../../utils/csvExport";
+import {
+  buildItemRows,
+  getItemSeverity,
+  gradedDelta,
+  type ItemGradingMetric,
+  type ItemMarginRow,
+} from "../../../../utils/itemMargins";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type ExportPreset = "items" | "items_vs_ly" | "cost" | "nocost";
+type ExportPreset =
+  | "items"
+  | "items_vs_ly"
+  | "cost"
+  | "nocost"
+  | "all_depts"
+  | "upc_list";
 type ModalMode = "presets" | "custom";
 type CustomSource = "ty" | "ly";
 type ItemSev = "critical" | "watch" | "healthy";
@@ -25,6 +39,16 @@ interface MarginPerfExportModalProps {
   tyMargins: SubDeptMargin[];
   lyMargins: SubDeptMargin[];
   threshold: number;
+  /** Every department in the current search, for the all-departments preset. */
+  subDepts: SubDept[];
+  /** Their grades, which already carry each department's TY/LW/LY item rows —
+   *  so a store-wide export costs no extra calls. Fills in as grading finishes,
+   *  which is why the preset says how many are in hand. */
+  grades: Record<number, SubDeptGrade>;
+  /** The page's Margin/Sales toggle. Severity has to mean here what it means on
+   *  screen, so the export grades on the same metric rather than assuming one. */
+  gradingMetric: ItemGradingMetric;
+  loadingGrades: boolean;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -144,6 +168,126 @@ const buildNoCostCsv = (margins: SubDeptMargin[]) => {
 };
 
 
+/**
+ * Every graded item in every department, filtered to the chosen severities.
+ *
+ * The one export on this page that isn't scoped to the open department. It
+ * costs nothing extra: grading already fetched each department's TY/LW/LY item
+ * rows and parked them on the grade, so this is a re-read of data the page is
+ * holding rather than a store-wide fan-out.
+ *
+ * Severity is computed with the same `buildItemRows` + `getItemSeverity` the
+ * items table renders from, and on the same Margin/Sales toggle — a row that
+ * reads Critical here is the row that reads Critical on screen. (The older
+ * `Items vs Last Year` preset above predates that helper and grades LY-only,
+ * which is why the two can disagree on an item with no LY counterpart.)
+ *
+ * Ungraded items — no LW or LY to compare against — are dropped. They can't be
+ * critical, and listing them with a blank severity in a file whose whole point
+ * is severity invites them being read as healthy.
+ */
+const METRIC_LABEL: Record<ItemGradingMetric, string> = {
+  margin: "Margin pts vs LY",
+  sales: "Sales % vs LY",
+  qty: "Qty % vs LY",
+};
+
+/** One graded item, with the department it came from. The full export and the
+ *  UPC-only export share this so the two can never disagree about which items
+ *  are in scope — the second is the first with the columns taken away. */
+interface GradedItem {
+  dept: string;
+  row: ItemMarginRow;
+  sev: ItemSev;
+}
+
+const collectGradedItems = (
+  subDepts: SubDept[],
+  grades: Record<number, SubDeptGrade>,
+  threshold: number,
+  gradingMetric: ItemGradingMetric,
+  sevs: Set<ItemSev>,
+): GradedItem[] => {
+  const sevRank: Record<ItemSev, number> = { critical: 0, watch: 1, healthy: 2 };
+  const out: GradedItem[] = [];
+
+  // Department order is the left panel's, so the file reads down the page.
+  for (const sd of subDepts) {
+    const grade = grades[sd.id];
+    if (!grade) continue;
+    const items = buildItemRows(
+      grade.tyWeekOneMargins,
+      grade.lwWeekOneMargins,
+      grade.lyWeekOneMargins,
+    );
+    const kept: GradedItem[] = [];
+    for (const row of items) {
+      const sev = getItemSeverity(row, threshold, gradingMetric);
+      if (sev === "ungraded" || !sevs.has(sev)) continue;
+      kept.push({ dept: sd.desc, row, sev });
+    }
+    // Worst first inside a department, then biggest sellers — the order someone
+    // works a list in.
+    kept.sort(
+      (a, b) =>
+        sevRank[a.sev] - sevRank[b.sev] || b.row.netSales - a.row.netSales,
+    );
+    out.push(...kept);
+  }
+  return out;
+};
+
+const buildAllDeptsCsv = (items: GradedItem[], gradingMetric: ItemGradingMetric) => {
+  const headers = [
+    "Sub Department",
+    "Product Code",
+    "Description",
+    "Severity",
+    "Graded On",
+    "Graded Δ",
+    "TY Net Sales",
+    "Qty",
+    "TY Margin %",
+    "LW Margin %",
+    "LY Margin %",
+    "Sales Δ%",
+    "Qty Δ%",
+  ];
+  const rows = items.map(({ dept, row, sev }) => {
+    const delta = gradedDelta(row, gradingMetric);
+    return [
+      dept,
+      row.productCode,
+      row.description,
+      SEV_LABEL[sev],
+      METRIC_LABEL[gradingMetric],
+      delta === null ? "" : fmtNum(delta),
+      fmtNum(row.netSales),
+      row.qty,
+      fmtNum(row.tyMarginPct),
+      row.lwMarginPct === null ? "" : fmtNum(row.lwMarginPct),
+      row.lyMarginPct === null ? "" : fmtNum(row.lyMarginPct),
+      row.salesTrendPct === null ? "" : fmtNum(row.salesTrendPct),
+      row.qtyTrendPct === null ? "" : fmtNum(row.qtyTrendPct),
+    ];
+  });
+  return rowsToCsv(headers, rows);
+};
+
+/** The same item set as above with everything but the UPC dropped — a list to
+ *  paste or upload into another page, not a report to read. Deduped because the
+ *  same UPC can be reached twice and an uploader would count it twice. */
+const buildUpcListCsv = (items: GradedItem[]) => {
+  const seen = new Set<string>();
+  const rows: (string | number)[][] = [];
+  for (const { row } of items) {
+    if (seen.has(row.productCode)) continue;
+    seen.add(row.productCode);
+    rows.push([row.productCode]);
+  }
+  return rowsToCsv(["UPC"], rows);
+};
+
 // ─── Config ───────────────────────────────────────────────────────────────────
 
 const ITEM_DIMS: DimDef[] = [
@@ -179,12 +323,20 @@ const MarginPerfExportModal = ({
   tyMargins,
   lyMargins,
   threshold,
+  subDepts,
+  grades,
+  gradingMetric,
+  loadingGrades,
 }: MarginPerfExportModalProps) => {
 
   // No default selections anywhere in this modal.
   const [mode, setMode] = useState<ModalMode>("presets");
   const [selected, setSelected] = useState<Set<ExportPreset>>(new Set());
   const [itemSevs, setItemSevs] = useState<Set<ItemSev>>(new Set());
+  // Seeded to Critical because that is what this preset is for — the other two
+  // are there to widen it, not to be chosen from scratch.
+  const [deptSevs, setDeptSevs] = useState<Set<ItemSev>>(new Set(["critical"]));
+  const [upcSevs, setUpcSevs] = useState<Set<ItemSev>>(new Set(["critical"]));
   const [source, setSource] = useState<CustomSource>("ty");
   const [groupBy, setGroupBy] = useState<Set<string>>(new Set());
   const [metrics, setMetrics] = useState<Map<string, MetricSelection>>(
@@ -236,6 +388,32 @@ const MarginPerfExportModal = ({
       return n;
     });
   };
+
+  // Same two-way tie as the Items vs Last Year chips: clearing every severity
+  // is the same statement as unchecking the preset, so they move together.
+  const toggleDeptSev = (sev: ItemSev) => {
+    const next = new Set(deptSevs);
+    next.has(sev) ? next.delete(sev) : next.add(sev);
+    setDeptSevs(next);
+    setSelected((prev) => {
+      const n = new Set(prev);
+      if (next.size > 0) n.add("all_depts"); else n.delete("all_depts");
+      return n;
+    });
+  };
+
+  const toggleUpcSev = (sev: ItemSev) => {
+    const next = new Set(upcSevs);
+    next.has(sev) ? next.delete(sev) : next.add(sev);
+    setUpcSevs(next);
+    setSelected((prev) => {
+      const n = new Set(prev);
+      if (next.size > 0) n.add("upc_list"); else n.delete("upc_list");
+      return n;
+    });
+  };
+
+  const gradedCount = subDepts.filter((s) => grades[s.id]).length;
 
   const setMetricFn = (key: string, fn: AggFn) => {
     setMetrics((prev) => {
@@ -314,8 +492,22 @@ const MarginPerfExportModal = ({
     if (selected.has("items_vs_ly") && itemSevs.size > 0) {
       sections.push(`Items vs Last Year\n${buildItemsVsLyCsv(tyMargins, lyMargins, threshold, itemSevs)}`);
     }
+    if (selected.has("all_depts") && deptSevs.size > 0) {
+      const items = collectGradedItems(subDepts, grades, threshold, gradingMetric, deptSevs);
+      sections.push(`Graded Items — All Departments\n${buildAllDeptsCsv(items, gradingMetric)}`);
+    }
+    if (selected.has("upc_list") && upcSevs.size > 0) {
+      const items = collectGradedItems(subDepts, grades, threshold, gradingMetric, upcSevs);
+      sections.push(`UPC List\n${buildUpcListCsv(items)}`);
+    }
     if (!sections.length) return;
-    downloadCsv(sections.join("\n\n"), `${safeName}_${dateRange.replace(/\s/g, "")}.csv`);
+    // The store-wide presets aren't about the open department, so a file made
+    // only of those shouldn't be named after it.
+    const storeWide = new Set<ExportPreset>(["all_depts", "upc_list"]);
+    const scopeName = [...selected].every((p) => storeWide.has(p))
+      ? storeName.replace(/[^a-z0-9]/gi, "_")
+      : safeName;
+    downloadCsv(sections.join("\n\n"), `${scopeName}_${dateRange.replace(/\s/g, "")}.csv`);
     onClose();
   };
 
@@ -405,6 +597,95 @@ const MarginPerfExportModal = ({
                         onClick={() => toggleItemSev(sev)}
                         className={`px-2 py-0.5 rounded-full text-[10px] font-medium border transition-colors ${
                           itemSevs.has(sev) ? activeClass : "bg-custom-white border-gray-200 text-content"
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* The only preset that isn't scoped to the open department.
+                  Costs nothing extra — grading already holds every
+                  department's item rows. */}
+              <div className="flex items-start gap-3 pt-3 border-t border-gray-100">
+                <input
+                  type="checkbox"
+                  checked={selected.has("all_depts")}
+                  onChange={() => {
+                    const checking = !selected.has("all_depts");
+                    if (checking) {
+                      if (deptSevs.size === 0) setDeptSevs(new Set(["critical"]));
+                    } else {
+                      setDeptSevs(new Set());
+                    }
+                    setSelected((prev) => { const n = new Set(prev); checking ? n.add("all_depts") : n.delete("all_depts"); return n; });
+                  }}
+                  className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-[#1e2a4a] cursor-pointer flex-shrink-0"
+                />
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] font-medium text-content">Graded Items — All Departments</p>
+                  <p className="text-[11px] text-content mt-0.5 mb-1.5">
+                    Every graded UPC in the store, tagged with its department and
+                    severity. Graded on {METRIC_LABEL[gradingMetric]} at a{" "}
+                    {threshold} threshold — the same as the items list.
+                  </p>
+                  <div className="flex gap-1.5 flex-wrap">
+                    {SEV_CHIP.map(({ sev, label, activeClass }) => (
+                      <button
+                        key={sev}
+                        onClick={() => toggleDeptSev(sev)}
+                        className={`px-2 py-0.5 rounded-full text-[10px] font-medium border transition-colors ${
+                          deptSevs.has(sev) ? activeClass : "bg-custom-white border-gray-200 text-content"
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                  {/* Departments grade in one at a time, so an export taken
+                      early would silently be a partial store. */}
+                  <p className="text-[10px] text-content mt-1.5">
+                    {loadingGrades
+                      ? `Still grading — ${gradedCount} of ${subDepts.length} departments ready`
+                      : `${gradedCount} of ${subDepts.length} departments`}
+                  </p>
+                </div>
+              </div>
+
+              {/* The same item set with every column but the UPC dropped —
+                  a list to feed another page, not a report to read. Its own
+                  severities, so it doesn't have to ride along with the full
+                  export to be taken. */}
+              <div className="flex items-start gap-3 pt-3 border-t border-gray-100">
+                <input
+                  type="checkbox"
+                  checked={selected.has("upc_list")}
+                  onChange={() => {
+                    const checking = !selected.has("upc_list");
+                    if (checking) {
+                      if (upcSevs.size === 0) setUpcSevs(new Set(["critical"]));
+                    } else {
+                      setUpcSevs(new Set());
+                    }
+                    setSelected((prev) => { const n = new Set(prev); checking ? n.add("upc_list") : n.delete("upc_list"); return n; });
+                  }}
+                  className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-[#1e2a4a] cursor-pointer flex-shrink-0"
+                />
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] font-medium text-content">UPC List</p>
+                  <p className="text-[11px] text-content mt-0.5 mb-1.5">
+                    Just the UPCs from every department, one per row, ready to
+                    load into another page.
+                  </p>
+                  <div className="flex gap-1.5 flex-wrap">
+                    {SEV_CHIP.map(({ sev, label, activeClass }) => (
+                      <button
+                        key={sev}
+                        onClick={() => toggleUpcSev(sev)}
+                        className={`px-2 py-0.5 rounded-full text-[10px] font-medium border transition-colors ${
+                          upcSevs.has(sev) ? activeClass : "bg-custom-white border-gray-200 text-content"
                         }`}
                       >
                         {label}

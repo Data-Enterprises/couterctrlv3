@@ -9,6 +9,7 @@ import {
   getItemSeverity,
   type ItemSeverity,
   type ItemGradingMetric,
+  type ItemMarginRow,
 } from "../../utils/itemMargins";
 import {
   LW_OFFSET,
@@ -21,7 +22,7 @@ import {
 import { fmtDayLabel } from "../../utils/dateLabels";
 import type { SubDeptMargin } from "../../interfaces";
 import type { VendorMetric, VendorRow } from "./vendorsUtils";
-import { getVendorTier, marginPct } from "./vendorsUtils";
+import { getVendorTier, marginPct, rowsForVendor } from "./vendorsUtils";
 
 /**
  * CSV export for Vendors.
@@ -32,7 +33,12 @@ import { getVendorTier, marginPct } from "./vendorsUtils";
  * selection.
  */
 
-type ExportPreset = "vendors" | "items" | "items_graded";
+type ExportPreset =
+  | "vendors"
+  | "items"
+  | "items_graded"
+  | "all_vendors"
+  | "upc_list";
 type ModalMode = "presets" | "custom";
 type CustomSource = "tw" | "lw" | "ly";
 type GradedSev = "critical" | "watch" | "healthy";
@@ -51,6 +57,9 @@ interface Props {
   rows: VendorRow[];
   /** Item rows for the open vendor only. */
   vendorRaw: { tw: SubDeptMargin[]; lw: SubDeptMargin[]; ly: SubDeptMargin[] };
+  /** Item rows for every vendor — the search already holds them, which is what
+   *  makes the all-vendors preset free. */
+  allRaw: { tw: SubDeptMargin[]; lw: SubDeptMargin[]; ly: SubDeptMargin[] };
   metric: VendorMetric;
   threshold: number;
   itemThreshold: number;
@@ -269,6 +278,145 @@ const buildItemsGradedCsv = (
   return rowsToCsv(headers, out);
 };
 
+/**
+ * The same graded item file, across every vendor rather than the open one.
+ *
+ * Costs nothing extra: the search already holds every vendor's TW/LW/LY rows,
+ * so this is a regroup of data in hand rather than a fan-out. It's the only
+ * dataset here that isn't scoped to the selected vendor, which is why the
+ * vendor lands in a column instead of the filename.
+ *
+ * Vendors are walked in the left panel's order and their items graded exactly
+ * as `buildItemsGradedCsv` does, so a row here matches the row that vendor's
+ * own export would produce.
+ */
+/** One graded item, with the vendor and department it came from. The full
+ *  export and the UPC-only export share this so the two can never disagree
+ *  about which items are in scope — the second is the first with the columns
+ *  taken away. */
+interface GradedItem {
+  vendorId: string;
+  vendorName: string;
+  dept: string;
+  r: ItemMarginRow;
+  sev: GradedSev;
+}
+
+const collectGradedItems = (
+  rows: VendorRow[],
+  raw: { tw: SubDeptMargin[]; lw: SubDeptMargin[]; ly: SubDeptMargin[] },
+  threshold: number,
+  gradingMetric: ItemGradingMetric,
+  sevs: Set<GradedSev>,
+): GradedItem[] => {
+  const sevRank: Record<GradedSev, number> = { critical: 0, watch: 1, healthy: 2 };
+  const out: GradedItem[] = [];
+
+  for (const v of rows) {
+    const tw = rowsForVendor(raw.tw, v.vendorId);
+    if (tw.length === 0) continue;
+    // Sub department isn't on the built item row, so it comes off the source
+    // rows — an item sells under one department, so first match is the answer.
+    const deptOf = new Map<string, string>();
+    for (const m of tw) {
+      if (!deptOf.has(m.product_code))
+        deptOf.set(m.product_code, m.sub_department_description);
+    }
+
+    const built = buildItemRows(
+      tw,
+      rowsForVendor(raw.lw, v.vendorId),
+      rowsForVendor(raw.ly, v.vendorId),
+    );
+    const kept: GradedItem[] = [];
+    for (const r of built) {
+      const sev = getItemSeverity(r, threshold, gradingMetric);
+      if (sev === "ungraded" || !sevs.has(sev)) continue;
+      kept.push({
+        vendorId: v.vendorId,
+        vendorName: v.vendorName,
+        dept: deptOf.get(r.productCode) ?? "",
+        r,
+        sev,
+      });
+    }
+    // Worst first inside a vendor, then biggest sellers — the order someone
+    // works a list in.
+    kept.sort(
+      (a, b) => sevRank[a.sev] - sevRank[b.sev] || b.r.grossSales - a.r.grossSales,
+    );
+    out.push(...kept);
+  }
+  return out;
+};
+
+const buildAllVendorsCsv = (items: GradedItem[]) => {
+  const headers = [
+    "Vendor ID",
+    "Vendor",
+    "Product Code",
+    "Description",
+    "Sub department",
+    "Grade",
+    "TY Net Sales",
+    "LW Net Sales",
+    "vs LW %",
+    "LY Net Sales",
+    "vs LY %",
+    "TY Qty",
+    "TY Margin %",
+    "LW Margin %",
+    "LY Margin %",
+  ];
+  const out = items.map(({ vendorId, vendorName, dept, r, sev }) => [
+    vendorId,
+    vendorName,
+    r.productCode,
+    r.description,
+    dept,
+    SEV_LABEL[sev],
+    fmtNum(r.grossSales),
+    r.lwGrossSales === null ? "" : fmtNum(r.lwGrossSales),
+    r.lwSalesPct === null ? "" : fmtNum(r.lwSalesPct),
+    r.lyGrossSales === null ? "" : fmtNum(r.lyGrossSales),
+    r.lySalesPct === null ? "" : fmtNum(r.lySalesPct),
+    r.qty,
+    fmtNum(r.tyMarginPct),
+    r.lwMarginPct === null ? "" : fmtNum(r.lwMarginPct),
+    r.lyMarginPct === null ? "" : fmtNum(r.lyMarginPct),
+  ]);
+  return rowsToCsv(headers, out);
+};
+
+/** The same item set with everything but the UPC dropped — a list to feed
+ *  another page, not a report to read. Deduped because an item carried by two
+ *  vendors would otherwise be uploaded twice. */
+const buildUpcListCsv = (items: GradedItem[]) => {
+  const seen = new Set<string>();
+  const out: (string | number)[][] = [];
+  for (const { r } of items) {
+    if (seen.has(r.productCode)) continue;
+    seen.add(r.productCode);
+    out.push([r.productCode]);
+  }
+  return rowsToCsv(["UPC"], out);
+};
+
+/** TW rows to the chosen dates, LW/LY to the same dates shifted — the Items
+ *  tab's narrowing, applied to whichever slice of the search it's handed. An
+ *  empty set means the whole week and is returned untouched. */
+const narrowToDays = (
+  src: { tw: SubDeptMargin[]; lw: SubDeptMargin[]; ly: SubDeptMargin[] },
+  days: Set<string>,
+) => {
+  if (days.size === 0) return src;
+  const lw = new Set([...days].map((d) => shiftIso(d, LW_OFFSET)));
+  const ly = new Set([...days].map((d) => shiftIso(d, LY_OFFSET)));
+  const on = (rows: SubDeptMargin[], keep: Set<string>) =>
+    rows.filter((r) => keep.has(isoOf(r.sale_date)));
+  return { tw: on(src.tw, days), lw: on(src.lw, lw), ly: on(src.ly, ly) };
+};
+
 /* ── custom mode ─────────────────────────────────────────────────────────── */
 
 const ITEM_DIMS = [
@@ -317,6 +465,7 @@ const VendorExportModal = ({
   dateRange,
   rows,
   vendorRaw,
+  allRaw,
   metric,
   threshold,
   itemThreshold,
@@ -326,6 +475,8 @@ const VendorExportModal = ({
   const [mode, setMode] = useState<ModalMode>("presets");
   const [selected, setSelected] = useState<Set<ExportPreset>>(new Set());
   const [itemSevs, setItemSevs] = useState<Set<GradedSev>>(new Set());
+  const [allSevs, setAllSevs] = useState<Set<GradedSev>>(new Set());
+  const [upcSevs, setUpcSevs] = useState<Set<GradedSev>>(new Set());
   const [source, setSource] = useState<CustomSource>("tw");
   const [groupBy, setGroupBy] = useState<Set<string>>(new Set());
   const [metrics, setMetrics] = useState(freshMetrics);
@@ -337,19 +488,17 @@ const VendorExportModal = ({
 
   /** Items narrowed to the chosen days — TW to those dates, LW/LY to the same
    *  dates shifted, exactly as the Items tab narrows them. */
-  const scoped = useMemo(() => {
-    if (exportDays.size === 0) return vendorRaw;
-    const tw = exportDays;
-    const lw = new Set([...exportDays].map((d) => shiftIso(d, LW_OFFSET)));
-    const ly = new Set([...exportDays].map((d) => shiftIso(d, LY_OFFSET)));
-    const on = (src: SubDeptMargin[], keep: Set<string>) =>
-      src.filter((r) => keep.has(isoOf(r.sale_date)));
-    return {
-      tw: on(vendorRaw.tw, tw),
-      lw: on(vendorRaw.lw, lw),
-      ly: on(vendorRaw.ly, ly),
-    };
-  }, [exportDays, vendorRaw]);
+  const scoped = useMemo(
+    () => narrowToDays(vendorRaw, exportDays),
+    [exportDays, vendorRaw],
+  );
+  // The day pills govern every dataset, so the all-vendors slice narrows the
+  // same way — otherwise picking Tuesday would quietly export a whole week for
+  // one preset and one day for the rest.
+  const scopedAll = useMemo(
+    () => narrowToDays(allRaw, exportDays),
+    [exportDays, allRaw],
+  );
 
   const hasItems = scoped.tw.length > 0;
 
@@ -410,6 +559,34 @@ const VendorExportModal = ({
       return n;
     });
   };
+
+  const toggleAllSev = (sev: GradedSev) => {
+    const next = new Set(allSevs);
+    if (next.has(sev)) next.delete(sev);
+    else next.add(sev);
+    setAllSevs(next);
+    setSelected((prev) => {
+      const n = new Set(prev);
+      if (next.size > 0) n.add("all_vendors");
+      else n.delete("all_vendors");
+      return n;
+    });
+  };
+
+  const toggleUpcSev = (sev: GradedSev) => {
+    const next = new Set(upcSevs);
+    if (next.has(sev)) next.delete(sev);
+    else next.add(sev);
+    setUpcSevs(next);
+    setSelected((prev) => {
+      const n = new Set(prev);
+      if (next.size > 0) n.add("upc_list");
+      else n.delete("upc_list");
+      return n;
+    });
+  };
+
+  const hasAllItems = scopedAll.tw.length > 0;
 
   const flatRows = useMemo<AggRow[]>(
     () =>
@@ -513,8 +690,26 @@ const VendorExportModal = ({
       sections.push(
         `${title("Items Graded")}\n${buildItemsGradedCsv(scoped, itemThreshold, gradingMetric, itemSevs)}`,
       );
+    if (selected.has("all_vendors") && allSevs.size > 0)
+      sections.push(
+        `${title("Items Graded — All Vendors")}\n${buildAllVendorsCsv(
+          collectGradedItems(rows, scopedAll, itemThreshold, gradingMetric, allSevs),
+        )}`,
+      );
+    if (selected.has("upc_list") && upcSevs.size > 0)
+      sections.push(
+        `${title("UPC List")}\n${buildUpcListCsv(
+          collectGradedItems(rows, scopedAll, itemThreshold, gradingMetric, upcSevs),
+        )}`,
+      );
     if (!sections.length) return;
-    downloadCsv(sections.join("\n\n"), `${safeName}_${fileDate}.csv`);
+    // The store-wide presets aren't about the open vendor, so a file made only
+    // of those shouldn't be named after it.
+    const storeWide = new Set<ExportPreset>(["all_vendors", "upc_list"]);
+    const scopeName = [...selected].every((p) => storeWide.has(p))
+      ? storeName.replace(/[^a-z0-9]/gi, "_")
+      : safeName;
+    downloadCsv(sections.join("\n\n"), `${scopeName}_${fileDate}.csv`);
     onClose();
   };
 
@@ -673,6 +868,112 @@ const VendorExportModal = ({
                       onClick={() => toggleItemSev(sev)}
                       className={`px-2 py-0.5 rounded-full text-[10px] font-medium border transition-colors disabled:cursor-not-allowed ${
                         itemSevs.has(sev)
+                          ? activeClass
+                          : "bg-custom-white border-gray-200 text-content"
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* The only dataset here that isn't scoped to the open vendor.
+                Free — the search already holds every vendor's rows. */}
+            <div
+              className={`flex items-start gap-3 pt-3 border-t border-gray-100 ${hasAllItems ? "" : "opacity-40"}`}
+            >
+              <input
+                type="checkbox"
+                disabled={!hasAllItems}
+                checked={selected.has("all_vendors")}
+                onChange={() => {
+                  const checking = !selected.has("all_vendors");
+                  if (checking) {
+                    if (allSevs.size === 0)
+                      setAllSevs(new Set(["critical", "watch", "healthy"]));
+                  } else {
+                    setAllSevs(new Set());
+                  }
+                  setSelected((prev) => {
+                    const n = new Set(prev);
+                    if (checking) n.add("all_vendors");
+                    else n.delete("all_vendors");
+                    return n;
+                  });
+                }}
+                className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-[#1e2a4a] cursor-pointer flex-shrink-0 disabled:cursor-not-allowed"
+              />
+              <div className="flex-1 min-w-0">
+                <p className="text-[13px] font-medium text-content">
+                  Items Graded — All Vendors
+                </p>
+                <p className="text-[11px] text-content mt-0.5 mb-1.5">
+                  {hasAllItems
+                    ? `Every item across all ${rows.length} vendors, tagged with its vendor, graded on ${gradingMetric} at ${itemThreshold}%`
+                    : "Nothing sold in the selected days"}
+                </p>
+                <div className="flex gap-1.5 flex-wrap">
+                  {SEV_CHIP.map(({ sev, label, activeClass }) => (
+                    <button
+                      key={sev}
+                      disabled={!hasAllItems}
+                      onClick={() => toggleAllSev(sev)}
+                      className={`px-2 py-0.5 rounded-full text-[10px] font-medium border transition-colors disabled:cursor-not-allowed ${
+                        allSevs.has(sev)
+                          ? activeClass
+                          : "bg-custom-white border-gray-200 text-content"
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* The same item set with every column but the UPC dropped — a list
+                to feed another page, not a report to read. Its own severities,
+                so it doesn't have to ride along with the full export. */}
+            <div
+              className={`flex items-start gap-3 pt-3 border-t border-gray-100 ${hasAllItems ? "" : "opacity-40"}`}
+            >
+              <input
+                type="checkbox"
+                disabled={!hasAllItems}
+                checked={selected.has("upc_list")}
+                onChange={() => {
+                  const checking = !selected.has("upc_list");
+                  if (checking) {
+                    if (upcSevs.size === 0) setUpcSevs(new Set(["critical"]));
+                  } else {
+                    setUpcSevs(new Set());
+                  }
+                  setSelected((prev) => {
+                    const n = new Set(prev);
+                    if (checking) n.add("upc_list");
+                    else n.delete("upc_list");
+                    return n;
+                  });
+                }}
+                className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-[#1e2a4a] cursor-pointer flex-shrink-0 disabled:cursor-not-allowed"
+              />
+              <div className="flex-1 min-w-0">
+                <p className="text-[13px] font-medium text-content">UPC List</p>
+                <p className="text-[11px] text-content mt-0.5 mb-1.5">
+                  {hasAllItems
+                    ? "Just the UPCs from every vendor, one per row, ready to load into another page."
+                    : "Nothing sold in the selected days"}
+                </p>
+                <div className="flex gap-1.5 flex-wrap">
+                  {SEV_CHIP.map(({ sev, label, activeClass }) => (
+                    <button
+                      key={sev}
+                      disabled={!hasAllItems}
+                      onClick={() => toggleUpcSev(sev)}
+                      className={`px-2 py-0.5 rounded-full text-[10px] font-medium border transition-colors disabled:cursor-not-allowed ${
+                        upcSevs.has(sev)
                           ? activeClass
                           : "bg-custom-white border-gray-200 text-content"
                       }`}
