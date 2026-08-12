@@ -53,6 +53,10 @@ export const postBedrockInvoice = async (
   storeid: number,
   files: File[],
 ) => {
+  const form = new FormData();
+  files.forEach((file) => form.append("files", file));
+  form.append("storeid", storeid.toString());
+  
   const json = await axios({
     method: "POST",
     headers: {
@@ -60,10 +64,7 @@ export const postBedrockInvoice = async (
       Authorization: `Bearer ${token}`,
     },
     url: url + "invoices/parse_bedrock",
-    data: {
-      storeid: storeid,
-      files: files,
-    },
+    data: form,
   });
 
   return json;
@@ -75,6 +76,10 @@ export const postTextractInvoice = async (
   storeid: number,
   files: File[],
 ) => {
+  const form = new FormData();
+  files.forEach((file) => form.append("files", file));
+  form.append("storeid", storeid.toString());
+
   const json = await axios({
     method: "POST",
     headers: {
@@ -82,10 +87,7 @@ export const postTextractInvoice = async (
       Authorization: `Bearer ${token}`,
     },
     url: url + "invoices/parse_textract",
-    data: {
-      storeid: storeid,
-      files: files,
-    },
+    data: form,
   });
 
   return json;
