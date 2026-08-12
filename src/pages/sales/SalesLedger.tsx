@@ -419,7 +419,7 @@ const SalesLedger = () => {
           {/* Left: store list */}
           <div
             className="flex flex-col min-w-0 shadow-lg"
-            style={{ flexBasis: "35%", flexShrink: 0 }}
+            style={{ flexBasis: "33%", flexShrink: 0 }}
           >
             <LedgerHeader
               weekLabel={weekLabel}

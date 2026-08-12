@@ -42,6 +42,52 @@ export interface ItemReportHandoff {
   departments: string[];
   sourceLabel: string;
   basisLabel: string;
+  /**
+   * The window the handed-over rows actually cover, carried rather than
+   * recomputed from `singleDate`.
+   *
+   * The two are normally the same, but only *normally*: if the date picker
+   * moved after the source page ran its search, recomputing would label the
+   * report with one week and fill it with another. Rows and their window travel
+   * together or not at all.
+   */
+  window: { start: string; end: string };
+  /**
+   * The item rows behind the list, when the caller already holds them.
+   *
+   * Every page that can offer this button has already fetched exactly what the
+   * report would fetch — it had to, in order to grade them. Without this the
+   * click pays for the same department fan-out twice, which on a whole store is
+   * around a hundred requests for nothing.
+   *
+   * Omitted means "fetch it yourself", which is still the right answer when the
+   * caller only holds a slice of what the list needs.
+   */
+  rows?: {
+    ty: SubDeptMargin[];
+    lw: SubDeptMargin[];
+    ly: SubDeptMargin[];
+  };
+  /**
+   * A grading rule to apply *after* fetching, for callers that don't already
+   * hold the rows.
+   *
+   * Sales is the case: it loads item rows one department at a time, so a
+   * store-wide list would mean fanning out before navigating — leaving the user
+   * on the old page watching nothing happen. Deferring lets the click land on
+   * the report's own loading screen, and the fan-out it was going to do anyway
+   * doubles as the one that resolves the list.
+   *
+   * Serializable by design — a rule named by `kind`, not a function.
+   */
+  grade?: {
+    kind: "sales";
+    threshold: number;
+    metric: "sales" | "qty";
+    /** Co-located storeids return both locations; the list has to be narrowed
+     *  the same way the page that launched it narrows its own figures. */
+    storeNumber: string;
+  };
 }
 
 interface ItemReportState {

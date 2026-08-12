@@ -286,6 +286,15 @@ const VendorDetailPanel = () => {
                 openCriticalReport({
                   storeId: vend.storeid,
                   items: criticalItems,
+                  window: { start: vend.twStart, end: vend.twEnd },
+                  // The vendor's rows for all three periods are already in
+                  // hand — handing them over is both faster and the only way
+                  // the report is guaranteed to show what this panel showed.
+                  rows: {
+                    ty: vendorRaw.tw,
+                    lw: vendorRaw.lw,
+                    ly: vendorRaw.ly,
+                  },
                   sourceLabel: row.vendorName,
                   basisLabel: `${criticalItems.length} critical by ${itemGradingMetric}, ${activeItemThreshold}%`,
                 })

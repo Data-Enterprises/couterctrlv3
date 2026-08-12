@@ -31,6 +31,7 @@ import {
   ChevronUpIcon,
 } from "@heroicons/react/20/solid";
 import type { Severity } from "./LedgerRow";
+import { aggregateByCode, itemSeverity } from "./itemGrading";
 import type { SubDeptMargin } from "../../../interfaces";
 import UpcContextMenu from "../../../components/UpcContextMenu";
 import { formatPct, pillClass, chipClass, CTA_SEVERITY_CLASSES, severityDotClass, PCT_COL_W, type SevFilter } from "./utils";
@@ -63,55 +64,12 @@ type DeptRow = {
   lyStoreCpn: number;
 };
 
-type Top10Item = {
-  productCode: string;
-  upc: string;
-  desc: string;
-  tyNet: number;
-  tyQty: number;
-  tyWeight: number;
-  lwNet: number | null;
-  lwQty: number | null;
-  lwWeight: number | null;
-  lyNet: number | null;
-  lyQty: number | null;
-  lyWeight: number | null;
-};
-
 type DeptSortColumn = "ty" | "vsLW" | "vsLY";
 type DeptSortState = { column: DeptSortColumn; direction: "desc" | "asc" } | null;
 
 type ItemSortColumn = "ty" | "lw" | "ly";
 type ItemSortState = { column: ItemSortColumn; direction: "desc" | "asc" } | null;
 
-const aggregateByCode = (
-  items: SubDeptMargin[],
-): Map<string, { desc: string; net: number; qty: number; weight: number }> => {
-  const map = new Map<
-    string,
-    { desc: string; net: number; qty: number; weight: number }
-  >();
-  for (const item of items) {
-    // product_code is typed as string but the API doesn't always send it as
-    // one (numeric UPCs come back as a JSON number on some queries) — coerce
-    // here so every downstream .toLowerCase()/string usage is safe.
-    const code = String(item.product_code);
-    const ex = map.get(code);
-    if (ex) {
-      ex.net += item.total_sales - item.total_tax;
-      ex.qty += item.qty;
-      ex.weight += item.weight;
-    } else {
-      map.set(code, {
-        desc: item.product_description,
-        net: item.total_sales - item.total_tax,
-        qty: item.qty,
-        weight: item.weight,
-      });
-    }
-  }
-  return map;
-};
 
 const deptSeverity = (
   r: DeptRow,
@@ -137,35 +95,6 @@ const deptSeverity = (
   return "healthy";
 };
 
-const itemSeverity = (
-  item: Top10Item,
-  threshold: number,
-  metric: GradingMetric,
-): Severity => {
-  const lyPct =
-    metric === "sales"
-      ? item.lyNet !== null && item.lyNet > 0
-        ? ((item.tyNet - item.lyNet) / item.lyNet) * 100
-        : null
-      : item.lyQty !== null && item.lyQty > 0
-        ? ((item.tyQty - item.lyQty) / item.lyQty) * 100
-        : null;
-  const lwPct =
-    metric === "sales"
-      ? item.lwNet !== null && item.lwNet > 0
-        ? ((item.tyNet - item.lwNet) / item.lwNet) * 100
-        : null
-      : item.lwQty !== null && item.lwQty > 0
-        ? ((item.tyQty - item.lwQty) / item.lwQty) * 100
-        : null;
-  // Rounded before grading — tyNet/lwNet/lyNet are sums of individual line
-  // items, so floating-point noise can leave a value like -0.0000000001%
-  // even when the displayed dollars are identical, misgrading it "watch".
-  const pct = Math.round((lyPct ?? lwPct ?? 0) * 10) / 10;
-  if (pct < -threshold) return "critical";
-  if (pct < 0) return "watch";
-  return "healthy";
-};
 
 const getCta = (
   row: DeptRow,

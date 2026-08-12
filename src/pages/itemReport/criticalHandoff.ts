@@ -2,6 +2,8 @@ import { useCallback } from "react";
 import { useNavigate } from "react-router";
 import { useAppDispatch } from "../../hooks";
 import { setItemReportHandoff } from "../../features/itemReportSlice";
+import type { SubDeptMargin } from "../../interfaces";
+import type { ItemReportHandoff } from "../../features/itemReportSlice";
 
 /**
  * "View critical report" — the hop from a graded page into Item Report.
@@ -38,7 +40,17 @@ export interface HandoffItem {
 
 export interface CriticalHandoffInput {
   storeId: number;
-  items: HandoffItem[];
+  /** The finished list, when the caller already graded it. Omitted by callers
+   *  that pass `grade` instead and let the report resolve it after fetching. */
+  items?: HandoffItem[];
+  /** Defer grading to the report. See the note on `ItemReportHandoff.grade`. */
+  grade?: ItemReportHandoff["grade"];
+  /** The window the caller's data covers, as yyyy-mm-dd. */
+  window: { start: string; end: string };
+  /** The three periods' item rows, when the caller already holds them — which
+   *  it does whenever it graded the items itself. Skips a fan-out the report
+   *  would otherwise repeat call for call. */
+  rows?: { ty: SubDeptMargin[]; lw: SubDeptMargin[]; ly: SubDeptMargin[] };
   /** What the list is of — "Soft Drinks", "Clark Beverage Group". */
   sourceLabel: string;
   /** How it was graded, so the report can say why these items and not others.
@@ -52,15 +64,23 @@ export const useCriticalReport = () => {
   const navigate = useNavigate();
 
   return useCallback(
-    ({ storeId, items, sourceLabel, basisLabel }: CriticalHandoffInput) => {
+    ({
+      storeId,
+      items,
+      grade,
+      window,
+      rows,
+      sourceLabel,
+      basisLabel,
+    }: CriticalHandoffInput) => {
       // Deduped because the same UPC can appear on more than one source row —
       // an item sold on several days, or under more than one price type.
-      const upcs = [...new Set(items.map((i) => i.productCode))];
+      const upcs = [...new Set((items ?? []).map((i) => i.productCode))];
       // Blank departments are dropped rather than passed through: an empty
       // string matches nothing on the far side, and one unmatched name would
       // widen the read back out to every department without saying so.
       const departments = [
-        ...new Set(items.map((i) => i.dept).filter((d) => d.length > 0)),
+        ...new Set((items ?? []).map((i) => i.dept).filter((d) => d.length > 0)),
       ];
 
       dispatch(
@@ -68,6 +88,9 @@ export const useCriticalReport = () => {
           storeId,
           upcs,
           departments,
+          grade,
+          window,
+          rows,
           sourceLabel,
           basisLabel,
         }),

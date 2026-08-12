@@ -20,6 +20,7 @@ import {
 } from "@heroicons/react/16/solid";
 import { collectGradedItems } from "./gradedItems";
 import { useCriticalReport } from "../../../itemReport/criticalHandoff";
+import { weekEnding } from "../../../itemReport/itemReportData";
 import type { SubDeptCost, SubDeptMargin } from "../../../../interfaces";
 
 import LoadingIndicator from "../../../../components/loading/LoadingIndicator";
@@ -293,6 +294,16 @@ const MarginPerfRightPanel = () => {
                   openCriticalReport({
                     storeId: ctx.searchValue,
                     items: criticalItems,
+                    window: weekEnding(ctx.singleDate ?? ""),
+                    // Grading already fetched all three periods for this
+                    // department, so the report has nothing left to fetch.
+                    rows: selectedGrade
+                      ? {
+                          ty: selectedGrade.tyWeekOneMargins,
+                          lw: selectedGrade.lwWeekOneMargins,
+                          ly: selectedGrade.lyWeekOneMargins,
+                        }
+                      : undefined,
                     sourceLabel: subDeptName,
                     basisLabel: `${criticalItems.length} critical by ${gradingMetric}, ${gradingThreshold}%`,
                   })

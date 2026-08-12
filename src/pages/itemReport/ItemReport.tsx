@@ -16,6 +16,10 @@ import {
   setItemReportSource,
 } from "../../features/itemReportSlice";
 import ItemReportEntry from "./ItemReportEntry";
+import type { SubDeptMargin } from "../../interfaces";
+import type { ItemReportHandoff } from "../../features/itemReportSlice";
+import { collectCriticalItems } from "../sales/components/itemGrading";
+import { scopeToStoreNumber } from "../sales/shared/ledgerUtils";
 import ItemReportSheet, { type SheetRow } from "./ItemReportSheet";
 import ItemReportRail from "./ItemReportRail";
 import ItemReportExportModal from "./ItemReportExportModal";
@@ -88,18 +92,29 @@ const ItemReport = () => {
      *  every run sets it, so a manual search can't inherit the provenance of a
      *  handoff that ran before it. */
     source?: { sourceLabel: string; basisLabel: string },
+    /** A handed-over week and its rows. When present the department fan-out is
+     *  skipped entirely — the caller already made those calls to grade the
+     *  items it is passing over. */
+    preloaded?: {
+      window: { start: string; end: string };
+      rows?: { ty: SubDeptMargin[]; lw: SubDeptMargin[]; ly: SubDeptMargin[] };
+      /** Grading the caller deferred — resolved here, after the fetch. */
+      grade?: ItemReportHandoff["grade"];
+    },
   ) => {
     if (!state.storeId) {
       toast.warn("Please select a store");
       return;
     }
-    if (upcs.length === 0) {
+    if (upcs.length === 0 && !preloaded?.grade) {
       toast.warn("Add or upload at least one UPC");
       return;
     }
     // One date in, a fixed seven-day week out — the same contract the graded
-    // pages work to, and what keeps the three periods comparable.
-    const week = weekEnding(singleDate);
+    // pages work to, and what keeps the three periods comparable. A handoff
+    // brings its own window, because its rows were fetched against that one and
+    // the picker may have moved since.
+    const week = preloaded?.window ?? weekEnding(singleDate);
     const next: ReportScope = {
       url,
       token,
@@ -117,6 +132,30 @@ const ItemReport = () => {
     cancelWalk();
 
     try {
+      // Rows in hand: nothing to fetch, so the report is on screen immediately
+      // and only the invoice walk is left running behind it.
+      if (preloaded?.rows) {
+        dispatch(
+          setItemReportResults({
+            scope: { storeid: next.storeid, start: next.start, end: next.end },
+            upcs,
+            uploadDepartments,
+            tyRows: preloaded.rows.ty,
+            lwRows: preloaded.rows.lw,
+            lyRows: preloaded.rows.ly,
+          }),
+        );
+        const retained = new Set(upcs);
+        for (const row of [
+          ...preloaded.rows.ty,
+          ...preloaded.rows.lw,
+          ...preloaded.rows.ly,
+        ])
+          retained.add(String(row.product_code));
+        void startWalk(next, [...retained]);
+        return;
+      }
+
       dispatch(
         setItemReportLoading({
           loading: true,
@@ -161,14 +200,50 @@ const ItemReport = () => {
         fetchRowsForDepartments(next, ids, lyWindow(next)),
       ]);
 
+      /**
+       * Deferred grading, resolved now that the rows are here.
+       *
+       * The rule is still the caller's — this page invents no severity of its
+       * own. All that moved is *when* it gets applied, so the wait happens on
+       * this page's loading screen rather than on the one the user just left.
+       */
+      let tyRows = ty;
+      let lwRows = lw;
+      let lyRows = ly;
+      let listUpcs = upcs;
+      let listDepts = uploadDepartments;
+
+      if (preloaded?.grade) {
+        const num = preloaded.grade.storeNumber;
+        tyRows = scopeToStoreNumber(ty, num);
+        lwRows = scopeToStoreNumber(lw, num);
+        lyRows = scopeToStoreNumber(ly, num);
+
+        const graded = collectCriticalItems(
+          tyRows,
+          lwRows,
+          lyRows,
+          preloaded.grade.threshold,
+          preloaded.grade.metric,
+        );
+        if (graded.length === 0) {
+          toast.info("No critical items in that store for that week");
+          return;
+        }
+        listUpcs = [...new Set(graded.map((g) => g.productCode))];
+        listDepts = [
+          ...new Set(graded.map((g) => g.dept).filter((d) => d.length > 0)),
+        ];
+      }
+
       dispatch(
         setItemReportResults({
           scope: { storeid: next.storeid, start: next.start, end: next.end },
-          upcs,
-          uploadDepartments,
-          tyRows: ty,
-          lwRows: lw,
-          lyRows: ly,
+          upcs: listUpcs,
+          uploadDepartments: listDepts,
+          tyRows,
+          lwRows,
+          lyRows,
         }),
       );
 
@@ -176,8 +251,8 @@ const ItemReport = () => {
       // of the three windows. That union is exactly the widest set the "all
       // found" scope can ever surface, so nothing reachable is discarded and
       // nothing unreachable is carried.
-      const retain = new Set(upcs);
-      for (const row of [...ty, ...lw, ...ly])
+      const retain = new Set(listUpcs);
+      for (const row of [...tyRows, ...lwRows, ...lyRows])
         retain.add(String(row.product_code));
 
       // Deliberately not awaited — the sheet is readable before the walk lands,
@@ -203,10 +278,12 @@ const ItemReport = () => {
   useEffect(() => {
     if (!handoff) return;
     dispatch(clearItemReportHandoff());
-    void run(handoff.upcs, handoff.departments, {
-      sourceLabel: handoff.sourceLabel,
-      basisLabel: handoff.basisLabel,
-    });
+    void run(
+      handoff.upcs,
+      handoff.departments,
+      { sourceLabel: handoff.sourceLabel, basisLabel: handoff.basisLabel },
+      { window: handoff.window, rows: handoff.rows, grade: handoff.grade },
+    );
     // Keyed on the handoff object alone: `run` is redefined every render, and
     // depending on it would re-fire the fan-out on each one.
   }, [handoff]);

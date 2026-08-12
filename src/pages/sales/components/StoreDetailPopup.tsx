@@ -39,6 +39,8 @@ import { ArrowDownTrayIcon /*, ExclamationTriangleIcon */ } from "@heroicons/rea
 import PopupDaySidebar from "./PopupDaySidebar";
 import PopupSubDeptList from "./PopupSubDeptList";
 import PopupHourlyView from "./PopupHourlyView";
+import { ClipboardDocumentListIcon } from "@heroicons/react/20/solid";
+import { useCriticalReport } from "../../itemReport/criticalHandoff";
 // import DataGapReport from "./DataGapReport";
 // import PopupCategoryList from "./PopupCategoryList";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
@@ -88,6 +90,11 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
   const [exportOpen, setExportOpen] = useState(false);
   // const [gapReportOpen, setGapReportOpen] = useState(false);
   const [showFlames, setShowFlames] = useState(false);
+  const openCriticalReport = useCriticalReport();
+  // The same item threshold the sub-dept list grades against, so the button's
+  // definition of critical is the one already on screen.
+  const itemThreshold =
+    useAppSelector((state) => state.salesLedger.itemThreshold) ?? 9;
   // const [catLoading, setCatLoading] = useState(false);
   // const [catFetchedFor, setCatFetchedFor] = useState<number | null>(null);
 
@@ -516,6 +523,34 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
               </span>
             </button>
           )} */}
+          {/* Whole-store critical report.
+              Nothing is fetched here. Sales loads item rows one department at
+              a time, so grading the store first would strand the user on this
+              popup watching nothing happen — instead the rule travels with the
+              handoff and the report resolves it on its own loading screen,
+              using the fan-out it was going to run anyway. */}
+          {!loading && rawSubs.length > 0 && (
+            <button
+              onClick={() =>
+                openCriticalReport({
+                  storeId: selection.storeId,
+                  grade: {
+                    kind: "sales",
+                    threshold: itemThreshold,
+                    metric: gradingMetric,
+                    storeNumber: selection.storeNumber,
+                  },
+                  window: { start: twStart, end: twEnd },
+                  sourceLabel: resolvedStoreName,
+                  basisLabel: `critical by ${gradingMetric}, ${itemThreshold}%`,
+                })
+              }
+              title="View critical report"
+              className="text-custom-white transition-colors"
+            >
+              <ClipboardDocumentListIcon className="w-4 h-4" />
+            </button>
+          )}
           {!loading && (rawSubs.length > 0 || rawHourly.length > 0) && (
             <button
               onClick={() => setExportOpen(true)}
@@ -636,6 +671,7 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
             {t === "subdept" ? "Sub dept" : "Hourly"}
           </button>
         ))}
+
       </div>
 
       {/* Content — fills remaining height */}
