@@ -725,7 +725,7 @@ const ItemReportExportModal = ({
         </div>
       ) : (
         <div
-          className="grid min-h-0"
+          className="grid flex-1 min-h-0"
           style={{ gridTemplateColumns: "220px 1fr" }}
         >
           {/* The source list stays put; only the column list scrolls. Twenty-odd
@@ -773,8 +773,8 @@ const ItemReportExportModal = ({
             </div>
           </div>
 
-          <div className="p-3.5 flex flex-col">
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-content/85 mb-2">
+          <div className="p-3.5 flex flex-col min-h-0">
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-content/85 mb-2 flex-shrink-0">
               Preview
             </p>
             <div className="border border-gray-100 rounded-md overflow-x-auto">
