@@ -41,9 +41,6 @@ export const getInvoiceResult = async (
       Authorization: `Bearer ${token}`,
     },
     url: url + `invoices/result/${run_id}`,
-    data: {
-      run_id: run_id,
-    },
   });
 
   return json;
