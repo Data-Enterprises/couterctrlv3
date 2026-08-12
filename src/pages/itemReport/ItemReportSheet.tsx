@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   MagnifyingGlassIcon,
   ArrowDownTrayIcon,
@@ -14,6 +14,9 @@ import { formatCurrencyCompact } from "../../utils";
 import { formatPct, pillClass } from "../../utils/severity";
 import TextFilter from "../../components/filters/TextFilter";
 import HeaderIconButton from "../../components/HeaderIconButton";
+import InfoButton from "../../components/InfoButton";
+import InfoPopover from "../../components/InfoPopover";
+import { ITEM_REPORT_INFO } from "./itemReportInfo";
 import {
   ACTION_LABEL,
   ACTION_RANK,
@@ -68,12 +71,6 @@ interface Props {
   onExportOpen: () => void;
   storeName: string;
   dateLabel: string;
-  /** Set when the list arrived from a graded page rather than a file. Naming
-   *  the source and the grading basis is what stops the same department
-   *  producing a different list next week with nothing on screen to explain
-   *  it. */
-  sourceLabel: string;
-  basisLabel: string;
   receivingComplete: boolean;
   receivingProgress: string;
 }
@@ -111,10 +108,21 @@ const TONE: Record<ActionKind, { chip: string; ring: string; rule: string }> = {
     ring: "ring-content/30",
     rule: "border-gray-300",
   },
+  /** Quiet on purpose. It is a state, not a finding, and colouring it would
+   *  give a row that says nothing the same weight as one that does. */
+  pending: {
+    chip: "bg-gray-50 text-content/85",
+    ring: "ring-content/20",
+    rule: "border-transparent",
+  },
 };
 
 /** Operational problems first, then pricing, then the clean rows. Someone
  *  working down the sheet should hit what's costing them soonest. */
+/** The chip row. "pending" is deliberately absent — it is not a pile anyone
+ *  works through, and a chip for it would invite filtering to a set that empties
+ *  itself a few seconds later. The progress strip below already says what is
+ *  happening. */
 const ORDER: ActionKind[] = [
   "investigate",
   "reorder",
@@ -156,8 +164,6 @@ const ItemReportSheet = ({
   onExportOpen,
   storeName,
   dateLabel,
-  sourceLabel,
-  basisLabel,
   receivingComplete,
   receivingProgress,
 }: Props) => {
@@ -168,6 +174,17 @@ const ItemReportSheet = ({
   const filter = useAppSelector((s) => s.itemReport.textFilter);
   const only = useAppSelector((s) => s.itemReport.actionFilter);
   const scope = useAppSelector((s) => s.itemReport.itemScope);
+  // Popover open/closed — ephemeral, and the same shape LedgerHeader uses.
+  const [infoOpen, setInfoOpen] = useState(false);
+
+  // Row 1 is the three-slot panel header the graded pages use: the entity on
+  // the left, what you are looking at in the centre, controls on the right.
+  //
+  // The centre names the page, not the source. A list can span many departments
+  // — a vendor's range routinely does, and an uploaded file almost always does —
+  // so a single department name in the title would be wrong more often than
+  // right. Where the list came from is on row 2, next to the rule that cut it.
+  const centreLabel = ["Item Report", dateLabel].filter(Boolean).join(" · ");
 
   const term = filter.trim().toLowerCase();
   const visible = useMemo(() => {
@@ -191,58 +208,97 @@ const ItemReportSheet = ({
 
   return (
     <div className="flex-1 min-w-0 shadow-lg">
-      <div className="bg-custom-white rounded-xl shadow-sm overflow-hidden flex flex-col h-full">
-        <div className="flex-shrink-0 px-4 py-[10px] flex items-center justify-between gap-3 bg-[#1e2a4a]">
-          <div className="min-w-0">
-            <div className="text-[13px] font-semibold text-custom-white leading-tight truncate">
-              {sourceLabel ? `${sourceLabel} — critical items` : "Critical items report"}
-            </div>
-            <div className="text-[10px] mt-0.5 text-custom-white/85 truncate">
-              {storeName} · {dateLabel} · {rows.length} items
-              {basisLabel ? ` · ${basisLabel}` : ""}
+      <div className="bg-custom-white rounded-xl shadow-sm flex flex-col h-full">
+        {/* Two rows split by a hairline, matching LedgerHeader: identity and
+            the headline count above, the controls that change them below. */}
+        <div className="flex-shrink-0 bg-[#1e2a4a] rounded-t-xl px-4 pt-1 pb-2.5 flex flex-col gap-0">
+          {/* Row 1: store | what you are looking at | count + export */}
+          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 min-h-[26px]">
+            <span className="text-custom-white font-semibold text-[13px] truncate justify-self-start">
+              {storeName}
+            </span>
+            <span className="text-custom-white font-semibold text-[13px] justify-self-center truncate">
+              {centreLabel}
+            </span>
+            <div className="flex items-center gap-2 justify-self-end">
+              <span className="text-[14px] font-semibold text-custom-white tabular-nums">
+                {rows.length} items
+              </span>
+              <HeaderIconButton onClick={onExportOpen} title="Export CSV">
+                <ArrowDownTrayIcon className="w-3.5 h-3.5" />
+              </HeaderIconButton>
             </div>
           </div>
-          <div className="flex items-center gap-1.5 flex-shrink-0">
-            <HeaderIconButton onClick={onExportOpen} title="Export CSV">
-              <ArrowDownTrayIcon className="h-3 w-3" />
-            </HeaderIconButton>
-            <HeaderIconButton onClick={onSearchOpen} title="New search">
-              <MagnifyingGlassIcon className="h-3 w-3" />
-            </HeaderIconButton>
-          </div>
-        </div>
 
-        {/* The piles. Clicking one narrows the sheet, but the sheet is already
-            complete — this is for working one kind of problem at a time. */}
-        <div className="flex-shrink-0 px-3 py-2 border-b border-gray-100 flex items-center gap-1.5 flex-wrap">
-          {/* Which population, before which pile. The action counts to the right
-              are counted over whatever is selected here. */}
-          <div
-            className="flex items-center flex-shrink-0 rounded overflow-hidden"
-            style={{ height: 26 }}
-          >
-            {SCOPE_OPTS.map(({ key, label }) => {
-              const active = scope === key;
-              return (
+          {/* Row 2: search + export | scope | grading basis | about */}
+          <div className="flex items-center gap-2 pt-1.5 mt-1 border-t border-custom-white/[0.08]">
+            <HeaderIconButton onClick={onSearchOpen} title="New search">
+              <MagnifyingGlassIcon className="w-3.5 h-3.5" />
+            </HeaderIconButton>
+            <div className="w-px h-4 bg-custom-white/15 flex-shrink-0" />
+
+            {/* Which population. Sits where Sales puts its Sales/Qty toggle,
+                because it does the same job: it decides what everything to the
+                right of it is counted over. */}
+            <div
+              className="flex items-center flex-shrink-0 rounded overflow-hidden"
+              style={{ height: 22 }}
+            >
+              {SCOPE_OPTS.map(({ key, label }) => (
                 <button
                   key={key}
                   onClick={() => dispatch(setItemReportScope(key))}
-                  className={`px-2.5 h-full text-[12px] font-semibold transition-colors ${
-                    active
-                      ? "bg-[#1e2a4a] text-custom-white"
-                      : "bg-[#1e2a4a]/10 text-content hover:bg-[#1e2a4a]/20"
-                  }`}
+                  className="px-2.5 text-[10px] text-custom-white font-medium transition-colors h-full"
+                  style={{
+                    background:
+                      scope === key
+                        ? "rgba(255,255,255,0.2)"
+                        : "rgba(255,255,255,0.07)",
+                  }}
                 >
                   {label}{" "}
                   <span className="tabular-nums">
                     {key === "uploaded" ? uploadedCount : allCount}
                   </span>
                 </button>
-              );
-            })}
-          </div>
-          <div className="w-px self-stretch bg-gray-200 mx-1 flex-shrink-0" />
+              ))}
+            </div>
 
+            <div className="flex-1" />
+
+            {/* What every row is built from, and how far back the delivery
+                side reaches — the question "Last" and "Recv" always raise.
+                Register lines are deliberately not named here: they load per
+                item on the right, and no action on this side depends on them. */}
+            <span className="text-[11px] text-custom-white font-medium flex-shrink-0 truncate">
+              Sales vs Receivers · 90 days
+            </span>
+
+            <div className="w-px h-4 bg-custom-white/15 flex-shrink-0" />
+
+            <div className="relative flex-shrink-0">
+              <InfoButton onClick={() => setInfoOpen((prev) => !prev)} />
+              {infoOpen && (
+                <InfoPopover
+                  title={ITEM_REPORT_INFO.title}
+                  purpose={ITEM_REPORT_INFO.purpose}
+                  glossary={ITEM_REPORT_INFO.glossary}
+                  onClose={() => setInfoOpen(false)}
+                  /* 20% wider than the shared default (260/500). This page has
+                     six actions to define plus their evidence columns, and at
+                     the standard width every entry wrapped to four lines. */
+                  className="min-w-[312px] max-w-[600px]"
+                />
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* The piles. Clicking one narrows the sheet, but the sheet is already
+            complete — this is for working one kind of problem at a time. The
+            scope toggle these counts are computed over lives in the header, one
+            level up, which is the order the two are actually applied in. */}
+        <div className="flex-shrink-0 px-3 py-2 border-b border-gray-100 flex items-center gap-1.5 flex-wrap">
           {ORDER.map((action) => (
             <button
               key={action}
@@ -301,7 +357,7 @@ const ItemReportSheet = ({
           <span className="text-right">Sales</span>
         </div>
 
-        <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar">
+        <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar rounded-b-xl">
           {visible.length === 0 && (
             <div className="py-8 text-center text-[12px] text-content/85">
               No items matched
@@ -334,8 +390,8 @@ const ItemReportSheet = ({
                     <span className="block text-[13px] font-medium text-content truncate">
                       {item.description}
                     </span>
-                    <span className="block text-[12px] text-content/85 truncate">
-                      {item.department} · {item.vendorName}
+                    <span className="block text-[12px] font-medium text-content/85 truncate">
+                      {item.productCode} · {item.department} · {item.vendorName}
                       {/* Says out loud that this row wasn't in the upload —
                           it has no sales, so no export could have contained
                           it. */}

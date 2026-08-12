@@ -466,8 +466,6 @@ const ItemReport = () => {
           onExportOpen={() => dispatch(setItemReportExportOpen(true))}
           storeName={storeName}
           dateLabel={dateLabel}
-          sourceLabel={state.sourceLabel}
-          basisLabel={state.basisLabel}
           receivingComplete={state.receivingComplete}
           receivingProgress={
             state.receivingError

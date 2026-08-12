@@ -109,7 +109,24 @@ export interface PeriodTotals {
 }
 
 export type ActionKind =
-  "investigate" | "reorder" | "reprice" | "vendor" | "none" | "insufficient";
+  | "investigate"
+  | "reorder"
+  | "reprice"
+  | "vendor"
+  | "none"
+  | "insufficient"
+  /**
+   * Not a verdict — the absence of one, while the delivery read is still
+   * running.
+   *
+   * Every action here depends on receipts, so none can be reached until the
+   * walk finishes. This used to report as "Insufficient", which is a real
+   * finding meaning "the data will never answer this" — so a whole store would
+   * briefly sit in a category that reads like a conclusion, and looks like a
+   * broken page to anyone who doesn't know a fetch is in flight. Separating the
+   * two lets the sheet say "still reading" and mean it.
+   */
+  | "pending";
 
 /**
  * Stock movement over a window where receipts and sales are both known.
@@ -462,6 +479,7 @@ export interface Verdict {
 }
 
 export const ACTION_LABEL: Record<ActionKind, string> = {
+  pending: "Reading…",
   investigate: "Investigate",
   reorder: "Reorder",
   reprice: "Reprice",
@@ -479,6 +497,9 @@ export const ACTION_RANK: Record<ActionKind, number> = {
   vendor: 3,
   insufficient: 4,
   none: 5,
+  /** Last, so that once the walk finishes and rows resolve, nothing that has
+   *  an answer is ever sorted below something that doesn't. */
+  pending: 6,
 };
 
 /**
@@ -515,8 +536,8 @@ export const verdictFor = (
 
   if (!receivingKnown) {
     return {
-      action: "insufficient",
-      evidence: "Reading invoices before drawing a conclusion.",
+      action: "pending",
+      evidence: "Waiting on the delivery read before drawing a conclusion.",
       unaccounted,
     };
   }
@@ -689,6 +710,7 @@ export const buildRollup = (
     vendor: 0,
     none: 0,
     insufficient: 0,
+    pending: 0,
   };
   for (const v of verdicts) out[v.action] += 1;
   return out;
