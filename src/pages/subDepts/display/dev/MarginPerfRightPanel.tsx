@@ -14,7 +14,12 @@ import {
   getLYDate,
   getTier,
 } from "../..";
-import { ArrowDownTrayIcon } from "@heroicons/react/16/solid";
+import {
+  ArrowDownTrayIcon,
+  ClipboardDocumentListIcon,
+} from "@heroicons/react/16/solid";
+import { collectGradedItems } from "./gradedItems";
+import { useCriticalReport } from "../../../itemReport/criticalHandoff";
 import type { SubDeptCost, SubDeptMargin } from "../../../../interfaces";
 
 import LoadingIndicator from "../../../../components/loading/LoadingIndicator";
@@ -166,6 +171,33 @@ const MarginPerfRightPanel = () => {
       : null;
 
   const [exportOpen, setExportOpen] = useState(false);
+  const openCriticalReport = useCriticalReport();
+
+  /**
+   * The open department's critical items, selected exactly the way the UPC List
+   * export selects them — same collector, so the button and the file can never
+   * disagree about what "critical" meant.
+   *
+   * Computed rather than fetched: grading already holds every department's item
+   * rows, so this costs nothing until the button is pressed.
+   */
+  const criticalItems = useMemo(() => {
+    const dept = ctx.subDepts.find((s) => s.id === ctx.selectedSubDeptId);
+    if (!dept) return [];
+    return collectGradedItems(
+      [dept],
+      subDeptGrades,
+      gradingThreshold,
+      gradingMetric,
+      new Set(["critical"] as const),
+    ).map((g) => ({ productCode: g.row.productCode, dept: g.dept }));
+  }, [
+    ctx.subDepts,
+    ctx.selectedSubDeptId,
+    subDeptGrades,
+    gradingThreshold,
+    gradingMetric,
+  ]);
 
   const handleNoCostTab = () => {
     const fmtDate = (dte: string) => dte.split("T")[0];
@@ -251,6 +283,25 @@ const MarginPerfRightPanel = () => {
             Margin Performance{dateRange ? ` · ${dateRange}` : ""}
           </span>
           <div className="flex items-center gap-2 justify-self-end">
+            {/* Only offered when there is something to diagnose. A department
+                with no critical items would open an empty report, which reads
+                as a broken page rather than as good news. */}
+            {criticalItems.length > 0 && (
+              <button
+                className="text-custom-white transition-colors"
+                onClick={() =>
+                  openCriticalReport({
+                    storeId: ctx.searchValue,
+                    items: criticalItems,
+                    sourceLabel: subDeptName,
+                    basisLabel: `${criticalItems.length} critical by ${gradingMetric}, ${gradingThreshold}%`,
+                  })
+                }
+                title={`View critical report (${criticalItems.length} items)`}
+              >
+                <ClipboardDocumentListIcon className="h-4 w-4" />
+              </button>
+            )}
             <button
               className="text-custom-white transition-colors"
               onClick={() => setExportOpen(true)}

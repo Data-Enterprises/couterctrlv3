@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useAppDispatch, useAppSelector, useStoreName } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import { formatDateSimple } from "../../utils";
@@ -12,6 +12,8 @@ import {
   setItemReportSelected,
   setItemReportSearchOpen,
   setItemReportExportOpen,
+  clearItemReportHandoff,
+  setItemReportSource,
 } from "../../features/itemReportSlice";
 import ItemReportEntry from "./ItemReportEntry";
 import ItemReportSheet, { type SheetRow } from "./ItemReportSheet";
@@ -79,7 +81,14 @@ const ItemReport = () => {
   const { actual, loadActual, resetActual } = useActualPricePoints();
   const storeName = useStoreName(state.scope?.storeid ?? state.storeId);
 
-  const run = async (upcs: string[], uploadDepartments: string[]) => {
+  const run = async (
+    upcs: string[],
+    uploadDepartments: string[],
+    /** Where the list came from. Absent for an upload, which is the point —
+     *  every run sets it, so a manual search can't inherit the provenance of a
+     *  handoff that ran before it. */
+    source?: { sourceLabel: string; basisLabel: string },
+  ) => {
     if (!state.storeId) {
       toast.warn("Please select a store");
       return;
@@ -101,6 +110,9 @@ const ItemReport = () => {
     dispatch(setItemReportSearchOpen(false));
     dispatch(setItemReportLoading({ loading: true }));
     dispatch(startItemReportSearch());
+    dispatch(
+      setItemReportSource(source ?? { sourceLabel: "", basisLabel: "" }),
+    );
     resetActual();
     cancelWalk();
 
@@ -179,6 +191,25 @@ const ItemReport = () => {
       dispatch(setItemReportLoading({ loading: false }));
     }
   };
+
+  /**
+   * A list handed over from Sub Dept Margins or Vendors.
+   *
+   * The handoff is cleared *before* the run starts, not after: `run` dispatches
+   * on the way through, and a re-render that still saw the handoff would fire a
+   * second identical fan-out on top of the first.
+   */
+  const handoff = state.handoff;
+  useEffect(() => {
+    if (!handoff) return;
+    dispatch(clearItemReportHandoff());
+    void run(handoff.upcs, handoff.departments, {
+      sourceLabel: handoff.sourceLabel,
+      basisLabel: handoff.basisLabel,
+    });
+    // Keyed on the handoff object alone: `run` is redefined every render, and
+    // depending on it would re-fire the fan-out on each one.
+  }, [handoff]);
 
   const windowDays = state.scope
     ? dayCount(state.scope.start, state.scope.end)
@@ -358,6 +389,8 @@ const ItemReport = () => {
           onExportOpen={() => dispatch(setItemReportExportOpen(true))}
           storeName={storeName}
           dateLabel={dateLabel}
+          sourceLabel={state.sourceLabel}
+          basisLabel={state.basisLabel}
           receivingComplete={state.receivingComplete}
           receivingProgress={
             state.receivingError

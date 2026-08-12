@@ -33,6 +33,17 @@ export interface ReportWindow {
  *  came through receiving inside the lookback. */
 export type ItemScope = "uploaded" | "all";
 
+/** A list handed over from a graded page instead of uploaded as a file. Held
+ *  as a whole object so the container can tell "a handoff arrived" from "the
+ *  same handoff I already ran" — it is cleared the moment it is consumed. */
+export interface ItemReportHandoff {
+  storeId: number;
+  upcs: string[];
+  departments: string[];
+  sourceLabel: string;
+  basisLabel: string;
+}
+
 interface ItemReportState {
   /** The store picked on the entry card, before a search has run. */
   storeId: number;
@@ -62,6 +73,13 @@ interface ItemReportState {
   /** Which population the sheet shows. Defaults to the uploaded list — the
    *  file is the question the user asked, and the wider set is the aside. */
   itemScope: ItemScope;
+  /** Set by `useCriticalReport` just before navigating here; consumed and
+   *  cleared by the container on arrival. */
+  handoff: ItemReportHandoff | null;
+  /** Where the current list came from, kept after the handoff is consumed so
+   *  the header can keep saying it. Empty for an ordinary upload. */
+  sourceLabel: string;
+  basisLabel: string;
   actionFilter: ActionKind | null;
   textFilter: string;
   searchOpen: boolean;
@@ -98,6 +116,9 @@ const initialState: ItemReportState = {
   loadingMessage: "",
   selectedUpc: null,
   itemScope: "uploaded",
+  handoff: null,
+  sourceLabel: "",
+  basisLabel: "",
   actionFilter: null,
   textFilter: "",
   searchOpen: false,
@@ -203,6 +224,35 @@ const itemReportSlice = createSlice({
     setItemReportSelected: (state, action: PayloadAction<string | null>) => {
       state.selectedUpc = action.payload;
     },
+    setItemReportHandoff: (
+      state,
+      action: PayloadAction<ItemReportHandoff>,
+    ) => {
+      state.handoff = action.payload;
+      // The store and the pending list are set here too, so the entry card
+      // behind the re-search button shows what the report is actually built
+      // from rather than whatever was last typed into it.
+      state.storeId = action.payload.storeId;
+      state.pendingUpcs = action.payload.upcs;
+      state.pendingDepartments = action.payload.departments;
+      state.pendingFileName = "";
+      state.pendingUpcText = "";
+    },
+    /** Consumed on arrival, before the run starts, so a re-render can't fire
+     *  the same handoff twice. */
+    clearItemReportHandoff: (state) => {
+      state.handoff = null;
+    },
+    /** Where the list being reported came from. Blank for a plain upload, which
+     *  is why every run sets it rather than only the handoff path — otherwise a
+     *  later manual search would inherit the previous handoff's provenance. */
+    setItemReportSource: (
+      state,
+      action: PayloadAction<{ sourceLabel: string; basisLabel: string }>,
+    ) => {
+      state.sourceLabel = action.payload.sourceLabel;
+      state.basisLabel = action.payload.basisLabel;
+    },
     setItemReportScope: (state, action: PayloadAction<ItemScope>) => {
       state.itemScope = action.payload;
     },
@@ -268,6 +318,9 @@ export const {
   setReceivingProgress,
   setReceivingError,
   setItemReportSelected,
+  setItemReportHandoff,
+  clearItemReportHandoff,
+  setItemReportSource,
   setItemReportScope,
   setItemReportActionFilter,
   setItemReportTextFilter,

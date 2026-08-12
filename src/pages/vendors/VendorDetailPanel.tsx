@@ -1,5 +1,11 @@
 import { useMemo, useState } from "react";
-import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
+import {
+  ArrowDownTrayIcon,
+  ClipboardDocumentListIcon,
+} from "@heroicons/react/24/outline";
+import { collectGradedItems } from "./vendorGradedItems";
+import type { ItemGradingMetric } from "../../utils/itemMargins";
+import { useCriticalReport } from "../itemReport/criticalHandoff";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { formatCurrency2 } from "../../utils";
 import {
@@ -76,6 +82,7 @@ const VendorDetailPanel = () => {
     vend;
 
   const [exportOpen, setExportOpen] = useState(false);
+  const openCriticalReport = useCriticalReport();
 
   const activeThreshold = threshold ?? VENDOR_THRESHOLD_DEFAULT;
   const isMargin = metric === "margin";
@@ -117,6 +124,31 @@ const VendorDetailPanel = () => {
           }
         : { tw: [], lw: [], ly: [] },
     [raw, selectedVendor],
+  );
+
+  /** Item grading uses its own threshold and follows the Margin/Sales toggle —
+   *  the same pair the export modal derives, so the button and the file agree. */
+  const activeItemThreshold = itemThreshold ?? VENDOR_ITEM_THRESHOLD_DEFAULT;
+  const itemGradingMetric: ItemGradingMetric = isMargin ? "margin" : "sales";
+
+  /**
+   * This vendor's critical items, selected by the same collector the UPC List
+   * export uses. Each carries the sub department it sells under, which is what
+   * lets a multi-department vendor narrow the report's fan-out instead of
+   * forcing it to read the whole store.
+   */
+  const criticalItems = useMemo(
+    () =>
+      row
+        ? collectGradedItems(
+            [row],
+            raw,
+            activeItemThreshold,
+            itemGradingMetric,
+            new Set(["critical"] as const),
+          ).map((g) => ({ productCode: g.r.productCode, dept: g.dept }))
+        : [],
+    [row, raw, activeItemThreshold, itemGradingMetric],
   );
 
   if (!row) {
@@ -244,13 +276,34 @@ const VendorDetailPanel = () => {
         <span className="text-custom-white text-[13px] font-bold justify-self-center">
           Vendor Performance · {twLabel}
         </span>
-        <button
-          onClick={() => setExportOpen(true)}
-          className="justify-self-end w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/60 hover:text-custom-white hover:border-custom-white/40 transition-colors"
-          title="Export"
-        >
-          <ArrowDownTrayIcon className="h-4 w-4" />
-        </button>
+        <div className="justify-self-end flex items-center gap-1.5">
+          {/* A vendor's range routinely spans several sub departments, so the
+              handed-over items carry their own — that set is what narrows the
+              fan-out on the report side instead of reading every department. */}
+          {criticalItems.length > 0 && (
+            <button
+              onClick={() =>
+                openCriticalReport({
+                  storeId: vend.storeid,
+                  items: criticalItems,
+                  sourceLabel: row.vendorName,
+                  basisLabel: `${criticalItems.length} critical by ${itemGradingMetric}, ${activeItemThreshold}%`,
+                })
+              }
+              className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/85 hover:text-custom-white hover:border-custom-white/40 transition-colors"
+              title={`View critical report (${criticalItems.length} items)`}
+            >
+              <ClipboardDocumentListIcon className="h-4 w-4" />
+            </button>
+          )}
+          <button
+            onClick={() => setExportOpen(true)}
+            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/85 hover:text-custom-white hover:border-custom-white/40 transition-colors"
+            title="Export"
+          >
+            <ArrowDownTrayIcon className="h-4 w-4" />
+          </button>
+        </div>
       </div>
 
       {/* KPI metric strip — values and date labels update with day selection */}

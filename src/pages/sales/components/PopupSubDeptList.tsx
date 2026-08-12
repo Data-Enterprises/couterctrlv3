@@ -780,7 +780,7 @@ const PopupSubDeptList = ({
         {/* Left panel — signal list */}
         <div
           className="flex flex-col border-r border-gray-100"
-          style={{ width: "36.5%" }}
+          style={{ width: "39.5%" }}
         >
           {/* Filter chips + threshold */}
           <div className="flex flex-wrap items-center gap-1 p-2 border-b border-gray-100 bg-gray-100">

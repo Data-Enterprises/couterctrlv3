@@ -8,12 +8,10 @@ import { calculateCogs, hasNoUsableCost } from "../..";
 import { fmtNum, rowsToCsv, downloadCsv, aggregateRows } from "../../../../utils/csvExport";
 import type { AggFn, AggRow } from "../../../../utils/csvExport";
 import {
-  buildItemRows,
-  getItemSeverity,
   gradedDelta,
   type ItemGradingMetric,
-  type ItemMarginRow,
 } from "../../../../utils/itemMargins";
+import { collectGradedItems, type GradedItem, type ItemSev } from "./gradedItems";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -26,7 +24,6 @@ type ExportPreset =
   | "upc_list";
 type ModalMode = "presets" | "custom";
 type CustomSource = "ty" | "ly";
-type ItemSev = "critical" | "watch" | "healthy";
 
 interface DimDef { key: string; label: string }
 interface MetricDef { key: string; label: string }
@@ -191,51 +188,6 @@ const METRIC_LABEL: Record<ItemGradingMetric, string> = {
   margin: "Margin pts vs LY",
   sales: "Sales % vs LY",
   qty: "Qty % vs LY",
-};
-
-/** One graded item, with the department it came from. The full export and the
- *  UPC-only export share this so the two can never disagree about which items
- *  are in scope — the second is the first with the columns taken away. */
-interface GradedItem {
-  dept: string;
-  row: ItemMarginRow;
-  sev: ItemSev;
-}
-
-const collectGradedItems = (
-  subDepts: SubDept[],
-  grades: Record<number, SubDeptGrade>,
-  threshold: number,
-  gradingMetric: ItemGradingMetric,
-  sevs: Set<ItemSev>,
-): GradedItem[] => {
-  const sevRank: Record<ItemSev, number> = { critical: 0, watch: 1, healthy: 2 };
-  const out: GradedItem[] = [];
-
-  // Department order is the left panel's, so the file reads down the page.
-  for (const sd of subDepts) {
-    const grade = grades[sd.id];
-    if (!grade) continue;
-    const items = buildItemRows(
-      grade.tyWeekOneMargins,
-      grade.lwWeekOneMargins,
-      grade.lyWeekOneMargins,
-    );
-    const kept: GradedItem[] = [];
-    for (const row of items) {
-      const sev = getItemSeverity(row, threshold, gradingMetric);
-      if (sev === "ungraded" || !sevs.has(sev)) continue;
-      kept.push({ dept: sd.desc, row, sev });
-    }
-    // Worst first inside a department, then biggest sellers — the order someone
-    // works a list in.
-    kept.sort(
-      (a, b) =>
-        sevRank[a.sev] - sevRank[b.sev] || b.row.netSales - a.row.netSales,
-    );
-    out.push(...kept);
-  }
-  return out;
 };
 
 const buildAllDeptsCsv = (items: GradedItem[], gradingMetric: ItemGradingMetric) => {

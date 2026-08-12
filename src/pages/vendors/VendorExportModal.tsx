@@ -10,7 +10,6 @@ import {
   getItemSeverity,
   type ItemSeverity,
   type ItemGradingMetric,
-  type ItemMarginRow,
 } from "../../utils/itemMargins";
 import {
   LW_OFFSET,
@@ -23,7 +22,12 @@ import {
 import { fmtDayLabel } from "../../utils/dateLabels";
 import type { SubDeptMargin } from "../../interfaces";
 import type { VendorMetric, VendorRow } from "./vendorsUtils";
-import { getVendorTier, marginPct, rowsForVendor } from "./vendorsUtils";
+import { getVendorTier, marginPct } from "./vendorsUtils";
+import {
+  collectGradedItems,
+  type GradedItem,
+  type GradedSev,
+} from "./vendorGradedItems";
 
 /**
  * CSV export for Vendors.
@@ -42,7 +46,6 @@ type ExportPreset =
   | "upc_list";
 type ModalMode = "presets" | "custom";
 type CustomSource = "tw" | "lw" | "ly";
-type GradedSev = "critical" | "watch" | "healthy";
 
 interface MetricSelection {
   fn: AggFn;
@@ -291,65 +294,7 @@ const buildItemsGradedCsv = (
  * as `buildItemsGradedCsv` does, so a row here matches the row that vendor's
  * own export would produce.
  */
-/** One graded item, with the vendor and department it came from. The full
- *  export and the UPC-only export share this so the two can never disagree
- *  about which items are in scope — the second is the first with the columns
- *  taken away. */
-interface GradedItem {
-  vendorId: string;
-  vendorName: string;
-  dept: string;
-  r: ItemMarginRow;
-  sev: GradedSev;
-}
 
-const collectGradedItems = (
-  rows: VendorRow[],
-  raw: { tw: SubDeptMargin[]; lw: SubDeptMargin[]; ly: SubDeptMargin[] },
-  threshold: number,
-  gradingMetric: ItemGradingMetric,
-  sevs: Set<GradedSev>,
-): GradedItem[] => {
-  const sevRank: Record<GradedSev, number> = { critical: 0, watch: 1, healthy: 2 };
-  const out: GradedItem[] = [];
-
-  for (const v of rows) {
-    const tw = rowsForVendor(raw.tw, v.vendorId);
-    if (tw.length === 0) continue;
-    // Sub department isn't on the built item row, so it comes off the source
-    // rows — an item sells under one department, so first match is the answer.
-    const deptOf = new Map<string, string>();
-    for (const m of tw) {
-      if (!deptOf.has(m.product_code))
-        deptOf.set(m.product_code, m.sub_department_description);
-    }
-
-    const built = buildItemRows(
-      tw,
-      rowsForVendor(raw.lw, v.vendorId),
-      rowsForVendor(raw.ly, v.vendorId),
-    );
-    const kept: GradedItem[] = [];
-    for (const r of built) {
-      const sev = getItemSeverity(r, threshold, gradingMetric);
-      if (sev === "ungraded" || !sevs.has(sev)) continue;
-      kept.push({
-        vendorId: v.vendorId,
-        vendorName: v.vendorName,
-        dept: deptOf.get(r.productCode) ?? "",
-        r,
-        sev,
-      });
-    }
-    // Worst first inside a vendor, then biggest sellers — the order someone
-    // works a list in.
-    kept.sort(
-      (a, b) => sevRank[a.sev] - sevRank[b.sev] || b.r.netSales - a.r.netSales,
-    );
-    out.push(...kept);
-  }
-  return out;
-};
 
 const buildAllVendorsCsv = (items: GradedItem[]) => {
   const headers = [

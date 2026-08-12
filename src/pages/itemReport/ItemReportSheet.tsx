@@ -68,6 +68,12 @@ interface Props {
   onExportOpen: () => void;
   storeName: string;
   dateLabel: string;
+  /** Set when the list arrived from a graded page rather than a file. Naming
+   *  the source and the grading basis is what stops the same department
+   *  producing a different list next week with nothing on screen to explain
+   *  it. */
+  sourceLabel: string;
+  basisLabel: string;
   receivingComplete: boolean;
   receivingProgress: string;
 }
@@ -150,6 +156,8 @@ const ItemReportSheet = ({
   onExportOpen,
   storeName,
   dateLabel,
+  sourceLabel,
+  basisLabel,
   receivingComplete,
   receivingProgress,
 }: Props) => {
@@ -187,10 +195,11 @@ const ItemReportSheet = ({
         <div className="flex-shrink-0 px-4 py-[10px] flex items-center justify-between gap-3 bg-[#1e2a4a]">
           <div className="min-w-0">
             <div className="text-[13px] font-semibold text-custom-white leading-tight truncate">
-              Critical items report
+              {sourceLabel ? `${sourceLabel} — critical items` : "Critical items report"}
             </div>
             <div className="text-[10px] mt-0.5 text-custom-white/85 truncate">
               {storeName} · {dateLabel} · {rows.length} items
+              {basisLabel ? ` · ${basisLabel}` : ""}
             </div>
           </div>
           <div className="flex items-center gap-1.5 flex-shrink-0">
