@@ -232,10 +232,10 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
           : (item.lyMarginPct ?? -999);
     }
     return col === "ty"
-      ? item.grossSales
+      ? item.netSales
       : col === "lw"
-        ? (item.lwGrossSales ?? -999)
-        : (item.lyGrossSales ?? -999);
+        ? (item.lwNetSales ?? -999)
+        : (item.lyNetSales ?? -999);
   };
   const [draftDesc, setDraftDesc] = useState("");
   const [appliedDesc, setAppliedDesc] = useState("");

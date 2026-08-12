@@ -2,7 +2,7 @@
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 // import { useSalesState } from "../hooks/useSalesState";
 import { getSubs, getHourly } from "../../../api/sales";
-import { getSubMargins } from "../../../api/subMargins";
+import { fetchSubDeptRowsSafe } from "../../../utils/marginRows";
 import {
   addDays,
   formatGoliathDate,
@@ -296,8 +296,11 @@ const LedgerStoreReport = () => {
     const run = async () => {
       dispatch(setTop10Loading(true));
       try {
+        // Paged — see the same note in PopupSubDeptList. Page 1 alone drops
+        // the tail of the window on any department that clears the 1000-row
+        // cap, which is exactly the departments worth opening.
         const [tyR, lwR, lyR] = await Promise.all([
-          getSubMargins(
+          fetchSubDeptRowsSafe(
             context.url,
             context.token,
             openSheetId,
@@ -307,7 +310,7 @@ const LedgerStoreReport = () => {
             selection.storeId,
             1,
           ),
-          getSubMargins(
+          fetchSubDeptRowsSafe(
             context.url,
             context.token,
             openSheetId,
@@ -317,7 +320,7 @@ const LedgerStoreReport = () => {
             selection.storeId,
             1,
           ),
-          getSubMargins(
+          fetchSubDeptRowsSafe(
             context.url,
             context.token,
             openSheetId,
@@ -329,18 +332,18 @@ const LedgerStoreReport = () => {
           ),
         ]);
         if (cancelled) return;
-        const tyItems: SubDeptMargin[] =
-          tyR.data?.error === 0
-            ? scopeToStoreNumber(tyR.data.subs, selection.storeNumber)
-            : [];
-        let lwItems: SubDeptMargin[] =
-          lwR.data?.error === 0
-            ? scopeToStoreNumber(lwR.data.subs, selection.storeNumber)
-            : [];
-        let lyItems: SubDeptMargin[] =
-          lyR.data?.error === 0
-            ? scopeToStoreNumber(lyR.data.subs, selection.storeNumber)
-            : [];
+        const tyItems: SubDeptMargin[] = scopeToStoreNumber(
+          tyR,
+          selection.storeNumber,
+        );
+        let lwItems: SubDeptMargin[] = scopeToStoreNumber(
+          lwR,
+          selection.storeNumber,
+        );
+        let lyItems: SubDeptMargin[] = scopeToStoreNumber(
+          lyR,
+          selection.storeNumber,
+        );
 
         // Whole-week case: the fetched LW/LY rows can include days that
         // don't actually correspond to any day in this TW week — filter down

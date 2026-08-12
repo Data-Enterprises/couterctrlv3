@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import ResizableModalShell from "../../components/modals/ResizableModalShell";
+import MultiSelectFilter from "../../components/filters/MultiSelectFilter";
 import { fmtNum, rowsToCsv, downloadCsv, aggregateRows } from "../../utils/csvExport";
 import type { AggFn, AggRow } from "../../utils/csvExport";
 import { calculateCogs } from "../subDepts";
@@ -261,10 +262,10 @@ const buildItemsGradedCsv = (
       r.productCode,
       r.description,
       SEV_LABEL[sev],
-      fmtNum(r.grossSales),
-      r.lwGrossSales === null ? "" : fmtNum(r.lwGrossSales),
+      fmtNum(r.netSales),
+      r.lwNetSales === null ? "" : fmtNum(r.lwNetSales),
       r.lwSalesPct === null ? "" : fmtNum(r.lwSalesPct),
-      r.lyGrossSales === null ? "" : fmtNum(r.lyGrossSales),
+      r.lyNetSales === null ? "" : fmtNum(r.lyNetSales),
       r.lySalesPct === null ? "" : fmtNum(r.lySalesPct),
       r.qty,
       r.lwQty === null ? "" : r.lwQty,
@@ -343,7 +344,7 @@ const collectGradedItems = (
     // Worst first inside a vendor, then biggest sellers — the order someone
     // works a list in.
     kept.sort(
-      (a, b) => sevRank[a.sev] - sevRank[b.sev] || b.r.grossSales - a.r.grossSales,
+      (a, b) => sevRank[a.sev] - sevRank[b.sev] || b.r.netSales - a.r.netSales,
     );
     out.push(...kept);
   }
@@ -375,10 +376,10 @@ const buildAllVendorsCsv = (items: GradedItem[]) => {
     r.description,
     dept,
     SEV_LABEL[sev],
-    fmtNum(r.grossSales),
-    r.lwGrossSales === null ? "" : fmtNum(r.lwGrossSales),
+    fmtNum(r.netSales),
+    r.lwNetSales === null ? "" : fmtNum(r.lwNetSales),
     r.lwSalesPct === null ? "" : fmtNum(r.lwSalesPct),
-    r.lyGrossSales === null ? "" : fmtNum(r.lyGrossSales),
+    r.lyNetSales === null ? "" : fmtNum(r.lyNetSales),
     r.lySalesPct === null ? "" : fmtNum(r.lySalesPct),
     r.qty,
     fmtNum(r.tyMarginPct),
@@ -534,6 +535,14 @@ const VendorExportModal = ({
   const [itemSevs, setItemSevs] = useState<Set<GradedSev>>(new Set());
   const [allSevs, setAllSevs] = useState<Set<GradedSev>>(new Set());
   const [upcSevs, setUpcSevs] = useState<Set<GradedSev>>(new Set());
+  /**
+   * Which vendors the two store-wide datasets cover. Empty means all — an
+   * untouched filter must never silently empty an export.
+   *
+   * One selection shared by both, not one each: they emit the same item set and
+   * differ only in how many columns survive.
+   */
+  const [vendorPick, setVendorPick] = useState<string[]>([]);
   const [source, setSource] = useState<CustomSource>("tw");
   const [groupBy, setGroupBy] = useState<Set<string>>(new Set());
   const [metrics, setMetrics] = useState(freshMetrics);
@@ -726,16 +735,35 @@ const VendorExportModal = ({
       sections.push(
         `${title("Items Graded")}\n${buildItemsGradedCsv(scoped, itemThreshold, gradingMetric, itemSevs)}`,
       );
+    // Narrowing the vendor list before the collector runs keeps the filter out
+    // of the grading logic entirely — it decides scope, not severity.
+    const pickedVendors =
+      vendorPick.length === 0
+        ? rows
+        : rows.filter((v) => vendorPick.includes(v.vendorId));
+
     if (selected.has("all_vendors") && allSevs.size > 0)
       sections.push(
         `${title("Items Graded — All Vendors")}\n${buildAllVendorsCsv(
-          collectGradedItems(rows, scopedAll, itemThreshold, gradingMetric, allSevs),
+          collectGradedItems(
+            pickedVendors,
+            scopedAll,
+            itemThreshold,
+            gradingMetric,
+            allSevs,
+          ),
         )}`,
       );
     if (selected.has("upc_list") && upcSevs.size > 0)
       sections.push(
         `${title("UPC List")}\n${buildUpcListCsv(
-          collectGradedItems(rows, scopedAll, itemThreshold, gradingMetric, upcSevs),
+          collectGradedItems(
+            pickedVendors,
+            scopedAll,
+            itemThreshold,
+            gradingMetric,
+            upcSevs,
+          ),
         )}`,
       );
     if (!sections.length) return;
@@ -903,7 +931,27 @@ const VendorExportModal = ({
               </div>
             </div>
 
-            {/* The only dataset here that isn't scoped to the open vendor.
+            {/* Scope for both store-wide datasets below. Sits above them
+                rather than inside either, because it governs the pair. */}
+            <div className="flex items-center gap-2 pt-3 border-t border-gray-100">
+              <span className="text-[11px] text-content">Vendors</span>
+              <MultiSelectFilter
+                options={rows.map((v) => ({
+                  label: v.vendorName,
+                  value: v.vendorId,
+                }))}
+                values={vendorPick}
+                onChange={setVendorPick}
+                placeholder="All vendors"
+                noun="vendors"
+                className="w-[220px]"
+              />
+              <span className="text-[10px] text-content">
+                Applies to both datasets below.
+              </span>
+            </div>
+
+            {/* The only datasets here that aren't scoped to the open vendor.
                 Free — the search already holds every vendor's rows. */}
             <div
               className={`flex items-start gap-3 pt-3 border-t border-gray-100 ${hasAllItems ? "" : "opacity-40"}`}

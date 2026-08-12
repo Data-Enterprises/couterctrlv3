@@ -1,7 +1,9 @@
 import { getReceiversList, getReceiverDetails } from "../../api/receivers";
 import { fetchSubDeptRowsSafe } from "../../utils/marginRows";
 import { fetchSubDepts } from "../inventory/inventoryData";
-import { LW_OFFSET, LY_OFFSET, shiftIso } from "../../utils/grading";
+import type { SubDeptSummary } from "../inventory/inventoryData";
+import { LW_OFFSET, shiftIso } from "../../utils/grading";
+import { getLYDate, setDates } from "../subDepts";
 import { formatDate } from "../../utils";
 import type {
   ReceiverListItem,
@@ -59,29 +61,83 @@ export interface ReportScope {
   end: string;
 }
 
+/** Days in every window this page reads. Fixed rather than user-chosen, so the
+ *  three periods are always the same length and directly comparable — the same
+ *  contract the graded pages work to. */
+export const WINDOW_DAYS = 7;
+
+/** The week ending on the picked date. One date in, seven days out. */
+export const weekEnding = (singleDate: string) => ({
+  start: setDates(new Date(singleDate), WINDOW_DAYS - 1),
+  end: setDates(new Date(singleDate)),
+});
+
 /**
- * The same window a week and a year earlier.
+ * The same week a week and a year earlier.
  *
- * 364 days rather than 365 for the year: a whole number of weeks, so the
- * comparison lands on the same weekdays. Both baselines are carried because
- * neither is sufficient alone — last year catches a seasonal collapse that last
- * week would call normal, and last week catches a recovery that last year would
- * still condemn. Flagging an item that is already coming back is the false
- * warning this page most needs to avoid.
+ * Both baselines are carried because neither is sufficient alone — last year
+ * catches a seasonal collapse that last week would call normal, and last week
+ * catches a recovery that last year would still condemn. Flagging an item that
+ * is already coming back is the false warning this page most needs to avoid.
+ *
+ * Last year goes through `getLYDate`, not a flat 364-day shift: it is holiday-
+ * and leap-year aware, and the codebase says so at its definition. A naive shift
+ * lands the wrong side of a moving holiday and silently compares a trading week
+ * against a dead one.
  */
-export const lwWindow = (scope: ReportScope) => ({
+export const lwWindow = (scope: { start: string; end: string }) => ({
   start: shiftIso(scope.start, LW_OFFSET),
   end: shiftIso(scope.end, LW_OFFSET),
 });
 
-export const lyWindow = (scope: ReportScope) => ({
-  start: shiftIso(scope.start, LY_OFFSET),
-  end: shiftIso(scope.end, LY_OFFSET),
+export const lyWindow = (scope: { start: string; end: string }) => ({
+  start: getLYDate(scope.start),
+  end: getLYDate(scope.end),
 });
 
-/** The departments that sold in the window. Shared with Price Opt rather than
- *  reimplemented — same endpoint, same paging, same roll-up. */
+/** The departments that sold in a given window. Shared with Price Opt rather
+ *  than reimplemented — same endpoint, same paging, same roll-up. */
 export const fetchDepartments = fetchSubDepts;
+
+/**
+ * The departments to *read*, discovered over a wide window rather than the week
+ * being reported.
+ *
+ * Discovery and reporting are different questions, and conflating them is a
+ * silent data loss. `subs/subs` only returns departments that sold inside the
+ * window it is handed, so discovering over the reported week drops any
+ * department that happened to sell nothing in those seven days — and with it
+ * every uploaded UPC that lives there, plus the receipts those items would have
+ * been crossed against. Over a month-long window that was rare enough to miss;
+ * over seven days it is routine, and it fails silently, as a short report rather
+ * than an error.
+ *
+ * Two calls. The receiving lookback is a strict superset of this week and last
+ * week, so it covers both; the same week last year sits outside it and needs its
+ * own. The union is the department set — the three reported windows are still
+ * read separately, so nothing here widens what the report actually counts.
+ *
+ * Last year is allowed to fail. A store with no history that far back should
+ * still get a report from the recent departments rather than nothing at all.
+ */
+export const fetchDepartmentsWide = async (
+  scope: ReportScope,
+): Promise<SubDeptSummary[]> => {
+  const [recent, priorYear] = await Promise.all([
+    fetchSubDepts({
+      ...scope,
+      start: shiftIso(scope.end, -RECEIVING_LOOKBACK_DAYS),
+    }),
+    fetchSubDepts({ ...scope, ...lyWindow(scope) }).catch(
+      () => [] as SubDeptSummary[],
+    ),
+  ]);
+
+  const byId = new Map<number, SubDeptSummary>();
+  for (const dept of [...recent, ...priorYear])
+    if (!byId.has(dept.id)) byId.set(dept.id, dept);
+  return [...byId.values()];
+};
 
 /**
  * Item rows for a set of departments over one window.
@@ -175,9 +231,19 @@ export interface ReceiptLine {
   description: string;
   date: string;
   vendorName: string;
-  /** Priced selling units, not cases — the same unit `subs/subs` sells in, which
-   *  is what makes the two sides comparable at all. */
+  /** Priced selling units, not cases — the same basis `subs/subs` sells in,
+   *  which is what makes received and sold comparable at all. Verified against
+   *  a real response: `ext_cost = qty * ucost` on every line, with `cases`
+   *  carried separately.
+   *
+   *  Confirmed on DSD beverage only. Warehouse invoices with different case
+   *  packs are unverified, which is why `cases` rides along — `units / cases`
+   *  gives the case pack, and a nonsense pack is the tell that an item is
+   *  being received on the other basis. */
   units: number;
+  /** Shipping containers on the line. Not the selling unit; kept so a reader
+   *  can see the pack behind the units rather than trusting them blind. */
+  cases: number;
   /** Unit cost on the day it landed. Two receipts at different costs is how a
    *  margin slips without anyone touching the shelf price. */
   unitCost: number;
@@ -195,6 +261,7 @@ export const toReceiptLine = (
   date: invoice.invoice_date,
   vendorName: invoice.vendor_name,
   units: line.qty,
+  cases: line.cases,
   unitCost: line.ucost,
   retail: line.retail,
 });

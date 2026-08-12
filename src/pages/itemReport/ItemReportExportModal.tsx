@@ -39,7 +39,7 @@ interface Props {
   dateLabel: string;
   lookbackDays: number;
   rows: SheetRow[];
-  receiptsByUpc: Map<string, ReceiptLine[]>;
+  receiptsByUpc: Record<string, ReceiptLine[]>;
   receivingComplete: boolean;
 }
 
@@ -63,17 +63,23 @@ const ITEM_COLS: Col[] = [
   { key: "source", label: "Source", defaultOn: true },
   { key: "sales", label: "Sales", defaultOn: true },
   { key: "units", label: "Units", defaultOn: true },
-  { key: "lwPct", label: "vs LW %", defaultOn: true },
-  { key: "lyPct", label: "vs LY %", defaultOn: true },
-  { key: "lwUnits", label: "LW units", defaultOn: false },
-  { key: "lyUnits", label: "LY units", defaultOn: false },
+  { key: "lwPct", label: "vs LW units %", defaultOn: true },
+  { key: "lyPct", label: "vs LY units %", defaultOn: true },
+  { key: "lwUnits", label: "LW units", defaultOn: true },
+  { key: "lyUnits", label: "LY units", defaultOn: true },
+  { key: "lwSales", label: "LW sales", defaultOn: false },
+  { key: "lySales", label: "LY sales", defaultOn: false },
   { key: "unitCost", label: "Cost / unit", defaultOn: true },
   { key: "marginPct", label: "GM %", defaultOn: true },
   { key: "daysSold", label: "Days sold", defaultOn: false },
   { key: "lastReceived", label: "Last received", defaultOn: true },
   { key: "daysSinceRecv", label: "Days since received", defaultOn: true },
   { key: "receivedUnits", label: "Units received", defaultOn: true },
-  { key: "unaccounted", label: "Unaccounted units", defaultOn: true },
+  { key: "moveReceived", label: "Received (14d)", defaultOn: true },
+  { key: "moveSold", label: "Sold (14d)", defaultOn: true },
+  { key: "moveNet", label: "Net units (14d)", defaultOn: true },
+  { key: "moveDays", label: "Movement days", defaultOn: false },
+  { key: "unaccounted", label: "Unaccounted since delivery", defaultOn: true },
   { key: "intendedRetail", label: "Intended retail", defaultOn: true },
 ];
 
@@ -97,6 +103,7 @@ const RECEIPT_COLS: Col[] = [
   { key: "vendor", label: "Vendor", defaultOn: true },
   { key: "invoice", label: "Invoice", defaultOn: true },
   { key: "units", label: "Units", defaultOn: true },
+  { key: "cases", label: "Cases", defaultOn: true },
   { key: "unitCost", label: "Unit cost", defaultOn: true },
   { key: "retail", label: "Intended retail", defaultOn: true },
 ];
@@ -132,7 +139,7 @@ const ItemReportExportModal = ({
     for (const { item } of ordered) {
       map.set(
         item.productCode,
-        buildPriceEras(item, receiptsByUpc.get(item.productCode) ?? []),
+        buildPriceEras(item, receiptsByUpc[item.productCode] ?? []),
       );
     }
     return map;
@@ -141,7 +148,7 @@ const ItemReportExportModal = ({
   const itemRows = useMemo<Row[]>(
     () =>
       ordered.map(({ item, verdict }) => {
-        const receipts = receiptsByUpc.get(item.productCode) ?? [];
+        const receipts = receiptsByUpc[item.productCode] ?? [];
         const last = receipts[0] ?? null;
         return {
           action: ACTION_LABEL[verdict.action],
@@ -159,6 +166,8 @@ const ItemReportExportModal = ({
           lyPct: item.lyPct === null ? "" : fmtNum(item.lyPct),
           lwUnits: item.lw ? fmtNum(item.lw.units) : "",
           lyUnits: item.ly ? fmtNum(item.ly.units) : "",
+          lwSales: item.lw ? fmtNum(item.lw.sales) : "",
+          lySales: item.ly ? fmtNum(item.ly.sales) : "",
           unitCost: item.unitCost === null ? "" : fmtNum(item.unitCost),
           marginPct: item.marginPct === null ? "" : fmtNum(item.marginPct),
           daysSold: item.daysSold,
@@ -171,6 +180,10 @@ const ItemReportExportModal = ({
               : "",
           daysSinceRecv: last ? (daysSince(last.date) ?? "") : "",
           receivedUnits: last ? fmtNum(last.units) : "",
+          moveReceived: item.movement ? item.movement.received : "",
+          moveSold: item.movement ? item.movement.sold : "",
+          moveNet: item.movement ? item.movement.net : "",
+          moveDays: item.movement ? item.movement.days : "",
           unaccounted:
             verdict.unaccounted === null ? "" : fmtNum(verdict.unaccounted),
           intendedRetail: last && last.retail > 0 ? fmtNum(last.retail) : "",
@@ -201,13 +214,14 @@ const ItemReportExportModal = ({
   const receiptRows = useMemo<Row[]>(
     () =>
       ordered.flatMap(({ item }) =>
-        (receiptsByUpc.get(item.productCode) ?? []).map((r) => ({
+        (receiptsByUpc[item.productCode] ?? []).map((r) => ({
           upc: item.productCode,
           description: item.description,
           date: r.date.slice(0, 10),
           vendor: r.vendorName,
           invoice: r.invoiceId,
           units: fmtNum(r.units),
+          cases: r.cases,
           unitCost: fmtNum(r.unitCost),
           retail: fmtNum(r.retail),
         })),
@@ -289,7 +303,7 @@ const ItemReportExportModal = ({
           <p className="text-custom-white text-[13px] font-semibold">
             Export CSV
           </p>
-          <p className="text-custom-white/70 text-[10px] truncate">
+          <p className="text-custom-white/85 text-[10px] truncate">
             {storeName} · {dateLabel}
           </p>
         </div>
@@ -301,7 +315,7 @@ const ItemReportExportModal = ({
               className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors ${
                 mode === m
                   ? "bg-custom-white text-[#1e2a4a]"
-                  : "text-custom-white/70 hover:text-custom-white"
+                  : "text-custom-white/85 hover:text-custom-white"
               }`}
             >
               {m === "presets" ? "Presets" : "Custom"}
@@ -310,7 +324,7 @@ const ItemReportExportModal = ({
         </div>
         <button
           onClick={onClose}
-          className="text-custom-white/60 hover:text-custom-white transition-colors justify-self-end"
+          className="text-custom-white/85 hover:text-custom-white transition-colors justify-self-end"
         >
           <XMarkIcon className="w-4 h-4" />
         </button>
@@ -328,7 +342,7 @@ const ItemReportExportModal = ({
 
       {mode === "presets" ? (
         <div className="p-4">
-          <p className="text-[11px] text-content/50 uppercase tracking-wide font-medium mb-2">
+          <p className="text-[11px] text-content/85 uppercase tracking-wide font-medium mb-2">
             Select data to include
           </p>
           {PRESETS.map((p) => (
@@ -349,7 +363,7 @@ const ItemReportExportModal = ({
                 <p className="text-[13px] font-medium text-content">
                   {p.title}
                 </p>
-                <p className="text-[11px] text-content/50 mt-0.5">
+                <p className="text-[11px] text-content/85 mt-0.5">
                   {p.caption}
                 </p>
               </div>
@@ -367,7 +381,7 @@ const ItemReportExportModal = ({
       ) : (
         <div className="grid" style={{ gridTemplateColumns: "220px 1fr" }}>
           <div className="p-3.5 border-r border-gray-100">
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-content/45 mb-2">
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-content/85 mb-2">
               Data source
             </p>
             {PRESETS.map((p) => (
@@ -387,7 +401,7 @@ const ItemReportExportModal = ({
               </label>
             ))}
 
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-content/45 mt-3.5 mb-2">
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-content/85 mt-3.5 mb-2">
               Columns
             </p>
             {COLS[source].map((c) => (
@@ -406,7 +420,7 @@ const ItemReportExportModal = ({
           </div>
 
           <div className="p-3.5 flex flex-col">
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-content/45 mb-2">
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-content/85 mb-2">
               Preview
             </p>
             <div className="border border-gray-100 rounded-md overflow-x-auto">
@@ -416,7 +430,7 @@ const ItemReportExportModal = ({
                     {activeCols.map((c) => (
                       <th
                         key={c.key}
-                        className="text-left px-2.5 py-1.5 text-content/55 font-semibold whitespace-nowrap"
+                        className="text-left px-2.5 py-1.5 text-content/85 font-semibold whitespace-nowrap"
                       >
                         {c.label}
                       </th>
@@ -429,7 +443,7 @@ const ItemReportExportModal = ({
                       {activeCols.map((c) => (
                         <td
                           key={c.key}
-                          className="px-2.5 py-1 text-content/80 whitespace-nowrap max-w-[280px] truncate"
+                          className="px-2.5 py-1 text-content/85 whitespace-nowrap max-w-[280px] truncate"
                         >
                           {r[c.key] ?? ""}
                         </td>
@@ -440,7 +454,7 @@ const ItemReportExportModal = ({
                     <tr>
                       <td
                         colSpan={Math.max(activeCols.length, 1)}
-                        className="px-2.5 py-1.5 text-[10px] text-content/35"
+                        className="px-2.5 py-1.5 text-[10px] text-content/85"
                       >
                         +{rowsOut.length - PREVIEW_ROWS} more rows in download…
                       </td>
@@ -453,7 +467,7 @@ const ItemReportExportModal = ({
             <div className="flex items-center justify-between mt-3.5">
               <button
                 onClick={onClose}
-                className="text-[12px] text-content/50 hover:text-content transition-colors"
+                className="text-[12px] text-content/85 hover:text-content transition-colors"
               >
                 Cancel
               </button>

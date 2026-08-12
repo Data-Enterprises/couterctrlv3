@@ -1,4 +1,5 @@
 import { calculateCogs } from "../subDepts";
+import { shiftIso } from "../../utils/grading";
 import { pricedUnits } from "../inventory/inventoryData";
 import { estimatedPricePoints } from "../inventory/pricePoints";
 import type { EstimatedPricePoint } from "../inventory/pricePoints";
@@ -44,6 +45,22 @@ const RETAIL_GAP_FLOOR = 0.05;
  *  problem rather than the price set against it. */
 const ERRATIC_COST_SPREAD = 0.1;
 
+/**
+ * The span stock movement is measured over.
+ *
+ * It has to be a window where **both** sides are complete. Deliveries reach back
+ * 90 days and sales cover the report window, so subtracting one from the other
+ * across their own spans would credit every item with three months of receipts
+ * against one week of sales — a few hundred phantom units on everything in the
+ * store.
+ *
+ * Fourteen days is the most we can honestly claim and it costs nothing: the LW
+ * rows are already fetched for the baseline columns, they just aren't displayed.
+ * A shorter picked window narrows this automatically, because the span is
+ * clamped to the sales actually in hand.
+ */
+const MOVEMENT_DAYS = 14;
+
 const round2 = (n: number) => Math.round(n * 100) / 100;
 const round1 = (n: number) => Math.round(n * 10) / 10;
 const DAY_MS = 86400000;
@@ -61,6 +78,17 @@ const pctMove = (from: number, to: number) =>
   from === 0 ? null : ((to - from) / from) * 100;
 
 const money = (n: number) => `$${n.toFixed(2)}`;
+
+/** Inclusive day count between two yyyy-mm-dd dates. */
+const daySpan = (start: string, end: string) =>
+  Math.max(
+    1,
+    Math.round(
+      (new Date(`${end}T12:00:00`).getTime() -
+        new Date(`${start}T12:00:00`).getTime()) /
+        DAY_MS,
+    ) + 1,
+  );
 
 /* ------------------------------------------------------------------- items */
 
@@ -83,6 +111,39 @@ export interface PeriodTotals {
 export type ActionKind =
   "investigate" | "reorder" | "reprice" | "vendor" | "none" | "insufficient";
 
+/**
+ * Stock movement over a window where receipts and sales are both known.
+ *
+ * Not an inventory level — nothing in the API reports one, and there is no
+ * opening balance to start from. This is the *change*: what came in against
+ * what went out. An item can show +40 and still have an empty shelf if the
+ * opening position was −40, which is why nothing here is labelled "on hand".
+ *
+ * It is also blind to shrink, damage, theft, transfers and markdowns to zero,
+ * all of which leave through the back door without a sales row. Net movement
+ * therefore reads high rather than low when something is going missing.
+ */
+export interface StockMovement {
+  /** Days actually covered — the movement window clamped to the sales in hand. */
+  days: number;
+  start: string;
+  received: number;
+  sold: number;
+  /** Received less sold. Positive means the shelf filled over the window. */
+  net: number;
+}
+
+/** What is left of the most recent delivery. Sharper than net movement because
+ *  it is anchored to one event rather than a span, so there is no opening
+ *  balance to be ignorant of — but only answerable when that delivery landed
+ *  inside the days we hold sales for. */
+export interface SinceDelivery {
+  date: string;
+  received: number;
+  sold: number;
+  left: number;
+}
+
 export interface ReportItem {
   productCode: string;
   description: string;
@@ -95,7 +156,17 @@ export interface ReportItem {
   ty: PeriodTotals;
   lw: PeriodTotals | null;
   ly: PeriodTotals | null;
-  /** Percent change in net sales. Null when the baseline period had none. */
+  /**
+   * Percent change in **units**, not dollars. Null when the baseline period
+   * sold none.
+   *
+   * Dollars conflate the two causes this page exists to separate: sales down
+   * 30% is either fewer units or a lower price, while units down 30% can only
+   * mean the item physically moved less. Everything else on the row — received,
+   * net, unaccounted — is already in units, so this keeps one basis across the
+   * whole comparison. Sales are still carried on `ty`/`lw`/`ly` for weighting
+   * and for the export.
+   */
   lwPct: number | null;
   lyPct: number | null;
 
@@ -107,6 +178,8 @@ export interface ReportItem {
   daysSold: number;
   series: DayPoint[];
   estimated: EstimatedPricePoint[];
+  movement: StockMovement | null;
+  sinceDelivery: SinceDelivery | null;
   rows: SubDeptMargin[];
 }
 
@@ -148,18 +221,37 @@ export const buildReport = (
   tyRows: SubDeptMargin[],
   lwRows: SubDeptMargin[],
   lyRows: SubDeptMargin[],
-  receiptsByUpc: Map<string, ReceiptLine[]>,
+  /** Plain object rather than a Map: this comes straight out of Redux, and
+   *  state has to stay serializable. Every consumer indexes by product code,
+   *  which an object does just as well. */
+  receiptsByUpc: Record<string, ReceiptLine[]>,
+  windowStart: string,
+  windowEnd: string,
 ): ReportItem[] => {
+  // The movement span, clamped to the sales we hold. LW covers the days before
+  // the picked window, so the pair reaches back a fortnight — but only the part
+  // of it that both sides can account for is used.
+  const movementStart = (() => {
+    const wanted = shiftIso(windowEnd, -(MOVEMENT_DAYS - 1));
+    const lwFloor = shiftIso(windowStart, -7);
+    return wanted > lwFloor ? wanted : lwFloor;
+  })();
   const tyBy = byCode(tyRows);
   const lwBy = byCode(lwRows);
   const lyBy = byCode(lyRows);
 
-  const wanted = new Set(upcs);
-  for (const code of receiptsByUpc.keys()) {
+  // Both populations are built; the sheet's scope toggle picks between them, so
+  // switching costs a filter rather than a rebuild.
+  //
+  // Discovery is bounded twice over: the code has to appear on a receipt, and it
+  // has to have sold in one of the prior periods — which is also what names the
+  // department a receipt line can't. An item already selling this week is left
+  // out because it wasn't flagged and isn't the question.
+  const uploaded = new Set(upcs);
+  const wanted = new Set(uploaded);
+  for (const code of Object.keys(receiptsByUpc)) {
     if (wanted.has(code)) continue;
     if (tyBy.has(code)) continue;
-    // Bounded discovery: a baseline in either prior period, which also names
-    // the department the receipt can't.
     if (lwBy.has(code) || lyBy.has(code)) wanted.add(code);
   }
 
@@ -168,7 +260,7 @@ export const buildReport = (
     const ty = tyBy.get(code) ?? [];
     const lw = lwBy.get(code) ?? [];
     const ly = lyBy.get(code) ?? [];
-    const receipts = receiptsByUpc.get(code) ?? [];
+    const receipts = receiptsByUpc[code] ?? [];
     if (ty.length === 0 && lw.length === 0 && ly.length === 0) continue;
 
     const identity = ty[0] ?? lw[0] ?? ly[0];
@@ -211,18 +303,62 @@ export const buildReport = (
     const lyTotals = ly.length > 0 ? totalsOf(ly) : null;
     const cogs = series.reduce((s, d) => s + d.cogs, 0);
 
+    // Sales across the movement span. LW rows are taken only from before the
+    // picked window — a window that isn't exactly seven days makes the two
+    // fetches overlap, and adding both sets would count the shared day twice.
+    const movementSales = [
+      ...ty,
+      ...lw.filter((r) => r.sale_date.slice(0, 10) < windowStart),
+    ].filter((r) => r.sale_date.slice(0, 10) >= movementStart);
+
+    const soldInSpan = movementSales.reduce((s, r) => s + pricedUnits(r), 0);
+    const receivedInSpan = receipts
+      .filter((r) => r.date.slice(0, 10) >= movementStart)
+      .reduce((s, r) => s + r.units, 0);
+    const movement: StockMovement | null =
+      movementSales.length > 0 || receivedInSpan > 0
+        ? {
+            days: daySpan(movementStart, windowEnd),
+            start: movementStart,
+            received: round1(receivedInSpan),
+            sold: round1(soldInSpan),
+            net: round1(receivedInSpan - soldInSpan),
+          }
+        : null;
+
+    // Anchored to the last delivery rather than a span, so it needs no opening
+    // balance — but only when that delivery is inside the days we hold sales
+    // for, otherwise the sales between it and the span are missing and the
+    // subtraction would invent a shortfall.
+    const last = receipts[0] ?? null;
+    const lastDate = last ? last.date.slice(0, 10) : null;
+    const sinceDelivery: SinceDelivery | null =
+      last && lastDate && lastDate >= movementStart
+        ? (() => {
+            const soldSince = movementSales
+              .filter((r) => r.sale_date.slice(0, 10) >= lastDate)
+              .reduce((s, r) => s + pricedUnits(r), 0);
+            return {
+              date: last.date,
+              received: round1(last.units),
+              sold: round1(soldSince),
+              left: round1(last.units - soldSince),
+            };
+          })()
+        : null;
+
     items.push({
       productCode: code,
       description: identity.product_description,
       department: identity.sub_department_description,
       vendorName:
         identity.vendor_name || receipts[0]?.vendorName || "No vendor",
-      discovered: ty.length === 0 && !upcs.includes(code),
+      discovered: !uploaded.has(code),
       ty: tyTotals,
       lw: lwTotals,
       ly: lyTotals,
-      lwPct: lwTotals ? pctMove(lwTotals.sales, tyTotals.sales) : null,
-      lyPct: lyTotals ? pctMove(lyTotals.sales, tyTotals.sales) : null,
+      lwPct: lwTotals ? pctMove(lwTotals.units, tyTotals.units) : null,
+      lyPct: lyTotals ? pctMove(lyTotals.units, tyTotals.units) : null,
       unitCost:
         tyTotals.units > 0
           ? cogs / tyTotals.units
@@ -234,6 +370,8 @@ export const buildReport = (
       daysSold: series.length,
       series,
       estimated: estimatedPricePoints(ty),
+      movement,
+      sinceDelivery,
       rows: ty,
     });
   }
@@ -343,22 +481,6 @@ export const ACTION_RANK: Record<ActionKind, number> = {
   none: 5,
 };
 
-const soldSinceLastReceipt = (
-  item: ReportItem,
-  last: ReceiptLine | null,
-  windowStart: string,
-): number | null => {
-  if (!last) return null;
-  const date = last.date.slice(0, 10);
-  // Only answerable when the delivery landed inside the window — otherwise the
-  // sales between the receipt and the window are not in hand, and subtracting
-  // would invent a shortfall.
-  if (date < windowStart) return null;
-  return item.series
-    .filter((d) => d.date >= date)
-    .reduce((s, d) => s + d.units, 0);
-};
-
 /**
  * One item's call to action, and the sentence backing it.
  *
@@ -376,18 +498,13 @@ export const verdictFor = (
   item: ReportItem,
   receipts: ReceiptLine[],
   eras: PriceEra[],
-  windowStart: string,
   windowDays: number,
   lookbackDays: number,
   receivingKnown: boolean,
 ): Verdict => {
   const last = receipts[0] ?? null;
   const lastDays = last ? daysSince(last.date) : null;
-  const unaccounted = (() => {
-    const sold = soldSinceLastReceipt(item, last, windowStart);
-    if (sold === null || !last) return null;
-    return round1(last.units - sold);
-  })();
+  const unaccounted = item.sinceDelivery?.left ?? null;
 
   const sold = item.ty.units;
   const trend = item.lyPct ?? item.lwPct;
@@ -395,11 +512,6 @@ export const verdictFor = (
    *  window being examined. */
   const recentDays = Math.max(windowDays, 14);
   const isRecent = lastDays !== null && lastDays <= recentDays;
-
-  const lyLine =
-    item.ly !== null
-      ? ` Sold ${round1(item.ly.units)} units this week last year.`
-      : "";
 
   if (!receivingKnown) {
     return {
@@ -422,7 +534,7 @@ export const verdictFor = (
     if (item.lw || item.ly) {
       return {
         action: "reorder",
-        evidence: `No delivery in ${lookbackDays} days and nothing sold this window — off the shelf.${lyLine}`,
+        evidence: `No delivery in ${lookbackDays} days and nothing sold this window — off the shelf.`,
         unaccounted,
       };
     }
@@ -434,29 +546,32 @@ export const verdictFor = (
   }
 
   if (!isRecent) {
-    const gap =
-      unaccounted !== null
-        ? ` ${round1(last.units)} units in, ${round1(last.units - unaccounted)} sold, then it stopped.`
-        : "";
+    const sd = item.sinceDelivery;
+    const gap = sd
+      ? ` ${sd.received} units in, ${sd.sold} sold, ${sd.left} unaccounted for.`
+      : "";
     return {
       action: "reorder",
-      evidence: `Last received ${lastDays} days ago — likely off the shelf.${gap}${lyLine}`,
+      evidence: `Last received ${lastDays} days ago — likely off the shelf.${gap}`,
       unaccounted,
     };
   }
 
   /* ── delivered and in stock: a demand problem ───────────────────────── */
 
-  const inStock = `Received ${lastDays} days ago — in stock.`;
+  // The sheet carries days-since in its own column and the rail states it
+  // beside the Received heading, so the sentence says the conclusion the date
+  // supports rather than repeating the date a third time.
+  const inStock = "In stock.";
 
   if (sold === 0) {
-    const held =
-      unaccounted !== null
-        ? ` ${round1(last.units)} units delivered, none scanned since.`
-        : " Nothing scanned since.";
+    const sd = item.sinceDelivery;
+    const held = sd
+      ? ` ${sd.received} units delivered, none scanned since.`
+      : " Nothing scanned since.";
     return {
       action: "investigate",
-      evidence: `${inStock}${held}${lyLine}`,
+      evidence: `${inStock}${held}`,
       unaccounted,
     };
   }

@@ -1,19 +1,30 @@
-import { useMemo, useState } from "react";
-import { useAppSelector, useStoreName } from "../../hooks";
+import { useMemo } from "react";
+import { useAppDispatch, useAppSelector, useStoreName } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
-import { formatGoliathDate, formatDate } from "../../utils";
+import { formatDateSimple } from "../../utils";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
 import { useActualPricePoints } from "../inventory/useActualPricePoints";
+import {
+  setItemReportStoreId,
+  setItemReportLoading,
+  startItemReportSearch,
+  setItemReportResults,
+  setItemReportSelected,
+  setItemReportSearchOpen,
+  setItemReportExportOpen,
+} from "../../features/itemReportSlice";
 import ItemReportEntry from "./ItemReportEntry";
 import ItemReportSheet, { type SheetRow } from "./ItemReportSheet";
 import ItemReportRail from "./ItemReportRail";
 import ItemReportExportModal from "./ItemReportExportModal";
 import { useReceivingWalk } from "./useReceivingWalk";
 import {
-  fetchDepartments,
+  fetchDepartmentsWide,
   fetchRowsForDepartments,
   lwWindow,
   lyWindow,
+  weekEnding,
+  RECEIVING_LOOKBACK_DAYS as RECEIVING_LOOKBACK,
   type ReportScope,
 } from "./itemReportData";
 import {
@@ -22,8 +33,6 @@ import {
   buildRollup,
   verdictFor,
 } from "./itemReportMetrics";
-import type { ParsedUpload } from "./parseUpload";
-import type { SubDeptMargin } from "../../interfaces";
 
 /**
  * Item Report — a critical list, diagnosed and handed over.
@@ -41,6 +50,11 @@ import type { SubDeptMargin } from "../../interfaces";
  * Receipts run behind the sheet and are an entry point in their own right, not
  * a lookup: an item delivered and never scanned has no sales row anywhere, so
  * the upload could not have contained it. Those rows are discovered here.
+ *
+ * Every piece of that lives in `itemReportSlice`, not in this component. A route
+ * change unmounts the page, and rebuilding it costs a department fan-out over
+ * three windows plus an invoice walk — so nothing here may be the kind of state
+ * that dies when someone clicks away and comes back.
  */
 
 const dayCount = (start: string, end: string) =>
@@ -55,49 +69,49 @@ const dayCount = (start: string, end: string) =>
 
 const ItemReport = () => {
   const toast = useToast();
+  const dispatch = useAppDispatch();
   const { url, token } = useAppSelector((s) => s.app);
-  const { startDate, endDate, lastStore } = useAppSelector((s) => s.search);
+  const { singleDate } = useAppSelector((s) => s.search);
   const { assignedStores } = useAppSelector((s) => s.user);
+  const state = useAppSelector((s) => s.itemReport);
 
-  const [storeId, setStoreId] = useState(lastStore || 0);
-  const [scope, setScope] = useState<ReportScope | null>(null);
-  const [upcs, setUpcs] = useState<string[]>([]);
-  const [rows, setRows] = useState<{
-    ty: SubDeptMargin[];
-    lw: SubDeptMargin[];
-    ly: SubDeptMargin[];
-  }>({ ty: [], lw: [], ly: [] });
-  const [loading, setLoading] = useState(false);
-  const [loadingMessage, setLoadingMessage] = useState("");
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [exportOpen, setExportOpen] = useState(false);
-  const [selectedUpc, setSelectedUpc] = useState<string | null>(null);
-
-  const { receiving, startWalk, resetWalk } = useReceivingWalk();
+  const { startWalk, cancelWalk } = useReceivingWalk();
   const { actual, loadActual, resetActual } = useActualPricePoints();
-  const storeName = useStoreName(scope?.storeid ?? storeId);
+  const storeName = useStoreName(state.scope?.storeid ?? state.storeId);
 
-  const run = async (parsed: ParsedUpload) => {
-    if (!storeId) {
+  const run = async (upcs: string[], uploadDepartments: string[]) => {
+    if (!state.storeId) {
       toast.warn("Please select a store");
       return;
     }
+    if (upcs.length === 0) {
+      toast.warn("Add or upload at least one UPC");
+      return;
+    }
+    // One date in, a fixed seven-day week out — the same contract the graded
+    // pages work to, and what keeps the three periods comparable.
+    const week = weekEnding(singleDate);
     const next: ReportScope = {
       url,
       token,
-      storeid: storeId,
-      start: formatGoliathDate(startDate),
-      end: formatGoliathDate(endDate),
+      storeid: state.storeId,
+      start: week.start,
+      end: week.end,
     };
-    setSearchOpen(false);
-    setLoading(true);
-    setSelectedUpc(null);
+    dispatch(setItemReportSearchOpen(false));
+    dispatch(setItemReportLoading({ loading: true }));
+    dispatch(startItemReportSearch());
     resetActual();
-    resetWalk();
+    cancelWalk();
 
     try {
-      setLoadingMessage("Finding departments…");
-      const depts = await fetchDepartments(next);
+      dispatch(
+        setItemReportLoading({
+          loading: true,
+          message: "Finding departments…",
+        }),
+      );
+      const depts = await fetchDepartmentsWide(next);
       if (depts.length === 0) {
         toast.warn("No departments sold in that window");
         return;
@@ -107,73 +121,139 @@ const ItemReport = () => {
       // difference between a dozen departments and all of them. An unmatched
       // name falls back to reading everything rather than silently returning a
       // short report.
-      const named = new Set(parsed.departments.map((d) => d.toLowerCase()));
+      const named = new Set(uploadDepartments.map((d) => d.toLowerCase()));
       const narrowed =
         named.size > 0
           ? depts.filter((d) => named.has(d.description.toLowerCase()))
           : [];
       const ids = (narrowed.length > 0 ? narrowed : depts).map((d) => d.id);
 
-      setLoadingMessage(`Reading ${ids.length} departments…`);
+      dispatch(
+        setItemReportLoading({
+          loading: true,
+          message: `Reading ${ids.length} departments…`,
+        }),
+      );
       const ty = await fetchRowsForDepartments(next, ids, next);
 
       // Both baselines go out together — they're independent reads, and
       // serialising them would double the wait for nothing.
-      setLoadingMessage("Reading last week and last year…");
+      dispatch(
+        setItemReportLoading({
+          loading: true,
+          message: "Reading last week and last year…",
+        }),
+      );
       const [lw, ly] = await Promise.all([
         fetchRowsForDepartments(next, ids, lwWindow(next)),
         fetchRowsForDepartments(next, ids, lyWindow(next)),
       ]);
 
-      setRows({ ty, lw, ly });
-      setUpcs(parsed.upcs);
-      setScope(next);
+      dispatch(
+        setItemReportResults({
+          scope: { storeid: next.storeid, start: next.start, end: next.end },
+          upcs,
+          uploadDepartments,
+          tyRows: ty,
+          lwRows: lw,
+          lyRows: ly,
+        }),
+      );
 
-      // Deliberately not awaited. The sheet is readable without it, and the
-      // walk both fills in receipts and discovers the never-scanned rows.
-      void startWalk(next);
+      // What the walk keeps: the uploaded codes, plus anything that sold in any
+      // of the three windows. That union is exactly the widest set the "all
+      // found" scope can ever surface, so nothing reachable is discarded and
+      // nothing unreachable is carried.
+      const retain = new Set(upcs);
+      for (const row of [...ty, ...lw, ...ly])
+        retain.add(String(row.product_code));
+
+      // Deliberately not awaited — the sheet is readable before the walk lands,
+      // and receipts fill in behind it.
+      void startWalk(next, [...retain]);
     } catch (e) {
       toast.error(
         e instanceof Error ? e.message : "Could not build the report",
       );
     } finally {
-      setLoading(false);
-      setLoadingMessage("");
+      dispatch(setItemReportLoading({ loading: false }));
     }
   };
 
-  const windowDays = scope ? dayCount(scope.start, scope.end) : 30;
+  const windowDays = state.scope
+    ? dayCount(state.scope.start, state.scope.end)
+    : 30;
 
   const items = useMemo(
-    () => buildReport(upcs, rows.ty, rows.lw, rows.ly, receiving.receiptsByUpc),
-    [upcs, rows, receiving.receiptsByUpc],
+    () =>
+      state.scope
+        ? buildReport(
+            state.upcs,
+            state.tyRows,
+            state.lwRows,
+            state.lyRows,
+            state.receipts,
+            state.scope.start,
+            state.scope.end,
+          )
+        : [],
+    [
+      state.scope,
+      state.upcs,
+      state.tyRows,
+      state.lwRows,
+      state.lyRows,
+      state.receipts,
+    ],
   );
 
-  const sheetRows: SheetRow[] = useMemo(() => {
-    if (!scope) return [];
-    return items.map((item) => {
-      const receipts = receiving.receiptsByUpc.get(item.productCode) ?? [];
-      return {
-        item,
-        verdict: verdictFor(
+  /**
+   * The two populations, and the counts the toggle shows.
+   *
+   * Both are derived from one `buildReport` pass, so flipping scope costs a
+   * filter rather than a rebuild — and the counts stay honest while the walk is
+   * still running, since "all found" climbs as receipts land.
+   */
+  const uploadedCount = useMemo(
+    () => items.filter((i) => !i.discovered).length,
+    [items],
+  );
+
+  const scopedItems = useMemo(
+    () =>
+      state.itemScope === "uploaded"
+        ? items.filter((i) => !i.discovered)
+        : items,
+    [items, state.itemScope],
+  );
+
+  const sheetRows: SheetRow[] = useMemo(
+    () =>
+      scopedItems.map((item) => {
+        const receipts = state.receipts[item.productCode] ?? [];
+        return {
           item,
-          receipts,
-          buildPriceEras(item, receipts),
-          scope.start,
-          windowDays,
-          receiving.lookbackDays,
-          receiving.complete,
-        ),
-      };
-    });
-  }, [items, scope, windowDays, receiving]);
+          verdict: verdictFor(
+            item,
+            receipts,
+            buildPriceEras(item, receipts),
+            windowDays,
+            RECEIVING_LOOKBACK,
+            state.receivingComplete,
+          ),
+        };
+      }),
+    [scopedItems, state.receipts, state.receivingComplete, windowDays],
+  );
 
   const counts = useMemo(
     () => buildRollup(sheetRows.map((r) => r.verdict)),
     [sheetRows],
   );
 
-  const selected = sheetRows.find((r) => r.item.productCode === selectedUpc);
+  const selected = sheetRows.find(
+    (r) => r.item.productCode === state.selectedUpc,
+  );
 
   /**
    * Registers load on selection. Two calls for one item, never across the
@@ -181,37 +261,39 @@ const ItemReport = () => {
    * loses nothing.
    */
   const selectRow = (row: SheetRow) => {
-    if (!scope) return;
-    setSelectedUpc(row.item.productCode);
+    if (!state.scope) return;
+    dispatch(setItemReportSelected(row.item.productCode));
     loadActual(
       row.item.productCode,
       row.item.description,
-      scope.storeid,
-      scope.start,
-      scope.end,
+      state.scope.storeid,
+      state.scope.start,
+      state.scope.end,
     );
   };
 
   const entry = (
     <ItemReportEntry
       stores={assignedStores}
-      storeId={storeId}
-      onStoreSelect={setStoreId}
+      storeId={state.storeId}
+      onStoreSelect={(id) => dispatch(setItemReportStoreId(id))}
       onRun={run}
-      loading={loading}
-      loadingMessage={loadingMessage || "Building report..."}
+      loading={state.loading}
+      loadingMessage={state.loadingMessage || "Building report..."}
     />
   );
 
-  if (loading) {
+  if (state.loading) {
     return (
       <div className="w-full select-none min-h-[calc(100vh-3rem)] relative">
-        <LoadingIndicator message={loadingMessage || "Building report..."} />
+        <LoadingIndicator
+          message={state.loadingMessage || "Building report..."}
+        />
       </div>
     );
   }
 
-  if (!scope || items.length === 0) {
+  if (!state.scope || items.length === 0) {
     return (
       <div className="w-full select-none min-h-[calc(100vh-3rem)] flex items-center justify-center p-4">
         {entry}
@@ -219,31 +301,47 @@ const ItemReport = () => {
     );
   }
 
-  const dateLabel = `${formatDate(scope.start)} – ${formatDate(scope.end)}`;
+  const dateLabel = `${formatDateSimple(state.scope.start)} – ${formatDateSimple(state.scope.end)}`;
+  // The strip names the days each figure covers, the way the Sales strip does —
+  // "vs last year" means nothing without saying which week that was.
+  const range = (w: { start: string; end: string }) =>
+    `${formatDateSimple(w.start)} – ${formatDateSimple(w.end)}`;
+  const windowScope = {
+    url,
+    token,
+    storeid: state.scope.storeid,
+    start: state.scope.start,
+    end: state.scope.end,
+  };
+  const periods = {
+    tw: dateLabel,
+    lw: range(lwWindow(windowScope)),
+    ly: range(lyWindow(windowScope)),
+  };
 
   return (
     <div className="w-full p-4 select-none min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden">
       {/* Re-search is an overlay, never a return to the entry screen — losing a
           load this expensive to change one field is what that pattern
           prevents. */}
-      {searchOpen && (
+      {state.searchOpen && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-          onClick={() => setSearchOpen(false)}
+          onClick={() => dispatch(setItemReportSearchOpen(false))}
         >
           <div onClick={(e) => e.stopPropagation()}>{entry}</div>
         </div>
       )}
 
-      {exportOpen && (
+      {state.exportOpen && (
         <ItemReportExportModal
-          onClose={() => setExportOpen(false)}
+          onClose={() => dispatch(setItemReportExportOpen(false))}
           storeName={storeName}
           dateLabel={dateLabel}
-          lookbackDays={receiving.lookbackDays}
+          lookbackDays={RECEIVING_LOOKBACK}
           rows={sheetRows}
-          receiptsByUpc={receiving.receiptsByUpc}
-          receivingComplete={receiving.complete}
+          receiptsByUpc={state.receipts}
+          receivingComplete={state.receivingComplete}
         />
       )}
 
@@ -251,30 +349,31 @@ const ItemReport = () => {
         <ItemReportSheet
           rows={sheetRows}
           counts={counts}
-          receiptsByUpc={receiving.receiptsByUpc}
-          selectedUpc={selectedUpc}
+          uploadedCount={uploadedCount}
+          allCount={items.length}
+          receiptsByUpc={state.receipts}
+          selectedUpc={state.selectedUpc}
           onSelect={selectRow}
-          onSearchOpen={() => setSearchOpen(true)}
-          onExportOpen={() => setExportOpen(true)}
+          onSearchOpen={() => dispatch(setItemReportSearchOpen(true))}
+          onExportOpen={() => dispatch(setItemReportExportOpen(true))}
           storeName={storeName}
           dateLabel={dateLabel}
-          receivingComplete={receiving.complete}
+          receivingComplete={state.receivingComplete}
           receivingProgress={
-            receiving.error
-              ? receiving.error
-              : `${receiving.invoicesSeen} of ${receiving.invoicesTotal} invoices`
+            state.receivingError
+              ? state.receivingError
+              : `${state.invoicesSeen} of ${state.invoicesTotal} invoices`
           }
         />
 
         <ItemReportRail
           item={selected?.item ?? null}
           receipts={
-            selected
-              ? (receiving.receiptsByUpc.get(selected.item.productCode) ?? [])
-              : []
+            selected ? (state.receipts[selected.item.productCode] ?? []) : []
           }
-          receivingComplete={receiving.complete}
-          lookbackDays={receiving.lookbackDays}
+          receivingComplete={state.receivingComplete}
+          lookbackDays={RECEIVING_LOOKBACK}
+          periods={periods}
           actual={actual}
         />
       </div>

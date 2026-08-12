@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import ResizableModalShell from "../../../../components/modals/ResizableModalShell";
+import MultiSelectFilter from "../../../../components/filters/MultiSelectFilter";
 import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import type { SubDept, SubDeptMargin } from "../../../../interfaces";
 import type { SubDeptGrade } from "../../../../features/subMarginSlice";
@@ -389,6 +390,15 @@ const MarginPerfExportModal = ({
   // are there to widen it, not to be chosen from scratch.
   const [deptSevs, setDeptSevs] = useState<Set<ItemSev>>(new Set(["critical"]));
   const [upcSevs, setUpcSevs] = useState<Set<ItemSev>>(new Set(["critical"]));
+  /**
+   * Which departments the two store-wide datasets cover. Empty means all — an
+   * untouched filter must never silently empty an export.
+   *
+   * One selection shared by both, not one each: they emit the same item set and
+   * differ only in how many columns survive, so two independent department
+   * pickers would be two ways to describe one thing.
+   */
+  const [deptPick, setDeptPick] = useState<string[]>([]);
   const [source, setSource] = useState<CustomSource>("ty");
   const [groupBy, setGroupBy] = useState<Set<string>>(new Set());
   const [metrics, setMetrics] = useState<Map<string, MetricSelection>>(
@@ -529,12 +539,19 @@ const MarginPerfExportModal = ({
     if (selected.has("items_vs_ly") && itemSevs.size > 0) {
       sections.push(`Items vs Last Year\n${buildItemsVsLyCsv(tyMargins, lyMargins, threshold, itemSevs)}`);
     }
+    // Narrowing the department list before the collector runs keeps the filter
+    // out of the grading logic entirely — it decides scope, not severity.
+    const pickedDepts =
+      deptPick.length === 0
+        ? subDepts
+        : subDepts.filter((d) => deptPick.includes(String(d.id)));
+
     if (selected.has("all_depts") && deptSevs.size > 0) {
-      const items = collectGradedItems(subDepts, grades, threshold, gradingMetric, deptSevs);
+      const items = collectGradedItems(pickedDepts, grades, threshold, gradingMetric, deptSevs);
       sections.push(`Graded Items — All Departments\n${buildAllDeptsCsv(items, gradingMetric)}`);
     }
     if (selected.has("upc_list") && upcSevs.size > 0) {
-      const items = collectGradedItems(subDepts, grades, threshold, gradingMetric, upcSevs);
+      const items = collectGradedItems(pickedDepts, grades, threshold, gradingMetric, upcSevs);
       sections.push(`UPC List\n${buildUpcListCsv(items)}`);
     }
     if (!sections.length) return;
@@ -634,9 +651,29 @@ const MarginPerfExportModal = ({
                 </div>
               </div>
 
-              {/* The only preset that isn't scoped to the open department.
-                  Costs nothing extra — grading already holds every
-                  department's item rows. */}
+              {/* Scope for both store-wide datasets below. Sits above them
+                  rather than inside either, because it governs the pair. */}
+              <div className="flex items-center gap-2 pt-3 border-t border-gray-100">
+                <span className="text-[11px] text-content">Departments</span>
+                <MultiSelectFilter
+                  options={subDepts.map((d) => ({
+                    label: d.desc,
+                    value: String(d.id),
+                  }))}
+                  values={deptPick}
+                  onChange={setDeptPick}
+                  placeholder="All departments"
+                  noun="departments"
+                  className="w-[220px]"
+                />
+                <span className="text-[10px] text-content">
+                  Applies to both datasets below.
+                </span>
+              </div>
+
+              {/* The only presets that aren't scoped to the open department.
+                  Cost nothing extra — grading already holds every department's
+                  item rows. */}
               <div className="flex items-start gap-3 pt-3 border-t border-gray-100">
                 <input
                   type="checkbox"

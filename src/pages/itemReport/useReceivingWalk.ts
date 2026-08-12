@@ -1,4 +1,10 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useRef } from "react";
+import { useAppDispatch } from "../../hooks";
+import {
+  startReceivingWalk,
+  setReceivingProgress,
+  setReceivingError,
+} from "../../features/itemReportSlice";
 import {
   fetchInvoices,
   fetchInvoiceLines,
@@ -17,18 +23,19 @@ import {
  * invoice on click — which is why every constraint here is explicit rather than
  * inherited.
  *
- * Every invoice in the lookback is opened, and no line is filtered out. That is
- * a deliberate cost: receipts are an entry point, not a lookup. An item that
- * was delivered and never scanned produces no sales row anywhere, so it cannot
- * reach the report through the upload — the only way to find it is to read what
- * came through the door and see what never rang. Filtering to a known UPC set
- * would make exactly those items invisible, which is the failure this walk
- * exists to catch.
+ * Every invoice in the lookback is opened, because an item can only be found by
+ * opening the invoice it sits on. Only lines matching the uploaded UPCs are
+ * kept, though — the report answers for the list it was given and nothing else,
+ * so retaining the rest would be several hundred invoices' worth of lines held
+ * in Redux that nothing reads.
  *
- * It runs behind the report rather than in front of it — sales render first and
- * receiving fills in underneath, because blocking a normal search on the
- * slowest half would make the page feel broken. Verdicts that depend on
- * receipts stay marked provisional until it finishes.
+ * Results go to Redux, not to local state. The walk is the most expensive thing
+ * the page does, and component state dies on a route change — so leaving it here
+ * would mean paying for the whole walk again every time someone navigated away
+ * and back.
+ *
+ * The hook keeps only refs: a run token to settle races, and the accumulator the
+ * flush batches out of. Neither is state, and neither survives — nor needs to.
  */
 
 /** How many invoices are opened at once. High enough to finish a quarter in a
@@ -41,143 +48,154 @@ const CONCURRENCY = 6;
  *  a complete one. */
 const MAX_INVOICES = 600;
 
-/** Invoices between state flushes. Setting state per invoice would re-render
- *  the whole report several hundred times; batching keeps the progress readable
- *  without thrashing a list that may hold hundreds of rows. */
+/** Invoices between dispatches. One per invoice would re-render a sheet of
+ *  several hundred rows several hundred times. */
 const FLUSH_EVERY = 8;
 
-export interface ReceivingState {
-  /** Receipts per UPC, newest first. Only holds the UPCs asked for. */
-  receiptsByUpc: Map<string, ReceiptLine[]>;
-  invoicesSeen: number;
-  invoicesTotal: number;
-  running: boolean;
-  /** True once the walk has finished — either every invoice was opened or every
-   *  item was found. Until then, an item with no receipts hasn't been proven to
-   *  have none. */
-  complete: boolean;
-  /** Invoices beyond the cap, left unopened. */
-  skipped: number;
-  /** How far back deliveries were read, for labelling. "No delivery in 90 days"
-   *  is a claim the page can defend; "never received" is not. */
-  lookbackDays: number;
-  error: string | null;
-}
-
-const initial: ReceivingState = {
-  receiptsByUpc: new Map(),
-  invoicesSeen: 0,
-  invoicesTotal: 0,
-  running: false,
-  complete: false,
-  skipped: 0,
-  lookbackDays: RECEIVING_LOOKBACK_DAYS,
-  error: null,
-};
-
 export const useReceivingWalk = () => {
-  const [state, setState] = useState<ReceivingState>(initial);
+  const dispatch = useAppDispatch();
   /** The most recent walk. A response whose token no longer matches belongs to
    *  a search the user has already replaced, and is dropped rather than merged
    *  into the current report. */
   const runId = useRef(0);
 
-  const start = useCallback(async (scope: ReportScope) => {
-    const id = ++runId.current;
-    setState({ ...initial, receiptsByUpc: new Map(), running: true });
+  const start = useCallback(
+    async (scope: ReportScope, upcs: string[]) => {
+      const id = ++runId.current;
+      dispatch(startReceivingWalk());
 
-    const stale = () => runId.current !== id;
+      // Every invoice still has to be opened — there is no way to know which one
+      // carries a UPC without looking — but only the uploaded codes are kept.
+      // The rest were retained to discover items the file never named, and the
+      // report no longer asks that question.
+      const wanted = new Set(upcs);
 
-    let invoices;
-    try {
-      invoices = await fetchInvoices(scope, RECEIVING_LOOKBACK_DAYS);
-    } catch (e) {
-      if (stale()) return;
-      setState({
-        ...initial,
-        running: false,
-        error: e instanceof Error ? e.message : "Could not load receivers",
-      });
-      return;
-    }
-    if (stale()) return;
+      const stale = () => runId.current !== id;
 
-    const skipped = Math.max(0, invoices.length - MAX_INVOICES);
-    const walk = invoices.slice(0, MAX_INVOICES);
-    if (walk.length === 0) {
-      setState({
-        ...initial,
-        running: false,
-        complete: true,
-        invoicesTotal: 0,
-        skipped,
-      });
-      return;
-    }
-
-    // Accumulated in a ref-like local and flushed periodically. The map is
-    // rebuilt on each flush rather than mutated in place, so React sees a new
-    // reference and the report actually repaints.
-    const acc = new Map<string, ReceiptLine[]>();
-    let seen = 0;
-
-    const flush = (done: boolean) => {
-      setState({
-        receiptsByUpc: new Map(acc),
-        invoicesSeen: seen,
-        invoicesTotal: walk.length,
-        running: !done,
-        complete: done,
-        skipped,
-        lookbackDays: RECEIVING_LOOKBACK_DAYS,
-        error: null,
-      });
-    };
-
-    let cursor = 0;
-    const worker = async () => {
-      for (;;) {
+      let invoices;
+      try {
+        invoices = await fetchInvoices(scope, RECEIVING_LOOKBACK_DAYS);
+      } catch (e) {
         if (stale()) return;
-        const index = cursor++;
-        if (index >= walk.length) return;
-        const invoice = walk[index];
-        const lines = await fetchInvoiceLines(scope, invoice);
-        if (stale()) return;
-
-        // Every line is kept. Narrowing to the uploaded UPCs here is what would
-        // hide the delivered-but-never-scanned items; the report decides which
-        // codes are in scope once it can cross them against sales.
-        for (const line of lines) {
-          const receipt = toReceiptLine(invoice, line);
-          const found = acc.get(receipt.productCode);
-          if (found) found.push(receipt);
-          else acc.set(receipt.productCode, [receipt]);
-        }
-
-        seen++;
-        if (seen % FLUSH_EVERY === 0) flush(false);
+        dispatch(
+          setReceivingError(
+            e instanceof Error ? e.message : "Could not load receivers",
+          ),
+        );
+        return;
       }
-    };
+      if (stale()) return;
 
-    await Promise.all(
-      Array.from({ length: Math.min(CONCURRENCY, walk.length) }, worker),
-    );
-    if (stale()) return;
+      const skipped = Math.max(0, invoices.length - MAX_INVOICES);
+      const walk = invoices.slice(0, MAX_INVOICES);
+      if (walk.length === 0) {
+        dispatch(
+          setReceivingProgress({
+            receipts: {},
+            seen: 0,
+            total: 0,
+            skipped,
+            done: true,
+          }),
+        );
+        return;
+      }
 
-    // Invoices are opened out of order by the workers, so each item's receipts
-    // are sorted once at the end rather than kept ordered during the walk.
-    for (const receipts of acc.values()) {
-      receipts.sort((a, b) => b.date.localeCompare(a.date));
-    }
-    flush(true);
-  }, []);
+      // Accumulated locally and dispatched periodically.
+      const acc: Record<string, ReceiptLine[]> = {};
+      let seen = 0;
 
-  /** Dropped when the search is replaced, so a walk can't outlive the report it
-   *  was filling in. */
-  const reset = useCallback(() => {
+      /**
+       * A copy deep enough to hand to Redux, which is one level deeper than it
+       * looks like it needs to be.
+       *
+       * The dispatched object *becomes* state, and immer deep-freezes state in
+       * development. A shallow `{ ...acc }` would put these very arrays into the
+       * store, freeze them there, and make the next `push` on the accumulator
+       * throw — killing the worker mid-walk. So each flush gets fresh arrays;
+       * only the line objects are shared, and those are never mutated.
+       *
+       * A new outer object every time is also what makes the sheet repaint.
+       */
+      const snapshot = () => {
+        const out: Record<string, ReceiptLine[]> = {};
+        for (const code in acc) out[code] = [...acc[code]];
+        return out;
+      };
+
+      const flush = (done: boolean) => {
+        dispatch(
+          setReceivingProgress({
+            receipts: snapshot(),
+            seen,
+            total: walk.length,
+            skipped,
+            done,
+          }),
+        );
+      };
+
+      let cursor = 0;
+      const worker = async () => {
+        for (;;) {
+          if (stale()) return;
+          const index = cursor++;
+          if (index >= walk.length) return;
+          const invoice = walk[index];
+          const lines = await fetchInvoiceLines(scope, invoice);
+          if (stale()) return;
+
+          for (const line of lines) {
+            const receipt = toReceiptLine(invoice, line);
+            if (!wanted.has(receipt.productCode)) continue;
+            const found = acc[receipt.productCode];
+            if (found) found.push(receipt);
+            else acc[receipt.productCode] = [receipt];
+          }
+
+          seen++;
+          if (seen % FLUSH_EVERY === 0) flush(false);
+        }
+      };
+
+      // The walk is fired as `void startWalk(...)`, so a throw in here would
+      // otherwise surface as an unhandled rejection and nothing else: the
+      // progress line would simply stop climbing and the report would present a
+      // partial walk as a finished one. Report it instead — a wrong "never
+      // received" is exactly the conclusion this page must not hand over.
+      try {
+        await Promise.all(
+          Array.from({ length: Math.min(CONCURRENCY, walk.length) }, worker),
+        );
+      } catch (e) {
+        if (stale()) return;
+        dispatch(
+          setReceivingError(
+            e instanceof Error
+              ? `Receiving stopped after ${seen} of ${walk.length} invoices: ${e.message}`
+              : "Receiving walk failed",
+          ),
+        );
+        return;
+      }
+      if (stale()) return;
+
+      // Invoices are opened out of order by the workers, so each item's
+      // receipts are sorted once at the end rather than kept ordered during
+      // the walk.
+      for (const receipts of Object.values(acc)) {
+        receipts.sort((a, b) => b.date.localeCompare(a.date));
+      }
+      flush(true);
+    },
+    [dispatch],
+  );
+
+  /** Invalidates any walk still in flight, so a replaced search can't have its
+   *  results land on top of the new one. The slice clears the data itself. */
+  const cancel = useCallback(() => {
     runId.current++;
-    setState({ ...initial, receiptsByUpc: new Map() });
   }, []);
 
-  return { receiving: state, startWalk: start, resetWalk: reset };
+  return { startWalk: start, cancelWalk: cancel };
 };
