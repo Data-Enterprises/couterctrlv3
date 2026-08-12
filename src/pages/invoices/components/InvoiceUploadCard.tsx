@@ -7,7 +7,8 @@ import {
   PhotoIcon,
   XMarkIcon,
 } from "@heroicons/react/20/solid";
-import type { InvoiceEngine } from "../../../interfaces";
+import type { InvoiceEngine, Store } from "../../../interfaces";
+import SingleSelect from "../../../components/SingleSelect";
 import {
   ACCEPT_ATTR,
   ENGINES,
@@ -23,8 +24,12 @@ interface InvoiceUploadCardProps {
   onFilesChange: (files: File[]) => void;
   engine: InvoiceEngine;
   onEngineChange: (engine: InvoiceEngine) => void;
+  stores: Store[];
+  storeid: number;
+  onStoreChange: (storeid: number) => void;
   onExtract: () => void;
   loading: boolean;
+  onHistory: () => void;
   /** Present once a run has finished, so the card can be reopened over the
    *  results without losing them. */
   onBack?: () => void;
@@ -36,8 +41,12 @@ const InvoiceUploadCard = ({
   onFilesChange,
   engine,
   onEngineChange,
+  stores,
+  storeid,
+  onStoreChange,
   onExtract,
   loading,
+  onHistory,
   onBack,
   notice,
 }: InvoiceUploadCardProps) => {
@@ -46,6 +55,8 @@ const InvoiceUploadCard = ({
   const [dragging, setDragging] = useState(false);
 
   const active = ENGINES.find((e) => e.id === engine) ?? ENGINES[0];
+  const storeName =
+    stores.find((s) => s.storeid === storeid)?.store_name ?? "";
   // Staged files the selected engine can't read. Not removed — the other
   // engine may well take them, and the fix is usually to switch rather than to
   // go find the file again.
@@ -89,6 +100,20 @@ const InvoiceUploadCard = ({
           totals.
         </p>
       </div>
+
+      {/* Every run is filed against a store — it's what the log row and the
+          cost are attributed to, and the server re-checks it against the
+          caller's own assignments before spending anything. */}
+      <SingleSelect
+        label="Select Store"
+        data={stores}
+        displayKey="store_name"
+        valueKey="storeid"
+        onSelect={(id) => onStoreChange(Number(id))}
+        defaultQuery={storeid > 0 ? storeName : ""}
+        innerClass="text-[13px] py-1"
+        listClass="text-[13px]"
+      />
 
       {/* Both engines return the same shape and the same reconciliation, so the
           checks on the results screen are what score one against the other on
@@ -214,15 +239,27 @@ const InvoiceUploadCard = ({
         </div>
       )}
 
+      {/* Store is required by the endpoint, and a missing one fails the whole
+          request — cheaper to gate here than to upload and be turned away. */}
       <button
         data-testid="extract-invoices-btn"
         onClick={onExtract}
-        disabled={loading || files.length === 0}
+        disabled={loading || files.length === 0 || storeid === 0}
         className="w-full py-2 text-sm font-semibold text-custom-white rounded-lg bg-[#1e2a4a] hover:bg-[#2a3a63] transition-colors cursor-pointer select-none disabled:opacity-50"
       >
-        {files.length === 0
-          ? `Extract with ${active.label}`
-          : `Extract ${files.length} File${files.length === 1 ? "" : "s"} with ${active.label}`}
+        {storeid === 0
+          ? "Select a store first"
+          : files.length === 0
+            ? `Extract with ${active.label}`
+            : `Extract ${files.length} File${files.length === 1 ? "" : "s"} with ${active.label}`}
+      </button>
+
+      <button
+        data-testid="open-history-btn"
+        onClick={onHistory}
+        className="w-full py-1.5 text-[12.5px] font-semibold text-content/60 hover:text-content transition-colors underline underline-offset-2"
+      >
+        View previous runs
       </button>
 
       {onBack && (

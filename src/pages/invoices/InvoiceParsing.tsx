@@ -1,19 +1,38 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
-import { parseScannedInvoices } from "../../api/invoices";
-import type { JsonError, ParseScannedJsonResp } from "../../interfaces";
+import {
+  getInvoiceHistory,
+  getInvoiceResult,
+  parseScannedInvoices,
+} from "../../api/invoices";
+import type {
+  InvoiceHistoryFile,
+  InvoiceHistoryJsonResp,
+  InvoiceResultJsonResp,
+  JsonError,
+  ParseScannedJsonResp,
+} from "../../interfaces";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
 import EmptyPrompt from "../../components/EmptyPrompt";
 import ExportModal from "../../components/modals/ExportModal";
 import InvoiceUploadCard from "./components/InvoiceUploadCard";
 import InvoiceListPanel from "./components/InvoiceListPanel";
 import InvoiceDetailPanel from "./components/InvoiceDetailPanel";
+import InvoiceHistoryPanel from "./components/InvoiceHistoryPanel";
 import { ENGINES, buildLineExportRows, lineExportCols, pairInvoices } from ".";
 import {
+  HISTORY_PAGE_SIZE,
   clearParseResult,
   setEngine,
+  setHistory,
+  setHistoryFilters,
+  setHistoryLoading,
+  setHistoryOffset,
   setInvoiceExportOpen,
+  setInvoiceStoreid,
+  setInvoiceView,
+  setOpeningRunId,
   setParseResult,
   setParsing,
   setSelectedInvoiceIndex,
@@ -23,11 +42,18 @@ const InvoiceParsing = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const { url, token, isMobile } = useAppSelector((s) => s.app);
+  const assignedStores = useAppSelector((s) => s.user.assignedStores);
+  const lastStore = useAppSelector((s) => s.search.lastStore);
   const {
+    view,
     engine,
+    storeid,
     runId,
     runEngine,
+    runStoreid,
     model,
+    pageCount,
+    estCostUsd,
     invoices,
     reconciliation,
     files,
@@ -35,14 +61,35 @@ const InvoiceParsing = () => {
     isParsing,
     selectedInvoiceIndex,
     exportOpen,
+    runArchived,
+    runExtractedAt,
+    runExtractedBy,
+    history,
+    historyTotal,
+    historyOffset,
+    historyLoading,
+    historyStoreid,
+    historyEngine,
+    historyStatus,
+    openingRunId,
   } = useAppSelector((s) => s.invoiceParsing);
 
   // Files being staged for the next run. Local, not Redux — a File isn't
   // serializable, and there is nothing about a half-filled upload box worth
   // surviving a route change.
   const [pending, setPending] = useState<File[]>([]);
-  const [uploadOpen, setUploadOpen] = useState(false);
   const [notice, setNotice] = useState<string | undefined>(undefined);
+
+  // Start on whatever store the rest of the app is already looking at, but only
+  // if it's one this user is actually assigned — the endpoint checks the same
+  // thing and rejects the run outright, so seeding a store they can't use would
+  // just move the failure later.
+  useEffect(() => {
+    if (storeid !== 0 || !lastStore) return;
+    if (assignedStores.some((s) => s.storeid === lastStore)) {
+      dispatch(setInvoiceStoreid(lastStore));
+    }
+  }, [assignedStores, lastStore]);
 
   const rows = useMemo(
     () => pairInvoices(invoices, reconciliation),
@@ -52,17 +99,16 @@ const InvoiceParsing = () => {
     selectedInvoiceIndex === null ? undefined : rows[selectedInvoiceIndex];
 
   const handleExtract = () => {
-    if (pending.length === 0) return;
+    if (pending.length === 0 || storeid === 0) return;
     setNotice(undefined);
     dispatch(setParsing(true));
-    setUploadOpen(false);
 
-    parseScannedInvoices(url, token, pending, engine)
+    parseScannedInvoices(url, token, pending, engine, storeid)
       .then((resp) => {
         const j: ParseScannedJsonResp = resp.data;
         if (j.error !== 0) {
           setNotice(j.msg || "The extraction failed.");
-          setUploadOpen(true);
+          dispatch(setInvoiceView("upload"));
           toast.error(j.msg || "Invoice extraction failed");
           return;
         }
@@ -72,7 +118,13 @@ const InvoiceParsing = () => {
             runId: j.runId ?? null,
             // Server echoes the engine; fall back to the one we asked for.
             runEngine: j.engine ?? engine,
+            runStoreid: j.storeid ?? storeid,
             model: j.model ?? null,
+            pageCount: j.pageCount ?? null,
+            estCostUsd: j.estCostUsd ?? null,
+            runArchived: false,
+            runExtractedAt: null,
+            runExtractedBy: null,
             invoices: j.invoices ?? [],
             reconciliation: j.reconciliation ?? [],
             files: j.files ?? [],
@@ -87,7 +139,7 @@ const InvoiceParsing = () => {
           // Every file failed, or nothing in them parsed — keep the upload card
           // open so the errors sit next to the box they came from.
           setNotice("No invoices came back from this batch.");
-          setUploadOpen(true);
+          dispatch(setInvoiceView("upload"));
         } else if (failed > 0) {
           toast.warn(
             `${count} invoice${count === 1 ? "" : "s"} extracted — ${failed} file${failed === 1 ? "" : "s"} failed`,
@@ -124,7 +176,7 @@ const InvoiceParsing = () => {
       })
       .catch((err: JsonError) => {
         setNotice(err.message);
-        setUploadOpen(true);
+        dispatch(setInvoiceView("upload"));
         toast.error(err.message);
       })
       .finally(() => dispatch(setParsing(false)));
@@ -132,12 +184,118 @@ const InvoiceParsing = () => {
 
   const handleNewBatch = () => {
     setNotice(undefined);
-    setUploadOpen(true);
+    dispatch(setInvoiceView("upload"));
+  };
+
+  const loadHistory = (offset = historyOffset) => {
+    dispatch(setHistoryLoading(true));
+    getInvoiceHistory(url, token, {
+      storeid: historyStoreid ?? undefined,
+      engine: historyEngine ?? undefined,
+      status: historyStatus ?? undefined,
+      limit: HISTORY_PAGE_SIZE,
+      offset,
+    })
+      .then((resp) => {
+        const j: InvoiceHistoryJsonResp = resp.data;
+        if (j.error !== 0) {
+          toast.error(j.msg || "Could not load previous runs");
+          return;
+        }
+        dispatch(
+          setHistory({
+            files: j.files ?? [],
+            total: j.total ?? 0,
+            offset: j.offset ?? offset,
+          }),
+        );
+      })
+      .catch((err: JsonError) => toast.error(err.message))
+      .finally(() => dispatch(setHistoryLoading(false)));
+  };
+
+  // Refetch on entering History and on any filter or page change. The filters
+  // live in Redux, so coming back to the page re-runs the same query rather
+  // than silently showing a stale list under filters that say otherwise.
+  useEffect(() => {
+    if (view !== "history") return;
+    loadHistory();
+  }, [view, historyStoreid, historyEngine, historyStatus, historyOffset]);
+
+  const handleOpenRun = (file: InvoiceHistoryFile) => {
+    dispatch(setOpeningRunId(file.runId));
+    getInvoiceResult(url, token, file.runId)
+      .then((resp) => {
+        const j: InvoiceResultJsonResp = resp.data;
+        if (j.error !== 0 || !j.result) {
+          toast.error(j.msg || "Could not open that run");
+          return;
+        }
+        const r = j.result;
+        // The archive deliberately carries no cost — it's derived at read time.
+        // Sum what the history rows for this run report instead, and treat a
+        // run whose rows we don't all hold, or that has any unpriced row, as
+        // unpriced rather than under-reporting it.
+        const runRows = history.filter((h) => h.runId === file.runId);
+        const allPriced =
+          runRows.length === r.files.length &&
+          runRows.every((h) => h.estCostUsd !== null);
+        const cost = allPriced
+          ? runRows
+              .reduce((sum, h) => sum + Number(h.estCostUsd), 0)
+              .toFixed(4)
+          : null;
+
+        dispatch(
+          setParseResult({
+            runId: r.runId,
+            runEngine: r.engine,
+            runStoreid: r.storeid,
+            model: r.model,
+            pageCount: r.pageCount ?? null,
+            estCostUsd: cost,
+            runArchived: true,
+            runExtractedAt: r.extractedAt,
+            runExtractedBy: r.extractedBy,
+            invoices: r.invoices ?? [],
+            reconciliation: r.reconciliation ?? [],
+            files: r.files ?? [],
+            // Reconstructed from the archive's own location — the run key is
+            // "<prefix>/result.json", so the prefix is everything before it.
+            storage: j.resultS3Uri
+              ? {
+                  bucket: j.resultS3Uri.replace("s3://", "").split("/")[0],
+                  prefix: j.resultS3Uri
+                    .replace("s3://", "")
+                    .split("/")
+                    .slice(1, -1)
+                    .join("/"),
+                  resultKey: j.resultS3Uri
+                    .replace("s3://", "")
+                    .split("/")
+                    .slice(1)
+                    .join("/"),
+                  error: null,
+                }
+              : null,
+          }),
+        );
+
+        if ((r.invoices ?? []).length === 0) {
+          // setParseResult only switches to results when there are invoices to
+          // show, so say why the screen didn't change.
+          toast.warn("That run archived no invoices — nothing to display.");
+        }
+      })
+      .catch((err: JsonError) => toast.error(err.message))
+      .finally(() => dispatch(setOpeningRunId(null)));
   };
 
   const exportRows = useMemo(() => buildLineExportRows(rows), [rows]);
   const engineLabel = (id: string) =>
     ENGINES.find((e) => e.id === id)?.label ?? id;
+  const storeLabel = (id: number) =>
+    assignedStores.find((s) => s.storeid === id)?.store_name ?? `Store ${id}`;
 
   if (isMobile) {
     return (
@@ -160,8 +318,34 @@ const InvoiceParsing = () => {
     );
   }
 
-  // No run yet, or the user asked to upload another batch.
-  if (invoices.length === 0 || uploadOpen) {
+  if (view === "history") {
+    return (
+      <div className="w-full p-4 select-none h-[calc(100vh-3rem)] overflow-hidden">
+        <InvoiceHistoryPanel
+          files={history}
+          total={historyTotal}
+          offset={historyOffset}
+          pageSize={HISTORY_PAGE_SIZE}
+          loading={historyLoading}
+          openingRunId={openingRunId}
+          stores={assignedStores}
+          storeid={historyStoreid}
+          engine={historyEngine}
+          status={historyStatus}
+          onFilterChange={(next) => dispatch(setHistoryFilters(next))}
+          onOffsetChange={(next) => dispatch(setHistoryOffset(next))}
+          onRefresh={() => loadHistory()}
+          onOpenRun={handleOpenRun}
+          onBack={() =>
+            dispatch(setInvoiceView(invoices.length > 0 ? "results" : "upload"))
+          }
+        />
+      </div>
+    );
+  }
+
+  // No run to show, or the user asked to upload another batch.
+  if (view === "upload" || invoices.length === 0) {
     return (
       <div className="h-[calc(100vh-3rem)] flex items-center justify-center mx-4 pb-12">
         <InvoiceUploadCard
@@ -169,14 +353,18 @@ const InvoiceParsing = () => {
           onFilesChange={setPending}
           engine={engine}
           onEngineChange={(next) => dispatch(setEngine(next))}
+          stores={assignedStores}
+          storeid={storeid}
+          onStoreChange={(next) => dispatch(setInvoiceStoreid(next))}
           onExtract={handleExtract}
           loading={isParsing}
           notice={notice}
+          onHistory={() => dispatch(setInvoiceView("history"))}
           onBack={
             invoices.length > 0
               ? () => {
                   setNotice(undefined);
-                  setUploadOpen(false);
+                  dispatch(setInvoiceView("results"));
                 }
               : undefined
           }
@@ -198,13 +386,33 @@ const InvoiceParsing = () => {
       {/* Run provenance. The prefix is what a disputed invoice gets traced
           through, so it's on screen rather than buried in a log table. */}
       <div className="flex items-center gap-3 px-1 pb-2 text-[11px] text-content/45 flex-shrink-0">
+        {runArchived && (
+          <span className="font-semibold text-[#1e2a4a] bg-[#1e2a4a]/8 px-1.5 py-0.5 rounded">
+            Archived run
+          </span>
+        )}
         {runEngine && (
           <span className="font-semibold text-content/60">
             {engineLabel(runEngine)}
           </span>
         )}
+        {runStoreid !== null && <span>· {storeLabel(runStoreid)}</span>}
         {runId && <span>· Run {runId}</span>}
         {model && <span>· {model}</span>}
+        {pageCount !== null && (
+          <span>
+            · {pageCount} page{pageCount === 1 ? "" : "s"}
+          </span>
+        )}
+        {/* Priced server-side from invoice_parse_cost. Absent means no pricing
+            row matched the engine/model, not that the run was free. */}
+        <span>· {estCostUsd === null ? "cost unpriced" : `$${estCostUsd}`}</span>
+        {runExtractedAt && (
+          <span>
+            · {new Date(runExtractedAt).toLocaleString()}
+            {runExtractedBy && ` by ${runExtractedBy}`}
+          </span>
+        )}
         {storage?.prefix && (
           <span className="truncate">
             · {storage.bucket}/{storage.prefix}
@@ -229,6 +437,7 @@ const InvoiceParsing = () => {
             selectedIndex={selectedInvoiceIndex}
             onSelect={(index) => dispatch(setSelectedInvoiceIndex(index))}
             onNewBatch={handleNewBatch}
+            onHistory={() => dispatch(setInvoiceView("history"))}
             onExport={() => dispatch(setInvoiceExportOpen(true))}
           />
         </div>

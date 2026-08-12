@@ -1314,6 +1314,11 @@ export interface CatSalesResponse<T> {
  *  document. */
 export type InvoiceEngine = "bedrock" | "textract";
 
+/** Run outcome as recorded in invoice_parse_log. History rows are per file, so
+ *  in practice they're success or failed; "partial" describes a whole request
+ *  and is accepted as a filter. */
+export type InvoiceRunStatus = "success" | "partial" | "failed";
+
 /** invoices/parse_scanned. Everything but the invoice number is optional:
  *  the endpoint dumps its model with exclude_none, so a field the invoice
  *  doesn't print is absent rather than null.
@@ -1377,6 +1382,10 @@ export interface InvoiceReconciliation {
 export interface InvoiceFileReport {
   file: string;
   invoices: number;
+  /** Pages submitted for this file — the unit both engines bill on. Counted
+   *  from the document, so a file that failed extraction still reports what it
+   *  was charged for. Null when the PDF couldn't be read for a count. */
+  pages: number | null;
   error: string | null;
   /** S3 key the source document was archived under, null if archiving failed. */
   sourceKey: string | null;
@@ -1405,9 +1414,81 @@ export interface ParseScannedJsonResp {
   /** Which extractor produced this run — echoed back rather than assumed, so
    *  the results carry the engine they actually came from. */
   engine?: InvoiceEngine;
+  /** The store the run was filed against, echoed back. */
+  storeid?: number;
+  /** Pages across every file in the run. */
+  pageCount?: number;
+  /** Estimated AWS cost, read back from invoice_parse_cost so the response and
+   *  the database can't disagree. A decimal string, not a number — it's money,
+   *  and null when no pricing row matched the engine/model. */
+  estCostUsd?: string | null;
   invoices?: ExtractedInvoice[];
   reconciliation?: InvoiceReconciliation[];
   files?: InvoiceFileReport[];
   storage?: InvoiceStorage;
   model?: string;
+}
+
+/** One previously processed file. Several share a runId when one request
+ *  carried several files. */
+export interface InvoiceHistoryFile {
+  runId: string;
+  createdAt: string;
+  storeid: number;
+  /** Null on a run that died before any file was read. */
+  fileName: string | null;
+  fileSizeBytes: number | null;
+  pageCount: number | null;
+  invoiceCount: number;
+  reconciledCount: number;
+  /** Invoices in this file that did NOT reconcile — not failed files. Always
+   *  invoiceCount - reconciledCount. */
+  failedCount: number;
+  engine: InvoiceEngine;
+  modelId: string;
+  durationMs: number | null;
+  status: InvoiceRunStatus;
+  error: string | null;
+  sourceS3Uri: string | null;
+  /** Null means the archive write failed, so /invoices/result has nothing to
+   *  hand back for this run. */
+  resultS3Uri: string | null;
+  estCostUsd: string | null;
+}
+
+export interface InvoiceHistoryJsonResp {
+  error: number;
+  success: boolean;
+  msg: string;
+  total?: number;
+  limit?: number;
+  offset?: number;
+  files?: InvoiceHistoryFile[];
+}
+
+/** The archived result.json. Same invoices and reconciliation the run returned;
+ *  no cost, deliberately — that's derived from invoice_pricing at read time so
+ *  a figure frozen into the archive would drift when a rate changed. */
+export interface InvoiceArchivedResult {
+  runId: string;
+  engine: InvoiceEngine;
+  storeid: number;
+  extractedAt: string;
+  extractedBy: string;
+  model: string;
+  effort: string | null;
+  pageCount: number;
+  files: InvoiceFileReport[];
+  invoices: ExtractedInvoice[];
+  reconciliation: InvoiceReconciliation[];
+}
+
+export interface InvoiceResultJsonResp {
+  error: number;
+  success: boolean;
+  msg: string;
+  runId?: string;
+  storeid?: number;
+  resultS3Uri?: string;
+  result?: InvoiceArchivedResult;
 }

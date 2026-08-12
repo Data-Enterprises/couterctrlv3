@@ -2,6 +2,7 @@ import {
   ArchiveBoxXMarkIcon,
   ArrowDownTrayIcon,
   ArrowUpTrayIcon,
+  ClockIcon,
   ExclamationTriangleIcon,
 } from "@heroicons/react/20/solid";
 import SeverityBadge from "../../../components/SeverityBadge";
@@ -14,6 +15,7 @@ interface InvoiceListPanelProps {
   selectedIndex: number | null;
   onSelect: (index: number) => void;
   onNewBatch: () => void;
+  onHistory: () => void;
   onExport: () => void;
 }
 
@@ -23,6 +25,7 @@ const InvoiceListPanel = ({
   selectedIndex,
   onSelect,
   onNewBatch,
+  onHistory,
   onExport,
 }: InvoiceListPanelProps) => {
   const failedFiles = files.filter((f) => f.error);
@@ -53,6 +56,13 @@ const InvoiceListPanel = ({
           <ArrowDownTrayIcon className="w-4 h-4 text-content/60" />
         </button>
         <button
+          onClick={onHistory}
+          title="Previous runs"
+          className="p-1.5 rounded-lg hover:bg-bkg transition-colors"
+        >
+          <ClockIcon className="w-4 h-4 text-content/60" />
+        </button>
+        <button
           onClick={onNewBatch}
           title="Upload more invoices"
           className="p-1.5 rounded-lg hover:bg-bkg transition-colors"
@@ -74,6 +84,14 @@ const InvoiceListPanel = ({
               <div className="min-w-0">
                 <div className="text-[11.5px] font-semibold text-severity_critical_text truncate">
                   {f.file}
+                  {/* Pages are billed whether or not the read succeeded, so a
+                      failed file still says what it cost. */}
+                  {f.pages !== null && (
+                    <span className="font-normal">
+                      {" "}
+                      · {f.pages} page{f.pages === 1 ? "" : "s"} billed
+                    </span>
+                  )}
                 </div>
                 <div className="text-[11px] text-severity_critical_text/80 leading-snug">
                   {f.error}
