@@ -47,6 +47,7 @@ import upcDevReducer from '../features/upcDevSlice';
 import ticketsReducer from '../pages/tickets/ticketsSlice';
 import categoriesReducer from '../features/categoriesSlice';
 import vendorsReducer from '../features/vendorsSlice';
+import invoiceParsingReducer from '../pages/invoices/invoiceParsingSlice';
 
 export const setupStore = () =>
   configureStore({
@@ -98,6 +99,7 @@ export const setupStore = () =>
       salesLegacy: salesLegacyReducer,
       upcDev: upcDevReducer,
       tickets: ticketsReducer,
+      invoiceParsing: invoiceParsingReducer,
     },
   });
 

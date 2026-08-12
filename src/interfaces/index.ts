@@ -1306,3 +1306,108 @@ export interface CatSalesResponse<T> {
   page_size: number;
   subs: T[];
 }
+
+////////////////////// Scanned invoice extraction //////////////////////
+/** The two interchangeable extractors. Same request, same response shape, same
+ *  archive and log — they differ in cost, speed and what they're good at, and
+ *  the reconciliation check is what scores one against the other on a given
+ *  document. */
+export type InvoiceEngine = "bedrock" | "textract";
+
+/** invoices/parse_scanned. Everything but the invoice number is optional:
+ *  the endpoint dumps its model with exclude_none, so a field the invoice
+ *  doesn't print is absent rather than null.
+ *
+ *  Money arrives as the string the invoice printed — "17.85", "4.4300",
+ *  "-12.00" — never a number. That's the whole point of the extraction: the
+ *  transcription is exact and reconciliation is computed server-side in
+ *  Decimals. Display these as they came; parsing them into floats here would
+ *  reintroduce the rounding the backend went out of its way to avoid. */
+export interface ExtractedInvoiceLine {
+  itemCode?: string;
+  upc?: string;
+  description?: string;
+  pack?: string;
+  size?: string;
+  qty?: number;
+  unitPrice?: string;
+  allowance?: string;
+  /** Printed extended (net) amount, transcribed — not computed. */
+  ext?: string;
+}
+
+export interface ExtractedInvoiceTotals {
+  subtotal?: string;
+  serviceFee?: string;
+  deposit?: string;
+  credits?: string;
+  invoiceTotal?: string;
+}
+
+export interface ExtractedInvoice {
+  invoiceNumber: string;
+  /** ISO YYYY-MM-DD. */
+  invoiceDate?: string;
+  vendor?: string;
+  storeNumber?: string;
+  /** Page range this invoice occupies in the uploaded document, e.g. "3-5". */
+  pages?: string;
+  lines?: ExtractedInvoiceLine[];
+  totals?: ExtractedInvoiceTotals;
+}
+
+/** One arithmetic check, computed server-side with exact Decimals. */
+export interface InvoiceReconciliationCheck {
+  label: string;
+  derived: string;
+  reported: string;
+  ok: boolean;
+}
+
+export interface InvoiceReconciliation {
+  invoiceNumber: string;
+  /** Uploaded file this invoice was read out of. */
+  file: string;
+  reconciled: boolean;
+  checks: InvoiceReconciliationCheck[];
+}
+
+/** Per-file outcome. One bad file doesn't sink the batch, so a report with an
+ *  error sits alongside the invoices the other files produced. */
+export interface InvoiceFileReport {
+  file: string;
+  invoices: number;
+  error: string | null;
+  /** S3 key the source document was archived under, null if archiving failed. */
+  sourceKey: string | null;
+  /** Why the source archive failed. Independent of `error`: extraction can
+   *  succeed on a file whose source never made it to S3, which leaves the
+   *  invoice with no image to be traced back to. */
+  storageError: string | null;
+}
+
+/** Where the run was archived. `error` non-null means the extraction still
+ *  succeeded but S3 was unreachable. */
+export interface InvoiceStorage {
+  bucket: string;
+  prefix: string;
+  resultKey: string | null;
+  error: string | null;
+}
+
+export interface ParseScannedJsonResp {
+  error: number;
+  success: boolean;
+  msg: string;
+  /** Present only on the success path — the failure branch returns just the
+   *  error/success/msg trio. */
+  runId?: string;
+  /** Which extractor produced this run — echoed back rather than assumed, so
+   *  the results carry the engine they actually came from. */
+  engine?: InvoiceEngine;
+  invoices?: ExtractedInvoice[];
+  reconciliation?: InvoiceReconciliation[];
+  files?: InvoiceFileReport[];
+  storage?: InvoiceStorage;
+  model?: string;
+}

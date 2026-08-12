@@ -5,6 +5,7 @@ import {
   MagnifyingGlassIcon,
   ArrowTrendingUpIcon,
   ClipboardDocumentCheckIcon,
+  DocumentMagnifyingGlassIcon,
   CurrencyDollarIcon,
   KeyIcon,
   MagnifyingGlassCircleIcon,
@@ -200,6 +201,17 @@ export const navigation: Navigation[] = [
     isVisible: true,
   },
   {
+    name: "Invoice Parsing",
+    href: "invoice-parsing",
+    icon: DocumentMagnifyingGlassIcon,
+    mobile: false,
+    children: [],
+    childOpen: false,
+    userLevels: ["5", "7", "8", "9"],
+    isHovering: false,
+    isVisible: true,
+  },
+  {
     name: "Admin",
     href: "admin",
     icon: KeyIcon,
@@ -388,6 +400,20 @@ export const categories: NavCategory[] = [
         children: [],
         childOpen: false,
         userLevels: ["*"],
+        isHovering: false,
+        isVisible: true,
+      },
+      {
+        // Extraction runs on Bedrock and archives to S3 per run, so it sits
+        // with the same manager-and-up levels as User Management rather than
+        // the "*" its neighbours use.
+        name: "Invoice Parsing",
+        href: "invoice-parsing",
+        icon: DocumentMagnifyingGlassIcon,
+        mobile: false,
+        children: [],
+        childOpen: false,
+        userLevels: ["5", "7", "8", "9"],
         isHovering: false,
         isVisible: true,
       },

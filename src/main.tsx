@@ -18,6 +18,7 @@ import Settings from "./pages/settings/Settings.tsx";
 import Dashboard from "./pages/quicksight/Dashboard.tsx";
 import SubDeptMargins from "./pages/subDepts/SubDeptMargins.tsx";
 import Tickets from "./pages/tickets/Tickets.tsx";
+import InvoiceParsing from "./pages/invoices/InvoiceParsing.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -48,6 +49,7 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="cashiers" element={<CashiersPage />} />
                 <Route path="orders" element={<OrdersPage />} />
                 <Route path="tickets" element={<Tickets />} />
+                <Route path="invoice-parsing" element={<InvoiceParsing />} />
               </Route>
             </Routes>
           </ToastProvider>
