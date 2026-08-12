@@ -724,8 +724,15 @@ const ItemReportExportModal = ({
           </button>
         </div>
       ) : (
-        <div className="grid" style={{ gridTemplateColumns: "220px 1fr" }}>
-          <div className="p-3.5 border-r border-gray-100">
+        <div
+          className="grid min-h-0"
+          style={{ gridTemplateColumns: "220px 1fr" }}
+        >
+          {/* The source list stays put; only the column list scrolls. Twenty-odd
+              checkboxes were pushing the download button off the bottom of the
+              modal, and the fix has to be here rather than on the whole column
+              or the source radios scroll away with them. */}
+          <div className="p-3.5 border-r border-gray-100 flex flex-col min-h-0">
             <p className="text-[10px] font-semibold uppercase tracking-wide text-content/85 mb-2">
               Data source
             </p>
@@ -746,22 +753,24 @@ const ItemReportExportModal = ({
               </label>
             ))}
 
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-content/85 mt-3.5 mb-2">
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-content/85 mt-3.5 mb-2 flex-shrink-0">
               Columns
             </p>
-            {COLS[source].map((c) => (
-              <label
-                key={c.key}
-                className="flex items-center gap-1.5 mb-1.5 cursor-pointer"
-              >
-                <input
-                  type="checkbox"
-                  checked={picked[source].has(c.key)}
-                  onChange={() => toggleCol(c.key)}
-                />
-                <span className="text-[11.5px] text-content">{c.label}</span>
-              </label>
-            ))}
+            <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar pr-1">
+              {COLS[source].map((c) => (
+                <label
+                  key={c.key}
+                  className="flex items-center gap-1.5 mb-1.5 cursor-pointer"
+                >
+                  <input
+                    type="checkbox"
+                    checked={picked[source].has(c.key)}
+                    onChange={() => toggleCol(c.key)}
+                  />
+                  <span className="text-[11.5px] text-content">{c.label}</span>
+                </label>
+              ))}
+            </div>
           </div>
 
           <div className="p-3.5 flex flex-col">
