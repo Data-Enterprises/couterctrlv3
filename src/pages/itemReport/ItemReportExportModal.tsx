@@ -298,6 +298,9 @@ const ItemReportExportModal = ({
    *  file someone is about to send. Same rule as the other export modals. */
   const [vendorPick, setVendorPick] = useState<string[]>([]);
   const [deptPick, setDeptPick] = useState<string[]>([]);
+  /** Custom mode only. Presets each declare their own actions, so offering this
+   *  alongside them would be two controls fighting over the same rows. */
+  const [actionPick, setActionPick] = useState<string[]>([]);
 
   /** The sheet's order, so the file opens the way the screen looked. */
   const ordered = useMemo(
@@ -317,6 +320,15 @@ const ItemReportExportModal = ({
         .map((v) => ({ label: v, value: v })),
     [ordered],
   );
+  /** Only the actions actually present, worst first. Listing empty categories
+   *  invites filtering to nothing and wondering why the file is blank. */
+  const actionOpts = useMemo(() => {
+    const present = new Set(ordered.map((r) => r.verdict.action));
+    return [...present]
+      .sort((a, b) => ACTION_RANK[a] - ACTION_RANK[b])
+      .map((a) => ({ label: ACTION_LABEL[a], value: a }));
+  }, [ordered]);
+
   const deptOpts = useMemo(
     () =>
       [...new Set(ordered.map((r) => r.item.department).filter(Boolean))]
@@ -335,7 +347,12 @@ const ItemReportExportModal = ({
   const scoped = useMemo(
     () =>
       ordered.filter(({ item, verdict }) => {
-        const actions = mode === "presets" ? preset.actions : undefined;
+        const actions =
+          mode === "presets"
+            ? preset.actions
+            : actionPick.length > 0
+              ? (actionPick as ActionKind[])
+              : undefined;
         if (actions && !actions.includes(verdict.action)) return false;
         if (vendorPick.length > 0 && !vendorPick.includes(item.vendorName))
           return false;
@@ -343,7 +360,7 @@ const ItemReportExportModal = ({
           return false;
         return true;
       }),
-    [ordered, mode, preset, vendorPick, deptPick],
+    [ordered, mode, preset, vendorPick, deptPick, actionPick],
   );
 
   const erasByUpc = useMemo(() => {
@@ -618,6 +635,19 @@ const ItemReportExportModal = ({
           picker, and an unexplained control is one more thing to get wrong. */}
       {(mode === "custom" || preset.filters.length > 0) && (
         <div className="px-4 pt-3 flex items-center gap-2 flex-wrap">
+          {mode === "custom" && (
+            <>
+              <span className="text-[11px] text-content">Actions</span>
+              <MultiSelectFilter
+                options={actionOpts}
+                values={actionPick}
+                onChange={setActionPick}
+                placeholder="All actions"
+                noun="actions"
+                className="w-[180px]"
+              />
+            </>
+          )}
           {(mode === "custom" || preset.filters.includes("vendor")) && (
             <>
               <span className="text-[11px] text-content">Vendors</span>
