@@ -16,7 +16,7 @@ import { rowsForVendor } from "./vendorsUtils";
  *
  * Each item carries its own department, which matters more here than it does
  * there: a vendor's range routinely spans several sub departments, and that set
- * is what narrows the fan-out when the list is handed to Item Report.
+ * is what narrows the fan-out when the list is handed to Item Actions.
  */
 
 export type GradedSev = "critical" | "watch" | "healthy";

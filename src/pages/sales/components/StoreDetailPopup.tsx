@@ -33,9 +33,15 @@ import {
   formatCurrency2,
   formatBigNumber,
 } from "../../../utils";
-import { computeDayMatchedTotals, scopeToStoreNumber, applyStoreNumberToName /*, getWeeklyDataGaps, getWeeklyGapCount */ } from "../shared/ledgerUtils";
+import {
+  computeDayMatchedTotals,
+  scopeToStoreNumber,
+  applyStoreNumberToName /*, getWeeklyDataGaps, getWeeklyGapCount */,
+} from "../shared/ledgerUtils";
 import { useStoreName } from "../../../hooks";
-import { ArrowDownTrayIcon /*, ExclamationTriangleIcon */ } from "@heroicons/react/20/solid";
+import {
+  ArrowDownTrayIcon /*, ExclamationTriangleIcon */,
+} from "@heroicons/react/20/solid";
 import PopupDaySidebar from "./PopupDaySidebar";
 import PopupSubDeptList from "./PopupSubDeptList";
 import PopupHourlyView from "./PopupHourlyView";
@@ -132,10 +138,13 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
   // there doesn't mean this specific dept/hour/item has no real data for
   // it — using the true calendar range means every entity's LW/LY match is
   // scoped to its own genuine data, not gated by a different fetch's gaps.
-  const twRealDates = Array.from({ length: 7 }, (_, i) =>
-    addDays(new Date(twStart), i).toISOString().split("T")[0],
+  const twRealDates = Array.from(
+    { length: 7 },
+    (_, i) => addDays(new Date(twStart), i).toISOString().split("T")[0],
   );
-  const lyWeekDates = twRealDates.map((d) => sameWeekDayLastYear(d).date).sort();
+  const lyWeekDates = twRealDates
+    .map((d) => sameWeekDayLastYear(d).date)
+    .sort();
   const lyStart = lyWeekDates[0];
   const lyEnd = lyWeekDates[lyWeekDates.length - 1];
   const lwWeekDates = twRealDates.map(
@@ -428,13 +437,17 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
       dispatch(setSubSales(rawSubs));
       dispatch(
         setPeriodSubSales({
-          subs: rawLWSubs.filter((s) => lwDateSet.has(s.sale_date.split("T")[0])),
+          subs: rawLWSubs.filter((s) =>
+            lwDateSet.has(s.sale_date.split("T")[0]),
+          ),
           period: 2,
         }),
       );
       dispatch(
         setPeriodSubSales({
-          subs: rawLYSubs.filter((s) => lyDateSet.has(s.sale_date.split("T")[0])),
+          subs: rawLYSubs.filter((s) =>
+            lyDateSet.has(s.sale_date.split("T")[0]),
+          ),
           period: 3,
         }),
       );
@@ -500,7 +513,9 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
   return (
     <div className="bg-custom-white rounded-xl shadow-sm overflow-hidden flex flex-col h-full">
       {/* Title bar — tinted to the selected store's severity */}
-      <div className={`relative grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-3 flex-shrink-0 ${severityHeaderBgClass[selection.severity]}`}>
+      <div
+        className={`relative grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-3 flex-shrink-0 ${severityHeaderBgClass[selection.severity]}`}
+      >
         {showFlames && <GhostFlames />}
         <p className="text-custom-white text-[13px] font-bold leading-tight justify-self-start">
           {headerStoreName}
@@ -545,7 +560,7 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
                   basisLabel: `critical by ${gradingMetric}, ${itemThreshold}%`,
                 })
               }
-              title="View critical report"
+              title="See item actions"
               className="text-custom-white transition-colors"
             >
               <ClipboardDocumentListIcon className="w-4 h-4" />
@@ -595,16 +610,22 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
           <div className="text-[10px] font-bold uppercase tracking-wide text-content">
             {isQty ? "TY Qty" : "TY Net Sales"}
           </div>
-          <div className="text-[10px] font-bold text-content mb-0.5">{twDateLabel}</div>
+          <div className="text-[10px] font-bold text-content mb-0.5">
+            {twDateLabel}
+          </div>
           <div className="text-[14px] font-bold text-content">
-            {isQty ? formatBigNumber(headerTwTotal, 0) : formatCurrency2(headerTwTotal)}
+            {isQty
+              ? formatBigNumber(headerTwTotal, 0)
+              : formatCurrency2(headerTwTotal)}
           </div>
         </div>
         <div className="px-4 pt-2.5 text-center">
           <div className="text-[10px] font-bold uppercase tracking-wide text-content">
             vs Last Week
           </div>
-          <div className="text-[10px] font-bold text-content mb-0.5">{lwDateLabel}</div>
+          <div className="text-[10px] font-bold text-content mb-0.5">
+            {lwDateLabel}
+          </div>
           <div className="flex items-baseline justify-center gap-2">
             <span className="text-[14px] font-bold text-content">
               {headerLwTotal !== null
@@ -626,7 +647,9 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
           <div className="text-[10px] font-bold uppercase tracking-wide text-content">
             vs Last Year
           </div>
-          <div className="text-[10px] font-bold text-content mb-0.5">{lyDateLabel}</div>
+          <div className="text-[10px] font-bold text-content mb-0.5">
+            {lyDateLabel}
+          </div>
           <div className="flex items-baseline justify-center gap-2">
             <span className="text-[14px] font-bold text-content">
               {headerLyTotal !== null
@@ -671,7 +694,6 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
             {t === "subdept" ? "Sub dept" : "Hourly"}
           </button>
         ))}
-
       </div>
 
       {/* Content — fills remaining height */}

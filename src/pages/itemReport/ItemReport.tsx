@@ -46,7 +46,7 @@ import {
 } from "./itemReportMetrics";
 
 /**
- * Item Report — a critical list, diagnosed and handed over.
+ * Item Actions — a critical list, diagnosed and handed over.
  *
  * This is a delivery mechanism, not a workspace. The judgement work happened on
  * the performance pages upstream; by the time someone arrives here the answer
@@ -265,7 +265,7 @@ const ItemReport = () => {
       void startWalk(next, [...retain]);
     } catch (e) {
       toast.error(
-        e instanceof Error ? e.message : "Could not build the report",
+        e instanceof Error ? e.message : "Could not build the action list",
       );
     } finally {
       dispatch(setItemReportLoading({ loading: false }));
@@ -440,7 +440,7 @@ const ItemReport = () => {
       onStoreSelect={(id) => dispatch(setItemReportStoreId(id))}
       onRun={run}
       loading={state.loading}
-      loadingMessage={state.loadingMessage || "Building report..."}
+      loadingMessage={state.loadingMessage || "Building actions..."}
     />
   );
 
@@ -448,7 +448,7 @@ const ItemReport = () => {
     return (
       <div className="w-full select-none min-h-[calc(100vh-3rem)] relative">
         <LoadingIndicator
-          message={state.loadingMessage || "Building report..."}
+          message={state.loadingMessage || "Building actions..."}
         />
       </div>
     );
@@ -547,6 +547,7 @@ const ItemReport = () => {
         <ItemReportRail
           item={selected?.item ?? null}
           action={selected?.verdict.action}
+          evidence={selected?.verdict.evidence}
           receipts={
             selected ? (state.receipts[selected.item.productCode] ?? []) : []
           }

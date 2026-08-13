@@ -14,7 +14,7 @@ import type {
 } from "../../interfaces";
 
 /**
- * Fetching for Item Report.
+ * Fetching for Item Actions.
  *
  * The page takes a list of UPCs and answers three questions about each: how it
  * sold, what it cost, and when it was last received. Those come from two

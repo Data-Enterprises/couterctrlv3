@@ -15,7 +15,7 @@ import {
 } from "./itemReportData";
 
 /**
- * The receiving half of Item Report, walked in the background.
+ * The receiving half of Item Actions, walked in the background.
  *
  * `receivers/details` opens one invoice at a time and there is no bulk form, so
  * finding out when a UPC last arrived means opening invoices until it turns up.

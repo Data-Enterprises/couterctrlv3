@@ -7,7 +7,7 @@ import type { ReceiptLine } from "./itemReportData";
 import type { SubDeptMargin } from "../../interfaces";
 
 /**
- * The arithmetic behind Item Report.
+ * The arithmetic behind Item Actions.
  *
  * The page carries no severity of its own. By the time a UPC reaches this list
  * it has already been called critical upstream; re-deciding that would answer a
@@ -148,6 +148,13 @@ export interface StockMovement {
   sold: number;
   /** Received less sold. Positive means the shelf filled over the window. */
   net: number;
+  /** How many deliveries landed inside the span. Drives which of the two stock
+   *  blocks the rail shows: at exactly one, this block is a contaminated copy
+   *  of "since last delivery" — its `sold` counts days *before* that delivery
+   *  arrived, charging pre-delivery sales against it — so the anchored block
+   *  replaces it. At two or more the two answer different questions and both
+   *  are shown. */
+  deliveries: number;
 }
 
 /** What is left of the most recent delivery. Sharper than net movement because
@@ -329,9 +336,8 @@ export const buildReport = (
     ].filter((r) => r.sale_date.slice(0, 10) >= movementStart);
 
     const soldInSpan = movementSales.reduce((s, r) => s + pricedUnits(r), 0);
-    const receivedInSpan = receipts
-      .filter((r) => r.date.slice(0, 10) >= movementStart)
-      .reduce((s, r) => s + r.sellingUnits, 0);
+    const inSpan = receipts.filter((r) => r.date.slice(0, 10) >= movementStart);
+    const receivedInSpan = inSpan.reduce((s, r) => s + r.sellingUnits, 0);
     const movement: StockMovement | null =
       movementSales.length > 0 || receivedInSpan > 0
         ? {
@@ -340,6 +346,7 @@ export const buildReport = (
             received: round1(receivedInSpan),
             sold: round1(soldInSpan),
             net: round1(receivedInSpan - soldInSpan),
+            deliveries: inSpan.length,
           }
         : null;
 

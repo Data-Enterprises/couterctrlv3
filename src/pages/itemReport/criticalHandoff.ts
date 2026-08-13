@@ -6,9 +6,9 @@ import type { SubDeptMargin } from "../../interfaces";
 import type { ItemReportHandoff } from "../../features/itemReportSlice";
 
 /**
- * "View critical report" — the hop from a graded page into Item Report.
+ * "See item actions" — the hop from a graded page into Item Actions.
  *
- * The performance pages decide *what* is wrong; Item Report says what to do
+ * The performance pages decide *what* is wrong; Item Actions says what to do
  * about it. Until now the only bridge between them was exporting a CSV and
  * uploading it again, which is a lot of ceremony for a question the app already
  * has the answer to.

@@ -83,9 +83,9 @@ const ItemReportEntry = ({
 
   return (
     <SingleStoreSearchCard
-      title="Item Report"
-      description="Upload a UPC list exported from Sub Dept Margins or Vendors to see how each item sold, what it cost, and when it last arrived."
-      buttonLabel="Build report"
+      title="Item Actions"
+      description="Upload a UPC list exported from Sub Dept Margins or Vendors to get a suggested next step for each item, with the deliveries, prices and sales behind it."
+      buttonLabel="Build actions"
       stores={stores}
       selectedStoreId={storeId}
       onStoreSelect={onStoreSelect}

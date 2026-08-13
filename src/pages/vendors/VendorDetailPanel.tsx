@@ -36,7 +36,9 @@ import { getVendorTier, rowsForVendor, marginPct } from "./vendorsUtils";
 /** Ungraded has no severity colour of its own, so the header falls back to the
  *  navy every other panel uses rather than borrowing a verdict colour. */
 const headerBg = (tier: Tier) =>
-  tier === "ungraded" ? "bg-[#1e2a4a]" : severityHeaderBgClass[tier as Severity];
+  tier === "ungraded"
+    ? "bg-[#1e2a4a]"
+    : severityHeaderBgClass[tier as Severity];
 
 /** One KPI cell, matching the Sales strip. The date line is load-bearing: the
  *  figure means something different once a day is selected. */
@@ -78,8 +80,15 @@ const Kpi = ({
 const VendorDetailPanel = () => {
   const dispatch = useAppDispatch();
   const vend = useAppSelector((s) => s.vendors);
-  const { rows, raw, metric, threshold, selectedVendor, selectedDay, itemThreshold } =
-    vend;
+  const {
+    rows,
+    raw,
+    metric,
+    threshold,
+    selectedVendor,
+    selectedDay,
+    itemThreshold,
+  } = vend;
 
   const [exportOpen, setExportOpen] = useState(false);
   const openCriticalReport = useCriticalReport();
@@ -92,7 +101,8 @@ const VendorDetailPanel = () => {
    *  share a formatter. */
   const valueOf = (net: number, cogs: number) =>
     isMargin ? marginPct(net, cogs) : net;
-  const fmt = (v: number) => (isMargin ? `${v.toFixed(2)}%` : formatCurrency2(v));
+  const fmt = (v: number) =>
+    isMargin ? `${v.toFixed(2)}%` : formatCurrency2(v);
 
   /** Points in margin mode, percent in sales mode — the same contract
    *  vendorDelta has, and the reason the two can't share a formatter either. */
@@ -182,9 +192,7 @@ const VendorDetailPanel = () => {
     return deltaOf(d.twNet, d.twCogs, bn, bc);
   };
 
-  const twValue = activeDay
-    ? dayTw(activeDay)
-    : valueOf(row.twNet, row.twCogs);
+  const twValue = activeDay ? dayTw(activeDay) : valueOf(row.twNet, row.twCogs);
   const lwValue = activeDay
     ? dayLw(activeDay)
     : row.hasLW
@@ -211,10 +219,16 @@ const VendorDetailPanel = () => {
     : fmtRangeLabel(vend.twStart, vend.twEnd);
   const lwLabel = selectedDay
     ? fmtDayLabel(shiftIso(selectedDay, LW_OFFSET))
-    : fmtRangeLabel(shiftIso(vend.twStart, LW_OFFSET), shiftIso(vend.twEnd, LW_OFFSET));
+    : fmtRangeLabel(
+        shiftIso(vend.twStart, LW_OFFSET),
+        shiftIso(vend.twEnd, LW_OFFSET),
+      );
   const lyLabel = selectedDay
     ? fmtDayLabel(shiftIso(selectedDay, LY_OFFSET))
-    : fmtRangeLabel(shiftIso(vend.twStart, LY_OFFSET), shiftIso(vend.twEnd, LY_OFFSET));
+    : fmtRangeLabel(
+        shiftIso(vend.twStart, LY_OFFSET),
+        shiftIso(vend.twEnd, LY_OFFSET),
+      );
 
   /* ── Day strip ─────────────────────────────────────────────────────────── */
 
@@ -300,7 +314,7 @@ const VendorDetailPanel = () => {
                 })
               }
               className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/85 hover:text-custom-white hover:border-custom-white/40 transition-colors"
-              title={`View critical report (${criticalItems.length} items)`}
+              title={`See item actions (${criticalItems.length})`}
             >
               <ClipboardDocumentListIcon className="h-4 w-4" />
             </button>
@@ -344,7 +358,9 @@ const VendorDetailPanel = () => {
         days={dayCards}
         weekValue={fmt(valueOf(row.twNet, row.twCogs))}
         weekDelta={weekLyPct ?? weekLwPct}
-        weekDeltaBasis={weekLyPct !== null ? "LY" : weekLwPct !== null ? "LW" : undefined}
+        weekDeltaBasis={
+          weekLyPct !== null ? "LY" : weekLwPct !== null ? "LW" : undefined
+        }
         selected={selectedDay ?? ""}
         onSelect={(iso) => dispatch(setSelectedDay(iso === "" ? null : iso))}
         higherIsWorse={false}
@@ -361,7 +377,6 @@ const VendorDetailPanel = () => {
         onThresholdChange={(v) => dispatch(setItemThreshold(v))}
         selectedDay={selectedDay}
       />
-
     </div>
   );
 };

@@ -5,7 +5,7 @@ import type { ReceiverDetailsItem } from "../interfaces";
 import type { ActionKind } from "../pages/itemReport/itemReportMetrics";
 
 /**
- * Item Report.
+ * Item Actions.
  *
  * The whole page lives here rather than in component state, because a route
  * change unmounts the page and component state goes with it — and rebuilding

@@ -1,12 +1,17 @@
 import type { InfoGlossaryEntry } from "../../components/InfoPopover";
 
 /**
- * Copy for the Item Report "?" popover.
+ * Copy for the Item Actions "?" popover.
  *
  * Written against `verdictFor` rather than from the labels, so every trigger
  * described below is the one that actually fires. If that logic changes, this
  * changes with it — a glossary that quietly stops matching the code is worse
  * than no glossary, because it is believed.
+ *
+ * Scope: the list only. Deliveries, price points, transactions and the two
+ * modals are explained by the detail panel's own "?" — see
+ * `itemReportRailInfo`. A glossary that reaches across the page to describe
+ * something you can't see from it is worse than two short ones.
  *
  * Tone: this page suggests, it does not conclude. The wording says "worth a
  * look" and "likely" on purpose — the data can point at a cause, confirming it
@@ -18,7 +23,7 @@ export const ITEM_REPORT_INFO: {
   purpose: string;
   glossary: InfoGlossaryEntry[];
 } = {
-  title: "Item Report",
+  title: "Item Actions",
   purpose:
     "Helps you get from a list of flagged items to the call worth making on each one. It suggests where to look; it doesn't decide the cause. Every row compares what sold against what was delivered, so a stocking problem and a demand problem stop looking alike.",
   glossary: [
@@ -71,14 +76,6 @@ export const ITEM_REPORT_INFO: {
     {
       term: "Sales",
       desc: "Last column on purpose. Useful for deciding which of forty reorders to do first, but units are what the row is about.",
-    },
-    {
-      term: "Unaccounted",
-      desc: "In the detail panel: delivered less sold since the most recent delivery. Sharper than the 14-day figure because it starts from a single known event.",
-    },
-    {
-      term: "Price points",
-      desc: "In the detail panel: what the item actually rang at, day by day. A price has to hold two days to count, so a one-day markdown or a keying error doesn't become a price period.",
     },
     {
       term: "Where “critical” came from",

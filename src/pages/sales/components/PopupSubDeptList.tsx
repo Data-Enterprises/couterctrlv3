@@ -309,7 +309,7 @@ const PopupSubDeptList = ({
         // tail of the window, because rows come back date-ordered. A busy
         // department over a full week clears that cap, so this list was
         // reporting a short week while the dept rows above it reported a whole
-        // one. Same helper Sub Dept Margins, Vendors and Item Report use, so
+        // one. Same helper Sub Dept Margins, Vendors and Item Actions use, so
         // there is one paging implementation rather than four.
         const [tyRaw, lwRaw, lyRaw] = await Promise.all([
           fetchSubDeptRowsSafe(

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../hooks";
 import {
   setItemReportExpandedReceipt,
@@ -6,16 +6,21 @@ import {
   toggleItemReportSection,
 } from "../../features/itemReportSlice";
 import { ChevronDownIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
+import InfoButton from "../../components/InfoButton";
+import InfoPopover from "../../components/InfoPopover";
+import { ITEM_REPORT_RAIL_INFO } from "./itemReportRailInfo";
 import { formatCurrency2, formatDateSimple } from "../../utils";
 import { formatPct, pillClass } from "../../utils/severity";
 import { actualPricePoints } from "../inventory/pricePoints";
 import type { ActualFetchState } from "../inventory/useActualPricePoints";
 import {
+  ACTION_LABEL,
   buildPriceEras,
   daysSince,
   type ActionKind,
   type ReportItem,
 } from "./itemReportMetrics";
+import { ACTION_TONE } from "./actionTone";
 import { describeReceipt } from "./itemReportData";
 import type { ReceiptLine } from "./itemReportData";
 import TransactionSheet from "./TransactionSheet";
@@ -60,6 +65,9 @@ interface Props {
   /** The selected item's suggested action, carried through to the basket view
    *  so its line there matches its chip on the sheet. */
   action?: ActionKind;
+  /** The sentence behind that action. It reads here rather than under every row
+   *  in the list, where it broke the columns apart. */
+  evidence?: string;
 }
 
 const fmtUnits = (n: number | null) =>
@@ -168,6 +176,10 @@ const Block = ({
  * two-track template so its figures finish flush at the right edge instead of
  * stopping short against an empty third column.
  */
+/** The transactions grid's own shape. "TRANSACTIONS" is a long heading and the
+ *  shared three-column template is sized for the estimated section's "Days". */
+const TXN_COLS = "1fr 52px 104px";
+
 const TEMPLATE: Record<number, string> = {
   2: "1fr 76px",
   3: "1fr 60px 76px",
@@ -296,10 +308,10 @@ const Kpis = ({
   </div>
 );
 
-const Head = ({ cols }: { cols: string[] }) => (
+const Head = ({ cols, template }: { cols: string[]; template?: string }) => (
   <div
     className="grid gap-2.5 pl-1 py-1.5 border-b border-gray-100 text-[11.5px] font-semibold uppercase tracking-wide text-content/85"
-    style={{ gridTemplateColumns: TEMPLATE[cols.length] }}
+    style={{ gridTemplateColumns: template ?? TEMPLATE[cols.length] }}
   >
     {cols.map((c, i) => (
       <span key={c} className={i === 0 ? "" : "text-right"}>
@@ -309,12 +321,46 @@ const Head = ({ cols }: { cols: string[] }) => (
   </div>
 );
 
+/**
+ * The foot of a section that is showing less than it holds.
+ *
+ * The label carries the count, so it discloses that there is more as well as
+ * offering it — a section that silently stopped at six was the same shape of
+ * problem as a query that silently stopped at one page.
+ *
+ * Expands in place rather than scrolling inside a fixed height: the rail is
+ * already one scroll container, and a second one inside it captures the wheel
+ * and hides the sections below. Now that every section folds, the height this
+ * costs is the reader's to reclaim.
+ */
+const ShowAll = ({
+  total,
+  expanded,
+  onToggle,
+}: {
+  total: number;
+  expanded: boolean;
+  onToggle: () => void;
+}) => (
+  <button
+    onClick={onToggle}
+    className="mt-1 pl-1 text-[12px] font-medium text-[#1e2a4a] underline underline-offset-2 hover:opacity-75 transition-opacity"
+  >
+    {expanded ? "Show fewer" : `Show all ${total}`}
+  </button>
+);
+
 const Line = ({
   cells,
   zebra,
   onClick,
+  template,
 }: {
   cells: Cell[];
+  /** Overrides the width-by-count default. Two three-column sections want
+   *  different shapes, and widening the shared template for one would silently
+   *  reflow the other. */
+  template?: string;
   /** Explicit rather than `even:` — the delivery rows interleave expansion
    *  strips, and a CSS nth-child rule would restripe everything below an open
    *  one. */
@@ -326,7 +372,7 @@ const Line = ({
     className={`grid gap-2.5 pl-1 py-1.5 text-[12px] items-center ${
       zebra === undefined ? "even:bg-row_stripe" : zebra ? "bg-row_stripe" : ""
     } ${onClick ? "cursor-pointer hover:bg-gray-50" : ""}`}
-    style={{ gridTemplateColumns: TEMPLATE[cells.length] }}
+    style={{ gridTemplateColumns: template ?? TEMPLATE[cells.length] }}
   >
     {cells.map((c, i) => (
       <span
@@ -351,6 +397,7 @@ const ItemReportRail = ({
   periods,
   actual,
   action,
+  evidence,
 }: Props) => {
   const dispatch = useAppDispatch();
   const expandedReceipt = useAppSelector((s) => s.itemReport.expandedReceipt);
@@ -358,6 +405,23 @@ const ItemReportRail = ({
    *  selected item that closes on its own — the route-change argument that put
    *  the rest of this page in Redux doesn't apply. */
   const [openPrice, setOpenPrice] = useState<number | null>(null);
+  const [infoOpen, setInfoOpen] = useState(false);
+  /** Sections showing their full list. Local, not slice: unlike a fold — which
+   *  is a standing preference — this is about the item currently in front of
+   *  you, and the count in the label belongs to that item. */
+  const [showAll, setShowAll] = useState<string[]>([]);
+  // Reset on a new item. The counts belong to whichever item is open, so a
+  // section left expanded would greet the next one with a wall of rows it was
+  // never asked for.
+  useEffect(() => {
+    setShowAll([]);
+  }, [item?.productCode]);
+
+  const isAll = (id: string) => showAll.includes(id);
+  const toggleAll = (id: string) =>
+    setShowAll((prev) =>
+      prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id],
+    );
 
   const collapsed = useAppSelector((s) => s.itemReport.collapsedSections);
   /** One place that knows how a section folds, so four call sites can't drift
@@ -377,21 +441,6 @@ const ItemReportRail = ({
     [isCurrent, actual.lines, item],
   );
 
-  if (!item) {
-    return (
-      <div className="flex-shrink-0 shadow-lg" style={{ width: "38%" }}>
-        <div className="bg-custom-white rounded-xl shadow-sm h-full flex items-center justify-center px-4">
-          <p className="text-[12px] text-content text-center leading-relaxed">
-            Pick a row for its deliveries and prices.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  const lastDays = receipts[0] ? daysSince(receipts[0].date) : null;
-  const txnCount = act.exactCount + act.averagedCount;
-
   /**
    * Price points merged by price alone.
    *
@@ -405,26 +454,131 @@ const ItemReportRail = ({
    * Merged locally rather than in `actualPricePoints`, which Price Opt shares.
    */
   const mergedPrices = useMemo(() => {
-    const byPrice = new Map<number, { price: number; trans: number }>();
+    const byPrice = new Map<
+      number,
+      { price: number; qty: number; sales: Set<string> }
+    >();
     for (const p of act.exact) {
       const found = byPrice.get(p.price);
-      if (found) found.trans += p.trans;
-      else byPrice.set(p.price, { price: p.price, trans: p.trans });
+      if (found) found.qty += p.qty;
+      else
+        byPrice.set(p.price, { price: p.price, qty: p.qty, sales: new Set() });
     }
-    return [...byPrice.values()].sort((a, b) => b.trans - a.trans);
-  }, [act.exact]);
+    // Distinct receipts per price, counted from the raw lines with the same
+    // match the modal uses — so the column and the modal it opens agree. A
+    // receipt carrying the item twice is one transaction, not two, which is
+    // exactly what the old line count got wrong.
+    for (const l of isCurrent ? actual.lines : []) {
+      for (const bucket of byPrice.values())
+        if (Math.abs(l.net_sales - bucket.price) < 0.005)
+          bucket.sales.add(l.sale_id);
+    }
+    return [...byPrice.values()].sort((a, b) => b.qty - a.qty);
+  }, [act.exact, isCurrent, actual.lines]);
+
+  /**
+   * How often this item normally arrives, across every delivery in the lookback
+   * — not just the handful on screen.
+   *
+   * This replaced a per-row gap. "Last received 24 days ago" is a fact; paired
+   * with "usually every 9" it becomes a decision, and one figure in the heading
+   * says that better than a dozen unlabelled annotations down the rows, each of
+   * which needed explaining.
+   */
+  const avgGap = useMemo(() => {
+    if (receipts.length < 2) return null;
+    const day = (d: string) =>
+      new Date(`${d.split("T")[0]}T12:00:00`).getTime() / 86400000;
+    // Newest first, so each gap is this delivery less the one before it.
+    let total = 0;
+    for (let i = 0; i < receipts.length - 1; i++)
+      total += day(receipts[i].date) - day(receipts[i + 1].date);
+    return Math.max(1, Math.round(total / (receipts.length - 1)));
+  }, [receipts]);
+
+  if (!item) {
+    return (
+      <div className="flex-shrink-0 shadow-lg" style={{ width: "38%" }}>
+        <div className="bg-custom-white rounded-xl shadow-sm h-full flex items-center justify-center px-4">
+          <p className="text-[12px] text-content text-center leading-relaxed">
+            Pick a row for its deliveries and prices.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const lastDays = receipts[0] ? daysSince(receipts[0].date) : null;
+
+  // Which of the two stock blocks to show. They measure the same shelf and are
+  // not interchangeable: the span block divides everything received in the
+  // window by everything sold in it, while the anchored one starts at a known
+  // delivery. At exactly one delivery the span block is strictly the worse of
+  // the two — its Sold includes days *before* that delivery landed, charging
+  // sales made from earlier stock against it — so the anchored block stands in.
+  // With none it is all there is; with two or more they answer different
+  // questions and both earn their space.
+  const showSince = item.sinceDelivery !== null;
+  const showMovement =
+    item.movement === null ? !showSince : item.movement.deliveries !== 1;
+
+  const txnCount = act.exactCount + act.averagedCount;
 
   return (
     <div className="flex-shrink-0 shadow-lg" style={{ width: "38%" }}>
-      <div className="bg-custom-white rounded-xl shadow-sm overflow-hidden flex flex-col h-full">
-        <div className="flex-shrink-0 px-4 py-3 bg-[#1e2a4a]">
-          <div className="text-[13px] font-semibold text-custom-white leading-tight">
-            {item.description}
+      <div className="bg-custom-white rounded-xl shadow-sm flex flex-col h-full">
+        <div className="flex-shrink-0 px-4 py-3 bg-[#1e2a4a] rounded-t-xl flex items-start gap-2">
+          <div className="min-w-0 flex-1">
+            <div className="text-[13px] font-semibold text-custom-white leading-tight">
+              {item.description}
+            </div>
+            <div className="text-[12px] mt-0.5 text-custom-white/85 truncate">
+              {item.productCode}
+            </div>
           </div>
-          <div className="text-[12px] mt-0.5 text-custom-white/85 truncate">
-            {item.productCode}
+          {/* This panel gets its own glossary rather than sharing the list's.
+              The sections here — estimated prices against actual registers,
+              how a vendor billed a delivery, what the two modals show — are
+              things the left panel's "?" was explaining from across the page,
+              or not at all. */}
+          <div className="relative flex-shrink-0">
+            <InfoButton onClick={() => setInfoOpen((prev) => !prev)} />
+            {infoOpen && (
+              <InfoPopover
+                title={ITEM_REPORT_RAIL_INFO.title}
+                purpose={ITEM_REPORT_RAIL_INFO.purpose}
+                glossary={ITEM_REPORT_RAIL_INFO.glossary}
+                onClose={() => setInfoOpen(false)}
+                className="min-w-[300px] max-w-[520px]"
+              />
+            )}
           </div>
         </div>
+
+        {/* The conclusion, before any of the figures behind it — the order the
+            UPC Workbook's detail panels use.
+            
+            Built on `ACTION_TONE` rather than the shared `CtaInsightStrip`: that
+            component's vocabulary is direction (up / down / flat), and six
+            actions can't map onto three without collapsing the blue and violet
+            distinctions the chips already carry. Reusing it would have made the
+            strip disagree with the chip that opened it. */}
+        {action && evidence && (
+          <div
+            className={`flex-shrink-0 px-4 py-2.5 border-b border-[#1e2a4a]/15 ${ACTION_TONE[action].row}`}
+          >
+            <div
+              className={`text-[11px] font-bold uppercase tracking-wide ${ACTION_TONE[action].text}`}
+            >
+              {ACTION_LABEL[action]}
+            </div>
+            <div
+              className={`text-[12px] leading-relaxed mt-0.5 ${ACTION_TONE[action].text}`}
+            >
+              {evidence}
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-3 divide-x divide-gray-100 border-b border-gray-100 bg-gray-50 flex-shrink-0">
           <Kpi label="TY Units" dates={periods.tw} units={item.ty.units} />
@@ -442,14 +596,19 @@ const ItemReportRail = ({
           />
         </div>
 
-        <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar">
+        <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar rounded-b-xl">
           <Block
             {...fold("received")}
             label={`Received (${lookbackDays} days)`}
             note={
               lastDays === null
                 ? undefined
-                : `Last received ${lastDays} days ago`
+                : // Reads as a sentence rather than two abbreviations: "every
+                  // 8" had no unit at all, and "16d ago" never said ago from
+                  // what. The second figure inherits "days" from the first.
+                  `Last received ${lastDays} days ago${
+                    avgGap === null ? "" : ` · usually every ${avgGap}`
+                  }`
             }
             noteTone={(lastDays ?? 0) > 21 ? "text-red-700" : "text-content"}
           >
@@ -466,151 +625,136 @@ const ItemReportRail = ({
                     one of these, so the sentence in the sheet is now checkable
                     against the deliveries that produced it. */}
                 <Head cols={["Date", "Qty", "Cost", "Retail", "GM%"]} />
-                {receipts.slice(0, 6).map((r, i) => {
-                  const key = `${r.invoiceId}-${r.date}-${r.unitCost}`;
-                  const open = expandedReceipt === key;
-                  const adjusted = r.free > 0 || r.returned > 0;
-                  // Cadence, folded into the date rather than given a column of
-                  // its own. "Last received 24 days ago" is a fact; "and it
-                  // normally arrives every 9" is what makes it a decision.
-                  const prev = receipts[i + 1];
-                  const gap = prev
-                    ? Math.round(
-                        (new Date(
-                          `${r.date.split("T")[0]}T12:00:00`,
-                        ).getTime() -
-                          new Date(
-                            `${prev.date.split("T")[0]}T12:00:00`,
-                          ).getTime()) /
-                          86400000,
-                      )
-                    : null;
-                  const gm =
-                    r.retail > 0
-                      ? ((r.retail - r.unitCost) / r.retail) * 100
-                      : null;
-                  return (
-                    <div key={key}>
-                      <Line
-                        zebra={i % 2 === 1}
-                        onClick={() =>
-                          dispatch(setItemReportExpandedReceipt(key))
-                        }
-                        cells={[
-                          {
-                            // The marker is really the feature. Without
-                            // something on the collapsed row saying a delivery
-                            // carried free goods or a return, nobody opens
-                            // anything and the strip below may as well not
-                            // exist.
-                            text: `${open ? "▾" : adjusted ? "•" : "›"} ${formatDateSimple(
-                              r.date,
-                            )}${gap !== null ? ` · ${gap}d` : ""}`,
-                          },
-                          { text: String(r.sellingUnits) },
-                          { text: formatCurrency2(r.unitCost) },
-                          {
-                            text:
-                              r.retail > 0 ? formatCurrency2(r.retail) : "—",
-                          },
-                          { text: gm === null ? "—" : `${gm.toFixed(1)}%` },
-                        ]}
-                      />
-                      {open && <ReceiptDetail line={r} />}
-                    </div>
-                  );
-                })}
+                {(isAll("received") ? receipts : receipts.slice(0, 6)).map(
+                  (r, i) => {
+                    const key = `${r.invoiceId}-${r.date}-${r.unitCost}`;
+                    const open = expandedReceipt === key;
+                    const adjusted = r.free > 0 || r.returned > 0;
+                    const gm =
+                      r.retail > 0
+                        ? ((r.retail - r.unitCost) / r.retail) * 100
+                        : null;
+                    return (
+                      <div key={key}>
+                        <Line
+                          zebra={i % 2 === 1}
+                          onClick={() =>
+                            dispatch(setItemReportExpandedReceipt(key))
+                          }
+                          cells={[
+                            {
+                              // The marker is really the feature. Without
+                              // something on the collapsed row saying a delivery
+                              // carried free goods or a return, nobody opens
+                              // anything and the strip below may as well not
+                              // exist.
+                              text: `${open ? "▾" : adjusted ? "•" : "›"} ${formatDateSimple(r.date)}`,
+                            },
+                            { text: String(r.sellingUnits) },
+                            { text: formatCurrency2(r.unitCost) },
+                            {
+                              text:
+                                r.retail > 0 ? formatCurrency2(r.retail) : "—",
+                            },
+                            { text: gm === null ? "—" : `${gm.toFixed(1)}%` },
+                          ]}
+                        />
+                        {open && <ReceiptDetail line={r} />}
+                      </div>
+                    );
+                  },
+                )}
+                {receipts.length > 6 && (
+                  <ShowAll
+                    total={receipts.length}
+                    expanded={isAll("received")}
+                    onToggle={() => toggleAll("received")}
+                  />
+                )}
               </>
             )}
           </Block>
 
-          {/* The working, not just the result — someone acting on "12 units
-              unaccounted for" should be able to see the two figures it came
-              from without leaving the report. */}
-          <Block
-            {...fold("movement")}
-            label={`Unit movement (${item.movement?.days ?? MOVEMENT_FALLBACK} days)`}
-            note={
-              item.movement
-                ? `${item.movement.net > 0 ? "+" : ""}${item.movement.net} net`
-                : undefined
-            }
-            noteTone={
-              (item.movement?.net ?? 0) > 0 ? "text-amber-700" : "text-content"
-            }
-          >
-            {item.movement === null ? (
-              <div className="text-[12px] text-content">
-                Nothing received or sold
-              </div>
-            ) : (
-              <>
-                <Head cols={["Measure", "Units"]} />
-                <Line
-                  cells={[
-                    { text: "Received" },
-                    { text: String(item.movement.received) },
-                  ]}
-                />
-                <Line
-                  cells={[
-                    { text: "Sold" },
-                    { text: String(item.movement.sold) },
-                  ]}
-                />
-                <div className="text-[12px] text-content mt-1.5 leading-snug">
-                  A change in stock, not a count — there is no opening balance
-                  in the data.
+          {showMovement && (
+            <Block
+              {...fold("movement")}
+              label={`Unit movement (${item.movement?.days ?? MOVEMENT_FALLBACK} days)`}
+            >
+              {item.movement === null ? (
+                <div className="text-[12px] text-content">
+                  Nothing received or sold
                 </div>
-              </>
-            )}
-            {item.sinceDelivery && (
-              <div className="mt-2 pt-2 border-t border-[#1e2a4a]/15">
-                {/* Anchored to one delivery rather than a span, which is
-                    why this one can name what is unaccounted for: there is no
-                    opening balance to be ignorant of. The block above measures
-                    a fortnight and cannot. */}
-                <div className="text-[11.5px] font-medium uppercase tracking-wide text-content mb-1">
-                  Since last delivery ·{" "}
-                  {formatDateSimple(item.sinceDelivery.date)}
-                </div>
-                <Line
-                  cells={[
-                    { text: "Delivered" },
-                    { text: String(item.sinceDelivery.received) },
-                  ]}
-                />
-                <Line
-                  cells={[
-                    { text: "Sold" },
-                    { text: String(item.sinceDelivery.sold) },
-                  ]}
-                />
-                <Line
-                  cells={[
-                    { text: "Unaccounted" },
-                    {
-                      text: String(item.sinceDelivery.left),
-                      tone:
-                        item.sinceDelivery.left > 0
-                          ? "text-amber-700"
-                          : "text-content",
-                    },
-                  ]}
-                />
-              </div>
-            )}
-          </Block>
+              ) : (
+                <>
+                  {/* Tiles rather than a two-row grid. Every other section here
+                      is a list, and Received/Sold/Change is arithmetic, not
+                      data — a `Head` plus two `Line`s made the thinnest
+                      possible table out of three related figures. The labels
+                      also retire the "Measure / Units" header, which was pure
+                      scaffolding. */}
+                  <Kpis
+                    cells={[
+                      {
+                        label: "Received",
+                        value: String(item.movement.received),
+                      },
+                      { label: "Sold", value: String(item.movement.sold) },
+                      {
+                        // The answer of the three, so it carries the tone —
+                        // positive means the shelf filled faster than it sold,
+                        // which is stock that should be findable and may not
+                        // be.
+                        label: "Change",
+                        value: `${item.movement.net > 0 ? "+" : ""}${item.movement.net}`,
+                        flagged: item.movement.net > 0,
+                      },
+                    ]}
+                  />
+                  <div className="text-[12px] text-content mt-1.5 leading-snug">
+                    A change in stock, not a count — there is no opening balance
+                    in the data.
+                  </div>
+                </>
+              )}
+            </Block>
+          )}
 
-          <Block {...fold("prices")} label="Price points">
+          {item.sinceDelivery && (
+            <Block
+              {...fold("delivery")}
+              label={`Since last delivery · ${formatDateSimple(
+                item.sinceDelivery.date,
+              )}`}
+            >
+              <Kpis
+                cells={[
+                  {
+                    label: "Delivered",
+                    value: String(item.sinceDelivery.received),
+                  },
+                  { label: "Sold", value: String(item.sinceDelivery.sold) },
+                  {
+                    // Left neutral on purpose. "Unaccounted" read as a
+                    // shortfall — stock that has gone missing — when a positive
+                    // figure here is the ordinary case: units still on the
+                    // shelf. Flagging it would put the pessimism back that the
+                    // rename took out.
+                    label: "Left over",
+                    value: String(item.sinceDelivery.left),
+                  },
+                ]}
+              />
+            </Block>
+          )}
+
+          <Block {...fold("prices")} label="Price points (estimated)">
             {eras.length === 0 ? (
               <div className="text-[12px] text-content">No sales rows</div>
             ) : (
               <Head cols={["Price", "Units", "Days"]} />
             )}
             {eras.length > 0 &&
-              eras
-                .slice(-4)
+              (isAll("prices") ? [...eras] : eras.slice(-4))
                 .reverse()
                 .map((e) => (
                   <Line
@@ -622,6 +766,13 @@ const ItemReportRail = ({
                     ]}
                   />
                 ))}
+            {eras.length > 4 && (
+              <ShowAll
+                total={eras.length}
+                expanded={isAll("prices")}
+                onToggle={() => toggleAll("prices")}
+              />
+            )}
             {/* Cost and intended retail are single reference figures, not
                 periods the item sold through. As grid rows they filled two of
                 three columns and read as price points that had mislaid their
@@ -652,30 +803,54 @@ const ItemReportRail = ({
           {isCurrent && !actual.loading && (
             <Block
               {...fold("transactions")}
-              label="Transactions"
-              note={txnCount > 0 ? `${txnCount} total` : undefined}
+              // Two kinds of the same thing, named as such. "Price points" and
+              // "Transactions" read as unrelated sections, which is how one got
+              // mistaken for the other — the difference is where the price came
+              // from, not what it is.
+              label="Price points (transactions)"
+              // No note. "3 total" under a price-points heading read as three
+              // price points; the grid now says how many units and how many
+              // receipts per price, which is what the total was reaching for.
             >
               {txnCount === 0 ? (
                 <div className="text-[12px] text-content">No lines matched</div>
               ) : (
                 <>
-                  <Head cols={["Price", "Count"]} />
-                  {mergedPrices.slice(0, 5).map((p) => (
+                  <Head
+                    cols={["Price", "Qty", "Transactions"]}
+                    template={TXN_COLS}
+                  />
+                  {(isAll("transactions")
+                    ? mergedPrices
+                    : mergedPrices.slice(0, 5)
+                  ).map((p) => (
                     <Line
                       key={p.price}
+                      template={TXN_COLS}
                       onClick={() => setOpenPrice(p.price)}
                       cells={[
                         { text: formatCurrency2(p.price) },
-                        { text: String(p.trans) },
+                        { text: String(p.qty) },
+                        { text: String(p.sales.size) },
                       ]}
                     />
                   ))}
+                  {mergedPrices.length > 5 && (
+                    <ShowAll
+                      total={mergedPrices.length}
+                      expanded={isAll("transactions")}
+                      onToggle={() => toggleAll("transactions")}
+                    />
+                  )}
                 </>
               )}
             </Block>
           )}
           {isCurrent && actual.loading && (
-            <Block {...fold("transactions")} label="Transactions">
+            <Block
+              {...fold("transactions")}
+              label="Price points (transactions)"
+            >
               <div className="text-[12px] text-content">Reading…</div>
             </Block>
           )}

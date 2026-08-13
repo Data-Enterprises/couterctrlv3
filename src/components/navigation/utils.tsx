@@ -125,7 +125,7 @@ export const navigation: Navigation[] = [
     isVisible: true,
   },
   {
-    name: "Item Report",
+    name: "Item Actions",
     href: "item-report",
     icon: ClipboardDocumentListIcon,
     // Desktop only — the two-panel report has no mobile form yet.
@@ -359,18 +359,18 @@ export const categories: NavCategory[] = [
         isHovering: false,
         isVisible: true,
       },
-    {
-      name: "Item Report",
-      href: "item-report",
-      icon: ClipboardDocumentListIcon,
-      // Desktop only — the two-panel report has no mobile form yet.
-      mobile: false,
-      children: [],
-      childOpen: false,
-      userLevels: ["*"],
-      isHovering: false,
-      isVisible: true,
-    },
+      {
+        name: "Item Actions",
+        href: "item-report",
+        icon: ClipboardDocumentListIcon,
+        // Desktop only — the two-panel report has no mobile form yet.
+        mobile: false,
+        children: [],
+        childOpen: false,
+        userLevels: ["*"],
+        isHovering: false,
+        isVisible: true,
+      },
       {
         name: "Price Opt Sub Dept",
         href: "inventory-sub-department",

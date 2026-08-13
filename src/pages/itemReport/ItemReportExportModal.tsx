@@ -14,7 +14,7 @@ import type { SheetRow } from "./ItemReportSheet";
 import type { ReceiptLine } from "./itemReportData";
 
 /**
- * CSV export for Item Report.
+ * CSV export for Item Actions.
  *
  * The sheet is the deliverable and this is the same sheet in a file — same
  * rows, same order, same action, same evidence sentence. Anyone comparing the
@@ -135,10 +135,20 @@ const RECEIPT_COLS: Col[] = [
   { key: "date", label: "Date", defaultOn: true },
   { key: "vendor", label: "Vendor", defaultOn: true },
   { key: "invoice", label: "Invoice", defaultOn: true },
-  { key: "units", label: "Units", defaultOn: true },
+  // "Qty" rather than "Units", matching the screen and the API: this is the
+  // sellable-unit count, and the endpoint's own `units` field means something
+  // else entirely.
+  { key: "units", label: "Qty", defaultOn: true },
   { key: "cases", label: "Cases", defaultOn: true },
+  { key: "billedIn", label: "Billed in", defaultOn: true },
+  { key: "caseSize", label: "Case size", defaultOn: true },
   { key: "unitCost", label: "Unit cost", defaultOn: true },
   { key: "retail", label: "Intended retail", defaultOn: true },
+  // Flags, not counts. They were visible on screen and absent from the file,
+  // which is the wrong way round for a page most people read as a CSV — a
+  // delivery flagged as a return simply vanished on the way out.
+  { key: "free", label: "Free", defaultOn: true },
+  { key: "returned", label: "Returned", defaultOn: true },
 ];
 
 /** One row per department. The only grain here that isn't per item, and the
@@ -175,7 +185,7 @@ const SOURCE_LABEL: { key: Source; label: string }[] = [
 const PRESETS: Preset[] = [
   {
     key: "full-report",
-    title: "The report",
+    title: "The action list",
     blurb: "Every row as it appears on screen, action and evidence included.",
     source: "items",
     cols: ITEM_COLS.map((c) => c.key),
@@ -451,8 +461,14 @@ const ItemReportExportModal = ({
           invoice: r.invoiceId,
           units: fmtNum(r.sellingUnits),
           cases: r.cases,
+          billedIn: r.billedIn,
+          // Blank on a unit receipt rather than 0 — there is no pack to state,
+          // and a zero would read as one.
+          caseSize: r.caseSize === null ? "" : r.caseSize,
           unitCost: fmtNum(r.unitCost),
           retail: fmtNum(r.retail),
+          free: r.free > 0 ? "Yes" : "No",
+          returned: r.returned > 0 ? "Yes" : "No",
         })),
       ),
     [scoped, receiptsByUpc],

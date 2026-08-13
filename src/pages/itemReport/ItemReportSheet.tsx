@@ -41,9 +41,11 @@ import type { ReceiptLine } from "./itemReportData";
  * by action turns a 300-row sheet into a rainbow and destroys the one thing a
  * spreadsheet is good at.
  *
- * Nothing here requires interaction. The work was done on the performance pages
- * upstream; arriving here, the answer should already be on the page. The
- * filters and the row selection are conveniences, not steps.
+ * The action chip is the answer; the reasoning behind it lives in the detail
+ * panel's CTA strip and in the export's evidence column. It used to sit under
+ * every row, which put a paragraph between each row's figures and cost the list
+ * a third of its height — the numbers lost their vertical rhythm and the list
+ * stopped being scannable, which is the one thing a sheet has to be.
  */
 
 export interface SheetRow {
@@ -94,7 +96,18 @@ const ORDER: ActionKind[] = [
   "none",
 ];
 
-const COLS = "96px 1fr 52px 74px 74px 52px 52px 48px 60px";
+/**
+ * Action | Item | Units | vs LW | vs LY | Recv | Net | Last | Sales.
+ *
+ * Action is 92px — 4% off its original 96 — and Units 49px, 5% off its 52. Both
+ * lots of slack go to Item, the only `1fr` track, which is what the description
+ * and its UPC line actually need.
+ *
+ * Action has little left to give: "Call vendor" in a 12px semibold pill with
+ * `px-2` needs roughly 84. Recv and Net stay at 52 despite matching Units'
+ * original width — they carry signed values, so they need the extra character.
+ */
+const COLS = "92px 1fr 49px 74px 74px 52px 52px 48px 60px";
 
 /**
  * A comparison cell, in the app's list-row treatment — a filled pill rather
@@ -146,7 +159,7 @@ const ItemReportSheet = ({
   // — a vendor's range routinely does, and an uploaded file almost always does —
   // so a single department name in the title would be wrong more often than
   // right. Where the list came from is on row 2, next to the rule that cut it.
-  const centreLabel = ["Item Report", dateLabel].filter(Boolean).join(" · ");
+  const centreLabel = ["Item Actions", dateLabel].filter(Boolean).join(" · ");
 
   const term = filter.trim().toLowerCase();
   const visible = useMemo(() => {
@@ -342,7 +355,10 @@ const ItemReportSheet = ({
                 } ${tone.rule}`}
               >
                 <div
-                  className="grid gap-3 px-3 pt-1.5 items-center"
+                  // Symmetric now that nothing sits beneath it. The evidence
+                  // line used to carry the bottom padding, so removing it left
+                  // every row top-padded and flush against its own border.
+                  className="grid gap-3 px-3 py-2.5 items-center"
                   style={{ gridTemplateColumns: COLS }}
                 >
                   <span
@@ -416,9 +432,6 @@ const ItemReportSheet = ({
                       ? formatCurrencyCompact(item.ty.sales)
                       : "$0"}
                   </span>
-                </div>
-                <div className="pr-3 pb-2 pt-0.5 text-[12px] leading-relaxed text-content/85 pl-[120px]">
-                  {verdict.evidence}
                 </div>
               </button>
             );
