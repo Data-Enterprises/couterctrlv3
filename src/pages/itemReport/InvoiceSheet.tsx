@@ -93,7 +93,7 @@ const InvoiceSheet = ({
             <p className="text-custom-white text-[13px] font-semibold truncate">
               {vendorName}
             </p>
-            <p className="text-custom-white/85 text-[10px] truncate">
+            <p className="text-custom-white/85 text-[12px] truncate">
               Invoice {invoiceId} · {formatDateSimple(date)}
             </p>
           </div>

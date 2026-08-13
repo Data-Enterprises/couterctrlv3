@@ -1,9 +1,11 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../hooks";
 import {
   setItemReportExpandedReceipt,
   openItemReportInvoice,
+  toggleItemReportSection,
 } from "../../features/itemReportSlice";
+import { ChevronDownIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
 import { formatCurrency2, formatDateSimple } from "../../utils";
 import { formatPct, pillClass } from "../../utils/severity";
 import { actualPricePoints } from "../inventory/pricePoints";
@@ -11,10 +13,12 @@ import type { ActualFetchState } from "../inventory/useActualPricePoints";
 import {
   buildPriceEras,
   daysSince,
+  type ActionKind,
   type ReportItem,
 } from "./itemReportMetrics";
 import { describeReceipt } from "./itemReportData";
 import type { ReceiptLine } from "./itemReportData";
+import TransactionSheet from "./TransactionSheet";
 
 /**
  * The detail beside the sheet: what arrived, what moved, what it rang at.
@@ -53,6 +57,9 @@ interface Props {
   lookbackDays: number;
   periods: PeriodLabels;
   actual: ActualFetchState;
+  /** The selected item's suggested action, carried through to the basket view
+   *  so its line there matches its chip on the sheet. */
+  action?: ActionKind;
 }
 
 const fmtUnits = (n: number | null) =>
@@ -100,31 +107,56 @@ const Kpi = ({
  * unrelated cards.
  */
 const Block = ({
+  // `id` arrives via the spread and is only there so the caller can key the
+  // fold; the component itself has no use for it.
   label,
   note,
   noteTone = "text-content",
+  collapsed,
+  onToggle,
   children,
 }: {
+  /** Stable across renders, unlike `label` — two of these interpolate a day
+   *  count into their heading, and a key that changes would lose the fold. */
+  id: string;
   label: string;
   /** Sits opposite the label. For a fact qualifying the whole section — how
    *  stale the deliveries are, say — which belongs with the heading rather than
    *  dangling under a list it isn't a row of. */
   note?: string;
   noteTone?: string;
+  collapsed: boolean;
+  onToggle: () => void;
   children: React.ReactNode;
 }) => (
   <div className="px-3 py-2.5 border-b border-[#1e2a4a]/15">
-    <div className="flex items-baseline justify-between gap-2 mb-1.5">
-      <span className="text-[11.5px] font-medium uppercase tracking-wide text-content">
-        {label}
+    {/* The whole heading is the hit area, not just the chevron — a 12px target
+        in a panel this narrow is a miss waiting to happen. */}
+    <div
+      onClick={onToggle}
+      className={`flex items-center justify-between gap-2 cursor-pointer select-none ${
+        collapsed ? "" : "mb-1.5"
+      }`}
+    >
+      <span className="flex items-center gap-1 min-w-0">
+        {collapsed ? (
+          <ChevronRightIcon className="w-3.5 h-3.5 text-content flex-shrink-0" />
+        ) : (
+          <ChevronDownIcon className="w-3.5 h-3.5 text-content flex-shrink-0" />
+        )}
+        <span className="text-[11.5px] font-medium uppercase tracking-wide text-content truncate">
+          {label}
+        </span>
       </span>
       {note && (
-        <span className={`text-[12px] font-medium tabular-nums ${noteTone}`}>
+        <span
+          className={`text-[12px] font-medium tabular-nums flex-shrink-0 ${noteTone}`}
+        >
           {note}
         </span>
       )}
     </div>
-    {children}
+    {!collapsed && children}
   </div>
 );
 
@@ -318,9 +350,23 @@ const ItemReportRail = ({
   lookbackDays,
   periods,
   actual,
+  action,
 }: Props) => {
   const dispatch = useAppDispatch();
   const expandedReceipt = useAppSelector((s) => s.itemReport.expandedReceipt);
+  /** Which price row is open, or null. Local: a transient overlay over one
+   *  selected item that closes on its own — the route-change argument that put
+   *  the rest of this page in Redux doesn't apply. */
+  const [openPrice, setOpenPrice] = useState<number | null>(null);
+
+  const collapsed = useAppSelector((s) => s.itemReport.collapsedSections);
+  /** One place that knows how a section folds, so four call sites can't drift
+   *  on the key they use or the handler they pass. */
+  const fold = (id: string) => ({
+    id,
+    collapsed: collapsed.includes(id),
+    onToggle: () => dispatch(toggleItemReportSection(id)),
+  });
   const eras = useMemo(
     () => (item ? buildPriceEras(item, receipts) : []),
     [item, receipts],
@@ -346,6 +392,28 @@ const ItemReportRail = ({
   const lastDays = receipts[0] ? daysSince(receipts[0].date) : null;
   const txnCount = act.exactCount + act.averagedCount;
 
+  /**
+   * Price points merged by price alone.
+   *
+   * `actualPricePoints` splits on price *and* price type, which is right for
+   * Price Opt — it cares whether a price was promotional. Here it produced two
+   * rows both reading "$10.99" with no way to tell them apart, and a count that
+   * disagreed with the modal behind it. These are price points based on
+   * transactions: what the item rang at is the whole question, and why it rang
+   * there is a column this section doesn't have.
+   *
+   * Merged locally rather than in `actualPricePoints`, which Price Opt shares.
+   */
+  const mergedPrices = useMemo(() => {
+    const byPrice = new Map<number, { price: number; trans: number }>();
+    for (const p of act.exact) {
+      const found = byPrice.get(p.price);
+      if (found) found.trans += p.trans;
+      else byPrice.set(p.price, { price: p.price, trans: p.trans });
+    }
+    return [...byPrice.values()].sort((a, b) => b.trans - a.trans);
+  }, [act.exact]);
+
   return (
     <div className="flex-shrink-0 shadow-lg" style={{ width: "38%" }}>
       <div className="bg-custom-white rounded-xl shadow-sm overflow-hidden flex flex-col h-full">
@@ -353,7 +421,7 @@ const ItemReportRail = ({
           <div className="text-[13px] font-semibold text-custom-white leading-tight">
             {item.description}
           </div>
-          <div className="text-[10px] mt-0.5 text-custom-white/85 truncate">
+          <div className="text-[12px] mt-0.5 text-custom-white/85 truncate">
             {item.productCode}
           </div>
         </div>
@@ -376,6 +444,7 @@ const ItemReportRail = ({
 
         <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar">
           <Block
+            {...fold("received")}
             label={`Received (${lookbackDays} days)`}
             note={
               lastDays === null
@@ -459,6 +528,7 @@ const ItemReportRail = ({
               unaccounted for" should be able to see the two figures it came
               from without leaving the report. */}
           <Block
+            {...fold("movement")}
             label={`Unit movement (${item.movement?.days ?? MOVEMENT_FALLBACK} days)`}
             note={
               item.movement
@@ -532,7 +602,7 @@ const ItemReportRail = ({
             )}
           </Block>
 
-          <Block label="Price points">
+          <Block {...fold("prices")} label="Price points">
             {eras.length === 0 ? (
               <div className="text-[12px] text-content">No sales rows</div>
             ) : (
@@ -581,6 +651,7 @@ const ItemReportRail = ({
 
           {isCurrent && !actual.loading && (
             <Block
+              {...fold("transactions")}
               label="Transactions"
               note={txnCount > 0 ? `${txnCount} total` : undefined}
             >
@@ -589,9 +660,10 @@ const ItemReportRail = ({
               ) : (
                 <>
                   <Head cols={["Price", "Count"]} />
-                  {act.exact.slice(0, 5).map((p) => (
+                  {mergedPrices.slice(0, 5).map((p) => (
                     <Line
-                      key={`${p.price}-${p.priceType}`}
+                      key={p.price}
+                      onClick={() => setOpenPrice(p.price)}
                       cells={[
                         { text: formatCurrency2(p.price) },
                         { text: String(p.trans) },
@@ -603,12 +675,27 @@ const ItemReportRail = ({
             </Block>
           )}
           {isCurrent && actual.loading && (
-            <Block label="Transactions">
+            <Block {...fold("transactions")} label="Transactions">
               <div className="text-[12px] text-content">Reading…</div>
             </Block>
           )}
         </div>
       </div>
+
+      {openPrice !== null && (
+        <TransactionSheet
+          productCode={item.productCode}
+          itemDescription={item.description}
+          price={openPrice}
+          action={action}
+          // `exact` points are single-unit rings, so a line at this price is
+          // one whose net sale *is* the price.
+          lines={actual.lines.filter(
+            (l) => Math.abs(l.net_sales - openPrice) < 0.005,
+          )}
+          onClose={() => setOpenPrice(null)}
+        />
+      )}
     </div>
   );
 };

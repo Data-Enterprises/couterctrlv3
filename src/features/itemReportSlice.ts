@@ -121,6 +121,12 @@ interface ItemReportState {
    *  the rail has three sections under Received, and two open strips push Unit
    *  movement off screen. */
   expandedReceipt: string | null;
+  /** Rail sections the user has folded away, by id.
+   *
+   *  In the slice rather than the component because this is a preference, not
+   *  an overlay: someone who never looks at price points wants it to stay shut
+   *  next week, not just until they navigate away. */
+  collapsedSections: string[];
   /** The delivery whose full order is open, or null. Carries what the modal
    *  needs to fetch and to title itself. */
   openInvoice: {
@@ -182,6 +188,7 @@ const initialState: ItemReportState = {
   loadingMessage: "",
   selectedUpc: null,
   expandedReceipt: null,
+  collapsedSections: [],
   openInvoice: null,
   invoiceLines: {},
   invoiceLoading: false,
@@ -360,6 +367,11 @@ const itemReportSlice = createSlice({
       state.invoiceError = action.payload;
       state.invoiceLoading = false;
     },
+    toggleItemReportSection: (state, action: PayloadAction<string>) => {
+      state.collapsedSections = state.collapsedSections.includes(action.payload)
+        ? state.collapsedSections.filter((id) => id !== action.payload)
+        : [...state.collapsedSections, action.payload];
+    },
     setItemReportScope: (state, action: PayloadAction<ItemScope>) => {
       state.itemScope = action.payload;
     },
@@ -429,6 +441,7 @@ export const {
   clearItemReportHandoff,
   setItemReportSource,
   setItemReportExpandedReceipt,
+  toggleItemReportSection,
   openItemReportInvoice,
   setItemReportInvoiceLines,
   setItemReportInvoiceError,

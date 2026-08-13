@@ -546,6 +546,7 @@ const ItemReport = () => {
 
         <ItemReportRail
           item={selected?.item ?? null}
+          action={selected?.verdict.action}
           receipts={
             selected ? (state.receipts[selected.item.productCode] ?? []) : []
           }

@@ -593,7 +593,7 @@ const ItemReportExportModal = ({
           <p className="text-custom-white text-[13px] font-semibold">
             Export CSV
           </p>
-          <p className="text-custom-white/85 text-[10px] truncate">
+          <p className="text-custom-white/85 text-[12px] truncate">
             {storeName} · {dateLabel}
           </p>
         </div>
