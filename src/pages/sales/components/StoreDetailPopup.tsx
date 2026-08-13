@@ -1,5 +1,9 @@
 ﻿import { useState, useEffect, memo } from "react";
-import { useAppSelector, useAppDispatch } from "../../../hooks";
+import {
+  useAppSelector,
+  useAppDispatch,
+  useCanSeeComingSoon,
+} from "../../../hooks";
 // import { useSalesState } from "../hooks/useSalesState";
 import { getSubs, getHourly /* , getCats */ } from "../../../api/sales";
 import SalesExportModal from "./SalesExportModal";
@@ -72,6 +76,9 @@ const fmtDate = (d: string) =>
 
 const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
   const dispatch = useAppDispatch();
+  // Item Actions is unreleased, so the way in goes with it. A button that
+  // navigates somewhere the nav says does not exist is worse than no button.
+  const canSeeComingSoon = useCanSeeComingSoon();
   const context = useAppSelector((state) => state.app);
   const search = useAppSelector((state) => state.search);
   const {
@@ -544,7 +551,7 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
               popup watching nothing happen — instead the rule travels with the
               handoff and the report resolves it on its own loading screen,
               using the fan-out it was going to run anyway. */}
-          {!loading && rawSubs.length > 0 && (
+          {canSeeComingSoon && !loading && rawSubs.length > 0 && (
             <button
               onClick={() =>
                 openCriticalReport({

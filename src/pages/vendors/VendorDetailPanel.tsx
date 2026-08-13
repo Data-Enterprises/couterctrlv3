@@ -6,7 +6,11 @@ import {
 import { collectGradedItems } from "./vendorGradedItems";
 import type { ItemGradingMetric } from "../../utils/itemMargins";
 import { useCriticalReport } from "../itemReport/criticalHandoff";
-import { useAppSelector, useAppDispatch } from "../../hooks";
+import {
+  useAppSelector,
+  useAppDispatch,
+  useCanSeeComingSoon,
+} from "../../hooks";
 import { formatCurrency2 } from "../../utils";
 import {
   pillClass,
@@ -80,6 +84,9 @@ const Kpi = ({
 const VendorDetailPanel = () => {
   const dispatch = useAppDispatch();
   const vend = useAppSelector((s) => s.vendors);
+  // Item Actions is unreleased, so the way in goes with it. A button that
+  // navigates somewhere the nav says does not exist is worse than no button.
+  const canSeeComingSoon = useCanSeeComingSoon();
   const {
     rows,
     raw,
@@ -294,7 +301,7 @@ const VendorDetailPanel = () => {
           {/* A vendor's range routinely spans several sub departments, so the
               handed-over items carry their own — that set is what narrows the
               fan-out on the report side instead of reading every department. */}
-          {criticalItems.length > 0 && (
+          {canSeeComingSoon && criticalItems.length > 0 && (
             <button
               onClick={() =>
                 openCriticalReport({

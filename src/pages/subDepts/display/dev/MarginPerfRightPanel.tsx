@@ -2,6 +2,7 @@ import { useMemo, useRef, useState } from "react";
 import {
   useAppDispatch,
   useAppSelector,
+  useCanSeeComingSoon,
   useStoreName,
 } from "../../../../hooks";
 import { useSubMarginCtx } from "../../hooks";
@@ -37,6 +38,9 @@ import { severityHeaderBgClass, pillClass } from "../../../../utils/severity";
 const MarginPerfRightPanel = () => {
   const ctx = useSubMarginCtx();
   const dispatch = useAppDispatch();
+  // Item Actions is unreleased, so the way in goes with it. A button that
+  // navigates somewhere the nav says does not exist is worse than no button.
+  const canSeeComingSoon = useCanSeeComingSoon();
   const actions = useSubMarginActions();
 
   const gradingMetric = useAppSelector((s) => s.subMargin.gradingMetric);
@@ -356,7 +360,7 @@ const MarginPerfRightPanel = () => {
             {/* Only offered when there is something to diagnose. A department
                 with no critical items would open an empty report, which reads
                 as a broken page rather than as good news. */}
-            {criticalItems.length > 0 && (
+            {canSeeComingSoon && criticalItems.length > 0 && (
               <button
                 className="text-custom-white transition-colors"
                 onClick={() =>
