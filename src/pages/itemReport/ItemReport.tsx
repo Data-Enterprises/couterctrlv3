@@ -14,8 +14,12 @@ import {
   setItemReportExportOpen,
   clearItemReportHandoff,
   setItemReportSource,
+  openItemReportInvoice,
+  setItemReportInvoiceLines,
+  setItemReportInvoiceError,
 } from "../../features/itemReportSlice";
 import ItemReportEntry from "./ItemReportEntry";
+import InvoiceSheet from "./InvoiceSheet";
 import type { SubDeptMargin } from "../../interfaces";
 import type { ItemReportHandoff } from "../../features/itemReportSlice";
 import { collectCriticalItems } from "../sales/components/itemGrading";
@@ -30,6 +34,7 @@ import {
   lwWindow,
   lyWindow,
   weekEnding,
+  fetchInvoiceById,
   RECEIVING_LOOKBACK_DAYS as RECEIVING_LOOKBACK,
   type ReportScope,
 } from "./itemReportData";
@@ -288,6 +293,54 @@ const ItemReport = () => {
     // depending on it would re-fire the fan-out on each one.
   }, [handoff]);
 
+  /**
+   * The full order behind one delivery, fetched on demand.
+   *
+   * The walk discards every line that isn't on the report's list, so this is a
+   * refetch rather than something already in hand — one call, and cached by
+   * invoice id because people compare two deliveries back and forth.
+   */
+  const openInvoice = state.openInvoice;
+  useEffect(() => {
+    if (!openInvoice || !state.scope) return;
+    const key = String(openInvoice.invoiceId);
+    if (state.invoiceLines[key]) return;
+    let cancelled = false;
+    fetchInvoiceById(
+      {
+        url,
+        token,
+        storeid: state.scope.storeid,
+        start: state.scope.start,
+        end: state.scope.end,
+      },
+      openInvoice.invoiceId,
+      openInvoice.date,
+    )
+      .then((lines) => {
+        if (cancelled) return;
+        dispatch(
+          setItemReportInvoiceLines({
+            invoiceId: openInvoice.invoiceId,
+            lines,
+          }),
+        );
+      })
+      .catch((e: unknown) => {
+        if (cancelled) return;
+        dispatch(
+          setItemReportInvoiceError(
+            e instanceof Error ? e.message : "Could not load that invoice",
+          ),
+        );
+      });
+    return () => {
+      cancelled = true;
+    };
+    // Keyed on the open invoice alone — the scope can't change while a modal
+    // over the report is open.
+  }, [openInvoice]);
+
   const windowDays = state.scope
     ? dayCount(state.scope.start, state.scope.end)
     : 30;
@@ -439,6 +492,23 @@ const ItemReport = () => {
         >
           <div onClick={(e) => e.stopPropagation()}>{entry}</div>
         </div>
+      )}
+
+      {openInvoice && (
+        <InvoiceSheet
+          vendorName={openInvoice.vendorName}
+          invoiceId={openInvoice.invoiceId}
+          date={openInvoice.date}
+          fromUpc={openInvoice.fromUpc}
+          fromAction={
+            sheetRows.find((r) => r.item.productCode === openInvoice.fromUpc)
+              ?.verdict.action
+          }
+          lines={state.invoiceLines[String(openInvoice.invoiceId)] ?? []}
+          loading={state.invoiceLoading}
+          error={state.invoiceError}
+          onClose={() => dispatch(openItemReportInvoice(null))}
+        />
       )}
 
       {state.exportOpen && (

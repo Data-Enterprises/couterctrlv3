@@ -408,7 +408,7 @@ const ItemReportExportModal = ({
               ? `none in ${lookbackDays}d`
               : "",
           daysSinceRecv: last ? (daysSince(last.date) ?? "") : "",
-          receivedUnits: last ? fmtNum(last.units) : "",
+          receivedUnits: last ? fmtNum(last.sellingUnits) : "",
           moveReceived: item.movement ? item.movement.received : "",
           moveSold: item.movement ? item.movement.sold : "",
           moveNet: item.movement ? item.movement.net : "",
@@ -449,7 +449,7 @@ const ItemReportExportModal = ({
           date: r.date.slice(0, 10),
           vendor: r.vendorName,
           invoice: r.invoiceId,
-          units: fmtNum(r.units),
+          units: fmtNum(r.sellingUnits),
           cases: r.cases,
           unitCost: fmtNum(r.unitCost),
           retail: fmtNum(r.retail),

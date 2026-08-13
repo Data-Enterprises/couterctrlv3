@@ -1,4 +1,9 @@
 import { useMemo } from "react";
+import { useAppDispatch, useAppSelector } from "../../hooks";
+import {
+  setItemReportExpandedReceipt,
+  openItemReportInvoice,
+} from "../../features/itemReportSlice";
 import { formatCurrency2, formatDateSimple } from "../../utils";
 import { formatPct, pillClass } from "../../utils/severity";
 import { actualPricePoints } from "../inventory/pricePoints";
@@ -8,6 +13,7 @@ import {
   daysSince,
   type ReportItem,
 } from "./itemReportMetrics";
+import { describeReceipt } from "./itemReportData";
 import type { ReceiptLine } from "./itemReportData";
 
 /**
@@ -141,6 +147,123 @@ interface Cell {
   tone?: string;
 }
 
+/**
+ * One delivery, opened up.
+ *
+ * Everything here is already on the line we keep, so opening a row costs nothing
+ * — no fetch, no second call. The collapsed grid answers "what arrived and at
+ * what price"; this answers "which invoice, how was it billed, and was any of it
+ * free or returned".
+ *
+ * Vendor is a heading rather than a tile: it is a name of unpredictable length,
+ * and a tile is a shape for a number.
+ */
+const ReceiptDetail = ({ line }: { line: ReceiptLine }) => {
+  const dispatch = useAppDispatch();
+
+  return (
+    <div className="bg-gray-50 border-l-2 border-[#1e2a4a]">
+      <div className="px-2.5 py-1.5 text-[12px] font-medium text-content truncate">
+        {line.vendorName}
+      </div>
+      <Kpis
+        cells={[
+          {
+            label: "Invoice",
+            value: String(line.invoiceId),
+            // The invoice number is already the identity of the thing you would
+            // open, so it is the button — no extra control to explain.
+            onClick: () =>
+              dispatch(
+                openItemReportInvoice({
+                  invoiceId: line.invoiceId,
+                  date: line.date,
+                  vendorName: line.vendorName,
+                  fromUpc: line.productCode,
+                }),
+              ),
+          },
+          {
+            label: "Ext cost",
+            value: formatCurrency2(line.sellingUnits * line.unitCost),
+          },
+          {
+            label: "Ext retail",
+            value:
+              line.retail > 0
+                ? formatCurrency2(line.sellingUnits * line.retail)
+                : "—",
+          },
+        ]}
+      />
+      <Kpis
+        cells={[
+          {
+            label: "Received as",
+            value: describeReceipt(line.sellingUnits, line.cases),
+          },
+          // Flags, not counts — a line is free goods or it isn't. "Yes" takes
+          // the watch tone so the exception is what draws the eye; "No" stays
+          // quiet, which is the answer on almost every delivery.
+          {
+            label: "Free",
+            value: line.free > 0 ? "Yes" : "No",
+            flagged: line.free > 0,
+          },
+          {
+            label: "Returned",
+            value: line.returned > 0 ? "Yes" : "No",
+            flagged: line.returned > 0,
+          },
+        ]}
+      />
+    </div>
+  );
+};
+
+/** Three equal tiles, on the KPI strip the rest of the app uses so a nested
+ *  strip still reads as native — with one deliberate variation: the values are
+ *  `font-medium`, not the canonical `font-bold`. This strip sits inside a row
+ *  that is itself inside a section, and bold at that depth competes with the
+ *  headline figures above it. Not drift; leave it. */
+const Kpis = ({
+  cells,
+}: {
+  cells: {
+    label: string;
+    value: string;
+    flagged?: boolean;
+    onClick?: () => void;
+  }[];
+}) => (
+  <div className="grid grid-cols-3 divide-x divide-[#1e2a4a]/15 border-t border-[#1e2a4a]/15">
+    {cells.map((c) => (
+      <div
+        key={c.label}
+        onClick={c.onClick}
+        className={`px-2 py-1.5 text-center min-w-0 ${
+          c.onClick ? "cursor-pointer hover:bg-[#1e2a4a]/[0.06]" : ""
+        }`}
+      >
+        <div className="text-[10px] font-bold uppercase tracking-wide text-content">
+          {c.label}
+        </div>
+        <div
+          className={`text-[12px] font-medium truncate ${
+            c.flagged
+              ? "text-severity_watch_text"
+              : c.onClick
+                ? "text-[#1e2a4a] underline underline-offset-2"
+                : "text-content"
+          }`}
+        >
+          {c.value}
+        </div>
+      </div>
+    ))}
+  </div>
+);
+
 const Head = ({ cols }: { cols: string[] }) => (
   <div
     className="grid gap-2.5 pl-1 py-1.5 border-b border-gray-100 text-[11.5px] font-semibold uppercase tracking-wide text-content/85"
@@ -154,9 +277,23 @@ const Head = ({ cols }: { cols: string[] }) => (
   </div>
 );
 
-const Line = ({ cells }: { cells: Cell[] }) => (
+const Line = ({
+  cells,
+  zebra,
+  onClick,
+}: {
+  cells: Cell[];
+  /** Explicit rather than `even:` — the delivery rows interleave expansion
+   *  strips, and a CSS nth-child rule would restripe everything below an open
+   *  one. */
+  zebra?: boolean;
+  onClick?: () => void;
+}) => (
   <div
-    className="grid gap-2.5 pl-1 py-1.5 text-[12px] items-center even:bg-row_stripe"
+    onClick={onClick}
+    className={`grid gap-2.5 pl-1 py-1.5 text-[12px] items-center ${
+      zebra === undefined ? "even:bg-row_stripe" : zebra ? "bg-row_stripe" : ""
+    } ${onClick ? "cursor-pointer hover:bg-gray-50" : ""}`}
     style={{ gridTemplateColumns: TEMPLATE[cells.length] }}
   >
     {cells.map((c, i) => (
@@ -182,6 +319,8 @@ const ItemReportRail = ({
   periods,
   actual,
 }: Props) => {
+  const dispatch = useAppDispatch();
+  const expandedReceipt = useAppSelector((s) => s.itemReport.expandedReceipt);
   const eras = useMemo(
     () => (item ? buildPriceEras(item, receipts) : []),
     [item, receipts],
@@ -257,8 +396,11 @@ const ItemReportRail = ({
                     implied. Three of the four Reprice triggers compare against
                     one of these, so the sentence in the sheet is now checkable
                     against the deliveries that produced it. */}
-                <Head cols={["Date", "Units", "Cost", "Retail", "GM%"]} />
+                <Head cols={["Date", "Qty", "Cost", "Retail", "GM%"]} />
                 {receipts.slice(0, 6).map((r, i) => {
+                  const key = `${r.invoiceId}-${r.date}-${r.unitCost}`;
+                  const open = expandedReceipt === key;
+                  const adjusted = r.free > 0 || r.returned > 0;
                   // Cadence, folded into the date rather than given a column of
                   // its own. "Last received 24 days ago" is a fact; "and it
                   // normally arrives every 9" is what makes it a decision.
@@ -279,22 +421,34 @@ const ItemReportRail = ({
                       ? ((r.retail - r.unitCost) / r.retail) * 100
                       : null;
                   return (
-                    <Line
-                      key={`${r.invoiceId}-${r.date}-${r.unitCost}`}
-                      cells={[
-                        {
-                          text: `${formatDateSimple(r.date)}${
-                            gap !== null ? ` · ${gap}d` : ""
-                          }`,
-                        },
-                        { text: String(r.units) },
-                        { text: formatCurrency2(r.unitCost) },
-                        {
-                          text: r.retail > 0 ? formatCurrency2(r.retail) : "—",
-                        },
-                        { text: gm === null ? "—" : `${gm.toFixed(1)}%` },
-                      ]}
-                    />
+                    <div key={key}>
+                      <Line
+                        zebra={i % 2 === 1}
+                        onClick={() =>
+                          dispatch(setItemReportExpandedReceipt(key))
+                        }
+                        cells={[
+                          {
+                            // The marker is really the feature. Without
+                            // something on the collapsed row saying a delivery
+                            // carried free goods or a return, nobody opens
+                            // anything and the strip below may as well not
+                            // exist.
+                            text: `${open ? "▾" : adjusted ? "•" : "›"} ${formatDateSimple(
+                              r.date,
+                            )}${gap !== null ? ` · ${gap}d` : ""}`,
+                          },
+                          { text: String(r.sellingUnits) },
+                          { text: formatCurrency2(r.unitCost) },
+                          {
+                            text:
+                              r.retail > 0 ? formatCurrency2(r.retail) : "—",
+                          },
+                          { text: gm === null ? "—" : `${gm.toFixed(1)}%` },
+                        ]}
+                      />
+                      {open && <ReceiptDetail line={r} />}
+                    </div>
                   );
                 })}
               </>

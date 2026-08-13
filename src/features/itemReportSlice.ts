@@ -1,6 +1,7 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { SubDeptMargin } from "../interfaces";
 import type { ReceiptLine } from "../pages/itemReport/itemReportData";
+import type { ReceiverDetailsItem } from "../interfaces";
 import type { ActionKind } from "../pages/itemReport/itemReportMetrics";
 
 /**
@@ -116,6 +117,25 @@ interface ItemReportState {
   loading: boolean;
   loadingMessage: string;
   selectedUpc: string | null;
+  /** Which delivery row in the rail is open, keyed invoice+date. One at a time:
+   *  the rail has three sections under Received, and two open strips push Unit
+   *  movement off screen. */
+  expandedReceipt: string | null;
+  /** The delivery whose full order is open, or null. Carries what the modal
+   *  needs to fetch and to title itself. */
+  openInvoice: {
+    invoiceId: number;
+    date: string;
+    vendorName: string;
+    /** So the line you arrived from can be marked among forty others. */
+    fromUpc: string;
+  } | null;
+  /** Fetched orders, keyed by invoice id. Cached because people compare two
+   *  deliveries back and forth, and a second call for data we just had is a
+   *  wait with nothing to show for it. */
+  invoiceLines: Record<string, ReceiverDetailsItem[]>;
+  invoiceLoading: boolean;
+  invoiceError: string | null;
   /** Which population the sheet shows. Defaults to the uploaded list — the
    *  file is the question the user asked, and the wider set is the aside. */
   itemScope: ItemScope;
@@ -161,6 +181,11 @@ const initialState: ItemReportState = {
   loading: false,
   loadingMessage: "",
   selectedUpc: null,
+  expandedReceipt: null,
+  openInvoice: null,
+  invoiceLines: {},
+  invoiceLoading: false,
+  invoiceError: null,
   itemScope: "uploaded",
   handoff: null,
   sourceLabel: "",
@@ -205,6 +230,10 @@ const itemReportSlice = createSlice({
       state.receivingSkipped = 0;
       state.receivingError = null;
       state.selectedUpc = null;
+      state.expandedReceipt = null;
+      state.openInvoice = null;
+      state.invoiceLines = {};
+      state.invoiceError = null;
       state.itemScope = "uploaded";
       state.actionFilter = null;
       state.textFilter = "";
@@ -269,11 +298,9 @@ const itemReportSlice = createSlice({
 
     setItemReportSelected: (state, action: PayloadAction<string | null>) => {
       state.selectedUpc = action.payload;
+      state.expandedReceipt = null;
     },
-    setItemReportHandoff: (
-      state,
-      action: PayloadAction<ItemReportHandoff>,
-    ) => {
+    setItemReportHandoff: (state, action: PayloadAction<ItemReportHandoff>) => {
       state.handoff = action.payload;
       // The store and the pending list are set here too, so the entry card
       // behind the re-search button shows what the report is actually built
@@ -298,6 +325,40 @@ const itemReportSlice = createSlice({
     ) => {
       state.sourceLabel = action.payload.sourceLabel;
       state.basisLabel = action.payload.basisLabel;
+    },
+    setItemReportExpandedReceipt: (
+      state,
+      action: PayloadAction<string | null>,
+    ) => {
+      state.expandedReceipt =
+        state.expandedReceipt === action.payload ? null : action.payload;
+    },
+    openItemReportInvoice: (
+      state,
+      action: PayloadAction<ItemReportState["openInvoice"]>,
+    ) => {
+      state.openInvoice = action.payload;
+      state.invoiceError = null;
+      // Only a cache miss shows a spinner; a hit renders immediately.
+      state.invoiceLoading =
+        !!action.payload &&
+        !state.invoiceLines[String(action.payload.invoiceId)];
+    },
+    setItemReportInvoiceLines: (
+      state,
+      action: PayloadAction<{
+        invoiceId: number;
+        lines: ReceiverDetailsItem[];
+      }>,
+    ) => {
+      state.invoiceLines[String(action.payload.invoiceId)] =
+        action.payload.lines;
+      state.invoiceLoading = false;
+      state.invoiceError = null;
+    },
+    setItemReportInvoiceError: (state, action: PayloadAction<string>) => {
+      state.invoiceError = action.payload;
+      state.invoiceLoading = false;
     },
     setItemReportScope: (state, action: PayloadAction<ItemScope>) => {
       state.itemScope = action.payload;
@@ -367,6 +428,10 @@ export const {
   setItemReportHandoff,
   clearItemReportHandoff,
   setItemReportSource,
+  setItemReportExpandedReceipt,
+  openItemReportInvoice,
+  setItemReportInvoiceLines,
+  setItemReportInvoiceError,
   setItemReportScope,
   setItemReportActionFilter,
   setItemReportTextFilter,

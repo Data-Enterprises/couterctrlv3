@@ -14,6 +14,7 @@ import { formatCurrencyCompact } from "../../utils";
 import { formatPct, pillClass } from "../../utils/severity";
 import TextFilter from "../../components/filters/TextFilter";
 import HeaderIconButton from "../../components/HeaderIconButton";
+import { ACTION_TONE } from "./actionTone";
 import InfoButton from "../../components/InfoButton";
 import InfoPopover from "../../components/InfoPopover";
 import { ITEM_REPORT_INFO } from "./itemReportInfo";
@@ -77,45 +78,6 @@ interface Props {
 
 /** Chip and rule colour per action. Kept to one place so the strip, the row
  *  marker and the chip can't disagree about what "reorder" looks like. */
-const TONE: Record<ActionKind, { chip: string; ring: string; rule: string }> = {
-  investigate: {
-    chip: "bg-severity_critical_bg text-severity_critical_text",
-    ring: "ring-severity_critical_text/40",
-    rule: "border-transparent",
-  },
-  reorder: {
-    chip: "bg-blue-50 text-blue-900",
-    ring: "ring-blue-900/40",
-    rule: "border-blue-500",
-  },
-  reprice: {
-    chip: "bg-severity_watch_bg text-severity_watch_text",
-    ring: "ring-severity_watch_text/40",
-    rule: "border-amber-500",
-  },
-  vendor: {
-    chip: "bg-violet-50 text-violet-900",
-    ring: "ring-violet-900/40",
-    rule: "border-transparent",
-  },
-  none: {
-    chip: "bg-severity_healthy_bg text-severity_healthy_text",
-    ring: "ring-severity_healthy_text/40",
-    rule: "border-emerald-500",
-  },
-  insufficient: {
-    chip: "bg-gray-100 text-content/85",
-    ring: "ring-content/30",
-    rule: "border-gray-300",
-  },
-  /** Quiet on purpose. It is a state, not a finding, and colouring it would
-   *  give a row that says nothing the same weight as one that does. */
-  pending: {
-    chip: "bg-gray-50 text-content/85",
-    ring: "ring-content/20",
-    rule: "border-transparent",
-  },
-};
 
 /** Operational problems first, then pricing, then the clean rows. Someone
  *  working down the sheet should hit what's costing them soonest. */
@@ -307,8 +269,10 @@ const ItemReportSheet = ({
                   setItemReportActionFilter(only === action ? null : action),
                 )
               }
-              className={`text-[12px] font-semibold px-2 py-1 rounded-full transition-shadow ${TONE[action].chip} ${
-                only === action ? `ring-2 shadow-sm ${TONE[action].ring}` : ""
+              className={`text-[12px] font-semibold px-2 py-1 rounded-full transition-shadow ${ACTION_TONE[action].chip} ${
+                only === action
+                  ? `ring-2 shadow-sm ${ACTION_TONE[action].ring}`
+                  : ""
               }`}
             >
               {ACTION_LABEL[action]}{" "}
@@ -368,7 +332,7 @@ const ItemReportSheet = ({
             const isSel = item.productCode === selectedUpc;
             const receipts = receiptsByUpc[item.productCode] ?? [];
             const lastDays = receipts[0] ? daysSince(receipts[0].date) : null;
-            const tone = TONE[verdict.action];
+            const tone = ACTION_TONE[verdict.action];
             return (
               <button
                 key={item.productCode}

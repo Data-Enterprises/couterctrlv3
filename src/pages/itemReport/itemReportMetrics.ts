@@ -331,7 +331,7 @@ export const buildReport = (
     const soldInSpan = movementSales.reduce((s, r) => s + pricedUnits(r), 0);
     const receivedInSpan = receipts
       .filter((r) => r.date.slice(0, 10) >= movementStart)
-      .reduce((s, r) => s + r.units, 0);
+      .reduce((s, r) => s + r.sellingUnits, 0);
     const movement: StockMovement | null =
       movementSales.length > 0 || receivedInSpan > 0
         ? {
@@ -357,9 +357,9 @@ export const buildReport = (
               .reduce((s, r) => s + pricedUnits(r), 0);
             return {
               date: last.date,
-              received: round1(last.units),
+              received: round1(last.sellingUnits),
               sold: round1(soldSince),
-              left: round1(last.units - soldSince),
+              left: round1(last.sellingUnits - soldSince),
             };
           })()
         : null;

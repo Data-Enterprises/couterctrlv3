@@ -61,6 +61,32 @@ export interface ReportScope {
   end: string;
 }
 
+/**
+ * How a delivery line was billed, in words rather than arithmetic.
+ *
+ * "1 case × 15" is correct but reads like a sum you have to do, and "8 cases × 1"
+ * reads like a placeholder. The fix is that **a case size of one carries no
+ * information** — a 24-pack billed one to a case *is* the selling unit, so
+ * saying "× 1" only invites the question. Only a pack above one is worth
+ * naming.
+ *
+ *     1 case of 15     15 selling units arrived in one case
+ *     8 cases          8 arrived, one to a case
+ *     by the unit      the vendor billed eaches, there is no pack
+ *
+ * Shared by the rail's delivery strip and the full-invoice modal so the two
+ * cannot describe the same line differently.
+ */
+export const describeReceipt = (
+  sellingUnits: number,
+  cases: number,
+): string => {
+  if (cases <= 0) return "by the unit";
+  const size = Math.round((sellingUnits / cases) * 10) / 10;
+  const plural = `${cases} case${cases === 1 ? "" : "s"}`;
+  return size > 1 ? `${plural} of ${size}` : plural;
+};
+
 /** Days in every window this page reads. Fixed rather than user-chosen, so the
  *  three periods are always the same length and directly comparable — the same
  *  contract the graded pages work to. */
@@ -203,20 +229,48 @@ export const fetchInvoices = async (
 
 /** One invoice's lines. Returns empty rather than throwing: a walk of hundreds
  *  of invoices must not lose the other 399 to one bad row. */
+/**
+ * One invoice, every line on it.
+ *
+ * Throws, unlike the walk's wrapper below. A user who clicked an invoice needs
+ * to be told it failed; an empty order would read as "this delivery had nothing
+ * on it", which is a different and wrong statement.
+ *
+ * Ignore the response's `totals` block entirely. It reports `cases` and `units`
+ * — which mean different things depending on how the vendor billed, with nothing
+ * in the response saying which — and its `ucost`/`retail` are sums of unrelated
+ * per-unit prices. Sum `qty`, `ext_cost` and `ext_retail` from the lines instead.
+ */
+export const fetchInvoiceById = async (
+  scope: ReportScope,
+  invoiceId: number,
+  invoiceDate: string,
+): Promise<ReceiverDetailsItem[]> => {
+  const resp = await getReceiverDetails(
+    scope.url,
+    scope.token,
+    scope.storeid,
+    invoiceId,
+    formatDate(invoiceDate),
+  );
+  const body: ReceiverDetailsResponse = resp.data;
+  if (body.error !== 0) throw new Error("Could not load that invoice");
+  return body.records ?? [];
+};
+
+/** Same call, but a failure resolves to no lines. Right for the walk — one bad
+ *  invoice must not lose the other 399 — and wrong for anything a user asked
+ *  for directly. */
 export const fetchInvoiceLines = async (
   scope: ReportScope,
   invoice: ReceiverListItem,
 ): Promise<ReceiverDetailsItem[]> => {
   try {
-    const resp = await getReceiverDetails(
-      scope.url,
-      scope.token,
-      scope.storeid,
+    return await fetchInvoiceById(
+      scope,
       invoice.invoiceid,
-      formatDate(invoice.invoice_date),
+      invoice.invoice_date,
     );
-    const body: ReceiverDetailsResponse = resp.data;
-    return body.error === 0 ? (body.records ?? []) : [];
   } catch {
     return [];
   }
@@ -231,19 +285,38 @@ export interface ReceiptLine {
   description: string;
   date: string;
   vendorName: string;
-  /** Priced selling units, not cases — the same basis `subs/subs` sells in,
-   *  which is what makes received and sold comparable at all. Verified against
-   *  a real response: `ext_cost = qty * ucost` on every line, with `cases`
-   *  carried separately.
+  /**
+   * Sellable units received. The API calls this `qty`, and it is the same basis
+   * `subs/subs` sells in — which is the only reason received and sold can be
+   * compared at all.
    *
-   *  Confirmed on DSD beverage only. Warehouse invoices with different case
-   *  packs are unverified, which is why `cases` rides along — `units / cases`
-   *  gives the case pack, and a nonsense pack is the tell that an item is
-   *  being received on the other basis. */
-  units: number;
-  /** Shipping containers on the line. Not the selling unit; kept so a reader
-   *  can see the pack behind the units rather than trusting them blind. */
+   * Named `sellingUnits` rather than `units` on purpose: the API *also* has a
+   * field called `units`, and it means something else entirely (see `billedIn`).
+   * Carrying our own `units` that held their `qty` was a trap waiting for
+   * whoever touched this next.
+   *
+   * Verified across 47 lines on four invoices: `ext_cost = ucost * qty` and
+   * `ext_retail = retail * qty` are exact on every one.
+   */
+  sellingUnits: number;
+  /** Shipping containers, `0` on a unit-received line. */
   cases: number;
+  /**
+   * How the vendor billed the line. The two modes are mutually exclusive — no
+   * line ever carries both `units` and `cases` — and `qty` is sellable units
+   * either way:
+   *
+   *     cases: qty = cases * caseSize,  units = 0
+   *     units: qty = units,             cases = 0
+   *
+   * So a line whose `qty` equals its `cases` is a case size of one, not a line
+   * counted in cases.
+   */
+  billedIn: "cases" | "units";
+  /** Sellable units per shipping container, or null on a unit receipt. Derived,
+   *  because the endpoint does not return it — worth asking for, since without
+   *  it this can be computed but not checked. */
+  caseSize: number | null;
   /** Unit cost on the day it landed. Two receipts at different costs is how a
    *  margin slips without anyone touching the shelf price. */
   unitCost: number;
@@ -269,8 +342,10 @@ export const toReceiptLine = (
   description: line.product_description,
   date: invoice.invoice_date,
   vendorName: invoice.vendor_name,
-  units: line.qty,
+  sellingUnits: line.qty,
   cases: line.cases,
+  billedIn: line.cases > 0 ? "cases" : "units",
+  caseSize: line.cases > 0 ? line.qty / line.cases : null,
   unitCost: line.ucost,
   retail: line.retail,
   free: line.free,
