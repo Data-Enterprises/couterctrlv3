@@ -55,7 +55,9 @@ interface SubMarginState {
   // null = nothing selected. Must not be 0 — sub_department 0 is a real
   // department id in the data, and using it as the sentinel made it
   // unselectable.
-  selectedSubDeptId: number | null;
+  // A key, not an id — see the same field in subMarginSlice and
+  // utils/subDeptIdentity.
+  selectedSubDeptKey: string | null;
   subDeptFitlerText: string;
   loadingSubDepts: boolean;
   loadingMargins: boolean;
@@ -120,7 +122,7 @@ const initialState: SubMarginState = {
   weekFourMarginsLY: [],
   weekFourMarginsLW: [],
   filteredMargins: [],
-  selectedSubDeptId: null,
+  selectedSubDeptKey: null,
   subDeptFitlerText: "",
   loadingSubDepts: false,
   loadingMargins: false,
@@ -184,8 +186,8 @@ const subMarginSlice = createSlice({
     setFilteredMargins: (state, action: PayloadAction<SubDeptMargin[]>) => {
       state.filteredMargins = action.payload;
     },
-    setSelectedSubDeptId: (state, action: PayloadAction<number | null>) => {
-      state.selectedSubDeptId = action.payload;
+    setSelectedSubDeptKey: (state, action: PayloadAction<string | null>) => {
+      state.selectedSubDeptKey = action.payload;
     },
     setWeekTrendMargins: (
       state,
@@ -251,7 +253,7 @@ const subMarginSlice = createSlice({
       state.weekThreeMarginsLY = [];
       state.weekFourMarginsLY = [];
       state.filteredMargins = [];
-      state.selectedSubDeptId = null;
+      state.selectedSubDeptKey = null;
       state.subDeptFitlerText = "";
       state.selectedWeek = 0;
       state.selectedWeekDay = "";
@@ -466,7 +468,7 @@ export const {
   setLoadingSubDepts,
   setMargins,
   setSearchValue,
-  setSelectedSubDeptId,
+  setSelectedSubDeptKey,
   setSelectedWeek,
   setSubDepts,
   setSubDeptFilterText,

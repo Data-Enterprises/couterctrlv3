@@ -2,10 +2,11 @@ import {
   setFilteredAvailableOrders,
   setFilteredOrders,
   setOrderFilters,
-  setSubIdsFilter,
+  setSubKeysFilter,
   setTypeFilterArr,
 } from "../../../features/ordersLegacySlice";
 import { useOrdersCtx } from "../hooks";
+import { subDeptKeyMode, subDeptKeyOf } from "../../../utils/subDeptIdentity";
 
 const OrdersGridFilters = () => {
   const ctx = useOrdersCtx();
@@ -46,7 +47,7 @@ const OrdersGridFilters = () => {
         result.includes(o.order_type),
       );
 
-      ctx.dispatch(setSubIdsFilter([]));
+      ctx.dispatch(setSubKeysFilter([]));
       ctx.dispatch(setFilteredOrders(allFiltered));
       ctx.dispatch(setFilteredAvailableOrders(filtered));
     }
@@ -58,33 +59,45 @@ const OrdersGridFilters = () => {
   //       .toLowerCase()
   //       .includes(ctx.orderStatusFilter);
   //     const subIdCheck =
-  //       ctx.subIdsFilter.length === 0 ||
-  //       ctx.subIdsFilter.includes(o.sub_department);
+  //       ctx.subKeysFilter.length === 0 ||
+  //       ctx.subKeysFilter.includes(o.sub_department);
   //     return statusCheck && subIdCheck;
   //   });
   //   return result;
   // };
 
-  const currentCount = (subId: number) => {
+  const currentCount = (key: string) => {
     const result = [...ctx.filteredOrders].filter((o) => {
       const statusCheck = o.status
         .toLowerCase()
         .includes(ctx.orderStatusFilter);
-      const subIdCheck = o.sub_department === subId;
+      const subIdCheck = subKey(o) === key;
       return statusCheck && subIdCheck;
     });
     return result.length;
   };
 
-  const hadleSubIdClick = (subId: number) => {
-    const currentSubIds = ctx.subIdsFilter;
-    if (subId === 0) {
-      ctx.dispatch(setSubIdsFilter([]));
-    } else if (currentSubIds.includes(subId)) {
-      ctx.dispatch(setSubIdsFilter(currentSubIds.filter((id) => id !== subId)));
-    } else {
-      ctx.dispatch(setSubIdsFilter([...currentSubIds, subId]));
-    }
+  // The department a row belongs to. Keyed by id where the company numbers its
+  // departments, by description where it doesn't — taken from allOrders so it
+  // matches the chips, which are built from the same set.
+  const subMode = subDeptKeyMode(ctx.allOrders);
+  const subKey = (o: { sub_department: number; sub_department_description: string }) =>
+    subDeptKeyOf(o, subMode);
+
+  // "All" is its own action rather than a magic key — 0 used to mean it, which
+  // is both a real department id and the only id every row has at a company
+  // that doesn't number them.
+  const clearSubFilter = () => ctx.dispatch(setSubKeysFilter([]));
+
+  const hadleSubIdClick = (key: string) => {
+    const current = ctx.subKeysFilter;
+    ctx.dispatch(
+      setSubKeysFilter(
+        current.includes(key)
+          ? current.filter((k) => k !== key)
+          : [...current, key],
+      ),
+    );
   };
 
   return (
@@ -122,16 +135,16 @@ const OrdersGridFilters = () => {
         {ctx.uniqueSubs.map((s, i) => (
           <div
             key={i}
-            className={`flex gap-1 rounded-full border border-content/40 shadow px-2 cursor-pointer hover:shadow-inner ${ctx.subIdsFilter.includes(s.subId) ? "bg-orange-200" : "bg-custom-white"} transition-all duration-200`}
-            onClick={() => hadleSubIdClick(s.subId)}
+            className={`flex gap-1 rounded-full border border-content/40 shadow px-2 cursor-pointer hover:shadow-inner ${ctx.subKeysFilter.includes(s.key) ? "bg-orange-200" : "bg-custom-white"} transition-all duration-200`}
+            onClick={() => hadleSubIdClick(s.key)}
           >
             <div>{s.desc}</div>
-            <div className="font-medium">{currentCount(s.subId)}</div>
+            <div className="font-medium">{currentCount(s.key)}</div>
           </div>
         ))}
         <div
-          className={`flex gap-1 rounded-full border border-content/40 shadow px-2 ${ctx.subIdsFilter.length === 0 ? "bg-orange-200" : "bg-custom-white"} cursor-pointer hover:shadow-inner transition-all duration-200`}
-          onClick={() => hadleSubIdClick(0)}
+          className={`flex gap-1 rounded-full border border-content/40 shadow px-2 ${ctx.subKeysFilter.length === 0 ? "bg-orange-200" : "bg-custom-white"} cursor-pointer hover:shadow-inner transition-all duration-200`}
+          onClick={clearSubFilter}
         >
           <div>All</div>
           <div className="font-medium">{ctx.filteredOrders.length}</div>
@@ -161,7 +174,7 @@ const OrdersGridFilters = () => {
             ctx.dispatch(setTypeFilterArr([]));
             ctx.dispatch(setFilteredAvailableOrders(ctx.availableOrders));
             ctx.dispatch(setFilteredOrders(ctx.allOrders));
-            ctx.dispatch(setSubIdsFilter([]));
+            ctx.dispatch(setSubKeysFilter([]));
           }}
         >
           All Orders

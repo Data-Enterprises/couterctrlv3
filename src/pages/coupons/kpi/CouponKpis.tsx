@@ -7,6 +7,7 @@ import {
 } from "@heroicons/react/24/solid";
 import { formatCurrency2 } from "../../../utils";
 import { sumCouponAmount } from "../../../utils/couponValue";
+import { subDeptKeyMode, subDeptKeyOf } from "../../../utils/subDeptIdentity";
 
 const CouponKpis = () => {
   const { gridCoupons } = useAppSelector((state) => state.couponLegacy);
@@ -18,7 +19,13 @@ const CouponKpis = () => {
   const customerIdCount = new Set(
     gridCoupons.filter((c) => c.customer_id).map((c) => c.customer_id)
   ).size;
-  const subDeptCount = new Set(gridCoupons.map((c) => c.sub_department)).size;
+  // Distinct departments, keyed the way the rest of the page groups them —
+  // counting raw ids reports 1 at a company that doesn't number its
+  // departments, since every row carries 0. See utils/subDeptIdentity.
+  const subDeptMode = subDeptKeyMode(gridCoupons);
+  const subDeptCount = new Set(
+    gridCoupons.map((c) => subDeptKeyOf(c, subDeptMode)),
+  ).size;
 
   const kpiStyle =
     "bg-custom-white p-4 rounded-lg shadow-md flex flex-col items-center justify-center font-medium relative";

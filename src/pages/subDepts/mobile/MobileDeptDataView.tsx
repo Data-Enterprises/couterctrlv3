@@ -37,8 +37,8 @@ const MobileDeptDataView = () => {
     dispatch(actions.setSelectedWeekDay(""));
     // null, not 0 — 0 is a real sub department id, so resetting to it leaves
     // SubDeptMobileView's `!= null` guard true and keeps this view mounted
-    // with no data. See selectedSubDeptId in subMarginSlice.
-    if (isResetting) dispatch(actions.setSelectedSubDeptId(null));
+    // with no data. See selectedSubDeptKey in subMarginSlice.
+    if (isResetting) dispatch(actions.setSelectedSubDeptKey(null));
   };
 
   const handleScanView = () => {
@@ -121,7 +121,7 @@ const MobileDeptDataView = () => {
 
   if (ctx.loadingMargins) {
     const deptName =
-      ctx.subDepts.find((d) => d.id === ctx.selectedSubDeptId)?.desc || "";
+      ctx.subDepts.find((d) => d.key === ctx.selectedSubDeptKey)?.desc || "";
     return (
       <div className="relative h-[calc(100vh-3rem)]">
         <LoadingIndicator message={`Loading ${deptName}`} className="" />

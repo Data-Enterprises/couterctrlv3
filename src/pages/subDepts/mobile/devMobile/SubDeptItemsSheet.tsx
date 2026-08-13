@@ -95,10 +95,10 @@ const SubDeptItemsSheet = ({ onBack }: Props) => {
   const itemThreshold = itemThresholdRef.current;
 
   const grade =
-    ctx.selectedSubDeptId != null
-      ? subDeptGrades[ctx.selectedSubDeptId]
+    ctx.selectedSubDeptKey != null
+      ? subDeptGrades[ctx.selectedSubDeptKey]
       : undefined;
-  const subDept = ctx.subDepts.find((sd) => sd.id === ctx.selectedSubDeptId);
+  const subDept = ctx.subDepts.find((sd) => sd.key === ctx.selectedSubDeptKey);
 
   /** The department's week, or the selected day. LW and LY are matched to the
    *  chosen day by position in each period's own date list — the periods can

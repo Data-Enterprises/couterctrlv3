@@ -320,6 +320,11 @@ export const buildStoreRows = (
 // on (CouponDetailPanel allSections.subdept), and the two pages have to bucket
 // identically or their sub dept counts drift apart wherever two ids share a
 // description.
+//
+// Unconditional here, unlike utils/subDeptIdentity, which falls back to the
+// description only where the ids are unusable. Coupons chose the description
+// outright and has always grouped this way, so it already reads correctly at a
+// company that doesn't number its departments.
 export const subDeptKeyOf = (c: CouponItem): string =>
   c.sub_department_description || `Sub dept ${c.sub_department}`;
 

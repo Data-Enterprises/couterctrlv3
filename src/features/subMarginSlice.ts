@@ -83,10 +83,10 @@ interface SubMarginState {
   weekFourMarginsLY: SubDeptMargin[];
   weekFourMarginsLW: SubDeptMargin[];
   filteredMargins: SubDeptMargin[];
-  // null = nothing selected. Must not be 0 — sub_department 0 is a real
-  // department id in the data, and using it as the sentinel made it
-  // unselectable.
-  selectedSubDeptId: number | null;
+  // null = nothing selected. A key, not an id: sub_department 0 is a real
+  // department (and the ONLY one at companies that don't number them), so a
+  // numeric sentinel made it unselectable. See utils/subDeptIdentity.
+  selectedSubDeptKey: string | null;
   /** The day the mobile list and report are both scoped to, or null for the
    *  whole week. In the slice rather than local state so opening a sub dept
    *  keeps whichever day was picked on the list behind it — the same way
@@ -129,7 +129,7 @@ interface SubMarginState {
   unitCostFilter: ThresholdFilter;
   caseCostFilter: ThresholdFilter;
 
-  subDeptGrades: Record<number, SubDeptGrade>;
+  subDeptGrades: Record<string, SubDeptGrade>;
   gradingThreshold: number | null;
   gradingMetric: GradingMetric;
   loadingGrades: boolean;
@@ -176,7 +176,7 @@ const initialState: SubMarginState = {
   weekFourMarginsLY: [],
   weekFourMarginsLW: [],
   filteredMargins: [],
-  selectedSubDeptId: null,
+  selectedSubDeptKey: null,
   selectedDay: null,
   lastFetchedTrendKey: null,
   subDeptFitlerText: "",
@@ -249,8 +249,8 @@ const subMarginSlice = createSlice({
     setFilteredMargins: (state, action: PayloadAction<SubDeptMargin[]>) => {
       state.filteredMargins = action.payload;
     },
-    setSelectedSubDeptId: (state, action: PayloadAction<number | null>) => {
-      state.selectedSubDeptId = action.payload;
+    setSelectedSubDeptKey: (state, action: PayloadAction<string | null>) => {
+      state.selectedSubDeptKey = action.payload;
     },
     setSubMarginSelectedDay: (state, action: PayloadAction<string | null>) => {
       state.selectedDay = action.payload;
@@ -319,12 +319,12 @@ const subMarginSlice = createSlice({
     },
     setSubDeptGrade(
       state,
-      action: PayloadAction<{ id: number; grade: SubDeptGrade }>,
+      action: PayloadAction<{ key: string; grade: SubDeptGrade }>,
     ) {
-      state.subDeptGrades[action.payload.id] = action.payload.grade;
+      state.subDeptGrades[action.payload.key] = action.payload.grade;
     },
     // Switching co-located locations re-grades from cached raw data. The
-    // grades map is keyed by sub dept id, so it has to be emptied first —
+    // grades map is keyed by sub dept, so it has to be emptied first —
     // otherwise depts that only exist at the other location linger in the list.
     resetSubDeptGrades(state) {
       state.subDeptGrades = {};
@@ -360,7 +360,7 @@ const subMarginSlice = createSlice({
       state.weekFourMarginsLY = [];
       state.weekFourMarginsLW = [];
       state.filteredMargins = [];
-      state.selectedSubDeptId = null;
+      state.selectedSubDeptKey = null;
       state.selectedDay = null;
       state.lastFetchedTrendKey = null;
       state.subDeptFitlerText = "";
@@ -591,7 +591,7 @@ export const {
   setLoadingSubDepts,
   setMargins,
   setSearchValue,
-  setSelectedSubDeptId,
+  setSelectedSubDeptKey,
   setSubMarginSelectedDay,
   setLastFetchedTrendKey,
   setSelectedWeek,

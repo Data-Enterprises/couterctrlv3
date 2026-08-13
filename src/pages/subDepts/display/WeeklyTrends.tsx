@@ -12,6 +12,7 @@ import type {
 import { getSubMargins } from "../../../api/subMargins";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { formatDate } from "./widgets";
+import { scopeToSubDept, subDeptKeyMode } from "..";
 
 const WeeklyTrends = () => {
   const toast = useToast();
@@ -76,8 +77,16 @@ const WeeklyTrends = () => {
   };
 
   const getData = (start: string, end: string, week: number) => {
-    const subDeptId = ctx.selectedSubDeptId;
-    if (subDeptId == null) return;
+    const subDeptKey = ctx.selectedSubDeptKey;
+    if (subDeptKey == null) return;
+    // The endpoint filters by department NUMBER, which is 0 for every
+    // department where the company doesn't number them — so the response comes
+    // back carrying all of them and scopeDept narrows it by description. A
+    // pass-through when the id was real and the API already filtered.
+    const subDeptId =
+      ctx.subDepts.find((s) => s.key === subDeptKey)?.id ?? 0;
+    const scopeDept = (rows: SubDeptMargin[]) =>
+      scopeToSubDept(rows, subDeptKey, subDeptKeyMode(rows));
     getSubMargins(
       ctx.url,
       ctx.token,
@@ -126,7 +135,7 @@ const WeeklyTrends = () => {
 
                     // If all pages have been fetched, we can set the margins for the week
                     if (pages.every((p) => p.fetched)) {
-                      dispatch(actions.setWeekTrendMargins({ data: marginData, week }));
+                      dispatch(actions.setWeekTrendMargins({ data: scopeDept(marginData), week }));
                     }
                   }
                 })
@@ -134,7 +143,7 @@ const WeeklyTrends = () => {
             }
           } else {
             // If we only have one page of data total, we can just set the margins for the week
-            dispatch(actions.setWeekTrendMargins({ data: marginData, week }));
+            dispatch(actions.setWeekTrendMargins({ data: scopeDept(marginData), week }));
           }
         }
       })

@@ -13,7 +13,7 @@ import {
   setOrderFilters,
   setOrdersExportModalOpen,
   setSelectedAvailableOrder,
-  setSubIdsFilter,
+  setSubKeysFilter,
   setTypeFilterArr,
   setUniqueSubs,
   type UniqueSub,
@@ -34,6 +34,7 @@ import LoadingIndicator from "../../components/loading/LoadingIndicator";
 import AllOrdersGrid from "./AllOrdersGrid";
 import KpiContainer from "./kpis/KpiContainer";
 import ExportModal from "../../components/modals/ExportModal";
+import { subDeptKeyMode, subDeptKeyOf } from "../../utils/subDeptIdentity";
 // import OrdersTablet from "./tablet/OrdersTablet";
 
 const OrdersLegacy = () => {
@@ -70,7 +71,7 @@ const OrdersLegacy = () => {
     ctx.dispatch(setAvailableOrderTypes([]));
     ctx.dispatch(setSelectedAvailableOrder(null));
     ctx.dispatch(setOrderFilters([]));
-    ctx.dispatch(setSubIdsFilter([]));
+    ctx.dispatch(setSubKeysFilter([]));
 
     const start = formatGoliathDate(ctx.startDate);
     const end = formatGoliathDate(ctx.endDate);
@@ -129,16 +130,20 @@ const OrdersLegacy = () => {
                   };
                 });
 
+                // See Orders.tsx — keyed by description where ids are unusable.
+                const subMode = subDeptKeyMode(j.orders);
                 const subIdsForFilter = [...j.orders].reduce(
                   (acc: UniqueSub[], o) => {
-                    if (!acc.some((a) => a.subId === o.sub_department)) {
+                    const key = subDeptKeyOf(o, subMode);
+                    if (!acc.some((a) => a.key === key)) {
                       acc.push({
                         desc: o.sub_department_description
                           ? o.sub_department_description
                           : "null",
+                        key,
                         subId: o.sub_department,
                         count: [...j.orders].filter(
-                          (f) => f.sub_department === o.sub_department,
+                          (f) => subDeptKeyOf(f, subMode) === key,
                         ).length,
                       });
                     }
@@ -225,7 +230,7 @@ const OrdersLegacy = () => {
         result.includes(o.order_type),
       );
 
-      ctx.dispatch(setSubIdsFilter([]));
+      ctx.dispatch(setSubKeysFilter([]));
       ctx.dispatch(setFilteredOrders(allFiltered));
       ctx.dispatch(setFilteredAvailableOrders(filtered));
     }
@@ -331,7 +336,7 @@ const OrdersLegacy = () => {
                   ctx.dispatch(setTypeFilterArr([]));
                   ctx.dispatch(setFilteredAvailableOrders(ctx.availableOrders));
                   ctx.dispatch(setFilteredOrders(ctx.allOrders));
-                  ctx.dispatch(setSubIdsFilter([]));
+                  ctx.dispatch(setSubKeysFilter([]));
                 }}
               >
                 All Orders

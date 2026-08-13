@@ -27,6 +27,7 @@ import OrdersAvailableScreen from "./OrdersAvailableScreen";
 import OrdersListScreen from "./OrdersListScreen";
 import OrdersLineItemsScreen from "./OrdersLineItemsScreen";
 import OrdersExportSheet from "./OrdersExportSheet";
+import { subDeptKeyMode, subDeptKeyOf } from "../../../utils/subDeptIdentity";
 
 type MobileStep = "available" | "list";
 
@@ -178,12 +179,18 @@ const OrdersMobile = () => {
             return { ...o, e_ret, base_cost, net_cost, weight, casesize, cogs, rev };
           });
 
+          // See Orders.tsx — keyed by description where ids are unusable.
+          const subMode = subDeptKeyMode(ordersWERet);
           const uniqueSubs = ordersWERet.reduce((acc: UniqueSub[], o) => {
-            if (!acc.some((a) => a.subId === o.sub_department)) {
+            const key = subDeptKeyOf(o, subMode);
+            if (!acc.some((a) => a.key === key)) {
               acc.push({
                 desc: o.sub_department_description ?? "null",
+                key,
                 subId: o.sub_department,
-                count: ordersWERet.filter((f) => f.sub_department === o.sub_department).length,
+                count: ordersWERet.filter(
+                  (f) => subDeptKeyOf(f, subMode) === key,
+                ).length,
               });
             }
             return acc;

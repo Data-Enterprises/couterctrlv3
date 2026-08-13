@@ -6,7 +6,7 @@ import {
   setSubDeptThreshold,
   setExportSubDeptName,
   setExportSubDeptItems,
-  setSelectedSubDeptId,
+  setSelectedSubDept,
   setSelectedSubDeptItems,
   setInactiveSubDeptItems,
   setLastFetchedItemsKey,
@@ -22,7 +22,12 @@ import {
   sameWeekDayLastYear,
 } from "../../../utils";
 import { getSubMargins } from "../../../api/subMargins";
-import { scopeToStoreNumber } from "../shared/ledgerUtils";
+import {
+  scopeToStoreNumber,
+  scopeToSubDept,
+  subDeptKeyMode,
+  subDeptKeyOf,
+} from "../shared/ledgerUtils";
 import {
   ExclamationTriangleIcon,
   ExclamationCircleIcon,
@@ -39,6 +44,11 @@ import TextFilter from "../../../components/filters/TextFilter";
 import SelectFilter from "../../../components/filters/SelectFilter";
 
 type DeptRow = {
+  /** Bucket key: the sub department id, or its description at companies that
+   *  don't number their departments. See utils/subDeptIdentity. */
+  key: string;
+  /** Still what getSubMargins is queried with — 0 for every department when the
+   *  company doesn't number them, which is exactly what those rows carry. */
   id: number;
   desc: string;
   tw: number;
@@ -254,9 +264,10 @@ const PopupSubDeptList = ({
     (state) => state.salesLedger.gradingMetric,
   );
   const isQty = gradingMetric === "qty";
-  const selectedId = useAppSelector(
-    (state) => state.salesLedger.selectedSubDeptId,
+  const selectedDept = useAppSelector(
+    (state) => state.salesLedger.selectedSubDept,
   );
+  const selectedKey = selectedDept?.key ?? null;
   const items = useAppSelector(
     (state) => state.salesLedger.selectedSubDeptItems,
   );
@@ -324,10 +335,10 @@ const PopupSubDeptList = ({
 
   useEffect(() => {
     setItemSevFilter("all");
-  }, [selectedId]);
+  }, [selectedKey]);
 
   useEffect(() => {
-    if (selectedId === null) {
+    if (selectedDept === null) {
       dispatch(setSelectedSubDeptItems([]));
       dispatch(setInactiveSubDeptItems([]));
       // The cache key below means "these items are already in Redux", so it
@@ -342,7 +353,7 @@ const PopupSubDeptList = ({
     // Remounting with items already fetched for this exact store+sub
     // dept+day (e.g. navigating away and back) shouldn't refire the
     // request — Redux still has it, only the component tree was torn down.
-    const itemsKey = `${storeId}__${storeNumber}_${selectedId}_${selectedDate ?? "all"}`;
+    const itemsKey = `${storeId}__${storeNumber}_${selectedDept.key}_${selectedDate ?? "all"}`;
     if (lastFetchedItemsKey === itemsKey) return;
 
     const twEnd = formatGoliathDate(search.singleDate);
@@ -379,7 +390,7 @@ const PopupSubDeptList = ({
           getSubMargins(
             context.url,
             context.token,
-            selectedId,
+            selectedDept.id,
             tyStart,
             tyEnd,
             0,
@@ -389,7 +400,7 @@ const PopupSubDeptList = ({
           getSubMargins(
             context.url,
             context.token,
-            selectedId,
+            selectedDept.id,
             lwDayStart,
             lwDayEnd,
             0,
@@ -399,7 +410,7 @@ const PopupSubDeptList = ({
           getSubMargins(
             context.url,
             context.token,
-            selectedId,
+            selectedDept.id,
             lyDayStart,
             lyDayEnd,
             0,
@@ -409,18 +420,23 @@ const PopupSubDeptList = ({
         ]);
         if (cancelled) return;
 
+        // When departments aren't numbered, the request above could only ask
+        // for id 0 — the one id these rows have — so it comes back carrying
+        // every department and the description is what separates them.
+        // scopeToSubDept is a pass-through in the numbered case, where the API
+        // already filtered.
+        const scope = (rows: SubDeptMargin[]) =>
+          scopeToSubDept(
+            scopeToStoreNumber(rows, storeNumber),
+            selectedDept.key,
+            subDeptKeyMode(rows),
+          );
         const tyItems: SubDeptMargin[] =
-          tyResp.data?.error === 0
-            ? scopeToStoreNumber(tyResp.data.subs, storeNumber)
-            : [];
+          tyResp.data?.error === 0 ? scope(tyResp.data.subs) : [];
         let lwItems: SubDeptMargin[] =
-          lwResp.data?.error === 0
-            ? scopeToStoreNumber(lwResp.data.subs, storeNumber)
-            : [];
+          lwResp.data?.error === 0 ? scope(lwResp.data.subs) : [];
         let lyItems: SubDeptMargin[] =
-          lyResp.data?.error === 0
-            ? scopeToStoreNumber(lyResp.data.subs, storeNumber)
-            : [];
+          lyResp.data?.error === 0 ? scope(lyResp.data.subs) : [];
 
         // Whole-week case: the fetched LW/LY rows can include days that
         // don't actually correspond to any day in this TW week — filter down
@@ -505,7 +521,7 @@ const PopupSubDeptList = ({
       cancelled = true;
     };
   }, [
-    selectedId,
+    selectedDept,
     selectedDate,
     search.singleDate,
     context.url,
@@ -515,11 +531,18 @@ const PopupSubDeptList = ({
   ]);
 
   const rows = useMemo((): DeptRow[] => {
+    // How a department is identified in THIS week's data. Taken from the
+    // current period rather than all three: a company that has only just
+    // started sending unnumbered rows still has last year's numbered ones, and
+    // letting those decide would collapse this week into a single "0" bucket.
+    // LW and LY are then bucketed the same way so the comparisons line up.
+    const mode = subDeptKeyMode(subSales);
+
     const buildMap = (src: typeof subSales) =>
       src.reduce(
         (
           acc: Record<
-            number,
+            string,
             {
               net: number;
               qty: number;
@@ -531,8 +554,9 @@ const PopupSubDeptList = ({
           >,
           s,
         ) => {
-          if (!acc[s.sub_department])
-            acc[s.sub_department] = {
+          const key = subDeptKeyOf(s, mode);
+          if (!acc[key])
+            acc[key] = {
               net: 0,
               qty: 0,
               digital: 0,
@@ -540,12 +564,12 @@ const PopupSubDeptList = ({
               elecStore: 0,
               storeCpn: 0,
             };
-          acc[s.sub_department].net += s.total_sales - s.total_tax;
-          acc[s.sub_department].qty += s.qty;
-          acc[s.sub_department].digital += s.digital_coupons;
-          acc[s.sub_department].elecInstore += s.elec_instore_coupons;
-          acc[s.sub_department].elecStore += s.elec_store_coupons;
-          acc[s.sub_department].storeCpn += s.store_coupon;
+          acc[key].net += s.total_sales - s.total_tax;
+          acc[key].qty += s.qty;
+          acc[key].digital += s.digital_coupons;
+          acc[key].elecInstore += s.elec_instore_coupons;
+          acc[key].elecStore += s.elec_store_coupons;
+          acc[key].storeCpn += s.store_coupon;
           return acc;
         },
         {},
@@ -557,8 +581,9 @@ const PopupSubDeptList = ({
     const twMap = subSales.reduce(
       (
         acc: Record<
-          number,
+          string,
           {
+            id: number;
             desc: string;
             net: number;
             qty: number;
@@ -570,8 +595,10 @@ const PopupSubDeptList = ({
         >,
         s,
       ) => {
-        if (!acc[s.sub_department]) {
-          acc[s.sub_department] = {
+        const key = subDeptKeyOf(s, mode);
+        if (!acc[key]) {
+          acc[key] = {
+            id: Number(s.sub_department) || 0,
             desc: s.sub_department_description,
             net: 0,
             qty: 0,
@@ -581,28 +608,28 @@ const PopupSubDeptList = ({
             storeCpn: 0,
           };
         }
-        acc[s.sub_department].net += s.total_sales - s.total_tax;
-        acc[s.sub_department].qty += s.qty;
-        acc[s.sub_department].digital += s.digital_coupons;
-        acc[s.sub_department].elecInstore += s.elec_instore_coupons;
-        acc[s.sub_department].elecStore += s.elec_store_coupons;
-        acc[s.sub_department].storeCpn += s.store_coupon;
+        acc[key].net += s.total_sales - s.total_tax;
+        acc[key].qty += s.qty;
+        acc[key].digital += s.digital_coupons;
+        acc[key].elecInstore += s.elec_instore_coupons;
+        acc[key].elecStore += s.elec_store_coupons;
+        acc[key].storeCpn += s.store_coupon;
         return acc;
       },
       {},
     );
 
     return Object.entries(twMap)
-      .map(([id, r]) => {
-        const numId = Number(id);
-        const lw = lwMap[numId];
-        const ly = lyMap[numId];
+      .map(([key, r]) => {
+        const lw = lwMap[key];
+        const ly = lyMap[key];
         const lwNet = lw?.net ?? 0;
         const lyNet = ly?.net ?? 0;
         const lwQty = lw?.qty ?? 0;
         const lyQty = ly?.qty ?? 0;
         return {
-          id: numId,
+          key,
+          id: r.id,
           desc: r.desc,
           tw: r.net,
           lw: lwNet,
@@ -678,8 +705,8 @@ const PopupSubDeptList = ({
     : visible;
 
   const selected =
-    selectedId !== null
-      ? (rows.find((r) => r.id === selectedId) ?? null)
+    selectedKey !== null
+      ? (rows.find((r) => r.key === selectedKey) ?? null)
       : null;
   const cta = selected ? getCta(selected, threshold, gradingMetric) : null;
 
@@ -705,7 +732,7 @@ const PopupSubDeptList = ({
   useEffect(() => {
     dispatch(setExportSubDeptName(selected?.desc ?? ""));
     dispatch(setExportSubDeptItems(selected ? itemsWithSev : []));
-  }, [itemsWithSev, selectedId]);
+  }, [itemsWithSev, selectedKey]);
 
   const itemCritCount = itemsWithSev.filter((i) => i.sev === "critical").length;
   const itemWatchCount = itemsWithSev.filter((i) => i.sev === "watch").length;
@@ -898,12 +925,16 @@ const PopupSubDeptList = ({
               const sev = deptSeverity(r, threshold, gradingMetric);
               const rowVsLWPct = isQty ? r.vsLWQtyPct : r.vsLWPct;
               const rowVsLYPct = isQty ? r.vsLYQtyPct : r.vsLYPct;
-              const isSel = selectedId === r.id;
+              const isSel = selectedKey === r.key;
               return (
                 <button
-                  key={r.id}
+                  key={r.key}
                   onClick={() =>
-                    dispatch(setSelectedSubDeptId(isSel ? null : r.id))
+                    dispatch(
+                      setSelectedSubDept(
+                        isSel ? null : { key: r.key, id: r.id },
+                      ),
+                    )
                   }
                   className={`w-full flex items-center gap-2.5 p-3 text-left transition-colors border-l-2 border-b border-b-[#1e2a4a]/15 ${
                     isSel

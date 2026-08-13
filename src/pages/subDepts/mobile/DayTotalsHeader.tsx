@@ -26,7 +26,7 @@ const TotalsHeader = ({ barData }: TotalsHeaderProps) => {
   };
 
   const findSubDeptName = () => {
-    const subDept = ctx.subDepts.find((s) => s.id === ctx.selectedSubDeptId);
+    const subDept = ctx.subDepts.find((s) => s.key === ctx.selectedSubDeptKey);
     return subDept ? subDept.desc : "";
   };
 

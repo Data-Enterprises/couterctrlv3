@@ -22,10 +22,10 @@ const SubDepts = ({ height }: SubDeptsProps) => {
     dispatch(actions.setSubDeptFilterText(x));
   };
 
-  const handleSubDeptClick = (id: number) => {
+  const handleSubDeptClick = (key: string) => {
     const subs = [...ctx.subDepts];
     dispatch(actions.requerySubDeptMargins());
-    dispatch(actions.setSelectedSubDeptId(id));
+    dispatch(actions.setSelectedSubDeptKey(key));
     dispatch(actions.setSubDepts(subs));
   };
 
@@ -50,9 +50,9 @@ const SubDepts = ({ height }: SubDeptsProps) => {
       <div className={`grid grid-cols-2 gap-2 ${height} rounded-lg overflow-hidden overflow-y-auto no-scrollbar`}>
         {filteredSubDepts.map((sub) => (
           <div
-            key={sub.id}
-            className={`${ctx.selectedSubDeptId === sub.id ? "bg-orange-200" : "bg-custom-white"} p-2 rounded-lg shadow-lg text-[13px] text-center hover:bg-blue-200 cursor-pointer transition-all duration-200`}
-            onClick={() => handleSubDeptClick(sub.id)}
+            key={sub.key}
+            className={`${ctx.selectedSubDeptKey === sub.key ? "bg-orange-200" : "bg-custom-white"} p-2 rounded-lg shadow-lg text-[13px] text-center hover:bg-blue-200 cursor-pointer transition-all duration-200`}
+            onClick={() => handleSubDeptClick(sub.key)}
           >
             {sub.desc}
           </div>

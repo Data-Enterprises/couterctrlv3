@@ -3,6 +3,11 @@ import { useState, useEffect } from "react";
 import { useAppDispatch } from "../../../hooks";
 import type { TopSub } from "../components";
 import type { SubGridRow } from "../../../interfaces";
+import { subDeptKeyMode, subDeptKeyOf } from "../../../utils/subDeptIdentity";
+
+/** SubGridRow plus the bucket key it was grouped under — the id, or the
+ *  description at companies that don't number their departments. */
+type SubGridRowKeyed = SubGridRow & { subDeptKey: string };
 import { useSalesActions } from "../hooks/useSalesActions";
 import { formatCurrency2, formatBigNumber } from "../../../utils";
 import { couponSalePct } from "../../../functions";
@@ -11,7 +16,9 @@ const SubDeptGridTablet = () => {
   const dispatch = useAppDispatch();
   const actions = useSalesActions();
   const { subSales, selectedSubDept, subSalesWk3 } = useSalesState();
-  const [groupSubs, setGroupSubs] = useState<SubGridRow[]>([]);
+  const [groupSubs, setGroupSubs] = useState<SubGridRowKeyed[]>([]);
+  // Also needed in render: the "Dept 12" caption is noise when every id is 0.
+  const mode = subDeptKeyMode(subSales);
 
   useEffect(() => {
     if (groupSubs.length) {
@@ -33,9 +40,11 @@ const SubDeptGridTablet = () => {
   }, [groupSubs]);
 
   useEffect(() => {
-    const getLastYrSales = (subDeptId: number) => {
+    // Identity comes from the period on screen; last year is bucketed the same
+    // way so its totals land on the matching row. See utils/subDeptIdentity.
+    const getLastYrSales = (key: string) => {
       return subSalesWk3
-        .filter((s) => s.sub_department === subDeptId)
+        .filter((s) => subDeptKeyOf(s, mode) === key)
         .reduce(
           (acc: number, curr) => (acc += curr.total_sales - curr.total_tax),
           0,
@@ -43,10 +52,9 @@ const SubDeptGridTablet = () => {
     };
 
     const grouped = () => {
-      return [...subSales].reduce((acc: SubGridRow[], curr) => {
-        const exists = acc.find(
-          (d) => d.sub_department === curr.sub_department,
-        );
+      return [...subSales].reduce((acc: SubGridRowKeyed[], curr) => {
+        const key = subDeptKeyOf(curr, mode);
+        const exists = acc.find((d) => d.subDeptKey === key);
         if (exists) {
           exists.total_sales += curr.total_sales;
           exists.net_sales += curr.net_sales;
@@ -58,8 +66,8 @@ const SubDeptGridTablet = () => {
           exists.weight += curr.weight;
           exists.total_tax += curr.total_tax;
         } else {
-          const lastYrSales = getLastYrSales(curr.sub_department);
-          acc.push({ ...curr, lastYrSales: lastYrSales });
+          const lastYrSales = getLastYrSales(key);
+          acc.push({ ...curr, subDeptKey: key, lastYrSales });
         }
         return acc;
       }, []);
@@ -69,7 +77,8 @@ const SubDeptGridTablet = () => {
   }, [subSales, subSalesWk3]);
 
   const handleSelect = (subDept: string | number) => {
-    const d = groupSubs.find((s) => s.sub_department === Number(subDept));
+    const d = groupSubs.find((s) => s.subDeptKey === String(subDept));
+    if (!d) return;
     if (!d) return;
 
     const selected: TopSub = {
@@ -104,12 +113,13 @@ const SubDeptGridTablet = () => {
           <tbody>
             {groupSubs.map((row) => {
               const active =
-                selectedSubDept?.sub_department === row.sub_department;
+                selectedSubDept != null &&
+                subDeptKeyOf(selectedSubDept, mode) === row.subDeptKey;
 
               return (
                 <tr
-                  key={row.sub_department}
-                  onClick={() => handleSelect(row.sub_department)}
+                  key={row.subDeptKey}
+                  onClick={() => handleSelect(row.subDeptKey)}
                   className={`cursor-pointer border-t border-content/60 transition-colors ${
                     active ? "bg-blue-200/50" : ""
                   }`}
@@ -119,9 +129,11 @@ const SubDeptGridTablet = () => {
                       <span className="text-sm font-medium text-content">
                         {row.sub_department_description}
                       </span>
-                      <span className="text-[11px] text-content/60">
-                        Dept {row.sub_department}
-                      </span>
+                      {mode === "id" && (
+                        <span className="text-[11px] text-content/60">
+                          Dept {row.sub_department}
+                        </span>
+                      )}
                     </div>
                   </td>
                   <td className="px-3 py-2 text-right text-sm font-medium tabular-nums text-content">

@@ -1,6 +1,21 @@
 import { sameWeekDayLastYear } from "../../utils";
 import type { MarginTier, SubDeptGrade, GradingMetric } from "../../features/subMarginSlice";
 import type { SubDeptMargin, SubSale } from "../../interfaces";
+import {
+  subDeptKeyOf,
+  type SubDeptKeyMode,
+} from "../../utils/subDeptIdentity";
+
+// Sub department identity is shared with Sales, Orders and Coupons — the four
+// pages have to bucket departments the same way. Re-exported so this page's
+// many call sites keep importing from one place.
+export {
+  subDeptKeyMode,
+  subDeptKeyOf,
+  distinctSubDepts,
+  scopeToSubDept,
+  type SubDeptKeyMode,
+} from "../../utils/subDeptIdentity";
 
 export const setDates = (date: Date, days: number = 0) => {
   const d = new Date(date);
@@ -171,12 +186,14 @@ export const computeStoreDayMatched = (
  * subs/subs is still used for margin, since it's the only source with cost. */
 export const aggSubDeptSales = (
   rows: SubSale[],
-): Record<number, SubDeptSalesTotals> =>
-  rows.reduce((acc: Record<number, SubDeptSalesTotals>, s) => {
-    const cur = acc[s.sub_department] ?? { net: 0, qty: 0 };
+  mode: SubDeptKeyMode,
+): Record<string, SubDeptSalesTotals> =>
+  rows.reduce((acc: Record<string, SubDeptSalesTotals>, s) => {
+    const key = subDeptKeyOf(s, mode);
+    const cur = acc[key] ?? { net: 0, qty: 0 };
     cur.net += s.total_sales - s.total_tax;
     cur.qty += s.qty;
-    acc[s.sub_department] = cur;
+    acc[key] = cur;
     return acc;
   }, {});
 

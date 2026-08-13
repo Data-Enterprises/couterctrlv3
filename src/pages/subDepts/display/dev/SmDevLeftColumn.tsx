@@ -23,13 +23,13 @@ const SmDevLeftColumn = ({ onSearchOpen }: Props) => {
   const dispatch = useAppDispatch();
   const actions = useSubMarginActions();
   const [legendHover, setLegendHover] = useState(false);
-  const hasSubDept = ctx.selectedSubDeptId != null;
+  const hasSubDept = ctx.selectedSubDeptKey != null;
 
   const storeName =
     ctx.assignedStores.find((s) => s.storeid === ctx.searchValue)?.store_name ??
     "";
   const subDeptName =
-    ctx.subDepts.find((s) => s.id === ctx.selectedSubDeptId)?.desc ?? "";
+    ctx.subDepts.find((s) => s.key === ctx.selectedSubDeptKey)?.desc ?? "";
 
   const periodEnd = ctx.singleDate
     ? formatDate(setDates(new Date(ctx.singleDate), 0))
@@ -60,14 +60,13 @@ const SmDevLeftColumn = ({ onSearchOpen }: Props) => {
 
   const subDeptOptions = ctx.subDepts.map((s) => ({
     label: s.desc,
-    value: String(s.id),
+    value: s.key,
   }));
 
   const handleSubDeptChange = (val: string) => {
-    const id = Number(val);
     const subs = [...ctx.subDepts];
     dispatch(actions.requerySubDeptMargins());
-    dispatch(actions.setSelectedSubDeptId(id));
+    dispatch(actions.setSelectedSubDeptKey(val));
     dispatch(actions.setSubDepts(subs));
   };
 
@@ -181,7 +180,7 @@ const SmDevLeftColumn = ({ onSearchOpen }: Props) => {
       <div className="px-3 py-2 border-b border-gray-100 bg-gray-50/60 flex items-center gap-2 flex-shrink-0">
         <SelectFilter
           options={subDeptOptions}
-          value={ctx.selectedSubDeptId != null ? String(ctx.selectedSubDeptId) : ""}
+          value={ctx.selectedSubDeptKey != null ? String(ctx.selectedSubDeptKey) : ""}
           onChange={handleSubDeptChange}
           placeholder="Select sub department"
           className="flex-1"

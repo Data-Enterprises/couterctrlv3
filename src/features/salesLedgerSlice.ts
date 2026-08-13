@@ -9,6 +9,10 @@ export type LedgerTab = "subdept" | "hourly" | "category";
 export type SevFilter = "all" | "critical" | "watch" | "healthy";
 export type OpenSheetType = "subdept" | "hourly" | null;
 
+/** A sub department the user has drilled into. `key` identifies it on screen,
+ *  `id` is what the margins endpoint takes — see utils/subDeptIdentity. */
+export type SelectedSubDept = { key: string; id: number };
+
 export type Top10Item = {
   productCode: string;
   upc: string;
@@ -78,7 +82,11 @@ interface SalesLedgerState {
   exportSubDeptItems: ExportSubDeptItem[];
 
   // Popup row selections — persist across tab switches, reset on new store
-  selectedSubDeptId: number | null;
+  /** The sub department the popup is drilled into. Both halves travel together:
+   *  `key` is what buckets rows on screen, `id` is what the margins endpoint is
+   *  queried with — and when the company doesn't number its departments those
+   *  are different values (id is 0 for all of them). */
+  selectedSubDept: SelectedSubDept | null;
   selectedSubDeptItems: Top10Item[];
   // Items that sold LW and/or LY but not at all this week, for the same
   // sub dept/day selection — surfaced via the item list's Active/Inactive
@@ -99,6 +107,11 @@ interface SalesLedgerState {
   reportSevFilter: SevFilter;
   openSheetType: OpenSheetType;
   openSheetId: number | null;
+  /** Sub department bucket key for the open sheet — the id as a string, or the
+   *  description at companies that don't number their departments. openSheetId
+   *  stays numeric because the hourly sheet keys on the hour and because the
+   *  margins endpoint is still queried by id. See utils/subDeptIdentity. */
+  openSheetKey: string | null;
 }
 
 const initialState: SalesLedgerState = {
@@ -122,7 +135,7 @@ const initialState: SalesLedgerState = {
   top10: [],
   exportSubDeptName: "",
   exportSubDeptItems: [],
-  selectedSubDeptId: null,
+  selectedSubDept: null,
   selectedSubDeptItems: [],
   inactiveSubDeptItems: [],
   selectedHour: null,
@@ -139,6 +152,7 @@ const initialState: SalesLedgerState = {
   reportSevFilter: "all",
   openSheetType: null,
   openSheetId: null,
+  openSheetKey: null,
 };
 
 const salesLedgerSlice = createSlice({
@@ -208,8 +222,11 @@ const salesLedgerSlice = createSlice({
     setExportSubDeptItems: (state, action: PayloadAction<ExportSubDeptItem[]>) => {
       state.exportSubDeptItems = action.payload;
     },
-    setSelectedSubDeptId: (state, action: PayloadAction<number | null>) => {
-      state.selectedSubDeptId = action.payload;
+    setSelectedSubDept: (
+      state,
+      action: PayloadAction<SelectedSubDept | null>,
+    ) => {
+      state.selectedSubDept = action.payload;
     },
     setSelectedSubDeptItems: (state, action: PayloadAction<Top10Item[]>) => {
       state.selectedSubDeptItems = action.payload;
@@ -227,7 +244,7 @@ const salesLedgerSlice = createSlice({
       state.lastFetchedItemsKey = action.payload;
     },
     clearPopupSelections: (state) => {
-      state.selectedSubDeptId = null;
+      state.selectedSubDept = null;
       state.selectedSubDeptItems = [];
       state.inactiveSubDeptItems = [];
       state.selectedHour = null;
@@ -263,15 +280,22 @@ const salesLedgerSlice = createSlice({
     },
     openSheet: (
       state,
-      action: PayloadAction<{ type: "subdept" | "hourly"; id: number }>,
+      action: PayloadAction<{
+        type: "subdept" | "hourly";
+        id: number;
+        /** Omitted by the hourly sheet, where the hour is the whole identity. */
+        key?: string;
+      }>,
     ) => {
       state.openSheetType = action.payload.type;
       state.openSheetId = action.payload.id;
+      state.openSheetKey = action.payload.key ?? String(action.payload.id);
       state.top10 = [];
     },
     closeSheet: (state) => {
       state.openSheetType = null;
       state.openSheetId = null;
+      state.openSheetKey = null;
       state.top10 = [];
     },
     resetLedger: (state) => {
@@ -293,7 +317,7 @@ const salesLedgerSlice = createSlice({
       state.top10 = [];
       state.exportSubDeptName = "";
       state.exportSubDeptItems = [];
-      state.selectedSubDeptId = null;
+      state.selectedSubDept = null;
       state.selectedSubDeptItems = [];
       state.inactiveSubDeptItems = [];
       state.selectedHour = null;
@@ -304,6 +328,7 @@ const salesLedgerSlice = createSlice({
       state.reportSevFilter = "all";
       state.openSheetType = null;
       state.openSheetId = null;
+      state.openSheetKey = null;
     },
     // Navigate to store report (mobile)
     navigateToReport: (state, action: PayloadAction<StoreSelection>) => {
@@ -314,6 +339,7 @@ const salesLedgerSlice = createSlice({
       state.reportSevFilter = "all";
       state.openSheetType = null;
       state.openSheetId = null;
+      state.openSheetKey = null;
       state.top10 = [];
     },
     // Go back to list (mobile)
@@ -322,6 +348,7 @@ const salesLedgerSlice = createSlice({
       state.selection = null;
       state.openSheetType = null;
       state.openSheetId = null;
+      state.openSheetKey = null;
       state.top10 = [];
     },
   },
@@ -349,7 +376,7 @@ export const {
   setTop10,
   setExportSubDeptName,
   setExportSubDeptItems,
-  setSelectedSubDeptId,
+  setSelectedSubDept,
   setSelectedSubDeptItems,
   setInactiveSubDeptItems,
   setSelectedHour,

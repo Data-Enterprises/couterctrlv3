@@ -4,6 +4,10 @@ import type { AllOrder, AvailableOrder } from "../interfaces";
 export type OrderStatus = "open" | "closed" | "";
 export type UniqueSub = {
   desc: string;
+  /** Bucket key: the sub department id, or the description at companies that
+   *  don't number their departments — see utils/subDeptIdentity. Without it
+   *  every order collapses into one "0" chip. */
+  key: string;
   subId: number;
   count: number;
 }
@@ -62,7 +66,7 @@ interface OrdersState {
   filteredAvailableOrders: AvailableOrder[];
   typeFilterArr: string[];
   orderStatusFilter: OrderStatus;
-  subIdsFilter: number[];
+  subKeysFilter: string[];
   uniqueSubs: UniqueSub[];
 }
 
@@ -85,7 +89,7 @@ const initialState: OrdersState = {
   filteredAvailableOrders: [],
   typeFilterArr: [],
   orderStatusFilter: "",
-  subIdsFilter: [],
+  subKeysFilter: [],
   uniqueSubs: [],
 };
 
@@ -169,8 +173,8 @@ const ordersSlice = createSlice({
     setOrderStatusFilter: (state, action: PayloadAction<OrderStatus>) => {
       state.orderStatusFilter = action.payload;
     },
-    setSubIdsFilter: (state, action: PayloadAction<number[]>) => {
-      state.subIdsFilter = action.payload;
+    setSubKeysFilter: (state, action: PayloadAction<string[]>) => {
+      state.subKeysFilter = action.payload;
     },
     setUniqueSubs: (state, action: PayloadAction<UniqueSub[]>) => {
       state.uniqueSubs = action.payload;
@@ -199,7 +203,7 @@ export const {
   setFilteredAvailableOrders,
   setTypeFilterArr,
   setOrderStatusFilter,
-  setSubIdsFilter,
+  setSubKeysFilter,
   setUniqueSubs,
 } = ordersSlice.actions;
 export default ordersSlice.reducer;

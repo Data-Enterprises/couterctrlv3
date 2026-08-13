@@ -2,6 +2,7 @@ import { themeQuartz, type ColDef, type ColGroupDef } from "ag-grid-community";
 import type { SubGridRow, SubSale } from "../../../interfaces";
 import { formatBigNumber, formatCurrency2 } from "../../../utils";
 import { couponSalePct } from "../../../functions";
+import { subDeptKeyMode, subDeptKeyOf } from "../../../utils/subDeptIdentity";
 import { useAppSelector } from "../../../hooks";
 
 export interface TopSub {
@@ -18,8 +19,12 @@ export interface TopSub {
 }
 
 export const reduceSubs = (data: SubSale[]): TopSub[] => {
+  // Departments are identified by id, or by description at companies that
+  // don't number them — see utils/subDeptIdentity.
+  const mode = subDeptKeyMode(data);
   const result = [...data].reduce((acc: TopSub[], curr) => {
-    const exists = acc.find((d) => d.sub_department === curr.sub_department);
+    const key = subDeptKeyOf(curr, mode);
+    const exists = acc.find((d) => subDeptKeyOf(d, mode) === key);
     if (exists) {
       exists.total_sales += curr.total_sales;
       exists.net_sales += curr.net_sales;

@@ -7,6 +7,7 @@ import VendorDistribution from "./VendorDistribution";
 import { defaultSummary, type TotalsSummary } from "./index";
 import type { PieData } from "../../sales/mobile";
 import { getCogs } from "..";
+import { subDeptKeyMode, subDeptKeyOf } from "../../../utils/subDeptIdentity";
 
 const orderTypes = ["PER", "DAM", "DMG", "INV"];
 
@@ -23,9 +24,13 @@ const KpiContainer = () => {
         const statusCheck = o.status
           .toLowerCase()
           .includes(ctx.orderStatusFilter);
+        // Same keying the chips use, off the same source set — see
+        // AllOrdersGrid and utils/subDeptIdentity.
         const subIdCheck =
-          ctx.subIdsFilter.length === 0 ||
-          ctx.subIdsFilter.includes(o.sub_department);
+          ctx.subKeysFilter.length === 0 ||
+          ctx.subKeysFilter.includes(
+            subDeptKeyOf(o, subDeptKeyMode(ctx.allOrders)),
+          );
         return statusCheck && subIdCheck;
       });
 
@@ -115,7 +120,7 @@ const KpiContainer = () => {
     } else {
       setSummary(defaultSummary);
     }
-  }, [ctx.filteredOrders, ctx.subIdsFilter]);
+  }, [ctx.filteredOrders, ctx.subKeysFilter]);
 
   if (!ctx.filteredOrders.length) return null;
 

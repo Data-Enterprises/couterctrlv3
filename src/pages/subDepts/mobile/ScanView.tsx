@@ -57,7 +57,7 @@ const ScanView = ({ dates }: ScanViewProps) => {
     }
   }, [ctx.viewDaily]);
 
-  const subDept = ctx.subDepts.find((s) => s.id === ctx.selectedSubDeptId);
+  const subDept = ctx.subDepts.find((s) => s.key === ctx.selectedSubDeptKey);
 
   const handleScan = (upc: string) => {
     setMsg("");

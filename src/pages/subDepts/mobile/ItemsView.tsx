@@ -145,7 +145,7 @@ const ItemsView = ({ barData }: ItemsViewProps) => {
     dispatch(actions.setMobileSort({ option }));
   };
 
-  const subDept = ctx.subDepts.find((s) => s.id === ctx.selectedSubDeptId);
+  const subDept = ctx.subDepts.find((s) => s.key === ctx.selectedSubDeptKey);
 
   const handleUpcSearchText = (value: string) => {
     dispatch(actions.setUpcSearch(value));

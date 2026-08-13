@@ -21,7 +21,7 @@ const SmDevRightPanel = () => {
   const actions = useSubMarginActions();
 
   const subDeptName =
-    ctx.subDepts.find((s) => s.id === ctx.selectedSubDeptId)?.desc ?? "";
+    ctx.subDepts.find((s) => s.key === ctx.selectedSubDeptKey)?.desc ?? "";
 
   const weekHeader = () => {
     if (ctx.selectedWeek === 5) return "All Weeks";
@@ -174,7 +174,7 @@ const SmDevRightPanel = () => {
     : [];
 
   // No sub dept selected yet
-  if (ctx.selectedSubDeptId == null) {
+  if (ctx.selectedSubDeptKey == null) {
     return (
       <div className="flex-1 min-w-0 shadow-lg">
         <div className="bg-custom-white rounded-xl shadow-sm overflow-hidden flex flex-col h-full items-center justify-center gap-2">

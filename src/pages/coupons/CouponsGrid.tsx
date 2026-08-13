@@ -142,7 +142,12 @@ const CouponsGrid = () => {
               <div className="truncate">{c.product_code ? c.product_code.split(".")[0] : ""}</div>
               <div className="truncate">{c.cashier_name}</div>
               <div className="truncate">{c.customer_id ? c.customer_id.split(".")[0] : "No Customer"}</div>
-              <div className="truncate text-right">{c.sub_department}</div>
+              {/* The description, not the id: it's what every other coupon
+                  view groups on, and the id is 0 for every row at a company
+                  that doesn't number its departments. */}
+              <div className="truncate text-right">
+                {c.sub_department_description || c.sub_department}
+              </div>
             </div>
           ))}
         </div>

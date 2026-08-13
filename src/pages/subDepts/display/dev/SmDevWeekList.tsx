@@ -15,6 +15,7 @@ import type {
   SubMarginsJsonResp,
 } from "../../../../interfaces";
 import type { MarginWeek } from "../../../../features/subMarginSlice";
+import { scopeToSubDept, subDeptKeyMode } from "../..";
 
 const SmDevWeekList = () => {
   const toast = useToast();
@@ -45,8 +46,16 @@ const SmDevWeekList = () => {
   const getData = (start: string, end: string, week: number) => {
     // Captured once — narrowing is lost inside the nested pagination
     // callbacks below.
-    const subDeptId = ctx.selectedSubDeptId;
-    if (subDeptId == null) return;
+    const subDeptKey = ctx.selectedSubDeptKey;
+    if (subDeptKey == null) return;
+    // The endpoint filters by department NUMBER, which is 0 for every
+    // department where the company doesn't number them — so the response comes
+    // back carrying all of them and scopeDept narrows it by description. A
+    // pass-through when the id was real and the API already filtered.
+    const subDeptId =
+      ctx.subDepts.find((s) => s.key === subDeptKey)?.id ?? 0;
+    const scopeDept = (rows: SubDeptMargin[]) =>
+      scopeToSubDept(rows, subDeptKey, subDeptKeyMode(rows));
     setLoading(week, true);
     getSubMargins(
       ctx.url,
@@ -98,7 +107,7 @@ const SmDevWeekList = () => {
                 });
             }
           } else {
-            dispatch(actions.setWeekTrendMargins({ data: marginData, week }));
+            dispatch(actions.setWeekTrendMargins({ data: scopeDept(marginData), week }));
             setLoading(week, false);
           }
         }
@@ -110,8 +119,16 @@ const SmDevWeekList = () => {
   };
 
   const getDataLY = (start: string, end: string, week: number) => {
-    const subDeptId = ctx.selectedSubDeptId;
-    if (subDeptId == null) return;
+    const subDeptKey = ctx.selectedSubDeptKey;
+    if (subDeptKey == null) return;
+    // The endpoint filters by department NUMBER, which is 0 for every
+    // department where the company doesn't number them — so the response comes
+    // back carrying all of them and scopeDept narrows it by description. A
+    // pass-through when the id was real and the API already filtered.
+    const subDeptId =
+      ctx.subDepts.find((s) => s.key === subDeptKey)?.id ?? 0;
+    const scopeDept = (rows: SubDeptMargin[]) =>
+      scopeToSubDept(rows, subDeptKey, subDeptKeyMode(rows));
     setLoadingLY(week, true);
     getSubMargins(
       ctx.url,
@@ -166,7 +183,7 @@ const SmDevWeekList = () => {
                 });
             }
           } else {
-            dispatch(actions.setWeekTrendMarginsLY({ data: marginData, week }));
+            dispatch(actions.setWeekTrendMarginsLY({ data: scopeDept(marginData), week }));
             setLoadingLY(week, false);
           }
         }
@@ -179,7 +196,7 @@ const SmDevWeekList = () => {
 
   // Auto-fetch all 4 TW weeks + all 4 LY weeks when sub dept is selected
   useEffect(() => {
-    if (ctx.selectedSubDeptId == null) return;
+    if (ctx.selectedSubDeptKey == null) return;
     // TW weeks
     if (!ctx.weekOneMargins.length) getData(params.start, params.end, 1);
     if (!ctx.weekTwoMargins.length) {
@@ -232,7 +249,7 @@ const SmDevWeekList = () => {
         4,
       );
     }
-  }, [ctx.selectedSubDeptId]);
+  }, [ctx.selectedSubDeptKey]);
 
   const handleWeekClick = (week: MarginWeek) => {
     dispatch(actions.setLoadingMargins(true));

@@ -8,10 +8,17 @@ import { useAppDispatch, useAppSelector } from "../../../../hooks";
 import { useSubMarginActions } from "../../hooks/useSubMarginActions";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 import { getSubDepts, getSubMargins } from "../../../../api/subMargins";
-import { setDates, calculateCogs, hasNoUsableCost, getLYDate } from "../..";
+import {
+  setDates,
+  calculateCogs,
+  hasNoUsableCost,
+  getLYDate,
+  distinctSubDepts,
+  subDeptKeyMode,
+  scopeToSubDept,
+} from "../..";
 import type {
   JsonError,
-  SubDept,
   SubSale,
   SubSalesJsonResp,
   SubMarginsJsonResp,
@@ -187,8 +194,10 @@ const SubDeptMarginsMobile = () => {
   // re-derives instantly instead of refetching 1 + 3xN calls.
   const rawRef = useRef<{
     subSales: SubSale[];
+    // Keyed by sub dept key — the id, or the description where departments
+    // aren't numbered. See utils/subDeptIdentity.
     margins: Record<
-      number,
+      string,
       { ty: SubDeptMargin[]; ly: SubDeptMargin[]; lw: SubDeptMargin[] }
     >;
   }>({ subSales: [], margins: {} });
@@ -215,27 +224,17 @@ const SubDeptMarginsMobile = () => {
       handleSearch(storeNumber);
       return;
     }
-    dispatch(actions.setSelectedSubDeptId(null));
+    dispatch(actions.setSelectedSubDeptKey(null));
     dispatch(resetSubDeptGrades());
     const raw = rawRef.current;
-    const subDepts = scoped(raw.subSales)
-      .reduce((acc: SubDept[], curr) => {
-        if (!acc.some((sd) => sd.id === curr.sub_department)) {
-          acc.push({
-            id: curr.sub_department,
-            desc: curr.sub_department_description,
-          });
-        }
-        return acc;
-      }, [])
-      .sort((a, b) => a.id - b.id);
+    const subDepts = distinctSubDepts(scoped(raw.subSales));
     dispatch(actions.setSubDepts(subDepts));
     for (const sd of subDepts) {
-      const m = raw.margins[sd.id];
+      const m = raw.margins[sd.key];
       if (!m) continue;
       dispatch(
         setSubDeptGrade({
-          id: sd.id,
+          key: sd.key,
           grade: computeSubDeptGrade(scoped(m.ty), scoped(m.ly), scoped(m.lw)),
         }),
       );
@@ -294,33 +293,16 @@ const SubDeptMarginsMobile = () => {
         }
         // No sub_department !== 0 filter — kept in step with desktop and with
         // Sales, which doesn't exclude it either.
-        const subDepts = scoped(j.subs)
-          .reduce((acc: SubDept[], curr) => {
-            if (!acc.some((s) => s.id === curr.sub_department)) {
-              acc.push({
-                id: curr.sub_department,
-                desc: curr.sub_department_description,
-              });
-            }
-            return acc;
-          }, [])
-          .sort((a, b) => a.id - b.id);
+        const subDepts = distinctSubDepts(scoped(j.subs));
 
         dispatch(actions.setSubDepts(subDepts));
 
         // Fetch margins for the union of both locations so switching never
         // needs data we didn't request; only the display list is scoped.
-        const allSubDepts = j.subs
-          .reduce((acc: SubDept[], curr) => {
-            if (!acc.some((sd) => sd.id === curr.sub_department)) {
-              acc.push({
-                id: curr.sub_department,
-                desc: curr.sub_department_description,
-              });
-            }
-            return acc;
-          }, [])
-          .sort((a, b) => a.id - b.id);
+        const allSubDepts = distinctSubDepts(j.subs);
+        // How this search identifies a department — id, or description where
+        // the company doesn't number them. See utils/subDeptIdentity.
+        const mode = subDeptKeyMode(j.subs);
 
         const total = allSubDepts.length;
         if (total === 0) {
@@ -365,18 +347,23 @@ const SubDeptMarginsMobile = () => {
               params.singleStore,
             ),
           ])
-            .then(([tyData, lyData, lwData]) => {
-              rawRef.current.margins[sd.id] = {
+            .then(([tyAll, lyAll, lwAll]) => {
+              // Pass-through when the API filtered by a real id; narrows by
+              // description when every id was 0 and it returned everything.
+              const tyData = scopeToSubDept(tyAll, sd.key, mode);
+              const lyData = scopeToSubDept(lyAll, sd.key, mode);
+              const lwData = scopeToSubDept(lwAll, sd.key, mode);
+              rawRef.current.margins[sd.key] = {
                 ty: tyData,
                 ly: lyData,
                 lw: lwData,
               };
               // A dept that only trades at the other location has nothing to
               // show under the current scope.
-              if (!subDepts.some((d) => d.id === sd.id)) return;
+              if (!subDepts.some((d) => d.key === sd.key)) return;
               dispatch(
                 setSubDeptGrade({
-                  id: sd.id,
+                  key: sd.key,
                   grade: computeSubDeptGrade(
                     scoped(tyData),
                     scoped(lyData),
@@ -408,10 +395,10 @@ const SubDeptMarginsMobile = () => {
           onStoreNumberChange={handleStoreNumberChange}
         />
         {/* null, not 0 — 0 is a real sub department id, so a truthiness test
-            would never open it. See selectedSubDeptId in subMarginSlice. */}
-        {ctx.selectedSubDeptId != null && (
+            would never open it. See selectedSubDeptKey in subMarginSlice. */}
+        {ctx.selectedSubDeptKey != null && (
           <SubDeptItemsSheet
-            onBack={() => dispatch(actions.setSelectedSubDeptId(null))}
+            onBack={() => dispatch(actions.setSelectedSubDeptKey(null))}
           />
         )}
       </>

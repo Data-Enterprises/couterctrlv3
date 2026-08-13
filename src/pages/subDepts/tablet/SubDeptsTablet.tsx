@@ -18,10 +18,10 @@ const SubDeptsTablet = () => {
     dispatch(actions.setSubDeptFilterText(x));
   };
 
-  const handleSubDeptClick = (id: number) => {
+  const handleSubDeptClick = (key: string) => {
     const subs = [...ctx.subDepts];
     dispatch(actions.requerySubDeptMargins());
-    dispatch(actions.setSelectedSubDeptId(id));
+    dispatch(actions.setSelectedSubDeptKey(key));
     dispatch(actions.setSubDepts(subs));
   };
 
@@ -46,9 +46,9 @@ const SubDeptsTablet = () => {
       <div className="grid grid-cols-2 gap-2 max-h-[430px] rounded-lg overflow-hidden overflow-y-auto">
         {filteredSubDepts.map((sub) => (
           <div
-            key={sub.id}
-            className={`${ctx.selectedSubDeptId === sub.id ? "bg-orange-200" : "bg-bkg/50"} py-1.5 rounded-lg shadow-lg text-[11px] text-center transition-all duration-200`}
-            onClick={() => handleSubDeptClick(sub.id)}
+            key={sub.key}
+            className={`${ctx.selectedSubDeptKey === sub.key ? "bg-orange-200" : "bg-bkg/50"} py-1.5 rounded-lg shadow-lg text-[11px] text-center transition-all duration-200`}
+            onClick={() => handleSubDeptClick(sub.key)}
           >
             {sub.desc}
           </div>

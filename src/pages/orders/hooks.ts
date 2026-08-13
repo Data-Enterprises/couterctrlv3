@@ -33,7 +33,7 @@ export const useOrdersCtx = () => {
     filteredAvailableOrders,
     typeFilterArr,
     orderStatusFilter,
-    subIdsFilter,
+    subKeysFilter,
     uniqueSubs,
   } = ordersState;
 
@@ -63,7 +63,7 @@ export const useOrdersCtx = () => {
     selectedStoreIds,
     startDate,
     subDeptFilter,
-    subIdsFilter,
+    subKeysFilter,
     token,
     type,
     uniqueSubs,

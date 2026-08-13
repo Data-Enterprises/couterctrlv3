@@ -14,6 +14,9 @@ import {
   computeMarginDayMatched,
   computeStoreDayMatched,
   aggSubDeptSales,
+  distinctSubDepts,
+  subDeptKeyMode,
+  scopeToSubDept,
   type SubDeptSalesTotals,
 } from ".";
 import type {
@@ -129,9 +132,10 @@ const EMPTY_SALES: SubDeptSalesTotals = { net: 0, qty: 0 };
 type RawSearch = {
   weekly: { tw: WeeklySale[]; lw: WeeklySale[]; ly: WeeklySale[] };
   subSales: { ty: SubSale[]; lw: SubSale[]; ly: SubSale[] };
-  // Keyed by sub dept id. Populated for the UNION of sub depts across both
-  // locations, so switching never needs data we didn't fetch.
-  margins: Record<number, { ty: SubDeptMargin[]; ly: SubDeptMargin[]; lw: SubDeptMargin[] }>;
+  // Keyed by sub dept key (id, or description where departments aren't
+  // numbered). Populated for the UNION of sub depts across both locations, so
+  // switching never needs data we didn't fetch.
+  margins: Record<string, { ty: SubDeptMargin[]; ly: SubDeptMargin[]; lw: SubDeptMargin[] }>;
 };
 
 const emptyRaw = (): RawSearch => ({
@@ -143,18 +147,11 @@ const emptyRaw = (): RawSearch => ({
 // No sub_department !== 0 filter — Sales doesn't exclude it (aggSubDepts takes
 // every row), so dropping it here made this page show one fewer sub department
 // and a lower total than Sales.
-const deriveSubDepts = (rows: SubSale[]): SubDept[] =>
-  rows
-    .reduce((acc: SubDept[], curr) => {
-      if (!acc.some((s) => s.id === curr.sub_department)) {
-        acc.push({
-          id: curr.sub_department,
-          desc: curr.sub_department_description,
-        });
-      }
-      return acc;
-    }, [])
-    .sort((a, b) => a.id - b.id);
+//
+// Identity comes from distinctSubDepts, which keys on the id where the company
+// numbers its departments and on the description where it doesn't — the whole
+// list otherwise collapses to a single "0" row worth the entire store.
+const deriveSubDepts = (rows: SubSale[]): SubDept[] => distinctSubDepts(rows);
 
 const pctChange = (ty: number, ref: number) =>
   ref > 0 ? ((ty - ref) / ref) * 100 : 0;
@@ -279,7 +276,7 @@ const SubDeptMarginsDev = () => {
       return;
     }
     // The previously selected sub dept may not trade at this location.
-    dispatch(actions.setSelectedSubDeptId(null));
+    dispatch(actions.setSelectedSubDeptKey(null));
     dispatch(resetSubDeptGrades());
 
     const raw = rawRef.current;
@@ -293,26 +290,28 @@ const SubDeptMarginsDev = () => {
       ),
     );
 
-    const salesTy = aggSubDeptSales(scoped(raw.subSales.ty));
-    const salesLw = aggSubDeptSales(scoped(raw.subSales.lw));
-    const salesLy = aggSubDeptSales(scoped(raw.subSales.ly));
+    // Both periods bucketed the way THIS search's data identifies departments.
+    const mode = subDeptKeyMode(raw.subSales.ty);
+    const salesTy = aggSubDeptSales(scoped(raw.subSales.ty), mode);
+    const salesLw = aggSubDeptSales(scoped(raw.subSales.lw), mode);
+    const salesLy = aggSubDeptSales(scoped(raw.subSales.ly), mode);
     const subDepts = deriveSubDepts(scoped(raw.subSales.ty));
     dispatch(actions.setSubDepts(subDepts));
 
     for (const sd of subDepts) {
-      const m = raw.margins[sd.id];
+      const m = raw.margins[sd.key];
       if (!m) continue;
       dispatch(
         setSubDeptGrade({
-          id: sd.id,
+          key: sd.key,
           grade: computeSubDeptGrade(
             scoped(m.ty),
             scoped(m.ly),
             scoped(m.lw),
             {
-              ty: salesTy[sd.id] ?? EMPTY_SALES,
-              lw: salesLw[sd.id] ?? EMPTY_SALES,
-              ly: salesLy[sd.id] ?? EMPTY_SALES,
+              ty: salesTy[sd.key] ?? EMPTY_SALES,
+              lw: salesLw[sd.key] ?? EMPTY_SALES,
+              ly: salesLy[sd.key] ?? EMPTY_SALES,
             },
           ),
         }),
@@ -402,9 +401,13 @@ const SubDeptMarginsDev = () => {
           ly: lyResp?.data?.error === 0 ? lyResp.data.subs : [],
         };
         discoverLocations(j.subs, preferredNumber);
-        const salesTy = aggSubDeptSales(scoped(rawRef.current.subSales.ty));
-        const salesLw = aggSubDeptSales(scoped(rawRef.current.subSales.lw));
-        const salesLy = aggSubDeptSales(scoped(rawRef.current.subSales.ly));
+        // One mode for the whole search: derived from this year's rows, then
+        // applied to LW and LY so their totals land on the matching row even
+        // when the older data still carries real department numbers.
+        const mode = subDeptKeyMode(rawRef.current.subSales.ty);
+        const salesTy = aggSubDeptSales(scoped(rawRef.current.subSales.ty), mode);
+        const salesLw = aggSubDeptSales(scoped(rawRef.current.subSales.lw), mode);
+        const salesLy = aggSubDeptSales(scoped(rawRef.current.subSales.ly), mode);
         {
           // Displayed list is scoped to the selected location; the fetch loop
           // below still walks the unscoped union, so switching locations never
@@ -421,44 +424,81 @@ const SubDeptMarginsDev = () => {
           dispatch(setLoadingGrades(true));
           let completed = 0;
 
+          // The endpoint filters by department NUMBER. Where the company
+          // doesn't number its departments every sd.id is 0, so all N requests
+          // for a period are the same request and each comes back carrying the
+          // whole store — share one in-flight promise per (id, window) instead
+          // of firing N identical ones, then split the result by description
+          // below. In the numbered case every key is distinct and this is the
+          // same N requests as before.
+          const inFlight = new Map<string, Promise<SubDeptMargin[]>>();
+          const fetchOnce = (
+            id: number,
+            start: string,
+            end: string,
+            run: () => Promise<SubDeptMargin[]>,
+          ) => {
+            const cacheKey = `${id}_${start}_${end}`;
+            const hit = inFlight.get(cacheKey);
+            if (hit) return hit;
+            const p = run();
+            inFlight.set(cacheKey, p);
+            return p;
+          };
+
+          const lwStartDate = setDates(new Date(`${params.start}T12:00:00`), 7);
+          const lwEndDate = setDates(new Date(`${params.end}T12:00:00`), 7);
+
           for (const sd of allSubDepts) {
             Promise.all([
-              fetchAllPages(
-                ctx.url,
-                ctx.token,
-                sd.id,
-                params.start,
-                params.end,
-                params.useGroups,
-                params.searchValue,
-                params.singleStore,
+              fetchOnce(sd.id, params.start, params.end, () =>
+                fetchAllPages(
+                  ctx.url,
+                  ctx.token,
+                  sd.id,
+                  params.start,
+                  params.end,
+                  params.useGroups,
+                  params.searchValue,
+                  params.singleStore,
+                ),
               ),
-              fetchSafe(
-                ctx.url,
-                ctx.token,
-                sd.id,
-                getLYDate(params.start),
-                getLYDate(params.end),
-                params.useGroups,
-                params.searchValue,
-                params.singleStore,
+              fetchOnce(sd.id, getLYDate(params.start), getLYDate(params.end), () =>
+                fetchSafe(
+                  ctx.url,
+                  ctx.token,
+                  sd.id,
+                  getLYDate(params.start),
+                  getLYDate(params.end),
+                  params.useGroups,
+                  params.searchValue,
+                  params.singleStore,
+                ),
               ),
-              fetchSafe(
-                ctx.url,
-                ctx.token,
-                sd.id,
-                // Shift the whole selected window back 7 days. The old
-                // end-13 → end-7 form ignored params.start, so any range that
-                // wasn't exactly 7 days fetched a mismatched LW span.
-                setDates(new Date(`${params.start}T12:00:00`), 7),
-                setDates(new Date(`${params.end}T12:00:00`), 7),
-                params.useGroups,
-                params.searchValue,
-                params.singleStore,
+              // Shift the whole selected window back 7 days. The old
+              // end-13 → end-7 form ignored params.start, so any range that
+              // wasn't exactly 7 days fetched a mismatched LW span.
+              fetchOnce(sd.id, lwStartDate, lwEndDate, () =>
+                fetchSafe(
+                  ctx.url,
+                  ctx.token,
+                  sd.id,
+                  lwStartDate,
+                  lwEndDate,
+                  params.useGroups,
+                  params.searchValue,
+                  params.singleStore,
+                ),
               ),
             ])
-              .then(([tyData, lyData, lwData]) => {
-                rawRef.current.margins[sd.id] = {
+              .then(([tyAll, lyAll, lwAll]) => {
+                // Pass-through when the API already filtered by a real id;
+                // narrows by description when it couldn't. Without this every
+                // department would be graded on the whole store's margins.
+                const tyData = scopeToSubDept(tyAll, sd.key, mode);
+                const lyData = scopeToSubDept(lyAll, sd.key, mode);
+                const lwData = scopeToSubDept(lwAll, sd.key, mode);
+                rawRef.current.margins[sd.key] = {
                   ty: tyData,
                   ly: lyData,
                   lw: lwData,
@@ -466,18 +506,18 @@ const SubDeptMarginsDev = () => {
                 // A dept that only trades at the other location has nothing to
                 // show under the current scope — skip rather than grading it
                 // against zeros.
-                if (!subDepts.some((s) => s.id === sd.id)) return;
+                if (!subDepts.some((s) => s.key === sd.key)) return;
                 dispatch(
                   setSubDeptGrade({
-                    id: sd.id,
+                    key: sd.key,
                     grade: computeSubDeptGrade(
                       scoped(tyData),
                       scoped(lyData),
                       scoped(lwData),
                       {
-                        ty: salesTy[sd.id] ?? EMPTY_SALES,
-                        lw: salesLw[sd.id] ?? EMPTY_SALES,
-                        ly: salesLy[sd.id] ?? EMPTY_SALES,
+                        ty: salesTy[sd.key] ?? EMPTY_SALES,
+                        lw: salesLw[sd.key] ?? EMPTY_SALES,
+                        ly: salesLy[sd.key] ?? EMPTY_SALES,
                       },
                     ),
                   }),
@@ -499,22 +539,33 @@ const SubDeptMarginsDev = () => {
 
   // Seed week 1 from pre-fetched grade when sub dept is selected, then lazy-fetch weeks 2-4
   useEffect(() => {
-    if (ctx.selectedSubDeptId == null) return;
-    const grade = subDeptGrades[ctx.selectedSubDeptId];
+    if (ctx.selectedSubDeptKey == null) return;
+    const grade = subDeptGrades[ctx.selectedSubDeptKey];
     if (!grade) return;
 
     const e = params.end;
     const g = params.useGroups;
     const sv = params.searchValue;
     const ss = params.singleStore;
-    const id = ctx.selectedSubDeptId;
+    const key = ctx.selectedSubDeptKey;
+    // The endpoint filters by department NUMBER, which is 0 for every
+    // department at a company that doesn't number them — so the request comes
+    // back carrying all of them and `scopedToDept` below narrows it by
+    // description. In the numbered case the id is the real one and the extra
+    // filter is a pass-through.
+    const dept = ctx.subDepts.find((s) => s.key === key);
+    const id = dept?.id ?? 0;
+    // Location scoping and department scoping in one place, so no week can be
+    // stored having had only one of them applied.
+    const scopedToDept = (rows: SubDeptMargin[]) =>
+      scopeToSubDept(scoped(rows), key, subDeptKeyMode(rows));
 
     // Remounting with weeks 2-4 already fetched for this exact sub dept +
     // date range + search (e.g. navigating away and back) shouldn't blank
     // and re-fire those fetches — Redux still has the data.
     // Includes the location: co-located stores share a storeid, so without it
     // switching from 369 to 370 would keep 369's weeks 2-4 on screen.
-    const trendKey = `${id}_${e}_${g}_${sv}_${ss}_${selectedStoreNumber ?? "all"}`;
+    const trendKey = `${key}_${e}_${g}_${sv}_${ss}_${selectedStoreNumber ?? "all"}`;
     if (lastFetchedTrendKey === trendKey) return;
 
     dispatch(setWeekTrendMargins({ data: grade.tyWeekOneMargins, week: 1 }));
@@ -539,7 +590,9 @@ const SubDeptMarginsDev = () => {
       g,
       sv,
       ss,
-    ).then((data) => dispatch(setWeekTrendMargins({ data: scoped(data), week: 2 })));
+    ).then((data) =>
+      dispatch(setWeekTrendMargins({ data: scopedToDept(data), week: 2 })),
+    );
 
     fetchSafe(
       ctx.url,
@@ -550,7 +603,9 @@ const SubDeptMarginsDev = () => {
       g,
       sv,
       ss,
-    ).then((data) => dispatch(setWeekTrendMargins({ data: scoped(data), week: 3 })));
+    ).then((data) =>
+      dispatch(setWeekTrendMargins({ data: scopedToDept(data), week: 3 })),
+    );
 
     fetchSafe(
       ctx.url,
@@ -561,7 +616,9 @@ const SubDeptMarginsDev = () => {
       g,
       sv,
       ss,
-    ).then((data) => dispatch(setWeekTrendMargins({ data: scoped(data), week: 4 })));
+    ).then((data) =>
+      dispatch(setWeekTrendMargins({ data: scopedToDept(data), week: 4 })),
+    );
 
     fetchSafe(
       ctx.url,
@@ -572,7 +629,9 @@ const SubDeptMarginsDev = () => {
       g,
       sv,
       ss,
-    ).then((data) => dispatch(setWeekTrendMarginsLY({ data: scoped(data), week: 2 })));
+    ).then((data) =>
+      dispatch(setWeekTrendMarginsLY({ data: scopedToDept(data), week: 2 })),
+    );
 
     fetchSafe(
       ctx.url,
@@ -583,7 +642,9 @@ const SubDeptMarginsDev = () => {
       g,
       sv,
       ss,
-    ).then((data) => dispatch(setWeekTrendMarginsLY({ data: scoped(data), week: 3 })));
+    ).then((data) =>
+      dispatch(setWeekTrendMarginsLY({ data: scopedToDept(data), week: 3 })),
+    );
 
     fetchSafe(
       ctx.url,
@@ -594,7 +655,9 @@ const SubDeptMarginsDev = () => {
       g,
       sv,
       ss,
-    ).then((data) => dispatch(setWeekTrendMarginsLY({ data: scoped(data), week: 4 })));
+    ).then((data) =>
+      dispatch(setWeekTrendMarginsLY({ data: scopedToDept(data), week: 4 })),
+    );
 
     fetchSafe(
       ctx.url,
@@ -605,8 +668,10 @@ const SubDeptMarginsDev = () => {
       g,
       sv,
       ss,
-    ).then((data) => dispatch(setWeekTrendMarginsLW({ data: scoped(data), week: 4 })));
-  }, [ctx.selectedSubDeptId]);
+    ).then((data) =>
+      dispatch(setWeekTrendMarginsLW({ data: scopedToDept(data), week: 4 })),
+    );
+  }, [ctx.selectedSubDeptKey]);
 
   useEffect(() => {
     dispatch(actions.resetFilters());

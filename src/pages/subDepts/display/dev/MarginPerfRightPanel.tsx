@@ -31,7 +31,7 @@ const MarginPerfRightPanel = () => {
 
   const gradingMetric = useAppSelector((s) => s.subMargin.gradingMetric);
   const subDeptGrades = useAppSelector((s) => s.subMargin.subDeptGrades);
-  const subDeptName = ctx.subDepts.find((s) => s.id === ctx.selectedSubDeptId)?.desc ?? "";
+  const subDeptName = ctx.subDepts.find((s) => s.key === ctx.selectedSubDeptKey)?.desc ?? "";
   const availableStoreNumbers = useAppSelector(
     (s) => s.subMargin.availableStoreNumbers,
   );
@@ -57,7 +57,7 @@ const MarginPerfRightPanel = () => {
   if (rawGradingThreshold != null) gradingThresholdRef.current = rawGradingThreshold;
   const gradingThreshold = gradingThresholdRef.current;
 
-  const selectedGrade = ctx.selectedSubDeptId != null ? subDeptGrades[ctx.selectedSubDeptId] : undefined;
+  const selectedGrade = ctx.selectedSubDeptKey != null ? subDeptGrades[ctx.selectedSubDeptKey] : undefined;
   const tier = selectedGrade ? getTier(selectedGrade, gradingThreshold, gradingMetric) : "healthy";
 
   const periodEnd = ctx.singleDate ? formatDate(setDates(new Date(ctx.singleDate), 0)) : "";
@@ -216,7 +216,7 @@ const MarginPerfRightPanel = () => {
     dispatch(actions.setSubDeptGridView("cost"));
   };
 
-  if (ctx.selectedSubDeptId == null) {
+  if (ctx.selectedSubDeptKey == null) {
     return (
       <div className="flex-1 min-w-0 shadow-lg">
         <div className="bg-custom-white rounded-xl shadow-sm overflow-hidden flex flex-col h-full items-center justify-center gap-2">

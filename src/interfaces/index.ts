@@ -922,6 +922,11 @@ export interface StoreActivityJsonResp {
 /////////////////////////
 
 export type SubDept = {
+  /** Bucket key: the id, or the description at companies that don't number
+   *  their departments. Identity on screen and in every derived map. */
+  key: string;
+  /** Still what the margins endpoint is queried with — 0 for every department
+   *  when the company doesn't number them. See utils/subDeptIdentity. */
   id: number;
   desc: string;
 };

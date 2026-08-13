@@ -11,6 +11,11 @@ import {
   type RowClickedEvent,
 } from "ag-grid-community";
 import type { SubGridRow } from "../../../interfaces";
+import { subDeptKeyMode, subDeptKeyOf } from "../../../utils/subDeptIdentity";
+
+/** SubGridRow plus the bucket key it was grouped under — the id, or the
+ *  description at companies that don't number their departments. */
+type SubGridRowKeyed = SubGridRow & { subDeptKey: string };
 import { useSalesActions } from "../hooks/useSalesActions";
 import SingleSelect from "../../../components/SingleSelect";
 
@@ -26,7 +31,9 @@ const SubDeptGrid = () => {
     topSubDept,
   } = useSalesState();
   const { isMobile, isTablet } = useAppSelector((state) => state.app);
-  const [groupSubs, setGroupSubs] = useState<SubGridRow[]>([]);
+  const [groupSubs, setGroupSubs] = useState<SubGridRowKeyed[]>([]);
+  // Needed in render too, to compare the stored selection against a row's key.
+  const mode = subDeptKeyMode(subSales);
   const { subCols } = useSubCols();
 
   // This useEffect does the same as above, but when the groupSubs changes
@@ -51,9 +58,11 @@ const SubDeptGrid = () => {
   }, [groupSubs]);
 
   useEffect(() => {
-    const getLastYrSales = (subDeptId: number) => {
+    // Identity comes from the period on screen; last year is bucketed the same
+    // way so its totals land on the matching row. See utils/subDeptIdentity.
+    const getLastYrSales = (key: string) => {
       return subSalesWk3
-        .filter((s) => s.sub_department === subDeptId)
+        .filter((s) => subDeptKeyOf(s, mode) === key)
         .reduce(
           (acc: number, curr) => (acc += curr.total_sales - curr.total_tax),
           0,
@@ -61,10 +70,9 @@ const SubDeptGrid = () => {
     };
 
     const grouped = () => {
-      return [...subSales].reduce((acc: SubGridRow[], curr) => {
-        const exists = acc.find(
-          (d) => d.sub_department === curr.sub_department,
-        );
+      return [...subSales].reduce((acc: SubGridRowKeyed[], curr) => {
+        const key = subDeptKeyOf(curr, mode);
+        const exists = acc.find((d) => d.subDeptKey === key);
         if (exists) {
           exists.total_sales += curr.total_sales;
           exists.net_sales += curr.net_sales;
@@ -76,8 +84,8 @@ const SubDeptGrid = () => {
           exists.weight += curr.weight;
           exists.total_tax += curr.total_tax;
         } else {
-          const lastYrSales = getLastYrSales(curr.sub_department);
-          acc.push({ ...curr, lastYrSales: lastYrSales });
+          const lastYrSales = getLastYrSales(key);
+          acc.push({ ...curr, subDeptKey: key, lastYrSales });
         }
         return acc;
       }, []);
@@ -105,7 +113,8 @@ const SubDeptGrid = () => {
   };
 
   const handleSelect = (subDept: string | number) => {
-    const d = groupSubs.find((s) => s.sub_department === Number(subDept));
+    const d = groupSubs.find((s) => s.subDeptKey === String(subDept));
+    if (!d) return;
     const selected: TopSub = {
       sub_department: d!.sub_department,
       sub_department_description: d!.sub_department_description,
@@ -127,7 +136,7 @@ const SubDeptGrid = () => {
         <SingleSelect
           data={groupSubs}
           displayKey="sub_department_description"
-          valueKey="sub_department"
+          valueKey="subDeptKey"
           label="Sub Department Sales"
           innerClass="py-1"
           className="w-full"
@@ -160,8 +169,7 @@ const SubDeptGrid = () => {
           onRowClicked={(d) => {
             if (
               !selectedSubDept ||
-              (selectedSubDept &&
-                selectedSubDept.sub_department !== d.data!.sub_department)
+              subDeptKeyOf(selectedSubDept, mode) !== subDeptKeyOf(d.data!, mode)
             ) {
               handleSetSelectedSubDept(d);
             }

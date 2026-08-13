@@ -39,6 +39,8 @@ import type { SubDeptMargin } from "../../../interfaces";
 import type { Severity } from "../components/LedgerRow";
 import {
   aggSubDepts,
+  subDeptKeyMode,
+  scopeToSubDept,
   aggHours,
   aggByCode,
   deptSeverity,
@@ -94,6 +96,7 @@ const LedgerStoreReport = () => {
     reportSevFilter,
     openSheetType,
     openSheetId,
+    openSheetKey,
     subDeptThreshold,
     hourlyThreshold,
     itemThreshold,
@@ -270,11 +273,16 @@ const LedgerStoreReport = () => {
   // Reset item filter when a new sheet opens
   useEffect(() => {
     setItemSevFilter("all");
-  }, [openSheetId]);
+  }, [openSheetKey]);
 
   // ── Fetch top 10 items ────────────────────────────────────────────────────────
   useEffect(() => {
-    if (openSheetType !== "subdept" || openSheetId === null || !selection) {
+    if (
+      openSheetType !== "subdept" ||
+      openSheetId === null ||
+      openSheetKey === null ||
+      !selection
+    ) {
       dispatch(setTop10([]));
       dispatch(setInactiveSubDeptItems([]));
       return;
@@ -329,18 +337,19 @@ const LedgerStoreReport = () => {
           ),
         ]);
         if (cancelled) return;
+        // Unnumbered departments mean the request could only ask for id 0, so
+        // the response carries every department and the description separates
+        // them. Pass-through when the API already filtered by a real id.
+        const scope = (rows: SubDeptMargin[]) =>
+          scopeToSubDept(
+            scopeToStoreNumber(rows, selection.storeNumber),
+            openSheetKey,
+            subDeptKeyMode(rows),
+          );
         const tyItems: SubDeptMargin[] =
-          tyR.data?.error === 0
-            ? scopeToStoreNumber(tyR.data.subs, selection.storeNumber)
-            : [];
-        let lwItems: SubDeptMargin[] =
-          lwR.data?.error === 0
-            ? scopeToStoreNumber(lwR.data.subs, selection.storeNumber)
-            : [];
-        let lyItems: SubDeptMargin[] =
-          lyR.data?.error === 0
-            ? scopeToStoreNumber(lyR.data.subs, selection.storeNumber)
-            : [];
+          tyR.data?.error === 0 ? scope(tyR.data.subs) : [];
+        let lwItems: SubDeptMargin[] = lwR.data?.error === 0 ? scope(lwR.data.subs) : [];
+        let lyItems: SubDeptMargin[] = lyR.data?.error === 0 ? scope(lyR.data.subs) : [];
 
         // Whole-week case: the fetched LW/LY rows can include days that
         // don't actually correspond to any day in this TW week — filter down
@@ -426,7 +435,7 @@ const LedgerStoreReport = () => {
     return () => {
       cancelled = true;
     };
-  }, [openSheetType, openSheetId, selectedDate]);
+  }, [openSheetType, openSheetId, openSheetKey, selectedDate]);
 
   // ── Computed rows ─────────────────────────────────────────────────────────────
   const depts = useMemo((): DeptRow[] => {
@@ -450,18 +459,23 @@ const LedgerStoreReport = () => {
     const lySrc = lyDay
       ? rawLYSubs.filter((s) => s.sale_date.startsWith(lyDay))
       : rawLYSubs.filter((s) => lyDateSet.has(s.sale_date.split("T")[0]));
-    const twMap = aggSubDepts(twSrc);
-    const lwMap = aggSubDepts(lwSrc);
-    const lyMap = aggSubDepts(lySrc);
+    // Mode comes from the period being graded, not the union of all three: a
+    // company that has only just started sending unnumbered rows still has last
+    // year's numbered ones, and letting those decide would collapse this week
+    // back into a single "0" bucket.
+    const mode = subDeptKeyMode(twSrc);
+    const twMap = aggSubDepts(twSrc, mode);
+    const lwMap = aggSubDepts(lwSrc, mode);
+    const lyMap = aggSubDepts(lySrc, mode);
     return Object.entries(twMap)
-      .map(([id, r]) => {
-        const numId = Number(id);
-        const lw = lwMap[numId];
-        const ly = lyMap[numId];
+      .map(([key, r]) => {
+        const lw = lwMap[key];
+        const ly = lyMap[key];
         const lwNet = lw?.net ?? 0;
         const lyNet = ly?.net ?? 0;
         return {
-          id: numId,
+          key,
+          id: r.id,
           desc: r.desc,
           tw: r.net,
           lw: lwNet,
@@ -559,7 +573,7 @@ const LedgerStoreReport = () => {
   // ── Sheet row resolution ──────────────────────────────────────────────────────
   const sheetDept =
     openSheetType === "subdept"
-      ? (depts.find((d) => d.id === openSheetId) ?? null)
+      ? (depts.find((d) => d.key === openSheetKey) ?? null)
       : null;
   const sheetHour =
     openSheetType === "hourly"
@@ -631,7 +645,8 @@ const LedgerStoreReport = () => {
           vsLWPct: r.vsLWPct,
           hasLY: r.hasLY,
           hasLW: r.hasLW,
-          onClick: () => dispatch(openSheet({ type: "subdept", id: r.id })),
+          onClick: () =>
+            dispatch(openSheet({ type: "subdept", id: r.id, key: r.key })),
         }))
       : hours.map((r) => ({
           sev: hourSeverity(r, effectiveHourlyThreshold),

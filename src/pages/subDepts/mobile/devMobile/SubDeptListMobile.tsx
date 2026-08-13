@@ -99,7 +99,7 @@ const SubDeptListMobile = ({
     const lw: SubDeptMargin[] = [];
     const ly: SubDeptMargin[] = [];
     for (const sd of ctx.subDepts) {
-      const g = subDeptGrades[sd.id];
+      const g = subDeptGrades[sd.key];
       if (!g) continue;
       ty.push(...g.tyWeekOneMargins);
       lw.push(...g.lwWeekOneMargins);
@@ -175,7 +175,7 @@ const SubDeptListMobile = ({
   const storeName = store?.store_name ?? "";
 
   const graded = ctx.subDepts.map((sd) => {
-    const grade = subDeptGrades[sd.id];
+    const grade = subDeptGrades[sd.key];
     const tier = grade
       ? getTier(grade, gradingThreshold, gradingMetric)
       : ("healthy" as MarginTier);
@@ -277,7 +277,7 @@ const SubDeptListMobile = ({
       <div className="flex-1 overflow-y-auto pb-14">
         {visible.map(({ sd, grade, tier }) => (
           <MobileSignalRow
-            key={sd.id}
+            key={sd.key}
             sev={tier}
             label={sd.desc}
             value={grade ? fmt1(grade.tyMarginPct) + "%" : "\u2026"}
@@ -292,7 +292,7 @@ const SubDeptListMobile = ({
                 : { text: "\u2014", pct: null }
             }
             threshold={gradingThreshold}
-            onClick={() => dispatch(actions.setSelectedSubDeptId(sd.id))}
+            onClick={() => dispatch(actions.setSelectedSubDeptKey(sd.key))}
           />
         ))}
       </div>

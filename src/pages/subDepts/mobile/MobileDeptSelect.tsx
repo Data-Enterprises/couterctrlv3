@@ -26,10 +26,10 @@ const MobileDeptSelect = () => {
   const dispatch = useAppDispatch();
   const actions = useSubMarginActions();
 
-  const getData = (week: number, id: number) => {
+  const getData = (week: number, key: string, id: number) => {
     const subs = [...ctx.subDepts];
     dispatch(actions.requerySubDeptMargins());
-    dispatch(actions.setSelectedSubDeptId(id));
+    dispatch(actions.setSelectedSubDeptKey(key));
     dispatch(actions.setSubDepts(subs));
     dispatch(actions.setLoadingMargins(true));
 
@@ -127,7 +127,7 @@ const MobileDeptSelect = () => {
           <div
             key={i}
             className="p-2 bg-custom-white rounded-full shadow-md text-[13px] flex justify-between items-center"
-            onClick={() => getData(1, s.id)}
+            onClick={() => getData(1, s.key, s.id)}
           >
             <div className="font-medium text-center w-full">{s.desc}</div>
           </div>

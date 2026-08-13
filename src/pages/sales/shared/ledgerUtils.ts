@@ -20,6 +20,17 @@ export {
   applyStoreNumberToName,
 } from "../../../utils/storeIdentity";
 
+// Same arrangement for sub department identity — Sales, Sub Dept Margins,
+// Orders and Coupons all have to bucket departments the same way.
+import { subDeptKeyOf, type SubDeptKeyMode } from "../../../utils/subDeptIdentity";
+export {
+  subDeptKeyMode,
+  subDeptKeyOf,
+  subDeptKeyer,
+  scopeToSubDept,
+  type SubDeptKeyMode,
+} from "../../../utils/subDeptIdentity";
+
 // The comparison a row is graded on: last year when we have it, else last
 // week. Rounded before grading — see itemSeverity in PopupSubDeptList for why.
 export const ledgerGradePct = (row: {
@@ -94,6 +105,11 @@ export const SECTION_TEXT: Record<Severity, string> = {
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type DeptRow = {
+  /** Bucket key — the sub department id, or its description at companies that
+   *  don't number their departments. See utils/subDeptIdentity. */
+  key: string;
+  /** Still the id, and still what the margins endpoint is queried with; it's 0
+   *  for every department when the company doesn't number them. */
   id: number;
   desc: string;
   tw: number;
@@ -478,11 +494,20 @@ export const buildLedgerRows = (
 
 // ─── Aggregators ──────────────────────────────────────────────────────────────
 
+/**
+ * Sub department totals, bucketed by whichever field identifies a department in
+ * this data. `mode` is passed in rather than derived per call so the TW, LW and
+ * LY maps key identically — deriving it separately would let an empty or
+ * differently-numbered comparison period key on the other field and match
+ * nothing, quietly zeroing every vs-LY figure.
+ */
 export const aggSubDepts = (
   src: SubSale[],
+  mode: SubDeptKeyMode,
 ): Record<
-  number,
+  string,
   {
+    id: number;
     desc: string;
     net: number;
     qty: number;
@@ -494,8 +519,10 @@ export const aggSubDepts = (
 > =>
   src.reduce(
     (acc, s) => {
-      if (!acc[s.sub_department])
-        acc[s.sub_department] = {
+      const key = subDeptKeyOf(s, mode);
+      if (!acc[key])
+        acc[key] = {
+          id: Number(s.sub_department) || 0,
           desc: s.sub_department_description,
           net: 0,
           qty: 0,
@@ -504,17 +531,18 @@ export const aggSubDepts = (
           elecStore: 0,
           storeCpn: 0,
         };
-      acc[s.sub_department].net += s.total_sales - s.total_tax;
-      acc[s.sub_department].qty += s.qty;
-      acc[s.sub_department].digital += s.digital_coupons;
-      acc[s.sub_department].elecInstore += s.elec_instore_coupons;
-      acc[s.sub_department].elecStore += s.elec_store_coupons;
-      acc[s.sub_department].storeCpn += s.store_coupon;
+      acc[key].net += s.total_sales - s.total_tax;
+      acc[key].qty += s.qty;
+      acc[key].digital += s.digital_coupons;
+      acc[key].elecInstore += s.elec_instore_coupons;
+      acc[key].elecStore += s.elec_store_coupons;
+      acc[key].storeCpn += s.store_coupon;
       return acc;
     },
     {} as Record<
-      number,
+      string,
       {
+        id: number;
         desc: string;
         net: number;
         qty: number;

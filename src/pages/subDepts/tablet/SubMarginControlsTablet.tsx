@@ -3,7 +3,8 @@ import { useParams, useSubMarginCtx } from "../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { getSubDepts } from "../../../api/subMargins";
 
-import type { JsonError, SubDept, SubSalesJsonResp } from "../../../interfaces";
+import type { JsonError, SubSalesJsonResp } from "../../../interfaces";
+import { distinctSubDepts } from "..";
 import { useSubMarginActions } from "../hooks/useSubMarginActions";
 
 import SingleDatePicker from "../../../components/datePickers/SingleDatePicker";
@@ -33,17 +34,9 @@ const SubMarginControlsTablet = () => {
       .then((resp) => {
         const j: SubSalesJsonResp = resp.data;
         if (j.error === 0) {
-          const subDepts = j.subs
-            .reduce((acc: SubDept[], curr) => {
-              if (!acc.some((s) => s.id === curr.sub_department)) {
-                acc.push({
-                  id: curr.sub_department,
-                  desc: curr.sub_department_description,
-                });
-              }
-              return acc;
-            }, [])
-            .sort((a, b) => a.id - b.id);
+          // Keyed on the id, or the description where the company doesn't
+          // number its departments — see utils/subDeptIdentity.
+          const subDepts = distinctSubDepts(j.subs);
 
           dispatch(actions.setSubDepts(subDepts));
         }
@@ -53,14 +46,14 @@ const SubMarginControlsTablet = () => {
   };
 
   const resetBtnActive = () => {
-    if (ctx.selectedSubDeptId != null && ctx.margins.length) {
+    if (ctx.selectedSubDeptKey != null && ctx.margins.length) {
       return "";
     }
     return "opacity-50 pointer-events-none";
   };
 
   const exportBtnActive = () => {
-    if (ctx.selectedSubDeptId != null && ctx.margins.length) {
+    if (ctx.selectedSubDeptKey != null && ctx.margins.length) {
       return "";
     }
     return "opacity-50 pointer-events-none";
@@ -119,7 +112,7 @@ const SubMarginControlsTablet = () => {
         </div>
       </div>
       <SubDeptsTablet />
-      {ctx.selectedSubDeptId != null ? <WeeklyTrendsTablet /> : null}
+      {ctx.selectedSubDeptKey != null ? <WeeklyTrendsTablet /> : null}
     </div>
   );
 };
