@@ -243,7 +243,10 @@ export const navigation: Navigation[] = [
     mobile: false,
     children: [],
     childOpen: false,
-    userLevels: ["9"],
+    // Level 5 and up. The page itself narrows what each of them can see —
+    // below 9 the companies and stores are scoped to their own assignments,
+    // and the Companies tab stays out of reach entirely.
+    userLevels: ["5", "7", "8", "9"],
     isHovering: false,
     isVisible: true,
   },
@@ -498,7 +501,7 @@ export const categories: NavCategory[] = [
         mobile: false,
         children: [],
         childOpen: false,
-        userLevels: ["9"],
+        userLevels: ["5", "7", "8", "9"],
         isHovering: false,
         isVisible: true,
       },

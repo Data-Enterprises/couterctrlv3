@@ -133,6 +133,7 @@ const Block = ({
 const TEMPLATE: Record<number, string> = {
   2: "1fr 76px",
   3: "1fr 60px 76px",
+  5: "1fr 44px 58px 58px 50px",
 };
 
 interface Cell {
@@ -193,7 +194,7 @@ const ItemReportRail = ({
 
   if (!item) {
     return (
-      <div className="flex-shrink-0 shadow-lg" style={{ width: "33%" }}>
+      <div className="flex-shrink-0 shadow-lg" style={{ width: "38%" }}>
         <div className="bg-custom-white rounded-xl shadow-sm h-full flex items-center justify-center px-4">
           <p className="text-[12px] text-content text-center leading-relaxed">
             Pick a row for its deliveries and prices.
@@ -207,7 +208,7 @@ const ItemReportRail = ({
   const txnCount = act.exactCount + act.averagedCount;
 
   return (
-    <div className="flex-shrink-0 shadow-lg" style={{ width: "33%" }}>
+    <div className="flex-shrink-0 shadow-lg" style={{ width: "38%" }}>
       <div className="bg-custom-white rounded-xl shadow-sm overflow-hidden flex flex-col h-full">
         <div className="flex-shrink-0 px-4 py-3 bg-[#1e2a4a]">
           <div className="text-[13px] font-semibold text-custom-white leading-tight">
@@ -252,17 +253,50 @@ const ItemReportRail = ({
               </div>
             ) : (
               <>
-                <Head cols={["Date", "Units", "Cost"]} />
-                {receipts.slice(0, 6).map((r) => (
-                  <Line
-                    key={`${r.invoiceId}-${r.date}-${r.unitCost}`}
-                    cells={[
-                      { text: formatDateSimple(r.date) },
-                      { text: String(r.units) },
-                      { text: formatCurrency2(r.unitCost) },
-                    ]}
-                  />
-                ))}
+                {/* Cost and retail side by side, with the margin the invoice
+                    implied. Three of the four Reprice triggers compare against
+                    one of these, so the sentence in the sheet is now checkable
+                    against the deliveries that produced it. */}
+                <Head cols={["Date", "Units", "Cost", "Retail", "GM%"]} />
+                {receipts.slice(0, 6).map((r, i) => {
+                  // Cadence, folded into the date rather than given a column of
+                  // its own. "Last received 24 days ago" is a fact; "and it
+                  // normally arrives every 9" is what makes it a decision.
+                  const prev = receipts[i + 1];
+                  const gap = prev
+                    ? Math.round(
+                        (new Date(
+                          `${r.date.split("T")[0]}T12:00:00`,
+                        ).getTime() -
+                          new Date(
+                            `${prev.date.split("T")[0]}T12:00:00`,
+                          ).getTime()) /
+                          86400000,
+                      )
+                    : null;
+                  const gm =
+                    r.retail > 0
+                      ? ((r.retail - r.unitCost) / r.retail) * 100
+                      : null;
+                  return (
+                    <Line
+                      key={`${r.invoiceId}-${r.date}-${r.unitCost}`}
+                      cells={[
+                        {
+                          text: `${formatDateSimple(r.date)}${
+                            gap !== null ? ` · ${gap}d` : ""
+                          }`,
+                        },
+                        { text: String(r.units) },
+                        { text: formatCurrency2(r.unitCost) },
+                        {
+                          text: r.retail > 0 ? formatCurrency2(r.retail) : "—",
+                        },
+                        { text: gm === null ? "—" : `${gm.toFixed(1)}%` },
+                      ]}
+                    />
+                  );
+                })}
               </>
             )}
           </Block>

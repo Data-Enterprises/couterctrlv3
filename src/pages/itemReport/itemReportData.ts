@@ -249,6 +249,15 @@ export interface ReceiptLine {
   unitCost: number;
   /** Retail the receipt expected, which is not always the retail that rang. */
   retail: number;
+  /** Free goods and returns on the line.
+   *
+   *  Carried because they are the two things that can make "received" mean
+   *  something other than "arrived and was paid for" — and both feed Net and
+   *  Unaccounted, which the Reorder and Investigate reasoning rests on. Whether
+   *  `units` already nets them is unverified against a real invoice, so they are
+   *  surfaced rather than silently subtracted. */
+  free: number;
+  returned: number;
 }
 
 export const toReceiptLine = (
@@ -264,4 +273,6 @@ export const toReceiptLine = (
   cases: line.cases,
   unitCost: line.ucost,
   retail: line.retail,
+  free: line.free,
+  returned: line.return,
 });
