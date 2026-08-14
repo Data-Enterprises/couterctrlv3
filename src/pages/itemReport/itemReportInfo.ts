@@ -33,11 +33,11 @@ export const ITEM_REPORT_INFO: {
       subEntries: [
         {
           label: "Reorder",
-          desc: "The last delivery was over two weeks ago and the item is still selling, or nothing has arrived in 90 days and it has stopped selling. Either way the shelf is likely empty or close to it.",
+          desc: "Two ways in. Either as much has sold as the last delivery brought — the delivery is consumed whatever the date says, which catches an item selling faster than it arrives — or the last delivery is over two weeks old, or nothing has arrived in 90 days and it has stopped selling. Reorder is a relationship between sold and received, so the first test is that relationship rather than the calendar. It shares the blind spot of everything built on the last delivery: no opening balance exists in the data, so stock held beforehand is invisible.",
         },
         {
           label: "Call vendor",
-          desc: "The cost history on the receivers doesn’t hold still: three or more changes across the lookback, a single delivery up 5% or more, a 10% rise end to end, or a cost that moves up and down repeatedly. Cost drifting upward is ordinary; these are the shapes worth querying. The row names which one it was. Often the fix is timing rather than price — a store ordering on a fixed schedule will catch whatever promotion or rebate happens to be running, and only the store and vendor together can line those up. Nothing here can see that; they can.",
+          desc: "The cost history on the receivers doesn’t hold still: three or more changes across the lookback, a single delivery up 5% or more **that the cost has stayed at**, a 10% rise end to end, or a cost that moves up and down repeatedly. A rise the cost later came back down from is a bounce, not an increase, and is counted by the up-and-down rule instead. Every one of them is dated, because a 90-day window always holds old events and an undated percentage reads as news. Cost drifting upward is ordinary; these are the shapes worth querying. The row names which one it was. Often the fix is timing rather than price — a store ordering on a fixed schedule will catch whatever promotion or rebate happens to be running, and only the store and vendor together can line those up. Nothing here can see that; they can.",
         },
         {
           label: "Check receiving",
@@ -45,7 +45,7 @@ export const ITEM_REPORT_INFO: {
         },
         {
           label: "Reprice",
-          desc: "Shelf price and cost don’t line up **today**. Judged on the price it is currently ringing at, against the cost the last receiver carried — not a blended cost from the sales file. Covers selling below cost and a cost increase the shelf price never followed. Ringing under the retail a receiver intended is **not** raised on its own — a markdown that still clears cost is a decision, not a mistake, and nothing in this data carries a target margin to judge it against. The intended retail sits in the detail panel so you can see the gap yourself. An item that was underwater earlier in the window and has since been fixed is not raised here; that stretch stays visible in the estimated price points instead. Causes range from a sale left running too long to a price keyed in wrong.",
+          desc: "Shelf price and cost don’t line up **today**. Judged on the price it is currently ringing at, against the cost the last receiver carried — not a blended cost from the sales file. Covers selling below cost, and a cost increase the shelf price never followed — that second one compares the first price of the window to the current one, so “didn’t follow” means the shelf price genuinely has not moved. Ringing under the retail a receiver intended is **not** raised on its own — a markdown that still clears cost is a decision, not a mistake, and nothing in this data carries a target margin to judge it against. The intended retail sits in the detail panel so you can see the gap yourself. An item that was underwater earlier in the window and has since been fixed is not raised here; that stretch stays visible in the estimated price points instead. Causes range from a sale left running too long to a price keyed in wrong.",
         },
         {
           label: "Investigate",

@@ -573,7 +573,7 @@ const ItemReportRail = ({
               {ACTION_LABEL[action]}
             </div>
             <div
-              className={`text-[12px] leading-relaxed mt-0.5 ${ACTION_TONE[action].text}`}
+              className={`text-[13px] leading-relaxed mt-0.5 ${ACTION_TONE[action].text}`}
             >
               {evidence}
             </div>

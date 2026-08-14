@@ -39,9 +39,6 @@ const FLAT_PCT = 10;
 /** Cost movement inside this band is rounding or a mixed pallet. */
 const COST_MOVE_FLOOR = 2;
 
-/** A shelf price this far under what the receipt intended is worth naming. */
-const RETAIL_GAP_FLOOR = 0.05;
-
 /**
  * When cost movement is the vendor's problem rather than the shelf's.
  *
@@ -108,15 +105,38 @@ const pctMove = (from: number, to: number) =>
 const money = (n: number) => `$${n.toFixed(2)}`;
 
 /** What the cost did across the lookback, in the four shapes worth a call. */
+/** One significant move between consecutive receipts. */
+interface CostStep {
+  from: number;
+  to: number;
+  pct: number;
+  /** The receipt that carried the new cost. */
+  date: string;
+  /** Position in the series, so a later reversal can be looked for. */
+  index: number;
+}
+
 interface CostHistory {
   first: number;
   last: number;
-  /** Steps between consecutive receipts that moved more than the rounding
-   *  floor. Four cost points is three changes — the distinction the old rule
-   *  missed by counting receipts. */
+  firstDate: string;
+  low: number;
+  high: number;
+  /** Steps that moved more than the rounding floor. Four cost points is three
+   *  changes — the distinction the old rule missed by counting receipts. */
   changes: number;
-  /** The largest single rise, as a percentage. */
-  maxStepUp: number;
+  firstChangeDate: string | null;
+  lastChangeDate: string | null;
+  /**
+   * The largest rise that is *still in force*.
+   *
+   * A rise the cost later came back down from is a bounce, not an increase, and
+   * `reversals` is the trigger built for that shape. Without this, an item that
+   * went $3.63 → $4.90 → $3.63 in June and has been billed $3.63 across ten
+   * deliveries since was told to call the vendor about a 35% jump it is no
+   * longer paying.
+   */
+  standingStepUp: CostStep | null;
   /** First receipt to last, as a percentage. */
   cumulative: number;
   /** How often the direction flipped between significant steps. */
@@ -128,42 +148,74 @@ interface CostHistory {
  *
  * Receipts arrive newest-first because that is how every list on the page reads
  * them, but cost is a story told in the order it happened, so this reverses
- * once at the top rather than indexing backwards four times.
+ * once at the top rather than indexing backwards.
+ *
+ * Dates are carried alongside the costs so each finding can say *when*. A
+ * 90-day window will always hold old events, and "cost jumped 35%" reads as
+ * news until it is dated.
  *
  * Returns null below two priced receipts: one cost is not a history, and a
  * verdict drawn from it would be a guess wearing a number.
  */
 const costHistory = (receipts: ReceiptLine[]): CostHistory | null => {
   const series = receipts
-    .map((r) => r.unitCost)
-    .filter((c) => c > 0)
+    .filter((r) => r.unitCost > 0)
+    .map((r) => ({ cost: r.unitCost, date: r.date.slice(0, 10) }))
     .reverse();
   if (series.length < 2) return null;
 
-  let changes = 0;
-  let maxStepUp = 0;
+  const steps: CostStep[] = [];
   let reversals = 0;
   let lastDir = 0;
   for (let i = 1; i < series.length; i++) {
-    const step = pctMove(series[i - 1], series[i]);
+    const pct = pctMove(series[i - 1].cost, series[i].cost);
     // Mixed pallets and rounding are not cost changes, and counting them is
     // how a stable item ends up looking erratic.
-    if (step === null || Math.abs(step) <= COST_MOVE_FLOOR) continue;
-    changes++;
-    if (step > maxStepUp) maxStepUp = step;
-    const dir = step > 0 ? 1 : -1;
+    if (pct === null || Math.abs(pct) <= COST_MOVE_FLOOR) continue;
+    steps.push({
+      from: series[i - 1].cost,
+      to: series[i].cost,
+      pct,
+      date: series[i].date,
+      index: i,
+    });
+    const dir = pct > 0 ? 1 : -1;
     if (lastDir !== 0 && dir !== lastDir) reversals++;
     lastDir = dir;
   }
 
+  // Standing means nothing after it brought the cost back to where it started.
+  const standingStepUp =
+    steps
+      .filter((step) => step.pct > 0)
+      .filter((step) =>
+        series
+          .slice(step.index)
+          .every((p) => p.cost > step.from * (1 + COST_MOVE_FLOOR / 100)),
+      )
+      .sort((a, b) => b.pct - a.pct)[0] ?? null;
+
+  const costs = series.map((p) => p.cost);
   return {
-    first: series[0],
-    last: series[series.length - 1],
-    changes,
-    maxStepUp,
-    cumulative: pctMove(series[0], series[series.length - 1]) ?? 0,
+    first: series[0].cost,
+    last: series[series.length - 1].cost,
+    firstDate: series[0].date,
+    low: Math.min(...costs),
+    high: Math.max(...costs),
+    changes: steps.length,
+    firstChangeDate: steps[0]?.date ?? null,
+    lastChangeDate: steps[steps.length - 1]?.date ?? null,
+    standingStepUp,
+    cumulative: pctMove(series[0].cost, series[series.length - 1].cost) ?? 0,
     reversals,
   };
+};
+
+/** mm/dd from a yyyy-mm-dd. Enough to place an event without spending the width
+ *  a full date costs inside a sentence. */
+const shortDate = (iso: string) => {
+  const [, m, d] = iso.split("-");
+  return `${m}/${d}`;
 };
 
 /** Inclusive day count between two yyyy-mm-dd dates. */
@@ -736,9 +788,44 @@ export const verdictFor = (
    * that loses money on every unit just buys more of the loss, so the price
    * travels with the reorder and names the order to do them in.
    */
-  const underCostNote =
+  const underCostFact =
     underCost && currentEra
-      ? ` Also selling below cost at ${money(currentEra.price)} against ${money(rulingCost ?? 0)} — worth fixing the price before reordering.`
+      ? ` Also selling below cost at ${money(currentEra.price)} against ${money(rulingCost ?? 0)}, margin ${rulingMargin === null ? "n/a" : `${rulingMargin.toFixed(1)}%`}.`
+      : "";
+
+  /**
+   * The cost history, hoisted so a stocking verdict can carry it too.
+   *
+   * Same reasoning as the below-cost note: an item that needs reordering *and*
+   * has a cost that will not hold still is one errand, not two. Telling someone
+   * to restock without mentioning that the price may not be what they last paid
+   * sends them into the order blind.
+   */
+  const hist = costHistory(receipts);
+  const step = hist?.standingStepUp ?? null;
+  const costReason = !hist
+    ? null
+    : hist.changes >= COST_CHANGES_FLAG
+      ? `${hist.changes} cost changes between ${shortDate(hist.firstChangeDate!)} and ${shortDate(hist.lastChangeDate!)}, ${money(hist.low)} to ${money(hist.high)}`
+      : step && step.pct >= COST_STEP_UP_PCT
+        ? `Cost up ${round1(step.pct)}% on ${shortDate(step.date)}, ${money(step.from)} to ${money(step.to)}, and still there`
+        : hist.cumulative >= COST_CUMULATIVE_PCT
+          ? `Cost up ${round1(hist.cumulative)}% since ${shortDate(hist.firstDate)}, ${money(hist.first)} to ${money(hist.last)}`
+          : hist.reversals >= COST_REVERSALS_FLAG
+            ? `Cost moved up and down ${hist.reversals} times between ${money(hist.low)} and ${money(hist.high)}`
+            : null;
+
+  /**
+   * At most one supplementary note, and money bleeding now outranks a
+   * conversation about the next invoice.
+   *
+   * Stacking both onto a reorder produced a four-clause paragraph in a strip
+   * meant to be read at a glance. One fact, chosen by urgency.
+   */
+  const extraNote = underCostFact
+    ? `${underCostFact} Worth fixing the price before reordering.`
+    : costReason
+      ? ` ${costReason} — worth confirming with the vendor before you order.`
       : "";
 
   /* ── no recent delivery: a stocking problem ─────────────────────────── */
@@ -747,7 +834,7 @@ export const verdictFor = (
     if (sold > 0) {
       return {
         action: "receiving",
-        evidence: `Sold ${round1(sold)} units but no receiver on file in ${lookbackDays} days. Confirm how this arrives — scanned, direct-store, or electronically.${underCostNote}`,
+        evidence: `Sold ${round1(sold)} units but no receiver on file in ${lookbackDays} days. Confirm how this arrives — scanned, direct-store, or electronically.${underCostFact}`,
         unaccounted,
       };
     }
@@ -765,14 +852,35 @@ export const verdictFor = (
     };
   }
 
-  if (!isRecent) {
+  /**
+   * Nothing left of the last delivery.
+   *
+   * Days alone were the whole reorder test, which misses the case that matters
+   * most: an item selling faster than it arrives is empty long before its
+   * cadence elapses. Reorder is a relationship between sold and received, so
+   * the relationship drives it — if as much has sold as came in, the delivery
+   * is consumed whatever the date says.
+   *
+   * Carries the same blind spot as everything built on `sinceDelivery`: there
+   * is no opening balance in the data, so prior stock is invisible and this can
+   * read empty when a few units remain. The sentence prints both figures rather
+   * than only the conclusion, so the reader can see what it is claiming.
+   */
+  const runOut = item.sinceDelivery !== null && item.sinceDelivery.left <= 0;
+
+  if (!isRecent || runOut) {
     const sd = item.sinceDelivery;
-    const gap = sd
-      ? ` ${sd.received} units in, ${sd.sold} sold, ${sd.left} unaccounted for.`
-      : "";
+    const lead =
+      runOut && sd
+        ? `${sd.received} delivered, ${sd.sold} sold since — nothing left of the last delivery.`
+        : `Last received ${lastDays} days ago — likely off the shelf.${
+            sd
+              ? ` ${sd.received} units in, ${sd.sold} sold, ${sd.left} unaccounted for.`
+              : ""
+          }`;
     return {
       action: "reorder",
-      evidence: `Last received ${lastDays} days ago — likely off the shelf.${gap}${underCostNote}`,
+      evidence: `${lead}${extraNote}`,
       unaccounted,
     };
   }
@@ -796,19 +904,20 @@ export const verdictFor = (
     };
   }
 
-  if (item.unitCost === null) {
-    return {
-      action: "insufficient",
-      evidence: `${inStock} No cost on file — margin can't be judged.`,
-      unaccounted,
-    };
-  }
-
   const costs = receipts.map((r) => r.unitCost).filter((c) => c > 0);
 
-  const retailGap =
-    currentEra && last.retail > 0
-      ? round2(currentEra.price - last.retail)
+  /**
+   * Whether the shelf price moved at all across the window.
+   *
+   * The check below claims "the shelf price didn't follow", but its guard used
+   * to be `|retailGap| < $0.05` — the ring price agreeing with the *receiver's
+   * intended retail*. That is a different statement: if the vendor raised
+   * intended retail alongside cost, the price had followed and it still fired.
+   * Comparing the first era to the current one tests what the sentence says.
+   */
+  const shelfMove =
+    eras.length >= 2 && currentEra
+      ? pctMove(eras[0].price, currentEra.price)
       : null;
   const costMove =
     costs.length >= 2 ? pctMove(costs[costs.length - 1], costs[0]) : null;
@@ -835,32 +944,20 @@ export const verdictFor = (
   if (underCost && currentEra) {
     return {
       action: "reprice",
-      evidence: `${inStock} Selling below cost at ${money(currentEra.price)} against ${money(rulingCost ?? 0)}.`,
+      evidence: `${inStock} Selling below cost at ${money(currentEra.price)} against ${money(rulingCost ?? 0)}.${rulingMargin === null ? "" : ` Margin ${rulingMargin.toFixed(1)}%.`}`,
       unaccounted,
     };
   }
 
   // Cost that can't be relied on makes every margin computed from it suspect,
-  // so this outranks the pricing verdicts that follow.
-  const hist = costHistory(receipts);
-  if (hist) {
-    const reason =
-      hist.changes >= COST_CHANGES_FLAG
-        ? `${hist.changes} cost changes in ${lookbackDays} days`
-        : hist.maxStepUp >= COST_STEP_UP_PCT
-          ? `Cost jumped ${round1(hist.maxStepUp)}% on one delivery`
-          : hist.cumulative >= COST_CUMULATIVE_PCT
-            ? `Cost up ${round1(hist.cumulative)}% across ${lookbackDays} days`
-            : hist.reversals >= COST_REVERSALS_FLAG
-              ? `Cost moved up and down ${hist.reversals} times`
-              : null;
-    if (reason) {
-      return {
-        action: "vendor",
-        evidence: `${inStock} ${reason}, ${money(hist.first)} to ${money(hist.last)}. Worth confirming the invoice price against what was quoted.`,
-        unaccounted,
-      };
-    }
+  // so this outranks the pricing verdicts that follow. The reason itself is
+  // built above, because the reorder branch needs it too.
+  if (costReason) {
+    return {
+      action: "vendor",
+      evidence: `${inStock} ${costReason}. Worth confirming the price with the vendor before the next order.`,
+      unaccounted,
+    };
   }
 
   /**
@@ -886,11 +983,11 @@ export const verdictFor = (
   if (
     costMove !== null &&
     costMove > COST_MOVE_FLOOR &&
-    (retailGap === null || Math.abs(retailGap) < RETAIL_GAP_FLOOR)
+    (shelfMove === null || shelfMove <= COST_MOVE_FLOOR)
   ) {
     return {
       action: "reprice",
-      evidence: `${inStock} Cost up ${round1(costMove)}% across the last ${costs.length} deliveries and the shelf price didn't follow. Margin ${rulingMargin === null ? "n/a" : `${rulingMargin.toFixed(1)}%`}.`,
+      evidence: `${inStock} Cost up ${round1(costMove)}% across ${costs.length} deliveries and the shelf price didn't follow. Margin ${rulingMargin === null ? "n/a" : `${rulingMargin.toFixed(1)}%`}.`,
       unaccounted,
     };
   }
