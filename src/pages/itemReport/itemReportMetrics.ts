@@ -211,6 +211,170 @@ const costHistory = (receipts: ReceiptLine[]): CostHistory | null => {
   };
 };
 
+/** How the item has been selling: what it last rang at, and whether that was a
+ *  promotion or the shelf price. */
+interface PriceRead {
+  /** The most recent day it sold, and what came in per unit that day. */
+  price: number;
+  date: string;
+  units: number;
+  /** True when `price` is an average rather than a figure the register rang. */
+  blended: boolean;
+  /** True when the most recent day rang on a promotional price type. */
+  onSale: boolean;
+  /** The current promotional run — first day, length, volume and money. Only
+   *  meaningful when `onSale`. */
+  saleStart: string;
+  saleDays: number;
+  saleUnits: number;
+  saleRevenue: number;
+  /** The last regular ring in the window, if there was one. */
+  regularPrice: number | null;
+  /** The first regular ring, so shelf-price movement can be measured without
+   *  promotional days dragging it. */
+  firstRegularPrice: number | null;
+  /** Every day that carried a promotional ring. Lets a comparison skip the
+   *  stretch where a promotion was running. */
+  promoDays: Set<string>;
+  /** The dearest price seen. A last-resort stand-in for the regular price when
+   *  nothing rang REG and the invoice carries no intended retail. */
+  highestPrice: number;
+}
+
+/**
+ * The row's price type, normalised.
+ *
+ * `String()` rather than a bare `??`: the field is typed as a string but does
+ * not always arrive as one — some rows carry a numeric code, and calling
+ * `.trim()` on that threw and took the whole report down.
+ */
+const priceTypeOf = (r: SubDeptMargin) =>
+  String(r.price_type ?? "")
+    .trim()
+    .toUpperCase();
+
+/** The base shelf price. */
+const isRegular = (r: SubDeptMargin) => priceTypeOf(r) === "REG";
+
+/**
+ * A promotional ring, and only when the row says so in a form we recognise.
+ *
+ * Deliberately not "anything that isn't REG". A numeric or blank price type
+ * tells us nothing, and reading it as a promotion would let the page announce
+ * "on sale since 08/12" for an item that was never on sale. Unknown types count
+ * as neither: they establish no regular price and support no promotion, which
+ * leaves both claims unmade rather than guessed.
+ *
+ * Verified per-sale on real rows: Pepsi rang REG at $15.99 through 08/11 and
+ * SALE at $9.99 from 08/12.
+ */
+const PROMO_TYPES = new Set(["TPR", "SALE", "AD", "ADS", "PROMO"]);
+
+const isPromo = (r: SubDeptMargin) => PROMO_TYPES.has(priceTypeOf(r));
+
+/**
+ * What the item has been selling at, and under what kind of price.
+ *
+ * Prices come from `total_sales - total_tax`, never `net_sales`. Verified on a
+ * real row: three units at $5.99 returned `total_sales 17.97`, `total_tax 0`,
+ * `net_sales 16.97` — the missing dollar a coupon. Net is money received; this
+ * is what the shelf asked, which is what a pricing decision acts on.
+ *
+ * A day is reported as an exact price when its money divides into a whole
+ * number of cents, and as an average when it doesn't. Row counting was tried
+ * first and is not enough: Coke Classic's 08/13 row is a single row of 182
+ * units for $596.24 — $3.2760 each, which nobody can pay. A real price times a
+ * unit count lands on a whole cent; a multi-buy or a mixed day does not.
+ *
+ * The promotional run walks back from the most recent day while the days stay
+ * promotional, stopping at the first regular one. Pepsi stops at 08/11, giving
+ * a two-day run of 53 units — which is what makes "on sale since 08/12" and the
+ * money given away sayable.
+ */
+const readPrices = (rows: SubDeptMargin[]): PriceRead | null => {
+  /** One entry per day: money, units, and whether any of it was promotional. */
+  const days = new Map<
+    string,
+    { revenue: number; units: number; promo: boolean }
+  >();
+  let highestPrice = 0;
+  let regularPrice: number | null = null;
+  let regularDay = "";
+  let firstRegularPrice: number | null = null;
+  let firstRegularDay = "";
+
+  for (const r of rows) {
+    const u = pricedUnits(r);
+    if (u <= 0) continue;
+    const day = r.sale_date.slice(0, 10);
+    const revenue = r.total_sales - r.total_tax;
+
+    const entry = days.get(day) ?? { revenue: 0, units: 0, promo: false };
+    entry.revenue += revenue;
+    entry.units += u;
+    if (isPromo(r)) entry.promo = true;
+    days.set(day, entry);
+
+    const rowPrice = revenue / u;
+    if (rowPrice > highestPrice) highestPrice = rowPrice;
+    // Latest regular ring wins, so a price change is picked up rather than the
+    // first one seen.
+    if (isRegular(r)) {
+      if (day >= regularDay) {
+        regularDay = day;
+        regularPrice = round2(rowPrice);
+      }
+      if (firstRegularDay === "" || day < firstRegularDay) {
+        firstRegularDay = day;
+        firstRegularPrice = round2(rowPrice);
+      }
+    }
+  }
+  if (days.size === 0) return null;
+
+  const ordered = [...days.keys()].sort();
+  const latest = ordered[ordered.length - 1];
+  const today = days.get(latest)!;
+
+  // Walk back while the days stay promotional.
+  let saleStart = latest;
+  let saleUnits = 0;
+  let saleRevenue = 0;
+  let saleDays = 0;
+  if (today.promo) {
+    for (let i = ordered.length - 1; i >= 0; i--) {
+      const d = days.get(ordered[i])!;
+      if (!d.promo) break;
+      saleStart = ordered[i];
+      saleUnits += d.units;
+      saleRevenue += d.revenue;
+      saleDays += 1;
+    }
+  }
+
+  // Tolerance rather than equality: 37.98 / 6 lands a fraction of a cent off
+  // 6.33 in floating point before rounding.
+  const cents = (today.revenue / today.units) * 100;
+
+  return {
+    price: round2(today.revenue / today.units),
+    date: latest,
+    units: round1(today.units),
+    blended: Math.abs(cents - Math.round(cents)) >= 1e-4,
+    onSale: today.promo,
+    saleStart,
+    saleDays,
+    saleUnits: round1(saleUnits),
+    saleRevenue: round2(saleRevenue),
+    regularPrice,
+    firstRegularPrice,
+    promoDays: new Set(
+      [...days.entries()].filter(([, d]) => d.promo).map(([day]) => day),
+    ),
+    highestPrice: round2(highestPrice),
+  };
+};
+
 /** mm/dd from a yyyy-mm-dd. Enough to place an event without spending the width
  *  a full date costs inside a sentence. */
 const shortDate = (iso: string) => {
@@ -743,7 +907,6 @@ export const verdictFor = (
    * report a blend that never rang — but that is a property of the day, not of
    * how many days ran, and requiring two of them fixes none of it.
    */
-  const currentEra = eras[eras.length - 1] ?? null;
 
   /**
    * The cost that rules today: the newest receiver.
@@ -766,16 +929,50 @@ export const verdictFor = (
    * which is +13%. Harmless when nothing else quoted a cost; wrong the moment
    * the sentence beside it names one.
    */
+  /** What it last rang at, and whether that was a promotion. */
+  const lastPrice = readPrices(item.rows);
+
+  /**
+   * The shelf price, best source first.
+   *
+   * A regular ring is the real thing. Failing that the last receiver's intended
+   * retail, which is what the invoice expects the shelf to be — the only source
+   * for an item that spent the whole window on promotion. Failing both, the
+   * dearest price seen, which is a stand-in and not evidence.
+   */
+  const regularPrice =
+    lastPrice?.regularPrice ??
+    (last && last.retail > 0 ? last.retail : null) ??
+    (lastPrice && lastPrice.highestPrice > 0 ? lastPrice.highestPrice : null);
+
+  const regularSource =
+    lastPrice?.regularPrice != null
+      ? "Regular price"
+      : last && last.retail > 0
+        ? "Regular price per the last invoice"
+        : "Highest price seen";
+
   const rulingMargin =
-    currentEra && rulingCost !== null && currentEra.price > 0
-      ? round1(((currentEra.price - rulingCost) / currentEra.price) * 100)
+    lastPrice && rulingCost !== null && lastPrice.price > 0
+      ? round1(((lastPrice.price - rulingCost) / lastPrice.price) * 100)
       : null;
 
+  /** Dropped rather than printed as "n/a". An item that sold only on promotion
+   *  has no regular price to compute a margin from, and a placeholder in the
+   *  middle of a sentence reads as a broken figure rather than an absent one. */
+  const marginClause =
+    rulingMargin === null ? "" : `, margin ${rulingMargin.toFixed(1)}%`;
+
   const underCost =
-    currentEra !== null &&
+    lastPrice !== null &&
     rulingCost !== null &&
-    currentEra.price > 0 &&
-    currentEra.price < rulingCost;
+    lastPrice.price > 0 &&
+    lastPrice.price < rulingCost;
+
+  /** The shelf tag itself is under cost — a permanent problem that taking the
+   *  item off promotion would not fix, so it outranks an underwater promo. */
+  const regularUnderCost =
+    regularPrice !== null && rulingCost !== null && regularPrice < rulingCost;
 
   /**
    * Losing money per unit, said alongside a stocking verdict rather than
@@ -789,8 +986,8 @@ export const verdictFor = (
    * travels with the reorder and names the order to do them in.
    */
   const underCostFact =
-    underCost && currentEra
-      ? ` Also selling below cost at ${money(currentEra.price)} against ${money(rulingCost ?? 0)}, margin ${rulingMargin === null ? "n/a" : `${rulingMargin.toFixed(1)}%`}.`
+    underCost && lastPrice
+      ? ` Also below cost — ${lastPrice.blended ? `${lastPrice.units} units on ${shortDate(lastPrice.date)} averaged ${money(lastPrice.price)}` : `last sold at ${money(lastPrice.price)} on ${shortDate(lastPrice.date)}`} against ${money(rulingCost ?? 0)}${marginClause}.`
       : "";
 
   /**
@@ -894,6 +1091,23 @@ export const verdictFor = (
 
   if (sold === 0) {
     const sd = item.sinceDelivery;
+    /**
+     * Zero sales is only evidence once the item has had a chance.
+     *
+     * A delivery two days ago with nothing scanned yet was being ranked worst
+     * in the list, ahead of items genuinely off the shelf. Either it has sat a
+     * full week, or it sold in one of the comparison periods so we know it
+     * normally moves — without one of those there is nothing to explain yet.
+     */
+    const hadTime = (lastDays ?? 0) >= 7;
+    const hasBaseline = Boolean(item.lw || item.ly);
+    if (!hadTime && !hasBaseline) {
+      return {
+        action: "insufficient",
+        evidence: `${inStock} Delivered ${lastDays} day${lastDays === 1 ? "" : "s"} ago, nothing scanned yet and no history to compare against — too soon to call.`,
+        unaccounted,
+      };
+    }
     const held = sd
       ? ` ${sd.received} units delivered, none scanned since.`
       : " Nothing scanned since.";
@@ -915,9 +1129,22 @@ export const verdictFor = (
    * intended retail alongside cost, the price had followed and it still fired.
    * Comparing the first era to the current one tests what the sentence says.
    */
+  /**
+   * Whether the *shelf* price moved — measured on regular rings only.
+   *
+   * This compared the first estimated era to the current one, and both are
+   * daily blends. On a promoted item those swing for reasons that have nothing
+   * to do with the tag: a promotion starting reads as a price cut, ending reads
+   * as a rise. Comparing the first regular ring to the last measures the shelf
+   * and ignores the promotions running across it.
+   *
+   * Null when the item never rang regular in the window, and the check that
+   * uses it then does not fire — with no regular price at either end there is
+   * no way to say whether the shelf followed anything.
+   */
   const shelfMove =
-    eras.length >= 2 && currentEra
-      ? pctMove(eras[0].price, currentEra.price)
+    lastPrice?.firstRegularPrice != null && lastPrice.regularPrice != null
+      ? pctMove(lastPrice.firstRegularPrice, lastPrice.regularPrice)
       : null;
   const costMove =
     costs.length >= 2 ? pctMove(costs[costs.length - 1], costs[0]) : null;
@@ -941,10 +1168,46 @@ export const verdictFor = (
    * Ahead of the cost-history checks below. Selling under cost is unambiguous
    * and fixable today; an unreliable cost is a conversation.
    */
-  if (underCost && currentEra) {
+  /**
+   * Two ways a price is wrong, and they need different fixes.
+   *
+   * The shelf tag being under cost is checked first: it is permanent, and
+   * taking the item off promotion would not repair it. An underwater promotion
+   * is the commoner case and the easier fix — end the promotion — so its
+   * sentence says how long it has run and what it has cost, which is what makes
+   * "take it off sale" an argument rather than an instruction.
+   */
+  if (regularUnderCost && regularPrice !== null) {
+    const pct = round1(
+      ((regularPrice - (rulingCost ?? 0)) / regularPrice) * 100,
+    );
     return {
       action: "reprice",
-      evidence: `${inStock} Selling below cost at ${money(currentEra.price)} against ${money(rulingCost ?? 0)}.${rulingMargin === null ? "" : ` Margin ${rulingMargin.toFixed(1)}%.`}`,
+      evidence: `${inStock} ${regularSource} is ${money(regularPrice)}, below the ${money(rulingCost ?? 0)} you last paid. Margin ${pct.toFixed(1)}%.${regularSource === "Highest price seen" ? " Worth checking the shelf tag — if it reads higher than this, the gap is coming from a sale or a coupon." : ""}`,
+      unaccounted,
+    };
+  }
+
+  if (underCost && lastPrice && lastPrice.onSale) {
+    const givenAway = round2(
+      (rulingCost ?? 0) * lastPrice.saleUnits - lastPrice.saleRevenue,
+    );
+    const run = `${lastPrice.saleDays} day${lastPrice.saleDays === 1 ? "" : "s"}, ${lastPrice.saleUnits} units`;
+    return {
+      action: "reprice",
+      evidence: `${inStock} On sale at ${money(lastPrice.price)} since ${shortDate(lastPrice.saleStart)} — ${run} — against a ${money(rulingCost ?? 0)} cost.${rulingMargin === null ? "" : ` Margin ${rulingMargin.toFixed(1)}%,`} about ${money(givenAway)} given away.${regularPrice === null ? "" : ` ${regularSource} is ${money(regularPrice)}, so it is the promotion that is underwater.`}`,
+      unaccounted,
+    };
+  }
+
+  if (underCost && lastPrice) {
+    return {
+      action: "reprice",
+      evidence: `${inStock} ${
+        lastPrice.blended
+          ? `On ${shortDate(lastPrice.date)} it rang at more than one price, averaging ${money(lastPrice.price)} across ${lastPrice.units} units`
+          : `Last sold at ${money(lastPrice.price)} on ${shortDate(lastPrice.date)}`
+      }, below the ${money(rulingCost ?? 0)} cost.${rulingMargin === null ? "" : ` Margin ${rulingMargin.toFixed(1)}%.`}`,
       unaccounted,
     };
   }
@@ -983,16 +1246,30 @@ export const verdictFor = (
   if (
     costMove !== null &&
     costMove > COST_MOVE_FLOOR &&
-    (shelfMove === null || shelfMove <= COST_MOVE_FLOOR)
+    shelfMove !== null &&
+    shelfMove <= COST_MOVE_FLOOR
   ) {
     return {
       action: "reprice",
-      evidence: `${inStock} Cost up ${round1(costMove)}% across ${costs.length} deliveries and the shelf price didn't follow. Margin ${rulingMargin === null ? "n/a" : `${rulingMargin.toFixed(1)}%`}.`,
+      evidence: `${inStock} Cost up ${round1(costMove)}% across ${costs.length} deliveries and the shelf price didn't follow${marginClause}.`,
       unaccounted,
     };
   }
 
-  const pair = comparableEras(eras);
+  /**
+   * Price up, demand down — but only between two regular stretches.
+   *
+   * Without that condition this fires on every promotion that ends: the price
+   * "rises" from the promotional one back to the shelf one, and demand falls
+   * away from the volume the promotion was run to create. Both are true and
+   * neither is a pricing fault — moving stock is what the promotion was for.
+   *
+   * An era is skipped if any of its days carried a promotional ring, so the
+   * comparison only ever sees the shelf price against itself.
+   */
+  const pair = comparableEras(
+    eras.filter((e) => !lastPrice?.promoDays.has(e.start)),
+  );
   if (pair) {
     const priceMove = pctMove(pair.prior.price, pair.current.price);
     const demandMove = pctMove(
@@ -1031,8 +1308,8 @@ export const verdictFor = (
   return {
     action: "none",
     evidence: recovering
-      ? `${inStock} Down on last year but holding against last week. Cost steady, margin ${rulingMargin === null ? "n/a" : `${rulingMargin.toFixed(1)}%`}.`
-      : `${inStock} Trend ${trend === null ? "flat" : `${round1(trend)}%`}, cost steady, margin ${rulingMargin === null ? "n/a" : `${rulingMargin.toFixed(1)}%`}. Nothing to fix.`,
+      ? `${inStock} Down on last year but holding against last week. Cost steady${marginClause}.`
+      : `${inStock} Trend ${trend === null ? "flat" : `${round1(trend)}%`}, cost steady${marginClause}. Nothing to fix.`,
     unaccounted,
   };
 };
