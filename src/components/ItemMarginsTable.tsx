@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { MagnifyingGlassIcon, MinusCircleIcon } from "@heroicons/react/16/solid";
+import { MinusCircleIcon } from "@heroicons/react/16/solid";
 import {
   ExclamationTriangleIcon,
   ExclamationCircleIcon,
@@ -32,6 +32,8 @@ import {
   type RowMetricKey,
 } from "../utils/itemMargins";
 import ThresholdFilter from "./filters/ThresholdFilter";
+import ColFilter from "./filters/ColFilter";
+import { colInputStyle } from "./filters/colFilterStyles";
 import UpcContextMenu from "./UpcContextMenu";
 import SharedSeverityBadge from "./SeverityBadge";
 import { LW_OFFSET, LY_OFFSET, shiftIso } from "../utils/grading";
@@ -61,106 +63,6 @@ const SeverityBadge = ({ severity }: { severity: ItemSeverity }) =>
   ) : (
     <SharedSeverityBadge severity={severity} />
   );
-
-interface ColFilterProps {
-  label: string;
-  active: boolean;
-  onApply: () => void;
-  onClear?: () => void;
-  children: React.ReactNode;
-}
-
-const ColFilter = ({
-  label,
-  active,
-  onApply,
-  onClear,
-  children,
-}: ColFilterProps) => {
-  const [open, setOpen] = useState(false);
-  const wrapRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    const close = (e: MouseEvent) => {
-      if (wrapRef.current && !wrapRef.current.contains(e.target as Node))
-        setOpen(false);
-    };
-    document.addEventListener("mousedown", close);
-    return () => document.removeEventListener("mousedown", close);
-  }, [open]);
-
-  return (
-    <div ref={wrapRef} className="relative flex items-center gap-1 min-w-0">
-      <button
-        onClick={() => setOpen((v) => !v)}
-        className={`flex items-center gap-1 text-[9px] font-semibold uppercase tracking-wide transition-colors select-none flex-shrink-0 ${
-          active ? "text-[#1e2a4a]" : "text-content"
-        }`}
-      >
-        {label}
-        {active && (
-          <span className="w-1 h-1 rounded-full bg-[#1e2a4a] flex-shrink-0" />
-        )}
-      </button>
-      {open && (
-        <div className="fixed inset-0 z-[199]" onClick={() => setOpen(false)} />
-      )}
-      {open && (
-        <div
-          className="bg-custom-white"
-          style={{
-            position: "absolute",
-            top: "calc(100% + 6px)",
-            left: 0,
-            zIndex: 200,
-            border: "1px solid rgba(30,42,74,0.12)",
-            borderRadius: 6,
-            boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
-            padding: "10px 10px 8px",
-            minWidth: 168,
-          }}
-        >
-          {children}
-          <div className="flex gap-1.5 mt-2">
-            <button
-              onClick={() => {
-                onApply();
-                setOpen(false);
-              }}
-              className="flex-1 flex items-center justify-center gap-1 rounded py-1 text-[10px] font-medium text-custom-white"
-              style={{ background: "#1e2a4a" }}
-            >
-              <MagnifyingGlassIcon className="w-3 h-3" /> Apply
-            </button>
-            {onClear && (
-              <button
-                onClick={() => {
-                  onClear();
-                  setOpen(false);
-                }}
-                className="px-2 rounded py-1 text-[10px] text-content border border-gray-200 hover:text-content transition-colors"
-              >
-                Clear
-              </button>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
-const colInputStyle: React.CSSProperties = {
-  width: "100%",
-  fontSize: 11,
-  border: "1px solid rgba(30,42,74,0.15)",
-  borderRadius: 4,
-  padding: "4px 7px",
-  outline: "none",
-  color: "var(--color-text-primary)",
-  background: "rgba(30,42,74,0.03)",
-};
 
 const GradeCell = ({
   pct,
@@ -197,7 +99,11 @@ interface Props {
   /** Item rows for all three periods. Any row carrying the margin columns and a
    *  sale_date works — CatItem from categories/cats, SubDeptMargin from
    *  subs/subs. */
-  items: { tw: MarginSourceRow[]; lw: MarginSourceRow[]; ly: MarginSourceRow[] };
+  items: {
+    tw: MarginSourceRow[];
+    lw: MarginSourceRow[];
+    ly: MarginSourceRow[];
+  };
   /** The page's own metric toggle, so switching it re-grades the items too. */
   gradingMetric: ItemGradingMetric;
   /** Items grade against their own threshold, separate from the page's. Null
@@ -219,7 +125,6 @@ const ItemMarginsTable = ({
   selectedDay,
   loading = false,
 }: Props) => {
-
   const [colSort, setColSort] = useState<{
     col: "ty" | "lw" | "ly";
     dir: "desc" | "asc";
@@ -320,7 +225,11 @@ const ItemMarginsTable = ({
 
   const getColSortValue = (item: ItemMarginRow, col: "ty" | "lw" | "ly") => {
     if (activeMetric === "qty") {
-      return col === "ty" ? item.qty : col === "lw" ? (item.lwQty ?? -999) : (item.lyQty ?? -999);
+      return col === "ty"
+        ? item.qty
+        : col === "lw"
+          ? (item.lwQty ?? -999)
+          : (item.lyQty ?? -999);
     }
     if (activeMetric === "margin") {
       return col === "ty"
@@ -342,7 +251,8 @@ const ItemMarginsTable = ({
       data = data.filter((d) =>
         d.description.toLowerCase().includes(appliedDesc.toLowerCase()),
       );
-    if (appliedUpc) data = data.filter((d) => d.productCode.includes(appliedUpc));
+    if (appliedUpc)
+      data = data.filter((d) => d.productCode.includes(appliedUpc));
     if (sevFilter !== "all")
       data = data.filter(
         (d) => getItemSeverity(d, thresholdAmt, gradingMetric) === sevFilter,
@@ -394,7 +304,12 @@ const ItemMarginsTable = ({
   const selectedInsight = useMemo(
     () =>
       selectedItem && selectedDetail
-        ? buildInsight(selectedItem, selectedDetail, thresholdAmt, gradingMetric)
+        ? buildInsight(
+            selectedItem,
+            selectedDetail,
+            thresholdAmt,
+            gradingMetric,
+          )
         : null,
     [selectedItem, selectedDetail, thresholdAmt, gradingMetric],
   );
@@ -403,10 +318,9 @@ const ItemMarginsTable = ({
    *  the rest support it in a fixed order. */
   const reportRows = !selectedItem
     ? []
-    : (
-        gradingMetric === "qty"
-          ? (["qty", "contribution", "sales", "margin"] as const)
-          : (["sales", "contribution", "margin", "qty"] as const)
+    : (gradingMetric === "qty"
+        ? (["qty", "contribution", "sales", "margin"] as const)
+        : (["sales", "contribution", "margin", "qty"] as const)
       ).map((key) => {
         const m = getRowMetric(selectedItem, key);
         return {
@@ -461,7 +375,10 @@ const ItemMarginsTable = ({
 
   return (
     <>
-      <div className="flex-1 min-h-0 flex" onContextMenu={(e) => openCtxMenu(e, "")}>
+      <div
+        className="flex-1 min-h-0 flex"
+        onContextMenu={(e) => openCtxMenu(e, "")}
+      >
         {/* ── Left: item list ── */}
         <div
           className="flex flex-col border-r border-gray-100 min-w-0"
@@ -496,7 +413,6 @@ const ItemMarginsTable = ({
                 </div>
               )}
             </div>
-
           </div>
 
           {/* Right padding is 4px wider than the rows' — matches the reserved
@@ -577,7 +493,9 @@ const ItemMarginsTable = ({
                 return (
                   <button
                     key={item.productCode}
-                    onClick={() => setSelectedUpc(isSel ? null : item.productCode)}
+                    onClick={() =>
+                      setSelectedUpc(isSel ? null : item.productCode)
+                    }
                     onContextMenu={(e) => {
                       e.stopPropagation();
                       openCtxMenu(e, item.productCode);
@@ -736,7 +654,9 @@ const ItemMarginsTable = ({
                             <div className="flex justify-center mt-0.5">
                               <GradeCell
                                 pct={
-                                  side === "lw" ? reportRows[0].lw : reportRows[0].ly
+                                  side === "lw"
+                                    ? reportRows[0].lw
+                                    : reportRows[0].ly
                                 }
                                 threshold={thresholdAmt}
                                 isPts={reportRows[0].isPts}
@@ -832,7 +752,8 @@ const ItemMarginsTable = ({
                     // Worst first; days with no baseline sort last — unknown
                     // isn't the same as bad.
                     const ranked = [...days].sort((a, b) => {
-                      if (a.rank === null && b.rank === null) return b.ty - a.ty;
+                      if (a.rank === null && b.rank === null)
+                        return b.ty - a.ty;
                       if (a.rank === null) return 1;
                       if (b.rank === null) return -1;
                       return a.rank - b.rank;
@@ -864,7 +785,9 @@ const ItemMarginsTable = ({
                             >
                               <span
                                 className={`w-2 h-2 rounded-full ${
-                                  sev === null ? "bg-gray-300" : severityDotClass[sev]
+                                  sev === null
+                                    ? "bg-gray-300"
+                                    : severityDotClass[sev]
                                 }`}
                               />
                               <span className="text-[12px] font-semibold text-content">

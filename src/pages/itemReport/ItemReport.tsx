@@ -38,6 +38,7 @@ import {
   RECEIVING_LOOKBACK_DAYS as RECEIVING_LOOKBACK,
   type ReportScope,
 } from "./itemReportData";
+import { normalizeProductCode } from "../../utils/productCode";
 import {
   buildPriceEras,
   buildReport,
@@ -156,7 +157,7 @@ const ItemReport = () => {
           ...preloaded.rows.lw,
           ...preloaded.rows.ly,
         ])
-          retained.add(String(row.product_code));
+          retained.add(normalizeProductCode(row.product_code));
         void startWalk(next, [...retained]);
         return;
       }
@@ -235,7 +236,9 @@ const ItemReport = () => {
           toast.info("No critical items in that store for that week");
           return;
         }
-        listUpcs = [...new Set(graded.map((g) => g.productCode))];
+        listUpcs = [
+          ...new Set(graded.map((g) => normalizeProductCode(g.productCode))),
+        ];
         listDepts = [
           ...new Set(graded.map((g) => g.dept).filter((d) => d.length > 0)),
         ];
@@ -258,7 +261,7 @@ const ItemReport = () => {
       // nothing unreachable is carried.
       const retain = new Set(listUpcs);
       for (const row of [...tyRows, ...lwRows, ...lyRows])
-        retain.add(String(row.product_code));
+        retain.add(normalizeProductCode(row.product_code));
 
       // Deliberately not awaited — the sheet is readable before the walk lands,
       // and receipts fill in behind it.
@@ -388,6 +391,18 @@ const ItemReport = () => {
     [items, state.itemScope],
   );
 
+  /**
+   * Whether this store has any receiving at all in the lookback.
+   *
+   * A finished walk that opened zero invoices is `receivers/` answering
+   * `record_count: 0` — the store keeps no received orders in the data, which
+   * is a different thing from an item never appearing on one. Only meaningful
+   * once the walk is done; while it runs the rows are "pending" anyway.
+   */
+  const receivingAvailable = !(
+    state.receivingComplete && state.invoicesTotal === 0
+  );
+
   const sheetRows: SheetRow[] = useMemo(
     () =>
       scopedItems.map((item) => {
@@ -401,10 +416,17 @@ const ItemReport = () => {
             windowDays,
             RECEIVING_LOOKBACK,
             state.receivingComplete,
+            receivingAvailable,
           ),
         };
       }),
-    [scopedItems, state.receipts, state.receivingComplete, windowDays],
+    [
+      scopedItems,
+      state.receipts,
+      state.receivingComplete,
+      receivingAvailable,
+      windowDays,
+    ],
   );
 
   const counts = useMemo(
@@ -542,6 +564,7 @@ const ItemReport = () => {
               ? state.receivingError
               : `${state.invoicesSeen} of ${state.invoicesTotal} invoices`
           }
+          receivingAvailable={receivingAvailable}
         />
 
         <ItemReportRail

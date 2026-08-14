@@ -398,7 +398,7 @@ const ItemReportExportModal = ({
           description: item.description,
           // Names the rows the upload could not have contained, so nobody
           // wonders why a UPC they never sent is in their own file.
-          source: item.discovered ? "Found in receipts" : "Uploaded",
+          source: item.discovered ? "Found in receivers" : "Uploaded",
           sales: fmtNum(item.ty.sales),
           units: fmtNum(item.ty.units),
           lwPct: item.lwPct === null ? "" : fmtNum(item.lwPct),
@@ -500,6 +500,7 @@ const ItemReportExportModal = ({
             reorder: 0,
             reprice: 0,
             vendor: 0,
+            receiving: 0,
             none: 0,
             insufficient: 0,
             pending: 0,
@@ -639,9 +640,9 @@ const ItemReportExportModal = ({
       {!receivingComplete && (
         <div className="px-4 pt-3">
           <div className="px-2.5 py-2 rounded-lg bg-amber-50 text-[11.5px] text-amber-900 leading-snug">
-            Deliveries are still being read. Actions that depend on receipts are
-            provisional, and receiving columns will be blank for items the walk
-            hasn't reached.
+            Deliveries are still being read. Actions that depend on receivers
+            are provisional, and receiving columns will be blank for items the
+            walk hasn't reached.
           </div>
         </div>
       )}

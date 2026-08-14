@@ -3,6 +3,7 @@ import { useAppSelector, useAppDispatch } from "../../../hooks";
 // import { useSalesState } from "../hooks/useSalesState";
 import { getSubs, getHourly } from "../../../api/sales";
 import { fetchSubDeptRowsSafe } from "../../../utils/marginRows";
+import { gradeSeverity } from "../../../utils/severity";
 import {
   addDays,
   formatGoliathDate,
@@ -1197,15 +1198,12 @@ const LedgerStoreReport = () => {
                       : item.lwQty !== null && item.lwQty > 0
                         ? ((item.tyQty - item.lwQty) / item.lwQty) * 100
                         : null;
-                  // Rounded before grading — tyNet/lwNet/lyNet (and their qty
-                  // counterparts) are sums of individual line items, so
-                  // floating-point noise can leave a value like
-                  // -0.0000000001% even when the displayed figures are
-                  // identical, misgrading it "watch".
-                  const pct = Math.round((lyPct ?? lwPct ?? 0) * 10) / 10;
-                  if (pct < -effectiveItemThreshold) return "critical";
-                  if (pct < 0) return "watch";
-                  return "healthy";
+                  // Same cut as the desktop list, epsilon and all — mobile and
+                  // desktop grading must not diverge.
+                  return gradeSeverity(
+                    lyPct ?? lwPct ?? 0,
+                    effectiveItemThreshold,
+                  );
                 };
                 const baseItems =
                   itemActiveFilter === "inactive"

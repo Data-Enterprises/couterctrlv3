@@ -4,7 +4,12 @@ import {
   setSelectedHour,
   setHourlyThreshold,
 } from "../../../features/salesLedgerSlice";
-import { formatCurrency2, formatBigNumber, addDays, sameWeekDayLastYear } from "../../../utils";
+import {
+  formatCurrency2,
+  formatBigNumber,
+  addDays,
+  sameWeekDayLastYear,
+} from "../../../utils";
 import type { GradingMetric } from "../../../features/salesLedgerSlice";
 import {
   ExclamationTriangleIcon,
@@ -16,7 +21,16 @@ import {
 } from "@heroicons/react/20/solid";
 import type { Severity } from "./LedgerRow";
 import HourTrendChart from "./HourTrendChart";
-import { formatPct, pillClass, chipClass, CTA_SEVERITY_CLASSES, severityDotClass, PCT_COL_W, type SevFilter } from "./utils";
+import {
+  formatPct,
+  pillClass,
+  gradeSeverity,
+  chipClass,
+  CTA_SEVERITY_CLASSES,
+  severityDotClass,
+  PCT_COL_W,
+  type SevFilter,
+} from "./utils";
 import ThresholdFilter from "../../../components/filters/ThresholdFilter";
 import ThresholdSlider from "../../../components/filters/ThresholdSlider";
 
@@ -46,7 +60,10 @@ type HourRow = {
 };
 
 type HourSortColumn = "ty" | "vsLW" | "vsLY";
-type HourSortState = { column: HourSortColumn; direction: "desc" | "asc" } | null;
+type HourSortState = {
+  column: HourSortColumn;
+  direction: "desc" | "asc";
+} | null;
 
 const hourSeverity = (
   r: HourRow,
@@ -69,10 +86,7 @@ const hourSeverity = (
         : r.hasLW
           ? r.vsLWPct
           : 0;
-  const pct = Math.round(primaryPct * 10) / 10;
-  if (pct < -threshold) return "critical";
-  if (pct < 0) return "watch";
-  return "healthy";
+  return gradeSeverity(primaryPct, threshold);
 };
 
 const getCta = (
@@ -183,9 +197,12 @@ const PopupHourlyView = ({
     if (!threshOpen) return;
     const close = (e: MouseEvent) => {
       if (
-        threshBtnRef.current && !threshBtnRef.current.contains(e.target as Node) &&
-        threshPopRef.current && !threshPopRef.current.contains(e.target as Node)
-      ) setThreshOpen(false);
+        threshBtnRef.current &&
+        !threshBtnRef.current.contains(e.target as Node) &&
+        threshPopRef.current &&
+        !threshPopRef.current.contains(e.target as Node)
+      )
+        setThreshOpen(false);
     };
     document.addEventListener("mousedown", close);
     return () => document.removeEventListener("mousedown", close);
@@ -205,17 +222,17 @@ const PopupHourlyView = ({
     const sumFor = (src: typeof rawHourly, dateStr: string) =>
       src
         .filter(
-          (h) => h.hour === selectedHour && h.sale_date.split("T")[0] === dateStr,
+          (h) =>
+            h.hour === selectedHour && h.sale_date.split("T")[0] === dateStr,
         )
         .reduce((acc, h) => acc + (h.total_sales - h.total_tax), 0);
 
     return tyDates.map((tyDate) => {
       const lwDate = addDays(tyDate, -7).toISOString().split("T")[0];
       const lyDate = sameWeekDayLastYear(tyDate).date;
-      const label = new Date(tyDate + "T12:00:00").toLocaleDateString(
-        "en-US",
-        { weekday: "short" },
-      );
+      const label = new Date(tyDate + "T12:00:00").toLocaleDateString("en-US", {
+        weekday: "short",
+      });
       return {
         label,
         tw: sumFor(rawHourly, tyDate),
@@ -225,8 +242,10 @@ const PopupHourlyView = ({
     });
   }, [selectedHour, rawHourly, rawLWHourly, rawLYHourly]);
 
-  const hasWeekLW = selectedHour !== null && rawLWHourly.some((h) => h.hour === selectedHour);
-  const hasWeekLY = selectedHour !== null && rawLYHourly.some((h) => h.hour === selectedHour);
+  const hasWeekLW =
+    selectedHour !== null && rawLWHourly.some((h) => h.hour === selectedHour);
+  const hasWeekLY =
+    selectedHour !== null && rawLYHourly.some((h) => h.hour === selectedHour);
 
   const hours = useMemo((): HourRow[] => {
     const buildMap = (src: typeof hourlySales) =>
@@ -292,14 +311,29 @@ const PopupHourlyView = ({
           rank[hourSeverity(b, threshold, gradingMetric)];
         if (rankDiff !== 0) return rankDiff;
         const aPct = isQty
-          ? (a.hasLY ? a.vsLYQtyPct : a.vsLWQtyPct)
-          : (a.hasLY ? a.vsLYPct : a.vsLWPct);
+          ? a.hasLY
+            ? a.vsLYQtyPct
+            : a.vsLWQtyPct
+          : a.hasLY
+            ? a.vsLYPct
+            : a.vsLWPct;
         const bPct = isQty
-          ? (b.hasLY ? b.vsLYQtyPct : b.vsLWQtyPct)
-          : (b.hasLY ? b.vsLYPct : b.vsLWPct);
+          ? b.hasLY
+            ? b.vsLYQtyPct
+            : b.vsLWQtyPct
+          : b.hasLY
+            ? b.vsLYPct
+            : b.vsLWPct;
         return aPct - bPct;
       });
-  }, [hourlySales, hourlySalesLastWeek, hourlySalesLastYear, threshold, gradingMetric, isQty]);
+  }, [
+    hourlySales,
+    hourlySalesLastWeek,
+    hourlySalesLastYear,
+    threshold,
+    gradingMetric,
+    isQty,
+  ]);
 
   const critCount = hours.filter(
     (h) => hourSeverity(h, threshold, gradingMetric) === "critical",
@@ -330,13 +364,20 @@ const PopupHourlyView = ({
   };
   const hourSortValue = (row: HourRow, column: HourSortColumn) =>
     column === "ty"
-      ? (isQty ? row.qty : row.tw)
+      ? isQty
+        ? row.qty
+        : row.tw
       : column === "vsLW"
-        ? (isQty ? row.vsLWQtyPct : row.vsLWPct)
-        : (isQty ? row.vsLYQtyPct : row.vsLYPct);
+        ? isQty
+          ? row.vsLWQtyPct
+          : row.vsLWPct
+        : isQty
+          ? row.vsLYQtyPct
+          : row.vsLYPct;
   const sortedVisible = hourSort
     ? [...visible].sort((a, b) => {
-        const diff = hourSortValue(a, hourSort.column) - hourSortValue(b, hourSort.column);
+        const diff =
+          hourSortValue(a, hourSort.column) - hourSortValue(b, hourSort.column);
         return hourSort.direction === "desc" ? -diff : diff;
       })
     : visible;
@@ -372,25 +413,37 @@ const PopupHourlyView = ({
         {/* Filter chips + threshold */}
         <div className="flex flex-wrap items-center gap-1 p-2 border-b border-gray-100 bg-gray-100">
           <button
-            onClick={() => setSevFilter((f) => (f === "critical" ? "all" : "critical"))}
+            onClick={() =>
+              setSevFilter((f) => (f === "critical" ? "all" : "critical"))
+            }
             className={`text-[10px] font-semibold px-2 py-1 rounded-full bg-severity_critical_bg text-severity_critical_text transition-shadow ${
-              sevFilter === "critical" ? "ring-2 ring-severity_critical_text/40 shadow-sm" : ""
+              sevFilter === "critical"
+                ? "ring-2 ring-severity_critical_text/40 shadow-sm"
+                : ""
             }`}
           >
             Crit ({critCount})
           </button>
           <button
-            onClick={() => setSevFilter((f) => (f === "watch" ? "all" : "watch"))}
+            onClick={() =>
+              setSevFilter((f) => (f === "watch" ? "all" : "watch"))
+            }
             className={`text-[10px] font-semibold px-2 py-1 rounded-full bg-severity_watch_bg text-severity_watch_text transition-shadow ${
-              sevFilter === "watch" ? "ring-2 ring-severity_watch_text/40 shadow-sm" : ""
+              sevFilter === "watch"
+                ? "ring-2 ring-severity_watch_text/40 shadow-sm"
+                : ""
             }`}
           >
             Watch ({watchCount})
           </button>
           <button
-            onClick={() => setSevFilter((f) => (f === "healthy" ? "all" : "healthy"))}
+            onClick={() =>
+              setSevFilter((f) => (f === "healthy" ? "all" : "healthy"))
+            }
             className={`text-[10px] font-semibold px-2 py-1 rounded-full bg-severity_healthy_bg text-severity_healthy_text transition-shadow ${
-              sevFilter === "healthy" ? "ring-2 ring-severity_healthy_text/40 shadow-sm" : ""
+              sevFilter === "healthy"
+                ? "ring-2 ring-severity_healthy_text/40 shadow-sm"
+                : ""
             }`}
           >
             OK ({healthyCount})
@@ -409,21 +462,25 @@ const PopupHourlyView = ({
                 className="absolute top-full left-0 mt-1 p-1.5 rounded-md border border-gray-200 bg-custom-white shadow-lg z-20"
               >
                 <div className="flex items-center gap-2">
-                <ThresholdSlider
-                  value={rawThreshold}
-                  onChange={(v) => dispatch(setHourlyThreshold(v))}
-                  ariaLabel="Hourly grading threshold, percent"
-                  className="w-[92px] flex-shrink-0"
-                />
-                <ThresholdFilter
-                  value={
-                    rawThreshold === null ? null : { op: "gt", amount: rawThreshold }
-                  }
-                  onChange={(v) => dispatch(setHourlyThreshold(v?.amount ?? null))}
-                  showOp={false}
-                  suffix="%"
-                  inputWidth={40}
-                />
+                  <ThresholdSlider
+                    value={rawThreshold}
+                    onChange={(v) => dispatch(setHourlyThreshold(v))}
+                    ariaLabel="Hourly grading threshold, percent"
+                    className="w-[92px] flex-shrink-0"
+                  />
+                  <ThresholdFilter
+                    value={
+                      rawThreshold === null
+                        ? null
+                        : { op: "gt", amount: rawThreshold }
+                    }
+                    onChange={(v) =>
+                      dispatch(setHourlyThreshold(v?.amount ?? null))
+                    }
+                    showOp={false}
+                    suffix="%"
+                    inputWidth={40}
+                  />
                 </div>
               </div>
             )}
@@ -496,7 +553,9 @@ const PopupHourlyView = ({
                     : "border-transparent hover:bg-gray-50"
                 }`}
               >
-                <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${severityDotClass[sev]}`} />
+                <span
+                  className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${severityDotClass[sev]}`}
+                />
                 <span className="text-[12px] font-medium text-content truncate flex-1">
                   {formatHourRange(r.hour)}
                 </span>
@@ -509,7 +568,9 @@ const PopupHourlyView = ({
                   </span>
                   <span
                     className={`text-[12px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${
-                      r.hasLW ? pillClass(rowVsLWPct, threshold) : "bg-gray-100 text-gray-400"
+                      r.hasLW
+                        ? pillClass(rowVsLWPct, threshold)
+                        : "bg-gray-100 text-gray-400"
                     }`}
                     style={{ minWidth: PCT_COL_W }}
                   >
@@ -517,7 +578,9 @@ const PopupHourlyView = ({
                   </span>
                   <span
                     className={`text-[12px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${
-                      r.hasLY ? pillClass(rowVsLYPct, threshold) : "bg-gray-100 text-gray-400"
+                      r.hasLY
+                        ? pillClass(rowVsLYPct, threshold)
+                        : "bg-gray-100 text-gray-400"
                     }`}
                     style={{ minWidth: PCT_COL_W }}
                   >
@@ -534,38 +597,56 @@ const PopupHourlyView = ({
       <div className="flex flex-col flex-1 min-w-0">
         {/* Header row: selected hour — doubles as the CTA insight toggle */}
         {selected && cta && (
-          <div className={`relative border-b ${CTA_SEVERITY_CLASSES[cta.severity].border}`}>
+          <div
+            className={`relative border-b ${CTA_SEVERITY_CLASSES[cta.severity].border}`}
+          >
             <button
               onClick={() => setCtaOpen((v) => !v)}
               className={`w-full flex items-center gap-1.5 px-3 py-1.5 ${CTA_SEVERITY_CLASSES[cta.severity].bg} ${CTA_SEVERITY_CLASSES[cta.severity].hoverBg} transition-colors`}
             >
               {cta.severity === "critical" && (
-                <ExclamationTriangleIcon className={`w-3.5 h-3.5 ${CTA_SEVERITY_CLASSES[cta.severity].text} flex-shrink-0`} />
+                <ExclamationTriangleIcon
+                  className={`w-3.5 h-3.5 ${CTA_SEVERITY_CLASSES[cta.severity].text} flex-shrink-0`}
+                />
               )}
               {cta.severity === "watch" && (
-                <ExclamationCircleIcon className={`w-3.5 h-3.5 ${CTA_SEVERITY_CLASSES[cta.severity].text} flex-shrink-0`} />
+                <ExclamationCircleIcon
+                  className={`w-3.5 h-3.5 ${CTA_SEVERITY_CLASSES[cta.severity].text} flex-shrink-0`}
+                />
               )}
               {cta.severity === "healthy" && (
-                <CheckCircleIcon className={`w-3.5 h-3.5 ${CTA_SEVERITY_CLASSES[cta.severity].text} flex-shrink-0`} />
+                <CheckCircleIcon
+                  className={`w-3.5 h-3.5 ${CTA_SEVERITY_CLASSES[cta.severity].text} flex-shrink-0`}
+                />
               )}
-              <span className={`text-[12px] font-semibold truncate ${CTA_SEVERITY_CLASSES[cta.severity].text}`}>
+              <span
+                className={`text-[12px] font-semibold truncate ${CTA_SEVERITY_CLASSES[cta.severity].text}`}
+              >
                 {formatHourRange(selected.hour)}
               </span>
-              <span className={`text-[10px] font-semibold flex-shrink-0 ${CTA_SEVERITY_CLASSES[cta.severity].text}`}>
+              <span
+                className={`text-[10px] font-semibold flex-shrink-0 ${CTA_SEVERITY_CLASSES[cta.severity].text}`}
+              >
                 Insight
               </span>
               <span className="flex-1" />
               {ctaOpen ? (
-                <ChevronUpIcon className={`w-3 h-3 flex-shrink-0 ${CTA_SEVERITY_CLASSES[cta.severity].text}`} />
+                <ChevronUpIcon
+                  className={`w-3 h-3 flex-shrink-0 ${CTA_SEVERITY_CLASSES[cta.severity].text}`}
+                />
               ) : (
-                <ChevronDownIcon className={`w-3 h-3 flex-shrink-0 ${CTA_SEVERITY_CLASSES[cta.severity].text}`} />
+                <ChevronDownIcon
+                  className={`w-3 h-3 flex-shrink-0 ${CTA_SEVERITY_CLASSES[cta.severity].text}`}
+                />
               )}
             </button>
             {ctaOpen && (
               <div
                 className={`absolute top-full left-0 right-0 z-20 px-3 py-2 border-b shadow-lg ${CTA_SEVERITY_CLASSES[cta.severity].bg} ${CTA_SEVERITY_CLASSES[cta.severity].border}`}
               >
-                <span className={`text-[11px] leading-relaxed ${CTA_SEVERITY_CLASSES[cta.severity].text}`}>
+                <span
+                  className={`text-[11px] leading-relaxed ${CTA_SEVERITY_CLASSES[cta.severity].text}`}
+                >
                   {cta.text}
                 </span>
               </div>

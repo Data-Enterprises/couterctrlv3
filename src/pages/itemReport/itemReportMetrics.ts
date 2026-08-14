@@ -4,6 +4,7 @@ import { pricedUnits } from "../inventory/inventoryData";
 import { estimatedPricePoints } from "../inventory/pricePoints";
 import type { EstimatedPricePoint } from "../inventory/pricePoints";
 import type { ReceiptLine } from "./itemReportData";
+import { normalizeProductCode } from "../../utils/productCode";
 import type { SubDeptMargin } from "../../interfaces";
 
 /**
@@ -41,9 +42,36 @@ const COST_MOVE_FLOOR = 2;
 /** A shelf price this far under what the receipt intended is worth naming. */
 const RETAIL_GAP_FLOOR = 0.05;
 
-/** Distinct unit costs across the lookback before the cost itself is the
- *  problem rather than the price set against it. */
-const ERRATIC_COST_SPREAD = 0.1;
+/**
+ * When cost movement is the vendor's problem rather than the shelf's.
+ *
+ * These replace a single rule — three receipts and a ten-cent spread — that was
+ * wrong twice over. It counted *receipts*, not cost *changes*, so three
+ * deliveries carrying one price rise looked like three; and ten cents is
+ * absolute, which is 7% of a $1.43 soda and 0.5% of a $20 case. Between them
+ * they swept up most of the list, which is why "call the vendor" stopped
+ * meaning anything.
+ *
+ * Cost drifting upward is the economy. These are the shapes that are worth a
+ * phone call, and each fires its own sentence so the row says which one it is.
+ */
+
+/** Changes, not cost points — four costs is three changes. Steps smaller than
+ *  `COST_MOVE_FLOOR` are rounding and don't count toward it. */
+const COST_CHANGES_FLAG = 3;
+
+/** One delivery moving this far up is worth asking about on its own, however
+ *  steady the rest of the history looks. */
+const COST_STEP_UP_PCT = 5;
+
+/** Where the whole lookback lands, first receipt to last. Small rises that all
+ *  run the same way reach a number no single step reveals. */
+const COST_CUMULATIVE_PCT = 10;
+
+/** Direction flips. Up-and-down is a different complaint from a trend: it makes
+ *  invoice checking, promo planning and ordering unreliable even when the cost
+ *  ends up where it started. */
+const COST_REVERSALS_FLAG = 2;
 
 /**
  * The span stock movement is measured over.
@@ -79,6 +107,65 @@ const pctMove = (from: number, to: number) =>
 
 const money = (n: number) => `$${n.toFixed(2)}`;
 
+/** What the cost did across the lookback, in the four shapes worth a call. */
+interface CostHistory {
+  first: number;
+  last: number;
+  /** Steps between consecutive receipts that moved more than the rounding
+   *  floor. Four cost points is three changes — the distinction the old rule
+   *  missed by counting receipts. */
+  changes: number;
+  /** The largest single rise, as a percentage. */
+  maxStepUp: number;
+  /** First receipt to last, as a percentage. */
+  cumulative: number;
+  /** How often the direction flipped between significant steps. */
+  reversals: number;
+}
+
+/**
+ * Reads a cost history forwards.
+ *
+ * Receipts arrive newest-first because that is how every list on the page reads
+ * them, but cost is a story told in the order it happened, so this reverses
+ * once at the top rather than indexing backwards four times.
+ *
+ * Returns null below two priced receipts: one cost is not a history, and a
+ * verdict drawn from it would be a guess wearing a number.
+ */
+const costHistory = (receipts: ReceiptLine[]): CostHistory | null => {
+  const series = receipts
+    .map((r) => r.unitCost)
+    .filter((c) => c > 0)
+    .reverse();
+  if (series.length < 2) return null;
+
+  let changes = 0;
+  let maxStepUp = 0;
+  let reversals = 0;
+  let lastDir = 0;
+  for (let i = 1; i < series.length; i++) {
+    const step = pctMove(series[i - 1], series[i]);
+    // Mixed pallets and rounding are not cost changes, and counting them is
+    // how a stable item ends up looking erratic.
+    if (step === null || Math.abs(step) <= COST_MOVE_FLOOR) continue;
+    changes++;
+    if (step > maxStepUp) maxStepUp = step;
+    const dir = step > 0 ? 1 : -1;
+    if (lastDir !== 0 && dir !== lastDir) reversals++;
+    lastDir = dir;
+  }
+
+  return {
+    first: series[0],
+    last: series[series.length - 1],
+    changes,
+    maxStepUp,
+    cumulative: pctMove(series[0], series[series.length - 1]) ?? 0,
+    reversals,
+  };
+};
+
 /** Inclusive day count between two yyyy-mm-dd dates. */
 const daySpan = (start: string, end: string) =>
   Math.max(
@@ -113,6 +200,21 @@ export type ActionKind =
   | "reorder"
   | "reprice"
   | "vendor"
+  /**
+   * Sells, but nothing on file says it ever arrived.
+   *
+   * Split out of "vendor". That action was covering two unrelated situations —
+   * an unstable cost, which is a conversation with the vendor, and a missing
+   * receiving trail, which usually is not their fault at all. Orders received
+   * electronically never reach the scan our data is built from, so the item can
+   * be arriving perfectly well and still look absent here. Telling a manager to
+   * phone a vendor about that is a wrong steer, and wrong steers are what a
+   * suggestion tool cannot afford.
+   *
+   * What is actually worth doing is finding out how the item arrives. The list
+   * already hints at it — these are the rows whose Last column reads "none".
+   */
+  | "receiving"
   | "none"
   | "insufficient"
   /**
@@ -215,7 +317,7 @@ const totalsOf = (rows: SubDeptMargin[]): PeriodTotals => ({
 const byCode = (rows: SubDeptMargin[]) => {
   const map = new Map<string, SubDeptMargin[]>();
   for (const r of rows) {
-    const code = String(r.product_code);
+    const code = normalizeProductCode(r.product_code);
     const found = map.get(code);
     if (found) found.push(r);
     else map.set(code, [r]);
@@ -491,6 +593,7 @@ export const ACTION_LABEL: Record<ActionKind, string> = {
   reorder: "Reorder",
   reprice: "Reprice",
   vendor: "Call vendor",
+  receiving: "Check receiving",
   none: "No action",
   insufficient: "Insufficient",
 };
@@ -502,11 +605,12 @@ export const ACTION_RANK: Record<ActionKind, number> = {
   reorder: 1,
   reprice: 2,
   vendor: 3,
-  insufficient: 4,
-  none: 5,
+  receiving: 4,
+  insufficient: 5,
+  none: 6,
   /** Last, so that once the walk finishes and rows resolve, nothing that has
    *  an answer is ever sorted below something that doesn't. */
-  pending: 6,
+  pending: 7,
 };
 
 /**
@@ -529,6 +633,9 @@ export const verdictFor = (
   windowDays: number,
   lookbackDays: number,
   receivingKnown: boolean,
+  /** False when the store has no receiving on file at all — see the guard
+   *  below for why that is a different question from this item having none. */
+  receivingAvailable: boolean,
 ): Verdict => {
   const last = receipts[0] ?? null;
   const lastDays = last ? daysSince(last.date) : null;
@@ -549,13 +656,98 @@ export const verdictFor = (
     };
   }
 
+  /**
+   * The store has no received orders on file — not this item, the store.
+   * `receivers/` answered with `record_count: 0`.
+   *
+   * Everything below reads the delivery side, so without it every row in the
+   * list reaches the same branch and the page hands back a hundred identical
+   * "call the vendor, nothing received in 90 days" verdicts. Each one is
+   * strictly true and none of them is about the item it sits on — the absence
+   * is a fact about the store, and repeating it per row disguises that.
+   *
+   * So it is said once, plainly, and the rows stop pretending to a conclusion
+   * they cannot reach. The banner above the list says the same thing.
+   */
+  if (!receivingAvailable) {
+    return {
+      action: "insufficient",
+      evidence: `No received orders on file for this store in ${lookbackDays} days — nothing here can be checked against deliveries.`,
+      unaccounted,
+    };
+  }
+
+  /**
+   * The price the item is currently ringing at.
+   *
+   * No minimum era length. A two-day floor lived here briefly, on the theory
+   * that a single day was too thin to judge — but `price = net ÷ units` is
+   * exact on one unit, not an average, so a short era is precise rather than
+   * unreliable. It only suppressed true findings: an item selling one unit at
+   * $6.49 against a $6.85 cost lost money on it, and the register confirms the
+   * line.
+   *
+   * Averaging *can* distort a busy day — four units split across two prices
+   * report a blend that never rang — but that is a property of the day, not of
+   * how many days ran, and requiring two of them fixes none of it.
+   */
+  const currentEra = eras[eras.length - 1] ?? null;
+
+  /**
+   * The cost that rules today: the newest receiver.
+   *
+   * Not `currentEra.unitCost`, which is `costOn(era.start)` — whatever was
+   * current when this price *opened*. A delivery landing mid-era leaves that
+   * figure stale, and an item ringing $6.49 against a fresh $5.55 was reported
+   * as "below cost at $6.49 against $6.85" from a receiver three weeks old. The
+   * question this page asks is whether the price is wrong *now*, so the cost
+   * has to be the one now.
+   */
+  const rulingCost = last && last.unitCost > 0 ? last.unitCost : null;
+
+  /**
+   * Margin as the shelf sees it: what it rings at now, against what the last
+   * receiver cost.
+   *
+   * `item.marginPct` comes off the sales rows and is a blend across the window
+   * — it reported -7.4% on an item ringing $6.38 against a $5.55 receiver,
+   * which is +13%. Harmless when nothing else quoted a cost; wrong the moment
+   * the sentence beside it names one.
+   */
+  const rulingMargin =
+    currentEra && rulingCost !== null && currentEra.price > 0
+      ? round1(((currentEra.price - rulingCost) / currentEra.price) * 100)
+      : null;
+
+  const underCost =
+    currentEra !== null &&
+    rulingCost !== null &&
+    currentEra.price > 0 &&
+    currentEra.price < rulingCost;
+
+  /**
+   * Losing money per unit, said alongside a stocking verdict rather than
+   * instead of it.
+   *
+   * The branches below return before the pricing checks ever run, so an item
+   * that had not been delivered recently could never be flagged on price no
+   * matter what it was ringing at — one sat in Reorder selling at $6.49 against
+   * a $6.85 cost. The two findings are not alternatives: reordering something
+   * that loses money on every unit just buys more of the loss, so the price
+   * travels with the reorder and names the order to do them in.
+   */
+  const underCostNote =
+    underCost && currentEra
+      ? ` Also selling below cost at ${money(currentEra.price)} against ${money(rulingCost ?? 0)} — worth fixing the price before reordering.`
+      : "";
+
   /* ── no recent delivery: a stocking problem ─────────────────────────── */
 
   if (!last) {
     if (sold > 0) {
       return {
-        action: "vendor",
-        evidence: `Sold ${round1(sold)} units but no receipt on file in ${lookbackDays} days. Check receiving, or whether this arrives direct-store and never gets entered.`,
+        action: "receiving",
+        evidence: `Sold ${round1(sold)} units but no receiver on file in ${lookbackDays} days. Confirm how this arrives — scanned, direct-store, or electronically.${underCostNote}`,
         unaccounted,
       };
     }
@@ -568,7 +760,7 @@ export const verdictFor = (
     }
     return {
       action: "insufficient",
-      evidence: `No sales, no receipts in ${lookbackDays} days, no baseline. Can't tell if this item is still carried.`,
+      evidence: `No sales, no receivers in ${lookbackDays} days, no baseline. Can't tell if this item is still carried.`,
       unaccounted,
     };
   }
@@ -580,7 +772,7 @@ export const verdictFor = (
       : "";
     return {
       action: "reorder",
-      evidence: `Last received ${lastDays} days ago — likely off the shelf.${gap}`,
+      evidence: `Last received ${lastDays} days ago — likely off the shelf.${gap}${underCostNote}`,
       unaccounted,
     };
   }
@@ -612,41 +804,84 @@ export const verdictFor = (
     };
   }
 
-  // Cost that moves around on every delivery makes any margin unreliable, so
-  // it outranks a pricing verdict computed from it.
   const costs = receipts.map((r) => r.unitCost).filter((c) => c > 0);
-  const spread =
-    costs.length >= 2 ? Math.max(...costs) - Math.min(...costs) : 0;
-  if (costs.length >= 3 && spread >= ERRATIC_COST_SPREAD) {
-    return {
-      action: "vendor",
-      evidence: `${inStock} ${costs.length} receipts at costs from ${money(Math.min(...costs))} to ${money(Math.max(...costs))}. Margin can't be trusted until the invoice price is confirmed.`,
-      unaccounted,
-    };
-  }
 
-  const current = eras[eras.length - 1] ?? null;
-  const belowCost = eras.some((e) => e.marginPct !== null && e.marginPct < 0);
   const retailGap =
-    current && last.retail > 0 ? round2(current.price - last.retail) : null;
+    currentEra && last.retail > 0
+      ? round2(currentEra.price - last.retail)
+      : null;
   const costMove =
     costs.length >= 2 ? pctMove(costs[costs.length - 1], costs[0]) : null;
 
-  if (belowCost) {
+  /**
+   * Below cost *now*, on the price it is currently ringing at.
+   *
+   * This used to fire on `eras.some(...)` — any era in the window — while the
+   * sentence printed the current price against the current cost. Two true
+   * numbers from different periods, and they contradicted each other on screen:
+   * "selling below cost at $9.49 against $5.95". The era that actually fired
+   * was an older $6.49 stretch that ran while cost was $6.85.
+   *
+   * Both figures now come off the same era object, so the sentence cannot
+   * disagree with itself no matter what the cost did in between. Scoping it to
+   * the current era also matches what this page is for: an item that was
+   * underwater last week and has since been repriced is a fact about the past,
+   * not an action for this afternoon. It stays visible in the estimated
+   * price-points grid, where a historical figure belongs.
+   *
+   * Ahead of the cost-history checks below. Selling under cost is unambiguous
+   * and fixable today; an unreliable cost is a conversation.
+   */
+  if (underCost && currentEra) {
     return {
       action: "reprice",
-      evidence: `${inStock} Selling below cost at ${money(current?.price ?? 0)} against ${money(item.unitCost)}.`,
+      evidence: `${inStock} Selling below cost at ${money(currentEra.price)} against ${money(rulingCost ?? 0)}.`,
       unaccounted,
     };
   }
 
-  if (retailGap !== null && retailGap <= -RETAIL_GAP_FLOOR) {
-    return {
-      action: "reprice",
-      evidence: `${inStock} Rings ${money(current!.price)}, last receipt intended ${money(last.retail)}. Margin ${item.marginPct?.toFixed(1)}%.`,
-      unaccounted,
-    };
+  // Cost that can't be relied on makes every margin computed from it suspect,
+  // so this outranks the pricing verdicts that follow.
+  const hist = costHistory(receipts);
+  if (hist) {
+    const reason =
+      hist.changes >= COST_CHANGES_FLAG
+        ? `${hist.changes} cost changes in ${lookbackDays} days`
+        : hist.maxStepUp >= COST_STEP_UP_PCT
+          ? `Cost jumped ${round1(hist.maxStepUp)}% on one delivery`
+          : hist.cumulative >= COST_CUMULATIVE_PCT
+            ? `Cost up ${round1(hist.cumulative)}% across ${lookbackDays} days`
+            : hist.reversals >= COST_REVERSALS_FLAG
+              ? `Cost moved up and down ${hist.reversals} times`
+              : null;
+    if (reason) {
+      return {
+        action: "vendor",
+        evidence: `${inStock} ${reason}, ${money(hist.first)} to ${money(hist.last)}. Worth confirming the invoice price against what was quoted.`,
+        unaccounted,
+      };
+    }
   }
+
+  /**
+   * Ringing under the receiver's intended retail is no longer a verdict on its
+   * own.
+   *
+   * It fired on any gap over five cents, which made every deliberate markdown a
+   * pricing error: an item ringing $6.38 against an intended $9.49 was raised
+   * as Reprice while earning 13% over its $5.55 cost. It also quoted
+   * `item.marginPct` — the sales file's blended figure — which said -7.4% about
+   * a price that was plainly profitable.
+   *
+   * Judging a markdown needs a target margin, and there isn't one anywhere in
+   * this data (see the Call vendor notes on category minimums). Below cost is
+   * the floor we can actually assert, and it has its own check above. The
+   * intended retail stays on screen in the detail panel, where someone can see
+   * the gap and decide for themselves.
+   *
+   * `retailGap` survives as a guard on the cost-move check below — that one
+   * only means anything when the shelf price has *not* moved.
+   */
 
   if (
     costMove !== null &&
@@ -655,7 +890,7 @@ export const verdictFor = (
   ) {
     return {
       action: "reprice",
-      evidence: `${inStock} Cost up ${round1(costMove)}% across the last ${costs.length} deliveries and the shelf price didn't follow. Margin ${item.marginPct?.toFixed(1)}%.`,
+      evidence: `${inStock} Cost up ${round1(costMove)}% across the last ${costs.length} deliveries and the shelf price didn't follow. Margin ${rulingMargin === null ? "n/a" : `${rulingMargin.toFixed(1)}%`}.`,
       unaccounted,
     };
   }
@@ -699,8 +934,8 @@ export const verdictFor = (
   return {
     action: "none",
     evidence: recovering
-      ? `${inStock} Down on last year but holding against last week. Cost steady, margin ${item.marginPct?.toFixed(1)}%.`
-      : `${inStock} Trend ${trend === null ? "flat" : `${round1(trend)}%`}, cost steady, margin ${item.marginPct?.toFixed(1)}%. Nothing to fix.`,
+      ? `${inStock} Down on last year but holding against last week. Cost steady, margin ${rulingMargin === null ? "n/a" : `${rulingMargin.toFixed(1)}%`}.`
+      : `${inStock} Trend ${trend === null ? "flat" : `${round1(trend)}%`}, cost steady, margin ${rulingMargin === null ? "n/a" : `${rulingMargin.toFixed(1)}%`}. Nothing to fix.`,
     unaccounted,
   };
 };
@@ -715,6 +950,7 @@ export const buildRollup = (
     reorder: 0,
     reprice: 0,
     vendor: 0,
+    receiving: 0,
     none: 0,
     insufficient: 0,
     pending: 0,

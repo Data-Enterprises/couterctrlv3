@@ -42,6 +42,16 @@ export const ACTION_TONE: Record<
     row: "bg-violet-50",
     text: "text-violet-900",
   },
+  /** Cyan, next to reorder's blue rather than near the healthy green. Both are
+   *  "something about this item's supply needs looking at"; green would read as
+   *  reassurance, which is the one thing this row does not offer. */
+  receiving: {
+    chip: "bg-cyan-50 text-cyan-900",
+    ring: "ring-cyan-900/40",
+    rule: "border-cyan-500",
+    row: "bg-cyan-50",
+    text: "text-cyan-900",
+  },
   none: {
     chip: "bg-severity_healthy_bg text-severity_healthy_text",
     ring: "ring-severity_healthy_text/40",

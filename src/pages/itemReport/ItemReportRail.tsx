@@ -778,13 +778,22 @@ const ItemReportRail = ({
                 three columns and read as price points that had mislaid their
                 units; they belong under the table, as the yardsticks it gets
                 read against. */}
-            {(item.unitCost !== null || receipts[0]?.retail > 0) && (
+            {/* The receiver's cost, not the sales file's.
+                
+                This printed `item.unitCost`, which comes off the sales rows and
+                is some blend — on an item whose receivers read $6.85, $6.85,
+                $5.50, $6.85 it showed $5.55, which is none of them. Harmless
+                while nothing else quoted a cost; not harmless once the strip
+                above began saying "below cost at $6.49 against $6.85", because
+                the panel then argued with itself and $6.49 looked healthy
+                against the footer. Both now name the same invoice. */}
+            {(receipts[0]?.unitCost > 0 || receipts[0]?.retail > 0) && (
               <div className="flex items-baseline gap-3 mt-1.5 text-[12px] text-content">
-                {item.unitCost !== null && (
+                {receipts[0]?.unitCost > 0 && (
                   <span>
-                    Cost{" "}
+                    Last cost{" "}
                     <span className="font-medium tabular-nums">
-                      {formatCurrency2(item.unitCost)}
+                      {formatCurrency2(receipts[0].unitCost)}
                     </span>
                   </span>
                 )}

@@ -4,6 +4,7 @@ import ResizableModalShell from "../../components/modals/ResizableModalShell";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
 import { formatCurrency2, formatDateSimple } from "../../utils";
 import { describeReceipt } from "./itemReportData";
+import { normalizeProductCode } from "../../utils/productCode";
 import { ACTION_TONE } from "./actionTone";
 import type { ActionKind } from "./itemReportMetrics";
 import type { ReceiverDetailsItem } from "../../interfaces";
@@ -159,7 +160,7 @@ const InvoiceSheet = ({
               <span className="text-right">GM%</span>
             </div>
             {lines.map((l, i) => {
-              const isFrom = String(l.product_code) === fromUpc;
+              const isFrom = normalizeProductCode(l.product_code) === fromUpc;
               const flagged = l.free > 0 || l.return > 0;
               // Computed rather than read off the response's own `gm`, so it
               // cannot disagree with the cost and retail printed beside it.

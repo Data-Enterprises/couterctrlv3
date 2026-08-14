@@ -111,8 +111,13 @@ const SalesLedger = () => {
     // exact holiday date last year while the other gets a plain weekday-preserving
     // shift, desyncing the range from the per-day lookups in buildLedgerRows.
     // Shifting every day in the week and taking the min/max keeps it correct.
-    const twWeekDates = Array.from({ length: 7 }, (_, i) => addDays(twStart, i).toISOString().split("T")[0]);
-    const lyWeekDates = twWeekDates.map((d) => sameWeekDayLastYear(d).date).sort();
+    const twWeekDates = Array.from(
+      { length: 7 },
+      (_, i) => addDays(twStart, i).toISOString().split("T")[0],
+    );
+    const lyWeekDates = twWeekDates
+      .map((d) => sameWeekDayLastYear(d).date)
+      .sort();
     const lyStart = lyWeekDates[0];
     const lyEnd = lyWeekDates[lyWeekDates.length - 1];
     return { twStart, twEnd, lwStart, lwEnd, lyStart, lyEnd };
@@ -438,25 +443,37 @@ const SalesLedger = () => {
             <div className="flex items-center justify-between px-4 py-2 bg-custom-white border-x border-gray-100">
               <div className="flex items-center gap-1.5">
                 <button
-                  onClick={() => setSevFilter((f) => (f === "critical" ? "all" : "critical"))}
+                  onClick={() =>
+                    setSevFilter((f) => (f === "critical" ? "all" : "critical"))
+                  }
                   className={`text-[12px] font-semibold px-2 py-1 rounded-full bg-severity_critical_bg text-severity_critical_text transition-shadow ${
-                    sevFilter === "critical" ? "ring-2 ring-severity_critical_text/40 shadow-sm" : ""
+                    sevFilter === "critical"
+                      ? "ring-2 ring-severity_critical_text/40 shadow-sm"
+                      : ""
                   }`}
                 >
                   Crit ({criticalRows.length})
                 </button>
                 <button
-                  onClick={() => setSevFilter((f) => (f === "watch" ? "all" : "watch"))}
+                  onClick={() =>
+                    setSevFilter((f) => (f === "watch" ? "all" : "watch"))
+                  }
                   className={`text-[12px] font-semibold px-2 py-1 rounded-full bg-severity_watch_bg text-severity_watch_text transition-shadow ${
-                    sevFilter === "watch" ? "ring-2 ring-severity_watch_text/40 shadow-sm" : ""
+                    sevFilter === "watch"
+                      ? "ring-2 ring-severity_watch_text/40 shadow-sm"
+                      : ""
                   }`}
                 >
                   Watch ({watchRows.length})
                 </button>
                 <button
-                  onClick={() => setSevFilter((f) => (f === "healthy" ? "all" : "healthy"))}
+                  onClick={() =>
+                    setSevFilter((f) => (f === "healthy" ? "all" : "healthy"))
+                  }
                   className={`text-[12px] font-semibold px-2 py-1 rounded-full bg-severity_healthy_bg text-severity_healthy_text transition-shadow ${
-                    sevFilter === "healthy" ? "ring-2 ring-severity_healthy_text/40 shadow-sm" : ""
+                    sevFilter === "healthy"
+                      ? "ring-2 ring-severity_healthy_text/40 shadow-sm"
+                      : ""
                   }`}
                 >
                   OK ({healthyRows.length})
@@ -516,6 +533,7 @@ const SalesLedger = () => {
                       selection?.storeNumber === row.store_number
                     }
                     gradingMetric={gradingMetric}
+                    threshold={activeThreshold}
                     onClick={handleRowClick}
                   />
                 ))}
@@ -529,7 +547,10 @@ const SalesLedger = () => {
             style={{ flexBasis: "52%" }}
           >
             {selection !== null ? (
-              <StoreDetailPopup selection={selection} onClose={handlePopupClose} />
+              <StoreDetailPopup
+                selection={selection}
+                onClose={handlePopupClose}
+              />
             ) : (
               <EmptyPrompt
                 title="No store selected"

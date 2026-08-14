@@ -7,12 +7,17 @@ import { useAppDispatch, useAppSelector } from "../../hooks";
 import {
   setItemReportScope,
   setItemReportActionFilter,
-  setItemReportTextFilter,
+  setItemReportUpcFilter,
+  setItemReportDescFilter,
+  setItemReportDeptFilter,
+  setItemReportVendorFilter,
 } from "../../features/itemReportSlice";
 import type { ItemScope } from "../../features/itemReportSlice";
 import { formatCurrencyCompact } from "../../utils";
 import { formatPct, pillClass } from "../../utils/severity";
-import TextFilter from "../../components/filters/TextFilter";
+import ColFilter from "../../components/filters/ColFilter";
+import { colInputStyle } from "../../components/filters/colFilterStyles";
+import SelectFilter from "../../components/filters/SelectFilter";
 import HeaderIconButton from "../../components/HeaderIconButton";
 import { ACTION_TONE } from "./actionTone";
 import InfoButton from "../../components/InfoButton";
@@ -76,6 +81,8 @@ interface Props {
   dateLabel: string;
   receivingComplete: boolean;
   receivingProgress: string;
+  /** False when `receivers/` returned nothing at all for this store. */
+  receivingAvailable: boolean;
 }
 
 /** Chip and rule colour per action. Kept to one place so the strip, the row
@@ -83,16 +90,21 @@ interface Props {
 
 /** Operational problems first, then pricing, then the clean rows. Someone
  *  working down the sheet should hit what's costing them soonest. */
-/** The chip row. "pending" is deliberately absent — it is not a pile anyone
- *  works through, and a chip for it would invite filtering to a set that empties
- *  itself a few seconds later. The progress strip below already says what is
- *  happening. */
+/** The chip row.
+ *
+ * Two actions are deliberately absent. "pending" is not a pile anyone works
+ * through, and a chip for it would invite filtering to a set that empties
+ * itself a few seconds later — the progress strip below already says that.
+ * "insufficient" is not a pile either: it means the data could not reach a
+ * conclusion, so there is no work to batch. Both still appear in the Action
+ * column, and both still export; they just are not offered as a way to spend
+ * an afternoon. */
 const ORDER: ActionKind[] = [
   "investigate",
   "reorder",
   "reprice",
   "vendor",
-  "insufficient",
+  "receiving",
   "none",
 ];
 
@@ -141,16 +153,24 @@ const ItemReportSheet = ({
   dateLabel,
   receivingComplete,
   receivingProgress,
+  receivingAvailable,
 }: Props) => {
   const dispatch = useAppDispatch();
   // Filters live in the slice with everything else. A route change would
   // otherwise silently reset which pile someone was working through, and they
   // would come back to a sheet that looks the same but isn't.
-  const filter = useAppSelector((s) => s.itemReport.textFilter);
   const only = useAppSelector((s) => s.itemReport.actionFilter);
+  const upcTerm = useAppSelector((s) => s.itemReport.upcFilter);
+  const descTerm = useAppSelector((s) => s.itemReport.descFilter);
+  const dept = useAppSelector((s) => s.itemReport.deptFilter);
+  const vendor = useAppSelector((s) => s.itemReport.vendorFilter);
   const scope = useAppSelector((s) => s.itemReport.itemScope);
   // Popover open/closed — ephemeral, and the same shape LedgerHeader uses.
   const [infoOpen, setInfoOpen] = useState(false);
+  // Draft stays local — a half-typed UPC is not page state, and only the value
+  // behind Apply changes what the list shows. Same split ItemMarginsTable uses.
+  const [draftUpc, setDraftUpc] = useState("");
+  const [draftDesc, setDraftDesc] = useState("");
 
   // Row 1 is the three-slot panel header the graded pages use: the entity on
   // the left, what you are looking at in the centre, controls on the right.
@@ -161,17 +181,39 @@ const ItemReportSheet = ({
   // right. Where the list came from is on row 2, next to the rule that cut it.
   const centreLabel = ["Item Actions", dateLabel].filter(Boolean).join(" · ");
 
-  const term = filter.trim().toLowerCase();
+  /**
+   * The groupings this list actually spans, taken from the rows rather than a
+   * fixed list — an uploaded file and a vendor handoff cover wildly different
+   * ground, and offering a department with nothing behind it is a dead end.
+   *
+   * Built off `rows`, which is already scoped, so switching Uploaded/All found
+   * re-derives both menus.
+   */
+  const [deptOpts, vendorOpts] = useMemo(() => {
+    const depts = new Set<string>();
+    const vendors = new Set<string>();
+    for (const r of rows) {
+      if (r.item.department) depts.add(r.item.department);
+      if (r.item.vendorName) vendors.add(r.item.vendorName);
+    }
+    const opts = (set: Set<string>) =>
+      [...set]
+        .sort((a, b) => a.localeCompare(b))
+        .map((v) => ({ label: v, value: v }));
+    return [opts(depts), opts(vendors)];
+  }, [rows]);
+
+  const upcQ = upcTerm.trim();
+  const descQ = descTerm.trim().toLowerCase();
   const visible = useMemo(() => {
     const matched = rows.filter((r) => {
       if (only && r.verdict.action !== only) return false;
-      if (!term) return true;
-      return (
-        r.item.description.toLowerCase().includes(term) ||
-        r.item.productCode.includes(term) ||
-        r.item.department.toLowerCase().includes(term) ||
-        r.item.vendorName.toLowerCase().includes(term)
-      );
+      if (dept && r.item.department !== dept) return false;
+      if (vendor && r.item.vendorName !== vendor) return false;
+      if (upcQ && !r.item.productCode.includes(upcQ)) return false;
+      if (descQ && !r.item.description.toLowerCase().includes(descQ))
+        return false;
+      return true;
     });
     // Action first, then money — the biggest loss inside the worst pile.
     return [...matched].sort(
@@ -179,7 +221,7 @@ const ItemReportSheet = ({
         ACTION_RANK[a.verdict.action] - ACTION_RANK[b.verdict.action] ||
         b.item.ty.sales - a.item.ty.sales,
     );
-  }, [rows, only, term]);
+  }, [rows, only, upcQ, descQ, dept, vendor]);
 
   return (
     <div className="flex-1 min-w-0 shadow-lg">
@@ -292,19 +334,47 @@ const ItemReportSheet = ({
               <span className="tabular-nums">{counts[action]}</span>
             </button>
           ))}
-          <div className="flex-1 min-w-[140px]">
-            <TextFilter
-              value={filter}
-              onChange={(v) => dispatch(setItemReportTextFilter(v))}
-              placeholder="Filter items…"
-            />
-          </div>
+          <div className="flex-1" />
+          {/* Exact-match narrowing, beside the substring box rather than in the
+              chip row: the chips are one dimension (what to do) and these are
+              another (whose shelf it is), so they combine rather than compete.
+              
+              Both render even when the list holds a single department or a
+              single vendor. Hiding them there was tempting — the menu can only
+              repeat what the header says — but it moved the toolbar depending
+              on which page you arrived from, and a control you cannot learn the
+              position of costs more than a menu of one. */}
+          <SelectFilter
+            options={deptOpts}
+            value={dept}
+            onChange={(v) => dispatch(setItemReportDeptFilter(v))}
+            placeholder="All sub depts"
+            className="w-[150px]"
+          />
+          <SelectFilter
+            options={vendorOpts}
+            value={vendor}
+            onChange={(v) => dispatch(setItemReportVendorFilter(v))}
+            placeholder="All vendors"
+            className="w-[150px]"
+          />
         </div>
 
         {!receivingComplete && (
           <div className="flex-shrink-0 px-4 py-1.5 bg-amber-50 text-[11px] text-amber-900">
             Reading deliveries — {receivingProgress}. Actions that depend on
-            receipts are provisional until this finishes.
+            receivers are provisional until this finishes.
+          </div>
+        )}
+
+        {/* Said once, here, instead of a hundred times down the Action column.
+            The wording is careful: the orders are missing from our data, which
+            is not the same claim as the store not receiving any. Every row
+            below reads "insufficient" for the same reason. */}
+        {receivingComplete && !receivingAvailable && (
+          <div className="flex-shrink-0 px-4 py-1.5 bg-amber-50 text-[11px] text-amber-900">
+            No received orders on file for this store — delivery-based actions
+            can't be judged. Units and price evidence are unaffected.
           </div>
         )}
 
@@ -313,7 +383,45 @@ const ItemReportSheet = ({
           style={{ gridTemplateColumns: COLS }}
         >
           <span>Action</span>
-          <span>Item</span>
+          {/* The item grids' own heading filters — two labelled triggers with
+              a dot when applied, not a search box parked in the chip row. */}
+          <span className="flex items-center gap-2 min-w-0">
+            Item
+            <ColFilter
+              label="UPC"
+              active={!!upcTerm}
+              onApply={() => dispatch(setItemReportUpcFilter(draftUpc))}
+              onClear={() => {
+                dispatch(setItemReportUpcFilter(""));
+                setDraftUpc("");
+              }}
+            >
+              <input
+                autoFocus
+                style={colInputStyle}
+                placeholder="Search UPC…"
+                value={draftUpc}
+                onChange={(e) => setDraftUpc(e.target.value)}
+              />
+            </ColFilter>
+            <ColFilter
+              label="Desc"
+              active={!!descTerm}
+              onApply={() => dispatch(setItemReportDescFilter(draftDesc))}
+              onClear={() => {
+                dispatch(setItemReportDescFilter(""));
+                setDraftDesc("");
+              }}
+            >
+              <input
+                autoFocus
+                style={colInputStyle}
+                placeholder="Search description…"
+                value={draftDesc}
+                onChange={(e) => setDraftDesc(e.target.value)}
+              />
+            </ColFilter>
+          </span>
           <span className="text-right">Units</span>
           <span className="text-right">vs LW</span>
           <span className="text-right">vs LY</span>
@@ -361,8 +469,15 @@ const ItemReportSheet = ({
                   className="grid gap-3 px-3 py-2.5 items-center"
                   style={{ gridTemplateColumns: COLS }}
                 >
+                  {/* Truncating, not wrapping. "Check receiving" is wider than
+                      the 92px this column allows, and a chip that wraps to two
+                      lines drags the whole row taller than its neighbours — the
+                      list stops scanning as a grid. The full label is one hover
+                      away, and the colour identifies the action before the text
+                      does. */}
                   <span
-                    className={`justify-self-start px-2 py-px rounded-full text-[12px] font-semibold ${tone.chip}`}
+                    title={ACTION_LABEL[verdict.action]}
+                    className={`justify-self-start min-w-0 max-w-full truncate px-2 py-px rounded-full text-[12px] font-semibold ${tone.chip}`}
                   >
                     {ACTION_LABEL[verdict.action]}
                   </span>
@@ -375,7 +490,7 @@ const ItemReportSheet = ({
                       {/* Says out loud that this row wasn't in the upload —
                           it has no sales, so no export could have contained
                           it. */}
-                      {item.discovered && " · from receipts"}
+                      {item.discovered && " · from receivers"}
                     </span>
                   </span>
                   {/* Priced selling units — the same basis as Recv and Net,

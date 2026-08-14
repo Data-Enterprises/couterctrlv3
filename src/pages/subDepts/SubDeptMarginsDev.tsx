@@ -25,18 +25,13 @@ import type {
   SubDeptMargin,
   WeeklySale,
 } from "../../interfaces";
-import {
-  scopeToStoreNumber,
-  storeNumbersIn,
-} from "../../utils/storeIdentity";
+import { scopeToStoreNumber, storeNumbersIn } from "../../utils/storeIdentity";
 import {
   setSubDeptGrade,
   setLoadingGrades,
   setStoreSalesTotals,
   setWeekTrendMargins,
   setWeekTrendMarginsLY,
-  setWeekTrendMarginsLW,
-  setLastFetchedTrendKey,
   setAvailableStoreNumbers,
   setSelectedStoreNumber,
   resetSubDeptGrades,
@@ -131,7 +126,10 @@ type RawSearch = {
   subSales: { ty: SubSale[]; lw: SubSale[]; ly: SubSale[] };
   // Keyed by sub dept id. Populated for the UNION of sub depts across both
   // locations, so switching never needs data we didn't fetch.
-  margins: Record<number, { ty: SubDeptMargin[]; ly: SubDeptMargin[]; lw: SubDeptMargin[] }>;
+  margins: Record<
+    number,
+    { ty: SubDeptMargin[]; ly: SubDeptMargin[]; lw: SubDeptMargin[] }
+  >;
 };
 
 const emptyRaw = (): RawSearch => ({
@@ -163,7 +161,11 @@ const computeSubDeptGrade = (
   tyMargins: SubDeptMargin[],
   lyMargins: SubDeptMargin[],
   lwMargins: SubDeptMargin[],
-  sales: { ty: SubDeptSalesTotals; lw: SubDeptSalesTotals; ly: SubDeptSalesTotals },
+  sales: {
+    ty: SubDeptSalesTotals;
+    lw: SubDeptSalesTotals;
+    ly: SubDeptSalesTotals;
+  },
 ): SubDeptGrade => {
   // Each metric reads the endpoint that's authoritative for it — getTier and
   // the panels already branch on gradingMetric, so this lands in the right
@@ -258,9 +260,6 @@ const SubDeptMarginsDev = () => {
   };
 
   const subDeptGrades = useAppSelector((s) => s.subMargin.subDeptGrades);
-  const lastFetchedTrendKey = useAppSelector(
-    (s) => s.subMargin.lastFetchedTrendKey,
-  );
 
   if (ctx.isMobile) return <SubDeptMarginsMobile />;
 
@@ -305,16 +304,11 @@ const SubDeptMarginsDev = () => {
       dispatch(
         setSubDeptGrade({
           id: sd.id,
-          grade: computeSubDeptGrade(
-            scoped(m.ty),
-            scoped(m.ly),
-            scoped(m.lw),
-            {
-              ty: salesTy[sd.id] ?? EMPTY_SALES,
-              lw: salesLw[sd.id] ?? EMPTY_SALES,
-              ly: salesLy[sd.id] ?? EMPTY_SALES,
-            },
-          ),
+          grade: computeSubDeptGrade(scoped(m.ty), scoped(m.ly), scoped(m.lw), {
+            ty: salesTy[sd.id] ?? EMPTY_SALES,
+            lw: salesLw[sd.id] ?? EMPTY_SALES,
+            ly: salesLy[sd.id] ?? EMPTY_SALES,
+          }),
         }),
       );
     }
@@ -498,114 +492,35 @@ const SubDeptMarginsDev = () => {
   };
 
   // Seed week 1 from pre-fetched grade when sub dept is selected, then lazy-fetch weeks 2-4
+  /**
+   * Seed the selected sub dept's weeks from the grade the search already built.
+   *
+   * This used to fire seven `subs/subs` calls. Six of them filled weeks 3 and 4
+   * of TY and LY, read only by the `SmDev*` display components the `MarginPerf*`
+   * refactor replaced — plus an LW week 4 that had no reader anywhere in the
+   * codebase. The seventh fetched TY week 2, which is simply last week, and the
+   * search had already put those rows in the grade as `lwWeekOneMargins`,
+   * `scoped()` exactly the way the fetch was.
+   *
+   * So selecting a department now costs nothing: every figure on screen comes
+   * out of state the search populated. Vendors has always worked this way, which
+   * is why it never made this call.
+   *
+   * The `lastFetchedTrendKey` cache went with them. It existed only to stop
+   * those fetches refiring on remount, and there is nothing left to refire.
+   */
   useEffect(() => {
     if (ctx.selectedSubDeptId == null) return;
     const grade = subDeptGrades[ctx.selectedSubDeptId];
     if (!grade) return;
 
-    const e = params.end;
-    const g = params.useGroups;
-    const sv = params.searchValue;
-    const ss = params.singleStore;
-    const id = ctx.selectedSubDeptId;
-
-    // Remounting with weeks 2-4 already fetched for this exact sub dept +
-    // date range + search (e.g. navigating away and back) shouldn't blank
-    // and re-fire those fetches — Redux still has the data.
-    // Includes the location: co-located stores share a storeid, so without it
-    // switching from 369 to 370 would keep 369's weeks 2-4 on screen.
-    const trendKey = `${id}_${e}_${g}_${sv}_${ss}_${selectedStoreNumber ?? "all"}`;
-    if (lastFetchedTrendKey === trendKey) return;
-
     dispatch(setWeekTrendMargins({ data: grade.tyWeekOneMargins, week: 1 }));
     dispatch(setWeekTrendMarginsLY({ data: grade.lyWeekOneMargins, week: 1 }));
-    dispatch(setWeekTrendMargins({ data: [], week: 2 }));
-    dispatch(setWeekTrendMargins({ data: [], week: 3 }));
-    dispatch(setWeekTrendMargins({ data: [], week: 4 }));
-    dispatch(setWeekTrendMarginsLY({ data: [], week: 2 }));
-    dispatch(setWeekTrendMarginsLY({ data: [], week: 3 }));
-    dispatch(setWeekTrendMarginsLY({ data: [], week: 4 }));
-    dispatch(setWeekTrendMarginsLW({ data: [], week: 4 }));
+    // Week 2 is last week — the day sidebar's LW column, and the only one of
+    // the old weeks 2-4 anything still reads.
+    dispatch(setWeekTrendMargins({ data: grade.lwWeekOneMargins, week: 2 }));
     dispatch(actions.setSelectedWeek(1));
     dispatch(actions.setSelectedWeekDay(""));
-    dispatch(setLastFetchedTrendKey(trendKey));
-
-    fetchSafe(
-      ctx.url,
-      ctx.token,
-      id,
-      setDates(new Date(e), 13),
-      setDates(new Date(e), 7),
-      g,
-      sv,
-      ss,
-    ).then((data) => dispatch(setWeekTrendMargins({ data: scoped(data), week: 2 })));
-
-    fetchSafe(
-      ctx.url,
-      ctx.token,
-      id,
-      setDates(new Date(e), 20),
-      setDates(new Date(e), 14),
-      g,
-      sv,
-      ss,
-    ).then((data) => dispatch(setWeekTrendMargins({ data: scoped(data), week: 3 })));
-
-    fetchSafe(
-      ctx.url,
-      ctx.token,
-      id,
-      setDates(new Date(e), 27),
-      setDates(new Date(e), 21),
-      g,
-      sv,
-      ss,
-    ).then((data) => dispatch(setWeekTrendMargins({ data: scoped(data), week: 4 })));
-
-    fetchSafe(
-      ctx.url,
-      ctx.token,
-      id,
-      setDates(new Date(e), 377),
-      setDates(new Date(e), 371),
-      g,
-      sv,
-      ss,
-    ).then((data) => dispatch(setWeekTrendMarginsLY({ data: scoped(data), week: 2 })));
-
-    fetchSafe(
-      ctx.url,
-      ctx.token,
-      id,
-      setDates(new Date(e), 384),
-      setDates(new Date(e), 378),
-      g,
-      sv,
-      ss,
-    ).then((data) => dispatch(setWeekTrendMarginsLY({ data: scoped(data), week: 3 })));
-
-    fetchSafe(
-      ctx.url,
-      ctx.token,
-      id,
-      setDates(new Date(e), 391),
-      setDates(new Date(e), 385),
-      g,
-      sv,
-      ss,
-    ).then((data) => dispatch(setWeekTrendMarginsLY({ data: scoped(data), week: 4 })));
-
-    fetchSafe(
-      ctx.url,
-      ctx.token,
-      id,
-      setDates(new Date(e), 34),
-      setDates(new Date(e), 28),
-      g,
-      sv,
-      ss,
-    ).then((data) => dispatch(setWeekTrendMarginsLW({ data: scoped(data), week: 4 })));
   }, [ctx.selectedSubDeptId]);
 
   useEffect(() => {

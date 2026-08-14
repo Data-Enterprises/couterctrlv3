@@ -37,11 +37,15 @@ export const ITEM_REPORT_INFO: {
         },
         {
           label: "Call vendor",
-          desc: "Selling, but nothing received in 90 days: it may never have been ordered, or it arrives direct-to-store and never gets entered. Also raised when the item has come in at three or more different costs, since margin can't be trusted until the invoice price is confirmed.",
+          desc: "The cost history on the receivers doesn’t hold still: three or more changes across the lookback, a single delivery up 5% or more, a 10% rise end to end, or a cost that moves up and down repeatedly. Cost drifting upward is ordinary; these are the shapes worth querying. The row names which one it was. Often the fix is timing rather than price — a store ordering on a fixed schedule will catch whatever promotion or rebate happens to be running, and only the store and vendor together can line those up. Nothing here can see that; they can.",
+        },
+        {
+          label: "Check receiving",
+          desc: "It is selling, but no receiver names it in 90 days — the rows whose Last column reads “none”. Three things do that and only one is the vendor’s: it was never ordered, it arrives direct-to-store, or it was received electronically and so never reached the scan this data is built from. The last is common and entirely normal, which is why this is its own action rather than a vendor call.",
         },
         {
           label: "Reprice",
-          desc: "Shelf price and cost don't line up. Covers selling below cost, ringing under what the last invoice intended, a cost increase the price never followed, and a price rise that demand visibly reacted to. Causes range from a sale left running too long to a price keyed in wrong.",
+          desc: "Shelf price and cost don’t line up **today**. Judged on the price it is currently ringing at, against the cost the last receiver carried — not a blended cost from the sales file. Covers selling below cost and a cost increase the shelf price never followed. Ringing under the retail a receiver intended is **not** raised on its own — a markdown that still clears cost is a decision, not a mistake, and nothing in this data carries a target margin to judge it against. The intended retail sits in the detail panel so you can see the gap yourself. An item that was underwater earlier in the window and has since been fixed is not raised here; that stretch stays visible in the estimated price points instead. Causes range from a sale left running too long to a price keyed in wrong.",
         },
         {
           label: "Investigate",

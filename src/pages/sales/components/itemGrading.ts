@@ -1,6 +1,7 @@
 import type { SubDeptMargin } from "../../../interfaces";
 import type { GradingMetric } from "../../../features/salesLedgerSlice";
 import type { Severity } from "./LedgerRow";
+import { gradeSeverity } from "../../../utils/severity";
 
 /**
  * How Sales grades an item, and how raw rows become one.
@@ -82,13 +83,9 @@ export const itemSeverity = (
       : item.lwQty !== null && item.lwQty > 0
         ? ((item.tyQty - item.lwQty) / item.lwQty) * 100
         : null;
-  // Rounded before grading — tyNet/lwNet/lyNet are sums of individual line
-  // items, so floating-point noise can leave a value like -0.0000000001%
-  // even when the displayed dollars are identical, misgrading it "watch".
-  const pct = Math.round((lyPct ?? lwPct ?? 0) * 10) / 10;
-  if (pct < -threshold) return "critical";
-  if (pct < 0) return "watch";
-  return "healthy";
+  // Noise on these sums is absorbed by gradeSeverity's epsilon. Rounding to
+  // 1dp here also shifted the threshold boundary; see PCT_EPSILON.
+  return gradeSeverity(lyPct ?? lwPct ?? 0, threshold);
 };
 
 /**

@@ -153,7 +153,17 @@ interface ItemReportState {
   sourceLabel: string;
   basisLabel: string;
   actionFilter: ActionKind | null;
-  textFilter: string;
+  /** Split from a single free-text box into the two fields a grid is actually
+   *  searched by. Department and vendor moved to their own selects, so one box
+   *  matching four fields at once had nothing left to justify its width. */
+  upcFilter: string;
+  descFilter: string;
+  /** Exact-match narrowing on the two groupings a list can span. Empty is "all"
+   *  — the same convention SelectFilter uses for its own inactive state. Kept
+   *  apart from `textFilter`, which is a substring match across four fields and
+   *  cannot express "this department and no other". */
+  deptFilter: string;
+  vendorFilter: string;
   searchOpen: boolean;
   exportOpen: boolean;
 
@@ -198,7 +208,10 @@ const initialState: ItemReportState = {
   sourceLabel: "",
   basisLabel: "",
   actionFilter: null,
-  textFilter: "",
+  upcFilter: "",
+  descFilter: "",
+  deptFilter: "",
+  vendorFilter: "",
   searchOpen: false,
   exportOpen: false,
   pendingUpcs: [],
@@ -243,7 +256,10 @@ const itemReportSlice = createSlice({
       state.invoiceError = null;
       state.itemScope = "uploaded";
       state.actionFilter = null;
-      state.textFilter = "";
+      state.upcFilter = "";
+      state.descFilter = "";
+      state.deptFilter = "";
+      state.vendorFilter = "";
     },
 
     setItemReportResults: (
@@ -381,8 +397,17 @@ const itemReportSlice = createSlice({
     ) => {
       state.actionFilter = action.payload;
     },
-    setItemReportTextFilter: (state, action: PayloadAction<string>) => {
-      state.textFilter = action.payload;
+    setItemReportUpcFilter: (state, action: PayloadAction<string>) => {
+      state.upcFilter = action.payload;
+    },
+    setItemReportDescFilter: (state, action: PayloadAction<string>) => {
+      state.descFilter = action.payload;
+    },
+    setItemReportDeptFilter: (state, action: PayloadAction<string>) => {
+      state.deptFilter = action.payload;
+    },
+    setItemReportVendorFilter: (state, action: PayloadAction<string>) => {
+      state.vendorFilter = action.payload;
     },
     setItemReportSearchOpen: (state, action: PayloadAction<boolean>) => {
       state.searchOpen = action.payload;
@@ -447,7 +472,10 @@ export const {
   setItemReportInvoiceError,
   setItemReportScope,
   setItemReportActionFilter,
-  setItemReportTextFilter,
+  setItemReportUpcFilter,
+  setItemReportDescFilter,
+  setItemReportDeptFilter,
+  setItemReportVendorFilter,
   setItemReportSearchOpen,
   setItemReportExportOpen,
   setPendingUpload,

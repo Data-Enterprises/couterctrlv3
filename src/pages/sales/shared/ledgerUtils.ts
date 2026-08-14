@@ -1,5 +1,6 @@
 import { addDays, sameWeekDayLastYear } from "../../../utils";
 import { rowsToCsv } from "../../../utils/csvExport";
+import { gradeSeverity } from "../../../utils/severity";
 import type {
   WeeklySale,
   SubSale,
@@ -27,14 +28,9 @@ export const ledgerGradePct = (row: {
   hasLW: boolean;
   vsLYPct: number;
   vsLWPct: number;
-}) =>
-  Math.round((row.hasLY ? row.vsLYPct : row.hasLW ? row.vsLWPct : 0) * 10) / 10;
+}) => (row.hasLY ? row.vsLYPct : row.hasLW ? row.vsLWPct : 0);
 
-export const ledgerSeverity = (pct: number, threshold: number): Severity => {
-  if (pct < -threshold) return "critical";
-  if (pct < 0) return "watch";
-  return "healthy";
-};
+export const ledgerSeverity = gradeSeverity;
 
 export const sortLedgerRows = (rows: LedgerRowData[]): LedgerRowData[] =>
   [...rows].sort((a, b) => {
@@ -148,23 +144,13 @@ export const ampm = (h: number) =>
 
 // ─── Severity helpers ─────────────────────────────────────────────────────────
 
-// Rounded before grading — the underlying totals are sums of individual
-// line items, so floating-point noise can leave a value like
-// -0.0000000001% even when the displayed dollars are identical, misgrading
-// what should be "healthy" as "watch".
-export const deptSeverity = (r: DeptRow, threshold = 9): Severity => {
-  const pct = Math.round((r.hasLY ? r.vsLYPct : r.hasLW ? r.vsLWPct : 0) * 10) / 10;
-  if (pct < -threshold) return "critical";
-  if (pct < 0) return "watch";
-  return "healthy";
-};
+// Float noise is handled by gradeSeverity's epsilon rather than by rounding
+// here; see PCT_EPSILON for why the difference matters at the threshold.
+export const deptSeverity = (r: DeptRow, threshold = 9): Severity =>
+  gradeSeverity(r.hasLY ? r.vsLYPct : r.hasLW ? r.vsLWPct : 0, threshold);
 
-export const hourSeverity = (r: HourRow, threshold = 9): Severity => {
-  const pct = Math.round((r.hasLY ? r.vsLYPct : r.hasLW ? r.vsLWPct : 0) * 10) / 10;
-  if (pct < -threshold) return "critical";
-  if (pct < 0) return "watch";
-  return "healthy";
-};
+export const hourSeverity = (r: HourRow, threshold = 9): Severity =>
+  gradeSeverity(r.hasLY ? r.vsLYPct : r.hasLW ? r.vsLWPct : 0, threshold);
 
 // ─── Day-matched comparison helpers ────────────────────────────────────────────
 //
@@ -247,7 +233,6 @@ export const computeDayMatchedTotals = (
     vsLYDollar: twTotalForLY - lyTotal,
   };
 };
-
 
 // ─── Data gap report ────────────────────────────────────────────────────────────
 //
@@ -382,97 +367,94 @@ export const buildLedgerRows = (
   }, {});
 
   const keys = [
-    ...new Map(
-      tw.map((d) => [`${d.storeid}__${d.store_number}`, d]),
-    ).values(),
+    ...new Map(tw.map((d) => [`${d.storeid}__${d.store_number}`, d])).values(),
   ];
 
-  const rows = keys
-    .map((keyRow) => {
-      const id = keyRow.storeid;
-      const num = keyRow.store_number;
-      const sameStore = (d: WeeklySale) =>
-        d.storeid === id && d.store_number === num;
-      const twRows = tw.filter(sameStore);
-      const lwRows = lw.filter(sameStore);
-      const lyRows = ly.filter(sameStore);
-      const ref = twRows[0];
-      // assignedStores is keyed by storeid only, so a co-located pair resolves
-      // to the same name for both — the store_number is what tells them apart
-      // until the store master gives 370 its own record.
-      const assigned = assignedStores.find((s) => s.storeid === id);
-      const storeNumbersForId = [...(numbersByStore[id] ?? [num])];
-      const twQty = twRows.reduce((acc, r) => acc + r.qty, 0);
+  const rows = keys.map((keyRow) => {
+    const id = keyRow.storeid;
+    const num = keyRow.store_number;
+    const sameStore = (d: WeeklySale) =>
+      d.storeid === id && d.store_number === num;
+    const twRows = tw.filter(sameStore);
+    const lwRows = lw.filter(sameStore);
+    const lyRows = ly.filter(sameStore);
+    const ref = twRows[0];
+    // assignedStores is keyed by storeid only, so a co-located pair resolves
+    // to the same name for both — the store_number is what tells them apart
+    // until the store master gives 370 its own record.
+    const assigned = assignedStores.find((s) => s.storeid === id);
+    const storeNumbersForId = [...(numbersByStore[id] ?? [num])];
+    const twQty = twRows.reduce((acc, r) => acc + r.qty, 0);
 
-      // The LW/LY fetch ranges can end up not lining up 1:1 with the current
-      // week's days (LY is intentionally widened around holidays — see
-      // getDateRanges/StoreDetailPopup — and the underlying weekly-sales rows
-      // are fragmented on top of that, missing some calendar days outright on
-      // any of TW/LW/LY). lwNet/lyNet are null (not 0) when no matching row
-      // exists, so computeDayMatchedTotals can tell "no data" apart from a
-      // real $0 day and scope each comparison's TW side to only the days
-      // that have a genuine LW/LY counterpart — both this row's totals and
-      // the detail panel's header read the same `days` array, so they always
-      // agree with each other.
-      const days = twRows
-        .sort((a, b) => a.sale_date.localeCompare(b.sale_date))
-        .map((r) => {
-          const twDate = r.sale_date.split("T")[0];
-          const lwDate = addDays(new Date(twDate), -7)
-            .toISOString()
-            .split("T")[0];
-          const lyDate = sameWeekDayLastYear(twDate).date;
-          const lwRow = lwRows.find((l) => l.sale_date.startsWith(lwDate));
-          const lyRow = lyRows.find((l) => l.sale_date.startsWith(lyDate));
-          return {
-            sale_date: r.sale_date,
-            twNet: r.total_sales - r.total_tax,
-            lwNet: lwRow ? lwRow.total_sales - lwRow.total_tax : null,
-            lyNet: lyRow ? lyRow.total_sales - lyRow.total_tax : null,
-            lwQty: lwRow ? lwRow.qty : null,
-            lyQty: lyRow ? lyRow.qty : null,
-            twQty: r.qty,
-          };
-        });
+    // The LW/LY fetch ranges can end up not lining up 1:1 with the current
+    // week's days (LY is intentionally widened around holidays — see
+    // getDateRanges/StoreDetailPopup — and the underlying weekly-sales rows
+    // are fragmented on top of that, missing some calendar days outright on
+    // any of TW/LW/LY). lwNet/lyNet are null (not 0) when no matching row
+    // exists, so computeDayMatchedTotals can tell "no data" apart from a
+    // real $0 day and scope each comparison's TW side to only the days
+    // that have a genuine LW/LY counterpart — both this row's totals and
+    // the detail panel's header read the same `days` array, so they always
+    // agree with each other.
+    const days = twRows
+      .sort((a, b) => a.sale_date.localeCompare(b.sale_date))
+      .map((r) => {
+        const twDate = r.sale_date.split("T")[0];
+        const lwDate = addDays(new Date(twDate), -7)
+          .toISOString()
+          .split("T")[0];
+        const lyDate = sameWeekDayLastYear(twDate).date;
+        const lwRow = lwRows.find((l) => l.sale_date.startsWith(lwDate));
+        const lyRow = lyRows.find((l) => l.sale_date.startsWith(lyDate));
+        return {
+          sale_date: r.sale_date,
+          twNet: r.total_sales - r.total_tax,
+          lwNet: lwRow ? lwRow.total_sales - lwRow.total_tax : null,
+          lyNet: lyRow ? lyRow.total_sales - lyRow.total_tax : null,
+          lwQty: lwRow ? lwRow.qty : null,
+          lyQty: lyRow ? lyRow.qty : null,
+          twQty: r.qty,
+        };
+      });
 
-      const {
-        twTotal,
-        lwTotal,
-        lwQty,
-        lyTotal,
-        lyQty,
-        hasLW,
-        hasLY,
-        vsLWPct,
-        vsLYPct,
-        vsLYDollar,
-      } = computeDayMatchedTotals(days, gradingMetric);
-      const severity = ledgerSeverity(
-        ledgerGradePct({ hasLY, hasLW, vsLYPct, vsLWPct }),
-        threshold,
-      );
-      return {
-        storeid: id,
-        store_name: assigned?.store_name ?? ref.store_name,
-        // Must be the grouping key, not assigned.store_number — that resolves
-        // by storeid and would label both co-located rows with the same number.
-        store_number: num,
-        storeNumbersForId,
-        twTotal,
-        lwTotal,
-        lyTotal,
-        twQty,
-        lwQty,
-        lyQty,
-        vsLWPct,
-        vsLYPct,
-        vsLYDollar,
-        hasLW,
-        hasLY,
-        severity,
-        days,
-      };
-    });
+    const {
+      twTotal,
+      lwTotal,
+      lwQty,
+      lyTotal,
+      lyQty,
+      hasLW,
+      hasLY,
+      vsLWPct,
+      vsLYPct,
+      vsLYDollar,
+    } = computeDayMatchedTotals(days, gradingMetric);
+    const severity = ledgerSeverity(
+      ledgerGradePct({ hasLY, hasLW, vsLYPct, vsLWPct }),
+      threshold,
+    );
+    return {
+      storeid: id,
+      store_name: assigned?.store_name ?? ref.store_name,
+      // Must be the grouping key, not assigned.store_number — that resolves
+      // by storeid and would label both co-located rows with the same number.
+      store_number: num,
+      storeNumbersForId,
+      twTotal,
+      lwTotal,
+      lyTotal,
+      twQty,
+      lwQty,
+      lyQty,
+      vsLWPct,
+      vsLYPct,
+      vsLYDollar,
+      hasLW,
+      hasLY,
+      severity,
+      days,
+    };
+  });
   return sortLedgerRows(rows);
 };
 

@@ -1,4 +1,5 @@
 import { getReceiversList, getReceiverDetails } from "../../api/receivers";
+import { normalizeProductCode } from "../../utils/productCode";
 import { fetchSubDeptRowsSafe } from "../../utils/marginRows";
 import { fetchSubDepts } from "../inventory/inventoryData";
 import type { SubDeptSummary } from "../inventory/inventoryData";
@@ -338,7 +339,7 @@ export const toReceiptLine = (
   line: ReceiverDetailsItem,
 ): ReceiptLine => ({
   invoiceId: invoice.invoiceid,
-  productCode: String(line.product_code),
+  productCode: normalizeProductCode(line.product_code),
   description: line.product_description,
   date: invoice.invoice_date,
   vendorName: invoice.vendor_name,

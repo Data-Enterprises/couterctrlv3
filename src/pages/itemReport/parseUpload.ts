@@ -16,6 +16,8 @@
  * skipped the disk.
  */
 
+import { normalizeProductCode } from "../../utils/productCode";
+
 export interface ParsedUpload {
   upcs: string[];
   /** Department names named by the file, empty when it didn't carry any. Names,
@@ -28,6 +30,18 @@ export interface ParsedUpload {
  *  titles, descriptions, dollar figures with a decimal point — falls out here,
  *  which is what lets one parser read a bare list and a 15-column report. */
 const isUpc = (token: string) => token.length > 0 && /^\d+$/.test(token);
+
+/**
+ * The same code after a trip through a float — "7203096070.0".
+ *
+ * Some stores return codes this way (see `normalizeProductCode`), so a list
+ * exported from one of them carries the decimal, and the all-digits test above
+ * rejected every line of it. The file looked like it had simply found no items.
+ *
+ * Six digits minimum, and only trailing zeros: "100.00" is a dollar figure, and
+ * without the floor this would quietly turn a price into a product code.
+ */
+const isFloatUpc = (token: string) => /^\d{6,}\.0+$/.test(token);
 
 /** Splits a CSV line on commas outside quotes. Descriptions carry commas, so a
  *  naive split would shift every column after the first quoted field. */
@@ -87,8 +101,11 @@ export const parseUpload = (text: string): ParsedUpload => {
     // The first all-digit cell is the UPC. Scanning rather than assuming a
     // column keeps the bare list and the graded report on the same path, and
     // it survives someone reordering columns in Excel before uploading.
-    const upc = cells.find(isUpc);
-    if (!upc) continue;
+    const raw = cells.find((c) => isUpc(c) || isFloatUpc(c));
+    if (!raw) continue;
+    // Stored in one spelling regardless of which store exported the file — the
+    // codes are about to be joined against sales and receiving rows.
+    const upc = normalizeProductCode(raw);
     if (!seenUpc.has(upc)) {
       seenUpc.add(upc);
       upcs.push(upc);

@@ -1,7 +1,7 @@
 import { memo } from "react";
 import { formatCurrencyCompact } from "../../../utils";
 import { useStoreName } from "../../../hooks";
-import { severityDotClass, PCT_COL_W } from "./utils";
+import { severityDotClass, pillClass, PCT_COL_W } from "./utils";
 import { applyStoreNumberToName } from "../shared/ledgerUtils";
 import type { Severity } from "../../../utils/severity";
 import type { GradingMetric } from "../../../features/salesLedgerSlice";
@@ -63,28 +63,59 @@ interface LedgerRowProps {
   row: LedgerRowData;
   isSelected: boolean;
   gradingMetric: GradingMetric;
+  /** The grading cut, so the delta pills band the same way the row's severity
+   *  dot does. Passed rather than selected here: the row is memoized against a
+   *  threshold slider that moves every frame. */
+  threshold: number;
   onClick: (selection: StoreSelection) => void;
 }
 
 const formatPct = (pct: number) => `${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%`;
 
-const deltaPillClass = (pct: number) =>
-  pct >= 0
-    ? "bg-severity_healthy_bg text-severity_healthy_text"
-    : "bg-severity_critical_bg text-severity_critical_text";
-
-const DeltaPill = ({ has, pct }: { has: boolean; pct: number }) => (
+/**
+ * Graded on the same three bands as the rest of the app, via the shared
+ * `pillClass`.
+ *
+ * This used to be a local two-band rule: positive green, negative red, the
+ * threshold ignored entirely. So a store down 2.19% against a 9% threshold —
+ * comfortably inside tolerance, and graded Watch by `ledgerSeverity` a few
+ * pixels to its left — wore a critical-red pill. Two colour systems on one row,
+ * disagreeing about the same store.
+ *
+ * `pillClass` applies the identical cut `ledgerSeverity` does (below
+ * -threshold critical, below zero watch, otherwise healthy), which is what
+ * Categories and the other performance pages already use. Nothing new is being
+ * invented here; Sales was the one page that had drifted off it.
+ */
+const DeltaPill = ({
+  has,
+  pct,
+  threshold,
+}: {
+  has: boolean;
+  pct: number;
+  threshold: number;
+}) => (
   <span
-    className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${
-      has ? deltaPillClass(pct) : "bg-gray-100 text-gray-400"
-    }`}
+    className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${pillClass(
+      // Null is the shared helper's own "no comparison" case, and it renders
+      // the same grey this used to hard-code.
+      has ? pct : null,
+      threshold,
+    )}`}
     style={{ minWidth: PCT_COL_W }}
   >
     {has ? formatPct(pct) : "—"}
   </span>
 );
 
-const LedgerRow = ({ row, isSelected, gradingMetric, onClick }: LedgerRowProps) => {
+const LedgerRow = ({
+  row,
+  isSelected,
+  gradingMetric,
+  threshold,
+  onClick,
+}: LedgerRowProps) => {
   const storeName = useStoreName(row.storeid, row.store_name);
   // No-op unless this storeid is co-located; see applyStoreNumberToName.
   const displayName = applyStoreNumberToName(
@@ -150,8 +181,8 @@ const LedgerRow = ({ row, isSelected, gradingMetric, onClick }: LedgerRowProps) 
         >
           {fmtMetric(row.twTotal, row.twQty)}
         </span>
-        <DeltaPill has={row.hasLW} pct={row.vsLWPct} />
-        <DeltaPill has={row.hasLY} pct={row.vsLYPct} />
+        <DeltaPill has={row.hasLW} pct={row.vsLWPct} threshold={threshold} />
+        <DeltaPill has={row.hasLY} pct={row.vsLYPct} threshold={threshold} />
       </div>
     </button>
   );

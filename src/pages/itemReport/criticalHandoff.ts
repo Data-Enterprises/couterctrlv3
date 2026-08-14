@@ -2,6 +2,7 @@ import { useCallback } from "react";
 import { useNavigate } from "react-router";
 import { useAppDispatch } from "../../hooks";
 import { setItemReportHandoff } from "../../features/itemReportSlice";
+import { normalizeProductCode } from "../../utils/productCode";
 import type { SubDeptMargin } from "../../interfaces";
 import type { ItemReportHandoff } from "../../features/itemReportSlice";
 
@@ -75,12 +76,18 @@ export const useCriticalReport = () => {
     }: CriticalHandoffInput) => {
       // Deduped because the same UPC can appear on more than one source row —
       // an item sold on several days, or under more than one price type.
-      const upcs = [...new Set((items ?? []).map((i) => i.productCode))];
+      const upcs = [
+        ...new Set(
+          (items ?? []).map((i) => normalizeProductCode(i.productCode)),
+        ),
+      ];
       // Blank departments are dropped rather than passed through: an empty
       // string matches nothing on the far side, and one unmatched name would
       // widen the read back out to every department without saying so.
       const departments = [
-        ...new Set((items ?? []).map((i) => i.dept).filter((d) => d.length > 0)),
+        ...new Set(
+          (items ?? []).map((i) => i.dept).filter((d) => d.length > 0),
+        ),
       ];
 
       dispatch(
