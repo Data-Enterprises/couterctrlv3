@@ -46,7 +46,7 @@ import type { SeatId } from "./portal/perspectives/perspectivesContent";
 import { getBlogs, getBlogFile } from "../../api/portal";
 import { POSTS, toPosts, type Post } from "../../content/posts";
 
-const VERSION = "Last updated 8/10/2026 @ 4:35 PM CST";
+const VERSION = "Last updated 8/17/2026 @ 12:27 PM CST";
 
 /** PLACEHOLDER: `/html_pages/` only exists on the dev API today, and this page
  *  runs before sign-in — `context.url` is always VITE_API_URL_PROD here, since
@@ -81,11 +81,17 @@ const Login = () => {
 
   useEffect(() => {
     const userAgent = navigator.userAgent.toLowerCase();
-    const isMobile = /iphone|ipod|android|windows phone/g.test(userAgent);
+    const isMobile = /iphone|ipod|android|windows phone/.test(userAgent);
+    // iPadOS 13+ Safari reports "Macintosh" in its user agent, which is why
+    // that token used to sit in the tablet pattern — but so does an actual Mac,
+    // and that swept every Mac desktop into isTablet, costing those users the
+    // desktop category nav and every desktop-only page with it. Touch points
+    // separate the two: an iPad reports several, a desktop Mac reports 0.
+    const isIpadPretendingToBeAMac =
+      /macintosh/.test(userAgent) && navigator.maxTouchPoints > 1;
     const isTablet =
-      /(ipad|macintosh|tablet|playbook|silk)|(android(?!.*mobile))/g.test(
-        userAgent,
-      );
+      /(ipad|tablet|playbook|silk)|(android(?!.*mobile))/.test(userAgent) ||
+      isIpadPretendingToBeAMac;
 
     dispatch(setIsMobile(isMobile));
     dispatch(setIsTablet(isTablet));
