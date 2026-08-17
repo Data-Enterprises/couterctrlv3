@@ -48,6 +48,7 @@ import ticketsReducer from "../pages/tickets/ticketsSlice";
 import categoriesReducer from "../features/categoriesSlice";
 import vendorsReducer from "../features/vendorsSlice";
 import itemReportReducer from "../features/itemReportSlice";
+import invoicesReducer from "../features/invoicesSlice";
 
 export const setupStore = () =>
   configureStore({
@@ -80,6 +81,7 @@ export const setupStore = () =>
       categories: categoriesReducer,
       vendors: vendorsReducer,
       itemReport: itemReportReducer,
+      invoices: invoicesReducer,
       couponLegacy: couponLegacyReducer,
       reportBuilder: reportBuilderReducer,
       admin: adminReducer,

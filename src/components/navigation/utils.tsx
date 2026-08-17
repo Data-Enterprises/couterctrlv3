@@ -18,6 +18,7 @@ import {
   TruckIcon,
   ArchiveBoxIcon,
   ClockIcon,
+  DocumentArrowUpIcon,
 } from "@heroicons/react/16/solid";
 import { COMING_SOON_LEVELS } from "../../utils/comingSoon";
 import SalesIconV2 from "../../svgs/SalesIconV2";
@@ -157,6 +158,18 @@ export const navigation: Navigation[] = [
     name: "Price Opt Vendor",
     href: "inventory-vendor",
     icon: TruckIcon,
+    mobile: false,
+    children: [],
+    childOpen: false,
+    userLevels: COMING_SOON_LEVELS,
+    isHovering: false,
+    isVisible: true,
+  },
+  {
+    name: "Invoices",
+    href: "invoices",
+    icon: DocumentArrowUpIcon,
+    // Desktop only — reading a fixed-width file is a two-panel job.
     mobile: false,
     children: [],
     childOpen: false,
@@ -525,6 +538,17 @@ export const categories: NavCategory[] = [
         name: "Price Opt Vendor",
         href: "inventory-vendor",
         icon: TruckIcon,
+        mobile: false,
+        children: [],
+        childOpen: false,
+        userLevels: COMING_SOON_LEVELS,
+        isHovering: false,
+        isVisible: true,
+      },
+      {
+        name: "Invoices",
+        href: "invoices",
+        icon: DocumentArrowUpIcon,
         mobile: false,
         children: [],
         childOpen: false,

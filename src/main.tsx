@@ -16,6 +16,7 @@ import Vendors from "./pages/vendors/Vendors.tsx";
 import InventorySubDept from "./pages/inventory/InventorySubDept.tsx";
 import InventoryVendor from "./pages/inventory/InventoryVendor.tsx";
 import ItemReport from "./pages/itemReport/ItemReport.tsx";
+import Invoices from "./pages/invoices/Invoices.tsx";
 import {
   SalesPage,
   LossPreventionPage,
@@ -64,6 +65,7 @@ createRoot(document.getElementById("root")!).render(
                 />
                 <Route path="inventory-vendor" element={<InventoryVendor />} />
                 <Route path="item-report" element={<ItemReport />} />
+                <Route path="invoices" element={<Invoices />} />
                 <Route path="forecasting" element={<ForecastPage />} />
                 <Route path="quicksight" element={<Dashboard />} />
                 <Route path="receivers" element={<ReceiversPage />} />
