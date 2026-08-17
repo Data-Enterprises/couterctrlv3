@@ -13,8 +13,11 @@ import CompanyGrid from "./CompanyGrid";
 import StoreActivityComp from "./StoreActivityComp";
 import NewStoreName from "./NewStoreName";
 
-const TABS: { id: AdminForm; label: string }[] = [
-  { id: "companies", label: "Companies" },
+/** `programmerOnly` tabs act on records that aren't scoped to anyone — creating
+ *  and deleting companies is a change to the whole tenancy, not to one
+ *  operator's data, so it stays with level 9. */
+const TABS: { id: AdminForm; label: string; programmerOnly?: boolean }[] = [
+  { id: "companies", label: "Companies", programmerOnly: true },
   { id: "store_activity", label: "Store activity" },
   { id: "new_store_name", label: "New store name" },
 ];
@@ -34,6 +37,17 @@ const Admin = () => {
     maxHeight: 950,
   });
 
+  const tabs = TABS.filter((t) => context.isProgrammer || !t.programmerOnly);
+
+  // `adminForm` persists in the slice, so a level-5 user arriving after a
+  // programmer used the same session would otherwise land on a tab that is no
+  // longer in their strip — visible content under an invisible tab.
+  useEffect(() => {
+    if (!context.isProgrammer && context.adminForm === "companies") {
+      dispatch(setAdminForm("store_activity"));
+    }
+  }, [context.isProgrammer, context.adminForm]);
+
   useEffect(() => {
     if (context.refresh) {
       getCompanies(context.url, context.token)
@@ -50,7 +64,9 @@ const Admin = () => {
   const renderActiveTab = () => {
     switch (context.adminForm) {
       case "companies":
-        return <CompanyGrid />;
+        // Belt and braces: the tab is gone and the effect above redirects, but
+        // a render can happen between the two.
+        return context.isProgrammer ? <CompanyGrid /> : null;
       case "store_activity":
         return (
           <StoreActivityComp
@@ -66,6 +82,24 @@ const Admin = () => {
   const missingCount = context.companyStoresActivity.filter(
     (s) => s.inactive_or_missing_days > 0,
   ).length;
+
+  // Nav hides Admin below level 5, but nav visibility is not access control —
+  // the route is reachable by typing it. This is the actual gate.
+  if (!context.canOpenAdmin) {
+    return (
+      <div className="min-h-[calc(100vh-3rem)] pt-12 px-4 pb-4 flex justify-center">
+        <div className="self-start bg-custom-white rounded-xl shadow-lg px-6 py-5 max-w-[420px]">
+          <p className="text-[13px] font-semibold text-content">
+            Admin access isn’t available on this account
+          </p>
+          <p className="text-[12px] text-content/85 mt-1.5 leading-snug">
+            It needs a higher access level. Speak to whoever manages your users
+            if this looks wrong.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-[calc(100vh-3rem)] pt-12 px-4 pb-4 flex justify-center">
@@ -107,7 +141,7 @@ const Admin = () => {
         </div>
 
         <div className="flex border-b border-gray-100 flex-shrink-0">
-          {TABS.map((tab) => (
+          {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => dispatch(setAdminForm(tab.id))}

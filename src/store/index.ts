@@ -33,20 +33,22 @@ import companyReducer from "../features/companySlice.ts";
 import organizationReducer from "../features/organizationSlice.ts";
 import subMarginReducer from "../features/subMarginSlice.ts";
 import subMarginLegacyReducer from "../features/subMarginLegacySlice";
-import cashiersReducer from '../features/cashiersSlice.ts';
-import cashiersLegacyReducer from '../features/cashiersLegacySlice';
+import cashiersReducer from "../features/cashiersSlice.ts";
+import cashiersLegacyReducer from "../features/cashiersLegacySlice";
 import itemScanReducer from "../features/itemScanSlice.ts";
 import mobileSalesReducer from "../features/salesMobileSlice.ts";
-import ordersReducer from '../features/ordersSlice.ts';
-import receiversLegacyReducer from '../features/receiversLegacySlice';
-import ordersLegacyReducer from '../features/ordersLegacySlice';
-import adListReducer from '../features/adListSlice';
-import salesLedgerReducer from '../features/salesLedgerSlice';
-import salesLegacyReducer from '../features/salesLegacySlice';
-import upcDevReducer from '../features/upcDevSlice';
-import ticketsReducer from '../pages/tickets/ticketsSlice';
-import categoriesReducer from '../features/categoriesSlice';
-import vendorsReducer from '../features/vendorsSlice';
+import ordersReducer from "../features/ordersSlice.ts";
+import receiversLegacyReducer from "../features/receiversLegacySlice";
+import ordersLegacyReducer from "../features/ordersLegacySlice";
+import adListReducer from "../features/adListSlice";
+import salesLedgerReducer from "../features/salesLedgerSlice";
+import salesLegacyReducer from "../features/salesLegacySlice";
+import upcDevReducer from "../features/upcDevSlice";
+import ticketsReducer from "../pages/tickets/ticketsSlice";
+import categoriesReducer from "../features/categoriesSlice";
+import vendorsReducer from "../features/vendorsSlice";
+import itemReportReducer from "../features/itemReportSlice";
+import invoicesReducer from "../features/invoicesSlice";
 
 export const setupStore = () =>
   configureStore({
@@ -78,6 +80,8 @@ export const setupStore = () =>
       couponSales: couponSalesReducer,
       categories: categoriesReducer,
       vendors: vendorsReducer,
+      itemReport: itemReportReducer,
+      invoices: invoicesReducer,
       couponLegacy: couponLegacyReducer,
       reportBuilder: reportBuilderReducer,
       admin: adminReducer,

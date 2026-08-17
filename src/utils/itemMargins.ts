@@ -91,6 +91,10 @@ export interface ItemMarginRow {
   // comes from the *Pct fields so grading stays threshold-based.
   lwGrossSales: number | null;
   lyGrossSales: number | null;
+  /** Net of tax, the basis everything user-facing is shown on. Gross is kept
+   *  alongside it only because the margin maths needs the tax it carries. */
+  lwNetSales: number | null;
+  lyNetSales: number | null;
   lwQty: number | null;
   lyQty: number | null;
   lwCogs: number | null;
@@ -147,8 +151,8 @@ export const buildItemRows = (
   const lyMap = aggregateByUpc(lyMargins);
 
   const tyTotal = tyMargins.reduce((s, m) => s + m.total_sales, 0);
-  const lwTotal = lwMargins.reduce((s, m) => s + m.total_sales, 0);
-  const lyTotal = lyMargins.reduce((s, m) => s + m.total_sales, 0);
+  const lwTotal = lwMargins.reduce((s, m) => s + m.total_sales - m.total_tax, 0);
+  const lyTotal = lyMargins.reduce((s, m) => s + m.total_sales - m.total_tax, 0);
 
   const rows: ItemMarginRow[] = [];
   for (const [upc, ty] of tyMap) {
@@ -166,10 +170,10 @@ export const buildItemRows = (
     const lyMarginPct = ly && lyNet > 0 ? ((lyNet - ly.cogs) / lyNet) * 100 : null;
 
     const salesTrendPct =
-      ly && ly.grossSales > 0
-        ? ((ty.grossSales - ly.grossSales) / ly.grossSales) * 100
-        : lw && lw.grossSales > 0
-          ? ((ty.grossSales - lw.grossSales) / lw.grossSales) * 100
+      ly && lyNet > 0
+        ? ((netSales - lyNet) / lyNet) * 100
+        : lw && lwNet > 0
+          ? ((netSales - lwNet) / lwNet) * 100
           : null;
     const qtyTrendPct =
       ly && ly.qty > 0
@@ -196,28 +200,26 @@ export const buildItemRows = (
       tyMarginPct,
       lwMarginPct,
       lyMarginPct,
-      tyContributionPct: tyTotal > 0 ? (ty.grossSales / tyTotal) * 100 : 0,
-      lwContributionPct: lw && lwTotal > 0 ? (lw.grossSales / lwTotal) * 100 : null,
-      lyContributionPct: ly && lyTotal > 0 ? (ly.grossSales / lyTotal) * 100 : null,
+      tyContributionPct: tyTotal > 0 ? (netSales / tyTotal) * 100 : 0,
+      lwContributionPct: lw && lwTotal > 0 ? (lwNet / lwTotal) * 100 : null,
+      lyContributionPct: ly && lyTotal > 0 ? (lyNet / lyTotal) * 100 : null,
       hasLW: !!lw,
       hasLY: !!ly,
       salesTrendPct,
       qtyTrendPct,
       marginTrendPct,
       lwSalesPct:
-        lw && lw.grossSales > 0
-          ? ((ty.grossSales - lw.grossSales) / lw.grossSales) * 100
-          : null,
+        lw && lwNet > 0 ? ((netSales - lwNet) / lwNet) * 100 : null,
       lySalesPct:
-        ly && ly.grossSales > 0
-          ? ((ty.grossSales - ly.grossSales) / ly.grossSales) * 100
-          : null,
+        ly && lyNet > 0 ? ((netSales - lyNet) / lyNet) * 100 : null,
       lwQtyPct: lw && lw.qty > 0 ? ((ty.qty - lw.qty) / lw.qty) * 100 : null,
       lyQtyPct: ly && ly.qty > 0 ? ((ty.qty - ly.qty) / ly.qty) * 100 : null,
       lwCogsPct: lw && lw.cogs > 0 ? ((ty.cogs - lw.cogs) / lw.cogs) * 100 : null,
       lyCogsPct: ly && ly.cogs > 0 ? ((ty.cogs - ly.cogs) / ly.cogs) * 100 : null,
       lwGrossSales: lw ? lw.grossSales : null,
       lyGrossSales: ly ? ly.grossSales : null,
+      lwNetSales: lw ? lwNet : null,
+      lyNetSales: ly ? lyNet : null,
       lwQty: lw ? lw.qty : null,
       lyQty: ly ? ly.qty : null,
       lwCogs: lw ? lw.cogs : null,
@@ -228,6 +230,30 @@ export const buildItemRows = (
   return rows;
 };
 
+/**
+ * The number an item's severity is read off, in whatever unit the page's toggle
+ * selects — margin points against LY (falling back to LW), or percent change in
+ * sales or qty. Null when the item has no counterpart period to compare
+ * against, which is what makes it ungraded rather than healthy.
+ *
+ * Exported so an export can print the figure a severity was derived from
+ * instead of recomputing it a second, subtly different way — a CSV that says
+ * "Critical" without showing the delta is unarguable with.
+ */
+export const gradedDelta = (
+  row: ItemMarginRow,
+  gradingMetric: ItemGradingMetric,
+): number | null =>
+  gradingMetric === "sales"
+    ? row.salesTrendPct
+    : gradingMetric === "qty"
+      ? row.qtyTrendPct
+      : row.lyMarginPct !== null
+        ? row.tyMarginPct - row.lyMarginPct
+        : row.lwMarginPct !== null
+          ? row.tyMarginPct - row.lwMarginPct
+          : null;
+
 /** Grades on whichever metric the page's Margin/Sales toggle selects, so
  *  flipping that toggle re-grades the item list and not just the parent rows. */
 export const getItemSeverity = (
@@ -235,16 +261,7 @@ export const getItemSeverity = (
   threshold: number,
   gradingMetric: ItemGradingMetric,
 ): ItemSeverity => {
-  const raw =
-    gradingMetric === "sales"
-      ? row.salesTrendPct
-      : gradingMetric === "qty"
-        ? row.qtyTrendPct
-        : row.lyMarginPct !== null
-          ? row.tyMarginPct - row.lyMarginPct
-          : row.lwMarginPct !== null
-            ? row.tyMarginPct - row.lwMarginPct
-            : null;
+  const raw = gradedDelta(row, gradingMetric);
   if (raw === null) return "ungraded";
   const delta = Math.round(raw * 10) / 10;
   if (delta < -threshold) return "critical";
@@ -522,13 +539,13 @@ export const getRowMetric = (item: ItemMarginRow, key: RowMetricKey) => {
       };
     case "sales":
       return {
-        tyDisplay: formatCurrency2(item.grossSales),
+        tyDisplay: formatCurrency2(item.netSales),
         lwColorPct: item.lwSalesPct,
         lyColorPct: item.lySalesPct,
         lwDisplay:
-          item.lwGrossSales !== null ? formatCurrency2(item.lwGrossSales) : null,
+          item.lwNetSales !== null ? formatCurrency2(item.lwNetSales) : null,
         lyDisplay:
-          item.lyGrossSales !== null ? formatCurrency2(item.lyGrossSales) : null,
+          item.lyNetSales !== null ? formatCurrency2(item.lyNetSales) : null,
       };
     case "qty":
       return {

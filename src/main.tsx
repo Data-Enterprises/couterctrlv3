@@ -13,7 +13,24 @@ import Home from "./pages/home/Home.tsx";
 import CouponSales from "./pages/couponSales/CouponSales.tsx";
 import Categories from "./pages/categories/Categories.tsx";
 import Vendors from "./pages/vendors/Vendors.tsx";
-import { SalesPage, LossPreventionPage, OrdersPage, CouponsPage, ReceiversPage, CashiersPage, UpcPage, ItemLookupPage, AdminPage, GroupsPage, OrganizationPage, ForecastPage } from "./DevPages.tsx";
+import InventorySubDept from "./pages/inventory/InventorySubDept.tsx";
+import InventoryVendor from "./pages/inventory/InventoryVendor.tsx";
+import ItemReport from "./pages/itemReport/ItemReport.tsx";
+import Invoices from "./pages/invoices/Invoices.tsx";
+import {
+  SalesPage,
+  LossPreventionPage,
+  OrdersPage,
+  CouponsPage,
+  ReceiversPage,
+  CashiersPage,
+  UpcPage,
+  ItemLookupPage,
+  AdminPage,
+  GroupsPage,
+  OrganizationPage,
+  ForecastPage,
+} from "./DevPages.tsx";
 import Settings from "./pages/settings/Settings.tsx";
 import Dashboard from "./pages/quicksight/Dashboard.tsx";
 import SubDeptMargins from "./pages/subDepts/SubDeptMargins.tsx";
@@ -30,12 +47,25 @@ createRoot(document.getElementById("root")!).render(
                 <Route index element={<Home />} />
                 <Route path="sales" element={<SalesPage />} />
                 <Route path="user-management" element={<OrganizationPage />} />
-                <Route path="team" element={<Navigate to="/user-management" replace />} />
-                <Route path="loss-prevention" element={<LossPreventionPage />} />
+                <Route
+                  path="team"
+                  element={<Navigate to="/user-management" replace />}
+                />
+                <Route
+                  path="loss-prevention"
+                  element={<LossPreventionPage />}
+                />
                 <Route path="groups" element={<GroupsPage />} />
                 <Route path="settings" element={<Settings />} />
                 <Route path="upc-upload" element={<UpcPage />} />
                 <Route path="item-lookup" element={<ItemLookupPage />} />
+                <Route
+                  path="inventory-sub-department"
+                  element={<InventorySubDept />}
+                />
+                <Route path="inventory-vendor" element={<InventoryVendor />} />
+                <Route path="item-report" element={<ItemReport />} />
+                <Route path="invoices" element={<Invoices />} />
                 <Route path="forecasting" element={<ForecastPage />} />
                 <Route path="quicksight" element={<Dashboard />} />
                 <Route path="receivers" element={<ReceiversPage />} />

@@ -2,7 +2,8 @@
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 // import { useSalesState } from "../hooks/useSalesState";
 import { getSubs, getHourly } from "../../../api/sales";
-import { getSubMargins } from "../../../api/subMargins";
+import { fetchSubDeptRowsSafe } from "../../../utils/marginRows";
+import { gradeSeverity } from "../../../utils/severity";
 import {
   addDays,
   formatGoliathDate,
@@ -296,8 +297,11 @@ const LedgerStoreReport = () => {
     const run = async () => {
       dispatch(setTop10Loading(true));
       try {
+        // Paged — see the same note in PopupSubDeptList. Page 1 alone drops
+        // the tail of the window on any department that clears the 1000-row
+        // cap, which is exactly the departments worth opening.
         const [tyR, lwR, lyR] = await Promise.all([
-          getSubMargins(
+          fetchSubDeptRowsSafe(
             context.url,
             context.token,
             openSheetId,
@@ -307,7 +311,7 @@ const LedgerStoreReport = () => {
             selection.storeId,
             1,
           ),
-          getSubMargins(
+          fetchSubDeptRowsSafe(
             context.url,
             context.token,
             openSheetId,
@@ -317,7 +321,7 @@ const LedgerStoreReport = () => {
             selection.storeId,
             1,
           ),
-          getSubMargins(
+          fetchSubDeptRowsSafe(
             context.url,
             context.token,
             openSheetId,
@@ -329,18 +333,18 @@ const LedgerStoreReport = () => {
           ),
         ]);
         if (cancelled) return;
-        const tyItems: SubDeptMargin[] =
-          tyR.data?.error === 0
-            ? scopeToStoreNumber(tyR.data.subs, selection.storeNumber)
-            : [];
-        let lwItems: SubDeptMargin[] =
-          lwR.data?.error === 0
-            ? scopeToStoreNumber(lwR.data.subs, selection.storeNumber)
-            : [];
-        let lyItems: SubDeptMargin[] =
-          lyR.data?.error === 0
-            ? scopeToStoreNumber(lyR.data.subs, selection.storeNumber)
-            : [];
+        const tyItems: SubDeptMargin[] = scopeToStoreNumber(
+          tyR,
+          selection.storeNumber,
+        );
+        let lwItems: SubDeptMargin[] = scopeToStoreNumber(
+          lwR,
+          selection.storeNumber,
+        );
+        let lyItems: SubDeptMargin[] = scopeToStoreNumber(
+          lyR,
+          selection.storeNumber,
+        );
 
         // Whole-week case: the fetched LW/LY rows can include days that
         // don't actually correspond to any day in this TW week — filter down
@@ -1194,15 +1198,12 @@ const LedgerStoreReport = () => {
                       : item.lwQty !== null && item.lwQty > 0
                         ? ((item.tyQty - item.lwQty) / item.lwQty) * 100
                         : null;
-                  // Rounded before grading — tyNet/lwNet/lyNet (and their qty
-                  // counterparts) are sums of individual line items, so
-                  // floating-point noise can leave a value like
-                  // -0.0000000001% even when the displayed figures are
-                  // identical, misgrading it "watch".
-                  const pct = Math.round((lyPct ?? lwPct ?? 0) * 10) / 10;
-                  if (pct < -effectiveItemThreshold) return "critical";
-                  if (pct < 0) return "watch";
-                  return "healthy";
+                  // Same cut as the desktop list, epsilon and all — mobile and
+                  // desktop grading must not diverge.
+                  return gradeSeverity(
+                    lyPct ?? lwPct ?? 0,
+                    effectiveItemThreshold,
+                  );
                 };
                 const baseItems =
                   itemActiveFilter === "inactive"

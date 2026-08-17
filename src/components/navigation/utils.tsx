@@ -10,12 +10,17 @@ import {
   MagnifyingGlassCircleIcon,
   DocumentCheckIcon,
   ChartBarSquareIcon,
+  ClipboardDocumentListIcon,
   CircleStackIcon,
   Cog6ToothIcon,
   BuildingOfficeIcon,
   Squares2X2Icon,
   TruckIcon,
+  ArchiveBoxIcon,
+  ClockIcon,
+  DocumentArrowUpIcon,
 } from "@heroicons/react/16/solid";
+import { COMING_SOON_LEVELS } from "../../utils/comingSoon";
 import SalesIconV2 from "../../svgs/SalesIconV2";
 import CashierIcon from "../../svgs/CashierIcon";
 import GroupsIcon from "../../svgs/GroupsIcon";
@@ -122,6 +127,56 @@ export const navigation: Navigation[] = [
     isHovering: false,
     isVisible: true,
   },
+  // The three unreleased pages. Gated here as well as in the "Coming Soon"
+  // category below — this flat list feeds the Settings nav editor, which would
+  // otherwise offer every user a page they cannot reach.
+  {
+    name: "Item Actions",
+    href: "item-report",
+    icon: ClipboardDocumentListIcon,
+    // Desktop only — the two-panel report has no mobile form yet.
+    mobile: false,
+    children: [],
+    childOpen: false,
+    userLevels: COMING_SOON_LEVELS,
+    isHovering: false,
+    isVisible: true,
+  },
+  {
+    name: "Price Opt Sub Dept",
+    href: "inventory-sub-department",
+    icon: ArchiveBoxIcon,
+    // Desktop only — the two-panel tree has no mobile form yet.
+    mobile: false,
+    children: [],
+    childOpen: false,
+    userLevels: COMING_SOON_LEVELS,
+    isHovering: false,
+    isVisible: true,
+  },
+  {
+    name: "Price Opt Vendor",
+    href: "inventory-vendor",
+    icon: TruckIcon,
+    mobile: false,
+    children: [],
+    childOpen: false,
+    userLevels: COMING_SOON_LEVELS,
+    isHovering: false,
+    isVisible: true,
+  },
+  {
+    name: "Invoices",
+    href: "invoices",
+    icon: DocumentArrowUpIcon,
+    // Desktop only — reading a fixed-width file is a two-panel job.
+    mobile: false,
+    children: [],
+    childOpen: false,
+    userLevels: COMING_SOON_LEVELS,
+    isHovering: false,
+    isVisible: true,
+  },
   {
     name: "Forecasting",
     href: "forecasting",
@@ -206,7 +261,10 @@ export const navigation: Navigation[] = [
     mobile: false,
     children: [],
     childOpen: false,
-    userLevels: ["9"],
+    // Level 5 and up. The page itself narrows what each of them can see —
+    // below 9 the companies and stores are scoped to their own assignments,
+    // and the Companies tab stays out of reach entirely.
+    userLevels: ["5", "7", "8", "9"],
     isHovering: false,
     isVisible: true,
   },
@@ -426,7 +484,75 @@ export const categories: NavCategory[] = [
         mobile: false,
         children: [],
         childOpen: false,
-        userLevels: ["9"],
+        userLevels: ["5", "7", "8", "9"],
+        isHovering: false,
+        isVisible: true,
+      },
+    ],
+  },
+  /**
+   * Pages that are built and routed but not released.
+   *
+   * Gated to Owner and up rather than hidden behind a flag, so the people who
+   * decide whether a page ships can use it in production against real data
+   * without a build of their own. Everyone below sees no category at all —
+   * `visibleCategories` in TitleBar drops a category whose every page is out of
+   * reach, so there is no empty heading to explain.
+   *
+   * Levels are matched exactly, not as a floor (see `canSee`), so "and up" has
+   * to be spelled out. 8 is undocumented in the list above but is used by the
+   * existing Admin and User Management gates, so it is included here too.
+   *
+   * Moving a page out of here is the release: cut its entry back to the
+   * category it belongs to and restore `userLevels: ["*"]`.
+   */
+  {
+    name: "Coming Soon",
+    icon: ClockIcon,
+    pages: [
+      {
+        name: "Item Actions",
+        href: "item-report",
+        icon: ClipboardDocumentListIcon,
+        // Desktop only — the two-panel report has no mobile form yet.
+        mobile: false,
+        children: [],
+        childOpen: false,
+        userLevels: COMING_SOON_LEVELS,
+        isHovering: false,
+        isVisible: true,
+      },
+      {
+        name: "Price Opt Sub Dept",
+        href: "inventory-sub-department",
+        icon: ArchiveBoxIcon,
+        // Desktop only — the two-panel tree has no mobile form yet.
+        mobile: false,
+        children: [],
+        childOpen: false,
+        userLevels: COMING_SOON_LEVELS,
+        isHovering: false,
+        isVisible: true,
+      },
+      {
+        name: "Price Opt Vendor",
+        href: "inventory-vendor",
+        icon: TruckIcon,
+        mobile: false,
+        children: [],
+        childOpen: false,
+        userLevels: COMING_SOON_LEVELS,
+        isHovering: false,
+        isVisible: true,
+      },
+      {
+        name: "Invoices",
+        href: "invoices",
+        icon: DocumentArrowUpIcon,
+        mobile: false,
+        children: [],
+        childOpen: false,
+        userLevels: COMING_SOON_LEVELS,
         isHovering: false,
         isVisible: true,
       },

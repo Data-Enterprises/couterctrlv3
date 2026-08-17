@@ -57,8 +57,12 @@ const NewStoreName = () => {
 
   const filteredStores = useMemo(() => {
     if (!stores) return [];
-    const base =
-      assignedFilter === "assigned"
+    // Below level 9 the unassigned half is, by definition, other operators'
+    // stores — so it isn't offered and the filter collapses to the assigned
+    // list regardless of which chip is lit.
+    const base = !context.canSeeAllStores
+      ? stores.assigned
+      : assignedFilter === "assigned"
         ? stores.assigned
         : assignedFilter === "unassigned"
           ? stores.unassigned
@@ -72,7 +76,7 @@ const NewStoreName = () => {
         : true;
       return companyMatch && searchMatch;
     });
-  }, [stores, assignedFilter, companyFilter, search]);
+  }, [stores, assignedFilter, companyFilter, search, context.canSeeAllStores]);
 
   const canSubmit =
     !!selectedStore &&
@@ -113,7 +117,10 @@ const NewStoreName = () => {
           className="w-full mb-2"
         />
         <div className="flex rounded overflow-hidden mb-2">
-          {(["all", "assigned", "unassigned"] as AssignedFilter[]).map((f) => (
+          {(context.canSeeAllStores
+            ? (["all", "assigned", "unassigned"] as AssignedFilter[])
+            : []
+          ).map((f) => (
             <button
               key={f}
               onClick={() => setAssignedFilter(f)}

@@ -1,6 +1,16 @@
 import { useMemo, useState } from "react";
-import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
-import { useAppSelector, useAppDispatch } from "../../hooks";
+import {
+  ArrowDownTrayIcon,
+  ClipboardDocumentListIcon,
+} from "@heroicons/react/24/outline";
+import { collectGradedItems } from "./vendorGradedItems";
+import type { ItemGradingMetric } from "../../utils/itemMargins";
+import { useCriticalReport } from "../itemReport/criticalHandoff";
+import {
+  useAppSelector,
+  useAppDispatch,
+  useCanSeeComingSoon,
+} from "../../hooks";
 import { formatCurrency2 } from "../../utils";
 import {
   pillClass,
@@ -30,7 +40,9 @@ import { getVendorTier, rowsForVendor, marginPct } from "./vendorsUtils";
 /** Ungraded has no severity colour of its own, so the header falls back to the
  *  navy every other panel uses rather than borrowing a verdict colour. */
 const headerBg = (tier: Tier) =>
-  tier === "ungraded" ? "bg-[#1e2a4a]" : severityHeaderBgClass[tier as Severity];
+  tier === "ungraded"
+    ? "bg-[#1e2a4a]"
+    : severityHeaderBgClass[tier as Severity];
 
 /** One KPI cell, matching the Sales strip. The date line is load-bearing: the
  *  figure means something different once a day is selected. */
@@ -72,10 +84,21 @@ const Kpi = ({
 const VendorDetailPanel = () => {
   const dispatch = useAppDispatch();
   const vend = useAppSelector((s) => s.vendors);
-  const { rows, raw, metric, threshold, selectedVendor, selectedDay, itemThreshold } =
-    vend;
+  // Item Actions is unreleased, so the way in goes with it. A button that
+  // navigates somewhere the nav says does not exist is worse than no button.
+  const canSeeComingSoon = useCanSeeComingSoon();
+  const {
+    rows,
+    raw,
+    metric,
+    threshold,
+    selectedVendor,
+    selectedDay,
+    itemThreshold,
+  } = vend;
 
   const [exportOpen, setExportOpen] = useState(false);
+  const openCriticalReport = useCriticalReport();
 
   const activeThreshold = threshold ?? VENDOR_THRESHOLD_DEFAULT;
   const isMargin = metric === "margin";
@@ -85,7 +108,8 @@ const VendorDetailPanel = () => {
    *  share a formatter. */
   const valueOf = (net: number, cogs: number) =>
     isMargin ? marginPct(net, cogs) : net;
-  const fmt = (v: number) => (isMargin ? `${v.toFixed(2)}%` : formatCurrency2(v));
+  const fmt = (v: number) =>
+    isMargin ? `${v.toFixed(2)}%` : formatCurrency2(v);
 
   /** Points in margin mode, percent in sales mode — the same contract
    *  vendorDelta has, and the reason the two can't share a formatter either. */
@@ -119,6 +143,31 @@ const VendorDetailPanel = () => {
     [raw, selectedVendor],
   );
 
+  /** Item grading uses its own threshold and follows the Margin/Sales toggle —
+   *  the same pair the export modal derives, so the button and the file agree. */
+  const activeItemThreshold = itemThreshold ?? VENDOR_ITEM_THRESHOLD_DEFAULT;
+  const itemGradingMetric: ItemGradingMetric = isMargin ? "margin" : "sales";
+
+  /**
+   * This vendor's critical items, selected by the same collector the UPC List
+   * export uses. Each carries the sub department it sells under, which is what
+   * lets a multi-department vendor narrow the report's fan-out instead of
+   * forcing it to read the whole store.
+   */
+  const criticalItems = useMemo(
+    () =>
+      row
+        ? collectGradedItems(
+            [row],
+            raw,
+            activeItemThreshold,
+            itemGradingMetric,
+            new Set(["critical"] as const),
+          ).map((g) => ({ productCode: g.r.productCode, dept: g.dept }))
+        : [],
+    [row, raw, activeItemThreshold, itemGradingMetric],
+  );
+
   if (!row) {
     return (
       <div className="flex-1 min-w-0 shadow-lg bg-custom-white rounded-xl flex items-center justify-center">
@@ -150,9 +199,7 @@ const VendorDetailPanel = () => {
     return deltaOf(d.twNet, d.twCogs, bn, bc);
   };
 
-  const twValue = activeDay
-    ? dayTw(activeDay)
-    : valueOf(row.twNet, row.twCogs);
+  const twValue = activeDay ? dayTw(activeDay) : valueOf(row.twNet, row.twCogs);
   const lwValue = activeDay
     ? dayLw(activeDay)
     : row.hasLW
@@ -179,10 +226,16 @@ const VendorDetailPanel = () => {
     : fmtRangeLabel(vend.twStart, vend.twEnd);
   const lwLabel = selectedDay
     ? fmtDayLabel(shiftIso(selectedDay, LW_OFFSET))
-    : fmtRangeLabel(shiftIso(vend.twStart, LW_OFFSET), shiftIso(vend.twEnd, LW_OFFSET));
+    : fmtRangeLabel(
+        shiftIso(vend.twStart, LW_OFFSET),
+        shiftIso(vend.twEnd, LW_OFFSET),
+      );
   const lyLabel = selectedDay
     ? fmtDayLabel(shiftIso(selectedDay, LY_OFFSET))
-    : fmtRangeLabel(shiftIso(vend.twStart, LY_OFFSET), shiftIso(vend.twEnd, LY_OFFSET));
+    : fmtRangeLabel(
+        shiftIso(vend.twStart, LY_OFFSET),
+        shiftIso(vend.twEnd, LY_OFFSET),
+      );
 
   /* ── Day strip ─────────────────────────────────────────────────────────── */
 
@@ -224,6 +277,8 @@ const VendorDetailPanel = () => {
           dateRange={fmtRangeLabel(vend.twStart, vend.twEnd)}
           rows={rows}
           vendorRaw={vendorRaw}
+          // Unsliced — the all-vendors preset splits it by vendor itself.
+          allRaw={raw}
           metric={metric}
           threshold={activeThreshold}
           itemThreshold={itemThreshold ?? VENDOR_ITEM_THRESHOLD_DEFAULT}
@@ -242,13 +297,43 @@ const VendorDetailPanel = () => {
         <span className="text-custom-white text-[13px] font-bold justify-self-center">
           Vendor Performance · {twLabel}
         </span>
-        <button
-          onClick={() => setExportOpen(true)}
-          className="justify-self-end w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/60 hover:text-custom-white hover:border-custom-white/40 transition-colors"
-          title="Export"
-        >
-          <ArrowDownTrayIcon className="h-4 w-4" />
-        </button>
+        <div className="justify-self-end flex items-center gap-1.5">
+          {/* A vendor's range routinely spans several sub departments, so the
+              handed-over items carry their own — that set is what narrows the
+              fan-out on the report side instead of reading every department. */}
+          {canSeeComingSoon && criticalItems.length > 0 && (
+            <button
+              onClick={() =>
+                openCriticalReport({
+                  storeId: vend.storeid,
+                  items: criticalItems,
+                  window: { start: vend.twStart, end: vend.twEnd },
+                  // The vendor's rows for all three periods are already in
+                  // hand — handing them over is both faster and the only way
+                  // the report is guaranteed to show what this panel showed.
+                  rows: {
+                    ty: vendorRaw.tw,
+                    lw: vendorRaw.lw,
+                    ly: vendorRaw.ly,
+                  },
+                  sourceLabel: row.vendorName,
+                  basisLabel: `${criticalItems.length} critical by ${itemGradingMetric}, ${activeItemThreshold}%`,
+                })
+              }
+              className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/85 hover:text-custom-white hover:border-custom-white/40 transition-colors"
+              title={`See item actions (${criticalItems.length})`}
+            >
+              <ClipboardDocumentListIcon className="h-4 w-4" />
+            </button>
+          )}
+          <button
+            onClick={() => setExportOpen(true)}
+            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/85 hover:text-custom-white hover:border-custom-white/40 transition-colors"
+            title="Export"
+          >
+            <ArrowDownTrayIcon className="h-4 w-4" />
+          </button>
+        </div>
       </div>
 
       {/* KPI metric strip — values and date labels update with day selection */}
@@ -280,7 +365,9 @@ const VendorDetailPanel = () => {
         days={dayCards}
         weekValue={fmt(valueOf(row.twNet, row.twCogs))}
         weekDelta={weekLyPct ?? weekLwPct}
-        weekDeltaBasis={weekLyPct !== null ? "LY" : weekLwPct !== null ? "LW" : undefined}
+        weekDeltaBasis={
+          weekLyPct !== null ? "LY" : weekLwPct !== null ? "LW" : undefined
+        }
         selected={selectedDay ?? ""}
         onSelect={(iso) => dispatch(setSelectedDay(iso === "" ? null : iso))}
         higherIsWorse={false}
@@ -297,7 +384,6 @@ const VendorDetailPanel = () => {
         onThresholdChange={(v) => dispatch(setItemThreshold(v))}
         selectedDay={selectedDay}
       />
-
     </div>
   );
 };

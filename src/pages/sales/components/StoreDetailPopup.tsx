@@ -1,5 +1,9 @@
 ﻿import { useState, useEffect, memo } from "react";
-import { useAppSelector, useAppDispatch } from "../../../hooks";
+import {
+  useAppSelector,
+  useAppDispatch,
+  useCanSeeComingSoon,
+} from "../../../hooks";
 // import { useSalesState } from "../hooks/useSalesState";
 import { getSubs, getHourly /* , getCats */ } from "../../../api/sales";
 import SalesExportModal from "./SalesExportModal";
@@ -33,12 +37,20 @@ import {
   formatCurrency2,
   formatBigNumber,
 } from "../../../utils";
-import { computeDayMatchedTotals, scopeToStoreNumber, applyStoreNumberToName /*, getWeeklyDataGaps, getWeeklyGapCount */ } from "../shared/ledgerUtils";
+import {
+  computeDayMatchedTotals,
+  scopeToStoreNumber,
+  applyStoreNumberToName /*, getWeeklyDataGaps, getWeeklyGapCount */,
+} from "../shared/ledgerUtils";
 import { useStoreName } from "../../../hooks";
-import { ArrowDownTrayIcon /*, ExclamationTriangleIcon */ } from "@heroicons/react/20/solid";
+import {
+  ArrowDownTrayIcon /*, ExclamationTriangleIcon */,
+} from "@heroicons/react/20/solid";
 import PopupDaySidebar from "./PopupDaySidebar";
 import PopupSubDeptList from "./PopupSubDeptList";
 import PopupHourlyView from "./PopupHourlyView";
+import { ClipboardDocumentListIcon } from "@heroicons/react/20/solid";
+import { useCriticalReport } from "../../itemReport/criticalHandoff";
 // import DataGapReport from "./DataGapReport";
 // import PopupCategoryList from "./PopupCategoryList";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
@@ -64,6 +76,9 @@ const fmtDate = (d: string) =>
 
 const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
   const dispatch = useAppDispatch();
+  // Item Actions is unreleased, so the way in goes with it. A button that
+  // navigates somewhere the nav says does not exist is worse than no button.
+  const canSeeComingSoon = useCanSeeComingSoon();
   const context = useAppSelector((state) => state.app);
   const search = useAppSelector((state) => state.search);
   const {
@@ -88,6 +103,11 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
   const [exportOpen, setExportOpen] = useState(false);
   // const [gapReportOpen, setGapReportOpen] = useState(false);
   const [showFlames, setShowFlames] = useState(false);
+  const openCriticalReport = useCriticalReport();
+  // The same item threshold the sub-dept list grades against, so the button's
+  // definition of critical is the one already on screen.
+  const itemThreshold =
+    useAppSelector((state) => state.salesLedger.itemThreshold) ?? 9;
   // const [catLoading, setCatLoading] = useState(false);
   // const [catFetchedFor, setCatFetchedFor] = useState<number | null>(null);
 
@@ -125,10 +145,13 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
   // there doesn't mean this specific dept/hour/item has no real data for
   // it — using the true calendar range means every entity's LW/LY match is
   // scoped to its own genuine data, not gated by a different fetch's gaps.
-  const twRealDates = Array.from({ length: 7 }, (_, i) =>
-    addDays(new Date(twStart), i).toISOString().split("T")[0],
+  const twRealDates = Array.from(
+    { length: 7 },
+    (_, i) => addDays(new Date(twStart), i).toISOString().split("T")[0],
   );
-  const lyWeekDates = twRealDates.map((d) => sameWeekDayLastYear(d).date).sort();
+  const lyWeekDates = twRealDates
+    .map((d) => sameWeekDayLastYear(d).date)
+    .sort();
   const lyStart = lyWeekDates[0];
   const lyEnd = lyWeekDates[lyWeekDates.length - 1];
   const lwWeekDates = twRealDates.map(
@@ -421,13 +444,17 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
       dispatch(setSubSales(rawSubs));
       dispatch(
         setPeriodSubSales({
-          subs: rawLWSubs.filter((s) => lwDateSet.has(s.sale_date.split("T")[0])),
+          subs: rawLWSubs.filter((s) =>
+            lwDateSet.has(s.sale_date.split("T")[0]),
+          ),
           period: 2,
         }),
       );
       dispatch(
         setPeriodSubSales({
-          subs: rawLYSubs.filter((s) => lyDateSet.has(s.sale_date.split("T")[0])),
+          subs: rawLYSubs.filter((s) =>
+            lyDateSet.has(s.sale_date.split("T")[0]),
+          ),
           period: 3,
         }),
       );
@@ -493,7 +520,9 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
   return (
     <div className="bg-custom-white rounded-xl shadow-sm overflow-hidden flex flex-col h-full">
       {/* Title bar — tinted to the selected store's severity */}
-      <div className={`relative grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-3 flex-shrink-0 ${severityHeaderBgClass[selection.severity]}`}>
+      <div
+        className={`relative grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-3 flex-shrink-0 ${severityHeaderBgClass[selection.severity]}`}
+      >
         {showFlames && <GhostFlames />}
         <p className="text-custom-white text-[13px] font-bold leading-tight justify-self-start">
           {headerStoreName}
@@ -516,6 +545,34 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
               </span>
             </button>
           )} */}
+          {/* Whole-store critical report.
+              Nothing is fetched here. Sales loads item rows one department at
+              a time, so grading the store first would strand the user on this
+              popup watching nothing happen — instead the rule travels with the
+              handoff and the report resolves it on its own loading screen,
+              using the fan-out it was going to run anyway. */}
+          {canSeeComingSoon && !loading && rawSubs.length > 0 && (
+            <button
+              onClick={() =>
+                openCriticalReport({
+                  storeId: selection.storeId,
+                  grade: {
+                    kind: "sales",
+                    threshold: itemThreshold,
+                    metric: gradingMetric,
+                    storeNumber: selection.storeNumber,
+                  },
+                  window: { start: twStart, end: twEnd },
+                  sourceLabel: resolvedStoreName,
+                  basisLabel: `critical by ${gradingMetric}, ${itemThreshold}%`,
+                })
+              }
+              title="See item actions"
+              className="text-custom-white transition-colors"
+            >
+              <ClipboardDocumentListIcon className="w-4 h-4" />
+            </button>
+          )}
           {!loading && (rawSubs.length > 0 || rawHourly.length > 0) && (
             <button
               onClick={() => setExportOpen(true)}
@@ -560,16 +617,22 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
           <div className="text-[10px] font-bold uppercase tracking-wide text-content">
             {isQty ? "TY Qty" : "TY Net Sales"}
           </div>
-          <div className="text-[10px] font-bold text-content mb-0.5">{twDateLabel}</div>
+          <div className="text-[10px] font-bold text-content mb-0.5">
+            {twDateLabel}
+          </div>
           <div className="text-[14px] font-bold text-content">
-            {isQty ? formatBigNumber(headerTwTotal, 0) : formatCurrency2(headerTwTotal)}
+            {isQty
+              ? formatBigNumber(headerTwTotal, 0)
+              : formatCurrency2(headerTwTotal)}
           </div>
         </div>
         <div className="px-4 pt-2.5 text-center">
           <div className="text-[10px] font-bold uppercase tracking-wide text-content">
             vs Last Week
           </div>
-          <div className="text-[10px] font-bold text-content mb-0.5">{lwDateLabel}</div>
+          <div className="text-[10px] font-bold text-content mb-0.5">
+            {lwDateLabel}
+          </div>
           <div className="flex items-baseline justify-center gap-2">
             <span className="text-[14px] font-bold text-content">
               {headerLwTotal !== null
@@ -591,7 +654,9 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
           <div className="text-[10px] font-bold uppercase tracking-wide text-content">
             vs Last Year
           </div>
-          <div className="text-[10px] font-bold text-content mb-0.5">{lyDateLabel}</div>
+          <div className="text-[10px] font-bold text-content mb-0.5">
+            {lyDateLabel}
+          </div>
           <div className="flex items-baseline justify-center gap-2">
             <span className="text-[14px] font-bold text-content">
               {headerLyTotal !== null

@@ -21,11 +21,47 @@ export const formatPct = (pct: number) =>
  */
 export const PCT_COL_W = 72;
 
+/**
+ * Slack around a boundary, for comparisons built out of summed line items.
+ *
+ * Floating point leaves noise on both edges: a genuinely flat department can
+ * come out at -0.0000000001%, and 2.20 against 2.00 is 10.000000000000009
+ * rather than 10. Neither should tip a grade.
+ *
+ * This replaces rounding the percentage to 1dp before comparing, which handled
+ * the noise but moved the threshold boundary with it — by up to 0.05 points. A
+ * department down 9.03% against a 9% threshold rounded to 9.0, failed
+ * `< -9`, and graded "watch" while its own pill and its printed -9.03% both
+ * said critical. Sub Dept Margins, grading the raw value, called the same
+ * department critical.
+ *
+ * An epsilon is the size of the actual problem. Rounding was three orders of
+ * magnitude larger than the noise it was aimed at.
+ */
+const PCT_EPSILON = 1e-6;
+
+/**
+ * The app's grading cut, in one place.
+ *
+ * Every severity dot, chip count and pill colour resolves through here, so a
+ * row cannot be graded one way and coloured another — which is exactly what
+ * happened while the dot rounded and the pill did not.
+ */
+export const gradeSeverity = (pct: number, threshold: number): Severity => {
+  if (pct < -threshold - PCT_EPSILON) return "critical";
+  if (pct < -PCT_EPSILON) return "watch";
+  return "healthy";
+};
+
+const PILL_CLASS: Record<Severity, string> = {
+  critical: "bg-severity_critical_bg text-severity_critical_text",
+  watch: "bg-severity_watch_bg text-severity_watch_text",
+  healthy: "bg-severity_healthy_bg text-severity_healthy_text",
+};
+
 export const pillClass = (pct: number | null, threshold: number) => {
   if (pct === null) return "bg-gray-100 text-gray-500";
-  if (pct < -threshold) return "bg-severity_critical_bg text-severity_critical_text";
-  if (pct < 0) return "bg-severity_watch_bg text-severity_watch_text";
-  return "bg-severity_healthy_bg text-severity_healthy_text";
+  return PILL_CLASS[gradeSeverity(pct, threshold)];
 };
 
 export const CTA_SEVERITY_CLASSES: Record<

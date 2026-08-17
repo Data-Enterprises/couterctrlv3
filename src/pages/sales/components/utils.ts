@@ -1,11 +1,9 @@
-export type {
-  Severity,
-  SevFilter,
-} from "../../../utils/severity";
+export type { Severity, SevFilter } from "../../../utils/severity";
 
 export {
   formatPct,
   pillClass,
+  gradeSeverity,
   CTA_SEVERITY_CLASSES,
   severityDotClass,
   PCT_COL_W,

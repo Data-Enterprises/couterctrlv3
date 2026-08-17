@@ -21,7 +21,7 @@ import {
   formatGoliathDate,
   sameWeekDayLastYear,
 } from "../../../utils";
-import { getSubMargins } from "../../../api/subMargins";
+import { fetchSubDeptRowsSafe } from "../../../utils/marginRows";
 import { scopeToStoreNumber } from "../shared/ledgerUtils";
 import {
   ExclamationTriangleIcon,
@@ -31,9 +31,19 @@ import {
   ChevronUpIcon,
 } from "@heroicons/react/20/solid";
 import type { Severity } from "./LedgerRow";
+import { aggregateByCode, itemSeverity } from "./itemGrading";
 import type { SubDeptMargin } from "../../../interfaces";
 import UpcContextMenu from "../../../components/UpcContextMenu";
-import { formatPct, pillClass, chipClass, CTA_SEVERITY_CLASSES, severityDotClass, PCT_COL_W, type SevFilter } from "./utils";
+import {
+  formatPct,
+  pillClass,
+  gradeSeverity,
+  chipClass,
+  CTA_SEVERITY_CLASSES,
+  severityDotClass,
+  PCT_COL_W,
+  type SevFilter,
+} from "./utils";
 import SeverityBadge from "../../../components/SeverityBadge";
 import TextFilter from "../../../components/filters/TextFilter";
 import SelectFilter from "../../../components/filters/SelectFilter";
@@ -63,62 +73,23 @@ type DeptRow = {
   lyStoreCpn: number;
 };
 
-type Top10Item = {
-  productCode: string;
-  upc: string;
-  desc: string;
-  tyNet: number;
-  tyQty: number;
-  tyWeight: number;
-  lwNet: number | null;
-  lwQty: number | null;
-  lwWeight: number | null;
-  lyNet: number | null;
-  lyQty: number | null;
-  lyWeight: number | null;
-};
-
 type DeptSortColumn = "ty" | "vsLW" | "vsLY";
-type DeptSortState = { column: DeptSortColumn; direction: "desc" | "asc" } | null;
+type DeptSortState = {
+  column: DeptSortColumn;
+  direction: "desc" | "asc";
+} | null;
 
 type ItemSortColumn = "ty" | "lw" | "ly";
-type ItemSortState = { column: ItemSortColumn; direction: "desc" | "asc" } | null;
-
-const aggregateByCode = (
-  items: SubDeptMargin[],
-): Map<string, { desc: string; net: number; qty: number; weight: number }> => {
-  const map = new Map<
-    string,
-    { desc: string; net: number; qty: number; weight: number }
-  >();
-  for (const item of items) {
-    // product_code is typed as string but the API doesn't always send it as
-    // one (numeric UPCs come back as a JSON number on some queries) — coerce
-    // here so every downstream .toLowerCase()/string usage is safe.
-    const code = String(item.product_code);
-    const ex = map.get(code);
-    if (ex) {
-      ex.net += item.total_sales - item.total_tax;
-      ex.qty += item.qty;
-      ex.weight += item.weight;
-    } else {
-      map.set(code, {
-        desc: item.product_description,
-        net: item.total_sales - item.total_tax,
-        qty: item.qty,
-        weight: item.weight,
-      });
-    }
-  }
-  return map;
-};
+type ItemSortState = {
+  column: ItemSortColumn;
+  direction: "desc" | "asc";
+} | null;
 
 const deptSeverity = (
   r: DeptRow,
   threshold: number,
   metric: GradingMetric,
 ): Severity => {
-  // Rounded before grading — see itemSeverity below for why.
   const primaryPct =
     metric === "qty"
       ? r.hasLY
@@ -131,40 +102,7 @@ const deptSeverity = (
         : r.hasLW
           ? r.vsLWPct
           : 0;
-  const pct = Math.round(primaryPct * 10) / 10;
-  if (pct < -threshold) return "critical";
-  if (pct < 0) return "watch";
-  return "healthy";
-};
-
-const itemSeverity = (
-  item: Top10Item,
-  threshold: number,
-  metric: GradingMetric,
-): Severity => {
-  const lyPct =
-    metric === "sales"
-      ? item.lyNet !== null && item.lyNet > 0
-        ? ((item.tyNet - item.lyNet) / item.lyNet) * 100
-        : null
-      : item.lyQty !== null && item.lyQty > 0
-        ? ((item.tyQty - item.lyQty) / item.lyQty) * 100
-        : null;
-  const lwPct =
-    metric === "sales"
-      ? item.lwNet !== null && item.lwNet > 0
-        ? ((item.tyNet - item.lwNet) / item.lwNet) * 100
-        : null
-      : item.lwQty !== null && item.lwQty > 0
-        ? ((item.tyQty - item.lwQty) / item.lwQty) * 100
-        : null;
-  // Rounded before grading — tyNet/lwNet/lyNet are sums of individual line
-  // items, so floating-point noise can leave a value like -0.0000000001%
-  // even when the displayed dollars are identical, misgrading it "watch".
-  const pct = Math.round((lyPct ?? lwPct ?? 0) * 10) / 10;
-  if (pct < -threshold) return "critical";
-  if (pct < 0) return "watch";
-  return "healthy";
+  return gradeSeverity(primaryPct, threshold);
 };
 
 const getCta = (
@@ -302,9 +240,12 @@ const PopupSubDeptList = ({
     if (!threshOpen) return;
     const close = (e: MouseEvent) => {
       if (
-        threshBtnRef.current && !threshBtnRef.current.contains(e.target as Node) &&
-        threshPopRef.current && !threshPopRef.current.contains(e.target as Node)
-      ) setThreshOpen(false);
+        threshBtnRef.current &&
+        !threshBtnRef.current.contains(e.target as Node) &&
+        threshPopRef.current &&
+        !threshPopRef.current.contains(e.target as Node)
+      )
+        setThreshOpen(false);
     };
     document.addEventListener("mousedown", close);
     return () => document.removeEventListener("mousedown", close);
@@ -314,9 +255,12 @@ const PopupSubDeptList = ({
     if (!itemThreshOpen) return;
     const close = (e: MouseEvent) => {
       if (
-        itemThreshBtnRef.current && !itemThreshBtnRef.current.contains(e.target as Node) &&
-        itemThreshPopRef.current && !itemThreshPopRef.current.contains(e.target as Node)
-      ) setItemThreshOpen(false);
+        itemThreshBtnRef.current &&
+        !itemThreshBtnRef.current.contains(e.target as Node) &&
+        itemThreshPopRef.current &&
+        !itemThreshPopRef.current.contains(e.target as Node)
+      )
+        setItemThreshOpen(false);
     };
     document.addEventListener("mousedown", close);
     return () => document.removeEventListener("mousedown", close);
@@ -349,7 +293,9 @@ const PopupSubDeptList = ({
     const twStart = addDays(search.singleDate, -6).toISOString().split("T")[0];
     const lwStart = addDays(search.singleDate, -13).toISOString().split("T")[0];
     const lwEnd = addDays(search.singleDate, -7).toISOString().split("T")[0];
-    const lyWeekDates = twRealDates.map((d) => sameWeekDayLastYear(d).date).sort();
+    const lyWeekDates = twRealDates
+      .map((d) => sameWeekDayLastYear(d).date)
+      .sort();
     const lyStart = lyWeekDates[0] ?? lwEnd;
     const lyEnd = lyWeekDates[lyWeekDates.length - 1] ?? lwEnd;
     const lwWeekDates = twRealDates.map(
@@ -375,8 +321,15 @@ const PopupSubDeptList = ({
     const fetch = async () => {
       setItemsLoading(true);
       try {
-        const [tyResp, lwResp, lyResp] = await Promise.all([
-          getSubMargins(
+        // Paged, not page 1. `subs/subs` caps a response at 1000 rows and
+        // reports `total_pages`; reading only the first page silently drops the
+        // tail of the window, because rows come back date-ordered. A busy
+        // department over a full week clears that cap, so this list was
+        // reporting a short week while the dept rows above it reported a whole
+        // one. Same helper Sub Dept Margins, Vendors and Item Actions use, so
+        // there is one paging implementation rather than four.
+        const [tyRaw, lwRaw, lyRaw] = await Promise.all([
+          fetchSubDeptRowsSafe(
             context.url,
             context.token,
             selectedId,
@@ -386,7 +339,7 @@ const PopupSubDeptList = ({
             storeId,
             1,
           ),
-          getSubMargins(
+          fetchSubDeptRowsSafe(
             context.url,
             context.token,
             selectedId,
@@ -396,7 +349,7 @@ const PopupSubDeptList = ({
             storeId,
             1,
           ),
-          getSubMargins(
+          fetchSubDeptRowsSafe(
             context.url,
             context.token,
             selectedId,
@@ -409,18 +362,9 @@ const PopupSubDeptList = ({
         ]);
         if (cancelled) return;
 
-        const tyItems: SubDeptMargin[] =
-          tyResp.data?.error === 0
-            ? scopeToStoreNumber(tyResp.data.subs, storeNumber)
-            : [];
-        let lwItems: SubDeptMargin[] =
-          lwResp.data?.error === 0
-            ? scopeToStoreNumber(lwResp.data.subs, storeNumber)
-            : [];
-        let lyItems: SubDeptMargin[] =
-          lyResp.data?.error === 0
-            ? scopeToStoreNumber(lyResp.data.subs, storeNumber)
-            : [];
+        const tyItems: SubDeptMargin[] = scopeToStoreNumber(tyRaw, storeNumber);
+        let lwItems: SubDeptMargin[] = scopeToStoreNumber(lwRaw, storeNumber);
+        let lyItems: SubDeptMargin[] = scopeToStoreNumber(lyRaw, storeNumber);
 
         // Whole-week case: the fetched LW/LY rows can include days that
         // don't actually correspond to any day in this TW week — filter down
@@ -430,8 +374,12 @@ const PopupSubDeptList = ({
         if (!selectedDate) {
           const lwDateSet = new Set(lwWeekDates);
           const lyDateSet = new Set(lyWeekDates);
-          lwItems = lwItems.filter((i) => lwDateSet.has(i.sale_date.split("T")[0]));
-          lyItems = lyItems.filter((i) => lyDateSet.has(i.sale_date.split("T")[0]));
+          lwItems = lwItems.filter((i) =>
+            lwDateSet.has(i.sale_date.split("T")[0]),
+          );
+          lyItems = lyItems.filter((i) =>
+            lyDateSet.has(i.sale_date.split("T")[0]),
+          );
         }
 
         const tyMap = aggregateByCode(tyItems);
@@ -466,7 +414,9 @@ const PopupSubDeptList = ({
         // in the normal TY-anchored list above since it's built from tyMap
         // alone. Surfaced separately so someone can spot "this used to sell
         // here" without it polluting the active list's severity counts.
-        const inactiveCodes = new Set([...lwMap.keys(), ...lyMap.keys()].filter((code) => !tyMap.has(code)));
+        const inactiveCodes = new Set(
+          [...lwMap.keys(), ...lyMap.keys()].filter((code) => !tyMap.has(code)),
+        );
         const inactiveSorted = [...inactiveCodes].sort((a, b) => {
           const aTotal = (lwMap.get(a)?.net ?? 0) + (lyMap.get(a)?.net ?? 0);
           const bTotal = (lwMap.get(b)?.net ?? 0) + (lyMap.get(b)?.net ?? 0);
@@ -633,11 +583,19 @@ const PopupSubDeptList = ({
           rank[deptSeverity(b, threshold, gradingMetric)];
         if (rankDiff !== 0) return rankDiff;
         const aPct = isQty
-          ? (a.hasLY ? a.vsLYQtyPct : a.vsLWQtyPct)
-          : (a.hasLY ? a.vsLYPct : a.vsLWPct);
+          ? a.hasLY
+            ? a.vsLYQtyPct
+            : a.vsLWQtyPct
+          : a.hasLY
+            ? a.vsLYPct
+            : a.vsLWPct;
         const bPct = isQty
-          ? (b.hasLY ? b.vsLYQtyPct : b.vsLWQtyPct)
-          : (b.hasLY ? b.vsLYPct : b.vsLWPct);
+          ? b.hasLY
+            ? b.vsLYQtyPct
+            : b.vsLWQtyPct
+          : b.hasLY
+            ? b.vsLYPct
+            : b.vsLWPct;
         return aPct - bPct;
       });
   }, [subSales, subSalesWk2, subSalesWk3, threshold, gradingMetric, isQty]);
@@ -655,7 +613,9 @@ const PopupSubDeptList = ({
   const visible =
     sevFilter === "all"
       ? rows
-      : rows.filter((r) => deptSeverity(r, threshold, gradingMetric) === sevFilter);
+      : rows.filter(
+          (r) => deptSeverity(r, threshold, gradingMetric) === sevFilter,
+        );
 
   const handleDeptSortClick = (column: DeptSortColumn) => {
     setDeptSort((prev) => {
@@ -666,13 +626,20 @@ const PopupSubDeptList = ({
   };
   const deptSortValue = (row: DeptRow, column: DeptSortColumn) =>
     column === "ty"
-      ? (isQty ? row.qty : row.tw)
+      ? isQty
+        ? row.qty
+        : row.tw
       : column === "vsLW"
-        ? (isQty ? row.vsLWQtyPct : row.vsLWPct)
-        : (isQty ? row.vsLYQtyPct : row.vsLYPct);
+        ? isQty
+          ? row.vsLWQtyPct
+          : row.vsLWPct
+        : isQty
+          ? row.vsLYQtyPct
+          : row.vsLYPct;
   const sortedVisible = deptSort
     ? [...visible].sort((a, b) => {
-        const diff = deptSortValue(a, deptSort.column) - deptSortValue(b, deptSort.column);
+        const diff =
+          deptSortValue(a, deptSort.column) - deptSortValue(b, deptSort.column);
         return deptSort.direction === "desc" ? -diff : diff;
       })
     : visible;
@@ -754,8 +721,17 @@ const PopupSubDeptList = ({
   // Nulls (no data for that period, e.g. an inactive item's TY or an
   // item with no LW/LY match) always sort last, regardless of direction —
   // otherwise "asc" would put them first, which reads as "worst" not "no data".
-  const itemSortValue = (item: (typeof textFilteredItems)[number], column: ItemSortColumn) =>
-    column === "ty" ? (item.hasTY === false ? null : item.tyNet) : column === "lw" ? item.lwNet : item.lyNet;
+  const itemSortValue = (
+    item: (typeof textFilteredItems)[number],
+    column: ItemSortColumn,
+  ) =>
+    column === "ty"
+      ? item.hasTY === false
+        ? null
+        : item.tyNet
+      : column === "lw"
+        ? item.lwNet
+        : item.lyNet;
   const sortedItems = itemSort
     ? [...textFilteredItems].sort((a, b) => {
         const av = itemSortValue(a, itemSort.column);
@@ -782,30 +758,42 @@ const PopupSubDeptList = ({
         {/* Left panel — signal list */}
         <div
           className="flex flex-col border-r border-gray-100"
-          style={{ width: "36.5%" }}
+          style={{ width: "39.5%" }}
         >
           {/* Filter chips + threshold */}
           <div className="flex flex-wrap items-center gap-1 p-2 border-b border-gray-100 bg-gray-100">
             <button
-              onClick={() => setSevFilter((f) => (f === "critical" ? "all" : "critical"))}
+              onClick={() =>
+                setSevFilter((f) => (f === "critical" ? "all" : "critical"))
+              }
               className={`text-[10px] font-semibold px-2 py-1 rounded-full bg-severity_critical_bg text-severity_critical_text transition-shadow ${
-                sevFilter === "critical" ? "ring-2 ring-severity_critical_text/40 shadow-sm" : ""
+                sevFilter === "critical"
+                  ? "ring-2 ring-severity_critical_text/40 shadow-sm"
+                  : ""
               }`}
             >
               Crit ({critCount})
             </button>
             <button
-              onClick={() => setSevFilter((f) => (f === "watch" ? "all" : "watch"))}
+              onClick={() =>
+                setSevFilter((f) => (f === "watch" ? "all" : "watch"))
+              }
               className={`text-[10px] font-semibold px-2 py-1 rounded-full bg-severity_watch_bg text-severity_watch_text transition-shadow ${
-                sevFilter === "watch" ? "ring-2 ring-severity_watch_text/40 shadow-sm" : ""
+                sevFilter === "watch"
+                  ? "ring-2 ring-severity_watch_text/40 shadow-sm"
+                  : ""
               }`}
             >
               Watch ({watchCount})
             </button>
             <button
-              onClick={() => setSevFilter((f) => (f === "healthy" ? "all" : "healthy"))}
+              onClick={() =>
+                setSevFilter((f) => (f === "healthy" ? "all" : "healthy"))
+              }
               className={`text-[10px] font-semibold px-2 py-1 rounded-full bg-severity_healthy_bg text-severity_healthy_text transition-shadow ${
-                sevFilter === "healthy" ? "ring-2 ring-severity_healthy_text/40 shadow-sm" : ""
+                sevFilter === "healthy"
+                  ? "ring-2 ring-severity_healthy_text/40 shadow-sm"
+                  : ""
               }`}
             >
               OK ({healthyCount})
@@ -832,9 +820,13 @@ const PopupSubDeptList = ({
                     />
                     <ThresholdFilter
                       value={
-                        rawThreshold === null ? null : { op: "gt", amount: rawThreshold }
+                        rawThreshold === null
+                          ? null
+                          : { op: "gt", amount: rawThreshold }
                       }
-                      onChange={(v) => dispatch(setSubDeptThreshold(v?.amount ?? null))}
+                      onChange={(v) =>
+                        dispatch(setSubDeptThreshold(v?.amount ?? null))
+                      }
                       showOp={false}
                       suffix="%"
                       inputWidth={40}
@@ -911,7 +903,9 @@ const PopupSubDeptList = ({
                       : "border-transparent hover:bg-gray-50"
                   }`}
                 >
-                  <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${severityDotClass[sev]}`} />
+                  <span
+                    className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${severityDotClass[sev]}`}
+                  />
                   <span
                     title={r.desc}
                     className="text-[12px] font-medium text-content truncate flex-1"
@@ -923,11 +917,15 @@ const PopupSubDeptList = ({
                       className="text-[12px] font-semibold text-content flex-shrink-0 pl-2.5 text-right"
                       style={{ width: 64 }}
                     >
-                      {isQty ? formatBigNumber(r.qty, 0) : formatCurrency2(r.tw)}
+                      {isQty
+                        ? formatBigNumber(r.qty, 0)
+                        : formatCurrency2(r.tw)}
                     </span>
                     <span
                       className={`text-[12px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${
-                        r.hasLW ? pillClass(rowVsLWPct, threshold) : "bg-gray-100 text-gray-400"
+                        r.hasLW
+                          ? pillClass(rowVsLWPct, threshold)
+                          : "bg-gray-100 text-gray-400"
                       }`}
                       style={{ minWidth: PCT_COL_W }}
                     >
@@ -935,7 +933,9 @@ const PopupSubDeptList = ({
                     </span>
                     <span
                       className={`text-[12px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${
-                        r.hasLY ? pillClass(rowVsLYPct, threshold) : "bg-gray-100 text-gray-400"
+                        r.hasLY
+                          ? pillClass(rowVsLYPct, threshold)
+                          : "bg-gray-100 text-gray-400"
                       }`}
                       style={{ minWidth: PCT_COL_W }}
                     >
@@ -952,38 +952,56 @@ const PopupSubDeptList = ({
         <div className="flex flex-col flex-1 min-w-0">
           {/* Header row: selected name — doubles as the CTA insight toggle */}
           {selected && cta && (
-            <div className={`relative border-b ${CTA_SEVERITY_CLASSES[cta.severity].border}`}>
+            <div
+              className={`relative border-b ${CTA_SEVERITY_CLASSES[cta.severity].border}`}
+            >
               <button
                 onClick={() => setCtaOpen((v) => !v)}
                 className={`w-full flex items-center gap-1.5 px-3 py-1.5 ${CTA_SEVERITY_CLASSES[cta.severity].bg} ${CTA_SEVERITY_CLASSES[cta.severity].hoverBg} transition-colors`}
               >
                 {cta.severity === "critical" && (
-                  <ExclamationTriangleIcon className={`w-3.5 h-3.5 ${CTA_SEVERITY_CLASSES[cta.severity].text} flex-shrink-0`} />
+                  <ExclamationTriangleIcon
+                    className={`w-3.5 h-3.5 ${CTA_SEVERITY_CLASSES[cta.severity].text} flex-shrink-0`}
+                  />
                 )}
                 {cta.severity === "watch" && (
-                  <ExclamationCircleIcon className={`w-3.5 h-3.5 ${CTA_SEVERITY_CLASSES[cta.severity].text} flex-shrink-0`} />
+                  <ExclamationCircleIcon
+                    className={`w-3.5 h-3.5 ${CTA_SEVERITY_CLASSES[cta.severity].text} flex-shrink-0`}
+                  />
                 )}
                 {cta.severity === "healthy" && (
-                  <CheckCircleIcon className={`w-3.5 h-3.5 ${CTA_SEVERITY_CLASSES[cta.severity].text} flex-shrink-0`} />
+                  <CheckCircleIcon
+                    className={`w-3.5 h-3.5 ${CTA_SEVERITY_CLASSES[cta.severity].text} flex-shrink-0`}
+                  />
                 )}
-                <span className={`text-[12px] font-semibold truncate ${CTA_SEVERITY_CLASSES[cta.severity].text}`}>
+                <span
+                  className={`text-[12px] font-semibold truncate ${CTA_SEVERITY_CLASSES[cta.severity].text}`}
+                >
                   {selected.desc}
                 </span>
-                <span className={`text-[12px] font-semibold flex-shrink-0 ${CTA_SEVERITY_CLASSES[cta.severity].text}`}>
+                <span
+                  className={`text-[12px] font-semibold flex-shrink-0 ${CTA_SEVERITY_CLASSES[cta.severity].text}`}
+                >
                   Insight
                 </span>
                 <span className="flex-1" />
                 {ctaOpen ? (
-                  <ChevronUpIcon className={`w-3 h-3 flex-shrink-0 ${CTA_SEVERITY_CLASSES[cta.severity].text}`} />
+                  <ChevronUpIcon
+                    className={`w-3 h-3 flex-shrink-0 ${CTA_SEVERITY_CLASSES[cta.severity].text}`}
+                  />
                 ) : (
-                  <ChevronDownIcon className={`w-3 h-3 flex-shrink-0 ${CTA_SEVERITY_CLASSES[cta.severity].text}`} />
+                  <ChevronDownIcon
+                    className={`w-3 h-3 flex-shrink-0 ${CTA_SEVERITY_CLASSES[cta.severity].text}`}
+                  />
                 )}
               </button>
               {ctaOpen && (
                 <div
                   className={`absolute top-full left-0 right-0 z-20 px-3 py-2 border-b shadow-lg ${CTA_SEVERITY_CLASSES[cta.severity].bg} ${CTA_SEVERITY_CLASSES[cta.severity].border}`}
                 >
-                  <span className={`text-[11px] leading-relaxed ${CTA_SEVERITY_CLASSES[cta.severity].text}`}>
+                  <span
+                    className={`text-[11px] leading-relaxed ${CTA_SEVERITY_CLASSES[cta.severity].text}`}
+                  >
                     {cta.text}
                   </span>
                 </div>
@@ -1076,25 +1094,43 @@ const PopupSubDeptList = ({
                   <div className="flex items-center justify-between gap-1 px-3 py-1 bg-gray-100 border-b border-gray-100 flex-shrink-0">
                     <div className="flex items-center gap-1">
                       <button
-                        onClick={() => setItemSevFilter((f) => (f === "critical" ? "all" : "critical"))}
+                        onClick={() =>
+                          setItemSevFilter((f) =>
+                            f === "critical" ? "all" : "critical",
+                          )
+                        }
                         className={`text-[10px] font-semibold px-2 py-1 rounded-full bg-severity_critical_bg text-severity_critical_text transition-shadow ${
-                          itemSevFilter === "critical" ? "ring-2 ring-severity_critical_text/40 shadow-sm" : ""
+                          itemSevFilter === "critical"
+                            ? "ring-2 ring-severity_critical_text/40 shadow-sm"
+                            : ""
                         }`}
                       >
                         Crit ({itemCritCount})
                       </button>
                       <button
-                        onClick={() => setItemSevFilter((f) => (f === "watch" ? "all" : "watch"))}
+                        onClick={() =>
+                          setItemSevFilter((f) =>
+                            f === "watch" ? "all" : "watch",
+                          )
+                        }
                         className={`text-[10px] font-semibold px-2 py-1 rounded-full bg-severity_watch_bg text-severity_watch_text transition-shadow ${
-                          itemSevFilter === "watch" ? "ring-2 ring-severity_watch_text/40 shadow-sm" : ""
+                          itemSevFilter === "watch"
+                            ? "ring-2 ring-severity_watch_text/40 shadow-sm"
+                            : ""
                         }`}
                       >
                         Watch ({itemWatchCount})
                       </button>
                       <button
-                        onClick={() => setItemSevFilter((f) => (f === "healthy" ? "all" : "healthy"))}
+                        onClick={() =>
+                          setItemSevFilter((f) =>
+                            f === "healthy" ? "all" : "healthy",
+                          )
+                        }
                         className={`text-[10px] font-semibold px-2 py-1 rounded-full bg-severity_healthy_bg text-severity_healthy_text transition-shadow ${
-                          itemSevFilter === "healthy" ? "ring-2 ring-severity_healthy_text/40 shadow-sm" : ""
+                          itemSevFilter === "healthy"
+                            ? "ring-2 ring-severity_healthy_text/40 shadow-sm"
+                            : ""
                         }`}
                       >
                         OK ({itemHealthyCount})
@@ -1125,7 +1161,9 @@ const PopupSubDeptList = ({
                                     ? null
                                     : { op: "gt", amount: rawItemThreshold }
                                 }
-                                onChange={(v) => dispatch(setItemThreshold(v?.amount ?? null))}
+                                onChange={(v) =>
+                                  dispatch(setItemThreshold(v?.amount ?? null))
+                                }
                                 showOp={false}
                                 suffix="%"
                                 inputWidth={40}
@@ -1146,7 +1184,10 @@ const PopupSubDeptList = ({
                       <SelectFilter
                         options={[
                           { label: "Active", value: "active" },
-                          { label: `Inactive (${inactiveItems.length})`, value: "inactive" },
+                          {
+                            label: `Inactive (${inactiveItems.length})`,
+                            value: "inactive",
+                          },
                         ]}
                         value={itemActiveFilter}
                         onChange={setItemActiveFilter}
@@ -1230,7 +1271,10 @@ const PopupSubDeptList = ({
                               });
                             }}
                           >
-                            <SeverityBadge severity={item.sev} showBackground={false} />
+                            <SeverityBadge
+                              severity={item.sev}
+                              showBackground={false}
+                            />
                             <div className="min-w-0 flex-1">
                               <span className="text-[13px] font-medium text-content truncate block">
                                 {item.desc}
@@ -1240,7 +1284,10 @@ const PopupSubDeptList = ({
                               </span>
                             </div>
                             <div className="flex items-start gap-[14px]">
-                              <div className="flex-shrink-0 pl-2.5" style={{ width: 64 }}>
+                              <div
+                                className="flex-shrink-0 pl-2.5"
+                                style={{ width: 64 }}
+                              >
                                 <div className="text-[13px] font-semibold text-content">
                                   {item.hasTY === false
                                     ? "—"
@@ -1256,7 +1303,10 @@ const PopupSubDeptList = ({
                                       : `${item.tyQty.toLocaleString()} u`}
                                 </div>
                               </div>
-                              <div className="flex-shrink-0" style={{ width: 64 }}>
+                              <div
+                                className="flex-shrink-0"
+                                style={{ width: 64 }}
+                              >
                                 <div className="text-[13px] font-semibold text-content">
                                   {isQty
                                     ? item.lwQty !== null
@@ -1276,7 +1326,10 @@ const PopupSubDeptList = ({
                                       : ""}
                                 </div>
                               </div>
-                              <div className="flex-shrink-0" style={{ width: 64 }}>
+                              <div
+                                className="flex-shrink-0"
+                                style={{ width: 64 }}
+                              >
                                 <div className="text-[13px] font-semibold text-content">
                                   {isQty
                                     ? item.lyQty !== null
