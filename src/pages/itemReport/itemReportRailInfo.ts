@@ -23,11 +23,11 @@ export const ITEM_REPORT_RAIL_INFO: {
   glossary: [
     {
       term: "Estimated vs transaction price points",
-      desc: "Two views of the same question, from different sources. **Estimated** is worked out from daily sales — net sales divided by units for each day, with days holding the same price grouped together. It is always available. **Transactions** is real register lines, fetched when you select the item and only for that item. Estimated tells you roughly what an item has been selling at; actual tells you what individual customers paid. When they disagree, the register is right.",
+      desc: "Two sources. **Estimated** comes from daily sales — net sales divided by units for each day, same-price days grouped. Always available. **Transactions** are real register lines, fetched only for the item you select. Estimated says roughly what it has been selling at; transactions say what individual customers paid.",
     },
     {
       term: "Received (90 days)",
-      desc: 'Every delivery in the lookback, newest first. Qty is sellable units, Retail is what that invoice expected the item to sell for, and GM% is the margin those two imply. The heading pairs the last arrival with how often the item usually comes, averaged across every delivery in the lookback: "24d ago, usually every 9" is a reorder, "6d ago, usually every 9" is not.',
+      desc: "Every delivery in the lookback, newest first. Qty is sellable units, Retail is what that invoice expected the item to sell for, GM% the margin those two imply. The heading pairs the last arrival with how often the item usually comes — context for reading the date, not a trigger. Reorder is decided by sold against received.",
     },
     {
       term: "Billed in cases or units",
@@ -51,15 +51,15 @@ export const ITEM_REPORT_RAIL_INFO: {
     },
     {
       term: "Why you see one block or two",
-      desc: "They measure the same shelf and are not interchangeable. With no delivery in the last 14 days you get **Unit movement** alone — it is all there is. With exactly one you get **Since last delivery** alone, because the 14-day figure would count sales made *before* that delivery arrived and charge them against it, understating what is left. With two or more you get both: the span totals every arrival, the anchored block tracks only the newest.",
+      desc: "Both measure the same shelf, differently. No delivery in 14 days and you get **Unit movement** alone. Exactly one and you get **Since last delivery** alone — the 14-day figure would count sales made before that delivery and charge them against it. Two or more and you get both.",
     },
     {
       term: "Opening a transaction price",
-      desc: "A price row opens the sales that rang at it — one row per transaction, with the cashier and the price type. Price type is the quickest explanation available: TPR is a planned promotion and needs no action, while a promotional price ringing as Regular means the shelf itself is wrong.",
+      desc: "A price row opens the sales that rang at it — one per transaction, with the cashier and the price type. Price type is the quickest explanation available: a promotional ring is planned, the same price ringing as Regular is not. Neither is automatically fine — a promotion below cost is raised as Reprice.",
     },
     {
       term: "Opening a transaction",
-      desc: "Shows the whole basket that sale belonged to, with your item marked. An item ringing at the wrong price is one story; an item ringing at the wrong price only when it is scanned alongside something else is a different one, and nothing else here separates them.",
+      desc: "Shows the whole basket that sale belonged to, with your item marked. An item ringing at the wrong price is one story; ringing wrong only when scanned alongside something else is another, and nothing else here separates them.",
     },
   ],
 };

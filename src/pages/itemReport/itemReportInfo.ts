@@ -33,23 +33,23 @@ export const ITEM_REPORT_INFO: {
       subEntries: [
         {
           label: "Reorder",
-          desc: "Two ways in. Either as much has sold as the last delivery brought — the delivery is consumed whatever the date says, which catches an item selling faster than it arrives — or the last delivery is over two weeks old, or nothing has arrived in 90 days and it has stopped selling. Reorder is a relationship between sold and received, so the first test is that relationship rather than the calendar. It shares the blind spot of everything built on the last delivery: no opening balance exists in the data, so stock held beforehand is invisible.",
+          desc: "Either the last delivery has all sold — sold against received, which catches an item going out faster than it arrives — or nothing has come in for over two weeks. No opening balance exists in the data, so stock held before that delivery is invisible.",
         },
         {
           label: "Call vendor",
-          desc: "The cost history on the receivers doesn’t hold still: three or more changes across the lookback, a single delivery up 5% or more **that the cost has stayed at**, a 10% rise end to end, or a cost that moves up and down repeatedly. A rise the cost later came back down from is a bounce, not an increase, and is counted by the up-and-down rule instead. Every one of them is dated, because a 90-day window always holds old events and an undated percentage reads as news. Cost drifting upward is ordinary; these are the shapes worth querying. The row names which one it was. Often the fix is timing rather than price — a store ordering on a fixed schedule will catch whatever promotion or rebate happens to be running, and only the store and vendor together can line those up. Nothing here can see that; they can.",
+          desc: "Cost that won’t hold still: three or more changes in the lookback, one delivery up 5% or more that stayed up, a 10% rise end to end, or a cost bouncing up and down. Each finding is dated. Drifting cost is ordinary — these are the shapes worth a call, often about *when* to order rather than the price itself.",
         },
         {
           label: "Check receiving",
-          desc: "It is selling, but no receiver names it in 90 days — the rows whose Last column reads “none”. Three things do that and only one is the vendor’s: it was never ordered, it arrives direct-to-store, or it was received electronically and so never reached the scan this data is built from. The last is common and entirely normal, which is why this is its own action rather than a vendor call.",
+          desc: "Selling, but no receiver names it in 90 days — the rows whose Last reads “none”. Either it was never ordered, it arrives direct-to-store, or it came in electronically and never reached the scan this data is built from. The last is common and normal, which is why it isn’t a vendor call.",
         },
         {
           label: "Reprice",
-          desc: "Two ways in, and they need different fixes. **The shelf price is under cost** — the tag itself is wrong, and no promotion ending will repair it, so this one is checked first. Or **a promotion is underwater**: the item is on sale below what you last paid, and the row says how many days it has run, how many units have gone out and roughly what that has cost — enough to decide whether to end it. Where nothing rang at the regular price, the last invoice’s intended retail stands in for it, and failing that the dearest price seen. Also covers a cost increase the shelf price never followed — measured on regular rings only, first to last, so a promotion running across the window cannot read as the shelf moving. A price rise that demand reacted to is raised the same way, and only ever between two regular stretches: a promotion ending always looks like a price rise with collapsing demand, and that is the promotion working rather than a pricing fault. Ringing under the retail a receiver intended is **not** raised on its own — a markdown that still clears cost is a decision, not a mistake, and nothing in this data carries a target margin to judge it against.",
+          desc: "Two shapes, needing different fixes. **The regular price is under cost** — the tag is wrong, and ending a promotion won’t repair it. Or **a promotion is underwater** — on sale below what you last paid, with the days it has run, units gone and money given away. Also a cost rise the regular price never followed. A markdown that still clears cost isn’t raised: that’s a decision, not a mistake.",
         },
         {
           label: "Investigate",
-          desc: "In stock, priced correctly, and still not moving. Either nothing has scanned since delivery, or it's down against both last week and last year with cost and price steady. Nothing in the data explains it, so the cause is elsewhere. Zero sales only counts once the item has had a chance — a full week on the shelf, or a history of selling in one of the comparison periods. Delivered two days ago with nothing scanned yet is too soon to call, and reads as Insufficient instead.",
+          desc: "In stock, priced right, still not moving — nothing scanned since delivery, or down on both last week and last year with cost and price steady. Zero sales only counts after a week on the shelf or with a selling history; sooner than that reads as Insufficient.",
         },
         {
           label: "No action",
@@ -57,7 +57,7 @@ export const ITEM_REPORT_INFO: {
         },
         {
           label: "Insufficient",
-          desc: "There isn't enough on file to suggest anything — usually no cost recorded against the item, so margin can't be judged. Said plainly rather than guessed: a blank would read as nothing being wrong.",
+          desc: "Not enough on file to suggest anything: the store keeps no receiving data at all, the item has no sales, receipts or baseline, or it arrived too recently to judge. Said plainly rather than guessed — a blank would read as nothing being wrong.",
         },
       ],
     },
