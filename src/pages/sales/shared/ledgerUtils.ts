@@ -408,9 +408,13 @@ export const buildLedgerRows = (
         const lyRow = lyRows.find((l) => l.sale_date.startsWith(lyDate));
         return {
           sale_date: r.sale_date,
-          twNet: r.total_sales - r.total_tax,
-          lwNet: lwRow ? lwRow.total_sales - lwRow.total_tax : null,
-          lyNet: lyRow ? lyRow.total_sales - lyRow.total_tax : null,
+          // net_sales, not total_sales - total_tax: the backend figure is the
+          // one that reconciles to the register report, because it has the
+          // coupons out as well as the tax. Same reason the sub-dept rows
+          // below read it straight off the row.
+          twNet: r.net_sales,
+          lwNet: lwRow ? lwRow.net_sales : null,
+          lyNet: lyRow ? lyRow.net_sales : null,
           lwQty: lwRow ? lwRow.qty : null,
           lyQty: lyRow ? lyRow.qty : null,
           twQty: r.qty,
@@ -486,7 +490,8 @@ export const aggSubDepts = (
           elecStore: 0,
           storeCpn: 0,
         };
-      acc[s.sub_department].net += s.total_sales - s.total_tax;
+      // See PopupSubDeptList: net_sales is the register-accurate figure.
+      acc[s.sub_department].net += s.net_sales;
       acc[s.sub_department].qty += s.qty;
       acc[s.sub_department].digital += s.digital_coupons;
       acc[s.sub_department].elecInstore += s.elec_instore_coupons;

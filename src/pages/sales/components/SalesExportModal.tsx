@@ -4,7 +4,12 @@ import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import type { SubSale, HourlySale } from "../../../interfaces";
 import type { DayDot } from "./LedgerRow";
 import type { ExportSubDeptItem } from "../../../features/salesLedgerSlice";
-import { fmtNum, rowsToCsv, downloadCsv, aggregateRows } from "../../../utils/csvExport";
+import {
+  fmtNum,
+  rowsToCsv,
+  downloadCsv,
+  aggregateRows,
+} from "../../../utils/csvExport";
 import type { AggFn, AggRow } from "../../../utils/csvExport";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -24,20 +29,31 @@ interface SalesExportModalProps {
   subDeptName?: string;
 }
 
-type ExportDataset = "subdept" | "hourly" | "summary" | "items";
+type ExportDataset = "subdept" | "deptgrid" | "hourly" | "summary" | "items";
 type ItemSev = "critical" | "watch" | "healthy";
 type ModalMode = "presets" | "custom";
 type CustomSource = "subdept" | "hourly";
 
-interface DimDef { key: string; label: string }
-interface MetricDef { key: string; label: string }
-interface MetricSelection { fn: AggFn; enabled: boolean }
+interface DimDef {
+  key: string;
+  label: string;
+}
+interface MetricDef {
+  key: string;
+  label: string;
+}
+interface MetricSelection {
+  fn: AggFn;
+  enabled: boolean;
+}
 
 // ─── Formatting helpers ────────────────────────────────────────────────────────
 
 const fmtDate = (d: string) =>
   new Date(d + "T12:00:00").toLocaleDateString("en-US", {
-    month: "short", day: "numeric", year: "numeric",
+    month: "short",
+    day: "numeric",
+    year: "numeric",
   });
 
 const fmtHour = (h: number) => {
@@ -49,22 +65,73 @@ const fmtHour = (h: number) => {
 // ─── Preset CSV builders ──────────────────────────────────────────────────────
 
 const buildSubDeptCsv = (ty: SubSale[], lw: SubSale[], ly: SubSale[]) => {
-  const headers = ["Date", "Sub Dept #", "Sub Dept", "Period", "Net Sales", "Qty", "Transactions", "Total Tax"];
+  const headers = [
+    "Date",
+    "Sub Dept #",
+    "Sub Dept",
+    "Period",
+    "Net Sales",
+    "Qty",
+    "Transactions",
+    "Total Tax",
+  ];
   const toRows = (subs: SubSale[], period: string) =>
-    subs.map((s) => [fmtDate(s.sale_date.split("T")[0]), s.sub_department, s.sub_department_description, period, fmtNum(s.net_sales), s.qty, s.transaction_count, fmtNum(s.total_tax)]);
-  return rowsToCsv(headers, [...toRows(ty, "This Year"), ...toRows(lw, "Last Week"), ...toRows(ly, "Last Year")]);
+    subs.map((s) => [
+      fmtDate(s.sale_date.split("T")[0]),
+      s.sub_department,
+      s.sub_department_description,
+      period,
+      fmtNum(s.net_sales),
+      s.qty,
+      s.transaction_count,
+      fmtNum(s.total_tax),
+    ]);
+  return rowsToCsv(headers, [
+    ...toRows(ty, "This Year"),
+    ...toRows(lw, "Last Week"),
+    ...toRows(ly, "Last Year"),
+  ]);
 };
 
-const buildHourlyCsv = (ty: HourlySale[], lw: HourlySale[], ly: HourlySale[]) => {
-  const headers = ["Date", "Hour", "Period", "Net Sales", "Qty", "Transactions", "Basket Size ($)", "Basket Size (Qty)", "Avg Item Price"];
+const buildHourlyCsv = (
+  ty: HourlySale[],
+  lw: HourlySale[],
+  ly: HourlySale[],
+) => {
+  const headers = [
+    "Date",
+    "Hour",
+    "Period",
+    "Net Sales",
+    "Qty",
+    "Transactions",
+    "Basket Size ($)",
+    "Basket Size (Qty)",
+    "Avg Item Price",
+  ];
   const toRows = (hourly: HourlySale[], period: string) =>
-    hourly.map((h) => [fmtDate(h.sale_date.split("T")[0]), fmtHour(h.hour), period, fmtNum(h.net_sales), h.qty, h.transactions, fmtNum(h.basket_size_sales), fmtNum(h.basket_size_qty), fmtNum(h.avg_item_price)]);
-  return rowsToCsv(headers, [...toRows(ty, "This Year"), ...toRows(lw, "Last Week"), ...toRows(ly, "Last Year")]);
+    hourly.map((h) => [
+      fmtDate(h.sale_date.split("T")[0]),
+      fmtHour(h.hour),
+      period,
+      fmtNum(h.net_sales),
+      h.qty,
+      h.transactions,
+      fmtNum(h.basket_size_sales),
+      fmtNum(h.basket_size_qty),
+      fmtNum(h.avg_item_price),
+    ]);
+  return rowsToCsv(headers, [
+    ...toRows(ty, "This Year"),
+    ...toRows(lw, "Last Week"),
+    ...toRows(ly, "Last Year"),
+  ]);
 };
 
 const buildSummaryCsv = (days: DayDot[]) => {
   const headers = ["Date", "TY Net Sales", "LW Net Sales", "LY Net Sales"];
-  const rows = [...days].sort((a, b) => a.sale_date.localeCompare(b.sale_date))
+  const rows = [...days]
+    .sort((a, b) => a.sale_date.localeCompare(b.sale_date))
     .map((d) => [
       fmtDate(d.sale_date.split("T")[0]),
       fmtNum(d.twNet),
@@ -74,16 +141,100 @@ const buildSummaryCsv = (days: DayDot[]) => {
   return rowsToCsv(headers, rows);
 };
 
-const SEV_LABEL: Record<ItemSev, string> = { critical: "Critical", watch: "Watch", healthy: "Healthy" };
+/**
+ * Every sub department against every day of the week, as a grid.
+ *
+ * The long-format Sub Department preset above is one row per dept per day per
+ * period — right for a pivot table, hard to read. This is the shape you hold
+ * next to a printed day report: departments down the side, days across the top,
+ * one number per cell, and totals on both edges so nothing has to be re-added
+ * by hand.
+ *
+ * This week only, and `net_sales` deliberately — that is the field the register
+ * report agrees with, since it already has tax and coupons taken out. LW/LY
+ * belong to the other presets; this one exists to be checked against the
+ * store's own paperwork.
+ */
+const buildDeptDayGridCsv = (subs: SubSale[], days: DayDot[]) => {
+  const dates = [...days]
+    .map((d) => d.sale_date.split("T")[0])
+    .sort((a, b) => a.localeCompare(b));
 
-const fmtPctRaw = (pct: number | null) => pct === null ? "" : `${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%`;
+  const deptName = new Map<number, string>();
+  const cell = new Map<string, number>();
+  for (const s of subs) {
+    if (!deptName.has(s.sub_department))
+      deptName.set(s.sub_department, s.sub_department_description ?? "");
+    const key = `${s.sub_department}__${s.sale_date.split("T")[0]}`;
+    cell.set(key, (cell.get(key) ?? 0) + s.net_sales);
+  }
+
+  const ids = [...deptName.keys()].sort((a, b) => a - b);
+  const headers = [
+    "Sub Dept #",
+    "Sub Dept",
+    ...dates.map(fmtDate),
+    "Week Total",
+  ];
+
+  const rows: (string | number)[][] = ids.map((id) => {
+    const values = dates.map((d) => cell.get(`${id}__${d}`) ?? 0);
+    return [
+      id,
+      deptName.get(id) ?? "",
+      ...values.map(fmtNum),
+      fmtNum(values.reduce((acc, v) => acc + v, 0)),
+    ];
+  });
+
+  // Column totals on the bottom row — the day figure to hold against the
+  // store's day report without re-adding the column by hand.
+  const dayTotals = dates.map((d) =>
+    ids.reduce((acc, id) => acc + (cell.get(`${id}__${d}`) ?? 0), 0),
+  );
+  rows.push([
+    "",
+    "All Sub Depts",
+    ...dayTotals.map(fmtNum),
+    fmtNum(dayTotals.reduce((acc, v) => acc + v, 0)),
+  ]);
+
+  return rowsToCsv(headers, rows);
+};
+
+const SEV_LABEL: Record<ItemSev, string> = {
+  critical: "Critical",
+  watch: "Watch",
+  healthy: "Healthy",
+};
+
+const fmtPctRaw = (pct: number | null) =>
+  pct === null ? "" : `${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%`;
 
 const buildItemsCsv = (items: ExportSubDeptItem[], sevs: Set<ItemSev>) => {
   const filtered = items.filter((i) => sevs.has(i.sev));
-  const headers = ["Product Code", "Description", "Severity", "TY Net", "TY Qty", "LW Net", "LW Qty", "LW vs %", "LY Net", "LY Qty", "LY vs %"];
+  const headers = [
+    "Product Code",
+    "Description",
+    "Severity",
+    "TY Net",
+    "TY Qty",
+    "LW Net",
+    "LW Qty",
+    "LW vs %",
+    "LY Net",
+    "LY Qty",
+    "LY vs %",
+  ];
   const rows = filtered.map((i) => {
-    const lwPct = i.lwNet !== null && i.lwNet > 0 ? ((i.tyNet - i.lwNet) / i.lwNet) * 100 : null;
-    const lyPct = i.lyNet !== null && i.lyNet > 0 ? ((i.tyNet - i.lyNet) / i.lyNet) * 100 : null;
+    const lwPct =
+      i.lwNet !== null && i.lwNet > 0
+        ? ((i.tyNet - i.lwNet) / i.lwNet) * 100
+        : null;
+    const lyPct =
+      i.lyNet !== null && i.lyNet > 0
+        ? ((i.tyNet - i.lyNet) / i.lyNet) * 100
+        : null;
     return [
       i.productCode,
       i.desc,
@@ -101,42 +252,41 @@ const buildItemsCsv = (items: ExportSubDeptItem[], sevs: Set<ItemSev>) => {
   return rowsToCsv(headers, rows);
 };
 
-
 // ─── Config ───────────────────────────────────────────────────────────────────
 
 const SUBDEPT_DIMS: DimDef[] = [
   { key: "sale_date", label: "Date" },
-  { key: "period",    label: "Period" },
+  { key: "period", label: "Period" },
   { key: "sub_department", label: "Sub Dept #" },
   { key: "sub_department_description", label: "Sub Dept Name" },
 ];
 
 const SUBDEPT_METRICS: MetricDef[] = [
-  { key: "net_sales",         label: "Net Sales" },
-  { key: "qty",               label: "Qty" },
+  { key: "net_sales", label: "Net Sales" },
+  { key: "qty", label: "Qty" },
   { key: "transaction_count", label: "Transactions" },
-  { key: "total_tax",         label: "Total Tax" },
+  { key: "total_tax", label: "Total Tax" },
 ];
 
 const HOURLY_DIMS: DimDef[] = [
   { key: "sale_date", label: "Date" },
-  { key: "period",    label: "Period" },
-  { key: "hour",      label: "Hour" },
+  { key: "period", label: "Period" },
+  { key: "hour", label: "Hour" },
 ];
 
 const HOURLY_METRICS: MetricDef[] = [
-  { key: "net_sales",        label: "Net Sales" },
-  { key: "qty",              label: "Qty" },
-  { key: "transactions",     label: "Transactions" },
+  { key: "net_sales", label: "Net Sales" },
+  { key: "qty", label: "Qty" },
+  { key: "transactions", label: "Transactions" },
   { key: "basket_size_sales", label: "Basket Size ($)" },
-  { key: "avg_item_price",   label: "Avg Item Price" },
+  { key: "avg_item_price", label: "Avg Item Price" },
 ];
 
 const AGG_OPTIONS: { value: AggFn; label: string }[] = [
-  { value: "sum",   label: "Sum" },
-  { value: "avg",   label: "Avg" },
-  { value: "min",   label: "Min" },
-  { value: "max",   label: "Max" },
+  { value: "sum", label: "Sum" },
+  { value: "avg", label: "Avg" },
+  { value: "min", label: "Min" },
+  { value: "max", label: "Max" },
   { value: "count", label: "Count" },
 ];
 
@@ -148,13 +298,16 @@ const SalesExportModal = ({
   onClose,
   storeName,
   dateLabel,
-  rawSubs, rawLWSubs, rawLYSubs,
-  rawHourly, rawLWHourly, rawLYHourly,
+  rawSubs,
+  rawLWSubs,
+  rawLYSubs,
+  rawHourly,
+  rawLWHourly,
+  rawLYHourly,
   days,
   subDeptItems,
   subDeptName,
 }: SalesExportModalProps) => {
-
   const hasItems = !!subDeptItems && subDeptItems.length > 0;
 
   // ── Preset state — no default selections ──
@@ -170,7 +323,8 @@ const SalesExportModal = ({
     setItemSevs(next);
     setSelected((prev) => {
       const n = new Set(prev);
-      if (next.size > 0) n.add("items"); else n.delete("items");
+      if (next.size > 0) n.add("items");
+      else n.delete("items");
       return n;
     });
   };
@@ -180,14 +334,14 @@ const SalesExportModal = ({
   const [groupBy, setGroupBy] = useState<Set<string>>(new Set());
   const [metrics, setMetrics] = useState<Map<string, MetricSelection>>(
     new Map([
-      ["net_sales",         { fn: "sum", enabled: false }],
-      ["qty",               { fn: "sum", enabled: false }],
+      ["net_sales", { fn: "sum", enabled: false }],
+      ["qty", { fn: "sum", enabled: false }],
       ["transaction_count", { fn: "sum", enabled: false }],
-      ["total_tax",         { fn: "sum", enabled: false }],
-    ])
+      ["total_tax", { fn: "sum", enabled: false }],
+    ]),
   );
 
-  const dims  = source === "subdept" ? SUBDEPT_DIMS  : HOURLY_DIMS;
+  const dims = source === "subdept" ? SUBDEPT_DIMS : HOURLY_DIMS;
   const mDefs = source === "subdept" ? SUBDEPT_METRICS : HOURLY_METRICS;
 
   // Switch source → reset groupBy & metrics (no default selections)
@@ -195,20 +349,24 @@ const SalesExportModal = ({
     setSource(s);
     setGroupBy(new Set());
     if (s === "subdept") {
-      setMetrics(new Map([
-        ["net_sales",         { fn: "sum", enabled: false }],
-        ["qty",               { fn: "sum", enabled: false }],
-        ["transaction_count", { fn: "sum", enabled: false }],
-        ["total_tax",         { fn: "sum", enabled: false }],
-      ]));
+      setMetrics(
+        new Map([
+          ["net_sales", { fn: "sum", enabled: false }],
+          ["qty", { fn: "sum", enabled: false }],
+          ["transaction_count", { fn: "sum", enabled: false }],
+          ["total_tax", { fn: "sum", enabled: false }],
+        ]),
+      );
     } else {
-      setMetrics(new Map([
-        ["net_sales",         { fn: "sum", enabled: false }],
-        ["qty",               { fn: "sum", enabled: false }],
-        ["transactions",      { fn: "sum", enabled: false }],
-        ["basket_size_sales", { fn: "avg", enabled: false }],
-        ["avg_item_price",    { fn: "avg", enabled: false }],
-      ]));
+      setMetrics(
+        new Map([
+          ["net_sales", { fn: "sum", enabled: false }],
+          ["qty", { fn: "sum", enabled: false }],
+          ["transactions", { fn: "sum", enabled: false }],
+          ["basket_size_sales", { fn: "avg", enabled: false }],
+          ["avg_item_price", { fn: "avg", enabled: false }],
+        ]),
+      );
     }
   };
 
@@ -240,26 +398,36 @@ const SalesExportModal = ({
 
   // ── Build flat rows for aggregation ──
   const flatRows = useMemo<AggRow[]>(() => {
-    const tagPeriod = (rows: (SubSale | HourlySale)[], period: string): AggRow[] =>
-      rows.map((r) => ({ ...r, period } as AggRow));
+    const tagPeriod = (
+      rows: (SubSale | HourlySale)[],
+      period: string,
+    ): AggRow[] => rows.map((r) => ({ ...r, period }) as AggRow);
 
     if (source === "subdept") {
       return [
-        ...tagPeriod(rawSubs,   "This Year"),
+        ...tagPeriod(rawSubs, "This Year"),
         ...tagPeriod(rawLWSubs, "Last Week"),
         ...tagPeriod(rawLYSubs, "Last Year"),
       ];
     }
     return [
-      ...tagPeriod(rawHourly,   "This Year"),
+      ...tagPeriod(rawHourly, "This Year"),
       ...tagPeriod(rawLWHourly, "Last Week"),
       ...tagPeriod(rawLYHourly, "Last Year"),
     ];
-  }, [source, rawSubs, rawLWSubs, rawLYSubs, rawHourly, rawLWHourly, rawLYHourly]);
+  }, [
+    source,
+    rawSubs,
+    rawLWSubs,
+    rawLYSubs,
+    rawHourly,
+    rawLWHourly,
+    rawLYHourly,
+  ]);
 
   // ── Aggregated result ──
   const { aggRows, columns } = useMemo(() => {
-    const activeDims   = dims.filter((d) => groupBy.has(d.key));
+    const activeDims = dims.filter((d) => groupBy.has(d.key));
     const activeMetrics = mDefs
       .map((m) => ({ ...m, sel: metrics.get(m.key) }))
       .filter((m) => m.sel?.enabled)
@@ -276,7 +444,8 @@ const SalesExportModal = ({
       const out: Record<string, string> = {};
       for (const d of activeDims) {
         const raw = row[d.key];
-        if (d.key === "sale_date") out[d.key] = fmtDate(String(raw).split("T")[0]);
+        if (d.key === "sale_date")
+          out[d.key] = fmtDate(String(raw).split("T")[0]);
         else if (d.key === "hour") out[d.key] = fmtHour(Number(raw));
         else out[d.key] = String(raw ?? "");
       }
@@ -290,7 +459,10 @@ const SalesExportModal = ({
 
     const columns: { key: string; label: string }[] = [
       ...activeDims.map((d) => ({ key: d.key, label: d.label })),
-      ...activeMetrics.map((m) => ({ key: `${m.fn}__${m.key}`, label: `${m.fn.charAt(0).toUpperCase() + m.fn.slice(1)} ${m.label}` })),
+      ...activeMetrics.map((m) => ({
+        key: `${m.fn}__${m.key}`,
+        label: `${m.fn.charAt(0).toUpperCase() + m.fn.slice(1)} ${m.label}`,
+      })),
     ];
 
     return { aggRows: display, columns };
@@ -299,9 +471,20 @@ const SalesExportModal = ({
   // ── Preset download ──
   const handlePresetDownload = () => {
     const sections: string[] = [];
-    if (selected.has("summary")) sections.push(`Weekly Summary\n${buildSummaryCsv(days)}`);
-    if (selected.has("subdept")) sections.push(`Sub Department\n${buildSubDeptCsv(rawSubs, rawLWSubs, rawLYSubs)}`);
-    if (selected.has("hourly"))  sections.push(`Hourly Breakdown\n${buildHourlyCsv(rawHourly, rawLWHourly, rawLYHourly)}`);
+    if (selected.has("summary"))
+      sections.push(`Weekly Summary\n${buildSummaryCsv(days)}`);
+    if (selected.has("subdept"))
+      sections.push(
+        `Sub Department\n${buildSubDeptCsv(rawSubs, rawLWSubs, rawLYSubs)}`,
+      );
+    if (selected.has("deptgrid"))
+      sections.push(
+        `Sub Dept by Day — This Week\n${buildDeptDayGridCsv(rawSubs, days)}`,
+      );
+    if (selected.has("hourly"))
+      sections.push(
+        `Hourly Breakdown\n${buildHourlyCsv(rawHourly, rawLWHourly, rawLYHourly)}`,
+      );
     if (selected.has("items") && subDeptItems && itemSevs.size > 0) {
       const label = subDeptName ? `Items — ${subDeptName}` : "Sub Dept Items";
       sections.push(`${label}\n${buildItemsCsv(subDeptItems, itemSevs)}`);
@@ -318,20 +501,59 @@ const SalesExportModal = ({
     const headers = columns.map((c) => c.label);
     const rows = aggRows.map((r) => columns.map((c) => r[c.key] ?? ""));
     const safeName = storeName.replace(/[^a-z0-9]/gi, "_");
-    downloadCsv(rowsToCsv(headers, rows), `${safeName}_custom_${dateLabel}.csv`);
+    downloadCsv(
+      rowsToCsv(headers, rows),
+      `${safeName}_custom_${dateLabel}.csv`,
+    );
     onClose();
   };
 
-  const presetDatasets: { id: ExportDataset; label: string; description: string }[] = [
-    { id: "summary",  label: "Weekly Summary",      description: "Day-by-day net sales vs last week and last year" },
-    { id: "subdept",  label: "Sub Department",      description: "Net sales, qty, and transactions by sub dept (TY / LW / LY)" },
-    { id: "hourly",   label: "Hourly Breakdown",    description: "Hourly net sales, basket size, and avg item price (TY / LW / LY)" },
+  const presetDatasets: {
+    id: ExportDataset;
+    label: string;
+    description: string;
+  }[] = [
+    {
+      id: "summary",
+      label: "Weekly Summary",
+      description: "Day-by-day net sales vs last week and last year",
+    },
+    {
+      id: "subdept",
+      label: "Sub Department",
+      description:
+        "Net sales, qty, and transactions by sub dept (TY / LW / LY)",
+    },
+    {
+      id: "deptgrid",
+      label: "Sub Dept by Day",
+      description:
+        "Every sub dept against every day of this week — net sales, with row and column totals",
+    },
+    {
+      id: "hourly",
+      label: "Hourly Breakdown",
+      description:
+        "Hourly net sales, basket size, and avg item price (TY / LW / LY)",
+    },
   ];
 
   const SEV_CHIP: { sev: ItemSev; label: string; activeClass: string }[] = [
-    { sev: "critical", label: "Critical", activeClass: "bg-red-600 border-red-600 text-custom-white" },
-    { sev: "watch",    label: "Watch",    activeClass: "bg-amber-500 border-amber-500 text-custom-white" },
-    { sev: "healthy",  label: "Healthy",  activeClass: "bg-emerald-600 border-emerald-600 text-custom-white" },
+    {
+      sev: "critical",
+      label: "Critical",
+      activeClass: "bg-red-600 border-red-600 text-custom-white",
+    },
+    {
+      sev: "watch",
+      label: "Watch",
+      activeClass: "bg-amber-500 border-amber-500 text-custom-white",
+    },
+    {
+      sev: "healthy",
+      label: "Healthy",
+      activeClass: "bg-emerald-600 border-emerald-600 text-custom-white",
+    },
   ];
 
   const canCustomDownload = columns.length > 0 && aggRows.length > 0;
@@ -343,249 +565,334 @@ const SalesExportModal = ({
       defaultWidth={1140}
       defaultHeight={960}
     >
-        {/* Header */}
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center px-4 py-3 bg-[#1e2a4a]">
-          <div>
-            <p className="text-custom-white text-[13px] font-semibold">Export CSV</p>
-            <p className="text-custom-white text-[10px] mt-0.5">{storeName}</p>
-          </div>
-          {/* Mode tabs */}
-          <div className="flex items-center gap-0.5 bg-custom-white/10 rounded-md p-0.5">
-            {(["presets", "custom"] as ModalMode[]).map((m) => (
-              <button
-                key={m}
-                onClick={() => setMode(m)}
-                className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors ${
-                  mode === m ? "bg-custom-white text-[#1e2a4a]" : "text-custom-white"
-                }`}
-              >
-                {m === "presets" ? "Presets" : "Custom"}
-              </button>
-            ))}
-          </div>
-          <button onClick={onClose} className="text-custom-white/60 hover:text-custom-white transition-colors justify-self-end">
-            <XMarkIcon className="w-4 h-4" />
-          </button>
+      {/* Header */}
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center px-4 py-3 bg-[#1e2a4a]">
+        <div>
+          <p className="text-custom-white text-[13px] font-semibold">
+            Export CSV
+          </p>
+          <p className="text-custom-white text-[10px] mt-0.5">{storeName}</p>
         </div>
+        {/* Mode tabs */}
+        <div className="flex items-center gap-0.5 bg-custom-white/10 rounded-md p-0.5">
+          {(["presets", "custom"] as ModalMode[]).map((m) => (
+            <button
+              key={m}
+              onClick={() => setMode(m)}
+              className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors ${
+                mode === m
+                  ? "bg-custom-white text-[#1e2a4a]"
+                  : "text-custom-white"
+              }`}
+            >
+              {m === "presets" ? "Presets" : "Custom"}
+            </button>
+          ))}
+        </div>
+        <button
+          onClick={onClose}
+          className="text-custom-white/60 hover:text-custom-white transition-colors justify-self-end"
+        >
+          <XMarkIcon className="w-4 h-4" />
+        </button>
+      </div>
 
-        {/* ── PRESETS MODE ── */}
-        {mode === "presets" && (
-          <>
-            <div className="px-4 pt-4 pb-2 space-y-3">
-              <p className="text-[11px] text-content uppercase tracking-wide font-medium">Select data to include</p>
-              {presetDatasets.map(({ id, label, description }) => (
-                <label key={id} className="flex items-start gap-3 cursor-pointer group">
-                  <input
-                    type="checkbox"
-                    checked={selected.has(id)}
-                    onChange={() => setSelected((prev) => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; })}
-                    className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-[#1e2a4a] cursor-pointer flex-shrink-0"
-                  />
-                  <div>
-                    <p className="text-[13px] font-medium text-content group-hover:text-[#1e2a4a] transition-colors">{label}</p>
-                    <p className="text-[11px] text-content mt-0.5">{description}</p>
+      {/* ── PRESETS MODE ── */}
+      {mode === "presets" && (
+        <>
+          <div className="px-4 pt-4 pb-2 space-y-3">
+            <p className="text-[11px] text-content uppercase tracking-wide font-medium">
+              Select data to include
+            </p>
+            {presetDatasets.map(({ id, label, description }) => (
+              <label
+                key={id}
+                className="flex items-start gap-3 cursor-pointer group"
+              >
+                <input
+                  type="checkbox"
+                  checked={selected.has(id)}
+                  onChange={() =>
+                    setSelected((prev) => {
+                      const n = new Set(prev);
+                      n.has(id) ? n.delete(id) : n.add(id);
+                      return n;
+                    })
+                  }
+                  className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-[#1e2a4a] cursor-pointer flex-shrink-0"
+                />
+                <div>
+                  <p className="text-[13px] font-medium text-content group-hover:text-[#1e2a4a] transition-colors">
+                    {label}
+                  </p>
+                  <p className="text-[11px] text-content mt-0.5">
+                    {description}
+                  </p>
+                </div>
+              </label>
+            ))}
+
+            {hasItems && (
+              <div className="flex items-start gap-3">
+                <input
+                  type="checkbox"
+                  checked={selected.has("items")}
+                  onChange={() => {
+                    const checking = !selected.has("items");
+                    if (checking) {
+                      if (itemSevs.size === 0)
+                        setItemSevs(new Set(["critical", "watch", "healthy"]));
+                    } else {
+                      setItemSevs(new Set());
+                    }
+                    setSelected((prev) => {
+                      const n = new Set(prev);
+                      checking ? n.add("items") : n.delete("items");
+                      return n;
+                    });
+                  }}
+                  className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-[#1e2a4a] cursor-pointer flex-shrink-0"
+                />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-baseline gap-2 flex-wrap">
+                    <p className="text-[13px] font-medium text-content">
+                      Sub Dept Items
+                    </p>
+                    {subDeptName && (
+                      <span className="text-[10px] text-content italic truncate">
+                        {subDeptName}
+                      </span>
+                    )}
                   </div>
-                </label>
-              ))}
+                  <p className="text-[11px] text-content mt-0.5 mb-1.5">
+                    Product-level items with severity grading (TY / LW / LY)
+                  </p>
+                  <div className="flex gap-1.5 flex-wrap">
+                    {SEV_CHIP.map(({ sev, label, activeClass }) => (
+                      <button
+                        key={sev}
+                        onClick={() => toggleItemSev(sev)}
+                        className={`px-2 py-0.5 rounded-full text-[10px] font-medium border transition-colors ${
+                          itemSevs.has(sev)
+                            ? activeClass
+                            : "bg-custom-white border-gray-200 text-content"
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 mt-2">
+            <button
+              onClick={onClose}
+              className="text-[12px] text-content transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handlePresetDownload}
+              disabled={selected.size === 0}
+              className="flex items-center gap-1.5 bg-[#1e2a4a] hover:bg-[#1e2a4a]/85 disabled:opacity-40 text-custom-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors"
+            >
+              <ArrowDownTrayIcon className="w-3.5 h-3.5" />
+              Download CSV
+            </button>
+          </div>
+        </>
+      )}
 
-              {hasItems && (
-                <div className="flex items-start gap-3">
-                  <input
-                    type="checkbox"
-                    checked={selected.has("items")}
-                    onChange={() => {
-                      const checking = !selected.has("items");
-                      if (checking) {
-                        if (itemSevs.size === 0) setItemSevs(new Set(["critical", "watch", "healthy"]));
-                      } else {
-                        setItemSevs(new Set());
-                      }
-                      setSelected((prev) => { const n = new Set(prev); checking ? n.add("items") : n.delete("items"); return n; });
-                    }}
-                    className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-[#1e2a4a] cursor-pointer flex-shrink-0"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-baseline gap-2 flex-wrap">
-                      <p className="text-[13px] font-medium text-content">Sub Dept Items</p>
-                      {subDeptName && (
-                        <span className="text-[10px] text-content italic truncate">{subDeptName}</span>
-                      )}
-                    </div>
-                    <p className="text-[11px] text-content mt-0.5 mb-1.5">Product-level items with severity grading (TY / LW / LY)</p>
-                    <div className="flex gap-1.5 flex-wrap">
-                      {SEV_CHIP.map(({ sev, label, activeClass }) => (
-                        <button
-                          key={sev}
-                          onClick={() => toggleItemSev(sev)}
-                          className={`px-2 py-0.5 rounded-full text-[10px] font-medium border transition-colors ${
-                            itemSevs.has(sev) ? activeClass : "bg-custom-white border-gray-200 text-content"
-                          }`}
+      {/* ── CUSTOM MODE ── */}
+      {mode === "custom" && (
+        <>
+          <div className="grid grid-cols-[200px_1fr] divide-x divide-gray-100 min-h-[360px] max-h-[calc(100vh-220px)]">
+            {/* Left: config panel */}
+            <div className="overflow-y-auto no-scrollbar p-4 space-y-5">
+              {/* Source */}
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-content mb-2">
+                  Data Source
+                </p>
+                <div className="flex flex-col gap-1.5">
+                  {(["subdept", "hourly"] as CustomSource[]).map((s) => (
+                    <label
+                      key={s}
+                      className="flex items-center gap-2 cursor-pointer"
+                    >
+                      <input
+                        type="radio"
+                        checked={source === s}
+                        onChange={() => switchSource(s)}
+                        className="accent-[#1e2a4a] h-3.5 w-3.5"
+                      />
+                      <span className="text-[12px] text-content">
+                        {s === "subdept" ? "Sub Department" : "Hourly"}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Group by */}
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-content mb-2">
+                  Group By
+                </p>
+                <div className="space-y-1.5">
+                  {dims.map((d) => (
+                    <label
+                      key={d.key}
+                      className="flex items-center gap-2 cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={groupBy.has(d.key)}
+                        onChange={() => toggleGroupBy(d.key)}
+                        className="accent-[#1e2a4a] h-3.5 w-3.5 rounded flex-shrink-0"
+                      />
+                      <span className="text-[12px] text-content">
+                        {d.label}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Metrics */}
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-content mb-2">
+                  Metrics
+                </p>
+                <div className="space-y-2">
+                  {mDefs.map((m) => {
+                    const sel = metrics.get(m.key)!;
+                    return (
+                      <div key={m.key} className="flex items-center gap-1.5">
+                        <input
+                          type="checkbox"
+                          checked={sel.enabled}
+                          onChange={() => toggleMetric(m.key)}
+                          className="accent-[#1e2a4a] h-3.5 w-3.5 rounded flex-shrink-0"
+                        />
+                        <span className="text-[12px] flex-1 text-content">
+                          {m.label}
+                        </span>
+                        <select
+                          value={sel.fn}
+                          disabled={!sel.enabled}
+                          onChange={(e) =>
+                            setMetricFn(m.key, e.target.value as AggFn)
+                          }
+                          className="text-[10px] border border-gray-200 rounded px-1 py-0.5 text-content disabled:opacity-30 bg-custom-white outline-none"
+                          style={{ minWidth: 52 }}
                         >
-                          {label}
-                        </button>
+                          {AGG_OPTIONS.map((o) => (
+                            <option key={o.value} value={o.value}>
+                              {o.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Right: preview */}
+            <div className="flex flex-col min-w-0">
+              <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-100 flex-shrink-0">
+                <p className="text-[11px] font-semibold text-content uppercase tracking-wide">
+                  Preview
+                </p>
+                <span className="text-[10px] text-content">
+                  {aggRows.length === 0
+                    ? "No data — select at least one group or metric"
+                    : `Showing ${Math.min(PREVIEW_ROWS, aggRows.length)} of ${aggRows.length} rows`}
+                </span>
+              </div>
+
+              {columns.length === 0 ? (
+                <div className="flex-1 flex items-center justify-center p-6 text-center">
+                  <p className="text-[12px] text-content leading-relaxed">
+                    Select at least one group-by dimension
+                    <br />
+                    or metric to see a preview.
+                  </p>
+                </div>
+              ) : (
+                <div className="flex-1 overflow-auto thin-scrollbar">
+                  <table className="min-w-full text-[11px] border-collapse">
+                    <thead className="sticky top-0 bg-gray-50 z-10">
+                      <tr>
+                        {columns.map((c) => (
+                          <th
+                            key={c.key}
+                            className="text-left px-3 py-2 text-content font-semibold border-b border-gray-100 whitespace-nowrap"
+                          >
+                            {c.label}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {aggRows.slice(0, PREVIEW_ROWS).map((row, i) => (
+                        <tr
+                          key={i}
+                          className={
+                            i % 2 === 0 ? "bg-custom-white" : "bg-gray-50/50"
+                          }
+                        >
+                          {columns.map((c) => (
+                            <td
+                              key={c.key}
+                              className="px-3 py-1.5 text-content whitespace-nowrap border-b border-gray-50"
+                            >
+                              {row[c.key] ?? "—"}
+                            </td>
+                          ))}
+                        </tr>
                       ))}
-                    </div>
-                  </div>
+                      {aggRows.length > PREVIEW_ROWS && (
+                        <tr>
+                          <td
+                            colSpan={columns.length}
+                            className="px-3 py-2 text-[10px] text-content italic"
+                          >
+                            + {aggRows.length - PREVIEW_ROWS} more rows in
+                            download…
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
                 </div>
               )}
             </div>
-            <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 mt-2">
-              <button onClick={onClose} className="text-[12px] text-content transition-colors">Cancel</button>
-              <button
-                onClick={handlePresetDownload}
-                disabled={selected.size === 0}
-                className="flex items-center gap-1.5 bg-[#1e2a4a] hover:bg-[#1e2a4a]/85 disabled:opacity-40 text-custom-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors"
-              >
-                <ArrowDownTrayIcon className="w-3.5 h-3.5" />
-                Download CSV
-              </button>
-            </div>
-          </>
-        )}
+          </div>
 
-        {/* ── CUSTOM MODE ── */}
-        {mode === "custom" && (
-          <>
-            <div className="grid grid-cols-[200px_1fr] divide-x divide-gray-100 min-h-[360px] max-h-[calc(100vh-220px)]">
-
-              {/* Left: config panel */}
-              <div className="overflow-y-auto no-scrollbar p-4 space-y-5">
-                {/* Source */}
-                <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-wide text-content mb-2">Data Source</p>
-                  <div className="flex flex-col gap-1.5">
-                    {(["subdept", "hourly"] as CustomSource[]).map((s) => (
-                      <label key={s} className="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="radio"
-                          checked={source === s}
-                          onChange={() => switchSource(s)}
-                          className="accent-[#1e2a4a] h-3.5 w-3.5"
-                        />
-                        <span className="text-[12px] text-content">{s === "subdept" ? "Sub Department" : "Hourly"}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Group by */}
-                <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-wide text-content mb-2">Group By</p>
-                  <div className="space-y-1.5">
-                    {dims.map((d) => (
-                      <label key={d.key} className="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={groupBy.has(d.key)}
-                          onChange={() => toggleGroupBy(d.key)}
-                          className="accent-[#1e2a4a] h-3.5 w-3.5 rounded flex-shrink-0"
-                        />
-                        <span className="text-[12px] text-content">{d.label}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Metrics */}
-                <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-wide text-content mb-2">Metrics</p>
-                  <div className="space-y-2">
-                    {mDefs.map((m) => {
-                      const sel = metrics.get(m.key)!;
-                      return (
-                        <div key={m.key} className="flex items-center gap-1.5">
-                          <input
-                            type="checkbox"
-                            checked={sel.enabled}
-                            onChange={() => toggleMetric(m.key)}
-                            className="accent-[#1e2a4a] h-3.5 w-3.5 rounded flex-shrink-0"
-                          />
-                          <span className="text-[12px] flex-1 text-content">{m.label}</span>
-                          <select
-                            value={sel.fn}
-                            disabled={!sel.enabled}
-                            onChange={(e) => setMetricFn(m.key, e.target.value as AggFn)}
-                            className="text-[10px] border border-gray-200 rounded px-1 py-0.5 text-content disabled:opacity-30 bg-custom-white outline-none"
-                            style={{ minWidth: 52 }}
-                          >
-                            {AGG_OPTIONS.map((o) => (
-                              <option key={o.value} value={o.value}>{o.label}</option>
-                            ))}
-                          </select>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-
-              {/* Right: preview */}
-              <div className="flex flex-col min-w-0">
-                <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-100 flex-shrink-0">
-                  <p className="text-[11px] font-semibold text-content uppercase tracking-wide">Preview</p>
-                  <span className="text-[10px] text-content">
-                    {aggRows.length === 0
-                      ? "No data — select at least one group or metric"
-                      : `Showing ${Math.min(PREVIEW_ROWS, aggRows.length)} of ${aggRows.length} rows`}
-                  </span>
-                </div>
-
-                {columns.length === 0 ? (
-                  <div className="flex-1 flex items-center justify-center p-6 text-center">
-                    <p className="text-[12px] text-content leading-relaxed">
-                      Select at least one group-by dimension<br />or metric to see a preview.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="flex-1 overflow-auto thin-scrollbar">
-                    <table className="min-w-full text-[11px] border-collapse">
-                      <thead className="sticky top-0 bg-gray-50 z-10">
-                        <tr>
-                          {columns.map((c) => (
-                            <th key={c.key} className="text-left px-3 py-2 text-content font-semibold border-b border-gray-100 whitespace-nowrap">
-                              {c.label}
-                            </th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {aggRows.slice(0, PREVIEW_ROWS).map((row, i) => (
-                          <tr key={i} className={i % 2 === 0 ? "bg-custom-white" : "bg-gray-50/50"}>
-                            {columns.map((c) => (
-                              <td key={c.key} className="px-3 py-1.5 text-content whitespace-nowrap border-b border-gray-50">
-                                {row[c.key] ?? "—"}
-                              </td>
-                            ))}
-                          </tr>
-                        ))}
-                        {aggRows.length > PREVIEW_ROWS && (
-                          <tr>
-                            <td colSpan={columns.length} className="px-3 py-2 text-[10px] text-content italic">
-                              + {aggRows.length - PREVIEW_ROWS} more rows in download…
-                            </td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Footer */}
-            <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
-              <button onClick={onClose} className="text-[12px] text-content transition-colors">Cancel</button>
-              <button
-                onClick={handleCustomDownload}
-                disabled={!canCustomDownload}
-                className="flex items-center gap-1.5 bg-[#1e2a4a] hover:bg-[#1e2a4a]/85 disabled:opacity-40 text-custom-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors"
-              >
-                <ArrowDownTrayIcon className="w-3.5 h-3.5" />
-                Download CSV
-              </button>
-            </div>
-          </>
-        )}
+          {/* Footer */}
+          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
+            <button
+              onClick={onClose}
+              className="text-[12px] text-content transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleCustomDownload}
+              disabled={!canCustomDownload}
+              className="flex items-center gap-1.5 bg-[#1e2a4a] hover:bg-[#1e2a4a]/85 disabled:opacity-40 text-custom-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors"
+            >
+              <ArrowDownTrayIcon className="w-3.5 h-3.5" />
+              Download CSV
+            </button>
+          </div>
+        </>
+      )}
     </ResizableModalShell>
   );
 };

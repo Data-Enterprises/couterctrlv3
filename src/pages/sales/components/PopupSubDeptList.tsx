@@ -73,7 +73,7 @@ type DeptRow = {
   lyStoreCpn: number;
 };
 
-type DeptSortColumn = "ty" | "vsLW" | "vsLY";
+type DeptSortColumn = "dept" | "ty" | "vsLW" | "vsLY";
 type DeptSortState = {
   column: DeptSortColumn;
   direction: "desc" | "asc";
@@ -464,6 +464,10 @@ const PopupSubDeptList = ({
     storeNumber,
   ]);
 
+  // `net_sales` is the figure the register report agrees with: the backend has
+  // already taken tax and coupons out of it, and it matched the store's own
+  // paperwork to the cent on every row we checked. Deriving it here as
+  // `total_sales - total_tax` left the coupons in and read high.
   const rows = useMemo((): DeptRow[] => {
     const buildMap = (src: typeof subSales) =>
       src.reduce(
@@ -490,7 +494,7 @@ const PopupSubDeptList = ({
               elecStore: 0,
               storeCpn: 0,
             };
-          acc[s.sub_department].net += s.total_sales - s.total_tax;
+          acc[s.sub_department].net += s.net_sales;
           acc[s.sub_department].qty += s.qty;
           acc[s.sub_department].digital += s.digital_coupons;
           acc[s.sub_department].elecInstore += s.elec_instore_coupons;
@@ -531,7 +535,7 @@ const PopupSubDeptList = ({
             storeCpn: 0,
           };
         }
-        acc[s.sub_department].net += s.total_sales - s.total_tax;
+        acc[s.sub_department].net += s.net_sales;
         acc[s.sub_department].qty += s.qty;
         acc[s.sub_department].digital += s.digital_coupons;
         acc[s.sub_department].elecInstore += s.elec_instore_coupons;
@@ -619,23 +623,31 @@ const PopupSubDeptList = ({
 
   const handleDeptSortClick = (column: DeptSortColumn) => {
     setDeptSort((prev) => {
-      if (prev?.column !== column) return { column, direction: "desc" };
-      if (prev.direction === "desc") return { column, direction: "asc" };
+      // Sub dept is an identifier, not a measure — 1, 2, 3 … is the order
+      // someone means by "sort by sub dept", so it opens ascending where the
+      // measures open with the biggest number. Still tri-state either way:
+      // first click, reverse, off.
+      const first: "desc" | "asc" = column === "dept" ? "asc" : "desc";
+      if (prev?.column !== column) return { column, direction: first };
+      if (prev.direction === first)
+        return { column, direction: first === "desc" ? "asc" : "desc" };
       return null;
     });
   };
   const deptSortValue = (row: DeptRow, column: DeptSortColumn) =>
-    column === "ty"
-      ? isQty
-        ? row.qty
-        : row.tw
-      : column === "vsLW"
+    column === "dept"
+      ? row.id
+      : column === "ty"
         ? isQty
-          ? row.vsLWQtyPct
-          : row.vsLWPct
-        : isQty
-          ? row.vsLYQtyPct
-          : row.vsLYPct;
+          ? row.qty
+          : row.tw
+        : column === "vsLW"
+          ? isQty
+            ? row.vsLWQtyPct
+            : row.vsLWPct
+          : isQty
+            ? row.vsLYQtyPct
+            : row.vsLYPct;
   const sortedVisible = deptSort
     ? [...visible].sort((a, b) => {
         const diff =
@@ -839,9 +851,18 @@ const PopupSubDeptList = ({
 
           <div className="flex items-center gap-2.5 px-3 py-1.5 border-b border-gray-100 flex-shrink-0">
             <span className="w-2.5 flex-shrink-0" />
-            <span className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-1">
+            <button
+              onClick={() => handleDeptSortClick("dept")}
+              className="flex items-center gap-0.5 text-[11.5px] font-semibold uppercase tracking-wide text-content/80 hover:text-content flex-1 min-w-0"
+            >
               Sub Dept
-            </span>
+              {deptSort?.column === "dept" &&
+                (deptSort.direction === "desc" ? (
+                  <ChevronDownIcon className="w-3 h-3" />
+                ) : (
+                  <ChevronUpIcon className="w-3 h-3" />
+                ))}
+            </button>
             <div className="flex items-center gap-[14px]">
               <button
                 onClick={() => handleDeptSortClick("ty")}
