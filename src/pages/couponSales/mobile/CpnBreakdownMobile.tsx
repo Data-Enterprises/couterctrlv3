@@ -1,9 +1,11 @@
 import { useMemo, useState } from "react";
+import { ChevronLeftIcon } from "@heroicons/react/20/solid";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
-import MobilePerfHeader from "../../../components/mobile/MobilePerfHeader";
 import MobileDayStrip from "../../../components/mobile/MobileDayStrip";
 import SevBadge from "../../../components/SevBadge";
 import SevChips from "../../../components/SevChips";
+import SelectFilter from "../../../components/filters/SelectFilter";
+import TrendBadge from "../../lossPrevention/mobile/components/TrendBadge";
 import { formatCurrency2, formatBigNumber } from "../../../utils";
 import type { CouponItem } from "../../../interfaces";
 import {
@@ -12,7 +14,6 @@ import {
   COUPON_THRESHOLD_DEFAULT,
 } from "../../../features/couponSalesSlice";
 import type { CouponBreakdown } from "../../../features/couponSalesSlice";
-import { COUPON_SALES_INFO } from "../couponSalesInfo";
 import {
   buildBreakdownRows,
   buildDateRows,
@@ -20,7 +21,6 @@ import {
   totalsFor,
   type GradingOptions,
 } from "../shared/couponGrading";
-import CpnMetricToggle from "./CpnMetricToggle";
 import {
   badgeTier,
   filterByTier,
@@ -30,19 +30,56 @@ import {
 } from "./couponTierUi";
 
 /**
- * One store, broken down — screen two of three, and the mobile equivalent of
- * the desktop detail panel.
+ * One store, broken down — screen two of three.
  *
- * The desktop dropped its Date tab when it gained a day-of-week strip, because
- * the two were the same cut twice. Mobile inherits that decision rather than
- * reintroducing it: the strip filters, the tabs group, and `buildDateRows` is
- * still what feeds the strip's up/down markers.
+ * Chrome follows Loss Prevention's inner nav, not the two-row
+ * `MobilePerfHeader` the list screens use: a single navy block with a back
+ * chevron, the store, and a subtitle naming what this screen is showing, then
+ * a grey section label, then the graded totals strip. LP's comment calls that
+ * shape "matches Sales LedgerStoreReport nav" — it is the drill-down
+ * convention, and the two-row header belongs on the screen you drill in FROM.
+ *
+ * The only addition is the day strip, which Coupon Sales has and LP doesn't:
+ * the desktop dropped its Date tab when it gained one, and mobile inherits that
+ * rather than reintroducing a tab that says the same thing.
  */
-const BREAKDOWNS: { value: CouponBreakdown; label: string }[] = [
+const BREAKDOWN_OPTS: { value: CouponBreakdown; label: string }[] = [
   { value: "subdept", label: "Sub dept" },
   { value: "cashier", label: "Cashier" },
   { value: "item", label: "Item" },
 ];
+
+const SUBTITLE: Record<CouponBreakdown, string> = {
+  subdept: "Sub dept coupons",
+  cashier: "Cashier coupons",
+  item: "Item coupons",
+};
+
+/** Label / value / vs-baseline / trend, the cell LP's inner nav uses. */
+const KpiCell = ({
+  label,
+  value,
+  baseline,
+  pct,
+  last,
+}: {
+  label: string;
+  value: string;
+  baseline?: string;
+  pct?: number;
+  last?: boolean;
+}) => (
+  <div className={`px-3 py-2 ${last ? "" : "border-r border-gray-100"}`}>
+    <div className="text-[10px] font-medium uppercase tracking-wide text-content/85">
+      {label}
+    </div>
+    <div className="text-[12px] font-semibold text-content mt-0.5">{value}</div>
+    {baseline && (
+      <div className="text-[10px] text-content/85 mt-0.5">vs {baseline}</div>
+    )}
+    {pct !== undefined && <TrendBadge pct={pct} />}
+  </div>
+);
 
 interface Props {
   /** Every coupon line for the selected store, the full week. */
@@ -87,9 +124,9 @@ const CpnBreakdownMobile = ({
     [storeCoupons, grading],
   );
 
-  // The day filter narrows what is grouped, but never what it is graded
-  // against: the baseline stays the whole two-week window, because a single
-  // day has no two-week counterpart of its own.
+  // The day filter narrows what is grouped, but never what a row is graded
+  // against: the baseline stays the whole two-week window, because a single day
+  // has no two-week counterpart of its own.
   const scoped = useMemo(
     () =>
       day === null
@@ -98,70 +135,130 @@ const CpnBreakdownMobile = ({
     [storeCoupons, day],
   );
 
+  const totals = useMemo(() => totalsFor(scoped), [scoped]);
+
+  // Amount, coupons and transactions are two-week TOTALS against one week, so
+  // they halve to read as a comparable week — LP's convention. The average is
+  // NOT halved: it is already per coupon, and halving it would invent a 50%
+  // drop on every store.
+  //
+  // Only computed for the whole week. With a single day selected there is
+  // nothing here to compare against — one day against a week-equivalent would
+  // show an ~85% collapse on every store, which is an artefact, not a finding.
+  const baselineTotals = useMemo(() => {
+    const rows = grading.baseline ?? [];
+    if (day !== null || rows.length === 0) return null;
+    const t = totalsFor(rows);
+    return {
+      amount: t.amount / 2,
+      lines: t.lines / 2,
+      transactions: t.transactions / 2,
+      avgAmount: t.avgAmount,
+    };
+  }, [grading.baseline, day]);
+
+  const pctVs = (now: number, base: number | undefined) =>
+    base === undefined || base === 0 ? undefined : ((now - base) / base) * 100;
+
   const rows = useMemo(
     () => buildBreakdownRows(scoped, grading, breakdown),
     [scoped, grading, breakdown],
   );
 
-  const totals = useMemo(() => totalsFor(scoped), [scoped]);
   const counts = useMemo(() => tierCounts(rows), [rows]);
   const ungraded = useMemo(() => ungradedCount(rows), [rows]);
   const visible = useMemo(() => filterByTier(rows, filter), [rows, filter]);
 
   return (
     <div className="flex flex-col h-full">
-      <MobilePerfHeader
-        pageName="Coupon Sales"
-        dateRange={rangeLabel}
-        storeName={storeLabel}
-        onBack={onBack}
-        actions={<CpnMetricToggle />}
-        info={COUPON_SALES_INFO}
-      />
-
-      {/* This store's own totals for whatever the day strip has selected —
-          the figure every row below adds up to, so a section can be read as a
-          share of it without leaving the screen. */}
-      <div className="flex-shrink-0 grid grid-cols-4 divide-x divide-gray-100 border-b border-gray-100 bg-custom-white">
-        {[
-          { label: "Avg", value: formatCurrency2(totals.avgAmount) },
-          { label: "Total", value: formatCurrency2(totals.amount) },
-          { label: "Coupons", value: formatBigNumber(totals.lines, 0) },
-          { label: "Trans", value: formatBigNumber(totals.transactions, 0) },
-        ].map(({ label, value }) => (
-          <div key={label} className="px-2 py-2 text-center min-w-0">
-            <div className="text-[10px] font-bold uppercase tracking-wide text-content">
-              {label}
-            </div>
-            <div className="text-[13px] font-semibold text-content tabular-nums truncate">
-              {value}
-            </div>
+      {/* Header — matches LP CashierListMobile / Sales LedgerStoreReport nav */}
+      <div className="bg-[#1e2a4a] px-4 pt-3 pb-4 flex items-start gap-3 flex-shrink-0">
+        <button
+          onClick={onBack}
+          aria-label="Back to stores"
+          className="text-custom-white/85 mt-0.5 flex-shrink-0"
+        >
+          <ChevronLeftIcon className="w-5 h-5" />
+        </button>
+        <div className="min-w-0">
+          <div className="text-custom-white font-semibold text-[13px] truncate">
+            {storeLabel}
           </div>
-        ))}
+          {/* The week lives here because this header has no second row for it,
+              and once you have drilled in it is the only statement of which
+              seven days you are looking at. */}
+          <div className="text-custom-white/85 text-[11px] truncate">
+            {SUBTITLE[breakdown]} · {rangeLabel}
+          </div>
+        </div>
+      </div>
+
+      {/* Section label + group-by. The bar already exists in LP as a label with
+          room on its right, so the selector costs no extra row. */}
+      <div className="flex-shrink-0 px-3 py-[7px] bg-gray-100 border-b border-gray-200 flex items-center gap-2">
+        <span className="text-[10px] font-semibold uppercase tracking-wide text-content/85">
+          Store totals
+        </span>
+        <div className="ml-auto flex-shrink-0">
+          <SelectFilter
+            options={BREAKDOWN_OPTS.map((o) => ({
+              value: o.value,
+              label: o.label,
+            }))}
+            value={breakdown}
+            onChange={(v) => {
+              dispatch(setCouponBreakdown(v as CouponBreakdown));
+              setFilter("all");
+            }}
+            placeholder=""
+            className="w-[104px]"
+          />
+        </div>
+      </div>
+
+      <div className="flex-shrink-0 grid grid-cols-4 bg-custom-white border-b border-gray-100">
+        <KpiCell
+          label="Avg"
+          value={formatCurrency2(totals.avgAmount)}
+          baseline={
+            baselineTotals
+              ? formatCurrency2(baselineTotals.avgAmount)
+              : undefined
+          }
+          pct={pctVs(totals.avgAmount, baselineTotals?.avgAmount)}
+        />
+        <KpiCell
+          label="Total"
+          value={formatCurrency2(totals.amount)}
+          baseline={
+            baselineTotals ? formatCurrency2(baselineTotals.amount) : undefined
+          }
+          pct={pctVs(totals.amount, baselineTotals?.amount)}
+        />
+        <KpiCell
+          label="Coupons"
+          value={formatBigNumber(totals.lines, 0)}
+          baseline={
+            baselineTotals
+              ? formatBigNumber(baselineTotals.lines, 0)
+              : undefined
+          }
+          pct={pctVs(totals.lines, baselineTotals?.lines)}
+        />
+        <KpiCell
+          label="Trans"
+          value={formatBigNumber(totals.transactions, 0)}
+          baseline={
+            baselineTotals
+              ? formatBigNumber(baselineTotals.transactions, 0)
+              : undefined
+          }
+          pct={pctVs(totals.transactions, baselineTotals?.transactions)}
+          last
+        />
       </div>
 
       <MobileDayStrip days={dayEntries} selected={day} onSelect={setDay} />
-
-      {/* Group-by, as chips rather than a dropdown: three options, and the one
-          in force changes what every row underneath means. */}
-      <div className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 border-b border-gray-100 bg-custom-white">
-        {BREAKDOWNS.map(({ value, label }) => (
-          <button
-            key={value}
-            onClick={() => {
-              dispatch(setCouponBreakdown(value));
-              setFilter("all");
-            }}
-            className={`px-2 py-1 rounded-full text-[11px] font-semibold border transition-colors ${
-              breakdown === value
-                ? "bg-[#1e2a4a] text-custom-white border-[#1e2a4a]"
-                : "bg-custom-white text-content/85 border-gray-200"
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
 
       <SevChips
         active={filter}

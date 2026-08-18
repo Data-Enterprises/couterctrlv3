@@ -1,30 +1,44 @@
-import { useMemo, useState } from "react";
-import { useAppSelector } from "../../../hooks";
-import MobilePerfHeader from "../../../components/mobile/MobilePerfHeader";
+import { useMemo, useRef, useState } from "react";
+import { useAppDispatch, useAppSelector } from "../../../hooks";
+import { useToast } from "../../../components/toasts/hooks/useToast";
+import { getCashierTransaction } from "../../../api/lossPrevention";
+import { setTransactionDrillDown } from "../../../features/lossPreventionSlice";
+import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
+import BottomSheet from "../../../components/BottomSheet";
 import SevBadge from "../../../components/SevBadge";
+import Transaction from "../../lossPrevention/Transaction";
 import { formatCurrency2, formatBigNumber } from "../../../utils";
-import type { CouponItem } from "../../../interfaces";
+import type {
+  CouponItem,
+  JsonError,
+  TransactionListItem,
+} from "../../../interfaces";
 import { COUPON_THRESHOLD_DEFAULT } from "../../../features/couponSalesSlice";
-import { COUPON_SALES_INFO } from "../couponSalesInfo";
 import {
   buildTransactions,
   couponPillClass,
   couponValueOf,
   sectionKeyOf,
+  type CouponTransaction,
 } from "../shared/couponGrading";
 import { badgeTier } from "./couponTierUi";
 
 /**
  * The receipts behind one section — screen three, and the end of the drill.
  *
- * Graded on the flat-dollar outlier rule regardless of which metric the rest
- * of the page is on, because a single sale has no prior two weeks of its own:
- * "this receipt versus its own baseline" isn't a question that means anything.
- * The only sensible read here is whether the coupon coming off it was large.
+ * Rows are graded on the flat-dollar outlier rule regardless of which metric
+ * the rest of the page is on, because a single sale has no prior two weeks of
+ * its own: "this receipt versus its own baseline" isn't a question that means
+ * anything. The only sensible read here is whether the coupon coming off it
+ * was unusually large.
  *
- * Lines are collapsed by default. A receipt with one coupon is the common
- * case, and expanding every one of them by default buries the rare receipt
- * carrying six.
+ * Tapping a row opens the **whole receipt** in a sheet, matching what the
+ * desktop panel does. That fetch is the point of it: `coupons/` returns only
+ * the coupon lines, so on its own this screen can't show what the discount was
+ * actually applied against — which is the first thing anyone asks when a
+ * coupon looks too big. The receipt comes from LP's endpoint and renders
+ * through LP's own `Transaction` component, so a receipt looks identical
+ * wherever it is opened from.
  */
 interface Props {
   /** Every coupon line for the selected store, the full week. */
@@ -40,10 +54,24 @@ const CpnTransactionsMobile = ({
   rangeLabel,
   onBack,
 }: Props) => {
+  const dispatch = useAppDispatch();
+  const toast = useToast();
+  const { url, token } = useAppSelector((s) => s.app);
   const { breakdown, selectedSectionKey, threshold } = useAppSelector(
     (s) => s.couponSales,
   );
-  const [openSale, setOpenSale] = useState<number | null>(null);
+  // The receipt lands in LP's slice because it is LP's endpoint and LP's
+  // renderer — duplicating it into couponSales would give the same receipt two
+  // homes and no rule about which one is current.
+  const receipt = useAppSelector(
+    (s) => s.lossPrevention.transactionDrillDown[0] ?? null,
+  );
+
+  const [expanded, setExpanded] = useState<number | null>(null);
+  const [openTx, setOpenTx] = useState<CouponTransaction | null>(null);
+  const [openLine, setOpenLine] = useState<CouponItem | null>(null);
+  const [loadingReceipt, setLoadingReceipt] = useState(false);
+  const sheetCloseRef = useRef<(() => void) | null>(null);
 
   const activeThreshold = threshold ?? COUPON_THRESHOLD_DEFAULT;
 
@@ -62,15 +90,73 @@ const CpnTransactionsMobile = ({
     [sectionCoupons, activeThreshold],
   );
 
+  // Sale id the receipt endpoint expects, assembled exactly as the desktop
+  // panel assembles it: month and day are NOT zero-padded, and the date parts
+  // come off the untouched ISO value rather than the display string.
+  const joinedSaleId = (t: CouponTransaction) => {
+    const [y, m, d] = t.rawSaleDate.split("T")[0].split("-");
+    return `${t.storeid}-${t.sale_id}-${t.terminal}-${parseInt(m)}-${parseInt(d)}-${y}`;
+  };
+
+  const openReceipt = (t: CouponTransaction, line: CouponItem) => {
+    setOpenTx(t);
+    setOpenLine(line);
+    setLoadingReceipt(true);
+    dispatch(setTransactionDrillDown([]));
+    getCashierTransaction(
+      url,
+      token,
+      t.rawSaleDate.split("T")[0],
+      joinedSaleId(t),
+      t.storeid,
+    )
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error !== 0) return;
+        const lines: TransactionListItem[] = [...j.transaction].map(
+          (item: TransactionListItem) => ({
+            ...item,
+            transaction_id: item.sale_id.split("-")[1],
+            qty: item.qty ? item.qty : 0,
+          }),
+        );
+        dispatch(setTransactionDrillDown([lines]));
+      })
+      .catch((err: JsonError) => {
+        setOpenTx(null);
+        setOpenLine(null);
+        toast.error("Error fetching transaction: " + err.message);
+      })
+      .finally(() => setLoadingReceipt(false));
+  };
+
+  const closeReceipt = () => {
+    setOpenTx(null);
+    setOpenLine(null);
+    dispatch(setTransactionDrillDown([]));
+  };
+
   return (
     <div className="flex flex-col h-full">
-      <MobilePerfHeader
-        pageName={selectedSectionKey ?? "Transactions"}
-        dateRange={rangeLabel}
-        storeName={storeLabel}
-        onBack={onBack}
-        info={COUPON_SALES_INFO}
-      />
+      {/* Same inner-nav header as the breakdown screen — the subtitle names the
+          section you drilled through rather than repeating the page. */}
+      <div className="bg-[#1e2a4a] px-4 pt-3 pb-4 flex items-start gap-3 flex-shrink-0">
+        <button
+          onClick={onBack}
+          aria-label="Back to breakdown"
+          className="text-custom-white/85 mt-0.5 flex-shrink-0"
+        >
+          <ChevronLeftIcon className="w-5 h-5" />
+        </button>
+        <div className="min-w-0">
+          <div className="text-custom-white font-semibold text-[13px] truncate">
+            {storeLabel}
+          </div>
+          <div className="text-custom-white/85 text-[11px] truncate">
+            {selectedSectionKey ?? "Transactions"} · {rangeLabel}
+          </div>
+        </div>
+      </div>
 
       <div className="flex-shrink-0 px-3 py-2 border-b border-gray-100 bg-custom-white">
         <p className="text-[11px] text-content">
@@ -87,11 +173,12 @@ const CpnTransactionsMobile = ({
           </div>
         ) : (
           transactions.map((t) => {
-            const isOpen = openSale === t.sale_id;
+            const isOpen = expanded === t.sale_id;
             return (
               <div key={t.sale_id} className="border-b border-gray-100">
                 <button
-                  onClick={() => setOpenSale(isOpen ? null : t.sale_id)}
+                  onClick={() => setExpanded(isOpen ? null : t.sale_id)}
+                  aria-expanded={isOpen}
                   className="w-full px-4 py-3 text-left hover:bg-gray-50 active:bg-gray-100 transition-colors"
                 >
                   <div className="flex items-center gap-2.5 mb-2">
@@ -136,22 +223,28 @@ const CpnTransactionsMobile = ({
                   </div>
                 </button>
 
+                {/* The coupon lines are already in memory, so opening them
+                    costs nothing. Tapping one is what fetches the receipt —
+                    the sub row says which coupon you are asking about, and
+                    the sheet answers what it came off. */}
                 {isOpen && (
-                  <div className="bg-row_stripe px-4 pb-3 pt-1">
+                  <div className="bg-row_stripe">
                     {t.items.map((line, i) => (
-                      <div
+                      <button
                         key={`${line.line_number}-${i}`}
-                        className="flex items-baseline gap-2 py-1 border-t border-gray-100 first:border-t-0"
+                        onClick={() => openReceipt(t, line)}
+                        className="w-full flex items-baseline gap-2 px-4 py-2 pl-[46px] text-left border-t border-gray-100 hover:bg-gray-100 active:bg-gray-200 transition-colors"
                       >
                         <span className="text-[11px] text-content flex-1 min-w-0 truncate">
                           {line.product_description ||
                             line.product_code ||
                             "Unknown item"}
                         </span>
-                        <span className="text-[11px] text-content tabular-nums flex-shrink-0">
+                        <span className="text-[11px] font-semibold text-content tabular-nums flex-shrink-0">
                           {formatCurrency2(couponValueOf(line))}
                         </span>
-                      </div>
+                        <ChevronRightIcon className="w-3.5 h-3.5 text-content/85 flex-shrink-0" />
+                      </button>
                     ))}
                   </div>
                 )}
@@ -160,6 +253,37 @@ const CpnTransactionsMobile = ({
           })
         )}
       </div>
+
+      {/* Receipt sheet — the same shell and the same renderer LP's mobile
+          transactions use, so the two pages can't drift on what a receipt
+          looks like. */}
+      {openTx && (
+        <BottomSheet onClose={closeReceipt} closeRef={sheetCloseRef}>
+          <div className="flex flex-col" style={{ maxHeight: "80vh" }}>
+            <div className="flex-shrink-0 px-3 py-2 border-b border-gray-100">
+              <p className="text-[12px] font-semibold text-content truncate">
+                {openTx.cashier_name || "Unknown cashier"} · #{openTx.sale_id}
+              </p>
+              <p className="text-[11px] text-content truncate">
+                {openLine
+                  ? `${openLine.product_description || openLine.product_code || "Coupon"} · ${formatCurrency2(couponValueOf(openLine))}`
+                  : `${openTx.sale_date} · Term ${openTx.terminal}`}
+              </p>
+            </div>
+            {loadingReceipt ? (
+              <div className="flex items-center justify-center py-16 text-[12px] text-content/85">
+                Loading receipt…
+              </div>
+            ) : !receipt || receipt.length === 0 ? (
+              <div className="flex items-center justify-center py-16 text-[12px] text-content/85">
+                No line items found.
+              </div>
+            ) : (
+              <Transaction trans={receipt} compact />
+            )}
+          </div>
+        </BottomSheet>
+      )}
     </div>
   );
 };
