@@ -22,6 +22,7 @@ import EmptyPrompt from "../../components/EmptyPrompt";
 import CpnSalesStorePanel from "./components/CpnSalesStorePanel";
 import CpnSalesDetailPanel from "./components/CpnSalesDetailPanel";
 import CpnSalesExportModal from "./components/CpnSalesExportModal";
+import CouponSalesMobile from "./mobile/CouponSalesMobile";
 import { buildStoreRows, storeKeyOf, totalsFor } from "./shared/couponGrading";
 
 const CouponSales = () => {
@@ -102,7 +103,15 @@ const CouponSales = () => {
     const singleStore = type === "Store" ? 1 : 0;
     const searchValue = type === "Group" ? lastGroup : lastStore;
 
-    getCoupons(url, token, weekStart, weekEnd, useGroups, singleStore, searchValue)
+    getCoupons(
+      url,
+      token,
+      weekStart,
+      weekEnd,
+      useGroups,
+      singleStore,
+      searchValue,
+    )
       .then((resp) => {
         const j: CouponsResponse = resp.data;
         if (j.error !== 0) {
@@ -120,7 +129,15 @@ const CouponSales = () => {
     // usable the moment the week lands, and rows simply grade as ungraded
     // until this arrives. A baseline failure is non-fatal for the same reason.
     dispatch(setCouponBaseline([]));
-    getCoupons(url, token, baseStart, baseEnd, useGroups, singleStore, searchValue)
+    getCoupons(
+      url,
+      token,
+      baseStart,
+      baseEnd,
+      useGroups,
+      singleStore,
+      searchValue,
+    )
       .then((resp) => {
         const j: CouponsResponse = resp.data;
         if (j.error === 0) dispatch(setCouponBaseline(j.records));
@@ -129,8 +146,7 @@ const CouponSales = () => {
   };
 
   const storeRows = useMemo(
-    () =>
-      buildStoreRows(coupons, grading, assignedStores, selectedGroupStores),
+    () => buildStoreRows(coupons, grading, assignedStores, selectedGroupStores),
     [coupons, grading, assignedStores, selectedGroupStores],
   );
 
@@ -164,14 +180,19 @@ const CouponSales = () => {
   // API so the label can't drift from what was actually queried.
   const rangeLabel = `${formatDateSimple(weekStart)} – ${formatDateSimple(weekEnd)}`;
 
+  // Mobile gets its own three-screen stack rather than a squeezed two-panel
+  // layout. Fetching, the baseline and every grading input stay here so the
+  // two form factors can never grade the same week differently.
   if (isMobile) {
     return (
-      <div className="w-full min-h-[calc(100vh-3rem)] p-4">
-        <EmptyPrompt
-          title="Coupon Sales is desktop only for now"
-          description="Use the Coupons page on mobile."
-        />
-      </div>
+      <CouponSalesMobile
+        storeRows={storeRows}
+        storeCoupons={storeCoupons}
+        storeLabel={selectedStore?.label ?? ""}
+        rangeLabel={rangeLabel}
+        storeGrading={storeGrading}
+        onSearch={getData}
+      />
     );
   }
 
@@ -220,7 +241,7 @@ const CouponSales = () => {
             <SearchCard
               title="Coupon Sales"
               description="Select a store or group and a week ending date. Coupons are graded against the same store's prior two weeks."
-          singleDate
+              singleDate
               buttonLabel="Load Coupon Sales"
               onSearch={() => {
                 setSearchModalOpen(false);
@@ -256,7 +277,7 @@ const CouponSales = () => {
               storeTier={selectedStore.tier}
               rangeLabel={rangeLabel}
               threshold={activeThreshold}
-          grading={storeGrading}
+              grading={storeGrading}
             />
           ) : (
             <EmptyPrompt

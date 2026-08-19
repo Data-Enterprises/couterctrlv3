@@ -352,8 +352,10 @@ export const categories: NavCategory[] = [
         name: "Coupon Sales",
         href: "coupon-sales",
         icon: CouponIcon,
-        // Desktop only for now — the Data-category Coupons page covers mobile.
-        mobile: false,
+        // Has its own three-screen mobile stack (pages/couponSales/mobile) —
+        // graded store list, per-store breakdown, receipts. The Data-category
+        // Coupons page is a different report, not this one's phone version.
+        mobile: true,
         children: [],
         childOpen: false,
         userLevels: ["*"],

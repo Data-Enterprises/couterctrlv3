@@ -73,7 +73,7 @@ type DeptRow = {
   lyStoreCpn: number;
 };
 
-type DeptSortColumn = "ty" | "vsLW" | "vsLY";
+type DeptSortColumn = "dept" | "ty" | "vsLW" | "vsLY";
 type DeptSortState = {
   column: DeptSortColumn;
   direction: "desc" | "asc";
@@ -464,6 +464,12 @@ const PopupSubDeptList = ({
     storeNumber,
   ]);
 
+  // Deliberately `total_sales - total_tax` and not `net_sales`, reverted
+  // 2026-08-18 while the backend work is still in flight. `net_sales` matched
+  // the register report to the cent on the rows we checked (it has coupons out
+  // as well as tax), so this is a hold, not a correction — revisit once the
+  // backend settles. The weekly totals above already read `net_sales`, so the
+  // two disagree by the coupon amount until then.
   const rows = useMemo((): DeptRow[] => {
     const buildMap = (src: typeof subSales) =>
       src.reduce(
@@ -619,23 +625,31 @@ const PopupSubDeptList = ({
 
   const handleDeptSortClick = (column: DeptSortColumn) => {
     setDeptSort((prev) => {
-      if (prev?.column !== column) return { column, direction: "desc" };
-      if (prev.direction === "desc") return { column, direction: "asc" };
+      // Sub dept is an identifier, not a measure — 1, 2, 3 … is the order
+      // someone means by "sort by sub dept", so it opens ascending where the
+      // measures open with the biggest number. Still tri-state either way:
+      // first click, reverse, off.
+      const first: "desc" | "asc" = column === "dept" ? "asc" : "desc";
+      if (prev?.column !== column) return { column, direction: first };
+      if (prev.direction === first)
+        return { column, direction: first === "desc" ? "asc" : "desc" };
       return null;
     });
   };
   const deptSortValue = (row: DeptRow, column: DeptSortColumn) =>
-    column === "ty"
-      ? isQty
-        ? row.qty
-        : row.tw
-      : column === "vsLW"
+    column === "dept"
+      ? row.id
+      : column === "ty"
         ? isQty
-          ? row.vsLWQtyPct
-          : row.vsLWPct
-        : isQty
-          ? row.vsLYQtyPct
-          : row.vsLYPct;
+          ? row.qty
+          : row.tw
+        : column === "vsLW"
+          ? isQty
+            ? row.vsLWQtyPct
+            : row.vsLWPct
+          : isQty
+            ? row.vsLYQtyPct
+            : row.vsLYPct;
   const sortedVisible = deptSort
     ? [...visible].sort((a, b) => {
         const diff =
@@ -839,9 +853,18 @@ const PopupSubDeptList = ({
 
           <div className="flex items-center gap-2.5 px-3 py-1.5 border-b border-gray-100 flex-shrink-0">
             <span className="w-2.5 flex-shrink-0" />
-            <span className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-1">
+            <button
+              onClick={() => handleDeptSortClick("dept")}
+              className="flex items-center gap-0.5 text-[11.5px] font-semibold uppercase tracking-wide text-content/80 hover:text-content flex-1 min-w-0"
+            >
               Sub Dept
-            </span>
+              {deptSort?.column === "dept" &&
+                (deptSort.direction === "desc" ? (
+                  <ChevronDownIcon className="w-3 h-3" />
+                ) : (
+                  <ChevronUpIcon className="w-3 h-3" />
+                ))}
+            </button>
             <div className="flex items-center gap-[14px]">
               <button
                 onClick={() => handleDeptSortClick("ty")}

@@ -7,8 +7,8 @@ import { categories } from "./utils";
 import { resetNav, setIsNavOpen, setLastRoute } from "../../features/navSlice";
 import {
   resetAppSlice,
-  toggleDevMode,
-  SHOW_ENV_TOGGLE,
+  setApiEnv,
+  SHOW_API_ENV_SWITCH,
 } from "../../features/appSlice";
 import { resetUserSlice } from "../../features/userSlice";
 import { resetSalesSlice } from "../../features/salesSlice";
@@ -265,6 +265,9 @@ const TitleBar = () => {
                 </div>
               )}
             </div>
+            {/* Client Help Desk — parked 2026-08-19, not deleted. The
+                /tickets route and its page are untouched, so restoring this is
+                uncommenting the block.
             {user.userLevel === 9 && (
               <button
                 onClick={() => {
@@ -276,6 +279,46 @@ const TitleBar = () => {
                 Client Help Desk
               </button>
             )}
+            */}
+            {/* Which backend this session talks to. Deliberately NOT wired
+                to `devMode`, which picks the dev-vs-legacy UI — see appSlice.
+
+                Owner and up (7, 8, 9): support and programmers. A segmented
+                control rather than a menu item, and the only row here that
+                does NOT close the dropdown — switching environments is
+                something you do and then verify, so the badge has to stay on
+                screen to confirm it took. */}
+            {SHOW_API_ENV_SWITCH && user.userLevel >= 7 ? (
+              <div className="px-4 py-2.5 border-b border-gray-100 flex items-center gap-2">
+                <span className="text-[13px] font-medium text-content flex-1">
+                  API
+                </span>
+                <div className="flex items-center rounded-full overflow-hidden border border-gray-200 text-[10px] font-bold select-none flex-shrink-0">
+                  <button
+                    onClick={() => dispatch(setApiEnv("dev"))}
+                    title="Point this session at the dev API"
+                    className={`px-2.5 py-1 transition-colors ${
+                      context.apiEnv === "dev"
+                        ? "bg-emerald-500 text-custom-white"
+                        : "text-content/85 hover:bg-gray-50"
+                    }`}
+                  >
+                    DEV
+                  </button>
+                  <button
+                    onClick={() => dispatch(setApiEnv("prod"))}
+                    title="Point this session at the prod API"
+                    className={`px-2.5 py-1 transition-colors ${
+                      context.apiEnv === "prod"
+                        ? "bg-red-600 text-custom-white"
+                        : "text-content/85 hover:bg-gray-50"
+                    }`}
+                  >
+                    PROD
+                  </button>
+                </div>
+              </div>
+            ) : null}
             <button
               data-testid="signout-btn"
               onClick={() => {
@@ -386,29 +429,6 @@ const TitleBar = () => {
         )}
 
         <div className="flex-1" />
-
-        {/* DEV/PROD toggle — programmer/admin only. Hidden for the cutover;
-            see SHOW_ENV_TOGGLE. */}
-        {SHOW_ENV_TOGGLE && (user.role === 9 || user.userLevel >= 2) ? (
-          <div className="flex items-center px-3 border-r border-custom-white/10">
-            <button
-              onClick={() => dispatch(toggleDevMode())}
-              className="flex items-center gap-0 rounded-full overflow-hidden border border-custom-white/20 text-[10px] font-bold select-none"
-              title={context.devMode ? "Switch to LIVE" : "Switch to PREVIEW"}
-            >
-              <span
-                className={`px-2.5 py-1 transition-colors ${!context.devMode ? "bg-custom-white text-[#1e2a4a]" : "text-custom-white/40"}`}
-              >
-                LIVE
-              </span>
-              <span
-                className={`px-2.5 py-1 transition-colors ${context.devMode ? "bg-emerald-500 text-custom-white" : "text-custom-white/40"}`}
-              >
-                PREVIEW
-              </span>
-            </button>
-          </div>
-        ) : null}
 
         {/* Avatar — always visible */}
         <AvatarDropdown />
