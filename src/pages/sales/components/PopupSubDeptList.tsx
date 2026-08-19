@@ -464,10 +464,12 @@ const PopupSubDeptList = ({
     storeNumber,
   ]);
 
-  // `net_sales` is the figure the register report agrees with: the backend has
-  // already taken tax and coupons out of it, and it matched the store's own
-  // paperwork to the cent on every row we checked. Deriving it here as
-  // `total_sales - total_tax` left the coupons in and read high.
+  // Deliberately `total_sales - total_tax` and not `net_sales`, reverted
+  // 2026-08-18 while the backend work is still in flight. `net_sales` matched
+  // the register report to the cent on the rows we checked (it has coupons out
+  // as well as tax), so this is a hold, not a correction — revisit once the
+  // backend settles. The weekly totals above already read `net_sales`, so the
+  // two disagree by the coupon amount until then.
   const rows = useMemo((): DeptRow[] => {
     const buildMap = (src: typeof subSales) =>
       src.reduce(
@@ -494,7 +496,7 @@ const PopupSubDeptList = ({
               elecStore: 0,
               storeCpn: 0,
             };
-          acc[s.sub_department].net += s.net_sales;
+          acc[s.sub_department].net += s.total_sales - s.total_tax;
           acc[s.sub_department].qty += s.qty;
           acc[s.sub_department].digital += s.digital_coupons;
           acc[s.sub_department].elecInstore += s.elec_instore_coupons;
@@ -535,7 +537,7 @@ const PopupSubDeptList = ({
             storeCpn: 0,
           };
         }
-        acc[s.sub_department].net += s.net_sales;
+        acc[s.sub_department].net += s.total_sales - s.total_tax;
         acc[s.sub_department].qty += s.qty;
         acc[s.sub_department].digital += s.digital_coupons;
         acc[s.sub_department].elecInstore += s.elec_instore_coupons;

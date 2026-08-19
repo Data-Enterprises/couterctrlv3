@@ -13,7 +13,7 @@ import {
   setFetchingCredentials,
   setProdToken,
   setDevToken,
-  SHOW_ENV_TOGGLE,
+  SHOW_API_ENV_SWITCH,
 } from "../../features/appSlice";
 import {
   setUsername,
@@ -49,9 +49,9 @@ import { POSTS, toPosts, type Post } from "../../content/posts";
 const VERSION = "Last updated 8/17/2026 @ 12:27 PM CST";
 
 /** PLACEHOLDER: `/html_pages/` only exists on the dev API today, and this page
- *  runs before sign-in — `context.url` is always VITE_API_URL_PROD here, since
- *  devMode can't be toggled until a session exists. Swap this for `context.url`
- *  once the endpoint ships to prod. */
+ *  runs before sign-in, so it cannot follow `apiEnv` (which now defaults to
+ *  prod). Pinned to dev deliberately. Swap this for `context.url` once the
+ *  endpoint ships to prod. */
 const BLOG_API = import.meta.env.VITE_API_URL_DEV;
 
 /**
@@ -60,7 +60,7 @@ const BLOG_API = import.meta.env.VITE_API_URL_DEV;
  * handoff-DEV-NOTES.md / handoff-PORTAL-README.md at the root).
  *
  * The authentication path below is unchanged from the pre-redesign page: the
- * impersonation credentials, the second dev-token login, every success
+ * impersonation credentials, the cross-environment token login, every success
  * dispatch and the device-detection effect are all carried over verbatim.
  * Only the presentation was replaced.
  *
@@ -188,12 +188,14 @@ const Login = () => {
         const j = resp.data;
         if (j.error == 0) {
           dispatch(setToken(j.access_token));
-          // Login runs against `context.url`, which is the dev API while
-          // SHOW_ENV_TOGGLE is off — so this token is a dev token, and it has
-          // to land in devToken or `useDevApi` (AccountSetupModal) carries an
-          // empty string and 401s for everyone below role 9.
+          // Login runs against `context.url`, so this token belongs to
+          // whichever environment `apiEnv` currently points at. It has to be
+          // filed under that one specifically: `useDevApi`
+          // (AccountSetupModal) reads `devToken` directly, and if the dev slot
+          // is empty it carries an empty string and 401s for everyone below
+          // role 9.
           dispatch(
-            context.devMode
+            context.apiEnv === "dev"
               ? setDevToken(j.access_token)
               : setProdToken(j.access_token),
           );
@@ -211,21 +213,24 @@ const Login = () => {
           setUseImpersonation(0);
           // The other environment's token, purely so the LIVE/PREVIEW switch
           // works the instant it's offered. Skipped entirely while
-          // SHOW_ENV_TOGGLE is off: with no way to switch environments, this
-          // is a second sign-in against an endpoint we're moving off, and a
-          // slow or down prod would delay every login for nothing.
+          // The other environment's token, fetched up front because the
+          // dropdown switch is a pointer swap between two held credentials
+          // rather than a re-auth — flipping with an empty slot just 401s.
+          // Fire-and-forget and non-fatal: a slow or down counterpart must not
+          // delay or fail the sign-in that actually matters.
           //
-          // No role gate. When the switch comes back it comes back for whoever
-          // can see it, which the title bars already decide on their own.
-          if (SHOW_ENV_TOGGLE) {
-            const otherUrl = context.devMode
-              ? import.meta.env.VITE_API_URL_PROD
-              : import.meta.env.VITE_API_URL_DEV;
+          // No role gate here. Who can see the switch is decided by the
+          // dropdown itself.
+          if (SHOW_API_ENV_SWITCH) {
+            const otherUrl =
+              context.apiEnv === "dev"
+                ? import.meta.env.VITE_API_URL_PROD
+                : import.meta.env.VITE_API_URL_DEV;
             login(otherUrl, state.username, state.password, 0)
               .then((otherResp) => {
                 if (otherResp.data.error === 0) {
                   dispatch(
-                    context.devMode
+                    context.apiEnv === "dev"
                       ? setProdToken(otherResp.data.access_token)
                       : setDevToken(otherResp.data.access_token),
                   );

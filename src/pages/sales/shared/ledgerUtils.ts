@@ -490,8 +490,9 @@ export const aggSubDepts = (
           elecStore: 0,
           storeCpn: 0,
         };
-      // See PopupSubDeptList: net_sales is the register-accurate figure.
-      acc[s.sub_department].net += s.net_sales;
+      // Held on total_sales - total_tax with PopupSubDeptList; see the note
+      // there. (No call sites today.)
+      acc[s.sub_department].net += s.total_sales - s.total_tax;
       acc[s.sub_department].qty += s.qty;
       acc[s.sub_department].digital += s.digital_coupons;
       acc[s.sub_department].elecInstore += s.elec_instore_coupons;
