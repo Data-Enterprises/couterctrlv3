@@ -4,7 +4,9 @@ import type {
   ExtractedInvoiceLine,
   InvoiceEngine,
   InvoiceReconciliation,
+  ParseScannedJsonResp,
 } from "../../interfaces";
+import type { InvoiceParseResult } from "./invoiceParsingSlice";
 
 /** Per-engine media types, mirroring the endpoint's `_media_type` and its
  *  TEXTRACT_MEDIA_TYPES gate. The two sets overlap but neither contains the
@@ -101,6 +103,98 @@ export const dedupeFiles = (existing: File[], incoming: File[]): File[] => {
     }),
   ];
 };
+
+/** How one file is doing in a bulk run. `canceled` is a file whose request was
+ *  dropped before an answer came back — the server may well have read it
+ *  anyway, so History is the authority on what it cost. */
+export type BulkFileStatus =
+  | "queued"
+  | "running"
+  | "done"
+  | "failed"
+  | "canceled";
+
+export type BulkFileProgress = {
+  /** Name only — enough to render, and it keeps the File itself out of the
+   *  render path where a stale reference would pin the whole upload alive. */
+  file: string;
+  status: BulkFileStatus;
+  invoices: number;
+  error?: string;
+};
+
+/** Axios reports anything that never reached the server as the bare string
+ *  "Network Error", which covers two very different situations: the API being
+ *  unreachable, and the browser failing to read a staged file off disk — what
+ *  a file that was moved, renamed or re-saved after being dropped looks like
+ *  from here. Neither is worth printing as-is next to a file name. */
+export const readableError = (err: unknown): string => {
+  const message =
+    (err as { message?: string } | null)?.message ?? "The request failed.";
+  return message === "Network Error"
+    ? "Never left the browser — either the file couldn't be read from disk (moved or renamed since it was dropped?) or the API was unreachable"
+    : message;
+};
+
+/** A parse response as the page stores it. Engine and store are echoed by the
+ *  server; the ones we asked with stand in when they aren't. */
+export const toParseResult = (
+  j: ParseScannedJsonResp,
+  engine: InvoiceEngine,
+  storeid: number,
+): InvoiceParseResult => ({
+  runIds: j.runId ? [j.runId] : [],
+  runEngine: j.engine ?? engine,
+  runStoreid: j.storeid ?? storeid,
+  model: j.model ?? null,
+  pageCount: j.pageCount ?? null,
+  estCostUsd: j.estCostUsd ?? null,
+  runArchived: false,
+  runExtractedAt: null,
+  runExtractedBy: null,
+  invoices: j.invoices ?? [],
+  reconciliation: j.reconciliation ?? [],
+  files: j.files ?? [],
+  storage: j.storage ?? null,
+});
+
+/** Folds the runs of a bulk batch into the single result the page renders.
+ *
+ *  `invoices` and `reconciliation` are concatenated run by run, which keeps
+ *  the positional pairing pairInvoices depends on: each run's two arrays stay
+ *  adjacent and in order, so the merged pair aligns exactly when every run's
+ *  did.
+ *
+ *  Pages and cost are all-or-nothing. A run that reports neither has still
+ *  been billed for something we can't see, and quietly summing the rest would
+ *  print a total that reads as the batch's when it isn't. */
+export const mergeRunResults = (
+  runs: InvoiceParseResult[],
+): InvoiceParseResult => ({
+  runIds: runs.flatMap((r) => r.runIds),
+  runEngine: runs[0]?.runEngine ?? null,
+  runStoreid: runs[0]?.runStoreid ?? null,
+  // Every run in a batch goes to the same engine, so any model id they report
+  // is the batch's; take the first that has one.
+  model: runs.find((r) => r.model !== null)?.model ?? null,
+  pageCount: runs.every((r) => r.pageCount !== null)
+    ? runs.reduce((sum, r) => sum + (r.pageCount ?? 0), 0)
+    : null,
+  estCostUsd:
+    runs.length > 0 && runs.every((r) => r.estCostUsd !== null)
+      ? runs.reduce((sum, r) => sum + Number(r.estCostUsd), 0).toFixed(4)
+      : null,
+  runArchived: false,
+  runExtractedAt: null,
+  runExtractedBy: null,
+  invoices: runs.flatMap((r) => r.invoices),
+  reconciliation: runs.flatMap((r) => r.reconciliation),
+  files: runs.flatMap((r) => r.files),
+  // Every run of a batch writes under its own prefix. The bar shows one as a
+  // starting point; the per-run keys are what the archive is actually indexed
+  // by, and history holds those.
+  storage: runs.find((r) => r.storage !== null)?.storage ?? null,
+});
 
 export type InvoiceRow = {
   invoice: ExtractedInvoice;

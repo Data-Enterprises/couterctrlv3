@@ -27,6 +27,9 @@ interface InvoiceUploadCardProps {
   stores: Store[];
   storeid: number;
   onStoreChange: (storeid: number) => void;
+  /** One request per file instead of one carrying the batch. */
+  bulk: boolean;
+  onBulkChange: (bulk: boolean) => void;
   onExtract: () => void;
   loading: boolean;
   onHistory: () => void;
@@ -44,6 +47,8 @@ const InvoiceUploadCard = ({
   stores,
   storeid,
   onStoreChange,
+  bulk,
+  onBulkChange,
   onExtract,
   loading,
   onHistory,
@@ -140,6 +145,31 @@ const InvoiceUploadCard = ({
           {active.blurb}
         </p>
       </div>
+
+      {/* One request per file is the safer shape for a big drop: a file that
+          blows up takes only itself down, and the invoices from the files that
+          finished are on screen while the rest are still reading. It costs the
+          same per page — the pages get read either way. */}
+      <label className="flex items-start gap-2 px-2.5 py-2 rounded-lg bg-bkg cursor-pointer">
+        <input
+          type="checkbox"
+          data-testid="bulk-mode-toggle"
+          checked={bulk}
+          disabled={loading}
+          onChange={(e) => onBulkChange(e.target.checked)}
+          className="mt-[2px] accent-[#1e2a4a] cursor-pointer"
+        />
+        <span className="min-w-0">
+          <span className="block text-[12.5px] font-semibold text-content">
+            Bulk mode — one request per file
+          </span>
+          <span className="block text-[11px] text-content/45 leading-snug">
+            {files.length > 0 ? `${files.length} files, ${files.length} requests` : "One request per file"}
+            , each filed as its own run. A failure costs you that file instead
+            of the batch, and results appear as they land.
+          </span>
+        </span>
+      </label>
 
       {notice && (
         <div className="px-2.5 py-2 rounded-lg bg-amber-50 text-[11.5px] text-amber-900 leading-snug">
@@ -251,7 +281,7 @@ const InvoiceUploadCard = ({
           ? "Select a store first"
           : files.length === 0
             ? `Extract with ${active.label}`
-            : `Extract ${files.length} File${files.length === 1 ? "" : "s"} with ${active.label}`}
+            : `Extract ${files.length} File${files.length === 1 ? "" : "s"} with ${active.label}${bulk ? " — separately" : ""}`}
       </button>
 
       <button

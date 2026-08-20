@@ -18,6 +18,10 @@ const ENGINE_PATHS: Record<InvoiceEngine, string> = {
  * and a multi-file batch routinely runs minutes. Cutting it off would throw
  * away an extraction that was going to finish, and that you're already paying
  * for.
+ *
+ * `signal` is how a bulk run stops early. Note what abandoning a request does
+ * and doesn't do: the browser drops the response, the server keeps reading and
+ * still bills the pages. Cancelling saves the caller's time, not their money.
  */
 export const parseScannedInvoices = async (
   url: string,
@@ -25,6 +29,7 @@ export const parseScannedInvoices = async (
   files: File[],
   engine: InvoiceEngine,
   storeid: number,
+  signal?: AbortSignal,
 ) => {
   const formData = new FormData();
   // Repeated `files` parts — the endpoint's List[UploadFile] parameter.
@@ -43,6 +48,7 @@ export const parseScannedInvoices = async (
     url: url + ENGINE_PATHS[engine],
     data: formData,
     timeout: 0,
+    signal,
   });
 
   return json;

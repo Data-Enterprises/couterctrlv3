@@ -28,6 +28,16 @@ interface InvoiceParsingState {
   /** Store the next run is filed against. 0 = none picked yet. Like `engine`,
    *  a standing choice rather than part of the result. */
   storeid: number;
+  /** Send each staged file as its own request instead of one request carrying
+   *  the batch. Slower end to end, but one bad file fails alone and the
+   *  invoices from the rest are on screen before the batch has finished.
+   *  A standing preference, like `engine`. */
+  bulk: boolean;
+  /** Every run behind what's on screen — one entry normally, one per file
+   *  after a bulk run. */
+  runIds: string[];
+  /** The single run on screen, or null when several were merged. Kept for the
+   *  common case; `runIds` is the authoritative list. */
   runId: string | null;
   /** The engine that produced the results on screen. Separate from `engine`
    *  above so switching the picker never relabels a run that already happened. */
@@ -77,6 +87,8 @@ export const initialState: InvoiceParsingState = {
   // the one that works on an invoice nobody has tried yet.
   engine: "bedrock",
   storeid: 0,
+  bulk: false,
+  runIds: [],
   runId: null,
   runEngine: null,
   runStoreid: null,
@@ -105,7 +117,7 @@ export const initialState: InvoiceParsingState = {
 
 export type InvoiceParseResult = Pick<
   InvoiceParsingState,
-  | "runId"
+  | "runIds"
   | "runEngine"
   | "runStoreid"
   | "model"
@@ -133,12 +145,15 @@ export const invoiceParsingSlice = createSlice({
     setInvoiceStoreid: (state, action: PayloadAction<number>) => {
       state.storeid = action.payload;
     },
+    setBulk: (state, action: PayloadAction<boolean>) => {
+      state.bulk = action.payload;
+    },
     setParsing: (state, action: PayloadAction<boolean>) => {
       state.isParsing = action.payload;
     },
     setParseResult: (state, action: PayloadAction<InvoiceParseResult>) => {
       const {
-        runId,
+        runIds,
         runEngine,
         runStoreid,
         model,
@@ -155,7 +170,10 @@ export const invoiceParsingSlice = createSlice({
       state.runArchived = runArchived;
       state.runExtractedAt = runExtractedAt;
       state.runExtractedBy = runExtractedBy;
-      state.runId = runId;
+      state.runIds = runIds;
+      // Only meaningful when one run produced everything on screen; a merged
+      // bulk result has no single id to name.
+      state.runId = runIds.length === 1 ? runIds[0] : null;
       state.runEngine = runEngine;
       state.runStoreid = runStoreid;
       state.model = model;
@@ -212,11 +230,13 @@ export const invoiceParsingSlice = createSlice({
     setInvoiceExportOpen: (state, action: PayloadAction<boolean>) => {
       state.exportOpen = action.payload;
     },
-    // Engine, store and the loaded history survive — none of them are results.
+    // Engine, store, bulk mode and the loaded history survive — none of them
+    // are results.
     clearParseResult: (state) => ({
       ...initialState,
       engine: state.engine,
       storeid: state.storeid,
+      bulk: state.bulk,
       history: state.history,
       historyTotal: state.historyTotal,
       historyOffset: state.historyOffset,
@@ -231,6 +251,7 @@ export const {
   setInvoiceView,
   setEngine,
   setInvoiceStoreid,
+  setBulk,
   setParsing,
   setParseResult,
   setSelectedInvoiceIndex,
