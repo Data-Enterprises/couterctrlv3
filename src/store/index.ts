@@ -30,6 +30,7 @@ import adminReducer from "../features/adminSlice.ts";
 import adminPageReducer from "../features/adminPageSlice.ts";
 import baseGroupReducer from "../features/baseGroupSlice.ts";
 import companyReducer from "../features/companySlice.ts";
+import lpActionsReducer from "../features/lpActionsSlice.ts";
 import organizationReducer from "../features/organizationSlice.ts";
 import subMarginReducer from "../features/subMarginSlice.ts";
 import subMarginLegacyReducer from "../features/subMarginLegacySlice";
@@ -63,6 +64,7 @@ export const setupStore = () =>
       users: usersReducer,
       forgotPassword: forgotPasswordReducer,
       lossPrevention: lossPreventionReducer,
+      lpActions: lpActionsReducer,
       lossPreventionLegacy: lossPreventionLegacyReducer,
       upc: upcReducer,
       item: itemLookupReducer,

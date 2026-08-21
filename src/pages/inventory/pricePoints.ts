@@ -185,7 +185,9 @@ const emptyActual: ActualPricePoints = {
 };
 
 /** Qty is optional on a transaction line; absent means one ring. */
-const lineQty = (t: TransactionListItem) => t.qty ?? 1;
+/** Units on a register line. A missing `qty` is one unit, not zero — the field
+ *  is absent on endpoints that only ever return single rings. */
+export const lineQty = (t: TransactionListItem) => t.qty ?? 1;
 
 /**
  * Spec §5.2. Register lines for one product_code into exact and averaged

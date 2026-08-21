@@ -44,6 +44,15 @@ export const formatDate = (date: string) => {
   return month + "/" + day + "/" + year;
 };
 
+/** The transaction number a register prints, out of the composite sale id.
+ *
+ *  `109-853866-4-8-18-2026` is store, transaction, lane and date glued
+ *  together for the backend's benefit; the only part anyone at a store
+ *  recognises is the second segment. Falls back to the whole id rather than
+ *  showing nothing if the shape ever changes. */
+export const transactionLabel = (saleId: string) =>
+  saleId.split("-")[1] ?? saleId;
+
 export const formatDateSimple = (date: string) => {
   const dte = date.split("T")[0];
   // yyyy-mm-dd => mm/dd/yyyy

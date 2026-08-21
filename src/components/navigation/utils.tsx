@@ -18,6 +18,7 @@ import {
   TruckIcon,
   ArchiveBoxIcon,
   ClockIcon,
+  ShieldExclamationIcon,
   DocumentArrowUpIcon,
 } from "@heroicons/react/16/solid";
 import { COMING_SOON_LEVELS } from "../../utils/comingSoon";
@@ -517,6 +518,18 @@ export const categories: NavCategory[] = [
         href: "item-report",
         icon: ClipboardDocumentListIcon,
         // Desktop only — the two-panel report has no mobile form yet.
+        mobile: false,
+        children: [],
+        childOpen: false,
+        userLevels: COMING_SOON_LEVELS,
+        isHovering: false,
+        isVisible: true,
+      },
+      {
+        name: "LP Actions",
+        href: "lp-actions",
+        icon: ShieldExclamationIcon,
+        // Desktop only — the two-panel ledger has no mobile form yet.
         mobile: false,
         children: [],
         childOpen: false,
