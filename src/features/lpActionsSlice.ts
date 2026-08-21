@@ -3,6 +3,7 @@ import type { PayloadAction } from "@reduxjs/toolkit";
 import type {
   ExceptionRow,
   WeekWindow,
+  CashierRef,
 } from "../pages/lpActions/lpActionsMetrics";
 import type { CashierTransaction } from "../interfaces";
 
@@ -32,8 +33,14 @@ export interface LpActionsState {
   rawRows: CashierTransaction[];
   windows: WeekWindow[];
   selectedId: string | null;
-  /** Cashier whose journey is open, or null. */
-  journeyCashier: number | null;
+  /** Cashier whose journey is open, or null. The connection plot stays a
+   *  modal: exploratory, and it genuinely wants the width. */
+  journeyCashier: CashierRef | null;
+  /** The case open in the right panel — cashier plus the exception type it is
+   *  written about. Null cashier means the panel is showing the exception
+   *  detail instead. */
+  caseCashier: CashierRef | null;
+  caseType: string | null;
   sevFilter: LpSevFilter;
   searched: boolean;
   loading: boolean;
@@ -51,6 +58,8 @@ const initialState: LpActionsState = {
   windows: [],
   selectedId: null,
   journeyCashier: null,
+  caseCashier: null,
+  caseType: null,
   sevFilter: "all",
   searched: false,
   loading: false,
@@ -95,6 +104,8 @@ const lpActionsSlice = createSlice({
       state.rawRows = action.payload.rawRows;
       state.windows = action.payload.windows;
       state.journeyCashier = null;
+      state.caseCashier = null;
+      state.caseType = null;
       state.weeks = action.payload.weeks;
       // Keep the selection when it survived the re-walk — asking for another
       // week shouldn't throw away the row being read.
@@ -109,9 +120,20 @@ const lpActionsSlice = createSlice({
     },
     setLpSelected: (state, action: PayloadAction<string | null>) => {
       state.selectedId = action.payload;
+      // Picking a different exception leaves the case behind — it was written
+      // about the one you were reading.
+      state.caseCashier = null;
+      state.caseType = null;
     },
-    setLpJourneyCashier: (state, action: PayloadAction<number | null>) => {
+    setLpJourneyCashier: (state, action: PayloadAction<CashierRef | null>) => {
       state.journeyCashier = action.payload;
+    },
+    setLpCase: (
+      state,
+      action: PayloadAction<{ ref: CashierRef; type: string } | null>,
+    ) => {
+      state.caseCashier = action.payload?.ref ?? null;
+      state.caseType = action.payload?.type ?? null;
     },
     setLpSevFilter: (state, action: PayloadAction<LpSevFilter>) => {
       state.sevFilter = action.payload;
@@ -123,6 +145,7 @@ const lpActionsSlice = createSlice({
 export const {
   setLpScopeLabel,
   setLpJourneyCashier,
+  setLpCase,
   toggleLpType,
   setLpLoading,
   setLpMessage,

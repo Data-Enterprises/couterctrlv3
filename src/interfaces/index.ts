@@ -288,7 +288,12 @@ export interface CashierTransaction {
   store_name: string;
   store_number: string;
   storeid: number;
-  termainal: string;
+  /** The register. Spelled with the typo because that is how the payload
+   *  arrived; `terminal` is carried alongside it because nothing outside LP
+   *  Actions has ever read this field, so a change of spelling on the backend
+   *  would go unnoticed. Read it through `laneOf`, never directly. */
+  termainal?: string;
+  terminal?: string;
   total_sales: number;
 }
 
@@ -908,7 +913,7 @@ export type StoreWithActivity = {
   total_days_in_range: number;
   active_days: number;
   inactive_or_missing_days: number;
-}
+};
 
 export interface StoreActivityJsonResp {
   error: number;

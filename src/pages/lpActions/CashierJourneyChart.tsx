@@ -1,5 +1,5 @@
 import type { CashierJourney } from "./journeyModel";
-import type { LpSeverity } from "./lpActionsMetrics";
+import { SEV_FILL } from "./journeyTheme";
 
 /**
  * The connection plot.
@@ -14,12 +14,6 @@ import type { LpSeverity } from "./lpActionsMetrics";
  * decoration on the chart, because it is the only thing a link chart shows
  * that a table doesn't.
  */
-const SEV_FILL: Record<LpSeverity, string> = {
-  investigate: "rgb(var(--color-severity-critical-text))",
-  watch: "rgb(var(--color-severity-watch-text))",
-  steady: "rgb(var(--color-severity-healthy-text))",
-};
-
 const W = 620;
 const H = 420;
 const CX = W / 2;

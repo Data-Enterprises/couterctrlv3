@@ -96,7 +96,7 @@ const StoreRow = ({ row }: { row: ExceptionRow }) => {
   return (
     <button
       onClick={() => dispatch(setLpSelected(row.id))}
-      className={`w-full text-left flex items-center gap-3 pl-8 pr-3 py-2 border-b border-gray-100 transition-colors ${
+      className={`w-full text-left flex items-center gap-2.5 pl-3 pr-3 py-2 border-b border-gray-100 transition-colors ${
         row.id === selectedId ? "bg-row_selected" : "hover:bg-gray-50"
       }`}
     >
@@ -158,7 +158,16 @@ const TypeSection = ({ group }: { group: TypeGroup }) => {
             : `${group.changePct >= 0 ? "+" : ""}${group.changePct.toFixed(0)}%`}
         </span>
       </button>
-      {open && group.stores.map((r) => <StoreRow key={r.id} row={r} />)}
+      {open && (
+        // A rule down the left, indented to the parent's chevron. The stores
+        // are the type broken apart, and without a guide a long list stops
+        // reading as belonging to the row above it.
+        <div className="ml-[19px] border-l-2 border-gray-200">
+          {group.stores.map((r) => (
+            <StoreRow key={r.id} row={r} />
+          ))}
+        </div>
+      )}
     </div>
   );
 };

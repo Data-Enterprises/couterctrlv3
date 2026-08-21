@@ -1,5 +1,5 @@
 import { useAppDispatch, useAppSelector } from "../../hooks";
-import { setLpJourneyCashier } from "../../features/lpActionsSlice";
+import { setLpCase } from "../../features/lpActionsSlice";
 import { formatDateSimple } from "../../utils";
 import { PlusIcon } from "@heroicons/react/20/solid";
 import type { ExceptionRow } from "./lpActionsMetrics";
@@ -19,7 +19,7 @@ interface Props {
 }
 
 const Empty = ({ text }: { text: string }) => (
-  <div className="flex-shrink-0 shadow-lg" style={{ width: "58%" }}>
+  <div className="flex-shrink-0 shadow-lg" style={{ width: "63%" }}>
     <div className="bg-custom-white rounded-xl shadow-sm h-full flex items-center justify-center px-4">
       <p className="text-[12px] text-content text-center leading-relaxed">
         {text}
@@ -53,7 +53,7 @@ const LpExceptionDetail = ({ onAddWeek, addingWeek }: Props) => {
         : "bg-severity_healthy_bg text-severity_healthy_text";
 
   return (
-    <div className="flex-shrink-0 shadow-lg" style={{ width: "58%" }}>
+    <div className="flex-shrink-0 shadow-lg" style={{ width: "63%" }}>
       <div className="bg-custom-white rounded-xl shadow-sm h-full flex flex-col overflow-hidden">
         <div className="flex-shrink-0 bg-[#1e2a4a] px-4 py-2.5">
           <p className="text-custom-white text-[13px] font-semibold truncate">
@@ -126,8 +126,18 @@ const LpExceptionDetail = ({ onAddWeek, addingWeek }: Props) => {
               return (
                 <button
                   key={c.cashierNumber}
-                  onClick={() => dispatch(setLpJourneyCashier(c.cashierNumber))}
-                  title="Open this cashier's connection plot"
+                  onClick={() =>
+                    dispatch(
+                      setLpCase({
+                        ref: {
+                          storeid: row.storeid,
+                          cashierNumber: c.cashierNumber,
+                        },
+                        type: row.saleType,
+                      }),
+                    )
+                  }
+                  title="Open this cashier's case"
                   className="w-full text-left flex items-center gap-3 px-3 py-2 border-b border-gray-100 hover:bg-gray-50 transition-colors"
                 >
                   <span className="min-w-0 flex-1">

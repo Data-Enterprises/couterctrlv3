@@ -40,6 +40,37 @@ export interface CashierMovement {
   baseline: number;
 }
 
+/**
+ * Who a cashier is.
+ *
+ * Never the number on its own. Cashier numbers are issued per store, so
+ * "cashier 19" is a different person at every store in a group — scoping a
+ * case by number alone silently pools them into one impossible operator.
+ */
+export interface CashierRef {
+  storeid: number;
+  cashierNumber: number;
+}
+
+/**
+ * The register a row was rung on.
+ *
+ * Accepts either spelling. `cashier_table` was typed into `CashierTransaction`
+ * as `termainal`, and no other screen in the app reads it — so if the backend
+ * ever spelled it correctly, or fixes the typo, every lane would silently
+ * collapse into one "unknown" bucket with nothing to flag it.
+ */
+export const laneOf = (row: {
+  termainal?: string;
+  terminal?: string;
+}): string => String(row.termainal ?? row.terminal ?? "").trim();
+
+/** True when a walked row belongs to that one operator. */
+export const isCashier = (
+  row: { storeid: number; cashier_number: number },
+  ref: CashierRef,
+) => row.storeid === ref.storeid && row.cashier_number === ref.cashierNumber;
+
 export interface ExceptionRow {
   /** storeid + sale type. A void spike at one store says nothing about
    *  another, so they are never pooled. */

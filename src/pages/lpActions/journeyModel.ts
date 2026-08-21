@@ -1,6 +1,6 @@
 import type { CashierTransaction } from "../../interfaces";
-import type { LpSeverity, WeekWindow } from "./lpActionsMetrics";
-import { gradeChange } from "./lpActionsMetrics";
+import type { CashierRef, LpSeverity, WeekWindow } from "./lpActionsMetrics";
+import { gradeChange, laneOf } from "./lpActionsMetrics";
 
 /**
  * One cashier's whole exception picture, built from rows already in hand.
@@ -52,7 +52,7 @@ export interface CashierJourney {
 
 /** The endpoint spells it `termainal`; kept in one place so the typo doesn't
  *  spread. Blank lanes become "unknown" rather than an empty node. */
-const lane = (t: CashierTransaction) => String(t.termainal || "").trim() || "—";
+const lane = (t: CashierTransaction) => laneOf(t) || "—";
 
 const weekIndexOf = (windows: WeekWindow[], saleDate: string) => {
   const day = saleDate.slice(0, 10);
@@ -62,16 +62,20 @@ const weekIndexOf = (windows: WeekWindow[], saleDate: string) => {
 export const buildCashierJourney = (
   rows: CashierTransaction[],
   windows: WeekWindow[],
-  cashierNumber: number,
+  ref: CashierRef,
 ): CashierJourney | null => {
-  const mine = rows.filter((r) => r.cashier_number === cashierNumber);
+  // One store throughout. Cashier numbers and lane numbers are both issued per
+  // store, so pooling the group would put this operator on lanes they have
+  // never stood at and count strangers as sharing their nodes.
+  const inStore = rows.filter((r) => r.storeid === ref.storeid);
+  const mine = inStore.filter((r) => r.cashier_number === ref.cashierNumber);
   if (mine.length === 0) return null;
 
-  // Who else reaches each type and lane, across everyone in scope.
+  // Who else at this store reaches each type and lane.
   const othersByType = new Map<string, Set<number>>();
   const othersByLane = new Map<string, Set<number>>();
-  for (const r of rows) {
-    if (r.cashier_number === cashierNumber) continue;
+  for (const r of inStore) {
+    if (r.cashier_number === ref.cashierNumber) continue;
     const t = othersByType.get(r.sale_type) ?? new Set<number>();
     t.add(r.cashier_number);
     othersByType.set(r.sale_type, t);
@@ -133,7 +137,7 @@ export const buildCashierJourney = (
 
   const first = mine[0];
   return {
-    cashierNumber,
+    cashierNumber: ref.cashierNumber,
     cashierName: first.cashier_name,
     storeName: first.store_name,
     total: mine.length,
