@@ -1,7 +1,7 @@
 import SearchCard from "../../components/SearchCard";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { setStartDate } from "../../features/searchSlice";
-import { formatDate, formatGoliathDate } from "../../utils";
+import { formatGoliathDate } from "../../utils";
 import { rangeForWeeks } from "./trackerWeeks";
 
 interface TrackerEntryCardProps {
@@ -14,6 +14,20 @@ interface TrackerEntryCardProps {
  *  produces a readable tracker; these fill the two date inputs rather than
  *  bypassing them, so what ran is always visible in the dates themselves. */
 const WEEK_PRESETS = [4, 8, 12, 26];
+
+/**
+ * `yyyy-mm-dd` to the `m/d/yyyy` the search slice holds, by string surgery.
+ *
+ * Deliberately not the shared `formatDate`. That does `new Date("2026-07-27")`,
+ * which parses as UTC midnight, then reads it back with local `getDate()` —
+ * west of Greenwich that is still the 26th, so every preset landed a day early.
+ * The fix for `rangeForWeeks` did not cover this because the day is lost after
+ * the arithmetic, on the way into the input.
+ */
+const isoToDisplay = (iso: string) => {
+  const [y, m, d] = iso.split("-").map(Number);
+  return `${m}/${d}/${y}`;
+};
 
 /**
  * Entry point for the tracker.
@@ -36,7 +50,7 @@ const TrackerEntryCard = ({
     // Anchored on whatever end date is already chosen, so a preset changes the
     // length of the span without moving where it finishes.
     const end = formatGoliathDate(endDate);
-    dispatch(setStartDate(formatDate(rangeForWeeks(end, weeks))));
+    dispatch(setStartDate(isoToDisplay(rangeForWeeks(end, weeks))));
   };
 
   const activePreset = WEEK_PRESETS.find(
