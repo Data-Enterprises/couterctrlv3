@@ -60,14 +60,14 @@ export const useVendorSearch = () => {
     );
 
     try {
+      // One phase now, so one message. This used to announce a second step
+      // once the department list came back, because the row fetch after it ran
+      // a call per department per period; the search is two paginated reads and
+      // there is no longer a first step to finish.
       const { tw, lw, ly, subDeptIds } = await fetchVendorPeriods(
         { url: context.url, token: context.token, storeid: storeId },
         start,
         end,
-        // Two steps, not a counter. Vendor lives on item rows that arrive one
-        // department at a time, so any count here is departments x periods —
-        // which reads as a vendor count and isn't one.
-        () => dispatch(setLoadingMessage("Loading vendors…")),
       );
 
       if (subDeptIds.length === 0) {

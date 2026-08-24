@@ -58,7 +58,11 @@ const LedgerHeader = ({
 
   return (
     <div className="bg-[#1e2a4a] rounded-t-xl px-4 pt-1 pb-2.5 flex flex-col gap-0">
-      {/* Row 1: date | total + compact vs LY/LW pills */}
+      {/* Row 1: date | total + compact vs LW/LY pills.
+          LW before LY, matching Sub Dept Margins and Vendors — and matching the
+          column order in the list directly below this header, which has always
+          been TY, vs LW, vs LY. The pills were the only place in the app
+          reading the two periods the other way round. */}
       <div className="flex items-center gap-2 min-h-[26px]">
         <span className="text-custom-white font-semibold text-[13px] flex-shrink-0">
           {weekLabel}
@@ -67,15 +71,6 @@ const LedgerHeader = ({
         <span className="text-[14px] font-semibold text-custom-white">
           {isQty ? formatBigNumber(twQty, 0) : formatCurrencyCompact(twTotal)}
         </span>
-        {hasLY && (
-          <span
-            className={`text-[12px] font-semibold px-2 py-0.5 rounded-full ${
-              vsLYPct >= 0 ? "bg-emerald-300/15 text-emerald-300" : "bg-red-300/15 text-red-300"
-            }`}
-          >
-            LY {formatPct(vsLYPct)}
-          </span>
-        )}
         {hasLW && (
           <span
             className={`text-[12px] font-semibold px-2 py-0.5 rounded-full ${
@@ -83,6 +78,15 @@ const LedgerHeader = ({
             }`}
           >
             LW {formatPct(vsLWPct)}
+          </span>
+        )}
+        {hasLY && (
+          <span
+            className={`text-[12px] font-semibold px-2 py-0.5 rounded-full ${
+              vsLYPct >= 0 ? "bg-emerald-300/15 text-emerald-300" : "bg-red-300/15 text-red-300"
+            }`}
+          >
+            LY {formatPct(vsLYPct)}
           </span>
         )}
       </div>
