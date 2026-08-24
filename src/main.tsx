@@ -18,6 +18,7 @@ import InventoryVendor from "./pages/inventory/InventoryVendor.tsx";
 import ItemReport from "./pages/itemReport/ItemReport.tsx";
 import Invoices from "./pages/invoices/Invoices.tsx";
 import LpActions from "./pages/lpActions/LpActions.tsx";
+import SalesTracker from "./pages/salesTracker/SalesTracker.tsx";
 import {
   SalesPage,
   LossPreventionPage,
@@ -68,6 +69,7 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="item-report" element={<ItemReport />} />
                 <Route path="invoices" element={<Invoices />} />
                 <Route path="lp-actions" element={<LpActions />} />
+                <Route path="sales-tracker" element={<SalesTracker />} />
                 <Route path="forecasting" element={<ForecastPage />} />
                 <Route path="quicksight" element={<Dashboard />} />
                 <Route path="receivers" element={<ReceiversPage />} />

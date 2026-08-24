@@ -29,7 +29,7 @@ interface AppState {
  * exclusively. Nothing is deleted — `toggleDevMode` and both title-bar controls
  * are intact, so flipping this back to `true` restores the switch as it was.
  */
-export const SHOW_ENV_TOGGLE = false;
+export const SHOW_ENV_TOGGLE = true;
 
 /**
  * The Prod/Dev API switch in the avatar dropdown.

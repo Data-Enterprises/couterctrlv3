@@ -538,6 +538,18 @@ export const categories: NavCategory[] = [
         isVisible: true,
       },
       {
+        name: "Sales Tracker",
+        href: "sales-tracker",
+        icon: ArrowTrendingUpIcon,
+        // Desktop only — the two-panel tracker has no mobile form yet.
+        mobile: false,
+        children: [],
+        childOpen: false,
+        userLevels: COMING_SOON_LEVELS,
+        isHovering: false,
+        isVisible: true,
+      },
+      {
         name: "Price Opt Sub Dept",
         href: "inventory-sub-department",
         icon: ArchiveBoxIcon,
