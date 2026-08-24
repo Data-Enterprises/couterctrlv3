@@ -4,8 +4,7 @@ import { useAppDispatch, useAppSelector } from "../../hooks";
 import { useSubMarginActions } from "./hooks/useSubMarginActions";
 import { useSubMarginState } from "./hooks/useSubMarginState";
 import { useToast } from "../../components/toasts/hooks/useToast";
-import { getSubDepts, getSubMargins } from "../../api/subMargins";
-import { getWeekly } from "../../api/sales";
+import { getSubMargins } from "../../api/subMargins";
 import { useParams } from "./hooks";
 import {
   setDates,
@@ -19,11 +18,8 @@ import {
 import type {
   JsonError,
   SubDept,
-  SubSale,
-  SubSalesJsonResp,
   SubMarginsJsonResp,
   SubDeptMargin,
-  WeeklySale,
 } from "../../interfaces";
 import { scopeToStoreNumber, storeNumbersIn } from "../../utils/storeIdentity";
 import {
@@ -116,32 +112,73 @@ const fetchAllPages = async (
   return data;
 };
 
+/**
+ * The `subDeptId` value that asks `subs/subs` for every department at once.
+ *
+ * Named rather than a bare 0 at the call site, because 0 is also a real
+ * department number in the response — `deriveSubDepts` deliberately keeps rows
+ * whose `sub_department` is 0. As a *request* argument it means "all"; as a
+ * *row value* it means that department. Conflating the two is easy and this
+ * name is here to stop it.
+ *
+ * It also removes a fault in the shape this replaced: that version asked for
+ * each department in turn, so on a store that has a department 0 the request
+ * for it came back with every item in the store, and department 0 was then
+ * graded against all of them.
+ */
+const ALL_SUB_DEPTS = 0;
+
+/**
+ * Rows falling inside a date window, bounds inclusive.
+ *
+ * Dates are `yyyy-mm-dd`, so a string compare is a date compare — no parsing,
+ * and no timezone to get wrong.
+ */
+const inRange = (rows: SubDeptMargin[], start: string, end: string) =>
+  rows.filter((r) => {
+    const d = r.sale_date.split("T")[0];
+    return d >= start && d <= end;
+  });
+
+/** Item rows keyed by the department each row says it belongs to. */
+const groupBySubDept = (rows: SubDeptMargin[]) => {
+  const by = new Map<number, SubDeptMargin[]>();
+  for (const row of rows) {
+    const found = by.get(row.sub_department);
+    if (found) found.push(row);
+    else by.set(row.sub_department, [row]);
+  }
+  return by;
+};
+
 const EMPTY_SALES: SubDeptSalesTotals = { net: 0, qty: 0 };
 
-// Every raw response from one search, kept so switching between co-located
-// locations can re-derive instantly. A refetch would cost 3 weekly + 3
-// sub_sales + 3xN paginated subs/subs calls — far too much for a toggle.
+/**
+ * The three item reads for one search, unscoped.
+ *
+ * One source for the whole page now. `subs/subs` carries store number, sale
+ * date, department, sales, tax, quantity and cost on every row, which is
+ * everything the store header, the department list, the Sales-metric totals
+ * and the margin grades were previously taking from three endpoints between
+ * them.
+ *
+ * Held unscoped so switching between co-located locations re-derives without
+ * touching the network.
+ */
 type RawSearch = {
-  weekly: { tw: WeeklySale[]; lw: WeeklySale[]; ly: WeeklySale[] };
-  subSales: { ty: SubSale[]; lw: SubSale[]; ly: SubSale[] };
-  // Keyed by sub dept id. Populated for the UNION of sub depts across both
-  // locations, so switching never needs data we didn't fetch.
-  margins: Record<
-    number,
-    { ty: SubDeptMargin[]; ly: SubDeptMargin[]; lw: SubDeptMargin[] }
-  >;
+  items: { ty: SubDeptMargin[]; lw: SubDeptMargin[]; ly: SubDeptMargin[] };
 };
 
 const emptyRaw = (): RawSearch => ({
-  weekly: { tw: [], lw: [], ly: [] },
-  subSales: { ty: [], lw: [], ly: [] },
-  margins: {},
+  items: { ty: [], lw: [], ly: [] },
 });
 
 // No sub_department !== 0 filter — Sales doesn't exclude it (aggSubDepts takes
 // every row), so dropping it here made this page show one fewer sub department
 // and a lower total than Sales.
-const deriveSubDepts = (rows: SubSale[]): SubDept[] =>
+const deriveSubDepts = (
+  rows: { sub_department: number; sub_department_description: string }[],
+): SubDept[] =>
   rows
     .reduce((acc: SubDept[], curr) => {
       if (!acc.some((s) => s.id === curr.sub_department)) {
@@ -273,42 +310,59 @@ const SubDeptMarginsDev = () => {
     // it while Redux still holds the results. Deriving from an empty cache would
     // overwrite Redux with an empty list and strand the user on the entry card,
     // so refetch instead — keeping the location just picked.
-    if (rawRef.current.subSales.ty.length === 0) {
+    if (rawRef.current.items.ty.length === 0) {
       handleSearch(storeNumber);
       return;
     }
     // The previously selected sub dept may not trade at this location.
     dispatch(actions.setSelectedSubDeptId(null));
     dispatch(resetSubDeptGrades());
+    deriveFromItems();
+  };
 
+  /**
+   * Everything the page shows, derived from the three item reads.
+   *
+   * Shared by the search and the location switch so the two cannot drift —
+   * they used to hold two copies of this arithmetic, and a location switch
+   * quietly recomputing something differently is the kind of fault nobody
+   * reports because both numbers look plausible.
+   */
+  const deriveFromItems = () => {
     const raw = rawRef.current;
-    dispatch(
-      setStoreSalesTotals(
-        computeStoreDayMatched(
-          scoped(raw.weekly.tw),
-          scoped(raw.weekly.lw),
-          scoped(raw.weekly.ly),
-        ),
-      ),
-    );
+    const ty = scoped(raw.items.ty);
+    const lw = scoped(raw.items.lw);
+    const ly = scoped(raw.items.ly);
 
-    const salesTy = aggSubDeptSales(scoped(raw.subSales.ty));
-    const salesLw = aggSubDeptSales(scoped(raw.subSales.lw));
-    const salesLy = aggSubDeptSales(scoped(raw.subSales.ly));
-    const subDepts = deriveSubDepts(scoped(raw.subSales.ty));
+    // Store header, day-matched, summed from the same rows the departments are
+    // built from — so the header and the list below it cannot disagree.
+    dispatch(setStoreSalesTotals(computeStoreDayMatched(ty, lw, ly)));
+
+    const salesTy = aggSubDeptSales(ty);
+    const salesLw = aggSubDeptSales(lw);
+    const salesLy = aggSubDeptSales(ly);
+
+    const tyBy = groupBySubDept(ty);
+    const lwBy = groupBySubDept(lw);
+    const lyBy = groupBySubDept(ly);
+
+    const subDepts = deriveSubDepts(ty);
     dispatch(actions.setSubDepts(subDepts));
 
     for (const sd of subDepts) {
-      const m = raw.margins[sd.id];
-      if (!m) continue;
       dispatch(
         setSubDeptGrade({
           id: sd.id,
-          grade: computeSubDeptGrade(scoped(m.ty), scoped(m.ly), scoped(m.lw), {
-            ty: salesTy[sd.id] ?? EMPTY_SALES,
-            lw: salesLw[sd.id] ?? EMPTY_SALES,
-            ly: salesLy[sd.id] ?? EMPTY_SALES,
-          }),
+          grade: computeSubDeptGrade(
+            tyBy.get(sd.id) ?? [],
+            lyBy.get(sd.id) ?? [],
+            lwBy.get(sd.id) ?? [],
+            {
+              ty: salesTy[sd.id] ?? EMPTY_SALES,
+              lw: salesLw[sd.id] ?? EMPTY_SALES,
+              ly: salesLy[sd.id] ?? EMPTY_SALES,
+            },
+          ),
         }),
       );
     }
@@ -323,172 +377,88 @@ const SubDeptMarginsDev = () => {
     rawRef.current = emptyRaw();
     scopeRef.current = null;
     discoveredRef.current = false;
-    // Store-level header figure comes from sales/weekly, day-matched — the
-    // same source and method the Sales page header uses. Summing sub
-    // departments gives a different number and can't be made to agree.
+    // Shift the whole selected window back 7 days. The old end-13 → end-7 form
+    // ignored params.start, so any range that wasn't exactly 7 days fetched a
+    // mismatched LW span.
     const lwStart = setDates(new Date(`${params.start}T12:00:00`), 7);
     const lwEnd = setDates(new Date(`${params.end}T12:00:00`), 7);
-    const weeklyFor = (start: string, end: string) =>
-      getWeekly(
+
+    /**
+     * Two paginated `subs/subs` reads: the this-year/last-week span, and last
+     * year.
+     *
+     * This is now the page's only source. It previously ran three
+     * `sales/weekly` for the store header, three `subs/sub_sales` for the
+     * department list and Sales-metric totals, and three-per-department
+     * `subs/subs` for margin — nine calls plus a fan-out that put hundreds of
+     * requests in flight from one search.
+     *
+     * Collapsing to one source is possible because the three endpoints were
+     * reconciled on the backend: `subs/subs` now carries the `SUBD` ring type
+     * alongside `ITEM`, so summing item rows gives the same store and
+     * department totals the other two reported. Every field the page needs —
+     * store number, date, department, sales, tax, quantity, cost — is on these
+     * rows already.
+     */
+    dispatch(setLoadingGrades(true));
+
+    Promise.all([
+      // This year and last week in one read. Last week is the same window
+      // shifted back seven days, so the two spans touch — and overlap once the
+      // window runs longer than a week — which makes `[lwStart, end]` a single
+      // continuous range covering both. Splitting it by date afterwards costs
+      // nothing and gives exactly what two reads gave.
+      //
+      // On a 28-day window that is 35 days of rows instead of 56: fewer calls
+      // and a smaller download, not a trade between them.
+      fetchAllPages(
         ctx.url,
         ctx.token,
-        start,
-        end,
+        ALL_SUB_DEPTS,
+        lwStart,
+        params.end,
         params.useGroups,
         params.searchValue,
         params.singleStore,
-      ).catch(() => null);
-
-    Promise.all([
-      weeklyFor(params.start, params.end),
-      weeklyFor(lwStart, lwEnd),
-      weeklyFor(getLYDate(params.start), getLYDate(params.end)),
-    ])
-      .then(([tw, lw, ly]) => {
-        const rows = (r: typeof tw) =>
-          r?.data?.error === 0 ? r.data.sales : [];
-        rawRef.current.weekly = {
-          tw: rows(tw),
-          lw: rows(lw),
-          ly: rows(ly),
-        };
-        discoverLocations(rawRef.current.weekly.tw, preferredNumber);
-        dispatch(
-          setStoreSalesTotals(
-            computeStoreDayMatched(
-              scoped(rawRef.current.weekly.tw),
-              scoped(rawRef.current.weekly.lw),
-              scoped(rawRef.current.weekly.ly),
-            ),
-          ),
-        );
-      })
-      .catch(() => dispatch(setStoreSalesTotals(null)));
-
-    // Three sub_sales calls (TY/LW/LY) rather than one — this is the source
-    // for every Sales-metric total, so LW and LY are needed here, not just the
-    // sub-department list. Cheap next to the 3xN subs/subs calls below.
-    const subSalesFor = (start: string, end: string) =>
-      getSubDepts(
+      ),
+      // Last year cannot join them — it is a year away, not adjacent.
+      fetchSafe(
         ctx.url,
         ctx.token,
-        start,
-        end,
+        ALL_SUB_DEPTS,
+        getLYDate(params.start),
+        getLYDate(params.end),
         params.useGroups,
         params.searchValue,
         params.singleStore,
-      ).catch(() => null);
-
-    Promise.all([
-      subSalesFor(params.start, params.end),
-      subSalesFor(lwStart, lwEnd),
-      subSalesFor(getLYDate(params.start), getLYDate(params.end)),
+      ),
     ])
-      .then(([tyResp, lwResp, lyResp]) => {
-        const j: SubSalesJsonResp | undefined = tyResp?.data;
-        if (!j || j.error !== 0) {
-          setNotice("No sub departments came back for this search");
+      .then(([span, ly]) => {
+        // A row in the overlap belongs to both sets, which is what two separate
+        // reads produced — the filters are independent, not a partition.
+        const ty = inRange(span, params.start, params.end);
+        const lw = inRange(span, lwStart, lwEnd);
+        rawRef.current.items = { ty, lw, ly };
+
+        if (ty.length === 0) {
+          setNotice("No sub departments came back for this search.");
           return;
         }
-        rawRef.current.subSales = {
-          ty: j.subs,
-          lw: lwResp?.data?.error === 0 ? lwResp.data.subs : [],
-          ly: lyResp?.data?.error === 0 ? lyResp.data.subs : [],
-        };
-        discoverLocations(j.subs, preferredNumber);
-        const salesTy = aggSubDeptSales(scoped(rawRef.current.subSales.ty));
-        const salesLw = aggSubDeptSales(scoped(rawRef.current.subSales.lw));
-        const salesLy = aggSubDeptSales(scoped(rawRef.current.subSales.ly));
-        {
-          // Displayed list is scoped to the selected location; the fetch loop
-          // below still walks the unscoped union, so switching locations never
-          // needs data we didn't request.
-          const subDepts = deriveSubDepts(scoped(j.subs));
-          const allSubDepts = deriveSubDepts(j.subs);
-          dispatch(actions.setSubDepts(subDepts));
 
-          const total = allSubDepts.length;
-          if (total === 0) {
-            setNotice("No sub departments came back for this search.");
-            return;
-          }
-          dispatch(setLoadingGrades(true));
-          let completed = 0;
-
-          for (const sd of allSubDepts) {
-            Promise.all([
-              fetchAllPages(
-                ctx.url,
-                ctx.token,
-                sd.id,
-                params.start,
-                params.end,
-                params.useGroups,
-                params.searchValue,
-                params.singleStore,
-              ),
-              fetchSafe(
-                ctx.url,
-                ctx.token,
-                sd.id,
-                getLYDate(params.start),
-                getLYDate(params.end),
-                params.useGroups,
-                params.searchValue,
-                params.singleStore,
-              ),
-              fetchSafe(
-                ctx.url,
-                ctx.token,
-                sd.id,
-                // Shift the whole selected window back 7 days. The old
-                // end-13 → end-7 form ignored params.start, so any range that
-                // wasn't exactly 7 days fetched a mismatched LW span.
-                setDates(new Date(`${params.start}T12:00:00`), 7),
-                setDates(new Date(`${params.end}T12:00:00`), 7),
-                params.useGroups,
-                params.searchValue,
-                params.singleStore,
-              ),
-            ])
-              .then(([tyData, lyData, lwData]) => {
-                rawRef.current.margins[sd.id] = {
-                  ty: tyData,
-                  ly: lyData,
-                  lw: lwData,
-                };
-                // A dept that only trades at the other location has nothing to
-                // show under the current scope — skip rather than grading it
-                // against zeros.
-                if (!subDepts.some((s) => s.id === sd.id)) return;
-                dispatch(
-                  setSubDeptGrade({
-                    id: sd.id,
-                    grade: computeSubDeptGrade(
-                      scoped(tyData),
-                      scoped(lyData),
-                      scoped(lwData),
-                      {
-                        ty: salesTy[sd.id] ?? EMPTY_SALES,
-                        lw: salesLw[sd.id] ?? EMPTY_SALES,
-                        ly: salesLy[sd.id] ?? EMPTY_SALES,
-                      },
-                    ),
-                  }),
-                );
-              })
-              .catch((err: JsonError) =>
-                toast.error(`${sd.desc}: ${err.message}`),
-              )
-              .finally(() => {
-                completed++;
-                if (completed === total) dispatch(setLoadingGrades(false));
-              });
-          }
-        }
+        // Locations come off the same rows as everything else now, so the
+        // page can no longer establish them from one endpoint and then
+        // scope a second against a different answer.
+        discoverLocations(ty, preferredNumber);
+        deriveFromItems();
       })
-      .catch((err: JsonError) => toast.error(err.message))
-      .finally(() => dispatch(actions.setLoadingSubDepts(false)));
+      .catch((err: JsonError) => {
+        dispatch(setStoreSalesTotals(null));
+        toast.error(err.message ?? "Could not load sub department margins");
+      })
+      .finally(() => {
+        dispatch(actions.setLoadingSubDepts(false));
+        dispatch(setLoadingGrades(false));
+      });
   };
 
   // Seed week 1 from pre-fetched grade when sub dept is selected, then lazy-fetch weeks 2-4

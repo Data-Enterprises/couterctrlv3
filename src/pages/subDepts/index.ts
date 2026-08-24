@@ -1,6 +1,6 @@
 import { sameWeekDayLastYear } from "../../utils";
 import type { MarginTier, SubDeptGrade, GradingMetric } from "../../features/subMarginSlice";
-import type { SubDeptMargin, SubSale } from "../../interfaces";
+import type { SubDeptMargin } from "../../interfaces";
 
 export const setDates = (date: Date, days: number = 0) => {
   const d = new Date(date);
@@ -116,10 +116,16 @@ export interface StoreDayMatchedTotals {
   vsLYSalesPct: number;
 }
 
-/** Store-level totals from the weekly endpoint, day-matched exactly as Sales
- * does it. The header figure is a STORE number, so it has to come from the
- * store-level source — summing sub-departments is a different quantity and
- * will not reconcile with what Sales shows. */
+/**
+ * Store-level totals, day-matched exactly as Sales does it.
+ *
+ * Takes any dated rows carrying `total_sales` and `total_tax`, so it works on
+ * the weekly endpoint's rows or on item rows summed up. It used to say the
+ * figure had to come from `sales/weekly` because summing sub departments gave
+ * a different number — that was true before the endpoints were reconciled, and
+ * is no longer: `sales/weekly`, `subs/sub_sales` and `subs/subs` now agree once
+ * aggregated. See the endpoint-reconciliation note.
+ */
 export const computeStoreDayMatched = (
   tw: NetRow[],
   lw: NetRow[],
@@ -160,17 +166,27 @@ export const computeStoreDayMatched = (
   };
 };
 
-/** Sub-department sales totals from the sub_sales endpoint, using the same
- * formula as Sales' aggSubDepts (`total_sales - total_tax`).
+/**
+ * Sub-department sales totals, using the same formula as Sales' aggSubDepts
+ * (`total_sales - total_tax`).
  *
- * Sales figures come from sub_sales rather than subs/subs deliberately:
- * sub_sales has the correct item_ring_type filter ('ITEM','SUBD') while
- * subs/subs currently only matches 'ITEM', so totals built from subs run
- * short. Sales is the source of truth for sub-department sales, so this page
- * reads the same endpoint with the same maths to guarantee they agree.
- * subs/subs is still used for margin, since it's the only source with cost. */
+ * Takes any rows carrying a department, sales, tax and quantity, so it works
+ * on `subs/sub_sales` rows or on `subs/subs` item rows.
+ *
+ * This used to insist on `sub_sales`: `subs/subs` matched only
+ * `item_ring_type = 'ITEM'` while `sub_sales` matched `'ITEM','SUBD'`, so
+ * totals built from item rows ran short by every sale rung straight to a
+ * department rather than to an item. **That has since been fixed on the
+ * backend** — `subs/subs` now carries both ring types, and all three sales
+ * endpoints agree once aggregated.
+ */
 export const aggSubDeptSales = (
-  rows: SubSale[],
+  rows: {
+    sub_department: number;
+    total_sales: number;
+    total_tax: number;
+    qty: number;
+  }[],
 ): Record<number, SubDeptSalesTotals> =>
   rows.reduce((acc: Record<number, SubDeptSalesTotals>, s) => {
     const cur = acc[s.sub_department] ?? { net: 0, qty: 0 };
