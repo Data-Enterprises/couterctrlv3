@@ -24,6 +24,11 @@ export interface ParsedUpload {
    *  not ids: the export writes descriptions, and matching those back to ids is
    *  the caller's job once it has the department list. */
   departments: string[];
+  /** Lines that held something but yielded no code. Header rows don't count —
+   *  they're consumed above. Exists so the entry card can say a paste was only
+   *  partly understood instead of dropping the rest in silence, which is what
+   *  a space- or semicolon-separated list used to do. */
+  skippedLines: number;
 }
 
 /** A UPC is all digits. Everything in these files that isn't — headers, section
@@ -42,6 +47,16 @@ const isUpc = (token: string) => token.length > 0 && /^\d+$/.test(token);
  * without the floor this would quietly turn a price into a product code.
  */
 const isFloatUpc = (token: string) => /^\d{6,}\.0+$/.test(token);
+
+/** Digits before any decimal point, so "7203096070.0" counts as ten and not
+ *  twelve. */
+const digitCount = (token: string) => token.split(".")[0].length;
+
+/** Shortest thing that can be a product code. PLUs are four digits (4011), so
+ *  the floor sits there rather than at UPC length — but it does exclude the
+ *  quantity and unit-count columns a report row carries, which is what makes
+ *  the all-codes test below safe. */
+const MIN_CODE_DIGITS = 4;
 
 /** Splits a CSV line on commas outside quotes. Descriptions carry commas, so a
  *  naive split would shift every column after the first quoted field. */
@@ -78,6 +93,7 @@ export const parseUpload = (text: string): ParsedUpload => {
   const lines = text.replace(/^\uFEFF/, "").split(/\r?\n/);
 
   const upcs: string[] = [];
+  let skippedLines = 0;
   const seenUpc = new Set<string>();
   const departments: string[] = [];
   const seenDept = new Set<string>();
@@ -98,17 +114,49 @@ export const parseUpload = (text: string): ParsedUpload => {
       continue;
     }
 
-    // The first all-digit cell is the UPC. Scanning rather than assuming a
-    // column keeps the bare list and the graded report on the same path, and
-    // it survives someone reordering columns in Excel before uploading.
-    const raw = cells.find((c) => isUpc(c) || isFloatUpc(c));
-    if (!raw) continue;
-    // Stored in one spelling regardless of which store exported the file — the
-    // codes are about to be joined against sales and receiving rows.
-    const upc = normalizeProductCode(raw);
-    if (!seenUpc.has(upc)) {
-      seenUpc.add(upc);
-      upcs.push(upc);
+    // How many codes a line carries depends on what kind of line it is, and
+    // the two shapes need opposite answers.
+    //
+    // A report row holds one UPC among quantities and dollar figures, so only
+    // the *first* digit cell is a code — taking them all would read a unit
+    // count as a product. A pasted list is the other way round: "1200000088,
+    // 1200000017" is one line whose every cell is a code, and taking only the
+    // first silently dropped everything after the first comma. The card offers
+    // comma separation explicitly, so that was most of a pasted list going
+    // missing with no error.
+    //
+    // A line qualifies as a list only when *every* filled cell is code-shaped
+    // and long enough to be one. A report row almost never passes: it carries a
+    // description or a decimal figure, and either one fails the test. The
+    // length floor covers the rest, since quantity columns are one or two
+    // digits.
+    const filled = cells.filter((c) => c.length > 0);
+    const everyCellIsCode =
+      filled.length > 1 &&
+      filled.every(
+        (c) =>
+          (isUpc(c) || isFloatUpc(c)) && digitCount(c) >= MIN_CODE_DIGITS,
+      );
+
+    // Scanning rather than assuming a column keeps the bare list and the graded
+    // report on the same path, and it survives someone reordering columns in
+    // Excel before uploading.
+    const raws = everyCellIsCode
+      ? filled
+      : cells.filter((c) => isUpc(c) || isFloatUpc(c)).slice(0, 1);
+    if (raws.length === 0) {
+      skippedLines += 1;
+      continue;
+    }
+
+    for (const raw of raws) {
+      // Stored in one spelling regardless of which store exported the file —
+      // the codes are about to be joined against sales and receiving rows.
+      const upc = normalizeProductCode(raw);
+      if (!seenUpc.has(upc)) {
+        seenUpc.add(upc);
+        upcs.push(upc);
+      }
     }
 
     if (deptCol >= 0) {
@@ -120,5 +168,5 @@ export const parseUpload = (text: string): ParsedUpload => {
     }
   }
 
-  return { upcs, departments };
+  return { upcs, departments, skippedLines };
 };
