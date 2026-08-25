@@ -22,7 +22,7 @@ import {
   sameWeekDayLastYear,
 } from "../../../utils";
 import { fetchSubDeptRowsSafe } from "../../../utils/marginRows";
-import { scopeToStoreNumber } from "../shared/ledgerUtils";
+import { scopeToStoreNumber, withProductCode } from "../shared/ledgerUtils";
 import {
   ExclamationTriangleIcon,
   ExclamationCircleIcon,
@@ -362,9 +362,18 @@ const PopupSubDeptList = ({
         ]);
         if (cancelled) return;
 
-        const tyItems: SubDeptMargin[] = scopeToStoreNumber(tyRaw, storeNumber);
-        let lwItems: SubDeptMargin[] = scopeToStoreNumber(lwRaw, storeNumber);
-        let lyItems: SubDeptMargin[] = scopeToStoreNumber(lyRaw, storeNumber);
+        // withProductCode: the endpoint returns a department catch-all row
+        // (product_code 0, described as the department) alongside the real
+        // items. See ledgerUtils — it takes real money out of this list.
+        const tyItems: SubDeptMargin[] = withProductCode(
+          scopeToStoreNumber(tyRaw, storeNumber),
+        );
+        let lwItems: SubDeptMargin[] = withProductCode(
+          scopeToStoreNumber(lwRaw, storeNumber),
+        );
+        let lyItems: SubDeptMargin[] = withProductCode(
+          scopeToStoreNumber(lyRaw, storeNumber),
+        );
 
         // Whole-week case: the fetched LW/LY rows can include days that
         // don't actually correspond to any day in this TW week — filter down
@@ -464,12 +473,11 @@ const PopupSubDeptList = ({
     storeNumber,
   ]);
 
-  // Deliberately `total_sales - total_tax` and not `net_sales`, reverted
-  // 2026-08-18 while the backend work is still in flight. `net_sales` matched
-  // the register report to the cent on the rows we checked (it has coupons out
-  // as well as tax), so this is a hold, not a correction — revisit once the
-  // backend settles. The weekly totals above already read `net_sales`, so the
-  // two disagree by the coupon amount until then.
+  // Deliberately `total_sales - total_tax` and not `net_sales`. This began as
+  // a hold in Aug 2026 while the backend work was in flight, when the weekly
+  // totals above still read `net_sales` and the two disagreed by the coupon
+  // amount. Both endpoint families have been fixed since and the weekly totals
+  // now read this too, so the page is on one basis throughout.
   const rows = useMemo((): DeptRow[] => {
     const buildMap = (src: typeof subSales) =>
       src.reduce(

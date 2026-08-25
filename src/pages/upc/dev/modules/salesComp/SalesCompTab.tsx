@@ -36,8 +36,12 @@ const SalesCompTab = () => {
   // they can be effect dependencies: the effect then fires exactly when the
   // gap changes — on a first visit, and again when a search adds a UPC — and
   // not on any other render.
-  const missingTy = missingFrom(ctx.upcs, ctx.salesCompCoverage);
-  const missingLy = missingFrom(ctx.upcs, ctx.salesCompLYCoverage);
+  // searchedUpcs, not upcs: `upcs` is the search card's working list and
+  // changes live as the user edits chips in the re-search popup, which would
+  // start fetching the moment they typed rather than when they clicked Search.
+  // `searchedUpcs` only moves when a search is actually committed.
+  const missingTy = missingFrom(ctx.searchedUpcs, ctx.salesCompCoverage);
+  const missingLy = missingFrom(ctx.searchedUpcs, ctx.salesCompLYCoverage);
   const missingTyKey = missingTy.join(",");
   const missingLyKey = missingLy.join(",");
 

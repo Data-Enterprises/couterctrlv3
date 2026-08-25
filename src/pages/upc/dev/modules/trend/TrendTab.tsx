@@ -27,7 +27,11 @@ const TrendTab = () => {
   // runs through today, not a fixed end date.
   const [trendStartDate, setTrendStartDate] = useState<string | null>(null);
 
-  const missing = missingFrom(ctx.upcs, ctx.trendCoverage);
+  // searchedUpcs, not upcs: `upcs` is the search card's working list and
+  // changes live as the user edits chips in the re-search popup, which would
+  // start fetching the moment they typed rather than when they clicked Search.
+  // `searchedUpcs` only moves when a search is actually committed.
+  const missing = missingFrom(ctx.searchedUpcs, ctx.trendCoverage);
   const missingKey = missing.join(",");
 
   // Waits for an actual visit, then asks only for the UPCs it's missing — see

@@ -11,7 +11,7 @@ import InfoPopover from "../../components/InfoPopover";
 import { ITEM_REPORT_RAIL_INFO } from "./itemReportRailInfo";
 import { formatCurrency2, formatDateSimple } from "../../utils";
 import { formatPct, pillClass } from "../../utils/severity";
-import { actualPricePoints } from "../inventory/pricePoints";
+import { actualPricePoints, unitPrice } from "../inventory/pricePoints";
 import type { ActualFetchState } from "../inventory/useActualPricePoints";
 import {
   ACTION_LABEL,
@@ -458,7 +458,11 @@ const ItemReportRail = ({
       number,
       { price: number; qty: number; sales: Set<string> }
     >();
-    for (const p of act.exact) {
+    // Both buckets. The exact/averaged split matters to Price Opt, which cares
+    // how a price was arrived at; here they are the same price and the same
+    // units. Reading only `exact` dropped every multi-unit ring — one 24-pack
+    // basket at $78 disappeared rather than adding 24 units at $3.25.
+    for (const p of [...act.exact, ...act.averaged]) {
       const found = byPrice.get(p.price);
       if (found) found.qty += p.qty;
       else
@@ -468,13 +472,16 @@ const ItemReportRail = ({
     // match the modal uses — so the column and the modal it opens agree. A
     // receipt carrying the item twice is one transaction, not two, which is
     // exactly what the old line count got wrong.
+    // Matched on the line's per-unit price: comparing `net_sales` to the bucket
+    // price only ever held for a single-unit ring, so the consolidated rows
+    // missing from the qty above were missing from this count too.
     for (const l of isCurrent ? actual.lines : []) {
       for (const bucket of byPrice.values())
-        if (Math.abs(l.net_sales - bucket.price) < 0.005)
+        if (Math.abs(unitPrice(l) - bucket.price) < 0.005)
           bucket.sales.add(l.sale_id);
     }
     return [...byPrice.values()].sort((a, b) => b.qty - a.qty);
-  }, [act.exact, isCurrent, actual.lines]);
+  }, [act.exact, act.averaged, isCurrent, actual.lines]);
 
   /**
    * How often this item normally arrives, across every delivery in the lookback
@@ -872,10 +879,10 @@ const ItemReportRail = ({
           itemDescription={item.description}
           price={openPrice}
           action={action}
-          // `exact` points are single-unit rings, so a line at this price is
-          // one whose net sale *is* the price.
+          // Same per-unit match the row above uses, so the modal and the
+          // count that opened it can't disagree.
           lines={actual.lines.filter(
-            (l) => Math.abs(l.net_sales - openPrice) < 0.005,
+            (l) => Math.abs(unitPrice(l) - openPrice) < 0.005,
           )}
           onClose={() => setOpenPrice(null)}
         />

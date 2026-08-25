@@ -87,6 +87,36 @@ export const SECTION_TEXT: Record<Severity, string> = {
   healthy: "text-emerald-800",
 };
 
+/**
+ * Drops the rows `subs/subs` returns with no real product code.
+ *
+ * These are the department's own catch-all bucket, not items: the payload
+ * carries them as `product_code: 0` with the department name as the
+ * description (and a matching `Refunded` twin), so they land in the item list
+ * as a row called "Grocery" sitting inside Grocery. `product_code` is typed as
+ * a string but the API sends it as a number on this endpoint, so both shapes
+ * have to be caught, along with null and empty string.
+ *
+ * NOTE: those rows carry real money. Removing them means the item list no
+ * longer sums to the sub department row above it — the difference is whatever
+ * rang up against the department key rather than a scanned item.
+ *
+ * Sales-only on purpose. Sub Dept Margins, Vendors and Item Actions read the
+ * same endpoint through the same fetcher and have not asked for this, so it
+ * lives at the Sales call sites rather than inside `fetchSubDeptRows`.
+ */
+export const withProductCode = <T extends { product_code: string }>(
+  rows: T[],
+): T[] =>
+  rows.filter((r) => {
+    const code = r.product_code;
+    if (code === null || code === undefined) return false;
+    const text = String(code).trim();
+    if (text === "" || text.toLowerCase() === "null") return false;
+    // `0` and `0.0` are the department bucket, never a scanned item.
+    return Number(text) !== 0;
+  });
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type DeptRow = {
@@ -408,13 +438,16 @@ export const buildLedgerRows = (
         const lyRow = lyRows.find((l) => l.sale_date.startsWith(lyDate));
         return {
           sale_date: r.sale_date,
-          // net_sales, not total_sales - total_tax: the backend figure is the
-          // one that reconciles to the register report, because it has the
-          // coupons out as well as the tax. Same reason the sub-dept rows
-          // below read it straight off the row.
-          twNet: r.net_sales,
-          lwNet: lwRow ? lwRow.net_sales : null,
-          lyNet: lyRow ? lyRow.net_sales : null,
+          // `total_sales - total_tax`, matching the sub-dept rows below.
+          // This started as a hold in Aug 2026 while `sales/weekly` and the
+          // subs endpoints disagreed — at the time the store level read
+          // `net_sales` and the sub-dept/item levels read this, and unifying
+          // them was the wrong move. Both endpoint families were fixed since,
+          // so the whole page is on one basis on purpose rather than by
+          // truce.
+          twNet: r.total_sales - r.total_tax,
+          lwNet: lwRow ? lwRow.total_sales - lwRow.total_tax : null,
+          lyNet: lyRow ? lyRow.total_sales - lyRow.total_tax : null,
           lwQty: lwRow ? lwRow.qty : null,
           lyQty: lyRow ? lyRow.qty : null,
           twQty: r.qty,

@@ -19,7 +19,11 @@ const PriceOptTab = () => {
   const dispatch = useAppDispatch();
   const [selectedCode, setSelectedCode] = useState<string | null>(null);
 
-  const missing = missingFrom(ctx.upcs, ctx.priceOptCoverage);
+  // searchedUpcs, not upcs: `upcs` is the search card's working list and
+  // changes live as the user edits chips in the re-search popup, which would
+  // start fetching the moment they typed rather than when they clicked Search.
+  // `searchedUpcs` only moves when a search is actually committed.
+  const missing = missingFrom(ctx.searchedUpcs, ctx.priceOptCoverage);
   const missingKey = missing.join(",");
 
   // The one fetch this tab needs: historical price/qty/revenue for every UPC

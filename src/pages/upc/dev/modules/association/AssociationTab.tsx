@@ -175,7 +175,7 @@ const AssociationTab = () => {
     setContextMenu({ x: e.clientX, y: e.clientY, upc });
   };
 
-  if (!ctx.upcs.length) {
+  if (!ctx.searchedUpcs.length) {
     return (
       <div className="flex items-center justify-center h-full text-[11px] text-content/85">
         Add UPCs to see associations
@@ -213,7 +213,7 @@ const AssociationTab = () => {
   const activeResult: AssociationResult | null = rerootUpc ? rerootResult : ctx.associationSeedData;
 
   const allVisibleUpcs = [
-    ...ctx.upcs,
+    ...ctx.searchedUpcs,
     ...(ctx.associationSeedData?.items.map((i) => i.product_code) ?? []),
   ];
 
