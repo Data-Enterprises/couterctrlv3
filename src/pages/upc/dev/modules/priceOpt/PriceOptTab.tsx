@@ -2,14 +2,14 @@ import { useEffect, useMemo, useState } from "react";
 import { useUpcDevCtx } from "../../hooks/useUpcDevCtx";
 import { useAppDispatch } from "../../../../../hooks";
 import {
-  setDevPriceOptLoaded,
   setDevPriceOptLoading,
-  setDevOptBestPrices,
-  setDevOptBestPricesByUpc,
+  mergeDevPriceOpt,
   setDevUpcItems,
 } from "../../../../../features/upcDevSlice";
 import { getPriceOpt } from "../../../../../api/upc";
-import type { UpcItem } from "../../../../../interfaces";
+import { upcQueue } from "../../upcQueue";
+import { missingFrom } from "../../coverage";
+import type { UpcPriceOpt } from "../../../../../interfaces";
 import { computePriceOptRowSummary } from "./priceOptStats";
 import PriceOptLeftList from "./PriceOptLeftList";
 import PriceOptDetailPanel from "./PriceOptDetailPanel";
@@ -19,39 +19,57 @@ const PriceOptTab = () => {
   const dispatch = useAppDispatch();
   const [selectedCode, setSelectedCode] = useState<string | null>(null);
 
-  // The one fetch this tab needs: historical price/qty/revenue for every
-  // UPC in the search, scoped to ctx.storeids (a single store in Store
-  // search, every group member in Group search — no per-store re-scoping,
-  // that data is what we have). No current price or cost anywhere in this
-  // data, so there's nothing else to fetch.
+  const missing = missingFrom(ctx.upcs, ctx.priceOptCoverage);
+  const missingKey = missing.join(",");
+
+  // The one fetch this tab needs: historical price/qty/revenue for every UPC
+  // in the search, scoped to ctx.storeids (a single store in Store search,
+  // every group member in Group search — no per-store re-scoping, that data is
+  // what we have). No current price or cost anywhere in this data, so there's
+  // nothing else to fetch.
+  //
+  // Gated two ways. activeTab means the call waits for an actual visit — all
+  // four tabs stay mounted so their local selection survives a switch, which
+  // used to mean all four fetched the moment the page rendered. missingKey
+  // means it asks only for UPCs it doesn't already have, so a search that adds
+  // one UPC to nine costs a one-UPC call rather than a ten-UPC one.
   useEffect(() => {
-    if (ctx.priceOptLoaded || ctx.priceOptLoading || !ctx.upcs.length || !ctx.storeids) return;
+    if (ctx.activeTab !== "priceOpt") return;
+    if (ctx.priceOptLoading || !ctx.storeids || !missingKey) return;
 
     const load = async () => {
       dispatch(setDevPriceOptLoading(true));
-      const upcParam = ctx.upcs.join(",");
-      const upcItemsMap = new Map<string, UpcItem>();
+      try {
+        const res = await upcQueue.enqueue(`priceOpt:${missingKey}`, (signal) =>
+          getPriceOpt(ctx.url, ctx.token, ctx.storeids, ctx.startDate, ctx.endDate, missingKey, signal),
+        );
+        // Superseded by a newer search. Returning before any dispatch is the
+        // whole point — a late response used to write its old UPC set into
+        // setDevUpcItems and repopulate the left panel behind the new search.
+        if (!res) return;
 
-      const res = await getPriceOpt(ctx.url, ctx.token, ctx.storeids, ctx.startDate, ctx.endDate, upcParam);
-      const j = res.data;
-      if (j.error === 0 && j.best_prices_by_upc?.length > 0) {
-        dispatch(setDevOptBestPrices(j.best_prices));
-        dispatch(setDevOptBestPricesByUpc(j.best_prices_by_upc));
-        for (const item of j.best_prices_by_upc) {
-          upcItemsMap.set(item.product_code, {
-            product_code: item.product_code,
-            description: item.product_description,
-          });
-        }
+        const j = res.data;
+        const ok = j.error === 0 && j.best_prices_by_upc?.length > 0;
+        const byUpc: UpcPriceOpt[] = ok ? j.best_prices_by_upc : [];
+        const bestPrices: UpcPriceOpt[] = ok ? j.best_prices : [];
+
+        // Codes are what was asked for, not what answered — a UPC with no
+        // price history still counts as covered.
+        dispatch(mergeDevPriceOpt({ bestPrices, byUpc, codes: missing }));
+        dispatch(
+          setDevUpcItems(
+            byUpc.map((i) => ({ product_code: i.product_code, description: i.product_description })),
+          ),
+        );
+      } catch {
+        // Coverage is left alone, so revisiting the tab retries.
+      } finally {
+        dispatch(setDevPriceOptLoading(false));
       }
-
-      if (upcItemsMap.size) dispatch(setDevUpcItems(Array.from(upcItemsMap.values())));
-      dispatch(setDevPriceOptLoaded(true));
-      dispatch(setDevPriceOptLoading(false));
     };
 
     load();
-  }, [ctx.searchVersion]);
+  }, [ctx.activeTab, missingKey]);
 
   const rows = useMemo(() => {
     const src = ctx.selectedUpcs.length > 0
@@ -78,14 +96,6 @@ const PriceOptTab = () => {
     return (
       <div className="flex items-center justify-center h-full text-[11px] text-content/85">
         Loading price optimization…
-      </div>
-    );
-  }
-
-  if (!ctx.priceOptLoaded) {
-    return (
-      <div className="flex items-center justify-center h-full text-[11px] text-content/85">
-        Navigate here to load price optimization data
       </div>
     );
   }

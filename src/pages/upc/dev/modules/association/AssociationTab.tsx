@@ -14,11 +14,19 @@ import {
   type AssociationResult,
 } from "../../../../../features/upcDevSlice";
 import { getItemAssociation } from "../../../../../api/upc";
+import { upcQueue } from "../../upcQueue";
 import AssociationLeftPanel from "./AssociationLeftPanel";
 import AssociationDetailPanel from "./AssociationDetailPanel";
 import UpcContextMenu from "../../../../../components/UpcContextMenu";
 
 const LIMIT = 25;
+
+/** The seed set changes on every checkbox click, and each change is a basket
+ *  association fetch. Selecting ten UPCs one at a time used to be ten heavy
+ *  calls; this collapses a run of clicks into the one that reflects where the
+ *  user actually stopped. Long enough to cover deliberate clicking, short
+ *  enough that it doesn't read as lag. */
+const SEED_DEBOUNCE_MS = 600;
 
 const fmtDate = (d: string) => {
   const [m, day, y] = d.split("/");
@@ -76,15 +84,25 @@ const AssociationTab = () => {
   const fetchSeed = async (upcsToQuery: string[]) => {
     dispatch(setDevAssociationSeedLoading(true));
     try {
-      const res = await getItemAssociation(
-        ctx.url, ctx.token, fmtDate(ctx.startDate), fmtDate(ctx.endDate),
-        storeidsArr, upcsToQuery, LIMIT, "top",
+      const res = await upcQueue.enqueue(`assoc:seed:${buildSeedKey(upcsToQuery)}`, (signal) =>
+        getItemAssociation(
+          ctx.url, ctx.token, fmtDate(ctx.startDate), fmtDate(ctx.endDate),
+          storeidsArr, upcsToQuery, LIMIT, "top", signal,
+        ),
       );
+      // Superseded by a newer search. Leaving seedLoaded alone matters here:
+      // marking it loaded would let the guard below skip the new run's fetch.
+      if (!res) {
+        dispatch(setDevAssociationSeedLoading(false));
+        return;
+      }
       if (res.data.error === 0) {
         const items: AssociationItem[] = res.data.items ?? [];
         dispatch(setDevAssociationSeedData({ totalBaskets: res.data.total_baskets, items }));
       }
-    } finally {
+      dispatch(setDevAssociationSeedLoading(false));
+      dispatch(setDevAssociationSeedLoaded(true));
+    } catch {
       dispatch(setDevAssociationSeedLoading(false));
       dispatch(setDevAssociationSeedLoaded(true));
     }
@@ -97,30 +115,49 @@ const AssociationTab = () => {
   // default seed: showing KPIs/CTA copy framed around "your seed items"
   // before the user has actually picked any doesn't read sensibly, so this
   // stays idle until hasSelection is true — the user picks what to check.
+  const seedKey = buildSeedKey(seedUpcs);
+
   useEffect(() => {
+    if (ctx.activeTab !== "association") return;
     if (!hasSelection || !ctx.storeids) return;
+    if (ctx.associationSeedLoaded && seedKey === ctx.associationSeedKey) return;
 
-    const key = buildSeedKey(seedUpcs);
-    if (ctx.associationSeedLoaded && key === ctx.associationSeedKey) return;
+    // Debounced, so a user working down the list with the checkboxes sends one
+    // fetch for where they landed rather than one per click. The cleanup
+    // cancels the pending timer on every seed change, so only the last one in a
+    // run of clicks survives to fire.
+    const timer = setTimeout(() => {
+      dispatch(setDevAssociationSeedKey(seedKey));
+      dispatch(setDevAssociationRerootUpc(null));
+      dispatch(clearDevAssociationRerootCache());
+      fetchSeed(seedUpcs);
+    }, SEED_DEBOUNCE_MS);
 
-    dispatch(setDevAssociationSeedKey(key));
-    dispatch(setDevAssociationRerootUpc(null));
-    dispatch(clearDevAssociationRerootCache());
-    fetchSeed(seedUpcs);
+    return () => clearTimeout(timer);
+    // seedKey, not selectedUpcs.length: swapping one UPC for another leaves the
+    // count unchanged, and keying on length meant that case silently kept the
+    // previous seed's companions on screen.
+    //
+    // ctx.activeTab: the fetch waits for an actual visit — see PriceOptTab.
     // ctx.searchVersion: a re-search with the exact same UPCs/store wouldn't
     // otherwise change buildSeedKey's output, so it's needed to force a
     // refetch the same way every other tab's initial-fetch effect does.
-  }, [hasSelection, ctx.selectedUpcs.length, ctx.storeids, ctx.searchVersion]);
+  }, [ctx.activeTab, hasSelection, seedKey, ctx.storeids, ctx.searchVersion]);
 
   const rerootTo = async (upc: string) => {
     dispatch(setDevAssociationRerootUpc(upc));
     if (ctx.associationRerootCache[upc]) return;
     dispatch(setDevAssociationRerootLoading(true));
     try {
-      const res = await getItemAssociation(
-        ctx.url, ctx.token, fmtDate(ctx.startDate), fmtDate(ctx.endDate),
-        storeidsArr, [upc], LIMIT, "top",
+      const res = await upcQueue.enqueue(`assoc:reroot:${upc}`, (signal) =>
+        getItemAssociation(
+          ctx.url, ctx.token, fmtDate(ctx.startDate), fmtDate(ctx.endDate),
+          storeidsArr, [upc], LIMIT, "top", signal,
+        ),
       );
+      // Superseded by a newer search — the re-root cache has been cleared and
+      // this companion belongs to the old seed set.
+      if (!res) return;
       if (res.data.error === 0) {
         const items: AssociationItem[] = res.data.items ?? [];
         const result: AssociationResult = { totalBaskets: res.data.total_baskets, items };

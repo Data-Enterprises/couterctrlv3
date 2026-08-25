@@ -29,8 +29,8 @@ import ItemReportRail from "./ItemReportRail";
 import ItemReportExportModal from "./ItemReportExportModal";
 import { useReceivingWalk } from "./useReceivingWalk";
 import {
-  fetchDepartmentsWide,
-  fetchRowsForDepartments,
+  fetchAllItemRows,
+  inRange,
   lwWindow,
   lyWindow,
   weekEnding,
@@ -163,48 +163,35 @@ const ItemReport = () => {
       }
 
       dispatch(
-        setItemReportLoading({
-          loading: true,
-          message: "Finding departments…",
-        }),
+        setItemReportLoading({ loading: true, message: "Reading sales…" }),
       );
-      const depts = await fetchDepartmentsWide(next);
-      if (depts.length === 0) {
-        toast.warn("No departments sold in that window");
+
+      /**
+       * Two reads for three windows.
+       *
+       * `subs/subs` answers for every department at once, so nothing has to
+       * discover which departments exist first — which is what the two
+       * ninety-day `sub_sales` calls were for, and why they reached back a
+       * quarter to answer a question about one week.
+       *
+       * This week and last week are consecutive seven-day windows, so one
+       * range covers both and splits by date. Last year sits a year away and
+       * needs its own. Rows in the overlap belong to both sets: the two
+       * `inRange` filters are independent, not a partition.
+       */
+      const lwWin = lwWindow(next);
+      const [span, ly] = await Promise.all([
+        fetchAllItemRows(next, { start: lwWin.start, end: next.end }),
+        fetchAllItemRows(next, lyWindow(next)),
+      ]);
+
+      const ty = inRange(span, next.start, next.end);
+      const lw = inRange(span, lwWin.start, lwWin.end);
+
+      if (span.length === 0 && ly.length === 0) {
+        toast.warn("No sales came back for that store and week");
         return;
       }
-
-      // A file that named its departments lets us skip the rest — usually the
-      // difference between a dozen departments and all of them. An unmatched
-      // name falls back to reading everything rather than silently returning a
-      // short report.
-      const named = new Set(uploadDepartments.map((d) => d.toLowerCase()));
-      const narrowed =
-        named.size > 0
-          ? depts.filter((d) => named.has(d.description.toLowerCase()))
-          : [];
-      const ids = (narrowed.length > 0 ? narrowed : depts).map((d) => d.id);
-
-      dispatch(
-        setItemReportLoading({
-          loading: true,
-          message: `Reading ${ids.length} departments…`,
-        }),
-      );
-      const ty = await fetchRowsForDepartments(next, ids, next);
-
-      // Both baselines go out together — they're independent reads, and
-      // serialising them would double the wait for nothing.
-      dispatch(
-        setItemReportLoading({
-          loading: true,
-          message: "Reading last week and last year…",
-        }),
-      );
-      const [lw, ly] = await Promise.all([
-        fetchRowsForDepartments(next, ids, lwWindow(next)),
-        fetchRowsForDepartments(next, ids, lyWindow(next)),
-      ]);
 
       /**
        * Deferred grading, resolved now that the rows are here.

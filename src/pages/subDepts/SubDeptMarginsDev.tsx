@@ -87,6 +87,10 @@ const fetchAllPages = async (
   );
   const j: SubMarginsJsonResp = resp.data;
   if (j.error !== 0) throw new Error(j.msg ?? "Failed to load margins");
+
+  // Pages 2..N go out together. Sequential paging was tried and measured
+  // slower in practice, so the parallel form stands regardless of how many
+  // workers the API runs.
   let data: SubDeptMargin[] = j.subs;
   if (j.total_pages > 1) {
     const extras = await Promise.all(

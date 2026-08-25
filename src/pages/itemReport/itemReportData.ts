@@ -1,8 +1,6 @@
 import { getReceiversList, getReceiverDetails } from "../../api/receivers";
 import { normalizeProductCode } from "../../utils/productCode";
 import { fetchSubDeptRowsSafe } from "../../utils/marginRows";
-import { fetchSubDepts } from "../inventory/inventoryData";
-import type { SubDeptSummary } from "../inventory/inventoryData";
 import { LW_OFFSET, shiftIso } from "../../utils/grading";
 import { getLYDate, setDates } from "../subDepts";
 import { formatDate } from "../../utils";
@@ -122,79 +120,50 @@ export const lyWindow = (scope: { start: string; end: string }) => ({
   end: getLYDate(scope.end),
 });
 
-/** The departments that sold in a given window. Shared with Price Opt rather
- *  than reimplemented — same endpoint, same paging, same roll-up. */
-export const fetchDepartments = fetchSubDepts;
+/**
+ * The `subDeptId` that asks `subs/subs` for every department at once.
+ *
+ * Named because 0 is also a real department number in the response — as a
+ * request argument it means "all", as a row value it means that department.
+ */
+export const ALL_SUB_DEPTS = 0;
 
 /**
- * The departments to *read*, discovered over a wide window rather than the week
- * being reported.
+ * Rows falling inside a date window, bounds inclusive.
  *
- * Discovery and reporting are different questions, and conflating them is a
- * silent data loss. `subs/subs` only returns departments that sold inside the
- * window it is handed, so discovering over the reported week drops any
- * department that happened to sell nothing in those seven days — and with it
- * every uploaded UPC that lives there, plus the receipts those items would have
- * been crossed against. Over a month-long window that was rare enough to miss;
- * over seven days it is routine, and it fails silently, as a short report rather
- * than an error.
- *
- * Two calls. The receiving lookback is a strict superset of this week and last
- * week, so it covers both; the same week last year sits outside it and needs its
- * own. The union is the department set — the three reported windows are still
- * read separately, so nothing here widens what the report actually counts.
- *
- * Last year is allowed to fail. A store with no history that far back should
- * still get a report from the recent departments rather than nothing at all.
+ * Dates are `yyyy-mm-dd`, so a string compare is a date compare — no parsing
+ * and no timezone to get wrong.
  */
-export const fetchDepartmentsWide = async (
-  scope: ReportScope,
-): Promise<SubDeptSummary[]> => {
-  const [recent, priorYear] = await Promise.all([
-    fetchSubDepts({
-      ...scope,
-      start: shiftIso(scope.end, -RECEIVING_LOOKBACK_DAYS),
-    }),
-    fetchSubDepts({ ...scope, ...lyWindow(scope) }).catch(
-      () => [] as SubDeptSummary[],
-    ),
-  ]);
-
-  const byId = new Map<number, SubDeptSummary>();
-  for (const dept of [...recent, ...priorYear])
-    if (!byId.has(dept.id)) byId.set(dept.id, dept);
-  return [...byId.values()];
-};
+export const inRange = (rows: SubDeptMargin[], start: string, end: string) =>
+  rows.filter((r) => {
+    const d = r.sale_date.split("T")[0];
+    return d >= start && d <= end;
+  });
 
 /**
- * Item rows for a set of departments over one window.
+ * Every item row in a window, across every department, paginated.
  *
- * Departments go out together; serialising would multiply latency by the
- * department count for nothing. A department that fails resolves to no rows
- * rather than taking the report down — losing one department understates a
- * slice of the list, losing the page helps nobody.
+ * Replaces asking department by department, which required knowing the
+ * departments first — and that is the only thing the two `subs/sub_sales`
+ * discovery calls were ever for. Reaching back ninety days to enumerate
+ * departments, in order to fan out across all of them anyway, bought nothing:
+ * on the upload path the file names no departments, so the narrowing that
+ * justified the discovery never applied.
  */
-export const fetchRowsForDepartments = async (
+export const fetchAllItemRows = (
   scope: ReportScope,
-  deptIds: number[],
   window: { start: string; end: string },
-): Promise<SubDeptMargin[]> => {
-  const results = await Promise.all(
-    deptIds.map((id) =>
-      fetchSubDeptRowsSafe(
-        scope.url,
-        scope.token,
-        id,
-        window.start,
-        window.end,
-        USE_GROUPS,
-        scope.storeid,
-        SINGLE_STORE,
-      ),
-    ),
+): Promise<SubDeptMargin[]> =>
+  fetchSubDeptRowsSafe(
+    scope.url,
+    scope.token,
+    ALL_SUB_DEPTS,
+    window.start,
+    window.end,
+    USE_GROUPS,
+    scope.storeid,
+    SINGLE_STORE,
   );
-  return results.flat();
-};
 
 /* --------------------------------------------------------------- receiving */
 
