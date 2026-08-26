@@ -40,6 +40,7 @@ import DatePickers from "../../../components/datePickers/DatePickers";
 import { formatDate } from "../tracker";
 import NoPanelsFound from "../NoPanelsFound";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
+import { isGroupSearch } from "../../../features/searchSlice";
 
 const SalesMobile = () => {
   const toast = useToast();
@@ -326,7 +327,7 @@ const SalesMobile = () => {
     const endDateLY = sameWeekDayLastYear(search.endDate).date;
     const startDateLY = sameWeekDayLastYear(search.startDate).date;
 
-    const useGroups = search.type === "Group" ? 1 : 0;
+    const useGroups = isGroupSearch(search.type) ? 1 : 0;
     const singleStore = search.type === "Store" ? 1 : 0;
     const searchValue = useGroups === 1 ? search.lastGroup : search.lastStore;
 

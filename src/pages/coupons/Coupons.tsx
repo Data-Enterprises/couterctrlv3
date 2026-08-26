@@ -20,6 +20,7 @@ import CouponsMobile from "./mobile/CouponsMobile";
 import CouponsMobileDev from "./mobile/devMobile";
 import CouponListPanel from "./CouponListPanel";
 import CouponDetailPanel from "./CouponDetailPanel";
+import { isGroupSearch } from "../../features/searchSlice";
 
 const Coupons = () => {
   const toast = useToast();
@@ -35,7 +36,7 @@ const Coupons = () => {
   const getData = () => {
     setSelectedKey("");
     dispatch(setCoupons([]));
-    if (context.type === "Group") {
+    if (isGroupSearch(context.type)) {
       getStoresAssignedToUserGroup(url, token, userid, context.lastGroup)
         .then((resp) => {
           if (resp.data.error === 0) {
@@ -50,9 +51,9 @@ const Coupons = () => {
     // Cleared on every search: leaving it set means a later failure shows
     // this notice describing the *previous* search alongside the error toast.
     dispatch(setNoCouponsFound(false));
-    const useGroups = context.type === "Group" ? 1 : 0;
+    const useGroups = isGroupSearch(context.type) ? 1 : 0;
     const singleStore = context.type === "Store" ? 1 : 0;
-    const searchValue = context.type === "Group" ? context.lastGroup : context.lastStore;
+    const searchValue = isGroupSearch(context.type) ? context.lastGroup : context.lastStore;
     const start = formatGoliathDate(context.startDate);
     const end = formatGoliathDate(context.endDate);
 

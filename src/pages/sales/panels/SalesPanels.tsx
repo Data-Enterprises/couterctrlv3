@@ -18,6 +18,7 @@ import { useToast } from "../../../components/toasts/hooks/useToast";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import SalesPanel from "./SalesPanel";
 import { comparePanels, setDates } from "../utils";
+import { isGroupSearch } from "../../../features/searchSlice";
 
 const SalesPanels = () => {
   const toast = useToast();
@@ -37,7 +38,7 @@ const SalesPanels = () => {
 
   const getSubsData = async (ws: string, we: string, period: number) => {
     const p = sales.selectedSalesPanel;
-    const useGroups = search.type === "Group" ? 1 : 0;
+    const useGroups = isGroupSearch(search.type) ? 1 : 0;
     const singleStore = search.type === "Store" ? 1 : 0;
     const searchValue = useGroups === 1 ? search.lastGroup : search.lastStore;
 
@@ -76,7 +77,7 @@ const SalesPanels = () => {
         : formatGoliathDate(search.singleDate);
 
     // useGroups and singleStore logic
-    const useGroups = search.type === "Group" ? 1 : 0;
+    const useGroups = isGroupSearch(search.type) ? 1 : 0;
     const singleStore = search.type === "Store" ? 1 : 0;
     const searchValue = useGroups === 1 ? search.lastGroup : search.lastStore;
 

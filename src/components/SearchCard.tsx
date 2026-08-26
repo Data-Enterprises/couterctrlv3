@@ -6,6 +6,7 @@ import EntryCardLoading from "./loading/EntryCardLoading";
 import { useAppSelector } from "../hooks";
 import { getStoreName } from "../utils";
 import type { ReactNode } from "react";
+import { isGroupSearch } from "../features/searchSlice";
 
 interface SearchCardProps {
   title: string;
@@ -49,7 +50,7 @@ const SearchCard = ({
   // Echoed under the spinner. Derived here rather than passed in so every
   // caller gets it for free — the pickers already read the same slice.
   const searchLabel = [
-    search.type === "Group"
+    isGroupSearch(search.type)
       ? search.selectedGroup.group_name
       : getStoreName(
           assignedStores,

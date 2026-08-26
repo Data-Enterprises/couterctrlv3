@@ -27,6 +27,7 @@ import OrdersAvailableScreen from "./OrdersAvailableScreen";
 import OrdersListScreen from "./OrdersListScreen";
 import OrdersLineItemsScreen from "./OrdersLineItemsScreen";
 import OrdersExportSheet from "./OrdersExportSheet";
+import { isGroupSearch } from "../../../features/searchSlice";
 
 type MobileStep = "available" | "list";
 
@@ -48,7 +49,7 @@ const OrdersMobile = () => {
   }, []);
 
   const handleSearch = () => {
-    if (ctx.type === "Group") {
+    if (isGroupSearch(ctx.type)) {
       getStoresAssignedToUserGroup(ctx.url, ctx.token, ctx.userid, ctx.lastGroup)
         .then((resp) => {
           const j = resp.data;

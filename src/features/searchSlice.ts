@@ -1,9 +1,21 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { Store } from "../interfaces";
 import { formatDate, addDays } from "../utils";
-import type { Group } from "./groupSlice";
+import { emptyGroup, type Group } from "./groupSlice";
 
-export type SEARCH_TYPE = "Group" | "Store";
+export type SEARCH_TYPE = "Group" | "Store" | "Shared";
+
+// "Shared" is a group the user did not build — a base group a manager shared
+// with them — but it is still an ordinary user_groups row, so every consumer
+// resolves it exactly like "Group". Written as the negation of "Store" rather
+// than a list of group-ish types on purpose: the backend takes singleStore XOR
+// useGroups and rejects neither-set, so deriving one from the other means that
+// invalid pair cannot be built no matter what is added to SEARCH_TYPE later.
+// Accepts undefined because a few components take the type as an optional
+// prop; an absent type is not a group search, matching what the `=== "Group"`
+// tests these replaced already did.
+export const isGroupSearch = (type?: SEARCH_TYPE) =>
+  type !== undefined && type !== "Store";
 
 export interface SearchState {
   type: SEARCH_TYPE;
@@ -30,7 +42,7 @@ export const initialState: SearchState = {
     company: 0,
     company_name: "",
   },
-  selectedGroup: { id: 0, group_name: "", userid: 0 },
+  selectedGroup: emptyGroup,
 };
 
 const searchSlice = createSlice({

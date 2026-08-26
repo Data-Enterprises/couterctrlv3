@@ -4,9 +4,15 @@ import { useOrganizationCtx } from "./hooks";
 import { useResizableBox } from "../../hooks/useResizableBox";
 import ResizeHandle from "../../components/ResizeHandle";
 import { useToast } from "../../components/toasts/hooks/useToast";
-import type { JsonError, User, UserLevelJsonResp } from "../../interfaces";
+import type {
+  BaseGroupJsonResp,
+  JsonError,
+  User,
+  UserLevelJsonResp,
+} from "../../interfaces";
 import { getAllUsers } from "../../api/user";
 import { getUserLevels } from "../../api/team";
+import { getBGAssignedToUserSplit } from "../../api/baseGroups";
 import {
   setInactiveUsers,
   setRefresh as setUsersRefresh,
@@ -17,6 +23,7 @@ import {
   setUsersExportOpen,
   setBaseGroupExportOpen,
   setStoresExportOpen,
+  setAuthorizedBaseGroupIds,
 } from "../../features/organizationSlice";
 import TeamTablet from "../team/tabletComps/TeamTablet";
 // import TeamLegacy from "../team/TeamLegacy";
@@ -54,6 +61,28 @@ const Organization = () => {
   useEffect(() => {
     ctx.dispatch(setUsersRefresh(true));
   }, []);
+
+  // The logged-in user's own base groups. The Base Groups form derives its
+  // authorized flag from these ids, so they are fetched here rather than at
+  // login (Organization is the only surface that reads them) and refetched on
+  // every mount, so a membership granted elsewhere is not stale all session.
+  // A user with no company_link rows makes the endpoint raise instead of
+  // returning empty arrays, so anything but error 0 is treated as "none".
+  useEffect(() => {
+    getBGAssignedToUserSplit(ctx.url, ctx.token, ctx.userid)
+      .then((resp) => {
+        const j: BaseGroupJsonResp = resp.data;
+        ctx.dispatch(
+          setAuthorizedBaseGroupIds(
+            j.error === 0 ? j.active.map((bg) => bg.id) : [],
+          ),
+        );
+      })
+      .catch((err: JsonError) => {
+        ctx.dispatch(setAuthorizedBaseGroupIds([]));
+        toast.error("Error fetching your base groups " + err.message);
+      });
+  }, [ctx.userid]);
 
   useEffect(() => {
     if (!ctx.refresh) return;

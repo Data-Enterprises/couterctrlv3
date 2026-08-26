@@ -5,6 +5,7 @@ import {
   setRefreshGroups,
   setSelectedGroup,
   type Group,
+  emptyGroup,
 } from "../../../features/groupSlice";
 import Input from "../../../components/inputs/Input";
 import type { JsonError } from "../../../interfaces";
@@ -29,7 +30,7 @@ const UpdateGroup = () => {
       .then((resp) => {
         const j = resp.data;
         if (j.error == "0") {
-          dispatch(setSelectedGroup({ id: 0, group_name: "", userid: 0 }));
+          dispatch(setSelectedGroup(emptyGroup));
           dispatch(setCreateInput(""));
           dispatch(setRefreshGroups(true));
           toast.success("Group updated successfully");

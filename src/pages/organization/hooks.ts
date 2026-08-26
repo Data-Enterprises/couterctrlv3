@@ -34,6 +34,12 @@ export const useOrganizationCtx = () => {
     baseGroupExportOpen,
     storesExportOpen,
     usersGridFilters,
+    authorizedBaseGroupIds,
+    baseGroupUserStatus,
+    baseGroupShareSummary,
+    baseGroupSelectedUserIds,
+    baseGroupSelectionResetKey,
+    pendingBaseGroupAction,
   } = useAppSelector((state) => state.organization);
 
   return {
@@ -68,5 +74,11 @@ export const useOrganizationCtx = () => {
     baseGroupExportOpen,
     storesExportOpen,
     usersGridFilters,
+    authorizedBaseGroupIds,
+    baseGroupUserStatus,
+    baseGroupShareSummary,
+    baseGroupSelectedUserIds,
+    baseGroupSelectionResetKey,
+    pendingBaseGroupAction,
   };
 };

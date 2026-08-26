@@ -1,5 +1,6 @@
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { addDays, formatGoliathDate } from "../../../utils";
+import { isGroupSearch } from "../../../features/searchSlice";
 
 export const useMobileSalesCtx = () => {
   const dispatch = useAppDispatch();
@@ -55,7 +56,7 @@ export const useMobileSalesCtx = () => {
   );
 
   const endDate = formatGoliathDate(singleDate);
-  const useGroups = type === "Group" ? 1 : 0;
+  const useGroups = isGroupSearch(type) ? 1 : 0;
   const singleStore = type === "Store" ? 1 : 0;
   const searchValue = useGroups === 1 ? lastGroup : lastStore;
   const startDate = addDays(singleDate, -6).toISOString().split("T")[0];

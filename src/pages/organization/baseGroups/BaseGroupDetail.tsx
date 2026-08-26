@@ -178,7 +178,12 @@ const BaseGroupDetail = ({
           </div>
         ))}
 
-      {subTab === "users" && <BaseGroupUsersTab group={group} />}
+      {subTab === "users" && (
+        <BaseGroupUsersTab
+          group={group}
+          assignedStoreCount={stores ? assigned.length : null}
+        />
+      )}
 
       {ctx.baseGroupExportOpen && (
         <BaseGroupExportModal

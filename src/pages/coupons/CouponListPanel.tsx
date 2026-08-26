@@ -9,6 +9,7 @@ import { useAppSelector, useStoreName } from "../../hooks";
 import { formatCurrency2 } from "../../utils";
 import InfoPopover from "../../components/InfoPopover";
 import { COUPONS_INFO } from "./couponsInfo";
+import { isGroupSearch } from "../../features/searchSlice";
 
 interface CouponListPanelProps {
   selectedKey: string;
@@ -35,7 +36,7 @@ const CouponListPanel = ({
   const [infoOpen, setInfoOpen] = useState(false);
 
   const storeName = useStoreName(Number(search.lastStore));
-  const isGroup = search.type === "Group";
+  const isGroup = isGroupSearch(search.type);
 
   const fmtRangePart = (mdy: string, withYear = false) => {
     const [m, d, y] = mdy.split("/");

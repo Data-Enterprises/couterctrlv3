@@ -14,6 +14,7 @@ import {
   setUploadedAdList,
 } from "../../../features/forecastDevSlice";
 import { getStoreName } from "../../../utils";
+import { isGroupSearch } from "../../../features/searchSlice";
 
 /**
  * Forecast entry — the search card.
@@ -123,7 +124,7 @@ const ForecastEntry = ({
 
   // Echoed under the spinner, same derivation SearchCard uses.
   const searchLabel = [
-    search.type === "Group"
+    isGroupSearch(search.type)
       ? search.selectedGroup.group_name
       : getStoreName(
           assignedStores,

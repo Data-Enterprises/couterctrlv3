@@ -18,6 +18,7 @@ import DatePickers from "../../../../components/datePickers/DatePickers";
 import CpnStoreList from "./CpnStoreList";
 import CpnOverview from "./CpnOverview";
 import CpnSectionDetail from "./CpnSectionDetail";
+import { isGroupSearch } from "../../../../features/searchSlice";
 
 export type GroupTab = "subdept" | "date" | "cashier";
 
@@ -64,7 +65,7 @@ const CouponsMobileDev = () => {
     };
   }, []);
 
-  const isGroup = ctx.type === "Group";
+  const isGroup = isGroupSearch(ctx.type);
 
   const dateRangeLabel =
     ctx.startDate && ctx.endDate
@@ -78,7 +79,7 @@ const CouponsMobileDev = () => {
     // A group search can return stores this user isn't personally assigned to.
     // Desktop loads them here so store names resolve for those rows; without
     // it mobile fell back to the coupon payload's own store_name.
-    if (ctx.type === "Group") {
+    if (isGroupSearch(ctx.type)) {
       getStoresAssignedToUserGroup(ctx.url, ctx.token, userid, ctx.lastGroup)
         .then((resp) => {
           if (resp.data.error === 0) {
@@ -93,9 +94,9 @@ const CouponsMobileDev = () => {
         })
         .catch(() => {});
     }
-    const useGroups = ctx.type === "Group" ? 1 : 0;
+    const useGroups = isGroupSearch(ctx.type) ? 1 : 0;
     const singleStore = ctx.type === "Store" ? 1 : 0;
-    const searchValue = ctx.type === "Group" ? ctx.lastGroup : ctx.lastStore;
+    const searchValue = isGroupSearch(ctx.type) ? ctx.lastGroup : ctx.lastStore;
     const start = formatGoliathDate(ctx.startDate);
     const end = formatGoliathDate(ctx.endDate);
 

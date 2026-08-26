@@ -24,6 +24,7 @@ import CpnSalesDetailPanel from "./components/CpnSalesDetailPanel";
 import CpnSalesExportModal from "./components/CpnSalesExportModal";
 import CouponSalesMobile from "./mobile/CouponSalesMobile";
 import { buildStoreRows, storeKeyOf, totalsFor } from "./shared/couponGrading";
+import { isGroupSearch } from "../../features/searchSlice";
 
 const CouponSales = () => {
   const toast = useToast();
@@ -85,7 +86,7 @@ const CouponSales = () => {
     dispatch(setCouponSalesHasSearched(true));
     dispatch(setCouponSalesFetching(true));
 
-    if (type === "Group") {
+    if (isGroupSearch(type)) {
       getStoresAssignedToUserGroup(url, token, userid, lastGroup)
         .then((resp) => {
           if (resp.data.error === 0) {
@@ -99,9 +100,9 @@ const CouponSales = () => {
         .catch(() => {});
     }
 
-    const useGroups = type === "Group" ? 1 : 0;
+    const useGroups = isGroupSearch(type) ? 1 : 0;
     const singleStore = type === "Store" ? 1 : 0;
-    const searchValue = type === "Group" ? lastGroup : lastStore;
+    const searchValue = isGroupSearch(type) ? lastGroup : lastStore;
 
     getCoupons(
       url,

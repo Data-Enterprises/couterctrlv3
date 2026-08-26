@@ -11,6 +11,7 @@ import type { JsonError } from "../../interfaces";
 import LPTablet from "./tablet/LPTablet";
 import LpMobile from "./mobile/LpMobile";
 import LPDesktop from "./desktop/LPDesktop";
+import { isGroupSearch } from "../../features/searchSlice";
 
 const LossPrevention = () => {
   const toast = useToast();
@@ -28,10 +29,10 @@ const LossPrevention = () => {
     const start = new Date(sy, sm - 1, sd - 6);
     const fmt   = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
-    const useGroups = search.type === "Group" ? 1 : 0;
+    const useGroups = isGroupSearch(search.type) ? 1 : 0;
     const singleStore = search.type === "Store" ? 1 : 0;
     const searchValue =
-      search.type === "Group" ? search.lastGroup : search.lastStore;
+      isGroupSearch(search.type) ? search.lastGroup : search.lastStore;
 
     // Group searches are the slow ones, and until this landed the card sat
     // inert while the call ran — no spinner, button still live, which reads as

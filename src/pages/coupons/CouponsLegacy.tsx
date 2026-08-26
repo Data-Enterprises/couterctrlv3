@@ -23,6 +23,7 @@ import FiltersModal from "./filters/FiltersModal";
 import ExportModal from "../../components/modals/ExportModal";
 import CouponKpis from "./kpi/CouponKpis";
 import CouponsMobile from "./mobile/CouponsMobile";
+import { isGroupSearch } from "../../features/searchSlice";
 
 const CouponsLegacy = () => {
   const toast = useToast();
@@ -33,10 +34,10 @@ const CouponsLegacy = () => {
   const getData = () => {
     dispatch(setCoupons([]));
     dispatch(setIsFetching(true));
-    const useGroups = context.type === "Group" ? 1 : 0;
+    const useGroups = isGroupSearch(context.type) ? 1 : 0;
     const singleStore = context.type === "Store" ? 1 : 0;
     const searchValue =
-      context.type === "Group" ? context.lastGroup : context.lastStore;
+      isGroupSearch(context.type) ? context.lastGroup : context.lastStore;
     const start = formatGoliathDate(context.startDate);
     const end = formatGoliathDate(context.endDate);
 

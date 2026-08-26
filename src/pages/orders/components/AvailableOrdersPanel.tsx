@@ -11,6 +11,7 @@ import TextFilter from "../../../components/filters/TextFilter";
 import SelectFilter, { type SelectFilterOption } from "../../../components/filters/SelectFilter";
 import InfoPopover from "../../../components/InfoPopover";
 import { ORDERS_INFO } from "../ordersInfo";
+import { isGroupSearch } from "../../../features/searchSlice";
 
 interface Props {
   cards: GroupedOrderCard[];
@@ -133,7 +134,7 @@ const isSelected = (order_date: string, order_type: string, storeid: number, sto
           >
             <MagnifyingGlassIcon className="w-3.5 h-3.5" />
           </button>
-          {type === "Group" && selectedGroup?.group_name && (
+          {isGroupSearch(type) && selectedGroup?.group_name && (
             <div className="flex flex-col leading-tight truncate">
               <span className="text-[11px] font-medium text-custom-white truncate">{selectedGroup.group_name}</span>
               {groupStores.length > 0 && (

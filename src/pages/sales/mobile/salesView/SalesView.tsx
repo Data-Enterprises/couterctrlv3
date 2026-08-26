@@ -2,6 +2,7 @@ import { useMobileSalesCtx } from "../hooks";
 import SalesViewHourly from "./SalesViewHourly";
 import SalesViewTopTen from "./SalesViewTopTen";
 import SalesViewWeekly from "./SalesViewWeekly";
+import { isGroupSearch } from "../../../../features/searchSlice";
 
 const SalesView = () => {
   const ctx = useMobileSalesCtx();
@@ -10,7 +11,7 @@ const SalesView = () => {
     if (ctx.selectedStore.store_name.length > 0)
       return ctx.selectedStore.store_name;
 
-    if (ctx.type === "Group") {
+    if (isGroupSearch(ctx.type)) {
       const group = ctx.groups.find((g) => g.id === ctx.searchValue);
       if (group) return group.group_name;
     } else {

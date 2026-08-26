@@ -30,6 +30,7 @@ import {
 import { orDash } from "./trackerTone";
 import VsLy from "./VsLy";
 import { SUB_GRID, NUM } from "./trackerColumns";
+import { isGroupSearch } from "../../features/searchSlice";
 
 type SortColumn = "dept" | "ty" | "ly" | "ats" | "dollar";
 
@@ -115,7 +116,7 @@ const SalesTracker = () => {
   );
 
   const fetchTracker = async () => {
-    const isGroup = search.type === "Group";
+    const isGroup = isGroupSearch(search.type);
     const useGroups = isGroup ? 1 : 0;
     const singleStore = isGroup ? 0 : 1;
     const searchValue = isGroup ? search.lastGroup : search.lastStore;

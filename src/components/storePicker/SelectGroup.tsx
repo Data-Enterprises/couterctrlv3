@@ -16,24 +16,32 @@ const SelectGroup = () => {
   const [query, setQuery] = useState<string>("");
   const [filtered, setFiltered] = useState<Group[]>([]);
 
+  // The dropdown shows one side or the other, never both: "Shared" lists the
+  // base groups a manager pushed to this user, "Group" the ones they built
+  // themselves. Both are ordinary user_groups rows, so everything downstream
+  // still treats the pick as a plain group id.
+  const scopedGroups = context.groups.filter((g) =>
+    context.type === "Shared" ? g.is_shared : !g.is_shared,
+  );
+
   useEffect(() => {
-    setFiltered(context.groups);
-    const group = context.groups.find((g) => g.id === context.lastGroup);
+    setFiltered(scopedGroups);
+    const group = scopedGroups.find((g) => g.id === context.lastGroup);
     setQuery(group?.group_name || "");
-  }, [context.lastGroup, context.groups]);
+  }, [context.lastGroup, context.groups, context.type]);
 
   useEffect(() => {
     if (context.selectedGroup) {
       setQuery(context.selectedGroup.group_name);
-      setFiltered(context.groups);
+      setFiltered(scopedGroups);
     }
   }, [context.selectedGroup]);
 
   useEffect(() => {
     if (!context.selectedGroup || (!query.length && context.selectedGroup)) {
-      setFiltered(context.groups);
+      setFiltered(scopedGroups);
     } else if (context.selectedGroup && query.length > 0) {
-      const filteredGroups = context.groups.filter((group) =>
+      const filteredGroups = scopedGroups.filter((group) =>
         group.group_name.toLowerCase().includes(query.toLowerCase())
       );
       setFiltered(filteredGroups);

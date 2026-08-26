@@ -49,6 +49,8 @@ const UserDataLoader = () => {
         return "Store";
       case "2":
         return "Group";
+      case "Shared":
+        return "Shared";
       case "3":
         return "Store";
       default:
@@ -158,6 +160,11 @@ const UserDataLoader = () => {
           );
           if (selectedGroup) {
             dispatch(setSelectedGroup(selectedGroup));
+            // The stored last_search_type predates "Shared", so a user whose
+            // last pick was a shared group comes back as plain "Group" and
+            // the picker would show it under the wrong list. The group itself
+            // says which side it belongs to.
+            if (selectedGroup.is_shared) dispatch(setType("Shared"));
           }
         }
       })

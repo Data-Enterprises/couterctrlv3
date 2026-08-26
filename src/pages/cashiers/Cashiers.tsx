@@ -32,6 +32,7 @@ import LensPanel from "./explorer/LensPanel";
 import SignalDetail from "./explorer/SignalDetail";
 import CashiersMobile from "./mobile/CashiersMobile";
 import { useCashierSignals } from "./useCashierSignals";
+import { isGroupSearch } from "../../features/searchSlice";
 
 // LP grades against "the prior 2 weeks" (see lossPrevention/lpInfo.ts), so the
 // explorer uses the same ceiling rather than inventing a second notion of
@@ -79,13 +80,13 @@ const Cashiers = () => {
   const scopeArgs = () => ({
     start: formatGoliathDate(ctx.startDate),
     end: formatGoliathDate(ctx.endDate),
-    useGroups: ctx.type === "Group" ? 1 : 0,
+    useGroups: isGroupSearch(ctx.type) ? 1 : 0,
     singleStore: ctx.type === "Store" ? 1 : 0,
-    searchValue: ctx.type === "Group" ? ctx.lastGroup : ctx.lastStore,
+    searchValue: isGroupSearch(ctx.type) ? ctx.lastGroup : ctx.lastStore,
   });
 
   const scopeLabel = () =>
-    ctx.type === "Group"
+    isGroupSearch(ctx.type)
       ? selectedGroup?.group_name || "Group"
       : getStoreName(assignedStores, ctx.lastStore, `Store ${ctx.lastStore}`);
 

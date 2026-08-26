@@ -5,7 +5,12 @@ import { useToast } from "../../../components/toasts/hooks/useToast";
 import type { CompanyBaseGroup, JsonError, Store } from "../../../interfaces";
 import { getCompanies } from "../../../api/company";
 import { getBaseGroups, getAllStoresInBaseGroup, createBaseGroup } from "../../../api/baseGroups";
-import { setCompanies, setRefresh } from "../../../features/organizationSlice";
+import { assignBaseGroupToUser } from "../../../api/team";
+import {
+  setCompanies,
+  setRefresh,
+  addAuthorizedBaseGroup,
+} from "../../../features/organizationSlice";
 import TextFilter from "../../../components/filters/TextFilter";
 import SelectFilter from "../../../components/filters/SelectFilter";
 import BaseGroupDetail from "./BaseGroupDetail";
@@ -13,15 +18,44 @@ import type { StoreSplit } from "../types";
 
 const NewGroupModal = ({
   companies,
+  groupsByCompany,
+  busy,
+  onCompanySelect,
   onCreate,
   onClose,
 }: {
   companies: { id: number; name: string }[];
+  groupsByCompany: Record<number, CompanyBaseGroup[]>;
+  busy: boolean;
+  onCompanySelect: (companyId: number) => void;
   onCreate: (name: string, companyId: number) => void;
   onClose: () => void;
 }) => {
   const [name, setName] = useState("");
   const [companyId, setCompanyId] = useState("");
+
+  // A company's groups are only in state once it has been fetched, so
+  // `undefined` means the request kicked off by onCompanySelect is still in
+  // flight — that is the difference between "loading" and "no groups yet",
+  // and showing an empty list for the former would read as "nothing is taken".
+  const existing = companyId ? groupsByCompany[Number(companyId)] : [];
+  const loading = companyId !== "" && existing === undefined;
+  const names = existing ?? [];
+
+  // Compared lowercased and trimmed, which is stricter than create_base_group's
+  // own `where name=:name` check. Deliberate: these names are reused verbatim
+  // as each user's store group name by assignments/share_bg_with_users, so two
+  // groups differing only by case or padding would collide there.
+  const matches = (a: string, b: string) =>
+    a.trim().toLowerCase() === b.trim().toLowerCase();
+  const taken = names.some((g) => matches(g.name, name));
+  const canCreate =
+    name.trim() !== "" && companyId !== "" && !loading && !taken && !busy;
+
+  const handleCompanyChange = (value: string) => {
+    setCompanyId(value);
+    if (value) onCompanySelect(Number(value));
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35">
@@ -30,18 +64,7 @@ const NewGroupModal = ({
           New base group
         </div>
         <div className="mb-2.5">
-          <label className="text-[11px] text-content/60 block mb-1">
-            Group name
-          </label>
-          <input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="e.g. Northeast"
-            className="basic-input w-full bg-custom-white py-1.5 px-2 text-[12px]"
-          />
-        </div>
-        <div className="mb-4">
-          <label className="text-[11px] text-content/60 block mb-1">
+          <label className="text-[11px] text-content/85 block mb-1">
             Company
           </label>
           <SelectFilter
@@ -50,23 +73,68 @@ const NewGroupModal = ({
               value: String(c.id),
             }))}
             value={companyId}
-            onChange={setCompanyId}
+            onChange={handleCompanyChange}
             placeholder="Choose a company"
             className="w-full"
           />
         </div>
+        <div className="mb-2.5">
+          <label className="text-[11px] text-content/85 block mb-1">
+            Group name
+          </label>
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="e.g. Northeast"
+            className="basic-input w-full bg-custom-white py-1.5 px-2 text-[12px]"
+          />
+          {taken && (
+            <div className="text-[11px] text-red-600 mt-1">
+              That name is already used in this company
+            </div>
+          )}
+        </div>
+
+        {companyId !== "" && (
+          <div className="mb-4">
+            <div className="text-[11px] text-content/85 mb-1">
+              {loading
+                ? "Loading existing groups…"
+                : `${names.length} existing group${names.length === 1 ? "" : "s"}`}
+            </div>
+            {!loading && names.length > 0 && (
+              <div className="max-h-[7rem] overflow-y-auto thin-scrollbar border border-gray-100 rounded-md">
+                {names.map((g) => (
+                  <div
+                    key={g.id}
+                    className={`px-2 py-1 text-[11px] border-b border-gray-100 last:border-b-0 truncate ${
+                      matches(g.name, name)
+                        ? "bg-red-50 text-red-700 font-medium"
+                        : "text-content"
+                    }`}
+                  >
+                    {g.name}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="flex justify-end gap-2">
           <button
             onClick={onClose}
-            className="text-[12px] font-medium px-3 py-1.5 rounded-md border border-gray-200 text-content"
+            disabled={busy}
+            className="text-[12px] font-medium px-3 py-1.5 rounded-md border border-gray-200 text-content disabled:cursor-not-allowed"
           >
             Cancel
           </button>
           <button
             onClick={() => onCreate(name, Number(companyId))}
-            className="text-[12px] font-medium px-3 py-1.5 rounded-md text-custom-white bg-[#1e2a4a] hover:bg-[#1e2a4a]/85"
+            disabled={!canCreate}
+            className="text-[12px] font-medium px-3 py-1.5 rounded-md text-custom-white bg-[#1e2a4a] hover:bg-[#1e2a4a]/85 disabled:bg-gray-300 disabled:cursor-not-allowed"
           >
-            Create
+            {busy ? "Creating…" : "Create"}
           </button>
         </div>
       </div>
@@ -92,6 +160,7 @@ const BaseGroups = () => {
   );
   const [search, setSearch] = useState("");
   const [showNewGroupModal, setShowNewGroupModal] = useState(false);
+  const [creating, setCreating] = useState(false);
 
   // DCR support staff need visibility across every client company, so (and
   // only so) they can fetch the full company directory. isDcrUser is derived
@@ -106,6 +175,14 @@ const BaseGroups = () => {
   const isDcrUser = ctx.companies.some(
     (c) => c.company === 5 && c.name === "DCR",
   );
+
+  // Which base groups this admin may open. DCR support staff administer client
+  // groups they were never assigned to, so they keep access to all of them;
+  // everyone else sees only the groups they hold. This is an affordance guard
+  // that keeps admins out of groups they shouldn't be editing — not an access
+  // boundary, since the endpoints behind it are unscoped.
+  const isAuthorized = (groupId: number) =>
+    isDcrUser || ctx.authorizedBaseGroupIds.includes(groupId);
 
   useEffect(() => {
     if (!isDcrUser || !ctx.companiesRefresh) return;
@@ -133,9 +210,15 @@ const BaseGroups = () => {
     getBaseGroups(ctx.url, ctx.token, companyId)
       .then((resp) => {
         const j = resp.data;
-        if (j.error === 0) {
-          setCompanyGroups((prev) => ({ ...prev, [companyId]: j.groups }));
-        }
+        // get_base_groups raises "no groups returned" for a company that has
+        // none, so an error is recorded as an empty list rather than left
+        // undefined. Otherwise such a company never resolves, and the create
+        // modal reads that as "still loading" forever with nothing to check a
+        // new name against.
+        setCompanyGroups((prev) => ({
+          ...prev,
+          [companyId]: j.error === 0 ? j.groups : [],
+        }));
       })
       .catch((err: JsonError) => toast.error(err.message))
       .finally(() => fetchingGroups.current.delete(companyId));
@@ -177,6 +260,7 @@ const BaseGroups = () => {
   };
 
   const selectGroup = (group: CompanyBaseGroup) => {
+    if (!isAuthorized(group.id)) return;
     setSelectedGroup(group);
     if (!groupStores[group.id]) fetchStores(group.id);
   };
@@ -202,7 +286,8 @@ const BaseGroups = () => {
   };
 
   const handleCreateGroup = (name: string, companyId: number) => {
-    if (!name.trim()) {
+    const trimmed = name.trim();
+    if (!trimmed) {
       toast.error("Base group name is required");
       return;
     }
@@ -212,24 +297,72 @@ const BaseGroups = () => {
     }
     const existing = companyGroups[companyId];
     if (
-      existing?.some((g) => g.name.toLowerCase() === name.trim().toLowerCase())
+      existing?.some(
+        (g) => g.name.trim().toLowerCase() === trimmed.toLowerCase(),
+      )
     ) {
       toast.error("A base group with that name already exists");
       return;
     }
-    createBaseGroup(ctx.url, ctx.token, name, companyId)
+    // Sent trimmed on purpose: the name is reused verbatim as each user's
+    // store group name by assignments/share_bg_with_users, which matches it
+    // exactly — a stray space would create a store group nothing can find.
+    setCreating(true);
+    createBaseGroup(ctx.url, ctx.token, trimmed, companyId)
       .then((resp) => {
         const j = resp.data;
-        if (j.error === 0) {
-          toast.success("Base group created");
-          setShowNewGroupModal(false);
-          fetchGroups(companyId);
-          setExpandedCompanies((prev) => new Set(prev).add(companyId));
-        } else {
+        if (j.error !== 0) {
+          setCreating(false);
           toast.error(j.msg || "Could not create base group");
+          return;
         }
+        fetchGroups(companyId);
+        setExpandedCompanies((prev) => new Set(prev).add(companyId));
+
+        // create_base_group returns the row it just inserted, and base_groups
+        // is exactly (id, name, company) — the same shape as CompanyBaseGroup
+        // — so the new group is selected straight from the create response
+        // rather than waiting on the refetch above.
+        const created: CompanyBaseGroup | undefined = j.record?.[0];
+        if (!created) {
+          setCreating(false);
+          setShowNewGroupModal(false);
+          toast.success("Base group created");
+          return;
+        }
+
+        // The creator is assigned to their own group straight away: an
+        // unauthorized group can't be opened, so without this the admin would
+        // be locked out of the group they just made.
+        assignBaseGroupToUser(ctx.url, ctx.token, ctx.userid, [created.id])
+          .then((assignResp) => {
+            setCreating(false);
+            setShowNewGroupModal(false);
+            if (assignResp.data.error === 0) {
+              ctx.dispatch(addAuthorizedBaseGroup(created.id));
+              setSelectedGroup(created);
+              fetchStores(created.id);
+              toast.success("Base group created");
+            } else {
+              toast.warn(
+                "Base group created, but could not be assigned to you: " +
+                  (assignResp.data.msg || "unknown error"),
+              );
+            }
+          })
+          .catch((err: JsonError) => {
+            setCreating(false);
+            setShowNewGroupModal(false);
+            toast.warn(
+              "Base group created, but could not be assigned to you: " +
+                err.message,
+            );
+          });
       })
-      .catch((err: JsonError) => toast.error(err.message));
+      .catch((err: JsonError) => {
+        setCreating(false);
+        toast.error(err.message);
+      });
   };
 
   const searching = search.trim().length > 0;
@@ -305,6 +438,26 @@ const BaseGroups = () => {
                 {isOpen && (
                   <div className="divide-y divide-gray-100">
                     {groups.map((g) => {
+                      // Unauthorized groups stay visible rather than hidden:
+                      // their names are still reserved, so hiding them would
+                      // turn create_base_group's duplicate-name rejection into
+                      // an error pointing at nothing.
+                      if (!isAuthorized(g.id)) {
+                        return (
+                          <div
+                            key={g.id}
+                            title="You are not assigned to this base group"
+                            className="w-full flex items-center gap-1.5 pl-6 pr-3 py-2 bg-gray-50 text-content/75 cursor-not-allowed"
+                          >
+                            <span className="text-[12px] font-medium flex-1 truncate">
+                              {g.name}
+                            </span>
+                            <span className="text-[10px] italic flex-shrink-0">
+                              Unauthorized
+                            </span>
+                          </div>
+                        );
+                      }
                       const isSel = selectedGroup?.id === g.id;
                       return (
                         <button
@@ -344,7 +497,7 @@ const BaseGroups = () => {
       </div>
 
       <div className="flex-1 min-w-0 overflow-y-auto p-4">
-        {!selectedGroup ? (
+        {!selectedGroup || !isAuthorized(selectedGroup.id) ? (
           <div className="flex items-center justify-center h-full text-[12px] text-content">
             Select a base group
           </div>
@@ -363,6 +516,11 @@ const BaseGroups = () => {
       {showNewGroupModal && (
         <NewGroupModal
           companies={visibleCompanies}
+          groupsByCompany={companyGroups}
+          busy={creating}
+          onCompanySelect={(companyId) => {
+            if (!companyGroups[companyId]) fetchGroups(companyId);
+          }}
           onCreate={handleCreateGroup}
           onClose={() => setShowNewGroupModal(false)}
         />

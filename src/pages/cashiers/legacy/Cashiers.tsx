@@ -28,6 +28,7 @@ import ViewToggle from "./ViewToggle";
 import TransFilters from "./transactions/TransFilters";
 import TransFilterModal from "./transactions/TransFilterModal";
 import CashiersMobile from "./mobile/CashiersMobile";
+import { isGroupSearch } from "../../../features/searchSlice";
 
 const Cashiers = () => {
   const toast = useToast();
@@ -41,9 +42,9 @@ const Cashiers = () => {
 
     const start = formatGoliathDate(ctx.startDate);
     const end = formatGoliathDate(ctx.endDate);
-    const useGroups = ctx.type === "Group" ? 1 : 0;
+    const useGroups = isGroupSearch(ctx.type) ? 1 : 0;
     const singleStore = ctx.type === "Store" ? 1 : 0;
-    const searchValue = ctx.type === "Group" ? ctx.lastGroup : ctx.lastStore;
+    const searchValue = isGroupSearch(ctx.type) ? ctx.lastGroup : ctx.lastStore;
 
     getStoreCards(
       ctx.miktoUrl,

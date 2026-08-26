@@ -9,6 +9,7 @@ import {
   setRefreshGroups,
   setSelectedGroup,
   type Group,
+  emptyGroup,
 } from "../../../features/groupSlice";
 
 import { deleteGroup } from "../../../api/groups";
@@ -23,7 +24,7 @@ const DeleteUserGroup = () => {
 
   const handleSelect = (g: Group) => {
     if (selectedGroup.id === g.id) {
-      dispatch(setSelectedGroup({ id: 0, group_name: "", userid: 0 }));
+      dispatch(setSelectedGroup(emptyGroup));
       dispatch(setCreateInput(""));
     } else {
       dispatch(setSelectedGroup(g));
@@ -37,7 +38,7 @@ const DeleteUserGroup = () => {
         const j = resp.data;
         if (j.error == "0") {
           dispatch(setRefreshGroups(true));
-          dispatch(setSelectedGroup({ id: 0, group_name: "", userid: 0 }));
+          dispatch(setSelectedGroup(emptyGroup));
           dispatch(setCreateInput(""));
           toast.success("Group deleted successfully");
         }
@@ -51,7 +52,7 @@ const DeleteUserGroup = () => {
   };
 
   const cleanup = () => {
-    dispatch(setSelectedGroup({ id: 0, group_name: "", userid: 0 }));
+    dispatch(setSelectedGroup(emptyGroup));
     dispatch(setCreateInput(""));
     setIsDeleting(false);
   };
