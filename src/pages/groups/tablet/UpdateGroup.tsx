@@ -18,6 +18,12 @@ const UpdateGroup = () => {
   const { url, token, userid, groups, selectedGroup, createInput } =
     useGroupCtx();
 
+  // Shared groups are built and maintained by whoever shared the base group
+  // they came from, so they are not offered as an edit target here. Unlike the
+  // desktop page, these pickers exist only to choose something to change —
+  // there is no view mode a disabled row would still be useful in.
+  const editableGroups = groups.filter((g) => !g.is_shared);
+
   const groupNames = groups.map((g) => g.group_name);
 
   const handleSelect = (g: Group) => {
@@ -60,7 +66,7 @@ const UpdateGroup = () => {
           <div>Select group to update</div>
         </div>
         <div className="md:text-sm p-3 bg-bkg rounded-lg grid grid-cols-3 gap-2 max-h-[50vh] shadow overflow-y-auto select-none">
-          {groups.map((g, i) => (
+          {editableGroups.map((g, i) => (
             <div
               key={g.id}
               data-testid={`update-group-option-${i}`}

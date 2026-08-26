@@ -25,6 +25,12 @@ const AssignStoresToGroup = () => {
   const { url, token, userid, groups, selectedGroup, storesWithGroupStatus } =
     useGroupCtx();
 
+  // Shared groups are built and maintained by whoever shared the base group
+  // they came from, so they are not offered as an edit target here. Unlike the
+  // desktop page, these pickers exist only to choose something to change —
+  // there is no view mode a disabled row would still be useful in.
+  const editableGroups = groups.filter((g) => !g.is_shared);
+
   const [unassignedFilter, setUnassignedFilter] = useState<string>("");
   const [assignedFilter, setAssignedFilter] = useState<string>("");
 
@@ -89,7 +95,7 @@ const AssignStoresToGroup = () => {
           <SingleSelect
             id={1}
             label="Select User Group"
-            data={groups}
+            data={editableGroups}
             displayKey="group_name"
             valueKey="id"
             onSelect={getGroupStores}

@@ -47,6 +47,12 @@ const GroupDetail = ({ group, onRenamed, onDeleted }: Props) => {
   const [unassignedFilter, setUnassignedFilter] = useState("");
   const [assignedFilter, setAssignedFilter] = useState("");
 
+  // A shared group is the store group assignments/share_bg_with_users builds
+  // from a base group. Renaming it breaks the by-name lookup that share and
+  // unshare both use, and any store edit is reverted the next time the manager
+  // syncs — so it is shown but never edited here.
+  const readOnly = group.is_shared;
+
   useEffect(() => {
     setEditing(false);
     setNameDraft(group.group_name);
@@ -69,6 +75,7 @@ const GroupDetail = ({ group, onRenamed, onDeleted }: Props) => {
   }, [group.id]);
 
   const handleSave = () => {
+    if (readOnly) return;
     if (nameDraft.trim() === group.group_name.trim()) {
       setEditing(false);
       return;
@@ -90,6 +97,7 @@ const GroupDetail = ({ group, onRenamed, onDeleted }: Props) => {
   };
 
   const handleDelete = () => {
+    if (readOnly) return;
     deleteGroup(ctx.url, ctx.token, group.id)
       .then((resp) => {
         const j = resp.data;
@@ -110,6 +118,7 @@ const GroupDetail = ({ group, onRenamed, onDeleted }: Props) => {
   };
 
   const handleToggle = (storeid: number, type: "assigned" | "unassigned") => {
+    if (readOnly) return;
     setStorePending(storeid, true);
     const call =
       type === "assigned"
@@ -160,18 +169,32 @@ const GroupDetail = ({ group, onRenamed, onDeleted }: Props) => {
               {group.group_name}
             </span>
           )}
-          <IconButton
-            icon={PencilIcon}
-            title="Rename"
-            onClick={() => setEditing((v) => !v)}
-          />
-          <IconButton
-            icon={TrashIcon}
-            title="Delete group"
-            variant="danger"
-            onClick={() => setConfirmDelete(true)}
-          />
+          {readOnly ? (
+            <span className="text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-blue-50 text-blue-700">
+              Shared
+            </span>
+          ) : (
+            <>
+              <IconButton
+                icon={PencilIcon}
+                title="Rename"
+                onClick={() => setEditing((v) => !v)}
+              />
+              <IconButton
+                icon={TrashIcon}
+                title="Delete group"
+                variant="danger"
+                onClick={() => setConfirmDelete(true)}
+              />
+            </>
+          )}
         </div>
+        {readOnly && (
+          <div className="text-[12px] text-content/75 mt-1">
+            Shared with you by a manager. The name and store list are managed
+            with the base group and can't be changed here.
+          </div>
+        )}
       </div>
 
       <div className="flex-1 min-h-0 p-4">
@@ -181,6 +204,9 @@ const GroupDetail = ({ group, onRenamed, onDeleted }: Props) => {
           </div>
         ) : (
           <div className="h-full flex gap-3">
+            {/* A shared group has nothing to add to, so the picker side is
+                dropped entirely rather than shown with dead buttons. */}
+            {!readOnly && (
             <div className="flex-1 min-w-0 flex flex-col min-h-0">
               <div className="mb-1.5">
                 <TextFilter
@@ -217,6 +243,7 @@ const GroupDetail = ({ group, onRenamed, onDeleted }: Props) => {
                 )}
               </div>
             </div>
+            )}
 
             <div className="flex-1 min-w-0 flex flex-col min-h-0">
               <div className="mb-1.5">
@@ -238,13 +265,15 @@ const GroupDetail = ({ group, onRenamed, onDeleted }: Props) => {
                     }`}
                   >
                     <span className="truncate">{s.store_name}</span>
-                    <button
-                      onClick={() => handleToggle(s.storeid, "assigned")}
-                      disabled={pending.has(s.storeid)}
-                      className="w-5 h-5 flex-shrink-0 flex items-center justify-center rounded text-[13px] font-semibold text-red-600 border border-gray-200 hover:bg-gray-50 disabled:cursor-not-allowed transition-colors"
-                    >
-                      −
-                    </button>
+                    {!readOnly && (
+                      <button
+                        onClick={() => handleToggle(s.storeid, "assigned")}
+                        disabled={pending.has(s.storeid)}
+                        className="w-5 h-5 flex-shrink-0 flex items-center justify-center rounded text-[13px] font-semibold text-red-600 border border-gray-200 hover:bg-gray-50 disabled:cursor-not-allowed transition-colors"
+                      >
+                        −
+                      </button>
+                    )}
                   </div>
                 ))}
                 {assigned.length === 0 && (
