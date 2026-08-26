@@ -1,8 +1,16 @@
 import { useEffect, useRef } from "react";
 import { ArrowPathIcon } from "@heroicons/react/20/solid";
-import { useOrganizationCtx } from "../hooks";
+import {
+  useOrganizationCtx,
+  useRefreshUserGroups,
+  useRefreshUserStores,
+} from "../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
-import { getBaseGroupsAssignedToUser } from "../../../api/team";
+import {
+  assignBaseGroupToUser,
+  deleteUserBaseGroupLink,
+  getBaseGroupsAssignedToUser,
+} from "../../../api/team";
 import {
   shareBgWithUsers,
   unshareBgWithUsers,
@@ -45,6 +53,18 @@ interface Props {
 const BaseGroupUsersTab = ({ group, assignedStoreCount }: Props) => {
   const ctx = useOrganizationCtx();
   const toast = useToast();
+  const refreshUserGroups = useRefreshUserGroups();
+  const refreshUserStores = useRefreshUserStores();
+
+  // Sharing or unsharing the acting user builds or tears down one of their own
+  // store groups, and grants or revokes their stores with it. groupSlice and
+  // userSlice are otherwise only filled at login, so without this their own
+  // picker stays wrong for the rest of the session.
+  const refreshSelfIfIncluded = (ids: number[]) => {
+    if (!ids.includes(ctx.userid)) return;
+    refreshUserGroups();
+    refreshUserStores();
+  };
 
   const candidates = ctx.users.filter(
     (u) =>
@@ -90,11 +110,58 @@ const BaseGroupUsersTab = ({ group, assignedStoreCount }: Props) => {
   const sumBy = <T,>(rows: T[], pick: (row: T) => number) =>
     rows.reduce((total, row) => total + pick(row), 0);
 
+  // assignments/share_bg_with_users and its mirror only exist on dev so far, so
+  // prod keeps the per-user groups/* calls this replaced. They are not the same
+  // operation — the old assign writes a base group link and nothing else, and
+  // the old delete revokes every store in the group regardless of what else
+  // grants it — so everything that reads the richer response (the summary line,
+  // the Sync action) is dev-only too rather than showing prod half a picture.
+  const useSharingEndpoints = ctx.apiEnv === "dev";
+
+  // One PUT/DELETE per user, results tallied, exactly as this tab worked before
+  // the batch endpoints landed.
+  const runLegacyBatch = (
+    ids: number[],
+    call: (userid: number) => Promise<{ data: { error: number } }>,
+    assignedAfter: boolean,
+    verb: string,
+  ) => {
+    Promise.all(
+      ids.map((userid) =>
+        call(userid).then((resp) => ({ userid, ok: resp.data.error === 0 })),
+      ),
+    )
+      .then((results) => {
+        const succeeded = results.filter((res) => res.ok).map((res) => res.userid);
+        if (succeeded.length > 0) {
+          const next: Record<number, boolean> = {};
+          succeeded.forEach((id) => {
+            next[id] = assignedAfter;
+          });
+          ctx.dispatch(mergeBaseGroupUserStatus(next));
+          refreshSelfIfIncluded(succeeded);
+        }
+        const failed = results.length - succeeded.length;
+        if (failed > 0) toast.error(`${failed} user(s) could not be ${verb}`);
+        else toast.success(`User(s) ${verb}`);
+      })
+      .catch((err: JsonError) => toast.error(err.message));
+  };
+
   // Shared by Assign and Sync: both are the same call, and the endpoint
   // reconciles rather than appends, so re-running it on someone already
   // assigned is what builds (or repairs) their store group.
   const runShare = (ids: number[], action: "share" | "sync") => {
     if (ids.length === 0) return;
+    if (!useSharingEndpoints) {
+      runLegacyBatch(
+        ids,
+        (userid) => assignBaseGroupToUser(ctx.url, ctx.token, userid, [group.id]),
+        true,
+        "assigned",
+      );
+      return;
+    }
     shareBgWithUsers(ctx.url, ctx.token, group.company, group.id, ids)
       .then((resp) => {
         const j: ShareBgResp = resp.data;
@@ -128,12 +195,22 @@ const BaseGroupUsersTab = ({ group, assignedStoreCount }: Props) => {
         // The selection has been consumed, so drop it here as well as in the
         // panel — leaving rows highlighted after a sync reads as still staged.
         if (action === "sync") ctx.dispatch(clearBaseGroupSelection());
+        refreshSelfIfIncluded(ids);
         toast.success(action === "sync" ? "Users synced" : "User(s) assigned");
       })
       .catch((err: JsonError) => toast.error(err.message));
   };
 
   const handleUnassign = (ids: number[]) => {
+    if (!useSharingEndpoints) {
+      runLegacyBatch(
+        ids,
+        (userid) => deleteUserBaseGroupLink(ctx.url, ctx.token, userid, [group.id]),
+        false,
+        "unassigned",
+      );
+      return;
+    }
     unshareBgWithUsers(ctx.url, ctx.token, group.company, group.id, ids)
       .then((resp) => {
         const j: UnshareBgResp = resp.data;
@@ -156,6 +233,7 @@ const BaseGroupUsersTab = ({ group, assignedStoreCount }: Props) => {
             storeGroupsReused: 0,
           }),
         );
+        refreshSelfIfIncluded(ids);
         toast.success("User(s) unassigned");
       })
       .catch((err: JsonError) => toast.error(err.message));
@@ -205,8 +283,10 @@ const BaseGroupUsersTab = ({ group, assignedStoreCount }: Props) => {
         {/* Users assigned before these endpoints existed hold only a base
             group link — no store group was ever built for them, and the
             Assign path never fires for someone already in the right column.
-            This re-runs the share over the current members to backfill it. */}
-        <button
+            This re-runs the share over the current members to backfill it.
+            Absent on prod, where the assign endpoint cannot build one. */}
+        {useSharingEndpoints && (
+          <button
           onClick={() =>
             ctx.dispatch(
               setPendingBaseGroupAction({
@@ -224,9 +304,10 @@ const BaseGroupUsersTab = ({ group, assignedStoreCount }: Props) => {
           {selectedAssigned.length > 0
             ? plural(selectedAssigned.length, "selected user")
             : plural(assigned.length, "assigned user")}
-        </button>
+          </button>
+        )}
       </div>
-      {summary && (
+      {useSharingEndpoints && summary && (
         <div className="text-[11px] text-content border-l-2 border-[#1e2a4a] pl-2 mb-2">
           {summary.action === "unshare"
             ? `${plural(summary.userCount, "user")} unassigned · ${plural(summary.storesRevoked, "store")} revoked`
@@ -290,7 +371,9 @@ const BaseGroupUsersTab = ({ group, assignedStoreCount }: Props) => {
           }
           message={
             pending.kind === "unshare"
-              ? `This deletes each user's "${group.name}" store group and revokes any store no other base group of theirs grants. Stores they can still reach another way are kept.`
+              ? useSharingEndpoints
+                ? `This deletes each user's "${group.name}" store group and revokes any store no other base group of theirs grants. Stores they can still reach another way are kept.`
+                : `This removes the base group from these users and revokes every store in it from them — including stores another base group of theirs also grants.`
               : `This grants every store in ${group.name} to ${selectedAssigned.length > 0 ? "the selected users" : "the users already assigned to it"}, and creates or updates their "${group.name}" store group. Anyone currently holding only some of the group's stores will end up with all of them.`
           }
           confirmLabel={pending.kind === "unshare" ? "Yes, remove" : "Yes, sync"}

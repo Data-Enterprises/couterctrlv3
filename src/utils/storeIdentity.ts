@@ -87,3 +87,21 @@ export const numbersByStoreId = <T>(
     if (!nums.includes(n)) nums.push(n);
     return acc;
   }, {});
+
+/**
+ * Normalise a store list from stores/unassigned_stores for display.
+ *
+ * Drops closed stores (they come back with a null name/number), orders by
+ * store number, and strips the trailing "(123)" the payload appends to some
+ * names. Shared because the login loader is no longer the only thing that
+ * fetches these — a base group delete can revoke a store from the logged-in
+ * user, and a re-fetch that skipped this would put raw names and null rows
+ * back into a picker the loader had already cleaned.
+ */
+export const normalizeUserStores = <T extends { store_number: string; store_name: string }>(
+  rows: T[],
+): T[] =>
+  (rows ?? [])
+    .filter((s) => s.store_number !== null && s.store_name !== null)
+    .sort((a, b) => parseInt(a.store_number) - parseInt(b.store_number))
+    .map((s) => ({ ...s, store_name: s.store_name.replace(/\s*\(\d+\)\s*$/, "") }));

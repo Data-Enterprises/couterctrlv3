@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import { PencilIcon, TrashIcon } from "@heroicons/react/20/solid";
-import { useOrganizationCtx } from "../hooks";
+import {
+  useOrganizationCtx,
+  useRefreshUserGroups,
+  useRefreshUserStores,
+} from "../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import type { CompanyBaseGroup, JsonError } from "../../../interfaces";
 import {
@@ -36,6 +40,8 @@ const BaseGroupDetail = ({
 }: Props) => {
   const ctx = useOrganizationCtx();
   const toast = useToast();
+  const refreshUserGroups = useRefreshUserGroups();
+  const refreshUserStores = useRefreshUserStores();
   const [editing, setEditing] = useState(false);
   const [nameDraft, setNameDraft] = useState(group.name);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -49,6 +55,13 @@ const BaseGroupDetail = ({
     ctx.dispatch(setBaseGroupExportOpen(false));
   }, [group.id, group.name]);
 
+  // Both actions below refresh the acting user's own data unconditionally
+  // rather than first checking whether they hold a store group from this base
+  // group. That check read groupSlice, which is only filled at login — so a
+  // store group created earlier in the same session (by syncing yourself) was
+  // invisible to it, and the case that most needed the refresh was the one it
+  // skipped.
+
   const handleSave = () => {
     if (nameDraft.trim() === group.name.trim()) {
       setEditing(false);
@@ -58,13 +71,17 @@ const BaseGroupDetail = ({
       toast.error("Group name is required");
       return;
     }
-    updateBaseGroup(ctx.url, ctx.token, group.id, nameDraft, group.company)
+    // Trimmed for the same reason create is: the name is copied verbatim into
+    // user_groups.group_name and matched exactly by share/unshare, so padding
+    // here would follow the rename all the way down.
+    updateBaseGroup(ctx.url, ctx.token, group.id, nameDraft.trim(), group.company)
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
           toast.success("Base group updated");
           setEditing(false);
           onRenamed(nameDraft.trim());
+          refreshUserGroups();
         } else {
           toast.error(j.msg || "Could not update base group");
         }
@@ -77,7 +94,19 @@ const BaseGroupDetail = ({
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          toast.success("Base group deleted");
+          // Deleting now unshares from every member first: their store group is
+          // torn down and any store no other base group of theirs grants is
+          // revoked. Say how many that touched rather than a bare "deleted".
+          toast.success(
+            j.user_count > 0
+              ? `Base group deleted · unshared from ${j.user_count} user${j.user_count === 1 ? "" : "s"}`
+              : "Base group deleted",
+          );
+          // The delete unshares from every member, so the acting user may have
+          // just lost a store group and, with it, any store no other base group
+          // of theirs still grants. Both caches have to come back.
+          refreshUserGroups();
+          refreshUserStores();
           onDeleted();
         } else {
           toast.error(j.msg || "Could not delete base group");
@@ -198,7 +227,7 @@ const BaseGroupDetail = ({
       {confirmDelete && (
         <ConfirmModal
           title={`Delete ${group.name}?`}
-          message="This removes the group and its store assignments. This can't be undone."
+          message="This removes the group and unshares it from everyone holding it — their copy of the group is deleted, and any store no other base group of theirs grants is revoked. This can't be undone."
           onConfirm={handleDelete}
           onCancel={() => setConfirmDelete(false)}
         />
