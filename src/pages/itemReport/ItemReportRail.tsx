@@ -21,6 +21,7 @@ import {
   type ReportItem,
 } from "./itemReportMetrics";
 import { ACTION_TONE } from "./actionTone";
+import DetailPopover from "./DetailPopover";
 import { describeReceipt } from "./itemReportData";
 import type { ReceiptLine } from "./itemReportData";
 import TransactionSheet from "./TransactionSheet";
@@ -406,6 +407,7 @@ const ItemReportRail = ({
    *  the rest of this page in Redux doesn't apply. */
   const [openPrice, setOpenPrice] = useState<number | null>(null);
   const [infoOpen, setInfoOpen] = useState(false);
+  const [actionOpen, setActionOpen] = useState(false);
   /** Sections showing their full list. Local, not slice: unlike a fold — which
    *  is a standing preference — this is about the item currently in front of
    *  you, and the count in the label belongs to that item. */
@@ -570,20 +572,39 @@ const ItemReportRail = ({
             actions can't map onto three without collapsing the blue and violet
             distinctions the chips already carry. Reusing it would have made the
             strip disagree with the chip that opened it. */}
+        {/* Closed by default, and it opens the way the "?" does — anchored
+            under its own trigger, dismissed by a click anywhere outside. The
+            label alone answers "what do I do"; the sentence is the working
+            behind it, and on a Reprice that runs to three lines. */}
         {action && evidence && (
           <div
-            className={`flex-shrink-0 px-4 py-2.5 border-b border-[#1e2a4a]/15 ${ACTION_TONE[action].row}`}
+            className={`relative flex-shrink-0 border-b border-[#1e2a4a]/15 ${ACTION_TONE[action].row}`}
           >
-            <div
-              className={`text-[11px] font-bold uppercase tracking-wide ${ACTION_TONE[action].text}`}
+            <button
+              onClick={() => setActionOpen((o) => !o)}
+              className="w-full text-left px-4 py-2.5 flex items-center justify-between gap-2"
             >
-              {ACTION_LABEL[action]}
-            </div>
-            <div
-              className={`text-[13px] leading-relaxed mt-0.5 ${ACTION_TONE[action].text}`}
-            >
-              {evidence}
-            </div>
+              <span
+                className={`text-[11px] font-bold uppercase tracking-wide ${ACTION_TONE[action].text}`}
+              >
+                {ACTION_LABEL[action]}
+              </span>
+              <span
+                className={`text-[11px] font-medium underline ${ACTION_TONE[action].text}`}
+              >
+                {actionOpen ? "Hide" : "Why"}
+              </span>
+            </button>
+            {actionOpen && (
+              <DetailPopover
+                onClose={() => setActionOpen(false)}
+                className={`${ACTION_TONE[action].row} ${ACTION_TONE[action].text}`}
+              >
+                <div className="px-4 py-2.5 text-[13px] leading-relaxed">
+                  {evidence}
+                </div>
+              </DetailPopover>
+            )}
           </div>
         )}
 

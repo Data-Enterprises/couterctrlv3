@@ -33,7 +33,7 @@ export const ITEM_REPORT_INFO: {
       subEntries: [
         {
           label: "Reorder",
-          desc: "Either the last delivery has all sold — sold against received, which catches an item going out faster than it arrives — or nothing has come in for over two weeks. No opening balance exists in the data, so stock held before that delivery is invisible.",
+          desc: "Three shapes. **It ran out mid-window** — selling steadily every day, then nothing for the last few days of the week, with the units it would have sold in that gap. This one needs no invoice: it reads the shelf emptying rather than a delivery date, so it works on stores whose orders never reach the data. Guarded so a slow mover doesn’t qualify — two days of sales to set a rate, two days of silence, and at least a unit a day. Or **the last delivery has all sold** — sold against received, which catches an item going out faster than it arrives. Or **nothing has come in for over two weeks**. The last two need an invoice on file; where none exists they simply do not fire. No opening balance exists in the data, so stock held before a delivery is invisible.",
         },
         {
           label: "Call vendor",

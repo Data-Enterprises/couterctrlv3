@@ -872,6 +872,9 @@ export const verdictFor = (
   receipts: ReceiptLine[],
   eras: PriceEra[],
   windowDays: number,
+  /** yyyy-mm-dd, the last day of the sales window. Needed to tell "stopped
+   *  selling four days ago" from "sold right up to the end". */
+  windowEnd: string,
   lookbackDays: number,
   receivingKnown: boolean,
 ): Verdict => {
@@ -1105,9 +1108,29 @@ export const verdictFor = (
    */
   if (!last) {
     if (sold === 0 && (item.lw || item.ly)) {
+      /**
+       * The one Reorder that does not need an invoice, and the only evidence
+       * for it is the sales stopping.
+       *
+       * This said "No delivery in 90 days", which is a claim about the store.
+       * What is actually known is that no invoice is on file — and on a
+       * store receiving electronically that is true of everything, so the
+       * sentence would have read as a delivery failure on every row.
+       *
+       * The conclusion is offered, not asserted: an item that sold every week
+       * and now sells nothing is usually off the shelf, but demand collapse and
+       * a delist look identical from here. Checking the spot settles it, and
+       * that is the action either way.
+       */
+      const sellingHistory = [
+        item.lw ? `${round1(item.lw.units)} last week` : "",
+        item.ly ? `${round1(item.ly.units)} last year` : "",
+      ]
+        .filter(Boolean)
+        .join(", ");
       return {
         action: "reorder",
-        evidence: `No delivery in ${lookbackDays} days and nothing sold this window — off the shelf.`,
+        evidence: `Sold ${sellingHistory}, none this window, and no receiver invoice on file to confirm a delivery. Most likely off the shelf — worth checking the spot.`,
         unaccounted,
       };
     }
@@ -1190,9 +1213,66 @@ export const verdictFor = (
     const held = sd
       ? ` ${sd.received} units delivered, none scanned since.`
       : " Nothing scanned since.";
+    /**
+     * What is standing there, in money.
+     *
+     * No price to quote — nothing sold, so there is no ring to read — and the
+     * unit counts are already in the strip above. The one figure neither of
+     * those carries is what the stock is worth, which is the size of the
+     * problem and the reason to walk out and look at it.
+     */
+    const atCost =
+      sd && sd.received > 0 && rulingCost !== null
+        ? ` About ${money(round2(sd.received * rulingCost))} of stock at cost${costBasis}.`
+        : "";
     return {
       action: "investigate",
-      evidence: `${inStock}${held}`,
+      evidence: `${inStock}${held}${atCost}`,
+      unaccounted,
+    };
+  }
+
+  /**
+   * Ran out partway through the window.
+   *
+   * The other Reorder tests both start from a delivery — how long ago it was,
+   * or how much of it has sold — so neither can fire on a store with no invoice
+   * trail, and Reorder reads zero there however empty the shelves get.
+   *
+   * This one reads the shelf instead of the paperwork: an item selling every
+   * day that stops dead, with days still left in the window, went empty. That
+   * is a stronger signal than a delivery date in any case — a date says what
+   * should be there, sales say what was.
+   *
+   * Guarded three ways, because a slow mover looks the same as a stockout if
+   * you squint: at least two days of sales to establish a rate, at least two
+   * days of silence to rule out a quiet day, and a rate of at least a unit a
+   * day so that "sold one on Monday and one on Tuesday" does not qualify.
+   */
+  const isoDaysBetween = (from: string, to: string) => {
+    const [ay, am, ad] = from.split("-").map(Number);
+    const [by, bm, bd] = to.split("-").map(Number);
+    return Math.round(
+      (Date.UTC(by, bm - 1, bd) - Date.UTC(ay, am - 1, ad)) / 86400000,
+    );
+  };
+
+  const stockout = (() => {
+    if (!windowEnd || sold <= 0) return null;
+    const selling = item.series.filter((d) => d.units > 0);
+    if (selling.length < 2) return null;
+    const lastSale = selling[selling.length - 1].date;
+    const dead = isoDaysBetween(lastSale, windowEnd);
+    if (dead < 2) return null;
+    const rate = sold / selling.length;
+    if (rate < 1) return null;
+    return { lastSale, dead, rate: round1(rate), missed: round1(rate * dead) };
+  })();
+
+  if (stockout) {
+    return {
+      action: "reorder",
+      evidence: `Sold about ${stockout.rate} a day through ${shortDate(stockout.lastSale)}, then nothing for the last ${stockout.dead} days — roughly ${stockout.missed} units of missed sales. Looks like it ran out mid-week.${extraNote}`,
       unaccounted,
     };
   }
@@ -1403,7 +1483,18 @@ export const verdictFor = (
   if (downOnBoth) {
     return {
       action: "investigate",
-      evidence: `${inStock} Down ${Math.abs(round1(item.lyPct!))}% on last year and ${Math.abs(round1(item.lwPct!))}% on last week, with cost and price steady. Nothing in the data explains it.`,
+      /**
+       * "Cost and price steady" was asserted and never shown.
+       *
+       * It is the whole basis of the verdict — the reason this is Investigate
+       * and not Reprice — so it prints the two figures it rests on. Without
+       * them the reader has to take the one claim that matters on trust.
+       */
+      evidence: `${inStock} Down ${Math.abs(round1(item.lyPct!))}% on last year and ${Math.abs(round1(item.lwPct!))}% on last week.${
+        lastPrice && rulingCost !== null
+          ? ` It rang ${money(lastPrice.price)} against a ${money(rulingCost)} cost${rulingMargin === null ? "" : `, margin ${rulingMargin.toFixed(1)}%`}${costBasis} — neither moved.`
+          : " Cost and price steady."
+      } Nothing in the data explains it.`,
       unaccounted,
     };
   }

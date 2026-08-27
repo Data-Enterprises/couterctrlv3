@@ -86,7 +86,22 @@ const ItemReport = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const { url, token, apiEnv } = useAppSelector((s) => s.app);
-  const useSubsPricePoints = apiEnv === "dev";
+  /**
+   * Off until something reads them.
+   *
+   * `include_price_points` re-runs the whole inner query and aggregates it a
+   * second time — `count(distinct (sale_date, terminal, sale_id))` and an
+   * ordered `array_agg` per price — and the span it runs over is fourteen days
+   * across every department. Meat alone produced 550 points for seven days.
+   *
+   * The points are fetched into Redux and nothing consumes them yet: they were
+   * wired ahead of the pricing-grade work. Paying for them on the blocking path
+   * meanwhile roughly doubled the report's load time, so the flag comes off
+   * until there is a reader for it. The fetch, the paging and the slice field
+   * all stay — flip this back to enable it.
+   */
+  const PRICE_POINTS_READY = false;
+  const useSubsPricePoints = apiEnv === "dev" && PRICE_POINTS_READY;
   const { singleDate } = useAppSelector((s) => s.search);
   const { assignedStores } = useAppSelector((s) => s.user);
   const state = useAppSelector((s) => s.itemReport);
@@ -411,13 +426,11 @@ const ItemReport = () => {
    * absence is one fact about the data, so it is counted once and said once,
    * and the rows carry whatever their sales actually show.
    */
-  const noReceiverCount = useMemo(
-    () =>
-      items.filter(
-        (i) => (state.receipts[i.productCode] ?? []).length === 0,
-      ).length,
+  const noReceiverItems = useMemo(
+    () => items.filter((i) => (state.receipts[i.productCode] ?? []).length === 0),
     [items, state.receipts],
   );
+  const noReceiverCount = noReceiverItems.length;
 
   const sheetRows: SheetRow[] = useMemo(
     () =>
@@ -430,6 +443,7 @@ const ItemReport = () => {
             receipts,
             buildPriceEras(item, receipts),
             windowDays,
+            state.scope?.end ?? "",
             RECEIVING_LOOKBACK,
             state.receivingComplete,
           ),
@@ -439,6 +453,7 @@ const ItemReport = () => {
       scopedItems,
       state.receipts,
       state.receivingComplete,
+      state.scope?.end,
       windowDays,
     ],
   );
@@ -625,6 +640,7 @@ const ItemReport = () => {
           }
           receivingAvailable={receivingAvailable}
           noReceiverCount={noReceiverCount}
+          noReceiverItems={noReceiverItems}
           itemCount={items.length}
         />
 

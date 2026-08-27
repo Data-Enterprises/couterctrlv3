@@ -20,6 +20,7 @@ import HeaderIconButton from "../../components/HeaderIconButton";
 import { ACTION_TONE } from "./actionTone";
 import InfoButton from "../../components/InfoButton";
 import InfoPopover from "../../components/InfoPopover";
+import DetailPopover from "./DetailPopover";
 import { ITEM_REPORT_INFO } from "./itemReportInfo";
 import {
   ACTION_LABEL,
@@ -74,6 +75,10 @@ interface Props {
    *  as one figure above the sheet — it is a fact about the data, not a verdict
    *  about any row, and it used to be both. */
   noReceiverCount: number;
+  /** The items behind that count. The banner states the number; this is what
+   *  the number is, one click away — a count nobody can enumerate is a claim
+   *  the reader has to take on faith. */
+  noReceiverItems: ReportItem[];
   itemCount: number;
 }
 
@@ -144,6 +149,7 @@ const ItemReportSheet = ({
   receivingProgress,
   receivingAvailable,
   noReceiverCount,
+  noReceiverItems,
   itemCount,
 }: Props) => {
   const dispatch = useAppDispatch();
@@ -157,6 +163,7 @@ const ItemReportSheet = ({
   const vendor = useAppSelector((s) => s.itemReport.vendorFilter);
   // Popover open/closed — ephemeral, and the same shape LedgerHeader uses.
   const [infoOpen, setInfoOpen] = useState(false);
+  const [noReceiverOpen, setNoReceiverOpen] = useState(false);
   // Draft stays local — a half-typed UPC is not page state, and only the value
   // behind Apply changes what the list shows. Same split ItemMarginsTable uses.
   const [draftUpc, setDraftUpc] = useState("");
@@ -333,12 +340,45 @@ const ItemReportSheet = ({
             OUR DATA, which is not a claim that the store received nothing; and
             only the delivery-side calls are withheld, because price and trend
             come from sales and do not need an invoice. */}
+        {/* The number opens the items behind it, the way the "?" opens its
+            glossary. A count nobody can enumerate asks to be taken on trust,
+            and this one decides whether two whole actions can fire — the shape
+            of the list is the finding: a whole vendor missing reads very
+            differently from a scattered handful. */}
         {receivingComplete && noReceiverCount > 0 && (
-          <div className="flex-shrink-0 px-4 py-1.5 bg-amber-50 text-[11px] text-amber-900">
-            {receivingAvailable
-              ? `No receiver invoice on file for ${noReceiverCount} of ${itemCount} item${itemCount === 1 ? "" : "s"} in the last 90 days`
-              : "No received orders on file for this store in the last 90 days"}
-            {" — Reorder and Call vendor can't be judged for those. Price and trend are unaffected."}
+          <div className="relative flex-shrink-0">
+            <button
+              onClick={() => setNoReceiverOpen((o) => !o)}
+              className="w-full text-left px-4 py-1.5 bg-amber-50 text-[11px] text-amber-900 hover:bg-amber-100 transition-colors"
+            >
+              {receivingAvailable
+                ? `No receiver invoice on file for ${noReceiverCount} of ${itemCount} item${itemCount === 1 ? "" : "s"} in the last 90 days`
+                : "No received orders on file for this store in the last 90 days"}
+              {" — Reorder and Call vendor can't be judged for those. Price and trend are unaffected."}
+              <span className="underline ml-1">
+                {noReceiverOpen ? "Hide" : "Show them"}
+              </span>
+            </button>
+            {noReceiverOpen && (
+              <DetailPopover
+                onClose={() => setNoReceiverOpen(false)}
+                className="bg-amber-50 text-amber-900"
+              >
+                {noReceiverItems.map((it) => (
+                  <div
+                    key={it.productCode}
+                    className="px-4 py-1.5 border-b border-current/10 last:border-b-0"
+                  >
+                    <div className="text-[11.5px] font-semibold truncate">
+                      {it.description}
+                    </div>
+                    <div className="text-[11px] opacity-90 truncate">
+                      {it.productCode} · {it.department} · {it.vendorName}
+                    </div>
+                  </div>
+                ))}
+              </DetailPopover>
+            )}
           </div>
         )}
 
@@ -513,6 +553,7 @@ const ItemReportSheet = ({
           })}
         </div>
       </div>
+
     </div>
   );
 };
