@@ -1,8 +1,12 @@
 import { useCallback, useRef, useState } from "react";
 import { useAppSelector } from "../../hooks";
-import { getCashierTable, getTransactionList } from "../../api/lossPrevention";
+import {
+  getCashierTable,
+  getProductLookup,
+  getTransactionList,
+} from "../../api/lossPrevention";
 import { fetchAllPages } from "../../utils/paging";
-import type { TransactionListItem } from "../../interfaces";
+import type { ProductLookupResp, TransactionListItem } from "../../interfaces";
 
 /**
  * The register-level half of Item Analysis — spec §4.
@@ -46,8 +50,22 @@ const initial: ActualFetchState = {
   truncated: 0,
 };
 
-export const useActualPricePoints = () => {
-  const { url, token } = useAppSelector((s) => s.app);
+interface Options {
+  /**
+   * Opt in to `cashiers/product_lookup` for step one instead of
+   * `cashier_table`. Off by default: this hook also serves Inventory's Sub
+   * Dept and Vendor panels, and only Item Actions is moving.
+   *
+   * TEMPORARY, dev only. `product_lookup` does not exist on prod yet, so the
+   * flag is ANDed with `apiEnv === "dev"` below and prod keeps the old walk.
+   * Delete the option and the branch once the endpoint ships.
+   */
+  productLookup?: boolean;
+}
+
+export const useActualPricePoints = (options: Options = {}) => {
+  const { url, token, apiEnv } = useAppSelector((s) => s.app);
+  const useLookup = options.productLookup === true && apiEnv === "dev";
   const [state, setState] = useState<ActualFetchState>(initial);
   /** The most recent request. A response whose token no longer matches is a
    *  loser of a race and is dropped rather than rendered. */
@@ -67,55 +85,94 @@ export const useActualPricePoints = () => {
       const stale = () => requestId.current !== id;
 
       try {
-        const firstResp = await getCashierTable(
-          url,
-          token,
-          start,
-          end,
-          USE_GROUPS,
-          storeid,
-          SINGLE_STORE,
-          ["description"],
-          1,
-          description,
-        );
-        if (stale()) return;
-        const first = firstResp.data;
-        if (first.error !== 0) {
-          setState({
-            ...initial,
-            upc,
-            error: first.msg ?? "Could not load transactions",
-          });
-          return;
+        /**
+         * Step one: name the receipts. Step two is the same either way.
+         *
+         * `product_lookup` takes the UPC this hook already holds, so it needs
+         * no description search and cannot over-match. `cashier_table` can
+         * only be searched by description, and it returned just the baskets
+         * carrying a discount row — SF BACON 12 OZ sold 81 units in a week and
+         * only 40 of them, the discounted ones, ever reached the panel.
+         */
+        let saleIds: string[];
+
+        if (useLookup) {
+          const lookupResp = await getProductLookup(
+            url,
+            token,
+            start,
+            end,
+            USE_GROUPS,
+            storeid,
+            SINGLE_STORE,
+            { productCodes: [upc] },
+          );
+          if (stale()) return;
+          const lookup = lookupResp.data as ProductLookupResp;
+          if (lookup.error !== 0) {
+            setState({
+              ...initial,
+              upc,
+              error: lookup.msg ?? "Could not load transactions",
+            });
+            return;
+          }
+          // Passing productCodes makes the product explicit, so the ids come
+          // back on this same response — the picker and its second round trip
+          // are only for a searchString that spans several products.
+          saleIds = [...new Set(lookup.transaction_ids ?? [])];
+        } else {
+          const firstResp = await getCashierTable(
+            url,
+            token,
+            start,
+            end,
+            USE_GROUPS,
+            storeid,
+            SINGLE_STORE,
+            ["description"],
+            1,
+            description,
+          );
+          if (stale()) return;
+          const first = firstResp.data;
+          if (first.error !== 0) {
+            setState({
+              ...initial,
+              upc,
+              error: first.msg ?? "Could not load transactions",
+            });
+            return;
+          }
+
+          const receipts = await fetchAllPages(
+            first,
+            (first.transactions ?? []) as { sale_id: string }[],
+            async (page) => {
+              try {
+                const r = await getCashierTable(
+                  url,
+                  token,
+                  start,
+                  end,
+                  USE_GROUPS,
+                  storeid,
+                  SINGLE_STORE,
+                  ["description"],
+                  page,
+                  description,
+                );
+                return r.data.error === 0 ? r.data.transactions : [];
+              } catch {
+                return [];
+              }
+            },
+          );
+          if (stale()) return;
+
+          saleIds = [...new Set(receipts.map((t) => t.sale_id))];
         }
 
-        const receipts = await fetchAllPages(
-          first,
-          (first.transactions ?? []) as { sale_id: string }[],
-          async (page) => {
-            try {
-              const r = await getCashierTable(
-                url,
-                token,
-                start,
-                end,
-                USE_GROUPS,
-                storeid,
-                SINGLE_STORE,
-                ["description"],
-                page,
-                description,
-              );
-              return r.data.error === 0 ? r.data.transactions : [];
-            } catch {
-              return [];
-            }
-          },
-        );
-        if (stale()) return;
-
-        let saleIds = [...new Set(receipts.map((t) => t.sale_id))];
         let truncated = 0;
         if (saleIds.length > MAX_TRANSACTIONS) {
           truncated = saleIds.length - MAX_TRANSACTIONS;
@@ -184,7 +241,7 @@ export const useActualPricePoints = () => {
         });
       }
     },
-    [url, token],
+    [url, token, useLookup],
   );
 
   /** Dropped when the selection is cleared, so a stale panel can't outlive the

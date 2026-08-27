@@ -396,9 +396,6 @@ const ItemReportExportModal = ({
           vendor: item.vendorName,
           upc: item.productCode,
           description: item.description,
-          // Names the rows the upload could not have contained, so nobody
-          // wonders why a UPC they never sent is in their own file.
-          source: item.discovered ? "Found in receivers" : "Uploaded",
           sales: fmtNum(item.ty.sales),
           units: fmtNum(item.ty.units),
           lwPct: item.lwPct === null ? "" : fmtNum(item.lwPct),
@@ -500,7 +497,6 @@ const ItemReportExportModal = ({
             reorder: 0,
             reprice: 0,
             vendor: 0,
-            receiving: 0,
             none: 0,
             insufficient: 0,
             pending: 0,

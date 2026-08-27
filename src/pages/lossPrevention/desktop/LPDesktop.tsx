@@ -8,7 +8,7 @@ import { scopeToStoreNumber } from "../../../utils/storeIdentity";
 import {
   getCashierDetails,
   getCashierTable,
-  getTransactionList,
+  getAllTransactionList,
   getCashierTransaction,
 } from "../../../api/lossPrevention";
 import {
@@ -144,7 +144,7 @@ const LPDesktop = ({ getSaleTypes }: Props) => {
 
   const fetchTransactions = (saleIds: string[], saleType: string) => {
     dispatch(setTransactionLoadingMessage("Loading Transactions..."));
-    getTransactionList(url, token, saleIds, 1, saleType, cashier.searchString)
+    getAllTransactionList(url, token, saleIds, saleType, cashier.searchString)
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {

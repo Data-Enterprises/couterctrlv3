@@ -969,6 +969,22 @@ export type SubDeptMargin = {
   margin: number;
   cost_fees: number;
   net_cost: number;
+  /**
+   * The posted price on the line — the POS price record, not what was charged.
+   *
+   * `ring_price` is per unit: `price_split` came back 1 on all 1,423 rows of a
+   * real department, so no multi-buy divisor is being applied. It diverges from
+   * what actually rang whenever a promotion is running — $7.99 on file against
+   * a $3.99 ring — and that divergence is the thing worth looking at, not an
+   * error to reconcile away.
+   *
+   * Optional because they were added to `subs/subs` after this type, and a
+   * response without them should read as "unknown", not as zero.
+   */
+  ring_price?: number;
+  price?: number;
+  price_split?: number;
+  avg_unit_price?: number;
 };
 
 export type SubMarginsJsonResp = {
@@ -983,6 +999,46 @@ export type SubMarginsJsonResp = {
   end_idx: number;
   page_size: number;
   subs: SubDeptMargin[];
+};
+
+/**
+ * One price an item actually rang at, from `subs/subs?include_price_points=1`.
+ *
+ * Not the same thing as the estimated points derived from the daily rows: those
+ * divide a day's dollars by its units, so a day that sold at two prices reports
+ * a blend that matched neither. This is grouped by the price on the line.
+ *
+ * PRE-DISCOUNT. The qty=0 coupon and "DC" rows divide to a null price and are
+ * filtered out of this aggregate, so `net_sales` is what rang before any
+ * discount row reversed part of it — an item selling 81 units at $3.99 with
+ * $40 of discounts reports one point of 81 units at $3.99, not the $2.99 that
+ * 40 of those customers effectively paid.
+ */
+export interface SubsPricePoint {
+  storeid: number;
+  store_number: string;
+  store_name: string;
+  product_code: string;
+  product_description: string;
+  price: number;
+  units: number;
+  transactions: number;
+  net_sales: number;
+  first_sold: string;
+  last_sold: string;
+  /** Distinct days at this price. */
+  days: number;
+  /** The days themselves, so a promo that lapsed and came back is
+   *  distinguishable from one that ran straight through — same first and last,
+   *  different story. */
+  days_sold: string[];
+}
+
+/** `subs/subs` when price points were asked for. The extra pair is absent
+ *  otherwise, so both are optional rather than the type being forked. */
+export type SubMarginsPricePointsResp = SubMarginsJsonResp & {
+  price_point_count?: number;
+  price_points?: SubsPricePoint[];
 };
 
 export type Mover = {
@@ -1310,4 +1366,116 @@ export interface CatSalesResponse<T> {
   page_label: string;
   page_size: number;
   subs: T[];
+}
+
+/**
+ * One product from `cashiers/product_lookup`.
+ *
+ * Both description arrays are `array_agg(...) FILTER (...)` results, and
+ * Postgres returns NULL — not an empty array — when the filter matches no
+ * rows. An item that never discounted has `discount_descriptions: null`, so
+ * neither can be read without a null check.
+ */
+export interface ProductLookupProduct {
+  product_code: string;
+  /** Names off the qty<>0 rows — the real item. */
+  item_descriptions: string[] | null;
+  /** Names off the qty=0 rows, e.g. "DC Smithfield". These act as coupon
+   *  aliases: they are how a vendor name reaches an item whose own
+   *  description never mentions it. */
+  discount_descriptions: string[] | null;
+  /** SUM(qty) over every row. Discount rows are qty 0, so they cannot inflate it. */
+  units: number;
+  /** Distinct baskets holding a qty<>0 row. */
+  baskets: number;
+}
+
+export interface ProductLookupResp {
+  error: number;
+  success: boolean;
+  msg?: string;
+  product_count: number;
+  products: ProductLookupProduct[];
+  transaction_count: number;
+  /** Empty when a `searchString` spanned several products — pick one and ask
+   *  again with `productCodes`. Always populated when `productCodes` was sent. */
+  transaction_ids: string[];
+}
+
+/**
+ * One line on a receiver from `receivers/item_search`.
+ *
+ * Nearly `ReceiverDetailsItem`, with two differences worth knowing: the return
+ * flag is `item_return` here rather than `return`, and the invoice header —
+ * vendor, date, invoice id — lives on the parent receiver instead of being
+ * repeated on every line.
+ */
+export interface ReceiverItemSearchLine {
+  line_number: number;
+  product_code: string;
+  product_description: string;
+  qty: number;
+  total_dollars: number;
+  weight: number | null;
+  units: number;
+  cases: number;
+  ext_retail: number;
+  retail: number;
+  free: number;
+  item_return: number;
+  ucost: number;
+  ext_cost: number;
+  gm: number;
+}
+
+export interface ReceiverItemSearchReceiver {
+  receiver_rank: number;
+  storeid: number;
+  store_number: string;
+  invoiceid: number;
+  invoice_date: string;
+  vendorid: number;
+  vendor_name: string;
+  reference_number: string | null;
+  terminal: string | null;
+  cashier_number: number | null;
+  cashier_name: string | null;
+  invoice_item_count: number;
+  line_count: number;
+  /**
+   * Covers only the matched lines unless `includeAllLines` was sent.
+   *
+   * Unlike `receivers/details`, these are safe to read: `avg_unit_cost` is
+   * ext_cost/qty rather than a sum of per-unit prices, and `ucost`/`retail`
+   * are deliberately absent instead of being summed into nonsense.
+   */
+  totals: {
+    cases: number;
+    units: number;
+    qty: number;
+    ext_cost: number;
+    ext_retail: number;
+    avg_unit_cost: number;
+    avg_unit_retail: number;
+  };
+  lines: ReceiverItemSearchLine[];
+}
+
+export interface ReceiverItemSearchResponse {
+  error: number;
+  success: boolean;
+  msg?: string;
+  requested_code_count: number;
+  receiver_count: number;
+  page_line_count: number;
+  /** Counts RECEIVERS, not lines — a caller stopping at page 1 loses whole
+   *  deliveries, not trailing lines off the last one. */
+  total_pages: number;
+  page: number;
+  page_size: number;
+  /** Absent on the no-rows response, which returns before they are set. */
+  start_idx?: number;
+  end_idx?: number;
+  include_all_lines?: boolean;
+  receivers: ReceiverItemSearchReceiver[];
 }

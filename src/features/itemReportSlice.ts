@@ -1,5 +1,9 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { SubDeptMargin } from "../interfaces";
+import type {
+  SubDeptMargin,
+  SubsPricePoint,
+  TransactionListItem,
+} from "../interfaces";
 import type { ReceiptLine } from "../pages/itemReport/itemReportData";
 import type { ReceiverDetailsItem } from "../interfaces";
 import type { ActionKind } from "../pages/itemReport/itemReportMetrics";
@@ -27,12 +31,6 @@ export interface ReportWindow {
   start: string;
   end: string;
 }
-
-/** Which population the sheet lists. "uploaded" is the file the user brought;
- *  "all" adds the codes the receiving walk turned up that also have prior-period
- *  sales. Deliberately not "everything" — the wider set is still bounded by what
- *  came through receiving inside the lookback. */
-export type ItemScope = "uploaded" | "all";
 
 /** A list handed over from a graded page instead of uploaded as a file. Held
  *  as a whole object so the container can tell "a handoff arrived" from "the
@@ -106,6 +104,21 @@ interface ItemReportState {
   lwRows: SubDeptMargin[];
   lyRows: SubDeptMargin[];
 
+  /**
+   * Register lines already fetched, by UPC.
+   *
+   * These cost two calls per item and were held in component state, so a route
+   * change threw them away and coming back re-fetched them — the page looked
+   * broken because everything around them survived. Cached here instead: a
+   * second visit to an item is free, and so is clicking between two items.
+   */
+  actualByUpc: Record<string, { lines: TransactionListItem[]; truncated: number }>;
+
+  /** The prices items actually rang at, over the TW+LW span the rows were
+   *  fetched against. Empty on prod, which has no such payload yet, and empty
+   *  on the handoff path, whose rows arrive already fetched. */
+  pricePoints: SubsPricePoint[];
+
   receipts: Record<string, ReceiptLine[]>;
   invoicesSeen: number;
   invoicesTotal: number;
@@ -144,7 +157,6 @@ interface ItemReportState {
   invoiceError: string | null;
   /** Which population the sheet shows. Defaults to the uploaded list — the
    *  file is the question the user asked, and the wider set is the aside. */
-  itemScope: ItemScope;
   /** Set by `useCriticalReport` just before navigating here; consumed and
    *  cleared by the container on arrival. */
   handoff: ItemReportHandoff | null;
@@ -187,6 +199,8 @@ const initialState: ItemReportState = {
   tyRows: [],
   lwRows: [],
   lyRows: [],
+  pricePoints: [],
+  actualByUpc: {},
   receipts: {},
   invoicesSeen: 0,
   invoicesTotal: 0,
@@ -203,7 +217,6 @@ const initialState: ItemReportState = {
   invoiceLines: {},
   invoiceLoading: false,
   invoiceError: null,
-  itemScope: "uploaded",
   handoff: null,
   sourceLabel: "",
   basisLabel: "",
@@ -242,6 +255,8 @@ const itemReportSlice = createSlice({
       state.tyRows = [];
       state.lwRows = [];
       state.lyRows = [];
+      state.pricePoints = [];
+      state.actualByUpc = {};
       state.receipts = {};
       state.invoicesSeen = 0;
       state.invoicesTotal = 0;
@@ -254,7 +269,6 @@ const itemReportSlice = createSlice({
       state.openInvoice = null;
       state.invoiceLines = {};
       state.invoiceError = null;
-      state.itemScope = "uploaded";
       state.actionFilter = null;
       state.upcFilter = "";
       state.descFilter = "";
@@ -271,6 +285,7 @@ const itemReportSlice = createSlice({
         tyRows: SubDeptMargin[];
         lwRows: SubDeptMargin[];
         lyRows: SubDeptMargin[];
+        pricePoints?: SubsPricePoint[];
       }>,
     ) => {
       state.scope = action.payload.scope;
@@ -279,6 +294,22 @@ const itemReportSlice = createSlice({
       state.tyRows = action.payload.tyRows;
       state.lwRows = action.payload.lwRows;
       state.lyRows = action.payload.lyRows;
+      state.pricePoints = action.payload.pricePoints ?? [];
+    },
+
+    /** One item's register lines, kept so the next visit costs nothing. */
+    setItemReportActual: (
+      state,
+      action: PayloadAction<{
+        upc: string;
+        lines: TransactionListItem[];
+        truncated: number;
+      }>,
+    ) => {
+      state.actualByUpc[action.payload.upc] = {
+        lines: action.payload.lines,
+        truncated: action.payload.truncated,
+      };
     },
 
     /* ── receiving walk ───────────────────────────────────────────────── */
@@ -388,9 +419,6 @@ const itemReportSlice = createSlice({
         ? state.collapsedSections.filter((id) => id !== action.payload)
         : [...state.collapsedSections, action.payload];
     },
-    setItemReportScope: (state, action: PayloadAction<ItemScope>) => {
-      state.itemScope = action.payload;
-    },
     setItemReportActionFilter: (
       state,
       action: PayloadAction<ActionKind | null>,
@@ -458,6 +486,7 @@ export const {
   setItemReportLoading,
   startItemReportSearch,
   setItemReportResults,
+  setItemReportActual,
   startReceivingWalk,
   setReceivingProgress,
   setReceivingError,
@@ -470,7 +499,6 @@ export const {
   openItemReportInvoice,
   setItemReportInvoiceLines,
   setItemReportInvoiceError,
-  setItemReportScope,
   setItemReportActionFilter,
   setItemReportUpcFilter,
   setItemReportDescFilter,

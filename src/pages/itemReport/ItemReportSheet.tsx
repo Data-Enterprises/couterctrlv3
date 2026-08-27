@@ -5,14 +5,12 @@ import {
 } from "@heroicons/react/20/solid";
 import { useAppDispatch, useAppSelector } from "../../hooks";
 import {
-  setItemReportScope,
   setItemReportActionFilter,
   setItemReportUpcFilter,
   setItemReportDescFilter,
   setItemReportDeptFilter,
   setItemReportVendorFilter,
 } from "../../features/itemReportSlice";
-import type { ItemScope } from "../../features/itemReportSlice";
 import { formatCurrencyCompact } from "../../utils";
 import { formatPct, pillClass } from "../../utils/severity";
 import ColFilter from "../../components/filters/ColFilter";
@@ -58,20 +56,9 @@ export interface SheetRow {
   verdict: Verdict;
 }
 
-/** Scope precedes action in the filter row because it picks the population the
- *  action counts are counted over. Labelled "All found", never "All" — the wider
- *  set is bounded by what the receiving walk turned up, and a control promising
- *  everything would be read as a guarantee it can't keep. */
-const SCOPE_OPTS: { key: ItemScope; label: string }[] = [
-  { key: "uploaded", label: "Uploaded" },
-  { key: "all", label: "All found" },
-];
-
 interface Props {
   rows: SheetRow[];
   counts: Record<ActionKind, number>;
-  uploadedCount: number;
-  allCount: number;
   receiptsByUpc: Record<string, ReceiptLine[]>;
   selectedUpc: string | null;
   onSelect: (row: SheetRow) => void;
@@ -83,6 +70,11 @@ interface Props {
   receivingProgress: string;
   /** False when `receivers/` returned nothing at all for this store. */
   receivingAvailable: boolean;
+  /** Items with no receiver invoice in the lookback, and the list's size. Shown
+   *  as one figure above the sheet — it is a fact about the data, not a verdict
+   *  about any row, and it used to be both. */
+  noReceiverCount: number;
+  itemCount: number;
 }
 
 /** Chip and rule colour per action. Kept to one place so the strip, the row
@@ -104,7 +96,6 @@ const ORDER: ActionKind[] = [
   "reorder",
   "reprice",
   "vendor",
-  "receiving",
   "none",
 ];
 
@@ -142,8 +133,6 @@ const DeltaPill = ({ pct }: { pct: number | null }) => (
 const ItemReportSheet = ({
   rows,
   counts,
-  uploadedCount,
-  allCount,
   receiptsByUpc,
   selectedUpc,
   onSelect,
@@ -154,6 +143,8 @@ const ItemReportSheet = ({
   receivingComplete,
   receivingProgress,
   receivingAvailable,
+  noReceiverCount,
+  itemCount,
 }: Props) => {
   const dispatch = useAppDispatch();
   // Filters live in the slice with everything else. A route change would
@@ -164,7 +155,6 @@ const ItemReportSheet = ({
   const descTerm = useAppSelector((s) => s.itemReport.descFilter);
   const dept = useAppSelector((s) => s.itemReport.deptFilter);
   const vendor = useAppSelector((s) => s.itemReport.vendorFilter);
-  const scope = useAppSelector((s) => s.itemReport.itemScope);
   // Popover open/closed — ephemeral, and the same shape LedgerHeader uses.
   const [infoOpen, setInfoOpen] = useState(false);
   // Draft stays local — a half-typed UPC is not page state, and only the value
@@ -186,8 +176,7 @@ const ItemReportSheet = ({
    * fixed list — an uploaded file and a vendor handoff cover wildly different
    * ground, and offering a department with nothing behind it is a dead end.
    *
-   * Built off `rows`, which is already scoped, so switching Uploaded/All found
-   * re-derives both menus.
+   * Built off `rows`, so both menus follow whatever the sheet is showing.
    */
   const [deptOpts, vendorOpts] = useMemo(() => {
     const depts = new Set<string>();
@@ -254,33 +243,6 @@ const ItemReportSheet = ({
             </HeaderIconButton>
             <div className="w-px h-4 bg-custom-white/15 flex-shrink-0" />
 
-            {/* Which population. Sits where Sales puts its Sales/Qty toggle,
-                because it does the same job: it decides what everything to the
-                right of it is counted over. */}
-            <div
-              className="flex items-center flex-shrink-0 rounded overflow-hidden"
-              style={{ height: 22 }}
-            >
-              {SCOPE_OPTS.map(({ key, label }) => (
-                <button
-                  key={key}
-                  onClick={() => dispatch(setItemReportScope(key))}
-                  className="px-2.5 text-[10px] text-custom-white font-medium transition-colors h-full"
-                  style={{
-                    background:
-                      scope === key
-                        ? "rgba(255,255,255,0.2)"
-                        : "rgba(255,255,255,0.07)",
-                  }}
-                >
-                  {label}{" "}
-                  <span className="tabular-nums">
-                    {key === "uploaded" ? uploadedCount : allCount}
-                  </span>
-                </button>
-              ))}
-            </div>
-
             <div className="flex-1" />
 
             {/* What every row is built from, and how far back the delivery
@@ -313,8 +275,7 @@ const ItemReportSheet = ({
 
         {/* The piles. Clicking one narrows the sheet, but the sheet is already
             complete — this is for working one kind of problem at a time. The
-            scope toggle these counts are computed over lives in the header, one
-            level up, which is the order the two are actually applied in. */}
+            complete — this is for working one kind of problem at a time. */}
         <div className="flex-shrink-0 px-3 py-2 border-b border-gray-100 flex items-center gap-1.5 flex-wrap">
           {ORDER.map((action) => (
             <button
@@ -367,14 +328,17 @@ const ItemReportSheet = ({
           </div>
         )}
 
-        {/* Said once, here, instead of a hundred times down the Action column.
-            The wording is careful: the orders are missing from our data, which
-            is not the same claim as the store not receiving any. Every row
-            below reads "insufficient" for the same reason. */}
-        {receivingComplete && !receivingAvailable && (
+        {/* Said once, here, instead of once per row down the Action column.
+            The wording is careful on two counts: the orders are missing from
+            OUR DATA, which is not a claim that the store received nothing; and
+            only the delivery-side calls are withheld, because price and trend
+            come from sales and do not need an invoice. */}
+        {receivingComplete && noReceiverCount > 0 && (
           <div className="flex-shrink-0 px-4 py-1.5 bg-amber-50 text-[11px] text-amber-900">
-            No received orders on file for this store — delivery-based actions
-            can't be judged. Units and price evidence are unaffected.
+            {receivingAvailable
+              ? `No receiver invoice on file for ${noReceiverCount} of ${itemCount} item${itemCount === 1 ? "" : "s"} in the last 90 days`
+              : "No received orders on file for this store in the last 90 days"}
+            {" — Reorder and Call vendor can't be judged for those. Price and trend are unaffected."}
           </div>
         )}
 
@@ -469,7 +433,7 @@ const ItemReportSheet = ({
                   className="grid gap-3 px-3 py-2.5 items-center"
                   style={{ gridTemplateColumns: COLS }}
                 >
-                  {/* Truncating, not wrapping. "Check receiving" is wider than
+                  {/* Truncating, not wrapping. "Insufficient" is wider than
                       the 92px this column allows, and a chip that wraps to two
                       lines drags the whole row taller than its neighbours — the
                       list stops scanning as a grid. The full label is one hover
@@ -487,10 +451,6 @@ const ItemReportSheet = ({
                     </span>
                     <span className="block text-[12px] font-medium text-content/85 truncate">
                       {item.productCode} · {item.department} · {item.vendorName}
-                      {/* Says out loud that this row wasn't in the upload —
-                          it has no sales, so no export could have contained
-                          it. */}
-                      {item.discovered && " · from receivers"}
                     </span>
                   </span>
                   {/* Priced selling units — the same basis as Recv and Net,

@@ -9,7 +9,7 @@ import {
 import {
   getCashierDetails,
   getCashierTable,
-  getTransactionList,
+  getAllTransactionList,
 } from "../../../api/lossPrevention";
 import { useLPState } from "../hooks/useLPState";
 import { useLPActions } from "../hooks/useLPActions";
@@ -284,11 +284,10 @@ const StoreListMobile = ({ onOpenSearch, onStoreSelected }: Props) => {
 
   const fetchTransactions = (saleIds: string[], saleType: string) => {
     dispatch(actions.setTransactionLoadingMessage("Loading transactions…"));
-    getTransactionList(
+    getAllTransactionList(
       params.url,
       params.token,
       saleIds,
-      1,
       saleType,
       lp.searchString,
     )

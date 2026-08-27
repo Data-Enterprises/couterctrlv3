@@ -3,7 +3,7 @@ import { useToast } from "../../../components/toasts/hooks/useToast";
 
 import {
   getCashierTable,
-  getTransactionList,
+  getAllTransactionList,
 } from "../../../api/lossPrevention";
 
 import type {
@@ -128,7 +128,7 @@ const CashierSalesTablet = () => {
 
   const fetchTransactions = (saleIds: string[], saleType: string) => {
     dispatch(actions.setTransactionLoadingMessage("Loading Transactions..."));
-    getTransactionList(url, token, saleIds, 1, saleType, lp.searchString)
+    getAllTransactionList(url, token, saleIds, saleType, lp.searchString)
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {

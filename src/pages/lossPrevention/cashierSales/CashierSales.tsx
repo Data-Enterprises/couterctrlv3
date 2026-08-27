@@ -4,7 +4,7 @@ import { cashierDetailCols, theme } from ".";
 
 import {
   getCashierTable,
-  getTransactionList,
+  getAllTransactionList,
 } from "../../../api/lossPrevention";
 
 import { AgGridReact } from "ag-grid-react";
@@ -138,7 +138,7 @@ const CashierSales = () => {
 
   const fetchTransactions = (saleIds: string[], saleType: string) => {
     dispatch(actions.setTransactionLoadingMessage("Loading Transactions..."));
-    getTransactionList(url, token, saleIds, 1, saleType, cashier.searchString)
+    getAllTransactionList(url, token, saleIds, saleType, cashier.searchString)
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
