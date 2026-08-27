@@ -27,6 +27,7 @@ import ExportModal from "../../components/modals/ExportModal";
 import AvailableOrdersPanel from "./components/AvailableOrdersPanel";
 import OrderReportPanel from "./components/OrderReportPanel";
 import OrdersMobile from "./mobile/OrdersMobile";
+import { isGroupSearch } from "../../features/searchSlice";
 
 const Orders = () => {
   const ctx = useOrdersCtx();
@@ -35,7 +36,7 @@ const Orders = () => {
   const [notice, setNotice] = useState<string | undefined>(undefined);
 
   const handleSearch = () => {
-    if (ctx.type === "Group") {
+    if (isGroupSearch(ctx.type)) {
       getStoresAssignedToUserGroup(ctx.url, ctx.token, ctx.userid, ctx.lastGroup)
         .then((resp) => {
           const j = resp.data;

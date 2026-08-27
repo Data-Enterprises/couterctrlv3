@@ -9,6 +9,7 @@ import { useCouponActions } from "../hooks/useCouponActions";
 import type { CouponsResponse, JsonError } from "../../../interfaces";
 import { formatGoliathDate } from "../../../utils";
 import CouponsGridMobile from "./CouponsGridMobile";
+import { isGroupSearch } from "../../../features/searchSlice";
 
 const CouponsMobile = () => {
   const toast = useToast();
@@ -18,9 +19,9 @@ const CouponsMobile = () => {
   const getData = () => {
     dispatch(actions.setCoupons([]));
     dispatch(actions.setIsFetching(true));
-    const useGroups = ctx.type === "Group" ? 1 : 0;
+    const useGroups = isGroupSearch(ctx.type) ? 1 : 0;
     const singleStore = ctx.type === "Store" ? 1 : 0;
-    const searchValue = ctx.type === "Group" ? ctx.lastGroup : ctx.lastStore;
+    const searchValue = isGroupSearch(ctx.type) ? ctx.lastGroup : ctx.lastStore;
     const start = formatGoliathDate(ctx.startDate);
     const end = formatGoliathDate(ctx.endDate);
 

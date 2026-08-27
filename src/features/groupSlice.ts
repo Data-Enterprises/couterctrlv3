@@ -4,6 +4,17 @@ export type Group = {
   id: number;
   userid: number;
   group_name: string;
+  is_shared: boolean;
+};
+
+// The blank Group used to clear a selection. Exported so the reset sites
+// across the Groups pages share one definition — is_shared was added to Group
+// after those literals were written, and each was its own compile error.
+export const emptyGroup: Group = {
+  id: 0,
+  userid: 0,
+  group_name: "",
+  is_shared: false,
 };
 
 export type StoreWithGroupStatus = {
@@ -32,7 +43,7 @@ export const initialState: GroupState = {
   refreshGroups: false,
   createInput: "",
   filterOption: "all",
-  selectedGroup: { id: 0, userid: 0, group_name: "" },
+  selectedGroup: emptyGroup,
   storesWithGroupStatus: [],
   selectedForm: "",
 };

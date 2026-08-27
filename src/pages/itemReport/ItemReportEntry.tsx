@@ -7,6 +7,7 @@ import {
   addPendingUpcs,
   removePendingUpc,
 } from "../../features/itemReportSlice";
+import { useToast } from "../../components/toasts/hooks/useToast";
 import SingleStoreSearchCard from "../../components/SingleStoreSearchCard";
 import SingleDatePicker from "../../components/datePickers/SingleDatePicker";
 import { parseUpload } from "./parseUpload";
@@ -45,6 +46,7 @@ const ItemReportEntry = ({
   loadingMessage,
 }: Props) => {
   const dispatch = useAppDispatch();
+  const toast = useToast();
   const fileRef = useRef<HTMLInputElement>(null);
   const upcs = useAppSelector((s) => s.itemReport.pendingUpcs);
   const departments = useAppSelector((s) => s.itemReport.pendingDepartments);
@@ -53,7 +55,21 @@ const ItemReportEntry = ({
 
   const handleParseText = () => {
     const parsed = parseUpload(upcText);
-    if (parsed.upcs.length === 0) return;
+
+    // Both of these used to return in silence, which read as the button doing
+    // nothing at all. Commas are the separator the box advertises, so a paste
+    // that came in spaces or semicolons is the likely cause of either.
+    if (parsed.upcs.length === 0) {
+      toast.warn("No UPCs found — separate codes with commas");
+      return;
+    }
+    if (parsed.skippedLines > 0) {
+      const n = parsed.skippedLines;
+      toast.warn(
+        `Added ${parsed.upcs.length}, skipped ${n} line${n === 1 ? "" : "s"} — separate codes with commas`,
+      );
+    }
+
     dispatch(addPendingUpcs(parsed.upcs));
     dispatch(setPendingUpcText(""));
   };
@@ -64,7 +80,14 @@ const ItemReportEntry = ({
     const reader = new FileReader();
     reader.onload = (ev) => {
       const parsed = parseUpload(String(ev.target?.result ?? ""));
-      if (parsed.upcs.length === 0) return;
+      // A file that yields nothing is worth saying out loud — silence here
+      // looks like the upload itself failed. Skipped lines aren't reported for
+      // a file: an exported report is mostly headers and totals rows, so a
+      // count of them would be noise rather than a problem.
+      if (parsed.upcs.length === 0) {
+        toast.warn(`No UPCs found in ${file.name}`);
+        return;
+      }
       // A CSV replaces rather than merges: it carries the department column that
       // narrows the fan-out, and merging two files' departments would widen the
       // read back out without saying so.

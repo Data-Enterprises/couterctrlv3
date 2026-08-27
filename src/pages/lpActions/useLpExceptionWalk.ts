@@ -12,6 +12,7 @@ import {
 import { getStoreName } from "../../utils";
 import type { CashierTransaction, JsonError } from "../../interfaces";
 import { weekWindows, buildExceptionRows } from "./lpActionsMetrics";
+import { isGroupSearch } from "../../features/searchSlice";
 
 /**
  * The walk behind LP Actions.
@@ -43,7 +44,7 @@ export const useLpExceptionWalk = () => {
     async (endDate: string, weeks: number) => {
       // Scope comes off the shared search slice, same as every other page —
       // a group is one flag and one id away from a store.
-      const isGroup = type === "Group";
+      const isGroup = isGroupSearch(type);
       const useGroups = isGroup ? 1 : 0;
       const singleStore = isGroup ? 0 : 1;
       const searchValue = isGroup ? lastGroup : lastStore;

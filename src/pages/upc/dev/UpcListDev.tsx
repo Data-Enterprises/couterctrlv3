@@ -3,25 +3,33 @@ import { useAppDispatch, useAppSelector } from "../../../hooks";
 import { useUpcDevCtx } from "./hooks/useUpcDevCtx";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import {
-  setDevIsLoading,
   setDevDataLoaded,
-  setDevSalesComp,
-  setDevSalesCompLY,
-  setDevSalesCompLoaded,
-  setDevUpcItems,
-  setDevUpcCount,
+  seedDevUpcItems,
   setDevStoreids,
+  setDevSearchSnapshot,
+  removeDevUpcs,
   clearDevUpcData,
 } from "../../../features/upcDevSlice";
-import { getSalesComp } from "../../../api/upc";
 import { getStoresAssignedToUserGroup } from "../../../api/groups";
-import { sameWeekDayLastYear } from "../../../utils";
-import type { UpcItem, UpcSalesComp } from "../../../interfaces";
+import { upcQueue } from "./upcQueue";
 
-import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import UpcSearchCard from "./components/UpcSearchCard";
 import UpcLeftPanel from "./components/UpcLeftPanel";
 import UpcRightPanel from "./components/UpcRightPanel";
+
+/** Everything except the UPC list that decides whether loaded data is still
+ *  valid. Two searches with the same scope key differ only in their UPCs, which
+ *  is the case a pure removal can be answered from state. Built from the search
+ *  *selection* rather than resolved storeids so the check costs nothing — a
+ *  group's store list is fetched, and a pure removal shouldn't pay even for
+ *  that. */
+const buildScopeKey = (
+  type: string,
+  storeid: number | string | undefined,
+  groupId: number | string | undefined,
+  startDate: string,
+  endDate: string,
+) => [type, type === "Store" ? storeid ?? "" : groupId ?? "", startDate, endDate].join("|");
 
 const UpcListDev = () => {
   const ctx = useUpcDevCtx();
@@ -77,87 +85,82 @@ const UpcListDev = () => {
       return;
     }
 
+    const scopeKey = buildScopeKey(
+      searchState.type,
+      searchState.selectedStore?.storeid,
+      searchState.selectedGroup?.id,
+      ctx.startDate,
+      ctx.endDate,
+    );
+    const removed = ctx.searchedUpcs.filter((u) => !ctx.upcs.includes(u));
+    const added = ctx.upcs.filter((u) => !ctx.searchedUpcs.includes(u));
+
+    // A search that only took UPCs away asks for a strict subset of what's
+    // already loaded, so it can be answered by arithmetic instead of three
+    // heavy calls. Every module's rows are keyed on product_code and carry
+    // only that UPC's own numbers, so pruning them lands on exactly the state
+    // a re-fetch would have produced.
+    //
+    // Conditions are deliberately narrow: same store/group, same dates, and
+    // nothing added. Any of those changing means the loaded rows are answers
+    // to a different question and have to be re-fetched.
+    if (ctx.dataLoaded && scopeKey === ctx.searchedScopeKey && removed.length && !added.length) {
+      // Anything still loading is fetching the pre-prune UPC set, and every
+      // module setter replaces its whole array — so that response would put
+      // the removed UPC straight back a second after it disappeared. Aborting
+      // leaves that module unloaded, and the version bump inside removeDevUpcs
+      // sends it back for the reduced set when the user next looks at it.
+      upcQueue.startRun();
+      dispatch(removeDevUpcs(removed));
+      setReSearchOpen(false);
+      toast.success(
+        `Removed ${removed.length} UPC${removed.length === 1 ? "" : "s"}`,
+      );
+      return;
+    }
+
     const storeids = await resolveStoreids();
     if (!storeids) return;
 
     setReSearchOpen(false);
-    // Wipe every tab's fetched/derived state before the new search's results
-    // start coming in — otherwise a re-search leaves stale selections and
-    // stale tab data (Price Opt/Trend/Association) sitting around mixed in
-    // with the new UPC list.
-    dispatch(clearDevUpcData());
-    dispatch(setDevStoreids(storeids));
-    dispatch(setDevIsLoading(true));
 
-    const upcParam = ctx.upcs.join(",");
-    const upcItemsMap = new Map<string, UpcItem>();
-    // sameWeekDayLastYear returns ISO (YYYY-MM-DD); the API rejects that
-    // with a 400 ("Please use mm/dd/yyyy") — reformat to match ctx.startDate/
-    // endDate's own m/d/yyyy format. Plain string split, not `new Date(iso)`
-    // + getMonth/getDate — that round-trip parses as UTC midnight and can
-    // roll back a day in any negative-UTC-offset timezone (all of the US).
-    const isoToMdy = (iso: string) => {
-      const [y, m, d] = iso.split("-");
-      return `${Number(m)}/${Number(d)}/${y}`;
-    };
-    const lyStartDate = isoToMdy(sameWeekDayLastYear(ctx.startDate).date);
-    const lyEndDate = isoToMdy(sameWeekDayLastYear(ctx.endDate).date);
+    // Past this point the previous run's results are unwanted: its queued jobs
+    // are dropped before they reach the network and its in-flight ones are
+    // aborted. Deliberately below resolveStoreids, which can bail out (no store
+    // picked, group lookup failed) and leave the page on its existing data —
+    // killing that data's in-flight refreshes for a search that never happened
+    // would strand it half-loaded.
+    upcQueue.startRun();
 
-    // LY is a supplementary comparison — fetched alongside TY, but a failed
-    // or empty LY response shouldn't block the search the way a failed TY
-    // fetch does.
-    const [tyResult, lyResult] = await Promise.allSettled([
-      getSalesComp(ctx.url, ctx.token, storeids, ctx.startDate, ctx.endDate, upcParam),
-      getSalesComp(ctx.url, ctx.token, storeids, lyStartDate, lyEndDate, upcParam),
-    ]);
-
-    if (tyResult.status === "rejected") {
-      const msg = tyResult.reason instanceof Error ? tyResult.reason.message : "Failed to load sales comp";
-      toast.error(msg);
-      dispatch(setDevIsLoading(false));
-      return;
+    // Two shapes of search, and the difference is the whole point of the
+    // coverage model:
+    //
+    //  - Same store, same dates, UPCs added: the loaded rows are still true
+    //    answers, they just don't cover the new UPCs. Nothing is wiped; each
+    //    module's coverage stays as it was, so its next fetch asks only for
+    //    what it's missing. Adding one UPC to a nine-UPC search costs one
+    //    one-UPC call per module the user actually opens.
+    //
+    //  - Anything else (different store, different dates, first search): the
+    //    loaded rows answer a different question, so everything goes.
+    const incremental = ctx.dataLoaded && scopeKey === ctx.searchedScopeKey;
+    if (incremental) {
+      if (removed.length) dispatch(removeDevUpcs(removed));
+    } else {
+      dispatch(clearDevUpcData());
+      dispatch(setDevStoreids(storeids));
     }
 
-    const j = tyResult.value.data;
-    if (j.error === 0 && j.daily?.length > 0) {
-      dispatch(setDevSalesComp(j.daily));
-      dispatch(setDevUpcCount(j.upc_count ?? j.daily.length));
-      for (const row of j.daily as UpcSalesComp[]) {
-        if (!upcItemsMap.has(row.product_code)) {
-          upcItemsMap.set(row.product_code, {
-            product_code: row.product_code,
-            description: row.description,
-          });
-        }
-      }
-    }
-
-    if (lyResult.status === "fulfilled") {
-      const lyJ = lyResult.value.data;
-      if (lyJ.error === 0 && lyJ.daily?.length > 0) {
-        dispatch(setDevSalesCompLY(lyJ.daily));
-      }
-    }
-
-    if (!upcItemsMap.size) {
-      toast.warn("No sales comp data found");
-      dispatch(setDevIsLoading(false));
-      return;
-    }
-
-    dispatch(setDevUpcItems(Array.from(upcItemsMap.values())));
-    dispatch(setDevSalesCompLoaded(true));
+    // The roster is the searched UPC list, not whatever an endpoint returned,
+    // so the left panel is complete and stable from the moment the search
+    // commits. Descriptions arrive as modules respond.
+    dispatch(seedDevUpcItems(ctx.upcs));
+    dispatch(setDevSearchSnapshot({ upcs: ctx.upcs, scopeKey }));
     dispatch(setDevDataLoaded(true));
-    dispatch(setDevIsLoading(false));
+    // No fetch here. Every module — Sales Comp included — asks for its own
+    // delta when the user actually opens it. A search costs zero calls on its
+    // own; the tab you land on makes exactly one.
   };
-
-  if (ctx.isLoading) {
-    return (
-      <div className="h-[calc(100vh-3rem)] overflow-hidden relative">
-        <LoadingIndicator message="Loading sales comp…" />
-      </div>
-    );
-  }
 
   if (!ctx.dataLoaded) {
     return <UpcSearchCard onSearch={handleSearch} />;

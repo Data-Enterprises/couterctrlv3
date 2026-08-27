@@ -26,6 +26,7 @@ import TabletSubComps from "./TabletSubComps";
 import SubDeptGridTablet from "./SubDeptGridTablet";
 import TopTenTablet from "./TopTenTablet";
 import SalesTrackerTablet from "../tracker/SalesTrackerTablet";
+import { isGroupSearch } from "../../../features/searchSlice";
 
 const SalesTablet = () => {
   const toast = useToast();
@@ -50,7 +51,7 @@ const SalesTablet = () => {
 
     const start = addDays(search.singleDate, -6).toISOString().split("T")[0];
     const end = formatGoliathDate(search.singleDate);
-    const useGroups = search.type === "Group" ? 1 : 0;
+    const useGroups = isGroupSearch(search.type) ? 1 : 0;
     const singleStore = search.type === "Store" ? 1 : 0;
     const searchValue = useGroups === 1 ? search.lastGroup : search.lastStore;
 
@@ -94,7 +95,7 @@ const SalesTablet = () => {
       Number(weeksBack),
     );
 
-    const useGroups = search.type === "Group" ? 1 : 0;
+    const useGroups = isGroupSearch(search.type) ? 1 : 0;
     const singleStore = search.type === "Store" ? 1 : 0;
     const searchValue = useGroups === 1 ? search.lastGroup : search.lastStore;
 

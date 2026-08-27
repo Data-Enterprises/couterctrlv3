@@ -404,7 +404,7 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
               return (
                 <div
                   key={u.id}
-                  className={`grid grid-cols-[12%_12%_12%_22%_11%_10%_11%_7rem] px-3 py-2 text-[13px] items-center transition-colors [content-visibility:auto] [contain-intrinsic-size:0_40px] ${outranked ? "bg-gray-50 text-content/40" : "text-content even:bg-row_stripe hover:bg-gray-50"}`}
+                  className={`grid grid-cols-[12%_12%_12%_22%_11%_10%_11%_7rem] px-3 py-2 text-[13px] items-center transition-colors [content-visibility:auto] [contain-intrinsic-size:0_40px] ${outranked ? "bg-gray-50 text-content/75" : "text-content even:bg-row_stripe hover:bg-gray-50"}`}
                 >
                   <div className="truncate">{u.username}</div>
                   <div className="truncate">{u.first_name || "—"}</div>
@@ -415,7 +415,7 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
                   <div className="truncate">{formatDate(u.last_visit)}</div>
                   <div className="flex items-center justify-end gap-1">
                     {outranked ? (
-                      <span className="text-[10px] italic text-content/40">
+                      <span className="text-[10px] italic text-content/75">
                         Unauthorized
                       </span>
                     ) : showInactive ? (

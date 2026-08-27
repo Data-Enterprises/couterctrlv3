@@ -9,6 +9,7 @@ import {
   setRefreshGroups,
   setSelectedGroup,
   type Group,
+  emptyGroup,
 } from "../../../features/groupSlice";
 
 import { deleteGroup } from "../../../api/groups";
@@ -21,9 +22,15 @@ const DeleteGroup = () => {
   const dispatch = useAppDispatch();
   const { url, token, groups, selectedGroup, createInput } = useGroupCtx();
 
+  // Shared groups are built and maintained by whoever shared the base group
+  // they came from, so they are not offered as an edit target here. Unlike the
+  // desktop page, these pickers exist only to choose something to change —
+  // there is no view mode a disabled row would still be useful in.
+  const editableGroups = groups.filter((g) => !g.is_shared);
+
   const handleSelect = (g: Group) => {
     if (selectedGroup.id === g.id) {
-      dispatch(setSelectedGroup({ id: 0, group_name: "", userid: 0 }));
+      dispatch(setSelectedGroup(emptyGroup));
       dispatch(setCreateInput(""));
     } else {
       dispatch(setSelectedGroup(g));
@@ -37,7 +44,7 @@ const DeleteGroup = () => {
         const j = resp.data;
         if (j.error == "0") {
           dispatch(setRefreshGroups(true));
-          dispatch(setSelectedGroup({ id: 0, group_name: "", userid: 0 }));
+          dispatch(setSelectedGroup(emptyGroup));
           dispatch(setCreateInput(""));
           toast.success("Group deleted successfully");
         }
@@ -51,7 +58,7 @@ const DeleteGroup = () => {
   };
 
   const cleanup = () => {
-    dispatch(setSelectedGroup({ id: 0, group_name: "", userid: 0 }));
+    dispatch(setSelectedGroup(emptyGroup));
     dispatch(setCreateInput(""));
     setIsDeleting(false);
   };
@@ -63,7 +70,7 @@ const DeleteGroup = () => {
           <div>Select group to delete</div>
         </div>
         <div className="md:text-sm p-3 bg-bkg rounded-lg grid grid-cols-3 gap-2 max-h-[50vh] shadow overflow-y-auto select-none">
-          {groups.map((g, i) => (
+          {editableGroups.map((g, i) => (
             <div
               key={g.id}
               data-testid={`delete-group-option-${i}`}

@@ -13,6 +13,7 @@ import {
   setStoresWithGroupStatus,
   type Group,
   type GroupFormType,
+  emptyGroup,
 } from "../../../features/groupSlice";
 import { getGroups, createGroup } from "../../../api/groups";
 import { useGroupCtx } from "..";
@@ -92,7 +93,7 @@ const Groups = () => {
   useEffect(() => {
     dispatch(setSelectedForm("create"));
     return () => {
-      dispatch(setSelectedGroup({ id: 0, group_name: "", userid: 0 }));
+      dispatch(setSelectedGroup(emptyGroup));
       dispatch(setCreateInput(""));
       dispatch(setStoresWithGroupStatus([]));
       dispatch(setSelectedForm(""));
@@ -100,7 +101,7 @@ const Groups = () => {
   }, []);
 
   useEffect(() => {
-    dispatch(setSelectedGroup({ id: 0, group_name: "", userid: 0 }));
+    dispatch(setSelectedGroup(emptyGroup));
     dispatch(setCreateInput(""));
     dispatch(setStoresWithGroupStatus([]));
   }, [ctx.selectedForm]);

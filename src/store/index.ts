@@ -44,6 +44,7 @@ import ordersLegacyReducer from "../features/ordersLegacySlice";
 import adListReducer from "../features/adListSlice";
 import salesLedgerReducer from "../features/salesLedgerSlice";
 import salesLegacyReducer from "../features/salesLegacySlice";
+import salesTrackerReducer from "../features/salesTrackerSlice";
 import upcDevReducer from "../features/upcDevSlice";
 import ticketsReducer from "../pages/tickets/ticketsSlice";
 import categoriesReducer from "../features/categoriesSlice";
@@ -102,6 +103,7 @@ export const setupStore = () =>
       adList: adListReducer,
       salesLedger: salesLedgerReducer,
       salesLegacy: salesLegacyReducer,
+      salesTracker: salesTrackerReducer,
       upcDev: upcDevReducer,
       tickets: ticketsReducer,
     },

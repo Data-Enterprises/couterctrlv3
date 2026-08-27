@@ -8,6 +8,7 @@ export const getSalesComp = async (
   enddate: string,
   // file: File,
   upc_list: string,
+  signal?: AbortSignal,
 ) => {
   // const formData = new FormData();
   // formData.append("file", file);
@@ -22,6 +23,7 @@ export const getSalesComp = async (
     },
     url: url + "marketing/upload_upcs_daily_sales",
     data: formData,
+    signal,
     params: {
       storeids,
       startdate,
@@ -73,6 +75,7 @@ export const getPriceOpt = async (
   enddate: string,
   // file: File,
   upc_list: string,
+  signal?: AbortSignal,
 ) => {
   // const formData = new FormData();
   // formData.append("file", file);
@@ -87,6 +90,7 @@ export const getPriceOpt = async (
     },
     url: url + "marketing/upload_upcs_price_optimizer",
     data: formData,
+    signal,
     params: {
       storeids,
       startdate,
@@ -106,6 +110,7 @@ export const getTrendDetect = async (
   periods: number = 120,
   // file: File,
   upc_list: string,
+  signal?: AbortSignal,
 ) => {
   // const formData = new FormData();
   // formData.append("file", file);
@@ -120,6 +125,7 @@ export const getTrendDetect = async (
     },
     url: url + "marketing/trend_detector",
     data: formData,
+    signal,
     params: {
       storeids,
       startdate,
@@ -140,6 +146,7 @@ export const getItemAssociation = async (
   upcs: string[],
   limit: number = 20,
   topBottomOrAll: "top" | "bottom" | "all",
+  signal?: AbortSignal,
 ) => {
   const json = await axios({
     method: "POST",
@@ -148,6 +155,7 @@ export const getItemAssociation = async (
       Authorization: `Bearer ${token}`,
     },
     url: url + "items/item_association",
+    signal,
     data: {
       storeids,
       startdate,

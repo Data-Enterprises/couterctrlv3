@@ -33,19 +33,19 @@ export const ITEM_REPORT_INFO: {
       subEntries: [
         {
           label: "Reorder",
-          desc: "Either the last delivery has all sold — sold against received, which catches an item going out faster than it arrives — or nothing has come in for over two weeks. No opening balance exists in the data, so stock held before that delivery is invisible.",
+          desc: "Three shapes. **It ran out mid-window** — selling steadily every day, then nothing for the last few days of the week, with the units it would have sold in that gap. This one needs no invoice: it reads the shelf emptying rather than a delivery date, so it works on stores whose orders never reach the data. Guarded so a slow mover doesn’t qualify — two days of sales to set a rate, two days of silence, and at least a unit a day. Or **the last delivery has all sold** — sold against received, which catches an item going out faster than it arrives. Or **nothing has come in for over two weeks**. The last two need an invoice on file; where none exists they simply do not fire. No opening balance exists in the data, so stock held before a delivery is invisible.",
         },
         {
           label: "Call vendor",
           desc: "Cost that won’t hold still: three or more changes in the lookback, one delivery up 5% or more that stayed up, a 10% rise end to end, or a cost bouncing up and down. Each finding is dated. Drifting cost is ordinary — these are the shapes worth a call, often about *when* to order rather than the price itself.",
         },
         {
-          label: "Check receiving",
-          desc: "Selling, but no receiver names it in 90 days — the rows whose Last reads “none”. Either it was never ordered, it arrives direct-to-store, or it came in electronically and never reached the scan this data is built from. The last is common and normal, which is why it isn’t a vendor call.",
+          label: "No receiver invoice on file",
+          desc: "A count above the list, not an action. Orders received electronically never reach the scan this data is built from, so a store can trade normally and still show no invoices — and those items were all being filed under one heading instead of being judged. They are now graded on what sales can prove: price against cost, and trend. Only **Reorder** and **Call vendor** are withheld, because those genuinely need the delivery trail. Where no invoice exists, cost falls back to the average from the week's sales and the sentence says so.",
         },
         {
           label: "Reprice",
-          desc: "Two shapes, needing different fixes. **The regular price is under cost** — the tag is wrong, and ending a promotion won’t repair it. Or **a promotion is underwater** — on sale below what you last paid, with the days it has run, units gone and money given away. Also a cost rise the regular price never followed. A markdown that still clears cost isn’t raised: that’s a decision, not a mistake.",
+          desc: "Ringing below cost, in two shapes needing different fixes. **The regular price is under cost** — the tag is wrong, and ending a promotion won’t repair it. Or **a promotion is underwater** — on sale below what the item cost, with the days it has run, the units gone and the money given away. Promotions are read from the POS price type, which distinguishes REG from TPR and SALE; an unrecognised type claims neither. Money given away counts register discounts as well as the ring, because both come off the same units. The price the tag is judged against is taken from the best source available and always named: a regular ring, then the last invoice’s intended retail, then the price on file, and only failing all three the highest price seen. Also raised when cost rose and the shelf never followed. A markdown that still clears cost isn’t raised — that’s a decision, not a mistake.",
         },
         {
           label: "Investigate",
@@ -57,13 +57,9 @@ export const ITEM_REPORT_INFO: {
         },
         {
           label: "Insufficient",
-          desc: "Not enough on file to suggest anything: the store keeps no receiving data at all, the item has no sales, receipts or baseline, or it arrived too recently to judge. Said plainly rather than guessed — a blank would read as nothing being wrong.",
+          desc: "Not enough on file to suggest anything: no sales, receipts or baseline; too recent to judge; or no cost from either an invoice or the week’s sales, which leaves margin unjudgeable. Said plainly rather than guessed at. A missing invoice on its own is **not** insufficient — price and trend are judged from sales, and cost falls back to the week’s average with the evidence saying so.",
         },
       ],
-    },
-    {
-      term: "Uploaded / All found",
-      desc: "Uploaded is the list you brought in, and what you see by default. All found adds items the delivery read turned up that also sold last week or last year — worth a look if you want to see what else came in on the same invoices. It is not a full department list: only items received in the last 90 days can appear.",
     },
     {
       term: "Units, vs LW, vs LY",

@@ -2,16 +2,15 @@ import { useEffect, useMemo, useState } from "react";
 import { useUpcDevCtx } from "../../hooks/useUpcDevCtx";
 import { useAppDispatch } from "../../../../../hooks";
 import {
-  setDevTrendLoaded,
   setDevTrendLoading,
   // setDevTrendPeriods, // parked with the Window input row — re-enable together
-  setDevUpcTrends,
-  setDevTopFiveTrends,
-  setDevBottomFiveTrends,
+  mergeDevTrends,
   setDevUpcItems,
 } from "../../../../../features/upcDevSlice";
 import { getTrendDetect } from "../../../../../api/upc";
-import type { UpcTrend, UpcItem } from "../../../../../interfaces";
+import { upcQueue } from "../../upcQueue";
+import { missingFrom } from "../../coverage";
+import type { UpcTrend } from "../../../../../interfaces";
 import { getTrendStatus } from "./trendStats";
 import TrendLeftList from "./TrendLeftList";
 import TrendDetailPanel from "./TrendDetailPanel";
@@ -28,37 +27,55 @@ const TrendTab = () => {
   // runs through today, not a fixed end date.
   const [trendStartDate, setTrendStartDate] = useState<string | null>(null);
 
-  const fetchTrends = async (periods: number) => {
-    dispatch(setDevTrendLoading(true));
-    const upcParam = ctx.upcs.join(",");
-    const upcItemsMap = new Map<string, UpcItem>();
+  // searchedUpcs, not upcs: `upcs` is the search card's working list and
+  // changes live as the user edits chips in the re-search popup, which would
+  // start fetching the moment they typed rather than when they clicked Search.
+  // `searchedUpcs` only moves when a search is actually committed.
+  const missing = missingFrom(ctx.searchedUpcs, ctx.trendCoverage);
+  const missingKey = missing.join(",");
 
-    const res = await getTrendDetect(ctx.url, ctx.token, ctx.storeids, ctx.startDate, ctx.endDate, periods, upcParam);
-    const j = res.data;
-    if (j.error === 0 && j.trends?.length > 0) {
-      dispatch(setDevUpcTrends(j.trends));
-      dispatch(setDevTopFiveTrends(j.top_5));
-      dispatch(setDevBottomFiveTrends(j.bottom_5));
-      setTrendStartDate(j.startdate);
-      for (const item of j.trends as UpcTrend[]) {
-        upcItemsMap.set(item.product_code, {
-          product_code: item.product_code,
-          description: item.product_description,
-        });
-      }
-    }
-
-    if (upcItemsMap.size) dispatch(setDevUpcItems(Array.from(upcItemsMap.values())));
-    dispatch(setDevTrendLoaded(true));
-    dispatch(setDevTrendLoading(false));
-  };
-
+  // Waits for an actual visit, then asks only for the UPCs it's missing — see
+  // the same pattern in PriceOptTab.
   useEffect(() => {
-    if (ctx.trendLoaded || ctx.trendLoading || !ctx.upcs.length || !ctx.storeids) return;
-    fetchTrends(ctx.trendPeriods);
-    // ctx.searchVersion: see the same note in PriceOptTab.tsx — without it
-    // this effect would never re-fire on a re-search.
-  }, [ctx.searchVersion]);
+    if (ctx.activeTab !== "trend") return;
+    if (ctx.trendLoading || !ctx.storeids || !missingKey) return;
+
+    const load = async () => {
+      dispatch(setDevTrendLoading(true));
+      try {
+        const res = await upcQueue.enqueue(`trend:${ctx.trendPeriods}:${missingKey}`, (signal) =>
+          getTrendDetect(
+            ctx.url, ctx.token, ctx.storeids, ctx.startDate, ctx.endDate,
+            ctx.trendPeriods, missingKey, signal,
+          ),
+        );
+        // Superseded by a newer search — see the same guard in PriceOptTab.
+        if (!res) return;
+
+        const j = res.data;
+        const rows: UpcTrend[] = j.error === 0 && j.trends?.length > 0 ? j.trends : [];
+        // j.top_5 / j.bottom_5 are dropped on the floor: they're the backend's
+        // own cross-UPC rankings, and nothing in this page reads them — the
+        // left list ranks by impact_units itself, so a stored ranking would
+        // only be one more thing to keep true as UPCs are added and removed.
+        // They'd also be wrong under delta fetching, being a ranking of
+        // whatever subset that one call happened to ask about.
+        if (rows.length) setTrendStartDate(j.startdate);
+        dispatch(mergeDevTrends({ rows, codes: missing }));
+        dispatch(
+          setDevUpcItems(
+            rows.map((t) => ({ product_code: t.product_code, description: t.product_description })),
+          ),
+        );
+      } catch {
+        // Coverage is left alone, so revisiting the tab retries.
+      } finally {
+        dispatch(setDevTrendLoading(false));
+      }
+    };
+
+    load();
+  }, [ctx.activeTab, missingKey]);
 
   // Parked with the Window input row below — re-enable together.
   // const handleWindowChange = (periods: number) => {
@@ -93,14 +110,6 @@ const TrendTab = () => {
     return (
       <div className="flex items-center justify-center h-full text-[11px] text-content/85">
         Loading trend detection…
-      </div>
-    );
-  }
-
-  if (!ctx.trendLoaded) {
-    return (
-      <div className="flex items-center justify-center h-full text-[11px] text-content/85">
-        Navigate here to load trend data
       </div>
     );
   }

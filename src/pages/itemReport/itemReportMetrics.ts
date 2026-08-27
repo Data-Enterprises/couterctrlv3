@@ -22,11 +22,11 @@ import type { SubDeptMargin } from "../../interfaces";
  *   — one is a stocking problem and one is a demand problem, they belong to
  *   different people, and nothing else can tell them apart.
  *
- *   Receipts are an entry point, not a lookup. An item that was delivered and
- *   never scanned produces no sales row anywhere, so it can't reach this page
- *   through the upload — Sub Dept Margins and Vendors both build their lists
- *   from this-year sales. Those items are found on the receipt side and marked
- *   `discovered`, and they are usually the most actionable rows in the report.
+ *   Receipts describe the items on the list, and only those. An item that was
+ *   delivered and never scanned produces no sales row anywhere, so it cannot
+ *   reach this page at all — the sheet used to discover those from the receipt
+ *   side, which is gone: the codes it took to find them had to travel as the
+ *   `receivers/item_search` request body, five figures of them on a full store.
  */
 
 /** A price has to hold this long before it counts as a period worth comparing.
@@ -228,6 +228,19 @@ interface PriceRead {
   saleDays: number;
   saleUnits: number;
   saleRevenue: number;
+  /**
+   * Register discounts given during the promotional run, as a negative number.
+   *
+   * The "DC <vendor>" rows carry no units and never reach `price` — that stays
+   * what the shelf asked. But they are real money off real units: the bacon's
+   * $3.99 promotion had a further $40.00 taken at the register, and 40 of its
+   * 81 units actually left at $2.99. Counting the promotion without them
+   * understated what it cost by nearly half.
+   */
+  saleDiscount: number;
+  /** The posted price from the most recent day's rows — what the POS says the
+   *  item costs, whatever it actually rang at. */
+  shelfPrice: number | null;
   /** The last regular ring in the window, if there was one. */
   regularPrice: number | null;
   /** The first regular ring, so shelf-price movement can be measured without
@@ -298,16 +311,27 @@ const readPrices = (rows: SubDeptMargin[]): PriceRead | null => {
     { revenue: number; units: number; promo: boolean }
   >();
   let highestPrice = 0;
+  let shelfPrice: number | null = null;
+  let shelfDay = "";
   let regularPrice: number | null = null;
   let regularDay = "";
   let firstRegularPrice: number | null = null;
   let firstRegularDay = "";
 
+  /** Money off, by day. Held apart from `days` so a discount row can never
+   *  create a day with revenue and no units to divide it by. */
+  const discounts = new Map<string, number>();
+
   for (const r of rows) {
     const u = pricedUnits(r);
-    if (u <= 0) continue;
     const day = r.sale_date.slice(0, 10);
     const revenue = r.total_sales - r.total_tax;
+
+    // A discount line: qty 0, money negative, same product_code as the item.
+    if (u <= 0) {
+      if (revenue < 0) discounts.set(day, (discounts.get(day) ?? 0) + revenue);
+      continue;
+    }
 
     const entry = days.get(day) ?? { revenue: 0, units: 0, promo: false };
     entry.revenue += revenue;
@@ -317,6 +341,14 @@ const readPrices = (rows: SubDeptMargin[]): PriceRead | null => {
 
     const rowPrice = revenue / u;
     if (rowPrice > highestPrice) highestPrice = rowPrice;
+
+    // Latest wins, same rule as the regular ring below — a price file that
+    // changed mid-window should report where it ended up.
+    const posted = r.ring_price ?? 0;
+    if (posted > 0 && day >= shelfDay) {
+      shelfDay = day;
+      shelfPrice = round2(posted);
+    }
     // Latest regular ring wins, so a price change is picked up rather than the
     // first one seen.
     if (isRegular(r)) {
@@ -341,6 +373,7 @@ const readPrices = (rows: SubDeptMargin[]): PriceRead | null => {
   let saleUnits = 0;
   let saleRevenue = 0;
   let saleDays = 0;
+  let saleDiscount = 0;
   if (today.promo) {
     for (let i = ordered.length - 1; i >= 0; i--) {
       const d = days.get(ordered[i])!;
@@ -348,6 +381,7 @@ const readPrices = (rows: SubDeptMargin[]): PriceRead | null => {
       saleStart = ordered[i];
       saleUnits += d.units;
       saleRevenue += d.revenue;
+      saleDiscount += discounts.get(ordered[i]) ?? 0;
       saleDays += 1;
     }
   }
@@ -357,6 +391,7 @@ const readPrices = (rows: SubDeptMargin[]): PriceRead | null => {
   const cents = (today.revenue / today.units) * 100;
 
   return {
+    shelfPrice,
     price: round2(today.revenue / today.units),
     date: latest,
     units: round1(today.units),
@@ -366,6 +401,7 @@ const readPrices = (rows: SubDeptMargin[]): PriceRead | null => {
     saleDays,
     saleUnits: round1(saleUnits),
     saleRevenue: round2(saleRevenue),
+    saleDiscount: round2(saleDiscount),
     regularPrice,
     firstRegularPrice,
     promoDays: new Set(
@@ -430,7 +466,6 @@ export type ActionKind =
    * What is actually worth doing is finding out how the item arrives. The list
    * already hints at it — these are the rows whose Last column reads "none".
    */
-  | "receiving"
   | "none"
   | "insufficient"
   /**
@@ -493,7 +528,6 @@ export interface ReportItem {
   vendorName: string;
   /** Found on the receipt side rather than in the upload — delivered but never
    *  scanned, so no sales row for it exists anywhere. */
-  discovered: boolean;
 
   ty: PeriodTotals;
   lw: PeriodTotals | null;
@@ -582,20 +616,14 @@ export const buildReport = (
   const lwBy = byCode(lwRows);
   const lyBy = byCode(lyRows);
 
-  // Both populations are built; the sheet's scope toggle picks between them, so
-  // switching costs a filter rather than a rebuild.
+  // The report answers for the list it was given, and nothing else.
   //
-  // Discovery is bounded twice over: the code has to appear on a receipt, and it
-  // has to have sold in one of the prior periods — which is also what names the
-  // department a receipt line can't. An item already selling this week is left
-  // out because it wasn't flagged and isn't the question.
-  const uploaded = new Set(upcs);
-  const wanted = new Set(uploaded);
-  for (const code of Object.keys(receiptsByUpc)) {
-    if (wanted.has(code)) continue;
-    if (tyBy.has(code)) continue;
-    if (lwBy.has(code) || lyBy.has(code)) wanted.add(code);
-  }
+  // There used to be a second population here, discovered by scanning the
+  // receipts for codes with prior-period sales, which the sheet exposed as an
+  // "All found" tab. It was dropped because the codes it needed had to be sent
+  // to `receivers/item_search` as the request body — five figures of them on a
+  // full store — to surface a handful of rows nobody had asked about.
+  const wanted = new Set(upcs);
 
   const items: ReportItem[] = [];
   for (const code of wanted) {
@@ -695,7 +723,6 @@ export const buildReport = (
       department: identity.sub_department_description,
       vendorName:
         identity.vendor_name || receipts[0]?.vendorName || "No vendor",
-      discovered: !uploaded.has(code),
       ty: tyTotals,
       lw: lwTotals,
       ly: lyTotals,
@@ -809,7 +836,6 @@ export const ACTION_LABEL: Record<ActionKind, string> = {
   reorder: "Reorder",
   reprice: "Reprice",
   vendor: "Call vendor",
-  receiving: "Check receiving",
   none: "No action",
   insufficient: "Insufficient",
 };
@@ -821,7 +847,6 @@ export const ACTION_RANK: Record<ActionKind, number> = {
   reorder: 1,
   reprice: 2,
   vendor: 3,
-  receiving: 4,
   insufficient: 5,
   none: 6,
   /** Last, so that once the walk finishes and rows resolve, nothing that has
@@ -847,11 +872,11 @@ export const verdictFor = (
   receipts: ReceiptLine[],
   eras: PriceEra[],
   windowDays: number,
+  /** yyyy-mm-dd, the last day of the sales window. Needed to tell "stopped
+   *  selling four days ago" from "sold right up to the end". */
+  windowEnd: string,
   lookbackDays: number,
   receivingKnown: boolean,
-  /** False when the store has no receiving on file at all — see the guard
-   *  below for why that is a different question from this item having none. */
-  receivingAvailable: boolean,
 ): Verdict => {
   const last = receipts[0] ?? null;
   const lastDays = last ? daysSince(last.date) : null;
@@ -873,25 +898,24 @@ export const verdictFor = (
   }
 
   /**
-   * The store has no received orders on file — not this item, the store.
-   * `receivers/` answered with `record_count: 0`.
+   * A missing delivery record is a fact about the DATA, not a verdict about the
+   * item, and it is no longer either of those things here.
    *
-   * Everything below reads the delivery side, so without it every row in the
-   * list reaches the same branch and the page hands back a hundred identical
-   * "call the vendor, nothing received in 90 days" verdicts. Each one is
-   * strictly true and none of them is about the item it sits on — the absence
-   * is a fact about the store, and repeating it per row disguises that.
+   * It used to be both: a store with no receivers at all returned `insufficient`
+   * for every row, and an item with no receiver of its own returned "check
+   * receiving" before any pricing or demand test could run. Orders received
+   * electronically never reach the scan this is built from, so entire stores
+   * come through with no invoice trail — and 522 items would land in one bucket
+   * reading `Reprice 0`, not because nothing was wrong but because nothing was
+   * looked at.
    *
-   * So it is said once, plainly, and the rows stop pretending to a conclusion
-   * they cannot reach. The banner above the list says the same thing.
+   * Sales are proof of presence. An item that sold 81 units is on the shelf
+   * whatever receiving says, so its price and its trend can both be judged. The
+   * count of items with no invoice is reported once, above the list.
+   *
+   * What still needs the invoice trail is unchanged and simply does not fire
+   * without it: reorder, run-out, cost history, and cost-moved-but-shelf-didn't.
    */
-  if (!receivingAvailable) {
-    return {
-      action: "insufficient",
-      evidence: `No received orders on file for this store in ${lookbackDays} days — nothing here can be checked against deliveries.`,
-      unaccounted,
-    };
-  }
 
   /**
    * The price the item is currently ringing at.
@@ -918,7 +942,33 @@ export const verdictFor = (
    * question this page asks is whether the price is wrong *now*, so the cost
    * has to be the one now.
    */
-  const rulingCost = last && last.unitCost > 0 ? last.unitCost : null;
+  const rulingCost =
+    last && last.unitCost > 0
+      ? last.unitCost
+      : item.unitCost && item.unitCost > 0
+        ? item.unitCost
+        : null;
+
+  /**
+   * Which cost the sentence is about to quote.
+   *
+   * The invoice wins whenever there is one — a delivery landing mid-window
+   * makes any blend stale, and the question is whether the price is wrong now.
+   * The sales-side figure is `cogs / units` off the `subs` rows and covers 520
+   * of 523 products in a real department, so refusing it means refusing to
+   * judge margin at all on a store whose orders arrive electronically. It is
+   * named in the evidence rather than passed off as an invoice cost.
+   */
+  const costIsInvoiced = Boolean(last && last.unitCost > 0);
+  const costBasis = costIsInvoiced
+    ? ""
+    : " (average cost this week — no invoice on file to confirm)";
+  /** How to name the cost mid-sentence. "You last paid" is a claim about an
+   *  invoice, and saying it over a figure derived from `subs` cost ÷ case pack
+   *  would be untrue on every electronically-received store. */
+  const costPhrase = costIsInvoiced
+    ? "you last paid"
+    : "average cost this week, with no invoice on file to confirm it";
 
   /**
    * Margin as the shelf sees it: what it rings at now, against what the last
@@ -940,9 +990,26 @@ export const verdictFor = (
    * for an item that spent the whole window on promotion. Failing both, the
    * dearest price seen, which is a stand-in and not evidence.
    */
+  /**
+   * The shelf price, best source first.
+   *
+   * A regular ring is the real thing. Then the last receiver's intended retail.
+   * Then the POS `ring_price` — an actual posted price rather than an inference,
+   * which matters because 401 of 520 products in a real department never rang
+   * REG in the window at all, and "highest price seen" was reading a promotion
+   * as though it were the tag. Highest-seen survives only as a last resort.
+   *
+   * Every one of these is named in the evidence. Where the posted price and the
+   * ring disagree the page does not try to decide which is right — it prints
+   * both and lets someone walk out and read the tag, which is the only thing
+   * that settles it.
+   */
   const regularPrice =
     lastPrice?.regularPrice ??
     (last && last.retail > 0 ? last.retail : null) ??
+    (lastPrice?.shelfPrice != null && lastPrice.shelfPrice > 0
+      ? lastPrice.shelfPrice
+      : null) ??
     (lastPrice && lastPrice.highestPrice > 0 ? lastPrice.highestPrice : null);
 
   const regularSource =
@@ -950,7 +1017,9 @@ export const verdictFor = (
       ? "Regular price"
       : last && last.retail > 0
         ? "Regular price per the last invoice"
-        : "Highest price seen";
+        : lastPrice?.shelfPrice != null && lastPrice.shelfPrice > 0
+          ? "Shelf price on file"
+          : "Highest price seen";
 
   const rulingMargin =
     lastPrice && rulingCost !== null && lastPrice.price > 0
@@ -961,7 +1030,9 @@ export const verdictFor = (
    *  has no regular price to compute a margin from, and a placeholder in the
    *  middle of a sentence reads as a broken figure rather than an absent one. */
   const marginClause =
-    rulingMargin === null ? "" : `, margin ${rulingMargin.toFixed(1)}%`;
+    rulingMargin === null
+      ? ""
+      : `, margin ${rulingMargin.toFixed(1)}%${costBasis}`;
 
   const underCost =
     lastPrice !== null &&
@@ -1027,26 +1098,51 @@ export const verdictFor = (
 
   /* ── no recent delivery: a stocking problem ─────────────────────────── */
 
+  /**
+   * No delivery record at all.
+   *
+   * Only the two no-sales cases resolve here. An item that HAS sold is on the
+   * shelf by the evidence of its own sales, so it carries on to the pricing and
+   * demand tests below rather than stopping at "check receiving" — which was a
+   * statement about our data wearing the costume of a verdict about the item.
+   */
   if (!last) {
-    if (sold > 0) {
-      return {
-        action: "receiving",
-        evidence: `Sold ${round1(sold)} units but no receiver on file in ${lookbackDays} days. Confirm how this arrives — scanned, direct-store, or electronically.${underCostFact}`,
-        unaccounted,
-      };
-    }
-    if (item.lw || item.ly) {
+    if (sold === 0 && (item.lw || item.ly)) {
+      /**
+       * The one Reorder that does not need an invoice, and the only evidence
+       * for it is the sales stopping.
+       *
+       * This said "No delivery in 90 days", which is a claim about the store.
+       * What is actually known is that no invoice is on file — and on a
+       * store receiving electronically that is true of everything, so the
+       * sentence would have read as a delivery failure on every row.
+       *
+       * The conclusion is offered, not asserted: an item that sold every week
+       * and now sells nothing is usually off the shelf, but demand collapse and
+       * a delist look identical from here. Checking the spot settles it, and
+       * that is the action either way.
+       */
+      const sellingHistory = [
+        item.lw ? `${round1(item.lw.units)} last week` : "",
+        item.ly ? `${round1(item.ly.units)} last year` : "",
+      ]
+        .filter(Boolean)
+        .join(", ");
       return {
         action: "reorder",
-        evidence: `No delivery in ${lookbackDays} days and nothing sold this window — off the shelf.`,
+        evidence: `Sold ${sellingHistory}, none this window, and no receiver invoice on file to confirm a delivery. Most likely off the shelf — worth checking the spot.`,
         unaccounted,
       };
     }
-    return {
-      action: "insufficient",
-      evidence: `No sales, no receivers in ${lookbackDays} days, no baseline. Can't tell if this item is still carried.`,
-      unaccounted,
-    };
+    if (sold === 0) {
+      return {
+        action: "insufficient",
+        evidence: `No sales, no receivers in ${lookbackDays} days, no baseline. Can't tell if this item is still carried.`,
+        unaccounted,
+      };
+    }
+    // Sold, but no delivery trail. Everything that needs one is skipped below
+    // by its own guards; everything that does not still runs.
   }
 
   /**
@@ -1065,7 +1161,10 @@ export const verdictFor = (
    */
   const runOut = item.sinceDelivery !== null && item.sinceDelivery.left <= 0;
 
-  if (!isRecent || runOut) {
+  // `last &&` matters: without a receipt `isRecent` is false, and an unguarded
+  // `!isRecent` would call every no-invoice item off the shelf — the same
+  // mistake as before, wearing "reorder" instead of "check receiving".
+  if (last && (!isRecent || runOut)) {
     const sd = item.sinceDelivery;
     const lead =
       runOut && sd
@@ -1087,7 +1186,10 @@ export const verdictFor = (
   // The sheet carries days-since in its own column and the rail states it
   // beside the Received heading, so the sentence says the conclusion the date
   // supports rather than repeating the date a third time.
-  const inStock = "In stock.";
+  // With an invoice, the delivery date says it is in stock. Without one, the
+  // only evidence is that it sold — enough to judge price and trend on, not
+  // enough to state stock.
+  const inStock = last ? "In stock." : "Selling.";
 
   if (sold === 0) {
     const sd = item.sinceDelivery;
@@ -1111,9 +1213,66 @@ export const verdictFor = (
     const held = sd
       ? ` ${sd.received} units delivered, none scanned since.`
       : " Nothing scanned since.";
+    /**
+     * What is standing there, in money.
+     *
+     * No price to quote — nothing sold, so there is no ring to read — and the
+     * unit counts are already in the strip above. The one figure neither of
+     * those carries is what the stock is worth, which is the size of the
+     * problem and the reason to walk out and look at it.
+     */
+    const atCost =
+      sd && sd.received > 0 && rulingCost !== null
+        ? ` About ${money(round2(sd.received * rulingCost))} of stock at cost${costBasis}.`
+        : "";
     return {
       action: "investigate",
-      evidence: `${inStock}${held}`,
+      evidence: `${inStock}${held}${atCost}`,
+      unaccounted,
+    };
+  }
+
+  /**
+   * Ran out partway through the window.
+   *
+   * The other Reorder tests both start from a delivery — how long ago it was,
+   * or how much of it has sold — so neither can fire on a store with no invoice
+   * trail, and Reorder reads zero there however empty the shelves get.
+   *
+   * This one reads the shelf instead of the paperwork: an item selling every
+   * day that stops dead, with days still left in the window, went empty. That
+   * is a stronger signal than a delivery date in any case — a date says what
+   * should be there, sales say what was.
+   *
+   * Guarded three ways, because a slow mover looks the same as a stockout if
+   * you squint: at least two days of sales to establish a rate, at least two
+   * days of silence to rule out a quiet day, and a rate of at least a unit a
+   * day so that "sold one on Monday and one on Tuesday" does not qualify.
+   */
+  const isoDaysBetween = (from: string, to: string) => {
+    const [ay, am, ad] = from.split("-").map(Number);
+    const [by, bm, bd] = to.split("-").map(Number);
+    return Math.round(
+      (Date.UTC(by, bm - 1, bd) - Date.UTC(ay, am - 1, ad)) / 86400000,
+    );
+  };
+
+  const stockout = (() => {
+    if (!windowEnd || sold <= 0) return null;
+    const selling = item.series.filter((d) => d.units > 0);
+    if (selling.length < 2) return null;
+    const lastSale = selling[selling.length - 1].date;
+    const dead = isoDaysBetween(lastSale, windowEnd);
+    if (dead < 2) return null;
+    const rate = sold / selling.length;
+    if (rate < 1) return null;
+    return { lastSale, dead, rate: round1(rate), missed: round1(rate * dead) };
+  })();
+
+  if (stockout) {
+    return {
+      action: "reorder",
+      evidence: `Sold about ${stockout.rate} a day through ${shortDate(stockout.lastSale)}, then nothing for the last ${stockout.dead} days — roughly ${stockout.missed} units of missed sales. Looks like it ran out mid-week.${extraNote}`,
       unaccounted,
     };
   }
@@ -1183,19 +1342,45 @@ export const verdictFor = (
     );
     return {
       action: "reprice",
-      evidence: `${inStock} ${regularSource} is ${money(regularPrice)}, below the ${money(rulingCost ?? 0)} you last paid. Margin ${pct.toFixed(1)}%.${regularSource === "Highest price seen" ? " Worth checking the shelf tag — if it reads higher than this, the gap is coming from a sale or a coupon." : ""}`,
+      evidence: `${inStock} ${regularSource} is ${money(regularPrice)}, below the ${money(rulingCost ?? 0)} ${costPhrase}. Margin ${pct.toFixed(1)}%.${regularSource === "Highest price seen" ? " Worth checking the shelf tag — if it reads higher than this, the gap is coming from a sale or a coupon." : ""}`,
       unaccounted,
     };
   }
 
   if (underCost && lastPrice && lastPrice.onSale) {
+    /**
+     * What the promotion actually cost, discounts included.
+     *
+     * `saleRevenue` is what the shelf asked. Register discounts are taken off
+     * it, because they are money given away on the same units — the bacon's
+     * $3.99 run looked like $44.60 and was $84.60 once its $40.00 of "DC" rows
+     * were counted. Reporting the smaller figure understated the promotion by
+     * nearly half.
+     */
+    const discount = Math.abs(lastPrice.saleDiscount);
     const givenAway = round2(
-      (rulingCost ?? 0) * lastPrice.saleUnits - lastPrice.saleRevenue,
+      (rulingCost ?? 0) * lastPrice.saleUnits -
+        (lastPrice.saleRevenue + lastPrice.saleDiscount),
     );
     const run = `${lastPrice.saleDays} day${lastPrice.saleDays === 1 ? "" : "s"}, ${lastPrice.saleUnits} units`;
+    /** Named separately rather than folded in, because the two are fixed in
+     *  different places: the shelf promotion, and whatever is firing at the
+     *  register on top of it. */
+    const discountClause =
+      discount > 0
+        ? ` That includes ${money(discount)} taken at the register on top of the ${money(lastPrice.price)} — some of these units left at ${money(round2(lastPrice.price - discount / lastPrice.saleUnits))} or less.`
+        : "";
     return {
       action: "reprice",
-      evidence: `${inStock} On sale at ${money(lastPrice.price)} since ${shortDate(lastPrice.saleStart)} — ${run} — against a ${money(rulingCost ?? 0)} cost.${rulingMargin === null ? "" : ` Margin ${rulingMargin.toFixed(1)}%,`} about ${money(givenAway)} given away.${regularPrice === null ? "" : ` ${regularSource} is ${money(regularPrice)}, so it is the promotion that is underwater.`}`,
+      /**
+       * "On sale" is a claim the data supports, not an inference.
+       *
+       * `price_type` is a real POS field with REG for the regular price and
+       * TPR/SALE for the two kinds of reduced one, and `isPromo` only fires on
+       * types it recognises — an unknown or blank type establishes neither a
+       * regular price nor a promotion. So this says the promotion out loud.
+       */
+      evidence: `${inStock} On sale at ${money(lastPrice.price)} since ${shortDate(lastPrice.saleStart)} — ${run} — against a ${money(rulingCost ?? 0)} cost.${rulingMargin === null ? "" : ` Margin ${rulingMargin.toFixed(1)}%,`} about ${money(givenAway)} given away.${discountClause}${regularPrice === null ? "" : ` ${regularSource} is ${money(regularPrice)}, so it is the promotion that is underwater.`}`,
       unaccounted,
     };
   }
@@ -1298,7 +1483,32 @@ export const verdictFor = (
   if (downOnBoth) {
     return {
       action: "investigate",
-      evidence: `${inStock} Down ${Math.abs(round1(item.lyPct!))}% on last year and ${Math.abs(round1(item.lwPct!))}% on last week, with cost and price steady. Nothing in the data explains it.`,
+      /**
+       * "Cost and price steady" was asserted and never shown.
+       *
+       * It is the whole basis of the verdict — the reason this is Investigate
+       * and not Reprice — so it prints the two figures it rests on. Without
+       * them the reader has to take the one claim that matters on trust.
+       */
+      evidence: `${inStock} Down ${Math.abs(round1(item.lyPct!))}% on last year and ${Math.abs(round1(item.lwPct!))}% on last week.${
+        lastPrice && rulingCost !== null
+          ? ` It rang ${money(lastPrice.price)} against a ${money(rulingCost)} cost${rulingMargin === null ? "" : `, margin ${rulingMargin.toFixed(1)}%`}${costBasis} — neither moved.`
+          : " Cost and price steady."
+      } Nothing in the data explains it.`,
+      unaccounted,
+    };
+  }
+
+  /**
+   * Nothing fired — but "no action" has to mean "checked and clean", not
+   * "could not check". An item with no cost from either source never reached
+   * the margin tests at all, and 3 of 523 products in a real department are
+   * like that (Managers Special and other open-department keys).
+   */
+  if (rulingCost === null) {
+    return {
+      action: "insufficient",
+      evidence: `${inStock} No cost on file from an invoice or from sales, so margin can't be judged. Trend ${trend === null ? "flat" : `${round1(trend)}%`}.`,
       unaccounted,
     };
   }
@@ -1324,7 +1534,6 @@ export const buildRollup = (
     reorder: 0,
     reprice: 0,
     vendor: 0,
-    receiving: 0,
     none: 0,
     insufficient: 0,
     pending: 0,

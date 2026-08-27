@@ -34,6 +34,7 @@ import LoadingIndicator from "../../components/loading/LoadingIndicator";
 import AllOrdersGrid from "./AllOrdersGrid";
 import KpiContainer from "./kpis/KpiContainer";
 import ExportModal from "../../components/modals/ExportModal";
+import { isGroupSearch } from "../../features/searchSlice";
 // import OrdersTablet from "./tablet/OrdersTablet";
 
 const OrdersLegacy = () => {
@@ -41,7 +42,7 @@ const OrdersLegacy = () => {
   const toast = useToast();
 
   const handleSearch = () => {
-    if (ctx.type === "Group") {
+    if (isGroupSearch(ctx.type)) {
       getStoresAssignedToUserGroup(
         ctx.url,
         ctx.token,

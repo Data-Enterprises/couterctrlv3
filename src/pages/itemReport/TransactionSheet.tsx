@@ -122,7 +122,32 @@ const TransactionSheet = ({
   }, [openSale, url, token]);
 
   const inBasket = openSale !== null;
-  const basketTotal = basket.reduce((s, l) => s + l.net_sales, 0);
+
+  /**
+   * A "DC <vendor>" line: the register's record of a discount, written as its
+   * own row under the SAME product_code as the item it discounts.
+   *
+   * That shared code is what lets a vendor name find an item whose own
+   * description never mentions it — and it is also why these have to be
+   * separated deliberately. Bucketing on product_code alone folds the discount
+   * into the item and reports the difference as a price: SF BACON rang at
+   * $2.99 with a $1.00 discount beside it, and the two collapsed to "$0.99".
+   */
+  const isDiscountLine = (l: TransactionListItem) =>
+    (l.qty ?? 0) === 0 && l.is_discounted === 1;
+
+  /**
+   * Sale lines only — their `net_sales` already has the discount applied.
+   *
+   * Verified on 111-177563: the bacon line reads `total_sales 3.99,
+   * net_sales 2.99` and carries a separate DC row. Adding the DC row here would
+   * subtract the discount a second time, and its own `net_sales` is doubled
+   * (-2.00 against a real -1.00), so it would subtract it twice over. That is
+   * what made this receipt total $14.62 instead of $18.62.
+   */
+  const basketTotal = basket
+    .filter((l) => !isDiscountLine(l))
+    .reduce((s, l) => s + l.net_sales, 0);
 
   /**
    * One row per product, not per scan.
@@ -183,6 +208,8 @@ const TransactionSheet = ({
       string,
       {
         code: string;
+        /** A "DC" line rather than a scan of the item itself. */
+        discount: boolean;
         description: string;
         qty: number;
         net: number;
@@ -193,20 +220,30 @@ const TransactionSheet = ({
     >();
     for (const l of basket) {
       const code = String(l.product_code);
-      const found = byCode.get(code);
+      // Keyed on the discount flag as well as the code, so an item and its own
+      // "DC" line stay two rows. They share a product_code, and merging them
+      // reports a price nobody paid.
+      const discount = isDiscountLine(l);
+      const key = `${code}|${discount ? "dc" : "item"}`;
+      const found = byCode.get(key);
       // `qty` is optional on the line; a scan with none is one unit.
       const q = l.qty ?? 1;
+      // `total_sales` on a DC row, `net_sales` on a sale row. The discount's
+      // `net_sales` is double its real value — -2.00 where the item went 3.99
+      // to 2.99 — while its `total_sales` is the amount that actually came off.
+      const amount = discount ? l.total_sales : l.net_sales;
       if (found) {
         found.qty += q;
-        found.net += l.net_sales;
+        found.net += amount;
         found.coupon += l.coupon_amount;
         found.priceTypes.add(l.price_type);
       } else {
-        byCode.set(code, {
+        byCode.set(key, {
           code,
+          discount,
           description: l.product_description,
           qty: q,
-          net: l.net_sales,
+          net: amount,
           coupon: l.coupon_amount,
           priceTypes: new Set([l.price_type]),
           firstLine: l.line_number,
@@ -216,7 +253,9 @@ const TransactionSheet = ({
     // Kept in the order the register rang them, so it still reads like the
     // receipt it represents.
     return [...byCode.values()].sort((a, b) => a.firstLine - b.firstLine);
-  }, [basket]);
+  }, [basket]);
+  const itemRowCount = grouped.filter((g) => !g.discount).length;
+  const discountRowCount = grouped.length - itemRowCount;
 
   return (
     <ResizableModalShell
@@ -286,7 +325,7 @@ const TransactionSheet = ({
                 isItem && action ? ACTION_TONE[action].text : "text-content";
               return (
                 <div
-                  key={l.code}
+                  key={`${l.code}-${l.discount ? "dc" : "item"}`}
                   className={`grid gap-3 px-4 py-2 items-center border-b border-gray-100 ${
                     // The line you came for, marked among the rest of the
                     // basket — that contrast is the whole point of the view,
@@ -313,7 +352,14 @@ const TransactionSheet = ({
                     >
                       {l.code}
                       {l.coupon > 0 && ` · ${formatCurrency2(l.coupon)} coupon`}
-                      {isItem && " · this item"}
+                      {/* Both halves of a discounted item are marked, and each
+                          says which half it is — the pair is the finding, and
+                          "this item" twice with different money on it would
+                          read as a duplicate row. */}
+                      {isItem &&
+                        (l.discount
+                          ? " · discount on this item"
+                          : " · this item")}
                     </div>
                   </div>
                   {/* Every price type this item rang under. More than one is
@@ -321,7 +367,9 @@ const TransactionSheet = ({
                   <span className={`${cell} ${ink}`}>
                     {[...l.priceTypes].join(" · ")}
                   </span>
-                  <span className={`${num} ${ink}`}>{l.qty}</span>
+                  <span className={`${num} ${ink}`}>
+                    {l.discount ? "—" : l.qty}
+                  </span>
                   {/* Per unit, because with quantity aggregated the line total
                       no longer says what anything actually rang at — and the
                       unit price is what you compare against the price row you
@@ -337,8 +385,14 @@ const TransactionSheet = ({
             })}
             {grouped.length > 0 && (
               <div className="px-4 py-2 text-[12px] font-medium text-content flex items-center justify-between">
+                {/* Discount rows are counted apart from the items. They are
+                    their own rows in the table, but calling one an item would
+                    say the basket held something it did not. */}
                 <span>
-                  {grouped.length} item{grouped.length === 1 ? "" : "s"} ·{" "}
+                  {itemRowCount} item{itemRowCount === 1 ? "" : "s"}
+                  {discountRowCount > 0 &&
+                    ` · ${discountRowCount} discount${discountRowCount === 1 ? "" : "s"}`}
+                  {" · "}
                   {basket.length} line{basket.length === 1 ? "" : "s"}
                 </span>
                 <span className="tabular-nums">

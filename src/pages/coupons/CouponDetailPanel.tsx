@@ -20,6 +20,7 @@ import ThresholdFilter, {
   type ThresholdValue,
 } from "../../components/filters/ThresholdFilter";
 import SelectFilter from "../../components/filters/SelectFilter";
+import { isGroupSearch } from "../../features/searchSlice";
 
 interface CouponDetailPanelProps {
   selectedKey: string; // sub dept name (single store) | store ID string (group) | "" for all
@@ -175,7 +176,7 @@ const CouponDetailPanel = ({
   const search = useAppSelector((s) => s.search);
   const context = useAppSelector((s) => s.app);
   const selectedGroup = useAppSelector((s) => s.search.selectedGroup);
-  const isGroup = search.type === "Group";
+  const isGroup = isGroupSearch(search.type);
   const storeName = useStoreName(Number(search.lastStore));
   const assignedStores = useAppSelector((s) => s.user.assignedStores);
 

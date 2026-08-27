@@ -1,5 +1,6 @@
 import { useAppSelector } from ".";
 import { getStoreName } from "../utils";
+import { isGroupSearch } from "../features/searchSlice";
 
 /**
  * What the current search covers, named — the group's name when the user
@@ -18,7 +19,7 @@ export const useSearchScopeLabel = (): string => {
   const { assignedStores } = useAppSelector((s) => s.user);
   const { groups } = useAppSelector((s) => s.group);
 
-  if (type === "Group") {
+  if (isGroupSearch(type)) {
     // The list can still be loading on first paint; an empty string would
     // collapse the header row, so fall back to the generic word.
     return groups.find((g) => g.id === lastGroup)?.group_name ?? "Group";

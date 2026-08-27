@@ -60,11 +60,18 @@ const GroupsList = ({
                   ? { boxShadow: "inset 0 0 8px rgba(37,99,235,0.22)" }
                   : undefined
               }
-              className={`w-full text-left px-3 py-2.5 border-b border-gray-100 text-[12px] font-medium transition-colors ${
+              className={`w-full flex items-center gap-1.5 text-left px-3 py-2.5 border-b border-gray-100 text-[12px] font-medium transition-colors ${
                 isSel ? "bg-custom-white text-content" : "hover:bg-gray-50 text-content"
               }`}
             >
-              {g.group_name}
+              <span className="flex-1 truncate">{g.group_name}</span>
+              {/* Shared groups stay selectable — they just can't be edited,
+                  which GroupDetail spells out once one is open. */}
+              {g.is_shared && (
+                <span className="text-[9px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-700 flex-shrink-0">
+                  Shared
+                </span>
+              )}
             </button>
           );
         })}

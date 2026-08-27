@@ -8,7 +8,9 @@ import { resetNav, setIsNavOpen, setLastRoute } from "../../features/navSlice";
 import {
   resetAppSlice,
   setApiEnv,
+  toggleDevMode,
   SHOW_API_ENV_SWITCH,
+  SHOW_ENV_TOGGLE,
 } from "../../features/appSlice";
 import { resetUserSlice } from "../../features/userSlice";
 import { resetSalesSlice } from "../../features/salesSlice";
@@ -315,6 +317,57 @@ const TitleBar = () => {
                     }`}
                   >
                     PROD
+                  </button>
+                </div>
+              </div>
+            ) : null}
+            {/* Which interface this session shows — the new UI or the legacy
+                one. Separate from the API row above: that picks the backend,
+                this picks the front end.
+
+                It lives here because the only other control for it is in
+                `TitleBarLegacy`, which by definition only renders once you are
+                already in Live — so without this row Preview was a one-way
+                door and there was no way back to the old pages.
+
+                Programmers only (level 9), a tighter gate than the legacy
+                control's `role === 9 || userLevel >= 2`: sending a client back
+                to the old interface is not something support or QA should be
+                one stray click away from.
+
+                Like the API row, it does not close the dropdown: you flip it
+                and confirm the badge moved. */}
+            {SHOW_ENV_TOGGLE && user.userLevel === 9 ? (
+              <div className="px-4 py-2.5 border-b border-gray-100 flex items-center gap-2">
+                <span className="text-[13px] font-medium text-content flex-1">
+                  Interface
+                </span>
+                <div className="flex items-center rounded-full overflow-hidden border border-gray-200 text-[10px] font-bold select-none flex-shrink-0">
+                  <button
+                    onClick={() => {
+                      if (!context.devMode) dispatch(toggleDevMode());
+                    }}
+                    title="Show the new interface"
+                    className={`px-2.5 py-1 transition-colors ${
+                      context.devMode
+                        ? "bg-[#1e2a4a] text-custom-white"
+                        : "text-content/85 hover:bg-gray-50"
+                    }`}
+                  >
+                    PREVIEW
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (context.devMode) dispatch(toggleDevMode());
+                    }}
+                    title="Show the legacy interface"
+                    className={`px-2.5 py-1 transition-colors ${
+                      !context.devMode
+                        ? "bg-amber-500 text-custom-white"
+                        : "text-content/85 hover:bg-gray-50"
+                    }`}
+                  >
+                    LIVE
                   </button>
                 </div>
               </div>

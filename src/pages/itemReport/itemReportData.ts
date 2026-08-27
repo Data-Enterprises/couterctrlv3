@@ -1,8 +1,12 @@
-import { getReceiversList, getReceiverDetails } from "../../api/receivers";
+import {
+  getReceiversList,
+  getReceiverDetails,
+  searchReceiversByItem,
+} from "../../api/receivers";
 import { normalizeProductCode } from "../../utils/productCode";
 import { fetchSubDeptRowsSafe } from "../../utils/marginRows";
-import { fetchSubDepts } from "../inventory/inventoryData";
-import type { SubDeptSummary } from "../inventory/inventoryData";
+import { getSubMarginsWithPricePoints } from "../../api/subMargins";
+import { fetchAllPages } from "../../utils/paging";
 import { LW_OFFSET, shiftIso } from "../../utils/grading";
 import { getLYDate, setDates } from "../subDepts";
 import { formatDate } from "../../utils";
@@ -11,7 +15,12 @@ import type {
   ReceiverListResponse,
   ReceiverDetailsItem,
   ReceiverDetailsResponse,
+  ReceiverItemSearchLine,
+  ReceiverItemSearchReceiver,
+  ReceiverItemSearchResponse,
   SubDeptMargin,
+  SubMarginsPricePointsResp,
+  SubsPricePoint,
 } from "../../interfaces";
 
 /**
@@ -122,78 +131,151 @@ export const lyWindow = (scope: { start: string; end: string }) => ({
   end: getLYDate(scope.end),
 });
 
-/** The departments that sold in a given window. Shared with Price Opt rather
- *  than reimplemented — same endpoint, same paging, same roll-up. */
-export const fetchDepartments = fetchSubDepts;
+/**
+ * The `subDeptId` that asks `subs/subs` for every department at once.
+ *
+ * Named because 0 is also a real department number in the response — as a
+ * request argument it means "all", as a row value it means that department.
+ */
+export const ALL_SUB_DEPTS = 0;
 
 /**
- * The departments to *read*, discovered over a wide window rather than the week
- * being reported.
+ * Rows falling inside a date window, bounds inclusive.
  *
- * Discovery and reporting are different questions, and conflating them is a
- * silent data loss. `subs/subs` only returns departments that sold inside the
- * window it is handed, so discovering over the reported week drops any
- * department that happened to sell nothing in those seven days — and with it
- * every uploaded UPC that lives there, plus the receipts those items would have
- * been crossed against. Over a month-long window that was rare enough to miss;
- * over seven days it is routine, and it fails silently, as a short report rather
- * than an error.
- *
- * Two calls. The receiving lookback is a strict superset of this week and last
- * week, so it covers both; the same week last year sits outside it and needs its
- * own. The union is the department set — the three reported windows are still
- * read separately, so nothing here widens what the report actually counts.
- *
- * Last year is allowed to fail. A store with no history that far back should
- * still get a report from the recent departments rather than nothing at all.
+ * Dates are `yyyy-mm-dd`, so a string compare is a date compare — no parsing
+ * and no timezone to get wrong.
  */
-export const fetchDepartmentsWide = async (
-  scope: ReportScope,
-): Promise<SubDeptSummary[]> => {
-  const [recent, priorYear] = await Promise.all([
-    fetchSubDepts({
-      ...scope,
-      start: shiftIso(scope.end, -RECEIVING_LOOKBACK_DAYS),
-    }),
-    fetchSubDepts({ ...scope, ...lyWindow(scope) }).catch(
-      () => [] as SubDeptSummary[],
-    ),
-  ]);
-
-  const byId = new Map<number, SubDeptSummary>();
-  for (const dept of [...recent, ...priorYear])
-    if (!byId.has(dept.id)) byId.set(dept.id, dept);
-  return [...byId.values()];
-};
+export const inRange = (rows: SubDeptMargin[], start: string, end: string) =>
+  rows.filter((r) => {
+    const d = r.sale_date.split("T")[0];
+    return d >= start && d <= end;
+  });
 
 /**
- * Item rows for a set of departments over one window.
+ * Every item row in a window, across every department, paginated.
  *
- * Departments go out together; serialising would multiply latency by the
- * department count for nothing. A department that fails resolves to no rows
- * rather than taking the report down — losing one department understates a
- * slice of the list, losing the page helps nobody.
+ * Replaces asking department by department, which required knowing the
+ * departments first — and that is the only thing the two `subs/sub_sales`
+ * discovery calls were ever for. Reaching back ninety days to enumerate
+ * departments, in order to fan out across all of them anyway, bought nothing:
+ * on the upload path the file names no departments, so the narrowing that
+ * justified the discovery never applied.
  */
-export const fetchRowsForDepartments = async (
+export const fetchAllItemRows = (
   scope: ReportScope,
-  deptIds: number[],
   window: { start: string; end: string },
-): Promise<SubDeptMargin[]> => {
-  const results = await Promise.all(
-    deptIds.map((id) =>
-      fetchSubDeptRowsSafe(
+): Promise<SubDeptMargin[]> =>
+  fetchSubDeptRowsSafe(
+    scope.url,
+    scope.token,
+    ALL_SUB_DEPTS,
+    window.start,
+    window.end,
+    USE_GROUPS,
+    scope.storeid,
+    SINGLE_STORE,
+  );
+
+/**
+ * The same rows, plus the prices they actually rang at.
+ *
+ * Its own function rather than a flag on `fetchAllItemRows`, so the shared
+ * `fetchSubDeptRowsSafe` — and the four other pages sitting on it — are left
+ * exactly as they are.
+ *
+ * `subs` pages; `price_points` does NOT. The endpoint repeats the whole
+ * price-point array on every page (verified: a two-page meat department
+ * returned the identical 550 rows on both, while `subs` split 1000/437), so
+ * only page 1 asks for it — `getSubMarginsWithPricePoints` derives the flag
+ * from the page number. Pages 2..N carry rows alone and never build the
+ * aggregate, which is why they come back faster than page 1.
+ *
+ * A page that fails to load THROWS rather than resolving empty. Rows are
+ * ordered by `sale_date`, so a dropped page removes the end of the window and
+ * every figure downstream stays plausible while being wrong.
+ */
+export const fetchItemRowsWithPricePoints = async (
+  scope: ReportScope,
+  window: { start: string; end: string },
+): Promise<{ rows: SubDeptMargin[]; pricePoints: SubsPricePoint[] }> => {
+  try {
+    const firstResp = await getSubMarginsWithPricePoints(
+      scope.url,
+      scope.token,
+      ALL_SUB_DEPTS,
+      window.start,
+      window.end,
+      USE_GROUPS,
+      scope.storeid,
+      SINGLE_STORE,
+    );
+    const body: SubMarginsPricePointsResp = firstResp.data;
+    // `error: 1` is also how "no records returned" arrives, which is a real
+    // answer for a store with no sales that week, not a failure.
+    if (body.error !== 0) return { rows: [], pricePoints: [] };
+
+    /**
+     * A page that fails is NOT an empty page.
+     *
+     * This swallowed failures per page, and `subs/subs` orders by `sale_date`
+     * — so a dropped page silently removes the END of the window. A 14-day
+     * span came back as 8 days, an item that sold 81 units reported 14, and
+     * every figure downstream was plausible and wrong. A report that lies
+     * quietly is worse than one that refuses to build, so the misses are
+     * counted and thrown rather than absorbed.
+     *
+     * One retry first: the span is every department over a fortnight, and
+     * `fetchAllPages` asks for 2..N at once, so a lost page is usually the
+     * burst rather than the query.
+     */
+    let missed = 0;
+    const askFor = async (page: number) => {
+      const r = await getSubMarginsWithPricePoints(
         scope.url,
         scope.token,
-        id,
+        ALL_SUB_DEPTS,
         window.start,
         window.end,
         USE_GROUPS,
         scope.storeid,
         SINGLE_STORE,
-      ),
-    ),
-  );
-  return results.flat();
+        page,
+      );
+      const b: SubMarginsPricePointsResp = r.data;
+      if (b.error !== 0) throw new Error(b.msg ?? `page ${page} failed`);
+      return b.subs ?? [];
+    };
+
+    const rows = await fetchAllPages(body, [...(body.subs ?? [])], async (page) => {
+      try {
+        return await askFor(page);
+      } catch {
+        try {
+          return await askFor(page);
+        } catch {
+          missed += 1;
+          return [];
+        }
+      }
+    });
+
+    if (missed > 0) {
+      const total = body.total_pages ?? 1;
+      throw new Error(
+        `Sales came back short — ${missed} of ${total} pages failed to load. ` +
+          `Rows are ordered by date, so the end of the window would be missing. ` +
+          `Nothing has been graded; run it again.`,
+      );
+    }
+
+    return { rows, pricePoints: body.price_points ?? [] };
+  } catch (e) {
+    // A short read is re-thrown so the page reports it. Anything else resolves
+    // empty, matching `fetchSubDeptRowsSafe`.
+    if (e instanceof Error && e.message.startsWith("Sales came back short"))
+      throw e;
+    return { rows: [], pricePoints: [] };
+  }
 };
 
 /* --------------------------------------------------------------- receiving */
@@ -352,3 +434,174 @@ export const toReceiptLine = (
   free: line.free,
   returned: line.return,
 });
+
+/**
+ * The same flattening, for a line that arrived via `receivers/item_search`.
+ *
+ * Separate rather than shared because the two shapes differ in exactly the
+ * places that would fail silently: the header fields come off the receiver
+ * instead of a sibling list item, and the return flag is `item_return` rather
+ * than `return` — which would have read `undefined` and made every receipt look
+ * like it had no returns on it.
+ */
+export const toReceiptLineFromSearch = (
+  receiver: ReceiverItemSearchReceiver,
+  line: ReceiverItemSearchLine,
+): ReceiptLine => ({
+  invoiceId: receiver.invoiceid,
+  productCode: normalizeProductCode(line.product_code),
+  description: line.product_description,
+  date: receiver.invoice_date,
+  vendorName: receiver.vendor_name,
+  sellingUnits: line.qty,
+  cases: line.cases,
+  billedIn: line.cases > 0 ? "cases" : "units",
+  caseSize: line.cases > 0 ? line.qty / line.cases : null,
+  unitCost: line.ucost,
+  retail: line.retail,
+  free: line.free,
+  returned: line.item_return,
+});
+
+/**
+ * Every receiver holding one of `upcs`, across every page.
+ *
+ * Replaces the per-invoice walk: one request names the deliveries and carries
+ * their lines, where the old path opened each invoice in the lookback to find
+ * out whether the item was on it.
+ *
+ * `maxReceivers` bounds the number of requests, so it is applied to the page
+ * count *before* paging rather than by trimming the result afterwards — a
+ * result already fetched has already cost what the cap exists to avoid.
+ */
+/**
+ * The endpoint's ceiling on `productCodes` per request.
+ *
+ * Item Actions routinely exceeds it. The walk is handed the uploaded codes plus
+ * every product that sold in any of the three windows, so the sheet's "All
+ * found" tab can surface items the file never named — on a full store that
+ * union is five figures (10,831 on the first live run).
+ *
+ * Free when those codes were a client-side filter over invoices being opened
+ * anyway. Not free as a request body, hence the batching.
+ */
+const MAX_PRODUCT_CODES = 2000;
+
+const inBatches = <T>(items: T[], size: number): T[][] => {
+  const out: T[][] = [];
+  for (let i = 0; i < items.length; i += size)
+    out.push(items.slice(i, i + size));
+  return out;
+};
+
+export const fetchReceiversByItem = async (
+  scope: ReportScope,
+  upcs: string[],
+  lookbackDays: number,
+  maxReceivers: number,
+): Promise<{ receivers: ReceiverItemSearchReceiver[]; skipped: number }> => {
+  const batches = inBatches(upcs, MAX_PRODUCT_CODES);
+  if (batches.length <= 1)
+    return fetchReceiverBatch(scope, upcs, lookbackDays, maxReceivers);
+
+  /**
+   * Batches hold disjoint codes, so they return disjoint LINES:
+   * `includeAllLines` is off, so a receiver only ever comes back carrying the
+   * codes the batch asked about. A receiver holding items from two batches
+   * appears twice with different lines on it, and flattening those lines yields
+   * each one exactly once — so nothing here needs de-duplicating.
+   *
+   * `maxReceivers` stays per batch rather than being divided across them. The
+   * batches are separate populations, and splitting one budget between them
+   * would truncate a busy batch because a quiet one existed.
+   */
+  const results = await Promise.all(
+    batches.map((batch) =>
+      fetchReceiverBatch(scope, batch, lookbackDays, maxReceivers),
+    ),
+  );
+  return {
+    receivers: results.flatMap((r) => r.receivers),
+    skipped: results.reduce((s, r) => s + r.skipped, 0),
+  };
+};
+
+/** One request's worth of codes, paged. `fetchReceiversByItem` above is the
+ *  entry point; this is what it runs per batch. */
+const fetchReceiverBatch = async (
+  scope: ReportScope,
+  upcs: string[],
+  lookbackDays: number,
+  maxReceivers: number,
+): Promise<{ receivers: ReceiverItemSearchReceiver[]; skipped: number }> => {
+  /**
+   * ISO, NOT `formatDate`.
+   *
+   * The older receivers endpoints take `m/d/yyyy` off a query string, so every
+   * other call in this file runs its dates through `formatDate` first. This one
+   * binds to a Pydantic `date`, which only parses `yyyy-mm-dd` and rejects
+   * `5/26/2026` as `date_from_datetime_parsing: input is too short`.
+   *
+   * `scope.end` and `shiftIso` are both already ISO, so passing them straight
+   * through is also the safer route: `formatDate` reads a UTC-parsed date with
+   * local getters, which lands a day early west of UTC.
+   */
+  const start = shiftIso(scope.end, -lookbackDays);
+  const end = scope.end;
+
+  const firstResp = await searchReceiversByItem(
+    scope.url,
+    scope.token,
+    scope.storeid,
+    upcs,
+    start,
+    end,
+    1,
+  );
+  const body: ReceiverItemSearchResponse = firstResp.data;
+  // A non-zero error arrives as HTTP 200, so the status alone proves nothing.
+  // The too-many-codes rejection lands here too, and its message names the
+  // limit — worth surfacing verbatim rather than replacing.
+  if (body.error !== 0)
+    throw new Error(body.msg ?? "Could not search receivers");
+
+  const pageSize = body.page_size || 1;
+  const maxPages = Math.max(1, Math.ceil(maxReceivers / pageSize));
+
+  /**
+   * A dropped page here reads as "no delivery", and "never received" is the one
+   * conclusion this page must not hand over wrongly. One retry, then throw —
+   * an error the user can act on beats a confident absence.
+   */
+  const askFor = async (page: number) => {
+    const r = await searchReceiversByItem(
+      scope.url,
+      scope.token,
+      scope.storeid,
+      upcs,
+      start,
+      end,
+      page,
+    );
+    const b: ReceiverItemSearchResponse = r.data;
+    if (b.error !== 0) throw new Error(b.msg ?? `receiver page ${page} failed`);
+    return b.receivers ?? [];
+  };
+
+  const receivers = await fetchAllPages(
+    { ...body, total_pages: Math.min(body.total_pages ?? 1, maxPages) },
+    [...(body.receivers ?? [])],
+    async (page) => {
+      try {
+        return await askFor(page);
+      } catch {
+        return await askFor(page);
+      }
+    },
+  );
+
+  return {
+    receivers,
+    skipped: Math.max(0, (body.receiver_count ?? 0) - receivers.length),
+  };
+};

@@ -5,6 +5,8 @@ import DatePickers from "./datePickers/DatePickers";
 import EntryCardLoading from "./loading/EntryCardLoading";
 import { useAppSelector } from "../hooks";
 import { getStoreName } from "../utils";
+import type { ReactNode } from "react";
+import { isGroupSearch } from "../features/searchSlice";
 
 interface SearchCardProps {
   title: string;
@@ -21,6 +23,11 @@ interface SearchCardProps {
    *  group searches can run long enough that a bare "Loading..." reads as a
    *  hang. */
   loadingMessage?: string;
+  /** Extra inputs between the date picker and the search button, for pages
+   *  whose search takes a parameter beyond store and date — the Sales Tracker
+   *  window length, for one. Hidden by the loading mask with the rest of the
+   *  form. */
+  extraControls?: ReactNode;
 }
 
 const SearchCard = ({
@@ -35,6 +42,7 @@ const SearchCard = ({
   top = false,
   notice,
   loadingMessage = "Loading...",
+  extraControls,
 }: SearchCardProps) => {
   const search = useAppSelector((s) => s.search);
   const assignedStores = useAppSelector((s) => s.user.assignedStores);
@@ -42,7 +50,7 @@ const SearchCard = ({
   // Echoed under the spinner. Derived here rather than passed in so every
   // caller gets it for free — the pickers already read the same slice.
   const searchLabel = [
-    search.type === "Group"
+    isGroupSearch(search.type)
       ? search.selectedGroup.group_name
       : getStoreName(
           assignedStores,
@@ -88,6 +96,8 @@ const SearchCard = ({
             <StorePicker />
 
             {singleDate ? <SingleDatePicker /> : <DatePickers showBtn={false} />}
+
+            {extraControls}
 
             <button
               onClick={onSearch}

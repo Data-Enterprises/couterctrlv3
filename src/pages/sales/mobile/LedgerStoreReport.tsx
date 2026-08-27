@@ -53,6 +53,7 @@ import {
   computeDayMatchedTotals,
   scopeToStoreNumber,
   applyStoreNumberToName,
+  withProductCode,
   // getWeeklyDataGaps,
   // getWeeklyGapCount,
   type DeptRow,
@@ -333,17 +334,17 @@ const LedgerStoreReport = () => {
           ),
         ]);
         if (cancelled) return;
-        const tyItems: SubDeptMargin[] = scopeToStoreNumber(
-          tyR,
-          selection.storeNumber,
+        // withProductCode: same filter the desktop popup applies — the
+        // endpoint returns a department catch-all row (product_code 0) among
+        // the real items. See ledgerUtils.
+        const tyItems: SubDeptMargin[] = withProductCode(
+          scopeToStoreNumber(tyR, selection.storeNumber),
         );
-        let lwItems: SubDeptMargin[] = scopeToStoreNumber(
-          lwR,
-          selection.storeNumber,
+        let lwItems: SubDeptMargin[] = withProductCode(
+          scopeToStoreNumber(lwR, selection.storeNumber),
         );
-        let lyItems: SubDeptMargin[] = scopeToStoreNumber(
-          lyR,
-          selection.storeNumber,
+        let lyItems: SubDeptMargin[] = withProductCode(
+          scopeToStoreNumber(lyR, selection.storeNumber),
         );
 
         // Whole-week case: the fetched LW/LY rows can include days that

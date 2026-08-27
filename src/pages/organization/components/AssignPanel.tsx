@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import TextFilter from "../../../components/filters/TextFilter";
 
 interface AssignPanelItem {
@@ -19,6 +19,14 @@ interface AssignPanelProps {
   // Base Groups tabs pass "global" since legacy's assign_all/unassign_all
   // there always recomputed from the full unfiltered list, ignoring search.
   assignAllScope?: "filtered" | "global";
+  // Optional: reports the right column's current selection to the parent, so a
+  // caller can offer an action over the selected rows without this component
+  // having to know what that action is. Base Groups uses it for Sync.
+  onRightSelectionChange?: (ids: number[]) => void;
+  // Change this to clear the right column's selection from outside — after an
+  // action has consumed it, say. The selection lives here, so a caller can't
+  // clear it by resetting whatever it mirrored the ids into.
+  rightSelectionResetKey?: number;
 }
 
 // Shared staged dual-column assign/unassign control — used by the create-user
@@ -32,11 +40,26 @@ const AssignPanel = ({
   onAssign,
   onUnassign,
   assignAllScope = "filtered",
+  onRightSelectionChange,
+  rightSelectionResetKey,
 }: AssignPanelProps) => {
   const [leftFilter, setLeftFilter] = useState("");
   const [rightFilter, setRightFilter] = useState("");
   const [staged, setStaged] = useState<Set<number>>(new Set());
   const [unstaged, setUnstaged] = useState<Set<number>>(new Set());
+
+  useEffect(() => {
+    onRightSelectionChange?.(Array.from(unstaged));
+  }, [unstaged]);
+
+  // Compared against the previous value rather than just firing on mount, so
+  // simply rendering the panel doesn't push an empty selection back out.
+  const prevResetKey = useRef(rightSelectionResetKey);
+  useEffect(() => {
+    if (prevResetKey.current === rightSelectionResetKey) return;
+    prevResetKey.current = rightSelectionResetKey;
+    setUnstaged(new Set());
+  }, [rightSelectionResetKey]);
 
   const filteredLeft = leftItems.filter((i) =>
     i.label.toLowerCase().includes(leftFilter.toLowerCase()),

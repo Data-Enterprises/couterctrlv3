@@ -74,6 +74,13 @@ const UpcItemList = () => {
         ) : (
           visible.map((item) => {
             const selected = ctx.selectedUpcs.includes(item.product_code);
+            // The roster is seeded from the searched UPC list, so a code sits
+            // here from the moment the search commits and gets its name only
+            // once some module returns a row for it. A blank stays blank for a
+            // UPC no module has data on, which is worth showing rather than
+            // hiding — the user typed it and deserves to see it came back
+            // empty.
+            const desc = item.description || "—";
             return (
               <button
                 key={item.product_code}
@@ -111,7 +118,7 @@ const UpcItemList = () => {
                   {ctx.displayMode === "code" ? (
                     <>
                       <div className="text-[12px] font-medium text-content truncate">
-                        {item.description}
+                        {desc}
                       </div>
                       <div className="text-[11px] text-content tabular-nums">
                         {item.product_code}
@@ -120,7 +127,7 @@ const UpcItemList = () => {
                   ) : (
                     <>
                       <div className="text-[12px] font-medium text-content truncate">
-                        {item.description}
+                        {desc}
                       </div>
                       <div className="text-[11px] text-content tabular-nums">
                         {item.product_code}

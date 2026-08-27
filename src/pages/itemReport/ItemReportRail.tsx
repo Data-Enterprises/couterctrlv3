@@ -11,7 +11,7 @@ import InfoPopover from "../../components/InfoPopover";
 import { ITEM_REPORT_RAIL_INFO } from "./itemReportRailInfo";
 import { formatCurrency2, formatDateSimple } from "../../utils";
 import { formatPct, pillClass } from "../../utils/severity";
-import { actualPricePoints } from "../inventory/pricePoints";
+import { actualPricePoints, unitPrice } from "../inventory/pricePoints";
 import type { ActualFetchState } from "../inventory/useActualPricePoints";
 import {
   ACTION_LABEL,
@@ -21,6 +21,7 @@ import {
   type ReportItem,
 } from "./itemReportMetrics";
 import { ACTION_TONE } from "./actionTone";
+import DetailPopover from "./DetailPopover";
 import { describeReceipt } from "./itemReportData";
 import type { ReceiptLine } from "./itemReportData";
 import TransactionSheet from "./TransactionSheet";
@@ -406,6 +407,7 @@ const ItemReportRail = ({
    *  the rest of this page in Redux doesn't apply. */
   const [openPrice, setOpenPrice] = useState<number | null>(null);
   const [infoOpen, setInfoOpen] = useState(false);
+  const [actionOpen, setActionOpen] = useState(false);
   /** Sections showing their full list. Local, not slice: unlike a fold — which
    *  is a standing preference — this is about the item currently in front of
    *  you, and the count in the label belongs to that item. */
@@ -458,7 +460,11 @@ const ItemReportRail = ({
       number,
       { price: number; qty: number; sales: Set<string> }
     >();
-    for (const p of act.exact) {
+    // Both buckets. The exact/averaged split matters to Price Opt, which cares
+    // how a price was arrived at; here they are the same price and the same
+    // units. Reading only `exact` dropped every multi-unit ring — one 24-pack
+    // basket at $78 disappeared rather than adding 24 units at $3.25.
+    for (const p of [...act.exact, ...act.averaged]) {
       const found = byPrice.get(p.price);
       if (found) found.qty += p.qty;
       else
@@ -468,13 +474,16 @@ const ItemReportRail = ({
     // match the modal uses — so the column and the modal it opens agree. A
     // receipt carrying the item twice is one transaction, not two, which is
     // exactly what the old line count got wrong.
+    // Matched on the line's per-unit price: comparing `net_sales` to the bucket
+    // price only ever held for a single-unit ring, so the consolidated rows
+    // missing from the qty above were missing from this count too.
     for (const l of isCurrent ? actual.lines : []) {
       for (const bucket of byPrice.values())
-        if (Math.abs(l.net_sales - bucket.price) < 0.005)
+        if (Math.abs(unitPrice(l) - bucket.price) < 0.005)
           bucket.sales.add(l.sale_id);
     }
     return [...byPrice.values()].sort((a, b) => b.qty - a.qty);
-  }, [act.exact, isCurrent, actual.lines]);
+  }, [act.exact, act.averaged, isCurrent, actual.lines]);
 
   /**
    * How often this item normally arrives, across every delivery in the lookback
@@ -563,20 +572,39 @@ const ItemReportRail = ({
             actions can't map onto three without collapsing the blue and violet
             distinctions the chips already carry. Reusing it would have made the
             strip disagree with the chip that opened it. */}
+        {/* Closed by default, and it opens the way the "?" does — anchored
+            under its own trigger, dismissed by a click anywhere outside. The
+            label alone answers "what do I do"; the sentence is the working
+            behind it, and on a Reprice that runs to three lines. */}
         {action && evidence && (
           <div
-            className={`flex-shrink-0 px-4 py-2.5 border-b border-[#1e2a4a]/15 ${ACTION_TONE[action].row}`}
+            className={`relative flex-shrink-0 border-b border-[#1e2a4a]/15 ${ACTION_TONE[action].row}`}
           >
-            <div
-              className={`text-[11px] font-bold uppercase tracking-wide ${ACTION_TONE[action].text}`}
+            <button
+              onClick={() => setActionOpen((o) => !o)}
+              className="w-full text-left px-4 py-2.5 flex items-center justify-between gap-2"
             >
-              {ACTION_LABEL[action]}
-            </div>
-            <div
-              className={`text-[13px] leading-relaxed mt-0.5 ${ACTION_TONE[action].text}`}
-            >
-              {evidence}
-            </div>
+              <span
+                className={`text-[11px] font-bold uppercase tracking-wide ${ACTION_TONE[action].text}`}
+              >
+                {ACTION_LABEL[action]}
+              </span>
+              <span
+                className={`text-[11px] font-medium underline ${ACTION_TONE[action].text}`}
+              >
+                {actionOpen ? "Hide" : "Why"}
+              </span>
+            </button>
+            {actionOpen && (
+              <DetailPopover
+                onClose={() => setActionOpen(false)}
+                className={`${ACTION_TONE[action].row} ${ACTION_TONE[action].text}`}
+              >
+                <div className="px-4 py-2.5 text-[13px] leading-relaxed">
+                  {evidence}
+                </div>
+              </DetailPopover>
+            )}
           </div>
         )}
 
@@ -872,10 +900,10 @@ const ItemReportRail = ({
           itemDescription={item.description}
           price={openPrice}
           action={action}
-          // `exact` points are single-unit rings, so a line at this price is
-          // one whose net sale *is* the price.
+          // Same per-unit match the row above uses, so the modal and the
+          // count that opened it can't disagree.
           lines={actual.lines.filter(
-            (l) => Math.abs(l.net_sales - openPrice) < 0.005,
+            (l) => Math.abs(unitPrice(l) - openPrice) < 0.005,
           )}
           onClose={() => setOpenPrice(null)}
         />

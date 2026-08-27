@@ -17,6 +17,7 @@ import {
 } from "../../features/cashiersSlice";
 import type { JsonError, TransactionListItem } from "../../interfaces";
 import { pickDefaultSaleTypeName } from "../../utils/saleTypes";
+import { isGroupSearch } from "../../features/searchSlice";
 
 /**
  * The explorer's two-stage fetch, shared by the desktop container and the
@@ -71,14 +72,14 @@ export const useCashierExplorer = () => {
     return {
       start,
       end,
-      useGroups: type === "Group" ? 1 : 0,
+      useGroups: isGroupSearch(type) ? 1 : 0,
       singleStore: type === "Store" ? 1 : 0,
-      searchValue: type === "Group" ? lastGroup : lastStore,
+      searchValue: isGroupSearch(type) ? lastGroup : lastStore,
     };
   };
 
   const scopeLabel = () =>
-    type === "Group"
+    isGroupSearch(type)
       ? (groups.find((g) => g.id === lastGroup)?.group_name ?? "Group")
       : getStoreName(assignedStores, lastStore, `Store ${lastStore}`);
 

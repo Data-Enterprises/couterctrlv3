@@ -22,6 +22,7 @@ import CashiersTableFilters from "./filters/CashiersTableFilters";
 import MobileTrendCards from "./cashierSales/MobileTrendCards";
 import LPTablet from "./tablet/LPTablet";
 import LpMobile from "./mobile/LpMobileLegacy";
+import { isGroupSearch } from "../../features/searchSlice";
 
 const LossPreventionLegacy = () => {
   const toast = useToast();
@@ -35,10 +36,10 @@ const LossPreventionLegacy = () => {
     if (cashier.saleTypes.length > 0) {
       dispatch(resetCashierSlice());
     }
-    const useGroups = search.type === "Group" ? 1 : 0;
+    const useGroups = isGroupSearch(search.type) ? 1 : 0;
     const singleStore = search.type === "Store" ? 1 : 0;
     const searchValue =
-      search.type === "Group" ? search.lastGroup : search.lastStore;
+      isGroupSearch(search.type) ? search.lastGroup : search.lastStore;
     getSaleTypes(
       context.url,
       context.token,

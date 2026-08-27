@@ -190,6 +190,20 @@ const emptyActual: ActualPricePoints = {
 export const lineQty = (t: TransactionListItem) => t.qty ?? 1;
 
 /**
+ * The per-unit price a register line rang at.
+ *
+ * The POS writes repeats two ways — as several single-unit rows, or as one
+ * consolidated row with a high qty — so `net_sales` is the price on the first
+ * shape and the whole basket on the second. Dividing handles both.
+ *
+ * Exported because the price-points table, its receipt count and the modal
+ * behind it all have to agree on which lines sit at a price. They each had
+ * their own comparison and every one of them missed the consolidated rows.
+ */
+export const unitPrice = (t: TransactionListItem) =>
+  round2(t.net_sales / lineQty(t));
+
+/**
  * Spec §5.2. Register lines for one product_code into exact and averaged
  * buckets.
  *

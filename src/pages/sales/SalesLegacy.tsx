@@ -47,6 +47,7 @@ import type { JsonError } from "../../interfaces";
 import SingleSelect from "../../components/SingleSelect";
 import DatePickers from "../../components/datePickers/DatePickers";
 import NoPanelsFound from "./NoPanelsFound";
+import { isGroupSearch } from "../../features/searchSlice";
 
 const dashboardOptions = [
   { label: "Daily Sales", value: "daily" },
@@ -96,7 +97,7 @@ const Sales = () => {
         : formatGoliathDate(search.singleDate);
 
     const end = formatGoliathDate(search.singleDate);
-    const useGroups = search.type === "Group" ? 1 : 0;
+    const useGroups = isGroupSearch(search.type) ? 1 : 0;
     const singleStore = search.type === "Store" ? 1 : 0;
     const searchValue = useGroups === 1 ? search.lastGroup : search.lastStore;
 
@@ -143,7 +144,7 @@ const Sales = () => {
     const endDateLY = sameWeekDayLastYear(search.endDate).date;
     const startDateLY = sameWeekDayLastYear(search.startDate).date;
 
-    const useGroups = search.type === "Group" ? 1 : 0;
+    const useGroups = isGroupSearch(search.type) ? 1 : 0;
     const singleStore = search.type === "Store" ? 1 : 0;
     const searchValue = useGroups === 1 ? search.lastGroup : search.lastStore;
 

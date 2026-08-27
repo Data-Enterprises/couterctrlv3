@@ -39,6 +39,7 @@ import { useTriStateSort } from "../../utils/useTriStateSort";
 import { PCT_COL_W } from "./components/utils";
 import type { SevFilter } from "./components/utils";
 import TextFilter from "../../components/filters/TextFilter";
+import { isGroupSearch } from "../../features/searchSlice";
 
 type SortColumn = "ty" | "vsLW" | "vsLY";
 
@@ -124,7 +125,7 @@ const SalesLedger = () => {
   };
 
   const fetchLedger = async () => {
-    const isGroup = search.type === "Group";
+    const isGroup = isGroupSearch(search.type);
     const useGroups = isGroup ? 1 : 0;
     const singleStore = isGroup ? 0 : 1;
     const searchValue = isGroup ? search.lastGroup : search.lastStore;
