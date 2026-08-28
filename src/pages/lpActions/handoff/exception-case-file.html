@@ -1,0 +1,834 @@
+<title>Cashier Exception Case File</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+:root{
+  --paper:#F1F4F8; --surface:#FBFCFD; --surface-2:#E7ECF3; --surface-3:#F5F7FA;
+  --ink:#0F1724; --ink-2:#48566E; --ink-3:#7A879D;
+  --rule:#D9E0EA; --rule-strong:#C4CEDC;
+  --chrome:#16233D; --chrome-2:#22334F; --chrome-ink:#EAEEF5; --chrome-ink-2:#A0ADC4;
+  --s-void:#9E2B2B; --s-cancel:#2E5E9E; --s-nosale:#B57C10; --s-refund:#109A72;
+  --s-void-t:#F5E5E4; --s-cancel-t:#E4EBF5; --s-nosale-t:#F6EDDC; --s-refund-t:#DFF1EA;
+  --seq-0:#EDF1F6; --seq-1:#CBD7E6; --seq-2:#93AACB; --seq-3:#4E73A6; --seq-4:#20406E;
+  --shadow:0 1px 2px rgba(15,23,36,.06), 0 6px 18px -10px rgba(15,23,36,.22);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0C1017; --surface:#171A21; --surface-2:#212733; --surface-3:#1B2029;
+    --ink:#EDF0F5; --ink-2:#A3AEC1; --ink-3:#6E7B90;
+    --rule:#2A313D; --rule-strong:#3B4453;
+    --chrome:#070A10; --chrome-2:#141A24; --chrome-ink:#EDF0F5; --chrome-ink-2:#93A0B7;
+    --s-void:#CF5F58; --s-cancel:#5B93DE; --s-nosale:#B58819; --s-refund:#1E9E77;
+    --s-void-t:#331E1E; --s-cancel-t:#1B2534; --s-nosale-t:#2E2716; --s-refund-t:#12281F;
+    --seq-0:#1B2029; --seq-1:#27303E; --seq-2:#3C4E68; --seq-3:#5A7BA8; --seq-4:#8FB0DC;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0C1017; --surface:#171A21; --surface-2:#212733; --surface-3:#1B2029;
+  --ink:#EDF0F5; --ink-2:#A3AEC1; --ink-3:#6E7B90;
+  --rule:#2A313D; --rule-strong:#3B4453;
+  --chrome:#070A10; --chrome-2:#141A24; --chrome-ink:#EDF0F5; --chrome-ink-2:#93A0B7;
+  --s-void:#CF5F58; --s-cancel:#5B93DE; --s-nosale:#B58819; --s-refund:#1E9E77;
+  --s-void-t:#331E1E; --s-cancel-t:#1B2534; --s-nosale-t:#2E2716; --s-refund-t:#12281F;
+  --seq-0:#1B2029; --seq-1:#27303E; --seq-2:#3C4E68; --seq-3:#5A7BA8; --seq-4:#8FB0DC;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.7);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:"Archivo","Helvetica Neue",Arial,sans-serif;
+  font-size:14px; line-height:1.45; -webkit-font-smoothing:antialiased;
+}
+.mono{font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace; font-variant-numeric:tabular-nums}
+h1,h2,h3{margin:0; text-wrap:balance}
+button{font:inherit; color:inherit; cursor:pointer}
+:focus-visible{outline:2px solid var(--s-cancel); outline-offset:2px; border-radius:2px}
+@media (prefers-reduced-motion:reduce){*{transition:none !important; animation:none !important}}
+
+.wrap{max-width:1420px; margin:0 auto; padding:0 0 64px}
+
+/* ---------- dossier header ---------- */
+.dossier{background:var(--chrome); color:var(--chrome-ink); padding:22px 28px 0}
+.dsr-top{display:flex; flex-wrap:wrap; gap:28px; align-items:flex-start; justify-content:space-between}
+.dsr-id{display:flex; gap:18px; align-items:baseline; flex-wrap:wrap}
+.dsr-name{font-size:26px; font-weight:700; letter-spacing:-.015em}
+.dsr-badge{
+  font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.09em;
+  border:1px solid rgba(255,255,255,.28); border-radius:2px; padding:3px 7px; color:var(--chrome-ink-2);
+}
+.dsr-meta{margin-top:5px; color:var(--chrome-ink-2); font-size:13px; display:flex; gap:8px; flex-wrap:wrap}
+.dsr-meta span:not(:last-child)::after{content:"·"; margin-left:8px; opacity:.5}
+.dsr-actions{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
+.btn{
+  background:transparent; border:1px solid rgba(255,255,255,.3); color:var(--chrome-ink);
+  border-radius:3px; padding:7px 13px; font-size:13px; font-weight:500; transition:background .12s, border-color .12s;
+}
+.btn:hover{background:rgba(255,255,255,.09); border-color:rgba(255,255,255,.5)}
+.btn-primary{background:var(--chrome-ink); color:var(--chrome); border-color:var(--chrome-ink); font-weight:600}
+.btn-primary:hover{background:#fff; border-color:#fff}
+.btn-primary[aria-pressed="true"]{background:var(--s-void); border-color:var(--s-void); color:#fff}
+
+/* headline rate */
+.headline{
+  margin-top:20px; display:flex; align-items:flex-end; gap:30px; flex-wrap:wrap;
+  border-top:1px solid rgba(255,255,255,.14); padding:18px 0 22px;
+}
+.hl-num{font-size:64px; font-weight:600; line-height:.9; letter-spacing:-.04em}
+.hl-txt{max-width:52ch; color:var(--chrome-ink-2); font-size:14px; padding-bottom:5px}
+.hl-txt b{color:var(--chrome-ink); font-weight:600}
+.hl-rank{
+  margin-left:auto; text-align:right; padding-bottom:4px; display:flex; gap:34px;
+}
+.hl-rank div{display:flex; flex-direction:column; gap:3px}
+.rk-lab{font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--chrome-ink-2)}
+.rk-val{font-size:19px; font-weight:600}
+
+/* ---------- sections ---------- */
+.sec{padding:30px 28px 0}
+.sec-head{display:flex; align-items:baseline; gap:14px; margin-bottom:16px; flex-wrap:wrap}
+.sec-n{
+  font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--ink-3);
+  border:1px solid var(--rule-strong); border-radius:2px; padding:2px 6px; letter-spacing:.06em;
+}
+.sec-t{font-size:16px; font-weight:600; letter-spacing:-.01em}
+.sec-sub{color:var(--ink-3); font-size:13px}
+.sec-tools{margin-left:auto; display:flex; gap:6px; align-items:center}
+.seg{display:inline-flex; border:1px solid var(--rule-strong); border-radius:3px; overflow:hidden; background:var(--surface)}
+.seg button{background:transparent; border:0; padding:5px 11px; font-size:12.5px; color:var(--ink-2)}
+.seg button+button{border-left:1px solid var(--rule)}
+.seg button[aria-pressed="true"]{background:var(--chrome); color:var(--chrome-ink); font-weight:600}
+
+.card{background:var(--surface); border:1px solid var(--rule); border-radius:4px; box-shadow:var(--shadow)}
+
+/* ---------- exception cards ---------- */
+.cards{display:grid; grid-template-columns:repeat(4,1fr); gap:14px}
+@media(max-width:1080px){.cards{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:620px){.cards{grid-template-columns:1fr}}
+.xc{padding:16px 17px 15px; display:flex; flex-direction:column; gap:12px; position:relative}
+.xc-top{display:flex; align-items:center; gap:8px}
+.swatch{width:10px; height:10px; border-radius:2px; flex:none}
+.xc-name{font-size:13.5px; font-weight:600; letter-spacing:.01em}
+.xc-days{margin-left:auto; font-size:11px; color:var(--ink-3); letter-spacing:.04em}
+.xc-num{display:flex; align-items:baseline; gap:9px}
+.xc-occ{font-size:38px; font-weight:500; line-height:1; letter-spacing:-.03em}
+.xc-occ-l{font-size:11px; color:var(--ink-3); text-transform:uppercase; letter-spacing:.09em}
+.xc-money{display:flex; gap:16px; font-size:12.5px; color:var(--ink-2); border-top:1px solid var(--rule); padding-top:10px}
+.xc-money b{font-weight:600; color:var(--ink)}
+.xc-dev{margin-top:2px}
+.dev-lab{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px}
+.dev-lab .k{font-size:10.5px; text-transform:uppercase; letter-spacing:.09em; color:var(--ink-3)}
+.dev-lab .v{font-size:15px; font-weight:600}
+.dev-track{position:relative; height:9px; background:var(--surface-2); border-radius:1px; overflow:visible}
+.dev-fill{position:absolute; inset:0 auto 0 0; border-radius:1px}
+.dev-peer{position:absolute; top:-4px; bottom:-4px; width:2px; background:var(--ink-2)}
+.dev-scale{display:flex; justify-content:space-between; margin-top:5px; font-size:10px; color:var(--ink-3)}
+
+/* ---------- charts ---------- */
+.chart-row{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:14px}
+@media(max-width:980px){.chart-row{grid-template-columns:1fr}}
+.ch{padding:16px 18px 14px}
+.ch-h{display:flex; align-items:baseline; gap:10px; margin-bottom:2px; flex-wrap:wrap}
+.ch-t{font-size:13.5px; font-weight:600}
+.ch-s{font-size:12px; color:var(--ink-3)}
+.legend{display:flex; gap:14px; flex-wrap:wrap; margin:10px 0 14px}
+.lg{display:flex; align-items:center; gap:6px; font-size:12px; color:var(--ink-2)}
+svg{display:block; width:100%; overflow:visible}
+.gridline{stroke:var(--rule); stroke-width:1}
+.axis-txt{fill:var(--ink-3); font-size:10.5px; font-family:"IBM Plex Mono",monospace}
+.axis-txt.hi{fill:var(--ink); font-weight:600}
+.ref-line{stroke:var(--ink-3); stroke-width:1.5}
+.ref-txt{fill:var(--ink-2); font-size:10.5px; font-family:"IBM Plex Mono",monospace}
+.dlabel{fill:var(--ink); font-size:11px; font-weight:600; font-family:"IBM Plex Mono",monospace}
+.wk-band{fill:var(--surface-2)}
+.hit{fill:transparent; cursor:pointer}
+.findings{
+  margin-top:12px; padding-top:11px; border-top:1px solid var(--rule);
+  font-size:12.5px; color:var(--ink-2); display:flex; gap:9px; align-items:flex-start;
+}
+.findings .tick{width:3px; align-self:stretch; background:var(--s-void); border-radius:2px; flex:none}
+.findings b{color:var(--ink); font-weight:600}
+
+/* ---------- evidence ---------- */
+.ev{display:grid; grid-template-columns:252px 1fr; gap:14px; margin-top:14px; align-items:start}
+@media(max-width:980px){.ev{grid-template-columns:1fr}}
+.facets{padding:4px 0 8px; position:sticky; top:12px}
+.fgroup{border-bottom:1px solid var(--rule); padding:13px 16px}
+.fgroup:last-child{border-bottom:0}
+.fg-h{font-size:10.5px; text-transform:uppercase; letter-spacing:.1em; color:var(--ink-3); margin-bottom:9px}
+.frow{
+  display:grid; grid-template-columns:1fr 30px; gap:8px; align-items:center;
+  width:100%; background:transparent; border:0; padding:3.5px 5px; margin:0 -5px; border-radius:2px;
+  text-align:left; transition:background .1s;
+}
+.frow:hover{background:var(--surface-2)}
+.frow[aria-pressed="true"]{background:var(--chrome); color:var(--chrome-ink)}
+.frow[aria-pressed="true"] .fr-n{color:var(--chrome-ink)}
+.fr-l{position:relative; font-size:12.5px; overflow:hidden}
+.fr-bar{position:absolute; left:0; top:0; bottom:0; background:var(--surface-2); border-radius:1px; z-index:0}
+.frow[aria-pressed="true"] .fr-bar{background:rgba(255,255,255,.18)}
+.fr-txt{position:relative; z-index:1; padding:1px 5px 1px 4px; display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.fr-n{font-size:11.5px; color:var(--ink-3); text-align:right; font-family:"IBM Plex Mono",monospace}
+
+.tbl-head{
+  display:flex; align-items:center; gap:10px; padding:12px 16px; border-bottom:1px solid var(--rule); flex-wrap:wrap;
+}
+.tbl-count{font-size:13px; font-weight:600}
+.chips{display:flex; gap:6px; flex-wrap:wrap; align-items:center}
+.chip{
+  display:inline-flex; align-items:center; gap:6px; font-size:11.5px; background:var(--surface-2);
+  border:1px solid var(--rule-strong); border-radius:2px; padding:3px 5px 3px 8px; color:var(--ink-2);
+}
+.chip button{background:transparent; border:0; padding:0 2px; color:var(--ink-3); font-size:13px; line-height:1}
+.chip button:hover{color:var(--ink)}
+.link-btn{background:transparent; border:0; padding:2px 4px; font-size:12px; color:var(--s-cancel); text-decoration:underline; text-underline-offset:2px}
+.scroller{max-height:560px; overflow:auto}
+table{width:100%; border-collapse:collapse; font-size:12.5px}
+thead th{
+  position:sticky; top:0; z-index:2; background:var(--surface); text-align:left;
+  font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); font-weight:600;
+  padding:9px 12px; border-bottom:1px solid var(--rule-strong); white-space:nowrap;
+}
+thead th.r, td.r{text-align:right}
+tbody tr{border-bottom:1px solid var(--rule)}
+tbody tr.evrow:hover{background:var(--surface-3); cursor:pointer}
+td{padding:8px 12px; vertical-align:middle}
+.type-pill{display:inline-flex; align-items:center; gap:6px; font-size:11.5px; font-weight:500; white-space:nowrap}
+.amt-neg{color:var(--s-refund)}
+.detail td{background:var(--surface-3); padding:0}
+.dwrap{padding:14px 16px 16px; border-left:3px solid var(--rule-strong)}
+.dgrid{display:flex; gap:30px; flex-wrap:wrap; margin-bottom:11px}
+.dgrid div{display:flex; flex-direction:column; gap:2px}
+.dg-l{font-size:9.5px; text-transform:uppercase; letter-spacing:.1em; color:var(--ink-3)}
+.dg-v{font-size:14px; font-weight:600}
+.lines{border:1px solid var(--rule); border-radius:3px; overflow:hidden; background:var(--surface)}
+.line{display:grid; grid-template-columns:26px 1fr 44px 76px; gap:10px; padding:7px 11px; font-size:12px; align-items:center}
+.line+.line{border-top:1px solid var(--rule)}
+.line.flag{background:var(--s-void-t)}
+.line-i{color:var(--ink-3); font-size:11px}
+.line-sub{font-size:11px; color:var(--ink-3)}
+
+.tip{
+  position:fixed; pointer-events:none; z-index:50; background:var(--chrome); color:var(--chrome-ink);
+  border-radius:3px; padding:8px 10px; font-size:12px; box-shadow:0 8px 24px -8px rgba(0,0,0,.45);
+  opacity:0; transition:opacity .1s; max-width:230px;
+}
+.tip.on{opacity:1}
+.tip-t{font-weight:600; margin-bottom:4px; font-size:12.5px}
+.tip-r{display:flex; justify-content:space-between; gap:14px; color:var(--chrome-ink-2)}
+.tip-r b{color:var(--chrome-ink); font-weight:500}
+
+.note{
+  margin:26px 28px 0; padding:14px 16px; border:1px solid var(--rule); border-radius:4px;
+  background:var(--surface-3); color:var(--ink-2); font-size:12.5px; line-height:1.55;
+}
+.note b{color:var(--ink)}
+</style>
+
+<div class="wrap">
+
+<header class="dossier">
+  <div class="dsr-top">
+    <div>
+      <div class="dsr-id">
+        <div class="dsr-name">Ann Delacroix</div>
+        <div class="dsr-badge mono">CASHIER 40</div>
+      </div>
+      <div class="dsr-meta">
+        <span>IGA #002</span><span>Aug 1 – Aug 13, 2026</span><span>13 shifts</span><span>Lanes 2, 4, 3</span>
+      </div>
+    </div>
+    <div class="dsr-actions">
+      <button class="btn" id="noteBtn">Add note</button>
+      <button class="btn" id="exportBtn">Export evidence pack</button>
+      <button class="btn btn-primary" id="flagBtn" aria-pressed="false">Flag for review</button>
+    </div>
+  </div>
+
+  <div class="headline">
+    <div class="hl-num mono">2.7×</div>
+    <div class="hl-txt">
+      Ann books exceptions at <b>2.7× the rate of her peers</b> at IGA #002 —
+      <b>141 events</b> where the peer baseline predicts <b>52</b>. The gap is driven by
+      voids and cancels, not no-sales.
+    </div>
+    <div class="hl-rank">
+      <div><span class="rk-lab">Peer rank</span><span class="rk-val mono">1 of 18</span></div>
+      <div><span class="rk-lab">Exception value</span><span class="rk-val mono">$677.74</span></div>
+      <div><span class="rk-lab">Days active</span><span class="rk-val mono">13 / 13</span></div>
+    </div>
+  </div>
+</header>
+
+<!-- SECTION 1 -->
+<section class="sec">
+  <div class="sec-head">
+    <span class="sec-n">01</span>
+    <h2 class="sec-t">Exception breakdown</h2>
+    <span class="sec-sub">Bars show this cashier against the store peer rate. The mark at 1× is the baseline.</span>
+    <div class="sec-tools">
+      <div class="seg" id="cardSort" role="group" aria-label="Sort exception types">
+        <button data-sort="dev" aria-pressed="true">Deviation</button>
+        <button data-sort="occ" aria-pressed="false">Volume</button>
+        <button data-sort="val" aria-pressed="false">$ exposure</button>
+      </div>
+    </div>
+  </div>
+  <div class="cards" id="cards"></div>
+</section>
+
+<!-- SECTION 2 -->
+<section class="sec">
+  <div class="sec-head">
+    <span class="sec-n">02</span>
+    <h2 class="sec-t">When it happens</h2>
+    <span class="sec-sub">Same 141 events, cut three ways. Hover any bar for the detail.</span>
+  </div>
+
+  <div class="card ch">
+    <div class="ch-h">
+      <span class="ch-t">Exceptions per shift</span>
+      <span class="ch-s">Aug 1 – Aug 13 · stacked by type · shaded columns are weekends</span>
+    </div>
+    <div class="legend" id="legendMain"></div>
+    <div id="timeline"></div>
+    <div class="findings"><span class="tick"></span><span id="finding1"></span></div>
+  </div>
+
+  <div class="chart-row">
+    <div class="card ch">
+      <div class="ch-h"><span class="ch-t">By hour of day</span><span class="ch-s">store hours 7a – 9p</span></div>
+      <div id="byHour"></div>
+    </div>
+    <div class="card ch">
+      <div class="ch-h"><span class="ch-t">By day of week</span><span class="ch-s">two of each weekday, one Friday</span></div>
+      <div id="byDow"></div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 3 -->
+<section class="sec">
+  <div class="sec-head">
+    <span class="sec-n">03</span>
+    <h2 class="sec-t">Evidence</h2>
+    <span class="sec-sub">Every filter on the left is also a distribution. Click to narrow the receipts.</span>
+  </div>
+
+  <div class="ev">
+    <div class="card facets" id="facets"></div>
+    <div class="card">
+      <div class="tbl-head">
+        <span class="tbl-count" id="tblCount"></span>
+        <div class="chips" id="chips"></div>
+      </div>
+      <div class="scroller">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th><th>Time</th><th>Transaction</th><th>Lane</th>
+              <th>Type</th><th>Item</th><th class="r">Qty</th><th class="r">Amount</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="note">
+  <b>Wireframe note.</b> Ann's totals, peer multipliers, day-of-week shapes and the visible No Sale
+  receipts are taken from the current screens. Times of day, item names, tenders and the remaining
+  receipt lines are plausible fill so the interactions have something to move — replace them with
+  live query results. Peer baselines are back-computed from the multipliers already shown in your
+  filter bar (141 ÷ 2.7 = 52 expected, and so on).
+</div>
+
+</div>
+
+<div class="tip" id="tip" role="status" aria-live="polite"></div>
+
+<script>
+/* ============ deterministic pseudo-random ============ */
+function mk(seed){let s=seed>>>0;return()=>((s=(s*1664525+1013904223)>>>0)/4294967296);}
+const rnd = mk(20260801);
+const pick = a => a[Math.floor(rnd()*a.length)];
+
+/* ============ constants ============ */
+const TYPES = [
+  {k:'void',   name:'Voided',    color:'var(--s-void)',   tint:'var(--s-void-t)',   occ:94, receipts:80, total:590.03, avg:6.28, days:13, mult:3.0, peer:31.3},
+  {k:'cancel', name:'Cancelled', color:'var(--s-cancel)', tint:'var(--s-cancel-t)', occ:19, receipts:2,  total:76.63,  avg:4.03, days:2,  mult:3.3, peer:5.8},
+  {k:'nosale', name:'No Sale',   color:'var(--s-nosale)', tint:'var(--s-nosale-t)', occ:26, receipts:26, total:0,      avg:0,    days:13, mult:1.6, peer:16.3},
+  {k:'refund', name:'Refunded',  color:'var(--s-refund)', tint:'var(--s-refund-t)', occ:2,  receipts:2,  total:-11.08, avg:-5.54,days:2,  mult:3.0, peer:0.7},
+];
+const TYPE = Object.fromEntries(TYPES.map(t=>[t.k,t]));
+const ORDER = ['void','cancel','nosale','refund'];      // CVD-validated adjacency order
+const DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const DAYS = [];                                          // Aug 1 2026 is a Saturday
+for(let d=1; d<=13; d++) DAYS.push({d, dow:(5+d)%7, weekend:((5+d)%7===0||(5+d)%7===6)});
+const LANE_OF_DAY = {1:2,2:4,3:4,4:4,5:4,6:4,7:4,8:3,9:3,10:3,11:3,12:3,13:3};
+
+const ITEMS_VOID = [
+  ['Boar’s Head Ovengold Turkey','Deli',9.48],['Ground Chuck 80/20','Meat',12.74],
+  ['Coca-Cola 12pk Cans','Beverage',8.99],['Red Bull 4pk','Beverage',10.49],
+  ['Tide Pods 42ct','Household',13.99],['Marlboro Gold Pack','Tobacco',9.85],
+  ['Prime Rib Roast','Meat',24.60],['Huggies Snugglers 32ct','Baby',11.99],
+  ['Sara Lee Honey Ham','Deli',7.29],['Gatorade 8pk','Beverage',7.49],
+  ['Tillamook Sharp Cheddar','Dairy',6.79],['Store Gift Card $25','Gift Card',25.00],
+  ['Bananas','Produce',1.62],['Kingsford Charcoal 16lb','Seasonal',12.49],
+  ['Wonder Bread','Bakery',3.29],['Folgers Classic 30.5oz','Grocery',10.99],
+  ['Advil Liqui-Gels 80ct','HBC',12.29],['Dozen Large Eggs','Dairy',4.19],
+  ['Ben & Jerry’s Pint','Frozen',5.99],['Tropicana OJ 89oz',
+  'Beverage',6.49],['Charmin Mega 12ct','Household',15.99],['Whole Rotisserie Chicken','Deli',8.99],
+];
+const TENDERS = ['Cash','Debit','Credit','EBT','Check'];
+const TENDER_W = [0,0,0,0,0,1,1,1,1,2,2,2,3,4];  // weighted index into TENDERS
+
+/* ============ build the 141 events ============ */
+const VOID_BY_DAY  = {1:14,2:7,3:4,4:9,5:5,6:5,7:5,8:16,9:7,10:4,11:9,12:4,13:5}; // = 94
+const DOUBLE_VOIDS = {1:2,2:1,4:2,6:1,7:1,8:3,9:1,11:2,12:1};                     // 14 two-void receipts -> 80 receipts
+
+// No Sale: the 15 receipts visible on the current screen, plus 11 that complete the day-of-week shape
+const NOSALE_ROWS = [
+  [1,2,989046],[1,2,989150],
+  [2,4,907034],[2,4,907110],
+  [4,4,907219],[4,4,907247],[4,4,907353],
+  [5,4,907354],[5,4,907428],
+  [6,4,907490],
+  [7,4,907520],
+  [8,3,989670],[8,3,989748],[8,3,989812],[8,3,989860],
+  [9,3,989908],[9,3,989981],[9,3,990012],[9,3,990040],
+  [10,3,990073],[10,3,990159],
+  [11,3,990211],[11,3,990240],[11,3,990268],[11,3,990297],
+  [13,3,990401],
+];
+
+const HOUR_W = {                       // hourly weights 7a..9p
+  void:  [1,1,2,3,3,3,4,4,5,6,8,10,11,9,5],
+  cancel:[0,0,1,1,2,2,2,3,3,4,5,6,7,5,3],
+  nosale:[2,2,3,3,3,3,3,3,3,4,4,4,4,3,2],
+  refund:[0,1,2,3,3,3,3,3,2,2,2,1,1,1,0],
+};
+function drawHour(k){
+  const w = HOUR_W[k], tot = w.reduce((a,b)=>a+b,0);
+  let r = rnd()*tot;
+  for(let i=0;i<w.length;i++){ r-=w[i]; if(r<=0) return 7+i; }
+  return 19;
+}
+const txnBase = {2:989000, 3:989600, 4:907000};
+function makeTxn(day, lane){
+  return txnBase[lane] + day*76 + Math.floor(rnd()*70);
+}
+
+const EVENTS = [];
+let uid = 0;
+function push(day, lane, type, txn, hour, min, item, dept, amount, qty, tender){
+  EVENTS.push({
+    id:++uid, day, dow:DAYS[day-1].dow, lane, type, txn, hour, min,
+    item, dept, amount, qty, tender,
+    rid:`36-${txn}-${lane}-8-${day}-2026`
+  });
+}
+
+// --- voids
+let voidAmts = [];
+for(const day of Object.keys(VOID_BY_DAY).map(Number)){
+  const lane = LANE_OF_DAY[day];
+  const n = VOID_BY_DAY[day];
+  const doubles = DOUBLE_VOIDS[day] || 0;
+  let txn = null, sharedLeft = 0, madeDoubles = 0;
+  for(let i=0;i<n;i++){
+    if(sharedLeft>0){ sharedLeft--; }
+    else{
+      txn = makeTxn(day, lane);
+      if(madeDoubles < doubles && i < n-1){ sharedLeft = 1; madeDoubles++; }
+    }
+    const it = pick(ITEMS_VOID);
+    const h = drawHour('void');
+    const amt = Math.round(it[2]*(0.45+rnd()*0.85)*100)/100;
+    voidAmts.push(amt);
+    push(day, lane, 'void', txn, h, Math.floor(rnd()*60), it[0], it[1], amt,
+         rnd()<0.16?2:1, TENDERS[pick(TENDER_W)]);
+  }
+}
+// force the void total to the reported $590.03
+(function(){
+  const rows = EVENTS.filter(e=>e.type==='void');
+  const sum = rows.reduce((a,e)=>a+e.amount,0);
+  const f = 590.03/sum;
+  let acc = 0;
+  rows.forEach((e,i)=>{
+    if(i<rows.length-1){ e.amount = Math.round(e.amount*f*100)/100; acc += e.amount; }
+    else e.amount = Math.round((590.03-acc)*100)/100;
+  });
+})();
+
+// --- cancels: two receipts, 12 on Sun Aug 9 and 7 on Tue Aug 11
+[[9,12],[11,7]].forEach(([day,n])=>{
+  const lane = LANE_OF_DAY[day];
+  const txn = makeTxn(day, lane);
+  const h = drawHour('cancel'); const m = Math.floor(rnd()*40);
+  for(let i=0;i<n;i++){
+    const it = pick(ITEMS_VOID);
+    push(day, lane, 'cancel', txn, h, m+i, it[0], it[1],
+         Math.round(it[2]*(0.3+rnd()*0.6)*100)/100, 1, 'Cash');
+  }
+});
+(function(){
+  const rows = EVENTS.filter(e=>e.type==='cancel');
+  const sum = rows.reduce((a,e)=>a+e.amount,0), f = 76.63/sum;
+  let acc=0;
+  rows.forEach((e,i)=>{
+    if(i<rows.length-1){ e.amount = Math.round(e.amount*f*100)/100; acc+=e.amount; }
+    else e.amount = Math.round((76.63-acc)*100)/100;
+  });
+})();
+
+// --- no sales
+NOSALE_ROWS.forEach(([day,lane,txn])=>{
+  push(day, lane, 'nosale', txn, drawHour('nosale'), Math.floor(rnd()*60),
+       'No Sale', 'No Sale', 0, 1, '—');
+});
+
+// --- refunds
+push(4, 4, 'refund', 907301, 14, 22, 'Tillamook Sharp Cheddar', 'Dairy', -6.49, 1, 'Cash');
+push(8, 3, 'refund', 989790, 18, 7,  'Red Bull 4pk',            'Beverage', -4.59, 1, 'Cash');
+
+EVENTS.sort((a,b)=> a.day-b.day || a.hour-b.hour || a.min-b.min);
+
+/* ============ helpers ============ */
+const money = v => (v<0?'-$':'$') + Math.abs(v).toFixed(2);
+const clock = e => { const h12=((e.hour+11)%12)+1; return `${h12}:${String(e.min).padStart(2,'0')} ${e.hour<12?'am':'pm'}`; };
+const el = (t,c,h) => { const n=document.createElement(t); if(c)n.className=c; if(h!=null)n.innerHTML=h; return n; };
+const SVGNS='http://www.w3.org/2000/svg';
+function s(tag, attrs){ const n=document.createElementNS(SVGNS,tag); for(const k in attrs) n.setAttribute(k,attrs[k]); return n; }
+
+/* ============ tooltip ============ */
+const tip = document.getElementById('tip');
+function showTip(evt, html){
+  tip.innerHTML = html; tip.classList.add('on');
+  const r = tip.getBoundingClientRect();
+  let x = evt.clientX + 14, y = evt.clientY - r.height - 12;
+  if(x + r.width > innerWidth - 10) x = evt.clientX - r.width - 14;
+  if(y < 8) y = evt.clientY + 18;
+  tip.style.left = x+'px'; tip.style.top = y+'px';
+}
+const hideTip = () => tip.classList.remove('on');
+
+/* ============ section 1: exception cards ============ */
+let cardSort = 'dev';
+function renderCards(){
+  const host = document.getElementById('cards'); host.innerHTML='';
+  const sorted = [...TYPES].sort((a,b)=>
+    cardSort==='dev' ? b.mult-a.mult :
+    cardSort==='occ' ? b.occ-a.occ :
+                       Math.abs(b.total)-Math.abs(a.total));
+  for(const t of sorted){
+    const pct = Math.min(t.mult,4)/4*100;
+    const c = el('div','card xc');
+    c.innerHTML = `
+      <div class="xc-top">
+        <span class="swatch" style="background:${t.color}"></span>
+        <span class="xc-name">${t.name}</span>
+        <span class="xc-days mono">${t.days}/13 DAYS</span>
+      </div>
+      <div class="xc-num">
+        <span class="xc-occ mono">${t.occ}</span>
+        <span class="xc-occ-l">occurrences<br>${t.receipts===t.occ?'':`across ${t.receipts} receipts`}</span>
+      </div>
+      <div class="xc-money">
+        <span>Total <b class="mono">${t.total===0?'$0.00':money(t.total)}</b></span>
+        <span>Avg <b class="mono">${t.avg===0?'$0.00':money(t.avg)}</b></span>
+      </div>
+      <div class="xc-dev">
+        <div class="dev-lab">
+          <span class="k">vs. store peers</span>
+          <span class="v mono" style="color:${t.color}">${t.mult.toFixed(1)}×</span>
+        </div>
+        <div class="dev-track">
+          <div class="dev-fill" style="width:${pct}%; background:${t.color}"></div>
+          <div class="dev-peer" style="left:25%"></div>
+        </div>
+        <div class="dev-scale mono"><span>0×</span><span>1× peer</span><span>2×</span><span>3×</span><span>4×</span></div>
+      </div>`;
+    host.appendChild(c);
+  }
+}
+document.getElementById('cardSort').addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  cardSort = b.dataset.sort;
+  [...e.currentTarget.children].forEach(x=>x.setAttribute('aria-pressed', String(x===b)));
+  renderCards();
+});
+renderCards();
+
+/* ============ legend ============ */
+(function(){
+  const host = document.getElementById('legendMain');
+  ORDER.forEach(k=>{
+    const t = TYPE[k];
+    host.appendChild(el('span','lg',
+      `<span class="swatch" style="background:${t.color}"></span>${t.name} <span class="mono" style="color:var(--ink-3)">${t.occ}</span>`));
+  });
+})();
+
+/* ============ section 2: charts ============ */
+function stackedChart(host, cats, W, H, opts){
+  // cats: [{label, sublabel, counts:{type:n}, total, highlight}]
+  const PAD = {t:16, r:opts.r||8, b:opts.b||34, l:34};
+  const max = Math.max(...cats.map(c=>c.total), 1);
+  const nice = Math.ceil(max/5)*5;
+  const iw = W-PAD.l-PAD.r, ih = H-PAD.t-PAD.b;
+  const bw = Math.min(opts.maxBar||44, iw/cats.length*0.66);
+  const step = iw/cats.length;
+  const y = v => PAD.t + ih - (v/nice)*ih;
+  const svg = s('svg',{viewBox:`0 0 ${W} ${H}`, role:'img'});
+
+  // weekend bands
+  cats.forEach((c,i)=>{ if(c.band) svg.appendChild(s('rect',{
+    class:'wk-band', x:PAD.l+i*step+1, y:PAD.t-6, width:step-2, height:ih+6, rx:2 })); });
+
+  // gridlines
+  for(let g=0; g<=4; g++){
+    const v = nice*g/4;
+    svg.appendChild(s('line',{class:'gridline', x1:PAD.l, x2:W-PAD.r, y1:y(v), y2:y(v)}));
+    const tx = s('text',{class:'axis-txt', x:PAD.l-7, y:y(v)+3.5, 'text-anchor':'end'});
+    tx.textContent = v; svg.appendChild(tx);
+  }
+
+  // reference line
+  if(opts.ref!=null){
+    svg.appendChild(s('line',{class:'ref-line', x1:PAD.l, x2:W-PAD.r+4, y1:y(opts.ref), y2:y(opts.ref)}));
+    const rt = s('text',{class:'ref-txt', x:W-PAD.r+10, y:y(opts.ref)+3.5, 'text-anchor':'start'});
+    rt.textContent = opts.refLabel; svg.appendChild(rt);
+  }
+
+  // bars
+  cats.forEach((c,i)=>{
+    const x = PAD.l + i*step + (step-bw)/2;
+    let acc = 0;
+    ORDER.forEach(k=>{
+      const n = c.counts[k]||0; if(!n) return;
+      const h = (n/nice)*ih;
+      const yy = y(acc+n);
+      svg.appendChild(s('rect',{ x, y:yy, width:bw, height:Math.max(h-2,1.5),
+        fill:TYPE[k].color, rx:2 }));
+      acc += n;
+    });
+    if(c.highlight && c.total){
+      const t = s('text',{class:'dlabel', x:x+bw/2, y:y(c.total)-7, 'text-anchor':'middle'});
+      t.textContent = c.total; svg.appendChild(t);
+    }
+    const lab = s('text',{class:'axis-txt'+(c.strong?' hi':''), x:x+bw/2, y:H-PAD.b+15, 'text-anchor':'middle'});
+    lab.textContent = c.label; svg.appendChild(lab);
+    if(c.sublabel){
+      const s2 = s('text',{class:'axis-txt', x:x+bw/2, y:H-PAD.b+28, 'text-anchor':'middle'});
+      s2.textContent = c.sublabel; svg.appendChild(s2);
+    }
+    const hit = s('rect',{class:'hit', x:PAD.l+i*step, y:PAD.t-6, width:step, height:ih+6});
+    hit.addEventListener('mousemove', ev=>showTip(ev, tipHTML(c)));
+    hit.addEventListener('mouseleave', hideTip);
+    svg.appendChild(hit);
+  });
+  host.innerHTML=''; host.appendChild(svg);
+}
+function tipHTML(c){
+  const rows = ORDER.filter(k=>c.counts[k]).map(k=>
+    `<div class="tip-r"><span><span class="swatch" style="background:${TYPE[k].color};display:inline-block;margin-right:6px"></span>${TYPE[k].name}</span><b class="mono">${c.counts[k]}</b></div>`).join('');
+  return `<div class="tip-t">${c.tipTitle||c.label}</div>${rows}
+    <div class="tip-r" style="margin-top:5px;padding-top:5px;border-top:1px solid rgba(255,255,255,.16)"><span>All</span><b class="mono">${c.total}</b></div>`;
+}
+
+function countsFor(filterFn){
+  const c = {}; let total=0;
+  for(const e of EVENTS) if(filterFn(e)){ c[e.type]=(c[e.type]||0)+1; total++; }
+  return {counts:c, total};
+}
+
+function drawTimeline(){
+  const cats = DAYS.map(d=>{
+    const {counts,total} = countsFor(e=>e.day===d.d);
+    return {label:`${d.d}`, sublabel:DOW[d.dow][0], counts, total,
+            band:d.weekend, strong:d.weekend,
+            highlight:false, tipTitle:`${DOW[d.dow]} Aug ${d.d} · lane ${LANE_OF_DAY[d.d]}`};
+  });
+  const peak = cats.reduce((a,b)=>b.total>a.total?b:a);
+  peak.highlight = true;
+  stackedChart(document.getElementById('timeline'), cats, 1120, 250,
+    {ref:4.0, refLabel:'peer avg 4.0 / shift', maxBar:46, b:44, r:132});
+}
+function drawByHour(){
+  const cats = [];
+  for(let h=7; h<=21; h++){
+    const {counts,total} = countsFor(e=>e.hour===h);
+    const h12 = ((h+11)%12)+1;
+    cats.push({label:`${h12}${h<12?'a':'p'}`, counts, total, tipTitle:`${h12}:00 ${h<12?'am':'pm'}`});
+  }
+  cats.reduce((a,b)=>b.total>a.total?b:a).highlight = true;
+  stackedChart(document.getElementById('byHour'), cats, 540, 210, {maxBar:24});
+}
+function drawByDow(){
+  const cats = DOW.map((d,i)=>{
+    const {counts,total} = countsFor(e=>e.dow===i);
+    return {label:d, counts, total, tipTitle:`Every ${d}`, band:(i===0||i===6), strong:(i===0||i===6)};
+  });
+  cats.reduce((a,b)=>b.total>a.total?b:a).highlight = true;
+  stackedChart(document.getElementById('byDow'), cats, 540, 210, {maxBar:38});
+}
+drawTimeline(); drawByHour(); drawByDow();
+
+/* finding line — computed, not asserted */
+(function(){
+  let best={n:0};
+  for(let dow=0; dow<7; dow++) for(let hb=0; hb<5; hb++){
+    const lo=7+hb*3, hi=lo+2;
+    const n = EVENTS.filter(e=>e.type==='void' && e.dow===dow && e.hour>=lo && e.hour<=hi).length;
+    if(n>best.n) best={n,dow,lo,hi};
+  }
+  const f = h=>`${((h+11)%12)+1}${h<12?'a':'p'}`;
+  document.getElementById('finding1').innerHTML =
+    `<b>${best.n} of 94 voids</b> land in a single recurring window — <b>${DOW[best.dow]}s, ${f(best.lo)}–${f(best.hi+1)}</b>,
+     covering lane ${LANE_OF_DAY[8]}. That is ${(best.n/94*100).toFixed(0)}% of her voids in ${((best.hi-best.lo+1)*2)} hours of the period.
+     Pull the drawer counts and camera for those two shifts first.`;
+})();
+
+/* ============ section 3: faceted evidence ============ */
+const FACETS = [
+  {key:'type',  label:'Exception type', get:e=>e.type,
+   fmt:v=>TYPE[v].name, dot:v=>TYPE[v].color, order:ORDER},
+  {key:'dow',   label:'Day of week',    get:e=>e.dow, fmt:v=>DOW[v], order:[0,1,2,3,4,5,6]},
+  {key:'block', label:'Time of day',    get:e=> e.hour<11?'morning' : e.hour<15?'midday' : e.hour<18?'afternoon' : 'evening',
+   fmt:v=>({morning:'7a – 11a',midday:'11a – 3p',afternoon:'3p – 6p',evening:'6p – 9p'})[v],
+   order:['morning','midday','afternoon','evening']},
+  {key:'lane',  label:'Lane',           get:e=>e.lane, fmt:v=>'Lane '+v, order:[2,3,4]},
+  {key:'tender',label:'Tender',         get:e=>e.tender, fmt:v=>v==='—'?'No tender (no sale)':v, order:['Cash','Debit','Credit','EBT','Check','—']},
+];
+const active = {};   // key -> Set
+
+function passes(e, skipKey){
+  for(const k in active){
+    if(k===skipKey) continue;
+    const set = active[k]; if(!set || !set.size) continue;
+    const f = FACETS.find(x=>x.key===k);
+    if(!set.has(f.get(e))) return false;
+  }
+  return true;
+}
+const filtered = () => EVENTS.filter(e=>passes(e,null));
+
+function renderFacets(){
+  const host = document.getElementById('facets'); host.innerHTML='';
+  for(const f of FACETS){
+    const pool = EVENTS.filter(e=>passes(e,f.key));
+    const counts = {};
+    pool.forEach(e=>{ const v=f.get(e); counts[v]=(counts[v]||0)+1; });
+    const max = Math.max(1, ...Object.values(counts));
+    const g = el('div','fgroup');
+    g.appendChild(el('div','fg-h', f.label));
+    for(const v of f.order){
+      const n = counts[v]||0;
+      if(!n && !(active[f.key]&&active[f.key].has(v))) continue;
+      const on = active[f.key] && active[f.key].has(v);
+      const b = el('button','frow');
+      b.setAttribute('aria-pressed', String(!!on));
+      b.innerHTML = `<span class="fr-l">
+          <span class="fr-bar" style="width:${(n/max*100).toFixed(1)}%"></span>
+          <span class="fr-txt">${f.dot?`<span class="swatch" style="background:${f.dot(v)};display:inline-block;margin-right:7px"></span>`:''}${f.fmt(v)}</span>
+        </span><span class="fr-n">${n}</span>`;
+      b.addEventListener('click', ()=>{
+        active[f.key] = active[f.key] || new Set();
+        active[f.key].has(v) ? active[f.key].delete(v) : active[f.key].add(v);
+        if(!active[f.key].size) delete active[f.key];
+        render();
+      });
+      g.appendChild(b);
+    }
+    host.appendChild(g);
+  }
+}
+
+function renderChips(){
+  const host = document.getElementById('chips'); host.innerHTML='';
+  let any=false;
+  for(const k in active){
+    const f = FACETS.find(x=>x.key===k);
+    for(const v of active[k]){
+      any=true;
+      const c = el('span','chip', `${f.label}: ${f.fmt(v)}<button aria-label="Remove filter">×</button>`);
+      c.querySelector('button').addEventListener('click', ()=>{
+        active[k].delete(v); if(!active[k].size) delete active[k]; render();
+      });
+      host.appendChild(c);
+    }
+  }
+  if(any){
+    const clr = el('button','link-btn','Clear all');
+    clr.addEventListener('click', ()=>{ for(const k in active) delete active[k]; render(); });
+    host.appendChild(clr);
+  } else {
+    host.appendChild(el('span','sec-sub','No filters — showing every exception in the period.'));
+  }
+}
+
+let openRow = null;
+function renderTable(){
+  const rows = filtered();
+  const val = rows.reduce((a,e)=>a+Math.abs(e.amount),0);
+  document.getElementById('tblCount').innerHTML =
+    `<span class="mono">${rows.length}</span> exception${rows.length===1?'':'s'} · <span class="mono">${money(val)}</span> value`;
+  const tb = document.getElementById('tbody'); tb.innerHTML='';
+  for(const e of rows){
+    const t = TYPE[e.type];
+    const tr = el('tr','evrow');
+    tr.innerHTML = `
+      <td class="mono">08/${String(e.day).padStart(2,'0')}</td>
+      <td class="mono" style="color:var(--ink-2)">${clock(e)}</td>
+      <td class="mono">${e.txn}</td>
+      <td class="mono">${e.lane}</td>
+      <td><span class="type-pill"><span class="swatch" style="background:${t.color}"></span>${t.name}</span></td>
+      <td>${e.item}<span class="line-sub"> · ${e.dept}</span></td>
+      <td class="r mono">${e.qty}</td>
+      <td class="r mono${e.amount<0?' amt-neg':''}">${e.amount===0?'—':money(e.amount)}</td>`;
+    const det = el('tr','detail');
+    det.style.display='none';
+    det.innerHTML = `<td colspan="8"><div class="dwrap" style="border-left-color:${t.color}">
+      <div class="dgrid">
+        <div><span class="dg-l">Receipt</span><span class="dg-v mono">${e.rid}</span></div>
+        <div><span class="dg-l">Cashier</span><span class="dg-v">Ann · 40</span></div>
+        <div><span class="dg-l">Tender</span><span class="dg-v">${e.tender}</span></div>
+        <div><span class="dg-l">${t.name} on receipt</span><span class="dg-v mono">${EVENTS.filter(x=>x.txn===e.txn&&x.type===e.type).length}</span></div>
+        <div><span class="dg-l">Receipt exposure</span><span class="dg-v mono">${money(EVENTS.filter(x=>x.txn===e.txn).reduce((a,x)=>a+Math.abs(x.amount),0))}</span></div>
+      </div>
+      <div class="lines">
+        ${EVENTS.filter(x=>x.txn===e.txn).map((x,i)=>`
+          <div class="line${x.id===e.id?' flag':''}">
+            <span class="line-i mono">${i+1}</span>
+            <span>${x.item}<span class="line-sub"> · ${TYPE[x.type].name} · ${x.dept}</span></span>
+            <span class="r mono">${x.qty}</span>
+            <span class="r mono">${x.amount===0?'$0.00':money(x.amount)}</span>
+          </div>`).join('')}
+      </div></div></td>`;
+    tr.addEventListener('click', ()=>{
+      const open = det.style.display!=='none';
+      if(openRow && openRow!==det) openRow.style.display='none';
+      det.style.display = open ? 'none' : 'table-row';
+      openRow = open ? null : det;
+    });
+    tb.appendChild(tr); tb.appendChild(det);
+  }
+}
+function render(){ renderFacets(); renderChips(); renderTable(); }
+render();
+
+/* ============ header actions ============ */
+const flagBtn = document.getElementById('flagBtn');
+flagBtn.addEventListener('click', ()=>{
+  const on = flagBtn.getAttribute('aria-pressed')==='true';
+  flagBtn.setAttribute('aria-pressed', String(!on));
+  flagBtn.textContent = on ? 'Flag for review' : 'Flagged · Aug 27';
+});
+</script>

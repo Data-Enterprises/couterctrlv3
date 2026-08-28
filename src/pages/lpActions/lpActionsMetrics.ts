@@ -105,6 +105,14 @@ export const weekWindows = (endDate: string, count: number): WeekWindow[] => {
   });
 };
 
+/** Which window a sale date falls in, or -1. Lives here because this module
+ *  owns `WeekWindow` and `weekWindows`; `caseModel` and `journeyModel` each
+ *  grew a private copy of it before this one existed. */
+export const weekIndexOf = (windows: WeekWindow[], saleDate: string) => {
+  const day = saleDate.slice(0, 10);
+  return windows.findIndex((w) => day >= w.start && day <= w.end);
+};
+
 export const gradeChange = (
   latest: number,
   baseline: number,

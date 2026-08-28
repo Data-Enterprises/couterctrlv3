@@ -1,13 +1,10 @@
 import { useState } from "react";
-import { useAppDispatch, useAppSelector } from "../../hooks";
+import { useAppSelector } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import { formatGoliathDate } from "../../utils";
 import LpActionsEntry from "./LpActionsEntry";
-import LpExceptionList from "./LpExceptionList";
-import LpExceptionDetail from "./LpExceptionDetail";
-import CashierJourney from "./CashierJourney";
-import CashierCase from "./case/CashierCase";
-import { setLpCase } from "../../features/lpActionsSlice";
+import LpRosterPanel from "./roster/LpRosterPanel";
+import CaseFilePanel from "./caseFile/CaseFilePanel";
 import { useLpExceptionWalk } from "./useLpExceptionWalk";
 import { DEFAULT_WEEKS, MAX_WEEKS } from "./lpActionsConfig";
 
@@ -22,11 +19,11 @@ import { DEFAULT_WEEKS, MAX_WEEKS } from "./lpActionsConfig";
  */
 const LpActions = () => {
   const toast = useToast();
-  const dispatch = useAppDispatch();
   const walk = useLpExceptionWalk();
   const { singleDate, lastStore, lastGroup } = useAppSelector((s) => s.search);
-  const { rows, searched, weeks, loading, caseCashier, selectedId } =
-    useAppSelector((s) => s.lpActions);
+  const { rows, searched, weeks, loading } = useAppSelector(
+    (s) => s.lpActions,
+  );
   const [searchOpen, setSearchOpen] = useState(false);
   const [addingWeek, setAddingWeek] = useState(false);
 
@@ -56,20 +53,12 @@ const LpActions = () => {
   return (
     <div className="w-full p-4 select-none min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden">
       <div className="flex gap-4 h-[calc(100vh-5rem)]">
-        <LpExceptionList onSearchOpen={() => setSearchOpen(true)} />
-        {caseCashier === null ? (
-          <LpExceptionDetail
-            onAddWeek={handleAddWeek}
-            addingWeek={addingWeek}
-          />
-        ) : (
-          <CashierCase
-            onBack={() => dispatch(setLpCase(null))}
-            backLabel={
-              rows.find((r) => r.id === selectedId)?.saleType ?? "Exceptions"
-            }
-          />
-        )}
+        <LpRosterPanel
+          onSearchOpen={() => setSearchOpen(true)}
+          onAddWeek={handleAddWeek}
+          addingWeek={addingWeek}
+        />
+        <CaseFilePanel />
       </div>
 
       {rows.length === 0 && !loading && (
@@ -78,8 +67,6 @@ const LpActions = () => {
           ending on the searched date.
         </p>
       )}
-
-      <CashierJourney />
 
       {searchOpen && (
         <div

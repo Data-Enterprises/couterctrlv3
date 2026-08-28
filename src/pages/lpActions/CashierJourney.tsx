@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../hooks";
 import { setLpJourneyCashier } from "../../features/lpActionsSlice";
 import { XMarkIcon } from "@heroicons/react/20/solid";
@@ -39,6 +39,16 @@ const CashierJourney = () => {
   const [branchKey, setBranchKey] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
   const { receipt, openReceipt, closeReceipt } = useReceiptCase();
+
+  // Same reason as the case panel: the journey can be reopened on a different
+  // cashier without unmounting, and a receipt left open would belong to the
+  // previous one.
+  const cashierKey = journeyCashier
+    ? `${journeyCashier.storeid}:${journeyCashier.cashierNumber}`
+    : "";
+  useEffect(() => {
+    closeReceipt();
+  }, [cashierKey, closeReceipt]);
 
   const journey = useMemo(
     () =>

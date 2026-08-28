@@ -1,0 +1,975 @@
+<title>LP Case File Panel</title>
+
+<style>
+/* ───────────────────────────────────────────────────────────────────────
+   LP Actions — right panel wireframe.
+
+   Single theme, deliberately: the authenticated app is light-only (no
+   `darkMode` in tailwind.config.js, no `dark:` variants, no [data-theme]).
+
+   No webfont and no tabular-nums. The authenticated app runs on the default
+   system stack — `font-mono` exists only for the public portal — so every
+   numeral here is set in the same face as everything else.
+
+   Colours are lifted from src/index.css, src/utils/severity.ts and
+   src/pages/lpActions/case/chartTheme.ts. Nothing is invented.
+   ─────────────────────────────────────────────────────────────────────── */
+:root{
+  --bkg:#e4e9ef;              /* --color-bkg */
+  --panel:#f4f7f8;            /* --color-custom-white */
+  --stripe:#eceded;           /* --color-row-stripe */
+  --row-sel:#eff1f2;          /* --color-row-selected */
+  --row-sel-border:#8a9bb0;   /* --color-row-selected-border */
+  --navy:#1e2a4a;             /* hardcoded per component, not a token */
+  --ink:#1e293b;              /* --color-content */
+  --rule:#f3f4f6;             /* gray-100 */
+  --rule-2:#e5e7eb;           /* gray-200 */
+  --kpi-bg:#f9fafb;           /* gray-50 */
+
+  /* severity — grades behaviour, never identity */
+  --crit-bg:#ebd8d8;   --crit-ink:#931010;
+  --watch-bg:#ece0cd;  --watch-ink:#7f4d00;
+  --ok-bg:#d8ebe1;     --ok-ink:#0e6331;
+
+  /* chartTheme.ts SERIES — identity, never severity */
+  --s1:#7F77DD; --s2:#1D9E75; --s3:#378ADD; --s4:#BA7517; --s5:#D4537E;
+
+  --ui:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bkg); color:var(--ink);
+  font-family:var(--ui); font-size:13px; line-height:1.45;
+  -webkit-font-smoothing:antialiased;
+}
+button{font:inherit; color:inherit; cursor:pointer}
+:focus-visible{outline:2px solid #2563eb; outline-offset:2px}
+@keyframes slidedown{from{opacity:0; transform:translateY(-4px)}to{opacity:1; transform:translateY(0)}}
+.slidedown{animation:slidedown .13s ease-out}
+@media (prefers-reduced-motion:reduce){*{transition:none!important; animation:none!important}}
+
+.caption{max-width:1400px; margin:0 auto; padding:14px 16px 0; font-size:11.5px; color:#475569}
+.caption b{color:var(--ink)}
+
+.shell{max-width:1400px; margin:0 auto; padding:14px 16px 28px; display:flex; gap:16px; height:830px}
+
+/* ── left panel — re-rooted on people ────────────────────────────────────
+   The navy header and the severity chip row are unchanged from
+   LpExceptionList: the graded-page template treats the header as separately
+   approved, and only the list below it is being re-rooted.
+
+   That list moves from `exception type → store` to `store → cashier`, because
+   the right panel is now a case file about one operator. The store level
+   collapses away entirely when the search is a single store.
+   ───────────────────────────────────────────────────────────────────── */
+.left{flex-basis:33%; flex-shrink:0; min-width:0; background:var(--panel); border-radius:12px; box-shadow:0 10px 15px -3px rgb(0 0 0/.08); overflow:hidden; display:flex; flex-direction:column}
+
+/* Navy header — two rows, exactly as it stands today. */
+.lp-hd{flex-shrink:0; background:var(--navy); border-radius:12px 12px 0 0; padding:4px 16px 10px}
+.lp-r1{display:flex; align-items:center; gap:8px; min-height:26px}
+.lp-r1 .scope{flex:1; min-width:0; color:#f4f7f8; font-weight:600; font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.lp-r1 .n{flex-shrink:0; color:#f4f7f8; font-weight:600; font-size:14px}
+.lp-r2{display:flex; align-items:center; gap:8px; padding-top:6px; margin-top:4px; border-top:1px solid rgb(244 247 248/.08)}
+.lp-r2 .note{font-size:11px; color:rgb(244 247 248/.85)}
+.hdr-sq{width:22px; height:22px; flex-shrink:0; display:flex; align-items:center; justify-content:center; border-radius:4px; border:1px solid rgb(244 247 248/.2); background:transparent; color:rgb(244 247 248/.85); transition:color .12s, border-color .12s}
+.hdr-sq:hover{color:#f4f7f8; border-color:rgb(244 247 248/.4)}
+.vr{width:1px; height:16px; background:rgb(244 247 248/.15); flex-shrink:0}
+
+/* Severity chips — no "All" pill; clicking the active one deselects. */
+.sevrow{flex-shrink:0; display:flex; align-items:center; gap:8px; padding:8px 12px; border-bottom:1px solid var(--rule)}
+.sevchip{font-size:12px; font-weight:600; padding:4px 8px; border-radius:999px; border:0; transition:box-shadow .12s}
+.sevchip.inv{background:var(--crit-bg); color:var(--crit-ink)}
+.sevchip.wat{background:var(--watch-bg); color:var(--watch-ink)}
+.sevchip.ste{background:var(--ok-bg); color:var(--ok-ink)}
+.sevchip[aria-pressed="true"]{box-shadow:0 0 0 2px currentColor inset, 0 1px 2px rgb(0 0 0/.05)}
+
+/* "What moved" strip — the one addition beyond the re-root. Rooting the list
+   on people loses the group-level read the type-rooted list used to give, and
+   this puts it back in one row. It doubles as the legend for the swatches on
+   every cashier below. Droppable if it reads as clutter. */
+.movedrow{flex-shrink:0; display:flex; align-items:center; gap:6px; padding:7px 12px; border-bottom:1px solid var(--rule); overflow-x:auto}
+.movedrow::-webkit-scrollbar{height:0}
+.movedlbl{font-size:9px; font-weight:600; text-transform:uppercase; letter-spacing:.07em; color:#475569; flex-shrink:0; margin-right:2px}
+.moved{display:inline-flex; align-items:center; gap:5px; flex-shrink:0; font-size:11px; padding:3px 7px; border-radius:4px; border:1px solid var(--rule-2); background:transparent; white-space:nowrap; transition:border-color .12s, background .12s}
+.moved:hover{border-color:var(--row-sel-border)}
+.moved[aria-pressed="true"]{background:#dbeafe; border-color:#2563eb}
+.moved .mv{font-weight:600}
+
+/* Store group — hidden entirely when the scope is one store. */
+.grp{width:100%; text-align:left; display:flex; align-items:center; gap:8px; padding:9px 12px; border-bottom:1px solid var(--rule); background:transparent; border-left:0; border-right:0; border-top:0; transition:background .12s}
+.grp:hover{background:#f9fafb}
+.grp .nm{flex:1; min-width:0}
+.grp .t{display:block; font-size:13px; font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.grp .s{display:block; font-size:12px; color:rgb(30 41 59/.85)}
+.chev{width:14px; height:14px; flex-shrink:0; color:rgb(30 41 59/.85)}
+
+/* Cashier row — the thing the case file is about. */
+.kids{margin-left:19px; border-left:2px solid #e5e7eb}
+.csh{width:100%; text-align:left; display:flex; align-items:center; gap:8px; padding:7px 12px; border-bottom:1px solid var(--rule); background:transparent; border-left:0; border-right:0; border-top:0; transition:background .12s}
+.csh:hover{background:#f9fafb}
+.csh.sel{background:var(--row-sel); box-shadow:inset 3px 0 0 var(--row-sel-border)}
+.csh .nm{flex:1; min-width:0}
+.csh .t{display:block; font-size:12.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.csh .num{color:rgb(30 41 59/.85)}
+.dot{width:8px; height:8px; border-radius:50%; flex-shrink:0}
+.sw-row{display:flex; gap:3px; margin-top:3px}
+.sw{width:14px; height:3px; border-radius:1px}
+
+/* Four weeks. Three grey and one coloured is a spike; four level is a habit. */
+.bars{display:flex; align-items:flex-end; gap:3px; height:20px; flex-shrink:0}
+.bars span{width:8px; border-radius:2px; background:#d1d5db}
+.mult{font-size:12px; font-weight:600; width:58px; text-align:right; flex-shrink:0}
+.lp-list{flex:1; min-height:0; overflow-y:auto; border-radius:0 0 12px 12px}
+.lp-list::-webkit-scrollbar{width:7px}
+.lp-list::-webkit-scrollbar-thumb{background:#c3ccd8; border-radius:4px}
+
+/* ── right panel ─────────────────────────────────────────────────────── */
+.right{flex:1; min-width:0; background:var(--panel); border-radius:12px; box-shadow:0 10px 15px -3px rgb(0 0 0/.08); overflow:hidden; display:flex; flex-direction:column; position:relative}
+
+.hd{background:var(--navy); padding:12px 16px; display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-shrink:0}
+.hd-back{display:inline-flex; align-items:center; gap:5px; background:transparent; border:1px solid rgb(244 247 248/.25); border-radius:4px; padding:3px 8px; color:#f4f7f8; font-size:11px; margin-bottom:5px; transition:border-color .12s}
+.hd-back:hover{border-color:rgb(244 247 248/.5)}
+.hd-name{color:#f4f7f8; font-size:13px; font-weight:600; line-height:1.25; display:flex; align-items:center; gap:8px; flex-wrap:wrap}
+.badge{font-size:10px; letter-spacing:.06em; border:1px solid rgb(244 247 248/.3); border-radius:3px; padding:1px 5px; font-weight:500}
+.hd-sub{color:#f4f7f8; opacity:.85; font-size:10.5px; margin-top:2px}
+.hd-btn{background:transparent; border:0; color:#f4f7f8; opacity:.85; padding:2px; line-height:0}
+.hd-btn:hover{opacity:1}
+
+.kpi{display:grid; grid-template-columns:repeat(4,1fr); background:var(--kpi-bg); border-bottom:1px solid var(--rule); flex-shrink:0}
+.kpi>div{padding:8px 16px; border-right:1px solid var(--rule)}
+.kpi>div:last-child{border-right:0}
+.kpi .l{font-size:9px; font-weight:500; text-transform:uppercase; letter-spacing:.06em; color:#475569}
+.kpi .v{font-size:13px; font-weight:600; margin-top:1px}
+
+ /* The white content section. This is the sheet's world: it sits between the
+    KPI strip and the footer, and both the sheet and its dim are bounded by it
+    — the panel header, the KPIs and the footer stay live, because this is a
+    panel overlay and not a modal. `overflow:hidden` keeps the sheet clipped
+    while it is off-screen. */
+.stage{flex:1; min-height:0; position:relative; overflow:hidden}
+.body{height:100%; overflow-y:auto}
+.body::-webkit-scrollbar{width:7px}
+.body::-webkit-scrollbar-thumb{background:#c3ccd8; border-radius:4px}
+
+/* headline */
+.headline{display:flex; align-items:center; gap:18px; padding:14px 16px; border-bottom:1px solid var(--rule)}
+.hl-num{font-size:30px; font-weight:600; letter-spacing:-.02em; line-height:1; flex-shrink:0}
+.hl-txt{font-size:12px; line-height:1.5; max-width:64ch}
+.hl-txt b{font-weight:600}
+
+.block{padding:14px 16px}
+.sortrow{display:flex; justify-content:flex-end; margin-bottom:9px}
+.seg{display:inline-flex; border:1px solid var(--rule-2); border-radius:5px; overflow:hidden; background:var(--panel)}
+.seg button{background:transparent; border:0; padding:3px 9px; font-size:10.5px; color:#475569; border-right:1px solid var(--rule-2)}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--navy); color:#f4f7f8}
+
+/* ── cards ───────────────────────────────────────────────────────────── */
+.cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(198px,1fr)); gap:10px}
+.card{background:var(--panel); border:1px solid var(--rule-2); border-radius:8px; padding:11px 12px 12px; text-align:left; transition:border-color .12s, box-shadow .12s; display:flex; flex-direction:column; gap:8px}
+.card:hover{border-color:var(--row-sel-border)}
+.card[aria-pressed="true"]{border-color:var(--row-sel-border); box-shadow:inset 0 0 8px rgb(37 99 235/.22)}
+.card.quiet{opacity:.72}
+.c-top{display:flex; align-items:center; gap:7px}
+.c-name{font-size:11.5px; font-weight:600; flex:1; display:flex; align-items:center; gap:6px}
+.c-days{font-size:9.5px; color:#475569; letter-spacing:.04em}
+.c-count{display:flex; align-items:baseline; gap:7px}
+.c-n{font-size:22px; font-weight:600; line-height:1}
+.c-n-l{font-size:9px; text-transform:uppercase; letter-spacing:.07em; color:#475569; line-height:1.25}
+.c-money{display:flex; gap:14px; font-size:10.5px; color:#475569; border-top:1px solid var(--rule); padding-top:7px}
+.c-money b{color:var(--ink); font-weight:600}
+.c-devl{display:flex; align-items:baseline; justify-content:space-between; font-size:9px; text-transform:uppercase; letter-spacing:.07em; color:#475569}
+.c-mult{font-size:13px; font-weight:600; letter-spacing:0; text-transform:none}
+.track{position:relative; height:7px; background:var(--stripe); border-radius:2px; margin-top:5px; overflow:hidden}
+.fill{position:absolute; inset:0 auto 0 0; border-radius:2px}
+.tick{position:absolute; top:-2px; bottom:-2px; width:1px; background:#94a3b8; left:25%}
+.axis{display:flex; justify-content:space-between; font-size:8.5px; color:#64748b; margin-top:3px}
+
+/* ── charts ──────────────────────────────────────────────────────────── */
+.legend{display:flex; gap:13px; flex-wrap:wrap; margin-bottom:9px}
+.lg{display:flex; align-items:center; gap:5px; font-size:10.5px; color:#334155}
+.lg .sw{width:8px; height:8px; border-radius:2px}
+.lg b{font-weight:600; color:var(--ink)}
+.chart-card{border:1px solid var(--rule-2); border-radius:8px; padding:11px 12px; background:var(--panel); margin-top:14px}
+.chart-t{font-size:11.5px; font-weight:600; margin-bottom:2px}
+.chart-s{font-size:10.5px; color:#475569; margin-bottom:8px}
+.chart-scroll{overflow-x:auto}
+.finding{display:flex; gap:9px; margin-top:10px; padding-top:10px; border-top:1px solid var(--rule); font-size:11.5px; line-height:1.5}
+.finding .bar{width:3px; border-radius:2px; flex-shrink:0}
+.finding b{font-weight:600}
+.duo{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+.duo .chart-card{margin-top:0}
+.duo-wrap{margin-top:10px}
+@media(max-width:1080px){.duo{grid-template-columns:1fr; gap:10px}}
+
+.foot{padding:12px 16px; display:flex; justify-content:flex-end; gap:8px; border-top:1px solid var(--rule); background:var(--kpi-bg); flex-shrink:0}
+.btn{background:var(--panel); border:1px solid var(--rule-2); border-radius:5px; padding:5px 11px; font-size:11.5px}
+.btn:hover{border-color:var(--row-sel-border)}
+.btn.pri{background:var(--navy); color:#f4f7f8; border-color:var(--navy)}
+.btn.pri:hover{background:#2a3a63; border-color:#2a3a63}
+
+/* ── transactions view ───────────────────────────────────────────────── */
+.ev{display:grid; grid-template-columns:206px 1fr; gap:12px; padding:14px 16px}
+@media(max-width:900px){.ev{grid-template-columns:1fr}}
+.rail{border:1px solid var(--rule-2); border-radius:8px; overflow:hidden; align-self:start}
+.fgroup{padding:10px 11px; border-bottom:1px solid var(--rule)}
+.fgroup:last-child{border-bottom:0}
+.fg-h{font-size:9px; text-transform:uppercase; letter-spacing:.08em; color:#475569; margin-bottom:7px}
+.frow{position:relative; display:grid; grid-template-columns:1fr auto; gap:8px; width:100%; background:transparent; border:0; padding:3px 5px; border-radius:3px; text-align:left; align-items:center}
+.frow:hover{background:var(--stripe)}
+.frow[aria-pressed="true"]{background:#dbeafe; box-shadow:inset 0 0 0 1px #2563eb}
+.fr-bar{position:absolute; left:0; top:0; bottom:0; background:var(--stripe); border-radius:2px; z-index:0}
+.frow[aria-pressed="true"] .fr-bar{background:rgb(37 99 235/.14)}
+.fr-l{position:relative; z-index:1; font-size:11.5px; display:flex; align-items:center; gap:6px; min-width:0}
+.fr-n{position:relative; z-index:1; font-size:10.5px; color:#475569}
+.tbl-wrap{border:1px solid var(--rule-2); border-radius:8px; overflow:hidden; display:flex; flex-direction:column}
+.tbl-hd{display:flex; align-items:center; gap:9px; padding:9px 12px; border-bottom:1px solid var(--rule); flex-wrap:wrap}
+.tbl-c{font-size:12px; font-weight:600}
+.tbl-note{font-size:11px; color:#475569}
+.scroller{max-height:452px; overflow:auto}
+table{width:100%; border-collapse:collapse; font-size:11.5px}
+thead th{position:sticky; top:0; z-index:2; background:var(--kpi-bg); text-align:left; font-size:9px; letter-spacing:.07em; text-transform:uppercase; color:#475569; font-weight:600; padding:7px 10px; border-bottom:1px solid var(--rule-2); white-space:nowrap}
+th.r,td.r{text-align:right}
+tbody tr{border-bottom:1px solid var(--rule); cursor:pointer}
+tbody tr:nth-child(even){background:var(--stripe)}
+tbody tr:hover{background:var(--row-sel)}
+tbody tr.on{background:var(--row-sel); box-shadow:inset 3px 0 0 var(--row-sel-border)}
+td{padding:6px 10px}
+.pill{display:inline-flex; align-items:center; gap:5px; font-size:10.5px; white-space:nowrap}
+.dash{color:#64748b}
+.dept{color:#64748b; font-size:10px}
+
+/* ── transaction slide-out ───────────────────────────────────────────── */
+.scrim{position:absolute; inset:0; background:rgb(15 23 42/.28); opacity:0; pointer-events:none; transition:opacity .16s; z-index:20}
+/* Anchored to .stage, so the dim stops at the KPI strip and the footer. */
+.scrim.on{opacity:1; pointer-events:auto}
+.slide{position:absolute; top:0; right:0; bottom:0; width:410px; max-width:92%; background:var(--panel); box-shadow:-8px 0 24px -8px rgb(15 23 42/.3); transform:translateX(100%); transition:transform .18s ease; z-index:21; display:flex; flex-direction:column}
+.slide.on{transform:translateX(0)}
+
+/* Transaction sub-header — the shape Transaction.tsx renders: id and terminal
+   left, date and time under them, the two action icons top right. */
+.tx-hd{flex-shrink:0; display:flex; align-items:flex-start; gap:12px; padding:10px 16px; border-bottom:1px solid var(--rule)}
+.tx-hd .tx-acts{margin-left:auto}
+.tx-id{font-size:13px; font-weight:700}
+.tx-term{margin-left:8px; font-size:10px; font-weight:400; color:rgb(30 41 59/.85)}
+.tx-sub{font-size:10px; color:rgb(30 41 59/.85); margin-top:2px}
+.tx-acts{display:flex; gap:6px; flex-shrink:0}
+.icon-btn{width:24px; height:24px; display:flex; align-items:center; justify-content:center; border-radius:4px; border:1px solid var(--rule-2); background:transparent; color:rgb(30 41 59/.85); transition:color .12s, border-color .12s}
+.icon-btn:hover{color:var(--ink); border-color:#d1d5db}
+
+/* CTA strip — the shape used across Sales, Sub Dept Margins and Item Actions.
+   Three tones, because the same strip has to be able to clear a cashier as
+   well as accuse one. `--tone-rgb` drives the /25 border and /10 hover that
+   CTA_SEVERITY_CLASSES specifies, so one class swap re-themes the whole
+   block including the popover and the flagged receipt line. */
+.cta{--tone-bg:var(--crit-bg); --tone-ink:var(--crit-ink); --tone-rgb:147 16 16}
+.cta.watch{--tone-bg:var(--watch-bg); --tone-ink:var(--watch-ink); --tone-rgb:127 77 0}
+.cta.ok{--tone-bg:var(--ok-bg); --tone-ink:var(--ok-ink); --tone-rgb:14 99 49}
+.cta{position:relative; flex-shrink:0; border-bottom:1px solid; background:var(--tone-bg); border-color:rgb(var(--tone-rgb)/.25); color:var(--tone-ink)}
+.cta-btn{width:100%; text-align:left; padding:8px 14px; display:flex; align-items:center; gap:6px; background:transparent; border:0; color:inherit; transition:background .12s}
+.cta-btn:hover{background:rgb(var(--tone-rgb)/.1)}
+.cta-lbl{font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; flex:1}
+.cta-why{font-size:11px; font-weight:500; text-decoration:underline}
+/* slides down over the receipt — absolute, so nothing below moves */
+.cta-pop{position:absolute; top:100%; left:0; right:0; z-index:30; background:var(--tone-bg); color:var(--tone-ink); border-bottom:1px solid rgb(var(--tone-rgb)/.25); border-radius:0 0 8px 8px; box-shadow:0 10px 15px -3px rgb(0 0 0/.2); padding:10px 14px 12px; max-height:340px; overflow-y:auto}
+.cta-pop ul{margin:0; padding:0; list-style:none; display:flex; flex-direction:column; gap:6px}
+.cta-pop li{font-size:13px; line-height:1.5; padding-left:12px; position:relative}
+.cta-pop li::before{content:"·"; position:absolute; left:3px; font-weight:700; opacity:.7}
+.cta-pop li b{font-weight:600}
+
+/* the receipt — the column shape LP's Transaction.tsx renders */
+.sl-body{flex:1; min-height:0; overflow-y:auto}
+.sl-body{--tone-bg:var(--crit-bg); --tone-ink:var(--crit-ink); --tone-rgb:147 16 16}
+.sl-body.watch{--tone-bg:var(--watch-bg); --tone-ink:var(--watch-ink); --tone-rgb:127 77 0}
+.sl-body.ok{--tone-bg:var(--ok-bg); --tone-ink:var(--ok-ink); --tone-rgb:14 99 49}
+.rcpt{background:var(--panel)}
+.rcpt-h,.rline{display:grid; grid-template-columns:70px minmax(0,1fr) 32px 56px 60px; gap:6px; padding:6px 16px; align-items:center}
+.rcpt-h{background:#f3f4f6; border-bottom:1px solid var(--rule); font-size:8.5px; text-transform:uppercase; letter-spacing:.07em; color:#475569; font-weight:600}
+.rline{font-size:11px}
+.rline+.rline{border-top:1px solid var(--rule)}
+/* The exception's own line. Tinted in the verdict's tone — marking it red on
+   a receipt we have just cleared would contradict the strip above it. */
+.rline.flag{background:var(--tone-bg,var(--crit-bg))}
+.rline .d{min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.rline .stamp{font-size:9.5px; color:#475569}
+.rtype{display:inline-block; font-size:9px; padding:0 4px; border-radius:3px; background:rgb(var(--tone-rgb,147 16 16)/.16); color:var(--tone-ink,var(--crit-ink)); margin-left:5px}
+.rcpt-f{display:flex; justify-content:space-between; padding:8px 16px; border-top:1px solid var(--rule); background:#f3f4f6; font-size:11.5px; font-weight:600}
+
+.hidden{display:none!important}
+</style>
+
+<p class="caption">
+  <b>Wireframe — LP Actions right panel.</b> Layout, hierarchy and interaction only; all figures are
+  <b>placeholder</b>. Colours come from <b>index.css</b>, <b>severity.ts</b> and <b>chartTheme.ts</b>;
+  no webfont, no tabular figures. Use the footer button to move between the case view and the
+  transactions view, click any transaction row to open the receipt, then <b>Why</b> to drop the summary
+  over it.
+</p>
+
+<div class="shell">
+
+  <aside class="left">
+    <div class="lp-hd">
+      <div class="lp-r1">
+        <span class="scope">Bruces Foodland</span>
+        <span class="n" id="lpCount">9</span>
+      </div>
+      <div class="lp-r2">
+        <button class="hdr-sq" title="New search" aria-label="New search">
+          <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11ZM2 9a7 7 0 1 1 12.452 4.391l3.328 3.329a.75.75 0 1 1-1.06 1.06l-3.329-3.328A7 7 0 0 1 2 9Z" clip-rule="evenodd"/></svg>
+        </button>
+        <span class="vr"></span>
+        <span class="note">4 weeks &middot; latest week graded on the 3 before it</span>
+        <div style="flex:1"></div>
+        <button class="hdr-sq" title="What this page shows" aria-label="What this page shows">
+          <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-8-3.5a1.5 1.5 0 0 0-1.5 1.5.75.75 0 0 1-1.5 0 3 3 0 1 1 4.5 2.598V11a.75.75 0 0 1-1.5 0v-.75a.75.75 0 0 1 .75-.75 1.5 1.5 0 0 0 0-3ZM10 15a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clip-rule="evenodd"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="sevrow" id="sevRow"></div>
+    <div class="movedrow" id="movedRow"></div>
+    <div class="lp-list" id="lpList"></div>
+  </aside>
+
+  <section class="right">
+
+    <header class="hd">
+      <div>
+        <button class="hd-back hidden" id="backBtn">&larr; Breakdown</button>
+        <div class="hd-name">Ann <span class="badge">CASHIER 40</span></div>
+        <div class="hd-sub">Bruces Foodland #002 · Aug 1 – Aug 13 · 13 shifts · Lanes 2, 4, 3</div>
+      </div>
+      <button class="hd-btn" title="Export evidence pack" aria-label="Export evidence pack">
+        <svg width="17" height="17" viewBox="0 0 20 20" fill="currentColor"><path d="M10 3a.75.75 0 0 1 .75.75v7.19l2.22-2.22a.75.75 0 1 1 1.06 1.06l-3.5 3.5a.75.75 0 0 1-1.06 0l-3.5-3.5a.75.75 0 1 1 1.06-1.06l2.22 2.22V3.75A.75.75 0 0 1 10 3Z"/><path d="M3.5 13a.75.75 0 0 1 .75.75v1.5c0 .14.11.25.25.25h11a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 15.5 17h-11A1.75 1.75 0 0 1 2.75 15.25v-1.5A.75.75 0 0 1 3.5 13Z"/></svg>
+      </button>
+    </header>
+
+    <div class="kpi">
+      <div><div class="l">Exceptions</div><div class="v">141</div></div>
+      <div><div class="l">Exception value</div><div class="v">$677.74</div></div>
+      <div><div class="l">Days active</div><div class="v">13 / 13</div></div>
+      <div><div class="l">Types touched</div><div class="v">4 of 5</div></div>
+    </div>
+
+    <div class="stage">
+
+    <!-- ═══════════════ the case view — cards and shape together ═══════════════ -->
+    <div class="body" id="stepCase">
+
+      <div class="headline">
+        <div class="hl-num" style="color:var(--crit-ink)">2.7&times;</div>
+        <div class="hl-txt">
+          Ann is running exceptions at <b>2.7&times; her own 3-week baseline</b> &mdash;
+          <b>141 this week</b> where her normal is <b>52</b>. The gap is
+          <b>voids and cancels</b>, not no-sales.
+        </div>
+      </div>
+
+      <div class="block">
+        <div class="sortrow">
+          <div class="seg" role="group" aria-label="Sort by">
+            <button aria-pressed="true">Deviation</button><button aria-pressed="false">Volume</button><button aria-pressed="false">$ exposure</button>
+          </div>
+        </div>
+
+        <div class="cards" id="cards"></div>
+
+        <div class="chart-card">
+          <div class="chart-t">Exceptions per shift</div>
+          <div class="chart-s">Aug 1 &ndash; Aug 13 · stacked by type · shaded columns are weekends</div>
+          <div class="legend" id="legend"></div>
+          <div class="chart-scroll"><div id="timeline"></div></div>
+          <div class="finding">
+            <span class="bar" style="background:var(--s1)"></span>
+            <span><b>11 of 94 voids</b> land in one recurring window &mdash; <b>Saturdays, 4p&ndash;7p</b>, covering lane 3. That is <b>12%</b> of her voids in <b>6 hours</b> of the period.</span>
+          </div>
+        </div>
+
+        <div class="duo-wrap">
+          <div class="duo">
+            <div class="chart-card">
+              <div class="chart-t">By hour of day</div>
+              <div class="chart-s">Store hours 7a &ndash; 9p</div>
+              <div class="chart-scroll"><div id="byHour"></div></div>
+            </div>
+            <div class="chart-card">
+              <div class="chart-t">By day of week</div>
+              <div class="chart-s">Two of each weekday, one Friday</div>
+              <div class="chart-scroll"><div id="byDow"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════ the transactions view ═══════════════════════ -->
+    <div class="body hidden" id="stepTx">
+      <div class="ev">
+        <div class="rail" id="rail"></div>
+        <div class="tbl-wrap">
+          <div class="tbl-hd">
+            <span class="tbl-c">141 exceptions · $677.74</span>
+            <span class="tbl-note" id="filtNote">No filters &mdash; showing every exception in the period.</span>
+          </div>
+          <div class="scroller">
+            <table>
+              <thead><tr>
+                <th>Date</th><th>Time</th><th>Transaction</th><th>Lane</th><th>Type</th><th>Item</th><th class="r">Qty</th><th class="r">Amount</th>
+              </tr></thead>
+              <tbody id="tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- transaction sheet: container contents, no navy header. Lives inside
+         .stage so it covers the white content and nothing else. -->
+    <div class="scrim" id="scrim"></div>
+    <aside class="slide" id="slide" aria-label="Transaction">
+
+      <div class="cta" id="cta">
+        <button class="cta-btn" id="ctaBtn" aria-expanded="false">
+          <span id="ctaIcon" style="line-height:0"></span>
+          <span class="cta-lbl" id="ctaLbl">Supports the case</span>
+          <span class="cta-why" id="ctaWhy">Why</span>
+        </button>
+        <div class="cta-pop slidedown hidden" id="ctaPop"><ul id="whyList"></ul></div>
+      </div>
+
+      <div class="sl-body" id="slBody">
+        <div class="tx-hd">
+          <div>
+            <div class="tx-id">Trans #<span id="slId">989098</span><span class="tx-term" id="slTerm">Terminal 2</span></div>
+            <div class="tx-sub" id="slMeta">Aug 1, 2026 &middot; 11:44:02&ndash;11:52:40</div>
+          </div>
+          <div class="tx-acts">
+            <button class="icon-btn" aria-label="Email transaction" title="Email transaction">
+              <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path d="M3 4a2 2 0 0 0-2 2v.161l8.5 4.937 8.5-4.937V6a2 2 0 0 0-2-2H3Z"/><path d="m19 8.839-7.997 4.643a2 2 0 0 1-2.006 0L1 8.839V14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8.839Z"/></svg>
+            </button>
+            <button class="icon-btn" aria-label="Export transaction CSV" title="Export transaction CSV">
+              <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path d="M10 3a.75.75 0 0 1 .75.75v7.19l2.22-2.22a.75.75 0 1 1 1.06 1.06l-3.5 3.5a.75.75 0 0 1-1.06 0l-3.5-3.5a.75.75 0 1 1 1.06-1.06l2.22 2.22V3.75A.75.75 0 0 1 10 3Z"/><path d="M3.5 13a.75.75 0 0 1 .75.75v1.5c0 .14.11.25.25.25h11a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 15.5 17h-11A1.75 1.75 0 0 1 2.75 15.25v-1.5A.75.75 0 0 1 3.5 13Z"/></svg>
+            </button>
+            <button class="icon-btn" id="slClose" aria-label="Close transaction" title="Close">
+              <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94Z"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="rcpt">
+          <div class="rcpt-h"><span>Time</span><span>Description</span><span class="r">Qty</span><span class="r">Price</span><span class="r">Total</span></div>
+          <div id="rlines"></div>
+          <div class="rcpt-f"><span>Basket total</span><span id="basketTotal">$48.16</span></div>
+        </div>
+      </div>
+
+    </aside>
+
+    </div><!-- /.stage -->
+
+    <footer class="foot">
+      <button class="btn" id="secondaryBtn">Add note</button>
+      <button class="btn pri" id="stepBtn">View transactions &rarr;</button>
+    </footer>
+
+  </section>
+</div>
+
+<script>
+/* ─── placeholder data ────────────────────────────────────────────────── */
+const TYPES = [
+  {k:"void",   label:"Voided",    hue:"var(--s1)", n:94, receipts:80, total:590.03, avg:6.28, days:"13/13", mult:3.0, sev:"crit"},
+  {k:"cancel", label:"Cancelled", hue:"var(--s2)", n:19, receipts:2,  total:76.63,  avg:4.03, days:"2/13",  mult:3.3, sev:"crit"},
+  {k:"nosale", label:"No Sale",   hue:"var(--s3)", n:26, receipts:26, total:0,      avg:0,    days:"13/13", mult:1.6, sev:"watch"},
+  {k:"refund", label:"Refunded",  hue:"var(--s4)", n:2,  receipts:2,  total:-11.08, avg:-5.54,days:"2/13",  mult:0.4, sev:"ok"},
+  {k:"susp",   label:"Suspended", hue:"var(--s5)", n:0,  receipts:0,  total:0,      avg:0,    days:"0/13",  mult:null,sev:null},
+];
+const SEV_INK = {crit:"var(--crit-ink)", watch:"var(--watch-ink)", ok:"var(--ok-ink)"};
+const ORDER   = ["void","cancel","nosale","refund"];
+const money   = v => (v<0?"−$":"$") + Math.abs(v).toFixed(2);
+const hueOf   = k => TYPES.find(t=>t.k===k).hue;
+const lblOf   = k => TYPES.find(t=>t.k===k).label;
+
+const DAYS = [
+  {d:1,w:"S",we:1,c:{void:12,cancel:0,nosale:3,refund:0}},{d:2,w:"S",we:1,c:{void:7,cancel:0,nosale:2,refund:0}},
+  {d:3,w:"M",we:0,c:{void:4,cancel:0,nosale:0,refund:0}}, {d:4,w:"T",we:0,c:{void:8,cancel:0,nosale:2,refund:1}},
+  {d:5,w:"W",we:0,c:{void:5,cancel:0,nosale:2,refund:0}}, {d:6,w:"T",we:0,c:{void:5,cancel:0,nosale:1,refund:0}},
+  {d:7,w:"F",we:0,c:{void:5,cancel:0,nosale:1,refund:0}}, {d:8,w:"S",we:1,c:{void:15,cancel:0,nosale:4,refund:1}},
+  {d:9,w:"S",we:1,c:{void:6,cancel:13,nosale:4,refund:0}},{d:10,w:"M",we:0,c:{void:5,cancel:0,nosale:2,refund:0}},
+  {d:11,w:"T",we:0,c:{void:7,cancel:6,nosale:4,refund:0}},{d:12,w:"W",we:0,c:{void:4,cancel:0,nosale:0,refund:0}},
+  {d:13,w:"T",we:0,c:{void:5,cancel:0,nosale:1,refund:0}},
+];
+const HOURS = [
+  {h:"7a",c:{void:1,cancel:0,nosale:0,refund:0}},{h:"8a",c:{void:2,cancel:0,nosale:1,refund:0}},
+  {h:"9a",c:{void:6,cancel:0,nosale:3,refund:0}},{h:"10a",c:{void:3,cancel:0,nosale:1,refund:0}},
+  {h:"11a",c:{void:2,cancel:0,nosale:0,refund:0}},{h:"12p",c:{void:5,cancel:0,nosale:3,refund:0}},
+  {h:"1p",c:{void:3,cancel:0,nosale:1,refund:0}},{h:"2p",c:{void:6,cancel:0,nosale:2,refund:0}},
+  {h:"3p",c:{void:6,cancel:0,nosale:2,refund:0}},{h:"4p",c:{void:7,cancel:11,nosale:2,refund:0}},
+  {h:"5p",c:{void:13,cancel:0,nosale:1,refund:1}},{h:"6p",c:{void:17,cancel:0,nosale:2,refund:0}},
+  {h:"7p",c:{void:16,cancel:8,nosale:5,refund:1}},{h:"8p",c:{void:6,cancel:0,nosale:3,refund:0}},
+];
+const DOW = [
+  {d:"Sun",em:1,c:{void:14,cancel:13,nosale:5,refund:0}},{d:"Mon",em:0,c:{void:9,cancel:0,nosale:1,refund:0}},
+  {d:"Tue",em:0,c:{void:15,cancel:6,nosale:5,refund:1}},{d:"Wed",em:0,c:{void:9,cancel:0,nosale:2,refund:0}},
+  {d:"Thu",em:0,c:{void:10,cancel:0,nosale:2,refund:0}},{d:"Fri",em:0,c:{void:5,cancel:0,nosale:1,refund:0}},
+  {d:"Sat",em:1,c:{void:32,cancel:0,nosale:10,refund:0}},
+];
+
+/* ─── left panel ─────────────────────────────────────────────────── */
+/* SEV_INK is declared with the placeholder data above. */
+const SEV_DOT = {crit:"#ef4444", watch:"#fbbf24", ok:"#10b981"};
+
+/* Movement per type across the whole scope — the group-level read the
+   type-rooted list used to carry. */
+const MOVED = [
+  {k:"cancel", label:"Cancelled", hue:"var(--s2)", mv:"3.3\u00d7", sev:"crit"},
+  {k:"void",   label:"Voided",    hue:"var(--s1)", mv:"2.1\u00d7", sev:"crit"},
+  {k:"nosale", label:"No Sale",   hue:"var(--s3)", mv:"1.4\u00d7", sev:"watch"},
+  {k:"refund", label:"Refunded",  hue:"var(--s4)", mv:"\u221240%",  sev:"ok"},
+];
+
+const STORES = [
+  {store:"Bruces Foodland #002", sev:"crit", inv:2, cashiers:[
+    {n:"Ann",   no:40, sev:"crit",  mv:"2.7\u00d7", w:[6,9,7,24],  sw:["var(--s1)","var(--s2)","var(--s3)"]},
+    {n:"Devon", no:12, sev:"crit",  mv:"1.9\u00d7", w:[8,7,9,16],  sw:["var(--s1)","var(--s3)"]},
+    {n:"Rosa",  no:7,  sev:"watch", mv:"1.4\u00d7", w:[11,9,10,14],sw:["var(--s3)"]},
+    {n:"Kip",   no:33, sev:"ok",    mv:"1.1\u00d7", w:[9,10,9,10], sw:["var(--s1)","var(--s4)"]},
+    {n:"Marcy", no:18, sev:"ok",    mv:"\u221218%",  sw:["var(--s1)"], w:[12,11,13,9]},
+    {n:"Toby",  no:51, sev:"ok",    mv:"\u22124%",   sw:["var(--s3)"], w:[7,8,7,7]},
+  ]},
+  {store:"Bruces Foodland #005", sev:"watch", inv:1, cashiers:[
+    {n:"Priya", no:22, sev:"crit",  mv:"2.2\u00d7", w:[5,6,5,12], sw:["var(--s1)","var(--s2)"]},
+    {n:"Hal",   no:9,  sev:"watch", mv:"1.3\u00d7", w:[9,8,10,12],sw:["var(--s1)"]},
+    {n:"Jo",    no:60, sev:"ok",    mv:"1.0\u00d7", w:[6,7,6,6],  sw:["var(--s4)"]},
+  ]},
+];
+
+const bars = (w, sev) => {
+  const peak = Math.max(...w, 1);
+  return '<span class="bars">' + w.map((v,i) =>
+    '<span style="height:' + Math.max(2, Math.round(v/peak*20)) + 'px' +
+    (i === w.length-1 ? ';background:' + SEV_INK[sev] : "") + '"></span>').join("") + '</span>';
+};
+
+let sevFilter = "all";
+let movedFilter = null;
+let selected = "Ann-40";
+
+function renderLeft(){
+  const all = STORES.flatMap(s => s.cashiers);
+  const counts = {crit:0, watch:0, ok:0};
+  all.forEach(c => counts[c.sev]++);
+
+  document.getElementById("sevRow").innerHTML =
+    [["crit","inv","Investigate"],["watch","wat","Watch"],["ok","ste","Steady"]]
+      .map(([k,cls,label]) =>
+        '<button class="sevchip ' + cls + '" data-sev="' + k + '" aria-pressed="' + (sevFilter===k) + '">' +
+        label + ' ' + counts[k] + '</button>').join("");
+
+  document.getElementById("movedRow").innerHTML =
+    '<span class="movedlbl">Moved</span>' + MOVED.map(m =>
+      '<button class="moved" data-moved="' + m.k + '" aria-pressed="' + (movedFilter===m.k) + '">' +
+      '<span class="sw" style="width:8px;height:8px;border-radius:2px;background:' + m.hue + '"></span>' +
+      m.label + ' <span class="mv" style="color:' + SEV_INK[m.sev] + '">' + m.mv + '</span></button>').join("");
+
+  const keep = c => (sevFilter === "all" || c.sev === sevFilter)
+                 && (movedFilter === null || c.sw.includes(MOVED.find(m=>m.k===movedFilter).hue));
+
+  /* One store in scope → no store level at all, just the people. */
+  const single = STORES.length === 1;
+  let html = "", shown = 0;
+  STORES.forEach(st => {
+    const kids = st.cashiers.filter(keep);
+    if(kids.length === 0) return;
+    shown += kids.length;
+    if(!single){
+      html += '<button class="grp">' +
+        '<svg class="chev" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/></svg>' +
+        '<span class="dot" style="background:' + SEV_DOT[st.sev] + '"></span>' +
+        '<span class="nm"><span class="t">' + st.store + '</span>' +
+        '<span class="s">' + kids.length + (kids.length===1?" cashier":" cashiers") +
+        (st.inv ? ' \u00b7 ' + st.inv + ' to investigate' : "") + '</span></span></button>';
+    }
+    const rows = kids.map(c => {
+      const id = c.n + "-" + c.no;
+      return '<button class="csh' + (id===selected?" sel":"") + '" data-id="' + id + '">' +
+        '<span class="dot" style="background:' + SEV_DOT[c.sev] + '"></span>' +
+        '<span class="nm"><span class="t">' + c.n + ' <span class="num">\u00b7 ' + c.no + '</span></span>' +
+        '<span class="sw-row">' + c.sw.map(h => '<span class="sw" style="background:' + h + '"></span>').join("") + '</span></span>' +
+        bars(c.w, c.sev) +
+        '<span class="mult" style="color:' + SEV_INK[c.sev] + '">' + c.mv + '</span></button>';
+    }).join("");
+    html += single ? rows : '<div class="kids">' + rows + '</div>';
+  });
+
+  document.getElementById("lpList").innerHTML = html ||
+    '<div style="padding:32px 0;text-align:center;font-size:12px;color:rgb(30 41 59/.85)">No cashiers matched.</div>';
+  document.getElementById("lpCount").textContent = shown;
+
+  document.querySelectorAll(".sevchip").forEach(b => b.addEventListener("click", () => {
+    sevFilter = sevFilter === b.dataset.sev ? "all" : b.dataset.sev; renderLeft();
+  }));
+  document.querySelectorAll(".moved").forEach(b => b.addEventListener("click", () => {
+    movedFilter = movedFilter === b.dataset.moved ? null : b.dataset.moved; renderLeft();
+  }));
+  document.querySelectorAll(".csh").forEach(b => b.addEventListener("click", () => {
+    selected = b.dataset.id;
+    const c = STORES.flatMap(s=>s.cashiers).find(x => x.n + "-" + x.no === selected);
+    document.querySelector(".hd-name").innerHTML =
+      c.n + ' <span class="badge">CASHIER ' + c.no + '</span>';
+    document.querySelector(".hl-num").textContent = c.mv;
+    document.querySelector(".hl-num").style.color = SEV_INK[c.sev];
+    renderLeft();
+  }));
+}
+renderLeft();
+
+/* ─── cards ───────────────────────────────────────────────────────────── */
+const MAXX = 4;
+document.getElementById("cards").innerHTML = TYPES.map((t,i)=>{
+  const zero = t.n === 0;
+  const pct  = t.mult === null ? 0 : Math.min(t.mult, MAXX)/MAXX*100;
+  return `
+  <button class="card${zero?" quiet":""}" aria-pressed="${i===0?"true":"false"}">
+    <div class="c-top">
+      <span class="c-name"><span class="sw" style="width:9px;height:9px;border-radius:2px;background:${t.hue}"></span>${t.label}</span>
+      <span class="c-days">${t.days} DAYS</span>
+    </div>
+    <div class="c-count">
+      <span class="c-n">${t.n}</span>
+      <span class="c-n-l">occurrences<br>${zero?"none this period":"across "+t.receipts+" receipts"}</span>
+    </div>
+    <div class="c-money">
+      <span>Total <b>${zero?"—":money(t.total)}</b></span>
+      <span>Avg <b>${zero?"—":money(t.avg)}</b></span>
+    </div>
+    <div>
+      <div class="c-devl">
+        <span>vs. her baseline</span>
+        <span class="c-mult" style="color:${t.sev?SEV_INK[t.sev]:"#64748b"}">${t.mult===null?"—":t.mult.toFixed(1)+"×"}</span>
+      </div>
+      <div class="track"><div class="fill" style="width:${pct}%;background:${t.hue}"></div><div class="tick"></div></div>
+      <div class="axis"><span>0×</span><span>1× base</span><span>2×</span><span>3×</span><span>4×</span></div>
+    </div>
+  </button>`;
+}).join("");
+
+document.getElementById("legend").innerHTML = ORDER.map(k=>{
+  const t = TYPES.find(x=>x.k===k);
+  return `<span class="lg"><span class="sw" style="background:${t.hue}"></span>${t.label} <b>${t.n}</b></span>`;
+}).join("");
+
+/* ─── stacked bar charts ──────────────────────────────────────────────── */
+const NS = "http://www.w3.org/2000/svg";
+const svgEl = (t,a) => { const n=document.createElementNS(NS,t); for(const k in a) n.setAttribute(k,a[k]); return n; };
+const UI = "ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif";
+
+function stacked(host, cats, opts){
+  const W=opts.w, H=opts.h, PAD={t:16,r:opts.r||10,b:26,l:26};
+  const iw=W-PAD.l-PAD.r, ih=H-PAD.t-PAD.b;
+  const max=Math.max(...cats.map(c=>ORDER.reduce((a,k)=>a+(c.c[k]||0),0)),1);
+  const nice=Math.ceil(max/5)*5||5;
+  const y=v=>PAD.t+ih-(v/nice)*ih;
+  const step=iw/cats.length, bw=Math.min(opts.bw||26, step*0.62);
+  const svg=svgEl("svg",{width:W,height:H,viewBox:`0 0 ${W} ${H}`,role:"img","aria-label":opts.label});
+
+  cats.forEach((c,i)=>{ if(c.we||c.band) svg.appendChild(svgEl("rect",
+    {x:PAD.l+i*step,y:PAD.t-6,width:step,height:ih+6,fill:"#eceded"})); });
+
+  for(let g=0; g<=4; g++){
+    const v=nice*g/4;
+    svg.appendChild(svgEl("line",{x1:PAD.l,x2:W-PAD.r,y1:y(v),y2:y(v),stroke:"#e5e7eb","stroke-width":1}));
+    const tx=svgEl("text",{x:PAD.l-5,y:y(v)+3,"text-anchor":"end","font-size":8.5,fill:"#64748b","font-family":UI});
+    tx.textContent=v; svg.appendChild(tx);
+  }
+  if(opts.ref) svg.appendChild(svgEl("line",
+    {x1:PAD.l,x2:W-PAD.r,y1:y(opts.ref.v),y2:y(opts.ref.v),stroke:"#64748b","stroke-width":1.5}));
+
+  cats.forEach((c,i)=>{
+    const cx=PAD.l+i*step+(step-bw)/2;
+    let acc=0; const tot=ORDER.reduce((a,k)=>a+(c.c[k]||0),0);
+    ORDER.forEach(k=>{
+      const n=c.c[k]||0; if(!n) return;
+      const y0=y(acc+n), h=Math.max(1,y(acc)-y(acc+n)-2);   /* 2px surface gap */
+      svg.appendChild(svgEl("rect",{x:cx,y:y0,width:bw,height:h,fill:hueOf(k),rx:2}));
+      acc+=n;
+    });
+    if(tot===max){
+      const t=svgEl("text",{x:cx+bw/2,y:y(tot)-5,"text-anchor":"middle","font-size":10,"font-weight":600,fill:"#1e293b","font-family":UI});
+      t.textContent=tot; svg.appendChild(t);
+    }
+    const l1=svgEl("text",{x:cx+bw/2,y:H-13,"text-anchor":"middle","font-size":9.5,fill:"#334155","font-weight":c.em?700:400,"font-family":UI});
+    l1.textContent=c.label; svg.appendChild(l1);
+    if(c.sub){
+      const l2=svgEl("text",{x:cx+bw/2,y:H-3,"text-anchor":"middle","font-size":8.5,fill:"#64748b","font-family":UI});
+      l2.textContent=c.sub; svg.appendChild(l2);
+    }
+  });
+  host.appendChild(svg);
+  if(opts.ref){
+    const tag=document.createElement("div");
+    tag.style.cssText="font-size:9px;color:#475569;text-align:right;margin-top:-6px;padding-right:2px";
+    tag.textContent=opts.ref.label; host.appendChild(tag);
+  }
+}
+
+stacked(document.getElementById("timeline"),
+  DAYS.map(d=>({label:String(d.d),sub:d.w,we:d.we,c:d.c})),
+  {w:820,h:196,bw:30,r:16,ref:{v:4,label:"her baseline 4.0 / shift"},label:"Exceptions per shift, stacked by type"});
+stacked(document.getElementById("byHour"),
+  HOURS.map(h=>({label:h.h,c:h.c})), {w:392,h:172,bw:18,label:"Exceptions by hour of day"});
+stacked(document.getElementById("byDow"),
+  DOW.map(d=>({label:d.d,band:d.em,em:d.em,c:d.c})), {w:392,h:172,bw:26,label:"Exceptions by day of week"});
+
+/* ─── facet rail ──────────────────────────────────────────────────────── */
+const FACETS = [
+  {h:"Exception type",rows:[["Voided",94,"var(--s1)"],["No Sale",26,"var(--s3)"],["Cancelled",19,"var(--s2)"],["Refunded",2,"var(--s4)"]]},
+  {h:"Day of week",   rows:[["Sat",37],["Tue",33],["Sun",32],["Thu",12],["Wed",11],["Mon",10],["Fri",6]]},
+  {h:"Time of day",   rows:[["6p – 9p",63],["3p – 6p",41],["11a – 3p",21],["7a – 11a",16]]},
+  {h:"Lane",          rows:[["Lane 3",80],["Lane 4",45],["Lane 2",16]]},
+  {h:"Tender",        rows:[["Cash",55],["Credit",26],["Debit",23],["EBT",7],["Check",4]]},
+];
+document.getElementById("rail").innerHTML = FACETS.map(g=>{
+  const max=Math.max(...g.rows.map(r=>r[1]));
+  return `<div class="fgroup"><div class="fg-h">${g.h}</div>`+g.rows.map(r=>`
+    <button class="frow" aria-pressed="false">
+      <span class="fr-bar" style="width:${r[1]/max*100}%"></span>
+      <span class="fr-l">${r[2]?`<span class="sw" style="width:8px;height:8px;border-radius:2px;background:${r[2]}"></span>`:""}${r[0]}</span>
+      <span class="fr-n">${r[1]}</span>
+    </button>`).join("")+`</div>`;
+}).join("");
+
+/* ─── transactions table ──────────────────────────────────────────────── */
+/* date, time, txn, lane, type, item, dept, qty, amount, then the three facts
+   the verdict is computed from: which line the exception fell on, how long
+   the receipt was, and whether the item was re-rung afterwards. */
+const ROWS = [
+  ["08/01","10:09 am","989088",2,"void","Tillamook Sharp Cheddar","Dairy",1,5.73,{line:2,lines:14,reRung:1}],
+  ["08/01","11:47 am","989098",2,"void","Gatorade 8pk","Beverage",1,5.51,{line:4,lines:10,reRung:0}],
+  ["08/01","1:04 pm","989115",2,"void","Tide Pods 42ct","Household",1,7.00,{line:6,lines:9,reRung:0}],
+  ["08/01","1:06 pm","989104",2,"void","Whole Rotisserie Chicken","Deli",1,7.41,{line:3,lines:11,reRung:1}],
+  ["08/01","1:48 pm","989115",2,"void","Kingsford Charcoal 16lb","Seasonal",1,6.80,{line:8,lines:9,reRung:0}],
+  ["08/01","2:59 pm","989106",2,"void","Tropicana OJ 89oz","Beverage",1,4.92,{line:2,lines:12,reRung:1}],
+  ["08/01","3:44 pm","989150",2,"nosale","No Sale","",1,0,{line:1,lines:1,reRung:0}],
+  ["08/01","5:10 pm","989089",2,"void","Coca-Cola 12pk Cans","Beverage",1,6.89,{line:5,lines:8,reRung:0}],
+  ["08/01","6:16 pm","989144",2,"void","Coca-Cola 12pk Cans","Beverage",1,6.73,{line:3,lines:9,reRung:0}],
+  ["08/01","6:28 pm","989098",2,"void","Sara Lee Honey Ham","Deli",1,4.82,{line:7,lines:13,reRung:1}],
+  ["08/01","6:51 pm","989101",2,"void","Tillamook Sharp Cheddar","Dairy",1,2.42,{line:4,lines:10,reRung:0}],
+  ["08/01","7:42 pm","989046",2,"nosale","No Sale","",1,0,{line:1,lines:1,reRung:0}],
+  ["08/01","7:46 pm","989106",2,"void","Dozen Large Eggs","Dairy",1,1.57,{line:9,lines:11,reRung:1}],
+  ["08/02","5:31 pm","989203",3,"void","Bananas","Produce",1,0.75,{line:2,lines:7,reRung:1}],
+  ["08/02","6:04 pm","989217",3,"cancel","Cancelled sale","",1,12.40,{line:6,lines:6,reRung:0}],
+];
+document.getElementById("tbody").innerHTML = ROWS.map((r,i)=>`
+  <tr data-i="${i}">
+    <td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td>
+    <td><span class="pill"><span class="sw" style="width:8px;height:8px;border-radius:2px;background:${hueOf(r[4])}"></span>${lblOf(r[4])}</span></td>
+    <td>${r[5]}${r[6]?` <span class="dept">· ${r[6]}</span>`:""}</td>
+    <td class="r">${r[7]}</td>
+    <td class="r">${r[8]===0?'<span class="dash">—</span>':money(r[8])}</td>
+  </tr>`).join("");
+
+/* ─── the verdict, computed ─────────────────────────────────────
+   Four checks, each reporting its outcome EITHER WAY — because the half of
+   this job that saves LP time is the receipt they can confidently put down.
+
+     · was the item re-rung afterwards
+     · did it fall inside the 4p–7p window the case flagged
+     · was it on lane 3, which carries most of her exceptions
+     · does the same item turn up on other receipts
+
+   Three or more fire → Supports the case. One or two → Worth a look.
+   None → Nothing unusual. There is deliberately no softer fourth verdict: if
+   the receipt lines cannot be read we say that instead, rather than grading
+   on evidence we do not have.
+   ───────────────────────────────────────────────────────────────────── */
+const hour24 = t => {
+  const [hm, ap] = t.split(" ");
+  const h = Number(hm.split(":")[0]) % 12;
+  return ap === "pm" ? h + 12 : h;
+};
+
+const FILLER = [
+  ["Dozen Large Eggs",3.29],["Sara Lee Honey Ham",4.82],["Tropicana OJ 89oz",4.92],
+  ["Bananas · 2.14 lb",1.61],["Coca-Cola 12pk Cans",6.89],["Tide Pods 42ct",7.00],
+  ["Whole Rotisserie Chicken",7.41],["Kingsford Charcoal 16lb",6.80],
+  ["Wonder Bread",2.49],["2% Milk Gallon",3.89],["Lay's Classic",4.29],
+];
+
+/* A receipt whose figures agree with the summary sitting above it — the
+   summary quotes the basket total and the line position, so they cannot be
+   allowed to drift apart. */
+function buildReceipt(row){
+  const d = row[9], n = d.lines;
+  const startH = hour24(row[1]), startM = Number(row[1].split(":")[1].slice(0,2));
+  const stamp = k => {
+    const tot = startH*60 + startM - (d.line-1) + k;
+    return String(Math.floor(tot/60)).padStart(2,"0") + ":" +
+           String(tot%60).padStart(2,"0") + ":" + String((k*17)%60).padStart(2,"0");
+  };
+
+  if(row[4] === "nosale")
+    return {lines:[{t:stamp(0), d:"NO SALE — drawer opened", q:null, p:null, tot:0, flag:1}], basket:0};
+
+  const out = []; let basket = 0;
+  for(let k=0; k<n-1; k++){
+    if(k === d.line-1){
+      out.push({t:stamp(k), d:row[5], q:row[7], p:row[8], tot:row[8], flag:1});
+      if(d.reRung){
+        out.push({t:stamp(k+1), d:row[5] + " (re-rung)", q:row[7], p:row[8], tot:row[8], flag:0});
+        basket += row[8]; k++;
+      }
+    } else {
+      const item = FILLER[(k + row[3]*3) % FILLER.length];
+      out.push({t:stamp(k), d:item[0], q:1, p:item[1], tot:item[1], flag:0});
+      basket += item[1];
+    }
+  }
+  basket = Math.round(basket*100)/100;
+  out.push({t:stamp(n), d:"CASH", q:null, p:null, tot:basket, flag:0});
+  return {lines:out, basket};
+}
+
+function verdictFor(row){
+  const d = row[9], type = row[4], item = row[5];
+  const h = hour24(row[1]);
+  const inWindow  = h >= 16 && h < 19;
+  const onHotLane = row[3] === 3;
+  /* Never put right. A void is corrected by a re-ring; a cancel never is —
+     the basket simply ends, so this always counts against it. */
+  const notCorrected = type === "cancel" ? true : type === "void" ? !d.reRung : false;
+  const others    = ROWS.filter(r => r[5] === item && r[4] === type && r !== row).length;
+  const repeats   = others > 0;
+  const rec       = buildReceipt(row);
+
+  const score = [notCorrected, inWindow, onHotLane, repeats].filter(Boolean).length;
+  const sev   = score >= 3 ? "crit" : score >= 1 ? "watch" : "ok";
+  const label = sev === "crit" ? "Supports the case"
+              : sev === "watch" ? "Worth a look" : "Nothing unusual";
+
+  const verb = type === "cancel" ? "Cancelled" : "Voided";
+  const pts  = [];
+
+  if(type === "nosale"){
+    pts.push("Drawer opened at <b>" + row[1] + "</b> with nothing rung — a no sale carries no line and no basket to weigh it against.");
+    pts.push("She books <b>26 no-sales</b> this period against a baseline of <b>16</b>.");
+  } else if(type === "cancel"){
+    pts.push("Whole basket cancelled at <b>" + money(row[8]) + "</b> after <b>" + (d.lines-1) + " lines</b> had rung, with <b>no tender line</b> — the sale never completed.");
+    pts.push("<b>13 of her 19 cancels</b> fall on a single day this period.");
+  } else {
+    pts.push(d.reRung
+      ? "Voided at <b>line " + d.line + " of " + d.lines + "</b>, then <b>re-rung on the next line</b> for the same amount — the shape of a correction."
+      : "Voided at <b>line " + d.line + " of " + d.lines + "</b> and <b>not re-rung</b> on any later line.");
+    pts.push("<b>" + money(row[8]) + "</b> of a <b>" + money(rec.basket) + "</b> sale — " + Math.round(row[8]/rec.basket*100) + "% of the basket.");
+  }
+
+  pts.push(inWindow
+    ? "<b>" + row[1] + "</b> on <b>lane " + row[3] + "</b> — inside the <b>4p–7p</b> window flagged on the case" + (onHotLane ? ", on the lane carrying <b>80 of her 141</b> exceptions" : "") + "."
+    : "<b>" + row[1] + "</b> on <b>lane " + row[3] + "</b> — <b>outside</b> the 4p–7p window flagged on the case" + (onHotLane ? ", though on lane 3, which carries 80 of her 141 exceptions" : "") + ".");
+
+  /* Only a void names a real item. A cancel is a whole basket and a no sale is
+     nothing at all, so neither has a repetition to report. */
+  if(type === "void"){
+    pts.push(repeats
+      ? "<b>" + item + "</b> was voided on <b>" + others + " other receipt" + (others>1?"s":"") + "</b> this period, " + (others>1 ? "all" : "also") + " by this cashier."
+      : "<b>" + item + "</b> was not voided on any other receipt this period.");
+  }
+  return {sev, label, pts, rec};
+}
+
+/* Triangle / circle / check — the same three the Sales CTA strips use. */
+const CTA_ICON = {
+  crit:  '<svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.515 2.625H3.72c-1.345 0-2.188-1.458-1.515-2.625L8.485 2.495ZM10 5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 10 5Zm0 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clip-rule="evenodd"/></svg>',
+  watch: '<svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-8-5a.75.75 0 0 1 .75.75v4a.75.75 0 0 1-1.5 0v-4A.75.75 0 0 1 10 5Zm0 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clip-rule="evenodd"/></svg>',
+  ok:    '<svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clip-rule="evenodd"/></svg>',
+};
+
+function renderVerdict(row){
+  const v = verdictFor(row);
+  const cta = document.getElementById("cta");
+  const body = document.getElementById("slBody");
+  cta.classList.remove("watch","ok");
+  body.classList.remove("watch","ok");
+  if(v.sev !== "crit"){ cta.classList.add(v.sev); body.classList.add(v.sev); }
+  document.getElementById("ctaIcon").innerHTML = CTA_ICON[v.sev];
+  document.getElementById("ctaLbl").textContent = v.label;
+  document.getElementById("whyList").innerHTML = v.pts.map(t => "<li>" + t + "</li>").join("");
+  document.getElementById("rlines").innerHTML = v.rec.lines.map(l =>
+    '<div class="rline' + (l.flag ? " flag" : "") + '">' +
+      '<span class="stamp">' + l.t + '</span>' +
+      '<span class="d">' + l.d + (l.flag ? '<span class="rtype">' + lblOf(row[4]).toUpperCase() + '</span>' : "") + '</span>' +
+      '<span class="r">' + (l.q ?? "") + '</span>' +
+      '<span class="r">' + (l.p == null ? "" : money(l.p)) + '</span>' +
+      '<span class="r">' + money(l.tot) + '</span>' +
+    '</div>').join("");
+  document.getElementById("basketTotal").textContent = money(v.rec.basket);
+}
+
+/* ─── interactions ────────────────────────────────────────────────────── */
+const $ = id => document.getElementById(id);
+let onTx = false;
+
+function setStep(tx){
+  onTx = tx;
+  $("stepCase").classList.toggle("hidden", tx);
+  $("stepTx").classList.toggle("hidden", !tx);
+  $("backBtn").classList.toggle("hidden", !tx);
+  $("stepBtn").textContent = tx ? "← Breakdown" : "View transactions →";
+  $("stepBtn").classList.toggle("pri", !tx);
+  $("secondaryBtn").textContent = tx ? "Export evidence pack" : "Add note";
+  if(!tx) closeSlide();
+}
+$("stepBtn").addEventListener("click", ()=> setStep(!onTx));
+$("backBtn").addEventListener("click", ()=> setStep(false));
+
+document.querySelectorAll(".card").forEach(c=>c.addEventListener("click",()=>{
+  document.querySelectorAll(".card").forEach(o=>o.setAttribute("aria-pressed","false"));
+  c.setAttribute("aria-pressed","true");
+}));
+
+document.querySelectorAll(".frow").forEach(f=>f.addEventListener("click",()=>{
+  f.setAttribute("aria-pressed", f.getAttribute("aria-pressed")==="true" ? "false" : "true");
+  $("filtNote").textContent = document.querySelector('.frow[aria-pressed="true"]')
+    ? "Filtered — counts in each group exclude that group's own filter."
+    : "No filters — showing every exception in the period.";
+}));
+
+/* CTA popover — slides down over the receipt, nothing below moves */
+function setCta(open){
+  $("ctaPop").classList.toggle("hidden", !open);
+  $("ctaBtn").setAttribute("aria-expanded", String(open));
+  $("ctaWhy").textContent = open ? "Hide" : "Why";
+}
+$("ctaBtn").addEventListener("click", e=>{ e.stopPropagation(); setCta($("ctaPop").classList.contains("hidden")); });
+document.addEventListener("mousedown", e=>{
+  if(!$("ctaPop").classList.contains("hidden") && !$("ctaPop").contains(e.target) && !$("ctaBtn").contains(e.target)) setCta(false);
+});
+
+function openSlide(i){
+  const r = ROWS[i];
+  $("slId").textContent = r[2];
+  $("slTerm").textContent = `Terminal ${r[3]}`;
+  renderVerdict(r);
+  // Date and the receipt's own span, the way Transaction.tsx labels one.
+  const ln = document.querySelectorAll("#rlines .rline");
+  const span = ln.length
+    ? `${ln[0].firstElementChild.textContent}–${ln[ln.length-1].firstElementChild.textContent}`
+    : "";
+  $("slMeta").textContent = `Aug ${Number(r[0].slice(3))}, 2026 · ${span}`;
+  document.querySelectorAll("#tbody tr").forEach(t=>t.classList.remove("on"));
+  document.querySelector(`#tbody tr[data-i="${i}"]`).classList.add("on");
+  setCta(false);
+  $("slide").classList.add("on"); $("scrim").classList.add("on");
+}
+function closeSlide(){
+  setCta(false);
+  $("slide").classList.remove("on"); $("scrim").classList.remove("on");
+  document.querySelectorAll("#tbody tr").forEach(t=>t.classList.remove("on"));
+}
+document.querySelectorAll("#tbody tr").forEach(t=>
+  t.addEventListener("click",()=>openSlide(Number(t.dataset.i))));
+$("slClose").addEventListener("click", closeSlide);
+$("scrim").addEventListener("click", closeSlide);
+document.addEventListener("keydown", e=>{ if(e.key==="Escape"){ if(!$("ctaPop").classList.contains("hidden")) setCta(false); else closeSlide(); } });
+</script>

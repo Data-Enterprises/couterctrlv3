@@ -5,7 +5,7 @@ import type {
   WeekWindow,
   CashierRef,
 } from "../pages/lpActions/lpActionsMetrics";
-import type { CashierTransaction } from "../interfaces";
+import type { CashierTransaction, TransactionListItem } from "../interfaces";
 
 /**
  * LP Actions page state.
@@ -17,12 +17,33 @@ import type { CashierTransaction } from "../interfaces";
  */
 export type LpSevFilter = "all" | "investigate" | "watch" | "steady";
 
+/** Which half of the case file the right panel is showing. Named for the tabs
+ *  a reader actually sees, so the state and the label can't drift apart. */
+export type LpCaseStep = "overview" | "evidence";
+
+/** How the deviation cards are ordered. */
+export type LpCardSort = "deviation" | "volume" | "value";
+
+/** One receipt, identified the way `cashiers/transaction` asks for it. */
+export interface LpReceiptRef {
+  saleId: string;
+  storeid: number;
+  /** yyyy-mm-dd. */
+  date: string;
+  /** The exception that led here, so its lines can be picked out. */
+  saleType: string;
+}
+
 export interface LpActionsState {
   /** What the walk was run against, for the header — a store or a group. */
   scopeLabel: string;
-  /** Sale types whose store rows are open. Collapsed to start: a group can
-   *  produce forty-odd rows, and the type is the level people scan. */
-  expandedTypes: string[];
+  /** Stores whose cashier rows are open, keyed by storeid. Collapsed to
+   *  start — a group can carry forty operators, and the store is the level
+   *  people scan before they pick a person. */
+  expandedStores: string[];
+  /** Name or number the roster is filtered by. Alongside `sevFilter`, which
+   *  narrows first — severity then text, AND not OR. */
+  rosterQuery: string;
   /** Weeks of history in the current result. Grows when the user asks for
    *  more — the baseline widens with it, so a verdict can change. */
   weeks: number;
@@ -42,6 +63,39 @@ export interface LpActionsState {
   caseCashier: CashierRef | null;
   caseType: string | null;
   sevFilter: LpSevFilter;
+  /** Which half of the case file is showing. The evidence half is where the
+   *  receipt reads happen, so this also gates the expensive work. */
+  caseStep: LpCaseStep;
+  cardSort: LpCardSort;
+  /** The exception type whose card is selected, carried into the transactions
+   *  view as its opening filter. Null means every type. */
+  focusedType: string | null;
+  /** Facet key -> selected values. Multi-select within a group (OR),
+   *  intersected across groups (AND). */
+  facets: Record<string, string[]>;
+  /** The receipt open over the transactions list, or null. */
+  openReceipt: LpReceiptRef | null;
+  /**
+   * Receipt lines already read, keyed by the scope that asked for them —
+   * `saleType:id,id,…` over the capped, deduped, sorted sale ids.
+   *
+   * Keyed per SCOPE rather than per scope-set on purpose. The case report and
+   * the journey drill build their scopes identically — filter `rawRows` by
+   * cashier and type, then `[...new Set(ids)].sort()` — so a type read for the
+   * case report is the same key the drill asks for, and the second read is
+   * free. A whole-set key would miss that entirely.
+   *
+   * Only successful reads land here. `transaction_list` answers `[]` on an
+   * error as readily as on an empty result, and caching that would pin the
+   * empty answer permanently and never retry.
+   */
+  receiptLines: Record<string, TransactionListItem[]>;
+  /** Whole baskets from `cashiers/transaction`, keyed `storeid:date:saleId` —
+   *  all three, because a sale id is only unique within a store and a day. */
+  baskets: Record<string, TransactionListItem[]>;
+  /** Keys currently in flight. Drives the per-key spinner, so one drill's
+   *  request cannot show a spinner over another's cached result. */
+  pending: string[];
   searched: boolean;
   loading: boolean;
   /** What the walk is doing, for the entry card's progress line. */
@@ -51,7 +105,8 @@ export interface LpActionsState {
 
 const initialState: LpActionsState = {
   scopeLabel: "",
-  expandedTypes: [],
+  expandedStores: [],
+  rosterQuery: "",
   weeks: 4,
   rows: [],
   rawRows: [],
@@ -61,6 +116,14 @@ const initialState: LpActionsState = {
   caseCashier: null,
   caseType: null,
   sevFilter: "all",
+  caseStep: "overview",
+  cardSort: "deviation",
+  focusedType: null,
+  facets: {},
+  openReceipt: null,
+  receiptLines: {},
+  baskets: {},
+  pending: [],
   searched: false,
   loading: false,
   message: "",
@@ -74,10 +137,53 @@ const lpActionsSlice = createSlice({
     setLpScopeLabel: (state, action: PayloadAction<string>) => {
       state.scopeLabel = action.payload;
     },
-    toggleLpType: (state, action: PayloadAction<string>) => {
-      state.expandedTypes = state.expandedTypes.includes(action.payload)
-        ? state.expandedTypes.filter((t) => t !== action.payload)
-        : [...state.expandedTypes, action.payload];
+    toggleLpStore: (state, action: PayloadAction<string>) => {
+      state.expandedStores = state.expandedStores.includes(action.payload)
+        ? state.expandedStores.filter((t) => t !== action.payload)
+        : [...state.expandedStores, action.payload];
+    },
+    setLpRosterQuery: (state, action: PayloadAction<string>) => {
+      state.rosterQuery = action.payload;
+    },
+    setLpCaseStep: (state, action: PayloadAction<LpCaseStep>) => {
+      state.caseStep = action.payload;
+      // Arriving from a selected card opens the evidence already narrowed to
+      // that type — the card WAS the question, and making someone re-pick it
+      // on the next screen is a click that says nothing.
+      if (
+        action.payload === "evidence" &&
+        state.focusedType &&
+        Object.keys(state.facets).length === 0
+      ) {
+        state.facets = { type: [state.focusedType] };
+      }
+      // Leaving the evidence half closes the receipt that was open over it —
+      // coming back to a stale one reads as a bug.
+      if (action.payload === "overview") state.openReceipt = null;
+    },
+    setLpCardSort: (state, action: PayloadAction<LpCardSort>) => {
+      state.cardSort = action.payload;
+    },
+    setLpFocusedType: (state, action: PayloadAction<string | null>) => {
+      state.focusedType = action.payload;
+    },
+    toggleLpFacet: (
+      state,
+      action: PayloadAction<{ key: string; value: string }>,
+    ) => {
+      const { key, value } = action.payload;
+      const current = state.facets[key] ?? [];
+      const next = current.includes(value)
+        ? current.filter((v) => v !== value)
+        : [...current, value];
+      if (next.length === 0) delete state.facets[key];
+      else state.facets[key] = next;
+    },
+    clearLpFacets: (state) => {
+      state.facets = {};
+    },
+    setLpOpenReceipt: (state, action: PayloadAction<LpReceiptRef | null>) => {
+      state.openReceipt = action.payload;
     },
     setLpLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload;
@@ -103,9 +209,23 @@ const lpActionsSlice = createSlice({
       state.rows = action.payload.rows;
       state.rawRows = action.payload.rawRows;
       state.windows = action.payload.windows;
+      // Sale ids belong to a store and a window, so a fresh walk invalidates
+      // every cached read. Dropped rather than reconciled — the keys would not
+      // collide, but keeping them would hold a whole previous search in memory
+      // for nothing.
+      state.receiptLines = {};
+      state.baskets = {};
+      state.pending = [];
       state.journeyCashier = null;
       state.caseCashier = null;
       state.caseType = null;
+      // A fresh walk is a fresh roster: the stores, the person being read and
+      // everything downstream of them all belong to the previous result.
+      state.expandedStores = [];
+      state.caseStep = "overview";
+      state.focusedType = null;
+      state.facets = {};
+      state.openReceipt = null;
       state.weeks = action.payload.weeks;
       // Keep the selection when it survived the re-walk — asking for another
       // week shouldn't throw away the row being read.
@@ -134,9 +254,38 @@ const lpActionsSlice = createSlice({
     ) => {
       state.caseCashier = action.payload?.ref ?? null;
       state.caseType = action.payload?.type ?? null;
+      // Every case opens on its own first page. Carrying the previous
+      // operator's tab, card and facets into a new one would answer a
+      // question nobody asked about this person.
+      state.caseStep = "overview";
+      state.focusedType = null;
+      state.facets = {};
+      state.openReceipt = null;
     },
     setLpSevFilter: (state, action: PayloadAction<LpSevFilter>) => {
       state.sevFilter = action.payload;
+    },
+    lpFetchStarted: (state, action: PayloadAction<string[]>) => {
+      for (const key of action.payload) {
+        if (!state.pending.includes(key)) state.pending.push(key);
+      }
+    },
+    lpFetchSettled: (state, action: PayloadAction<string[]>) => {
+      state.pending = state.pending.filter((k) => !action.payload.includes(k));
+    },
+    cacheLpReceiptLines: (
+      state,
+      action: PayloadAction<{ key: string; lines: TransactionListItem[] }[]>,
+    ) => {
+      for (const entry of action.payload) {
+        state.receiptLines[entry.key] = entry.lines;
+      }
+    },
+    cacheLpBasket: (
+      state,
+      action: PayloadAction<{ key: string; lines: TransactionListItem[] }>,
+    ) => {
+      state.baskets[action.payload.key] = action.payload.lines;
     },
     clearLpActions: () => initialState,
   },
@@ -146,13 +295,24 @@ export const {
   setLpScopeLabel,
   setLpJourneyCashier,
   setLpCase,
-  toggleLpType,
+  toggleLpStore,
+  setLpRosterQuery,
+  setLpCaseStep,
+  setLpCardSort,
+  setLpFocusedType,
+  toggleLpFacet,
+  clearLpFacets,
+  setLpOpenReceipt,
   setLpLoading,
   setLpMessage,
   setLpError,
   setLpResult,
   setLpSelected,
   setLpSevFilter,
+  lpFetchStarted,
+  lpFetchSettled,
+  cacheLpReceiptLines,
+  cacheLpBasket,
   clearLpActions,
 } = lpActionsSlice.actions;
 

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
 import {
   setLpCase,
@@ -53,6 +53,18 @@ const CashierCase = ({ onBack, backLabel }: Props) => {
   );
   const [showAllItems, setShowAllItems] = useState(false);
   const { receipt, openReceipt, closeReceipt } = useReceiptCase();
+
+  // The panel stays mounted when the case moves to another cashier — only a
+  // null `caseCashier` unmounts it — so an open receipt would otherwise sit
+  // over the new cashier's case still showing the previous one's basket. Keyed
+  // on the pair rather than the object so re-selecting the same cashier does
+  // not shut a receipt the reader just opened.
+  const cashierKey = caseCashier
+    ? `${caseCashier.storeid}:${caseCashier.cashierNumber}`
+    : "";
+  useEffect(() => {
+    closeReceipt();
+  }, [cashierKey, closeReceipt]);
 
   const core = useMemo(
     () =>

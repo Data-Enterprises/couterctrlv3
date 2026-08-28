@@ -1,6 +1,6 @@
 import type { CashierTransaction } from "../../interfaces";
 import type { CashierRef, LpSeverity, WeekWindow } from "./lpActionsMetrics";
-import { gradeChange, laneOf } from "./lpActionsMetrics";
+import { gradeChange, laneOf, weekIndexOf } from "./lpActionsMetrics";
 
 /**
  * One cashier's whole exception picture, built from rows already in hand.
@@ -53,11 +53,6 @@ export interface CashierJourney {
 /** The endpoint spells it `termainal`; kept in one place so the typo doesn't
  *  spread. Blank lanes become "unknown" rather than an empty node. */
 const lane = (t: CashierTransaction) => laneOf(t) || "—";
-
-const weekIndexOf = (windows: WeekWindow[], saleDate: string) => {
-  const day = saleDate.slice(0, 10);
-  return windows.findIndex((w) => day >= w.start && day <= w.end);
-};
 
 export const buildCashierJourney = (
   rows: CashierTransaction[],

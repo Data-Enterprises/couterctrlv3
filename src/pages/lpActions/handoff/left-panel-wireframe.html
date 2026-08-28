@@ -1,0 +1,377 @@
+<title>LP Cashier Roster</title>
+
+<style>
+/* ───────────────────────────────────────────────────────────────────────
+   LP Actions — left panel, re-rooted from exception type to cashier.
+
+   True proportions: LpExceptionDetail pins the RIGHT panel at width:63% and
+   LpExceptionList takes flex-1, so the left panel is ~37% of the row — far
+   wider than the stub in the right-panel wireframe suggested.
+
+   Single theme (the app is light-only). No webfont, no tabular figures.
+   Colours from src/index.css, src/utils/severity.ts, chartTheme.ts.
+   ─────────────────────────────────────────────────────────────────────── */
+:root{
+  --bkg:#e4e9ef; --panel:#f4f7f8; --stripe:#eceded;
+  --row-sel:#eff1f2; --row-sel-border:#8a9bb0;
+  --navy:#1e2a4a; --ink:#1e293b;
+  --rule:#f3f4f6; --rule-2:#e5e7eb; --kpi-bg:#f9fafb;
+  --crit-bg:#ebd8d8; --crit-ink:#931010;
+  --watch-bg:#ece0cd; --watch-ink:#7f4d00;
+  --ok-bg:#d8ebe1;  --ok-ink:#0e6331;
+  --s1:#7F77DD; --s2:#1D9E75; --s3:#378ADD; --s4:#BA7517; --s5:#D4537E;
+  --ui:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0; background:var(--bkg); color:var(--ink); font-family:var(--ui); font-size:13px; line-height:1.45; -webkit-font-smoothing:antialiased}
+button{font:inherit; color:inherit; cursor:pointer}
+input{font:inherit}
+:focus-visible{outline:2px solid #2563eb; outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+.caption{max-width:1400px; margin:0 auto; padding:14px 16px 0; font-size:11.5px; color:#475569}
+.caption b{color:var(--ink)}
+.scopebar{max-width:1400px; margin:0 auto; padding:10px 16px 0; display:flex; align-items:center; gap:9px; font-size:11px; color:#475569}
+.seg{display:inline-flex; border:1px solid var(--rule-2); border-radius:5px; overflow:hidden; background:var(--panel)}
+.seg button{background:transparent; border:0; padding:3px 9px; font-size:10.5px; color:#475569; border-right:1px solid var(--rule-2)}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--navy); color:#f4f7f8}
+
+.shell{max-width:1400px; margin:0 auto; padding:12px 16px 28px; display:flex; gap:16px; height:800px}
+
+/* ── LEFT: flex-1, the panel under review ────────────────────────────── */
+.left{flex:1; min-width:0; background:var(--panel); border-radius:12px; box-shadow:0 10px 15px -3px rgb(0 0 0/.08); display:flex; flex-direction:column; overflow:hidden}
+
+/* Navy header — UNTOUCHED. Two rows, exactly what LpExceptionList renders
+   today; the header and everything below it are separately-approved pieces
+   and only the list below is being re-rooted. */
+.hd{flex-shrink:0; background:var(--navy); padding:4px 16px 10px; display:flex; flex-direction:column}
+.hd-r1{display:flex; align-items:center; gap:8px; min-height:26px}
+.hd-scope{min-width:0; flex:1; color:#f4f7f8; font-weight:600; font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.hd-count{flex-shrink:0; font-size:14px; font-weight:600; color:#f4f7f8}
+.hd-r2{display:flex; align-items:center; gap:8px; padding-top:6px; margin-top:4px; border-top:1px solid rgb(244 247 248/.08)}
+.hd-icon{width:22px; height:22px; display:flex; align-items:center; justify-content:center; border-radius:4px; border:1px solid rgb(244 247 248/.2); background:transparent; color:rgb(244 247 248/.85)}
+.hd-icon:hover{color:#f4f7f8; border-color:rgb(244 247 248/.4)}
+.hd-div{width:1px; height:16px; background:rgb(244 247 248/.15); flex-shrink:0}
+.hd-note{font-size:11px; color:rgb(244 247 248/.85)}
+.hd-sp{flex:1}
+
+/* Chip + filter row */
+.chips{flex-shrink:0; display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 12px; border-bottom:1px solid var(--rule)}
+.chipgrp{display:flex; align-items:center; gap:6px}
+.chip{font-size:12px; font-weight:600; padding:4px 8px; border-radius:999px; border:0; transition:box-shadow .12s}
+.chip.crit{background:var(--crit-bg); color:var(--crit-ink)}
+.chip.watch{background:var(--watch-bg); color:var(--watch-ink)}
+.chip.ok{background:var(--ok-bg); color:var(--ok-ink)}
+.chip[aria-pressed="true"]{box-shadow:0 0 0 2px currentColor inset, 0 1px 2px rgb(0 0 0/.05)}
+.tfilter{max-width:190px; flex:1; display:flex; align-items:center; gap:6px; border:1px solid var(--rule-2); border-radius:5px; padding:3px 8px; background:var(--panel)}
+.tfilter input{border:0; outline:none; background:transparent; font-size:11.5px; width:100%; color:var(--ink)}
+.tfilter input::placeholder{color:#6e7f96}
+
+/* Column header — the canonical list header, sized for a TOP-LEVEL list */
+.colhd{flex-shrink:0; display:flex; align-items:center; gap:10px; padding:6px 12px; border-bottom:1px solid var(--rule); font-size:11.5px; font-weight:600; text-transform:uppercase; letter-spacing:.04em; color:rgb(30 41 59/.85)}
+.colhd .sp{width:10px; flex-shrink:0}
+.colhd .nm{flex:1; min-width:0}
+.colhd .bars{width:46px; text-align:center; flex-shrink:0}
+.colhd .val{width:58px; text-align:right; flex-shrink:0}
+
+.list{flex:1; min-height:0; overflow-y:auto}
+.list::-webkit-scrollbar{width:7px}
+.list::-webkit-scrollbar-thumb{background:#c3ccd8; border-radius:4px}
+
+/* Store section — the same collapsible shape TypeSection uses today, just
+   rooted on the store instead of the exception type. */
+.store{width:100%; text-align:left; display:flex; align-items:center; gap:8px; padding:9px 12px; border-bottom:1px solid var(--rule); background:transparent; border-left:0; border-right:0; border-top:0; transition:background .12s}
+.store:hover{background:#f9fafb}
+.chev{width:14px; height:14px; flex-shrink:0; color:rgb(30 41 59/.85)}
+.dot{width:8px; height:8px; border-radius:50%; flex-shrink:0}
+.store .txt{min-width:0; flex:1}
+.store .t1{display:block; font-size:13px; font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.store .t2{display:block; font-size:10px; color:rgb(30 41 59/.85)}
+.kids{margin-left:19px; border-left:2px solid #e5e7eb}
+
+/* Cashier row */
+.csh{width:100%; text-align:left; display:flex; align-items:center; gap:10px; padding:7px 12px; border:0; border-bottom:1px solid var(--rule); background:transparent; transition:background .12s}
+.csh:hover{background:#f9fafb}
+.csh[aria-pressed="true"]{background:var(--row-sel); box-shadow:inset 3px 0 0 var(--row-sel-border)}
+.csh .txt{min-width:0; flex:1}
+.csh .t1{display:block; font-size:13px; font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.csh .t2{display:flex; align-items:center; gap:6px; font-size:10px; color:rgb(30 41 59/.85); margin-top:1px}
+/* Which types drove them — the one thing the exception-rooted list did that
+   a cashier-rooted one otherwise loses. */
+.sw-row{display:flex; gap:3px; flex-shrink:0}
+.sw{width:12px; height:3px; border-radius:1px}
+.bars{display:flex; align-items:flex-end; gap:3px; height:20px; width:46px; flex-shrink:0; justify-content:flex-end}
+.bar{width:8px; border-radius:2px; background:#d1d5db}
+.val{width:58px; text-align:right; flex-shrink:0; font-size:12.5px; font-weight:600}
+.v-crit{color:var(--crit-ink)} .v-watch{color:var(--watch-ink)} .v-ok{color:rgb(30 41 59/.85)}
+.b-crit{background:var(--crit-ink)} .b-watch{background:var(--watch-ink)} .b-ok{background:var(--ok-ink)}
+
+.empty{padding:32px 0; text-align:center; font-size:12px; color:rgb(30 41 59/.85)}
+
+/* ── RIGHT: 63%, dimmed. Context only — locked in already. ───────────── */
+.right{width:63%; flex-shrink:0; background:var(--panel); border-radius:12px; box-shadow:0 10px 15px -3px rgb(0 0 0/.08); display:flex; flex-direction:column; overflow:hidden; opacity:.5}
+.r-hd{background:var(--navy); padding:12px 16px}
+.r-hd .n{color:#f4f7f8; font-size:13px; font-weight:600}
+.r-hd .s{color:rgb(244 247 248/.85); font-size:10.5px; margin-top:2px}
+.r-kpi{display:grid; grid-template-columns:repeat(4,1fr); background:var(--kpi-bg); border-bottom:1px solid var(--rule)}
+.r-kpi>div{padding:8px 16px; border-right:1px solid var(--rule)}
+.r-kpi>div:last-child{border-right:0}
+.r-kpi .l{font-size:9px; font-weight:500; text-transform:uppercase; letter-spacing:.06em; color:#475569}
+.r-kpi .v{font-size:13px; font-weight:600; margin-top:1px}
+.r-hl{display:flex; align-items:center; gap:16px; padding:14px 16px; border-bottom:1px solid var(--rule)}
+.r-hl .num{font-size:30px; font-weight:600; color:var(--crit-ink); line-height:1}
+.r-hl .txt{font-size:12px; line-height:1.5}
+.r-cards{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; padding:14px 16px}
+.r-card{border:1px solid var(--rule-2); border-radius:8px; padding:11px 12px; display:flex; flex-direction:column; gap:7px}
+.r-card .nm{font-size:11.5px; font-weight:600; display:flex; align-items:center; gap:6px}
+.r-card .n{font-size:22px; font-weight:600; line-height:1}
+.r-track{height:7px; background:var(--stripe); border-radius:2px; position:relative; overflow:hidden}
+.r-fill{position:absolute; inset:0 auto 0 0; border-radius:2px}
+.r-rest{flex:1; background:repeating-linear-gradient(135deg,#eceded 0 10px,#f4f7f8 10px 20px); margin:0 16px 16px; border-radius:8px; border:1px solid var(--rule-2)}
+</style>
+
+<p class="caption">
+  <b>Wireframe — LP Actions left panel, re-rooted on the cashier.</b> The navy header is
+  unchanged; only the list below it is being reworked. Right panel is dimmed context.
+  All figures are <b>placeholder</b>. Click a cashier to select, a store to collapse, the
+  chips to filter, or type in the filter box.
+</p>
+
+<div class="scopebar">
+  <span>Wireframe control, not a product one &mdash; the real panel reads the scope from the search:</span>
+  <div class="seg" role="group" aria-label="Search scope">
+    <button id="scopeGroup" aria-pressed="true">Group search</button>
+    <button id="scopeStore" aria-pressed="false">Single store</button>
+  </div>
+</div>
+
+<div class="shell">
+
+  <!-- ══════════════════════ LEFT PANEL ══════════════════════ -->
+  <section class="left">
+
+    <header class="hd">
+      <div class="hd-r1">
+        <span class="hd-scope" id="hdScope">Bruces Foodland</span>
+        <span class="hd-count" id="hdCount">9</span>
+      </div>
+      <div class="hd-r2">
+        <button class="hd-icon" title="New search" aria-label="New search">
+          <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11ZM2 9a7 7 0 1 1 12.452 4.391l3.328 3.329a.75.75 0 1 1-1.06 1.06l-3.329-3.328A7 7 0 0 1 2 9Z" clip-rule="evenodd"/></svg>
+        </button>
+        <div class="hd-div"></div>
+        <span class="hd-note">4 weeks &middot; latest week graded on the 3 before it</span>
+        <div class="hd-sp"></div>
+        <button class="hd-icon" title="About this page" aria-label="About this page">
+          <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0ZM8.94 6.94a.75.75 0 1 1-1.061-1.061 3 3 0 1 1 2.871 5.026v.345a.75.75 0 0 1-1.5 0v-.5c0-.72.57-1.172 1.081-1.287A1.5 1.5 0 1 0 8.94 6.94ZM10 15a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clip-rule="evenodd"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="chips">
+      <div class="chipgrp" id="chipGrp"></div>
+      <label class="tfilter">
+        <svg width="12" height="12" viewBox="0 0 20 20" fill="#6e7f96"><path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11ZM2 9a7 7 0 1 1 12.452 4.391l3.328 3.329a.75.75 0 1 1-1.06 1.06l-3.329-3.328A7 7 0 0 1 2 9Z" clip-rule="evenodd"/></svg>
+        <input id="tf" type="text" placeholder="Filter by name or number" aria-label="Filter cashiers">
+      </label>
+    </div>
+
+    <div class="colhd">
+      <span class="sp"></span>
+      <span class="nm">Cashier</span>
+      <span class="bars">4 weeks</span>
+      <span class="val">vs base</span>
+    </div>
+
+    <div class="list" id="list"></div>
+  </section>
+
+  <!-- ══════════════ RIGHT PANEL — dimmed context ══════════════ -->
+  <aside class="right" aria-hidden="true">
+    <div class="r-hd">
+      <div class="n">Ann &nbsp;<span style="font-size:10px;font-weight:500;border:1px solid rgb(244 247 248/.3);border-radius:3px;padding:1px 5px">CASHIER 40</span></div>
+      <div class="s">Bruces Foodland #002 &middot; Aug 1 &ndash; Aug 13 &middot; 13 shifts &middot; Lanes 2, 4, 3</div>
+    </div>
+    <div class="r-kpi">
+      <div><div class="l">Exceptions</div><div class="v">141</div></div>
+      <div><div class="l">Exception value</div><div class="v">$677.74</div></div>
+      <div><div class="l">Days active</div><div class="v">13 / 13</div></div>
+      <div><div class="l">Types touched</div><div class="v">4 of 5</div></div>
+    </div>
+    <div class="r-hl">
+      <div class="num">2.7&times;</div>
+      <div class="txt">Ann is running exceptions at <b>2.7&times; her own 3-week baseline</b> &mdash; 141 this week where her normal is 52.</div>
+    </div>
+    <div class="r-cards" id="rCards"></div>
+    <div class="r-rest"></div>
+  </aside>
+</div>
+
+<script>
+/* ─── placeholder roster ──────────────────────────────────────────────── */
+const SEV = {
+  crit:  {dot:"#ef4444", val:"v-crit",  bar:"b-crit",  label:"Investigate"},
+  watch: {dot:"#fbbf24", val:"v-watch", bar:"b-watch", label:"Watch"},
+  ok:    {dot:"#10b981", val:"v-ok",    bar:"b-ok",    label:"Steady"},
+};
+const TYPE_HUE = {void:"var(--s1)", cancel:"var(--s2)", nosale:"var(--s3)", refund:"var(--s4)"};
+
+const STORES = [
+  {store:"Bruces Foodland #002", cashiers:[
+    {name:"Ann",   num:40, sev:"crit",  mult:2.7, exc:141, types:["void","cancel","nosale"], weeks:[38,44,51,141]},
+    {name:"Devon", num:12, sev:"crit",  mult:1.9, exc:88,  types:["void","nosale"],          weeks:[41,47,44,88]},
+    {name:"Rosa",  num:7,  sev:"watch", mult:1.4, exc:54,  types:["nosale"],                 weeks:[35,40,38,54]},
+    {name:"Marc",  num:21, sev:"watch", mult:1.3, exc:41,  types:["void","refund"],          weeks:[30,33,31,41]},
+    {name:"Kip",   num:33, sev:"ok",    mult:1.1, exc:37,  types:["void","refund"],          weeks:[33,35,34,37]},
+    {name:"June",  num:18, sev:"ok",    mult:0.8, exc:22,  types:["nosale"],                 weeks:[28,27,29,22]},
+  ]},
+  {store:"Bruces Foodland #005", cashiers:[
+    {name:"Tomas", num:4,  sev:"crit",  mult:2.2, exc:96,  types:["void","cancel"],          weeks:[40,45,42,96]},
+    {name:"Priya", num:15, sev:"watch", mult:1.2, exc:33,  types:["void"],                   weeks:[27,29,28,33]},
+    {name:"Hal",   num:29, sev:"ok",    mult:0.9, exc:19,  types:["nosale","refund"],        weeks:[22,20,23,19]},
+  ]},
+];
+
+let scope = "group";          // wireframe control only
+let sevFilter = "all";
+let query = "";
+let selected = "40";
+const collapsed = new Set();
+
+const $ = id => document.getElementById(id);
+const allCashiers = () => STORES.flatMap(s => s.cashiers.map(c => ({...c, store:s.store})));
+
+function matches(c){
+  if(sevFilter !== "all" && c.sev !== sevFilter) return false;
+  if(!query) return true;
+  const q = query.toLowerCase();
+  return c.name.toLowerCase().includes(q) || String(c.num).includes(q);
+}
+
+/* Severity narrows first, then the text filter within that set — AND, not OR. */
+function counts(){
+  const c = {crit:0, watch:0, ok:0};
+  allCashiers().forEach(x => { c[x.sev]++; });
+  return c;
+}
+
+function barsHtml(weeks, sev){
+  const peak = Math.max(...weeks, 1);
+  return '<span class="bars">' + weeks.map((w,i) =>
+    '<span class="bar' + (i === weeks.length-1 ? " " + SEV[sev].bar : "") +
+    '" style="height:' + Math.max(2, Math.round(w/peak*20)) + 'px" title="week ' + (i+1) + ': ' + w + '"></span>'
+  ).join("") + '</span>';
+}
+
+function cashierHtml(c){
+  const id = String(c.num);
+  return '<button class="csh" data-id="' + id + '" aria-pressed="' + (selected === id) + '">' +
+    '<span class="dot" style="background:' + SEV[c.sev].dot + '"></span>' +
+    '<span class="txt">' +
+      '<span class="t1">' + c.name + ' &middot; ' + String(c.num).padStart(2,"0") + '</span>' +
+      '<span class="t2">' +
+        '<span class="sw-row">' + c.types.map(t => '<span class="sw" style="background:' + TYPE_HUE[t] + '"></span>').join("") + '</span>' +
+        c.exc + ' exceptions' +
+      '</span>' +
+    '</span>' +
+    barsHtml(c.weeks, c.sev) +
+    '<span class="val ' + SEV[c.sev].val + '">' + c.mult.toFixed(1) + '&times;</span>' +
+  '</button>';
+}
+
+function render(){
+  const cts = counts();
+  $("chipGrp").innerHTML = ["crit","watch","ok"].map(k =>
+    '<button class="chip ' + k + '" data-sev="' + k + '" aria-pressed="' + (sevFilter === k) + '">' +
+      SEV[k].label + ' ' + cts[k] + '</button>').join("");
+
+  let html = "", shown = 0;
+
+  if(scope === "group"){
+    /* Store first, cashiers under it. Same collapsible shape the type
+       sections use today — a rule down the left keeps a long list reading
+       as belonging to the store above it. */
+    STORES.forEach(s => {
+      const kids = s.cashiers.filter(matches);
+      if(kids.length === 0) return;
+      shown += kids.length;
+      const open = !collapsed.has(s.store);
+      const worst = kids.some(c=>c.sev==="crit") ? "crit" : kids.some(c=>c.sev==="watch") ? "watch" : "ok";
+      const crit = kids.filter(c => c.sev === "crit").length;
+      const weeks = [0,1,2,3].map(i => kids.reduce((a,c) => a + c.weeks[i], 0));
+      const mult = weeks[3] / (weeks.slice(0,3).reduce((a,b)=>a+b,0)/3);
+      html += '<div>' +
+        '<button class="store" data-store="' + s.store + '">' +
+          '<svg class="chev" viewBox="0 0 20 20" fill="currentColor">' +
+            (open ? '<path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/>'
+                 : '<path fill-rule="evenodd" d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/>') +
+          '</svg>' +
+          '<span class="dot" style="background:' + SEV[worst].dot + '"></span>' +
+          '<span class="txt">' +
+            '<span class="t1">' + s.store + '</span>' +
+            '<span class="t2">' + kids.length + (kids.length === 1 ? " cashier" : " cashiers") +
+              (crit ? " &middot; " + crit + " to investigate" : "") + '</span>' +
+          '</span>' +
+          barsHtml(weeks, worst) +
+          '<span class="val ' + SEV[worst].val + '">' + mult.toFixed(1) + '&times;</span>' +
+        '</button>' +
+        (open ? '<div class="kids">' + kids.map(cashierHtml).join("") + '</div>' : "") +
+      '</div>';
+    });
+  } else {
+    /* One store searched: the store level would be a header over a list of
+       one, so it collapses away and the cashiers are the top-level list. */
+    const kids = STORES[0].cashiers.filter(matches);
+    shown = kids.length;
+    html = kids.map(cashierHtml).join("");
+  }
+
+  $("list").innerHTML = html || '<div class="empty">No cashiers matched.</div>';
+  $("hdScope").textContent = scope === "group" ? "Bruces Foodland" : "Bruces Foodland #002";
+  $("hdCount").textContent = shown;
+  wire();
+}
+
+function wire(){
+  document.querySelectorAll(".chip").forEach(b => b.addEventListener("click", () => {
+    const k = b.dataset.sev;
+    sevFilter = sevFilter === k ? "all" : k;   // toggle-to-deselect, no "All" pill
+    render();
+  }));
+  document.querySelectorAll(".store").forEach(b => b.addEventListener("click", () => {
+    const k = b.dataset.store;
+    collapsed.has(k) ? collapsed.delete(k) : collapsed.add(k);
+    render();
+  }));
+  document.querySelectorAll(".csh").forEach(b => b.addEventListener("click", () => {
+    selected = b.dataset.id;
+    render();
+  }));
+}
+
+$("tf").addEventListener("input", e => { query = e.target.value; render(); });
+$("scopeGroup").addEventListener("click", () => {
+  scope = "group";
+  $("scopeGroup").setAttribute("aria-pressed","true");
+  $("scopeStore").setAttribute("aria-pressed","false");
+  render();
+});
+$("scopeStore").addEventListener("click", () => {
+  scope = "store";
+  $("scopeStore").setAttribute("aria-pressed","true");
+  $("scopeGroup").setAttribute("aria-pressed","false");
+  render();
+});
+
+/* dimmed right-panel cards, for context */
+$("rCards").innerHTML = [
+  ["Voided","var(--s1)",94,3.0,75],["Cancelled","var(--s2)",19,3.3,82],
+  ["No Sale","var(--s3)",26,1.6,40],["Refunded","var(--s4)",2,0.4,10],
+].map(c =>
+  '<div class="r-card"><div class="nm"><span style="width:9px;height:9px;border-radius:2px;background:' + c[1] + '"></span>' + c[0] + '</div>' +
+  '<div class="n">' + c[2] + '</div>' +
+  '<div class="r-track"><div class="r-fill" style="width:' + c[4] + '%;background:' + c[1] + '"></div></div></div>').join("");
+
+render();
+</script>

@@ -16,6 +16,13 @@ interface TransactionProps {
    * short of room.
    */
   compact?: boolean;
+  /**
+   * Which sale type's totals to compute. Defaults to LP's own
+   * `selectedSaleType`, which is right for every LP screen — but LP Actions
+   * renders this receipt outside that slice, where the type comes from the
+   * exception that was clicked rather than from LP's filter.
+   */
+  saleType?: string;
 }
 
 const fmtTime = (raw: string) => {
@@ -38,7 +45,7 @@ const typeBadgeClass = (isVoid: boolean, saleType: string) => {
     : "bg-amber-100 text-amber-800";
 };
 
-const Transaction = ({ trans, compact }: TransactionProps) => {
+const Transaction = ({ trans, compact, saleType }: TransactionProps) => {
   // Description is the one `1fr` track, so it only grows if the fixed columns
   // give something up — each is 95% of its desktop width here.
   const COLS = compact
@@ -46,7 +53,10 @@ const Transaction = ({ trans, compact }: TransactionProps) => {
     : "84px minmax(0, 1fr) 46px 80px 92px";
   const toast = useToast();
   const context = useAppSelector((s) => s.app);
-  const { selectedSaleType } = useAppSelector((s) => s.lossPrevention);
+  const { selectedSaleType: lpSaleType } = useAppSelector(
+    (s) => s.lossPrevention,
+  );
+  const selectedSaleType = saleType ?? lpSaleType;
 
   const first = trans[0];
   const saleId = first.sale_id.split("-")[1];

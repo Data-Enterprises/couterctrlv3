@@ -1,6 +1,11 @@
 import type { CashierTransaction } from "../../../interfaces";
 import type { CashierRef, LpSeverity, WeekWindow } from "../lpActionsMetrics";
-import { gradeChange, isCashier, laneOf } from "../lpActionsMetrics";
+import {
+  gradeChange,
+  isCashier,
+  laneOf,
+  weekIndexOf,
+} from "../lpActionsMetrics";
 
 /**
  * The core of one cashier's case: every exception type they touched, each
@@ -51,10 +56,9 @@ const meanOfEarlier = (counts: number[]) =>
     ? 0
     : counts.slice(0, -1).reduce((acc, n) => acc + n, 0) / (counts.length - 1);
 
-export const weekIndexOf = (windows: WeekWindow[], saleDate: string) => {
-  const day = saleDate.slice(0, 10);
-  return windows.findIndex((w) => day >= w.start && day <= w.end);
-};
+/** Re-exported so the files in this folder that already import it from here
+ *  keep working; the implementation lives in `lpActionsMetrics`. */
+export { weekIndexOf };
 
 export const buildCaseCore = (
   rows: CashierTransaction[],
