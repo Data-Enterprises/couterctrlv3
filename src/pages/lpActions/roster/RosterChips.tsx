@@ -26,24 +26,40 @@ interface Props {
   counts: Record<LpSeverity, number>;
 }
 
-const CHIPS: { key: Exclude<LpSevFilter, "all">; label: string; cls: string }[] =
-  [
-    {
-      key: "investigate",
-      label: "Investigate",
-      cls: "bg-severity_critical_bg text-severity_critical_text",
-    },
-    {
-      key: "watch",
-      label: "Watch",
-      cls: "bg-severity_watch_bg text-severity_watch_text",
-    },
-    {
-      key: "steady",
-      label: "Steady",
-      cls: "bg-severity_healthy_bg text-severity_healthy_text",
-    },
-  ];
+/**
+ * Each chip carries its own ring class.
+ *
+ * `ring-current` was the obvious way to say "the ring matches the text", and
+ * it does not survive an opacity modifier — `ring-current/40` falls back to
+ * Tailwind's default ring, which is blue. So a selected Investigate chip rang
+ * in a colour that means nothing on this page. The severity token is named
+ * explicitly instead.
+ */
+const CHIPS: {
+  key: Exclude<LpSevFilter, "all">;
+  label: string;
+  cls: string;
+  ring: string;
+}[] = [
+  {
+    key: "investigate",
+    label: "Investigate",
+    cls: "bg-severity_critical_bg text-severity_critical_text",
+    ring: "ring-severity_critical_text/40",
+  },
+  {
+    key: "watch",
+    label: "Watch",
+    cls: "bg-severity_watch_bg text-severity_watch_text",
+    ring: "ring-severity_watch_text/40",
+  },
+  {
+    key: "steady",
+    label: "Steady",
+    cls: "bg-severity_healthy_bg text-severity_healthy_text",
+    ring: "ring-severity_healthy_text/40",
+  },
+];
 
 const RosterChips = ({ counts }: Props) => {
   const dispatch = useAppDispatch();
@@ -52,7 +68,7 @@ const RosterChips = ({ counts }: Props) => {
   return (
     <div className="flex-shrink-0 flex items-center justify-between gap-2 px-3 py-2 border-b border-gray-100">
       <div className="flex items-center gap-1.5">
-        {CHIPS.map(({ key, label, cls }) => (
+        {CHIPS.map(({ key, label, cls, ring }) => (
           <button
             key={key}
             aria-pressed={sevFilter === key}
@@ -60,7 +76,7 @@ const RosterChips = ({ counts }: Props) => {
               dispatch(setLpSevFilter(sevFilter === key ? "all" : key))
             }
             className={`text-[12px] font-semibold px-2 py-1 rounded-full transition-shadow ${cls} ${
-              sevFilter === key ? "ring-2 ring-current/40 shadow-sm" : ""
+              sevFilter === key ? `ring-2 shadow-sm ${ring}` : ""
             }`}
           >
             {label} {counts[key]}

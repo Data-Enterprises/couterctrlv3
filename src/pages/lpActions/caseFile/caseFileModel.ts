@@ -1,10 +1,11 @@
 import type { CashierTransaction } from "../../../interfaces";
 import {
   gradeChange,
-  isCashier,
+  inSubject,
   laneOf,
+  MIN_LATEST,
   weekIndexOf,
-  type CashierRef,
+  type CaseSubject,
   type LpSeverity,
   type WeekWindow,
 } from "../lpActionsMetrics";
@@ -51,12 +52,32 @@ export interface CaseCard {
   multiple: number | null;
   changePct: number | null;
   severity: LpSeverity;
+  /**
+   * Whether the multiple means anything.
+   *
+   * Grading already refuses to grade under `MIN_LATEST`, but the multiple is
+   * plain division and will happily divide one refund by a baseline of a third
+   * of a refund and report 3.0×. That number then wears the severity of an
+   * ungraded row — calm — and reads as a confident finding that nothing is
+   * wrong, when the truth is that there is not enough here to say either way.
+   */
+  rated: boolean;
+  /** The floor, so the card can name it rather than hard-coding a number into
+   *  its own copy. */
+  ratedAbove: number;
 }
 
 export interface CaseHeadline {
+  /** What the case is called — an operator's name, or the store's. */
+  title: string;
+  /** `CASHIER 39`, or null when the case is the whole store. */
+  badge: string | null;
+  /** Used in the sentences, where "the store" reads better than a number. */
   cashierName: string;
-  cashierNumber: number;
   storeName: string;
+  /** Operators who rang an exception this week. Only interesting store-wide,
+   *  where it is the difference between one person and a site-wide habit. */
+  cashiers: number;
   /** Lanes worked in the latest week, in the order first seen. */
   lanes: string[];
   latest: number;
@@ -95,9 +116,9 @@ const dayOf = (saleDate: string) => saleDate.slice(0, 10);
 export const buildCaseFile = (
   rows: CashierTransaction[],
   windows: WeekWindow[],
-  ref: CashierRef,
+  subject: CaseSubject,
 ): CaseFile | null => {
-  const mine = rows.filter((r) => isCashier(r, ref));
+  const mine = rows.filter((r) => inSubject(r, subject));
   if (mine.length === 0 || windows.length === 0) return null;
 
   const latestWindow = windows[windows.length - 1];
@@ -136,6 +157,8 @@ export const buildCaseFile = (
       // Null rather than Infinity with no history to divide by. A first
       // sighting is an unknown increase, not an infinite one.
       multiple: baseline > 0 ? count / baseline : null,
+      rated: count >= MIN_LATEST,
+      ratedAbove: MIN_LATEST,
       ...gradeChange(count, baseline),
     };
   });
@@ -152,11 +175,15 @@ export const buildCaseFile = (
   const baseline = meanOfEarlier(allWeeks);
   const first = mine[0];
 
+  const wholeStore = subject.cashierNumber === null;
+
   return {
     headline: {
-      cashierName: first.cashier_name,
-      cashierNumber: ref.cashierNumber,
+      title: wholeStore ? first.store_name : first.cashier_name,
+      badge: wholeStore ? null : `CASHIER ${subject.cashierNumber}`,
+      cashierName: wholeStore ? "This store" : first.cashier_name,
       storeName: first.store_name,
+      cashiers: new Set(latestRows.map((r) => r.cashier_number)).size,
       // Through `laneOf`, never off the field directly — the payload spells
       // it `termainal` and reading it raw would silently blank every lane if
       // the backend ever fixed the typo.

@@ -31,7 +31,7 @@ const CardSortToggle = () => {
           key={key}
           aria-pressed={cardSort === key}
           onClick={() => dispatch(setLpCardSort(key))}
-          className={`px-2.5 py-1 text-[10.5px] border-r border-gray-200 last:border-r-0 transition-colors ${
+          className={`px-2.5 py-1 text-[12px] border-r border-gray-200 last:border-r-0 transition-colors ${
             cardSort === key
               ? "bg-[#1e2a4a] text-custom-white"
               : "text-content/85 hover:bg-gray-50"

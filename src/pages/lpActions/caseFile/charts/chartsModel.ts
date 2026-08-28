@@ -5,12 +5,11 @@ import { hourOf } from "../../case/hourProfile";
 import { typeOrder } from "../../typeColour";
 
 /**
- * The same week, cut three ways.
+ * The whole walked span, cut two ways: by weekday and by hour.
  *
- * Two of the three cost nothing: the day and the weekday both come off
- * `sale_date`, which the walk already has. The hour does not — the walked row
- * carries no time at all, only `sale_start_time` on the receipt LINE does, so
- * the hour chart is the one piece of this block that waits on a read.
+ * The weekday costs nothing — it comes off `sale_date`, which the walk already
+ * has. The hour does not: the walked row carries no time at all, only
+ * `sale_start_time` on the receipt LINE does, so that chart waits on a read.
  *
  * Bins are built in STORE-LOCAL terms, straight off the date string. A void at
  * 8:47pm belongs to that store's Saturday close, and parsing these through a
@@ -23,35 +22,19 @@ export interface StackCategory {
   key: string;
   /** Axis label, e.g. "8" or "Sat" or "7p". */
   label: string;
-  /** Second axis line, e.g. the weekday initial under a date. */
+  /** Second axis line, under the main one. */
   sublabel?: string;
   counts: Record<string, number>;
   total: number;
-  /** Shaded column — weekends on the shift chart, and the emphasised days on
-   *  the weekday one. */
+  /** Shaded column — the weekend days. */
   band?: boolean;
   /** Heavier axis label. */
   emphasis?: boolean;
 }
 
-const WEEKDAY = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-const INITIAL = ["S", "M", "T", "W", "T", "F", "S"];
+export const WEEKDAY = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 const dayOf = (saleDate: string) => saleDate.slice(0, 10);
-
-/** yyyy-mm-dd + n days, by string surgery. Deliberately not `addDays`, which
- *  parses as UTC and reads back local — an ISO date through it lands a day
- *  early. */
-const addDays = (iso: string, days: number) => {
-  const [y, m, d] = iso.split("-").map(Number);
-  const t = Date.UTC(y, m - 1, d + days);
-  const next = new Date(t);
-  return [
-    next.getUTCFullYear(),
-    String(next.getUTCMonth() + 1).padStart(2, "0"),
-    String(next.getUTCDate()).padStart(2, "0"),
-  ].join("-");
-};
 
 const emptyCounts = (types: string[]) =>
   Object.fromEntries(types.map((t) => [t, 0])) as Record<string, number>;
@@ -74,42 +57,29 @@ const tally = (
 export const stackOrder = (types: string[]) =>
   [...types].sort((a, b) => typeOrder(a) - typeOrder(b));
 
-/** Every day in the window, including the ones with nothing on them — a gap in
- *  a run of shifts is information, and dropping empty days would close it up
- *  and make a three-day cluster look continuous. */
-export const byShift = (
-  rows: CashierTransaction[],
-  window: WeekWindow,
-  types: string[],
-): StackCategory[] => {
-  const out: StackCategory[] = [];
-  for (let day = window.start; day <= window.end; day = addDays(day, 1)) {
-    const wd = weekdayOf(day);
-    const onDay = rows.filter((r) => dayOf(r.sale_date) === day);
-    out.push({
-      key: day,
-      label: String(Number(day.slice(8))),
-      sublabel: INITIAL[wd],
-      band: wd === 0 || wd === 6,
-      ...tally(onDay, types),
-    });
-  }
-  return out;
-};
+/** Inside the picked week, or anywhere when none is picked. */
+const inWindow = (day: string, window?: WeekWindow | null) =>
+  !window || (day >= window.start && day <= window.end);
 
+/**
+ * No weekend shading.
+ *
+ * Two of seven columns permanently greyed is a lot of ink for something a
+ * reader already knows — Saturday is on the axis — and it competed with the
+ * one column that genuinely needs marking, the picked one. The shading now
+ * belongs to the selection instead.
+ */
 export const byWeekday = (
   rows: CashierTransaction[],
   types: string[],
+  window?: WeekWindow | null,
 ): StackCategory[] =>
   WEEKDAY.map((label, i) => {
-    const onDay = rows.filter((r) => weekdayOf(dayOf(r.sale_date)) === i);
-    return {
-      key: label,
-      label,
-      band: i === 0 || i === 6,
-      emphasis: i === 0 || i === 6,
-      ...tally(onDay, types),
-    };
+    const onDay = rows.filter((r) => {
+      const day = dayOf(r.sale_date);
+      return weekdayOf(day) === i && inWindow(day, window);
+    });
+    return { key: label, label, ...tally(onDay, types) };
   });
 
 const hourLabel = (h: number) => {
@@ -128,12 +98,20 @@ const hourLabel = (h: number) => {
 export const byHour = (
   lines: TransactionListItem[],
   types: string[],
+  /** One weekday label, or null for every day. Narrowing the hours to a
+   *  selected day is the question "when on Saturdays" — which neither chart
+   *  answers alone. */
+  weekday?: string | null,
+  window?: WeekWindow | null,
 ): StackCategory[] => {
   const wanted = new Set(types);
   const buckets = new Map<number, { sale_type: string }[]>();
 
   for (const line of lines) {
     if (!wanted.has(line.sale_type)) continue;
+    const day = dayOf(line.sale_date);
+    if (!inWindow(day, window)) continue;
+    if (weekday && WEEKDAY[weekdayOf(day)] !== weekday) continue;
     const h = hourOf(line);
     if (h < 0) continue;
     const list = buckets.get(h);
@@ -152,21 +130,4 @@ export const byHour = (
     });
   }
   return out;
-};
-
-/**
- * The reference line on the shift chart: their own normal, per day.
- *
- * Divided by the days the window SPANS, not by the days they happened to work
- * — the same rule the rest of LP's grading uses. Dividing by days worked would
- * give a part-timer a higher bar than a full-timer for identical behaviour.
- */
-export const baselinePerDay = (baseline: number, window: WeekWindow) => {
-  const days =
-    Math.round(
-      (Date.parse(`${window.end}T12:00:00Z`) -
-        Date.parse(`${window.start}T12:00:00Z`)) /
-        86400000,
-    ) + 1;
-  return days > 0 ? baseline / days : 0;
 };

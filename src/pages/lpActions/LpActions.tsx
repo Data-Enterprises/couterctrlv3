@@ -6,16 +6,16 @@ import LpActionsEntry from "./LpActionsEntry";
 import LpRosterPanel from "./roster/LpRosterPanel";
 import CaseFilePanel from "./caseFile/CaseFilePanel";
 import { useLpExceptionWalk } from "./useLpExceptionWalk";
-import { DEFAULT_WEEKS, MAX_WEEKS } from "./lpActionsConfig";
+import { DEFAULT_WEEKS } from "./lpActionsConfig";
 
 /**
  * LP Actions — which exceptions changed, and who moved.
  *
  * The page owns the walk the same way every other searched page owns its fetch.
- * "Add week" re-runs it with a longer span rather than fetching the one extra
- * week and stitching: the baseline is a mean over everything before the latest
- * week, so a new week changes every verdict on the page, not just the column
- * it added.
+ * The span is fixed at `DEFAULT_WEEKS` — widening it from inside the page was
+ * a control that re-ran the whole walk and changed every verdict on it, since
+ * the baseline is a mean over everything before the latest week. A different
+ * span is a different search.
  */
 const LpActions = () => {
   const toast = useToast();
@@ -25,7 +25,6 @@ const LpActions = () => {
     (s) => s.lpActions,
   );
   const [searchOpen, setSearchOpen] = useState(false);
-  const [addingWeek, setAddingWeek] = useState(false);
 
   const run = (nextWeeks: number) => {
     if (!lastStore && !lastGroup) {
@@ -36,16 +35,6 @@ const LpActions = () => {
     return walk(formatGoliathDate(singleDate), nextWeeks);
   };
 
-  const handleAddWeek = async () => {
-    if (weeks >= MAX_WEEKS) {
-      toast.warn(`${MAX_WEEKS} weeks is as far back as this goes`);
-      return;
-    }
-    setAddingWeek(true);
-    await run(weeks + 1);
-    setAddingWeek(false);
-  };
-
   if (!searched) {
     return <LpActionsEntry onRun={() => run(DEFAULT_WEEKS)} />;
   }
@@ -53,11 +42,7 @@ const LpActions = () => {
   return (
     <div className="w-full p-4 select-none min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden">
       <div className="flex gap-4 h-[calc(100vh-5rem)]">
-        <LpRosterPanel
-          onSearchOpen={() => setSearchOpen(true)}
-          onAddWeek={handleAddWeek}
-          addingWeek={addingWeek}
-        />
+        <LpRosterPanel onSearchOpen={() => setSearchOpen(true)} />
         <CaseFilePanel />
       </div>
 

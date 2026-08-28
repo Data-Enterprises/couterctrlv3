@@ -51,6 +51,9 @@ export interface RosterCashier extends CashierRef {
   changePct: number | null;
   severity: LpSeverity;
   types: RosterType[];
+  /** Money on the latest week's exceptions, unsigned. Matches the case
+   *  file's Exception value, so a row and the panel it opens agree. */
+  latestValue: number;
 }
 
 export interface RosterStore {
@@ -64,6 +67,7 @@ export interface RosterStore {
   changePct: number | null;
   severity: LpSeverity;
   investigateCount: number;
+  latestValue: number;
   cashiers: RosterCashier[];
 }
 
@@ -116,6 +120,7 @@ export const buildRoster = (
     storeName: string;
     weeks: number[];
     types: Map<string, number>;
+    latestValue: number;
   }
 
   const byCashier = new Map<string, Acc>();
@@ -134,11 +139,15 @@ export const buildRoster = (
         storeName: row.store_name,
         weeks: Array(windows.length).fill(0),
         types: new Map(),
+        latestValue: 0,
       };
       byCashier.set(id, acc);
     }
     acc.weeks[wi] += 1;
     acc.types.set(row.sale_type, (acc.types.get(row.sale_type) ?? 0) + 1);
+    // Unsigned: a refund and a void of the same size are the same exposure,
+    // and letting them cancel would report a busy operator as a quiet one.
+    if (wi === windows.length - 1) acc.latestValue += Math.abs(row.total_sales);
   }
 
   const cashiers: RosterCashier[] = [...byCashier.entries()].map(
@@ -149,6 +158,7 @@ export const buildRoster = (
       cashierName: acc.cashierName,
       storeName: acc.storeName,
       weeks: acc.weeks,
+      latestValue: acc.latestValue,
       types: [...acc.types.entries()]
         .map(([saleType, count]) => ({ saleType, count }))
         .sort((a, b) => b.count - a.count),
@@ -185,6 +195,7 @@ export const buildRoster = (
         severity: worstOf(list.map((c) => c.severity)),
         investigateCount: list.filter((c) => c.severity === "investigate")
           .length,
+        latestValue: list.reduce((sum, c) => sum + c.latestValue, 0),
         cashiers: sorted,
       };
     })

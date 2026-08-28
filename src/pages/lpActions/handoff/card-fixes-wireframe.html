@@ -1,0 +1,305 @@
+<title>Card Judgement Fixes</title>
+
+<style>
+/* ───────────────────────────────────────────────────────────────────────
+   LP Actions — three judgement fixes on the Summary cards.
+
+   Not a restyle. The layout, the type scale and the tokens are exactly what
+   is built today; what changes is what the cards are willing to CLAIM.
+
+   Single theme (the app is light-only). No webfont, no tabular figures.
+   Colours from src/index.css, severity.ts and chartTheme.ts.
+   ─────────────────────────────────────────────────────────────────────── */
+:root{
+  --bkg:#e4e9ef; --panel:#f4f7f8; --stripe:#eceded;
+  --row-sel:#eff1f2; --row-sel-border:#8a9bb0;
+  --navy:#1e2a4a; --ink:#1e293b;
+  --rule:#f3f4f6; --rule-2:#e5e7eb; --kpi-bg:#f9fafb;
+  --crit-bg:#ebd8d8; --crit-ink:#931010;
+  --watch-bg:#ece0cd; --watch-ink:#7f4d00;
+  --ok-bg:#d8ebe1;  --ok-ink:#0e6331;
+  --s1:#7F77DD; --s2:#1D9E75; --s3:#378ADD; --s4:#BA7517; --s5:#D4537E;
+  --ui:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0; background:var(--bkg); color:var(--ink); font-family:var(--ui); font-size:13px; line-height:1.45; -webkit-font-smoothing:antialiased}
+button{font:inherit; color:inherit; cursor:pointer}
+:focus-visible{outline:2px solid #2563eb; outline-offset:2px}
+
+.wrap{max-width:1280px; margin:0 auto; padding:16px 16px 40px}
+.intro{font-size:12px; color:#475569; margin:0 0 12px}
+.intro b{color:var(--ink)}
+
+.switch{display:flex; align-items:center; gap:10px; margin-bottom:12px}
+.switch .lbl{font-size:12px; color:#475569}
+.seg{display:inline-flex; border:1px solid var(--rule-2); border-radius:5px; overflow:hidden; background:var(--panel)}
+.seg button{background:transparent; border:0; padding:5px 12px; font-size:12px; color:#475569; border-right:1px solid var(--rule-2)}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--navy); color:#f4f7f8}
+
+/* ── panel ───────────────────────────────────────────────────────────── */
+.panel{background:var(--panel); border-radius:12px; box-shadow:0 10px 15px -3px rgb(0 0 0/.08); overflow:hidden}
+.hd{background:var(--navy); padding:12px 16px}
+.hd .n{display:flex; align-items:center; gap:8px; color:#f4f7f8; font-size:13px; font-weight:600}
+.badge{font-size:12px; font-weight:500; border:1px solid rgb(244 247 248/.3); border-radius:3px; padding:0 6px}
+.hd .s{color:rgb(244 247 248/.85); font-size:12px; margin-top:2px}
+
+.kpi{display:grid; grid-template-columns:repeat(4,1fr); background:var(--kpi-bg); border-bottom:1px solid var(--rule)}
+.kpi>div{padding:10px 16px; border-right:1px solid var(--rule)}
+.kpi>div:last-child{border-right:0}
+.kpi .l{font-size:12px; font-weight:500; color:rgb(30 41 59/.85)}
+.kpi .v{font-size:14px; font-weight:600; margin-top:2px}
+
+.tabs{display:flex; align-items:center; border-bottom:1px solid var(--rule); padding:0 12px}
+.tabs button{padding:8px 12px; font-size:12px; font-weight:500; border:0; border-bottom:2px solid transparent; background:transparent; color:rgb(30 41 59/.85)}
+.tabs button[aria-selected="true"]{border-bottom-color:var(--navy); color:var(--ink)}
+
+/* CTA strip */
+.cta{position:relative; border-bottom:1px solid rgb(147 16 16/.25); background:var(--crit-bg); color:var(--crit-ink)}
+.cta-btn{width:100%; display:flex; align-items:center; gap:8px; padding:8px 16px; background:transparent; border:0; color:inherit; text-align:left}
+.cta-btn:hover{background:rgb(147 16 16/.1)}
+.cta-lbl{font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.05em}
+.cta-fig{font-size:12px; font-weight:600}
+.cta-drv{font-size:12px}
+.cta-why{margin-left:auto; font-size:12px; font-weight:500; text-decoration:underline}
+.cta-pop{position:absolute; top:100%; left:0; right:0; z-index:30; background:var(--crit-bg); color:var(--crit-ink); border-bottom:1px solid rgb(147 16 16/.25); border-radius:0 0 8px 8px; box-shadow:0 10px 15px -3px rgb(0 0 0/.2); padding:10px 16px; font-size:12.5px; line-height:1.55}
+
+/* ── cards ───────────────────────────────────────────────────────────── */
+.cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(232px,1fr)); gap:10px; padding:16px}
+.card{display:flex; flex-direction:column; border:1px solid var(--rule-2); border-radius:8px; overflow:hidden; background:var(--panel)}
+.card.quiet{opacity:.72}
+.c-hd{display:flex; align-items:center; gap:8px; padding:8px 12px; border-bottom:1px solid var(--rule); background:var(--kpi-bg)}
+.sw{width:10px; height:10px; border-radius:2px; flex-shrink:0}
+.c-name{flex:1; min-width:0; font-size:13px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.c-count{font-size:18px; font-weight:600; line-height:1}
+.dl{display:grid; grid-template-columns:1fr auto; align-items:baseline; column-gap:12px; row-gap:4px; padding:10px 12px}
+.dt{font-size:12px; color:rgb(30 41 59/.85)}
+.dd{font-size:13px; font-weight:600; text-align:right}
+.foot{padding:0 12px 12px; margin-top:auto}
+.vs{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:4px}
+.vs .l{font-size:12px; color:rgb(30 41 59/.85)}
+.vs .v{font-size:14px; font-weight:600}
+.v-crit{color:var(--crit-ink)} .v-watch{color:var(--watch-ink)} .v-ok{color:rgb(30 41 59/.85)}
+.track{position:relative; height:7px; border-radius:2px; background:var(--stripe); overflow:hidden}
+.fill{position:absolute; inset:0 auto 0 0; border-radius:2px}
+.tick{position:absolute; top:-2px; bottom:-2px; width:1px; background:rgb(30 41 59/.4); left:25%}
+.axis{display:flex; justify-content:space-between; margin-top:4px; font-size:11px; color:rgb(30 41 59/.85)}
+.axis.dim{opacity:.45}
+
+/* the three new pieces */
+.note{
+  margin:0 12px 10px; padding:7px 9px; border-radius:6px;
+  background:var(--watch-bg); color:var(--watch-ink);
+  font-size:12px; line-height:1.45; border-left:3px solid var(--watch-ink);
+}
+.plain{margin:0 12px 10px; font-size:12px; color:rgb(30 41 59/.85); line-height:1.45}
+.unrated{font-size:12px; font-weight:600; color:rgb(30 41 59/.85)}
+
+/* annotations */
+.ann{margin-top:16px; display:grid; gap:8px}
+.ann h2{font-size:13px; margin:0 0 2px}
+.ann .item{background:var(--panel); border:1px solid var(--rule-2); border-left:3px solid var(--crit-ink); border-radius:6px; padding:10px 12px}
+.ann .item.idea{border-left-color:var(--watch-ink)}
+.ann .item.q{border-left-color:var(--row-sel-border)}
+.ann .t{font-size:12.5px; font-weight:600; margin-bottom:2px}
+.ann .d{font-size:12px; color:#475569; line-height:1.5}
+.ann code{font-family:ui-monospace,SFMono-Regular,monospace; font-size:11.5px; background:#dfe5ed; padding:1px 4px; border-radius:3px}
+.hidden{display:none!important}
+</style>
+
+<div class="wrap">
+
+<p class="intro">
+  <b>Three judgement fixes, not a restyle.</b> Layout, type scale and tokens are exactly
+  what is built today. What changes is what a card is willing to claim when the data
+  cannot support the claim. Figures are from the live screenshot.
+</p>
+
+<div class="switch">
+  <span class="lbl">Compare:</span>
+  <div class="seg" role="group" aria-label="Version">
+    <button id="bCur" aria-pressed="true">Built today</button>
+    <button id="bNew" aria-pressed="false">Proposed</button>
+  </div>
+</div>
+
+<section class="panel">
+  <header class="hd">
+    <div class="n">Ann <span class="badge">CASHIER 40</span></div>
+    <div class="s">IGA #002 · 08/21/2026 – 08/27/2026 · 5 shifts · Lanes 3, 2, 4</div>
+  </header>
+
+  <div class="kpi">
+    <div><div class="l">Exceptions</div><div class="v">60</div></div>
+    <div><div class="l">Exception value</div><div class="v">$283.25</div></div>
+    <div><div class="l">Qty</div><div class="v">170</div></div>
+    <div><div class="l">Unique items</div><div class="v">117</div></div>
+  </div>
+
+  <div class="tabs" role="tablist">
+    <button role="tab" aria-selected="true">Summary</button>
+    <button role="tab" aria-selected="false">Evidence</button>
+  </div>
+
+  <div class="cta">
+    <button class="cta-btn" id="ctaBtn">
+      <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.515 2.625H3.72c-1.345 0-2.188-1.458-1.515-2.625L8.485 2.495ZM10 5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 10 5Zm0 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clip-rule="evenodd"/></svg>
+      <span class="cta-lbl">Investigate</span>
+      <span class="cta-fig">2.0× their baseline</span>
+      <span class="cta-drv hidden" id="ctaDrv">· driven by Voided and Cancelled</span>
+      <span class="cta-why" id="ctaWhy">Why</span>
+    </button>
+    <div class="cta-pop hidden" id="ctaPop">
+      Ann is running exceptions at <b>2.0× their own baseline</b> — <b>60 this week</b>
+      where their normal is <b>30</b>. The gap is <b>Voided and Cancelled</b>.
+    </div>
+  </div>
+
+  <div class="cards" id="cards"></div>
+</section>
+
+<div class="ann" id="ann"></div>
+</div>
+
+<script>
+const money = v => (v < 0 ? "−$" : "$") + Math.abs(v).toFixed(2);
+
+/* Figures lifted from the live screenshot. */
+const CARDS = [
+  {type:"Cancelled", hue:"var(--s2)", count:10, total:45.56, avg:4.56, qty:31, avgQty:3.1,
+   txns:1,  mult:3.3, sev:"crit"},
+  {type:"Refunded",  hue:"var(--s4)", count:1,  total:-4.19, avg:-4.19, qty:-2, avgQty:-2.0,
+   txns:1,  mult:3.0, sev:"ok", baseline:0.3, belowFloor:true},
+  {type:"Voided",    hue:"var(--s1)", count:39, total:233.50, avg:5.99, qty:112, avgQty:2.9,
+   txns:30, mult:1.9, sev:"crit"},
+  {type:"No Sale",   hue:"var(--s3)", count:10, total:0, avg:0, qty:29, avgQty:2.9,
+   txns:10, mult:1.6, sev:"watch", ringsNothing:true},
+];
+
+const SEV = {crit:"v-crit", watch:"v-watch", ok:"v-ok"};
+const MAX = 4;
+
+const row = (label, value) => `<dt class="dt">${label}</dt><dd class="dd">${value}</dd>`;
+
+function card(c, proposed){
+  const unrated = proposed && c.belowFloor;
+  const qty = proposed && c.qty < 0 ? Math.abs(c.qty) : c.qty;
+  const avgQty = proposed && c.avgQty < 0 ? Math.abs(c.avgQty) : c.avgQty;
+
+  /* concentration: many occurrences, one receipt */
+  const concentrated = proposed && c.count > 1 && c.txns === 1;
+
+  let body = "";
+
+  if (concentrated) {
+    body += `<div class="note"><b>All ${c.count} on one receipt.</b> One incident, not a rate —
+      the multiple below is measuring a single event.</div>`;
+  }
+  if (proposed && c.ringsNothing) {
+    body += `<div class="plain">A no sale rings nothing, so there is no money on it —
+      the value below is the definition, not a gap in the data.</div>`;
+  }
+
+  body += `<dl class="dl">
+    ${row("Total", money(c.total))}
+    ${row("Avg", money(c.avg))}
+    ${row("Qty", qty)}
+    ${row("Avg qty", avgQty.toFixed(1))}
+    ${row("Transactions", c.txns)}
+  </dl>`;
+
+  const foot = unrated
+    ? `<div class="foot">
+         <div class="vs"><span class="l">vs. baseline</span><span class="unrated">Not rated</span></div>
+         <div class="track"><div class="tick"></div></div>
+         <div class="axis dim"><span>0×</span><span>1× base</span><span>2×</span><span>3×</span><span>4×</span></div>
+         <div class="plain" style="margin:8px 0 0">Under 5 events against a baseline of
+           ${c.baseline}. Too few to read a rate from, so none is shown.</div>
+       </div>`
+    : `<div class="foot">
+         <div class="vs"><span class="l">vs. baseline</span>
+           <span class="v ${SEV[c.sev]}">${c.mult.toFixed(1)}×</span></div>
+         <div class="track">
+           <div class="fill" style="width:${Math.min(c.mult,MAX)/MAX*100}%;background:${c.hue}"></div>
+           <div class="tick"></div>
+         </div>
+         <div class="axis"><span>0×</span><span>1× base</span><span>2×</span><span>3×</span><span>4×</span></div>
+       </div>`;
+
+  return `<div class="card${unrated ? " quiet" : ""}">
+    <div class="c-hd">
+      <span class="sw" style="background:${c.hue}"></span>
+      <span class="c-name">${c.type}</span>
+      <span class="c-count">${c.count}</span>
+    </div>
+    ${body}
+    ${foot}
+  </div>`;
+}
+
+const NOTES = [
+  {kind:"", t:"Refunded shows 3.0× on one event — that is live today",
+   d:`Grading has a floor: under five occurrences it returns <i>steady</i>, because a
+      percentage off two data points is noise. But the multiple is computed separately and
+      printed anyway, so the card shows a confident 3.0× wearing the colour that means
+      "nothing to see". <b>Proposed:</b> print <code>Not rated</code> and say why. The bar
+      keeps its track and its 1× mark so the card still reads as the same object.`},
+  {kind:"idea", t:"Ten cancels on one receipt is one incident, not a rate",
+   d:`Every figure on the Cancelled card is true and the conclusion a reader draws from
+      3.3× is wrong. Both numbers are already on the card — <code>count</code> and
+      <code>Transactions</code> — so this is saying what their ratio means rather than
+      fetching anything. This is the fast-dismissal case: it should take two seconds to
+      put 3.3× down.`},
+  {kind:"idea", t:"$0.00 on a No Sale reads as missing data",
+   d:`Nothing rings on a no sale, so zero is the definition rather than a hole. One line
+      says so. Same treatment would suit any type whose money is structurally absent.`},
+  {kind:"idea", t:"The driver moves into the strip",
+   d:`The sentence stays behind <b>Why</b>, but the two words that answer "at what" come
+      out onto the bar. Costs no vertical space and saves the click for the most common
+      question.`},
+  {kind:"q", t:"Open: negative quantity on refunds",
+   d:`Refund lines carry a negative qty, so the card reads <code>−2</code> and
+      <code>−2.0</code>. Shown here as absolute. Literal is defensible, but next to a
+      positive count it reads like an error — your call.`},
+  {kind:"q", t:"Open: No Sale shows Qty 29 across 10 occurrences",
+   d:`If a no sale rings nothing, a quantity of 29 is worth explaining. Either those lines
+      are carrying something we are not expecting, or the line filter is catching more than
+      the ten exceptions. Worth checking against a real receipt before trusting that cell.`},
+];
+
+let proposed = false;
+
+function render(){
+  document.getElementById("cards").innerHTML = CARDS.map(c => card(c, proposed)).join("");
+  document.getElementById("ctaDrv").classList.toggle("hidden", !proposed);
+  document.getElementById("ann").innerHTML = proposed
+    ? `<h2>What changed, and why</h2>` + NOTES.map(n =>
+        `<div class="item ${n.kind}"><div class="t">${n.t}</div><div class="d">${n.d}</div></div>`).join("")
+    : `<h2>Switch to Proposed to see the three fixes</h2>`;
+}
+
+document.getElementById("bCur").addEventListener("click", () => {
+  proposed = false;
+  document.getElementById("bCur").setAttribute("aria-pressed","true");
+  document.getElementById("bNew").setAttribute("aria-pressed","false");
+  render();
+});
+document.getElementById("bNew").addEventListener("click", () => {
+  proposed = true;
+  document.getElementById("bNew").setAttribute("aria-pressed","true");
+  document.getElementById("bCur").setAttribute("aria-pressed","false");
+  render();
+});
+
+const pop = document.getElementById("ctaPop"), why = document.getElementById("ctaWhy");
+document.getElementById("ctaBtn").addEventListener("click", e => {
+  e.stopPropagation();
+  const open = pop.classList.toggle("hidden");
+  why.textContent = open ? "Why" : "Hide";
+});
+document.addEventListener("mousedown", () => {
+  if (!pop.classList.contains("hidden")) { pop.classList.add("hidden"); why.textContent = "Why"; }
+});
+
+render();
+</script>

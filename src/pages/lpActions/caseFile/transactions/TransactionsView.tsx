@@ -19,11 +19,15 @@ import type { CaseFile } from "../caseFileModel";
 /**
  * The evidence half: filters on the left, receipts on the right.
  *
+ * Laid out the way Loss Prevention's own right panel is — two flush columns
+ * split by a hairline, each with its own `gray-100` header and its own
+ * scroller, rather than two rounded cards floating in a padded area. The panel
+ * is already the card; a bordered box inside it reads as a second one.
+ *
  * This is the step that costs. Everything before it derives from rows the walk
  * already had; here the receipt lines are read, one request per exception type
  * plus one for tender. They are cached by scope, so coming back to a case, or
- * arriving here from the charts that already needed the hours, finds them
- * waiting.
+ * arriving from the charts that already needed the hours, finds them waiting.
  *
  * Tender is not an exception and never arrives with them, but how a suspect
  * transaction was paid for is the question LP asks next — so it is read
@@ -35,15 +39,15 @@ interface Props {
 
 const TransactionsView = ({ file }: Props) => {
   const dispatch = useAppDispatch();
-  const { rawRows, caseCashier, facets, openReceipt } = useAppSelector(
+  const { rawRows, caseSubject, facets, openReceipt } = useAppSelector(
     (s) => s.lpActions,
   );
 
   const scopes = useMemo(() => {
-    const byType = buildTypeScopes(rawRows, caseCashier);
-    const tender = buildTenderScope(rawRows, caseCashier);
+    const byType = buildTypeScopes(rawRows, caseSubject);
+    const tender = buildTenderScope(rawRows, caseSubject);
     return tender ? [...byType, tender] : byType;
-  }, [rawRows, caseCashier]);
+  }, [rawRows, caseSubject]);
 
   const receipts = useCaseReceipts(scopes);
 
@@ -106,44 +110,43 @@ const TransactionsView = ({ file }: Props) => {
 
   return (
     <>
-      <div className="h-full overflow-y-auto thin-scrollbar p-4">
-        <div className="grid gap-3 grid-cols-[206px_minmax(0,1fr)]">
-          <FacetRail groups={groups} />
-
-          <div className="rounded-lg border border-gray-200 overflow-hidden flex flex-col min-w-0">
-            <div className="flex items-center gap-2.5 flex-wrap px-3 py-2 border-b border-gray-100">
-              <span className="text-[12px] font-semibold text-content">
-                {rows.length}{" "}
-                {rows.length === 1 ? "exception" : "exceptions"} ·{" "}
-                {formatCurrency2(value)}
-              </span>
-              <span className="text-[11px] text-content/85">
-                {filtered
-                  ? "Filtered — each group's counts exclude its own filter."
-                  : "No filters — showing every exception in the period."}
-              </span>
-              {filtered && (
-                <button
-                  onClick={() => dispatch(clearLpFacets())}
-                  className="ml-auto text-[11px] font-medium text-content hover:underline"
-                >
-                  Clear
-                </button>
-              )}
-            </div>
-
-            {receipts.error && (
-              <p className="px-3 py-2 text-[11px] text-severity_critical_text">
-                {receipts.error}
-              </p>
+      <div className="h-full flex">
+        <div className="w-[224px] flex-shrink-0 flex flex-col min-h-0 border-r border-gray-100">
+          <div className="flex-shrink-0 flex items-center gap-2 px-3 py-2 bg-gray-100 border-b border-gray-100">
+            <span className="flex-1 text-[12px] font-semibold text-content">
+              Filters
+            </span>
+            {filtered && (
+              <button
+                onClick={() => dispatch(clearLpFacets())}
+                className="text-[12px] font-semibold text-[#1e2a4a] hover:text-[#1e2a4a]/70 transition-colors"
+              >
+                Clear
+              </button>
             )}
+          </div>
 
-            <div className="max-h-[460px] overflow-hidden">
-              <EvidenceTable
-                rows={rows}
-                storeid={caseCashier?.storeid ?? 0}
-              />
+          <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar">
+            <FacetRail groups={groups} />
+          </div>
+        </div>
+
+        <div className="flex-1 min-w-0 flex flex-col min-h-0">
+          <div className="flex-shrink-0 px-3.5 py-1.5 bg-gray-100 border-b border-gray-100">
+            <div className="text-[13px] font-semibold text-content">
+              {rows.length} {rows.length === 1 ? "exception" : "exceptions"}{" "}
+              &middot; {formatCurrency2(value)}
             </div>
+          </div>
+
+          {receipts.error && (
+            <p className="flex-shrink-0 px-3.5 py-2 text-[12px] text-severity_critical_text border-b border-gray-100">
+              {receipts.error}
+            </p>
+          )}
+
+          <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar">
+            <EvidenceTable rows={rows} storeid={caseSubject?.storeid ?? 0} />
           </div>
         </div>
       </div>

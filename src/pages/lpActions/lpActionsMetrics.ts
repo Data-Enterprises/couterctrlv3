@@ -66,6 +66,30 @@ export const laneOf = (row: {
 }): string => String(row.termainal ?? row.terminal ?? "").trim();
 
 /** True when a walked row belongs to that one operator. */
+/**
+ * Who a case is about — a whole store, or one operator inside it.
+ *
+ * A group search lands on a store first: the question at that level is which
+ * site is moving, and only then which person. `cashierNumber: null` means the
+ * case covers every operator at that store, which is also the only sensible
+ * default for a single-store search, where a store row would otherwise be a
+ * heading over a list of one.
+ */
+export interface CaseSubject {
+  storeid: number;
+  /** Null for the whole store. */
+  cashierNumber: number | null;
+}
+
+/** Does this row belong to the case? Store-wide when no cashier is named. */
+export const inSubject = (
+  row: { storeid: number; cashier_number: number },
+  subject: CaseSubject,
+) =>
+  row.storeid === subject.storeid &&
+  (subject.cashierNumber === null ||
+    row.cashier_number === subject.cashierNumber);
+
 export const isCashier = (
   row: { storeid: number; cashier_number: number },
   ref: CashierRef,

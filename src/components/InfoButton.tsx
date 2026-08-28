@@ -21,19 +21,35 @@ interface InfoButtonProps {
   onClick?: () => void;
   /** Defaults to "About this view"; override where the panel isn't a view. */
   title?: string;
+  /**
+   * Which surface it sits on. `navy` is the panel header this was built for;
+   * `light` is the same button on a white card, where the white-on-navy
+   * treatment would be invisible.
+   *
+   * A variant rather than a className override: the base classes already set
+   * a colour and a border, and appending a competing one leaves which wins to
+   * the order Tailwind happens to emit.
+   */
+  tone?: "navy" | "light";
   className?: string;
 }
+
+const TONE = {
+  navy: "border-custom-white/20 text-custom-white/75 hover:text-custom-white hover:border-custom-white/40",
+  light: "border-gray-200 text-content/85 hover:text-content hover:border-gray-400",
+};
 
 const InfoButton = ({
   onClick,
   title = "About this view",
+  tone = "navy",
   className,
 }: InfoButtonProps) => (
   <button
     onClick={onClick}
     title={title}
     aria-label={title}
-    className={`w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/75 hover:text-custom-white hover:border-custom-white/40 transition-colors ${className ?? ""}`}
+    className={`w-[22px] h-[22px] flex items-center justify-center rounded border transition-colors ${TONE[tone]} ${className ?? ""}`}
   >
     <QuestionMarkCircleIcon className="w-3.5 h-3.5" />
   </button>

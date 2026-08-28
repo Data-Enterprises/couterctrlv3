@@ -2,13 +2,14 @@ import { useMemo } from "react";
 import { useAppSelector } from "../../../hooks";
 import { formatDateSimple } from "../../../utils";
 import CaseHeader from "./CaseHeader";
-import CaseKpiStrip from "./CaseKpiStrip";
 import CaseBreakdown from "./CaseBreakdown";
 import CaseCharts from "./charts/CaseCharts";
 import CaseTabStrip from "./CaseTabStrip";
+import CaseSummaryStrip from "./CaseSummaryStrip";
 import TransactionsView from "./transactions/TransactionsView";
 import CaseEmpty from "../case/CaseEmpty";
 import { buildCaseFile } from "./caseFileModel";
+import { buildContribution } from "./contributionModel";
 
 /**
  * The case file — one operator, one period, built to be acted on or put down.
@@ -19,38 +20,61 @@ import { buildCaseFile } from "./caseFileModel";
  * why the zero-count cards, the honest "no baseline" wording and the both-ways
  * evidence summary all earn their space.
  *
+ * There is no KPI strip. Exceptions, value, quantity and receipts all sit in
+ * the table's own Totals row, and a strip repeating them above the table it
+ * summarised was one band of chrome saying what the next band already said.
+ *
  * Everything above the transactions step is derived from `rawRows`, which the
  * walk already downloaded. Opening a case, reading it and backing out costs no
  * requests at all — the receipt reads only start when someone commits to the
  * transactions half.
  */
 const CaseFilePanel = () => {
-  const { rawRows, windows, caseCashier, caseStep } = useAppSelector(
+  const { rawRows, windows, caseSubject, caseStep } = useAppSelector(
     (s) => s.lpActions,
   );
 
   const file = useMemo(
     () =>
-      caseCashier === null
+      caseSubject === null
         ? null
-        : buildCaseFile(rawRows, windows, caseCashier),
-    [rawRows, windows, caseCashier],
+        : buildCaseFile(rawRows, windows, caseSubject),
+    [rawRows, windows, caseSubject],
   );
 
-  const period = useMemo(() => {
-    const last = windows[windows.length - 1];
-    if (!last) return "";
-    return `${formatDateSimple(last.start)} – ${formatDateSimple(last.end)}`;
-  }, [windows]);
+  /** Built here rather than in each consumer: the strip quotes the leading
+   *  contributor and the panel draws all of them, and two builds of the same
+   *  decomposition would be two chances to disagree about it. */
+  const view = useMemo(
+    () => (file === null ? null : buildContribution(file)),
+    [file],
+  );
 
-  if (!file) return <CaseEmpty />;
+  /** The week everything on the Summary tab is about. */
+  const latest = windows[windows.length - 1];
+
+  const period = useMemo(
+    () =>
+      latest
+        ? `${formatDateSimple(latest.start)} – ${formatDateSimple(latest.end)}`
+        : "",
+    [latest],
+  );
+
+  if (!file || !view) return <CaseEmpty />;
 
   return (
-    <div className="flex-shrink-0 shadow-lg" style={{ width: "68%" }}>
+    <div className="flex-shrink-0 shadow-lg" style={{ width: "65%" }}>
       <div className="bg-custom-white rounded-xl shadow-sm h-full flex flex-col overflow-hidden">
         <CaseHeader headline={file.headline} period={period} />
-        <CaseKpiStrip headline={file.headline} />
         <CaseTabStrip />
+        {/* Under the tabs rather than inside them: the verdict on the operator
+            is as true while you are reading the evidence as it is on the
+            summary, and it costs one row to keep it there. */}
+        <CaseSummaryStrip
+          headline={file.headline}
+          view={view}
+        />
 
         {/*
           The stage: the white content between the KPI strip and the footer.
@@ -60,7 +84,7 @@ const CaseFilePanel = () => {
         */}
         <div className="flex-1 min-h-0 relative overflow-hidden">
           {caseStep === "overview" ? (
-            <CaseBreakdown file={file}>
+            <CaseBreakdown file={file} window={latest} view={view}>
               <CaseCharts file={file} />
             </CaseBreakdown>
           ) : (

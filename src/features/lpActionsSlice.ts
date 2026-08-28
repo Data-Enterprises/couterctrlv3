@@ -4,8 +4,10 @@ import type {
   ExceptionRow,
   WeekWindow,
   CashierRef,
+  CaseSubject,
 } from "../pages/lpActions/lpActionsMetrics";
 import type { CashierTransaction, TransactionListItem } from "../interfaces";
+import type { SortState } from "../utils/useTriStateSort";
 
 /**
  * LP Actions page state.
@@ -20,6 +22,17 @@ export type LpSevFilter = "all" | "investigate" | "watch" | "steady";
 /** Which half of the case file the right panel is showing. Named for the tabs
  *  a reader actually sees, so the state and the label can't drift apart. */
 export type LpCaseStep = "overview" | "evidence";
+
+/** Roster columns that can be sorted. */
+export type LpRosterSortCol = "name" | "weeks" | "total" | "base";
+/** Evidence grid columns that can be sorted. */
+export type LpEvidenceSortCol =
+  | "date"
+  | "time"
+  | "txn"
+  | "lane"
+  | "qty"
+  | "amount";
 
 /** How the deviation cards are ordered. */
 export type LpCardSort = "deviation" | "volume" | "value";
@@ -41,6 +54,20 @@ export interface LpActionsState {
    *  start — a group can carry forty operators, and the store is the level
    *  people scan before they pick a person. */
   expandedStores: string[];
+  /**
+   * Column sorts, tri-state: unsorted to descending to ascending and back.
+   *
+   * In the slice rather than in `useTriStateSort`, which every other graded
+   * page uses, because this page keeps its view state where it can survive a
+   * route change. The transition and the header component are the shared
+   * ones — only where the value lives differs.
+   *
+   * Null is not "no order": it is the list's OWN order, worst grade first,
+   * which is the point of the page. Sorting by a column is a lens, so there
+   * has to be a way back to it.
+   */
+  rosterSort: SortState<LpRosterSortCol>;
+  evidenceSort: SortState<LpEvidenceSortCol>;
   /** Name or number the roster is filtered by. Alongside `sevFilter`, which
    *  narrows first — severity then text, AND not OR. */
   rosterQuery: string;
@@ -57,10 +84,15 @@ export interface LpActionsState {
   /** Cashier whose journey is open, or null. The connection plot stays a
    *  modal: exploratory, and it genuinely wants the width. */
   journeyCashier: CashierRef | null;
-  /** The case open in the right panel — cashier plus the exception type it is
-   *  written about. Null cashier means the panel is showing the exception
-   *  detail instead. */
-  caseCashier: CashierRef | null;
+  /**
+   * What the right panel is reporting on: a store, or one operator inside it.
+   *
+   * A group search opens on a store, because at that level the question is
+   * which site moved; picking a cashier narrows the same panel to them. A
+   * single-store search opens on its one store, where a store row would
+   * otherwise be a heading over a list of one.
+   */
+  caseSubject: CaseSubject | null;
   caseType: string | null;
   sevFilter: LpSevFilter;
   /** Which half of the case file is showing. The evidence half is where the
@@ -70,6 +102,21 @@ export interface LpActionsState {
   /** The exception type whose card is selected, carried into the transactions
    *  view as its opening filter. Null means every type. */
   focusedType: string | null;
+  /**
+   * Index into `windows` when the charts are cut to one week, null for the
+   * whole walk. Chart-only: the cards and the KPI strip are always the latest
+   * week, because that is what the grading compares.
+   */
+  focusedWeek: number | null;
+  /**
+   * Facet groups expanded by hand. A group holding an active value counts as
+   * open regardless — a filter you cannot see is one you cannot take off.
+   *
+   * Exception type starts open because it is the one everyone reaches for,
+   * and five groups fully expanded is thirty rows before a question has been
+   * asked of any of them.
+   */
+  expandedFacets: string[];
   /** Facet key -> selected values. Multi-select within a group (OR),
    *  intersected across groups (AND). */
   facets: Record<string, string[]>;
@@ -107,18 +154,22 @@ const initialState: LpActionsState = {
   scopeLabel: "",
   expandedStores: [],
   rosterQuery: "",
+  rosterSort: null,
+  evidenceSort: null,
   weeks: 4,
   rows: [],
   rawRows: [],
   windows: [],
   selectedId: null,
   journeyCashier: null,
-  caseCashier: null,
+  caseSubject: null,
   caseType: null,
   sevFilter: "all",
   caseStep: "overview",
   cardSort: "deviation",
   focusedType: null,
+  focusedWeek: null,
+  expandedFacets: ["type"],
   facets: {},
   openReceipt: null,
   receiptLines: {},
@@ -128,6 +179,17 @@ const initialState: LpActionsState = {
   loading: false,
   message: "",
   error: null,
+};
+
+/** The shared tri-state transition, lifted out of `useTriStateSort` so the
+ *  two behave identically. */
+const cycle = <C extends string>(
+  prev: SortState<C>,
+  col: C,
+): SortState<C> => {
+  if (prev?.col !== col) return { col, dir: "desc" };
+  if (prev.dir === "desc") return { col, dir: "asc" };
+  return null;
 };
 
 const lpActionsSlice = createSlice({
@@ -145,17 +207,26 @@ const lpActionsSlice = createSlice({
     setLpRosterQuery: (state, action: PayloadAction<string>) => {
       state.rosterQuery = action.payload;
     },
+    setLpRosterSort: (state, action: PayloadAction<LpRosterSortCol>) => {
+      state.rosterSort = cycle(state.rosterSort, action.payload);
+    },
+    setLpEvidenceSort: (state, action: PayloadAction<LpEvidenceSortCol>) => {
+      state.evidenceSort = cycle(state.evidenceSort, action.payload);
+    },
     setLpCaseStep: (state, action: PayloadAction<LpCaseStep>) => {
       state.caseStep = action.payload;
       // Arriving from a selected card opens the evidence already narrowed to
       // that type — the card WAS the question, and making someone re-pick it
       // on the next screen is a click that says nothing.
+      // Checks the TYPE facet specifically, not whether any facet is set — a
+      // day picked on the weekday chart is also a facet, and it should not
+      // stop the selected card from narrowing the evidence too.
       if (
         action.payload === "evidence" &&
         state.focusedType &&
-        Object.keys(state.facets).length === 0
+        !state.facets.type
       ) {
-        state.facets = { type: [state.focusedType] };
+        state.facets.type = [state.focusedType];
       }
       // Leaving the evidence half closes the receipt that was open over it —
       // coming back to a stale one reads as a bug.
@@ -166,6 +237,14 @@ const lpActionsSlice = createSlice({
     },
     setLpFocusedType: (state, action: PayloadAction<string | null>) => {
       state.focusedType = action.payload;
+    },
+    setLpFocusedWeek: (state, action: PayloadAction<number | null>) => {
+      state.focusedWeek = action.payload;
+    },
+    toggleLpFacetGroup: (state, action: PayloadAction<string>) => {
+      state.expandedFacets = state.expandedFacets.includes(action.payload)
+        ? state.expandedFacets.filter((k) => k !== action.payload)
+        : [...state.expandedFacets, action.payload];
     },
     toggleLpFacet: (
       state,
@@ -217,13 +296,15 @@ const lpActionsSlice = createSlice({
       state.baskets = {};
       state.pending = [];
       state.journeyCashier = null;
-      state.caseCashier = null;
+      state.caseSubject = null;
       state.caseType = null;
       // A fresh walk is a fresh roster: the stores, the person being read and
       // everything downstream of them all belong to the previous result.
       state.expandedStores = [];
       state.caseStep = "overview";
       state.focusedType = null;
+      state.focusedWeek = null;
+      state.expandedFacets = ["type"];
       state.facets = {};
       state.openReceipt = null;
       state.weeks = action.payload.weeks;
@@ -242,7 +323,7 @@ const lpActionsSlice = createSlice({
       state.selectedId = action.payload;
       // Picking a different exception leaves the case behind — it was written
       // about the one you were reading.
-      state.caseCashier = null;
+      state.caseSubject = null;
       state.caseType = null;
     },
     setLpJourneyCashier: (state, action: PayloadAction<CashierRef | null>) => {
@@ -250,15 +331,17 @@ const lpActionsSlice = createSlice({
     },
     setLpCase: (
       state,
-      action: PayloadAction<{ ref: CashierRef; type: string } | null>,
+      action: PayloadAction<{ ref: CaseSubject; type: string } | null>,
     ) => {
-      state.caseCashier = action.payload?.ref ?? null;
+      state.caseSubject = action.payload?.ref ?? null;
       state.caseType = action.payload?.type ?? null;
       // Every case opens on its own first page. Carrying the previous
       // operator's tab, card and facets into a new one would answer a
       // question nobody asked about this person.
       state.caseStep = "overview";
       state.focusedType = null;
+      state.focusedWeek = null;
+      state.expandedFacets = ["type"];
       state.facets = {};
       state.openReceipt = null;
     },
@@ -297,10 +380,14 @@ export const {
   setLpCase,
   toggleLpStore,
   setLpRosterQuery,
+  setLpRosterSort,
+  setLpEvidenceSort,
   setLpCaseStep,
   setLpCardSort,
   setLpFocusedType,
+  setLpFocusedWeek,
   toggleLpFacet,
+  toggleLpFacetGroup,
   clearLpFacets,
   setLpOpenReceipt,
   setLpLoading,

@@ -1,146 +1,165 @@
 import { useMemo } from "react";
-import { useAppSelector } from "../../../../hooks";
-import { isCashier } from "../../lpActionsMetrics";
+import { useAppDispatch, useAppSelector } from "../../../../hooks";
+import { toggleLpFacet } from "../../../../features/lpActionsSlice";
+import { inSubject } from "../../lpActionsMetrics";
 import { useCaseReceipts } from "../../case/useCaseReceipts";
 import { buildTypeScopes } from "../caseScopes";
 import StackedBarChart from "./StackedBarChart";
-import ChartLegend from "./ChartLegend";
 import ChartCard from "./ChartCard";
-import {
-  byShift,
-  byWeekday,
-  byHour,
-  baselinePerDay,
-  stackOrder,
-} from "./chartsModel";
+import { HOUR_INFO, DOW_INFO } from "./chartsInfo";
+import { byWeekday, byHour, stackOrder } from "./chartsModel";
 import type { CaseFile } from "../caseFileModel";
 
 /**
- * Where this week's exceptions actually fell.
+ * When the exceptions happen: which day, and what time of day.
  *
- * The cards above state the numbers; these say whether they cluster. Same
- * claim, twice — which is why there is no heading between them.
+ * Two cuts, not three. A per-shift timeline of the latest week was here and
+ * came out — it answered the same question as the weekday chart in a shape
+ * this audience does not read things in, and it was the only view on the tab
+ * scoped to one week while everything beside it spanned the whole walk. Both
+ * charts now cover the same span, so a reader can put them side by side
+ * without silently comparing different periods.
  *
- * Two of the three draw immediately from rows already in hand. The hour chart
- * needs `sale_start_time`, which only exists on receipt lines, so this
- * component starts that read as soon as a case opens rather than waiting for
- * someone to reach the transactions half. The panel is on screen either way,
- * and by the time anyone gets to the evidence the answer is already cached.
+ * **Selecting a card isolates both charts to that type.** Once someone has
+ * named the type they care about, the other bands are in the way of the shape
+ * they came for. Deselecting brings the stack back; the bins and the axis are
+ * otherwise identical, so it is the same chart with the noise removed.
+ *
+ * Both charts count EVERY walked week, not just the latest — a habit only
+ * shows across weeks, and one week of a day-of-week chart is seven columns of
+ * one day each. The cards above them are the latest week alone, so each chart
+ * says its span on its face; the two answering different periods without
+ * saying so is exactly the confusion this note exists to stop.
+ *
+ * No legend. Every colour on these charts is already named on a card directly
+ * above them, with its count — a third telling of the same key was spending a
+ * row to repeat what the reader had just scrolled past.
+ *
+ * The hour chart is the one piece here that waits on a read — the walked row
+ * carries no time, only the receipt line does. It starts as soon as a case
+ * opens rather than when someone reaches the evidence tab, so by the time they
+ * do, it is cached.
  */
 interface Props {
   file: CaseFile;
 }
 
 const CaseCharts = ({ file }: Props) => {
-  const { rawRows, windows, caseCashier } = useAppSelector((s) => s.lpActions);
+  const dispatch = useAppDispatch();
+  const { rawRows, windows, caseSubject, focusedType, focusedWeek, facets } =
+    useAppSelector((s) => s.lpActions);
 
   const scopes = useMemo(
-    () => buildTypeScopes(rawRows, caseCashier),
-    [rawRows, caseCashier],
+    () => buildTypeScopes(rawRows, caseSubject),
+    [rawRows, caseSubject],
   );
   const receipts = useCaseReceipts(scopes);
 
   const mine = useMemo(
     () =>
-      caseCashier === null
+      caseSubject === null
         ? []
-        : rawRows.filter((r) => isCashier(r, caseCashier)),
-    [rawRows, caseCashier],
+        : rawRows.filter((r) => inSubject(r, caseSubject)),
+    [rawRows, caseSubject],
   );
 
-  /** Only the types this operator actually touched get a series. A legend
-   *  listing four zeroes is noise; the zero CARDS above already make that
-   *  point, in the one place it reads as an answer. */
-  const types = useMemo(
-    () => stackOrder(file.cards.filter((c) => c.count > 0).map((c) => c.saleType)),
-    [file.cards],
-  );
-
-  const counts = useMemo(
+  /** Only types this operator actually touched get a series. A legend listing
+   *  four zeroes is noise; the zero CARDS above already make that point, in
+   *  the one place it reads as an answer. */
+  const touched = useMemo(
     () =>
-      Object.fromEntries(file.cards.map((c) => [c.saleType, c.count])) as Record<
-        string,
-        number
-      >,
+      stackOrder(file.cards.filter((c) => c.count > 0).map((c) => c.saleType)),
     [file.cards],
   );
 
-  const window = windows[windows.length - 1];
-
-  const latestRows = useMemo(() => {
-    if (!window) return [];
-    return mine.filter((r) => {
-      const day = r.sale_date.slice(0, 10);
-      return day >= window.start && day <= window.end;
-    });
-  }, [mine, window]);
-
-  const shift = useMemo(
-    () => (window ? byShift(latestRows, window, types) : []),
-    [latestRows, window, types],
+  /** One type when a card is selected, every type otherwise. */
+  const drawn = useMemo(
+    () =>
+      focusedType && touched.includes(focusedType) ? [focusedType] : touched,
+    [focusedType, touched],
   );
-  const weekday = useMemo(() => byWeekday(mine, types), [mine, types]);
+
+  /** The week the charts count, or null for the whole walk. */
+  const window =
+    focusedWeek !== null ? (windows[focusedWeek] ?? null) : null;
+
+  const weekday = useMemo(
+    () => byWeekday(mine, drawn, window),
+    [mine, drawn, window],
+  );
+
+  /**
+   * The picked day, shared with the evidence rail rather than held here.
+   *
+   * Clicking a column IS setting the day-of-week filter, so it sets the same
+   * one — which means the hours narrow immediately, and switching to Evidence
+   * arrives already cut to that day instead of asking for the choice twice.
+   * One selection only: a chart column is a single answer, and the rail is
+   * where several days get combined.
+   */
+  const pickedDay = facets.dow?.length === 1 ? facets.dow[0] : null;
+
   const hours = useMemo(
-    () => byHour(receipts.lines, types),
-    [receipts.lines, types],
+    () => byHour(receipts.lines, drawn, pickedDay, window),
+    [receipts.lines, drawn, pickedDay, window],
   );
 
-  const perDay = window ? baselinePerDay(file.headline.baseline, window) : 0;
+  /** What the charts are counting, said on their face. */
+  const span = window
+    ? `week ending ${window.end.slice(5)}`
+    : `all ${windows.length} weeks`;
 
-  if (types.length === 0) return null;
+  if (touched.length === 0) return null;
 
   return (
-    <div className="mt-3.5 flex flex-col gap-2.5">
-      <ChartCard
-        title="Exceptions per shift"
-        caption={`${window?.start ?? ""} – ${window?.end ?? ""} · stacked by type · shaded columns are weekends`}
-      >
-        <ChartLegend types={types} counts={counts} />
-        <StackedBarChart
-          categories={shift}
-          types={types}
-          barWidth={30}
-          reference={{
-            value: perDay,
-            label: `their baseline ${perDay.toFixed(1)} / day`,
-          }}
-          label="Exceptions per shift, stacked by exception type"
-        />
-      </ChartCard>
-
-      <div className="grid gap-2.5 grid-cols-[repeat(auto-fit,minmax(320px,1fr))]">
-        <ChartCard
-          title="By hour of day"
-          caption="Trading hours only · from the receipt lines"
-          loading={receipts.loading && hours.length === 0}
-          empty={
-            !receipts.loading && hours.length === 0
-              ? receipts.error ?? "No timed lines came back for this operator."
-              : undefined
-          }
-        >
-          <StackedBarChart
-            categories={hours}
-            types={types}
-            width={392}
-            height={172}
-            barWidth={18}
-            label="Exceptions by hour of day"
-          />
+    /* `min-h`, not `min-h-0`: in a scrolling flex column a shrinkable child
+       can be handed zero height on a short window, and the charts would
+       disappear rather than the panel scrolling. With a floor the column
+       overflows instead, which is the behaviour that can be scrolled out of. */
+    <div className="flex-1 min-h-[300px] flex flex-col gap-2.5">
+      {/* `auto-rows-fr` so the two share the height evenly whether they sit
+          side by side or wrap onto two rows. */}
+      <div className="flex-1 min-h-0 grid gap-2.5 auto-rows-fr grid-cols-[repeat(auto-fit,minmax(340px,1fr))]">
+        <ChartCard info={DOW_INFO} note={span}>
+          {(size) => (
+            <StackedBarChart
+              categories={weekday}
+              types={drawn}
+              width={size.width}
+              height={size.height}
+              barWidth={40}
+              label="Exceptions by day of week"
+              selectedKey={pickedDay}
+              onSelect={(key) =>
+                dispatch(toggleLpFacet({ key: "dow", value: key }))
+              }
+            />
+          )}
         </ChartCard>
 
         <ChartCard
-          title="By day of week"
-          caption={`All ${windows.length} weeks · weekends shaded`}
+          info={HOUR_INFO}
+          note={pickedDay ? `${pickedDay}s · ${span}` : span}
+          loading={receipts.loading && hours.length === 0}
+          empty={
+            !receipts.loading && hours.length === 0
+              ? (receipts.error ??
+                (pickedDay
+                  ? `Nothing on a ${pickedDay} in this span.`
+                  : "No timed lines came back for this span."))
+              : undefined
+          }
         >
-          <StackedBarChart
-            categories={weekday}
-            types={types}
-            width={392}
-            height={172}
-            barWidth={26}
-            label="Exceptions by day of week"
-          />
+          {(size) => (
+            <StackedBarChart
+              categories={hours}
+              types={drawn}
+              width={size.width}
+              height={size.height}
+              barWidth={26}
+              label="Exceptions by hour of day"
+            />
+          )}
         </ChartCard>
       </div>
     </div>

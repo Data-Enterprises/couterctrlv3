@@ -5,7 +5,7 @@ import type { LpCaseStep } from "../../../features/lpActionsSlice";
 /**
  * The two halves of a case, as tabs.
  *
- * Overview answers whether this person is worth an investigation; Evidence is
+ * Summary answers whether this person is worth an investigation; Evidence is
  * the investigation. Tabs rather than a footer button because they are two
  * views of one case, not two steps of a wizard — someone reading the evidence
  * should be able to glance back at the shape without feeling they have gone
@@ -15,7 +15,7 @@ import type { LpCaseStep } from "../../../features/lpActionsSlice";
  * single button.
  */
 const TABS: { key: LpCaseStep; label: string }[] = [
-  { key: "overview", label: "Overview" },
+  { key: "overview", label: "Summary" },
   { key: "evidence", label: "Evidence" },
 ];
 

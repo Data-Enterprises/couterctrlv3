@@ -1,12 +1,15 @@
 import { useEffect, useMemo } from "react";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
-import { setLpCase } from "../../../features/lpActionsSlice";
+import { setLpCase, setLpRosterSort } from "../../../features/lpActionsSlice";
+import type { LpRosterSortCol } from "../../../features/lpActionsSlice";
+import SortHeader from "../../../components/SortHeader";
 import { ALL_TYPES } from "../case/caseModel";
 import RosterHeader from "./RosterHeader";
 import RosterChips from "./RosterChips";
 import StoreSection from "./StoreSection";
 import CashierRow from "./CashierRow";
 import { buildRoster, filterRoster } from "./rosterModel";
+import { sortRoster } from "./rosterSort";
 import type { LpSeverity } from "../lpActionsMetrics";
 
 /**
@@ -20,15 +23,17 @@ import type { LpSeverity } from "../lpActionsMetrics";
  * transaction across every week, so re-rooting the list is a single pass over
  * `rawRows` and costs nothing at the network.
  */
+/** This panel's column-header look, at its own 12px / 85% floor. */
+const HEAD =
+  "text-[12px] font-semibold uppercase tracking-wide text-content/85 hover:text-content flex-shrink-0";
+
 interface Props {
   onSearchOpen: () => void;
-  onAddWeek: () => void;
-  addingWeek: boolean;
 }
 
-const LpRosterPanel = ({ onSearchOpen, onAddWeek, addingWeek }: Props) => {
+const LpRosterPanel = ({ onSearchOpen }: Props) => {
   const dispatch = useAppDispatch();
-  const { rawRows, windows, sevFilter, rosterQuery, caseCashier } =
+  const { rawRows, windows, sevFilter, rosterQuery, rosterSort, caseSubject } =
     useAppSelector((s) => s.lpActions);
 
   const roster = useMemo(
@@ -50,8 +55,8 @@ const LpRosterPanel = ({ onSearchOpen, onAddWeek, addingWeek }: Props) => {
   }, [roster]);
 
   const visible = useMemo(
-    () => filterRoster(roster, sevFilter, rosterQuery),
-    [roster, sevFilter, rosterQuery],
+    () => sortRoster(filterRoster(roster, sevFilter, rosterQuery), rosterSort),
+    [roster, sevFilter, rosterQuery, rosterSort],
   );
 
   const shown = useMemo(
@@ -60,46 +65,75 @@ const LpRosterPanel = ({ onSearchOpen, onAddWeek, addingWeek }: Props) => {
   );
 
   /**
-   * Land on the worst operator rather than on an empty right panel.
+   * Land on a STORE rather than on an empty right panel.
    *
-   * The roster is already sorted worst first at both levels, so the first
-   * cashier of the first store is the one a manager should open. Only ever
-   * fires when nothing is selected — re-selecting on every filter change would
-   * yank the case out from under someone mid-read.
+   * The whole store, not its worst operator: a single-store search should open
+   * on that store's own totals, and a group search should answer "which site"
+   * before "which person". The roster is sorted worst first, so the first
+   * store is the one to open either way.
+   *
+   * Only ever fires when nothing is selected — re-selecting on every filter
+   * change would yank the case out from under someone mid-read.
    */
-  const first = visible[0]?.cashiers[0];
+  const firstStore = visible[0];
   useEffect(() => {
-    if (caseCashier || !first) return;
+    if (caseSubject || !firstStore) return;
     dispatch(
       setLpCase({
-        ref: { storeid: first.storeid, cashierNumber: first.cashierNumber },
+        ref: { storeid: firstStore.storeid, cashierNumber: null },
         type: ALL_TYPES,
       }),
     );
-  }, [caseCashier, first, dispatch]);
+  }, [caseSubject, firstStore, dispatch]);
 
   /** One store in scope: the store row would be a header over a list of one,
    *  so it collapses away and the cashiers become the top-level list. */
   const flat = visible.length === 1;
 
+  const onSort = (col: LpRosterSortCol) => dispatch(setLpRosterSort(col));
+
   return (
     <div className="flex-1 min-w-0 shadow-lg">
       <div className="bg-custom-white rounded-xl shadow-sm flex flex-col h-full">
-        <RosterHeader
-          count={shown}
-          onSearchOpen={onSearchOpen}
-          onAddWeek={onAddWeek}
-          addingWeek={addingWeek}
-        />
+        <RosterHeader count={shown} onSearchOpen={onSearchOpen} />
         <RosterChips counts={counts} />
 
-        <div className="flex-shrink-0 flex items-center gap-2.5 px-3 py-1.5 border-b border-gray-100 text-[11.5px] font-semibold uppercase tracking-wide text-content/85">
+        {/* Sortable, on the app's shared header. The size is this panel's
+            12px floor rather than `PERF_SORT_HEADER`'s 11.5 — legibility
+            beats matching a constant nobody reads. */}
+        <div className="flex-shrink-0 flex items-center gap-2.5 px-3 py-1.5 bg-gray-100 border-b border-gray-100">
           <span className="w-2 flex-shrink-0" />
-          <span className="flex-1 min-w-0">Cashier</span>
-          <span className="w-[46px] text-center flex-shrink-0">
-            {windows.length} wks
-          </span>
-          <span className="w-[58px] text-right flex-shrink-0">vs base</span>
+          <SortHeader
+            col="name"
+            label="Cashier"
+            sort={rosterSort}
+            onSort={onSort}
+            className={`${HEAD} flex-1 min-w-0`}
+          />
+          <SortHeader
+            col="weeks"
+            label={`${windows.length} wks`}
+            sort={rosterSort}
+            onSort={onSort}
+            width={46}
+            className={`${HEAD} justify-center`}
+          />
+          <SortHeader
+            col="total"
+            label="Total"
+            sort={rosterSort}
+            onSort={onSort}
+            width={72}
+            className={`${HEAD} justify-end`}
+          />
+          <SortHeader
+            col="base"
+            label="vs base"
+            sort={rosterSort}
+            onSort={onSort}
+            width={58}
+            className={`${HEAD} justify-end`}
+          />
         </div>
 
         <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar rounded-b-xl">
