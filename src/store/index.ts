@@ -43,6 +43,8 @@ import receiversLegacyReducer from "../features/receiversLegacySlice";
 import ordersLegacyReducer from "../features/ordersLegacySlice";
 import adListReducer from "../features/adListSlice";
 import salesLedgerReducer from "../features/salesLedgerSlice";
+import salesPerfReducer from "../features/salesPerfSlice";
+import itemPerfReducer from "../features/itemPerfSlice";
 import salesLegacyReducer from "../features/salesLegacySlice";
 import salesTrackerReducer from "../features/salesTrackerSlice";
 import upcDevReducer from "../features/upcDevSlice";
@@ -60,6 +62,8 @@ export const setupStore = () =>
       user: userReducer,
       search: searchReducer,
       sales: salesReducer,
+      salesPerf: salesPerfReducer,
+      itemPerf: itemPerfReducer,
       group: groupReducer,
       stores: storeReducer,
       users: usersReducer,

@@ -42,6 +42,19 @@ body {
   left: 1050px;
 }
 
+/* Reveals an element only if it is still on screen once the delay has passed,
+   so a fast operation never flashes a spinner at the user. `both` holds the
+   from-state during the delay, which is what makes the element invisible until
+   the wait is genuinely long enough to be worth explaining. */
+@keyframes delayed-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 @keyframes ripple-animation {
   from {
     transform: scale(0);

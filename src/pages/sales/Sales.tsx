@@ -5,7 +5,7 @@ import { useAppSelector } from "../../hooks";
 // import { getSubs, getWeekly } from "../../api/sales";
 
 // Components
-import SalesLedgerMobile from "./mobile/SalesLedgerMobile";
+import SalesPerfMobile from "./mobile/perf/SalesPerfMobile";
 import SalesLedger from "./SalesLedger";
 import SalesTablet from "./tablet/SalesTablet";
 
@@ -248,7 +248,9 @@ const Sales = () => {
   //     .catch((err: JsonError) => toast.error(err.message));
   // };
 
-  if (context.isMobile) return <SalesLedgerMobile />;
+  // The ungraded rebuild. SalesLedgerMobile is still on disk — swap this line
+  // back to compare the two on a device.
+  if (context.isMobile) return <SalesPerfMobile />;
   if (context.isTablet) return <SalesTablet />;
 
   return <SalesLedger />;

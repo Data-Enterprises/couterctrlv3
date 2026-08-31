@@ -1,0 +1,260 @@
+import { describe, expect, it } from "vitest";
+import type { SubDeptMargin } from "../../../interfaces";
+import {
+  buildDailyRows,
+  buildGroupRows,
+  buildItemRows,
+  buildMarginTotals,
+  priceRows,
+} from "./itemPerfData";
+
+const S = { storeid: 685, store_number: "369", store_name: "Arab" };
+
+const TY_MON = "2026-08-24";
+const TY_TUE = "2026-08-25";
+const WEEK = [TY_MON, TY_TUE, "2026-08-26"];
+
+/** case_size 1 keeps calculateCogs on the plain per-unit path, so these tests
+ *  are about grouping and margin rather than cost arithmetic. */
+const item = (date: string, opts: Partial<SubDeptMargin> & { sales: number }) =>
+  // Priced the same way the page prices them, so the fixtures exercise the
+  // real cost path rather than hand-written totals.
+  priceRows([
+    {
+      ...S,
+      sale_date: `${date}T00:00:00`,
+      product_code: "1200000129",
+      product_description: "Pepsi 20 oz",
+      sub_department: 1,
+      sub_department_description: "Grocery",
+      vendor_id: "80",
+      vendor_name: "ACE",
+      total_sales: opts.sales,
+      total_tax: 0,
+      qty: 1,
+      weight: 0,
+      cost: 0,
+      net_cost: 0,
+      case_size: 1,
+      ...opts,
+    } as SubDeptMargin,
+  ])[0];
+
+const DELI = {
+  sub_department: 2,
+  sub_department_description: "Deli",
+  vendor_id: "91",
+  vendor_name: "AWG",
+  product_code: "999",
+  product_description: "Sliced turkey",
+};
+
+describe("buildGroupRows", () => {
+  it("groups the same rows by department or by vendor", () => {
+    const rows = [
+      item(TY_MON, { sales: 100, net_cost: 60 }),
+      item(TY_MON, { sales: 300, net_cost: 200, ...DELI }),
+    ];
+    expect(
+      buildGroupRows(rows, [], "subdept", null).map((r) => r.label),
+    ).toEqual(["Deli", "Grocery"]);
+    expect(
+      buildGroupRows(rows, [], "vendor", null).map((r) => r.label),
+    ).toEqual(["AWG", "ACE"]);
+  });
+
+  it("orders by profit, not by sales", () => {
+    // Deli sells more but earns less. The page is about margin.
+    const rows = [
+      item(TY_MON, { sales: 100, net_cost: 10 }),
+      item(TY_MON, { sales: 300, net_cost: 280, ...DELI }),
+    ];
+    expect(buildGroupRows(rows, [], "subdept", null)[0].label).toBe("Grocery");
+  });
+
+  it("keeps a group that sold last year and nothing this year", () => {
+    // The trap buildItemRows in utils/itemMargins falls into: iterating this
+    // year and looking last year up drops the row entirely instead of showing
+    // a zero against its last-year bar.
+    const rows = buildGroupRows(
+      [],
+      [item("2025-08-25", { sales: 500, net_cost: 300 })],
+      "subdept",
+      null,
+    );
+    expect(rows).toHaveLength(1);
+    expect(rows[0].profit).toBe(0);
+    expect(rows[0].profitLy).toBe(200);
+    expect(rows[0].gpm).toBeNull();
+  });
+
+  it("calls vendor 0 No Vendor rather than printing a zero", () => {
+    // Not a vendor numbered zero — the store's own "nothing assigned", and it
+    // lands on real items like Managers Special.
+    const rows = buildGroupRows(
+      [item(TY_MON, { sales: 10, vendor_id: "0", vendor_name: "" })],
+      [],
+      "vendor",
+      null,
+    );
+    expect(rows[0].label).toBe("No Vendor");
+  });
+
+  it("names a vendor by id when the name is blank", () => {
+    const rows = buildGroupRows(
+      [item(TY_MON, { sales: 10, vendor_name: "" })],
+      [],
+      "vendor",
+      null,
+    );
+    expect(rows[0].label).toBe("Vendor 80");
+  });
+});
+
+describe("buildItemRows", () => {
+  const rows = [
+    item(TY_MON, { sales: 100, net_cost: 60 }),
+    item(TY_MON, { sales: 200, net_cost: 120, ...DELI }),
+  ];
+
+  it("lists only the items inside a drilled group", () => {
+    expect(buildItemRows(rows, [], "subdept", null, "1", "")).toHaveLength(1);
+    expect(buildItemRows(rows, [], "vendor", null, "91", "")).toHaveLength(1);
+  });
+
+  it("matches a search on description or UPC", () => {
+    expect(
+      buildItemRows(rows, [], "subdept", null, null, "turkey"),
+    ).toHaveLength(1);
+    expect(
+      buildItemRows(rows, [], "subdept", null, null, "12000001"),
+    ).toHaveLength(1);
+    expect(buildItemRows(rows, [], "subdept", null, null, "nope")).toHaveLength(
+      0,
+    );
+  });
+
+  it("returns everything for an empty query", () => {
+    expect(buildItemRows(rows, [], "subdept", null, null, "")).toHaveLength(2);
+  });
+});
+
+describe("priceRows", () => {
+  it("survives a product code the endpoint sent as a number", () => {
+    // The interface promises a string. Some rows arrive numeric, and the
+    // search's .toLowerCase() took the whole page down with an error boundary.
+    const rows = [
+      item(TY_MON, { sales: 10, product_code: 1200000129 as never }),
+    ];
+    expect(() =>
+      buildItemRows(rows, [], "subdept", null, null, "12000"),
+    ).not.toThrow();
+    expect(
+      buildItemRows(rows, [], "subdept", null, null, "12000"),
+    ).toHaveLength(1);
+  });
+
+  it("strips the trailing decimal a float round-trip leaves behind", () => {
+    // "7203096070.0" and "7203096070" are the same item to a person and two
+    // different keys to a Map.
+    const rows = [
+      item(TY_MON, { sales: 10, product_code: "7203096070.0" }),
+      item(TY_TUE, { sales: 10, product_code: "7203096070" }),
+    ];
+    expect(buildItemRows(rows, [], "subdept", null, null, "")).toHaveLength(1);
+  });
+
+  it("matches a drilled vendor whose id arrived numeric", () => {
+    // A number never === the string key held in state, so the drill silently
+    // showed nothing rather than throwing.
+    const rows = [item(TY_MON, { sales: 10, vendor_id: 80 as never })];
+    expect(buildItemRows(rows, [], "vendor", null, "80", "")).toHaveLength(1);
+  });
+});
+
+describe("buildMarginTotals", () => {
+  it("computes margin from cost, not the row's own margin field", () => {
+    const t = buildMarginTotals(
+      [item(TY_MON, { sales: 100, net_cost: 60 })],
+      [],
+      "subdept",
+      null,
+      null,
+      null,
+    );
+    expect(t.cogs).toBe(60);
+    expect(t.profit).toBe(40);
+    expect(t.gpm).toBeCloseTo(40);
+  });
+
+  it("counts weighted items by weight, not scan count", () => {
+    // A pound of bananas is one scan and several priced units.
+    const t = buildMarginTotals(
+      [item(TY_MON, { sales: 10, qty: 1, weight: 4.5 })],
+      [],
+      "subdept",
+      null,
+      null,
+      null,
+    );
+    expect(t.units).toBe(4.5);
+  });
+
+  it("returns null margin rather than zero when nothing sold", () => {
+    expect(
+      buildMarginTotals([], [], "subdept", null, null, null).gpm,
+    ).toBeNull();
+  });
+
+  it("day-matches last year rather than shifting a fixed 365 days", () => {
+    // Monday 2026-08-24 pairs with Monday 2025-08-25, not 2025-08-24.
+    const t = buildMarginTotals(
+      [item(TY_MON, { sales: 100, net_cost: 50 })],
+      [
+        item("2025-08-25", { sales: 90, net_cost: 40 }),
+        item("2025-08-24", { sales: 5000, net_cost: 10 }),
+      ],
+      "subdept",
+      TY_MON,
+      null,
+      null,
+    );
+    expect(t.profitLy).toBe(50);
+  });
+
+  it("narrows to one item for the Daily view", () => {
+    const t = buildMarginTotals(
+      [
+        item(TY_MON, { sales: 100, net_cost: 60 }),
+        item(TY_MON, { sales: 900, net_cost: 500, ...DELI }),
+      ],
+      [],
+      "subdept",
+      null,
+      null,
+      "999",
+    );
+    expect(t.sales).toBe(900);
+  });
+});
+
+describe("buildDailyRows", () => {
+  it("returns a row per window day, flagging the ones with no sale", () => {
+    const rows = buildDailyRows(
+      [item(TY_MON, { sales: 16.95, net_cost: 12.9 })],
+      "1200000129",
+      WEEK,
+    );
+    expect(rows).toHaveLength(3);
+    expect(rows[0].absent).toBe(false);
+    expect(rows[0].gpm).toBeCloseTo(23.89, 1);
+    // A day the item did not sell is not a day it sold zero.
+    expect(rows[1].absent).toBe(true);
+    expect(rows[1].gpm).toBeNull();
+  });
+
+  it("returns empty rows when no item is selected", () => {
+    const rows = buildDailyRows([item(TY_MON, { sales: 10 })], null, WEEK);
+    expect(rows.every((r) => r.absent)).toBe(true);
+  });
+});
