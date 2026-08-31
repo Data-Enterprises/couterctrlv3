@@ -1,4 +1,4 @@
-import type { SubDeptMargin } from "../../../interfaces";
+import type { ItemRow } from "../../../features/itemPerfSlice";
 import { calculateCogs } from "../../subDepts";
 import { dayOf, lyDateFor, netOf } from "../../../utils/perfPairs";
 import { normalizeProductCode } from "../../../utils/productCode";
@@ -12,12 +12,12 @@ import type { ItemDimension } from "../../../features/itemPerfSlice";
  * items, where `weight` is the priced unit and `qty` is only the scan count,
  * and vendors reporting a per-unit cost with `case_size` of 0.
  */
-const cogsOf = (r: SubDeptMargin) =>
+const cogsOf = (r: ItemRow) =>
   calculateCogs(r.net_cost, r.cost, r.case_size, r.qty, r.weight);
 
 /** Units sold. Weighted items price by weight, so a pound of bananas is one
  *  scan and several units — reporting `qty` for those would undercount. */
-const unitsOf = (r: SubDeptMargin) => (r.weight > 0 ? r.weight : r.qty);
+const unitsOf = (r: ItemRow) => (r.weight > 0 ? r.weight : r.qty);
 
 /**
  * A row with its money already worked out.
@@ -28,14 +28,14 @@ const unitsOf = (r: SubDeptMargin) => (r.weight > 0 ? r.weight : r.qty);
  * switching views feel slow. Priced once per fetch, everything downstream is
  * addition.
  */
-export interface PricedRow extends SubDeptMargin {
+export interface PricedRow extends ItemRow {
   _net: number;
   _cogs: number;
   _units: number;
   _day: string;
 }
 
-export const priceRows = (rows: SubDeptMargin[]): PricedRow[] =>
+export const priceRows = (rows: ItemRow[]): PricedRow[] =>
   rows.map((r) => ({
     ...r,
     // The interface says these are strings; the endpoint disagrees on some
@@ -59,9 +59,13 @@ export const priceRows = (rows: SubDeptMargin[]): PricedRow[] =>
 const gpmOf = (sales: number, cogs: number) =>
   sales > 0 ? ((sales - cogs) / sales) * 100 : null;
 
-/** Which field this page groups on. */
-const keyOf = (r: SubDeptMargin, d: ItemDimension) =>
-  d === "vendor" ? r.vendor_id : String(r.sub_department);
+/** Which field this page groups on. A row only carries the column its own
+ *  endpoint grouped by, so the others read undefined and key to "". */
+const keyOf = (r: ItemRow, d: ItemDimension) => {
+  if (d === "vendor") return String(r.vendor_id ?? "");
+  if (d === "category") return String(r.category ?? "");
+  return String(r.sub_department ?? "");
+};
 
 /**
  * The vendor, as a person would say it.
@@ -70,7 +74,7 @@ const keyOf = (r: SubDeptMargin, d: ItemDimension) =>
  * assigned", and it lands on plenty of real items (Managers Special, WIC
  * produce). Printing "0" makes it look like data went missing.
  */
-const vendorLabel = (r: SubDeptMargin) => {
+const vendorLabel = (r: ItemRow) => {
   const id = String(r.vendor_id ?? "");
   if (!id || id === "0") return "No Vendor";
   // Id is unique and always present; the name is the readable half and is
@@ -78,8 +82,11 @@ const vendorLabel = (r: SubDeptMargin) => {
   return r.vendor_name || `Vendor ${id}`;
 };
 
-const labelOf = (r: SubDeptMargin, d: ItemDimension) =>
-  d === "vendor" ? vendorLabel(r) : r.sub_department_description;
+const labelOf = (r: ItemRow, d: ItemDimension) => {
+  if (d === "vendor") return vendorLabel(r);
+  if (d === "category") return r.category_description ?? "Uncategorised";
+  return r.sub_department_description ?? "";
+};
 
 /** These pages are single-store, so the day is the only shared scope. */
 const onDay = (rows: PricedRow[], day: string | null) =>
@@ -277,9 +284,13 @@ export const buildItemRows = (
     ).filter(match),
     (r) => r.product_code,
     (r) => r.product_description,
+    // The subtitle carries the dimension the page is NOT grouped by, so a row
+    // always says something the list around it does not already say.
     (r) =>
       `${r.product_code} · ${
-        dimension === "vendor" ? r.sub_department_description : vendorLabel(r)
+        dimension === "vendor"
+          ? (r.sub_department_description ?? r.category_description ?? "")
+          : vendorLabel(r)
       }`,
   );
 };

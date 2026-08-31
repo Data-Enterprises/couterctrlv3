@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { SubDeptMargin } from "../../../interfaces";
+import type { ItemRow } from "../../../features/itemPerfSlice";
 import {
   buildDailyRows,
   buildGroupRows,
@@ -16,7 +16,7 @@ const WEEK = [TY_MON, TY_TUE, "2026-08-26"];
 
 /** case_size 1 keeps calculateCogs on the plain per-unit path, so these tests
  *  are about grouping and margin rather than cost arithmetic. */
-const item = (date: string, opts: Partial<SubDeptMargin> & { sales: number }) =>
+const item = (date: string, opts: Partial<ItemRow> & { sales: number }) =>
   // Priced the same way the page prices them, so the fixtures exercise the
   // real cost path rather than hand-written totals.
   priceRows([
@@ -37,7 +37,7 @@ const item = (date: string, opts: Partial<SubDeptMargin> & { sales: number }) =>
       net_cost: 0,
       case_size: 1,
       ...opts,
-    } as SubDeptMargin,
+    } as ItemRow,
   ])[0];
 
 const DELI = {
@@ -108,6 +108,48 @@ describe("buildGroupRows", () => {
       null,
     );
     expect(rows[0].label).toBe("Vendor 80");
+  });
+});
+
+describe("category grouping", () => {
+  it("groups categories/cats rows, which carry no sub department", () => {
+    // CatItem is a SubDeptMargin with the grouping column swapped, so the row
+    // has category/category_description and neither sub_department field.
+    const rows = [
+      item(TY_MON, {
+        sales: 100,
+        net_cost: 60,
+        sub_department: undefined,
+        sub_department_description: undefined,
+        category: 12,
+        category_description: "Soft Drinks",
+      }),
+    ];
+    const out = buildGroupRows(rows, [], "category", null);
+    expect(out).toHaveLength(1);
+    expect(out[0].label).toBe("Soft Drinks");
+    expect(out[0].gpm).toBeCloseTo(40);
+  });
+
+  it("does not collapse category rows onto one sub-department bucket", () => {
+    // keyOf falls back to "" for a missing column. Grouping these by subdept
+    // would silently merge every category into a single unnamed row.
+    const rows = [
+      item(TY_MON, {
+        sales: 100,
+        sub_department: undefined,
+        category: 12,
+        category_description: "Soft Drinks",
+      }),
+      item(TY_MON, {
+        sales: 50,
+        product_code: "999",
+        sub_department: undefined,
+        category: 14,
+        category_description: "Snacks",
+      }),
+    ];
+    expect(buildGroupRows(rows, [], "category", null)).toHaveLength(2);
   });
 });
 

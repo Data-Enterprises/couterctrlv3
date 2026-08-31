@@ -12,7 +12,7 @@ import SingleStoreSearchCard from "../../../components/SingleStoreSearchCard";
 import SingleDatePicker from "../../../components/datePickers/SingleDatePicker";
 import BottomSheet from "../../../components/BottomSheet";
 import ScannerView from "../../../components/scanner/ScannerView";
-import { fetchSubDeptRows } from "../../../utils/marginRows";
+import { fetchItemRows } from "./fetchItemRows";
 import {
   addDays,
   formatCurrency2,
@@ -56,14 +56,6 @@ import {
 import PairedBars from "../../sales/mobile/perf/PairedBars";
 import PerfDayChart from "../../sales/mobile/perf/PerfDayChart";
 import { TY_COLOR } from "../../sales/mobile/perf/perfColors";
-
-/** Every department in one read. As a REQUEST argument 0 means "all"; as a ROW
- *  value 0 is a real department, which is why this is named rather than
- *  written inline. */
-const ALL_SUB_DEPTS = 0;
-
-/** Single store, always. These pages never take a group. */
-const STORE_SCOPE = { useGroups: 0, singleStore: 1 } as const;
 
 /** How many recents sit in the page before the rest move to a sheet. */
 const RECENTS_INLINE = 3;
@@ -129,28 +121,14 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
   const fetchItems = async () => {
     dispatch(setItemPerfLoading(true));
     try {
-      const args = [
-        STORE_SCOPE.useGroups,
-        perf.storeId,
-        STORE_SCOPE.singleStore,
-      ] as const;
+      const scope = {
+        url: context.url,
+        token: context.token,
+        storeid: perf.storeId,
+      };
       const [ty, ly] = await Promise.all([
-        fetchSubDeptRows(
-          context.url,
-          context.token,
-          ALL_SUB_DEPTS,
-          twStart,
-          twEnd,
-          ...args,
-        ),
-        fetchSubDeptRows(
-          context.url,
-          context.token,
-          ALL_SUB_DEPTS,
-          lyDates[0],
-          lyDates[6],
-          ...args,
-        ),
+        fetchItemRows(dimension, scope, twStart, twEnd),
+        fetchItemRows(dimension, scope, lyDates[0], lyDates[6]),
       ]);
       dispatch(setItemPerfRows({ ty, ly }));
       dispatch(setItemPerfHasSearched(true));

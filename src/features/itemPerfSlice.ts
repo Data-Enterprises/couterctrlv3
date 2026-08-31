@@ -1,5 +1,5 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { SubDeptMargin } from "../interfaces";
+import type { CatItem, SubDeptMargin } from "../interfaces";
 
 /**
  * How this page groups its rows. One per page, never a switch.
@@ -9,7 +9,25 @@ import type { SubDeptMargin } from "../interfaces";
  * separate pages to a user, and showing both groupings on one screen would
  * blur that. The dataset is shared; the page is not.
  */
-export type ItemDimension = "subdept" | "vendor";
+export type ItemDimension = "subdept" | "vendor" | "category";
+
+/**
+ * An item row from either endpoint.
+ *
+ * `subs/subs` returns sub-department and vendor; `categories/cats` returns
+ * category and vendor. Otherwise they are the same columns off the same
+ * table, which is what lets all three pages share one screen and one set of
+ * maths. The grouping columns are optional here because a row only ever
+ * carries the one its endpoint groups by.
+ */
+export type ItemRow = Omit<
+  SubDeptMargin,
+  "sub_department" | "sub_department_description"
+> &
+  Partial<
+    Pick<SubDeptMargin, "sub_department" | "sub_department_description">
+  > &
+  Partial<Pick<CatItem, "category" | "category_description">>;
 
 /** The three views every one of these pages has. */
 export type ItemView = "list" | "search" | "daily";
@@ -35,8 +53,8 @@ interface ItemPerfState {
   /** The store being reported on. These pages never take a group. */
   storeId: number;
 
-  itemsTy: SubDeptMargin[];
-  itemsLy: SubDeptMargin[];
+  itemsTy: ItemRow[];
+  itemsLy: ItemRow[];
 
   view: ItemView;
 
@@ -128,7 +146,7 @@ const itemPerfSlice = createSlice({
     },
     setItemPerfRows: (
       state,
-      action: PayloadAction<{ ty: SubDeptMargin[]; ly: SubDeptMargin[] }>,
+      action: PayloadAction<{ ty: ItemRow[]; ly: ItemRow[] }>,
     ) => {
       state.itemsTy = action.payload.ty;
       state.itemsLy = action.payload.ly;
