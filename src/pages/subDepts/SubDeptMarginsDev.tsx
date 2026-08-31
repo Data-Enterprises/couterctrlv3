@@ -37,7 +37,7 @@ import {
 import MarginPerfLeftPanel from "./display/dev/MarginPerfLeftPanel";
 import MarginPerfRightPanel from "./display/dev/MarginPerfRightPanel";
 import SmDevSearchOverlay from "./display/dev/SmDevSearchOverlay";
-import SubDeptMarginsMobile from "./mobile/devMobile";
+import ItemPerfMobile from "../shared/itemPerf/ItemPerfMobile";
 import SmDevEntryCard from "./display/dev/SmDevEntryCard";
 import ItemFilterModal from "./display/modals/ItemFilterModal";
 import ExportModal from "../../components/modals/ExportModal";
@@ -302,7 +302,16 @@ const SubDeptMarginsDev = () => {
 
   const subDeptGrades = useAppSelector((s) => s.subMargin.subDeptGrades);
 
-  if (ctx.isMobile) return <SubDeptMarginsMobile />;
+  // The ungraded rebuild, shared with Vendors — same fetch and screen, a
+  // different list open first. mobile/devMobile is still on disk to compare.
+  if (ctx.isMobile)
+    return (
+      <ItemPerfMobile
+        dimension="subdept"
+        title="Sub Dept Margins"
+        listLabel="Sub depts"
+      />
+    );
 
   // Re-present the cached search as a different location. No network — every
   // raw response is already in rawRef, including sub depts that only exist at

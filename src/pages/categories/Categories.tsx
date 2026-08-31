@@ -6,7 +6,7 @@ import SingleDatePicker from "../../components/datePickers/SingleDatePicker";
 import { useCategoryData } from "./useCategoryData";
 import CategoryListPanel from "./CategoryListPanel";
 import CategoryDetailPanel from "./CategoryDetailPanel";
-import CategoriesMobile from "./mobile/CategoriesMobile";
+import ItemPerfMobile from "../shared/itemPerf/ItemPerfMobile";
 
 /**
  * Categories — Performance.
@@ -32,8 +32,17 @@ const Categories = () => {
   const [searchOpen, setSearchOpen] = useState(false);
   const [storeId, setStoreId] = useState(search.lastStore || 0);
 
+  // Mobile shares one ungraded screen with Sub Dept Margins and Vendors —
+  // same item rows, grouped by category instead. It owns its own fetch, so
+  // nothing above reaches categoriesSlice on this path.
   if (context.isMobile)
-    return <CategoriesMobile runSearch={runSearch} onLoadHourly={loadHourly} />;
+    return (
+      <ItemPerfMobile
+        dimension="category"
+        title="Categories"
+        listLabel="Categories"
+      />
+    );
 
   const entry = (
     <SingleStoreSearchCard

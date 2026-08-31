@@ -1,7 +1,14 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import { getCoupons } from "../../api/coupons";
+import type { CouponItem } from "../../interfaces";
+import { useApiContext } from "../hooks";
+import EventPerfMobile from "../shared/eventPerf/EventPerfMobile";
+import {
+  couponReceipt,
+  fetchCouponEvents,
+} from "../shared/eventPerf/couponAdapter";
 import { getStoresAssignedToUserGroup } from "../../api/groups";
 import { formatDateSimple } from "../../utils";
 import { setSelectedGroupStores } from "../../features/userSlice";
@@ -22,7 +29,6 @@ import EmptyPrompt from "../../components/EmptyPrompt";
 import CpnSalesStorePanel from "./components/CpnSalesStorePanel";
 import CpnSalesDetailPanel from "./components/CpnSalesDetailPanel";
 import CpnSalesExportModal from "./components/CpnSalesExportModal";
-import CouponSalesMobile from "./mobile/CouponSalesMobile";
 import { buildStoreRows, storeKeyOf, totalsFor } from "./shared/couponGrading";
 import { isGroupSearch } from "../../features/searchSlice";
 
@@ -30,6 +36,10 @@ const CouponSales = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const { url, token, isMobile } = useAppSelector((s) => s.app);
+  const api = useApiContext();
+  /** The week's coupon lines, kept for the mobile receipt sheet — every line
+   *  of every sale is already in hand, so opening one is a filter not a fetch. */
+  const mobileLines = useRef<CouponItem[]>([]);
   const { userid, assignedStores, selectedGroupStores } = useAppSelector(
     (s) => s.user,
   );
@@ -184,15 +194,43 @@ const CouponSales = () => {
   // Mobile gets its own three-screen stack rather than a squeezed two-panel
   // layout. Fetching, the baseline and every grading input stay here so the
   // two form factors can never grade the same week differently.
+  // Mobile shares one ungraded screen with Loss Prevention — same shell, same
+  // three tabs, coupon type where LP has exception type. It owns its own fetch,
+  // so none of the grading above runs on this path.
   if (isMobile) {
     return (
-      <CouponSalesMobile
-        storeRows={storeRows}
-        storeCoupons={storeCoupons}
-        storeLabel={selectedStore?.label ?? ""}
-        rangeLabel={rangeLabel}
-        storeGrading={storeGrading}
-        onSearch={getData}
+      <EventPerfMobile
+        pageKey="couponSales"
+        start={api.lpStart}
+        end={api.lpEnd}
+        title="Coupon sales"
+        description="Select a store or group and a week ending date."
+        buttonLabel="Load coupons"
+        allLabel="All coupons"
+        measure="amount"
+        load={async (start, end, onProgress) => {
+          const result = await fetchCouponEvents(
+            {
+              url: api.url,
+              token: api.token,
+              start,
+              end,
+              baseStart: api.lpBaseStart,
+              baseEnd: api.lpBaseEnd,
+              useGroups: api.useGroups,
+              searchValue: api.searchValue,
+              singleStore: api.singleStore,
+              assignedStores,
+              groupStores: selectedGroupStores,
+            },
+            onProgress,
+          );
+          mobileLines.current = result.items;
+          return result;
+        }}
+        loadReceipt={async (saleId) =>
+          couponReceipt(mobileLines.current, saleId)
+        }
       />
     );
   }

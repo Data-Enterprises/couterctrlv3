@@ -6,7 +6,7 @@ import SingleDatePicker from "../../components/datePickers/SingleDatePicker";
 import { useVendorSearch } from "./useVendorSearch";
 import VendorListPanel from "./VendorListPanel";
 import VendorDetailPanel from "./VendorDetailPanel";
-import VendorsMobile from "./mobile/VendorsMobile";
+import ItemPerfMobile from "../shared/itemPerf/ItemPerfMobile";
 
 /**
  * Vendors — Performance.
@@ -49,7 +49,16 @@ const Vendors = () => {
 
   // Mobile gets its own screens; the desktop two-panel layout below never
   // renders on a phone. Placed after the hooks so hook order stays stable.
-  if (context.isMobile) return <VendorsMobile />;
+  // Same screen as Sub Dept Margins, opening on the vendor list. One item
+  // row carries both dimensions, so this is a grouping choice, not a page.
+  if (context.isMobile)
+    return (
+      <ItemPerfMobile
+        dimension="vendor"
+        title="Vendors"
+        listLabel="Vendors"
+      />
+    );
 
   if (vend.loading) {
     return (
