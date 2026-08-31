@@ -8,6 +8,17 @@ const CONSTRAINTS = {
 };
 
 /**
+ * The band Quagga decodes, as percentages inset from each edge.
+ *
+ * Reading only the middle keeps a neighbouring barcode on a shelf tag out of
+ * the decode. These same numbers draw the on-screen guide below, so the box
+ * cannot come to promise a region the decoder is not actually reading — on
+ * Item Lookup the two were written separately and the guide is about eight
+ * percent narrower than the truth.
+ */
+const AREA = { top: 30, bottom: 30, left: 10, right: 10 };
+
+/**
  * Why the camera would not start, in the user's terms.
  *
  * The three cases have different fixes — grant a permission, use another
@@ -90,7 +101,12 @@ const ScannerView = ({ onDetected }: Props) => {
           },
           // Reading only the middle band keeps neighbouring barcodes on a
           // shelf tag out of the decode.
-          area: { top: "30%", bottom: "30%", left: "10%", right: "10%" },
+          area: {
+            top: `${AREA.top}%`,
+            bottom: `${AREA.bottom}%`,
+            left: `${AREA.left}%`,
+            right: `${AREA.right}%`,
+          },
         },
         decoder: {
           readers: ["upc_reader", "upc_e_reader", "ean_reader", "ean_8_reader"],
@@ -133,14 +149,31 @@ const ScannerView = ({ onDetected }: Props) => {
           to exist at init, and a black rectangle under an error message reads
           as a camera that is on and pointed at nothing. */}
       <div
-        ref={ref}
-        className="scanner-container overflow-hidden rounded-lg bg-content"
-        style={{
-          objectFit: "cover",
-          height: error ? 0 : 175,
-          width: "100%",
-        }}
-      />
+        className="relative w-full overflow-hidden rounded-lg"
+        style={{ height: error ? 0 : 175 }}
+      >
+        <div
+          ref={ref}
+          className="scanner-container absolute inset-0 bg-content"
+          style={{ objectFit: "cover" }}
+        />
+        {/* Where to hold the barcode. Clients line the code up against this,
+            which is most of why a scan lands on the first try rather than the
+            third — it is worth more than it looks. Inset from the same AREA
+            the decoder reads, so it is a true mask rather than a rough guide. */}
+        {!error && (
+          <div
+            className="pointer-events-none absolute rounded-md"
+            style={{
+              top: `${AREA.top}%`,
+              bottom: `${AREA.bottom}%`,
+              left: `${AREA.left}%`,
+              right: `${AREA.right}%`,
+              border: "2px solid #6ee7b7",
+            }}
+          />
+        )}
+      </div>
       <p
         className={`text-center text-[11.5px] text-content/85 ${error ? "" : "pt-1.5"}`}
       >
