@@ -1,4 +1,4 @@
-import { useDeferredValue, useMemo } from "react";
+import { useDeferredValue, useEffect, useMemo } from "react";
 import {
   BackspaceIcon,
   ChevronDownIcon,
@@ -23,6 +23,7 @@ import {
 } from "../../../utils";
 import type { JsonError } from "../../../interfaces";
 import {
+  claimItemPerf,
   clearPerfItem,
   closeScanner,
   openScanner,
@@ -41,6 +42,7 @@ import {
   type ItemDimension,
   type ItemView,
   ROWS_PER_PAGE,
+  sourceOf,
 } from "../../../features/itemPerfSlice";
 import {
   buildDailyRows,
@@ -117,6 +119,16 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
     () => weekDates.map((d) => sameWeekDayLastYear(d).date).sort(),
     [weekDates],
   );
+
+  /** Categories reads a different endpoint from the other two, so its rows
+   *  must not survive a navigation into them. Sub Dept Margins and Vendors
+   *  share a source and deliberately keep theirs — moving between those two
+   *  regroups rows already in hand. */
+  const source = sourceOf(dimension);
+  const mine = perf.source === source;
+  useEffect(() => {
+    if (!mine) dispatch(claimItemPerf(source));
+  }, [mine, source]);
 
   const fetchItems = async () => {
     dispatch(setItemPerfLoading(true));
@@ -345,7 +357,11 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
   const showPicker =
     perf.view === "search" || (perf.view === "daily" && !itemCode);
 
-  if (!perf.hasSearched || (!perf.loading && perf.itemsTy.length === 0)) {
+  if (
+    !mine ||
+    !perf.hasSearched ||
+    (!perf.loading && perf.itemsTy.length === 0)
+  ) {
     return (
       <div className="flex h-[calc(100dvh-3rem)] items-start justify-center overflow-y-auto p-4">
         <SingleStoreSearchCard

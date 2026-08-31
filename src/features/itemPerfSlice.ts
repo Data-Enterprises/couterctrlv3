@@ -29,6 +29,20 @@ export type ItemRow = Omit<
   > &
   Partial<Pick<CatItem, "category" | "category_description">>;
 
+/**
+ * Where a page's rows came from.
+ *
+ * Sub Dept Margins and Vendors read the same `subs/subs` rows and differ only
+ * in how they group them, so moving between them should regroup rather than
+ * re-fetch. Categories reads a different endpoint entirely — without this,
+ * opening it after Vendors showed the previous page's rows under the new
+ * heading, because one slice serves all three.
+ */
+export type ItemSource = "subs" | "cats";
+
+export const sourceOf = (d: ItemDimension): ItemSource =>
+  d === "category" ? "cats" : "subs";
+
 /** The three views every one of these pages has. */
 export type ItemView = "list" | "search" | "daily";
 
@@ -47,6 +61,9 @@ export const ROWS_PER_PAGE = 100;
  * last week, so a search is two paged reads.
  */
 interface ItemPerfState {
+  /** Which endpoint the rows in here came from. */
+  source: ItemSource | null;
+
   hasSearched: boolean;
   loading: boolean;
 
@@ -113,6 +130,7 @@ interface ItemPerfState {
 }
 
 const initialState: ItemPerfState = {
+  source: null,
   hasSearched: false,
   loading: false,
   storeId: 0,
@@ -256,6 +274,11 @@ const itemPerfSlice = createSlice({
       state.selectedItemCode = null;
       state.itemOrigin = null;
     },
+    /** Hand the slice to a data source, discarding another one's rows. */
+    claimItemPerf: (_state, action: PayloadAction<ItemSource>) => ({
+      ...initialState,
+      source: action.payload,
+    }),
     resetItemPerf: () => initialState,
   },
 });
@@ -275,6 +298,7 @@ export const {
   scannedUpc,
   selectPerfItem,
   showMoreItems,
+  claimItemPerf,
   clearPerfItem,
   resetItemPerf,
 } = itemPerfSlice.actions;

@@ -10,6 +10,13 @@ interface Props {
   max: number;
   /** Tightens the row for use inside the totals card. */
   compact?: boolean;
+  /** Row captions. Sales and Margins compare periods; Loss Prevention and
+   *  Coupon Sales compare a week against its own baseline, which is the same
+   *  picture with different words on it. */
+  labels?: [string, string];
+  /** How the figures read. Counts are not money, and formatting an exception
+   *  tally as $363.00 is the kind of wrong that survives review. */
+  format?: (n: number) => string;
 }
 
 /**
@@ -25,7 +32,14 @@ interface Props {
  * a quantity that means nothing. Two bars compare the values directly, and
  * fit in a row rather than needing half a screen each.
  */
-const PairedBars = ({ ty, ly, max, compact = false }: Props) => {
+const PairedBars = ({
+  ty,
+  ly,
+  max,
+  compact = false,
+  labels = ["TY", "LY"],
+  format = formatCurrency2,
+}: Props) => {
   const safeMax = max > 0 ? max : 1;
   const tyWins = ty >= ly;
 
@@ -55,15 +69,15 @@ const PairedBars = ({ ty, ly, max, compact = false }: Props) => {
         className="min-w-[76px] flex-none text-right text-[12.5px] font-bold tabular-nums text-content"
         style={{ opacity: dimmed ? LOSER_OPACITY : 1 }}
       >
-        {formatCurrency2(value)}
+        {format(value)}
       </span>
     </div>
   );
 
   return (
     <div className="flex flex-col gap-1.5">
-      {bar("TY", ty, TY_COLOR, !tyWins)}
-      {bar("LY", ly, LY_COLOR, tyWins)}
+      {bar(labels[0], ty, TY_COLOR, !tyWins)}
+      {bar(labels[1], ly, LY_COLOR, tyWins)}
     </div>
   );
 };

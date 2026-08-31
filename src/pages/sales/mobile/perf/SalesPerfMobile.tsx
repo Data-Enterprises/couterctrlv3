@@ -37,21 +37,11 @@ import {
   buildTotals,
 } from "./perfData";
 import PairedBars from "./PairedBars";
-import {
-  COUPON_COLORS,
-  COUPON_LABELS,
-  LY_COLOR,
-  TY_COLOR,
-} from "./perfColors";
+import { COUPON_COLORS, COUPON_LABELS, LY_COLOR, TY_COLOR } from "./perfColors";
 import PerfDayChart from "./PerfDayChart";
 
 /** Darkest to lightest, so the stack and the legend agree. */
-const COUPON_KEYS = [
-  "digital",
-  "elecStore",
-  "elecInstore",
-  "store",
-] as const;
+const COUPON_KEYS = ["digital", "elecStore", "elecInstore", "store"] as const;
 
 const DIMENSIONS: { key: PerfDimension; label: string }[] = [
   { key: "stores", label: "Stores" },
@@ -62,10 +52,15 @@ const DIMENSIONS: { key: PerfDimension; label: string }[] = [
 /**
  * Weekly Sales on mobile, without grading.
  *
- * Three cards on a padded page: the period total, the week as tappable
- * columns, and one breakdown list. Stores, Subs and Hours are the same card
- * with a different list inside it, so nothing has to be relearned moving
+ * Stores, Subs and Hours are tabs above the scroll — the same position every
+ * other mobile Performance page puts its views. Under them sit three cards:
+ * the period total, the week as tappable columns, and one breakdown list. The
+ * tab changes only that last list, so nothing has to be relearned moving
  * between them.
+ *
+ * Selecting a store on the Stores tab is a filter rather than a drill: it
+ * narrows Subs and Hours to that store and the same tap clears it. That is why
+ * there is no back control here, unlike the pages whose rows navigate.
  *
  * No severity, no thresholds, no last week. This year sits against last year
  * and the reader draws the conclusion — which is how the legacy mobile view
@@ -91,8 +86,10 @@ const SalesPerfMobile = () => {
   // the raw picker value returns an empty result rather than an error.
   const twEnd = formatGoliathDate(search.singleDate);
   const twStart = addDays(search.singleDate, -6).toISOString().split("T")[0];
-  const lyDates = Array.from({ length: 7 }, (_, i) =>
-    sameWeekDayLastYear(addDays(twStart, i).toISOString().split("T")[0]).date,
+  const lyDates = Array.from(
+    { length: 7 },
+    (_, i) =>
+      sameWeekDayLastYear(addDays(twStart, i).toISOString().split("T")[0]).date,
   ).sort();
 
   /** Sub-department and hourly rows for one scope, both periods.
@@ -207,13 +204,7 @@ const SalesPerfMobile = () => {
         perf.selectedDay,
         perf.selectedStore,
       ),
-    [
-      perf.weekTy,
-      perf.weekLy,
-      active,
-      perf.selectedDay,
-      perf.selectedStore,
-    ],
+    [perf.weekTy, perf.weekLy, active, perf.selectedDay, perf.selectedStore],
   );
 
   const pairs = useMemo(() => {
@@ -246,8 +237,8 @@ const SalesPerfMobile = () => {
    *  measure, then store, then day. Without it a filtered figure looks like a
    *  wrong one. */
   const selectedStoreName = perf.selectedStore
-    ? pairs.find((x) => x.key === perf.selectedStore)?.label ??
-      perf.weekTy.find((r) => storeKeyOf(r) === perf.selectedStore)?.store_name
+    ? (pairs.find((x) => x.key === perf.selectedStore)?.label ??
+      perf.weekTy.find((r) => storeKeyOf(r) === perf.selectedStore)?.store_name)
     : null;
 
   const scopeLabel = ["Sales", selectedStoreName, dayLabel]
@@ -292,217 +283,229 @@ const SalesPerfMobile = () => {
   }
 
   return (
-    // pb-14 clears the fixed bottom tab bar, which is outside document flow
-    // and would otherwise hide the last row of the list.
-    <div className="h-[calc(100dvh-3rem)] overflow-y-auto bg-bkg pb-14">
-      <div className="flex flex-col gap-3 p-3">
-        {/* ── totals ───────────────────────────────────────────── */}
-        <section className="overflow-hidden rounded-2xl border border-gray-200 bg-custom-white shadow-md">
-          <div className="flex items-baseline gap-2 px-4 pt-3">
-            <span className="min-w-0 truncate font-display text-[14px] font-bold text-content">
-              {scopeName}
-            </span>
-            <span className="flex-none text-[12px] text-content/85">
-              {isGroupSearch(search.type)
-                ? `${storeCount} ${storeCount === 1 ? "store" : "stores"}`
-                : "Single store"}
-            </span>
-            {/* The range doubles as the way back to the search card — changing
+    <div className="flex h-[calc(100dvh-3rem)] flex-col overflow-hidden bg-bkg">
+      {/* Stores / Subs / Hours sit above the scroll, directly under the app
+          header, matching every other mobile Performance page. Inside the list
+          card they read as a filter on that card; up here they read as where
+          you are — which is what they are, since the totals and the week chart
+          answer to them too. */}
+      <nav className="flex flex-shrink-0 border-b border-gray-200 bg-custom-white">
+        {DIMENSIONS.map((d) => (
+          <button
+            key={d.key}
+            type="button"
+            onClick={() => dispatch(setPerfDimension(d.key))}
+            aria-current={perf.dimension === d.key ? "page" : undefined}
+            className={`flex-1 border-r border-gray-100 py-3 text-[12.5px] font-semibold last:border-r-0 ${
+              perf.dimension === d.key ? "text-content" : "text-content/85"
+            }`}
+            style={
+              perf.dimension === d.key
+                ? { boxShadow: `inset 0 -2px 0 ${TY_COLOR}` }
+                : undefined
+            }
+          >
+            {d.label}
+          </button>
+        ))}
+      </nav>
+
+      {/* pb-14 clears the fixed bottom tab bar, which is outside document flow
+          and would otherwise hide the last row of the list. */}
+      <div className="flex-1 overflow-y-auto pb-14">
+        <div className="flex flex-col gap-3 p-3">
+          {/* ── totals ───────────────────────────────────────────── */}
+          <section className="overflow-hidden rounded-2xl border border-gray-200 bg-custom-white shadow-md">
+            <div className="flex items-baseline gap-2 px-4 pt-3">
+              <span className="min-w-0 truncate font-display text-[14px] font-bold text-content">
+                {scopeName}
+              </span>
+              <span className="flex-none text-[12px] text-content/85">
+                {isGroupSearch(search.type)
+                  ? `${storeCount} ${storeCount === 1 ? "store" : "stores"}`
+                  : "Single store"}
+              </span>
+              {/* The range doubles as the way back to the search card — changing
                 the period is the only reason to go back, so a second control
                 would do the same job. ml-auto rather than justify-between: the
                 name truncates and the range must never wrap, so the gap
                 belongs between them. */}
-            <button
-              type="button"
-              onClick={() => dispatch(setPerfHasSearched(false))}
-              className="ml-auto flex flex-none items-center gap-1 rounded-md px-1 py-0.5 font-mono text-[11px] font-semibold tabular-nums text-content/85 active:bg-bkg"
-            >
-              {formatDateSimple(twStart)} – {formatDateSimple(twEnd)}
-              <ChevronDownIcon className="h-3.5 w-3.5" />
-            </button>
-          </div>
-
-          <div className="px-4 pb-4 pt-3">
-            <div className="font-mono text-[10px] uppercase tracking-wider text-content/85">
-              {scopeLabel}
-            </div>
-            <div className="mt-1.5 font-display text-[32px] font-extrabold leading-none tracking-tight tabular-nums text-content">
-              {formatCurrency2(totals.sales)}
+              <button
+                type="button"
+                onClick={() => dispatch(setPerfHasSearched(false))}
+                className="ml-auto flex flex-none items-center gap-1 rounded-md px-1 py-0.5 font-mono text-[11px] font-semibold tabular-nums text-content/85 active:bg-bkg"
+              >
+                {formatDateSimple(twStart)} – {formatDateSimple(twEnd)}
+                <ChevronDownIcon className="h-3.5 w-3.5" />
+              </button>
             </div>
 
-            <div className="mt-3">
-              <PairedBars
-                ty={totals.sales}
-                ly={totals.salesLy}
-                max={Math.max(totals.sales, totals.salesLy)}
-                compact
-              />
-            </div>
+            <div className="px-4 pb-4 pt-3">
+              <div className="font-mono text-[10px] uppercase tracking-wider text-content/85">
+                {scopeLabel}
+              </div>
+              <div className="mt-1.5 font-display text-[32px] font-extrabold leading-none tracking-tight tabular-nums text-content">
+                {formatCurrency2(totals.sales)}
+              </div>
 
-            <div className="mt-3.5 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-gray-100 pt-3">
-              {[
-                ["Transactions", totals.transactions.toLocaleString("en-US")],
-                ["Avg basket", formatCurrency2(totals.avgBasket)],
-                ["Tax", formatCurrency2(totals.tax)],
-                ["Coupons", formatCurrency2(totals.coupons)],
-              ].map(([k, v]) => (
-                <div key={k} className="flex flex-col">
-                  <span className="font-mono text-[9.5px] uppercase tracking-wider text-content/85">
-                    {k}
-                  </span>
-                  <span className="font-display text-[15px] font-bold tabular-nums text-content">
-                    {v}
-                  </span>
-                </div>
-              ))}
-            </div>
+              <div className="mt-3">
+                <PairedBars
+                  ty={totals.sales}
+                  ly={totals.salesLy}
+                  max={Math.max(totals.sales, totals.salesLy)}
+                  compact
+                />
+              </div>
 
-            {/* Coupon mix. A stacked bar rather than the legacy donut: this is
+              <div className="mt-3.5 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-gray-100 pt-3">
+                {[
+                  ["Transactions", totals.transactions.toLocaleString("en-US")],
+                  ["Avg basket", formatCurrency2(totals.avgBasket)],
+                  ["Tax", formatCurrency2(totals.tax)],
+                  ["Coupons", formatCurrency2(totals.coupons)],
+                ].map(([k, v]) => (
+                  <div key={k} className="flex flex-col">
+                    <span className="font-mono text-[9.5px] uppercase tracking-wider text-content/85">
+                      {k}
+                    </span>
+                    <span className="font-display text-[15px] font-bold tabular-nums text-content">
+                      {v}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Coupon mix. A stacked bar rather than the legacy donut: this is
                 one figure split four ways, and a ring makes its own
                 circumference — TY plus LY plus the rest — look like a
                 quantity. Rendered even when a channel is zero, because "this
                 store takes no store coupons" is itself worth seeing. */}
-            {totals.coupons > 0 && (
-              <div className="mt-3.5 border-t border-gray-100 pt-3">
-                <div className="flex h-2 overflow-hidden rounded-full bg-bkg">
-                  {COUPON_KEYS.map((k) => (
-                    <span
-                      key={k}
-                      style={{
-                        width: `${(totals.couponSplit[k] / totals.coupons) * 100}%`,
-                        background: COUPON_COLORS[k],
-                      }}
-                    />
-                  ))}
-                </div>
-                <div className="mt-2.5 grid grid-cols-2 gap-x-4 gap-y-1.5">
-                  {COUPON_KEYS.map((k) => (
-                    <div
-                      key={k}
-                      className="flex items-center gap-1.5 text-[12px] tabular-nums text-content/85"
-                    >
+              {totals.coupons > 0 && (
+                <div className="mt-3.5 border-t border-gray-100 pt-3">
+                  <div className="flex h-2 overflow-hidden rounded-full bg-bkg">
+                    {COUPON_KEYS.map((k) => (
                       <span
-                        className="h-2 w-2 flex-none rounded-sm"
-                        style={{ background: COUPON_COLORS[k] }}
+                        key={k}
+                        style={{
+                          width: `${(totals.couponSplit[k] / totals.coupons) * 100}%`,
+                          background: COUPON_COLORS[k],
+                        }}
                       />
-                      <span className="flex-1 truncate">{COUPON_LABELS[k]}</span>
-                      <span className="font-semibold text-content">
-                        {formatCurrency2(totals.couponSplit[k])}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </section>
-
-        {/* ── the week, and the filter ─────────────────────────── */}
-        <section className="overflow-hidden rounded-2xl border border-gray-200 bg-custom-white px-3 pb-3 pt-3 shadow-md">
-          <PerfDayChart
-            days={days}
-            selected={perf.selectedDay}
-            onToggle={(iso) => dispatch(togglePerfDay(iso))}
-          />
-          <div className="mt-1 flex gap-3.5 px-1 text-[12px] text-content/85">
-            <span className="inline-flex items-center gap-1.5">
-              <span
-                className="h-2 w-3.5 rounded-sm"
-                style={{ background: TY_COLOR }}
-              />
-              This year
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <span
-                className="h-2 w-3.5 rounded-sm"
-                style={{ background: LY_COLOR }}
-              />
-              Last year
-            </span>
-          </div>
-          <p className="px-1 pt-1.5 text-[12px] text-content/85">
-            {perf.selectedDay
-              ? "Tap the selected day again for the full week."
-              : "Tap a day to scope the screen to it."}
-          </p>
-        </section>
-
-        {/* ── the breakdown ────────────────────────────────────── */}
-        <section className="overflow-hidden rounded-2xl border border-gray-200 bg-custom-white shadow-md">
-          <div className="m-3 flex gap-0.5 rounded-xl bg-bkg p-0.5">
-            {DIMENSIONS.map((d) => (
-              <button
-                key={d.key}
-                type="button"
-                onClick={() => dispatch(setPerfDimension(d.key))}
-                aria-pressed={perf.dimension === d.key}
-                className={`flex-1 rounded-[10px] py-2 text-[12.5px] font-semibold transition-colors ${
-                  perf.dimension === d.key
-                    ? "bg-custom-white text-content shadow-sm"
-                    : "text-content/85"
-                }`}
-              >
-                {d.label}
-              </button>
-            ))}
-          </div>
-
-          {perf.selectedStore && perf.dimension !== "stores" && (
-            <p className="px-3.5 pb-2 text-[12px] text-content/85">
-              Showing {selectedStoreName} only. Clear it on the Stores tab.
-            </p>
-          )}
-
-          {bundleLoading && perf.dimension !== "stores" ? (
-            <div className="px-4 pb-5 pt-1 text-center text-[12.5px] text-content/85">
-              Loading {selectedStoreName}...
-            </div>
-          ) : pairs.length === 0 ? (
-            <div className="px-4 pb-5 pt-1 text-center text-[12.5px] text-content/85">
-              Nothing recorded for this selection.
-            </div>
-          ) : (
-            pairs.map((p) => {
-              // Only the store list selects. Subs and Hours are the things
-              // being filtered, so making them tappable too would invite a
-              // scope this screen has no way to show.
-              const selectable = perf.dimension === "stores";
-              const isSel = selectable && perf.selectedStore === p.key;
-
-              return (
-                <button
-                  key={p.key}
-                  type="button"
-                  disabled={!selectable}
-                  aria-pressed={selectable ? isSel : undefined}
-                  onClick={() =>
-                    selectable && dispatch(togglePerfStore(p.key))
-                  }
-                  className={`block w-full border-t border-gray-100 px-3.5 py-3 text-left first:border-t-0 ${
-                    isSel ? "bg-row_selected" : ""
-                  } ${selectable ? "active:bg-bkg" : ""}`}
-                >
-                  <div className="flex items-baseline gap-2">
-                    <span className="min-w-0 flex-1 truncate font-display text-[13.5px] font-semibold text-content">
-                      {p.label}
-                    </span>
-                    {isSel && (
-                      <span
-                        className="flex-none font-mono text-[10px] uppercase tracking-wider"
-                        style={{ color: TY_COLOR }}
+                    ))}
+                  </div>
+                  <div className="mt-2.5 grid grid-cols-2 gap-x-4 gap-y-1.5">
+                    {COUPON_KEYS.map((k) => (
+                      <div
+                        key={k}
+                        className="flex items-center gap-1.5 text-[12px] tabular-nums text-content/85"
                       >
-                        Selected
+                        <span
+                          className="h-2 w-2 flex-none rounded-sm"
+                          style={{ background: COUPON_COLORS[k] }}
+                        />
+                        <span className="flex-1 truncate">
+                          {COUPON_LABELS[k]}
+                        </span>
+                        <span className="font-semibold text-content">
+                          {formatCurrency2(totals.couponSplit[k])}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </section>
+
+          {/* ── the week, and the filter ─────────────────────────── */}
+          <section className="overflow-hidden rounded-2xl border border-gray-200 bg-custom-white px-3 pb-3 pt-3 shadow-md">
+            <PerfDayChart
+              days={days}
+              selected={perf.selectedDay}
+              onToggle={(iso) => dispatch(togglePerfDay(iso))}
+            />
+            <div className="mt-1 flex gap-3.5 px-1 text-[12px] text-content/85">
+              <span className="inline-flex items-center gap-1.5">
+                <span
+                  className="h-2 w-3.5 rounded-sm"
+                  style={{ background: TY_COLOR }}
+                />
+                This year
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <span
+                  className="h-2 w-3.5 rounded-sm"
+                  style={{ background: LY_COLOR }}
+                />
+                Last year
+              </span>
+            </div>
+            <p className="px-1 pt-1.5 text-[12px] text-content/85">
+              {perf.selectedDay
+                ? "Tap the selected day again for the full week."
+                : "Tap a day to scope the screen to it."}
+            </p>
+          </section>
+
+          {/* ── the breakdown ────────────────────────────────────── */}
+          <section className="overflow-hidden rounded-2xl border border-gray-200 bg-custom-white shadow-md">
+            {perf.selectedStore && perf.dimension !== "stores" && (
+              <p className="border-b border-gray-100 px-3.5 pb-2.5 pt-3 text-[12px] text-content/85">
+                Showing {selectedStoreName} only. Clear it on the Stores tab.
+              </p>
+            )}
+
+            {bundleLoading && perf.dimension !== "stores" ? (
+              <div className="px-4 py-8 text-center text-[12.5px] text-content/85">
+                Loading {selectedStoreName}...
+              </div>
+            ) : pairs.length === 0 ? (
+              <div className="px-4 py-8 text-center text-[12.5px] text-content/85">
+                Nothing recorded for this selection.
+              </div>
+            ) : (
+              pairs.map((p) => {
+                // Only the store list selects. Subs and Hours are the things
+                // being filtered, so making them tappable too would invite a
+                // scope this screen has no way to show.
+                const selectable = perf.dimension === "stores";
+                const isSel = selectable && perf.selectedStore === p.key;
+
+                return (
+                  <button
+                    key={p.key}
+                    type="button"
+                    disabled={!selectable}
+                    aria-pressed={selectable ? isSel : undefined}
+                    onClick={() =>
+                      selectable && dispatch(togglePerfStore(p.key))
+                    }
+                    className={`block w-full border-t border-gray-100 px-3.5 py-3 text-left first:border-t-0 ${
+                      isSel ? "bg-row_selected" : ""
+                    } ${selectable ? "active:bg-bkg" : ""}`}
+                  >
+                    <div className="flex items-baseline gap-2">
+                      <span className="min-w-0 flex-1 truncate font-display text-[13.5px] font-semibold text-content">
+                        {p.label}
                       </span>
-                    )}
-                  </div>
-                  <div className="mt-2">
-                    <PairedBars ty={p.ty} ly={p.ly} max={listMax} />
-                  </div>
-                </button>
-              );
-            })
-          )}
-        </section>
+                      {isSel && (
+                        <span
+                          className="flex-none font-mono text-[10px] uppercase tracking-wider"
+                          style={{ color: TY_COLOR }}
+                        >
+                          Selected
+                        </span>
+                      )}
+                    </div>
+                    <div className="mt-2">
+                      <PairedBars ty={p.ty} ly={p.ly} max={listMax} />
+                    </div>
+                  </button>
+                );
+              })
+            )}
+          </section>
+        </div>
       </div>
     </div>
   );

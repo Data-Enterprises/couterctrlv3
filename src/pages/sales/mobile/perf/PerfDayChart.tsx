@@ -15,6 +15,10 @@ interface Props {
 /**
  * The week, as seven pairs of columns — and the screen's only filter.
  *
+ * Shared by every mobile Performance page: Sales, Sub Dept Margins, Vendors,
+ * Categories, Loss Prevention and Coupon Sales all render this one component,
+ * so a change here lands on all six.
+ *
  * There is no separate day strip and no "all week" button. Tapping a column
  * scopes the totals card and the list below to that day; tapping the same
  * column again clears it. An eighth control meaning "no filter" would be a
@@ -35,15 +39,21 @@ const PerfDayChart = ({ days, selected, onToggle }: Props) => {
 
         const col = (value: number, colour: string, loser: boolean) => (
           <span
-            className="w-[38%] rounded-t-[3px]"
+            // Height and opacity are the two things that move: the figures
+            // change when the scope does, and the dimming changes when a day
+            // is picked. Easing both means switching view, swiping a lens or
+            // tapping a day redraws the week rather than cutting to it.
+            //
+            // The columns are keyed by date through the button above, so React
+            // keeps the same nodes across a scope change and the transition
+            // has something to run on. A NEW week replaces them and lands at
+            // full height with no animation, which is correct — that is a new
+            // chart, not a change to this one.
+            className="w-[38%] rounded-t-[3px] transition-[height,opacity] duration-300 ease-out motion-reduce:transition-none"
             style={{
               height: `${Math.max((value / max) * 84, 2)}px`,
               background: colour,
-              opacity: dim
-                ? UNSCOPED_OPACITY
-                : loser
-                  ? LOSER_OPACITY
-                  : 1,
+              opacity: dim ? UNSCOPED_OPACITY : loser ? LOSER_OPACITY : 1,
             }}
           />
         );

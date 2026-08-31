@@ -45,6 +45,7 @@ import adListReducer from "../features/adListSlice";
 import salesLedgerReducer from "../features/salesLedgerSlice";
 import salesPerfReducer from "../features/salesPerfSlice";
 import itemPerfReducer from "../features/itemPerfSlice";
+import eventPerfReducer from "../features/eventPerfSlice";
 import salesLegacyReducer from "../features/salesLegacySlice";
 import salesTrackerReducer from "../features/salesTrackerSlice";
 import upcDevReducer from "../features/upcDevSlice";
@@ -64,6 +65,7 @@ export const setupStore = () =>
       sales: salesReducer,
       salesPerf: salesPerfReducer,
       itemPerf: itemPerfReducer,
+      eventPerf: eventPerfReducer,
       group: groupReducer,
       stores: storeReducer,
       users: usersReducer,
