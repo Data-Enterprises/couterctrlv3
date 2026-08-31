@@ -14,12 +14,7 @@ import {
 const A = { storeid: 685, store_number: "369", store_name: "Arab" };
 const B = { storeid: 685, store_number: "370", store_name: "Hartselle" };
 
-const week = (
-  s: typeof A,
-  date: string,
-  net: number,
-  tax = 0,
-): WeeklySale => ({
+const week = (s: typeof A, date: string, net: number, tax = 0): WeeklySale => ({
   ...s,
   sale_date: `${date}T00:00:00`,
   net_sales: net,
@@ -148,7 +143,11 @@ describe("buildTotals", () => {
 });
 
 describe("buildDays", () => {
-  const weekTy = [week(A, TY_MON, 100), week(B, TY_MON, 200), week(A, TY_TUE, 50)];
+  const weekTy = [
+    week(A, TY_MON, 100),
+    week(B, TY_MON, 200),
+    week(A, TY_TUE, 50),
+  ];
 
   it("keeps every day when a store is selected", () => {
     // The chart is the day control, so narrowing it to the selected day would
@@ -167,10 +166,13 @@ describe("buildDays", () => {
 
 describe("dimension lists", () => {
   it("store rows are labelled by name alone and never store-scoped", () => {
+    // The resolver stands in for the user's assigned stores — the label never
+    // comes off the payload, so the test supplies it the same way the page does.
     const rows = buildStorePairs(
       [week(A, TY_MON, 100), week(B, TY_MON, 200)],
       [],
       null,
+      (_id, fallback) => fallback ?? "",
     );
     expect(rows.map((r) => r.label)).toEqual(["Hartselle", "Arab"]);
   });

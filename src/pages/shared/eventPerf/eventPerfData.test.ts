@@ -108,31 +108,52 @@ describe("the baseline", () => {
     expect(rows[0].baseline).toBeNull();
   });
 
-  it("is not filtered down to the selected day", () => {
-    // The baseline is a weekly figure with no days in it. Filtering it to a
-    // Saturday would compare one day against a whole week.
+  it("matches the selected day by WEEKDAY, not by date", () => {
+    // MON is a Monday. The baseline window sits two weeks back, so its
+    // Mondays are the comparison — not its whole fortnight, and not the same
+    // calendar date.
     const t = buildTotals(
       [ev({ day: MON }), ev({ day: TUE, sale_id: "2" })],
-      [agg({ count: 40 })],
+      [
+        ev({ day: "2026-08-10", sale_id: "b1", amount: 5 }), // Monday
+        ev({ day: "2026-08-17", sale_id: "b2", amount: 5 }), // Monday
+        ev({ day: "2026-08-11", sale_id: "b3", amount: 99 }), // Tuesday
+      ],
       { ...EMPTY_SCOPE, day: MON },
     );
     expect(t.transactions).toBe(1);
-    expect(t.baselineTransactions).toBe(40);
+    expect(t.baselineTransactions).toBe(2);
+    expect(t.baselineAmount).toBe(10);
   });
 
-  it("spreads evenly across the week on the chart", () => {
-    // Nothing in trend carries a date, so a per-day baseline would be invented.
+  it("drops a dateless row when a day is selected", () => {
+    // It cannot be matched to one, and pretending it can is how the bar came
+    // to show a full period against a single day.
+    const t = buildTotals([ev()], [agg({ count: 40 })], {
+      ...EMPTY_SCOPE,
+      day: MON,
+    });
+    expect(t.baselineTransactions).toBeNull();
+  });
+
+  it("gives each column its own weekday's baseline on the chart", () => {
+    // A flat seventh drew the same grey bar under every day, which said
+    // nothing: a Saturday baseline and a Tuesday baseline are different
+    // numbers, and that difference is the reason the bar is there.
     const days = buildEventDays(
-      [ev()],
-      [agg({ count: 70 })],
+      [ev({ day: MON })],
+      [
+        ev({ day: "2026-08-10", sale_id: "b1" }), // Monday
+        ev({ day: "2026-08-17", sale_id: "b2" }), // Monday
+        ev({ day: "2026-08-11", sale_id: "b3" }), // Tuesday
+      ],
       EMPTY_SCOPE,
       WEEK,
       "transactions",
     );
-    expect(days).toHaveLength(3);
-    expect(days[0].baseline).toBeCloseTo(10);
-    expect(days[0].value).toBe(1);
-    expect(days[1].value).toBe(0);
+    expect(days[0].baseline).toBe(2); // Mon
+    expect(days[1].baseline).toBe(1); // Tue
+    expect(days[2].baseline).toBe(0); // Wed — nothing that weekday
   });
 });
 

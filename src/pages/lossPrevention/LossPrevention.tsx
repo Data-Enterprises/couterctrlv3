@@ -20,6 +20,9 @@ const LossPrevention = () => {
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
   const search = useAppSelector((state) => state.search);
+  const { assignedStores, selectedGroupStores } = useAppSelector(
+    (state) => state.user,
+  );
   const api = useApiContext();
 
   const getSaleTypesData = () => {
@@ -99,9 +102,13 @@ const LossPrevention = () => {
               token: api.token,
               start,
               end,
+              baseStart: api.lpBaseStart,
+              baseEnd: api.lpBaseEnd,
               useGroups: api.useGroups,
               searchValue: api.searchValue,
               singleStore: api.singleStore,
+              assignedStores,
+              groupStores: selectedGroupStores,
             },
             onProgress,
           )

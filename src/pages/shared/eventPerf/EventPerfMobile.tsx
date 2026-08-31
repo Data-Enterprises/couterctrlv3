@@ -1,9 +1,5 @@
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
-import {
-  ChevronDownIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-} from "@heroicons/react/20/solid";
+import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import SearchCard from "../../../components/SearchCard";
@@ -44,6 +40,7 @@ import {
 import type { ReceiptLine } from "./receiptTypes";
 import PairedBars from "../../sales/mobile/perf/PairedBars";
 import PerfDayChart from "../../sales/mobile/perf/PerfDayChart";
+import PerfCardHeader from "../../sales/mobile/perf/PerfCardHeader";
 import { LY_COLOR, TY_COLOR } from "../../sales/mobile/perf/perfColors";
 
 export interface EventFetchResult {
@@ -359,21 +356,21 @@ const EventPerfMobile = ({
     measure === "amount" ? t.baselineAmount : t.baselineTransactions;
   const fmt = measure === "amount" ? formatCurrency2 : fmtInt;
 
-  const scopeLabel = [
+  const scopeLabel =
     perf.selectedCashierLabel ??
-      perf.selectedStoreLabel ??
-      cardTotals[0]?.storeName ??
-      "All stores",
-    perf.selectedDay
-      ? new Date(`${perf.selectedDay}T12:00:00`).toLocaleDateString("en-US", {
-          weekday: "short",
-          month: "numeric",
-          day: "numeric",
-        })
-      : "",
-  ]
-    .filter(Boolean)
-    .join(" · ");
+    perf.selectedStoreLabel ??
+    cardTotals[0]?.storeName ??
+    "All stores";
+
+  /** The day, when one is picked. It takes the window's place on the header
+   *  line rather than sitting beside it — see PerfCardHeader. */
+  const dayLabel = shown.day
+    ? new Date(`${shown.day}T12:00:00`).toLocaleDateString("en-US", {
+        weekday: "short",
+        month: "numeric",
+        day: "numeric",
+      })
+    : "";
 
   /** Hoisted out of the card map — it is the same answer on every card, and
    *  it was being recomputed once per lens. */
@@ -461,25 +458,17 @@ const EventPerfMobile = ({
                 className="w-full flex-none snap-center px-3"
               >
                 <section className="overflow-hidden rounded-2xl border border-gray-200 bg-custom-white shadow-md">
-                  <div className="flex items-baseline gap-2 px-4 pt-3">
-                    <span className="min-w-0 truncate font-display text-[14px] font-bold text-content">
-                      {lens ?? allLabel}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setShowSearch(true)}
-                      className="ml-auto flex flex-none items-center gap-1 rounded-md px-1 py-0.5 font-mono text-[11px] font-semibold tabular-nums text-content/85 active:bg-bkg"
-                    >
-                      {formatDateSimple(weekDates[0])} –{" "}
-                      {formatDateSimple(weekDates[6])}
-                      <ChevronDownIcon className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
+                  <PerfCardHeader
+                    title={lens ?? allLabel}
+                    label={scopeLabel}
+                    when={
+                      dayLabel ||
+                      `${formatDateSimple(weekDates[0])} – ${formatDateSimple(weekDates[6])}`
+                    }
+                    onSearch={() => setShowSearch(true)}
+                  />
 
-                  <div className="px-4 pb-4 pt-3">
-                    <div className="truncate font-mono text-[10px] uppercase tracking-wider text-content/85">
-                      {scopeLabel}
-                    </div>
+                  <div className="px-4 pb-4 pt-2">
                     <div className="mt-1.5 font-display text-[31px] font-extrabold leading-none tracking-tight tabular-nums text-content">
                       {fmt(value)}
                     </div>
@@ -589,7 +578,9 @@ const EventPerfMobile = ({
                   ty: d.value,
                   ly: d.baseline,
                 }))}
-                selected={perf.selectedDay}
+                // The DEFERRED day — see ItemPerfMobile. The chart and the
+                // rows it scopes have to move on the same render.
+                selected={shown.day}
                 onToggle={(iso) => dispatch(toggleEventDay(iso))}
               />
               <div className="mt-1 flex gap-3.5 px-1 text-[12px] text-content/85">

@@ -36,8 +36,37 @@ export const scopeRows = (rows: EventRow[], s: EventScope) => {
   return out;
 };
 
-/** Scope without the day, for the baseline side of any comparison. */
-const weekScope = (s: EventScope): EventScope => ({ ...s, day: null });
+/** Parsed at midday, so a UTC-parsed ISO date read back in local time cannot
+ *  slip the weekday to the day before. */
+const weekdayOf = (iso: string) => new Date(`${iso}T12:00:00`).getDay();
+
+/**
+ * Narrow the comparison period to match the open scope.
+ *
+ * The day is matched by WEEKDAY, not by date: the baseline window sits two
+ * weeks behind the searched one, so selecting Saturday has to find the
+ * Saturdays in it. Comparing one Saturday against a whole fortnight is the
+ * shape this got wrong — the bar sat at the full-period figure no matter which
+ * day was picked.
+ *
+ * Baseline rows arrive pre-scaled to one week's worth by their adapter, so two
+ * halved Saturdays sum to the average Saturday, exactly as fourteen halved days
+ * sum to the average week.
+ *
+ * A row with no day cannot be matched to one and drops out — that reads as "no
+ * bar", which is honest, rather than as a comparison that silently isn't one.
+ */
+const scopeBaseline = (rows: EventRow[], s: EventScope) => {
+  let out = rows;
+  if (s.lens) out = out.filter((r) => r.lens === s.lens);
+  if (s.storeKey) out = out.filter((r) => storeKeyOf(r) === s.storeKey);
+  if (s.cashierKey) out = out.filter((r) => cashierKeyOf(r) === s.cashierKey);
+  if (s.day) {
+    const wd = weekdayOf(s.day);
+    out = out.filter((r) => r.day !== "" && weekdayOf(r.day) === wd);
+  }
+  return out;
+};
 
 /** Transactions, not rows. A coupon sale with four coupon lines is one
  *  transaction; an exception row is already one. */
@@ -60,7 +89,8 @@ export interface EventTotals {
   cashiers: number;
   stores: number;
   /** The store's name when the scope holds exactly one, so a single-store
-   *  search can say where it is rather than "All stores". */
+   *  search can say where it is rather than "All stores". Already resolved
+   *  against the user's stores by the adapter that built the rows. */
   storeName: string | null;
   terminals: number;
   perTransaction: number;
@@ -101,7 +131,7 @@ export const buildTotals = (
     // The baseline is only comparable at a level it actually carries. LP's
     // trend rows know a store and never a cashier, so asking one for a
     // person's baseline yields nothing — which reads as "no bar", not zero.
-    scopeRows(baseline, weekScope(scope)),
+    scopeBaseline(baseline, scope),
   );
 
 /**
@@ -123,7 +153,7 @@ export const buildLensCards = (
 ): EventTotals[] => {
   const lensless = { ...scope, lens: null };
   const within = scopeRows(rows, lensless);
-  const baseWithin = scopeRows(baseline, weekScope(lensless));
+  const baseWithin = scopeBaseline(baseline, lensless);
 
   const bucket = (list: EventRow[]) => {
     const acc = new Map<string, EventRow[]>();
@@ -186,10 +216,7 @@ export const buildGroupRows = (
   // Baselines are matched by the same key, so a level the comparison period
   // does not carry simply produces null rather than a misleading zero.
   const baseAcc = new Map<string, number>();
-  for (const r of scopeRows(
-    baseline,
-    weekScope({ ...scope, cashierKey: null }),
-  )) {
+  for (const r of scopeBaseline(baseline, { ...scope, cashierKey: null })) {
     if (by === "cashier" && r.cashier_number === null) continue;
     const k = keyFn(r);
     baseAcc.set(
@@ -324,15 +351,24 @@ export const buildEventDays = (
 ): EventDay[] => {
   const dayless: EventScope = { ...scope, day: null };
   const mine = scopeRows(rows, dayless);
-  const base = scopeRows(baseline, dayless);
+  const base = scopeBaseline(baseline, dayless);
 
-  const baseTotal =
-    measure === "amount"
-      ? base.reduce((a, r) => a + r.amount, 0)
-      : transactionsIn(base);
+  // Bucketed by weekday rather than divided by seven. A flat seventh drew the
+  // same grey bar under every column, which said nothing — a Saturday baseline
+  // and a Tuesday baseline are not the same number, and the whole point of the
+  // grey bar is to say whether this Saturday was a normal one.
+  const baseByWeekday = new Map<number, EventRow[]>();
+  for (const r of base) {
+    if (!r.day) continue;
+    const wd = weekdayOf(r.day);
+    const found = baseByWeekday.get(wd);
+    if (found) found.push(r);
+    else baseByWeekday.set(wd, [r]);
+  }
 
   return weekDates.map((iso) => {
     const onDay = mine.filter((r) => r.day === iso);
+    const onWeekday = baseByWeekday.get(weekdayOf(iso)) ?? [];
     return {
       iso,
       // Parsed at midday so a UTC-parsed date read back in local time cannot
@@ -344,7 +380,10 @@ export const buildEventDays = (
         measure === "amount"
           ? onDay.reduce((a, r) => a + r.amount, 0)
           : transactionsIn(onDay),
-      baseline: baseTotal / 7,
+      baseline:
+        measure === "amount"
+          ? onWeekday.reduce((a, r) => a + r.amount, 0)
+          : transactionsIn(onWeekday),
     };
   });
 };

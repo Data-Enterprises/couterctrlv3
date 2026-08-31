@@ -220,6 +220,8 @@ const CouponSales = () => {
               useGroups: api.useGroups,
               searchValue: api.searchValue,
               singleStore: api.singleStore,
+              assignedStores,
+              groupStores: selectedGroupStores,
             },
             onProgress,
           );

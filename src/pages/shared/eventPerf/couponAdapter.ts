@@ -1,6 +1,7 @@
 import { getCoupons } from "../../../api/coupons";
 import { withResolvedCouponAmount } from "../../../utils/couponValue";
-import type { CouponItem, CouponsResponse } from "../../../interfaces";
+import type { CouponItem, CouponsResponse, Store } from "../../../interfaces";
+import { resolveStoreName } from "../../../utils";
 import type { EventRow } from "../../../features/eventPerfSlice";
 import type { ReceiptLine } from "./receiptTypes";
 
@@ -16,6 +17,10 @@ interface Scope {
   useGroups: number;
   searchValue: number;
   singleStore: number;
+  /** See the store-name rule — resolved at the row boundary, never read off
+   *  the payload. */
+  assignedStores: Store[];
+  groupStores: Store[];
 }
 
 /** How a coupon line is labelled. `coupon_type` is the specific one when the
@@ -41,12 +46,17 @@ const lensOf = (c: CouponItem) => {
  * puts the figure on the sale's first line and zero on the rest, so the shell
  * can add up a column without knowing any of this.
  */
-const toRows = (items: CouponItem[]): EventRow[] =>
+const toRows = (items: CouponItem[], scope: Scope): EventRow[] =>
   withResolvedCouponAmount(items).map((c) => ({
     lens: lensOf(c),
     storeid: c.storeid,
     store_number: c.store_number,
-    store_name: c.store_name,
+    store_name: resolveStoreName(
+      scope.assignedStores,
+      scope.groupStores,
+      c.storeid,
+      c.store_name,
+    ),
     cashier_number: c.cashier_number,
     cashier_name: c.cashier_name,
     terminal: c.terminal ?? "",
@@ -98,8 +108,8 @@ export const fetchCouponEvents = async (
     load(scope, scope.baseStart, scope.baseEnd).catch(() => [] as CouponItem[]),
   ]);
 
-  const rows = toRows(week);
-  const baseline = toRows(base).map((r) => ({
+  const rows = toRows(week, scope);
+  const baseline = toRows(base, scope).map((r) => ({
     ...r,
     amount: r.amount / 2,
     count: r.count / 2,

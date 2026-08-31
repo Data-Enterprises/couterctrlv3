@@ -1,5 +1,4 @@
-import { useEffect, useMemo } from "react";
-import { ChevronDownIcon } from "@heroicons/react/20/solid";
+import { useDeferredValue, useEffect, useMemo } from "react";
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 import SearchCard from "../../../../components/SearchCard";
@@ -12,6 +11,7 @@ import {
   sameWeekDayLastYear,
 } from "../../../../utils";
 import { isGroupSearch } from "../../../../features/searchSlice";
+import { resolveStoreName } from "../../../../utils";
 import type { JsonError } from "../../../../interfaces";
 import {
   cachePerfStoreData,
@@ -39,6 +39,7 @@ import {
 import PairedBars from "./PairedBars";
 import { COUPON_COLORS, COUPON_LABELS, LY_COLOR, TY_COLOR } from "./perfColors";
 import PerfDayChart from "./PerfDayChart";
+import PerfCardHeader from "./PerfCardHeader";
 
 /** Darkest to lightest, so the stack and the legend agree. */
 const COUPON_KEYS = ["digital", "elecStore", "elecInstore", "store"] as const;
@@ -72,6 +73,13 @@ const SalesPerfMobile = () => {
   const context = useAppSelector((s) => s.app);
   const search = useAppSelector((s) => s.search);
   const perf = useAppSelector((s) => s.salesPerf);
+  const { assignedStores, selectedGroupStores } = useAppSelector((s) => s.user);
+
+  /** The name the user knows a store by, never the one the payload sent.
+   *  Group searches can include stores nobody is personally assigned to, which
+   *  is what `selectedGroupStores` covers. */
+  const nameOf = (storeid: number, fallback?: string) =>
+    resolveStoreName(assignedStores, selectedGroupStores, storeid, fallback);
 
   const isStore = !isGroupSearch(search.type);
   const useGroups = isStore ? 0 : 1;
@@ -189,6 +197,17 @@ const SalesPerfMobile = () => {
   const bundleLoading =
     perf.selectedStore !== null && !perf.storeData[perf.selectedStore];
 
+  /**
+   * The day the screen is scoped to, held one render behind.
+   *
+   * Rebuilding the totals and the breakdown is synchronous, so a tap blocked
+   * the main thread until both were done and then repainted everything at
+   * once. Deferring it lets the tap register first — and because the chart's
+   * own highlight reads this same deferred value, the column and the rows it
+   * scopes always move on the same render rather than one leading the other.
+   */
+  const shownDay = useDeferredValue(perf.selectedDay);
+
   const days = useMemo(
     () => buildDays(perf.weekTy, perf.weekLy, perf.selectedStore),
     [perf.weekTy, perf.weekLy, perf.selectedStore],
@@ -201,26 +220,34 @@ const SalesPerfMobile = () => {
         perf.weekLy,
         active.hourlyTy,
         active.subsTy,
-        perf.selectedDay,
+        shownDay,
         perf.selectedStore,
       ),
-    [perf.weekTy, perf.weekLy, active, perf.selectedDay, perf.selectedStore],
+    [perf.weekTy, perf.weekLy, active, shownDay, perf.selectedStore],
   );
 
   const pairs = useMemo(() => {
     if (perf.dimension === "subs")
-      return buildSubPairs(active.subsTy, active.subsLy, perf.selectedDay);
+      return buildSubPairs(active.subsTy, active.subsLy, shownDay);
     if (perf.dimension === "hours")
-      return buildHourPairs(active.hourlyTy, active.hourlyLy, perf.selectedDay);
-    return buildStorePairs(perf.weekTy, perf.weekLy, perf.selectedDay);
-  }, [perf.dimension, perf.selectedDay, perf.weekTy, perf.weekLy, active]);
+      return buildHourPairs(active.hourlyTy, active.hourlyLy, shownDay);
+    return buildStorePairs(perf.weekTy, perf.weekLy, shownDay, nameOf);
+  }, [
+    perf.dimension,
+    shownDay,
+    perf.weekTy,
+    perf.weekLy,
+    active,
+    assignedStores,
+    selectedGroupStores,
+  ]);
 
   /** One scale across the whole list, so a row's bar length means the same
    *  thing in every row. */
   const listMax = pairs.reduce((m, p) => Math.max(m, p.ty, p.ly), 0);
 
-  const dayLabel = perf.selectedDay
-    ? new Date(`${perf.selectedDay}T12:00:00`).toLocaleDateString("en-US", {
+  const dayLabel = shownDay
+    ? new Date(`${shownDay}T12:00:00`).toLocaleDateString("en-US", {
         weekday: "long",
         month: "numeric",
         day: "numeric",
@@ -237,17 +264,19 @@ const SalesPerfMobile = () => {
    *  measure, then store, then day. Without it a filtered figure looks like a
    *  wrong one. */
   const selectedStoreName = perf.selectedStore
-    ? (pairs.find((x) => x.key === perf.selectedStore)?.label ??
-      perf.weekTy.find((r) => storeKeyOf(r) === perf.selectedStore)?.store_name)
+    ? (() => {
+        const row = perf.weekTy.find(
+          (r) => storeKeyOf(r) === perf.selectedStore,
+        );
+        return row ? nameOf(row.storeid, row.store_name) : null;
+      })()
     : null;
 
-  const scopeLabel = ["Sales", selectedStoreName, dayLabel]
-    .filter(Boolean)
-    .join(" · ");
+  const scopeLabel = ["Sales", selectedStoreName].filter(Boolean).join(" · ");
 
   const scopeName = isGroupSearch(search.type)
     ? search.selectedGroup.group_name
-    : perf.weekTy[0]?.store_name;
+    : nameOf(search.lastStore, perf.weekTy[0]?.store_name);
 
   // hasSearched false means "show me the search card" — either the first visit
   // or a deliberate return via the range chip. The second clause covers a
@@ -316,34 +345,24 @@ const SalesPerfMobile = () => {
         <div className="flex flex-col gap-3 p-3">
           {/* ── totals ───────────────────────────────────────────── */}
           <section className="overflow-hidden rounded-2xl border border-gray-200 bg-custom-white shadow-md">
-            <div className="flex items-baseline gap-2 px-4 pt-3">
-              <span className="min-w-0 truncate font-display text-[14px] font-bold text-content">
-                {scopeName}
-              </span>
-              <span className="flex-none text-[12px] text-content/85">
-                {isGroupSearch(search.type)
+            <PerfCardHeader
+              title={scopeName}
+              // Only on a group. "Single store" beside a store's own name was
+              // saying the same thing twice.
+              note={
+                isGroupSearch(search.type)
                   ? `${storeCount} ${storeCount === 1 ? "store" : "stores"}`
-                  : "Single store"}
-              </span>
-              {/* The range doubles as the way back to the search card — changing
-                the period is the only reason to go back, so a second control
-                would do the same job. ml-auto rather than justify-between: the
-                name truncates and the range must never wrap, so the gap
-                belongs between them. */}
-              <button
-                type="button"
-                onClick={() => dispatch(setPerfHasSearched(false))}
-                className="ml-auto flex flex-none items-center gap-1 rounded-md px-1 py-0.5 font-mono text-[11px] font-semibold tabular-nums text-content/85 active:bg-bkg"
-              >
-                {formatDateSimple(twStart)} – {formatDateSimple(twEnd)}
-                <ChevronDownIcon className="h-3.5 w-3.5" />
-              </button>
-            </div>
+                  : undefined
+              }
+              label={scopeLabel}
+              when={
+                dayLabel ||
+                `${formatDateSimple(twStart)} – ${formatDateSimple(twEnd)}`
+              }
+              onSearch={() => dispatch(setPerfHasSearched(false))}
+            />
 
-            <div className="px-4 pb-4 pt-3">
-              <div className="font-mono text-[10px] uppercase tracking-wider text-content/85">
-                {scopeLabel}
-              </div>
+            <div className="px-4 pb-4 pt-2">
               <div className="mt-1.5 font-display text-[32px] font-extrabold leading-none tracking-tight tabular-nums text-content">
                 {formatCurrency2(totals.sales)}
               </div>
@@ -421,7 +440,7 @@ const SalesPerfMobile = () => {
           <section className="overflow-hidden rounded-2xl border border-gray-200 bg-custom-white px-3 pb-3 pt-3 shadow-md">
             <PerfDayChart
               days={days}
-              selected={perf.selectedDay}
+              selected={shownDay}
               onToggle={(iso) => dispatch(togglePerfDay(iso))}
             />
             <div className="mt-1 flex gap-3.5 px-1 text-[12px] text-content/85">
@@ -441,7 +460,7 @@ const SalesPerfMobile = () => {
               </span>
             </div>
             <p className="px-1 pt-1.5 text-[12px] text-content/85">
-              {perf.selectedDay
+              {shownDay
                 ? "Tap the selected day again for the full week."
                 : "Tap a day to scope the screen to it."}
             </p>

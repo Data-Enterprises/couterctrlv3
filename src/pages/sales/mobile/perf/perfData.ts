@@ -96,7 +96,19 @@ export const buildStorePairs = (
   weekTy: WeeklySale[],
   weekLy: WeeklySale[],
   day: string | null,
-) => pairBy(weekTy, weekLy, day, null, storeKeyOf, (r) => r.store_name, netOf);
+  /** How a store is named. Passed in rather than read off the row: the name
+   *  the user knows comes from their assigned stores, never from a payload. */
+  nameOf: (storeid: number, fallback?: string) => string,
+) =>
+  pairBy(
+    weekTy,
+    weekLy,
+    day,
+    null,
+    storeKeyOf,
+    (r) => nameOf(r.storeid, r.store_name),
+    netOf,
+  );
 
 /** Rows arrive already scoped to the group or to one store, so there is no
  *  store filter here — see buildTotals. */

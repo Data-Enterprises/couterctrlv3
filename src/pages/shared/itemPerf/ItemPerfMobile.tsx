@@ -1,7 +1,6 @@
 import { useDeferredValue, useEffect, useMemo } from "react";
 import {
   BackspaceIcon,
-  ChevronDownIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   MagnifyingGlassIcon,
@@ -57,6 +56,7 @@ import {
 } from "./itemPerfData";
 import PairedBars from "../../sales/mobile/perf/PairedBars";
 import PerfDayChart from "../../sales/mobile/perf/PerfDayChart";
+import PerfCardHeader from "../../sales/mobile/perf/PerfCardHeader";
 import { TY_COLOR } from "../../sales/mobile/perf/perfColors";
 
 /** How many recents sit in the page before the rest move to a sheet. */
@@ -341,7 +341,6 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
     "Margin",
     selectedItem?.product_description,
     groupKey ? perf.selectedGroupLabel : null,
-    dayLabel,
   ]
     .filter(Boolean)
     .join(" · ");
@@ -537,26 +536,21 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
           {/* ── margin summary ─────────────────────────────────── */}
           {!showPicker && (
             <section className="overflow-hidden rounded-2xl border border-gray-200 bg-custom-white shadow-md">
-              <div className="flex items-baseline gap-2 px-4 pt-3">
-                <span className="min-w-0 truncate font-display text-[14px] font-bold text-content">
-                  {selectedItem?.product_description ??
-                    perf.selectedGroupLabel ??
-                    getStoreName(assignedStores, perf.storeId)}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => dispatch(setItemPerfHasSearched(false))}
-                  className="ml-auto flex flex-none items-center gap-1 rounded-md px-1 py-0.5 font-mono text-[11px] font-semibold tabular-nums text-content/85 active:bg-bkg"
-                >
-                  {formatDateSimple(twStart)} – {formatDateSimple(twEnd)}
-                  <ChevronDownIcon className="h-3.5 w-3.5" />
-                </button>
-              </div>
+              <PerfCardHeader
+                title={
+                  selectedItem?.product_description ??
+                  perf.selectedGroupLabel ??
+                  getStoreName(assignedStores, perf.storeId)
+                }
+                label={scopeLabel}
+                when={
+                  dayLabel ||
+                  `${formatDateSimple(twStart)} – ${formatDateSimple(twEnd)}`
+                }
+                onSearch={() => dispatch(setItemPerfHasSearched(false))}
+              />
 
-              <div className="px-4 pb-4 pt-3">
-                <div className="truncate font-mono text-[10px] uppercase tracking-wider text-content/85">
-                  {scopeLabel}
-                </div>
+              <div className="px-4 pb-4 pt-2">
                 <div className="mt-1.5 font-display text-[31px] font-extrabold leading-none tracking-tight tabular-nums text-content">
                   {pct(totals.gpm)}
                 </div>
@@ -606,7 +600,12 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
             <section className="overflow-hidden rounded-2xl border border-gray-200 bg-custom-white px-3 pb-3 pt-3 shadow-md">
               <PerfDayChart
                 days={days}
-                selected={perf.selectedDay}
+                // The DEFERRED day, not the live one. Reading the live value
+                // highlighted the column on the frame of the tap while the
+                // rows below stayed on the old day until the rebuild landed —
+                // a control moving before its consequences, which is what read
+                // as twitch. Chart and list now change together.
+                selected={listFor.day}
                 onToggle={(iso) => dispatch(toggleItemPerfDay(iso))}
               />
               <p className="px-1 pt-1.5 text-[12px] text-content/85">

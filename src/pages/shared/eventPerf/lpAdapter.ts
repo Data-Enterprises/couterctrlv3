@@ -1,13 +1,13 @@
 import {
-  getCashierDetails,
   getCashierTable,
   getCashierTransaction,
   getSaleTypes,
 } from "../../../api/lossPrevention";
 import { fetchAllPages } from "../../../utils/paging";
+import { resolveStoreName } from "../../../utils";
 import type {
   CashierTransaction,
-  CashierTrend,
+  Store,
   SaleType,
   TransactionListItem,
 } from "../../../interfaces";
@@ -19,9 +19,18 @@ interface Scope {
   token: string;
   start: string;
   end: string;
+  /** The comparison window, end-20..end-7 — fourteen days, same as Coupon
+   *  Sales. */
+  baseStart: string;
+  baseEnd: string;
   useGroups: number;
   searchValue: number;
   singleStore: number;
+  /** Store names never come off a payload — see the store-name rule. Resolved
+   *  here, at the one point rows are built, so every list, card and receipt
+   *  downstream inherits the name the user knows the store by. */
+  assignedStores: Store[];
+  groupStores: Store[];
 }
 
 /** The register, whichever way this payload spelled it. The typo is real and
@@ -38,10 +47,12 @@ const laneOf = (t: CashierTransaction) => t.terminal ?? t.termainal ?? "";
  * lets the lens chips show their counts without being tapped — and lets
  * switching lenses regroup rows already in hand instead of firing a request.
  *
- * `cashiers/` is still called, but only for `trend`: the transaction rows have
- * no comparison period in them, and trend is the one place the prior weeks
- * live. Its figures are already weekly-equivalent — the desktop page compares
- * them 1:1 against the week — so nothing here rescales them.
+ * The comparison period is read the same way rather than from `cashiers/`'s
+ * `trend`. Trend arrives as one aggregate per store per type with **no dates
+ * and no cashier on it**, which cost two things: a day selection could not
+ * narrow it, so the baseline bar sat at the full-week figure whichever day you
+ * picked; and a cashier could never have a baseline at all. Reading the prior
+ * fortnight's transactions costs one more paged call and fixes both.
  */
 export const fetchLpEvents = async (
   scope: Scope,
@@ -61,16 +72,25 @@ export const fetchLpEvents = async (
   if (lenses.length === 0) return { rows: [], baseline: [], lenses: [] };
 
   onProgress("Loading exceptions...");
-  const [table, details] = await Promise.all([
-    fetchTransactions(scope, lenses),
-    getCashierDetails(url, token, ...args, lenses),
+  const [table, base] = await Promise.all([
+    fetchTransactions(scope, scope.start, scope.end, lenses),
+    // A missing comparison is not fatal: a week with no baseline is still a
+    // week worth reading, and it simply draws without a second bar.
+    fetchTransactions(scope, scope.baseStart, scope.baseEnd, lenses).catch(
+      () => [] as CashierTransaction[],
+    ),
   ]);
 
-  const rows: EventRow[] = table.map((t) => ({
+  const toRow = (t: CashierTransaction): EventRow => ({
     lens: t.sale_type,
     storeid: t.storeid,
     store_number: t.store_number,
-    store_name: t.store_name,
+    store_name: resolveStoreName(
+      scope.assignedStores,
+      scope.groupStores,
+      t.storeid,
+      t.store_name,
+    ),
     cashier_number: t.cashier_number,
     cashier_name: t.cashier_name,
     terminal: laneOf(t),
@@ -78,26 +98,19 @@ export const fetchLpEvents = async (
     day: t.sale_date.split("T")[0],
     amount: t.total_sales ?? 0,
     count: 1,
-  }));
+  });
 
-  // One synthetic row per store per type. It knows no cashier and no day,
-  // which is exactly what the shell needs to tell it apart from a real event
-  // and refuse to draw a per-person baseline it does not have.
-  const baseline: EventRow[] = ((details.data?.trend ?? []) as CashierTrend[])
-    .map((t) => ({
-      lens: t.sale_type,
-      storeid: t.storeid,
-      store_number: t.store_number,
-      store_name: t.store_name,
-      cashier_number: null,
-      cashier_name: "",
-      terminal: "",
-      sale_id: "",
-      day: "",
-      amount: t.amount ?? 0,
-      count: t.transaction_count ?? 0,
-    }))
-    .filter((r) => r.count > 0 || r.amount > 0);
+  const rows = table.map(toRow);
+
+  // Halved, because the window is a fortnight and everything it is compared
+  // against is a week. Done per row rather than on the total so that narrowing
+  // to one weekday still lands on an average: two halved Saturdays are the
+  // average Saturday.
+  const baseline = base.map(toRow).map((r) => ({
+    ...r,
+    amount: r.amount / 2,
+    count: r.count / 2,
+  }));
 
   // Only the types that actually happened. A chip reading 0 is a chip that
   // wastes a tap.
@@ -106,7 +119,9 @@ export const fetchLpEvents = async (
 };
 
 const fetchTransactions = async (
-  { url, token, start, end, useGroups, searchValue, singleStore }: Scope,
+  { url, token, useGroups, searchValue, singleStore }: Scope,
+  start: string,
+  end: string,
   lenses: string[],
 ): Promise<CashierTransaction[]> => {
   const call = (page: number) =>
