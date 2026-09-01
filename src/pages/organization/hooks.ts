@@ -14,7 +14,7 @@ import type { JsonError } from "../../interfaces";
 
 export const useOrganizationCtx = () => {
   const dispatch = useAppDispatch();
-  const { url, token, isDesktop, isTablet, apiEnv } = useAppSelector(
+  const { url, token, isDesktop, isTablet } = useAppSelector(
     (state) => state.app,
   );
   const { userid, userLevel, companies } = useAppSelector(
@@ -60,7 +60,6 @@ export const useOrganizationCtx = () => {
     token,
     isDesktop,
     isTablet,
-    apiEnv,
     userid,
     userLevel,
     companies,
@@ -137,7 +136,9 @@ export const useRefreshUserStores = () => {
             normalizeUserStores<Store>(j.all_stores_for_user ?? []),
           ),
         );
-        dispatch(setAssignedStores(normalizeUserStores<Store>(j.assigned_stores)));
+        dispatch(
+          setAssignedStores(normalizeUserStores<Store>(j.assigned_stores)),
+        );
         dispatch(
           setUnassignedStores(normalizeUserStores<Store>(j.unassigned_stores)),
         );

@@ -85,7 +85,7 @@ const dayCount = (start: string, end: string) =>
 const ItemReport = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
-  const { url, token, apiEnv } = useAppSelector((s) => s.app);
+  const { url, token } = useAppSelector((s) => s.app);
   /**
    * Off until something reads them.
    *
@@ -101,16 +101,16 @@ const ItemReport = () => {
    * all stay — flip this back to enable it.
    */
   const PRICE_POINTS_READY = false;
-  const useSubsPricePoints = apiEnv === "dev" && PRICE_POINTS_READY;
+  const useSubsPricePoints = PRICE_POINTS_READY;
   const { singleDate } = useAppSelector((s) => s.search);
   const { assignedStores } = useAppSelector((s) => s.user);
   const state = useAppSelector((s) => s.itemReport);
 
   const { startWalk, cancelWalk } = useReceivingWalk();
   // Item Actions always knows the UPC, so step one can look the product up
-  // directly instead of searching `cashier_table` by description. Dev only —
-  // the hook ANDs this with apiEnv, and Inventory's two panels stay on the old
-  // walk either way.
+  // directly instead of searching `cashier_table` by description. Price Opt
+  // Sub Dept and Price Opt Vendor share this hook and do not opt in, so they
+  // stay on the old walk until they are moved deliberately.
   const { actual, loadActual, resetActual } = useActualPricePoints({
     productLookup: true,
   });
@@ -427,7 +427,8 @@ const ItemReport = () => {
    * and the rows carry whatever their sales actually show.
    */
   const noReceiverItems = useMemo(
-    () => items.filter((i) => (state.receipts[i.productCode] ?? []).length === 0),
+    () =>
+      items.filter((i) => (state.receipts[i.productCode] ?? []).length === 0),
     [items, state.receipts],
   );
   const noReceiverCount = noReceiverItems.length;
