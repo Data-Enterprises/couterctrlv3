@@ -16,8 +16,18 @@ import type { SubSale } from "../interfaces";
 interface SalesTrackerState {
   hasSearched: boolean;
   loading: boolean;
-  /** Window length in weeks. Lives here because changing it re-runs the fetch. */
-  weeks: number;
+  /**
+   * The earliest TY date whose rows are held, or null before a search.
+   *
+   * Adding a week extends the window backwards, and dropping one narrows it
+   * without discarding anything — so this is what says whether a week is
+   * already in hand. Re-adding a week you just dropped costs nothing, and
+   * adding a genuinely new one fetches only the gap rather than the window.
+   */
+  loadedFrom: string | null;
+  /** A week is being fetched onto the front of the window. Distinct from
+   *  `loading`, which blanks the page for a whole new search. */
+  addingWeek: boolean;
   /** Store or group name, for the panel header. */
   scopeLabel: string;
   ty: SubSale[];
@@ -30,14 +40,14 @@ interface SalesTrackerState {
   expandedWeeks: number[];
 }
 
-const DEFAULT_WEEKS = 4;
 export const MAX_WEEKS = 26;
 export const MIN_WEEKS = 1;
 
 const initialState: SalesTrackerState = {
   hasSearched: false,
   loading: false,
-  weeks: DEFAULT_WEEKS,
+  loadedFrom: null,
+  addingWeek: false,
   scopeLabel: "",
   ty: [],
   ly: [],
@@ -56,15 +66,29 @@ const salesTrackerSlice = createSlice({
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload;
     },
-    setWeeks: (state, action: PayloadAction<number>) => {
-      state.weeks = Math.min(MAX_WEEKS, Math.max(MIN_WEEKS, action.payload));
+    setAddingWeek: (state, action: PayloadAction<boolean>) => {
+      state.addingWeek = action.payload;
     },
     setScopeLabel: (state, action: PayloadAction<string>) => {
       state.scopeLabel = action.payload;
     },
-    setRows: (state, action: PayloadAction<{ ty: SubSale[]; ly: SubSale[] }>) => {
+    setRows: (
+      state,
+      action: PayloadAction<{ ty: SubSale[]; ly: SubSale[]; from: string }>,
+    ) => {
       state.ty = action.payload.ty;
       state.ly = action.payload.ly;
+      state.loadedFrom = action.payload.from;
+    },
+    /** One week's rows onto the front of what is already held. The window
+     *  itself is the search range — this only supplies the data for it. */
+    appendRows: (
+      state,
+      action: PayloadAction<{ ty: SubSale[]; ly: SubSale[]; from: string }>,
+    ) => {
+      state.ty = [...state.ty, ...action.payload.ty];
+      state.ly = [...state.ly, ...action.payload.ly];
+      state.loadedFrom = action.payload.from;
     },
     setSelectedSubDept: (state, action: PayloadAction<number | null>) => {
       state.selectedSubDept = action.payload;
@@ -98,7 +122,8 @@ const salesTrackerSlice = createSlice({
 export const {
   setHasSearched,
   setLoading,
-  setWeeks,
+  setAddingWeek,
+  appendRows,
   setScopeLabel,
   setRows,
   setSelectedSubDept,

@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback } from "react";
 import { useAppSelector, useAppDispatch } from "../../hooks";
+import { setStartDate } from "../../features/searchSlice";
 import { formatGoliathDate, formatCurrency2, getStoreName } from "../../utils";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
@@ -12,6 +13,10 @@ import {
   setLoading,
   setScopeLabel,
   setRows,
+  appendRows,
+  setAddingWeek,
+  MAX_WEEKS,
+  MIN_WEEKS,
   setSelectedSubDept,
   setSubFilter,
   reQueryTracker,
@@ -21,7 +26,7 @@ import TrackerHeader from "./TrackerHeader";
 import SubDeptRow from "./SubDeptRow";
 import TrackerDetail from "./TrackerDetail";
 import { fetchSubSales } from "./trackerData";
-import { buildWindowPlan } from "./trackerWeeks";
+import { buildWindowPlan, isoToDisplay, shiftDays } from "./trackerWeeks";
 import {
   buildSubDeptTotals,
   allDeptsTotal,
@@ -38,7 +43,6 @@ const shortLabel = (d: string) => {
   const dt = new Date(d + "T12:00:00");
   return `${dt.getMonth() + 1}/${dt.getDate()}`;
 };
-
 
 /**
  * Sales Tracker — sub-department sales against the same weeks last year.
@@ -57,17 +61,26 @@ const SalesTracker = () => {
   const {
     hasSearched,
     loading,
-    weeks,
     scopeLabel,
     ty,
     ly,
     selectedSubDept,
     subFilter,
+    loadedFrom,
+    addingWeek,
   } = useAppSelector((s) => s.salesTracker);
 
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [fetchFailed, setFetchFailed] = useState(false);
   const { sort, handleSort, applySort } = useTriStateSort<SortColumn>();
+
+  /** The search scope, read by both the full search and the add-a-week fetch.
+   *  Derived here rather than inside the search so the two cannot disagree
+   *  about which store the extra week belongs to. */
+  const isGroup = isGroupSearch(search.type);
+  const useGroups = isGroup ? 1 : 0;
+  const singleStore = isGroup ? 0 : 1;
+  const searchValue = isGroup ? search.lastGroup : search.lastStore;
 
   const plan = useMemo(
     () =>
@@ -77,6 +90,76 @@ const SalesTracker = () => {
       ),
     [search.startDate, search.endDate],
   );
+
+  /**
+   * One more week, on the front of the window.
+   *
+   * The window is the search range, so this moves the start date back seven
+   * days and lets the plan rebuild — the same path a preset takes. What is new
+   * is that only the gap is fetched: `loadedFrom` says how far back the rows in
+   * hand already reach, so re-adding a week that was dropped costs nothing and
+   * a genuinely new one costs one week rather than the whole window.
+   *
+   * The date moves only once the rows are in. Moving it first would widen the
+   * plan while the fetch was still running, and every total would read low for
+   * the duration — a week of missing sales presented as a real figure.
+   */
+  const addWeek = async () => {
+    if (plan.weeks.length >= MAX_WEEKS || addingWeek) return;
+
+    const newStart = shiftDays(plan.tyStart, -7);
+
+    // Already in hand — dropped earlier and now coming back.
+    if (loadedFrom && newStart >= loadedFrom) {
+      dispatch(setStartDate(isoToDisplay(newStart)));
+      return;
+    }
+
+    // The gap alone, and its own LY range: the plan shifts every day and takes
+    // the extremes, so a week containing a holiday still asks for the days its
+    // pairing actually needs.
+    const gap = buildWindowPlan(
+      newStart,
+      shiftDays(loadedFrom ?? plan.tyStart, -1),
+    );
+
+    dispatch(setAddingWeek(true));
+    try {
+      const [tyRows, lyRows] = await Promise.all([
+        fetchSubSales(
+          context.url,
+          context.token,
+          useGroups,
+          searchValue,
+          singleStore,
+          gap.tyStart,
+          gap.tyEnd,
+        ),
+        fetchSubSales(
+          context.url,
+          context.token,
+          useGroups,
+          searchValue,
+          singleStore,
+          gap.lyStart,
+          gap.lyEnd,
+        ),
+      ]);
+      dispatch(appendRows({ ty: tyRows, ly: lyRows, from: newStart }));
+      dispatch(setStartDate(isoToDisplay(newStart)));
+    } catch {
+      toast.error("Could not load that week.");
+    } finally {
+      dispatch(setAddingWeek(false));
+    }
+  };
+
+  /** One week off the front. No fetch, and the rows stay — narrowing the
+   *  window is all that happened, so adding it back is instant. */
+  const dropWeek = () => {
+    if (plan.weeks.length <= MIN_WEEKS) return;
+    dispatch(setStartDate(isoToDisplay(shiftDays(plan.tyStart, 7))));
+  };
 
   const rows = useMemo(() => buildSubDeptTotals(ty, ly, plan), [ty, ly, plan]);
 
@@ -109,17 +192,12 @@ const SalesTracker = () => {
   const ranked = useMemo(
     () =>
       [...rows].sort(
-        (a, b) =>
-          Math.abs(b.dollarChange ?? 0) - Math.abs(a.dollarChange ?? 0),
+        (a, b) => Math.abs(b.dollarChange ?? 0) - Math.abs(a.dollarChange ?? 0),
       ),
     [rows],
   );
 
   const fetchTracker = async () => {
-    const isGroup = isGroupSearch(search.type);
-    const useGroups = isGroup ? 1 : 0;
-    const singleStore = isGroup ? 0 : 1;
-    const searchValue = isGroup ? search.lastGroup : search.lastStore;
     if (!searchValue) {
       toast.warn("Pick a store or group first");
       return;
@@ -170,10 +248,10 @@ const SalesTracker = () => {
       ]);
 
       if (tyRows.length === 0) setFetchFailed(true);
-      dispatch(setRows({ ty: tyRows, ly: lyRows }));
+      dispatch(setRows({ ty: tyRows, ly: lyRows, from: plan.tyStart }));
     } catch {
       setFetchFailed(true);
-      dispatch(setRows({ ty: [], ly: [] }));
+      dispatch(setRows({ ty: [], ly: [], from: plan.tyStart }));
     } finally {
       dispatch(setLoading(false));
     }
@@ -237,9 +315,14 @@ const SalesTracker = () => {
             <TrackerHeader
               windowLabel={windowLabel}
               scopeLabel={scopeLabel}
-              weeks={weeks}
-              salesTy={(groupTotal?.salesTy ?? 0)}
-              pctChange={(groupTotal?.pctChange ?? null)}
+              weeks={plan.weeks.length}
+              addingWeek={addingWeek}
+              canAddWeek={plan.weeks.length < MAX_WEEKS}
+              canDropWeek={plan.weeks.length > MIN_WEEKS}
+              onAddWeek={addWeek}
+              onDropWeek={dropWeek}
+              salesTy={groupTotal?.salesTy ?? 0}
+              pctChange={groupTotal?.pctChange ?? null}
               onOpenSearch={() => setSearchModalOpen(true)}
             />
 

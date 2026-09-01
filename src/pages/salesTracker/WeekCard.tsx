@@ -23,7 +23,8 @@ const shortDate = (d: string) => {
 const dayName = (d: string) =>
   new Date(d + "T12:00:00").toLocaleDateString("en-US", { weekday: "short" });
 
-const HEAD = "text-[10.5px] font-semibold uppercase tracking-wide text-content/80";
+const HEAD =
+  "text-[10.5px] font-semibold uppercase tracking-wide text-content/80";
 
 /** Two periods, not two verdicts — so navy and a lighter tint of it, never the
  *  severity palette. The comparison carries the judgement, the lines don't. */
@@ -100,7 +101,9 @@ const WeekCard = ({
             <span className="text-[13px] font-semibold text-content whitespace-nowrap">
               Week {label}
             </span>
-            <span className={`text-[12.5px] text-content whitespace-nowrap ${NUM}`}>
+            <span
+              className={`text-[12.5px] text-content whitespace-nowrap ${NUM}`}
+            >
               {shortDate(week.start)} – {shortDate(week.end)}
             </span>
           </span>

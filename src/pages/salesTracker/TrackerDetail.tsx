@@ -22,11 +22,7 @@ interface TrackerDetailProps {
  * navy rather than severity-tinted: nothing on this page is graded, so there is
  * no severity to tint it with.
  */
-const TrackerDetail = ({
-  row,
-  plan,
-  scopeLabel,
-}: TrackerDetailProps) => {
+const TrackerDetail = ({ row, plan, scopeLabel }: TrackerDetailProps) => {
   const dispatch = useAppDispatch();
   const expandedWeeks = useAppSelector((s) => s.salesTracker.expandedWeeks);
 
@@ -111,7 +107,9 @@ const TrackerDetail = ({
           <div className="text-[10px] font-bold text-content mb-0.5">
             {plan.weeks.length} weeks
           </div>
-          <div className={`text-[14px] font-bold ${changeTone(row.dollarChange)}`}>
+          <div
+            className={`text-[14px] font-bold ${changeTone(row.dollarChange)}`}
+          >
             {signed(row.dollarChange, formatCurrency2)}
           </div>
         </div>
