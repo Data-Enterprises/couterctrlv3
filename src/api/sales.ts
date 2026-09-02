@@ -200,6 +200,42 @@ export const getSubs = async (
 };
 
 // This is setup to handle the single store sub dept comparison
+/**
+ * `subs/sales_tracker` — day-level sub-department totals for an explicit list
+ * of dates.
+ *
+ * Dates rather than a range, because an LY tracker week is not seven
+ * contiguous days: `sameWeekDayLastYear` snaps a holiday to its real date last
+ * year, so a range would either miss the snapped day or pull in one the
+ * pairing never asked for.
+ *
+ * Unpaged by design. A tracker needs every day of a week to total it, so a
+ * page boundary would silently truncate one — which is the failure `sub_sales`
+ * paging could produce and nothing downstream could detect.
+ *
+ * Group responses carry no store columns. The tracker never reads them, and
+ * omitting them is most of why the payload is smaller.
+ */
+export const getSalesTracker = async (
+  url: string,
+  token: string,
+  dates: string[],
+  useGroups: number,
+  searchValue: number,
+  singleStore: number,
+) => {
+  const json = await axios({
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token,
+    },
+    url: url + "subs/sales_tracker",
+    data: { dates, useGroups, searchValue, singleStore },
+  });
+  return json;
+};
+
 export const getSubsComp = async (
   url: string,
   token: string,

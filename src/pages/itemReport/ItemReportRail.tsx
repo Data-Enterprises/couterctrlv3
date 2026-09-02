@@ -775,7 +775,7 @@ const ItemReportRail = ({
             </Block>
           )}
 
-          <Block {...fold("prices")} label="Price points (estimated)">
+          <Block {...fold("prices")} label="Price points">
             {eras.length === 0 ? (
               <div className="text-[12px] text-content">No sales rows</div>
             ) : (

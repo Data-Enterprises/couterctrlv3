@@ -25,7 +25,7 @@ import TrackerEntryCard from "./TrackerEntryCard";
 import TrackerHeader from "./TrackerHeader";
 import SubDeptRow from "./SubDeptRow";
 import TrackerDetail from "./TrackerDetail";
-import { fetchSubSales } from "./trackerData";
+import { fetchSubSales, fetchTrackerWindow } from "./trackerData";
 import { buildWindowPlan, isoToDisplay, shiftDays } from "./trackerWeeks";
 import {
   buildSubDeptTotals,
@@ -72,6 +72,9 @@ const SalesTracker = () => {
 
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [fetchFailed, setFetchFailed] = useState(false);
+  /** Weeks landed, while the pooled fetch runs. Local: it is loading copy, and
+   *  nothing outside this page reads it. */
+  const [progress, setProgress] = useState("");
   const { sort, handleSort, applySort } = useTriStateSort<SortColumn>();
 
   /** The search scope, read by both the full search and the add-a-week fetch.
@@ -81,6 +84,30 @@ const SalesTracker = () => {
   const useGroups = isGroup ? 1 : 0;
   const singleStore = isGroup ? 0 : 1;
   const searchValue = isGroup ? search.lastGroup : search.lastStore;
+
+  /**
+   * EXPERIMENT, PARKED. `subs/sales_tracker` instead of two paged
+   * `subs/sub_sales` reads.
+   *
+   * Off outright rather than gated on `apiEnv`, because the endpoint is not on
+   * the API yet — on dev it would 404, and the API toggle is reachable by
+   * anyone at level 7. A hard `false` means the branch is publish-safe no
+   * matter which backend is selected.
+   *
+   * To resume the comparison, change this to `context.apiEnv === "dev"`. The
+   * measurements it produced: 5 stores over 12 weeks went from ~52s across two
+   * paged reads to ~7s across 12 pooled requests, on the same ~1.15MB — the
+   * cost was query time, never payload. Delete the flag and the `fetchSubSales`
+   * path once the endpoint ships for good.
+   */
+  const useTrackerEndpoint = false;
+  const scope = {
+    url: context.url,
+    token: context.token,
+    useGroups,
+    searchValue,
+    singleStore,
+  };
 
   const plan = useMemo(
     () =>
@@ -125,26 +152,36 @@ const SalesTracker = () => {
 
     dispatch(setAddingWeek(true));
     try {
-      const [tyRows, lyRows] = await Promise.all([
-        fetchSubSales(
-          context.url,
-          context.token,
-          useGroups,
-          searchValue,
-          singleStore,
-          gap.tyStart,
-          gap.tyEnd,
-        ),
-        fetchSubSales(
-          context.url,
-          context.token,
-          useGroups,
-          searchValue,
-          singleStore,
-          gap.lyStart,
-          gap.lyEnd,
-        ),
-      ]);
+      let tyRows;
+      let lyRows;
+
+      if (useTrackerEndpoint) {
+        const res = await fetchTrackerWindow(scope, gap);
+        if (!res) return;
+        tyRows = res.ty;
+        lyRows = res.ly;
+      } else {
+        [tyRows, lyRows] = await Promise.all([
+          fetchSubSales(
+            context.url,
+            context.token,
+            useGroups,
+            searchValue,
+            singleStore,
+            gap.tyStart,
+            gap.tyEnd,
+          ),
+          fetchSubSales(
+            context.url,
+            context.token,
+            useGroups,
+            searchValue,
+            singleStore,
+            gap.lyStart,
+            gap.lyEnd,
+          ),
+        ]);
+      }
       dispatch(appendRows({ ty: tyRows, ly: lyRows, from: newStart }));
       dispatch(setStartDate(isoToDisplay(newStart)));
     } catch {
@@ -222,35 +259,54 @@ const SalesTracker = () => {
     setFetchFailed(false);
 
     try {
-      // Two reads, both paged: the window, and the day-matched window last
-      // year. The LY range comes from the plan, which shifts every day and
-      // takes the extremes — shifting only the endpoints breaks whenever one
-      // of them lands on a holiday.
-      const [tyRows, lyRows] = await Promise.all([
-        fetchSubSales(
-          context.url,
-          context.token,
-          useGroups,
-          searchValue,
-          singleStore,
-          plan.tyStart,
-          plan.tyEnd,
-        ),
-        fetchSubSales(
-          context.url,
-          context.token,
-          useGroups,
-          searchValue,
-          singleStore,
-          plan.lyStart,
-          plan.lyEnd,
-        ),
-      ]);
+      let tyRows;
+      let lyRows;
+
+      if (useTrackerEndpoint) {
+        // One request per period per week, four at a time. A superseded search
+        // resolves to null rather than to a partial window.
+        const res = await fetchTrackerWindow(scope, plan, (done, total) =>
+          setProgress(done < total ? `${done} of ${total} loaded` : ""),
+        );
+        setProgress("");
+        if (!res) return;
+        tyRows = res.ty;
+        lyRows = res.ly;
+      } else {
+        // Two reads, both paged: the window, and the day-matched window last
+        // year. The LY range comes from the plan, which shifts every day and
+        // takes the extremes — shifting only the endpoints breaks whenever one
+        // of them lands on a holiday.
+        [tyRows, lyRows] = await Promise.all([
+          fetchSubSales(
+            context.url,
+            context.token,
+            useGroups,
+            searchValue,
+            singleStore,
+            plan.tyStart,
+            plan.tyEnd,
+          ),
+          fetchSubSales(
+            context.url,
+            context.token,
+            useGroups,
+            searchValue,
+            singleStore,
+            plan.lyStart,
+            plan.lyEnd,
+          ),
+        ]);
+      }
 
       if (tyRows.length === 0) setFetchFailed(true);
       dispatch(setRows({ ty: tyRows, ly: lyRows, from: plan.tyStart }));
-    } catch {
+    } catch (err) {
       setFetchFailed(true);
+      setProgress("");
+      toast.error(
+        err instanceof Error ? err.message : "Could not load the tracker",
+      );
       dispatch(setRows({ ty: [], ly: [], from: plan.tyStart }));
     } finally {
       dispatch(setLoading(false));
@@ -304,7 +360,14 @@ const SalesTracker = () => {
     <div className="w-full p-4 select-none min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden">
       {loading ? (
         <div className="relative h-[calc(100vh-3rem)]">
-          <LoadingIndicator message="Building tracker" />
+          {/* The pooled fetch reports weeks as they land, so a long window
+              says how far along it is rather than sitting on one word for
+              half a minute. Empty on the prod path, which is two requests. */}
+          <LoadingIndicator
+            message={
+              progress ? `Building tracker · ${progress}` : "Building tracker"
+            }
+          />
         </div>
       ) : (
         <div className="flex gap-4 h-[calc(100vh-5rem)]">

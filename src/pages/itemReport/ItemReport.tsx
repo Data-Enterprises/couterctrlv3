@@ -33,7 +33,6 @@ import { useReceivingWalk } from "./useReceivingWalk";
 import {
   fetchAllItemRows,
   fetchItemRowsWithPricePoints,
-  inRange,
   lwWindow,
   lyWindow,
   weekEnding,
@@ -90,18 +89,16 @@ const ItemReport = () => {
    * Off until something reads them.
    *
    * `include_price_points` re-runs the whole inner query and aggregates it a
-   * second time — `count(distinct (sale_date, terminal, sale_id))` and an
-   * ordered `array_agg` per price — and the span it runs over is fourteen days
-   * across every department. Meat alone produced 550 points for seven days.
+   * second time, so it is not free — but it is what the suggestions are built
+   * on now. Every price signal used to be derived by dividing a day's revenue
+   * by its units, which on a day carrying two prices produces one the register
+   * never charged: a promotion starting read as a price cut, a promotion
+   * ending as a rise, and reprice actions fired on both.
    *
-   * The points are fetched into Redux and nothing consumes them yet: they were
-   * wired ahead of the pricing-grade work. Paying for them on the blocking path
-   * meanwhile roughly doubled the report's load time, so the flag comes off
-   * until there is a reader for it. The fetch, the paging and the slice field
-   * all stay — flip this back to enable it.
+   * Only page 1 asks for it — `getSubMarginsWithPricePoints` derives that from
+   * the page number, since the payload is identical on every page.
    */
-  const PRICE_POINTS_READY = false;
-  const useSubsPricePoints = PRICE_POINTS_READY;
+  const useSubsPricePoints = true;
   const { singleDate } = useAppSelector((s) => s.search);
   const { assignedStores } = useAppSelector((s) => s.user);
   const state = useAppSelector((s) => s.itemReport);
@@ -187,44 +184,41 @@ const ItemReport = () => {
       );
 
       /**
-       * Two reads for three windows.
+       * One read per window.
        *
        * `subs/subs` answers for every department at once, so nothing has to
        * discover which departments exist first — which is what the two
        * ninety-day `sub_sales` calls were for, and why they reached back a
        * quarter to answer a question about one week.
        *
-       * This week and last week are consecutive seven-day windows, so one
-       * range covers both and splits by date. Last year sits a year away and
-       * needs its own. Rows in the overlap belong to both sets: the two
-       * `inRange` filters are independent, not a partition.
-       */
-      const lwWin = lwWindow(next);
-      const spanWindow = { start: lwWin.start, end: next.end };
-      /**
-       * TEMPORARY, dev only. `include_price_points` gives the prices each item
-       * actually rang at instead of the blended daily average the rows carry;
-       * prod's `subs/subs` has no such payload, so it keeps the shared fetch
-       * and the page grades without them. Delete the fork once it ships.
+       * This week and last week used to share one fourteen-day range that was
+       * split by date afterwards. They are separate reads now because the
+       * price points ride on this call: a span request returns the prices of
+       * BOTH weeks with no way to tell them apart — a point's `units` covers
+       * the whole range — so last week's prices appeared in a panel headed by
+       * this week's dates, and `highestPrice` spanned fourteen days while
+       * every figure it is quoted against spanned seven.
        *
-       * Points come off the span call, so they cover TW+LW — fourteen days of
-       * pricing history rather than seven, for free.
+       * Only this week asks for points. Last week and last year carry none,
+       * so the split costs no extra aggregate — and each response is smaller
+       * than the span's was.
        */
-      const [spanResult, ly] = await Promise.all([
+      const [tyResult, lw, ly] = await Promise.all([
         useSubsPricePoints
-          ? fetchItemRowsWithPricePoints(next, spanWindow)
-          : fetchAllItemRows(next, spanWindow).then((rows) => ({
-              rows,
-              pricePoints: [] as SubsPricePoint[],
-            })),
+          ? fetchItemRowsWithPricePoints(next, {
+              start: next.start,
+              end: next.end,
+            })
+          : fetchAllItemRows(next, { start: next.start, end: next.end }).then(
+              (rows) => ({ rows, pricePoints: [] as SubsPricePoint[] }),
+            ),
+        fetchAllItemRows(next, lwWindow(next)),
         fetchAllItemRows(next, lyWindow(next)),
       ]);
-      const span = spanResult.rows;
 
-      const ty = inRange(span, next.start, next.end);
-      const lw = inRange(span, lwWin.start, lwWin.end);
+      const ty = tyResult.rows;
 
-      if (span.length === 0 && ly.length === 0) {
+      if (ty.length === 0 && lw.length === 0 && ly.length === 0) {
         toast.warn("No sales came back for that store and week");
         return;
       }
@@ -275,7 +269,7 @@ const ItemReport = () => {
           tyRows,
           lwRows,
           lyRows,
-          pricePoints: spanResult.pricePoints,
+          pricePoints: tyResult.pricePoints,
         }),
       );
 
@@ -372,6 +366,18 @@ const ItemReport = () => {
     ? dayCount(state.scope.start, state.scope.end)
     : 30;
 
+  /** Points keyed by product code, normalised the same way the rows are —
+   *  `subs/subs` sends codes as numbers on some rows and with a trailing `.0`
+   *  on others, so an unnormalised key silently matches nothing. */
+  const pointsByUpc = useMemo(() => {
+    const map: Record<string, SubsPricePoint[]> = {};
+    for (const pp of state.pricePoints) {
+      const code = normalizeProductCode(pp.product_code);
+      (map[code] ??= []).push(pp);
+    }
+    return map;
+  }, [state.pricePoints]);
+
   const items = useMemo(
     () =>
       state.scope
@@ -381,11 +387,13 @@ const ItemReport = () => {
             state.lwRows,
             state.lyRows,
             state.receipts,
+            pointsByUpc,
             state.scope.start,
             state.scope.end,
           )
         : [],
     [
+      pointsByUpc,
       state.scope,
       state.upcs,
       state.tyRows,

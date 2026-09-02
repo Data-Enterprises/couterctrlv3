@@ -1,8 +1,7 @@
 import { calculateCogs } from "../subDepts";
 import { shiftIso } from "../../utils/grading";
 import { pricedUnits } from "../inventory/inventoryData";
-import { estimatedPricePoints } from "../inventory/pricePoints";
-import type { EstimatedPricePoint } from "../inventory/pricePoints";
+import type { SubsPricePoint } from "../../interfaces";
 import type { ReceiptLine } from "./itemReportData";
 import { normalizeProductCode } from "../../utils/productCode";
 import type { SubDeptMargin } from "../../interfaces";
@@ -304,7 +303,17 @@ const isPromo = (r: SubDeptMargin) => PROMO_TYPES.has(priceTypeOf(r));
  * a two-day run of 53 units — which is what makes "on sale since 08/12" and the
  * money given away sayable.
  */
-const readPrices = (rows: SubDeptMargin[]): PriceRead | null => {
+/** The price charged on a day, when exactly one point ran that day. Null when
+ *  none did or when several did, which is the caller's cue to fall back. */
+const priceOnDay = (points: SubsPricePoint[], day: string): number | null => {
+  const on = points.filter((pp) => pp.days_sold?.includes(day));
+  return on.length === 1 ? on[0].price : null;
+};
+
+const readPrices = (
+  rows: SubDeptMargin[],
+  points: SubsPricePoint[] = [],
+): PriceRead | null => {
   /** One entry per day: money, units, and whether any of it was promotional. */
   const days = new Map<
     string,
@@ -351,14 +360,21 @@ const readPrices = (rows: SubDeptMargin[]): PriceRead | null => {
     }
     // Latest regular ring wins, so a price change is picked up rather than the
     // first one seen.
+    //
+    // The price comes from the point that ran on that day when exactly one did
+    // — a real charged price rather than the day's average. A day carrying two
+    // points is genuinely ambiguous without a price type on the point, so it
+    // keeps the row arithmetic rather than guessing which of the two was the
+    // shelf price.
     if (isRegular(r)) {
+      const exact = priceOnDay(points, day);
       if (day >= regularDay) {
         regularDay = day;
-        regularPrice = round2(rowPrice);
+        regularPrice = round2(exact ?? rowPrice);
       }
       if (firstRegularDay === "" || day < firstRegularDay) {
         firstRegularDay = day;
-        firstRegularPrice = round2(rowPrice);
+        firstRegularPrice = round2(exact ?? rowPrice);
       }
     }
   }
@@ -390,12 +406,29 @@ const readPrices = (rows: SubDeptMargin[]): PriceRead | null => {
   // 6.33 in floating point before rounding.
   const cents = (today.revenue / today.units) * 100;
 
+  /**
+   * What it last rang at, and whether that day carried more than one price.
+   *
+   * The points answer both exactly. Dividing the day's revenue by its units
+   * only ever produced the average of the prices on it, and `blended` had to
+   * be inferred from whether that average landed on a whole cent — which a
+   * genuine $3.335 average defeats and a $2.99/$3.99 pair can accidentally
+   * satisfy. Counting the points that actually sold on the latest day is the
+   * question itself rather than a proxy for it.
+   */
+  const onLatest = points.filter((pp) => pp.days_sold?.includes(latest));
   return {
     shelfPrice,
-    price: round2(today.revenue / today.units),
+    price:
+      onLatest.length === 1
+        ? round2(onLatest[0].price)
+        : round2(today.revenue / today.units),
     date: latest,
     units: round1(today.units),
-    blended: Math.abs(cents - Math.round(cents)) >= 1e-4,
+    blended:
+      onLatest.length > 0
+        ? onLatest.length > 1
+        : Math.abs(cents - Math.round(cents)) >= 1e-4,
     onSale: today.promo,
     saleStart,
     saleDays,
@@ -407,7 +440,14 @@ const readPrices = (rows: SubDeptMargin[]): PriceRead | null => {
     promoDays: new Set(
       [...days.entries()].filter(([, d]) => d.promo).map(([day]) => day),
     ),
-    highestPrice: round2(highestPrice),
+    // The dearest price actually charged, not the dearest daily average. A day
+    // that blended $6.99 and $3.99 used to report $5.49 as the highest price
+    // seen, and "Highest price seen" is quoted verbatim in reprice evidence.
+    highestPrice: round2(
+      points.length > 0
+        ? points.reduce((m, pp) => Math.max(m, pp.price), 0)
+        : highestPrice,
+    ),
   };
 };
 
@@ -553,7 +593,19 @@ export interface ReportItem {
   /** Days in the window it sold at all. */
   daysSold: number;
   series: DayPoint[];
-  estimated: EstimatedPricePoint[];
+  /**
+   * The prices this item actually rang at, from `subs/subs`.
+   *
+   * Replaces the estimate that used to live here. Every price signal below was
+   * derived by dividing a day's revenue by its units, which on a day carrying
+   * two prices produces one the register never charged — a promotion starting
+   * read as a price cut and a promotion ending read as a rise. These are the
+   * real prices, with the units and the days each one ran.
+   *
+   * Empty when the endpoint returned none for this code, and every consumer
+   * falls back to the row arithmetic in that case rather than reporting zero.
+   */
+  points: SubsPricePoint[];
   movement: StockMovement | null;
   sinceDelivery: SinceDelivery | null;
   rows: SubDeptMargin[];
@@ -601,6 +653,10 @@ export const buildReport = (
    *  state has to stay serializable. Every consumer indexes by product code,
    *  which an object does just as well. */
   receiptsByUpc: Record<string, ReceiptLine[]>,
+  /** Actual price points from `subs/subs`, keyed the same way. Empty when the
+   *  fetch did not ask for them, which every consumer treats as "fall back to
+   *  the row arithmetic" rather than as "this item had no prices". */
+  pricePointsByUpc: Record<string, SubsPricePoint[]>,
   windowStart: string,
   windowEnd: string,
 ): ReportItem[] => {
@@ -738,7 +794,7 @@ export const buildReport = (
           : null,
       daysSold: series.length,
       series,
-      estimated: estimatedPricePoints(ty),
+      points: pricePointsByUpc[code] ?? [],
       movement,
       sinceDelivery,
       rows: ty,
@@ -771,11 +827,70 @@ const costOn = (date: string, receipts: ReceiptLine[]): number | null => {
   return null;
 };
 
+/**
+ * Eras straight from the actual price points.
+ *
+ * A point already IS an era: one price, the days it ran, the units it moved.
+ * The series walk below had to infer them by watching a daily average change,
+ * which invented a boundary whenever a day happened to blend two prices and
+ * missed one whenever two different prices averaged to the same number.
+ *
+ * `days_sold` is what makes the run contiguous-aware: a promotion that lapsed
+ * and came back is two eras here, where first_sold/last_sold alone would report
+ * one long one.
+ */
+const erasFromPoints = (points: SubsPricePoint[]): PriceEra[] => {
+  const eras: PriceEra[] = [];
+
+  for (const pp of points) {
+    const days = [...(pp.days_sold ?? [])].sort();
+    if (days.length === 0) continue;
+
+    // Units are only known for the point as a whole, so a point that ran in
+    // two stretches splits them by how many days each stretch holds. It is an
+    // apportionment rather than a measurement, which is why it is not used to
+    // decide anything — only shown.
+    const perDay = pp.units / days.length;
+
+    let start = days[0];
+    let run = 1;
+    for (let i = 1; i <= days.length; i++) {
+      const prev = days[i - 1];
+      const contiguous = i < days.length && shiftIso(prev, 1) === days[i];
+      if (contiguous) {
+        run += 1;
+        continue;
+      }
+      eras.push({
+        price: round2(pp.price),
+        start,
+        end: prev,
+        days: run,
+        units: round1(perDay * run),
+        unitsPerDay: 0,
+        unitCost: null,
+        marginPct: null,
+      });
+      if (i < days.length) {
+        start = days[i];
+        run = 1;
+      }
+    }
+  }
+
+  return eras.sort((a, b) => a.start.localeCompare(b.start));
+};
+
 export const buildPriceEras = (
   item: ReportItem,
   receipts: ReceiptLine[],
 ): PriceEra[] => {
-  const eras: PriceEra[] = [];
+  const eras: PriceEra[] =
+    item.points.length > 0 ? erasFromPoints(item.points) : [];
+  if (eras.length > 0) return withEraCost(eras, item, receipts);
+
+  // No points for this code — the day walk, which is what every era was built
+  // from before the endpoint returned real ones.
   for (const day of item.series) {
     const last = eras[eras.length - 1];
     if (last && last.price === day.price) {
@@ -795,7 +910,16 @@ export const buildPriceEras = (
       });
     }
   }
-  return eras.map((e) => {
+  return withEraCost(eras, item, receipts);
+};
+
+/** Cost and margin onto eras, from the receipt ruling on the day each began. */
+const withEraCost = (
+  eras: PriceEra[],
+  item: ReportItem,
+  receipts: ReceiptLine[],
+): PriceEra[] =>
+  eras.map((e) => {
     const unitCost = costOn(e.start, receipts) ?? item.unitCost;
     return {
       ...e,
@@ -807,7 +931,6 @@ export const buildPriceEras = (
           : round1(((e.price - unitCost) / e.price) * 100),
     };
   });
-};
 
 export const comparableEras = (
   eras: PriceEra[],
@@ -980,7 +1103,7 @@ export const verdictFor = (
    * the sentence beside it names one.
    */
   /** What it last rang at, and whether that was a promotion. */
-  const lastPrice = readPrices(item.rows);
+  const lastPrice = readPrices(item.rows, item.points);
 
   /**
    * The shelf price, best source first.
