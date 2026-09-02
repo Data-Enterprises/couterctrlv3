@@ -46,7 +46,7 @@ import type { SeatId } from "./portal/perspectives/perspectivesContent";
 import { getBlogs, getBlogFile } from "../../api/portal";
 import { POSTS, toPosts, type Post } from "../../content/posts";
 
-const VERSION = "Last updated 8/31/2026 @ 4:24 PM CST";
+const VERSION = "Last updated 9/2/2026 @ 5:00 PM CST";
 
 /** PLACEHOLDER: `/html_pages/` only exists on the dev API today, and this page
  *  runs before sign-in, so it cannot follow `apiEnv` (which now defaults to
