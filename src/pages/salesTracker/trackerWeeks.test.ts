@@ -68,7 +68,9 @@ describe("window plan", () => {
 describe("BUG 1: rows bucket by their own date, not array position", () => {
   it("gives the same answer however the rows arrive", () => {
     const dates = plan.weeks.flatMap((w) => w.dates);
-    const ordered = dates.map((d, i) => row(d, { sales: (i + 1) * 10, tax: 0 }));
+    const ordered = dates.map((d, i) =>
+      row(d, { sales: (i + 1) * 10, tax: 0 }),
+    );
     const shuffled = [...ordered].reverse();
 
     const a = buildSubDeptTotals(ordered, [], plan);
@@ -155,7 +157,9 @@ describe("ATS", () => {
   });
 
   it("has no ATS at all rather than a zero, with no transactions", () => {
-    const ty = [row(plan.weeks[0].dates[0], { sales: 110, transaction_count: 0 })];
+    const ty = [
+      row(plan.weeks[0].dates[0], { sales: 110, transaction_count: 0 }),
+    ];
     const t = buildSubDeptTotals(ty, [], plan)[0];
     // null, not 0: a day that took no transactions has no average transaction,
     // and $0.00 is indistinguishable from a real average that came to nothing.

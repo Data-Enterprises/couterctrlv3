@@ -404,20 +404,24 @@ const TitleBar = () => {
         // longer does.
         className="h-12 w-full flex items-stretch select-none relative z-50 bg-custom-white text-content border-b border-gray-200"
       >
-        {/* Logo + page title */}
-        <div className={`flex items-center p-1 flex-shrink-0 `}>
-          {/* The wordmark is dark navy on transparent, so it sits directly on
-              the bar — the white pill it used to need was for reading against
-              navy. The box still fills the block the page title used to share,
-              and `object-contain` lets the image use as much of it as the 4:1
-              aspect allows without ever squashing. */}
-          <div className="flex-1 self-stretch flex items-center justify-center px-2 py-1">
-            <img
-              src={logo}
-              alt="CounterCtrl Cloud"
-              className="max-h-full max-w-full object-contain"
-            />
-          </div>
+        {/* Logo.
+         *
+         * Bounded by HEIGHT, with the width following the aspect ratio. It used
+         * to be bounded by nothing: the wrapper was `flex-shrink-0` around a
+         * `flex-1` box, so its base size was the image's own intrinsic width
+         * and it could never give any of it back. On a wide viewport there was
+         * room to spare; on a 390px phone the bar overflowed and carried the
+         * avatar — and with it the only way to log out — off the right edge.
+         *
+         * `max-w-full` did not save it, because "full" resolved to a container
+         * that had already grown to fit the image.
+         */}
+        <div className="flex min-w-0 flex-none items-center overflow-hidden px-2">
+          <img
+            src={logo}
+            alt="CounterCtrl Cloud"
+            className="h-8 w-auto max-w-full object-contain"
+          />
         </div>
 
         {/* Category nav — desktop only */}

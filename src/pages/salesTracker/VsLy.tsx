@@ -97,7 +97,10 @@ const VsLy = ({
       <span className={`${big} font-semibold`}>
         {signed(dollarChange, formatCurrency2)}
       </span>
-      <span className={isPill ? "opacity-40" : "text-gray-300"} aria-hidden="true">
+      <span
+        className={isPill ? "opacity-40" : "text-gray-300"}
+        aria-hidden="true"
+      >
         |
       </span>
       <span className={`${small} font-semibold`}>{signedPct(pctChange)}</span>

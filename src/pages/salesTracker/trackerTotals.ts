@@ -119,7 +119,8 @@ export const buildSubDeptTotals = (
     let entry = byDept.get(row.sub_department);
     if (!entry) {
       entry = {
-        desc: row.sub_department_description ?? `Sub dept ${row.sub_department}`,
+        desc:
+          row.sub_department_description ?? `Sub dept ${row.sub_department}`,
         days: new Map(),
       };
       byDept.set(row.sub_department, entry);
@@ -153,86 +154,90 @@ export const buildSubDeptTotals = (
     }
   }
 
-  return [...byDept.entries()]
-    .map(([id, entry]) => {
-      const weeks: WeekTotal[] = plan.weeks.map((bucket) => {
-        const days: DayTotal[] = bucket.dates.map((date) => {
-          const pair = plan.byTyDate.get(date);
-          const acc = entry.days.get(date) ?? blankDay();
-          const ats = atsOf(acc.ty, acc.trans);
+  return (
+    [...byDept.entries()]
+      .map(([id, entry]) => {
+        const weeks: WeekTotal[] = plan.weeks.map((bucket) => {
+          const days: DayTotal[] = bucket.dates.map((date) => {
+            const pair = plan.byTyDate.get(date);
+            const acc = entry.days.get(date) ?? blankDay();
+            const ats = atsOf(acc.ty, acc.trans);
+            return {
+              date,
+              lyDate: pair?.lyDate ?? "",
+              salesTy: acc.ty,
+              salesLy: acc.ly,
+              trans: acc.trans,
+              ats,
+              ...changes(acc.ty, acc.ly),
+              noSales: !acc.seen,
+            };
+          });
+
+          const salesTy = days.reduce((a, d) => a + d.salesTy, 0);
+          const comparable = days.filter((d) => d.salesLy !== null);
+          const salesLy = comparable.length
+            ? comparable.reduce((a, d) => a + (d.salesLy ?? 0), 0)
+            : null;
+          // Day-matched: only the days with a last-year partner count on the TY
+          // side too, so a week missing two LY days isn't shown as collapsing.
+          const tyForCompare = comparable.reduce((a, d) => a + d.salesTy, 0);
+          const trans = days.reduce((a, d) => a + d.trans, 0);
+
+          const rated = days.filter((d) => d.dollarChange !== null);
+          const worstDay = rated.reduce<DayTotal | null>(
+            (worst, d) =>
+              (d.dollarChange as number) < 0 &&
+              (worst === null ||
+                (d.dollarChange as number) < (worst.dollarChange as number))
+                ? d
+                : worst,
+            null,
+          );
+
           return {
-            date,
-            lyDate: pair?.lyDate ?? "",
-            salesTy: acc.ty,
-            salesLy: acc.ly,
-            trans: acc.trans,
-            ats,
-            ...changes(acc.ty, acc.ly),
-            noSales: !acc.seen,
+            index: bucket.index,
+            start: bucket.start,
+            end: bucket.end,
+            days,
+            salesTy,
+            salesLy,
+            trans,
+            ats: atsOf(salesTy, trans),
+            upDays: rated.filter((d) => (d.dollarChange as number) > 0).length,
+            downDays: rated.filter((d) => (d.dollarChange as number) < 0)
+              .length,
+            comparedDays: rated.length,
+            worstDay,
+            ...changes(tyForCompare, salesLy),
           };
         });
 
-        const salesTy = days.reduce((a, d) => a + d.salesTy, 0);
-        const comparable = days.filter((d) => d.salesLy !== null);
-        const salesLy = comparable.length
-          ? comparable.reduce((a, d) => a + (d.salesLy ?? 0), 0)
+        const salesTy = weeks.reduce((a, w) => a + w.salesTy, 0);
+        const cmp = weeks.filter((w) => w.salesLy !== null);
+        const salesLy = cmp.length
+          ? cmp.reduce((a, w) => a + (w.salesLy ?? 0), 0)
           : null;
-        // Day-matched: only the days with a last-year partner count on the TY
-        // side too, so a week missing two LY days isn't shown as collapsing.
-        const tyForCompare = comparable.reduce((a, d) => a + d.salesTy, 0);
-        const trans = days.reduce((a, d) => a + d.trans, 0);
-
-        const rated = days.filter((d) => d.dollarChange !== null);
-        const worstDay = rated.reduce<DayTotal | null>(
-          (worst, d) =>
-            (d.dollarChange as number) < 0 &&
-            (worst === null || (d.dollarChange as number) < (worst.dollarChange as number))
-              ? d
-              : worst,
-          null,
-        );
+        const tyForCompare = cmp.reduce((a, w) => a + w.salesTy, 0);
+        const trans = weeks.reduce((a, w) => a + w.trans, 0);
 
         return {
-          index: bucket.index,
-          start: bucket.start,
-          end: bucket.end,
-          days,
+          id,
+          desc: entry.desc,
+          weeks,
           salesTy,
           salesLy,
           trans,
           ats: atsOf(salesTy, trans),
-          upDays: rated.filter((d) => (d.dollarChange as number) > 0).length,
-          downDays: rated.filter((d) => (d.dollarChange as number) < 0).length,
-          comparedDays: rated.length,
-          worstDay,
           ...changes(tyForCompare, salesLy),
         };
-      });
-
-      const salesTy = weeks.reduce((a, w) => a + w.salesTy, 0);
-      const cmp = weeks.filter((w) => w.salesLy !== null);
-      const salesLy = cmp.length
-        ? cmp.reduce((a, w) => a + (w.salesLy ?? 0), 0)
-        : null;
-      const tyForCompare = cmp.reduce((a, w) => a + w.salesTy, 0);
-      const trans = weeks.reduce((a, w) => a + w.trans, 0);
-
-      return {
-        id,
-        desc: entry.desc,
-        weeks,
-        salesTy,
-        salesLy,
-        trans,
-        ats: atsOf(salesTy, trans),
-        ...changes(tyForCompare, salesLy),
-      };
-    })
-    // Sub-department number order, which is the order these are numbered in
-    // the back office and the order every other report prints them in.
-    // Alphabetical put Bakery above Grocery and made the list unrecognisable
-    // to anyone who knows the departments by their numbers.
-    .sort((a, b) => a.id - b.id);
+      })
+      // Sub-department number order, which is the order these are numbered in
+      // the back office and the order every other report prints them in.
+      // Alphabetical put Bakery above Grocery and made the list unrecognisable
+      // to anyone who knows the departments by their numbers.
+      .sort((a, b) => a.id - b.id)
+  );
 };
 
 /**
@@ -289,7 +294,8 @@ export const allDeptsTotal = (
     const worstDay = rated.reduce<DayTotal | null>(
       (worst, d) =>
         (d.dollarChange as number) < 0 &&
-        (worst === null || (d.dollarChange as number) < (worst.dollarChange as number))
+        (worst === null ||
+          (d.dollarChange as number) < (worst.dollarChange as number))
           ? d
           : worst,
       null,
@@ -347,5 +353,3 @@ export const allDeptsTotal = (
  * than one that reports the harder-to-defend answer, so there is now one
  * computation and both panels read from it.
  */
-
-

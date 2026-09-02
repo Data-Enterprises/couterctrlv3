@@ -31,11 +31,25 @@ import { sameWeekDayLastYear } from "../../utils";
  * Parsing the parts and working through `Date.UTC` keeps the calendar date the
  * only thing in play, which is all a sales date ever is.
  */
-const shiftDays = (date: string, days: number): string => {
+export const shiftDays = (date: string, days: number): string => {
   const [y, m, d] = date.split("T")[0].split("-").map(Number);
   const dt = new Date(Date.UTC(y, m - 1, d));
   dt.setUTCDate(dt.getUTCDate() + days);
   return dt.toISOString().split("T")[0];
+};
+
+/**
+ * `yyyy-mm-dd` to the `m/d/yyyy` the search slice holds, by string surgery.
+ *
+ * Deliberately not the shared `formatDate`. That does `new Date("2026-07-27")`,
+ * which parses as UTC midnight, then reads it back with local `getDate()` —
+ * west of Greenwich that is still the 26th, so every preset landed a day early.
+ * Lives here beside `shiftDays` because both exist for the same reason and
+ * anything that shifts a tracker date needs this on the way back out.
+ */
+export const isoToDisplay = (iso: string) => {
+  const [y, m, d] = iso.split("-").map(Number);
+  return `${m}/${d}/${y}`;
 };
 
 export type WeekBucket = {

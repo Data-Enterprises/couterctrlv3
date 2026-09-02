@@ -22,8 +22,12 @@ export const ITEM_REPORT_RAIL_INFO: {
     "Everything behind the suggestion at the top: what arrived, what moved, what it rang at, and who bought it. The strip states the call; these sections are the working.",
   glossary: [
     {
-      term: "Estimated vs transaction price points",
-      desc: "Two sources. **Estimated** comes from daily sales — net sales divided by units for each day, same-price days grouped. Always available. **Transactions** are real register lines, fetched only for the item you select. Estimated says roughly what it has been selling at; transactions say what individual customers paid.",
+      term: "Price points vs transactions",
+      desc: "Two sources, both real. **Price points** are the prices the item actually rang at across the window, with the units and the days each one ran — they come back with the week's sales, so every item has them. **Transactions** are individual register lines, fetched only for the item you select. Price points say what the item has been selling at; transactions say what each customer paid.",
+    },
+    {
+      term: "Why the price points cover this week only",
+      desc: "The window at the top, and nothing else. They used to arrive on a fourteen-day read shared with last week, so last week's prices appeared under this week's dates — and the dearest price seen, which the Reprice evidence quotes, was drawn from twice the period everything it is compared against uses.",
     },
     {
       term: "Received (90 days)",

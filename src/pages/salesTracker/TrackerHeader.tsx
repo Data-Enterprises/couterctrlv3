@@ -1,5 +1,9 @@
 import { useState } from "react";
-import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
+import {
+  MagnifyingGlassIcon,
+  MinusIcon,
+  PlusIcon,
+} from "@heroicons/react/20/solid";
 import { formatCurrencyCompact } from "../../utils";
 import InfoButton from "../../components/InfoButton";
 import InfoPopover from "../../components/InfoPopover";
@@ -10,6 +14,11 @@ interface TrackerHeaderProps {
   windowLabel: string;
   scopeLabel: string;
   weeks: number;
+  addingWeek: boolean;
+  canAddWeek: boolean;
+  canDropWeek: boolean;
+  onAddWeek: () => void;
+  onDropWeek: () => void;
   salesTy: number;
   pctChange: number | null;
   onOpenSearch: () => void;
@@ -28,6 +37,11 @@ const TrackerHeader = ({
   windowLabel,
   scopeLabel,
   weeks,
+  addingWeek,
+  canAddWeek,
+  canDropWeek,
+  onAddWeek,
+  onDropWeek,
   salesTy,
   pctChange,
   onOpenSearch,
@@ -74,9 +88,37 @@ const TrackerHeader = ({
 
         <div className="flex-1" />
 
-        <span className="text-[11px] text-custom-white font-medium flex-shrink-0">
-          {weeks} {weeks === 1 ? "week" : "weeks"}
-        </span>
+        {/* The window, and the two controls that change it.
+            Minus is free — the rows stay held and the window simply narrows,
+            so a week that comes back off a later plus costs no request. Plus
+            fetches only the week being added. */}
+        <div className="flex items-center gap-1 flex-shrink-0">
+          <button
+            type="button"
+            onClick={onDropWeek}
+            disabled={!canDropWeek}
+            aria-label="Remove the oldest week"
+            title="Remove the oldest week"
+            className="flex h-5 w-5 items-center justify-center rounded border border-custom-white/20 text-custom-white/85 hover:bg-custom-white/10 disabled:opacity-30 disabled:hover:bg-transparent"
+          >
+            <MinusIcon className="h-3 w-3" />
+          </button>
+          <span className="text-[11px] text-custom-white font-medium tabular-nums min-w-[52px] text-center">
+            {addingWeek
+              ? "loading…"
+              : `${weeks} ${weeks === 1 ? "week" : "weeks"}`}
+          </span>
+          <button
+            type="button"
+            onClick={onAddWeek}
+            disabled={!canAddWeek || addingWeek}
+            aria-label="Add another week"
+            title="Add another week further back"
+            className="flex h-5 w-5 items-center justify-center rounded border border-custom-white/20 text-custom-white/85 hover:bg-custom-white/10 disabled:opacity-30 disabled:hover:bg-transparent"
+          >
+            <PlusIcon className="h-3 w-3" />
+          </button>
+        </div>
 
         <div className="w-px h-4 bg-custom-white/15 flex-shrink-0" />
 

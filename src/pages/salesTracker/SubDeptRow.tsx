@@ -39,7 +39,9 @@ const SubDeptRow = ({ row, isSelected, onClick }: SubDeptRowProps) => (
       {row.desc}
     </span>
 
-    <span className={`text-[13.5px] font-semibold text-content text-right ${NUM}`}>
+    <span
+      className={`text-[13.5px] font-semibold text-content text-right ${NUM}`}
+    >
       {formatCurrency2(row.salesTy)}
     </span>
 

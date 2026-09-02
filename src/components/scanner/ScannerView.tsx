@@ -19,6 +19,16 @@ const CONSTRAINTS = {
 const AREA = { top: 30, bottom: 30, left: 10, right: 10 };
 
 /**
+ * Viewfinder height.
+ *
+ * It buys more than screen presence: the decode band is the middle 40% of the
+ * frame, so this is the one number that sets how tall a barcode can be and
+ * still be read. At 175 that band was 70px, which is a tight target held at
+ * arm's length over a shelf.
+ */
+const FRAME_HEIGHT = 220;
+
+/**
  * Why the camera would not start, in the user's terms.
  *
  * The three cases have different fixes — grant a permission, use another
@@ -150,7 +160,7 @@ const ScannerView = ({ onDetected }: Props) => {
           as a camera that is on and pointed at nothing. */}
       <div
         className="relative w-full overflow-hidden rounded-lg"
-        style={{ height: error ? 0 : 175 }}
+        style={{ height: error ? 0 : FRAME_HEIGHT }}
       >
         <div
           ref={ref}

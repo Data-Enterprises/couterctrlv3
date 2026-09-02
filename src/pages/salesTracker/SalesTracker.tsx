@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback } from "react";
 import { useAppSelector, useAppDispatch } from "../../hooks";
+import { setStartDate } from "../../features/searchSlice";
 import { formatGoliathDate, formatCurrency2, getStoreName } from "../../utils";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
@@ -12,6 +13,10 @@ import {
   setLoading,
   setScopeLabel,
   setRows,
+  appendRows,
+  setAddingWeek,
+  MAX_WEEKS,
+  MIN_WEEKS,
   setSelectedSubDept,
   setSubFilter,
   reQueryTracker,
@@ -20,8 +25,8 @@ import TrackerEntryCard from "./TrackerEntryCard";
 import TrackerHeader from "./TrackerHeader";
 import SubDeptRow from "./SubDeptRow";
 import TrackerDetail from "./TrackerDetail";
-import { fetchSubSales } from "./trackerData";
-import { buildWindowPlan } from "./trackerWeeks";
+import { fetchSubSales, fetchTrackerWindow } from "./trackerData";
+import { buildWindowPlan, isoToDisplay, shiftDays } from "./trackerWeeks";
 import {
   buildSubDeptTotals,
   allDeptsTotal,
@@ -38,7 +43,6 @@ const shortLabel = (d: string) => {
   const dt = new Date(d + "T12:00:00");
   return `${dt.getMonth() + 1}/${dt.getDate()}`;
 };
-
 
 /**
  * Sales Tracker — sub-department sales against the same weeks last year.
@@ -57,17 +61,53 @@ const SalesTracker = () => {
   const {
     hasSearched,
     loading,
-    weeks,
     scopeLabel,
     ty,
     ly,
     selectedSubDept,
     subFilter,
+    loadedFrom,
+    addingWeek,
   } = useAppSelector((s) => s.salesTracker);
 
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [fetchFailed, setFetchFailed] = useState(false);
+  /** Weeks landed, while the pooled fetch runs. Local: it is loading copy, and
+   *  nothing outside this page reads it. */
+  const [progress, setProgress] = useState("");
   const { sort, handleSort, applySort } = useTriStateSort<SortColumn>();
+
+  /** The search scope, read by both the full search and the add-a-week fetch.
+   *  Derived here rather than inside the search so the two cannot disagree
+   *  about which store the extra week belongs to. */
+  const isGroup = isGroupSearch(search.type);
+  const useGroups = isGroup ? 1 : 0;
+  const singleStore = isGroup ? 0 : 1;
+  const searchValue = isGroup ? search.lastGroup : search.lastStore;
+
+  /**
+   * EXPERIMENT, PARKED. `subs/sales_tracker` instead of two paged
+   * `subs/sub_sales` reads.
+   *
+   * Off outright rather than gated on `apiEnv`, because the endpoint is not on
+   * the API yet — on dev it would 404, and the API toggle is reachable by
+   * anyone at level 7. A hard `false` means the branch is publish-safe no
+   * matter which backend is selected.
+   *
+   * To resume the comparison, change this to `context.apiEnv === "dev"`. The
+   * measurements it produced: 5 stores over 12 weeks went from ~52s across two
+   * paged reads to ~7s across 12 pooled requests, on the same ~1.15MB — the
+   * cost was query time, never payload. Delete the flag and the `fetchSubSales`
+   * path once the endpoint ships for good.
+   */
+  const useTrackerEndpoint = false;
+  const scope = {
+    url: context.url,
+    token: context.token,
+    useGroups,
+    searchValue,
+    singleStore,
+  };
 
   const plan = useMemo(
     () =>
@@ -77,6 +117,86 @@ const SalesTracker = () => {
       ),
     [search.startDate, search.endDate],
   );
+
+  /**
+   * One more week, on the front of the window.
+   *
+   * The window is the search range, so this moves the start date back seven
+   * days and lets the plan rebuild — the same path a preset takes. What is new
+   * is that only the gap is fetched: `loadedFrom` says how far back the rows in
+   * hand already reach, so re-adding a week that was dropped costs nothing and
+   * a genuinely new one costs one week rather than the whole window.
+   *
+   * The date moves only once the rows are in. Moving it first would widen the
+   * plan while the fetch was still running, and every total would read low for
+   * the duration — a week of missing sales presented as a real figure.
+   */
+  const addWeek = async () => {
+    if (plan.weeks.length >= MAX_WEEKS || addingWeek) return;
+
+    const newStart = shiftDays(plan.tyStart, -7);
+
+    // Already in hand — dropped earlier and now coming back.
+    if (loadedFrom && newStart >= loadedFrom) {
+      dispatch(setStartDate(isoToDisplay(newStart)));
+      return;
+    }
+
+    // The gap alone, and its own LY range: the plan shifts every day and takes
+    // the extremes, so a week containing a holiday still asks for the days its
+    // pairing actually needs.
+    const gap = buildWindowPlan(
+      newStart,
+      shiftDays(loadedFrom ?? plan.tyStart, -1),
+    );
+
+    dispatch(setAddingWeek(true));
+    try {
+      let tyRows;
+      let lyRows;
+
+      if (useTrackerEndpoint) {
+        const res = await fetchTrackerWindow(scope, gap);
+        if (!res) return;
+        tyRows = res.ty;
+        lyRows = res.ly;
+      } else {
+        [tyRows, lyRows] = await Promise.all([
+          fetchSubSales(
+            context.url,
+            context.token,
+            useGroups,
+            searchValue,
+            singleStore,
+            gap.tyStart,
+            gap.tyEnd,
+          ),
+          fetchSubSales(
+            context.url,
+            context.token,
+            useGroups,
+            searchValue,
+            singleStore,
+            gap.lyStart,
+            gap.lyEnd,
+          ),
+        ]);
+      }
+      dispatch(appendRows({ ty: tyRows, ly: lyRows, from: newStart }));
+      dispatch(setStartDate(isoToDisplay(newStart)));
+    } catch {
+      toast.error("Could not load that week.");
+    } finally {
+      dispatch(setAddingWeek(false));
+    }
+  };
+
+  /** One week off the front. No fetch, and the rows stay — narrowing the
+   *  window is all that happened, so adding it back is instant. */
+  const dropWeek = () => {
+    if (plan.weeks.length <= MIN_WEEKS) return;
+    dispatch(setStartDate(isoToDisplay(shiftDays(plan.tyStart, 7))));
+  };
 
   const rows = useMemo(() => buildSubDeptTotals(ty, ly, plan), [ty, ly, plan]);
 
@@ -109,17 +229,12 @@ const SalesTracker = () => {
   const ranked = useMemo(
     () =>
       [...rows].sort(
-        (a, b) =>
-          Math.abs(b.dollarChange ?? 0) - Math.abs(a.dollarChange ?? 0),
+        (a, b) => Math.abs(b.dollarChange ?? 0) - Math.abs(a.dollarChange ?? 0),
       ),
     [rows],
   );
 
   const fetchTracker = async () => {
-    const isGroup = isGroupSearch(search.type);
-    const useGroups = isGroup ? 1 : 0;
-    const singleStore = isGroup ? 0 : 1;
-    const searchValue = isGroup ? search.lastGroup : search.lastStore;
     if (!searchValue) {
       toast.warn("Pick a store or group first");
       return;
@@ -144,36 +259,55 @@ const SalesTracker = () => {
     setFetchFailed(false);
 
     try {
-      // Two reads, both paged: the window, and the day-matched window last
-      // year. The LY range comes from the plan, which shifts every day and
-      // takes the extremes — shifting only the endpoints breaks whenever one
-      // of them lands on a holiday.
-      const [tyRows, lyRows] = await Promise.all([
-        fetchSubSales(
-          context.url,
-          context.token,
-          useGroups,
-          searchValue,
-          singleStore,
-          plan.tyStart,
-          plan.tyEnd,
-        ),
-        fetchSubSales(
-          context.url,
-          context.token,
-          useGroups,
-          searchValue,
-          singleStore,
-          plan.lyStart,
-          plan.lyEnd,
-        ),
-      ]);
+      let tyRows;
+      let lyRows;
+
+      if (useTrackerEndpoint) {
+        // One request per period per week, four at a time. A superseded search
+        // resolves to null rather than to a partial window.
+        const res = await fetchTrackerWindow(scope, plan, (done, total) =>
+          setProgress(done < total ? `${done} of ${total} loaded` : ""),
+        );
+        setProgress("");
+        if (!res) return;
+        tyRows = res.ty;
+        lyRows = res.ly;
+      } else {
+        // Two reads, both paged: the window, and the day-matched window last
+        // year. The LY range comes from the plan, which shifts every day and
+        // takes the extremes — shifting only the endpoints breaks whenever one
+        // of them lands on a holiday.
+        [tyRows, lyRows] = await Promise.all([
+          fetchSubSales(
+            context.url,
+            context.token,
+            useGroups,
+            searchValue,
+            singleStore,
+            plan.tyStart,
+            plan.tyEnd,
+          ),
+          fetchSubSales(
+            context.url,
+            context.token,
+            useGroups,
+            searchValue,
+            singleStore,
+            plan.lyStart,
+            plan.lyEnd,
+          ),
+        ]);
+      }
 
       if (tyRows.length === 0) setFetchFailed(true);
-      dispatch(setRows({ ty: tyRows, ly: lyRows }));
-    } catch {
+      dispatch(setRows({ ty: tyRows, ly: lyRows, from: plan.tyStart }));
+    } catch (err) {
       setFetchFailed(true);
-      dispatch(setRows({ ty: [], ly: [] }));
+      setProgress("");
+      toast.error(
+        err instanceof Error ? err.message : "Could not load the tracker",
+      );
+      dispatch(setRows({ ty: [], ly: [], from: plan.tyStart }));
     } finally {
       dispatch(setLoading(false));
     }
@@ -226,7 +360,14 @@ const SalesTracker = () => {
     <div className="w-full p-4 select-none min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden">
       {loading ? (
         <div className="relative h-[calc(100vh-3rem)]">
-          <LoadingIndicator message="Building tracker" />
+          {/* The pooled fetch reports weeks as they land, so a long window
+              says how far along it is rather than sitting on one word for
+              half a minute. Empty on the prod path, which is two requests. */}
+          <LoadingIndicator
+            message={
+              progress ? `Building tracker · ${progress}` : "Building tracker"
+            }
+          />
         </div>
       ) : (
         <div className="flex gap-4 h-[calc(100vh-5rem)]">
@@ -237,9 +378,14 @@ const SalesTracker = () => {
             <TrackerHeader
               windowLabel={windowLabel}
               scopeLabel={scopeLabel}
-              weeks={weeks}
-              salesTy={(groupTotal?.salesTy ?? 0)}
-              pctChange={(groupTotal?.pctChange ?? null)}
+              weeks={plan.weeks.length}
+              addingWeek={addingWeek}
+              canAddWeek={plan.weeks.length < MAX_WEEKS}
+              canDropWeek={plan.weeks.length > MIN_WEEKS}
+              onAddWeek={addWeek}
+              onDropWeek={dropWeek}
+              salesTy={groupTotal?.salesTy ?? 0}
+              pctChange={groupTotal?.pctChange ?? null}
               onOpenSearch={() => setSearchModalOpen(true)}
             />
 

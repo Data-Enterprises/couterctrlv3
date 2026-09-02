@@ -53,19 +53,19 @@ const initial: ActualFetchState = {
 interface Options {
   /**
    * Opt in to `cashiers/product_lookup` for step one instead of
-   * `cashier_table`. Off by default: this hook also serves Inventory's Sub
-   * Dept and Vendor panels, and only Item Actions is moving.
+   * `cashier_table`.
    *
-   * TEMPORARY, dev only. `product_lookup` does not exist on prod yet, so the
-   * flag is ANDed with `apiEnv === "dev"` below and prod keeps the old walk.
-   * Delete the option and the branch once the endpoint ships.
+   * Off by default, and no longer because of the backend: `product_lookup` is
+   * on prod now. It stays an option because this hook also serves Price Opt
+   * Sub Dept and Price Opt Vendor, which are still experimental and have not
+   * been moved deliberately. Item Actions is the only caller that opts in.
    */
   productLookup?: boolean;
 }
 
 export const useActualPricePoints = (options: Options = {}) => {
-  const { url, token, apiEnv } = useAppSelector((s) => s.app);
-  const useLookup = options.productLookup === true && apiEnv === "dev";
+  const { url, token } = useAppSelector((s) => s.app);
+  const useLookup = options.productLookup === true;
   const [state, setState] = useState<ActualFetchState>(initial);
   /** The most recent request. A response whose token no longer matches is a
    *  loser of a race and is dropped rather than rendered. */
