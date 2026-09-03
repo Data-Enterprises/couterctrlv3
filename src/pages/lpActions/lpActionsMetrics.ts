@@ -1,4 +1,4 @@
-import type { CashierTransaction } from "../../interfaces";
+import type { CashierRollupRow, CashierTransaction } from "../../interfaces";
 
 /**
  * How an exception is graded, and how the weeks are cut.
@@ -137,6 +137,57 @@ export const SEVERITY_RANK: Record<LpSeverity, number> = {
 export const exceptionId = (storeid: number, saleType: string) =>
   `${storeid}__${saleType}`;
 
+interface ExceptionAccum {
+  storeid: number;
+  storeName: string;
+  saleType: string;
+  perWeek: number[];
+  cashierPerWeek: Map<number, { name: string; counts: number[] }>;
+}
+
+type ExceptionTally = Map<string, ExceptionAccum>;
+
+/**
+ * Add `n` occurrences to one (store, type, cashier, week) cell.
+ *
+ * Both front-ends below funnel through this, so counting a row one at a time
+ * and reading a pre-summed count are the same operation with a different `n`.
+ */
+const tally = (
+  byKey: ExceptionTally,
+  weekCount: number,
+  weekIndex: number,
+  row: {
+    storeid: number;
+    store_name: string;
+    sale_type: string;
+    cashier_number: number;
+    cashier_name: string;
+  },
+  n: number,
+) => {
+  const key = exceptionId(row.storeid, row.sale_type);
+  let entry = byKey.get(key);
+  if (!entry) {
+    entry = {
+      storeid: row.storeid,
+      storeName: row.store_name,
+      saleType: row.sale_type,
+      perWeek: Array(weekCount).fill(0),
+      cashierPerWeek: new Map(),
+    };
+    byKey.set(key, entry);
+  }
+  entry.perWeek[weekIndex] += n;
+
+  let cashier = entry.cashierPerWeek.get(row.cashier_number);
+  if (!cashier) {
+    cashier = { name: row.cashier_name, counts: Array(weekCount).fill(0) };
+    entry.cashierPerWeek.set(row.cashier_number, cashier);
+  }
+  cashier.counts[weekIndex] += n;
+};
+
 /**
  * Transactions, already bucketed by week, into graded rows.
  *
@@ -148,44 +199,53 @@ export const buildExceptionRows = (
   windows: WeekWindow[],
   rowsByWeek: CashierTransaction[][],
 ): ExceptionRow[] => {
-  const byKey = new Map<
-    string,
-    {
-      storeid: number;
-      storeName: string;
-      saleType: string;
-      perWeek: number[];
-      cashierPerWeek: Map<number, { name: string; counts: number[] }>;
-    }
-  >();
-
+  const byKey: ExceptionTally = new Map();
   const weekCount = windows.length;
 
   rowsByWeek.forEach((rows, weekIndex) => {
-    for (const t of rows) {
-      const key = exceptionId(t.storeid, t.sale_type);
-      let entry = byKey.get(key);
-      if (!entry) {
-        entry = {
-          storeid: t.storeid,
-          storeName: t.store_name,
-          saleType: t.sale_type,
-          perWeek: Array(weekCount).fill(0),
-          cashierPerWeek: new Map(),
-        };
-        byKey.set(key, entry);
-      }
-      entry.perWeek[weekIndex] += 1;
-
-      let cashier = entry.cashierPerWeek.get(t.cashier_number);
-      if (!cashier) {
-        cashier = { name: t.cashier_name, counts: Array(weekCount).fill(0) };
-        entry.cashierPerWeek.set(t.cashier_number, cashier);
-      }
-      cashier.counts[weekIndex] += 1;
-    }
+    for (const t of rows) tally(byKey, weekCount, weekIndex, t, 1);
   });
 
+  return gradeTally(windows, byKey);
+};
+
+/**
+ * The same rows, from `cashier_table`'s `groupBy: "cashier"` rollup.
+ *
+ * The rollup has already done the counting the loop above does one row at a
+ * time, so this reads `line_count` where the other adds one. Everything after
+ * the tally is shared, deliberately: the two paths must grade identically or
+ * the dev fork silently reports different severities than prod.
+ *
+ * `line_count` and not `transaction_count` — the browser walk counted
+ * PRODUCT-GRAIN rows, so a basket holding two different discounted items
+ * counted twice. Baskets are roughly a seventh of that, and swapping them would
+ * move every grade on the page.
+ *
+ * A `week_index` outside the requested windows is dropped rather than clamped:
+ * it would mean the server bucketed differently than the page did, and folding
+ * it into the nearest week would hide exactly the mismatch worth seeing.
+ */
+export const buildExceptionRowsFromRollup = (
+  windows: WeekWindow[],
+  rows: CashierRollupRow[],
+): ExceptionRow[] => {
+  const byKey: ExceptionTally = new Map();
+  const weekCount = windows.length;
+
+  for (const r of rows) {
+    if (r.week_index < 0 || r.week_index >= weekCount) continue;
+    tally(byKey, weekCount, r.week_index, r, r.line_count);
+  }
+
+  return gradeTally(windows, byKey);
+};
+
+/** Grading, ordering and shaping — everything downstream of the counts. */
+const gradeTally = (
+  windows: WeekWindow[],
+  byKey: ExceptionTally,
+): ExceptionRow[] => {
   const meanOfEarlier = (counts: number[]) =>
     counts.length < 2
       ? 0

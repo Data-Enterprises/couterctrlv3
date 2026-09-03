@@ -1,5 +1,5 @@
 import type { CashierTransaction } from "../../../interfaces";
-import type { WeekWindow } from "../lpActionsMetrics";
+import type { CashierRef, ExceptionRow, WeekWindow } from "../lpActionsMetrics";
 import { isAll, weekIndexOf } from "./caseModel";
 
 /**
@@ -61,6 +61,63 @@ export const buildStoreShare = (
   return {
     storeIncrease: Math.round(increaseOf(storeWeeks)),
     herIncrease: Math.round(increaseOf(mine)),
+    otherMovers,
+  };
+};
+
+/**
+ * The same three numbers, off the graded rows instead of the transactions.
+ *
+ * The case's own rows are ONE cashier's — that is the whole point of fetching
+ * them lazily — and this line is a claim about everybody else: what the store
+ * did, and how many other people moved. Computing it from the cashier's own
+ * rows produces a store that rose by exactly her amount and a confident "no
+ * other cashier moved", which is not a rounding error but a false statement
+ * about five other people.
+ *
+ * Nothing needs fetching to fix it. The overview already graded every cashier
+ * at the store, and `latest - baseline` here is the same arithmetic
+ * `increaseOf` does over the weekly counts.
+ */
+export const storeShareFromGraded = (
+  gradedRows: ExceptionRow[],
+  ref: CashierRef,
+  saleType: string,
+): StoreShare => {
+  const mine = gradedRows.filter(
+    (r) =>
+      r.storeid === ref.storeid && (isAll(saleType) || r.saleType === saleType),
+  );
+  if (mine.length === 0)
+    return { storeIncrease: 0, herIncrease: 0, otherMovers: 0 };
+
+  const storeIncrease = mine.reduce(
+    (acc, r) => acc + (r.latest - r.baseline),
+    0,
+  );
+
+  // "All" pools the types, so a cashier's movement has to pool with it —
+  // otherwise someone who rose on two types is counted as two movers.
+  const byCashier = new Map<number, number>();
+  for (const r of mine) {
+    for (const c of r.cashiers) {
+      byCashier.set(
+        c.cashierNumber,
+        (byCashier.get(c.cashierNumber) ?? 0) + (c.latest - c.baseline),
+      );
+    }
+  }
+
+  let otherMovers = 0;
+  for (const [num, move] of byCashier) {
+    // A whole extra occurrence, not a rounding wobble on a fractional mean —
+    // the same threshold the transaction-derived version uses.
+    if (num !== ref.cashierNumber && move >= 1) otherMovers += 1;
+  }
+
+  return {
+    storeIncrease: Math.round(storeIncrease),
+    herIncrease: Math.round(byCashier.get(ref.cashierNumber) ?? 0),
     otherMovers,
   };
 };

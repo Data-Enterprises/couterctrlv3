@@ -104,13 +104,7 @@ const ItemReport = () => {
   const state = useAppSelector((s) => s.itemReport);
 
   const { startWalk, cancelWalk } = useReceivingWalk();
-  // Item Actions always knows the UPC, so step one can look the product up
-  // directly instead of searching `cashier_table` by description. Price Opt
-  // Sub Dept and Price Opt Vendor share this hook and do not opt in, so they
-  // stay on the old walk until they are moved deliberately.
-  const { actual, loadActual, resetActual } = useActualPricePoints({
-    productLookup: true,
-  });
+  const { actual, loadActual, resetActual } = useActualPricePoints();
   const storeName = useStoreName(state.scope?.storeid ?? state.storeId);
 
   const run = async (
@@ -491,13 +485,7 @@ const ItemReport = () => {
       resetActual();
       return;
     }
-    loadActual(
-      code,
-      row.item.description,
-      state.scope.storeid,
-      state.scope.start,
-      state.scope.end,
-    );
+    loadActual(code, state.scope.storeid, state.scope.start, state.scope.end);
   };
 
   /**

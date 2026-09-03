@@ -31,6 +31,26 @@ export interface LpActionsState {
    *  journey is derived from it — the walk already downloaded every type and
    *  every week, so drilling into one operator costs nothing further. */
   rawRows: CashierTransaction[];
+  /**
+   * The overview came from `cashier_table`'s per-cashier rollup rather than
+   * from the rows themselves.
+   *
+   * The grades are the same either way — both paths share one grading function
+   * — but `rawRows` is empty, so the case file has nothing to open. The flag
+   * exists so the UI can say the drill is unavailable instead of rendering an
+   * empty case, which reads as "this cashier did nothing".
+   */
+  rollup: boolean;
+  /**
+   * The open case's rows, when they had to be fetched.
+   *
+   * Empty on the prod walk, where `rawRows` already holds everything. In rollup
+   * mode the case fetches one cashier's baskets and rebuilds `cashier_table`
+   * rows from their lines — and the connection plot, which is opened from an
+   * open case for that same cashier, reads them rather than fetching the
+   * identical thing a second time.
+   */
+  caseRows: CashierTransaction[];
   windows: WeekWindow[];
   selectedId: string | null;
   /** Cashier whose journey is open, or null. The connection plot stays a
@@ -55,6 +75,8 @@ const initialState: LpActionsState = {
   weeks: 4,
   rows: [],
   rawRows: [],
+  rollup: false,
+  caseRows: [],
   windows: [],
   selectedId: null,
   journeyCashier: null,
@@ -79,6 +101,31 @@ const lpActionsSlice = createSlice({
         ? state.expandedTypes.filter((t) => t !== action.payload)
         : [...state.expandedTypes, action.payload];
     },
+    /**
+     * Drop the previous search's result, at the moment the next one starts.
+     *
+     * `setLpResult` overwrites every one of these fields when it lands, which
+     * is not the same thing: between the click and the answer the slice still
+     * held the old store's rows, and every panel reading it rendered them.
+     * Behind a modal that is merely untidy; anything else reading the slice —
+     * an export, a deep link, a second panel — was reading the wrong store.
+     *
+     * `searched` deliberately stays true. Flipping it back would swap the whole
+     * page for the entry card mid-search and then swap it away again.
+     */
+    clearLpResult: (state) => {
+      state.rows = [];
+      state.rawRows = [];
+      state.rollup = false;
+      state.windows = [];
+      state.selectedId = null;
+      state.journeyCashier = null;
+      state.caseCashier = null;
+      state.caseType = null;
+      state.sevFilter = "all";
+      state.expandedTypes = [];
+      state.caseRows = [];
+    },
     setLpLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload;
       if (action.payload) state.error = null;
@@ -96,12 +143,29 @@ const lpActionsSlice = createSlice({
       action: PayloadAction<{
         rows: ExceptionRow[];
         rawRows: CashierTransaction[];
+        rollup: boolean;
         windows: WeekWindow[];
         weeks: number;
+        /**
+         * A new scope, rather than the same one re-walked for another week.
+         *
+         * "Add week" must keep the reader's place — the filter chip, the
+         * expanded groups, the selected row — because it is the same search
+         * answering a wider question. A different store is a different
+         * question, and carrying a severity filter into it is how a search
+         * comes back looking empty when it is only filtered.
+         */
+        fresh: boolean;
       }>,
     ) => {
+      if (action.payload.fresh) {
+        state.sevFilter = "all";
+        state.expandedTypes = [];
+        state.selectedId = null;
+      }
       state.rows = action.payload.rows;
       state.rawRows = action.payload.rawRows;
+      state.rollup = action.payload.rollup;
       state.windows = action.payload.windows;
       state.journeyCashier = null;
       state.caseCashier = null;
@@ -128,12 +192,18 @@ const lpActionsSlice = createSlice({
     setLpJourneyCashier: (state, action: PayloadAction<CashierRef | null>) => {
       state.journeyCashier = action.payload;
     },
+    setLpCaseRows: (state, action: PayloadAction<CashierTransaction[]>) => {
+      state.caseRows = action.payload;
+    },
     setLpCase: (
       state,
       action: PayloadAction<{ ref: CashierRef; type: string } | null>,
     ) => {
       state.caseCashier = action.payload?.ref ?? null;
       state.caseType = action.payload?.type ?? null;
+      // Switching cashier must not leave the previous one's receipts on screen
+      // under the new name, even for the frame before the fetch returns.
+      if (action.payload?.ref !== state.caseCashier) state.caseRows = [];
     },
     setLpSevFilter: (state, action: PayloadAction<LpSevFilter>) => {
       state.sevFilter = action.payload;
@@ -151,6 +221,8 @@ export const {
   setLpMessage,
   setLpError,
   setLpResult,
+  clearLpResult,
+  setLpCaseRows,
   setLpSelected,
   setLpSevFilter,
   clearLpActions,

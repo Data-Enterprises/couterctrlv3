@@ -30,13 +30,28 @@ const LpActions = () => {
   const [searchOpen, setSearchOpen] = useState(false);
   const [addingWeek, setAddingWeek] = useState(false);
 
-  const run = (nextWeeks: number) => {
+  /**
+   * The modal stays up until the walk answers.
+   *
+   * It used to close first and then start the walk, which unmounted
+   * `LpActionsEntry` — the only thing on this page that renders `loading` and
+   * the progress message. With `searched` already true, that dropped the reader
+   * straight onto the PREVIOUS search's rows with no indication anything was
+   * happening, and they sat there, live and clickable, until the new ones
+   * landed. On a different store that is not a slow page, it is the wrong
+   * answer presented as the right one.
+   *
+   * A failed walk keeps the card open too, so the error appears on the form
+   * that caused it rather than over stale results.
+   */
+  const run = async (nextWeeks: number, fresh = true) => {
     if (!lastStore && !lastGroup) {
       toast.warn("Pick a store or group first");
-      return;
+      return false;
     }
-    setSearchOpen(false);
-    return walk(formatGoliathDate(singleDate), nextWeeks);
+    const ok = await walk(formatGoliathDate(singleDate), nextWeeks, fresh);
+    if (ok) setSearchOpen(false);
+    return ok;
   };
 
   const handleAddWeek = async () => {
@@ -45,11 +60,26 @@ const LpActions = () => {
       return;
     }
     setAddingWeek(true);
-    await run(weeks + 1);
+    // Not fresh: same scope, wider window. The filter, the expanded groups and
+    // the selected row all stay where the reader left them.
+    await run(weeks + 1, false);
     setAddingWeek(false);
   };
 
-  if (!searched) {
+  /**
+   * The card owns the screen whenever there is nothing behind it to look at.
+   *
+   * That is the first search, and now also a re-search: clearing the slice when
+   * the walk starts is what stops the previous store's rows being readable
+   * mid-fetch, but it leaves the panels rendering their empty states — "Pick an
+   * exception", an empty list — dimmed behind the popup. Empty furniture is not
+   * better than stale data, it is just a different wrong answer.
+   *
+   * `rows.length` and not `loading` alone, so "add week" is unaffected: it
+   * keeps its rows, so the page stays and the spinner lives on the detail
+   * panel where the extra week is being added.
+   */
+  if (!searched || (loading && rows.length === 0)) {
     return <LpActionsEntry onRun={() => run(DEFAULT_WEEKS)} />;
   }
 
@@ -84,7 +114,9 @@ const LpActions = () => {
       {searchOpen && (
         <div
           className="fixed inset-0 z-[5000] flex items-center justify-center bg-black/35 p-4"
-          onMouseDown={() => setSearchOpen(false)}
+          onMouseDown={() => {
+            if (!loading) setSearchOpen(false);
+          }}
         >
           <div
             className="w-full max-w-[560px]"
@@ -92,7 +124,7 @@ const LpActions = () => {
           >
             <LpActionsEntry
               onRun={() => run(DEFAULT_WEEKS)}
-              onBack={() => setSearchOpen(false)}
+              onBack={loading ? undefined : () => setSearchOpen(false)}
             />
           </div>
         </div>

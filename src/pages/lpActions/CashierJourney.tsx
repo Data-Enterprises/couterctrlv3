@@ -31,9 +31,13 @@ import type { TypeScope } from "./case/useCaseReceipts";
  */
 const CashierJourney = () => {
   const dispatch = useAppDispatch();
-  const { rawRows, windows, journeyCashier } = useAppSelector(
+  const { rawRows, rollup, caseRows, windows, journeyCashier } = useAppSelector(
     (s) => s.lpActions,
   );
+  // The plot is only ever opened from an open case, for the cashier that case
+  // is about — so in rollup mode its rows are already in hand and there is
+  // nothing to fetch here.
+  const rows = rollup ? caseRows : rawRows;
   const [focus, setFocus] = useState<string | null>(null);
   const [facet, setFacet] = useState<FacetKey>("dow");
   const [branchKey, setBranchKey] = useState<string | null>(null);
@@ -44,16 +48,16 @@ const CashierJourney = () => {
     () =>
       journeyCashier === null
         ? null
-        : buildCashierJourney(rawRows, windows, journeyCashier),
-    [rawRows, windows, journeyCashier],
+        : buildCashierJourney(rows, windows, journeyCashier),
+    [rows, windows, journeyCashier],
   );
 
   const mine = useMemo(
     () =>
       journeyCashier === null
         ? []
-        : rawRows.filter((r) => isCashier(r, journeyCashier)),
-    [rawRows, journeyCashier],
+        : rows.filter((r) => isCashier(r, journeyCashier)),
+    [rows, journeyCashier],
   );
 
   const pickNode = (next: string | null) => {

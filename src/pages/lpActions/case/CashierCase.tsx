@@ -1,14 +1,17 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
 import {
   setLpCase,
+  setLpCaseRows,
   setLpJourneyCashier,
 } from "../../../features/lpActionsSlice";
 import { ALL_TYPES, buildCaseCore, isAll, latestWeekFacts } from "./caseModel";
-import { buildStoreShare } from "./storeShare";
+import { buildStoreShare, storeShareFromGraded } from "./storeShare";
 import { buildItemMovement } from "./itemMovement";
 import { buildHourProfile } from "./hourProfile";
 import { useCaseReceipts, type TypeScope } from "./useCaseReceipts";
+import { useCaseIds } from "./useCaseIds";
+import { rowsFromLines, typesForCashier } from "./caseSource";
 import { isCashier } from "../lpActionsMetrics";
 import {
   headlineLine,
@@ -48,18 +51,46 @@ const ICON_ORDER: EvidenceIcon[] = ["clock", "store", "items"];
 
 const CashierCase = ({ onBack, backLabel }: Props) => {
   const dispatch = useAppDispatch();
-  const { rawRows, windows, caseCashier, caseType } = useAppSelector(
-    (s) => s.lpActions,
-  );
+  const {
+    rawRows,
+    rows: gradedRows,
+    rollup,
+    caseRows: sourceRows,
+    windows,
+    caseCashier,
+    caseType,
+  } = useAppSelector((s) => s.lpActions);
   const [showAllItems, setShowAllItems] = useState(false);
   const { receipt, openReceipt, closeReceipt } = useReceiptCase();
+
+  /**
+   * Where this case's rows come from.
+   *
+   * On the prod walk they are already in hand — the overview downloaded every
+   * exception row, so drilling costs nothing. The rollup carries counts and no
+   * rows, so the case fetches this cashier's baskets and rebuilds the rows from
+   * their lines. Everything below reads `sourceRows` and cannot tell which
+   * happened.
+   */
+  const caseTypes = useMemo(
+    () =>
+      caseCashier === null ? [] : typesForCashier(gradedRows, caseCashier),
+    [gradedRows, caseCashier],
+  );
+  const caseIds = useCaseIds(caseCashier, caseTypes, rollup);
+
+  // The rebuilt rows live in Redux, not local state: the connection plot is a
+  // sibling component that needs the same ones, and fetching them again there
+  // would be a second identical round trip for a modal opened out of this very
+  // panel.
+  const caseRows = rollup ? sourceRows : rawRows;
 
   const core = useMemo(
     () =>
       caseCashier === null
         ? null
-        : buildCaseCore(rawRows, windows, caseCashier),
-    [rawRows, windows, caseCashier],
+        : buildCaseCore(caseRows, windows, caseCashier),
+    [caseRows, windows, caseCashier],
   );
 
   // Lands on the exception the reader clicked, and falls back to All rather
@@ -75,7 +106,17 @@ const CashierCase = ({ onBack, backLabel }: Props) => {
   // carries its own receipts, and the whole window rather than the latest week
   // so "new item" and "unusual hour" have a baseline to stand on.
   const scopes = useMemo<TypeScope[]>(() => {
-    if (caseCashier === null || !core) return [];
+    if (caseCashier === null) return [];
+    // Rollup: one id list for every type, and `transaction_list` narrows by
+    // type itself. The types come off the graded rows rather than off `core`,
+    // which does not exist yet — core is built from the rows these receipts
+    // produce.
+    if (rollup) {
+      return caseIds.ids.length === 0
+        ? []
+        : caseTypes.map((saleType) => ({ saleType, saleIds: caseIds.ids }));
+    }
+    if (!core) return [];
     return core.types.map((t) => ({
       saleType: t.saleType,
       saleIds: [
@@ -88,30 +129,49 @@ const CashierCase = ({ onBack, backLabel }: Props) => {
         ),
       ].sort(),
     }));
-  }, [rawRows, caseCashier, core]);
+  }, [rawRows, caseCashier, core, rollup, caseIds.ids, caseTypes]);
 
   const detail = useCaseReceipts(scopes);
+
+  // The lines are the only source of rows in rollup mode, so they are folded
+  // back to `cashier_table` grain as they land. Held in state rather than
+  // derived inline because `core` reads it and `scopes` feeds it — deriving it
+  // in a memo that `scopes` also depends on is the cycle.
+  useEffect(() => {
+    if (!rollup) return;
+    dispatch(setLpCaseRows(rowsFromLines(detail.lines, new Set(caseTypes))));
+  }, [rollup, detail.lines, caseTypes, dispatch]);
 
   const facts = useMemo(
     () =>
       caseCashier === null || !selected
         ? null
-        : latestWeekFacts(rawRows, windows, caseCashier, selected),
-    [rawRows, windows, caseCashier, selected],
+        : latestWeekFacts(caseRows, windows, caseCashier, selected),
+    [caseRows, windows, caseCashier, selected],
   );
 
+  /**
+   * Off the graded rows in rollup mode, off the transactions otherwise.
+   *
+   * `caseRows` holds this cashier and nobody else there, and store share is the
+   * one figure on the page that is about everybody else. Feeding it a
+   * single-cashier set does not fail — it confidently reports that the store
+   * rose by her amount alone and no colleague moved.
+   */
   const share = useMemo(
     () =>
       core && selected
-        ? buildStoreShare(
-            rawRows,
-            windows,
-            core.storeid,
-            core.cashierNumber,
-            selected,
-          )
+        ? rollup
+          ? storeShareFromGraded(gradedRows, core, selected)
+          : buildStoreShare(
+              caseRows,
+              windows,
+              core.storeid,
+              core.cashierNumber,
+              selected,
+            )
         : null,
-    [rawRows, windows, core, selected],
+    [caseRows, windows, core, selected, rollup, gradedRows],
   );
 
   const items = useMemo(
@@ -131,16 +191,41 @@ const CashierCase = ({ onBack, backLabel }: Props) => {
   const latestRows = useMemo(() => {
     if (caseCashier === null || !selected || windows.length === 0) return [];
     const last = windows[windows.length - 1];
-    return rawRows.filter(
+    return caseRows.filter(
       (r) =>
         isCashier(r, caseCashier) &&
         (isAll(selected) || r.sale_type === selected) &&
         r.sale_date.slice(0, 10) >= last.start &&
         r.sale_date.slice(0, 10) <= last.end,
     );
-  }, [rawRows, windows, caseCashier, selected]);
+  }, [caseRows, windows, caseCashier, selected]);
 
-  if (!core || !facts || caseCashier === null) return null;
+  // In rollup mode the rows arrive over the network, so there is a real window
+  // where the case is open and `core` cannot be built yet. Returning null there
+  // blanks the right panel with no explanation — the reader clicked a cashier
+  // and got an empty half-screen. The prod path never reaches this: its rows
+  // are already in memory, so `core` exists on the first render.
+  //
+  // Deliberately NOT keyed on the loading flags. The case makes two requests in
+  // sequence, and between them there is a render where the first has finished
+  // and the second has not yet started its effect — both flags false, still no
+  // rows. Keying on them returned null for that one frame, so the panel blinked
+  // out and back on every cashier click, which reads as a crash rather than a
+  // fetch. Having a case open with no rows yet IS the loading state, whatever
+  // the flags say.
+  const sourcing = rollup && caseCashier !== null;
+  if (!core || !facts || caseCashier === null) {
+    if (!sourcing && !caseIds.error) return null;
+    return (
+      <div className="flex-shrink-0 shadow-lg" style={{ width: "63%" }}>
+        <div className="bg-custom-white rounded-xl shadow-sm h-full flex items-center justify-center">
+          <p className="text-[12px] text-content/85">
+            {caseIds.error ?? "Reading this cashier's receipts…"}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   const type = isAll(selected)
     ? core.all
@@ -174,7 +259,7 @@ const CashierCase = ({ onBack, backLabel }: Props) => {
         <CaseKpis
           facts={facts}
           profile={profile}
-          profileLoading={detail.loading}
+          profileLoading={detail.loading || caseIds.loading}
           saleType={selected}
         />
 
@@ -192,14 +277,14 @@ const CashierCase = ({ onBack, backLabel }: Props) => {
             windows={windows}
             selected={selected}
             profile={profile}
-            profileLoading={detail.loading}
-            profileError={detail.error}
+            profileLoading={detail.loading || caseIds.loading}
+            profileError={detail.error ?? caseIds.error}
           />
 
           <CaseGrids
             items={items}
-            itemsLoading={detail.loading}
-            itemsError={detail.error}
+            itemsLoading={detail.loading || caseIds.loading}
+            itemsError={detail.error ?? caseIds.error}
             showAllItems={showAllItems}
             onToggleItems={() => setShowAllItems((v) => !v)}
             rows={latestRows}

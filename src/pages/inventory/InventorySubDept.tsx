@@ -124,13 +124,7 @@ const InventorySubDept = () => {
     setSelected(p);
     // Description, not UPC — that is the only search `cashier_table` offers.
     // The over-match it causes is filtered out again on product_code.
-    loadActual(
-      p.productCode,
-      p.description,
-      scope.storeid,
-      scope.start,
-      scope.end,
-    );
+    loadActual(p.productCode, scope.storeid, scope.start, scope.end);
   };
 
   const groups: TreeGroup[] = subDepts.map((d) => ({
