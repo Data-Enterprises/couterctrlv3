@@ -21,7 +21,10 @@ import {
   ShieldExclamationIcon,
   DocumentArrowUpIcon,
 } from "@heroicons/react/16/solid";
-import { COMING_SOON_LEVELS } from "../../utils/comingSoon";
+import {
+  COMING_SOON_LEVELS,
+  PROGRAMMER_ONLY_LEVELS,
+} from "../../utils/comingSoon";
 import SalesIconV2 from "../../svgs/SalesIconV2";
 import CashierIcon from "../../svgs/CashierIcon";
 import GroupsIcon from "../../svgs/GroupsIcon";
@@ -128,9 +131,12 @@ export const navigation: Navigation[] = [
     isHovering: false,
     isVisible: true,
   },
-  // The three unreleased pages. Gated here as well as in the "Coming Soon"
-  // category below — this flat list feeds the Settings nav editor, which would
-  // otherwise offer every user a page they cannot reach.
+  // The unreleased pages that also appear in this flat list. Gated here as well
+  // as in the "Coming Soon" category below — this list feeds the Settings nav
+  // editor, which would otherwise offer every user a page they cannot reach.
+  // Two different gates, per page: see the category's docblock. LP Actions and
+  // Sales Tracker are absent from this list entirely, which is why neither
+  // appears below.
   {
     name: "Item Actions",
     href: "item-report",
@@ -151,7 +157,7 @@ export const navigation: Navigation[] = [
     mobile: false,
     children: [],
     childOpen: false,
-    userLevels: COMING_SOON_LEVELS,
+    userLevels: PROGRAMMER_ONLY_LEVELS,
     isHovering: false,
     isVisible: true,
   },
@@ -162,7 +168,7 @@ export const navigation: Navigation[] = [
     mobile: false,
     children: [],
     childOpen: false,
-    userLevels: COMING_SOON_LEVELS,
+    userLevels: PROGRAMMER_ONLY_LEVELS,
     isHovering: false,
     isVisible: true,
   },
@@ -174,7 +180,7 @@ export const navigation: Navigation[] = [
     mobile: false,
     children: [],
     childOpen: false,
-    userLevels: COMING_SOON_LEVELS,
+    userLevels: PROGRAMMER_ONLY_LEVELS,
     isHovering: false,
     isVisible: true,
   },
@@ -496,18 +502,30 @@ export const categories: NavCategory[] = [
   /**
    * Pages that are built and routed but not released.
    *
-   * Gated to Owner and up rather than hidden behind a flag, so the people who
-   * decide whether a page ships can use it in production against real data
-   * without a build of their own. Everyone below sees no category at all —
+   * Gated by level rather than hidden behind a flag, so the people who decide
+   * whether a page ships can use it in production against real data without a
+   * build of their own. Everyone below the gate sees no category at all —
    * `visibleCategories` in TitleBar drops a category whose every page is out of
    * reach, so there is no empty heading to explain.
    *
+   * Two gates, not one, because the category holds two kinds of page:
+   *
+   *   COMING_SOON_LEVELS (7, 8, 9) — unfinished but usable. An owner running
+   *   one against real data is the point.
+   *
+   *   PROGRAMMER_ONLY_LEVELS (9) — not answerable to a client yet. LP Actions,
+   *   Invoices and both Price Opt pages depend on backend decisions that are
+   *   still open, so putting them in front of an owner buys a support call
+   *   rather than feedback.
+   *
    * Levels are matched exactly, not as a floor (see `canSee`), so "and up" has
    * to be spelled out. 8 is undocumented in the list above but is used by the
-   * existing Admin and User Management gates, so it is included here too.
+   * existing Admin and User Management gates, so it is included in the wider
+   * gate too.
    *
-   * Moving a page out of here is the release: cut its entry back to the
-   * category it belongs to and restore `userLevels: ["*"]`.
+   * Promoting a page from 9 to owner-visible is a one-word change to its
+   * `userLevels`. Moving a page out of here entirely is the release: cut its
+   * entry back to the category it belongs to and restore `userLevels: ["*"]`.
    */
   {
     name: "Coming Soon",
@@ -533,7 +551,7 @@ export const categories: NavCategory[] = [
         mobile: false,
         children: [],
         childOpen: false,
-        userLevels: COMING_SOON_LEVELS,
+        userLevels: PROGRAMMER_ONLY_LEVELS,
         isHovering: false,
         isVisible: true,
       },
@@ -557,7 +575,7 @@ export const categories: NavCategory[] = [
         mobile: false,
         children: [],
         childOpen: false,
-        userLevels: COMING_SOON_LEVELS,
+        userLevels: PROGRAMMER_ONLY_LEVELS,
         isHovering: false,
         isVisible: true,
       },
@@ -568,7 +586,7 @@ export const categories: NavCategory[] = [
         mobile: false,
         children: [],
         childOpen: false,
-        userLevels: COMING_SOON_LEVELS,
+        userLevels: PROGRAMMER_ONLY_LEVELS,
         isHovering: false,
         isVisible: true,
       },
@@ -579,7 +597,7 @@ export const categories: NavCategory[] = [
         mobile: false,
         children: [],
         childOpen: false,
-        userLevels: COMING_SOON_LEVELS,
+        userLevels: PROGRAMMER_ONLY_LEVELS,
         isHovering: false,
         isVisible: true,
       },

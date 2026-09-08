@@ -7,7 +7,7 @@ import {
   ChevronDownIcon,
   ChevronUpIcon,
 } from "@heroicons/react/20/solid";
-import { formatCurrency2, formatBigNumber } from "../utils";
+import { formatCurrency2 } from "../utils";
 import {
   severityDotClass,
   chipClass,
@@ -38,6 +38,7 @@ import UpcContextMenu from "./UpcContextMenu";
 import SharedSeverityBadge from "./SeverityBadge";
 import { LW_OFFSET, LY_OFFSET, shiftIso } from "../utils/grading";
 import type { MarginSourceRow, ItemGradingMetric } from "../utils/itemMargins";
+import { formatPricedUnitsShort, PRICED_UNITS_LABEL } from "../utils/pricedUnits";
 
 /**
  * Item-level report, shared by the Performance pages that drill to items.
@@ -91,7 +92,9 @@ const REPORT_ROW_LABELS: Record<RowMetricKey, string> = {
   margin: "Margin",
   contribution: "Contribution",
   sales: "Sales",
-  qty: "Qty",
+  // Names both units: the row prints pounds on a scale item and a count on
+  // everything else, and a bare "Qty" made the pounds look like a count.
+  qty: PRICED_UNITS_LABEL,
   cogs: "COGS",
 };
 
@@ -304,12 +307,7 @@ const ItemMarginsTable = ({
   const selectedInsight = useMemo(
     () =>
       selectedItem && selectedDetail
-        ? buildInsight(
-            selectedItem,
-            selectedDetail,
-            thresholdAmt,
-            gradingMetric,
-          )
+        ? buildInsight(selectedItem, thresholdAmt, gradingMetric)
         : null,
     [selectedItem, selectedDetail, thresholdAmt, gradingMetric],
   );
@@ -720,7 +718,7 @@ const ItemMarginsTable = ({
                 <div className="px-4 py-2.5">
                   {/* Day trend, ranked worst-first — the ordering is the answer,
                       which is why there's no "best day / worst day" caption. */}
-                  <div className="grid grid-cols-[10px_34px_1fr_81px_81px_81px] gap-2 pb-1 text-[11px] font-semibold uppercase tracking-wide text-content">
+                  <div className="grid grid-cols-[10px_34px_1fr_92px_92px_92px] gap-2 pb-1 text-[11px] font-semibold uppercase tracking-wide text-content">
                     <span />
                     <span>Day</span>
                     <span />
@@ -734,7 +732,7 @@ const ItemMarginsTable = ({
                     const cell = (v: DayPeriodValue | null) =>
                       v === null
                         ? "\u2014"
-                        : `${formatCurrency2(v.sales)} | ${formatBigNumber(v.qty, 0)}`;
+                        : `${formatCurrency2(v.sales)} | ${formatPricedUnitsShort(v.qty, v.weight)}`;
 
                     const days = WEEKDAY_ORDER.map((wd) => {
                       const v = selectedDetail.dayOfWeek[wd];
@@ -781,7 +779,7 @@ const ItemMarginsTable = ({
                           return (
                             <div
                               key={d.wd}
-                              className="grid grid-cols-[10px_34px_1fr_81px_81px_81px] gap-2 items-center py-2 border-t border-[#1e2a4a]/15"
+                              className="grid grid-cols-[10px_34px_1fr_92px_92px_92px] gap-2 items-center py-2 border-t border-[#1e2a4a]/15"
                             >
                               <span
                                 className={`w-2 h-2 rounded-full ${

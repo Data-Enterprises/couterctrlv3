@@ -15,7 +15,7 @@ import { useSubMarginCtx } from "../../hooks";
 import { useSubMarginActions } from "../../hooks/useSubMarginActions";
 import { getLYDate } from "../..";
 import { severityDotClass } from "../../../../utils/severity";
-import { formatCurrency2, formatBigNumber, addDays } from "../../../../utils";
+import { formatCurrency2, addDays } from "../../../../utils";
 import {
   buildItemRows,
   buildItemDetail,
@@ -46,6 +46,7 @@ import SelectFilter from "../../../../components/filters/SelectFilter";
 import UpcContextMenu from "../../../../components/UpcContextMenu";
 import SharedSeverityBadge from "../../../../components/SeverityBadge";
 import { chipClass, CTA_SEVERITY_CLASSES } from "../../../../utils/severity";
+import { formatPricedUnitsShort, PRICED_UNITS_LABEL } from "../../../../utils/pricedUnits";
 
 type SevFilter = "all" | Severity;
 
@@ -370,12 +371,7 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
   const selectedInsight = useMemo(
     () =>
       selectedItem && selectedDetail
-        ? buildInsight(
-            selectedItem,
-            selectedDetail,
-            thresholdAmt,
-            gradingMetric,
-          )
+        ? buildInsight(selectedItem, thresholdAmt, gradingMetric)
         : null,
     [selectedItem, selectedDetail, thresholdAmt, gradingMetric],
   );
@@ -442,7 +438,9 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
     margin: "Margin",
     contribution: "Contribution",
     sales: "Sales",
-    qty: "Qty",
+    // Names both units: the row prints pounds on a scale item and a count on
+    // everything else, and a bare "Qty" made the pounds look like a count.
+    qty: PRICED_UNITS_LABEL,
   };
   const reportRows = !selectedItem
     ? []
@@ -901,7 +899,7 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
                       "best day / worst day" caption underneath any more: the
                       order is the answer. Both baselines are shown rather than
                       one silently-chosen delta. */}
-                  <div className="grid grid-cols-[10px_34px_1fr_81px_81px_81px] gap-2 pb-1 text-[11px] font-semibold uppercase tracking-wide text-content">
+                  <div className="grid grid-cols-[10px_34px_1fr_92px_92px_92px] gap-2 pb-1 text-[11px] font-semibold uppercase tracking-wide text-content">
                     <span />
                     <span>Day</span>
                     <span />
@@ -915,7 +913,7 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
                     const cell = (v: DayPeriodValue | null) =>
                       v === null
                         ? "\u2014"
-                        : `${formatCurrency2(v.sales)} | ${formatBigNumber(v.qty, 0)}`;
+                        : `${formatCurrency2(v.sales)} | ${formatPricedUnitsShort(v.qty, v.weight)}`;
 
                     const days = WEEKDAY_ORDER.map((wd) => {
                       const v = selectedDetail.dayOfWeek[wd];
@@ -962,7 +960,7 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
                           return (
                             <div
                               key={d.wd}
-                              className="grid grid-cols-[10px_34px_1fr_81px_81px_81px] gap-2 items-center py-2 border-t border-[#1e2a4a]/15"
+                              className="grid grid-cols-[10px_34px_1fr_92px_92px_92px] gap-2 items-center py-2 border-t border-[#1e2a4a]/15"
                             >
                               <span
                                 className={`w-2 h-2 rounded-full ${
