@@ -162,6 +162,27 @@ const SubDeptCostGrid = () => {
   const [draftCogsVal, setDraftCogsVal] = useState("");
   const [appliedCogs, setAppliedCogs] = useState<{ op: Operator; val: string }>({ op: ">", val: "" });
 
+/**
+ * The number `total_cost` was actually costed on.
+ *
+ * `calculateCogs` prices a scale item on its weight and everything else on its
+ * qty, so this column has to follow the same rule or the row cannot be checked:
+ * cost x this = COGS, on every row. Reading `qty` for a weighted item invites
+ * the arithmetic that started this — $1.36 x 160 packages = $217.60 against a
+ * real $688.19 for 506.03 lb.
+ *
+ * Rendering, sorting and filtering all go through here so the three cannot
+ * disagree about which number the column holds.
+ */
+const pricedUnits = (d: SubDeptCost) => ((d.weight ?? 0) > 0 ? d.weight! : d.qty);
+
+/** Weighted rows carry a fractional pound count and need the decimals; a ring
+ *  count never does. */
+const pricedUnitsLabel = (d: SubDeptCost) =>
+  (d.weight ?? 0) > 0
+    ? `${d.weight!.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} lb`
+    : formatBigNumber(d.qty, 0);
+
   const applyThresh = (val: string, op: Operator, rowVal: number) => {
     const n = parseFloat(val);
     if (isNaN(n)) return true;
@@ -179,7 +200,7 @@ const SubDeptCostGrid = () => {
     if (appliedUpc) data = data.filter((d) => d.product_code.includes(appliedUpc));
     if (appliedUnitCost.val) data = data.filter((d) => applyThresh(appliedUnitCost.val, appliedUnitCost.op, d.calculated_cost));
     if (appliedCaseCost.val) data = data.filter((d) => applyThresh(appliedCaseCost.val, appliedCaseCost.op, d.cost));
-    if (appliedQty.val) data = data.filter((d) => applyThresh(appliedQty.val, appliedQty.op, d.qty));
+    if (appliedQty.val) data = data.filter((d) => applyThresh(appliedQty.val, appliedQty.op, pricedUnits(d)));
     if (appliedCogs.val) data = data.filter((d) => applyThresh(appliedCogs.val, appliedCogs.op, d.total_cost));
 
     if (sortCol && sortDir) {
@@ -190,7 +211,7 @@ const SubDeptCostGrid = () => {
           case "upc": av = a.product_code; bv = b.product_code; break;
           case "unitCost": av = a.calculated_cost; bv = b.calculated_cost; break;
           case "caseCost": av = a.cost; bv = b.cost; break;
-          case "qty": av = a.qty; bv = b.qty; break;
+          case "qty": av = pricedUnits(a); bv = pricedUnits(b); break;
           case "cogs": av = a.total_cost; bv = b.total_cost; break;
         }
         if (typeof av === "string") {
@@ -297,13 +318,13 @@ const SubDeptCostGrid = () => {
         </div>
         <div className={`${thStyle} flex items-center justify-end gap-1.5`}>
           <ColFilter
-            label="Qty"
+            label="Qty / Lb"
             active={!!appliedQty.val}
             align="right"
             onApply={() => setAppliedQty({ op: draftQtyOp, val: draftQtyVal })}
             onClear={() => { setAppliedQty({ op: ">", val: "" }); setDraftQtyVal(""); }}
           >
-            <ThreshInput operator={draftQtyOp} value={draftQtyVal} onOperatorChange={setDraftQtyOp} onValueChange={setDraftQtyVal} placeholder="Qty…" />
+            <ThreshInput operator={draftQtyOp} value={draftQtyVal} onOperatorChange={setDraftQtyOp} onValueChange={setDraftQtyVal} placeholder="Qty or lb…" />
           </ColFilter>
           <button onClick={() => handleSort("qty")} className="text-[9px] text-content">{arrow("qty")}</button>
         </div>
@@ -341,7 +362,7 @@ const SubDeptCostGrid = () => {
             <div className="px-3 py-[9px] text-[10px] text-content tabular-nums truncate">{item.product_code}</div>
             <div className="px-3 py-[9px] text-[13px] text-right tabular-nums text-content">{formatCurrency2(item.calculated_cost)}</div>
             <div className="px-3 py-[9px] text-[13px] text-right tabular-nums text-content">{formatCurrency2(item.cost)}</div>
-            <div className="px-3 py-[9px] text-[13px] text-right tabular-nums text-content">{formatBigNumber(item.qty, 0)}</div>
+            <div className="px-3 py-[9px] text-[13px] text-right tabular-nums text-content">{pricedUnitsLabel(item)}</div>
             <div className="px-3 py-[9px] text-[13px] text-right tabular-nums font-semibold text-[#1e2a4a]">{formatCurrency2(item.total_cost)}</div>
           </div>
         ))

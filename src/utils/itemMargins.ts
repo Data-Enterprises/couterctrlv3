@@ -1,5 +1,10 @@
 import { calculateCogs } from "../pages/subDepts";
 import { formatCurrency2 } from ".";
+import {
+  pricedUnits,
+  formatPricedUnits,
+  pricedUnitLabel,
+} from "./pricedUnits";
 
 /**
  * Item-level margin maths, shared by Sub Dept Margins and Categories.
@@ -62,6 +67,10 @@ export interface ItemMarginRow {
   netSales: number;
   tax: number;
   qty: number;
+  /** Pounds, on a scale item; 0 on a by-the-each item. Kept beside `qty`
+   *  rather than replacing it — `qty` still grades and still totals, this is
+   *  what gets shown. See utils/pricedUnits. */
+  weight: number;
   cogs: number;
   costFees: number;
   tyMarginPct: number;
@@ -97,6 +106,8 @@ export interface ItemMarginRow {
   lyNetSales: number | null;
   lwQty: number | null;
   lyQty: number | null;
+  lwWeight: number | null;
+  lyWeight: number | null;
   lwCogs: number | null;
   lyCogs: number | null;
 }
@@ -108,6 +119,7 @@ const aggregateByUpc = (margins: MarginSourceRow[]) => {
       grossSales: number;
       tax: number;
       qty: number;
+      weight: number;
       cogs: number;
       costFees: number;
       desc: string;
@@ -121,6 +133,7 @@ const aggregateByUpc = (margins: MarginSourceRow[]) => {
         grossSales: m.total_sales,
         tax: m.total_tax,
         qty: m.qty,
+        weight: m.weight,
         cogs,
         costFees: m.cost_fees,
         desc: m.product_description,
@@ -129,6 +142,7 @@ const aggregateByUpc = (margins: MarginSourceRow[]) => {
       ex.grossSales += m.total_sales;
       ex.tax += m.total_tax;
       ex.qty += m.qty;
+      ex.weight += m.weight;
       ex.cogs += cogs;
       ex.costFees += m.cost_fees;
     }
@@ -195,6 +209,7 @@ export const buildItemRows = (
       netSales,
       tax: ty.tax,
       qty: ty.qty,
+      weight: ty.weight,
       cogs: ty.cogs,
       costFees: ty.costFees,
       tyMarginPct,
@@ -222,6 +237,8 @@ export const buildItemRows = (
       lyNetSales: ly ? lyNet : null,
       lwQty: lw ? lw.qty : null,
       lyQty: ly ? ly.qty : null,
+      lwWeight: lw ? lw.weight : null,
+      lyWeight: ly ? ly.weight : null,
       lwCogs: lw ? lw.cogs : null,
       lyCogs: ly ? ly.cogs : null,
     });
@@ -278,6 +295,10 @@ export const WEEKDAY_ORDER = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 export interface DayPeriodValue {
   sales: number;
   qty: number;
+  /** Pounds for the weekday, 0 when nothing that day was a scale item. The day
+   *  rows print this instead of `qty` where it is non-zero — see
+   *  utils/pricedUnits. */
+  weight: number;
 }
 
 /** A weekday across the three periods. `null` means the item did not sell that
@@ -289,11 +310,12 @@ export interface DayOfWeekValue {
 }
 
 export interface ItemDetail {
-  // Dominant (highest-qty) unit price this period, TY vs LW vs LY — lets the
-  // insight tell a price-point shift apart from a pure volume swing.
-  tyDominantPrice: number | null;
-  lwDominantPrice: number | null;
-  lyDominantPrice: number | null;
+  // The dominant-price fields that used to live here are gone. They were
+  // `total_sales / qty`, which on a scale item is the average value of a
+  // package rather than a price — $6.52 on an item selling at $1.99/lb — and
+  // they moved whenever package size did. `buildInsight` derives a retail rate
+  // from net sales over priced units instead, which is correct on weighted and
+  // by-the-each items alike.
   dayOfWeek: Record<string, DayOfWeekValue>;
 }
 
@@ -308,32 +330,15 @@ const weekdayTotals = (
   const byWeekday = new Map<string, DayPeriodValue>();
   for (const m of itemRows) {
     const wd = weekdayOf(m);
-    const cur = byWeekday.get(wd) ?? { sales: 0, qty: 0 };
+    const cur = byWeekday.get(wd) ?? { sales: 0, qty: 0, weight: 0 };
     cur.sales += m.total_sales - m.total_tax;
     // Raw scan count, the same field buildItemRows totals — so a day's units
     // add up to the item's own Qty rather than quietly disagreeing with it.
     cur.qty += m.qty;
+    cur.weight += m.weight;
     byWeekday.set(wd, cur);
   }
   return byWeekday;
-};
-
-const dominantPrice = (itemRows: MarginSourceRow[]): number | null => {
-  const byPrice = new Map<number, number>();
-  for (const m of itemRows) {
-    if (m.qty <= 0) continue;
-    const unitPrice = Math.round((m.total_sales / m.qty) * 100) / 100;
-    byPrice.set(unitPrice, (byPrice.get(unitPrice) ?? 0) + m.qty);
-  }
-  let best: number | null = null;
-  let bestQty = -Infinity;
-  for (const [price, qty] of byPrice) {
-    if (qty > bestQty) {
-      bestQty = qty;
-      best = price;
-    }
-  }
-  return best;
 };
 
 /** Always scoped to the full week for this UPC in each period, regardless of any
@@ -363,9 +368,6 @@ export const buildItemDetail = (
   }
 
   return {
-    tyDominantPrice: dominantPrice(tyRows),
-    lwDominantPrice: dominantPrice(lwRows),
-    lyDominantPrice: dominantPrice(lyRows),
     dayOfWeek,
   };
 };
@@ -404,7 +406,6 @@ const FLAT_PCT_EPSILON = 5;
  *  getItemSeverity — so the banner always agrees with the item's own dot. */
 export const buildInsight = (
   item: ItemMarginRow,
-  detail: ItemDetail,
   threshold: number,
   gradingMetric: ItemGradingMetric,
 ): { headline: string; detail: string; sev: GradedSeverity } | null => {
@@ -430,18 +431,78 @@ export const buildInsight = (
     gradingMetric === "sales" ? "Sales" : gradingMetric === "qty" ? "Qty" : "Margin";
   const flatEpsilon = isPts ? FLAT_PTS_EPSILON : FLAT_PCT_EPSILON;
 
-  const basisPrice = hasLY ? detail.lyDominantPrice : detail.lwDominantPrice;
-  const priceDeltaAmt =
-    detail.tyDominantPrice !== null && basisPrice !== null
-      ? Math.round((detail.tyDominantPrice - basisPrice) * 100) / 100
+  /**
+   * Rates, not totals — the whole point of this block.
+   *
+   * Margin % is a pure function of two rates:
+   *
+   *     margin% = 1 - costRate / retailRate
+   *
+   * Volume cancels out of it entirely. That identity holds to the cent on
+   * every row (BNLS CHICKEN THIGHS: 1 - 1.3600/1.9860 = 31.52%, which is what
+   * the panel prints), and it is what lets this strip say *which lever moved*
+   * instead of guessing.
+   *
+   * The previous version compared `dominantPrice` (total_sales / qty) against
+   * total COGS, and both are volume-contaminated. On an item that went on ad it
+   * announced "price and cost both moved — price dropped $4.49 while COGS rose
+   * 738%", when the retail rate had halved and the cost rate had not moved at
+   * all: $1.3600/lb before and after. It reported a volume fact as a cost fact,
+   * on the one item where a buyer most needs to know the difference.
+   */
+  const tyUnits = pricedUnits(item.qty, item.weight);
+  const basisUnits = hasLY
+    ? item.lyQty === null
+      ? null
+      : pricedUnits(item.lyQty, item.lyWeight)
+    : item.lwQty === null
+      ? null
+      : pricedUnits(item.lwQty, item.lwWeight);
+  const basisNetSales = hasLY ? item.lyNetSales : item.lwNetSales;
+
+  const rate = (total: number | null, units: number | null) =>
+    total !== null && units !== null && units > 0 ? total / units : null;
+
+  const tyRetail = rate(item.netSales, tyUnits);
+  const tyCost = rate(item.cogs, tyUnits);
+  const basisRetail = rate(basisNetSales, basisUnits);
+  const basisCost = rate(hasLY ? item.lyCogs : item.lwCogs, basisUnits);
+
+  /** A rate has "moved" on a relative test, not an absolute one — a penny is
+   *  noise on a $50 item and a real cut on a $1.09 one. The currency guard
+   *  stops a rounding artefact reading as a price change. */
+  const moved = (ty: number | null, basis: number | null) =>
+    ty !== null && basis !== null && basis > 0
+      ? Math.abs(ty - basis) > 0.005 &&
+        Math.abs((ty - basis) / basis) * 100 >= 1
+      : false;
+
+  const priceChanged = moved(tyRetail, basisRetail);
+  const cogsChanged = moved(tyCost, basisCost);
+  const volumePct =
+    basisUnits !== null && basisUnits > 0
+      ? ((tyUnits - basisUnits) / basisUnits) * 100
       : null;
-  const priceChanged = priceDeltaAmt !== null && Math.abs(priceDeltaAmt) > 0.01;
-  const qtyChangePct = hasLY ? item.lyQtyPct : item.lwQtyPct;
   const volumeChanged =
-    qtyChangePct !== null && Math.abs(qtyChangePct) >= FLAT_PCT_EPSILON;
-  const cogsChangePct = hasLY ? item.lyCogsPct : item.lwCogsPct;
-  const cogsChanged =
-    cogsChangePct !== null && Math.abs(cogsChangePct) >= FLAT_PCT_EPSILON;
+    volumePct !== null && Math.abs(volumePct) >= FLAT_PCT_EPSILON;
+
+  const unit = pricedUnitLabel(item.weight);
+  const retailDelta =
+    tyRetail !== null && basisRetail !== null ? tyRetail - basisRetail : null;
+  const costDelta =
+    tyCost !== null && basisCost !== null ? tyCost - basisCost : null;
+
+  /** Retail down, cost rate flat, volume up: the signature of an ad or a
+   *  markdown rather than anything wrong. Named explicitly because it is the
+   *  most common false alarm on a graded list — the item grades Critical for
+   *  doing exactly what it was put on ad to do. */
+  const looksLikeAd =
+    priceChanged &&
+    !cogsChanged &&
+    retailDelta !== null &&
+    retailDelta < 0 &&
+    volumePct !== null &&
+    volumePct > 0;
 
   const sev: GradedSeverity =
     gradedDelta < -threshold ? "critical" : gradedDelta < 0 ? "watch" : "healthy";
@@ -449,55 +510,81 @@ export const buildInsight = (
   const headline = (() => {
     if (sev === "critical") {
       if (priceChanged && cogsChanged)
-        return `${metricLabel} in freefall — price and cost both moved`;
-      if (priceChanged) return `${metricLabel} in freefall — price cut is the driver`;
-      if (volumeChanged) return `${metricLabel} in freefall — volume collapsed`;
-      return `${metricLabel} in freefall — cost spiked`;
+        return `${metricLabel} in freefall — retail and cost rate both moved`;
+      if (looksLikeAd)
+        return `${metricLabel} in freefall — retail cut, cost rate held`;
+      if (priceChanged) return `${metricLabel} in freefall — retail price is the driver`;
+      if (cogsChanged) return `${metricLabel} in freefall — cost rate moved`;
+      if (volumeChanged)
+        return `${metricLabel} in freefall — volume ${volumePct! < 0 ? "collapsed" : "surged"}`;
+      return `${metricLabel} in freefall`;
     }
     if (sev === "watch") {
-      if (volumeChanged && !priceChanged) return `${metricLabel} slipping — volume down`;
-      if (priceChanged) return `${metricLabel} slipping — price shifted`;
-      return `${metricLabel} slipping — check cost`;
+      if (looksLikeAd) return `${metricLabel} slipping — retail cut, cost rate held`;
+      if (volumeChanged && !priceChanged)
+        return `${metricLabel} slipping — volume ${volumePct! < 0 ? "down" : "up"}`;
+      if (priceChanged) return `${metricLabel} slipping — retail shifted`;
+      if (cogsChanged) return `${metricLabel} slipping — cost rate moved`;
+      return `${metricLabel} slipping`;
     }
     if (Math.abs(gradedDelta) < flatEpsilon)
-      return `${metricLabel} held — investigate cost`;
+      return `${metricLabel} held`;
     return gradedDelta > 0
       ? `${metricLabel} improving`
       : `${metricLabel} holding steady`;
   })();
 
+  /**
+   * Scale, then the named finding, then context — the impact ordering the
+   * diagnostic panels use. Every clause is a rate or a volume, and each says
+   * what it is, so no figure here can be mistaken for another.
+   */
   const middleClause = (() => {
-    if (priceChanged && cogsChanged) {
-      return `Price ${priceDeltaAmt! < 0 ? "dropped" : "rose"} ${formatCurrency2(Math.abs(priceDeltaAmt!))} while COGS ${
-        cogsChangePct! >= 0 ? "rose" : "fell"
-      } ${Math.abs(cogsChangePct!).toFixed(0)}%`;
+    const parts: string[] = [];
+    if (priceChanged && retailDelta !== null) {
+      parts.push(
+        `Retail ${retailDelta < 0 ? "fell" : "rose"} ${formatCurrency2(
+          Math.abs(retailDelta),
+        )}/${unit} (${formatCurrency2(basisRetail!)} → ${formatCurrency2(tyRetail!)})`,
+      );
     }
-    if (priceChanged) {
-      return `Price ${priceDeltaAmt! < 0 ? "dropped" : "rose"} ${formatCurrency2(Math.abs(priceDeltaAmt!))}${
-        volumeChanged
-          ? ` with qty ${qtyChangePct! < 0 ? "down" : "up"} ${Math.abs(qtyChangePct!).toFixed(0)}%`
-          : " with qty holding steady"
-      }`;
+    if (cogsChanged && costDelta !== null) {
+      parts.push(
+        `cost ${costDelta < 0 ? "fell" : "rose"} ${formatCurrency2(
+          Math.abs(costDelta),
+        )}/${unit} (${formatCurrency2(basisCost!)} → ${formatCurrency2(tyCost!)})`,
+      );
+    } else if (tyCost !== null) {
+      // Saying the cost held is not filler — it is the half of the answer that
+      // stops a rising COGS total being read as a cost problem.
+      parts.push(`cost held at ${formatCurrency2(tyCost)}/${unit}`);
     }
-    if (volumeChanged) {
-      return `Qty ${qtyChangePct! < 0 ? "dropped" : "rose"} ${Math.abs(qtyChangePct!).toFixed(0)}% with price held flat`;
+    if (volumeChanged && volumePct !== null) {
+      parts.push(
+        `volume ${volumePct < 0 ? "down" : "up"} ${Math.abs(volumePct).toFixed(0)}% to ${formatPricedUnits(item.qty, item.weight)}`,
+      );
     }
-    if (cogsChanged) {
-      return `Cost ${cogsChangePct! >= 0 ? "rose" : "fell"} ${Math.abs(cogsChangePct!).toFixed(0)}% with price and volume flat`;
-    }
-    return "No price or volume change";
+    if (parts.length === 0) return "No rate or volume change";
+    return parts.join(", ");
   })();
 
   const action =
-    sev === "critical"
-      ? "Immediate review needed"
-      : priceChanged
-        ? "Check pricing strategy"
-        : volumeChanged
-          ? "Check placement and promo status"
+    // Nothing is wrong, so the strip should not manufacture an errand. This
+    // ran ahead of the ad check deliberately: an item whose margin went *up*
+    // on an ad does not need confirming.
+    sev === "healthy"
+      ? "No action needed"
+      : looksLikeAd
+        ? "Expected if this item was on ad — confirm before acting"
+        : sev === "critical"
+          ? "Immediate review needed"
           : cogsChanged
             ? "Check vendor cost changes"
-            : "Cost may have shifted";
+            : priceChanged
+              ? "Check pricing strategy"
+              : volumeChanged
+                ? "Check placement and promo status"
+                : "Cost may have shifted";
 
   const deltaLabel = `${gradedDelta >= 0 ? "+" : ""}${gradedDelta.toFixed(2)}${
     isPts ? " pts" : "%"
@@ -547,14 +634,35 @@ export const getRowMetric = (item: ItemMarginRow, key: RowMetricKey) => {
         lyDisplay:
           item.lyNetSales !== null ? formatCurrency2(item.lyNetSales) : null,
       };
-    case "qty":
+    case "qty": {
+      // Shown in the unit the item is priced in, so the row agrees with the
+      // Cost grid and with its own COGS. The percentage has to be computed on
+      // the same basis: pairing a pounds figure with a ring-count delta was
+      // the inconsistency this set out to remove, and on a variable-weight
+      // department the two genuinely differ — package weight moves up to 89%
+      // day to day inside one item.
+      //
+      // Deliberately NOT `lwQtyPct`/`lyQtyPct`. Those still grade and still
+      // drive the narrative on rings; only the figure on screen moves here.
+      const ty = pricedUnits(item.qty, item.weight);
+      const lw = item.lwQty === null ? null : pricedUnits(item.lwQty, item.lwWeight);
+      const ly = item.lyQty === null ? null : pricedUnits(item.lyQty, item.lyWeight);
+      const pct = (base: number | null) =>
+        base !== null && base > 0 ? ((ty - base) / base) * 100 : null;
       return {
-        tyDisplay: String(item.qty),
-        lwColorPct: item.lwQtyPct,
-        lyColorPct: item.lyQtyPct,
-        lwDisplay: item.lwQty !== null ? String(item.lwQty) : null,
-        lyDisplay: item.lyQty !== null ? String(item.lyQty) : null,
+        tyDisplay: formatPricedUnits(item.qty, item.weight),
+        lwColorPct: pct(lw),
+        lyColorPct: pct(ly),
+        lwDisplay:
+          item.lwQty !== null
+            ? formatPricedUnits(item.lwQty, item.lwWeight)
+            : null,
+        lyDisplay:
+          item.lyQty !== null
+            ? formatPricedUnits(item.lyQty, item.lyWeight)
+            : null,
       };
+    }
     case "cogs":
       return {
         tyDisplay: formatCurrency2(item.cogs),

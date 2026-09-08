@@ -1098,6 +1098,20 @@ export type SubDeptCost = {
   calculated_cost: number;
   cost: number;
   qty: number;
+  /**
+   * Pounds, on a scale item. Zero or absent on a by-the-each item.
+   *
+   * Carried because `total_cost` is costed on this, not on `qty` — see
+   * `calculateCogs`, where `weight` wins whenever it is non-zero. Without it a
+   * reader multiplies the cost column by `qty` and gets a number that is not
+   * the COGS beside it: BNLS CHICKEN THIGHS rang 160 packages weighing 506.03
+   * lb, so its week costed at $1.36 x 506.03 = $688.19, not $217.60.
+   *
+   * Optional only because the legacy KPI builder in `display/MarginKpi.tsx`
+   * does not populate it and the legacy grid does not read it. Every dev
+   * caller sets it.
+   */
+  weight?: number;
   total_cost: number;
 };
 
@@ -1425,6 +1439,114 @@ export interface CashierRollupRow {
   line_count: number;
   transaction_count: number;
   total_sales: number;
+}
+
+/**
+ * One week of one cashier's exception, with its peer indices.
+ *
+ * An index is the cashier's figure over the peer average — 1.0 is the average
+ * cashier. `null` where the peer average is zero and there is nothing to be
+ * above, which is every dollar measure on a type like No Sale.
+ */
+export interface CashierWeekStat {
+  week_index: number;
+  /** yyyy-mm-dd, the block's first day. */
+  week_start: string;
+  line_count: number;
+  transaction_count: number;
+  qty: number;
+  total_sales: number;
+  lines_index: number | null;
+  qty_index: number | null;
+  sales_index: number | null;
+  /** Only present when the request carried a threshold. ABSENT means "not
+   *  evaluated", which is not the same as false. */
+  investigate?: boolean;
+}
+
+/** One cashier's whole window for one exception type. */
+export interface CashierExceptionStat {
+  line_count: number;
+  transaction_count: number;
+  qty: number;
+  total_sales: number;
+  lines_index: number | null;
+  qty_index: number | null;
+  sales_index: number | null;
+  /** Weeks this cashier had ANY of this exception — the true denominator.
+   *  `weekly` may be shorter, because it holds only the flagged weeks. */
+  weeks_present: number;
+  weekly: CashierWeekStat[];
+  investigate?: boolean;
+  weeks_flagged?: number;
+}
+
+/**
+ * The peer baseline for one exception type.
+ *
+ * The peer group is the cashiers who HAVE that exception — someone with no
+ * refunds is not part of the refund average. `peer_count` stays larger than the
+ * cashiers returned whenever the response is filtered to the flagged ones,
+ * which is correct: dropping clean cashiers from the LIST must never drop them
+ * from the DENOMINATOR.
+ */
+export interface CashierBenchmark {
+  peer_count: number;
+  avg_line_count: number;
+  avg_transaction_count: number;
+  avg_qty: number;
+  avg_total_sales: number;
+  /** The same averages over cashier-WEEKS, for grading a single week. */
+  weekly: {
+    peer_count: number;
+    avg_line_count: number;
+    avg_transaction_count: number;
+    avg_qty: number;
+    avg_total_sales: number;
+  };
+  /** Which measures could be graded at all. A measure whose peer average is
+   *  zero returns a null index rather than a special case keyed on the type
+   *  name — this says so without the frontend having to infer it. */
+  gradeable: {
+    line_count: boolean;
+    qty: boolean;
+    total_sales: boolean;
+  };
+}
+
+/** One cashier, with every exception they hit nested underneath. */
+export interface CashierProfile {
+  storeid: number;
+  store_name: string;
+  store_number: string;
+  cashier_number: number;
+  cashier_name: string;
+  /** Keyed by sale type. An absent key means none of that exception. */
+  exceptions: Record<string, CashierExceptionStat>;
+  peak_index: number | null;
+  peak_type: string | null;
+  peak_measure: string | null;
+  flagged_types?: string[];
+  investigate?: boolean;
+  max_weeks_flagged?: number;
+  /** The same exception, week after week. */
+  persistent?: boolean;
+  /** Several different exceptions at once. */
+  multi_type?: boolean;
+  repeat_offender?: boolean;
+}
+
+/** `cashier_table` with `groupBy: "cashier"` and `includeStats: true`. */
+export interface CashierStatsResp {
+  error: number;
+  success: boolean;
+  msg?: string;
+  /** Counts CASHIERS in this mode, not exception rows. */
+  record_count: number;
+  total_pages: number;
+  page: number;
+  benchmarks: Record<string, CashierBenchmark>;
+  cashiers: CashierProfile[];
 }
 
 /** `cashiers/transaction_ids` — the id list without the rows behind it. */
