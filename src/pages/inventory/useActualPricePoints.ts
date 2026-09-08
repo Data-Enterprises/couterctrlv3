@@ -1,10 +1,6 @@
 import { useCallback, useRef, useState } from "react";
 import { useAppSelector } from "../../hooks";
-import {
-  getCashierTable,
-  getProductLookup,
-  getTransactionList,
-} from "../../api/lossPrevention";
+import { getProductLookup, getTransactionList } from "../../api/lossPrevention";
 import { fetchAllPages } from "../../utils/paging";
 import type { ProductLookupResp, TransactionListItem } from "../../interfaces";
 
@@ -12,14 +8,13 @@ import type { ProductLookupResp, TransactionListItem } from "../../interfaces";
  * The register-level half of Item Analysis — spec §4.
  *
  * Two steps, because no endpoint goes from an item to its lines directly:
- * `cashier_table` names the receipts, `transaction_list` opens them. Both are
- * paged and both fan out pages 2..N together.
+ * `product_lookup` names the receipts, `transaction_list` opens them.
  *
- * Step one searches by **product description**, not UPC — that is the only
- * search the endpoint offers. It over-matches by design ("BAG ICE 7 LB" also
- * hits "BAG ICE 20 LB"), which is why step three filters strictly on
- * `product_code`. Widening the receipt net costs nothing; the filter is what
- * makes the answer exact.
+ * Step one takes the UPC every caller already holds, so it cannot over-match
+ * and needs no paging — the ids arrive in full on one response. Step two is
+ * paged and fans out pages 2..N together. Step three still filters strictly on
+ * `product_code`, because `transaction_list` returns whole receipts and most of
+ * what comes back belongs to other items.
  */
 
 /** Receipts are opened by id, and the id list travels in the request body.
@@ -50,35 +45,15 @@ const initial: ActualFetchState = {
   truncated: 0,
 };
 
-interface Options {
-  /**
-   * Opt in to `cashiers/product_lookup` for step one instead of
-   * `cashier_table`.
-   *
-   * Off by default, and no longer because of the backend: `product_lookup` is
-   * on prod now. It stays an option because this hook also serves Price Opt
-   * Sub Dept and Price Opt Vendor, which are still experimental and have not
-   * been moved deliberately. Item Actions is the only caller that opts in.
-   */
-  productLookup?: boolean;
-}
-
-export const useActualPricePoints = (options: Options = {}) => {
+export const useActualPricePoints = () => {
   const { url, token } = useAppSelector((s) => s.app);
-  const useLookup = options.productLookup === true;
   const [state, setState] = useState<ActualFetchState>(initial);
   /** The most recent request. A response whose token no longer matches is a
    *  loser of a race and is dropped rather than rendered. */
   const requestId = useRef(0);
 
   const run = useCallback(
-    async (
-      upc: string,
-      description: string,
-      storeid: number,
-      start: string,
-      end: string,
-    ) => {
+    async (upc: string, storeid: number, start: string, end: string) => {
       const id = ++requestId.current;
       setState({ ...initial, upc, loading: true });
 
@@ -86,92 +61,39 @@ export const useActualPricePoints = (options: Options = {}) => {
 
       try {
         /**
-         * Step one: name the receipts. Step two is the same either way.
+         * Step one: name the receipts.
          *
-         * `product_lookup` takes the UPC this hook already holds, so it needs
-         * no description search and cannot over-match. `cashier_table` can
-         * only be searched by description, and it returned just the baskets
+         * This was `cashier_table` searched by product description, which is
+         * the only search that endpoint offers. It returned just the baskets
          * carrying a discount row — SF BACON 12 OZ sold 81 units in a week and
          * only 40 of them, the discounted ones, ever reached the panel.
+         * `product_lookup` is scoped on `qty <> 0` instead, so it answers with
+         * every basket containing the item.
          */
-        let saleIds: string[];
-
-        if (useLookup) {
-          const lookupResp = await getProductLookup(
-            url,
-            token,
-            start,
-            end,
-            USE_GROUPS,
-            storeid,
-            SINGLE_STORE,
-            { productCodes: [upc] },
-          );
-          if (stale()) return;
-          const lookup = lookupResp.data as ProductLookupResp;
-          if (lookup.error !== 0) {
-            setState({
-              ...initial,
-              upc,
-              error: lookup.msg ?? "Could not load transactions",
-            });
-            return;
-          }
-          // Passing productCodes makes the product explicit, so the ids come
-          // back on this same response — the picker and its second round trip
-          // are only for a searchString that spans several products.
-          saleIds = [...new Set(lookup.transaction_ids ?? [])];
-        } else {
-          const firstResp = await getCashierTable(
-            url,
-            token,
-            start,
-            end,
-            USE_GROUPS,
-            storeid,
-            SINGLE_STORE,
-            ["description"],
-            1,
-            description,
-          );
-          if (stale()) return;
-          const first = firstResp.data;
-          if (first.error !== 0) {
-            setState({
-              ...initial,
-              upc,
-              error: first.msg ?? "Could not load transactions",
-            });
-            return;
-          }
-
-          const receipts = await fetchAllPages(
-            first,
-            (first.transactions ?? []) as { sale_id: string }[],
-            async (page) => {
-              try {
-                const r = await getCashierTable(
-                  url,
-                  token,
-                  start,
-                  end,
-                  USE_GROUPS,
-                  storeid,
-                  SINGLE_STORE,
-                  ["description"],
-                  page,
-                  description,
-                );
-                return r.data.error === 0 ? r.data.transactions : [];
-              } catch {
-                return [];
-              }
-            },
-          );
-          if (stale()) return;
-
-          saleIds = [...new Set(receipts.map((t) => t.sale_id))];
+        const lookupResp = await getProductLookup(
+          url,
+          token,
+          start,
+          end,
+          USE_GROUPS,
+          storeid,
+          SINGLE_STORE,
+          { productCodes: [upc] },
+        );
+        if (stale()) return;
+        const lookup = lookupResp.data as ProductLookupResp;
+        if (lookup.error !== 0) {
+          setState({
+            ...initial,
+            upc,
+            error: lookup.msg ?? "Could not load transactions",
+          });
+          return;
         }
+        // Passing productCodes makes the product explicit, so the ids come
+        // back on this same response — the picker and its second round trip
+        // are only for a searchString that spans several products.
+        let saleIds = [...new Set(lookup.transaction_ids ?? [])];
 
         let truncated = 0;
         if (saleIds.length > MAX_TRANSACTIONS) {
@@ -241,7 +163,7 @@ export const useActualPricePoints = (options: Options = {}) => {
         });
       }
     },
-    [url, token, useLookup],
+    [url, token],
   );
 
   /** Dropped when the selection is cleared, so a stale panel can't outlive the

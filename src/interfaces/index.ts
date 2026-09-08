@@ -332,6 +332,17 @@ export interface TransactionListItem {
   line_number: number;
   terminal: string;
   total_sales: number;
+  /**
+   * `total_sales` as the column actually stores it — no tax added, no store
+   * coupon removed.
+   *
+   * `total_sales` above is the adjusted figure this endpoint has always
+   * returned. `cashier_table` returns the raw one, so anything reconciling the
+   * two must compare like with like: the difference is small per line and
+   * compounds into a visibly different case value. Optional because only the
+   * optimized router returns it.
+   */
+  item_total?: number;
   net_sales: number;
   sale_id: string;
   product_code: string;
@@ -1388,6 +1399,45 @@ export interface ProductLookupProduct {
   units: number;
   /** Distinct baskets holding a qty<>0 row. */
   baskets: number;
+}
+
+/**
+ * One row of `cashier_table`'s `groupBy: "cashier"` rollup.
+ *
+ * The per-cashier-per-week counts LP Actions used to derive by counting rows in
+ * the browser. `line_count` is the number of PRODUCT-GRAIN rows the same query
+ * would have returned — which is what the page's `+= 1` counted — and is NOT
+ * `transaction_count`, which is distinct baskets. For one group over four weeks
+ * those differ by roughly 7x, so they are never interchangeable.
+ */
+export interface CashierRollupRow {
+  storeid: number;
+  store_name: string;
+  store_number: string;
+  sale_type: string;
+  /** 0-based, in 7-day blocks from the request's `startDate`. */
+  week_index: number;
+  /** The block's first day. Returned so a bucketing mismatch is visible in the
+   *  response rather than silently shifting every weekly figure. */
+  week_start: string;
+  cashier_number: number;
+  cashier_name: string;
+  line_count: number;
+  transaction_count: number;
+  total_sales: number;
+}
+
+/** `cashiers/transaction_ids` — the id list without the rows behind it. */
+export interface TransactionIdsResp {
+  error: number;
+  success: boolean;
+  msg?: string;
+  /** Distinct baskets in the window BEFORE `limit`, so the page can report the
+   *  overflow without fetching what it is about to discard. */
+  transaction_count: number;
+  returned_count: number;
+  truncated: boolean;
+  transaction_ids: string[];
 }
 
 export interface ProductLookupResp {
