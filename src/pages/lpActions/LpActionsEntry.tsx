@@ -18,7 +18,7 @@ const LpActionsEntry = ({ onRun, onBack }: Props) => {
   return (
     <SearchCard
       title="LP Actions"
-      description={`Every exception type across a store or group, graded on what changed rather than what is highest. The ${DEFAULT_WEEKS} weeks ending on the chosen date: the last is judged against the ones before it, and the cashiers behind it are ranked by movement against their own normal.`}
+      description={`Every exception type across a store or group, graded on what changed rather than what is highest. The ${DEFAULT_WEEKS} weeks ending on the chosen date: the last is judged against the ones before it, and the cashiers behind it are ranked by movement against their own average.`}
       buttonLabel="Grade exceptions"
       singleDate
       onSearch={onRun}

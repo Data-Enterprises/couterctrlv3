@@ -27,6 +27,14 @@ export interface ItemRow {
   /** Receipts, not lines. Seven receipts is a pattern; seven units on one
    *  receipt is a single event. */
   receipts: number;
+  /**
+   * Which receipts, in the graded week.
+   *
+   * Carried because counts do not add up across items: three flagged items on
+   * one basket is three item-rows each reporting one receipt, and summing them
+   * claims three. The narrative needs the union, and only the set can give it.
+   */
+  receiptIds: string[];
   /** Units rung in the latest week. Receipts drive the grading, but units are
    *  what a reader counts against the shelf. */
   qty: number;
@@ -109,6 +117,7 @@ export const buildItemMovement = (
         productCode,
         description: e.description,
         receipts: latest,
+        receiptIds: [...(e.receiptsPerWeek[lastIndex] ?? new Set<string>())],
         qty: e.qty,
         value: e.value,
         baseline,

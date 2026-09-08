@@ -28,6 +28,7 @@ const FAMILY = {
   sales: "Performance", lossPrevention: "Performance",
   subDepts: "Performance", categories: "Performance",
   orders: "Data", receivers: "Data", coupons: "Data", couponSales: "Data",
+  suggested: "Data",
   admin: "Config", organization: "Config", groups: "Config",
   team: "Config", settings: "Config",
   lookup: "Diagnostic", upc: "Diagnostic",

@@ -7,7 +7,8 @@ import LpExceptionList from "./LpExceptionList";
 import LpExceptionDetail from "./LpExceptionDetail";
 import CashierJourney from "./CashierJourney";
 import CashierCase from "./case/CashierCase";
-import { setLpCase } from "../../features/lpActionsSlice";
+import LpCashierProfiles from "./profiles/LpCashierProfiles";
+import { setLpCase, setLpProfileScope } from "../../features/lpActionsSlice";
 import { useLpExceptionWalk } from "./useLpExceptionWalk";
 import { DEFAULT_WEEKS, MAX_WEEKS } from "./lpActionsConfig";
 
@@ -25,8 +26,16 @@ const LpActions = () => {
   const dispatch = useAppDispatch();
   const walk = useLpExceptionWalk();
   const { singleDate, lastStore, lastGroup } = useAppSelector((s) => s.search);
-  const { rows, searched, weeks, loading, caseCashier, selectedId } =
-    useAppSelector((s) => s.lpActions);
+  const {
+    rows,
+    searched,
+    weeks,
+    loading,
+    caseCashier,
+    selectedId,
+    profileType,
+    profileStore,
+  } = useAppSelector((s) => s.lpActions);
   const [searchOpen, setSearchOpen] = useState(false);
   const [addingWeek, setAddingWeek] = useState(false);
 
@@ -87,12 +96,24 @@ const LpActions = () => {
     <div className="w-full p-4 select-none min-h-[calc(100vh-3rem)] max-h-[calc(100vh-3rem)] overflow-hidden">
       <div className="flex gap-4 h-[calc(100vh-5rem)]">
         <LpExceptionList onSearchOpen={() => setSearchOpen(true)} />
-        {caseCashier === null ? (
+        {/* Three states for one panel, deepest first. The exception detail is
+            the default and now carries the graded profiles for its own store;
+            the standalone list exists only for the cross-store view, which no
+            single exception row can express. */}
+        {caseCashier !== null ? null : profileType !== null &&
+          profileStore === null ? (
+          <LpCashierProfiles
+            onBack={() =>
+              dispatch(setLpProfileScope({ saleType: null, storeid: null }))
+            }
+          />
+        ) : (
           <LpExceptionDetail
             onAddWeek={handleAddWeek}
             addingWeek={addingWeek}
           />
-        ) : (
+        )}
+        {caseCashier !== null && (
           <CashierCase
             onBack={() => dispatch(setLpCase(null))}
             backLabel={

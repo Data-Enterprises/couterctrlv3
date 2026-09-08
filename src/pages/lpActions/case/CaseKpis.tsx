@@ -1,17 +1,21 @@
 import { formatCurrency2, formatDateSimple } from "../../../utils";
+import KpiTileGrid, { type KpiCell } from "../../../components/KpiTileGrid";
 import { hourLabel } from "./chartTheme";
 import { peakHourOf } from "./hourProfile";
 import type { HourProfile } from "./hourProfile";
 import type { TypeFacts } from "./caseModel";
 
 /**
- * The selected week, in five numbers.
+ * The selected week, in four figures.
  *
  * Directly under the tabs because these are the facts the tab changes — the
  * header above carries the operator, which does not. Peak day and peak hour
  * earn their place by being the two the prose can only claim conditionally:
  * the sentences below refuse to call four hours a cluster, but a reader still
  * wants to know when the week concentrated.
+ *
+ * Rendered by the shared band, so this strip, the store panel's above it and
+ * Item Actions' are one component rather than three that drift.
  */
 interface Props {
   facts: TypeFacts;
@@ -20,54 +24,49 @@ interface Props {
   saleType: string;
 }
 
-const Kpi = ({
-  value,
-  label,
-  sub,
-}: {
-  value: string;
-  label: string;
-  sub?: string;
-}) => (
-  <div className="flex-1 min-w-0 px-3 py-1.5 border-r border-gray-100 last:border-r-0">
-    <div className="text-[15px] font-semibold tabular-nums text-content leading-tight truncate">
-      {value}
-    </div>
-    <div className="text-[10.5px] uppercase tracking-wide text-content/85 truncate">
-      {label}
-      {sub ? <span className="normal-case"> · {sub}</span> : null}
-    </div>
-  </div>
-);
-
 const CaseKpis = ({ facts, profile, profileLoading, saleType }: Props) => {
   const peakHour = profile ? peakHourOf(profile, saleType) : null;
 
-  return (
-    <div className="flex items-stretch border-b border-gray-100 bg-gray-50">
-      <Kpi value={String(facts.occurrences)} label="this week" />
-      <Kpi value={String(facts.receipts)} label="receipts" />
-      <Kpi value={formatCurrency2(facts.value)} label="value" />
-      <Kpi
-        value={facts.peakDay ? formatDateSimple(facts.peakDay) : "—"}
-        label="peak day"
-        sub={facts.peakDay ? String(facts.peakDayCount) : undefined}
-      />
-      <Kpi
-        value={
-          peakHour && peakHour.hour >= 0
-            ? hourLabel(peakHour.hour)
-            : profileLoading
-              ? "…"
-              : "—"
-        }
-        label="peak hour"
-        sub={
-          peakHour && peakHour.hour >= 0 ? String(peakHour.count) : undefined
-        }
-      />
-    </div>
-  );
+  const items: KpiCell[] = [
+    {
+      label: "This week",
+      value: String(facts.occurrences),
+      sub: `${facts.receipts} rcpt`,
+      variant: facts.occurrences > 0 ? "down" : undefined,
+      subVariant: "neutral",
+    },
+    {
+      label: "Value",
+      value: formatCurrency2(facts.value),
+      sub:
+        facts.largest > 0 ? `max ${formatCurrency2(facts.largest)}` : undefined,
+      subVariant: "neutral",
+    },
+    {
+      label: "Peak day",
+      value: facts.peakDay ? formatDateSimple(facts.peakDay) : "—",
+      sub: facts.peakDay ? String(facts.peakDayCount) : undefined,
+      subVariant: "neutral",
+    },
+    {
+      label: "Peak hour",
+      value:
+        peakHour && peakHour.hour >= 0
+          ? hourLabel(peakHour.hour)
+          : profileLoading
+            ? "…"
+            : "—",
+      // Receipts, not lines — the hour profile folds a basket to one entry.
+      // Unlabelled it sat beside a line count and read as a contradiction.
+      sub:
+        peakHour && peakHour.hour >= 0
+          ? `${peakHour.count} ${peakHour.count === 1 ? "rcpt" : "rcpts"}`
+          : undefined,
+      subVariant: "neutral",
+    },
+  ];
+
+  return <KpiTileGrid items={items} />;
 };
 
 export default CaseKpis;

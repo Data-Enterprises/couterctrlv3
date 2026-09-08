@@ -6,6 +6,8 @@ import { createRequestQueue } from "../../utils/requestQueue";
 import {
   clearLpResult,
   setLpLoading,
+  setLpProfiles,
+  setLpRollupRows,
   setLpMessage,
   setLpError,
   setLpResult,
@@ -13,6 +15,8 @@ import {
 } from "../../features/lpActionsSlice";
 import { getStoreName } from "../../utils";
 import type {
+  CashierProfile,
+  CashierStatsResp,
   CashierRollupRow,
   CashierTransaction,
   JsonError,
@@ -64,6 +68,26 @@ const NOT_EXCEPTIONS = ["Tender", "Description", "Sale"];
  */
 const walkQueue = createRequestQueue({ concurrency: 4 });
 
+/**
+ * The two calls have different jobs, and the split is what keeps both small.
+ *
+ * Call 1's rollup is already the whole population at cashier-week grain, so it
+ * decides WHO is on the list — their total, their weekly rate, their store's
+ * average and the group's. Nothing filtered, nothing to tune.
+ *
+ * Call 2 is the pivot: cashier as the entity, per-week indices, `qty`, and the
+ * peer benchmark attached to the rows it grades so the two cannot drift. It
+ * answers WHAT TO INVESTIGATE, so it is filtered — this threshold is a
+ * "worth enriching" line, not a "belongs on the list" line.
+ *
+ * Loose on purpose. A borderline person is exactly who someone clicks to make
+ * up their mind, and arriving at a thinner screen than the confident cases get
+ * is the wrong way round. Anyone under it still appears, built from call 1's
+ * rows; they simply lack `qty` and the server-computed indices.
+ */
+const ENRICH_THRESHOLD = 1.5;
+const INCLUDE_UNFLAGGED = false;
+
 interface Scope {
   url: string;
   token: string;
@@ -71,6 +95,57 @@ interface Scope {
   searchValue: number;
   singleStore: number;
 }
+
+/**
+ * The graded cashiers for the same window, in one request.
+ *
+ * Fired alongside the overview rather than on a store click: it answers for the
+ * whole group at once, so paying for it up front buys every drill for free and
+ * a click never waits on a fetch.
+ *
+ * Failure is not fatal. The exception list is the page; the profiles are the
+ * step after it, and a search that produced a list should render it rather than
+ * fail whole because the second call fell over.
+ */
+const fetchProfiles = async (
+  { url, token, useGroups, searchValue, singleStore }: Scope,
+  span: { start: string; end: string },
+  types: string[],
+): Promise<{
+  profiles: CashierProfile[];
+  benchmarks: CashierStatsResp["benchmarks"];
+}> => {
+  const empty = { profiles: [], benchmarks: {} };
+  try {
+    const resp = await walkQueue.enqueue("profiles", () =>
+      getCashierTable(
+        url,
+        token,
+        span.start,
+        span.end,
+        useGroups,
+        searchValue,
+        singleStore,
+        types,
+        1,
+        "",
+        "cashier",
+        true,
+        ENRICH_THRESHOLD,
+        INCLUDE_UNFLAGGED,
+      ),
+    );
+    if (!resp) return empty;
+    const body = resp.data as CashierStatsResp;
+    if (body.error !== 0) return empty;
+    return {
+      profiles: body.cashiers ?? [],
+      benchmarks: body.benchmarks ?? {},
+    };
+  } catch {
+    return empty;
+  }
+};
 
 /**
  * The whole span, every type, as per-cashier-per-week counts.
@@ -231,11 +306,14 @@ export const useLpExceptionWalk = () => {
         // off in this mode rather than silently rendering empty. See
         // `rollupMode` on the slice.
         if (apiEnv === "dev") {
-          const rollup = await fetchRollup(
-            { url, token, useGroups, searchValue, singleStore },
-            span,
-            types,
-          );
+          const scope = { url, token, useGroups, searchValue, singleStore };
+          // Together, not in series. Neither needs the other's answer, and the
+          // profiles are wanted the moment the list they sit behind renders.
+          const [rollup, graded] = await Promise.all([
+            fetchRollup(scope, span, types),
+            fetchProfiles(scope, span, types),
+          ]);
+          dispatch(setLpProfiles(graded));
           // The same second filter the walk below applies, and for the same
           // reason: `cashier_table` selects whole BASKETS containing an
           // exception and then returns every row in them, so `Sale` and
@@ -244,6 +322,11 @@ export const useLpExceptionWalk = () => {
           // rows — so without this the page grows a "Sale" and a "Tender" line
           // that prod does not have.
           const wantedTypes = new Set(types);
+          // Kept, not reduced away. These rows are the whole population at
+          // cashier-week grain and every average the list needs is in them.
+          dispatch(
+            setLpRollupRows(rollup.filter((r) => wantedTypes.has(r.sale_type))),
+          );
           const rows = buildExceptionRowsFromRollup(
             windows,
             rollup.filter((r) => wantedTypes.has(r.sale_type)),

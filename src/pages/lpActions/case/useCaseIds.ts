@@ -33,7 +33,20 @@ export const useCaseIds = (
 ): CaseIds => {
   const { url, token } = useAppSelector((s) => s.app);
   const { type, lastStore, lastGroup } = useAppSelector((s) => s.search);
-  const { windows } = useAppSelector((s) => s.lpActions);
+  const { windows, caseWeek } = useAppSelector((s) => s.lpActions);
+  /**
+   * One week, not four.
+   *
+   * `transaction_ids` takes a date range, so scoping to the week that flagged
+   * costs nothing and makes the evidence set small enough to read. The other
+   * weeks are the baseline it was measured against, not the finding.
+   */
+  const scope =
+    caseWeek !== null && windows[caseWeek]
+      ? windows[caseWeek]
+      : windows.length > 0
+        ? { start: windows[0].start, end: windows[windows.length - 1].end }
+        : null;
   const [state, setState] = useState<CaseIds>(empty);
   /** The most recent request. A slower answer to an older question is dropped
    *  rather than rendered under the cashier now on screen. */
@@ -42,12 +55,19 @@ export const useCaseIds = (
   const key = ref
     ? `${ref.storeid}:${ref.cashierNumber}:${types.join(",")}`
     : "";
-  const span = windows.length
-    ? `${windows[0].start}:${windows[windows.length - 1].end}`
-    : "";
+  /**
+   * The dates actually being asked for.
+   *
+   * This used to be the whole span, which does not change when the reader
+   * picks a different week — so the strip re-scoped the request in principle
+   * and the effect never ran, leaving the ids from whichever week the case
+   * opened on. The window's own dates are in here too, so widening the search
+   * still refetches.
+   */
+  const scopeKey = scope ? `${scope.start}:${scope.end}` : "";
 
   useEffect(() => {
-    if (!enabled || !ref || types.length === 0 || windows.length === 0) {
+    if (!enabled || !ref || types.length === 0 || !scope) {
       setState(empty);
       return;
     }
@@ -59,8 +79,8 @@ export const useCaseIds = (
     getTransactionIds(
       url,
       token,
-      windows[0].start,
-      windows[windows.length - 1].end,
+      scope.start,
+      scope.end,
       isGroup ? 1 : 0,
       isGroup ? lastGroup : lastStore,
       isGroup ? 0 : 1,
@@ -84,7 +104,14 @@ export const useCaseIds = (
         // group, and 19 at one store is a different person from 19 at another.
         // The storeid is in the id itself, so this costs nothing.
         setState({
-          ids: j.transaction_ids.filter((t) => storeIdOf(t) === ref.storeid),
+          // Coerced on both sides. `storeIdOf` parses a number out of the id
+          // string, and a `storeid` that arrives as a string despite its type
+          // — which this API has done before with `product_code` — makes
+          // `17 === "17"` false and silently drops every basket, leaving the
+          // case with ids fetched and no receipts to ask for.
+          ids: j.transaction_ids.filter(
+            (t) => storeIdOf(t) === Number(ref.storeid),
+          ),
           loading: false,
           error: null,
         });
@@ -97,9 +124,9 @@ export const useCaseIds = (
           error: err.message ?? "Could not load receipts",
         });
       });
-    // `key` and `span` stand in for ref/types/windows, which are fresh objects
-    // on every render and would otherwise refetch continuously.
-  }, [enabled, key, span, url, token, type, lastStore, lastGroup]);
+    // `key` and `scopeKey` stand in for ref/types/scope, which are fresh
+    // objects on every render and would otherwise refetch continuously.
+  }, [enabled, key, scopeKey, url, token, type, lastStore, lastGroup]);
 
   return state;
 };

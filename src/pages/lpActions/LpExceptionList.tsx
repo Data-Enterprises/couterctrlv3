@@ -1,6 +1,7 @@
 import { useAppDispatch, useAppSelector } from "../../hooks";
 import {
   setLpSelected,
+  setLpProfileScope,
   setLpSevFilter,
   toggleLpType,
 } from "../../features/lpActionsSlice";
@@ -58,44 +59,53 @@ const CHIP: { key: SevChipKey; label: string; cls: string }[] = [
   },
 ];
 
-const WeekBars = ({
+/**
+ * The two figures the grade is made of, in the row that carries the grade.
+ *
+ * These used to be four spark bars here and a KPI strip on the right panel
+ * saying the same thing. The bars showed which week without saying how many,
+ * and the strip repeated the row you had just clicked — so the numbers moved
+ * to where the percentage already lives and the strip came out entirely.
+ */
+const Grade = ({
   row,
 }: {
-  row: Pick<ExceptionRow, "weeks" | "severity">;
-}) => {
-  const peak = Math.max(...row.weeks.map((w) => w.count), 1);
-  return (
-    <span className="flex items-end gap-[3px] h-5 flex-shrink-0">
-      {row.weeks.map((w, i) => {
-        const last = i === row.weeks.length - 1;
-        const height = Math.max(2, Math.round((w.count / peak) * 20));
-        return (
-          <span
-            key={w.start}
-            title={`${w.start} — ${w.count}`}
-            style={{ height }}
-            className={`w-2 rounded-sm ${
-              last
-                ? row.severity === "investigate"
-                  ? "bg-severity_critical_text"
-                  : row.severity === "watch"
-                    ? "bg-severity_watch_text"
-                    : "bg-severity_healthy_text"
-                : "bg-gray-300"
-            }`}
-          />
-        );
-      })}
+  row: Pick<ExceptionRow, "latest" | "baseline" | "changePct" | "severity">;
+}) => (
+  <>
+    <span className="text-[12.5px] font-semibold tabular-nums text-content w-[34px] text-right flex-shrink-0">
+      {row.latest}
     </span>
-  );
-};
+    <span
+      className="text-[12px] tabular-nums text-content/85 w-[38px] text-right flex-shrink-0"
+      title="Average of the weeks before it"
+    >
+      {row.baseline.toFixed(1)}
+    </span>
+    <span
+      className={`text-[12px] tabular-nums w-[54px] text-right flex-shrink-0 ${PCT_TEXT[row.severity]}`}
+    >
+      {row.changePct === null
+        ? row.severity === "investigate"
+          ? "new"
+          : "—"
+        : `${row.changePct >= 0 ? "+" : ""}${row.changePct.toFixed(0)}%`}
+    </span>
+  </>
+);
 
 const StoreRow = ({ row }: { row: ExceptionRow }) => {
   const dispatch = useAppDispatch();
   const selectedId = useAppSelector((s) => s.lpActions.selectedId);
   return (
     <button
-      onClick={() => dispatch(setLpSelected(row.id))}
+      onClick={() => {
+        dispatch(setLpSelected(row.id));
+        // Leaves the cross-store view if it was open. The detail panel derives
+        // its own profiles from `selectedId`, so a store needs no scope of its
+        // own — one selection, one source of truth.
+        dispatch(setLpProfileScope({ saleType: null, storeid: null }));
+      }}
       className={`w-full text-left flex items-center gap-2.5 pl-3 pr-3 py-2 border-b border-gray-100 transition-colors ${
         row.id === selectedId ? "bg-row_selected" : "hover:bg-gray-50"
       }`}
@@ -106,16 +116,7 @@ const StoreRow = ({ row }: { row: ExceptionRow }) => {
       <span className="min-w-0 flex-1 text-[12.5px] text-content truncate">
         {row.storeName}
       </span>
-      <WeekBars row={row} />
-      <span
-        className={`text-[12px] tabular-nums w-[58px] text-right flex-shrink-0 ${PCT_TEXT[row.severity]}`}
-      >
-        {row.changePct === null
-          ? row.severity === "investigate"
-            ? "new"
-            : "—"
-          : `${row.changePct >= 0 ? "+" : ""}${row.changePct.toFixed(0)}%`}
-      </span>
+      <Grade row={row} />
     </button>
   );
 };
@@ -123,7 +124,16 @@ const StoreRow = ({ row }: { row: ExceptionRow }) => {
 const TypeSection = ({ group }: { group: TypeGroup }) => {
   const dispatch = useAppDispatch();
   const expandedTypes = useAppSelector((s) => s.lpActions.expandedTypes);
+  const { profiles, profileType, profileStore } = useAppSelector(
+    (s) => s.lpActions,
+  );
   const open = expandedTypes.includes(group.saleType);
+  /** Cashiers graded on THIS exception anywhere in the search. The row hides
+   *  itself at zero rather than offering an empty panel. */
+  const flagged = profiles.filter(
+    (c) => c.exceptions[group.saleType] !== undefined,
+  ).length;
+  const allSelected = profileType === group.saleType && profileStore === null;
   const Chevron = open ? ChevronDownIcon : ChevronRightIcon;
 
   return (
@@ -147,17 +157,30 @@ const TypeSection = ({ group }: { group: TypeGroup }) => {
               ` · ${group.investigateCount} to investigate`}
           </span>
         </span>
-        <WeekBars row={group} />
-        <span
-          className={`text-[12.5px] tabular-nums w-[58px] text-right flex-shrink-0 ${PCT_TEXT[group.severity]}`}
-        >
-          {group.changePct === null
-            ? group.severity === "investigate"
-              ? "new"
-              : "—"
-            : `${group.changePct >= 0 ? "+" : ""}${group.changePct.toFixed(0)}%`}
-        </span>
+        <Grade row={group} />
       </button>
+      {open && flagged > 0 && (
+        /* Every flagged cashier for this exception, across every store under
+           it. The alternative is opening each store in turn to find out who is
+           in it, and the data for all of them is already in hand. */
+        <button
+          onClick={() =>
+            dispatch(
+              setLpProfileScope({ saleType: group.saleType, storeid: null }),
+            )
+          }
+          className={`w-full text-left flex items-center gap-2 pl-9 pr-3 py-1.5 border-b border-gray-100 text-[12px] font-medium transition-colors ${
+            allSelected
+              ? "bg-row_selected text-content"
+              : "text-primary-a10 hover:bg-gray-50"
+          }`}
+        >
+          All flagged cashiers
+          <span className="ml-auto tabular-nums text-content/85">
+            {flagged}
+          </span>
+        </button>
+      )}
       {open && (
         // A rule down the left, indented to the parent's chevron. The stores
         // are the type broken apart, and without a guide a long list stops

@@ -109,6 +109,29 @@ export const getCashierTable = async (
    * than missing rows.
    */
   groupBy: "product" | "cashier" = "product",
+  /**
+   * Peer grading. Cashier mode only, and off by default — mobile LP, Coupon
+   * Sales and the baseline walk all read this endpoint and none of them want
+   * it, so they should not pay for the extra aggregate.
+   *
+   * On, the response pivots so the CASHIER is the entity: `cashiers` and
+   * `benchmarks` instead of `transactions`, one object per person with every
+   * exception nested underneath, each measure as a ratio to what their peers
+   * did.
+   */
+  includeStats: boolean = false,
+  /**
+   * With this set, every graded row gains `investigate`. Left unset the indices
+   * still come back ungraded — so `investigate` being ABSENT means "not
+   * evaluated", which the UI must not read as false.
+   */
+  investigateThreshold?: number,
+  /**
+   * Return the whole population rather than only the flagged. For calibrating
+   * the threshold: three flagged out of 250 could be a clean group or a line
+   * set too high, and only the full distribution says which.
+   */
+  includeUnflagged: boolean = false,
 ) => {
   const json = await axios({
     method: "POST",
@@ -127,6 +150,9 @@ export const getCashierTable = async (
       page,
       searchString,
       groupBy,
+      includeStats,
+      includeUnflagged,
+      ...(investigateThreshold !== undefined ? { investigateThreshold } : {}),
     },
   });
   return json;

@@ -3,7 +3,9 @@ import { useAppDispatch, useAppSelector } from "../../../hooks";
 import {
   setLpCase,
   setLpCaseRows,
+  setLpCaseView,
   setLpJourneyCashier,
+  toggleLpQuiet,
 } from "../../../features/lpActionsSlice";
 import { ALL_TYPES, buildCaseCore, isAll, latestWeekFacts } from "./caseModel";
 import { buildStoreShare, storeShareFromGraded } from "./storeShare";
@@ -12,9 +14,17 @@ import { buildHourProfile } from "./hourProfile";
 import { useCaseReceipts, type TypeScope } from "./useCaseReceipts";
 import { useCaseIds } from "./useCaseIds";
 import { rowsFromLines, typesForCashier } from "./caseSource";
+import { caseLines } from "./caseExport";
 import { isCashier } from "../lpActionsMetrics";
+import { formatDateSimple } from "../../../utils";
 import {
-  headlineLine,
+  buildStandings,
+  peakWeek,
+  type CashierStanding,
+} from "../profiles/rollupStats";
+import { decideVerdict, storeContext } from "./caseVerdict";
+import LpWhoList from "../profiles/LpWhoList";
+import {
   findingLine,
   hourLine,
   storeLine,
@@ -22,12 +32,13 @@ import {
   cautionLine,
 } from "./caseNarrative";
 import CaseHeader from "./CaseHeader";
-import CaseTabs from "./CaseTabs";
 import CaseSummary from "./CaseSummary";
 import type { EvidenceIcon, EvidenceLine } from "./CaseSummary";
 import CaseEvidence from "./CaseEvidence";
+import CaseEvidenceBar from "./CaseEvidenceBar";
 import CaseGrids from "./CaseGrids";
 import CaseKpis from "./CaseKpis";
+import CaseTypeMatrix from "./CaseTypeMatrix";
 import ReceiptCase from "../ReceiptCase";
 import { useReceiptCase } from "../useReceiptCase";
 
@@ -38,6 +49,13 @@ import { useReceiptCase } from "../useReceiptCase";
  * reader's attention already is and keeps the ledger visible beside it. Only
  * the connection plot — exploratory, and genuinely wanting the width — stays a
  * modal.
+ *
+ * Three things sit still while the reader works: the roster on the left, the
+ * week strip, and the type tabs. The roster is the reason the case stopped
+ * replacing the store panel — moving from one flagged cashier to the next used
+ * to mean going back, finding the row again and losing the week you were on.
+ * The two views under it are one case read twice: what the numbers say, then
+ * the rows they were counted from, which is also what gets exported.
  *
  * Switching a chip re-points emphasis rather than navigating: the charts keep
  * their shape and only the narrative, the items and the receipts change.
@@ -59,6 +77,10 @@ const CashierCase = ({ onBack, backLabel }: Props) => {
     windows,
     caseCashier,
     caseType,
+    caseWeek,
+    caseView,
+    quietOpen,
+    rollupRows,
   } = useAppSelector((s) => s.lpActions);
   const [showAllItems, setShowAllItems] = useState(false);
   const { receipt, openReceipt, closeReceipt } = useReceiptCase();
@@ -93,14 +115,19 @@ const CashierCase = ({ onBack, backLabel }: Props) => {
     [caseRows, windows, caseCashier],
   );
 
-  // Lands on the exception the reader clicked, and falls back to All rather
-  // than to an arbitrary first type — an unrecognised tab means the walk has
-  // moved on, and the operator is the one view that is always answerable.
+  /**
+   * The exception this case is written about.
+   *
+   * Always one, never All. The reader arrives from a store row that already
+   * named a type, and the type table below re-points this rather than a strip
+   * of chips. An unrecognised type means the walk has moved on since — fall
+   * back to their biggest rather than to a combined view, because every
+   * sentence, chart and receipt below reads better about one thing.
+   */
   const selected =
-    caseType &&
-    (isAll(caseType) || core?.types.some((t) => t.saleType === caseType))
+    caseType && core?.types.some((t) => t.saleType === caseType)
       ? caseType
-      : ALL_TYPES;
+      : (core?.types[0]?.saleType ?? caseType ?? ALL_TYPES);
 
   // Grouped by type because that is how `transaction_list` is asked: each type
   // carries its own receipts, and the whole window rather than the latest week
@@ -142,12 +169,28 @@ const CashierCase = ({ onBack, backLabel }: Props) => {
     dispatch(setLpCaseRows(rowsFromLines(detail.lines, new Set(caseTypes))));
   }, [rollup, detail.lines, caseTypes, dispatch]);
 
+  /**
+   * The week everything below is about.
+   *
+   * One definition, read by the KPIs, the hour profile and the receipts grid.
+   * They each used to reach for the last window, which was the same thing
+   * until the strip let the reader pick — and in rollup mode the rows in hand
+   * are only the picked week's, so "the last window" answered zero for
+   * anybody whose spike was earlier.
+   */
+  const focus = useMemo(
+    () =>
+      (caseWeek !== null ? windows[caseWeek] : undefined) ??
+      windows[windows.length - 1],
+    [windows, caseWeek],
+  );
+
   const facts = useMemo(
     () =>
-      caseCashier === null || !selected
+      caseCashier === null || !selected || !focus
         ? null
-        : latestWeekFacts(caseRows, windows, caseCashier, selected),
-    [caseRows, windows, caseCashier, selected],
+        : latestWeekFacts(caseRows, windows, caseCashier, selected, focus),
+    [caseRows, windows, caseCashier, selected, focus],
   );
 
   /**
@@ -183,22 +226,31 @@ const CashierCase = ({ onBack, backLabel }: Props) => {
   );
 
   const profile = useMemo(() => {
-    if (!detail.lines.length || windows.length === 0) return null;
-    const last = windows[windows.length - 1];
-    return buildHourProfile(detail.lines, last.start, last.end);
-  }, [detail.lines, windows]);
+    if (!detail.lines.length || !focus) return null;
+    return buildHourProfile(detail.lines, focus.start, focus.end);
+  }, [detail.lines, focus]);
 
   const latestRows = useMemo(() => {
-    if (caseCashier === null || !selected || windows.length === 0) return [];
-    const last = windows[windows.length - 1];
+    if (caseCashier === null || !selected || !focus) return [];
     return caseRows.filter(
       (r) =>
         isCashier(r, caseCashier) &&
         (isAll(selected) || r.sale_type === selected) &&
-        r.sale_date.slice(0, 10) >= last.start &&
-        r.sale_date.slice(0, 10) <= last.end,
+        r.sale_date.slice(0, 10) >= focus.start &&
+        r.sale_date.slice(0, 10) <= focus.end,
     );
-  }, [caseRows, windows, caseCashier, selected]);
+  }, [caseRows, caseCashier, selected, focus]);
+
+  /** The lines the evidence view shows and exports: this type, this week,
+   *  ordered the way somebody reads a day. */
+  const evidenceLines = useMemo(
+    () => caseLines(detail.lines, selected, caseTypes),
+    [detail.lines, selected, caseTypes],
+  );
+
+  const weekLabel = focus
+    ? `Week of ${formatDateSimple(focus.start)}`
+    : `${windows.length} weeks`;
 
   // In rollup mode the rows arrive over the network, so there is a real window
   // where the case is open and `core` cannot be built yet. Returning null there
@@ -231,6 +283,31 @@ const CashierCase = ({ onBack, backLabel }: Props) => {
     ? core.all
     : (core.types.find((t) => t.saleType === selected) ?? core.all);
 
+  /**
+   * What kind of thing this is.
+   *
+   * Decided from the figures already on screen — the week's counts, the hour
+   * profile, the items, and this cashier's peers at the same store — so the
+   * headline can never say something the tables below contradict. The peers
+   * come from call 1 because it is the only source that holds the store's
+   * quiet cashiers, and "did everyone rise?" is unanswerable without them.
+   */
+  const weekIndex = caseWeek ?? windows.length - 1;
+  const peers = buildStandings(rollupRows, windows.length).filter(
+    (p) => p.storeid === core.storeid && p.saleType === selected,
+  );
+  const standing =
+    peers.find((p) => p.cashierNumber === core.cashierNumber) ?? null;
+  const verdict = decideVerdict({
+    standing,
+    facts,
+    profile,
+    items,
+    saleType: selected,
+    weekIndex,
+    ctx: storeContext(peers, weekIndex),
+  });
+
   const evidence = [
     profile ? hourLine(profile, selected, facts) : null,
     share ? storeLine(share, selected) : null,
@@ -238,6 +315,8 @@ const CashierCase = ({ onBack, backLabel }: Props) => {
   ]
     .map((text, i) => (text ? { icon: ICON_ORDER[i], text } : null))
     .filter((l): l is EvidenceLine => !!l);
+
+  const busy = detail.loading || caseIds.loading;
 
   return (
     <div className="flex-shrink-0 shadow-lg" style={{ width: "63%" }}>
@@ -247,57 +326,118 @@ const CashierCase = ({ onBack, backLabel }: Props) => {
           onBack={onBack}
           backLabel={backLabel}
           onOpenPlot={() => dispatch(setLpJourneyCashier(caseCashier))}
+          view={caseView}
+          onView={(v) => dispatch(setLpCaseView(v))}
         />
 
-        <CaseTabs
-          all={core.all}
-          types={core.types}
-          selected={selected}
-          onSelect={(t) => dispatch(setLpCase({ ref: caseCashier, type: t }))}
-        />
-
+        {/* The week's figures lead, spanning the roster as well as the
+            report — they are the store-and-week this whole panel answers for,
+            and a band that starts where the roster ends reads as belonging to
+            the column it sits in. Same placement as the store panel. */}
         <CaseKpis
           facts={facts}
           profile={profile}
-          profileLoading={detail.loading || caseIds.loading}
+          profileLoading={busy}
           saleType={selected}
         />
 
-        <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar">
-          <CaseSummary
-            type={type}
-            headline={headlineLine(type, core.types.length)}
-            finding={findingLine(type, facts)}
-            lines={evidence}
-            caution={cautionLine(items, facts)}
-          />
+        <div className="flex-1 min-h-0 flex">
+          {/* The roster. Split by the reader's own rule — over their store's
+              average, the peer average, or either in money — so moving to the
+              next person worth opening is one click from anywhere in the
+              case, and the ones who cleared stay reachable underneath. */}
+          <aside className="w-[212px] flex-shrink-0 min-h-0 flex flex-col border-r border-[#1e2a4a]/15">
+            <LpWhoList
+              variant="column"
+              saleType={isAll(selected) ? null : selected}
+              storeid={core.storeid}
+              selected={caseCashier}
+              showQuiet={quietOpen}
+              onToggleQuiet={() => dispatch(toggleLpQuiet())}
+              onOpen={(c: CashierStanding) =>
+                dispatch(
+                  setLpCase({
+                    // Cashier numbers are issued per store, so identity is
+                    // always the pair — 19 is a different person at every
+                    // store.
+                    ref: {
+                      storeid: c.storeid,
+                      cashierNumber: c.cashierNumber,
+                    },
+                    type: c.saleType,
+                    // Opens on their worst week. The evidence is about the
+                    // week that flagged; the others are the baseline it was
+                    // measured against.
+                    week: peakWeek(c).index,
+                  }),
+                )
+              }
+            />
+          </aside>
 
-          <CaseEvidence
-            types={core.types}
-            windows={windows}
-            selected={selected}
-            profile={profile}
-            profileLoading={detail.loading || caseIds.loading}
-            profileError={detail.error ?? caseIds.error}
-          />
+          <div className="flex-1 min-w-0 min-h-0 flex flex-col">
+            {caseView === "case" ? (
+              <>
+                <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar">
+                  <CaseSummary
+                    verdict={verdict}
+                    finding={findingLine(type, facts)}
+                    lines={evidence}
+                    caution={cautionLine(items, facts)}
+                  />
 
-          <CaseGrids
-            items={items}
-            itemsLoading={detail.loading || caseIds.loading}
-            itemsError={detail.error ?? caseIds.error}
-            showAllItems={showAllItems}
-            onToggleItems={() => setShowAllItems((v) => !v)}
-            rows={latestRows}
-            lines={detail.lines}
-            saleType={selected}
-            onOpenReceipt={openReceipt}
-          />
+                  <CaseEvidence
+                    types={core.types}
+                    windows={windows}
+                    selected={selected}
+                    profile={profile}
+                    profileLoading={busy}
+                    profileError={detail.error ?? caseIds.error}
+                  />
 
-          {detail.truncated > 0 && (
-            <div className="px-4 py-2 border-t border-gray-100 text-[12px] text-content/85">
-              {detail.truncated} receipts beyond the cap were not read
-            </div>
-          )}
+                  {/* Their whole record, and the control that re-points this
+                      case — what the tab strip used to be, with the weeks
+                      spelled out instead of folded into a multiplier. */}
+                  <CaseTypeMatrix cashier={caseCashier} selected={selected} />
+                </div>
+              </>
+            ) : (
+              <>
+                <CaseEvidenceBar
+                  lines={evidenceLines}
+                  receipts={new Set(evidenceLines.map((l) => l.sale_id)).size}
+                  loading={busy}
+                  scope={{
+                    cashierName: core.cashierName,
+                    cashierNumber: core.cashierNumber,
+                    storeName: core.storeName,
+                    saleType: isAll(selected) ? "All exceptions" : selected,
+                    weekLabel,
+                  }}
+                />
+
+                <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar">
+                  <CaseGrids
+                    items={items}
+                    itemsLoading={busy}
+                    itemsError={detail.error ?? caseIds.error}
+                    showAllItems={showAllItems}
+                    onToggleItems={() => setShowAllItems((v) => !v)}
+                    rows={latestRows}
+                    lines={detail.lines}
+                    saleType={selected}
+                    onOpenReceipt={openReceipt}
+                  />
+
+                  {detail.truncated > 0 && (
+                    <div className="px-4 py-2 border-t border-gray-100 text-[12px] text-content/85">
+                      {detail.truncated} receipts beyond the cap were not read
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
         </div>
 
         {receipt.saleId && (

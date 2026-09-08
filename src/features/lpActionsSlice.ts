@@ -5,7 +5,12 @@ import type {
   WeekWindow,
   CashierRef,
 } from "../pages/lpActions/lpActionsMetrics";
-import type { CashierTransaction } from "../interfaces";
+import type {
+  CashierBenchmark,
+  CashierProfile,
+  CashierRollupRow,
+  CashierTransaction,
+} from "../interfaces";
 
 /**
  * LP Actions page state.
@@ -16,6 +21,9 @@ import type { CashierTransaction } from "../interfaces";
  * it for the same reason.
  */
 export type LpSevFilter = "all" | "investigate" | "watch" | "steady";
+
+/** The case's two reads: what the numbers say, then the rows behind them. */
+export type LpCaseView = "case" | "evidence";
 
 export interface LpActionsState {
   /** What the walk was run against, for the header — a store or a group. */
@@ -51,6 +59,36 @@ export interface LpActionsState {
    * identical thing a second time.
    */
   caseRows: CashierTransaction[];
+  /**
+   * The graded cashiers for the whole search, from the stats call.
+   *
+   * Fetched once alongside the exception list and filtered in the browser —
+   * "every flagged cashier for this exception" and "the ones at this store" are
+   * the same array with and without a storeid clause, so neither view costs a
+   * request.
+   */
+  /**
+   * Call 1's rollup, one row per store/type/week/cashier, for everyone.
+   *
+   * Kept rather than reduced away. It is the whole population at cashier-week
+   * grain, so it carries every average the list compares against — the store's
+   * and the group's — and every week including the quiet ones. The graded rows
+   * beside it are a summary of these; this is the source.
+   */
+  rollupRows: CashierRollupRow[];
+  /** Call 2's pivot: only the cashiers past the enrichment threshold. */
+  profiles: CashierProfile[];
+  benchmarks: Record<string, CashierBenchmark>;
+  /**
+   * Which profiles the right panel is showing: an exception across every store,
+   * or one store within it. Null saleType means nothing is selected.
+   *
+   * Held apart from `selectedId` because the exception row and the store row
+   * under it are now both destinations, and `selectedId` cannot express the
+   * first one — it is keyed `storeid__saleType`.
+   */
+  profileType: string | null;
+  profileStore: number | null;
   windows: WeekWindow[];
   selectedId: string | null;
   /** Cashier whose journey is open, or null. The connection plot stays a
@@ -61,6 +99,27 @@ export interface LpActionsState {
    *  detail instead. */
   caseCashier: CashierRef | null;
   caseType: string | null;
+  /**
+   * Which week of the case is being read, as an index into `windows`.
+   *
+   * The case opens on the person's worst week rather than the whole span. Four
+   * weeks of receipts is more evidence than anyone reads, and the week that
+   * flagged is the one the finding is about — everything else is the baseline
+   * it was measured against.
+   */
+  caseWeek: number | null;
+  /**
+   * Which half of the case is on screen.
+   *
+   * The case reads in two passes and they want different room: what the
+   * numbers say, then the rows they were counted from. Splitting them lets the
+   * roster column stay in place across both, so moving between cashiers never
+   * costs a trip back to the store panel.
+   */
+  caseView: LpCaseView;
+  /** Whether the roster's "not flagged" section is open. Here rather than in
+   *  the list so it survives moving between cashiers and panels. */
+  quietOpen: boolean;
   sevFilter: LpSevFilter;
   searched: boolean;
   loading: boolean;
@@ -77,11 +136,19 @@ const initialState: LpActionsState = {
   rawRows: [],
   rollup: false,
   caseRows: [],
+  rollupRows: [],
+  profiles: [],
+  benchmarks: {},
+  profileType: null,
+  profileStore: null,
   windows: [],
   selectedId: null,
   journeyCashier: null,
   caseCashier: null,
   caseType: null,
+  caseWeek: null,
+  caseView: "case",
+  quietOpen: false,
   sevFilter: "all",
   searched: false,
   loading: false,
@@ -125,6 +192,11 @@ const lpActionsSlice = createSlice({
       state.sevFilter = "all";
       state.expandedTypes = [];
       state.caseRows = [];
+      state.rollupRows = [];
+      state.profiles = [];
+      state.benchmarks = {};
+      state.profileType = null;
+      state.profileStore = null;
     },
     setLpLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload;
@@ -192,18 +264,91 @@ const lpActionsSlice = createSlice({
     setLpJourneyCashier: (state, action: PayloadAction<CashierRef | null>) => {
       state.journeyCashier = action.payload;
     },
+    setLpRollupRows: (state, action: PayloadAction<CashierRollupRow[]>) => {
+      state.rollupRows = action.payload;
+    },
+    setLpProfiles: (
+      state,
+      action: PayloadAction<{
+        profiles: CashierProfile[];
+        benchmarks: Record<string, CashierBenchmark>;
+      }>,
+    ) => {
+      state.profiles = action.payload.profiles;
+      state.benchmarks = action.payload.benchmarks;
+    },
+    /** Show an exception across every store, or one store within it. */
+    setLpProfileScope: (
+      state,
+      action: PayloadAction<{
+        saleType: string | null;
+        storeid: number | null;
+      }>,
+    ) => {
+      state.profileType = action.payload.saleType;
+      state.profileStore = action.payload.storeid;
+      // A new scope is a new question; the case written about the old one goes.
+      state.caseCashier = null;
+      state.caseType = null;
+      state.caseWeek = null;
+      state.caseRows = [];
+    },
     setLpCaseRows: (state, action: PayloadAction<CashierTransaction[]>) => {
       state.caseRows = action.payload;
     },
+    setLpCaseWeek: (state, action: PayloadAction<number | null>) => {
+      state.caseWeek = action.payload;
+    },
     setLpCase: (
       state,
-      action: PayloadAction<{ ref: CashierRef; type: string } | null>,
+      action: PayloadAction<{
+        ref: CashierRef;
+        type: string;
+        /** The week to open on — their worst, decided by the caller who has
+         *  the standings in hand. */
+        week?: number | null;
+      } | null>,
     ) => {
-      state.caseCashier = action.payload?.ref ?? null;
-      state.caseType = action.payload?.type ?? null;
+      const next = action.payload;
+      /**
+       * Compared by value, not by reference.
+       *
+       * Every caller builds a fresh `{ storeid, cashierNumber }`, so an
+       * identity check is true even when the tab strip re-selects the person
+       * already open — which cleared their receipts and made a type switch
+       * refetch the same baskets.
+       */
+      const sameCashier =
+        !!next &&
+        !!state.caseCashier &&
+        next.ref.storeid === state.caseCashier.storeid &&
+        next.ref.cashierNumber === state.caseCashier.cashierNumber;
+
       // Switching cashier must not leave the previous one's receipts on screen
       // under the new name, even for the frame before the fetch returns.
-      if (action.payload?.ref !== state.caseCashier) state.caseRows = [];
+      if (!sameCashier) {
+        state.caseRows = [];
+        state.caseView = "case";
+      }
+
+      state.caseCashier = next?.ref ?? null;
+      state.caseType = next?.type ?? null;
+      // The week is scope, not part of the tab. An omitted `week` on the
+      // person already open keeps the week they are reading; `null` still
+      // clears it, so a caller that means the whole window can say so.
+      state.caseWeek = !next
+        ? null
+        : next.week === undefined
+          ? sameCashier
+            ? state.caseWeek
+            : null
+          : next.week;
+    },
+    setLpCaseView: (state, action: PayloadAction<LpCaseView>) => {
+      state.caseView = action.payload;
+    },
+    toggleLpQuiet: (state) => {
+      state.quietOpen = !state.quietOpen;
     },
     setLpSevFilter: (state, action: PayloadAction<LpSevFilter>) => {
       state.sevFilter = action.payload;
@@ -223,6 +368,12 @@ export const {
   setLpResult,
   clearLpResult,
   setLpCaseRows,
+  setLpCaseWeek,
+  setLpCaseView,
+  toggleLpQuiet,
+  setLpRollupRows,
+  setLpProfiles,
+  setLpProfileScope,
   setLpSelected,
   setLpSevFilter,
   clearLpActions,

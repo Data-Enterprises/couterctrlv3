@@ -16,19 +16,6 @@ import { hourLabel } from "./chartTheme";
  */
 const money = (n: number) => `$${n.toFixed(2)}`;
 
-/** The one line a reader would repeat to a colleague. Carries the type and the
- *  size of the move; the sentence beneath it carries the arithmetic, so the two
- *  never say the same thing twice. */
-export const headlineLine = (type: CaseType, typeCount = 0): string => {
-  const subject = isAll(type.saleType)
-    ? `Exceptions across ${typeCount} ${typeCount === 1 ? "type" : "types"}`
-    : type.saleType;
-  if (type.multiplier === null) return `${subject} — new this week`;
-  if (type.multiplier >= 1)
-    return `${subject} ${type.multiplier >= 10 ? type.multiplier.toFixed(0) : type.multiplier.toFixed(1)}× their weekly normal`;
-  return `${subject} down ${Math.round((1 - type.multiplier) * 100)}% on their weekly normal`;
-};
-
 export const findingLine = (type: CaseType, facts: TypeFacts): string => {
   const spread =
     facts.days.length === 1
@@ -39,7 +26,7 @@ export const findingLine = (type: CaseType, facts: TypeFacts): string => {
   const against =
     type.multiplier === null
       ? "None in the weeks before it."
-      : `Their normal is ${type.baseline.toFixed(1)}/week.`;
+      : `Their average is ${type.baseline.toFixed(1)}/week.`;
   return `${facts.occurrences} this week, worth ${money(facts.value)}, ${spread}. ${against}`;
 };
 
@@ -77,9 +64,25 @@ export const hourLine = (
 
   const days = facts.days.map((d) => formatDateSimple(d)).join(" and ");
 
+  /**
+   * Receipts, because that is what the hour profile counts.
+   *
+   * `buildHourProfile` folds a basket to one entry — forty cancelled lines on
+   * one receipt happened at a single instant, not spread across an hour — so
+   * quoting `facts.occurrences` here put a LINE count inside a sentence about
+   * a RECEIPT-derived window. On screen it read "All 80 fell at 6p" two inches
+   * under a KPI saying "peak hour 6p · 2", which is the same fact stated in
+   * two units and looks like one of them is wrong.
+   */
+  const baskets = mine.reduce((acc, n) => acc + n, 0);
+  const what =
+    baskets === facts.occurrences
+      ? `All ${baskets}`
+      : `All ${baskets} ${baskets === 1 ? "receipt" : "receipts"} — ${facts.occurrences} ${facts.occurrences === 1 ? "line" : "lines"} —`;
+
   return otherSpread
-    ? `All ${facts.occurrences} fell ${window} on ${days}. This cashier's other exceptions the same week ran across the trading day, so this is not simply when they work.`
-    : `All ${facts.occurrences} fell ${window} on ${days}.`;
+    ? `${what} fell ${window} on ${days}. This cashier's other exceptions the same week ran across the trading day, so this is not simply when they work.`
+    : `${what} fell ${window} on ${days}.`;
 };
 
 export const storeLine = (
@@ -101,7 +104,16 @@ export const itemLine = (items: ItemRow[], facts: TypeFacts): string | null => {
   );
   if (movers.length === 0) return null;
   const top = movers.slice(0, 3);
-  const covered = top.reduce((acc, i) => acc + i.receipts, 0);
+  /**
+   * The union, not the sum.
+   *
+   * Summing each item's receipt count double-counts every basket that carried
+   * more than one of them, and the result is not bounded by the denominator —
+   * three items on two receipts printed "6 of the 2 receipts", which is the
+   * kind of arithmetic that costs a reader their trust in every other figure
+   * on the page.
+   */
+  const covered = new Set(top.flatMap((i) => i.receiptIds)).size;
   if (covered === 0) return null;
   const allNew = top.every((i) => i.move === "new");
   return `${top.length === 1 ? "One item carries" : `${top.length} items carry`} ${covered} of the ${facts.receipts} receipts${allNew ? ", none of them seen in the weeks before" : ""}. Average ${money(facts.average)}, largest ${money(facts.largest)}.`;

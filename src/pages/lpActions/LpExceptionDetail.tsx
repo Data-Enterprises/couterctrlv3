@@ -1,17 +1,31 @@
+import { useMemo } from "react";
 import { useAppDispatch, useAppSelector } from "../../hooks";
-import { setLpCase } from "../../features/lpActionsSlice";
-import { formatDateSimple } from "../../utils";
+import { setLpCase, toggleLpQuiet } from "../../features/lpActionsSlice";
+import LpWhoList from "./profiles/LpWhoList";
+import LpStoreCards from "./profiles/LpStoreCards";
+import LpWeekMatrix from "./profiles/LpWeekMatrix";
+import KpiTileGrid, { type KpiCell } from "../../components/KpiTileGrid";
+import { buildStoreCall2 } from "./profiles/call2Model";
+import type { CashierStanding } from "./profiles/rollupStats";
 import { PlusIcon } from "@heroicons/react/20/solid";
-import type { ExceptionRow } from "./lpActionsMetrics";
+import { bandOf, buildStandings, peakWeek } from "./profiles/rollupStats";
 
 /**
- * One exception in full: the weeks it was counted over, then the cashiers
- * behind the latest one.
+ * One store on one exception — the report before anybody is opened.
  *
- * The cashier list is the reason the page exists. It is ordered by movement
- * against each person's own weekly normal — `was 4/wk` beside `41` is the
- * whole finding, and sorting by the raw count would put the busiest lane on
- * top every single week.
+ * Two bands, and each answers a different question with a different call. The
+ * roster on the left is call 1: the whole population, split by the rule the
+ * reader gave — over their store's weekly average, over the peer average, or
+ * over either in money. The figures and cards beside it are call 2: how far
+ * out, in which weeks, and whether the same person keeps coming back.
+ *
+ * What is deliberately NOT here is the baseline. The ledger on the left of the
+ * page already carries this week against the weeks before it for every row,
+ * and the same figure printed twice in two shapes is two figures that
+ * eventually disagree.
+ *
+ * The roster stays in the same column when a cashier is opened, so moving
+ * between people never costs a trip back to this screen.
  */
 interface Props {
   onAddWeek: () => void;
@@ -28,137 +42,152 @@ const Empty = ({ text }: { text: string }) => (
   </div>
 );
 
-const changeLine = (row: ExceptionRow, weeks: number) => {
-  if (row.changePct === null)
-    return row.severity === "investigate"
-      ? `First appearance at this volume — nothing in the previous ${weeks - 1} weeks to compare against.`
-      : `Too few in the latest week to read a trend from.`;
-  const dir = row.changePct >= 0 ? "above" : "below";
-  return `The latest week is ${Math.abs(row.changePct).toFixed(0)}% ${dir} this store's own ${weeks - 1}-week average of ${row.baseline.toFixed(1)}.`;
-};
-
 const LpExceptionDetail = ({ onAddWeek, addingWeek }: Props) => {
   const dispatch = useAppDispatch();
-  const { rows, selectedId, weeks } = useAppSelector((s) => s.lpActions);
+  const {
+    rows,
+    selectedId,
+    rollupRows,
+    windows,
+    profiles,
+    benchmarks,
+    quietOpen,
+  } = useAppSelector((s) => s.lpActions);
   const row = rows.find((r) => r.id === selectedId) ?? null;
 
-  if (!row)
-    return <Empty text="Pick an exception for its weeks and cashiers." />;
+  /** Everyone at this store on this exception. All from call 1, so the panel
+   *  has its roster the moment the search lands. */
+  const standings = useMemo(
+    () =>
+      row
+        ? buildStandings(rollupRows, windows.length).filter(
+            (s) => s.storeid === row.storeid && s.saleType === row.saleType,
+          )
+        : [],
+    [rollupRows, windows.length, row],
+  );
 
-  const tone =
-    row.severity === "investigate"
-      ? "bg-severity_critical_bg text-severity_critical_text"
-      : row.severity === "watch"
-        ? "bg-severity_watch_bg text-severity_watch_text"
-        : "bg-severity_healthy_bg text-severity_healthy_text";
+  const call2 = useMemo(
+    () =>
+      row
+        ? buildStoreCall2(profiles, benchmarks, row.storeid, row.saleType)
+        : null,
+    [profiles, benchmarks, row],
+  );
+
+  if (!row || !call2)
+    return <Empty text="Pick an exception for its cashiers and its report." />;
+
+  const toInvestigate = standings.filter((s) => bandOf(s) !== "quiet").length;
+  const peerWeekly = call2.peer?.weekly.avg_line_count ?? 0;
+  const worst = call2.worst;
+
+  /**
+   * Four figures, in the order the reader needs them: how many people, how far
+   * the worst one is out, what the line they are measured against is, and how
+   * long it has been going on. All from call 2 except the first, whose
+   * denominator only call 1 has — call 2 was never sent the clean ones.
+   */
+  const figures: KpiCell[] = [
+    {
+      label: "To investigate",
+      value: String(toInvestigate),
+      sub: `of ${standings.length}`,
+      variant: toInvestigate > 0 ? "down" : "up",
+      subVariant: "neutral",
+    },
+    {
+      label: "Worst index",
+      value: worst?.index != null ? `${worst.index.toFixed(1)}×` : "—",
+      sub: worst ? worst.cashierName : undefined,
+      variant: worst ? "down" : undefined,
+      subVariant: "neutral",
+    },
+    {
+      label: "Peer average",
+      value: `${peerWeekly.toFixed(1)}/wk`,
+      sub: call2.peer ? `${call2.peer.peer_count} peers` : undefined,
+      subVariant: "neutral",
+    },
+    {
+      label: "Flagged weeks",
+      value: String(call2.maxWeeksFlagged),
+      sub: `of ${windows.length}`,
+      variant: call2.maxWeeksFlagged > 1 ? "down" : undefined,
+      subVariant: "neutral",
+    },
+  ];
 
   return (
     <div className="flex-shrink-0 shadow-lg" style={{ width: "63%" }}>
       <div className="bg-custom-white rounded-xl shadow-sm h-full flex flex-col overflow-hidden">
-        <div className="flex-shrink-0 bg-[#1e2a4a] px-4 py-2.5">
-          <p className="text-custom-white text-[13px] font-semibold truncate">
-            {row.saleType}
-          </p>
-          <p className="text-custom-white/85 text-[12px] truncate">
-            {row.storeName}
-          </p>
-        </div>
-
-        <div className={`flex-shrink-0 px-4 py-2.5 ${tone}`}>
-          <div className="text-[11px] font-bold uppercase tracking-wide">
-            {row.severity}
+        <div className="flex-shrink-0 bg-[#1e2a4a] px-4 py-2.5 flex items-center gap-3">
+          <div className="min-w-0">
+            <p className="text-custom-white text-[14px] font-bold truncate">
+              {row.saleType}
+            </p>
+            <p className="text-custom-white/85 text-[12px] truncate">
+              {row.storeName} · {standings.length}{" "}
+              {standings.length === 1 ? "cashier" : "cashiers"} rang it
+            </p>
           </div>
-          <div className="text-[13px] leading-relaxed mt-0.5">
-            {changeLine(row, weeks)}
-          </div>
-        </div>
-
-        <div className="flex-shrink-0 flex border-b border-gray-100 bg-gray-50">
-          {row.weeks.map((w, i) => {
-            const last = i === row.weeks.length - 1;
-            return (
-              <div
-                key={w.start}
-                className={`flex-1 min-w-0 px-2 py-2 text-center border-r border-gray-100 ${
-                  last && row.severity !== "steady" ? tone : ""
-                }`}
-              >
-                <div className="text-[10px] font-bold uppercase tracking-wide truncate">
-                  {formatDateSimple(w.end)}
-                </div>
-                <div className="text-[14px] font-bold tabular-nums">
-                  {w.count}
-                </div>
-              </div>
-            );
-          })}
+          {/* Widening the window changes every figure below it, which is why
+              it lives up here rather than beside any one of them. */}
           <button
             onClick={onAddWeek}
             disabled={addingWeek}
             title="Read one more week of history — the baseline widens with it"
-            className="flex-shrink-0 px-3 flex items-center gap-1 text-[11.5px] font-medium text-content hover:bg-gray-100 disabled:opacity-50 transition-colors"
+            className="ml-auto flex-shrink-0 flex items-center gap-1 text-[12px] font-medium text-custom-white/85 hover:text-custom-white border border-custom-white/35 rounded-lg px-2.5 py-1 disabled:opacity-50 transition-colors"
           >
             <PlusIcon className="w-3.5 h-3.5" />
             {addingWeek ? "Reading…" : "week"}
           </button>
         </div>
 
-        <div className="flex-shrink-0 px-3 py-1.5 border-b border-gray-100 text-[11.5px] font-semibold uppercase tracking-wide text-content/85">
-          Cashiers in the latest week
-        </div>
+        {/* The store's headline, above both columns rather than inside one.
+            These four are about the store, not about the roster beside them or
+            the sections under them — a band that starts halfway across reads
+            as belonging to the column it sits in. */}
+        <KpiTileGrid items={figures} />
 
-        <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar rounded-b-xl">
-          {row.cashiers.filter((c) => c.latest > 0).length === 0 && (
-            <div className="py-8 text-center text-[12px] text-content/85">
-              Nothing rang against this exception in the latest week.
-            </div>
-          )}
-          {row.cashiers
-            .filter((c) => c.latest > 0)
-            .map((c) => {
-              const move = c.latest - c.baseline;
-              const tone =
-                move >= 5
-                  ? "text-severity_critical_text"
-                  : move >= 2
-                    ? "text-severity_watch_text"
-                    : "text-content";
-              return (
-                <button
-                  key={c.cashierNumber}
-                  onClick={() =>
-                    dispatch(
-                      setLpCase({
-                        ref: {
-                          storeid: row.storeid,
-                          cashierNumber: c.cashierNumber,
-                        },
-                        type: row.saleType,
-                      }),
-                    )
-                  }
-                  title="Open this cashier's case"
-                  className="w-full text-left flex items-center gap-3 px-3 py-2 border-b border-gray-100 hover:bg-gray-50 transition-colors"
-                >
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-[13px] font-medium text-content truncate">
-                      {c.cashierName}
-                    </span>
-                    <span className="block text-[12px] text-content/85">
-                      Cashier {c.cashierNumber}
-                    </span>
-                  </span>
-                  <span className="text-[12px] text-content/85 flex-shrink-0">
-                    was {c.baseline.toFixed(1)}/wk
-                  </span>
-                  <span
-                    className={`text-[13px] font-medium tabular-nums w-9 text-right flex-shrink-0 ${tone}`}
-                  >
-                    {c.latest}
-                  </span>
-                </button>
-              );
-            })}
+        <div className="flex-1 min-h-0 flex">
+          {/* The roster, in the column it will stay in once a case is open. */}
+          <aside className="w-[212px] flex-shrink-0 min-h-0 flex flex-col border-r border-[#1e2a4a]/15">
+            <LpWhoList
+              variant="column"
+              saleType={row.saleType}
+              storeid={row.storeid}
+              showQuiet={quietOpen}
+              onToggleQuiet={() => dispatch(toggleLpQuiet())}
+              onOpen={(c: CashierStanding) =>
+                dispatch(
+                  setLpCase({
+                    ref: {
+                      storeid: c.storeid,
+                      cashierNumber: c.cashierNumber,
+                    },
+                    type: row.saleType,
+                    // Opens on their worst week. The evidence is about the
+                    // week that flagged; the others are the baseline it was
+                    // measured against.
+                    week: peakWeek(c).index,
+                  }),
+                )
+              }
+            />
+          </aside>
+
+          <div className="flex-1 min-w-0 min-h-0 overflow-y-auto thin-scrollbar">
+            <LpStoreCards
+              data={call2}
+              people={standings.length}
+              windowWeeks={windows.length}
+            />
+            {/* The whole population, under the summary of its flagged half.
+                Call 2 only ever returned the flagged cashiers, so without
+                this a store with two of them has a report about two people. */}
+            <LpWeekMatrix saleType={row.saleType} storeid={row.storeid} />
+          </div>
         </div>
       </div>
     </div>

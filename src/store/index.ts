@@ -54,6 +54,7 @@ import categoriesReducer from "../features/categoriesSlice";
 import vendorsReducer from "../features/vendorsSlice";
 import itemReportReducer from "../features/itemReportSlice";
 import invoicesReducer from "../features/invoicesSlice";
+import suggestedReducer from "../features/suggestedSlice";
 
 export const setupStore = () =>
   configureStore({
@@ -91,6 +92,7 @@ export const setupStore = () =>
       vendors: vendorsReducer,
       itemReport: itemReportReducer,
       invoices: invoicesReducer,
+      suggested: suggestedReducer,
       couponLegacy: couponLegacyReducer,
       reportBuilder: reportBuilderReducer,
       admin: adminReducer,

@@ -25,7 +25,7 @@ export const LP_ACTIONS_INFO = {
     },
     {
       term: "Cashiers",
-      desc: "Ordered by how far each moved against their own weekly normal, not by who rang the most. The busiest operator is usually the one with the most of everything.",
+      desc: "Ordered by how far each moved against their own weekly average, not by who rang the most. The busiest operator is usually the one with the most of everything.",
     },
   ],
 };

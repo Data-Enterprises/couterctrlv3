@@ -142,8 +142,17 @@ export const latestWeekFacts = (
   windows: WeekWindow[],
   ref: CashierRef,
   saleType: string,
+  /**
+   * The week being read, when it is not the most recent one.
+   *
+   * The case opens on the person's worst week rather than the last, and in
+   * rollup mode the rows on hand ARE only that week's — so defaulting to the
+   * end of the window reported a confident zero for anyone whose spike was
+   * earlier.
+   */
+  focus?: WeekWindow,
 ): TypeFacts => {
-  const last = windows[windows.length - 1];
+  const last = focus ?? windows[windows.length - 1];
   const mine = rows.filter(
     (r) =>
       isCashier(r, ref) &&
