@@ -225,10 +225,18 @@ const Suggested = () => {
         />
       </label>
       </div>
+      {/* The old version of this line packed two separate orders into one
+          sentence and left the reader to work out which one the numbers
+          belonged to. Cover days is simply the gap to the next delivery, and
+          naming the day that does NOT belong to this order is what stops the
+          off-by-one. */}
       <p className="text-[12px] text-content/85 leading-snug">
-        Order Wednesday for Friday, then again Saturday for Monday? That is{" "}
-        <span className="font-semibold text-content">2 and 3</span> — not 2 and
-        4, or Monday gets bought twice.
+        Trucks on Friday and Monday, ordering Wednesday? That is{" "}
+        <span className="font-semibold text-content">2</span> days until
+        delivery and{" "}
+        <span className="font-semibold text-content">3</span> cover days —
+        Friday, Saturday, Sunday. Monday belongs to the next truck, so counting
+        it here buys it twice.
       </p>
     </div>
   );

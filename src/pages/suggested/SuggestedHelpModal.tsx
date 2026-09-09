@@ -305,10 +305,12 @@ const SECTIONS: { id: string; q: string; body: ReactNode }[] = [
           though nothing else moved.
         </P>
         <Note>
-          The two should add up to how you actually order. Ordering Wednesday for
-          Friday, then again Saturday for Monday, is{" "}
-          <b className="font-semibold">2 and 3</b> &mdash; not 2 and 4, or Monday
-          gets bought twice.
+          Cover days is the gap to your <Em>next</Em> delivery. Trucks on Friday
+          and Monday, ordering Wednesday: that is{" "}
+          <b className="font-semibold">2 days until delivery</b> and{" "}
+          <b className="font-semibold">3 cover days</b> &mdash; Friday, Saturday,
+          Sunday. Monday belongs to the next truck, and counting it here buys it
+          twice.
         </Note>
       </>
     ),
