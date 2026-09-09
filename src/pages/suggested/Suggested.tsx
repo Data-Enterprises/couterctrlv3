@@ -196,7 +196,7 @@ const Suggested = () => {
       <div className="flex items-start gap-3">
       <label className="flex flex-col gap-0.5 flex-1 min-w-0">
         <span className="text-[12px] font-semibold uppercase tracking-wide text-content/85">
-          Days until it lands
+          Days until delivery
         </span>
         <input
           type="number"
@@ -211,7 +211,7 @@ const Suggested = () => {
       </label>
       <label className="flex flex-col gap-0.5 flex-1 min-w-0">
         <span className="text-[12px] font-semibold uppercase tracking-wide text-content/85">
-          Days it must last
+          Cover days
         </span>
         <input
           type="number"

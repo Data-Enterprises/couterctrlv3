@@ -278,7 +278,7 @@ const SECTIONS: { id: string; q: string; body: ReactNode }[] = [
   },
   {
     id: "q3",
-    q: "What do the two day counts change?",
+    q: "What do days until delivery and cover days change?",
     body: (
       <>
         <Lead>
@@ -289,11 +289,11 @@ const SECTIONS: { id: string; q: string; body: ReactNode }[] = [
         <Defs
           rows={[
             {
-              t: "Days until it lands",
+              t: "Days until delivery",
               d: "How long between placing the order and it arriving. Moves the window forward.",
             },
             {
-              t: "Days it must last",
+              t: "Cover days",
               d: "How long the delivery has to cover, until the next one arrives. Sets how wide the window is.",
             },
           ]}
