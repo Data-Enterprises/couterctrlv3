@@ -17,8 +17,8 @@ const NOT_AN_ORDER: InfoGlossaryEntry = {
 };
 
 const LEAD_COVER: InfoGlossaryEntry = {
-  term: "Lead / Cover days",
-  desc: "Lead is days until the delivery lands; Cover is how many days it has to last. They should add up to your real ordering rhythm — ordering Wednesday for Friday and again Saturday for Monday is Lead 2, Cover 3, not 4, or Monday gets bought twice.",
+  term: "The two day counts",
+  desc: "Days until it lands is how long between placing the order and it arriving; Days it must last is how long the delivery has to cover. They should add up to your real ordering rhythm — ordering Wednesday for Friday and again Saturday for Monday is 2 and 3, not 2 and 4, or Monday gets bought twice.",
 };
 
 const WASTE_PCT: InfoGlossaryEntry = {
@@ -40,7 +40,7 @@ export const SUGGESTED_INFO: {
     InfoGlossaryEntry[]
   >;
 } = {
-  title: "Suggested Order",
+  title: "Suggested Weight",
   purpose:
     "How many pounds of each scale item to buy to cover the days between the next delivery and the one after it. Demand is learned per weekday, then adjusted for waste.",
 
@@ -90,7 +90,7 @@ export const SUGGESTED_INFO: {
       },
       {
         term: "Avg / day",
-        desc: "The ordinary daily rate of the rows on screen. It is the intuition check: Cover demand should be roughly this times the cover days, and the gap between them is the weekday shape — a Fri-Mon window is not four average days. The day cards are graded against this same figure.",
+        desc: "The ordinary daily rate of the rows on screen. It is the intuition check: Cover demand should be roughly this times the days it must last, and the gap between them is the weekday shape — a Fri-Mon window is not four average days. The day cards are graded against this same figure.",
       },
       {
         term: "Items",

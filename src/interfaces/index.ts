@@ -1653,7 +1653,7 @@ export interface ReceiverItemSearchResponse {
 }
 
 ////////////////////////////
-// Suggested Order Interfaces
+// Suggested Weight Interfaces
 ///////////////////////////
 
 /**

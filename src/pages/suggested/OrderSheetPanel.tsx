@@ -198,7 +198,7 @@ const OrderSheetPanel = () => {
     ? ctx.sheetKey!.storeLabel
     : hasStore
       ? ctx.activeStoreLabel
-      : "Order Sheet";
+      : "Suggested Weight";
 
   return (
     <div

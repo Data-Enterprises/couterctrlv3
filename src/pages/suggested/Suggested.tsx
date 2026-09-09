@@ -40,7 +40,7 @@ import StoreTreePanel from "./StoreTreePanel";
 import OrderSheetPanel from "./OrderSheetPanel";
 
 /**
- * Suggested Order — pounds to buy for each scale item.
+ * Suggested Weight — pounds to buy for each scale item.
  *
  * Two calls, deliberately not one. The group call answers store x sub
  * department and drives the tree; the item sheet is fetched per department when
@@ -192,10 +192,11 @@ const Suggested = () => {
   };
 
   const orderControls = (
-    <div className="flex items-center gap-2">
+    <div className="flex flex-col gap-2">
+      <div className="flex items-start gap-3">
       <label className="flex flex-col gap-0.5 flex-1 min-w-0">
         <span className="text-[12px] font-semibold uppercase tracking-wide text-content/85">
-          Lead days
+          Days until it lands
         </span>
         <input
           type="number"
@@ -210,7 +211,7 @@ const Suggested = () => {
       </label>
       <label className="flex flex-col gap-0.5 flex-1 min-w-0">
         <span className="text-[12px] font-semibold uppercase tracking-wide text-content/85">
-          Cover days
+          Days it must last
         </span>
         <input
           type="number"
@@ -223,13 +224,19 @@ const Suggested = () => {
           style={{ outline: "none", WebkitAppearance: "none", boxShadow: "none" }}
         />
       </label>
+      </div>
+      <p className="text-[12px] text-content/85 leading-snug">
+        Order Wednesday for Friday, then again Saturday for Monday? That is{" "}
+        <span className="font-semibold text-content">2 and 3</span> — not 2 and
+        4, or Monday gets bought twice.
+      </p>
     </div>
   );
 
   const searchCard = (onDone?: () => void) => (
     <SearchCard
-      title="Suggested Order"
-      description="Pick a store or group and the day the order is placed. Lead and cover days should add up to your ordering rhythm."
+      title="Suggested Weight"
+      description="Pick a store or group, then say how your deliveries run. The two counts should add up to your real ordering rhythm."
       buttonLabel="Build order"
       hideDates
       onSearch={() => {

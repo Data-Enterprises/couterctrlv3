@@ -14,7 +14,7 @@ interface SearchCardProps {
   buttonLabel?: string;
   singleDate?: boolean;
   /** Suppress the card's own date control entirely, for a page that owns its
-   *  date rather than sharing `searchSlice`'s. Suggested Order does: its date
+   *  date rather than sharing `searchSlice`'s. Suggested Weight does: its date
    *  is the day an order is PLACED and defaults to today, while the shared one
    *  defaults a day back because every reporting page wants a complete day.
    *  Writing today into the shared slice to suit this page moved the week

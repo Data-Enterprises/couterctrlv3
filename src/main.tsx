@@ -71,7 +71,7 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="invoices" element={<Invoices />} />
                 <Route path="lp-actions" element={<LpActions />} />
                 <Route path="sales-tracker" element={<SalesTracker />} />
-                <Route path="suggested-order" element={<Suggested />} />
+                <Route path="suggested-weight" element={<Suggested />} />
                 <Route path="forecasting" element={<ForecastPage />} />
                 <Route path="quicksight" element={<Dashboard />} />
                 <Route path="receivers" element={<ReceiversPage />} />

@@ -603,8 +603,8 @@ export const categories: NavCategory[] = [
         isVisible: true,
       },
       {
-        name: "Suggested Order",
-        href: "suggested-order",
+        name: "Suggested Weight",
+        href: "suggested-weight",
         icon: ScaleIcon,
         // Desktop only — the order sheet is a two-panel report with no mobile
         // form yet.

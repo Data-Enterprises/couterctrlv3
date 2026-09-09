@@ -29,7 +29,7 @@ export interface DayCardEntry {
    * Overrides for the card's own wording, all optional so every existing caller
    * keeps the weekday-and-date default.
    *
-   * Suggested Order needs them because its cards are NOT that date's figure:
+   * Suggested Weight needs them because its cards are NOT that date's figure:
    * they are the weekday's average, shown against the date it will be delivered
    * against. Rendering "Saturday 9/12 — 1,151 lb" reads as a forecast for that
    * Saturday, which the number is not. "Saturdays / covers 9/12 / 1,151 lb

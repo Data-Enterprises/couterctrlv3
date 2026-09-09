@@ -278,7 +278,7 @@ const SECTIONS: { id: string; q: string; body: ReactNode }[] = [
   },
   {
     id: "q3",
-    q: "What do lead days and cover days change?",
+    q: "What do the two day counts change?",
     body: (
       <>
         <Lead>
@@ -289,26 +289,26 @@ const SECTIONS: { id: string; q: string; body: ReactNode }[] = [
         <Defs
           rows={[
             {
-              t: "Lead days",
+              t: "Days until it lands",
               d: "How long between placing the order and it arriving. Moves the window forward.",
             },
             {
-              t: "Cover days",
-              d: "How long the delivery has to last, until the next one. Sets how wide the window is.",
+              t: "Days it must last",
+              d: "How long the delivery has to cover, until the next one arrives. Sets how wide the window is.",
             },
           ]}
         />
         <P>
-          Order on Wednesday with 2 lead days and 4 cover days and you are buying
-          for Friday through Monday. Change lead days to 5 and the same four-day
-          order now covers Monday to Thursday &mdash; all midweek, and the figure
-          drops, even though nothing else moved.
+          Order on Wednesday with 2 and 4 and you are buying for Friday through
+          Monday. Change the first to 5 and the same four-day order now covers
+          Monday to Thursday &mdash; all midweek, and the figure drops, even
+          though nothing else moved.
         </P>
         <Note>
           The two should add up to how you actually order. Ordering Wednesday for
-          Friday, then again Saturday for Monday, is 2 lead and{" "}
-          <b className="font-semibold">3</b> cover &mdash; not 4, or Monday gets
-          bought twice.
+          Friday, then again Saturday for Monday, is{" "}
+          <b className="font-semibold">2 and 3</b> &mdash; not 2 and 4, or Monday
+          gets bought twice.
         </Note>
       </>
     ),
