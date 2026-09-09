@@ -32,7 +32,7 @@ import ColFilter from "../../components/filters/ColFilter";
 import { colInputStyle } from "../../components/filters/colFilterStyles";
 import SortHeader from "../../components/SortHeader";
 import { useTriStateSort } from "../../utils/useTriStateSort";
-import LoadingIndicator from "../../components/loading/LoadingIndicator";
+import { SheetSkeleton } from "./Skeletons";
 import KpiTileGrid, { type KpiCell } from "../../components/KpiTileGrid";
 import InfoButton from "../../components/InfoButton";
 import InfoPopover from "../../components/InfoPopover";
@@ -256,7 +256,12 @@ const OrderSheetPanel = () => {
         )}
       </div>
 
-      {!hasStore && (
+      {/* While the stores themselves are still arriving there is nothing to
+          select, so the prompt would be telling the reader to do something they
+          cannot yet do. Show the shape of the sheet instead. */}
+      {!hasStore && ctx.loadingGroup && <SheetSkeleton />}
+
+      {!hasStore && !ctx.loadingGroup && (
         <div className="flex-1 flex flex-col items-center justify-center gap-1">
           <p className="text-[13px] font-medium text-content">Select a store</p>
           <p className="text-[11px] text-content/85">
@@ -274,11 +279,7 @@ const OrderSheetPanel = () => {
         </div>
       )}
 
-      {hasStore && ctx.loadingItems && (
-        <div className="flex-1 relative">
-          <LoadingIndicator message="Building the sheet" />
-        </div>
-      )}
+      {hasStore && ctx.loadingItems && <SheetSkeleton />}
 
       {/* Store opened, no department picked: the heaviest lines across all of
           them, out of the response already in hand. */}

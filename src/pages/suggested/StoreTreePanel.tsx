@@ -14,7 +14,7 @@ import FilterBar from "../../components/filters/FilterBar";
 import TextFilter from "../../components/filters/TextFilter";
 import InfoButton from "../../components/InfoButton";
 import InfoPopover from "../../components/InfoPopover";
-import LoadingIndicator from "../../components/loading/LoadingIndicator";
+import { StoreListSkeleton } from "./Skeletons";
 import { SUGGESTED_INFO } from "./suggestedInfo";
 
 /** Header and rows share these, so a column cannot drift from its label. */
@@ -90,8 +90,10 @@ const StoreTreePanel = ({
   const scopeName = isGroupSearch(ctx.type)
     ? (ctx.selectedGroup?.group_name ?? "")
     : (ctx.selectedStore?.store_name ?? "");
+  // "0 of 20 stores" while the call is still running reads as twenty stores
+  // that failed. The count only means anything once there is a result to count.
   const scopeLabel =
-    requested > answered
+    !ctx.loadingGroup && requested > answered
       ? `${scopeName} · ${answered} of ${requested} stores`
       : scopeName;
 
@@ -166,7 +168,7 @@ const StoreTreePanel = ({
           a table people scan down a column, not a stack of cards. */}
       <div className="flex-1 overflow-y-auto thin-scrollbar flex flex-col">
         {ctx.loadingGroup ? (
-          <LoadingIndicator message="Loading stores" />
+          <StoreListSkeleton />
         ) : shown.length === 0 ? (
           <div className="flex items-center justify-center py-8 text-[11px] text-content/85">
             No stores match filters
