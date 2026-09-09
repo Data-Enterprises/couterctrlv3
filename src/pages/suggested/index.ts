@@ -1,4 +1,9 @@
-import type { DowRates, SuggestedGroupRow } from "../../interfaces";
+import type {
+  DowRates,
+  NotSellingItem,
+  SuggestedGroupRow,
+  SuggestedItem,
+} from "../../interfaces";
 
 /**
  * Rows whose department could not be resolved.
@@ -184,3 +189,94 @@ export const dayLabel = (iso: string) => {
  */
 export const dayLevelPct = (dayLb: number, avgDaily: number): number | null =>
   avgDaily > 0 ? (dayLb / avgDaily - 1) * 100 : null;
+
+
+/**
+ * The pounds an item used to sell in this window and now does not.
+ *
+ * The endpoint gives both rates but not the gap, and the gap is what ranks the
+ * list by what it actually costs: a 7.9 lb/day line that stopped matters more
+ * than a 0.3 lb/day one, and sorted by status alone they sit together.
+ *
+ * Floored at 0 — an item classed `declining` on the rate test can still have a
+ * heavier recent half on a short window, and negative "lost" pounds is not a
+ * thing anyone can act on.
+ */
+export const lostLb = (r: NotSellingItem, recentDays: number) =>
+  Math.max((r.prior_lb_per_day - r.recent_lb_per_day) * recentDays, 0);
+
+/** One store's standing in a department, normalised. */
+export interface BenchmarkRow {
+  storeid: number;
+  label: string;
+  /** The department's whole-store rate, which is what the raw comparison uses. */
+  lbPerDay: number;
+  itemCount: number;
+  /** lbPerDay / itemCount — the comparable figure. */
+  lbPerItem: number;
+}
+
+/**
+ * Every store's rate for one department, per item carried.
+ *
+ * Raw pounds a day is the wrong comparison and it is wrong in a way that reads
+ * as a crisis: SAVE A LOT 115 runs 10.45 lb/day of Meat by # against IGA 1's
+ * 781.20, which is -98.7% — but it stocks 5 meat items to IGA 1's 189. It has
+ * no meat case. Per item carried the same pair is 2.09 against 4.13, and -49%
+ * is a number somebody can actually act on.
+ *
+ * Stores with no items are dropped rather than divided by zero.
+ */
+export const buildBenchmark = (
+  rows: SuggestedGroupRow[],
+  subDepartment: number | null,
+  labelFor: (storeid: number, fallback: string) => string,
+): BenchmarkRow[] =>
+  rows
+    .filter((r) => r.sub_department === subDepartment && r.item_count > 0)
+    .map((r) => ({
+      storeid: r.storeid,
+      label: labelFor(r.storeid, r.store_name ?? String(r.storeid)),
+      lbPerDay: r.avg_daily_weight ?? 0,
+      itemCount: r.item_count,
+      lbPerItem: (r.avg_daily_weight ?? 0) / r.item_count,
+    }))
+    .sort((a, b) => b.lbPerItem - a.lbPerItem);
+
+/** The middle value, not the mean — one Save A Lot with five items drags an
+ *  average far harder than it drags a median. */
+export const median = (ns: number[]): number => {
+  if (ns.length === 0) return 0;
+  const sorted = [...ns].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2
+    ? sorted[mid]
+    : (sorted[mid - 1] + sorted[mid]) / 2;
+};
+
+
+/**
+ * The rows the Order tab is showing, out of the whole store's items.
+ *
+ * Shared rather than written twice: the export has to hand over exactly what
+ * the buyer is looking at, and a second copy of this predicate would drift the
+ * first time a filter is added on one side only.
+ */
+export const sheetRows = (
+  items: SuggestedItem[],
+  subDepartment: number | null,
+  upcFilter: string,
+  descFilter: string,
+  onlyFlagged: boolean,
+): SuggestedItem[] => {
+  const upc = upcFilter.trim().toLowerCase();
+  const desc = descFilter.trim().toLowerCase();
+  return items.filter((i) => {
+    if (i.sub_department !== subDepartment) return false;
+    if (onlyFlagged && !i.shrink_clamped) return false;
+    if (upc && !String(i.product_code).toLowerCase().includes(upc)) return false;
+    if (desc && !(i.product_description ?? "").toLowerCase().includes(desc))
+      return false;
+    return true;
+  });
+};

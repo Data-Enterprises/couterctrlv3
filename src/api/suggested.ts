@@ -39,6 +39,10 @@ export interface SuggestedParams {
   /** The figures behind `shrink_multiplier`: lifetime sold, received, damaged
    *  and marked-down weight. */
   includeDiagnostics?: boolean;
+  /** Items that are dead, stopped or declining, under their own `not_selling`
+   *  key. Single store only — on a group this returns the set for every store
+   *  at once, which is not a list anybody works from. */
+  includeNotSelling?: boolean;
   page?: number;
   pageSize?: number;
 }
@@ -103,6 +107,7 @@ const post = async (url: string, token: string, params: SuggestedParams) => {
         : {}),
       ...(params.includeDaily ? { includeDaily: true } : {}),
       ...(params.includeDiagnostics ? { includeDiagnostics: true } : {}),
+      ...(params.includeNotSelling ? { includeNotSelling: true } : {}),
       page: params.page ?? 1,
       pageSize: params.pageSize ?? 500,
     },

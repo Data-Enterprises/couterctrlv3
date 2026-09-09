@@ -11,6 +11,8 @@ import {
   setCoverage,
   setRequestedStoreIds,
   setSheetKey,
+  setActiveStore,
+  setNotSelling,
   setExpandedStores,
   setLoadingGroup,
   setLoadingItems,
@@ -21,8 +23,8 @@ import {
   type SheetKey,
 } from "../../features/suggestedSlice";
 import { isGroupSearch } from "../../features/searchSlice";
-import { formatGoliathDate } from "../../utils";
-import { deptLabel } from ".";
+import { formatGoliathDate, getStoreName } from "../../utils";
+import { deptLabel, sheetRows } from ".";
 import type {
   JsonError,
   Store,
@@ -115,40 +117,73 @@ const Suggested = () => {
         const first = [...j.items].sort(
           (a, b) => (b.suggested_weight ?? 0) - (a.suggested_weight ?? 0),
         )[0];
-        if (first) ctx.dispatch(setExpandedStores([first.storeid]));
+        if (first) {
+          ctx.dispatch(setExpandedStores([first.storeid]));
+          // Load it as well as expand it. The panel opens on that store's Top
+          // to order rather than an empty frame telling the buyer to pick.
+          openStore(
+            first.storeid,
+            getStoreName(
+              ctx.assignedStores,
+              first.storeid,
+              first.store_name ?? String(first.storeid),
+            ),
+          );
+        }
       })
       .catch((err: JsonError) => toast.error(err.message))
       .finally(() => ctx.dispatch(setLoadingGroup(false)));
   };
 
   /**
-   * The sheet for one store's department.
+   * Every scale item in one store, fetched once when the store is opened.
    *
-   * Filtered client-side by department rather than sent as `subDepartments`:
-   * that parameter reads the inventory join, which is null on exactly the rows
-   * that already lost their department name — so filtering server-side would
-   * silently drop the "No department" bucket instead of showing it.
+   * This used to run per DEPARTMENT and filter the response down to the one
+   * asked for. The endpoint has only ever answered at store grain, so that
+   * pulled all ~380 rows and discarded ~70% of them, then pulled the identical
+   * payload again on the next department. One call per store is strictly fewer
+   * calls than one per department, and holding the whole store is what lets the
+   * overview and the store-wide exports come out of a response already in hand.
+   *
+   * Departments are still filtered client-side rather than through
+   * `subDepartments`: that parameter reads the inventory join, which is null on
+   * exactly the rows that already lost their department name, so filtering
+   * server-side would silently drop the "No department" bucket instead of
+   * showing it.
    */
-  const openDepartment = (key: SheetKey) => {
-    ctx.dispatch(setSheetKey(key));
-    ctx.dispatch(setItems([]));
+  const openStore = (storeid: number, storeLabel: string) => {
+    // Clears the previous store's sheet key, items and not-selling set, so a
+    // slow response can never paint one store's rows under another's header.
+    ctx.dispatch(setActiveStore({ storeid, label: storeLabel }));
     ctx.dispatch(setLoadingItems(true));
 
-    getSuggestedItems(ctx.url, ctx.token, key.storeid, modelArgs())
+    getSuggestedItems(ctx.url, ctx.token, storeid, modelArgs())
       .then((resp) => {
         const j: SuggestedItemsResp = resp.data;
         if (j.error !== 0) {
           toast.warn(j.msg ?? "Could not load the sheet");
           return;
         }
-        ctx.dispatch(
-          setItems(
-            j.items.filter((i) => i.sub_department === key.sub_department),
-          ),
-        );
+        ctx.dispatch(setItems(j.items));
+        ctx.dispatch(setNotSelling(j.not_selling ?? null));
       })
       .catch((err: JsonError) => toast.error(err.message))
       .finally(() => ctx.dispatch(setLoadingItems(false)));
+  };
+
+  /**
+   * Pick a department to read. No fetch of its own — the store's items are
+   * already here — unless the click came from a different store's open tree,
+   * which is the one case where the rows on hand are the wrong ones.
+   *
+   * Order matters: `setActiveStore` clears the sheet key by design, so the key
+   * is dispatched after it rather than before.
+   */
+  const openDepartment = (key: SheetKey) => {
+    if (key.storeid !== ctx.activeStoreId) {
+      openStore(key.storeid, key.storeLabel);
+    }
+    ctx.dispatch(setSheetKey(key));
   };
 
   const orderControls = (
@@ -219,18 +254,35 @@ const Suggested = () => {
 
   return (
     <div className="h-[calc(100vh-3rem)] overflow-hidden p-4 flex gap-3">
-      {ctx.exportOpen && ctx.sheetKey && (
+      {ctx.exportOpen && ctx.activeStoreId !== null && (
         <SuggestedExportModal
           items={ctx.items}
+          sheetItems={
+            ctx.sheetKey
+              ? sheetRows(
+                  ctx.items,
+                  ctx.sheetKey.sub_department,
+                  ctx.upcFilter,
+                  ctx.descFilter,
+                  ctx.onlyFlagged,
+                )
+              : []
+          }
           groupRows={ctx.groupRows}
-          storeLabel={ctx.sheetKey.storeLabel}
-          departmentLabel={deptLabel(ctx.sheetKey.sub_department_description)}
+          notSelling={ctx.notSelling}
+          storeLabel={ctx.activeStoreLabel}
+          departmentLabel={
+            ctx.sheetKey
+              ? deptLabel(ctx.sheetKey.sub_department_description)
+              : null
+          }
           coverWindow={ctx.parameters?.cover_window ?? null}
           onClose={() => ctx.dispatch(setExportOpen(false))}
         />
       )}
 
       <StoreTreePanel
+        onOpenStore={openStore}
         onSelectDepartment={openDepartment}
         onOpenSearch={() => setSearchModalOpen(true)}
       />

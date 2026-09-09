@@ -1,7 +1,11 @@
 import { useState, useMemo } from "react";
 import ResizableModalShell from "../../components/modals/ResizableModalShell";
 import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
-import type { SuggestedItem, SuggestedGroupRow } from "../../interfaces";
+import type {
+  SuggestedItem,
+  SuggestedGroupRow,
+  SuggestedNotSelling,
+} from "../../interfaces";
 import {
   fmtNum,
   rowsToCsv,
@@ -9,29 +13,39 @@ import {
   aggregateRows,
 } from "../../utils/csvExport";
 import type { AggFn, AggRow } from "../../utils/csvExport";
-import { deptLabel } from ".";
+import { deptLabel, lostLb } from ".";
 
 /**
  * Presets / Custom CSV export, the shape every other page uses.
  *
- * Presets are the two sheets a buyer actually hands over — the order itself,
- * and the store-by-store rollup behind it. Custom is the same group-by +
- * metric-with-aggregate builder as Receivers, Coupons and Sub Dept Margins,
- * running on the item rows.
+ * One preset per view. The panel answers four questions in four places, so the
+ * file menu offers the same four rather than making anyone learn a second
+ * arrangement: the store's heaviest lines, one department's sheet, the
+ * production reading, and what has stopped selling. The rollup behind the tree
+ * is the fifth, and the only one that spans stores.
+ *
+ * Custom is the same group-by + metric-with-aggregate builder as Receivers,
+ * Coupons and Sub Dept Margins, running on the store's item rows.
  */
 interface Props {
   onClose: () => void;
-  /** The item sheet currently on screen, already filtered and sorted. */
+  /** Every scale item in the active store, all departments. */
   items: SuggestedItem[];
+  /** Just the department on screen, with its column filters applied — what the
+   *  buyer is actually looking at, which is what the Order Sheet has to be. */
+  sheetItems: SuggestedItem[];
   /** Every store x department row behind the tree. */
   groupRows: SuggestedGroupRow[];
+  /** The active store's dead / stopped / declining set, when it was asked for. */
+  notSelling: SuggestedNotSelling | null;
   storeLabel: string;
-  departmentLabel: string;
+  /** Null when no department is selected — the store overview is open. */
+  departmentLabel: string | null;
   coverWindow: { start: string; end: string } | null;
 }
 
 type ModalMode = "presets" | "custom";
-type PresetId = "sheet" | "rollup";
+type PresetId = "storeOrder" | "sheet" | "production" | "notSelling" | "rollup";
 
 interface MetricSelection {
   fn: AggFn;
@@ -45,7 +59,10 @@ const DIMS = [
   { key: "product_code", label: "UPC" },
   { key: "product_description", label: "Description" },
   { key: "sub_department_description", label: "Department" },
-  { key: "shrink_source", label: "Shrink source" },
+  { key: "store_name", label: "Store" },
+  // Renamed with the column it describes — "shrink" means total inventory loss
+  // on a grocery floor, which is not what this is.
+  { key: "shrink_source", label: "Waste source" },
 ];
 
 const METRICS = [
@@ -55,6 +72,7 @@ const METRICS = [
   { key: "sold_weight_window", label: "Lookback lb" },
   { key: "shrink_multiplier", label: "Shrink multiplier" },
   { key: "lifetime_markdown", label: "Marked down lb" },
+  ...DOW.map((d, i) => ({ key: `dow_${i}`, label: `${d} lb` })),
   { key: "on_order_weight", label: "On order lb" },
 ];
 
@@ -122,6 +140,111 @@ const buildSheetCsv = (items: SuggestedItem[]) => {
   return rowsToCsv(headers, rows);
 };
 
+/**
+ * The store's heaviest lines, every department, in the order the endpoint
+ * returned them.
+ *
+ * Not truncated. A buyer wanting the top twenty sorts or filters in Excel;
+ * shipping two presets that differ only by row count is a control nobody asked
+ * for. The Department column is what makes it readable as one list.
+ */
+const buildStoreOrderCsv = (items: SuggestedItem[]) => {
+  const headers = [
+    "UPC",
+    "Description",
+    "Department",
+    "Avg lb/day",
+    "Cover demand lb",
+    "Waste %",
+    "Order lb",
+  ];
+  const rows = items.map((i) => [
+    i.product_code,
+    i.product_description ?? "",
+    deptLabel(i.sub_department_description),
+    fmtNum(i.avg_daily_weight ?? 0),
+    fmtNum(i.demand_weight ?? 0),
+    fmtNum(((i.shrink_multiplier ?? 1) - 1) * 100),
+    fmtNum(i.suggested_weight ?? 0),
+  ]);
+  rows.push([
+    "",
+    `Totals — ${items.length} items`,
+    "",
+    fmtNum(items.reduce((s, i) => s + (i.avg_daily_weight ?? 0), 0)),
+    fmtNum(items.reduce((s, i) => s + (i.demand_weight ?? 0), 0)),
+    "",
+    fmtNum(items.reduce((s, i) => s + (i.suggested_weight ?? 0), 0)),
+  ]);
+  return rowsToCsv(headers, rows);
+};
+
+/**
+ * The production reading: what each department produces on each weekday.
+ *
+ * Department grain rather than item, because that is the level somebody plans a
+ * week at — an item's Tuesday rate is noise, a department's is a shift.
+ */
+const buildProductionCsv = (rows: SuggestedGroupRow[]) => {
+  const headers = [
+    "Store",
+    "Department",
+    "Items",
+    "Avg lb/day",
+    ...DOW.map((d) => `${d} lb`),
+    "Lookback lb",
+  ];
+  return rowsToCsv(
+    headers,
+    rows.map((r) => [
+      r.store_name ?? String(r.storeid),
+      deptLabel(r.sub_department_description),
+      r.item_count,
+      fmtNum(r.avg_daily_weight ?? 0),
+      ...DOW.map((_, d) => fmtNum(r.dow_rates?.[String(d)] ?? 0)),
+      fmtNum(r.sold_weight_window ?? 0),
+    ]),
+  );
+};
+
+/**
+ * What has stopped or slowed, worst first.
+ *
+ * Ordered by Lost lb rather than by status: a heavy item that stopped costs
+ * more than a slow one that died, and grouping by status alone buries it. Lost
+ * lb is computed here for the same reason it is computed on screen — the
+ * endpoint returns both rates but not the gap between them.
+ */
+const buildNotSellingCsv = (ns: SuggestedNotSelling) => {
+  const days = ns.window.recent.days;
+  const headers = [
+    "Status",
+    "UPC",
+    "Description",
+    "Department",
+    "Prior lb/day",
+    "Recent lb/day",
+    "Change %",
+    "Lost lb",
+  ];
+  const sorted = [...ns.items].sort(
+    (a, b) => lostLb(b, days) - lostLb(a, days),
+  );
+  return rowsToCsv(
+    headers,
+    sorted.map((r) => [
+      r.status,
+      r.product_code,
+      r.product_description ?? "",
+      deptLabel(r.sub_department_description),
+      fmtNum(r.prior_lb_per_day ?? 0),
+      fmtNum(r.recent_lb_per_day ?? 0),
+      r.change_ratio === null ? "" : fmtNum(r.change_ratio * 100),
+      fmtNum(lostLb(r, days)),
+    ]),
+  );
+};
+
 const buildRollupCsv = (rows: SuggestedGroupRow[]) => {
   const headers = [
     "Store",
@@ -129,6 +252,7 @@ const buildRollupCsv = (rows: SuggestedGroupRow[]) => {
     "Department",
     "Items",
     "Avg lb/day",
+    "Lb/day per item",
     "Cover demand lb",
     "Order lb",
     "Shrink items",
@@ -143,6 +267,10 @@ const buildRollupCsv = (rows: SuggestedGroupRow[]) => {
       deptLabel(r.sub_department_description),
       r.item_count,
       fmtNum(r.avg_daily_weight ?? 0),
+      // The only figure here that compares across stores. Raw lb/day says a
+      // store carrying five meat items is down 99% on one carrying 189, when it
+      // simply has no meat case.
+      fmtNum(r.item_count > 0 ? (r.avg_daily_weight ?? 0) / r.item_count : 0),
       fmtNum(r.demand_weight ?? 0),
       fmtNum(r.suggested_weight ?? 0),
       // Every source that produced an uplift, not just damage. Markdown
@@ -163,13 +291,15 @@ const buildRollupCsv = (rows: SuggestedGroupRow[]) => {
 const SuggestedExportModal = ({
   onClose,
   items,
+  sheetItems,
   groupRows,
+  notSelling,
   storeLabel,
   departmentLabel,
   coverWindow,
 }: Props) => {
   const [mode, setMode] = useState<ModalMode>("presets");
-  const [selected, setSelected] = useState<Set<PresetId>>(new Set(["sheet"]));
+  const [selected, setSelected] = useState<Set<PresetId>>(new Set(["storeOrder"]));
 
   const [groupBy, setGroupBy] = useState<Set<string>>(new Set());
   const [metrics, setMetrics] = useState<Map<string, MetricSelection>>(
@@ -180,6 +310,10 @@ const SuggestedExportModal = ({
       ["sold_weight_window", { fn: "sum", enabled: false }],
       ["shrink_multiplier", { fn: "avg", enabled: false }],
       ["lifetime_markdown", { fn: "sum", enabled: false }],
+      ...DOW.map(
+        (_, i) =>
+          [`dow_${i}`, { fn: "sum", enabled: false }] as [string, MetricSelection],
+      ),
       ["on_order_weight", { fn: "sum", enabled: false }],
     ]),
   );
@@ -216,13 +350,19 @@ const SuggestedExportModal = ({
 
   const flatRows = useMemo<AggRow[]>(
     () =>
-      items.map(
-        (i) =>
-          ({
-            ...i,
-            sub_department_description: deptLabel(i.sub_department_description),
-          }) as unknown as AggRow,
-      ),
+      items.map((i) => {
+        // `aggregateRows` walks flat keys, so the seven rates have to be
+        // columns here rather than a nested object.
+        const dow: Record<string, number> = {};
+        for (let d = 0; d < 7; d++) {
+          dow[`dow_${d}`] = i.dow_rates?.[String(d)] ?? 0;
+        }
+        return {
+          ...i,
+          ...dow,
+          sub_department_description: deptLabel(i.sub_department_description),
+        } as unknown as AggRow;
+      }),
     [items],
   );
 
@@ -270,13 +410,35 @@ const SuggestedExportModal = ({
     ? `${coverWindow.start} to ${coverWindow.end}`
     : "";
 
+  /** The active store's departments. Item rows carry their own storeid, so the
+   *  scope comes from the data rather than another prop. */
+  const activeStoreId = items.length ? items[0].storeid : null;
+  const storeDeptRows = groupRows.filter((r) => r.storeid === activeStoreId);
+
   const handlePresetDownload = () => {
     const sections: string[] = [];
-    if (selected.has("sheet")) {
+    if (selected.has("storeOrder")) {
+      sections.push(
+        `Top to Order — ${storeLabel} — all departments${
+          windowLabel ? ` — covers ${windowLabel}` : ""
+        }\n${buildStoreOrderCsv(items)}`,
+      );
+    }
+    if (selected.has("sheet") && departmentLabel) {
       sections.push(
         `Order Sheet — ${storeLabel} — ${departmentLabel}${
           windowLabel ? ` — covers ${windowLabel}` : ""
-        }\n${buildSheetCsv(items)}`,
+        }\n${buildSheetCsv(sheetItems)}`,
+      );
+    }
+    if (selected.has("production")) {
+      sections.push(
+        `Production — ${storeLabel} — average lb by weekday\n${buildProductionCsv(storeDeptRows)}`,
+      );
+    }
+    if (selected.has("notSelling") && notSelling) {
+      sections.push(
+        `Not Selling — ${storeLabel} — recent ${notSelling.window.recent.days}d vs prior ${notSelling.window.prior.days}d\n${buildNotSellingCsv(notSelling)}`,
       );
     }
     if (selected.has("rollup")) {
@@ -303,12 +465,37 @@ const SuggestedExportModal = ({
 
   const canCustomDownload = columns.length > 0 && aggRows.length > 0;
 
+  // Only offer what the current scope can actually fill. A preset that silently
+  // exports a header and no rows is worse than one that is not there.
   const PRESETS: { id: PresetId; label: string; description: string }[] = [
     {
-      id: "sheet",
-      label: "Order Sheet",
-      description: `${items.length.toLocaleString()} items for ${storeLabel} — ${departmentLabel}, with a totals row`,
+      id: "storeOrder",
+      label: "Top to Order",
+      description: `${items.length.toLocaleString()} items across every department at ${storeLabel}, heaviest first`,
     },
+    ...(departmentLabel
+      ? [
+          {
+            id: "sheet" as PresetId,
+            label: "Order Sheet",
+            description: `${sheetItems.length.toLocaleString()} items for ${departmentLabel} as filtered on screen, with a totals row`,
+          },
+        ]
+      : []),
+    {
+      id: "production",
+      label: "Production",
+      description: `${storeDeptRows.length.toLocaleString()} departments at ${storeLabel}, with the seven weekday rates`,
+    },
+    ...(notSelling
+      ? [
+          {
+            id: "notSelling" as PresetId,
+            label: "Not Selling",
+            description: `${notSelling.items.length.toLocaleString()} dead, stopped and declining items, ranked by pounds lost`,
+          },
+        ]
+      : []),
     {
       id: "rollup",
       label: "Store Rollup",

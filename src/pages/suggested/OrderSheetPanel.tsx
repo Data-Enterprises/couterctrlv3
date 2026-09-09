@@ -7,6 +7,8 @@ import {
   setDescFilter,
   setOnlyFlagged,
   setSelectedDay,
+  setActiveTab,
+  type SuggestedTab,
 } from "../../features/suggestedSlice";
 import {
   coverDates,
@@ -16,19 +18,26 @@ import {
   fmtLb,
   fmtLb0,
   rateForDate,
+  sheetRows,
   shrinkLabel,
   shrinkTitle,
 } from ".";
 import DayCardStrip, { type DayCardEntry } from "../../components/DayCardStrip";
-import SoldPerDayStrip from "./SoldPerDayStrip";
+import CoverageStrip from "./CoverageStrip";
+import TopToOrder from "./TopToOrder";
+import ProductionTab from "./ProductionTab";
+import NotSellingTab from "./NotSellingTab";
 import ColFilter from "../../components/filters/ColFilter";
 import { colInputStyle } from "../../components/filters/colFilterStyles";
 import SortHeader from "../../components/SortHeader";
 import { useTriStateSort } from "../../utils/useTriStateSort";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
 import KpiTileGrid, { type KpiCell } from "../../components/KpiTileGrid";
+import InfoButton from "../../components/InfoButton";
+import InfoPopover from "../../components/InfoPopover";
 import UpcContextMenu from "../../components/UpcContextMenu";
-import type { SuggestedItem } from "../../interfaces";
+import { SUGGESTED_INFO } from "./suggestedInfo";
+import type { DowRates, SuggestedItem } from "../../interfaces";
 
 const TH =
   "px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/85";
@@ -45,6 +54,12 @@ const SORT_TH =
 
 type SortCol = "daily" | "demand" | "markdown" | "order";
 
+const TABS: { key: SuggestedTab; label: string }[] = [
+  { key: "order", label: "Order" },
+  { key: "production", label: "Production" },
+  { key: "notSelling", label: "Not selling" },
+];
+
 const OrderSheetPanel = () => {
   const ctx = useSuggestedCtx();
   const { sort, handleSort, applySort } = useTriStateSort<SortCol>();
@@ -55,52 +70,34 @@ const OrderSheetPanel = () => {
     y: number;
     upc: string;
   } | null>(null);
-
-  const filtered = useMemo(() => {
-    const upc = ctx.upcFilter.trim().toLowerCase();
-    const desc = ctx.descFilter.trim().toLowerCase();
-    return ctx.items.filter((i) => {
-      if (ctx.onlyFlagged && !i.shrink_clamped) return false;
-      if (upc && !String(i.product_code).toLowerCase().includes(upc)) return false;
-      if (desc && !(i.product_description ?? "").toLowerCase().includes(desc))
-        return false;
-      return true;
-    });
-  }, [ctx.items, ctx.upcFilter, ctx.descFilter, ctx.onlyFlagged]);
+  const [infoOpen, setInfoOpen] = useState(false);
 
   /**
-   * The department's weekday profile, read off the group row the sheet was
-   * opened from rather than re-summed across items — the backend computes both
-   * from the same `labelled` rows, and the group row is already in hand.
+   * The department, out of the store's rows.
+   *
+   * `items` holds every department now, so the sheet filters to the selected one
+   * here rather than at fetch time — which is what stopped the page pulling the
+   * same store payload once per department click.
    */
+  const filtered = useMemo(
+    () =>
+      sheetRows(
+        ctx.items,
+        ctx.sheetKey?.sub_department ?? null,
+        ctx.upcFilter,
+        ctx.descFilter,
+        ctx.onlyFlagged,
+      ),
+    [ctx.items, ctx.sheetKey, ctx.upcFilter, ctx.descFilter, ctx.onlyFlagged],
+  );
+
+  /** The group row behind this department — the only source of the day-by-day
+   *  history and the cross-store comparison, neither of which is on item rows. */
   const groupRow = ctx.groupRows.find(
     (r) =>
       r.storeid === ctx.sheetKey?.storeid &&
       r.sub_department === ctx.sheetKey?.sub_department,
   );
-
-  /**
-   * No profile, no strip.
-   *
-   * A row whose profile is missing or unparseable reaches us with `dow_rates`
-   * absent, and `rateForDate` answers 0 for a missing key — which rendered
-   * every day as "0.00 lb, -100% vs avg day". That is a department that sells
-   * nothing, stated confidently, and it is the opposite of true. An absent
-   * field is not seven zeros.
-   */
-  const dayCards: DayCardEntry[] = useMemo(() => {
-    if (!groupRow?.dow_rates) return [];
-    return coverDates(ctx.parameters?.cover_window).map((iso) => {
-      const lb = rateForDate(groupRow.dow_rates, iso);
-      return {
-        iso,
-        value: `${fmtLb(lb)} lb`,
-        delta: dayLevelPct(lb, groupRow.avg_daily_weight ?? 0),
-        deltaTitle: `${fmtLb(groupRow.avg_daily_weight ?? 0)} lb on an average day here`,
-        basis: "avg day",
-      };
-    });
-  }, [groupRow, ctx.parameters]);
 
   /**
    * The demand figure a row shows: the whole cover window, or one day of it.
@@ -132,11 +129,74 @@ const OrderSheetPanel = () => {
     const demand = rows.reduce((s, r) => s + demandFor(r), 0);
     const daily = rows.reduce((s, r) => s + (r.avg_daily_weight ?? 0), 0);
     const capped = rows.filter((r) => r.shrink_clamped).length;
-    const adjusted = rows.filter((r) => r.shrink_source !== "none").length;
-    return { order, demand, daily, capped, adjusted };
+    // Never day-scoped. `demand` follows the selected day by design, so reusing
+    // it for the All Week card would have made that card show one day's pounds
+    // under the label "All Week".
+    const week = rows.reduce((s, r) => s + (r.demand_weight ?? 0), 0);
+    return { order, demand, daily, capped, week };
   }, [rows]);
 
+  /**
+   * The weekday profile, summed from the ROWS ON SCREEN rather than read off the
+   * group row.
+   *
+   * Same arithmetic the endpoint does — the group row's `dow_rates` is its items
+   * summed — so unfiltered the two agree exactly. Doing it here means the strip
+   * and the Avg/day tile share one baseline: taking the values from the group
+   * row and the baseline from the visible rows put two "average day" figures on
+   * one screen, 781.2 against 781.25, which nobody would ever catch.
+   */
+  const deptRates: DowRates | undefined = useMemo(() => {
+    const out: DowRates = {};
+    for (let d = 0; d < 7; d++) out[String(d)] = 0;
+    let any = false;
+    for (const r of rows) {
+      if (!r.dow_rates) continue;
+      any = true;
+      for (let d = 0; d < 7; d++) {
+        out[String(d)] += r.dow_rates[String(d)] ?? 0;
+      }
+    }
+    return any ? out : undefined;
+  }, [rows]);
+
+  /**
+   * A card per day the order has to cover.
+   *
+   * These are NOT forecasts for those dates. Each one is what this department
+   * does on that WEEKDAY, averaged over the lookback, labelled with the date it
+   * will be delivered against — which is why the value says "typical" and the
+   * date says "covers". Move the order to a different Friday and the number is
+   * identical. The four sum to Cover demand, which is the honest reason they are
+   * on an order screen at all.
+   */
+  const dayCards: DayCardEntry[] = useMemo(() => {
+    if (!deptRates) return [];
+    return coverDates(ctx.parameters?.cover_window).map((iso) => {
+      const lb = rateForDate(deptRates, iso);
+      const d = new Date(`${iso}T12:00:00`);
+      return {
+        iso,
+        value: `${fmtLb(lb)} lb`,
+        delta: dayLevelPct(lb, totals.daily),
+        deltaTitle: `${fmtLb(totals.daily)} lb on an average day here`,
+        basis: "vs avg day",
+        label: `${d.toLocaleDateString(undefined, { weekday: "long" })}s`,
+        subLabel: `covers ${d.getMonth() + 1}/${d.getDate()}`,
+        valueNote: "typical",
+      };
+    });
+  }, [deptRates, ctx.parameters, totals.daily]);
+
+  const hasStore = ctx.activeStoreId !== null;
   const hasSheet = ctx.sheetKey !== null;
+  const tab = ctx.activeTab;
+
+  const headerTitle = hasSheet
+    ? ctx.sheetKey!.storeLabel
+    : hasStore
+      ? ctx.activeStoreLabel
+      : "Order Sheet";
 
   return (
     <div
@@ -149,21 +209,37 @@ const OrderSheetPanel = () => {
         style={{ background: "#1e2a4a" }}
       >
         <div>
-          {hasSheet ? (
-            <div className="text-[13px] font-semibold text-custom-white">
-              {ctx.sheetKey!.storeLabel}
+          <div className="text-[13px] font-semibold text-custom-white">
+            {headerTitle}
+            {hasStore && (
               <span className="ml-2 text-[11px] font-normal text-custom-white">
-                — {deptLabel(ctx.sheetKey!.sub_department_description)}
+                —{" "}
+                {hasSheet
+                  ? deptLabel(ctx.sheetKey!.sub_department_description)
+                  : "all departments"}
               </span>
-            </div>
-          ) : (
-            <div className="text-[13px] font-semibold text-custom-white">
-              Order Sheet
-            </div>
-          )}
+            )}
+          </div>
         </div>
-        {hasSheet && ctx.items.length > 0 && (
+        {hasStore && ctx.items.length > 0 && (
           <div className="flex items-center gap-3 mt-0.5">
+            {/* Scoped to the tab on screen: the same term does not mean the same
+                thing on Order as it does on Production. */}
+            <div className="relative">
+              <InfoButton onClick={() => setInfoOpen((v) => !v)} />
+              {infoOpen && (
+                <InfoPopover
+                  title={SUGGESTED_INFO.title}
+                  purpose={SUGGESTED_INFO.purpose}
+                  glossary={
+                    hasSheet
+                      ? SUGGESTED_INFO.byTab[tab]
+                      : SUGGESTED_INFO.byTab.topToOrder
+                  }
+                  onClose={() => setInfoOpen(false)}
+                />
+              )}
+            </div>
             <button
               onClick={() => ctx.dispatch(setExportOpen(true))}
               title="Export CSV"
@@ -175,268 +251,302 @@ const OrderSheetPanel = () => {
         )}
       </div>
 
-      {!hasSheet && (
+      {!hasStore && (
         <div className="flex-1 flex flex-col items-center justify-center gap-1">
-          <p className="text-[13px] font-medium text-content">
-            Select a department
-          </p>
+          <p className="text-[13px] font-medium text-content">Select a store</p>
           <p className="text-[11px] text-content/85">
-            Open a store on the left, then choose a department
+            Open one on the left to see what it needs
           </p>
         </div>
       )}
 
-      {hasSheet && ctx.loadingItems && (
+      {hasStore && ctx.loadingItems && (
         <div className="flex-1 relative">
           <LoadingIndicator message="Building the sheet" />
         </div>
       )}
 
-      {hasSheet && !ctx.loadingItems && (
+      {/* Store opened, no department picked: the heaviest lines across all of
+          them, out of the response already in hand. */}
+      {hasStore && !ctx.loadingItems && !hasSheet && <TopToOrder />}
+
+      {hasStore && !ctx.loadingItems && hasSheet && (
         <>
-          {/* Rising pounds are a heavier production day, not a worse one — the
-              same reason Vendors turns the red/green round for sales. */}
-          <DayCardStrip
-            days={dayCards}
-            weekValue={`${fmtLb(groupRow?.demand_weight ?? 0)} lb`}
-            weekDelta={null}
-            selected={ctx.selectedDay}
-            onSelect={(iso) =>
-              ctx.dispatch(setSelectedDay(iso === ctx.selectedDay ? "" : iso))
-            }
-            higherIsWorse={false}
-          />
-
-          {/* What the department actually moved, under what it is forecast to.
-              The cards are an average weekday; these are the days that
-              happened. */}
-          {groupRow?.daily?.length ? (
-            <SoldPerDayStrip
-              daily={groupRow.daily}
-              dailyAvg={groupRow.daily_avg ?? 0}
-            />
-          ) : null}
-
-          <KpiTileGrid
-            items={
-              [
-                { label: "Order", value: `${fmtLb(totals.order)} lb` },
-                {
-                  label: ctx.selectedDay
-                    ? dayLabel(ctx.selectedDay)
-                    : "Cover demand",
-                  value: `${fmtLb(totals.demand)} lb`,
-                },
-                { label: "Avg / day", value: `${fmtLb(totals.daily)} lb` },
-                { label: "Items", value: rows.length.toLocaleString() },
-                {
-                  label: "Shrink applied",
-                  value: totals.adjusted.toLocaleString(),
-                },
-                { label: "Capped", value: totals.capped.toLocaleString() },
-              ] satisfies KpiCell[]
-            }
-          />
-
-          <div className="flex-1 overflow-auto thin-scrollbar">
-            {rows.length === 0 ? (
-              <div className="flex items-center justify-center py-8 text-[11px] text-content/85">
-                {ctx.items.length === 0
-                  ? "No scale items in this department"
-                  : "No results match filters"}
-              </div>
-            ) : (
-              <table className="w-full border-collapse text-[13px]">
-                <thead>
-                  <tr className="sticky top-0 bg-gray-100 border-b border-gray-100 z-10">
-                    <th
-                      className={`${TH} text-left`}
-                      style={{ overflow: "visible" }}
-                    >
-                      <ColFilter
-                        label="Item"
-                        active={!!ctx.descFilter}
-                        onApply={() => ctx.dispatch(setDescFilter(draftDesc))}
-                        onClear={() => {
-                          ctx.dispatch(setDescFilter(""));
-                          setDraftDesc("");
-                        }}
-                      >
-                        <input
-                          autoFocus
-                          style={colInputStyle}
-                          placeholder="Search description…"
-                          value={draftDesc}
-                          onChange={(e) => setDraftDesc(e.target.value)}
-                        />
-                      </ColFilter>
-                    </th>
-                    <th
-                      className={`${TH} text-left w-32`}
-                      style={{ overflow: "visible" }}
-                    >
-                      <ColFilter
-                        label="UPC"
-                        active={!!ctx.upcFilter}
-                        onApply={() => ctx.dispatch(setUpcFilter(draftUpc))}
-                        onClear={() => {
-                          ctx.dispatch(setUpcFilter(""));
-                          setDraftUpc("");
-                        }}
-                      >
-                        <input
-                          autoFocus
-                          style={colInputStyle}
-                          placeholder="Search UPC…"
-                          value={draftUpc}
-                          onChange={(e) => setDraftUpc(e.target.value)}
-                        />
-                      </ColFilter>
-                    </th>
-                    <th className={`${TH} text-right whitespace-nowrap`}>
-                      <SortHeader
-                        col="daily"
-                        label="Avg lb/day"
-                        sort={sort}
-                        onSort={handleSort}
-                        className={SORT_TH}
-                      />
-                    </th>
-                    <th className={`${TH} text-right whitespace-nowrap`}>
-                      <SortHeader
-                        col="demand"
-                        label={
-                          ctx.selectedDay
-                            ? dayLabel(ctx.selectedDay)
-                            : "Cover demand"
-                        }
-                        sort={sort}
-                        onSort={handleSort}
-                        className={SORT_TH}
-                      />
-                    </th>
-                    <th className={`${TH} text-right`}>
-                      <button
-                        onClick={() =>
-                          ctx.dispatch(setOnlyFlagged(!ctx.onlyFlagged))
-                        }
-                        title="Show only capped rows"
-                        className={`flex items-center gap-1 w-full justify-end transition-colors ${
-                          ctx.onlyFlagged
-                            ? "text-severity_watch_text"
-                            : "text-content/85"
-                        }`}
-                      >
-                        Shrink
-                        {ctx.onlyFlagged && (
-                          <span className="w-1 h-1 rounded-full bg-severity_watch_text flex-shrink-0" />
-                        )}
-                      </button>
-                    </th>
-                    <th
-                      className={`${TH} text-right whitespace-nowrap`}
-                      title="Recorded waste in pounds, over each item's whole recorded life — not the cover window. Sort it to rank where the waste actually is: a small percentage of a big mover outweighs a big percentage of a slow one."
-                    >
-                      <SortHeader
-                        col="markdown"
-                        label="Marked down"
-                        sort={sort}
-                        onSort={handleSort}
-                        className={SORT_TH}
-                      />
-                    </th>
-                    <th className={`${TH} text-right whitespace-nowrap`}>
-                      <SortHeader
-                        col="order"
-                        label="Order lb"
-                        sort={sort}
-                        onSort={handleSort}
-                        className={SORT_TH}
-                      />
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.map((r) => (
-                    <tr
-                      key={r.product_code}
-                      onContextMenu={(e) => {
-                        e.preventDefault();
-                        setCtxMenu({
-                          x: e.clientX,
-                          y: e.clientY,
-                          upc: String(r.product_code),
-                        });
-                      }}
-                      className="border-b border-[#1e2a4a]/15 hover:bg-gray-50 transition-colors"
-                    >
-                      <td className="px-3 py-2 text-content font-medium">
-                        {r.product_description ?? String(r.product_code)}
-                      </td>
-                      <td className="px-3 py-2 text-content/85 tabular-nums">
-                        {r.product_code}
-                      </td>
-                      <td className="px-3 py-2 text-right tabular-nums text-content">
-                        {fmtLb(r.avg_daily_weight)}
-                      </td>
-                      <td className="px-3 py-2 text-right tabular-nums text-content">
-                        {fmtLb(demandFor(r))}
-                      </td>
-                      <td
-                        className="px-3 py-2 text-right tabular-nums"
-                        title={shrinkTitle(r)}
-                      >
-                        <span
-                          className={
-                            r.shrink_clamped
-                              ? "text-severity_watch_text font-semibold"
-                              : "text-content"
-                          }
-                        >
-                          {shrinkLabel(r)}
-                        </span>
-                        {r.shrink_clamped && (
-                          <span className="ml-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-severity_watch_bg text-severity_watch_text">
-                            Cap
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-3 py-2 text-right tabular-nums text-content">
-                        {r.lifetime_markdown ? fmtLb0(r.lifetime_markdown) : "—"}
-                      </td>
-                      <td className="px-3 py-2 text-right tabular-nums text-content font-semibold">
-                        {fmtLb(r.suggested_weight)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-                <tfoot>
-                  <tr className="sticky bottom-0 bg-gray-50 border-t-2 border-content/70 font-bold text-[14px]">
-                    <td className="px-3 py-2"></td>
-                    <td className="px-3 py-2 text-right text-content/85">
-                      Totals
-                    </td>
-                    <td className="px-3 py-2 text-right tabular-nums text-content/85">
-                      {fmtLb(totals.daily)}
-                    </td>
-                    <td className="px-3 py-2 text-right tabular-nums text-content/85">
-                      {fmtLb(totals.demand)}
-                    </td>
-                    <td className="px-3 py-2"></td>
-                    {/* Marked down is deliberately not totalled. Every other
-                        figure in this row covers the same window; these are
-                        lifetime pounds over item lifetimes that differ, so a
-                        sum sitting beside them would read as a period it does
-                        not have. The sort is what this column is for. */}
-                    <td className="px-3 py-2"></td>
-                    <td className="px-3 py-2 text-right tabular-nums text-content/85">
-                      {fmtLb(totals.order)}
-                    </td>
-                  </tr>
-                </tfoot>
-              </table>
-            )}
+          <div className="flex-shrink-0 flex gap-0.5 px-3 bg-gray-50 border-b border-gray-100">
+            {TABS.map((t) => {
+              const on = tab === t.key;
+              return (
+                <button
+                  key={t.key}
+                  onClick={() => ctx.dispatch(setActiveTab(t.key))}
+                  className={`px-4 py-2 text-[12px] font-semibold border-b-2 transition-colors ${
+                    on
+                      ? "text-content border-[#1e2a4a] bg-custom-white"
+                      : "text-content/85 border-transparent hover:text-content"
+                  }`}
+                >
+                  {t.label}
+                </button>
+              );
+            })}
           </div>
+
+          {tab === "order" && (
+            <>
+              <div className="flex-shrink-0 px-3 pt-2 text-[10.5px] text-content/85 bg-gray-50 leading-snug">
+                Each card is what this department does on that{" "}
+                <span className="font-semibold text-content">weekday</span>,
+                averaged over the lookback — not a forecast for that date. The
+                four sum to Cover demand.
+              </div>
+              {/* Rising pounds are a heavier production day, not a worse one — the
+                  same reason Vendors turns the red/green round for sales. */}
+              <DayCardStrip
+                days={dayCards}
+                weekValue={`${fmtLb(totals.week)} lb`}
+                weekDelta={null}
+                selected={ctx.selectedDay}
+                onSelect={(iso) =>
+                  ctx.dispatch(setSelectedDay(iso === ctx.selectedDay ? "" : iso))
+                }
+                higherIsWorse={false}
+              />
+
+              <KpiTileGrid
+                items={
+                  [
+                    { label: "Order", value: `${fmtLb(totals.order)} lb` },
+                    {
+                      label: ctx.selectedDay
+                        ? dayLabel(ctx.selectedDay)
+                        : "Cover demand",
+                      value: `${fmtLb(totals.demand)} lb`,
+                    },
+                    { label: "Avg / day", value: `${fmtLb(totals.daily)} lb` },
+                    { label: "Items", value: rows.length.toLocaleString() },
+                    { label: "Capped", value: totals.capped.toLocaleString() },
+                  ] satisfies KpiCell[]
+                }
+              />
+
+              <CoverageStrip coverage={ctx.coverage} />
+
+              <div className="flex-1 overflow-auto thin-scrollbar">
+                {rows.length === 0 ? (
+                  <div className="flex items-center justify-center py-8 text-[11px] text-content/85">
+                    No results match filters
+                  </div>
+                ) : (
+                  <table className="w-full border-collapse text-[13px]">
+                    <thead>
+                      <tr className="sticky top-0 bg-gray-100 border-b border-gray-100 z-10">
+                        <th
+                          className={`${TH} text-left`}
+                          style={{ overflow: "visible" }}
+                        >
+                          <ColFilter
+                            label="Item"
+                            active={!!ctx.descFilter}
+                            onApply={() => ctx.dispatch(setDescFilter(draftDesc))}
+                            onClear={() => {
+                              ctx.dispatch(setDescFilter(""));
+                              setDraftDesc("");
+                            }}
+                          >
+                            <input
+                              autoFocus
+                              style={colInputStyle}
+                              placeholder="Search description…"
+                              value={draftDesc}
+                              onChange={(e) => setDraftDesc(e.target.value)}
+                            />
+                          </ColFilter>
+                        </th>
+                        <th
+                          className={`${TH} text-left w-32`}
+                          style={{ overflow: "visible" }}
+                        >
+                          <ColFilter
+                            label="UPC"
+                            active={!!ctx.upcFilter}
+                            onApply={() => ctx.dispatch(setUpcFilter(draftUpc))}
+                            onClear={() => {
+                              ctx.dispatch(setUpcFilter(""));
+                              setDraftUpc("");
+                            }}
+                          >
+                            <input
+                              autoFocus
+                              style={colInputStyle}
+                              placeholder="Search UPC…"
+                              value={draftUpc}
+                              onChange={(e) => setDraftUpc(e.target.value)}
+                            />
+                          </ColFilter>
+                        </th>
+                        <th className={`${TH} text-right whitespace-nowrap`}>
+                          <SortHeader
+                            col="daily"
+                            label="Avg lb/day"
+                            sort={sort}
+                            onSort={handleSort}
+                            className={SORT_TH}
+                          />
+                        </th>
+                        <th className={`${TH} text-right whitespace-nowrap`}>
+                          <SortHeader
+                            col="demand"
+                            label={
+                              ctx.selectedDay
+                                ? dayLabel(ctx.selectedDay)
+                                : "Cover demand"
+                            }
+                            sort={sort}
+                            onSort={handleSort}
+                            className={SORT_TH}
+                          />
+                        </th>
+                        <th
+                          className={`${TH} text-right`}
+                          title="The percentage added to the order to cover product that will not sell — for every 100 lb sold, this much gets thrown away. Click to show only capped rows."
+                        >
+                          <button
+                            onClick={() =>
+                              ctx.dispatch(setOnlyFlagged(!ctx.onlyFlagged))
+                            }
+                            className={`flex items-center gap-1 w-full justify-end transition-colors ${
+                              ctx.onlyFlagged
+                                ? "text-severity_watch_text"
+                                : "text-content/85"
+                            }`}
+                          >
+                            Waste %
+                            {ctx.onlyFlagged && (
+                              <span className="w-1 h-1 rounded-full bg-severity_watch_text flex-shrink-0" />
+                            )}
+                          </button>
+                        </th>
+                        <th
+                          className={`${TH} text-right whitespace-nowrap`}
+                          title="Recorded waste in pounds, over each item's whole recorded life — not the cover window. Sort it to rank where the waste actually is: a small percentage of a big mover outweighs a big percentage of a slow one."
+                        >
+                          <SortHeader
+                            col="markdown"
+                            label="Marked down"
+                            sort={sort}
+                            onSort={handleSort}
+                            className={SORT_TH}
+                          />
+                        </th>
+                        <th className={`${TH} text-right whitespace-nowrap`}>
+                          <SortHeader
+                            col="order"
+                            label="Order lb"
+                            sort={sort}
+                            onSort={handleSort}
+                            className={SORT_TH}
+                          />
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {rows.map((r) => (
+                        <tr
+                          key={r.product_code}
+                          onContextMenu={(e) => {
+                            e.preventDefault();
+                            setCtxMenu({
+                              x: e.clientX,
+                              y: e.clientY,
+                              upc: String(r.product_code),
+                            });
+                          }}
+                          className="border-b border-[#1e2a4a]/15 hover:bg-gray-50 transition-colors"
+                        >
+                          <td className="px-3 py-2 text-content font-medium">
+                            {r.product_description ?? String(r.product_code)}
+                          </td>
+                          <td className="px-3 py-2 text-content/85 tabular-nums">
+                            {r.product_code}
+                          </td>
+                          <td className="px-3 py-2 text-right tabular-nums text-content">
+                            {fmtLb(r.avg_daily_weight)}
+                          </td>
+                          <td className="px-3 py-2 text-right tabular-nums text-content">
+                            {fmtLb(demandFor(r))}
+                          </td>
+                          <td
+                            className="px-3 py-2 text-right tabular-nums"
+                            title={shrinkTitle(r)}
+                          >
+                            <span
+                              className={
+                                r.shrink_clamped
+                                  ? "text-severity_watch_text font-semibold"
+                                  : "text-content"
+                              }
+                            >
+                              {shrinkLabel(r)}
+                            </span>
+                            {r.shrink_clamped && (
+                              <span className="ml-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-severity_watch_bg text-severity_watch_text">
+                                Cap
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-3 py-2 text-right tabular-nums text-content">
+                            {r.lifetime_markdown
+                              ? fmtLb0(r.lifetime_markdown)
+                              : "—"}
+                          </td>
+                          <td className="px-3 py-2 text-right tabular-nums text-content font-semibold">
+                            {fmtLb(r.suggested_weight)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                    <tfoot>
+                      <tr className="sticky bottom-0 bg-gray-50 border-t-2 border-content/70 font-bold text-[14px]">
+                        <td className="px-3 py-2"></td>
+                        <td className="px-3 py-2 text-right text-content/85">
+                          Totals
+                        </td>
+                        <td className="px-3 py-2 text-right tabular-nums text-content/85">
+                          {fmtLb(totals.daily)}
+                        </td>
+                        <td className="px-3 py-2 text-right tabular-nums text-content/85">
+                          {fmtLb(totals.demand)}
+                        </td>
+                        <td className="px-3 py-2"></td>
+                        {/* Marked down is deliberately not totalled. Every other
+                            figure in this row covers the same window; these are
+                            lifetime pounds over item lifetimes that differ, so a
+                            sum beside them would read as a period it does not
+                            have. The sort is what this column is for. */}
+                        <td className="px-3 py-2"></td>
+                        <td className="px-3 py-2 text-right tabular-nums text-content/85">
+                          {fmtLb(totals.order)}
+                        </td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                )}
+              </div>
+            </>
+          )}
+
+          {tab === "production" && (
+            <ProductionTab
+              groupRow={groupRow}
+              subDepartment={ctx.sheetKey!.sub_department}
+            />
+          )}
+
+          {tab === "notSelling" && (
+            <NotSellingTab
+              subDepartment={ctx.sheetKey!.sub_department}
+            />
+          )}
         </>
       )}
 

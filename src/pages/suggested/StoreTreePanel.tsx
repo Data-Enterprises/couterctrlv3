@@ -31,9 +31,11 @@ const DEPT_COLS = "grid-cols-[1fr_56px_72px]";
  */
 const StoreTreePanel = ({
   onSelectDepartment,
+  onOpenStore,
   onOpenSearch,
 }: {
   onSelectDepartment: (key: SheetKey) => void;
+  onOpenStore: (storeid: number, storeLabel: string) => void;
   onOpenSearch: () => void;
 }) => {
   const ctx = useSuggestedCtx();
@@ -135,7 +137,9 @@ const StoreTreePanel = ({
             <InfoButton onClick={() => setInfoOpen((v) => !v)} />
             {infoOpen && (
               <InfoPopover
-                {...SUGGESTED_INFO}
+                title={SUGGESTED_INFO.title}
+                purpose={SUGGESTED_INFO.purpose}
+                glossary={SUGGESTED_INFO.glossary}
                 onClose={() => setInfoOpen(false)}
               />
             )}
@@ -177,10 +181,30 @@ const StoreTreePanel = ({
                 return (
                   <div key={store.storeid}>
                     <button
-                      onClick={() =>
-                        ctx.dispatch(toggleExpandedStore(store.storeid))
+                      onClick={() => {
+                        // A store that is not the one loaded always opens and
+                        // becomes active — collapsing it instead would leave the
+                        // buyer looking at another store's sheet with no way to
+                        // tell. Only the active store toggles shut.
+                        if (ctx.activeStoreId !== store.storeid) {
+                          if (!open) {
+                            ctx.dispatch(toggleExpandedStore(store.storeid));
+                          }
+                          onOpenStore(store.storeid, store.label);
+                        } else {
+                          ctx.dispatch(toggleExpandedStore(store.storeid));
+                        }
+                      }}
+                      className={`w-full grid ${STORE_COLS} items-center gap-2 px-3 py-3 text-left transition-colors ${
+                        ctx.activeStoreId === store.storeid && !ctx.sheetKey
+                          ? "bg-custom-white"
+                          : "hover:bg-gray-50"
+                      }`}
+                      style={
+                        ctx.activeStoreId === store.storeid && !ctx.sheetKey
+                          ? { boxShadow: "inset 0 0 8px rgba(37,99,235,0.22)" }
+                          : undefined
                       }
-                      className={`w-full grid ${STORE_COLS} items-center gap-2 px-3 py-3 text-left hover:bg-gray-50 transition-colors`}
                     >
                       <span className="text-[12px] font-medium text-content text-left truncate">
                         {store.label}

@@ -4,7 +4,13 @@ import type {
   SuggestedGroupRow,
   SuggestedParameters,
   SuggestedCoverage,
+  SuggestedNotSelling,
+  NotSellingStatus,
 } from "../interfaces";
+
+/** The three readings of one department. `order` is the buyer's, `production`
+ *  the manager's, `notSelling` the one that answers what is dying. */
+export type SuggestedTab = "order" | "production" | "notSelling";
 
 /** Which store x department the sheet is showing. `sub_department` is nullable
  *  because the payload's own department can be null — those rows are real and
@@ -26,8 +32,31 @@ interface SuggestedState {
 
   /** Group rollup: one row per store x sub department. Drives the left tree. */
   groupRows: SuggestedGroupRow[];
-  /** Item sheet for whichever department is selected. */
+  /**
+   * Item rows for the ACTIVE STORE — every department, not just the selected
+   * one.
+   *
+   * The endpoint has always returned the whole store; the page used to fetch it
+   * per department and throw ~70% away, refetching the identical payload on
+   * every department click. Holding the store means one call per store instead
+   * of one per department, and the store-wide views (Top to order, the exports)
+   * come out of a response already in hand.
+   */
   items: SuggestedItem[];
+  /** Which store's items are loaded. Distinct from `sheetKey`, which says which
+   *  department of it is being read — null there means the store overview. */
+  activeStoreId: number | null;
+  activeStoreLabel: string;
+
+  /** Items that stopped or slowed, for the active store. Own key, never merged
+   *  into `items` — a zero-demand row is not an order. */
+  notSelling: SuggestedNotSelling | null;
+  /** Which status the not-selling tab is showing. Opens on `declining`: dead and
+   *  stopped are already obvious, an item at half its old rate is not. */
+  notSellingStatus: NotSellingStatus;
+
+  /** Which lens the right panel is showing. */
+  activeTab: SuggestedTab;
 
   parameters: SuggestedParameters | null;
   coverage: SuggestedCoverage | null;
@@ -69,6 +98,11 @@ export const initialState: SuggestedState = {
 
   groupRows: [],
   items: [],
+  activeStoreId: null,
+  activeStoreLabel: "",
+  notSelling: null,
+  notSellingStatus: "declining",
+  activeTab: "order",
   parameters: null,
   coverage: null,
   requestedStoreIds: [],
@@ -118,6 +152,30 @@ export const suggestedSlice = createSlice({
       // next — the sheet would open showing one day of a different case.
       state.selectedDay = "";
     },
+    setActiveStore: (
+      state,
+      action: PayloadAction<{ storeid: number; label: string } | null>,
+    ) => {
+      state.activeStoreId = action.payload?.storeid ?? null;
+      state.activeStoreLabel = action.payload?.label ?? "";
+      // Switching store invalidates everything scoped to the old one. Leaving
+      // the sheet key behind would render one store's header over another's
+      // rows, which reads as real data.
+      state.sheetKey = null;
+      state.items = [];
+      state.notSelling = null;
+      state.selectedDay = "";
+      state.activeTab = "order";
+    },
+    setNotSelling: (state, action: PayloadAction<SuggestedNotSelling | null>) => {
+      state.notSelling = action.payload;
+    },
+    setNotSellingStatus: (state, action: PayloadAction<NotSellingStatus>) => {
+      state.notSellingStatus = action.payload;
+    },
+    setActiveTab: (state, action: PayloadAction<SuggestedTab>) => {
+      state.activeTab = action.payload;
+    },
     toggleExpandedStore: (state, action: PayloadAction<number>) => {
       const i = state.expandedStores.indexOf(action.payload);
       if (i === -1) state.expandedStores.push(action.payload);
@@ -159,6 +217,11 @@ export const suggestedSlice = createSlice({
       state.coverage = null;
       state.requestedStoreIds = [];
       state.sheetKey = null;
+      state.activeStoreId = null;
+      state.activeStoreLabel = "";
+      state.notSelling = null;
+      state.notSellingStatus = "declining";
+      state.activeTab = "order";
       state.expandedStores = [];
       state.selectedDay = "";
       state.storeSearch = "";
@@ -171,6 +234,10 @@ export const suggestedSlice = createSlice({
 });
 
 export const {
+  setActiveStore,
+  setNotSelling,
+  setNotSellingStatus,
+  setActiveTab,
   setLeadDays,
   setCoverDays,
   setLookbackWeeks,

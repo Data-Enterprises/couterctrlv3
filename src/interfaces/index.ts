@@ -1687,6 +1687,11 @@ export type ShrinkSource = "receipts" | "markdown" | "damage" | "none";
 /** One item on one store's order sheet. Every weight is POUNDS — this endpoint
  *  only answers for scale departments, so there is no qty anywhere in it. */
 export interface SuggestedItem {
+  /** The endpoint has always sent these on item rows; they only started
+   *  mattering once the sheet held more than one store's worth. */
+  storeid: number;
+  store_name: string | null;
+  store_number: string | null;
   product_code: string;
   product_description: string | null;
   sub_department: number | null;
@@ -1770,6 +1775,55 @@ export interface SuggestedGroupRow {
   dow_rates?: DowRates;
 }
 
+/** Why an item is on the not-selling list, worst-to-least-recoverable.
+ *
+ *  `declining` is the one that pays for the feature: dead and stopped are
+ *  visible to anyone paying attention, but an item still moving at half its old
+ *  rate is being produced to the OLD level and rotting the difference. */
+export type NotSellingStatus = "dead" | "stopped" | "declining";
+
+/** One item that has stopped or slowed. Rates are per day, because the two
+ *  halves of the lookback are different lengths and raw totals would call
+ *  everything declining. */
+export interface NotSellingItem {
+  storeid: number;
+  product_code: string;
+  product_description: string | null;
+  sub_department: number | null;
+  sub_department_description: string | null;
+  status: NotSellingStatus;
+  recent_weight: number;
+  prior_weight: number;
+  recent_lb_per_day: number;
+  prior_lb_per_day: number;
+  /** recent/prior - 1. Null when the item never sold in the prior half, which
+   *  is division by zero rather than a 0% change. */
+  change_ratio: number | null;
+}
+
+export interface NotSellingWindow {
+  start: string;
+  end: string;
+  days: number;
+}
+
+/**
+ * The other half of the question, under its own key.
+ *
+ * Never merged into `items`: a zero-demand row is not an order, and folding it
+ * in would move record_count, every department sum and the shrink coverage.
+ * Those are order figures.
+ *
+ * `counts` is over every department the call covered, not the selected one —
+ * a per-department badge has to be counted client-side from `items`.
+ */
+export interface SuggestedNotSelling {
+  window: { recent: NotSellingWindow; prior: NotSellingWindow };
+  decline_threshold: number;
+  counts: Record<NotSellingStatus, number>;
+  items: NotSellingItem[];
+}
+
 /** Echoed back so the page can state what the numbers were computed under. A
  *  suggestion without its window is meaningless. */
 export interface SuggestedParameters {
@@ -1816,6 +1870,8 @@ export interface SuggestedItemsResp {
   page: number;
   parameters: SuggestedParameters;
   data_coverage: SuggestedCoverage;
+  /** Present only when the request set `includeNotSelling`; null otherwise. */
+  not_selling: SuggestedNotSelling | null;
   items: SuggestedItem[];
 }
 
