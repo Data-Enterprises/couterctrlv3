@@ -278,7 +278,6 @@ const Suggested = () => {
                   ctx.sheetKey.sub_department,
                   ctx.upcFilter,
                   ctx.descFilter,
-                  ctx.onlyFlagged,
                 )
               : []
           }

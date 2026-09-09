@@ -5,7 +5,7 @@ import {
   setExportOpen,
   setUpcFilter,
   setDescFilter,
-  setOnlyFlagged,
+  setActionFilter,
   setSelectedDay,
   setActiveTab,
   type SuggestedTab,
@@ -24,6 +24,8 @@ import {
   shrinkTitle,
   suggestedAction,
   ACTION_TONE,
+  ACTION_TONE_FOR,
+  ACTION_ORDER,
 } from ".";
 import DayCardStrip, { type DayCardEntry } from "../../components/DayCardStrip";
 import TopToOrder from "./TopToOrder";
@@ -69,7 +71,6 @@ const OrderSheetPanel = () => {
   const { sort, handleSort, applySort } = useTriStateSort<SortCol>();
   const [draftUpc, setDraftUpc] = useState("");
   const [draftDesc, setDraftDesc] = useState("");
-  const [draftCapped, setDraftCapped] = useState(ctx.onlyFlagged);
   const [ctxMenu, setCtxMenu] = useState<{
     x: number;
     y: number;
@@ -113,17 +114,29 @@ const OrderSheetPanel = () => {
         ctx.sheetKey?.sub_department ?? null,
         ctx.upcFilter,
         ctx.descFilter,
-        false,
       ),
     [ctx.items, ctx.sheetKey, ctx.upcFilter, ctx.descFilter],
   );
 
-  /** Applied after the column filters, because whether a row has an action is
-   *  a property of the row rather than of any one column. */
-  const visible = useMemo(
-    () => (ctx.onlyFlagged ? filtered.filter((r) => actionFor(r) !== null) : filtered),
+  /** Counts drive the chip row, so they are taken before the chip filter is
+   *  applied — otherwise selecting one pile would zero every other chip. */
+  const actionCounts = useMemo(() => {
+    const c = {} as Record<string, number>;
+    for (const r of filtered) {
+      const a = actionFor(r);
+      if (a) c[a.key] = (c[a.key] ?? 0) + 1;
+    }
+    return c;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [filtered, ctx.onlyFlagged, nsByCode, recentDays],
+  }, [filtered, nsByCode, recentDays]);
+
+  const visible = useMemo(
+    () =>
+      ctx.actionFilter === "all"
+        ? filtered
+        : filtered.filter((r) => actionFor(r)?.key === ctx.actionFilter),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [filtered, ctx.actionFilter, nsByCode, recentDays],
   );
 
   /** The group row behind this department — the only source of the day-by-day
@@ -329,25 +342,6 @@ const OrderSheetPanel = () => {
 
           {tab === "order" && (
             <>
-              <div className="flex-shrink-0 px-3 pt-2 text-[12px] text-content/85 bg-gray-50 leading-snug">
-                Each card is what this department does on that{" "}
-                <span className="font-semibold text-content">weekday</span>,
-                averaged over the lookback — not a forecast for that date. The
-                four sum to Cover demand.
-              </div>
-              {/* Rising pounds are a heavier production day, not a worse one — the
-                  same reason Vendors turns the red/green round for sales. */}
-              <DayCardStrip
-                days={dayCards}
-                weekValue={`${fmtLb(totals.week)} lb`}
-                weekDelta={null}
-                selected={ctx.selectedDay}
-                onSelect={(iso) =>
-                  ctx.dispatch(setSelectedDay(iso === ctx.selectedDay ? "" : iso))
-                }
-                higherIsWorse={false}
-              />
-
               <KpiTileGrid
                 items={
                   [
@@ -371,6 +365,62 @@ const OrderSheetPanel = () => {
                 }
               />
 
+              <div className="flex-shrink-0 px-3 pt-2 text-[12px] text-content/85 bg-gray-50 leading-snug">
+                Each card is what this department does on that{" "}
+                <span className="font-semibold text-content">weekday</span>,
+                averaged over the lookback — not a forecast for that date. The
+                four sum to Cover demand.
+              </div>
+              {/* Rising pounds are a heavier production day, not a worse one — the
+                  same reason Vendors turns the red/green round for sales. */}
+              <DayCardStrip
+                days={dayCards}
+                weekValue={`${fmtLb(totals.week)} lb`}
+                weekDelta={null}
+                selected={ctx.selectedDay}
+                onSelect={(iso) =>
+                  ctx.dispatch(setSelectedDay(iso === ctx.selectedDay ? "" : iso))
+                }
+                higherIsWorse={false}
+              />
+
+
+
+              {/* Straight off Item Actions: a chip per pile with its count,
+                  filtering the sheet. Piles a reader can see are piles they
+                  work through; the same filter buried in a column popover was
+                  something nobody would ever find. */}
+              <div className="flex-shrink-0 flex items-center gap-1.5 flex-wrap px-3 py-2 border-b border-gray-100 bg-gray-50">
+                <button
+                  onClick={() => ctx.dispatch(setActionFilter("all"))}
+                  className={`text-[12px] font-semibold px-2.5 py-1 rounded-full transition-shadow ${
+                    ctx.actionFilter === "all"
+                      ? "bg-[#1e2a4a] text-custom-white"
+                      : "bg-custom-white text-content/85 border border-gray-200"
+                  }`}
+                >
+                  All <span className="tabular-nums">{filtered.length}</span>
+                </button>
+                {ACTION_ORDER.map((a) => {
+                  const n = actionCounts[a.key] ?? 0;
+                  if (n === 0) return null;
+                  const tone = ACTION_TONE[ACTION_TONE_FOR[a.key]];
+                  const on = ctx.actionFilter === a.key;
+                  return (
+                    <button
+                      key={a.key}
+                      onClick={() =>
+                        ctx.dispatch(setActionFilter(on ? "all" : a.key))
+                      }
+                      className={`text-[12px] font-semibold px-2.5 py-1 rounded-full transition-shadow ${tone.chip} ${
+                        on ? `ring-2 shadow-sm ${tone.ring}` : ""
+                      }`}
+                    >
+                      {a.label} <span className="tabular-nums">{n}</span>
+                    </button>
+                  );
+                })}
+              </div>
 
               <div className="flex-1 overflow-auto thin-scrollbar">
                 {rows.length === 0 ? (
@@ -381,22 +431,21 @@ const OrderSheetPanel = () => {
                   <table className="w-full border-collapse text-[13px]">
                     <thead>
                       <tr className="sticky top-0 bg-gray-100 border-b border-gray-100 z-10">
+                        {/* First, not appended to the product name. A reader
+                            scanning for what to do should not have to read a
+                            description to find out there is nothing. */}
+                        <th className={`${TH} text-left w-[116px]`}>Action</th>
                         <th
                           className={`${TH} text-left`}
                           style={{ overflow: "visible" }}
                         >
                           <ColFilter
                             label="Item"
-                            active={!!ctx.descFilter || ctx.onlyFlagged}
-                            onApply={() => {
-                              ctx.dispatch(setDescFilter(draftDesc));
-                              ctx.dispatch(setOnlyFlagged(draftCapped));
-                            }}
+                            active={!!ctx.descFilter}
+                            onApply={() => ctx.dispatch(setDescFilter(draftDesc))}
                             onClear={() => {
                               ctx.dispatch(setDescFilter(""));
-                              ctx.dispatch(setOnlyFlagged(false));
                               setDraftDesc("");
-                              setDraftCapped(false);
                             }}
                           >
                             <input
@@ -406,14 +455,6 @@ const OrderSheetPanel = () => {
                               value={draftDesc}
                               onChange={(e) => setDraftDesc(e.target.value)}
                             />
-                            <label className="flex items-center gap-2 mt-2 text-[12px] text-content cursor-pointer">
-                              <input
-                                type="checkbox"
-                                checked={draftCapped}
-                                onChange={(e) => setDraftCapped(e.target.checked)}
-                              />
-                              Only items needing attention
-                            </label>
                           </ColFilter>
                         </th>
                         <th
@@ -513,23 +554,22 @@ const OrderSheetPanel = () => {
                           }}
                           className="border-b border-[#1e2a4a]/15 even:bg-row_stripe hover:bg-gray-50 transition-colors cursor-pointer"
                         >
-                          <td className="px-3 py-2 text-content font-medium">
-                            {r.product_description ?? String(r.product_code)}
-                            {/* Under the name rather than in a column of its
-                                own: it is about this item, and an eighth
-                                column would push the figures off a laptop. */}
+                          <td className="px-3 py-2">
                             {(() => {
                               const a = actionFor(r);
                               if (!a) return null;
                               return (
                                 <span
-                                  className={`ml-2 inline-block px-1.5 py-0.5 rounded text-[11px] font-semibold align-middle ${ACTION_TONE[a.tone]}`}
+                                  className={`inline-block px-2 py-0.5 rounded text-[11px] font-semibold whitespace-nowrap ${ACTION_TONE[a.tone].chip}`}
                                   title={a.detail}
                                 >
                                   {a.label}
                                 </span>
                               );
                             })()}
+                          </td>
+                          <td className="px-3 py-2 text-content font-medium">
+                            {r.product_description ?? String(r.product_code)}
                           </td>
                           <td className="px-3 py-2 text-content/85 tabular-nums">
                             {r.product_code}
@@ -572,6 +612,7 @@ const OrderSheetPanel = () => {
                     </tbody>
                     <tfoot>
                       <tr className="sticky bottom-0 bg-gray-50 border-t-2 border-content/70 font-bold text-[14px]">
+                        <td className="px-3 py-2"></td>
                         <td className="px-3 py-2"></td>
                         <td className="px-3 py-2 text-right text-content/85">
                           Totals

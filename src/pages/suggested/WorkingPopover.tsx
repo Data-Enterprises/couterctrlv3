@@ -166,7 +166,7 @@ const WorkingPopover = ({
         <div className="px-3 py-2.5 border-t border-gray-200 bg-gray-50">
           <div className="flex items-center gap-2 mb-1.5">
             <span
-              className={`inline-block px-1.5 py-0.5 rounded text-[11px] font-semibold ${ACTION_TONE[action.tone]}`}
+              className={`inline-block px-1.5 py-0.5 rounded text-[11px] font-semibold ${ACTION_TONE[action.tone].chip}`}
             >
               {action.label}
             </span>

@@ -38,7 +38,7 @@ export const useSuggestedCtx = () => {
     nsUpcFilter,
     upcFilter,
     descFilter,
-    onlyFlagged,
+    actionFilter,
   } = useAppSelector((s) => s.suggested);
 
   return {
@@ -84,6 +84,6 @@ export const useSuggestedCtx = () => {
     nsUpcFilter,
     upcFilter,
     descFilter,
-    onlyFlagged,
+    actionFilter,
   };
 };

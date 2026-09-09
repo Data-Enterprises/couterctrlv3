@@ -1,4 +1,5 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import type { ActionKey } from "../pages/suggested";
 import type {
   SuggestedItem,
   SuggestedGroupRow,
@@ -123,9 +124,10 @@ interface SuggestedState {
    *  filters per column through ColFilter, the way Coupons and Item Actions do. */
   upcFilter: string;
   descFilter: string;
-  /** Was "only capped rows". Capped is now one of the seven actions, so the
-   *  filter widened with it: show only rows that have something to act on. */
-  onlyFlagged: boolean;
+  /** Which suggested action the sheet is filtered to. "all" is every row,
+   *  including the ones with nothing to act on. Replaces the old capped-only
+   *  toggle, which is now one of the seven actions. */
+  actionFilter: ActionKey | "all";
 }
 
 /** Local calendar date as `yyyy-mm-dd`. Built from the local getters rather
@@ -169,7 +171,7 @@ export const initialState: SuggestedState = {
   nsUpcFilter: "",
   upcFilter: "",
   descFilter: "",
-  onlyFlagged: false,
+  actionFilter: "all",
 };
 
 export const suggestedSlice = createSlice({
@@ -280,8 +282,8 @@ export const suggestedSlice = createSlice({
     setDescFilter: (state, action: PayloadAction<string>) => {
       state.descFilter = action.payload;
     },
-    setOnlyFlagged: (state, action: PayloadAction<boolean>) => {
-      state.onlyFlagged = action.payload;
+    setActionFilter: (state, action: PayloadAction<ActionKey | "all">) => {
+      state.actionFilter = action.payload;
     },
     /** Clears the results but keeps the order parameters — a buyer re-running
      *  for a different store is still ordering on the same rhythm. */
@@ -307,7 +309,7 @@ export const suggestedSlice = createSlice({
       state.nsUpcFilter = "";
       state.upcFilter = "";
       state.descFilter = "";
-      state.onlyFlagged = false;
+      state.actionFilter = "all";
     },
     resetSuggestedSlice: () => initialState,
   },
@@ -342,7 +344,7 @@ export const {
   setStoreSearch,
   setUpcFilter,
   setDescFilter,
-  setOnlyFlagged,
+  setActionFilter,
   resetSuggestedResults,
   resetSuggestedSlice,
 } = suggestedSlice.actions;

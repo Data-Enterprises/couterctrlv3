@@ -39,6 +39,9 @@ export interface SuggestedParams {
   /** The figures behind `shrink_multiplier`: lifetime sold, received, damaged
    *  and marked-down weight. */
   includeDiagnostics?: boolean;
+  /** Ordered against sold over the lookback, per item: the ratio, the gap in
+   *  pounds and a status band. */
+  includeOrders?: boolean;
   /** Items that are dead, stopped or declining, under their own `not_selling`
    *  key. Single store only — on a group this returns the set for every store
    *  at once, which is not a list anybody works from. */
@@ -108,6 +111,9 @@ const post = async (url: string, token: string, params: SuggestedParams) => {
       ...(params.includeDaily ? { includeDaily: true } : {}),
       ...(params.includeDiagnostics ? { includeDiagnostics: true } : {}),
       ...(params.includeNotSelling ? { includeNotSelling: true } : {}),
+      ...(params.includeOrders !== undefined
+        ? { includeOrders: params.includeOrders }
+        : {}),
       page: params.page ?? 1,
       pageSize: params.pageSize ?? 500,
     },
@@ -194,4 +200,8 @@ export const getSuggestedItems = async (
     // the descriptions on those rows are filled from the main result, which
     // only carries product codes at item grain.
     includeNotSelling: true,
+    // The endpoint already defaults this on, but the ordering actions are the
+    // reason half this sheet has anything to say — leaving them to a default
+    // means a server-side change to it silently empties the column.
+    includeOrders: true,
   });

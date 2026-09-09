@@ -278,13 +278,11 @@ export const sheetRows = (
   subDepartment: number | null,
   upcFilter: string,
   descFilter: string,
-  onlyFlagged: boolean,
 ): SuggestedItem[] => {
   const upc = upcFilter.trim().toLowerCase();
   const desc = descFilter.trim().toLowerCase();
   return items.filter((i) => {
     if (i.sub_department !== subDepartment) return false;
-    if (onlyFlagged && !i.shrink_clamped) return false;
     if (upc && !String(i.product_code).toLowerCase().includes(upc)) return false;
     if (desc && !(i.product_description ?? "").toLowerCase().includes(desc))
       return false;
@@ -386,7 +384,7 @@ export const suggestedAction = (
     const lost = lostLb(ns, recentDays);
     return {
       key: "slowing",
-      label: ns.status === "stopped" ? "Stopped selling" : "Slowing down",
+      label: ns.status === "stopped" ? "Stopped selling" : "Selling less",
       tone: ns.status === "stopped" ? "critical" : "watch",
       affectsOrder: true,
       detail:
@@ -428,7 +426,7 @@ export const suggestedAction = (
   if (item.order_status === "watch") {
     return {
       key: "watchOrdering",
-      label: "Watch ordering",
+      label: "Ordering high",
       tone: "watch",
       affectsOrder: false,
       detail: `Bought ${(item.order_ratio ?? 0).toFixed(2)}x what sold this quarter — ${fmtLb(item.order_gap_weight ?? 0)} lb more than went out. Not alarming on its own, but worth knowing which way it is drifting.`,
@@ -439,7 +437,7 @@ export const suggestedAction = (
   if (item.shrink_source === "none") {
     return {
       key: "runsLow",
-      label: "Runs low",
+      label: "May run short",
       tone: "neutral",
       affectsOrder: true,
       detail:
@@ -450,9 +448,51 @@ export const suggestedAction = (
   return null;
 };
 
-/** Chip colours, from the severity tokens the rest of the page uses. */
-export const ACTION_TONE: Record<SuggestedAction["tone"], string> = {
-  critical: "bg-severity_critical_bg text-severity_critical_text",
-  watch: "bg-severity_watch_bg text-severity_watch_text",
-  neutral: "bg-gray-200 text-content/85",
+/**
+ * How each tone looks, following Item Actions' `actionTone.ts`: chip fill and
+ * its selected ring in one place, so the chip row and the row's own chip cannot
+ * disagree about what "over-ordering" looks like.
+ *
+ * The chip carries the colour and the row stays neutral — the same call that
+ * page made, for the same reason. Tinting rows by action turns a 380-row sheet
+ * into a rainbow and destroys the one thing a sheet is good at.
+ */
+export const ACTION_TONE: Record<
+  SuggestedAction["tone"],
+  { chip: string; ring: string }
+> = {
+  critical: {
+    chip: "bg-severity_critical_bg text-severity_critical_text",
+    ring: "ring-severity_critical_text/40",
+  },
+  watch: {
+    chip: "bg-severity_watch_bg text-severity_watch_text",
+    ring: "ring-severity_watch_text/40",
+  },
+  neutral: { chip: "bg-gray-100 text-content/85", ring: "ring-content/30" },
 };
+
+/** The tone each action wears, so the chip row can colour itself without
+ *  building a row to ask. */
+export const ACTION_TONE_FOR: Record<ActionKey, SuggestedAction["tone"]> = {
+  codes: "critical",
+  slowing: "critical",
+  over: "critical",
+  under: "watch",
+  unlogged: "watch",
+  watchOrdering: "watch",
+  runsLow: "neutral",
+};
+
+
+/** Chip-row order: worst first, matching the order `suggestedAction` resolves
+ *  in, so the rows a chip filters to are the rows that were showing it. */
+export const ACTION_ORDER: { key: ActionKey; label: string }[] = [
+  { key: "codes", label: "Check item codes" },
+  { key: "slowing", label: "Selling less" },
+  { key: "over", label: "Over-ordering" },
+  { key: "under", label: "Under-ordering" },
+  { key: "unlogged", label: "No waste logged" },
+  { key: "watchOrdering", label: "Ordering high" },
+  { key: "runsLow", label: "May run short" },
+];
