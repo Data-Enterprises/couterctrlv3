@@ -97,10 +97,14 @@ const CoverageStrip = ({ coverage }: Props) => {
             </span>
           );
         })}
+        {/* Says what the buyer has to DO about it, not what the model lacks.
+            "No on-hand, not a stock balance" is inventory vocabulary describing
+            an absent input; the person reading it needs to know the number is
+            what will sell, and that netting off the case is still their job. */}
         <span className="ml-auto">
           {coverage.on_hand
-            ? "on-hand applied"
-            : "no on-hand — a forecast of what will sell, not a stock balance"}
+            ? "stock on hand is already subtracted"
+            : "pounds that will sell — subtract what is already in your case"}
         </span>
       </div>
     </div>
