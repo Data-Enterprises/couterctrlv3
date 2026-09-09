@@ -1651,3 +1651,182 @@ export interface ReceiverItemSearchResponse {
   include_all_lines?: boolean;
   receivers: ReceiverItemSearchReceiver[];
 }
+
+////////////////////////////
+// Suggested Order Interfaces
+///////////////////////////
+
+/**
+ * Average pounds sold on each day of the week, keyed "0".."6" with **0 =
+ * Sunday** — Postgres' `extract(dow)` convention, not JavaScript's, though the
+ * two happen to agree. All seven keys are always present; a day the item never
+ * sells is a `0`, not a missing key, so a strip built from this never has gaps.
+ *
+ * At item grain these are that item's rates; at store grain the department's
+ * items summed. Each is the weekday's pounds divided by how many times that
+ * weekday occurred in the lookback, so the seven sum to
+ * `avg_daily_weight * 7` exactly.
+ */
+export type DowRates = Record<string, number>;
+
+/**
+ * What the shrink adjustment on a row was built from, best signal first.
+ *
+ * `receipts` is the good one and arrives with EDI. `markdown` is the best
+ * available today — recorded waste out of `public.markdowns`, and where meat's
+ * loss actually lives. `damage` is narrower and almost entirely a subset of
+ * markdown, so it only applies where markdown found nothing. `none` is a pure
+ * demand figure.
+ *
+ * These are exclusive, not additive: markdown REPLACES damage rather than
+ * stacking, because the two overlap ~94% and stacking would double-count on
+ * exactly the most heavily wasted items.
+ */
+export type ShrinkSource = "receipts" | "markdown" | "damage" | "none";
+
+/** One item on one store's order sheet. Every weight is POUNDS — this endpoint
+ *  only answers for scale departments, so there is no qty anywhere in it. */
+export interface SuggestedItem {
+  product_code: string;
+  product_description: string | null;
+  sub_department: number | null;
+  sub_department_description: string | null;
+  /** Pounds sold across the whole lookback, not the cover window. */
+  sold_weight_window: number;
+  /** Pounds the cover window is forecast to sell, by weekday. */
+  demand_weight: number;
+  shrink_source: ShrinkSource;
+  shrink_multiplier: number;
+  /** True when the raw shrink rate blew past its clamp — a keying problem
+   *  rather than heavy waste, and not the same thing as a big multiplier. */
+  shrink_clamped: boolean;
+  /** The figures BEHIND `shrink_multiplier`. Present only when the request
+   *  sets `includeDiagnostics` — they exist to audit a multiplier ("why is
+   *  this item 1.31?"), which is a pgAdmin question, not a manager's screen.
+   *  This page does not ask for them. */
+  lifetime_damaged?: number;
+  lifetime_markdown?: number;
+  lifetime_received?: number;
+  lifetime_sold?: number;
+  on_order_weight?: number;
+  /** demand x shrink - on_order, floored at 0. The number the buyer acts on. */
+  suggested_weight: number;
+  avg_daily_weight: number;
+  /** Normalised by `api/suggested`. Optional because a row whose profile is
+   *  missing or malformed arrives here absent, and callers must treat that as
+   *  "no profile", never as seven zeros. */
+  dow_rates?: DowRates;
+}
+
+/**
+ * One day's actual pounds for a store x sub department.
+ *
+ * The backward-looking half of the page. `dow_rates` answers "what does a
+ * Friday normally look like"; this answers "what did we actually move last
+ * Friday", and they are different numbers — the first is an average over the
+ * lookback, the second is one observation.
+ */
+export interface SuggestedDailyPoint {
+  /** yyyy-mm-dd. */
+  date: string;
+  weight: number;
+  /** Distinct products that sold weight that day. */
+  items: number;
+}
+
+/** One store x sub department in the group rollup. Carries counts rather than
+ *  the items themselves; the sheet is a separate call. */
+export interface SuggestedGroupRow {
+  storeid: number;
+  store_name: string | null;
+  store_number: string | null;
+  sub_department: number | null;
+  sub_department_description: string | null;
+  item_count: number;
+  sold_weight_window: number;
+  demand_weight: number;
+  suggested_weight: number;
+  items_receipts: number;
+  items_markdown: number;
+  items_damage: number;
+  items_none: number;
+  items_clamped: number;
+  avg_daily_weight: number;
+  /**
+   * Actual pounds per date, present only when the request sets `includeDaily`.
+   *
+   * Requested at STORE grain only. The endpoint keys the series on
+   * (store, sub_department) at both grains, so asking for it on the item call
+   * would attach an identical copy of the same series to every item row in the
+   * department — up to 500 duplicates a page of what is one series.
+   */
+  daily?: SuggestedDailyPoint[];
+  /** Mean of the days that actually have sales — NOT the window mean, which is
+   *  diluted by days the department was shut. Ships with `daily`. */
+  daily_avg?: number;
+  /** Normalised by `api/suggested`. Optional because a row whose profile is
+   *  missing or malformed arrives here absent, and callers must treat that as
+   *  "no profile", never as seven zeros. */
+  dow_rates?: DowRates;
+}
+
+/** Echoed back so the page can state what the numbers were computed under. A
+ *  suggestion without its window is meaningless. */
+export interface SuggestedParameters {
+  storeid?: number;
+  storeids?: number[];
+  group_by?: string;
+  as_of: string;
+  lead_days: number;
+  cover_days: number;
+  cover_window: { start: string; end: string };
+  lookback_window: { start: string; end: string; weeks: number; days: number };
+  min_weight_sold: number;
+}
+
+/**
+ * Which terms of the model actually had data behind them.
+ *
+ * Not decoration: with `on_hand` and `receipts` false, `suggested_weight` is a
+ * demand forecast with a waste adjustment, NOT an order quantity — it does not
+ * subtract what is already in the case. The page has to say so.
+ */
+export interface SuggestedCoverage {
+  demand: boolean;
+  receipts: boolean;
+  markdown: boolean;
+  damage: boolean;
+  on_hand: boolean;
+  on_order: boolean;
+  items_by_shrink_source: {
+    receipts: number;
+    markdown: number;
+    damage: number;
+    none: number;
+  };
+  note: string;
+}
+
+export interface SuggestedItemsResp {
+  error: number;
+  success: boolean;
+  msg?: string;
+  record_count: number;
+  total_pages: number;
+  page: number;
+  parameters: SuggestedParameters;
+  data_coverage: SuggestedCoverage;
+  items: SuggestedItem[];
+}
+
+export interface SuggestedGroupResp {
+  error: number;
+  success: boolean;
+  msg?: string;
+  record_count: number;
+  total_pages: number;
+  page: number;
+  parameters: SuggestedParameters;
+  data_coverage: SuggestedCoverage;
+  items: SuggestedGroupRow[];
+}
