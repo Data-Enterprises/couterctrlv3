@@ -123,6 +123,8 @@ interface SuggestedState {
    *  filters per column through ColFilter, the way Coupons and Item Actions do. */
   upcFilter: string;
   descFilter: string;
+  /** Was "only capped rows". Capped is now one of the seven actions, so the
+   *  filter widened with it: show only rows that have something to act on. */
   onlyFlagged: boolean;
 }
 

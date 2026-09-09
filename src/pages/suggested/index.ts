@@ -322,3 +322,137 @@ export const coverBreakdown = (
     label: dayLabel(iso),
     lb: rateForDate(rates, iso),
   }));
+
+
+/* ── suggested actions ────────────────────────────────────────────────────── */
+
+export type ActionKey =
+  | "codes"
+  | "slowing"
+  | "over"
+  | "under"
+  | "unlogged"
+  | "watchOrdering"
+  | "runsLow";
+
+export interface SuggestedAction {
+  key: ActionKey;
+  /** Chip text. Short enough to sit under a product name. */
+  label: string;
+  tone: "critical" | "watch" | "neutral";
+  /**
+   * Whether this bears on the pounds on screen or on the item's history.
+   *
+   * The load-bearing distinction on this page. `order_status` looks BACKWARD at
+   * a whole quarter of ordering; `suggested_weight` looks FORWARD at four days.
+   * They disagree on the same item without either being wrong, so an action
+   * built from the backward figure must never read as "change this number" —
+   * a buyer who sees "over-ordering" beside 313 lb and reduces it has been
+   * misled by the UI, not by the data.
+   */
+  affectsOrder: boolean;
+  detail: string;
+}
+
+/**
+ * One action per row, worst first.
+ *
+ * Deliberately at most one. Several of these fire together on the same item —
+ * a clamped rate usually means no usable waste figure either — and a stack of
+ * chips under a product name is a wall, not advice. The popover carries the
+ * full reasoning; the chip carries the one thing worth acting on.
+ */
+export const suggestedAction = (
+  item: SuggestedItem,
+  ns?: NotSellingItem,
+  recentDays = 0,
+): SuggestedAction | null => {
+  // A capped rate means the number itself is not trustworthy, which outranks
+  // anything the number would otherwise tell you.
+  if (item.shrink_clamped) {
+    return {
+      key: "codes",
+      label: "Check item codes",
+      tone: "critical",
+      affectsOrder: true,
+      detail:
+        "This item records more waste than it ever sold, so the adjustment was capped. That is almost always the item being received under one code and sold under another rather than heavy waste — worth passing to whoever sets items up.",
+    };
+  }
+
+  // The one class that genuinely changes what to buy: the forecast is built on
+  // twelve weeks, and this item is no longer selling the way those weeks did.
+  if (ns && (ns.status === "declining" || ns.status === "stopped")) {
+    const lost = lostLb(ns, recentDays);
+    return {
+      key: "slowing",
+      label: ns.status === "stopped" ? "Stopped selling" : "Slowing down",
+      tone: ns.status === "stopped" ? "critical" : "watch",
+      affectsOrder: true,
+      detail:
+        ns.status === "stopped"
+          ? `Sold ${fmtLb(ns.prior_lb_per_day)} lb a day earlier in the window and nothing at all in the last ${recentDays} days. The suggestion is built on twelve weeks, so it is still buying for an item that has stopped — about ${fmtLb(lost)} lb of it.`
+          : `Down to ${fmtLb(ns.recent_lb_per_day)} lb a day from ${fmtLb(ns.prior_lb_per_day)}. The suggestion averages twelve weeks, so it is running ahead of where this item is now — roughly ${fmtLb(lost)} lb over the recent window.`,
+    };
+  }
+
+  // Everything below is about the ORDERING PATTERN, not this order.
+  if (item.order_status === "critical") {
+    return {
+      key: "over",
+      label: "Over-ordering",
+      tone: "critical",
+      affectsOrder: false,
+      detail: `Bought ${(item.order_ratio ?? 0).toFixed(2)}x what sold this quarter — ${fmtLb(item.order_gap_weight ?? 0)} lb more than went out. That gap is shrink. Is it being recorded?`,
+    };
+  }
+  if (item.order_status === "under") {
+    return {
+      key: "under",
+      label: "Under-ordering",
+      tone: "watch",
+      affectsOrder: false,
+      detail: `Sold more than was bought over the window — ${fmtLb(Math.abs(item.order_gap_weight ?? 0))} lb more. Either stock is being run down, or deliveries are arriving without being recorded.`,
+    };
+  }
+  if (item.shrink_unrecorded) {
+    return {
+      key: "unlogged",
+      label: "No waste logged",
+      tone: "watch",
+      affectsOrder: false,
+      detail:
+        "Ordered and sold match almost exactly, and nothing has ever been recorded as damaged or marked down. Two separate readings both saying nothing was lost, on product sold by the pound — that is usually a gap in the recording rather than a clean run.",
+    };
+  }
+  if (item.order_status === "watch") {
+    return {
+      key: "watchOrdering",
+      label: "Watch ordering",
+      tone: "watch",
+      affectsOrder: false,
+      detail: `Bought ${(item.order_ratio ?? 0).toFixed(2)}x what sold this quarter — ${fmtLb(item.order_gap_weight ?? 0)} lb more than went out. Not alarming on its own, but worth knowing which way it is drifting.`,
+    };
+  }
+
+  // Weakest signal, and the only one that says the number is too LOW.
+  if (item.shrink_source === "none") {
+    return {
+      key: "runsLow",
+      label: "Runs low",
+      tone: "neutral",
+      affectsOrder: true,
+      detail:
+        "No waste has ever been recorded for this item, so its figure is demand only — what customers bought, with nothing added for what never reached them. It will tend to come up short.",
+    };
+  }
+
+  return null;
+};
+
+/** Chip colours, from the severity tokens the rest of the page uses. */
+export const ACTION_TONE: Record<SuggestedAction["tone"], string> = {
+  critical: "bg-severity_critical_bg text-severity_critical_text",
+  watch: "bg-severity_watch_bg text-severity_watch_text",
+  neutral: "bg-gray-200 text-content/85",
+};

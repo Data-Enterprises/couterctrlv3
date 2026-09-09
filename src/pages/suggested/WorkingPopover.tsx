@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { XMarkIcon } from "@heroicons/react/16/solid";
-import { coverBreakdown, fmtLb, shrinkLabel } from ".";
+import { coverBreakdown, fmtLb, shrinkLabel, ACTION_TONE } from ".";
+import type { SuggestedAction } from ".";
 import type { DowRates, SuggestedItem } from "../../interfaces";
 
 /**
@@ -25,6 +26,8 @@ interface Props {
    *  these days rather than whatever is in the form right now. */
   leadDays: number;
   coverDays: number;
+  /** The row's one suggested action, if it has one. */
+  action: SuggestedAction | null;
   onClose: () => void;
 }
 
@@ -62,6 +65,7 @@ const WorkingPopover = ({
   coverWindow,
   leadDays,
   coverDays,
+  action,
   onClose,
 }: Props) => {
   const ref = useRef<HTMLDivElement>(null);
@@ -158,10 +162,30 @@ const WorkingPopover = ({
         <Row k="Order" v={`${fmtLb(item.suggested_weight)} lb`} strong />
       </div>
 
+      {action && (
+        <div className="px-3 py-2.5 border-t border-gray-200 bg-gray-50">
+          <div className="flex items-center gap-2 mb-1.5">
+            <span
+              className={`inline-block px-1.5 py-0.5 rounded text-[11px] font-semibold ${ACTION_TONE[action.tone]}`}
+            >
+              {action.label}
+            </span>
+            {/* Says which kind of advice this is. Without it "over-ordering"
+                next to a figure of 313 lb reads as "buy less than 313", which
+                is the one thing it does not mean. */}
+            <span className="text-[11px] text-content/85">
+              {action.affectsOrder
+                ? "affects this order"
+                : "about this item's history"}
+            </span>
+          </div>
+          <p className="text-[11px] leading-snug text-content">{action.detail}</p>
+        </div>
+      )}
+
       <div className="px-3 py-2 border-t border-gray-100 text-[11px] leading-snug text-content/85">
-        {item.shrink_clamped
-          ? "This item's waste rate hit its limit and was capped — that is usually an item received under one code and sold under another, not heavy waste."
-          : "A forecast of what will sell, with waste added. It does not subtract what is already in the case."}
+        A forecast of what will sell, with waste added. It does not subtract
+        what is already in the case.
       </div>
     </div>
   );

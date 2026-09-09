@@ -22,9 +22,10 @@ import {
   sheetRows,
   shrinkLabel,
   shrinkTitle,
+  suggestedAction,
+  ACTION_TONE,
 } from ".";
 import DayCardStrip, { type DayCardEntry } from "../../components/DayCardStrip";
-import CoverageStrip from "./CoverageStrip";
 import TopToOrder from "./TopToOrder";
 import ProductionTab from "./ProductionTab";
 import NotSellingTab from "./NotSellingTab";
@@ -36,7 +37,11 @@ import { SheetSkeleton } from "./Skeletons";
 import KpiTileGrid, { type KpiCell } from "../../components/KpiTileGrid";
 import UpcContextMenu from "../../components/UpcContextMenu";
 import WorkingPopover from "./WorkingPopover";
-import type { DowRates, SuggestedItem } from "../../interfaces";
+import type {
+  DowRates,
+  NotSellingItem,
+  SuggestedItem,
+} from "../../interfaces";
 
 const TH =
   "px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/85";
@@ -51,7 +56,7 @@ const TH =
 const SORT_TH =
   "w-full justify-end text-[10px] font-semibold uppercase tracking-wide text-content/85 hover:text-content";
 
-type SortCol = "daily" | "demand" | "markdown" | "order";
+type SortCol = "daily" | "demand" | "waste" | "markdown" | "order";
 
 const TABS: { key: SuggestedTab; label: string }[] = [
   { key: "order", label: "Order" },
@@ -78,6 +83,23 @@ const OrderSheetPanel = () => {
   } | null>(null);
 
   /**
+   * The not-selling verdicts, by product code.
+   *
+   * The only action that changes what to BUY comes from here — a twelve-week
+   * forecast for an item that stopped four weeks ago is buying for a shelf
+   * nobody is emptying.
+   */
+  const nsByCode = useMemo(() => {
+    const m = new Map<string, NotSellingItem>();
+    for (const r of ctx.notSelling?.items ?? []) m.set(String(r.product_code), r);
+    return m;
+  }, [ctx.notSelling]);
+  const recentDays = ctx.notSelling?.window.recent.days ?? 0;
+
+  const actionFor = (r: SuggestedItem) =>
+    suggestedAction(r, nsByCode.get(String(r.product_code)), recentDays);
+
+  /**
    * The department, out of the store's rows.
    *
    * `items` holds every department now, so the sheet filters to the selected one
@@ -91,9 +113,17 @@ const OrderSheetPanel = () => {
         ctx.sheetKey?.sub_department ?? null,
         ctx.upcFilter,
         ctx.descFilter,
-        ctx.onlyFlagged,
+        false,
       ),
-    [ctx.items, ctx.sheetKey, ctx.upcFilter, ctx.descFilter, ctx.onlyFlagged],
+    [ctx.items, ctx.sheetKey, ctx.upcFilter, ctx.descFilter],
+  );
+
+  /** Applied after the column filters, because whether a row has an action is
+   *  a property of the row rather than of any one column. */
+  const visible = useMemo(
+    () => (ctx.onlyFlagged ? filtered.filter((r) => actionFor(r) !== null) : filtered),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [filtered, ctx.onlyFlagged, nsByCode, recentDays],
   );
 
   /** The group row behind this department — the only source of the day-by-day
@@ -119,12 +149,14 @@ const OrderSheetPanel = () => {
   // Default order is heaviest first, which is how the endpoint returns it and
   // how a buyer reads it. Sorting is a lens over that, not a new permanent
   // order — the tri-state hook is what gives the default back.
-  const rows = applySort<SuggestedItem>(filtered, (r, col) =>
+  const rows = applySort<SuggestedItem>(visible, (r, col) =>
     col === "daily"
       ? (r.avg_daily_weight ?? null)
       : col === "demand"
         ? demandFor(r)
-        : col === "markdown"
+        : col === "waste"
+          ? (r.shrink_multiplier ?? null)
+          : col === "markdown"
           ? (r.lifetime_markdown ?? null)
           : (r.suggested_weight ?? null),
   );
@@ -133,12 +165,12 @@ const OrderSheetPanel = () => {
     const order = rows.reduce((s, r) => s + (r.suggested_weight ?? 0), 0);
     const demand = rows.reduce((s, r) => s + demandFor(r), 0);
     const daily = rows.reduce((s, r) => s + (r.avg_daily_weight ?? 0), 0);
-    const capped = rows.filter((r) => r.shrink_clamped).length;
+    const actionable = rows.filter((r) => actionFor(r) !== null).length;
     // Never day-scoped. `demand` follows the selected day by design, so reusing
     // it for the All Week card would have made that card show one day's pounds
     // under the label "All Week".
     const week = rows.reduce((s, r) => s + (r.demand_weight ?? 0), 0);
-    return { order, demand, daily, capped, week };
+    return { order, demand, daily, actionable, week };
   }, [rows]);
 
   /**
@@ -331,12 +363,23 @@ const OrderSheetPanel = () => {
                     },
                     { label: "Avg / day", value: `${fmtLb(totals.daily)} lb` },
                     { label: "Items", value: rows.length.toLocaleString() },
-                    { label: "Capped", value: totals.capped.toLocaleString() },
+                    {
+                      label: "Needs attention",
+                      value: totals.actionable.toLocaleString(),
+                    },
                   ] satisfies KpiCell[]
                 }
               />
 
-              <CoverageStrip coverage={ctx.coverage} />
+              {/* The stacked waste bar that used to sit here said, store-wide,
+                  how many items had a markdown rate. Every one of those counts
+                  is now a per-row action on the item it belongs to, which is
+                  both more specific and harder to misread. The one line worth
+                  keeping is the caveat, because nothing else on screen says
+                  the number is not an order. */}
+              <div className="flex-shrink-0 px-3 py-1.5 border-b border-gray-100 bg-custom-white text-[12px] text-content/85">
+                Pounds that will sell — subtract what is already in your case.
+              </div>
 
               <div className="flex-1 overflow-auto thin-scrollbar">
                 {rows.length === 0 ? (
@@ -353,11 +396,16 @@ const OrderSheetPanel = () => {
                         >
                           <ColFilter
                             label="Item"
-                            active={!!ctx.descFilter}
-                            onApply={() => ctx.dispatch(setDescFilter(draftDesc))}
+                            active={!!ctx.descFilter || ctx.onlyFlagged}
+                            onApply={() => {
+                              ctx.dispatch(setDescFilter(draftDesc));
+                              ctx.dispatch(setOnlyFlagged(draftCapped));
+                            }}
                             onClear={() => {
                               ctx.dispatch(setDescFilter(""));
+                              ctx.dispatch(setOnlyFlagged(false));
                               setDraftDesc("");
+                              setDraftCapped(false);
                             }}
                           >
                             <input
@@ -367,6 +415,14 @@ const OrderSheetPanel = () => {
                               value={draftDesc}
                               onChange={(e) => setDraftDesc(e.target.value)}
                             />
+                            <label className="flex items-center gap-2 mt-2 text-[12px] text-content cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={draftCapped}
+                                onChange={(e) => setDraftCapped(e.target.checked)}
+                              />
+                              Only items needing attention
+                            </label>
                           </ColFilter>
                         </th>
                         <th
@@ -413,36 +469,17 @@ const OrderSheetPanel = () => {
                             className={SORT_TH}
                           />
                         </th>
-                        {/* A ColFilter rather than a bare toggle, so every
-                            heading on this page is either a filter or a sort
-                            and none of them is a one-off. */}
                         <th
-                          className={`${TH} text-right`}
-                          style={{ overflow: "visible" }}
+                          className={`${TH} text-right whitespace-nowrap`}
                           title="The percentage added to the order to cover product that will not sell — for every 100 lb sold, this much gets thrown away."
                         >
-                          <div className="flex justify-end">
-                            <ColFilter
-                              label="Waste %"
-                              active={ctx.onlyFlagged}
-                              onApply={() =>
-                                ctx.dispatch(setOnlyFlagged(draftCapped))
-                              }
-                              onClear={() => {
-                                ctx.dispatch(setOnlyFlagged(false));
-                                setDraftCapped(false);
-                              }}
-                            >
-                              <label className="flex items-center gap-2 text-[12px] text-content cursor-pointer">
-                                <input
-                                  type="checkbox"
-                                  checked={draftCapped}
-                                  onChange={(e) => setDraftCapped(e.target.checked)}
-                                />
-                                Only capped rows
-                              </label>
-                            </ColFilter>
-                          </div>
+                          <SortHeader
+                            col="waste"
+                            label="Waste %"
+                            sort={sort}
+                            onSort={handleSort}
+                            className={SORT_TH}
+                          />
                         </th>
                         <th
                           className={`${TH} text-right whitespace-nowrap`}
@@ -487,6 +524,21 @@ const OrderSheetPanel = () => {
                         >
                           <td className="px-3 py-2 text-content font-medium">
                             {r.product_description ?? String(r.product_code)}
+                            {/* Under the name rather than in a column of its
+                                own: it is about this item, and an eighth
+                                column would push the figures off a laptop. */}
+                            {(() => {
+                              const a = actionFor(r);
+                              if (!a) return null;
+                              return (
+                                <span
+                                  className={`ml-2 inline-block px-1.5 py-0.5 rounded text-[11px] font-semibold align-middle ${ACTION_TONE[a.tone]}`}
+                                  title={a.detail}
+                                >
+                                  {a.label}
+                                </span>
+                              );
+                            })()}
                           </td>
                           <td className="px-3 py-2 text-content/85 tabular-nums">
                             {r.product_code}
@@ -580,6 +632,7 @@ const OrderSheetPanel = () => {
           coverWindow={ctx.parameters?.cover_window ?? null}
           leadDays={ctx.parameters?.lead_days ?? ctx.leadDays}
           coverDays={ctx.parameters?.cover_days ?? ctx.coverDays}
+          action={actionFor(working.item)}
           onClose={() => setWorking(null)}
         />
       )}
