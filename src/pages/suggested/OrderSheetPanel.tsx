@@ -35,6 +35,7 @@ import { useTriStateSort } from "../../utils/useTriStateSort";
 import { SheetSkeleton } from "./Skeletons";
 import KpiTileGrid, { type KpiCell } from "../../components/KpiTileGrid";
 import UpcContextMenu from "../../components/UpcContextMenu";
+import WorkingPopover from "./WorkingPopover";
 import type { DowRates, SuggestedItem } from "../../interfaces";
 
 const TH =
@@ -68,6 +69,12 @@ const OrderSheetPanel = () => {
     x: number;
     y: number;
     upc: string;
+  } | null>(null);
+  /** Which row is showing its working, and where the click was. */
+  const [working, setWorking] = useState<{
+    x: number;
+    y: number;
+    item: SuggestedItem;
   } | null>(null);
 
   /**
@@ -464,6 +471,10 @@ const OrderSheetPanel = () => {
                       {rows.map((r) => (
                         <tr
                           key={r.product_code}
+                          title="Show how this number was worked out"
+                          onClick={(e) =>
+                            setWorking({ x: e.clientX, y: e.clientY, item: r })
+                          }
                           onContextMenu={(e) => {
                             e.preventDefault();
                             setCtxMenu({
@@ -472,7 +483,7 @@ const OrderSheetPanel = () => {
                               upc: String(r.product_code),
                             });
                           }}
-                          className="border-b border-[#1e2a4a]/15 even:bg-row_stripe hover:bg-gray-50 transition-colors"
+                          className="border-b border-[#1e2a4a]/15 even:bg-row_stripe hover:bg-gray-50 transition-colors cursor-pointer"
                         >
                           <td className="px-3 py-2 text-content font-medium">
                             {r.product_description ?? String(r.product_code)}
@@ -559,6 +570,18 @@ const OrderSheetPanel = () => {
             />
           )}
         </>
+      )}
+
+      {working && (
+        <WorkingPopover
+          x={working.x}
+          y={working.y}
+          item={working.item}
+          coverWindow={ctx.parameters?.cover_window ?? null}
+          leadDays={ctx.parameters?.lead_days ?? ctx.leadDays}
+          coverDays={ctx.parameters?.cover_days ?? ctx.coverDays}
+          onClose={() => setWorking(null)}
+        />
       )}
 
       {ctxMenu && (

@@ -154,6 +154,59 @@ const DayBars = () => (
   </div>
 );
 
+/**
+ * The model as one line, then its terms.
+ *
+ * Everything else in this document is prose about the formula; without the
+ * formula itself a reader has to assemble it from twelve answers. It is the
+ * endpoint's own expression, not a paraphrase:
+ *
+ *     suggested_weight = demand(cover window, by weekday) x shrink - on_order
+ */
+const Formula = () => (
+  <div className="rounded-lg border border-gray-200 bg-gray-50 overflow-hidden">
+    <div className="px-3.5 py-3 border-b border-gray-200 bg-custom-white">
+      <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-[15px] tabular-nums">
+        <span className="font-bold text-[#1e2a4a]">Suggested weight</span>
+        <span className="text-content/85">=</span>
+        <span className="font-semibold text-content">demand</span>
+        <span className="text-content/85">&times;</span>
+        <span className="font-semibold text-content">waste</span>
+        <span className="text-content/85">&minus;</span>
+        <span className="font-semibold text-content">already on order</span>
+      </div>
+    </div>
+    <dl className="m-0 divide-y divide-gray-200">
+      {[
+        {
+          t: "demand",
+          d: "This item's rate for each weekday the delivery covers, added up. A four-day order over a weekend adds four weekend rates, not four average days.",
+        },
+        {
+          t: "weekday rate",
+          d: "Pounds this item sold on that weekday across the lookback, divided by how many times that weekday came round in it — twelve Fridays, not the number of Fridays it happened to sell on.",
+        },
+        {
+          t: "waste",
+          d: "1 plus that item's own recorded waste rate. 1.00 where there is no record, and capped where the raw rate exceeds what waste can plausibly be.",
+        },
+        {
+          t: "already on order",
+          d: "Outstanding orders, subtracted so a delivery already coming is not bought twice. Zero until the vendor delivery feed is connected.",
+        },
+      ].map((r) => (
+        <div key={r.t} className="grid grid-cols-[8.5rem_1fr] gap-4 px-3.5 py-2.5">
+          <dt className="m-0 text-[14px] font-bold text-[#1e2a4a]">{r.t}</dt>
+          <dd className="m-0 text-[14px] leading-[1.6] text-content">{r.d}</dd>
+        </div>
+      ))}
+    </dl>
+    <div className="px-3.5 py-2.5 border-t border-gray-200 text-[13px] leading-snug text-content/85">
+      The result is floored at zero — the model never asks for a negative order.
+    </div>
+  </div>
+);
+
 /* ── the questions ────────────────────────────────────────────────────────── */
 
 /** Sections and contents come from one list, so the jump links cannot drift
@@ -169,6 +222,7 @@ const SECTIONS: { id: string; q: string; body: ReactNode }[] = [
           specific days the delivery has to cover, then adds back what typically
           gets lost before it reaches a customer.
         </Lead>
+        <Formula />
         <Example
           head="Pork Shoulder Steak · covering Friday to Monday"
           rows={[
@@ -211,71 +265,83 @@ const SECTIONS: { id: string; q: string; body: ReactNode }[] = [
       </>
     ),
   },
-  {
-    id: "qyoy",
-    q: "Can I trust the weekday pattern?",
-    body: (
-      <>
-        <Lead>
-          Fair question &mdash; a pattern pulled out of twelve weeks could just be
-          twelve weeks of coincidence. So we checked it against a year it had
-          never seen.
-        </Lead>
-        <P>
-          Same department, same store, same weeks of the calendar, one year apart.
-          Here is each day&rsquo;s share of its own week, then and now:
-        </P>
-        <Example
-          head="Meat by # · share of the week · last year → this year"
-          rows={[
-            { k: "Sunday", v: "14.6% → 14.7%" },
-            { k: "Monday", v: "12.0% → 11.4%" },
-            { k: "Tuesday", v: "12.1% → 10.6%" },
-            { k: "Wednesday", v: "10.9% → 10.3%" },
-            { k: "Thursday", v: "13.5% → 13.1%" },
-            { k: "Friday", v: "17.6% → 18.8%" },
-            { k: "Saturday", v: "19.2% → 21.1%", out: true },
-          ]}
-        />
-        <P>
-          Every day landed within about a point and a half of where it was.
-          Saturday was the peak both years, Wednesday the trough both years, and
-          the order of the seven days didn&rsquo;t change &mdash; while the
-          department sold 50% more meat overall.
-        </P>
-        <P>
-          The weekend is a slightly bigger share of the week now than it was, not
-          a smaller one. Whatever else moved, the shape of the week held.
-        </P>
-      </>
-    ),
-  },
-  {
-    id: "qlast",
-    q: "Can I look at the same week last year?",
-    body: (
-      <>
-        <Lead>
-          Yes. Set the date to a day that has already passed and the screen
-          switches into comparison mode: the same weekday rates, the same daily
-          history, the same not-selling list &mdash; for that point in the
-          calendar.
-        </Lead>
-        <Note>
-          In comparison mode there is <b className="font-semibold">no suggested
-          weight</b>, on purpose. A pounds-to-order figure worked out for last
-          September isn&rsquo;t something anyone should be able to read off a
-          screen and act on. You get the history to compare against; the ordering
-          number only appears for a date you can still order for.
-        </Note>
-        <P>
-          It is most useful on the seasonal lines. If cherries came off in the
-          second week of September last year, that&rsquo;s a date you can look up
-          rather than a thing you have to remember.
-        </P>
-      </>
-    ),
-  },
+  /* ── YEAR OVER YEAR — commented out, not deleted ──────────────────────────
+   *
+   * Both of these describe a comparison mode the UI does not have yet. The
+   * second promises a control that was removed with the date picker, and the
+   * first argues for the model using a year the page cannot show anyone. Help
+   * text that describes a feature nobody can reach is worse than no help text:
+   * a reader who goes looking and finds nothing stops trusting the rest.
+   *
+   * Restore both when the year-over-year work lands. `setAsOf` in the slice is
+   * the seam it plugs into, and the copy below is unchanged.
+   *
+   *   {
+   *     id: "qyoy",
+   *     q: "Can I trust the weekday pattern?",
+   *     body: (
+   *       <>
+   *         <Lead>
+   *           Fair question &mdash; a pattern pulled out of twelve weeks could just be
+   *           twelve weeks of coincidence. So we checked it against a year it had
+   *           never seen.
+   *         </Lead>
+   *         <P>
+   *           Same department, same store, same weeks of the calendar, one year apart.
+   *           Here is each day&rsquo;s share of its own week, then and now:
+   *         </P>
+   *         <Example
+   *           head="Meat by # · share of the week · last year → this year"
+   *           rows={[
+   *             { k: "Sunday", v: "14.6% → 14.7%" },
+   *             { k: "Monday", v: "12.0% → 11.4%" },
+   *             { k: "Tuesday", v: "12.1% → 10.6%" },
+   *             { k: "Wednesday", v: "10.9% → 10.3%" },
+   *             { k: "Thursday", v: "13.5% → 13.1%" },
+   *             { k: "Friday", v: "17.6% → 18.8%" },
+   *             { k: "Saturday", v: "19.2% → 21.1%", out: true },
+   *           ]}
+   *         />
+   *         <P>
+   *           Every day landed within about a point and a half of where it was.
+   *           Saturday was the peak both years, Wednesday the trough both years, and
+   *           the order of the seven days didn&rsquo;t change &mdash; while the
+   *           department sold 50% more meat overall.
+   *         </P>
+   *         <P>
+   *           The weekend is a slightly bigger share of the week now than it was, not
+   *           a smaller one. Whatever else moved, the shape of the week held.
+   *         </P>
+   *       </>
+   *     ),
+   *   },
+   *   {
+   *     id: "qlast",
+   *     q: "Can I look at the same week last year?",
+   *     body: (
+   *       <>
+   *         <Lead>
+   *           Yes. Set the date to a day that has already passed and the screen
+   *           switches into comparison mode: the same weekday rates, the same daily
+   *           history, the same not-selling list &mdash; for that point in the
+   *           calendar.
+   *         </Lead>
+   *         <Note>
+   *           In comparison mode there is <b className="font-semibold">no suggested
+   *           weight</b>, on purpose. A pounds-to-order figure worked out for last
+   *           September isn&rsquo;t something anyone should be able to read off a
+   *           screen and act on. You get the history to compare against; the ordering
+   *           number only appears for a date you can still order for.
+   *         </Note>
+   *         <P>
+   *           It is most useful on the seasonal lines. If cherries came off in the
+   *           second week of September last year, that&rsquo;s a date you can look up
+   *           rather than a thing you have to remember.
+   *         </P>
+   *       </>
+   *     ),
+   *   },
+   */
   {
     id: "q3",
     q: "What do days until delivery and cover days change?",
@@ -430,10 +496,10 @@ const SECTIONS: { id: string; q: string; body: ReactNode }[] = [
         <P>
           A lot of what shows up is seasonal, and you&rsquo;ll know most of it
           before the screen tells you &mdash; the cherries are done, the
-          home-grown tomatoes are done. That&rsquo;s worth having anyway: the same
-          exits repeat within a week or two of the same dates each year, so you
-          can check a date instead of recalling it, and the declines that{" "}
-          <Em>aren&rsquo;t</Em> seasonal stand out against the ones that are.
+          home-grown tomatoes are done. That&rsquo;s worth having anyway: it puts
+          the seasonal exits in front of you at the moment they happen, and the
+          declines that <Em>aren&rsquo;t</Em> seasonal stand out against the ones
+          that are.
         </P>
       </>
     ),
@@ -489,9 +555,8 @@ const SECTIONS: { id: string; q: string; body: ReactNode }[] = [
         </Lead>
         <P>
           The trade-off is worth knowing: twelve weeks back from September reaches
-          mid-June, so a shoulder-season item can carry some summer in its figure.
-          If a seasonal line looks high, that&rsquo;s usually why &mdash; and
-          pulling up the same week last year will normally confirm it.
+          mid-June, so a shoulder-season item can carry some summer in its
+          figure. If a seasonal line looks high, that is usually why.
         </P>
         <P>
           You can shorten or lengthen the window. Shorter reacts faster to a real

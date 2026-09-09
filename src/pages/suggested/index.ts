@@ -291,3 +291,34 @@ export const sheetRows = (
     return true;
   });
 };
+
+
+/** One day of the cover window and what this item is forecast to do on it. */
+export interface CoverDay {
+  iso: string;
+  /** "Fri 9/11". */
+  label: string;
+  lb: number;
+}
+
+/**
+ * The suggested figure, taken apart.
+ *
+ * Not a re-derivation — the endpoint's own numbers are the authority and are
+ * shown as they arrived. This only names which weekday rate each covered date
+ * pulled, so the arithmetic on screen is the arithmetic that produced the row.
+ *
+ * The per-day figures can miss the endpoint's `demand_weight` by a hundredth or
+ * two: both `dow_rates` and `demand_weight` are rounded to 2dp server-side, so
+ * summing the rounded parts is not the same as rounding the sum. The panel says
+ * so rather than quietly showing a total that does not add up.
+ */
+export const coverBreakdown = (
+  rates: DowRates | undefined,
+  window: { start: string; end: string } | null | undefined,
+): CoverDay[] =>
+  coverDates(window).map((iso) => ({
+    iso,
+    label: dayLabel(iso),
+    lb: rateForDate(rates, iso),
+  }));
