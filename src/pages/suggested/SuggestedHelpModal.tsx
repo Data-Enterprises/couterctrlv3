@@ -161,7 +161,7 @@ const DayBars = () => (
  * formula itself a reader has to assemble it from twelve answers. It is the
  * endpoint's own expression, not a paraphrase:
  *
- *     suggested_weight = demand(cover window, by weekday) x shrink - on_order
+ *     suggested_weight = demand(cover window, by weekday) x shrink - on_hand
  */
 const Formula = () => (
   <div className="rounded-lg border border-gray-200 bg-gray-50 overflow-hidden">
@@ -173,7 +173,7 @@ const Formula = () => (
         <span className="text-content/85">&times;</span>
         <span className="font-semibold text-content">waste</span>
         <span className="text-content/85">&minus;</span>
-        <span className="font-semibold text-content">already on order</span>
+        <span className="font-semibold text-content">stock on hand</span>
       </div>
     </div>
     <dl className="m-0 divide-y divide-gray-200">
@@ -191,8 +191,8 @@ const Formula = () => (
           d: "1 plus that item's own recorded waste rate. 1.00 where there is no record, and capped where the raw rate exceeds what waste can plausibly be.",
         },
         {
-          t: "already on order",
-          d: "Outstanding orders, subtracted so a delivery already coming is not bought twice. Zero until the vendor delivery feed is connected.",
+          t: "stock on hand",
+          d: "What was ordered and has not sold yet, subtracted so you are not buying it twice. Measured over the days this order has to cover, not the whole lookback — stock is a level, and a figure that grows the further back you look is not one.",
         },
       ].map((r) => (
         <div key={r.t} className="grid grid-cols-[8.5rem_1fr] gap-4 px-3.5 py-2.5">
@@ -230,6 +230,10 @@ const SECTIONS: { id: string; q: string; body: ReactNode }[] = [
             { k: "Which averages per day", v: "61.3 lb" },
             { k: "Friday + Saturday + Sunday + Monday rates", v: "313.2 lb" },
             { k: "Waste adjustment", v: "× 1.00" },
+            // Spelled out rather than left off. The term is in the formula
+            // directly above, and an example that silently skips one line of it
+            // reads as the formula being wrong.
+            { k: "Ordered and not yet sold", v: "none recorded" },
             { k: "Suggested", v: "313 lb", out: true },
           ]}
         />
@@ -447,17 +451,91 @@ const SECTIONS: { id: string; q: string; body: ReactNode }[] = [
     body: (
       <>
         <Lead>
-          <b className="font-semibold">No.</b> Nothing here can see your current
-          stock, and nothing here knows what&rsquo;s already on a truck.
+          <b className="font-semibold">Yes, as far as the records go.</b> What
+          was ordered and hasn&rsquo;t sold yet comes off the suggestion before
+          you see it.
         </Lead>
         <P>
-          What you&rsquo;re looking at is how much the case is expected to move
-          over those days, adjusted for waste. Subtracting what&rsquo;s already on
-          hand is still your call.
+          It compares what was ordered against what was sold over the days this
+          order has to cover, and subtracts the difference. Not the whole twelve
+          weeks &mdash; stock is a <Em>level</Em>, and a figure that gets bigger
+          the further back you look is not one.
+        </P>
+        <Example
+          head="Pork Shoulder Steak · 2 days until delivery, 4 cover days"
+          rows={[
+            { k: "Friday + Saturday + Sunday + Monday rates", v: "313.2 lb" },
+            { k: "Waste adjustment", v: "× 1.00" },
+            { k: "Ordered and not yet sold, last 6 days", v: "− 48.0 lb" },
+            { k: "Suggested", v: "265 lb", out: true },
+          ]}
+        />
+        <P>
+          Open any row to see its own version of that sum, including how many
+          days of selling the stock on hand works out to.
         </P>
         <Note warn>
-          Treat it as the starting figure, not the order. It answers &ldquo;how
-          much will this sell&rdquo;, not &ldquo;how much more do I need&rdquo;.
+          It is only as good as what got written down. Where receiving weight
+          isn&rsquo;t recorded, this reads as no stock and comes off as zero
+          &mdash; which leaves the figure where it was before, rather than
+          somewhere wrong. Still worth a look in the case before you send it.
+        </Note>
+      </>
+    ),
+  },
+  {
+    id: "q6b",
+    q: "What are the actions telling me to do?",
+    body: (
+      <>
+        <Lead>
+          The suggested weight is how much to buy. The action beside it is about
+          the <Em>rhythm</Em> &mdash; how often, and how much each time.
+        </Lead>
+        <P>
+          It turns on one figure: how many days the stock on hand would last at
+          the rate the item sells. That gets compared against what one delivery
+          has to carry, which is your days until delivery plus your cover days.
+          Six days of stock is comfortable on a weekly delivery and two
+          orders&rsquo; worth on a Tuesday/Friday one, which is why it is always
+          measured against your own cycle rather than a fixed number of days.
+        </P>
+        <Defs
+          rows={[
+            {
+              t: "Slow the ordering",
+              d: "Over a cycle of stock sitting there, and buying has run well ahead of selling all quarter. Both readings agree, which is what makes it worth acting on. Order less now and less again next time.",
+            },
+            {
+              t: "Skip this order",
+              d: "Over a cycle of stock, but the buying itself is in line. Nothing is wrong with the rhythm — this particular turn just isn't needed.",
+            },
+            {
+              t: "Buy more",
+              d: "Under a quarter of a cycle in the case, and less has been bought than sold over the quarter. The case is emptying before the next truck lands.",
+            },
+            {
+              t: "Deliver more often",
+              d: "Running short, and one weekday does half again the item's normal volume. Ordering more won't fix that — the extra just sits through the slow days. A delivery closer to the busy day will.",
+            },
+            {
+              t: "Watch",
+              d: "The trend is wrong while today's number is fine. Doing nothing this cycle costs nothing; it's the direction worth knowing about.",
+            },
+            {
+              t: "Nothing to do",
+              d: "A real answer, not a blank. Stock, buying and waste all read normally for this item.",
+            },
+          ]}
+        />
+        <Note>
+          Three more chips aren&rsquo;t about rhythm at all.{" "}
+          <b className="font-semibold">Selling less</b> and{" "}
+          <b className="font-semibold">Stopped selling</b> mean the forecast is
+          running ahead of where the item actually is.{" "}
+          <b className="font-semibold">Check item codes</b> and{" "}
+          <b className="font-semibold">No waste logged</b> are about the records
+          rather than the order. Each row&rsquo;s popover says which kind it is.
         </Note>
       </>
     ),

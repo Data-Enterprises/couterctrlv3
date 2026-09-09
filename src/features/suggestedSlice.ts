@@ -124,9 +124,10 @@ interface SuggestedState {
    *  filters per column through ColFilter, the way Coupons and Item Actions do. */
   upcFilter: string;
   descFilter: string;
-  /** Which suggested action the sheet is filtered to. "all" is every row,
-   *  including the ones with nothing to act on. Replaces the old capped-only
-   *  toggle, which is now one of the seven actions. */
+  /** Which suggested action the sheet is filtered to. "all" is every row;
+   *  "none" is the rows with nothing to act on, which is a pile in its own
+   *  right rather than the absence of one. Replaces the old capped-only
+   *  toggle, which is now one action among the rest. */
   actionFilter: ActionKey | "all";
 }
 
@@ -210,6 +211,10 @@ export const suggestedSlice = createSlice({
       // A day selected on one department should not silently carry into the
       // next — the sheet would open showing one day of a different case.
       state.selectedDay = "";
+      // Same argument, and it bites harder: the piles differ per department,
+      // so a filter carried across can open a sheet on zero rows with no chip
+      // lit to explain why.
+      state.actionFilter = "all";
     },
     setActiveStore: (
       state,

@@ -97,8 +97,25 @@ const OrderSheetPanel = () => {
   }, [ctx.notSelling]);
   const recentDays = ctx.notSelling?.window.recent.days ?? 0;
 
+  /**
+   * One delivery's worth of days, off the response rather than the form.
+   *
+   * The rhythm bands were computed against the settings that produced these
+   * rows, so the sentence explaining one has to quote the same figure — a
+   * reader who changed the form since would otherwise be told the item has
+   * 9 days of stock against a cycle nothing on screen was measured on.
+   */
+  const cycleDays =
+    (ctx.parameters?.lead_days ?? ctx.leadDays) +
+    (ctx.parameters?.cover_days ?? ctx.coverDays);
+
   const actionFor = (r: SuggestedItem) =>
-    suggestedAction(r, nsByCode.get(String(r.product_code)), recentDays);
+    suggestedAction(
+      r,
+      nsByCode.get(String(r.product_code)),
+      recentDays,
+      cycleDays,
+    );
 
   /**
    * The department, out of the store's rows.
@@ -124,19 +141,22 @@ const OrderSheetPanel = () => {
     const c = {} as Record<string, number>;
     for (const r of filtered) {
       const a = actionFor(r);
-      if (a) c[a.key] = (c[a.key] ?? 0) + 1;
+      // A row with nothing to say is counted under `none` rather than skipped.
+      // The blank Action cell is the answer to "is this safe to order" and it
+      // only reads that way once the pile has a size next to it.
+      c[a ? a.key : "none"] = (c[a ? a.key : "none"] ?? 0) + 1;
     }
     return c;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filtered, nsByCode, recentDays]);
+  }, [filtered, nsByCode, recentDays, cycleDays]);
 
   const visible = useMemo(
     () =>
       ctx.actionFilter === "all"
         ? filtered
-        : filtered.filter((r) => actionFor(r)?.key === ctx.actionFilter),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [filtered, ctx.actionFilter, nsByCode, recentDays],
+        : ctx.actionFilter === "none"
+          ? filtered.filter((r) => actionFor(r) === null)
+          : filtered.filter((r) => actionFor(r)?.key === ctx.actionFilter),
+    [filtered, ctx.actionFilter, nsByCode, recentDays, cycleDays],
   );
 
   /** The group row behind this department — the only source of the day-by-day
@@ -179,11 +199,24 @@ const OrderSheetPanel = () => {
     const demand = rows.reduce((s, r) => s + demandFor(r), 0);
     const daily = rows.reduce((s, r) => s + (r.avg_daily_weight ?? 0), 0);
     const actionable = rows.filter((r) => actionFor(r) !== null).length;
+    // Summed, then divided — NOT the mean of the rows' own days_of_cover. A
+    // department is stocked as a case, and one dead line sitting on 400 days
+    // of cover would swamp an average that ninety live items are in. This is
+    // the same arithmetic the endpoint does at store grain, so unfiltered the
+    // two agree.
+    const onHand = rows.reduce((s, r) => s + (r.on_hand_weight ?? 0), 0);
     // Never day-scoped. `demand` follows the selected day by design, so reusing
     // it for the All Week card would have made that card show one day's pounds
     // under the label "All Week".
     const week = rows.reduce((s, r) => s + (r.demand_weight ?? 0), 0);
-    return { order, demand, daily, actionable, week };
+    return {
+      order,
+      demand,
+      daily,
+      actionable,
+      week,
+      cover: daily > 0 ? onHand / daily : null,
+    };
   }, [rows]);
 
   /**
@@ -356,6 +389,21 @@ const OrderSheetPanel = () => {
                       value: `${fmtLb(totals.demand)} lb`,
                     },
                     { label: "Avg / day", value: `${fmtLb(totals.daily)} lb` },
+                    {
+                      // The rhythm figure, at the grain the sheet is worked at.
+                      // Every rhythm action argues in days of cover, and without
+                      // it on the strip the chips are verdicts with no scale
+                      // behind them.
+                      label: "Days of cover",
+                      value:
+                        totals.cover === null
+                          ? "—"
+                          : totals.cover < 10
+                            ? totals.cover.toFixed(1)
+                            : Math.round(totals.cover).toLocaleString(),
+                      sub: `of ${cycleDays}`,
+                      subVariant: "neutral",
+                    },
                     { label: "Items", value: rows.length.toLocaleString() },
                     {
                       label: "Needs attention",

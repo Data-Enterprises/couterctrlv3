@@ -1713,10 +1713,8 @@ export interface SuggestedItem {
   lifetime_markdown?: number;
   lifetime_received?: number;
   lifetime_sold?: number;
-  /** Also absent on a historical call, for the same reason. */
-  on_order_weight?: number;
   /**
-   * demand x shrink - on_order, floored at 0. The number the buyer acts on.
+   * demand x shrink - on_hand, floored at 0. The number the buyer acts on.
    *
    * ABSENT when `parameters.is_historical` is true. A call for a past date is a
    * comparison, not an order — nobody buys for last September — and the figure
@@ -1753,6 +1751,32 @@ export interface SuggestedItem {
    * say so, because a ratio of 1.000 sits squarely inside `ok`.
    */
   shrink_unrecorded?: boolean;
+
+  /**
+   * How many days the stock on hand would last at this item's ordinary rate.
+   *
+   * The rhythm test, and the reason it is expressed in DAYS rather than pounds:
+   * 2 lb is a lot of saffron and nothing of bananas. Null when nothing sold
+   * over the lookback, which is why `rhythm_action` has an `unknown` band —
+   * a missing figure is not a verdict of "fine".
+   */
+  days_of_cover?: number | null;
+  /** This item's heaviest weekday against its own daily mean. At 1.5 and above
+   *  one delivery has to carry a spike, which ordering more does not fix. */
+  dow_peak_ratio?: number | null;
+  rhythm_action?: RhythmAction;
+
+  /**
+   * Stock still in the store: ordered minus sold over `leadDays + coverDays`,
+   * floored at zero. ALREADY SUBTRACTED from `suggested_weight` — do not net it
+   * off again.
+   *
+   * The short window is the whole point. On-hand is a LEVEL; ordered-minus-sold
+   * over the lookback is an accumulation of every imbalance since June, and it
+   * grows if you widen `lookbackWeeks`. Nothing in the case changes when you
+   * look further back, so a figure that moves when you do is not stock.
+   */
+  on_hand_weight?: number;
 
   /* ── diagnostics only ── */
   damaged_weight?: number;
@@ -1833,6 +1857,7 @@ export interface SuggestedGroupRow {
   order_ratio?: number | null;
   order_ratio_units?: number | null;
   order_gap_weight?: number | null;
+  on_hand_weight?: number;
   items_critical?: number;
   items_watch?: number;
   items_ok?: number;
@@ -1840,6 +1865,15 @@ export interface SuggestedGroupRow {
   items_no_orders?: number;
   items_insufficient?: number;
   items_shrink_unrecorded?: number;
+  /** The department's own days of cover: its total on-hand over its total
+   *  daily rate. Not the mean of its items' figures — a department is stocked
+   *  as a case, and one dead line with 400 days of cover would swamp that. */
+  days_of_cover?: number | null;
+  items_slow_down?: number;
+  items_skip_cycle?: number;
+  items_tighten?: number;
+  items_deliver_often?: number;
+  items_watch_rhythm?: number;
 
   /** Normalised by `api/suggested`. Optional because a row whose profile is
    *  missing or malformed arrives here absent, and callers must treat that as
@@ -1876,6 +1910,46 @@ export type OrderSummary = Record<OrderStatus, number>;
 export interface OrderFlags {
   shrink_unrecorded: number;
 }
+
+/**
+ * What to do about the ordering RHYTHM, as opposed to this order's pounds.
+ *
+ * Server-side, and deliberately so. The thresholds are request fields the
+ * endpoint tunes (`slowCycles`, `tightCycles`), the bands are counted over the
+ * whole query into `rhythm_summary`, and a store-grain view needs "3 items need
+ * to slow down" per department — which a frontend holding one store's item rows
+ * cannot produce. The frontend owns the wording, not the verdict.
+ *
+ * Measured in CYCLES of `leadDays + coverDays`, so one threshold holds across a
+ * 4-day rhythm and a 7-day one:
+ *
+ *   slow_down      over a cycle of stock AND buying 1.2x+ — both signals, so it
+ *                  is neither an item that already corrected nor one heavy
+ *                  delivery
+ *   skip_cycle     over a cycle of stock, but the buying is in line. Nothing
+ *                  wrong with the rhythm; this turn just is not needed
+ *   tighten        under a quarter-cycle AND buying under what sells
+ *   deliver_often  under a quarter-cycle with a spiky weekday. Ordering more
+ *                  does not fix a spike; delivering closer to it does
+ *   watch          the trend is wrong while today's number is fine — doing
+ *                  nothing THIS cycle costs nothing
+ *   ok             nothing to do
+ *   insufficient   under 10 lb sold in the lookback: too little to judge
+ *   unknown        nothing sold, so there is no rate to divide stock by
+ */
+export type RhythmAction =
+  | "slow_down"
+  | "skip_cycle"
+  | "tighten"
+  | "deliver_often"
+  | "watch"
+  | "ok"
+  | "insufficient"
+  | "unknown";
+
+/** Band counts over the whole query, same contract as `OrderSummary`:
+ *  exhaustive and exclusive, so they sum to `record_count`. */
+export type RhythmSummary = Record<RhythmAction, number>;
 
 /** Why an item is on the not-selling list, worst-to-least-recoverable.
  *
@@ -1980,6 +2054,9 @@ export interface SuggestedItemsResp {
   /** Null when `includeOrders` is off or the response is historical. */
   order_summary: OrderSummary | null;
   order_flags: OrderFlags | null;
+  /** Null on the same terms as `order_summary` — the rhythm bands are computed
+   *  in the same CTE and are gated on the same `includeOrders`. */
+  rhythm_summary: RhythmSummary | null;
   /** Present only when the request set `includeNotSelling`; null otherwise. */
   not_selling: SuggestedNotSelling | null;
   items: SuggestedItem[];
@@ -1999,5 +2076,8 @@ export interface SuggestedGroupResp {
   /** Null when `includeOrders` is off or the response is historical. */
   order_summary: OrderSummary | null;
   order_flags: OrderFlags | null;
+  /** Null on the same terms as `order_summary` — the rhythm bands are computed
+   *  in the same CTE and are gated on the same `includeOrders`. */
+  rhythm_summary: RhythmSummary | null;
   items: SuggestedGroupRow[];
 }

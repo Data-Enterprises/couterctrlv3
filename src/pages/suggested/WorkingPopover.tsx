@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { XMarkIcon } from "@heroicons/react/16/solid";
-import { coverBreakdown, fmtLb, shrinkLabel, ACTION_TONE } from ".";
+import { coverBreakdown, fmtLb, shrinkLabel, ACTION_TONE, SCOPE_TEXT } from ".";
 import type { SuggestedAction } from ".";
 import type { DowRates, SuggestedItem } from "../../interfaces";
 
@@ -87,7 +87,7 @@ const WorkingPopover = ({
   const daySum = days.reduce((s, d) => s + d.lb, 0);
   const demand = item.demand_weight ?? 0;
   const mult = item.shrink_multiplier ?? 1;
-  const onOrder = item.on_order_weight ?? 0;
+  const onHand = item.on_hand_weight ?? 0;
   const uplift = demand * mult - demand;
 
   // Rounding, not disagreement: dow_rates and demand_weight are each rounded to
@@ -153,8 +153,22 @@ const WorkingPopover = ({
           v={uplift > 0 ? `+ ${fmtLb(uplift)} lb` : "—"}
           soft
         />
-        {onOrder > 0 && (
-          <Row k="Already on order" v={`− ${fmtLb(onOrder)} lb`} soft />
+        {onHand > 0 && (
+          <Row k="Already in the case" v={`− ${fmtLb(onHand)} lb`} soft />
+        )}
+        {/* The same stock expressed as time, because that is the form every
+            rhythm action is argued in. Pounds say what came off this order;
+            days say whether it is a lot. */}
+        {item.days_of_cover != null && (
+          <Row
+            k="That is days of stock"
+            v={`${
+              item.days_of_cover < 10
+                ? item.days_of_cover.toFixed(1)
+                : Math.round(item.days_of_cover)
+            } of ${leadDays + coverDays}`}
+            soft
+          />
         )}
       </div>
 
@@ -174,18 +188,17 @@ const WorkingPopover = ({
                 next to a figure of 313 lb reads as "buy less than 313", which
                 is the one thing it does not mean. */}
             <span className="text-[11px] text-content/85">
-              {action.affectsOrder
-                ? "affects this order"
-                : "about this item's history"}
+              {SCOPE_TEXT[action.scope]}
             </span>
           </div>
           <p className="text-[11px] leading-snug text-content">{action.detail}</p>
         </div>
       )}
 
-      <div className="px-3 py-2 border-t border-gray-100 text-[11px] leading-snug text-content/85">
-        A forecast of what will sell, with waste added. It does not subtract
-        what is already in the case.
+      <div className="px-3 py-2 border-t border-gray-100 text-[12px] leading-snug text-content/85">
+        {onHand > 0
+          ? "What this item should sell over those days, plus its waste rate, less what is still in the case."
+          : "What this item should sell over those days, plus its waste rate. Nothing came off for stock on hand — more has sold than was recorded as ordered, so there is nothing to net."}
       </div>
     </div>
   );

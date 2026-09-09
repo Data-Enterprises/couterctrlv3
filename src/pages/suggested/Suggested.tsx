@@ -268,6 +268,10 @@ const Suggested = () => {
     <div className="h-[calc(100vh-3rem)] overflow-hidden p-4 flex gap-3">
       {ctx.exportOpen && ctx.activeStoreId !== null && (
         <SuggestedExportModal
+          cycleDays={
+            (ctx.parameters?.lead_days ?? ctx.leadDays) +
+            (ctx.parameters?.cover_days ?? ctx.coverDays)
+          }
           items={ctx.items}
           sheetItems={
             ctx.sheetKey

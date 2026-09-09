@@ -324,31 +324,58 @@ export const coverBreakdown = (
 
 /* ── suggested actions ────────────────────────────────────────────────────── */
 
+
+/**
+ * Days, at the precision the figure deserves.
+ *
+ * Under ten days it is a decision — 1.8 days of cover and 3.4 days of cover
+ * call for different things — and above it the fraction is noise nobody reads.
+ */
+const fmtDays = (n: number) => (n < 10 ? n.toFixed(1) : Math.round(n).toString());
+
 export type ActionKey =
   | "codes"
   | "slowing"
-  | "over"
-  | "under"
+  | "slowDown"
+  | "skipCycle"
+  | "tighten"
+  | "deliverOften"
   | "unlogged"
-  | "watchOrdering"
-  | "runsLow";
+  | "watchRhythm"
+  | "runsLow"
+  /** Not an action. The chip row's "nothing to do here" pile, so a reader can
+   *  see that a blank Action cell is a verdict rather than missing data. */
+  | "none";
+
+/**
+ * What an action is ABOUT, which decides how the popover frames it.
+ *
+ * The load-bearing distinction on this page, and it used to be a boolean called
+ * `affectsOrder`. It is four values because "not this order" turned out to mean
+ * three different things, and rendering all three as "about this item's
+ * history" was wrong about two of them.
+ *
+ * `order` is the only one that says change the number on screen. The others
+ * look BACKWARD at a quarter of buying while `suggested_weight` looks FORWARD
+ * at a few days — they disagree on the same item without either being wrong,
+ * so a buyer who reads "over-ordering" beside 313 lb and cuts it has been
+ * misled by the UI, not by the data.
+ */
+export type ActionScope = "order" | "pattern" | "schedule" | "recording";
+
+export const SCOPE_TEXT: Record<ActionScope, string> = {
+  order: "changes this order",
+  pattern: "about the ordering pattern",
+  schedule: "about the delivery schedule",
+  recording: "about the recording, not the order",
+};
 
 export interface SuggestedAction {
   key: ActionKey;
   /** Chip text. Short enough to sit under a product name. */
   label: string;
   tone: "critical" | "watch" | "neutral";
-  /**
-   * Whether this bears on the pounds on screen or on the item's history.
-   *
-   * The load-bearing distinction on this page. `order_status` looks BACKWARD at
-   * a whole quarter of ordering; `suggested_weight` looks FORWARD at four days.
-   * They disagree on the same item without either being wrong, so an action
-   * built from the backward figure must never read as "change this number" —
-   * a buyer who sees "over-ordering" beside 313 lb and reduces it has been
-   * misled by the UI, not by the data.
-   */
-  affectsOrder: boolean;
+  scope: ActionScope;
   detail: string;
 }
 
@@ -359,11 +386,25 @@ export interface SuggestedAction {
  * a clamped rate usually means no usable waste figure either — and a stack of
  * chips under a product name is a wall, not advice. The popover carries the
  * full reasoning; the chip carries the one thing worth acting on.
+ *
+ * The rhythm verdicts come off the row as `rhythm_action`; this function picks
+ * the wording, never the band. That split is deliberate: the thresholds are
+ * request fields the endpoint tunes against real output, and the counts behind
+ * the chip row are tallied over the WHOLE query server-side — neither of which
+ * a page holding one store's rows could do. What arrives here is a key and its
+ * evidence, and turning that into a sentence a buyer acts on is this page's job.
+ *
+ * `rhythm_action` is absent when the response carries no ordering data
+ * (historical, or `includeOrders` off), and the ladder falls straight through
+ * to the two client-side calls — the correct behaviour rather than a gap.
  */
 export const suggestedAction = (
   item: SuggestedItem,
   ns?: NotSellingItem,
   recentDays = 0,
+  /** `leadDays + coverDays` — what one delivery has to carry. The rhythm bands
+   *  are expressed in cycles of it, so the wording has to state it. */
+  cycleDays = 0,
 ): SuggestedAction | null => {
   // A capped rate means the number itself is not trustworthy, which outranks
   // anything the number would otherwise tell you.
@@ -372,7 +413,7 @@ export const suggestedAction = (
       key: "codes",
       label: "Check item codes",
       tone: "critical",
-      affectsOrder: true,
+      scope: "order",
       detail:
         "This item records more waste than it ever sold, so the adjustment was capped. That is almost always the item being received under one code and sold under another rather than heavy waste — worth passing to whoever sets items up.",
     };
@@ -386,7 +427,7 @@ export const suggestedAction = (
       key: "slowing",
       label: ns.status === "stopped" ? "Stopped selling" : "Selling less",
       tone: ns.status === "stopped" ? "critical" : "watch",
-      affectsOrder: true,
+      scope: "order",
       detail:
         ns.status === "stopped"
           ? `Sold ${fmtLb(ns.prior_lb_per_day)} lb a day earlier in the window and nothing at all in the last ${recentDays} days. The suggestion is built on twelve weeks, so it is still buying for an item that has stopped — about ${fmtLb(lost)} lb of it.`
@@ -394,43 +435,80 @@ export const suggestedAction = (
     };
   }
 
-  // Everything below is about the ORDERING PATTERN, not this order.
-  if (item.order_status === "critical") {
-    return {
-      key: "over",
-      label: "Over-ordering",
-      tone: "critical",
-      affectsOrder: false,
-      detail: `Bought ${(item.order_ratio ?? 0).toFixed(2)}x what sold this quarter — ${fmtLb(item.order_gap_weight ?? 0)} lb more than went out. That gap is shrink. Is it being recorded?`,
-    };
-  }
-  if (item.order_status === "under") {
-    return {
-      key: "under",
-      label: "Under-ordering",
-      tone: "watch",
-      affectsOrder: false,
-      detail: `Sold more than was bought over the window — ${fmtLb(Math.abs(item.order_gap_weight ?? 0))} lb more. Either stock is being run down, or deliveries are arriving without being recorded.`,
-    };
-  }
-  if (item.shrink_unrecorded) {
-    return {
-      key: "unlogged",
-      label: "No waste logged",
-      tone: "watch",
-      affectsOrder: false,
-      detail:
-        "Ordered and sold match almost exactly, and nothing has ever been recorded as damaged or marked down. Two separate readings both saying nothing was lost, on product sold by the pound — that is usually a gap in the recording rather than a clean run.",
-    };
-  }
-  if (item.order_status === "watch") {
-    return {
-      key: "watchOrdering",
-      label: "Ordering high",
-      tone: "watch",
-      affectsOrder: false,
-      detail: `Bought ${(item.order_ratio ?? 0).toFixed(2)}x what sold this quarter — ${fmtLb(item.order_gap_weight ?? 0)} lb more than went out. Not alarming on its own, but worth knowing which way it is drifting.`,
-    };
+  /* ── the ordering rhythm ──────────────────────────────────────────────── */
+
+  const cover = item.days_of_cover ?? null;
+  // Both halves of every rhythm sentence: how long the stock lasts, and how
+  // long it has to. A days figure on its own means nothing — six days of cover
+  // is comfortable on a weekly delivery and two orders' worth on a Tue/Fri one.
+  const stock =
+    cover === null
+      ? ""
+      : `About ${fmtDays(cover)} days of stock in the case${
+          cycleDays > 0 ? `, and one delivery only has to carry ${cycleDays}` : ""
+        }.`;
+  const ratio = (item.order_ratio ?? 0).toFixed(2);
+  const gap = fmtLb(Math.abs(item.order_gap_weight ?? 0));
+
+  switch (item.rhythm_action) {
+    case "slow_down":
+      return {
+        key: "slowDown",
+        label: "Slow the ordering",
+        tone: "critical",
+        scope: "order",
+        detail: `${stock} On top of that, buying has run ${ratio}x what sold this quarter — ${gap} lb more than went out. Both readings say the same thing, which is what makes it worth acting on: order less this cycle, and less again next time.`,
+      };
+    case "skip_cycle":
+      return {
+        key: "skipCycle",
+        label: "Skip this order",
+        tone: "watch",
+        scope: "order",
+        detail: `${stock} The buying itself is in line, so nothing is wrong with the rhythm — this turn is simply not needed. Skip it and pick the rhythm back up next time.`,
+      };
+    case "tighten":
+      return {
+        key: "tighten",
+        label: "Buy more",
+        tone: "watch",
+        scope: "order",
+        detail: `${stock} And only ${ratio}x what sold has been bought over the quarter — ${gap} lb short. The case is emptying before the next truck lands.`,
+      };
+    case "deliver_often":
+      return {
+        key: "deliverOften",
+        label: "Deliver more often",
+        tone: "watch",
+        scope: "schedule",
+        detail: `${stock} This item's biggest weekday runs ${(item.dow_peak_ratio ?? 0).toFixed(2)}x its own average, so one delivery has to carry that spike. Ordering more does not fix it — the extra just sits longer. A delivery closer to the peak day does.`,
+      };
+    case "watch":
+      // Two different causes reach this band, and they are not the same
+      // conversation. Split on the flag the row already carries rather than
+      // writing one sentence that half-fits both.
+      return item.shrink_unrecorded
+        ? {
+            key: "unlogged",
+            label: "No waste logged",
+            tone: "watch",
+            scope: "recording",
+            detail:
+              "Ordered and sold match almost exactly, and nothing has ever been recorded as damaged or marked down. Two separate readings both saying nothing was lost, on product sold by the pound — that is usually a gap in the recording rather than a clean run.",
+          }
+        : {
+            key: "watchRhythm",
+            label: "Watch",
+            tone: "watch",
+            scope: "pattern",
+            detail: `Bought ${ratio}x what sold this quarter — ${gap} lb more than went out. Stock is at a sensible level, so there is nothing to change this cycle. It is the direction that is worth knowing about.`,
+          };
+    // ok, insufficient and unknown are not advice. `insufficient` is under
+    // 10 lb across twelve weeks and `unknown` sold nothing at all, so neither
+    // has enough behind it to say anything — and inventing a chip for them
+    // would bury the rows that do.
+    default:
+      break;
   }
 
   // Weakest signal, and the only one that says the number is too LOW.
@@ -439,7 +517,7 @@ export const suggestedAction = (
       key: "runsLow",
       label: "May run short",
       tone: "neutral",
-      affectsOrder: true,
+      scope: "order",
       detail:
         "No waste has ever been recorded for this item, so its figure is demand only — what customers bought, with nothing added for what never reached them. It will tend to come up short.",
     };
@@ -451,7 +529,7 @@ export const suggestedAction = (
 /**
  * How each tone looks, following Item Actions' `actionTone.ts`: chip fill and
  * its selected ring in one place, so the chip row and the row's own chip cannot
- * disagree about what "over-ordering" looks like.
+ * disagree about what an action looks like.
  *
  * The chip carries the colour and the row stays neutral — the same call that
  * page made, for the same reason. Tinting rows by action turns a 380-row sheet
@@ -477,22 +555,34 @@ export const ACTION_TONE: Record<
 export const ACTION_TONE_FOR: Record<ActionKey, SuggestedAction["tone"]> = {
   codes: "critical",
   slowing: "critical",
-  over: "critical",
-  under: "watch",
+  slowDown: "critical",
+  skipCycle: "watch",
+  tighten: "watch",
+  deliverOften: "watch",
   unlogged: "watch",
-  watchOrdering: "watch",
+  watchRhythm: "watch",
   runsLow: "neutral",
+  none: "neutral",
 };
 
-
-/** Chip-row order: worst first, matching the order `suggestedAction` resolves
- *  in, so the rows a chip filters to are the rows that were showing it. */
+/**
+ * Chip-row order: worst first, matching the order `suggestedAction` resolves
+ * in, so the rows a chip filters to are the rows that were showing it.
+ *
+ * `none` sits last and is not a verdict about an item — it is the pile with
+ * nothing to say. It earns a chip because a blank Action column is ambiguous:
+ * a buyer twice asked whether those rows were safe to order or simply had not
+ * been looked at. A chip with a count answers that without them asking.
+ */
 export const ACTION_ORDER: { key: ActionKey; label: string }[] = [
   { key: "codes", label: "Check item codes" },
   { key: "slowing", label: "Selling less" },
-  { key: "over", label: "Over-ordering" },
-  { key: "under", label: "Under-ordering" },
+  { key: "slowDown", label: "Slow the ordering" },
+  { key: "skipCycle", label: "Skip this order" },
+  { key: "tighten", label: "Buy more" },
+  { key: "deliverOften", label: "Deliver more often" },
   { key: "unlogged", label: "No waste logged" },
-  { key: "watchOrdering", label: "Ordering high" },
+  { key: "watchRhythm", label: "Watch" },
   { key: "runsLow", label: "May run short" },
+  { key: "none", label: "Nothing to do" },
 ];

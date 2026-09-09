@@ -5,6 +5,7 @@ import type {
   SuggestedItem,
   SuggestedGroupRow,
   SuggestedNotSelling,
+  NotSellingItem,
 } from "../../interfaces";
 import {
   fmtNum,
@@ -13,7 +14,13 @@ import {
   aggregateRows,
 } from "../../utils/csvExport";
 import type { AggFn, AggRow } from "../../utils/csvExport";
-import { deptLabel, lostLb } from ".";
+import {
+  deptLabel,
+  lostLb,
+  suggestedAction,
+  ACTION_ORDER,
+  SCOPE_TEXT,
+} from ".";
 
 /**
  * Presets / Custom CSV export, the shape every other page uses.
@@ -42,10 +49,19 @@ interface Props {
   /** Null when no department is selected — the store overview is open. */
   departmentLabel: string | null;
   coverWindow: { start: string; end: string } | null;
+  /** `leadDays + coverDays`, off the response. Every rhythm sentence is argued
+   *  against it, so the export has to carry the same figure the screen used. */
+  cycleDays: number;
 }
 
 type ModalMode = "presets" | "custom";
-type PresetId = "storeOrder" | "sheet" | "production" | "notSelling" | "rollup";
+type PresetId =
+  | "storeOrder"
+  | "actions"
+  | "sheet"
+  | "production"
+  | "notSelling"
+  | "rollup";
 
 interface MetricSelection {
   fn: AggFn;
@@ -63,6 +79,7 @@ const DIMS = [
   // Renamed with the column it describes — "shrink" means total inventory loss
   // on a grocery floor, which is not what this is.
   { key: "shrink_source", label: "Waste source" },
+  { key: "rhythm_action", label: "Rhythm" },
 ];
 
 const METRICS = [
@@ -73,7 +90,8 @@ const METRICS = [
   { key: "shrink_multiplier", label: "Shrink multiplier" },
   { key: "lifetime_markdown", label: "Marked down lb" },
   ...DOW.map((d, i) => ({ key: `dow_${i}`, label: `${d} lb` })),
-  { key: "on_order_weight", label: "On order lb" },
+  { key: "on_hand_weight", label: "On hand lb" },
+  { key: "days_of_cover", label: "Days of cover" },
 ];
 
 const AGG_OPTIONS: { value: AggFn; label: string }[] = [
@@ -99,7 +117,7 @@ const buildSheetCsv = (items: SuggestedItem[]) => {
     "Shrink multiplier",
     "Capped",
     "Marked down lb (lifetime)",
-    "On order lb",
+    "On hand lb",
     "Order lb",
     ...DOW.map((d) => `${d} lb`),
   ];
@@ -113,7 +131,7 @@ const buildSheetCsv = (items: SuggestedItem[]) => {
     fmtNum(i.shrink_multiplier ?? 1, 4),
     i.shrink_clamped ? "yes" : "",
     fmtNum(i.lifetime_markdown ?? 0),
-    fmtNum(i.on_order_weight ?? 0),
+    fmtNum(i.on_hand_weight ?? 0),
     fmtNum(i.suggested_weight ?? 0),
     ...DOW.map((_, d) => fmtNum(i.dow_rates?.[String(d)] ?? 0)),
   ]);
@@ -131,7 +149,7 @@ const buildSheetCsv = (items: SuggestedItem[]) => {
     // Left blank for the same reason the grid leaves it blank: lifetime
     // pounds over item lifetimes that differ do not sum into a period.
     "",
-    fmtNum(items.reduce((s, i) => s + (i.on_order_weight ?? 0), 0)),
+    fmtNum(items.reduce((s, i) => s + (i.on_hand_weight ?? 0), 0)),
     fmtNum(items.reduce((s, i) => s + (i.suggested_weight ?? 0), 0)),
     ...DOW.map((_, d) =>
       fmtNum(items.reduce((s, i) => s + (i.dow_rates?.[String(d)] ?? 0), 0)),
@@ -175,6 +193,76 @@ const buildStoreOrderCsv = (items: SuggestedItem[]) => {
     fmtNum(items.reduce((s, i) => s + (i.demand_weight ?? 0), 0)),
     "",
     fmtNum(items.reduce((s, i) => s + (i.suggested_weight ?? 0), 0)),
+  ]);
+  return rowsToCsv(headers, rows);
+};
+
+/**
+ * The rows with something to do about them, and why.
+ *
+ * The one preset that is not a copy of a view: the sheet on screen shows a chip
+ * and hides the reasoning in a popover, which does not survive a CSV. Here the
+ * sentence IS the row, because the person reading the file is usually not the
+ * person who opened the page.
+ *
+ * Ordered by the action ladder rather than by pounds. Every other export on
+ * this page is heaviest-first; this one is worst-first, because a list of
+ * things to do is worked from the top.
+ */
+const buildActionsCsv = (
+  items: SuggestedItem[],
+  notSelling: SuggestedNotSelling | null,
+  cycleDays: number,
+) => {
+  const nsByCode = new Map<string, NotSellingItem>();
+  for (const r of notSelling?.items ?? []) nsByCode.set(String(r.product_code), r);
+  const recentDays = notSelling?.window.recent.days ?? 0;
+
+  const rank = new Map(ACTION_ORDER.map((a, i) => [a.key, i]));
+  const withAction = items
+    .map((i) => ({
+      item: i,
+      action: suggestedAction(
+        i,
+        nsByCode.get(String(i.product_code)),
+        recentDays,
+        cycleDays,
+      ),
+    }))
+    .filter((r) => r.action !== null)
+    .sort(
+      (a, b) =>
+        (rank.get(a.action!.key) ?? 99) - (rank.get(b.action!.key) ?? 99) ||
+        (b.item.suggested_weight ?? 0) - (a.item.suggested_weight ?? 0),
+    );
+
+  const headers = [
+    "Action",
+    "About",
+    "UPC",
+    "Description",
+    "Department",
+    "Order lb",
+    "On hand lb",
+    "Days of cover",
+    `Days one delivery covers`,
+    "Ordered ÷ sold",
+    "Waste %",
+    "Why",
+  ];
+  const rows = withAction.map(({ item: i, action: a }) => [
+    a!.label,
+    SCOPE_TEXT[a!.scope],
+    i.product_code,
+    i.product_description ?? "",
+    deptLabel(i.sub_department_description),
+    fmtNum(i.suggested_weight ?? 0),
+    fmtNum(i.on_hand_weight ?? 0),
+    i.days_of_cover == null ? "" : fmtNum(i.days_of_cover),
+    cycleDays,
+    i.order_ratio == null ? "" : fmtNum(i.order_ratio, 3),
+    fmtNum(((i.shrink_multiplier ?? 1) - 1) * 100),
+    a!.detail,
   ]);
   return rowsToCsv(headers, rows);
 };
@@ -297,6 +385,7 @@ const SuggestedExportModal = ({
   storeLabel,
   departmentLabel,
   coverWindow,
+  cycleDays,
 }: Props) => {
   const [mode, setMode] = useState<ModalMode>("presets");
   const [selected, setSelected] = useState<Set<PresetId>>(new Set(["storeOrder"]));
@@ -314,7 +403,10 @@ const SuggestedExportModal = ({
         (_, i) =>
           [`dow_${i}`, { fn: "sum", enabled: false }] as [string, MetricSelection],
       ),
-      ["on_order_weight", { fn: "sum", enabled: false }],
+      ["on_hand_weight", { fn: "sum", enabled: false }],
+      // Averaged, not summed: adding days of cover across items produces a
+      // number with no meaning at all.
+      ["days_of_cover", { fn: "avg", enabled: false }],
     ]),
   );
 
@@ -424,6 +516,14 @@ const SuggestedExportModal = ({
         }\n${buildStoreOrderCsv(items)}`,
       );
     }
+    if (selected.has("actions")) {
+      sections.push(
+        `Suggested Actions — ${storeLabel} — all departments${
+          windowLabel ? ` — covers ${windowLabel}` : ""
+        }
+${buildActionsCsv(items, notSelling, cycleDays)}`,
+      );
+    }
     if (selected.has("sheet") && departmentLabel) {
       sections.push(
         `Order Sheet — ${storeLabel} — ${departmentLabel}${
@@ -465,6 +565,23 @@ const SuggestedExportModal = ({
 
   const canCustomDownload = columns.length > 0 && aggRows.length > 0;
 
+  /** Quoted on the preset card. Built the same way the file is, so the number
+   *  the card promises is the number of rows that come out. */
+  const actionCount = useMemo(() => {
+    const ns = new Map<string, NotSellingItem>();
+    for (const r of notSelling?.items ?? []) ns.set(String(r.product_code), r);
+    const recentDays = notSelling?.window.recent.days ?? 0;
+    return items.filter(
+      (i) =>
+        suggestedAction(
+          i,
+          ns.get(String(i.product_code)),
+          recentDays,
+          cycleDays,
+        ) !== null,
+    ).length;
+  }, [items, notSelling, cycleDays]);
+
   // Only offer what the current scope can actually fill. A preset that silently
   // exports a header and no rows is worse than one that is not there.
   const PRESETS: { id: PresetId; label: string; description: string }[] = [
@@ -472,6 +589,11 @@ const SuggestedExportModal = ({
       id: "storeOrder",
       label: "Top to Order",
       description: `${items.length.toLocaleString()} items across every department at ${storeLabel}, heaviest first`,
+    },
+    {
+      id: "actions",
+      label: "Suggested Actions",
+      description: `${actionCount.toLocaleString()} items at ${storeLabel} with something to do about them, worst first, each with its reasoning`,
     },
     ...(departmentLabel
       ? [

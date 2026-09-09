@@ -272,6 +272,38 @@ const StoreTreePanel = ({
                                   }`}
                                 >
                                   {deptLabel(d.sub_department_description)}
+                                  {(() => {
+                                    /* The rhythm calls that ask for a change
+                                       this cycle. `watch` is left out on
+                                       purpose — it means doing nothing costs
+                                       nothing, so counting it here would send
+                                       somebody into a department to find there
+                                       was nothing to do.
+
+                                       Counted server-side over the whole
+                                       query, which is the only place it can
+                                       be: the sheet holds one department's
+                                       rows and this line is about the ones
+                                       nobody has opened yet. */
+                                    const act =
+                                      (d.items_slow_down ?? 0) +
+                                      (d.items_skip_cycle ?? 0) +
+                                      (d.items_tighten ?? 0) +
+                                      (d.items_deliver_often ?? 0);
+                                    if (act === 0) return null;
+                                    return (
+                                      <span
+                                        className={
+                                          (d.items_slow_down ?? 0) > 0
+                                            ? "text-severity_critical_text"
+                                            : "text-severity_watch_text"
+                                        }
+                                      >
+                                        {" "}
+                                        · {act} to act on
+                                      </span>
+                                    );
+                                  })()}
                                   {d.items_clamped > 0 && (
                                     <span className="text-severity_watch_text">
                                       {" "}
