@@ -1,7 +1,13 @@
 import { useMemo, useState } from "react";
 import { useSuggestedCtx } from "./hooks";
-import { setNotSellingStatus } from "../../features/suggestedSlice";
+import {
+  setNotSellingStatus,
+  setNsDescFilter,
+  setNsUpcFilter,
+} from "../../features/suggestedSlice";
 import { fmtLb, lostLb } from ".";
+import ColFilter from "../../components/filters/ColFilter";
+import { colInputStyle } from "../../components/filters/colFilterStyles";
 import SortHeader from "../../components/SortHeader";
 import { useTriStateSort } from "../../utils/useTriStateSort";
 import UpcContextMenu from "../../components/UpcContextMenu";
@@ -51,6 +57,8 @@ const NotSellingTab = ({
   const [ctxMenu, setCtxMenu] = useState<{ x: number; y: number; upc: string } | null>(
     null,
   );
+  const [draftDesc, setDraftDesc] = useState("");
+  const [draftUpc, setDraftUpc] = useState("");
 
   const ns = ctx.notSelling;
   const recentDays = ns?.window.recent.days ?? 0;
@@ -64,14 +72,27 @@ const NotSellingTab = ({
     [ns, subDepartment],
   );
 
+  /** Column filters run before the status split, so the chip counts describe
+   *  the rows a click would actually show rather than the unfiltered set. */
+  const matching = useMemo(() => {
+    const desc = ctx.nsDescFilter.trim().toLowerCase();
+    const upc = ctx.nsUpcFilter.trim().toLowerCase();
+    return forDept.filter((r) => {
+      if (desc && !(r.product_description ?? "").toLowerCase().includes(desc))
+        return false;
+      if (upc && !String(r.product_code).toLowerCase().includes(upc)) return false;
+      return true;
+    });
+  }, [forDept, ctx.nsDescFilter, ctx.nsUpcFilter]);
+
   const counts = useMemo(() => {
     const c: Record<NotSellingStatus, number> = { dead: 0, stopped: 0, declining: 0 };
-    for (const r of forDept) c[r.status] += 1;
+    for (const r of matching) c[r.status] += 1;
     return c;
-  }, [forDept]);
+  }, [matching]);
 
   const rows = applySort<NotSellingItem>(
-    forDept.filter((r) => r.status === ctx.notSellingStatus),
+    matching.filter((r) => r.status === ctx.notSellingStatus),
     (r, col) =>
       col === "prior"
         ? r.prior_lb_per_day
@@ -138,8 +159,47 @@ const NotSellingTab = ({
           <table className="w-full border-collapse text-[13px]">
             <thead>
               <tr className="sticky top-0 bg-gray-100 border-b border-gray-100 z-10">
-                <th className={`${TH} text-left`}>Item</th>
-                <th className={`${TH} text-left w-32`}>UPC</th>
+                <th className={`${TH} text-left`} style={{ overflow: "visible" }}>
+                  <ColFilter
+                    label="Item"
+                    active={!!ctx.nsDescFilter}
+                    onApply={() => ctx.dispatch(setNsDescFilter(draftDesc))}
+                    onClear={() => {
+                      ctx.dispatch(setNsDescFilter(""));
+                      setDraftDesc("");
+                    }}
+                  >
+                    <input
+                      autoFocus
+                      style={colInputStyle}
+                      placeholder="Search description…"
+                      value={draftDesc}
+                      onChange={(e) => setDraftDesc(e.target.value)}
+                    />
+                  </ColFilter>
+                </th>
+                <th
+                  className={`${TH} text-left w-32`}
+                  style={{ overflow: "visible" }}
+                >
+                  <ColFilter
+                    label="UPC"
+                    active={!!ctx.nsUpcFilter}
+                    onApply={() => ctx.dispatch(setNsUpcFilter(draftUpc))}
+                    onClear={() => {
+                      ctx.dispatch(setNsUpcFilter(""));
+                      setDraftUpc("");
+                    }}
+                  >
+                    <input
+                      autoFocus
+                      style={colInputStyle}
+                      placeholder="Search UPC…"
+                      value={draftUpc}
+                      onChange={(e) => setDraftUpc(e.target.value)}
+                    />
+                  </ColFilter>
+                </th>
                 <th className={`${TH} text-right whitespace-nowrap`}>
                   <SortHeader col="prior" label="Prior lb/day" sort={sort} onSort={handleSort} className={SORT_TH} />
                 </th>

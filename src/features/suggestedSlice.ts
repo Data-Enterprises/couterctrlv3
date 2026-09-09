@@ -90,6 +90,13 @@ interface SuggestedState {
   selectedDay: string;
 
   storeSearch: string;
+  /** Column filters for the store overview and the not-selling list. Separate
+   *  from the sheet's own so switching tabs does not silently carry a filter
+   *  onto a different set of rows. */
+  topDescFilter: string;
+  topDeptFilter: string;
+  nsDescFilter: string;
+  nsUpcFilter: string;
   /** Applied column filters on the sheet. Two, not one search box: the grid
    *  filters per column through ColFilter, the way Coupons and Item Actions do. */
   upcFilter: string;
@@ -122,6 +129,10 @@ export const initialState: SuggestedState = {
   exportOpen: false,
   selectedDay: "",
   storeSearch: "",
+  topDescFilter: "",
+  topDeptFilter: "",
+  nsDescFilter: "",
+  nsUpcFilter: "",
   upcFilter: "",
   descFilter: "",
   onlyFlagged: false,
@@ -214,6 +225,18 @@ export const suggestedSlice = createSlice({
     setStoreSearch: (state, action: PayloadAction<string>) => {
       state.storeSearch = action.payload;
     },
+    setTopDescFilter: (state, action: PayloadAction<string>) => {
+      state.topDescFilter = action.payload;
+    },
+    setTopDeptFilter: (state, action: PayloadAction<string>) => {
+      state.topDeptFilter = action.payload;
+    },
+    setNsDescFilter: (state, action: PayloadAction<string>) => {
+      state.nsDescFilter = action.payload;
+    },
+    setNsUpcFilter: (state, action: PayloadAction<string>) => {
+      state.nsUpcFilter = action.payload;
+    },
     setUpcFilter: (state, action: PayloadAction<string>) => {
       state.upcFilter = action.payload;
     },
@@ -241,6 +264,10 @@ export const suggestedSlice = createSlice({
       state.expandedStores = [];
       state.selectedDay = "";
       state.storeSearch = "";
+      state.topDescFilter = "";
+      state.topDeptFilter = "";
+      state.nsDescFilter = "";
+      state.nsUpcFilter = "";
       state.upcFilter = "";
       state.descFilter = "";
       state.onlyFlagged = false;
@@ -250,6 +277,10 @@ export const suggestedSlice = createSlice({
 });
 
 export const {
+  setTopDescFilter,
+  setTopDeptFilter,
+  setNsDescFilter,
+  setNsUpcFilter,
   setActiveStore,
   setDailyByDepartment,
   setNotSelling,

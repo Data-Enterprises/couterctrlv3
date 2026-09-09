@@ -63,6 +63,7 @@ const OrderSheetPanel = () => {
   const { sort, handleSort, applySort } = useTriStateSort<SortCol>();
   const [draftUpc, setDraftUpc] = useState("");
   const [draftDesc, setDraftDesc] = useState("");
+  const [draftCapped, setDraftCapped] = useState(ctx.onlyFlagged);
   const [ctxMenu, setCtxMenu] = useState<{
     x: number;
     y: number;
@@ -405,25 +406,36 @@ const OrderSheetPanel = () => {
                             className={SORT_TH}
                           />
                         </th>
+                        {/* A ColFilter rather than a bare toggle, so every
+                            heading on this page is either a filter or a sort
+                            and none of them is a one-off. */}
                         <th
                           className={`${TH} text-right`}
-                          title="The percentage added to the order to cover product that will not sell — for every 100 lb sold, this much gets thrown away. Click to show only capped rows."
+                          style={{ overflow: "visible" }}
+                          title="The percentage added to the order to cover product that will not sell — for every 100 lb sold, this much gets thrown away."
                         >
-                          <button
-                            onClick={() =>
-                              ctx.dispatch(setOnlyFlagged(!ctx.onlyFlagged))
-                            }
-                            className={`flex items-center gap-1 w-full justify-end transition-colors ${
-                              ctx.onlyFlagged
-                                ? "text-severity_watch_text"
-                                : "text-content/85"
-                            }`}
-                          >
-                            Waste %
-                            {ctx.onlyFlagged && (
-                              <span className="w-1 h-1 rounded-full bg-severity_watch_text flex-shrink-0" />
-                            )}
-                          </button>
+                          <div className="flex justify-end">
+                            <ColFilter
+                              label="Waste %"
+                              active={ctx.onlyFlagged}
+                              onApply={() =>
+                                ctx.dispatch(setOnlyFlagged(draftCapped))
+                              }
+                              onClear={() => {
+                                ctx.dispatch(setOnlyFlagged(false));
+                                setDraftCapped(false);
+                              }}
+                            >
+                              <label className="flex items-center gap-2 text-[12px] text-content cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={draftCapped}
+                                  onChange={(e) => setDraftCapped(e.target.checked)}
+                                />
+                                Only capped rows
+                              </label>
+                            </ColFilter>
+                          </div>
                         </th>
                         <th
                           className={`${TH} text-right whitespace-nowrap`}
