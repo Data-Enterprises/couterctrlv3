@@ -12,6 +12,7 @@ import SortHeader from "../../components/SortHeader";
 import { useTriStateSort } from "../../utils/useTriStateSort";
 import UpcContextMenu from "../../components/UpcContextMenu";
 import type { NotSellingItem, NotSellingStatus } from "../../interfaces";
+import type { NotSellingFilter } from "../../features/suggestedSlice";
 
 const TH =
   "px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/85";
@@ -19,6 +20,14 @@ const SORT_TH =
   "w-full justify-end text-[10px] font-semibold uppercase tracking-wide text-content/85 hover:text-content";
 
 type SortCol = "prior" | "recent" | "change" | "lost";
+
+/** Severity, in the order a reader should care: a line that stopped outright is
+ *  worse news than one that slowed, and a dead line is a cleanup job. */
+const STATUS_PILL: Record<NotSellingStatus, string> = {
+  stopped: "bg-severity_critical_bg text-severity_critical_text",
+  declining: "bg-severity_watch_bg text-severity_watch_text",
+  dead: "bg-gray-200 text-content/85",
+};
 
 /**
  * Opens on `declining`, and that ordering is the argument for the whole tab.
@@ -28,7 +37,13 @@ type SortCol = "prior" | "recent" | "change" | "lost";
  * its old rate looks fine on a shelf and is being PRODUCED to the old level,
  * rotting the difference every day, and nothing else on this page surfaces it.
  */
-const STATUSES: { key: NotSellingStatus; label: string; blurb: string }[] = [
+const STATUSES: { key: NotSellingFilter; label: string; blurb: string }[] = [
+  {
+    key: "all",
+    label: "All",
+    blurb:
+      "Everything that has stopped or slowed in this department, worst first. The Status column says which is which.",
+  },
   {
     key: "declining",
     label: "Declining",
@@ -86,13 +101,20 @@ const NotSellingTab = ({
   }, [forDept, ctx.nsDescFilter, ctx.nsUpcFilter]);
 
   const counts = useMemo(() => {
-    const c: Record<NotSellingStatus, number> = { dead: 0, stopped: 0, declining: 0 };
+    const c: Record<NotSellingFilter, number> = {
+      all: matching.length,
+      dead: 0,
+      stopped: 0,
+      declining: 0,
+    };
     for (const r of matching) c[r.status] += 1;
     return c;
   }, [matching]);
 
   const rows = applySort<NotSellingItem>(
-    matching.filter((r) => r.status === ctx.notSellingStatus),
+    matching.filter(
+      (r) => ctx.notSellingStatus === "all" || r.status === ctx.notSellingStatus,
+    ),
     (r, col) =>
       col === "prior"
         ? r.prior_lb_per_day
@@ -103,7 +125,19 @@ const NotSellingTab = ({
             : lostLb(r, recentDays),
   );
 
-  const lostTotal = rows.reduce((s, r) => s + lostLb(r, recentDays), 0);
+  /** Rates sum because they are all per-day over the same window; the change is
+   *  recomputed from the two totals rather than averaged from the rows, which
+   *  would weight a 0.06 lb/day line the same as a 3.6 lb/day one. */
+  const totals = useMemo(() => {
+    const prior = rows.reduce((s, r) => s + (r.prior_lb_per_day ?? 0), 0);
+    const recent = rows.reduce((s, r) => s + (r.recent_lb_per_day ?? 0), 0);
+    return {
+      prior,
+      recent,
+      change: prior > 0 ? recent / prior - 1 : null,
+      lost: rows.reduce((s, r) => s + lostLb(r, recentDays), 0),
+    };
+  }, [rows, recentDays]);
   const active = STATUSES.find((s) => s.key === ctx.notSellingStatus)!;
 
   if (!ns) {
@@ -200,6 +234,7 @@ const NotSellingTab = ({
                     />
                   </ColFilter>
                 </th>
+                <th className={`${TH} text-left w-24`}>Status</th>
                 <th className={`${TH} text-right whitespace-nowrap`}>
                   <SortHeader col="prior" label="Prior lb/day" sort={sort} onSort={handleSort} className={SORT_TH} />
                 </th>
@@ -233,6 +268,13 @@ const NotSellingTab = ({
                   <td className="px-3 py-2 text-content/85 tabular-nums">
                     {r.product_code}
                   </td>
+                  <td className="px-3 py-2">
+                    <span
+                      className={`inline-block px-1.5 py-0.5 rounded text-[11px] font-semibold capitalize ${STATUS_PILL[r.status]}`}
+                    >
+                      {r.status}
+                    </span>
+                  </td>
                   <td className="px-3 py-2 text-right tabular-nums text-content">
                     {fmtLb(r.prior_lb_per_day)}
                   </td>
@@ -257,14 +299,26 @@ const NotSellingTab = ({
             <tfoot>
               <tr className="sticky bottom-0 bg-gray-50 border-t-2 border-content/70 font-bold text-[14px]">
                 <td className="px-3 py-2"></td>
-                <td className="px-3 py-2 text-right text-content/85">
-                  {rows.length.toLocaleString()} items
+                <td className="px-3 py-2 text-right text-content/85" colSpan={2}>
+                  Totals · {rows.length.toLocaleString()} items
                 </td>
-                <td className="px-3 py-2"></td>
-                <td className="px-3 py-2"></td>
-                <td className="px-3 py-2"></td>
                 <td className="px-3 py-2 text-right tabular-nums text-content/85">
-                  {fmtLb(lostTotal)}
+                  {fmtLb(totals.prior)}
+                </td>
+                <td className="px-3 py-2 text-right tabular-nums text-content/85">
+                  {fmtLb(totals.recent)}
+                </td>
+                <td className="px-3 py-2 text-right tabular-nums">
+                  {totals.change === null ? (
+                    <span className="text-content/85">—</span>
+                  ) : (
+                    <span className="text-severity_critical_text">
+                      {(totals.change * 100).toFixed(0)}%
+                    </span>
+                  )}
+                </td>
+                <td className="px-3 py-2 text-right tabular-nums text-content/85">
+                  {fmtLb(totals.lost)}
                 </td>
               </tr>
             </tfoot>

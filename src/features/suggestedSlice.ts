@@ -9,6 +9,11 @@ import type {
   NotSellingStatus,
 } from "../interfaces";
 
+/** The not-selling chip row, which carries an "all" option the payload has no
+ *  equivalent for — the statuses are worth reading together, and opening on one
+ *  of them hides two thirds of the answer. */
+export type NotSellingFilter = NotSellingStatus | "all";
+
 /** The three readings of one department. `order` is the buyer's, `production`
  *  the manager's, `notSelling` the one that answers what is dying. */
 export type SuggestedTab = "order" | "production" | "notSelling";
@@ -61,7 +66,7 @@ interface SuggestedState {
   notSelling: SuggestedNotSelling | null;
   /** Which status the not-selling tab is showing. Opens on `declining`: dead and
    *  stopped are already obvious, an item at half its old rate is not. */
-  notSellingStatus: NotSellingStatus;
+  notSellingStatus: NotSellingFilter;
 
   /** Which lens the right panel is showing. */
   activeTab: SuggestedTab;
@@ -117,7 +122,7 @@ export const initialState: SuggestedState = {
   activeStoreLabel: "",
   dailyByDepartment: null,
   notSelling: null,
-  notSellingStatus: "declining",
+  notSellingStatus: "all",
   activeTab: "order",
   parameters: null,
   coverage: null,
@@ -196,7 +201,7 @@ export const suggestedSlice = createSlice({
     setNotSelling: (state, action: PayloadAction<SuggestedNotSelling | null>) => {
       state.notSelling = action.payload;
     },
-    setNotSellingStatus: (state, action: PayloadAction<NotSellingStatus>) => {
+    setNotSellingStatus: (state, action: PayloadAction<NotSellingFilter>) => {
       state.notSellingStatus = action.payload;
     },
     setActiveTab: (state, action: PayloadAction<SuggestedTab>) => {
@@ -259,7 +264,7 @@ export const suggestedSlice = createSlice({
       state.activeStoreLabel = "";
       state.notSelling = null;
       state.dailyByDepartment = null;
-      state.notSellingStatus = "declining";
+      state.notSellingStatus = "all";
       state.activeTab = "order";
       state.expandedStores = [];
       state.selectedDay = "";

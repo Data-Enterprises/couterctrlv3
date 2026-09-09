@@ -23,7 +23,17 @@ import ResizableModalShell from "../../components/modals/ResizableModalShell";
 const NAVY = "#1e2a4a";
 
 const P = ({ children }: { children: ReactNode }) => (
-  <p className="text-[13px] leading-relaxed text-content">{children}</p>
+  <p className="text-[14px] leading-[1.65] text-content">{children}</p>
+);
+
+/** The opening line of an answer, a step up from the rest.
+ *
+ *  Twelve answers set at one size read as one undifferentiated block — the
+ *  complaint that prompted this. A heavier first sentence gives each section a
+ *  topic line a reader can skim, and makes the paragraphs under it feel like
+ *  support rather than more of the same. */
+const Lead = ({ children }: { children: ReactNode }) => (
+  <p className="text-[15px] leading-[1.6] text-content font-medium">{children}</p>
 );
 
 /** Severity tokens rather than the document's own palette — a reader who has
@@ -36,7 +46,7 @@ const PILL: Record<string, string> = {
 
 const Pill = ({ tone, children }: { tone: keyof typeof PILL; children: ReactNode }) => (
   <span
-    className={`inline-block px-1.5 py-0.5 rounded text-[12px] font-semibold tabular-nums whitespace-nowrap ${PILL[tone]}`}
+    className={`inline-block px-2 py-0.5 rounded text-[13px] font-semibold whitespace-nowrap ${PILL[tone]}`}
   >
     {children}
   </span>
@@ -52,21 +62,21 @@ const Example = ({
   rows: { k: string; v: string; out?: boolean }[];
 }) => (
   <div className="border border-gray-200 rounded-lg overflow-hidden bg-custom-white">
-    <div className="px-3 py-2 border-b border-gray-200 bg-gray-50 text-[12px] font-semibold uppercase tracking-wide text-content/85">
+    <div className="px-3.5 py-2.5 border-b border-gray-200 bg-gray-50 text-[12px] font-bold uppercase tracking-[0.08em] text-[#1e2a4a]">
       {head}
     </div>
     {rows.map((r) => (
       <div
         key={r.k}
-        className={`grid grid-cols-[1fr_auto] gap-4 px-3 py-2 border-b border-gray-100 last:border-b-0 text-[13px] ${
+        className={`grid grid-cols-[1fr_auto] gap-4 px-3.5 py-2.5 border-b border-gray-100 last:border-b-0 text-[14px] ${
           r.out ? "bg-gray-100" : ""
         }`}
       >
-        <span className={r.out ? "font-semibold text-content" : "text-content/85"}>
+        <span className={r.out ? "font-bold text-content" : "text-content"}>
           {r.k}
         </span>
         <span
-          className={`tabular-nums ${r.out ? "font-semibold text-content" : "text-content"}`}
+          className={`tabular-nums ${r.out ? "font-bold text-[#1e2a4a] text-[15px]" : "font-medium text-content"}`}
         >
           {r.v}
         </span>
@@ -78,9 +88,9 @@ const Example = ({
 const Defs = ({ rows }: { rows: { t: ReactNode; d: ReactNode }[] }) => (
   <dl className="flex flex-col gap-2.5 m-0">
     {rows.map((r, i) => (
-      <div key={i} className="grid grid-cols-[8rem_1fr] gap-3 items-baseline">
-        <dt className="m-0 text-[13px] font-semibold text-content">{r.t}</dt>
-        <dd className="m-0 text-[13px] leading-relaxed text-content/85">{r.d}</dd>
+      <div key={i} className="grid grid-cols-[8.5rem_1fr] gap-4 items-baseline">
+        <dt className="m-0 text-[14px] font-bold text-[#1e2a4a]">{r.t}</dt>
+        <dd className="m-0 text-[14px] leading-[1.65] text-content">{r.d}</dd>
       </div>
     ))}
   </dl>
@@ -88,10 +98,10 @@ const Defs = ({ rows }: { rows: { t: ReactNode; d: ReactNode }[] }) => (
 
 const Note = ({ warn, children }: { warn?: boolean; children: ReactNode }) => (
   <div
-    className={`border-l-[3px] px-3 py-2.5 rounded-r text-[13px] leading-relaxed ${
+    className={`border-l-4 px-4 py-3 rounded-r text-[14px] leading-[1.65] ${
       warn
         ? "border-severity_watch_text bg-severity_watch_bg text-severity_watch_text"
-        : "border-gray-300 bg-gray-50 text-content/85"
+        : "border-[#1e2a4a]/30 bg-gray-50 text-content"
     }`}
   >
     {children}
@@ -115,7 +125,7 @@ const DayBars = () => (
     {DAY_ROWS.map((d) => (
       <div
         key={d.n}
-        className="grid grid-cols-[6rem_1fr_5rem] gap-3 items-center text-[13px]"
+        className="grid grid-cols-[6.5rem_1fr_5.5rem] gap-3 items-center text-[14px]"
       >
         <span className="text-content">{d.n}</span>
         <span className="bg-gray-200 rounded-sm h-4 overflow-hidden">
@@ -127,7 +137,7 @@ const DayBars = () => (
             }}
           />
         </span>
-        <span className="text-right tabular-nums text-content/85">{d.lb}</span>
+        <span className="text-right tabular-nums font-medium text-content">{d.lb}</span>
       </div>
     ))}
   </div>
@@ -143,11 +153,11 @@ const SECTIONS: { id: string; q: string; body: ReactNode }[] = [
     q: "Where does the suggested figure come from?",
     body: (
       <>
-        <P>
+        <Lead>
           Three steps. It starts with what this item actually sold, on the
           specific days the delivery has to cover, then adds back what typically
           gets lost before it reaches a customer.
-        </P>
+        </Lead>
         <Example
           head="Pork Shoulder Steak · covering Friday to Monday"
           rows={[
@@ -170,12 +180,12 @@ const SECTIONS: { id: string; q: string; body: ReactNode }[] = [
     q: "Why is Saturday so different from Wednesday?",
     body: (
       <>
-        <P>
+        <Lead>
           Because it is. Every figure on this page is worked out per weekday
           rather than as one daily average, because a case doesn&rsquo;t sell
           evenly across the week and ordering as though it does costs you both
           ways.
-        </P>
+        </Lead>
         <DayBars />
         <P>
           This is Meat by # at one store.{" "}
@@ -195,11 +205,11 @@ const SECTIONS: { id: string; q: string; body: ReactNode }[] = [
     q: "Can I trust the weekday pattern?",
     body: (
       <>
-        <P>
+        <Lead>
           Fair question &mdash; a pattern pulled out of twelve weeks could just be
           twelve weeks of coincidence. So we checked it against a year it had
           never seen.
-        </P>
+        </Lead>
         <P>
           Same department, same store, same weeks of the calendar, one year apart.
           Here is each day&rsquo;s share of its own week, then and now:
@@ -234,12 +244,12 @@ const SECTIONS: { id: string; q: string; body: ReactNode }[] = [
     q: "Can I look at the same week last year?",
     body: (
       <>
-        <P>
+        <Lead>
           Yes. Set the date to a day that has already passed and the screen
           switches into comparison mode: the same weekday rates, the same daily
           history, the same not-selling list &mdash; for that point in the
           calendar.
-        </P>
+        </Lead>
         <Note>
           In comparison mode there is <b className="font-semibold">no suggested
           weight</b>, on purpose. A pounds-to-order figure worked out for last
@@ -260,11 +270,11 @@ const SECTIONS: { id: string; q: string; body: ReactNode }[] = [
     q: "What do lead days and cover days change?",
     body: (
       <>
-        <P>
+        <Lead>
           Together they decide <em>which calendar days</em> the order has to pay
           for &mdash; and because the week isn&rsquo;t flat, that changes the
           number.
-        </P>
+        </Lead>
         <Defs
           rows={[
             {
@@ -297,12 +307,12 @@ const SECTIONS: { id: string; q: string; body: ReactNode }[] = [
     q: "What is the waste adjustment?",
     body: (
       <>
-        <P>
+        <Lead>
           Sales tell you what customers took home. They don&rsquo;t tell you about
           trim loss, spoilage, or product marked down and thrown out. Order to
           sales alone and you come up short every cycle by whatever never reached
           the register.
-        </P>
+        </Lead>
         <P>
           So the figure is lifted by that item&rsquo;s own recorded waste rate.
           Each row says which record it used:
@@ -340,11 +350,11 @@ const SECTIONS: { id: string; q: string; body: ReactNode }[] = [
     q: "Why do some items say no adjustment?",
     body: (
       <>
-        <P>
+        <Lead>
           Because nothing has been recorded as wasted for that item. It
           doesn&rsquo;t mean nothing is being lost &mdash; it means there&rsquo;s
           no record to measure.
-        </P>
+        </Lead>
         <P>
           Those rows are a sales forecast rather than a full order figure, and
           they will tend to run low. If a cut you know throws off a lot of trim
@@ -359,10 +369,10 @@ const SECTIONS: { id: string; q: string; body: ReactNode }[] = [
     q: "Does this know what’s already in my case?",
     body: (
       <>
-        <P>
+        <Lead>
           <b className="font-semibold">No.</b> Nothing here can see your current
           stock, and nothing here knows what&rsquo;s already on a truck.
-        </P>
+        </Lead>
         <P>
           What you&rsquo;re looking at is how much the case is expected to move
           over those days, adjusted for waste. Subtracting what&rsquo;s already on
@@ -380,10 +390,10 @@ const SECTIONS: { id: string; q: string; body: ReactNode }[] = [
     q: "What does the not-selling list mean?",
     body: (
       <>
-        <P>
+        <Lead>
           The other half of the question. It compares the last four weeks against
           the eight before them, and flags two things:
-        </P>
+        </Lead>
         <Defs
           rows={[
             {
@@ -422,12 +432,12 @@ const SECTIONS: { id: string; q: string; body: ReactNode }[] = [
     q: "Is my store low, or is everyone low?",
     body: (
       <>
-        <P>
+        <Lead>
           Switch to the group view and you get one line per store per department,
           so a department can be read against the same department everywhere else.
           A store that looks weak on its own often turns out to be in line with
           the group in a slow week.
-        </P>
+        </Lead>
         <Note>
           One thing to watch: a store carrying three meat items will always look
           far below one carrying 170. Compare pounds per item, or check the item
@@ -441,12 +451,12 @@ const SECTIONS: { id: string; q: string; body: ReactNode }[] = [
     q: "Why is an item marked as a data problem?",
     body: (
       <>
-        <P>
+        <Lead>
           Some items record more waste than they ever sold &mdash; one store shows
           tuna steaks at over four times, catfish at over three. That isn&rsquo;t
           waste, it&rsquo;s the item being received under one code and sold under
           another.
-        </P>
+        </Lead>
         <P>
           Where that happens the adjustment is capped and the row is flagged, so a
           keying problem doesn&rsquo;t quietly inflate an order. It&rsquo;s worth
@@ -461,11 +471,11 @@ const SECTIONS: { id: string; q: string; body: ReactNode }[] = [
     q: "How far back does it look?",
     body: (
       <>
-        <P>
+        <Lead>
           Twelve weeks by default. That&rsquo;s long enough that one holiday or one
           ad week doesn&rsquo;t distort a weekday rate, and each day of the week
           gets twelve readings behind it.
-        </P>
+        </Lead>
         <P>
           The trade-off is worth knowing: twelve weeks back from September reaches
           mid-June, so a shoulder-season item can carry some summer in its figure.
@@ -525,10 +535,10 @@ const SuggestedHelpModal = ({ onClose }: { onClose: () => void }) => {
         style={{ background: NAVY }}
       >
         <div>
-          <div className="text-[13px] font-semibold text-custom-white">
+          <div className="text-[15px] font-bold text-custom-white">
             Reading Suggested Weight
           </div>
-          <div className="text-[12px] font-normal text-custom-white/85 mt-0.5">
+          <div className="text-[13px] font-normal text-custom-white/85 mt-0.5">
             How the number is worked out, what it covers, and what it doesn&rsquo;t.
           </div>
         </div>
@@ -542,48 +552,68 @@ const SuggestedHelpModal = ({ onClose }: { onClose: () => void }) => {
       </div>
 
       <div ref={scroller} className="flex-1 overflow-y-auto thin-scrollbar px-5 py-4">
-        <nav className="rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 mb-5">
-          <div className="text-[12px] font-semibold uppercase tracking-wide text-content/85 mb-2">
+        <nav className="rounded-lg border border-gray-200 bg-gray-50 px-4 py-3.5 mb-7">
+          <div className="text-[12px] font-bold uppercase tracking-[0.08em] text-[#1e2a4a] mb-2.5">
             Questions
           </div>
-          <ol className="list-decimal pl-5 flex flex-col gap-1 m-0">
-            {SECTIONS.map((s) => (
-              <li key={s.id} className="text-[13px] marker:text-content/85">
+          <ol className="flex flex-col gap-1.5 m-0 p-0 list-none">
+            {SECTIONS.map((sec, i) => (
+              <li key={sec.id}>
                 <button
-                  onClick={() => jump(s.id)}
-                  className="text-left text-content hover:text-[#1e2a4a] hover:underline underline-offset-2 transition-colors"
+                  onClick={() => jump(sec.id)}
+                  className="group w-full text-left flex items-baseline gap-3"
                 >
-                  {s.q}
+                  <span className="w-5 flex-shrink-0 text-[13px] font-bold tabular-nums text-[#1e2a4a]/50 group-hover:text-[#1e2a4a] transition-colors">
+                    {i + 1}
+                  </span>
+                  <span className="text-[14px] text-content group-hover:text-[#1e2a4a] group-hover:underline underline-offset-2 transition-colors">
+                    {sec.q}
+                  </span>
                 </button>
               </li>
             ))}
           </ol>
         </nav>
 
-        {SECTIONS.map((s, i) => (
+        {SECTIONS.map((sec, i) => (
           <section
-            key={s.id}
-            id={s.id}
+            key={sec.id}
+            id={sec.id}
             // -1 keeps it focusable for the jump without putting a block of
             // text into the tab order.
             tabIndex={-1}
-            className={`flex flex-col gap-3 py-5 outline-none ${
+            className={`py-7 outline-none ${
               i < SECTIONS.length - 1 ? "border-b border-gray-200" : ""
             }`}
             style={{ scrollMarginTop: "0.5rem" }}
           >
-            <h2
-              className={`text-[16px] font-semibold leading-snug m-0 transition-colors duration-700 ${
-                landed === s.id ? "text-[#1e2a4a]" : "text-content"
-              }`}
-            >
-              {s.q}
-            </h2>
-            {s.body}
+            {/* The number sits in its own gutter and the answer aligns to it.
+                Twelve headings on a flat surface all read the same weight; a
+                left rail gives the eye somewhere to count from, and it is a
+                true numbering — the contents list is the same twelve, in the
+                same order. */}
+            <div className="grid grid-cols-[2rem_1fr] gap-x-3">
+              <span
+                className={`text-[15px] font-bold tabular-nums leading-snug transition-colors duration-700 ${
+                  landed === sec.id ? "text-[#1e2a4a]" : "text-[#1e2a4a]/40"
+                }`}
+              >
+                {i + 1}
+              </span>
+              <h2
+                className={`text-[19px] font-bold leading-snug m-0 tracking-[-0.01em] transition-colors duration-700 ${
+                  landed === sec.id ? "text-[#1e2a4a]" : "text-content"
+                }`}
+              >
+                {sec.q}
+              </h2>
+              <div />
+              <div className="flex flex-col gap-3.5 mt-3">{sec.body}</div>
+            </div>
           </section>
         ))}
 
-        <footer className="mt-4 pt-3 border-t border-gray-200 text-[12px] leading-relaxed text-content/85">
+        <footer className="mt-5 pt-4 border-t border-gray-200 text-[13px] leading-relaxed text-content/85">
           Figures shown are real, from one store over a twelve-week window.
           Departments covered are the ones that sell by the pound &mdash; meat,
           produce and deli scale items.
