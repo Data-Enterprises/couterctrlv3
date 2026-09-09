@@ -13,9 +13,8 @@ import PanelFrame from "./PanelFrame";
 import FilterBar from "../../components/filters/FilterBar";
 import TextFilter from "../../components/filters/TextFilter";
 import InfoButton from "../../components/InfoButton";
-import InfoPopover from "../../components/InfoPopover";
+import SuggestedHelpModal from "./SuggestedHelpModal";
 import { StoreListSkeleton } from "./Skeletons";
-import { SUGGESTED_INFO } from "./suggestedInfo";
 
 /** Header and rows share these, so a column cannot drift from its label. */
 const STORE_COLS = "grid-cols-[1fr_56px_72px_32px]";
@@ -140,15 +139,13 @@ const StoreTreePanel = ({
             {scopeLabel}
           </span>
           <div className="flex-1" />
-          <div className="relative flex-shrink-0">
-            <InfoButton onClick={() => setInfoOpen((v) => !v)} />
+          <div className="flex-shrink-0">
+            <InfoButton
+              title="How this page works"
+              onClick={() => setInfoOpen((v) => !v)}
+            />
             {infoOpen && (
-              <InfoPopover
-                title={SUGGESTED_INFO.title}
-                purpose={SUGGESTED_INFO.purpose}
-                glossary={SUGGESTED_INFO.glossary}
-                onClose={() => setInfoOpen(false)}
-              />
+              <SuggestedHelpModal onClose={() => setInfoOpen(false)} />
             )}
           </div>
         </>

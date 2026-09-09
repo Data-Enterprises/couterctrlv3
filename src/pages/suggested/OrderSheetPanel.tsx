@@ -34,10 +34,7 @@ import SortHeader from "../../components/SortHeader";
 import { useTriStateSort } from "../../utils/useTriStateSort";
 import { SheetSkeleton } from "./Skeletons";
 import KpiTileGrid, { type KpiCell } from "../../components/KpiTileGrid";
-import InfoButton from "../../components/InfoButton";
-import InfoPopover from "../../components/InfoPopover";
 import UpcContextMenu from "../../components/UpcContextMenu";
-import { SUGGESTED_INFO } from "./suggestedInfo";
 import type { DowRates, SuggestedItem } from "../../interfaces";
 
 const TH =
@@ -71,7 +68,6 @@ const OrderSheetPanel = () => {
     y: number;
     upc: string;
   } | null>(null);
-  const [infoOpen, setInfoOpen] = useState(false);
 
   /**
    * The department, out of the store's rows.
@@ -230,21 +226,6 @@ const OrderSheetPanel = () => {
           <div className="flex items-center gap-3 mt-0.5">
             {/* Scoped to the tab on screen: the same term does not mean the same
                 thing on Order as it does on Production. */}
-            <div className="relative">
-              <InfoButton onClick={() => setInfoOpen((v) => !v)} />
-              {infoOpen && (
-                <InfoPopover
-                  title={SUGGESTED_INFO.title}
-                  purpose={SUGGESTED_INFO.purpose}
-                  glossary={
-                    hasSheet
-                      ? SUGGESTED_INFO.byTab[tab]
-                      : SUGGESTED_INFO.byTab.topToOrder
-                  }
-                  onClose={() => setInfoOpen(false)}
-                />
-              )}
-            </div>
             <button
               onClick={() => ctx.dispatch(setExportOpen(true))}
               title="Export CSV"
