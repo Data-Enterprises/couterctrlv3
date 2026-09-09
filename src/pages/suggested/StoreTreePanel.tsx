@@ -67,6 +67,21 @@ const StoreTreePanel = ({
   const isHistorical = ctx.parameters?.is_historical === true;
   const orderLb = (n: number | null | undefined) =>
     isHistorical ? "—" : fmtLb0(n);
+  /**
+   * Why this column is not "Order lb".
+   *
+   * The tree is fetched without the ordering half — it spans twenty stores and
+   * the sheet spans one, so that is where the cost lands. But the on-hand
+   * subtraction rides on the same flag: these pounds are demand plus waste,
+   * with nothing taken off for stock already in the case, while the sheet's
+   * are the same figure net of it.
+   *
+   * So the two do not add up, and the honest fix is to stop claiming they do.
+   * This column ranks stores and departments by size, which is all it was ever
+   * read for; the number you order is the one on the sheet.
+   */
+  const PRE_STOCK_TITLE =
+    "Demand plus waste for this window, before stock on hand comes off. The sheet's Order lb is this figure net of what is already in the case, so it will be the lower of the two.";
 
   const cover = ctx.parameters?.cover_window;
   // Bare, the way Receivers prints its range — no leading label, month/day on
@@ -175,7 +190,9 @@ const StoreTreePanel = ({
             <div className={`grid ${STORE_COLS} gap-2 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide text-content/85 flex-shrink-0`}>
               <div>Store</div>
               <div className="text-center">Items</div>
-              <div className="text-right">Order lb</div>
+              <div className="text-right" title={PRE_STOCK_TITLE}>
+                Needs lb
+              </div>
               <div></div>
             </div>
 
@@ -232,7 +249,9 @@ const StoreTreePanel = ({
                         <div className={`grid ${DEPT_COLS} gap-2 pl-6 pr-3 py-1.5 bg-gray-50 text-[9.5px] font-bold uppercase tracking-wide text-content/85`}>
                           <div>Department</div>
                           <div className="text-center">Items</div>
-                          <div className="text-right">Order lb</div>
+                          <div className="text-right" title={PRE_STOCK_TITLE}>
+                            Needs lb
+                          </div>
                         </div>
                         <div className="divide-y divide-[#1e2a4a]/15">
                           {store.departments.map((d) => {
@@ -272,38 +291,6 @@ const StoreTreePanel = ({
                                   }`}
                                 >
                                   {deptLabel(d.sub_department_description)}
-                                  {(() => {
-                                    /* The rhythm calls that ask for a change
-                                       this cycle. `watch` is left out on
-                                       purpose — it means doing nothing costs
-                                       nothing, so counting it here would send
-                                       somebody into a department to find there
-                                       was nothing to do.
-
-                                       Counted server-side over the whole
-                                       query, which is the only place it can
-                                       be: the sheet holds one department's
-                                       rows and this line is about the ones
-                                       nobody has opened yet. */
-                                    const act =
-                                      (d.items_slow_down ?? 0) +
-                                      (d.items_skip_cycle ?? 0) +
-                                      (d.items_tighten ?? 0) +
-                                      (d.items_deliver_often ?? 0);
-                                    if (act === 0) return null;
-                                    return (
-                                      <span
-                                        className={
-                                          (d.items_slow_down ?? 0) > 0
-                                            ? "text-severity_critical_text"
-                                            : "text-severity_watch_text"
-                                        }
-                                      >
-                                        {" "}
-                                        · {act} to act on
-                                      </span>
-                                    );
-                                  })()}
                                   {d.items_clamped > 0 && (
                                     <span className="text-severity_watch_text">
                                       {" "}

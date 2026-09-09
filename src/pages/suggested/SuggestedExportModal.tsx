@@ -88,7 +88,7 @@ const METRICS = [
   { key: "avg_daily_weight", label: "Avg lb/day" },
   { key: "sold_weight_window", label: "Lookback lb" },
   { key: "shrink_multiplier", label: "Shrink multiplier" },
-  { key: "lifetime_markdown", label: "Marked down lb" },
+  { key: "markdown_weight_window", label: "Marked down lb" },
   ...DOW.map((d, i) => ({ key: `dow_${i}`, label: `${d} lb` })),
   { key: "on_hand_weight", label: "On hand lb" },
   { key: "days_of_cover", label: "Days of cover" },
@@ -113,10 +113,15 @@ const buildSheetCsv = (items: SuggestedItem[]) => {
     "Department",
     "Avg lb/day",
     "Cover demand lb",
+    // The two the sheet on screen does not have room for. A buyer checking a
+    // suggestion against their own sense of the item reaches for these before
+    // anything else: what did we buy over the window, and what went out.
+    "Ordered lb (lookback)",
+    "Sold lb (lookback)",
     "Shrink source",
     "Shrink multiplier",
     "Capped",
-    "Marked down lb (lifetime)",
+    "Marked down lb (lookback)",
     "On hand lb",
     "Order lb",
     ...DOW.map((d) => `${d} lb`),
@@ -127,10 +132,12 @@ const buildSheetCsv = (items: SuggestedItem[]) => {
     deptLabel(i.sub_department_description),
     fmtNum(i.avg_daily_weight ?? 0),
     fmtNum(i.demand_weight ?? 0),
+    fmtNum(i.ordered_weight ?? 0),
+    fmtNum(i.sold_weight_window ?? 0),
     i.shrink_source,
     fmtNum(i.shrink_multiplier ?? 1, 4),
     i.shrink_clamped ? "yes" : "",
-    fmtNum(i.lifetime_markdown ?? 0),
+    fmtNum(i.markdown_weight_window ?? 0),
     fmtNum(i.on_hand_weight ?? 0),
     fmtNum(i.suggested_weight ?? 0),
     ...DOW.map((_, d) => fmtNum(i.dow_rates?.[String(d)] ?? 0)),
@@ -143,12 +150,12 @@ const buildSheetCsv = (items: SuggestedItem[]) => {
     "",
     fmtNum(items.reduce((s, i) => s + (i.avg_daily_weight ?? 0), 0)),
     fmtNum(items.reduce((s, i) => s + (i.demand_weight ?? 0), 0)),
+    fmtNum(items.reduce((s, i) => s + (i.ordered_weight ?? 0), 0)),
+    fmtNum(items.reduce((s, i) => s + (i.sold_weight_window ?? 0), 0)),
     "",
     "",
     "",
-    // Left blank for the same reason the grid leaves it blank: lifetime
-    // pounds over item lifetimes that differ do not sum into a period.
-    "",
+    fmtNum(items.reduce((s, i) => s + (i.markdown_weight_window ?? 0), 0)),
     fmtNum(items.reduce((s, i) => s + (i.on_hand_weight ?? 0), 0)),
     fmtNum(items.reduce((s, i) => s + (i.suggested_weight ?? 0), 0)),
     ...DOW.map((_, d) =>
@@ -398,7 +405,7 @@ const SuggestedExportModal = ({
       ["avg_daily_weight", { fn: "sum", enabled: false }],
       ["sold_weight_window", { fn: "sum", enabled: false }],
       ["shrink_multiplier", { fn: "avg", enabled: false }],
-      ["lifetime_markdown", { fn: "sum", enabled: false }],
+      ["markdown_weight_window", { fn: "sum", enabled: false }],
       ...DOW.map(
         (_, i) =>
           [`dow_${i}`, { fn: "sum", enabled: false }] as [string, MetricSelection],

@@ -190,7 +190,7 @@ const OrderSheetPanel = () => {
         : col === "waste"
           ? (r.shrink_multiplier ?? null)
           : col === "markdown"
-          ? (r.lifetime_markdown ?? null)
+          ? (r.markdown_weight_window ?? null)
           : (r.suggested_weight ?? null),
   );
 
@@ -205,6 +205,7 @@ const OrderSheetPanel = () => {
     // the same arithmetic the endpoint does at store grain, so unfiltered the
     // two agree.
     const onHand = rows.reduce((s, r) => s + (r.on_hand_weight ?? 0), 0);
+    const markdown = rows.reduce((s, r) => s + (r.markdown_weight_window ?? 0), 0);
     // Never day-scoped. `demand` follows the selected day by design, so reusing
     // it for the All Week card would have made that card show one day's pounds
     // under the label "All Week".
@@ -215,6 +216,7 @@ const OrderSheetPanel = () => {
       daily,
       actionable,
       week,
+      markdown,
       cover: daily > 0 ? onHand / daily : null,
     };
   }, [rows]);
@@ -563,7 +565,7 @@ const OrderSheetPanel = () => {
                         </th>
                         <th
                           className={`${TH} text-right whitespace-nowrap`}
-                          title="Recorded waste in pounds, over each item's whole recorded life — not the cover window. Sort it to rank where the waste actually is: a small percentage of a big mover outweighs a big percentage of a slow one."
+                          title="Recorded markdown pounds over the lookback — the same window as every other figure in this row. Sort it to rank where the waste actually is: a small percentage of a big mover outweighs a big percentage of a slow one."
                         >
                           <SortHeader
                             col="markdown"
@@ -648,8 +650,8 @@ const OrderSheetPanel = () => {
                             )}
                           </td>
                           <td className="px-3 py-2 text-right tabular-nums text-content">
-                            {r.lifetime_markdown
-                              ? fmtLb0(r.lifetime_markdown)
+                            {r.markdown_weight_window
+                              ? fmtLb0(r.markdown_weight_window)
                               : "—"}
                           </td>
                           <td className="px-3 py-2 text-right tabular-nums text-content font-semibold">
@@ -672,12 +674,13 @@ const OrderSheetPanel = () => {
                           {fmtLb(totals.demand)}
                         </td>
                         <td className="px-3 py-2"></td>
-                        {/* Marked down is deliberately not totalled. Every other
-                            figure in this row covers the same window; these are
-                            lifetime pounds over item lifetimes that differ, so a
-                            sum beside them would read as a period it does not
-                            have. The sort is what this column is for. */}
-                        <td className="px-3 py-2"></td>
+                        {/* Totalled now that the column is the lookback rather
+                            than each item's whole life. Lifetime pounds over
+                            lifetimes that differ had no period to sum into; this
+                            covers the same window as everything beside it. */}
+                        <td className="px-3 py-2 text-right tabular-nums text-content/85">
+                          {fmtLb(totals.markdown)}
+                        </td>
                         <td className="px-3 py-2 text-right tabular-nums text-content/85">
                           {isHistorical ? "—" : fmtLb(totals.order)}
                         </td>

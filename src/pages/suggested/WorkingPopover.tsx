@@ -113,7 +113,7 @@ const WorkingPopover = ({
           <div className="text-[12px] font-semibold text-custom-white truncate">
             {item.product_description ?? String(item.product_code)}
           </div>
-          <div className="text-[11px] text-custom-white/85">
+          <div className="text-[12px] text-custom-white/85">
             {leadDays} days until delivery · {coverDays} cover days
           </div>
         </div>
@@ -126,7 +126,7 @@ const WorkingPopover = ({
         </button>
       </div>
 
-      <div className="px-3 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-wide text-content/85">
+      <div className="px-3 pt-2 pb-1 text-[12px] font-semibold uppercase tracking-wide text-content/85">
         What this item does on the days covered
       </div>
       {days.length === 0 ? (
@@ -140,7 +140,7 @@ const WorkingPopover = ({
       <div className="border-t border-gray-200">
         <Row k="Cover demand" v={`${fmtLb(demand)} lb`} />
         {drift && (
-          <div className="px-3 pb-1 text-[11px] text-content/85 leading-snug">
+          <div className="px-3 pb-1 text-[12px] text-content/85 leading-snug">
             The days above sum to {fmtLb(daySum)} — each weekday rate is rounded
             to two places before it is shown, so the parts need not add to the
             whole.
@@ -154,7 +154,20 @@ const WorkingPopover = ({
           soft
         />
         {onHand > 0 && (
-          <Row k="Already in the case" v={`− ${fmtLb(onHand)} lb`} soft />
+          <>
+            <Row k="Already in the case" v={`− ${fmtLb(onHand)} lb`} soft />
+            {/* The subtraction, shown rather than asserted. This is the one
+                term of the model a buyer will not take on trust — "48 lb
+                already in the case" is a claim about their own case, and they
+                will want to know where it came from before they cut an order
+                by it. Both halves are the SHORT window, which is why the line
+                names the days. */}
+            <div className="px-3 pb-1.5 text-[12px] text-content/85 leading-snug">
+              Ordered {fmtLb(item.ordered_weight_recent)} lb and sold{" "}
+              {fmtLb(item.sold_weight_recent)} lb over the last{" "}
+              {leadDays + coverDays} days.
+            </div>
+          </>
         )}
         {/* The same stock expressed as time, because that is the form every
             rhythm action is argued in. Pounds say what came off this order;
@@ -180,18 +193,18 @@ const WorkingPopover = ({
         <div className="px-3 py-2.5 border-t border-gray-200 bg-gray-50">
           <div className="flex items-center gap-2 mb-1.5">
             <span
-              className={`inline-block px-1.5 py-0.5 rounded text-[11px] font-semibold ${ACTION_TONE[action.tone].chip}`}
+              className={`inline-block px-1.5 py-0.5 rounded text-[12px] font-semibold ${ACTION_TONE[action.tone].chip}`}
             >
               {action.label}
             </span>
             {/* Says which kind of advice this is. Without it "over-ordering"
                 next to a figure of 313 lb reads as "buy less than 313", which
                 is the one thing it does not mean. */}
-            <span className="text-[11px] text-content/85">
+            <span className="text-[12px] text-content/85">
               {SCOPE_TEXT[action.scope]}
             </span>
           </div>
-          <p className="text-[11px] leading-snug text-content">{action.detail}</p>
+          <p className="text-[12px] leading-snug text-content">{action.detail}</p>
         </div>
       )}
 

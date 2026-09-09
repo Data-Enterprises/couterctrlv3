@@ -156,6 +156,20 @@ export const getSuggestedGroup = async (
     ...params,
     singleStore: 0,
     groupBy: "store",
+    // OFF, against the endpoint's default of on.
+    //
+    // The item call reads one store's ledger; this one reads twenty. The
+    // ordering half is where that cost lands, and nothing in the tree is worth
+    // twenty stores of it — the tree's job is to say which store and which
+    // department to open, and the ordering verdicts are read on the sheet
+    // once you are in there.
+    //
+    // It costs the store-grain counts (`items_slow_down` and the rest) and,
+    // less obviously, the on-hand subtraction: `suggested_weight` is
+    // demand x shrink MINUS on-hand only when this flag is on. So the tree's
+    // pounds are a pre-stock figure and the sheet's are post-stock, which is
+    // why the tree no longer calls its column "Order lb".
+    includeOrders: false,
     pageSize: params.pageSize ?? 1500,
   });
 
@@ -181,13 +195,12 @@ export const getSuggestedItems = async (
     useGroups: 0,
     singleStore: 1,
     searchValue: storeid,
-    // Against the endpoint's own default, deliberately. It calls these an
-    // audit trail for "why is this item 1.31?" — a pgAdmin question. That was
-    // true when the only diagnostics were lifetime damage and two fields that
-    // are structurally zero until EDI. `lifetime_markdown` is different: it is
-    // recorded waste in pounds, which is the manager's question, not the
-    // auditor's. The other four ride along for five numbers a row.
-    includeDiagnostics: true,
+    // Left at the endpoint's default, which is off. It was on for one field:
+    // `lifetime_markdown`, back when the only markdown figure was a lifetime
+    // one. `markdown_weight_window` covers the lookback, ships on every row
+    // without the flag, and is the figure the sheet shows — so the other five
+    // diagnostics were riding along for nothing. The endpoint has just spent
+    // three commits cutting its own payload; this is the same move from here.
     // Asked for HERE and only here. The endpoint refuses it at store grain with
     // a 400 — across a group it is thousands of rows spanning every store, and
     // the descriptions on those rows are filled from the main result, which

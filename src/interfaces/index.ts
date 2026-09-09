@@ -1711,6 +1711,15 @@ export interface SuggestedItem {
    *  This page does not ask for them. */
   lifetime_damaged?: number;
   lifetime_markdown?: number;
+  /**
+   * Recorded markdown pounds over the LOOKBACK, not the item's whole life.
+   *
+   * The figure the sheet shows. Lifetime pounds cannot be totalled beside
+   * anything else on the row — item lifetimes differ, so the column had to sit
+   * out of the totals row and could only be sorted. This one covers the same
+   * window as every other figure there, so it adds up.
+   */
+  markdown_weight_window?: number;
   lifetime_received?: number;
   lifetime_sold?: number;
   /**
@@ -1734,15 +1743,26 @@ export interface SuggestedItem {
         action and a past date has no ordering decision left in it. ── */
   ordered_weight?: number;
   ordered_units?: number;
-  sold_units?: number;
   /** Ordered ÷ sold over the lookback. Null when nothing sold. */
   order_ratio?: number | null;
-  order_ratio_units?: number | null;
   /** The same statement in pounds: bought and not sold. Negative where the
    *  store sold more than it bought. This is what a list should rank by — the
    *  ratio says how far out of line, the gap says what it costs. */
   order_gap_weight?: number | null;
   order_status?: OrderStatus;
+
+  /**
+   * The two halves `on_hand_weight` is the difference of, over the short
+   * window rather than the lookback.
+   *
+   * Returned separately because the subtraction is the one term of the model a
+   * buyer will not take on trust: "48 lb already in the case" is an assertion,
+   * and "ordered 91, sold 43" is an argument. Neither is a lookback figure, so
+   * neither should be read against `ordered_weight` or `sold_weight_window`.
+   */
+  ordered_weight_recent?: number;
+  sold_weight_recent?: number;
+
   /**
    * Ordered and sold within 3% of each other AND no waste recorded anywhere.
    *
@@ -1781,7 +1801,6 @@ export interface SuggestedItem {
   /* ── diagnostics only ── */
   damaged_weight?: number;
   damaged_units?: number;
-  ledger_sold_weight?: number;
 }
 
 /**
@@ -1853,9 +1872,7 @@ export interface SuggestedGroupRow {
   /* ── ordered against sold, same availability rules as the item row ── */
   ordered_weight?: number;
   ordered_units?: number;
-  sold_units?: number;
   order_ratio?: number | null;
-  order_ratio_units?: number | null;
   order_gap_weight?: number | null;
   on_hand_weight?: number;
   items_critical?: number;
