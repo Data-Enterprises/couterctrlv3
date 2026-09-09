@@ -32,6 +32,23 @@ interface SuggestedState {
   /** The order parameters. These live here rather than in `search` because
    *  they are this page's model inputs, not a store/date search — and because
    *  changing one has to re-run the whole fetch, which the page owns. */
+  /**
+   * The day the order is placed, `yyyy-mm-dd`.
+   *
+   * This page's own rather than `searchSlice.singleDate`. That one starts a day
+   * back because every reporting page wants a complete day; an order is placed
+   * TODAY, and the endpoint treats an earlier date as a comparison and strips
+   * the order figures. Writing today into the shared slice to fix this page
+   * moved the week ending on every other one.
+   *
+   * Held as the wire format end to end. Every conversion between a Date and a
+   * date string in this app is somewhere a day can be lost.
+   *
+   * No control writes it yet — an order is always placed today, and a past date
+   * only becomes meaningful alongside the year-over-year comparison. `setAsOf`
+   * is the seam that work plugs into.
+   */
+  asOf: string;
   leadDays: number;
   coverDays: number;
   lookbackWeeks: number;
@@ -109,9 +126,19 @@ interface SuggestedState {
   onlyFlagged: boolean;
 }
 
+/** Local calendar date as `yyyy-mm-dd`. Built from the local getters rather
+ *  than `toISOString`, which is UTC and hands back yesterday for anyone west of
+ *  Greenwich after their afternoon. */
+const todayIso = () => {
+  const d = new Date();
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+};
+
 export const initialState: SuggestedState = {
-  // Defaults match the endpoint's own: order Wednesday, lands Friday, has to
-  // last until Monday. Twelve weeks of history behind the weekday rates.
+  // Defaults match the endpoint's own: today, order Wednesday, lands Friday,
+  // has to last until Monday. Twelve weeks of history behind the weekday rates.
+  asOf: todayIso(),
   leadDays: 2,
   coverDays: 4,
   lookbackWeeks: 12,
@@ -147,6 +174,9 @@ export const suggestedSlice = createSlice({
   name: "suggested",
   initialState,
   reducers: {
+    setAsOf: (state, action: PayloadAction<string>) => {
+      state.asOf = action.payload;
+    },
     setLeadDays: (state, action: PayloadAction<number>) => {
       state.leadDays = action.payload;
     },
@@ -282,6 +312,7 @@ export const suggestedSlice = createSlice({
 });
 
 export const {
+  setAsOf,
   setTopDescFilter,
   setTopDeptFilter,
   setNsDescFilter,

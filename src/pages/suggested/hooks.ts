@@ -10,6 +10,7 @@ export const useSuggestedCtx = () => {
     (s) => s.user,
   );
   const {
+    asOf,
     leadDays,
     coverDays,
     lookbackWeeks,
@@ -55,6 +56,7 @@ export const useSuggestedCtx = () => {
     userid,
     assignedStores,
     selectedGroupStores,
+    asOf,
     leadDays,
     coverDays,
     lookbackWeeks,

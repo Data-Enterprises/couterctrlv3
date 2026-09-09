@@ -13,6 +13,13 @@ interface SearchCardProps {
   description: string;
   buttonLabel?: string;
   singleDate?: boolean;
+  /** Suppress the card's own date control entirely, for a page that owns its
+   *  date rather than sharing `searchSlice`'s. Suggested Order does: its date
+   *  is the day an order is PLACED and defaults to today, while the shared one
+   *  defaults a day back because every reporting page wants a complete day.
+   *  Writing today into the shared slice to suit this page moved the week
+   *  ending on every other one. */
+  hideDates?: boolean;
   onSearch: () => void;
   loading: boolean;
   onBack?: () => void;
@@ -35,6 +42,7 @@ const SearchCard = ({
   description,
   buttonLabel = "Search",
   singleDate = false,
+  hideDates = false,
   onSearch,
   loading,
   onBack,
@@ -57,9 +65,11 @@ const SearchCard = ({
           search.selectedStore.storeid,
           search.selectedStore.store_name,
         ),
-    singleDate
-      ? search.singleDate
-      : `${search.startDate} - ${search.endDate}`,
+    hideDates
+      ? ""
+      : singleDate
+        ? search.singleDate
+        : `${search.startDate} - ${search.endDate}`,
   ]
     .filter(Boolean)
     .join(" · ");
@@ -95,7 +105,8 @@ const SearchCard = ({
 
             <StorePicker />
 
-            {singleDate ? <SingleDatePicker /> : <DatePickers showBtn={false} />}
+            {!hideDates &&
+              (singleDate ? <SingleDatePicker /> : <DatePickers showBtn={false} />)}
 
             {extraControls}
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useSuggestedCtx } from "./hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import { getSuggestedGroup, getSuggestedItems } from "../../api/suggested";
@@ -23,8 +23,8 @@ import {
   resetSuggestedResults,
   type SheetKey,
 } from "../../features/suggestedSlice";
-import { isGroupSearch, setSingleDate } from "../../features/searchSlice";
-import { formatDate, formatGoliathDate, getStoreName } from "../../utils";
+import { isGroupSearch } from "../../features/searchSlice";
+import { getStoreName } from "../../utils";
 import { deptLabel, sheetRows } from ".";
 import type {
   JsonError,
@@ -56,33 +56,10 @@ const Suggested = () => {
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [notice, setNotice] = useState<string | undefined>(undefined);
 
-  /**
-   * This page orders for TODAY; the shared date picker defaults to yesterday.
-   *
-   * `searchSlice` starts `singleDate` a day back because every reporting page
-   * wants a complete day, and today's sales are still coming in. An order is the
-   * opposite: `asOf` is the day the order is PLACED, the endpoint's own default
-   * is today, and anything earlier now comes back flagged `is_historical` with
-   * `suggested_weight` stripped — so the default landed the page on a sheet
-   * whose entire Order column was blank.
-   *
-   * Set once on mount rather than clamped on every send: a past date is a
-   * legitimate thing to ask for (it is how you check a suggestion against what
-   * actually sold), so the picker has to keep showing what will be sent.
-   */
-  useEffect(() => {
-    const today = formatDate(new Date().toString());
-    if (new Date(ctx.singleDate) < new Date(today)) {
-      ctx.dispatch(setSingleDate(today));
-    }
-    // Mount only. Re-running would stomp a date the user deliberately picked.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   /** The model inputs, shared by both calls so the sheet cannot be computed
    *  under a different window than the rollup it was opened from. */
   const modelArgs = () => ({
-    asOf: formatGoliathDate(ctx.singleDate),
+    asOf: ctx.asOf,
     leadDays: ctx.leadDays,
     coverDays: ctx.coverDays,
     lookbackWeeks: ctx.lookbackWeeks,
@@ -254,7 +231,7 @@ const Suggested = () => {
       title="Suggested Order"
       description="Pick a store or group and the day the order is placed. Lead and cover days should add up to your ordering rhythm."
       buttonLabel="Build order"
-      singleDate
+      hideDates
       onSearch={() => {
         onDone?.();
         handleSearch();

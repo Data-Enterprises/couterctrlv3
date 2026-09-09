@@ -26,6 +26,17 @@ const P = ({ children }: { children: ReactNode }) => (
   <p className="text-[14px] leading-[1.65] text-content">{children}</p>
 );
 
+/** Emphasis, underlined as well as slanted.
+ *
+ *  Italic alone is a weak signal at this size and disappears entirely for
+ *  anyone reading quickly; the underline is what makes the stressed word
+ *  actually register as stressed. */
+const Em = ({ children }: { children: ReactNode }) => (
+  <em className="italic underline underline-offset-2 decoration-content/40">
+    {children}
+  </em>
+);
+
 /** The opening line of an answer, a step up from the rest.
  *
  *  Twelve answers set at one size read as one undifferentiated block — the
@@ -271,7 +282,7 @@ const SECTIONS: { id: string; q: string; body: ReactNode }[] = [
     body: (
       <>
         <Lead>
-          Together they decide <em>which calendar days</em> the order has to pay
+          Together they decide <Em>which calendar days</Em> the order has to pay
           for &mdash; and because the week isn&rsquo;t flat, that changes the
           number.
         </Lead>
@@ -422,7 +433,7 @@ const SECTIONS: { id: string; q: string; body: ReactNode }[] = [
           home-grown tomatoes are done. That&rsquo;s worth having anyway: the same
           exits repeat within a week or two of the same dates each year, so you
           can check a date instead of recalling it, and the declines that{" "}
-          <em>aren&rsquo;t</em> seasonal stand out against the ones that are.
+          <Em>aren&rsquo;t</Em> seasonal stand out against the ones that are.
         </P>
       </>
     ),
@@ -551,8 +562,12 @@ const SuggestedHelpModal = ({ onClose }: { onClose: () => void }) => {
         </button>
       </div>
 
-      <div ref={scroller} className="flex-1 overflow-y-auto thin-scrollbar px-5 py-4">
-        <nav className="rounded-lg border border-gray-200 bg-gray-50 px-4 py-3.5 mb-7">
+      {/* A tray, so the answer cards below have something to lift off. */}
+      <div
+        ref={scroller}
+        className="flex-1 overflow-y-auto thin-scrollbar bg-gray-50 px-5 py-5"
+      >
+        <nav className="rounded-lg border border-gray-200 bg-custom-white shadow-md px-4 py-3.5 mb-4">
           <div className="text-[12px] font-bold uppercase tracking-[0.08em] text-[#1e2a4a] mb-2.5">
             Questions
           </div>
@@ -582,20 +597,21 @@ const SuggestedHelpModal = ({ onClose }: { onClose: () => void }) => {
             // -1 keeps it focusable for the jump without putting a block of
             // text into the tab order.
             tabIndex={-1}
-            className={`py-7 outline-none ${
-              i < SECTIONS.length - 1 ? "border-b border-gray-200" : ""
+            className={`rounded-lg border bg-custom-white shadow-md outline-none mb-4 transition-colors duration-700 ${
+              landed === sec.id ? "border-[#1e2a4a]/40" : "border-gray-200"
             }`}
             style={{ scrollMarginTop: "0.5rem" }}
           >
-            {/* The number sits in its own gutter and the answer aligns to it.
-                Twelve headings on a flat surface all read the same weight; a
-                left rail gives the eye somewhere to count from, and it is a
-                true numbering — the contents list is the same twelve, in the
-                same order. */}
-            <div className="grid grid-cols-[2rem_1fr] gap-x-3">
+            {/* Question band, then the answer. One card per question is what
+                makes this read as a Q&A rather than a page with rules through
+                it — twelve headings on one surface all carried the same weight
+                however they were set. The numeral matches the contents list,
+                same twelve in the same order, so it is structure rather than
+                ornament. */}
+            <div className="flex items-baseline gap-3 px-5 pt-4 pb-3.5 border-b border-gray-100">
               <span
-                className={`text-[15px] font-bold tabular-nums leading-snug transition-colors duration-700 ${
-                  landed === sec.id ? "text-[#1e2a4a]" : "text-[#1e2a4a]/40"
+                className={`w-6 flex-shrink-0 text-[13px] font-bold tabular-nums text-custom-white rounded text-center py-0.5 transition-colors duration-700 ${
+                  landed === sec.id ? "bg-[#1e2a4a]" : "bg-[#1e2a4a]/55"
                 }`}
               >
                 {i + 1}
@@ -607,13 +623,12 @@ const SuggestedHelpModal = ({ onClose }: { onClose: () => void }) => {
               >
                 {sec.q}
               </h2>
-              <div />
-              <div className="flex flex-col gap-3.5 mt-3">{sec.body}</div>
             </div>
+            <div className="flex flex-col gap-3.5 px-5 py-4">{sec.body}</div>
           </section>
         ))}
 
-        <footer className="mt-5 pt-4 border-t border-gray-200 text-[13px] leading-relaxed text-content/85">
+        <footer className="px-1 pt-2 pb-1 text-[13px] leading-relaxed text-content/85">
           Figures shown are real, from one store over a twelve-week window.
           Departments covered are the ones that sell by the pound &mdash; meat,
           produce and deli scale items.
