@@ -165,7 +165,7 @@ const NotSellingTab = ({
                     e.preventDefault();
                     setCtxMenu({ x: e.clientX, y: e.clientY, upc: String(r.product_code) });
                   }}
-                  className="border-b border-[#1e2a4a]/15 hover:bg-gray-50 transition-colors"
+                  className="border-b border-[#1e2a4a]/15 even:bg-row_stripe hover:bg-gray-50 transition-colors"
                 >
                   <td className="px-3 py-2 text-content font-medium">
                     {r.product_description ?? String(r.product_code)}

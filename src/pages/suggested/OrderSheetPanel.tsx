@@ -308,7 +308,7 @@ const OrderSheetPanel = () => {
 
           {tab === "order" && (
             <>
-              <div className="flex-shrink-0 px-3 pt-2 text-[10.5px] text-content/85 bg-gray-50 leading-snug">
+              <div className="flex-shrink-0 px-3 pt-2 text-[12px] text-content/85 bg-gray-50 leading-snug">
                 Each card is what this department does on that{" "}
                 <span className="font-semibold text-content">weekday</span>,
                 averaged over the lookback — not a forecast for that date. The
@@ -479,7 +479,7 @@ const OrderSheetPanel = () => {
                               upc: String(r.product_code),
                             });
                           }}
-                          className="border-b border-[#1e2a4a]/15 hover:bg-gray-50 transition-colors"
+                          className="border-b border-[#1e2a4a]/15 even:bg-row_stripe hover:bg-gray-50 transition-colors"
                         >
                           <td className="px-3 py-2 text-content font-medium">
                             {r.product_description ?? String(r.product_code)}

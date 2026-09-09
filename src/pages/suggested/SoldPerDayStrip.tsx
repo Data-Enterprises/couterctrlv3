@@ -58,13 +58,13 @@ const SoldPerDayStrip = ({ daily, dailyAvg }: SoldPerDayStripProps) => {
   return (
     <div className="flex-shrink-0 px-3 pt-2 pb-2.5 border-b border-gray-100 bg-gray-50">
       <div className="flex items-baseline justify-between mb-1.5">
-        <span className="text-[10px] font-semibold uppercase tracking-wide text-content/85">
+        <span className="text-[12px] font-semibold uppercase tracking-wide text-content/85">
           Sold per day
           <span className="ml-1.5 font-normal normal-case tracking-normal">
             {dayLabel(daily[0].date)} – {dayLabel(daily[daily.length - 1].date)}
           </span>
         </span>
-        <span className="text-[10px] text-content/85 tabular-nums">
+        <span className="text-[12px] text-content/85 tabular-nums">
           peak {fmtLb0(peak.weight)} · low {fmtLb0(low.weight)} · avg{" "}
           <span className="font-semibold text-content">{fmtLb0(dailyAvg)}</span>{" "}
           lb

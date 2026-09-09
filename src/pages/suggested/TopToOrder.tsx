@@ -59,10 +59,10 @@ const TopToOrder = () => {
     <>
       <div className="flex-shrink-0 px-3 pt-2 pb-2.5 border-b border-gray-100 bg-gray-50">
         <div className="flex items-baseline justify-between">
-          <span className="text-[10px] font-semibold uppercase tracking-wide text-content/85">
+          <span className="text-[12px] font-semibold uppercase tracking-wide text-content/85">
             Top to order · every department
           </span>
-          <span className="text-[10px] text-content/85 tabular-nums">
+          <span className="text-[12px] text-content/85 tabular-nums">
             these {rows.length} are{" "}
             <span className="font-semibold text-content">
               {sharePct.toFixed(0)}%
@@ -70,7 +70,7 @@ const TopToOrder = () => {
             of {fmtLb(storeTotal)} lb
           </span>
         </div>
-        <p className="text-[10.5px] text-content/85 mt-1 leading-snug">
+        <p className="text-[12px] text-content/85 mt-1 leading-snug">
           The heaviest lines in the store for this window. Open a department on
           the left for its full sheet, or click a row to jump to it.
         </p>
@@ -116,7 +116,7 @@ const TopToOrder = () => {
                     upc: String(r.product_code),
                   });
                 }}
-                className="border-b border-[#1e2a4a]/15 hover:bg-gray-50 transition-colors cursor-pointer"
+                className="border-b border-[#1e2a4a]/15 even:bg-row_stripe hover:bg-gray-50 transition-colors cursor-pointer"
               >
                 <td className="px-3 py-2 text-content font-medium">
                   {r.product_description ?? String(r.product_code)}

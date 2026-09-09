@@ -65,7 +65,7 @@ const CoverageStrip = ({ coverage }: Props) => {
 
   return (
     <div className="flex-shrink-0 px-3 pt-2 pb-2.5 border-b border-gray-100 bg-custom-white">
-      <div className="text-[10px] font-semibold uppercase tracking-wide text-content/85">
+      <div className="text-[12px] font-semibold uppercase tracking-wide text-content/85">
         What the waste figure is built from
       </div>
 
@@ -83,7 +83,7 @@ const CoverageStrip = ({ coverage }: Props) => {
         })}
       </div>
 
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] text-content/85">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[12px] text-content/85">
         {SOURCES.map((s) => {
           const n = by[s.key] ?? 0;
           if (n === 0) return null;

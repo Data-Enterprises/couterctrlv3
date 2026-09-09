@@ -216,8 +216,8 @@ const Suggested = () => {
 
   const orderControls = (
     <div className="flex items-center gap-2">
-      <label className="flex flex-col gap-0.5 flex-1">
-        <span className="text-[10px] font-semibold uppercase tracking-wide text-content/85">
+      <label className="flex flex-col gap-0.5 flex-1 min-w-0">
+        <span className="text-[12px] font-semibold uppercase tracking-wide text-content/85">
           Lead days
         </span>
         <input
@@ -227,12 +227,12 @@ const Suggested = () => {
           onChange={(e) =>
             ctx.dispatch(setLeadDays(Math.max(0, Number(e.target.value) || 0)))
           }
-          className="border-0 border-b border-gray-300 bg-transparent text-[13px] text-content py-0.5 tabular-nums"
+          className="w-full min-w-0 border-0 border-b border-gray-300 bg-transparent text-[13px] text-content py-0.5 tabular-nums"
           style={{ outline: "none", WebkitAppearance: "none", boxShadow: "none" }}
         />
       </label>
-      <label className="flex flex-col gap-0.5 flex-1">
-        <span className="text-[10px] font-semibold uppercase tracking-wide text-content/85">
+      <label className="flex flex-col gap-0.5 flex-1 min-w-0">
+        <span className="text-[12px] font-semibold uppercase tracking-wide text-content/85">
           Cover days
         </span>
         <input
@@ -242,7 +242,7 @@ const Suggested = () => {
           onChange={(e) =>
             ctx.dispatch(setCoverDays(Math.max(1, Number(e.target.value) || 1)))
           }
-          className="border-0 border-b border-gray-300 bg-transparent text-[13px] text-content py-0.5 tabular-nums"
+          className="w-full min-w-0 border-0 border-b border-gray-300 bg-transparent text-[13px] text-content py-0.5 tabular-nums"
           style={{ outline: "none", WebkitAppearance: "none", boxShadow: "none" }}
         />
       </label>

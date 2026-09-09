@@ -78,23 +78,32 @@ const ProductionTab = ({
   const benchMax = bench.length ? bench[0].lbPerItem : 0;
 
   return (
-    <div className="flex-1 overflow-auto thin-scrollbar">
+    /**
+     * The strips are fixed and the store list is the one thing that scrolls.
+     *
+     * The tab used to scroll as a whole, which pushed the weekday bars out of
+     * view the moment anyone went looking at where their store sat — and those
+     * two readings are meant to be compared, not paged between. `flex-shrink-0`
+     * on the strips is load-bearing: without it they compress instead of the
+     * list scrolling, which looks like a scroll bug and is not one.
+     */
+    <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
       {series?.series.length ? (
         <SoldPerDayStrip daily={series.series} dailyAvg={series.avg} />
       ) : (
-        <div className="px-3 py-3 border-b border-gray-100 bg-gray-50 text-[11px] text-content/85">
+        <div className="flex-shrink-0 px-3 py-3 border-b border-gray-100 bg-gray-50 text-[12px] text-content/85">
           No day-by-day history came back for this department.
         </div>
       )}
 
       {/* ── the typical week, all seven ── */}
       {rates && maxRate > 0 && (
-        <div className="px-3 pt-2 pb-3 border-b border-gray-100 bg-custom-white">
+        <div className="flex-shrink-0 px-3 pt-2 pb-3 border-b border-gray-100 bg-custom-white">
           <div className="flex items-baseline justify-between mb-2">
-            <span className="text-[10px] font-semibold uppercase tracking-wide text-content/85">
+            <span className="text-[12px] font-semibold uppercase tracking-wide text-content/85">
               Typical week · all seven days
             </span>
-            <span className="text-[10px] text-content/85">
+            <span className="text-[12px] text-content/85">
               the Order tab shows the days this order covers
             </span>
           </div>
@@ -126,10 +135,10 @@ const ProductionTab = ({
           <div className="flex gap-1.5 mt-1.5">
             {SHORT.map((s, d) => (
               <div key={d} className="flex-1 text-center">
-                <div className="text-[9.5px] font-semibold uppercase tracking-wide text-content/85">
+                <div className="text-[12px] font-semibold uppercase tracking-wide text-content/85">
                   {s}
                 </div>
-                <div className="text-[11px] font-semibold text-content tabular-nums">
+                <div className="text-[13px] font-semibold text-content tabular-nums">
                   {fmtLb0(rates[String(d)] ?? 0)}
                 </div>
               </div>
@@ -137,7 +146,7 @@ const ProductionTab = ({
           </div>
 
           {peakDay !== null && avgDay > 0 && (
-            <p className="text-[10.5px] text-content/85 mt-2 leading-snug">
+            <p className="text-[12px] text-content/85 mt-2 leading-snug">
               {DAYS[peakDay]}s run{" "}
               <span className="font-semibold text-content">
                 {(((rates[String(peakDay)] ?? 0) / avgDay - 1) * 100).toFixed(0)}%
@@ -151,13 +160,13 @@ const ProductionTab = ({
 
       {/* ── where this store stands ── */}
       {bench.length > 1 && (
-        <div className="px-3 pt-2 pb-3">
-          <div className="flex items-baseline justify-between mb-2">
-            <span className="text-[10px] font-semibold uppercase tracking-wide text-content/85">
+        <div className="flex-1 min-h-0 flex flex-col px-3 pt-2 pb-3">
+          <div className="flex-shrink-0 flex items-baseline justify-between mb-2">
+            <span className="text-[12px] font-semibold uppercase tracking-wide text-content/85">
               {deptLabel(groupRow?.sub_department_description ?? null)} · lb per
               day per item carried · {bench.length} stores
             </span>
-            <span className="text-[10px] text-content/85 tabular-nums">
+            <span className="text-[12px] text-content/85 tabular-nums">
               group median{" "}
               <span className="font-semibold text-content">
                 {benchMedian.toFixed(2)}
@@ -166,13 +175,13 @@ const ProductionTab = ({
             </span>
           </div>
 
-          <div className="flex flex-col gap-0.5">
+          <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar flex flex-col gap-0.5">
             {bench.map((b) => {
               const me = b.storeid === ctx.activeStoreId;
               return (
                 <div
                   key={b.storeid}
-                  className={`grid items-center gap-2 text-[11.5px] ${
+                  className={`grid items-center gap-2 text-[12px] ${
                     me ? "font-semibold text-content" : "text-content/85"
                   }`}
                   style={{ gridTemplateColumns: "1fr 2fr 78px 44px 66px" }}
@@ -202,7 +211,7 @@ const ProductionTab = ({
             })}
           </div>
 
-          <p className="text-[10.5px] text-content/85 mt-2 leading-snug">
+          <p className="flex-shrink-0 text-[12px] text-content/85 mt-2 leading-snug">
             Per item carried, not raw pounds. A store stocking five meat items
             against another&rsquo;s hundred and eighty reads as down 99% on raw
             pounds and has simply not got a meat case; dividing by the count is
