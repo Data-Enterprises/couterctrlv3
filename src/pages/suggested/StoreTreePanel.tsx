@@ -63,6 +63,11 @@ const StoreTreePanel = ({
   }, [rollups, ctx.storeSearch]);
 
   const total = rollups.reduce((sum, s) => sum + s.suggested, 0);
+  /** A past `asOf` makes this a comparison: the endpoint strips
+   *  `suggested_weight`, so every order figure here would sum to a confident 0. */
+  const isHistorical = ctx.parameters?.is_historical === true;
+  const orderLb = (n: number | null | undefined) =>
+    isHistorical ? "—" : fmtLb0(n);
 
   const cover = ctx.parameters?.cover_window;
   // Bare, the way Receivers prints its range — no leading label, month/day on
@@ -108,7 +113,7 @@ const StoreTreePanel = ({
               Total
             </span>
             <span className="text-[13px] font-medium text-custom-white tabular-nums">
-              {fmtLb0(total)} lb
+              {isHistorical ? "—" : `${fmtLb0(total)} lb`}
             </span>
           </div>
         ) : undefined
@@ -213,7 +218,7 @@ const StoreTreePanel = ({
                         {store.items.toLocaleString()}
                       </span>
                       <span className="text-[12px] text-content text-right tabular-nums font-medium">
-                        {fmtLb0(store.suggested)}
+                        {orderLb(store.suggested)}
                       </span>
                       <ChevronRightIcon
                         className="w-3 h-3 text-content/85 flex-shrink-0 justify-self-end transition-transform"
@@ -279,7 +284,7 @@ const StoreTreePanel = ({
                                   {d.item_count.toLocaleString()}
                                 </span>
                                 <span className="text-[12px] text-content text-right tabular-nums">
-                                  {fmtLb0(d.suggested_weight)}
+                                  {orderLb(d.suggested_weight)}
                                 </span>
                               </button>
                             );

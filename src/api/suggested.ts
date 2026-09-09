@@ -189,4 +189,9 @@ export const getSuggestedItems = async (
     // recorded waste in pounds, which is the manager's question, not the
     // auditor's. The other four ride along for five numbers a row.
     includeDiagnostics: true,
+    // Asked for HERE and only here. The endpoint refuses it at store grain with
+    // a 400 — across a group it is thousands of rows spanning every store, and
+    // the descriptions on those rows are filled from the main result, which
+    // only carries product codes at item grain.
+    includeNotSelling: true,
   });
