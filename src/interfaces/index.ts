@@ -1730,6 +1730,34 @@ export interface SuggestedItem {
    *  missing or malformed arrives here absent, and callers must treat that as
    *  "no profile", never as seven zeros. */
   dow_rates?: DowRates;
+
+  /* ── ordered against sold. Present with `includeOrders`, and absent in
+        their entirety on a historical response, because order_status is an
+        action and a past date has no ordering decision left in it. ── */
+  ordered_weight?: number;
+  ordered_units?: number;
+  sold_units?: number;
+  /** Ordered ÷ sold over the lookback. Null when nothing sold. */
+  order_ratio?: number | null;
+  order_ratio_units?: number | null;
+  /** The same statement in pounds: bought and not sold. Negative where the
+   *  store sold more than it bought. This is what a list should rank by — the
+   *  ratio says how far out of line, the gap says what it costs. */
+  order_gap_weight?: number | null;
+  order_status?: OrderStatus;
+  /**
+   * Ordered and sold within 3% of each other AND no waste recorded anywhere.
+   *
+   * Two independent readings both saying nothing was ever lost, on product sold
+   * by the pound. Not a clean bill — a hole in the recording. The bands cannot
+   * say so, because a ratio of 1.000 sits squarely inside `ok`.
+   */
+  shrink_unrecorded?: boolean;
+
+  /* ── diagnostics only ── */
+  damaged_weight?: number;
+  damaged_units?: number;
+  ledger_sold_weight?: number;
 }
 
 /**
@@ -1798,10 +1826,55 @@ export interface SuggestedGroupRow {
   items_clamped: number;
   avg_daily_weight: number;
 
+  /* ── ordered against sold, same availability rules as the item row ── */
+  ordered_weight?: number;
+  ordered_units?: number;
+  sold_units?: number;
+  order_ratio?: number | null;
+  order_ratio_units?: number | null;
+  order_gap_weight?: number | null;
+  items_critical?: number;
+  items_watch?: number;
+  items_ok?: number;
+  items_under?: number;
+  items_no_orders?: number;
+  items_insufficient?: number;
+  items_shrink_unrecorded?: number;
+
   /** Normalised by `api/suggested`. Optional because a row whose profile is
    *  missing or malformed arrives here absent, and callers must treat that as
    *  "no profile", never as seven zeros. */
   dow_rates?: DowRates;
+}
+
+/**
+ * How this item's ORDERING has run against its selling, over the lookback.
+ *
+ * Faces the opposite way to `suggested_weight`, and the two can disagree on the
+ * same item without either being wrong: a line bought at 1.6x all quarter can
+ * still genuinely need 313 lb this weekend. This is a verdict on the pattern,
+ * never an instruction about the order on screen.
+ *
+ * `ok` starts at 0.9 and runs THROUGH 1.0 deliberately — a store should buy a
+ * little more than it sells, and the gap above 1.0 is the shrink.
+ * `no_orders` and `insufficient` are absences of signal, not verdicts.
+ */
+export type OrderStatus =
+  | "critical"
+  | "watch"
+  | "ok"
+  | "under"
+  | "no_orders"
+  | "insufficient";
+
+/** Band counts over the whole query. Exhaustive and exclusive, so they sum to
+ *  `record_count`. */
+export type OrderSummary = Record<OrderStatus, number>;
+
+/** Kept out of `OrderSummary` on purpose: a flagged item is ALSO counted in its
+ *  band, so folding it in would break that sum. */
+export interface OrderFlags {
+  shrink_unrecorded: number;
 }
 
 /** Why an item is on the not-selling list, worst-to-least-recoverable.
@@ -1904,6 +1977,9 @@ export interface SuggestedItemsResp {
   data_coverage: SuggestedCoverage;
   /** Keyed by `dailyKey(storeid, sub_department)`. Null unless `includeDaily`. */
   daily_by_department: Record<string, SuggestedDailySeries> | null;
+  /** Null when `includeOrders` is off or the response is historical. */
+  order_summary: OrderSummary | null;
+  order_flags: OrderFlags | null;
   /** Present only when the request set `includeNotSelling`; null otherwise. */
   not_selling: SuggestedNotSelling | null;
   items: SuggestedItem[];
@@ -1920,5 +1996,8 @@ export interface SuggestedGroupResp {
   data_coverage: SuggestedCoverage;
   /** Keyed by `dailyKey(storeid, sub_department)`. Null unless `includeDaily`. */
   daily_by_department: Record<string, SuggestedDailySeries> | null;
+  /** Null when `includeOrders` is off or the response is historical. */
+  order_summary: OrderSummary | null;
+  order_flags: OrderFlags | null;
   items: SuggestedGroupRow[];
 }
