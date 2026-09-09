@@ -156,13 +156,6 @@ export const getSuggestedGroup = async (
     ...params,
     singleStore: 0,
     groupBy: "store",
-    // The actual-pounds-per-day series, asked for HERE and only here. It is
-    // keyed on store x sub-department, which is exactly this call's grain — the
-    // item call would return the same series stamped onto every item row. It
-    // costs one extra query and roughly 5x this response's size, which is the
-    // difference between a ~30 KB tree and a ~150 KB one; the alternative is a
-    // second round trip every time a buyer opens a department.
-    includeDaily: true,
     pageSize: params.pageSize ?? 1500,
   });
 

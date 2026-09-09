@@ -108,10 +108,6 @@ const Suggested = () => {
         ctx.dispatch(setGroupRows(j.items));
         ctx.dispatch(setParameters(j.parameters));
         ctx.dispatch(setCoverage(j.data_coverage));
-        // One entry per store x department, not per row. Kept whole for the
-        // whole group — the map covers every store, so drilling into a
-        // different one does not need another read.
-        ctx.dispatch(setDailyByDepartment(j.daily_by_department ?? null));
         // The response echoes what was asked for; trust it over our own list so
         // "18 of 20" reflects the server's view rather than the client's.
         if (j.parameters?.storeids?.length) {
@@ -171,6 +167,8 @@ const Suggested = () => {
         }
         ctx.dispatch(setItems(j.items));
         ctx.dispatch(setNotSelling(j.not_selling ?? null));
+        // Arrives with the store now rather than for the whole group up front.
+        ctx.dispatch(setDailyByDepartment(j.daily_by_department ?? null));
       })
       .catch((err: JsonError) => toast.error(err.message))
       .finally(() => ctx.dispatch(setLoadingItems(false)));
