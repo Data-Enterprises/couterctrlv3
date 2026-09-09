@@ -305,12 +305,10 @@ const SECTIONS: { id: string; q: string; body: ReactNode }[] = [
           though nothing else moved.
         </P>
         <Note>
-          Cover days is the gap to your <Em>next</Em> delivery. Trucks on Friday
-          and Monday, ordering Wednesday: that is{" "}
-          <b className="font-semibold">2 days until delivery</b> and{" "}
-          <b className="font-semibold">3 cover days</b> &mdash; Friday, Saturday,
-          Sunday. Monday belongs to the next truck, and counting it here buys it
-          twice.
+          Cover days runs <Em>to</Em> your next delivery, not through it.
+          Whatever your rhythm, the day the next truck lands is that
+          order&rsquo;s to cover, not this one&rsquo;s &mdash; count it in both
+          and you buy it twice.
         </Note>
       </>
     ),

@@ -18,7 +18,7 @@ const NOT_AN_ORDER: InfoGlossaryEntry = {
 
 const LEAD_COVER: InfoGlossaryEntry = {
   term: "Days until delivery / Cover days",
-  desc: "Days until delivery is how long between placing the order and it arriving; Cover days is how long the delivery has to last. Cover days is the gap to your next delivery: trucks on Friday and Monday means Friday's order covers Friday, Saturday and Sunday — 3, not 4, because Monday belongs to the next truck.",
+  desc: "Days until delivery is how long between placing the order and it arriving; Cover days is how long the delivery has to last. Cover days runs to your next delivery, not through it: the day the next truck lands is that order's to cover, not this one's.",
 };
 
 const WASTE_PCT: InfoGlossaryEntry = {
