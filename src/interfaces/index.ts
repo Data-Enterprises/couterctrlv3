@@ -1713,9 +1713,18 @@ export interface SuggestedItem {
   lifetime_markdown?: number;
   lifetime_received?: number;
   lifetime_sold?: number;
+  /** Also absent on a historical call, for the same reason. */
   on_order_weight?: number;
-  /** demand x shrink - on_order, floored at 0. The number the buyer acts on. */
-  suggested_weight: number;
+  /**
+   * demand x shrink - on_order, floored at 0. The number the buyer acts on.
+   *
+   * ABSENT when `parameters.is_historical` is true. A call for a past date is a
+   * comparison, not an order — nobody buys for last September — and the figure
+   * would be a hybrid anyway, since shrink comes from lifetime aggregates with
+   * no date scope. Everything else on a historical response is genuinely
+   * historical; this one field and `on_order_weight` are the exceptions.
+   */
+  suggested_weight?: number;
   avg_daily_weight: number;
   /** Normalised by `api/suggested`. Optional because a row whose profile is
    *  missing or malformed arrives here absent, and callers must treat that as
@@ -1739,6 +1748,37 @@ export interface SuggestedDailyPoint {
   items: number;
 }
 
+/**
+ * One department's day-by-day history.
+ *
+ * Returned once per department under `daily_by_department` rather than copied
+ * onto every row. It used to ride on the rows, which read as the ROW's history:
+ * on an item row the department's series looked like that item's own, so banana
+ * showed a daily average of 361 lb against its real ~103 with nothing on the row
+ * to tell you which it was.
+ */
+export interface SuggestedDailySeries {
+  storeid: number;
+  sub_department: number | null;
+  /** Mean of the days that actually traded — NOT the window mean, which a
+   *  closed Sunday would dilute. */
+  avg: number;
+  days: number;
+  series: SuggestedDailyPoint[];
+}
+
+/**
+ * The key `daily_by_department` is indexed by.
+ *
+ * The backend builds it in Python as `f"{storeid}:{sub_department}"`, so a null
+ * department stringifies to the literal `None` rather than an empty segment.
+ * Reproduced here rather than worked around at each call site — get it wrong and
+ * the lookup silently misses, which shows up as a department with no history
+ * instead of an error.
+ */
+export const dailyKey = (storeid: number, subDepartment: number | null) =>
+  `${storeid}:${subDepartment === null ? "None" : subDepartment}`;
+
 /** One store x sub department in the group rollup. Carries counts rather than
  *  the items themselves; the sheet is a separate call. */
 export interface SuggestedGroupRow {
@@ -1757,18 +1797,7 @@ export interface SuggestedGroupRow {
   items_none: number;
   items_clamped: number;
   avg_daily_weight: number;
-  /**
-   * Actual pounds per date, present only when the request sets `includeDaily`.
-   *
-   * Requested at STORE grain only. The endpoint keys the series on
-   * (store, sub_department) at both grains, so asking for it on the item call
-   * would attach an identical copy of the same series to every item row in the
-   * department — up to 500 duplicates a page of what is one series.
-   */
-  daily?: SuggestedDailyPoint[];
-  /** Mean of the days that actually have sales — NOT the window mean, which is
-   *  diluted by days the department was shut. Ships with `daily`. */
-  daily_avg?: number;
+
   /** Normalised by `api/suggested`. Optional because a row whose profile is
    *  missing or malformed arrives here absent, and callers must treat that as
    *  "no profile", never as seven zeros. */
@@ -1831,6 +1860,9 @@ export interface SuggestedParameters {
   storeids?: number[];
   group_by?: string;
   as_of: string;
+  /** True when `as_of` is in the past, which makes the response a comparison
+   *  rather than an order — `suggested_weight` is omitted from every row. */
+  is_historical?: boolean;
   lead_days: number;
   cover_days: number;
   cover_window: { start: string; end: string };
@@ -1870,6 +1902,8 @@ export interface SuggestedItemsResp {
   page: number;
   parameters: SuggestedParameters;
   data_coverage: SuggestedCoverage;
+  /** Keyed by `dailyKey(storeid, sub_department)`. Null unless `includeDaily`. */
+  daily_by_department: Record<string, SuggestedDailySeries> | null;
   /** Present only when the request set `includeNotSelling`; null otherwise. */
   not_selling: SuggestedNotSelling | null;
   items: SuggestedItem[];
@@ -1884,5 +1918,7 @@ export interface SuggestedGroupResp {
   page: number;
   parameters: SuggestedParameters;
   data_coverage: SuggestedCoverage;
+  /** Keyed by `dailyKey(storeid, sub_department)`. Null unless `includeDaily`. */
+  daily_by_department: Record<string, SuggestedDailySeries> | null;
   items: SuggestedGroupRow[];
 }

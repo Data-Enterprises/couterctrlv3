@@ -5,6 +5,7 @@ import type {
   SuggestedParameters,
   SuggestedCoverage,
   SuggestedNotSelling,
+  SuggestedDailySeries,
   NotSellingStatus,
 } from "../interfaces";
 
@@ -47,6 +48,13 @@ interface SuggestedState {
    *  department of it is being read — null there means the store overview. */
   activeStoreId: number | null;
   activeStoreLabel: string;
+
+  /**
+   * Day-by-day history, one entry per store x department, keyed by
+   * `dailyKey()`. Held whole rather than per row: it is DEPARTMENT history, and
+   * hanging it off an item row makes it read as that item's own.
+   */
+  dailyByDepartment: Record<string, SuggestedDailySeries> | null;
 
   /** Items that stopped or slowed, for the active store. Own key, never merged
    *  into `items` — a zero-demand row is not an order. */
@@ -100,6 +108,7 @@ export const initialState: SuggestedState = {
   items: [],
   activeStoreId: null,
   activeStoreLabel: "",
+  dailyByDepartment: null,
   notSelling: null,
   notSellingStatus: "declining",
   activeTab: "order",
@@ -167,6 +176,12 @@ export const suggestedSlice = createSlice({
       state.selectedDay = "";
       state.activeTab = "order";
     },
+    setDailyByDepartment: (
+      state,
+      action: PayloadAction<Record<string, SuggestedDailySeries> | null>,
+    ) => {
+      state.dailyByDepartment = action.payload;
+    },
     setNotSelling: (state, action: PayloadAction<SuggestedNotSelling | null>) => {
       state.notSelling = action.payload;
     },
@@ -220,6 +235,7 @@ export const suggestedSlice = createSlice({
       state.activeStoreId = null;
       state.activeStoreLabel = "";
       state.notSelling = null;
+      state.dailyByDepartment = null;
       state.notSellingStatus = "declining";
       state.activeTab = "order";
       state.expandedStores = [];
@@ -235,6 +251,7 @@ export const suggestedSlice = createSlice({
 
 export const {
   setActiveStore,
+  setDailyByDepartment,
   setNotSelling,
   setNotSellingStatus,
   setActiveTab,

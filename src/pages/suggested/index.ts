@@ -26,6 +26,17 @@ export const fmtLb = (n: number | null | undefined) =>
     maximumFractionDigits: 2,
   });
 
+/**
+ * Pounds, or a dash when there is no figure at all.
+ *
+ * `fmtLb` prints a missing value as "0.00", which is right for a genuine zero
+ * and wrong for an absent one. A historical call omits `suggested_weight`
+ * entirely — a past date is a comparison, not an order — and printing that as
+ * 0.00 lb states confidently that the store should buy nothing.
+ */
+export const fmtLbOrDash = (n: number | null | undefined) =>
+  n === null || n === undefined ? "—" : fmtLb(n);
+
 /** Whole pounds, for rollups where two decimals are noise. */
 export const fmtLb0 = (n: number | null | undefined) =>
   Math.round(n ?? 0).toLocaleString();

@@ -17,6 +17,7 @@ import {
   deptLabel,
   fmtLb,
   fmtLb0,
+  fmtLbOrDash,
   rateForDate,
   sheetRows,
   shrinkLabel,
@@ -188,6 +189,10 @@ const OrderSheetPanel = () => {
     });
   }, [deptRates, ctx.parameters, totals.daily]);
 
+  /** A past `asOf` makes the response a comparison: the endpoint drops
+   *  `suggested_weight` rather than publish an order nobody can place. */
+  const isHistorical = ctx.parameters?.is_historical === true;
+
   const hasStore = ctx.activeStoreId !== null;
   const hasSheet = ctx.sheetKey !== null;
   const tab = ctx.activeTab;
@@ -260,6 +265,15 @@ const OrderSheetPanel = () => {
         </div>
       )}
 
+      {hasStore && isHistorical && (
+        <div className="flex-shrink-0 px-3 py-2 border-b border-gray-100 bg-severity_watch_bg text-[11px] text-severity_watch_text leading-snug">
+          <span className="font-semibold">Historical date.</span> This is a
+          comparison, not an order — nobody buys for a date that has passed, and
+          the waste rates behind an order figure are current rather than
+          historical. Everything else here is the real history for that window.
+        </div>
+      )}
+
       {hasStore && ctx.loadingItems && (
         <div className="flex-1 relative">
           <LoadingIndicator message="Building the sheet" />
@@ -315,7 +329,10 @@ const OrderSheetPanel = () => {
               <KpiTileGrid
                 items={
                   [
-                    { label: "Order", value: `${fmtLb(totals.order)} lb` },
+                    {
+                      label: "Order",
+                      value: isHistorical ? "—" : `${fmtLb(totals.order)} lb`,
+                    },
                     {
                       label: ctx.selectedDay
                         ? dayLabel(ctx.selectedDay)
@@ -500,7 +517,7 @@ const OrderSheetPanel = () => {
                               : "—"}
                           </td>
                           <td className="px-3 py-2 text-right tabular-nums text-content font-semibold">
-                            {fmtLb(r.suggested_weight)}
+                            {fmtLbOrDash(r.suggested_weight)}
                           </td>
                         </tr>
                       ))}
@@ -525,7 +542,7 @@ const OrderSheetPanel = () => {
                             have. The sort is what this column is for. */}
                         <td className="px-3 py-2"></td>
                         <td className="px-3 py-2 text-right tabular-nums text-content/85">
-                          {fmtLb(totals.order)}
+                          {isHistorical ? "—" : fmtLb(totals.order)}
                         </td>
                       </tr>
                     </tfoot>

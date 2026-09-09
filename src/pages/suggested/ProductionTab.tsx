@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { useSuggestedCtx } from "./hooks";
 import { buildBenchmark, deptLabel, fmtLb, fmtLb0, median } from ".";
+import { dailyKey } from "../../interfaces";
 import SoldPerDayStrip from "./SoldPerDayStrip";
 import { getStoreName } from "../../utils";
 import type { SuggestedGroupRow } from "../../interfaces";
@@ -51,6 +52,18 @@ const ProductionTab = ({
     [rates],
   );
 
+  /**
+   * This department's day-by-day history.
+   *
+   * Looked up by store and department rather than read off the row: the
+   * endpoint returns one series per department under `daily_by_department`,
+   * because the same series hanging on 380 item rows read as each item's own
+   * history and duplicated ~10,000 entries to carry about eight distinct ones.
+   */
+  const series = ctx.activeStoreId
+    ? ctx.dailyByDepartment?.[dailyKey(ctx.activeStoreId, subDepartment)]
+    : undefined;
+
   const bench = useMemo(
     () =>
       buildBenchmark(ctx.groupRows, subDepartment, (id, fb) =>
@@ -66,11 +79,8 @@ const ProductionTab = ({
 
   return (
     <div className="flex-1 overflow-auto thin-scrollbar">
-      {groupRow?.daily?.length ? (
-        <SoldPerDayStrip
-          daily={groupRow.daily}
-          dailyAvg={groupRow.daily_avg ?? 0}
-        />
+      {series?.series.length ? (
+        <SoldPerDayStrip daily={series.series} dailyAvg={series.avg} />
       ) : (
         <div className="px-3 py-3 border-b border-gray-100 bg-gray-50 text-[11px] text-content/85">
           No day-by-day history came back for this department.

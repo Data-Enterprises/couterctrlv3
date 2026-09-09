@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useSuggestedCtx } from "./hooks";
 import { setSheetKey } from "../../features/suggestedSlice";
-import { deptLabel, fmtLb } from ".";
+import { deptLabel, fmtLb, fmtLbOrDash } from ".";
 import UpcContextMenu from "../../components/UpcContextMenu";
 
 /**
@@ -134,7 +134,7 @@ const TopToOrder = () => {
                   {fmtLb(r.avg_daily_weight)}
                 </td>
                 <td className="px-3 py-2 text-right tabular-nums text-content font-semibold">
-                  {fmtLb(r.suggested_weight)}
+                  {fmtLbOrDash(r.suggested_weight)}
                 </td>
               </tr>
             ))}
