@@ -1,8 +1,9 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useSuggestedCtx } from "./hooks";
-import { buildBenchmark, deptLabel, fmtLb, fmtLb0, median } from ".";
+import { buildBenchmark, deptLabel, fmtLb, median } from ".";
 import { dailyKey } from "../../interfaces";
 import SoldPerDayStrip from "./SoldPerDayStrip";
+import BarTooltip from "./BarTooltip";
 import { getStoreName } from "../../utils";
 import type { SuggestedGroupRow } from "../../interfaces";
 
@@ -33,6 +34,7 @@ const ProductionTab = ({
   subDepartment: number | null;
 }) => {
   const ctx = useSuggestedCtx();
+  const [hoverDay, setHoverDay] = useState<number | null>(null);
 
   const rates = groupRow?.dow_rates;
   const avgDay = groupRow?.avg_daily_weight ?? 0;
@@ -108,28 +110,60 @@ const ProductionTab = ({
             </span>
           </div>
 
-          <div className="flex items-end gap-1.5 h-16 relative">
+          <div
+            className="flex items-end gap-1.5 h-16 relative"
+            onMouseLeave={() => setHoverDay(null)}
+          >
             {avgDay > 0 && (
               <div
                 className="absolute left-0 right-0 border-t border-dashed border-[#1e2a4a]/40 pointer-events-none"
                 style={{ bottom: `${Math.min((avgDay / maxRate) * 100, 100)}%` }}
-                title={`${fmtLb(avgDay)} lb on an average day`}
               />
             )}
-            {DAYS.map((name, d) => {
+            {DAYS.map((_, d) => {
               const lb = rates[String(d)] ?? 0;
               return (
                 <div
                   key={d}
-                  title={`${name}s average ${fmtLb(lb)} lb here`}
-                  className="flex-1 rounded-t-sm"
-                  style={{
-                    height: lb > 0 ? `${Math.max((lb / maxRate) * 100, 3)}%` : 0,
-                    background: d === peakDay ? "#1e2a4a" : "#1e2a4a99",
-                  }}
-                />
+                  onMouseEnter={() => setHoverDay(d)}
+                  className="flex-1 h-full flex items-end cursor-default"
+                >
+                  <div
+                    className="w-full rounded-t-sm transition-colors"
+                    style={{
+                      height: lb > 0 ? `${Math.max((lb / maxRate) * 100, 3)}%` : 0,
+                      background:
+                        hoverDay === d || d === peakDay ? "#1e2a4a" : "#1e2a4a99",
+                      opacity: hoverDay !== null && hoverDay !== d ? 0.55 : 1,
+                    }}
+                  />
+                </div>
               );
             })}
+
+            {hoverDay !== null && (
+              <BarTooltip
+                xPct={((hoverDay + 0.5) / 7) * 100}
+                title={`${DAYS[hoverDay]}s`}
+                rows={[
+                  {
+                    label: "Typical",
+                    value: `${fmtLb(rates[String(hoverDay)] ?? 0)} lb`,
+                  },
+                  {
+                    label: "vs avg day",
+                    value:
+                      avgDay > 0
+                        ? `${(rates[String(hoverDay)] ?? 0) >= avgDay ? "+" : ""}${(
+                            ((rates[String(hoverDay)] ?? 0) / avgDay - 1) *
+                            100
+                          ).toFixed(1)}%`
+                        : "—",
+                    soft: true,
+                  },
+                ]}
+              />
+            )}
           </div>
 
           <div className="flex gap-1.5 mt-1.5">
@@ -139,14 +173,14 @@ const ProductionTab = ({
                   {s}
                 </div>
                 <div className="text-[13px] font-semibold text-content tabular-nums">
-                  {fmtLb0(rates[String(d)] ?? 0)}
+                  {fmtLb(rates[String(d)] ?? 0)}
                 </div>
               </div>
             ))}
           </div>
 
           {peakDay !== null && avgDay > 0 && (
-            <p className="text-[12px] text-content/85 mt-2 leading-snug">
+            <p className="text-[13px] text-content/85 mt-2 leading-snug">
               {DAYS[peakDay]}s run{" "}
               <span className="font-semibold text-content">
                 {(((rates[String(peakDay)] ?? 0) / avgDay - 1) * 100).toFixed(0)}%
@@ -184,8 +218,8 @@ const ProductionTab = ({
                   className={`grid items-center gap-2 text-[12px] ${
                     me ? "font-semibold text-content" : "text-content/85"
                   }`}
-                  style={{ gridTemplateColumns: "1fr 2fr 78px 44px 66px" }}
-                  title={`${fmtLb0(b.lbPerDay)} lb/day across ${b.itemCount} items`}
+                  style={{ gridTemplateColumns: "1fr 1.6fr 84px 44px 92px" }}
+                  title={`${fmtLb(b.lbPerDay)} lb/day across ${b.itemCount} items`}
                 >
                   <span className="truncate">{b.label}</span>
                   <span className="bg-gray-200 rounded-sm h-2.5 overflow-hidden">
@@ -204,14 +238,14 @@ const ProductionTab = ({
                     {b.itemCount}
                   </span>
                   <span className="text-right tabular-nums text-content/85">
-                    {fmtLb0(b.lbPerDay)} lb
+                    {fmtLb(b.lbPerDay)} lb
                   </span>
                 </div>
               );
             })}
           </div>
 
-          <p className="flex-shrink-0 text-[12px] text-content/85 mt-2 leading-snug">
+          <p className="flex-shrink-0 text-[13px] text-content/85 mt-2 leading-snug">
             Per item carried, not raw pounds. A store stocking five meat items
             against another&rsquo;s hundred and eighty reads as down 99% on raw
             pounds and has simply not got a meat case; dividing by the count is
