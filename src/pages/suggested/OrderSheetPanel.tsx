@@ -371,15 +371,6 @@ const OrderSheetPanel = () => {
                 }
               />
 
-              {/* The stacked waste bar that used to sit here said, store-wide,
-                  how many items had a markdown rate. Every one of those counts
-                  is now a per-row action on the item it belongs to, which is
-                  both more specific and harder to misread. The one line worth
-                  keeping is the caveat, because nothing else on screen says
-                  the number is not an order. */}
-              <div className="flex-shrink-0 px-3 py-1.5 border-b border-gray-100 bg-custom-white text-[12px] text-content/85">
-                Pounds that will sell — subtract what is already in your case.
-              </div>
 
               <div className="flex-1 overflow-auto thin-scrollbar">
                 {rows.length === 0 ? (
