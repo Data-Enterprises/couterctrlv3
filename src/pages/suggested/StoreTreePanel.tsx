@@ -305,12 +305,6 @@ const StoreTreePanel = ({
                                       </span>
                                     );
                                   })()}
-                                  {d.items_clamped > 0 && (
-                                    <span className="text-severity_watch_text">
-                                      {" "}
-                                      · {d.items_clamped} capped
-                                    </span>
-                                  )}
                                 </span>
                                 <span className="text-[12px] text-content text-center">
                                   {d.item_count.toLocaleString()}

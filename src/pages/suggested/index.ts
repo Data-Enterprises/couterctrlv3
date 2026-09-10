@@ -94,7 +94,6 @@ export interface StoreRollup {
   storeNumber: string | null;
   suggested: number;
   items: number;
-  clamped: number;
   departments: SuggestedGroupRow[];
 }
 
@@ -112,7 +111,6 @@ export const rollupByStore = (
         storeNumber: r.store_number,
         suggested: 0,
         items: 0,
-        clamped: 0,
         departments: [],
       };
       byStore.set(r.storeid, entry);
@@ -122,7 +120,6 @@ export const rollupByStore = (
     if (r.store_number && !entry.storeNumber) entry.storeNumber = r.store_number;
     entry.suggested += r.suggested_weight ?? 0;
     entry.items += r.item_count ?? 0;
-    entry.clamped += r.items_clamped ?? 0;
     entry.departments.push(r);
   }
   const out = [...byStore.values()];
