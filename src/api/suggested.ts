@@ -156,20 +156,21 @@ export const getSuggestedGroup = async (
     ...params,
     singleStore: 0,
     groupBy: "store",
-    // OFF, against the endpoint's default of on.
+    // Pinned on, against the endpoint's default rather than with it: the
+    // tree's per-department "N to act on" is counted server-side and arrives
+    // only under this flag, and so does the on-hand term — `suggested_weight`
+    // is demand x shrink MINUS on-hand only when it is set.
     //
-    // The item call reads one store's ledger; this one reads twenty. The
-    // ordering half is where that cost lands, and nothing in the tree is worth
-    // twenty stores of it — the tree's job is to say which store and which
-    // department to open, and the ordering verdicts are read on the sheet
-    // once you are in there.
+    // Both halves of that matter here. Without the counts the tree cannot say
+    // which department to open first; without on-hand its pounds are a
+    // pre-stock figure while the sheet's are post-stock, and the two would not
+    // add up on the same screen.
     //
-    // It costs the store-grain counts (`items_slow_down` and the rest) and,
-    // less obviously, the on-hand subtraction: `suggested_weight` is
-    // demand x shrink MINUS on-hand only when this flag is on. So the tree's
-    // pounds are a pre-stock figure and the sheet's are post-stock, which is
-    // why the tree no longer calls its column "Order lb".
-    includeOrders: false,
+    // It is the expensive flag on this call — one store's ledger for the item
+    // fetch against twenty for this one — so if the tree ever needs to get
+    // cheaper, the counts can come off `items` client-side for whichever store
+    // is expanded. The mismatch is what cannot be fixed from here.
+    includeOrders: true,
     pageSize: params.pageSize ?? 1500,
   });
 
