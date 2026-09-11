@@ -39,6 +39,7 @@ import {
 } from "../../../utils";
 import {
   computeDayMatchedTotals,
+  describeLyWindow,
   scopeToStoreNumber,
   applyStoreNumberToName /*, getWeeklyDataGaps, getWeeklyGapCount */,
 } from "../shared/ledgerUtils";
@@ -149,9 +150,17 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
     { length: 7 },
     (_, i) => addDays(new Date(twStart), i).toISOString().split("T")[0],
   );
-  const lyWeekDates = twRealDates
-    .map((d) => sameWeekDayLastYear(d).date)
-    .sort();
+  /**
+   * What the LY comparison actually looks at, as opposed to what was fetched.
+   *
+   * `lyStart`/`lyEnd` are min/max of the shifted dates and exist to make the
+   * FETCH wide enough — a Labor Day in this week matches Labor Day last year,
+   * which can sit ten days from the rest of the week, and the row has to be
+   * inside the requested range. Printing those bounds as the label is what put
+   * "Sep 1 – Sep 11" over a seven-day week.
+   */
+  const lyWindow = describeLyWindow(twRealDates);
+  const lyWeekDates = [...lyWindow.dates].sort();
   const lyStart = lyWeekDates[0];
   const lyEnd = lyWeekDates[lyWeekDates.length - 1];
   const lwWeekDates = twRealDates.map(
@@ -185,14 +194,21 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
       })
     : `${fmtDate(lwStart)} – ${fmtDate(lwEnd)}`;
   const lyDateLabel = selectedDate
-    ? new Date(
-        sameWeekDayLastYear(selectedDate).date + "T12:00:00",
-      ).toLocaleDateString("en-US", {
-        weekday: "short",
-        month: "short",
-        day: "numeric",
-      })
-    : `${fmtDate(lyStart)} – ${fmtDate(lyEnd)}`;
+    ? (() => {
+        const label = new Date(
+          sameWeekDayLastYear(selectedDate).date + "T12:00:00",
+        ).toLocaleDateString("en-US", {
+          weekday: "short",
+          month: "short",
+          day: "numeric",
+        });
+        // A holiday is matched to last year's holiday rather than shifted by
+        // weekday, so this date deliberately breaks the pattern of the days
+        // either side of it. Unnamed, it reads as an off-by-something.
+        const hol = lyWindow.holidays.find((h) => h.twDate === selectedDate);
+        return hol ? `${label} · ${hol.name}` : label;
+      })()
+    : lyWindow.label;
 
   // KPI strip values — full week or selected day
   const sortedDays = [...selection.days].sort((a, b) =>
@@ -253,6 +269,16 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
     : weekTotals.hasLW
       ? weekTotals.vsLWPct
       : null;
+  /**
+   * How much of the week each comparison covers.
+   *
+   * A selected day is its own comparison, so it is one of one or it has no
+   * pill at all. The week is where this matters: three matched days out of
+   * seven produced a -12.07% that read exactly like a complete one.
+   */
+  const headerLYDays = activeDay ? 1 : weekTotals.lyDayCount;
+  const headerLWDays = activeDay ? 1 : weekTotals.lwDayCount;
+  const headerDays = activeDay ? 1 : weekTotals.dayCount;
   const headerVsLYPct = activeDay
     ? headerHasLY
       ? isQty
@@ -643,12 +669,21 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
             </span>
             {headerVsLWPct !== null && (
               <span
-                className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${pillClass(headerVsLWPct, THRESHOLD)}`}
+                className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${
+                  headerLWDays < headerDays
+                    ? "bg-gray-200 text-content"
+                    : pillClass(headerVsLWPct, THRESHOLD)
+                }`}
               >
                 {formatPct(headerVsLWPct)}
               </span>
             )}
           </div>
+          {headerLWDays < headerDays && (
+            <div className="text-[10px] font-semibold text-content pb-0.5">
+              {headerLWDays} of {headerDays} days matched
+            </div>
+          )}
         </div>
         <div className="px-4 pt-2.5 text-center">
           <div className="text-[10px] font-bold uppercase tracking-wide text-content">
@@ -667,12 +702,30 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
             </span>
             {headerVsLYPct !== null && (
               <span
-                className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${pillClass(headerVsLYPct, THRESHOLD)}`}
+                /* Grey, not red or green, when days are missing. The figure is
+                   arithmetically right over the days it has and still does not
+                   support a verdict — store 590's three matched days are
+                   missing both weekend days, the two biggest of the week. */
+                className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${
+                  headerLYDays < headerDays
+                    ? "bg-gray-200 text-content"
+                    : pillClass(headerVsLYPct, THRESHOLD)
+                }`}
+                title={
+                  headerLYDays < headerDays
+                    ? `Compares only the ${headerLYDays} day${headerLYDays === 1 ? "" : "s"} with a matching date last year. The total beside it is those days too — not the ${headerDays}-day week above.`
+                    : undefined
+                }
               >
                 {formatPct(headerVsLYPct)}
               </span>
             )}
           </div>
+          {headerLYDays < headerDays && (
+            <div className="text-[10px] font-semibold text-content pb-0.5">
+              {headerLYDays} of {headerDays} days matched
+            </div>
+          )}
         </div>
       </div>
 

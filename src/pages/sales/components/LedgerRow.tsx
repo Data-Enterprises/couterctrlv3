@@ -36,6 +36,19 @@ export type LedgerRowData = {
   twQty: number;
   lwQty: number;
   lyQty: number;
+  /** The TW side of each comparison — only the days that found a match.
+   *  `twTotal` above is the whole week and is NOT the base of vsLWPct or
+   *  vsLYPct; a rollup that adds these instead stays weighted by store size
+   *  without ever dividing a seven-day figure by a three-day one. */
+  twTotalForLW: number;
+  twQtyForLW: number;
+  twTotalForLY: number;
+  twQtyForLY: number;
+  /** Coverage, so a percentage over three of seven days can be presented as
+   *  the weaker claim it is. */
+  dayCount: number;
+  lwDayCount: number;
+  lyDayCount: number;
   vsLWPct: number;
   vsLYPct: number;
   vsLYDollar: number;

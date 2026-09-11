@@ -1,6 +1,8 @@
 import { addDays, sameWeekDayLastYear } from "../../../utils";
 import { rowsToCsv } from "../../../utils/csvExport";
 import { gradeSeverity } from "../../../utils/severity";
+import { getHolidayName, getHolidayLastYear } from "../../../utils/holidays";
+import type { HolidayName } from "../../../utils/holidays";
 import type {
   WeeklySale,
   SubSale,
@@ -205,12 +207,32 @@ export interface DayMatchable {
 }
 
 export interface DayMatchedTotals {
+  /** All TW days. The store's actual week — NOT the base of any percentage
+   *  below, which is the distinction the callers kept getting wrong. */
   twTotal: number;
   twQty: number;
   lwTotal: number;
   lwQty: number;
   lyTotal: number;
   lyQty: number;
+  /**
+   * The TW side of each comparison: only the days that found a match.
+   *
+   * These were computed and thrown away, which left callers with no correct
+   * numerator to hand and `twTotal` sitting there looking like one. A store
+   * with three of seven LY days then read as +127% against its own full week
+   * instead of -12% against the days it can actually be compared on.
+   */
+  twTotalForLW: number;
+  twQtyForLW: number;
+  twTotalForLY: number;
+  twQtyForLY: number;
+  /** How much of the week each comparison actually covers. A percentage over
+   *  three of seven days is a different claim from one over seven, and the UI
+   *  cannot say so without these. */
+  dayCount: number;
+  lwDayCount: number;
+  lyDayCount: number;
   hasLW: boolean;
   hasLY: boolean;
   vsLWPct: number;
@@ -256,6 +278,13 @@ export const computeDayMatchedTotals = (
     lwQty,
     lyTotal,
     lyQty,
+    twTotalForLW,
+    twQtyForLW,
+    twTotalForLY,
+    twQtyForLY,
+    dayCount: days.length,
+    lwDayCount: lwDays.length,
+    lyDayCount: lyDays.length,
     hasLW,
     hasLY,
     vsLWPct: hasLW ? ((gradeTwLW - gradeLW) / gradeLW) * 100 : 0,
@@ -460,6 +489,13 @@ export const buildLedgerRows = (
       lwQty,
       lyTotal,
       lyQty,
+      twTotalForLW,
+      twQtyForLW,
+      twTotalForLY,
+      twQtyForLY,
+      dayCount,
+      lwDayCount,
+      lyDayCount,
       hasLW,
       hasLY,
       vsLWPct,
@@ -483,6 +519,13 @@ export const buildLedgerRows = (
       twQty,
       lwQty,
       lyQty,
+      twTotalForLW,
+      twQtyForLW,
+      twTotalForLY,
+      twQtyForLY,
+      dayCount,
+      lwDayCount,
+      lyDayCount,
       vsLWPct,
       vsLYPct,
       vsLYDollar,
@@ -583,4 +626,81 @@ export const aggByCode = (
       });
   }
   return map;
+};
+
+// ─── Last-year window description ────────────────────────────────────────────
+//
+// The LY comparison is a SET of dates, not a range, and the two are not the
+// same thing the moment a holiday is in the week.
+//
+// `getDateRanges` and `StoreDetailPopup` both take min/max of the shifted
+// dates to build a FETCH range, and they have to: a Labor Day in the TW week
+// matches Labor Day last year, which can sit ten days off the rest of the
+// week, and the row has to be inside the window or it is never returned.
+// Sep 4-10 2026 therefore fetches Sep 1-11 2025 — eleven days for a seven-day
+// comparison, on purpose.
+//
+// What went wrong is that those fetch bounds were then printed as the label.
+// A header reading "Sep 1 - Sep 11" against a seven-day week is the page
+// telling the reader something untrue about its own arithmetic, which is how
+// this got noticed.
+
+export interface LyHolidayMatch {
+  /** The day in the current week. */
+  twDate: string;
+  /** Last year's occurrence of the same holiday — NOT a weekday shift. */
+  lyDate: string;
+  name: HolidayName;
+}
+
+export interface LyWindow {
+  /** Every date the LY comparison looks for, in order. */
+  dates: string[];
+  /** The days matched to a holiday rather than shifted by weekday. */
+  holidays: LyHolidayMatch[];
+  /** What to print. The contiguous run, with any holiday named after it —
+   *  "Sep 5 – Sep 11 · Labor Day" rather than a range that includes four days
+   *  nothing is being compared against. */
+  label: string;
+}
+
+/**
+ * Describes the LY window a set of TW dates maps onto.
+ *
+ * Shared rather than repeated: the desktop popup and the mobile report print
+ * the same label, and a holiday is exactly the case where two hand-rolled
+ * versions would drift apart without anyone noticing until a September.
+ */
+export const describeLyWindow = (twDates: string[]): LyWindow => {
+  const sortedTw = [...twDates].sort();
+  const holidays: LyHolidayMatch[] = [];
+  const plain: string[] = [];
+  const dates: string[] = [];
+
+  for (const twDate of sortedTw) {
+    const lyDate = sameWeekDayLastYear(twDate).date;
+    dates.push(lyDate);
+    const name = getHolidayName(twDate);
+    // A holiday only takes the special branch when last year's occurrence is
+    // in the table; outside 2025-2035 it falls back to the weekday shift and
+    // belongs with the plain days.
+    if (name && getHolidayLastYear(twDate)) {
+      holidays.push({ twDate, lyDate, name });
+    } else {
+      plain.push(lyDate);
+    }
+  }
+
+  // The run the reader thinks of as "the same week last year". Falls back to
+  // the whole set when a week is somehow all holidays, so the label is never
+  // empty.
+  const run = plain.length > 0 ? plain : [...dates].sort();
+  const label = `${fmtDate(run[0])} – ${fmtDate(run[run.length - 1])}`;
+  const names = [...new Set(holidays.map((h) => h.name))];
+
+  return {
+    dates,
+    holidays,
+    label: names.length > 0 ? `${label} · ${names.join(", ")}` : label,
+  };
 };

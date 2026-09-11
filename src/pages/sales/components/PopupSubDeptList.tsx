@@ -518,6 +518,38 @@ const PopupSubDeptList = ({
     const lwMap = buildMap(subSalesWk2);
     const lyMap = buildMap(subSalesWk3);
 
+    /**
+     * The TW side of each comparison, restricted to the days that matched.
+     *
+     * `subSalesWk2`/`subSalesWk3` are filtered upstream to the matched date
+     * set; `subSales` is the whole TW week. Dividing one by the other is the
+     * bug this fixes, and it does not merely exaggerate — it inverts. Wic
+     * Grocery at store 590 has three of seven LY days: the full week's
+     * $1,591.91 over those three days' $1,069.40 reads +48.86%, while the
+     * same three TW days total $619.31, which is -42.09%. The sheet was
+     * calling a department up by half when it is down by nearly as much.
+     *
+     * LW and LY need separate subtotals because their matched sets differ —
+     * here LW is all seven days and LY is three.
+     */
+    const lwDates = new Set(
+      subSalesWk2.map((s) => s.sale_date.split("T")[0]),
+    );
+    const lyDates = new Set(
+      subSalesWk3.map((s) => s.sale_date.split("T")[0]),
+    );
+    const twForLW = buildMap(
+      subSales.filter((s) => {
+        const d = s.sale_date.split("T")[0];
+        return lwDates.has(addDays(new Date(d), -7).toISOString().split("T")[0]);
+      }),
+    );
+    const twForLY = buildMap(
+      subSales.filter((s) =>
+        lyDates.has(sameWeekDayLastYear(s.sale_date.split("T")[0]).date),
+      ),
+    );
+
     const twMap = subSales.reduce(
       (
         acc: Record<
@@ -565,6 +597,15 @@ const PopupSubDeptList = ({
         const lyNet = ly?.net ?? 0;
         const lwQty = lw?.qty ?? 0;
         const lyQty = ly?.qty ?? 0;
+        // Each percentage divides by the TW subtotal for its OWN comparison.
+        // `tw` below stays the whole week — it is the department's actual
+        // sales and the column header says so — but it is never the base.
+        const twLW = twForLW[numId];
+        const twLY = twForLY[numId];
+        const twNetForLW = twLW?.net ?? 0;
+        const twNetForLY = twLY?.net ?? 0;
+        const twQtyForLW = twLW?.qty ?? 0;
+        const twQtyForLY = twLY?.qty ?? 0;
         return {
           id: numId,
           desc: r.desc,
@@ -573,10 +614,10 @@ const PopupSubDeptList = ({
           ly: lyNet,
           hasLW: lwNet > 0,
           hasLY: lyNet > 0,
-          vsLWPct: lwNet ? ((r.net - lwNet) / lwNet) * 100 : 0,
-          vsLYPct: lyNet ? ((r.net - lyNet) / lyNet) * 100 : 0,
-          vsLWQtyPct: lwQty ? ((r.qty - lwQty) / lwQty) * 100 : 0,
-          vsLYQtyPct: lyQty ? ((r.qty - lyQty) / lyQty) * 100 : 0,
+          vsLWPct: lwNet ? ((twNetForLW - lwNet) / lwNet) * 100 : 0,
+          vsLYPct: lyNet ? ((twNetForLY - lyNet) / lyNet) * 100 : 0,
+          vsLWQtyPct: lwQty ? ((twQtyForLW - lwQty) / lwQty) * 100 : 0,
+          vsLYQtyPct: lyQty ? ((twQtyForLY - lyQty) / lyQty) * 100 : 0,
           qty: r.qty,
           lwQty,
           lyQty,

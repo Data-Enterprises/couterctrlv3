@@ -267,6 +267,28 @@ const PopupHourlyView = ({
     const lwMap = buildMap(hourlySalesLastWeek);
     const lyMap = buildMap(hourlySalesLastYear);
 
+    // Same day-matching the sub-dept list and the KPI header do. The LW/LY
+    // arrays are filtered upstream to the days that matched; `hourlySales` is
+    // the whole TW week. Comparing a seven-day 4 PM against a three-day 4 PM
+    // is not a busy hour, it is two different questions.
+    const lwDates = new Set(
+      hourlySalesLastWeek.map((h) => h.sale_date.split("T")[0]),
+    );
+    const lyDates = new Set(
+      hourlySalesLastYear.map((h) => h.sale_date.split("T")[0]),
+    );
+    const twForLW = buildMap(
+      hourlySales.filter((h) => {
+        const d = h.sale_date.split("T")[0];
+        return lwDates.has(addDays(new Date(d), -7).toISOString().split("T")[0]);
+      }),
+    );
+    const twForLY = buildMap(
+      hourlySales.filter((h) =>
+        lyDates.has(sameWeekDayLastYear(h.sale_date.split("T")[0]).date),
+      ),
+    );
+
     const allHours = Array.from(
       new Set(
         [
@@ -298,10 +320,14 @@ const PopupHourlyView = ({
           lyQty,
           hasLW: lw > 0,
           hasLY: ly > 0,
-          vsLWPct: lw ? ((tw - lw) / lw) * 100 : 0,
-          vsLYPct: ly ? ((tw - ly) / ly) * 100 : 0,
-          vsLWQtyPct: lwQty ? ((qty - lwQty) / lwQty) * 100 : 0,
-          vsLYQtyPct: lyQty ? ((qty - lyQty) / lyQty) * 100 : 0,
+          vsLWPct: lw ? (((twForLW[h]?.net ?? 0) - lw) / lw) * 100 : 0,
+          vsLYPct: ly ? (((twForLY[h]?.net ?? 0) - ly) / ly) * 100 : 0,
+          vsLWQtyPct: lwQty
+            ? (((twForLW[h]?.qty ?? 0) - lwQty) / lwQty) * 100
+            : 0,
+          vsLYQtyPct: lyQty
+            ? (((twForLY[h]?.qty ?? 0) - lyQty) / lyQty) * 100
+            : 0,
         };
       })
       .sort((a, b) => {

@@ -26,6 +26,12 @@ interface LedgerHeaderProps {
   vsLWPct: number;
   hasLY: boolean;
   hasLW: boolean;
+  /** Store-days in the result, and how many of them found a match. A pill over
+   *  three days of a seven-day week is a hint, not a verdict, and this is what
+   *  lets it be shown as one. */
+  dayCount: number;
+  lyDayCount: number;
+  lwDayCount: number;
   onNewSearch: () => void;
   onOpenSearch: () => void;
   gradingMetric: GradingMetric;
@@ -39,6 +45,9 @@ const LedgerHeader = ({
   vsLWPct,
   hasLY,
   hasLW,
+  dayCount,
+  lyDayCount,
+  lwDayCount,
   onOpenSearch,
   gradingMetric,
 }: LedgerHeaderProps) => {
@@ -54,6 +63,30 @@ const LedgerHeader = ({
   // actually graded against.
   const lastValidRef = useRef<number>(threshold?.amount ?? THRESHOLD_DEFAULT);
   if (threshold?.amount != null) lastValidRef.current = threshold.amount;
+
+  /**
+   * A comparison missing days is not the same claim as a complete one.
+   *
+   * Store 590's last year has three of seven days, and the two it is missing
+   * are Saturday and Sunday — the biggest of the week. The arithmetic over
+   * those three days is correct and the conclusion still does not carry, so
+   * the pill drops its red/green fill and says what it covers instead. Green
+   * and red are for verdicts.
+   */
+  const pill = (pct: number, matched: number) => {
+    const partial = matched < dayCount;
+    return {
+      partial,
+      cls: partial
+        ? "bg-custom-white/10 text-custom-white/85"
+        : pct >= 0
+          ? "bg-emerald-300/15 text-emerald-300"
+          : "bg-red-300/15 text-red-300",
+      note: partial ? ` · ${matched}/${dayCount} days` : "",
+    };
+  };
+  const lwPill = pill(vsLWPct, lwDayCount);
+  const lyPill = pill(vsLYPct, lyDayCount);
 
 
   return (
@@ -73,20 +106,28 @@ const LedgerHeader = ({
         </span>
         {hasLW && (
           <span
-            className={`text-[12px] font-semibold px-2 py-0.5 rounded-full ${
-              vsLWPct >= 0 ? "bg-emerald-300/15 text-emerald-300" : "bg-red-300/15 text-red-300"
-            }`}
+            title={
+              lwPill.partial
+                ? `Only ${lwDayCount} of ${dayCount} store-days have a matching day last week. The percentage covers those days alone.`
+                : undefined
+            }
+            className={`text-[12px] font-semibold px-2 py-0.5 rounded-full ${lwPill.cls}`}
           >
             LW {formatPct(vsLWPct)}
+            {lwPill.note}
           </span>
         )}
         {hasLY && (
           <span
-            className={`text-[12px] font-semibold px-2 py-0.5 rounded-full ${
-              vsLYPct >= 0 ? "bg-emerald-300/15 text-emerald-300" : "bg-red-300/15 text-red-300"
-            }`}
+            title={
+              lyPill.partial
+                ? `Only ${lyDayCount} of ${dayCount} store-days have a matching day last year. The percentage covers those days alone.`
+                : undefined
+            }
+            className={`text-[12px] font-semibold px-2 py-0.5 rounded-full ${lyPill.cls}`}
           >
             LY {formatPct(vsLYPct)}
+            {lyPill.note}
           </span>
         )}
       </div>

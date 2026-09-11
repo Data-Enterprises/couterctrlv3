@@ -4,6 +4,7 @@ import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { getSubs, getHourly } from "../../../api/sales";
 import { fetchSubDeptRowsSafe } from "../../../utils/marginRows";
 import { gradeSeverity } from "../../../utils/severity";
+import { getHolidayName } from "../../../utils/holidays";
 import {
   addDays,
   formatGoliathDate,
@@ -51,6 +52,7 @@ import {
   BADGE_COLOR,
   SEVERITY_RANK,
   computeDayMatchedTotals,
+  describeLyWindow,
   scopeToStoreNumber,
   applyStoreNumberToName,
   withProductCode,
@@ -65,6 +67,7 @@ import {
   CheckCircleIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  StarIcon,
 } from "@heroicons/react/20/solid";
 import BottomSheet from "../../../components/BottomSheet";
 import SevBadge from "../../../components/SevBadge";
@@ -150,9 +153,12 @@ const LedgerStoreReport = () => {
     { length: 7 },
     (_, i) => addDays(new Date(twStart), i).toISOString().split("T")[0],
   );
-  const lyWeekDates = twRealDates
-    .map((d) => sameWeekDayLastYear(d).date)
-    .sort();
+  // `lyStart`/`lyEnd` are min/max of the shifted dates and stay that way: they
+  // are FETCH bounds, wide enough to include a holiday match that can sit ten
+  // days off the rest of the week. What they are not is a label — printing them
+  // as one put "Sep 1 - Sep 11" over a seven-day week.
+  const lyWindow = describeLyWindow(twRealDates);
+  const lyWeekDates = [...lyWindow.dates].sort();
   const lyStart = lyWeekDates[0];
   const lyEnd = lyWeekDates[lyWeekDates.length - 1];
   const lwWeekDates = twRealDates.map(
@@ -177,14 +183,20 @@ const LedgerStoreReport = () => {
       })
     : `${fmtDate(lwStart)} – ${fmtDate(lwEnd)}`;
   const lyDateLabel = selectedDate
-    ? new Date(
-        sameWeekDayLastYear(selectedDate).date + "T12:00:00",
-      ).toLocaleDateString("en-US", {
-        weekday: "short",
-        month: "short",
-        day: "numeric",
-      })
-    : `${fmtDate(lyStart)} – ${fmtDate(lyEnd)}`;
+    ? (() => {
+        const label = new Date(
+          sameWeekDayLastYear(selectedDate).date + "T12:00:00",
+        ).toLocaleDateString("en-US", {
+          weekday: "short",
+          month: "short",
+          day: "numeric",
+        });
+        // Named, because a holiday matches last year's holiday rather than the
+        // same weekday and the date otherwise looks like an error.
+        const hol = lyWindow.holidays.find((h) => h.twDate === selectedDate);
+        return hol ? `${label} · ${hol.name}` : label;
+      })()
+    : lyWindow.label;
 
   // ── Fetch report data on store selection ─────────────────────────────────────
   useEffect(() => {
@@ -614,6 +626,11 @@ const LedgerStoreReport = () => {
     : weekTotals.hasLW
       ? weekTotals.vsLWPct
       : null;
+  // Days behind each comparison. A selected day is its own comparison; the
+  // week is where a three-of-seven figure was wearing full-verdict colour.
+  const kpiDays = activeDay ? 1 : weekTotals.dayCount;
+  const kpiLYDays = activeDay ? 1 : weekTotals.lyDayCount;
+  const kpiLWDays = activeDay ? 1 : weekTotals.lwDayCount;
   const kpiVsLY = activeDay
     ? kpiHasLY
       ? ((activeDay.twNet - (activeDay.lyNet as number)) /
@@ -753,12 +770,17 @@ const LedgerStoreReport = () => {
               </span>
               {kpiVsLW !== null && (
                 <span
-                  className={`text-[10px] font-semibold ${kpiVsLW >= 0 ? "text-emerald-600" : "text-red-500"}`}
+                  className={`text-[10px] font-semibold ${kpiLWDays < kpiDays ? "text-content/85" : kpiVsLW >= 0 ? "text-emerald-600" : "text-red-500"}`}
                 >
                   {formatPct(kpiVsLW)}
                 </span>
               )}
             </div>
+            {kpiLWDays < kpiDays && (
+              <div className="text-[10px] font-medium text-content/85">
+                {kpiLWDays} of {kpiDays} days
+              </div>
+            )}
           </div>
           <div className="px-3 py-2">
             <div className="text-[10px] font-medium uppercase tracking-wide text-content/85">
@@ -773,12 +795,20 @@ const LedgerStoreReport = () => {
               </span>
               {kpiVsLY !== null && (
                 <span
-                  className={`text-[10px] font-semibold ${kpiVsLY >= 0 ? "text-emerald-600" : "text-red-500"}`}
+                  /* Neutral rather than red/green where days are missing — the
+                     figure is right over what it has and still is not a
+                     verdict about the week. */
+                  className={`text-[10px] font-semibold ${kpiLYDays < kpiDays ? "text-content/85" : kpiVsLY >= 0 ? "text-emerald-600" : "text-red-500"}`}
                 >
                   {formatPct(kpiVsLY)}
                 </span>
               )}
             </div>
+            {kpiLYDays < kpiDays && (
+              <div className="text-[10px] font-medium text-content/85">
+                {kpiLYDays} of {kpiDays} days
+              </div>
+            )}
           </div>
         </div>
 
@@ -829,8 +859,21 @@ const LedgerStoreReport = () => {
                 onClick={() =>
                   dispatch(setLedgerSelectedDate(isSelected ? null : dateStr))
                 }
-                className={`flex flex-col items-center justify-center gap-1 py-2 border-r border-gray-100 last:border-r-0 transition-colors ${isSelected ? "bg-[#1e2a4a]" : "hover:bg-gray-50"}`}
+                /* Carries the holiday the way desktop's day strip does. A
+                   holiday compares against last year's holiday rather than the
+                   same weekday, so its LY figure is drawn from a date that
+                   breaks the run either side of it — unmarked, that reads as a
+                   mistake. */
+                title={
+                  getHolidayName(dateStr)
+                    ? `${getHolidayName(dateStr)} — compared with last year's ${getHolidayName(dateStr)}, not the same weekday.`
+                    : undefined
+                }
+                className={`relative flex flex-col items-center justify-center gap-1 py-2 border-r border-gray-100 last:border-r-0 transition-colors ${isSelected ? "bg-[#1e2a4a]" : "hover:bg-gray-50"}`}
               >
+                {getHolidayName(dateStr) && (
+                  <StarIcon className="absolute top-0.5 right-0.5 w-2 h-2 text-amber-500" />
+                )}
                 <span
                   className={`text-[10px] font-semibold leading-none ${isSelected ? "text-custom-white" : "text-content"}`}
                 >
