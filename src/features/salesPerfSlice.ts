@@ -250,7 +250,12 @@ const salesPerfSlice = createSlice({
       // Its items belonged to the previous store.
       state.openSubDept = null;
     },
-    resetSalesPerf: () => initialState,
+    // The generation survives a reset and moves on, so a store or item fetch
+    // still in flight from before it is dropped when it lands.
+    resetSalesPerf: (state) => ({
+      ...initialState,
+      storeCacheGen: state.storeCacheGen + 1,
+    }),
   },
 });
 

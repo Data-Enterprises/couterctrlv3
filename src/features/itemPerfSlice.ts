@@ -393,7 +393,9 @@ const itemPerfSlice = createSlice({
       groupSort: state.groupSort,
       itemSort: state.itemSort,
     }),
-    resetItemPerf: () => initialState,
+    // The counter survives a reset and moves on, so a load still in flight
+    // from before it can't match the next load's number and land.
+    resetItemPerf: (state) => ({ ...initialState, loadGen: state.loadGen + 1 }),
   },
 });
 

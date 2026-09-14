@@ -1,7 +1,12 @@
-import { useState } from "react";
+import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
 import SearchCard from "../../../components/SearchCard";
-import { setExplorerNotice } from "../../../features/cashiersSlice";
+import {
+  closeExplorerSignal,
+  setExplorerMobileSearchOpen,
+  setExplorerNotice,
+} from "../../../features/cashiersSlice";
+import { useCashierSignals } from "../useCashierSignals";
 import { useCashierExplorer, type ExplorerOutcome } from "../useCashierExplorer";
 import SignalListMobile from "./SignalListMobile";
 import SignalTransactionsMobile from "./SignalTransactionsMobile";
@@ -37,11 +42,22 @@ const CashiersMobile = () => {
     explorerSaleTypes,
     explorerAllRows,
     explorerNotice,
+    explorerMobileScreen,
+    explorerMobileSearchOpen,
+    explorerSignalKey,
   } = useAppSelector((s) => s.cashier);
   const { runPreflight, runExplore, scopeArgs } = useCashierExplorer();
+  const { signals } = useCashierSignals();
 
-  const [screen, setScreen] = useState<"signals" | "transactions">("signals");
-  const [searchOpen, setSearchOpen] = useState(false);
+  /** The transactions screen needs its signal. Coming back to the page after
+   *  the rows changed underneath it — desktop switched lens, or reloaded —
+   *  would otherwise render nothing at all; send it back to the list. */
+  const signalGone =
+    explorerMobileScreen === "transactions" &&
+    !signals.some((s) => s.key === explorerSignalKey);
+  useEffect(() => {
+    if (signalGone) dispatch(closeExplorerSignal());
+  }, [signalGone]);
 
   const { start, end } = scopeArgs();
   const hasData = explorerAllRows.length > 0;
@@ -73,20 +89,19 @@ const CashiersMobile = () => {
     const outcome = await runExplore(preflight.fallback);
     if (outcome === "stale") return;
     noticeFor(outcome);
-    if (outcome !== "loaded") return;
-    setScreen("signals");
-    setSearchOpen(false);
+    // Loaded rows reset the screen and close the search card in the slice
+    // (setExplorerRows), so there's nothing left to do here.
   };
 
   /** Changing the exception refetches — unlike LP, each one is its own
    *  `cashier_table` call, so this can't be a client-side filter. */
   const handleExceptionChange = async (saleType: string) => {
-    setScreen("signals");
+    dispatch(closeExplorerSignal());
     const outcome = await runExplore(saleType);
     if (outcome !== "stale") noticeFor(outcome);
   };
 
-  if (!hasData || searchOpen) {
+  if (!hasData || explorerMobileSearchOpen) {
     return (
       <div className="h-[calc(100dvh-3rem)] overflow-y-auto">
         <div className="mx-4 pt-4 pb-2">
@@ -100,23 +115,28 @@ const CashiersMobile = () => {
             loading={explorerLoading}
             loadingMessage={explorerMessage || "Finding exceptions..."}
             notice={explorerNotice || undefined}
-            onBack={hasData ? () => setSearchOpen(false) : undefined}
+            onBack={
+              hasData
+                ? () => dispatch(setExplorerMobileSearchOpen(false))
+                : undefined
+            }
           />
         </div>
       </div>
     );
   }
 
-  if (screen === "transactions") {
-    return <SignalTransactionsMobile onBack={() => setScreen("signals")} />;
+  if (explorerMobileScreen === "transactions" && !signalGone) {
+    return (
+      <SignalTransactionsMobile onBack={() => dispatch(closeExplorerSignal())} />
+    );
   }
 
   return (
     <SignalListMobile
       saleTypes={explorerSaleTypes}
       onExceptionChange={handleExceptionChange}
-      onSelectSignal={() => setScreen("transactions")}
-      onSearch={() => setSearchOpen(true)}
+      onSearch={() => dispatch(setExplorerMobileSearchOpen(true))}
       start={start}
       end={end}
     />

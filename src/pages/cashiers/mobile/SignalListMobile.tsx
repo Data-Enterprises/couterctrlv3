@@ -2,7 +2,7 @@ import { ChevronRightIcon } from "@heroicons/react/20/solid";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
 import {
   setExplorerLens,
-  setExplorerSignalKey,
+  openExplorerSignal,
 } from "../../../features/cashiersSlice";
 import SelectFilter from "../../../components/filters/SelectFilter";
 import MobilePerfHeader from "../../../components/mobile/MobilePerfHeader";
@@ -32,7 +32,6 @@ interface Props {
   /** Exception types this store/week actually returned, from preflight. */
   saleTypes: string[];
   onExceptionChange: (saleType: string) => void;
-  onSelectSignal: () => void;
   onSearch: () => void;
   start: string;
   end: string;
@@ -51,7 +50,6 @@ const SPREAD_CLASS: Record<string, string> = {
 const SignalListMobile = ({
   saleTypes,
   onExceptionChange,
-  onSelectSignal,
   onSearch,
   start,
   end,
@@ -161,10 +159,7 @@ const SignalListMobile = ({
           signals.map((s) => (
             <button
               key={s.key}
-              onClick={() => {
-                dispatch(setExplorerSignalKey(s.key));
-                onSelectSignal();
-              }}
+              onClick={() => dispatch(openExplorerSignal(s.key))}
               className="w-full px-3 py-2.5 bg-custom-white border-b border-[#1e2a4a]/15 even:bg-row_stripe text-left active:bg-gray-50"
             >
               <div className="flex items-center gap-2">
