@@ -1,5 +1,6 @@
-import { useDeferredValue, useEffect, useMemo } from "react";
+import { useDeferredValue, useEffect, useMemo, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
+import { useDrillScroll } from "../../../../hooks/useDrillScroll";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 import SearchCard from "../../../../components/SearchCard";
 import { getHourly, getSubs, getWeekly } from "../../../../api/sales";
@@ -134,6 +135,17 @@ const SalesPerfMobile = () => {
   const context = useAppSelector((s) => s.app);
   const search = useAppSelector((s) => s.search);
   const perf = useAppSelector((s) => s.salesPerf);
+
+  // Items open inside the list card, below the totals and the chart — so a
+  // sub department's items start at that card, and Back returns to the row.
+  const scroller = useRef<HTMLDivElement>(null);
+  const breakdown = useRef<HTMLElement>(null);
+  useDrillScroll(
+    scroller,
+    perf.openSubDept ? 1 : 0,
+    `${perf.dimension}|${perf.openSubDept?.id ?? ""}`,
+    breakdown,
+  );
   const { assignedStores, selectedGroupStores } = useAppSelector((s) => s.user);
 
   /** The name the user knows a store by, never the one the payload sent.
@@ -492,7 +504,7 @@ const SalesPerfMobile = () => {
 
       {/* pb-14 clears the fixed bottom tab bar, which is outside document flow
           and would otherwise hide the last row of the list. */}
-      <div className="flex-1 overflow-y-auto pb-14">
+      <div ref={scroller} className="flex-1 overflow-y-auto pb-14">
         <div className="flex flex-col gap-3 p-3">
           {/* ── totals ───────────────────────────────────────────── */}
           <section className="overflow-hidden rounded-2xl border border-gray-200 bg-custom-white shadow-md">
@@ -631,7 +643,10 @@ const SalesPerfMobile = () => {
           </section>
 
           {/* ── the breakdown ────────────────────────────────────── */}
-          <section className="overflow-hidden rounded-2xl border border-gray-200 bg-custom-white shadow-md">
+          <section
+            ref={breakdown}
+            className="overflow-hidden rounded-2xl border border-gray-200 bg-custom-white shadow-md"
+          >
             {showingItems && perf.openSubDept ? (
               <>
                 <div className="border-b border-gray-100 px-3.5 pb-2.5 pt-2">

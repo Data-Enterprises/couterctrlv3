@@ -1,4 +1,4 @@
-import { useDeferredValue, useEffect, useMemo } from "react";
+import { useDeferredValue, useEffect, useMemo, useRef } from "react";
 import {
   BackspaceIcon,
   ChevronLeftIcon,
@@ -6,6 +6,7 @@ import {
   MagnifyingGlassIcon,
 } from "@heroicons/react/20/solid";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
+import { useDrillScroll } from "../../../hooks/useDrillScroll";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import SingleStoreSearchCard from "../../../components/SingleStoreSearchCard";
 import SingleDatePicker from "../../../components/datePickers/SingleDatePicker";
@@ -125,6 +126,19 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
   const search = useAppSelector((s) => s.search);
   const assignedStores = useAppSelector((s) => s.user.assignedStores);
   const perf = useAppSelector((s) => s.itemPerf);
+
+  // A group opens its items and an item opens its week, all in one scroll:
+  // each level starts at the top, and Back returns to the row you tapped.
+  const scroller = useRef<HTMLDivElement>(null);
+  useDrillScroll(
+    scroller,
+    perf.view === "daily" && perf.selectedItemCode
+      ? 2
+      : perf.view === "daily"
+        ? 1
+        : 0,
+    `${perf.view}|${perf.selectedGroupKey ?? ""}|${perf.selectedItemCode ?? ""}|${perf.storeNumber ?? ""}`,
+  );
 
   // The week the NEXT search will fetch. singleDate is m/d/yyyy off
   // formatDate; Goliath wants yyyy-mm-dd.
@@ -624,7 +638,7 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
       )}
 
       {/* pb-14 clears the fixed bottom tab bar, which is outside document flow. */}
-      <div className="flex-1 overflow-y-auto pb-14">
+      <div ref={scroller} className="flex-1 overflow-y-auto pb-14">
         <div className="flex flex-col gap-3 p-3">
           {/* ── back out of an item ─────────────────────────────── */}
           {/* Spelled out rather than a bare chevron: this screen is reached

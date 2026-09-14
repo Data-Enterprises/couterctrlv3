@@ -2,6 +2,7 @@ import { useDeferredValue, useEffect, useMemo, useRef } from "react";
 import { useStore } from "react-redux";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
+import { useDrillScroll } from "../../../hooks/useDrillScroll";
 import type { RootState } from "../../../store";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import SearchCard from "../../../components/SearchCard";
@@ -156,6 +157,15 @@ const EventPerfMobile = ({
   const perf = useAppSelector((s) => s.eventPerf);
 
   const carousel = useRef<HTMLDivElement>(null);
+
+  // Stores → cashiers → transactions all drill inside one scroll, so each
+  // level starts at the top and Back returns to the row you tapped.
+  const scroller = useRef<HTMLDivElement>(null);
+  useDrillScroll(
+    scroller,
+    perf.selectedCashierKey ? 2 : perf.selectedStoreKey ? 1 : 0,
+    `${perf.selectedStoreKey ?? ""}|${perf.selectedCashierKey ?? ""}`,
+  );
 
   /** Whatever is in the slice belongs to this page. Checked in render as well
    *  as cleared in the effect, so the other page's rows never paint for the
@@ -499,7 +509,7 @@ const EventPerfMobile = ({
       </nav>
 
       {/* pb-14 clears the fixed bottom tab bar, which is outside document flow. */}
-      <div className="flex-1 overflow-y-auto pb-14">
+      <div ref={scroller} className="flex-1 overflow-y-auto pb-14">
         {(perf.selectedStoreKey || perf.selectedCashierKey) && (
           <div className="px-3 pt-3">
             <button
