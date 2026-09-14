@@ -20,6 +20,7 @@ import {
   emptyBundle,
   setPerfDimension,
   setPerfGroupData,
+  setPerfSort,
   setPerfHasSearched,
   setPerfLoading,
   setPerfStoreLoading,
@@ -36,7 +37,13 @@ import {
   buildStorePairs,
   buildSubPairs,
   buildTotals,
+  pairChangePct,
+  sortPairs,
+  type PairSort,
 } from "./perfData";
+import MobileSortChips, {
+  type SortOption,
+} from "../../../../components/mobile/MobileSortChips";
 import PairedBars from "./PairedBars";
 import { COUPON_COLORS, COUPON_LABELS, LY_COLOR, TY_COLOR } from "./perfColors";
 import PerfDayChart from "./PerfDayChart";
@@ -44,6 +51,34 @@ import PerfCardHeader from "./PerfCardHeader";
 
 /** Darkest to lightest, so the stack and the legend agree. */
 const COUPON_KEYS = ["digital", "elecStore", "elecInstore", "store"] as const;
+
+/** What each tab can sort by. Hours adds the time of day, which is also its
+ *  default — a day reads as a timeline first. */
+const SORTS: Record<PerfDimension, SortOption<PairSort>[]> = {
+  stores: [
+    { key: "sales", label: "Sales" },
+    { key: "change", label: "Change vs LY" },
+    { key: "name", label: "Store #" },
+  ],
+  subs: [
+    { key: "sales", label: "Sales" },
+    { key: "change", label: "Change vs LY" },
+    { key: "name", label: "Name" },
+  ],
+  hours: [
+    { key: "time", label: "Time" },
+    { key: "sales", label: "Sales" },
+    { key: "change", label: "Change vs LY" },
+  ],
+};
+
+/** Stores sort on their number, taken from the key — the label is whatever
+ *  name the user knows the store by, which needn't start with it. */
+const storeNumberOf = (p: { key: string; label: string }) =>
+  p.key.split("__")[1] ?? p.label;
+
+const fmtChange = (pct: number) =>
+  `${pct > 0 ? "+" : pct < 0 ? "\u2212" : ""}${Math.abs(pct).toFixed(1)}%`;
 
 const DIMENSIONS: { key: PerfDimension; label: string }[] = [
   { key: "stores", label: "Stores" },
@@ -223,14 +258,26 @@ const SalesPerfMobile = () => {
     [perf.weekTy, perf.weekLy, active, shownDay, perf.selectedStore],
   );
 
+  const sort = perf.sort[perf.dimension];
   const pairs = useMemo(() => {
     if (perf.dimension === "subs")
-      return buildSubPairs(active.subsTy, active.subsLy, shownDay);
+      return sortPairs(
+        buildSubPairs(active.subsTy, active.subsLy, shownDay),
+        sort,
+      );
     if (perf.dimension === "hours")
-      return buildHourPairs(active.hourlyTy, active.hourlyLy, shownDay);
-    return buildStorePairs(perf.weekTy, perf.weekLy, shownDay, nameOf);
+      return sortPairs(
+        buildHourPairs(active.hourlyTy, active.hourlyLy, shownDay),
+        sort,
+      );
+    return sortPairs(
+      buildStorePairs(perf.weekTy, perf.weekLy, shownDay, nameOf),
+      sort,
+      storeNumberOf,
+    );
   }, [
     perf.dimension,
+    sort,
     shownDay,
     perf.weekTy,
     perf.weekLy,
@@ -477,6 +524,13 @@ const SalesPerfMobile = () => {
 
           {/* ── the breakdown ────────────────────────────────────── */}
           <section className="overflow-hidden rounded-2xl border border-gray-200 bg-custom-white shadow-md">
+            <MobileSortChips
+              options={SORTS[perf.dimension]}
+              value={sort}
+              onChange={(key) =>
+                dispatch(setPerfSort({ dimension: perf.dimension, sort: key }))
+              }
+            />
             {perf.selectedStore && perf.dimension !== "stores" && (
               <p className="border-b border-gray-100 px-3.5 pb-2.5 pt-3 text-[12px] text-content/85">
                 Showing {selectedStoreName} only. Clear it on the Stores tab.
@@ -498,6 +552,7 @@ const SalesPerfMobile = () => {
                 // scope this screen has no way to show.
                 const selectable = perf.dimension === "stores";
                 const isSel = selectable && perf.selectedStore === p.key;
+                const change = pairChangePct(p);
 
                 return (
                   <button
@@ -515,6 +570,12 @@ const SalesPerfMobile = () => {
                     <div className="flex items-baseline gap-2">
                       <span className="min-w-0 flex-1 truncate font-display text-[13.5px] font-semibold text-content">
                         {p.label}
+                      </span>
+                      {/* The figure the Change sort orders on, so that order
+                          can be read off the rows. Neutral: no grading on
+                          mobile. A dash when last year sold nothing. */}
+                      <span className="flex-none text-[12px] font-semibold tabular-nums text-content/85">
+                        {change === null ? "\u2014" : fmtChange(change)}
                       </span>
                       {isSel && (
                         <span

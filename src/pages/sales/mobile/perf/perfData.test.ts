@@ -6,6 +6,7 @@ import {
   buildStorePairs,
   buildSubPairs,
   buildTotals,
+  sortPairs,
   storeKeyOf,
 } from "./perfData";
 
@@ -206,5 +207,44 @@ describe("dimension lists", () => {
       null,
     );
     expect(rows.map((r) => r.label)).toEqual(["12am – 1am", "12pm – 1pm"]);
+  });
+});
+
+describe("sortPairs", () => {
+  const p = (key: string, label: string, ty: number, ly: number) => ({
+    key,
+    label,
+    ty,
+    ly,
+  });
+  const rows = [
+    p("685__10", "Hartselle", 100, 200), // -50%
+    p("685__9", "Arab", 300, 250), // +20%
+    p("686__2", "Boaz", 50, 0), // no LY
+  ];
+  const keys = (r: { key: string }[]) => r.map((x) => x.key);
+
+  it("sales puts the largest this year first", () => {
+    expect(keys(sortPairs(rows, "sales"))).toEqual(["685__9", "685__10", "686__2"]);
+  });
+
+  it("change puts the biggest drop first and rows without LY last", () => {
+    expect(keys(sortPairs(rows, "change"))).toEqual(["685__10", "685__9", "686__2"]);
+  });
+
+  it("name compares numbers as numbers", () => {
+    const byNumber = sortPairs(rows, "name", (r) => r.key.split("__")[1]);
+    expect(keys(byNumber)).toEqual(["686__2", "685__9", "685__10"]);
+  });
+
+  it("time orders by the key as an hour", () => {
+    const hours = [p("14", "2pm", 1, 1), p("9", "9am", 5, 5), p("10", "10am", 3, 3)];
+    expect(keys(sortPairs(hours, "time"))).toEqual(["9", "10", "14"]);
+  });
+
+  it("does not mutate its input", () => {
+    const copy = [...rows];
+    sortPairs(rows, "change");
+    expect(rows).toEqual(copy);
   });
 });

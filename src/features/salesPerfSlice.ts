@@ -1,5 +1,6 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { HourlySale, SubSale, WeeklySale } from "../interfaces";
+import type { PairSort } from "../utils/perfPairs";
 
 /** Which breakdown the list card is showing. All three render the same row —
  *  a name and a pair of bars — so this only picks the data source. */
@@ -77,6 +78,11 @@ interface SalesPerfState {
 
   dimension: PerfDimension;
 
+  /** How each tab's list is ordered, remembered per tab: Hours defaults to
+   *  the time of day, the other two to size. Kept across searches — it's a
+   *  preference, not part of the result. */
+  sort: Record<PerfDimension, PairSort>;
+
   /** ISO date of the selected day, or null for the whole week. Scopes the
    *  totals card and every row in the list. Tapping the selected day again
    *  clears it — there is no "all week" control. */
@@ -102,6 +108,7 @@ const initialState: SalesPerfState = {
   storeLoading: null,
   storeCacheGen: 0,
   dimension: "stores",
+  sort: { stores: "sales", subs: "sales", hours: "time" },
   selectedDay: null,
   selectedStore: null,
 };
@@ -156,6 +163,12 @@ const salesPerfSlice = createSlice({
     },
     /** Tapping the day that is already selected clears the scope. The chart is
      *  the only control, so it has to be able to undo itself. */
+    setPerfSort: (
+      state,
+      action: PayloadAction<{ dimension: PerfDimension; sort: PairSort }>,
+    ) => {
+      state.sort[action.payload.dimension] = action.payload.sort;
+    },
     togglePerfDay: (state, action: PayloadAction<string>) => {
       state.selectedDay =
         state.selectedDay === action.payload ? null : action.payload;
@@ -180,6 +193,7 @@ export const {
   cachePerfStoreData,
   failPerfStoreData,
   setPerfDimension,
+  setPerfSort,
   togglePerfDay,
   togglePerfStore,
   resetSalesPerf,

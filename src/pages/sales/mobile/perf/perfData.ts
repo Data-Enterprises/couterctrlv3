@@ -11,6 +11,11 @@ import {
 } from "../../../../utils/perfPairs";
 
 export { lyDateFor, storeKeyOf };
+export {
+  pairChangePct,
+  sortPairs,
+  type PairSort,
+} from "../../../../utils/perfPairs";
 export type { PerfDay, PerfPair };
 
 /** The four coupon channels, kept split rather than summed so the card can

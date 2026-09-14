@@ -91,9 +91,61 @@ export const pairBy = <T extends StoreRow & { sale_date: string }>(
   add(tyRows, day, "ty");
   add(lyRows, lyDay, "ly");
 
-  // Largest this year first. Size is a fact about the row; ordering by how far
-  // it fell would be grading by another name.
+  // Largest this year first — the default. Size is a fact about the row;
+  // ordering by how far it fell is available, but only when someone asks for
+  // it (sortPairs "change").
   return [...acc.values()].sort((a, b) => b.ty - a.ty);
+};
+
+/** How a list of pairs can be ordered.
+ *  - sales:  this year, largest first
+ *  - change: vs last year, biggest drop first
+ *  - name:   A-Z, numbers in number order ("9" before "10")
+ *  - time:   by key as a number — hours of the day */
+export type PairSort = "sales" | "change" | "name" | "time";
+
+/** This year against last year as a percentage. Null when last year is zero:
+ *  there is nothing to take a percentage of. */
+export const pairChangePct = (p: PerfPair): number | null =>
+  p.ly > 0 ? ((p.ty - p.ly) / p.ly) * 100 : null;
+
+/**
+ * Order a list of pairs. Returns a new array.
+ *
+ * Rows with no last year sort after every row that has one under "change" —
+ * unknown isn't the same as down. Ties fall back to size, so equal rows keep a
+ * stable, sensible order.
+ *
+ * `nameOf` picks what "name" compares; stores pass their store number.
+ */
+export const sortPairs = (
+  pairs: PerfPair[],
+  sort: PairSort,
+  nameOf: (p: PerfPair) => string = (p) => p.label,
+): PerfPair[] => {
+  const bySize = (a: PerfPair, b: PerfPair) => b.ty - a.ty;
+  const out = [...pairs];
+  switch (sort) {
+    case "sales":
+      return out.sort(bySize);
+    case "change":
+      return out.sort((a, b) => {
+        const pa = pairChangePct(a);
+        const pb = pairChangePct(b);
+        if (pa === null && pb === null) return bySize(a, b);
+        if (pa === null) return 1;
+        if (pb === null) return -1;
+        return pa - pb || bySize(a, b);
+      });
+    case "name":
+      return out.sort(
+        (a, b) =>
+          nameOf(a).localeCompare(nameOf(b), undefined, { numeric: true }) ||
+          bySize(a, b),
+      );
+    case "time":
+      return out.sort((a, b) => Number(a.key) - Number(b.key));
+  }
 };
 
 export interface PerfDay {
