@@ -7,7 +7,12 @@ import { fetchSubDeptRows } from "../../../../utils/marginRows";
 import { withProductCode } from "../../shared/ledgerUtils";
 import { SALES_MOBILE_INFO } from "../../salesInfo";
 import MobileInfoSheet from "../../../../components/mobile/MobileInfoSheet";
-import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  MagnifyingGlassIcon,
+  XMarkIcon,
+} from "@heroicons/react/20/solid";
 import {
   addDays,
   formatCurrency2,
@@ -26,6 +31,7 @@ import {
   openPerfSubDept,
   setPerfInfoOpen,
   setPerfItemLoading,
+  setPerfItemQuery,
   setPerfItemSort,
   failPerfStoreData,
   emptyBundle,
@@ -46,6 +52,7 @@ import {
   buildDays,
   buildHourPairs,
   buildItemPairs,
+  filterItemPairs,
   buildStorePairs,
   buildSubPairs,
   buildTotals,
@@ -374,14 +381,20 @@ const SalesPerfMobile = () => {
    *  thing in every row. */
   const listMax = pairs.reduce((m, p) => Math.max(m, p.ty, p.ly), 0);
 
-  const itemPairs = useMemo(
+  const allItemPairs = useMemo(
     () =>
       openItems
         ? sortPairs(buildItemPairs(openItems.ty, openItems.ly, shownDay), perf.itemSort)
         : [],
     [openItems, shownDay, perf.itemSort],
   );
-  const itemMax = itemPairs.reduce((m, p) => Math.max(m, p.ty, p.ly), 0);
+  const itemPairs = useMemo(
+    () => filterItemPairs(allItemPairs, perf.itemQuery),
+    [allItemPairs, perf.itemQuery],
+  );
+  // Scaled to the whole sub department, not the matches, so a bar keeps its
+  // length while you type.
+  const itemMax = allItemPairs.reduce((m, p) => Math.max(m, p.ty, p.ly), 0);
   const showingItems = perf.dimension === "subs" && perf.openSubDept !== null;
 
   const dayLabel = shownDay
@@ -637,7 +650,9 @@ const SalesPerfMobile = () => {
                     </span>
                     {openItems && (
                       <span className="flex-none text-[12px] text-content/85">
-                        {itemPairs.length} {itemPairs.length === 1 ? "item" : "items"}
+                        {perf.itemQuery.trim()
+                          ? `${itemPairs.length} of ${allItemPairs.length}`
+                          : `${allItemPairs.length} ${allItemPairs.length === 1 ? "item" : "items"}`}
                       </span>
                     )}
                   </div>
@@ -646,6 +661,31 @@ const SalesPerfMobile = () => {
                       {selectedStoreName}
                     </div>
                   )}
+                </div>
+                <div className="border-b border-gray-100 px-3.5 py-2">
+                  <div className="flex items-center gap-2 rounded-lg bg-bkg px-3">
+                    <MagnifyingGlassIcon className="h-4 w-4 flex-none text-content/85" />
+                    <input
+                      value={perf.itemQuery}
+                      onChange={(e) => dispatch(setPerfItemQuery(e.target.value))}
+                      placeholder="Description or UPC"
+                      inputMode="search"
+                      enterKeyHint="search"
+                      aria-label="Search items"
+                      className="min-w-0 flex-1 border-0 bg-transparent py-2.5 text-[14px] text-content placeholder:text-content/85"
+                      style={{ outline: "none", WebkitAppearance: "none", boxShadow: "none" }}
+                    />
+                    {perf.itemQuery && (
+                      <button
+                        type="button"
+                        onClick={() => dispatch(setPerfItemQuery(""))}
+                        aria-label="Clear search"
+                        className="-mr-1 flex h-7 w-7 flex-none items-center justify-center rounded-full text-content/85 active:bg-custom-white"
+                      >
+                        <XMarkIcon className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
                 </div>
                 <MobileSortChips
                   options={ITEM_SORTS}
@@ -662,7 +702,9 @@ const SalesPerfMobile = () => {
                   </div>
                 ) : itemPairs.length === 0 ? (
                   <div className="px-4 py-8 text-center text-[12.5px] text-content/85">
-                    No items sold {shownDay ? "on this day" : "this week or last year"}.
+                    {perf.itemQuery.trim()
+                      ? `Nothing matches "${perf.itemQuery.trim()}".`
+                      : `No items sold ${shownDay ? "on this day" : "this week or last year"}.`}
                   </div>
                 ) : (
                   itemPairs.map((p) => {

@@ -28,7 +28,7 @@ export const SALES_MOBILE_INFO: { title: string; purpose: string; glossary: Info
     { term: "Coupons", desc: "Every coupon redeemed, split by type: digital, electronic store, electronic in-store and paper store coupons." },
     { term: "Tap a day", desc: "Scopes the whole screen — totals and lists — to that day. Tap it again for the full week." },
     { term: "Tap a store", desc: "On the Stores tab, narrows Subs and Hours to that store. Tap it again to go back to every store." },
-    { term: "Items", desc: "On the Subs tab, tap a sub department to see its items. On a group search, pick a store on the Stores tab first — items are shown one store at a time." },
+    { term: "Items", desc: "On the Subs tab, tap a sub department to see its items. On a group search, pick a store on the Stores tab first — items are shown one store at a time. Type in the search box to find an item by its description or UPC." },
     { term: "Sort by", desc: "Sales puts the biggest sellers first. Change vs LY puts the biggest drop first; rows that sold nothing last year go to the bottom. Store # and Name sort in order; Time keeps hours in the order of the day. Each tab remembers its own sort." },
     { term: "Change %", desc: "This year against last year for that row. A dash means it sold nothing last year, so there's no percentage to show." },
   ],

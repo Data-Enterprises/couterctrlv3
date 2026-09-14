@@ -188,3 +188,17 @@ export const buildItemPairs = (
     (r) => r.product_description || String(r.product_code),
     netOf,
   );
+
+/** Items whose description or UPC contains the query, ignoring case. The UPC
+ *  also matches with its leading zeros dropped, so "4900" finds "0004900". */
+export const filterItemPairs = (pairs: PerfPair[], query: string) => {
+  const q = query.trim().toLowerCase();
+  if (!q) return pairs;
+  const qCode = q.replace(/^0+/, "");
+  return pairs.filter(
+    (p) =>
+      p.label.toLowerCase().includes(q) ||
+      p.key.includes(q) ||
+      (qCode !== "" && p.key.replace(/^0+/, "").includes(qCode)),
+  );
+};

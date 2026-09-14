@@ -4,6 +4,7 @@ import {
   buildDays,
   buildHourPairs,
   buildItemPairs,
+  filterItemPairs,
   buildStorePairs,
   buildSubPairs,
   buildTotals,
@@ -278,5 +279,22 @@ describe("buildItemPairs", () => {
       "2026-09-09",
     );
     expect(rows).toEqual([{ key: "1", label: "GUM", ty: 5, ly: 4 }]);
+  });
+});
+
+describe("filterItemPairs", () => {
+  const pairs = [
+    { key: "0002874900229", label: "FRESH GROUND BEEF", ty: 1, ly: 1 },
+    { key: "2718257508", label: "RIBEYE STEAK PATTIES", ty: 1, ly: 1 },
+  ];
+  it("matches description ignoring case", () => {
+    expect(filterItemPairs(pairs, "ribeye").map((p) => p.key)).toEqual(["2718257508"]);
+  });
+  it("matches UPC with or without leading zeros", () => {
+    expect(filterItemPairs(pairs, "2874900").map((p) => p.key)).toEqual(["0002874900229"]);
+    expect(filterItemPairs(pairs, "0002874").map((p) => p.key)).toEqual(["0002874900229"]);
+  });
+  it("returns everything for a blank query", () => {
+    expect(filterItemPairs(pairs, "  ")).toHaveLength(2);
   });
 });

@@ -103,6 +103,9 @@ interface SalesPerfState {
   /** The item key being fetched. */
   itemLoading: string | null;
   itemSort: PairSort;
+  /** Filters the open item list by description or UPC. Cleared when a
+   *  different sub department opens. */
+  itemQuery: string;
 
   /** The "?" sheet. */
   infoOpen: boolean;
@@ -137,6 +140,7 @@ const initialState: SalesPerfState = {
   itemData: {},
   itemLoading: null,
   itemSort: "sales",
+  itemQuery: "",
   infoOpen: false,
   selectedDay: null,
   selectedStore: null,
@@ -210,7 +214,11 @@ const salesPerfSlice = createSlice({
       state,
       action: PayloadAction<{ id: number; label: string } | null>,
     ) => {
+      if (state.openSubDept?.id !== action.payload?.id) state.itemQuery = "";
       state.openSubDept = action.payload;
+    },
+    setPerfItemQuery: (state, action: PayloadAction<string>) => {
+      state.itemQuery = action.payload;
     },
     setPerfItemSort: (state, action: PayloadAction<PairSort>) => {
       state.itemSort = action.payload;
@@ -262,6 +270,7 @@ export const {
   failPerfItems,
   openPerfSubDept,
   setPerfItemSort,
+  setPerfItemQuery,
   setPerfInfoOpen,
   togglePerfDay,
   togglePerfStore,
