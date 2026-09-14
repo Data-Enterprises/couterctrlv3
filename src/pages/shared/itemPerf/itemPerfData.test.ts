@@ -5,7 +5,9 @@ import {
   buildGroupRows,
   buildItemRows,
   buildMarginTotals,
+  findItem,
   priceRows,
+  sortMarginRows,
 } from "./itemPerfData";
 
 const S = { storeid: 685, store_number: "369", store_name: "Arab" };
@@ -298,5 +300,35 @@ describe("buildDailyRows", () => {
   it("returns empty rows when no item is selected", () => {
     const rows = buildDailyRows([item(TY_MON, { sales: 10 })], null, WEEK);
     expect(rows.every((r) => r.absent)).toBe(true);
+  });
+});
+
+describe("findItem", () => {
+  it("finds an item that only sold last year", () => {
+    const ly = item("2025-08-25", { sales: 5, product_code: "999" });
+    expect(findItem("999", [], [ly])?.product_code).toBe("999");
+    expect(findItem(null, [ly])).toBeUndefined();
+  });
+});
+
+describe("sortMarginRows", () => {
+  const row = (key: string, label: string, profit: number, profitLy: number, sales: number, gpm: number | null) =>
+    ({ key, label, sub: "", sales, profit, profitLy, gpm });
+  const rows = [
+    row("a", "Bakery", 50, 100, 400, 12.5), // -50%
+    row("b", "Produce", 200, 150, 300, 40), // +33%
+    row("c", "Deli", 80, 0, 900, null), // no LY, no gpm
+  ];
+  const keys = (r: { key: string }[]) => r.map((x) => x.key);
+
+  it("profit, sales and name", () => {
+    expect(keys(sortMarginRows(rows, "profit"))).toEqual(["b", "c", "a"]);
+    expect(keys(sortMarginRows(rows, "sales"))).toEqual(["c", "a", "b"]);
+    expect(keys(sortMarginRows(rows, "name"))).toEqual(["a", "c", "b"]);
+  });
+
+  it("gpm lowest first and change biggest drop first, unknowns last", () => {
+    expect(keys(sortMarginRows(rows, "gpm"))).toEqual(["a", "b", "c"]);
+    expect(keys(sortMarginRows(rows, "change"))).toEqual(["a", "b", "c"]);
   });
 });

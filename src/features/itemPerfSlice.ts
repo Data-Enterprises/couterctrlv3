@@ -1,5 +1,6 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { CatItem, SubDeptMargin } from "../interfaces";
+import { storeNumbersIn } from "../utils/storeIdentity";
 
 /**
  * How this page groups its rows. One per page, never a switch.
@@ -50,6 +51,10 @@ export type ItemView = "list" | "search" | "daily";
  *  "show more" is a deliberate act rather than something you hit scrolling. */
 export const ROWS_PER_PAGE = 100;
 
+/** How a list of departments, vendors, categories or items can be ordered.
+ *  Profit is the default: it is what the bars show. */
+export type MarginSort = "profit" | "sales" | "gpm" | "change" | "name";
+
 /**
  * State for the ungraded mobile Margins screen, shared by Sub Dept Margins and
  * Vendors.
@@ -63,6 +68,34 @@ export const ROWS_PER_PAGE = 100;
 interface ItemPerfState {
   /** Which endpoint the rows in here came from. */
   source: ItemSource | null;
+
+  /**
+   * Bumped by every load and every hand-over to another page.
+   *
+   * A load only lands if its number is still current. Without it, a Sub Dept
+   * Margins load still in flight when you opened Categories arrived after the
+   * reset, marked the page searched, and showed sub-department rows as one
+   * "Uncategorised" group — and its `finally` cleared Categories' own spinner.
+   */
+  loadGen: number;
+
+  /** The week-ending date (ISO) of the rows in hand. Every date on screen
+   *  reads from this, not from the shared search date — changing the date on
+   *  another page used to relabel this week and zero its day chart. */
+  loadedEnd: string | null;
+
+  /** Every store_number in the loaded rows. More than one means the storeid
+   *  covers two locations (685 → 369 and 370), fetched combined. */
+  storeNumbers: string[];
+  /** The location shown when there is more than one, else null. */
+  storeNumber: string | null;
+
+  /** Sort for the page's own list, and for item lists. Kept across searches. */
+  groupSort: MarginSort;
+  itemSort: MarginSort;
+
+  /** The "?" sheet. */
+  infoOpen: boolean;
 
   hasSearched: boolean;
   loading: boolean;
@@ -146,6 +179,13 @@ interface ItemPerfState {
 
 const initialState: ItemPerfState = {
   source: null,
+  loadGen: 0,
+  loadedEnd: null,
+  storeNumbers: [],
+  storeNumber: null,
+  groupSort: "profit",
+  itemSort: "profit",
+  infoOpen: false,
   hasSearched: false,
   loading: false,
   storeId: 0,
@@ -172,6 +212,16 @@ const itemPerfSlice = createSlice({
     setItemPerfLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload;
     },
+    /** Start a load. The caller passes loadGen + 1 and hands the same number
+     *  to setItemPerfRows or failItemPerfLoad. */
+    beginItemPerfLoad: (state, action: PayloadAction<number>) => {
+      state.loadGen = action.payload;
+      state.loading = true;
+    },
+    /** A load failed. Only the current load may clear the spinner. */
+    failItemPerfLoad: (state, action: PayloadAction<number>) => {
+      if (action.payload === state.loadGen) state.loading = false;
+    },
     setItemPerfHasSearched: (state, action: PayloadAction<boolean>) => {
       state.hasSearched = action.payload;
     },
@@ -184,8 +234,25 @@ const itemPerfSlice = createSlice({
         ty: ItemRow[];
         /** Null when last year could not be read at all — see `lyMissing`. */
         ly: ItemRow[] | null;
+        gen: number;
+        source: ItemSource;
+        /** Week-ending ISO date the rows were fetched for. */
+        end: string;
       }>,
     ) => {
+      // A load for another page, or overtaken by a newer one.
+      if (
+        action.payload.gen !== state.loadGen ||
+        action.payload.source !== state.source
+      )
+        return;
+      state.loading = false;
+      state.hasSearched = true;
+      state.loadedEnd = action.payload.end;
+      state.storeNumbers = storeNumbersIn(action.payload.ty);
+      // First location by default, as on desktop Sub Dept Margins.
+      state.storeNumber =
+        state.storeNumbers.length > 1 ? state.storeNumbers[0] : null;
       state.itemsTy = action.payload.ty;
       state.itemsLy = action.payload.ly ?? [];
       state.lyMissing = action.payload.ly === null;
@@ -246,6 +313,28 @@ const itemPerfSlice = createSlice({
     setRecentsOpen: (state, action: PayloadAction<boolean>) => {
       state.recentsOpen = action.payload;
     },
+    /** Switch location. Every drill belonged to the other one. */
+    setItemPerfStoreNumber: (state, action: PayloadAction<string>) => {
+      state.storeNumber = action.payload;
+      state.view = "list";
+      state.selectedDay = null;
+      state.selectedGroupKey = null;
+      state.selectedGroupLabel = null;
+      state.selectedItemCode = null;
+      state.itemOrigin = null;
+      state.listLimit = ROWS_PER_PAGE;
+    },
+    setItemPerfGroupSort: (state, action: PayloadAction<MarginSort>) => {
+      state.groupSort = action.payload;
+      state.listLimit = ROWS_PER_PAGE;
+    },
+    setItemPerfItemSort: (state, action: PayloadAction<MarginSort>) => {
+      state.itemSort = action.payload;
+      state.listLimit = ROWS_PER_PAGE;
+    },
+    setItemPerfInfoOpen: (state, action: PayloadAction<boolean>) => {
+      state.infoOpen = action.payload;
+    },
     /**
      * Open the camera on an empty field.
      *
@@ -296,9 +385,13 @@ const itemPerfSlice = createSlice({
       state.itemOrigin = null;
     },
     /** Hand the slice to a data source, discarding another one's rows. */
-    claimItemPerf: (_state, action: PayloadAction<ItemSource>) => ({
+    claimItemPerf: (state, action: PayloadAction<ItemSource>) => ({
       ...initialState,
       source: action.payload,
+      // Bumped so a load the previous page started can't land here.
+      loadGen: state.loadGen + 1,
+      groupSort: state.groupSort,
+      itemSort: state.itemSort,
     }),
     resetItemPerf: () => initialState,
   },
@@ -306,6 +399,12 @@ const itemPerfSlice = createSlice({
 
 export const {
   setItemPerfLoading,
+  beginItemPerfLoad,
+  failItemPerfLoad,
+  setItemPerfStoreNumber,
+  setItemPerfGroupSort,
+  setItemPerfItemSort,
+  setItemPerfInfoOpen,
   setItemPerfHasSearched,
   setItemPerfStore,
   setItemPerfRows,

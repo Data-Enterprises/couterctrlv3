@@ -2,7 +2,10 @@ import type { ItemRow } from "../../../features/itemPerfSlice";
 import { calculateCogs } from "../../subDepts";
 import { dayOf, lyDateFor, netOf } from "../../../utils/perfPairs";
 import { normalizeProductCode } from "../../../utils/productCode";
-import type { ItemDimension } from "../../../features/itemPerfSlice";
+import type {
+  ItemDimension,
+  MarginSort,
+} from "../../../features/itemPerfSlice";
 
 /**
  * Cost of goods for one row.
@@ -366,5 +369,62 @@ export const buildMarginDays = (
     };
   });
 
-export const findItem = (rows: PricedRow[], code: string | null) =>
-  code ? rows.find((r) => r.product_code === code) : undefined;
+/** Find an item's row in whichever period has one. Items that sold last year
+ *  and nothing this year are listed, so they must open too — looking in this
+ *  year alone gave them a blank title and an empty card. */
+export const findItem = (
+  code: string | null,
+  ...periods: PricedRow[][]
+): PricedRow | undefined => {
+  if (!code) return undefined;
+  for (const rows of periods) {
+    const hit = rows.find((r) => r.product_code === code);
+    if (hit) return hit;
+  }
+  return undefined;
+};
+
+/** Profit this year against last, as a percentage. Null when last year made
+ *  no profit to compare against. */
+export const profitChangePct = (r: MarginRow): number | null =>
+  r.profitLy > 0 ? ((r.profit - r.profitLy) / r.profitLy) * 100 : null;
+
+/**
+ * Order a margin list. Returns a new array.
+ *
+ * Nulls — no margin, or no last-year profit — sort after every real value, so
+ * unknown never reads as worst. Ties fall back to profit.
+ */
+export const sortMarginRows = (rows: MarginRow[], sort: MarginSort): MarginRow[] => {
+  const byProfit = (a: MarginRow, b: MarginRow) => b.profit - a.profit;
+  const nullsLast = (
+    pick: (r: MarginRow) => number | null,
+    dir: 1 | -1,
+  ) => (a: MarginRow, b: MarginRow) => {
+    const va = pick(a);
+    const vb = pick(b);
+    if (va === null && vb === null) return byProfit(a, b);
+    if (va === null) return 1;
+    if (vb === null) return -1;
+    return (va - vb) * dir || byProfit(a, b);
+  };
+  const out = [...rows];
+  switch (sort) {
+    case "profit":
+      return out.sort(byProfit);
+    case "sales":
+      return out.sort((a, b) => b.sales - a.sales || byProfit(a, b));
+    case "gpm":
+      // Lowest margin first: the thin ones are what you open this to find.
+      return out.sort(nullsLast((r) => r.gpm, 1));
+    case "change":
+      // Biggest drop first.
+      return out.sort(nullsLast(profitChangePct, 1));
+    case "name":
+      return out.sort(
+        (a, b) =>
+          a.label.localeCompare(b.label, undefined, { numeric: true }) ||
+          byProfit(a, b),
+      );
+  }
+};

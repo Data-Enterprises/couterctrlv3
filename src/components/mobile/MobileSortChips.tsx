@@ -15,22 +15,26 @@ interface Props<K extends string> {
   options: SortOption<K>[];
   value: K;
   onChange: (key: K) => void;
+  /** The caption in front of the chips. Defaults to "Sort by"; a location
+   *  picker reuses the same row as "Location". */
+  label?: string;
 }
 
 const MobileSortChips = <K extends string>({
   options,
   value,
   onChange,
+  label = "Sort by",
 }: Props<K>) => (
   // `pl-3.5` plus a trailing spacer, not `px-3.5`: a flex scroll container
   // drops its right padding at the end of its scroll range — see SevChips.
   <div
     role="radiogroup"
-    aria-label="Sort by"
+    aria-label={label}
     className="flex items-center gap-2 overflow-x-auto border-b border-gray-100 py-2 pl-3.5"
   >
     <span className="flex-shrink-0 font-mono text-[10px] uppercase tracking-wider text-content/85">
-      Sort by
+      {label}
     </span>
     {options.map((o) => (
       <button
