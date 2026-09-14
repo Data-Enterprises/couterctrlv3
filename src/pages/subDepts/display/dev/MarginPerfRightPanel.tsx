@@ -532,6 +532,11 @@ const MarginPerfRightPanel = () => {
                   </span>
                 )}
             </div>
+            {!lwComplete && lwKpis && selectedGrade && (
+              <div className="text-[10px] font-semibold text-content pt-0.5">
+                {selectedGrade.coverage.lwDayCount} of {selectedGrade.coverage.dayCount} days matched
+              </div>
+            )}
           </div>
 
           {/* vs LY */}
@@ -570,6 +575,11 @@ const MarginPerfRightPanel = () => {
                   </span>
                 )}
             </div>
+            {!lyComplete && lyKpis && selectedGrade && (
+              <div className="text-[10px] font-semibold text-content pt-0.5">
+                {selectedGrade.coverage.lyDayCount} of {selectedGrade.coverage.dayCount} days matched
+              </div>
+            )}
           </div>
         </div>
 
