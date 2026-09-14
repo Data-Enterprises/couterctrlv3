@@ -19,7 +19,8 @@ import ItemReport from "./pages/itemReport/ItemReport.tsx";
 import Invoices from "./pages/invoices/Invoices.tsx";
 import LpActions from "./pages/lpActions/LpActions.tsx";
 import SalesTracker from "./pages/salesTracker/SalesTracker.tsx";
-import Suggested from "./pages/suggested/Suggested.tsx";
+// Suggested Weight — commented out for publish; dev-API only (see navigation/utils.tsx)
+// import Suggested from "./pages/suggested/Suggested.tsx";
 import {
   SalesPage,
   LossPreventionPage,
@@ -71,7 +72,7 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="invoices" element={<Invoices />} />
                 <Route path="lp-actions" element={<LpActions />} />
                 <Route path="sales-tracker" element={<SalesTracker />} />
-                <Route path="suggested-weight" element={<Suggested />} />
+                {/* <Route path="suggested-weight" element={<Suggested />} /> */}
                 <Route path="forecasting" element={<ForecastPage />} />
                 <Route path="quicksight" element={<Dashboard />} />
                 <Route path="receivers" element={<ReceiversPage />} />

@@ -383,6 +383,11 @@ const LPDesktop = ({ getSaleTypes }: Props) => {
     const baseStart = fmt(baseStartD);
     const baseEnd = fmt(baseEndD);
 
+    // Off until `cashiers/transaction_ids` is deployed to the dev server — it
+    // isn't yet, so dev falls through to the `cashier_table` walk prod uses.
+    // Flip to true once the endpoint is live on dev.
+    const useTransactionIdsEndpoint = false;
+
     // Dev: the ids in one request, instead of walking every page of
     // `cashier_table` to keep one column of it.
     //
@@ -393,7 +398,7 @@ const LPDesktop = ({ getSaleTypes }: Props) => {
     // transactions beneath it to one of them is what made the two disagree.
     // A co-located store's second location had no row leading to it at all.
     // Storeid plus the selected exception is the whole question being asked.
-    if (apiEnv === "dev") {
+    if (apiEnv === "dev" && useTransactionIdsEndpoint) {
       getTransactionIds(url, token, start, end, 0, detail.storeid, 1, [
         saleType,
       ])
