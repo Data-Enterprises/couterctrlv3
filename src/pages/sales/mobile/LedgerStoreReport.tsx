@@ -50,7 +50,12 @@ import {
   formatPct,
   BADGE_BG,
   BADGE_COLOR,
-  SEVERITY_RANK,
+  severityRank,
+  basisPct,
+  gradeBasis,
+  isCompleteCoverage,
+  matchDatedRows,
+  PARTIAL_PILL_CLASS,
   computeDayMatchedTotals,
   describeLyWindow,
   scopeToStoreNumber,
@@ -60,6 +65,7 @@ import {
   // getWeeklyGapCount,
   type DeptRow,
   type HourRow,
+  type Coverage,
 } from "../shared/ledgerUtils";
 import {
   ExclamationTriangleIcon,
@@ -446,7 +452,10 @@ const LedgerStoreReport = () => {
   }, [openSheetType, openSheetId, selectedDate]);
 
   // ── Computed rows ─────────────────────────────────────────────────────────────
-  const depts = useMemo((): DeptRow[] => {
+  const { rows: depts, coverage: deptCoverage } = useMemo((): {
+    rows: DeptRow[];
+    coverage: Coverage;
+  } => {
     const lwDay = selectedDate
       ? addDays(new Date(selectedDate), -7).toISOString().split("T")[0]
       : null;
@@ -470,7 +479,13 @@ const LedgerStoreReport = () => {
     const twMap = aggSubDepts(twSrc);
     const lwMap = aggSubDepts(lwSrc);
     const lyMap = aggSubDepts(lySrc);
-    return Object.entries(twMap)
+    // Each percentage divides by the TW rows for its own comparison — the days
+    // that found a match — not the whole week. Comparing seven days against
+    // three is what flipped Wic Grocery from -42% to +49% on desktop.
+    const { twForLW, twForLY, coverage } = matchDatedRows(twSrc, lwSrc, lySrc);
+    const twLWMap = aggSubDepts(twForLW);
+    const twLYMap = aggSubDepts(twForLY);
+    const rows = Object.entries(twMap)
       .map(([id, r]) => {
         const numId = Number(id);
         const lw = lwMap[numId];
@@ -485,8 +500,12 @@ const LedgerStoreReport = () => {
           ly: lyNet,
           hasLW: lwNet > 0,
           hasLY: lyNet > 0,
-          vsLWPct: lwNet ? ((r.net - lwNet) / lwNet) * 100 : 0,
-          vsLYPct: lyNet ? ((r.net - lyNet) / lyNet) * 100 : 0,
+          vsLWPct: lwNet
+            ? (((twLWMap[numId]?.net ?? 0) - lwNet) / lwNet) * 100
+            : 0,
+          vsLYPct: lyNet
+            ? (((twLYMap[numId]?.net ?? 0) - lyNet) / lyNet) * 100
+            : 0,
           qty: r.qty,
           lwQty: lw?.qty ?? 0,
           lyQty: ly?.qty ?? 0,
@@ -502,16 +521,20 @@ const LedgerStoreReport = () => {
       })
       .sort((a, b) => {
         const rd =
-          SEVERITY_RANK[deptSeverity(a, effectiveSubDeptThreshold)] -
-          SEVERITY_RANK[deptSeverity(b, effectiveSubDeptThreshold)];
-        return rd !== 0
-          ? rd
-          : (a.hasLY ? a.vsLYPct : a.vsLWPct) -
-              (b.hasLY ? b.vsLYPct : b.vsLWPct);
+          severityRank(deptSeverity(a, coverage, effectiveSubDeptThreshold)) -
+          severityRank(deptSeverity(b, coverage, effectiveSubDeptThreshold));
+        if (rd !== 0) return rd;
+        const ap = basisPct(gradeBasis({ ...a, ...coverage }), a.vsLWPct, a.vsLYPct);
+        const bp = basisPct(gradeBasis({ ...b, ...coverage }), b.vsLWPct, b.vsLYPct);
+        return ap === null || bp === null ? b.tw - a.tw : ap - bp;
       });
+    return { rows, coverage };
   }, [rawSubs, rawLWSubs, rawLYSubs, selectedDate, effectiveSubDeptThreshold]);
 
-  const hours = useMemo((): HourRow[] => {
+  const { rows: hours, coverage: hourCoverage } = useMemo((): {
+    rows: HourRow[];
+    coverage: Coverage;
+  } => {
     const lwDay = selectedDate
       ? addDays(new Date(selectedDate), -7).toISOString().split("T")[0]
       : null;
@@ -533,7 +556,10 @@ const LedgerStoreReport = () => {
     const twMap = aggHours(twSrc);
     const lwMap = aggHours(lwSrc);
     const lyMap = aggHours(lySrc);
-    return Array.from(new Set(Object.keys(twMap).map(Number)))
+    const { twForLW, twForLY, coverage } = matchDatedRows(twSrc, lwSrc, lySrc);
+    const twLWMap = aggHours(twForLW);
+    const twLYMap = aggHours(twForLY);
+    const rows = Array.from(new Set(Object.keys(twMap).map(Number)))
       .sort((a, b) => a - b)
       .map((h) => {
         const tw = twMap[h]?.net ?? 0;
@@ -552,19 +578,20 @@ const LedgerStoreReport = () => {
           lyQty: lyMap[h]?.qty ?? 0,
           hasLW: lw > 0,
           hasLY: ly > 0,
-          vsLWPct: lw ? ((tw - lw) / lw) * 100 : 0,
-          vsLYPct: ly ? ((tw - ly) / ly) * 100 : 0,
+          vsLWPct: lw ? (((twLWMap[h]?.net ?? 0) - lw) / lw) * 100 : 0,
+          vsLYPct: ly ? (((twLYMap[h]?.net ?? 0) - ly) / ly) * 100 : 0,
         };
       })
       .sort((a, b) => {
         const rd =
-          SEVERITY_RANK[hourSeverity(a, effectiveHourlyThreshold)] -
-          SEVERITY_RANK[hourSeverity(b, effectiveHourlyThreshold)];
-        return rd !== 0
-          ? rd
-          : (a.hasLY ? a.vsLYPct : a.vsLWPct) -
-              (b.hasLY ? b.vsLYPct : b.vsLWPct);
+          severityRank(hourSeverity(a, coverage, effectiveHourlyThreshold)) -
+          severityRank(hourSeverity(b, coverage, effectiveHourlyThreshold));
+        if (rd !== 0) return rd;
+        const ap = basisPct(gradeBasis({ ...a, ...coverage }), a.vsLWPct, a.vsLYPct);
+        const bp = basisPct(gradeBasis({ ...b, ...coverage }), b.vsLWPct, b.vsLYPct);
+        return ap === null || bp === null ? a.hour - b.hour : ap - bp;
       });
+    return { rows, coverage };
   }, [
     rawHourly,
     rawLWHourly,
@@ -584,18 +611,29 @@ const LedgerStoreReport = () => {
       : null;
   const sheetRow = sheetDept ?? sheetHour;
   const sheetSev: Severity | null = sheetDept
-    ? deptSeverity(sheetDept, effectiveSubDeptThreshold)
+    ? deptSeverity(sheetDept, deptCoverage, effectiveSubDeptThreshold)
     : sheetHour
-      ? hourSeverity(sheetHour, effectiveHourlyThreshold)
+      ? hourSeverity(sheetHour, hourCoverage, effectiveHourlyThreshold)
       : null;
+  const sheetCoverage = sheetDept ? deptCoverage : hourCoverage;
+  const sheetLWComplete = isCompleteCoverage(
+    sheetCoverage.lwDayCount,
+    sheetCoverage.dayCount,
+  );
+  const sheetLYComplete = isCompleteCoverage(
+    sheetCoverage.lyDayCount,
+    sheetCoverage.dayCount,
+  );
 
   const sheetTW = sheetRow?.tw ?? 0;
   const sheetLW = sheetRow?.lw ?? 0;
   const sheetLY = sheetRow?.ly ?? 0;
   const sheetHasLW = sheetRow?.hasLW ?? false;
   const sheetHasLY = sheetRow?.hasLY ?? false;
-  const sheetVsLW = sheetHasLW ? ((sheetTW - sheetLW) / sheetLW) * 100 : null;
-  const sheetVsLY = sheetHasLY ? ((sheetTW - sheetLY) / sheetLY) * 100 : null;
+  // The row's own percentages, which are day-matched. Recomputing them here
+  // from the whole-week TW figure was the same seven-against-three comparison.
+  const sheetVsLW = sheetHasLW && sheetRow ? sheetRow.vsLWPct : null;
+  const sheetVsLY = sheetHasLY && sheetRow ? sheetRow.vsLYPct : null;
 
   // ── KPI strip (dynamic on selectedDate) ──────────────────────────────────────
   const sortedDays = selection
@@ -645,7 +683,9 @@ const LedgerStoreReport = () => {
   const signalItems =
     tab === "subdept"
       ? depts.map((r) => ({
-          sev: deptSeverity(r, effectiveSubDeptThreshold),
+          sev: deptSeverity(r, deptCoverage, effectiveSubDeptThreshold),
+          lwComplete: isCompleteCoverage(deptCoverage.lwDayCount, deptCoverage.dayCount),
+          lyComplete: isCompleteCoverage(deptCoverage.lyDayCount, deptCoverage.dayCount),
           label: r.desc,
           tw: r.tw,
           qty: r.qty,
@@ -656,7 +696,9 @@ const LedgerStoreReport = () => {
           onClick: () => dispatch(openSheet({ type: "subdept", id: r.id })),
         }))
       : hours.map((r) => ({
-          sev: hourSeverity(r, effectiveHourlyThreshold),
+          sev: hourSeverity(r, hourCoverage, effectiveHourlyThreshold),
+          lwComplete: isCompleteCoverage(hourCoverage.lwDayCount, hourCoverage.dayCount),
+          lyComplete: isCompleteCoverage(hourCoverage.lyDayCount, hourCoverage.dayCount),
           label: `${ampm(r.hour)} – ${ampm(r.hour + 1 <= 23 ? r.hour + 1 : 0)}`,
           tw: r.tw,
           qty: r.qty,
@@ -989,7 +1031,7 @@ const LedgerStoreReport = () => {
                 className="w-full px-3 py-2.5 bg-custom-white border-b border-gray-100 text-left active:bg-gray-50"
               >
                 <div className="flex items-center gap-2.5">
-                  <SevBadge sev={item.sev} />
+                  <SevBadge sev={item.sev ?? "ungraded"} />
                   <span className="flex-1 text-[12px] font-medium text-content truncate">
                     {item.label}
                   </span>
@@ -1006,13 +1048,13 @@ const LedgerStoreReport = () => {
                 <div className="flex gap-2 mt-1.5 justify-end">
                   {item.hasLW && (
                     <span
-                      className={`text-[11px] font-medium px-1.5 py-0.5 rounded ${pillClass(item.vsLWPct)}`}
+                      className={`text-[11px] font-medium px-1.5 py-0.5 rounded ${item.lwComplete ? pillClass(item.vsLWPct) : PARTIAL_PILL_CLASS}`}
                     >
                       LW {formatPct(item.vsLWPct)}
                     </span>
                   )}
                   <span
-                    className={`text-[11px] font-medium px-1.5 py-0.5 rounded ${pillClass(item.hasLY ? item.vsLYPct : null)}`}
+                    className={`text-[11px] font-medium px-1.5 py-0.5 rounded ${item.hasLY ? (item.lyComplete ? pillClass(item.vsLYPct) : PARTIAL_PILL_CLASS) : pillClass(null)}`}
                   >
                     LY {item.hasLY ? formatPct(item.vsLYPct) : "—"}
                   </span>
@@ -1024,7 +1066,8 @@ const LedgerStoreReport = () => {
       </div>
 
       {/* Bottom sheet */}
-      {openSheetType && sheetRow && sheetSev && (
+      {/* Opens for ungraded rows too — they still have figures to show. */}
+      {openSheetType && sheetRow && (
         <BottomSheet
           onClose={() => dispatch(closeSheet())}
           closeRef={sheetCloseRef}
@@ -1044,24 +1087,30 @@ const LedgerStoreReport = () => {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <div
-                className="flex items-center gap-1 text-[10px] font-semibold px-2.5 py-1 rounded-full"
-                style={{
-                  background: BADGE_BG[sheetSev],
-                  color: BADGE_COLOR[sheetSev],
-                }}
-              >
-                {sheetSev === "critical" && (
-                  <ExclamationTriangleIcon className="w-3 h-3" />
-                )}
-                {sheetSev === "watch" && (
-                  <ExclamationCircleIcon className="w-3 h-3" />
-                )}
-                {sheetSev === "healthy" && (
-                  <CheckCircleIcon className="w-3 h-3" />
-                )}
-                {sheetSev.charAt(0).toUpperCase() + sheetSev.slice(1)}
-              </div>
+              {sheetSev ? (
+                <div
+                  className="flex items-center gap-1 text-[10px] font-semibold px-2.5 py-1 rounded-full"
+                  style={{
+                    background: BADGE_BG[sheetSev],
+                    color: BADGE_COLOR[sheetSev],
+                  }}
+                >
+                  {sheetSev === "critical" && (
+                    <ExclamationTriangleIcon className="w-3 h-3" />
+                  )}
+                  {sheetSev === "watch" && (
+                    <ExclamationCircleIcon className="w-3 h-3" />
+                  )}
+                  {sheetSev === "healthy" && (
+                    <CheckCircleIcon className="w-3 h-3" />
+                  )}
+                  {sheetSev.charAt(0).toUpperCase() + sheetSev.slice(1)}
+                </div>
+              ) : (
+                <div className="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-gray-100 text-content/85">
+                  Not graded
+                </div>
+              )}
             </div>
           </div>
 
@@ -1113,7 +1162,7 @@ const LedgerStoreReport = () => {
                       </span>
                       {sheetVsLW !== null && (
                         <span
-                          className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${pillClass(sheetVsLW)}`}
+                          className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${sheetLWComplete ? pillClass(sheetVsLW) : PARTIAL_PILL_CLASS}`}
                         >
                           {formatPct(sheetVsLW)}
                         </span>
@@ -1140,7 +1189,7 @@ const LedgerStoreReport = () => {
                       </span>
                       {sheetVsLY !== null && (
                         <span
-                          className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${pillClass(sheetVsLY)}`}
+                          className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${sheetLYComplete ? pillClass(sheetVsLY) : PARTIAL_PILL_CLASS}`}
                         >
                           {formatPct(sheetVsLY)}
                         </span>

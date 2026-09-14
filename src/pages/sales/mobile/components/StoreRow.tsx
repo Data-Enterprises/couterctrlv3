@@ -24,7 +24,7 @@ const StoreRow = ({ row, onClick }: StoreRowProps) => {
       onClick={() => onClick(row)}
       className="flex items-start w-full px-3 py-3 gap-3 bg-custom-white border-b border-gray-300 last:border-0 text-left active:bg-gray-50"
     >
-      <SevBadge sev={row.severity} />
+      <SevBadge sev={row.severity ?? "ungraded"} />
       <div className="flex-1 min-w-0">
         <div className="text-[12px] font-medium text-content truncate mb-1.5">
           {displayName}

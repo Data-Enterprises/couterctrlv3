@@ -72,8 +72,8 @@ export const couponTier = (
     return isCouponOutlier(avgAmount, opts.threshold) ? "critical" : "ok";
   }
   if (trendPct === null) return "ungraded";
-  // Rounded to 1dp before comparing, the same rule Sales uses in
-  // ledgerGradePct: 2.20 against 2.00 is 10.000000000000009 in floating point,
+  // Rounded to 1dp before comparing, the same rule Sales used when
+  // grading: 2.20 against 2.00 is 10.000000000000009 in floating point,
   // which would tip an exactly-at-threshold row into critical.
   const pct = Math.round(trendPct * 10) / 10;
   if (pct > opts.trendThreshold) return "critical";

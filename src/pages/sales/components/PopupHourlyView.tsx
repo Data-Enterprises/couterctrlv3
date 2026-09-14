@@ -24,13 +24,23 @@ import HourTrendChart from "./HourTrendChart";
 import {
   formatPct,
   pillClass,
-  gradeSeverity,
   chipClass,
   CTA_SEVERITY_CLASSES,
   severityDotClass,
   PCT_COL_W,
   type SevFilter,
 } from "./utils";
+import {
+  gradeBasis,
+  gradeOnBasis,
+  basisPct,
+  severityRank,
+  isCompleteCoverage,
+  matchDatedRows,
+  comparisonPillClass,
+  type Coverage,
+  type GradeBasis,
+} from "../shared/ledgerUtils";
 import ThresholdFilter from "../../../components/filters/ThresholdFilter";
 import ThresholdSlider from "../../../components/filters/ThresholdSlider";
 
@@ -65,50 +75,72 @@ type HourSortState = {
   direction: "desc" | "asc";
 } | null;
 
+/**
+ * Grade on last year only when it covers every day, else last week when that
+ * does, else not at all. Coverage belongs to the list — every hour shares the
+ * store's dates — not the row. See matchDatedRows.
+ */
+const hourBasis = (r: HourRow, coverage: Coverage): GradeBasis =>
+  gradeBasis({ hasLY: r.hasLY, hasLW: r.hasLW, ...coverage });
+
 const hourSeverity = (
   r: HourRow,
+  coverage: Coverage,
   threshold: number,
   metric: GradingMetric,
-): Severity => {
-  // Rounded before grading — the underlying totals are sums of individual
-  // line items, so floating-point noise can leave a value like
-  // -0.0000000001% even when the displayed dollars are identical, misgrading
-  // what should be "healthy" as "watch".
-  const primaryPct =
-    metric === "qty"
-      ? r.hasLY
-        ? r.vsLYQtyPct
-        : r.hasLW
-          ? r.vsLWQtyPct
-          : 0
-      : r.hasLY
-        ? r.vsLYPct
-        : r.hasLW
-          ? r.vsLWPct
-          : 0;
-  return gradeSeverity(primaryPct, threshold);
+): Severity | null => {
+  const basis = hourBasis(r, coverage);
+  return metric === "qty"
+    ? gradeOnBasis(basis, r.vsLWQtyPct, r.vsLYQtyPct, threshold)
+    : gradeOnBasis(basis, r.vsLWPct, r.vsLYPct, threshold);
 };
+
+/** CTA palette for an ungraded hour: no verdict, so no severity colour. */
+const NEUTRAL_CTA = {
+  border: "border-gray-200",
+  bg: "bg-gray-50",
+  hoverBg: "hover:bg-gray-100",
+  text: "text-content",
+};
+const ctaClasses = (sev: Severity | null) =>
+  sev ? CTA_SEVERITY_CLASSES[sev] : NEUTRAL_CTA;
 
 const getCta = (
   row: HourRow,
+  coverage: Coverage,
   threshold: number,
   metric: GradingMetric,
-): { text: string; severity: Severity } => {
-  const sev = hourSeverity(row, threshold, metric);
+): { text: string; severity: Severity | null } => {
+  const basis = hourBasis(row, coverage);
+  const sev = hourSeverity(row, coverage, threshold, metric);
   const lwPct = metric === "qty" ? row.vsLWQtyPct : row.vsLWPct;
   const lyPct = metric === "qty" ? row.vsLYQtyPct : row.vsLYPct;
-  const primaryPeriod = row.hasLY ? "LY" : "LW";
-  const primaryPct = row.hasLY ? lyPct : lwPct;
+
+  if (basis === null) {
+    return {
+      severity: null,
+      text: `Not graded. Neither last week (${coverage.lwDayCount} of ${coverage.dayCount} days) nor last year (${coverage.lyDayCount} of ${coverage.dayCount} days) covers the whole week, so there's no full-week comparison to grade on.`,
+    };
+  }
+
+  const onLY = basis === "LY";
+  const primaryPeriod = basis;
+  const primaryPct = onLY ? lyPct : lwPct;
   const pctStr = `${Math.abs(primaryPct).toFixed(2)}%`;
   const avgBasket = row.trans > 0 ? row.tw / row.trans : 0;
-  const refTrans = row.hasLY ? row.lyTrans : row.lwTrans;
-  const refBasket = row.hasLY
+  const refTrans = onLY ? row.lyTrans : row.lwTrans;
+  const refBasket = onLY
     ? row.lyTrans > 0
       ? row.ly / row.lyTrans
       : 0
     : row.lwTrans > 0
       ? row.lw / row.lwTrans
       : 0;
+  const partialLyNote =
+    !onLY && row.hasLY
+      ? ` Last year covers only ${coverage.lyDayCount} of ${coverage.dayCount} days, so it isn't used to grade.`
+      : "";
+  const bothFull = onLY && row.hasLW;
 
   if (sev === "critical") {
     const transDrop =
@@ -120,39 +152,37 @@ const getCta = (
     if (isTrafficLoss && !isSpendDrop)
       return {
         severity: "critical",
-        text: `Down ${pctStr} vs ${primaryPeriod} — traffic loss is the driver. Transactions down ${Math.abs(transDrop!).toFixed(2)}% while basket is holding. Check staffing and flow.`,
+        text: `Down ${pctStr} vs ${primaryPeriod} — traffic loss is the driver. Transactions down ${Math.abs(transDrop!).toFixed(2)}% while basket is holding. Check staffing and flow.${partialLyNote}`,
       };
     if (isSpendDrop && !isTrafficLoss)
       return {
         severity: "critical",
-        text: `Down ${pctStr} vs ${primaryPeriod} — spend compression is the driver. Traffic held but avg basket dropped. Look at mix shift or promoted item performance.`,
+        text: `Down ${pctStr} vs ${primaryPeriod} — spend compression is the driver. Traffic held but avg basket dropped. Look at mix shift or promoted item performance.${partialLyNote}`,
       };
     return {
       severity: "critical",
-      text: `Down ${pctStr} vs ${primaryPeriod} — exceeds the ${threshold}% threshold. Both traffic and spend show pressure. Investigate staffing, promotions, and item availability.`,
+      text: `Down ${pctStr} vs ${primaryPeriod} — exceeds the ${threshold}% threshold. Both traffic and spend show pressure. Investigate staffing, promotions, and item availability.${partialLyNote}`,
     };
   }
   if (sev === "watch") {
-    const secondaryNote =
-      row.hasLY && row.hasLW
-        ? lwPct >= 0
-          ? ` Recovering vs LW — may be stabilizing.`
-          : ` LW also soft — monitor before escalating.`
-        : "";
+    const secondaryNote = bothFull
+      ? lwPct >= 0
+        ? ` Recovering vs LW — may be stabilizing.`
+        : ` LW also soft — monitor before escalating.`
+      : "";
     return {
       severity: "watch",
-      text: `Down ${pctStr} vs ${primaryPeriod} — within the watch band.${secondaryNote}`,
+      text: `Down ${pctStr} vs ${primaryPeriod} — within the watch band.${secondaryNote}${partialLyNote}`,
     };
   }
-  const secondaryHealthNote =
-    row.hasLY && row.hasLW
-      ? lwPct < 0
-        ? ` LW is softer — watch for a developing trend.`
-        : ` LW also positive.`
-      : "";
+  const secondaryHealthNote = bothFull
+    ? lwPct < 0
+      ? ` LW is softer — watch for a developing trend.`
+      : ` LW also positive.`
+    : "";
   return {
     severity: "healthy",
-    text: `At or above ${primaryPeriod}.${secondaryHealthNote} Traffic and spend contributing positively.`,
+    text: `At or above ${primaryPeriod}.${secondaryHealthNote}${partialLyNote} Traffic and spend contributing positively.`,
   };
 };
 
@@ -247,7 +277,10 @@ const PopupHourlyView = ({
   const hasWeekLY =
     selectedHour !== null && rawLYHourly.some((h) => h.hour === selectedHour);
 
-  const hours = useMemo((): HourRow[] => {
+  const { rows: hours, coverage: hourCoverage } = useMemo((): {
+    rows: HourRow[];
+    coverage: Coverage;
+  } => {
     const buildMap = (src: typeof hourlySales) =>
       src.reduce(
         (
@@ -271,23 +304,14 @@ const PopupHourlyView = ({
     // arrays are filtered upstream to the days that matched; `hourlySales` is
     // the whole TW week. Comparing a seven-day 4 PM against a three-day 4 PM
     // is not a busy hour, it is two different questions.
-    const lwDates = new Set(
-      hourlySalesLastWeek.map((h) => h.sale_date.split("T")[0]),
+    const matched = matchDatedRows(
+      hourlySales,
+      hourlySalesLastWeek,
+      hourlySalesLastYear,
     );
-    const lyDates = new Set(
-      hourlySalesLastYear.map((h) => h.sale_date.split("T")[0]),
-    );
-    const twForLW = buildMap(
-      hourlySales.filter((h) => {
-        const d = h.sale_date.split("T")[0];
-        return lwDates.has(addDays(new Date(d), -7).toISOString().split("T")[0]);
-      }),
-    );
-    const twForLY = buildMap(
-      hourlySales.filter((h) =>
-        lyDates.has(sameWeekDayLastYear(h.sale_date.split("T")[0]).date),
-      ),
-    );
+    const twForLW = buildMap(matched.twForLW);
+    const twForLY = buildMap(matched.twForLY);
+    const coverage = matched.coverage;
 
     const allHours = Array.from(
       new Set(
@@ -299,7 +323,7 @@ const PopupHourlyView = ({
       ),
     ).sort((a, b) => a - b);
 
-    return allHours
+    const sorted = allHours
       .map((h) => {
         const tw = twMap[h]?.net ?? 0;
         const lw = lwMap[h]?.net ?? 0;
@@ -331,27 +355,19 @@ const PopupHourlyView = ({
         };
       })
       .sort((a, b) => {
-        const rank = { critical: 0, watch: 1, healthy: 2 } as const;
         const rankDiff =
-          rank[hourSeverity(a, threshold, gradingMetric)] -
-          rank[hourSeverity(b, threshold, gradingMetric)];
+          severityRank(hourSeverity(a, coverage, threshold, gradingMetric)) -
+          severityRank(hourSeverity(b, coverage, threshold, gradingMetric));
         if (rankDiff !== 0) return rankDiff;
-        const aPct = isQty
-          ? a.hasLY
-            ? a.vsLYQtyPct
-            : a.vsLWQtyPct
-          : a.hasLY
-            ? a.vsLYPct
-            : a.vsLWPct;
-        const bPct = isQty
-          ? b.hasLY
-            ? b.vsLYQtyPct
-            : b.vsLWQtyPct
-          : b.hasLY
-            ? b.vsLYPct
-            : b.vsLWPct;
-        return aPct - bPct;
+        const ap = isQty
+          ? basisPct(hourBasis(a, coverage), a.vsLWQtyPct, a.vsLYQtyPct)
+          : basisPct(hourBasis(a, coverage), a.vsLWPct, a.vsLYPct);
+        const bp = isQty
+          ? basisPct(hourBasis(b, coverage), b.vsLWQtyPct, b.vsLYQtyPct)
+          : basisPct(hourBasis(b, coverage), b.vsLWPct, b.vsLYPct);
+        return ap === null || bp === null ? a.hour - b.hour : ap - bp;
       });
+    return { rows: sorted, coverage };
   }, [
     hourlySales,
     hourlySalesLastWeek,
@@ -362,22 +378,22 @@ const PopupHourlyView = ({
   ]);
 
   const critCount = hours.filter(
-    (h) => hourSeverity(h, threshold, gradingMetric) === "critical",
+    (h) => hourSeverity(h, hourCoverage, threshold, gradingMetric) === "critical",
   ).length;
   const watchCount = hours.filter(
-    (h) => hourSeverity(h, threshold, gradingMetric) === "watch",
+    (h) => hourSeverity(h, hourCoverage, threshold, gradingMetric) === "watch",
   ).length;
   const healthyCount = hours.filter(
-    (h) => hourSeverity(h, threshold, gradingMetric) === "healthy",
+    (h) => hourSeverity(h, hourCoverage, threshold, gradingMetric) === "healthy",
   ).length;
 
   const visible = hours.filter((h) => {
     if (sevFilter === "critical")
-      return hourSeverity(h, threshold, gradingMetric) === "critical";
+      return hourSeverity(h, hourCoverage, threshold, gradingMetric) === "critical";
     if (sevFilter === "watch")
-      return hourSeverity(h, threshold, gradingMetric) === "watch";
+      return hourSeverity(h, hourCoverage, threshold, gradingMetric) === "watch";
     if (sevFilter === "healthy")
-      return hourSeverity(h, threshold, gradingMetric) === "healthy";
+      return hourSeverity(h, hourCoverage, threshold, gradingMetric) === "healthy";
     return true;
   });
 
@@ -412,7 +428,7 @@ const PopupHourlyView = ({
     selectedHour !== null
       ? (hours.find((h) => h.hour === selectedHour) ?? null)
       : null;
-  const cta = selected ? getCta(selected, threshold, gradingMetric) : null;
+  const cta = selected ? getCta(selected, hourCoverage, threshold, gradingMetric) : null;
 
   const avgBasket =
     selected && selected.trans > 0 ? selected.tw / selected.trans : 0;
@@ -565,7 +581,15 @@ const PopupHourlyView = ({
         {/* Signal list */}
         <div className="overflow-y-auto thin-scrollbar flex-1">
           {sortedVisible.map((r) => {
-            const sev = hourSeverity(r, threshold, gradingMetric);
+            const sev = hourSeverity(r, hourCoverage, threshold, gradingMetric);
+            const lwComplete = isCompleteCoverage(
+              hourCoverage.lwDayCount,
+              hourCoverage.dayCount,
+            );
+            const lyComplete = isCompleteCoverage(
+              hourCoverage.lyDayCount,
+              hourCoverage.dayCount,
+            );
             const rowVsLWPct = isQty ? r.vsLWQtyPct : r.vsLWPct;
             const rowVsLYPct = isQty ? r.vsLYQtyPct : r.vsLYPct;
             const isSel = selectedHour === r.hour;
@@ -580,7 +604,7 @@ const PopupHourlyView = ({
                 }`}
               >
                 <span
-                  className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${severityDotClass[sev]}`}
+                  className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${sev ? severityDotClass[sev] : "bg-gray-400"}`}
                 />
                 <span className="text-[12px] font-medium text-content truncate flex-1">
                   {formatHourRange(r.hour)}
@@ -595,7 +619,7 @@ const PopupHourlyView = ({
                   <span
                     className={`text-[12px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${
                       r.hasLW
-                        ? pillClass(rowVsLWPct, threshold)
+                        ? comparisonPillClass(rowVsLWPct, lwComplete, threshold)
                         : "bg-gray-100 text-gray-400"
                     }`}
                     style={{ minWidth: PCT_COL_W }}
@@ -605,7 +629,7 @@ const PopupHourlyView = ({
                   <span
                     className={`text-[12px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${
                       r.hasLY
-                        ? pillClass(rowVsLYPct, threshold)
+                        ? comparisonPillClass(rowVsLYPct, lyComplete, threshold)
                         : "bg-gray-100 text-gray-400"
                     }`}
                     style={{ minWidth: PCT_COL_W }}
@@ -624,54 +648,54 @@ const PopupHourlyView = ({
         {/* Header row: selected hour — doubles as the CTA insight toggle */}
         {selected && cta && (
           <div
-            className={`relative border-b ${CTA_SEVERITY_CLASSES[cta.severity].border}`}
+            className={`relative border-b ${ctaClasses(cta.severity).border}`}
           >
             <button
               onClick={() => setCtaOpen((v) => !v)}
-              className={`w-full flex items-center gap-1.5 px-3 py-1.5 ${CTA_SEVERITY_CLASSES[cta.severity].bg} ${CTA_SEVERITY_CLASSES[cta.severity].hoverBg} transition-colors`}
+              className={`w-full flex items-center gap-1.5 px-3 py-1.5 ${ctaClasses(cta.severity).bg} ${ctaClasses(cta.severity).hoverBg} transition-colors`}
             >
               {cta.severity === "critical" && (
                 <ExclamationTriangleIcon
-                  className={`w-3.5 h-3.5 ${CTA_SEVERITY_CLASSES[cta.severity].text} flex-shrink-0`}
+                  className={`w-3.5 h-3.5 ${ctaClasses(cta.severity).text} flex-shrink-0`}
                 />
               )}
               {cta.severity === "watch" && (
                 <ExclamationCircleIcon
-                  className={`w-3.5 h-3.5 ${CTA_SEVERITY_CLASSES[cta.severity].text} flex-shrink-0`}
+                  className={`w-3.5 h-3.5 ${ctaClasses(cta.severity).text} flex-shrink-0`}
                 />
               )}
               {cta.severity === "healthy" && (
                 <CheckCircleIcon
-                  className={`w-3.5 h-3.5 ${CTA_SEVERITY_CLASSES[cta.severity].text} flex-shrink-0`}
+                  className={`w-3.5 h-3.5 ${ctaClasses(cta.severity).text} flex-shrink-0`}
                 />
               )}
               <span
-                className={`text-[12px] font-semibold truncate ${CTA_SEVERITY_CLASSES[cta.severity].text}`}
+                className={`text-[12px] font-semibold truncate ${ctaClasses(cta.severity).text}`}
               >
                 {formatHourRange(selected.hour)}
               </span>
               <span
-                className={`text-[10px] font-semibold flex-shrink-0 ${CTA_SEVERITY_CLASSES[cta.severity].text}`}
+                className={`text-[10px] font-semibold flex-shrink-0 ${ctaClasses(cta.severity).text}`}
               >
                 Insight
               </span>
               <span className="flex-1" />
               {ctaOpen ? (
                 <ChevronUpIcon
-                  className={`w-3 h-3 flex-shrink-0 ${CTA_SEVERITY_CLASSES[cta.severity].text}`}
+                  className={`w-3 h-3 flex-shrink-0 ${ctaClasses(cta.severity).text}`}
                 />
               ) : (
                 <ChevronDownIcon
-                  className={`w-3 h-3 flex-shrink-0 ${CTA_SEVERITY_CLASSES[cta.severity].text}`}
+                  className={`w-3 h-3 flex-shrink-0 ${ctaClasses(cta.severity).text}`}
                 />
               )}
             </button>
             {ctaOpen && (
               <div
-                className={`absolute top-full left-0 right-0 z-20 px-3 py-2 border-b shadow-lg ${CTA_SEVERITY_CLASSES[cta.severity].bg} ${CTA_SEVERITY_CLASSES[cta.severity].border}`}
+                className={`absolute top-full left-0 right-0 z-20 px-3 py-2 border-b shadow-lg ${ctaClasses(cta.severity).bg} ${ctaClasses(cta.severity).border}`}
               >
                 <span
-                  className={`text-[11px] leading-relaxed ${CTA_SEVERITY_CLASSES[cta.severity].text}`}
+                  className={`text-[11px] leading-relaxed ${ctaClasses(cta.severity).text}`}
                 >
                   {cta.text}
                 </span>
@@ -719,7 +743,7 @@ const PopupHourlyView = ({
                     )}
                     {selected.hasLW && (
                       <span
-                        className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${pillClass(selected.vsLWPct, threshold)}`}
+                        className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${comparisonPillClass(selected.vsLWPct, isCompleteCoverage(hourCoverage.lwDayCount, hourCoverage.dayCount), threshold)}`}
                       >
                         {formatPct(selected.vsLWPct)}
                       </span>
@@ -744,7 +768,7 @@ const PopupHourlyView = ({
                     )}
                     {selected.hasLY && (
                       <span
-                        className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${pillClass(selected.vsLYPct, threshold)}`}
+                        className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${comparisonPillClass(selected.vsLYPct, isCompleteCoverage(hourCoverage.lyDayCount, hourCoverage.dayCount), threshold)}`}
                       >
                         {formatPct(selected.vsLYPct)}
                       </span>

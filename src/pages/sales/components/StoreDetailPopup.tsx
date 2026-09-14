@@ -40,6 +40,7 @@ import {
 import {
   computeDayMatchedTotals,
   describeLyWindow,
+  PARTIAL_PILL_CLASS,
   scopeToStoreNumber,
   applyStoreNumberToName /*, getWeeklyDataGaps, getWeeklyGapCount */,
 } from "../shared/ledgerUtils";
@@ -547,7 +548,12 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
     <div className="bg-custom-white rounded-xl shadow-sm overflow-hidden flex flex-col h-full">
       {/* Title bar — tinted to the selected store's severity */}
       <div
-        className={`relative grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-3 flex-shrink-0 ${severityHeaderBgClass[selection.severity]}`}
+        className={`relative grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-3 flex-shrink-0 ${
+          // Navy when the store wasn't graded — tinting it would claim a verdict.
+          selection.severity
+            ? severityHeaderBgClass[selection.severity]
+            : "bg-[#1e2a4a]"
+        }`}
       >
         {showFlames && <GhostFlames />}
         <p className="text-custom-white text-[13px] font-bold leading-tight justify-self-start">
@@ -671,7 +677,7 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
               <span
                 className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${
                   headerLWDays < headerDays
-                    ? "bg-gray-200 text-content"
+                    ? PARTIAL_PILL_CLASS
                     : pillClass(headerVsLWPct, THRESHOLD)
                 }`}
               >
@@ -708,7 +714,7 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
                    missing both weekend days, the two biggest of the week. */
                 className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${
                   headerLYDays < headerDays
-                    ? "bg-gray-200 text-content"
+                    ? PARTIAL_PILL_CLASS
                     : pillClass(headerVsLYPct, THRESHOLD)
                 }`}
                 title={

@@ -1,6 +1,6 @@
 import { addDays, sameWeekDayLastYear } from "../../../utils";
 import { rowsToCsv } from "../../../utils/csvExport";
-import { gradeSeverity } from "../../../utils/severity";
+import { gradeSeverity, pillClass } from "../../../utils/severity";
 import { getHolidayName, getHolidayLastYear } from "../../../utils/holidays";
 import type { HolidayName } from "../../../utils/holidays";
 import type {
@@ -23,23 +23,148 @@ export {
   applyStoreNumberToName,
 } from "../../../utils/storeIdentity";
 
-// The comparison a row is graded on: last year when we have it, else last
-// week. Rounded before grading — see itemSeverity in PopupSubDeptList for why.
-export const ledgerGradePct = (row: {
-  hasLY: boolean;
-  hasLW: boolean;
-  vsLYPct: number;
-  vsLWPct: number;
-}) => (row.hasLY ? row.vsLYPct : row.hasLW ? row.vsLWPct : 0);
+// ─── Grading basis ────────────────────────────────────────────────────────────
+//
+// Which comparison a row is graded on. Last year, but only when it covers every
+// day the week has; otherwise last week, when THAT covers every day; otherwise
+// the row is not graded at all.
+//
+// It used to be "last year whenever there is any". Store 590 has three of seven
+// matching days last year, both weekend days missing, and was graded Critical
+// on that three-day figure while a complete last week put it at -1.20%. A
+// verdict about a store has to rest on a whole week. The partial comparison
+// still shows — in grey, with its day count — it just doesn't decide anything.
+//
+// Ungraded is a real outcome rather than a fallback to "healthy": a store with
+// neither comparison complete isn't known to be fine, and counting it under OK
+// would say it is.
 
-export const ledgerSeverity = gradeSeverity;
+/** Which comparison decided a row's severity. Null means neither covered the
+ *  whole week, so the row carries no severity. */
+export type GradeBasis = "LY" | "LW" | null;
+
+export interface Coverage {
+  /** Days the current week has data for. */
+  dayCount: number;
+  /** Of those, how many found a matching day last week / last year. */
+  lwDayCount: number;
+  lyDayCount: number;
+}
+
+/** Every day matched. A week with no days is not complete — there is nothing
+ *  to be complete about. */
+export const isCompleteCoverage = (matched: number, days: number) =>
+  days > 0 && matched >= days;
+
+export const gradeBasis = (
+  r: { hasLY: boolean; hasLW: boolean } & Coverage,
+): GradeBasis =>
+  r.hasLY && isCompleteCoverage(r.lyDayCount, r.dayCount)
+    ? "LY"
+    : r.hasLW && isCompleteCoverage(r.lwDayCount, r.dayCount)
+      ? "LW"
+      : null;
+
+/** Severity on the chosen basis, or null when there is no basis. */
+export const gradeOnBasis = (
+  basis: GradeBasis,
+  lwPct: number,
+  lyPct: number,
+  threshold: number,
+): Severity | null =>
+  basis === "LY"
+    ? gradeSeverity(lyPct, threshold)
+    : basis === "LW"
+      ? gradeSeverity(lwPct, threshold)
+      : null;
+
+/** The percentage the basis points at — what a list sorts graded rows by. */
+export const basisPct = (basis: GradeBasis, lwPct: number, lyPct: number) =>
+  basis === "LY" ? lyPct : basis === "LW" ? lwPct : null;
+
+/**
+ * The grey a comparison takes when it's missing days.
+ *
+ * The VS LAST YEAR tile's grey, used everywhere a partial comparison shows —
+ * store rows, sub-dept and hourly rows, insight tiles, mobile. Deliberately
+ * darker than pillClass(null), which means "no comparison at all": a partial
+ * figure is still a real number worth reading, it just doesn't grade.
+ */
+export const PARTIAL_PILL_CLASS = "bg-gray-200 text-content";
+
+/** Severity colours when the comparison covers every day, the partial grey
+ *  when it doesn't. */
+export const comparisonPillClass = (
+  pct: number,
+  complete: boolean,
+  threshold: number,
+) => (complete ? pillClass(pct, threshold) : PARTIAL_PILL_CLASS);
+
+/** Critical, watch, healthy, then ungraded last. */
+export const severityRank = (s: Severity | null) =>
+  s === null ? 3 : SEVERITY_RANK[s];
+
+/**
+ * Split a dated row set into the TW rows each comparison may use, and count
+ * coverage.
+ *
+ * For any list that aggregates dated rows by group — sub-departments, hours.
+ * `lw` and `ly` must already be the matched-date rows (callers filter to the
+ * matched date set first). A TW row is kept for a comparison only when its
+ * date found a counterpart there.
+ *
+ * Coverage is counted on DATES across the whole row set, not per group. A
+ * sub-department that sold nothing on a day it traded last year is a real
+ * zero, not a gap; what makes a comparison incomplete is the store having no
+ * rows for that date at all.
+ */
+export const matchDatedRows = <T extends { sale_date: string }>(
+  tw: T[],
+  lw: T[],
+  ly: T[],
+) => {
+  const day = (r: { sale_date: string }) => r.sale_date.split("T")[0];
+  const lwDates = new Set(lw.map(day));
+  const lyDates = new Set(ly.map(day));
+  const lyFor = new Map<string, string>();
+  const twForLW: T[] = [];
+  const twForLY: T[] = [];
+  const twDays = new Set<string>();
+  const lwHit = new Set<string>();
+  const lyHit = new Set<string>();
+  for (const r of tw) {
+    const d = day(r);
+    twDays.add(d);
+    if (lwDates.has(addDays(new Date(d), -7).toISOString().split("T")[0])) {
+      twForLW.push(r);
+      lwHit.add(d);
+    }
+    let lyDate = lyFor.get(d);
+    if (lyDate === undefined) {
+      lyDate = sameWeekDayLastYear(d).date;
+      lyFor.set(d, lyDate);
+    }
+    if (lyDates.has(lyDate)) {
+      twForLY.push(r);
+      lyHit.add(d);
+    }
+  }
+  const coverage: Coverage = {
+    dayCount: twDays.size,
+    lwDayCount: lwHit.size,
+    lyDayCount: lyHit.size,
+  };
+  return { twForLW, twForLY, coverage };
+};
 
 export const sortLedgerRows = (rows: LedgerRowData[]): LedgerRowData[] =>
   [...rows].sort((a, b) => {
-    const rankDiff = SEVERITY_RANK[a.severity] - SEVERITY_RANK[b.severity];
+    const rankDiff = severityRank(a.severity) - severityRank(b.severity);
     if (rankDiff !== 0) return rankDiff;
-    const aPct = a.hasLY ? a.vsLYPct : a.vsLWPct;
-    const bPct = b.hasLY ? b.vsLYPct : b.vsLWPct;
+    const aPct = basisPct(a.gradedOn, a.vsLWPct, a.vsLYPct);
+    const bPct = basisPct(b.gradedOn, b.vsLWPct, b.vsLYPct);
+    // Ungraded rows have no percentage to rank by; biggest store first.
+    if (aPct === null || bPct === null) return b.twTotal - a.twTotal;
     return aPct - bPct;
   });
 
@@ -58,7 +183,9 @@ export const regradeLedgerRows = (
 ): LedgerRowData[] =>
   sortLedgerRows(
     rows.map((r) => {
-      const severity = ledgerSeverity(ledgerGradePct(r), threshold);
+      // The basis doesn't move with the threshold — coverage decides it —
+      // so only the severity on that basis is recomputed.
+      const severity = gradeOnBasis(r.gradedOn, r.vsLWPct, r.vsLYPct, threshold);
       return severity === r.severity ? r : { ...r, severity };
     }),
   );
@@ -178,11 +305,21 @@ export const ampm = (h: number) =>
 
 // Float noise is handled by gradeSeverity's epsilon rather than by rounding
 // here; see PCT_EPSILON for why the difference matters at the threshold.
-export const deptSeverity = (r: DeptRow, threshold = 9): Severity =>
-  gradeSeverity(r.hasLY ? r.vsLYPct : r.hasLW ? r.vsLWPct : 0, threshold);
+// Coverage comes from the list a row belongs to, not the row — see
+// matchDatedRows — so every row in one list shares it.
+export const deptSeverity = (
+  r: DeptRow,
+  coverage: Coverage,
+  threshold = 9,
+): Severity | null =>
+  gradeOnBasis(gradeBasis({ ...r, ...coverage }), r.vsLWPct, r.vsLYPct, threshold);
 
-export const hourSeverity = (r: HourRow, threshold = 9): Severity =>
-  gradeSeverity(r.hasLY ? r.vsLYPct : r.hasLW ? r.vsLWPct : 0, threshold);
+export const hourSeverity = (
+  r: HourRow,
+  coverage: Coverage,
+  threshold = 9,
+): Severity | null =>
+  gradeOnBasis(gradeBasis({ ...r, ...coverage }), r.vsLWPct, r.vsLYPct, threshold);
 
 // ─── Day-matched comparison helpers ────────────────────────────────────────────
 //
@@ -502,10 +639,14 @@ export const buildLedgerRows = (
       vsLYPct,
       vsLYDollar,
     } = computeDayMatchedTotals(days, gradingMetric);
-    const severity = ledgerSeverity(
-      ledgerGradePct({ hasLY, hasLW, vsLYPct, vsLWPct }),
-      threshold,
-    );
+    const gradedOn = gradeBasis({
+      hasLY,
+      hasLW,
+      dayCount,
+      lwDayCount,
+      lyDayCount,
+    });
+    const severity = gradeOnBasis(gradedOn, vsLWPct, vsLYPct, threshold);
     return {
       storeid: id,
       store_name: assigned?.store_name ?? ref.store_name,
@@ -531,6 +672,7 @@ export const buildLedgerRows = (
       vsLYDollar,
       hasLW,
       hasLY,
+      gradedOn,
       severity,
       days,
     };
