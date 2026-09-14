@@ -55,8 +55,9 @@ const PerfCardHeader = ({ title, note, label, when, onSearch }: Props) => (
       )}
     </div>
     <div className="truncate px-4 pt-2 font-mono text-[10px] uppercase tracking-wider text-content/85">
-      {label}
-      {when ? ` · ${when}` : ""}
+      {/* Either part can be empty — no store selected leaves only the dates —
+          so join what's there rather than leading with a stray dot. */}
+      {[label, when].filter(Boolean).join(" · ")}
     </div>
   </>
 );

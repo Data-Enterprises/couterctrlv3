@@ -269,7 +269,7 @@ const SalesPerfMobile = () => {
       })()
     : null;
 
-  const scopeLabel = ["Sales", selectedStoreName].filter(Boolean).join(" · ");
+  const scopeLabel = selectedStoreName ?? "";
 
   const scopeName = isGroupSearch(search.type)
     ? search.selectedGroup.group_name
