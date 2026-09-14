@@ -3,6 +3,7 @@ import type { HourlySale, SubSale, WeeklySale } from "../../../../interfaces";
 import {
   buildDays,
   buildHourPairs,
+  buildItemPairs,
   buildStorePairs,
   buildSubPairs,
   buildTotals,
@@ -246,5 +247,36 @@ describe("sortPairs", () => {
     const copy = [...rows];
     sortPairs(rows, "change");
     expect(rows).toEqual(copy);
+  });
+});
+
+describe("buildItemPairs", () => {
+  const item = (code: unknown, date: string, net: number) =>
+    ({
+      ...A,
+      sale_date: `${date}T00:00:00`,
+      product_code: code,
+      product_description: "GUM",
+      total_sales: net,
+      total_tax: 0,
+    }) as unknown as import("../../../../interfaces").SubDeptMargin;
+
+  it("pairs this year with the matched weekday last year, keyed as a string", () => {
+    // 2026-09-08 (Tue) matches 2025-09-09 (Tue).
+    const rows = buildItemPairs(
+      [item(123, "2026-09-08", 10)],
+      [item("123", "2025-09-09", 8)],
+      null,
+    );
+    expect(rows).toEqual([{ key: "123", label: "GUM", ty: 10, ly: 8 }]);
+  });
+
+  it("scopes both sides to the selected day", () => {
+    const rows = buildItemPairs(
+      [item("1", "2026-09-08", 10), item("1", "2026-09-09", 5)],
+      [item("1", "2025-09-09", 8), item("1", "2025-09-10", 4)],
+      "2026-09-09",
+    );
+    expect(rows).toEqual([{ key: "1", label: "GUM", ty: 5, ly: 4 }]);
   });
 });

@@ -1,5 +1,10 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { HourlySale, SubSale, WeeklySale } from "../interfaces";
+import type {
+  HourlySale,
+  SubDeptMargin,
+  SubSale,
+  WeeklySale,
+} from "../interfaces";
 import type { PairSort } from "../utils/perfPairs";
 
 /** Which breakdown the list card is showing. All three render the same row —
@@ -18,6 +23,12 @@ export interface PerfBundle {
   subsLy: SubSale[];
   hourlyTy: HourlySale[];
   hourlyLy: HourlySale[];
+}
+
+/** One sub department's item rows for one store, both periods. */
+export interface PerfItems {
+  ty: SubDeptMargin[];
+  ly: SubDeptMargin[];
 }
 
 export const emptyBundle = (): PerfBundle => ({
@@ -83,6 +94,19 @@ interface SalesPerfState {
    *  preference, not part of the result. */
   sort: Record<PerfDimension, PairSort>;
 
+  /** The sub department whose items the Subs tab is showing, or null for the
+   *  sub department list. Closed by changing tab, store or search. */
+  openSubDept: { id: number; label: string } | null;
+  /** Item rows keyed `${storeScope}|${subDeptId}`, fetched when a sub
+   *  department is opened and kept for the search, like storeData. */
+  itemData: Record<string, PerfItems>;
+  /** The item key being fetched. */
+  itemLoading: string | null;
+  itemSort: PairSort;
+
+  /** The "?" sheet. */
+  infoOpen: boolean;
+
   /** ISO date of the selected day, or null for the whole week. Scopes the
    *  totals card and every row in the list. Tapping the selected day again
    *  clears it — there is no "all week" control. */
@@ -109,6 +133,11 @@ const initialState: SalesPerfState = {
   storeCacheGen: 0,
   dimension: "stores",
   sort: { stores: "sales", subs: "sales", hours: "time" },
+  openSubDept: null,
+  itemData: {},
+  itemLoading: null,
+  itemSort: "sales",
+  infoOpen: false,
   selectedDay: null,
   selectedStore: null,
 };
@@ -139,6 +168,9 @@ const salesPerfSlice = createSlice({
     clearPerfStoreCache: (state) => {
       state.storeData = {};
       state.storeLoading = null;
+      state.itemData = {};
+      state.itemLoading = null;
+      state.openSubDept = null;
       state.storeCacheGen += 1;
       state.selectedStore = null;
     },
@@ -158,8 +190,37 @@ const salesPerfSlice = createSlice({
     failPerfStoreData: (state, action: PayloadAction<string>) => {
       if (state.storeLoading === action.payload) state.storeLoading = null;
     },
+    setPerfItemLoading: (state, action: PayloadAction<string | null>) => {
+      state.itemLoading = action.payload;
+    },
+    /** Same contract as cachePerfStoreData: always cached under its own key,
+     *  dropped if it belongs to an older search. */
+    cachePerfItems: (
+      state,
+      action: PayloadAction<{ key: string; items: PerfItems; gen: number }>,
+    ) => {
+      if (action.payload.gen !== state.storeCacheGen) return;
+      state.itemData[action.payload.key] = action.payload.items;
+      if (state.itemLoading === action.payload.key) state.itemLoading = null;
+    },
+    failPerfItems: (state, action: PayloadAction<string>) => {
+      if (state.itemLoading === action.payload) state.itemLoading = null;
+    },
+    openPerfSubDept: (
+      state,
+      action: PayloadAction<{ id: number; label: string } | null>,
+    ) => {
+      state.openSubDept = action.payload;
+    },
+    setPerfItemSort: (state, action: PayloadAction<PairSort>) => {
+      state.itemSort = action.payload;
+    },
+    setPerfInfoOpen: (state, action: PayloadAction<boolean>) => {
+      state.infoOpen = action.payload;
+    },
     setPerfDimension: (state, action: PayloadAction<PerfDimension>) => {
       state.dimension = action.payload;
+      state.openSubDept = null;
     },
     /** Tapping the day that is already selected clears the scope. The chart is
      *  the only control, so it has to be able to undo itself. */
@@ -178,6 +239,8 @@ const salesPerfSlice = createSlice({
     togglePerfStore: (state, action: PayloadAction<string>) => {
       state.selectedStore =
         state.selectedStore === action.payload ? null : action.payload;
+      // Its items belonged to the previous store.
+      state.openSubDept = null;
     },
     resetSalesPerf: () => initialState,
   },
@@ -194,6 +257,12 @@ export const {
   failPerfStoreData,
   setPerfDimension,
   setPerfSort,
+  setPerfItemLoading,
+  cachePerfItems,
+  failPerfItems,
+  openPerfSubDept,
+  setPerfItemSort,
+  setPerfInfoOpen,
   togglePerfDay,
   togglePerfStore,
   resetSalesPerf,

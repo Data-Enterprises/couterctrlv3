@@ -3,6 +3,11 @@ import { useAppDispatch, useAppSelector } from "../../../../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 import SearchCard from "../../../../components/SearchCard";
 import { getHourly, getSubs, getWeekly } from "../../../../api/sales";
+import { fetchSubDeptRows } from "../../../../utils/marginRows";
+import { withProductCode } from "../../shared/ledgerUtils";
+import { SALES_MOBILE_INFO } from "../../salesInfo";
+import MobileInfoSheet from "../../../../components/mobile/MobileInfoSheet";
+import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
 import {
   addDays,
   formatCurrency2,
@@ -12,10 +17,16 @@ import {
 } from "../../../../utils";
 import { isGroupSearch } from "../../../../features/searchSlice";
 import { resolveStoreName } from "../../../../utils";
-import type { JsonError } from "../../../../interfaces";
+import type { JsonError, SubDeptMargin } from "../../../../interfaces";
 import {
+  cachePerfItems,
   cachePerfStoreData,
   clearPerfStoreCache,
+  failPerfItems,
+  openPerfSubDept,
+  setPerfInfoOpen,
+  setPerfItemLoading,
+  setPerfItemSort,
   failPerfStoreData,
   emptyBundle,
   setPerfDimension,
@@ -34,6 +45,7 @@ import {
   storeKeyOf,
   buildDays,
   buildHourPairs,
+  buildItemPairs,
   buildStorePairs,
   buildSubPairs,
   buildTotals,
@@ -79,6 +91,12 @@ const storeNumberOf = (p: { key: string; label: string }) =>
 
 const fmtChange = (pct: number) =>
   `${pct > 0 ? "+" : pct < 0 ? "\u2212" : ""}${Math.abs(pct).toFixed(1)}%`;
+
+const ITEM_SORTS: SortOption<PairSort>[] = [
+  { key: "sales", label: "Sales" },
+  { key: "change", label: "Change vs LY" },
+  { key: "name", label: "Name" },
+];
 
 const DIMENSIONS: { key: PerfDimension; label: string }[] = [
   { key: "stores", label: "Stores" },
@@ -220,6 +238,72 @@ const SalesPerfMobile = () => {
       });
   }, [perf.selectedStore]);
 
+  /**
+   * The one store items can be shown for, or null.
+   *
+   * Items are fetched per store, as on desktop: a single-store search is that
+   * store; a group search needs a store picked on the Stores tab. The store
+   * number is kept because storeid alone isn't unique — the endpoint answers
+   * for the id, so rows are narrowed to the number too.
+   */
+  const itemScope: { key: string; storeid: number; storeNumber: string | null } | null =
+    isStore
+      ? { key: `store:${searchValue}`, storeid: searchValue, storeNumber: null }
+      : (() => {
+          const row = perf.selectedStore
+            ? perf.weekTy.find((r) => storeKeyOf(r) === perf.selectedStore)
+            : undefined;
+          if (!row) return null;
+          // Only narrow by number when this id really carries two stores —
+          // the endpoints don't promise to format store_number the same way.
+          const shared = perf.weekTy.some(
+            (r) => r.storeid === row.storeid && r.store_number !== row.store_number,
+          );
+          return {
+            key: storeKeyOf(row),
+            storeid: row.storeid,
+            storeNumber: shared ? row.store_number : null,
+          };
+        })();
+
+  const itemKey =
+    itemScope && perf.openSubDept ? `${itemScope.key}|${perf.openSubDept.id}` : null;
+
+  /** A sub department's items, fetched the first time it's opened for a store
+   *  and kept for the search — the same contract as the store bundle above. */
+  useEffect(() => {
+    if (!itemKey || !itemScope || !perf.openSubDept) return;
+    if (perf.itemData[itemKey] || perf.itemLoading === itemKey) return;
+
+    const key = itemKey;
+    const { storeid, storeNumber } = itemScope;
+    const subId = perf.openSubDept.id;
+    const gen = perf.storeCacheGen;
+    const scoped = (rows: SubDeptMargin[]) =>
+      withProductCode(rows).filter(
+        (r) =>
+          storeNumber === null ||
+          String(r.store_number).trim().replace(/^0+/, "") ===
+            storeNumber.trim().replace(/^0+/, ""),
+      );
+
+    dispatch(setPerfItemLoading(key));
+    Promise.all([
+      fetchSubDeptRows(context.url, context.token, subId, twStart, twEnd, 0, storeid, 1),
+      fetchSubDeptRows(context.url, context.token, subId, lyDates[0], lyDates[6], 0, storeid, 1),
+    ])
+      .then(([ty, ly]) =>
+        dispatch(cachePerfItems({ key, items: { ty: scoped(ty), ly: scoped(ly) }, gen })),
+      )
+      .catch((err: JsonError) => {
+        dispatch(failPerfItems(key));
+        toast.error("Error loading items: " + err.message);
+      });
+  }, [itemKey]);
+
+  const openItems = itemKey ? perf.itemData[itemKey] : undefined;
+  const itemsLoading = itemKey !== null && !openItems;
+
   /** The group bundle, or the selected store's. Never a filter over the group
    *  bundle — those rows do not say which store they came from. */
   const active: PerfBundle = perf.selectedStore
@@ -289,6 +373,16 @@ const SalesPerfMobile = () => {
   /** One scale across the whole list, so a row's bar length means the same
    *  thing in every row. */
   const listMax = pairs.reduce((m, p) => Math.max(m, p.ty, p.ly), 0);
+
+  const itemPairs = useMemo(
+    () =>
+      openItems
+        ? sortPairs(buildItemPairs(openItems.ty, openItems.ly, shownDay), perf.itemSort)
+        : [],
+    [openItems, shownDay, perf.itemSort],
+  );
+  const itemMax = itemPairs.reduce((m, p) => Math.max(m, p.ty, p.ly), 0);
+  const showingItems = perf.dimension === "subs" && perf.openSubDept !== null;
 
   const dayLabel = shownDay
     ? new Date(`${shownDay}T12:00:00`).toLocaleDateString("en-US", {
@@ -404,6 +498,7 @@ const SalesPerfMobile = () => {
                 `${formatDateSimple(twStart)} – ${formatDateSimple(twEnd)}`
               }
               onSearch={() => dispatch(setPerfHasSearched(false))}
+              onInfo={() => dispatch(setPerfInfoOpen(true))}
             />
 
             <div className="px-4 pb-4 pt-2">
@@ -524,78 +619,173 @@ const SalesPerfMobile = () => {
 
           {/* ── the breakdown ────────────────────────────────────── */}
           <section className="overflow-hidden rounded-2xl border border-gray-200 bg-custom-white shadow-md">
-            <MobileSortChips
-              options={SORTS[perf.dimension]}
-              value={sort}
-              onChange={(key) =>
-                dispatch(setPerfSort({ dimension: perf.dimension, sort: key }))
-              }
-            />
-            {perf.selectedStore && perf.dimension !== "stores" && (
-              <p className="border-b border-gray-100 px-3.5 pb-2.5 pt-3 text-[12px] text-content/85">
-                Showing {selectedStoreName} only. Clear it on the Stores tab.
-              </p>
-            )}
-
-            {bundleLoading && perf.dimension !== "stores" ? (
-              <div className="px-4 py-8 text-center text-[12.5px] text-content/85">
-                Loading {selectedStoreName}...
-              </div>
-            ) : pairs.length === 0 ? (
-              <div className="px-4 py-8 text-center text-[12.5px] text-content/85">
-                Nothing recorded for this selection.
-              </div>
-            ) : (
-              pairs.map((p) => {
-                // Only the store list selects. Subs and Hours are the things
-                // being filtered, so making them tappable too would invite a
-                // scope this screen has no way to show.
-                const selectable = perf.dimension === "stores";
-                const isSel = selectable && perf.selectedStore === p.key;
-                const change = pairChangePct(p);
-
-                return (
+            {showingItems && perf.openSubDept ? (
+              <>
+                <div className="border-b border-gray-100 px-3.5 pb-2.5 pt-2">
                   <button
-                    key={p.key}
                     type="button"
-                    disabled={!selectable}
-                    aria-pressed={selectable ? isSel : undefined}
-                    onClick={() =>
-                      selectable && dispatch(togglePerfStore(p.key))
-                    }
-                    className={`block w-full border-t border-gray-100 px-3.5 py-3 text-left first:border-t-0 ${
-                      isSel ? "bg-row_selected" : ""
-                    } ${selectable ? "active:bg-bkg" : ""}`}
+                    onClick={() => dispatch(openPerfSubDept(null))}
+                    className="-ml-1 flex items-center gap-0.5 rounded-lg py-1 pr-2 text-[12.5px] font-semibold active:bg-bkg"
+                    style={{ color: TY_COLOR }}
                   >
-                    <div className="flex items-baseline gap-2">
-                      <span className="min-w-0 flex-1 truncate font-display text-[13.5px] font-semibold text-content">
-                        {p.label}
-                      </span>
-                      {/* The figure the Change sort orders on, so that order
-                          can be read off the rows. Neutral: no grading on
-                          mobile. A dash when last year sold nothing. */}
-                      <span className="flex-none text-[12px] font-semibold tabular-nums text-content/85">
-                        {change === null ? "\u2014" : fmtChange(change)}
-                      </span>
-                      {isSel && (
-                        <span
-                          className="flex-none font-mono text-[10px] uppercase tracking-wider"
-                          style={{ color: TY_COLOR }}
-                        >
-                          Selected
-                        </span>
-                      )}
-                    </div>
-                    <div className="mt-2">
-                      <PairedBars ty={p.ty} ly={p.ly} max={listMax} />
-                    </div>
+                    <ChevronLeftIcon className="h-4 w-4" />
+                    Back to Subs
                   </button>
-                );
-              })
+                  <div className="mt-0.5 flex items-baseline gap-2">
+                    <span className="min-w-0 flex-1 truncate font-display text-[14px] font-bold text-content">
+                      {perf.openSubDept.label}
+                    </span>
+                    {openItems && (
+                      <span className="flex-none text-[12px] text-content/85">
+                        {itemPairs.length} {itemPairs.length === 1 ? "item" : "items"}
+                      </span>
+                    )}
+                  </div>
+                  {selectedStoreName && (
+                    <div className="truncate text-[12px] text-content/85">
+                      {selectedStoreName}
+                    </div>
+                  )}
+                </div>
+                <MobileSortChips
+                  options={ITEM_SORTS}
+                  value={perf.itemSort}
+                  onChange={(key) => dispatch(setPerfItemSort(key))}
+                />
+                {itemsLoading ? (
+                  <div className="flex items-center justify-center gap-2 px-4 py-10 text-[12.5px] text-content/85">
+                    <span
+                      className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-gray-200"
+                      style={{ borderTopColor: TY_COLOR }}
+                    />
+                    Loading items...
+                  </div>
+                ) : itemPairs.length === 0 ? (
+                  <div className="px-4 py-8 text-center text-[12.5px] text-content/85">
+                    No items sold {shownDay ? "on this day" : "this week or last year"}.
+                  </div>
+                ) : (
+                  itemPairs.map((p) => {
+                    const change = pairChangePct(p);
+                    return (
+                      <div
+                        key={p.key}
+                        className="border-t border-gray-100 px-3.5 py-3 first:border-t-0"
+                      >
+                        <div className="flex items-baseline gap-2">
+                          <span className="min-w-0 flex-1 truncate font-display text-[13.5px] font-semibold text-content">
+                            {p.label}
+                          </span>
+                          <span className="flex-none text-[12px] font-semibold tabular-nums text-content/85">
+                            {change === null ? "\u2014" : fmtChange(change)}
+                          </span>
+                        </div>
+                        <div className="font-mono text-[10px] tracking-wider text-content/85">
+                          {p.key}
+                        </div>
+                        <div className="mt-2">
+                          <PairedBars ty={p.ty} ly={p.ly} max={itemMax} />
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </>
+            ) : (
+              <>
+                <MobileSortChips
+                  options={SORTS[perf.dimension]}
+                  value={sort}
+                  onChange={(key) =>
+                    dispatch(setPerfSort({ dimension: perf.dimension, sort: key }))
+                  }
+                />
+                {perf.selectedStore && perf.dimension !== "stores" && (
+                  <p className="border-b border-gray-100 px-3.5 pb-2.5 pt-3 text-[12px] text-content/85">
+                    Showing {selectedStoreName} only. Clear it on the Stores tab.
+                  </p>
+                )}
+                {perf.dimension === "subs" && !itemScope && (
+                  <p className="border-b border-gray-100 px-3.5 pb-2.5 pt-3 text-[12px] text-content/85">
+                    Pick a store on the Stores tab to see a sub department's items.
+                  </p>
+                )}
+
+                {bundleLoading && perf.dimension !== "stores" ? (
+                  <div className="px-4 py-8 text-center text-[12.5px] text-content/85">
+                    Loading {selectedStoreName}...
+                  </div>
+                ) : pairs.length === 0 ? (
+                  <div className="px-4 py-8 text-center text-[12.5px] text-content/85">
+                    Nothing recorded for this selection.
+                  </div>
+                ) : (
+                  pairs.map((p) => {
+                    // Stores select (a filter on Subs and Hours); sub
+                    // departments open their items once a store is in scope.
+                    // Hours stay read-only.
+                    const selectsStore = perf.dimension === "stores";
+                    const opensItems = perf.dimension === "subs" && itemScope !== null;
+                    const tappable = selectsStore || opensItems;
+                    const isSel = selectsStore && perf.selectedStore === p.key;
+                    const change = pairChangePct(p);
+
+                    return (
+                      <button
+                        key={p.key}
+                        type="button"
+                        disabled={!tappable}
+                        aria-pressed={selectsStore ? isSel : undefined}
+                        onClick={() => {
+                          if (selectsStore) dispatch(togglePerfStore(p.key));
+                          else if (opensItems)
+                            dispatch(openPerfSubDept({ id: Number(p.key), label: p.label }));
+                        }}
+                        className={`block w-full border-t border-gray-100 px-3.5 py-3 text-left first:border-t-0 ${
+                          isSel ? "bg-row_selected" : ""
+                        } ${tappable ? "active:bg-bkg" : ""}`}
+                      >
+                        <div className="flex items-baseline gap-2">
+                          <span className="min-w-0 flex-1 truncate font-display text-[13.5px] font-semibold text-content">
+                            {p.label}
+                          </span>
+                          {/* The figure the Change sort orders on, so that order
+                              can be read off the rows. Neutral: no grading on
+                              mobile. A dash when last year sold nothing. */}
+                          <span className="flex-none text-[12px] font-semibold tabular-nums text-content/85">
+                            {change === null ? "\u2014" : fmtChange(change)}
+                          </span>
+                          {isSel && (
+                            <span
+                              className="flex-none font-mono text-[10px] uppercase tracking-wider"
+                              style={{ color: TY_COLOR }}
+                            >
+                              Selected
+                            </span>
+                          )}
+                          {opensItems && (
+                            <ChevronRightIcon className="h-4 w-4 flex-none self-center text-content/85" />
+                          )}
+                        </div>
+                        <div className="mt-2">
+                          <PairedBars ty={p.ty} ly={p.ly} max={listMax} />
+                        </div>
+                      </button>
+                    );
+                  })
+                )}
+              </>
             )}
           </section>
         </div>
       </div>
+
+      {perf.infoOpen && (
+        <MobileInfoSheet
+          {...SALES_MOBILE_INFO}
+          onClose={() => dispatch(setPerfInfoOpen(false))}
+        />
+      )}
     </div>
   );
 };

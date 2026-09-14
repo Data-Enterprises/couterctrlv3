@@ -1,4 +1,9 @@
-import type { HourlySale, SubSale, WeeklySale } from "../../../../interfaces";
+import type {
+  HourlySale,
+  SubDeptMargin,
+  SubSale,
+  WeeklySale,
+} from "../../../../interfaces";
 import {
   buildDays as buildDaysCore,
   lyDateFor,
@@ -161,3 +166,25 @@ export const buildHourPairs = (
     // day. Re-sorted here rather than in pairBy so the other lists keep size
     // order.
     .sort((a, b) => Number(a.key) - Number(b.key));
+
+/**
+ * One sub department's items, this year against last year.
+ *
+ * Rows arrive already scoped to one store (see SalesPerfMobile), so there is
+ * no store filter. Keyed on product_code as a string — the endpoint sends it as
+ * a number on some rows.
+ */
+export const buildItemPairs = (
+  itemsTy: SubDeptMargin[],
+  itemsLy: SubDeptMargin[],
+  day: string | null,
+) =>
+  pairBy(
+    itemsTy,
+    itemsLy,
+    day,
+    null,
+    (r) => String(r.product_code),
+    (r) => r.product_description || String(r.product_code),
+    netOf,
+  );
