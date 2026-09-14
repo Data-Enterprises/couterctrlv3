@@ -4,11 +4,11 @@ import { useAppSelector } from "../../../hooks";
 import { formatCurrency2 } from "../../../utils";
 import BottomSheet from "../../../components/BottomSheet";
 import Transaction from "../../lossPrevention/Transaction";
-import type { TransactionListItem } from "../../../interfaces";
 import {
   describeSignal,
   groupSignalByTransaction,
   formatClock,
+  receiptLinesFor,
 } from "../explorer/lensUtils";
 import { useCashierSignals } from "../useCashierSignals";
 
@@ -27,10 +27,14 @@ import { useCashierSignals } from "../useCashierSignals";
  */
 
 const SignalTransactionsMobile = ({ onBack }: { onBack: () => void }) => {
-  const { explorerSignalKey, explorerLens, explorerFetchedException } =
-    useAppSelector((s) => s.cashier);
+  const {
+    explorerSignalKey,
+    explorerLens,
+    explorerFetchedException,
+    explorerAllRows,
+  } = useAppSelector((s) => s.cashier);
   const { signals, transactionLengths } = useCashierSignals();
-  const [receipt, setReceipt] = useState<TransactionListItem[] | null>(null);
+  const [openSaleId, setOpenSaleId] = useState<string | null>(null);
   const sheetCloseRef = useRef<(() => void) | null>(null);
 
   const signal = useMemo(
@@ -41,6 +45,12 @@ const SignalTransactionsMobile = ({ onBack }: { onBack: () => void }) => {
   const rows = useMemo(
     () => (signal ? groupSignalByTransaction(signal, transactionLengths) : []),
     [signal, transactionLengths],
+  );
+
+  // The whole receipt, the same lines desktop's SignalDetail opens.
+  const receipt = useMemo(
+    () => (openSaleId ? receiptLinesFor(explorerAllRows, openSaleId) : []),
+    [explorerAllRows, openSaleId],
   );
 
   if (!signal) return null;
@@ -109,11 +119,7 @@ const SignalTransactionsMobile = ({ onBack }: { onBack: () => void }) => {
           {rows.map((r) => (
             <button
               key={r.saleId}
-              onClick={() =>
-                setReceipt(
-                  signal.rows.filter((row) => String(row.sale_id) === r.saleId),
-                )
-              }
+              onClick={() => setOpenSaleId(r.saleId)}
               className="w-full px-3 py-2.5 bg-custom-white border-b border-[#1e2a4a]/15 even:bg-row_stripe text-left active:bg-gray-50"
             >
               <div className="flex items-center gap-2">
@@ -157,9 +163,12 @@ const SignalTransactionsMobile = ({ onBack }: { onBack: () => void }) => {
         </div>
       </div>
 
-      {receipt && (
-        <BottomSheet onClose={() => setReceipt(null)} closeRef={sheetCloseRef}>
-          <Transaction trans={receipt} compact />
+      {receipt.length > 0 && (
+        <BottomSheet onClose={() => setOpenSaleId(null)} closeRef={sheetCloseRef}>
+          {/* saleType is passed rather than left to the component: LP's
+              receipt otherwise reads Loss Prevention's own selected type,
+              which has nothing to do with the exception loaded here. */}
+          <Transaction trans={receipt} saleType={explorerFetchedException} compact />
         </BottomSheet>
       )}
     </>

@@ -105,6 +105,16 @@ interface CashiersState {
   explorerMessage: string;
   explorerScopeLabel: string;
   explorerSearched: boolean;
+  // Bumped by every preflight/explore. Each run remembers the value it started
+  // with and drops its result if another run has bumped it since — otherwise
+  // switching exception A → B quickly lets whichever finishes last win, even
+  // when that is A.
+  explorerRequestId: number;
+  // Transactions dropped past the receipt cap, so the page can say its totals
+  // run low instead of silently undercounting.
+  explorerTruncated: number;
+  // Why mobile is back on the search card (nothing found, or the fetch failed).
+  explorerNotice: string;
 }
 
 const initialState: CashiersState = {
@@ -167,6 +177,9 @@ const initialState: CashiersState = {
   explorerMessage: "",
   explorerScopeLabel: "",
   explorerSearched: false,
+  explorerRequestId: 0,
+  explorerTruncated: 0,
+  explorerNotice: "",
 };
 
 const cashiersSlice = createSlice({
@@ -417,12 +430,23 @@ const cashiersSlice = createSlice({
     },
     setExplorerRows: (
       state,
-      action: PayloadAction<{ rows: TransactionListItem[]; exception: string }>,
+      action: PayloadAction<{
+        rows: TransactionListItem[];
+        exception: string;
+        truncated?: number;
+      }>,
     ) => {
       state.explorerAllRows = action.payload.rows;
       state.explorerFetchedException = action.payload.exception;
+      state.explorerTruncated = action.payload.truncated ?? 0;
       state.explorerSignalKey = "";
       state.explorerSearched = true;
+    },
+    beginExplorerRequest: (state) => {
+      state.explorerRequestId += 1;
+    },
+    setExplorerNotice: (state, action: PayloadAction<string>) => {
+      state.explorerNotice = action.payload;
     },
     resetCashierState: () => initialState,
   },
@@ -483,5 +507,7 @@ export const {
   setExplorerMessage,
   setExplorerScopeLabel,
   setExplorerRows,
+  beginExplorerRequest,
+  setExplorerNotice,
 } = cashiersSlice.actions;
 export default cashiersSlice.reducer;

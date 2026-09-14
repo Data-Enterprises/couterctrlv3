@@ -58,8 +58,12 @@ const SignalListMobile = ({
 }: Props) => {
   const dispatch = useAppDispatch();
   const scopeLabel = useSearchScopeLabel();
-  const { explorerLens, explorerFetchedException, explorerLoading } =
-    useAppSelector((s) => s.cashier);
+  const {
+    explorerLens,
+    explorerFetchedException,
+    explorerLoading,
+    explorerTruncated,
+  } = useAppSelector((s) => s.cashier);
   const { signals, totals } = useCashierSignals();
 
   return (
@@ -97,6 +101,17 @@ const SignalListMobile = ({
           </div>
         ))}
       </div>
+
+      {/* The receipt fetch is capped, so past it every figure above runs low.
+          Desktop says so in its header; there is no room for that here, so it
+          gets its own line rather than being left out. */}
+      {explorerTruncated > 0 && (
+        <div className="px-3 py-1.5 bg-amber-50 border-b border-[#1e2a4a]/15 text-[11px] text-amber-900 flex-shrink-0">
+          Capped — {explorerTruncated.toLocaleString()} more{" "}
+          {explorerTruncated === 1 ? "transaction" : "transactions"} not
+          loaded, so these totals run low.
+        </div>
+      )}
 
       {/* Lens as a tab strip, matching desktop. The exception is a header
           subtitle there, not a control, so it sits beside the tabs rather than

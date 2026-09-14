@@ -1,9 +1,16 @@
 import { useState } from "react";
-import { useAppSelector } from "../../../hooks";
+import { useAppDispatch, useAppSelector } from "../../../hooks";
 import SearchCard from "../../../components/SearchCard";
-import { useCashierExplorer } from "../useCashierExplorer";
+import { setExplorerNotice } from "../../../features/cashiersSlice";
+import { useCashierExplorer, type ExplorerOutcome } from "../useCashierExplorer";
 import SignalListMobile from "./SignalListMobile";
 import SignalTransactionsMobile from "./SignalTransactionsMobile";
+
+const NOTICES: Partial<Record<ExplorerOutcome, string>> = {
+  empty:
+    "Nothing found for that search — try a different store, group, or week.",
+  error: "Couldn't load that search. Check your connection and try again.",
+};
 
 /**
  * Cashiers on mobile — the signal explorer, not the old card drill-down.
@@ -23,32 +30,50 @@ import SignalTransactionsMobile from "./SignalTransactionsMobile";
  *         → receipt sheet
  */
 const CashiersMobile = () => {
+  const dispatch = useAppDispatch();
   const {
     explorerLoading,
     explorerMessage,
     explorerSaleTypes,
     explorerAllRows,
+    explorerNotice,
   } = useAppSelector((s) => s.cashier);
   const { runPreflight, runExplore, scopeArgs } = useCashierExplorer();
 
   const [screen, setScreen] = useState<"signals" | "transactions">("signals");
   const [searchOpen, setSearchOpen] = useState(false);
-  const [notice, setNotice] = useState<string | undefined>(undefined);
 
   const { start, end } = scopeArgs();
   const hasData = explorerAllRows.length > 0;
+
+  /** Anything short of rows lands back on the search card, so it has to say
+   *  why — a card that just reappears reads as the search never having run. */
+  const noticeFor = (outcome: ExplorerOutcome) =>
+    dispatch(setExplorerNotice(NOTICES[outcome] ?? ""));
 
   /** Both stages in one go: the user picked a scope and a week, and the
    *  exception they'd most likely want is derivable — making them choose it in
    *  a second step would be asking a question we can already answer. */
   const handleSearch = async () => {
-    setNotice(undefined);
-    const { types, fallback } = await runPreflight();
-    if (types.length === 0) {
-      setNotice("No exceptions were recorded for that store and week.");
+    dispatch(setExplorerNotice(""));
+    const preflight = await runPreflight();
+    // A superseded run applied nothing, and the run that replaced it owns the
+    // screen from here.
+    if (preflight.outcome === "stale") return;
+    if (preflight.outcome === "empty") {
+      dispatch(
+        setExplorerNotice("No exceptions were recorded for that search and week."),
+      );
       return;
     }
-    await runExplore(fallback);
+    if (preflight.outcome === "error") {
+      noticeFor("error");
+      return;
+    }
+    const outcome = await runExplore(preflight.fallback);
+    if (outcome === "stale") return;
+    noticeFor(outcome);
+    if (outcome !== "loaded") return;
     setScreen("signals");
     setSearchOpen(false);
   };
@@ -57,7 +82,8 @@ const CashiersMobile = () => {
    *  `cashier_table` call, so this can't be a client-side filter. */
   const handleExceptionChange = async (saleType: string) => {
     setScreen("signals");
-    await runExplore(saleType);
+    const outcome = await runExplore(saleType);
+    if (outcome !== "stale") noticeFor(outcome);
   };
 
   if (!hasData || searchOpen) {
@@ -73,7 +99,7 @@ const CashiersMobile = () => {
             onSearch={handleSearch}
             loading={explorerLoading}
             loadingMessage={explorerMessage || "Finding exceptions..."}
-            notice={notice}
+            notice={explorerNotice || undefined}
             onBack={hasData ? () => setSearchOpen(false) : undefined}
           />
         </div>
