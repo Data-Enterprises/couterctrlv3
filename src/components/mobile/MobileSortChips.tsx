@@ -26,11 +26,11 @@ const MobileSortChips = <K extends string>({
   // drops its right padding at the end of its scroll range — see SevChips.
   <div
     role="radiogroup"
-    aria-label="Sort"
+    aria-label="Sort by"
     className="flex items-center gap-2 overflow-x-auto border-b border-gray-100 py-2 pl-3.5"
   >
     <span className="flex-shrink-0 font-mono text-[10px] uppercase tracking-wider text-content/85">
-      Sort
+      Sort by
     </span>
     {options.map((o) => (
       <button
