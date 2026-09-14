@@ -15,6 +15,7 @@ import {
   calculateCogs,
   hasNoUsableCost,
   matchedCounterpartRows,
+  matchedTyRows,
   setDates,
   getLYDate,
   getTier,
@@ -207,17 +208,34 @@ const MarginPerfRightPanel = () => {
     return count;
   }, [ctx.weekOneMargins]);
 
+  // The TY side of each comparison, over only the days that matched it — the
+  // same subtotal the list grades on. The TY tile itself stays the whole week.
+  const tyForLwKpis = useMemo(
+    () =>
+      selectedLwDate
+        ? tyKpis
+        : computeKpis(matchedTyRows(ctx.weekOneMargins, ctx.weekTwoMargins, "lw")),
+    [selectedLwDate, tyKpis, ctx.weekOneMargins, ctx.weekTwoMargins],
+  );
+  const tyForLyKpis = useMemo(
+    () =>
+      selectedLyDate
+        ? tyKpis
+        : computeKpis(matchedTyRows(ctx.weekOneMargins, ctx.weekOneMarginsLY, "ly")),
+    [selectedLyDate, tyKpis, ctx.weekOneMargins, ctx.weekOneMarginsLY],
+  );
+
   const marginDelta =
-    tyKpis && lyKpis ? tyKpis.rawMargin - lyKpis.rawMargin : null;
+    tyForLyKpis && lyKpis ? tyForLyKpis.rawMargin - lyKpis.rawMargin : null;
   const salesDelta =
-    tyKpis && lyKpis && lyKpis.sales > 0
-      ? ((tyKpis.sales - lyKpis.sales) / Math.abs(lyKpis.sales)) * 100
+    tyForLyKpis && lyKpis && lyKpis.sales > 0
+      ? ((tyForLyKpis.sales - lyKpis.sales) / Math.abs(lyKpis.sales)) * 100
       : null;
   const lwMarginDelta =
-    tyKpis && lwKpis ? tyKpis.rawMargin - lwKpis.rawMargin : null;
+    tyForLwKpis && lwKpis ? tyForLwKpis.rawMargin - lwKpis.rawMargin : null;
   const lwSalesDelta =
-    tyKpis && lwKpis && lwKpis.sales > 0
-      ? ((tyKpis.sales - lwKpis.sales) / Math.abs(lwKpis.sales)) * 100
+    tyForLwKpis && lwKpis && lwKpis.sales > 0
+      ? ((tyForLwKpis.sales - lwKpis.sales) / Math.abs(lwKpis.sales)) * 100
       : null;
 
   // Sales-metric KPIs read the grade, which is built from sub_sales — the

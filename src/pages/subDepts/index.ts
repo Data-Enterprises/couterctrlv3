@@ -241,6 +241,21 @@ export const matchedCounterpartRows = (
   return refRows.filter((r) => wanted.has(dayKey(r.sale_date)));
 };
 
+/** The TY rows whose day has a counterpart in `refRows` — the TY side of a
+ * day-matched comparison. Pair with matchedCounterpartRows: dividing a whole
+ * TY week by two matched LY days is what put the right panel's vs LY at
+ * −28.57 pts against the list's −32.37. */
+export const matchedTyRows = (
+  tyRows: SubDeptMargin[],
+  refRows: SubDeptMargin[],
+  period: "lw" | "ly",
+): SubDeptMargin[] => {
+  const present = new Set(refRows.map((r) => dayKey(r.sale_date)));
+  const counterpart = (d: string) =>
+    period === "lw" ? setDates(new Date(`${d}T12:00:00`), 7) : getLYDate(d);
+  return tyRows.filter((r) => present.has(counterpart(dayKey(r.sale_date))));
+};
+
 export interface MarginDayMatchedTotals {
   tySales: number;
   tyMarginPct: number;
