@@ -138,9 +138,25 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
         token: context.token,
         storeid: perf.storeId,
       };
+      /**
+       * This year decides whether there is a page; last year only decides
+       * whether it can compare.
+       *
+       * They used to share one `Promise.all`, so a store with no history on
+       * the new backend — the endpoint answers with an error, not an empty
+       * list — rejected the pair, toasted, and never set `hasSearched`. The
+       * reader was left on the search card with a week of perfectly good
+       * current rows already in hand.
+       *
+       * `null` rather than `[]` on the way out: an empty array is a store
+       * that traded nothing last year, and that one really should read as a
+       * rise from zero.
+       */
       const [ty, ly] = await Promise.all([
         fetchItemRows(dimension, scope, twStart, twEnd),
-        fetchItemRows(dimension, scope, lyDates[0], lyDates[6]),
+        fetchItemRows(dimension, scope, lyDates[0], lyDates[6]).catch(
+          () => null,
+        ),
       ]);
       dispatch(setItemPerfRows({ ty, ly }));
       dispatch(setItemPerfHasSearched(true));
@@ -296,7 +312,13 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
 
   // Scaled to the page on screen, not the full result set: with one outlier
   // item off-list, every visible bar would be a sliver.
-  const listMax = shown.reduce((m, r) => Math.max(m, r.profit, r.profitLy), 0);
+  // Last year is excluded from the shared scale when it was never read —
+  // otherwise a store with no history scales every bar against a zero it did
+  // not measure.
+  const listMax = shown.reduce(
+    (m, r) => Math.max(m, r.profit, perf.lyMissing ? 0 : r.profitLy),
+    0,
+  );
   const selectedItem = findItem(ty, perf.selectedItemCode);
 
   /** One recent item. Shared by the panel and the sheet so the two cannot
@@ -563,6 +585,7 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
                     ly={totals.profitLy}
                     max={Math.max(totals.profit, totals.profitLy)}
                     compact
+                    lyUnavailable={perf.lyMissing}
                   />
                 </div>
 
@@ -570,7 +593,10 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
                   {[
                     ["Sales", formatCurrency2(totals.sales)],
                     ["Cost", formatCurrency2(totals.cogs)],
-                    ["LY margin", pct(totals.gpmLy)],
+                    [
+                      "LY margin",
+                      perf.lyMissing ? "no history" : pct(totals.gpmLy),
+                    ],
                     [
                       selectedItem ? "Qty" : "Items",
                       selectedItem
@@ -757,7 +783,12 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
                       {r.sub}
                     </div>
                     <div className="mt-2">
-                      <PairedBars ty={r.profit} ly={r.profitLy} max={listMax} />
+                      <PairedBars
+                        ty={r.profit}
+                        ly={r.profitLy}
+                        max={listMax}
+                        lyUnavailable={perf.lyMissing}
+                      />
                     </div>
                   </button>
                 ))

@@ -73,6 +73,21 @@ interface ItemPerfState {
   itemsTy: ItemRow[];
   itemsLy: ItemRow[];
 
+  /**
+   * Last year could not be read for this store.
+   *
+   * Not the same as a store that traded nothing last year, and the difference
+   * is the whole point of the flag. Both arrive here as an empty `itemsLy`,
+   * but one means "they made no money" and the other means "we have no
+   * record" — and the comparison has to be withheld for the second, not
+   * printed as a rise from zero.
+   *
+   * Some stores simply have no history on the new backend; the endpoint
+   * answers with an error rather than an empty list, which used to reject the
+   * whole fetch and leave the page on its search card.
+   */
+  lyMissing: boolean;
+
   view: ItemView;
 
   /** ISO date of the selected day, or null for the whole window. Tapping the
@@ -136,6 +151,7 @@ const initialState: ItemPerfState = {
   storeId: 0,
   itemsTy: [],
   itemsLy: [],
+  lyMissing: false,
   view: "list",
   selectedDay: null,
   selectedGroupKey: null,
@@ -164,10 +180,15 @@ const itemPerfSlice = createSlice({
     },
     setItemPerfRows: (
       state,
-      action: PayloadAction<{ ty: ItemRow[]; ly: ItemRow[] }>,
+      action: PayloadAction<{
+        ty: ItemRow[];
+        /** Null when last year could not be read at all — see `lyMissing`. */
+        ly: ItemRow[] | null;
+      }>,
     ) => {
       state.itemsTy = action.payload.ty;
-      state.itemsLy = action.payload.ly;
+      state.itemsLy = action.payload.ly ?? [];
+      state.lyMissing = action.payload.ly === null;
       // A new window invalidates every drill into the old one.
       state.view = "list";
       state.selectedDay = null;
