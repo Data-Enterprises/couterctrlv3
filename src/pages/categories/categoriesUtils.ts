@@ -1,4 +1,5 @@
 import type { CatSalesDaily } from "../../interfaces";
+import { coverageOf, gradeBasis, type Coverage } from "../../utils/grading";
 
 /** Category performance: turning three weeks of daily rows into graded rows.
  *
@@ -73,6 +74,9 @@ export interface CategoryRow {
   twQtyForLY: number;
   hasLW: boolean;
   hasLY: boolean;
+  /** The store's coverage for the week — the same object on every row. A
+   *  comparison grades only when it covers every day; see utils/grading. */
+  coverage: Coverage;
 }
 
 /* ── date helpers ─────────────────────────────────────────────────────────
@@ -173,6 +177,18 @@ export const buildCategoryRows = (
   const lwMap = foldByCategoryDay(lw);
   const lyMap = foldByCategoryDay(ly);
   const labels = buildLabels(tw, lw, ly);
+  // Once for the store, before any category: a category that sold nothing on
+  // a day is a zero, not a missing day.
+  const coverage = coverageOf(
+    twDates,
+    {
+      tw: new Set(tw.map((r) => isoOf(r.sale_date))),
+      lw: new Set(lw.map((r) => isoOf(r.sale_date))),
+      ly: new Set(ly.map((r) => isoOf(r.sale_date))),
+    },
+    (d) => shiftIso(d, LW_OFFSET),
+    (d) => shiftIso(d, LY_OFFSET),
+  );
 
   // Any category appearing in any period gets a row — one that traded last
   // year and not this week is exactly the disappearance worth seeing.
@@ -234,6 +250,7 @@ export const buildCategoryRows = (
       twQtyForLY: sum(matchedLY, (d) => d.twQty),
       hasLW: matched.length > 0,
       hasLY: matchedLY.length > 0,
+      coverage,
     });
   }
 
@@ -274,12 +291,13 @@ export const categoryDelta = (
   row: CategoryRow,
   metric: CategoryMetric,
 ): number | null => {
-  if (row.hasLY) {
+  const basis = gradeBasis(row, row.coverage);
+  if (basis === "LY") {
     const tw = metric === "qty" ? row.twQtyForLY : row.twNetForLY;
     const prior = metric === "qty" ? row.lyQty : row.lyNet;
     return pctChange(tw, prior);
   }
-  if (row.hasLW) {
+  if (basis === "LW") {
     const tw = metric === "qty" ? row.twQtyForLW : row.twNetForLW;
     const prior = metric === "qty" ? row.lwQty : row.lwNet;
     return pctChange(tw, prior);

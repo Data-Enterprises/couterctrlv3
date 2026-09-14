@@ -3,7 +3,7 @@ import { useAppSelector, useAppDispatch } from "../../../hooks";
 // import { useSalesState } from "../hooks/useSalesState";
 import { getSubs, getHourly } from "../../../api/sales";
 import { fetchSubDeptRowsSafe } from "../../../utils/marginRows";
-import { gradeSeverity } from "../../../utils/severity";
+import { itemSeverity, matchItemRows } from "../components/itemGrading";
 import { getHolidayName } from "../../../utils/holidays";
 import {
   addDays,
@@ -32,10 +32,7 @@ import {
   closeSheet,
   navigateToList,
 } from "../../../features/salesLedgerSlice";
-import type {
-  SevFilter,
-  GradingMetric,
-} from "../../../features/salesLedgerSlice";
+import type { SevFilter } from "../../../features/salesLedgerSlice";
 import SelectFilter from "../../../components/filters/SelectFilter";
 import type { SubDeptMargin } from "../../../interfaces";
 import type { Severity } from "../components/LedgerRow";
@@ -383,6 +380,7 @@ const LedgerStoreReport = () => {
         const tyMap = aggByCode(tyItems);
         const lwMap = aggByCode(lwItems);
         const lyMap = aggByCode(lyItems);
+        const { tyForLW, tyForLY } = matchItemRows(tyItems, lwItems, lyItems);
         const sorted = [...tyMap.entries()].sort((a, b) => b[1].qty - a[1].qty);
         dispatch(
           setTop10(
@@ -402,6 +400,10 @@ const LedgerStoreReport = () => {
                 lyNet: ly?.net ?? null,
                 lyQty: ly?.qty ?? null,
                 lyWeight: ly?.weight ?? null,
+                tyNetForLW: tyForLW.get(code)?.net ?? 0,
+                tyQtyForLW: tyForLW.get(code)?.qty ?? 0,
+                tyNetForLY: tyForLY.get(code)?.net ?? 0,
+                tyQtyForLY: tyForLY.get(code)?.qty ?? 0,
               };
             }),
           ),
@@ -1267,37 +1269,11 @@ const LedgerStoreReport = () => {
             )}
             {openSheetType === "subdept" &&
               (() => {
-                const itemSeverity = (
-                  item: (typeof top10)[0],
-                  metric: GradingMetric,
-                ): Severity => {
-                  // Grades on the same metric (Sales vs Qty, per the
-                  // gradingMetric toggle) the pill below actually displays —
-                  // grading on a different metric than what's shown would
-                  // let the badge disagree with a visible 0% figure.
-                  const lyPct =
-                    metric === "sales"
-                      ? item.lyNet !== null && item.lyNet > 0
-                        ? ((item.tyNet - item.lyNet) / item.lyNet) * 100
-                        : null
-                      : item.lyQty !== null && item.lyQty > 0
-                        ? ((item.tyQty - item.lyQty) / item.lyQty) * 100
-                        : null;
-                  const lwPct =
-                    metric === "sales"
-                      ? item.lwNet !== null && item.lwNet > 0
-                        ? ((item.tyNet - item.lwNet) / item.lwNet) * 100
-                        : null
-                      : item.lwQty !== null && item.lwQty > 0
-                        ? ((item.tyQty - item.lwQty) / item.lwQty) * 100
-                        : null;
-                  // Same cut as the desktop list, epsilon and all — mobile and
-                  // desktop grading must not diverge.
-                  return gradeSeverity(
-                    lyPct ?? lwPct ?? 0,
-                    effectiveItemThreshold,
-                  );
-                };
+                // The desktop list's grader, so mobile and desktop can't
+                // diverge: day-matched TY, whole-week coverage, and null when
+                // neither comparison covers the week.
+                const gradeItem = (item: (typeof top10)[0]) =>
+                  itemSeverity(item, effectiveItemThreshold, gradingMetric, deptCoverage);
                 const baseItems =
                   itemActiveFilter === "inactive"
                     ? inactiveSubDeptItems
@@ -1306,7 +1282,7 @@ const LedgerStoreReport = () => {
                       : [...top10, ...inactiveSubDeptItems];
                 const itemsWithSev = baseItems.map((item) => ({
                   ...item,
-                  sev: itemSeverity(item, gradingMetric),
+                  sev: gradeItem(item),
                 }));
                 const itemCounts: Record<SevFilter, number> = {
                   all: itemsWithSev.length,
@@ -1454,7 +1430,7 @@ const LedgerStoreReport = () => {
                                     className="px-4 py-2.5 border-b border-gray-100"
                                   >
                                     <div className="flex items-start gap-2">
-                                      <SevBadge sev={item.sev} />
+                                      <SevBadge sev={item.sev ?? "ungraded"} />
                                       <div className="min-w-0 flex-1">
                                         <div className="flex items-baseline justify-between gap-2">
                                           <span

@@ -7,6 +7,9 @@ import {
   shiftIso,
   pctChange,
   tierOfDelta,
+  coverageOf,
+  gradeBasis,
+  type Coverage,
   type Tier,
 } from "../../utils/grading";
 
@@ -80,6 +83,9 @@ export interface VendorRow {
   twCogsForLY: number;
   hasLW: boolean;
   hasLY: boolean;
+  /** The store's coverage for the week — the same object on every row. A
+   *  comparison grades only when it covers every day; see utils/grading. */
+  coverage: Coverage;
 
   /** Margin points, computed from the DAY-MATCHED subtotals so a partial week
    *  isn't compared against a full one. Positive means margin improved. */
@@ -167,6 +173,18 @@ export const buildVendorRows = (
   const twMap = collect(tw);
   const lwMap = collect(lw);
   const lyMap = collect(ly);
+  // Once for the store: a vendor with no delivery on a day is a zero, not a
+  // missing day.
+  const coverage = coverageOf(
+    twDates,
+    {
+      tw: new Set(tw.map((r) => isoOf(r.sale_date))),
+      lw: new Set(lw.map((r) => isoOf(r.sale_date))),
+      ly: new Set(ly.map((r) => isoOf(r.sale_date))),
+    },
+    (d) => shiftIso(d, LW_OFFSET),
+    (d) => shiftIso(d, LY_OFFSET),
+  );
 
   const rows: VendorRow[] = [];
 
@@ -234,6 +252,7 @@ export const buildVendorRows = (
       lwNet, lwQty, lwCogs, twNetForLW, twQtyForLW, twCogsForLW,
       lyNet, lyQty, lyCogs, twNetForLY, twQtyForLY, twCogsForLY,
       hasLW, hasLY,
+      coverage,
       tyMarginPct: marginPct(twNet, twCogs),
       lwMarginPct: marginPct(lwNet, lwCogs),
       lyMarginPct: marginPct(lyNet, lyCogs),
@@ -260,10 +279,11 @@ export const vendorDelta = (
   metric: VendorMetric,
 ): number | null => {
   const isMargin = metric === "margin";
-  if (row.hasLY) {
+  const basis = gradeBasis(row, row.coverage);
+  if (basis === "LY") {
     return isMargin ? row.lyPtsDelta : pctChange(row.twNetForLY, row.lyNet);
   }
-  if (row.hasLW) {
+  if (basis === "LW") {
     return isMargin ? row.lwPtsDelta : pctChange(row.twNetForLW, row.lwNet);
   }
   return null;

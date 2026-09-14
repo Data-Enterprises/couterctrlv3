@@ -1,5 +1,6 @@
 import type { SubDept } from "../../../../interfaces";
 import type { SubDeptGrade } from "../../../../features/subMarginSlice";
+import { setDates, getLYDate } from "../..";
 import {
   buildItemRows,
   getItemSeverity,
@@ -49,6 +50,11 @@ export const collectGradedItems = (
       grade.tyWeekOneMargins,
       grade.lwWeekOneMargins,
       grade.lyWeekOneMargins,
+      {
+        lwOf: (d) => setDates(new Date(`${d}T12:00:00`), 7),
+        lyOf: (d) => getLYDate(d),
+        coverage: grade.coverage,
+      },
     );
     const kept: GradedItem[] = [];
     for (const row of items) {

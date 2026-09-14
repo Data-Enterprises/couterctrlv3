@@ -33,7 +33,11 @@ import MarginPerfItemsTable from "./MarginPerfItemsTable";
 import SubDeptCostGrid from "../widgets/SubDeptCostGrid";
 import MarginPerfExportModal from "./MarginPerfExportModal";
 import MarginPerfDaySidebar from "./MarginPerfDaySidebar";
-import { severityHeaderBgClass, pillClass } from "../../../../utils/severity";
+import {
+  severityHeaderBgClass,
+  comparisonPillClass,
+} from "../../../../utils/severity";
+import { isCompleteCoverage } from "../../../../utils/grading";
 
 const MarginPerfRightPanel = () => {
   const ctx = useSubMarginCtx();
@@ -83,6 +87,16 @@ const MarginPerfRightPanel = () => {
   const tier = selectedGrade
     ? getTier(selectedGrade, gradingThreshold, gradingMetric)
     : "healthy";
+  // A selected single day is one of one — never partial. The whole week is
+  // partial when the store is missing matched days.
+  const lwComplete =
+    !selectedGrade ||
+    !!ctx.selectedWeekDay ||
+    isCompleteCoverage(selectedGrade.coverage.lwDayCount, selectedGrade.coverage.dayCount);
+  const lyComplete =
+    !selectedGrade ||
+    !!ctx.selectedWeekDay ||
+    isCompleteCoverage(selectedGrade.coverage.lyDayCount, selectedGrade.coverage.dayCount);
 
   const periodEnd = ctx.singleDate
     ? formatDate(setDates(new Date(ctx.singleDate), 0))
@@ -395,7 +409,7 @@ const MarginPerfRightPanel = () => {
       <div className="bg-custom-white rounded-xl shadow-sm overflow-hidden flex flex-col h-full">
         {/* ── Title bar — tinted to the selected sub dept's tier ── */}
         <div
-          className={`relative grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-3 flex-shrink-0 ${severityHeaderBgClass[tier]}`}
+          className={`relative grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-3 flex-shrink-0 ${tier === "ungraded" ? "bg-[#1e2a4a]" : severityHeaderBgClass[tier]}`}
         >
           <p className="text-custom-white text-[13px] font-bold leading-tight justify-self-start">
             {subDeptName}
@@ -484,7 +498,7 @@ const MarginPerfRightPanel = () => {
               </span>
               {gradingMetric === "margin" && lwMarginDelta !== null && (
                 <span
-                  className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${pillClass(lwMarginDelta, gradingThreshold)}`}
+                  className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${comparisonPillClass(lwMarginDelta, lwComplete, gradingThreshold)}`}
                 >
                   {lwMarginDelta >= 0 ? "+" : ""}
                   {lwMarginDelta.toFixed(2)} pts
@@ -493,7 +507,7 @@ const MarginPerfRightPanel = () => {
               {gradingMetric === "sales" &&
                 (salesKpis?.vsLw ?? lwSalesDelta) !== null && (
                   <span
-                    className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${pillClass((salesKpis?.vsLw ?? lwSalesDelta)!, gradingThreshold)}`}
+                    className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${comparisonPillClass((salesKpis?.vsLw ?? lwSalesDelta)!, lwComplete, gradingThreshold)}`}
                   >
                     {(salesKpis?.vsLw ?? lwSalesDelta)! >= 0 ? "+" : ""}
                     {(salesKpis?.vsLw ?? lwSalesDelta)!.toFixed(2)}%
@@ -522,7 +536,7 @@ const MarginPerfRightPanel = () => {
               </span>
               {gradingMetric === "margin" && marginDelta !== null && (
                 <span
-                  className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${pillClass(marginDelta, gradingThreshold)}`}
+                  className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${comparisonPillClass(marginDelta, lyComplete, gradingThreshold)}`}
                 >
                   {marginDelta >= 0 ? "+" : ""}
                   {marginDelta.toFixed(2)} pts
@@ -531,7 +545,7 @@ const MarginPerfRightPanel = () => {
               {gradingMetric === "sales" &&
                 (salesKpis?.vsLy ?? salesDelta) !== null && (
                   <span
-                    className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${pillClass((salesKpis?.vsLy ?? salesDelta)!, gradingThreshold)}`}
+                    className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${comparisonPillClass((salesKpis?.vsLy ?? salesDelta)!, lyComplete, gradingThreshold)}`}
                   >
                     {(salesKpis?.vsLy ?? salesDelta)! >= 0 ? "+" : ""}
                     {(salesKpis?.vsLy ?? salesDelta)!.toFixed(2)}%
@@ -542,7 +556,7 @@ const MarginPerfRightPanel = () => {
         </div>
 
         {/* ── Day sidebar ── */}
-        <MarginPerfDaySidebar />
+        <MarginPerfDaySidebar coverage={selectedGrade?.coverage} />
 
         {/* ── Tabs ── */}
         <div className="flex items-center border-b border-gray-100 px-3 flex-shrink-0">
@@ -582,6 +596,7 @@ const MarginPerfRightPanel = () => {
         <div className="flex-1 overflow-hidden flex flex-col min-h-0">
           {ctx.subDeptGridView === "item" ? (
             <MarginPerfItemsTable
+              coverage={selectedGrade?.coverage}
               tyMargins={ctx.weekOneMargins}
               lwMargins={ctx.weekTwoMargins}
               lyMargins={ctx.weekOneMarginsLY}

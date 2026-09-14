@@ -18,7 +18,14 @@ import {
 import ThresholdFilter from "../../../../components/filters/ThresholdFilter";
 import LocationTabs from "../../../../components/filters/LocationTabs";
 import TextFilter from "../../../../components/filters/TextFilter";
-import { severityDotClass, pillClass, PCT_COL_W, type SevFilter } from "../../../../utils/severity";
+import {
+  severityDotClass,
+  comparisonPillClass,
+  headerDeltaPill,
+  PCT_COL_W,
+  type SevFilter,
+} from "../../../../utils/severity";
+import { isCompleteCoverage } from "../../../../utils/grading";
 import type { SubDeptMargin } from "../../../../interfaces";
 import InfoPopover from "../../../../components/InfoPopover";
 import { SUB_DEPT_MARGINS_INFO } from "../../subDeptMarginsInfo";
@@ -35,7 +42,7 @@ interface Props {
 /** Sortable columns. Trend is a shape, not a figure, so it stays static. */
 type SdSortCol = "ty" | "lw" | "ly";
 
-const SEV_RANK: Record<MarginTier, number> = { critical: 0, watch: 1, healthy: 2 };
+const SEV_RANK: Record<MarginTier, number> = { critical: 0, watch: 1, healthy: 2, ungraded: 3 };
 
 const TOGGLE_OPTS: { key: GradingMetric; label: string }[] = [
   { key: "margin", label: "Margin" },
@@ -46,6 +53,7 @@ const TIER_STROKE: Record<MarginTier, string> = {
   critical: "#ef4444",
   watch: "#fbbf24",
   healthy: "#10b981",
+  ungraded: "#9ca3af",
 };
 
 // Small inline trend line for a sub dept's daily sales across the current
@@ -138,6 +146,9 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: Props) => {
     tier: getTier(grade, gradingThreshold, gradingMetric),
   }));
 
+  // Store-level, so every department grade carries the same coverage.
+  const headerCov = grades[0]?.grade.coverage ?? { dayCount: 0, lwDayCount: 0, lyDayCount: 0 };
+
   const criticalCount = grades.filter((g) => g.tier === "critical").length;
   const watchCount = grades.filter((g) => g.tier === "watch").length;
   const healthyCount = grades.filter((g) => g.tier === "healthy").length;
@@ -202,10 +213,11 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: Props) => {
   const gradeOrdered = [...textFilteredRows].sort((a, b) => {
     const rankDiff = SEV_RANK[a.tier] - SEV_RANK[b.tier];
     if (rankDiff !== 0) return rankDiff;
-    return (
-      getGradeDelta(a.grade, gradingMetric) -
-      getGradeDelta(b.grade, gradingMetric)
-    );
+    const ad = getGradeDelta(a.grade, gradingMetric);
+    const bd = getGradeDelta(b.grade, gradingMetric);
+    // Ungraded rows have nothing to rank by; biggest department first.
+    if (ad === null || bd === null) return b.grade.tySales - a.grade.tySales;
+    return ad - bd;
   });
 
   // Sorting follows the metric toggle: in margin mode the columns hold points,
@@ -248,30 +260,30 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: Props) => {
               </span>
               {(gradingMetric === "margin" ? avgLwDelta : vsLWSalesPct) !== null && (
                 <span
+                  title={headerDeltaPill((gradingMetric === "margin" ? avgLwDelta! : vsLWSalesPct!), headerCov.lwDayCount, headerCov.dayCount, "last week").title}
                   className={`text-[12px] font-semibold px-2 py-0.5 rounded-full ${
-                    (gradingMetric === "margin" ? avgLwDelta! : vsLWSalesPct!) >= 0
-                      ? "bg-emerald-300/15 text-emerald-300"
-                      : "bg-red-300/15 text-red-300"
+                    headerDeltaPill((gradingMetric === "margin" ? avgLwDelta! : vsLWSalesPct!), headerCov.lwDayCount, headerCov.dayCount, "last week").cls
                   }`}
                 >
                   LW{" "}
                   {gradingMetric === "margin"
                     ? `${avgLwDelta! >= 0 ? "+" : ""}${avgLwDelta!.toFixed(2)} pts`
                     : `${vsLWSalesPct! >= 0 ? "+" : ""}${vsLWSalesPct!.toFixed(2)}%`}
+                  {headerDeltaPill((gradingMetric === "margin" ? avgLwDelta! : vsLWSalesPct!), headerCov.lwDayCount, headerCov.dayCount, "last week").note}
                 </span>
               )}
               {totalLySales > 0 && (gradingMetric === "margin" ? avgDelta : vsLYSalesPct) !== null && (
                 <span
+                  title={headerDeltaPill((gradingMetric === "margin" ? avgDelta! : vsLYSalesPct!), headerCov.lyDayCount, headerCov.dayCount, "last year").title}
                   className={`text-[12px] font-semibold px-2 py-0.5 rounded-full ${
-                    (gradingMetric === "margin" ? avgDelta! : vsLYSalesPct!) >= 0
-                      ? "bg-emerald-300/15 text-emerald-300"
-                      : "bg-red-300/15 text-red-300"
+                    headerDeltaPill((gradingMetric === "margin" ? avgDelta! : vsLYSalesPct!), headerCov.lyDayCount, headerCov.dayCount, "last year").cls
                   }`}
                 >
                   LY{" "}
                   {gradingMetric === "margin"
                     ? `${avgDelta! >= 0 ? "+" : ""}${avgDelta!.toFixed(2)} pts`
                     : `${vsLYSalesPct! >= 0 ? "+" : ""}${vsLYSalesPct!.toFixed(2)}%`}
+                  {headerDeltaPill((gradingMetric === "margin" ? avgDelta! : vsLYSalesPct!), headerCov.lyDayCount, headerCov.dayCount, "last year").note}
                 </span>
               )}
             </>
@@ -466,7 +478,16 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: Props) => {
                           : "border-transparent hover:bg-gray-50"
                       }`}
                     >
-                      <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${severityDotClass[tier]}`} />
+                      <span
+                        className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
+                          tier === "ungraded" ? "bg-gray-400" : severityDotClass[tier]
+                        }`}
+                        title={
+                          tier === "ungraded"
+                            ? "Not graded — neither last week nor last year has every day"
+                            : undefined
+                        }
+                      />
                       <span className="text-[13px] font-medium text-content truncate flex-1">
                         {name}
                       </span>
@@ -485,7 +506,13 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: Props) => {
                         </span>
                         <span
                           className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${
-                            hasLW ? pillClass(lwPct, gradingThreshold) : "bg-gray-100 text-gray-400"
+                            hasLW
+                              ? comparisonPillClass(
+                                  lwPct,
+                                  isCompleteCoverage(grade.coverage.lwDayCount, grade.coverage.dayCount),
+                                  gradingThreshold,
+                                )
+                              : "bg-gray-100 text-gray-400"
                           }`}
                           style={{ minWidth: PCT_COL_W }}
                         >
@@ -493,7 +520,13 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: Props) => {
                         </span>
                         <span
                           className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${
-                            hasLY ? pillClass(lyPct, gradingThreshold) : "bg-gray-100 text-gray-400"
+                            hasLY
+                              ? comparisonPillClass(
+                                  lyPct,
+                                  isCompleteCoverage(grade.coverage.lyDayCount, grade.coverage.dayCount),
+                                  gradingThreshold,
+                                )
+                              : "bg-gray-100 text-gray-400"
                           }`}
                           style={{ minWidth: PCT_COL_W }}
                         >

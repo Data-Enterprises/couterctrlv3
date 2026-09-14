@@ -16,11 +16,15 @@ export const CATEGORIES_INFO: {
   glossary: [
     {
       term: "Crit / Watch / OK",
-      desc: "Graded against last year, or last week if this category has no matching week a year ago. Crit means down more than your threshold; Watch means down, but not past it; OK means flat or up. Click a chip to show only those; click it again to clear.",
+      desc: "Graded against last year, but only when last year has every day of the week. If it's missing days, the grade uses last week instead. Crit means down more than your threshold; Watch means down, but not past it; OK means flat or up. Click a chip to show only those; click it again to clear.",
     },
     {
       term: "Ungraded",
-      desc: "Sold this week but has neither a last-week nor a last-year figure to compare against. Not a verdict — there is simply nothing to grade it on yet. The chip only appears when some exist.",
+      desc: "Neither last week nor last year has every day of the week, or neither has a figure at all, so there's no full-week comparison to grade on. Shown with a grey dot and not counted under Crit, Watch or OK. The chip only appears when some exist.",
+    },
+    {
+      term: "Grey percentages",
+      desc: "That comparison is missing days — for example, last year only has 3 of the 7 days. The number is still shown, but it isn't used for the grade, because a partial week can't fairly call a category Crit. The header pills go grey the same way and show how many days matched.",
     },
     {
       term: "Threshold",

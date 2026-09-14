@@ -22,6 +22,12 @@ export type Top10Item = {
   lyNet: number | null;
   lyQty: number | null;
   lyWeight: number | null;
+  /** This year over only the days that matched each comparison — see
+   *  itemGrading's Top10Item. Absent on rows with no TY. */
+  tyNetForLW?: number;
+  tyQtyForLW?: number;
+  tyNetForLY?: number;
+  tyQtyForLY?: number;
   // Present and false only on synthetic rows built for items that sold in
   // LW/LY but not at all this week — lets the item row show "—" for TY
   // instead of a misleading $0. Absent (undefined) means a normal,
@@ -29,7 +35,8 @@ export type Top10Item = {
   hasTY?: boolean;
 };
 
-export type ExportSubDeptItem = Top10Item & { sev: "critical" | "watch" | "healthy" };
+/** `sev` is null when the item isn't graded — neither comparison covers the week. */
+export type ExportSubDeptItem = Top10Item & { sev: "critical" | "watch" | "healthy" | null };
 
 interface SalesLedgerState {
   // Navigation (shared desktop + mobile)

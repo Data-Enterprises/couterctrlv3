@@ -7,6 +7,7 @@ import { addDays, formatCurrency2 } from "../../../../utils";
 import { getHolidayName } from "../../../../utils/holidays";
 import { StarIcon } from "@heroicons/react/20/solid";
 import type { SubDeptMargin } from "../../../../interfaces";
+import { gradeBasis, type Coverage } from "../../../../utils/grading";
 
 const fmtPct = (pct: number) => `${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%`;
 const fmtPts = (pts: number) => `${pts >= 0 ? "+" : ""}${pts.toFixed(2)} pts`;
@@ -24,7 +25,13 @@ const agg = (rows: SubDeptMargin[]) => {
 const byDate = (src: SubDeptMargin[], dateStr: string) =>
   src.filter((m) => m.sale_date.split("T")[0] === dateStr);
 
-const MarginPerfDaySidebar = () => {
+interface Props {
+  /** The store's coverage for the week — the All Week card grades on last
+   *  year only when it covers every day. See utils/grading. */
+  coverage?: Coverage;
+}
+
+const MarginPerfDaySidebar = ({ coverage }: Props) => {
   const ctx = useSubMarginCtx();
   const dispatch = useAppDispatch();
   const actions = useSubMarginActions();
@@ -40,27 +47,39 @@ const MarginPerfDaySidebar = () => {
   );
 
   const weekTw = useMemo(() => agg(ctx.weekOneMargins), [ctx.weekOneMargins]);
-  const weekLy = useMemo(
-    () => agg(ctx.weekOneMarginsLY),
-    [ctx.weekOneMarginsLY],
-  );
-  const weekLw = useMemo(() => agg(ctx.weekTwoMargins), [ctx.weekTwoMargins]);
+
+  // Day-matched: each comparison uses only the TY days that found a
+  // counterpart, and the week grades on last year only when that covers
+  // every day — the same rule as the sub-dept list.
+  const week = useMemo(() => {
+    const day = (m: SubDeptMargin) => m.sale_date.split("T")[0];
+    const lwOf = (d: string) => addDays(d, -7).toISOString().split("T")[0];
+    const lwDates = new Set(ctx.weekTwoMargins.map(day));
+    const lyDates = new Set(ctx.weekOneMarginsLY.map(day));
+    const lwWanted = new Set(tyDates.map(lwOf));
+    const lyWanted = new Set(tyDates.map((d) => getLYDate(d)));
+    const twLw = agg(ctx.weekOneMargins.filter((m) => lwDates.has(lwOf(day(m)))));
+    const twLy = agg(ctx.weekOneMargins.filter((m) => lyDates.has(getLYDate(day(m)))));
+    const lw = agg(ctx.weekTwoMargins.filter((m) => lwWanted.has(day(m))));
+    const ly = agg(ctx.weekOneMarginsLY.filter((m) => lyWanted.has(day(m))));
+    return { twLw, twLy, lw, ly };
+  }, [ctx.weekOneMargins, ctx.weekTwoMargins, ctx.weekOneMarginsLY, tyDates]);
 
   const primaryValue = (a: { sales: number; marginPct: number }) =>
     gradingMetric === "margin" ? `${a.marginPct.toFixed(2)}%` : formatCurrency2(a.sales);
 
-  const weekHasLY = weekLy.sales > 0;
-  const weekHasLW = weekLw.sales > 0;
-  const weekDelta = weekHasLY
-    ? unit === "pts"
-      ? weekTw.marginPct - weekLy.marginPct
-      : ((weekTw.sales - weekLy.sales) / weekLy.sales) * 100
-    : weekHasLW
-      ? unit === "pts"
-        ? weekTw.marginPct - weekLw.marginPct
-        : ((weekTw.sales - weekLw.sales) / weekLw.sales) * 100
-      : null;
-  const weekSuffix = weekHasLY ? "LY" : weekHasLW ? "LW" : null;
+  const cmp = (tw: { sales: number; marginPct: number }, ref: { sales: number; marginPct: number }) =>
+    unit === "pts" ? tw.marginPct - ref.marginPct : ((tw.sales - ref.sales) / ref.sales) * 100;
+  const weekSuffix = gradeBasis(
+    { hasLY: week.ly.sales > 0, hasLW: week.lw.sales > 0 },
+    coverage ?? { dayCount: 0, lwDayCount: 0, lyDayCount: 0 },
+  );
+  const weekDelta =
+    weekSuffix === "LY"
+      ? cmp(week.twLy, week.ly)
+      : weekSuffix === "LW"
+        ? cmp(week.twLw, week.lw)
+        : null;
   const weekIsNeg = weekDelta !== null && weekDelta < 0;
 
   const firstDate = tyDates[0] ?? "";

@@ -5,6 +5,11 @@ import {
   formatPricedUnits,
   pricedUnitLabel,
 } from "./pricedUnits";
+import {
+  isCompleteCoverage,
+  type Coverage,
+  type GradeBasis,
+} from "./grading";
 
 /**
  * Item-level margin maths, shared by Sub Dept Margins and Categories.
@@ -110,6 +115,34 @@ export interface ItemMarginRow {
   lyWeight: number | null;
   lwCogs: number | null;
   lyCogs: number | null;
+  /** Margin points against each period, TY measured over only that period's
+   *  matched days. */
+  lwMarginDelta: number | null;
+  lyMarginDelta: number | null;
+  /** TY units over the days matched to each period, for the qty comparison. */
+  tyQtyForLW: number;
+  tyWeightForLW: number;
+  tyQtyForLY: number;
+  tyWeightForLY: number;
+  /** False when that period is missing days for the store. Its figures still
+   *  show, in grey, but it doesn't grade — see utils/grading. */
+  lwComplete: boolean;
+  lyComplete: boolean;
+  /** The period the margin trend (and the insight) is read against. */
+  marginBasis: GradeBasis;
+}
+
+/**
+ * How to line an item's week up against its prior periods, and the store's
+ * coverage for the week. Each page passes its own matching — Sub Dept Margins
+ * matches holidays, Vendors and Categories use whole weeks.
+ *
+ * Omit it for a single selected day: that is already one matched day.
+ */
+export interface ItemMatch {
+  lwOf: (iso: string) => string;
+  lyOf: (iso: string) => string;
+  coverage: Coverage;
 }
 
 const aggregateByUpc = (margins: MarginSourceRow[]) => {
@@ -159,48 +192,93 @@ export const buildItemRows = (
   tyMargins: MarginSourceRow[],
   lwMargins: MarginSourceRow[],
   lyMargins: MarginSourceRow[],
+  match?: ItemMatch,
 ): ItemMarginRow[] => {
+  const day = (m: MarginSourceRow) => m.sale_date.split("T")[0];
+
+  // Day-matching. Without it an item's whole TY week was divided by whatever
+  // LY returned — for store 590 that's seven days against three, which inverts
+  // a trend as easily as it inflates one. Each comparison now uses only the TY
+  // days that found a counterpart, and only the counterparts of TY days.
+  let tyForLW = tyMargins;
+  let tyForLY = tyMargins;
+  let lwRows = lwMargins;
+  let lyRows = lyMargins;
+  let lwComplete = true;
+  let lyComplete = true;
+  if (match) {
+    const lwDates = new Set(lwMargins.map(day));
+    const lyDates = new Set(lyMargins.map(day));
+    const lwWanted = new Set<string>();
+    const lyWanted = new Set<string>();
+    tyForLW = [];
+    tyForLY = [];
+    for (const m of tyMargins) {
+      const d = day(m);
+      const l = match.lwOf(d);
+      const y = match.lyOf(d);
+      lwWanted.add(l);
+      lyWanted.add(y);
+      if (lwDates.has(l)) tyForLW.push(m);
+      if (lyDates.has(y)) tyForLY.push(m);
+    }
+    lwRows = lwMargins.filter((m) => lwWanted.has(day(m)));
+    lyRows = lyMargins.filter((m) => lyWanted.has(day(m)));
+    lwComplete = isCompleteCoverage(match.coverage.lwDayCount, match.coverage.dayCount);
+    lyComplete = isCompleteCoverage(match.coverage.lyDayCount, match.coverage.dayCount);
+  }
+
   const tyMap = aggregateByUpc(tyMargins);
-  const lwMap = aggregateByUpc(lwMargins);
-  const lyMap = aggregateByUpc(lyMargins);
+  const tyLWMap = aggregateByUpc(tyForLW);
+  const tyLYMap = aggregateByUpc(tyForLY);
+  const lwMap = aggregateByUpc(lwRows);
+  const lyMap = aggregateByUpc(lyRows);
 
   const tyTotal = tyMargins.reduce((s, m) => s + m.total_sales, 0);
-  const lwTotal = lwMargins.reduce((s, m) => s + m.total_sales - m.total_tax, 0);
-  const lyTotal = lyMargins.reduce((s, m) => s + m.total_sales - m.total_tax, 0);
+  const lwTotal = lwRows.reduce((s, m) => s + m.total_sales - m.total_tax, 0);
+  const lyTotal = lyRows.reduce((s, m) => s + m.total_sales - m.total_tax, 0);
+
+  const netOf = (a: { grossSales: number; tax: number }) => a.grossSales - a.tax;
+  const marginOf = (net: number, cogs: number) =>
+    net > 0 ? ((net - cogs) / net) * 100 : 0;
 
   const rows: ItemMarginRow[] = [];
   for (const [upc, ty] of tyMap) {
     if (!upc || upc === "0") continue;
 
-    const netSales = ty.grossSales - ty.tax;
-    const tyMarginPct = netSales > 0 ? ((netSales - ty.cogs) / netSales) * 100 : 0;
+    const netSales = netOf(ty);
+    const tyMarginPct = marginOf(netSales, ty.cogs);
 
     const lw = lwMap.get(upc);
-    const lwNet = lw ? lw.grossSales - lw.tax : 0;
-    const lwMarginPct = lw && lwNet > 0 ? ((lwNet - lw.cogs) / lwNet) * 100 : null;
+    const lwNet = lw ? netOf(lw) : 0;
+    const lwMarginPct = lw && lwNet > 0 ? marginOf(lwNet, lw.cogs) : null;
 
     const ly = lyMap.get(upc);
-    const lyNet = ly ? ly.grossSales - ly.tax : 0;
-    const lyMarginPct = ly && lyNet > 0 ? ((lyNet - ly.cogs) / lyNet) * 100 : null;
+    const lyNet = ly ? netOf(ly) : 0;
+    const lyMarginPct = ly && lyNet > 0 ? marginOf(lyNet, ly.cogs) : null;
 
-    const salesTrendPct =
-      ly && lyNet > 0
-        ? ((netSales - lyNet) / lyNet) * 100
-        : lw && lwNet > 0
-          ? ((netSales - lwNet) / lwNet) * 100
-          : null;
-    const qtyTrendPct =
-      ly && ly.qty > 0
-        ? ((ty.qty - ly.qty) / ly.qty) * 100
-        : lw && lw.qty > 0
-          ? ((ty.qty - lw.qty) / lw.qty) * 100
-          : null;
-    const marginTrendPct =
-      lyMarginPct !== null
-        ? tyMarginPct - lyMarginPct
-        : lwMarginPct !== null
-          ? tyMarginPct - lwMarginPct
-          : null;
+    const tLW = tyLWMap.get(upc);
+    const tLY = tyLYMap.get(upc);
+    const netForLW = tLW ? netOf(tLW) : 0;
+    const netForLY = tLY ? netOf(tLY) : 0;
+    const qtyForLW = tLW?.qty ?? 0;
+    const qtyForLY = tLY?.qty ?? 0;
+    const cogsForLW = tLW?.cogs ?? 0;
+    const cogsForLY = tLY?.cogs ?? 0;
+
+    const lwSalesPct = lw && lwNet > 0 ? ((netForLW - lwNet) / lwNet) * 100 : null;
+    const lySalesPct = ly && lyNet > 0 ? ((netForLY - lyNet) / lyNet) * 100 : null;
+    const lwQtyPct = lw && lw.qty > 0 ? ((qtyForLW - lw.qty) / lw.qty) * 100 : null;
+    const lyQtyPct = ly && ly.qty > 0 ? ((qtyForLY - ly.qty) / ly.qty) * 100 : null;
+    const lwMarginDelta =
+      lwMarginPct !== null ? marginOf(netForLW, cogsForLW) - lwMarginPct : null;
+    const lyMarginDelta =
+      lyMarginPct !== null ? marginOf(netForLY, cogsForLY) - lyMarginPct : null;
+
+    // Grade on last year only when it covers the whole week, else last week
+    // when that does, else not at all.
+    const pick = (lyV: number | null, lwV: number | null) =>
+      lyComplete && lyV !== null ? lyV : lwComplete && lwV !== null ? lwV : null;
 
     rows.push({
       productCode: upc,
@@ -220,17 +298,15 @@ export const buildItemRows = (
       lyContributionPct: ly && lyTotal > 0 ? (lyNet / lyTotal) * 100 : null,
       hasLW: !!lw,
       hasLY: !!ly,
-      salesTrendPct,
-      qtyTrendPct,
-      marginTrendPct,
-      lwSalesPct:
-        lw && lwNet > 0 ? ((netSales - lwNet) / lwNet) * 100 : null,
-      lySalesPct:
-        ly && lyNet > 0 ? ((netSales - lyNet) / lyNet) * 100 : null,
-      lwQtyPct: lw && lw.qty > 0 ? ((ty.qty - lw.qty) / lw.qty) * 100 : null,
-      lyQtyPct: ly && ly.qty > 0 ? ((ty.qty - ly.qty) / ly.qty) * 100 : null,
-      lwCogsPct: lw && lw.cogs > 0 ? ((ty.cogs - lw.cogs) / lw.cogs) * 100 : null,
-      lyCogsPct: ly && ly.cogs > 0 ? ((ty.cogs - ly.cogs) / ly.cogs) * 100 : null,
+      salesTrendPct: pick(lySalesPct, lwSalesPct),
+      qtyTrendPct: pick(lyQtyPct, lwQtyPct),
+      marginTrendPct: pick(lyMarginDelta, lwMarginDelta),
+      lwSalesPct,
+      lySalesPct,
+      lwQtyPct,
+      lyQtyPct,
+      lwCogsPct: lw && lw.cogs > 0 ? ((cogsForLW - lw.cogs) / lw.cogs) * 100 : null,
+      lyCogsPct: ly && ly.cogs > 0 ? ((cogsForLY - ly.cogs) / ly.cogs) * 100 : null,
       lwGrossSales: lw ? lw.grossSales : null,
       lyGrossSales: ly ? ly.grossSales : null,
       lwNetSales: lw ? lwNet : null,
@@ -241,6 +317,20 @@ export const buildItemRows = (
       lyWeight: ly ? ly.weight : null,
       lwCogs: lw ? lw.cogs : null,
       lyCogs: ly ? ly.cogs : null,
+      lwMarginDelta,
+      lyMarginDelta,
+      tyQtyForLW: qtyForLW,
+      tyWeightForLW: tLW?.weight ?? 0,
+      tyQtyForLY: qtyForLY,
+      tyWeightForLY: tLY?.weight ?? 0,
+      lwComplete,
+      lyComplete,
+      marginBasis:
+        lyComplete && lyMarginPct !== null
+          ? "LY"
+          : lwComplete && lwMarginPct !== null
+            ? "LW"
+            : null,
     });
   }
 
@@ -265,11 +355,7 @@ export const gradedDelta = (
     ? row.salesTrendPct
     : gradingMetric === "qty"
       ? row.qtyTrendPct
-      : row.lyMarginPct !== null
-        ? row.tyMarginPct - row.lyMarginPct
-        : row.lwMarginPct !== null
-          ? row.tyMarginPct - row.lwMarginPct
-          : null;
+      : row.marginTrendPct;
 
 /** Grades on whichever metric the page's Margin/Sales toggle selects, so
  *  flipping that toggle re-grades the item list and not just the parent rows. */
@@ -409,11 +495,13 @@ export const buildInsight = (
   threshold: number,
   gradingMetric: ItemGradingMetric,
 ): { headline: string; detail: string; sev: GradedSeverity } | null => {
-  const hasLY = item.lyMarginPct !== null;
-  const basisMarginPct = hasLY ? item.lyMarginPct : item.lwMarginPct;
-  if (basisMarginPct === null) return null;
-  const basisLabel = hasLY ? "LY" : "LW";
-  const marginDelta = Math.round((item.tyMarginPct - basisMarginPct) * 10) / 10;
+  // The same basis the item grades on: last year only when it covers the week.
+  if (item.marginBasis === null) return null;
+  const hasLY = item.marginBasis === "LY";
+  const basisLabel = item.marginBasis;
+  const basisDelta = hasLY ? item.lyMarginDelta : item.lwMarginDelta;
+  if (basisDelta === null) return null;
+  const marginDelta = Math.round(basisDelta * 10) / 10;
   const salesDelta =
     item.salesTrendPct !== null ? Math.round(item.salesTrendPct * 10) / 10 : null;
   const qtyDelta =
@@ -644,15 +732,16 @@ export const getRowMetric = (item: ItemMarginRow, key: RowMetricKey) => {
       //
       // Deliberately NOT `lwQtyPct`/`lyQtyPct`. Those still grade and still
       // drive the narrative on rings; only the figure on screen moves here.
-      const ty = pricedUnits(item.qty, item.weight);
+      const tyLW = pricedUnits(item.tyQtyForLW, item.tyWeightForLW);
+      const tyLY = pricedUnits(item.tyQtyForLY, item.tyWeightForLY);
       const lw = item.lwQty === null ? null : pricedUnits(item.lwQty, item.lwWeight);
       const ly = item.lyQty === null ? null : pricedUnits(item.lyQty, item.lyWeight);
-      const pct = (base: number | null) =>
+      const pct = (ty: number, base: number | null) =>
         base !== null && base > 0 ? ((ty - base) / base) * 100 : null;
       return {
         tyDisplay: formatPricedUnits(item.qty, item.weight),
-        lwColorPct: pct(lw),
-        lyColorPct: pct(ly),
+        lwColorPct: pct(tyLW, lw),
+        lyColorPct: pct(tyLY, ly),
         lwDisplay:
           item.lwQty !== null
             ? formatPricedUnits(item.lwQty, item.lwWeight)
@@ -674,8 +763,8 @@ export const getRowMetric = (item: ItemMarginRow, key: RowMetricKey) => {
     case "margin":
       return {
         tyDisplay: `${item.tyMarginPct.toFixed(2)}%`,
-        lwColorPct: ptsDelta(item.tyMarginPct, item.lwMarginPct),
-        lyColorPct: ptsDelta(item.tyMarginPct, item.lyMarginPct),
+        lwColorPct: item.lwMarginDelta,
+        lyColorPct: item.lyMarginDelta,
         lwDisplay:
           item.lwMarginPct !== null ? `${item.lwMarginPct.toFixed(2)}%` : null,
         lyDisplay:

@@ -43,7 +43,7 @@ import {
   ChevronUpIcon,
 } from "@heroicons/react/20/solid";
 import type { Severity } from "./LedgerRow";
-import { aggregateByCode, itemSeverity } from "./itemGrading";
+import { aggregateByCode, itemSeverity, matchItemRows } from "./itemGrading";
 import type { SubDeptMargin } from "../../../interfaces";
 import UpcContextMenu from "../../../components/UpcContextMenu";
 import {
@@ -428,6 +428,7 @@ const PopupSubDeptList = ({
         const tyMap = aggregateByCode(tyItems);
         const lwMap = aggregateByCode(lwItems);
         const lyMap = aggregateByCode(lyItems);
+        const { tyForLW, tyForLY } = matchItemRows(tyItems, lwItems, lyItems);
 
         const sorted = [...tyMap.entries()].sort((a, b) => b[1].qty - a[1].qty);
 
@@ -449,6 +450,10 @@ const PopupSubDeptList = ({
                 lyNet: ly?.net ?? null,
                 lyQty: ly?.qty ?? null,
                 lyWeight: ly?.weight ?? null,
+                tyNetForLW: tyForLW.get(code)?.net ?? 0,
+                tyQtyForLW: tyForLW.get(code)?.qty ?? 0,
+                tyNetForLY: tyForLY.get(code)?.net ?? 0,
+                tyQtyForLY: tyForLY.get(code)?.qty ?? 0,
               };
             }),
           ),
@@ -744,9 +749,9 @@ const PopupSubDeptList = ({
     () =>
       baseItems.map((item) => ({
         ...item,
-        sev: itemSeverity(item, itemThreshold, gradingMetric),
+        sev: itemSeverity(item, itemThreshold, gradingMetric, deptCoverage),
       })),
-    [baseItems, itemThreshold, gradingMetric],
+    [baseItems, itemThreshold, gradingMetric, deptCoverage],
   );
 
   useEffect(() => {

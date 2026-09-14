@@ -8,6 +8,7 @@ import {
 } from "../../../features/salesLedgerSlice";
 import { formatCurrencyCompact, formatBigNumber } from "../../../utils";
 import { formatPct } from "./tierColumnUtils";
+import { headerDeltaPill } from "../../../utils/severity";
 import {
   MagnifyingGlassIcon,
 } from "@heroicons/react/20/solid";
@@ -73,20 +74,8 @@ const LedgerHeader = ({
    * the pill drops its red/green fill and says what it covers instead. Green
    * and red are for verdicts.
    */
-  const pill = (pct: number, matched: number) => {
-    const partial = matched < dayCount;
-    return {
-      partial,
-      cls: partial
-        ? "bg-custom-white/10 text-custom-white/85"
-        : pct >= 0
-          ? "bg-emerald-300/15 text-emerald-300"
-          : "bg-red-300/15 text-red-300",
-      note: partial ? ` · ${matched}/${dayCount} days` : "",
-    };
-  };
-  const lwPill = pill(vsLWPct, lwDayCount);
-  const lyPill = pill(vsLYPct, lyDayCount);
+  const lwPill = headerDeltaPill(vsLWPct, lwDayCount, dayCount, "last week");
+  const lyPill = headerDeltaPill(vsLYPct, lyDayCount, dayCount, "last year");
 
 
   return (
@@ -106,11 +95,7 @@ const LedgerHeader = ({
         </span>
         {hasLW && (
           <span
-            title={
-              lwPill.partial
-                ? `Only ${lwDayCount} of ${dayCount} store-days have a matching day last week. The percentage covers those days alone.`
-                : undefined
-            }
+            title={lwPill.title}
             className={`text-[12px] font-semibold px-2 py-0.5 rounded-full ${lwPill.cls}`}
           >
             LW {formatPct(vsLWPct)}
@@ -119,11 +104,7 @@ const LedgerHeader = ({
         )}
         {hasLY && (
           <span
-            title={
-              lyPill.partial
-                ? `Only ${lyDayCount} of ${dayCount} store-days have a matching day last year. The percentage covers those days alone.`
-                : undefined
-            }
+            title={lyPill.title}
             className={`text-[12px] font-semibold px-2 py-0.5 rounded-full ${lyPill.cls}`}
           >
             LY {formatPct(vsLYPct)}

@@ -1,4 +1,5 @@
 import { sameWeekDayLastYear } from "../../utils";
+import { coverageOf, gradeBasis, type Coverage } from "../../utils/grading";
 import type { MarginTier, SubDeptGrade, GradingMetric } from "../../features/subMarginSlice";
 import type { SubDeptMargin } from "../../interfaces";
 
@@ -13,17 +14,44 @@ export const setDates = (date: Date, days: number = 0) => {
 // (see sameWeekDayLastYear) — use this instead of setDates(date, 364).
 export const getLYDate = (date: string): string => sameWeekDayLastYear(date).date;
 
-/** The figure a sub department is graded and ranked on: last year when we have
- * it, else last week. Shared by getTier and the list sort so ordering can
- * never drift from grading. */
+/** The figure a sub department is graded and ranked on: last year when it
+ * covers every day of the week, else last week when that does, else nothing.
+ * Shared by getTier and the list sort so ordering can never drift from
+ * grading. Null means ungraded. */
+export const gradeBasisOf = (grade: SubDeptGrade) =>
+  gradeBasis(
+    {
+      hasLY: grade.lySales > 0 || grade.lyMarginPct > 0,
+      hasLW: grade.lwSales > 0 || grade.lwMarginPct > 0,
+    },
+    grade.coverage,
+  );
+
 export const getGradeDelta = (
   grade: SubDeptGrade,
   metric: GradingMetric,
-): number => {
-  const hasLY = grade.lySales > 0 || grade.lyMarginPct > 0;
+): number | null => {
+  const basis = gradeBasisOf(grade);
   const vsLY = metric === "margin" ? grade.ptsDelta : grade.vsLYSalesPct;
   const vsLW = metric === "margin" ? grade.lwPtsDelta : grade.vsLWSalesPct;
-  return hasLY ? vsLY : vsLW;
+  return basis === "LY" ? vsLY : basis === "LW" ? vsLW : null;
+};
+
+/** The store's coverage for the week, from the dates each period has any row
+ *  for — never one department's rows, where a slow day is a zero, not a gap. */
+export const storeCoverage = (
+  ty: { sale_date: string }[],
+  lw: { sale_date: string }[],
+  ly: { sale_date: string }[],
+): Coverage => {
+  const day = (r: { sale_date: string }) => r.sale_date.split("T")[0];
+  const tw = new Set(ty.map(day));
+  return coverageOf(
+    tw,
+    { tw, lw: new Set(lw.map(day)), ly: new Set(ly.map(day)) },
+    (d) => setDates(new Date(`${d}T12:00:00`), 7),
+    (d) => getLYDate(d),
+  );
 };
 
 /**
@@ -71,6 +99,7 @@ export const buildDayComparisons = (
 
 export const getTier = (grade: SubDeptGrade, threshold: number, metric: GradingMetric): MarginTier => {
   const delta = getGradeDelta(grade, metric);
+  if (delta === null) return "ungraded";
   if (delta >= 0) return "healthy";
   if (delta < -threshold) return "critical";
   return "watch";

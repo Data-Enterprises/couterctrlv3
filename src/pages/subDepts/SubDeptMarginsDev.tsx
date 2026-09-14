@@ -12,9 +12,9 @@ import {
   getLYDate,
   computeMarginDayMatched,
   computeStoreDayMatched,
-  aggSubDeptSales,
-  type SubDeptSalesTotals,
+  storeCoverage,
 } from ".";
+import type { Coverage } from "../../utils/grading";
 import type {
   JsonError,
   SubDept,
@@ -155,8 +155,6 @@ const groupBySubDept = (rows: SubDeptMargin[]) => {
   return by;
 };
 
-const EMPTY_SALES: SubDeptSalesTotals = { net: 0, qty: 0 };
-
 /**
  * The three item reads for one search, unscoped.
  *
@@ -195,18 +193,11 @@ const deriveSubDepts = (
     }, [])
     .sort((a, b) => a.id - b.id);
 
-const pctChange = (ty: number, ref: number) =>
-  ref > 0 ? ((ty - ref) / ref) * 100 : 0;
-
 const computeSubDeptGrade = (
   tyMargins: SubDeptMargin[],
   lyMargins: SubDeptMargin[],
   lwMargins: SubDeptMargin[],
-  sales: {
-    ty: SubDeptSalesTotals;
-    lw: SubDeptSalesTotals;
-    ly: SubDeptSalesTotals;
-  },
+  coverage: Coverage,
 ): SubDeptGrade => {
   // Each metric reads the endpoint that's authoritative for it — getTier and
   // the panels already branch on gradingMetric, so this lands in the right
@@ -221,6 +212,11 @@ const computeSubDeptGrade = (
   //                   day-matched (computeMarginDayMatched) since there's no
   //                   Sales figure it has to line up with.
   const m = computeMarginDayMatched(tyMargins, lwMargins, lyMargins);
+  // Sales figures day-matched too, exactly as the store header above them is.
+  // They used to be whole-range sums — full week against whatever last year
+  // returned — which is the comparison that flipped Wic Grocery from -42% to
+  // +49% on the Sales page.
+  const sales = computeStoreDayMatched(tyMargins, lwMargins, lyMargins);
 
   const seen = new Set<string>();
   let noCostCount = 0;
@@ -238,14 +234,15 @@ const computeSubDeptGrade = (
     lwMarginPct: m.lwMarginPct,
     lwPtsDelta: m.lwPtsDelta,
     noCostCount,
-    tySales: sales.ty.net,
-    lySales: sales.ly.net,
-    lwSales: sales.lw.net,
-    vsLYSalesPct: pctChange(sales.ty.net, sales.ly.net),
-    vsLWSalesPct: pctChange(sales.ty.net, sales.lw.net),
+    tySales: sales.tySales,
+    lySales: sales.lySales,
+    lwSales: sales.lwSales,
+    vsLYSalesPct: sales.vsLYSalesPct,
+    vsLWSalesPct: sales.vsLWSalesPct,
     tyWeekOneMargins: tyMargins,
     lyWeekOneMargins: lyMargins,
     lwWeekOneMargins: lwMargins,
+    coverage,
   };
 };
 
@@ -351,9 +348,8 @@ const SubDeptMarginsDev = () => {
     // built from — so the header and the list below it cannot disagree.
     dispatch(setStoreSalesTotals(computeStoreDayMatched(ty, lw, ly)));
 
-    const salesTy = aggSubDeptSales(ty);
-    const salesLw = aggSubDeptSales(lw);
-    const salesLy = aggSubDeptSales(ly);
+    // Once for the store; every department grades against the same coverage.
+    const coverage = storeCoverage(ty, lw, ly);
 
     const tyBy = groupBySubDept(ty);
     const lwBy = groupBySubDept(lw);
@@ -370,11 +366,7 @@ const SubDeptMarginsDev = () => {
             tyBy.get(sd.id) ?? [],
             lyBy.get(sd.id) ?? [],
             lwBy.get(sd.id) ?? [],
-            {
-              ty: salesTy[sd.id] ?? EMPTY_SALES,
-              lw: salesLw[sd.id] ?? EMPTY_SALES,
-              ly: salesLy[sd.id] ?? EMPTY_SALES,
-            },
+            coverage,
           ),
         }),
       );

@@ -1,6 +1,17 @@
 import { addDays, sameWeekDayLastYear } from "../../../utils";
 import { rowsToCsv } from "../../../utils/csvExport";
-import { gradeSeverity, pillClass } from "../../../utils/severity";
+import { gradeSeverity } from "../../../utils/severity";
+import {
+  gradeBasis as sharedGradeBasis,
+  isCompleteCoverage,
+  type Coverage,
+  type GradeBasis,
+} from "../../../utils/grading";
+export { isCompleteCoverage, type Coverage, type GradeBasis };
+export {
+  PARTIAL_PILL_CLASS,
+  comparisonPillClass,
+} from "../../../utils/severity";
 import { getHolidayName, getHolidayLastYear } from "../../../utils/holidays";
 import type { HolidayName } from "../../../utils/holidays";
 import type {
@@ -39,31 +50,11 @@ export {
 // neither comparison complete isn't known to be fine, and counting it under OK
 // would say it is.
 
-/** Which comparison decided a row's severity. Null means neither covered the
- *  whole week, so the row carries no severity. */
-export type GradeBasis = "LY" | "LW" | null;
-
-export interface Coverage {
-  /** Days the current week has data for. */
-  dayCount: number;
-  /** Of those, how many found a matching day last week / last year. */
-  lwDayCount: number;
-  lyDayCount: number;
-}
-
-/** Every day matched. A week with no days is not complete — there is nothing
- *  to be complete about. */
-export const isCompleteCoverage = (matched: number, days: number) =>
-  days > 0 && matched >= days;
-
+/** The whole-week rule lives in utils/grading.ts so every Performance page grades
+ *  the same way; this takes Sales' rows, which carry coverage inline. */
 export const gradeBasis = (
   r: { hasLY: boolean; hasLW: boolean } & Coverage,
-): GradeBasis =>
-  r.hasLY && isCompleteCoverage(r.lyDayCount, r.dayCount)
-    ? "LY"
-    : r.hasLW && isCompleteCoverage(r.lwDayCount, r.dayCount)
-      ? "LW"
-      : null;
+): GradeBasis => sharedGradeBasis(r, r);
 
 /** Severity on the chosen basis, or null when there is no basis. */
 export const gradeOnBasis = (
@@ -81,24 +72,6 @@ export const gradeOnBasis = (
 /** The percentage the basis points at — what a list sorts graded rows by. */
 export const basisPct = (basis: GradeBasis, lwPct: number, lyPct: number) =>
   basis === "LY" ? lyPct : basis === "LW" ? lwPct : null;
-
-/**
- * The grey a comparison takes when it's missing days.
- *
- * The VS LAST YEAR tile's grey, used everywhere a partial comparison shows —
- * store rows, sub-dept and hourly rows, insight tiles, mobile. Deliberately
- * darker than pillClass(null), which means "no comparison at all": a partial
- * figure is still a real number worth reading, it just doesn't grade.
- */
-export const PARTIAL_PILL_CLASS = "bg-gray-200 text-content";
-
-/** Severity colours when the comparison covers every day, the partial grey
- *  when it doesn't. */
-export const comparisonPillClass = (
-  pct: number,
-  complete: boolean,
-  threshold: number,
-) => (complete ? pillClass(pct, threshold) : PARTIAL_PILL_CLASS);
 
 /** Critical, watch, healthy, then ungraded last. */
 export const severityRank = (s: Severity | null) =>

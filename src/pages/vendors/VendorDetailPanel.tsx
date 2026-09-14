@@ -13,7 +13,7 @@ import {
 } from "../../hooks";
 import { formatCurrency2 } from "../../utils";
 import {
-  pillClass,
+  comparisonPillClass,
   formatPct,
   severityHeaderBgClass,
   type Severity,
@@ -23,6 +23,8 @@ import {
   LY_OFFSET,
   shiftIso,
   pctChange,
+  gradeBasis,
+  isCompleteCoverage,
   type Tier,
 } from "../../utils/grading";
 import { fmtDayLabel, fmtRangeLabel } from "../../utils/dateLabels";
@@ -52,12 +54,18 @@ const Kpi = ({
   value,
   pct,
   threshold,
+  complete = true,
+  coverageNote,
 }: {
   title: string;
   dateLabel: string;
   value: string;
   pct?: number | null;
   threshold: number;
+  /** False when the comparison is missing days: grey, and it doesn't grade. */
+  complete?: boolean;
+  /** "3 of 7 days matched", shown under a partial comparison. */
+  coverageNote?: string;
 }) => (
   <div className="px-4 pt-2.5 pb-2 text-center">
     <div className="text-[10px] font-bold uppercase tracking-wide text-content">
@@ -71,12 +79,15 @@ const Kpi = ({
         <span className="text-[14px] font-bold text-content">{value}</span>
         {pct !== null && (
           <span
-            className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${pillClass(pct, threshold)}`}
+            className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${comparisonPillClass(pct, complete, threshold)}`}
           >
             {formatPct(pct)}
           </span>
         )}
       </div>
+    )}
+    {coverageNote && (
+      <div className="text-[10px] font-semibold text-content pt-0.5">{coverageNote}</div>
     )}
   </div>
 );
@@ -179,6 +190,10 @@ const VendorDetailPanel = () => {
   }
 
   const tier = getVendorTier(row, activeThreshold, metric);
+  const cov = row.coverage;
+  const lwComplete = isCompleteCoverage(cov.lwDayCount, cov.dayCount);
+  const lyComplete = isCompleteCoverage(cov.lyDayCount, cov.dayCount);
+  const basis = gradeBasis(row, cov);
 
   /* ── KPI values: whole week, or the selected day ───────────────────────── */
 
@@ -350,6 +365,12 @@ const VendorDetailPanel = () => {
           value={lwValue === null ? "—" : fmt(lwValue)}
           pct={lwPct}
           threshold={activeThreshold}
+          complete={!!activeDay || lwComplete}
+          coverageNote={
+            !activeDay && row.hasLW && !lwComplete
+              ? `${cov.lwDayCount} of ${cov.dayCount} days matched`
+              : undefined
+          }
         />
         <Kpi
           title="vs Last Year"
@@ -357,6 +378,12 @@ const VendorDetailPanel = () => {
           value={lyValue === null ? "—" : fmt(lyValue)}
           pct={lyPct}
           threshold={activeThreshold}
+          complete={!!activeDay || lyComplete}
+          coverageNote={
+            !activeDay && row.hasLY && !lyComplete
+              ? `${cov.lyDayCount} of ${cov.dayCount} days matched`
+              : undefined
+          }
         />
       </div>
 
@@ -364,10 +391,8 @@ const VendorDetailPanel = () => {
       <DayCardStrip
         days={dayCards}
         weekValue={fmt(valueOf(row.twNet, row.twCogs))}
-        weekDelta={weekLyPct ?? weekLwPct}
-        weekDeltaBasis={
-          weekLyPct !== null ? "LY" : weekLwPct !== null ? "LW" : undefined
-        }
+        weekDelta={basis === "LY" ? weekLyPct : basis === "LW" ? weekLwPct : null}
+        weekDeltaBasis={basis ?? undefined}
         selected={selectedDay ?? ""}
         onSelect={(iso) => dispatch(setSelectedDay(iso === "" ? null : iso))}
         higherIsWorse={false}
@@ -377,6 +402,7 @@ const VendorDetailPanel = () => {
           so a one-tab strip above it would be decoration. Sub-department
           breakdowns live on Sub Dept Margins, not repeated per vendor. */}
       <ItemMarginsTable
+        coverage={row.coverage}
         items={vendorRaw}
         gradingMetric={isMargin ? "margin" : "sales"}
         threshold={itemThreshold}
