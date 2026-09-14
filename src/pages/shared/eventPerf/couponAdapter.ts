@@ -4,6 +4,7 @@ import type { CouponItem, CouponsResponse, Store } from "../../../interfaces";
 import { resolveStoreName } from "../../../utils";
 import type { EventRow } from "../../../features/eventPerfSlice";
 import type { ReceiptLine } from "./receiptTypes";
+import { clockOf } from "./eventPerfData";
 
 interface Scope {
   url: string;
@@ -60,8 +61,13 @@ const toRows = (items: CouponItem[], scope: Scope): EventRow[] =>
     cashier_number: c.cashier_number,
     cashier_name: c.cashier_name,
     terminal: c.terminal ?? "",
-    sale_id: String(c.sale_id),
+    sale_id: c.sale_id == null ? "" : String(c.sale_id),
     day: c.sale_date.split("T")[0],
+    // See lpAdapter — a start time is read if the payload carries one.
+    time: clockOf(
+      c.sale_date,
+      (c as { sale_start_time?: unknown }).sale_start_time,
+    ),
     amount: c.coupon_amount,
     count: 1,
   }));
@@ -91,9 +97,10 @@ const load = async (
  * The week, and the fourteen days before it halved into a weekly equivalent.
  *
  * Halving happens here rather than in the shell because it is a fact about
- * this page's window, not about comparisons in general — LP's baseline already
- * arrives weekly-equivalent, and dividing it too would understate every bar on
- * that page by half.
+ * this page's window, not about comparisons in general. LP reads the same
+ * fourteen days and halves in its own adapter. Transactions are counted off
+ * the halved `count` once per sale — see transactionsIn — so a four-line sale
+ * in the fortnight is half a transaction, not two.
  */
 export const fetchCouponEvents = async (
   scope: Scope,
