@@ -70,6 +70,10 @@ interface SalesPerfState {
   /** The store key currently being fetched, so the list can say so without a
    *  second boolean going stale. */
   storeLoading: string | null;
+  /** Bumped by every new search. A store fetch started under an older search
+   *  carries the old number and is dropped when it lands — its rows belong to
+   *  the previous date range. */
+  storeCacheGen: number;
 
   dimension: PerfDimension;
 
@@ -96,6 +100,7 @@ const initialState: SalesPerfState = {
   groupData: emptyBundle(),
   storeData: {},
   storeLoading: null,
+  storeCacheGen: 0,
   dimension: "stores",
   selectedDay: null,
   selectedStore: null,
@@ -127,6 +132,7 @@ const salesPerfSlice = createSlice({
     clearPerfStoreCache: (state) => {
       state.storeData = {};
       state.storeLoading = null;
+      state.storeCacheGen += 1;
       state.selectedStore = null;
     },
     setPerfStoreLoading: (state, action: PayloadAction<string | null>) => {
@@ -134,10 +140,16 @@ const salesPerfSlice = createSlice({
     },
     cachePerfStoreData: (
       state,
-      action: PayloadAction<{ key: string; bundle: PerfBundle }>,
+      action: PayloadAction<{ key: string; bundle: PerfBundle; gen: number }>,
     ) => {
+      if (action.payload.gen !== state.storeCacheGen) return;
       state.storeData[action.payload.key] = action.payload.bundle;
       if (state.storeLoading === action.payload.key) state.storeLoading = null;
+    },
+    /** A store fetch failed. Clears the loading flag only if it is still this
+     *  store's, so the next tap on it can try again. */
+    failPerfStoreData: (state, action: PayloadAction<string>) => {
+      if (state.storeLoading === action.payload) state.storeLoading = null;
     },
     setPerfDimension: (state, action: PayloadAction<PerfDimension>) => {
       state.dimension = action.payload;
@@ -166,6 +178,7 @@ export const {
   clearPerfStoreCache,
   setPerfStoreLoading,
   cachePerfStoreData,
+  failPerfStoreData,
   setPerfDimension,
   togglePerfDay,
   togglePerfStore,

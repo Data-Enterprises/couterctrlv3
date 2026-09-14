@@ -360,7 +360,9 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
   /** Every active scope, in the order they narrow. Without it a filtered
    *  figure looks like a wrong one. */
   const scopeLabel = [
-    "Margin",
+    // "TY" because the card also shows last year's margin; a bare "Margin"
+    // read as if this year's were missing.
+    "TY margin",
     selectedItem?.product_description,
     groupKey ? perf.selectedGroupLabel : null,
   ]
@@ -578,8 +580,12 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
                 </div>
 
                 {/* Profit dollars, not sales. The percentage above says how
-                    healthy; these say how much it is worth. */}
+                    healthy; these say how much it is worth. Captioned, because
+                    unlabelled they sit right above Sales and read as sales. */}
                 <div className="mt-3">
+                  <div className="mb-1.5 font-mono text-[10px] uppercase tracking-wider text-content/85">
+                    Gross profit (sales − cost)
+                  </div>
                   <PairedBars
                     ty={totals.profit}
                     ly={totals.profitLy}

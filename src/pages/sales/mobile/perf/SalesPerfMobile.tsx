@@ -16,6 +16,7 @@ import type { JsonError } from "../../../../interfaces";
 import {
   cachePerfStoreData,
   clearPerfStoreCache,
+  failPerfStoreData,
   emptyBundle,
   setPerfDimension,
   setPerfGroupData,
@@ -169,23 +170,19 @@ const SalesPerfMobile = () => {
     const row = perf.weekTy.find((r) => storeKeyOf(r) === key);
     if (!row) return;
 
-    let live = true;
+    const gen = perf.storeCacheGen;
     dispatch(setPerfStoreLoading(key));
+    // Always cached under its own key, even if the user has moved on: the rows
+    // are still that store's, and dropping them used to strand the loading
+    // flag — deselect a store before it landed and re-tapping it never fetched
+    // again, so Transactions, Avg basket and Coupons sat at zero. The slice
+    // discards a result from an older search.
     fetchBundle(0, row.storeid, 1)
-      .then((bundle) => {
-        if (live) dispatch(cachePerfStoreData({ key, bundle }));
-      })
+      .then((bundle) => dispatch(cachePerfStoreData({ key, bundle, gen })))
       .catch((err: JsonError) => {
-        if (!live) return;
-        dispatch(setPerfStoreLoading(null));
+        dispatch(failPerfStoreData(key));
         toast.error("Error loading store: " + err.message);
       });
-
-    // Selecting a third store before the second lands must not write the
-    // second's rows into the third's slot.
-    return () => {
-      live = false;
-    };
   }, [perf.selectedStore]);
 
   /** The group bundle, or the selected store's. Never a filter over the group
@@ -377,19 +374,31 @@ const SalesPerfMobile = () => {
               </div>
 
               <div className="mt-3.5 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-gray-100 pt-3">
-                {[
-                  ["Transactions", totals.transactions.toLocaleString("en-US")],
-                  ["Avg basket", formatCurrency2(totals.avgBasket)],
-                  ["Tax", formatCurrency2(totals.tax)],
-                  ["Coupons", formatCurrency2(totals.coupons)],
-                ].map(([k, v]) => (
+                {/* Tax is on the weekly rows already loaded. The other three
+                    come from the store's own fetch, so until it lands they
+                    show a placeholder — not a zero nobody measured. */}
+                {(
+                  [
+                    ["Transactions", totals.transactions.toLocaleString("en-US"), true],
+                    ["Avg basket", formatCurrency2(totals.avgBasket), true],
+                    ["Tax", formatCurrency2(totals.tax), false],
+                    ["Coupons", formatCurrency2(totals.coupons), true],
+                  ] as const
+                ).map(([k, v, fromBundle]) => (
                   <div key={k} className="flex flex-col">
                     <span className="font-mono text-[9.5px] uppercase tracking-wider text-content/85">
                       {k}
                     </span>
-                    <span className="font-display text-[15px] font-bold tabular-nums text-content">
-                      {v}
-                    </span>
+                    {fromBundle && bundleLoading ? (
+                      <span
+                        aria-label="Loading"
+                        className="mt-1 block h-[15px] w-16 animate-pulse rounded bg-gray-200"
+                      />
+                    ) : (
+                      <span className="font-display text-[15px] font-bold tabular-nums text-content">
+                        {v}
+                      </span>
+                    )}
                   </div>
                 ))}
               </div>
@@ -399,7 +408,7 @@ const SalesPerfMobile = () => {
                 circumference — TY plus LY plus the rest — look like a
                 quantity. Rendered even when a channel is zero, because "this
                 store takes no store coupons" is itself worth seeing. */}
-              {totals.coupons > 0 && (
+              {!bundleLoading && totals.coupons > 0 && (
                 <div className="mt-3.5 border-t border-gray-100 pt-3">
                   <div className="flex h-2 overflow-hidden rounded-full bg-bkg">
                     {COUPON_KEYS.map((k) => (
