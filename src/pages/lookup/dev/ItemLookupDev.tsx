@@ -14,6 +14,7 @@ import {
   setCategoryDescription,
   setHistoryMetrics,
   setItemLookupHistory,
+  setItemLookupHistoryAll,
   setPause,
   reQueryUpc,
   setSelectedStore,
@@ -26,7 +27,13 @@ import { setError } from "../../../features/itemScanSlice";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import LookupEntryScreen from "./LookupEntryScreen";
 import LookupResultScreen from "./LookupResultScreen";
-import { buildDayBuckets, computeMargin, computeTrend } from "./lookupMetrics";
+import {
+  buildDayBuckets,
+  computeMargin,
+  computeTrend,
+  itemDescription,
+} from "./lookupMetrics";
+import { isSaleRow } from "../../../utils/saleType";
 
 const ItemLookupDev = () => {
   const dispatch = useAppDispatch();
@@ -40,6 +47,7 @@ const ItemLookupDev = () => {
     description,
     categoryDescription,
     itemLookupHistory,
+    itemLookupHistoryAll,
     totalSales,
     totalQty,
   } = useAppSelector((s) => s.item);
@@ -57,18 +65,22 @@ const ItemLookupDev = () => {
     selectedStoreNumber ? availableStoreNumbers : [],
   );
 
-  // Full unscoped history, so switching locations re-derives without refetching.
+  // Full unscoped history, every line type, so switching locations re-derives
+  // the figures and the sale-type breakdown without refetching.
   const rawHistoryRef = useRef<ItemLookupHistory[]>([]);
 
   // The lookup is by storeid, so its history covers both locations. Every
   // headline figure is derived from those rows, so scoping re-derives all.
+  // Headline figures count Sale rows only; the breakdown counts every type.
   const applyScope = (
-    history: ItemLookupHistory[],
+    allHistory: ItemLookupHistory[],
     storeNumber: string | null,
   ) => {
-    const rows = storeNumber
-      ? scopeToStoreNumber(history, storeNumber)
-      : history;
+    const scoped = storeNumber
+      ? scopeToStoreNumber(allHistory, storeNumber)
+      : allHistory;
+    const rows = scoped.filter(isSaleRow);
+    dispatch(setItemLookupHistoryAll(scoped));
     const totalSales = rows.reduce((acc, h) => acc + h.total_sales, 0);
     const totalQty = rows.reduce((acc, h) => acc + h.qty, 0);
     dispatch(setItemLookupHistory(rows));
@@ -108,14 +120,16 @@ const ItemLookupDev = () => {
       .then((resp) => {
         const j = resp.data;
         if (j.error == 0) {
-          rawHistoryRef.current = j.history;
-          const numbers = storeNumbersIn(j.history);
+          const allHistory: ItemLookupHistory[] = j.history_all ?? j.history;
+          rawHistoryRef.current = allHistory;
+          const numbers = storeNumbersIn(allHistory);
           dispatch(setLookupStoreNumbers(numbers));
           const scope = numbers.length > 1 ? numbers[0] : null;
           dispatch(setLookupSelectedStoreNumber(scope));
-          const scopedResult = applyScope(j.history, scope);
+          const scopedResult = applyScope(allHistory, scope);
+          const name = itemDescription(j.description, j.history);
           dispatch(setProductCode(j.product_code));
-          dispatch(setDescription(j.description));
+          dispatch(setDescription(name));
           dispatch(setCategoryDescription(j.category_description));
           dispatch(setItemsLoaded(true));
 
@@ -127,7 +141,7 @@ const ItemLookupDev = () => {
           dispatch(
             addRecentLookup({
               productCode: j.product_code,
-              description: j.description,
+              description: name,
               marginPct: margin.marginPct,
               qty: scopedResult.totalQty,
               revenue: scopedResult.totalSales,
@@ -184,6 +198,7 @@ const ItemLookupDev = () => {
         onBack={handleBack}
         onSelectRecent={handleSearch}
         margin={computeMargin(itemLookupHistory, totalSales, totalQty)}
+        historyAll={itemLookupHistoryAll}
         buckets={buckets}
         trend={computeTrend(buckets)}
       />

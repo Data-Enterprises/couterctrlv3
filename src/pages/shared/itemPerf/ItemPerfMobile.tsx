@@ -65,7 +65,7 @@ import {
   buildMarginTotals,
   findItem,
   priceRows,
-  profitChangePct,
+  salesChangePct,
   sortMarginRows,
   type MarginRow,
   type PricedRow,
@@ -84,8 +84,8 @@ const fmtChange = (v: number) =>
   `${v > 0 ? "+" : v < 0 ? "\u2212" : ""}${Math.abs(v).toFixed(1)}%`;
 
 const SORTS: SortOption<MarginSort>[] = [
-  { key: "profit", label: "Profit" },
   { key: "sales", label: "Sales" },
+  { key: "profit", label: "Profit" },
   { key: "gpm", label: "GPM" },
   { key: "change", label: "Change vs LY" },
   { key: "name", label: "Name" },
@@ -115,9 +115,10 @@ interface Props {
  * Tapping a department goes to Daily scoped to it — the question after "which
  * department" is always "which item in it".
  *
- * Margin leads throughout: the hero is GPM, the bars carry profit dollars, and
- * each row shows its own percentage. Percent answers how healthy, bars answer
- * how much.
+ * Margin leads throughout: the hero is GPM and each row shows its own
+ * percentage. Every bar on the screen — card, day chart and rows — carries
+ * sales, so no two bars mean different things; profit dollars are printed
+ * beside them. Percent answers how healthy, bars answer how much.
  */
 const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
   const dispatch = useAppDispatch();
@@ -397,7 +398,7 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
   // otherwise a store with no history scales every bar against a zero it did
   // not measure.
   const listMax = shown.reduce(
-    (m, r) => Math.max(m, r.profit, perf.lyMissing ? 0 : r.profitLy),
+    (m, r) => Math.max(m, r.sales, perf.lyMissing ? 0 : r.salesLy),
     0,
   );
   const selectedItem = findItem(perf.selectedItemCode, ty, ly);
@@ -441,9 +442,8 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
   /** Every active scope, in the order they narrow. Without it a filtered
    *  figure looks like a wrong one. */
   const scopeLabel = [
-    // "TY" because the card also shows last year's margin; a bare "Margin"
-    // read as if this year's were missing.
-    "TY margin",
+    // Plain "Margin": the card labels its TY and LY figures itself.
+    "Margin",
     selectedItem?.product_description,
     groupKey ? perf.selectedGroupLabel : null,
   ]
@@ -679,48 +679,71 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
               />
 
               <div className="px-4 pb-4 pt-2">
-                <div className="mt-1.5 font-display text-[31px] font-extrabold leading-none tracking-tight tabular-nums text-content">
-                  {pct(totals.gpm)}
+                {/* Margin this year and last, side by side. This year leads;
+                    last year sits beside it smaller, as the reference. */}
+                <div className="mt-1.5 flex items-end gap-5">
+                  <div className="flex flex-col">
+                    <span className="mb-1 font-mono text-[9.5px] uppercase tracking-wider text-content/85">
+                      TY margin
+                    </span>
+                    <span className="font-display text-[31px] font-extrabold leading-none tracking-tight tabular-nums text-content">
+                      {pct(totals.gpm)}
+                    </span>
+                  </div>
+                  <div className="flex flex-col pb-0.5">
+                    <span className="mb-1 font-mono text-[9.5px] uppercase tracking-wider text-content/85">
+                      LY margin
+                    </span>
+                    {/* No record isn't a 0% margin. */}
+                    <span className="font-display text-[20px] font-bold leading-none tracking-tight tabular-nums text-content/85">
+                      {perf.lyMissing ? "no history" : pct(totals.gpmLy)}
+                    </span>
+                  </div>
                 </div>
 
-                {/* Profit dollars, not sales. The percentage above says how
-                    healthy; these say how much it is worth. Captioned, because
-                    unlabelled they sit right above Sales and read as sales. */}
+                {/* Sales this year against last, like every other bar on the
+                    screen. Profit dollars live in the tiles below. */}
                 <div className="mt-3">
-                  <div className="mb-1.5 font-mono text-[10px] uppercase tracking-wider text-content/85">
-                    Gross profit (sales − cost)
+                  <div className="mb-1.5 flex items-baseline justify-between font-mono text-[10px] uppercase tracking-wider text-content/85">
+                    <span>Sales</span>
+                    {/* The count the grid below used to carry; it describes
+                        what was sold, so it sits with the sales. */}
+                    <span className="tabular-nums">
+                      {selectedItem
+                        ? `${totals.units.toLocaleString("en-US")} qty`
+                        : `${totals.itemCount.toLocaleString("en-US")} ${
+                            totals.itemCount === 1 ? "item" : "items"
+                          }`}
+                    </span>
                   </div>
                   <PairedBars
-                    ty={totals.profit}
-                    ly={totals.profitLy}
-                    max={Math.max(totals.profit, totals.profitLy)}
+                    ty={totals.sales}
+                    ly={totals.salesLy}
+                    max={Math.max(totals.sales, totals.salesLy)}
                     compact
                     lyUnavailable={perf.lyMissing}
                   />
                 </div>
 
                 <div className="mt-3.5 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-gray-100 pt-3">
+                  {/* Columns are the figure, rows are the year: each LY tile
+                      sits directly under the TY one it compares with. */}
                   {[
-                    // "TY" because the tile beside them is last year's.
-                    ["TY sales", formatCurrency2(totals.sales)],
-                    ["TY cost", formatCurrency2(totals.cogs)],
-                    [
-                      "LY margin",
-                      perf.lyMissing ? "no history" : pct(totals.gpmLy),
-                    ],
-                    [
-                      selectedItem ? "TY qty" : "Items",
-                      selectedItem
-                        ? totals.units.toLocaleString("en-US")
-                        : totals.itemCount.toLocaleString("en-US"),
-                    ],
-                  ].map(([k, v]) => (
+                    { k: "TY gross profit", v: totals.profit, ly: false },
+                    { k: "TY cost", v: totals.cogs, ly: false },
+                    { k: "LY gross profit", v: totals.profitLy, ly: true },
+                    { k: "LY cost", v: totals.cogsLy, ly: true },
+                  ].map(({ k, v, ly }) => (
                     <div key={k} className="flex flex-col">
                       <span className="font-mono text-[9.5px] uppercase tracking-wider text-content/85">
                         {k}
                       </span>
-                      <span className="font-display text-[15px] font-bold tabular-nums text-content">
-                        {v}
+                      <span
+                        className={`font-display text-[15px] font-bold tabular-nums ${
+                          ly ? "text-content/85" : "text-content"
+                        }`}
+                      >
+                        {ly && perf.lyMissing ? "no history" : formatCurrency2(v)}
                       </span>
                     </div>
                   ))}
@@ -760,7 +783,7 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
               <p className="px-1 pt-1.5 text-[12px] text-content/85">
                 {perf.selectedDay
                   ? "Tap the selected day again for the full week."
-                  : "Profit by day. Tap one to scope the screen to it."}
+                  : "Sales by day. Tap one to scope the screen to it."}
               </p>
             </section>
           )}
@@ -834,10 +857,10 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
                       )
                     }
                   />
-                  {/* The bars sit right under a sales figure and read as
-                      sales without this. */}
+                  {/* Rows print a margin, and often a profit figure, beside
+                      the bars; this says which one the bars are. */}
                   <p className="border-b border-gray-100 px-3.5 py-1.5 font-mono text-[10px] uppercase tracking-wider text-content/85">
-                    Bars: gross profit, TY vs LY
+                    Bars: sales, TY vs LY
                   </p>
                 </>
               )}
@@ -925,19 +948,24 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
                     </div>
                     <div className="mt-0.5 truncate text-[11px] tabular-nums text-content/85">
                       {r.sub}
-                      {/* The figure the Change sort orders on, only while it
-                          is the sort — otherwise it's one more number. */}
+                      {/* The figure a sort orders on when the row doesn't
+                          already show it, only while it is the sort —
+                          otherwise it's one more number. Group rows carry
+                          profit in their subtitle already. */}
+                      {activeSort === "profit" &&
+                        perf.view !== "list" &&
+                        ` · ${formatCurrency2(r.profit)} gross profit`}
                       {activeSort === "change" &&
                         !perf.lyMissing &&
-                        ` · profit ${(() => {
-                          const c = profitChangePct(r);
+                        ` · sales ${(() => {
+                          const c = salesChangePct(r);
                           return c === null ? "no LY" : `${fmtChange(c)} vs LY`;
                         })()}`}
                     </div>
                     <div className="mt-2">
                       <PairedBars
-                        ty={r.profit}
-                        ly={r.profitLy}
+                        ty={r.sales}
+                        ly={r.salesLy}
                         max={listMax}
                         lyUnavailable={perf.lyMissing}
                       />

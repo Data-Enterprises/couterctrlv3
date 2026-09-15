@@ -5,12 +5,21 @@ import {
   ExclamationTriangleIcon,
 } from "@heroicons/react/20/solid";
 import type { MarginResult, DayBucket, TrendResult } from "./lookupMetrics";
-import { computeActiveGap } from "./lookupMetrics";
+import {
+  buildDayBuckets,
+  buildSaleTypeBreakdown,
+  computeActiveGap,
+  formatUnits,
+  hasSaleTypeBreakdown,
+  rowsOfSaleType,
+} from "./lookupMetrics";
 import RecentLookupsStrip from "./RecentLookupsStrip";
 import LocationTabs from "../../../components/filters/LocationTabs";
 import { useState } from "react";
 import BottomSheet from "../../../components/BottomSheet";
 import DailyBreakdown from "./DailyBreakdown";
+import SaleTypeBreakdown from "./SaleTypeBreakdown";
+import type { ItemLookupHistory } from "../../../features/itemLookupSlice";
 
 interface LookupResultScreenProps {
   description: string;
@@ -23,6 +32,8 @@ interface LookupResultScreenProps {
   onBack: () => void;
   onSelectRecent: (productCode: string) => void;
   margin: MarginResult;
+  /** Every line type, for the sale-type breakdown and its timelines. */
+  historyAll: ItemLookupHistory[];
   buckets: DayBucket[];
   trend: TrendResult;
 }
@@ -38,10 +49,23 @@ const LookupResultScreen = ({
   onBack,
   onSelectRecent,
   margin,
+  historyAll,
   buckets,
   trend,
 }: LookupResultScreenProps) => {
   const [recentOpen, setRecentOpen] = useState(false);
+  const saleTypes = buildSaleTypeBreakdown(historyAll);
+  // Keyed to the item so a new lookup opens on its sales.
+  const [saleTypePick, setSaleTypePick] = useState({ code: "", type: "Sale" });
+  const selectedSaleType =
+    saleTypePick.code === productCode &&
+    saleTypes.some((s) => s.saleType === saleTypePick.type)
+      ? saleTypePick.type
+      : "Sale";
+  const timeline =
+    selectedSaleType === "Sale"
+      ? buckets
+      : buildDayBuckets(rowsOfSaleType(historyAll, selectedSaleType));
   const isNegative = margin.marginPct !== null && margin.marginPct < 0;
   const activeGapDays = computeActiveGap(buckets);
   const dateRangeLabel = buckets.length
@@ -119,15 +143,53 @@ const LookupResultScreen = ({
         </div>
       )}
 
-      <DailyBreakdown buckets={buckets} />
+      {/* Above the breakdown it drives, so picking a type and seeing its
+          days happen in the same glance. */}
+      {hasSaleTypeBreakdown(saleTypes) && (
+        <div className="pt-2.5 border-b border-[#1e2a4a]/15">
+          <div className="px-4 pb-1 text-[10px] font-medium uppercase tracking-wide text-content/85">
+            By sale type · tap one for its days
+          </div>
+          <SaleTypeBreakdown
+            saleTypes={saleTypes}
+            weighed={margin.weighed}
+            selected={selectedSaleType}
+            onSelect={(type) => setSaleTypePick({ code: productCode, type })}
+            compact
+          />
+        </div>
+      )}
+
+      {selectedSaleType !== "Sale" && (
+        <div className="flex items-center justify-between px-4 py-2 bg-row_selected text-[11.5px]">
+          <span className="font-semibold text-content">
+            Showing {selectedSaleType.toLowerCase()} lines
+          </span>
+          <button
+            type="button"
+            onClick={() => setSaleTypePick({ code: productCode, type: "Sale" })}
+            className="font-semibold text-[#1e2a4a] underline"
+          >
+            Back to sales
+          </button>
+        </div>
+      )}
+
+      <DailyBreakdown
+        buckets={timeline}
+        weighed={margin.weighed}
+        saleType={selectedSaleType}
+      />
 
       <div className="p-3.5 pt-2.5">
         {trend.isSlowing && (
           <div className="flex items-center gap-1.5 mt-1.5 px-2.5 py-2 bg-amber-50 rounded-lg">
             <ArrowTrendingDownIcon className="w-4 h-4 text-amber-800" />
             <span className="text-[11.5px] text-amber-900">
-              Slowing down - {trend.firstHalfQty} units first week,{" "}
-              {trend.secondHalfQty} units this week
+              Slowing down - {formatUnits(trend.firstHalfUnits, margin.weighed)}
+              {margin.weighed ? "" : " units"} first week,{" "}
+              {formatUnits(trend.secondHalfUnits, margin.weighed)}
+              {margin.weighed ? "" : " units"} this week
             </span>
           </div>
         )}

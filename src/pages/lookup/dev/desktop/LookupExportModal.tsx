@@ -1,7 +1,12 @@
 import { useMemo, useState } from "react";
 import ResizableModalShell from "../../../../components/modals/ResizableModalShell";
 import { ArrowDownTrayIcon, XMarkIcon } from "@heroicons/react/20/solid";
-import { computeMargin } from "../lookupMetrics";
+import {
+  buildSaleTypeBreakdown,
+  computeMargin,
+  dayMarginPct,
+  dayUnitCost,
+} from "../lookupMetrics";
 import type { DayBucket } from "../lookupMetrics";
 import type { QueueItem } from "../../../../features/itemLookupSlice";
 import { rowsToCsv, downloadCsv } from "../../../../utils/csvExport";
@@ -9,12 +14,16 @@ import { rowsToCsv, downloadCsv } from "../../../../utils/csvExport";
 interface LookupExportModalProps {
   queue: QueueItem[];
   selectedDescription: string;
+  /** The timeline on screen — Sale, or whichever type is selected. */
   buckets: DayBucket[];
+  selectedSaleType: string;
+  /** Current item sells by weight — the daily Weight column is filled. */
+  weighed: boolean;
   onClose: () => void;
 }
 
 type ModalMode = "presets" | "custom";
-type Preset = "batch" | "daily";
+type Preset = "batch" | "daily" | "saleTypes";
 type BatchColKey =
   | "upc"
   | "description"
@@ -26,12 +35,20 @@ type BatchColKey =
   | "daysSold";
 type DailyColKey =
   | "date"
+  | "saleType"
   | "qty"
+  | "weight"
   | "revenue"
   | "cost"
   | "caseCost"
   | "listPrice"
   | "marginPct";
+
+interface ColDef {
+  key: string;
+  label: string;
+  defaultOn: boolean;
+}
 
 const BATCH_COLS: { key: BatchColKey; label: string; defaultOn: boolean }[] = [
   { key: "upc", label: "UPC", defaultOn: true },
@@ -40,19 +57,98 @@ const BATCH_COLS: { key: BatchColKey; label: string; defaultOn: boolean }[] = [
   { key: "avgSoldAt", label: "Avg sold at", defaultOn: false },
   { key: "listPrice", label: "List price", defaultOn: false },
   { key: "caseCost", label: "Cost / unit", defaultOn: false },
-  { key: "totalQty", label: "Total units", defaultOn: false },
+  { key: "totalQty", label: "Total units / lb", defaultOn: false },
   { key: "daysSold", label: "Days sold", defaultOn: false },
 ];
 
 const DAILY_COLS: { key: DailyColKey; label: string; defaultOn: boolean }[] = [
   { key: "date", label: "Date", defaultOn: true },
+  { key: "saleType", label: "Sale type", defaultOn: true },
   { key: "qty", label: "Qty", defaultOn: true },
-  { key: "revenue", label: "Revenue", defaultOn: true },
+  { key: "weight", label: "Weight (lb)", defaultOn: true },
+  { key: "revenue", label: "Amount", defaultOn: true },
   { key: "cost", label: "Cost", defaultOn: false },
   { key: "caseCost", label: "Cost / unit", defaultOn: false },
   { key: "listPrice", label: "List price", defaultOn: false },
   { key: "marginPct", label: "Margin %", defaultOn: true },
 ];
+
+type SaleTypeColKey =
+  | "upc"
+  | "description"
+  | "saleType"
+  | "days"
+  | "revenue"
+  | "qty"
+  | "weight"
+  | "pctOfSales";
+
+const SALE_TYPE_COLS: { key: SaleTypeColKey; label: string; defaultOn: boolean }[] = [
+  { key: "upc", label: "UPC", defaultOn: true },
+  { key: "description", label: "Description", defaultOn: true },
+  { key: "saleType", label: "Sale type", defaultOn: true },
+  { key: "days", label: "Days", defaultOn: true },
+  { key: "revenue", label: "Amount", defaultOn: true },
+  { key: "qty", label: "Qty", defaultOn: true },
+  { key: "weight", label: "Weight (lb)", defaultOn: true },
+  { key: "pctOfSales", label: "% of sales", defaultOn: true },
+];
+
+interface SaleTypeRow {
+  upc: string;
+  description: string;
+  saleType: string;
+  days: number;
+  revenue: number;
+  qty: number;
+  /** Null on an each-priced item, which has no weight to report. */
+  weight: number | null;
+  /** Null on the Sale row itself. */
+  pctOfSales: number | null;
+}
+
+/** One row per loaded item per sale type, Sale first. Built from every line
+ *  type, not the Sale-only history the batch summary uses. */
+const buildSaleTypeRows = (queue: QueueItem[]): SaleTypeRow[] =>
+  queue
+    .filter((q) => q.status === "loaded" && q.history)
+    .flatMap((q) => {
+      const { weighed } = computeMargin(q.history!, q.totalSales ?? 0, q.totalQty ?? 0);
+      const types = buildSaleTypeBreakdown(q.historyAll ?? q.history!);
+      const saleDollars = types.find((t) => t.saleType === "Sale")?.sales ?? 0;
+      return types.map((t) => ({
+        upc: q.upc,
+        description: q.description ?? "",
+        saleType: t.saleType,
+        days: t.days,
+        revenue: t.sales,
+        qty: t.qty,
+        weight: weighed ? t.units : null,
+        pctOfSales:
+          t.saleType === "Sale" || saleDollars <= 0 ? null : (t.sales / saleDollars) * 100,
+      }));
+    });
+
+const saleTypeCell = (row: SaleTypeRow, key: SaleTypeColKey): string | number => {
+  switch (key) {
+    case "upc":
+      return row.upc;
+    case "description":
+      return row.description;
+    case "saleType":
+      return row.saleType;
+    case "days":
+      return row.days;
+    case "revenue":
+      return row.revenue.toFixed(2);
+    case "qty":
+      return row.qty;
+    case "weight":
+      return row.weight !== null ? row.weight.toFixed(2) : "";
+    case "pctOfSales":
+      return row.pctOfSales !== null ? row.pctOfSales.toFixed(2) : "";
+  }
+};
 
 const PREVIEW_ROWS = 5;
 
@@ -83,7 +179,8 @@ const buildBatchRows = (queue: QueueItem[]): BatchRow[] =>
         avgSoldAt: margin.avgSoldAt,
         listPrice: margin.listPrice,
         caseCost: margin.unitCost,
-        totalQty: q.totalQty ?? 0,
+        // Priced units: pounds for a scale item, whose ring count is 0.
+        totalQty: margin.weighed ? margin.totalUnits : (q.totalQty ?? 0),
         daysSold: q.daysSold ?? 0,
       };
     });
@@ -109,121 +206,155 @@ const batchCell = (row: BatchRow, key: BatchColKey): string | number => {
   }
 };
 
-const dailyMarginPct = (b: DayBucket): number | null =>
-  b.hasSale && b.revenue > 0 ? ((b.revenue - b.cost) / b.revenue) * 100 : null;
-
-const dailyCell = (b: DayBucket, key: DailyColKey): string | number => {
-  if (!b.hasSale && key !== "date") return "";
+const dailyCell = (
+  b: DayBucket,
+  key: DailyColKey,
+  saleType: string,
+  weighed: boolean,
+): string | number => {
+  if (key === "date") return b.label;
+  if (key === "saleType") return saleType;
+  if (!b.hasSale) return "";
+  // An each-priced item has no weight; blank rather than a copy of qty.
+  if (key === "weight") return weighed ? Number(b.units.toFixed(2)) : "";
+  // Cost and margin don't apply to a voided or restored line.
+  if (saleType !== "Sale" && (key === "cost" || key === "caseCost" || key === "marginPct")) {
+    return "";
+  }
   switch (key) {
-    case "date":
-      return b.label;
     case "qty":
       return b.qty;
     case "revenue":
       return b.revenue.toFixed(2);
     case "cost":
-      return b.cost.toFixed(2);
-    case "caseCost":
-      return (b.cost / b.qty).toFixed(2);
+      return b.hasCost ? b.cost.toFixed(2) : "";
+    case "caseCost": {
+      const c = dayUnitCost(b);
+      return c !== null ? c.toFixed(2) : "";
+    }
     case "listPrice":
       return b.listPrice.toFixed(2);
     case "marginPct": {
-      const pct = dailyMarginPct(b);
+      const pct = dayMarginPct(b);
       return pct !== null ? pct.toFixed(2) : "";
     }
   }
 };
 
+const COLS: Record<Preset, ColDef[]> = {
+  batch: BATCH_COLS,
+  daily: DAILY_COLS,
+  saleTypes: SALE_TYPE_COLS,
+};
+
+const defaultsFor = (src: Preset) =>
+  new Set(COLS[src].filter((c) => c.defaultOn).map((c) => c.key));
+
 const LookupExportModal = ({
   queue,
   selectedDescription,
   buckets,
+  selectedSaleType,
+  weighed,
   onClose,
 }: LookupExportModalProps) => {
   const [mode, setMode] = useState<ModalMode>("presets");
   const [preset, setPreset] = useState<Preset>("batch");
   const [source, setSource] = useState<Preset>("batch");
-  const [batchCols, setBatchCols] = useState<Set<BatchColKey>>(
-    new Set(BATCH_COLS.filter((c) => c.defaultOn).map((c) => c.key)),
-  );
-  const [dailyCols, setDailyCols] = useState<Set<DailyColKey>>(
-    new Set(DAILY_COLS.filter((c) => c.defaultOn).map((c) => c.key)),
-  );
+  const [chosenCols, setChosenCols] = useState<Record<Preset, Set<string>>>(() => ({
+    batch: defaultsFor("batch"),
+    daily: defaultsFor("daily"),
+    saleTypes: defaultsFor("saleTypes"),
+  }));
 
   const batchRows = useMemo(() => buildBatchRows(queue), [queue]);
+  const saleTypeRows = useMemo(() => buildSaleTypeRows(queue), [queue]);
   const hasSelectedItem = buckets.length > 0;
+  // Nothing but Sale — every response from an endpoint without sale_type.
+  const hasSaleTypes = saleTypeRows.some((r) => r.saleType !== "Sale");
+  const timelineName =
+    selectedSaleType === "Sale" ? "sales" : selectedSaleType.toLowerCase();
 
-  const toggleBatchCol = (key: BatchColKey) => {
-    setBatchCols((prev) => {
-      const next = new Set(prev);
+  const available: Record<Preset, boolean> = {
+    batch: batchRows.length > 0,
+    daily: hasSelectedItem,
+    saleTypes: hasSaleTypes,
+  };
+
+  const fileName: Record<Preset, string> = {
+    batch: "item-lookup-batch-summary.csv",
+    daily: `item-lookup-daily-${timelineName}.csv`,
+    saleTypes: "item-lookup-sale-types.csv",
+  };
+
+  /** Header and rows for a source, limited to `only` when given. */
+  const tableFor = (src: Preset, only?: Set<string>) => {
+    const cols = COLS[src].filter((c) => !only || only.has(c.key));
+    const rows =
+      src === "batch"
+        ? batchRows.map((r) => cols.map((c) => batchCell(r, c.key as BatchColKey)))
+        : src === "daily"
+          ? buckets.map((b) =>
+              cols.map((c) =>
+                dailyCell(b, c.key as DailyColKey, selectedSaleType, weighed),
+              ),
+            )
+          : saleTypeRows.map((r) =>
+              cols.map((c) => saleTypeCell(r, c.key as SaleTypeColKey)),
+            );
+    return { cols, rows };
+  };
+
+  const toggleCol = (src: Preset, key: string) => {
+    setChosenCols((prev) => {
+      const next = new Set(prev[src]);
       next.has(key) ? next.delete(key) : next.add(key);
-      return next;
+      return { ...prev, [src]: next };
     });
   };
 
-  const toggleDailyCol = (key: DailyColKey) => {
-    setDailyCols((prev) => {
-      const next = new Set(prev);
-      next.has(key) ? next.delete(key) : next.add(key);
-      return next;
-    });
-  };
-
-  const activeCols =
-    source === "batch"
-      ? BATCH_COLS.filter((c) => batchCols.has(c.key))
-      : DAILY_COLS.filter((c) => dailyCols.has(c.key));
+  const custom = tableFor(source, chosenCols[source]);
 
   const handleDownload = () => {
-    if (mode === "presets") {
-      if (preset === "batch") {
-        const cols = BATCH_COLS;
-        downloadCsv(
-          rowsToCsv(
-            cols.map((c) => c.label),
-            batchRows.map((r) => cols.map((c) => batchCell(r, c.key))),
-          ),
-          "item-lookup-batch-summary.csv",
-        );
-      } else {
-        downloadCsv(
-          rowsToCsv(
-            DAILY_COLS.map((c) => c.label),
-            buckets.map((b) => DAILY_COLS.map((c) => dailyCell(b, c.key))),
-          ),
-          "item-lookup-daily-breakdown.csv",
-        );
-      }
-    } else {
-      if (source === "batch") {
-        const cols = BATCH_COLS.filter((c) => batchCols.has(c.key));
-        downloadCsv(
-          rowsToCsv(
-            cols.map((c) => c.label),
-            batchRows.map((r) => cols.map((c) => batchCell(r, c.key))),
-          ),
-          "item-lookup-batch-summary.csv",
-        );
-      } else {
-        const cols = DAILY_COLS.filter((c) => dailyCols.has(c.key));
-        downloadCsv(
-          rowsToCsv(
-            cols.map((c) => c.label),
-            buckets.map((b) => cols.map((c) => dailyCell(b, c.key))),
-          ),
-          "item-lookup-daily-breakdown.csv",
-        );
-      }
-    }
+    const src = mode === "presets" ? preset : source;
+    const { cols, rows } =
+      mode === "presets" ? tableFor(src) : tableFor(src, chosenCols[src]);
+    downloadCsv(rowsToCsv(cols.map((c) => c.label), rows), fileName[src]);
     onClose();
   };
 
   const canDownload =
     mode === "presets"
-      ? preset === "batch"
-        ? batchRows.length > 0
-        : hasSelectedItem
-      : activeCols.length > 0;
+      ? available[preset]
+      : available[source] && custom.cols.length > 0;
+
+  const presetOptions: { key: Preset; title: string; detail: string }[] = [
+    {
+      key: "batch",
+      title: "All items — batch summary",
+      detail: `One row per loaded item (${batchRows.length})`,
+    },
+    {
+      key: "daily",
+      title: "Current item — daily breakdown",
+      detail: hasSelectedItem
+        ? `${selectedDescription} · ${timelineName} · one row per day`
+        : "Select an item first",
+    },
+    {
+      key: "saleTypes",
+      title: "All items — by sale type",
+      detail: hasSaleTypes
+        ? "One row per loaded item per sale type — Sale, Backup, Cancelled, Voided"
+        : "No sale types other than Sale in this batch",
+    },
+  ];
+
+  const sourceLabels: Record<Preset, string> = {
+    batch: "Batch summary",
+    daily: "Current item (daily)",
+    saleTypes: "By sale type",
+  };
 
   return (
     <ResizableModalShell
@@ -264,43 +395,26 @@ const LookupExportModal = ({
             <p className="text-[11px] text-content/50 uppercase tracking-wide font-medium mb-2">
               Select data to include
             </p>
-            <label className="flex items-start gap-2.5 py-2.5 border-b border-gray-100 cursor-pointer">
-              <input
-                type="radio"
-                checked={preset === "batch"}
-                onChange={() => setPreset("batch")}
-                className="mt-0.5"
-              />
-              <div>
-                <p className="text-[13px] font-medium text-content">
-                  All items — batch summary
-                </p>
-                <p className="text-[11px] text-content/50 mt-0.5">
-                  One row per loaded item ({batchRows.length})
-                </p>
-              </div>
-            </label>
-            <label
-              className={`flex items-start gap-2.5 py-2.5 cursor-pointer ${!hasSelectedItem ? "opacity-40" : ""}`}
-            >
-              <input
-                type="radio"
-                checked={preset === "daily"}
-                onChange={() => setPreset("daily")}
-                disabled={!hasSelectedItem}
-                className="mt-0.5"
-              />
-              <div>
-                <p className="text-[13px] font-medium text-content">
-                  Current item — daily breakdown
-                </p>
-                <p className="text-[11px] text-content/50 mt-0.5">
-                  {hasSelectedItem
-                    ? `${selectedDescription} · one row per day`
-                    : "Select an item first"}
-                </p>
-              </div>
-            </label>
+            {presetOptions.map((o, i) => (
+              <label
+                key={o.key}
+                className={`flex items-start gap-2.5 py-2.5 cursor-pointer ${
+                  i < presetOptions.length - 1 ? "border-b border-gray-100" : ""
+                } ${!available[o.key] ? "opacity-40" : ""}`}
+              >
+                <input
+                  type="radio"
+                  checked={preset === o.key}
+                  onChange={() => setPreset(o.key)}
+                  disabled={!available[o.key]}
+                  className="mt-0.5"
+                />
+                <div>
+                  <p className="text-[13px] font-medium text-content">{o.title}</p>
+                  <p className="text-[11px] text-content/50 mt-0.5">{o.detail}</p>
+                </div>
+              </label>
+            ))}
             <button
               onClick={handleDownload}
               disabled={!canDownload}
@@ -316,64 +430,41 @@ const LookupExportModal = ({
               <p className="text-[10px] font-semibold uppercase tracking-wide text-content/45 mb-2">
                 Data source
               </p>
-              <label className="flex items-center gap-1.5 mb-1.5 cursor-pointer">
-                <input
-                  type="radio"
-                  checked={source === "batch"}
-                  onChange={() => setSource("batch")}
-                />
-                <span className="text-[11.5px] text-content">
-                  Batch summary
-                </span>
-              </label>
-              <label
-                className={`flex items-center gap-1.5 mb-3.5 cursor-pointer ${!hasSelectedItem ? "opacity-40" : ""}`}
-              >
-                <input
-                  type="radio"
-                  checked={source === "daily"}
-                  onChange={() => setSource("daily")}
-                  disabled={!hasSelectedItem}
-                />
-                <span className="text-[11.5px] text-content">
-                  Current item (daily)
-                </span>
-              </label>
+              {(Object.keys(sourceLabels) as Preset[]).map((src, i, all) => (
+                <label
+                  key={src}
+                  className={`flex items-center gap-1.5 cursor-pointer ${
+                    i === all.length - 1 ? "mb-3.5" : "mb-1.5"
+                  } ${!available[src] ? "opacity-40" : ""}`}
+                >
+                  <input
+                    type="radio"
+                    checked={source === src}
+                    onChange={() => setSource(src)}
+                    disabled={!available[src]}
+                  />
+                  <span className="text-[11.5px] text-content">
+                    {sourceLabels[src]}
+                  </span>
+                </label>
+              ))}
 
               <p className="text-[10px] font-semibold uppercase tracking-wide text-content/45 mb-2">
                 Columns
               </p>
-              {source === "batch"
-                ? BATCH_COLS.map((c) => (
-                    <label
-                      key={c.key}
-                      className="flex items-center gap-1.5 mb-1.5 cursor-pointer"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={batchCols.has(c.key)}
-                        onChange={() => toggleBatchCol(c.key)}
-                      />
-                      <span className="text-[11.5px] text-content">
-                        {c.label}
-                      </span>
-                    </label>
-                  ))
-                : DAILY_COLS.map((c) => (
-                    <label
-                      key={c.key}
-                      className="flex items-center gap-1.5 mb-1.5 cursor-pointer"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={dailyCols.has(c.key)}
-                        onChange={() => toggleDailyCol(c.key)}
-                      />
-                      <span className="text-[11.5px] text-content">
-                        {c.label}
-                      </span>
-                    </label>
-                  ))}
+              {COLS[source].map((c) => (
+                <label
+                  key={c.key}
+                  className="flex items-center gap-1.5 mb-1.5 cursor-pointer"
+                >
+                  <input
+                    type="checkbox"
+                    checked={chosenCols[source].has(c.key)}
+                    onChange={() => toggleCol(source, c.key)}
+                  />
+                  <span className="text-[11.5px] text-content">{c.label}</span>
+                </label>
+              ))}
             </div>
 
             <div className="p-3.5 flex flex-col">
@@ -384,7 +475,7 @@ const LookupExportModal = ({
                 <table className="w-full text-[11px]">
                   <thead>
                     <tr className="bg-gray-50 border-b border-gray-100">
-                      {activeCols.map((c) => (
+                      {custom.cols.map((c) => (
                         <th
                           key={c.key}
                           className="text-left px-2.5 py-1.5 text-content/55 font-semibold whitespace-nowrap"
@@ -395,43 +486,25 @@ const LookupExportModal = ({
                     </tr>
                   </thead>
                   <tbody>
-                    {source === "batch"
-                      ? batchRows.slice(0, PREVIEW_ROWS).map((r) => (
-                          <tr key={r.upc} className="border-b border-gray-50">
-                            {activeCols.map((c) => (
-                              <td
-                                key={c.key}
-                                className="px-2.5 py-1 text-content/80 whitespace-nowrap"
-                              >
-                                {batchCell(r, c.key as BatchColKey)}
-                              </td>
-                            ))}
-                          </tr>
-                        ))
-                      : buckets.slice(0, PREVIEW_ROWS).map((b) => (
-                          <tr key={b.date} className="border-b border-gray-50">
-                            {activeCols.map((c) => (
-                              <td
-                                key={c.key}
-                                className="px-2.5 py-1 text-content/80 whitespace-nowrap"
-                              >
-                                {dailyCell(b, c.key as DailyColKey)}
-                              </td>
-                            ))}
-                          </tr>
+                    {custom.rows.slice(0, PREVIEW_ROWS).map((row, ri) => (
+                      <tr key={ri} className="border-b border-gray-50">
+                        {row.map((cell, ci) => (
+                          <td
+                            key={custom.cols[ci].key}
+                            className="px-2.5 py-1 text-content/80 whitespace-nowrap"
+                          >
+                            {cell}
+                          </td>
                         ))}
-                    {(source === "batch" ? batchRows.length : buckets.length) >
-                      PREVIEW_ROWS && (
+                      </tr>
+                    ))}
+                    {custom.rows.length > PREVIEW_ROWS && (
                       <tr>
                         <td
-                          colSpan={activeCols.length}
+                          colSpan={custom.cols.length}
                           className="px-2.5 py-1.5 text-[10px] text-content/35 italic"
                         >
-                          +
-                          {(source === "batch"
-                            ? batchRows.length
-                            : buckets.length) - PREVIEW_ROWS}{" "}
-                          more rows in download…
+                          +{custom.rows.length - PREVIEW_ROWS} more rows in download…
                         </td>
                       </tr>
                     )}

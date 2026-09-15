@@ -12,7 +12,7 @@ import { getSalesComp } from "../../../../../api/upc";
 import { sameWeekDayLastYear } from "../../../../../utils";
 import { upcQueue } from "../../upcQueue";
 import { missingFrom } from "../../coverage";
-import { computeUpcSalesCompStats } from "./salesCompStats";
+import { combineSalesCompRows, computeUpcSalesCompStats } from "./salesCompStats";
 import type { UpcSalesComp } from "../../../../../interfaces";
 import SalesCompLeftList from "./SalesCompLeftList";
 import SalesCompDetailPanel from "./SalesCompDetailPanel";
@@ -62,7 +62,10 @@ const SalesCompTab = () => {
         if (!res) return;
 
         const j = res.data;
-        const rows: UpcSalesComp[] = j.error === 0 && j.daily?.length > 0 ? j.daily : [];
+        // Combined on the way in, so the table, KPI strip and export all see
+        // one row per UPC per week — see combineSalesCompRows.
+        const rows: UpcSalesComp[] =
+          j.error === 0 && j.daily?.length > 0 ? combineSalesCompRows(j.daily) : [];
         // Merged against the UPCs that were *asked for*, not the ones that
         // answered: a UPC with no sales in the window returns nothing, and it
         // still has to count as covered or it would be re-requested forever.
@@ -112,7 +115,8 @@ const SalesCompTab = () => {
         if (!res) return;
 
         const j = res.data;
-        const rows: UpcSalesComp[] = j.error === 0 && j.daily?.length > 0 ? j.daily : [];
+        const rows: UpcSalesComp[] =
+          j.error === 0 && j.daily?.length > 0 ? combineSalesCompRows(j.daily) : [];
         dispatch(mergeDevSalesCompLY({ rows, codes: missingLy }));
       } catch {
         /* supplementary — the tab is already usable on TY alone */

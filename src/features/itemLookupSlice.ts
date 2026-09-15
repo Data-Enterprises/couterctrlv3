@@ -23,6 +23,9 @@ export interface ItemLookupHistory {
   product_description: string;
   qty: number;
   sale_date: string; // split at T [0]
+  /** "Sale", "Backup", "Cancelled", "Voided". Absent on the production
+   *  endpoint, where every row is a Sale. See utils/saleType. */
+  sale_type?: string;
   store_name: string;
   store_number: string;
   storeid: number;
@@ -63,6 +66,17 @@ export interface RecentLookup {
   unitCost: number;
 }
 
+/** One register line type's share of the lookup window. */
+export interface SaleTypeSummary {
+  saleType: string;
+  /** Distinct days with at least one line of this type. */
+  days: number;
+  sales: number;
+  qty: number;
+  /** Pounds on a scale item, else the same as qty. */
+  units: number;
+}
+
 export type QueueItemStatus = "queued" | "loading" | "loaded" | "error";
 
 export interface QueueItem {
@@ -74,6 +88,9 @@ export interface QueueItem {
   // Full unscoped history as returned. Kept intact so switching between
   // co-located locations can re-derive the totals below without refetching.
   history?: ItemLookupHistory[];
+  /** Every line type in the (scoped) window, Sale included — the sale-type
+   *  breakdown and each type's timeline are built from this. */
+  historyAll?: ItemLookupHistory[];
   totalSales?: number;
   totalQty?: number;
   daysSold?: number;
@@ -100,7 +117,10 @@ interface ItemLookupState {
   avgPrice: number;
   itemsLoaded: boolean;
   selectedStore: number;
+  /** Sale rows only — what every headline figure is summed from. */
   itemLookupHistory: ItemLookupHistory[];
+  /** Every line type, for the sale-type breakdown and its timelines. */
+  itemLookupHistoryAll: ItemLookupHistory[];
   daysSold: number;
   pause: boolean;
   viewSearch: boolean;
@@ -135,6 +155,7 @@ const initialState: ItemLookupState = {
   itemsLoaded: false,
   selectedStore: 0,
   itemLookupHistory: [],
+  itemLookupHistoryAll: [],
   daysSold: 0,
   pause: true,
   viewSearch: true,
@@ -219,6 +240,12 @@ const itemLookupSlice = createSlice({
     ) => {
       state.itemLookupHistory = action.payload;
     },
+    setItemLookupHistoryAll: (
+      state,
+      action: PayloadAction<ItemLookupHistory[]>,
+    ) => {
+      state.itemLookupHistoryAll = action.payload;
+    },
     setHistoryMetrics: (state, action: PayloadAction<HistoryMetrics>) => {
       state.totalSales = action.payload.totalSales;
       state.totalQty = action.payload.totalQty;
@@ -267,6 +294,7 @@ const itemLookupSlice = createSlice({
       state.itemsLoaded = false;
       // state.selectedStore = 0;
       state.itemLookupHistory = [];
+      state.itemLookupHistoryAll = [];
       state.daysSold = 0;
       state.pause = true;
       state.viewHistory = false;
@@ -312,6 +340,7 @@ export const {
   setMetrics,
   setSelectedStore,
   setItemLookupHistory,
+  setItemLookupHistoryAll,
   setHistoryMetrics,
   setPause,
   reQueryUpc,

@@ -65,13 +65,23 @@ describe("buildGroupRows", () => {
     ).toEqual(["AWG", "ACE"]);
   });
 
-  it("orders by profit, not by sales", () => {
-    // Deli sells more but earns less. The page is about margin.
+  it("orders by sales, matching the bars", () => {
+    // Deli sells more but earns less. The bars are sales, so Deli leads.
     const rows = [
       item(TY_MON, { sales: 100, net_cost: 10 }),
       item(TY_MON, { sales: 300, net_cost: 280, ...DELI }),
     ];
-    expect(buildGroupRows(rows, [], "subdept", null)[0].label).toBe("Grocery");
+    expect(buildGroupRows(rows, [], "subdept", null)[0].label).toBe("Deli");
+  });
+
+  it("subtitles a group with its profit, since the bar prints its sales", () => {
+    const [row] = buildGroupRows(
+      [item(TY_MON, { sales: 100, net_cost: 60 })],
+      [],
+      "subdept",
+      null,
+    );
+    expect(row.sub).toBe("$40.00 gross profit");
   });
 
   it("keeps a group that sold last year and nothing this year", () => {
@@ -85,6 +95,8 @@ describe("buildGroupRows", () => {
       null,
     );
     expect(rows).toHaveLength(1);
+    expect(rows[0].sales).toBe(0);
+    expect(rows[0].salesLy).toBe(500);
     expect(rows[0].profit).toBe(0);
     expect(rows[0].profitLy).toBe(200);
     expect(rows[0].gpm).toBeNull();
@@ -263,6 +275,8 @@ describe("buildMarginTotals", () => {
       null,
       null,
     );
+    expect(t.salesLy).toBe(90);
+    expect(t.cogsLy).toBe(40);
     expect(t.profitLy).toBe(50);
   });
 
@@ -312,18 +326,18 @@ describe("findItem", () => {
 });
 
 describe("sortMarginRows", () => {
-  const row = (key: string, label: string, profit: number, profitLy: number, sales: number, gpm: number | null) =>
-    ({ key, label, sub: "", sales, profit, profitLy, gpm });
+  const row = (key: string, label: string, profit: number, sales: number, salesLy: number, gpm: number | null) =>
+    ({ key, label, sub: "", sales, salesLy, profit, profitLy: 0, gpm });
   const rows = [
-    row("a", "Bakery", 50, 100, 400, 12.5), // -50%
-    row("b", "Produce", 200, 150, 300, 40), // +33%
-    row("c", "Deli", 80, 0, 900, null), // no LY, no gpm
+    row("a", "Bakery", 50, 400, 800, 12.5), // sales -50%
+    row("b", "Produce", 200, 300, 225, 40), // sales +33%
+    row("c", "Deli", 80, 900, 0, null), // no LY, no gpm
   ];
   const keys = (r: { key: string }[]) => r.map((x) => x.key);
 
-  it("profit, sales and name", () => {
-    expect(keys(sortMarginRows(rows, "profit"))).toEqual(["b", "c", "a"]);
+  it("sales, profit and name", () => {
     expect(keys(sortMarginRows(rows, "sales"))).toEqual(["c", "a", "b"]);
+    expect(keys(sortMarginRows(rows, "profit"))).toEqual(["b", "c", "a"]);
     expect(keys(sortMarginRows(rows, "name"))).toEqual(["a", "c", "b"]);
   });
 

@@ -10,7 +10,8 @@ import {
   setLookupStoreNumbers,
   setLookupSelectedStoreNumber,
 } from "../../../../features/itemLookupSlice";
-import { computeMargin } from "../lookupMetrics";
+import { computeMargin, itemDescription } from "../lookupMetrics";
+import { isSaleRow } from "../../../../utils/saleType";
 import {
   scopeToStoreNumber,
   storeNumbersIn,
@@ -20,16 +21,20 @@ import type { ItemLookupHistory } from "../../../../features/itemLookupSlice";
 // The lookup is fetched by storeid, so a co-located storeid returns both
 // locations' line items in one history. Every headline figure is derived from
 // those rows, so scoping the rows re-derives all of them — no refetch needed.
+// Takes every line type: the breakdown counts them all, while everything else
+// is derived from Sale rows only.
 const deriveTotals = (
-  history: ItemLookupHistory[],
+  allHistory: ItemLookupHistory[],
   storeNumber: string | null,
 ) => {
-  const rows = storeNumber ? scopeToStoreNumber(history, storeNumber) : history;
+  const scoped = storeNumber ? scopeToStoreNumber(allHistory, storeNumber) : allHistory;
+  const rows = scoped.filter(isSaleRow);
   const totalSales = rows.reduce((acc, h) => acc + h.total_sales, 0);
   const totalQty = rows.reduce((acc, h) => acc + h.qty, 0);
   const daysSold = new Set(rows.map((h) => h.sale_date.split("T")[0])).size;
   return {
     history: rows,
+    historyAll: scoped,
     totalSales,
     totalQty,
     daysSold,
@@ -97,25 +102,28 @@ export const useLookupQueue = () => {
           );
           const j = resp.data;
           if (j.error === 0) {
-            rawHistoryRef.current[upc] = j.history;
+            // All line types, so a location switch can rebuild the breakdown.
+            const allHistory: ItemLookupHistory[] = j.history_all ?? j.history;
+            rawHistoryRef.current[upc] = allHistory;
             // First UPC back establishes the locations; the rest scope to it.
-            if (!discovered && j.history.length > 0) {
+            if (!discovered && allHistory.length > 0) {
               discovered = true;
-              const numbers = storeNumbersIn(j.history);
+              const numbers = storeNumbersIn(allHistory);
               dispatch(setLookupStoreNumbers(numbers));
               if (numbers.length > 1) {
                 scopeRef.current = numbers[0];
                 dispatch(setLookupSelectedStoreNumber(numbers[0]));
               }
             }
-            const totals = deriveTotals(j.history, scopeRef.current);
+            const totals = deriveTotals(allHistory, scopeRef.current);
+            const description = itemDescription(j.description, j.history);
             dispatch(
               updateLookupQueueItem({
                 upc,
                 patch: {
                   status: "loaded",
                   productCode: j.product_code,
-                  description: j.description,
+                  description,
                   categoryDescription: j.category_description,
                   ...totals,
                 },
@@ -124,7 +132,7 @@ export const useLookupQueue = () => {
             dispatch(
               addRecentLookup({
                 productCode: j.product_code,
-                description: j.description,
+                description,
                 marginPct: totals.marginPct,
                 qty: totals.totalQty,
                 revenue: totals.totalSales,

@@ -97,7 +97,9 @@ const onDay = (rows: PricedRow[], day: string | null) =>
 
 export interface MarginTotals {
   sales: number;
+  salesLy: number;
   cogs: number;
+  cogsLy: number;
   profit: number;
   profitLy: number;
   gpm: number | null;
@@ -115,7 +117,9 @@ const totalsOf = (ty: PricedRow[], ly: PricedRow[]): MarginTotals => {
 
   return {
     sales,
+    salesLy,
     cogs,
+    cogsLy,
     profit: sales - cogs,
     profitLy: salesLy - cogsLy,
     gpm: gpmOf(sales, cogs),
@@ -168,14 +172,15 @@ export const buildMarginTotals = (
     ),
   );
 
-/** One row in any of the three lists. Profit drives the bars because it has
- *  magnitude; the percentage sits beside the name because it answers a
- *  different question. */
+/** One row in any of the three lists. Sales drive the bars, the same figure
+ *  the card's bars show; the percentage sits beside the name because it
+ *  answers a different question. */
 export interface MarginRow {
   key: string;
   label: string;
   sub: string;
   sales: number;
+  salesLy: number;
   profit: number;
   profitLy: number;
   gpm: number | null;
@@ -233,13 +238,14 @@ const rowsBy = (
         label: a.label,
         sub: a.sub,
         sales: a.s,
+        salesLy: a.sLy,
         profit: a.s - a.c,
         profitLy: a.sLy - a.cLy,
         gpm: gpmOf(a.s, a.c),
       }))
-      // Biggest profit first. Size is a fact about the row; ordering by how far
-      // it fell would be grading by another name.
-      .sort((x, y) => y.profit - x.profit)
+      // Biggest sales first, matching the bars. Size is a fact about the row;
+      // ordering by how far it fell would be grading by another name.
+      .sort((x, y) => y.sales - x.sales)
   );
 };
 
@@ -259,7 +265,8 @@ export const buildGroupRows = (
     (r) => keyOf(r, dimension),
     (r) => labelOf(r, dimension),
     () => "",
-  ).map((r) => ({ ...r, sub: `${money(r.sales)} sales` }));
+    // Profit, not sales: the TY bar already prints this row's sales.
+  ).map((r) => ({ ...r, sub: `${money(r.profit)} gross profit` }));
 
 /** Items — inside a drilled group, or matching a search across the store. */
 export const buildItemRows = (
@@ -341,7 +348,7 @@ export const buildDailyRows = (
   });
 };
 
-/** Profit by day, for the chart. */
+/** Sales by day, for the chart — the same figure as the card's bars above it. */
 export const buildMarginDays = (
   itemsTy: PricedRow[],
   itemsLy: PricedRow[],
@@ -364,8 +371,8 @@ export const buildMarginDays = (
       label: new Date(`${iso}T12:00:00`).toLocaleDateString("en-US", {
         weekday: "short",
       }),
-      ty: ty.reduce((a, r) => a + r._net - r._cogs, 0),
-      ly: ly.reduce((a, r) => a + r._net - r._cogs, 0),
+      ty: ty.reduce((a, r) => a + r._net, 0),
+      ly: ly.reduce((a, r) => a + r._net, 0),
     };
   });
 
@@ -384,47 +391,47 @@ export const findItem = (
   return undefined;
 };
 
-/** Profit this year against last, as a percentage. Null when last year made
- *  no profit to compare against. */
-export const profitChangePct = (r: MarginRow): number | null =>
-  r.profitLy > 0 ? ((r.profit - r.profitLy) / r.profitLy) * 100 : null;
+/** Sales this year against last, as a percentage — what the bars compare.
+ *  Null when last year sold nothing to compare against. */
+export const salesChangePct = (r: MarginRow): number | null =>
+  r.salesLy > 0 ? ((r.sales - r.salesLy) / r.salesLy) * 100 : null;
 
 /**
  * Order a margin list. Returns a new array.
  *
- * Nulls — no margin, or no last-year profit — sort after every real value, so
- * unknown never reads as worst. Ties fall back to profit.
+ * Nulls — no margin, or no last-year sales — sort after every real value, so
+ * unknown never reads as worst. Ties fall back to sales.
  */
 export const sortMarginRows = (rows: MarginRow[], sort: MarginSort): MarginRow[] => {
-  const byProfit = (a: MarginRow, b: MarginRow) => b.profit - a.profit;
+  const bySales = (a: MarginRow, b: MarginRow) => b.sales - a.sales;
   const nullsLast = (
     pick: (r: MarginRow) => number | null,
     dir: 1 | -1,
   ) => (a: MarginRow, b: MarginRow) => {
     const va = pick(a);
     const vb = pick(b);
-    if (va === null && vb === null) return byProfit(a, b);
+    if (va === null && vb === null) return bySales(a, b);
     if (va === null) return 1;
     if (vb === null) return -1;
-    return (va - vb) * dir || byProfit(a, b);
+    return (va - vb) * dir || bySales(a, b);
   };
   const out = [...rows];
   switch (sort) {
-    case "profit":
-      return out.sort(byProfit);
     case "sales":
-      return out.sort((a, b) => b.sales - a.sales || byProfit(a, b));
+      return out.sort(bySales);
+    case "profit":
+      return out.sort((a, b) => b.profit - a.profit || bySales(a, b));
     case "gpm":
       // Lowest margin first: the thin ones are what you open this to find.
       return out.sort(nullsLast((r) => r.gpm, 1));
     case "change":
       // Biggest drop first.
-      return out.sort(nullsLast(profitChangePct, 1));
+      return out.sort(nullsLast(salesChangePct, 1));
     case "name":
       return out.sort(
         (a, b) =>
           a.label.localeCompare(b.label, undefined, { numeric: true }) ||
-          byProfit(a, b),
+          bySales(a, b),
       );
   }
 };

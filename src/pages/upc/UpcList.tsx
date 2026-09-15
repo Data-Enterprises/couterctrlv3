@@ -41,6 +41,7 @@ import type {
   UpcPriceOpt,
   UpcTrend,
 } from "../../interfaces";
+import { combineSalesCompRows } from "./dev/modules/salesComp/salesCompStats";
 import { colorCodes } from "./components";
 import { formatForecastExport } from "./utils";
 
@@ -111,7 +112,9 @@ const UpcList = () => {
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0 && j.daily.length > 0) {
-          const upcCopy = [...j.daily].reduce((acc: UpcItem[], cur) => {
+          // The endpoint can split one UPC's week across descriptions.
+          const daily = combineSalesCompRows(j.daily);
+          const upcCopy = daily.reduce((acc: UpcItem[], cur) => {
             if (!acc.find((item) => item.product_code === cur.product_code)) {
               acc.push({
                 product_code: cur.product_code,
@@ -122,7 +125,7 @@ const UpcList = () => {
           }, []);
           dispatch(setUpcItems(upcCopy));
           dispatch(setUpcCount(j.upc_count));
-          dispatch(setSalesComp(j.daily));
+          dispatch(setSalesComp(daily));
           dispatch(setDataLoaded(true));
         } else {
           toast.warn("No Records Found");

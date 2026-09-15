@@ -1,4 +1,5 @@
 import axios from "axios";
+import { isSaleRow } from "../utils/saleType";
 
 export const getItemLookup = async (
   url: string,
@@ -57,5 +58,14 @@ export const getItemLookupSingleStore = async (
       daysback,
     },
   });
+  // `history` stays Sale-only, matching the response's own totals, so every
+  // screen that sums it keeps meaning sales. All line types — Backup,
+  // Cancelled, Voided — are kept as `history_all` for the sale-type breakdown.
+  // See utils/saleType.
+  const data = json.data;
+  if (data && Array.isArray(data.history)) {
+    data.history_all = data.history;
+    data.history = data.history.filter(isSaleRow);
+  }
   return json;
 };

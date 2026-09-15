@@ -52,7 +52,7 @@ export type ItemView = "list" | "search" | "daily";
 export const ROWS_PER_PAGE = 100;
 
 /** How a list of departments, vendors, categories or items can be ordered.
- *  Profit is the default: it is what the bars show. */
+ *  Sales is the default: it is what the bars show. */
 export type MarginSort = "profit" | "sales" | "gpm" | "change" | "name";
 
 /**
@@ -183,8 +183,8 @@ const initialState: ItemPerfState = {
   loadedEnd: null,
   storeNumbers: [],
   storeNumber: null,
-  groupSort: "profit",
-  itemSort: "profit",
+  groupSort: "sales",
+  itemSort: "sales",
   infoOpen: false,
   hasSearched: false,
   loading: false,
