@@ -1,4 +1,4 @@
-import { useDeferredValue, useEffect, useMemo } from "react";
+import { useDeferredValue, useEffect, useMemo, useRef } from "react";
 import {
   BackspaceIcon,
   ChevronLeftIcon,
@@ -6,6 +6,7 @@ import {
   MagnifyingGlassIcon,
 } from "@heroicons/react/20/solid";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
+import { useDrillScroll } from "../../../hooks/useDrillScroll";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import SingleStoreSearchCard from "../../../components/SingleStoreSearchCard";
 import SingleDatePicker from "../../../components/datePickers/SingleDatePicker";
@@ -21,15 +22,28 @@ import {
   sameWeekDayLastYear,
 } from "../../../utils";
 import type { JsonError } from "../../../interfaces";
+import { shiftIso } from "../../../utils/grading";
+import { applyStoreNumberToName } from "../../../utils/storeIdentity";
+import MobileSortChips, {
+  type SortOption,
+} from "../../../components/mobile/MobileSortChips";
+import MobileInfoSheet from "../../../components/mobile/MobileInfoSheet";
+import { itemPerfMobileInfo } from "./itemPerfInfo";
 import {
+  beginItemPerfLoad,
   claimItemPerf,
   clearPerfItem,
+  failItemPerfLoad,
+  setItemPerfGroupSort,
+  setItemPerfInfoOpen,
+  setItemPerfItemSort,
+  setItemPerfStoreNumber,
+  type MarginSort,
   closeScanner,
   openScanner,
   scannedUpc,
   selectPerfItem,
   setItemPerfHasSearched,
-  setItemPerfLoading,
   setItemPerfRows,
   setItemPerfStore,
   setItemPerfView,
@@ -49,20 +63,36 @@ import {
   buildItemRows,
   buildMarginDays,
   buildMarginTotals,
+  isPartialMatch,
+  matchWeek,
+  noLyHistory,
   findItem,
   priceRows,
+  salesChangePct,
+  sortMarginRows,
   type MarginRow,
   type PricedRow,
 } from "./itemPerfData";
 import PairedBars from "../../sales/mobile/perf/PairedBars";
 import PerfDayChart from "../../sales/mobile/perf/PerfDayChart";
 import PerfCardHeader from "../../sales/mobile/perf/PerfCardHeader";
-import { TY_COLOR } from "../../sales/mobile/perf/perfColors";
+import { LY_COLOR, TY_COLOR } from "../../sales/mobile/perf/perfColors";
 
 /** How many recents sit in the page before the rest move to a sheet. */
 const RECENTS_INLINE = 3;
 
 const pct = (v: number | null) => (v === null ? "—" : `${v.toFixed(2)}%`);
+
+const fmtChange = (v: number) =>
+  `${v > 0 ? "+" : v < 0 ? "\u2212" : ""}${Math.abs(v).toFixed(1)}%`;
+
+const SORTS: SortOption<MarginSort>[] = [
+  { key: "sales", label: "Sales" },
+  { key: "profit", label: "Profit" },
+  { key: "gpm", label: "GPM" },
+  { key: "change", label: "Change vs LY" },
+  { key: "name", label: "Name" },
+];
 
 interface Props {
   /** What this page groups by. One per page — the same rows could group the
@@ -88,9 +118,10 @@ interface Props {
  * Tapping a department goes to Daily scoped to it — the question after "which
  * department" is always "which item in it".
  *
- * Margin leads throughout: the hero is GPM, the bars carry profit dollars, and
- * each row shows its own percentage. Percent answers how healthy, bars answer
- * how much.
+ * Margin leads throughout: the hero is GPM and each row shows its own
+ * percentage. Every bar on the screen — card, day chart and rows — carries
+ * sales, so no two bars mean different things; profit dollars are printed
+ * beside them. Percent answers how healthy, bars answer how much.
  */
 const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
   const dispatch = useAppDispatch();
@@ -100,24 +131,43 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
   const assignedStores = useAppSelector((s) => s.user.assignedStores);
   const perf = useAppSelector((s) => s.itemPerf);
 
-  // singleDate is m/d/yyyy off formatDate; Goliath wants yyyy-mm-dd.
+  // A group opens its items and an item opens its week, all in one scroll:
+  // each level starts at the top, and Back returns to the row you tapped.
+  const scroller = useRef<HTMLDivElement>(null);
+  useDrillScroll(
+    scroller,
+    perf.view === "daily" && perf.selectedItemCode
+      ? 2
+      : perf.view === "daily"
+        ? 1
+        : 0,
+    `${perf.view}|${perf.selectedGroupKey ?? ""}|${perf.selectedItemCode ?? ""}|${perf.storeNumber ?? ""}`,
+  );
+
+  // The week the NEXT search will fetch. singleDate is m/d/yyyy off
+  // formatDate; Goliath wants yyyy-mm-dd.
   const twEnd = formatGoliathDate(search.singleDate);
   const twStart = addDays(search.singleDate, -6).toISOString().split("T")[0];
-  /** The seven dates of the window, so a day with no sales still gets a row. */
-  const weekDates = useMemo(
-    () =>
-      Array.from(
-        { length: 7 },
-        (_, i) => addDays(twStart, i).toISOString().split("T")[0],
-      ),
-    [twStart],
-  );
   /** Each day shifted individually and re-sorted. Shifting only the endpoints
    *  breaks when one lands on a fixed-date holiday: that end snaps to the
    *  holiday while the other keeps a weekday shift. */
   const lyDates = useMemo(
-    () => weekDates.map((d) => sameWeekDayLastYear(d).date).sort(),
-    [weekDates],
+    () =>
+      Array.from({ length: 7 }, (_, i) =>
+        sameWeekDayLastYear(shiftIso(twStart, i)).date,
+      ).sort(),
+    [twStart],
+  );
+
+  /** The week ON SCREEN — the one the rows were loaded for. The search date
+   *  is shared with every other page, so reading it here relabelled this week
+   *  whenever someone changed the date elsewhere. */
+  const viewEnd = perf.loadedEnd ?? twEnd;
+  const viewStart = shiftIso(viewEnd, -6);
+  /** The seven dates of the window, so a day with no sales still gets a row. */
+  const weekDates = useMemo(
+    () => Array.from({ length: 7 }, (_, i) => shiftIso(viewStart, i)),
+    [viewStart],
   );
 
   /** Categories reads a different endpoint from the other two, so its rows
@@ -131,23 +181,40 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
   }, [mine, source]);
 
   const fetchItems = async () => {
-    dispatch(setItemPerfLoading(true));
+    // Stamped so a result from an earlier load, or another page's, is dropped
+    // by the slice rather than landing on this screen.
+    const gen = perf.loadGen + 1;
+    dispatch(beginItemPerfLoad(gen));
     try {
       const scope = {
         url: context.url,
         token: context.token,
         storeid: perf.storeId,
       };
+      /**
+       * This year decides whether there is a page; last year only decides
+       * whether it can compare.
+       *
+       * They used to share one `Promise.all`, so a store with no history on
+       * the new backend — the endpoint answers with an error, not an empty
+       * list — rejected the pair, toasted, and never set `hasSearched`. The
+       * reader was left on the search card with a week of perfectly good
+       * current rows already in hand.
+       *
+       * `null` rather than `[]` on the way out: an empty array is a store
+       * that traded nothing last year, and that one really should read as a
+       * rise from zero.
+       */
       const [ty, ly] = await Promise.all([
         fetchItemRows(dimension, scope, twStart, twEnd),
-        fetchItemRows(dimension, scope, lyDates[0], lyDates[6]),
+        fetchItemRows(dimension, scope, lyDates[0], lyDates[6]).catch(
+          () => null,
+        ),
       ]);
-      dispatch(setItemPerfRows({ ty, ly }));
-      dispatch(setItemPerfHasSearched(true));
+      dispatch(setItemPerfRows({ ty, ly, gen, source, end: twEnd }));
     } catch (err) {
+      dispatch(failItemPerfLoad(gen));
       toast.error("Error loading items: " + (err as JsonError).message);
-    } finally {
-      dispatch(setItemPerfLoading(false));
     }
   };
 
@@ -158,8 +225,47 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
    * inside the grouping meant every view switch and keystroke redid all of it.
    * That was the lag.
    */
-  const ty = useMemo(() => priceRows(perf.itemsTy), [perf.itemsTy]);
-  const ly = useMemo(() => priceRows(perf.itemsLy), [perf.itemsLy]);
+  // One location at a time when the storeid covers two. The rows come back
+  // combined, and adding 369 and 370 together is a store that doesn't exist.
+  // storeNumber is only set when this year's rows carry more than one, so a
+  // plain filter is safe — and applied to last year too, so a year that only
+  // recorded the other location can't stand in for this one.
+  const ty = useMemo(
+    () =>
+      priceRows(
+        perf.storeNumber
+          ? perf.itemsTy.filter((r) => r.store_number === perf.storeNumber)
+          : perf.itemsTy,
+      ),
+    [perf.itemsTy, perf.storeNumber],
+  );
+  const ly = useMemo(
+    () =>
+      priceRows(
+        perf.storeNumber
+          ? perf.itemsLy.filter((r) => r.store_number === perf.storeNumber)
+          : perf.itemsLy,
+      ),
+    [perf.itemsLy, perf.storeNumber],
+  );
+
+  /**
+   * Which days of the loaded week last year can be compared on, off the
+   * store's own rows — a department quiet on a day the store traded is a zero,
+   * not a gap. Around a moving holiday the LY fetch spans more than seven
+   * days, and this is also what keeps the dates in between out of every sum.
+   */
+  const weekMatch = useMemo(() => matchWeek(ty, ly), [ty, ly]);
+  /** Last year has some of the week, not all of it. */
+  const weekPartial = !perf.lyMissing && isPartialMatch(weekMatch);
+  /**
+   * Nothing on file last year — the request failed (`lyMissing`), or it
+   * answered with no rows for the dates in question. Either way it reads "no
+   * history", never a $0.00 nobody measured. Week-level for the legend, and
+   * scoped to the selected day for the card.
+   */
+  const weekNoLy = perf.lyMissing || noLyHistory(weekMatch, null);
+  const cardNoLy = perf.lyMissing || noLyHistory(weekMatch, perf.selectedDay);
 
   /** Daily narrows to one item only once one is chosen; before that it is the
    *  picker, scoped to the department you arrived from if any. */
@@ -175,9 +281,12 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
         perf.selectedDay,
         groupKey,
         itemCode,
+        weekMatch,
       ),
-    [ty, ly, dimension, perf.selectedDay, groupKey, itemCode],
+    [ty, ly, dimension, perf.selectedDay, groupKey, itemCode, weekMatch],
   );
+  /** Bars and change compare like with like: over only the matched days. */
+  const totalsPartial = !perf.selectedDay && weekPartial;
 
   const days = useMemo(
     () => buildMarginDays(ty, ly, dimension, groupKey, itemCode, weekDates),
@@ -213,6 +322,8 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
       groupKey: perf.selectedGroupKey,
       itemCode: perf.selectedItemCode,
       query,
+      groupSort: perf.groupSort,
+      itemSort: perf.itemSort,
     }),
     [
       perf.view,
@@ -220,6 +331,8 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
       perf.selectedGroupKey,
       perf.selectedItemCode,
       query,
+      perf.groupSort,
+      perf.itemSort,
     ],
   );
   const listFor = useDeferredValue(listInputs);
@@ -229,25 +342,35 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
 
   const rows: MarginRow[] = useMemo(() => {
     if (listFor.view === "list")
-      return buildGroupRows(ty, ly, dimension, listFor.day);
+      return sortMarginRows(
+        buildGroupRows(ty, ly, dimension, listFor.day, weekMatch),
+        listFor.groupSort,
+      );
 
     if (listFor.view === "search") {
       if (!listFor.query) return [];
-      return buildItemRows(ty, ly, dimension, listFor.day, null, listFor.query);
+      return sortMarginRows(
+        buildItemRows(ty, ly, dimension, listFor.day, null, listFor.query, weekMatch),
+        listFor.itemSort,
+      );
     }
 
     // Daily's picker: browse everything, or the group arrived from.
     return listFor.itemCode
       ? []
-      : buildItemRows(
-          ty,
-          ly,
-          dimension,
-          listFor.day,
-          listFor.groupKey,
-          listFor.query,
+      : sortMarginRows(
+          buildItemRows(
+            ty,
+            ly,
+            dimension,
+            listFor.day,
+            listFor.groupKey,
+            listFor.query,
+            weekMatch,
+          ),
+          listFor.itemSort,
         );
-  }, [ty, ly, dimension, listFor]);
+  }, [ty, ly, dimension, listFor, weekMatch]);
 
   /** Recently opened items, resolved back to rows so they carry their figures.
    *  Only built for Search, and only while nothing is typed. */
@@ -265,11 +388,12 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
       null,
       null,
       "",
+      weekMatch,
     );
     return perf.recentItems
       .map((code) => all.find((r) => r.key === code))
       .filter((r): r is MarginRow => Boolean(r));
-  }, [ty, ly, dimension, perf.view, perf.recentItems, query]);
+  }, [ty, ly, dimension, perf.view, perf.recentItems, query, weekMatch]);
 
   const dailyRows = useMemo(
     () => buildDailyRows(ty, itemCode, weekDates),
@@ -296,8 +420,17 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
 
   // Scaled to the page on screen, not the full result set: with one outlier
   // item off-list, every visible bar would be a sliver.
-  const listMax = shown.reduce((m, r) => Math.max(m, r.profit, r.profitLy), 0);
-  const selectedItem = findItem(ty, perf.selectedItemCode);
+  // Last year is excluded from the shared scale when it was never read —
+  // otherwise a store with no history scales every bar against a zero it did
+  // not measure.
+  const listPartial = !listFor.day && weekPartial;
+  // Store-level, so one answer covers every row in the list.
+  const listNoLy = perf.lyMissing || noLyHistory(weekMatch, listFor.day);
+  const listMax = shown.reduce(
+    (m, r) => Math.max(m, r.sales, listNoLy ? 0 : r.salesLy),
+    0,
+  );
+  const selectedItem = findItem(perf.selectedItemCode, ty, ly);
 
   /** One recent item. Shared by the panel and the sheet so the two cannot
    *  drift. No bars: recents are a shortcut, not a comparison, and the scale
@@ -338,12 +471,24 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
   /** Every active scope, in the order they narrow. Without it a filtered
    *  figure looks like a wrong one. */
   const scopeLabel = [
+    // Plain "Margin": the card labels its TY and LY figures itself.
     "Margin",
     selectedItem?.product_description,
     groupKey ? perf.selectedGroupLabel : null,
   ]
     .filter(Boolean)
     .join(" · ");
+
+  const storeName = (() => {
+    const name = getStoreName(assignedStores, perf.storeId);
+    return perf.storeNumber
+      ? applyStoreNumberToName(name, perf.storeNumber, perf.storeNumbers)
+      : name;
+  })();
+
+  /** Which list sort applies: the page's own list, or an item list. */
+  const onGroupList = perf.view === "list";
+  const activeSort = onGroupList ? perf.groupSort : perf.itemSort;
 
   const VIEWS: { key: ItemView; label: string }[] = [
     { key: "list", label: listLabel },
@@ -409,6 +554,17 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
           </button>
         ))}
       </nav>
+
+      {perf.storeNumbers.length > 1 && (
+        <div className="flex-shrink-0 border-b border-gray-200 bg-custom-white">
+          <MobileSortChips
+            label="Location"
+            options={perf.storeNumbers.map((n) => ({ key: n, label: `Store ${n}` }))}
+            value={perf.storeNumber ?? ""}
+            onChange={(n) => dispatch(setItemPerfStoreNumber(n))}
+          />
+        </div>
+      )}
 
       {/* Pinned above the scroll. The field is how you get anywhere from these
           two views, so scrolling a long result list must not carry it off the
@@ -511,7 +667,7 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
       )}
 
       {/* pb-14 clears the fixed bottom tab bar, which is outside document flow. */}
-      <div className="flex-1 overflow-y-auto pb-14">
+      <div ref={scroller} className="flex-1 overflow-y-auto pb-14">
         <div className="flex flex-col gap-3 p-3">
           {/* ── back out of an item ─────────────────────────────── */}
           {/* Spelled out rather than a bare chevron: this screen is reached
@@ -540,50 +696,90 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
                 title={
                   selectedItem?.product_description ??
                   perf.selectedGroupLabel ??
-                  getStoreName(assignedStores, perf.storeId)
+                  storeName
                 }
                 label={scopeLabel}
                 when={
                   dayLabel ||
-                  `${formatDateSimple(twStart)} – ${formatDateSimple(twEnd)}`
+                  `${formatDateSimple(viewStart)} – ${formatDateSimple(viewEnd)}`
                 }
                 onSearch={() => dispatch(setItemPerfHasSearched(false))}
+                onInfo={() => dispatch(setItemPerfInfoOpen(true))}
               />
 
               <div className="px-4 pb-4 pt-2">
-                <div className="mt-1.5 font-display text-[31px] font-extrabold leading-none tracking-tight tabular-nums text-content">
-                  {pct(totals.gpm)}
+                {/* Margin this year and last, side by side. This year leads;
+                    last year sits beside it smaller, as the reference. */}
+                <div className="mt-1.5 flex items-end gap-5">
+                  <div className="flex flex-col">
+                    <span className="mb-1 font-mono text-[9.5px] uppercase tracking-wider text-content/85">
+                      TY margin
+                    </span>
+                    <span className="font-display text-[31px] font-extrabold leading-none tracking-tight tabular-nums text-content">
+                      {pct(totals.gpm)}
+                    </span>
+                  </div>
+                  <div className="flex flex-col pb-0.5">
+                    <span className="mb-1 font-mono text-[9.5px] uppercase tracking-wider text-content/85">
+                      LY margin
+                    </span>
+                    {/* No record isn't a 0% margin. */}
+                    <span className="font-display text-[20px] font-bold leading-none tracking-tight tabular-nums text-content/85">
+                      {cardNoLy ? "no history" : pct(totals.gpmLy)}
+                    </span>
+                  </div>
                 </div>
 
-                {/* Profit dollars, not sales. The percentage above says how
-                    healthy; these say how much it is worth. */}
+                {/* Sales this year against last, like every other bar on the
+                    screen. Profit dollars live in the tiles below. */}
                 <div className="mt-3">
+                  <div className="mb-1.5 flex items-baseline justify-between font-mono text-[10px] uppercase tracking-wider text-content/85">
+                    <span>Sales</span>
+                    {/* The count the grid below used to carry; it describes
+                        what was sold, so it sits with the sales. */}
+                    <span className="tabular-nums">
+                      {selectedItem
+                        ? `${totals.units.toLocaleString("en-US")} qty`
+                        : `${totals.itemCount.toLocaleString("en-US")} ${
+                            totals.itemCount === 1 ? "item" : "items"
+                          }`}
+                    </span>
+                  </div>
+                  {/* This year is the full week; last year is its matched
+                      dates only. */}
                   <PairedBars
-                    ty={totals.profit}
-                    ly={totals.profitLy}
-                    max={Math.max(totals.profit, totals.profitLy)}
+                    ty={totals.sales}
+                    ly={totals.salesLy}
+                    max={Math.max(totals.sales, totals.salesLy)}
                     compact
+                    lyUnavailable={cardNoLy}
                   />
+                  {totalsPartial && (
+                    <p className="mt-1.5 inline-block rounded bg-gray-200 px-1.5 py-0.5 text-[11px] font-semibold text-content">
+                      Last year: {weekMatch.lyDays} of {weekMatch.days} days matched
+                    </p>
+                  )}
                 </div>
 
                 <div className="mt-3.5 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-gray-100 pt-3">
+                  {/* Columns are the figure, rows are the year: each LY tile
+                      sits directly under the TY one it compares with. */}
                   {[
-                    ["Sales", formatCurrency2(totals.sales)],
-                    ["Cost", formatCurrency2(totals.cogs)],
-                    ["LY margin", pct(totals.gpmLy)],
-                    [
-                      selectedItem ? "Qty" : "Items",
-                      selectedItem
-                        ? totals.units.toLocaleString("en-US")
-                        : totals.itemCount.toLocaleString("en-US"),
-                    ],
-                  ].map(([k, v]) => (
+                    { k: "TY gross profit", v: totals.profit, ly: false },
+                    { k: "TY cost", v: totals.cogs, ly: false },
+                    { k: "LY gross profit", v: totals.profitLy, ly: true },
+                    { k: "LY cost", v: totals.cogsLy, ly: true },
+                  ].map(({ k, v, ly }) => (
                     <div key={k} className="flex flex-col">
                       <span className="font-mono text-[9.5px] uppercase tracking-wider text-content/85">
                         {k}
                       </span>
-                      <span className="font-display text-[15px] font-bold tabular-nums text-content">
-                        {v}
+                      <span
+                        className={`font-display text-[15px] font-bold tabular-nums ${
+                          ly ? "text-content/85" : "text-content"
+                        }`}
+                      >
+                        {ly && cardNoLy ? "no history" : formatCurrency2(v)}
                       </span>
                     </div>
                   ))}
@@ -608,10 +804,22 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
                 selected={listFor.day}
                 onToggle={(iso) => dispatch(toggleItemPerfDay(iso))}
               />
+              <div className="mt-1 flex flex-wrap gap-x-3.5 gap-y-1 px-1 text-[12px] text-content/85">
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="h-2 w-3.5 rounded-sm" style={{ background: TY_COLOR }} />
+                  This year
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="h-2 w-3.5 rounded-sm" style={{ background: LY_COLOR }} />
+                  {/* No record isn't a zero — the columns can't say so, the
+                      legend can. */}
+                  {weekNoLy ? "Last year: no history" : "Last year"}
+                </span>
+              </div>
               <p className="px-1 pt-1.5 text-[12px] text-content/85">
                 {perf.selectedDay
                   ? "Tap the selected day again for the full week."
-                  : "Profit by day. Tap one to scope the screen to it."}
+                  : "Sales by day. Tap one to scope the screen to it."}
               </p>
             </section>
           )}
@@ -672,6 +880,31 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
           {/* ── the list, or the daily table ────────────────────── */}
           {!(perf.view === "search" && !query) && (
             <section className="overflow-hidden rounded-2xl border border-gray-200 bg-custom-white shadow-md">
+              {!(perf.view === "daily" && itemCode) && (
+                <>
+                  <MobileSortChips
+                    options={SORTS}
+                    value={activeSort}
+                    onChange={(key) =>
+                      dispatch(
+                        onGroupList
+                          ? setItemPerfGroupSort(key)
+                          : setItemPerfItemSort(key),
+                      )
+                    }
+                  />
+                  {/* Rows print a margin, and often a profit figure, beside
+                      the bars; this says which one the bars are. */}
+                  <p className="border-b border-gray-100 px-3.5 py-1.5 font-mono text-[10px] uppercase tracking-wider text-content/85">
+                    Bars: sales, TY vs LY
+                  </p>
+                  {listPartial && (
+                    <p className="border-b border-gray-100 bg-gray-100 px-3.5 py-2 text-[11.5px] font-semibold text-content">
+                      Last year: {weekMatch.lyDays} of {weekMatch.days} days matched
+                    </p>
+                  )}
+                </>
+              )}
               {building ? (
                 // Held back 200ms by the animation delay, so the quick
                 // transitions this also covers never flash a spinner.
@@ -731,7 +964,8 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
                     : "Nothing recorded for this selection."}
                 </div>
               ) : (
-                shown.map((r) => (
+                <div>
+                {shown.map((r) => (
                   <button
                     key={r.key}
                     type="button"
@@ -755,12 +989,31 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
                     </div>
                     <div className="mt-0.5 truncate text-[11px] tabular-nums text-content/85">
                       {r.sub}
+                      {/* The figure a sort orders on when the row doesn't
+                          already show it, only while it is the sort —
+                          otherwise it's one more number. Group rows carry
+                          profit in their subtitle already. */}
+                      {activeSort === "profit" &&
+                        perf.view !== "list" &&
+                        ` · ${formatCurrency2(r.profit)} gross profit`}
+                      {activeSort === "change" &&
+                        !listNoLy &&
+                        ` · sales ${(() => {
+                          const c = salesChangePct(r);
+                          return c === null ? "no LY" : `${fmtChange(c)} vs LY`;
+                        })()}`}
                     </div>
                     <div className="mt-2">
-                      <PairedBars ty={r.profit} ly={r.profitLy} max={listMax} />
+                      <PairedBars
+                        ty={r.sales}
+                        ly={r.salesLy}
+                        max={listMax}
+                        lyUnavailable={listNoLy}
+                      />
                     </div>
                   </button>
-                ))
+                ))}
+                </div>
               )}
 
               {rows.length > shown.length && (
@@ -797,6 +1050,13 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
           )}
         </div>
       </div>
+
+      {perf.infoOpen && (
+        <MobileInfoSheet
+          {...itemPerfMobileInfo(dimension, title)}
+          onClose={() => dispatch(setItemPerfInfoOpen(false))}
+        />
+      )}
     </div>
   );
 };

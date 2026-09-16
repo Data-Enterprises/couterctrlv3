@@ -6,6 +6,7 @@ import {
   describeSignal,
   formatClock,
   groupSignalByTransaction,
+  receiptLinesFor,
   type Signal,
 } from "./lensUtils";
 import { formatCurrency2 } from "../../../utils";
@@ -88,15 +89,8 @@ const SignalDetail = ({
     return rows;
   }, [grouped, sort]);
 
-  // Transaction renders a whole receipt, so it needs every line of the sale,
-  // not just the ones matching the selected exception.
   const openLines = useMemo(
-    () =>
-      openTransaction
-        ? allRows
-            .filter((r) => r.sale_id === openTransaction)
-            .sort((a, b) => a.line_number - b.line_number)
-        : [],
+    () => (openTransaction ? receiptLinesFor(allRows, openTransaction) : []),
     [allRows, openTransaction],
   );
 

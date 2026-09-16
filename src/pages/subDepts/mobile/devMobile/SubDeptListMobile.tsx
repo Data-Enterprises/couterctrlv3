@@ -30,6 +30,7 @@ interface Props {
 }
 
 const TIER_ORDER: Record<MarginTier, number> = {
+  ungraded: 3,
   critical: 0,
   watch: 1,
   healthy: 2,

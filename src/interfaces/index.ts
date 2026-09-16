@@ -1651,3 +1651,450 @@ export interface ReceiverItemSearchResponse {
   include_all_lines?: boolean;
   receivers: ReceiverItemSearchReceiver[];
 }
+
+////////////////////////////
+// Suggested Weight Interfaces
+///////////////////////////
+
+/**
+ * Average pounds sold on each day of the week, keyed "0".."6" with **0 =
+ * Sunday** — Postgres' `extract(dow)` convention, not JavaScript's, though the
+ * two happen to agree. All seven keys are always present; a day the item never
+ * sells is a `0`, not a missing key, so a strip built from this never has gaps.
+ *
+ * At item grain these are that item's rates; at store grain the department's
+ * items summed. Each is the weekday's pounds divided by how many times that
+ * weekday occurred in the lookback, so the seven sum to
+ * `avg_daily_weight * 7` exactly.
+ */
+export type DowRates = Record<string, number>;
+
+/**
+ * What the shrink adjustment on a row was built from, best signal first.
+ *
+ * `receipts` is the good one and arrives with EDI. `markdown` is the best
+ * available today — recorded waste out of `public.markdowns`, and where meat's
+ * loss actually lives. `damage` is narrower and almost entirely a subset of
+ * markdown, so it only applies where markdown found nothing. `none` is a pure
+ * demand figure.
+ *
+ * These are exclusive, not additive: markdown REPLACES damage rather than
+ * stacking, because the two overlap ~94% and stacking would double-count on
+ * exactly the most heavily wasted items.
+ */
+export type ShrinkSource = "receipts" | "markdown" | "damage" | "none";
+
+/** One item on one store's order sheet. Every weight is POUNDS — this endpoint
+ *  only answers for scale departments, so there is no qty anywhere in it. */
+export interface SuggestedItem {
+  /** The endpoint has always sent these on item rows; they only started
+   *  mattering once the sheet held more than one store's worth. */
+  storeid: number;
+  store_name: string | null;
+  store_number: string | null;
+  product_code: string;
+  product_description: string | null;
+  sub_department: number | null;
+  sub_department_description: string | null;
+  /** Pounds sold across the whole lookback, not the cover window. */
+  sold_weight_window: number;
+  /** Pounds the cover window is forecast to sell, by weekday. */
+  demand_weight: number;
+  shrink_source: ShrinkSource;
+  shrink_multiplier: number;
+  /** True when the raw shrink rate blew past its clamp — a keying problem
+   *  rather than heavy waste, and not the same thing as a big multiplier. */
+  shrink_clamped: boolean;
+  /** The figures BEHIND `shrink_multiplier`. Present only when the request
+   *  sets `includeDiagnostics` — they exist to audit a multiplier ("why is
+   *  this item 1.31?"), which is a pgAdmin question, not a manager's screen.
+   *  This page does not ask for them. */
+  lifetime_damaged?: number;
+  lifetime_markdown?: number;
+  /**
+   * Recorded markdown pounds over the LOOKBACK, not the item's whole life.
+   *
+   * The figure the sheet shows. Lifetime pounds cannot be totalled beside
+   * anything else on the row — item lifetimes differ, so the column had to sit
+   * out of the totals row and could only be sorted. This one covers the same
+   * window as every other figure there, so it adds up.
+   */
+  markdown_weight_window?: number;
+  lifetime_received?: number;
+  lifetime_sold?: number;
+  /**
+   * demand x shrink - on_hand, floored at 0. The number the buyer acts on.
+   *
+   * ABSENT when `parameters.is_historical` is true. A call for a past date is a
+   * comparison, not an order — nobody buys for last September — and the figure
+   * would be a hybrid anyway, since shrink comes from lifetime aggregates with
+   * no date scope. Everything else on a historical response is genuinely
+   * historical; this one field and `on_order_weight` are the exceptions.
+   */
+  suggested_weight?: number;
+  avg_daily_weight: number;
+  /** Normalised by `api/suggested`. Optional because a row whose profile is
+   *  missing or malformed arrives here absent, and callers must treat that as
+   *  "no profile", never as seven zeros. */
+  dow_rates?: DowRates;
+
+  /* ── ordered against sold. Present with `includeOrders`, and absent in
+        their entirety on a historical response, because order_status is an
+        action and a past date has no ordering decision left in it. ── */
+  ordered_weight?: number;
+  ordered_units?: number;
+  /** Ordered ÷ sold over the lookback. Null when nothing sold. */
+  order_ratio?: number | null;
+  /** The same statement in pounds: bought and not sold. Negative where the
+   *  store sold more than it bought. This is what a list should rank by — the
+   *  ratio says how far out of line, the gap says what it costs. */
+  order_gap_weight?: number | null;
+  order_status?: OrderStatus;
+
+  /**
+   * The two halves `on_hand_weight` is the difference of, over the short
+   * window rather than the lookback.
+   *
+   * Returned separately because the subtraction is the one term of the model a
+   * buyer will not take on trust: "48 lb already in the case" is an assertion,
+   * and "ordered 91, sold 43" is an argument. Neither is a lookback figure, so
+   * neither should be read against `ordered_weight` or `sold_weight_window`.
+   */
+  ordered_weight_recent?: number;
+  sold_weight_recent?: number;
+
+  /**
+   * Ordered and sold within 3% of each other AND no waste recorded anywhere.
+   *
+   * Two independent readings both saying nothing was ever lost, on product sold
+   * by the pound. Not a clean bill — a hole in the recording. The bands cannot
+   * say so, because a ratio of 1.000 sits squarely inside `ok`.
+   */
+  shrink_unrecorded?: boolean;
+
+  /**
+   * How many days the stock on hand would last at this item's ordinary rate.
+   *
+   * The rhythm test, and the reason it is expressed in DAYS rather than pounds:
+   * 2 lb is a lot of saffron and nothing of bananas. Null when nothing sold
+   * over the lookback, which is why `rhythm_action` has an `unknown` band —
+   * a missing figure is not a verdict of "fine".
+   */
+  days_of_cover?: number | null;
+  /** This item's heaviest weekday against its own daily mean. At 1.5 and above
+   *  one delivery has to carry a spike, which ordering more does not fix. */
+  dow_peak_ratio?: number | null;
+  rhythm_action?: RhythmAction;
+
+  /**
+   * Stock still in the store: ordered minus sold over `leadDays + coverDays`,
+   * floored at zero. ALREADY SUBTRACTED from `suggested_weight` — do not net it
+   * off again.
+   *
+   * The short window is the whole point. On-hand is a LEVEL; ordered-minus-sold
+   * over the lookback is an accumulation of every imbalance since June, and it
+   * grows if you widen `lookbackWeeks`. Nothing in the case changes when you
+   * look further back, so a figure that moves when you do is not stock.
+   */
+  on_hand_weight?: number;
+
+  /* ── diagnostics only ── */
+  damaged_weight?: number;
+  damaged_units?: number;
+}
+
+/**
+ * One day's actual pounds for a store x sub department.
+ *
+ * The backward-looking half of the page. `dow_rates` answers "what does a
+ * Friday normally look like"; this answers "what did we actually move last
+ * Friday", and they are different numbers — the first is an average over the
+ * lookback, the second is one observation.
+ */
+export interface SuggestedDailyPoint {
+  /** yyyy-mm-dd. */
+  date: string;
+  weight: number;
+  /** Distinct products that sold weight that day. */
+  items: number;
+}
+
+/**
+ * One department's day-by-day history.
+ *
+ * Returned once per department under `daily_by_department` rather than copied
+ * onto every row. It used to ride on the rows, which read as the ROW's history:
+ * on an item row the department's series looked like that item's own, so banana
+ * showed a daily average of 361 lb against its real ~103 with nothing on the row
+ * to tell you which it was.
+ */
+export interface SuggestedDailySeries {
+  storeid: number;
+  sub_department: number | null;
+  /** Mean of the days that actually traded — NOT the window mean, which a
+   *  closed Sunday would dilute. */
+  avg: number;
+  days: number;
+  series: SuggestedDailyPoint[];
+}
+
+/**
+ * The key `daily_by_department` is indexed by.
+ *
+ * The backend builds it in Python as `f"{storeid}:{sub_department}"`, so a null
+ * department stringifies to the literal `None` rather than an empty segment.
+ * Reproduced here rather than worked around at each call site — get it wrong and
+ * the lookup silently misses, which shows up as a department with no history
+ * instead of an error.
+ */
+export const dailyKey = (storeid: number, subDepartment: number | null) =>
+  `${storeid}:${subDepartment === null ? "None" : subDepartment}`;
+
+/** One store x sub department in the group rollup. Carries counts rather than
+ *  the items themselves; the sheet is a separate call. */
+export interface SuggestedGroupRow {
+  storeid: number;
+  store_name: string | null;
+  store_number: string | null;
+  sub_department: number | null;
+  sub_department_description: string | null;
+  item_count: number;
+  sold_weight_window: number;
+  demand_weight: number;
+  suggested_weight: number;
+  items_receipts: number;
+  items_markdown: number;
+  items_damage: number;
+  items_none: number;
+  items_clamped: number;
+  avg_daily_weight: number;
+
+  /* ── ordered against sold, same availability rules as the item row ── */
+  ordered_weight?: number;
+  ordered_units?: number;
+  order_ratio?: number | null;
+  order_gap_weight?: number | null;
+  on_hand_weight?: number;
+  items_critical?: number;
+  items_watch?: number;
+  items_ok?: number;
+  items_under?: number;
+  items_no_orders?: number;
+  items_insufficient?: number;
+  items_shrink_unrecorded?: number;
+  /** The department's own days of cover: its total on-hand over its total
+   *  daily rate. Not the mean of its items' figures — a department is stocked
+   *  as a case, and one dead line with 400 days of cover would swamp that. */
+  days_of_cover?: number | null;
+  items_slow_down?: number;
+  items_skip_cycle?: number;
+  items_tighten?: number;
+  items_deliver_often?: number;
+  items_watch_rhythm?: number;
+
+  /** Normalised by `api/suggested`. Optional because a row whose profile is
+   *  missing or malformed arrives here absent, and callers must treat that as
+   *  "no profile", never as seven zeros. */
+  dow_rates?: DowRates;
+}
+
+/**
+ * How this item's ORDERING has run against its selling, over the lookback.
+ *
+ * Faces the opposite way to `suggested_weight`, and the two can disagree on the
+ * same item without either being wrong: a line bought at 1.6x all quarter can
+ * still genuinely need 313 lb this weekend. This is a verdict on the pattern,
+ * never an instruction about the order on screen.
+ *
+ * `ok` starts at 0.9 and runs THROUGH 1.0 deliberately — a store should buy a
+ * little more than it sells, and the gap above 1.0 is the shrink.
+ * `no_orders` and `insufficient` are absences of signal, not verdicts.
+ */
+export type OrderStatus =
+  | "critical"
+  | "watch"
+  | "ok"
+  | "under"
+  | "no_orders"
+  | "insufficient";
+
+/** Band counts over the whole query. Exhaustive and exclusive, so they sum to
+ *  `record_count`. */
+export type OrderSummary = Record<OrderStatus, number>;
+
+/** Kept out of `OrderSummary` on purpose: a flagged item is ALSO counted in its
+ *  band, so folding it in would break that sum. */
+export interface OrderFlags {
+  shrink_unrecorded: number;
+}
+
+/**
+ * What to do about the ordering RHYTHM, as opposed to this order's pounds.
+ *
+ * Server-side, and deliberately so. The thresholds are request fields the
+ * endpoint tunes (`slowCycles`, `tightCycles`), the bands are counted over the
+ * whole query into `rhythm_summary`, and a store-grain view needs "3 items need
+ * to slow down" per department — which a frontend holding one store's item rows
+ * cannot produce. The frontend owns the wording, not the verdict.
+ *
+ * Measured in CYCLES of `leadDays + coverDays`, so one threshold holds across a
+ * 4-day rhythm and a 7-day one:
+ *
+ *   slow_down      over a cycle of stock AND buying 1.2x+ — both signals, so it
+ *                  is neither an item that already corrected nor one heavy
+ *                  delivery
+ *   skip_cycle     over a cycle of stock, but the buying is in line. Nothing
+ *                  wrong with the rhythm; this turn just is not needed
+ *   tighten        under a quarter-cycle AND buying under what sells
+ *   deliver_often  under a quarter-cycle with a spiky weekday. Ordering more
+ *                  does not fix a spike; delivering closer to it does
+ *   watch          the trend is wrong while today's number is fine — doing
+ *                  nothing THIS cycle costs nothing
+ *   ok             nothing to do
+ *   insufficient   under 10 lb sold in the lookback: too little to judge
+ *   unknown        nothing sold, so there is no rate to divide stock by
+ */
+export type RhythmAction =
+  | "slow_down"
+  | "skip_cycle"
+  | "tighten"
+  | "deliver_often"
+  | "watch"
+  | "ok"
+  | "insufficient"
+  | "unknown";
+
+/** Band counts over the whole query, same contract as `OrderSummary`:
+ *  exhaustive and exclusive, so they sum to `record_count`. */
+export type RhythmSummary = Record<RhythmAction, number>;
+
+/** Why an item is on the not-selling list, worst-to-least-recoverable.
+ *
+ *  `declining` is the one that pays for the feature: dead and stopped are
+ *  visible to anyone paying attention, but an item still moving at half its old
+ *  rate is being produced to the OLD level and rotting the difference. */
+export type NotSellingStatus = "dead" | "stopped" | "declining";
+
+/** One item that has stopped or slowed. Rates are per day, because the two
+ *  halves of the lookback are different lengths and raw totals would call
+ *  everything declining. */
+export interface NotSellingItem {
+  storeid: number;
+  product_code: string;
+  product_description: string | null;
+  sub_department: number | null;
+  sub_department_description: string | null;
+  status: NotSellingStatus;
+  recent_weight: number;
+  prior_weight: number;
+  recent_lb_per_day: number;
+  prior_lb_per_day: number;
+  /** recent/prior - 1. Null when the item never sold in the prior half, which
+   *  is division by zero rather than a 0% change. */
+  change_ratio: number | null;
+}
+
+export interface NotSellingWindow {
+  start: string;
+  end: string;
+  days: number;
+}
+
+/**
+ * The other half of the question, under its own key.
+ *
+ * Never merged into `items`: a zero-demand row is not an order, and folding it
+ * in would move record_count, every department sum and the shrink coverage.
+ * Those are order figures.
+ *
+ * `counts` is over every department the call covered, not the selected one —
+ * a per-department badge has to be counted client-side from `items`.
+ */
+export interface SuggestedNotSelling {
+  window: { recent: NotSellingWindow; prior: NotSellingWindow };
+  decline_threshold: number;
+  counts: Record<NotSellingStatus, number>;
+  items: NotSellingItem[];
+}
+
+/** Echoed back so the page can state what the numbers were computed under. A
+ *  suggestion without its window is meaningless. */
+export interface SuggestedParameters {
+  storeid?: number;
+  storeids?: number[];
+  group_by?: string;
+  as_of: string;
+  /** True when `as_of` is in the past, which makes the response a comparison
+   *  rather than an order — `suggested_weight` is omitted from every row. */
+  is_historical?: boolean;
+  lead_days: number;
+  cover_days: number;
+  cover_window: { start: string; end: string };
+  lookback_window: { start: string; end: string; weeks: number; days: number };
+  min_weight_sold: number;
+}
+
+/**
+ * Which terms of the model actually had data behind them.
+ *
+ * Not decoration: with `on_hand` and `receipts` false, `suggested_weight` is a
+ * demand forecast with a waste adjustment, NOT an order quantity — it does not
+ * subtract what is already in the case. The page has to say so.
+ */
+export interface SuggestedCoverage {
+  demand: boolean;
+  receipts: boolean;
+  markdown: boolean;
+  damage: boolean;
+  on_hand: boolean;
+  on_order: boolean;
+  items_by_shrink_source: {
+    receipts: number;
+    markdown: number;
+    damage: number;
+    none: number;
+  };
+  note: string;
+}
+
+export interface SuggestedItemsResp {
+  error: number;
+  success: boolean;
+  msg?: string;
+  record_count: number;
+  total_pages: number;
+  page: number;
+  parameters: SuggestedParameters;
+  data_coverage: SuggestedCoverage;
+  /** Keyed by `dailyKey(storeid, sub_department)`. Null unless `includeDaily`. */
+  daily_by_department: Record<string, SuggestedDailySeries> | null;
+  /** Null when `includeOrders` is off or the response is historical. */
+  order_summary: OrderSummary | null;
+  order_flags: OrderFlags | null;
+  /** Null on the same terms as `order_summary` — the rhythm bands are computed
+   *  in the same CTE and are gated on the same `includeOrders`. */
+  rhythm_summary: RhythmSummary | null;
+  /** Present only when the request set `includeNotSelling`; null otherwise. */
+  not_selling: SuggestedNotSelling | null;
+  items: SuggestedItem[];
+}
+
+export interface SuggestedGroupResp {
+  error: number;
+  success: boolean;
+  msg?: string;
+  record_count: number;
+  total_pages: number;
+  page: number;
+  parameters: SuggestedParameters;
+  data_coverage: SuggestedCoverage;
+  /** Keyed by `dailyKey(storeid, sub_department)`. Null unless `includeDaily`. */
+  daily_by_department: Record<string, SuggestedDailySeries> | null;
+  /** Null when `includeOrders` is off or the response is historical. */
+  order_summary: OrderSummary | null;
+  order_flags: OrderFlags | null;
+  /** Null on the same terms as `order_summary` — the rhythm bands are computed
+   *  in the same CTE and are gated on the same `includeOrders`. */
+  rhythm_summary: RhythmSummary | null;
+  items: SuggestedGroupRow[];
+}

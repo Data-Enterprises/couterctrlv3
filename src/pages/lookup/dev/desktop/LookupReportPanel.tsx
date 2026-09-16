@@ -4,8 +4,16 @@ import {
   ExclamationTriangleIcon,
 } from "@heroicons/react/20/solid";
 import { formatCurrency2 } from "../../../../utils";
+import type { SaleTypeSummary } from "../../../../features/itemLookupSlice";
+import SaleTypeBreakdown from "../SaleTypeBreakdown";
 import type { MarginResult, DayBucket, TrendResult } from "../lookupMetrics";
-import { computeActiveGap } from "../lookupMetrics";
+import {
+  computeActiveGap,
+  dayMarginPct,
+  dayUnitCost,
+  formatUnits,
+  hasSaleTypeBreakdown,
+} from "../lookupMetrics";
 
 interface LookupReportPanelProps {
   description: string;
@@ -17,11 +25,15 @@ interface LookupReportPanelProps {
   buckets: DayBucket[];
   trend: TrendResult;
   gaps: { start: string; end: string; days: number }[];
+  saleTypes: SaleTypeSummary[];
+  /** "Sale", or the type whose timeline replaces the daily breakdown. */
+  selectedSaleType: string;
+  onSelectSaleType: (saleType: string) => void;
+  /** The selected type's days. Ignored while that type is Sale, which uses
+   *  `buckets` — the timeline the KPIs and banners are built on. */
+  timeline: DayBucket[];
   onExportOpen: () => void;
 }
-
-const dayMarginPct = (b: DayBucket): number | null =>
-  b.hasSale && b.revenue > 0 ? ((b.revenue - b.cost) / b.revenue) * 100 : null;
 
 const LookupReportPanel = ({
   description,
@@ -33,11 +45,22 @@ const LookupReportPanel = ({
   buckets,
   trend,
   gaps,
+  saleTypes,
+  selectedSaleType,
+  onSelectSaleType,
+  timeline,
   onExportOpen,
 }: LookupReportPanelProps) => {
+  const showingSales = selectedSaleType === "Sale";
   const isNegative = margin.marginPct !== null && margin.marginPct < 0;
   const activeGapDays = computeActiveGap(buckets);
   const longestGap = gaps.reduce((max, g) => Math.max(max, g.days), 0);
+  const unit = margin.weighed ? "lb" : "unit";
+  // A scale item gets Qty and Weight side by side: qty is how many times it
+  // rang, weight is what it was priced and costed by.
+  const salesGrid = {
+    gridTemplateColumns: `repeat(${margin.weighed ? 8 : 7}, minmax(0, 1fr))`,
+  };
 
   return (
     <div className="flex-1 min-w-0 shadow-lg">
@@ -49,7 +72,7 @@ const LookupReportPanel = ({
               {description}
             </div>
             <div className="text-[10px] mt-0.5 text-custom-white truncate">
-              {productCode} · {categoryDescription}
+              {[productCode, categoryDescription].filter(Boolean).join(" · ")}
             </div>
           </div>
           <button
@@ -70,9 +93,15 @@ const LookupReportPanel = ({
             <div
               className={`text-[14px] font-bold tabular-nums mt-0.5 ${isNegative ? "text-red-800" : "text-emerald-800"}`}
             >
-              {margin.marginPct !== null
-                ? `${margin.marginPct.toFixed(2)}%`
-                : "-"}
+              {margin.costMissing ? (
+                <span className="text-[12px] font-semibold text-gray-500">
+                  No cost on file
+                </span>
+              ) : margin.marginPct !== null ? (
+                `${margin.marginPct.toFixed(2)}%`
+              ) : (
+                "-"
+              )}
             </div>
           </div>
           <div className="px-4 pt-2.5 text-center">
@@ -95,18 +124,26 @@ const LookupReportPanel = ({
           </div>
           <div className="px-4 pt-2.5 text-center">
             <div className="text-[10px] font-bold uppercase tracking-wide text-content">
-              Cost / {margin.weighed ? "lb" : "unit"}
+              Cost / {unit}
             </div>
             <div className="text-[14px] font-bold text-content tabular-nums mt-0.5">
-              {formatCurrency2(margin.unitCost)}
+              {margin.costMissing ? (
+                <span className="text-[12px] font-semibold text-gray-500">
+                  No cost on file
+                </span>
+              ) : (
+                formatCurrency2(margin.unitCost)
+              )}
             </div>
           </div>
           <div className="px-4 pt-2.5 text-center">
+            {/* A scale item rings qty 0 and sells by weight, so its count is
+                always zero — show what it actually sold. */}
             <div className="text-[10px] font-bold uppercase tracking-wide text-content">
-              Total units
+              {margin.weighed ? "Total weight" : "Total units"}
             </div>
             <div className="text-[14px] font-bold text-content tabular-nums mt-0.5">
-              {totalQty}
+              {margin.weighed ? formatUnits(margin.totalUnits, true) : totalQty}
             </div>
           </div>
           <div className="px-4 pt-2.5 text-center">
@@ -146,8 +183,10 @@ const LookupReportPanel = ({
               <div className="flex-1 flex items-center gap-1.5 px-2.5 py-2 bg-amber-50 rounded-lg min-w-0">
                 <ArrowTrendingDownIcon className="w-4 h-4 text-amber-800 flex-shrink-0" />
                 <span className="text-[11.5px] text-amber-900 truncate">
-                  Slowing down - {trend.firstHalfQty} units first week,{" "}
-                  {trend.secondHalfQty} units this week
+                  Slowing down - {formatUnits(trend.firstHalfUnits, margin.weighed)}
+                  {margin.weighed ? "" : " units"} first week,{" "}
+                  {formatUnits(trend.secondHalfUnits, margin.weighed)}
+                  {margin.weighed ? "" : " units"} this week
                 </span>
               </div>
             )}
@@ -162,30 +201,71 @@ const LookupReportPanel = ({
           </div>
         )}
 
+        {hasSaleTypeBreakdown(saleTypes) && (
+          <div className="px-4 pt-4 flex-shrink-0">
+            <div className="text-[11px] font-semibold text-content pb-1">
+              By sale type
+            </div>
+            <SaleTypeBreakdown
+              saleTypes={saleTypes}
+              weighed={margin.weighed}
+              selected={selectedSaleType}
+              onSelect={onSelectSaleType}
+            />
+          </div>
+        )}
+
         {/* Consolidated daily breakdown */}
-        <div className="px-4 pt-4 pb-2 flex-shrink-0">
+        <div className="px-4 pt-4 pb-2 flex-shrink-0 flex items-baseline justify-between gap-3">
           <div className="text-[11px] font-semibold text-content">
             Daily breakdown
+            {!showingSales && (
+              <span className="font-normal text-content/85"> · {selectedSaleType}</span>
+            )}
           </div>
+          {!showingSales && (
+            <button
+              type="button"
+              onClick={() => onSelectSaleType("Sale")}
+              className="text-[11px] font-semibold text-[#1e2a4a] hover:underline"
+            >
+              Back to sales
+            </button>
+          )}
         </div>
         <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar px-4 pb-4">
-          <div className="grid grid-cols-7 px-2 py-1.5 text-[9px] font-medium uppercase tracking-wide text-content border-b border-gray-100 sticky top-0 bg-custom-white">
+          {!showingSales ? (
+            <SaleTypeTimeline
+              buckets={timeline}
+              weighed={margin.weighed}
+              saleType={selectedSaleType}
+            />
+          ) : (
+          <>
+          <div
+            className="grid px-2 py-1.5 text-[9px] font-medium uppercase tracking-wide text-content border-b border-gray-100 sticky top-0 bg-custom-white"
+            style={salesGrid}
+          >
             <span>Date</span>
             <span className="text-right">Qty</span>
-            <span className="text-right">Revenue</span>
+            {margin.weighed && <span className="text-right">Weight</span>}
+            <span className="text-right">Amount</span>
             <span className="text-right">Cost of goods</span>
-            <span className="text-right">Cost / unit</span>
+            <span className="text-right">Cost / {unit}</span>
             <span className="text-right">List price</span>
             <span className="text-right">Margin</span>
           </div>
           {[...buckets].reverse().map((b) => {
             const pct = dayMarginPct(b);
             const isNeg = pct !== null && pct < 0;
-            const caseCost = b.hasSale ? b.cost / b.qty : null;
+            const caseCost = dayUnitCost(b);
+            // Sold, but nothing to cost it against — not a $0.00 cost.
+            const noCost = b.hasSale && !b.hasCost;
             return (
               <div
                 key={b.date}
-                className={`grid grid-cols-7 px-2 py-2 text-[12px] border-b border-gray-50 ${b.hasSale ? "even:bg-row_stripe" : "bg-gray-50/60"}`}
+                className={`grid px-2 py-2 text-[12px] border-b border-gray-50 ${b.hasSale ? "even:bg-row_stripe" : "bg-gray-50/60"}`}
+                style={salesGrid}
               >
                 <span className={b.hasSale ? "text-content" : "text-gray-400"}>
                   {b.label}
@@ -193,17 +273,24 @@ const LookupReportPanel = ({
                 <span
                   className={`text-right tabular-nums ${b.hasSale ? "text-content" : "text-gray-400"}`}
                 >
-                  {b.hasSale ? b.qty : "—"}
+                  {b.hasSale ? b.qty.toLocaleString() : "—"}
                 </span>
+                {margin.weighed && (
+                  <span
+                    className={`text-right tabular-nums ${b.hasSale ? "text-content" : "text-gray-400"}`}
+                  >
+                    {b.hasSale ? formatUnits(b.units, true) : "—"}
+                  </span>
+                )}
                 <span
                   className={`text-right tabular-nums ${b.hasSale ? "text-content" : "text-gray-400"}`}
                 >
                   {b.hasSale ? formatCurrency2(b.revenue) : "—"}
                 </span>
                 <span
-                  className={`text-right tabular-nums ${b.hasSale ? "text-content" : "text-gray-400"}`}
+                  className={`text-right tabular-nums ${b.hasSale && !noCost ? "text-content" : "text-gray-400"}`}
                 >
-                  {b.hasSale ? formatCurrency2(b.cost) : "—"}
+                  {noCost ? "No cost" : b.hasSale ? formatCurrency2(b.cost) : "—"}
                 </span>
                 <span
                   className={`text-right tabular-nums ${b.hasSale ? "text-content" : "text-gray-400"}`}
@@ -229,9 +316,61 @@ const LookupReportPanel = ({
               </div>
             );
           })}
+          </>
+          )}
         </div>
       </div>
     </div>
+  );
+};
+
+/**
+ * One non-Sale type's days. Cost and margin are left off: a voided or
+ * restored line isn't a sale, so neither means anything against it.
+ */
+const SaleTypeTimeline = ({
+  buckets,
+  weighed,
+  saleType,
+}: {
+  buckets: DayBucket[];
+  weighed: boolean;
+  saleType: string;
+}) => {
+  const grid = {
+    gridTemplateColumns: `repeat(${weighed ? 5 : 4}, minmax(0, 1fr))`,
+  };
+  return (
+    <>
+      <div
+        className="grid px-2 py-1.5 text-[9px] font-medium uppercase tracking-wide text-content border-b border-gray-100 sticky top-0 bg-custom-white"
+        style={grid}
+      >
+        <span>Date</span>
+        <span className="text-right">Qty</span>
+        {weighed && <span className="text-right">Weight</span>}
+        <span className="text-right">Amount</span>
+        <span className="text-right">List price</span>
+      </div>
+      {[...buckets].reverse().map((b) => (
+        <div
+          key={b.date}
+          className={`grid px-2 py-2 text-[12px] tabular-nums border-b border-gray-50 ${
+            b.hasSale ? "even:bg-row_stripe text-content" : "bg-gray-50/60 text-gray-400"
+          }`}
+          style={grid}
+          aria-label={b.hasSale ? `${saleType} on ${b.label}` : undefined}
+        >
+          <span>{b.label}</span>
+          <span className="text-right">{b.hasSale ? b.qty.toLocaleString() : "—"}</span>
+          {weighed && (
+            <span className="text-right">{b.hasSale ? formatUnits(b.units, true) : "—"}</span>
+          )}
+          <span className="text-right">{b.hasSale ? formatCurrency2(b.revenue) : "—"}</span>
+          <span className="text-right">{b.hasSale ? formatCurrency2(b.listPrice) : "—"}</span>
+        </div>
+      ))}
+    </>
   );
 };
 

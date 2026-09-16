@@ -1,6 +1,19 @@
 import { addDays, sameWeekDayLastYear } from "../../../utils";
 import { rowsToCsv } from "../../../utils/csvExport";
 import { gradeSeverity } from "../../../utils/severity";
+import {
+  gradeBasis as sharedGradeBasis,
+  isCompleteCoverage,
+  type Coverage,
+  type GradeBasis,
+} from "../../../utils/grading";
+export { isCompleteCoverage, type Coverage, type GradeBasis };
+export {
+  PARTIAL_PILL_CLASS,
+  comparisonPillClass,
+} from "../../../utils/severity";
+import { getHolidayName, getHolidayLastYear } from "../../../utils/holidays";
+import type { HolidayName } from "../../../utils/holidays";
 import type {
   WeeklySale,
   SubSale,
@@ -21,23 +34,110 @@ export {
   applyStoreNumberToName,
 } from "../../../utils/storeIdentity";
 
-// The comparison a row is graded on: last year when we have it, else last
-// week. Rounded before grading — see itemSeverity in PopupSubDeptList for why.
-export const ledgerGradePct = (row: {
-  hasLY: boolean;
-  hasLW: boolean;
-  vsLYPct: number;
-  vsLWPct: number;
-}) => (row.hasLY ? row.vsLYPct : row.hasLW ? row.vsLWPct : 0);
+// ─── Grading basis ────────────────────────────────────────────────────────────
+//
+// Which comparison a row is graded on. Last year, but only when it covers every
+// day the week has; otherwise last week, when THAT covers every day; otherwise
+// the row is not graded at all.
+//
+// It used to be "last year whenever there is any". Store 590 has three of seven
+// matching days last year, both weekend days missing, and was graded Critical
+// on that three-day figure while a complete last week put it at -1.20%. A
+// verdict about a store has to rest on a whole week. The partial comparison
+// still shows — in grey, with its day count — it just doesn't decide anything.
+//
+// Ungraded is a real outcome rather than a fallback to "healthy": a store with
+// neither comparison complete isn't known to be fine, and counting it under OK
+// would say it is.
 
-export const ledgerSeverity = gradeSeverity;
+/** The whole-week rule lives in utils/grading.ts so every Performance page grades
+ *  the same way; this takes Sales' rows, which carry coverage inline. */
+export const gradeBasis = (
+  r: { hasLY: boolean; hasLW: boolean } & Coverage,
+): GradeBasis => sharedGradeBasis(r, r);
+
+/** Severity on the chosen basis, or null when there is no basis. */
+export const gradeOnBasis = (
+  basis: GradeBasis,
+  lwPct: number,
+  lyPct: number,
+  threshold: number,
+): Severity | null =>
+  basis === "LY"
+    ? gradeSeverity(lyPct, threshold)
+    : basis === "LW"
+      ? gradeSeverity(lwPct, threshold)
+      : null;
+
+/** The percentage the basis points at — what a list sorts graded rows by. */
+export const basisPct = (basis: GradeBasis, lwPct: number, lyPct: number) =>
+  basis === "LY" ? lyPct : basis === "LW" ? lwPct : null;
+
+/** Critical, watch, healthy, then ungraded last. */
+export const severityRank = (s: Severity | null) =>
+  s === null ? 3 : SEVERITY_RANK[s];
+
+/**
+ * Split a dated row set into the TW rows each comparison may use, and count
+ * coverage.
+ *
+ * For any list that aggregates dated rows by group — sub-departments, hours.
+ * `lw` and `ly` must already be the matched-date rows (callers filter to the
+ * matched date set first). A TW row is kept for a comparison only when its
+ * date found a counterpart there.
+ *
+ * Coverage is counted on DATES across the whole row set, not per group. A
+ * sub-department that sold nothing on a day it traded last year is a real
+ * zero, not a gap; what makes a comparison incomplete is the store having no
+ * rows for that date at all.
+ */
+export const matchDatedRows = <T extends { sale_date: string }>(
+  tw: T[],
+  lw: T[],
+  ly: T[],
+) => {
+  const day = (r: { sale_date: string }) => r.sale_date.split("T")[0];
+  const lwDates = new Set(lw.map(day));
+  const lyDates = new Set(ly.map(day));
+  const lyFor = new Map<string, string>();
+  const twForLW: T[] = [];
+  const twForLY: T[] = [];
+  const twDays = new Set<string>();
+  const lwHit = new Set<string>();
+  const lyHit = new Set<string>();
+  for (const r of tw) {
+    const d = day(r);
+    twDays.add(d);
+    if (lwDates.has(addDays(new Date(d), -7).toISOString().split("T")[0])) {
+      twForLW.push(r);
+      lwHit.add(d);
+    }
+    let lyDate = lyFor.get(d);
+    if (lyDate === undefined) {
+      lyDate = sameWeekDayLastYear(d).date;
+      lyFor.set(d, lyDate);
+    }
+    if (lyDates.has(lyDate)) {
+      twForLY.push(r);
+      lyHit.add(d);
+    }
+  }
+  const coverage: Coverage = {
+    dayCount: twDays.size,
+    lwDayCount: lwHit.size,
+    lyDayCount: lyHit.size,
+  };
+  return { twForLW, twForLY, coverage };
+};
 
 export const sortLedgerRows = (rows: LedgerRowData[]): LedgerRowData[] =>
   [...rows].sort((a, b) => {
-    const rankDiff = SEVERITY_RANK[a.severity] - SEVERITY_RANK[b.severity];
+    const rankDiff = severityRank(a.severity) - severityRank(b.severity);
     if (rankDiff !== 0) return rankDiff;
-    const aPct = a.hasLY ? a.vsLYPct : a.vsLWPct;
-    const bPct = b.hasLY ? b.vsLYPct : b.vsLWPct;
+    const aPct = basisPct(a.gradedOn, a.vsLWPct, a.vsLYPct);
+    const bPct = basisPct(b.gradedOn, b.vsLWPct, b.vsLYPct);
+    // Ungraded rows have no percentage to rank by; biggest store first.
+    if (aPct === null || bPct === null) return b.twTotal - a.twTotal;
     return aPct - bPct;
   });
 
@@ -56,7 +156,9 @@ export const regradeLedgerRows = (
 ): LedgerRowData[] =>
   sortLedgerRows(
     rows.map((r) => {
-      const severity = ledgerSeverity(ledgerGradePct(r), threshold);
+      // The basis doesn't move with the threshold — coverage decides it —
+      // so only the severity on that basis is recomputed.
+      const severity = gradeOnBasis(r.gradedOn, r.vsLWPct, r.vsLYPct, threshold);
       return severity === r.severity ? r : { ...r, severity };
     }),
   );
@@ -176,11 +278,21 @@ export const ampm = (h: number) =>
 
 // Float noise is handled by gradeSeverity's epsilon rather than by rounding
 // here; see PCT_EPSILON for why the difference matters at the threshold.
-export const deptSeverity = (r: DeptRow, threshold = 9): Severity =>
-  gradeSeverity(r.hasLY ? r.vsLYPct : r.hasLW ? r.vsLWPct : 0, threshold);
+// Coverage comes from the list a row belongs to, not the row — see
+// matchDatedRows — so every row in one list shares it.
+export const deptSeverity = (
+  r: DeptRow,
+  coverage: Coverage,
+  threshold = 9,
+): Severity | null =>
+  gradeOnBasis(gradeBasis({ ...r, ...coverage }), r.vsLWPct, r.vsLYPct, threshold);
 
-export const hourSeverity = (r: HourRow, threshold = 9): Severity =>
-  gradeSeverity(r.hasLY ? r.vsLYPct : r.hasLW ? r.vsLWPct : 0, threshold);
+export const hourSeverity = (
+  r: HourRow,
+  coverage: Coverage,
+  threshold = 9,
+): Severity | null =>
+  gradeOnBasis(gradeBasis({ ...r, ...coverage }), r.vsLWPct, r.vsLYPct, threshold);
 
 // ─── Day-matched comparison helpers ────────────────────────────────────────────
 //
@@ -205,12 +317,32 @@ export interface DayMatchable {
 }
 
 export interface DayMatchedTotals {
+  /** All TW days. The store's actual week — NOT the base of any percentage
+   *  below, which is the distinction the callers kept getting wrong. */
   twTotal: number;
   twQty: number;
   lwTotal: number;
   lwQty: number;
   lyTotal: number;
   lyQty: number;
+  /**
+   * The TW side of each comparison: only the days that found a match.
+   *
+   * These were computed and thrown away, which left callers with no correct
+   * numerator to hand and `twTotal` sitting there looking like one. A store
+   * with three of seven LY days then read as +127% against its own full week
+   * instead of -12% against the days it can actually be compared on.
+   */
+  twTotalForLW: number;
+  twQtyForLW: number;
+  twTotalForLY: number;
+  twQtyForLY: number;
+  /** How much of the week each comparison actually covers. A percentage over
+   *  three of seven days is a different claim from one over seven, and the UI
+   *  cannot say so without these. */
+  dayCount: number;
+  lwDayCount: number;
+  lyDayCount: number;
   hasLW: boolean;
   hasLY: boolean;
   vsLWPct: number;
@@ -256,6 +388,13 @@ export const computeDayMatchedTotals = (
     lwQty,
     lyTotal,
     lyQty,
+    twTotalForLW,
+    twQtyForLW,
+    twTotalForLY,
+    twQtyForLY,
+    dayCount: days.length,
+    lwDayCount: lwDays.length,
+    lyDayCount: lyDays.length,
     hasLW,
     hasLY,
     vsLWPct: hasLW ? ((gradeTwLW - gradeLW) / gradeLW) * 100 : 0,
@@ -460,16 +599,27 @@ export const buildLedgerRows = (
       lwQty,
       lyTotal,
       lyQty,
+      twTotalForLW,
+      twQtyForLW,
+      twTotalForLY,
+      twQtyForLY,
+      dayCount,
+      lwDayCount,
+      lyDayCount,
       hasLW,
       hasLY,
       vsLWPct,
       vsLYPct,
       vsLYDollar,
     } = computeDayMatchedTotals(days, gradingMetric);
-    const severity = ledgerSeverity(
-      ledgerGradePct({ hasLY, hasLW, vsLYPct, vsLWPct }),
-      threshold,
-    );
+    const gradedOn = gradeBasis({
+      hasLY,
+      hasLW,
+      dayCount,
+      lwDayCount,
+      lyDayCount,
+    });
+    const severity = gradeOnBasis(gradedOn, vsLWPct, vsLYPct, threshold);
     return {
       storeid: id,
       store_name: assigned?.store_name ?? ref.store_name,
@@ -483,11 +633,19 @@ export const buildLedgerRows = (
       twQty,
       lwQty,
       lyQty,
+      twTotalForLW,
+      twQtyForLW,
+      twTotalForLY,
+      twQtyForLY,
+      dayCount,
+      lwDayCount,
+      lyDayCount,
       vsLWPct,
       vsLYPct,
       vsLYDollar,
       hasLW,
       hasLY,
+      gradedOn,
       severity,
       days,
     };
@@ -583,4 +741,81 @@ export const aggByCode = (
       });
   }
   return map;
+};
+
+// ─── Last-year window description ────────────────────────────────────────────
+//
+// The LY comparison is a SET of dates, not a range, and the two are not the
+// same thing the moment a holiday is in the week.
+//
+// `getDateRanges` and `StoreDetailPopup` both take min/max of the shifted
+// dates to build a FETCH range, and they have to: a Labor Day in the TW week
+// matches Labor Day last year, which can sit ten days off the rest of the
+// week, and the row has to be inside the window or it is never returned.
+// Sep 4-10 2026 therefore fetches Sep 1-11 2025 — eleven days for a seven-day
+// comparison, on purpose.
+//
+// What went wrong is that those fetch bounds were then printed as the label.
+// A header reading "Sep 1 - Sep 11" against a seven-day week is the page
+// telling the reader something untrue about its own arithmetic, which is how
+// this got noticed.
+
+export interface LyHolidayMatch {
+  /** The day in the current week. */
+  twDate: string;
+  /** Last year's occurrence of the same holiday — NOT a weekday shift. */
+  lyDate: string;
+  name: HolidayName;
+}
+
+export interface LyWindow {
+  /** Every date the LY comparison looks for, in order. */
+  dates: string[];
+  /** The days matched to a holiday rather than shifted by weekday. */
+  holidays: LyHolidayMatch[];
+  /** What to print. The contiguous run, with any holiday named after it —
+   *  "Sep 5 – Sep 11 · Labor Day" rather than a range that includes four days
+   *  nothing is being compared against. */
+  label: string;
+}
+
+/**
+ * Describes the LY window a set of TW dates maps onto.
+ *
+ * Shared rather than repeated: the desktop popup and the mobile report print
+ * the same label, and a holiday is exactly the case where two hand-rolled
+ * versions would drift apart without anyone noticing until a September.
+ */
+export const describeLyWindow = (twDates: string[]): LyWindow => {
+  const sortedTw = [...twDates].sort();
+  const holidays: LyHolidayMatch[] = [];
+  const plain: string[] = [];
+  const dates: string[] = [];
+
+  for (const twDate of sortedTw) {
+    const lyDate = sameWeekDayLastYear(twDate).date;
+    dates.push(lyDate);
+    const name = getHolidayName(twDate);
+    // A holiday only takes the special branch when last year's occurrence is
+    // in the table; outside 2025-2035 it falls back to the weekday shift and
+    // belongs with the plain days.
+    if (name && getHolidayLastYear(twDate)) {
+      holidays.push({ twDate, lyDate, name });
+    } else {
+      plain.push(lyDate);
+    }
+  }
+
+  // The run the reader thinks of as "the same week last year". Falls back to
+  // the whole set when a week is somehow all holidays, so the label is never
+  // empty.
+  const run = plain.length > 0 ? plain : [...dates].sort();
+  const label = `${fmtDate(run[0])} – ${fmtDate(run[run.length - 1])}`;
+  const names = [...new Set(holidays.map((h) => h.name))];
+
+  return {
+    dates,
+    holidays,
+    label: names.length > 0 ? `${label} · ${names.join(", ")}` : label,
+  };
 };

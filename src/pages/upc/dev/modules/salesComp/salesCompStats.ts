@@ -8,6 +8,36 @@ function rowTotal(row: UpcSalesComp): number {
   return DAYS.reduce((acc, d) => acc + (row[d] ?? 0), 0);
 }
 
+/**
+ * One row per UPC per week, as everything downstream assumes.
+ *
+ * upload_upcs_daily_sales groups by description as well as UPC and week, so an
+ * item whose sales rang under two descriptions — often one of them blank —
+ * comes back as two rows for the same week. Left split, the period total
+ * counted both while the week-by-week table showed only the first, and the
+ * day-of-week averages divided by row count instead of week count.
+ *
+ * Days are summed, and the first non-blank description wins.
+ */
+export function combineSalesCompRows(rows: UpcSalesComp[]): UpcSalesComp[] {
+  const byKey = new Map<string, UpcSalesComp>();
+  for (const r of rows) {
+    const key = `${r.product_code}|${r.week}`;
+    const acc = byKey.get(key);
+    if (!acc) {
+      byKey.set(key, { ...r });
+      continue;
+    }
+    for (const d of DAYS) {
+      // Null only when neither side had a figure, so "no data" still reads
+      // as no data rather than a zero.
+      acc[d] = acc[d] === null && r[d] === null ? null : (acc[d] ?? 0) + (r[d] ?? 0);
+    }
+    if (!acc.description && r.description) acc.description = r.description;
+  }
+  return [...byKey.values()];
+}
+
 export function fmtWeekRange(weekStart: string): string {
   const start = new Date(weekStart);
   const end = addDays(weekStart, 6);
@@ -45,8 +75,8 @@ export type UpcSalesCompStats = {
   dayDeltaPcts: (number | null)[];
   rowMax: number;
   // Total ÷ count of individual (week, weekday) cells that actually had a
-  // sale — a true per-active-day average, not the day-of-week-slot
-  // approximation the aggregate KPI strip uses across the whole selection.
+  // sale — a true per-active-day average. The KPI strip counts days the same
+  // way, so with one UPC selected the two agree.
   avgDaily: number;
 };
 
@@ -62,9 +92,11 @@ export function computeUpcSalesCompStats(
 
   return upcCodes.map((code) => {
     const rows = tyRows.filter((r) => r.product_code === code);
-    const desc = rows[0]?.description ?? code;
+    const desc = rows.find((r) => r.description)?.description || code;
     const sortedWeeks = [...new Set(rows.map((r) => r.week))].sort((a, b) => a.localeCompare(b));
-    const weekCount = rows.length;
+    // Distinct weeks, not rows — the two only agree once rows are combined,
+    // and an average by day of week is per week.
+    const weekCount = sortedWeeks.length;
 
     const dayAvgs = DAYS.map((d) =>
       rows.reduce((acc, r) => acc + (r[d] ?? 0), 0) / (weekCount || 1),
@@ -92,8 +124,9 @@ export function computeUpcSalesCompStats(
 
     const lyRowsForCode = lyRows.filter((r) => r.product_code === code);
     const hasLY = lyRowsForCode.length > 0;
+    const lyWeekCount = new Set(lyRowsForCode.map((r) => r.week)).size;
     const lyDayAvgs = DAYS.map((d) =>
-      lyRowsForCode.reduce((acc, r) => acc + (r[d] ?? 0), 0) / (lyRowsForCode.length || 1),
+      lyRowsForCode.reduce((acc, r) => acc + (r[d] ?? 0), 0) / (lyWeekCount || 1),
     );
     const lyPeakIdx = hasLY ? lyDayAvgs.indexOf(Math.max(...lyDayAvgs)) : -1;
     const lyPeriodTotal = lyRowsForCode.reduce((acc, r) => acc + rowTotal(r), 0);

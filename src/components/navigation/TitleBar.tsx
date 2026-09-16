@@ -30,6 +30,10 @@ import { resetReceiverSlice } from "../../features/receiversSlice";
 import { resetCouponsSlice } from "../../features/couponSlice";
 import { resetLedger } from "../../features/salesLedgerSlice";
 import { resetOrdersState } from "../../features/ordersSlice";
+import { resetCashierState } from "../../features/cashiersSlice";
+import { resetSalesPerf } from "../../features/salesPerfSlice";
+import { resetItemPerf } from "../../features/itemPerfSlice";
+import { resetEventPerf } from "../../features/eventPerfSlice";
 import { setUserPrefs } from "../../api/user";
 import { useToast } from "../toasts/hooks/useToast";
 import type { JsonError } from "../../interfaces";
@@ -224,6 +228,13 @@ const TitleBar = () => {
     dispatch(resetForgotPasswordSlice());
     dispatch(resetLedger());
     dispatch(resetOrdersState());
+    // The mobile Performance screens and the Cashiers explorer hold a whole
+    // search's rows and where you were in them — the next person to sign in
+    // on this device must not land there.
+    dispatch(resetCashierState());
+    dispatch(resetSalesPerf());
+    dispatch(resetItemPerf());
+    dispatch(resetEventPerf());
   };
 
   const handleMobileNavClick = (href: string) => {

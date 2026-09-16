@@ -3,6 +3,18 @@ import type { UpcSalesComp } from "../../../../../interfaces";
 import type { KpiCell } from "../../types";
 import { computeUpcSalesCompStats, DAYS, DAY_SHORT } from "./salesCompStats";
 
+/** Calendar days in the selection on which any UPC sold. Counted per (week,
+ *  weekday), not per weekday column — counting columns capped a two-week range
+ *  at 7 days, so the strip's average disagreed with the detail panel's. With
+ *  one UPC selected the two are the same figure. */
+function activeDayCount(rows: UpcSalesComp[]): number {
+  const days = new Set<string>();
+  for (const r of rows) {
+    for (const d of DAYS) if ((r[d] ?? 0) > 0) days.add(`${r.week}|${d}`);
+  }
+  return days.size;
+}
+
 export function getSalesCompKpis(
   salesComp: UpcSalesComp[],
   salesCompLY: UpcSalesComp[],
@@ -35,10 +47,9 @@ export function getSalesCompKpis(
   // Mode (which day most individual UPCs peak on) is the sub — the two can
   // genuinely disagree when a few high-volume UPCs outweigh many small ones.
   const daySums = DAYS.map((d) => filtered.reduce((acc, s) => acc + (s[d] ?? 0), 0));
-  const activeDays = daySums.filter((v) => v > 0).length;
+  const activeDays = activeDayCount(filtered);
   const avgDaily = upcCount > 0 && activeDays > 0 ? totalSales / activeDays / upcCount : 0;
-  const daySumsLY = DAYS.map((d) => filteredLY.reduce((acc, s) => acc + (s[d] ?? 0), 0));
-  const activeDaysLY = daySumsLY.filter((v) => v > 0).length;
+  const activeDaysLY = activeDayCount(filteredLY);
   const avgDailyLY = hasLY && upcCount > 0 && activeDaysLY > 0 ? totalSalesLY / activeDaysLY / upcCount : null;
 
   const dollarPeakIdx = daySums.indexOf(Math.max(...daySums));

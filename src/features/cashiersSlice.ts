@@ -105,6 +105,24 @@ interface CashiersState {
   explorerMessage: string;
   explorerScopeLabel: string;
   explorerSearched: boolean;
+  // Bumped by every preflight/explore. Each run remembers the value it started
+  // with and drops its result if another run has bumped it since — otherwise
+  // switching exception A → B quickly lets whichever finishes last win, even
+  // when that is A.
+  explorerRequestId: number;
+  // Transactions dropped past the receipt cap, so the page can say its totals
+  // run low instead of silently undercounting.
+  explorerTruncated: number;
+  // Why mobile is back on the search card (nothing found, or the fetch failed).
+  explorerNotice: string;
+  // Mobile walkthrough position: the signal list or one signal's transactions,
+  // whether the search card is open over results, and which receipt's sheet is
+  // up. In the slice so it survives leaving the page, and so every action that
+  // invalidates a level (new rows, another lens, another signal) closes it in
+  // the same reducer rather than each call site remembering to.
+  explorerMobileScreen: "signals" | "transactions";
+  explorerMobileSearchOpen: boolean;
+  explorerReceiptSaleId: string | null;
 }
 
 const initialState: CashiersState = {
@@ -167,6 +185,12 @@ const initialState: CashiersState = {
   explorerMessage: "",
   explorerScopeLabel: "",
   explorerSearched: false,
+  explorerRequestId: 0,
+  explorerTruncated: 0,
+  explorerNotice: "",
+  explorerMobileScreen: "signals",
+  explorerMobileSearchOpen: false,
+  explorerReceiptSaleId: null,
 };
 
 const cashiersSlice = createSlice({
@@ -400,11 +424,34 @@ const cashiersSlice = createSlice({
     setExplorerLens: (state, action: PayloadAction<ExplorerLens>) => {
       state.explorerLens = action.payload;
       // Signal keys aren't comparable across lenses (a cashier number means
-      // nothing to the item lens), so the selection has to clear on switch.
+      // nothing to the item lens), so the selection has to clear on switch —
+      // and with it anything mobile had open under that signal.
       state.explorerSignalKey = "";
+      state.explorerMobileScreen = "signals";
+      state.explorerReceiptSaleId = null;
     },
     setExplorerSignalKey: (state, action: PayloadAction<string>) => {
       state.explorerSignalKey = action.payload;
+      state.explorerReceiptSaleId = null;
+      if (!action.payload) state.explorerMobileScreen = "signals";
+    },
+    /** Mobile: open a signal's transactions. */
+    openExplorerSignal: (state, action: PayloadAction<string>) => {
+      state.explorerSignalKey = action.payload;
+      state.explorerMobileScreen = "transactions";
+      state.explorerReceiptSaleId = null;
+    },
+    /** Mobile: back to the signal list. The signal stays selected — desktop
+     *  shares it — but its receipt closes. */
+    closeExplorerSignal: (state) => {
+      state.explorerMobileScreen = "signals";
+      state.explorerReceiptSaleId = null;
+    },
+    setExplorerMobileSearchOpen: (state, action: PayloadAction<boolean>) => {
+      state.explorerMobileSearchOpen = action.payload;
+    },
+    setExplorerReceipt: (state, action: PayloadAction<string | null>) => {
+      state.explorerReceiptSaleId = action.payload;
     },
     setExplorerLoading: (state, action: PayloadAction<boolean>) => {
       state.explorerLoading = action.payload;
@@ -417,14 +464,36 @@ const cashiersSlice = createSlice({
     },
     setExplorerRows: (
       state,
-      action: PayloadAction<{ rows: TransactionListItem[]; exception: string }>,
+      action: PayloadAction<{
+        rows: TransactionListItem[];
+        exception: string;
+        truncated?: number;
+      }>,
     ) => {
       state.explorerAllRows = action.payload.rows;
       state.explorerFetchedException = action.payload.exception;
+      state.explorerTruncated = action.payload.truncated ?? 0;
       state.explorerSignalKey = "";
       state.explorerSearched = true;
+      // New rows invalidate every level below the list.
+      state.explorerMobileScreen = "signals";
+      state.explorerReceiptSaleId = null;
+      // Results replace the search card; an empty result leaves the card up
+      // anyway, since there is nothing to go back to.
+      if (action.payload.rows.length) state.explorerMobileSearchOpen = false;
     },
-    resetCashierState: () => initialState,
+    beginExplorerRequest: (state) => {
+      state.explorerRequestId += 1;
+    },
+    setExplorerNotice: (state, action: PayloadAction<string>) => {
+      state.explorerNotice = action.payload;
+    },
+    // The request id survives a reset and moves on, so an explorer run still
+    // in flight from before it can't pass its staleness check.
+    resetCashierState: (state) => ({
+      ...initialState,
+      explorerRequestId: state.explorerRequestId + 1,
+    }),
   },
 });
 
@@ -483,5 +552,11 @@ export const {
   setExplorerMessage,
   setExplorerScopeLabel,
   setExplorerRows,
+  beginExplorerRequest,
+  setExplorerNotice,
+  openExplorerSignal,
+  closeExplorerSignal,
+  setExplorerMobileSearchOpen,
+  setExplorerReceipt,
 } = cashiersSlice.actions;
 export default cashiersSlice.reducer;

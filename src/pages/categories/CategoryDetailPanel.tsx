@@ -4,6 +4,7 @@ import { useAppSelector, useAppDispatch } from "../../hooks";
 import { formatCurrency2, formatBigNumber } from "../../utils";
 import {
   pillClass,
+  comparisonPillClass,
   PCT_COL_W,
   formatPct,
   chipClass,
@@ -31,6 +32,7 @@ import {
   type CategoryDay,
   type CategoryTier,
 } from "./categoriesUtils";
+import { gradeBasis, isCompleteCoverage } from "../../utils/grading";
 
 type Tab = "items" | "hours";
 
@@ -71,12 +73,18 @@ const Kpi = ({
   value,
   pct,
   threshold,
+  complete = true,
+  coverageNote,
 }: {
   title: string;
   dateLabel: string;
   value: string;
   pct?: number | null;
   threshold: number;
+  /** False when the comparison is missing days: grey, and it doesn't grade. */
+  complete?: boolean;
+  /** "3 of 7 days matched", shown under a partial comparison. */
+  coverageNote?: string;
 }) => (
   <div className="px-4 pt-2.5 pb-2 text-center">
     <div className="text-[10px] font-bold uppercase tracking-wide text-content">
@@ -90,12 +98,15 @@ const Kpi = ({
         <span className="text-[14px] font-bold text-content">{value}</span>
         {pct !== null && (
           <span
-            className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${pillClass(pct, threshold)}`}
+            className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${comparisonPillClass(pct, complete, threshold)}`}
           >
             {formatPct(pct)}
           </span>
         )}
       </div>
+    )}
+    {coverageNote && (
+      <div className="text-[10px] font-semibold text-content pt-0.5">{coverageNote}</div>
     )}
   </div>
 );
@@ -205,6 +216,10 @@ const CategoryDetailPanel = ({ onLoadHourly }: Props) => {
   }
 
   const tier = getTier(row, activeThreshold, metric);
+  const cov = row.coverage;
+  const lwComplete = isCompleteCoverage(cov.lwDayCount, cov.dayCount);
+  const lyComplete = isCompleteCoverage(cov.lyDayCount, cov.dayCount);
+  const basis = gradeBasis(row, cov);
 
   /* ── KPI values: whole week, or the selected day ───────────────────────── */
 
@@ -278,7 +293,22 @@ const CategoryDetailPanel = ({ onLoadHourly }: Props) => {
     value: h.tw,
     lp: h.lwPct,
     yp: h.lyPct,
-    sev: tierOf(h.lyPct ?? h.lwPct, activeThreshold),
+    // The category's coverage applies to its hours: last year only when it
+    // covers the whole week, else last week, else ungraded.
+    shownPct:
+      gradeBasis({ hasLY: h.lyPct !== null, hasLW: h.lwPct !== null }, cov) === "LY"
+        ? h.lyPct
+        : gradeBasis({ hasLY: h.lyPct !== null, hasLW: h.lwPct !== null }, cov) === "LW"
+          ? h.lwPct
+          : null,
+    sev: tierOf(
+      gradeBasis({ hasLY: h.lyPct !== null, hasLW: h.lwPct !== null }, cov) === "LY"
+        ? h.lyPct
+        : gradeBasis({ hasLY: h.lyPct !== null, hasLW: h.lwPct !== null }, cov) === "LW"
+          ? h.lwPct
+          : null,
+      activeThreshold,
+    ),
   }));
 
   const shown = sevFilter === "all" ? list : list.filter((r) => r.sev === sevFilter);
@@ -370,6 +400,12 @@ const CategoryDetailPanel = ({ onLoadHourly }: Props) => {
           dateLabel={lwLabel}
           value={lwValue === null ? "—" : fmt(lwValue)}
           pct={lwPct}
+          complete={!!activeDay || lwComplete}
+          coverageNote={
+            !activeDay && row.hasLW && !lwComplete
+              ? `${cov.lwDayCount} of ${cov.dayCount} days matched`
+              : undefined
+          }
           threshold={activeThreshold}
         />
         <Kpi
@@ -377,6 +413,12 @@ const CategoryDetailPanel = ({ onLoadHourly }: Props) => {
           dateLabel={lyLabel}
           value={lyValue === null ? "—" : fmt(lyValue)}
           pct={lyPct}
+          complete={!!activeDay || lyComplete}
+          coverageNote={
+            !activeDay && row.hasLY && !lyComplete
+              ? `${cov.lyDayCount} of ${cov.dayCount} days matched`
+              : undefined
+          }
           threshold={activeThreshold}
         />
       </div>
@@ -387,8 +429,8 @@ const CategoryDetailPanel = ({ onLoadHourly }: Props) => {
       <DayCardStrip
         days={dayCards}
         weekValue={fmt(isQty ? row.twQty : row.twNet)}
-        weekDelta={weekLyPct ?? weekLwPct}
-        weekDeltaBasis={weekLyPct !== null ? "LY" : weekLwPct !== null ? "LW" : undefined}
+        weekDelta={basis === "LY" ? weekLyPct : basis === "LW" ? weekLwPct : null}
+        weekDeltaBasis={basis ?? undefined}
         selected={selectedDay ?? ""}
         onSelect={(iso) => dispatch(setSelectedDay(iso === "" ? null : iso))}
         higherIsWorse={false}
@@ -491,10 +533,16 @@ const CategoryDetailPanel = ({ onLoadHourly }: Props) => {
                     {fmt(r.value)}
                   </span>
                   <span
-                    className={`text-[11px] font-semibold px-1.5 py-0.5 rounded text-center flex-shrink-0 whitespace-nowrap ${pillClass(r.yp ?? r.lp, activeThreshold)}`}
+                    className={`text-[11px] font-semibold px-1.5 py-0.5 rounded text-center flex-shrink-0 whitespace-nowrap ${
+                      r.shownPct !== null
+                        ? pillClass(r.shownPct, activeThreshold)
+                        : comparisonPillClass(r.yp ?? r.lp, false, activeThreshold)
+                    }`}
                     style={{ minWidth: PCT_COL_W }}
                   >
-                    {r.yp ?? r.lp ? formatPct((r.yp ?? r.lp) as number) : "—"}
+                    {(r.shownPct ?? r.yp ?? r.lp) !== null
+                      ? formatPct((r.shownPct ?? r.yp ?? r.lp) as number)
+                      : "—"}
                   </span>
                 </button>
               ))

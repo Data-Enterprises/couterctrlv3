@@ -7,6 +7,7 @@ import {
 import type { SubDeptMargin } from "../../interfaces";
 import type { VendorRow } from "./vendorsUtils";
 import { rowsForVendor } from "./vendorsUtils";
+import { LW_OFFSET, LY_OFFSET, shiftIso } from "../../utils/grading";
 
 /**
  * Which graded items a vendor contributes, and in what order.
@@ -62,6 +63,11 @@ export const collectGradedItems = (
       tw,
       rowsForVendor(raw.lw, v.vendorId),
       rowsForVendor(raw.ly, v.vendorId),
+      {
+        lwOf: (d) => shiftIso(d, LW_OFFSET),
+        lyOf: (d) => shiftIso(d, LY_OFFSET),
+        coverage: v.coverage,
+      },
     );
     const kept: GradedItem[] = [];
     for (const r of built) {

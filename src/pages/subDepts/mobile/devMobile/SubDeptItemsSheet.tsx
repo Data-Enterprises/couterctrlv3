@@ -47,6 +47,7 @@ type AggregatedItem = {
 };
 
 const TIER_ORDER: Record<MarginTier, number> = {
+  ungraded: 3,
   critical: 0,
   watch: 1,
   healthy: 2,
@@ -325,7 +326,7 @@ const SubDeptItemsSheet = ({ onBack }: Props) => {
             {selectedDay ? fmtDayLabel(selectedDay) : endLabel}
           </div>
         </div>
-        {tier && (
+        {tier && tier !== "ungraded" && (
           <div
             className="flex items-center gap-1 text-[10px] font-semibold px-2.5 py-1 rounded-full flex-shrink-0"
             style={{ background: BADGE_BG[tier], color: BADGE_COLOR[tier] }}

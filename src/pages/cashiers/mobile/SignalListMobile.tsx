@@ -2,7 +2,7 @@ import { ChevronRightIcon } from "@heroicons/react/20/solid";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
 import {
   setExplorerLens,
-  setExplorerSignalKey,
+  openExplorerSignal,
 } from "../../../features/cashiersSlice";
 import SelectFilter from "../../../components/filters/SelectFilter";
 import MobilePerfHeader from "../../../components/mobile/MobilePerfHeader";
@@ -32,7 +32,6 @@ interface Props {
   /** Exception types this store/week actually returned, from preflight. */
   saleTypes: string[];
   onExceptionChange: (saleType: string) => void;
-  onSelectSignal: () => void;
   onSearch: () => void;
   start: string;
   end: string;
@@ -51,15 +50,18 @@ const SPREAD_CLASS: Record<string, string> = {
 const SignalListMobile = ({
   saleTypes,
   onExceptionChange,
-  onSelectSignal,
   onSearch,
   start,
   end,
 }: Props) => {
   const dispatch = useAppDispatch();
   const scopeLabel = useSearchScopeLabel();
-  const { explorerLens, explorerFetchedException, explorerLoading } =
-    useAppSelector((s) => s.cashier);
+  const {
+    explorerLens,
+    explorerFetchedException,
+    explorerLoading,
+    explorerTruncated,
+  } = useAppSelector((s) => s.cashier);
   const { signals, totals } = useCashierSignals();
 
   return (
@@ -97,6 +99,17 @@ const SignalListMobile = ({
           </div>
         ))}
       </div>
+
+      {/* The receipt fetch is capped, so past it every figure above runs low.
+          Desktop says so in its header; there is no room for that here, so it
+          gets its own line rather than being left out. */}
+      {explorerTruncated > 0 && (
+        <div className="px-3 py-1.5 bg-amber-50 border-b border-[#1e2a4a]/15 text-[11px] text-amber-900 flex-shrink-0">
+          Capped — {explorerTruncated.toLocaleString()} more{" "}
+          {explorerTruncated === 1 ? "transaction" : "transactions"} not
+          loaded, so these totals run low.
+        </div>
+      )}
 
       {/* Lens as a tab strip, matching desktop. The exception is a header
           subtitle there, not a control, so it sits beside the tabs rather than
@@ -146,10 +159,7 @@ const SignalListMobile = ({
           signals.map((s) => (
             <button
               key={s.key}
-              onClick={() => {
-                dispatch(setExplorerSignalKey(s.key));
-                onSelectSignal();
-              }}
+              onClick={() => dispatch(openExplorerSignal(s.key))}
               className="w-full px-3 py-2.5 bg-custom-white border-b border-[#1e2a4a]/15 even:bg-row_stripe text-left active:bg-gray-50"
             >
               <div className="flex items-center gap-2">

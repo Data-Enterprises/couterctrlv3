@@ -1,8 +1,19 @@
-import { useDeferredValue, useEffect, useMemo } from "react";
+import { useDeferredValue, useEffect, useMemo, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
+import { useDrillScroll } from "../../../../hooks/useDrillScroll";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 import SearchCard from "../../../../components/SearchCard";
 import { getHourly, getSubs, getWeekly } from "../../../../api/sales";
+import { fetchSubDeptRows } from "../../../../utils/marginRows";
+import { withProductCode } from "../../shared/ledgerUtils";
+import { SALES_MOBILE_INFO } from "../../salesInfo";
+import MobileInfoSheet from "../../../../components/mobile/MobileInfoSheet";
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  MagnifyingGlassIcon,
+  XMarkIcon,
+} from "@heroicons/react/20/solid";
 import {
   addDays,
   formatCurrency2,
@@ -12,13 +23,22 @@ import {
 } from "../../../../utils";
 import { isGroupSearch } from "../../../../features/searchSlice";
 import { resolveStoreName } from "../../../../utils";
-import type { JsonError } from "../../../../interfaces";
+import type { JsonError, SubDeptMargin } from "../../../../interfaces";
 import {
+  cachePerfItems,
   cachePerfStoreData,
   clearPerfStoreCache,
+  failPerfItems,
+  openPerfSubDept,
+  setPerfInfoOpen,
+  setPerfItemLoading,
+  setPerfItemQuery,
+  setPerfItemSort,
+  failPerfStoreData,
   emptyBundle,
   setPerfDimension,
   setPerfGroupData,
+  setPerfSort,
   setPerfHasSearched,
   setPerfLoading,
   setPerfStoreLoading,
@@ -32,10 +52,26 @@ import {
   storeKeyOf,
   buildDays,
   buildHourPairs,
+  buildItemPairs,
+  filterItemPairs,
   buildStorePairs,
   buildSubPairs,
   buildTotals,
+  isPartialMatch,
+  noLyHistory,
+  pairChangePct,
+  scopeMatch,
+  sortPairs,
+  type PairSort,
 } from "./perfData";
+
+/** "3 of 7 days matched" — why last year's figure is short of a full week.
+ *  The same wording desktop Sales uses. */
+const matchedNote = (p: { days?: number | null; lyDays?: number | null }) =>
+  `${p.lyDays} of ${p.days} days matched`;
+import MobileSortChips, {
+  type SortOption,
+} from "../../../../components/mobile/MobileSortChips";
 import PairedBars from "./PairedBars";
 import { COUPON_COLORS, COUPON_LABELS, LY_COLOR, TY_COLOR } from "./perfColors";
 import PerfDayChart from "./PerfDayChart";
@@ -43,6 +79,40 @@ import PerfCardHeader from "./PerfCardHeader";
 
 /** Darkest to lightest, so the stack and the legend agree. */
 const COUPON_KEYS = ["digital", "elecStore", "elecInstore", "store"] as const;
+
+/** What each tab can sort by. Hours adds the time of day, which is also its
+ *  default — a day reads as a timeline first. */
+const SORTS: Record<PerfDimension, SortOption<PairSort>[]> = {
+  stores: [
+    { key: "sales", label: "Sales" },
+    { key: "change", label: "Change vs LY" },
+    { key: "name", label: "Store #" },
+  ],
+  subs: [
+    { key: "sales", label: "Sales" },
+    { key: "change", label: "Change vs LY" },
+    { key: "name", label: "Name" },
+  ],
+  hours: [
+    { key: "time", label: "Time" },
+    { key: "sales", label: "Sales" },
+    { key: "change", label: "Change vs LY" },
+  ],
+};
+
+/** Stores sort on their number, taken from the key — the label is whatever
+ *  name the user knows the store by, which needn't start with it. */
+const storeNumberOf = (p: { key: string; label: string }) =>
+  p.key.split("__")[1] ?? p.label;
+
+const fmtChange = (pct: number) =>
+  `${pct > 0 ? "+" : pct < 0 ? "\u2212" : ""}${Math.abs(pct).toFixed(1)}%`;
+
+const ITEM_SORTS: SortOption<PairSort>[] = [
+  { key: "sales", label: "Sales" },
+  { key: "change", label: "Change vs LY" },
+  { key: "name", label: "Name" },
+];
 
 const DIMENSIONS: { key: PerfDimension; label: string }[] = [
   { key: "stores", label: "Stores" },
@@ -73,6 +143,17 @@ const SalesPerfMobile = () => {
   const context = useAppSelector((s) => s.app);
   const search = useAppSelector((s) => s.search);
   const perf = useAppSelector((s) => s.salesPerf);
+
+  // Items open inside the list card, below the totals and the chart — so a
+  // sub department's items start at that card, and Back returns to the row.
+  const scroller = useRef<HTMLDivElement>(null);
+  const breakdown = useRef<HTMLElement>(null);
+  useDrillScroll(
+    scroller,
+    perf.openSubDept ? 1 : 0,
+    `${perf.dimension}|${perf.openSubDept?.id ?? ""}`,
+    breakdown,
+  );
   const { assignedStores, selectedGroupStores } = useAppSelector((s) => s.user);
 
   /** The name the user knows a store by, never the one the payload sent.
@@ -169,24 +250,86 @@ const SalesPerfMobile = () => {
     const row = perf.weekTy.find((r) => storeKeyOf(r) === key);
     if (!row) return;
 
-    let live = true;
+    const gen = perf.storeCacheGen;
     dispatch(setPerfStoreLoading(key));
+    // Always cached under its own key, even if the user has moved on: the rows
+    // are still that store's, and dropping them used to strand the loading
+    // flag — deselect a store before it landed and re-tapping it never fetched
+    // again, so Transactions, Avg basket and Coupons sat at zero. The slice
+    // discards a result from an older search.
     fetchBundle(0, row.storeid, 1)
-      .then((bundle) => {
-        if (live) dispatch(cachePerfStoreData({ key, bundle }));
-      })
+      .then((bundle) => dispatch(cachePerfStoreData({ key, bundle, gen })))
       .catch((err: JsonError) => {
-        if (!live) return;
-        dispatch(setPerfStoreLoading(null));
+        dispatch(failPerfStoreData(key));
         toast.error("Error loading store: " + err.message);
       });
-
-    // Selecting a third store before the second lands must not write the
-    // second's rows into the third's slot.
-    return () => {
-      live = false;
-    };
   }, [perf.selectedStore]);
+
+  /**
+   * The one store items can be shown for, or null.
+   *
+   * Items are fetched per store, as on desktop: a single-store search is that
+   * store; a group search needs a store picked on the Stores tab. The store
+   * number is kept because storeid alone isn't unique — the endpoint answers
+   * for the id, so rows are narrowed to the number too.
+   */
+  const itemScope: { key: string; storeid: number; storeNumber: string | null } | null =
+    isStore
+      ? { key: `store:${searchValue}`, storeid: searchValue, storeNumber: null }
+      : (() => {
+          const row = perf.selectedStore
+            ? perf.weekTy.find((r) => storeKeyOf(r) === perf.selectedStore)
+            : undefined;
+          if (!row) return null;
+          // Only narrow by number when this id really carries two stores —
+          // the endpoints don't promise to format store_number the same way.
+          const shared = perf.weekTy.some(
+            (r) => r.storeid === row.storeid && r.store_number !== row.store_number,
+          );
+          return {
+            key: storeKeyOf(row),
+            storeid: row.storeid,
+            storeNumber: shared ? row.store_number : null,
+          };
+        })();
+
+  const itemKey =
+    itemScope && perf.openSubDept ? `${itemScope.key}|${perf.openSubDept.id}` : null;
+
+  /** A sub department's items, fetched the first time it's opened for a store
+   *  and kept for the search — the same contract as the store bundle above. */
+  useEffect(() => {
+    if (!itemKey || !itemScope || !perf.openSubDept) return;
+    if (perf.itemData[itemKey] || perf.itemLoading === itemKey) return;
+
+    const key = itemKey;
+    const { storeid, storeNumber } = itemScope;
+    const subId = perf.openSubDept.id;
+    const gen = perf.storeCacheGen;
+    const scoped = (rows: SubDeptMargin[]) =>
+      withProductCode(rows).filter(
+        (r) =>
+          storeNumber === null ||
+          String(r.store_number).trim().replace(/^0+/, "") ===
+            storeNumber.trim().replace(/^0+/, ""),
+      );
+
+    dispatch(setPerfItemLoading(key));
+    Promise.all([
+      fetchSubDeptRows(context.url, context.token, subId, twStart, twEnd, 0, storeid, 1),
+      fetchSubDeptRows(context.url, context.token, subId, lyDates[0], lyDates[6], 0, storeid, 1),
+    ])
+      .then(([ty, ly]) =>
+        dispatch(cachePerfItems({ key, items: { ty: scoped(ty), ly: scoped(ly) }, gen })),
+      )
+      .catch((err: JsonError) => {
+        dispatch(failPerfItems(key));
+        toast.error("Error loading items: " + err.message);
+      });
+  }, [itemKey]);
+
+  const openItems = itemKey ? perf.itemData[itemKey] : undefined;
+  const itemsLoading = itemKey !== null && !openItems;
 
   /** The group bundle, or the selected store's. Never a filter over the group
    *  bundle — those rows do not say which store they came from. */
@@ -226,25 +369,91 @@ const SalesPerfMobile = () => {
     [perf.weekTy, perf.weekLy, active, shownDay, perf.selectedStore],
   );
 
+  /** The whole week's day matching for the scope on screen — the selected
+   *  store, or the search. Subs and hours share it; stores match their own. */
+  const weekMatch = useMemo(
+    () => scopeMatch(perf.weekTy, perf.weekLy, perf.selectedStore),
+    [perf.weekTy, perf.weekLy, perf.selectedStore],
+  );
+
+  const sort = perf.sort[perf.dimension];
   const pairs = useMemo(() => {
     if (perf.dimension === "subs")
-      return buildSubPairs(active.subsTy, active.subsLy, shownDay);
+      return sortPairs(
+        buildSubPairs(active.subsTy, active.subsLy, shownDay, weekMatch),
+        sort,
+      );
     if (perf.dimension === "hours")
-      return buildHourPairs(active.hourlyTy, active.hourlyLy, shownDay);
-    return buildStorePairs(perf.weekTy, perf.weekLy, shownDay, nameOf);
+      return sortPairs(
+        buildHourPairs(active.hourlyTy, active.hourlyLy, shownDay, weekMatch),
+        sort,
+      );
+    return sortPairs(
+      buildStorePairs(perf.weekTy, perf.weekLy, shownDay, nameOf),
+      sort,
+      storeNumberOf,
+    );
   }, [
     perf.dimension,
+    sort,
     shownDay,
     perf.weekTy,
     perf.weekLy,
     active,
     assignedStores,
     selectedGroupStores,
+    weekMatch,
   ]);
 
   /** One scale across the whole list, so a row's bar length means the same
    *  thing in every row. */
   const listMax = pairs.reduce((m, p) => Math.max(m, p.ty, p.ly), 0);
+
+  /** Items belong to one store, so they match on that store's dates. */
+  const itemMatch = useMemo(
+    () =>
+      itemScope
+        ? scopeMatch(perf.weekTy, perf.weekLy, isStore ? null : itemScope.key)
+        : undefined,
+    [perf.weekTy, perf.weekLy, itemScope?.key, isStore],
+  );
+
+  const allItemPairs = useMemo(
+    () =>
+      openItems
+        ? sortPairs(
+            buildItemPairs(openItems.ty, openItems.ly, shownDay, itemMatch),
+            perf.itemSort,
+          )
+        : [],
+    [openItems, shownDay, perf.itemSort, itemMatch],
+  );
+  const itemPairs = useMemo(
+    () => filterItemPairs(allItemPairs, perf.itemQuery),
+    [allItemPairs, perf.itemQuery],
+  );
+  // Scaled to the whole sub department, not the matches, so a bar keeps its
+  // length while you type.
+  const itemMax = allItemPairs.reduce((m, p) => Math.max(m, p.ty, p.ly), 0);
+
+  // Day coverage is a store's property. Across a group it is just the group's
+  // figure — each store's own count sits on its row on the Stores tab — so the
+  // card and list notes only appear once the figures are one store's.
+  const oneStore = isStore || perf.selectedStore !== null;
+  // Subs, hours and items share one scope's matching, so one note covers the
+  // whole list rather than repeating on every row.
+  const listPartial =
+    oneStore && !shownDay && perf.dimension !== "stores" && isPartialMatch(weekMatch);
+  const totalsPartial =
+    oneStore &&
+    isPartialMatch({
+      days: totals.days ?? undefined,
+      lyDays: totals.lyDays ?? undefined,
+    });
+  /** Nothing on file last year for the card's scope — drawn as "no history",
+   *  not a $0.00 bar. Across a group that means no store in it has any. */
+  const cardNoLy = noLyHistory(weekMatch, shownDay);
+  const showingItems = perf.dimension === "subs" && perf.openSubDept !== null;
 
   const dayLabel = shownDay
     ? new Date(`${shownDay}T12:00:00`).toLocaleDateString("en-US", {
@@ -272,7 +481,7 @@ const SalesPerfMobile = () => {
       })()
     : null;
 
-  const scopeLabel = ["Sales", selectedStoreName].filter(Boolean).join(" · ");
+  const scopeLabel = selectedStoreName ?? "";
 
   const scopeName = isGroupSearch(search.type)
     ? search.selectedGroup.group_name
@@ -341,7 +550,7 @@ const SalesPerfMobile = () => {
 
       {/* pb-14 clears the fixed bottom tab bar, which is outside document flow
           and would otherwise hide the last row of the list. */}
-      <div className="flex-1 overflow-y-auto pb-14">
+      <div ref={scroller} className="flex-1 overflow-y-auto pb-14">
         <div className="flex flex-col gap-3 p-3">
           {/* ── totals ───────────────────────────────────────────── */}
           <section className="overflow-hidden rounded-2xl border border-gray-200 bg-custom-white shadow-md">
@@ -360,6 +569,7 @@ const SalesPerfMobile = () => {
                 `${formatDateSimple(twStart)} – ${formatDateSimple(twEnd)}`
               }
               onSearch={() => dispatch(setPerfHasSearched(false))}
+              onInfo={() => dispatch(setPerfInfoOpen(true))}
             />
 
             <div className="px-4 pb-4 pt-2">
@@ -368,28 +578,49 @@ const SalesPerfMobile = () => {
               </div>
 
               <div className="mt-3">
+                {/* This year is the full week; last year is its matched
+                    dates only, so a short last year reads as short rather
+                    than borrowing days that match nothing. */}
                 <PairedBars
                   ty={totals.sales}
                   ly={totals.salesLy}
                   max={Math.max(totals.sales, totals.salesLy)}
                   compact
+                  lyUnavailable={cardNoLy}
                 />
+                {totalsPartial && (
+                  <p className="mt-1.5 inline-block rounded bg-gray-200 px-1.5 py-0.5 text-[11px] font-semibold text-content">
+                    Last year: {matchedNote(totals)}
+                  </p>
+                )}
               </div>
 
               <div className="mt-3.5 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-gray-100 pt-3">
-                {[
-                  ["Transactions", totals.transactions.toLocaleString("en-US")],
-                  ["Avg basket", formatCurrency2(totals.avgBasket)],
-                  ["Tax", formatCurrency2(totals.tax)],
-                  ["Coupons", formatCurrency2(totals.coupons)],
-                ].map(([k, v]) => (
+                {/* Tax is on the weekly rows already loaded. The other three
+                    come from the store's own fetch, so until it lands they
+                    show a placeholder — not a zero nobody measured. */}
+                {(
+                  [
+                    ["Transactions", totals.transactions.toLocaleString("en-US"), true],
+                    ["Avg basket", formatCurrency2(totals.avgBasket), true],
+                    ["Tax", formatCurrency2(totals.tax), false],
+                    ["Coupons", formatCurrency2(totals.coupons), true],
+                  ] as const
+                ).map(([k, v, fromBundle]) => (
                   <div key={k} className="flex flex-col">
                     <span className="font-mono text-[9.5px] uppercase tracking-wider text-content/85">
                       {k}
                     </span>
-                    <span className="font-display text-[15px] font-bold tabular-nums text-content">
-                      {v}
-                    </span>
+                    {fromBundle && bundleLoading ? (
+                      <span
+                        aria-label="Loading"
+                        className="mt-1 block h-[15px] w-16 animate-pulse rounded bg-gray-200"
+                      />
+                    ) : (
+                      <span className="font-display text-[15px] font-bold tabular-nums text-content">
+                        {v}
+                      </span>
+                    )}
                   </div>
                 ))}
               </div>
@@ -399,7 +630,7 @@ const SalesPerfMobile = () => {
                 circumference — TY plus LY plus the rest — look like a
                 quantity. Rendered even when a channel is zero, because "this
                 store takes no store coupons" is itself worth seeing. */}
-              {totals.coupons > 0 && (
+              {!bundleLoading && totals.coupons > 0 && (
                 <div className="mt-3.5 border-t border-gray-100 pt-3">
                   <div className="flex h-2 overflow-hidden rounded-full bg-bkg">
                     {COUPON_KEYS.map((k) => (
@@ -456,7 +687,9 @@ const SalesPerfMobile = () => {
                   className="h-2 w-3.5 rounded-sm"
                   style={{ background: LY_COLOR }}
                 />
-                Last year
+                {/* No record isn't a zero — the columns can't say so, the
+                    legend can. */}
+                {noLyHistory(weekMatch, null) ? "Last year: no history" : "Last year"}
               </span>
             </div>
             <p className="px-1 pt-1.5 text-[12px] text-content/85">
@@ -467,65 +700,240 @@ const SalesPerfMobile = () => {
           </section>
 
           {/* ── the breakdown ────────────────────────────────────── */}
-          <section className="overflow-hidden rounded-2xl border border-gray-200 bg-custom-white shadow-md">
-            {perf.selectedStore && perf.dimension !== "stores" && (
-              <p className="border-b border-gray-100 px-3.5 pb-2.5 pt-3 text-[12px] text-content/85">
-                Showing {selectedStoreName} only. Clear it on the Stores tab.
-              </p>
-            )}
-
-            {bundleLoading && perf.dimension !== "stores" ? (
-              <div className="px-4 py-8 text-center text-[12.5px] text-content/85">
-                Loading {selectedStoreName}...
-              </div>
-            ) : pairs.length === 0 ? (
-              <div className="px-4 py-8 text-center text-[12.5px] text-content/85">
-                Nothing recorded for this selection.
-              </div>
-            ) : (
-              pairs.map((p) => {
-                // Only the store list selects. Subs and Hours are the things
-                // being filtered, so making them tappable too would invite a
-                // scope this screen has no way to show.
-                const selectable = perf.dimension === "stores";
-                const isSel = selectable && perf.selectedStore === p.key;
-
-                return (
+          <section
+            ref={breakdown}
+            className="overflow-hidden rounded-2xl border border-gray-200 bg-custom-white shadow-md"
+          >
+            {showingItems && perf.openSubDept ? (
+              <>
+                <div className="border-b border-gray-100 px-3.5 pb-2.5 pt-2">
                   <button
-                    key={p.key}
                     type="button"
-                    disabled={!selectable}
-                    aria-pressed={selectable ? isSel : undefined}
-                    onClick={() =>
-                      selectable && dispatch(togglePerfStore(p.key))
-                    }
-                    className={`block w-full border-t border-gray-100 px-3.5 py-3 text-left first:border-t-0 ${
-                      isSel ? "bg-row_selected" : ""
-                    } ${selectable ? "active:bg-bkg" : ""}`}
+                    onClick={() => dispatch(openPerfSubDept(null))}
+                    className="-ml-1 flex items-center gap-0.5 rounded-lg py-1 pr-2 text-[12.5px] font-semibold active:bg-bkg"
+                    style={{ color: TY_COLOR }}
                   >
-                    <div className="flex items-baseline gap-2">
-                      <span className="min-w-0 flex-1 truncate font-display text-[13.5px] font-semibold text-content">
-                        {p.label}
-                      </span>
-                      {isSel && (
-                        <span
-                          className="flex-none font-mono text-[10px] uppercase tracking-wider"
-                          style={{ color: TY_COLOR }}
-                        >
-                          Selected
-                        </span>
-                      )}
-                    </div>
-                    <div className="mt-2">
-                      <PairedBars ty={p.ty} ly={p.ly} max={listMax} />
-                    </div>
+                    <ChevronLeftIcon className="h-4 w-4" />
+                    Back to Subs
                   </button>
-                );
-              })
+                  <div className="mt-0.5 flex items-baseline gap-2">
+                    <span className="min-w-0 flex-1 truncate font-display text-[14px] font-bold text-content">
+                      {perf.openSubDept.label}
+                    </span>
+                    {openItems && (
+                      <span className="flex-none text-[12px] text-content/85">
+                        {perf.itemQuery.trim()
+                          ? `${itemPairs.length} of ${allItemPairs.length}`
+                          : `${allItemPairs.length} ${allItemPairs.length === 1 ? "item" : "items"}`}
+                      </span>
+                    )}
+                  </div>
+                  {selectedStoreName && (
+                    <div className="truncate text-[12px] text-content/85">
+                      {selectedStoreName}
+                    </div>
+                  )}
+                </div>
+                <div className="border-b border-gray-100 px-3.5 py-2">
+                  <div className="flex items-center gap-2 rounded-lg bg-bkg px-3">
+                    <MagnifyingGlassIcon className="h-4 w-4 flex-none text-content/85" />
+                    <input
+                      value={perf.itemQuery}
+                      onChange={(e) => dispatch(setPerfItemQuery(e.target.value))}
+                      placeholder="Description or UPC"
+                      inputMode="search"
+                      enterKeyHint="search"
+                      aria-label="Search items"
+                      className="min-w-0 flex-1 border-0 bg-transparent py-2.5 text-[14px] text-content placeholder:text-content/85"
+                      style={{ outline: "none", WebkitAppearance: "none", boxShadow: "none" }}
+                    />
+                    {perf.itemQuery && (
+                      <button
+                        type="button"
+                        onClick={() => dispatch(setPerfItemQuery(""))}
+                        aria-label="Clear search"
+                        className="-mr-1 flex h-7 w-7 flex-none items-center justify-center rounded-full text-content/85 active:bg-custom-white"
+                      >
+                        <XMarkIcon className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <MobileSortChips
+                  options={ITEM_SORTS}
+                  value={perf.itemSort}
+                  onChange={(key) => dispatch(setPerfItemSort(key))}
+                />
+                {!shownDay && itemMatch && isPartialMatch(itemMatch) && (
+                  <p className="border-b border-gray-100 bg-gray-100 px-3.5 py-2 text-[11.5px] font-semibold text-content">
+                    Last year: {matchedNote(itemMatch)}
+                  </p>
+                )}
+                {itemsLoading ? (
+                  <div className="flex items-center justify-center gap-2 px-4 py-10 text-[12.5px] text-content/85">
+                    <span
+                      className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-gray-200"
+                      style={{ borderTopColor: TY_COLOR }}
+                    />
+                    Loading items...
+                  </div>
+                ) : itemPairs.length === 0 ? (
+                  <div className="px-4 py-8 text-center text-[12.5px] text-content/85">
+                    {perf.itemQuery.trim()
+                      ? `Nothing matches "${perf.itemQuery.trim()}".`
+                      : `No items sold ${shownDay ? "on this day" : "this week or last year"}.`}
+                  </div>
+                ) : (
+                  itemPairs.map((p) => {
+                    const change = pairChangePct(p);
+                    return (
+                      <div
+                        key={p.key}
+                        className="border-t border-gray-100 px-3.5 py-3 first:border-t-0"
+                      >
+                        <div className="flex items-baseline gap-2">
+                          <span className="min-w-0 flex-1 truncate font-display text-[13.5px] font-semibold text-content">
+                            {p.label}
+                          </span>
+                          <span className="flex-none text-[12px] font-semibold tabular-nums text-content/85">
+                            {change === null ? "\u2014" : fmtChange(change)}
+                          </span>
+                        </div>
+                        <div className="font-mono text-[10px] tracking-wider text-content/85">
+                          {p.key}
+                        </div>
+                        <div className="mt-2">
+                          <PairedBars
+                            ty={p.ty}
+                            ly={p.ly}
+                            max={itemMax}
+                            lyUnavailable={p.noLy}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </>
+            ) : (
+              <>
+                <MobileSortChips
+                  options={SORTS[perf.dimension]}
+                  value={sort}
+                  onChange={(key) =>
+                    dispatch(setPerfSort({ dimension: perf.dimension, sort: key }))
+                  }
+                />
+                {perf.selectedStore && perf.dimension !== "stores" && (
+                  <p className="border-b border-gray-100 px-3.5 pb-2.5 pt-3 text-[12px] text-content/85">
+                    Showing {selectedStoreName} only. Clear it on the Stores tab.
+                  </p>
+                )}
+                {perf.dimension === "subs" && !itemScope && (
+                  <p className="border-b border-gray-100 px-3.5 pb-2.5 pt-3 text-[12px] text-content/85">
+                    Pick a store on the Stores tab to see a sub department's items.
+                  </p>
+                )}
+                {listPartial && (
+                  <p className="border-b border-gray-100 bg-gray-100 px-3.5 py-2 text-[11.5px] font-semibold text-content">
+                    Last year: {matchedNote(weekMatch)}
+                  </p>
+                )}
+
+                {bundleLoading && perf.dimension !== "stores" ? (
+                  <div className="px-4 py-8 text-center text-[12.5px] text-content/85">
+                    Loading {selectedStoreName}...
+                  </div>
+                ) : pairs.length === 0 ? (
+                  <div className="px-4 py-8 text-center text-[12.5px] text-content/85">
+                    Nothing recorded for this selection.
+                  </div>
+                ) : (
+                  pairs.map((p) => {
+                    // Stores select (a filter on Subs and Hours); sub
+                    // departments open their items once a store is in scope.
+                    // Hours stay read-only.
+                    const selectsStore = perf.dimension === "stores";
+                    const opensItems = perf.dimension === "subs" && itemScope !== null;
+                    const tappable = selectsStore || opensItems;
+                    const isSel = selectsStore && perf.selectedStore === p.key;
+                    const change = pairChangePct(p);
+                    // Stores each match on their own dates, so the note is
+                    // per row there; the other lists carry one above.
+                    const rowPartial = selectsStore && isPartialMatch(p);
+
+                    return (
+                      <button
+                        key={p.key}
+                        type="button"
+                        disabled={!tappable}
+                        aria-pressed={selectsStore ? isSel : undefined}
+                        onClick={() => {
+                          if (selectsStore) dispatch(togglePerfStore(p.key));
+                          else if (opensItems)
+                            dispatch(openPerfSubDept({ id: Number(p.key), label: p.label }));
+                        }}
+                        className={`block w-full border-t border-gray-100 px-3.5 py-3 text-left first:border-t-0 ${
+                          isSel ? "bg-row_selected" : ""
+                        } ${tappable ? "active:bg-bkg" : ""}`}
+                      >
+                        <div className="flex items-baseline gap-2">
+                          <span className="min-w-0 flex-1 truncate font-display text-[13.5px] font-semibold text-content">
+                            {p.label}
+                          </span>
+                          {/* The figure the Change sort orders on, so that order
+                              can be read off the rows. Neutral: no grading on
+                              mobile. A dash when last year sold nothing. */}
+                          <span
+                            className={`flex-none text-[12px] font-semibold tabular-nums ${
+                              rowPartial
+                                ? "rounded bg-gray-200 px-1.5 text-content"
+                                : "text-content/85"
+                            }`}
+                          >
+                            {change === null ? "\u2014" : fmtChange(change)}
+                          </span>
+                          {isSel && (
+                            <span
+                              className="flex-none font-mono text-[10px] uppercase tracking-wider"
+                              style={{ color: TY_COLOR }}
+                            >
+                              Selected
+                            </span>
+                          )}
+                          {opensItems && (
+                            <ChevronRightIcon className="h-4 w-4 flex-none self-center text-content/85" />
+                          )}
+                        </div>
+                        {rowPartial && (
+                          <div className="text-[11px] text-content/85">
+                            Last year: {matchedNote(p)}
+                          </div>
+                        )}
+                        <div className="mt-2">
+                          <PairedBars
+                            ty={p.ty}
+                            ly={p.ly}
+                            max={listMax}
+                            lyUnavailable={p.noLy}
+                          />
+                        </div>
+                      </button>
+                    );
+                  })
+                )}
+              </>
             )}
           </section>
         </div>
       </div>
+
+      {perf.infoOpen && (
+        <MobileInfoSheet
+          {...SALES_MOBILE_INFO}
+          onClose={() => dispatch(setPerfInfoOpen(false))}
+        />
+      )}
     </div>
   );
 };

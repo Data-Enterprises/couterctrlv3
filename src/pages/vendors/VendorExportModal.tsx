@@ -16,6 +16,7 @@ import {
   LY_OFFSET,
   isoOf,
   shiftIso,
+  coverageOf,
   pctChange,
   tierOfDelta,
 } from "../../utils/grading";
@@ -256,7 +257,25 @@ const buildItemsGradedCsv = (
     "LY Margin %",
     "Contribution %",
   ];
-  const built = buildItemRows(items.tw, items.lw, items.ly);
+  // Matched and graded exactly as the item table on screen: coverage of the
+  // exported days, taken on the store's dates, and each comparison over only
+  // the days that matched.
+  const dayOf = (r: { sale_date: string }) => r.sale_date.split("T")[0];
+  const twDays = new Set(items.tw.map(dayOf));
+  const built = buildItemRows(items.tw, items.lw, items.ly, {
+    lwOf: (d) => shiftIso(d, LW_OFFSET),
+    lyOf: (d) => shiftIso(d, LY_OFFSET),
+    coverage: coverageOf(
+      twDays,
+      {
+        tw: twDays,
+        lw: new Set(items.lw.map(dayOf)),
+        ly: new Set(items.ly.map(dayOf)),
+      },
+      (d) => shiftIso(d, LW_OFFSET),
+      (d) => shiftIso(d, LY_OFFSET),
+    ),
+  });
   const out: (string | number)[][] = [];
   for (const r of built) {
     const sev = getItemSeverity(r, threshold, gradingMetric);

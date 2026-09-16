@@ -17,6 +17,15 @@ interface Props {
   /** How the figures read. Counts are not money, and formatting an exception
    *  tally as $363.00 is the kind of wrong that survives review. */
   format?: (n: number) => string;
+  /**
+   * There is no comparison period on file — draw this year alone.
+   *
+   * Distinct from an `ly` of 0, which is a real reading: they traded nothing.
+   * Some stores have no history on the new backend at all, and drawing that
+   * as a zero bar states a fact nobody measured — every row then reads as a
+   * rise from nothing. Opt-in, so nothing that passes a genuine zero changes.
+   */
+  lyUnavailable?: boolean;
 }
 
 /**
@@ -47,9 +56,11 @@ const PairedBars = ({
   compact = false,
   labels = ["TY", "LY"],
   format = formatCurrency2,
+  lyUnavailable = false,
 }: Props) => {
   const safeMax = max > 0 ? max : 1;
-  const tyWins = ty >= ly;
+  // Nothing to lose to, so this year is never the dimmed one.
+  const tyWins = lyUnavailable || ty >= ly;
 
   const bar = (
     label: string,
@@ -96,7 +107,18 @@ const PairedBars = ({
   return (
     <div className="flex flex-col gap-1.5">
       {bar(labels[0], ty, TY_COLOR, !tyWins)}
-      {bar(labels[1], ly, LY_COLOR, tyWins)}
+      {lyUnavailable ? (
+        <div className="flex items-center gap-2">
+          <span className="w-5 flex-none font-mono text-[9.5px] font-semibold tracking-wider text-content/85">
+            {labels[1]}
+          </span>
+          <span className="flex-1 text-[11px] text-content/85">
+            no history on file
+          </span>
+        </div>
+      ) : (
+        bar(labels[1], ly, LY_COLOR, tyWins)
+      )}
     </div>
   );
 };

@@ -380,15 +380,42 @@ const SalesLedger = () => {
   const heroTWQty = ledgerRows.reduce((acc, r) => acc + r.twQty, 0);
   const heroLYQty = ledgerRows.reduce((acc, r) => acc + r.lyQty, 0);
   const heroLWQty = ledgerRows.reduce((acc, r) => acc + r.lwQty, 0);
-  const heroGradeTW = gradingMetric === "qty" ? heroTWQty : heroTWTotal;
+  /**
+   * Each pill divides by the TW subtotal for ITS OWN comparison, not by the
+   * week total above it.
+   *
+   * This used to put the full seven-day TW figure over a day-matched LY one.
+   * Store 590 has three of seven LY days, so the same screen carried "+127.28%"
+   * up here and "-12.07%" in the row below — the second being right. The gap
+   * is not a rounding difference, it is 199,279 / 87,680 against
+   * 77,094 / 87,680, and the reader has no way to tell which is which.
+   *
+   * Summing the per-store subtotals rather than averaging the per-store
+   * percentages keeps a group weighted by size: twenty stores where the big
+   * one has full LY history and the small ones have none should read as the
+   * big one.
+   */
+  const heroTWForLY = ledgerRows.reduce((acc, r) => acc + r.twTotalForLY, 0);
+  const heroTWForLW = ledgerRows.reduce((acc, r) => acc + r.twTotalForLW, 0);
+  const heroTWQtyForLY = ledgerRows.reduce((acc, r) => acc + r.twQtyForLY, 0);
+  const heroTWQtyForLW = ledgerRows.reduce((acc, r) => acc + r.twQtyForLW, 0);
   const heroGradeLY = gradingMetric === "qty" ? heroLYQty : heroLYTotal;
   const heroGradeLW = gradingMetric === "qty" ? heroLWQty : heroLWTotal;
+  const heroGradeTWForLY =
+    gradingMetric === "qty" ? heroTWQtyForLY : heroTWForLY;
+  const heroGradeTWForLW =
+    gradingMetric === "qty" ? heroTWQtyForLW : heroTWForLW;
   const heroVsLYPct = heroGradeLY
-    ? ((heroGradeTW - heroGradeLY) / heroGradeLY) * 100
+    ? ((heroGradeTWForLY - heroGradeLY) / heroGradeLY) * 100
     : 0;
   const heroVsLWPct = heroGradeLW
-    ? ((heroGradeTW - heroGradeLW) / heroGradeLW) * 100
+    ? ((heroGradeTWForLW - heroGradeLW) / heroGradeLW) * 100
     : 0;
+  // How much of the week each comparison actually covers, across every store
+  // in the result. Drives whether the pill is presented as a verdict.
+  const heroDayCount = ledgerRows.reduce((acc, r) => acc + r.dayCount, 0);
+  const heroLYDayCount = ledgerRows.reduce((acc, r) => acc + r.lyDayCount, 0);
+  const heroLWDayCount = ledgerRows.reduce((acc, r) => acc + r.lwDayCount, 0);
 
   const weekLabel = (() => {
     const { twStart, twEnd } = getDateRanges();
@@ -435,6 +462,13 @@ const SalesLedger = () => {
               vsLWPct={heroVsLWPct}
               hasLY={heroGradeLY > 0}
               hasLW={heroGradeLW > 0}
+              dayCount={heroDayCount}
+              lyDayCount={heroLYDayCount}
+              lwDayCount={heroLWDayCount}
+              // Off the rows, not the search type: what matters is whether the
+              // header sums more than one store, and a storeid carrying two
+              // locations does that too.
+              isGroup={ledgerRows.length > 1}
               onNewSearch={resetToEntry}
               onOpenSearch={() => setSearchModalOpen(true)}
               gradingMetric={gradingMetric}

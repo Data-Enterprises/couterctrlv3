@@ -5,10 +5,13 @@ import {
   buildGroupRows,
   buildLensCards,
   buildReceipts,
+  buildLensBusiest,
   buildTotals,
   busiestDay,
+  clockOf,
   EMPTY_SCOPE,
   receiptLabel,
+  sortGroupRows,
 } from "./eventPerfData";
 
 const MON = "2026-08-24";
@@ -25,13 +28,15 @@ const ev = (over: Partial<EventRow> = {}): EventRow => ({
   terminal: "3",
   sale_id: "4471029",
   day: MON,
+  time: "",
   amount: 10,
   count: 1,
   ...over,
 });
 
-/** LP's baseline: one aggregate row per store per type, standing for many
- *  transactions, with no cashier and no day. */
+/** An aggregate row: one per store per type, standing for many transactions,
+ *  with no cashier and no day. Neither adapter builds these any more, but the
+ *  counting still honours them. */
 const agg = (over: Partial<EventRow> = {}): EventRow =>
   ev({
     cashier_number: null,
@@ -79,6 +84,75 @@ describe("transaction counting", () => {
     expect(
       buildGroupRows(rows, [], EMPTY_SCOPE, "store", "transactions"),
     ).toHaveLength(2);
+  });
+});
+
+/**
+ * The baseline as both adapters now build it: the fourteen days before the
+ * week, one row per event with its sale id, each row halved.
+ */
+const fortnight = (over: Partial<EventRow> = {}) => {
+  const out: EventRow[] = [];
+  for (let i = 0; i < 14; i++) {
+    const d = new Date(2026, 7, 10 + i, 12);
+    const day = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    // Two sales a day, the first with three lines on it.
+    for (const [sale, lines] of [
+      [`b${i}a`, 3],
+      [`b${i}b`, 1],
+    ] as const)
+      for (let l = 0; l < lines; l++)
+        out.push(ev({ sale_id: sale, day, amount: 2 / 2, count: 1 / 2, ...over }));
+  }
+  return out;
+};
+
+describe("the halved fortnight baseline", () => {
+  it("averages to a week, not a fortnight", () => {
+    // 28 sales over 14 days is 14 a week. Counting distinct ids as whole
+    // transactions ignored the halving and read 28.
+    const t = buildTotals([ev()], fortnight(), EMPTY_SCOPE);
+    expect(t.baselineTransactions).toBe(14);
+    // 56 lines at $2, halved.
+    expect(t.baselineAmount).toBe(56);
+  });
+
+  it("gives a store list row the same AVG as the card", () => {
+    // Summing `count` per row counted the three-line sale three times.
+    const [row] = buildGroupRows(
+      [ev()],
+      fortnight(),
+      EMPTY_SCOPE,
+      "store",
+      "transactions",
+    );
+    expect(row.baseline).toBe(14);
+  });
+
+  it("gives a weekday its own average on the chart and the card", () => {
+    // MON's weekday appears twice in the fortnight, two sales each time,
+    // halved: an average Monday of 2.
+    const days = buildEventDays(
+      [ev()],
+      fortnight(),
+      EMPTY_SCOPE,
+      WEEK,
+      "transactions",
+    );
+    expect(days[0].baseline).toBe(2);
+    expect(
+      buildTotals([ev()], fortnight(), { ...EMPTY_SCOPE, day: MON })
+        .baselineTransactions,
+    ).toBe(2);
+  });
+
+  it("still counts this week's sales whole", () => {
+    const t = buildTotals(
+      [ev(), ev({ amount: 1 }), ev({ sale_id: "2" })],
+      [],
+      EMPTY_SCOPE,
+    );
+    expect(t.transactions).toBe(2);
   });
 });
 
@@ -228,6 +302,42 @@ describe("buildReceipts", () => {
     expect(buildReceipts(rows, EMPTY_SCOPE, "nope")).toHaveLength(0);
   });
 
+  it("puts the newest first by day, then time", () => {
+    const out = buildReceipts(
+      [
+        ev({ sale_id: "a", day: MON, time: "150000" }),
+        ev({ sale_id: "b", day: TUE, time: "090000" }),
+        ev({ sale_id: "c", day: MON, time: "170000" }),
+      ],
+      EMPTY_SCOPE,
+      "",
+    );
+    expect(out.map((r) => r.saleId)).toEqual(["b", "c", "a"]);
+  });
+
+  it("falls back to the transaction number, compared as a number", () => {
+    // Coupon Sales: "9" is not newer than "10". LP: the store number leads the
+    // id, so the transaction number is the part to compare.
+    const coupons = buildReceipts(
+      [ev({ sale_id: "9" }), ev({ sale_id: "10" })],
+      EMPTY_SCOPE,
+      "",
+    );
+    expect(coupons.map((r) => r.saleId)).toEqual(["10", "9"]);
+    const lp = buildReceipts(
+      [
+        ev({ sale_id: "99-100-3-8-24-2026" }),
+        ev({ sale_id: "54-454872-3-8-24-2026" }),
+      ],
+      EMPTY_SCOPE,
+      "",
+    );
+    expect(lp.map((r) => r.saleId)).toEqual([
+      "54-454872-3-8-24-2026",
+      "99-100-3-8-24-2026",
+    ]);
+  });
+
   it("ignores aggregate rows, which are not receipts", () => {
     expect(buildReceipts([agg({ count: 40 })], EMPTY_SCOPE, "")).toHaveLength(
       0,
@@ -248,9 +358,8 @@ describe("group rows", () => {
     expect(rows[0].sub).toBe("lanes 3, 5");
   });
 
-  it("orders by size, not by distance from baseline", () => {
-    // Ordering by how unusual someone looks is the grading this page is
-    // deliberately without.
+  it("orders by size by default, not by distance from baseline", () => {
+    // The page opens on size. vs Avg is there, but only when someone picks it.
     const rows = buildGroupRows(
       [
         ev({ cashier_number: 1, cashier_name: "A", sale_id: "1" }),
@@ -266,6 +375,39 @@ describe("group rows", () => {
   });
 });
 
+describe("sortGroupRows", () => {
+  const rows = [
+    { key: "685__370", label: "Arab 2", sub: "", transactions: 30, amount: 5, baseline: 20 },
+    { key: "685__99", label: "Zed", sub: "", transactions: 3, amount: 50, baseline: 1 },
+    { key: "685__369", label: "Arab", sub: "", transactions: 10, amount: 9, baseline: null },
+  ];
+  const order = (sort: Parameters<typeof sortGroupRows>[1]) =>
+    sortGroupRows(rows, sort, "store", "transactions").map((r) => r.key);
+
+  it("sorts by count, amount, change and store number", () => {
+    expect(order("transactions")).toEqual(["685__370", "685__369", "685__99"]);
+    expect(order("amount")).toEqual(["685__99", "685__369", "685__370"]);
+    // 30-20 = +10, no baseline counts from zero = +10, 3-1 = +2. The tie
+    // falls back to size.
+    expect(order("change")).toEqual(["685__370", "685__369", "685__99"]);
+    // Numeric: 99 before 369.
+    expect(order("name")).toEqual(["685__99", "685__369", "685__370"]);
+  });
+});
+
+describe("clockOf", () => {
+  it("reads a real time off the date, and ignores midnight", () => {
+    expect(clockOf("2026-08-24T14:05:09")).toBe("140509");
+    expect(clockOf("2026-08-24T00:00:00")).toBe("");
+    expect(clockOf("2026-08-24")).toBe("");
+  });
+
+  it("pads a start time that lost its leading zero", () => {
+    expect(clockOf("2026-08-24T00:00:00", "93045")).toBe("093045");
+    expect(clockOf("2026-08-24", 93045)).toBe("093045");
+  });
+});
+
 describe("receiptLabel", () => {
   it("takes the second segment, not the last", () => {
     // 54-454872-3-8-30-2026 — the tail is the DATE, so .pop() would label
@@ -276,6 +418,31 @@ describe("receiptLabel", () => {
   it("leaves a plain id alone", () => {
     // Coupon Sales sale ids are numbers with no structure to strip.
     expect(receiptLabel("7352085")).toBe("7352085");
+  });
+});
+
+describe("buildLensBusiest", () => {
+  it("names each card's own busiest day", () => {
+    // Voids peak Monday, refunds Tuesday; the everything card follows the
+    // total. One answer printed on every card named the wrong day for one.
+    const rows = [
+      ev({ lens: "Void", day: MON, sale_id: "1" }),
+      ev({ lens: "Void", day: MON, sale_id: "2" }),
+      ev({ lens: "Void", day: MON, sale_id: "3" }),
+      ev({ lens: "Refund", day: TUE, sale_id: "4" }),
+      ev({ lens: "Refund", day: TUE, sale_id: "5" }),
+    ];
+    const [all, voids, refunds, none] = buildLensBusiest(
+      rows,
+      { ...EMPTY_SCOPE, lens: "Refund", day: TUE },
+      [null, "Void", "Refund", "No Sale"],
+      WEEK,
+      "transactions",
+    );
+    expect(all).toContain("Mon");
+    expect(voids).toContain("Mon");
+    expect(refunds).toContain("Tue");
+    expect(none).toBeNull();
   });
 });
 

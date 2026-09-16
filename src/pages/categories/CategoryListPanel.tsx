@@ -18,12 +18,14 @@ import {
 import { fmtCompactRange } from "../../utils/dateLabels";
 import {
   severityDotClass,
-  pillClass,
+  comparisonPillClass,
+  headerDeltaPill,
   PCT_COL_W,
   formatPct,
   type Severity,
 } from "../../utils/severity";
 import { CATEGORIES_INFO } from "./categoriesInfo";
+import { isCompleteCoverage } from "../../utils/grading";
 import {
   setTextFilter,
   setTierFilter,
@@ -129,12 +131,25 @@ const CategoryListPanel = ({ onSearchOpen }: Props) => {
           ...b,
           tier,
           dotClass: dotFor(tier),
-          lwPillClass: pillClass(b.lwPct, activeThreshold),
-          lyPillClass: pillClass(b.lyPct, activeThreshold),
+          // Grey when the comparison is missing days — it shows, but it
+          // doesn't grade (see utils/grading).
+          lwPillClass: comparisonPillClass(
+            b.lwPct,
+            isCompleteCoverage(b.coverage.lwDayCount, b.coverage.dayCount),
+            activeThreshold,
+          ),
+          lyPillClass: comparisonPillClass(
+            b.lyPct,
+            isCompleteCoverage(b.coverage.lyDayCount, b.coverage.dayCount),
+            activeThreshold,
+          ),
         };
       }),
     [base, activeThreshold, metric],
   );
+
+  // Store-level, so every category row carries the same coverage.
+  const headerCov = rows[0]?.coverage ?? { dayCount: 0, lwDayCount: 0, lyDayCount: 0 };
 
   const counts = useMemo(() => {
     const c = { critical: 0, watch: 0, healthy: 0, ungraded: 0 };
@@ -240,24 +255,24 @@ const CategoryListPanel = ({ onSearchOpen }: Props) => {
               </span>
               {totals.lwPct !== null && (
                 <span
+                  title={headerDeltaPill(totals.lwPct, headerCov.lwDayCount, headerCov.dayCount, "last week").title}
                   className={`text-[12px] font-semibold px-2 py-0.5 rounded-full ${
-                    totals.lwPct >= 0
-                      ? "bg-emerald-300/15 text-emerald-300"
-                      : "bg-red-300/15 text-red-300"
+                    headerDeltaPill(totals.lwPct, headerCov.lwDayCount, headerCov.dayCount, "last week").cls
                   }`}
                 >
                   LW {formatPct(totals.lwPct)}
+                  {headerDeltaPill(totals.lwPct, headerCov.lwDayCount, headerCov.dayCount, "last week").note}
                 </span>
               )}
               {totals.lyPct !== null && (
                 <span
+                  title={headerDeltaPill(totals.lyPct, headerCov.lyDayCount, headerCov.dayCount, "last year").title}
                   className={`text-[12px] font-semibold px-2 py-0.5 rounded-full ${
-                    totals.lyPct >= 0
-                      ? "bg-emerald-300/15 text-emerald-300"
-                      : "bg-red-300/15 text-red-300"
+                    headerDeltaPill(totals.lyPct, headerCov.lyDayCount, headerCov.dayCount, "last year").cls
                   }`}
                 >
                   LY {formatPct(totals.lyPct)}
+                  {headerDeltaPill(totals.lyPct, headerCov.lyDayCount, headerCov.dayCount, "last year").note}
                 </span>
               )}
             </>

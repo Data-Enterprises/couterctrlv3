@@ -6,7 +6,14 @@ import LookupQueuePanel from "./LookupQueuePanel";
 import LookupReportPanel from "./LookupReportPanel";
 import LookupExportModal from "./LookupExportModal";
 import { useLookupQueue } from "./useLookupQueue";
-import { buildDayBuckets, computeMargin, computeTrend, findGaps } from "../lookupMetrics";
+import {
+  buildDayBuckets,
+  buildSaleTypeBreakdown,
+  computeMargin,
+  computeTrend,
+  findGaps,
+  rowsOfSaleType,
+} from "../lookupMetrics";
 
 const ItemLookupDesktop = () => {
   const { selectedStore } = useAppSelector((s) => s.item);
@@ -29,6 +36,12 @@ const ItemLookupDesktop = () => {
   );
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [exportModalOpen, setExportModalOpen] = useState(false);
+  // Remembered against the item it was picked on, so selecting another item
+  // lands on its sales rather than a type it may not even have.
+  const [saleTypePick, setSaleTypePick] = useState<{ upc: string | null; type: string }>({
+    upc: null,
+    type: "Sale",
+  });
 
   const handleSearch = (upcs: string[]) => {
     if (!selectedStore) return;
@@ -46,6 +59,20 @@ const ItemLookupDesktop = () => {
 
   const selectedItem = queue.find((q) => q.upc === selectedUpc && q.status === "loaded");
   const buckets = selectedItem?.history ? buildDayBuckets(selectedItem.history) : [];
+  const margin = selectedItem?.history
+    ? computeMargin(selectedItem.history, selectedItem.totalSales ?? 0, selectedItem.totalQty ?? 0)
+    : null;
+  const historyAll = selectedItem?.historyAll ?? selectedItem?.history ?? [];
+  const saleTypes = buildSaleTypeBreakdown(historyAll);
+  const selectedSaleType =
+    saleTypePick.upc === selectedUpc &&
+    saleTypes.some((s) => s.saleType === saleTypePick.type)
+      ? saleTypePick.type
+      : "Sale";
+  const timeline =
+    selectedSaleType === "Sale"
+      ? buckets
+      : buildDayBuckets(rowsOfSaleType(historyAll, selectedSaleType));
 
   return (
     <div className="h-[calc(100vh-3rem)] overflow-hidden p-4 flex gap-4">
@@ -76,12 +103,16 @@ const ItemLookupDesktop = () => {
           description={selectedItem.description ?? ""}
           productCode={selectedItem.productCode ?? ""}
           categoryDescription={selectedItem.categoryDescription ?? ""}
-          margin={computeMargin(selectedItem.history, selectedItem.totalSales ?? 0, selectedItem.totalQty ?? 0)}
+          margin={margin!}
           totalQty={selectedItem.totalQty ?? 0}
           daysSold={selectedItem.daysSold ?? 0}
           buckets={buckets}
           trend={computeTrend(buckets)}
           gaps={findGaps(buckets)}
+          saleTypes={saleTypes}
+          selectedSaleType={selectedSaleType}
+          onSelectSaleType={(type) => setSaleTypePick({ upc: selectedUpc, type })}
+          timeline={timeline}
           onExportOpen={() => setExportModalOpen(true)}
         />
       ) : (
@@ -96,7 +127,9 @@ const ItemLookupDesktop = () => {
         <LookupExportModal
           queue={queue}
           selectedDescription={selectedItem?.description ?? ""}
-          buckets={buckets}
+          buckets={timeline}
+          selectedSaleType={selectedSaleType}
+          weighed={margin?.weighed ?? false}
           onClose={() => setExportModalOpen(false)}
         />
       )}

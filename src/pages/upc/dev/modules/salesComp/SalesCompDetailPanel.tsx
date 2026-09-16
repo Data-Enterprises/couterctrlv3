@@ -15,6 +15,9 @@ interface Props {
   stats: UpcSalesCompStats;
 }
 
+/** Week label, seven days, then the week's total. */
+const WEEK_GRID = "120px repeat(7, 1fr) 1.1fr";
+
 const SalesCompDetailPanel = ({ stats: s }: Props) => {
   const kpis: KpiCell[] = [
     {
@@ -139,7 +142,7 @@ const SalesCompDetailPanel = ({ stats: s }: Props) => {
           </div>
           <div
             className="grid gap-1 text-[11px] font-semibold uppercase tracking-wide text-content pb-1.5 mb-0.5"
-            style={{ gridTemplateColumns: "120px repeat(7, 1fr)" }}
+            style={{ gridTemplateColumns: WEEK_GRID }}
           >
             <span />
             {DAY_SHORT.map((d) => (
@@ -147,12 +150,13 @@ const SalesCompDetailPanel = ({ stats: s }: Props) => {
                 {d}
               </span>
             ))}
+            <span className="text-right pr-2">Total</span>
           </div>
-          {s.weekRows.map(({ week, row }) => (
+          {s.weekRows.map(({ week, row }, wi) => (
             <div
               key={week}
               className="grid gap-1 items-center py-1 border-t border-gray-200"
-              style={{ gridTemplateColumns: "120px repeat(7, 1fr)" }}
+              style={{ gridTemplateColumns: WEEK_GRID }}
             >
               <span className="text-[13px] text-content/85 truncate">
                 {fmtWeekRange(week)}
@@ -168,8 +172,37 @@ const SalesCompDetailPanel = ({ stats: s }: Props) => {
                   </span>
                 );
               })}
+              {/* weekTotals shares weekRows' order — both walk the same
+                  sorted weeks. */}
+              <span className="text-right pr-2 text-[13px] font-semibold text-content tabular-nums">
+                {formatCurrency2(s.weekTotals[wi])}
+              </span>
             </div>
           ))}
+          {/* Each weekday summed down the weeks. The corner is the period
+              total, so the table visibly reconciles with Total sales above. */}
+          <div
+            className="grid gap-1 items-center py-1.5 border-t-2 border-gray-300"
+            style={{ gridTemplateColumns: WEEK_GRID }}
+          >
+            <span className="text-[11px] font-semibold uppercase tracking-wide text-content">
+              Total
+            </span>
+            {DAYS.map((d) => {
+              const sum = s.weekRows.reduce((acc, { row }) => acc + (row[d] ?? 0), 0);
+              return (
+                <span
+                  key={d}
+                  className="text-center text-[13px] font-semibold text-content tabular-nums"
+                >
+                  {sum > 0 ? formatCurrency2(sum) : "—"}
+                </span>
+              );
+            })}
+            <span className="text-right pr-2 text-[13px] font-bold text-content tabular-nums">
+              {formatCurrency2(s.periodTotal)}
+            </span>
+          </div>
         </div>
       </div>
     </div>

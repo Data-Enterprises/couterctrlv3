@@ -26,6 +26,22 @@ export interface DayCardEntry {
   /** Hover text for the delta, e.g. the baseline value behind it. */
   deltaTitle?: string;
   /**
+   * Overrides for the card's own wording, all optional so every existing caller
+   * keeps the weekday-and-date default.
+   *
+   * Suggested Weight needs them because its cards are NOT that date's figure:
+   * they are the weekday's average, shown against the date it will be delivered
+   * against. Rendering "Saturday 9/12 — 1,151 lb" reads as a forecast for that
+   * Saturday, which the number is not. "Saturdays / covers 9/12 / 1,151 lb
+   * typical" says the same thing truthfully in the same space.
+   */
+  /** Replaces the weekday name on the top line. */
+  label?: string;
+  /** Replaces the m/d on the second line. */
+  subLabel?: string;
+  /** Small qualifier printed after the value, e.g. "typical". */
+  valueNote?: string;
+  /**
    * Which baseline the delta is measured against — "LY" or "LW" — printed
    * after the percentage so the card says what it is comparing to. Per-card
    * rather than per-strip because a day can have a last-year figure while the
@@ -104,7 +120,7 @@ const DayCardStrip = ({
         </div>
       </button>
 
-      {days.map(({ iso, value, delta, deltaTitle, basis }) => {
+      {days.map(({ iso, value, delta, deltaTitle, basis, label, subLabel, valueNote }) => {
         const date = new Date(iso + "T12:00:00");
         const holidayName = getHolidayName(iso);
         const isSelected = selected === iso;
@@ -125,12 +141,19 @@ const DayCardStrip = ({
             )}
             <div className="flex flex-col items-center justify-center gap-0.5 py-2 px-1 bg-custom-white">
               <div className="text-[9px] font-bold uppercase tracking-wide text-content">
-                {date.toLocaleDateString("en-US", { weekday: "long" })}
+                {label ?? date.toLocaleDateString("en-US", { weekday: "long" })}
               </div>
               <div className="text-[12px] font-bold text-content leading-none">
-                {md(iso)}
+                {subLabel ?? md(iso)}
               </div>
-              <div className="text-[12px] font-bold text-content mt-1">{value}</div>
+              <div className="text-[12px] font-bold text-content mt-1">
+                {value}
+                {valueNote && (
+                  <span className="ml-1 text-[8.5px] font-bold uppercase tracking-wide text-content/85">
+                    {valueNote}
+                  </span>
+                )}
+              </div>
               <div
                 className={`text-[11px] font-semibold ${deltaClass(delta)}`}
                 title={deltaTitle}

@@ -8,6 +8,7 @@ import {
 } from "../../../features/salesLedgerSlice";
 import { formatCurrencyCompact, formatBigNumber } from "../../../utils";
 import { formatPct } from "./tierColumnUtils";
+import { headerDeltaPill } from "../../../utils/severity";
 import {
   MagnifyingGlassIcon,
 } from "@heroicons/react/20/solid";
@@ -26,6 +27,15 @@ interface LedgerHeaderProps {
   vsLWPct: number;
   hasLY: boolean;
   hasLW: boolean;
+  /** Store-days in the result, and how many of them found a match. A pill over
+   *  three days of a seven-day week is a hint, not a verdict, and this is what
+   *  lets it be shown as one. */
+  dayCount: number;
+  lyDayCount: number;
+  lwDayCount: number;
+  /** More than one store in the result. The pills then state the group's
+   *  figure without day counts — see headerDeltaPill. */
+  isGroup: boolean;
   onNewSearch: () => void;
   onOpenSearch: () => void;
   gradingMetric: GradingMetric;
@@ -39,6 +49,10 @@ const LedgerHeader = ({
   vsLWPct,
   hasLY,
   hasLW,
+  dayCount,
+  lyDayCount,
+  lwDayCount,
+  isGroup,
   onOpenSearch,
   gradingMetric,
 }: LedgerHeaderProps) => {
@@ -54,6 +68,18 @@ const LedgerHeader = ({
   // actually graded against.
   const lastValidRef = useRef<number>(threshold?.amount ?? THRESHOLD_DEFAULT);
   if (threshold?.amount != null) lastValidRef.current = threshold.amount;
+
+  /**
+   * A comparison missing days is not the same claim as a complete one.
+   *
+   * Store 590's last year has three of seven days, and the two it is missing
+   * are Saturday and Sunday — the biggest of the week. The arithmetic over
+   * those three days is correct and the conclusion still does not carry, so
+   * the pill drops its red/green fill and says what it covers instead. Green
+   * and red are for verdicts.
+   */
+  const lwPill = headerDeltaPill(vsLWPct, lwDayCount, dayCount, "last week", isGroup);
+  const lyPill = headerDeltaPill(vsLYPct, lyDayCount, dayCount, "last year", isGroup);
 
 
   return (
@@ -73,20 +99,20 @@ const LedgerHeader = ({
         </span>
         {hasLW && (
           <span
-            className={`text-[12px] font-semibold px-2 py-0.5 rounded-full ${
-              vsLWPct >= 0 ? "bg-emerald-300/15 text-emerald-300" : "bg-red-300/15 text-red-300"
-            }`}
+            title={lwPill.title}
+            className={`text-[12px] font-semibold px-2 py-0.5 rounded-full ${lwPill.cls}`}
           >
             LW {formatPct(vsLWPct)}
+            {lwPill.note}
           </span>
         )}
         {hasLY && (
           <span
-            className={`text-[12px] font-semibold px-2 py-0.5 rounded-full ${
-              vsLYPct >= 0 ? "bg-emerald-300/15 text-emerald-300" : "bg-red-300/15 text-red-300"
-            }`}
+            title={lyPill.title}
+            className={`text-[12px] font-semibold px-2 py-0.5 rounded-full ${lyPill.cls}`}
           >
             LY {formatPct(vsLYPct)}
+            {lyPill.note}
           </span>
         )}
       </div>

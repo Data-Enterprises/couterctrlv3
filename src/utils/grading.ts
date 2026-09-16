@@ -86,6 +86,69 @@ export const gradeDelta = (row: {
   return null;
 };
 
+/* ── whole-week basis ─────────────────────────────────────────────────────────
+   Which comparison a row is graded on. Last year, but only when it covers
+   every day of the week; otherwise last week, when THAT covers every day;
+   otherwise nothing.
+
+   Before this, every Performance page graded on last year whenever any existed.
+   Store 590 has last-year data for 3 of 7 days — both weekend days missing — and
+   was graded Critical on that partial week while a complete last week put it at
+   -1.20%. The partial comparison still shows, greyed; it just doesn't decide.
+
+   Coverage is counted on the STORE's dates, never per row. A vendor that
+   delivers three days a week, or a category that sold nothing on Tuesday, is a
+   real zero — not a hole in the data. What makes a comparison incomplete is the
+   store having no rows at all for a matched date. */
+
+export interface Coverage {
+  /** Days in the current week the store has data for. */
+  dayCount: number;
+  /** Of those, how many found a matching day last week / last year. */
+  lwDayCount: number;
+  lyDayCount: number;
+}
+
+export type GradeBasis = "LY" | "LW" | null;
+
+/** Every day matched. A week with no days isn't complete. */
+export const isCompleteCoverage = (matched: number, days: number) =>
+  days > 0 && matched >= days;
+
+export const gradeBasis = (
+  r: { hasLY: boolean; hasLW: boolean },
+  c: Coverage,
+): GradeBasis =>
+  r.hasLY && isCompleteCoverage(c.lyDayCount, c.dayCount)
+    ? "LY"
+    : r.hasLW && isCompleteCoverage(c.lwDayCount, c.dayCount)
+      ? "LW"
+      : null;
+
+/**
+ * Coverage of a week from the dates each period has ANY row for.
+ *
+ * `lwOf`/`lyOf` map a current-week date to its counterpart, so each page keeps
+ * its own matching (Sales matches holidays; the item pages use whole weeks).
+ */
+export const coverageOf = (
+  twDates: Iterable<string>,
+  present: { tw: Set<string>; lw: Set<string>; ly: Set<string> },
+  lwOf: (iso: string) => string,
+  lyOf: (iso: string) => string,
+): Coverage => {
+  let dayCount = 0;
+  let lwDayCount = 0;
+  let lyDayCount = 0;
+  for (const d of twDates) {
+    if (!present.tw.has(d)) continue;
+    dayCount += 1;
+    if (present.lw.has(lwOf(d))) lwDayCount += 1;
+    if (present.ly.has(lyOf(d))) lyDayCount += 1;
+  }
+  return { dayCount, lwDayCount, lyDayCount };
+};
+
 /** Critical first, then by size within a tier — a 30% fall on a large row
  *  matters more than the same percentage on a rounding error. */
 export const sortGraded = <T extends { tier: Tier }>(

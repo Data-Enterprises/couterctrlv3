@@ -3,7 +3,8 @@ import { useAppSelector, useAppDispatch } from "../../../hooks";
 // import { useSalesState } from "../hooks/useSalesState";
 import { getSubs, getHourly } from "../../../api/sales";
 import { fetchSubDeptRowsSafe } from "../../../utils/marginRows";
-import { gradeSeverity } from "../../../utils/severity";
+import { itemSeverity, matchItemRows } from "../components/itemGrading";
+import { getHolidayName } from "../../../utils/holidays";
 import {
   addDays,
   formatGoliathDate,
@@ -31,10 +32,7 @@ import {
   closeSheet,
   navigateToList,
 } from "../../../features/salesLedgerSlice";
-import type {
-  SevFilter,
-  GradingMetric,
-} from "../../../features/salesLedgerSlice";
+import type { SevFilter } from "../../../features/salesLedgerSlice";
 import SelectFilter from "../../../components/filters/SelectFilter";
 import type { SubDeptMargin } from "../../../interfaces";
 import type { Severity } from "../components/LedgerRow";
@@ -49,8 +47,14 @@ import {
   formatPct,
   BADGE_BG,
   BADGE_COLOR,
-  SEVERITY_RANK,
+  severityRank,
+  basisPct,
+  gradeBasis,
+  isCompleteCoverage,
+  matchDatedRows,
+  PARTIAL_PILL_CLASS,
   computeDayMatchedTotals,
+  describeLyWindow,
   scopeToStoreNumber,
   applyStoreNumberToName,
   withProductCode,
@@ -58,6 +62,7 @@ import {
   // getWeeklyGapCount,
   type DeptRow,
   type HourRow,
+  type Coverage,
 } from "../shared/ledgerUtils";
 import {
   ExclamationTriangleIcon,
@@ -65,6 +70,7 @@ import {
   CheckCircleIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  StarIcon,
 } from "@heroicons/react/20/solid";
 import BottomSheet from "../../../components/BottomSheet";
 import SevBadge from "../../../components/SevBadge";
@@ -150,9 +156,12 @@ const LedgerStoreReport = () => {
     { length: 7 },
     (_, i) => addDays(new Date(twStart), i).toISOString().split("T")[0],
   );
-  const lyWeekDates = twRealDates
-    .map((d) => sameWeekDayLastYear(d).date)
-    .sort();
+  // `lyStart`/`lyEnd` are min/max of the shifted dates and stay that way: they
+  // are FETCH bounds, wide enough to include a holiday match that can sit ten
+  // days off the rest of the week. What they are not is a label — printing them
+  // as one put "Sep 1 - Sep 11" over a seven-day week.
+  const lyWindow = describeLyWindow(twRealDates);
+  const lyWeekDates = [...lyWindow.dates].sort();
   const lyStart = lyWeekDates[0];
   const lyEnd = lyWeekDates[lyWeekDates.length - 1];
   const lwWeekDates = twRealDates.map(
@@ -177,14 +186,20 @@ const LedgerStoreReport = () => {
       })
     : `${fmtDate(lwStart)} – ${fmtDate(lwEnd)}`;
   const lyDateLabel = selectedDate
-    ? new Date(
-        sameWeekDayLastYear(selectedDate).date + "T12:00:00",
-      ).toLocaleDateString("en-US", {
-        weekday: "short",
-        month: "short",
-        day: "numeric",
-      })
-    : `${fmtDate(lyStart)} – ${fmtDate(lyEnd)}`;
+    ? (() => {
+        const label = new Date(
+          sameWeekDayLastYear(selectedDate).date + "T12:00:00",
+        ).toLocaleDateString("en-US", {
+          weekday: "short",
+          month: "short",
+          day: "numeric",
+        });
+        // Named, because a holiday matches last year's holiday rather than the
+        // same weekday and the date otherwise looks like an error.
+        const hol = lyWindow.holidays.find((h) => h.twDate === selectedDate);
+        return hol ? `${label} · ${hol.name}` : label;
+      })()
+    : lyWindow.label;
 
   // ── Fetch report data on store selection ─────────────────────────────────────
   useEffect(() => {
@@ -365,6 +380,7 @@ const LedgerStoreReport = () => {
         const tyMap = aggByCode(tyItems);
         const lwMap = aggByCode(lwItems);
         const lyMap = aggByCode(lyItems);
+        const { tyForLW, tyForLY } = matchItemRows(tyItems, lwItems, lyItems);
         const sorted = [...tyMap.entries()].sort((a, b) => b[1].qty - a[1].qty);
         dispatch(
           setTop10(
@@ -384,6 +400,10 @@ const LedgerStoreReport = () => {
                 lyNet: ly?.net ?? null,
                 lyQty: ly?.qty ?? null,
                 lyWeight: ly?.weight ?? null,
+                tyNetForLW: tyForLW.get(code)?.net ?? 0,
+                tyQtyForLW: tyForLW.get(code)?.qty ?? 0,
+                tyNetForLY: tyForLY.get(code)?.net ?? 0,
+                tyQtyForLY: tyForLY.get(code)?.qty ?? 0,
               };
             }),
           ),
@@ -434,7 +454,10 @@ const LedgerStoreReport = () => {
   }, [openSheetType, openSheetId, selectedDate]);
 
   // ── Computed rows ─────────────────────────────────────────────────────────────
-  const depts = useMemo((): DeptRow[] => {
+  const { rows: depts, coverage: deptCoverage } = useMemo((): {
+    rows: DeptRow[];
+    coverage: Coverage;
+  } => {
     const lwDay = selectedDate
       ? addDays(new Date(selectedDate), -7).toISOString().split("T")[0]
       : null;
@@ -458,7 +481,13 @@ const LedgerStoreReport = () => {
     const twMap = aggSubDepts(twSrc);
     const lwMap = aggSubDepts(lwSrc);
     const lyMap = aggSubDepts(lySrc);
-    return Object.entries(twMap)
+    // Each percentage divides by the TW rows for its own comparison — the days
+    // that found a match — not the whole week. Comparing seven days against
+    // three is what flipped Wic Grocery from -42% to +49% on desktop.
+    const { twForLW, twForLY, coverage } = matchDatedRows(twSrc, lwSrc, lySrc);
+    const twLWMap = aggSubDepts(twForLW);
+    const twLYMap = aggSubDepts(twForLY);
+    const rows = Object.entries(twMap)
       .map(([id, r]) => {
         const numId = Number(id);
         const lw = lwMap[numId];
@@ -473,8 +502,12 @@ const LedgerStoreReport = () => {
           ly: lyNet,
           hasLW: lwNet > 0,
           hasLY: lyNet > 0,
-          vsLWPct: lwNet ? ((r.net - lwNet) / lwNet) * 100 : 0,
-          vsLYPct: lyNet ? ((r.net - lyNet) / lyNet) * 100 : 0,
+          vsLWPct: lwNet
+            ? (((twLWMap[numId]?.net ?? 0) - lwNet) / lwNet) * 100
+            : 0,
+          vsLYPct: lyNet
+            ? (((twLYMap[numId]?.net ?? 0) - lyNet) / lyNet) * 100
+            : 0,
           qty: r.qty,
           lwQty: lw?.qty ?? 0,
           lyQty: ly?.qty ?? 0,
@@ -490,16 +523,20 @@ const LedgerStoreReport = () => {
       })
       .sort((a, b) => {
         const rd =
-          SEVERITY_RANK[deptSeverity(a, effectiveSubDeptThreshold)] -
-          SEVERITY_RANK[deptSeverity(b, effectiveSubDeptThreshold)];
-        return rd !== 0
-          ? rd
-          : (a.hasLY ? a.vsLYPct : a.vsLWPct) -
-              (b.hasLY ? b.vsLYPct : b.vsLWPct);
+          severityRank(deptSeverity(a, coverage, effectiveSubDeptThreshold)) -
+          severityRank(deptSeverity(b, coverage, effectiveSubDeptThreshold));
+        if (rd !== 0) return rd;
+        const ap = basisPct(gradeBasis({ ...a, ...coverage }), a.vsLWPct, a.vsLYPct);
+        const bp = basisPct(gradeBasis({ ...b, ...coverage }), b.vsLWPct, b.vsLYPct);
+        return ap === null || bp === null ? b.tw - a.tw : ap - bp;
       });
+    return { rows, coverage };
   }, [rawSubs, rawLWSubs, rawLYSubs, selectedDate, effectiveSubDeptThreshold]);
 
-  const hours = useMemo((): HourRow[] => {
+  const { rows: hours, coverage: hourCoverage } = useMemo((): {
+    rows: HourRow[];
+    coverage: Coverage;
+  } => {
     const lwDay = selectedDate
       ? addDays(new Date(selectedDate), -7).toISOString().split("T")[0]
       : null;
@@ -521,7 +558,10 @@ const LedgerStoreReport = () => {
     const twMap = aggHours(twSrc);
     const lwMap = aggHours(lwSrc);
     const lyMap = aggHours(lySrc);
-    return Array.from(new Set(Object.keys(twMap).map(Number)))
+    const { twForLW, twForLY, coverage } = matchDatedRows(twSrc, lwSrc, lySrc);
+    const twLWMap = aggHours(twForLW);
+    const twLYMap = aggHours(twForLY);
+    const rows = Array.from(new Set(Object.keys(twMap).map(Number)))
       .sort((a, b) => a - b)
       .map((h) => {
         const tw = twMap[h]?.net ?? 0;
@@ -540,19 +580,20 @@ const LedgerStoreReport = () => {
           lyQty: lyMap[h]?.qty ?? 0,
           hasLW: lw > 0,
           hasLY: ly > 0,
-          vsLWPct: lw ? ((tw - lw) / lw) * 100 : 0,
-          vsLYPct: ly ? ((tw - ly) / ly) * 100 : 0,
+          vsLWPct: lw ? (((twLWMap[h]?.net ?? 0) - lw) / lw) * 100 : 0,
+          vsLYPct: ly ? (((twLYMap[h]?.net ?? 0) - ly) / ly) * 100 : 0,
         };
       })
       .sort((a, b) => {
         const rd =
-          SEVERITY_RANK[hourSeverity(a, effectiveHourlyThreshold)] -
-          SEVERITY_RANK[hourSeverity(b, effectiveHourlyThreshold)];
-        return rd !== 0
-          ? rd
-          : (a.hasLY ? a.vsLYPct : a.vsLWPct) -
-              (b.hasLY ? b.vsLYPct : b.vsLWPct);
+          severityRank(hourSeverity(a, coverage, effectiveHourlyThreshold)) -
+          severityRank(hourSeverity(b, coverage, effectiveHourlyThreshold));
+        if (rd !== 0) return rd;
+        const ap = basisPct(gradeBasis({ ...a, ...coverage }), a.vsLWPct, a.vsLYPct);
+        const bp = basisPct(gradeBasis({ ...b, ...coverage }), b.vsLWPct, b.vsLYPct);
+        return ap === null || bp === null ? a.hour - b.hour : ap - bp;
       });
+    return { rows, coverage };
   }, [
     rawHourly,
     rawLWHourly,
@@ -572,18 +613,29 @@ const LedgerStoreReport = () => {
       : null;
   const sheetRow = sheetDept ?? sheetHour;
   const sheetSev: Severity | null = sheetDept
-    ? deptSeverity(sheetDept, effectiveSubDeptThreshold)
+    ? deptSeverity(sheetDept, deptCoverage, effectiveSubDeptThreshold)
     : sheetHour
-      ? hourSeverity(sheetHour, effectiveHourlyThreshold)
+      ? hourSeverity(sheetHour, hourCoverage, effectiveHourlyThreshold)
       : null;
+  const sheetCoverage = sheetDept ? deptCoverage : hourCoverage;
+  const sheetLWComplete = isCompleteCoverage(
+    sheetCoverage.lwDayCount,
+    sheetCoverage.dayCount,
+  );
+  const sheetLYComplete = isCompleteCoverage(
+    sheetCoverage.lyDayCount,
+    sheetCoverage.dayCount,
+  );
 
   const sheetTW = sheetRow?.tw ?? 0;
   const sheetLW = sheetRow?.lw ?? 0;
   const sheetLY = sheetRow?.ly ?? 0;
   const sheetHasLW = sheetRow?.hasLW ?? false;
   const sheetHasLY = sheetRow?.hasLY ?? false;
-  const sheetVsLW = sheetHasLW ? ((sheetTW - sheetLW) / sheetLW) * 100 : null;
-  const sheetVsLY = sheetHasLY ? ((sheetTW - sheetLY) / sheetLY) * 100 : null;
+  // The row's own percentages, which are day-matched. Recomputing them here
+  // from the whole-week TW figure was the same seven-against-three comparison.
+  const sheetVsLW = sheetHasLW && sheetRow ? sheetRow.vsLWPct : null;
+  const sheetVsLY = sheetHasLY && sheetRow ? sheetRow.vsLYPct : null;
 
   // ── KPI strip (dynamic on selectedDate) ──────────────────────────────────────
   const sortedDays = selection
@@ -614,6 +666,11 @@ const LedgerStoreReport = () => {
     : weekTotals.hasLW
       ? weekTotals.vsLWPct
       : null;
+  // Days behind each comparison. A selected day is its own comparison; the
+  // week is where a three-of-seven figure was wearing full-verdict colour.
+  const kpiDays = activeDay ? 1 : weekTotals.dayCount;
+  const kpiLYDays = activeDay ? 1 : weekTotals.lyDayCount;
+  const kpiLWDays = activeDay ? 1 : weekTotals.lwDayCount;
   const kpiVsLY = activeDay
     ? kpiHasLY
       ? ((activeDay.twNet - (activeDay.lyNet as number)) /
@@ -628,7 +685,9 @@ const LedgerStoreReport = () => {
   const signalItems =
     tab === "subdept"
       ? depts.map((r) => ({
-          sev: deptSeverity(r, effectiveSubDeptThreshold),
+          sev: deptSeverity(r, deptCoverage, effectiveSubDeptThreshold),
+          lwComplete: isCompleteCoverage(deptCoverage.lwDayCount, deptCoverage.dayCount),
+          lyComplete: isCompleteCoverage(deptCoverage.lyDayCount, deptCoverage.dayCount),
           label: r.desc,
           tw: r.tw,
           qty: r.qty,
@@ -639,7 +698,9 @@ const LedgerStoreReport = () => {
           onClick: () => dispatch(openSheet({ type: "subdept", id: r.id })),
         }))
       : hours.map((r) => ({
-          sev: hourSeverity(r, effectiveHourlyThreshold),
+          sev: hourSeverity(r, hourCoverage, effectiveHourlyThreshold),
+          lwComplete: isCompleteCoverage(hourCoverage.lwDayCount, hourCoverage.dayCount),
+          lyComplete: isCompleteCoverage(hourCoverage.lyDayCount, hourCoverage.dayCount),
           label: `${ampm(r.hour)} – ${ampm(r.hour + 1 <= 23 ? r.hour + 1 : 0)}`,
           tw: r.tw,
           qty: r.qty,
@@ -753,12 +814,17 @@ const LedgerStoreReport = () => {
               </span>
               {kpiVsLW !== null && (
                 <span
-                  className={`text-[10px] font-semibold ${kpiVsLW >= 0 ? "text-emerald-600" : "text-red-500"}`}
+                  className={`text-[10px] font-semibold ${kpiLWDays < kpiDays ? "text-content/85" : kpiVsLW >= 0 ? "text-emerald-600" : "text-red-500"}`}
                 >
                   {formatPct(kpiVsLW)}
                 </span>
               )}
             </div>
+            {kpiLWDays < kpiDays && (
+              <div className="text-[10px] font-medium text-content/85">
+                {kpiLWDays} of {kpiDays} days
+              </div>
+            )}
           </div>
           <div className="px-3 py-2">
             <div className="text-[10px] font-medium uppercase tracking-wide text-content/85">
@@ -773,12 +839,20 @@ const LedgerStoreReport = () => {
               </span>
               {kpiVsLY !== null && (
                 <span
-                  className={`text-[10px] font-semibold ${kpiVsLY >= 0 ? "text-emerald-600" : "text-red-500"}`}
+                  /* Neutral rather than red/green where days are missing — the
+                     figure is right over what it has and still is not a
+                     verdict about the week. */
+                  className={`text-[10px] font-semibold ${kpiLYDays < kpiDays ? "text-content/85" : kpiVsLY >= 0 ? "text-emerald-600" : "text-red-500"}`}
                 >
                   {formatPct(kpiVsLY)}
                 </span>
               )}
             </div>
+            {kpiLYDays < kpiDays && (
+              <div className="text-[10px] font-medium text-content/85">
+                {kpiLYDays} of {kpiDays} days
+              </div>
+            )}
           </div>
         </div>
 
@@ -829,8 +903,21 @@ const LedgerStoreReport = () => {
                 onClick={() =>
                   dispatch(setLedgerSelectedDate(isSelected ? null : dateStr))
                 }
-                className={`flex flex-col items-center justify-center gap-1 py-2 border-r border-gray-100 last:border-r-0 transition-colors ${isSelected ? "bg-[#1e2a4a]" : "hover:bg-gray-50"}`}
+                /* Carries the holiday the way desktop's day strip does. A
+                   holiday compares against last year's holiday rather than the
+                   same weekday, so its LY figure is drawn from a date that
+                   breaks the run either side of it — unmarked, that reads as a
+                   mistake. */
+                title={
+                  getHolidayName(dateStr)
+                    ? `${getHolidayName(dateStr)} — compared with last year's ${getHolidayName(dateStr)}, not the same weekday.`
+                    : undefined
+                }
+                className={`relative flex flex-col items-center justify-center gap-1 py-2 border-r border-gray-100 last:border-r-0 transition-colors ${isSelected ? "bg-[#1e2a4a]" : "hover:bg-gray-50"}`}
               >
+                {getHolidayName(dateStr) && (
+                  <StarIcon className="absolute top-0.5 right-0.5 w-2 h-2 text-amber-500" />
+                )}
                 <span
                   className={`text-[10px] font-semibold leading-none ${isSelected ? "text-custom-white" : "text-content"}`}
                 >
@@ -946,7 +1033,7 @@ const LedgerStoreReport = () => {
                 className="w-full px-3 py-2.5 bg-custom-white border-b border-gray-100 text-left active:bg-gray-50"
               >
                 <div className="flex items-center gap-2.5">
-                  <SevBadge sev={item.sev} />
+                  <SevBadge sev={item.sev ?? "ungraded"} />
                   <span className="flex-1 text-[12px] font-medium text-content truncate">
                     {item.label}
                   </span>
@@ -963,13 +1050,13 @@ const LedgerStoreReport = () => {
                 <div className="flex gap-2 mt-1.5 justify-end">
                   {item.hasLW && (
                     <span
-                      className={`text-[11px] font-medium px-1.5 py-0.5 rounded ${pillClass(item.vsLWPct)}`}
+                      className={`text-[11px] font-medium px-1.5 py-0.5 rounded ${item.lwComplete ? pillClass(item.vsLWPct) : PARTIAL_PILL_CLASS}`}
                     >
                       LW {formatPct(item.vsLWPct)}
                     </span>
                   )}
                   <span
-                    className={`text-[11px] font-medium px-1.5 py-0.5 rounded ${pillClass(item.hasLY ? item.vsLYPct : null)}`}
+                    className={`text-[11px] font-medium px-1.5 py-0.5 rounded ${item.hasLY ? (item.lyComplete ? pillClass(item.vsLYPct) : PARTIAL_PILL_CLASS) : pillClass(null)}`}
                   >
                     LY {item.hasLY ? formatPct(item.vsLYPct) : "—"}
                   </span>
@@ -981,7 +1068,8 @@ const LedgerStoreReport = () => {
       </div>
 
       {/* Bottom sheet */}
-      {openSheetType && sheetRow && sheetSev && (
+      {/* Opens for ungraded rows too — they still have figures to show. */}
+      {openSheetType && sheetRow && (
         <BottomSheet
           onClose={() => dispatch(closeSheet())}
           closeRef={sheetCloseRef}
@@ -1001,24 +1089,30 @@ const LedgerStoreReport = () => {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <div
-                className="flex items-center gap-1 text-[10px] font-semibold px-2.5 py-1 rounded-full"
-                style={{
-                  background: BADGE_BG[sheetSev],
-                  color: BADGE_COLOR[sheetSev],
-                }}
-              >
-                {sheetSev === "critical" && (
-                  <ExclamationTriangleIcon className="w-3 h-3" />
-                )}
-                {sheetSev === "watch" && (
-                  <ExclamationCircleIcon className="w-3 h-3" />
-                )}
-                {sheetSev === "healthy" && (
-                  <CheckCircleIcon className="w-3 h-3" />
-                )}
-                {sheetSev.charAt(0).toUpperCase() + sheetSev.slice(1)}
-              </div>
+              {sheetSev ? (
+                <div
+                  className="flex items-center gap-1 text-[10px] font-semibold px-2.5 py-1 rounded-full"
+                  style={{
+                    background: BADGE_BG[sheetSev],
+                    color: BADGE_COLOR[sheetSev],
+                  }}
+                >
+                  {sheetSev === "critical" && (
+                    <ExclamationTriangleIcon className="w-3 h-3" />
+                  )}
+                  {sheetSev === "watch" && (
+                    <ExclamationCircleIcon className="w-3 h-3" />
+                  )}
+                  {sheetSev === "healthy" && (
+                    <CheckCircleIcon className="w-3 h-3" />
+                  )}
+                  {sheetSev.charAt(0).toUpperCase() + sheetSev.slice(1)}
+                </div>
+              ) : (
+                <div className="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-gray-100 text-content/85">
+                  Not graded
+                </div>
+              )}
             </div>
           </div>
 
@@ -1070,7 +1164,7 @@ const LedgerStoreReport = () => {
                       </span>
                       {sheetVsLW !== null && (
                         <span
-                          className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${pillClass(sheetVsLW)}`}
+                          className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${sheetLWComplete ? pillClass(sheetVsLW) : PARTIAL_PILL_CLASS}`}
                         >
                           {formatPct(sheetVsLW)}
                         </span>
@@ -1097,7 +1191,7 @@ const LedgerStoreReport = () => {
                       </span>
                       {sheetVsLY !== null && (
                         <span
-                          className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${pillClass(sheetVsLY)}`}
+                          className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${sheetLYComplete ? pillClass(sheetVsLY) : PARTIAL_PILL_CLASS}`}
                         >
                           {formatPct(sheetVsLY)}
                         </span>
@@ -1175,37 +1269,11 @@ const LedgerStoreReport = () => {
             )}
             {openSheetType === "subdept" &&
               (() => {
-                const itemSeverity = (
-                  item: (typeof top10)[0],
-                  metric: GradingMetric,
-                ): Severity => {
-                  // Grades on the same metric (Sales vs Qty, per the
-                  // gradingMetric toggle) the pill below actually displays —
-                  // grading on a different metric than what's shown would
-                  // let the badge disagree with a visible 0% figure.
-                  const lyPct =
-                    metric === "sales"
-                      ? item.lyNet !== null && item.lyNet > 0
-                        ? ((item.tyNet - item.lyNet) / item.lyNet) * 100
-                        : null
-                      : item.lyQty !== null && item.lyQty > 0
-                        ? ((item.tyQty - item.lyQty) / item.lyQty) * 100
-                        : null;
-                  const lwPct =
-                    metric === "sales"
-                      ? item.lwNet !== null && item.lwNet > 0
-                        ? ((item.tyNet - item.lwNet) / item.lwNet) * 100
-                        : null
-                      : item.lwQty !== null && item.lwQty > 0
-                        ? ((item.tyQty - item.lwQty) / item.lwQty) * 100
-                        : null;
-                  // Same cut as the desktop list, epsilon and all — mobile and
-                  // desktop grading must not diverge.
-                  return gradeSeverity(
-                    lyPct ?? lwPct ?? 0,
-                    effectiveItemThreshold,
-                  );
-                };
+                // The desktop list's grader, so mobile and desktop can't
+                // diverge: day-matched TY, whole-week coverage, and null when
+                // neither comparison covers the week.
+                const gradeItem = (item: (typeof top10)[0]) =>
+                  itemSeverity(item, effectiveItemThreshold, gradingMetric, deptCoverage);
                 const baseItems =
                   itemActiveFilter === "inactive"
                     ? inactiveSubDeptItems
@@ -1214,7 +1282,7 @@ const LedgerStoreReport = () => {
                       : [...top10, ...inactiveSubDeptItems];
                 const itemsWithSev = baseItems.map((item) => ({
                   ...item,
-                  sev: itemSeverity(item, gradingMetric),
+                  sev: gradeItem(item),
                 }));
                 const itemCounts: Record<SevFilter, number> = {
                   all: itemsWithSev.length,
@@ -1362,7 +1430,7 @@ const LedgerStoreReport = () => {
                                     className="px-4 py-2.5 border-b border-gray-100"
                                   >
                                     <div className="flex items-start gap-2">
-                                      <SevBadge sev={item.sev} />
+                                      <SevBadge sev={item.sev ?? "ungraded"} />
                                       <div className="min-w-0 flex-1">
                                         <div className="flex items-baseline justify-between gap-2">
                                           <span

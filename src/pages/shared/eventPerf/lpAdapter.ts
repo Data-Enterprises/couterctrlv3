@@ -13,6 +13,7 @@ import type {
 } from "../../../interfaces";
 import type { EventRow } from "../../../features/eventPerfSlice";
 import type { ReceiptLine } from "./receiptTypes";
+import { clockOf } from "./eventPerfData";
 
 interface Scope {
   url: string;
@@ -94,8 +95,17 @@ export const fetchLpEvents = async (
     cashier_number: t.cashier_number,
     cashier_name: t.cashier_name,
     terminal: laneOf(t),
-    sale_id: t.sale_id,
+    // Ids can arrive as numbers despite the interface, and every consumer
+    // downstream does string work on them.
+    sale_id: t.sale_id == null ? "" : String(t.sale_id),
     day: t.sale_date.split("T")[0],
+    // Not a declared field on these rows — read if the payload carries it, so
+    // the transaction list can order by it; otherwise it falls back to the
+    // transaction number.
+    time: clockOf(
+      t.sale_date,
+      (t as { sale_start_time?: unknown }).sale_start_time,
+    ),
     amount: t.total_sales ?? 0,
     count: 1,
   });
@@ -169,7 +179,9 @@ export const fetchLpReceipt = async (
     storeid,
   );
   const j = resp.data;
-  if (j.error !== 0) return [];
+  // Thrown, not returned empty: the sheet tells a failed fetch apart from a
+  // receipt that genuinely has no lines, and an empty array erased that.
+  if (j.error !== 0) throw new Error(j.msg ?? "Failed to load the receipt");
 
   return ((j.transaction ?? []) as TransactionListItem[]).map((l) => ({
     description: l.product_description,

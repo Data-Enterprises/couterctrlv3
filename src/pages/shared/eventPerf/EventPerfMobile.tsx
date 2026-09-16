@@ -1,37 +1,54 @@
-import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
+import { useDeferredValue, useEffect, useMemo, useRef } from "react";
+import { useStore } from "react-redux";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
+import { useDrillScroll } from "../../../hooks/useDrillScroll";
+import type { RootState } from "../../../store";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import SearchCard from "../../../components/SearchCard";
 import BottomSheet from "../../../components/BottomSheet";
+import type { InfoGlossaryEntry } from "../../../components/InfoPopover";
+import MobileInfoSheet from "../../../components/mobile/MobileInfoSheet";
+import MobileSortChips, {
+  type SortOption,
+} from "../../../components/mobile/MobileSortChips";
 import { formatCurrency2, formatDateSimple } from "../../../utils";
 import type { JsonError } from "../../../interfaces";
 import {
+  beginEventLoad,
   claimEventPerf,
   clearEventCashier,
   clearEventStore,
   closeReceipt,
+  failEventLoad,
+  failReceipt,
   openReceipt,
   ROWS_PER_PAGE,
   selectEventCashier,
   selectEventStore,
   setEventData,
-  setEventHasSearched,
+  setEventInfoOpen,
   setEventLens,
-  setEventLoading,
+  setEventLoadProgress,
   setEventQuery,
+  setEventSearchOpen,
+  setEventSort,
   setEventView,
+  setReceiptLines,
   showMoreEvents,
   toggleEventDay,
+  type EventReceiptState,
   type EventRow,
+  type EventSort,
   type EventView,
 } from "../../../features/eventPerfSlice";
 import {
   buildEventDays,
   buildGroupRows,
+  buildLensBusiest,
   buildLensCards,
   buildReceipts,
-  busiestDay,
+  defaultEventSort,
   receiptLabel,
   type EventReceipt,
   type EventScope,
@@ -85,9 +102,28 @@ interface Props {
     day: string,
     storeid: number,
   ) => Promise<ReceiptLine[]>;
+  /** The page's mobile "?" copy — same shape as the desktop `*Info.ts`. */
+  info: { title: string; purpose: string; glossary: InfoGlossaryEntry[] };
 }
 
 const fmtInt = (n: number) => Math.round(n).toLocaleString("en-US");
+
+/** What the store and cashier lists can sort by. The page's own figure leads,
+ *  so the chip row opens on the order the list is already in. */
+const sortOptions = (
+  measure: "transactions" | "amount",
+  by: "store" | "cashier",
+): SortOption<EventSort>[] => {
+  const size: SortOption<EventSort>[] = [
+    { key: "transactions", label: "Transactions" },
+    { key: "amount", label: "Amount" },
+  ];
+  return [
+    ...(measure === "amount" ? size.reverse() : size),
+    { key: "change", label: "vs Avg" },
+    { key: "name", label: by === "store" ? "Store #" : "Name" },
+  ];
+};
 
 /**
  * Loss Prevention and Coupon Sales on a phone, without grading.
@@ -113,14 +149,23 @@ const EventPerfMobile = ({
   measure,
   load,
   loadReceipt,
+  info,
 }: Props) => {
   const dispatch = useAppDispatch();
+  const store = useStore<RootState>();
   const toast = useToast();
   const perf = useAppSelector((s) => s.eventPerf);
 
-  const [showSearch, setShowSearch] = useState(false);
-  const [receipt, setReceipt] = useState<ReceiptLine[] | null>(null);
   const carousel = useRef<HTMLDivElement>(null);
+
+  // Stores → cashiers → transactions all drill inside one scroll, so each
+  // level starts at the top and Back returns to the row you tapped.
+  const scroller = useRef<HTMLDivElement>(null);
+  useDrillScroll(
+    scroller,
+    perf.selectedCashierKey ? 2 : perf.selectedStoreKey ? 1 : 0,
+    `${perf.selectedStoreKey ?? ""}|${perf.selectedCashierKey ?? ""}`,
+  );
 
   /** Whatever is in the slice belongs to this page. Checked in render as well
    *  as cleared in the effect, so the other page's rows never paint for the
@@ -130,31 +175,54 @@ const EventPerfMobile = ({
     if (!mine) dispatch(claimEventPerf(pageKey));
   }, [mine, pageKey]);
 
-  /** The seven dates of the window, so a day with no activity still gets a
-   *  column. Parsed at midday: a UTC-parsed ISO date read back in local time
-   *  lands a day early, which would shift the whole chart. */
+  /** The seven dates of the week that was LOADED, so a day with no activity
+   *  still gets a column. Not the `start` prop: that follows the search card's
+   *  picker, which can move without a search ever running. Parsed at midday:
+   *  a UTC-parsed ISO date read back in local time lands a day early, which
+   *  would shift the whole chart. */
+  const loadedStart = perf.loadedStart ?? start;
   const weekDates = useMemo(() => {
-    const d0 = new Date(`${start}T12:00:00`);
+    const d0 = new Date(`${loadedStart}T12:00:00`);
     return Array.from({ length: 7 }, (_, i) => {
       const d = new Date(d0);
       d.setDate(d.getDate() + i);
       return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
     });
-  }, [start]);
+  }, [loadedStart]);
 
+  /**
+   * Load the week, tagged with the generation it started under.
+   *
+   * Every dispatch that follows carries the tag, and the slice drops any whose
+   * tag is no longer current — the other page claimed the slice, or a newer
+   * search started. The generation is read back off the store rather than
+   * predicted, so two taps in one frame cannot share one.
+   */
   const runSearch = async () => {
-    dispatch(setEventLoading({ loading: true, message: "Loading..." }));
+    dispatch(beginEventLoad({ owner: pageKey, message: "Loading..." }));
+    const tag = { owner: pageKey, gen: store.getState().eventPerf.loadGen };
+    const current = () => {
+      const s = store.getState().eventPerf;
+      return s.owner === tag.owner && s.loadGen === tag.gen;
+    };
     try {
       const result = await load(start, end, (message) =>
-        dispatch(setEventLoading({ loading: true, message })),
+        dispatch(setEventLoadProgress({ ...tag, message })),
       );
-      dispatch(setEventData(result));
-      setShowSearch(false);
+      dispatch(
+        setEventData({
+          ...tag,
+          rows: result.rows,
+          baseline: result.baseline,
+          lenses: result.lenses,
+          start,
+        }),
+      );
     } catch (err) {
-      toast.error(`Error loading ${title}: ` + (err as JsonError).message);
-      dispatch(setEventHasSearched(true));
-    } finally {
-      dispatch(setEventLoading({ loading: false }));
+      // A search nobody is waiting for any more fails quietly.
+      if (current())
+        toast.error(`Error loading ${title}: ` + (err as JsonError).message);
+      dispatch(failEventLoad(tag));
     }
   };
 
@@ -220,6 +288,15 @@ const EventPerfMobile = ({
   const query = perf.query.trim();
   const deferredQuery = useDeferredValue(query);
 
+  /** Busiest day per card, each for its own lens — see buildLensBusiest. */
+  const cardBusiest = useMemo(
+    () => buildLensBusiest(perf.rows, shown, pages, weekDates, measure),
+    [perf.rows, shown, pages, weekDates, measure],
+  );
+
+  const sortList = perf.view === "cashiers" ? "cashiers" : "stores";
+  const sort = perf.sort[sortList] ?? defaultEventSort(measure);
+
   const rows = useMemo(() => {
     if (perf.view === "receipts") return [];
     return buildGroupRows(
@@ -228,8 +305,9 @@ const EventPerfMobile = ({
       shown,
       perf.view === "stores" ? "store" : "cashier",
       measure,
+      sort,
     );
-  }, [perf.rows, perf.baseline, shown, perf.view, measure]);
+  }, [perf.rows, perf.baseline, shown, perf.view, measure, sort]);
 
   const receipts = useMemo(() => {
     if (perf.view !== "receipts") return [];
@@ -281,24 +359,27 @@ const EventPerfMobile = ({
 
   // Opening a receipt may be a fetch (LP) or a filter (Coupons). Either way
   // the sheet mounts immediately and fills in, rather than the tap hanging.
+  // The lines land in the slice tagged with the receipt and the load, so one
+  // that arrives after the sheet has moved on is dropped there.
   useEffect(() => {
-    if (!perf.openSaleId) {
-      setReceipt(null);
-      return;
-    }
+    if (!perf.openSaleId) return;
     const t = receipts.find((r) => r.saleId === perf.openSaleId);
     if (!t) return;
-    let live = true;
-    setReceipt(null);
-    loadReceipt(t.saleId, t.day, t.storeid)
-      .then((lines) => live && setReceipt(lines))
-      .catch(() => live && setReceipt([]));
-    return () => {
-      live = false;
+    const tag = {
+      owner: pageKey,
+      gen: store.getState().eventPerf.loadGen,
+      saleId: t.saleId,
     };
+    loadReceipt(t.saleId, t.day, t.storeid)
+      .then((lines) => dispatch(setReceiptLines({ ...tag, lines })))
+      .catch(() => dispatch(failReceipt(tag)));
   }, [perf.openSaleId]);
 
   const openTxn = receipts.find((r) => r.saleId === perf.openSaleId) ?? null;
+  const openReceiptState =
+    perf.receipt && perf.receipt.saleId === perf.openSaleId
+      ? perf.receipt
+      : null;
 
   /** Single-store searches skip the store list, the same rule Sales follows —
    *  a one-row list asks you to confirm something you already said. */
@@ -312,7 +393,10 @@ const EventPerfMobile = ({
     { key: "receipts", label: "Transactions" },
   ];
 
-  if (perf.loading) {
+  // Ownership first. The other page's load still running in the slice is not
+  // this page's spinner — checking loading first showed LP's progress under
+  // Coupon Sales until the claim landed.
+  if (mine && perf.loading) {
     return (
       <div className="flex h-[calc(100dvh-3rem)] items-center justify-center bg-bkg px-8 text-center">
         <div>
@@ -328,7 +412,9 @@ const EventPerfMobile = ({
     );
   }
 
-  if (!mine || !perf.hasSearched || showSearch || perf.rows.length === 0) {
+  const hasResults = mine && perf.hasSearched && perf.rows.length > 0;
+
+  if (!hasResults || perf.searchOpen) {
     return (
       <div className="h-[calc(100dvh-3rem)] overflow-y-auto bg-bkg">
         <SearchCard
@@ -338,8 +424,15 @@ const EventPerfMobile = ({
           buttonLabel={buttonLabel}
           singleDate
           onSearch={runSearch}
-          loading={perf.loading}
+          loading={mine && perf.loading}
           loadingMessage="Loading..."
+          // Opened over a week already loaded, the card needs a way back to it
+          // that is not a search — changing the picker alone loads nothing.
+          onBack={
+            hasResults
+              ? () => dispatch(setEventSearchOpen(false))
+              : undefined
+          }
           notice={
             mine && perf.hasSearched && perf.rows.length === 0
               ? "Nothing found for that search."
@@ -372,9 +465,13 @@ const EventPerfMobile = ({
       })
     : "";
 
-  /** Hoisted out of the card map — it is the same answer on every card, and
-   *  it was being recomputed once per lens. */
-  const busiest = busiestDay(days) ?? "—";
+  /** Names the hero figure. The number alone did not say whether it was
+   *  dollars or a count, or whether it was the week or the tapped day. */
+  const heroCaption = `${measure === "amount" ? "Amount" : "Transactions"} ${
+    dayLabel ? "on the selected day" : "this week"
+  }`;
+
+  const weekLabel = `${formatDateSimple(weekDates[0])} – ${formatDateSimple(weekDates[6])}`;
 
   const listRows = rows.slice(0, perf.listLimit);
   const listMax = Math.max(
@@ -412,7 +509,7 @@ const EventPerfMobile = ({
       </nav>
 
       {/* pb-14 clears the fixed bottom tab bar, which is outside document flow. */}
-      <div className="flex-1 overflow-y-auto pb-14">
+      <div ref={scroller} className="flex-1 overflow-y-auto pb-14">
         {(perf.selectedStoreKey || perf.selectedCashierKey) && (
           <div className="px-3 pt-3">
             <button
@@ -461,15 +558,16 @@ const EventPerfMobile = ({
                   <PerfCardHeader
                     title={lens ?? allLabel}
                     label={scopeLabel}
-                    when={
-                      dayLabel ||
-                      `${formatDateSimple(weekDates[0])} – ${formatDateSimple(weekDates[6])}`
-                    }
-                    onSearch={() => setShowSearch(true)}
+                    when={dayLabel || weekLabel}
+                    onSearch={() => dispatch(setEventSearchOpen(true))}
+                    onInfo={() => dispatch(setEventInfoOpen(true))}
                   />
 
                   <div className="px-4 pb-4 pt-2">
-                    <div className="mt-1.5 font-display text-[31px] font-extrabold leading-none tracking-tight tabular-nums text-content">
+                    <div className="mt-1 text-[11px] font-semibold text-content/85">
+                      {heroCaption}
+                    </div>
+                    <div className="mt-1 font-display text-[31px] font-extrabold leading-none tracking-tight tabular-nums text-content">
                       {fmt(value)}
                     </div>
 
@@ -487,22 +585,36 @@ const EventPerfMobile = ({
                           format={fmt}
                           compact
                         />
+                        {/* The bar captions have room for three letters, so
+                            what they stand for is spelled out once, here. */}
+                        <p className="mt-1.5 text-[11px] text-content/85">
+                          WK {dayLabel ? "selected day" : "this week"} · AVG
+                          prior 2-wk avg{dayLabel ? ", same weekday" : ""}
+                        </p>
                       </div>
                     )}
 
                     <div className="mt-3.5 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-gray-100 pt-3">
                       {(
                         [
-                          measure === "amount"
-                            ? ["Lines", fmtInt(t.lines)]
-                            : ["Amount", formatCurrency2(t.amount)],
-                          ["Transactions", fmtInt(t.transactions)],
+                          // The hero is dollars on Coupon Sales and a count on
+                          // LP, so each puts the other figure here — and LP
+                          // shows its cashiers rather than repeating the hero.
+                          ...(measure === "amount"
+                            ? [
+                                ["Coupons", fmtInt(t.lines)],
+                                ["Transactions", fmtInt(t.transactions)],
+                              ]
+                            : [
+                                ["Amount", formatCurrency2(t.amount)],
+                                ["Cashiers", fmtInt(t.cashiers)],
+                              ]),
                           ["Per txn", formatCurrency2(t.perTransaction)],
-                          ["Busiest", busiest],
+                          ["Busiest", cardBusiest[i] ?? "—"],
                         ] as [string, string][]
                       ).map(([k, v]) => (
                         <div key={k} className="flex flex-col">
-                          <span className="font-mono text-[9.5px] uppercase tracking-wider text-content/85">
+                          <span className="font-mono text-[10px] uppercase tracking-wider text-content/85">
                             {k}
                           </span>
                           <span className="font-display text-[15px] font-bold tabular-nums text-content">
@@ -596,7 +708,7 @@ const EventPerfMobile = ({
                     className="h-2 w-3.5 rounded-sm"
                     style={{ background: LY_COLOR }}
                   />
-                  Weekly average
+                  Prior 2-wk avg, same weekday
                 </span>
               </div>
               <p className="px-1 pt-1.5 text-[12px] text-content/85">
@@ -627,6 +739,20 @@ const EventPerfMobile = ({
 
           {/* ── the list ─────────────────────────────────────────── */}
           <section className="overflow-hidden rounded-2xl border border-gray-200 bg-custom-white shadow-md">
+            {/* Stores and cashiers only. Transactions stay newest first: the
+                order is the sequence, and the sequence is what LP reads. */}
+            {perf.view !== "receipts" && (
+              <MobileSortChips
+                options={sortOptions(
+                  measure,
+                  perf.view === "stores" ? "store" : "cashier",
+                )}
+                value={sort}
+                onChange={(key) =>
+                  dispatch(setEventSort({ list: sortList, sort: key }))
+                }
+              />
+            )}
             {building ? (
               <div
                 className="flex items-center justify-center gap-2 px-4 py-10 text-[12.5px] text-content/85"
@@ -759,10 +885,17 @@ const EventPerfMobile = ({
         <BottomSheet onClose={() => dispatch(closeReceipt())}>
           <Receipt
             txn={openTxn}
-            lines={receipt}
+            receipt={openReceiptState}
             when={openTxn.day ? formatDateSimple(openTxn.day) : ""}
           />
         </BottomSheet>
+      )}
+
+      {perf.infoOpen && (
+        <MobileInfoSheet
+          {...info}
+          onClose={() => dispatch(setEventInfoOpen(false))}
+        />
       )}
     </div>
   );
@@ -816,15 +949,18 @@ const Total = ({
  */
 const Receipt = ({
   txn,
-  lines,
+  receipt,
   when,
 }: {
   txn: EventReceipt;
-  lines: ReceiptLine[] | null;
+  /** Null until the slice has a state for this receipt — read as loading. */
+  receipt: EventReceiptState | null;
   when: string;
 }) => {
-  const items = (lines ?? []).filter((l) => l.kind !== "tender");
-  const tenders = (lines ?? []).filter((l) => l.kind === "tender");
+  const status = receipt?.status ?? "loading";
+  const lines: ReceiptLine[] = receipt?.lines ?? [];
+  const items = lines.filter((l) => l.kind !== "tender");
+  const tenders = lines.filter((l) => l.kind === "tender");
   const itemTotal = items.reduce((a, l) => a + l.amount, 0);
 
   return (
@@ -842,9 +978,16 @@ const Receipt = ({
       </div>
 
       <div className="mx-auto w-full max-w-md overflow-y-auto px-5 pb-6">
-        {lines === null ? (
+        {status === "loading" ? (
           <div className="py-8 text-center font-mono text-[12px] text-content/85">
             Loading receipt...
+          </div>
+        ) : status === "error" ? (
+          // Not "no lines": a fetch that failed says nothing about what was on
+          // the receipt, and reading it as empty is the wrong conclusion.
+          <div className="py-8 text-center font-mono text-[12px] text-content">
+            Couldn't load this receipt. Close it and tap the transaction to try
+            again.
           </div>
         ) : lines.length === 0 ? (
           <div className="py-8 text-center font-mono text-[12px] text-content/85">

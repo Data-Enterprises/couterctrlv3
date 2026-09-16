@@ -1,3 +1,4 @@
+import type { Coverage } from "../utils/grading";
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { SubDeptMargin, SubDept, SubDeptCost } from "../interfaces";
 import type { ItemRow, ItemRowMobile } from "../pages/subDepts/display/widgets";
@@ -18,7 +19,9 @@ export type ItemFilterType =
 
 export type ThreshOperator = ">" | "<" | "=" | "";
 
-export type MarginTier = "critical" | "watch" | "healthy";
+/** "ungraded" when neither last week nor last year covers every day of the
+ *  week — see utils/grading. Not a clean bill of health, so not "healthy". */
+export type MarginTier = "critical" | "watch" | "healthy" | "ungraded";
 export type GradingMetric = "margin" | "sales";
 
 /** Store-level totals from sales/weekly, day-matched — the same figure and
@@ -47,6 +50,9 @@ export type SubDeptGrade = {
   tyWeekOneMargins: SubDeptMargin[];
   lyWeekOneMargins: SubDeptMargin[];
   lwWeekOneMargins: SubDeptMargin[];
+  /** The STORE's coverage for the week, the same on every department. A
+   *  comparison grades only when it covers every day; see utils/grading. */
+  coverage: Coverage;
 };
 
 export type ThresholdFilter = {

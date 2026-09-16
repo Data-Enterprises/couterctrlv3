@@ -16,6 +16,13 @@ interface TransactionProps {
    * short of room.
    */
   compact?: boolean;
+  /**
+   * Which exception the receipt is totalled for. Defaults to Loss Prevention's
+   * selected type; pages that borrow this receipt with their own exception
+   * (the Cashiers mobile explorer) pass it, or the totals follow whatever LP
+   * last had selected.
+   */
+  saleType?: string;
 }
 
 const fmtTime = (raw: string) => {
@@ -38,7 +45,7 @@ const typeBadgeClass = (isVoid: boolean, saleType: string) => {
     : "bg-amber-100 text-amber-800";
 };
 
-const Transaction = ({ trans, compact }: TransactionProps) => {
+const Transaction = ({ trans, compact, saleType }: TransactionProps) => {
   // Description is the one `1fr` track, so it only grows if the fixed columns
   // give something up — each is 95% of its desktop width here.
   const COLS = compact
@@ -46,7 +53,8 @@ const Transaction = ({ trans, compact }: TransactionProps) => {
     : "84px minmax(0, 1fr) 46px 80px 92px";
   const toast = useToast();
   const context = useAppSelector((s) => s.app);
-  const { selectedSaleType } = useAppSelector((s) => s.lossPrevention);
+  const lpSaleType = useAppSelector((s) => s.lossPrevention.selectedSaleType);
+  const selectedSaleType = saleType ?? lpSaleType;
 
   const first = trans[0];
   const saleId = first.sale_id.split("-")[1];

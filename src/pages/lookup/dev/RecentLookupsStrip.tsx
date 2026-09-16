@@ -35,7 +35,7 @@ const RecentLookupsStrip = ({
             Qty
           </span>
           <span className="text-[10px] font-semibold text-content/85 uppercase tracking-wide text-right">
-            Revenue
+            Amount
           </span>
           <span className="text-[10px] font-semibold text-content/85 uppercase tracking-wide text-right">
             U cost

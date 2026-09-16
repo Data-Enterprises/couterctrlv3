@@ -64,6 +64,60 @@ export const pillClass = (pct: number | null, threshold: number) => {
   return PILL_CLASS[gradeSeverity(pct, threshold)];
 };
 
+/**
+ * The grey a comparison takes when it's missing days.
+ *
+ * The Sales VS LAST YEAR tile's grey, used wherever a partial comparison shows.
+ * Darker than pillClass(null), which means "no comparison at all": a partial
+ * figure is a real number worth reading, it just doesn't grade.
+ */
+export const PARTIAL_PILL_CLASS = "bg-gray-200 text-content";
+
+/** Severity colours when the comparison covers every day, grey when it doesn't. */
+export const comparisonPillClass = (
+  pct: number | null,
+  complete: boolean,
+  threshold: number,
+) =>
+  pct === null
+    ? pillClass(null, threshold)
+    : complete
+      ? pillClass(pct, threshold)
+      : PARTIAL_PILL_CLASS;
+
+/**
+ * A vs LW / vs LY pill on a navy left-panel header.
+ *
+ * Grey with a day count when the period is missing days, so the header can't
+ * read as a verdict the grades beneath it don't make. Sales, Vendors, Categories
+ * and Sub Dept Margins all render this pill; one definition keeps them in step.
+ *
+ * Over a group it is the group's figure and nothing more. Day coverage is a
+ * store's property: summed across a group it became store-days ("63/306"),
+ * which answers no question anyone asks. Each store's own "3 of 7 days
+ * matched" is on its row and in its detail panel.
+ */
+export const headerDeltaPill = (
+  pct: number,
+  matched: number,
+  days: number,
+  period: "last week" | "last year",
+  isGroup = false,
+) => {
+  const partial = !isGroup && days > 0 && matched < days;
+  return {
+    cls: partial
+      ? "bg-custom-white/10 text-custom-white/85"
+      : pct >= 0
+        ? "bg-emerald-300/15 text-emerald-300"
+        : "bg-red-300/15 text-red-300",
+    note: partial ? ` · ${matched}/${days} days` : "",
+    title: partial
+      ? `Only ${matched} of ${days} days have a matching day ${period}, so this isn't used to grade.`
+      : undefined,
+  };
+};
+
 export const CTA_SEVERITY_CLASSES: Record<
   Severity,
   { border: string; bg: string; hoverBg: string; text: string }

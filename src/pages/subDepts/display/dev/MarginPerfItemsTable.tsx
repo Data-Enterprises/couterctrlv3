@@ -40,6 +40,7 @@ import {
   type GradedSeverity,
 } from "../../../../utils/itemMargins";
 import type { SubDeptMargin } from "../../../../interfaces";
+import type { Coverage } from "../../../../utils/grading";
 import ThresholdFilter from "../../../../components/filters/ThresholdFilter";
 import type { ThresholdValue } from "../../../../components/filters/ThresholdFilter";
 import SelectFilter from "../../../../components/filters/SelectFilter";
@@ -166,6 +167,8 @@ interface Props {
   tyMargins: SubDeptMargin[];
   lwMargins: SubDeptMargin[];
   lyMargins: SubDeptMargin[];
+  /** The store's coverage for the week — see utils/grading. */
+  coverage?: Coverage;
 }
 
 const byDate = (src: SubDeptMargin[], dateStr: string) =>
@@ -175,16 +178,19 @@ const GradeCell = ({
   pct,
   threshold,
   isPts,
+  partial = false,
 }: {
   pct: number | null;
   threshold: number;
   isPts: boolean;
+  /** The period is missing days: show the figure without a verdict colour. */
+  partial?: boolean;
 }) => {
   if (pct === null)
     return <span className="text-[13px] font-semibold text-gray-400">—</span>;
   return (
     <span
-      className={`text-[13px] font-semibold whitespace-nowrap ${deltaTextClass(pct, threshold)}`}
+      className={`text-[13px] font-semibold whitespace-nowrap ${partial ? "text-content" : deltaTextClass(pct, threshold)}`}
     >
       {isPts
         ? `${pct >= 0 ? "+" : ""}${pct.toFixed(2)}pt`
@@ -193,7 +199,12 @@ const GradeCell = ({
   );
 };
 
-const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
+const MarginPerfItemsTable = ({
+  tyMargins,
+  lwMargins,
+  lyMargins,
+  coverage,
+}: Props) => {
   const dispatch = useAppDispatch();
   const actions = useSubMarginActions();
   const ctx = useSubMarginCtx();
@@ -290,8 +301,16 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
         dayFilteredMargins.ty,
         dayFilteredMargins.lw,
         dayFilteredMargins.ly,
+        // A single selected day is already one matched day.
+        !ctx.selectedWeekDay && coverage
+          ? {
+              lwOf: (d) => addDays(d, -7).toISOString().split("T")[0],
+              lyOf: (d) => getLYDate(d),
+              coverage,
+            }
+          : undefined,
       ),
-    [dayFilteredMargins],
+    [dayFilteredMargins, ctx.selectedWeekDay, coverage],
   );
 
   useEffect(() => {
@@ -458,6 +477,9 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
           lwDisplay: m.lwDisplay,
           lyDisplay: m.lyDisplay,
           isPts: key === "margin" || key === "contribution",
+          // Missing days: the figure shows, without a verdict colour.
+          lwPartial: !selectedItem.lwComplete,
+          lyPartial: !selectedItem.lyComplete,
         };
       });
 
@@ -833,6 +855,11 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
                                 }
                                 threshold={thresholdAmt}
                                 isPts={reportRows[0].isPts}
+                                partial={
+                                  side === "lw"
+                                    ? reportRows[0].lwPartial
+                                    : reportRows[0].lyPartial
+                                }
                               />
                             </div>
                           </div>
@@ -868,7 +895,7 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
                         <span
                           title={`Last week: ${row.lwDisplay ?? "no data"}`}
                           className={`text-[12px] text-right font-semibold ${
-                            row.lw !== null
+                            row.lw !== null && !row.lwPartial
                               ? deltaTextClass(row.lw, thresholdAmt)
                               : "text-content"
                           }`}
@@ -878,7 +905,7 @@ const MarginPerfItemsTable = ({ tyMargins, lwMargins, lyMargins }: Props) => {
                         <span
                           title={`Last year: ${row.lyDisplay ?? "no data"}`}
                           className={`text-[12px] text-right font-semibold ${
-                            row.ly !== null
+                            row.ly !== null && !row.lyPartial
                               ? deltaTextClass(row.ly, thresholdAmt)
                               : "text-content"
                           }`}

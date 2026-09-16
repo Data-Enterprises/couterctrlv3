@@ -4,6 +4,11 @@ import { useStoreName } from "../../../hooks";
 import { severityDotClass, pillClass, PCT_COL_W } from "./utils";
 import { applyStoreNumberToName } from "../shared/ledgerUtils";
 import type { Severity } from "../../../utils/severity";
+import {
+  isCompleteCoverage,
+  comparisonPillClass,
+  type GradeBasis,
+} from "../shared/ledgerUtils";
 import type { GradingMetric } from "../../../features/salesLedgerSlice";
 
 export type { Severity };
@@ -36,12 +41,30 @@ export type LedgerRowData = {
   twQty: number;
   lwQty: number;
   lyQty: number;
+  /** The TW side of each comparison — only the days that found a match.
+   *  `twTotal` above is the whole week and is NOT the base of vsLWPct or
+   *  vsLYPct; a rollup that adds these instead stays weighted by store size
+   *  without ever dividing a seven-day figure by a three-day one. */
+  twTotalForLW: number;
+  twQtyForLW: number;
+  twTotalForLY: number;
+  twQtyForLY: number;
+  /** Coverage, so a percentage over three of seven days can be presented as
+   *  the weaker claim it is. */
+  dayCount: number;
+  lwDayCount: number;
+  lyDayCount: number;
   vsLWPct: number;
   vsLYPct: number;
   vsLYDollar: number;
   hasLW: boolean;
   hasLY: boolean;
-  severity: Severity;
+  /** The comparison that decided `severity` — last year only when it covers
+   *  the whole week, else last week, else neither. */
+  gradedOn: GradeBasis;
+  /** Null when neither comparison covers the whole week: not graded, and not
+   *  counted under Critical, Watch or OK. */
+  severity: Severity | null;
   days: DayDot[];
 };
 
@@ -56,7 +79,8 @@ export type StoreSelection = {
   end: string;
   mode: "weekly" | "daily";
   days: DayDot[];
-  severity: Severity;
+  /** Null when the store wasn't graded — see LedgerRowData.gradedOn. */
+  severity: Severity | null;
 };
 
 interface LedgerRowProps {
@@ -91,19 +115,35 @@ const DeltaPill = ({
   has,
   pct,
   threshold,
+  complete,
+  matched,
+  days,
+  period,
 }: {
   has: boolean;
   pct: number;
   threshold: number;
+  /** False when the comparison is missing days. It still shows its figure,
+   *  in grey: a partial week can't grade a store, so it doesn't get the
+   *  colour that says it did. */
+  complete: boolean;
+  matched: number;
+  days: number;
+  period: "last week" | "last year";
 }) => (
   <span
-    className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${pillClass(
-      // Null is the shared helper's own "no comparison" case, and it renders
-      // the same grey this used to hard-code.
-      has ? pct : null,
-      threshold,
-    )}`}
+    className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${
+      has
+        ? comparisonPillClass(pct, complete, threshold)
+        : // Null is the shared helper's own "no comparison" case.
+          pillClass(null, threshold)
+    }`}
     style={{ minWidth: PCT_COL_W }}
+    title={
+      has && !complete
+        ? `Only ${matched} of ${days} days have a matching day ${period}, so this isn't used to grade the store.`
+        : undefined
+    }
   >
     {has ? formatPct(pct) : "—"}
   </span>
@@ -157,7 +197,16 @@ const LedgerRow = ({
       }`}
     >
       <span
-        className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${severityDotClass[row.severity]}`}
+        className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
+          // Grey: neither last week nor last year covers the whole week, so
+          // there is nothing to grade on.
+          row.severity ? severityDotClass[row.severity] : "bg-gray-400"
+        }`}
+        title={
+          row.severity
+            ? undefined
+            : "Not graded — neither last week nor last year has every day"
+        }
       />
       <div className="min-w-0 flex-1">
         <div className="text-[13px] font-medium text-content truncate">
@@ -181,8 +230,24 @@ const LedgerRow = ({
         >
           {fmtMetric(row.twTotal, row.twQty)}
         </span>
-        <DeltaPill has={row.hasLW} pct={row.vsLWPct} threshold={threshold} />
-        <DeltaPill has={row.hasLY} pct={row.vsLYPct} threshold={threshold} />
+        <DeltaPill
+          has={row.hasLW}
+          pct={row.vsLWPct}
+          threshold={threshold}
+          complete={isCompleteCoverage(row.lwDayCount, row.dayCount)}
+          matched={row.lwDayCount}
+          days={row.dayCount}
+          period="last week"
+        />
+        <DeltaPill
+          has={row.hasLY}
+          pct={row.vsLYPct}
+          threshold={threshold}
+          complete={isCompleteCoverage(row.lyDayCount, row.dayCount)}
+          matched={row.lyDayCount}
+          days={row.dayCount}
+          period="last year"
+        />
       </div>
     </button>
   );

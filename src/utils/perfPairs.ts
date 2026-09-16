@@ -17,9 +17,85 @@ import { sameWeekDayLastYear } from ".";
 export interface PerfPair {
   key: string;
   label: string;
+  /** This year, every day in scope — what the row is sized and sorted by. */
   ty: number;
+  /** Last year, on the matched dates only. */
   ly: number;
+  /** This year over only the days last year can be matched on — the side a
+   *  vs-LY figure divides and a TY/LY bar should draw. Same as `ty` inside a
+   *  single day or when last year covers the whole week. */
+  tyForLy: number;
+  /** Days this year has in scope, and how many matched last year. Absent
+   *  inside a single day, where the question doesn't arise. */
+  days?: number;
+  lyDays?: number;
+  /** Nothing on file last year for this row's scope — see noLyHistory. Absent
+   *  when no matching was given. */
+  noLy?: boolean;
 }
+
+/**
+ * Which days of a week can be compared with last year.
+ *
+ * Last year's dates come from `lyDateFor` one TY date at a time, so around a
+ * moving holiday they aren't contiguous — TY Fri 9/4–Thu 9/10/2026 matches
+ * Labor Day Mon 9/1/2025 plus Fri 9/5–Thu 9/11. The fetch covers min..max,
+ * 9/1–9/11, so rows for 9/2–9/4 and 9/8 arrive too and must never be summed.
+ * A TY date matches only when its own partner has rows.
+ *
+ * Coverage is on dates across the rows given, not per group: a department
+ * with nothing on a day the store traded is a zero, not a gap.
+ */
+export interface DayMatch {
+  /** TY dates whose partner last year has rows. */
+  tyDates: Set<string>;
+  /** Those partners — the only LY dates any sum may include. */
+  lyDates: Set<string>;
+  /** TY dates with rows. */
+  days: number;
+  /** How many of them matched. */
+  lyDays: number;
+  /** Every LY date that has rows, matched or not — what a single selected
+   *  day checks its partner against. */
+  lyAll: Set<string>;
+}
+
+export const matchWeek = (
+  tyRows: { sale_date: string }[],
+  lyRows: { sale_date: string }[],
+): DayMatch => {
+  const lyHave = new Set(lyRows.map(dayOf));
+  const tyAll = new Set(tyRows.map(dayOf));
+  const tyDates = new Set<string>();
+  const lyDates = new Set<string>();
+  for (const d of tyAll) {
+    const partner = lyDateFor(d);
+    if (lyHave.has(partner)) {
+      tyDates.add(d);
+      lyDates.add(partner);
+    }
+  }
+  return { tyDates, lyDates, days: tyAll.size, lyDays: tyDates.size, lyAll: lyHave };
+};
+
+/**
+ * Last year has nothing on file to compare against — for the week, not one
+ * matched day; for a selected day, no row on its partner date.
+ *
+ * Not the same as last year selling nothing: that is a row with a zero in it.
+ * Drawing a missing year as a $0.00 bar states a fact nobody measured, so the
+ * UI says "no history" instead.
+ */
+export const noLyHistory = (m: DayMatch, day: string | null) =>
+  day ? !m.lyAll.has(lyDateFor(day)) : m.days > 0 && m.lyDays === 0;
+
+/** Last year has some of the week but not all of it — a comparison worth
+ *  showing, over fewer days, and flagged as such. */
+export const isPartialMatch = (p: { days?: number; lyDays?: number }) =>
+  p.days !== undefined &&
+  p.lyDays !== undefined &&
+  p.lyDays > 0 &&
+  p.lyDays < p.days;
 
 /** Rows across every sales endpoint carry a `sale_date`; this is the day key
  *  everything groups on. Split rather than parsed — a string compare is a date
@@ -75,25 +151,110 @@ export const pairBy = <T extends StoreRow & { sale_date: string }>(
   keyOf: (r: T) => string,
   labelOf: (r: T) => string,
   pick: (r: T) => number,
+  /**
+   * The whole week's day matching — one for every row, or per row key when
+   * each group has its own dates (stores). Ignored inside a single day, where
+   * `lyDateFor(day)` already names the one date. Without it the whole week
+   * sums every LY row fetched, padding dates included.
+   */
+  match?: DayMatch | ((key: string) => DayMatch | undefined),
 ): PerfPair[] => {
   const lyDay = day ? lyDateFor(day) : null;
   const acc = new Map<string, PerfPair>();
+  const scopeMatch = (key: string) =>
+    typeof match === "function" ? match(key) : match;
+  // Filtering by matched dates is a whole-week concern; a single day already
+  // names its one LY date.
+  const matchFor = (key: string) => (day ? undefined : scopeMatch(key));
 
-  const add = (rows: T[], scope: string | null, side: "ty" | "ly") =>
-    rows.forEach((r) => {
-      if (!inScope(r, scope, store)) return;
-      const key = keyOf(r);
-      const found = acc.get(key) ?? { key, label: labelOf(r), ty: 0, ly: 0 };
-      found[side] += pick(r);
-      acc.set(key, found);
-    });
+  tyRows.forEach((r) => {
+    if (!inScope(r, day, store)) return;
+    const key = keyOf(r);
+    const found = acc.get(key) ?? { key, label: labelOf(r), ty: 0, ly: 0, tyForLy: 0 };
+    const v = pick(r);
+    found.ty += v;
+    const m = matchFor(key);
+    if (!m || m.tyDates.has(dayOf(r))) found.tyForLy += v;
+    acc.set(key, found);
+  });
 
-  add(tyRows, day, "ty");
-  add(lyRows, lyDay, "ly");
+  lyRows.forEach((r) => {
+    if (!inScope(r, lyDay, store)) return;
+    const key = keyOf(r);
+    const m = matchFor(key);
+    // Checked before the row is created, so a group that only traded on a
+    // padding date doesn't appear as an empty pair.
+    if (m && !m.lyDates.has(dayOf(r))) return;
+    const found = acc.get(key) ?? { key, label: labelOf(r), ty: 0, ly: 0, tyForLy: 0 };
+    found.ly += pick(r);
+    acc.set(key, found);
+  });
 
-  // Largest this year first. Size is a fact about the row; ordering by how far
-  // it fell would be grading by another name.
+  for (const p of acc.values()) {
+    const m = scopeMatch(p.key);
+    if (!m) continue;
+    p.noLy = noLyHistory(m, day);
+    if (!day) {
+      p.days = m.days;
+      p.lyDays = m.lyDays;
+    }
+  }
+
+  // Largest this year first — the default. Size is a fact about the row;
+  // ordering by how far it fell is available, but only when someone asks for
+  // it (sortPairs "change").
   return [...acc.values()].sort((a, b) => b.ty - a.ty);
+};
+
+/** How a list of pairs can be ordered.
+ *  - sales:  this year, largest first
+ *  - change: vs last year, biggest drop first
+ *  - name:   A-Z, numbers in number order ("9" before "10")
+ *  - time:   by key as a number — hours of the day */
+export type PairSort = "sales" | "change" | "name" | "time";
+
+/** This year against last year as a percentage, over the matched days. Null
+ *  when last year is zero: there is nothing to take a percentage of. */
+export const pairChangePct = (p: PerfPair): number | null =>
+  p.ly > 0 ? ((p.tyForLy - p.ly) / p.ly) * 100 : null;
+
+/**
+ * Order a list of pairs. Returns a new array.
+ *
+ * Rows with no last year sort after every row that has one under "change" —
+ * unknown isn't the same as down. Ties fall back to size, so equal rows keep a
+ * stable, sensible order.
+ *
+ * `nameOf` picks what "name" compares; stores pass their store number.
+ */
+export const sortPairs = (
+  pairs: PerfPair[],
+  sort: PairSort,
+  nameOf: (p: PerfPair) => string = (p) => p.label,
+): PerfPair[] => {
+  const bySize = (a: PerfPair, b: PerfPair) => b.ty - a.ty;
+  const out = [...pairs];
+  switch (sort) {
+    case "sales":
+      return out.sort(bySize);
+    case "change":
+      return out.sort((a, b) => {
+        const pa = pairChangePct(a);
+        const pb = pairChangePct(b);
+        if (pa === null && pb === null) return bySize(a, b);
+        if (pa === null) return 1;
+        if (pb === null) return -1;
+        return pa - pb || bySize(a, b);
+      });
+    case "name":
+      return out.sort(
+        (a, b) =>
+          nameOf(a).localeCompare(nameOf(b), undefined, { numeric: true }) ||
+          bySize(a, b),
+      );
+    case "time":
+      return out.sort((a, b) => Number(a.key) - Number(b.key));
+  }
 };
 
 export interface PerfDay {

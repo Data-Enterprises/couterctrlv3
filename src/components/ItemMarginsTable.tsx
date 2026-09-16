@@ -36,7 +36,7 @@ import ColFilter from "./filters/ColFilter";
 import { colInputStyle } from "./filters/colFilterStyles";
 import UpcContextMenu from "./UpcContextMenu";
 import SharedSeverityBadge from "./SeverityBadge";
-import { LW_OFFSET, LY_OFFSET, shiftIso } from "../utils/grading";
+import { LW_OFFSET, LY_OFFSET, shiftIso, type Coverage } from "../utils/grading";
 import type { MarginSourceRow, ItemGradingMetric } from "../utils/itemMargins";
 import { formatPricedUnitsShort, PRICED_UNITS_LABEL } from "../utils/pricedUnits";
 
@@ -69,16 +69,19 @@ const GradeCell = ({
   pct,
   threshold,
   isPts,
+  partial = false,
 }: {
   pct: number | null;
   threshold: number;
   isPts: boolean;
+  /** The period is missing days: show the figure without a verdict colour. */
+  partial?: boolean;
 }) => {
   if (pct === null)
     return <span className="text-[13px] font-semibold text-gray-400">—</span>;
   return (
     <span
-      className={`text-[13px] font-semibold whitespace-nowrap ${deltaTextClass(pct, threshold)}`}
+      className={`text-[13px] font-semibold whitespace-nowrap ${partial ? "text-content" : deltaTextClass(pct, threshold)}`}
     >
       {`${pct >= 0 ? "+" : ""}${pct.toFixed(2)}${isPts ? "pt" : "%"}`}
     </span>
@@ -117,6 +120,9 @@ interface Props {
   /** Null means the whole week. */
   selectedDay: string | null;
   loading?: boolean;
+  /** The store's coverage for the week. Items day-match and grade on last
+   *  year only when it covers every day — see utils/grading. */
+  coverage?: Coverage;
 }
 
 const ItemMarginsTable = ({
@@ -127,6 +133,7 @@ const ItemMarginsTable = ({
   onThresholdChange,
   selectedDay,
   loading = false,
+  coverage,
 }: Props) => {
   const [colSort, setColSort] = useState<{
     col: "ty" | "lw" | "ly";
@@ -176,8 +183,21 @@ const ItemMarginsTable = ({
   }, [items, selectedDay]);
 
   const rawRows = useMemo(
-    () => buildItemRows(scoped.tw, scoped.lw, scoped.ly),
-    [scoped],
+    () =>
+      buildItemRows(
+        scoped.tw,
+        scoped.lw,
+        scoped.ly,
+        // A single selected day is already one matched day.
+        !selectedDay && coverage
+          ? {
+              lwOf: (d) => shiftIso(d, LW_OFFSET),
+              lyOf: (d) => shiftIso(d, LY_OFFSET),
+              coverage,
+            }
+          : undefined,
+      ),
+    [scoped, selectedDay, coverage],
   );
 
   const sevCounts = useMemo(() => {
@@ -330,6 +350,9 @@ const ItemMarginsTable = ({
           lwDisplay: m.lwDisplay,
           lyDisplay: m.lyDisplay,
           isPts: key === "margin" || key === "contribution",
+          // Missing days: the figure shows, without a verdict colour.
+          lwPartial: !selectedItem.lwComplete,
+          lyPartial: !selectedItem.lyComplete,
         };
       });
 
@@ -658,6 +681,11 @@ const ItemMarginsTable = ({
                                 }
                                 threshold={thresholdAmt}
                                 isPts={reportRows[0].isPts}
+                                partial={
+                                  side === "lw"
+                                    ? reportRows[0].lwPartial
+                                    : reportRows[0].lyPartial
+                                }
                               />
                             </div>
                           </div>
@@ -690,7 +718,7 @@ const ItemMarginsTable = ({
                         <span
                           title={`Last week: ${row.lwDisplay ?? "no data"}`}
                           className={`text-[12px] text-right font-semibold ${
-                            row.lw !== null
+                            row.lw !== null && !row.lwPartial
                               ? deltaTextClass(row.lw, thresholdAmt)
                               : "text-content"
                           }`}
@@ -700,7 +728,7 @@ const ItemMarginsTable = ({
                         <span
                           title={`Last year: ${row.lyDisplay ?? "no data"}`}
                           className={`text-[12px] text-right font-semibold ${
-                            row.ly !== null
+                            row.ly !== null && !row.lyPartial
                               ? deltaTextClass(row.ly, thresholdAmt)
                               : "text-content"
                           }`}

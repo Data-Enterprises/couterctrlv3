@@ -47,3 +47,49 @@ export const COUPON_SALES_INFO: {
     },
   ],
 };
+
+/** The mobile "?" sheet. Mobile Coupon Sales has no grading, Trend/Avg $
+ *  toggle or threshold, so it gets its own copy rather than the desktop one. */
+export const COUPON_SALES_MOBILE_INFO: {
+  title: string;
+  purpose: string;
+  glossary: InfoGlossaryEntry[];
+} = {
+  title: "Coupon Sales",
+  purpose:
+    "Coupon dollars for the week you searched, next to the same stores' and cashiers' own prior two weeks, down to the receipt. Nothing is graded: the two sit side by side and you draw the conclusion.",
+  glossary: [
+    {
+      term: "The big number",
+      desc: "Coupon dollars for whatever is in view — the whole week or the day you've tapped, for the store, cashier and coupon type you have open.",
+    },
+    {
+      term: "WK / AVG",
+      desc: "WK is the week you searched. AVG is the two weeks before it, added up and halved into one week's worth. With a day picked, AVG is that weekday in those two weeks, halved — so a Saturday is compared with an average Saturday.",
+    },
+    {
+      term: "Coupon types",
+      desc: "Swipe the card, or use the arrows under it, to narrow the whole screen to one type. The first card is every type at once. Busiest is the day of the week with the most coupon dollars for that card's type.",
+    },
+    {
+      term: "Coupons / Transactions",
+      desc: "Coupons is the number of coupon lines. Transactions is the number of sales with at least one coupon on them. Per txn is coupon dollars divided by transactions.",
+    },
+    {
+      term: "Tap a day",
+      desc: "Scopes the card and the lists to that day. Tap it again for the full week.",
+    },
+    {
+      term: "Stores, cashiers, transactions",
+      desc: "Tap a store to see its cashiers, a cashier to see their transactions, and a transaction to open its coupon lines. Back steps up one level. A single-store search starts at Cashiers.",
+    },
+    {
+      term: "Sort by",
+      desc: "Amount and Transactions put the biggest first. vs Avg puts the biggest rise in dollars over AVG first — the most extra coupon money, not the biggest percentage. Store # and Name sort in order. Stores and Cashiers each remember their own sort.",
+    },
+    {
+      term: "Transactions list",
+      desc: "Newest first. Search it by sale ID, cashier or lane.",
+    },
+  ],
+};

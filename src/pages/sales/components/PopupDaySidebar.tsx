@@ -1,6 +1,10 @@
 import type { DayDot } from "./LedgerRow";
 import { getHolidayName } from "../../../utils/holidays";
-import { formatCurrency2, formatBigNumber } from "../../../utils";
+import {
+  formatCurrency2,
+  formatBigNumber,
+  sameWeekDayLastYear,
+} from "../../../utils";
 import { computeDayMatchedTotals } from "../shared/ledgerUtils";
 import type { GradingMetric } from "../../../features/salesLedgerSlice";
 import { StarIcon } from "@heroicons/react/20/solid";
@@ -38,6 +42,16 @@ const PopupDaySidebar = ({
       : null;
   const weekSuffix = weekHasLY ? "LY" : weekHasLW ? "LW" : null;
   const weekIsNeg = weekDisplayPct !== null && weekDisplayPct < 0;
+  /**
+   * Whether the week card's percentage covers the whole week.
+   *
+   * It falls back to LW when no day has an LY match, so the figure being shown
+   * can be over any number of days between one and seven. Store 590 showed
+   * "-12.07% LY" in the same red as a complete week while comparing three
+   * days, both weekend days missing.
+   */
+  const weekMatched = weekHasLY ? weekTotals.lyDayCount : weekTotals.lwDayCount;
+  const weekPartial = weekDisplayPct !== null && weekMatched < weekTotals.dayCount;
 
   const firstDate = sorted[0]?.sale_date.split("T")[0] ?? "";
   const lastDate = sorted[sorted.length - 1]?.sale_date.split("T")[0] ?? "";
@@ -73,12 +87,20 @@ const PopupDaySidebar = ({
             {isQty ? formatBigNumber(weekTw, 0) : formatCurrency2(weekTw)}
           </div>
           <div
-            className={`text-[11px] font-semibold ${weekDisplayPct === null ? "text-content" : weekIsNeg ? "text-severity_critical_text" : "text-severity_healthy_text"}`}
+            className={`text-[11px] font-semibold ${weekDisplayPct === null || weekPartial ? "text-content" : weekIsNeg ? "text-severity_critical_text" : "text-severity_healthy_text"}`}
           >
             {weekDisplayPct !== null
-              ? `${weekIsNeg ? "▼" : "▲"} ${fmtPct(weekDisplayPct)} ${weekSuffix}`
+              ? `${weekPartial ? "" : weekIsNeg ? "▼ " : "▲ "}${fmtPct(weekDisplayPct)} ${weekSuffix}`
               : "—"}
           </div>
+          {weekPartial && (
+            <div
+              className="text-[10px] font-semibold text-content"
+              title={`Only ${weekMatched} of the ${weekTotals.dayCount} days have a matching ${weekSuffix} date, so the percentage covers those days alone.`}
+            >
+              {weekMatched} of {weekTotals.dayCount} days
+            </div>
+          )}
         </div>
       </button>
 
@@ -126,7 +148,12 @@ const PopupDaySidebar = ({
           >
             {holidayName && (
               <span
-                title={holidayName}
+                title={`${holidayName} — compared with ${holidayName} last year (${new Date(
+                  sameWeekDayLastYear(dateStr).date + "T12:00:00",
+                ).toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                })}), not with the same weekday.`}
                 className="absolute top-1 right-1 z-10"
               >
                 <StarIcon className="w-2.5 h-2.5 text-amber-500" />

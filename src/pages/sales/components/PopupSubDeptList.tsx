@@ -22,7 +22,19 @@ import {
   sameWeekDayLastYear,
 } from "../../../utils";
 import { fetchSubDeptRowsSafe } from "../../../utils/marginRows";
-import { scopeToStoreNumber, withProductCode } from "../shared/ledgerUtils";
+import {
+  scopeToStoreNumber,
+  withProductCode,
+  gradeBasis,
+  gradeOnBasis,
+  basisPct,
+  severityRank,
+  isCompleteCoverage,
+  matchDatedRows,
+  comparisonPillClass,
+  type Coverage,
+  type GradeBasis,
+} from "../shared/ledgerUtils";
 import {
   ExclamationTriangleIcon,
   ExclamationCircleIcon,
@@ -31,13 +43,11 @@ import {
   ChevronUpIcon,
 } from "@heroicons/react/20/solid";
 import type { Severity } from "./LedgerRow";
-import { aggregateByCode, itemSeverity } from "./itemGrading";
+import { aggregateByCode, itemSeverity, matchItemRows } from "./itemGrading";
 import type { SubDeptMargin } from "../../../interfaces";
 import UpcContextMenu from "../../../components/UpcContextMenu";
 import {
   formatPct,
-  pillClass,
-  gradeSeverity,
   chipClass,
   CTA_SEVERITY_CLASSES,
   severityDotClass,
@@ -85,72 +95,96 @@ type ItemSortState = {
   direction: "desc" | "asc";
 } | null;
 
+/**
+ * Grade on last year only when it covers every day, else last week when that
+ * does, else not at all. Coverage belongs to the list (every sub-department
+ * shares the store's dates), not the row — see matchDatedRows.
+ */
+const deptBasis = (r: DeptRow, coverage: Coverage): GradeBasis =>
+  gradeBasis({ hasLY: r.hasLY, hasLW: r.hasLW, ...coverage });
+
 const deptSeverity = (
   r: DeptRow,
+  coverage: Coverage,
   threshold: number,
   metric: GradingMetric,
-): Severity => {
-  const primaryPct =
-    metric === "qty"
-      ? r.hasLY
-        ? r.vsLYQtyPct
-        : r.hasLW
-          ? r.vsLWQtyPct
-          : 0
-      : r.hasLY
-        ? r.vsLYPct
-        : r.hasLW
-          ? r.vsLWPct
-          : 0;
-  return gradeSeverity(primaryPct, threshold);
+): Severity | null => {
+  const basis = deptBasis(r, coverage);
+  return metric === "qty"
+    ? gradeOnBasis(basis, r.vsLWQtyPct, r.vsLYQtyPct, threshold)
+    : gradeOnBasis(basis, r.vsLWPct, r.vsLYPct, threshold);
 };
+
+/** The CTA palette for an ungraded row: no verdict, so no severity colour. */
+const NEUTRAL_CTA = {
+  border: "border-gray-200",
+  bg: "bg-gray-50",
+  hoverBg: "hover:bg-gray-100",
+  text: "text-content",
+};
+const ctaClasses = (sev: Severity | null) =>
+  sev ? CTA_SEVERITY_CLASSES[sev] : NEUTRAL_CTA;
 
 const getCta = (
   row: DeptRow,
+  coverage: Coverage,
   threshold: number,
   metric: GradingMetric,
-): { text: string; severity: Severity } => {
-  const sev = deptSeverity(row, threshold, metric);
+): { text: string; severity: Severity | null } => {
+  const basis = deptBasis(row, coverage);
+  const sev = deptSeverity(row, coverage, threshold, metric);
   const isQty = metric === "qty";
   const lwPct = isQty ? row.vsLWQtyPct : row.vsLWPct;
   const lyPct = isQty ? row.vsLYQtyPct : row.vsLYPct;
-  const primaryPeriod = row.hasLY ? "LY" : "LW";
-  const primaryPct = row.hasLY ? lyPct : lwPct;
+
+  if (basis === null) {
+    return {
+      severity: null,
+      text: `Not graded. Neither last week (${coverage.lwDayCount} of ${coverage.dayCount} days) nor last year (${coverage.lyDayCount} of ${coverage.dayCount} days) covers the whole week, so there's no full-week comparison to grade on.`,
+    };
+  }
+
+  const primaryPeriod = basis;
+  const primaryPct = basis === "LY" ? lyPct : lwPct;
   const pctStr = `${Math.abs(primaryPct).toFixed(2)}%`;
+  // When last year exists but is missing days, say why it isn't the one being
+  // used — otherwise a grey LY figure beside an LW grade looks like an error.
+  const partialLyNote =
+    basis === "LW" && row.hasLY
+      ? ` Last year covers only ${coverage.lyDayCount} of ${coverage.dayCount} days, so it isn't used to grade.`
+      : "";
+  const bothFull = basis === "LY" && row.hasLW;
 
   if (sev === "critical") {
-    const secondaryNote =
-      row.hasLY && row.hasLW
-        ? lwPct < 0
-          ? ` LW also down ${Math.abs(lwPct).toFixed(2)}% — trend is consistent.`
-          : ` LW is up ${lwPct.toFixed(2)}% — decline may be seasonal vs last year.`
-        : "";
+    const secondaryNote = bothFull
+      ? lwPct < 0
+        ? ` LW also down ${Math.abs(lwPct).toFixed(2)}% — trend is consistent.`
+        : ` LW is up ${lwPct.toFixed(2)}% — decline may be seasonal vs last year.`
+      : "";
     return {
       severity: "critical",
-      text: `Down ${pctStr} vs ${primaryPeriod} — exceeds the ${threshold}% threshold.${secondaryNote} Check receiving, shrink, and pricing.`,
+      text: `Down ${pctStr} vs ${primaryPeriod} — exceeds the ${threshold}% threshold.${secondaryNote}${partialLyNote} Check receiving, shrink, and pricing.`,
     };
   }
   if (sev === "watch") {
-    const secondaryNote =
-      row.hasLY && row.hasLW
-        ? lwPct >= 0
-          ? ` Recovering vs LW — may be stabilizing.`
-          : ` LW also soft — monitor for a second consecutive week.`
-        : "";
+    const secondaryNote = bothFull
+      ? lwPct >= 0
+        ? ` Recovering vs LW — may be stabilizing.`
+        : ` LW also soft — monitor for a second consecutive week.`
+      : "";
     return {
       severity: "watch",
-      text: `Down ${pctStr} vs ${primaryPeriod} — within the watch band.${secondaryNote}`,
+      text: `Down ${pctStr} vs ${primaryPeriod} — within the watch band.${secondaryNote}${partialLyNote}`,
     };
   }
-  const secondaryHealthNote =
-    row.hasLY && row.hasLW
-      ? lwPct < 0
-        ? ` LW is softer — watch for a developing trend.`
-        : ` LW also positive.`
-      : "";
+  const secondaryHealthNote = bothFull
+    ? lwPct < 0
+      ? ` LW is softer — watch for a developing trend.`
+      : ` LW also positive.`
+    : "";
   return {
     severity: "healthy",
-    text: `At or above ${primaryPeriod}.${secondaryHealthNote} Contribution holding strong.`,
+    text: `At or above ${primaryPeriod}.${secondaryHealthNote}${partialLyNote} Contribution holding strong.`,
   };
 };
 
@@ -394,6 +428,7 @@ const PopupSubDeptList = ({
         const tyMap = aggregateByCode(tyItems);
         const lwMap = aggregateByCode(lwItems);
         const lyMap = aggregateByCode(lyItems);
+        const { tyForLW, tyForLY } = matchItemRows(tyItems, lwItems, lyItems);
 
         const sorted = [...tyMap.entries()].sort((a, b) => b[1].qty - a[1].qty);
 
@@ -415,6 +450,10 @@ const PopupSubDeptList = ({
                 lyNet: ly?.net ?? null,
                 lyQty: ly?.qty ?? null,
                 lyWeight: ly?.weight ?? null,
+                tyNetForLW: tyForLW.get(code)?.net ?? 0,
+                tyQtyForLW: tyForLW.get(code)?.qty ?? 0,
+                tyNetForLY: tyForLY.get(code)?.net ?? 0,
+                tyQtyForLY: tyForLY.get(code)?.qty ?? 0,
               };
             }),
           ),
@@ -478,7 +517,10 @@ const PopupSubDeptList = ({
   // totals above still read `net_sales` and the two disagreed by the coupon
   // amount. Both endpoint families have been fixed since and the weekly totals
   // now read this too, so the page is on one basis throughout.
-  const rows = useMemo((): DeptRow[] => {
+  const { rows, coverage: deptCoverage } = useMemo((): {
+    rows: DeptRow[];
+    coverage: Coverage;
+  } => {
     const buildMap = (src: typeof subSales) =>
       src.reduce(
         (
@@ -518,6 +560,25 @@ const PopupSubDeptList = ({
     const lwMap = buildMap(subSalesWk2);
     const lyMap = buildMap(subSalesWk3);
 
+    /**
+     * The TW side of each comparison, restricted to the days that matched.
+     *
+     * `subSalesWk2`/`subSalesWk3` are filtered upstream to the matched date
+     * set; `subSales` is the whole TW week. Dividing one by the other is the
+     * bug this fixes, and it does not merely exaggerate — it inverts. Wic
+     * Grocery at store 590 has three of seven LY days: the full week's
+     * $1,591.91 over those three days' $1,069.40 reads +48.86%, while the
+     * same three TW days total $619.31, which is -42.09%. The sheet was
+     * calling a department up by half when it is down by nearly as much.
+     *
+     * LW and LY need separate subtotals because their matched sets differ —
+     * here LW is all seven days and LY is three.
+     */
+    const matched = matchDatedRows(subSales, subSalesWk2, subSalesWk3);
+    const twForLW = buildMap(matched.twForLW);
+    const twForLY = buildMap(matched.twForLY);
+    const coverage = matched.coverage;
+
     const twMap = subSales.reduce(
       (
         acc: Record<
@@ -556,7 +617,7 @@ const PopupSubDeptList = ({
       {},
     );
 
-    return Object.entries(twMap)
+    const sorted = Object.entries(twMap)
       .map(([id, r]) => {
         const numId = Number(id);
         const lw = lwMap[numId];
@@ -565,6 +626,15 @@ const PopupSubDeptList = ({
         const lyNet = ly?.net ?? 0;
         const lwQty = lw?.qty ?? 0;
         const lyQty = ly?.qty ?? 0;
+        // Each percentage divides by the TW subtotal for its OWN comparison.
+        // `tw` below stays the whole week — it is the department's actual
+        // sales and the column header says so — but it is never the base.
+        const twLW = twForLW[numId];
+        const twLY = twForLY[numId];
+        const twNetForLW = twLW?.net ?? 0;
+        const twNetForLY = twLY?.net ?? 0;
+        const twQtyForLW = twLW?.qty ?? 0;
+        const twQtyForLY = twLY?.qty ?? 0;
         return {
           id: numId,
           desc: r.desc,
@@ -573,10 +643,10 @@ const PopupSubDeptList = ({
           ly: lyNet,
           hasLW: lwNet > 0,
           hasLY: lyNet > 0,
-          vsLWPct: lwNet ? ((r.net - lwNet) / lwNet) * 100 : 0,
-          vsLYPct: lyNet ? ((r.net - lyNet) / lyNet) * 100 : 0,
-          vsLWQtyPct: lwQty ? ((r.qty - lwQty) / lwQty) * 100 : 0,
-          vsLYQtyPct: lyQty ? ((r.qty - lyQty) / lyQty) * 100 : 0,
+          vsLWPct: lwNet ? ((twNetForLW - lwNet) / lwNet) * 100 : 0,
+          vsLYPct: lyNet ? ((twNetForLY - lyNet) / lyNet) * 100 : 0,
+          vsLWQtyPct: lwQty ? ((twQtyForLW - lwQty) / lwQty) * 100 : 0,
+          vsLYQtyPct: lyQty ? ((twQtyForLY - lyQty) / lyQty) * 100 : 0,
           qty: r.qty,
           lwQty,
           lyQty,
@@ -591,44 +661,37 @@ const PopupSubDeptList = ({
         };
       })
       .sort((a, b) => {
-        const rank = { critical: 0, watch: 1, healthy: 2 } as const;
         const rankDiff =
-          rank[deptSeverity(a, threshold, gradingMetric)] -
-          rank[deptSeverity(b, threshold, gradingMetric)];
+          severityRank(deptSeverity(a, coverage, threshold, gradingMetric)) -
+          severityRank(deptSeverity(b, coverage, threshold, gradingMetric));
         if (rankDiff !== 0) return rankDiff;
-        const aPct = isQty
-          ? a.hasLY
-            ? a.vsLYQtyPct
-            : a.vsLWQtyPct
-          : a.hasLY
-            ? a.vsLYPct
-            : a.vsLWPct;
-        const bPct = isQty
-          ? b.hasLY
-            ? b.vsLYQtyPct
-            : b.vsLWQtyPct
-          : b.hasLY
-            ? b.vsLYPct
-            : b.vsLWPct;
-        return aPct - bPct;
+        const ap = isQty
+          ? basisPct(deptBasis(a, coverage), a.vsLWQtyPct, a.vsLYQtyPct)
+          : basisPct(deptBasis(a, coverage), a.vsLWPct, a.vsLYPct);
+        const bp = isQty
+          ? basisPct(deptBasis(b, coverage), b.vsLWQtyPct, b.vsLYQtyPct)
+          : basisPct(deptBasis(b, coverage), b.vsLWPct, b.vsLYPct);
+        // Ungraded: nothing to rank by, so biggest department first.
+        return ap === null || bp === null ? b.tw - a.tw : ap - bp;
       });
+    return { rows: sorted, coverage };
   }, [subSales, subSalesWk2, subSalesWk3, threshold, gradingMetric, isQty]);
 
   const critCount = rows.filter(
-    (r) => deptSeverity(r, threshold, gradingMetric) === "critical",
+    (r) => deptSeverity(r, deptCoverage, threshold, gradingMetric) === "critical",
   ).length;
   const watchCount = rows.filter(
-    (r) => deptSeverity(r, threshold, gradingMetric) === "watch",
+    (r) => deptSeverity(r, deptCoverage, threshold, gradingMetric) === "watch",
   ).length;
   const healthyCount = rows.filter(
-    (r) => deptSeverity(r, threshold, gradingMetric) === "healthy",
+    (r) => deptSeverity(r, deptCoverage, threshold, gradingMetric) === "healthy",
   ).length;
 
   const visible =
     sevFilter === "all"
       ? rows
       : rows.filter(
-          (r) => deptSeverity(r, threshold, gradingMetric) === sevFilter,
+          (r) => deptSeverity(r, deptCoverage, threshold, gradingMetric) === sevFilter,
         );
 
   const handleDeptSortClick = (column: DeptSortColumn) => {
@@ -670,7 +733,7 @@ const PopupSubDeptList = ({
     selectedId !== null
       ? (rows.find((r) => r.id === selectedId) ?? null)
       : null;
-  const cta = selected ? getCta(selected, threshold, gradingMetric) : null;
+  const cta = selected ? getCta(selected, deptCoverage, threshold, gradingMetric) : null;
 
   const baseItems = useMemo(
     () =>
@@ -686,9 +749,9 @@ const PopupSubDeptList = ({
     () =>
       baseItems.map((item) => ({
         ...item,
-        sev: itemSeverity(item, itemThreshold, gradingMetric),
+        sev: itemSeverity(item, itemThreshold, gradingMetric, deptCoverage),
       })),
-    [baseItems, itemThreshold, gradingMetric],
+    [baseItems, itemThreshold, gradingMetric, deptCoverage],
   );
 
   useEffect(() => {
@@ -918,7 +981,15 @@ const PopupSubDeptList = ({
 
           <div className="overflow-y-auto thin-scrollbar flex-1">
             {sortedVisible.map((r) => {
-              const sev = deptSeverity(r, threshold, gradingMetric);
+              const lwComplete = isCompleteCoverage(
+                deptCoverage.lwDayCount,
+                deptCoverage.dayCount,
+              );
+              const lyComplete = isCompleteCoverage(
+                deptCoverage.lyDayCount,
+                deptCoverage.dayCount,
+              );
+              const sev = deptSeverity(r, deptCoverage, threshold, gradingMetric);
               const rowVsLWPct = isQty ? r.vsLWQtyPct : r.vsLWPct;
               const rowVsLYPct = isQty ? r.vsLYQtyPct : r.vsLYPct;
               const isSel = selectedId === r.id;
@@ -935,7 +1006,9 @@ const PopupSubDeptList = ({
                   }`}
                 >
                   <span
-                    className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${severityDotClass[sev]}`}
+                    className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
+                      sev ? severityDotClass[sev] : "bg-gray-400"
+                    }`}
                   />
                   <span
                     title={r.desc}
@@ -955,9 +1028,14 @@ const PopupSubDeptList = ({
                     <span
                       className={`text-[12px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${
                         r.hasLW
-                          ? pillClass(rowVsLWPct, threshold)
+                          ? comparisonPillClass(rowVsLWPct, lwComplete, threshold)
                           : "bg-gray-100 text-gray-400"
                       }`}
+                      title={
+                        r.hasLW && !lwComplete
+                          ? `Last week covers ${deptCoverage.lwDayCount} of ${deptCoverage.dayCount} days, so it isn't used to grade.`
+                          : undefined
+                      }
                       style={{ minWidth: PCT_COL_W }}
                     >
                       {r.hasLW ? formatPct(rowVsLWPct) : "—"}
@@ -965,9 +1043,14 @@ const PopupSubDeptList = ({
                     <span
                       className={`text-[12px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${
                         r.hasLY
-                          ? pillClass(rowVsLYPct, threshold)
+                          ? comparisonPillClass(rowVsLYPct, lyComplete, threshold)
                           : "bg-gray-100 text-gray-400"
                       }`}
+                      title={
+                        r.hasLY && !lyComplete
+                          ? `Last year covers ${deptCoverage.lyDayCount} of ${deptCoverage.dayCount} days, so it isn't used to grade.`
+                          : undefined
+                      }
                       style={{ minWidth: PCT_COL_W }}
                     >
                       {r.hasLY ? formatPct(rowVsLYPct) : "—"}
@@ -984,54 +1067,54 @@ const PopupSubDeptList = ({
           {/* Header row: selected name — doubles as the CTA insight toggle */}
           {selected && cta && (
             <div
-              className={`relative border-b ${CTA_SEVERITY_CLASSES[cta.severity].border}`}
+              className={`relative border-b ${ctaClasses(cta.severity).border}`}
             >
               <button
                 onClick={() => setCtaOpen((v) => !v)}
-                className={`w-full flex items-center gap-1.5 px-3 py-1.5 ${CTA_SEVERITY_CLASSES[cta.severity].bg} ${CTA_SEVERITY_CLASSES[cta.severity].hoverBg} transition-colors`}
+                className={`w-full flex items-center gap-1.5 px-3 py-1.5 ${ctaClasses(cta.severity).bg} ${ctaClasses(cta.severity).hoverBg} transition-colors`}
               >
                 {cta.severity === "critical" && (
                   <ExclamationTriangleIcon
-                    className={`w-3.5 h-3.5 ${CTA_SEVERITY_CLASSES[cta.severity].text} flex-shrink-0`}
+                    className={`w-3.5 h-3.5 ${ctaClasses(cta.severity).text} flex-shrink-0`}
                   />
                 )}
                 {cta.severity === "watch" && (
                   <ExclamationCircleIcon
-                    className={`w-3.5 h-3.5 ${CTA_SEVERITY_CLASSES[cta.severity].text} flex-shrink-0`}
+                    className={`w-3.5 h-3.5 ${ctaClasses(cta.severity).text} flex-shrink-0`}
                   />
                 )}
                 {cta.severity === "healthy" && (
                   <CheckCircleIcon
-                    className={`w-3.5 h-3.5 ${CTA_SEVERITY_CLASSES[cta.severity].text} flex-shrink-0`}
+                    className={`w-3.5 h-3.5 ${ctaClasses(cta.severity).text} flex-shrink-0`}
                   />
                 )}
                 <span
-                  className={`text-[12px] font-semibold truncate ${CTA_SEVERITY_CLASSES[cta.severity].text}`}
+                  className={`text-[12px] font-semibold truncate ${ctaClasses(cta.severity).text}`}
                 >
                   {selected.desc}
                 </span>
                 <span
-                  className={`text-[12px] font-semibold flex-shrink-0 ${CTA_SEVERITY_CLASSES[cta.severity].text}`}
+                  className={`text-[12px] font-semibold flex-shrink-0 ${ctaClasses(cta.severity).text}`}
                 >
                   Insight
                 </span>
                 <span className="flex-1" />
                 {ctaOpen ? (
                   <ChevronUpIcon
-                    className={`w-3 h-3 flex-shrink-0 ${CTA_SEVERITY_CLASSES[cta.severity].text}`}
+                    className={`w-3 h-3 flex-shrink-0 ${ctaClasses(cta.severity).text}`}
                   />
                 ) : (
                   <ChevronDownIcon
-                    className={`w-3 h-3 flex-shrink-0 ${CTA_SEVERITY_CLASSES[cta.severity].text}`}
+                    className={`w-3 h-3 flex-shrink-0 ${ctaClasses(cta.severity).text}`}
                   />
                 )}
               </button>
               {ctaOpen && (
                 <div
-                  className={`absolute top-full left-0 right-0 z-20 px-3 py-2 border-b shadow-lg ${CTA_SEVERITY_CLASSES[cta.severity].bg} ${CTA_SEVERITY_CLASSES[cta.severity].border}`}
+                  className={`absolute top-full left-0 right-0 z-20 px-3 py-2 border-b shadow-lg ${ctaClasses(cta.severity).bg} ${ctaClasses(cta.severity).border}`}
                 >
                   <span
-                    className={`text-[11px] leading-relaxed ${CTA_SEVERITY_CLASSES[cta.severity].text}`}
+                    className={`text-[11px] leading-relaxed ${ctaClasses(cta.severity).text}`}
                   >
                     {cta.text}
                   </span>
@@ -1079,7 +1162,7 @@ const PopupSubDeptList = ({
                       )}
                       {selected.hasLW && (
                         <span
-                          className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${pillClass(selected.vsLWPct, threshold)}`}
+                          className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${comparisonPillClass(selected.vsLWPct, isCompleteCoverage(deptCoverage.lwDayCount, deptCoverage.dayCount), threshold)}`}
                         >
                           {formatPct(selected.vsLWPct)}
                         </span>
@@ -1104,7 +1187,7 @@ const PopupSubDeptList = ({
                       )}
                       {selected.hasLY && (
                         <span
-                          className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${pillClass(selected.vsLYPct, threshold)}`}
+                          className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${comparisonPillClass(selected.vsLYPct, isCompleteCoverage(deptCoverage.lyDayCount, deptCoverage.dayCount), threshold)}`}
                         >
                           {formatPct(selected.vsLYPct)}
                         </span>

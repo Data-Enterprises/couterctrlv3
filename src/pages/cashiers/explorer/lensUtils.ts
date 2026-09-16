@@ -81,18 +81,43 @@ export const buildTransactionLengths = (allRows: TransactionListItem[]) => {
   return lengths;
 };
 
+// A receipt renders the whole sale, so it needs every line of it — not just the
+// exception lines a signal holds — and in till order, which the API doesn't
+// guarantee. Showing only the exception lines would make every receipt look
+// like a one-item sale and throw its totals off. sale_id is coerced because ids
+// have come back as numbers despite the string type.
+export const receiptLinesFor = (
+  allRows: TransactionListItem[],
+  saleId: string,
+): TransactionListItem[] =>
+  allRows
+    .filter((r) => String(r.sale_id) === String(saleId))
+    .sort((a, b) => a.line_number - b.line_number);
+
+// Store identity is storeid + store_number: a few storeids cover two physical
+// locations, and keying on the id alone merges them. See utils/storeIdentity.
+// Cashier and lane numbers are only unique inside a store — cashier 12 at one
+// store is a different person from cashier 12 at the next — so in a group
+// search they have to carry the store too, or two people fold into one signal.
+export const storeKeyOf = (r: TransactionListItem) =>
+  `${r.storeid}__${r.store_number}`;
+export const cashierKeyOf = (r: TransactionListItem) =>
+  `${storeKeyOf(r)}__${r.cashier_number}`;
+export const terminalKeyOf = (r: TransactionListItem) =>
+  `${storeKeyOf(r)}__${r.terminal || ""}`;
+
 const distinct = <T>(rows: TransactionListItem[], pick: (r: TransactionListItem) => T) =>
   new Set(rows.map(pick)).size;
 
 const topItemOf = (rows: TransactionListItem[]) => {
   const counts = new Map<string, { label: string; count: number }>();
   rows.forEach((r) => {
-    const key = r.product_code;
+    const key = String(r.product_code);
     const existing = counts.get(key);
     if (existing) existing.count += 1;
     else
       counts.set(key, {
-        label: r.product_description || r.product_code,
+        label: r.product_description || String(r.product_code),
         count: 1,
       });
   });
@@ -112,7 +137,7 @@ const spreadFor = (
     return { spread: "unmapped", spreadLabel: "unmapped upc" };
   }
   if (lens === "cashier") {
-    const items = distinct(rows, (r) => r.product_code);
+    const items = distinct(rows, (r) => String(r.product_code));
     return {
       spread: items <= 2 ? "single" : "wide",
       spreadLabel: `${items} ${items === 1 ? "item" : "items"}`,
@@ -127,15 +152,13 @@ const spreadFor = (
 const groupKeyFor = (lens: ExplorerLens, row: TransactionListItem): string | null => {
   switch (lens) {
     case "store":
-      // storeid + store_number — a few storeids cover two physical locations,
-      // and grouping on the id alone merges them. See utils/storeIdentity.
-      return `${row.storeid}__${row.store_number}`;
+      return storeKeyOf(row);
     case "cashier":
-      return String(row.cashier_number);
+      return cashierKeyOf(row);
     case "item":
-      return row.product_code;
+      return String(row.product_code);
     case "terminal":
-      return row.terminal || "";
+      return terminalKeyOf(row);
     case "hour": {
       const hour = parseHour(row.sale_start_time);
       return hour === null ? null : String(hour);
@@ -173,7 +196,7 @@ const labelsFor = (
     case "item":
       return {
         label: row.product_description || "(no description)",
-        sublabel: row.product_code,
+        sublabel: String(row.product_code),
       };
     case "terminal":
       return {
@@ -209,7 +232,7 @@ export const buildSignals = (
 
   const signals: Signal[] = [];
   groups.forEach((rows, key) => {
-    const cashiers = distinct(rows, (r) => r.cashier_number);
+    const cashiers = distinct(rows, cashierKeyOf);
     const { spread, spreadLabel } = spreadFor(lens, rows, cashiers);
     signals.push({
       key,
@@ -218,7 +241,7 @@ export const buildSignals = (
       amount: rows.reduce((sum, r) => sum + (r.total_sales ?? 0), 0),
       transactions: distinct(rows, (r) => r.sale_id),
       cashiers,
-      items: distinct(rows, (r) => r.product_code),
+      items: distinct(rows, (r) => String(r.product_code)),
       lastLineCount: rows.filter(
         (r) => transactionLengths[r.sale_id] === r.line_number,
       ).length,
@@ -364,7 +387,7 @@ export const buildTotals = (rows: TransactionListItem[]): ExplorerTotals => ({
   exceptions: rows.length,
   transactions: distinct(rows, (r) => r.sale_id),
   amount: rows.reduce((sum, r) => sum + (r.total_sales ?? 0), 0),
-  stores: distinct(rows, (r) => r.storeid),
-  cashiers: distinct(rows, (r) => r.cashier_number),
-  items: distinct(rows, (r) => r.product_code),
+  stores: distinct(rows, storeKeyOf),
+  cashiers: distinct(rows, cashierKeyOf),
+  items: distinct(rows, (r) => String(r.product_code)),
 });

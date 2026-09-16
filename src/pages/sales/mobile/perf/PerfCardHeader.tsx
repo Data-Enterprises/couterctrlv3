@@ -1,4 +1,7 @@
-import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
+import {
+  MagnifyingGlassIcon,
+  QuestionMarkCircleIcon,
+} from "@heroicons/react/20/solid";
 
 interface Props {
   /** What the card is about — the store, the group, the item, the lens. */
@@ -14,6 +17,8 @@ interface Props {
   when: string;
   /** Back to the search card. */
   onSearch: () => void;
+  /** Opens the page's "?" sheet. The icon only renders when this is given. */
+  onInfo?: () => void;
 }
 
 /**
@@ -31,7 +36,14 @@ interface Props {
  * front of them, and once you have scoped to Thursday the week is context you
  * are no longer reading — the day carries its own date, so nothing is lost.
  */
-const PerfCardHeader = ({ title, note, label, when, onSearch }: Props) => (
+const PerfCardHeader = ({
+  title,
+  note,
+  label,
+  when,
+  onSearch,
+  onInfo,
+}: Props) => (
   <>
     {/* items-center, not items-baseline: an icon has no baseline of its own, so
         baseline alignment hung it off the bottom of the title's text box. */}
@@ -53,10 +65,22 @@ const PerfCardHeader = ({ title, note, label, when, onSearch }: Props) => (
       {note && (
         <span className="flex-none text-[12px] text-content/85">{note}</span>
       )}
+      {onInfo && (
+        // Same solid 20px mark as the desktop headers' "?".
+        <button
+          type="button"
+          onClick={onInfo}
+          aria-label="What this page shows"
+          className="-mr-1 ml-auto flex h-7 w-7 flex-none items-center justify-center rounded-full text-content/85 active:bg-bkg"
+        >
+          <QuestionMarkCircleIcon className="h-5 w-5" />
+        </button>
+      )}
     </div>
     <div className="truncate px-4 pt-2 font-mono text-[10px] uppercase tracking-wider text-content/85">
-      {label}
-      {when ? ` · ${when}` : ""}
+      {/* Either part can be empty — no store selected leaves only the dates —
+          so join what's there rather than leading with a stray dot. */}
+      {[label, when].filter(Boolean).join(" · ")}
     </div>
   </>
 );

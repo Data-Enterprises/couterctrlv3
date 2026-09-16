@@ -1,5 +1,9 @@
-import type { ItemLookupHistory } from "../../../features/itemLookupSlice";
+import type {
+  ItemLookupHistory,
+  SaleTypeSummary,
+} from "../../../features/itemLookupSlice";
 import { calculateCogs } from "../../subDepts";
+import { isSaleRow } from "../../../utils/saleType";
 
 /**
  * How many priced units a row represents.
@@ -56,6 +60,67 @@ export const rowUnitCost = (h: ItemLookupHistory): number => {
 export const rowCogs = (h: ItemLookupHistory): number =>
   calculateCogs(0, rowUnitCost(h), 0, h.qty, pricedUnits(h));
 
+/**
+ * The item's name. The top-level `description` can come back blank while the
+ * history rows carry one — an item that rang before its description was set
+ * up, then got named mid-window. Falls back to the most recent row that has a
+ * name.
+ */
+export const itemDescription = (
+  description: string | null | undefined,
+  history: ItemLookupHistory[],
+): string => {
+  if (description) return description;
+  const named = history
+    .filter((h) => h.product_description)
+    .sort((a, b) => b.sale_date.localeCompare(a.sale_date));
+  return named[0]?.product_description ?? "";
+};
+
+/**
+ * Every register line type in the window: Sale first, then the rest by dollars.
+ *
+ * Takes every row as returned, not the Sale rows the headline figures use. Returns only
+ * Sale when the response carries no `sale_type`, which the UI reads as nothing
+ * to break down.
+ */
+export const buildSaleTypeBreakdown = (
+  rows: ItemLookupHistory[],
+): SaleTypeSummary[] => {
+  const byType = new Map<string, SaleTypeSummary & { dates: Set<string> }>();
+  for (const h of rows) {
+    const saleType = isSaleRow(h) ? "Sale" : h.sale_type!;
+    const acc =
+      byType.get(saleType) ??
+      { saleType, days: 0, sales: 0, qty: 0, units: 0, dates: new Set<string>() };
+    acc.sales += h.total_sales;
+    acc.qty += h.qty;
+    acc.units += pricedUnits(h);
+    acc.dates.add(h.sale_date.split("T")[0]);
+    byType.set(saleType, acc);
+  }
+  return [...byType.values()]
+    .map(({ dates, ...s }) => ({ ...s, days: dates.size }))
+    .sort((a, b) =>
+      a.saleType === "Sale" ? -1 : b.saleType === "Sale" ? 1 : b.sales - a.sales,
+    );
+};
+
+/** True when there's anything besides Sale to break down. False for every
+ *  response from an endpoint that doesn't return `sale_type` yet. */
+export const hasSaleTypeBreakdown = (saleTypes: SaleTypeSummary[]) =>
+  saleTypes.some((s) => s.saleType !== "Sale");
+
+/** One sale type's rows. "Sale" includes rows with no `sale_type`, which is
+ *  what every row was before the field existed. */
+export const rowsOfSaleType = (
+  rows: ItemLookupHistory[],
+  saleType: string,
+): ItemLookupHistory[] =>
+  saleType === "Sale"
+    ? rows.filter(isSaleRow)
+    : rows.filter((h) => h.sale_type === saleType);
+
 export interface DayBucket {
   date: string;
   label: string;
@@ -65,8 +130,23 @@ export interface DayBucket {
   revenue: number;
   cost: number;
   listPrice: number;
+  /** Anything sold: rings, weight or dollars. A scale item rings `qty: 0` and
+   *  records its sale in `weight`, so qty alone reads every day as empty. */
   hasSale: boolean;
+  /** A cost was on file for the day's sales. Without one, COGS is 0 and a
+   *  margin computed from it reads 100% — shown as missing instead. */
+  hasCost: boolean;
 }
+
+/** Per-day margin, or null when there was no sale or no cost to measure it by. */
+export const dayMarginPct = (b: DayBucket): number | null =>
+  b.hasSale && b.hasCost && b.revenue > 0
+    ? ((b.revenue - b.cost) / b.revenue) * 100
+    : null;
+
+/** Cost of one priced unit that day — per lb on a scale item. */
+export const dayUnitCost = (b: DayBucket): number | null =>
+  b.hasSale && b.hasCost && b.units > 0 ? b.cost / b.units : null;
 
 export const buildDayBuckets = (
   history: ItemLookupHistory[],
@@ -106,24 +186,32 @@ export const buildDayBuckets = (
       revenue: agg?.revenue ?? 0,
       cost: agg?.cost ?? 0,
       listPrice: agg?.listPrice ?? 0,
-      hasSale: (agg?.qty ?? 0) > 0,
+      hasSale: !!agg && (agg.units > 0 || agg.revenue !== 0),
+      hasCost: (agg?.cost ?? 0) > 0,
     });
   }
   return buckets;
 };
 
 export interface TrendResult {
-  firstHalfQty: number;
-  secondHalfQty: number;
+  /** Priced units — pounds on a scale item, whose qty is always 0. */
+  firstHalfUnits: number;
+  secondHalfUnits: number;
   isSlowing: boolean;
 }
 
 export const computeTrend = (buckets: DayBucket[]): TrendResult => {
   const half = Math.floor(buckets.length / 2);
-  const firstHalfQty = buckets.slice(0, half).reduce((acc, b) => acc + b.qty, 0);
-  const secondHalfQty = buckets.slice(half).reduce((acc, b) => acc + b.qty, 0);
-  return { firstHalfQty, secondHalfQty, isSlowing: secondHalfQty < firstHalfQty };
+  const firstHalfUnits = buckets.slice(0, half).reduce((acc, b) => acc + b.units, 0);
+  const secondHalfUnits = buckets.slice(half).reduce((acc, b) => acc + b.units, 0);
+  return { firstHalfUnits, secondHalfUnits, isSlowing: secondHalfUnits < firstHalfUnits };
 };
+
+/** "12" for a count, "37.40 lb" for a scale item. */
+export const formatUnits = (units: number, weighed: boolean): string =>
+  weighed
+    ? `${units.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} lb`
+    : units.toLocaleString("en-US", { maximumFractionDigits: 2 });
 
 export interface MarginResult {
   totalCost: number;
@@ -137,6 +225,9 @@ export interface MarginResult {
   /** Cost of one priced unit. The API calls this `casecost`, but the SQL
    *  already divides by case_size — it is not the cost of a case. */
   unitCost: number;
+  /** No cost on file for anything sold in the window. `marginPct` is null and
+   *  `unitCost` is 0; the UI says so rather than showing 100% and $0.00. */
+  costMissing: boolean;
 }
 
 export const computeMargin = (
@@ -145,7 +236,11 @@ export const computeMargin = (
   totalQty: number,
 ): MarginResult => {
   const totalCost = history.reduce((acc, h) => acc + rowCogs(h), 0);
-  const marginPct = totalSales > 0 ? ((totalSales - totalCost) / totalSales) * 100 : null;
+  // A sale with no cost behind it costs out at $0, which is a 100% margin that
+  // nobody earned. New items commonly sell before their cost is set up.
+  const costMissing = history.length > 0 && totalCost <= 0;
+  const marginPct =
+    totalSales > 0 && !costMissing ? ((totalSales - totalCost) / totalSales) * 100 : null;
   // Per priced unit, so it stays comparable to list price. Dividing by qty
   // reads as "$1.13 on a $0.59 item" when bananas ring ~1.9 lb at a time.
   const totalUnits = history.reduce((acc, h) => acc + pricedUnits(h), 0);
@@ -160,6 +255,7 @@ export const computeMargin = (
     weighed,
     listPrice: last ? last.price : 0,
     unitCost: last ? rowUnitCost(last) : 0,
+    costMissing,
   };
 };
 

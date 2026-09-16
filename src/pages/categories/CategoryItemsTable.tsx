@@ -15,11 +15,14 @@ import {
  *  category rows in the left panel — one control, one meaning. */
 const CategoryItemsTable = () => {
   const dispatch = useAppDispatch();
-  const { items, metric, selectedDay, loadingItems, itemThreshold } =
+  const { items, metric, selectedDay, loadingItems, itemThreshold, rows } =
     useAppSelector((s) => s.categories);
+  // Store-level, so every category row carries the same coverage.
+  const coverage = rows[0]?.coverage;
 
   return (
     <ItemMarginsTable
+      coverage={coverage}
       items={items}
       gradingMetric={metric === "qty" ? "qty" : "sales"}
       threshold={itemThreshold}

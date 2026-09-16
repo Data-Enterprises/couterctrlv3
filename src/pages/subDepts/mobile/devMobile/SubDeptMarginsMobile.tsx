@@ -8,7 +8,13 @@ import { useAppDispatch, useAppSelector } from "../../../../hooks";
 import { useSubMarginActions } from "../../hooks/useSubMarginActions";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 import { getSubDepts, getSubMargins } from "../../../../api/subMargins";
-import { setDates, calculateCogs, hasNoUsableCost, getLYDate } from "../..";
+import {
+  setDates,
+  calculateCogs,
+  hasNoUsableCost,
+  getLYDate,
+  storeCoverage,
+} from "../..";
 import type {
   JsonError,
   SubDept,
@@ -161,6 +167,7 @@ const computeSubDeptGrade = (
     tyWeekOneMargins: tyMargins,
     lyWeekOneMargins: lyMargins,
     lwWeekOneMargins: lwMargins,
+    coverage: storeCoverage(tyMargins, lwMargins, lyMargins),
   };
 };
 

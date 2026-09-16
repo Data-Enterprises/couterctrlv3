@@ -2,6 +2,7 @@ import {
   cashierKeyOf,
   storeKeyOf,
   type EventRow,
+  type EventSort,
 } from "../../../features/eventPerfSlice";
 
 /** What the screen currently has open. Every builder takes the same scope so
@@ -68,17 +69,50 @@ const scopeBaseline = (rows: EventRow[], s: EventScope) => {
   return out;
 };
 
-/** Transactions, not rows. A coupon sale with four coupon lines is one
- *  transaction; an exception row is already one. */
-const transactionsIn = (rows: EventRow[]) => {
+/**
+ * Transactions, not rows. A coupon sale with four coupon lines is one
+ * transaction; an exception row is already one.
+ *
+ * Each distinct sale contributes its row's `count` once, rather than 1. In the
+ * searched week that is the same thing — every real event counts 1 — but the
+ * baseline's rows are halved to turn a fortnight into a week, and counting its
+ * sale ids as whole transactions ignored the halving and made every AVG a
+ * two-week total. Aggregate rows carry no sale id and say how many they stand
+ * for, so they add their count as they are.
+ */
+export const transactionsIn = (rows: EventRow[]) => {
   const ids = new Set<string>();
-  let aggregate = 0;
+  let total = 0;
   for (const r of rows) {
-    // Aggregate rows carry no sale id and say how many they stand for.
-    if (!r.sale_id) aggregate += r.count;
-    else ids.add(r.sale_id);
+    if (!r.sale_id) {
+      total += r.count;
+      continue;
+    }
+    if (ids.has(r.sale_id)) continue;
+    ids.add(r.sale_id);
+    total += r.count;
   }
-  return ids.size + aggregate;
+  return total;
+};
+
+/**
+ * A payload's clock as zero-padded HHMMSS, or "" when it has none.
+ *
+ * Takes the time off `sale_date` when the date carries a real one, and
+ * otherwise a separate start-time field. That field comes back as bare digits
+ * — "93045" with the leading zero dropped — so it is padded rather than parsed.
+ * A midnight stamp is treated as no time: it is what a date-only value looks
+ * like once serialised, and sorting on it would put every sale at 00:00.
+ */
+export const clockOf = (saleDate: string, startTime?: unknown): string => {
+  const fromDate = (String(saleDate ?? "").split("T")[1] ?? "")
+    .replace(/\D/g, "")
+    .slice(0, 6);
+  if (fromDate.length >= 4 && Number(fromDate) !== 0)
+    return fromDate.padEnd(6, "0");
+  const digits = String(startTime ?? "").replace(/\D/g, "");
+  if (digits.length < 3 || digits.length > 6) return "";
+  return (digits.length % 2 === 1 ? `0${digits}` : digits).padEnd(6, "0");
 };
 
 export interface EventTotals {
@@ -185,12 +219,61 @@ export interface EventGroupRow {
   baseline: number | null;
 }
 
+/** The page's own order when nobody has picked one: the figure it leads with,
+ *  biggest first. */
+export const defaultEventSort = (
+  measure: "transactions" | "amount",
+): EventSort => measure;
+
+/**
+ * Order a store or cashier list.
+ *
+ * `change` is this week minus the prior-2-week average, in whatever the page
+ * measures, biggest rise first. A difference rather than a percentage: more
+ * exceptions (or more coupon dollars) is the thing being looked for, and a
+ * percentage puts a cashier going from 1 to 3 above one going from 20 to 30.
+ * A row with no baseline counts from zero, which is also what its bar draws.
+ *
+ * It is opt-in and sits among neutral chips. The default stays size, so the
+ * page never opens ranked by how unusual someone looks.
+ *
+ * Ties fall back to size and then to name, so the order is stable between
+ * renders rather than shuffling equal rows.
+ */
+export const sortGroupRows = (
+  list: EventGroupRow[],
+  sort: EventSort,
+  by: "store" | "cashier",
+  measure: "transactions" | "amount",
+): EventGroupRow[] => {
+  const size = (r: EventGroupRow) =>
+    measure === "amount" ? r.amount : r.transactions;
+  // Stores sort on their number, taken from the key — the label is whatever
+  // name the user knows the store by, which needn't start with it.
+  const nameOf = (r: EventGroupRow) =>
+    by === "store" ? (r.key.split("__")[1] ?? r.label) : r.label;
+  const byName = (a: EventGroupRow, b: EventGroupRow) =>
+    nameOf(a).localeCompare(nameOf(b), undefined, { numeric: true });
+
+  const cmp: Record<EventSort, (a: EventGroupRow, b: EventGroupRow) => number> =
+    {
+      transactions: (a, b) => b.transactions - a.transactions,
+      amount: (a, b) => b.amount - a.amount,
+      change: (a, b) =>
+        size(b) - (b.baseline ?? 0) - (size(a) - (a.baseline ?? 0)),
+      name: byName,
+    };
+
+  return [...list].sort(
+    (a, b) => cmp[sort](a, b) || size(b) - size(a) || byName(a, b),
+  );
+};
+
 /**
  * The store list, or the cashier list.
  *
- * Ordered by transaction count, biggest first. Ordering by distance from
- * baseline would rank people by how unusual they look, which is the grading
- * this page exists without.
+ * Ordered by the page's own figure, biggest first, unless a sort is given —
+ * see sortGroupRows.
  */
 export const buildGroupRows = (
   rows: EventRow[],
@@ -199,6 +282,7 @@ export const buildGroupRows = (
   by: "store" | "cashier",
   /** Which figure the bars measure — counts for LP, dollars for Coupons. */
   measure: "transactions" | "amount",
+  sort: EventSort = defaultEventSort(measure),
 ): EventGroupRow[] => {
   const keyFn = by === "store" ? storeKeyOf : cashierKeyOf;
   const mine = scopeRows(rows, scope).filter(
@@ -215,17 +299,28 @@ export const buildGroupRows = (
 
   // Baselines are matched by the same key, so a level the comparison period
   // does not carry simply produces null rather than a misleading zero.
-  const baseAcc = new Map<string, number>();
+  //
+  // Counted through transactionsIn like the card and the chart, not by adding
+  // up `count`. Summing per row counted a four-line coupon sale as four
+  // transactions, so a store's AVG disagreed with the card above it.
+  const baseGroups = new Map<string, EventRow[]>();
   for (const r of scopeBaseline(baseline, { ...scope, cashierKey: null })) {
     if (by === "cashier" && r.cashier_number === null) continue;
     const k = keyFn(r);
+    const list = baseGroups.get(k);
+    if (list) list.push(r);
+    else baseGroups.set(k, [r]);
+  }
+  const baseAcc = new Map<string, number>();
+  for (const [k, list] of baseGroups)
     baseAcc.set(
       k,
-      (baseAcc.get(k) ?? 0) + (measure === "amount" ? r.amount : r.count),
+      measure === "amount"
+        ? list.reduce((a, r) => a + r.amount, 0)
+        : transactionsIn(list),
     );
-  }
 
-  return [...groups.entries()]
+  const built: EventGroupRow[] = [...groups.entries()]
     .map(([key, list]) => {
       const first = list[0];
       const transactions = transactionsIn(list);
@@ -252,12 +347,9 @@ export const buildGroupRows = (
         amount,
         baseline: baseAcc.get(key) ?? null,
       };
-    })
-    .sort((a, b) =>
-      measure === "amount"
-        ? b.amount - a.amount
-        : b.transactions - a.transactions,
-    );
+    });
+
+  return sortGroupRows(built, sort, by, measure);
 };
 
 /**
@@ -277,6 +369,8 @@ export const receiptLabel = (saleId: string) => {
 export interface EventReceipt {
   saleId: string;
   day: string;
+  /** HHMMSS, or "" when the source carried no time. */
+  time: string;
   terminal: string;
   cashierName: string;
   storeName: string;
@@ -306,6 +400,7 @@ export const buildReceipts = (
     acc.set(r.sale_id, {
       saleId: r.sale_id,
       day: r.day,
+      time: r.time,
       terminal: r.terminal,
       cashierName: r.cashier_name,
       storeName: r.store_name,
@@ -325,7 +420,27 @@ export const buildReceipts = (
 
   // Most recent first: on this screen the sequence is the story, and five
   // exceptions inside forty minutes only reads that way in order.
-  return out.sort((a, b) => b.saleId.localeCompare(a.saleId));
+  return out.sort(newestFirst);
+};
+
+/**
+ * Day, then time of day, then transaction number — each newest first.
+ *
+ * Sorting the raw sale id was a string sort on the wrong thing: LP's ids lead
+ * with the store number, so the list grouped by store instead of by time, and
+ * Coupon Sales' plain numbers put "9" after "10". Neither payload reliably
+ * carries a clock, so where one is missing the transaction number stands in —
+ * it counts up through the day at a register — compared as a number.
+ */
+export const newestFirst = (a: EventReceipt, b: EventReceipt) => {
+  if (a.day !== b.day) return b.day.localeCompare(a.day);
+  if (a.time && b.time && a.time !== b.time)
+    return b.time.localeCompare(a.time);
+  return (
+    receiptLabel(b.saleId).localeCompare(receiptLabel(a.saleId), undefined, {
+      numeric: true,
+    }) || b.saleId.localeCompare(a.saleId, undefined, { numeric: true })
+  );
 };
 
 export interface EventDay {
@@ -399,5 +514,60 @@ export const busiestDay = (days: EventDay[]) => {
     weekday: "short",
     month: "numeric",
     day: "numeric",
+  });
+};
+
+/**
+ * The busiest day for every card in the carousel, each for its own lens.
+ *
+ * It used to be worked out once from the open lens and printed on every card,
+ * so the Refunds card could name the busiest day for voids. The day chart only
+ * ever shows the open lens, so this cannot borrow it — each card buckets its
+ * own rows. Ignores a selected day, like the chart: the busiest day of a single
+ * day is not a question.
+ */
+export const buildLensBusiest = (
+  rows: EventRow[],
+  scope: EventScope,
+  lenses: (string | null)[],
+  weekDates: string[],
+  measure: "transactions" | "amount",
+): (string | null)[] => {
+  const within = scopeRows(rows, { ...scope, lens: null, day: null });
+  const inWeek = new Set(weekDates);
+
+  // Keyed by lens, with null as the everything card — a Map takes null as a
+  // key, so no lens name has to be reserved for it.
+  const byLensDay = new Map<string | null, Map<string, EventRow[]>>();
+  const add = (lens: string | null, r: EventRow) => {
+    let days = byLensDay.get(lens);
+    if (!days) byLensDay.set(lens, (days = new Map()));
+    const list = days.get(r.day);
+    if (list) list.push(r);
+    else days.set(r.day, [r]);
+  };
+  for (const r of within) {
+    if (!inWeek.has(r.day)) continue;
+    add(r.lens, r);
+    add(null, r);
+  }
+
+  return lenses.map((lens) => {
+    const days = byLensDay.get(lens);
+    if (!days) return null;
+    return busiestDay(
+      weekDates.map((iso) => {
+        const list = days.get(iso) ?? [];
+        return {
+          iso,
+          label: "",
+          value:
+            measure === "amount"
+              ? list.reduce((a, r) => a + r.amount, 0)
+              : transactionsIn(list),
+          baseline: 0,
+        };
+      }),
+    );
   });
 };

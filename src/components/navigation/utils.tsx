@@ -20,6 +20,7 @@ import {
   ClockIcon,
   ShieldExclamationIcon,
   DocumentArrowUpIcon,
+  // ScaleIcon, // Suggested Weight — commented out for publish
 } from "@heroicons/react/16/solid";
 import {
   COMING_SOON_LEVELS,
@@ -601,6 +602,26 @@ export const categories: NavCategory[] = [
         isHovering: false,
         isVisible: true,
       },
+      // Commented out for publish — `suggested/order_weight` is dev-API only.
+      // Restore this entry, the ScaleIcon import and the route in main.tsx
+      // together when the endpoint ships.
+      // {
+      //   name: "Suggested Weight",
+      //   href: "suggested-weight",
+      //   icon: ScaleIcon,
+      //   // Desktop only — the order sheet is a two-panel report with no mobile
+      //   // form yet.
+      //   mobile: false,
+      //   children: [],
+      //   childOpen: false,
+      //   // Programmer tier, and for a harder reason than the rest of this
+      //   // category: `suggested/order_weight` is only deployed to the dev API,
+      //   // so on prod the page would render an error rather than an unfinished
+      //   // feature. It moves to COMING_SOON_LEVELS the day the endpoint ships.
+      //   userLevels: PROGRAMMER_ONLY_LEVELS,
+      //   isHovering: false,
+      //   isVisible: true,
+      // },
     ],
   },
 ];
