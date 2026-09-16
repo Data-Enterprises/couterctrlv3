@@ -4,7 +4,10 @@ import { useDrillScroll } from "../../../../hooks/useDrillScroll";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 import SearchCard from "../../../../components/SearchCard";
 import { getHourly, getSubs, getWeekly } from "../../../../api/sales";
-import { fetchSubDeptRows } from "../../../../utils/marginRows";
+import {
+  fetchSubDeptRows,
+  fetchSubDeptRowsSafe,
+} from "../../../../utils/marginRows";
 import { withProductCode } from "../../shared/ledgerUtils";
 import { SALES_MOBILE_INFO } from "../../salesInfo";
 import MobileInfoSheet from "../../../../components/mobile/MobileInfoSheet";
@@ -317,7 +320,23 @@ const SalesPerfMobile = () => {
     dispatch(setPerfItemLoading(key));
     Promise.all([
       fetchSubDeptRows(context.url, context.token, subId, twStart, twEnd, 0, storeid, 1),
-      fetchSubDeptRows(context.url, context.token, subId, lyDates[0], lyDates[6], 0, storeid, 1),
+      // Last year resolves empty rather than throwing. A store with no history
+      // for this department answers the LY window with an error, and letting
+      // that reject the pair put the whole card on "Error loading items" while
+      // this year's rows were sitting right there -- reported on a Food Giant
+      // store, where Sales failed and Sub Dept Margins did not, because that
+      // page has been on the safe variant all along. Empty LY rows pair as no
+      // history, which is what the totals card and the columns already say.
+      fetchSubDeptRowsSafe(
+        context.url,
+        context.token,
+        subId,
+        lyDates[0],
+        lyDates[6],
+        0,
+        storeid,
+        1,
+      ),
     ])
       .then(([ty, ly]) =>
         dispatch(cachePerfItems({ key, items: { ty: scoped(ty), ly: scoped(ly) }, gen })),
