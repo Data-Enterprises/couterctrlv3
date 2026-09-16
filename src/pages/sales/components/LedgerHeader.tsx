@@ -33,6 +33,9 @@ interface LedgerHeaderProps {
   dayCount: number;
   lyDayCount: number;
   lwDayCount: number;
+  /** More than one store in the result. The pills then state the group's
+   *  figure without day counts — see headerDeltaPill. */
+  isGroup: boolean;
   onNewSearch: () => void;
   onOpenSearch: () => void;
   gradingMetric: GradingMetric;
@@ -49,6 +52,7 @@ const LedgerHeader = ({
   dayCount,
   lyDayCount,
   lwDayCount,
+  isGroup,
   onOpenSearch,
   gradingMetric,
 }: LedgerHeaderProps) => {
@@ -74,8 +78,8 @@ const LedgerHeader = ({
    * the pill drops its red/green fill and says what it covers instead. Green
    * and red are for verdicts.
    */
-  const lwPill = headerDeltaPill(vsLWPct, lwDayCount, dayCount, "last week");
-  const lyPill = headerDeltaPill(vsLYPct, lyDayCount, dayCount, "last year");
+  const lwPill = headerDeltaPill(vsLWPct, lwDayCount, dayCount, "last week", isGroup);
+  const lyPill = headerDeltaPill(vsLYPct, lyDayCount, dayCount, "last year", isGroup);
 
 
   return (

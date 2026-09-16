@@ -6,6 +6,7 @@ import {
   buildItemRows,
   buildMarginTotals,
   findItem,
+  matchWeek,
   priceRows,
   sortMarginRows,
 } from "./itemPerfData";
@@ -325,9 +326,51 @@ describe("findItem", () => {
   });
 });
 
+describe("whole-week day matching around a moving holiday", () => {
+  // TY Fri 9/4–Thu 9/10/2026 matches Labor Day Mon 9/1/2025 plus 9/5–9/11. The
+  // LY fetch spans 9/1–9/11; last year here has only 9/1, 9/5 and 9/10 of the
+  // matched dates, plus 9/2 and 9/8 which match nothing.
+  const TY = ["2026-09-04", "2026-09-05", "2026-09-06", "2026-09-07", "2026-09-08", "2026-09-09", "2026-09-10"];
+  const ty = TY.map((d) => item(d, { sales: 100 }));
+  const ly = [
+    item("2025-09-01", { sales: 30 }),
+    item("2025-09-02", { sales: 999 }), // padding
+    item("2025-09-05", { sales: 20 }),
+    item("2025-09-08", { sales: 999 }), // padding
+    item("2025-09-10", { sales: 10 }),
+    item("2025-09-03", { sales: 500, ...DELI }), // a group that only sold on padding
+  ];
+  const match = matchWeek(ty, ly);
+
+  it("matches 3 of the 7 days", () => {
+    expect(match).toMatchObject({ days: 7, lyDays: 3 });
+  });
+
+  it("totals never sum padding dates, and compare TY over matched days", () => {
+    const t = buildMarginTotals(ty, ly, "subdept", null, null, null, match);
+    expect(t.salesLy).toBe(60);
+    expect(t.sales).toBe(700);
+    expect(t.salesForLy).toBe(300);
+    expect(t).toMatchObject({ days: 7, lyDays: 3 });
+  });
+
+  it("group rows drop padding rows, and a group that only sold then", () => {
+    const rows = buildGroupRows(ty, ly, "subdept", null, match);
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({ sales: 700, salesForLy: 300, salesLy: 60 });
+  });
+
+  it("a selected day names its one LY date", () => {
+    // Mon 9/7/2026 (Labor Day) against Mon 9/1/2025.
+    const t = buildMarginTotals(ty, ly, "subdept", "2026-09-07", null, null, match);
+    expect(t.salesLy).toBe(30);
+    expect(t.lyDays).toBeNull();
+  });
+});
+
 describe("sortMarginRows", () => {
   const row = (key: string, label: string, profit: number, sales: number, salesLy: number, gpm: number | null) =>
-    ({ key, label, sub: "", sales, salesLy, profit, profitLy: 0, gpm });
+    ({ key, label, sub: "", sales, salesForLy: sales, salesLy, profit, profitLy: 0, gpm });
   const rows = [
     row("a", "Bakery", 50, 400, 800, 12.5), // sales -50%
     row("b", "Produce", 200, 300, 225, 40), // sales +33%

@@ -8,6 +8,10 @@
  *
  * A row with no `sale_type` is a Sale: that is the response from before the
  * field existed, which is still what production returns.
+ *
+ * Applied by the dev Item Lookup screens only (pages/lookup/dev). The legacy
+ * Item Lookup and the Sub Dept mobile views read `history` untouched until
+ * production gets the field.
  */
 export const isSaleRow = (row: { sale_type?: string | null }): boolean =>
   !row.sale_type || row.sale_type === "Sale";

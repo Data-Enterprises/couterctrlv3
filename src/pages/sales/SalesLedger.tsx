@@ -465,6 +465,10 @@ const SalesLedger = () => {
               dayCount={heroDayCount}
               lyDayCount={heroLYDayCount}
               lwDayCount={heroLWDayCount}
+              // Off the rows, not the search type: what matters is whether the
+              // header sums more than one store, and a storeid carrying two
+              // locations does that too.
+              isGroup={ledgerRows.length > 1}
               onNewSearch={resetToEntry}
               onOpenSearch={() => setSearchModalOpen(true)}
               gradingMetric={gradingMetric}

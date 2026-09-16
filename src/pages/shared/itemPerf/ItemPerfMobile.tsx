@@ -63,6 +63,9 @@ import {
   buildItemRows,
   buildMarginDays,
   buildMarginTotals,
+  isPartialMatch,
+  matchWeek,
+  noLyHistory,
   findItem,
   priceRows,
   salesChangePct,
@@ -246,6 +249,24 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
     [perf.itemsLy, perf.storeNumber],
   );
 
+  /**
+   * Which days of the loaded week last year can be compared on, off the
+   * store's own rows — a department quiet on a day the store traded is a zero,
+   * not a gap. Around a moving holiday the LY fetch spans more than seven
+   * days, and this is also what keeps the dates in between out of every sum.
+   */
+  const weekMatch = useMemo(() => matchWeek(ty, ly), [ty, ly]);
+  /** Last year has some of the week, not all of it. */
+  const weekPartial = !perf.lyMissing && isPartialMatch(weekMatch);
+  /**
+   * Nothing on file last year — the request failed (`lyMissing`), or it
+   * answered with no rows for the dates in question. Either way it reads "no
+   * history", never a $0.00 nobody measured. Week-level for the legend, and
+   * scoped to the selected day for the card.
+   */
+  const weekNoLy = perf.lyMissing || noLyHistory(weekMatch, null);
+  const cardNoLy = perf.lyMissing || noLyHistory(weekMatch, perf.selectedDay);
+
   /** Daily narrows to one item only once one is chosen; before that it is the
    *  picker, scoped to the department you arrived from if any. */
   const itemCode = perf.view === "daily" ? perf.selectedItemCode : null;
@@ -260,9 +281,12 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
         perf.selectedDay,
         groupKey,
         itemCode,
+        weekMatch,
       ),
-    [ty, ly, dimension, perf.selectedDay, groupKey, itemCode],
+    [ty, ly, dimension, perf.selectedDay, groupKey, itemCode, weekMatch],
   );
+  /** Bars and change compare like with like: over only the matched days. */
+  const totalsPartial = !perf.selectedDay && weekPartial;
 
   const days = useMemo(
     () => buildMarginDays(ty, ly, dimension, groupKey, itemCode, weekDates),
@@ -319,14 +343,14 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
   const rows: MarginRow[] = useMemo(() => {
     if (listFor.view === "list")
       return sortMarginRows(
-        buildGroupRows(ty, ly, dimension, listFor.day),
+        buildGroupRows(ty, ly, dimension, listFor.day, weekMatch),
         listFor.groupSort,
       );
 
     if (listFor.view === "search") {
       if (!listFor.query) return [];
       return sortMarginRows(
-        buildItemRows(ty, ly, dimension, listFor.day, null, listFor.query),
+        buildItemRows(ty, ly, dimension, listFor.day, null, listFor.query, weekMatch),
         listFor.itemSort,
       );
     }
@@ -342,10 +366,11 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
             listFor.day,
             listFor.groupKey,
             listFor.query,
+            weekMatch,
           ),
           listFor.itemSort,
         );
-  }, [ty, ly, dimension, listFor]);
+  }, [ty, ly, dimension, listFor, weekMatch]);
 
   /** Recently opened items, resolved back to rows so they carry their figures.
    *  Only built for Search, and only while nothing is typed. */
@@ -363,11 +388,12 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
       null,
       null,
       "",
+      weekMatch,
     );
     return perf.recentItems
       .map((code) => all.find((r) => r.key === code))
       .filter((r): r is MarginRow => Boolean(r));
-  }, [ty, ly, dimension, perf.view, perf.recentItems, query]);
+  }, [ty, ly, dimension, perf.view, perf.recentItems, query, weekMatch]);
 
   const dailyRows = useMemo(
     () => buildDailyRows(ty, itemCode, weekDates),
@@ -397,8 +423,11 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
   // Last year is excluded from the shared scale when it was never read —
   // otherwise a store with no history scales every bar against a zero it did
   // not measure.
+  const listPartial = !listFor.day && weekPartial;
+  // Store-level, so one answer covers every row in the list.
+  const listNoLy = perf.lyMissing || noLyHistory(weekMatch, listFor.day);
   const listMax = shown.reduce(
-    (m, r) => Math.max(m, r.sales, perf.lyMissing ? 0 : r.salesLy),
+    (m, r) => Math.max(m, r.sales, listNoLy ? 0 : r.salesLy),
     0,
   );
   const selectedItem = findItem(perf.selectedItemCode, ty, ly);
@@ -696,7 +725,7 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
                     </span>
                     {/* No record isn't a 0% margin. */}
                     <span className="font-display text-[20px] font-bold leading-none tracking-tight tabular-nums text-content/85">
-                      {perf.lyMissing ? "no history" : pct(totals.gpmLy)}
+                      {cardNoLy ? "no history" : pct(totals.gpmLy)}
                     </span>
                   </div>
                 </div>
@@ -716,13 +745,20 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
                           }`}
                     </span>
                   </div>
+                  {/* This year is the full week; last year is its matched
+                      dates only. */}
                   <PairedBars
                     ty={totals.sales}
                     ly={totals.salesLy}
                     max={Math.max(totals.sales, totals.salesLy)}
                     compact
-                    lyUnavailable={perf.lyMissing}
+                    lyUnavailable={cardNoLy}
                   />
+                  {totalsPartial && (
+                    <p className="mt-1.5 inline-block rounded bg-gray-200 px-1.5 py-0.5 text-[11px] font-semibold text-content">
+                      Last year: {weekMatch.lyDays} of {weekMatch.days} days matched
+                    </p>
+                  )}
                 </div>
 
                 <div className="mt-3.5 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-gray-100 pt-3">
@@ -743,7 +779,7 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
                           ly ? "text-content/85" : "text-content"
                         }`}
                       >
-                        {ly && perf.lyMissing ? "no history" : formatCurrency2(v)}
+                        {ly && cardNoLy ? "no history" : formatCurrency2(v)}
                       </span>
                     </div>
                   ))}
@@ -777,7 +813,7 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
                   <span className="h-2 w-3.5 rounded-sm" style={{ background: LY_COLOR }} />
                   {/* No record isn't a zero — the columns can't say so, the
                       legend can. */}
-                  {perf.lyMissing ? "Last year: no history" : "Last year"}
+                  {weekNoLy ? "Last year: no history" : "Last year"}
                 </span>
               </div>
               <p className="px-1 pt-1.5 text-[12px] text-content/85">
@@ -862,6 +898,11 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
                   <p className="border-b border-gray-100 px-3.5 py-1.5 font-mono text-[10px] uppercase tracking-wider text-content/85">
                     Bars: sales, TY vs LY
                   </p>
+                  {listPartial && (
+                    <p className="border-b border-gray-100 bg-gray-100 px-3.5 py-2 text-[11.5px] font-semibold text-content">
+                      Last year: {weekMatch.lyDays} of {weekMatch.days} days matched
+                    </p>
+                  )}
                 </>
               )}
               {building ? (
@@ -956,7 +997,7 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
                         perf.view !== "list" &&
                         ` · ${formatCurrency2(r.profit)} gross profit`}
                       {activeSort === "change" &&
-                        !perf.lyMissing &&
+                        !listNoLy &&
                         ` · sales ${(() => {
                           const c = salesChangePct(r);
                           return c === null ? "no LY" : `${fmtChange(c)} vs LY`;
@@ -967,7 +1008,7 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
                         ty={r.sales}
                         ly={r.salesLy}
                         max={listMax}
-                        lyUnavailable={perf.lyMissing}
+                        lyUnavailable={listNoLy}
                       />
                     </div>
                   </button>

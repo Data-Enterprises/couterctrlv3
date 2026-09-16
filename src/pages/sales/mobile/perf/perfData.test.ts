@@ -8,6 +8,8 @@ import {
   buildStorePairs,
   buildSubPairs,
   buildTotals,
+  noLyHistory,
+  scopeMatch,
   sortPairs,
   storeKeyOf,
 } from "./perfData";
@@ -218,6 +220,7 @@ describe("sortPairs", () => {
     label,
     ty,
     ly,
+    tyForLy: ty,
   });
   const rows = [
     p("685__10", "Hartselle", 100, 200), // -50%
@@ -269,7 +272,7 @@ describe("buildItemPairs", () => {
       [item("123", "2025-09-09", 8)],
       null,
     );
-    expect(rows).toEqual([{ key: "123", label: "GUM", ty: 10, ly: 8 }]);
+    expect(rows).toEqual([{ key: "123", label: "GUM", ty: 10, ly: 8, tyForLy: 10 }]);
   });
 
   it("scopes both sides to the selected day", () => {
@@ -278,14 +281,98 @@ describe("buildItemPairs", () => {
       [item("1", "2025-09-09", 8), item("1", "2025-09-10", 4)],
       "2026-09-09",
     );
-    expect(rows).toEqual([{ key: "1", label: "GUM", ty: 5, ly: 4 }]);
+    expect(rows).toEqual([{ key: "1", label: "GUM", ty: 5, ly: 4, tyForLy: 5 }]);
+  });
+});
+
+describe("whole-week day matching around a moving holiday", () => {
+  // Store 590, TY Fri 9/4–Thu 9/10/2026. Labor Day is Mon 9/1/2025 and Mon
+  // 9/7/2026, so the matched LY dates are 9/1 and 9/5–9/11/2025. The LY fetch
+  // spans 9/1–9/11 and returned 9/1–9/5, 9/8 and 9/10: only 9/1, 9/5 and 9/10
+  // are matched dates, and 9/6, 9/7, 9/9, 9/11 are missing.
+  const S = { storeid: 844, store_number: "590", store_name: "Priceless IGA 590" };
+  const TY = ["2026-09-04", "2026-09-05", "2026-09-06", "2026-09-07", "2026-09-08", "2026-09-09", "2026-09-10"];
+  const weekTy = TY.map((d) => week(S, d, 1000));
+  const LY_NET: [string, number][] = [
+    ["2025-09-01", 34939.06],
+    ["2025-09-02", 24876.47],
+    ["2025-09-03", 29510.92],
+    ["2025-09-04", 25451.56],
+    ["2025-09-05", 29331.06],
+    ["2025-09-08", 24808.92],
+    ["2025-09-10", 23410.06],
+  ];
+  const weekLy = LY_NET.map(([d, n]) => week(S, d, n));
+
+  it("sums only matched LY dates, never the padding the range fetched", () => {
+    const t = buildTotals(weekTy, weekLy, [], [], null, null);
+    // 9/1 + 9/5 + 9/10 — not all seven rows ($192,328.05).
+    expect(t.salesLy).toBeCloseTo(87680.18);
+    expect(t.lyDays).toBe(3);
+    expect(t.days).toBe(7);
+  });
+
+  it("compares TY over the matched days only, keeping the full week as the headline", () => {
+    const t = buildTotals(weekTy, weekLy, [], [], null, null);
+    expect(t.sales).toBe(7000);
+    // Fri 9/4, Mon 9/7 (Labor Day), Wed 9/9 matched.
+    expect(t.salesForLy).toBe(3000);
+  });
+
+  it("store rows match on their own dates", () => {
+    const [row] = buildStorePairs(weekTy, weekLy, null, (_id, f) => f ?? "");
+    expect(row.ly).toBeCloseTo(87680.18);
+    expect(row.tyForLy).toBe(3000);
+    expect(row).toMatchObject({ days: 7, lyDays: 3 });
+  });
+
+  it("sub rows drop padding-date LY rows, including groups that only sold then", () => {
+    const rows = buildSubPairs(
+      [sub(S, "2026-09-04", 1, "Grocery", 50)],
+      [
+        sub(S, "2025-09-05", 1, "Grocery", 40),
+        sub(S, "2025-09-02", 1, "Grocery", 999), // padding date
+        sub(S, "2025-09-03", 2, "Deli", 70), // padding only
+      ],
+      null,
+      scopeMatch(weekTy, weekLy, null),
+    );
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({ ly: 40, tyForLy: 50, lyDays: 3 });
+  });
+
+  it("says no history, not $0, when last year has nothing on file", () => {
+    const other = { storeid: 111, store_number: "114", store_name: "FS Celina" };
+    const tyBoth = [...weekTy, ...TY.map((d) => week(other, d, 500))];
+    const rows = buildStorePairs(tyBoth, weekLy, null, (_id, f) => f ?? "");
+    const celina = rows.find((r) => r.label === "FS Celina")!;
+    const s590 = rows.find((r) => r.label === "Priceless IGA 590")!;
+    expect(celina).toMatchObject({ ly: 0, noLy: true, lyDays: 0 });
+    // Partial isn't missing.
+    expect(s590.noLy).toBe(false);
+    // A selected day with no row on its partner date is missing too; one
+    // with a row isn't.
+    expect(noLyHistory(scopeMatch(weekTy, weekLy, null), "2026-09-05")).toBe(true);
+    expect(noLyHistory(scopeMatch(weekTy, weekLy, null), "2026-09-04")).toBe(false);
+  });
+
+  it("a genuine zero last year is a row, not missing history", () => {
+    const m = scopeMatch(weekTy, [week(S, "2025-09-05", 0)], null);
+    expect(noLyHistory(m, null)).toBe(false);
+  });
+
+  it("a selected day still names its one LY date", () => {
+    // Mon 9/7/2026 (Labor Day) against Mon 9/1/2025 (Labor Day).
+    const t = buildTotals(weekTy, weekLy, [], [], "2026-09-07", null);
+    expect(t.salesLy).toBeCloseTo(34939.06);
+    expect(t.lyDays).toBeNull();
   });
 });
 
 describe("filterItemPairs", () => {
   const pairs = [
-    { key: "0002874900229", label: "FRESH GROUND BEEF", ty: 1, ly: 1 },
-    { key: "2718257508", label: "RIBEYE STEAK PATTIES", ty: 1, ly: 1 },
+    { key: "0002874900229", label: "FRESH GROUND BEEF", ty: 1, ly: 1, tyForLy: 1 },
+    { key: "2718257508", label: "RIBEYE STEAK PATTIES", ty: 1, ly: 1, tyForLy: 1 },
   ];
   it("matches description ignoring case", () => {
     expect(filterItemPairs(pairs, "ribeye").map((p) => p.key)).toEqual(["2718257508"]);

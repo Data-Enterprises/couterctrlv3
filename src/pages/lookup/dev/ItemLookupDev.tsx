@@ -120,7 +120,8 @@ const ItemLookupDev = () => {
       .then((resp) => {
         const j = resp.data;
         if (j.error == 0) {
-          const allHistory: ItemLookupHistory[] = j.history_all ?? j.history;
+          // Every line type as returned; applyScope splits out the Sale rows.
+          const allHistory: ItemLookupHistory[] = j.history;
           rawHistoryRef.current = allHistory;
           const numbers = storeNumbersIn(allHistory);
           dispatch(setLookupStoreNumbers(numbers));

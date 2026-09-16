@@ -280,6 +280,12 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
   const headerLYDays = activeDay ? 1 : weekTotals.lyDayCount;
   const headerLWDays = activeDay ? 1 : weekTotals.lwDayCount;
   const headerDays = activeDay ? 1 : weekTotals.dayCount;
+  /** No matching last-year row at all — for the week, not one day of it; for a
+   *  selected day, its one date. Distinct from a genuine $0 day, which has a
+   *  row (lyNet 0, not null). */
+  const noLyHistory = activeDay
+    ? activeDay.lyNet === null
+    : headerDays > 0 && headerLYDays === 0;
   const headerVsLYPct = activeDay
     ? headerHasLY
       ? isQty
@@ -699,14 +705,19 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
             {lyDateLabel}
           </div>
           <div className="flex items-baseline justify-center gap-2">
-            <span className="text-[14px] font-bold text-content">
-              {headerLyTotal !== null
-                ? isQty
-                  ? formatBigNumber(headerLyTotal, 0)
-                  : formatCurrency2(headerLyTotal)
-                : "—"}
+            {/* Not one day of the week has a matching date on file. $0.00
+                would read as a store that sold nothing; the store simply has
+                no history there. */}
+            <span className={`text-[14px] font-bold ${noLyHistory ? "text-content/85" : "text-content"}`}>
+              {noLyHistory
+                ? "No history"
+                : headerLyTotal !== null
+                  ? isQty
+                    ? formatBigNumber(headerLyTotal, 0)
+                    : formatCurrency2(headerLyTotal)
+                  : "—"}
             </span>
-            {headerVsLYPct !== null && (
+            {!noLyHistory && headerVsLYPct !== null && (
               <span
                 /* Grey, not red or green, when days are missing. The figure is
                    arithmetically right over the days it has and still does not
@@ -727,7 +738,7 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
               </span>
             )}
           </div>
-          {headerLYDays < headerDays && (
+          {!noLyHistory && headerLYDays < headerDays && (
             <div className="text-[10px] font-semibold text-content pb-0.5">
               {headerLYDays} of {headerDays} days matched
             </div>

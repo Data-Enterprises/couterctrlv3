@@ -1,6 +1,18 @@
 import type { ItemRow } from "../../../features/itemPerfSlice";
 import { calculateCogs } from "../../subDepts";
-import { dayOf, lyDateFor, netOf } from "../../../utils/perfPairs";
+import {
+  dayOf,
+  lyDateFor,
+  netOf,
+  type DayMatch,
+} from "../../../utils/perfPairs";
+
+export {
+  isPartialMatch,
+  matchWeek,
+  noLyHistory,
+  type DayMatch,
+} from "../../../utils/perfPairs";
 import { normalizeProductCode } from "../../../utils/productCode";
 import type {
   ItemDimension,
@@ -96,8 +108,17 @@ const onDay = (rows: PricedRow[], day: string | null) =>
   day ? rows.filter((r) => r._day === day) : rows;
 
 export interface MarginTotals {
+  /** This year, every day in scope — the headline figures. */
   sales: number;
+  /** This year over only the days last year matched — what the TY/LY bars
+   *  compare. Equal to `sales` inside a day or on a complete week. */
+  salesForLy: number;
+  /** Last year, and everything below suffixed Ly, on matched dates only. */
   salesLy: number;
+  /** Days this year has, and how many matched last year. Null inside a day,
+   *  or when no matching was given. */
+  days: number | null;
+  lyDays: number | null;
   cogs: number;
   cogsLy: number;
   profit: number;
@@ -109,15 +130,25 @@ export interface MarginTotals {
   tax: number;
 }
 
-const totalsOf = (ty: PricedRow[], ly: PricedRow[]): MarginTotals => {
+const totalsOf = (
+  ty: PricedRow[],
+  ly: PricedRow[],
+  match: DayMatch | undefined,
+): MarginTotals => {
   const sales = ty.reduce((a, r) => a + r._net, 0);
   const cogs = ty.reduce((a, r) => a + r._cogs, 0);
   const salesLy = ly.reduce((a, r) => a + r._net, 0);
   const cogsLy = ly.reduce((a, r) => a + r._cogs, 0);
+  const salesForLy = match
+    ? ty.reduce((a, r) => (match.tyDates.has(r._day) ? a + r._net : a), 0)
+    : sales;
 
   return {
     sales,
+    salesForLy,
     salesLy,
+    days: match ? match.days : null,
+    lyDays: match ? match.lyDays : null,
     cogs,
     cogsLy,
     profit: sales - cogs,
@@ -151,6 +182,14 @@ export const scopeItems = (
   return out;
 };
 
+/**
+ * Last year's rows a whole-week comparison may use: the matched dates, and
+ * nothing else. Around a moving holiday the LY fetch spans more than seven
+ * days (see DayMatch), so the rows in between must never be summed.
+ */
+const lyForWeek = (rows: PricedRow[], match: DayMatch | undefined) =>
+  match ? rows.filter((r) => match.lyDates.has(r._day)) : rows;
+
 export const buildMarginTotals = (
   itemsTy: PricedRow[],
   itemsLy: PricedRow[],
@@ -158,19 +197,28 @@ export const buildMarginTotals = (
   day: string | null,
   groupKey: string | null,
   itemCode: string | null,
-): MarginTotals =>
-  totalsOf(
+  /** The store week's matching (matchWeek over the store's rows). Ignored
+   *  inside a single day, which names its one LY date. */
+  match?: DayMatch,
+): MarginTotals => {
+  const m = day ? undefined : match;
+  return totalsOf(
     scopeItems(itemsTy, dimension, day, groupKey, itemCode),
     // Last year is matched day for day, so a Saturday never lands against a
     // Friday. A fixed 365-day shift gets the weekday wrong five years in seven.
-    scopeItems(
-      itemsLy,
-      dimension,
-      day ? lyDateFor(day) : null,
-      groupKey,
-      itemCode,
+    lyForWeek(
+      scopeItems(
+        itemsLy,
+        dimension,
+        day ? lyDateFor(day) : null,
+        groupKey,
+        itemCode,
+      ),
+      m,
     ),
+    m,
   );
+};
 
 /** One row in any of the three lists. Sales drive the bars, the same figure
  *  the card's bars show; the percentage sits beside the name because it
@@ -180,6 +228,9 @@ export interface MarginRow {
   label: string;
   sub: string;
   sales: number;
+  /** This year over the days last year matched — the side the change and the
+   *  bars compare. Equal to `sales` inside a day or on a complete week. */
+  salesForLy: number;
   salesLy: number;
   profit: number;
   profitLy: number;
@@ -192,11 +243,14 @@ const rowsBy = (
   keyFn: (r: PricedRow) => string,
   labelFn: (r: PricedRow) => string,
   subFn: (r: PricedRow) => string,
+  /** TY dates that matched last year; every TY row counts when absent. */
+  tyDates?: Set<string>,
 ): MarginRow[] => {
   type Acc = {
     label: string;
     sub: string;
     s: number;
+    sFor: number;
     c: number;
     sLy: number;
     cLy: number;
@@ -210,6 +264,7 @@ const rowsBy = (
         label: labelFn(r),
         sub: subFn(r),
         s: 0,
+        sFor: 0,
         c: 0,
         sLy: 0,
         cLy: 0,
@@ -217,6 +272,7 @@ const rowsBy = (
       if (side === "ty") {
         a.s += r._net;
         a.c += r._cogs;
+        if (!tyDates || tyDates.has(r._day)) a.sFor += r._net;
       } else {
         a.sLy += r._net;
         a.cLy += r._cogs;
@@ -238,6 +294,7 @@ const rowsBy = (
         label: a.label,
         sub: a.sub,
         sales: a.s,
+        salesForLy: a.sFor,
         salesLy: a.sLy,
         profit: a.s - a.c,
         profitLy: a.sLy - a.cLy,
@@ -258,15 +315,20 @@ export const buildGroupRows = (
   itemsLy: PricedRow[],
   dimension: ItemDimension,
   day: string | null,
-) =>
-  rowsBy(
+  /** The store week's matching; see buildMarginTotals. */
+  match?: DayMatch,
+) => {
+  const m = day ? undefined : match;
+  return rowsBy(
     onDay(itemsTy, day),
-    onDay(itemsLy, day ? lyDateFor(day) : null),
+    lyForWeek(onDay(itemsLy, day ? lyDateFor(day) : null), m),
     (r) => keyOf(r, dimension),
     (r) => labelOf(r, dimension),
     () => "",
+    m?.tyDates,
     // Profit, not sales: the TY bar already prints this row's sales.
   ).map((r) => ({ ...r, sub: `${money(r.profit)} gross profit` }));
+};
 
 /** Items — inside a drilled group, or matching a search across the store. */
 export const buildItemRows = (
@@ -276,22 +338,28 @@ export const buildItemRows = (
   day: string | null,
   groupKey: string | null,
   query: string,
+  /** The store week's matching; see buildMarginTotals. */
+  weekMatch?: DayMatch,
 ) => {
   const q = query.trim().toLowerCase();
   const match = (r: PricedRow) =>
     !q ||
     r.product_code.toLowerCase().includes(q) ||
     r.product_description.toLowerCase().includes(q);
+  const m = day ? undefined : weekMatch;
 
   return rowsBy(
     scopeItems(itemsTy, dimension, day, groupKey, null).filter(match),
-    scopeItems(
-      itemsLy,
-      dimension,
-      day ? lyDateFor(day) : null,
-      groupKey,
-      null,
-    ).filter(match),
+    lyForWeek(
+      scopeItems(
+        itemsLy,
+        dimension,
+        day ? lyDateFor(day) : null,
+        groupKey,
+        null,
+      ).filter(match),
+      m,
+    ),
     (r) => r.product_code,
     (r) => r.product_description,
     // The subtitle carries the dimension the page is NOT grouped by, so a row
@@ -302,6 +370,7 @@ export const buildItemRows = (
           ? (r.sub_department_description ?? r.category_description ?? "")
           : vendorLabel(r)
       }`,
+    m?.tyDates,
   );
 };
 
@@ -391,10 +460,10 @@ export const findItem = (
   return undefined;
 };
 
-/** Sales this year against last, as a percentage — what the bars compare.
- *  Null when last year sold nothing to compare against. */
+/** Sales this year against last, as a percentage, over the matched days —
+ *  what the bars compare. Null when last year sold nothing to compare against. */
 export const salesChangePct = (r: MarginRow): number | null =>
-  r.salesLy > 0 ? ((r.sales - r.salesLy) / r.salesLy) * 100 : null;
+  r.salesLy > 0 ? ((r.salesForLy - r.salesLy) / r.salesLy) * 100 : null;
 
 /**
  * Order a margin list. Returns a new array.

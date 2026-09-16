@@ -91,14 +91,20 @@ export const comparisonPillClass = (
  * Grey with a day count when the period is missing days, so the header can't
  * read as a verdict the grades beneath it don't make. Sales, Vendors, Categories
  * and Sub Dept Margins all render this pill; one definition keeps them in step.
+ *
+ * Over a group it is the group's figure and nothing more. Day coverage is a
+ * store's property: summed across a group it became store-days ("63/306"),
+ * which answers no question anyone asks. Each store's own "3 of 7 days
+ * matched" is on its row and in its detail panel.
  */
 export const headerDeltaPill = (
   pct: number,
   matched: number,
   days: number,
   period: "last week" | "last year",
+  isGroup = false,
 ) => {
-  const partial = days > 0 && matched < days;
+  const partial = !isGroup && days > 0 && matched < days;
   return {
     cls: partial
       ? "bg-custom-white/10 text-custom-white/85"

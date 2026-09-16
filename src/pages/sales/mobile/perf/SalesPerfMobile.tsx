@@ -57,10 +57,18 @@ import {
   buildStorePairs,
   buildSubPairs,
   buildTotals,
+  isPartialMatch,
+  noLyHistory,
   pairChangePct,
+  scopeMatch,
   sortPairs,
   type PairSort,
 } from "./perfData";
+
+/** "3 of 7 days matched" — why last year's figure is short of a full week.
+ *  The same wording desktop Sales uses. */
+const matchedNote = (p: { days?: number | null; lyDays?: number | null }) =>
+  `${p.lyDays} of ${p.days} days matched`;
 import MobileSortChips, {
   type SortOption,
 } from "../../../../components/mobile/MobileSortChips";
@@ -361,16 +369,23 @@ const SalesPerfMobile = () => {
     [perf.weekTy, perf.weekLy, active, shownDay, perf.selectedStore],
   );
 
+  /** The whole week's day matching for the scope on screen — the selected
+   *  store, or the search. Subs and hours share it; stores match their own. */
+  const weekMatch = useMemo(
+    () => scopeMatch(perf.weekTy, perf.weekLy, perf.selectedStore),
+    [perf.weekTy, perf.weekLy, perf.selectedStore],
+  );
+
   const sort = perf.sort[perf.dimension];
   const pairs = useMemo(() => {
     if (perf.dimension === "subs")
       return sortPairs(
-        buildSubPairs(active.subsTy, active.subsLy, shownDay),
+        buildSubPairs(active.subsTy, active.subsLy, shownDay, weekMatch),
         sort,
       );
     if (perf.dimension === "hours")
       return sortPairs(
-        buildHourPairs(active.hourlyTy, active.hourlyLy, shownDay),
+        buildHourPairs(active.hourlyTy, active.hourlyLy, shownDay, weekMatch),
         sort,
       );
     return sortPairs(
@@ -387,18 +402,31 @@ const SalesPerfMobile = () => {
     active,
     assignedStores,
     selectedGroupStores,
+    weekMatch,
   ]);
 
   /** One scale across the whole list, so a row's bar length means the same
    *  thing in every row. */
   const listMax = pairs.reduce((m, p) => Math.max(m, p.ty, p.ly), 0);
 
+  /** Items belong to one store, so they match on that store's dates. */
+  const itemMatch = useMemo(
+    () =>
+      itemScope
+        ? scopeMatch(perf.weekTy, perf.weekLy, isStore ? null : itemScope.key)
+        : undefined,
+    [perf.weekTy, perf.weekLy, itemScope?.key, isStore],
+  );
+
   const allItemPairs = useMemo(
     () =>
       openItems
-        ? sortPairs(buildItemPairs(openItems.ty, openItems.ly, shownDay), perf.itemSort)
+        ? sortPairs(
+            buildItemPairs(openItems.ty, openItems.ly, shownDay, itemMatch),
+            perf.itemSort,
+          )
         : [],
-    [openItems, shownDay, perf.itemSort],
+    [openItems, shownDay, perf.itemSort, itemMatch],
   );
   const itemPairs = useMemo(
     () => filterItemPairs(allItemPairs, perf.itemQuery),
@@ -407,6 +435,24 @@ const SalesPerfMobile = () => {
   // Scaled to the whole sub department, not the matches, so a bar keeps its
   // length while you type.
   const itemMax = allItemPairs.reduce((m, p) => Math.max(m, p.ty, p.ly), 0);
+
+  // Day coverage is a store's property. Across a group it is just the group's
+  // figure — each store's own count sits on its row on the Stores tab — so the
+  // card and list notes only appear once the figures are one store's.
+  const oneStore = isStore || perf.selectedStore !== null;
+  // Subs, hours and items share one scope's matching, so one note covers the
+  // whole list rather than repeating on every row.
+  const listPartial =
+    oneStore && !shownDay && perf.dimension !== "stores" && isPartialMatch(weekMatch);
+  const totalsPartial =
+    oneStore &&
+    isPartialMatch({
+      days: totals.days ?? undefined,
+      lyDays: totals.lyDays ?? undefined,
+    });
+  /** Nothing on file last year for the card's scope — drawn as "no history",
+   *  not a $0.00 bar. Across a group that means no store in it has any. */
+  const cardNoLy = noLyHistory(weekMatch, shownDay);
   const showingItems = perf.dimension === "subs" && perf.openSubDept !== null;
 
   const dayLabel = shownDay
@@ -532,12 +578,21 @@ const SalesPerfMobile = () => {
               </div>
 
               <div className="mt-3">
+                {/* This year is the full week; last year is its matched
+                    dates only, so a short last year reads as short rather
+                    than borrowing days that match nothing. */}
                 <PairedBars
                   ty={totals.sales}
                   ly={totals.salesLy}
                   max={Math.max(totals.sales, totals.salesLy)}
                   compact
+                  lyUnavailable={cardNoLy}
                 />
+                {totalsPartial && (
+                  <p className="mt-1.5 inline-block rounded bg-gray-200 px-1.5 py-0.5 text-[11px] font-semibold text-content">
+                    Last year: {matchedNote(totals)}
+                  </p>
+                )}
               </div>
 
               <div className="mt-3.5 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-gray-100 pt-3">
@@ -632,7 +687,9 @@ const SalesPerfMobile = () => {
                   className="h-2 w-3.5 rounded-sm"
                   style={{ background: LY_COLOR }}
                 />
-                Last year
+                {/* No record isn't a zero — the columns can't say so, the
+                    legend can. */}
+                {noLyHistory(weekMatch, null) ? "Last year: no history" : "Last year"}
               </span>
             </div>
             <p className="px-1 pt-1.5 text-[12px] text-content/85">
@@ -707,6 +764,11 @@ const SalesPerfMobile = () => {
                   value={perf.itemSort}
                   onChange={(key) => dispatch(setPerfItemSort(key))}
                 />
+                {!shownDay && itemMatch && isPartialMatch(itemMatch) && (
+                  <p className="border-b border-gray-100 bg-gray-100 px-3.5 py-2 text-[11.5px] font-semibold text-content">
+                    Last year: {matchedNote(itemMatch)}
+                  </p>
+                )}
                 {itemsLoading ? (
                   <div className="flex items-center justify-center gap-2 px-4 py-10 text-[12.5px] text-content/85">
                     <span
@@ -741,7 +803,12 @@ const SalesPerfMobile = () => {
                           {p.key}
                         </div>
                         <div className="mt-2">
-                          <PairedBars ty={p.ty} ly={p.ly} max={itemMax} />
+                          <PairedBars
+                            ty={p.ty}
+                            ly={p.ly}
+                            max={itemMax}
+                            lyUnavailable={p.noLy}
+                          />
                         </div>
                       </div>
                     );
@@ -767,6 +834,11 @@ const SalesPerfMobile = () => {
                     Pick a store on the Stores tab to see a sub department's items.
                   </p>
                 )}
+                {listPartial && (
+                  <p className="border-b border-gray-100 bg-gray-100 px-3.5 py-2 text-[11.5px] font-semibold text-content">
+                    Last year: {matchedNote(weekMatch)}
+                  </p>
+                )}
 
                 {bundleLoading && perf.dimension !== "stores" ? (
                   <div className="px-4 py-8 text-center text-[12.5px] text-content/85">
@@ -786,6 +858,9 @@ const SalesPerfMobile = () => {
                     const tappable = selectsStore || opensItems;
                     const isSel = selectsStore && perf.selectedStore === p.key;
                     const change = pairChangePct(p);
+                    // Stores each match on their own dates, so the note is
+                    // per row there; the other lists carry one above.
+                    const rowPartial = selectsStore && isPartialMatch(p);
 
                     return (
                       <button
@@ -809,7 +884,13 @@ const SalesPerfMobile = () => {
                           {/* The figure the Change sort orders on, so that order
                               can be read off the rows. Neutral: no grading on
                               mobile. A dash when last year sold nothing. */}
-                          <span className="flex-none text-[12px] font-semibold tabular-nums text-content/85">
+                          <span
+                            className={`flex-none text-[12px] font-semibold tabular-nums ${
+                              rowPartial
+                                ? "rounded bg-gray-200 px-1.5 text-content"
+                                : "text-content/85"
+                            }`}
+                          >
                             {change === null ? "\u2014" : fmtChange(change)}
                           </span>
                           {isSel && (
@@ -824,8 +905,18 @@ const SalesPerfMobile = () => {
                             <ChevronRightIcon className="h-4 w-4 flex-none self-center text-content/85" />
                           )}
                         </div>
+                        {rowPartial && (
+                          <div className="text-[11px] text-content/85">
+                            Last year: {matchedNote(p)}
+                          </div>
+                        )}
                         <div className="mt-2">
-                          <PairedBars ty={p.ty} ly={p.ly} max={listMax} />
+                          <PairedBars
+                            ty={p.ty}
+                            ly={p.ly}
+                            max={listMax}
+                            lyUnavailable={p.noLy}
+                          />
                         </div>
                       </button>
                     );

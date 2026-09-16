@@ -102,8 +102,9 @@ export const useLookupQueue = () => {
           );
           const j = resp.data;
           if (j.error === 0) {
-            // All line types, so a location switch can rebuild the breakdown.
-            const allHistory: ItemLookupHistory[] = j.history_all ?? j.history;
+            // Every line type as returned — deriveTotals splits out the Sale
+            // rows — so a location switch can rebuild the breakdown too.
+            const allHistory: ItemLookupHistory[] = j.history;
             rawHistoryRef.current[upc] = allHistory;
             // First UPC back establishes the locations; the rest scope to it.
             if (!discovered && allHistory.length > 0) {

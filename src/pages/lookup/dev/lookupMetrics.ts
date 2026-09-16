@@ -80,7 +80,7 @@ export const itemDescription = (
 /**
  * Every register line type in the window: Sale first, then the rest by dollars.
  *
- * Takes all rows — `history_all` — not the Sale-only `history`. Returns only
+ * Takes every row as returned, not the Sale rows the headline figures use. Returns only
  * Sale when the response carries no `sale_type`, which the UI reads as nothing
  * to break down.
  */
