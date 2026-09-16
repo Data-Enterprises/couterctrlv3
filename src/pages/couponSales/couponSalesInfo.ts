@@ -93,7 +93,7 @@ export const COUPON_SALES_MOBILE_INFO: {
     },
     {
       term: "Sort by",
-      desc: "Amount and Transactions put the biggest first. vs Avg puts the biggest rise in dollars over AVG first \u2014 the most extra coupon money, not the biggest percentage. Store # and Name sort in order. Stores and Cashiers each remember their own sort.",
+      desc: "Amount and Transactions put the biggest first. vs Avg puts the biggest rise in dollars over AVG first \u2014 the most extra coupon money, not the biggest percentage. Store # and Name sort in order. Tap the same one again to reverse it, and once more to put the list back the way it arrived. Stores and Cashiers each remember their own sort.",
     },
     {
       term: "Filter by store",

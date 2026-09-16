@@ -221,6 +221,24 @@ export interface EventGroupRow {
 
 /** The page's own order when nobody has picked one: the figure it leads with,
  *  biggest first. */
+/**
+ * The order each column reads in on its first tap. Size and change open on the
+ * biggest; a name or a store number opens where a reader expects to start.
+ */
+export const EVENT_SORT_DIR: Record<EventSort, "asc" | "desc"> = {
+  transactions: "desc",
+  amount: "desc",
+  change: "desc",
+  name: "asc",
+};
+
+/** Which way a list is actually pointing, for the arrow on its chip. */
+export const eventDirOf = (
+  sort: EventSort,
+  reversed: boolean,
+): "asc" | "desc" =>
+  reversed ? (EVENT_SORT_DIR[sort] === "asc" ? "desc" : "asc") : EVENT_SORT_DIR[sort];
+
 export const defaultEventSort = (
   measure: "transactions" | "amount",
 ): EventSort => measure;
@@ -245,7 +263,17 @@ export const sortGroupRows = (
   sort: EventSort,
   by: "store" | "cashier",
   measure: "transactions" | "amount",
+  /**
+   * Reverse the column, leaving the tiebreaks alone.
+   *
+   * Flipped here rather than by reversing the result: the size and name
+   * tiebreaks exist to keep equal rows stable, and inverting them with the
+   * column would reshuffle those rows on a tap that should only have changed
+   * direction.
+   */
+  reversed: boolean = false,
 ): EventGroupRow[] => {
+  const flip = reversed ? -1 : 1;
   const size = (r: EventGroupRow) =>
     measure === "amount" ? r.amount : r.transactions;
   // Stores sort on their number, taken from the key — the label is whatever
@@ -265,7 +293,7 @@ export const sortGroupRows = (
     };
 
   return [...list].sort(
-    (a, b) => cmp[sort](a, b) || size(b) - size(a) || byName(a, b),
+    (a, b) => cmp[sort](a, b) * flip || size(b) - size(a) || byName(a, b),
   );
 };
 
@@ -283,6 +311,7 @@ export const buildGroupRows = (
   /** Which figure the bars measure — counts for LP, dollars for Coupons. */
   measure: "transactions" | "amount",
   sort: EventSort = defaultEventSort(measure),
+  reversed: boolean = false,
 ): EventGroupRow[] => {
   const keyFn = by === "store" ? storeKeyOf : cashierKeyOf;
   const mine = scopeRows(rows, scope).filter(
@@ -349,7 +378,7 @@ export const buildGroupRows = (
       };
     });
 
-  return sortGroupRows(built, sort, by, measure);
+  return sortGroupRows(built, sort, by, measure, reversed);
 };
 
 /**

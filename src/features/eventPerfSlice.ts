@@ -1,4 +1,5 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import { cycleSort, type SortState } from "../utils/perfPairs";
 import type { ReceiptLine } from "../pages/shared/eventPerf/receiptTypes";
 
 /**
@@ -145,7 +146,8 @@ interface EventPerfState {
    * dollars on Coupon Sales — which the slice cannot know, since it serves
    * both. Kept across searches: it is a preference, not part of the result.
    */
-  sort: Record<EventSortList, EventSort | null>;
+  /** Null is the order the list was built in — see `cycleSort`. */
+  sort: Record<EventSortList, SortState<EventSort> | null>;
 
   /**
    * The day an open STORE card is scoped to, or null for its whole week.
@@ -331,11 +333,14 @@ const eventPerfSlice = createSlice({
     setEventInfoOpen: (state, action: PayloadAction<boolean>) => {
       state.infoOpen = action.payload;
     },
+    /** The same three-state cycle the other mobile Performance pages use:
+     *  natural order, reversed, then back to the list as it arrived. */
     setEventSort: (
       state,
       action: PayloadAction<{ list: EventSortList; sort: EventSort }>,
     ) => {
-      state.sort[action.payload.list] = action.payload.sort;
+      const l = action.payload.list;
+      state.sort[l] = cycleSort(state.sort[l], action.payload.sort);
       state.listLimit = ROWS_PER_PAGE;
     },
     /**

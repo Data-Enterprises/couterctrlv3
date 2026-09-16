@@ -62,6 +62,7 @@ import {
   buildReceipts,
   buildTotals,
   defaultEventSort,
+  eventDirOf,
   receiptLabel,
   type EventReceipt,
   type EventScope,
@@ -406,8 +407,12 @@ const EventPerfMobile = ({
     [perf.rows, shownCard, perf.lens, weekDates, measure],
   );
 
-  const storeSort = perf.sort.stores ?? defaultEventSort(measure);
-  const cashierSort = perf.sort.cashiers ?? defaultEventSort(measure);
+  const storeSortState = perf.sort.stores;
+  const storeSort = storeSortState?.key ?? defaultEventSort(measure);
+  const storeReversed = storeSortState?.reversed ?? false;
+  const cashierSortState = perf.sort.cashiers;
+  const cashierSort = cashierSortState?.key ?? defaultEventSort(measure);
+  const cashierReversed = cashierSortState?.reversed ?? false;
 
   /** The screen's own list: every store, on the group's day. */
   const storeRows = useMemo(
@@ -419,8 +424,9 @@ const EventPerfMobile = ({
         "store",
         measure,
         storeSort,
+        storeReversed,
       ),
-    [perf.rows, perf.baseline, shownGroup, measure, storeSort],
+    [perf.rows, perf.baseline, shownGroup, measure, storeSort, storeReversed],
   );
 
   /** Narrowed by the filter. Must sit with the other hooks, above the early
@@ -447,8 +453,9 @@ const EventPerfMobile = ({
       "cashier",
       measure,
       cashierSort,
+      cashierReversed,
     );
-  }, [perf.rows, perf.baseline, shownCard, perf.detailOpen, perf.view, measure, cashierSort]);
+  }, [perf.rows, perf.baseline, shownCard, perf.detailOpen, perf.view, measure, cashierSort, cashierReversed]);
 
   const receipts = useMemo(() => {
     if (!perf.detailOpen || perf.view !== "receipts") return [];
@@ -620,7 +627,12 @@ const EventPerfMobile = ({
             measure={measure}
             rows={shownCashiers}
             sortOptions={sortOptions(measure, "cashier")}
-            sort={perf.sort.cashiers}
+            sort={perf.sort.cashiers?.key ?? null}
+            sortDir={
+              perf.sort.cashiers
+                ? eventDirOf(perf.sort.cashiers.key, perf.sort.cashiers.reversed)
+                : null
+            }
             onSort={(key) =>
               dispatch(setEventSort({ list: "cashiers", sort: key }))
             }
@@ -817,7 +829,12 @@ const EventPerfMobile = ({
             <section className="overflow-hidden rounded-2xl border border-gray-200 bg-custom-white shadow-md">
               <MobileSortChips
                 options={sortOptions(measure, "store")}
-                value={perf.sort.stores}
+                value={perf.sort.stores?.key ?? null}
+                dir={
+                  perf.sort.stores
+                    ? eventDirOf(perf.sort.stores.key, perf.sort.stores.reversed)
+                    : null
+                }
                 onChange={(key) =>
                   dispatch(setEventSort({ list: "stores", sort: key }))
                 }

@@ -25,6 +25,8 @@ interface Props {
   rows: EventGroupRow[];
   sortOptions: SortOption<EventSort>[];
   sort: EventSort | null;
+  /** Which way the active chip's column is pointing. */
+  sortDir: "asc" | "desc" | null;
   onSort: (s: EventSort) => void;
   onSelectCashier: (row: { key: string; label: string }) => void;
 
@@ -69,6 +71,7 @@ const EventDrillList = ({
   rows,
   sortOptions,
   sort,
+  sortDir,
   onSort,
   onSelectCashier,
   receipts,
@@ -196,7 +199,12 @@ const EventDrillList = ({
 
   return (
     <div>
-      <MobileSortChips options={sortOptions} value={sort} onChange={onSort} />
+      <MobileSortChips
+        options={sortOptions}
+        value={sort}
+        dir={sortDir}
+        onChange={onSort}
+      />
       {building ? (
         spinner
       ) : rows.length === 0 ? (
