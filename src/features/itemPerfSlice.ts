@@ -1,4 +1,5 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import { cycleSort, type SortState } from "../utils/perfPairs";
 import type { CatItem, SubDeptMargin } from "../interfaces";
 import { storeNumbersIn } from "../utils/storeIdentity";
 
@@ -45,7 +46,19 @@ export const sourceOf = (d: ItemDimension): ItemSource =>
   d === "category" ? "cats" : "subs";
 
 /** The three views every one of these pages has. */
-export type ItemView = "list" | "search" | "daily";
+/**
+ * There is no "view" any more.
+ *
+ * The three tabs — list, search, daily — were not siblings: list and daily
+ * were two rungs of one ladder, and search spanned the whole store from
+ * outside it. Tabbing between them meant the screen could not say where you
+ * were, which is why an item needed `itemOrigin` to know what Back meant.
+ *
+ * Now the ladder is the screen (a group opens, its items open, an item's week
+ * opens) and search is its own place. Each level knows what is above it, so
+ * Back is always one rung.
+ */
+export type MarginSortState = SortState<MarginSort>;
 
 /** Rows rendered per page. Comfortably more than a phone screen holds, so
  *  "show more" is a deliberate act rather than something you hit scrolling. */
@@ -91,8 +104,9 @@ interface ItemPerfState {
   storeNumber: string | null;
 
   /** Sort for the page's own list, and for item lists. Kept across searches. */
-  groupSort: MarginSort;
-  itemSort: MarginSort;
+  /** Null is the order the list was built in — see `cycleSort`. */
+  groupSort: MarginSortState | null;
+  itemSort: MarginSortState | null;
 
   /** The "?" sheet. */
   infoOpen: boolean;
@@ -121,29 +135,33 @@ interface ItemPerfState {
    */
   lyMissing: boolean;
 
-  view: ItemView;
+  /**
+   * The expanded card in the group list, or null when they are all closed.
+   *
+   * One at a time — this screen is an accordion, and a single key is what
+   * keeps it one.
+   */
+  openGroup: { key: string; label: string } | null;
 
-  /** ISO date of the selected day, or null for the whole window. Tapping the
-   *  selected day again clears it — there is no "all week" control. */
-  selectedDay: string | null;
-
-  /** Set by tapping a department or vendor row, narrowing the list to the
-   *  items inside it. Cleared by tapping it again. */
-  selectedGroupKey: string | null;
-  selectedGroupLabel: string | null;
+  /** The items screen for `openGroup` is on screen. */
+  detailOpen: boolean;
 
   /**
-   * Which view sent us into the item, so Back can undo that one step.
+   * The find-an-item screen is on screen.
    *
-   * Search and Daily's picker both land on the same item layout — Search is
-   * just the faster way in — so the screen itself cannot say where you came
-   * from. Without this, Back from a scanned item would drop you into the
-   * picker you never opened.
+   * Its own place rather than a level: it spans every department and it drives
+   * the scanner, so there is no one group it could sit under.
    */
-  itemOrigin: ItemView | null;
+  searchOpen: boolean;
 
-  /** The item Daily is reporting on. Search sets it too, so scanning in
-   *  either place lands somewhere useful. */
+  /** ISO date of the selected day, or null for the whole window. Scopes the
+   *  open card. Tapping the selected day again clears it — there is no
+   *  "all week" control. */
+  selectedDay: string | null;
+
+  /** The item whose week is showing, inside whichever screen opened it — the
+   *  items list, or search. That screen is what Back returns to, so no origin
+   *  needs recording. */
   selectedItemCode: string | null;
 
   /** One query, shared by Search and the Daily picker — they search the same
@@ -175,7 +193,82 @@ interface ItemPerfState {
   /** The camera is open. Kept in state rather than local so closing it is a
    *  reducer away from anywhere, including the scan handler itself. */
   scannerOpen: boolean;
+
+  /** Which of the three pages is on screen. */
+  active: ItemDimension;
+
+  /**
+   * What each of the other pages was left looking at.
+   *
+   * Sub Dept Margins, Vendors and Categories are one screen with three
+   * groupings, and they used to be one state as well — so searching on one
+   * put its query on the next, an open department survived into a vendor list
+   * that had never heard of it, and stepping into Categories wiped the lot.
+   * None of that is explicable to someone who thinks of them as three pages,
+   * because to them it is three pages.
+   *
+   * So each page parks everything on its way out and takes it back on its way
+   * in. Rows included: re-fetching a week you already had, to show it grouped
+   * the way you last left it, is the part that reads as broken.
+   */
+  stash: Partial<Record<ItemDimension, ItemPerfSnapshot>>;
 }
+
+/**
+ * Everything that belongs to one page's visit.
+ *
+ * `loadGen` and `infoOpen` are deliberately outside it: the counter has to
+ * keep climbing across pages so a load left in flight by one can never land on
+ * another, and the sheet is a thing on screen now rather than a thing a page
+ * remembers.
+ */
+type ItemPerfSnapshot = Omit<
+  ItemPerfState,
+  "loadGen" | "infoOpen" | "active" | "stash"
+>;
+
+const SNAPSHOT_KEYS = [
+  "source",
+  "loadedEnd",
+  "storeNumbers",
+  "storeNumber",
+  "groupSort",
+  "itemSort",
+  "hasSearched",
+  "loading",
+  "storeId",
+  "itemsTy",
+  "itemsLy",
+  "lyMissing",
+  "openGroup",
+  "detailOpen",
+  "searchOpen",
+  "selectedDay",
+  "selectedItemCode",
+  "itemQuery",
+  "listLimit",
+  "recentItems",
+  "recentsOpen",
+  "scannerOpen",
+] as const;
+
+const snapshotOf = (s: ItemPerfSnapshot): ItemPerfSnapshot =>
+  Object.fromEntries(
+    SNAPSHOT_KEYS.map((k) => [k, s[k]]),
+  ) as unknown as ItemPerfSnapshot;
+
+/** The rows half of a snapshot — what a page loaded, as opposed to where it
+ *  was looking. */
+const ROW_KEYS = [
+  "source",
+  "loadedEnd",
+  "storeNumbers",
+  "itemsTy",
+  "itemsLy",
+  "lyMissing",
+  "hasSearched",
+  "storeId",
+] as const;
 
 const initialState: ItemPerfState = {
   source: null,
@@ -183,8 +276,8 @@ const initialState: ItemPerfState = {
   loadedEnd: null,
   storeNumbers: [],
   storeNumber: null,
-  groupSort: "sales",
-  itemSort: "sales",
+  groupSort: null,
+  itemSort: null,
   infoOpen: false,
   hasSearched: false,
   loading: false,
@@ -192,17 +285,18 @@ const initialState: ItemPerfState = {
   itemsTy: [],
   itemsLy: [],
   lyMissing: false,
-  view: "list",
+  openGroup: null,
+  detailOpen: false,
+  searchOpen: false,
   selectedDay: null,
-  selectedGroupKey: null,
-  selectedGroupLabel: null,
   selectedItemCode: null,
-  itemOrigin: null,
   itemQuery: "",
   listLimit: ROWS_PER_PAGE,
   recentItems: [],
   recentsOpen: false,
   scannerOpen: false,
+  active: "subdept",
+  stash: {},
 };
 
 const itemPerfSlice = createSlice({
@@ -257,28 +351,30 @@ const itemPerfSlice = createSlice({
       state.itemsLy = action.payload.ly ?? [];
       state.lyMissing = action.payload.ly === null;
       // A new window invalidates every drill into the old one.
-      state.view = "list";
+      state.openGroup = null;
+      state.detailOpen = false;
+      state.searchOpen = false;
       state.selectedDay = null;
-      state.selectedGroupKey = null;
-      state.selectedGroupLabel = null;
       state.selectedItemCode = null;
-      state.itemOrigin = null;
       state.itemQuery = "";
       state.listLimit = ROWS_PER_PAGE;
       state.recentItems = [];
       state.recentsOpen = false;
     },
-    setItemPerfView: (state, action: PayloadAction<ItemView>) => {
-      // Daily with no item selected shows its own picker, so there is nothing
-      // to redirect away from — every tab lands somewhere usable.
-      state.view = action.payload;
+    /** Show or leave the items screen. Leaving keeps the card open behind it,
+     *  so Back is a return rather than a re-search. */
+    openItemDetail: (state, action: PayloadAction<boolean>) => {
+      state.detailOpen = action.payload;
       state.listLimit = ROWS_PER_PAGE;
-      // Leaving Daily by tab drops the item; coming back should offer the
-      // picker rather than whatever was last open.
-      if (action.payload !== "daily") {
-        state.selectedItemCode = null;
-        state.itemOrigin = null;
-      }
+      if (!action.payload) state.selectedItemCode = null;
+    },
+    /** Show or leave the find-an-item screen. It is not a level, so it does
+     *  not disturb whichever card is open underneath it. */
+    openItemSearch: (state, action: PayloadAction<boolean>) => {
+      state.searchOpen = action.payload;
+      state.listLimit = ROWS_PER_PAGE;
+      state.selectedItemCode = null;
+      if (!action.payload) state.scannerOpen = false;
     },
     toggleItemPerfDay: (state, action: PayloadAction<string>) => {
       state.selectedDay =
@@ -286,25 +382,23 @@ const itemPerfSlice = createSlice({
       state.listLimit = ROWS_PER_PAGE;
     },
     /**
-     * Tapping a department or vendor moves to Daily, showing that group's
-     * items.
+     * Open a department or vendor where it sits, or close it.
      *
-     * The overview list answers "which department", and the question straight
-     * after it is always "which item in it" — so the chevron goes somewhere
-     * rather than expanding in place. Clearing the group stays on Daily and
-     * widens it to every item, which is where the picker lives anyway.
+     * It expands rather than navigating: the figures that answer "is this one
+     * worth opening" are the same ones the card shows, so making you leave the
+     * list to see them meant leaving to find out you needn't have.
      */
     toggleItemPerfGroup: (
       state,
       action: PayloadAction<{ key: string; label: string }>,
     ) => {
-      const same = state.selectedGroupKey === action.payload.key;
-      state.selectedGroupKey = same ? null : action.payload.key;
-      state.selectedGroupLabel = same ? null : action.payload.label;
+      const same = state.openGroup?.key === action.payload.key;
+      state.openGroup = same ? null : action.payload;
+      state.detailOpen = false;
       state.selectedItemCode = null;
-      state.itemOrigin = null;
+      // A day picked inside one department says nothing about the next.
+      state.selectedDay = null;
       state.listLimit = ROWS_PER_PAGE;
-      state.view = "daily";
     },
     setItemQuery: (state, action: PayloadAction<string>) => {
       state.itemQuery = action.payload;
@@ -316,20 +410,20 @@ const itemPerfSlice = createSlice({
     /** Switch location. Every drill belonged to the other one. */
     setItemPerfStoreNumber: (state, action: PayloadAction<string>) => {
       state.storeNumber = action.payload;
-      state.view = "list";
+      state.openGroup = null;
+      state.detailOpen = false;
+      state.searchOpen = false;
       state.selectedDay = null;
-      state.selectedGroupKey = null;
-      state.selectedGroupLabel = null;
       state.selectedItemCode = null;
-      state.itemOrigin = null;
       state.listLimit = ROWS_PER_PAGE;
     },
+    /** Both sorts advance the same three-state cycle. */
     setItemPerfGroupSort: (state, action: PayloadAction<MarginSort>) => {
-      state.groupSort = action.payload;
+      state.groupSort = cycleSort(state.groupSort, action.payload);
       state.listLimit = ROWS_PER_PAGE;
     },
     setItemPerfItemSort: (state, action: PayloadAction<MarginSort>) => {
-      state.itemSort = action.payload;
+      state.itemSort = cycleSort(state.itemSort, action.payload);
       state.listLimit = ROWS_PER_PAGE;
     },
     setItemPerfInfoOpen: (state, action: PayloadAction<boolean>) => {
@@ -362,10 +456,6 @@ const itemPerfSlice = createSlice({
      *  list or Search. */
     selectPerfItem: (state, action: PayloadAction<string>) => {
       state.selectedItemCode = action.payload;
-      // Recorded before the view changes — after this line the screen no
-      // longer knows which of the two ways in was used.
-      state.itemOrigin = state.view;
-      state.view = "daily";
       // Newest first, no duplicates, capped — a recents list you have to
       // scroll is just the catalogue again.
       state.recentItems = [
@@ -376,26 +466,74 @@ const itemPerfSlice = createSlice({
     showMoreItems: (state) => {
       state.listLimit += ROWS_PER_PAGE;
     },
-    /** Back out of an item, to whichever list opened it. Falls back to Daily's
-     *  own picker, which is where an item with no recorded origin belongs. */
+    /** Back out of an item, to the list that opened it. Which list that is
+     *  no longer needs recording: the screen it sits on is still on screen. */
     clearPerfItem: (state) => {
       state.listLimit = ROWS_PER_PAGE;
-      state.view = state.itemOrigin ?? "daily";
       state.selectedItemCode = null;
-      state.itemOrigin = null;
     },
-    /** Hand the slice to a data source, discarding another one's rows. */
-    claimItemPerf: (state, action: PayloadAction<ItemSource>) => ({
-      ...initialState,
-      source: action.payload,
-      // Bumped so a load the previous page started can't land here.
-      loadGen: state.loadGen + 1,
-      groupSort: state.groupSort,
-      itemSort: state.itemSort,
-    }),
+    /**
+     * Put one page away and bring another out.
+     *
+     * Called on mount, so arriving at a page restores exactly what it was left
+     * looking at — its rows, its search, its open card and its sorts.
+     */
+    setItemPerfDimension: (state, action: PayloadAction<ItemDimension>) => {
+      const next = action.payload;
+      if (state.active === next) {
+        // The first page to mount already matches `active`, so it never runs
+        // the swap below — but it still has to claim its endpoint, because
+        // setItemPerfRows drops any result whose source is not the current
+        // one, and a null source matches nothing.
+        state.source = sourceOf(next);
+        return;
+      }
+
+      state.stash[state.active] = snapshotOf(state);
+      const back = state.stash[next];
+      Object.assign(state, back ?? snapshotOf(initialState));
+      state.active = next;
+      // The endpoint this page reads. The snapshot just assigned carries
+      // whatever the previous occupant had, so it is set explicitly rather
+      // than inherited.
+      state.source = sourceOf(next);
+      // Anything still in flight was the outgoing page's.
+      state.loadGen += 1;
+
+      if (back) return;
+
+      /*
+       * First visit. Sub Dept Margins and Vendors read the same endpoint and
+       * differ only in how they group the rows, so if its sibling already has
+       * this store's week in hand, group those rather than asking for an
+       * identical copy. Categories reads a different endpoint and never
+       * qualifies.
+       */
+      const want = sourceOf(next);
+      const sibling = (Object.entries(state.stash) as [
+        ItemDimension,
+        ItemPerfSnapshot,
+      ][]).find(
+        ([d, snap]) =>
+          d !== next &&
+          sourceOf(d) === want &&
+          snap.source === want &&
+          snap.hasSearched &&
+          snap.itemsTy.length > 0,
+      );
+      if (!sibling) return;
+      for (const k of ROW_KEYS) {
+        (state as Record<string, unknown>)[k] = sibling[1][k];
+      }
+      state.storeNumber = sibling[1].storeNumber;
+    },
     // The counter survives a reset and moves on, so a load still in flight
     // from before it can't match the next load's number and land.
-    resetItemPerf: (state) => ({ ...initialState, loadGen: state.loadGen + 1 }),
+    resetItemPerf: (state) => ({
+      ...initialState,
+      loadGen: state.loadGen + 1,
+      active: state.active,
+    }),
   },
 });
 
@@ -410,7 +548,8 @@ export const {
   setItemPerfHasSearched,
   setItemPerfStore,
   setItemPerfRows,
-  setItemPerfView,
+  openItemDetail,
+  openItemSearch,
   toggleItemPerfDay,
   toggleItemPerfGroup,
   setItemQuery,
@@ -420,7 +559,7 @@ export const {
   scannedUpc,
   selectPerfItem,
   showMoreItems,
-  claimItemPerf,
+  setItemPerfDimension,
   clearPerfItem,
   resetItemPerf,
 } = itemPerfSlice.actions;

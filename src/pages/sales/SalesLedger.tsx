@@ -351,9 +351,15 @@ const SalesLedger = () => {
   const watchRows = ledgerRows.filter((r) => r.severity === "watch");
   const healthyRows = ledgerRows.filter((r) => r.severity === "healthy");
 
+  // "All" is every row, not the three graded buckets concatenated. A store
+  // whose comparisons are both short of a full week grades to null — a real
+  // fourth outcome, not a severity — and enumerating the other three dropped
+  // it from the list entirely while the header still counted its sales.
+  // `ledgerRows` is already in grade order with ungraded sunk to the bottom,
+  // so this preserves the ordering the concat produced.
   const sevFilteredRows =
     sevFilter === "all"
-      ? [...criticalRows, ...watchRows, ...healthyRows]
+      ? ledgerRows
       : sevFilter === "critical"
         ? criticalRows
         : sevFilter === "watch"

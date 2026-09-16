@@ -55,6 +55,19 @@ const SearchCard = ({
   const search = useAppSelector((s) => s.search);
   const assignedStores = useAppSelector((s) => s.user.assignedStores);
 
+  /**
+   * Nothing to search yet.
+   *
+   * Both sides start at id 0 — no store, no group — and every page here reads
+   * the same slice, so one check covers all of them. Without it the button
+   * fired a request for store 0, which comes back empty and reads as "this
+   * week has no data" rather than "you haven't picked anywhere".
+   */
+  const searchingGroup = isGroupSearch(search.type);
+  const nothingPicked = searchingGroup
+    ? search.selectedGroup.id === 0
+    : search.selectedStore.storeid === 0;
+
   // Echoed under the spinner. Derived here rather than passed in so every
   // caller gets it for free — the pickers already read the same slice.
   const searchLabel = [
@@ -112,10 +125,18 @@ const SearchCard = ({
 
             <button
               onClick={onSearch}
-              disabled={loading}
+              disabled={loading || nothingPicked}
               className="w-full py-2 text-sm font-semibold text-custom-white rounded-lg bg-[#1e2a4a] hover:bg-[#2a3a63] transition-colors cursor-pointer select-none disabled:opacity-50"
             >
-              {buttonLabel}
+              {/* The button says what it is waiting for rather than what it
+                  will do, so the disabled state names the missing step instead
+                  of only dimming. It becomes the page's own label the moment
+                  there is something to search. */}
+              {nothingPicked
+                ? searchingGroup
+                  ? "Select Group"
+                  : "Select Store"
+                : buttonLabel}
             </button>
 
             {onBack && (
