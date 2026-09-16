@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { HourlySale, SubSale, WeeklySale } from "../../../../interfaces";
 import {
+  dirOf,
   buildDays,
   buildHourPairs,
   buildItemPairs,
@@ -251,6 +252,37 @@ describe("sortPairs", () => {
     const copy = [...rows];
     sortPairs(rows, "change");
     expect(rows).toEqual(copy);
+  });
+
+  it("reversed flips sales", () => {
+    expect(keys(sortPairs(rows, "sales", undefined, true))).toEqual([
+      "686__2",
+      "685__10",
+      "685__9",
+    ]);
+  });
+
+  it("reversed flips change but keeps rows without LY last", () => {
+    // The trap: reversing the ARRAY would put Boaz first, which reads as the
+    // worst performer when it means there is nothing to compare it to.
+    expect(keys(sortPairs(rows, "change", undefined, true))).toEqual([
+      "685__9",
+      "685__10",
+      "686__2",
+    ]);
+  });
+
+  it("reversed flips time", () => {
+    const hours = [p("14", "2pm", 1, 1), p("9", "9am", 5, 5), p("10", "10am", 3, 3)];
+    expect(keys(sortPairs(hours, "time", undefined, true))).toEqual(["14", "10", "9"]);
+  });
+
+  it("dirOf reports the direction the list is actually in", () => {
+    expect(dirOf("sales", false)).toBe("desc");
+    expect(dirOf("sales", true)).toBe("asc");
+    // change opens on the steepest fall, so its natural direction is ascending
+    expect(dirOf("change", false)).toBe("asc");
+    expect(dirOf("change", true)).toBe("desc");
   });
 });
 

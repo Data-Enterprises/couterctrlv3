@@ -1,4 +1,6 @@
 import {
+  ChevronDownIcon,
+  ChevronRightIcon,
   MagnifyingGlassIcon,
   QuestionMarkCircleIcon,
 } from "@heroicons/react/20/solid";
@@ -19,6 +21,20 @@ interface Props {
   onSearch: () => void;
   /** Opens the page's "?" sheet. The icon only renders when this is given. */
   onInfo?: () => void;
+  /** Makes the title row expand a card. The chevron only renders when this is
+   *  given, so the pages that use this header as a plain caption are
+   *  unchanged. */
+  onToggle?: () => void;
+  open?: boolean;
+  /**
+   * Makes the TITLE itself a control — an underline and a caret, opening
+   * whatever picker the page provides.
+   *
+   * Separate from `onToggle`, which belongs to the date line: one opens the
+   * card, the other changes what the card is about, and a single tap target
+   * doing both would be guessing which was meant.
+   */
+  onTitleTap?: () => void;
 }
 
 /**
@@ -43,6 +59,9 @@ const PerfCardHeader = ({
   when,
   onSearch,
   onInfo,
+  onToggle,
+  open = false,
+  onTitleTap,
 }: Props) => (
   <>
     {/* items-center, not items-baseline: an icon has no baseline of its own, so
@@ -59,9 +78,22 @@ const PerfCardHeader = ({
       >
         <MagnifyingGlassIcon className="h-3.5 w-3.5" />
       </button>
-      <span className="min-w-0 truncate font-display text-[14px] font-bold text-content">
-        {title}
-      </span>
+      {onTitleTap ? (
+        <button
+          type="button"
+          onClick={onTitleTap}
+          className="flex min-w-0 items-center gap-1 rounded text-left active:opacity-70"
+        >
+          <span className="min-w-0 truncate font-display text-[14px] font-bold text-content underline decoration-content/40 underline-offset-[3px]">
+            {title}
+          </span>
+          <ChevronDownIcon className="h-4 w-4 flex-none text-content/85" />
+        </button>
+      ) : (
+        <span className="min-w-0 truncate font-display text-[14px] font-bold text-content">
+          {title}
+        </span>
+      )}
       {note && (
         <span className="flex-none text-[12px] text-content/85">{note}</span>
       )}
@@ -77,11 +109,32 @@ const PerfCardHeader = ({
         </button>
       )}
     </div>
-    <div className="truncate px-4 pt-2 font-mono text-[10px] uppercase tracking-wider text-content/85">
-      {/* Either part can be empty — no store selected leaves only the dates —
-          so join what's there rather than leading with a stray dot. */}
-      {[label, when].filter(Boolean).join(" · ")}
-    </div>
+    {/* The date line doubles as the expand control when the card is one. The
+        icons above stay their own buttons — a search that also collapsed the
+        card would be two actions on one tap. */}
+    {onToggle ? (
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-expanded={open}
+        className="flex w-full items-center gap-2 px-4 pt-2 text-left active:bg-bkg"
+      >
+        <span className="min-w-0 flex-1 truncate font-mono text-[10px] uppercase tracking-wider text-content/85">
+          {[label, when].filter(Boolean).join(" · ")}
+        </span>
+        {open ? (
+          <ChevronDownIcon className="h-4 w-4 flex-none text-content/85" />
+        ) : (
+          <ChevronRightIcon className="h-4 w-4 flex-none text-content/85" />
+        )}
+      </button>
+    ) : (
+      <div className="truncate px-4 pt-2 font-mono text-[10px] uppercase tracking-wider text-content/85">
+        {/* Either part can be empty — no store selected leaves only the dates —
+            so join what's there rather than leading with a stray dot. */}
+        {[label, when].filter(Boolean).join(" · ")}
+      </div>
+    )}
   </>
 );
 

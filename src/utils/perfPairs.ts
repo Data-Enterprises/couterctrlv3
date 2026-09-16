@@ -219,6 +219,55 @@ export const pairChangePct = (p: PerfPair): number | null =>
   p.ly > 0 ? ((p.tyForLy - p.ly) / p.ly) * 100 : null;
 
 /**
+ * A list's order: which column, and whether it is reversed from that column's
+ * natural direction. Null is the list's own ordering, untouched.
+ */
+export interface SortState<K extends string> {
+  key: K;
+  reversed: boolean;
+}
+
+/**
+ * The three-state cycle every mobile Performance sort chip follows: natural
+ * order, reversed, then back to the list as it arrived.
+ *
+ * The third state is why null is representable. Every one of these lists is
+ * ordered meaningfully before anyone touches a chip — a search's own order,
+ * size, time — so sorting is a temporary lens and there has to be a way to put
+ * it down. The same contract `useTriStateSort` gives the desktop panels.
+ *
+ * Generic over the key because the pages sort on different columns: Sales has
+ * sales/change/name/time, the margin pages add profit and GPM.
+ */
+export const cycleSort = <K extends string>(
+  prev: SortState<K> | null,
+  key: K,
+): SortState<K> | null => {
+  if (prev?.key !== key) return { key, reversed: false };
+  if (!prev.reversed) return { key, reversed: true };
+  return null;
+};
+
+/**
+ * The order each key reads in on its first tap.
+ *
+ * Not uniformly descending, because "biggest first" and "worst first" are both
+ * the useful end of their own column: sales opens on the largest, change opens
+ * on the steepest fall, and a name or an hour opens where a reader expects to
+ * start. The second tap reverses whichever of those it is.
+ */
+export const SORT_DIR: Record<PairSort, "asc" | "desc"> = {
+  sales: "desc",
+  change: "asc",
+  name: "asc",
+  time: "asc",
+};
+
+/** Which way a list is actually pointing, for the arrow on its chip. */
+export const dirOf = (sort: PairSort, reversed: boolean): "asc" | "desc" =>
+  reversed ? (SORT_DIR[sort] === "asc" ? "desc" : "asc") : SORT_DIR[sort];
+
+/**
  * Order a list of pairs. Returns a new array.
  *
  * Rows with no last year sort after every row that has one under "change" —
@@ -226,34 +275,47 @@ export const pairChangePct = (p: PerfPair): number | null =>
  * stable, sensible order.
  *
  * `nameOf` picks what "name" compares; stores pass their store number.
+ *
+ * `reversed` flips the comparison, and does it INSIDE each case rather than by
+ * reversing the result. Two things would break if it reversed the array: rows
+ * with no last year would float to the top under "change" — reading as "these
+ * are the worst" when they mean "these have nothing to compare" — and the
+ * size tiebreak would invert with them, so equal rows would reshuffle on a tap
+ * that should only have changed direction.
  */
 export const sortPairs = (
   pairs: PerfPair[],
   sort: PairSort,
   nameOf: (p: PerfPair) => string = (p) => p.label,
+  reversed: boolean = false,
 ): PerfPair[] => {
+  const flip = reversed ? -1 : 1;
+  // Never flipped: it only ever breaks ties, and a stable tiebreak is the
+  // point of having one.
   const bySize = (a: PerfPair, b: PerfPair) => b.ty - a.ty;
   const out = [...pairs];
   switch (sort) {
     case "sales":
-      return out.sort(bySize);
+      return out.sort((a, b) => bySize(a, b) * flip);
     case "change":
       return out.sort((a, b) => {
         const pa = pairChangePct(a);
         const pb = pairChangePct(b);
+        // Checked before the flip, so an absent comparison stays last in both
+        // directions.
         if (pa === null && pb === null) return bySize(a, b);
         if (pa === null) return 1;
         if (pb === null) return -1;
-        return pa - pb || bySize(a, b);
+        return (pa - pb) * flip || bySize(a, b);
       });
     case "name":
       return out.sort(
         (a, b) =>
-          nameOf(a).localeCompare(nameOf(b), undefined, { numeric: true }) ||
-          bySize(a, b),
+          nameOf(a).localeCompare(nameOf(b), undefined, { numeric: true }) *
+            flip || bySize(a, b),
       );
     case "time":
-      return out.sort((a, b) => Number(a.key) - Number(b.key));
+      return out.sort((a, b) => (Number(a.key) - Number(b.key)) * flip);
   }
 };
 

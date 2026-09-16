@@ -96,7 +96,7 @@ const PairedBars = ({
         />
       </span>
       <span
-        className="min-w-[76px] flex-none text-right text-[12.5px] font-bold tabular-nums text-content"
+        className="min-w-[76px] flex-none text-right text-[12.5px] font-bold text-content"
         style={{ opacity: dimmed ? LOSER_OPACITY : 1 }}
       >
         {format(value)}

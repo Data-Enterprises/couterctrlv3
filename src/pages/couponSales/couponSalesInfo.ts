@@ -61,35 +61,51 @@ export const COUPON_SALES_MOBILE_INFO: {
   glossary: [
     {
       term: "The big number",
-      desc: "Coupon dollars for whatever is in view — the whole week or the day you've tapped, for the store, cashier and coupon type you have open.",
+      desc: "Coupon dollars for whatever is in view \u2014 the whole week or the day you have tapped, for the store and coupon type you have open.",
     },
     {
       term: "WK / AVG",
-      desc: "WK is the week you searched. AVG is the two weeks before it, added up and halved into one week's worth. With a day picked, AVG is that weekday in those two weeks, halved — so a Saturday is compared with an average Saturday.",
+      desc: "WK is the week you searched. AVG is the two weeks before it, added up and halved into one week's worth. With a day picked, AVG is that weekday in those two weeks, halved \u2014 so a Saturday is compared with an average Saturday.",
     },
     {
-      term: "Coupon types",
-      desc: "Swipe the card, or use the arrows under it, to narrow the whole screen to one type. The first card is every type at once. Busiest is the day of the week with the most coupon dollars for that card's type.",
+      term: "Coupon type",
+      desc: "Tap the underlined title on the top card to choose one. The list shows every type with its own figures, so you can see which is biggest before choosing. Picking one narrows the whole screen, including every store below; the first entry is every type at once.",
     },
     {
       term: "Coupons / Transactions",
       desc: "Coupons is the number of coupon lines. Transactions is the number of sales with at least one coupon on them. Per txn is coupon dollars divided by transactions.",
     },
     {
-      term: "Tap a day",
-      desc: "Scopes the card and the lists to that day. Tap it again for the full week.",
+      term: "The card at the top",
+      desc: "All the stores you searched, together. Open it for the week's shape and its own cashiers and transactions.",
     },
     {
-      term: "Stores, cashiers, transactions",
-      desc: "Tap a store to see its cashiers, a cashier to see their transactions, and a transaction to open its coupon lines. Back steps up one level. A single-store search starts at Cashiers.",
+      term: "Open a store",
+      desc: "Tap a store to open its report where it sits. One opens at a time; the others shrink to a single line. Changing the coupon type keeps your store open.",
+    },
+    {
+      term: "View details",
+      desc: "Opens that store's cashiers and transactions on their own screen. Tap a cashier to see just their transactions, and a transaction to open its coupon lines. Back returns to the list with your card still open.",
+    },
+    {
+      term: "Tap a day",
+      desc: "On the top card, scopes the whole screen \u2014 its figures and every store below. Inside a store's card it scopes that store only, and is cleared when you open a different one. Tap the same day again for the full week.",
     },
     {
       term: "Sort by",
-      desc: "Amount and Transactions put the biggest first. vs Avg puts the biggest rise in dollars over AVG first — the most extra coupon money, not the biggest percentage. Store # and Name sort in order. Stores and Cashiers each remember their own sort.",
+      desc: "Amount and Transactions put the biggest first. vs Avg puts the biggest rise in dollars over AVG first \u2014 the most extra coupon money, not the biggest percentage. Store # and Name sort in order. Stores and Cashiers each remember their own sort.",
+    },
+    {
+      term: "Filter by store",
+      desc: "Narrows a long list to the stores matching what you type. It only hides rows \u2014 no figure changes.",
     },
     {
       term: "Transactions list",
       desc: "Newest first. Search it by sale ID, cashier or lane.",
+    },
+    {
+      term: "Busiest",
+      desc: "The day of the week with the most coupon dollars for what is in view.",
     },
   ],
 };

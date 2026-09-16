@@ -470,12 +470,23 @@ export const salesChangePct = (r: MarginRow): number | null =>
  *
  * Nulls — no margin, or no last-year sales — sort after every real value, so
  * unknown never reads as worst. Ties fall back to sales.
+ *
+ * `reversed` flips the comparison INSIDE each case rather than by reversing the
+ * result. Reversing the array would float the null rows to the top — reading as
+ * "these are the worst" when they mean "there is nothing to compare" — and
+ * would invert the sales tiebreak with them, so equal rows would reshuffle on a
+ * tap that should only have changed direction.
  */
-export const sortMarginRows = (rows: MarginRow[], sort: MarginSort): MarginRow[] => {
+export const sortMarginRows = (
+  rows: MarginRow[],
+  sort: MarginSort,
+  reversed: boolean = false,
+): MarginRow[] => {
+  const flip = reversed ? -1 : 1;
   const bySales = (a: MarginRow, b: MarginRow) => b.sales - a.sales;
   const nullsLast = (
     pick: (r: MarginRow) => number | null,
-    dir: 1 | -1,
+    dir: number,
   ) => (a: MarginRow, b: MarginRow) => {
     const va = pick(a);
     const vb = pick(b);
@@ -487,20 +498,42 @@ export const sortMarginRows = (rows: MarginRow[], sort: MarginSort): MarginRow[]
   const out = [...rows];
   switch (sort) {
     case "sales":
-      return out.sort(bySales);
+      return out.sort((a, b) => bySales(a, b) * flip);
     case "profit":
-      return out.sort((a, b) => b.profit - a.profit || bySales(a, b));
+      return out.sort((a, b) => (b.profit - a.profit) * flip || bySales(a, b));
     case "gpm":
       // Lowest margin first: the thin ones are what you open this to find.
-      return out.sort(nullsLast((r) => r.gpm, 1));
+      return out.sort(nullsLast((r) => r.gpm, flip));
     case "change":
       // Biggest drop first.
-      return out.sort(nullsLast(salesChangePct, 1));
+      return out.sort(nullsLast(salesChangePct, flip));
     case "name":
       return out.sort(
         (a, b) =>
-          a.label.localeCompare(b.label, undefined, { numeric: true }) ||
+          a.label.localeCompare(b.label, undefined, { numeric: true }) * flip ||
           bySales(a, b),
       );
   }
 };
+
+/**
+ * The order each margin column reads in on its first tap.
+ *
+ * Not uniformly descending: sales and profit open on the largest, GPM and
+ * change open on the thinnest and the steepest fall. Both are the useful end
+ * of their own column.
+ */
+export const MARGIN_SORT_DIR: Record<MarginSort, "asc" | "desc"> = {
+  sales: "desc",
+  profit: "desc",
+  gpm: "asc",
+  change: "asc",
+  name: "asc",
+};
+
+/** Which way a margin list is actually pointing, for the arrow on its chip. */
+export const marginDirOf = (
+  sort: MarginSort,
+  reversed: boolean,
+): "asc" | "desc" =>
+  reversed ? (MARGIN_SORT_DIR[sort] === "asc" ? "desc" : "asc") : MARGIN_SORT_DIR[sort];

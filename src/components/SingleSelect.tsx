@@ -1,11 +1,13 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, type ReactNode } from "react";
 import ChevronUpDownIcon from "../svgs/ChevronUpDownIcon";
 
 interface SingleSelectProps<T> {
   data: T[];
   valueKey: keyof T;
   displayKey: keyof T;
-  label: string;
+  /** A node, not just a string, so a caller can mark the field's state in
+   *  the label itself — "Select Store — not selected" and the like. */
+  label: ReactNode;
   onSelect?: (selection: string | number) => void;
   id?: number;
   value?: number;

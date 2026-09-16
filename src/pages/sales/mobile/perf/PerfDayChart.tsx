@@ -51,7 +51,7 @@ const PerfDayChart = ({ days, selected, onToggle }: Props) => {
             // chart, not a change to this one.
             className="w-[38%] rounded-t-[3px] transition-[height,opacity] duration-300 ease-out motion-reduce:transition-none"
             style={{
-              height: `${Math.max((value / max) * 84, 2)}px`,
+              height: `${Math.max((value / max) * 80, 2)}px`,
               background: colour,
               opacity: dim ? UNSCOPED_OPACITY : loser ? LOSER_OPACITY : 1,
             }}
@@ -66,7 +66,7 @@ const PerfDayChart = ({ days, selected, onToggle }: Props) => {
             aria-pressed={isSel}
             className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-lg py-1 active:bg-bkg"
           >
-            <span className="flex h-[84px] w-full items-end justify-center gap-[3px]">
+            <span className="flex h-[80px] w-full items-end justify-center gap-[3px]">
               {col(d.ty, TY_COLOR, !tyWins)}
               {col(d.ly, LY_COLOR, tyWins)}
             </span>

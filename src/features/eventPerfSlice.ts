@@ -36,8 +36,22 @@ export interface EventRow {
   count: number;
 }
 
-/** Which list the middle tab shows. */
-export type EventView = "stores" | "cashiers" | "receipts";
+/**
+ * Which list the detail view shows.
+ *
+ * "stores" is gone: the store list is the screen now, not a tab on it. A tab
+ * only names something you go INTO a store to see.
+ */
+export type EventView = "cashiers" | "receipts";
+
+/**
+ * The expanded-card key that means the whole search rather than one store.
+ *
+ * A sentinel rather than a second boolean, so "which card is open" stays one
+ * question with one answer. Real keys are `storeid__store_number`, so this can
+ * never collide with one.
+ */
+export const GROUP_KEY = "__group";
 
 /** The two lists that sort. Transactions keep their time order. */
 export type EventSortList = "stores" | "cashiers";
@@ -123,6 +137,7 @@ interface EventPerfState {
   /** The active lens. Null means every lens at once. */
   lens: string | null;
 
+  /** Which breakdown the detail view is showing. */
   view: EventView;
 
   /**
@@ -132,11 +147,37 @@ interface EventPerfState {
    */
   sort: Record<EventSortList, EventSort | null>;
 
-  /** ISO date, or null for the whole week. Tapping the same day clears it. */
+  /**
+   * The day an open STORE card is scoped to, or null for its whole week.
+   *
+   * Local to that card and short-lived: cleared whenever a different card
+   * opens, because a day picked while reading one store says nothing about the
+   * next. Falls back to `groupDay` when unset.
+   */
   selectedDay: string | null;
 
+  /**
+   * The day the GROUP card is scoped to.
+   *
+   * This one is the screen's scope rather than a card's — it re-scopes every
+   * store row in the list below, and a store card opens on it. That is the
+   * difference between the two.
+   */
+  groupDay: string | null;
+
+  /**
+   * Which card is expanded — GROUP_KEY, a store key, or none. One at a time:
+   * this screen is an accordion, and a single key is what keeps it one.
+   *
+   * Doubles as the data scope, which is why a store card's figures and its
+   * drill are the same store's without a second field to keep in step.
+   */
   selectedStoreKey: string | null;
   selectedStoreLabel: string | null;
+
+  /** Whether the detail view is on screen for the expanded card. Separate from
+   *  `view` so the chosen tab survives backing out and returning. */
+  detailOpen: boolean;
   selectedCashierKey: string | null;
   selectedCashierLabel: string | null;
 
@@ -167,9 +208,11 @@ const initialState: EventPerfState = {
   baseline: [],
   lenses: [],
   lens: null,
-  view: "stores",
+  view: "cashiers",
   sort: { stores: null, cashiers: null },
   selectedDay: null,
+  groupDay: null,
+  detailOpen: false,
   selectedStoreKey: null,
   selectedStoreLabel: null,
   selectedCashierKey: null,
@@ -264,8 +307,10 @@ const eventPerfSlice = createSlice({
       state.searchOpen = false;
       // A new week invalidates every drill into the old one.
       state.lens = null;
-      state.view = "stores";
+      state.view = "cashiers";
+      state.detailOpen = false;
       state.selectedDay = null;
+      state.groupDay = null;
       state.selectedStoreKey = null;
       state.selectedStoreLabel = null;
       state.query = "";
@@ -306,34 +351,55 @@ const eventPerfSlice = createSlice({
       state.listLimit = ROWS_PER_PAGE;
       closeSheet(state);
     },
+    /** Switch tab inside the detail view. Moving to Cashiers drops the open
+     *  person, whose receipts belong to a list that is no longer on screen. */
     setEventView: (state, action: PayloadAction<EventView>) => {
       state.view = action.payload;
       state.listLimit = ROWS_PER_PAGE;
       closeSheet(state);
-      // Leaving by tab drops the drill that tab was showing, so coming back
-      // offers the list rather than whatever was last open inside it.
-      if (action.payload === "stores") {
-        state.selectedStoreKey = null;
-        state.selectedStoreLabel = null;
-        clearCashier(state);
-      }
       if (action.payload === "cashiers") clearCashier(state);
+    },
+    /** Show or leave the detail view. Leaving keeps the tab and the open
+     *  person, so coming back lands where you left. */
+    openEventDetail: (state, action: PayloadAction<boolean>) => {
+      state.detailOpen = action.payload;
+      state.listLimit = ROWS_PER_PAGE;
+      closeSheet(state);
     },
     toggleEventDay: (state, action: PayloadAction<string>) => {
       state.selectedDay =
         state.selectedDay === action.payload ? null : action.payload;
       state.listLimit = ROWS_PER_PAGE;
     },
-    /** Tapping a store moves to Cashiers scoped to it — the question after
-     *  "which store" is always "who in it". */
-    selectEventStore: (
+    /** The group card's chart. Scopes the store list below it as well as its
+     *  own figures, so it survives cards opening and closing. */
+    toggleEventGroupDay: (state, action: PayloadAction<string>) => {
+      state.groupDay =
+        state.groupDay === action.payload ? null : action.payload;
+      state.listLimit = ROWS_PER_PAGE;
+    },
+    /**
+     * Open a card, or close the one that is open. GROUP_KEY is the whole
+     * search; anything else is one store.
+     *
+     * Toggle-to-clear, the same contract the day columns use — the card is its
+     * own only control, so it has to be able to undo itself.
+     */
+    toggleEventCard: (
       state,
       action: PayloadAction<{ key: string; label: string }>,
     ) => {
-      state.selectedStoreKey = action.payload.key;
-      state.selectedStoreLabel = action.payload.label;
+      const closing = state.selectedStoreKey === action.payload.key;
+      state.selectedStoreKey = closing ? null : action.payload.key;
+      state.selectedStoreLabel = closing ? null : action.payload.label;
+      // Everything below belonged to the card that just closed, and a day
+      // picked inside one store is not a question about the next.
+      state.detailOpen = false;
+      state.selectedDay = null;
       state.view = "cashiers";
-      state.listLimit = ROWS_PER_PAGE;
+      // listLimit is deliberately NOT reset: the store list is the same list
+      // it was, and truncating it back to the first page would pull the ground
+      // out from under a card someone just opened further down it.
       clearCashier(state);
     },
     /** And after "who" comes "show me". */
@@ -347,17 +413,10 @@ const eventPerfSlice = createSlice({
       state.listLimit = ROWS_PER_PAGE;
       closeSheet(state);
     },
-    /** Back out one level, to whichever list opened this one. */
+    /** Back out of one person's receipts to the list of people. */
     clearEventCashier: (state) => {
       state.view = "cashiers";
       state.listLimit = ROWS_PER_PAGE;
-      clearCashier(state);
-    },
-    clearEventStore: (state) => {
-      state.view = "stores";
-      state.listLimit = ROWS_PER_PAGE;
-      state.selectedStoreKey = null;
-      state.selectedStoreLabel = null;
       clearCashier(state);
     },
     setEventQuery: (state, action: PayloadAction<string>) => {
@@ -409,10 +468,11 @@ export const {
   setEventLens,
   setEventView,
   toggleEventDay,
-  selectEventStore,
+  toggleEventGroupDay,
+  toggleEventCard,
+  openEventDetail,
   selectEventCashier,
   clearEventCashier,
-  clearEventStore,
   setEventQuery,
   openReceipt,
   setReceiptLines,

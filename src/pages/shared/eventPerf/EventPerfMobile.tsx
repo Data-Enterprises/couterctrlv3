@@ -1,8 +1,18 @@
-import { useDeferredValue, useEffect, useMemo, useRef } from "react";
+import {
+  useDeferredValue,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useStore } from "react-redux";
-import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
+import {
+  ChevronRightIcon,
+  MagnifyingGlassIcon,
+  XMarkIcon,
+} from "@heroicons/react/20/solid";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
-import { useDrillScroll } from "../../../hooks/useDrillScroll";
 import type { RootState } from "../../../store";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import SearchCard from "../../../components/SearchCard";
@@ -18,14 +28,14 @@ import {
   beginEventLoad,
   claimEventPerf,
   clearEventCashier,
-  clearEventStore,
   closeReceipt,
   failEventLoad,
   failReceipt,
   openReceipt,
+  GROUP_KEY,
+  openEventDetail,
   ROWS_PER_PAGE,
   selectEventCashier,
-  selectEventStore,
   setEventData,
   setEventInfoOpen,
   setEventLens,
@@ -36,7 +46,9 @@ import {
   setEventView,
   setReceiptLines,
   showMoreEvents,
+  toggleEventCard,
   toggleEventDay,
+  toggleEventGroupDay,
   type EventReceiptState,
   type EventRow,
   type EventSort,
@@ -48,6 +60,7 @@ import {
   buildLensBusiest,
   buildLensCards,
   buildReceipts,
+  buildTotals,
   defaultEventSort,
   receiptLabel,
   type EventReceipt,
@@ -58,7 +71,11 @@ import type { ReceiptLine } from "./receiptTypes";
 import PairedBars from "../../sales/mobile/perf/PairedBars";
 import PerfDayChart from "../../sales/mobile/perf/PerfDayChart";
 import PerfCardHeader from "../../sales/mobile/perf/PerfCardHeader";
-import { LY_COLOR, TY_COLOR } from "../../sales/mobile/perf/perfColors";
+import { TY_COLOR } from "../../sales/mobile/perf/perfColors";
+import MobilePerfCard from "../../../components/mobile/MobilePerfCard";
+import MobilePerfDetail from "../../../components/mobile/MobilePerfDetail";
+import EventStoreReport from "./EventStoreReport";
+import EventDrillList from "./EventDrillList";
 
 export interface EventFetchResult {
   rows: EventRow[];
@@ -156,16 +173,17 @@ const EventPerfMobile = ({
   const toast = useToast();
   const perf = useAppSelector((s) => s.eventPerf);
 
-  const carousel = useRef<HTMLDivElement>(null);
+  /** Narrows a long store list. Ephemeral by design — it describes what you
+   *  are looking for right now, not what the search returned. */
+  const [storeFilter, setStoreFilter] = useState("");
+  /** The type picker. Local: it is a menu, not a place you can be. */
+  const [typePickerOpen, setTypePickerOpen] = useState(false);
 
-  // Stores → cashiers → transactions all drill inside one scroll, so each
-  // level starts at the top and Back returns to the row you tapped.
   const scroller = useRef<HTMLDivElement>(null);
-  useDrillScroll(
-    scroller,
-    perf.selectedCashierKey ? 2 : perf.selectedStoreKey ? 1 : 0,
-    `${perf.selectedStoreKey ?? ""}|${perf.selectedCashierKey ?? ""}`,
-  );
+  const openCard = useRef<HTMLDivElement>(null);
+  /** Where the list was left. It unmounts while the detail view is up, so the
+   *  position has to survive outside the DOM. */
+  const listScroll = useRef(0);
 
   /** Whatever is in the slice belongs to this page. Checked in render as well
    *  as cleared in the effect, so the other page's rows never paint for the
@@ -235,22 +253,97 @@ const EventPerfMobile = ({
    * compares by identity — a fresh object every render would read as
    * permanently stale.
    */
-  const scope: EventScope = useMemo(
+  /** The group card is a card in the same accordion, so "which is open" stays
+   *  one question with one answer. */
+  const groupOpen = perf.selectedStoreKey === GROUP_KEY;
+
+  /**
+   * Two scopes, because the group card and a store card ask different
+   * questions.
+   *
+   * The group's day is the screen's scope — it re-scopes every store row in
+   * the list below, and a store card opens on it. A store card's day is local
+   * to that card and is dropped when another opens, because a day picked while
+   * reading one store says nothing about the next.
+   */
+  const groupScope: EventScope = useMemo(
     () => ({
       lens: perf.lens,
-      day: perf.selectedDay,
-      storeKey: perf.selectedStoreKey,
+      day: perf.groupDay,
+      storeKey: null,
+      cashierKey: null,
+    }),
+    [perf.lens, perf.groupDay],
+  );
+
+  const cardScope: EventScope = useMemo(
+    () => ({
+      lens: perf.lens,
+      day: groupOpen ? perf.groupDay : (perf.selectedDay ?? perf.groupDay),
+      // The group card is every store, so it scopes to none.
+      storeKey: groupOpen ? null : perf.selectedStoreKey,
       cashierKey: perf.selectedCashierKey,
     }),
     [
       perf.lens,
+      perf.groupDay,
       perf.selectedDay,
       perf.selectedStoreKey,
       perf.selectedCashierKey,
+      groupOpen,
     ],
   );
-  const shown = useDeferredValue(scope);
-  const building = shown !== scope;
+
+  const shownGroup = useDeferredValue(groupScope);
+  const shownCard = useDeferredValue(cardScope);
+
+  /**
+   * Two rebuild flags, because the two scopes move independently.
+   *
+   * Only the group's scope can restate the store list — opening a card changes
+   * the CARD's scope and nothing about the list it sits in. Sharing one flag
+   * meant a tap replaced the whole list with a spinner, the page collapsed to
+   * nothing, the browser clamped the scroll to the top, and the card someone
+   * had just opened came back off screen.
+   */
+  const listBuilding = shownGroup !== groupScope;
+  const detailBuilding = shownCard !== cardScope;
+
+  /**
+   * Opening a card brings it to the top of the screen.
+   *
+   * An accordion has to scroll DOWN as well as up: the card just tapped is
+   * usually below the one that was open, so leaving the viewport where it was
+   * opens the report off screen. That is why this doesn't use
+   * `useDrillScroll` — that hook only ever scrolls up within a level, which is
+   * right for tabs and wrong for this.
+   *
+   * It also watches the group scope, which is what brings you back after
+   * picking a type. That rebuilds the list, so the open card unmounts and its
+   * scroll goes with it — the card is still open in state, it has just left
+   * the screen. Running again once the new list lands puts it back under the
+   * reader rather than making them find it.
+   */
+  useLayoutEffect(() => {
+    if (perf.detailOpen || !perf.selectedStoreKey) return;
+    const el = scroller.current;
+    // Null while the group card is the open one — the ref is only attached to
+    // store cards — and while the list is mid-rebuild.
+    const card = openCard.current;
+    if (!el || !card) return;
+    const offset =
+      card.getBoundingClientRect().top - el.getBoundingClientRect().top;
+    el.scrollTop = Math.max(0, el.scrollTop + offset - 8);
+  }, [perf.selectedStoreKey, shownGroup]);
+
+  /** Coming back from the detail view lands where the list was left. */
+  useLayoutEffect(() => {
+    if (perf.detailOpen) return;
+    const el = scroller.current;
+    if (el) el.scrollTop = listScroll.current;
+  }, [perf.detailOpen]);
+  /** What the old single scope meant, for the pieces that still read one. */
+  const shown = shownCard;
 
   /**
    * Null first: the carousel opens on everything, and swiping narrows.
@@ -276,13 +369,25 @@ const EventPerfMobile = ({
    * before the list even started rebuilding.
    */
   const cardTotals = useMemo(
-    () => buildLensCards(perf.rows, perf.baseline, shown, pages),
-    [pages, perf.rows, perf.baseline, shown],
+    () => buildLensCards(perf.rows, perf.baseline, shownGroup, pages),
+    [pages, perf.rows, perf.baseline, shownGroup],
   );
 
+  /** The week for whichever card is open. */
   const days = useMemo(
-    () => buildEventDays(perf.rows, perf.baseline, shown, weekDates, measure),
-    [perf.rows, perf.baseline, shown, weekDates, measure],
+    () =>
+      buildEventDays(perf.rows, perf.baseline, shownCard, weekDates, measure),
+    [perf.rows, perf.baseline, shownCard, weekDates, measure],
+  );
+
+  /** The open store's own figures. Null while the group card is the open one —
+   *  the carousel above already carries the group's. */
+  const storeTotals = useMemo(
+    () =>
+      groupOpen || !perf.selectedStoreKey
+        ? null
+        : buildTotals(perf.rows, perf.baseline, shownCard),
+    [groupOpen, perf.selectedStoreKey, perf.rows, perf.baseline, shownCard],
   );
 
   const query = perf.query.trim();
@@ -290,72 +395,65 @@ const EventPerfMobile = ({
 
   /** Busiest day per card, each for its own lens — see buildLensBusiest. */
   const cardBusiest = useMemo(
-    () => buildLensBusiest(perf.rows, shown, pages, weekDates, measure),
-    [perf.rows, shown, pages, weekDates, measure],
+    () => buildLensBusiest(perf.rows, shownGroup, pages, weekDates, measure),
+    [perf.rows, shownGroup, pages, weekDates, measure],
   );
 
-  const sortList = perf.view === "cashiers" ? "cashiers" : "stores";
-  const sort = perf.sort[sortList] ?? defaultEventSort(measure);
+  /** Busiest day for the open store, on its own scope. */
+  const storeBusiest = useMemo(
+    () =>
+      buildLensBusiest(perf.rows, shownCard, [perf.lens], weekDates, measure)[0],
+    [perf.rows, shownCard, perf.lens, weekDates, measure],
+  );
 
-  const rows = useMemo(() => {
-    if (perf.view === "receipts") return [];
+  const storeSort = perf.sort.stores ?? defaultEventSort(measure);
+  const cashierSort = perf.sort.cashiers ?? defaultEventSort(measure);
+
+  /** The screen's own list: every store, on the group's day. */
+  const storeRows = useMemo(
+    () =>
+      buildGroupRows(
+        perf.rows,
+        perf.baseline,
+        shownGroup,
+        "store",
+        measure,
+        storeSort,
+      ),
+    [perf.rows, perf.baseline, shownGroup, measure, storeSort],
+  );
+
+  /** Narrowed by the filter. Must sit with the other hooks, above the early
+   *  returns — the search screen and the results screen have to run the same
+   *  hooks in the same order. */
+  const visibleStores = useMemo(() => {
+    const q = storeFilter.trim().toLowerCase();
+    if (!q) return storeRows;
+    return storeRows.filter(
+      (r) =>
+        r.label.toLowerCase().includes(q) ||
+        r.key.toLowerCase().includes(q) ||
+        r.sub.toLowerCase().includes(q),
+    );
+  }, [storeRows, storeFilter]);
+
+  /** The detail view's lists, on the open card's scope. */
+  const cashierRows = useMemo(() => {
+    if (!perf.detailOpen || perf.view !== "cashiers") return [];
     return buildGroupRows(
       perf.rows,
       perf.baseline,
-      shown,
-      perf.view === "stores" ? "store" : "cashier",
+      shownCard,
+      "cashier",
       measure,
-      sort,
+      cashierSort,
     );
-  }, [perf.rows, perf.baseline, shown, perf.view, measure, sort]);
+  }, [perf.rows, perf.baseline, shownCard, perf.detailOpen, perf.view, measure, cashierSort]);
 
   const receipts = useMemo(() => {
-    if (perf.view !== "receipts") return [];
-    return buildReceipts(perf.rows, shown, deferredQuery);
-  }, [perf.rows, shown, perf.view, deferredQuery]);
-
-  const settle = useRef<number | undefined>(undefined);
-  /** True while the lens change came from the user's own finger. */
-  const fromSwipe = useRef(false);
-
-  /**
-   * Adopt a lens only once the swipe has stopped moving.
-   *
-   * Reading `scrollLeft` on every scroll event is what made the card bounce:
-   * the moment the midpoint was crossed we dispatched, the sync effect below
-   * saw a new index and issued its own `scrollTo`, and that fought the
-   * browser's snap animation still in flight. Waiting for the scroll to go
-   * quiet means exactly one dispatch per gesture, after the snap has landed.
-   */
-  const onCarouselScroll = () => {
-    window.clearTimeout(settle.current);
-    settle.current = window.setTimeout(() => {
-      const el = carousel.current;
-      if (!el || el.clientWidth === 0) return;
-      const i = Math.round(el.scrollLeft / el.clientWidth);
-      if (i < 0 || i >= pages.length || pages[i] === perf.lens) return;
-      fromSwipe.current = true;
-      dispatch(setEventLens(pages[i]));
-    }, 110);
-  };
-
-  useEffect(() => () => window.clearTimeout(settle.current), []);
-
-  /** Keep the carousel in step when the lens changes from anywhere else — a
-   *  fresh search resets to All, and the arrows below move a card at a time.
-   *  A swipe is skipped outright: the browser already put the card where the
-   *  user let go of it, and scrolling it again is the bounce. */
-  useEffect(() => {
-    if (fromSwipe.current) {
-      fromSwipe.current = false;
-      return;
-    }
-    const el = carousel.current;
-    if (!el || el.clientWidth === 0) return;
-    const target = pageIndex * el.clientWidth;
-    if (Math.abs(el.scrollLeft - target) > 4)
-      el.scrollTo({ left: target, behavior: "smooth" });
-  }, [pageIndex]);
+    if (!perf.detailOpen || perf.view !== "receipts") return [];
+    return buildReceipts(perf.rows, shownCard, deferredQuery);
+  }, [perf.rows, shownCard, perf.detailOpen, perf.view, deferredQuery]);
 
   // Opening a receipt may be a fetch (LP) or a filter (Coupons). Either way
   // the sheet mounts immediately and fills in, rather than the tap hanging.
@@ -384,12 +482,17 @@ const EventPerfMobile = ({
   /** Single-store searches skip the store list, the same rule Sales follows —
    *  a one-row list asks you to confirm something you already said. */
   const multiStore = (cardTotals[0]?.stores ?? 0) > 1;
-  const VIEWS: { key: EventView; label: string }[] = [
-    ...(multiStore ? [{ key: "stores" as const, label: "Stores" }] : []),
+
+  /** A single-store search has no list to accordion, so its one card is always
+   *  open and carries the page's controls itself. */
+  const groupAlwaysOpen = !multiStore;
+  const scopeOpen = groupAlwaysOpen || groupOpen;
+
+  // The view key stays "receipts" — that is what the bottom sheet renders, and
+  // it is the word for one of these. The TAB names the list, and a list of them
+  // is transactions, which is also what the card above counts.
+  const DETAIL_TABS: { key: EventView; label: string }[] = [
     { key: "cashiers", label: "Cashiers" },
-    // The view key stays "receipts" — that is what the bottom sheet renders,
-    // and it is the word for one of these. The TAB names the list, and a list
-    // of them is transactions, which is also what the card above counts.
     { key: "receipts", label: "Transactions" },
   ];
 
@@ -449,11 +552,6 @@ const EventPerfMobile = ({
     measure === "amount" ? t.baselineAmount : t.baselineTransactions;
   const fmt = measure === "amount" ? formatCurrency2 : fmtInt;
 
-  const scopeLabel =
-    perf.selectedCashierLabel ??
-    perf.selectedStoreLabel ??
-    cardTotals[0]?.storeName ??
-    "All stores";
 
   /** The day, when one is picked. It takes the window's place on the header
    *  line rather than sitting beside it — see PerfCardHeader. */
@@ -473,7 +571,19 @@ const EventPerfMobile = ({
 
   const weekLabel = `${formatDateSimple(weekDates[0])} – ${formatDateSimple(weekDates[6])}`;
 
-  const listRows = rows.slice(0, perf.listLimit);
+  /** The type on screen. The picker lists them all; this is the one chosen. */
+  const current = cardTotals[pageIndex] ?? cardTotals[0];
+
+  /** The group's day names the list; a card's names that card. */
+  const groupDayLabel = shownGroup.day
+    ? new Date(`${shownGroup.day}T12:00:00`).toLocaleDateString("en-US", {
+        weekday: "short",
+        month: "numeric",
+        day: "numeric",
+      })
+    : "";
+
+  const listRows = visibleStores.slice(0, perf.listLimit);
   const listMax = Math.max(
     ...listRows.map((r) =>
       Math.max(
@@ -483,411 +593,391 @@ const EventPerfMobile = ({
     ),
     1,
   );
+  const shownCashiers = cashierRows.slice(0, perf.listLimit);
   const shownReceipts = receipts.slice(0, perf.listLimit);
+
+  /** What the detail view's rows belong to. */
+  const detailScope =
+    perf.selectedStoreLabel ?? cardTotals[0]?.storeName ?? "All stores";
+
+  /* ── a breakdown is its own screen ──────────────────────────────── */
+  if (perf.detailOpen && (scopeOpen || perf.selectedStoreKey)) {
+    return (
+      <>
+        <MobilePerfDetail
+          tabs={DETAIL_TABS}
+          active={perf.view}
+          onTab={(k) => dispatch(setEventView(k))}
+          scopeName={detailScope}
+          when={`${dayLabel || weekLabel}${perf.lens ? ` · ${perf.lens}` : ""}`}
+          backLabel={multiStore ? "Stores" : title}
+          onBack={() => dispatch(openEventDetail(false))}
+          levelKey={`${perf.view}|${perf.selectedCashierKey ?? ""}`}
+        >
+          <EventDrillList
+            view={perf.view}
+            building={detailBuilding}
+            measure={measure}
+            rows={shownCashiers}
+            sortOptions={sortOptions(measure, "cashier")}
+            sort={perf.sort.cashiers}
+            onSort={(key) =>
+              dispatch(setEventSort({ list: "cashiers", sort: key }))
+            }
+            onSelectCashier={(row) => dispatch(selectEventCashier(row))}
+            receipts={shownReceipts}
+            query={perf.query}
+            onQuery={(q) => dispatch(setEventQuery(q))}
+            onOpenReceipt={(id) => dispatch(openReceipt(id))}
+            cashierLabel={perf.selectedCashierLabel}
+            onClearCashier={() => dispatch(clearEventCashier())}
+            remaining={
+              perf.view === "receipts"
+                ? receipts.length - shownReceipts.length
+                : cashierRows.length - shownCashiers.length
+            }
+            onShowMore={() => dispatch(showMoreEvents())}
+          />
+        </MobilePerfDetail>
+
+        {openTxn && (
+          <BottomSheet onClose={() => dispatch(closeReceipt())}>
+            <Receipt
+              txn={openTxn}
+              receipt={openReceiptState}
+              when={openTxn.day ? formatDateSimple(openTxn.day) : ""}
+            />
+          </BottomSheet>
+        )}
+      </>
+    );
+  }
 
   return (
     <div className="flex h-[calc(100dvh-3rem)] flex-col overflow-hidden bg-bkg">
-      <nav className="flex flex-shrink-0 border-b border-gray-200 bg-custom-white">
-        {VIEWS.map((v) => (
-          <button
-            key={v.key}
-            type="button"
-            onClick={() => dispatch(setEventView(v.key))}
-            aria-current={perf.view === v.key ? "page" : undefined}
-            className={`flex-1 border-r border-gray-100 py-3 text-[12.5px] font-semibold last:border-r-0 ${
-              perf.view === v.key ? "text-content" : "text-content/85"
+      {/* pb-14 clears the fixed bottom tab bar, which is outside document flow
+          and would otherwise hide the last card. */}
+      <div
+        ref={scroller}
+        onScroll={(e) => (listScroll.current = e.currentTarget.scrollTop)}
+        className="flex-1 overflow-y-auto pb-14"
+      >
+        {/* ── the scope card, and the screen's filter ────────────── */}
+        {/* The type is chosen from the title rather than swiped to. A carousel
+            meant six taps to reach the sixth type and gave no way to see what
+            the types were without visiting each one; the picker lists them all
+            with their figures, so choosing is one tap from a menu that already
+            answers "which is worst". */}
+        <div className="px-3 pt-3">
+          <section
+            className={`overflow-hidden rounded-2xl border bg-custom-white shadow-md transition-colors ${
+              scopeOpen ? "border-gray-300" : "border-gray-200"
             }`}
-            style={
-              perf.view === v.key
-                ? { boxShadow: `inset 0 -2px 0 ${TY_COLOR}` }
-                : undefined
-            }
           >
-            {v.label}
-          </button>
-        ))}
-      </nav>
-
-      {/* pb-14 clears the fixed bottom tab bar, which is outside document flow. */}
-      <div ref={scroller} className="flex-1 overflow-y-auto pb-14">
-        {(perf.selectedStoreKey || perf.selectedCashierKey) && (
-          <div className="px-3 pt-3">
-            <button
-              type="button"
-              onClick={() =>
-                dispatch(
-                  perf.selectedCashierKey
-                    ? clearEventCashier()
-                    : clearEventStore(),
-                )
+            <PerfCardHeader
+              title={perf.lens ?? allLabel}
+              label={multiStore ? `${current.stores} stores` : ""}
+              when={groupDayLabel || weekLabel}
+              onSearch={() => dispatch(setEventSearchOpen(true))}
+              onInfo={() => dispatch(setEventInfoOpen(true))}
+              // Only offered when there is more than one type to choose from.
+              onTitleTap={
+                pages.length > 1 ? () => setTypePickerOpen(true) : undefined
               }
-              className="flex items-center gap-0.5 rounded-lg py-1 pl-0.5 pr-2 text-[12.5px] font-semibold active:bg-row_selected"
-              style={{ color: TY_COLOR }}
-            >
-              <ChevronLeftIcon className="h-4 w-4" />
-              {perf.selectedCashierKey
-                ? `Back to ${perf.selectedStoreLabel ?? "cashiers"}`
-                : "Back to stores"}
-            </button>
-          </div>
-        )}
+              onToggle={
+                groupAlwaysOpen
+                  ? undefined
+                  : () =>
+                      dispatch(
+                        toggleEventCard({
+                          key: GROUP_KEY,
+                          label: current.storeName ?? "All stores",
+                        }),
+                      )
+              }
+              open={scopeOpen}
+            />
 
-        {/* ── the lens carousel ─────────────────────────────────── */}
-        {/* With one event type the carousel is two cards showing identical
-            figures, since "all" and "the only one" are the same set. The
-            markup collapses to a single card rather than the page explaining
-            a control that cannot do anything. */}
-        <div
-          ref={carousel}
-          onScroll={onCarouselScroll}
-          className={`no-scrollbar flex overflow-x-auto overscroll-x-contain pt-3 ${
-            pages.length > 1 ? "snap-x snap-mandatory" : ""
-          }`}
-          style={{ scrollbarWidth: "none" }}
-        >
-          {pages.map((lens, i) => {
-            const t = cardTotals[i];
-            const value = valueOf(t);
-            const base = baseOf(t);
-            return (
-              <div
-                key={lens ?? "__all"}
-                className="w-full flex-none snap-center px-3"
-              >
-                <section className="overflow-hidden rounded-2xl border border-gray-200 bg-custom-white shadow-md">
-                  <PerfCardHeader
-                    title={lens ?? allLabel}
-                    label={scopeLabel}
-                    when={dayLabel || weekLabel}
-                    onSearch={() => dispatch(setEventSearchOpen(true))}
-                    onInfo={() => dispatch(setEventInfoOpen(true))}
+            <div className="px-4 pb-4 pt-2">
+              <div className="mt-1 text-[11px] font-semibold text-content/85">
+                {heroCaption}
+              </div>
+              <div className="mt-1 font-display text-[31px] font-extrabold leading-none tracking-tight text-content">
+                {fmt(valueOf(current))}
+              </div>
+
+              {/* No second bar when the comparison period has nothing at this
+                  level — LP's baseline knows stores, never people, and a zero
+                  would read as "none last time" rather than "not measured". */}
+              {baseOf(current) !== null && (
+                <div className="mt-3">
+                  <PairedBars
+                    ty={valueOf(current)}
+                    ly={baseOf(current) as number}
+                    max={Math.max(valueOf(current), baseOf(current) as number)}
+                    labels={["WK", "AVG"]}
+                    format={fmt}
+                    compact
                   />
+                  <p className="mt-1.5 text-[11px] text-content/85">
+                    WK {groupDayLabel ? "selected day" : "this week"} · AVG
+                    prior 2-wk avg{groupDayLabel ? ", same weekday" : ""}
+                  </p>
+                </div>
+              )}
 
-                  <div className="px-4 pb-4 pt-2">
-                    <div className="mt-1 text-[11px] font-semibold text-content/85">
-                      {heroCaption}
-                    </div>
-                    <div className="mt-1 font-display text-[31px] font-extrabold leading-none tracking-tight tabular-nums text-content">
-                      {fmt(value)}
-                    </div>
+              <div className="mt-3.5 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-gray-100 pt-3">
+                {(
+                  [
+                    ...(measure === "amount"
+                      ? [
+                          ["Coupons", fmtInt(current.lines)],
+                          ["Transactions", fmtInt(current.transactions)],
+                        ]
+                      : [
+                          ["Amount", formatCurrency2(current.amount)],
+                          ["Cashiers", fmtInt(current.cashiers)],
+                        ]),
+                    ["Per txn", formatCurrency2(current.perTransaction)],
+                    ["Busiest", cardBusiest[pageIndex] ?? "—"],
+                  ] as [string, string][]
+                ).map(([k, v]) => (
+                  <div key={k} className="flex flex-col">
+                    <span className="font-mono text-[10px] uppercase tracking-wider text-content/85">
+                      {k}
+                    </span>
+                    <span className="font-display text-[15px] font-bold text-content">
+                      {v}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        </div>
 
-                    {/* No second bar when the comparison period has nothing at
-                        this level — LP's baseline knows stores, never people,
-                        and a zero would read as "none last time" rather than
-                        "not measured". */}
-                    {base !== null && (
-                      <div className="mt-3">
+        <div className="flex flex-col gap-3 p-3">
+          {/* ── the scope card, opened ──────────────────────────── */}
+          {/* The carousel above already carries its figures, so opening it adds
+              the week and the way down rather than repeating them. */}
+          {scopeOpen && (
+            <section className="overflow-hidden rounded-2xl border border-gray-300 bg-custom-white shadow-md">
+              <div className="px-3.5 pb-1 pt-3">
+                <PerfDayChart
+                  days={days.map((d) => ({
+                    iso: d.iso,
+                    label: d.label,
+                    ty: d.value,
+                    ly: d.baseline,
+                  }))}
+                  // The DEFERRED day — the chart and the rows it scopes have to
+                  // move on the same render.
+                  selected={shownGroup.day}
+                  onToggle={(iso) => dispatch(toggleEventGroupDay(iso))}
+                />
+                <div className="mt-1 flex gap-3.5 px-1 text-[12px] text-content/85">
+                  <span className="inline-flex items-center gap-1.5">
+                    <span
+                      className="h-2 w-3.5 rounded-sm"
+                      style={{ background: TY_COLOR }}
+                    />
+                    This week
+                  </span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <span
+                      className="h-2 w-3.5 rounded-sm"
+                      style={{ background: "#5a6c84" }}
+                    />
+                    Prior 2-wk avg
+                  </span>
+                </div>
+                <p className="px-1 pt-1 text-[12px] text-content/85">
+                  {shownGroup.day
+                    ? "Tap the selected day again for the full week."
+                    : multiStore
+                      ? "Tap a day to scope the screen to it."
+                      : "Tap a day to scope this store to it."}
+                </p>
+              </div>
+              <div className="px-3.5 pb-3.5 pt-2">
+                <button
+                  type="button"
+                  onClick={() => dispatch(openEventDetail(true))}
+                  className="flex w-full items-center justify-center gap-1 rounded-lg bg-[#1e2a4a] py-2.5 text-[12.5px] font-bold text-custom-white active:bg-[#2a3a62]"
+                >
+                  View details
+                  <ChevronRightIcon className="h-4 w-4" />
+                </button>
+              </div>
+            </section>
+          )}
+
+          {/* ── how the list is ordered ─────────────────────────── */}
+          {multiStore && (
+            <section className="overflow-hidden rounded-2xl border border-gray-200 bg-custom-white shadow-md">
+              <MobileSortChips
+                options={sortOptions(measure, "store")}
+                value={perf.sort.stores}
+                onChange={(key) =>
+                  dispatch(setEventSort({ list: "stores", sort: key }))
+                }
+              />
+              <div className="px-3.5 py-2">
+                <div className="flex items-center gap-2 rounded-lg bg-bkg px-3">
+                  <MagnifyingGlassIcon className="h-4 w-4 flex-none text-content/85" />
+                  <input
+                    id="event-store-filter"
+                    value={storeFilter}
+                    onChange={(e) => setStoreFilter(e.target.value)}
+                    placeholder="Filter by store"
+                    inputMode="search"
+                    enterKeyHint="search"
+                    aria-label="Filter by store"
+                    className="min-w-0 flex-1 border-0 bg-transparent py-2.5 text-[14px] text-content placeholder:text-content/85"
+                    style={{
+                      outline: "none",
+                      WebkitAppearance: "none",
+                      boxShadow: "none",
+                    }}
+                  />
+                  {storeFilter && (
+                    <button
+                      type="button"
+                      onClick={() => setStoreFilter("")}
+                      aria-label="Clear filter"
+                      className="-mr-1 flex h-7 w-7 flex-none items-center justify-center rounded-full text-content/85 active:bg-custom-white"
+                    >
+                      <XMarkIcon className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* ── the stores ──────────────────────────────────────── */}
+          {multiStore &&
+            (listBuilding ? (
+              <section
+                className="rounded-2xl border border-gray-200 bg-custom-white px-4 py-10 text-center text-[12.5px] text-content/85 shadow-md"
+                style={{ animation: "delayed-fade-in 140ms ease-out 200ms both" }}
+              >
+                Building the list...
+              </section>
+            ) : listRows.length === 0 ? (
+              <section className="rounded-2xl border border-gray-200 bg-custom-white px-4 py-8 text-center text-[12.5px] text-content/85 shadow-md">
+                {storeFilter.trim()
+                  ? `No store matches "${storeFilter.trim()}".`
+                  : "Nothing recorded for this selection."}
+              </section>
+            ) : (
+              listRows.map((r) => {
+                const isOpen = perf.selectedStoreKey === r.key;
+                return (
+                  <div key={r.key} ref={isOpen ? openCard : undefined}>
+                    <MobilePerfCard
+                      label={r.label}
+                      change={
+                        measure === "amount"
+                          ? formatCurrency2(r.amount)
+                          : fmtInt(r.transactions)
+                      }
+                      open={isOpen}
+                      minimised={!isOpen && perf.selectedStoreKey !== null}
+                      onToggle={() =>
+                        dispatch(
+                          toggleEventCard({ key: r.key, label: r.label }),
+                        )
+                      }
+                      bars={
                         <PairedBars
-                          ty={value}
-                          ly={base}
-                          max={Math.max(value, base)}
+                          ty={measure === "amount" ? r.amount : r.transactions}
+                          ly={r.baseline ?? 0}
+                          max={listMax}
                           labels={["WK", "AVG"]}
                           format={fmt}
                           compact
                         />
-                        {/* The bar captions have room for three letters, so
-                            what they stand for is spelled out once, here. */}
-                        <p className="mt-1.5 text-[11px] text-content/85">
-                          WK {dayLabel ? "selected day" : "this week"} · AVG
-                          prior 2-wk avg{dayLabel ? ", same weekday" : ""}
-                        </p>
-                      </div>
-                    )}
-
-                    <div className="mt-3.5 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-gray-100 pt-3">
-                      {(
-                        [
-                          // The hero is dollars on Coupon Sales and a count on
-                          // LP, so each puts the other figure here — and LP
-                          // shows its cashiers rather than repeating the hero.
-                          ...(measure === "amount"
-                            ? [
-                                ["Coupons", fmtInt(t.lines)],
-                                ["Transactions", fmtInt(t.transactions)],
-                              ]
-                            : [
-                                ["Amount", formatCurrency2(t.amount)],
-                                ["Cashiers", fmtInt(t.cashiers)],
-                              ]),
-                          ["Per txn", formatCurrency2(t.perTransaction)],
-                          ["Busiest", cardBusiest[i] ?? "—"],
-                        ] as [string, string][]
-                      ).map(([k, v]) => (
-                        <div key={k} className="flex flex-col">
-                          <span className="font-mono text-[10px] uppercase tracking-wider text-content/85">
-                            {k}
-                          </span>
-                          <span className="font-display text-[15px] font-bold tabular-nums text-content">
-                            {v}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
+                      }
+                    >
+                      {isOpen && storeTotals && (
+                        <EventStoreReport
+                          days={days}
+                          selectedDay={shownCard.day}
+                          onToggleDay={(iso) => dispatch(toggleEventDay(iso))}
+                          totals={storeTotals}
+                          measure={measure}
+                          heroCaption={heroCaption}
+                          dayLabel={dayLabel}
+                          busiest={storeBusiest ?? "—"}
+                          onViewDetails={() => dispatch(openEventDetail(true))}
+                        />
+                      )}
+                    </MobilePerfCard>
                   </div>
-                </section>
-              </div>
-            );
-          })}
-        </div>
+                );
+              })
+            ))}
 
-        {/* Position, and what is on either side of it. Dots alone say there is
-            more without saying what — and naming the neighbours turns the
-            arrows into a way to step through types without swiping. */}
-        {pages.length > 1 && (
-          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-3 pt-2">
+          {multiStore && !listBuilding && visibleStores.length > listRows.length && (
             <button
               type="button"
-              disabled={pageIndex === 0}
-              onClick={() => dispatch(setEventLens(pages[pageIndex - 1]))}
-              className="flex min-w-0 items-center gap-0.5 justify-self-start rounded-md py-1 pr-1 text-[11px] font-semibold text-content/85 disabled:invisible active:bg-row_selected"
+              onClick={() => dispatch(showMoreEvents())}
+              className="rounded-2xl border border-gray-200 bg-custom-white py-3 text-center text-[12px] font-semibold shadow-md active:bg-bkg"
+              style={{ color: TY_COLOR }}
             >
-              <ChevronLeftIcon className="h-3.5 w-3.5 flex-none" />
-              <span className="truncate">
-                {pages[pageIndex - 1] ?? allLabel}
+              Show {ROWS_PER_PAGE} more
+              <span className="text-content/85">
+                {" "}
+                · {fmtInt(visibleStores.length - listRows.length)} left
               </span>
             </button>
-
-            <div className="flex items-center gap-1.5">
-              {pages.map((lens, i) => (
-                <span
-                  key={lens ?? "__all"}
-                  className="h-1.5 rounded-full transition-all"
-                  style={{
-                    width: i === pageIndex ? 14 : 6,
-                    background: i === pageIndex ? TY_COLOR : "#5a6c84",
-                    opacity: i === pageIndex ? 1 : 0.32,
-                  }}
-                />
-              ))}
-            </div>
-
-            <button
-              type="button"
-              disabled={pageIndex >= pages.length - 1}
-              onClick={() => dispatch(setEventLens(pages[pageIndex + 1]))}
-              className="flex min-w-0 items-center gap-0.5 justify-self-end rounded-md py-1 pl-1 text-[11px] font-semibold text-content/85 disabled:invisible active:bg-row_selected"
-            >
-              <span className="truncate">
-                {pages[pageIndex + 1] ?? allLabel}
-              </span>
-              <ChevronRightIcon className="h-3.5 w-3.5 flex-none" />
-            </button>
-          </div>
-        )}
-
-        <div className="flex flex-col gap-3 p-3">
-          {/* ── the week ─────────────────────────────────────────── */}
-          {/* Sales' own chart component, not a lookalike. It carries the
-              behaviour the hand-rolled version was missing: the unselected
-              days drop back rather than the selected one gaining a ring, so
-              the week's shape survives while you read one day of it. */}
-          {perf.view !== "receipts" && (
-            <section className="overflow-hidden rounded-2xl border border-gray-200 bg-custom-white px-3 pb-3 pt-3 shadow-md">
-              <PerfDayChart
-                days={days.map((d) => ({
-                  iso: d.iso,
-                  label: d.label,
-                  ty: d.value,
-                  ly: d.baseline,
-                }))}
-                // The DEFERRED day — see ItemPerfMobile. The chart and the
-                // rows it scopes have to move on the same render.
-                selected={shown.day}
-                onToggle={(iso) => dispatch(toggleEventDay(iso))}
-              />
-              <div className="mt-1 flex gap-3.5 px-1 text-[12px] text-content/85">
-                <span className="inline-flex items-center gap-1.5">
-                  <span
-                    className="h-2 w-3.5 rounded-sm"
-                    style={{ background: TY_COLOR }}
-                  />
-                  This week
-                </span>
-                <span className="inline-flex items-center gap-1.5">
-                  <span
-                    className="h-2 w-3.5 rounded-sm"
-                    style={{ background: LY_COLOR }}
-                  />
-                  Prior 2-wk avg, same weekday
-                </span>
-              </div>
-              <p className="px-1 pt-1.5 text-[12px] text-content/85">
-                {perf.selectedDay
-                  ? "Tap the selected day again for the full week."
-                  : "Tap a day to scope the screen to it."}
-              </p>
-            </section>
           )}
-
-          {/* ── find a receipt ───────────────────────────────────── */}
-          {perf.view === "receipts" && (
-            <section className="rounded-2xl border border-gray-200 bg-custom-white p-3 shadow-md">
-              <input
-                value={perf.query}
-                onChange={(e) => dispatch(setEventQuery(e.target.value))}
-                placeholder="Sale ID, cashier or lane"
-                inputMode="search"
-                className="w-full rounded-lg border-0 bg-bkg px-3 py-2.5 text-[14px] text-content placeholder:text-content/85"
-                style={{
-                  outline: "none",
-                  WebkitAppearance: "none",
-                  boxShadow: "none",
-                }}
-              />
-            </section>
-          )}
-
-          {/* ── the list ─────────────────────────────────────────── */}
-          <section className="overflow-hidden rounded-2xl border border-gray-200 bg-custom-white shadow-md">
-            {/* Stores and cashiers only. Transactions stay newest first: the
-                order is the sequence, and the sequence is what LP reads. */}
-            {perf.view !== "receipts" && (
-              <MobileSortChips
-                options={sortOptions(
-                  measure,
-                  perf.view === "stores" ? "store" : "cashier",
-                )}
-                value={sort}
-                onChange={(key) =>
-                  dispatch(setEventSort({ list: sortList, sort: key }))
-                }
-              />
-            )}
-            {building ? (
-              <div
-                className="flex items-center justify-center gap-2 px-4 py-10 text-[12.5px] text-content/85"
-                style={{
-                  animation: "delayed-fade-in 140ms ease-out 200ms both",
-                }}
-              >
-                <span
-                  className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-gray-200"
-                  style={{ borderTopColor: TY_COLOR }}
-                />
-                Building the list...
-              </div>
-            ) : perf.view === "receipts" ? (
-              shownReceipts.length === 0 ? (
-                <Empty query={query} />
-              ) : (
-                shownReceipts.map((t) => (
-                  <button
-                    key={t.saleId}
-                    type="button"
-                    onClick={() => dispatch(openReceipt(t.saleId))}
-                    className="block w-full border-t border-gray-100 px-3.5 py-3 text-left first:border-t-0 active:bg-bkg"
-                  >
-                    <div className="flex items-baseline gap-2">
-                      <span className="min-w-0 flex-1 truncate font-display text-[13.5px] font-semibold text-content">
-                        #{receiptLabel(t.saleId)}
-                      </span>
-                      <span className="flex-none font-display text-[13px] font-bold tabular-nums text-content">
-                        {formatCurrency2(t.amount)}
-                      </span>
-                      <ChevronRightIcon className="h-4 w-4 flex-none text-content/85" />
-                    </div>
-                    {/* Who, then when, then where. The person is what someone
-                        is following; the lane matters once they have one. */}
-                    <div className="mt-0.5 truncate text-[11px] tabular-nums text-content/85">
-                      {[
-                        t.cashierName,
-                        t.day ? formatDateSimple(t.day) : "",
-                        t.terminal ? `lane ${t.terminal}` : "",
-                      ]
-                        .filter(Boolean)
-                        .join(" · ")}
-                    </div>
-                  </button>
-                ))
-              )
-            ) : listRows.length === 0 ? (
-              <Empty query="" />
-            ) : (
-              listRows.map((r) => (
-                <button
-                  key={r.key}
-                  type="button"
-                  onClick={() =>
-                    dispatch(
-                      perf.view === "stores"
-                        ? selectEventStore({ key: r.key, label: r.label })
-                        : selectEventCashier({ key: r.key, label: r.label }),
-                    )
-                  }
-                  className="block w-full border-t border-gray-100 px-3.5 py-3 text-left first:border-t-0 active:bg-bkg"
-                >
-                  <div className="flex items-baseline gap-2">
-                    <span className="min-w-0 flex-1 truncate font-display text-[13.5px] font-semibold text-content">
-                      {r.label}
-                    </span>
-                    <span className="flex-none font-display text-[13px] font-bold tabular-nums text-content">
-                      {measure === "amount"
-                        ? formatCurrency2(r.amount)
-                        : fmtInt(r.transactions)}
-                    </span>
-                    <ChevronRightIcon className="h-4 w-4 flex-none text-content/85" />
-                  </div>
-                  <div className="mt-0.5 truncate text-[11px] tabular-nums text-content/85">
-                    {[
-                      measure === "amount"
-                        ? `${fmtInt(r.transactions)} transactions`
-                        : formatCurrency2(r.amount),
-                      r.sub,
-                    ]
-                      .filter(Boolean)
-                      .join(" · ")}
-                  </div>
-                  <div className="mt-2">
-                    <PairedBars
-                      ty={measure === "amount" ? r.amount : r.transactions}
-                      ly={r.baseline ?? 0}
-                      max={listMax}
-                      labels={["WK", "AVG"]}
-                      format={fmt}
-                      compact
-                    />
-                  </div>
-                </button>
-              ))
-            )}
-
-            {!building &&
-              (perf.view === "receipts"
-                ? receipts.length > shownReceipts.length
-                : rows.length > listRows.length) && (
-                <button
-                  type="button"
-                  onClick={() => dispatch(showMoreEvents())}
-                  className="block w-full border-t border-gray-100 py-3 text-center text-[12px] font-semibold active:bg-bkg"
-                  style={{ color: TY_COLOR }}
-                >
-                  Show {ROWS_PER_PAGE} more
-                  <span className="text-content/85">
-                    {" "}
-                    ·{" "}
-                    {fmtInt(
-                      (perf.view === "receipts"
-                        ? receipts.length
-                        : rows.length) -
-                        (perf.view === "receipts"
-                          ? shownReceipts.length
-                          : listRows.length),
-                    )}{" "}
-                    left
-                  </span>
-                </button>
-              )}
-          </section>
         </div>
       </div>
 
-      {openTxn && (
-        <BottomSheet onClose={() => dispatch(closeReceipt())}>
-          <Receipt
-            txn={openTxn}
-            receipt={openReceiptState}
-            when={openTxn.day ? formatDateSimple(openTxn.day) : ""}
-          />
+      {typePickerOpen && (
+        <BottomSheet onClose={() => setTypePickerOpen(false)}>
+          <div className="px-4 pb-6 pt-1">
+            <h2 className="font-display text-[15px] font-bold text-content">
+              Type
+            </h2>
+            <p className="pb-2 pt-0.5 text-[12px] text-content/85">
+              Scopes the whole screen, including the stores below.
+            </p>
+            {/* Each row carries its own figures, so the choice is made from the
+                menu rather than by visiting every type to find out. */}
+            {pages.map((lens, i) => {
+              const t = cardTotals[i];
+              const active = perf.lens === lens;
+              return (
+                <button
+                  key={lens ?? "__all"}
+                  type="button"
+                  aria-current={active ? "true" : undefined}
+                  onClick={() => {
+                    dispatch(setEventLens(lens));
+                    setTypePickerOpen(false);
+                  }}
+                  className={`flex w-full items-baseline gap-3 border-t border-gray-100 px-1 py-3 text-left first:border-t-0 ${
+                    active ? "bg-row_selected" : "active:bg-bkg"
+                  }`}
+                >
+                  <span className="min-w-0 flex-1 truncate font-display text-[13.5px] font-semibold text-content">
+                    {lens ?? allLabel}
+                  </span>
+                  <span className="flex-none text-[12px] text-content/85">
+                    {measure === "amount"
+                      ? `${fmtInt(t.transactions)} txns`
+                      : formatCurrency2(t.amount)}
+                  </span>
+                  <span className="flex-none font-display text-[13.5px] font-bold text-content">
+                    {fmt(valueOf(t))}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </BottomSheet>
       )}
 
@@ -1039,13 +1129,5 @@ const Receipt = ({
     </>
   );
 };
-
-const Empty = ({ query }: { query: string }) => (
-  <div className="px-4 py-8 text-center text-[12.5px] text-content/85">
-    {query
-      ? `Nothing matches "${query}".`
-      : "Nothing recorded for this selection."}
-  </div>
-);
 
 export default EventPerfMobile;

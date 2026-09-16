@@ -20,16 +20,18 @@ export const SALES_LEDGER_INFO: { title: string; purpose: string; glossary: Info
  *  so it gets its own copy rather than the desktop glossary. */
 export const SALES_MOBILE_INFO: { title: string; purpose: string; glossary: InfoGlossaryEntry[] } = {
   title: "Sales",
-  purpose: "This year against last year for the week you searched — by store, by sub department and by hour, down to the items in a sub department.",
+  purpose: "This year against last year for the week you searched. Open a store to see its week, then open a sub department to see the items in it.",
   glossary: [
     { term: "TY / LY", desc: "TY is the week you searched. LY is the same weekdays last year, matched day by day, so a Monday is compared with a Monday and a holiday with the same holiday." },
-    { term: "Sales", desc: "Sales before tax, for everything in scope — the whole search, or the store and day you've picked." },
-    { term: "Transactions / Avg basket", desc: "Transactions is the number of receipts. Avg basket is sales divided by transactions. After you pick a store these take a moment to load; until then they show a grey placeholder." },
+    { term: "Sales", desc: "Sales before tax, for whatever is in view \u2014 the whole search, or the store and day you have open." },
+    { term: "The card at the top", desc: "The group as a whole, and the total every store below is part of. Open it for the group's week and its own breakdowns." },
+    { term: "Open a store", desc: "Tap a store to open its report where it sits \u2014 its week, its total against last year, and what made it up. One opens at a time; the others shrink to a single line so the open one has the screen." },
+    { term: "Transactions / Avg basket", desc: "Transactions is the number of receipts. Avg basket is sales divided by transactions. These come from the store's own figures, so they show a grey placeholder for a moment after you open a card." },
     { term: "Coupons", desc: "Every coupon redeemed, split by type: digital, electronic store, electronic in-store and paper store coupons." },
-    { term: "Tap a day", desc: "Scopes the whole screen — totals and lists — to that day. Tap it again for the full week." },
-    { term: "Tap a store", desc: "On the Stores tab, narrows Subs and Hours to that store. Tap it again to go back to every store." },
-    { term: "Items", desc: "On the Subs tab, tap a sub department to see its items. On a group search, pick a store on the Stores tab first — items are shown one store at a time. Type in the search box to find an item by its description or UPC." },
-    { term: "Sort by", desc: "Sales puts the biggest sellers first. Change vs LY puts the biggest drop first; rows that sold nothing last year go to the bottom. Store # and Name sort in order; Time keeps hours in the order of the day. Each tab remembers its own sort." },
-    { term: "Change %", desc: "This year against last year for that row. A dash means it sold nothing last year, so there's no percentage to show." },
+    { term: "View details", desc: "Opens the store's sub departments and hours on their own screen. Tap a sub department to see the items in it \u2014 those load the first time you open that department and are instant after. Back returns to the list with your card still open." },
+    { term: "Tap a day", desc: "On the top card, scopes the whole screen \u2014 its figures and every store below. Inside a store's card it scopes that store only, and is cleared when you open a different one. Tap the same day again for the full week." },
+    { term: "Sort by", desc: "Tap a chip to sort, again to reverse it, and a third time to go back to the order the search returned. Sales opens on the biggest, Change vs LY on the biggest drop; rows with nothing to compare stay at the bottom either way. Each list keeps its own sort." },
+    { term: "Filter by store", desc: "Narrows a long list to the stores whose name or number matches what you type. It only hides rows \u2014 no figure changes." },
+    { term: "Change %", desc: "This year against last year for that row. A dash means it sold nothing last year, so there is no percentage to show." },
   ],
 };

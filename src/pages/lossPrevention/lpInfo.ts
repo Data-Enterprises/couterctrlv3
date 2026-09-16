@@ -18,15 +18,19 @@ export const LP_INFO: { title: string; purpose: string; glossary: InfoGlossaryEn
  *  it gets its own copy rather than the desktop glossary. */
 export const LP_MOBILE_INFO: { title: string; purpose: string; glossary: InfoGlossaryEntry[] } = {
   title: "Loss Prevention",
-  purpose: "Exception activity — voids, refunds, no-sales and the rest — for the week you searched, next to the same stores' and cashiers' own prior two weeks. Nothing is graded: the two sit side by side and you draw the conclusion.",
+  purpose: "Exception activity \u2014 voids, refunds, no-sales and the rest \u2014 for the week you searched, next to the same stores' and cashiers' own prior two weeks. Nothing is graded: the two sit side by side and you draw the conclusion.",
   glossary: [
-    { term: "The big number", desc: "Exception transactions for whatever is in view — the whole week or the day you've tapped, for the store, cashier and exception type you have open. A transaction with two exceptions on it counts once." },
-    { term: "WK / AVG", desc: "WK is the week you searched. AVG is the two weeks before it, added up and halved into one week's worth. With a day picked, AVG is that weekday in those two weeks, halved — so a Saturday is compared with an average Saturday." },
-    { term: "Exception types", desc: "Swipe the card, or use the arrows under it, to narrow the whole screen to one type. The first card is every type at once. Busiest is the day of the week with the most transactions for that card's type." },
-    { term: "Tap a day", desc: "Scopes the card and the lists to that day. Tap it again for the full week." },
-    { term: "Stores, cashiers, transactions", desc: "Tap a store to see its cashiers, a cashier to see their transactions, and a transaction to open the receipt. Back steps up one level. A single-store search starts at Cashiers." },
-    { term: "Sort by", desc: "Transactions and Amount put the biggest first. vs Avg puts the biggest rise over AVG first — the most extra exceptions, not the biggest percentage, so a cashier going from 1 to 3 doesn't outrank one going from 20 to 30. Store # and Name sort in order. Stores and Cashiers each remember their own sort." },
-    { term: "Transactions list", desc: "Newest first. Search it by sale ID, cashier or lane." },
+    { term: "The big number", desc: "Exception transactions for whatever is in view \u2014 the whole week or the day you have tapped, for the store and exception type you have open. A transaction with two exceptions on it counts once." },
+    { term: "WK / AVG", desc: "WK is the week you searched. AVG is the two weeks before it, added up and halved into one week's worth. With a day picked, AVG is that weekday in those two weeks, halved \u2014 so a Saturday is compared with an average Saturday." },
+    { term: "Exception type", desc: "Tap the underlined title on the top card to choose one. The list shows every type with its own figures, so you can see which is worst before choosing. Picking one narrows the whole screen, including every store below; the first entry is every type at once." },
+    { term: "The card at the top", desc: "All the stores you searched, together. Open it for the week's shape and its own cashiers and transactions." },
+    { term: "Open a store", desc: "Tap a store to open its report where it sits. One opens at a time; the others shrink to a single line. Changing the exception type keeps your store open." },
+    { term: "View details", desc: "Opens that store's cashiers and transactions on their own screen. Tap a cashier to see just their transactions, and a transaction to open the receipt. Back returns to the list with your card still open." },
+    { term: "Tap a day", desc: "On the top card, scopes the whole screen \u2014 its figures and every store below. Inside a store's card it scopes that store only, and is cleared when you open a different one. Tap the same day again for the full week." },
+    { term: "Sort by", desc: "Transactions and Amount put the biggest first. vs Avg puts the biggest rise over AVG first \u2014 the most extra exceptions, not the biggest percentage, so a cashier going from 1 to 3 does not outrank one going from 20 to 30. Store # and Name sort in order. Stores and Cashiers each remember their own sort." },
+    { term: "Filter by store", desc: "Narrows a long list to the stores matching what you type. It only hides rows \u2014 no figure changes." },
+    { term: "Transactions list", desc: "Newest first, because a run of exceptions in one evening is the pattern worth seeing. Search it by sale ID, cashier or lane." },
+    { term: "Busiest", desc: "The day of the week with the most exception transactions for what is in view." },
     { term: "Per txn", desc: "The dollar amount divided by the number of transactions." },
   ],
 };

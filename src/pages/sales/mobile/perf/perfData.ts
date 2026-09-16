@@ -21,6 +21,7 @@ import {
 
 export { lyDateFor, storeKeyOf };
 export {
+  dirOf,
   isPartialMatch,
   noLyHistory,
   pairChangePct,
@@ -28,6 +29,21 @@ export {
   type PairSort,
 } from "../../../../utils/perfPairs";
 export type { DayMatch, PerfDay, PerfPair };
+
+/**
+ * A change against last year, as a signed percentage.
+ *
+ * A true minus sign rather than a hyphen: at 12px a hyphen reads as a dash
+ * joining the number to whatever precedes it. Neutral by design — there is no
+ * grading on mobile Performance, so this is a figure and never a verdict.
+ */
+export const fmtChange = (pct: number) =>
+  `${pct > 0 ? "+" : pct < 0 ? "−" : ""}${Math.abs(pct).toFixed(1)}%`;
+
+/** "3 of 7 days matched" — why last year is short of a full week. The same
+ *  wording desktop Sales uses. */
+export const matchedNote = (p: { days?: number | null; lyDays?: number | null }) =>
+  `${p.lyDays} of ${p.days} days matched`;
 
 /**
  * The week's day matching for a scope — one store, or every store in the
