@@ -1,120 +1,39 @@
-import { configureStore } from "@reduxjs/toolkit";
+import { combineReducers, configureStore } from "@reduxjs/toolkit";
 
-import appReducer from "../features/appSlice";
-import navReducer from "../features/navSlice";
-import userReducer from "../features/userSlice";
-import searchReducer from "../features/searchSlice";
-import salesReducer from "../features/salesSlice";
-import groupReducer from "../features/groupSlice";
-import storeReducer from "../features/storeSlice";
-import usersReducer from "../features/usersSlice";
-import forgotPasswordReducer from "../features/forgotPasswordSlice";
-import lossPreventionReducer from "../features/lossPreventionSlice.ts";
-import lossPreventionLegacyReducer from "../features/lossPreventionLegacySlice";
-import upcReducer from "../features/upcSlice";
-import itemLookupReducer from "../features/itemLookupSlice";
-import trendModalReducer from "../features/trendModalSlice";
-import upcModalReducer from "../features/upcModalSlice";
-import ctxMenuReducer from "../features/ctxMenuSlice";
-import quickSightReducer from "../features/qsSlice";
-import forecastReducer from "../features/forecastSlice";
-import forecastDevReducer from "../features/forecastDevSlice";
-import priceSimReducer from "../features/priceSimSlice";
-import upcUploadReducer from "../features/upcUploadSlice";
-import receiversReducer from "../features/receiversSlice";
-import couponReducer from "../features/couponSlice";
-import couponSalesReducer from "../features/couponSalesSlice";
-import couponLegacyReducer from "../features/couponLegacySlice";
-import reportBuilderReducer from "../features/reportBuilderSlice";
-import adminReducer from "../features/adminSlice.ts";
-import adminPageReducer from "../features/adminPageSlice.ts";
-import baseGroupReducer from "../features/baseGroupSlice.ts";
-import companyReducer from "../features/companySlice.ts";
-import lpActionsReducer from "../features/lpActionsSlice.ts";
-import organizationReducer from "../features/organizationSlice.ts";
-import subMarginReducer from "../features/subMarginSlice.ts";
-import subMarginLegacyReducer from "../features/subMarginLegacySlice";
-import cashiersReducer from "../features/cashiersSlice.ts";
-import cashiersLegacyReducer from "../features/cashiersLegacySlice";
-import itemScanReducer from "../features/itemScanSlice.ts";
-import mobileSalesReducer from "../features/salesMobileSlice.ts";
-import ordersReducer from "../features/ordersSlice.ts";
-import receiversLegacyReducer from "../features/receiversLegacySlice";
-import ordersLegacyReducer from "../features/ordersLegacySlice";
-import adListReducer from "../features/adListSlice";
-import salesLedgerReducer from "../features/salesLedgerSlice";
-import salesPerfReducer from "../features/salesPerfSlice";
-import itemPerfReducer from "../features/itemPerfSlice";
-import eventPerfReducer from "../features/eventPerfSlice";
-import salesLegacyReducer from "../features/salesLegacySlice";
-import salesTrackerReducer from "../features/salesTrackerSlice";
-import upcDevReducer from "../features/upcDevSlice";
-import ticketsReducer from "../pages/tickets/ticketsSlice";
-import categoriesReducer from "../features/categoriesSlice";
-import vendorsReducer from "../features/vendorsSlice";
-import itemReportReducer from "../features/itemReportSlice";
-import invoicesReducer from "../features/invoicesSlice";
-import suggestedReducer from "../features/suggestedSlice";
+import { sessionReducers } from "./sessionReducers";
+import { pageReducers } from "./pageReducers";
+import { devReducer } from "./devReducers";
 
+/**
+ * The store, in three parts.
+ *
+ *   session  — who you are and what you are asking about, at the root.
+ *   prod     — every page slice, holding answers from the prod API.
+ *   dev      — forked copies of the page slices a dev page has changed.
+ *
+ * Both trees are registered once, at load. Nothing is swapped at runtime and
+ * `replaceReducer` is never called: flipping the environment changes which
+ * branch a page reads, not which reducers exist.
+ *
+ * MIGRATION — the page slices are currently mounted TWICE, once under `prod`
+ * and once at the root where they have always been. That is deliberate and
+ * temporary. A reducer is a pure function, so the two copies receive the same
+ * actions from the same initial state and hold identical values at all times;
+ * a page can read `state.salesPerf` or `state.prod.salesPerf` and get the same
+ * answer. That is what lets the 524 call sites move one page per commit
+ * instead of all at once. When the last one has moved, delete the spread
+ * marked below and the compiler will point at anything left behind.
+ */
 export const setupStore = () =>
   configureStore({
-    reducer: {
-      app: appReducer,
-      nav: navReducer,
-      user: userReducer,
-      search: searchReducer,
-      sales: salesReducer,
-      salesPerf: salesPerfReducer,
-      itemPerf: itemPerfReducer,
-      eventPerf: eventPerfReducer,
-      group: groupReducer,
-      stores: storeReducer,
-      users: usersReducer,
-      forgotPassword: forgotPasswordReducer,
-      lossPrevention: lossPreventionReducer,
-      lpActions: lpActionsReducer,
-      lossPreventionLegacy: lossPreventionLegacyReducer,
-      upc: upcReducer,
-      item: itemLookupReducer,
-      trendModal: trendModalReducer,
-      upcModal: upcModalReducer,
-      ctxMenu: ctxMenuReducer,
-      quicksight: quickSightReducer,
-      forecast: forecastReducer,
-      forecastDev: forecastDevReducer,
-      priceSim: priceSimReducer,
-      upcs: upcUploadReducer,
-      receivers: receiversReducer,
-      receiversLegacy: receiversLegacyReducer,
-      coupons: couponReducer,
-      couponSales: couponSalesReducer,
-      categories: categoriesReducer,
-      vendors: vendorsReducer,
-      itemReport: itemReportReducer,
-      invoices: invoicesReducer,
-      suggested: suggestedReducer,
-      couponLegacy: couponLegacyReducer,
-      reportBuilder: reportBuilderReducer,
-      admin: adminReducer,
-      adminPage: adminPageReducer,
-      baseGroup: baseGroupReducer,
-      company: companyReducer,
-      organization: organizationReducer,
-      subMargin: subMarginReducer,
-      subMarginLegacy: subMarginLegacyReducer,
-      cashier: cashiersReducer,
-      cashierLegacy: cashiersLegacyReducer,
-      itemScan: itemScanReducer,
-      salesMobile: mobileSalesReducer,
-      orders: ordersReducer,
-      ordersLegacy: ordersLegacyReducer,
-      adList: adListReducer,
-      salesLedger: salesLedgerReducer,
-      salesLegacy: salesLegacyReducer,
-      salesTracker: salesTrackerReducer,
-      upcDev: upcDevReducer,
-      tickets: ticketsReducer,
-    },
+    reducer: combineReducers({
+      ...sessionReducers,
+      prod: combineReducers(pageReducers),
+      dev: devReducer,
+      // Delete this line when no page reads a bare `state.<pageSlice>` — see
+      // the migration note above.
+      ...pageReducers,
+    }),
   });
 
 export type RootState = ReturnType<ReturnType<typeof setupStore>["getState"]>;

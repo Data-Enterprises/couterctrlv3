@@ -6,6 +6,10 @@ export default defineConfig({
   plugins: [react()],
   test: {
     environment: "jsdom",
+    // Test discovery defaults to the whole repo, so a spec parked in `trash/`
+    // during the dev/prod separation would still run — against code nothing
+    // imports any more.
+    exclude: ["**/node_modules/**", "**/dist/**", "trash/**"],
     setupFiles: "./src/vitest.setup.ts",
     globals: true,
     coverage: {
