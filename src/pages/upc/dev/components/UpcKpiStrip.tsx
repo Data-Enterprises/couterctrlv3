@@ -21,9 +21,9 @@ const UpcKpiStrip = () => {
       case "forecast":
         return getForecastKpis(ctx.forecastQtyData, ctx.selectedUpcs);
       case "priceOpt":
-        return getPriceOptKpis(ctx.optBestPrices, ctx.optBestPricesByUpc, ctx.selectedUpcs);
+        return getPriceOptKpis(ctx.optBestPrices, ctx.optBestPricesByUpc, ctx.selectedUpcs, ctx.fixes);
       case "trend":
-        return getTrendKpis(ctx.upcTrends, ctx.selectedUpcs);
+        return getTrendKpis(ctx.upcTrends, ctx.selectedUpcs, ctx.fixes);
       case "association":
         return getAssociationKpis(
           ctx.associationSeedData,

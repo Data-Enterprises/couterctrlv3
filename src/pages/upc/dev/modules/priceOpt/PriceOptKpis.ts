@@ -1,7 +1,8 @@
 import { formatCurrency2 } from "../../../../../utils";
 import type { UpcPriceOpt } from "../../../../../interfaces";
 import type { KpiCell } from "../../types";
-import { pricePoints, elasticityFromPoints } from "./priceOptStats";
+import { isWeighted } from "../../../../../utils/pricedUnits";
+import { pricePoints, elasticityFromPoints, pointUnits } from "./priceOptStats";
 
 // No current price or cost anywhere in this data, so there's nothing to
 // compare a price against — only what price history alone can answer:
@@ -11,6 +12,7 @@ export function getPriceOptKpis(
   optBestPrices: UpcPriceOpt[],
   optBestPricesByUpc: UpcPriceOpt[],
   selectedUpcs: string[],
+  fixes = false,
 ): KpiCell[] {
   const filterUpc = (code: string) => selectedUpcs.length === 0 || selectedUpcs.includes(code);
   const bestByUpc = optBestPricesByUpc.filter((o) => filterUpc(o.product_code));
@@ -18,19 +20,23 @@ export function getPriceOptKpis(
   const upcCount = bestByUpc.length;
 
   let withPriceData = 0;
-  let topRevenue: { desc: string; price: number; revenue: number } | null = null;
+  let topRevenue: { desc: string; price: number; revenue: number; weighted: boolean } | null = null;
   let largestGap: { desc: string; gap: number } | null = null;
   const elasticities: number[] = [];
   const pointCounts: number[] = [];
 
   for (const row of bestByUpc) {
-    const points = pricePoints(bestPrices, row.product_code).filter((p) => p.qty > 0);
+    const all = pricePoints(bestPrices, row.product_code);
+    // A scale item can ring a pound with a qty of 0 or the other way about,
+    // so "did this price move anything" has to ask in the item's own unit.
+    const weighted = fixes && (isWeighted(row.total_weight) || all.some((p) => p.weight > 0));
+    const points = all.filter((p) => pointUnits(p, weighted) > 0);
     pointCounts.push(points.length);
     if (points.length >= 2) withPriceData++;
 
     for (const p of points) {
       if (!topRevenue || p.revenue > topRevenue.revenue) {
-        topRevenue = { desc: row.product_description, price: p.price, revenue: p.revenue };
+        topRevenue = { desc: row.product_description, price: p.price, revenue: p.revenue, weighted };
       }
     }
 
@@ -40,7 +46,7 @@ export function getPriceOptKpis(
       if (!largestGap || gap > largestGap.gap) {
         largestGap = { desc: row.product_description, gap };
       }
-      const elasticity = elasticityFromPoints(points);
+      const elasticity = elasticityFromPoints(points, weighted);
       if (elasticity !== null) elasticities.push(elasticity);
     }
   }
@@ -53,7 +59,9 @@ export function getPriceOptKpis(
     { label: "Items with price data", value: `${withPriceData} of ${upcCount}`, sub: "2+ price points" },
     {
       label: "Top revenue price",
-      value: topRevenue ? formatCurrency2(topRevenue.price) : "—",
+      value: topRevenue
+        ? `${formatCurrency2(topRevenue.price)}${topRevenue.weighted ? "/lb" : ""}`
+        : "—",
       sub: topRevenue ? topRevenue.desc : undefined,
     },
     {

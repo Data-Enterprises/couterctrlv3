@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useUpcDevCtx } from "../../hooks/useUpcDevCtx";
 import { useAppDispatch } from "../../../../../hooks";
+import { useToast } from "../../../../../components/toasts/hooks/useToast";
 import {
   setDevPriceOptLoading,
   mergeDevPriceOpt,
@@ -17,6 +18,7 @@ import PriceOptDetailPanel from "./PriceOptDetailPanel";
 const PriceOptTab = () => {
   const ctx = useUpcDevCtx();
   const dispatch = useAppDispatch();
+  const toast = useToast();
   const [selectedCode, setSelectedCode] = useState<string | null>(null);
 
   // searchedUpcs, not upcs: `upcs` is the search card's working list and
@@ -53,9 +55,18 @@ const PriceOptTab = () => {
         if (!res) return;
 
         const j = res.data;
+        // An endpoint-level failure is a failure, not an empty answer — see
+        // the same guard in TrendTab. Covering on it recorded these UPCs as
+        // fetched-and-empty and the tab never asked again.
+        if (ctx.fixes && j.error !== 0) {
+          toast.warn(j.msg || "Price optimization failed for these UPCs");
+          return;
+        }
         const ok = j.error === 0 && j.best_prices_by_upc?.length > 0;
         const byUpc: UpcPriceOpt[] = ok ? j.best_prices_by_upc : [];
-        const bestPrices: UpcPriceOpt[] = ok ? j.best_prices : [];
+        // best_prices can be absent even on a good answer; mergeRows spreads
+        // it, so undefined here throws rather than merging nothing.
+        const bestPrices: UpcPriceOpt[] = ok ? j.best_prices ?? [] : [];
 
         // Codes are what was asked for, not what answered — a UPC with no
         // price history still counts as covered.
@@ -80,8 +91,8 @@ const PriceOptTab = () => {
       ? ctx.optBestPricesByUpc.filter((o) => ctx.selectedUpcs.includes(o.product_code))
       : ctx.optBestPricesByUpc;
 
-    return src.map((row) => computePriceOptRowSummary(row, ctx.optBestPrices));
-  }, [ctx.optBestPricesByUpc, ctx.optBestPrices, ctx.selectedUpcs]);
+    return src.map((row) => computePriceOptRowSummary(row, ctx.optBestPrices, ctx.fixes));
+  }, [ctx.optBestPricesByUpc, ctx.optBestPrices, ctx.selectedUpcs, ctx.fixes]);
 
   // Keep the detail panel pointed at a valid item — same pattern as Sales
   // Comp: default to the first row, re-pick if the current selection drops
@@ -117,7 +128,9 @@ const PriceOptTab = () => {
   return (
     <div className="flex-1 overflow-hidden flex min-h-0">
       <PriceOptLeftList rows={rows} selectedCode={selectedCode} onSelect={setSelectedCode} />
-      {selectedSummary && <PriceOptDetailPanel summary={selectedSummary} />}
+      {selectedSummary && (
+        <PriceOptDetailPanel summary={selectedSummary} fixes={ctx.fixes} />
+      )}
     </div>
   );
 };

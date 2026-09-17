@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useUpcDevCtx } from "../../hooks/useUpcDevCtx";
 import { useAppDispatch } from "../../../../../hooks";
+import { useToast } from "../../../../../components/toasts/hooks/useToast";
 import {
   mergeDevSalesComp,
   mergeDevSalesCompLY,
@@ -30,6 +31,7 @@ const isoToMdy = (iso: string) => {
 const SalesCompTab = () => {
   const ctx = useUpcDevCtx();
   const dispatch = useAppDispatch();
+  const toast = useToast();
   const [selectedCode, setSelectedCode] = useState<string | null>(null);
 
   // Both fetches ask only for the UPCs they're missing. Joined into a string so
@@ -62,6 +64,14 @@ const SalesCompTab = () => {
         if (!res) return;
 
         const j = res.data;
+        // An endpoint-level failure is a failure, not an empty answer. Taking
+        // the success path extended coverage below, which recorded these UPCs
+        // as fetched-and-empty and meant the tab never asked again — the catch
+        // deliberately leaves coverage alone for exactly this reason.
+        if (ctx.fixes && j.error !== 0) {
+          toast.warn(j.msg || "Sales comparison failed for these UPCs");
+          return;
+        }
         // Combined on the way in, so the table, KPI strip and export all see
         // one row per UPC per week — see combineSalesCompRows.
         const rows: UpcSalesComp[] =
@@ -115,6 +125,10 @@ const SalesCompTab = () => {
         if (!res) return;
 
         const j = res.data;
+        // Same guard as this year. Supplementary data, so no toast — a missing
+        // last year is already reported by `hasLY` leaving the vs-LY figures
+        // blank; all this does is let a failed call be retried.
+        if (ctx.fixes && j.error !== 0) return;
         const rows: UpcSalesComp[] =
           j.error === 0 && j.daily?.length > 0 ? combineSalesCompRows(j.daily) : [];
         dispatch(mergeDevSalesCompLY({ rows, codes: missingLy }));

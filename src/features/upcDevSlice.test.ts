@@ -7,6 +7,7 @@ import reducer, {
   mergeDevSalesComp,
   mergeDevPriceOpt,
   mergeDevTrends,
+  setUpcDevEnv,
 } from "./upcDevSlice";
 import type { UpcSalesComp, UpcPriceOpt, UpcTrend } from "../interfaces";
 
@@ -271,5 +272,76 @@ describe("upc roster", () => {
     state = reducer(state, setDevUpcItems([{ product_code: "A", description: "" }]));
 
     expect(state.upcItems[0].description).toBe("COKE 12PK");
+  });
+});
+
+
+describe("switching environment", () => {
+  /** The page as a completed prod search leaves it, plus a module mid-fetch. */
+  const onProd = () => ({
+    ...loaded(),
+    env: "prod" as const,
+    activeTab: "trend" as const,
+    trendPeriods: 120,
+    priceOptLoading: true,
+  });
+
+  it("parks the outgoing environment's data and starts the new one empty", () => {
+    const next = reducer(onProd(), setUpcDevEnv("dev"));
+
+    expect(next.env).toBe("dev");
+    expect(next.dataLoaded).toBe(false);
+    expect(next.salesComp).toEqual([]);
+    expect(next.searchedUpcs).toEqual([]);
+    // Resolved against prod's group listing — it belongs to prod's rows.
+    expect(next.storeids).toBe("");
+    expect(next.stash.prod?.salesComp.length).toBeGreaterThan(0);
+  });
+
+  it("carries the question across so the search card arrives filled in", () => {
+    const next = reducer(onProd(), setUpcDevEnv("dev"));
+
+    expect(next.upcs).toEqual(["A", "B", "C"]);
+    expect(next.trendPeriods).toBe(120);
+    expect(next.activeTab).toBe("trend");
+  });
+
+  it("does not park a loading flag that nothing will ever clear", () => {
+    // The fetch behind it was abandoned when the environment changed, so a
+    // restored `true` would leave that tab on "Loading..." for good.
+    const next = reducer(onProd(), setUpcDevEnv("dev"));
+    expect(next.stash.prod?.priceOptLoading).toBe(false);
+  });
+
+  it("gives the data back when you switch back", () => {
+    const prod = onProd();
+    const onDev = reducer(prod, setUpcDevEnv("dev"));
+    const back = reducer(onDev, setUpcDevEnv("prod"));
+
+    expect(back.env).toBe("prod");
+    expect(back.dataLoaded).toBe(true);
+    expect(back.salesComp).toEqual(prod.salesComp);
+    expect(back.searchedScopeKey).toBe(prod.searchedScopeKey);
+    // Only ever two datasets alive: the one on screen and the one parked.
+    expect(back.stash.prod).toBeUndefined();
+  });
+
+  it("keeps each environment's rows to itself", () => {
+    const onDev = reducer(onProd(), setUpcDevEnv("dev"));
+    const devLoaded = reducer(
+      onDev,
+      mergeDevSalesComp({ rows: [salesRow("Z")], codes: ["Z"] }),
+    );
+    const back = reducer(devLoaded, setUpcDevEnv("prod"));
+
+    // Prod never sees Z, and dev still has it waiting.
+    expect(back.salesComp.map((r) => r.product_code)).not.toContain("Z");
+    expect(back.stash.dev?.salesComp.map((r) => r.product_code)).toEqual(["Z"]);
+  });
+
+  it("ignores a switch to the environment it is already on", () => {
+    const prod = onProd();
+    const next = reducer(prod, setUpcDevEnv("prod"));
+    expect(next).toBe(prod);
   });
 });
