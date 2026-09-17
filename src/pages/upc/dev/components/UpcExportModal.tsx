@@ -4,8 +4,9 @@ import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/16/solid";
 import { useUpcDevCtx } from "../hooks/useUpcDevCtx";
 import type { UpcDevTab, AssociationItem } from "../../../../features/upcDevSlice";
 import { computeUpcSalesCompStats, DAYS, DAY_SHORT } from "../modules/salesComp/salesCompStats";
-import { getTrendStatus } from "../modules/trend/trendStats";
+import { getTrendStatus, impactUnits } from "../modules/trend/trendStats";
 import { pricePoints, elasticityFromPoints } from "../modules/priceOpt/priceOptStats";
+import { isWeighted, pricedUnits, pricedUnitLabel } from "../../../../utils/pricedUnits";
 import {
   getDisplayItems,
   getDepartmentBreakdown,
@@ -43,6 +44,7 @@ const PRESETS: Record<UpcDevTab, Preset[]> = {
     { id: "growing", label: "Growing" },
     { id: "declining", label: "Declining" },
     { id: "reduced-availability", label: "Reduced availability" },
+    { id: "new", label: "New since pivot" },
   ],
   association: [
     { id: "companions", label: "Companions (current view)" },
@@ -76,7 +78,9 @@ const download = (blob: Blob, filename: string) => {
 
 const UpcExportModal = ({ onClose }: Props) => {
   const ctx = useUpcDevCtx();
-  const presets = PRESETS[ctx.activeTab];
+  // "New since pivot" is a status that only exists behind the flag, so on
+  // prod the preset would filter to nothing.
+  const presets = PRESETS[ctx.activeTab].filter((p) => ctx.fixes || p.id !== "new");
   const [selectedPreset, setSelectedPreset] = useState(presets[0].id);
   const [exportShape, setExportShape] = useState<ExportShape>("summary");
 
@@ -130,16 +134,24 @@ const UpcExportModal = ({ onClose }: Props) => {
       }
       case "priceOpt": {
         const data = ctx.optBestPricesByUpc.filter((o) => sel === "all" || isSelected(o.product_code));
-        const headers = ["UPC", "Description", "Best Price", "Best Revenue", "Best Qty", "Elasticity", "Price Points"];
+        // "Best Qty" meant a ring count on scale items, where the price is per
+        // pound — the Unit column says which one a row is in, so a mixed
+        // export can still be summed correctly downstream.
+        const headers = ctx.fixes
+          ? ["UPC", "Description", "Best Price", "Best Revenue", "Best Volume", "Unit", "Elasticity", "Price Points"]
+          : ["UPC", "Description", "Best Price", "Best Revenue", "Best Qty", "Elasticity", "Price Points"];
         const rows = data.map((row) => {
           const points = pricePoints(ctx.optBestPrices, row.product_code);
-          const elasticity = elasticityFromPoints(points);
+          const weighted =
+            ctx.fixes && (isWeighted(row.total_weight) || points.some((p) => p.weight > 0));
+          const elasticity = elasticityFromPoints(points, weighted);
           return [
             row.product_code,
             row.product_description,
             String(row.price),
             String(row.total_revenue),
-            String(row.total_qty),
+            String(weighted ? pricedUnits(row.total_qty, row.total_weight) : row.total_qty),
+            ...(ctx.fixes ? [pricedUnitLabel(weighted ? row.total_weight : 0)] : []),
             elasticity !== null ? elasticity.toFixed(2) : "",
             String(points.length),
           ];
@@ -151,12 +163,12 @@ const UpcExportModal = ({ onClose }: Props) => {
         const src = ctx.upcTrends.filter((t) => {
           if (!isSelected(t.product_code)) return false;
           if (sel === "all") return true;
-          const status = getTrendStatus(t);
+          const status = getTrendStatus(t, ctx.fixes);
           if (sel === "declining") return status === "declining" || status === "accelerating";
           return status === sel;
         });
         const headers = ["UPC", "Description", "Status", "Slope Before", "Slope After", "Slope Change", "Confidence", "Mean Before", "Mean After", "Pct Change Mean", "Impact Units"];
-        const rows = src.map((t) => [t.product_code, t.product_description, getTrendStatus(t), String(t.slope_before), String(t.slope_after), String(t.slope_change), String(t["r2-after"]), String(t.mean_before), String(t.mean_after), String(t.pct_change_mean), String(t.impact_units)]);
+        const rows = src.map((t) => [t.product_code, t.product_description, getTrendStatus(t, ctx.fixes), String(t.slope_before), String(t.slope_after), String(t.slope_change), String(t["r2-after"]), String(t.mean_before), String(t.mean_after), String(t.pct_change_mean), ctx.fixes ? String(Math.round(impactUnits(t, ctx.fixes))) : String(t.impact_units)]);
         download(toBlobCsv(headers, rows), `trends_${sel}.csv`);
         break;
       }

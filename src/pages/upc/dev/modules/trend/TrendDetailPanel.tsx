@@ -5,7 +5,7 @@ import BeforeAfterBar from "../../components/BeforeAfterBar";
 import BeforeAfterLegend from "../../components/BeforeAfterLegend";
 import type { KpiCell } from "../../types";
 import type { TrendStatus } from "./trendStats";
-import { accelerationFactor } from "./trendStats";
+import { accelerationFactor, impactUnits } from "./trendStats";
 import { getTrendPhrase, getTrendInsight } from "./trendPhrase";
 import { getWindowDays, activeRatePct, isWeakBaseline, isSmallSample } from "./trendWindow";
 import TrendBeforeAfterTile from "./TrendBeforeAfterTile";
@@ -15,15 +15,27 @@ interface Props {
   status: TrendStatus;
   periods: number;
   trendStartDate: string | null;
+  /** The window's own far end, echoed back by the endpoint. */
+  trendEndDate: string | null;
+  fixes: boolean;
 }
 
-const TrendDetailPanel = ({ trend: t, status, periods, trendStartDate }: Props) => {
+const TrendDetailPanel = ({
+  trend: t,
+  status,
+  periods,
+  trendStartDate,
+  trendEndDate,
+  fixes,
+}: Props) => {
   const phrase = getTrendPhrase(status);
-  const insight = getTrendInsight(t, status);
-  const factor = status === "accelerating" ? accelerationFactor(t) : null;
+  const insight = getTrendInsight(t, status, fixes);
+  const factor = status === "accelerating" ? accelerationFactor(t, fixes) : null;
+  const impact = Math.round(impactUnits(t, fixes));
+  const noBaseline = status === "new";
 
   const { beforeWindowDays, afterWindowDays } = trendStartDate
-    ? getWindowDays(trendStartDate, periods)
+    ? getWindowDays(trendStartDate, trendEndDate, periods, fixes)
     : { beforeWindowDays: periods, afterWindowDays: 0 };
 
   const activeRateBefore = activeRatePct(t.active_days_before, beforeWindowDays);
@@ -36,8 +48,11 @@ const TrendDetailPanel = ({ trend: t, status, periods, trendStartDate }: Props) 
   const kpis: KpiCell[] = [
     {
       label: "Impact Units",
-      value: `${t.impact_units >= 0 ? "▲" : "▼"}${Math.abs(Math.round(t.impact_units)).toLocaleString()}`,
-      variant: t.impact_units < 0 ? "down" : "up",
+      value: noBaseline
+        ? "—"
+        : `${impact >= 0 ? "▲" : "▼"}${Math.abs(impact).toLocaleString()}`,
+      sub: noBaseline ? "no prior history" : undefined,
+      variant: noBaseline ? undefined : impact < 0 ? "down" : "up",
     },
     { label: "Daily rate", value: `${t.mean_before.toFixed(1)} → ${t.mean_after.toFixed(1)}` },
     ...(factor !== null
@@ -66,7 +81,7 @@ const TrendDetailPanel = ({ trend: t, status, periods, trendStartDate }: Props) 
             afterPct={r2AfterPct}
             beforeDisplay={`${r2BeforePct}%`}
             afterDisplay={`${r2AfterPct}%`}
-            flagged={weakBaseline}
+            flagged={weakBaseline && !noBaseline}
             note="Sales before this date were inconsistent, so Impact Units above is a rough estimate, not an exact count"
           />
           <BeforeAfterBar

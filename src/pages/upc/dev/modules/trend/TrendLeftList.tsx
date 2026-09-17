@@ -1,11 +1,12 @@
 import type { UpcTrend } from "../../../../../interfaces";
-import type { TrendStatus } from "./trendStats";
+import { impactUnits, type TrendStatus } from "./trendStats";
 import { getTrendPhrase, type TrendTone } from "./trendPhrase";
 
 interface Props {
   rows: { t: UpcTrend; status: TrendStatus }[];
   selectedCode: string | null;
   onSelect: (code: string) => void;
+  fixes: boolean;
 }
 
 const TONE_TEXT: Record<TrendTone, string> = {
@@ -19,11 +20,15 @@ const TONE_TEXT: Record<TrendTone, string> = {
 // unit, matching the aggregate KPI strip above it. Phrase is just the
 // status label itself; no synthesis needed here the way Sales Comp/Price
 // Opt required.
-const TrendLeftList = ({ rows, selectedCode, onSelect }: Props) => {
+const TrendLeftList = ({ rows, selectedCode, onSelect, fixes }: Props) => {
   return (
     <div className="w-[340px] flex-shrink-0 border-r border-gray-100 overflow-y-auto thin-scrollbar">
       {rows.map(({ t, status }) => {
         const phrase = getTrendPhrase(status);
+        const impact = Math.round(impactUnits(t, fixes));
+        // Nothing to compare against, so no arrow and no colour — a green
+        // zero read as a verdict on an item that simply has no before.
+        const noBaseline = status === "new";
         const isSelected = t.product_code === selectedCode;
         return (
           <button
@@ -38,11 +43,14 @@ const TrendLeftList = ({ rows, selectedCode, onSelect }: Props) => {
               <span className="text-[12px] font-medium text-content truncate">{t.product_description}</span>
               <span
                 className={`text-[12px] font-semibold tabular-nums flex-shrink-0 ${
-                  t.impact_units < 0 ? "text-severity_critical_text" : "text-severity_healthy_text"
+                  noBaseline
+                    ? "text-content/85"
+                    : impact < 0
+                    ? "text-severity_critical_text"
+                    : "text-severity_healthy_text"
                 }`}
               >
-                {t.impact_units >= 0 ? "▲" : "▼"}
-                {Math.abs(Math.round(t.impact_units)).toLocaleString()}
+                {noBaseline ? "—" : `${impact >= 0 ? "▲" : "▼"}${Math.abs(impact).toLocaleString()}`}
               </span>
             </div>
             <div className="flex items-center justify-between gap-2 mt-0.5 font-medium">

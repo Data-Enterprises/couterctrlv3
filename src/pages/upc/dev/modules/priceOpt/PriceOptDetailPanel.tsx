@@ -1,4 +1,5 @@
 import { formatCurrency2 } from "../../../../../utils";
+import { formatPricedUnits } from "../../../../../utils/pricedUnits";
 import CtaInsightStrip from "../../components/CtaInsightStrip";
 import KpiTileGrid from "../../components/KpiTileGrid";
 import type { KpiCell } from "../../types";
@@ -8,15 +9,31 @@ import PriceOptPricePointsTable from "./PriceOptPricePointsTable";
 
 interface Props {
   summary: PriceOptRowSummary;
+  fixes: boolean;
 }
 
-const PriceOptDetailPanel = ({ summary: r }: Props) => {
+const PriceOptDetailPanel = ({ summary: r, fixes }: Props) => {
   const phrase = getPriceOptPhrase(r.points, r.elasticity);
   const insight = getPriceOptInsight(r.points, r.elasticity);
 
   const kpis: KpiCell[] = [
-    { label: "Best price", value: formatCurrency2(r.bestPrice) },
+    // "$3.99" on a scale item is a price per pound, and without the unit it
+    // reads as what one package costs.
+    {
+      label: "Best price",
+      value: `${formatCurrency2(r.bestPrice)}${r.weighted ? "/lb" : ""}`,
+    },
     { label: "Best revenue", value: formatCurrency2(r.bestRevenue) },
+    // A new tile, so it exists only behind the flag — on prod the strip keeps
+    // the four it had.
+    ...(fixes
+      ? [
+          {
+            label: r.weighted ? "Volume at best" : "Qty at best",
+            value: formatPricedUnits(r.bestUnits, r.weighted ? r.bestUnits : 0),
+          },
+        ]
+      : []),
     { label: "Elasticity", value: r.elasticity !== null ? r.elasticity.toFixed(1) : "—" },
     { label: "Price points tested", value: String(r.points.length) },
   ];
@@ -32,7 +49,11 @@ const PriceOptDetailPanel = ({ summary: r }: Props) => {
             No price history available for this item.
           </div>
         ) : (
-          <PriceOptPricePointsTable points={r.points} bestPrice={r.bestPrice} />
+          <PriceOptPricePointsTable
+            points={r.points}
+            bestPrice={r.bestPrice}
+            weighted={r.weighted}
+          />
         )}
       </div>
     </div>

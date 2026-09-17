@@ -1,9 +1,12 @@
 import { formatCurrency2 } from "../../../../../utils";
+import { formatPricedUnitsShort } from "../../../../../utils/pricedUnits";
 import type { PricePoint } from "./priceOptStats";
 
 interface Props {
   points: PricePoint[];
   bestPrice: number;
+  /** Sold by the pound — the volume column is weight, not a ring count. */
+  weighted: boolean;
 }
 
 // Price Opt's equivalent of Sales Comp's day-of-week grid — a variable-
@@ -11,7 +14,7 @@ interface Props {
 // tied to a calendar. No profit column and no "current" row — there's no
 // current price or cost anywhere in this data, only the best-by-revenue
 // row gets a tinted background.
-const PriceOptPricePointsTable = ({ points, bestPrice }: Props) => {
+const PriceOptPricePointsTable = ({ points, bestPrice, weighted }: Props) => {
   const sorted = [...points].sort((a, b) => b.revenue - a.revenue);
   const cols = "1fr 70px 90px";
 
@@ -22,7 +25,10 @@ const PriceOptPricePointsTable = ({ points, bestPrice }: Props) => {
       </div>
       <div className="grid gap-1 px-2 text-[10px] font-semibold uppercase tracking-wide text-content/85" style={{ gridTemplateColumns: cols }}>
         <span>Price</span>
-        <span className="text-right">Qty</span>
+        {/* The table covers one item, so the header can name its unit
+            outright rather than hedging with "Qty / Lb" the way a mixed
+            sub-department grid has to. */}
+        <span className="text-right">{weighted ? "Lb" : "Qty"}</span>
         <span className="text-right">Revenue</span>
       </div>
       {sorted.map((p) => {
@@ -37,7 +43,9 @@ const PriceOptPricePointsTable = ({ points, bestPrice }: Props) => {
               {formatCurrency2(p.price)}
               {isBest && <span className="ml-1.5 text-[10px] font-semibold text-severity_healthy_text">best</span>}
             </span>
-            <span className="text-right text-[13px] tabular-nums text-content">{p.qty.toLocaleString()}</span>
+            <span className="text-right text-[13px] tabular-nums text-content">
+              {weighted ? formatPricedUnitsShort(p.qty, p.weight) : p.qty.toLocaleString()}
+            </span>
             <span className="text-right text-[13px] tabular-nums text-content">{formatCurrency2(p.revenue)}</span>
           </div>
         );

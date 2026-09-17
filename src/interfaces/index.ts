@@ -482,7 +482,9 @@ export type UpcTrend = {
   slope_before: number;
   slope_after: number;
   slope_change: number;
-  trend: string;
+  // The live endpoint sends a number here, not a string — it is slope_change
+  // repeated. Nothing reads it; typed honestly so nothing starts to.
+  trend: number;
   mean_before: number;
   mean_after: number;
   pct_change_mean: number;
@@ -501,6 +503,25 @@ export type UpcTrend = {
   sparkline?: number[];
   tooltip?: string;
   rank?: number;
+};
+
+/** What `marketing/trend_detector` answers with.
+ *
+ *  `startdate` and `end_date` are the two ends of the AFTER window, echoed
+ *  back from the request — the split point the before/after figures are
+ *  measured either side of, and how far past it they run. `top_5`/`bottom_5`
+ *  are the backend's own cross-UPC rankings of the same rows and are
+ *  deliberately unused; see TrendTab. */
+export type TrendDetectorResp = {
+  error: number;
+  msg?: string;
+  startdate: string;
+  end_date: string;
+  total_stores: number;
+  upc_count: number;
+  trends: UpcTrend[];
+  top_5?: UpcTrend[];
+  bottom_5?: UpcTrend[];
 };
 
 export type Handlers = {
