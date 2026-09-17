@@ -55,7 +55,11 @@ const TrendModal = () => {
         <div className="flex flex-col text-sm relative bg-custom-white">
           <div className="flex gap-1 absolute -top-1 right-0 items-center">
             <div className="">
-              {trend.trend === "up" ? (
+              {/* `trend` is a number from the endpoint — slope_change repeated —
+                  so it is positive when the daily rate improved. The old test
+                  compared it to the string "up", which never matched, so this
+                  arrow pointed down on every item. */}
+              {trend.trend > 0 ? (
                 <ArrowUpCircleIcon
                   className="h-7 w-7 text-emerald-500"
                   strokeWidth={2}
