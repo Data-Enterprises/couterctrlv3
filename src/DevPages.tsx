@@ -3,7 +3,6 @@ import UpcList from "./pages/upc/UpcList.tsx";
 import Cashiers from "./pages/cashiers/Cashiers.tsx";
 import CashiersLegacy from "./pages/cashiers/CashiersLegacy.tsx";
 import Sales from "./pages/sales/Sales.tsx";
-import SalesLegacy from "./pages/sales/SalesLegacy.tsx";
 import LossPrevention from "./pages/lossPrevention/LossPrevention.tsx";
 import LossPreventionLegacy from "./pages/lossPrevention/LossPreventionLegacy.tsx";
 import Orders from "./pages/orders/Orders.tsx";
@@ -43,10 +42,9 @@ export const CashiersPage = () => {
   return devMode ? <Cashiers /> : <CashiersLegacy />;
 };
 
-export const SalesPage = () => {
-  const devMode = useAppSelector((s) => s.app.devMode);
-  return devMode ? <Sales /> : <SalesLegacy />;
-};
+// No legacy branch: Sales has a prod and a dev tree now, picked inside
+// pages/sales/Sales.tsx by the API switch. The legacy Sales page is in trash/.
+export const SalesPage = () => <Sales />;
 
 export const LossPreventionPage = () => {
   const devMode = useAppSelector((s) => s.app.devMode);

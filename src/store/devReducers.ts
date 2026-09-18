@@ -1,11 +1,16 @@
 import { combineReducers, type Reducer } from "@reduxjs/toolkit";
+import { resetAppSlice } from "../features/appSlice";
+
+import devSalesReducer from "../features/dev/devSalesSlice";
+import devSalesLedgerReducer from "../features/dev/devSalesLedgerSlice";
+import devSalesPerfReducer from "../features/dev/devSalesPerfSlice";
 
 /**
- * The dev tree's own copy of any page slice that has been forked.
+ * The dev tree's own copy of every page slice that has been forked.
  *
- * Empty until the first page is forked, which is the point — a page only gains
- * a dev slice while someone is changing it, and promoting the dev version back
- * to prod removes the entry again.
+ * Keys match the prod keys in `pageReducers` — `state.dev.salesLedger` is the
+ * dev twin of `state.prod.salesLedger` — so a page moving between trees reads
+ * the same path with one segment changed.
  *
  * Every slice added here MUST have a `name` that differs from its prod
  * counterpart, conventionally `devSalesPerf` for `salesPerf`. Redux hands every
@@ -15,19 +20,37 @@ import { combineReducers, type Reducer } from "@reduxjs/toolkit";
  * matter which key they are mounted under. `sliceIsolation.test.ts` fails the
  * build if a rename is missed, because nothing else would: the symptom is prod
  * quietly remembering a date you set in dev.
+ *
+ * Forked so far: Sales (desktop ledger + mobile performance).
  */
-export const devReducers = {} satisfies Record<string, Reducer>;
+export const devReducers = {
+  sales: devSalesReducer,
+  salesLedger: devSalesLedgerReducer,
+  salesPerf: devSalesPerfReducer,
+} satisfies Record<string, Reducer>;
 
 type DevState = { [K in keyof typeof devReducers]: ReturnType<(typeof devReducers)[K]> };
 
 /**
  * `combineReducers` logs "Store does not have a valid reducer" for an empty
- * map, and an empty dev namespace is the correct state of affairs today — so
- * the namespace is an identity reducer until it has something in it. Adding
- * the first slice switches it over with no other change.
+ * map, so an empty dev namespace — the state after every page has been
+ * promoted — falls back to an identity reducer.
  */
-export const devReducer = (
+const combined = (
   Object.keys(devReducers).length
     ? combineReducers(devReducers)
     : (state: DevState = {} as DevState) => state
 ) as Reducer<DevState>;
+
+/**
+ * The whole dev namespace resets on sign-out.
+ *
+ * Sign-out resets each prod slice by name, one dispatch per slice in TitleBar.
+ * Relying on the same for dev would mean every forked page adding its own
+ * resets there, and a fork that forgot would hand the next person to sign in
+ * on this device the last one's dev Sales. `resetAppSlice` is dispatched on
+ * every sign-out, so keying the dev tree to it clears every dev slice there
+ * is now and every one added later, with nothing to remember.
+ */
+export const devReducer: Reducer<DevState> = (state, action) =>
+  combined(action.type === resetAppSlice.type ? undefined : state, action);

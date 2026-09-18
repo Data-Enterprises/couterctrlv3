@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation, NavLink } from "react-router";
 import logo from "../../assets/portal/logo.webp";
+// The same logo with its navy recoloured to custom-white and the fill inside
+// the letter counters removed — the full-colour one vanishes on a navy bar.
+import logoReversed from "../../assets/portal/logo-reversed.webp";
 import { ChevronDownIcon } from "@heroicons/react/16/solid";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { categories } from "./utils";
@@ -168,6 +171,9 @@ const TitleBar = () => {
   const location = useLocation();
   const toast = useToast();
   const context = useAppSelector((state) => state.app);
+  /** On the dev API the bar turns navy, so which environment — and so which
+   *  UI tree — you are in is never a question. Prod keeps the white bar. */
+  const onNavy = context.apiEnv === "dev";
   const user = useAppSelector((state) => state.user);
   const nav = useAppSelector((state) => state.nav);
 
@@ -247,19 +253,30 @@ const TitleBar = () => {
     <div className="relative flex items-stretch">
       <button
         onClick={() => setAvatarOpen((o) => !o)}
-        className={`flex items-center gap-2 px-3 transition-colors h-full hover:bg-bkg ${
-          context.isDesktop ? "border-l border-gray-200" : ""
+        className={`flex items-center gap-2 px-3 transition-colors h-full ${
+          onNavy ? "hover:bg-custom-white/10" : "hover:bg-bkg"
+        } ${
+          context.isDesktop
+            ? onNavy
+              ? "border-l border-custom-white/15"
+              : "border-l border-gray-200"
+            : ""
         }`}
       >
         {/* A translucent white disc is invisible on a white bar, so the
             initials sit on navy — the same navy that marks the active
             category. */}
-        <div className="w-7 h-7 rounded-full bg-[#1e2a4a] flex items-center justify-center text-custom-white text-[11px] font-semibold flex-shrink-0">
+        <div
+          className={`w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-semibold flex-shrink-0 ${
+            // A navy disc on a navy bar disappears, so dev inverts it.
+            onNavy ? "bg-custom-white text-[#1e2a4a]" : "bg-[#1e2a4a] text-custom-white"
+          }`}
+        >
           {(user.firstName?.[0] ?? "").toUpperCase()}
           {(user.lastName?.[0] ?? "").toUpperCase()}
         </div>
         <ChevronDownIcon
-          className={`h-3.5 w-3.5 text-content/85 transition-transform duration-200 ${avatarOpen ? "rotate-180" : ""}`}
+          className={`h-3.5 w-3.5 transition-transform duration-200 ${onNavy ? "text-custom-white/85" : "text-content/85"} ${avatarOpen ? "rotate-180" : ""}`}
         />
       </button>
 
@@ -409,11 +426,15 @@ const TitleBar = () => {
       {/* Title bar */}
       <div
         data-testid="title-bar"
-        // White, not the app navy: the bar sits above a light page, and the
-        // navy read as a second, heavier header stacked on the content. The
-        // border is what separates it from the page now that the colour no
-        // longer does.
-        className="h-12 w-full flex items-stretch select-none relative z-50 bg-custom-white text-content border-b border-gray-200"
+        // White on prod: the bar sits above a light page, and navy read as a
+        // second, heavier header stacked on the content. On the dev API it is
+        // navy on purpose — the one thing that must never be mistaken is which
+        // environment, and so which UI tree, you are looking at.
+        className={`h-12 w-full flex items-stretch select-none relative z-50 border-b ${
+          onNavy
+            ? "bg-[#1e2a4a] text-custom-white border-[#1e2a4a]"
+            : "bg-custom-white text-content border-gray-200"
+        }`}
       >
         {/* Logo.
          *
@@ -429,7 +450,7 @@ const TitleBar = () => {
          */}
         <div className="flex min-w-0 flex-none items-center overflow-hidden px-2">
           <img
-            src={logo}
+            src={onNavy ? logoReversed : logo}
             alt="CounterCtrl Cloud"
             className="h-8 w-auto max-w-full object-contain"
           />
@@ -455,9 +476,13 @@ const TitleBar = () => {
                     // Navy now carries the ACTIVE category rather than the
                     // whole bar — the same job it does on the mobile tab bar.
                     className={`flex items-center gap-1.5 px-3 text-[12px] transition-colors rounded-md my-1.5 ${
-                      isActive
-                        ? "bg-[#1e2a4a]/8 text-[#1e2a4a] font-semibold"
-                        : "text-content/85 font-medium hover:text-content hover:bg-bkg"
+                      onNavy
+                        ? isActive
+                          ? "bg-custom-white/15 text-custom-white font-semibold"
+                          : "text-custom-white/85 font-medium hover:text-custom-white hover:bg-custom-white/10"
+                        : isActive
+                          ? "bg-[#1e2a4a]/8 text-[#1e2a4a] font-semibold"
+                          : "text-content/85 font-medium hover:text-content hover:bg-bkg"
                     }`}
                   >
                     <cat.icon className="h-3.5 w-3.5" />

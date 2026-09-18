@@ -1,0 +1,26 @@
+.loading-indicator-legacy {
+  width: 170px;
+  height: 20px;
+  border-radius: 20px;
+  color: #3b82f6;
+  border: 2px solid;
+  position: absolute;
+  left: 49%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+}
+.loading-indicator-legacy::before {
+  content: "";
+  position: absolute;
+  margin: 2px;
+  inset: 0 100% 0 0;
+  border-radius: inherit;
+  background: currentColor;
+  animation: l6 3s infinite;
+}
+@keyframes l6 {
+  100% {
+    inset: 0;
+  }
+}

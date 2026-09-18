@@ -70,7 +70,7 @@ export interface HourlyTotal {
 }
 
 export const useSubCols = () => {
-  const { selectedSubDept } = useAppSelector((state) => state.sales);
+  const { selectedSubDept } = useAppSelector((state) => state.prod.sales);
 
   const isSelected = (idx: number) => {
     // if (!selectedSubDept) return "";

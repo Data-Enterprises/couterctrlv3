@@ -3,6 +3,9 @@ import { setupStore } from "./index";
 import { pageReducers } from "./pageReducers";
 import { sessionReducers } from "./sessionReducers";
 import { devReducers } from "./devReducers";
+import { resetAppSlice } from "../features/appSlice";
+import { setThreshold as prodSetLedgerThreshold } from "../features/salesLedgerSlice";
+import { setThreshold as devSetLedgerThreshold } from "../features/dev/devSalesLedgerSlice";
 
 /** Every RTK action creator a module exports, by its action type.
  *
@@ -88,8 +91,48 @@ describe("the migration mounting", () => {
     }
   });
 
-  it("starts the dev namespace empty", () => {
-    const state = setupStore().getState();
-    expect(state.dev).toEqual({});
+  it("starts every dev slice as an exact copy of its prod twin", () => {
+    // A fork begins identical; only edits to the dev copy make them differ.
+    const state = setupStore().getState() as unknown as {
+      prod: Record<string, unknown>;
+      dev: Record<string, unknown>;
+    };
+    for (const key of Object.keys(devReducers)) {
+      expect(state.dev[key], `dev.${key} vs prod.${key}`).toEqual(state.prod[key]);
+    }
+  });
+});
+
+describe("the Sales fork", () => {
+  /** A threshold neither tree starts on, so any movement is visible. */
+  const CHANGED = { op: "lt", amount: 3 } as const;
+
+  it("moves dev Sales without moving prod Sales", () => {
+    const store = setupStore();
+    const before = store.getState().prod.salesLedger.threshold;
+    store.dispatch(devSetLedgerThreshold(CHANGED));
+
+    expect(store.getState().dev.salesLedger.threshold).toEqual(CHANGED);
+    expect(store.getState().prod.salesLedger.threshold).toEqual(before);
+  });
+
+  it("leaves dev Sales alone when prod Sales moves", () => {
+    const store = setupStore();
+    const before = store.getState().dev.salesLedger.threshold;
+    store.dispatch(prodSetLedgerThreshold(CHANGED));
+
+    expect(store.getState().prod.salesLedger.threshold).toEqual(CHANGED);
+    expect(store.getState().dev.salesLedger.threshold).toEqual(before);
+  });
+
+  it("clears the whole dev tree on sign-out", () => {
+    // Sign-out resets prod slice by slice; the dev tree resets on the one
+    // action every sign-out dispatches, so no fork can be forgotten.
+    const store = setupStore();
+    const initial = store.getState().dev.salesLedger.threshold;
+    store.dispatch(devSetLedgerThreshold(CHANGED));
+    expect(store.getState().dev.salesLedger.threshold).toEqual(CHANGED);
+    store.dispatch(resetAppSlice());
+    expect(store.getState().dev.salesLedger.threshold).toEqual(initial);
   });
 });
