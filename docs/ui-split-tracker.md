@@ -3,6 +3,7 @@
 Per page: `npm run split:page -- <page> --dry` → split → cut tablet/legacy →
 trash dead files → `tsc -b` + `npm run check:split -- <page>` → commit.
 Promote later with `npm run promote:page -- <page>` once dev is signed off.
+A page with `mobile: false` in the nav (`components/navigation/utils.tsx`) has no mobile version: its mobile code goes to trash in the split.
 Every page gets its own dev Redux state, as Sales has (split-page forks each page slice; `npm run fork:slice -- <page> <key>` for one added later).
 
 Status: **done** · **next** · blank = not started
@@ -31,7 +32,7 @@ Status: **done** · **next** · blank = not started
 | Receivers | `/receivers` | `receivers` | | legacy branch; tablet |
 | Item Lookup | `/item-lookup` | `lookup` | **done** | Option A (d4e66553) cherry-picked in first; legacy page, tablet and old desktop views removed (19 files, incl. the legacy `UpcScanner`); page moved up out of `lookup/dev/`, mobile page renamed `ItemLookupMobile`; own dev Redux state (`devItemLookupSlice`). Option A is dev-tree only now (prod keeps `LookupResultScreen`); `lookupDevView.ts` gone; promoting ships Option A |
 | UPC List | `/upc-upload` | `upc` | **done** | old `UpcList` (devMode off) + 48 dead files removed; current page moved up out of `upc/dev/` as the `UpcList` entry; `ColFilter` → `components/filters/ColFilterPopover`; own dev Redux state (`devUpcDevSlice`). Fixes flag is per tree now (dev on, prod off; promoting turns it on for prod); the per-environment stash is gone — each tree has its own slice and queue |
-| Forecasting | `/forecasting` | `forecast` | **done** | old `Forecasting` page (devMode off, and the tablet/phone fallback) + tablet removed; every device gets the current page (phones render desktop, like other desktop-only pages); `ForecastDev` is now the `Forecasting` entry; own dev Redux state (`devForecastSlice`, `devForecastDevSlice`); `src/api/forecast.ts` unused but left |
+| Forecasting | `/forecasting` | `forecast` | **done** | old `Forecasting` page (devMode off, and the tablet/phone fallback) + tablet removed; every device gets the current page; no mobile (not on the mobile nav); `ForecastDev` is now the `Forecasting` entry; own dev Redux state (`devForecastSlice`, `devForecastDevSlice`); `src/api/forecast.ts` unused but left |
 | Item Report | `/item-report` | `itemReport` | | |
 | Invoices | `/invoices` | `invoices` | | |
 | Inventory (Sub Dept + Vendor) | `/inventory-sub-department`, `/inventory-vendor` | `inventory` | | two entries, one folder |
