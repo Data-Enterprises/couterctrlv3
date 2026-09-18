@@ -1,4 +1,4 @@
-﻿import type { SubSale } from "../../interfaces";
+﻿import type { SubSale } from "../../../interfaces";
 import type { WindowPlan } from "./trackerWeeks";
 
 /**

@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { buildWindowPlan, rangeForWeeks } from "./trackerWeeks";
 import { buildSubDeptTotals, allDeptsTotal } from "./trackerTotals";
-import type { SubSale } from "../../interfaces";
+import type { SubSale } from "../../../interfaces";
 
 const plan = buildWindowPlan("2026-07-25", "2026-08-21");
 

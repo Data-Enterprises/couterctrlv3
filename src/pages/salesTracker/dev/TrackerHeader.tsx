@@ -4,9 +4,9 @@ import {
   MinusIcon,
   PlusIcon,
 } from "@heroicons/react/20/solid";
-import { formatCurrencyCompact } from "../../utils";
-import InfoButton from "../../components/InfoButton";
-import InfoPopover from "../../components/InfoPopover";
+import { formatCurrencyCompact } from "../../../utils";
+import InfoButton from "../../../components-dev/InfoButton";
+import InfoPopover from "../../../components-dev/InfoPopover";
 import { SALES_TRACKER_INFO } from "./salesTrackerInfo";
 import { signedPct } from "./trackerTone";
 

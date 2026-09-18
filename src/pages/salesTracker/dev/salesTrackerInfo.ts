@@ -1,4 +1,4 @@
-import type { InfoGlossaryEntry } from "../../components/InfoPopover";
+import type { InfoGlossaryEntry } from "../../../components-dev/InfoPopover";
 
 export const SALES_TRACKER_INFO: {
   title: string;

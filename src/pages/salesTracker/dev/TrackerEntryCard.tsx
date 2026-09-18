@@ -1,7 +1,7 @@
-import SearchCard from "../../components/SearchCard";
-import { useAppSelector, useAppDispatch } from "../../hooks";
-import { setStartDate } from "../../features/searchSlice";
-import { formatGoliathDate } from "../../utils";
+import SearchCard from "../../../components-dev/SearchCard";
+import { useAppSelector, useAppDispatch } from "../../../hooks";
+import { setStartDate } from "../../../features/searchSlice";
+import { formatGoliathDate } from "../../../utils";
 import { isoToDisplay, rangeForWeeks } from "./trackerWeeks";
 
 interface TrackerEntryCardProps {

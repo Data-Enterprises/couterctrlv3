@@ -26,6 +26,7 @@ import devAdminPageReducer from "../features/dev/devAdminPageSlice";
 import devGroupsPageReducer from "../features/dev/devGroupsPageSlice";
 import devQsReducer from "../features/dev/devQsSlice";
 import devLpActionsReducer from "../features/dev/devLpActionsSlice";
+import devSalesTrackerReducer from "../features/dev/devSalesTrackerSlice";
 
 /**
  * The dev tree's own copy of every page slice that has been forked.
@@ -71,6 +72,7 @@ export const devReducers = {
   groupsPage: devGroupsPageReducer,
   quicksight: devQsReducer,
   lpActions: devLpActionsReducer,
+  salesTracker: devSalesTrackerReducer,
 } satisfies Record<string, Reducer>;
 
 type DevState = { [K in keyof typeof devReducers]: ReturnType<(typeof devReducers)[K]> };

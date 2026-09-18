@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { formatCurrency2 } from "../../utils";
+import { formatCurrency2 } from "../../../utils";
 import { orDash } from "./trackerTone";
 import { SUB_GRID, NUM } from "./trackerColumns";
 import VsLy from "./VsLy";

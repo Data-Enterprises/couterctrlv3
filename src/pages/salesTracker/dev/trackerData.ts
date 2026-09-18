@@ -1,8 +1,8 @@
-import { getSalesTracker, getSubs } from "../../api/sales";
-import { createRequestQueue } from "../../utils/requestQueue";
+import { getSalesTracker, getSubs } from "../../../api/sales";
+import { createRequestQueue } from "../../../utils/requestQueue";
 import type { WindowPlan } from "./trackerWeeks";
-import { fetchAllPages } from "../../utils/paging";
-import type { SubSale, SubSalesJsonResp } from "../../interfaces";
+import { fetchAllPages } from "../../../utils/paging";
+import type { SubSale, SubSalesJsonResp } from "../../../interfaces";
 
 /**
  * Sub-department rows for one store or group over a window.

@@ -1,4 +1,4 @@
-import { formatCurrency2 } from "../../utils";
+import { formatCurrency2 } from "../../../utils";
 import { changeTone, signed, signedPct } from "./trackerTone";
 import { NUM } from "./trackerColumns";
 

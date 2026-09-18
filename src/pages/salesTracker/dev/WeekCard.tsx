@@ -1,8 +1,8 @@
 import { ChevronRightIcon, StarIcon } from "@heroicons/react/20/solid";
-import { formatCurrency2, formatCurrencyCompact } from "../../utils";
+import { formatCurrency2, formatCurrencyCompact } from "../../../utils";
 import { orDash, changeTone, signedPct } from "./trackerTone";
 import { WEEK_GRID, DAY_GRID, NUM } from "./trackerColumns";
-import TrendLine, { type TrendSeries } from "../../components/charts/TrendLine";
+import TrendLine, { type TrendSeries } from "../../../components-dev/charts/TrendLine";
 import VsLy from "./VsLy";
 import type { WeekTotal } from "./trackerTotals";
 

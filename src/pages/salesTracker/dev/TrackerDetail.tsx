@@ -1,8 +1,8 @@
 import { useMemo } from "react";
 import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
-import { useAppSelector, useAppDispatch } from "../../hooks";
-import { toggleWeek, setAllWeeksOpen } from "../../features/salesTrackerSlice";
-import { formatCurrency2 } from "../../utils";
+import { useAppSelector, useAppDispatch } from "../../../hooks";
+import { toggleWeek, setAllWeeksOpen } from "../../../features/dev/devSalesTrackerSlice";
+import { formatCurrency2 } from "../../../utils";
 import { changeTone, signed, signedPct, orDash } from "./trackerTone";
 import WeekCard from "./WeekCard";
 import { exportTracker } from "./trackerExport";
@@ -24,7 +24,7 @@ interface TrackerDetailProps {
  */
 const TrackerDetail = ({ row, plan, scopeLabel }: TrackerDetailProps) => {
   const dispatch = useAppDispatch();
-  const expandedWeeks = useAppSelector((s) => s.salesTracker.expandedWeeks);
+  const expandedWeeks = useAppSelector((s) => s.dev.salesTracker.expandedWeeks);
 
   // The panel header formats its dates; the strip underneath was printing them
   // raw, so the same window appeared twice in two different notations.
