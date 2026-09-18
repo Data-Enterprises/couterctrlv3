@@ -6,7 +6,6 @@ import { setSelectedStore } from "../../../features/itemLookupSlice";
 import DevUpcScanner from "./DevUpcScanner";
 import RecentLookupsStrip from "./RecentLookupsStrip";
 import RecentLookupsCard from "./RecentLookupsCard";
-import { lookupDevViewOn } from "./lookupDevView";
 
 interface LookupEntryScreenProps {
   onSearch: (upc: string) => void;
@@ -31,7 +30,6 @@ const LookupEntryScreen = ({
 }: LookupEntryScreenProps) => {
   const dispatch = useAppDispatch();
   const { error } = useAppSelector((s) => s.itemScan);
-  const apiEnv = useAppSelector((s) => s.app.apiEnv);
   const { assignedStores } = useAppSelector((s) => s.user);
   const { selectedStore } = useAppSelector((s) => s.prod.item);
   const [manualUpc, setManualUpc] = useState("");
@@ -39,7 +37,8 @@ const LookupEntryScreen = ({
   const [cameraOpen, setCameraOpen] = useState(false);
 
   const hasStore = selectedStore > 0;
-  const devView = lookupDevViewOn(apiEnv);
+  // Option A's recents card: on in the dev tree, off in prod until promoted.
+  const devView = false;
 
   const handleManualSearch = () => {
     if (!manualUpc.trim() || !hasStore) return;

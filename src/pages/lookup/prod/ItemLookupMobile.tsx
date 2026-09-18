@@ -27,8 +27,6 @@ import { setError } from "../../../features/itemScanSlice";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import LookupEntryScreen from "./LookupEntryScreen";
 import LookupResultScreen from "./LookupResultScreen";
-import LookupItemReport from "./LookupItemReport";
-import { lookupDevViewOn } from "./lookupDevView";
 import {
   buildDayBuckets,
   computeMargin,
@@ -40,7 +38,7 @@ import { isSaleRow } from "../../../utils/saleType";
 const ItemLookupMobile = () => {
   const dispatch = useAppDispatch();
   const toast = useToast();
-  const { url, token, apiEnv } = useAppSelector((s) => s.app);
+  const { url, token } = useAppSelector((s) => s.app);
   const { assignedStores } = useAppSelector((s) => s.user);
   const {
     selectedStore,
@@ -191,9 +189,11 @@ const ItemLookupMobile = () => {
   }
 
   const buckets = buildDayBuckets(itemLookupHistory);
-  // Identical props either way, so the two screens stay swappable and prod's
-  // render path is never edited — see lookupDevView.ts.
-  const Result = lookupDevViewOn(apiEnv) ? LookupItemReport : LookupResultScreen;
+  // Identical props either way, so the two screens stay swappable. By tree:
+  // the dev tree shows the new report (Option A); prod keeps
+  // LookupResultScreen until this tree is promoted. (Was keyed off apiEnv while both
+  // environments shared one tree — lookupDevView.ts.)
+  const Result = LookupResultScreen;
 
   return (
     <div className="relative">
