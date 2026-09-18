@@ -3,7 +3,7 @@ import { useTicketsCtx } from "./hooks";
 import { useResizableBox } from "../../hooks/useResizableBox";
 import ResizeHandle from "../../components/ResizeHandle";
 import { getUserLevels } from "../../api/team";
-import { setUserLevels } from "../../features/usersSlice";
+import { setTicketUserLevels } from "./ticketsSlice";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import type { JsonError, UserLevelJsonResp } from "../../interfaces";
 import { setActiveTab, type TicketsTab } from "./ticketsSlice";
@@ -45,7 +45,7 @@ const Tickets = () => {
     getUserLevels(ctx.url, ctx.token)
       .then((resp) => {
         const j: UserLevelJsonResp = resp.data;
-        if (j.error === 0) ctx.dispatch(setUserLevels(j.levels));
+        if (j.error === 0) ctx.dispatch(setTicketUserLevels(j.levels));
       })
       .catch((err: JsonError) => toast.error(err.message));
   }, []);

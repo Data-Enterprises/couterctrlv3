@@ -3,8 +3,8 @@ import { useAppDispatch, useAppSelector } from "../../hooks";
 // Flat context-selector hook, mirrors useOrganizationCtx()/useAdminPageCtx().
 // userLevel/companies come from the logged-in user's own login data
 // (state.user); userLevels (the full level list, for the elevated-access
-// check) is shared, already-fetched-elsewhere data owned by usersSlice —
-// read here rather than duplicated into ticketsSlice.
+// check) is Tickets' own copy in ticketsSlice — Tickets is on hold as an
+// experiment and touches no other page's state.
 export const useTicketsCtx = () => {
   const dispatch = useAppDispatch();
   const { url, token, isDesktop, isTablet } = useAppSelector(
@@ -13,8 +13,8 @@ export const useTicketsCtx = () => {
   const { userid, userLevel, companies } = useAppSelector(
     (state) => state.user,
   );
-  const { userLevels } = useAppSelector((state) => state.users);
   const {
+    userLevels,
     activeTab,
     tickets,
     messages,

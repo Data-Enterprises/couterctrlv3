@@ -44,7 +44,7 @@ Status: **done** · **next** · blank = not started
 | Home | `/` | `home` | | |
 | Settings | `/settings` | `settings` | | |
 | QuickSight | `/quicksight` | `quicksight` | | |
-| Tickets | `/tickets` | `tickets` | | prototype; slice + mock data live in the page |
+| Tickets | `/tickets` | `tickets` | | experiment on hold. Own Redux state only: `userLevels` moved off User Management's `users` slice into `ticketsSlice` (which, with its mock data, still lives in the page). Not split yet |
 
 ## Not routed — decide: split, or trash
 

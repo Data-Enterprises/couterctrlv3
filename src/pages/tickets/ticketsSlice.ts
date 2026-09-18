@@ -1,4 +1,5 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import type { UserLevel } from "../../interfaces";
 import type {
   Ticket,
   TicketMsg,
@@ -32,6 +33,9 @@ export type QuickFilter = "all" | "unassigned" | "mine" | "urgent";
 
 interface TicketsState {
   activeTab: TicketsTab;
+  /** The full user-level list, for the elevated-access check. Tickets fetches
+   *  and keeps its own copy rather than borrowing User Management's. */
+  userLevels: UserLevel[];
 
   tickets: Ticket[];
   messages: TicketMsg[];
@@ -64,6 +68,7 @@ interface TicketsState {
 
 const initialState: TicketsState = {
   activeTab: "tickets",
+  userLevels: [],
 
   tickets: MOCK_TICKETS,
   messages: MOCK_MESSAGES,
@@ -96,6 +101,9 @@ const ticketsSlice = createSlice({
   name: "tickets",
   initialState,
   reducers: {
+    setTicketUserLevels: (state, action: PayloadAction<UserLevel[]>) => {
+      state.userLevels = action.payload;
+    },
     setActiveTab: (state, action: PayloadAction<TicketsTab>) => {
       state.activeTab = action.payload;
     },
@@ -277,6 +285,7 @@ const ticketsSlice = createSlice({
 });
 
 export const {
+  setTicketUserLevels,
   setActiveTab,
   setSelectedTicketId,
   setQuickFilter,
