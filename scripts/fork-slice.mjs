@@ -130,6 +130,7 @@ for (const f of devFiles) {
   let src = readFileSync(f, "utf8");
   const before = src;
   for (const p of selectorParams(src)) src = src.replace(readRe(p), `${p}.dev.${key}`);
+  src = src.replace(new RegExp(`getState\\(\\)\\.(?:prod\\.)?${key}\\b`, "g"), `getState().dev.${key}`);
   if (src !== before) writeFileSync(f, src);
 }
 console.log(`\nDone. Next: npx tsc -b && node scripts/check-split.mjs ${page}`);

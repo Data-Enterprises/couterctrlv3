@@ -15,14 +15,9 @@ import { devReducer } from "./devReducers";
  * `replaceReducer` is never called: flipping the environment changes which
  * branch a page reads, not which reducers exist.
  *
- * MIGRATION — the page slices are currently mounted TWICE, once under `prod`
- * and once at the root where they have always been. That is deliberate and
- * temporary. A reducer is a pure function, so the two copies receive the same
- * actions from the same initial state and hold identical values at all times;
- * a page can read `state.salesPerf` or `state.prod.salesPerf` and get the same
- * answer. That is what lets the 524 call sites move one page per commit
- * instead of all at once. When the last one has moved, delete the spread
- * marked below and the compiler will point at anything left behind.
+ * Page code reads `state.prod.<slice>` or `state.dev.<slice>` for its tree —
+ * never a bare `state.<slice>`: page slices are not mounted at the root. (They
+ * were, twice over, while the pages moved to their trees one at a time.)
  */
 export const setupStore = () =>
   configureStore({
@@ -30,9 +25,6 @@ export const setupStore = () =>
       ...sessionReducers,
       prod: combineReducers(pageReducers),
       dev: devReducer,
-      // Delete this line when no page reads a bare `state.<pageSlice>` — see
-      // the migration note above.
-      ...pageReducers,
     }),
   });
 

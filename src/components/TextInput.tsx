@@ -38,7 +38,7 @@ const TextInput = <T,>({
     }
   };
   const { userInfo, selectedUserId, users } = useAppSelector(
-    (state) => state.users
+    (state) => state.prod.users
   );
 
   const handleEncryptionToggle = () => {

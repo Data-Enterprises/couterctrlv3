@@ -89,6 +89,7 @@ const promoteText = (from, src) => {
     return next === spec ? m : `${head}${q}${next}${q}`;
   });
   for (const p of selectorParams(out)) out = out.replace(new RegExp(`(?<![.\\w])${p}\\.dev\\.`, "g"), `${p}.prod.`);
+  out = out.replace(/getState\(\)\.dev\./g, "getState().prod.");
   return out.replace(/\bThe dev tree\b/g, "The prod tree").replace(/\bdev tree\b/g, "prod tree");
 };
 // A dev slice back to its prod form: no "Dev copy" header, the prod name.

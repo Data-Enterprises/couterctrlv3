@@ -219,9 +219,9 @@ const EventPerfMobile = ({
    */
   const runSearch = async () => {
     dispatch(beginEventLoad({ owner: pageKey, message: "Loading..." }));
-    const tag = { owner: pageKey, gen: store.getState().eventPerf.loadGen };
+    const tag = { owner: pageKey, gen: store.getState().prod.eventPerf.loadGen };
     const current = () => {
-      const s = store.getState().eventPerf;
+      const s = store.getState().prod.eventPerf;
       return s.owner === tag.owner && s.loadGen === tag.gen;
     };
     try {
@@ -472,7 +472,7 @@ const EventPerfMobile = ({
     if (!t) return;
     const tag = {
       owner: pageKey,
-      gen: store.getState().eventPerf.loadGen,
+      gen: store.getState().prod.eventPerf.loadGen,
       saleId: t.saleId,
     };
     loadReceipt(t.saleId, t.day, t.storeid)

@@ -361,6 +361,11 @@ const rewriteState = (f, tree) => {
       const ns = tree === "dev" && forked.has(key) ? "dev" : "prod";
       src = src.replace(new RegExp(`(?<![.\\w])${p}\\.(?:prod\\.|dev\\.)?${key}\\b`, "g"), `${p}.${ns}.${key}`);
     }
+  // Direct store reads in thunks and handlers: getState().<key>.
+  for (const key of pageKeys.keys()) {
+    const ns = tree === "dev" && forked.has(key) ? "dev" : "prod";
+    src = src.replace(new RegExp(`getState\\(\\)\\.(?:prod\\.|dev\\.)?${key}\\b`, "g"), `getState().${ns}.${key}`);
+  }
   if (src !== before) writeFileSync(f, src);
 };
 for (const dest of Object.keys(treeCopies)) if (/\.tsx?$/.test(dest)) rewriteState(dest, dest.startsWith(DEV) ? "dev" : "prod");

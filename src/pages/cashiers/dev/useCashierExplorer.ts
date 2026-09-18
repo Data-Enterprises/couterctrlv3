@@ -90,7 +90,7 @@ export const useCashierExplorer = () => {
    */
   const beginRequest = () => {
     const currentId = () =>
-      dispatch((_, getState) => getState().cashier.explorerRequestId);
+      dispatch((_, getState) => getState().dev.cashier.explorerRequestId);
     dispatch(beginExplorerRequest());
     const id = currentId();
     return () => currentId() !== id;

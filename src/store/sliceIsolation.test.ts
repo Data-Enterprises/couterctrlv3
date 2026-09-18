@@ -80,14 +80,16 @@ describe("dev and prod slices stay isolated", () => {
   });
 });
 
-describe("the migration mounting", () => {
-  it("keeps the root and prod copies of a page slice in step", () => {
-    const store = setupStore();
-    const state = store.getState() as Record<string, unknown> & {
+describe("the store layout", () => {
+  it("mounts page slices under prod only, never at the root", () => {
+    // Page code reads state.prod.<slice> or state.dev.<slice>; a bare
+    // state.<slice> would be a page reading neither tree.
+    const state = setupStore().getState() as unknown as Record<string, unknown> & {
       prod: Record<string, unknown>;
     };
     for (const key of Object.keys(pageReducers)) {
-      expect(state[key], `${key} root vs prod`).toEqual(state.prod[key]);
+      expect(state[key], `${key} at the root`).toBeUndefined();
+      expect(state.prod[key], `prod.${key}`).toBeDefined();
     }
   });
 

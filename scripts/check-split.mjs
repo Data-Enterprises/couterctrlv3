@@ -180,6 +180,9 @@ const reads = (f) => {
   for (const p of selectorParams(src))
     for (const m of src.matchAll(new RegExp(`(?<![.\\w])${p}\\.(?:(prod|dev)\\.)?(\\w+)`, "g")))
       if (pageKeys.has(m[2])) out.push({ ns: m[1] ?? "root", key: m[2], text: m[0] });
+  // Thunks and event handlers read the store directly: getState().<...>.
+  for (const m of src.matchAll(/getState\(\)\.(?:(prod|dev)\.)?(\w+)/g))
+    if (pageKeys.has(m[2])) out.push({ ns: m[1] ?? "root", key: m[2], text: m[0] });
   return out;
 };
 const stateBad = [];
