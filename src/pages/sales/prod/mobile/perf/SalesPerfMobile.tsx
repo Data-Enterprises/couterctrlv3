@@ -8,7 +8,7 @@ import {
 } from "react";
 import { useAppDispatch, useAppSelector } from "../../../../../hooks";
 import { useToast } from "../../../../../components/toasts/hooks/useToast";
-import SearchCard from "../../ui/SearchCard";
+import SearchCard from "../../../../../components/SearchCard";
 import { getHourly, getSubs, getWeekly } from "../../../../../api/sales";
 import {
   fetchSubDeptRows,
@@ -16,11 +16,11 @@ import {
 } from "../../../../../utils/marginRows";
 import { withProductCode } from "../../../shared/ledgerUtils";
 import { SALES_MOBILE_INFO } from "../../salesInfo";
-import MobileInfoSheet from "../../ui/mobile/MobileInfoSheet";
+import MobileInfoSheet from "../../../../../components/mobile/MobileInfoSheet";
 import MobileSortChips, {
   type SortOption,
-} from "../../ui/mobile/MobileSortChips";
-import type { DetailTab } from "../../ui/mobile/MobilePerfDetail";
+} from "../../../../../components/mobile/MobileSortChips";
+import type { DetailTab } from "../../../../../components/mobile/MobilePerfDetail";
 import { MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/20/solid";
 import {
   addDays,
@@ -77,11 +77,11 @@ import {
   sortPairs,
   storeKeyOf,
   type PairSort,
-} from "../../../mobile/perf/perfData";
-import PairedBars from "./PairedBars";
-import PerfCardHeader from "./PerfCardHeader";
-import MobilePerfCard from "../../ui/mobile/MobilePerfCard";
-import MobilePerfDetail from "../../ui/mobile/MobilePerfDetail";
+} from "./perfData";
+import PairedBars from "../../../../../components/mobile/perf/PairedBars";
+import PerfCardHeader from "../../../../../components/mobile/perf/PerfCardHeader";
+import MobilePerfCard from "../../../../../components/mobile/MobilePerfCard";
+import MobilePerfDetail from "../../../../../components/mobile/MobilePerfDetail";
 import PerfStoreReport from "./PerfStoreReport";
 import PerfDrillList from "./PerfDrillList";
 

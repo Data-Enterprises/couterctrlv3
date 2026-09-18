@@ -6,10 +6,10 @@ import {
 } from "@heroicons/react/20/solid";
 import MobileSortChips, {
   type SortOption,
-} from "../../ui/mobile/MobileSortChips";
+} from "../../../../../components/mobile/MobileSortChips";
 import { formatCurrency2 } from "../../../../../utils";
-import { LY_COLOR, TY_COLOR } from "./perfColors";
-import { fmtChange, pairChangePct, type PerfPair, type PairSort } from "../../../mobile/perf/perfData";
+import { LY_COLOR, TY_COLOR } from "../../../../../components/mobile/perf/perfColors";
+import { fmtChange, pairChangePct, type PerfPair, type PairSort } from "./perfData";
 import type { PerfDrill } from "../../../../../features/salesPerfSlice";
 
 /** What each drill can sort by. Hours adds the time of day, which is also its

@@ -69,10 +69,10 @@ import {
   type EventTotals,
 } from "./eventPerfData";
 import type { ReceiptLine } from "./receiptTypes";
-import PairedBars from "../../sales/mobile/perf/PairedBars";
-import PerfDayChart from "../../sales/mobile/perf/PerfDayChart";
-import PerfCardHeader from "../../sales/mobile/perf/PerfCardHeader";
-import { TY_COLOR } from "../../sales/mobile/perf/perfColors";
+import PairedBars from "../../../components/mobile/perf/PairedBars";
+import PerfDayChart from "../../../components/mobile/perf/PerfDayChart";
+import PerfCardHeader from "../../../components/mobile/perf/PerfCardHeader";
+import { TY_COLOR } from "../../../components/mobile/perf/perfColors";
 import MobilePerfCard from "../../../components/mobile/MobilePerfCard";
 import MobilePerfDetail from "../../../components/mobile/MobilePerfDetail";
 import EventStoreReport from "./EventStoreReport";

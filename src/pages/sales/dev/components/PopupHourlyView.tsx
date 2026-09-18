@@ -41,8 +41,8 @@ import {
   type Coverage,
   type GradeBasis,
 } from "../../shared/ledgerUtils";
-import ThresholdFilter from "../ui/filters/ThresholdFilter";
-import ThresholdSlider from "../ui/filters/ThresholdSlider";
+import ThresholdFilter from "../../../../components-dev/filters/ThresholdFilter";
+import ThresholdSlider from "../../../../components-dev/filters/ThresholdSlider";
 
 const ampm = (h: number) =>
   h === 0 ? "12 AM" : h < 12 ? `${h} AM` : h === 12 ? "12 PM" : `${h - 12} PM`;

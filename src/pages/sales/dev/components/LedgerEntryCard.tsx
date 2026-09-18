@@ -1,4 +1,4 @@
-import SearchCard from "../ui/SearchCard";
+import SearchCard from "../../../../components-dev/SearchCard";
 
 interface LedgerEntryCardProps {
   onSearch: () => void;

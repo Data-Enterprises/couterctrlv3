@@ -46,22 +46,18 @@ const strip = (src) =>
     .replace(/^\s*\/\/.*$/gm, blank);
 
 /**
- * Dev/prod UI trees (`pages/<page>/prod/` and `pages/<page>/dev/`) — not scanned
- * twice.
+ * Dev/prod UI trees (`pages/<page>/prod/` and `pages/<page>/dev/`).
  *
  *   prod/     is a released snapshot. Nothing is fixed there directly: a fix
  *             goes into dev/, gets tested, and is promoted over prod. Auditing
  *             both reports every finding twice and points at the copy you are
- *             not meant to edit.
+ *             not meant to edit. Everything under dev/ is audited normally —
+ *             that is where changes land.
  *
- *   dev/ui/   copies of src/components/, which this audit has never scanned.
- *             `ui/InfoButton.tsx` IS the canonical button, not a hand-rolled
- *             one — flagging it as bespoke is the rule misfiring.
- *
- * Everything else under dev/ is audited normally: that is where changes land.
+ * The component libraries (src/components and src/components-dev) are outside
+ * src/pages and have never been scanned by this audit.
  */
-const isTreeCopy = (p) =>
-  /^src\/pages\/[^/]+\/prod\//.test(p) || /^src\/pages\/[^/]+\/dev\/ui\//.test(p);
+const isTreeCopy = (p) => /^src\/pages\/[^/]+\/prod\//.test(p);
 
 const isLegacy = (p) =>
   /legacy/i.test(p) || /tabletComps/.test(p) || /Tablet\.tsx$/.test(p);
@@ -221,7 +217,7 @@ const bucket = (hits) => {
 
 console.log("\n" + "=".repeat(76));
 console.log("  THEME / STYLING / STRUCTURE AUDIT");
-console.log("  " + treeCopies + " prod/ snapshot and ui/ copy files skipped (audited in dev/)");
+console.log("  " + treeCopies + " prod/ snapshot files skipped (audited in dev/)");
 console.log("  " + files.filter((f) => !f.legacy).length + " current files, " +
             files.filter((f) => f.legacy).length + " legacy (reported separately)");
 console.log("=".repeat(76));

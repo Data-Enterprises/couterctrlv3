@@ -12,8 +12,8 @@ import {
   setLastFetchedItemsKey,
 } from "../../../../features/salesLedgerSlice";
 import type { GradingMetric } from "../../../../features/salesLedgerSlice";
-import ThresholdFilter from "../ui/filters/ThresholdFilter";
-import ThresholdSlider from "../ui/filters/ThresholdSlider";
+import ThresholdFilter from "../../../../components/filters/ThresholdFilter";
+import ThresholdSlider from "../../../../components/filters/ThresholdSlider";
 import {
   formatCurrency2,
   formatBigNumber,
@@ -45,7 +45,7 @@ import {
 import type { Severity } from "./LedgerRow";
 import { aggregateByCode, itemSeverity, matchItemRows } from "../../components/itemGrading";
 import type { SubDeptMargin } from "../../../../interfaces";
-import UpcContextMenu from "../ui/UpcContextMenu";
+import UpcContextMenu from "../../../../components/UpcContextMenu";
 import {
   formatPct,
   chipClass,
@@ -54,9 +54,9 @@ import {
   PCT_COL_W,
   type SevFilter,
 } from "./utils";
-import SeverityBadge from "../ui/SeverityBadge";
-import TextFilter from "../ui/filters/TextFilter";
-import SelectFilter from "../ui/filters/SelectFilter";
+import SeverityBadge from "../../../../components/SeverityBadge";
+import TextFilter from "../../../../components/filters/TextFilter";
+import SelectFilter from "../../../../components/filters/SelectFilter";
 
 type DeptRow = {
   id: number;

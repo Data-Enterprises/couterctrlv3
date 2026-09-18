@@ -1,9 +1,9 @@
 import { ChevronRightIcon } from "@heroicons/react/20/solid";
 import { formatCurrency2 } from "../../../../../utils";
-import type { PerfDay, PerfTotals } from "../../../mobile/perf/perfData";
-import PairedBars from "./PairedBars";
-import PerfDayChart from "./PerfDayChart";
-import { COUPON_COLORS, COUPON_LABELS, LY_COLOR, TY_COLOR } from "./perfColors";
+import type { PerfDay, PerfTotals } from "./perfData";
+import PairedBars from "../../../../../components-dev/mobile/perf/PairedBars";
+import PerfDayChart from "../../../../../components-dev/mobile/perf/PerfDayChart";
+import { COUPON_COLORS, COUPON_LABELS, LY_COLOR, TY_COLOR } from "../../../../../components-dev/mobile/perf/perfColors";
 
 /** Darkest to lightest, so the stack and the legend agree. */
 const COUPON_KEYS = ["digital", "elecStore", "elecInstore", "store"] as const;

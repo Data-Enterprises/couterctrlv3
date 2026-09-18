@@ -1,4 +1,4 @@
-import type { InfoGlossaryEntry } from "./ui/InfoPopover";
+import type { InfoGlossaryEntry } from "../../../components/InfoPopover";
 
 export const SALES_LEDGER_INFO: { title: string; purpose: string; glossary: InfoGlossaryEntry[] } = {
   title: "Sales",

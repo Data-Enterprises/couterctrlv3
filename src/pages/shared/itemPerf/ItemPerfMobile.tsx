@@ -82,10 +82,10 @@ import {
 } from "./itemPerfData";
 import MobilePerfCard from "../../../components/mobile/MobilePerfCard";
 import MobilePerfDetail from "../../../components/mobile/MobilePerfDetail";
-import PairedBars from "../../sales/mobile/perf/PairedBars";
-import PerfDayChart from "../../sales/mobile/perf/PerfDayChart";
-import PerfCardHeader from "../../sales/mobile/perf/PerfCardHeader";
-import { LY_COLOR, TY_COLOR } from "../../sales/mobile/perf/perfColors";
+import PairedBars from "../../../components/mobile/perf/PairedBars";
+import PerfDayChart from "../../../components/mobile/perf/PerfDayChart";
+import PerfCardHeader from "../../../components/mobile/perf/PerfCardHeader";
+import { LY_COLOR, TY_COLOR } from "../../../components/mobile/perf/perfColors";
 
 /** How many recents sit in the page before the rest move to a sheet. */
 const RECENTS_INLINE = 3;

@@ -1,4 +1,4 @@
-import InfoButton from "../ui/InfoButton";
+import InfoButton from "../../../../components-dev/InfoButton";
 import { useState, useRef } from "react";
 import { useAppSelector, useAppDispatch } from "../../../../hooks";
 import {
@@ -12,9 +12,9 @@ import { headerDeltaPill } from "../../../../utils/severity";
 import {
   MagnifyingGlassIcon,
 } from "@heroicons/react/20/solid";
-import ThresholdFilter from "../ui/filters/ThresholdFilter";
-import ThresholdSlider from "../ui/filters/ThresholdSlider";
-import InfoPopover from "../ui/InfoPopover";
+import ThresholdFilter from "../../../../components-dev/filters/ThresholdFilter";
+import ThresholdSlider from "../../../../components-dev/filters/ThresholdSlider";
+import InfoPopover from "../../../../components-dev/InfoPopover";
 import { SALES_LEDGER_INFO } from "../salesInfo";
 
 const THRESHOLD_DEFAULT = 9;

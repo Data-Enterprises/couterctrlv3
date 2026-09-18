@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import ResizableModalShell from "../ui/modals/ResizableModalShell";
+import ResizableModalShell from "../../../../components/modals/ResizableModalShell";
 import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import type { SubSale, HourlySale } from "../../../../interfaces";
 import type { DayDot } from "./LedgerRow";

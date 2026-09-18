@@ -55,7 +55,7 @@ import { ClipboardDocumentListIcon } from "@heroicons/react/20/solid";
 import { useCriticalReport } from "../../../itemReport/criticalHandoff";
 // import DataGapReport from "./DataGapReport";
 // import PopupCategoryList from "./PopupCategoryList";
-import LoadingIndicator from "../ui/loading/LoadingIndicator";
+import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
 import type { StoreSelection } from "./LedgerRow";
 import { formatPct, pillClass, severityHeaderBgClass } from "./utils";
 import GhostFlames from "./GhostFlames";
