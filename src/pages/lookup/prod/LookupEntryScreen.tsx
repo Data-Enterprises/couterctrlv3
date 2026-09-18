@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
 import { CameraIcon, ExclamationTriangleIcon } from "@heroicons/react/20/solid";
-import SingleStoreSearchCard from "../../../components-dev/SingleStoreSearchCard";
-import { setSelectedStore } from "../../../features/dev/devItemLookupSlice";
+import SingleStoreSearchCard from "../../../components/SingleStoreSearchCard";
+import { setSelectedStore } from "../../../features/itemLookupSlice";
 import DevUpcScanner from "./DevUpcScanner";
 import RecentLookupsStrip from "./RecentLookupsStrip";
 import RecentLookupsCard from "./RecentLookupsCard";
@@ -33,7 +33,7 @@ const LookupEntryScreen = ({
   const { error } = useAppSelector((s) => s.itemScan);
   const apiEnv = useAppSelector((s) => s.app.apiEnv);
   const { assignedStores } = useAppSelector((s) => s.user);
-  const { selectedStore } = useAppSelector((s) => s.dev.item);
+  const { selectedStore } = useAppSelector((s) => s.prod.item);
   const [manualUpc, setManualUpc] = useState("");
   const [retryKey, setRetryKey] = useState(0);
   const [cameraOpen, setCameraOpen] = useState(false);

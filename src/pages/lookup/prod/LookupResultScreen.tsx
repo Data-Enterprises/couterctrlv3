@@ -14,12 +14,12 @@ import {
   rowsOfSaleType,
 } from "./lookupMetrics";
 import RecentLookupsStrip from "./RecentLookupsStrip";
-import LocationTabs from "../../../components-dev/filters/LocationTabs";
+import LocationTabs from "../../../components/filters/LocationTabs";
 import { useState } from "react";
-import BottomSheet from "../../../components-dev/BottomSheet";
+import BottomSheet from "../../../components/BottomSheet";
 import DailyBreakdown from "./DailyBreakdown";
 import SaleTypeBreakdown from "./SaleTypeBreakdown";
-import type { ItemLookupHistory } from "../../../features/dev/devItemLookupSlice";
+import type { ItemLookupHistory } from "../../../features/itemLookupSlice";
 
 interface LookupResultScreenProps {
   description: string;

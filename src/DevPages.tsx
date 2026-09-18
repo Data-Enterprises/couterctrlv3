@@ -9,7 +9,6 @@ import CouponsLegacy from "./pages/coupons/CouponsLegacy.tsx";
 import Receivers from "./pages/receivers/Receivers.tsx";
 import ReceiversLegacy from "./pages/receivers/ReceiversLegacy.tsx";
 import ItemLookup from "./pages/lookup/ItemLookup.tsx";
-import ItemLookupLegacy from "./pages/lookup/ItemLookupLegacy.tsx";
 import Admin from "./pages/admin/dev/Admin.tsx";
 import AdminLegacy from "./pages/admin/AdminLegacy.tsx";
 import Groups from "./pages/groups/dev/Groups.tsx";
@@ -64,10 +63,9 @@ export const ReceiversPage = () => {
 // tree, picked inside pages/upc/UpcList.tsx by the API switch.
 export const UpcPage = () => <UpcList />;
 
-export const ItemLookupPage = () => {
-  const devMode = useAppSelector((s) => s.app.devMode);
-  return devMode ? <ItemLookup /> : <ItemLookupLegacy />;
-};
+// No legacy branch: Item Lookup has a prod and a dev tree, picked inside
+// pages/lookup/ItemLookup.tsx by the API switch.
+export const ItemLookupPage = () => <ItemLookup />;
 
 export const AdminPage = () => {
   const devMode = useAppSelector((s) => s.app.devMode);

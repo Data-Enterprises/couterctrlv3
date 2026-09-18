@@ -37,7 +37,7 @@ import {
 } from "./lookupMetrics";
 import { isSaleRow } from "../../../utils/saleType";
 
-const ItemLookupDev = () => {
+const ItemLookupMobile = () => {
   const dispatch = useAppDispatch();
   const toast = useToast();
   const { url, token, apiEnv } = useAppSelector((s) => s.app);
@@ -52,13 +52,13 @@ const ItemLookupDev = () => {
     itemLookupHistoryAll,
     totalSales,
     totalQty,
-  } = useAppSelector((s) => s.item);
+  } = useAppSelector((s) => s.prod.item);
   const [isLoading, setIsLoading] = useState(false);
   const resolvedStoreName = useStoreName(selectedStore);
   const availableStoreNumbers = useAppSelector(
-    (s) => s.item.availableStoreNumbers,
+    (s) => s.prod.item.availableStoreNumbers,
   );
-  const selectedStoreNumber = useAppSelector((s) => s.item.selectedStoreNumber);
+  const selectedStoreNumber = useAppSelector((s) => s.prod.item.selectedStoreNumber);
   // Co-located stores resolve to one assignedStores record — rewrite the
   // embedded number to the location on screen. See utils/storeIdentity.
   const storeName = applyStoreNumberToName(
@@ -217,4 +217,4 @@ const ItemLookupDev = () => {
   );
 };
 
-export default ItemLookupDev;
+export default ItemLookupMobile;

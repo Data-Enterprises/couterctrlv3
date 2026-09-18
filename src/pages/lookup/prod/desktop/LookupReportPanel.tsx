@@ -4,7 +4,7 @@ import {
   ExclamationTriangleIcon,
 } from "@heroicons/react/20/solid";
 import { formatCurrency2 } from "../../../../utils";
-import type { SaleTypeSummary } from "../../../../features/dev/devItemLookupSlice";
+import type { SaleTypeSummary } from "../../../../features/itemLookupSlice";
 import SaleTypeBreakdown from "../SaleTypeBreakdown";
 import type { MarginResult, DayBucket, TrendResult } from "../lookupMetrics";
 import {

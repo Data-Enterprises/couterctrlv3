@@ -22,20 +22,41 @@ interface InfoButtonProps {
   /** Defaults to "About this view"; override where the panel isn't a view. */
   title?: string;
   className?: string;
+  /**
+   * Which surface it sits on.
+   *
+   * "navy" is the desktop panel header this was written for. "light" is the
+   * white card the mobile screens use, where the navy styling renders a white
+   * glyph on white — which is why those screens had started hand-rolling their
+   * own copy, exactly the drift this component exists to stop.
+   */
+  variant?: "navy" | "light";
 }
+
+const SHELL: Record<"navy" | "light", string> = {
+  navy: "w-[22px] h-[22px] rounded border border-custom-white/20 text-custom-white/75 hover:text-custom-white hover:border-custom-white/40",
+  light: "w-7 h-7 rounded-full text-content/85 active:bg-bkg",
+};
+
+const GLYPH: Record<"navy" | "light", string> = {
+  navy: "w-3.5 h-3.5",
+  light: "w-5 h-5",
+};
 
 const InfoButton = ({
   onClick,
   title = "About this view",
   className,
+  variant = "navy",
 }: InfoButtonProps) => (
   <button
+    type="button"
     onClick={onClick}
     title={title}
     aria-label={title}
-    className={`w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/75 hover:text-custom-white hover:border-custom-white/40 transition-colors ${className ?? ""}`}
+    className={`flex items-center justify-center transition-colors ${SHELL[variant]} ${className ?? ""}`}
   >
-    <QuestionMarkCircleIcon className="w-3.5 h-3.5" />
+    <QuestionMarkCircleIcon className={GLYPH[variant]} />
   </button>
 );
 

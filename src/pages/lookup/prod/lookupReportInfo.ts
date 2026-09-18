@@ -1,4 +1,4 @@
-import type { InfoGlossaryEntry } from "../../../components-dev/InfoPopover";
+import type { InfoGlossaryEntry } from "../../../components/InfoPopover";
 
 /**
  * The mobile "?" sheet for the Item Lookup report — dev only.

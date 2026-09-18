@@ -5,7 +5,7 @@ import { Provider } from "react-redux";
 import { setupStore } from "../../../store";
 import LookupItemReport from "./LookupItemReport";
 import type { DayBucket, MarginResult, TrendResult } from "./lookupMetrics";
-import type { ItemLookupHistory } from "../../../features/itemLookupSlice";
+import type { ItemLookupHistory } from "../../../features/dev/devItemLookupSlice";
 
 const bucket = (date: string, revenue: number, units: number): DayBucket => ({
   date,

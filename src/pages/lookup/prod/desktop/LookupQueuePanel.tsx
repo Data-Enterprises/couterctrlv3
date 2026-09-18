@@ -1,12 +1,12 @@
-import InfoButton from "../../../../components-dev/InfoButton";
+import InfoButton from "../../../../components/InfoButton";
 import { useState } from "react";
 import {
   ExclamationTriangleIcon,
   MagnifyingGlassIcon,
 } from "@heroicons/react/20/solid";
-import type { QueueItem } from "../../../../features/dev/devItemLookupSlice";
-import LocationTabs from "../../../../components-dev/filters/LocationTabs";
-import InfoPopover from "../../../../components-dev/InfoPopover";
+import type { QueueItem } from "../../../../features/itemLookupSlice";
+import LocationTabs from "../../../../components/filters/LocationTabs";
+import InfoPopover from "../../../../components/InfoPopover";
 import { LOOKUP_INFO } from "../lookupInfo";
 
 interface LookupQueuePanelProps {

@@ -26,7 +26,7 @@ interface Props {
  * fall back to until `units` was added to `RecentLookup`.
  */
 const RecentLookupsCard = ({ onSelect, bare = false }: Props) => {
-  const { recentLookups } = useAppSelector((s) => s.dev.item);
+  const { recentLookups } = useAppSelector((s) => s.prod.item);
   if (!recentLookups.length) return null;
 
   const rows = (

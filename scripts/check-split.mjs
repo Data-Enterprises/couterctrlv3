@@ -134,7 +134,9 @@ const walk = (starts, forbidden, label) => {
     fail(`${label}:\n          ${chain.reverse().join("\n            -> ")}`);
   }
 };
-walk(files.filter((f) => f.startsWith(DEV)),
+// Tests are left out: a test may build the whole app store on purpose, and
+// the store holds every slice, prod and dev.
+walk(files.filter((f) => f.startsWith(DEV) && !/\.test\.tsx?$/.test(f)),
   (f) => (f.startsWith("src/components/") && !isToast(f)) || f.startsWith(PROD) || devTwinOf.has(f),
   "dev tree reaches no prod UI and no prod twin slice");
 // Types too: they vanish at build, but a dev tree borrowing a type from the

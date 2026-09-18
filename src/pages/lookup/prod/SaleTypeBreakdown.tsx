@@ -1,4 +1,4 @@
-import type { SaleTypeSummary } from "../../../features/dev/devItemLookupSlice";
+import type { SaleTypeSummary } from "../../../features/itemLookupSlice";
 import { formatCurrency2 } from "../../../utils";
 import { formatUnits, hasSaleTypeBreakdown } from "./lookupMetrics";
 

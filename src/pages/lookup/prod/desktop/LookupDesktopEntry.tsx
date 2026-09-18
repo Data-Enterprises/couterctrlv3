@@ -4,8 +4,8 @@ import {
   useAppSelector,
   useStoreName,
 } from "../../../../hooks";
-import SingleSelect from "../../../../components-dev/SingleSelect";
-import { setSelectedStore } from "../../../../features/dev/devItemLookupSlice";
+import SingleSelect from "../../../../components/SingleSelect";
+import { setSelectedStore } from "../../../../features/itemLookupSlice";
 
 interface LookupDesktopEntryProps {
   onSearch: (upcs: string[]) => void;
@@ -20,7 +20,7 @@ const parseUpcs = (raw: string): string[] =>
 const LookupDesktopEntry = ({ onSearch }: LookupDesktopEntryProps) => {
   const dispatch = useAppDispatch();
   const { assignedStores } = useAppSelector((s) => s.user);
-  const { selectedStore } = useAppSelector((s) => s.dev.item);
+  const { selectedStore } = useAppSelector((s) => s.prod.item);
   const storeName = useStoreName(selectedStore, "");
   const [rawUpcs, setRawUpcs] = useState("");
 

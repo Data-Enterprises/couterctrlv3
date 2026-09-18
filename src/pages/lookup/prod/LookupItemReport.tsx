@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
 import { formatCurrency2 } from "../../../utils";
-import type { ItemLookupHistory } from "../../../features/dev/devItemLookupSlice";
+import type { ItemLookupHistory } from "../../../features/itemLookupSlice";
 import type { DayBucket, MarginResult, TrendResult } from "./lookupMetrics";
 import {
   buildDayBuckets,
@@ -22,9 +22,9 @@ import {
 } from "./lookupReport";
 import ItemDayChart from "./ItemDayChart";
 import LookupDayRows from "./LookupDayRows";
-import LocationTabs from "../../../components-dev/filters/LocationTabs";
-import InfoButton from "../../../components-dev/InfoButton";
-import MobileInfoSheet from "../../../components-dev/mobile/MobileInfoSheet";
+import LocationTabs from "../../../components/filters/LocationTabs";
+import InfoButton from "../../../components/InfoButton";
+import MobileInfoSheet from "../../../components/mobile/MobileInfoSheet";
 import { LOOKUP_REPORT_INFO } from "./lookupReportInfo";
 
 interface Props {
