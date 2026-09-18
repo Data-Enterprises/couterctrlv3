@@ -164,14 +164,12 @@ interface SubMarginState {
   processMobileItemData: boolean;
   itemDataMobile: ItemRowMobile[];
   filteredItemDataMobile: ItemRowMobile[];
-  filteredItemDataMobileCopy: ItemRowMobile[];
   scannedItemMobile: ItemRowMobile | null;
   searchedItemMobile: ItemRowMobile | null;
   mobileMainView: MobileMainView;
   viewDaily: boolean;
   upcSearch: string;
   mSort: MSort;
-  viewTabletCards: boolean;
 }
 
 const initialState: SubMarginState = {
@@ -230,7 +228,6 @@ const initialState: SubMarginState = {
   processMobileItemData: false,
   itemDataMobile: [],
   filteredItemDataMobile: [],
-  filteredItemDataMobileCopy: [],
   scannedItemMobile: null,
   searchedItemMobile: null,
   mobileMainView: "overview",
@@ -244,7 +241,6 @@ const initialState: SubMarginState = {
     margin: "",
     reset: "",
   },
-  viewTabletCards: true,
 };
 
 const subMarginSlice = createSlice({
@@ -259,17 +255,8 @@ const subMarginSlice = createSlice({
     setMargins: (state, action: PayloadAction<SubDeptMargin[]>) => {
       state.margins = action.payload;
     },
-    setFilteredMargins: (state, action: PayloadAction<SubDeptMargin[]>) => {
-      state.filteredMargins = action.payload;
-    },
     setSelectedSubDeptId: (state, action: PayloadAction<number | null>) => {
       state.selectedSubDeptId = action.payload;
-    },
-    setSubMarginSelectedDay: (state, action: PayloadAction<string | null>) => {
-      state.selectedDay = action.payload;
-    },
-    setLastFetchedTrendKey: (state, action: PayloadAction<string | null>) => {
-      state.lastFetchedTrendKey = action.payload;
     },
     setWeekTrendMargins: (
       state,
@@ -314,21 +301,8 @@ const subMarginSlice = createSlice({
           break;
       }
     },
-    setWeekTrendMarginsLW: (
-      state,
-      action: PayloadAction<{ data: SubDeptMargin[]; week: number }>,
-    ) => {
-      if (action.payload.week === 4)
-        state.weekFourMarginsLW = action.payload.data;
-    },
-    setSubDeptFilterText: (state, action: PayloadAction<string>) => {
-      state.subDeptFitlerText = action.payload;
-    },
     setLoadingSubDepts: (state, action: PayloadAction<boolean>) => {
       state.loadingSubDepts = action.payload;
-    },
-    setLoadingMargins: (state, action: PayloadAction<boolean>) => {
-      state.loadingMargins = action.payload;
     },
     setSubDeptGrade(
       state,
@@ -470,9 +444,6 @@ const subMarginSlice = createSlice({
     setItemGridData: (state, action: PayloadAction<ItemRow[]>) => {
       state.itemGridData = action.payload;
     },
-    setFilteredItemGridData: (state, action: PayloadAction<ItemRow[]>) => {
-      state.filteredItemGridData = action.payload;
-    },
     setOpenExportModal: (state, action: PayloadAction<boolean>) => {
       state.openExportModal = action.payload;
     },
@@ -488,105 +459,9 @@ const subMarginSlice = createSlice({
     setFilteredCostGridData: (state, action: PayloadAction<SubDeptCost[]>) => {
       state.filteredCostGridData = action.payload;
     },
-    handleWeekReset: (state) => {
-      state.itemGridData = [];
-      state.filteredItemGridData = [];
-      state.subDeptCost = [];
-      state.filteredCostGridData = [];
-      state.selectedWeekDay = "";
-      state.subDeptGridView = "item";
-    },
-    setScannedUpc: (state, action: PayloadAction<string>) => {
-      state.scannedUpc = action.payload;
-    },
     setPause: (state, action: PayloadAction<boolean>) => {
       state.pause = action.payload;
     },
-    setScannedItemHistory: (
-      state,
-      action: PayloadAction<ItemLookupHistory[]>,
-    ) => {
-      state.scannedItemHistory = action.payload;
-    },
-    setItemHistoryModalOpen: (state, action: PayloadAction<boolean>) => {
-      state.itemHistoryModalOpen = action.payload;
-    },
-    setFetchingItemHistory: (state, action: PayloadAction<boolean>) => {
-      state.fetchingItemHistory = action.payload;
-    },
-    setItemDataMobile: (state, action: PayloadAction<ItemRowMobile[]>) => {
-      state.itemDataMobile = action.payload;
-    },
-    setItemDataFilteredMobile: (
-      state,
-      action: PayloadAction<ItemRowMobile[]>,
-    ) => {
-      state.filteredItemDataMobile = action.payload;
-    },
-    setProcessMobileItemData: (state, action: PayloadAction<boolean>) => {
-      state.processMobileItemData = action.payload;
-    },
-    setScannedItemMobile: (
-      state,
-      action: PayloadAction<ItemRowMobile | null>,
-    ) => {
-      state.scannedItemMobile = action.payload;
-    },
-    setSearchedItemMobile: (
-      state,
-      action: PayloadAction<ItemRowMobile | null>,
-    ) => {
-      state.searchedItemMobile = action.payload;
-    },
-    setMobileMainView: (state, action: PayloadAction<MobileMainView>) => {
-      state.mobileMainView = action.payload;
-    },
-    setViewDaily: (state, action: PayloadAction<boolean>) => {
-      state.viewDaily = action.payload;
-    },
-    setUpcSearch: (state, action: PayloadAction<string>) => {
-      state.upcSearch = action.payload;
-    },
-    setMobileSort: (
-      state: SubMarginState,
-      action: PayloadAction<{ option: SortOption }>,
-    ) => {
-      const { option } = action.payload; // the key of the mSort obj to be updated
-      const currentSort = state.mSort[option]; // the key's current sort value (asc | desc | "")
-
-      // The value to be set to the selected sorting option
-      let newSort: MobileSort;
-      if (currentSort === "asc") {
-        newSort = "desc";
-      } else if (currentSort === "desc") {
-        newSort = "";
-      } else {
-        newSort = "asc";
-      }
-
-      // Set the sort option's new value
-      state.mSort[option] = newSort;
-
-      // reset other sort options
-      (Object.keys(state.mSort) as SortOption[]).forEach((key) => {
-        if (key !== option && state.mSort[key] !== "") {
-          state.mSort[key] = "";
-        }
-      });
-    },
-    resetMobileSort: (state) => {
-      state.mSort = {
-        total_sales: "",
-        qty: "",
-        cogs: "",
-        margin: "",
-        reset: "",
-      };
-    },
-    setViewTabletCards: (state, action: PayloadAction<boolean>) => {
-      state.viewTabletCards = action.payload;
-    },
-    resetSubMarginState: () => initialState,
   },
 });
 
@@ -599,22 +474,15 @@ export const {
   setAvailableStoreNumbers,
   setSelectedStoreNumber,
   resetSubDeptGrades,
-  setFilteredMargins,
-  setLoadingMargins,
   setLoadingSubDepts,
   setMargins,
   setSearchValue,
   setSelectedSubDeptId,
-  setSubMarginSelectedDay,
-  setLastFetchedTrendKey,
   setSelectedWeek,
   setSubDepts,
-  setSubDeptFilterText,
   setWeekTrendMargins,
   setWeekTrendMarginsLY,
-  setWeekTrendMarginsLW,
   setSelectedWeekDay,
-  resetSubMarginState,
   setUpcFilter,
   setDescFilter,
   setThresholdFilter,
@@ -624,29 +492,12 @@ export const {
   setThreshOperator,
   setItemGridData,
   setOpenExportModal,
-  setFilteredItemGridData,
   resetFilters,
   setSubDeptCost,
   setFilteredCostGridData,
   setSubDeptGridView,
   setOpenCostExportModal,
-  handleWeekReset,
   requerySubDeptMargins,
-  setScannedUpc,
   setPause,
-  setScannedItemHistory,
-  setItemHistoryModalOpen,
-  setFetchingItemHistory,
-  setItemDataMobile,
-  setItemDataFilteredMobile,
-  setProcessMobileItemData,
-  setScannedItemMobile,
-  setMobileMainView,
-  setViewDaily,
-  setSearchedItemMobile,
-  setUpcSearch,
-  setMobileSort,
-  resetMobileSort,
-  setViewTabletCards,
 } = subMarginSlice.actions;
 export default subMarginSlice.reducer;

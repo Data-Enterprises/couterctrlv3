@@ -54,9 +54,8 @@ Status: **done** · **next** · blank = not started
 | `priceSimulator` | **trashed** (dead, per Steve) with its slice; `utils/priceSimCalc` and `api/priceSim` stay (Forecast uses them) |
 | `suggested` | **done (dev-only)** — Suggested Weight, Coming Soon: `dev/` tree, empty `prod/`; route still commented out in `main.tsx` (restoring it needs no path change); phone placeholder removed (not on mobile nav); own dev Redux state (`devSuggestedSlice`) |
 
-## Leftovers to clean as pages come up
+## Leftovers
 
-- Unused page slices (nothing live reads or dispatches them): `reportBuilder` (`suggested` is Suggested Weight's — Coming Soon, keep)
-
-- Dead components: `SevBadge`, `SevChips`, `MobileDayStrip`, `MobileKpiStrip`, `MobileSignalRow`
-- `LoadingIndicator`: dev library drops the legacy spinner — answer `--keep-lib` on promote until legacy is gone
+- Dead files under `pages/home` (`ResetPassword`, `SecurityQuestion`, portal `support/`) — Home is left as is; say the word to trash them
+- `receiversSlice` text filters (`setFilter`/`applyFilters`/`resetFilters` and their fields) may be dead with the old grid; not confirmed, kept
+- Cleaned 2026-09-18: devMode toggle + legacy nav, the root mount of page slices, `reportBuilder` slice, dead `api/` files (cashiers, forecast, invoices, vendors), dead components/hooks, unused `subMargin`/`receivers` slice fields
