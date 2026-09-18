@@ -36,7 +36,7 @@ Status: **done** · **next** · blank = not started
 | Forecasting | `/forecasting` | `forecast` | **done** | old `Forecasting` page (devMode off, and the tablet/phone fallback) + tablet removed; every device gets the current page; no mobile (not on the mobile nav); `ForecastDev` is now the `Forecasting` entry; own dev Redux state (`devForecastSlice`, `devForecastDevSlice`); `src/api/forecast.ts` unused but left |
 | Item Report | `/item-report` | `itemReport` | | |
 | Invoices | `/invoices` | `invoices` | | |
-| Inventory (Sub Dept + Vendor) | `/inventory-sub-department`, `/inventory-vendor` | `inventory` | | two entries, one folder |
+| Price Opt (Sub Dept + Vendor) | `/inventory-sub-department`, `/inventory-vendor` | `inventory` | **done (dev-only)** | Coming Soon: `dev/` tree, empty `prod/` (README) until greenlight; two guarded switchers; no page slice (session state only) |
 | Sales Tracker | `/sales-tracker` | `salesTracker` | | |
 | Admin | `/admin` | `admin` | **done** | legacy page + its forms/ and the `admin` slice removed (9 files); page moved up out of `admin/dev/`; desktop only; own dev Redux state (`devAdminPageSlice`) |
 | Store Groups | `/groups` | `groups` | **done** | legacy page, old forms/ and tablet removed (7 files); page moved up out of `groups/dev/`; the phone view's create/update/delete forms moved from `tablet/` to `mobile/`. page-only fields moved out of the session `group` slice into `groupsPageSlice`, forked for dev (`devGroupsPageSlice`); `groups` and `selectedGroup` stay in the shared session slice (the store picker reads them) |

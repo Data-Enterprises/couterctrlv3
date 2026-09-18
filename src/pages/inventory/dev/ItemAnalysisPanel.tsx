@@ -4,17 +4,17 @@ import {
   InformationCircleIcon,
   ArrowTrendingUpIcon,
 } from "@heroicons/react/20/solid";
-import { formatCurrency2 } from "../../utils";
+import { formatCurrency2 } from "../../../utils";
 import {
   estimatedPricePoints,
   actualPricePoints,
   mixedPriceInsight,
   classifyPattern,
   suggestPrice,
-} from "../../utils/pricePoints";
+} from "../../../utils/pricePoints";
 import ActualPriceRow, { ACT_COLS } from "./ActualPriceRow";
 import { itemCostStats, type ProductSummary } from "./inventoryData";
-import type { ActualFetchState } from "../../hooks/useActualPricePoints";
+import type { ActualFetchState } from "../../../hooks/useActualPricePoints";
 
 /**
  * One item, read two ways — and only one of them gets a vote.

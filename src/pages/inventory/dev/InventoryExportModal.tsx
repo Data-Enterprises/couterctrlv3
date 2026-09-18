@@ -1,15 +1,15 @@
 import { useMemo, useState } from "react";
 import { ArrowDownTrayIcon, XMarkIcon } from "@heroicons/react/20/solid";
-import ResizableModalShell from "../../components/modals/ResizableModalShell";
-import { rowsToCsv, downloadCsv } from "../../utils/csvExport";
+import ResizableModalShell from "../../../components-dev/modals/ResizableModalShell";
+import { rowsToCsv, downloadCsv } from "../../../utils/csvExport";
 import {
   estimatedPricePoints,
   actualPricePoints,
   suggestPrice,
-} from "../../utils/pricePoints";
+} from "../../../utils/pricePoints";
 import { itemCostStats, type ProductSummary } from "./inventoryData";
 import type { TreeGroup } from "./InventoryTreePanel";
-import type { TransactionListItem } from "../../interfaces";
+import type { TransactionListItem } from "../../../interfaces";
 
 /**
  * CSV export for both Price Opt pages.

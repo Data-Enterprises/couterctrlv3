@@ -5,9 +5,9 @@ import {
   MagnifyingGlassIcon,
   ArrowDownTrayIcon,
 } from "@heroicons/react/20/solid";
-import { formatCurrencyCompact } from "../../utils";
-import TextFilter from "../../components/filters/TextFilter";
-import HeaderIconButton from "../../components/HeaderIconButton";
+import { formatCurrencyCompact } from "../../../utils";
+import TextFilter from "../../../components-dev/filters/TextFilter";
+import HeaderIconButton from "../../../components-dev/HeaderIconButton";
 import type { ProductSummary } from "./inventoryData";
 
 /**
