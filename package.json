@@ -17,7 +17,8 @@
     "audit:legacy": "node scripts/legacy-audit.mjs",
     "split:page": "node scripts/split-page.mjs",
     "check:split": "node scripts/check-split.mjs",
-    "promote:page": "node scripts/promote-page.mjs"
+    "promote:page": "node scripts/promote-page.mjs",
+    "fork:slice": "node scripts/fork-slice.mjs"
   },
   "dependencies": {
     "@ericblade/quagga2": "^1.8.4",

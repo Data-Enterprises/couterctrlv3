@@ -144,6 +144,46 @@ walk(files.filter((f) => f.startsWith("src/components-dev/")),
   (f) => f.startsWith("src/components/") && !isToast(f),
   "components-dev reaches no prod library component");
 
+// ── 2b. state ─────────────────────────────────────────────────────────────
+// Redux reads, which imports can't show: a dev file selecting prod state
+// renders prod data no matter which slice it imports.
+console.log("\n2b. STATE (Redux reads)");
+const reducerKeys = (file) => {
+  const src = readFileSync(file, "utf8");
+  const block = src.slice(src.indexOf("= {"), src.indexOf("} satisfies"));
+  return new Set([...block.matchAll(/^\s*(\w+):\s*\w+,/gm)].map((m) => m[1]));
+};
+const pageKeys = reducerKeys("src/store/pageReducers.ts");
+const devKeys = reducerKeys("src/store/devReducers.ts");
+const selectorParams = (src) => {
+  const ps = new Set();
+  for (const m of src.matchAll(/useAppSelector\(\s*\(?\s*(\w+)/g)) ps.add(m[1]);
+  for (const m of src.matchAll(/\b(\w+)\s*:\s*RootState\b/g)) ps.add(m[1]);
+  return ps;
+};
+const reads = (f) => {
+  const src = stripComments(readFileSync(f, "utf8"));
+  const out = [];
+  for (const p of selectorParams(src))
+    for (const m of src.matchAll(new RegExp(`(?<![.\\w])${p}\\.(?:(prod|dev)\\.)?(\\w+)`, "g")))
+      if (pageKeys.has(m[2])) out.push({ ns: m[1] ?? "root", key: m[2], text: m[0] });
+  return out;
+};
+const stateBad = [];
+for (const f of files.filter((f) => /\.tsx?$/.test(f) && !/\.test\.tsx?$/.test(f))) {
+  const dev = f.startsWith(DEV) || f.startsWith("src/components-dev/");
+  const prod = f.startsWith(PROD);
+  if (!dev && !prod) continue;
+  for (const r of reads(f)) {
+    if (prod && r.ns !== "prod") stateBad.push(`${f}: ${r.text} — the prod tree reads state.prod.*`);
+    if (dev && devKeys.has(r.key) && r.ns !== "dev") stateBad.push(`${f}: ${r.text} — "${r.key}" has a dev slice, read state.dev.${r.key}`);
+    if (dev && !devKeys.has(r.key) && r.ns === "root") stateBad.push(`${f}: ${r.text} — read state.prod.${r.key} (or fork it: npm run fork:slice)`);
+    if (dev && r.ns === "dev" && !devKeys.has(r.key)) stateBad.push(`${f}: ${r.text} — no dev slice mounted at "${r.key}"`);
+  }
+}
+if (stateBad.length) stateBad.forEach((b) => fail(b));
+else ok("prod tree reads state.prod, dev tree and components-dev read state.dev for every forked slice");
+
 // ── 3. imports ────────────────────────────────────────────────────────────
 console.log("\n3. IMPORTS");
 if (unresolved.length) unresolved.forEach((u) => fail(`unresolved ${u}`));

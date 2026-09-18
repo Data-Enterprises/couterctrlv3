@@ -33,7 +33,7 @@ interface Props {
 type LpSortCol = "trans" | "qty" | "amount" | "avg";
 
 const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch, onDaySelect }: Props) => {
-  const cashier = useAppSelector((s) => s.prod.lossPrevention);
+  const cashier = useAppSelector((s) => s.dev.lossPrevention);
   const search = useAppSelector((s) => s.search);
   const assignedStores = useAppSelector((s) => s.user.assignedStores);
   const [infoOpen, setInfoOpen] = useState(false);

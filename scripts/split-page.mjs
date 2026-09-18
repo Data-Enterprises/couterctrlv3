@@ -20,12 +20,13 @@
  *   3. DEV LIBRARY: every src/components file the tree reaches (toasts aside)
  *      that src/components-dev lacks is copied there, and the dev tree is
  *      pointed at src/components-dev.
- *   4. DEV SLICES: page slices the tree uses are forked into
+ *   4. DEV SLICES: every page slice the tree uses is forked into
  *      features/dev/dev<Name>Slice.ts with a distinct slice name, mounted in
- *      store/devReducers.ts, and the dev tree reads state.dev.<key>. A slice
- *      that code outside the page also uses (a global modal, another page) is
- *      NOT forked by default — forking it would cut dev off from that code —
- *      and is listed; --fork forces one, --share keeps one prod-side.
+ *      store/devReducers.ts, and the dev tree reads state.dev.<key> — dev and
+ *      prod each get their own Redux state, as Sales has. Code OUTSIDE the
+ *      page that uses the same slice stays on prod state and is listed: if
+ *      the dev tree renders it (a modal borrowed from another page), it needs
+ *      a look. --share keeps a slice prod-side (dev reads state.prod).
  *   5. Selectors: page-slice reads become state.prod.<key> in the prod tree,
  *      and state.dev.<key> (forked) or state.prod.<key> (shared) in dev.
  *   6. The original files go to trash/ (same path, restorable) and each entry
@@ -229,7 +230,7 @@ const fork = [], share = [];
 for (const [key, mod] of candidates) {
   const others = files.filter((f) => !inPage(f) && live.has(f) && f !== mod && !f.startsWith("src/store/") &&
     !f.startsWith("src/features/dev/") && !/\.test\.tsx?$/.test(f) && /\.(ts|tsx)$/.test(f) && sharesKey(f, key, mod));
-  const shared = FORCE_SHARE.has(key) || (others.length && !FORCE_FORK.has(key));
+  const shared = FORCE_SHARE.has(key);
   (shared ? share : fork).push({ key, mod, dev: devFileFor(mod), exists: devKeys.has(key), others });
 }
 for (const k of FORCE_FORK) if (!candidates.some(([key]) => key === k)) die(`--fork ${k}: the ${page} tree doesn't use that slice`);
@@ -249,10 +250,16 @@ if (switchers.length) {
 console.log(`  dev library: ${Object.keys(libCopies).length} component file(s) to add to ${DEVLIB}`);
 Object.values(libCopies).forEach((f) => console.log(`      ${f}`));
 console.log(`  slices forked for dev: ${fork.length ? "" : "(none)"}`);
-fork.forEach((s) => console.log(`      ${s.key}  ${s.mod} -> ${s.dev}${s.exists ? "  (already forked, reused)" : ""}`));
+fork.forEach((s) => {
+  console.log(`      ${s.key}  ${s.mod} -> ${s.dev}${s.exists ? "  (already forked, reused)" : ""}`);
+  if (s.others.length) {
+    console.log(`        also used outside ${PAGE} — these stay on prod state; check any the dev tree renders:`);
+    s.others.forEach((o) => console.log(`          ${o}`));
+  }
+});
 if (share.length) {
-  console.log(`  slices kept shared (used outside ${PAGE}; dev reads state.prod — pass --fork <key> to fork anyway):`);
-  share.forEach((s) => console.log(`      ${s.key}  used by ${s.others.slice(0, 4).join(", ")}${s.others.length > 4 ? ` +${s.others.length - 4}` : ""}`));
+  console.log(`  slices kept shared (--share; dev reads state.prod):`);
+  share.forEach((s) => console.log(`      ${s.key}`));
 }
 if (DRY) process.exit(0);
 
@@ -318,6 +325,8 @@ const rewriteState = (f, tree) => {
   if (src !== before) writeFileSync(f, src);
 };
 for (const dest of Object.keys(treeCopies)) if (/\.tsx?$/.test(dest)) rewriteState(dest, dest.startsWith(DEV) ? "dev" : "prod");
+// The dev library copies made for this page read dev state for its slices.
+for (const dest of Object.keys(libCopies)) if (/\.tsx?$/.test(dest)) rewriteState(dest, "dev");
 
 // ── trash the originals, write the switchers ──────────────────────────────
 for (const f of [...tree, ...tests]) {

@@ -10,7 +10,7 @@ import {
   setSaleTypes,
   setNoSaleTypesFound,
   setLoadingSaleTypes,
-} from "../../../features/lossPreventionSlice";
+} from "../../../features/dev/devLossPreventionSlice";
 import type { JsonError } from "../../../interfaces";
 import LPDesktop from "./desktop/LPDesktop";
 import { isGroupSearch } from "../../../features/searchSlice";

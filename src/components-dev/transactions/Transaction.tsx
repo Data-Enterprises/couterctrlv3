@@ -53,7 +53,7 @@ const Transaction = ({ trans, compact, saleType }: TransactionProps) => {
     : "84px minmax(0, 1fr) 46px 80px 92px";
   const toast = useToast();
   const context = useAppSelector((s) => s.app);
-  const lpSaleType = useAppSelector((s) => s.lossPrevention.selectedSaleType);
+  const lpSaleType = useAppSelector((s) => s.dev.lossPrevention.selectedSaleType);
   const selectedSaleType = saleType ?? lpSaleType;
 
   const first = trans[0];

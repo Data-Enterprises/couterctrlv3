@@ -3,6 +3,7 @@
 Per page: `npm run split:page -- <page> --dry` → split → cut tablet/legacy →
 trash dead files → `tsc -b` + `npm run check:split -- <page>` → commit.
 Promote later with `npm run promote:page -- <page>` once dev is signed off.
+Every page gets its own dev Redux state, as Sales has (split-page forks each page slice; `npm run fork:slice -- <page> <key>` for one added later).
 
 Status: **done** · **next** · blank = not started
 
@@ -21,9 +22,9 @@ Status: **done** · **next** · blank = not started
 | Categories | `/categories` | `categories` | | after itemPerf; dry run clean |
 | Vendors | `/vendors` | `vendors` | | after itemPerf |
 | Sub Dept Margins | `/sub-dept-margins` | `subDepts` | | after itemPerf; has tablet + old `dev/`; `subDepts/index.ts` re-exports cogs/dates helpers until split |
-| Coupon Sales | `/coupon-sales` | `couponSales` | | after eventPerf (done); dead `mobile/` folder already trashed with LP |
-| Loss Prevention | `/loss-prevention` | `lossPrevention` | **done** | legacy page + `lossPreventionLegacy` state and tablet removed (35 files to trash); `lossPrevention` slice stays shared (Coupons, Coupon Sales, `Transaction` read it); `TransactionModal` is a switcher Coupons still uses
-| Coupons | `/coupons` | `coupons` | | legacy branch; imports LP's `TransactionModal` |
+| Coupon Sales | `/coupon-sales` | `couponSales` | | after eventPerf (done); dead `mobile/` folder already trashed with LP; reuses `devLossPreventionSlice` — check `CpnSalesDetailPanel`'s transaction drill-down |
+| Loss Prevention | `/loss-prevention` | `lossPrevention` | **done** | legacy page + `lossPreventionLegacy` state and tablet removed (35 files to trash); own dev Redux state (`state.dev.lossPrevention`, `devLossPreventionSlice`); `TransactionModal` moved to `pages/coupons` (only Coupons opened it; reads prod state)
+| Coupons | `/coupons` | `coupons` | | legacy branch; owns `TransactionModal` now (reads prod `lossPrevention`), dev copy must read `state.dev` |
 | LP Actions | `/lp-actions` | `lpActions` | | |
 | Cashiers | `/cashiers` | `cashiers` | | legacy branch |
 | Orders | `/orders` | `orders` | | legacy branch; tablet |

@@ -10,7 +10,7 @@ import {
   setSaleDateFilter,
   setSelectedCashier,
   setCashierSaleIds,
-} from "../../../../features/lossPreventionSlice";
+} from "../../../../features/dev/devLossPreventionSlice";
 import ThresholdFilter from "../../../../components-dev/filters/ThresholdFilter";
 import type {
   TransactionListItem,
@@ -270,7 +270,7 @@ interface Props {
 
 const LPTransactionPanel = ({ onTransactionClick }: Props) => {
   const dispatch = useAppDispatch();
-  const cashier = useAppSelector((s) => s.prod.lossPrevention);
+  const cashier = useAppSelector((s) => s.dev.lossPrevention);
   const search = useAppSelector((s) => s.search);
 
   const [selectedOverview, setSelectedOverview] =

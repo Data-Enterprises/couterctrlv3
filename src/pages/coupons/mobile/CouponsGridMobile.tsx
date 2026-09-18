@@ -3,7 +3,7 @@ import Modal from "../../../components/Modal";
 import SingleSelect from "../../../components/SingleSelect";
 import { useAppDispatch } from "../../../hooks";
 import { useCouponActions } from "../hooks/useCouponActions";
-import TransactionModal from "../../lossPrevention/TransactionModal";
+import TransactionModal from "../TransactionModal";
 import CpnCard from "./CpnCard";
 
 const CouponsGridMobile = () => {

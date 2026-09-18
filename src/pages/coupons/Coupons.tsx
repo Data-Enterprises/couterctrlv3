@@ -15,7 +15,7 @@ import { formatGoliathDate } from "../../utils";
 
 import SearchCard from "../../components/SearchCard";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
-import TransactionModal from "../lossPrevention/TransactionModal";
+import TransactionModal from "./TransactionModal";
 import CouponsMobile from "./mobile/CouponsMobile";
 import CouponsMobileDev from "./mobile/devMobile";
 import CouponListPanel from "./CouponListPanel";

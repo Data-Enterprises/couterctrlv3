@@ -37,7 +37,7 @@ import {
   setTransactionLoadingMessage,
   toggleNoTransMsg,
   // setSearchString, // Description logic commented out
-} from "../../../../features/lossPreventionSlice";
+} from "../../../../features/dev/devLossPreventionSlice";
 import type {
   CashierDetails,
   JsonError,
@@ -64,7 +64,7 @@ const LPDesktop = ({ getSaleTypes }: Props) => {
   const dispatch = useAppDispatch();
   const { url, token } = useAppSelector((s) => s.app);
   const search = useAppSelector((s) => s.search);
-  const cashier = useAppSelector((s) => s.prod.lossPrevention);
+  const cashier = useAppSelector((s) => s.dev.lossPrevention);
   const [loading, setLoading] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
 

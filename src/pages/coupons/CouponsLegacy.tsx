@@ -18,7 +18,7 @@ import DatePickers from "../../components/datePickers/DatePickers";
 import CouponsGrid from "./CouponsGrid";
 import CouponGridFilters from "./CouponGridFilters";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
-import TransactionModal from "../lossPrevention/TransactionModal";
+import TransactionModal from "./TransactionModal";
 import FiltersModal from "./filters/FiltersModal";
 import ExportModal from "../../components/modals/ExportModal";
 import CouponKpis from "./kpi/CouponKpis";
