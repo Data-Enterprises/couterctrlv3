@@ -329,12 +329,12 @@ const TitleBar = () => {
             {SHOW_API_ENV_SWITCH && user.userLevel >= 7 ? (
               <div className="px-4 py-2.5 border-b border-gray-100 flex items-center gap-2">
                 <span className="text-[13px] font-medium text-content flex-1">
-                  API
+                  Mode
                 </span>
                 <div className="flex items-center rounded-full overflow-hidden border border-gray-200 text-[10px] font-bold select-none flex-shrink-0">
                   <button
                     onClick={() => dispatch(setApiEnv("dev"))}
-                    title="Point this session at the dev API"
+                    title="Dev mode: the dev API, the dev version of every page, and Coming Soon"
                     className={`px-2.5 py-1 transition-colors ${
                       context.apiEnv === "dev"
                         ? "bg-emerald-500 text-custom-white"
@@ -345,7 +345,7 @@ const TitleBar = () => {
                   </button>
                   <button
                     onClick={() => dispatch(setApiEnv("prod"))}
-                    title="Point this session at the prod API"
+                    title="Prod mode: the prod API and the pages clients see"
                     className={`px-2.5 py-1 transition-colors ${
                       context.apiEnv === "prod"
                         ? "bg-red-600 text-custom-white"
@@ -507,14 +507,14 @@ const TitleBar = () => {
         <div
           aria-hidden={!onNavy}
           className={`flex items-center overflow-hidden transition-all duration-300 ease-in-out ${
-            onNavy ? "max-w-[72px] opacity-100 pr-2.5" : "max-w-0 opacity-0 pr-0"
+            onNavy ? "max-w-[120px] opacity-100 pr-3" : "max-w-0 opacity-0 pr-0"
           }`}
         >
           <span
             title="Dev mode: this session is on the dev API"
-            className="px-2 py-0.5 rounded-full bg-emerald-500 text-custom-white text-[10px] font-bold tracking-wide leading-none whitespace-nowrap select-none"
+            className="px-3 py-1 rounded-full bg-emerald-500 text-custom-white text-[11px] font-bold tracking-wide leading-none whitespace-nowrap select-none"
           >
-            DEV
+            DEV MODE
           </span>
         </div>
 
