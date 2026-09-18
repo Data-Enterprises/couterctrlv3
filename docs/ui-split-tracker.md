@@ -3,6 +3,7 @@
 Per page: `npm run split:page -- <page> --dry` → split → cut tablet/legacy →
 trash dead files → `tsc -b` + `npm run check:split -- <page>` → commit.
 Promote later with `npm run promote:page -- <page>` once dev is signed off.
+**Coming Soon pages are dev-only**: they get a `dev/` tree and no `prod/` tree until greenlit for production; then they are copied over and set up for prod. They are handled last. Suggested Weight belongs to Coming Soon (route commented out for now).
 A page with `mobile: false` in the nav (`components/navigation/utils.tsx`) has no mobile version: its mobile code goes to trash in the split.
 Every page gets its own dev Redux state, as Sales has (split-page forks each page slice; `npm run fork:slice -- <page> <key>` for one added later).
 
