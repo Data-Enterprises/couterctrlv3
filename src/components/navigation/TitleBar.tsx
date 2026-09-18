@@ -270,7 +270,7 @@ const TitleBar = () => {
             initials sit on navy — the same navy that marks the active
             category. */}
         <div
-          className={`w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-semibold flex-shrink-0 ${
+          className={`w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-semibold flex-shrink-0 transition-colors duration-300 ease-in-out ${
             // A navy disc on a navy bar disappears, so dev inverts it.
             onNavy ? "bg-custom-white text-[#1e2a4a]" : "bg-[#1e2a4a] text-custom-white"
           }`}
@@ -279,7 +279,7 @@ const TitleBar = () => {
           {(user.lastName?.[0] ?? "").toUpperCase()}
         </div>
         <ChevronDownIcon
-          className={`h-3.5 w-3.5 transition-transform duration-200 ${onNavy ? "text-custom-white/85" : "text-content/85"} ${avatarOpen ? "rotate-180" : ""}`}
+          className={`h-3.5 w-3.5 transition-[transform,color] duration-300 ${onNavy ? "text-custom-white/85" : "text-content/85"} ${avatarOpen ? "rotate-180" : ""}`}
         />
       </button>
 
@@ -382,7 +382,8 @@ const TitleBar = () => {
         // second, heavier header stacked on the content. On the dev API it is
         // navy on purpose — the one thing that must never be mistaken is which
         // environment, and so which UI tree, you are looking at.
-        className={`h-12 w-full flex items-stretch select-none relative z-50 border-b ${
+        // The switch recolours the whole bar, so it eases rather than snaps.
+        className={`h-12 w-full flex items-stretch select-none relative z-50 border-b transition-colors duration-300 ease-in-out ${
           onNavy
             ? "bg-[#1e2a4a] text-custom-white border-[#1e2a4a]"
             : "bg-custom-white text-content border-gray-200"
@@ -401,11 +402,22 @@ const TitleBar = () => {
          * that had already grown to fit the image.
          */}
         <div className="flex min-w-0 flex-none items-center overflow-hidden px-2">
-          <img
-            src={onNavy ? logoReversed : logo}
-            alt="CounterCtrl Cloud"
-            className="h-8 w-auto max-w-full object-contain"
-          />
+          {/* Both logos are always rendered and cross-fade with the bar — an
+              <img> swapping its src can't transition. The light one stays in
+              flow and sizes the box; the reversed one sits on top of it. */}
+          <div className="relative h-8 max-w-full">
+            <img
+              src={logo}
+              alt="CounterCtrl Cloud"
+              className={`h-8 w-auto max-w-full object-contain transition-opacity duration-300 ease-in-out ${onNavy ? "opacity-0" : "opacity-100"}`}
+            />
+            <img
+              src={logoReversed}
+              alt=""
+              aria-hidden
+              className={`absolute inset-0 h-8 w-auto max-w-full object-contain transition-opacity duration-300 ease-in-out ${onNavy ? "opacity-100" : "opacity-0"}`}
+            />
+          </div>
         </div>
 
         {/* Category nav — desktop only */}
@@ -486,6 +498,25 @@ const TitleBar = () => {
         )}
 
         <div className="flex-1" />
+
+        {/* DEV pill: says in words what the navy bar says in colour — this
+            session is on the dev API, so every page is showing its dev tree
+            and Coming Soon is open. Always rendered and eased in and out
+            with the bar (max-width + opacity), so flipping the switch slides
+            it rather than popping it. */}
+        <div
+          aria-hidden={!onNavy}
+          className={`flex items-center overflow-hidden transition-all duration-300 ease-in-out ${
+            onNavy ? "max-w-[72px] opacity-100 pr-2.5" : "max-w-0 opacity-0 pr-0"
+          }`}
+        >
+          <span
+            title="Dev mode: this session is on the dev API"
+            className="px-2 py-0.5 rounded-full bg-emerald-500 text-custom-white text-[10px] font-bold tracking-wide leading-none whitespace-nowrap select-none"
+          >
+            DEV
+          </span>
+        </div>
 
         {/* Avatar — always visible */}
         <AvatarDropdown />
