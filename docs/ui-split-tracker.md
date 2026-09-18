@@ -26,7 +26,7 @@ Status: **done** · **next** · blank = not started
 | Loss Prevention | `/loss-prevention` | `lossPrevention` | **done** | legacy page + `lossPreventionLegacy` state and tablet removed (35 files to trash); own dev Redux state (`state.dev.lossPrevention`, `devLossPreventionSlice`); `TransactionModal` moved to `pages/coupons` (only Coupons opened it; reads prod state)
 | Coupons | `/coupons` | `coupons` | | legacy branch; owns `TransactionModal` now (reads prod `lossPrevention`), dev copy must read `state.dev` |
 | LP Actions | `/lp-actions` | `lpActions` | | |
-| Cashiers | `/cashiers` | `cashiers` | | legacy branch |
+| Cashiers | `/cashiers` | `cashiers` | **done** | legacy page + `cashierLegacy` state and the pre-Explorer desktop UI removed (43 files to trash); own dev Redux state (`devCashiersSlice`); `src/api/cashiers.ts` now unused but left (api layer) |
 | Orders | `/orders` | `orders` | | legacy branch; tablet |
 | Receivers | `/receivers` | `receivers` | | legacy branch; tablet |
 | Item Lookup | `/item-lookup` | `lookup` | | legacy branch; tablet; has old `dev/` (mobile Option A) |

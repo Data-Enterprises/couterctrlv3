@@ -1,7 +1,6 @@
 import { useAppSelector } from "./hooks";
 import UpcList from "./pages/upc/UpcList.tsx";
 import Cashiers from "./pages/cashiers/Cashiers.tsx";
-import CashiersLegacy from "./pages/cashiers/CashiersLegacy.tsx";
 import Sales from "./pages/sales/Sales.tsx";
 import LossPrevention from "./pages/lossPrevention/LossPrevention.tsx";
 import Orders from "./pages/orders/Orders.tsx";
@@ -36,10 +35,9 @@ export const NavSwitch = () => {
   );
 };
 
-export const CashiersPage = () => {
-  const devMode = useAppSelector((s) => s.app.devMode);
-  return devMode ? <Cashiers /> : <CashiersLegacy />;
-};
+// No legacy branch: Cashiers has a prod and a dev tree, picked inside
+// pages/cashiers/Cashiers.tsx by the API switch.
+export const CashiersPage = () => <Cashiers />;
 
 // No legacy branch: Sales has a prod and a dev tree now, picked inside
 // pages/sales/Sales.tsx by the API switch. The legacy Sales page is in trash/.

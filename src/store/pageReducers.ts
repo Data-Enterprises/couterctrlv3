@@ -34,7 +34,6 @@ import companyReducer from "../features/companySlice";
 import organizationReducer from "../features/organizationSlice";
 import subMarginReducer from "../features/subMarginSlice";
 import cashiersReducer from "../features/cashiersSlice";
-import cashiersLegacyReducer from "../features/cashiersLegacySlice";
 import ordersReducer from "../features/ordersSlice";
 import ordersLegacyReducer from "../features/ordersLegacySlice";
 import adListReducer from "../features/adListSlice";
@@ -90,7 +89,6 @@ export const pageReducers = {
   organization: organizationReducer,
   subMargin: subMarginReducer,
   cashier: cashiersReducer,
-  cashierLegacy: cashiersLegacyReducer,
   orders: ordersReducer,
   ordersLegacy: ordersLegacyReducer,
   adList: adListReducer,
