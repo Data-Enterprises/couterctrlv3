@@ -9,33 +9,10 @@ import {
   tierOfDelta,
   coverageOf,
   gradeBasis,
-  type Coverage,
-  type Tier,
 } from "../../utils/grading";
-
-/** Margin or sales — the page-wide toggle, the same contract Sub Dept Margins
- *  uses. Vendors reads the same `subs/subs` rows, just grouped by vendor rather
- *  than by department, so margin is available on exactly the same basis. */
-export type VendorMetric = "margin" | "sales";
-export type VendorTier = Tier;
-
-/** One TW day for one vendor, with its aligned comparisons.
- *
- *  Null on the LW/LY side means that day is absent from the prior period —
- *  which is not the same as zero, and is what the day-matching below keys off. */
-export interface VendorDay {
-  /** Always the *this week* date. LW and LY are aligned onto it. */
-  date: string;
-  twNet: number;
-  twQty: number;
-  twCogs: number;
-  lwNet: number | null;
-  lwQty: number | null;
-  lwCogs: number | null;
-  lyNet: number | null;
-  lyQty: number | null;
-  lyCogs: number | null;
-}
+import type { VendorMetric, VendorRow, VendorDay, VendorTier } from "../../interfaces";
+// Defined in src/interfaces — Vendors. Re-exported for this page's files.
+export type { VendorMetric, VendorRow, VendorDay, VendorTier } from "../../interfaces";
 
 /** Margin percentage from a net/COGS pair. Zero net means there is nothing to
  *  take a margin on — 0 rather than a divide-by-zero, matching Sub Dept
@@ -52,49 +29,6 @@ export const marginPct = (net: number, cogs: number) =>
  *  Uncategorized. */
 export const NO_VENDOR_ID = "__none__";
 export const NO_VENDOR_LABEL = "No vendor";
-
-export interface VendorRow {
-  /** Zero-padded string from the POS, or NO_VENDOR_ID. The stable key — names
-   *  get re-keyed, ids don't. */
-  vendorId: string;
-  vendorName: string;
-  /** True for the NO_VENDOR_ID bucket, so the panel can label it rather than
-   *  presenting it as a supplier. */
-  noVendor: boolean;
-  days: VendorDay[];
-
-  /** Day-matched: each comparison totals only the days present on both sides,
-   *  and carries its own TW subtotal so the two are like for like. Summing a
-   *  full TW against a partial LY is the error these fields exist to prevent. */
-  twNet: number;
-  twQty: number;
-  twCogs: number;
-  lwNet: number;
-  lwQty: number;
-  lwCogs: number;
-  twNetForLW: number;
-  twQtyForLW: number;
-  twCogsForLW: number;
-  lyNet: number;
-  lyQty: number;
-  lyCogs: number;
-  twNetForLY: number;
-  twQtyForLY: number;
-  twCogsForLY: number;
-  hasLW: boolean;
-  hasLY: boolean;
-  /** The store's coverage for the week — the same object on every row. A
-   *  comparison grades only when it covers every day; see utils/grading. */
-  coverage: Coverage;
-
-  /** Margin points, computed from the DAY-MATCHED subtotals so a partial week
-   *  isn't compared against a full one. Positive means margin improved. */
-  tyMarginPct: number;
-  lwMarginPct: number;
-  lyMarginPct: number;
-  lwPtsDelta: number;
-  lyPtsDelta: number;
-}
 
 /** Net of tax, matching Sub Dept Margins and the Item Lookup fix. `net_sales`
  *  is also on the row but is coupon-adjusted as well, so it isn't the same

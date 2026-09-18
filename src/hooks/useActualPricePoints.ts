@@ -1,8 +1,8 @@
 import { useCallback, useRef, useState } from "react";
-import { useAppSelector } from "../../hooks";
-import { getProductLookup, getTransactionList } from "../../api/lossPrevention";
-import { fetchAllPages } from "../../utils/paging";
-import type { ProductLookupResp, TransactionListItem } from "../../interfaces";
+import { useAppSelector } from ".";
+import { getProductLookup, getTransactionList } from "../api/lossPrevention";
+import { fetchAllPages } from "../utils/paging";
+import type { ProductLookupResp, TransactionListItem } from "../interfaces";
 
 /**
  * The register-level half of Item Analysis — spec §4.

@@ -1,6 +1,6 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import { cycleSort, type SortState } from "../utils/perfPairs";
-import type { ReceiptLine } from "../pages/shared/eventPerf/receiptTypes";
+import type { SaleReceiptLine as ReceiptLine } from "../interfaces";
 
 /**
  * One thing that happened at a register.

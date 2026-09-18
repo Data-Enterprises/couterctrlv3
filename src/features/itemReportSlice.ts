@@ -1,12 +1,12 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type {
+  ActionKind,
+  ReceivedLine as ReceiptLine,
+  ReceiverDetailsItem,
   SubDeptMargin,
   SubsPricePoint,
   TransactionListItem,
 } from "../interfaces";
-import type { ReceiptLine } from "../pages/itemReport/itemReportData";
-import type { ReceiverDetailsItem } from "../interfaces";
-import type { ActionKind } from "../pages/itemReport/itemReportMetrics";
 
 /**
  * Item Actions.

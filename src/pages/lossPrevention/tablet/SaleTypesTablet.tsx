@@ -6,7 +6,7 @@ import { useLPState } from "../hooks/useLPState";
 import { useLPActions } from "../hooks/useLPActions";
 import type { JsonError } from "../../../interfaces";
 import { activePanelStyle } from "..";
-import { useApiContext } from "../../hooks";
+import { useApiContext } from "../../../hooks/useApiContext";
 import DescModal from "../components/DescModal";
 
 const SaleTypesTablet = () => {

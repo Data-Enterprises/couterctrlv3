@@ -1,3 +1,4 @@
+import type { Coverage, Tier } from "../utils/grading";
 import type { Severity } from "../utils/severity";
 
 export type JsonError = {
@@ -2165,4 +2166,358 @@ export interface TopSub {
   elec_store_coupons: number;
   store_coupon: number;
   total_tax: number;
+}
+
+//////////////////////////////////////////////////////////////
+// Receipts — two different things that both used to be called ReceiptLine.
+//   ReceivedLine     a line delivered on an invoice (Item Report)
+//   SaleReceiptLine  a line on a till receipt (LP and Coupon Sales)
+//////////////////////////////////////////////////////////////
+
+/** One receipt of one item, flattened out of the invoice it arrived on. */
+export interface ReceivedLine {
+  invoiceId: number;
+  /** Carried because receipts are now an entry point in their own right — an
+   *  item that was delivered and never scanned exists nowhere else. */
+  productCode: string;
+  description: string;
+  date: string;
+  vendorName: string;
+  /**
+   * Sellable units received. The API calls this `qty`, and it is the same basis
+   * `subs/subs` sells in — which is the only reason received and sold can be
+   * compared at all.
+   *
+   * Named `sellingUnits` rather than `units` on purpose: the API *also* has a
+   * field called `units`, and it means something else entirely (see `billedIn`).
+   * Carrying our own `units` that held their `qty` was a trap waiting for
+   * whoever touched this next.
+   *
+   * Verified across 47 lines on four invoices: `ext_cost = ucost * qty` and
+   * `ext_retail = retail * qty` are exact on every one.
+   */
+  sellingUnits: number;
+  /** Shipping containers, `0` on a unit-received line. */
+  cases: number;
+  /**
+   * How the vendor billed the line. The two modes are mutually exclusive — no
+   * line ever carries both `units` and `cases` — and `qty` is sellable units
+   * either way:
+   *
+   *     cases: qty = cases * caseSize,  units = 0
+   *     units: qty = units,             cases = 0
+   *
+   * So a line whose `qty` equals its `cases` is a case size of one, not a line
+   * counted in cases.
+   */
+  billedIn: "cases" | "units";
+  /** Sellable units per shipping container, or null on a unit receipt. Derived,
+   *  because the endpoint does not return it — worth asking for, since without
+   *  it this can be computed but not checked. */
+  caseSize: number | null;
+  /** Unit cost on the day it landed. Two receipts at different costs is how a
+   *  margin slips without anyone touching the shelf price. */
+  unitCost: number;
+  /** Retail the receipt expected, which is not always the retail that rang. */
+  retail: number;
+  /** Free goods and returns on the line.
+   *
+   *  Carried because they are the two things that can make "received" mean
+   *  something other than "arrived and was paid for" — and both feed Net and
+   *  Unaccounted, which the Reorder and Investigate reasoning rests on. Whether
+   *  `units` already nets them is unverified against a real invoice, so they are
+   *  surfaced rather than silently subtracted. */
+  free: number;
+  returned: number;
+}
+
+/** One line on a receipt. Both pages resolve to this — Coupon Sales from rows
+ *  already in memory, Loss Prevention from a fetch — so the sheet that renders
+ *  it never learns which page opened it. */
+export interface SaleReceiptLine {
+  description: string;
+  qty: number;
+  amount: number;
+  /**
+   * Tender lines sit below the total, the way they do on a till roll.
+   *
+   * Optional, and defaulting to an item, because only Loss Prevention's
+   * payload distinguishes them. A page that cannot tell simply renders
+   * everything as items, which is what it did before this existed.
+   */
+  kind?: "item" | "tender";
+}
+
+//////////////////////////////////////////////////////////////
+// Categories
+//////////////////////////////////////////////////////////////
+
+export type CategoryMetric = "sales" | "qty";
+
+/** Matches Sub Dept Margins' MarginTier naming — same list-of-rows-under-a-
+ *  store shape, so the vocabulary should be the same too. */
+export type CategoryTier = "critical" | "watch" | "healthy" | "ungraded";
+
+export interface CategoryRow {
+  category: number;
+  /** Null from the API means uncategorized at the POS. Surfaced as such rather
+   *  than hidden, because a large uncategorized bucket is worth acting on. */
+  description: string | null;
+  uncategorized: boolean;
+  days: CategoryDay[];
+  /** Day-matched: each comparison totals only the days present on both sides,
+   *  and carries its own TW subtotal so the two are like for like. */
+  twNet: number;
+  twQty: number;
+  lwNet: number;
+  lwQty: number;
+  twNetForLW: number;
+  twQtyForLW: number;
+  lyNet: number;
+  lyQty: number;
+  twNetForLY: number;
+  twQtyForLY: number;
+  hasLW: boolean;
+  hasLY: boolean;
+  /** The store's coverage for the week — the same object on every row. A
+   *  comparison grades only when it covers every day; see utils/grading. */
+  coverage: Coverage;
+}
+
+export interface CategoryDay {
+  /** YYYY-MM-DD, always the *this week* date — LW and LY are aligned onto it. */
+  date: string;
+  twNet: number;
+  twQty: number;
+  /** This week's full figures for the day. */
+  detail: DayDetail;
+  lwNet: number | null;
+  lwQty: number | null;
+  lyNet: number | null;
+  lyQty: number | null;
+}
+
+/** One category's figures for a single day, across the three periods.
+ *
+ *  `null` is load-bearing throughout: it means "that day did not exist in that
+ *  period" and must never be coerced to 0. Zero is a real trading day with no
+ *  sales; null is a day the store was shut or a week that ran short. */
+/** Everything the payload carries for one day, kept for the report column.
+ *  Grading only needs net and qty, but the drill-down should show what the
+ *  endpoint actually returned rather than a two-field summary of it. */
+export interface DayDetail {
+  gross: number;
+  net: number;
+  tax: number;
+  qty: number;
+  weight: number;
+  elecInstore: number;
+  elecStore: number;
+  digital: number;
+  storeCoupon: number;
+}
+
+//////////////////////////////////////////////////////////////
+// Vendors
+//////////////////////////////////////////////////////////////
+
+/** Margin or sales — the page-wide toggle, the same contract Sub Dept Margins
+ *  uses. Vendors reads the same `subs/subs` rows, just grouped by vendor rather
+ *  than by department, so margin is available on exactly the same basis. */
+export type VendorMetric = "margin" | "sales";
+
+export interface VendorRow {
+  /** Zero-padded string from the POS, or NO_VENDOR_ID. The stable key — names
+   *  get re-keyed, ids don't. */
+  vendorId: string;
+  vendorName: string;
+  /** True for the NO_VENDOR_ID bucket, so the panel can label it rather than
+   *  presenting it as a supplier. */
+  noVendor: boolean;
+  days: VendorDay[];
+
+  /** Day-matched: each comparison totals only the days present on both sides,
+   *  and carries its own TW subtotal so the two are like for like. Summing a
+   *  full TW against a partial LY is the error these fields exist to prevent. */
+  twNet: number;
+  twQty: number;
+  twCogs: number;
+  lwNet: number;
+  lwQty: number;
+  lwCogs: number;
+  twNetForLW: number;
+  twQtyForLW: number;
+  twCogsForLW: number;
+  lyNet: number;
+  lyQty: number;
+  lyCogs: number;
+  twNetForLY: number;
+  twQtyForLY: number;
+  twCogsForLY: number;
+  hasLW: boolean;
+  hasLY: boolean;
+  /** The store's coverage for the week — the same object on every row. A
+   *  comparison grades only when it covers every day; see utils/grading. */
+  coverage: Coverage;
+
+  /** Margin points, computed from the DAY-MATCHED subtotals so a partial week
+   *  isn't compared against a full one. Positive means margin improved. */
+  tyMarginPct: number;
+  lwMarginPct: number;
+  lyMarginPct: number;
+  lwPtsDelta: number;
+  lyPtsDelta: number;
+}
+
+/** One TW day for one vendor, with its aligned comparisons.
+ *
+ *  Null on the LW/LY side means that day is absent from the prior period —
+ *  which is not the same as zero, and is what the day-matching below keys off. */
+export interface VendorDay {
+  /** Always the *this week* date. LW and LY are aligned onto it. */
+  date: string;
+  twNet: number;
+  twQty: number;
+  twCogs: number;
+  lwNet: number | null;
+  lwQty: number | null;
+  lwCogs: number | null;
+  lyNet: number | null;
+  lyQty: number | null;
+  lyCogs: number | null;
+}
+
+export type VendorTier = Tier;
+
+//////////////////////////////////////////////////////////////
+// LP Actions
+//////////////////////////////////////////////////////////////
+
+export interface ExceptionRow {
+  /** storeid + sale type. A void spike at one store says nothing about
+   *  another, so they are never pooled. */
+  id: string;
+  storeid: number;
+  storeName: string;
+  saleType: string;
+  weeks: WeekBucket[];
+  latest: number;
+  baseline: number;
+  /** Null when there is no baseline to compare against — a first sighting. */
+  changePct: number | null;
+  severity: LpSeverity;
+  cashiers: CashierMovement[];
+}
+
+export interface WeekBucket extends WeekWindow {
+  count: number;
+}
+
+export interface WeekWindow {
+  /** yyyy-mm-dd, inclusive. */
+  start: string;
+  end: string;
+}
+
+export type LpSeverity = "investigate" | "watch" | "steady";
+
+export interface CashierMovement {
+  cashierNumber: number;
+  cashierName: string;
+  /** Occurrences in the most recent week. */
+  latest: number;
+  /** Mean per week across the earlier weeks — their own normal. */
+  baseline: number;
+}
+
+/**
+ * Who a cashier is.
+ *
+ * Never the number on its own. Cashier numbers are issued per store, so
+ * "cashier 19" is a different person at every store in a group — scoping a
+ * case by number alone silently pools them into one impossible operator.
+ */
+export interface CashierRef {
+  storeid: number;
+  cashierNumber: number;
+}
+
+//////////////////////////////////////////////////////////////
+// Item Report actions
+//////////////////////////////////////////////////////////////
+
+export type ActionKind =
+  | "investigate"
+  | "reorder"
+  | "reprice"
+  | "vendor"
+  /**
+   * Sells, but nothing on file says it ever arrived.
+   *
+   * Split out of "vendor". That action was covering two unrelated situations —
+   * an unstable cost, which is a conversation with the vendor, and a missing
+   * receiving trail, which usually is not their fault at all. Orders received
+   * electronically never reach the scan our data is built from, so the item can
+   * be arriving perfectly well and still look absent here. Telling a manager to
+   * phone a vendor about that is a wrong steer, and wrong steers are what a
+   * suggestion tool cannot afford.
+   *
+   * What is actually worth doing is finding out how the item arrives. The list
+   * already hints at it — these are the rows whose Last column reads "none".
+   */
+  | "none"
+  | "insufficient"
+  /**
+   * Not a verdict — the absence of one, while the delivery read is still
+   * running.
+   *
+   * Every action here depends on receipts, so none can be reached until the
+   * walk finishes. This used to report as "Insufficient", which is a real
+   * finding meaning "the data will never answer this" — so a whole store would
+   * briefly sit in a category that reads like a conclusion, and looks like a
+   * broken page to anyone who doesn't know a fetch is in flight. Separating the
+   * two lets the sheet say "still reading" and mean it.
+   */
+  | "pending";
+
+//////////////////////////////////////////////////////////////
+// Sub Dept Margins items
+//////////////////////////////////////////////////////////////
+
+export interface ItemRow {
+  sub_department_description: string; // good
+  product_code: string; // good
+  product_description: string; // good
+  cogs: number; // good
+  total_sales: number; // good
+  net_sales: number; // good
+  total_tax: number; // good
+  qty: number; //good
+  margin: number;
+  cost_fees: number;
+}
+
+export interface ItemRowMobile {
+  sub_department_description: string; // good
+  product_code: string; // good
+  product_description: string; // good
+  cogs: number; // good
+  total_sales: number; // good
+  net_sales: number; // good
+  total_tax: number; // good
+  qty: number; //good
+  margin: number;
+  cost_fees: number;
+  cost: number;
+  calculated_cost: number;
+}
+
+//////////////////////////////////////////////////////////////
+// Filters
+//////////////////////////////////////////////////////////////
+
+/** A numeric threshold filter: keep rows above, below or equal to amount. */
+export interface ThresholdValue {
+  op: "gt" | "lt" | "eq";
+  amount: number;
 }

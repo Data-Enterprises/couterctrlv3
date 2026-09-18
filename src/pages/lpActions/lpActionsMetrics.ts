@@ -1,4 +1,7 @@
 import type { CashierTransaction } from "../../interfaces";
+import type { ExceptionRow, WeekBucket, WeekWindow, LpSeverity, CashierMovement, CashierRef } from "../../interfaces";
+// Defined in src/interfaces — LP Actions. Re-exported for this page's files.
+export type { ExceptionRow, WeekBucket, WeekWindow, LpSeverity, CashierMovement, CashierRef } from "../../interfaces";
 
 /**
  * How an exception is graded, and how the weeks are cut.
@@ -10,8 +13,6 @@ import type { CashierTransaction } from "../../interfaces";
  * and only the second is worth a manager's morning.
  */
 
-export type LpSeverity = "investigate" | "watch" | "steady";
-
 /** Below this, a week is too thin to read a trend from. Two occurrences
  *  becoming six is +200% and means nothing; the floor stops the list filling
  *  with arithmetic noise. */
@@ -20,37 +21,6 @@ export const MIN_LATEST = 5;
 /** Percent above the baseline that earns each verdict. */
 export const INVESTIGATE_PCT = 75;
 export const WATCH_PCT = 25;
-
-export interface WeekWindow {
-  /** yyyy-mm-dd, inclusive. */
-  start: string;
-  end: string;
-}
-
-export interface WeekBucket extends WeekWindow {
-  count: number;
-}
-
-export interface CashierMovement {
-  cashierNumber: number;
-  cashierName: string;
-  /** Occurrences in the most recent week. */
-  latest: number;
-  /** Mean per week across the earlier weeks — their own normal. */
-  baseline: number;
-}
-
-/**
- * Who a cashier is.
- *
- * Never the number on its own. Cashier numbers are issued per store, so
- * "cashier 19" is a different person at every store in a group — scoping a
- * case by number alone silently pools them into one impossible operator.
- */
-export interface CashierRef {
-  storeid: number;
-  cashierNumber: number;
-}
 
 /**
  * The register a row was rung on.
@@ -70,22 +40,6 @@ export const isCashier = (
   row: { storeid: number; cashier_number: number },
   ref: CashierRef,
 ) => row.storeid === ref.storeid && row.cashier_number === ref.cashierNumber;
-
-export interface ExceptionRow {
-  /** storeid + sale type. A void spike at one store says nothing about
-   *  another, so they are never pooled. */
-  id: string;
-  storeid: number;
-  storeName: string;
-  saleType: string;
-  weeks: WeekBucket[];
-  latest: number;
-  baseline: number;
-  /** Null when there is no baseline to compare against — a first sighting. */
-  changePct: number | null;
-  severity: LpSeverity;
-  cashiers: CashierMovement[];
-}
 
 const iso = (d: Date) => d.toISOString().slice(0, 10);
 

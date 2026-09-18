@@ -8,7 +8,7 @@ import DatePickers from "../../components/datePickers/DatePickers";
 import InventoryTreePanel, { type TreeGroup } from "./InventoryTreePanel";
 import InventoryExportModal from "./InventoryExportModal";
 import ItemAnalysisPanel from "./ItemAnalysisPanel";
-import { useActualPricePoints } from "./useActualPricePoints";
+import { useActualPricePoints } from "../../hooks/useActualPricePoints";
 import {
   fetchSubDepts,
   fetchVendors,

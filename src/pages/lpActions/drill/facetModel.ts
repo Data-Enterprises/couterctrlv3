@@ -4,7 +4,7 @@ import type {
 } from "../../../interfaces";
 import type { WeekWindow } from "../lpActionsMetrics";
 import { laneOf } from "../lpActionsMetrics";
-import { lineQty } from "../../inventory/pricePoints";
+import { lineQty } from "../../../utils/pricePoints";
 import { hourOf } from "../case/hourProfile";
 import { hourLabel } from "../case/chartTheme";
 import { formatDateSimple } from "../../../utils";

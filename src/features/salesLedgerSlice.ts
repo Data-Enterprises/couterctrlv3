@@ -1,7 +1,11 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { SubSale, HourlySale, CatSale } from "../interfaces";
-import type { StoreSelection } from "../interfaces";
-import type { ThresholdValue } from "../components/filters/ThresholdFilter";
+import type {
+  CatSale,
+  HourlySale,
+  StoreSelection,
+  SubSale,
+  ThresholdValue,
+} from "../interfaces";
 
 export type GradingMetric = "sales" | "qty";
 

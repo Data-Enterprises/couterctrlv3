@@ -11,8 +11,8 @@ import InfoPopover from "../../components/InfoPopover";
 import { ITEM_REPORT_RAIL_INFO } from "./itemReportRailInfo";
 import { formatCurrency2, formatDateSimple } from "../../utils";
 import { formatPct, pillClass } from "../../utils/severity";
-import { actualPricePoints, unitPrice } from "../inventory/pricePoints";
-import type { ActualFetchState } from "../inventory/useActualPricePoints";
+import { actualPricePoints, unitPrice } from "../../utils/pricePoints";
+import type { ActualFetchState } from "../../hooks/useActualPricePoints";
 import {
   ACTION_LABEL,
   buildPriceEras,

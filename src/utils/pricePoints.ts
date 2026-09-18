@@ -1,5 +1,5 @@
-import { calculateCogs } from "../../utils/cogs";
-import type { SubDeptMargin, TransactionListItem } from "../../interfaces";
+import { calculateCogs } from "./cogs";
+import type { SubDeptMargin, TransactionListItem } from "../interfaces";
 
 /**
  * Estimated vs actual price points for one item.

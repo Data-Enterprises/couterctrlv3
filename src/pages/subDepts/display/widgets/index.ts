@@ -1,6 +1,9 @@
 import { themeQuartz, type ColDef } from "ag-grid-community";
 import { formatCurrency2, formatBigNumber } from "../../../../utils";
 import type { SubDeptCost } from "../../../../interfaces";
+import type { ItemRow } from "../../../../interfaces";
+// Defined in src/interfaces — Sub Dept Margins items. Re-exported for this page's files.
+export type { ItemRow, ItemRowMobile } from "../../../../interfaces";
 
 export interface BarData {
   sales: number;
@@ -10,34 +13,6 @@ export interface BarData {
   cogs: number;
   date: string;
   gpm: string;
-}
-
-export interface ItemRow {
-  sub_department_description: string; // good
-  product_code: string; // good
-  product_description: string; // good
-  cogs: number; // good
-  total_sales: number; // good
-  net_sales: number; // good
-  total_tax: number; // good
-  qty: number; //good
-  margin: number;
-  cost_fees: number;
-}
-
-export interface ItemRowMobile {
-  sub_department_description: string; // good
-  product_code: string; // good
-  product_description: string; // good
-  cogs: number; // good
-  total_sales: number; // good
-  net_sales: number; // good
-  total_tax: number; // good
-  qty: number; //good
-  margin: number;
-  cost_fees: number;
-  cost: number;
-  calculated_cost: number;
 }
 
 export const formatDate = (dateStr: string) => {

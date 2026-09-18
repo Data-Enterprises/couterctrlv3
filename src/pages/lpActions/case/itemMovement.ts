@@ -1,6 +1,6 @@
 import type { TransactionListItem } from "../../../interfaces";
 import type { WeekWindow } from "../lpActionsMetrics";
-import { lineQty } from "../../inventory/pricePoints";
+import { lineQty } from "../../../utils/pricePoints";
 import { isAll, weekIndexOf } from "./caseModel";
 
 /**

@@ -8,7 +8,10 @@ import { fetchSubDeptRowsSafe } from "../../utils/marginRows";
 import { getSubMarginsWithPricePoints } from "../../api/subMargins";
 import { fetchAllPages } from "../../utils/paging";
 import { LW_OFFSET, shiftIso } from "../../utils/grading";
-import { getLYDate, setDates } from "../../utils/dates";
+import { getLYDate, WINDOW_DAYS, weekEnding } from "../../utils/dates";
+// Shared with every page that hands an item to this one, so both ends agree
+// on how long the window is. Re-exported for this page's own files.
+export { WINDOW_DAYS, weekEnding };
 import { formatDate } from "../../utils";
 import type {
   ReceiverListItem,
@@ -22,6 +25,10 @@ import type {
   SubMarginsPricePointsResp,
   SubsPricePoint,
 } from "../../interfaces";
+import type { ReceivedLine } from "../../interfaces";
+/** A line received on an invoice — defined in src/interfaces as ReceivedLine,
+ *  because itemReportSlice holds it. */
+export type ReceiptLine = ReceivedLine;
 
 /**
  * Fetching for Item Actions.
@@ -96,17 +103,6 @@ export const describeReceipt = (
   const plural = `${cases} case${cases === 1 ? "" : "s"}`;
   return size > 1 ? `${plural} of ${size}` : plural;
 };
-
-/** Days in every window this page reads. Fixed rather than user-chosen, so the
- *  three periods are always the same length and directly comparable — the same
- *  contract the graded pages work to. */
-export const WINDOW_DAYS = 7;
-
-/** The week ending on the picked date. One date in, seven days out. */
-export const weekEnding = (singleDate: string) => ({
-  start: setDates(new Date(singleDate), WINDOW_DAYS - 1),
-  end: setDates(new Date(singleDate)),
-});
 
 /**
  * The same week a week and a year earlier.
@@ -358,63 +354,6 @@ export const fetchInvoiceLines = async (
     return [];
   }
 };
-
-/** One receipt of one item, flattened out of the invoice it arrived on. */
-export interface ReceiptLine {
-  invoiceId: number;
-  /** Carried because receipts are now an entry point in their own right — an
-   *  item that was delivered and never scanned exists nowhere else. */
-  productCode: string;
-  description: string;
-  date: string;
-  vendorName: string;
-  /**
-   * Sellable units received. The API calls this `qty`, and it is the same basis
-   * `subs/subs` sells in — which is the only reason received and sold can be
-   * compared at all.
-   *
-   * Named `sellingUnits` rather than `units` on purpose: the API *also* has a
-   * field called `units`, and it means something else entirely (see `billedIn`).
-   * Carrying our own `units` that held their `qty` was a trap waiting for
-   * whoever touched this next.
-   *
-   * Verified across 47 lines on four invoices: `ext_cost = ucost * qty` and
-   * `ext_retail = retail * qty` are exact on every one.
-   */
-  sellingUnits: number;
-  /** Shipping containers, `0` on a unit-received line. */
-  cases: number;
-  /**
-   * How the vendor billed the line. The two modes are mutually exclusive — no
-   * line ever carries both `units` and `cases` — and `qty` is sellable units
-   * either way:
-   *
-   *     cases: qty = cases * caseSize,  units = 0
-   *     units: qty = units,             cases = 0
-   *
-   * So a line whose `qty` equals its `cases` is a case size of one, not a line
-   * counted in cases.
-   */
-  billedIn: "cases" | "units";
-  /** Sellable units per shipping container, or null on a unit receipt. Derived,
-   *  because the endpoint does not return it — worth asking for, since without
-   *  it this can be computed but not checked. */
-  caseSize: number | null;
-  /** Unit cost on the day it landed. Two receipts at different costs is how a
-   *  margin slips without anyone touching the shelf price. */
-  unitCost: number;
-  /** Retail the receipt expected, which is not always the retail that rang. */
-  retail: number;
-  /** Free goods and returns on the line.
-   *
-   *  Carried because they are the two things that can make "received" mean
-   *  something other than "arrived and was paid for" — and both feed Net and
-   *  Unaccounted, which the Reorder and Investigate reasoning rests on. Whether
-   *  `units` already nets them is unverified against a real invoice, so they are
-   *  surfaced rather than silently subtracted. */
-  free: number;
-  returned: number;
-}
 
 export const toReceiptLine = (
   invoice: ReceiverListItem,

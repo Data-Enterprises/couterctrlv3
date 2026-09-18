@@ -3,7 +3,7 @@ import { useAppDispatch, useAppSelector } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import { getCoupons } from "../../api/coupons";
 import type { CouponItem } from "../../interfaces";
-import { useApiContext } from "../hooks";
+import { useApiContext } from "../../hooks/useApiContext";
 import EventPerfMobile from "../shared/eventPerf/EventPerfMobile";
 import {
   couponReceipt,

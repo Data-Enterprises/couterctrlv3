@@ -1,10 +1,14 @@
 import { calculateCogs } from "../../utils/cogs";
 import { shiftIso } from "../../utils/grading";
-import { pricedUnits } from "../inventory/inventoryData";
+// The weight-before-qty rule, from utils rather than the Inventory page.
+import { rowPricedUnits as pricedUnits } from "../../utils/pricedUnits";
 import type { SubsPricePoint } from "../../interfaces";
 import type { ReceiptLine } from "./itemReportData";
 import { normalizeProductCode } from "../../utils/productCode";
 import type { SubDeptMargin } from "../../interfaces";
+import type { ActionKind } from "../../interfaces";
+// Defined in src/interfaces — Item Report actions. Re-exported for this page's files.
+export type { ActionKind } from "../../interfaces";
 
 /**
  * The arithmetic behind Item Actions.
@@ -486,40 +490,6 @@ export interface PeriodTotals {
   sales: number;
   units: number;
 }
-
-export type ActionKind =
-  | "investigate"
-  | "reorder"
-  | "reprice"
-  | "vendor"
-  /**
-   * Sells, but nothing on file says it ever arrived.
-   *
-   * Split out of "vendor". That action was covering two unrelated situations —
-   * an unstable cost, which is a conversation with the vendor, and a missing
-   * receiving trail, which usually is not their fault at all. Orders received
-   * electronically never reach the scan our data is built from, so the item can
-   * be arriving perfectly well and still look absent here. Telling a manager to
-   * phone a vendor about that is a wrong steer, and wrong steers are what a
-   * suggestion tool cannot afford.
-   *
-   * What is actually worth doing is finding out how the item arrives. The list
-   * already hints at it — these are the rows whose Last column reads "none".
-   */
-  | "none"
-  | "insufficient"
-  /**
-   * Not a verdict — the absence of one, while the delivery read is still
-   * running.
-   *
-   * Every action here depends on receipts, so none can be reached until the
-   * walk finishes. This used to report as "Insufficient", which is a real
-   * finding meaning "the data will never answer this" — so a whole store would
-   * briefly sit in a category that reads like a conclusion, and looks like a
-   * broken page to anyone who doesn't know a fetch is in flight. Separating the
-   * two lets the sheet say "still reading" and mean it.
-   */
-  | "pending";
 
 /**
  * Stock movement over a window where receipts and sales are both known.

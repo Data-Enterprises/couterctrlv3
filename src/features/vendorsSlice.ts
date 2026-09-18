@@ -1,6 +1,6 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { SubDeptMargin } from "../interfaces";
-import type { VendorMetric, VendorRow, VendorTier } from "../pages/vendors/vendorsUtils";
+import type { VendorMetric, VendorRow, VendorTier } from "../interfaces";
 
 /** Vendors (Performance).
  *

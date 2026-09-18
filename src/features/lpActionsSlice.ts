@@ -4,8 +4,8 @@ import type {
   ExceptionRow,
   WeekWindow,
   CashierRef,
-} from "../pages/lpActions/lpActionsMetrics";
-import type { CashierTransaction } from "../interfaces";
+  CashierTransaction,
+} from "../interfaces";
 
 /**
  * LP Actions page state.

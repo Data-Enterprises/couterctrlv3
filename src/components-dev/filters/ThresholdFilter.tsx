@@ -1,7 +1,7 @@
-export interface ThresholdValue {
-  op: "gt" | "lt" | "eq";
-  amount: number;
-}
+import type { ThresholdValue } from "../../interfaces";
+
+// Defined in src/interfaces so slices can hold it without importing UI.
+export type { ThresholdValue };
 
 interface Props {
   value: ThresholdValue | null;

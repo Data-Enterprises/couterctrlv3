@@ -4,9 +4,13 @@
  * promoted, it replaces the prod slice. See src/store/devReducers.ts.
  */
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { SubSale, HourlySale, CatSale } from "../../interfaces";
-import type { StoreSelection } from "../../interfaces";
-import type { ThresholdValue } from "../../components-dev/filters/ThresholdFilter";
+import type {
+  CatSale,
+  HourlySale,
+  StoreSelection,
+  SubSale,
+  ThresholdValue,
+} from "../../interfaces";
 
 export type GradingMetric = "sales" | "qty";
 

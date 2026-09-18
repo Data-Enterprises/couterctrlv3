@@ -26,6 +26,11 @@ import { formatBigNumber } from ".";
 export const pricedUnits = (qty: number, weight: number | undefined | null) =>
   (weight ?? 0) > 0 ? weight! : qty;
 
+/** The same rule for a whole row, for callers holding rows rather than the two
+ *  figures — Item Report sums it across a sub department's rows. */
+export const rowPricedUnits = (r: { qty: number; weight?: number | null }) =>
+  pricedUnits(r.qty, r.weight);
+
 /** True when the figure is pounds rather than a count — callers that label or
  *  total the column need to know which they are holding. */
 export const isWeighted = (weight: number | undefined | null) =>

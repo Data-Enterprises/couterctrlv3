@@ -4,7 +4,7 @@ import UpcControls from "../../components/UpcControls";
 import SalesComparison from "../salesComp/SalesComparison";
 import SalesCompGrid from "../salesComp/SalesCompGrid";
 import SalesCompHeader from "../salesComp/SalesCompHeader";
-import { useRowHeight } from "../../../hooks";
+import { useRowHeight } from "../../../../hooks/useRowHeight";
 import UpcModal from "../../modal/UpcModal";
 import { exportData } from "../../exportHeaders/utils";
 import { tableHeaderUpc } from "../../exportHeaders";

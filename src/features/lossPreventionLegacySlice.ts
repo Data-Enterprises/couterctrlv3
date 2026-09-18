@@ -1,5 +1,4 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { ThresholdValue } from "../components/filters/ThresholdFilter";
 import type {
   CashierDetails,
   CashierTransaction,
@@ -8,6 +7,7 @@ import type {
   UniqueCashier,
   TransactionListItem,
   TransactionOverview,
+  ThresholdValue,
 } from "../interfaces";
 
 type SelectedCashier = {

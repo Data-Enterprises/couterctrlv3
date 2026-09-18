@@ -26,7 +26,7 @@ import {
 } from "@heroicons/react/16/solid";
 import { collectGradedItems } from "./gradedItems";
 import { useCriticalReport } from "../../../../hooks/useCriticalReport";
-import { weekEnding } from "../../../itemReport/itemReportData";
+import { weekEnding } from "../../../../utils/dates";
 import type { SubDeptCost, SubDeptMargin } from "../../../../interfaces";
 
 import LoadingIndicator from "../../../../components/loading/LoadingIndicator";

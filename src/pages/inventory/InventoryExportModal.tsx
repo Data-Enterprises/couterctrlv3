@@ -6,7 +6,7 @@ import {
   estimatedPricePoints,
   actualPricePoints,
   suggestPrice,
-} from "./pricePoints";
+} from "../../utils/pricePoints";
 import { itemCostStats, type ProductSummary } from "./inventoryData";
 import type { TreeGroup } from "./InventoryTreePanel";
 import type { TransactionListItem } from "../../interfaces";

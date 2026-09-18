@@ -4,7 +4,7 @@ import {
   transactionLabel,
 } from "../../../utils";
 import { ChevronRightIcon } from "@heroicons/react/20/solid";
-import { lineQty } from "../../inventory/pricePoints";
+import { lineQty } from "../../../utils/pricePoints";
 import { isAll } from "./caseModel";
 import {
   GRID_CELL,

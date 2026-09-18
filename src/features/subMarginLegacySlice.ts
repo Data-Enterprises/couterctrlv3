@@ -1,6 +1,6 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { SubDeptMargin, SubDept, SubDeptCost } from "../interfaces";
-import type { ItemRow, ItemRowMobile } from "../pages/subDepts/display/widgets";
+import type { ItemRow, ItemRowMobile } from "../interfaces";
 import type { ItemLookupHistory } from "./itemLookupSlice";
 
 export type SubDeptGridView = "item" | "cost" | "nocost";

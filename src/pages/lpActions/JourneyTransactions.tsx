@@ -4,7 +4,7 @@ import {
   formatDateSimple,
   transactionLabel,
 } from "../../utils";
-import { lineQty } from "../inventory/pricePoints";
+import { lineQty } from "../../utils/pricePoints";
 import { laneOf } from "./lpActionsMetrics";
 import {
   GRID_CELL,

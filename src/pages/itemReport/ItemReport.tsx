@@ -3,8 +3,8 @@ import { useAppDispatch, useAppSelector, useStoreName } from "../../hooks";
 import { useToast } from "../../components/toasts/hooks/useToast";
 import { formatDateSimple } from "../../utils";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
-import { useActualPricePoints } from "../inventory/useActualPricePoints";
-import type { ActualFetchState } from "../inventory/useActualPricePoints";
+import { useActualPricePoints } from "../../hooks/useActualPricePoints";
+import type { ActualFetchState } from "../../hooks/useActualPricePoints";
 import {
   setItemReportStoreId,
   setItemReportLoading,

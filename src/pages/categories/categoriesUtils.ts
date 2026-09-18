@@ -1,5 +1,7 @@
-import type { CatSalesDaily } from "../../interfaces";
-import { coverageOf, gradeBasis, type Coverage } from "../../utils/grading";
+import { coverageOf, gradeBasis } from "../../utils/grading";
+import type { CatSalesDaily, CategoryMetric, CategoryTier, CategoryRow, CategoryDay, DayDetail } from "../../interfaces";
+// Defined in src/interfaces — Categories. Re-exported for this page's files.
+export type { CategoryMetric, CategoryTier, CategoryRow, CategoryDay, DayDetail } from "../../interfaces";
 
 /** Category performance: turning three weeks of daily rows into graded rows.
  *
@@ -13,71 +15,10 @@ import { coverageOf, gradeBasis, type Coverage } from "../../utils/grading";
  *  price of a comparison that means something.
  */
 
-export type CategoryMetric = "sales" | "qty";
-
-/** One category's figures for a single day, across the three periods.
- *
- *  `null` is load-bearing throughout: it means "that day did not exist in that
- *  period" and must never be coerced to 0. Zero is a real trading day with no
- *  sales; null is a day the store was shut or a week that ran short. */
-/** Everything the payload carries for one day, kept for the report column.
- *  Grading only needs net and qty, but the drill-down should show what the
- *  endpoint actually returned rather than a two-field summary of it. */
-export interface DayDetail {
-  gross: number;
-  net: number;
-  tax: number;
-  qty: number;
-  weight: number;
-  elecInstore: number;
-  elecStore: number;
-  digital: number;
-  storeCoupon: number;
-}
-
 export const emptyDetail = (): DayDetail => ({
   gross: 0, net: 0, tax: 0, qty: 0, weight: 0,
   elecInstore: 0, elecStore: 0, digital: 0, storeCoupon: 0,
 });
-
-export interface CategoryDay {
-  /** YYYY-MM-DD, always the *this week* date — LW and LY are aligned onto it. */
-  date: string;
-  twNet: number;
-  twQty: number;
-  /** This week's full figures for the day. */
-  detail: DayDetail;
-  lwNet: number | null;
-  lwQty: number | null;
-  lyNet: number | null;
-  lyQty: number | null;
-}
-
-export interface CategoryRow {
-  category: number;
-  /** Null from the API means uncategorized at the POS. Surfaced as such rather
-   *  than hidden, because a large uncategorized bucket is worth acting on. */
-  description: string | null;
-  uncategorized: boolean;
-  days: CategoryDay[];
-  /** Day-matched: each comparison totals only the days present on both sides,
-   *  and carries its own TW subtotal so the two are like for like. */
-  twNet: number;
-  twQty: number;
-  lwNet: number;
-  lwQty: number;
-  twNetForLW: number;
-  twQtyForLW: number;
-  lyNet: number;
-  lyQty: number;
-  twNetForLY: number;
-  twQtyForLY: number;
-  hasLW: boolean;
-  hasLY: boolean;
-  /** The store's coverage for the week — the same object on every row. A
-   *  comparison grades only when it covers every day; see utils/grading. */
-  coverage: Coverage;
-}
 
 /* ── date helpers ─────────────────────────────────────────────────────────
    All parsed as UTC. Local parsing shifts YYYY-MM-DD back a day for anyone
@@ -258,10 +199,6 @@ export const buildCategoryRows = (
 };
 
 /* ── grading ──────────────────────────────────────────────────────────────── */
-
-/** Matches Sub Dept Margins' MarginTier naming — same list-of-rows-under-a-
- *  store shape, so the vocabulary should be the same too. */
-export type CategoryTier = "critical" | "watch" | "healthy" | "ungraded";
 
 export const TIER_RANK: Record<CategoryTier, number> = {
   critical: 0,
