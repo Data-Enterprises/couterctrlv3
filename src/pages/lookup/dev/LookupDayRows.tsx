@@ -2,7 +2,7 @@ import { formatCurrency2 } from "../../../utils";
 import type { DayBucket } from "./lookupMetrics";
 import { dayUnitCost, formatUnits } from "./lookupMetrics";
 import { dayLabel, dayMargin } from "./lookupReport";
-import { TY_COLOR } from "../../sales/mobile/perf/perfColors";
+import { TY_COLOR } from "../../../components/mobile/perf/perfColors";
 
 interface Props {
   buckets: DayBucket[];

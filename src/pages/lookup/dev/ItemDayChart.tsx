@@ -1,6 +1,6 @@
 import type { DayBucket } from "./lookupMetrics";
 import { dayNumber } from "./lookupReport";
-import { TY_COLOR, UNSCOPED_OPACITY } from "../../sales/mobile/perf/perfColors";
+import { TY_COLOR, UNSCOPED_OPACITY } from "../../../components/mobile/perf/perfColors";
 
 interface Props {
   buckets: DayBucket[];
