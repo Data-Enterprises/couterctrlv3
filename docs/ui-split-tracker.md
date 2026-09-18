@@ -42,8 +42,8 @@ Status: **done** · **next** · blank = not started
 | Store Groups | `/groups` | `groups` | **done** | legacy page, old forms/ and tablet removed (7 files); page moved up out of `groups/dev/`; the phone view's create/update/delete forms moved from `tablet/` to `mobile/`. page-only fields moved out of the session `group` slice into `groupsPageSlice`, forked for dev (`devGroupsPageSlice`); `groups` and `selectedGroup` stay in the shared session slice (the store picker reads them) |
 | User Management | `/user-management` | `organization` | **done** | legacy Team page + `TeamTablet` removed — the whole `team/` folder (83 files) is trashed; desktop only (no tablet, not on mobile nav); own dev Redux state (`devUsersSlice`, `devBaseGroupSlice`, `devOrganizationSlice`). Settings' `TextInput` and Tickets still read prod `users` — fine until those pages split |
 | Home | `/` | `home` | **skip** | login and portal only — stays as is, not split |
-| Settings | `/settings` | `settings` | | |
-| QuickSight | `/quicksight` | `quicksight` | | |
+| Settings | `/settings` | `settings` | **skip (limbo)** | not split until it has a clear purpose; its `TextInput` reads the prod `users` slice |
+| QuickSight | `/quicksight` | `quicksight` | **done** | being phased out (one user left) — split so it stays consistent until it goes; own dev Redux state (`devQsSlice`) |
 | Tickets | `/tickets` | `tickets` | | **Coming Soon** (experiment on hold; nav entry, programmer-only). Own Redux state only (`ticketsSlice`, incl. its own `userLevels`) |
 
 ## Not routed — decide: split, or trash
