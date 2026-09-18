@@ -5,7 +5,7 @@ import {
   formatBigNumber,
   sameWeekDayLastYear,
 } from "../../../../utils";
-import { computeDayMatchedTotals } from "../../shared/ledgerUtils";
+import { computeDayMatchedTotals } from "../shared/ledgerUtils";
 import type { GradingMetric } from "../../../../features/salesLedgerSlice";
 import { StarIcon } from "@heroicons/react/20/solid";
 

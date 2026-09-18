@@ -1,4 +1,4 @@
-import { calculateCogs } from "../subDepts";
+import { calculateCogs } from "../../utils/cogs";
 import type { SubDeptMargin, TransactionListItem } from "../../interfaces";
 
 /**

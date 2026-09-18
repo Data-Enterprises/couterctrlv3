@@ -1,5 +1,5 @@
 import type { ItemRow } from "../../../features/itemPerfSlice";
-import { calculateCogs } from "../../subDepts";
+import { calculateCogs } from "../../../utils/cogs";
 import {
   dayOf,
   lyDateFor,

@@ -1,4 +1,4 @@
-import { calculateCogs } from "../subDepts";
+import { calculateCogs } from "../../utils/cogs";
 import { shiftIso } from "../../utils/grading";
 import { pricedUnits } from "../inventory/inventoryData";
 import type { SubsPricePoint } from "../../interfaces";

@@ -4,7 +4,7 @@ import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { getWeekly, getHourly } from "../../../api/sales";
 import { getStoresAssignedToUserGroup } from "../../../api/groups";
 import { addDays, formatGoliathDate, sameWeekDayLastYear } from "../../../utils";
-import { buildLedgerRows, regradeLedgerRows } from "../shared/ledgerUtils";
+import { buildLedgerRows, regradeLedgerRows } from "./shared/ledgerUtils";
 import type { Store } from "../../../interfaces";
 import {
   setWeeklySales,

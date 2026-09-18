@@ -1,5 +1,5 @@
 import type { SubDeptMargin } from "../../interfaces";
-import { calculateCogs } from "../subDepts";
+import { calculateCogs } from "../../utils/cogs";
 import {
   LW_OFFSET,
   LY_OFFSET,

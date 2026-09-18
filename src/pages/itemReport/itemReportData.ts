@@ -8,7 +8,7 @@ import { fetchSubDeptRowsSafe } from "../../utils/marginRows";
 import { getSubMarginsWithPricePoints } from "../../api/subMargins";
 import { fetchAllPages } from "../../utils/paging";
 import { LW_OFFSET, shiftIso } from "../../utils/grading";
-import { getLYDate, setDates } from "../subDepts";
+import { getLYDate, setDates } from "../../utils/dates";
 import { formatDate } from "../../utils";
 import type {
   ReceiverListItem,

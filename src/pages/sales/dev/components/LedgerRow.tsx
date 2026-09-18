@@ -2,28 +2,18 @@ import { memo } from "react";
 import { formatCurrencyCompact } from "../../../../utils";
 import { useStoreName } from "../../../../hooks";
 import { severityDotClass, pillClass, PCT_COL_W } from "./utils";
-import { applyStoreNumberToName } from "../../shared/ledgerUtils";
+import { applyStoreNumberToName } from "../shared/ledgerUtils";
 import type { Severity } from "../../../../utils/severity";
 import {
   isCompleteCoverage,
   comparisonPillClass,
   type GradeBasis,
-} from "../../shared/ledgerUtils";
+} from "../shared/ledgerUtils";
 import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice";
 
-export type { Severity };
-
-export type DayDot = {
-  sale_date: string;
-  twNet: number;
-  // null means no matching LW/LY row for this day — not the same as a
-  // genuine $0 sales day. See computeDayMatchedTotals in shared/ledgerUtils.
-  lwNet: number | null;
-  lyNet: number | null;
-  lwQty: number | null;
-  lyQty: number | null;
-  twQty: number;
-};
+import type { DayDot, StoreSelection } from "../../../../interfaces";
+// Defined in src/interfaces — the Sales slices hold them.
+export type { DayDot, Severity, StoreSelection };
 
 export type LedgerRowData = {
   storeid: number;
@@ -66,21 +56,6 @@ export type LedgerRowData = {
    *  counted under Critical, Watch or OK. */
   severity: Severity | null;
   days: DayDot[];
-};
-
-export type StoreSelection = {
-  storeId: number;
-  storeName: string;
-  storeNumber: string;
-  /** Mirrors LedgerRowData.storeNumbersForId — lets the detail panel label
-   * which of the co-located locations it's showing. */
-  storeNumbersForId: string[];
-  start: string;
-  end: string;
-  mode: "weekly" | "daily";
-  days: DayDot[];
-  /** Null when the store wasn't graded — see LedgerRowData.gradedOn. */
-  severity: Severity | null;
 };
 
 interface LedgerRowProps {

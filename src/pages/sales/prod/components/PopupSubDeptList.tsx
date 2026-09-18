@@ -34,7 +34,7 @@ import {
   comparisonPillClass,
   type Coverage,
   type GradeBasis,
-} from "../../shared/ledgerUtils";
+} from "../shared/ledgerUtils";
 import {
   ExclamationTriangleIcon,
   ExclamationCircleIcon,
@@ -43,7 +43,7 @@ import {
   ChevronUpIcon,
 } from "@heroicons/react/20/solid";
 import type { Severity } from "./LedgerRow";
-import { aggregateByCode, itemSeverity, matchItemRows } from "../../components/itemGrading";
+import { aggregateByCode, itemSeverity, matchItemRows } from "../../../../utils/itemGrading";
 import type { SubDeptMargin } from "../../../../interfaces";
 import UpcContextMenu from "../../../../components/UpcContextMenu";
 import {

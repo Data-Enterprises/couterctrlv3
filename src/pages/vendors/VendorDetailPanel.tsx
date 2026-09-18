@@ -5,7 +5,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { collectGradedItems } from "./vendorGradedItems";
 import type { ItemGradingMetric } from "../../utils/itemMargins";
-import { useCriticalReport } from "../itemReport/criticalHandoff";
+import { useCriticalReport } from "../../hooks/useCriticalReport";
 import {
   useAppSelector,
   useAppDispatch,

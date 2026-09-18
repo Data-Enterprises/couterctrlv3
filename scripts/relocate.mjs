@@ -58,6 +58,7 @@ const makeResolver = (has) => (from, spec) => {
 const specFor = (fromFile, targetFile, suffix) => {
   const trimmed = suffix ? targetFile.slice(0, -suffix.length) : targetFile;
   let r = P.relative(P.dirname(fromFile), trimmed);
+  if (r === "") return "."; // the importer's own folder index
   if (!r.startsWith(".")) r = "./" + r;
   return r;
 };

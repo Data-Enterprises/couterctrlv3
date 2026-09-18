@@ -43,7 +43,7 @@ import {
   PARTIAL_PILL_CLASS,
   scopeToStoreNumber,
   applyStoreNumberToName /*, getWeeklyDataGaps, getWeeklyGapCount */,
-} from "../../shared/ledgerUtils";
+} from "../shared/ledgerUtils";
 import { useStoreName } from "../../../../hooks";
 import {
   ArrowDownTrayIcon /*, ExclamationTriangleIcon */,
@@ -52,7 +52,7 @@ import PopupDaySidebar from "./PopupDaySidebar";
 import PopupSubDeptList from "./PopupSubDeptList";
 import PopupHourlyView from "./PopupHourlyView";
 import { ClipboardDocumentListIcon } from "@heroicons/react/20/solid";
-import { useCriticalReport } from "../../../itemReport/criticalHandoff";
+import { useCriticalReport } from "../../../../hooks/useCriticalReport";
 // import DataGapReport from "./DataGapReport";
 // import PopupCategoryList from "./PopupCategoryList";
 import LoadingIndicator from "../../../../components/loading/LoadingIndicator";

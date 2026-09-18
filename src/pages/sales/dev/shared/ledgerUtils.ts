@@ -1,28 +1,31 @@
-import { addDays, sameWeekDayLastYear } from "../../../utils";
-import { rowsToCsv } from "../../../utils/csvExport";
-import { gradeSeverity } from "../../../utils/severity";
+import { addDays, sameWeekDayLastYear } from "../../../../utils";
+import { rowsToCsv } from "../../../../utils/csvExport";
+import { matchDatedRows } from "../../../../utils/grading";
+// Universal now (Item Grading uses it too); re-exported for the ledger code.
+export { matchDatedRows };
+import { gradeSeverity } from "../../../../utils/severity";
 import {
   gradeBasis as sharedGradeBasis,
   isCompleteCoverage,
   type Coverage,
   type GradeBasis,
-} from "../../../utils/grading";
+} from "../../../../utils/grading";
 export { isCompleteCoverage, type Coverage, type GradeBasis };
 export {
   PARTIAL_PILL_CLASS,
   comparisonPillClass,
-} from "../../../utils/severity";
-import { getHolidayName, getHolidayLastYear } from "../../../utils/holidays";
-import type { HolidayName } from "../../../utils/holidays";
+} from "../../../../utils/severity";
+import { getHolidayName, getHolidayLastYear } from "../../../../utils/holidays";
+import type { HolidayName } from "../../../../utils/holidays";
 import type {
   WeeklySale,
   SubSale,
   HourlySale,
   SubDeptMargin,
   Store,
-} from "../../../interfaces";
+} from "../../../../interfaces";
 import type { LedgerRowData, Severity } from "../components/LedgerRow";
-import type { GradingMetric } from "../../../features/salesLedgerSlice";
+import type { GradingMetric } from "../../../../features/salesLedgerSlice";
 
 export const SEVERITY_RANK = { critical: 0, watch: 1, healthy: 2 } as const;
 
@@ -32,7 +35,7 @@ export const SEVERITY_RANK = { critical: 0, watch: 1, healthy: 2 } as const;
 export {
   scopeToStoreNumber,
   applyStoreNumberToName,
-} from "../../../utils/storeIdentity";
+} from "../../../../utils/storeIdentity";
 
 // ─── Grading basis ────────────────────────────────────────────────────────────
 //
@@ -76,59 +79,6 @@ export const basisPct = (basis: GradeBasis, lwPct: number, lyPct: number) =>
 /** Critical, watch, healthy, then ungraded last. */
 export const severityRank = (s: Severity | null) =>
   s === null ? 3 : SEVERITY_RANK[s];
-
-/**
- * Split a dated row set into the TW rows each comparison may use, and count
- * coverage.
- *
- * For any list that aggregates dated rows by group — sub-departments, hours.
- * `lw` and `ly` must already be the matched-date rows (callers filter to the
- * matched date set first). A TW row is kept for a comparison only when its
- * date found a counterpart there.
- *
- * Coverage is counted on DATES across the whole row set, not per group. A
- * sub-department that sold nothing on a day it traded last year is a real
- * zero, not a gap; what makes a comparison incomplete is the store having no
- * rows for that date at all.
- */
-export const matchDatedRows = <T extends { sale_date: string }>(
-  tw: T[],
-  lw: T[],
-  ly: T[],
-) => {
-  const day = (r: { sale_date: string }) => r.sale_date.split("T")[0];
-  const lwDates = new Set(lw.map(day));
-  const lyDates = new Set(ly.map(day));
-  const lyFor = new Map<string, string>();
-  const twForLW: T[] = [];
-  const twForLY: T[] = [];
-  const twDays = new Set<string>();
-  const lwHit = new Set<string>();
-  const lyHit = new Set<string>();
-  for (const r of tw) {
-    const d = day(r);
-    twDays.add(d);
-    if (lwDates.has(addDays(new Date(d), -7).toISOString().split("T")[0])) {
-      twForLW.push(r);
-      lwHit.add(d);
-    }
-    let lyDate = lyFor.get(d);
-    if (lyDate === undefined) {
-      lyDate = sameWeekDayLastYear(d).date;
-      lyFor.set(d, lyDate);
-    }
-    if (lyDates.has(lyDate)) {
-      twForLY.push(r);
-      lyHit.add(d);
-    }
-  }
-  const coverage: Coverage = {
-    dayCount: twDays.size,
-    lwDayCount: lwHit.size,
-    lyDayCount: lyHit.size,
-  };
-  return { twForLW, twForLY, coverage };
-};
 
 export const sortLedgerRows = (rows: LedgerRowData[]): LedgerRowData[] =>
   [...rows].sort((a, b) => {

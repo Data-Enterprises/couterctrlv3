@@ -4,7 +4,7 @@ import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import ResizableModalShell from "../../components/modals/ResizableModalShell";
 import { fmtNum, rowsToCsv, downloadCsv, aggregateRows } from "../../utils/csvExport";
 import type { AggFn, AggRow } from "../../utils/csvExport";
-import { calculateCogs } from "../subDepts";
+import { calculateCogs } from "../../utils/cogs";
 import {
   buildItemRows,
   getItemSeverity,

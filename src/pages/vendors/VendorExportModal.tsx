@@ -4,7 +4,7 @@ import ResizableModalShell from "../../components/modals/ResizableModalShell";
 import MultiSelectFilter from "../../components/filters/MultiSelectFilter";
 import { fmtNum, rowsToCsv, downloadCsv, aggregateRows } from "../../utils/csvExport";
 import type { AggFn, AggRow } from "../../utils/csvExport";
-import { calculateCogs } from "../subDepts";
+import { calculateCogs } from "../../utils/cogs";
 import {
   buildItemRows,
   getItemSeverity,

@@ -40,7 +40,7 @@ import {
   comparisonPillClass,
   type Coverage,
   type GradeBasis,
-} from "../../shared/ledgerUtils";
+} from "../shared/ledgerUtils";
 import ThresholdFilter from "../../../../components/filters/ThresholdFilter";
 import ThresholdSlider from "../../../../components/filters/ThresholdSlider";
 

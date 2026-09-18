@@ -25,7 +25,7 @@ import {
   ClipboardDocumentListIcon,
 } from "@heroicons/react/16/solid";
 import { collectGradedItems } from "./gradedItems";
-import { useCriticalReport } from "../../../itemReport/criticalHandoff";
+import { useCriticalReport } from "../../../../hooks/useCriticalReport";
 import { weekEnding } from "../../../itemReport/itemReportData";
 import type { SubDeptCost, SubDeptMargin } from "../../../../interfaces";
 

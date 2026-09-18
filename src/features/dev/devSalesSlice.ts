@@ -11,7 +11,7 @@ import type {
   HourlySale,
   SubSale,
 } from "../../interfaces";
-import type { TopSub } from "../../pages/sales/components";
+import type { TopSub } from "../../interfaces";
 
 export type SubTracker = {
   id: number;

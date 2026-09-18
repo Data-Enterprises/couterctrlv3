@@ -1,3 +1,5 @@
+import type { Severity } from "../utils/severity";
+
 export type JsonError = {
   message: string;
 };
@@ -2118,4 +2120,49 @@ export interface SuggestedGroupResp {
    *  in the same CTE and are gated on the same `includeOrders`. */
   rhythm_summary: RhythmSummary | null;
   items: SuggestedGroupRow[];
+}
+
+//////////////////////////////////////////////////////////////
+// Sales — shapes the Sales slices hold. Moved out of the Sales page's
+// LedgerRow and components/index so the data layer imports no UI file.
+//////////////////////////////////////////////////////////////
+
+export type DayDot = {
+  sale_date: string;
+  twNet: number;
+  // null means no matching LW/LY row for this day — not the same as a
+  // genuine $0 sales day. See computeDayMatchedTotals in shared/ledgerUtils.
+  lwNet: number | null;
+  lyNet: number | null;
+  lwQty: number | null;
+  lyQty: number | null;
+  twQty: number;
+};
+
+export type StoreSelection = {
+  storeId: number;
+  storeName: string;
+  storeNumber: string;
+  /** Mirrors LedgerRowData.storeNumbersForId — lets the detail panel label
+   * which of the co-located locations it's showing. */
+  storeNumbersForId: string[];
+  start: string;
+  end: string;
+  mode: "weekly" | "daily";
+  days: DayDot[];
+  /** Null when the store wasn't graded — see LedgerRowData.gradedOn. */
+  severity: Severity | null;
+};
+
+export interface TopSub {
+  sub_department: number;
+  sub_department_description: string;
+  total_sales: number;
+  net_sales: number;
+  qty: number;
+  digital_coupons: number;
+  elec_instore_coupons: number;
+  elec_store_coupons: number;
+  store_coupon: number;
+  total_tax: number;
 }

@@ -14,7 +14,7 @@ import {
   fetchSubDeptRows,
   fetchSubDeptRowsSafe,
 } from "../../../../../utils/marginRows";
-import { withProductCode } from "../../../shared/ledgerUtils";
+import { withProductCode } from "../../shared/ledgerUtils";
 import { SALES_MOBILE_INFO } from "../../salesInfo";
 import MobileInfoSheet from "../../../../../components-dev/mobile/MobileInfoSheet";
 import MobileSortChips, {

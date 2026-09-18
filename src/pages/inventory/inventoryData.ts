@@ -1,7 +1,7 @@
 import { getSubDepts } from "../../api/subMargins";
 import { fetchAllPages } from "../../utils/paging";
 import { fetchSubDeptRows, fetchSubDeptRowsSafe } from "../../utils/marginRows";
-import { calculateCogs } from "../subDepts";
+import { calculateCogs } from "../../utils/cogs";
 import type {
   SubDeptMargin,
   SubSale,
