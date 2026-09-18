@@ -55,6 +55,8 @@ Status: **done** · **next** · blank = not started
 
 ## Leftovers to clean as pages come up
 
+- Unused page slices (nothing live reads or dispatches them): `suggested` (Suggested page is unrouted), `reportBuilder`
+
 - Dead components: `SevBadge`, `SevChips`, `MobileDayStrip`, `MobileKpiStrip`, `MobileSignalRow`
 - `sales/mobile/index.ts` (`PieData`, legacy Orders only)
 - `LoadingIndicator`: dev library drops the legacy spinner — answer `--keep-lib` on promote until legacy is gone

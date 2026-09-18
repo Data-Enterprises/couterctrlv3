@@ -51,6 +51,12 @@ export interface AdListData {
   featureNotes: string;
   tprDates: string;
 }
+/** One ad-list line keyed by its UPC. Lived in adListSlice, whose state
+ *  nothing read any more; the row shape is all the forecast needed. */
+export interface AdListRow extends AdListData {
+  upc: string;
+}
+
 
 export type ForecastOutlierRow = {
   upc: string;

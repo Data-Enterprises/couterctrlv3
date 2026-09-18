@@ -173,10 +173,10 @@ const Forecasting = () => {
       .finally(() => dispatch(setIsLoading(false)));
   };
 
-  // Every device gets this page. Tablet and phone used to fall through to the
-  // old Forecasting page and its tablet layout; both are gone (no tablet
-  // carry-over — it gets a fresh start later), and a phone renders this
-  // desktop page, like the other desktop-only pages.
+  // Desktop only. Tablet and phone used to fall through to the old
+  // Forecasting page and its tablet layout; both are gone. No tablet
+  // carry-over (a fresh start later), and no mobile version: Forecasting is
+  // not on the mobile nav.
   const hasData = rowData.length > 0;
 
   return (

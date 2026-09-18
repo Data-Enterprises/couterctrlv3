@@ -9,8 +9,6 @@ import lossPreventionReducer from "../features/lossPreventionSlice";
 import lpActionsReducer from "../features/lpActionsSlice";
 import upcReducer from "../features/upcSlice";
 import itemLookupReducer from "../features/itemLookupSlice";
-import trendModalReducer from "../features/trendModalSlice";
-import upcModalReducer from "../features/upcModalSlice";
 import quickSightReducer from "../features/qsSlice";
 import forecastReducer from "../features/forecastSlice";
 import forecastDevReducer from "../features/forecastDevSlice";
@@ -35,7 +33,6 @@ import subMarginReducer from "../features/subMarginSlice";
 import cashiersReducer from "../features/cashiersSlice";
 import ordersReducer from "../features/ordersSlice";
 import ordersLegacyReducer from "../features/ordersLegacySlice";
-import adListReducer from "../features/adListSlice";
 import salesLedgerReducer from "../features/salesLedgerSlice";
 import salesTrackerReducer from "../features/salesTrackerSlice";
 import upcDevReducer from "../features/upcDevSlice";
@@ -63,8 +60,6 @@ export const pageReducers = {
   lpActions: lpActionsReducer,
   upc: upcReducer,
   item: itemLookupReducer,
-  trendModal: trendModalReducer,
-  upcModal: upcModalReducer,
   quicksight: quickSightReducer,
   forecast: forecastReducer,
   forecastDev: forecastDevReducer,
@@ -89,7 +84,6 @@ export const pageReducers = {
   cashier: cashiersReducer,
   orders: ordersReducer,
   ordersLegacy: ordersLegacyReducer,
-  adList: adListReducer,
   salesLedger: salesLedgerReducer,
   salesTracker: salesTrackerReducer,
   upcDev: upcDevReducer,

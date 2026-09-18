@@ -1,6 +1,5 @@
 import type { PriceHistoryFromListResp } from "../../../interfaces";
-import type { AdListRow } from "../../../features/adListSlice";
-import type { AdListData } from "../../../features/forecastSlice";
+import type { AdListData, AdListRow } from "../../../features/forecastSlice";
 import { formatRowData, formatSinglePriceRowData } from ".";
 import {
   fitLinearDemand,

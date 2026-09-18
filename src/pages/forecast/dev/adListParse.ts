@@ -1,5 +1,5 @@
 import * as XLSX from "xlsx";
-import type { AdListRow } from "../../../features/adListSlice";
+import type { AdListRow } from "../../../features/dev/devForecastSlice";
 
 /**
  * AD list workbook → rows.

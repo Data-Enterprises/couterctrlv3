@@ -4,7 +4,7 @@ import type {
   ForecastTier as Tier,
   PriceHistoryResult,
 } from "../interfaces";
-import type { AdListRow } from "./adListSlice";
+import type { AdListRow } from "./forecastSlice";
 import type { ForecastOutlierRow } from "./forecastSlice";
 import { calcFcstQty, estimateDaysActive, forecastUnits } from "../utils/forecastCalc";
 
