@@ -1,5 +1,5 @@
 import { useEffect, useRef, type ReactNode } from "react";
-import { useResizableBox } from "../hooks/useResizableBox";
+import { useResizableBox } from "../../hooks/useResizableBox";
 import ResizeHandle from "../ResizeHandle";
 
 /**

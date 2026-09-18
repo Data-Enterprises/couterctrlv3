@@ -47,15 +47,15 @@ const listFiles = () =>
     .trim().split("\n")
     .filter((f) => existsSync(f) && statSync(f).isFile());
 
-const CANDIDATES = ["", ".ts", ".tsx", "/index.ts", "/index.tsx"];
-const makeResolver = (has) => (from, spec) => {
+export const CANDIDATES = ["", ".ts", ".tsx", "/index.ts", "/index.tsx"];
+export const makeResolver = (has) => (from, spec) => {
   const base = P.normalize(P.join(P.dirname(from), spec)).replace(/\/$/, "");
   for (const suffix of CANDIDATES)
     if (has.has(base + suffix)) return { target: base + suffix, suffix };
   return null;
 };
 
-const specFor = (fromFile, targetFile, suffix) => {
+export const specFor = (fromFile, targetFile, suffix) => {
   // Omit what the original spec omitted — but the target may have changed
   // shape (a folder index moved to a plain file), so trim only what is there.
   let trimmed = targetFile;
@@ -68,7 +68,7 @@ const specFor = (fromFile, targetFile, suffix) => {
 };
 
 // import … from "x" | export … from "x" | import("x") | import "x"
-const SPEC_RE = /((?:import|export)[^'"]*?from\s*|import\(\s*|import\s+)(["'])(\.[^"']*)\2/g;
+export const SPEC_RE = /((?:import|export)[^'"]*?from\s*|import\(\s*|import\s+)(["'])(\.[^"']*)\2/g;
 
 export function relocate(plan, { dry = false, log = console.log } = {}) {
   const files = listFiles();
