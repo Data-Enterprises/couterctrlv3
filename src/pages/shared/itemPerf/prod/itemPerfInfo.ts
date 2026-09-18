@@ -1,5 +1,5 @@
-import type { InfoGlossaryEntry } from "../../../components/InfoPopover";
-import type { ItemDimension } from "../../../features/itemPerfSlice";
+import type { InfoGlossaryEntry } from "../../../../components/InfoPopover";
+import type { ItemDimension } from "../../../../features/itemPerfSlice";
 
 const NOUN: Record<ItemDimension, { one: string; many: string }> = {
   subdept: { one: "sub department", many: "sub departments" },

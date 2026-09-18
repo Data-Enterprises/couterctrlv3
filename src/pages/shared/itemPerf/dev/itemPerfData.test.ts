@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ItemRow } from "../../../features/itemPerfSlice";
+import type { ItemRow } from "../../../../features/dev/devItemPerfSlice";
 import {
   buildDailyRows,
   buildGroupRows,

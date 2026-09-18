@@ -1,23 +1,23 @@
-import type { ItemRow } from "../../../features/itemPerfSlice";
-import { calculateCogs } from "../../../utils/cogs";
+import type { ItemRow } from "../../../../features/itemPerfSlice";
+import { calculateCogs } from "../../../../utils/cogs";
 import {
   dayOf,
   lyDateFor,
   netOf,
   type DayMatch,
-} from "../../../utils/perfPairs";
+} from "../../../../utils/perfPairs";
 
 export {
   isPartialMatch,
   matchWeek,
   noLyHistory,
   type DayMatch,
-} from "../../../utils/perfPairs";
-import { normalizeProductCode } from "../../../utils/productCode";
+} from "../../../../utils/perfPairs";
+import { normalizeProductCode } from "../../../../utils/productCode";
 import type {
   ItemDimension,
   MarginSort,
-} from "../../../features/itemPerfSlice";
+} from "../../../../features/itemPerfSlice";
 
 /**
  * Cost of goods for one row.
