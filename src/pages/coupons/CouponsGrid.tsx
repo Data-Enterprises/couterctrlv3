@@ -14,8 +14,9 @@ import {
   setTransModalOpen,
 } from "../../features/lossPreventionSlice";
 import type { JsonError, TransactionListItem } from "../../interfaces";
-import { formatCurrency2 } from "../../utils";
-import { formatDate } from "../sales/tracker";
+// formatDateSimple is the same yyyy-mm-dd -> mm/dd/yyyy cut the Sales tracker
+// helper made; utils/formatDate is NOT — it parses as UTC and lands a day early.
+import { formatCurrency2, formatDateSimple } from "../../utils";
 import { couponValueOf } from "../../utils/couponValue";
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -99,7 +100,7 @@ const CouponsGrid = () => {
   //             className="grid grid-cols-8 border-b last:border-0 py-1"
   //           >
   //             <div>{c.store_name}</div>
-  //             <div>{formatDate(c.sale_date)}</div>
+  //             <div>{formatDateSimple(c.sale_date)}</div>
   //             <div>{c.sale_id}</div>
   //             <div className="text-right">{formatCurrency2(c.coupon_amount)}</div>
   //             <div>{c.product_code}</div>
@@ -134,7 +135,7 @@ const CouponsGrid = () => {
               className="grid grid-cols-[1.3fr_1fr_1fr_0.5fr_1.3fr_1.1fr_1.3fr_0.7fr] gap-2 px-2 py-2 text-[13.5px] border-b border-content/20 even:bg-bkg/75"
             >
               <div className="truncate">{c.store_name}</div>
-              <div className="truncate">{formatDate(c.sale_date)}</div>
+              <div className="truncate">{formatDateSimple(c.sale_date)}</div>
               <div className="truncate">{c.sale_id}</div>
               <div className="text-right tabular-nums pr-1">
                 {formatCurrency2(couponValueOf(c))}

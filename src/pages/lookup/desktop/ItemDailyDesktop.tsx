@@ -1,7 +1,15 @@
 import { useAppSelector } from "../../../hooks";
 import { formatBigNumber, formatCurrency2 } from "../../../utils";
 import { ResponsiveBar, type BarDatum } from "@nivo/bar";
-import { rgbaColor } from "../../sales/utils";
+
+// Was imported from pages/sales/utils, which is gone; kept here, the one
+// place it is used. Same body as before.
+const rgbaColor = (hex: string, alpha: number) => {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
+};
 
 const ItemDailyDesktop = () => {
   const { itemLookupHistory, itemsLoaded } = useAppSelector(
