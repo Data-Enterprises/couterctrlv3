@@ -25,7 +25,7 @@ import type {
   Store,
 } from "../../../../interfaces";
 import type { LedgerRowData, Severity } from "../components/LedgerRow";
-import type { GradingMetric } from "../../../../features/salesLedgerSlice";
+import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice";
 
 export const SEVERITY_RANK = { critical: 0, watch: 1, healthy: 2 } as const;
 

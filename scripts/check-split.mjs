@@ -137,6 +137,14 @@ const walk = (starts, forbidden, label) => {
 walk(files.filter((f) => f.startsWith(DEV)),
   (f) => (f.startsWith("src/components/") && !isToast(f)) || f.startsWith(PROD) || devTwinOf.has(f),
   "dev tree reaches no prod UI and no prod twin slice");
+// Types too: they vanish at build, but a dev tree borrowing a type from the
+// prod slice misses any change made to that type in the dev slice.
+{
+  const typeHits = files.filter((f) => f.startsWith(DEV))
+    .flatMap((f) => (allEdges.get(f) ?? []).filter((t) => devTwinOf.has(t)).map((t) => `${f} -> ${t}`));
+  if (typeHits.length) typeHits.forEach((h) => fail(`dev tree imports a prod slice that has a dev twin (use features/dev): ${h}`));
+  else ok("dev tree imports no prod twin slice, types included");
+}
 walk(files.filter((f) => f.startsWith(PROD)),
   (f) => f.startsWith("src/components-dev/") || f.startsWith(DEV) || f.startsWith("src/features/dev/"),
   "prod tree reaches no dev UI");
