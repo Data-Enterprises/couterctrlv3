@@ -1,7 +1,7 @@
 import { useEffect } from "react";
-import { useAppSelector, useAppDispatch } from "../../hooks";
-import { useToast } from "../../components/toasts/hooks/useToast";
-import { formatGoliathDate, getStoreName } from "../../utils";
+import { useAppSelector, useAppDispatch } from "../../../hooks";
+import { useToast } from "../../../components/toasts/hooks/useToast";
+import { formatGoliathDate, getStoreName } from "../../../utils";
 import {
   setRows,
   setLoading,
@@ -13,7 +13,7 @@ import {
   setItems,
   setLoadingItems,
   reQuery,
-} from "../../features/categoriesSlice";
+} from "../../../features/categoriesSlice";
 import {
   fetchAllPeriods,
   fetchCatItemPeriods,
@@ -36,7 +36,7 @@ export const useCategoryData = () => {
   const context = useAppSelector((s) => s.app);
   const search = useAppSelector((s) => s.search);
   const user = useAppSelector((s) => s.user);
-  const cats = useAppSelector((s) => s.categories);
+  const cats = useAppSelector((s) => s.prod.categories);
 
   /** Resolves to the row count, so a caller can tell "found nothing" from
    *  "never ran" without reading state back on the next render. */

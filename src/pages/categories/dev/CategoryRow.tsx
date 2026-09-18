@@ -1,5 +1,5 @@
 import { memo, useCallback } from "react";
-import { PCT_COL_W } from "../../utils/severity";
+import { PCT_COL_W } from "../../../utils/severity";
 
 /**
  * One row in the category list.

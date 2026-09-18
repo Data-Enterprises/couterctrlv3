@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState, useEffect } from "react";
 import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
-import { useAppSelector, useAppDispatch } from "../../hooks";
-import { formatCurrency2, formatBigNumber } from "../../utils";
+import { useAppSelector, useAppDispatch } from "../../../hooks";
+import { formatCurrency2, formatBigNumber } from "../../../utils";
 import {
   pillClass,
   comparisonPillClass,
@@ -10,19 +10,19 @@ import {
   chipClass,
   severityHeaderBgClass,
   type Severity,
-} from "../../utils/severity";
-import DayCardStrip, { type DayCardEntry } from "../../components/DayCardStrip";
+} from "../../../utils/severity";
+import DayCardStrip, { type DayCardEntry } from "../../../components-dev/DayCardStrip";
 import CategoryItemsTable from "./CategoryItemsTable";
 import CategoryExportModal from "./CategoryExportModal";
-import { fmtDayLabel, fmtRangeLabel } from "../../utils/dateLabels";
-import ThresholdSlider from "../../components/filters/ThresholdSlider";
-import ThresholdFilter from "../../components/filters/ThresholdFilter";
+import { fmtDayLabel, fmtRangeLabel } from "../../../utils/dateLabels";
+import ThresholdSlider from "../../../components-dev/filters/ThresholdSlider";
+import ThresholdFilter from "../../../components-dev/filters/ThresholdFilter";
 import {
   setSelectedDay,
   setThreshold,
   CATEGORY_THRESHOLD_DEFAULT,
   ITEM_THRESHOLD_DEFAULT,
-} from "../../features/categoriesSlice";
+} from "../../../features/dev/devCategoriesSlice";
 import {
   getTier,
   pctChange,
@@ -32,7 +32,7 @@ import {
   type CategoryDay,
   type CategoryTier,
 } from "./categoriesUtils";
-import { gradeBasis, isCompleteCoverage } from "../../utils/grading";
+import { gradeBasis, isCompleteCoverage } from "../../../utils/grading";
 
 type Tab = "items" | "hours";
 
@@ -127,7 +127,7 @@ interface Props {
 
 const CategoryDetailPanel = ({ onLoadHourly }: Props) => {
   const dispatch = useAppDispatch();
-  const cats = useAppSelector((s) => s.categories);
+  const cats = useAppSelector((s) => s.dev.categories);
   const { rows, metric, threshold, selectedCategory, selectedDay, hourly, loadingHourly } = cats;
 
   const [tab, setTab] = useState<Tab>("items");

@@ -1,21 +1,21 @@
-import InfoButton from "../../components/InfoButton";
+import InfoButton from "../../../components-dev/InfoButton";
 import CategoryRow from "./CategoryRow";
 import { useMemo, useState, useCallback } from "react";
 import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
-import { useAppSelector, useAppDispatch } from "../../hooks";
-import TextFilter from "../../components/filters/TextFilter";
+import { useAppSelector, useAppDispatch } from "../../../hooks";
+import TextFilter from "../../../components-dev/filters/TextFilter";
 import ThresholdFilter, {
   type ThresholdValue,
-} from "../../components/filters/ThresholdFilter";
-import InfoPopover from "../../components/InfoPopover";
-import SortHeader, { PERF_SORT_HEADER } from "../../components/SortHeader";
-import { useTriStateSort } from "../../utils/useTriStateSort";
+} from "../../../components-dev/filters/ThresholdFilter";
+import InfoPopover from "../../../components-dev/InfoPopover";
+import SortHeader, { PERF_SORT_HEADER } from "../../../components-dev/SortHeader";
+import { useTriStateSort } from "../../../utils/useTriStateSort";
 import {
   formatCurrency2,
   formatCurrencyCompact,
   formatBigNumber,
-} from "../../utils";
-import { fmtCompactRange } from "../../utils/dateLabels";
+} from "../../../utils";
+import { fmtCompactRange } from "../../../utils/dateLabels";
 import {
   severityDotClass,
   comparisonPillClass,
@@ -23,9 +23,9 @@ import {
   PCT_COL_W,
   formatPct,
   type Severity,
-} from "../../utils/severity";
+} from "../../../utils/severity";
 import { CATEGORIES_INFO } from "./categoriesInfo";
-import { isCompleteCoverage } from "../../utils/grading";
+import { isCompleteCoverage } from "../../../utils/grading";
 import {
   setTextFilter,
   setTierFilter,
@@ -33,7 +33,7 @@ import {
   setMetric,
   setThreshold,
   CATEGORY_THRESHOLD_DEFAULT,
-} from "../../features/categoriesSlice";
+} from "../../../features/dev/devCategoriesSlice";
 import {
   getTier,
   categoryDelta,
@@ -82,7 +82,7 @@ const CategoryListPanel = ({ onSearchOpen }: Props) => {
   const dispatch = useAppDispatch();
   const [infoOpen, setInfoOpen] = useState(false);
   const { sort, handleSort, applySort } = useTriStateSort<ListSortCol>();
-  const cats = useAppSelector((s) => s.categories);
+  const cats = useAppSelector((s) => s.dev.categories);
   const { rows, metric, threshold, tierFilter, textFilter, selectedCategory } = cats;
 
   // Null threshold means the input is mid-edit; grade against the default

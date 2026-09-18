@@ -1,7 +1,7 @@
-import { coverageOf, gradeBasis } from "../../utils/grading";
-import type { CatSalesDaily, CategoryMetric, CategoryTier, CategoryRow, CategoryDay, DayDetail } from "../../interfaces";
+import { coverageOf, gradeBasis } from "../../../utils/grading";
+import type { CatSalesDaily, CategoryMetric, CategoryTier, CategoryRow, CategoryDay, DayDetail } from "../../../interfaces";
 // Defined in src/interfaces — Categories. Re-exported for this page's files.
-export type { CategoryMetric, CategoryTier, CategoryRow, CategoryDay, DayDetail } from "../../interfaces";
+export type { CategoryMetric, CategoryTier, CategoryRow, CategoryDay, DayDetail } from "../../../interfaces";
 
 /** Category performance: turning three weeks of daily rows into graded rows.
  *

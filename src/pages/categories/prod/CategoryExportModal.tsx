@@ -1,17 +1,17 @@
-import { coverageOf } from "../../utils/grading";
+import { coverageOf } from "../../../utils/grading";
 import { useMemo, useState } from "react";
 import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
-import ResizableModalShell from "../../components/modals/ResizableModalShell";
-import { fmtNum, rowsToCsv, downloadCsv, aggregateRows } from "../../utils/csvExport";
-import type { AggFn, AggRow } from "../../utils/csvExport";
-import { calculateCogs } from "../../utils/cogs";
+import ResizableModalShell from "../../../components/modals/ResizableModalShell";
+import { fmtNum, rowsToCsv, downloadCsv, aggregateRows } from "../../../utils/csvExport";
+import type { AggFn, AggRow } from "../../../utils/csvExport";
+import { calculateCogs } from "../../../utils/cogs";
 import {
   buildItemRows,
   getItemSeverity,
   type ItemSeverity,
   type ItemGradingMetric,
-} from "../../utils/itemMargins";
-import type { CatItem, CatSalesHourly } from "../../interfaces";
+} from "../../../utils/itemMargins";
+import type { CatItem, CatSalesHourly } from "../../../interfaces";
 import type { CategoryMetric, CategoryRow } from "./categoriesUtils";
 import {
   getTier,
@@ -21,7 +21,7 @@ import {
   LW_OFFSET,
   LY_OFFSET,
 } from "./categoriesUtils";
-import { fmtDayLabel } from "../../utils/dateLabels";
+import { fmtDayLabel } from "../../../utils/dateLabels";
 
 /**
  * CSV export for Categories.

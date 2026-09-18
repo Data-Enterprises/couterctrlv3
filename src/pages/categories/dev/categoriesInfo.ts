@@ -1,4 +1,4 @@
-import type { InfoGlossaryEntry } from "../../components/InfoPopover";
+import type { InfoGlossaryEntry } from "../../../components-dev/InfoPopover";
 
 /** Content for the "?" popover in the Categories header.
  *

@@ -1,9 +1,9 @@
-import { useAppDispatch, useAppSelector } from "../../hooks";
-import ItemMarginsTable from "../../components/ItemMarginsTable";
+import { useAppDispatch, useAppSelector } from "../../../hooks";
+import ItemMarginsTable from "../../../components-dev/ItemMarginsTable";
 import {
   setItemThreshold,
   ITEM_THRESHOLD_DEFAULT,
-} from "../../features/categoriesSlice";
+} from "../../../features/dev/devCategoriesSlice";
 
 /** The open category's items, on the shared item report.
  *
@@ -16,7 +16,7 @@ import {
 const CategoryItemsTable = () => {
   const dispatch = useAppDispatch();
   const { items, metric, selectedDay, loadingItems, itemThreshold, rows } =
-    useAppSelector((s) => s.categories);
+    useAppSelector((s) => s.dev.categories);
   // Store-level, so every category row carries the same coverage.
   const coverage = rows[0]?.coverage;
 
