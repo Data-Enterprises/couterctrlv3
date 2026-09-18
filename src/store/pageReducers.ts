@@ -21,7 +21,6 @@ import vendorsReducer from "../features/vendorsSlice";
 import itemReportReducer from "../features/itemReportSlice";
 import invoicesReducer from "../features/invoicesSlice";
 import suggestedReducer from "../features/suggestedSlice";
-import couponLegacyReducer from "../features/couponLegacySlice";
 import reportBuilderReducer from "../features/reportBuilderSlice";
 import adminReducer from "../features/adminSlice";
 import adminPageReducer from "../features/adminPageSlice";
@@ -70,7 +69,6 @@ export const pageReducers = {
   itemReport: itemReportReducer,
   invoices: invoicesReducer,
   suggested: suggestedReducer,
-  couponLegacy: couponLegacyReducer,
   reportBuilder: reportBuilderReducer,
   admin: adminReducer,
   adminPage: adminPageReducer,

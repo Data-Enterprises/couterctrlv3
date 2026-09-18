@@ -1,141 +1,18 @@
-import { useState } from "react";
-import { useAppDispatch, useAppSelector } from "../../hooks";
-import { getCoupons } from "../../api/coupons";
-import { getStoresAssignedToUserGroup } from "../../api/groups";
-import { setSelectedGroupStores } from "../../features/userSlice";
-import { useToast } from "../../components/toasts/hooks/useToast";
-import { useCouponContext } from ".";
-import {
-  setIsFetching,
-  setNoCouponsFound,
-  setCoupons,
-} from "../../features/couponSlice";
-import type { CouponsResponse, JsonError } from "../../interfaces";
-import { formatGoliathDate } from "../../utils";
+import { useAppSelector } from "../../hooks";
+import ProdCoupons from "./prod/Coupons";
+import DevCoupons from "./dev/Coupons";
 
-import SearchCard from "../../components/SearchCard";
-import LoadingIndicator from "../../components/loading/LoadingIndicator";
-import TransactionModal from "./TransactionModal";
-import CouponsMobile from "./mobile/CouponsMobile";
-import CouponsMobileDev from "./mobile/devMobile";
-import CouponListPanel from "./CouponListPanel";
-import CouponDetailPanel from "./CouponDetailPanel";
-import { isGroupSearch } from "../../features/searchSlice";
-
+/**
+ * Which Coupons to show.
+ *
+ * The API switch picks the UI tree as well as the backend: on the dev API you
+ * get `pages/coupons/dev`, on prod you get `pages/coupons/prod`. Work happens in
+ * dev; when it is signed off, `node scripts/promote-page.mjs coupons` copies it
+ * over prod and the two trees match again until the next change.
+ */
 const Coupons = () => {
-  const toast = useToast();
-  const dispatch = useAppDispatch();
-  const context = useCouponContext();
-  const devMode = useAppSelector((s) => s.app.devMode);
-  const { url, token } = useAppSelector((s) => s.app);
-  const { userid } = useAppSelector((s) => s.user);
-  const [selectedKey, setSelectedKey] = useState("");
-  const [sortMetric, setSortMetric] = useState<"amount" | "qty">("amount");
-  const [searchModalOpen, setSearchModalOpen] = useState(false);
-
-  const getData = () => {
-    setSelectedKey("");
-    dispatch(setCoupons([]));
-    if (isGroupSearch(context.type)) {
-      getStoresAssignedToUserGroup(url, token, userid, context.lastGroup)
-        .then((resp) => {
-          if (resp.data.error === 0) {
-            dispatch(setSelectedGroupStores(resp.data.stores.filter((s: any) => s.active)));
-          } else {
-            toast.warn(resp.data.msg);
-          }
-        })
-        .catch(() => {});
-    }
-    dispatch(setIsFetching(true));
-    // Cleared on every search: leaving it set means a later failure shows
-    // this notice describing the *previous* search alongside the error toast.
-    dispatch(setNoCouponsFound(false));
-    const useGroups = isGroupSearch(context.type) ? 1 : 0;
-    const singleStore = context.type === "Store" ? 1 : 0;
-    const searchValue = isGroupSearch(context.type) ? context.lastGroup : context.lastStore;
-    const start = formatGoliathDate(context.startDate);
-    const end = formatGoliathDate(context.endDate);
-
-    getCoupons(context.url, context.token, start, end, useGroups, singleStore, searchValue)
-      .then((resp) => {
-        const j: CouponsResponse = resp.data;
-        if (j.error !== 0) {
-          toast.warn(j.msg ?? "Failed to load coupons");
-        } else if (j.records.length > 0) {
-          dispatch(setCoupons(j.records));
-        } else {
-          dispatch(setNoCouponsFound(true));
-        }
-      })
-      .catch((err: JsonError) => toast.error(err.message))
-      .finally(() => dispatch(setIsFetching(false)));
-  };
-
-  if (context.isMobile && devMode) return <CouponsMobileDev />;
-  if (context.isMobile) return <CouponsMobile />;
-
-  // Loading
-  if (context.isFetching) {
-    return (
-      <div className="w-full h-[calc(100vh-3rem)] relative">
-        <LoadingIndicator message="Loading coupons..." />
-      </div>
-    );
-  }
-
-  // Initial search card / no results for the last search
-  if (context.coupons.length === 0) {
-    return (
-      <div className="h-[calc(100vh-3rem)] flex items-center justify-center mx-4 pb-12">
-        <SearchCard
-          title="Coupons"
-          description="Select a store and date range to load coupon activity."
-          buttonLabel="Load Coupons"
-          onSearch={getData}
-          loading={context.isFetching}
-          loadingMessage="Finding coupons..."
-          notice={
-            context.noCouponsFound
-              ? "No coupons came back for this search."
-              : undefined
-          }
-        />
-      </div>
-    );
-  }
-
-  // Two-panel layout
-  return (
-    <div className="h-[calc(100vh-3rem)] overflow-hidden p-4 flex gap-4">
-      <TransactionModal />
-      {searchModalOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-          onClick={() => setSearchModalOpen(false)}
-        >
-          <div className="w-full max-w-sm mx-4" onClick={(e) => e.stopPropagation()}>
-            <SearchCard
-              title="Coupons"
-              description="Select a store or group and date range to load coupon activity."
-              buttonLabel="Load Coupons"
-              onSearch={() => { setSearchModalOpen(false); getData(); }}
-              loading={context.isFetching}
-              loadingMessage="Finding coupons..."
-            />
-          </div>
-        </div>
-      )}
-      <CouponListPanel
-        selectedKey={selectedKey}
-        onSelect={setSelectedKey}
-        sortMetric={sortMetric}
-        onSortMetric={setSortMetric}
-        onOpenSearch={() => setSearchModalOpen(true)}
-      />
-      <CouponDetailPanel selectedKey={selectedKey} sortMetric={sortMetric} />
-    </div>
-  );
+  const apiEnv = useAppSelector((state) => state.app.apiEnv);
+  return apiEnv === "dev" ? <DevCoupons /> : <ProdCoupons />;
 };
 
 export default Coupons;

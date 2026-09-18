@@ -1,5 +1,10 @@
+/**
+ * Dev copy of `features/couponSlice.ts`, mounted at `state.dev.coupons` and read only
+ * by `pages/coupons/dev`. Edit this one while changing dev coupons; when dev is
+ * promoted, it replaces the prod slice. See src/store/devReducers.ts.
+ */
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { CouponItem, TransactionListItem } from "../interfaces";
+import type { CouponItem, TransactionListItem } from "../../interfaces";
 
 export type FilterType =
   | "Store"
@@ -67,7 +72,9 @@ const initialState: CouponState = {
 };
 
 const couponSlice = createSlice({
-  name: "coupon",
+  // Distinct from the prod slice's "coupon": Redux matches actions on this
+  // string alone, so sharing it would move prod and dev together.
+  name: "devCoupon",
   initialState,
   reducers: {
     setCouponReceiptLines: (state, action: PayloadAction<TransactionListItem[]>) => {
