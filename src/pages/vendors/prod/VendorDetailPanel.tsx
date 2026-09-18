@@ -1,15 +1,8 @@
 import { useMemo, useState } from "react";
-import {
-  ArrowDownTrayIcon,
-  ClipboardDocumentListIcon,
-} from "@heroicons/react/24/outline";
-import { collectGradedItems } from "./vendorGradedItems";
-import type { ItemGradingMetric } from "../../../utils/itemMargins";
-import { useCriticalReport } from "../../../hooks/useCriticalReport";
+import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
 import {
   useAppSelector,
   useAppDispatch,
-  useCanSeeComingSoon,
 } from "../../../hooks";
 import { formatCurrency2 } from "../../../utils";
 import {
@@ -97,7 +90,6 @@ const VendorDetailPanel = () => {
   const vend = useAppSelector((s) => s.prod.vendors);
   // Item Actions is unreleased, so the way in goes with it. A button that
   // navigates somewhere the nav says does not exist is worse than no button.
-  const canSeeComingSoon = useCanSeeComingSoon();
   const {
     rows,
     raw,
@@ -109,7 +101,6 @@ const VendorDetailPanel = () => {
   } = vend;
 
   const [exportOpen, setExportOpen] = useState(false);
-  const openCriticalReport = useCriticalReport();
 
   const activeThreshold = threshold ?? VENDOR_THRESHOLD_DEFAULT;
   const isMargin = metric === "margin";
@@ -152,31 +143,6 @@ const VendorDetailPanel = () => {
           }
         : { tw: [], lw: [], ly: [] },
     [raw, selectedVendor],
-  );
-
-  /** Item grading uses its own threshold and follows the Margin/Sales toggle —
-   *  the same pair the export modal derives, so the button and the file agree. */
-  const activeItemThreshold = itemThreshold ?? VENDOR_ITEM_THRESHOLD_DEFAULT;
-  const itemGradingMetric: ItemGradingMetric = isMargin ? "margin" : "sales";
-
-  /**
-   * This vendor's critical items, selected by the same collector the UPC List
-   * export uses. Each carries the sub department it sells under, which is what
-   * lets a multi-department vendor narrow the report's fan-out instead of
-   * forcing it to read the whole store.
-   */
-  const criticalItems = useMemo(
-    () =>
-      row
-        ? collectGradedItems(
-            [row],
-            raw,
-            activeItemThreshold,
-            itemGradingMetric,
-            new Set(["critical"] as const),
-          ).map((g) => ({ productCode: g.r.productCode, dept: g.dept }))
-        : [],
-    [row, raw, activeItemThreshold, itemGradingMetric],
   );
 
   if (!row) {
@@ -313,34 +279,6 @@ const VendorDetailPanel = () => {
           Vendor Performance · {twLabel}
         </span>
         <div className="justify-self-end flex items-center gap-1.5">
-          {/* A vendor's range routinely spans several sub departments, so the
-              handed-over items carry their own — that set is what narrows the
-              fan-out on the report side instead of reading every department. */}
-          {canSeeComingSoon && criticalItems.length > 0 && (
-            <button
-              onClick={() =>
-                openCriticalReport({
-                  storeId: vend.storeid,
-                  items: criticalItems,
-                  window: { start: vend.twStart, end: vend.twEnd },
-                  // The vendor's rows for all three periods are already in
-                  // hand — handing them over is both faster and the only way
-                  // the report is guaranteed to show what this panel showed.
-                  rows: {
-                    ty: vendorRaw.tw,
-                    lw: vendorRaw.lw,
-                    ly: vendorRaw.ly,
-                  },
-                  sourceLabel: row.vendorName,
-                  basisLabel: `${criticalItems.length} critical by ${itemGradingMetric}, ${activeItemThreshold}%`,
-                })
-              }
-              className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/85 hover:text-custom-white hover:border-custom-white/40 transition-colors"
-              title={`See item actions (${criticalItems.length})`}
-            >
-              <ClipboardDocumentListIcon className="h-4 w-4" />
-            </button>
-          )}
           <button
             onClick={() => setExportOpen(true)}
             className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/85 hover:text-custom-white hover:border-custom-white/40 transition-colors"

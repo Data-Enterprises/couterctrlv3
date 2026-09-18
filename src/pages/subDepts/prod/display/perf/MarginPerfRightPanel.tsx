@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   useAppDispatch,
   useAppSelector,
-  useCanSeeComingSoon,
   useStoreName,
 } from "../../../../../hooks";
 import { useSubMarginCtx } from "../../hooks";
@@ -12,18 +11,13 @@ import { formatCurrency2, addDays } from "../../../../../utils";
 import { applyStoreNumberToName } from "../../../../../utils/storeIdentity";
 import { gpm } from "../../../../../functions";
 import { calculateCogs, hasNoUsableCost } from "../../../../../utils/cogs";
-import { setDates, getLYDate, weekEnding } from "../../../../../utils/dates";
+import { setDates, getLYDate } from "../../../../../utils/dates";
 import {
   matchedCounterpartRows,
   matchedTyRows,
   getTier,
 } from "../..";
-import {
-  ArrowDownTrayIcon,
-  ClipboardDocumentListIcon,
-} from "@heroicons/react/16/solid";
-import { collectGradedItems } from "./gradedItems";
-import { useCriticalReport } from "../../../../../hooks/useCriticalReport";
+import { ArrowDownTrayIcon } from "@heroicons/react/16/solid";
 import type { SubDeptCost, SubDeptMargin } from "../../../../../interfaces";
 
 import LoadingIndicator from "../../../../../components/loading/LoadingIndicator";
@@ -42,7 +36,6 @@ const MarginPerfRightPanel = () => {
   const dispatch = useAppDispatch();
   // Item Actions is unreleased, so the way in goes with it. A button that
   // navigates somewhere the nav says does not exist is worse than no button.
-  const canSeeComingSoon = useCanSeeComingSoon();
   const actions = useSubMarginActions();
 
   const gradingMetric = useAppSelector((s) => s.prod.subMargin.gradingMetric);
@@ -253,33 +246,6 @@ const MarginPerfRightPanel = () => {
       : null;
 
   const [exportOpen, setExportOpen] = useState(false);
-  const openCriticalReport = useCriticalReport();
-
-  /**
-   * The open department's critical items, selected exactly the way the UPC List
-   * export selects them — same collector, so the button and the file can never
-   * disagree about what "critical" meant.
-   *
-   * Computed rather than fetched: grading already holds every department's item
-   * rows, so this costs nothing until the button is pressed.
-   */
-  const criticalItems = useMemo(() => {
-    const dept = ctx.subDepts.find((s) => s.id === ctx.selectedSubDeptId);
-    if (!dept) return [];
-    return collectGradedItems(
-      [dept],
-      subDeptGrades,
-      gradingThreshold,
-      gradingMetric,
-      new Set(["critical"] as const),
-    ).map((g) => ({ productCode: g.row.productCode, dept: g.dept }));
-  }, [
-    ctx.subDepts,
-    ctx.selectedSubDeptId,
-    subDeptGrades,
-    gradingThreshold,
-    gradingMetric,
-  ]);
 
   /**
    * Roll the margin rows up into one line per product, scoped to the selected
@@ -433,35 +399,6 @@ const MarginPerfRightPanel = () => {
             Margin Performance{dateRange ? ` · ${dateRange}` : ""}
           </span>
           <div className="flex items-center gap-2 justify-self-end">
-            {/* Only offered when there is something to diagnose. A department
-                with no critical items would open an empty report, which reads
-                as a broken page rather than as good news. */}
-            {canSeeComingSoon && criticalItems.length > 0 && (
-              <button
-                className="text-custom-white transition-colors"
-                onClick={() =>
-                  openCriticalReport({
-                    storeId: ctx.searchValue,
-                    items: criticalItems,
-                    window: weekEnding(ctx.singleDate ?? ""),
-                    // Grading already fetched all three periods for this
-                    // department, so the report has nothing left to fetch.
-                    rows: selectedGrade
-                      ? {
-                          ty: selectedGrade.tyWeekOneMargins,
-                          lw: selectedGrade.lwWeekOneMargins,
-                          ly: selectedGrade.lyWeekOneMargins,
-                        }
-                      : undefined,
-                    sourceLabel: subDeptName,
-                    basisLabel: `${criticalItems.length} critical by ${gradingMetric}, ${gradingThreshold}%`,
-                  })
-                }
-                title={`See item actions (${criticalItems.length})`}
-              >
-                <ClipboardDocumentListIcon className="h-4 w-4" />
-              </button>
-            )}
             <button
               className="text-custom-white transition-colors"
               onClick={() => setExportOpen(true)}
