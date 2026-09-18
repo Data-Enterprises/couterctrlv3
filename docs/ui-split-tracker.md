@@ -2,7 +2,7 @@
 
 Per page: `npm run split:page -- <page> --dry` → split → cut tablet/legacy →
 trash dead files → `tsc -b` + `npm run check:split -- <page>` → commit.
-Promote later with `npm run promote:page -- <page>` once dev is signed off.
+Promote later with `npm run promote:page -- <page>` once dev is signed off. Greenlight a Coming Soon page with `npm run greenlight:page -- <page>` (then move its nav entry out of Coming Soon, and drop its entry-point gates).
 **Coming Soon pages are dev-only**: they get a `dev/` tree and no `prod/` tree until greenlit for production; then they are copied over and set up for prod. They are handled last. For safety they must **hit the dev API only** — pinned with `useDevApi()` (dev URL + dev token from the environment), never `app.url`, and render nothing prod-side. Coming Soon: Item Actions, LP Actions, Sales Tracker, Price Opt Sub Dept, Price Opt Vendor, Invoices, Suggested Weight (route commented out), Tickets.
 A page with `mobile: false` in the nav (`components/navigation/utils.tsx`) has no mobile version: its mobile code goes to trash in the split.
 Every page gets its own dev Redux state, as Sales has (split-page forks each page slice; `npm run fork:slice -- <page> <key>` for one added later).
