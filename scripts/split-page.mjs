@@ -35,7 +35,7 @@
  * `node scripts/check-split.mjs <page>`, then cut what the new trees don't
  * need (tablet routes and the like) and trash what that leaves dead.
  */
-import { readFileSync, writeFileSync, existsSync, statSync, mkdirSync, renameSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync, statSync, mkdirSync, renameSync, readdirSync, rmdirSync } from "node:fs";
 import { execSync } from "node:child_process";
 import path from "node:path";
 import { relocate } from "./relocate.mjs";
@@ -326,6 +326,14 @@ for (const f of [...tree, ...tests]) {
   mkdirSync(P.dirname(dest), { recursive: true });
   renameSync(f, dest);
 }
+// Remove the folders the originals leave empty.
+const prune = (d) => {
+  if (!existsSync(d) || !statSync(d).isDirectory()) return;
+  for (const e of readdirSync(d)) prune(P.join(d, e));
+  if (!readdirSync(d).length) rmdirSync(d);
+};
+for (const e of readdirSync(PAGE)) if (!["prod", "dev"].includes(e)) prune(P.join(PAGE, e));
+
 for (const f of entries) {
   const rel = f.slice(PAGE.length).replace(/\.tsx$/, "");
   const name = P.basename(rel);

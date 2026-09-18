@@ -360,8 +360,8 @@ export const categories: NavCategory[] = [
         name: "Coupon Sales",
         href: "coupon-sales",
         icon: CouponIcon,
-        // Has its own three-screen mobile stack (pages/couponSales/mobile) —
-        // graded store list, per-store breakdown, receipts. The Data-category
+        // Has its own mobile view (pages/shared/eventPerf, shared with Loss
+        // Prevention) — store list, per-store report, receipts. The Data-category
         // Coupons page is a different report, not this one's phone version.
         mobile: true,
         children: [],

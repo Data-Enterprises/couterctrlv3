@@ -4,7 +4,6 @@ import Cashiers from "./pages/cashiers/Cashiers.tsx";
 import CashiersLegacy from "./pages/cashiers/CashiersLegacy.tsx";
 import Sales from "./pages/sales/Sales.tsx";
 import LossPrevention from "./pages/lossPrevention/LossPrevention.tsx";
-import LossPreventionLegacy from "./pages/lossPrevention/LossPreventionLegacy.tsx";
 import Orders from "./pages/orders/Orders.tsx";
 import OrdersLegacy from "./pages/orders/OrdersLegacy.tsx";
 import Coupons from "./pages/coupons/Coupons.tsx";
@@ -46,10 +45,9 @@ export const CashiersPage = () => {
 // pages/sales/Sales.tsx by the API switch. The legacy Sales page is in trash/.
 export const SalesPage = () => <Sales />;
 
-export const LossPreventionPage = () => {
-  const devMode = useAppSelector((s) => s.app.devMode);
-  return devMode ? <LossPrevention /> : <LossPreventionLegacy />;
-};
+// No legacy branch: Loss Prevention has a prod and a dev tree, picked inside
+// pages/lossPrevention/LossPrevention.tsx by the API switch.
+export const LossPreventionPage = () => <LossPrevention />;
 
 export const OrdersPage = () => {
   const devMode = useAppSelector((s) => s.app.devMode);

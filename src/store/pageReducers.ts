@@ -7,7 +7,6 @@ import eventPerfReducer from "../features/eventPerfSlice";
 import usersReducer from "../features/usersSlice";
 import lossPreventionReducer from "../features/lossPreventionSlice";
 import lpActionsReducer from "../features/lpActionsSlice";
-import lossPreventionLegacyReducer from "../features/lossPreventionLegacySlice";
 import upcReducer from "../features/upcSlice";
 import itemLookupReducer from "../features/itemLookupSlice";
 import trendModalReducer from "../features/trendModalSlice";
@@ -65,7 +64,6 @@ export const pageReducers = {
   users: usersReducer,
   lossPrevention: lossPreventionReducer,
   lpActions: lpActionsReducer,
-  lossPreventionLegacy: lossPreventionLegacyReducer,
   upc: upcReducer,
   item: itemLookupReducer,
   trendModal: trendModalReducer,

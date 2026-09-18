@@ -21,8 +21,8 @@ Status: **done** · **next** · blank = not started
 | Categories | `/categories` | `categories` | | after itemPerf; dry run clean |
 | Vendors | `/vendors` | `vendors` | | after itemPerf |
 | Sub Dept Margins | `/sub-dept-margins` | `subDepts` | | after itemPerf; has tablet + old `dev/`; `subDepts/index.ts` re-exports cogs/dates helpers until split |
-| Coupon Sales | `/coupon-sales` | `couponSales` | | after eventPerf; old `mobile/` files are dead (split flags them) |
-| Loss Prevention | `/loss-prevention` | `lossPrevention` | | after eventPerf; legacy branch in DevPages; tablet; `TransactionModal` is borrowed by Coupons |
+| Coupon Sales | `/coupon-sales` | `couponSales` | | after eventPerf (done); dead `mobile/` folder already trashed with LP
+| Loss Prevention | `/loss-prevention` | `lossPrevention` | **done** | legacy page + `lossPreventionLegacy` state and tablet removed (35 files to trash); `lossPrevention` slice stays shared (Coupons, Coupon Sales, `Transaction` read it); `TransactionModal` is a switcher Coupons still uses
 | Coupons | `/coupons` | `coupons` | | legacy branch; imports LP's `TransactionModal` |
 | LP Actions | `/lp-actions` | `lpActions` | | |
 | Cashiers | `/cashiers` | `cashiers` | | legacy branch |
