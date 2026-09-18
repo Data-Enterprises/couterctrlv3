@@ -1,13 +1,13 @@
 import { useState } from "react";
-import { useAppSelector } from "../../hooks";
-import { formatCurrency2, formatBigNumber, formatDate } from "../../utils";
-import LoadingIndicator from "../../components/loading/LoadingIndicator";
+import { useAppSelector } from "../../../hooks";
+import { formatCurrency2, formatBigNumber, formatDate } from "../../../utils";
+import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import ReceiversExportModal from "./ReceiversExportModal";
 
 const ReceiverDetailPanel = () => {
   const [exportOpen, setExportOpen] = useState(false);
-  const state = useAppSelector((s) => s.receivers);
+  const state = useAppSelector((s) => s.prod.receivers);
 
   const selectedReceiver = state.selectedInvoice
     ? (state.list.find(

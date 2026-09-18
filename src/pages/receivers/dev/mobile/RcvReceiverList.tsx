@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
-import LocationTabs from "../../../../components/filters/LocationTabs";
+import LocationTabs from "../../../../components-dev/filters/LocationTabs";
 import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
-import MobilePerfHeader from "../../../../components/mobile/MobilePerfHeader";
-import { RECEIVERS_INFO } from "../../receiversInfo";
+import MobilePerfHeader from "../../../../components-dev/mobile/MobilePerfHeader";
+import { RECEIVERS_INFO } from "../receiversInfo";
 import { useAppSelector } from "../../../../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 import { getReceiverDetails } from "../../../../api/receivers";
@@ -14,7 +14,7 @@ import type {
   ReceiverDetailsResponse,
   JsonError,
 } from "../../../../interfaces";
-import BottomSheet from "../../../../components/BottomSheet";
+import BottomSheet from "../../../../components-dev/BottomSheet";
 import { rowsToCsv, downloadCsv, fmtNum } from "../../../../utils/csvExport";
 
 interface Props {

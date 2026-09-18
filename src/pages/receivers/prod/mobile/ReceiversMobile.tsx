@@ -2,8 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { applyStoreNumberToName, scopeToStoreNumber, storeNumbersIn } from "../../../../utils/storeIdentity";
 import { ArrowLeftIcon } from "@heroicons/react/20/solid";
 import { useAppDispatch, useAppSelector, useStoreName } from "../../../../hooks";
-import { useReceiversState } from "../../hooks/useReceiversState";
-import { useReceiversActions } from "../../hooks/useReceiversActions";
+import { useReceiversState } from "../hooks/useReceiversState";
+import { useReceiversActions } from "../hooks/useReceiversActions";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 import { getReceiversList } from "../../../../api/receivers";
 import type { ReceiverListResponse, JsonError } from "../../../../interfaces";
@@ -19,7 +19,7 @@ const fmtSearchDate = (mdy: string) => {
     .toLocaleDateString("en-US", { month: "short", day: "numeric" });
 };
 
-const ReceiversMobileDev = () => {
+const ReceiversMobile = () => {
   const dispatch = useAppDispatch();
   const rcv = useReceiversState();
   const actions = useReceiversActions();
@@ -165,4 +165,4 @@ const ReceiversMobileDev = () => {
   );
 };
 
-export default ReceiversMobileDev;
+export default ReceiversMobile;

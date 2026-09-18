@@ -1,9 +1,14 @@
+/**
+ * Dev copy of `features/receiversSlice.ts`, mounted at `state.dev.receivers` and read only
+ * by `pages/receivers/dev`. Edit this one while changing dev receivers; when dev is
+ * promoted, it replaces the prod slice. See src/store/devReducers.ts.
+ */
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type {
   ReceiverListItem,
   ReceiverDetailsItem,
   ReceiverDetailsTotals,
-} from "../interfaces";
+} from "../../interfaces";
 
 export type FilterType =
   | "VendorID"
@@ -25,9 +30,11 @@ export type Operator = { cashier_name: string; cashier_number: number };
 
 interface ReceiversState {
   storeid: number;
-  // Kept in step with receiversSlice so the shared mobile components can read
-  // and dispatch against either slice. See utils/storeIdentity.
+  // Co-located stores: one storeid, two physical locations. The list is fetched
+  // by storeid and comes back with both mixed together, so the page discovers
+  // the numbers and lets the user scope to one. See utils/storeIdentity.
   availableStoreNumbers: string[];
+  /** null = every location combined. */
   selectedStoreNumber: string | null;
   list: ReceiverListItem[];
   listGridData: ReceiverListItem[];
@@ -90,7 +97,9 @@ export const initialState: ReceiversState = {
 };
 
 export const receiversSlice = createSlice({
-  name: "receiversLegacy",
+  // Distinct from the prod slice's "receivers": Redux matches actions on this
+  // string alone, so sharing it would move prod and dev together.
+  name: "devReceivers",
   initialState,
   reducers: {
     setStoreId: (state, action: PayloadAction<number>) => {

@@ -6,7 +6,6 @@ import Orders from "./pages/orders/Orders.tsx";
 import Coupons from "./pages/coupons/Coupons.tsx";
 import CouponsLegacy from "./pages/coupons/CouponsLegacy.tsx";
 import Receivers from "./pages/receivers/Receivers.tsx";
-import ReceiversLegacy from "./pages/receivers/ReceiversLegacy.tsx";
 import ItemLookup from "./pages/lookup/ItemLookup.tsx";
 import Admin from "./pages/admin/dev/Admin.tsx";
 import AdminLegacy from "./pages/admin/AdminLegacy.tsx";
@@ -52,10 +51,9 @@ export const CouponsPage = () => {
   return devMode ? <Coupons /> : <CouponsLegacy />;
 };
 
-export const ReceiversPage = () => {
-  const devMode = useAppSelector((s) => s.app.devMode);
-  return devMode ? <Receivers /> : <ReceiversLegacy />;
-};
+// No legacy branch: Receivers has a prod and a dev tree, picked inside
+// pages/receivers/Receivers.tsx by the API switch.
+export const ReceiversPage = () => <Receivers />;
 
 // No legacy branch: the old UpcList is gone, and Upc List has a prod and a dev
 // tree, picked inside pages/upc/UpcList.tsx by the API switch.

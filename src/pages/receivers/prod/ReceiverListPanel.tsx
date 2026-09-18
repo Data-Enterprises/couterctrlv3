@@ -1,12 +1,12 @@
-import InfoButton from "../../components/InfoButton";
+import InfoButton from "../../../components/InfoButton";
 import { useState, useMemo } from "react";
 import {
   MagnifyingGlassIcon,
   ChevronRightIcon,
 } from "@heroicons/react/20/solid";
-import { useAppSelector, useAppDispatch, useStoreName } from "../../hooks";
-import { useToast } from "../../components/toasts/hooks/useToast";
-import { getReceiverDetails } from "../../api/receivers";
+import { useAppSelector, useAppDispatch, useStoreName } from "../../../hooks";
+import { useToast } from "../../../components/toasts/hooks/useToast";
+import { getReceiverDetails } from "../../../api/receivers";
 import {
   setIsFetchingDetails,
   setSelectedInvoice,
@@ -14,21 +14,21 @@ import {
   setTotals,
   setSelectedStoreNumber,
   setListGridData,
-} from "../../features/receiversSlice";
-import { formatDate } from "../../utils";
-import { applyStoreNumberToName, scopeToStoreNumber } from "../../utils/storeIdentity";
-import LocationTabs from "../../components/filters/LocationTabs";
-import type { JsonError, ReceiverDetailsResponse } from "../../interfaces";
-import SelectFilter from "../../components/filters/SelectFilter";
-import FilterBar from "../../components/filters/FilterBar";
-import InfoPopover from "../../components/InfoPopover";
+} from "../../../features/receiversSlice";
+import { formatDate } from "../../../utils";
+import { applyStoreNumberToName, scopeToStoreNumber } from "../../../utils/storeIdentity";
+import LocationTabs from "../../../components/filters/LocationTabs";
+import type { JsonError, ReceiverDetailsResponse } from "../../../interfaces";
+import SelectFilter from "../../../components/filters/SelectFilter";
+import FilterBar from "../../../components/filters/FilterBar";
+import InfoPopover from "../../../components/InfoPopover";
 import { RECEIVERS_INFO } from "./receiversInfo";
 
 const ReceiverListPanel = ({ onOpenSearch }: { onOpenSearch: () => void }) => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const { url, token } = useAppSelector((s) => s.app);
-  const state = useAppSelector((s) => s.receivers);
+  const state = useAppSelector((s) => s.prod.receivers);
   const search = useAppSelector((s) => s.search);
 
   const [openDates, setOpenDates] = useState<Set<string>>(new Set());

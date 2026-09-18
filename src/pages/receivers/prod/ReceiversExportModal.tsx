@@ -1,17 +1,17 @@
 import { useState, useMemo } from "react";
-import ResizableModalShell from "../../components/modals/ResizableModalShell";
+import ResizableModalShell from "../../../components/modals/ResizableModalShell";
 import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import type {
   ReceiverDetailsItem,
   ReceiverDetailsTotals,
-} from "../../interfaces";
+} from "../../../interfaces";
 import {
   fmtNum,
   rowsToCsv,
   downloadCsv,
   aggregateRows,
-} from "../../utils/csvExport";
-import type { AggFn, AggRow } from "../../utils/csvExport";
+} from "../../../utils/csvExport";
+import type { AggFn, AggRow } from "../../../utils/csvExport";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

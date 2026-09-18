@@ -14,7 +14,6 @@ import forecastReducer from "../features/forecastSlice";
 import forecastDevReducer from "../features/forecastDevSlice";
 import upcUploadReducer from "../features/upcUploadSlice";
 import receiversReducer from "../features/receiversSlice";
-import receiversLegacyReducer from "../features/receiversLegacySlice";
 import couponReducer from "../features/couponSlice";
 import couponSalesReducer from "../features/couponSalesSlice";
 import categoriesReducer from "../features/categoriesSlice";
@@ -64,7 +63,6 @@ export const pageReducers = {
   forecastDev: forecastDevReducer,
   upcs: upcUploadReducer,
   receivers: receiversReducer,
-  receiversLegacy: receiversLegacyReducer,
   coupons: couponReducer,
   couponSales: couponSalesReducer,
   categories: categoriesReducer,
