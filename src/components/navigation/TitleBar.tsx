@@ -17,7 +17,6 @@ import {
 } from "../../features/appSlice";
 import { resetUserSlice } from "../../features/userSlice";
 import { resetSalesSlice } from "../../features/salesSlice";
-import { resetSalesLegacySlice } from "../../features/salesLegacySlice";
 import { resetStoreSlice } from "../../features/storeSlice";
 import { resetGroupState } from "../../features/groupSlice";
 import { resetUsersSlice } from "../../features/usersSlice";
@@ -217,7 +216,6 @@ const TitleBar = () => {
     dispatch(resetUserSlice());
     dispatch(resetUsersSlice());
     dispatch(resetSalesSlice());
-    dispatch(resetSalesLegacySlice());
     dispatch(resetStoreSlice());
     dispatch(resetUserSlice());
     dispatch(resetNav());

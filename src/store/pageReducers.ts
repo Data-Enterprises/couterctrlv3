@@ -37,12 +37,10 @@ import subMarginReducer from "../features/subMarginSlice";
 import subMarginLegacyReducer from "../features/subMarginLegacySlice";
 import cashiersReducer from "../features/cashiersSlice";
 import cashiersLegacyReducer from "../features/cashiersLegacySlice";
-import mobileSalesReducer from "../features/salesMobileSlice";
 import ordersReducer from "../features/ordersSlice";
 import ordersLegacyReducer from "../features/ordersLegacySlice";
 import adListReducer from "../features/adListSlice";
 import salesLedgerReducer from "../features/salesLedgerSlice";
-import salesLegacyReducer from "../features/salesLegacySlice";
 import salesTrackerReducer from "../features/salesTrackerSlice";
 import upcDevReducer from "../features/upcDevSlice";
 import ticketsReducer from "../pages/tickets/ticketsSlice";
@@ -97,12 +95,10 @@ export const pageReducers = {
   subMarginLegacy: subMarginLegacyReducer,
   cashier: cashiersReducer,
   cashierLegacy: cashiersLegacyReducer,
-  salesMobile: mobileSalesReducer,
   orders: ordersReducer,
   ordersLegacy: ordersLegacyReducer,
   adList: adListReducer,
   salesLedger: salesLedgerReducer,
-  salesLegacy: salesLegacyReducer,
   salesTracker: salesTrackerReducer,
   upcDev: upcDevReducer,
   tickets: ticketsReducer,
