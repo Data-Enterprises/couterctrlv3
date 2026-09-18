@@ -1,13 +1,13 @@
 import { useMemo, useState } from "react";
 import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
-import InfoButton from "../../../components-dev/InfoButton";
-import InfoPopover from "../../../components-dev/InfoPopover";
+import InfoButton from "../../../components/InfoButton";
+import InfoPopover from "../../../components/InfoPopover";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
 import {
   toggleCheckedUpc,
   setCheckedUpcs,
   setListFilter,
-} from "../../../features/dev/devForecastDevSlice";
+} from "../../../features/forecastDevSlice";
 import { formatCurrency2 } from "../../../utils";
 import { FORECAST_INFO } from "./forecastInfo";
 
@@ -28,7 +28,7 @@ const ForecastListPanel = ({ onReSearch }: Props) => {
   const dispatch = useAppDispatch();
   const search = useAppSelector((s) => s.search);
   const { rowData, checkedUpcs, listFilter, adListRows } = useAppSelector(
-    (s) => s.dev.forecastDev,
+    (s) => s.prod.forecastDev,
   );
   const [showSelectedOnly, setShowSelectedOnly] = useState(false);
   const [infoOpen, setInfoOpen] = useState(false);

@@ -31,7 +31,7 @@ Status: **done** · **next** · blank = not started
 | Receivers | `/receivers` | `receivers` | | legacy branch; tablet |
 | Item Lookup | `/item-lookup` | `lookup` | | legacy branch; tablet; has old `dev/` (mobile Option A) |
 | UPC List | `/upc-upload` | `upc` | **done** | old `UpcList` (devMode off) + 48 dead files removed; current page moved up out of `upc/dev/` as the `UpcList` entry; `ColFilter` → `components/filters/ColFilterPopover`; own dev Redux state (`devUpcDevSlice`). Fixes flag is per tree now (dev on, prod off; promoting turns it on for prod); the per-environment stash is gone — each tree has its own slice and queue |
-| Forecasting | `/forecasting` | `forecast` | | picks `ForecastDev`/`Forecasting` by devMode; tablet |
+| Forecasting | `/forecasting` | `forecast` | **done** | old `Forecasting` page (devMode off, and the tablet/phone fallback) + tablet removed; every device gets the current page (phones render desktop, like other desktop-only pages); `ForecastDev` is now the `Forecasting` entry; own dev Redux state (`devForecastSlice`, `devForecastDevSlice`); `src/api/forecast.ts` unused but left |
 | Item Report | `/item-report` | `itemReport` | | |
 | Invoices | `/invoices` | `invoices` | | |
 | Inventory (Sub Dept + Vendor) | `/inventory-sub-department`, `/inventory-vendor` | `inventory` | | two entries, one folder |
@@ -49,7 +49,7 @@ Status: **done** · **next** · blank = not started
 | Folder | Notes |
 |---|---|
 | `team` | only reached through Organization (legacy + `TeamTablet`) |
-| `priceSimulator` | no route; calc now in `utils/priceSimCalc` |
+| `priceSimulator` | **trashed** (dead, per Steve) with its slice; `utils/priceSimCalc` and `api/priceSim` stay (Forecast uses them) |
 | `suggested` | route commented out in `main.tsx` |
 
 ## Leftovers to clean as pages come up

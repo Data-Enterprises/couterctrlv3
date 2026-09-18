@@ -14,7 +14,6 @@ import upcModalReducer from "../features/upcModalSlice";
 import quickSightReducer from "../features/qsSlice";
 import forecastReducer from "../features/forecastSlice";
 import forecastDevReducer from "../features/forecastDevSlice";
-import priceSimReducer from "../features/priceSimSlice";
 import upcUploadReducer from "../features/upcUploadSlice";
 import receiversReducer from "../features/receiversSlice";
 import receiversLegacyReducer from "../features/receiversLegacySlice";
@@ -69,7 +68,6 @@ export const pageReducers = {
   quicksight: quickSightReducer,
   forecast: forecastReducer,
   forecastDev: forecastDevReducer,
-  priceSim: priceSimReducer,
   upcs: upcUploadReducer,
   receivers: receiversReducer,
   receiversLegacy: receiversLegacyReducer,

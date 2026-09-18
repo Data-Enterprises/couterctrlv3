@@ -1,4 +1,4 @@
-import type { InfoGlossaryEntry } from "../../../components-dev/InfoPopover";
+import type { InfoGlossaryEntry } from "../../../components/InfoPopover";
 
 /** Content for the "?" popover in the Forecast header.
  *

@@ -20,7 +20,6 @@ import TitleBar from "./components/navigation/TitleBar.tsx";
 import TitleBarLegacy from "./components/navigation/TitleBarLegacy.tsx";
 import SideBarLegacy from "./components/navigation/SideBarLegacy.tsx";
 import UpcList from "./pages/upc/UpcList.tsx";
-import ForecastDev from "./pages/forecast/dev/ForecastDev.tsx";
 import Forecasting from "./pages/forecast/Forecasting.tsx";
 
 export const NavSwitch = () => {
@@ -75,10 +74,9 @@ export const AdminPage = () => {
   return devMode ? <Admin /> : <AdminLegacy />;
 };
 
-export const ForecastPage = () => {
-  const devMode = useAppSelector((s) => s.app.devMode);
-  return devMode ? <ForecastDev /> : <Forecasting />;
-};
+// No legacy branch: the old Forecasting page is gone, and Forecasting has a
+// prod and a dev tree, picked inside pages/forecast/Forecasting.tsx.
+export const ForecastPage = () => <Forecasting />;
 
 export const GroupsPage = () => {
   const devMode = useAppSelector((s) => s.app.devMode);

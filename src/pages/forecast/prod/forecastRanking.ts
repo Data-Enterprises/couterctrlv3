@@ -1,4 +1,4 @@
-import type { ForecastOutlierRow } from "../../../features/dev/devForecastSlice";
+import type { ForecastOutlierRow } from "../../../features/forecastSlice";
 import type { ForecastTier, PriceHistoryResult } from "../../../interfaces";
 
 /**

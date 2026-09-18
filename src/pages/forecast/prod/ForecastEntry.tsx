@@ -2,9 +2,9 @@ import { useRef } from "react";
 import { XMarkIcon } from "@heroicons/react/20/solid";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
-import StorePicker from "../../../components-dev/storePicker/StorePicker";
-import SingleDatePicker from "../../../components-dev/datePickers/SingleDatePicker";
-import EntryCardLoading from "../../../components-dev/loading/EntryCardLoading";
+import StorePicker from "../../../components/storePicker/StorePicker";
+import SingleDatePicker from "../../../components/datePickers/SingleDatePicker";
+import EntryCardLoading from "../../../components/loading/EntryCardLoading";
 import { isAdListFile, parseAdListWorkbook } from "./adListParse";
 import {
   addUpcs,
@@ -12,7 +12,7 @@ import {
   removeUpc,
   clearUpcs,
   setUploadedAdList,
-} from "../../../features/dev/devForecastDevSlice";
+} from "../../../features/forecastDevSlice";
 import { getStoreName } from "../../../utils";
 import { isGroupSearch } from "../../../features/searchSlice";
 
@@ -66,7 +66,7 @@ const ForecastEntry = ({
   // Dev's own list — see the note in forecastDevSlice. Nothing loaded here
   // reaches the legacy page or the UPC List page.
   const { upcs, upcText, adListRows, adListFileName } = useAppSelector(
-    (s) => s.dev.forecastDev,
+    (s) => s.prod.forecastDev,
   );
 
   const handleParseText = () => {
