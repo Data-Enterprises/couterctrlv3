@@ -1,12 +1,7 @@
 import { useAppDispatch } from "../../../../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
-import {
-  setCreateInput,
-  setRefreshGroups,
-  setSelectedGroup,
-  type Group,
-  emptyGroup,
-} from "../../../../features/groupSlice";
+import { setSelectedGroup, type Group, emptyGroup } from "../../../../features/groupSlice";
+import { setCreateInput, setRefreshGroups } from "../../../../features/groupsPageSlice";
 import Input from "../../../../components/inputs/Input";
 import type { JsonError } from "../../../../interfaces";
 import { updateGroup } from "../../../../api/groups";

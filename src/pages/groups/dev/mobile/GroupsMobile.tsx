@@ -5,7 +5,7 @@ import {
   BuildingStorefrontIcon,
   LinkSlashIcon,
 } from "@heroicons/react/24/solid";
-import type { GroupFormType } from "../../../../features/groupSlice";
+import type { GroupFormType } from "../../../../interfaces";
 import CreateGroup from "./CreateGroup";
 import UpdateGroup from "./UpdateGroup";
 import DeleteGroup from "./DeleteGroup";

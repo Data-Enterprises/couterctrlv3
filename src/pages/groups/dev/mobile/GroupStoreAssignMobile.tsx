@@ -3,12 +3,9 @@ import { useGroupCtx } from "..";
 import { useAppDispatch } from "../../../../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 
-import {
-  setSelectedGroup,
-  setStoresWithGroupStatus,
-  updateStoresWithStatus,
-  type StoreWithGroupStatus,
-} from "../../../../features/groupSlice";
+import { setSelectedGroup } from "../../../../features/groupSlice";
+import { setStoresWithGroupStatus, updateStoresWithStatus } from "../../../../features/dev/devGroupsPageSlice";
+import type { StoreWithGroupStatus } from "../../../../interfaces";
 import type { JsonError } from "../../../../interfaces";
 import {
   addStoreToGroup,

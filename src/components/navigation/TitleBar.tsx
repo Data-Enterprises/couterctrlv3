@@ -19,6 +19,7 @@ import { resetUserSlice } from "../../features/userSlice";
 import { resetSalesSlice } from "../../features/salesSlice";
 import { resetStoreSlice } from "../../features/storeSlice";
 import { resetGroupState } from "../../features/groupSlice";
+import { resetGroupsPageState } from "../../features/groupsPageSlice";
 import { resetUsersSlice } from "../../features/usersSlice";
 import { resetUpcState } from "../../features/upcSlice";
 import { resetSearchSlice } from "../../features/searchSlice";
@@ -213,6 +214,7 @@ const TitleBar = () => {
   const handleSignOut = () => {
     navigate("/");
     dispatch(resetGroupState());
+    dispatch(resetGroupsPageState());
     dispatch(resetUserSlice());
     dispatch(resetUsersSlice());
     dispatch(resetSalesSlice());

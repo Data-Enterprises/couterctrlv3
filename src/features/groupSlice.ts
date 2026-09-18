@@ -17,35 +17,20 @@ export const emptyGroup: Group = {
   is_shared: false,
 };
 
-export type StoreWithGroupStatus = {
-  store_number: string;
-  store_name: string;
-  storeid: number;
-  active: 1 | 0;
-};
-
-export type FilterOption = "all" | "active" | "inactive";
-export type GroupFormType = "create" | "update" | "delete" | "assign" | "";
-
+/**
+ * Session state: the user's groups and the selected one, read by the store
+ * picker on every page. The Groups page's own form state is in
+ * groupsPageSlice.
+ */
 export interface GroupState {
   groups: Group[];
   selectedGroup: Group;
-  refreshGroups: boolean;
-  createInput: string;
-  filterOption: FilterOption;
-  storesWithGroupStatus: StoreWithGroupStatus[];
-  selectedForm: GroupFormType;
 }
 
 
 export const initialState: GroupState = {
   groups: [],
-  refreshGroups: false,
-  createInput: "",
-  filterOption: "all",
   selectedGroup: emptyGroup,
-  storesWithGroupStatus: [],
-  selectedForm: "",
 };
 
 const groupSlice = createSlice({
@@ -58,34 +43,6 @@ const groupSlice = createSlice({
     setSelectedGroup(state, action: PayloadAction<Group>) {
       state.selectedGroup = action.payload;
     },
-    setRefreshGroups(state, action: PayloadAction<boolean>) {
-      state.refreshGroups = action.payload;
-    },
-    setCreateInput(state, action: PayloadAction<string>) {
-      state.createInput = action.payload;
-    },
-    setFilterOption(state, action: PayloadAction<FilterOption>) {
-      state.filterOption = action.payload;
-    },
-    setStoresWithGroupStatus(
-      state,
-      action: PayloadAction<StoreWithGroupStatus[]>
-    ) {
-      state.storesWithGroupStatus = action.payload;
-    },
-    updateStoresWithStatus: (state, action: PayloadAction<number>) => {
-      const storeId = action.payload;
-      state.storesWithGroupStatus = state.storesWithGroupStatus
-        .map((store) =>
-          store.storeid === storeId
-            ? { ...store, active: store.active === 1 ? 0 : 1 }
-            : store
-        )
-        .sort((a, b) => b.active - a.active) as StoreWithGroupStatus[];
-    },
-    setSelectedForm(state, action: PayloadAction<GroupFormType>) {
-      state.selectedForm = action.payload;
-    },
     resetGroupState: () => initialState,
   },
 });
@@ -93,12 +50,6 @@ const groupSlice = createSlice({
 export const {
   setGroups,
   setSelectedGroup,
-  setRefreshGroups,
-  setCreateInput,
-  setFilterOption,
-  setStoresWithGroupStatus,
-  updateStoresWithStatus,
-  setSelectedForm,
   resetGroupState,
 } = groupSlice.actions;
 export default groupSlice.reducer;

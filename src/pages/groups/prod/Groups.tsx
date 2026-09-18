@@ -4,17 +4,9 @@ import { useResizableBox } from "../../../hooks/useResizableBox";
 import ResizeHandle from "../../../components/ResizeHandle";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import type { JsonError } from "../../../interfaces";
-import {
-  setCreateInput,
-  setGroups,
-  setRefreshGroups,
-  setSelectedForm,
-  setSelectedGroup,
-  setStoresWithGroupStatus,
-  type Group,
-  type GroupFormType,
-  emptyGroup,
-} from "../../../features/groupSlice";
+import { setGroups, setSelectedGroup, type Group, emptyGroup } from "../../../features/groupSlice";
+import { setCreateInput, setRefreshGroups, setSelectedForm, setStoresWithGroupStatus } from "../../../features/groupsPageSlice";
+import type { GroupFormType } from "../../../interfaces";
 import { getGroups, createGroup } from "../../../api/groups";
 import { useGroupCtx } from ".";
 import GroupsMobile from "./mobile/GroupsMobile";

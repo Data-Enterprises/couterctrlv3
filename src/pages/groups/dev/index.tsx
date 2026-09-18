@@ -4,14 +4,9 @@ export const useGroupCtx = () => {
   const dispatch = useAppDispatch();
   const { url, token, isDesktop } = useAppSelector((state) => state.app);
   const {userid} = useAppSelector((state) => state.user);
-  const {
-    groups,
-    selectedGroup,
-    selectedForm,
-    refreshGroups,
-    storesWithGroupStatus,
-    createInput,
-  } = useAppSelector((state) => state.group);
+  const { groups, selectedGroup } = useAppSelector((state) => state.group);
+  const { selectedForm, refreshGroups, storesWithGroupStatus, createInput } =
+    useAppSelector((state) => state.dev.groupsPage);
 
   return {
     dispatch,

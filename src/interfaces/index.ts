@@ -2627,3 +2627,18 @@ export type SaveSimRow = {
   adDays: number;
   markdownDollars: number;
 };
+
+//////////////////////////////////////////////////////////////
+// Store Groups page
+//////////////////////////////////////////////////////////////
+
+/** A store as the group editor lists it: in the group (active 1) or not. */
+export type StoreWithGroupStatus = {
+  store_number: string;
+  store_name: string;
+  storeid: number;
+  active: 1 | 0;
+};
+
+export type FilterOption = "all" | "active" | "inactive";
+export type GroupFormType = "create" | "update" | "delete" | "assign" | "";

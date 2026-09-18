@@ -9,7 +9,8 @@ import {
   addStoreToGroup,
   removeStoreFromGroup,
 } from "../../../api/groups";
-import type { Group, StoreWithGroupStatus } from "../../../features/groupSlice";
+import type { Group } from "../../../features/groupSlice";
+import type { StoreWithGroupStatus } from "../../../interfaces";
 import type { JsonError } from "../../../interfaces";
 import IconButton from "../../../components-dev/IconButton";
 import ConfirmModal from "../../../components-dev/ConfirmModal";
