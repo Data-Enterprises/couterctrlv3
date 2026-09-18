@@ -40,7 +40,7 @@ Status: **done** · **next** · blank = not started
 | Sales Tracker | `/sales-tracker` | `salesTracker` | | |
 | Admin | `/admin` | `admin` | | legacy branch; already routes to `admin/dev` |
 | Store Groups | `/groups` | `groups` | **done** | legacy page, old forms/ and tablet removed (7 files); page moved up out of `groups/dev/`; the phone view's create/update/delete forms moved from `tablet/` to `mobile/`. **Redux: no page slice** — its state is the session `group` slice (shared by design; the store picker reads the groups list) |
-| User Management | `/user-management` | `organization` | | legacy branch is `team/TeamLegacy`; imports tablet `TeamTablet` |
+| User Management | `/user-management` | `organization` | **done** | legacy Team page + `TeamTablet` removed — the whole `team/` folder (83 files) is trashed; desktop only (no tablet, not on mobile nav); own dev Redux state (`devUsersSlice`, `devBaseGroupSlice`, `devOrganizationSlice`). Settings' `TextInput` and Tickets still read prod `users` — fine until those pages split |
 | Home | `/` | `home` | | |
 | Settings | `/settings` | `settings` | | |
 | QuickSight | `/quicksight` | `quicksight` | | |
@@ -50,7 +50,7 @@ Status: **done** · **next** · blank = not started
 
 | Folder | Notes |
 |---|---|
-| `team` | only reached through Organization (legacy + `TeamTablet`) |
+| `team` | **trashed** with User Management's split (only its legacy page and tablet used it) |
 | `priceSimulator` | **trashed** (dead, per Steve) with its slice; `utils/priceSimCalc` and `api/priceSim` stay (Forecast uses them) |
 | `suggested` | route commented out in `main.tsx` |
 

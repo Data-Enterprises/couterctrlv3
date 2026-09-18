@@ -1,0 +1,192 @@
+import { useEffect, useState } from "react";
+import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
+import { useOrganizationCtx } from "./hooks";
+import { useResizableBox } from "../../../hooks/useResizableBox";
+import ResizeHandle from "../../../components/ResizeHandle";
+import { useToast } from "../../../components/toasts/hooks/useToast";
+import type {
+  BaseGroupJsonResp,
+  JsonError,
+  User,
+  UserLevelJsonResp,
+} from "../../../interfaces";
+import { getAllUsers } from "../../../api/user";
+import { getUserLevels } from "../../../api/team";
+import { getBGAssignedToUserSplit } from "../../../api/baseGroups";
+import {
+  setInactiveUsers,
+  setRefresh as setUsersRefresh,
+  setUserLevels,
+  setUsers,
+} from "../../../features/usersSlice";
+import {
+  setUsersExportOpen,
+  setBaseGroupExportOpen,
+  setStoresExportOpen,
+  setAuthorizedBaseGroupIds,
+} from "../../../features/organizationSlice";
+// import TeamLegacy from "../team/TeamLegacy";
+import Users from "./users/Users";
+import BaseGroups from "./baseGroups/BaseGroups";
+import StoresDirectory from "./stores/StoresDirectory";
+
+type Tab = "users" | "baseGroups" | "stores";
+
+const TAB_LABELS: Record<Tab, string> = {
+  users: "Users",
+  baseGroups: "Base Groups",
+  stores: "Stores",
+};
+
+const Organization = () => {
+  const toast = useToast();
+  const ctx = useOrganizationCtx();
+  const [tab, setTab] = useState<Tab>("users");
+  const { width, height, boxRef, handleProps } = useResizableBox({
+    storageKey: "organization-panel-size",
+    defaultWidth: 1080,
+    defaultHeight: 640,
+    minWidth: 700,
+    maxWidth: 1600,
+    minHeight: 450,
+    maxHeight: 950,
+  });
+
+  // usersSlice is shared with the legacy Team page (no forked slice), so
+  // switching Live -> Preview mounts this component with whatever
+  // refresh/users state legacy last left behind — often refresh:false,
+  // which would skip the fetch below entirely and show stale/legacy-shaped
+  // data (e.g. missing inactive_users). Force a fresh fetch on every mount.
+  useEffect(() => {
+    ctx.dispatch(setUsersRefresh(true));
+  }, []);
+
+  // The logged-in user's own base groups. The Base Groups form derives its
+  // authorized flag from these ids, so they are fetched here rather than at
+  // login (Organization is the only surface that reads them) and refetched on
+  // every mount, so a membership granted elsewhere is not stale all session.
+  // A user with no company_link rows makes the endpoint raise instead of
+  // returning empty arrays, so anything but error 0 is treated as "none".
+  useEffect(() => {
+    getBGAssignedToUserSplit(ctx.url, ctx.token, ctx.userid)
+      .then((resp) => {
+        const j: BaseGroupJsonResp = resp.data;
+        ctx.dispatch(
+          setAuthorizedBaseGroupIds(
+            j.error === 0 ? j.active.map((bg) => bg.id) : [],
+          ),
+        );
+      })
+      .catch((err: JsonError) => {
+        ctx.dispatch(setAuthorizedBaseGroupIds([]));
+        toast.error("Error fetching your base groups " + err.message);
+      });
+  }, [ctx.userid]);
+
+  useEffect(() => {
+    if (!ctx.refresh) return;
+    getAllUsers(ctx.url, ctx.token)
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error === 0) {
+          const companyIds = ctx.companies.map((c) => c.company);
+          const scopeToOwnCompanies = (list: User[]) =>
+            list.filter((u: User) => {
+              const isDcrUser = u.companies.find(
+                (c) => c.company === 5 && c.name === "DCR",
+              );
+              if (isDcrUser) return false;
+              return u.companies.some((c) => companyIds.includes(c.company));
+            });
+          const isDcrUser = ctx.companies.find(
+            (c) => c.company === 5 && c.name === "DCR",
+          );
+          // Inactive users seeded for testing carry an @example.com email —
+          // strip those out so the Inactive list only shows real accounts.
+          const realInactiveUsers = j.inactive_users.filter(
+            (u: User) => !u.email?.toLowerCase().endsWith("@example.com"),
+          );
+          // in place to double check the api is working so we don't mess with live users
+          // const realInactiveUsers = j.inactive_users;
+          ctx.dispatch(
+            setUsers(isDcrUser ? j.users : scopeToOwnCompanies(j.users)),
+          );
+          ctx.dispatch(
+            setInactiveUsers(
+              isDcrUser
+                ? realInactiveUsers
+                : scopeToOwnCompanies(realInactiveUsers),
+            ),
+          );
+        }
+      })
+      .catch((err: JsonError) =>
+        toast.error("Error fetching users " + err.message),
+      );
+    getUserLevels(ctx.url, ctx.token)
+      .then((resp) => {
+        const j: UserLevelJsonResp = resp.data;
+        if (j.error === 0) ctx.dispatch(setUserLevels(j.levels));
+      })
+      .catch((err: JsonError) => toast.error(err.message));
+    ctx.dispatch(setUsersRefresh(false));
+  }, [ctx.refresh]);
+
+  // Desktop only: no tablet layout (a tablet takes this page) and no mobile
+  // version (User Management is not on the mobile nav).
+
+  return (
+    <div className="min-h-[calc(100vh-3rem)] pt-12 px-4 pb-4 flex justify-center">
+      <div
+        ref={boxRef}
+        className="relative max-w-[95vw] max-h-[calc(100vh-8rem)] flex flex-col rounded-xl shadow-lg overflow-hidden bg-custom-white self-start"
+        style={{ width, height }}
+      >
+        <div className="bg-[#1e2a4a] px-3 py-2 flex-shrink-0 flex items-center gap-3">
+          <span className="text-custom-white font-semibold text-[13px] flex-shrink-0">
+            User Management
+          </span>
+          <div className="flex-1" />
+          <button
+            onClick={() => {
+              if (tab === "users") ctx.dispatch(setUsersExportOpen(true));
+              else if (tab === "baseGroups")
+                ctx.dispatch(setBaseGroupExportOpen(true));
+              else ctx.dispatch(setStoresExportOpen(true));
+            }}
+            title="Export CSV"
+            className="w-[20px] h-[20px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/60 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
+          >
+            <ArrowDownTrayIcon className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        <div className="flex border-b border-gray-100 flex-shrink-0">
+          {(["users", "baseGroups", "stores"] as Tab[]).map((t) => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className={`text-[12px] font-semibold py-2.5 px-4 whitespace-nowrap border-b-2 transition-colors ${
+                tab === t
+                  ? "border-[#1e2a4a] text-[#1e2a4a]"
+                  : "border-transparent text-content"
+              }`}
+            >
+              {TAB_LABELS[t]}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
+          {tab === "users" && <Users />}
+          {tab === "baseGroups" && <BaseGroups />}
+          {tab === "stores" && <StoresDirectory />}
+        </div>
+
+        <ResizeHandle {...handleProps} />
+      </div>
+    </div>
+  );
+};
+
+export default Organization;

@@ -9,8 +9,7 @@ import ItemLookup from "./pages/lookup/ItemLookup.tsx";
 import Admin from "./pages/admin/dev/Admin.tsx";
 import AdminLegacy from "./pages/admin/AdminLegacy.tsx";
 import Groups from "./pages/groups/Groups.tsx";
-import OrganizationDev from "./pages/organization/Organization.tsx";
-import TeamLegacy from "./pages/team/TeamLegacy.tsx";
+import Organization from "./pages/organization/Organization.tsx";
 import TitleBar from "./components/navigation/TitleBar.tsx";
 import TitleBarLegacy from "./components/navigation/TitleBarLegacy.tsx";
 import SideBarLegacy from "./components/navigation/SideBarLegacy.tsx";
@@ -73,7 +72,6 @@ export const ForecastPage = () => <Forecasting />;
 // pages/groups/Groups.tsx by the API switch.
 export const GroupsPage = () => <Groups />;
 
-export const OrganizationPage = () => {
-  const devMode = useAppSelector((s) => s.app.devMode);
-  return devMode ? <OrganizationDev /> : <TeamLegacy />;
-};
+// No legacy branch: the Team page is gone, and User Management has a prod and
+// a dev tree, picked inside pages/organization/Organization.tsx.
+export const OrganizationPage = () => <Organization />;
