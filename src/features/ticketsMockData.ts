@@ -6,7 +6,7 @@ import type {
   TicketTemplate,
   ApiKey,
   TicketDoc,
-} from "./interfaces";
+} from "../interfaces/tickets";
 
 // Stands in for real User records until a tickets backend exists — swap for
 // a real staff/users fetch once ticket assignment can reference real accounts.

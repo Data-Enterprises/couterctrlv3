@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { TicketDoc } from "../interfaces";
+import type { TicketDoc } from "../../../../interfaces/tickets";
 
 interface NewDocModalProps {
   onClose: () => void;

@@ -1,5 +1,5 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { UserLevel } from "../../interfaces";
+import type { UserLevel } from "../interfaces";
 import type {
   Ticket,
   TicketMsg,
@@ -8,7 +8,7 @@ import type {
   TicketTemplate,
   ApiKey,
   TicketDoc,
-} from "./interfaces";
+} from "../interfaces/tickets";
 import {
   MOCK_TICKETS,
   MOCK_MESSAGES,
@@ -19,7 +19,7 @@ import {
   MOCK_DOCS,
   MOCK_STAFF,
   type MockStaffUser,
-} from "./mockData";
+} from "./ticketsMockData";
 
 export type TicketsTab =
   | "tickets"

@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useTicketsCtx } from "../hooks";
-import SelectFilter from "../../../components/filters/SelectFilter";
-import { MOCK_COMPANIES } from "../mockData";
-import type { TicketConfig, Ticket } from "../interfaces";
+import SelectFilter from "../../../../components-dev/filters/SelectFilter";
+import { MOCK_COMPANIES } from "../../../../features/ticketsMockData";
+import type { TicketConfig, Ticket } from "../../../../interfaces/tickets";
 
 interface NewConfigModalProps {
   isElevated: boolean;

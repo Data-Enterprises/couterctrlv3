@@ -1,4 +1,4 @@
-import type { UserLevel } from "../../interfaces";
+import type { UserLevel } from "../../../interfaces";
 
 // "Top two user levels" (ticket tech / programmer) computed dynamically
 // against whatever levels actually exist — never a hardcoded id, since the

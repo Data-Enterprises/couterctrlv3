@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { TicketTemplate } from "../interfaces";
+import type { TicketTemplate } from "../../../../interfaces/tickets";
 
 interface NewTemplateModalProps {
   onClose: () => void;

@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
 import { PlusIcon, TrashIcon } from "@heroicons/react/20/solid";
 import { useTicketsCtx } from "../hooks";
-import TextFilter from "../../../components/filters/TextFilter";
-import IconButton from "../../../components/IconButton";
-import { setDocSearchText, addDoc, deleteDoc } from "../ticketsSlice";
+import TextFilter from "../../../../components-dev/filters/TextFilter";
+import IconButton from "../../../../components-dev/IconButton";
+import { setDocSearchText, addDoc, deleteDoc } from "../../../../features/dev/devTicketsSlice";
 import NewDocModal from "./NewDocModal";
 
 const formatDate = (iso: string) => {

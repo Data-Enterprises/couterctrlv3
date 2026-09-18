@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useTicketsCtx } from "../hooks";
-import { createTicket } from "../ticketsSlice";
-import { MOCK_COMPANIES } from "../mockData";
-import SelectFilter from "../../../components/filters/SelectFilter";
-import type { Ticket } from "../interfaces";
+import { createTicket } from "../../../../features/dev/devTicketsSlice";
+import { MOCK_COMPANIES } from "../../../../features/ticketsMockData";
+import SelectFilter from "../../../../components-dev/filters/SelectFilter";
+import type { Ticket } from "../../../../interfaces/tickets";
 
 interface NewTicketModalProps {
   isElevated: boolean;

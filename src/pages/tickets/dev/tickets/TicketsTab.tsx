@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
 import { PlusIcon, XMarkIcon, LockClosedIcon } from "@heroicons/react/20/solid";
 import { useTicketsCtx } from "../hooks";
-import TextFilter from "../../../components/filters/TextFilter";
-import SelectFilter from "../../../components/filters/SelectFilter";
+import TextFilter from "../../../../components-dev/filters/TextFilter";
+import SelectFilter from "../../../../components-dev/filters/SelectFilter";
 import {
   setSearchText,
   setStatusFilter,
@@ -16,9 +16,9 @@ import {
   assignTicket,
   addMessage,
   type QuickFilter,
-} from "../ticketsSlice";
-import type { Ticket } from "../interfaces";
-import { MOCK_COMPANIES } from "../mockData";
+} from "../../../../features/dev/devTicketsSlice";
+import type { Ticket } from "../../../../interfaces/tickets";
+import { MOCK_COMPANIES } from "../../../../features/ticketsMockData";
 import NewTicketModal from "./NewTicketModal";
 
 interface TicketsTabProps {

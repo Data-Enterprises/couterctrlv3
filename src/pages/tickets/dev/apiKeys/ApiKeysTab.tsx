@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { PlusIcon } from "@heroicons/react/20/solid";
 import { useTicketsCtx } from "../hooks";
-import { addApiKey, revokeApiKey } from "../ticketsSlice";
+import { addApiKey, revokeApiKey } from "../../../../features/dev/devTicketsSlice";
 import NewApiKeyModal from "./NewApiKeyModal";
 
 const formatDate = (iso: string) => {

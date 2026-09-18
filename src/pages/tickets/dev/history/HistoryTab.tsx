@@ -1,9 +1,9 @@
 import { useMemo } from "react";
 import { useTicketsCtx } from "../hooks";
-import SelectFilter from "../../../components/filters/SelectFilter";
-import { setHistoryCompanyFilter } from "../ticketsSlice";
-import type { Ticket } from "../interfaces";
-import { MOCK_COMPANIES } from "../mockData";
+import SelectFilter from "../../../../components-dev/filters/SelectFilter";
+import { setHistoryCompanyFilter } from "../../../../features/dev/devTicketsSlice";
+import type { Ticket } from "../../../../interfaces/tickets";
+import { MOCK_COMPANIES } from "../../../../features/ticketsMockData";
 
 interface HistoryTabProps {
   isElevated: boolean;

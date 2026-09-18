@@ -44,7 +44,7 @@ Status: **done** · **next** · blank = not started
 | Home | `/` | `home` | **skip** | login and portal only — stays as is, not split |
 | Settings | `/settings` | `settings` | **skip (limbo)** | not split until it has a clear purpose; its `TextInput` reads the prod `users` slice |
 | QuickSight | `/quicksight` | `quicksight` | **done** | being phased out (one user left) — split so it stays consistent until it goes; own dev Redux state (`devQsSlice`) |
-| Tickets | `/tickets` | `tickets` | | **Coming Soon** (experiment on hold; nav entry, programmer-only). Own Redux state only (`ticketsSlice`, incl. its own `userLevels`) |
+| Tickets | `/tickets` | `tickets` | **done (dev-only)** | Coming Soon (experiment on hold): `dev/` tree, empty `prod/` until greenlight; its slice, mock data and types moved out of the page (`features/ticketsSlice`, `features/ticketsMockData`, `interfaces/tickets`); own dev Redux state (`devTicketsSlice`) |
 
 ## Not routed — decide: split, or trash
 

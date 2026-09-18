@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
 import { PlusIcon, TrashIcon } from "@heroicons/react/20/solid";
 import { useTicketsCtx } from "../hooks";
-import TextFilter from "../../../components/filters/TextFilter";
-import IconButton from "../../../components/IconButton";
-import { setTemplateSearchText, addTemplate, deleteTemplate } from "../ticketsSlice";
+import TextFilter from "../../../../components-dev/filters/TextFilter";
+import IconButton from "../../../../components-dev/IconButton";
+import { setTemplateSearchText, addTemplate, deleteTemplate } from "../../../../features/dev/devTicketsSlice";
 import NewTemplateModal from "./NewTemplateModal";
 
 const TemplatesTab = () => {

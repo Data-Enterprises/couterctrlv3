@@ -33,7 +33,7 @@ import ordersReducer from "../features/ordersSlice";
 import salesLedgerReducer from "../features/salesLedgerSlice";
 import salesTrackerReducer from "../features/salesTrackerSlice";
 import upcDevReducer from "../features/upcDevSlice";
-import ticketsReducer from "../pages/tickets/ticketsSlice";
+import ticketsReducer from "../features/ticketsSlice";
 
 /**
  * State that holds an answer from an API.

@@ -1,10 +1,10 @@
 import { useMemo, useState } from "react";
 import { PlusIcon, TrashIcon } from "@heroicons/react/20/solid";
 import { useTicketsCtx } from "../hooks";
-import TextFilter from "../../../components/filters/TextFilter";
-import IconButton from "../../../components/IconButton";
-import { setConfigSearchText, addConfig, deleteConfig } from "../ticketsSlice";
-import { MOCK_COMPANIES } from "../mockData";
+import TextFilter from "../../../../components-dev/filters/TextFilter";
+import IconButton from "../../../../components-dev/IconButton";
+import { setConfigSearchText, addConfig, deleteConfig } from "../../../../features/dev/devTicketsSlice";
+import { MOCK_COMPANIES } from "../../../../features/ticketsMockData";
 import NewConfigModal from "./NewConfigModal";
 
 interface ConfigsTabProps {
