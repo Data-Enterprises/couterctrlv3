@@ -226,7 +226,13 @@ else ok("every relative import in src resolves");
 // ── 4. dead ───────────────────────────────────────────────────────────────
 console.log("\n4. DEAD");
 const reach = new Set();
-const stack = ["src/main.tsx", ...files.filter((f) => /\.test\.tsx?$/.test(f))];
+// A dev-only page can be parked with its route commented out (Suggested
+// Weight); its switchers count as entry points so the page isn't "dead".
+const stack = [
+  "src/main.tsx",
+  ...files.filter((f) => /\.test\.tsx?$/.test(f)),
+  ...(DEV_ONLY ? files.filter((f) => P.dirname(f) + "/" === PAGE && /\.tsx$/.test(f)) : []),
+];
 while (stack.length) {
   const f = stack.pop();
   if (reach.has(f)) continue;

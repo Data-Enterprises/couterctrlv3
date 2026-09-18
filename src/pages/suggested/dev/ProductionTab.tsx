@@ -1,11 +1,11 @@
 import { useMemo, useState } from "react";
 import { useSuggestedCtx } from "./hooks";
 import { buildBenchmark, deptLabel, fmtLb, median } from ".";
-import { dailyKey } from "../../interfaces";
+import { dailyKey } from "../../../interfaces";
 import SoldPerDayStrip from "./SoldPerDayStrip";
 import BarTooltip from "./BarTooltip";
-import { getStoreName } from "../../utils";
-import type { SuggestedGroupRow } from "../../interfaces";
+import { getStoreName } from "../../../utils";
+import type { SuggestedGroupRow } from "../../../interfaces";
 
 /** Sunday first, matching the `dow_rates` keys and Postgres' extract(dow). */
 const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];

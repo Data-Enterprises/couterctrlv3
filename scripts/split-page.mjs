@@ -252,7 +252,7 @@ for (const k of FORCE_FORK) if (!candidates.some(([key]) => key === k)) die(`--f
 // ── report ────────────────────────────────────────────────────────────────
 console.log(`\nSplitting ${PAGE}${DRY ? "   [dry run]" : ""}`);
 console.log(`\n  entries (become switchers): ${entries.join(", ")}`);
-console.log(`  tree: ${tree.size} file(s) -> prod/ and dev/${tests.length ? `, ${tests.length} test(s) -> dev/ only` : ""}`);
+console.log(`  tree: ${tree.size} file(s) -> ${DEV_ONLY ? "dev/ only (dev-only: prod/ gets a README)" : "prod/ and dev/"}${tests.length ? `, ${tests.length} test(s) -> dev/ only` : ""}`);
 if (leftovers.length) {
   console.log(`  not reached from the entries (left in place — dead or legacy?):`);
   leftovers.forEach((f) => console.log(`      ${f}${breaking.includes(f) ? "   <- imports tree files; will break, trash it" : ""}`));

@@ -5,14 +5,14 @@ import {
   setStoreSearch,
   toggleExpandedStore,
   type SheetKey,
-} from "../../features/suggestedSlice";
+} from "../../../features/dev/devSuggestedSlice";
 import { deptLabel, fmtLb0, rollupByStore } from ".";
-import { getStoreName } from "../../utils";
-import { isGroupSearch } from "../../features/searchSlice";
+import { getStoreName } from "../../../utils";
+import { isGroupSearch } from "../../../features/searchSlice";
 import PanelFrame from "./PanelFrame";
-import FilterBar from "../../components/filters/FilterBar";
-import TextFilter from "../../components/filters/TextFilter";
-import InfoButton from "../../components/InfoButton";
+import FilterBar from "../../../components-dev/filters/FilterBar";
+import TextFilter from "../../../components-dev/filters/TextFilter";
+import InfoButton from "../../../components-dev/InfoButton";
 import SuggestedHelpModal from "./SuggestedHelpModal";
 import { StoreListSkeleton } from "./Skeletons";
 

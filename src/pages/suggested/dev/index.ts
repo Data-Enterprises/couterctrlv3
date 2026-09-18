@@ -3,10 +3,10 @@ import type {
   NotSellingItem,
   SuggestedGroupRow,
   SuggestedItem,
-} from "../../interfaces";
-import type { ActionKey } from "../../interfaces";
+} from "../../../interfaces";
+import type { ActionKey } from "../../../interfaces";
 // Defined in src/interfaces — Suggested actions. Re-exported for this page's files.
-export type { ActionKey } from "../../interfaces";
+export type { ActionKey } from "../../../interfaces";
 
 /**
  * Rows whose department could not be resolved.

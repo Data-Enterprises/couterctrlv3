@@ -4,15 +4,15 @@ import {
   setNotSellingStatus,
   setNsDescFilter,
   setNsUpcFilter,
-} from "../../features/suggestedSlice";
+} from "../../../features/dev/devSuggestedSlice";
 import { fmtLb, lostLb } from ".";
-import ColFilter from "../../components/filters/ColFilter";
-import { colInputStyle } from "../../components/filters/colFilterStyles";
-import SortHeader from "../../components/SortHeader";
-import { useTriStateSort } from "../../utils/useTriStateSort";
-import UpcContextMenu from "../../components/UpcContextMenu";
-import type { NotSellingItem, NotSellingStatus } from "../../interfaces";
-import type { NotSellingFilter } from "../../features/suggestedSlice";
+import ColFilter from "../../../components-dev/filters/ColFilter";
+import { colInputStyle } from "../../../components-dev/filters/colFilterStyles";
+import SortHeader from "../../../components-dev/SortHeader";
+import { useTriStateSort } from "../../../utils/useTriStateSort";
+import UpcContextMenu from "../../../components-dev/UpcContextMenu";
+import type { NotSellingItem, NotSellingStatus } from "../../../interfaces";
+import type { NotSellingFilter } from "../../../features/dev/devSuggestedSlice";
 
 const TH =
   "px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/85";

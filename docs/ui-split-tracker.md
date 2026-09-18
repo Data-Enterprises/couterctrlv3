@@ -52,7 +52,7 @@ Status: **done** · **next** · blank = not started
 |---|---|
 | `team` | **trashed** with User Management's split (only its legacy page and tablet used it) |
 | `priceSimulator` | **trashed** (dead, per Steve) with its slice; `utils/priceSimCalc` and `api/priceSim` stay (Forecast uses them) |
-| `suggested` | route commented out in `main.tsx` |
+| `suggested` | **done (dev-only)** — Suggested Weight, Coming Soon: `dev/` tree, empty `prod/`; route still commented out in `main.tsx` (restoring it needs no path change); phone placeholder removed (not on mobile nav); own dev Redux state (`devSuggestedSlice`) |
 
 ## Leftovers to clean as pages come up
 

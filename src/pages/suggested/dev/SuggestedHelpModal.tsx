@@ -1,6 +1,6 @@
 import { useRef, useState, type ReactNode } from "react";
 import { XMarkIcon } from "@heroicons/react/20/solid";
-import ResizableModalShell from "../../components/modals/ResizableModalShell";
+import ResizableModalShell from "../../../components-dev/modals/ResizableModalShell";
 
 /**
  * The page's explainer, opened from the store panel's "?".

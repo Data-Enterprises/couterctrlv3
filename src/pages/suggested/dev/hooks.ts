@@ -1,9 +1,9 @@
-import { useAppSelector, useAppDispatch } from "../../hooks";
+import { useAppSelector, useAppDispatch } from "../../../hooks";
 
 /** Flat context selector, same shape as useOrdersCtx/useReceiversCtx. */
 export const useSuggestedCtx = () => {
   const dispatch = useAppDispatch();
-  const { url, token, isMobile, isTablet } = useAppSelector((s) => s.app);
+  const { url, token } = useAppSelector((s) => s.app);
   const { type, singleDate, lastStore, lastGroup, selectedGroup, selectedStore } =
     useAppSelector((s) => s.search);
   const { userid, assignedStores, selectedGroupStores } = useAppSelector(
@@ -39,14 +39,12 @@ export const useSuggestedCtx = () => {
     upcFilter,
     descFilter,
     actionFilter,
-  } = useAppSelector((s) => s.suggested);
+  } = useAppSelector((s) => s.dev.suggested);
 
   return {
     dispatch,
     url,
     token,
-    isMobile,
-    isTablet,
     type,
     singleDate,
     lastStore,

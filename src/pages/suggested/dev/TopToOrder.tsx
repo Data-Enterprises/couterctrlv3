@@ -4,14 +4,14 @@ import {
   setSheetKey,
   setTopDescFilter,
   setTopDeptFilter,
-} from "../../features/suggestedSlice";
+} from "../../../features/dev/devSuggestedSlice";
 import { deptLabel, fmtLb, fmtLbOrDash } from ".";
-import ColFilter from "../../components/filters/ColFilter";
-import { colInputStyle } from "../../components/filters/colFilterStyles";
-import SortHeader from "../../components/SortHeader";
-import { useTriStateSort } from "../../utils/useTriStateSort";
-import UpcContextMenu from "../../components/UpcContextMenu";
-import type { SuggestedItem } from "../../interfaces";
+import ColFilter from "../../../components-dev/filters/ColFilter";
+import { colInputStyle } from "../../../components-dev/filters/colFilterStyles";
+import SortHeader from "../../../components-dev/SortHeader";
+import { useTriStateSort } from "../../../utils/useTriStateSort";
+import UpcContextMenu from "../../../components-dev/UpcContextMenu";
+import type { SuggestedItem } from "../../../interfaces";
 
 /**
  * The store's heaviest lines, before a department is picked.

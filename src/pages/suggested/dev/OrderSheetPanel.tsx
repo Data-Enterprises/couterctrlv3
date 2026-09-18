@@ -9,7 +9,7 @@ import {
   setSelectedDay,
   setActiveTab,
   type SuggestedTab,
-} from "../../features/suggestedSlice";
+} from "../../../features/dev/devSuggestedSlice";
 import {
   coverDates,
   dayLabel,
@@ -27,23 +27,23 @@ import {
   ACTION_TONE_FOR,
   ACTION_ORDER,
 } from ".";
-import DayCardStrip, { type DayCardEntry } from "../../components/DayCardStrip";
+import DayCardStrip, { type DayCardEntry } from "../../../components-dev/DayCardStrip";
 import TopToOrder from "./TopToOrder";
 import ProductionTab from "./ProductionTab";
 import NotSellingTab from "./NotSellingTab";
-import ColFilter from "../../components/filters/ColFilter";
-import { colInputStyle } from "../../components/filters/colFilterStyles";
-import SortHeader from "../../components/SortHeader";
-import { useTriStateSort } from "../../utils/useTriStateSort";
+import ColFilter from "../../../components-dev/filters/ColFilter";
+import { colInputStyle } from "../../../components-dev/filters/colFilterStyles";
+import SortHeader from "../../../components-dev/SortHeader";
+import { useTriStateSort } from "../../../utils/useTriStateSort";
 import { SheetSkeleton } from "./Skeletons";
-import KpiTileGrid, { type KpiCell } from "../../components/KpiTileGrid";
-import UpcContextMenu from "../../components/UpcContextMenu";
+import KpiTileGrid, { type KpiCell } from "../../../components-dev/KpiTileGrid";
+import UpcContextMenu from "../../../components-dev/UpcContextMenu";
 import WorkingPopover from "./WorkingPopover";
 import type {
   DowRates,
   NotSellingItem,
   SuggestedItem,
-} from "../../interfaces";
+} from "../../../interfaces";
 
 const TH =
   "px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/85";

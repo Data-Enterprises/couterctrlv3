@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { XMarkIcon } from "@heroicons/react/16/solid";
 import { coverBreakdown, fmtLb, shrinkLabel, ACTION_TONE, SCOPE_TEXT } from ".";
 import type { SuggestedAction } from ".";
-import type { DowRates, SuggestedItem } from "../../interfaces";
+import type { DowRates, SuggestedItem } from "../../../interfaces";
 
 /**
  * How this row's number was arrived at, for this row.

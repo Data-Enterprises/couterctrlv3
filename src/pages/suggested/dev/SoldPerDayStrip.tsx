@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { fmtLb, dayLabel } from ".";
 import BarTooltip from "./BarTooltip";
-import type { SuggestedDailyPoint } from "../../interfaces";
+import type { SuggestedDailyPoint } from "../../../interfaces";
 
 /**
  * What the department actually moved, day by day.
