@@ -1,17 +1,17 @@
-import InfoButton from "../../../components/InfoButton";
+import InfoButton from "../../../../components-dev/InfoButton";
 import { useState, useMemo } from "react";
 import { MagnifyingGlassIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
-import type { GroupedOrderCard, SelectedOrderKey } from "../../../features/ordersSlice";
-import type { Group } from "../../../features/groupSlice";
-import type { Store } from "../../../interfaces";
-import type { SEARCH_TYPE } from "../../../features/searchSlice";
-import FilterBar from "../../../components/filters/FilterBar";
-import LoadingIndicator from "../../../components/loading/LoadingIndicator";
-import TextFilter from "../../../components/filters/TextFilter";
-import SelectFilter, { type SelectFilterOption } from "../../../components/filters/SelectFilter";
-import InfoPopover from "../../../components/InfoPopover";
+import type { GroupedOrderCard, SelectedOrderKey } from "../../../../features/dev/devOrdersSlice";
+import type { Group } from "../../../../features/groupSlice";
+import type { Store } from "../../../../interfaces";
+import type { SEARCH_TYPE } from "../../../../features/searchSlice";
+import FilterBar from "../../../../components-dev/filters/FilterBar";
+import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
+import TextFilter from "../../../../components-dev/filters/TextFilter";
+import SelectFilter, { type SelectFilterOption } from "../../../../components-dev/filters/SelectFilter";
+import InfoPopover from "../../../../components-dev/InfoPopover";
 import { ORDERS_INFO } from "../ordersInfo";
-import { isGroupSearch } from "../../../features/searchSlice";
+import { isGroupSearch } from "../../../../features/searchSlice";
 
 interface Props {
   cards: GroupedOrderCard[];

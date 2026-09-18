@@ -1,11 +1,11 @@
 import { useState, useMemo } from "react";
 import { ChevronRightIcon } from "@heroicons/react/20/solid";
-import type { GroupedOrderCard, SelectedOrderKey } from "../../../features/ordersSlice";
-import TextFilter from "../../../components/filters/TextFilter";
-import SelectFilter, { type SelectFilterOption } from "../../../components/filters/SelectFilter";
-import MobilePerfHeader from "../../../components/mobile/MobilePerfHeader";
+import type { GroupedOrderCard, SelectedOrderKey } from "../../../../features/ordersSlice";
+import TextFilter from "../../../../components/filters/TextFilter";
+import SelectFilter, { type SelectFilterOption } from "../../../../components/filters/SelectFilter";
+import MobilePerfHeader from "../../../../components/mobile/MobilePerfHeader";
 import { ORDERS_INFO } from "../ordersInfo";
-import { useSearchScopeLabel } from "../../../hooks/useSearchScopeLabel";
+import { useSearchScopeLabel } from "../../../../hooks/useSearchScopeLabel";
 
 interface Props {
   cards: GroupedOrderCard[];

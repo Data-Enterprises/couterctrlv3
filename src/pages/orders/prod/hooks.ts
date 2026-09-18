@@ -1,19 +1,13 @@
-import { useAppSelector, useAppDispatch } from "../../hooks";
-import type { RootState } from "../../store";
+import { useAppSelector, useAppDispatch } from "../../../hooks";
 
 export const useOrdersCtx = () => {
   const dispatch = useAppDispatch();
-  const { url, token, isTablet, isMobile, devMode } = useAppSelector((state) => state.app);
+  const { url, token, isMobile } = useAppSelector((state) => state.app);
   const { startDate, endDate, type, lastStore, lastGroup, selectedGroup, selectedStore } = useAppSelector(
     (state) => state.search,
   );
   const { assignedStores, userid, selectedGroupStores } = useAppSelector((state) => state.user);
-  // Cast to the dev slice's shape: legacy Orders never reads the newer dev-only
-  // fields (selectedOrderKey.storeids / selectedOrder), so the two slices'
-  // structural differences there never surface at any actual legacy call site.
-  const ordersState = useAppSelector(
-    (state) => (devMode ? state.orders : state.ordersLegacy) as RootState["orders"],
-  );
+  const ordersState = useAppSelector((state) => state.prod.orders);
   const {
     availableOrders,
     groupedAvailableOrders,
@@ -71,7 +65,6 @@ export const useOrdersCtx = () => {
     userid,
     filteredAvailableOrders,
     typeFilterArr,
-    isTablet,
     isMobile,
   };
 };

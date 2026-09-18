@@ -1,5 +1,10 @@
+/**
+ * Dev copy of `features/ordersSlice.ts`, mounted at `state.dev.orders` and read only
+ * by `pages/orders/dev`. Edit this one while changing dev orders; when dev is
+ * promoted, it replaces the prod slice. See src/store/devReducers.ts.
+ */
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { AllOrder, AvailableOrder } from "../interfaces";
+import type { AllOrder, AvailableOrder } from "../../interfaces";
 
 export type OrderStatus = "open" | "closed" | "";
 export type UniqueSub = {
@@ -29,15 +34,25 @@ export type GroupedOrderCard = {
 
 export type SelectedOrderKey = {
   order_date: string;
+  order_date_end: string;
   order_type: string;
+  storeids: number[];
+  // Which locations within those storeids. null = every location (the
+  // select-all-stores path, where both siblings are wanted anyway).
+  storenumbers: string[] | null;
+} | null;
+
+export type SelectedOrder = {
   storeid: number;
+  storenumber: string;
+  orderId: number;
 } | null;
 
 interface OrdersState {
   availableOrders: AvailableOrder[];
   groupedAvailableOrders: GroupedOrderCard[];
   selectedOrderKey: SelectedOrderKey;
-  selectedOrderId: number | null;
+  selectedOrder: SelectedOrder;
   allOrders: AllOrder[];
   orderTypeFilter: string[];
   subDeptFilter: number;
@@ -60,7 +75,7 @@ const initialState: OrdersState = {
   availableOrders: [],
   groupedAvailableOrders: [],
   selectedOrderKey: null,
-  selectedOrderId: null,
+  selectedOrder: null,
   allOrders: [],
   orderTypeFilter: [],
   subDeptFilter: 0,
@@ -80,7 +95,9 @@ const initialState: OrdersState = {
 };
 
 const ordersSlice = createSlice({
-  name: "ordersLegacy",
+  // Distinct from the prod slice's "orders": Redux matches actions on this
+  // string alone, so sharing it would move prod and dev together.
+  name: "devOrders",
   initialState,
   reducers: {
     setAvailableOrders: (state, action: PayloadAction<AvailableOrder[]>) => {
@@ -93,8 +110,8 @@ const ordersSlice = createSlice({
     setSelectedOrderKey: (state, action: PayloadAction<SelectedOrderKey>) => {
       state.selectedOrderKey = action.payload;
     },
-    setSelectedOrderId: (state, action: PayloadAction<number | null>) => {
-      state.selectedOrderId = action.payload;
+    setSelectedOrder: (state, action: PayloadAction<SelectedOrder>) => {
+      state.selectedOrder = action.payload;
     },
     setFilteredAvailableOrders: (state, action: PayloadAction<AvailableOrder[]>) => {
       state.filteredAvailableOrders = action.payload;
@@ -173,7 +190,7 @@ export const {
   setAvailableOrders,
   setGroupedAvailableOrders,
   setSelectedOrderKey,
-  setSelectedOrderId,
+  setSelectedOrder,
   setAllOrders,
   setFilteredOrders,
   setOrderTypeFilter,

@@ -1,4 +1,4 @@
-import type { InfoGlossaryEntry } from "../../components/InfoPopover";
+import type { InfoGlossaryEntry } from "../../../components/InfoPopover";
 
 export const ORDERS_INFO: { title: string; purpose: string; glossary: InfoGlossaryEntry[] } = {
   title: "Orders",

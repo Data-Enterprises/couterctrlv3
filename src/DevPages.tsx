@@ -3,7 +3,6 @@ import Cashiers from "./pages/cashiers/Cashiers.tsx";
 import Sales from "./pages/sales/Sales.tsx";
 import LossPrevention from "./pages/lossPrevention/LossPrevention.tsx";
 import Orders from "./pages/orders/Orders.tsx";
-import OrdersLegacy from "./pages/orders/OrdersLegacy.tsx";
 import Coupons from "./pages/coupons/Coupons.tsx";
 import CouponsLegacy from "./pages/coupons/CouponsLegacy.tsx";
 import Receivers from "./pages/receivers/Receivers.tsx";
@@ -44,10 +43,9 @@ export const SalesPage = () => <Sales />;
 // pages/lossPrevention/LossPrevention.tsx by the API switch.
 export const LossPreventionPage = () => <LossPrevention />;
 
-export const OrdersPage = () => {
-  const devMode = useAppSelector((s) => s.app.devMode);
-  return devMode ? <Orders /> : <OrdersLegacy />;
-};
+// No legacy branch: Orders has a prod and a dev tree, picked inside
+// pages/orders/Orders.tsx by the API switch.
+export const OrdersPage = () => <Orders />;
 
 export const CouponsPage = () => {
   const devMode = useAppSelector((s) => s.app.devMode);

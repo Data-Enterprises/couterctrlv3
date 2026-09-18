@@ -1,6 +1,6 @@
 import { themeQuartz, type ColDef, type ColGroupDef } from "ag-grid-community";
-import type { AllOrder } from "../../interfaces";
-import { formatBigNumber, formatCurrency2 } from "../../utils";
+import type { AllOrder } from "../../../interfaces";
+import { formatBigNumber, formatCurrency2 } from "../../../utils";
 
 export const theme = themeQuartz.withParams({
   headerHeight: 26,

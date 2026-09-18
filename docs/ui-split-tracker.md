@@ -29,7 +29,7 @@ Status: **done** · **next** · blank = not started
 | Coupons | `/coupons` | `coupons` | | legacy branch; owns `TransactionModal` now (reads prod `lossPrevention`), dev copy must read `state.dev` |
 | LP Actions | `/lp-actions` | `lpActions` | | |
 | Cashiers | `/cashiers` | `cashiers` | **done** | legacy page + `cashierLegacy` state and the pre-Explorer desktop UI removed (43 files to trash); own dev Redux state (`devCashiersSlice`); `src/api/cashiers.ts` now unused but left (api layer) |
-| Orders | `/orders` | `orders` | | legacy branch; tablet |
+| Orders | `/orders` | `orders` | **done** | legacy page + `ordersLegacy` state, kpis/ and tablet removed (12 files, incl. `sales/mobile/index.ts`); own dev Redux state (`devOrdersSlice`) |
 | Receivers | `/receivers` | `receivers` | | legacy branch; tablet |
 | Item Lookup | `/item-lookup` | `lookup` | **done** | Option A (d4e66553) cherry-picked in first; legacy page, tablet and old desktop views removed (19 files, incl. the legacy `UpcScanner`); page moved up out of `lookup/dev/`, mobile page renamed `ItemLookupMobile`; own dev Redux state (`devItemLookupSlice`). Option A is dev-tree only now (prod keeps `LookupResultScreen`); `lookupDevView.ts` gone; promoting ships Option A |
 | UPC List | `/upc-upload` | `upc` | **done** | old `UpcList` (devMode off) + 48 dead files removed; current page moved up out of `upc/dev/` as the `UpcList` entry; `ColFilter` → `components/filters/ColFilterPopover`; own dev Redux state (`devUpcDevSlice`). Fixes flag is per tree now (dev on, prod off; promoting turns it on for prod); the per-environment stash is gone — each tree has its own slice and queue |
@@ -56,8 +56,7 @@ Status: **done** · **next** · blank = not started
 
 ## Leftovers to clean as pages come up
 
-- Unused page slices (nothing live reads or dispatches them): `suggested` (Suggested page is unrouted), `reportBuilder`
+- Unused page slices (nothing live reads or dispatches them): `reportBuilder` (`suggested` is Suggested Weight's — Coming Soon, keep)
 
 - Dead components: `SevBadge`, `SevChips`, `MobileDayStrip`, `MobileKpiStrip`, `MobileSignalRow`
-- `sales/mobile/index.ts` (`PieData`, legacy Orders only)
 - `LoadingIndicator`: dev library drops the legacy spinner — answer `--keep-lib` on promote until legacy is gone

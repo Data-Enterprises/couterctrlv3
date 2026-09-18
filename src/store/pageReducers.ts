@@ -32,7 +32,6 @@ import organizationReducer from "../features/organizationSlice";
 import subMarginReducer from "../features/subMarginSlice";
 import cashiersReducer from "../features/cashiersSlice";
 import ordersReducer from "../features/ordersSlice";
-import ordersLegacyReducer from "../features/ordersLegacySlice";
 import salesLedgerReducer from "../features/salesLedgerSlice";
 import salesTrackerReducer from "../features/salesTrackerSlice";
 import upcDevReducer from "../features/upcDevSlice";
@@ -83,7 +82,6 @@ export const pageReducers = {
   subMargin: subMarginReducer,
   cashier: cashiersReducer,
   orders: ordersReducer,
-  ordersLegacy: ordersLegacyReducer,
   salesLedger: salesLedgerReducer,
   salesTracker: salesTrackerReducer,
   upcDev: upcDevReducer,
