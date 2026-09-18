@@ -11,7 +11,7 @@ Status: **done** · **next** · blank = not started
 | Unit | Used by | Status | Notes |
 |---|---|---|---|
 | `shared/itemPerf` | Categories, Vendors, Sub Dept Margins (mobile) | next | dry run clean; tested in a worktree |
-| `shared/eventPerf` | Loss Prevention, Coupon Sales (mobile) | | |
+| `shared/eventPerf` | Loss Prevention, Coupon Sales (mobile) | **done** | LP/coupon adapters moved to `src/api/eventPerf/`, `clockOf` to `utils/dates` |
 
 ## Pages
 

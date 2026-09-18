@@ -1,8 +1,8 @@
 import { ChevronRightIcon } from "@heroicons/react/20/solid";
-import { formatCurrency2 } from "../../../utils";
-import PairedBars from "../../../components/mobile/perf/PairedBars";
-import PerfDayChart from "../../../components/mobile/perf/PerfDayChart";
-import { LY_COLOR, TY_COLOR } from "../../../components/mobile/perf/perfColors";
+import { formatCurrency2 } from "../../../../utils";
+import PairedBars from "../../../../components/mobile/perf/PairedBars";
+import PerfDayChart from "../../../../components/mobile/perf/PerfDayChart";
+import { LY_COLOR, TY_COLOR } from "../../../../components/mobile/perf/perfColors";
 import type { EventTotals } from "./eventPerfData";
 
 const fmtInt = (n: number) => Math.round(n).toLocaleString("en-US");

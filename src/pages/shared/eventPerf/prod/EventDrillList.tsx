@@ -1,11 +1,11 @@
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
 import MobileSortChips, {
   type SortOption,
-} from "../../../components/mobile/MobileSortChips";
-import PairedBars from "../../../components/mobile/perf/PairedBars";
-import { TY_COLOR } from "../../../components/mobile/perf/perfColors";
-import { formatCurrency2, formatDateSimple } from "../../../utils";
-import type { EventSort } from "../../../features/eventPerfSlice";
+} from "../../../../components/mobile/MobileSortChips";
+import PairedBars from "../../../../components/mobile/perf/PairedBars";
+import { TY_COLOR } from "../../../../components/mobile/perf/perfColors";
+import { formatCurrency2, formatDateSimple } from "../../../../utils";
+import type { EventSort } from "../../../../features/eventPerfSlice";
 import {
   receiptLabel,
   type EventGroupRow,

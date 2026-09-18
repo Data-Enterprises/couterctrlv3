@@ -2,18 +2,18 @@ import {
   getCashierTable,
   getCashierTransaction,
   getSaleTypes,
-} from "../../../api/lossPrevention";
-import { fetchAllPages } from "../../../utils/paging";
-import { resolveStoreName } from "../../../utils";
+} from "../lossPrevention";
+import { fetchAllPages } from "../../utils/paging";
+import { resolveStoreName } from "../../utils";
 import type {
   CashierTransaction,
   Store,
   SaleType,
   TransactionListItem,
-} from "../../../interfaces";
-import type { EventRow } from "../../../features/eventPerfSlice";
-import type { ReceiptLine } from "./receiptTypes";
-import { clockOf } from "./eventPerfData";
+} from "../../interfaces";
+import type { EventRow } from "../../features/eventPerfSlice";
+import type { SaleReceiptLine as ReceiptLine } from "../../interfaces";
+import { clockOf } from "../../utils/dates";
 
 interface Scope {
   url: string;

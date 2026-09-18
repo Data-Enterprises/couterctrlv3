@@ -4,6 +4,7 @@ import { resetAppSlice } from "../features/appSlice";
 import devSalesReducer from "../features/dev/devSalesSlice";
 import devSalesLedgerReducer from "../features/dev/devSalesLedgerSlice";
 import devSalesPerfReducer from "../features/dev/devSalesPerfSlice";
+import devEventPerfReducer from "../features/dev/devEventPerfSlice";
 
 /**
  * The dev tree's own copy of every page slice that has been forked.
@@ -27,6 +28,7 @@ export const devReducers = {
   sales: devSalesReducer,
   salesLedger: devSalesLedgerReducer,
   salesPerf: devSalesPerfReducer,
+  eventPerf: devEventPerfReducer,
 } satisfies Record<string, Reducer>;
 
 type DevState = { [K in keyof typeof devReducers]: ReturnType<(typeof devReducers)[K]> };

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { EventRow } from "../../../features/eventPerfSlice";
+import type { EventRow } from "../../../../features/dev/devEventPerfSlice";
 import {
   buildEventDays,
   buildGroupRows,

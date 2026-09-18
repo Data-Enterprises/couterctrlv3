@@ -135,8 +135,10 @@ const tree = new Set();
   }
 }
 // A non-entry tree file that outside code imports can't be moved: those
-// importers would be left pointing at a file in trash/.
-const stuck = blockers.filter((b) => tree.has(b.f));
+// importers would be left pointing at a file in trash/. Nor can a page file
+// outside code imports that itself imports tree files (an adapter the page
+// calls): it stays in place, and its imports would go to trash.
+const stuck = blockers.filter((b) => tree.has(b.f) || (edges.get(b.f) ?? []).some((e) => tree.has(e.to)));
 if (stuck.length)
   die(`these page files are imported from outside the page and are not entries.\n` +
     `Move them to src/ (components, hooks, utils, interfaces) first:\n  ` +

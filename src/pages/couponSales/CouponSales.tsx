@@ -8,7 +8,7 @@ import EventPerfMobile from "../shared/eventPerf/EventPerfMobile";
 import {
   couponReceipt,
   fetchCouponEvents,
-} from "../shared/eventPerf/couponAdapter";
+} from "../../api/eventPerf/couponAdapter";
 import { getStoresAssignedToUserGroup } from "../../api/groups";
 import { formatDateSimple } from "../../utils";
 import { setSelectedGroupStores } from "../../features/userSlice";

@@ -1,10 +1,10 @@
-import { getCoupons } from "../../../api/coupons";
-import { withResolvedCouponAmount } from "../../../utils/couponValue";
-import type { CouponItem, CouponsResponse, Store } from "../../../interfaces";
-import { resolveStoreName } from "../../../utils";
-import type { EventRow } from "../../../features/eventPerfSlice";
-import type { ReceiptLine } from "./receiptTypes";
-import { clockOf } from "./eventPerfData";
+import { getCoupons } from "../coupons";
+import { withResolvedCouponAmount } from "../../utils/couponValue";
+import type { CouponItem, CouponsResponse, Store } from "../../interfaces";
+import { resolveStoreName } from "../../utils";
+import type { EventRow } from "../../features/eventPerfSlice";
+import type { SaleReceiptLine as ReceiptLine } from "../../interfaces";
+import { clockOf } from "../../utils/dates";
 
 interface Scope {
   url: string;

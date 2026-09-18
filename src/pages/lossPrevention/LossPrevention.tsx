@@ -3,7 +3,7 @@ import { useToast } from "../../components/toasts/hooks/useToast";
 import { getSaleTypes } from "../../api/lossPrevention";
 import { useApiContext } from "../../hooks/useApiContext";
 import EventPerfMobile from "../shared/eventPerf/EventPerfMobile";
-import { fetchLpEvents, fetchLpReceipt } from "../shared/eventPerf/lpAdapter";
+import { fetchLpEvents, fetchLpReceipt } from "../../api/eventPerf/lpAdapter";
 import { LP_MOBILE_INFO } from "./lpInfo";
 import {
   resetCashierSlice,
