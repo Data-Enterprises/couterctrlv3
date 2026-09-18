@@ -4,20 +4,20 @@ import {
   ClipboardDocumentListIcon,
 } from "@heroicons/react/24/outline";
 import { collectGradedItems } from "./vendorGradedItems";
-import type { ItemGradingMetric } from "../../utils/itemMargins";
-import { useCriticalReport } from "../../hooks/useCriticalReport";
+import type { ItemGradingMetric } from "../../../utils/itemMargins";
+import { useCriticalReport } from "../../../hooks/useCriticalReport";
 import {
   useAppSelector,
   useAppDispatch,
   useCanSeeComingSoon,
-} from "../../hooks";
-import { formatCurrency2 } from "../../utils";
+} from "../../../hooks";
+import { formatCurrency2 } from "../../../utils";
 import {
   comparisonPillClass,
   formatPct,
   severityHeaderBgClass,
   type Severity,
-} from "../../utils/severity";
+} from "../../../utils/severity";
 import {
   LW_OFFSET,
   LY_OFFSET,
@@ -26,17 +26,17 @@ import {
   gradeBasis,
   isCompleteCoverage,
   type Tier,
-} from "../../utils/grading";
-import { fmtDayLabel, fmtRangeLabel } from "../../utils/dateLabels";
-import DayCardStrip, { type DayCardEntry } from "../../components/DayCardStrip";
-import ItemMarginsTable from "../../components/ItemMarginsTable";
+} from "../../../utils/grading";
+import { fmtDayLabel, fmtRangeLabel } from "../../../utils/dateLabels";
+import DayCardStrip, { type DayCardEntry } from "../../../components-dev/DayCardStrip";
+import ItemMarginsTable from "../../../components-dev/ItemMarginsTable";
 import VendorExportModal from "./VendorExportModal";
 import {
   setSelectedDay,
   setItemThreshold,
   VENDOR_THRESHOLD_DEFAULT,
   VENDOR_ITEM_THRESHOLD_DEFAULT,
-} from "../../features/vendorsSlice";
+} from "../../../features/dev/devVendorsSlice";
 import { getVendorTier, rowsForVendor, marginPct } from "./vendorsUtils";
 
 /** Ungraded has no severity colour of its own, so the header falls back to the
@@ -94,7 +94,7 @@ const Kpi = ({
 
 const VendorDetailPanel = () => {
   const dispatch = useAppDispatch();
-  const vend = useAppSelector((s) => s.vendors);
+  const vend = useAppSelector((s) => s.dev.vendors);
   // Item Actions is unreleased, so the way in goes with it. A button that
   // navigates somewhere the nav says does not exist is worse than no button.
   const canSeeComingSoon = useCanSeeComingSoon();

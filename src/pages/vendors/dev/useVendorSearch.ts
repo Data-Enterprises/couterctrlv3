@@ -1,6 +1,6 @@
-import { useAppSelector, useAppDispatch } from "../../hooks";
-import { useToast } from "../../components/toasts/hooks/useToast";
-import { formatGoliathDate, getStoreName } from "../../utils";
+import { useAppSelector, useAppDispatch } from "../../../hooks";
+import { useToast } from "../../../components/toasts/hooks/useToast";
+import { formatGoliathDate, getStoreName } from "../../../utils";
 import {
   setRows,
   setRaw,
@@ -9,7 +9,7 @@ import {
   setStore,
   setRange,
   reQuery,
-} from "../../features/vendorsSlice";
+} from "../../../features/dev/devVendorsSlice";
 import { fetchVendorPeriods } from "./vendorsData";
 import { buildVendorRows, datesOf } from "./vendorsUtils";
 

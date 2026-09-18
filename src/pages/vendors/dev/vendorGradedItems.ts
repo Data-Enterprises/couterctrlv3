@@ -3,11 +3,11 @@ import {
   getItemSeverity,
   type ItemGradingMetric,
   type ItemMarginRow,
-} from "../../utils/itemMargins";
-import type { SubDeptMargin } from "../../interfaces";
+} from "../../../utils/itemMargins";
+import type { SubDeptMargin } from "../../../interfaces";
 import type { VendorRow } from "./vendorsUtils";
 import { rowsForVendor } from "./vendorsUtils";
-import { LW_OFFSET, LY_OFFSET, shiftIso } from "../../utils/grading";
+import { LW_OFFSET, LY_OFFSET, shiftIso } from "../../../utils/grading";
 
 /**
  * Which graded items a vendor contributes, and in what order.

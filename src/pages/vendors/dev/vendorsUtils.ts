@@ -1,5 +1,5 @@
-import type { SubDeptMargin } from "../../interfaces";
-import { calculateCogs } from "../../utils/cogs";
+import type { SubDeptMargin } from "../../../interfaces";
+import { calculateCogs } from "../../../utils/cogs";
 import {
   LW_OFFSET,
   LY_OFFSET,
@@ -9,10 +9,10 @@ import {
   tierOfDelta,
   coverageOf,
   gradeBasis,
-} from "../../utils/grading";
-import type { VendorMetric, VendorRow, VendorDay, VendorTier } from "../../interfaces";
+} from "../../../utils/grading";
+import type { VendorMetric, VendorRow, VendorDay, VendorTier } from "../../../interfaces";
 // Defined in src/interfaces — Vendors. Re-exported for this page's files.
-export type { VendorMetric, VendorRow, VendorDay, VendorTier } from "../../interfaces";
+export type { VendorMetric, VendorRow, VendorDay, VendorTier } from "../../../interfaces";
 
 /** Margin percentage from a net/COGS pair. Zero net means there is nothing to
  *  take a margin on — 0 rather than a divide-by-zero, matching Sub Dept

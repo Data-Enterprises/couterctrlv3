@@ -1,17 +1,17 @@
-import InfoButton from "../../components/InfoButton";
+import InfoButton from "../../../components/InfoButton";
 import VendorRow from "./VendorRow";
 import { useMemo, useState, useCallback } from "react";
 import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
-import { useAppSelector, useAppDispatch } from "../../hooks";
-import TextFilter from "../../components/filters/TextFilter";
+import { useAppSelector, useAppDispatch } from "../../../hooks";
+import TextFilter from "../../../components/filters/TextFilter";
 import ThresholdFilter, {
   type ThresholdValue,
-} from "../../components/filters/ThresholdFilter";
-import InfoPopover from "../../components/InfoPopover";
-import SortHeader, { PERF_SORT_HEADER } from "../../components/SortHeader";
-import { useTriStateSort } from "../../utils/useTriStateSort";
-import { formatCurrency2, formatCurrencyCompact } from "../../utils";
-import { fmtCompactRange } from "../../utils/dateLabels";
+} from "../../../components/filters/ThresholdFilter";
+import InfoPopover from "../../../components/InfoPopover";
+import SortHeader, { PERF_SORT_HEADER } from "../../../components/SortHeader";
+import { useTriStateSort } from "../../../utils/useTriStateSort";
+import { formatCurrency2, formatCurrencyCompact } from "../../../utils";
+import { fmtCompactRange } from "../../../utils/dateLabels";
 import {
   severityDotClass,
   comparisonPillClass,
@@ -19,13 +19,13 @@ import {
   PCT_COL_W,
   formatPct,
   type Severity,
-} from "../../utils/severity";
+} from "../../../utils/severity";
 import {
   pctChange,
   sortGraded,
   isCompleteCoverage,
   type Tier,
-} from "../../utils/grading";
+} from "../../../utils/grading";
 import { VENDORS_INFO } from "./vendorsInfo";
 import {
   setTextFilter,
@@ -34,7 +34,7 @@ import {
   setMetric,
   setThreshold,
   VENDOR_THRESHOLD_DEFAULT,
-} from "../../features/vendorsSlice";
+} from "../../../features/vendorsSlice";
 import { getVendorTier, vendorDelta, marginPct } from "./vendorsUtils";
 
 const TOGGLE_OPTS = [
@@ -85,7 +85,7 @@ const VendorListPanel = ({ onSearchOpen }: Props) => {
   const dispatch = useAppDispatch();
   const [infoOpen, setInfoOpen] = useState(false);
   const { sort, handleSort, applySort } = useTriStateSort<ListSortCol>();
-  const vend = useAppSelector((s) => s.vendors);
+  const vend = useAppSelector((s) => s.prod.vendors);
   const { rows, metric, threshold, tierFilter, textFilter, selectedVendor } = vend;
 
   // Null threshold means the input is mid-edit; grade against the default

@@ -20,7 +20,7 @@ Status: **done** · **next** · blank = not started
 |---|---|---|---|---|
 | Sales | `/sales` | `sales` | **done** | legacy Sales + `salesLegacy`/`salesMobile` state removed; prod `Sales.tsx` still has commented legacy (a promote cleans it) |
 | Categories | `/categories` | `categories` | **done** | no legacy or tablet to cut; own dev Redux state (`devCategoriesSlice`); mobile on its own side of `shared/itemPerf` |
-| Vendors | `/vendors` | `vendors` | | after itemPerf |
+| Vendors | `/vendors` | `vendors` | **done** | no legacy or tablet to cut; own dev Redux state (`devVendorsSlice`); last `shared/itemPerf` user, so its switcher went to trash |
 | Sub Dept Margins | `/sub-dept-margins` | `subDepts` | **done** | legacy page + `subMarginLegacy` state, tablet and old mobile stack removed (49 files to trash); `SubDeptMarginsDev` is now the `SubDeptMargins` entry; `display/dev` renamed `display/perf`; helpers imported from `src/utils` directly; own dev Redux state (`devSubMarginSlice`). `subMarginSlice` still carries tablet/old-mobile fields (e.g. `viewTabletCards`) |
 | Coupon Sales | `/coupon-sales` | `couponSales` | **done** | own dev Redux state (`devCouponSalesSlice`); open receipt moved off LP's `transactionDrillDown` into `couponSales.receiptLines`, so it uses no LP state; dead `mobile/` trashed with LP |
 | Loss Prevention | `/loss-prevention` | `lossPrevention` | **done** | legacy page + `lossPreventionLegacy` state and tablet removed (35 files to trash); own dev Redux state (`state.dev.lossPrevention`, `devLossPreventionSlice`); `TransactionModal` moved to `pages/coupons` (only Coupons opened it; reads prod state)

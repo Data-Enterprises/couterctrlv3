@@ -1,6 +1,6 @@
-import { fetchSubDeptRowsSafe } from "../../utils/marginRows";
-import { LW_OFFSET, LY_OFFSET, shiftIso } from "../../utils/grading";
-import type { SubDeptMargin } from "../../interfaces";
+import { fetchSubDeptRowsSafe } from "../../../utils/marginRows";
+import { LW_OFFSET, LY_OFFSET, shiftIso } from "../../../utils/grading";
+import type { SubDeptMargin } from "../../../interfaces";
 
 /**
  * Fetching for the Vendors page.

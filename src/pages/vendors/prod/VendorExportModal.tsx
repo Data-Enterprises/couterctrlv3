@@ -1,16 +1,16 @@
 import { useMemo, useState } from "react";
 import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
-import ResizableModalShell from "../../components/modals/ResizableModalShell";
-import MultiSelectFilter from "../../components/filters/MultiSelectFilter";
-import { fmtNum, rowsToCsv, downloadCsv, aggregateRows } from "../../utils/csvExport";
-import type { AggFn, AggRow } from "../../utils/csvExport";
-import { calculateCogs } from "../../utils/cogs";
+import ResizableModalShell from "../../../components/modals/ResizableModalShell";
+import MultiSelectFilter from "../../../components/filters/MultiSelectFilter";
+import { fmtNum, rowsToCsv, downloadCsv, aggregateRows } from "../../../utils/csvExport";
+import type { AggFn, AggRow } from "../../../utils/csvExport";
+import { calculateCogs } from "../../../utils/cogs";
 import {
   buildItemRows,
   getItemSeverity,
   type ItemSeverity,
   type ItemGradingMetric,
-} from "../../utils/itemMargins";
+} from "../../../utils/itemMargins";
 import {
   LW_OFFSET,
   LY_OFFSET,
@@ -19,9 +19,9 @@ import {
   coverageOf,
   pctChange,
   tierOfDelta,
-} from "../../utils/grading";
-import { fmtDayLabel } from "../../utils/dateLabels";
-import type { SubDeptMargin } from "../../interfaces";
+} from "../../../utils/grading";
+import { fmtDayLabel } from "../../../utils/dateLabels";
+import type { SubDeptMargin } from "../../../interfaces";
 import type { VendorMetric, VendorRow } from "./vendorsUtils";
 import { getVendorTier, marginPct } from "./vendorsUtils";
 import {

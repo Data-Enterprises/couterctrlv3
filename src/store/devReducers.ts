@@ -10,6 +10,7 @@ import devCouponSalesReducer from "../features/dev/devCouponSalesSlice";
 import devItemPerfReducer from "../features/dev/devItemPerfSlice";
 import devSubMarginReducer from "../features/dev/devSubMarginSlice";
 import devCategoriesReducer from "../features/dev/devCategoriesSlice";
+import devVendorsReducer from "../features/dev/devVendorsSlice";
 
 /**
  * The dev tree's own copy of every page slice that has been forked.
@@ -39,6 +40,7 @@ export const devReducers = {
   itemPerf: devItemPerfReducer,
   subMargin: devSubMarginReducer,
   categories: devCategoriesReducer,
+  vendors: devVendorsReducer,
 } satisfies Record<string, Reducer>;
 
 type DevState = { [K in keyof typeof devReducers]: ReturnType<(typeof devReducers)[K]> };
