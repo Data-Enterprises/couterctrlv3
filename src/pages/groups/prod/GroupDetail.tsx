@@ -11,10 +11,10 @@ import {
 } from "../../../api/groups";
 import type { Group, StoreWithGroupStatus } from "../../../features/groupSlice";
 import type { JsonError } from "../../../interfaces";
-import IconButton from "../../../components-dev/IconButton";
-import ConfirmModal from "../../../components-dev/ConfirmModal";
-import TextFilter from "../../../components-dev/filters/TextFilter";
-import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
+import IconButton from "../../../components/IconButton";
+import ConfirmModal from "../../../components/ConfirmModal";
+import TextFilter from "../../../components/filters/TextFilter";
+import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 
 interface Props {
   group: Group;

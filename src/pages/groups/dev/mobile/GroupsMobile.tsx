@@ -5,17 +5,17 @@ import {
   BuildingStorefrontIcon,
   LinkSlashIcon,
 } from "@heroicons/react/24/solid";
-import type { GroupFormType } from "../../../features/groupSlice";
-import CreateGroup from "../tablet/CreateGroup";
-import UpdateGroup from "../tablet/UpdateGroup";
-import DeleteGroup from "../tablet/DeleteGroup";
+import type { GroupFormType } from "../../../../features/groupSlice";
+import CreateGroup from "./CreateGroup";
+import UpdateGroup from "./UpdateGroup";
+import DeleteGroup from "./DeleteGroup";
 import GroupStoreAssignMobile from "./GroupStoreAssignMobile";
 
-interface GroupsTabletProps {
+interface GroupsMobileProps {
   handleFormSelect: (formType: GroupFormType) => void;
 }
 
-const GroupsMobile = ({ handleFormSelect }: GroupsTabletProps) => {
+const GroupsMobile = ({ handleFormSelect }: GroupsMobileProps) => {
   const ctx = useGroupCtx();
 
   const renderForm = () => {

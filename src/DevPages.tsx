@@ -8,8 +8,7 @@ import Receivers from "./pages/receivers/Receivers.tsx";
 import ItemLookup from "./pages/lookup/ItemLookup.tsx";
 import Admin from "./pages/admin/dev/Admin.tsx";
 import AdminLegacy from "./pages/admin/AdminLegacy.tsx";
-import Groups from "./pages/groups/dev/Groups.tsx";
-import GroupsLegacy from "./pages/groups/GroupsLegacy.tsx";
+import Groups from "./pages/groups/Groups.tsx";
 import OrganizationDev from "./pages/organization/Organization.tsx";
 import TeamLegacy from "./pages/team/TeamLegacy.tsx";
 import TitleBar from "./components/navigation/TitleBar.tsx";
@@ -70,10 +69,9 @@ export const AdminPage = () => {
 // prod and a dev tree, picked inside pages/forecast/Forecasting.tsx.
 export const ForecastPage = () => <Forecasting />;
 
-export const GroupsPage = () => {
-  const devMode = useAppSelector((s) => s.app.devMode);
-  return devMode ? <Groups /> : <GroupsLegacy />;
-};
+// No legacy branch: Store Groups has a prod and a dev tree, picked inside
+// pages/groups/Groups.tsx by the API switch.
+export const GroupsPage = () => <Groups />;
 
 export const OrganizationPage = () => {
   const devMode = useAppSelector((s) => s.app.devMode);

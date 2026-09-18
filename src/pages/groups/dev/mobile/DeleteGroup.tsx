@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useGroupCtx } from "..";
-import { useAppDispatch } from "../../../hooks";
-import { useToast } from "../../../components/toasts/hooks/useToast";
-import type { JsonError } from "../../../interfaces";
+import { useAppDispatch } from "../../../../hooks";
+import { useToast } from "../../../../components/toasts/hooks/useToast";
+import type { JsonError } from "../../../../interfaces";
 
 import {
   setCreateInput,
@@ -10,11 +10,11 @@ import {
   setSelectedGroup,
   type Group,
   emptyGroup,
-} from "../../../features/groupSlice";
+} from "../../../../features/groupSlice";
 
-import { deleteGroup } from "../../../api/groups";
+import { deleteGroup } from "../../../../api/groups";
 
-import Input from "../../../components/inputs/Input";
+import Input from "../../../../components-dev/inputs/Input";
 
 const DeleteGroup = () => {
   const [isDeleting, setIsDeleting] = useState<boolean>(false);

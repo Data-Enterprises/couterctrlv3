@@ -39,7 +39,7 @@ Status: **done** · **next** · blank = not started
 | Inventory (Sub Dept + Vendor) | `/inventory-sub-department`, `/inventory-vendor` | `inventory` | | two entries, one folder |
 | Sales Tracker | `/sales-tracker` | `salesTracker` | | |
 | Admin | `/admin` | `admin` | | legacy branch; already routes to `admin/dev` |
-| Groups | `/groups` | `groups` | | legacy branch; tablet; already routes to `groups/dev` |
+| Store Groups | `/groups` | `groups` | **done** | legacy page, old forms/ and tablet removed (7 files); page moved up out of `groups/dev/`; the phone view's create/update/delete forms moved from `tablet/` to `mobile/`. **Redux: no page slice** — its state is the session `group` slice (shared by design; the store picker reads the groups list) |
 | User Management | `/user-management` | `organization` | | legacy branch is `team/TeamLegacy`; imports tablet `TeamTablet` |
 | Home | `/` | `home` | | |
 | Settings | `/settings` | `settings` | | |

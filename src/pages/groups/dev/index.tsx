@@ -1,4 +1,4 @@
-import { useAppSelector, useAppDispatch } from "../../hooks";
+import { useAppSelector, useAppDispatch } from "../../../hooks";
 
 export const useGroupCtx = () => {
   const dispatch = useAppDispatch();

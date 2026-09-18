@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
 import { useResizableBox } from "../../../hooks/useResizableBox";
-import ResizeHandle from "../../../components-dev/ResizeHandle";
+import ResizeHandle from "../../../components/ResizeHandle";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import type { JsonError } from "../../../interfaces";
 import {

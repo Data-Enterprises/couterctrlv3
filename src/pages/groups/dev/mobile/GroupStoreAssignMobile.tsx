@@ -1,23 +1,23 @@
 import { useState } from "react";
 import { useGroupCtx } from "..";
-import { useAppDispatch } from "../../../hooks";
-import { useToast } from "../../../components/toasts/hooks/useToast";
+import { useAppDispatch } from "../../../../hooks";
+import { useToast } from "../../../../components/toasts/hooks/useToast";
 
 import {
   setSelectedGroup,
   setStoresWithGroupStatus,
   updateStoresWithStatus,
   type StoreWithGroupStatus,
-} from "../../../features/groupSlice";
-import type { JsonError } from "../../../interfaces";
+} from "../../../../features/groupSlice";
+import type { JsonError } from "../../../../interfaces";
 import {
   addStoreToGroup,
   getStoresAssignedToUserGroup,
   removeStoreFromGroup,
-} from "../../../api/groups";
+} from "../../../../api/groups";
 
-import SingleSelect from "../../../components/SingleSelect";
-import Input from "../../../components/inputs/Input";
+import SingleSelect from "../../../../components-dev/SingleSelect";
+import Input from "../../../../components-dev/inputs/Input";
 
 const GroupStoreAssignMobile = () => {
   const toast = useToast();

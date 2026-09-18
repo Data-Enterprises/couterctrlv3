@@ -1,6 +1,6 @@
 import { PlusIcon } from "@heroicons/react/20/solid";
 import type { Group } from "../../../features/groupSlice";
-import TextFilter from "../../../components-dev/filters/TextFilter";
+import TextFilter from "../../../components/filters/TextFilter";
 
 interface GroupsListProps {
   groups: Group[];
