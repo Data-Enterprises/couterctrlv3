@@ -10,10 +10,14 @@ export const useAppDispatch = () => useDispatch<AppDispatch>();
 export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
 
 /** Whether this user is allowed the unreleased pages — and so whether the
- *  entry points that lead to them should be on screen at all. See
- *  `utils/comingSoon` for why the level is shared rather than inlined. */
-export const useCanSeeComingSoon = (): boolean =>
-  useAppSelector((s) => s.user.userLevel) >= COMING_SOON_MIN_LEVEL;
+ *  entry points that lead to them should be on screen at all. Only ever on
+ *  the dev API: Coming Soon pages are dev-only. See `utils/comingSoon` for why
+ *  the level is shared rather than inlined. */
+export const useCanSeeComingSoon = (): boolean => {
+  const level = useAppSelector((s) => s.user.userLevel);
+  const apiEnv = useAppSelector((s) => s.app.apiEnv);
+  return apiEnv === "dev" && level >= COMING_SOON_MIN_LEVEL;
+};
 
 export const useStoreName = (storeid: number, fallback?: string): string => {
   const assignedStores = useAppSelector((s) => s.user.assignedStores);

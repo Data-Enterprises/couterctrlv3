@@ -7,6 +7,7 @@ import logoReversed from "../../assets/portal/logo-reversed.webp";
 import { ChevronDownIcon } from "@heroicons/react/16/solid";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { categories } from "./utils";
+import { COMING_SOON_CATEGORY } from "../../utils/comingSoon";
 import { resetNav, setIsNavOpen, setLastRoute } from "../../features/navSlice";
 import {
   resetAppSlice,
@@ -198,8 +199,12 @@ const TitleBar = () => {
   const canSee = (userLevels: string[]) =>
     userLevels.includes(user.userLevel.toString()) || userLevels.includes("*");
 
-  const visibleCategories = categories.filter((cat) =>
-    cat.pages.some((p) => canSee(p.userLevels)),
+  // Coming Soon pages only exist on the dev API; on prod (what clients see)
+  // the category is not offered at all.
+  const visibleCategories = categories.filter(
+    (cat) =>
+      (cat.name !== COMING_SOON_CATEGORY || context.apiEnv === "dev") &&
+      cat.pages.some((p) => canSee(p.userLevels)),
   );
 
   // Persist last route whenever it changes

@@ -2,9 +2,10 @@
  * The gate on unreleased pages.
  *
  * Item Actions, Price Opt Sub Dept and Price Opt Vendor are built and routed
- * but not released. They are held behind an ownership level rather than a build
- * flag so the people deciding whether a page ships can use it in production
- * against real data.
+ * but not released. They are held behind an ownership level, and — since the
+ * dev/prod UI split — on the dev API only: each Coming Soon page has a dev UI
+ * tree and no prod tree, so the people deciding whether a page ships test it
+ * on dev (same database, real data) while clients on prod never see it.
  *
  * The level lives here, alone, because it is enforced in three unrelated
  * shapes: the nav's `canSee` wants exact-match strings, the entry points on the
@@ -57,3 +58,11 @@ export const COMING_SOON_LEVELS = ["7", "8", "9"];
  * points, and it stays on the wider gate.
  */
 export const PROGRAMMER_ONLY_LEVELS = ["9"];
+
+/**
+ * The nav category that holds the unreleased pages. Coming Soon is dev-only:
+ * each page has a `dev/` UI tree and no prod tree until it is greenlit, it
+ * calls the dev API only, and on the prod API — what clients see — the
+ * category, its entry points and its routes all stay out of sight.
+ */
+export const COMING_SOON_CATEGORY = "Coming Soon";

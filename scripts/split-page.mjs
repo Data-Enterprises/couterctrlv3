@@ -50,7 +50,13 @@ const listArg = (flag) => {
 };
 const FORCE_FORK = new Set(listArg("--fork"));
 const FORCE_SHARE = new Set(listArg("--share"));
-const page = args.find((a, i) => !a.startsWith("--") && !["--fork", "--share"].includes(args[i - 1]));
+// --dev-only: a Coming Soon page. dev/ tree only, no prod/ tree; the switcher
+// renders the page on the dev API and DevOnlyNotice everywhere else.
+const DEV_ONLY = args.includes("--dev-only");
+// --entry a.tsx,b.tsx: entry files (relative to the page) when nothing routes
+// to the page yet — e.g. a route that is commented out.
+const ENTRY_ARGS = listArg("--entry");
+const page = args.find((a, i) => !a.startsWith("--") && !["--fork", "--share", "--entry"].includes(args[i - 1]));
 if (!page) {
   console.error("usage: node scripts/split-page.mjs <page> [--dry] [--fork key,..] [--share key,..]");
   process.exit(2);
@@ -122,7 +128,13 @@ for (const [f, outs] of outsideUses) {
   if (/\.tsx$/.test(f) && defaultOnly && hasDefault) entries.push(f);
   else blockers.push({ f, outs });
 }
-if (!entries.length) die(`nothing outside ${PAGE} imports this page — no entry to switch on`);
+for (const e of ENTRY_ARGS) {
+  const f = PAGE + e;
+  if (!has.has(f)) die(`--entry ${e}: no ${f}`);
+  if (!/\bexport\s+default\b/.test(text.get(f) ?? "")) die(`--entry ${e}: ${f} has no default export`);
+  if (!entries.includes(f)) entries.push(f);
+}
+if (!entries.length) die(`nothing outside ${PAGE} imports this page — no entry to switch on (name one with --entry)`);
 
 // ── 2. the tree ───────────────────────────────────────────────────────────
 const tree = new Set();
@@ -297,14 +309,14 @@ for (const s of newSlices) {
 const treeCopies = {};
 for (const f of tree) {
   const rel = f.slice(PAGE.length);
-  treeCopies[PROD + rel] = f;
+  if (!DEV_ONLY) treeCopies[PROD + rel] = f;
   treeCopies[DEV + rel] = f;
 }
 for (const f of tests) treeCopies[DEV + f.slice(PAGE.length)] = f;
 // Docs (a module README) are never imported, so they aren't in the tree — but
 // they describe it, so both trees carry them.
 for (const f of docs) {
-  treeCopies[PROD + f.slice(PAGE.length)] = f;
+  if (!DEV_ONLY) treeCopies[PROD + f.slice(PAGE.length)] = f;
   treeCopies[DEV + f.slice(PAGE.length)] = f;
 }
 relocate({
@@ -319,6 +331,25 @@ relocate({
     ...fork.map((s) => ({ under: DEV, from: s.mod, to: s.dev })),
   ],
 });
+
+// A Coming Soon page's prod/ is created empty, ready for greenlight. Git keeps
+// no empty folders, so it holds a README saying why it is empty — which is
+// also how check-split recognises a dev-only page.
+if (DEV_ONLY) {
+  mkdirSync(PROD, { recursive: true });
+  writeFileSync(`${PROD}README.md`, [
+    `# ${page} — prod tree (empty)`,
+    ``,
+    `This is a Coming Soon page: it is dev only. Its UI lives in \`../dev/\`, it`,
+    `renders only on the dev API, and on the prod API (what clients see) the`,
+    `switcher shows DevOnlyNotice instead.`,
+    ``,
+    `This folder stays empty until the page is greenlit for production. Then the`,
+    `dev tree is copied here and set up for prod, the switcher is changed to pick`,
+    `a tree like every other split page, and this README goes.`,
+    ``,
+  ].join("\n"));
+}
 
 // ── selectors ─────────────────────────────────────────────────────────────
 const forked = new Set(fork.map((s) => s.key));
@@ -361,6 +392,37 @@ for (const f of entries) {
   // zero-argument component is `unknown`, which can't be spread.
   const comp = src.match(/export\s+default\s+(\w+)\s*;/)?.[1];
   const noProps = !comp || new RegExp(`(?:const|function)\\s+${comp}\\s*(?::[^=]+)?=?\\s*\\(\\s*\\)`).test(src);
+  if (DEV_ONLY) {
+    const lib = P.relative(P.dirname(f), "src/components/DevOnlyNotice");
+    const devApi = P.relative(P.dirname(f), "src/hooks/useDevApi");
+    const props = noProps ? "" : ` {...props}`;
+    writeFileSync(f, [
+      ...(noProps ? [] : [`import type { ComponentProps } from "react";`]),
+      `import { useAppSelector } from "${hooks}";`,
+      `import { DEV_API_URL } from "${devApi}";`,
+      `import DevOnlyNotice from "${lib}";`,
+      `import Dev${name} from "${local(`dev/${rel}`)}";`,
+      ``,
+      `/**`,
+      ` * ${name} is a Coming Soon page: dev only.`,
+      ` *`,
+      ` * It has a \`pages/${page}/dev\` tree and no prod tree until it is greenlit. The`,
+      ` * page renders only when the session is on the dev API — \`apiEnv\` is "dev"`,
+      ` * AND the base URL really is the dev one, so every call it makes goes to`,
+      ` * dev. Anywhere else (the prod API, which is what clients see) it renders`,
+      ` * DevOnlyNotice: none of the page's code runs and nothing is fetched.`,
+      ` */`,
+      `const ${name} = (${noProps ? "" : `props: ComponentProps<typeof Dev${name}>`}) => {`,
+      `  const { apiEnv, url } = useAppSelector((state) => state.app);`,
+      `  if (apiEnv !== "dev" || url !== DEV_API_URL) return <DevOnlyNotice />;`,
+      `  return <Dev${name}${props} />;`,
+      `};`,
+      ``,
+      `export default ${name};`,
+      ``,
+    ].join(nl));
+    continue;
+  }
   writeFileSync(f, [
     ...(noProps ? [] : [`import type { ComponentProps } from "react";`]),
     `import { useAppSelector } from "${hooks}";`,

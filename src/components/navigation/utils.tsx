@@ -24,6 +24,7 @@ import {
   // ScaleIcon, // Suggested Weight — commented out for publish
 } from "@heroicons/react/16/solid";
 import {
+  COMING_SOON_CATEGORY,
   COMING_SOON_LEVELS,
   PROGRAMMER_ONLY_LEVELS,
 } from "../../utils/comingSoon";
@@ -530,7 +531,7 @@ export const categories: NavCategory[] = [
    * entry back to the category it belongs to and restore `userLevels: ["*"]`.
    */
   {
-    name: "Coming Soon",
+    name: COMING_SOON_CATEGORY,
     icon: ClockIcon,
     pages: [
       {

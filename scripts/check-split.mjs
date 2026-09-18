@@ -79,9 +79,12 @@ console.log(`\n1. MIRROR  ${PROD} vs ${DEV}`);
 // Tests live in dev/ only — dev is where changes are made and tested.
 const treeFiles = (root) => files.filter((f) => f.startsWith(root) && !/\.test\.tsx?$/.test(f)).map((f) => f.slice(root.length)).sort();
 const prodFiles = treeFiles(PROD), devFiles = treeFiles(DEV);
+// A Coming Soon page: prod/ exists but holds only its README until greenlight.
+const DEV_ONLY = prodFiles.length > 0 && prodFiles.every((f) => f === "README.md");
 const onlyProd = prodFiles.filter((f) => !devFiles.includes(f));
 const onlyDev = devFiles.filter((f) => !prodFiles.includes(f));
-if (onlyProd.length || onlyDev.length) {
+if (DEV_ONLY) ok(`dev-only (Coming Soon): prod/ holds only its README until greenlight; ${devFiles.length} dev files`);
+else if (onlyProd.length || onlyDev.length) {
   onlyProd.forEach((f) => console.log(`  warn  only in prod/: ${f}`));
   onlyDev.forEach((f) => console.log(`  warn  only in dev/:  ${f}`));
 } else ok(`same ${prodFiles.length} files in both trees`);
@@ -102,7 +105,7 @@ const norm = (text, tree) => {
 const switcher = files.find((f) => P.dirname(f) + "/" === PAGE && /\.tsx$/.test(f) &&
   (allEdges.get(f) ?? []).some((d) => d.startsWith(PROD)) && (allEdges.get(f) ?? []).some((d) => d.startsWith(DEV)));
 const entry = switcher ? P.basename(switcher) : null;
-const drift = prodFiles.filter((f) => devFiles.includes(f) && f !== entry &&
+const drift = DEV_ONLY ? [] : prodFiles.filter((f) => devFiles.includes(f) && f !== entry &&
   norm(readFileSync(PROD + f, "utf8"), "prod") !== norm(readFileSync(DEV + f, "utf8"), "dev"));
 if (drift.length) drift.forEach((f) => console.log(`  warn  dev differs from prod: ${f}`));
 else ok("every shared file identical apart from the expected swaps");
@@ -193,6 +196,27 @@ for (const f of files.filter((f) => /\.tsx?$/.test(f) && !/\.test\.tsx?$/.test(f
 }
 if (stateBad.length) stateBad.forEach((b) => fail(b));
 else ok("prod tree reads state.prod, dev tree and components-dev read state.dev for every forked slice");
+
+// ── 2c. dev-only ──────────────────────────────────────────────────────────
+// A Coming Soon page must never run or call an API on prod: its switcher shows
+// the page only on the dev API (apiEnv AND the dev base URL) and DevOnlyNotice
+// otherwise, and nothing in its dev tree names the prod API.
+if (DEV_ONLY) {
+  console.log("\n2c. DEV-ONLY (Coming Soon)");
+  const entries = files.filter((f) => P.dirname(f) + "/" === PAGE && /\.tsx$/.test(f) &&
+    (allEdges.get(f) ?? []).some((d) => d.startsWith(DEV)));
+  if (!entries.length) fail(`no switcher in ${PAGE} imports the dev tree`);
+  for (const f of entries) {
+    const src = readFileSync(f, "utf8");
+    const guarded = /apiEnv !== "dev" \|\| url !== DEV_API_URL\) return <DevOnlyNotice/.test(src);
+    const prodTree = (allEdges.get(f) ?? []).some((d) => d.startsWith(PROD));
+    if (!guarded || prodTree) fail(`${f}: a dev-only switcher renders the dev tree only on the dev API and DevOnlyNotice otherwise`);
+    else ok(`${P.basename(f)} renders the page on the dev API only, DevOnlyNotice otherwise`);
+  }
+  const prodApi = files.filter((f) => f.startsWith(DEV) && /\.tsx?$/.test(f) && /VITE_API_URL_PROD/.test(readFileSync(f, "utf8")));
+  if (prodApi.length) prodApi.forEach((f) => fail(`${f} names the prod API`));
+  else ok("nothing in the dev tree names the prod API");
+}
 
 // ── 3. imports ────────────────────────────────────────────────────────────
 console.log("\n3. IMPORTS");
