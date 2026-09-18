@@ -1,17 +1,17 @@
 import { useMemo, useState } from "react";
 import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
-import { useAppDispatch, useAppSelector } from "../../hooks";
+import { useAppDispatch, useAppSelector } from "../../../hooks";
 import {
   setInvoiceFailedOnly,
   setInvoiceSelected,
   setInvoiceTextFilter,
-} from "../../features/invoicesSlice";
-import TextFilter from "../../components/filters/TextFilter";
-import SortHeader, { PERF_SORT_HEADER } from "../../components/SortHeader";
-import { useTriStateSort } from "../../utils/useTriStateSort";
-import InfoButton from "../../components/InfoButton";
-import InfoPopover from "../../components/InfoPopover";
-import HeaderIconButton from "../../components/HeaderIconButton";
+} from "../../../features/dev/devInvoicesSlice";
+import TextFilter from "../../../components-dev/filters/TextFilter";
+import SortHeader, { PERF_SORT_HEADER } from "../../../components-dev/SortHeader";
+import { useTriStateSort } from "../../../utils/useTriStateSort";
+import InfoButton from "../../../components-dev/InfoButton";
+import InfoPopover from "../../../components-dev/InfoPopover";
+import HeaderIconButton from "../../../components-dev/HeaderIconButton";
 import { INVOICES_INFO } from "./invoicesInfo";
 import type { InvoiceRow } from "./present";
 
@@ -61,7 +61,7 @@ interface Props {
 const InvoiceListPanel = ({ onSearchOpen }: Props) => {
   const dispatch = useAppDispatch();
   const { rows, fileName, selectedId, failedOnly, textFilter, allReconciled } =
-    useAppSelector((s) => s.invoices);
+    useAppSelector((s) => s.dev.invoices);
   const [infoOpen, setInfoOpen] = useState(false);
   const { sort, handleSort, applySort } = useTriStateSort<SortCol>();
 

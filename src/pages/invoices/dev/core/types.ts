@@ -1,6 +1,6 @@
-import type { ParseWarning } from "../../../interfaces";
+import type { ParseWarning } from "../../../../interfaces";
 // Defined in src/interfaces — Invoice parsing. Re-exported for this page's files.
-export type { ParseWarning } from "../../../interfaces";
+export type { ParseWarning } from "../../../../interfaces";
 /**
  * Vendor-agnostic types for the fixed-width invoice reader.
  *

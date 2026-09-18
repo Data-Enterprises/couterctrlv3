@@ -1,11 +1,11 @@
 import { useMemo, useState } from "react";
-import { useAppDispatch, useAppSelector } from "../../hooks";
+import { useAppDispatch, useAppSelector } from "../../../hooks";
 import {
   setInvoiceLineDescFilter,
   setInvoiceLineUpcFilter,
-} from "../../features/invoicesSlice";
-import ColFilter from "../../components/filters/ColFilter";
-import { colInputStyle } from "../../components/filters/colFilterStyles";
+} from "../../../features/dev/devInvoicesSlice";
+import ColFilter from "../../../components-dev/filters/ColFilter";
+import { colInputStyle } from "../../../components-dev/filters/colFilterStyles";
 import type { InvoiceRow } from "./present";
 
 /**
@@ -117,7 +117,7 @@ const Reconciliation = ({ row }: { row: InvoiceRow }) => (
 const InvoiceDetailPanel = () => {
   const dispatch = useAppDispatch();
   const { rows, selectedId, lineUpcFilter, lineDescFilter } = useAppSelector(
-    (s) => s.invoices,
+    (s) => s.dev.invoices,
   );
   // Draft stays local — a half-typed UPC is not page state, and only the value
   // behind Apply changes what the grid shows.
