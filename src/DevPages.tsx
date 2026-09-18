@@ -1,5 +1,4 @@
 import { useAppSelector } from "./hooks";
-import UpcList from "./pages/upc/UpcList.tsx";
 import Cashiers from "./pages/cashiers/Cashiers.tsx";
 import Sales from "./pages/sales/Sales.tsx";
 import LossPrevention from "./pages/lossPrevention/LossPrevention.tsx";
@@ -20,7 +19,7 @@ import TeamLegacy from "./pages/team/TeamLegacy.tsx";
 import TitleBar from "./components/navigation/TitleBar.tsx";
 import TitleBarLegacy from "./components/navigation/TitleBarLegacy.tsx";
 import SideBarLegacy from "./components/navigation/SideBarLegacy.tsx";
-import UpcListDev from "./pages/upc/dev/UpcListDev.tsx";
+import UpcList from "./pages/upc/UpcList.tsx";
 import ForecastDev from "./pages/forecast/dev/ForecastDev.tsx";
 import Forecasting from "./pages/forecast/Forecasting.tsx";
 
@@ -62,11 +61,9 @@ export const ReceiversPage = () => {
   return devMode ? <Receivers /> : <ReceiversLegacy />;
 };
 
-export const UpcPage = () => {
-  // return <UpcList />;
-  const devMode = useAppSelector((s) => s.app.devMode);
-  return devMode ? <UpcListDev /> : <UpcList />;
-};
+// No legacy branch: the old UpcList is gone, and Upc List has a prod and a dev
+// tree, picked inside pages/upc/UpcList.tsx by the API switch.
+export const UpcPage = () => <UpcList />;
 
 export const ItemLookupPage = () => {
   const devMode = useAppSelector((s) => s.app.devMode);

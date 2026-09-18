@@ -6,7 +6,7 @@ import {
   setDevAllSelectedUpcs,
   resetDevSelectedUpcs,
   setDevFilterText,
-} from "../../../../features/upcDevSlice";
+} from "../../../../features/dev/devUpcDevSlice";
 
 const UpcItemList = () => {
   const ctx = useUpcDevCtx();

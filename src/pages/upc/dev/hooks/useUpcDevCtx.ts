@@ -6,7 +6,7 @@ export const useUpcDevCtx = () => {
   const { userid, assignedStores } = useAppSelector((s) => s.user);
   const { startDate, endDate, selectedStore, selectedGroup, type: searchType } = useAppSelector((s) => s.search);
   const groups = useAppSelector((s) => s.group.groups);
-  const dev = useAppSelector((s) => s.upcDev);
+  const dev = useAppSelector((s) => s.dev.upcDev);
 
   return {
     url,

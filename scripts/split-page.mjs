@@ -39,7 +39,7 @@
 import { readFileSync, writeFileSync, existsSync, statSync, mkdirSync, renameSync, readdirSync, rmdirSync } from "node:fs";
 import { execSync } from "node:child_process";
 import path from "node:path";
-import { relocate } from "./relocate.mjs";
+import { relocate, trashPath } from "./relocate.mjs";
 
 const P = path.posix;
 const args = process.argv.slice(2);
@@ -145,7 +145,9 @@ if (stuck.length)
     `Move them to src/ (components, hooks, utils, interfaces) first:\n  ` +
     stuck.map((b) => `${b.f}\n      used by ${b.outs.map((o) => `${o.from} { ${o.names} }`).join("\n              ")}`).join("\n  "));
 const tests = files.filter((f) => inPage(f) && isTest(f) && (edges.get(f) ?? []).some((e) => tree.has(e.to)));
-const leftovers = files.filter((f) => inPage(f) && !tree.has(f) && !tests.includes(f));
+const isDoc = (f) => /\.(md|txt)$/i.test(f);
+const docs = files.filter((f) => inPage(f) && isDoc(f));
+const leftovers = files.filter((f) => inPage(f) && !tree.has(f) && !tests.includes(f) && !isDoc(f));
 // Leftovers that import tree files lose those imports when the originals go
 // to trash — tsc will name them. They are dead or legacy by construction.
 const breaking = leftovers.filter((f) => (edges.get(f) ?? []).some((e) => tree.has(e.to)));
@@ -299,6 +301,12 @@ for (const f of tree) {
   treeCopies[DEV + rel] = f;
 }
 for (const f of tests) treeCopies[DEV + f.slice(PAGE.length)] = f;
+// Docs (a module README) are never imported, so they aren't in the tree — but
+// they describe it, so both trees carry them.
+for (const f of docs) {
+  treeCopies[PROD + f.slice(PAGE.length)] = f;
+  treeCopies[DEV + f.slice(PAGE.length)] = f;
+}
 relocate({
   copies: treeCopies,
   redirects: [
@@ -329,9 +337,8 @@ for (const dest of Object.keys(treeCopies)) if (/\.tsx?$/.test(dest)) rewriteSta
 for (const dest of Object.keys(libCopies)) if (/\.tsx?$/.test(dest)) rewriteState(dest, "dev");
 
 // ── trash the originals, write the switchers ──────────────────────────────
-for (const f of [...tree, ...tests]) {
-  const dest = P.join("trash", f);
-  if (existsSync(dest)) die(`already in trash: ${dest} (the copies are written; restore by hand)`);
+for (const f of [...tree, ...tests, ...docs]) {
+  const dest = trashPath(f);
   mkdirSync(P.dirname(dest), { recursive: true });
   renameSync(f, dest);
 }

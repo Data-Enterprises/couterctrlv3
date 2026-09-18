@@ -7,7 +7,7 @@ import {
   // setDevTrendPeriods, // parked with the Window input row — re-enable together
   mergeDevTrends,
   setDevUpcItems,
-} from "../../../../../features/upcDevSlice";
+} from "../../../../../features/dev/devUpcDevSlice";
 import { getTrendDetect } from "../../../../../api/upc";
 import { upcQueue } from "../../upcQueue";
 import { missingFrom } from "../../coverage";

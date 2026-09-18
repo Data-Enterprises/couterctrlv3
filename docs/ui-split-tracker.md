@@ -30,7 +30,7 @@ Status: **done** · **next** · blank = not started
 | Orders | `/orders` | `orders` | | legacy branch; tablet |
 | Receivers | `/receivers` | `receivers` | | legacy branch; tablet |
 | Item Lookup | `/item-lookup` | `lookup` | | legacy branch; tablet; has old `dev/` (mobile Option A) |
-| UPC List | `/upc-upload` | `upc` | | picks `UpcListDev`/`UpcList` by devMode; apiEnv stopgap flag to remove |
+| UPC List | `/upc-upload` | `upc` | **done** | old `UpcList` (devMode off) + 48 dead files removed; current page moved up out of `upc/dev/` as the `UpcList` entry; `ColFilter` → `components/filters/ColFilterPopover`; own dev Redux state (`devUpcDevSlice`). Next: fixes flag per tree, then remove the env stash |
 | Forecasting | `/forecasting` | `forecast` | | picks `ForecastDev`/`Forecasting` by devMode; tablet |
 | Item Report | `/item-report` | `itemReport` | | |
 | Invoices | `/invoices` | `invoices` | | |

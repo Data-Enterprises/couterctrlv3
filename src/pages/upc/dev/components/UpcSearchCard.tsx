@@ -9,11 +9,11 @@ import {
   clearDevUpcs,
   setDevActiveTab,
   UPC_DEV_TABS,
-} from "../../../../features/upcDevSlice";
+} from "../../../../features/dev/devUpcDevSlice";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 
-import StorePicker from "../../../../components/storePicker/StorePicker";
-import DatePickers from "../../../../components/datePickers/DatePickers";
+import StorePicker from "../../../../components-dev/storePicker/StorePicker";
+import DatePickers from "../../../../components-dev/datePickers/DatePickers";
 
 interface Props {
   onSearch: () => void;

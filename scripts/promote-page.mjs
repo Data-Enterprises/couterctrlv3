@@ -32,7 +32,7 @@
 import { readFileSync, writeFileSync, existsSync, statSync, mkdirSync, renameSync } from "node:fs";
 import { execSync } from "node:child_process";
 import path from "node:path";
-import { makeResolver, specFor, SPEC_RE } from "./relocate.mjs";
+import { makeResolver, specFor, SPEC_RE, trashPath } from "./relocate.mjs";
 
 const P = path.posix;
 const args = process.argv.slice(2);
@@ -200,8 +200,7 @@ for (const [f, text] of writes) put(f, text);
 for (const s of sliceWrites) put(s.twin, s.text);
 for (const l of [...libNew, ...libApply]) put(l.twin, l.text);
 for (const f of drops) {
-  const dest = P.join("trash", f);
-  if (existsSync(dest)) { console.error(`already in trash: ${dest} — left ${f} in place`); continue; }
+  const dest = trashPath(f);
   mkdirSync(P.dirname(dest), { recursive: true });
   renameSync(f, dest);
 }

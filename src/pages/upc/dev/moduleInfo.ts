@@ -1,5 +1,5 @@
-import type { UpcDevTab } from "../../../features/upcDevSlice";
-import type { InfoGlossaryEntry } from "../../../components/InfoPopover";
+import type { UpcDevTab } from "../../../features/dev/devUpcDevSlice";
+import type { InfoGlossaryEntry } from "../../../components-dev/InfoPopover";
 
 export type ModuleInfo = {
   title: string;

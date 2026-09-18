@@ -207,7 +207,8 @@ while (stack.length) {
   reach.add(f);
   for (const d of allEdges.get(f) ?? []) stack.push(d);
 }
-const dead = files.filter((f) => (f.startsWith(PAGE) || f.startsWith("src/components-dev/")) && !reach.has(f));
+// Code only: a README is never imported, so it would always look dead.
+const dead = files.filter((f) => (f.startsWith(PAGE) || f.startsWith("src/components-dev/")) && /\.(tsx?|css)$/.test(f) && !reach.has(f));
 if (dead.length) dead.forEach((f) => fail(`unreachable (move to trash/): ${f}`));
 else ok(`nothing dead under ${PAGE} or src/components-dev/`);
 

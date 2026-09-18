@@ -31,8 +31,8 @@ import IconButton from "../../../components/IconButton";
 import ConfirmModal from "../../../components/ConfirmModal";
 import SecurityTab from "./view/SecurityTab";
 import UsersExportModal from "./UsersExportModal";
-import ColFilter from "../../upc/dev/components/ColFilter";
-import { colFilterInputStyle } from "../../upc/dev/components/colFilterInputStyle";
+import ColFilter from "../../../components/filters/ColFilterPopover";
+import { colInputStyle } from "../../../components/filters/colFilterStyles";
 
 interface UserGridProps {
   onOpenCreate: () => void;
@@ -367,7 +367,7 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
             >
               <input
                 autoFocus
-                style={colFilterInputStyle}
+                style={colInputStyle}
                 placeholder="Search username…"
                 value={draftUsernameFilter}
                 onChange={(e) => setDraftUsernameFilter(e.target.value)}
@@ -387,7 +387,7 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
             >
               <input
                 autoFocus
-                style={colFilterInputStyle}
+                style={colInputStyle}
                 placeholder="Search email…"
                 value={draftEmailFilter}
                 onChange={(e) => setDraftEmailFilter(e.target.value)}

@@ -68,6 +68,21 @@ export const specFor = (fromFile, targetFile, suffix) => {
 };
 
 // import … from "x" | export … from "x" | import("x") | import "x"
+/**
+ * Where a file goes in trash/: its own path, or — when an earlier file with
+ * that path is already there (a legacy page trashed before the page split) —
+ * the same name with .2, .3 … before the extension. Never overwrites.
+ */
+export const trashPath = (f) => {
+  const base = P.join("trash", f);
+  if (!existsSync(base)) return base;
+  const ext = P.extname(base);
+  for (let n = 2; ; n++) {
+    const next = `${base.slice(0, base.length - ext.length)}.${n}${ext}`;
+    if (!existsSync(next)) return next;
+  }
+};
+
 export const SPEC_RE = /((?:import|export)[^'"]*?from\s*|import\(\s*|import\s+)(["'])(\.[^"']*)\2/g;
 
 export function relocate(plan, { dry = false, log = console.log } = {}) {

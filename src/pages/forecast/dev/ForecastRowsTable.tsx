@@ -18,8 +18,8 @@ import type { ForecastOutlierRow } from "../../../features/forecastSlice";
 import { formatCurrency2 } from "../../../utils";
 import { useTriStateSort } from "../../../utils/useTriStateSort";
 import SortHeader, { PERF_SORT_HEADER } from "../../../components/SortHeader";
-import ColFilter from "../../upc/dev/components/ColFilter";
-import { colFilterInputStyle } from "../../upc/dev/components/colFilterInputStyle";
+import ColFilter from "../../../components/filters/ColFilterPopover";
+import { colInputStyle } from "../../../components/filters/colFilterStyles";
 import {
   rankRows,
   tierCounts,
@@ -490,7 +490,7 @@ const ForecastRowsTable = ({
               >
                 <input
                   autoFocus
-                  style={colFilterInputStyle}
+                  style={colInputStyle}
                   placeholder="Search UPC…"
                   value={draftUpc}
                   onChange={(e) => setDraftUpc(e.target.value)}
@@ -508,7 +508,7 @@ const ForecastRowsTable = ({
               >
                 <input
                   autoFocus
-                  style={colFilterInputStyle}
+                  style={colInputStyle}
                   placeholder="Search description…"
                   value={draftDesc}
                   onChange={(e) => setDraftDesc(e.target.value)}

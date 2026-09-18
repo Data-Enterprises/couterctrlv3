@@ -2,7 +2,7 @@ import { useState } from "react";
 import { ArrowDownTrayIcon } from "@heroicons/react/16/solid";
 import { useUpcDevCtx } from "../hooks/useUpcDevCtx";
 import { useAppDispatch } from "../../../../hooks";
-import { setDevActiveTab, UPC_DEV_TABS } from "../../../../features/upcDevSlice";
+import { setDevActiveTab, UPC_DEV_TABS } from "../../../../features/dev/devUpcDevSlice";
 
 import UpcKpiStrip from "./UpcKpiStrip";
 import UpcExportModal from "./UpcExportModal";

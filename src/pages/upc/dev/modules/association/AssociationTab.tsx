@@ -12,12 +12,12 @@ import {
   clearDevAssociationRerootCache,
   type AssociationItem,
   type AssociationResult,
-} from "../../../../../features/upcDevSlice";
+} from "../../../../../features/dev/devUpcDevSlice";
 import { getItemAssociation } from "../../../../../api/upc";
 import { upcQueue } from "../../upcQueue";
 import AssociationLeftPanel from "./AssociationLeftPanel";
 import AssociationDetailPanel from "./AssociationDetailPanel";
-import UpcContextMenu from "../../../../../components/UpcContextMenu";
+import UpcContextMenu from "../../../../../components-dev/UpcContextMenu";
 
 const LIMIT = 25;
 

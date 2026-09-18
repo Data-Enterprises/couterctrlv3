@@ -8,7 +8,7 @@ import {
   setDevSalesCompLoading,
   setDevSalesCompLYLoading,
   setDevUpcItems,
-} from "../../../../../features/upcDevSlice";
+} from "../../../../../features/dev/devUpcDevSlice";
 import { getSalesComp } from "../../../../../api/upc";
 import { sameWeekDayLastYear } from "../../../../../utils";
 import { upcQueue } from "../../upcQueue";

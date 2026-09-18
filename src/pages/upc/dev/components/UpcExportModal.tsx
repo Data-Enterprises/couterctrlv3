@@ -1,8 +1,8 @@
 import { useState } from "react";
-import ResizableModalShell from "../../../../components/modals/ResizableModalShell";
+import ResizableModalShell from "../../../../components-dev/modals/ResizableModalShell";
 import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/16/solid";
 import { useUpcDevCtx } from "../hooks/useUpcDevCtx";
-import type { UpcDevTab, AssociationItem } from "../../../../features/upcDevSlice";
+import type { UpcDevTab, AssociationItem } from "../../../../features/dev/devUpcDevSlice";
 import { computeUpcSalesCompStats, DAYS, DAY_SHORT } from "../modules/salesComp/salesCompStats";
 import { getTrendStatus, impactUnits } from "../modules/trend/trendStats";
 import { pricePoints, elasticityFromPoints } from "../modules/priceOpt/priceOptStats";
