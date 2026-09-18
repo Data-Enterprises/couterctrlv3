@@ -9,7 +9,6 @@ import {
   setDevSearchSnapshot,
   removeDevUpcs,
   clearDevUpcData,
-  setUpcDevEnv,
 } from "../../../features/dev/devUpcDevSlice";
 import { getStoresAssignedToUserGroup } from "../../../api/groups";
 import { upcQueue } from "./upcQueue";
@@ -38,27 +37,6 @@ const UpcList = () => {
   const toast = useToast();
   const searchState = useAppSelector((s) => s.search);
   const [reSearchOpen, setReSearchOpen] = useState(false);
-
-  /**
-   * Keep the data pointed at the backend the session is pointed at.
-   *
-   * Written as "do these two disagree" rather than "did apiEnv just change",
-   * so it covers the switch made while this page is open AND the switch made
-   * somewhere else before navigating here — a ref comparing against the
-   * previous render would miss the second, because this component was not
-   * mounted for it.
-   *
-   * The queue is aborted before the swap, in that order and synchronously:
-   * `startRun` abandons in-flight jobs and resolves them null, so the `if
-   * (!res) return` in every tab bails instead of merging the outgoing
-   * backend's answer into the incoming environment's rows.
-   */
-  const envMismatch = ctx.env !== ctx.apiEnv;
-  useEffect(() => {
-    if (!envMismatch) return;
-    upcQueue.startRun();
-    dispatch(setUpcDevEnv(ctx.apiEnv));
-  }, [envMismatch, ctx.apiEnv]);
 
   useEffect(() => {
     if (!reSearchOpen) return;
@@ -183,12 +161,6 @@ const UpcList = () => {
     // delta when the user actually opens it. A search costs zero calls on its
     // own; the tab you land on makes exactly one.
   };
-
-  // One render can fall between the environment changing and the effect above
-  // swapping the data, and `ctx.fixes` has already flipped by then — so this
-  // would otherwise paint one frame of the other environment's rows read under
-  // this one's rules. Nothing is cheaper to show than the wrong numbers.
-  if (envMismatch) return null;
 
   if (!ctx.dataLoaded) {
     return <UpcSearchCard onSearch={handleSearch} />;
