@@ -1,4 +1,4 @@
-import type { PriceHistory } from "../../../interfaces";
+import type { PriceHistory } from "../interfaces";
 
 export const estimateDaysActive = (history: PriceHistory[], price: number) => {
   const hollowPoint: PriceHistory = {

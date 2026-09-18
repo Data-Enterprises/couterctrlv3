@@ -5,7 +5,7 @@ import {
 } from "../../../features/upcUploadSlice";
 import { setUploadedUpcs } from "../../../features/upcSlice";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
-import FileInput from "../../forecast/controls/FileInput";
+import FileInput from "../../../components/inputs/FileInput";
 
 interface UpcSelectorProps {
   setFile: (file: File | null) => void;

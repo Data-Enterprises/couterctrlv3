@@ -1,5 +1,12 @@
 export type AggFn = "sum" | "avg" | "min" | "max" | "count";
 
+/** The aggregation picker options for AggFn, in menu order. */
+export const AGG_OPTIONS: { value: AggFn; label: string }[] = [
+  { value: "sum", label: "Sum" }, { value: "avg", label: "Avg" },
+  { value: "min", label: "Min" }, { value: "max", label: "Max" },
+  { value: "count", label: "Count" },
+];
+
 export type AggRow = Record<string, string | number | null>;
 
 export const fmtNum = (v: number, dp = 2) => v.toFixed(dp);

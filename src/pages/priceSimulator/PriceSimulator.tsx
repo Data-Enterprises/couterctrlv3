@@ -17,7 +17,7 @@ import {
   setRowData,
 } from "../../features/priceSimSlice";
 import PriceSimExportModal from "./export/PriceSimExportModal";
-// import FileInput from "../forecast/controls/FileInput";
+// import FileInput from "../../components/inputs/FileInput";
 import type { JsonError, PriceHistoryFromListResp } from "../../interfaces";
 import {
   removeSingleUpc,
@@ -26,7 +26,7 @@ import {
 } from "../../features/upcUploadSlice";
 import { usePriceSimContext } from "./utils";
 import { getHistoryFromList } from "../../api/priceSim";
-import { calcFcstQty } from "./calc";
+import { calcFcstQty } from "../../utils/priceSimCalc";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
 
 const PriceSimulator = () => {

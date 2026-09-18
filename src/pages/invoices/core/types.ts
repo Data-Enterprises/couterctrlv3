@@ -1,3 +1,6 @@
+import type { ParseWarning } from "../../../interfaces";
+// Defined in src/interfaces — Invoice parsing. Re-exported for this page's files.
+export type { ParseWarning } from "../../../interfaces";
 /**
  * Vendor-agnostic types for the fixed-width invoice reader.
  *
@@ -68,12 +71,6 @@ export interface ParsedRecord {
   known: boolean;
   fields: Record<string, FieldValue>;
   raw: string;
-}
-
-export interface ParseWarning {
-  lineNumber: number;
-  recordType: string;
-  message: string;
 }
 
 export interface ParseResult {

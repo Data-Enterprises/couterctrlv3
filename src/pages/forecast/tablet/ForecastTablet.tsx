@@ -5,8 +5,8 @@ import type { Group } from "../../../features/groupSlice";
 
 import SingleSelect from "../../../components/SingleSelect";
 import DatePickers from "../../../components/datePickers/DatePickers";
-import SelectedStoreList from "../../upc/components/SelectedStoreList";
-import FileInput from "../controls/FileInput";
+import SelectedStoreList from "../../../components/storePicker/SelectedStoreList";
+import FileInput from "../../../components/inputs/FileInput";
 import FileGrid from "../grids/FileGrid";
 
 const options = [

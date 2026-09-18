@@ -4,7 +4,7 @@ import { useAppDispatch, useAppSelector } from "../../../hooks";
 import { setExplorerReceipt } from "../../../features/cashiersSlice";
 import { formatCurrency2 } from "../../../utils";
 import BottomSheet from "../../../components/BottomSheet";
-import Transaction from "../../lossPrevention/Transaction";
+import Transaction from "../../../components/transactions/Transaction";
 import {
   describeSignal,
   groupSignalByTransaction,

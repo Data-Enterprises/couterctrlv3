@@ -13,7 +13,7 @@ import { useToast } from "../../../components/toasts/hooks/useToast";
 
 import SingleSelect from "../../../components/SingleSelect";
 import DatePickers from "../../../components/datePickers/DatePickers";
-import SelectedStoreList from "./SelectedStoreList";
+import SelectedStoreList from "../../../components/storePicker/SelectedStoreList";
 import Input from "../../../components/inputs/Input";
 
 const options = [

@@ -8,8 +8,8 @@ import {
   setNewRowPriceValue,
 } from "../../features/forecastSlice";
 import { formatCurrency2 } from "../../utils";
-import { fitLinearDemand, predictQty } from "./utils";
-import { forecastUnits } from "../priceSimulator/calc";
+import { fitLinearDemand, predictQty } from "../../utils/forecastCalc";
+import { forecastUnits } from "../../utils/priceSimCalc";
 import type { PriceHistory } from "../../interfaces";
 import ScenarioTable from "./ScenarioTable";
 

@@ -1,4 +1,4 @@
-import { calcFcstQty } from "../../priceSimulator/calc";
+import { calcFcstQty } from "../../../utils/priceSimCalc";
 import type { PriceHistoryResult } from "../../../interfaces";
 
 export const formatRowData = (data: PriceHistoryResult[]) => {

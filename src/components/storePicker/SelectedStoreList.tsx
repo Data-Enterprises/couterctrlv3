@@ -1,5 +1,5 @@
-import type { Store } from "../../../interfaces";
-import { useResizeContext } from "../../forecast/hooks";
+import type { Store } from "../../interfaces";
+import { useResizeContext } from "../../hooks/useResizeContext";
 
 interface SelectedStoreListProps {
   selectedStores: Store[];

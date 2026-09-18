@@ -3,7 +3,7 @@ import { useLPState } from "./hooks/useLPState";
 import { useLPActions } from "./hooks/useLPActions";
 import Modal from "../../components/Modal";
 import LoadingIndicator from "../../components/loading/LoadingIndicator";
-import Transaction from "./Transaction";
+import Transaction from "../../components/transactions/Transaction";
 
 const TransactionModal = () => {
   const dispatch = useAppDispatch();

@@ -6,7 +6,7 @@ import { setTransactionDrillDown } from "../../../features/lossPreventionSlice";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
 import BottomSheet from "../../../components/BottomSheet";
 import SevBadge from "../../../components/SevBadge";
-import Transaction from "../../lossPrevention/Transaction";
+import Transaction from "../../../components/transactions/Transaction";
 import { formatCurrency2, formatBigNumber } from "../../../utils";
 import type {
   CouponItem,

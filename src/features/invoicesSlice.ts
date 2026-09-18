@@ -1,7 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
-import type { InvoiceRow } from "../pages/invoices/present";
-import type { ParseWarning } from "../pages/invoices/core/types";
+import type { InvoiceRow, ParseWarning } from "../interfaces";
 
 /**
  * Invoices page state.

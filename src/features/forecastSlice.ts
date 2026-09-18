@@ -6,7 +6,7 @@ import type {
   SimListItem,
   SimReplayItem,
 } from "../interfaces";
-import { calcFcstQty, estimateDaysActive, forecastUnits } from "../pages/forecast/utils";
+import { calcFcstQty, estimateDaysActive, forecastUnits } from "../utils/forecastCalc";
 
 export interface SelectedHistory {
   upc: string;

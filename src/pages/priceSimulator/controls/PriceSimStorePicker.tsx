@@ -18,8 +18,8 @@ import type { JsonError, Store } from "../../../interfaces";
 import type { Group } from "../../../features/groupSlice";
 // import { formatQtyOutput, formatSalesOutput } from ".";
 
-// import FileInput from "../../forecast/controls/FileInput";
-import SelectedStoreList from "../../upc/components/SelectedStoreList";
+// import FileInput from "../../../components/inputs/FileInput";
+import SelectedStoreList from "../../../components/storePicker/SelectedStoreList";
 import DatePickers from "../../../components/datePickers/DatePickers";
 import SingleSelect from "../../../components/SingleSelect";
 import { getStoresAssignedToUserGroup } from "../../../api/groups";

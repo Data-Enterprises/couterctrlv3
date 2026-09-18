@@ -1,10 +1,10 @@
 import { useRef, useEffect } from "react";
-import { useToast } from "../../../components/toasts/hooks/useToast";
-import { setUpcs, clearUpcs } from "../../../features/upcUploadSlice";
-import { useAppDispatch, useAppSelector } from "../../../hooks";
-import { setFileName, setUploadedUpcs } from "../../../features/upcSlice";
-import { setUpcFileName } from "../../../features/upcUploadSlice";
-import { clearAdListData } from "../../../features/adListSlice";
+import { useToast } from "../toasts/hooks/useToast";
+import { setUpcs, clearUpcs } from "../../features/upcUploadSlice";
+import { useAppDispatch, useAppSelector } from "../../hooks";
+import { setFileName, setUploadedUpcs } from "../../features/upcSlice";
+import { setUpcFileName } from "../../features/upcUploadSlice";
+import { clearAdListData } from "../../features/adListSlice";
 
 interface FileInputProps {
   fileExt: string[];

@@ -17,7 +17,9 @@ export const theme = themeQuartz.withParams({
 import { useAppSelector } from "../../hooks";
 import type { ForecastOutlierRow } from "../../features/forecastSlice";
 import type { PriceHistoryResult } from "../../interfaces";
-import { fitLinearDemand, predictQty, forecastUnits } from "./utils";
+import { fitLinearDemand, predictQty, forecastUnits } from "../../utils/forecastCalc";
+// Defined in src/interfaces — Forecast saved simulations. Re-exported for this page's files.
+export type { SaveSimRow } from "../../interfaces";
 
 export const useScrollHeight = () => {
   const state = useAppSelector((state) => state.forecast);
@@ -138,16 +140,3 @@ export const formatSinglePriceRowData = (data: PriceHistoryResult[]) => {
   });
 };
 
-export type SaveSimRow = {
-  upc: string;
-  description: string;
-  qtySold: number;
-  daysActive: number;
-  daysAtPrice: number;
-  adFcst: number;
-  fcstPrice: number;
-  fcstTotal: number;
-  forecastWindow: number;
-  adDays: number;
-  markdownDollars: number;
-};

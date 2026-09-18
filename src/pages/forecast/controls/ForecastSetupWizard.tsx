@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import SingleSelect from "../../../components/SingleSelect";
 import DatePickers from "../../../components/datePickers/DatePickers";
-import SelectedStoreList from "../../upc/components/SelectedStoreList";
-import FileInput from "./FileInput";
+import SelectedStoreList from "../../../components/storePicker/SelectedStoreList";
+import FileInput from "../../../components/inputs/FileInput";
 import FileGrid from "../grids/FileGrid";
 import AdListInput from "./AdListInput";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";

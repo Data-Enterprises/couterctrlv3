@@ -7,7 +7,7 @@ import {
   predictQty,
   forecastUnits,
   estimateDaysActive,
-} from "./utils";
+} from "../../utils/forecastCalc";
 
 /**
  * Ad-list enrichment + row formatting, lifted verbatim out of `Forecasting.tsx`

@@ -10,7 +10,7 @@ import {
 } from "ag-grid-community";
 ModuleRegistry.registerModules([AllCommunityModule]);
 import type { SimGridRow } from "../../../interfaces";
-import { calcFcstQty } from "../calc";
+import { calcFcstQty } from "../../../utils/priceSimCalc";
 import {
   setGlobalRows,
   setNewRowPriceValue,

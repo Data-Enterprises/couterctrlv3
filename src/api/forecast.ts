@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { SaveSimRow } from "../pages/forecast";
+import type { SaveSimRow } from "../interfaces";
 
 export const getForecasting = async (
   url: string,

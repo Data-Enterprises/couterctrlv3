@@ -2521,3 +2521,109 @@ export interface ThresholdValue {
   op: "gt" | "lt" | "eq";
   amount: number;
 }
+
+//////////////////////////////////////////////////////////////
+// Invoices
+//////////////////////////////////////////////////////////////
+
+export interface InvoiceRow {
+  id: string;
+  storeNbr: string;
+  invoiceNbr: string;
+  retailDept: string;
+  deliveryDate: string | null;
+  lineCount: number;
+  totalCost: string;
+  totalRetail: string;
+  totalAllowances: string;
+  totalCases: string;
+  reconciled: boolean;
+  /** Set when the invoice couldn't be checked at all — no total record. */
+  note?: string;
+  checks: {
+    label: string;
+    derived: string;
+    reported: string;
+    ok: boolean;
+    difference: string;
+  }[];
+  lines: InvoiceLineRow[];
+}
+
+export interface InvoiceLineRow {
+  lineNumber: number;
+  upc: string;
+  description: string;
+  /** Selling units per case — the bridge between a case cost and a unit
+   *  retail, without which the two columns look like they should match. */
+  pack: string;
+  cases: string;
+  /** List cost per case. `extCost` is net of allowances, so the two differ by
+   *  whatever deal was applied — which is how a deal becomes visible on the
+   *  line it affected rather than only in the invoice total. */
+  caseCost: string;
+  /** Net cost of one selling unit, to the cent — extended cost divided by the
+   *  units billed, so it is after allowances and directly comparable to retail.
+   *  Null when the line carries no pack or case count to divide by. */
+  unitCost: string | null;
+  /** Shelf price. Shown as "2/$5.00" where the invoice prices in multiples. */
+  retail: string;
+  extCost: string;
+  extRetail: string;
+  /** Null when the line carries no retail, so the panel can show a dash rather
+   *  than a misleading 0.0%. */
+  marginPct: string | null;
+}
+
+//////////////////////////////////////////////////////////////
+// Invoice parsing
+//////////////////////////////////////////////////////////////
+
+export interface ParseWarning {
+  lineNumber: number;
+  recordType: string;
+  message: string;
+}
+
+//////////////////////////////////////////////////////////////
+// Suggested actions
+//////////////////////////////////////////////////////////////
+
+export type ActionKey =
+  | "codes"
+  | "slowing"
+  | "slowDown"
+  | "skipCycle"
+  | "tighten"
+  | "deliverOften"
+  | "unlogged"
+  | "watchRhythm"
+  | "runsLow"
+  /** Not an action. The chip row's "nothing to do here" pile, so a reader can
+   *  see that a blank Action cell is a verdict rather than missing data. */
+  | "none";
+
+//////////////////////////////////////////////////////////////
+// Forecast
+//////////////////////////////////////////////////////////////
+
+/** ABC tier on cumulative share of the forecast (see pages/forecast/dev/forecastRanking). */
+export type ForecastTier = "A" | "B" | "C";
+
+//////////////////////////////////////////////////////////////
+// Forecast saved simulations
+//////////////////////////////////////////////////////////////
+
+export type SaveSimRow = {
+  upc: string;
+  description: string;
+  qtySold: number;
+  daysActive: number;
+  daysAtPrice: number;
+  adFcst: number;
+  fcstPrice: number;
+  fcstTotal: number;
+  forecastWindow: number;
+  adDays: number;
+  markdownDollars: number;
+};

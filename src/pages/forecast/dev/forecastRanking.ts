@@ -1,5 +1,5 @@
 import type { ForecastOutlierRow } from "../../../features/forecastSlice";
-import type { PriceHistoryResult } from "../../../interfaces";
+import type { ForecastTier, PriceHistoryResult } from "../../../interfaces";
 
 /**
  * Ranking for the forecast grid.
@@ -15,7 +15,8 @@ import type { PriceHistoryResult } from "../../../interfaces";
  * statements about the *forecast's* reliability or cost, not about the item.
  */
 
-export type Tier = "A" | "B" | "C";
+// ForecastTier lives in src/interfaces (a slice holds it); Tier here for short.
+export type Tier = ForecastTier;
 
 /** Cumulative-share cut points. A is the ad, B supports it, C is the tail. */
 const A_CUT = 0.8;

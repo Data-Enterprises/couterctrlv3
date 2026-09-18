@@ -14,7 +14,7 @@ import type {
 } from "../../../interfaces";
 import { formatCurrency2 } from "../../../utils";
 import BottomSheet from "../../../components/BottomSheet";
-import Transaction from "../Transaction";
+import Transaction from "../../../components/transactions/Transaction";
 import TrendBadge from "./components/TrendBadge";
 // import SelectFilter from "../../../components/filters/SelectFilter";
 // import ThresholdFilter from "../../../components/filters/ThresholdFilter";

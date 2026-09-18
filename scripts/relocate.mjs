@@ -56,7 +56,11 @@ const makeResolver = (has) => (from, spec) => {
 };
 
 const specFor = (fromFile, targetFile, suffix) => {
-  const trimmed = suffix ? targetFile.slice(0, -suffix.length) : targetFile;
+  // Omit what the original spec omitted — but the target may have changed
+  // shape (a folder index moved to a plain file), so trim only what is there.
+  let trimmed = targetFile;
+  if (suffix && targetFile.endsWith(suffix)) trimmed = targetFile.slice(0, -suffix.length);
+  else if (suffix) trimmed = targetFile.replace(/\.tsx?$/, "");
   let r = P.relative(P.dirname(fromFile), trimmed);
   if (r === "") return "."; // the importer's own folder index
   if (!r.startsWith(".")) r = "./" + r;

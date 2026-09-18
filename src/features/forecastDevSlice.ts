@@ -1,10 +1,12 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { ForecastItem, PriceHistoryResult } from "../interfaces";
+import type {
+  ForecastItem,
+  ForecastTier as Tier,
+  PriceHistoryResult,
+} from "../interfaces";
 import type { AdListRow } from "./adListSlice";
-import type { Tier } from "../pages/forecast/dev/forecastRanking";
 import type { ForecastOutlierRow } from "./forecastSlice";
-import { calcFcstQty, estimateDaysActive } from "../pages/forecast/utils";
-import { forecastUnits } from "../pages/forecast/utils";
+import { calcFcstQty, estimateDaysActive, forecastUnits } from "../utils/forecastCalc";
 
 /**
  * Forecast (dev).

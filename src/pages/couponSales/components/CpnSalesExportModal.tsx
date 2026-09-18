@@ -15,7 +15,7 @@ import {
   type AggFn,
   type AggRow,
 } from "../../../utils/csvExport";
-import { AGG_OPTIONS } from "../../coupons/couponsExportShared";
+import { AGG_OPTIONS } from "../../../utils/csvExport";
 import {
   buildCouponPresetCsv,
   PRESET_OPTIONS,

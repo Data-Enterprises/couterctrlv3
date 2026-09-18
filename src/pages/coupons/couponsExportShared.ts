@@ -1,7 +1,6 @@
 import type { CouponItem } from "../../interfaces";
 import { fmtNum, rowsToCsv } from "../../utils/csvExport";
 import { withResolvedCouponAmount } from "../../utils/couponValue";
-import type { AggFn } from "../../utils/csvExport";
 
 export const buildPresetCsv = (rows: CouponItem[], label: string) => {
   // coupon_amount can be null with the figure in store_coupon/vendor_coupon,
@@ -40,8 +39,5 @@ export const METRICS = [
   { key: "qty",           label: "Qty" },
 ];
 
-export const AGG_OPTIONS: { value: AggFn; label: string }[] = [
-  { value: "sum", label: "Sum" }, { value: "avg", label: "Avg" },
-  { value: "min", label: "Min" }, { value: "max", label: "Max" },
-  { value: "count", label: "Count" },
-];
+// Moved to utils/csvExport beside AggFn; re-exported for this page's files.
+export { AGG_OPTIONS } from "../../utils/csvExport";

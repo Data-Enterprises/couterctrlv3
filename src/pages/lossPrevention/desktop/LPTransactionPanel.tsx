@@ -18,7 +18,7 @@ import type {
 } from "../../../interfaces";
 import { formatCurrency2 } from "../../../utils";
 import SelectFilter from "../../../components/filters/SelectFilter";
-import Transaction from "../Transaction";
+import Transaction from "../../../components/transactions/Transaction";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import EmptyPrompt from "../../../components/EmptyPrompt";
 import type { ThresholdValue } from "../../../components/filters/ThresholdFilter";

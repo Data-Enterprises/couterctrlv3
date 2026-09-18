@@ -3,7 +3,7 @@ import { useAppSelector, useAppDispatch } from "../../../hooks";
 import Modal from "../../../components/Modal";
 import { setCalcNow } from "../../../features/priceSimSlice";
 import { formatCurrency2 } from "../../../utils";
-import { fitLinearDemand, predictProfit, predictQty, predictRevenue } from ".";
+import { fitLinearDemand, predictProfit, predictQty, predictRevenue } from "../../../utils/priceSimCalc";
 
 const CalcModal = () => {
   const [open, setOpen] = useState<boolean>(false);

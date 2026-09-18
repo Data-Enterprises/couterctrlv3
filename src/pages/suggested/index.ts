@@ -4,6 +4,9 @@ import type {
   SuggestedGroupRow,
   SuggestedItem,
 } from "../../interfaces";
+import type { ActionKey } from "../../interfaces";
+// Defined in src/interfaces — Suggested actions. Re-exported for this page's files.
+export type { ActionKey } from "../../interfaces";
 
 /**
  * Rows whose department could not be resolved.
@@ -329,20 +332,6 @@ export const coverBreakdown = (
  * call for different things — and above it the fraction is noise nobody reads.
  */
 const fmtDays = (n: number) => (n < 10 ? n.toFixed(1) : Math.round(n).toString());
-
-export type ActionKey =
-  | "codes"
-  | "slowing"
-  | "slowDown"
-  | "skipCycle"
-  | "tighten"
-  | "deliverOften"
-  | "unlogged"
-  | "watchRhythm"
-  | "runsLow"
-  /** Not an action. The chip row's "nothing to do here" pile, so a reader can
-   *  see that a blank Action cell is a verdict rather than missing data. */
-  | "none";
 
 /**
  * What an action is ABOUT, which decides how the popover frames it.

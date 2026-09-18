@@ -7,7 +7,7 @@ import type {
   SimGridRow,
   PriceHistoryResult,
 } from "../interfaces";
-import { calcFcstQty } from "../pages/priceSimulator/calc";
+import { calcFcstQty } from "../utils/priceSimCalc";
 
 interface PriceSimState {
   isLoading: boolean;

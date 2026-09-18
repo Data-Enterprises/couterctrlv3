@@ -9,8 +9,8 @@ import {
   setItemNotes,
 } from "../../../features/forecastDevSlice";
 import { formatCurrency2 } from "../../../utils";
-import { fitLinearDemand, predictQty } from "../utils";
-import { forecastUnits } from "../../priceSimulator/calc";
+import { fitLinearDemand, predictQty } from "../../../utils/forecastCalc";
+import { forecastUnits } from "../../../utils/priceSimCalc";
 import ForecastScenarios from "./ForecastScenarios";
 
 /**

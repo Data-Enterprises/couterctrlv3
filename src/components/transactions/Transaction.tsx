@@ -4,7 +4,7 @@ import { formatCurrency2 } from "../../utils";
 import { exportData } from "../../utils/export";
 import { useAppSelector } from "../../hooks";
 import { emailTransaction } from "../../api/lossPrevention";
-import { useToast } from "../../components/toasts/hooks/useToast";
+import { useToast } from "../toasts/hooks/useToast";
 
 interface TransactionProps {
   trans: TransactionListItem[];
