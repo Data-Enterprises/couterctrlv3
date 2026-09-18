@@ -27,6 +27,8 @@ import { setError } from "../../../features/itemScanSlice";
 import LoadingIndicator from "../../../components/loading/LoadingIndicator";
 import LookupEntryScreen from "./LookupEntryScreen";
 import LookupResultScreen from "./LookupResultScreen";
+import LookupItemReport from "./LookupItemReport";
+import { lookupDevViewOn } from "./lookupDevView";
 import {
   buildDayBuckets,
   computeMargin,
@@ -38,7 +40,7 @@ import { isSaleRow } from "../../../utils/saleType";
 const ItemLookupDev = () => {
   const dispatch = useAppDispatch();
   const toast = useToast();
-  const { url, token } = useAppSelector((s) => s.app);
+  const { url, token, apiEnv } = useAppSelector((s) => s.app);
   const { assignedStores } = useAppSelector((s) => s.user);
   const {
     selectedStore,
@@ -147,6 +149,11 @@ const ItemLookupDev = () => {
               qty: scopedResult.totalQty,
               revenue: scopedResult.totalSales,
               unitCost: margin.unitCost,
+              // All three already computed for the screen below; they just
+              // were not travelling as far as the recent list.
+              units: margin.totalUnits,
+              weighed: margin.weighed,
+              costMissing: margin.costMissing,
             }),
           );
         } else {
@@ -184,11 +191,14 @@ const ItemLookupDev = () => {
   }
 
   const buckets = buildDayBuckets(itemLookupHistory);
+  // Identical props either way, so the two screens stay swappable and prod's
+  // render path is never edited — see lookupDevView.ts.
+  const Result = lookupDevViewOn(apiEnv) ? LookupItemReport : LookupResultScreen;
 
   return (
     <div className="relative">
       {isLoading && <LoadingIndicator message="Looking up item..." />}
-      <LookupResultScreen
+      <Result
         storeNumbers={availableStoreNumbers}
         selectedStoreNumber={selectedStoreNumber}
         onStoreNumberChange={handleStoreNumberChange}

@@ -64,6 +64,25 @@ export interface RecentLookup {
   qty: number;
   revenue: number;
   unitCost: number;
+  /**
+   * Priced units — pounds on a scale item.
+   *
+   * Without it a recent entry could only ever show `qty`, which a scale item
+   * rings as 0: the list said a salad bar that took $5,944 had sold nothing.
+   * Unlike the item's own screen there was no weight to fall back to, because
+   * it was never carried this far.
+   */
+  units?: number;
+  /** True when `units` is pounds rather than a count. */
+  weighed?: boolean;
+  /**
+   * No cost was on file for the window.
+   *
+   * `unitCost` is a plain number, so a missing cost arrives as 0 and renders
+   * as "$0.00" — free, rather than unknown — with a margin computed from that
+   * same zero. This is what lets the list say so instead.
+   */
+  costMissing?: boolean;
 }
 
 /** One register line type's share of the lookup window. */
