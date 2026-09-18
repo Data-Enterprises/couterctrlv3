@@ -1,12 +1,12 @@
 import { useMemo, useState } from "react";
-import ResizableModalShell from "../../../components/modals/ResizableModalShell";
+import ResizableModalShell from "../../../../components-dev/modals/ResizableModalShell";
 import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
-import { useAppDispatch, useAppSelector } from "../../../hooks";
+import { useAppDispatch, useAppSelector } from "../../../../hooks";
 import {
   setCouponExportOpen,
   COUPON_THRESHOLD_DEFAULT,
   COUPON_TREND_THRESHOLD_DEFAULT,
-} from "../../../features/couponSalesSlice";
+} from "../../../../features/dev/devCouponSalesSlice";
 import {
   aggregateRows,
   downloadCsv,
@@ -14,8 +14,8 @@ import {
   rowsToCsv,
   type AggFn,
   type AggRow,
-} from "../../../utils/csvExport";
-import { AGG_OPTIONS } from "../../../utils/csvExport";
+} from "../../../../utils/csvExport";
+import { AGG_OPTIONS } from "../../../../utils/csvExport";
 import {
   buildCouponPresetCsv,
   PRESET_OPTIONS,
@@ -23,7 +23,7 @@ import {
   CPN_SALES_METRICS,
   type CouponPreset,
 } from "../shared/couponSalesExport";
-import type { CouponItem } from "../../../interfaces";
+import type { CouponItem } from "../../../../interfaces";
 import { couponValueOf, usesFallbackValue } from "../shared/couponGrading";
 
 interface Props {
@@ -38,8 +38,8 @@ type Scope = "store" | "all";
 
 const CpnSalesExportModal = ({ storeCoupons }: Props) => {
   const dispatch = useAppDispatch();
-  const allCoupons = useAppSelector((s) => s.couponSales.coupons);
-  const rawThreshold = useAppSelector((s) => s.couponSales.threshold);
+  const allCoupons = useAppSelector((s) => s.dev.couponSales.coupons);
+  const rawThreshold = useAppSelector((s) => s.dev.couponSales.threshold);
   const assignedStores = useAppSelector((s) => s.user.assignedStores);
   const groupStores = useAppSelector((s) => s.user.selectedGroupStores);
   const threshold = rawThreshold ?? COUPON_THRESHOLD_DEFAULT;
@@ -58,9 +58,9 @@ const CpnSalesExportModal = ({ storeCoupons }: Props) => {
 
   const source = scope === "all" ? allCoupons : storeCoupons;
 
-  const rawTrendThreshold = useAppSelector((s) => s.couponSales.trendThreshold);
-  const metric = useAppSelector((s) => s.couponSales.metric);
-  const baselineCoupons = useAppSelector((s) => s.couponSales.baselineCoupons);
+  const rawTrendThreshold = useAppSelector((s) => s.dev.couponSales.trendThreshold);
+  const metric = useAppSelector((s) => s.dev.couponSales.metric);
+  const baselineCoupons = useAppSelector((s) => s.dev.couponSales.baselineCoupons);
   // Scope selection drives the baseline the same way it drives the source, so
   // an all-stores export grades against the all-stores baseline.
   const grading = useMemo(

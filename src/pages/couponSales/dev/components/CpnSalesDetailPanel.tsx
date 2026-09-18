@@ -1,22 +1,22 @@
 import { useEffect, useMemo, useState } from "react";
 import { ArrowDownTrayIcon, ArrowLeftIcon } from "@heroicons/react/16/solid";
-import { useAppDispatch, useAppSelector } from "../../../hooks";
-import { formatCurrency2, formatBigNumber, formatDate } from "../../../utils";
-import { downloadCsv } from "../../../utils/csvExport";
+import { useAppDispatch, useAppSelector } from "../../../../hooks";
+import { formatCurrency2, formatBigNumber, formatDate } from "../../../../utils";
+import { downloadCsv } from "../../../../utils/csvExport";
 import {
   setCouponBreakdown,
   setSelectedCouponSection,
   setCouponSectionFilter,
   setCouponExportOpen,
+  setCouponReceiptLines,
   type CouponBreakdown,
   type CouponTierFilter,
-} from "../../../features/couponSalesSlice";
-import TextFilter from "../../../components/filters/TextFilter";
-import { useToast } from "../../../components/toasts/hooks/useToast";
-import { getCashierTransaction } from "../../../api/lossPrevention";
+} from "../../../../features/dev/devCouponSalesSlice";
+import TextFilter from "../../../../components-dev/filters/TextFilter";
+import { useToast } from "../../../../components/toasts/hooks/useToast";
+import { getCashierTransaction } from "../../../../api/lossPrevention";
 import CpnSalesDayCards from "./CpnSalesDayCards";
-import LoadingIndicator from "../../../components/loading/LoadingIndicator";
-import { setTransactionDrillDown } from "../../../features/lossPreventionSlice";
+import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
 import {
   buildBreakdownRows,
   buildTransactions,
@@ -28,14 +28,14 @@ import {
   type CouponTransaction,
   type GradingOptions,
 } from "../shared/couponGrading";
-import type { CouponTier } from "../../../features/couponSalesSlice";
+import type { CouponTier } from "../../../../features/dev/devCouponSalesSlice";
 import type {
   CouponItem,
   JsonError,
   TransactionListItem,
-} from "../../../interfaces";
-import SortHeader from "../../../components/SortHeader";
-import { useTriStateSort } from "../../../utils/useTriStateSort";
+} from "../../../../interfaces";
+import SortHeader from "../../../../components-dev/SortHeader";
+import { useTriStateSort } from "../../../../utils/useTriStateSort";
 
 type SectionSortCol = "amount" | "trans" | "count" | "avg";
 type TxSortCol = "count" | "amount";
@@ -150,7 +150,7 @@ const CpnSalesDetailPanel = ({
     if (joinedSaleId === openSaleId) return;
 
     setOpenSaleId(joinedSaleId);
-    dispatch(setTransactionDrillDown([]));
+    dispatch(setCouponReceiptLines([]));
     getCashierTransaction(url, token, saleDate, joinedSaleId, t.storeid)
       .then((resp) => {
         const j = resp.data;
@@ -162,7 +162,7 @@ const CpnSalesDetailPanel = ({
             qty: item.qty ? item.qty : 0,
           }),
         );
-        dispatch(setTransactionDrillDown([lines]));
+        dispatch(setCouponReceiptLines(lines));
       })
       .catch((err: JsonError) => {
         setOpenSaleId("");
@@ -172,17 +172,13 @@ const CpnSalesDetailPanel = ({
 
   const handleBackFromTransaction = () => {
     setOpenSaleId("");
-    dispatch(setTransactionDrillDown([]));
+    dispatch(setCouponReceiptLines([]));
   };
 
 
   // Receipt derivation, matching dev Coupons: sale lines and coupon lines are
   // split so the footer can show gross, discount, tax and net separately.
-  const txLines: TransactionListItem[] = useAppSelector((s) =>
-    Array.isArray(s.lossPrevention.transactionDrillDown?.[0])
-      ? s.lossPrevention.transactionDrillDown[0]
-      : [],
-  );
+  const txLines: TransactionListItem[] = useAppSelector((s) => s.dev.couponSales.receiptLines);
   const txMeta = txLines[0] ?? null;
   const txSaleLines = txLines.filter(
     (r) => r.sale_type === "Sale" && r.is_coupon !== 1,
@@ -225,13 +221,13 @@ const CpnSalesDetailPanel = ({
     const date = txMeta?.sale_date?.split("T")[0] ?? "";
     downloadCsv(csv, `transaction_${store}_${date}_${txId}.csv`);
   };
-  const breakdown = useAppSelector((s) => s.couponSales.breakdown);
+  const breakdown = useAppSelector((s) => s.dev.couponSales.breakdown);
   // Items stack their metrics under the description; the other two
   // breakdowns keep the aligned column grid.
   const isItemView = breakdown === "item";
-  const selectedSectionKey = useAppSelector((s) => s.couponSales.selectedSectionKey);
-  const selectedStoreKey = useAppSelector((s) => s.couponSales.selectedStoreKey);
-  const sectionFilter = useAppSelector((s) => s.couponSales.sectionFilter);
+  const selectedSectionKey = useAppSelector((s) => s.dev.couponSales.selectedSectionKey);
+  const selectedStoreKey = useAppSelector((s) => s.dev.couponSales.selectedStoreKey);
+  const sectionFilter = useAppSelector((s) => s.dev.couponSales.sectionFilter);
   // Switching the breakdown tab, picking a different row in the left column, or
   // changing store all replace what this panel is about — an open receipt from
   // the previous context would otherwise stay on screen, unrelated to what is
@@ -240,7 +236,7 @@ const CpnSalesDetailPanel = ({
   // "clear selection" button, rather than each call site remembering to.
   useEffect(() => {
     setOpenSaleId("");
-    dispatch(setTransactionDrillDown([]));
+    dispatch(setCouponReceiptLines([]));
   }, [breakdown, selectedSectionKey, selectedStoreKey, dispatch]);
 
   // A day filter from one store means nothing on the next one, so it resets

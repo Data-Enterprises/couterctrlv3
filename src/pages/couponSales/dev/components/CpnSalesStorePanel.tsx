@@ -1,8 +1,8 @@
-import InfoButton from "../../../components/InfoButton";
+import InfoButton from "../../../../components-dev/InfoButton";
 import { useMemo, useRef, useState } from "react";
 import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
-import { useAppDispatch, useAppSelector } from "../../../hooks";
-import { formatCurrency2, formatBigNumber, formatCurrencyCompact } from "../../../utils";
+import { useAppDispatch, useAppSelector } from "../../../../hooks";
+import { formatCurrency2, formatBigNumber, formatCurrencyCompact } from "../../../../utils";
 import {
   setCouponThreshold,
   setCouponTrendThreshold,
@@ -14,15 +14,15 @@ import {
   COUPON_TREND_THRESHOLD_DEFAULT,
   type CouponTierFilter,
   type CouponMetric,
-} from "../../../features/couponSalesSlice";
-import ThresholdFilter from "../../../components/filters/ThresholdFilter";
-import ThresholdSlider from "../../../components/filters/ThresholdSlider";
-import TextFilter from "../../../components/filters/TextFilter";
-import InfoPopover from "../../../components/InfoPopover";
+} from "../../../../features/dev/devCouponSalesSlice";
+import ThresholdFilter from "../../../../components-dev/filters/ThresholdFilter";
+import ThresholdSlider from "../../../../components-dev/filters/ThresholdSlider";
+import TextFilter from "../../../../components-dev/filters/TextFilter";
+import InfoPopover from "../../../../components-dev/InfoPopover";
 import { COUPON_SALES_INFO } from "../couponSalesInfo";
 import { couponDotClass, couponPillClass, type CouponRow, type CouponTotals } from "../shared/couponGrading";
-import SortHeader from "../../../components/SortHeader";
-import { useTriStateSort } from "../../../utils/useTriStateSort";
+import SortHeader from "../../../../components-dev/SortHeader";
+import { useTriStateSort } from "../../../../utils/useTriStateSort";
 
 const METRIC_OPTS: { key: CouponMetric; label: string }[] = [
   { key: "trend", label: "Trend" },
@@ -41,10 +41,10 @@ interface Props {
 const CpnSalesStorePanel = ({ rows, totals, rangeLabel, onOpenSearch }: Props) => {
   const dispatch = useAppDispatch();
   const [infoOpen, setInfoOpen] = useState(false);
-  const rawThreshold = useAppSelector((s) => s.couponSales.threshold);
+  const rawThreshold = useAppSelector((s) => s.dev.couponSales.threshold);
   const activeThreshold = rawThreshold ?? COUPON_THRESHOLD_DEFAULT;
-  const rawTrendThreshold = useAppSelector((s) => s.couponSales.trendThreshold);
-  const metric = useAppSelector((s) => s.couponSales.metric);
+  const rawTrendThreshold = useAppSelector((s) => s.dev.couponSales.trendThreshold);
+  const metric = useAppSelector((s) => s.dev.couponSales.metric);
   const isTrend = metric === "trend";
   const activeRaw = isTrend ? rawTrendThreshold : rawThreshold;
 
@@ -54,9 +54,9 @@ const CpnSalesStorePanel = ({ rows, totals, rangeLabel, onOpenSearch }: Props) =
     rawTrendThreshold ?? COUPON_TREND_THRESHOLD_DEFAULT,
   );
   if (rawTrendThreshold !== null) lastValidTrendRef.current = rawTrendThreshold;
-  const tierFilter = useAppSelector((s) => s.couponSales.tierFilter);
-  const storeFilter = useAppSelector((s) => s.couponSales.storeFilter);
-  const selectedStoreKey = useAppSelector((s) => s.couponSales.selectedStoreKey);
+  const tierFilter = useAppSelector((s) => s.dev.couponSales.tierFilter);
+  const storeFilter = useAppSelector((s) => s.dev.couponSales.storeFilter);
+  const selectedStoreKey = useAppSelector((s) => s.dev.couponSales.selectedStoreKey);
 
   // Clearing the numeric input dispatches null; grading deliberately holds the
   // last valid amount so rows don't reshuffle mid-edit. The slider has to sit

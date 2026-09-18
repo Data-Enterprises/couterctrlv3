@@ -22,7 +22,7 @@ Status: **done** · **next** · blank = not started
 | Categories | `/categories` | `categories` | | after itemPerf; dry run clean |
 | Vendors | `/vendors` | `vendors` | | after itemPerf |
 | Sub Dept Margins | `/sub-dept-margins` | `subDepts` | | after itemPerf; has tablet + old `dev/`; `subDepts/index.ts` re-exports cogs/dates helpers until split |
-| Coupon Sales | `/coupon-sales` | `couponSales` | | after eventPerf (done); dead `mobile/` folder already trashed with LP; reuses `devLossPreventionSlice` — check `CpnSalesDetailPanel`'s transaction drill-down |
+| Coupon Sales | `/coupon-sales` | `couponSales` | **done** | own dev Redux state (`devCouponSalesSlice`); open receipt moved off LP's `transactionDrillDown` into `couponSales.receiptLines`, so it uses no LP state; dead `mobile/` trashed with LP |
 | Loss Prevention | `/loss-prevention` | `lossPrevention` | **done** | legacy page + `lossPreventionLegacy` state and tablet removed (35 files to trash); own dev Redux state (`state.dev.lossPrevention`, `devLossPreventionSlice`); `TransactionModal` moved to `pages/coupons` (only Coupons opened it; reads prod state)
 | Coupons | `/coupons` | `coupons` | | legacy branch; owns `TransactionModal` now (reads prod `lossPrevention`), dev copy must read `state.dev` |
 | LP Actions | `/lp-actions` | `lpActions` | | |

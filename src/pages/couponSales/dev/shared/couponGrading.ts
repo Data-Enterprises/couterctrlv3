@@ -1,11 +1,11 @@
-import type { CouponItem, Store } from "../../../interfaces";
-import { formatDateSimple } from "../../../utils";
+import type { CouponItem, Store } from "../../../../interfaces";
+import { formatDateSimple } from "../../../../utils";
 import type {
   CouponTier,
   CouponBreakdown,
   CouponMetric,
-} from "../../../features/couponSalesSlice";
-import { applyStoreNumberToName, numbersByStoreId } from "../../../utils/storeIdentity";
+} from "../../../../features/dev/devCouponSalesSlice";
+import { applyStoreNumberToName, numbersByStoreId } from "../../../../utils/storeIdentity";
 
 /**
  * Coupon Sales asks two questions about the average value of a single coupon,
@@ -43,7 +43,7 @@ import {
   couponValueOf,
   usesFallbackValue,
   sumCouponAmount,
-} from "../../../utils/couponValue";
+} from "../../../../utils/couponValue";
 export { couponValueOf, usesFallbackValue, sumCouponAmount };
 
 /** Percentage move of this week's average against the baseline average.
