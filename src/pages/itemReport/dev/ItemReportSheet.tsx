@@ -3,23 +3,23 @@ import {
   MagnifyingGlassIcon,
   ArrowDownTrayIcon,
 } from "@heroicons/react/20/solid";
-import { useAppDispatch, useAppSelector } from "../../hooks";
+import { useAppDispatch, useAppSelector } from "../../../hooks";
 import {
   setItemReportActionFilter,
   setItemReportUpcFilter,
   setItemReportDescFilter,
   setItemReportDeptFilter,
   setItemReportVendorFilter,
-} from "../../features/itemReportSlice";
-import { formatCurrencyCompact } from "../../utils";
-import { formatPct, pillClass } from "../../utils/severity";
-import ColFilter from "../../components/filters/ColFilter";
-import { colInputStyle } from "../../components/filters/colFilterStyles";
-import SelectFilter from "../../components/filters/SelectFilter";
-import HeaderIconButton from "../../components/HeaderIconButton";
+} from "../../../features/dev/devItemReportSlice";
+import { formatCurrencyCompact } from "../../../utils";
+import { formatPct, pillClass } from "../../../utils/severity";
+import ColFilter from "../../../components-dev/filters/ColFilter";
+import { colInputStyle } from "../../../components-dev/filters/colFilterStyles";
+import SelectFilter from "../../../components-dev/filters/SelectFilter";
+import HeaderIconButton from "../../../components-dev/HeaderIconButton";
 import { ACTION_TONE } from "./actionTone";
-import InfoButton from "../../components/InfoButton";
-import InfoPopover from "../../components/InfoPopover";
+import InfoButton from "../../../components-dev/InfoButton";
+import InfoPopover from "../../../components-dev/InfoPopover";
 import DetailPopover from "./DetailPopover";
 import { ITEM_REPORT_INFO } from "./itemReportInfo";
 import {
@@ -156,11 +156,11 @@ const ItemReportSheet = ({
   // Filters live in the slice with everything else. A route change would
   // otherwise silently reset which pile someone was working through, and they
   // would come back to a sheet that looks the same but isn't.
-  const only = useAppSelector((s) => s.itemReport.actionFilter);
-  const upcTerm = useAppSelector((s) => s.itemReport.upcFilter);
-  const descTerm = useAppSelector((s) => s.itemReport.descFilter);
-  const dept = useAppSelector((s) => s.itemReport.deptFilter);
-  const vendor = useAppSelector((s) => s.itemReport.vendorFilter);
+  const only = useAppSelector((s) => s.dev.itemReport.actionFilter);
+  const upcTerm = useAppSelector((s) => s.dev.itemReport.upcFilter);
+  const descTerm = useAppSelector((s) => s.dev.itemReport.descFilter);
+  const dept = useAppSelector((s) => s.dev.itemReport.deptFilter);
+  const vendor = useAppSelector((s) => s.dev.itemReport.vendorFilter);
   // Popover open/closed — ephemeral, and the same shape LedgerHeader uses.
   const [infoOpen, setInfoOpen] = useState(false);
   const [noReceiverOpen, setNoReceiverOpen] = useState(false);

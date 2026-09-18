@@ -1,18 +1,18 @@
 import { useRef } from "react";
-import { useAppDispatch, useAppSelector } from "../../hooks";
+import { useAppDispatch, useAppSelector } from "../../../hooks";
 import {
   setPendingUpload,
   clearPendingUpload,
   setPendingUpcText,
   addPendingUpcs,
   removePendingUpc,
-} from "../../features/itemReportSlice";
-import { useToast } from "../../components/toasts/hooks/useToast";
-import SingleStoreSearchCard from "../../components/SingleStoreSearchCard";
-import SingleDatePicker from "../../components/datePickers/SingleDatePicker";
+} from "../../../features/dev/devItemReportSlice";
+import { useToast } from "../../../components/toasts/hooks/useToast";
+import SingleStoreSearchCard from "../../../components-dev/SingleStoreSearchCard";
+import SingleDatePicker from "../../../components-dev/datePickers/SingleDatePicker";
 import { parseUpload } from "./parseUpload";
 import { RECEIVING_LOOKBACK_DAYS, WINDOW_DAYS } from "./itemReportData";
-import type { Store } from "../../interfaces";
+import type { Store } from "../../../interfaces";
 
 /**
  * The entry screen: a store, a week, and a list of UPCs.
@@ -48,10 +48,10 @@ const ItemReportEntry = ({
   const dispatch = useAppDispatch();
   const toast = useToast();
   const fileRef = useRef<HTMLInputElement>(null);
-  const upcs = useAppSelector((s) => s.itemReport.pendingUpcs);
-  const departments = useAppSelector((s) => s.itemReport.pendingDepartments);
-  const fileName = useAppSelector((s) => s.itemReport.pendingFileName);
-  const upcText = useAppSelector((s) => s.itemReport.pendingUpcText);
+  const upcs = useAppSelector((s) => s.dev.itemReport.pendingUpcs);
+  const departments = useAppSelector((s) => s.dev.itemReport.pendingDepartments);
+  const fileName = useAppSelector((s) => s.dev.itemReport.pendingFileName);
+  const upcText = useAppSelector((s) => s.dev.itemReport.pendingUpcText);
 
   const handleParseText = () => {
     const parsed = parseUpload(upcText);

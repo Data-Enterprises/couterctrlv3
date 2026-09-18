@@ -16,7 +16,7 @@
  * skipped the disk.
  */
 
-import { normalizeProductCode } from "../../utils/productCode";
+import { normalizeProductCode } from "../../../utils/productCode";
 
 export interface ParsedUpload {
   upcs: string[];

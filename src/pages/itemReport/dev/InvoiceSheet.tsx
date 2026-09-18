@@ -1,13 +1,13 @@
 import { useMemo, useRef, useEffect } from "react";
 import { XMarkIcon } from "@heroicons/react/20/solid";
-import ResizableModalShell from "../../components/modals/ResizableModalShell";
-import LoadingIndicator from "../../components/loading/LoadingIndicator";
-import { formatCurrency2, formatDateSimple } from "../../utils";
+import ResizableModalShell from "../../../components-dev/modals/ResizableModalShell";
+import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
+import { formatCurrency2, formatDateSimple } from "../../../utils";
 import { describeReceipt } from "./itemReportData";
-import { normalizeProductCode } from "../../utils/productCode";
+import { normalizeProductCode } from "../../../utils/productCode";
 import { ACTION_TONE } from "./actionTone";
 import type { ActionKind } from "./itemReportMetrics";
-import type { ReceiverDetailsItem } from "../../interfaces";
+import type { ReceiverDetailsItem } from "../../../interfaces";
 
 /**
  * One delivery, in full.

@@ -1,18 +1,18 @@
 import { useEffect, useMemo, useState } from "react";
-import { useAppDispatch, useAppSelector } from "../../hooks";
+import { useAppDispatch, useAppSelector } from "../../../hooks";
 import {
   setItemReportExpandedReceipt,
   openItemReportInvoice,
   toggleItemReportSection,
-} from "../../features/itemReportSlice";
+} from "../../../features/dev/devItemReportSlice";
 import { ChevronDownIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
-import InfoButton from "../../components/InfoButton";
-import InfoPopover from "../../components/InfoPopover";
+import InfoButton from "../../../components-dev/InfoButton";
+import InfoPopover from "../../../components-dev/InfoPopover";
 import { ITEM_REPORT_RAIL_INFO } from "./itemReportRailInfo";
-import { formatCurrency2, formatDateSimple } from "../../utils";
-import { formatPct, pillClass } from "../../utils/severity";
-import { actualPricePoints, unitPrice } from "../../utils/pricePoints";
-import type { ActualFetchState } from "../../hooks/useActualPricePoints";
+import { formatCurrency2, formatDateSimple } from "../../../utils";
+import { formatPct, pillClass } from "../../../utils/severity";
+import { actualPricePoints, unitPrice } from "../../../utils/pricePoints";
+import type { ActualFetchState } from "../../../hooks/useActualPricePoints";
 import {
   ACTION_LABEL,
   buildPriceEras,
@@ -401,7 +401,7 @@ const ItemReportRail = ({
   evidence,
 }: Props) => {
   const dispatch = useAppDispatch();
-  const expandedReceipt = useAppSelector((s) => s.itemReport.expandedReceipt);
+  const expandedReceipt = useAppSelector((s) => s.dev.itemReport.expandedReceipt);
   /** Which price row is open, or null. Local: a transient overlay over one
    *  selected item that closes on its own — the route-change argument that put
    *  the rest of this page in Redux doesn't apply. */
@@ -425,7 +425,7 @@ const ItemReportRail = ({
       prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id],
     );
 
-  const collapsed = useAppSelector((s) => s.itemReport.collapsedSections);
+  const collapsed = useAppSelector((s) => s.dev.itemReport.collapsedSections);
   /** One place that knows how a section folds, so four call sites can't drift
    *  on the key they use or the handler they pass. */
   const fold = (id: string) => ({

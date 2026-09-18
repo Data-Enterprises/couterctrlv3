@@ -2,17 +2,17 @@ import {
   getReceiversList,
   getReceiverDetails,
   searchReceiversByItem,
-} from "../../api/receivers";
-import { normalizeProductCode } from "../../utils/productCode";
-import { fetchSubDeptRowsSafe } from "../../utils/marginRows";
-import { getSubMarginsWithPricePoints } from "../../api/subMargins";
-import { fetchAllPages } from "../../utils/paging";
-import { LW_OFFSET, shiftIso } from "../../utils/grading";
-import { getLYDate, WINDOW_DAYS, weekEnding } from "../../utils/dates";
+} from "../../../api/receivers";
+import { normalizeProductCode } from "../../../utils/productCode";
+import { fetchSubDeptRowsSafe } from "../../../utils/marginRows";
+import { getSubMarginsWithPricePoints } from "../../../api/subMargins";
+import { fetchAllPages } from "../../../utils/paging";
+import { LW_OFFSET, shiftIso } from "../../../utils/grading";
+import { getLYDate, WINDOW_DAYS, weekEnding } from "../../../utils/dates";
 // Shared with every page that hands an item to this one, so both ends agree
 // on how long the window is. Re-exported for this page's own files.
 export { WINDOW_DAYS, weekEnding };
-import { formatDate } from "../../utils";
+import { formatDate } from "../../../utils";
 import type {
   ReceiverListItem,
   ReceiverListResponse,
@@ -24,8 +24,8 @@ import type {
   SubDeptMargin,
   SubMarginsPricePointsResp,
   SubsPricePoint,
-} from "../../interfaces";
-import type { ReceivedLine } from "../../interfaces";
+} from "../../../interfaces";
+import type { ReceivedLine } from "../../../interfaces";
 /** A line received on an invoice — defined in src/interfaces as ReceivedLine,
  *  because itemReportSlice holds it. */
 export type ReceiptLine = ReceivedLine;

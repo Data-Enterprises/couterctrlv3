@@ -1,14 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { XMarkIcon, ArrowLeftIcon } from "@heroicons/react/20/solid";
-import ResizableModalShell from "../../components/modals/ResizableModalShell";
-import LoadingIndicator from "../../components/loading/LoadingIndicator";
-import { useAppSelector } from "../../hooks";
-import { getTransactionList } from "../../api/lossPrevention";
-import { fetchAllPages } from "../../utils/paging";
-import { formatCurrency2, formatDateSimple } from "../../utils";
+import ResizableModalShell from "../../../components-dev/modals/ResizableModalShell";
+import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
+import { useAppSelector } from "../../../hooks";
+import { getTransactionList } from "../../../api/lossPrevention";
+import { fetchAllPages } from "../../../utils/paging";
+import { formatCurrency2, formatDateSimple } from "../../../utils";
 import { ACTION_TONE } from "./actionTone";
 import type { ActionKind } from "./itemReportMetrics";
-import type { TransactionListItem } from "../../interfaces";
+import type { TransactionListItem } from "../../../interfaces";
 
 /**
  * The sales behind one price, and the basket behind one sale.

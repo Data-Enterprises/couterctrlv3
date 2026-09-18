@@ -1,10 +1,10 @@
 import { useCallback } from "react";
 import { useNavigate } from "react-router";
 import { useAppDispatch } from ".";
-import { setItemReportHandoff } from "../features/itemReportSlice";
+import { setItemReportHandoff } from "../features/dev/devItemReportSlice";
 import { normalizeProductCode } from "../utils/productCode";
 import type { SubDeptMargin } from "../interfaces";
-import type { ItemReportHandoff } from "../features/itemReportSlice";
+import type { ItemReportHandoff } from "../features/dev/devItemReportSlice";
 
 /**
  * "See item actions" — the hop from a graded page into Item Actions.
