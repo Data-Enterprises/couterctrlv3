@@ -1,15 +1,14 @@
-import { useAppSelector } from "../../hooks";
 import LoadingIndicatorDev from "./LoadingIndicatorDev";
-import LoadingIndicatorLegacy from "./LoadingIndicatorLegacy";
 
 interface Props {
   message?: string;
   className?: string;
 }
 
-const LoadingIndicator = (props: Props) => {
-  const devMode = useAppSelector((s) => s.app.devMode);
-  return devMode ? <LoadingIndicatorDev {...props} /> : <LoadingIndicatorLegacy {...props} />;
-};
+/**
+ * The loading screen. Always the current one — the legacy spinner went with
+ * the devMode (Preview/Live) switch.
+ */
+const LoadingIndicator = (props: Props) => <LoadingIndicatorDev {...props} />;
 
 export default LoadingIndicator;

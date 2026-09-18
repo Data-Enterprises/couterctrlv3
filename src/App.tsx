@@ -7,7 +7,7 @@ import { useToast } from "./components/toasts/hooks/useToast";
 // Components
 import { Outlet } from "react-router";
 import Login from "./pages/home/Login";
-import { NavSwitch } from "./DevPages";
+import TitleBar from "./components/navigation/TitleBar";
 import UserDataLoader from "./components/UserDataLoader";
 import AccountSetupModal from "./components/accountSetup/AccountSetupModal";
 import { getUserStores } from "./api/user";
@@ -23,7 +23,6 @@ const App = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
-  const nav = useAppSelector((state) => state.nav);
   const user = useAppSelector((state) => state.user);
   const navigate = useNavigate();
 
@@ -69,11 +68,7 @@ const App = () => {
     navigate("/");
   }, []);
 
-  const containerStyle = context.isMobile
-    ? context.devMode ? "h-full bg-bkg pb-14" : "h-full bg-bkg"
-    : context.devMode
-      ? "w-full"
-      : "ml-12 min-w-[calc(100vw-3rem)] max-w-[calc(100vw-3rem)]";
+  const containerStyle = context.isMobile ? "h-full bg-bkg pb-14" : "w-full";
 
   return (
     <div
@@ -83,10 +78,10 @@ const App = () => {
       <UserDataLoader />
       {context.loggedIn ? (
         <div className="max-h-screen max-w-screen overflow-hidden">
-          <NavSwitch />
+          <TitleBar />
           <div
             data-testid="outlet-container"
-            className={`${containerStyle} bg-bkg ${!context.devMode && nav.isNavOpen ? "opacity-20 pointer-events-none" : "opacity-100"} transition-all duration-300`}
+            className={`${containerStyle} bg-bkg transition-all duration-300`}
           >
             {/* Renders only when the login response says the user still owes a
                 password change and/or a security question — otherwise null. */}

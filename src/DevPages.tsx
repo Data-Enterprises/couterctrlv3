@@ -1,4 +1,3 @@
-import { useAppSelector } from "./hooks";
 import Cashiers from "./pages/cashiers/Cashiers.tsx";
 import Sales from "./pages/sales/Sales.tsx";
 import LossPrevention from "./pages/lossPrevention/LossPrevention.tsx";
@@ -9,22 +8,8 @@ import ItemLookup from "./pages/lookup/ItemLookup.tsx";
 import Admin from "./pages/admin/Admin.tsx";
 import Groups from "./pages/groups/Groups.tsx";
 import Organization from "./pages/organization/Organization.tsx";
-import TitleBar from "./components/navigation/TitleBar.tsx";
-import TitleBarLegacy from "./components/navigation/TitleBarLegacy.tsx";
-import SideBarLegacy from "./components/navigation/SideBarLegacy.tsx";
 import UpcList from "./pages/upc/UpcList.tsx";
 import Forecasting from "./pages/forecast/Forecasting.tsx";
-
-export const NavSwitch = () => {
-  const devMode = useAppSelector((s) => s.app.devMode);
-  if (devMode) return <TitleBar />;
-  return (
-    <>
-      <TitleBarLegacy />
-      <SideBarLegacy />
-    </>
-  );
-};
 
 // No legacy branch: Cashiers has a prod and a dev tree, picked inside
 // pages/cashiers/Cashiers.tsx by the API switch.
