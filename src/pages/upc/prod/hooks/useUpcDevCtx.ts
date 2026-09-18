@@ -1,5 +1,4 @@
 import { useAppSelector } from "../../../../hooks";
-import { upcFixesOn } from "../upcFixes";
 
 export const useUpcDevCtx = () => {
   const { url, token, apiEnv } = useAppSelector((s) => s.app);
@@ -12,8 +11,12 @@ export const useUpcDevCtx = () => {
     url,
     token,
     apiEnv,
-    /** The endpoint corrections, dev-API only — see upcFixes.ts. */
-    fixes: upcFixesOn(apiEnv),
+    /** The endpoint corrections (Trend direction/window/impact, Price Opt by
+     *  weight, failed calls not recorded as empty). Off in the prod tree — this
+     *  is the page prod users have always had. On in the dev tree; promoting dev
+     *  turns them on here. Replaces upcFixes.ts, which keyed this off apiEnv
+     *  while both environments shared one tree. */
+    fixes: false,
     userid,
     assignedStores,
     startDate,
