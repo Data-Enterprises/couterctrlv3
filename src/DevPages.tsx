@@ -6,8 +6,7 @@ import Orders from "./pages/orders/Orders.tsx";
 import Coupons from "./pages/coupons/Coupons.tsx";
 import Receivers from "./pages/receivers/Receivers.tsx";
 import ItemLookup from "./pages/lookup/ItemLookup.tsx";
-import Admin from "./pages/admin/dev/Admin.tsx";
-import AdminLegacy from "./pages/admin/AdminLegacy.tsx";
+import Admin from "./pages/admin/Admin.tsx";
 import Groups from "./pages/groups/Groups.tsx";
 import Organization from "./pages/organization/Organization.tsx";
 import TitleBar from "./components/navigation/TitleBar.tsx";
@@ -59,10 +58,9 @@ export const UpcPage = () => <UpcList />;
 // pages/lookup/ItemLookup.tsx by the API switch.
 export const ItemLookupPage = () => <ItemLookup />;
 
-export const AdminPage = () => {
-  const devMode = useAppSelector((s) => s.app.devMode);
-  return devMode ? <Admin /> : <AdminLegacy />;
-};
+// No legacy branch: Admin has a prod and a dev tree, picked inside
+// pages/admin/Admin.tsx by the API switch.
+export const AdminPage = () => <Admin />;
 
 // No legacy branch: the old Forecasting page is gone, and Forecasting has a
 // prod and a dev tree, picked inside pages/forecast/Forecasting.tsx.

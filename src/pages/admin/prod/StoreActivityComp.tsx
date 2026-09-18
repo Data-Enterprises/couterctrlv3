@@ -8,14 +8,14 @@ import {
   setIsLoadingStoreActivity,
   setSelectedCompanyForm,
   setStoreNameFilter,
-} from "../../../features/dev/devAdminPageSlice";
+} from "../../../features/adminPageSlice";
 import { getAllStoreActivity } from "../../../api/admin";
 import type { JsonError, StoreActivityJsonResp } from "../../../interfaces";
 import { formatGoliathDate } from "../../../utils";
-import DatePickers from "../../../components-dev/datePickers/DatePickers";
-import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
-import TextFilter from "../../../components-dev/filters/TextFilter";
-import EmptyPrompt from "../../../components-dev/EmptyPrompt";
+import DatePickers from "../../../components/datePickers/DatePickers";
+import LoadingIndicator from "../../../components/loading/LoadingIndicator";
+import TextFilter from "../../../components/filters/TextFilter";
+import EmptyPrompt from "../../../components/EmptyPrompt";
 import CompanyPicker from "./CompanyPicker";
 import StoreActivityExportModal from "./StoreActivityExportModal";
 

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Input from "../../../components-dev/inputs/Input";
+import Input from "../../../components/inputs/Input";
 import type { Company } from "../../../interfaces";
 
 interface CompanyFormModalProps {

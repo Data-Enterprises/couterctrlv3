@@ -1,5 +1,5 @@
 import { useState } from "react";
-import ResizableModalShell from "../../../components-dev/modals/ResizableModalShell";
+import ResizableModalShell from "../../../components/modals/ResizableModalShell";
 import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import type { StoreWithActivity } from "../../../interfaces";
 

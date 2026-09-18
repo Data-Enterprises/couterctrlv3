@@ -46,7 +46,7 @@ export const COMING_SOON_LEVELS = ["7", "8", "9"];
  * every page in the category ends up here, `visibleCategories` in TitleBar
  * drops the whole heading for 7 and 8 on its own — no extra handling needed.
  *
- * Deliberately not shared with `PROGRAMMER_LEVEL` in `pages/admin/dev/hooks`.
+ * Deliberately not shared with `PROGRAMMER_LEVEL` in Admin's `hooks.ts` (both trees).
  * That one is authority over the tenancy — who may create and delete a
  * company. This one is release timing. They are the same number today and have
  * no reason to move together.

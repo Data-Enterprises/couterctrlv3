@@ -2,12 +2,12 @@ import { useMemo, useState } from "react";
 import { PencilIcon, TrashIcon, PlusIcon } from "@heroicons/react/20/solid";
 import { useAdminPageCtx } from "./hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
-import { setRefresh } from "../../../features/dev/devAdminPageSlice";
+import { setRefresh } from "../../../features/adminPageSlice";
 import { createCompany, updateCompany, deleteCompany } from "../../../api/company";
 import type { Company, JsonError } from "../../../interfaces";
-import TextFilter from "../../../components-dev/filters/TextFilter";
-import IconButton from "../../../components-dev/IconButton";
-import ConfirmModal from "../../../components-dev/ConfirmModal";
+import TextFilter from "../../../components/filters/TextFilter";
+import IconButton from "../../../components/IconButton";
+import ConfirmModal from "../../../components/ConfirmModal";
 import CompanyFormModal from "./CompanyFormModal";
 
 // Collapses the old separate Create/Update/Delete tabs into one grid with

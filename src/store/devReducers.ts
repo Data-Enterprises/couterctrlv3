@@ -22,6 +22,7 @@ import devCouponReducer from "../features/dev/devCouponSlice";
 import devUsersReducer from "../features/dev/devUsersSlice";
 import devBaseGroupReducer from "../features/dev/devBaseGroupSlice";
 import devOrganizationReducer from "../features/dev/devOrganizationSlice";
+import devAdminPageReducer from "../features/dev/devAdminPageSlice";
 
 /**
  * The dev tree's own copy of every page slice that has been forked.
@@ -63,6 +64,7 @@ export const devReducers = {
   users: devUsersReducer,
   baseGroup: devBaseGroupReducer,
   organization: devOrganizationReducer,
+  adminPage: devAdminPageReducer,
 } satisfies Record<string, Reducer>;
 
 type DevState = { [K in keyof typeof devReducers]: ReturnType<(typeof devReducers)[K]> };
