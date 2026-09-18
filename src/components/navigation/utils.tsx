@@ -20,6 +20,7 @@ import {
   ClockIcon,
   ShieldExclamationIcon,
   DocumentArrowUpIcon,
+  TicketIcon,
   // ScaleIcon, // Suggested Weight — commented out for publish
 } from "@heroicons/react/16/solid";
 import {
@@ -622,6 +623,20 @@ export const categories: NavCategory[] = [
       //   isHovering: false,
       //   isVisible: true,
       // },
+      {
+        name: "Tickets",
+        href: "tickets",
+        icon: TicketIcon,
+        // An experiment on hold. Programmer tier: it is not answerable to a
+        // client, and like every Coming Soon page it only exists in the dev UI
+        // tree, against the dev API. Desktop only.
+        mobile: false,
+        children: [],
+        childOpen: false,
+        userLevels: PROGRAMMER_ONLY_LEVELS,
+        isHovering: false,
+        isVisible: true,
+      },
     ],
   },
 ];

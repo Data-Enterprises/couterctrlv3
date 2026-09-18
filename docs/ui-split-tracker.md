@@ -3,7 +3,7 @@
 Per page: `npm run split:page -- <page> --dry` → split → cut tablet/legacy →
 trash dead files → `tsc -b` + `npm run check:split -- <page>` → commit.
 Promote later with `npm run promote:page -- <page>` once dev is signed off.
-**Coming Soon pages are dev-only**: they get a `dev/` tree and no `prod/` tree until greenlit for production; then they are copied over and set up for prod. They are handled last. Suggested Weight belongs to Coming Soon (route commented out for now).
+**Coming Soon pages are dev-only**: they get a `dev/` tree and no `prod/` tree until greenlit for production; then they are copied over and set up for prod. They are handled last. For safety they must **hit the dev API only** — pinned with `useDevApi()` (dev URL + dev token from the environment), never `app.url`, and render nothing prod-side. Coming Soon: Item Actions, LP Actions, Sales Tracker, Price Opt Sub Dept, Price Opt Vendor, Invoices, Suggested Weight (route commented out), Tickets.
 A page with `mobile: false` in the nav (`components/navigation/utils.tsx`) has no mobile version: its mobile code goes to trash in the split.
 Every page gets its own dev Redux state, as Sales has (split-page forks each page slice; `npm run fork:slice -- <page> <key>` for one added later).
 
@@ -41,10 +41,10 @@ Status: **done** · **next** · blank = not started
 | Admin | `/admin` | `admin` | **done** | legacy page + its forms/ and the `admin` slice removed (9 files); page moved up out of `admin/dev/`; desktop only; own dev Redux state (`devAdminPageSlice`) |
 | Store Groups | `/groups` | `groups` | **done** | legacy page, old forms/ and tablet removed (7 files); page moved up out of `groups/dev/`; the phone view's create/update/delete forms moved from `tablet/` to `mobile/`. page-only fields moved out of the session `group` slice into `groupsPageSlice`, forked for dev (`devGroupsPageSlice`); `groups` and `selectedGroup` stay in the shared session slice (the store picker reads them) |
 | User Management | `/user-management` | `organization` | **done** | legacy Team page + `TeamTablet` removed — the whole `team/` folder (83 files) is trashed; desktop only (no tablet, not on mobile nav); own dev Redux state (`devUsersSlice`, `devBaseGroupSlice`, `devOrganizationSlice`). Settings' `TextInput` and Tickets still read prod `users` — fine until those pages split |
-| Home | `/` | `home` | | |
+| Home | `/` | `home` | **skip** | login and portal only — stays as is, not split |
 | Settings | `/settings` | `settings` | | |
 | QuickSight | `/quicksight` | `quicksight` | | |
-| Tickets | `/tickets` | `tickets` | | experiment on hold. Own Redux state only: `userLevels` moved off User Management's `users` slice into `ticketsSlice` (which, with its mock data, still lives in the page). Not split yet |
+| Tickets | `/tickets` | `tickets` | | **Coming Soon** (experiment on hold; nav entry, programmer-only). Own Redux state only (`ticketsSlice`, incl. its own `userLevels`) |
 
 ## Not routed — decide: split, or trash
 
