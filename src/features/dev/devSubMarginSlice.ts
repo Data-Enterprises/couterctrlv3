@@ -1,8 +1,13 @@
-import type { Coverage } from "../utils/grading";
+/**
+ * Dev copy of `features/subMarginSlice.ts`, mounted at `state.dev.subMargin` and read only
+ * by `pages/subDepts/dev`. Edit this one while changing dev subDepts; when dev is
+ * promoted, it replaces the prod slice. See src/store/devReducers.ts.
+ */
+import type { Coverage } from "../../utils/grading";
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { SubDeptMargin, SubDept, SubDeptCost } from "../interfaces";
-import type { ItemRow, ItemRowMobile } from "../interfaces";
-import type { ItemLookupHistory } from "./itemLookupSlice";
+import type { SubDeptMargin, SubDept, SubDeptCost } from "../../interfaces";
+import type { ItemRow, ItemRowMobile } from "../../interfaces";
+import type { ItemLookupHistory } from "../itemLookupSlice";
 
 export type SubDeptGridView = "item" | "cost" | "nocost";
 export type MarginWeek = 0 | 1 | 2 | 3 | 4 | 5;
@@ -243,7 +248,9 @@ const initialState: SubMarginState = {
 };
 
 const subMarginSlice = createSlice({
-  name: "subMargin",
+  // Distinct from the prod slice's "subMargin": Redux matches actions on this
+  // string alone, so sharing it would move prod and dev together.
+  name: "devSubMargin",
   initialState,
   reducers: {
     setSubDepts(state, action: PayloadAction<SubDept[]>) {

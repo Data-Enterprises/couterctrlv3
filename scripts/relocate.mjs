@@ -158,9 +158,13 @@ export function relocate(plan, { dry = false, log = console.log } = {}) {
   }
 
   for (const [f, text] of writes) writeFileSync(f, text);
+  // git mv keeps history for tracked files; a file not committed yet (a tree
+  // split-page just wrote) can only be renamed.
+  const tracked = new Set(execSync("git ls-files src", { encoding: "utf8" }).trim().split("\n"));
   for (const [from, to] of moves) {
     mkdirSync(P.dirname(to), { recursive: true });
-    execSync(`git mv "${from}" "${to}"`);
+    if (tracked.has(from)) execSync(`git mv "${from}" "${to}"`);
+    else renameSync(from, to);
   }
   for (const [to, w] of copyWrites) {
     mkdirSync(P.dirname(to), { recursive: true });
