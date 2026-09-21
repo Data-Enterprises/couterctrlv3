@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import { useAppDispatch, useAppSelector } from "../../../../hooks";
+import { useAppDispatch, useAppSelector, useSearchPick } from "../../../../hooks";
 import { useCouponContext } from "..";
 import { useCouponActions } from "../hooks/useCouponActions";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
@@ -36,6 +36,7 @@ const fmtSearchDate = (mdy: string) => {
 
 const CouponsMobile = () => {
   const ctx = useCouponContext();
+  const { nothingPicked, pickLabel } = useSearchPick();
   const dispatch = useAppDispatch();
   const actions = useCouponActions();
   const toast = useToast();
@@ -280,10 +281,10 @@ const CouponsMobile = () => {
           <DatePickers showBtn={false} handleQuery={getData} />
           <button
             onClick={getData}
-            disabled={ctx.isFetching}
+            disabled={ctx.isFetching || nothingPicked}
             className="w-full py-2.5 text-[12px] font-semibold text-custom-white rounded-xl bg-[#1e2a4a] hover:bg-[#2a3a63] disabled:opacity-60 transition-colors"
           >
-            {ctx.isFetching ? "Loading…" : "Load Coupons"}
+            {ctx.isFetching ? "Loading…" : nothingPicked ? pickLabel : "Load Coupons"}
           </button>
         </div>
       </div>

@@ -1,4 +1,5 @@
 import StorePicker from "../../../../components/storePicker/StorePicker";
+import { useSearchPick } from "../../../../hooks";
 import DatePickers from "../../../../components/datePickers/DatePickers";
 import SelectFilter from "../../../../components/filters/SelectFilter";
 import LoadingIndicator from "../../../../components/loading/LoadingIndicator";
@@ -36,6 +37,7 @@ const ExplorerSearch = ({
 }: ExplorerSearchProps) => {
   const rangeTooWide = rangeDays > maxRangeDays;
   const hasSaleTypes = saleTypes.length > 0;
+  const { nothingPicked, pickLabel } = useSearchPick();
 
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-3rem)] overflow-hidden mx-4 pb-8">
@@ -93,12 +95,14 @@ const ExplorerSearch = ({
 
         <button
           onClick={hasSaleTypes && exception ? onExplore : onFindExceptions}
-          disabled={loading || rangeTooWide || (hasSaleTypes && !exception)}
+          disabled={loading || nothingPicked || rangeTooWide || (hasSaleTypes && !exception)}
           className="w-full py-2 text-sm font-semibold text-custom-white rounded-lg bg-[#1e2a4a] hover:bg-[#2a3a63] transition-colors cursor-pointer select-none disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading
             ? message || "Loading…"
-            : hasSaleTypes
+            : nothingPicked
+              ? pickLabel
+              : hasSaleTypes
               ? "Explore transactions"
               : "Find exceptions"}
         </button>
