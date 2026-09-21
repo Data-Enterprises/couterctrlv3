@@ -872,11 +872,14 @@ export interface CompanyJsonResp {
 
 /* ----------------------------------------------------------- shared groups */
 
-/** A store as the shared_groups router returns it. */
+/** A store as the shared_groups router returns it. `company` comes back on
+ *  /shared_groups/stores; a group's own stores don't carry it. */
 export interface SharedGroupStore {
   storeid: number;
   store_number: string | null;
   store_name: string | null;
+  company?: number;
+  company_name?: string | null;
 }
 
 /** A store group an owner builds and lets other users search with. A search
@@ -885,6 +888,7 @@ export interface SharedGroup {
   id: number;
   name: string;
   company: number;
+  company_name: string | null;
   /** userid of whoever created it; their rows are the group's store list. */
   owner: number;
   stores: SharedGroupStore[];
@@ -905,19 +909,23 @@ export interface SharedGroupUser {
 export interface SharedGroupTemplate {
   id: number;
   name: string;
+  company: number;
+  company_name: string | null;
   stores: SharedGroupStore[];
 }
 
+/** Every read takes one company or several (?company=1,4,6) and echoes them. */
 interface SharedGroupsEnvelope {
   error: number;
   success: boolean;
   msg?: string;
-  company: number;
+  companies: number[];
 }
 
 export type SharedGroupsResp = SharedGroupsEnvelope & { shared_groups: SharedGroup[] };
 export type SharedGroupUsersResp = SharedGroupsEnvelope & { users: SharedGroupUser[] };
 export type SharedGroupTemplatesResp = SharedGroupsEnvelope & { templates: SharedGroupTemplate[] };
+export type SharedGroupStoresResp = SharedGroupsEnvelope & { stores: SharedGroupStore[] };
 
 /** groups/base_group_users: everyone a base group's Users tab needs, in one call. */
 export interface BaseGroupUserRow {

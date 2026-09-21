@@ -12,17 +12,19 @@ import {
 } from "../../../../api/sharedGroups";
 import type {
   SharedGroup,
+  SharedGroupStore,
   SharedGroupUser,
   SharedGroupUsersResp,
 } from "../../../../interfaces";
 import AssignPanel from "../../../../components-dev/AssignPanel";
 import IconButton from "../../../../components-dev/IconButton";
 import ConfirmModal from "../../../../components-dev/ConfirmModal";
-import { errorText, storeLabel, useSharedGroupsCtx } from "./hooks";
+import { errorText, storeLabel, storesFor, useSharedGroupsCtx } from "./hooks";
 
 interface Props {
   group: SharedGroup;
-  companyName: string;
+  /** Every store in the tab's companies, from /shared_groups/stores. */
+  allStores: SharedGroupStore[];
   /** Re-reads the company's shared groups after any change to this one. */
   onChanged: () => void;
   onDeleted: () => void;
@@ -37,7 +39,7 @@ type Envelope = { error: number; msg?: string };
  * someone search with the group — it never changes which stores they can
  * open, so there is nothing to stage or confirm here except delete.
  */
-const SharedGroupDetail = ({ group, companyName, onChanged, onDeleted }: Props) => {
+const SharedGroupDetail = ({ group, allStores, onChanged, onDeleted }: Props) => {
   const ctx = useSharedGroupsCtx();
   const toast = useToast();
   const [editing, setEditing] = useState(false);
@@ -61,7 +63,7 @@ const SharedGroupDetail = ({ group, companyName, onChanged, onDeleted }: Props) 
   const loadUsers = () => {
     const forGroup = group.id;
     activeGroupId.current = forGroup;
-    getSharedGroupUsers(ctx.url, ctx.token, group.company)
+    getSharedGroupUsers(ctx.url, ctx.token, [group.company])
       .then((resp) => {
         if (activeGroupId.current !== forGroup) return;
         const j: SharedGroupUsersResp = resp.data;
@@ -124,7 +126,7 @@ const SharedGroupDetail = ({ group, companyName, onChanged, onDeleted }: Props) 
     );
 
   const inGroup = new Set(group.stores.map((s) => s.storeid));
-  const stores = ctx.companyStores(group.company, group.stores);
+  const stores = storesFor(allStores, group.company, group.stores);
   const sharedWith = new Set(group.userids);
   // The owner's rows are the group itself; they're never a recipient.
   const candidates = (users ?? []).filter((u) => u.userid !== group.owner);
@@ -166,7 +168,7 @@ const SharedGroupDetail = ({ group, companyName, onChanged, onDeleted }: Props) 
         />
       </div>
       <div className="text-[11.5px] text-content/85 mb-2">
-        {companyName} · {group.stores.length} store
+        {group.company_name ?? `Company ${group.company}`} · {group.stores.length} store
         {group.stores.length === 1 ? "" : "s"} · shared with {group.userids.length}
       </div>
 

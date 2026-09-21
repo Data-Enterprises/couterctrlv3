@@ -31,14 +31,21 @@ const call = (
 export const isForbidden = (err: unknown) =>
   (err as { response?: { status?: number } })?.response?.status === 403;
 
-export const getSharedGroups = (url: string, token: string, company: number) =>
-  call(url, token, "GET", "", { params: { company } });
+/** Reads take every company at once: ?company=1,4,6. */
+const companiesParam = (companies: number[]) => ({ company: companies.join(",") });
 
-export const getSharedGroupUsers = (url: string, token: string, company: number) =>
-  call(url, token, "GET", "users", { params: { company } });
+export const getSharedGroups = (url: string, token: string, companies: number[]) =>
+  call(url, token, "GET", "", { params: companiesParam(companies) });
 
-export const getSharedGroupTemplates = (url: string, token: string, company: number) =>
-  call(url, token, "GET", "templates", { params: { company } });
+export const getSharedGroupUsers = (url: string, token: string, companies: number[]) =>
+  call(url, token, "GET", "users", { params: companiesParam(companies) });
+
+export const getSharedGroupTemplates = (url: string, token: string, companies: number[]) =>
+  call(url, token, "GET", "templates", { params: companiesParam(companies) });
+
+/** Every store in the companies, for picking a group's stores. */
+export const getSharedGroupStores = (url: string, token: string, companies: number[]) =>
+  call(url, token, "GET", "stores", { params: companiesParam(companies) });
 
 export const createSharedGroup = (
   url: string,
