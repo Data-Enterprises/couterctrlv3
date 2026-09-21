@@ -1,98 +1,107 @@
 import { useEffect, useRef, useState } from "react";
-import { PlusIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
+import { PlusIcon } from "@heroicons/react/20/solid";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
-import { createSharedGroup, getSharedGroups } from "../../../../api/sharedGroups";
-import type { SharedGroup, SharedGroupsResp } from "../../../../interfaces";
+import {
+  createSharedGroup,
+  getSharedGroups,
+  getSharedGroupTemplates,
+} from "../../../../api/sharedGroups";
+import type {
+  SharedGroup,
+  SharedGroupsResp,
+  SharedGroupTemplate,
+  SharedGroupTemplatesResp,
+} from "../../../../interfaces";
 import TextFilter from "../../../../components-dev/filters/TextFilter";
+import SelectFilter from "../../../../components-dev/filters/SelectFilter";
 import SharedGroupDetail from "./SharedGroupDetail";
-import NewSharedGroupModal from "./NewSharedGroupModal";
+import CreateSharedGroupPanel from "./CreateSharedGroupPanel";
 import { errorText, useSharedGroupsCtx } from "./hooks";
+
+type RightSide =
+  | { kind: "none" }
+  | { kind: "create"; template: SharedGroupTemplate | null }
+  | { kind: "group"; id: number };
 
 /**
  * Admin > Shared Groups, on the shared_groups router.
  *
- * Laid out like Base Groups — companies down the left, a group's detail on the
- * right — because the two are managed side by side. They are different
- * things: a base group grants access to stores; a shared group is a search
- * filter handed to other users, and never grants or revokes anything.
+ * One company at a time. Down the left: the company's base groups, offered as
+ * templates to start a shared group from, then the shared groups it already
+ * has. The right side is either the form for a new one or the selected group,
+ * opening on who it's shared with.
+ *
+ * A base group grants access to stores; a shared group is a search filter
+ * handed to other users and never grants or revokes anything. Starting from a
+ * base group copies its name and stores — nothing links the two afterwards.
  */
 const SharedGroups = () => {
   const ctx = useSharedGroupsCtx();
   const toast = useToast();
 
-  const [expanded, setExpanded] = useState<Set<number>>(new Set());
-  const [companyGroups, setCompanyGroups] = useState<Record<number, SharedGroup[]>>({});
-  const [selected, setSelected] = useState<{ id: number; company: number } | null>(null);
+  const [companyId, setCompanyId] = useState(
+    ctx.companies[0] ? String(ctx.companies[0].id) : "",
+  );
+  const company = Number(companyId);
+  // The company on screen now — a response for one the reader has left is dropped.
+  const currentCompany = useRef(company);
+  currentCompany.current = company;
+  const [templates, setTemplates] = useState<SharedGroupTemplate[] | null>(null);
+  const [groups, setGroups] = useState<SharedGroup[] | null>(null);
   const [search, setSearch] = useState("");
-  const [showNew, setShowNew] = useState(false);
+  const [right, setRight] = useState<RightSide>({ kind: "none" });
 
-  const fetching = useRef<Set<number>>(new Set());
+  // Admin's company list can arrive after this tab mounts.
+  useEffect(() => {
+    if (!companyId && ctx.companies[0]) setCompanyId(String(ctx.companies[0].id));
+  }, [ctx.companies.length]);
 
-  const fetchGroups = (company: number) => {
-    if (fetching.current.has(company)) return;
-    fetching.current.add(company);
-    getSharedGroups(ctx.url, ctx.token, company)
+  const fetchGroups = () => {
+    if (!company) return;
+    const forCompany = company;
+    getSharedGroups(ctx.url, ctx.token, forCompany)
       .then((resp) => {
         const j: SharedGroupsResp = resp.data;
-        if (j.error === 0) {
-          setCompanyGroups((prev) => ({ ...prev, [company]: j.shared_groups }));
-        } else {
-          toast.error(j.msg || "Could not load shared groups");
-        }
+        if (forCompany !== currentCompany.current) return;
+        if (j.error === 0) setGroups(j.shared_groups);
+        else toast.error(j.msg || "Could not load shared groups");
       })
-      .catch((err) => toast.error(errorText(err)))
-      .finally(() => fetching.current.delete(company));
+      .catch((err) => toast.error(errorText(err)));
   };
 
-  const toggleCompany = (company: number) => {
-    setExpanded((prev) => {
-      const next = new Set(prev);
-      if (next.has(company)) next.delete(company);
-      else {
-        next.add(company);
-        if (!companyGroups[company]) fetchGroups(company);
-      }
-      return next;
-    });
-  };
-
-  const searching = search.trim().length > 0;
-  const matched = (company: number) => {
-    const groups = companyGroups[company] ?? [];
-    return searching
-      ? groups.filter((g) => g.name.toLowerCase().includes(search.toLowerCase()))
-      : groups;
-  };
-
-  // A search surfaces matches whatever is collapsed, so every company's
-  // groups are fetched while one is active.
   useEffect(() => {
-    if (!searching) return;
-    ctx.companies.forEach((c) => {
-      if (!companyGroups[c.id]) fetchGroups(c.id);
-    });
-  }, [searching]);
+    setTemplates(null);
+    setGroups(null);
+    setRight({ kind: "none" });
+    setSearch("");
+    if (!company) return;
+    fetchGroups();
+    const forCompany = company;
+    getSharedGroupTemplates(ctx.url, ctx.token, company)
+      .then((resp) => {
+        const j: SharedGroupTemplatesResp = resp.data;
+        if (forCompany !== currentCompany.current) return;
+        if (j.error === 0) setTemplates(j.templates);
+        else toast.error(j.msg || "Could not load base groups");
+      })
+      .catch((err) => toast.error(errorText(err)));
+  }, [company]);
 
-  // The detail reads the group from the list, so a re-fetch after any change
-  // (stores, sharing, rename) is all it takes to show the new state.
-  const selectedGroup = selected
-    ? (companyGroups[selected.company] ?? []).find((g) => g.id === selected.id) ?? null
-    : null;
+  const companyName = ctx.companies.find((c) => c.id === company)?.name ?? "";
+  const q = search.trim().toLowerCase();
+  const match = (name: string) => !q || name.toLowerCase().includes(q);
+  const shownTemplates = (templates ?? []).filter((t) => match(t.name));
+  const shownGroups = (groups ?? []).filter((g) => match(g.name));
+  const selectedGroup =
+    right.kind === "group" ? (groups ?? []).find((g) => g.id === right.id) ?? null : null;
 
-  const companyName = (id: number) =>
-    ctx.companies.find((c) => c.id === id)?.name ?? "";
-
-  const handleCreate = (name: string, company: number, storeids: number[]) => {
+  const handleCreate = (name: string, storeids: number[]) => {
     const trimmed = name.trim();
     if (!trimmed) {
       toast.error("Group name is required");
       return;
     }
-    if (
-      (companyGroups[company] ?? []).some(
-        (g) => g.name.toLowerCase() === trimmed.toLowerCase(),
-      )
-    ) {
+    if ((groups ?? []).some((g) => g.name.toLowerCase() === trimmed.toLowerCase())) {
       toast.error("A shared group with that name already exists");
       return;
     }
@@ -101,10 +110,9 @@ const SharedGroups = () => {
         const j = resp.data;
         if (j.error === 0) {
           toast.success("Shared group created");
-          setShowNew(false);
-          fetchGroups(company);
-          setExpanded((prev) => new Set(prev).add(company));
-          setSelected({ id: j.id, company });
+          fetchGroups();
+          // Straight to who it's shared with — the next thing to do with it.
+          setRight({ kind: "group", id: j.id });
         } else {
           toast.error(j.msg || "Could not create the shared group");
         }
@@ -112,115 +120,134 @@ const SharedGroups = () => {
       .catch((err) => toast.error(errorText(err)));
   };
 
+  const rowClass = (active: boolean) =>
+    `w-full flex flex-col items-start px-3 py-2 text-left transition-colors ${
+      active ? "bg-custom-white" : "hover:bg-gray-50"
+    }`;
+  const activeStyle = { boxShadow: "inset 0 0 8px rgba(37,99,235,0.22)" };
+  const sectionHead = "px-3 pt-3 pb-1.5 text-[10.5px] font-semibold uppercase tracking-wide text-content/60";
+
   return (
     <div className="flex-1 flex min-h-0 w-full">
       <div className="w-72 border-r border-gray-100 flex-shrink-0 flex flex-col">
-        <div className="p-2.5 border-b border-gray-100 flex gap-1.5">
-          <TextFilter
-            value={search}
-            onChange={setSearch}
-            placeholder="Search shared groups…"
-            className="flex-1"
+        <div className="p-2.5 border-b border-gray-100 flex flex-col gap-1.5">
+          <SelectFilter
+            options={ctx.companies.map((c) => ({ label: c.name, value: String(c.id) }))}
+            value={companyId}
+            onChange={setCompanyId}
+            placeholder="Choose a company"
+            className="w-full"
           />
-          <button
-            onClick={() => setShowNew(true)}
-            title="New shared group"
-            aria-label="New shared group"
-            className="w-7 h-7 flex-shrink-0 rounded-md border border-gray-300 border-dashed text-blue-700 flex items-center justify-center hover:bg-gray-50"
-          >
-            <PlusIcon className="w-4 h-4" />
-          </button>
+          <div className="flex gap-1.5">
+            <TextFilter
+              value={search}
+              onChange={setSearch}
+              placeholder="Search groups…"
+              className="flex-1"
+            />
+            <button
+              onClick={() => setRight({ kind: "create", template: null })}
+              disabled={!company}
+              title="New shared group"
+              aria-label="New shared group"
+              className="w-7 h-7 flex-shrink-0 rounded-md border border-gray-300 border-dashed text-blue-700 flex items-center justify-center hover:bg-gray-50 disabled:opacity-40"
+            >
+              <PlusIcon className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
-        <div className="flex-1 min-h-0 overflow-y-auto p-2 space-y-1.5 thin-scrollbar">
-          {ctx.companies.length === 0 && (
-            <div className="p-3 text-[11px] text-content">No companies</div>
-          )}
-          {ctx.companies.map((c) => {
-            const groups = matched(c.id);
-            if (searching && groups.length === 0) return null;
-            const isOpen = searching || expanded.has(c.id);
-            const total = companyGroups[c.id]?.length;
-            return (
-              <div key={c.id} className="rounded-lg border border-gray-100 overflow-hidden">
-                <button
-                  onClick={() => toggleCompany(c.id)}
-                  className="w-full flex items-center gap-2 bg-[#1e2a4a]/5 hover:bg-[#1e2a4a]/10 pl-3 pr-3 py-2 transition-colors"
-                >
-                  <ChevronRightIcon
-                    className="w-3 h-3 text-[#1e2a4a]/60 flex-shrink-0 transition-transform"
-                    style={{ transform: isOpen ? "rotate(90deg)" : "rotate(0deg)" }}
-                  />
-                  <span className="text-[12px] font-semibold text-[#1e2a4a] flex-1 text-left truncate">
-                    {c.name}
-                  </span>
-                  <span className="text-[11px] text-[#1e2a4a]/55 flex-shrink-0">
-                    {total !== undefined ? `${total} shared` : ""}
-                  </span>
-                </button>
-                {isOpen && (
-                  <div className="divide-y divide-gray-100">
-                    {groups.map((g) => {
-                      const isSel = selected?.id === g.id;
-                      return (
-                        <button
-                          key={g.id}
-                          onClick={() => setSelected({ id: g.id, company: c.id })}
-                          style={
-                            isSel
-                              ? { boxShadow: "inset 0 0 8px rgba(37,99,235,0.22)" }
-                              : undefined
-                          }
-                          className={`w-full flex flex-col items-start pl-6 pr-3 py-2 text-left transition-colors ${
-                            isSel ? "bg-custom-white" : "hover:bg-gray-50"
-                          }`}
-                        >
-                          <span className="text-[12px] font-medium text-content">{g.name}</span>
-                          <span className="text-[10.5px] text-content/55">
-                            {g.stores.length} store{g.stores.length === 1 ? "" : "s"} · shared
-                            with {g.userids.length}
-                          </span>
-                        </button>
-                      );
-                    })}
-                    {groups.length === 0 && (
-                      <div className="pl-6 py-1.5 text-[11px] text-content/60">
-                        {companyGroups[c.id] ? "No shared groups" : "Loading…"}
-                      </div>
-                    )}
-                  </div>
-                )}
+        <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar">
+          <div className={sectionHead}>Base group templates</div>
+          <div className="divide-y divide-gray-100">
+            {templates === null ? (
+              <div className="px-3 py-1.5 text-[11px] text-content/60">
+                {company ? "Loading…" : "Choose a company"}
               </div>
-            );
-          })}
+            ) : shownTemplates.length === 0 ? (
+              <div className="px-3 py-1.5 text-[11px] text-content/60">No base groups</div>
+            ) : (
+              shownTemplates.map((t) => {
+                const active = right.kind === "create" && right.template?.id === t.id;
+                return (
+                  <button
+                    key={`t${t.id}`}
+                    onClick={() => setRight({ kind: "create", template: t })}
+                    style={active ? activeStyle : undefined}
+                    className={rowClass(active)}
+                    title="Start a shared group from this base group"
+                  >
+                    <span className="text-[12px] font-medium text-content">{t.name}</span>
+                    <span className="text-[10.5px] text-content/55">
+                      {t.stores.length} store{t.stores.length === 1 ? "" : "s"}
+                    </span>
+                  </button>
+                );
+              })
+            )}
+          </div>
+
+          <div className={`${sectionHead} border-t border-gray-100 mt-1`}>
+            Shared groups
+          </div>
+          <div className="divide-y divide-gray-100">
+            {groups === null ? (
+              <div className="px-3 py-1.5 text-[11px] text-content/60">
+                {company ? "Loading…" : ""}
+              </div>
+            ) : shownGroups.length === 0 ? (
+              <div className="px-3 py-1.5 text-[11px] text-content/60">
+                No shared groups yet
+              </div>
+            ) : (
+              shownGroups.map((g) => {
+                const active = right.kind === "group" && right.id === g.id;
+                return (
+                  <button
+                    key={`g${g.id}`}
+                    onClick={() => setRight({ kind: "group", id: g.id })}
+                    style={active ? activeStyle : undefined}
+                    className={rowClass(active)}
+                  >
+                    <span className="text-[12px] font-medium text-content">{g.name}</span>
+                    <span className="text-[10.5px] text-content/55">
+                      {g.stores.length} store{g.stores.length === 1 ? "" : "s"} · shared
+                      with {g.userids.length}
+                    </span>
+                  </button>
+                );
+              })
+            )}
+          </div>
         </div>
       </div>
 
       <div className="flex-1 min-w-0 overflow-y-auto p-4">
-        {!selectedGroup ? (
-          <div className="flex items-center justify-center h-full text-[12px] text-content">
-            Select a shared group
-          </div>
-        ) : (
+        {right.kind === "create" ? (
+          <CreateSharedGroupPanel
+            company={company}
+            companyName={companyName}
+            template={right.template}
+            onCreate={handleCreate}
+            onCancel={() => setRight({ kind: "none" })}
+          />
+        ) : selectedGroup ? (
           <SharedGroupDetail
             group={selectedGroup}
-            companyName={companyName(selectedGroup.company)}
-            onChanged={() => fetchGroups(selectedGroup.company)}
+            companyName={companyName}
+            onChanged={fetchGroups}
             onDeleted={() => {
-              fetchGroups(selectedGroup.company);
-              setSelected(null);
+              fetchGroups();
+              setRight({ kind: "none" });
             }}
           />
+        ) : (
+          <div className="flex items-center justify-center h-full text-[12px] text-content text-center px-6">
+            Pick a base group template to start a shared group, or select a
+            shared group to see who it's shared with.
+          </div>
         )}
       </div>
-
-      {showNew && (
-        <NewSharedGroupModal
-          companies={ctx.companies}
-          onCreate={handleCreate}
-          onClose={() => setShowNew(false)}
-        />
-      )}
     </div>
   );
 };

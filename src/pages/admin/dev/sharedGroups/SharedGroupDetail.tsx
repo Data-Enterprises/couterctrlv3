@@ -43,7 +43,7 @@ const SharedGroupDetail = ({ group, companyName, onChanged, onDeleted }: Props) 
   const [editing, setEditing] = useState(false);
   const [nameDraft, setNameDraft] = useState(group.name);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const [subTab, setSubTab] = useState<"stores" | "users">("stores");
+  const [subTab, setSubTab] = useState<"stores" | "users">("users");
   const [users, setUsers] = useState<SharedGroupUser[] | null>(null);
   const activeGroupId = useRef(group.id);
 
@@ -53,8 +53,9 @@ const SharedGroupDetail = ({ group, companyName, onChanged, onDeleted }: Props) 
     setConfirmDelete(false);
   }, [group.id, group.name]);
 
+  // Opens on who it's shared with — the reason to select a group.
   useEffect(() => {
-    setSubTab("stores");
+    setSubTab("users");
   }, [group.id]);
 
   const loadUsers = () => {
@@ -170,7 +171,7 @@ const SharedGroupDetail = ({ group, companyName, onChanged, onDeleted }: Props) 
       </div>
 
       <div className="flex border-b border-gray-100 mb-4">
-        {(["stores", "users"] as const).map((t) => (
+        {(["users", "stores"] as const).map((t) => (
           <button
             key={t}
             onClick={() => setSubTab(t)}
