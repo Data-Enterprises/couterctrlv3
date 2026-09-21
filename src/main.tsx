@@ -17,6 +17,7 @@ import InventorySubDept from "./pages/inventory/InventorySubDept.tsx";
 import InventoryVendor from "./pages/inventory/InventoryVendor.tsx";
 import ItemReport from "./pages/itemReport/ItemReport.tsx";
 import Invoices from "./pages/invoices/Invoices.tsx";
+import LpActions from "./pages/lpActions/LpActions.tsx";
 import SalesTracker from "./pages/salesTracker/SalesTracker.tsx";
 // Suggested Weight — commented out for publish; dev-API only (see navigation/utils.tsx)
 // import Suggested from "./pages/suggested/Suggested.tsx";
@@ -69,7 +70,7 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="inventory-vendor" element={<InventoryVendor />} />
                 <Route path="item-report" element={<ItemReport />} />
                 <Route path="invoices" element={<Invoices />} />
-                {/* LP Actions stays local while the rebuild is tested: no route. */}
+                <Route path="lp-actions" element={<LpActions />} />
                 <Route path="sales-tracker" element={<SalesTracker />} />
                 {/* <Route path="suggested-weight" element={<Suggested />} /> */}
                 <Route path="forecasting" element={<ForecastPage />} />
