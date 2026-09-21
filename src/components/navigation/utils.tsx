@@ -18,7 +18,7 @@ import {
   TruckIcon,
   ArchiveBoxIcon,
   ClockIcon,
-  ShieldExclamationIcon,
+  // ShieldExclamationIcon, // LP Actions — out of the nav for now
   DocumentArrowUpIcon,
   TicketIcon,
   // ScaleIcon, // Suggested Weight — commented out for publish
@@ -546,18 +546,8 @@ export const categories: NavCategory[] = [
         isHovering: false,
         isVisible: true,
       },
-      {
-        name: "LP Actions",
-        href: "lp-actions",
-        icon: ShieldExclamationIcon,
-        // Desktop only — the two-panel ledger has no mobile form yet.
-        mobile: false,
-        children: [],
-        childOpen: false,
-        userLevels: PROGRAMMER_ONLY_LEVELS,
-        isHovering: false,
-        isVisible: true,
-      },
+      // LP Actions: taken out of the nav while the rebuild is tested. The
+      // route stays (/lp-actions, dev mode only); restore this entry to list it.
       {
         name: "Sales Tracker",
         href: "sales-tracker",
