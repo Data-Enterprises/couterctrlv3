@@ -27,6 +27,9 @@ interface AssignPanelProps {
   // action has consumed it, say. The selection lives here, so a caller can't
   // clear it by resetting whatever it mirrored the ids into.
   rightSelectionResetKey?: number;
+  // What the buttons call the action. Defaults to Assign / Unassign; a panel
+  // whose action isn't an assignment says what it does (Shared Groups: Share).
+  verbs?: { assign: string; unassign: string };
 }
 
 // Shared staged dual-column assign/unassign control — used by the create-user
@@ -39,6 +42,7 @@ const AssignPanel = ({
   rightItems,
   onAssign,
   onUnassign,
+  verbs = { assign: "Assign", unassign: "Unassign" },
   assignAllScope = "filtered",
   onRightSelectionChange,
   rightSelectionResetKey,
@@ -138,7 +142,7 @@ const AssignPanel = ({
             disabled={staged.size === 0}
             className="flex-1 text-[11px] font-medium py-1.5 rounded-md text-custom-white bg-[#1e2a4a] hover:bg-[#1e2a4a]/85 disabled:bg-gray-300 disabled:cursor-not-allowed"
           >
-            Assign
+            {verbs.assign}
           </button>
           <button
             onClick={() =>
@@ -151,7 +155,7 @@ const AssignPanel = ({
             disabled={leftItems.length === 0}
             className="flex-1 text-[11px] font-medium py-1.5 rounded-md text-custom-white bg-[#1e2a4a] hover:bg-[#1e2a4a]/85 disabled:bg-gray-300 disabled:cursor-not-allowed"
           >
-            Assign all
+            {verbs.assign} all
           </button>
         </div>
       </div>
@@ -198,7 +202,7 @@ const AssignPanel = ({
             disabled={unstaged.size === 0}
             className="flex-1 text-[11px] font-medium py-1.5 rounded-md text-custom-white bg-red-600 hover:bg-red-600/85 disabled:bg-gray-300 disabled:cursor-not-allowed"
           >
-            Unassign
+            {verbs.unassign}
           </button>
           <button
             onClick={() =>
@@ -211,7 +215,7 @@ const AssignPanel = ({
             disabled={rightItems.length === 0}
             className="flex-1 text-[11px] font-medium py-1.5 rounded-md text-custom-white bg-red-600 hover:bg-red-600/85 disabled:bg-gray-300 disabled:cursor-not-allowed"
           >
-            Unassign all
+            {verbs.unassign} all
           </button>
         </div>
       </div>

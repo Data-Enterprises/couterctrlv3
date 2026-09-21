@@ -233,6 +233,7 @@ const SharedGroupDetail = ({ group, companyName, onChanged, onDeleted }: Props) 
             </p>
             <AssignPanel
               leftTitle="Not shared with"
+              verbs={{ assign: "Share", unassign: "Unshare" }}
               rightTitle="Shared with"
               leftItems={candidates.filter((u) => !sharedWith.has(u.userid)).map(userItem)}
               rightItems={candidates.filter((u) => sharedWith.has(u.userid)).map(userItem)}
