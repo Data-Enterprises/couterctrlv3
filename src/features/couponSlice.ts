@@ -1,5 +1,5 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { CouponItem } from "../interfaces";
+import type { CouponItem, TransactionListItem } from "../interfaces";
 
 export type FilterType =
   | "Store"
@@ -36,6 +36,10 @@ interface CouponState {
   subDeptMobileFilter: string[];
   uniqueDateMobileFilter: string;
   showSubsMobileFilter: boolean;
+  /** Lines of the receipt open in the detail panel (or the mobile sheet);
+   *  empty when none is. Was parked in LP's slice (transactionDrillDown) —
+   *  Coupons keeps its own, as Coupon Sales does. */
+  receiptLines: TransactionListItem[];
 }
 
 const initialState: CouponState = {
@@ -59,12 +63,16 @@ const initialState: CouponState = {
   uniqueSubDepts: [],
   subDeptMobileFilter: [],
   showSubsMobileFilter: false,
+  receiptLines: [],
 };
 
 const couponSlice = createSlice({
   name: "coupon",
   initialState,
   reducers: {
+    setCouponReceiptLines: (state, action: PayloadAction<TransactionListItem[]>) => {
+      state.receiptLines = action.payload;
+    },
     setCoupons: (state, action: PayloadAction<CouponItem[]>) => {
       state.coupons = action.payload;
       state.gridCoupons = action.payload;
@@ -241,6 +249,7 @@ const couponSlice = createSlice({
 });
 
 export const {
+  setCouponReceiptLines,
   setCoupons,
   resetCoupons,
   setFilter,

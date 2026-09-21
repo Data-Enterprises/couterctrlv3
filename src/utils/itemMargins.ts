@@ -1,4 +1,4 @@
-import { calculateCogs } from "../pages/subDepts";
+import { calculateCogs } from "./cogs";
 import { formatCurrency2 } from ".";
 import {
   pricedUnits,

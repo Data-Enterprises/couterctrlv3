@@ -15,30 +15,18 @@ interface AppState {
   isTablet: boolean;
   isDesktop: boolean;
   fetchingCredentials: boolean;
-  devMode: boolean;
-  /** Which API this session talks to. Independent of `devMode`. */
+  /** Which API this session talks to — and so which UI tree each page renders. */
   apiEnv: "dev" | "prod";
   prodToken: string;
   devToken: string;
 }
 
 /**
- * Whether the LIVE/PREVIEW switch is offered in the title bars.
- *
- * Off for the cutover to the new UI: everyone runs Preview against the dev API
- * exclusively. Nothing is deleted — `toggleDevMode` and both title-bar controls
- * are intact, so flipping this back to `true` restores the switch as it was.
- */
-export const SHOW_ENV_TOGGLE = true;
-
-/**
  * The Prod/Dev API switch in the avatar dropdown.
  *
- * Separate from SHOW_ENV_TOGGLE above, and separate from `devMode`, because
- * they are three different questions. `devMode` picks the dev-vs-legacy UI --
- * 80-odd call sites, every page in DevPages -- so routing an API switch
- * through it would drop the whole app back to the legacy interface on the
- * first click. `apiEnv` picks the backend and nothing else.
+ * `apiEnv` picks the backend, and with it the UI tree: every split page shows
+ * its dev tree on the dev API and its prod tree on prod, and Coming Soon pages
+ * exist on the dev API only.
  *
  * Also gates the cross-environment sign-in in Login: the switch is a pointer
  * swap between two already-held tokens, so both have to be fetched up front
@@ -67,7 +55,6 @@ export const initialState: AppState = {
   isTablet: false,
   isDesktop: true,
   fetchingCredentials: false,
-  devMode: true,
   apiEnv: "prod",
   prodToken: "",
   devToken: "",
@@ -104,12 +91,6 @@ export const appSlice = createSlice({
     setProdToken: (state, action: PayloadAction<string>) => {
       state.prodToken = action.payload;
     },
-    // UI fork only. It used to move url/token as well, which conflated the
-    // interface someone is looking at with the backend they are pointed at;
-    // setApiEnv owns that half now.
-    toggleDevMode: (state) => {
-      state.devMode = !state.devMode;
-    },
     setApiEnv: (state, action: PayloadAction<"dev" | "prod">) => {
       state.apiEnv = action.payload;
       state.url =
@@ -135,7 +116,6 @@ export const {
   setDevToken,
   setProdToken,
   setApiEnv,
-  toggleDevMode,
   resetAppSlice,
 } = appSlice.actions;
 

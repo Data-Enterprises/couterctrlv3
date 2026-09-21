@@ -1,5 +1,4 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { ActionKey } from "../pages/suggested";
 import type {
   SuggestedItem,
   SuggestedGroupRow,
@@ -8,6 +7,7 @@ import type {
   SuggestedNotSelling,
   SuggestedDailySeries,
   NotSellingStatus,
+  ActionKey,
 } from "../interfaces";
 
 /** The not-selling chip row, which carries an "all" option the payload has no

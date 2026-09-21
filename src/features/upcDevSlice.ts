@@ -41,37 +41,7 @@ export type AssociationResult = {
   items: AssociationItem[];
 };
 
-/** Which backend the loaded data came from. Mirrors `app.apiEnv`, but held
- *  here so the data can say which environment it belongs to. */
-export type UpcDevEnv = "dev" | "prod";
-
 interface UpcDevState {
-  /**
-   * The environment the data below was fetched from.
-   *
-   * Switching the API switches the backend but not what is already on screen,
-   * and none of it is labelled — so prod rows sat under a DEV badge, and
-   * because `searchedScopeKey` knows nothing about the environment, the next
-   * re-search took the incremental path and merged a call to one backend into
-   * rows from the other. A removal-only re-search skipped the network
-   * entirely, leaving a page of dev data under a PROD badge.
-   *
-   * Rather than throw the data away on every switch, each environment keeps
-   * its own: see `stash` and `setUpcDevEnv`.
-   */
-  env: UpcDevEnv;
-  /**
-   * The other environment's data, parked.
-   *
-   * Two full answers to the same question is the point — load a search on
-   * prod, switch to dev, and flipping between them is a click rather than two
-   * re-searches, which is the only way to see the same UPCs read both ways.
-   *
-   * Same park-and-restore shape as `itemPerfSlice`'s per-page stash, and for
-   * the same reason: the alternative is keying all forty-odd fields by
-   * environment and rewriting every reducer that touches them.
-   */
-  stash: Partial<Record<UpcDevEnv, UpcDevSnapshot>>;
   upcs: string[];
   upcText: string;
   storeids: string;
@@ -171,72 +141,7 @@ const mergeRows = <T extends { product_code: string }>(
 const extendCoverage = (current: string[], codes: string[]): string[] =>
   Array.from(new Set([...current, ...codes]));
 
-/**
- * What follows you between environments instead of being parked with the data.
- *
- * The split is "the question" vs "the answer". A UPC list, a trend window and
- * which tab you are reading are what you are asking, and retyping them to look
- * at the same items on the other backend is the friction this whole change
- * exists to remove — switching envs drops you on the search card with your
- * chips still in it. `searchVersion` is shared because it is a counter that
- * must only ever climb; restoring an older value would hand two different
- * datasets the same version.
- *
- * `storeids` is deliberately NOT here. It is a resolved answer — for a group
- * search it is that group's member stores as one backend listed them — so it
- * belongs with the rows it fetched.
- */
-const SHARED_KEYS = [
-  "env",
-  "stash",
-  "upcs",
-  "upcText",
-  "trendPeriods",
-  "activeTab",
-  "displayMode",
-  "showMode",
-  "searchVersion",
-] as const;
-
-type SharedKey = (typeof SHARED_KEYS)[number];
-
-/** One environment's data, and where it was left. */
-export type UpcDevSnapshot = Omit<UpcDevState, SharedKey>;
-
-/**
- * Cleared on the way into the stash.
- *
- * A module parked mid-fetch would come back with its flag still set and no
- * request behind it, so the tab would sit on "Loading…" forever — the fetch
- * that would have cleared it was abandoned by `upcQueue.startRun()` when the
- * environment changed. Coverage is untouched, so the restored tab simply asks
- * again on its next visit.
- */
-const LOADING_KEYS = [
-  "salesCompLoading",
-  "salesCompLYLoading",
-  "forecastLoading",
-  "priceOptLoading",
-  "trendLoading",
-  "associationSeedLoading",
-  "associationRerootLoading",
-] as const;
-
-const SHARED = new Set<string>(SHARED_KEYS);
-
-const snapshotOf = (s: UpcDevState): UpcDevSnapshot => {
-  const out: Record<string, unknown> = {};
-  for (const [k, v] of Object.entries(s)) {
-    if (!SHARED.has(k)) out[k] = v;
-  }
-  for (const k of LOADING_KEYS) out[k] = false;
-  return out as UpcDevSnapshot;
-};
-
 const initialState: UpcDevState = {
-  // Prod on load, in step with `app.apiEnv`'s own default.
-  env: "prod",
-  stash: {},
   upcs: [],
   upcText: "",
   storeids: "",
@@ -547,31 +452,6 @@ const upcDevSlice = createSlice({
       }
     },
 
-    /**
-     * Put one environment's data away and bring the other's out.
-     *
-     * Dispatched from UpcListDev whenever `app.apiEnv` and this slice disagree
-     * — on a switch made while the page is open, and on arriving at the page
-     * after a switch made somewhere else. The queue is aborted by the caller
-     * first: it is a module singleton rather than Redux state, and an
-     * in-flight response from the outgoing backend must not land in the
-     * incoming environment's freshly restored rows.
-     */
-    setUpcDevEnv(state, action: PayloadAction<UpcDevEnv>) {
-      const next = action.payload;
-      if (state.env === next) return;
-
-      state.stash[state.env] = snapshotOf(state);
-      const back = state.stash[next];
-      // No stash entry means this environment has not been searched yet, so
-      // it starts empty — which lands on the search card, with the UPC chips
-      // and trend window carried over by SHARED_KEYS.
-      Object.assign(state, back ?? snapshotOf(initialState));
-      // Only ever two datasets alive: the one on screen and the one parked.
-      delete state.stash[next];
-      state.env = next;
-    },
-
     clearDevUpcData(state) {
       state.searchVersion += 1;
       state.dataLoaded = false;
@@ -653,7 +533,6 @@ export const {
   setDevAssociationRerootCacheEntry,
   clearDevAssociationRerootCache,
   resetDevAssociations,
-  setUpcDevEnv,
   clearDevUpcData,
   resetDevUpcState,
 } = upcDevSlice.actions;

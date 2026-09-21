@@ -15,7 +15,7 @@ const RecentLookupsStrip = ({
   onSelect,
   variant = "cards",
 }: RecentLookupsStripProps) => {
-  const { recentLookups } = useAppSelector((s) => s.item);
+  const { recentLookups } = useAppSelector((s) => s.dev.item);
   if (!recentLookups.length) return null;
 
   if (variant === "list") {

@@ -6,7 +6,7 @@ import {
   setDevPriceOptLoading,
   mergeDevPriceOpt,
   setDevUpcItems,
-} from "../../../../../features/upcDevSlice";
+} from "../../../../../features/dev/devUpcDevSlice";
 import { getPriceOpt } from "../../../../../api/upc";
 import { upcQueue } from "../../upcQueue";
 import { missingFrom } from "../../coverage";

@@ -1,0 +1,153 @@
+import { addDays } from "../../../../../utils";
+import type { UpcSalesComp } from "../../../../../interfaces";
+
+export const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"] as const;
+export const DAY_SHORT = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
+
+function rowTotal(row: UpcSalesComp): number {
+  return DAYS.reduce((acc, d) => acc + (row[d] ?? 0), 0);
+}
+
+/**
+ * One row per UPC per week, as everything downstream assumes.
+ *
+ * upload_upcs_daily_sales groups by description as well as UPC and week, so an
+ * item whose sales rang under two descriptions — often one of them blank —
+ * comes back as two rows for the same week. Left split, the period total
+ * counted both while the week-by-week table showed only the first, and the
+ * day-of-week averages divided by row count instead of week count.
+ *
+ * Days are summed, and the first non-blank description wins.
+ */
+export function combineSalesCompRows(rows: UpcSalesComp[]): UpcSalesComp[] {
+  const byKey = new Map<string, UpcSalesComp>();
+  for (const r of rows) {
+    const key = `${r.product_code}|${r.week}`;
+    const acc = byKey.get(key);
+    if (!acc) {
+      byKey.set(key, { ...r });
+      continue;
+    }
+    for (const d of DAYS) {
+      // Null only when neither side had a figure, so "no data" still reads
+      // as no data rather than a zero.
+      acc[d] = acc[d] === null && r[d] === null ? null : (acc[d] ?? 0) + (r[d] ?? 0);
+    }
+    if (!acc.description && r.description) acc.description = r.description;
+  }
+  return [...byKey.values()];
+}
+
+export function fmtWeekRange(weekStart: string): string {
+  const start = new Date(weekStart);
+  const end = addDays(weekStart, 6);
+  const startStr = start.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  const endStr = end.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  return `${startStr} - ${endStr}`;
+}
+
+// A trailing week whose 7-day span hasn't fully elapsed within the query
+// range is "incomplete" — its partial total would skew both the "recent
+// week" value and the average it's compared against if left in.
+export function makeIsWeekComplete(endDate: string) {
+  const queryEndDate = new Date(endDate);
+  return (wk: string) => addDays(wk, 6) <= queryEndDate;
+}
+
+export type UpcSalesCompStats = {
+  code: string;
+  desc: string;
+  dayAvgs: number[];
+  peakIdx: number;
+  periodTotal: number;
+  weekTotals: number[];
+  weekRows: { week: string; row: UpcSalesComp }[];
+  wowPct: number | null;
+  hasLY: boolean;
+  lyDayAvgs: number[];
+  lyPeakIdx: number;
+  lyPeriodTotal: number;
+  vsLYPct: number | null;
+  peakShifted: boolean;
+  // Day-of-week % change vs LY, and this item's own peak-day scale for
+  // heat coloring — both derived once here so the list, detail panel, and
+  // export summary all read the same numbers.
+  dayDeltaPcts: (number | null)[];
+  rowMax: number;
+  // Total ÷ count of individual (week, weekday) cells that actually had a
+  // sale — a true per-active-day average. The KPI strip counts days the same
+  // way, so with one UPC selected the two agree.
+  avgDaily: number;
+};
+
+// Per-UPC Total / vs LY / WoW / Peak day — shared by the table, the KPI
+// strip, and the export summary so the three never drift out of sync.
+export function computeUpcSalesCompStats(
+  upcCodes: string[],
+  tyRows: UpcSalesComp[],
+  lyRows: UpcSalesComp[],
+  endDate: string,
+): UpcSalesCompStats[] {
+  const isWeekComplete = makeIsWeekComplete(endDate);
+
+  return upcCodes.map((code) => {
+    const rows = tyRows.filter((r) => r.product_code === code);
+    const desc = rows.find((r) => r.description)?.description || code;
+    const sortedWeeks = [...new Set(rows.map((r) => r.week))].sort((a, b) => a.localeCompare(b));
+    // Distinct weeks, not rows — the two only agree once rows are combined,
+    // and an average by day of week is per week.
+    const weekCount = sortedWeeks.length;
+
+    const dayAvgs = DAYS.map((d) =>
+      rows.reduce((acc, r) => acc + (r[d] ?? 0), 0) / (weekCount || 1),
+    );
+    const peakIdx = dayAvgs.indexOf(Math.max(...dayAvgs));
+    const periodTotal = rows.reduce((acc, r) => acc + rowTotal(r), 0);
+
+    const weekTotals = sortedWeeks.map(
+      (wk) => rowTotal(rows.find((r) => r.week === wk)!),
+    );
+    const completeTotals = sortedWeeks
+      .map((wk, i) => (isWeekComplete(wk) ? weekTotals[i] : null))
+      .filter((v): v is number => v !== null);
+    let wowPct: number | null = null;
+    if (completeTotals.length >= 2) {
+      const lw = completeTotals[completeTotals.length - 1];
+      const avg = completeTotals.reduce((a, b) => a + b, 0) / completeTotals.length;
+      wowPct = avg === 0 ? null : ((lw - avg) / avg) * 100;
+    }
+
+    const weekRows = sortedWeeks.map((wk) => ({
+      week: wk,
+      row: rows.find((r) => r.week === wk)!,
+    }));
+
+    const lyRowsForCode = lyRows.filter((r) => r.product_code === code);
+    const hasLY = lyRowsForCode.length > 0;
+    const lyWeekCount = new Set(lyRowsForCode.map((r) => r.week)).size;
+    const lyDayAvgs = DAYS.map((d) =>
+      lyRowsForCode.reduce((acc, r) => acc + (r[d] ?? 0), 0) / (lyWeekCount || 1),
+    );
+    const lyPeakIdx = hasLY ? lyDayAvgs.indexOf(Math.max(...lyDayAvgs)) : -1;
+    const lyPeriodTotal = lyRowsForCode.reduce((acc, r) => acc + rowTotal(r), 0);
+    const vsLYPct = hasLY && lyPeriodTotal > 0 ? ((periodTotal - lyPeriodTotal) / lyPeriodTotal) * 100 : null;
+    const peakShifted = hasLY && lyPeakIdx !== peakIdx;
+
+    const dayDeltaPcts = DAYS.map((_, di) =>
+      hasLY && lyDayAvgs[di] > 0 ? ((dayAvgs[di] - lyDayAvgs[di]) / lyDayAvgs[di]) * 100 : null,
+    );
+    const rowMax = Math.max(...dayAvgs, 1);
+
+    const activeDayCount = weekRows.reduce(
+      (count, { row }) => count + DAYS.filter((d) => (row[d] ?? 0) > 0).length,
+      0,
+    );
+    const avgDaily = activeDayCount > 0 ? periodTotal / activeDayCount : 0;
+
+    return {
+      code, desc, dayAvgs, peakIdx, periodTotal, weekTotals, weekRows, wowPct,
+      hasLY, lyDayAvgs, lyPeakIdx, lyPeriodTotal, vsLYPct, peakShifted,
+      dayDeltaPcts, rowMax, avgDaily,
+    };
+  });
+}

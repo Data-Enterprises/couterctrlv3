@@ -1,8 +1,8 @@
 import type {
   ItemLookupHistory,
   SaleTypeSummary,
-} from "../../../features/itemLookupSlice";
-import { calculateCogs } from "../../subDepts";
+} from "../../../features/dev/devItemLookupSlice";
+import { calculateCogs } from "../../../utils/cogs";
 import { isSaleRow } from "../../../utils/saleType";
 
 /**

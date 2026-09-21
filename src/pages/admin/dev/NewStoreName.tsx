@@ -4,9 +4,9 @@ import { useToast } from "../../../components/toasts/hooks/useToast";
 import { getUserStores } from "../../../api/user";
 import { setNewStoreName } from "../../../api/admin";
 import type { JsonError, Store } from "../../../interfaces";
-import Input from "../../../components/inputs/Input";
-import SelectFilter from "../../../components/filters/SelectFilter";
-import TextFilter from "../../../components/filters/TextFilter";
+import Input from "../../../components-dev/inputs/Input";
+import SelectFilter from "../../../components-dev/filters/SelectFilter";
+import TextFilter from "../../../components-dev/filters/TextFilter";
 
 type AssignedFilter = "all" | "assigned" | "unassigned";
 

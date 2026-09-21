@@ -41,7 +41,7 @@ export const useAdminPageCtx = () => {
     filteredStoresActivity,
     isLoadingStoreActivity,
     storeNameFilter,
-  } = useAppSelector((state) => state.adminPage);
+  } = useAppSelector((state) => state.dev.adminPage);
 
   /**
    * Two separate powers, deliberately not one flag.

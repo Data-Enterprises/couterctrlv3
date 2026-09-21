@@ -1,0 +1,66 @@
+import type { InfoGlossaryEntry } from "../../../components/InfoPopover";
+
+/** Content for the "?" popover in the Vendors header.
+ *
+ *  Kept beside the page rather than in the component so the copy can be edited
+ *  without touching layout, matching salesInfo.ts and categoriesInfo.ts.
+ */
+export const VENDORS_INFO: {
+  title: string;
+  purpose: string;
+  glossary: InfoGlossaryEntry[];
+} = {
+  title: "Vendors",
+  purpose:
+    "Shows which of a store's suppliers are falling behind, then lets you drill into the items and departments where it happened.",
+  glossary: [
+    {
+      term: "Crit / Watch / OK",
+      desc: "Graded against last year, but only when last year has every day of the week. If it's missing days, the grade uses last week instead. Crit means down more than your threshold; Watch means down, but not past it; OK means flat or up. Click a chip to show only those; click it again to clear.",
+    },
+    {
+      term: "Ungraded",
+      desc: "Neither last week nor last year has every day of the week, or neither has a figure at all, so there's no full-week comparison to grade on. Shown with a grey dot and not counted under Crit, Watch or OK. The chip only appears when some exist.",
+    },
+    {
+      term: "Grey percentages",
+      desc: "That comparison is missing days — for example, last year only has 3 of the 7 days. The number is still shown, but it isn't used for the grade, because a partial week can't fairly call a vendor Crit. The header pills go grey the same way and show how many days matched.",
+    },
+    {
+      term: "Threshold",
+      desc: "How far a decline has to go before a vendor is flagged Crit — points in margin mode, percent in sales mode. The Items tab has its own separate threshold, since a single UPC moving is a smaller thing than a whole vendor moving.",
+    },
+    {
+      term: "No vendor",
+      desc: "Coupon (CPN) lines and anything else the POS books without a supplier. Kept in the list rather than dropped, so the vendors still add up to the store total — but it isn't a supplier, and a large bucket here is worth a look on its own.",
+    },
+    {
+      term: "Day strip",
+      desc: "Picking a day narrows everything below it — the KPIs, the items, the departments — to that day alone. Click the selected day again, or All Week, to go back to the full week.",
+    },
+    {
+      term: "Items",
+      desc: "Every UPC this vendor supplied, graded the same way the vendors are. Selecting one shows its margin, contribution and day-of-week pattern. Department-level breakdowns live on Sub Dept Margins rather than being repeated here.",
+    },
+    {
+      term: "Margin vs Sales",
+      desc: "Swaps the whole page between gross margin and dollars, including every KPI and every grade — vendors and items alike. Margin moves are shown in POINTS, sales moves in percent; a two-point margin change is not a two percent change.",
+    },
+    {
+      term: "vs LW / vs LY",
+      desc: "Only compares days present in both periods, so a week still in progress isn't dragged down by days that haven't happened yet. A dash means there's no comparable period at all.",
+    },
+    {
+      term: "Net sales and margin",
+      desc: "Sales are net of tax and margin uses the same cost helper as Sub Dept Margins — net_cost before list, weight before scan count — so a vendor reconciles with the departments it sits in. The store figure in the header is weighted: dollars over dollars, not an average of the vendors' percentages.",
+    },
+    {
+      term: "Where the data comes from",
+      desc: "Vendor is carried on the item rows, which arrive one department at a time. The page asks which departments sold this week, then walks all of them across three periods — which is why it takes longer to load than the pages above it.",
+    },
+    {
+      term: "Export",
+      desc: "Covers whatever the date pills are set to, so a single day exports that day. Vendors are always the full list; items cover the open vendor only.",
+    },
+  ],
+};

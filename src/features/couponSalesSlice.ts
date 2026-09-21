@@ -1,5 +1,5 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { CouponItem } from "../interfaces";
+import type { CouponItem, TransactionListItem } from "../interfaces";
 
 /** Coupon Sales grades on a dollar amount, not a percentage change, and there
  *  is no middle ground to express — a store's average coupon is either over
@@ -64,6 +64,9 @@ interface CouponSalesState {
   storeFilter: string;
   sectionFilter: string;
   exportOpen: boolean;
+  /** Lines of the receipt open in the detail panel; empty when none is. Was
+   *  parked in LP's slice (transactionDrillDown) — Coupon Sales keeps its own. */
+  receiptLines: TransactionListItem[];
 }
 
 const initialState: CouponSalesState = {
@@ -82,6 +85,7 @@ const initialState: CouponSalesState = {
   storeFilter: "",
   sectionFilter: "",
   exportOpen: false,
+  receiptLines: [],
 };
 
 const couponSalesSlice = createSlice({
@@ -142,6 +146,9 @@ const couponSalesSlice = createSlice({
     },
     /** New search — drop the data and every selection made against it, but
      *  keep the threshold the user dialled in. */
+    setCouponReceiptLines: (state, action: PayloadAction<TransactionListItem[]>) => {
+      state.receiptLines = action.payload;
+    },
     reQueryCouponSales: (state) => {
       state.coupons = [];
       state.noCouponsFound = false;
@@ -173,6 +180,7 @@ export const {
   setCouponStoreFilter,
   setCouponSectionFilter,
   setCouponExportOpen,
+  setCouponReceiptLines,
   reQueryCouponSales,
   resetCouponSalesState,
 } = couponSalesSlice.actions;

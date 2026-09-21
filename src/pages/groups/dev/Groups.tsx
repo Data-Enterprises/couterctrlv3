@@ -1,24 +1,15 @@
 import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
 import { useResizableBox } from "../../../hooks/useResizableBox";
-import ResizeHandle from "../../../components/ResizeHandle";
+import ResizeHandle from "../../../components-dev/ResizeHandle";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import type { JsonError } from "../../../interfaces";
-import {
-  setCreateInput,
-  setGroups,
-  setRefreshGroups,
-  setSelectedForm,
-  setSelectedGroup,
-  setStoresWithGroupStatus,
-  type Group,
-  type GroupFormType,
-  emptyGroup,
-} from "../../../features/groupSlice";
+import { setGroups, setSelectedGroup, type Group, emptyGroup } from "../../../features/groupSlice";
+import { setCreateInput, setRefreshGroups, setSelectedForm, setStoresWithGroupStatus } from "../../../features/dev/devGroupsPageSlice";
+import type { GroupFormType } from "../../../interfaces";
 import { getGroups, createGroup } from "../../../api/groups";
-import { useGroupCtx } from "..";
-import GroupsTablet from "../tablet/GroupsTablet";
-import GroupsMobile from "../mobile/GroupsMobile";
+import { useGroupCtx } from ".";
+import GroupsMobile from "./mobile/GroupsMobile";
 import GroupsList from "./GroupsList";
 import GroupDetail from "./GroupDetail";
 
@@ -71,7 +62,7 @@ const Groups = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const ctx = useGroupCtx();
-  const { isTablet, isMobile } = useAppSelector((state) => state.app);
+  const { isMobile } = useAppSelector((state) => state.app);
   const [selectedGroup, setSelectedGroupLocal] = useState<Group | null>(null);
   const [search, setSearch] = useState("");
   const [showNewGroupModal, setShowNewGroupModal] = useState(false);
@@ -85,8 +76,8 @@ const Groups = () => {
     maxHeight: 950,
   });
 
-  // These two effects only matter for the isTablet/isMobile fallback below —
-  // GroupsTablet/GroupsMobile still switch their own internal view off the
+  // These two effects only matter for the mobile view below — GroupsMobile
+  // still switches its own internal view off the
   // shared selectedForm/createInput/storesWithGroupStatus slice fields, so
   // this reset-on-tab-change behavior has to stay intact for them even
   // though the new desktop view below never reads those fields itself.
@@ -127,7 +118,7 @@ const Groups = () => {
     dispatch(setSelectedForm(formType));
   };
 
-  if (isTablet) return <GroupsTablet handleFormSelect={handleFormSelect} />;
+  // No tablet layout: a tablet takes the desktop page.
   if (isMobile) return <GroupsMobile handleFormSelect={handleFormSelect} />;
 
   const filteredGroups = ctx.groups.filter((g) =>

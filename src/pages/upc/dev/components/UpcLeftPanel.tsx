@@ -1,4 +1,4 @@
-import InfoButton from "../../../../components/InfoButton";
+import InfoButton from "../../../../components-dev/InfoButton";
 import { useState } from "react";
 import {
   MagnifyingGlassIcon,

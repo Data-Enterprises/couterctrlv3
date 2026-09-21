@@ -8,7 +8,7 @@ import {
   setPause,
   setUpcCode,
 } from "../../../features/itemScanSlice";
-import { normalizeUpc } from "../../../components/scanner";
+import { normalizeUpc } from "../../../components-dev/scanner";
 import "./dev-scanner.css";
 
 interface DevUpcScannerProps {

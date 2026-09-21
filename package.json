@@ -14,7 +14,12 @@
     "publish": "npm run deploy",
     "build:test": "vite build",
     "audit:theme": "node scripts/theme-audit.mjs",
-    "audit:legacy": "node scripts/legacy-audit.mjs"
+    "audit:legacy": "node scripts/legacy-audit.mjs",
+    "split:page": "node scripts/split-page.mjs",
+    "check:split": "node scripts/check-split.mjs",
+    "promote:page": "node scripts/promote-page.mjs",
+    "fork:slice": "node scripts/fork-slice.mjs",
+    "greenlight:page": "node scripts/greenlight-page.mjs"
   },
   "dependencies": {
     "@ericblade/quagga2": "^1.8.4",

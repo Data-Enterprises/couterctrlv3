@@ -1,22 +1,24 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation, NavLink } from "react-router";
 import logo from "../../assets/portal/logo.webp";
+// The same logo with its navy recoloured to custom-white and the fill inside
+// the letter counters removed — the full-colour one vanishes on a navy bar.
+import logoReversed from "../../assets/portal/logo-reversed.webp";
 import { ChevronDownIcon } from "@heroicons/react/16/solid";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { categories } from "./utils";
+import { COMING_SOON_CATEGORY } from "../../utils/comingSoon";
 import { resetNav, setIsNavOpen, setLastRoute } from "../../features/navSlice";
 import {
   resetAppSlice,
   setApiEnv,
-  toggleDevMode,
   SHOW_API_ENV_SWITCH,
-  SHOW_ENV_TOGGLE,
 } from "../../features/appSlice";
 import { resetUserSlice } from "../../features/userSlice";
 import { resetSalesSlice } from "../../features/salesSlice";
-import { resetSalesLegacySlice } from "../../features/salesLegacySlice";
 import { resetStoreSlice } from "../../features/storeSlice";
 import { resetGroupState } from "../../features/groupSlice";
+import { resetGroupsPageState } from "../../features/groupsPageSlice";
 import { resetUsersSlice } from "../../features/usersSlice";
 import { resetUpcState } from "../../features/upcSlice";
 import { resetSearchSlice } from "../../features/searchSlice";
@@ -168,6 +170,9 @@ const TitleBar = () => {
   const location = useLocation();
   const toast = useToast();
   const context = useAppSelector((state) => state.app);
+  /** On the dev API the bar turns navy, so which environment — and so which
+   *  UI tree — you are in is never a question. Prod keeps the white bar. */
+  const onNavy = context.apiEnv === "dev";
   const user = useAppSelector((state) => state.user);
   const nav = useAppSelector((state) => state.nav);
 
@@ -192,8 +197,12 @@ const TitleBar = () => {
   const canSee = (userLevels: string[]) =>
     userLevels.includes(user.userLevel.toString()) || userLevels.includes("*");
 
-  const visibleCategories = categories.filter((cat) =>
-    cat.pages.some((p) => canSee(p.userLevels)),
+  // Coming Soon pages only exist on the dev API; on prod (what clients see)
+  // the category is not offered at all.
+  const visibleCategories = categories.filter(
+    (cat) =>
+      (cat.name !== COMING_SOON_CATEGORY || context.apiEnv === "dev") &&
+      cat.pages.some((p) => canSee(p.userLevels)),
   );
 
   // Persist last route whenever it changes
@@ -208,10 +217,10 @@ const TitleBar = () => {
   const handleSignOut = () => {
     navigate("/");
     dispatch(resetGroupState());
+    dispatch(resetGroupsPageState());
     dispatch(resetUserSlice());
     dispatch(resetUsersSlice());
     dispatch(resetSalesSlice());
-    dispatch(resetSalesLegacySlice());
     dispatch(resetStoreSlice());
     dispatch(resetUserSlice());
     dispatch(resetNav());
@@ -247,19 +256,30 @@ const TitleBar = () => {
     <div className="relative flex items-stretch">
       <button
         onClick={() => setAvatarOpen((o) => !o)}
-        className={`flex items-center gap-2 px-3 transition-colors h-full hover:bg-bkg ${
-          context.isDesktop ? "border-l border-gray-200" : ""
+        className={`flex items-center gap-2 px-3 transition-colors h-full ${
+          onNavy ? "hover:bg-custom-white/10" : "hover:bg-bkg"
+        } ${
+          context.isDesktop
+            ? onNavy
+              ? "border-l border-custom-white/15"
+              : "border-l border-gray-200"
+            : ""
         }`}
       >
         {/* A translucent white disc is invisible on a white bar, so the
             initials sit on navy — the same navy that marks the active
             category. */}
-        <div className="w-7 h-7 rounded-full bg-[#1e2a4a] flex items-center justify-center text-custom-white text-[11px] font-semibold flex-shrink-0">
+        <div
+          className={`w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-semibold flex-shrink-0 transition-colors duration-300 ease-in-out ${
+            // A navy disc on a navy bar disappears, so dev inverts it.
+            onNavy ? "bg-custom-white text-[#1e2a4a]" : "bg-[#1e2a4a] text-custom-white"
+          }`}
+        >
           {(user.firstName?.[0] ?? "").toUpperCase()}
           {(user.lastName?.[0] ?? "").toUpperCase()}
         </div>
         <ChevronDownIcon
-          className={`h-3.5 w-3.5 text-content/85 transition-transform duration-200 ${avatarOpen ? "rotate-180" : ""}`}
+          className={`h-3.5 w-3.5 transition-[transform,color] duration-300 ${onNavy ? "text-custom-white/85" : "text-content/85"} ${avatarOpen ? "rotate-180" : ""}`}
         />
       </button>
 
@@ -298,8 +318,8 @@ const TitleBar = () => {
               </button>
             )}
             */}
-            {/* Which backend this session talks to. Deliberately NOT wired
-                to `devMode`, which picks the dev-vs-legacy UI — see appSlice.
+            {/* Which backend this session talks to — and so which UI tree
+                each page renders (prod or dev).
 
                 Owner and up (7, 8, 9): support and programmers. A segmented
                 control rather than a menu item, and the only row here that
@@ -309,12 +329,12 @@ const TitleBar = () => {
             {SHOW_API_ENV_SWITCH && user.userLevel >= 7 ? (
               <div className="px-4 py-2.5 border-b border-gray-100 flex items-center gap-2">
                 <span className="text-[13px] font-medium text-content flex-1">
-                  API
+                  Mode
                 </span>
                 <div className="flex items-center rounded-full overflow-hidden border border-gray-200 text-[10px] font-bold select-none flex-shrink-0">
                   <button
                     onClick={() => dispatch(setApiEnv("dev"))}
-                    title="Point this session at the dev API"
+                    title="Dev mode: the dev API, the dev version of every page, and Coming Soon"
                     className={`px-2.5 py-1 transition-colors ${
                       context.apiEnv === "dev"
                         ? "bg-emerald-500 text-custom-white"
@@ -325,7 +345,7 @@ const TitleBar = () => {
                   </button>
                   <button
                     onClick={() => dispatch(setApiEnv("prod"))}
-                    title="Point this session at the prod API"
+                    title="Prod mode: the prod API and the pages clients see"
                     className={`px-2.5 py-1 transition-colors ${
                       context.apiEnv === "prod"
                         ? "bg-red-600 text-custom-white"
@@ -333,57 +353,6 @@ const TitleBar = () => {
                     }`}
                   >
                     PROD
-                  </button>
-                </div>
-              </div>
-            ) : null}
-            {/* Which interface this session shows — the new UI or the legacy
-                one. Separate from the API row above: that picks the backend,
-                this picks the front end.
-
-                It lives here because the only other control for it is in
-                `TitleBarLegacy`, which by definition only renders once you are
-                already in Live — so without this row Preview was a one-way
-                door and there was no way back to the old pages.
-
-                Programmers only (level 9), a tighter gate than the legacy
-                control's `role === 9 || userLevel >= 2`: sending a client back
-                to the old interface is not something support or QA should be
-                one stray click away from.
-
-                Like the API row, it does not close the dropdown: you flip it
-                and confirm the badge moved. */}
-            {SHOW_ENV_TOGGLE && user.userLevel === 9 ? (
-              <div className="px-4 py-2.5 border-b border-gray-100 flex items-center gap-2">
-                <span className="text-[13px] font-medium text-content flex-1">
-                  Interface
-                </span>
-                <div className="flex items-center rounded-full overflow-hidden border border-gray-200 text-[10px] font-bold select-none flex-shrink-0">
-                  <button
-                    onClick={() => {
-                      if (!context.devMode) dispatch(toggleDevMode());
-                    }}
-                    title="Show the new interface"
-                    className={`px-2.5 py-1 transition-colors ${
-                      context.devMode
-                        ? "bg-[#1e2a4a] text-custom-white"
-                        : "text-content/85 hover:bg-gray-50"
-                    }`}
-                  >
-                    PREVIEW
-                  </button>
-                  <button
-                    onClick={() => {
-                      if (context.devMode) dispatch(toggleDevMode());
-                    }}
-                    title="Show the legacy interface"
-                    className={`px-2.5 py-1 transition-colors ${
-                      !context.devMode
-                        ? "bg-amber-500 text-custom-white"
-                        : "text-content/85 hover:bg-gray-50"
-                    }`}
-                  >
-                    LIVE
                   </button>
                 </div>
               </div>
@@ -409,11 +378,16 @@ const TitleBar = () => {
       {/* Title bar */}
       <div
         data-testid="title-bar"
-        // White, not the app navy: the bar sits above a light page, and the
-        // navy read as a second, heavier header stacked on the content. The
-        // border is what separates it from the page now that the colour no
-        // longer does.
-        className="h-12 w-full flex items-stretch select-none relative z-50 bg-custom-white text-content border-b border-gray-200"
+        // White on prod: the bar sits above a light page, and navy read as a
+        // second, heavier header stacked on the content. On the dev API it is
+        // navy on purpose — the one thing that must never be mistaken is which
+        // environment, and so which UI tree, you are looking at.
+        // The switch recolours the whole bar, so it eases rather than snaps.
+        className={`h-12 w-full flex items-stretch select-none relative z-50 border-b transition-colors duration-300 ease-in-out ${
+          onNavy
+            ? "bg-[#1e2a4a] text-custom-white border-[#1e2a4a]"
+            : "bg-custom-white text-content border-gray-200"
+        }`}
       >
         {/* Logo.
          *
@@ -428,11 +402,22 @@ const TitleBar = () => {
          * that had already grown to fit the image.
          */}
         <div className="flex min-w-0 flex-none items-center overflow-hidden px-2">
-          <img
-            src={logo}
-            alt="CounterCtrl Cloud"
-            className="h-8 w-auto max-w-full object-contain"
-          />
+          {/* Both logos are always rendered and cross-fade with the bar — an
+              <img> swapping its src can't transition. The light one stays in
+              flow and sizes the box; the reversed one sits on top of it. */}
+          <div className="relative h-8 max-w-full">
+            <img
+              src={logo}
+              alt="CounterCtrl Cloud"
+              className={`h-8 w-auto max-w-full object-contain transition-opacity duration-300 ease-in-out ${onNavy ? "opacity-0" : "opacity-100"}`}
+            />
+            <img
+              src={logoReversed}
+              alt=""
+              aria-hidden
+              className={`absolute inset-0 h-8 w-auto max-w-full object-contain transition-opacity duration-300 ease-in-out ${onNavy ? "opacity-100" : "opacity-0"}`}
+            />
+          </div>
         </div>
 
         {/* Category nav — desktop only */}
@@ -455,9 +440,13 @@ const TitleBar = () => {
                     // Navy now carries the ACTIVE category rather than the
                     // whole bar — the same job it does on the mobile tab bar.
                     className={`flex items-center gap-1.5 px-3 text-[12px] transition-colors rounded-md my-1.5 ${
-                      isActive
-                        ? "bg-[#1e2a4a]/8 text-[#1e2a4a] font-semibold"
-                        : "text-content/85 font-medium hover:text-content hover:bg-bkg"
+                      onNavy
+                        ? isActive
+                          ? "bg-custom-white/15 text-custom-white font-semibold"
+                          : "text-custom-white/85 font-medium hover:text-custom-white hover:bg-custom-white/10"
+                        : isActive
+                          ? "bg-[#1e2a4a]/8 text-[#1e2a4a] font-semibold"
+                          : "text-content/85 font-medium hover:text-content hover:bg-bkg"
                     }`}
                   >
                     <cat.icon className="h-3.5 w-3.5" />
@@ -509,6 +498,25 @@ const TitleBar = () => {
         )}
 
         <div className="flex-1" />
+
+        {/* DEV pill: says in words what the navy bar says in colour — this
+            session is on the dev API, so every page is showing its dev tree
+            and Coming Soon is open. Always rendered and eased in and out
+            with the bar (max-width + opacity), so flipping the switch slides
+            it rather than popping it. */}
+        <div
+          aria-hidden={!onNavy}
+          className={`flex items-center overflow-hidden transition-all duration-300 ease-in-out ${
+            onNavy ? "max-w-[120px] opacity-100 pr-3" : "max-w-0 opacity-0 pr-0"
+          }`}
+        >
+          <span
+            title="Dev mode: this session is on the dev API"
+            className="px-3 py-1.5 rounded-full bg-emerald-500 text-custom-white text-[11px] font-bold tracking-wide leading-none whitespace-nowrap select-none"
+          >
+            DEV MODE
+          </span>
+        </div>
 
         {/* Avatar — always visible */}
         <AvatarDropdown />

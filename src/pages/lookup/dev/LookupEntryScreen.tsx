@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
 import { CameraIcon, ExclamationTriangleIcon } from "@heroicons/react/20/solid";
-import SingleStoreSearchCard from "../../../components/SingleStoreSearchCard";
-import { setSelectedStore } from "../../../features/itemLookupSlice";
+import SingleStoreSearchCard from "../../../components-dev/SingleStoreSearchCard";
+import { setSelectedStore } from "../../../features/dev/devItemLookupSlice";
 import DevUpcScanner from "./DevUpcScanner";
 import RecentLookupsStrip from "./RecentLookupsStrip";
+import RecentLookupsCard from "./RecentLookupsCard";
 
 interface LookupEntryScreenProps {
   onSearch: (upc: string) => void;
@@ -30,12 +31,14 @@ const LookupEntryScreen = ({
   const dispatch = useAppDispatch();
   const { error } = useAppSelector((s) => s.itemScan);
   const { assignedStores } = useAppSelector((s) => s.user);
-  const { selectedStore } = useAppSelector((s) => s.item);
+  const { selectedStore } = useAppSelector((s) => s.dev.item);
   const [manualUpc, setManualUpc] = useState("");
   const [retryKey, setRetryKey] = useState(0);
   const [cameraOpen, setCameraOpen] = useState(false);
 
   const hasStore = selectedStore > 0;
+  // Option A's recents card: on in the dev tree, off in prod until promoted.
+  const devView = true;
 
   const handleManualSearch = () => {
     if (!manualUpc.trim() || !hasStore) return;
@@ -48,8 +51,15 @@ const LookupEntryScreen = ({
   };
 
   return (
-    <div className="h-[calc(100dvh-3rem)] overflow-y-auto">
-      <div className="mx-4 pt-4 pb-2">
+    // pb-14 clears the fixed bottom tab bar — 56px, outside document flow, so
+    // nothing reserves space for it and the last recent row sits underneath it.
+    // Same fix and value as SalesPerfMobile and the dev result screen. Gated
+    // only because this screen is shared with prod, which is meant to stay
+    // exactly as it is; the bug is there too and this would fix it.
+    <div
+      className={`h-[calc(100dvh-3rem)] overflow-y-auto ${devView ? "pb-14" : ""}`}
+    >
+      <div className="mx-4 pb-2 pt-4">
         <SingleStoreSearchCard
           title="Item Lookup"
           description="Pick a store, then scan a barcode or enter a UPC."
@@ -120,7 +130,11 @@ const LookupEntryScreen = ({
         </SingleStoreSearchCard>
 
         <div className="mt-3">
-          <RecentLookupsStrip onSelect={onSelectRecent} variant="list" />
+          {devView ? (
+            <RecentLookupsCard onSelect={onSelectRecent} />
+          ) : (
+            <RecentLookupsStrip onSelect={onSelectRecent} variant="list" />
+          )}
         </div>
       </div>
     </div>

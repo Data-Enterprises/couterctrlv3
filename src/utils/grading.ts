@@ -1,3 +1,5 @@
+import { addDays, sameWeekDayLastYear } from ".";
+
 /**
  * Grading primitives shared by the Performance pages.
  *
@@ -177,4 +179,57 @@ export const deltaPillClass = (
   if (delta < -threshold) return "bg-red-100 text-red-800";
   if (delta < 0) return "bg-amber-100 text-amber-800";
   return "bg-emerald-100 text-emerald-800";
+};
+
+/**
+ * Split a dated row set into the TW rows each comparison may use, and count
+ * coverage.
+ *
+ * For any list that aggregates dated rows by group — sub-departments, hours.
+ * `lw` and `ly` must already be the matched-date rows (callers filter to the
+ * matched date set first). A TW row is kept for a comparison only when its
+ * date found a counterpart there.
+ *
+ * Coverage is counted on DATES across the whole row set, not per group. A
+ * sub-department that sold nothing on a day it traded last year is a real
+ * zero, not a gap; what makes a comparison incomplete is the store having no
+ * rows for that date at all.
+ */
+export const matchDatedRows = <T extends { sale_date: string }>(
+  tw: T[],
+  lw: T[],
+  ly: T[],
+) => {
+  const day = (r: { sale_date: string }) => r.sale_date.split("T")[0];
+  const lwDates = new Set(lw.map(day));
+  const lyDates = new Set(ly.map(day));
+  const lyFor = new Map<string, string>();
+  const twForLW: T[] = [];
+  const twForLY: T[] = [];
+  const twDays = new Set<string>();
+  const lwHit = new Set<string>();
+  const lyHit = new Set<string>();
+  for (const r of tw) {
+    const d = day(r);
+    twDays.add(d);
+    if (lwDates.has(addDays(new Date(d), -7).toISOString().split("T")[0])) {
+      twForLW.push(r);
+      lwHit.add(d);
+    }
+    let lyDate = lyFor.get(d);
+    if (lyDate === undefined) {
+      lyDate = sameWeekDayLastYear(d).date;
+      lyFor.set(d, lyDate);
+    }
+    if (lyDates.has(lyDate)) {
+      twForLY.push(r);
+      lyHit.add(d);
+    }
+  }
+  const coverage: Coverage = {
+    dayCount: twDays.size,
+    lwDayCount: lwHit.size,
+    lyDayCount: lyHit.size,
+  };
+  return { twForLW, twForLY, coverage };
 };

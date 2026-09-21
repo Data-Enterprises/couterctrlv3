@@ -9,14 +9,14 @@ import {
   setLookupSelectedUpc,
   setLookupStoreNumbers,
   setLookupSelectedStoreNumber,
-} from "../../../../features/itemLookupSlice";
+} from "../../../../features/dev/devItemLookupSlice";
 import { computeMargin, itemDescription } from "../lookupMetrics";
 import { isSaleRow } from "../../../../utils/saleType";
 import {
   scopeToStoreNumber,
   storeNumbersIn,
 } from "../../../../utils/storeIdentity";
-import type { ItemLookupHistory } from "../../../../features/itemLookupSlice";
+import type { ItemLookupHistory } from "../../../../features/dev/devItemLookupSlice";
 
 // The lookup is fetched by storeid, so a co-located storeid returns both
 // locations' line items in one history. Every headline figure is derived from
@@ -55,7 +55,7 @@ export const useLookupQueue = () => {
     lookupSelectedUpc: selectedUpc,
     availableStoreNumbers,
     selectedStoreNumber,
-  } = useAppSelector((s) => s.item);
+  } = useAppSelector((s) => s.dev.item);
   // Ref so the async batch callbacks below scope against the live value.
   const scopeRef = useRef<string | null>(selectedStoreNumber);
   scopeRef.current = selectedStoreNumber;

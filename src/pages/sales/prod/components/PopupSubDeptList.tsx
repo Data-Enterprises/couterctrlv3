@@ -1,0 +1,1497 @@
+import { useSalesState } from "../hooks/useSalesState";
+import { useState, useMemo, useEffect, useRef } from "react";
+import { useAppSelector, useAppDispatch } from "../../../../hooks";
+import {
+  setItemThreshold,
+  setSubDeptThreshold,
+  setExportSubDeptName,
+  setExportSubDeptItems,
+  setSelectedSubDeptId,
+  setSelectedSubDeptItems,
+  setInactiveSubDeptItems,
+  setLastFetchedItemsKey,
+} from "../../../../features/salesLedgerSlice";
+import type { GradingMetric } from "../../../../features/salesLedgerSlice";
+import ThresholdFilter from "../../../../components/filters/ThresholdFilter";
+import ThresholdSlider from "../../../../components/filters/ThresholdSlider";
+import {
+  formatCurrency2,
+  formatBigNumber,
+  addDays,
+  formatGoliathDate,
+  sameWeekDayLastYear,
+} from "../../../../utils";
+import { fetchSubDeptRowsSafe } from "../../../../utils/marginRows";
+import {
+  scopeToStoreNumber,
+  withProductCode,
+  gradeBasis,
+  gradeOnBasis,
+  basisPct,
+  severityRank,
+  isCompleteCoverage,
+  matchDatedRows,
+  comparisonPillClass,
+  type Coverage,
+  type GradeBasis,
+} from "../shared/ledgerUtils";
+import {
+  ExclamationTriangleIcon,
+  ExclamationCircleIcon,
+  CheckCircleIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+} from "@heroicons/react/20/solid";
+import type { Severity } from "./LedgerRow";
+import { aggregateByCode, itemSeverity, matchItemRows } from "../../../../utils/itemGrading";
+import type { SubDeptMargin } from "../../../../interfaces";
+import UpcContextMenu from "../../../../components/UpcContextMenu";
+import {
+  formatPct,
+  chipClass,
+  CTA_SEVERITY_CLASSES,
+  severityDotClass,
+  PCT_COL_W,
+  type SevFilter,
+} from "./utils";
+import SeverityBadge from "../../../../components/SeverityBadge";
+import TextFilter from "../../../../components/filters/TextFilter";
+import SelectFilter from "../../../../components/filters/SelectFilter";
+
+type DeptRow = {
+  id: number;
+  desc: string;
+  tw: number;
+  lw: number;
+  ly: number;
+  hasLW: boolean;
+  hasLY: boolean;
+  vsLWPct: number;
+  vsLYPct: number;
+  vsLWQtyPct: number;
+  vsLYQtyPct: number;
+  qty: number;
+  lwQty: number;
+  lyQty: number;
+  digital: number;
+  lyDigital: number;
+  elecInstore: number;
+  lyElecInstore: number;
+  elecStore: number;
+  lyElecStore: number;
+  storeCpn: number;
+  lyStoreCpn: number;
+};
+
+type DeptSortColumn = "dept" | "ty" | "vsLW" | "vsLY";
+type DeptSortState = {
+  column: DeptSortColumn;
+  direction: "desc" | "asc";
+} | null;
+
+type ItemSortColumn = "ty" | "lw" | "ly";
+type ItemSortState = {
+  column: ItemSortColumn;
+  direction: "desc" | "asc";
+} | null;
+
+/**
+ * Grade on last year only when it covers every day, else last week when that
+ * does, else not at all. Coverage belongs to the list (every sub-department
+ * shares the store's dates), not the row — see matchDatedRows.
+ */
+const deptBasis = (r: DeptRow, coverage: Coverage): GradeBasis =>
+  gradeBasis({ hasLY: r.hasLY, hasLW: r.hasLW, ...coverage });
+
+const deptSeverity = (
+  r: DeptRow,
+  coverage: Coverage,
+  threshold: number,
+  metric: GradingMetric,
+): Severity | null => {
+  const basis = deptBasis(r, coverage);
+  return metric === "qty"
+    ? gradeOnBasis(basis, r.vsLWQtyPct, r.vsLYQtyPct, threshold)
+    : gradeOnBasis(basis, r.vsLWPct, r.vsLYPct, threshold);
+};
+
+/** The CTA palette for an ungraded row: no verdict, so no severity colour. */
+const NEUTRAL_CTA = {
+  border: "border-gray-200",
+  bg: "bg-gray-50",
+  hoverBg: "hover:bg-gray-100",
+  text: "text-content",
+};
+const ctaClasses = (sev: Severity | null) =>
+  sev ? CTA_SEVERITY_CLASSES[sev] : NEUTRAL_CTA;
+
+const getCta = (
+  row: DeptRow,
+  coverage: Coverage,
+  threshold: number,
+  metric: GradingMetric,
+): { text: string; severity: Severity | null } => {
+  const basis = deptBasis(row, coverage);
+  const sev = deptSeverity(row, coverage, threshold, metric);
+  const isQty = metric === "qty";
+  const lwPct = isQty ? row.vsLWQtyPct : row.vsLWPct;
+  const lyPct = isQty ? row.vsLYQtyPct : row.vsLYPct;
+
+  if (basis === null) {
+    return {
+      severity: null,
+      text: `Not graded. Neither last week (${coverage.lwDayCount} of ${coverage.dayCount} days) nor last year (${coverage.lyDayCount} of ${coverage.dayCount} days) covers the whole week, so there's no full-week comparison to grade on.`,
+    };
+  }
+
+  const primaryPeriod = basis;
+  const primaryPct = basis === "LY" ? lyPct : lwPct;
+  const pctStr = `${Math.abs(primaryPct).toFixed(2)}%`;
+  // When last year exists but is missing days, say why it isn't the one being
+  // used — otherwise a grey LY figure beside an LW grade looks like an error.
+  const partialLyNote =
+    basis === "LW" && row.hasLY
+      ? ` Last year covers only ${coverage.lyDayCount} of ${coverage.dayCount} days, so it isn't used to grade.`
+      : "";
+  const bothFull = basis === "LY" && row.hasLW;
+
+  if (sev === "critical") {
+    const secondaryNote = bothFull
+      ? lwPct < 0
+        ? ` LW also down ${Math.abs(lwPct).toFixed(2)}% — trend is consistent.`
+        : ` LW is up ${lwPct.toFixed(2)}% — decline may be seasonal vs last year.`
+      : "";
+    return {
+      severity: "critical",
+      text: `Down ${pctStr} vs ${primaryPeriod} — exceeds the ${threshold}% threshold.${secondaryNote}${partialLyNote} Check receiving, shrink, and pricing.`,
+    };
+  }
+  if (sev === "watch") {
+    const secondaryNote = bothFull
+      ? lwPct >= 0
+        ? ` Recovering vs LW — may be stabilizing.`
+        : ` LW also soft — monitor for a second consecutive week.`
+      : "";
+    return {
+      severity: "watch",
+      text: `Down ${pctStr} vs ${primaryPeriod} — within the watch band.${secondaryNote}${partialLyNote}`,
+    };
+  }
+  const secondaryHealthNote = bothFull
+    ? lwPct < 0
+      ? ` LW is softer — watch for a developing trend.`
+      : ` LW also positive.`
+    : "";
+  return {
+    severity: "healthy",
+    text: `At or above ${primaryPeriod}.${secondaryHealthNote}${partialLyNote} Contribution holding strong.`,
+  };
+};
+
+interface PopupSubDeptListProps {
+  twDateLabel: string;
+  lwDateLabel: string;
+  lyDateLabel: string;
+  storeId: number;
+  // Items are fetched by storeid, which for co-located stores returns both
+  // locations — scoped down to this number so the item list agrees with the
+  // dept rows above it.
+  storeNumber: string;
+  selectedDate: string | null;
+  // The full 7 calendar days of the searched week (see StoreDetailPopup) —
+  // used to build the exact LW/LY match set so the item list's whole-week
+  // totals agree with the KPI strip and sub-dept rows.
+  twRealDates: string[];
+}
+
+const PopupSubDeptList = ({
+  twDateLabel,
+  lwDateLabel,
+  lyDateLabel,
+  storeId,
+  storeNumber,
+  selectedDate,
+  twRealDates,
+}: PopupSubDeptListProps) => {
+  const { subSales, subSalesWk2, subSalesWk3 } = useSalesState();
+  const context = useAppSelector((state) => state.app);
+  const search = useAppSelector((state) => state.search);
+  const rawThreshold = useAppSelector(
+    (state) => state.prod.salesLedger.subDeptThreshold,
+  );
+  const rawItemThreshold = useAppSelector(
+    (state) => state.prod.salesLedger.itemThreshold,
+  );
+  const gradingMetric = useAppSelector(
+    (state) => state.prod.salesLedger.gradingMetric,
+  );
+  const isQty = gradingMetric === "qty";
+  const selectedId = useAppSelector(
+    (state) => state.prod.salesLedger.selectedSubDeptId,
+  );
+  const items = useAppSelector(
+    (state) => state.prod.salesLedger.selectedSubDeptItems,
+  );
+  const inactiveItems = useAppSelector(
+    (state) => state.prod.salesLedger.inactiveSubDeptItems,
+  );
+  const lastFetchedItemsKey = useAppSelector(
+    (state) => state.prod.salesLedger.lastFetchedItemsKey,
+  );
+
+  // Grading should never move rows around on its own when the threshold input
+  // is cleared — keep grading against the last valid amount so severity/sort
+  // order stays exactly where it was until a new number is typed.
+  const thresholdRef = useRef<number>(rawThreshold ?? 9);
+  if (rawThreshold != null) thresholdRef.current = rawThreshold;
+  const threshold = thresholdRef.current;
+
+  const itemThresholdRef = useRef<number>(rawItemThreshold ?? 9);
+  if (rawItemThreshold != null) itemThresholdRef.current = rawItemThreshold;
+  const itemThreshold = itemThresholdRef.current;
+  const dispatch = useAppDispatch();
+  const [sevFilter, setSevFilter] = useState<SevFilter>("all");
+  const [ctaOpen, setCtaOpen] = useState(false);
+  const [threshOpen, setThreshOpen] = useState(false);
+  const threshBtnRef = useRef<HTMLButtonElement>(null);
+  const threshPopRef = useRef<HTMLDivElement>(null);
+  const [itemThreshOpen, setItemThreshOpen] = useState(false);
+  const itemThreshBtnRef = useRef<HTMLButtonElement>(null);
+  const itemThreshPopRef = useRef<HTMLDivElement>(null);
+  const [itemSevFilter, setItemSevFilter] = useState<SevFilter>("all");
+  const [itemTextFilter, setItemTextFilter] = useState("");
+  const [itemActiveFilter, setItemActiveFilter] = useState("active");
+  const [deptSort, setDeptSort] = useState<DeptSortState>(null);
+  const [itemSort, setItemSort] = useState<ItemSortState>(null);
+  const [itemsLoading, setItemsLoading] = useState(false);
+  const [ctxMenu, setCtxMenu] = useState<{
+    x: number;
+    y: number;
+    upc: string;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!threshOpen) return;
+    const close = (e: MouseEvent) => {
+      if (
+        threshBtnRef.current &&
+        !threshBtnRef.current.contains(e.target as Node) &&
+        threshPopRef.current &&
+        !threshPopRef.current.contains(e.target as Node)
+      )
+        setThreshOpen(false);
+    };
+    document.addEventListener("mousedown", close);
+    return () => document.removeEventListener("mousedown", close);
+  }, [threshOpen]);
+
+  useEffect(() => {
+    if (!itemThreshOpen) return;
+    const close = (e: MouseEvent) => {
+      if (
+        itemThreshBtnRef.current &&
+        !itemThreshBtnRef.current.contains(e.target as Node) &&
+        itemThreshPopRef.current &&
+        !itemThreshPopRef.current.contains(e.target as Node)
+      )
+        setItemThreshOpen(false);
+    };
+    document.addEventListener("mousedown", close);
+    return () => document.removeEventListener("mousedown", close);
+  }, [itemThreshOpen]);
+
+  useEffect(() => {
+    setItemSevFilter("all");
+  }, [selectedId]);
+
+  useEffect(() => {
+    if (selectedId === null) {
+      dispatch(setSelectedSubDeptItems([]));
+      dispatch(setInactiveSubDeptItems([]));
+      // The cache key below means "these items are already in Redux", so it
+      // has to be cleared alongside the items it refers to. Leaving it set
+      // made re-selecting the same sub dept match the key and skip the
+      // refetch, leaving the list permanently empty until something else
+      // changed the key.
+      dispatch(setLastFetchedItemsKey(null));
+      return;
+    }
+
+    // Remounting with items already fetched for this exact store+sub
+    // dept+day (e.g. navigating away and back) shouldn't refire the
+    // request — Redux still has it, only the component tree was torn down.
+    const itemsKey = `${storeId}__${storeNumber}_${selectedId}_${selectedDate ?? "all"}`;
+    if (lastFetchedItemsKey === itemsKey) return;
+
+    const twEnd = formatGoliathDate(search.singleDate);
+    const twStart = addDays(search.singleDate, -6).toISOString().split("T")[0];
+    const lwStart = addDays(search.singleDate, -13).toISOString().split("T")[0];
+    const lwEnd = addDays(search.singleDate, -7).toISOString().split("T")[0];
+    const lyWeekDates = twRealDates
+      .map((d) => sameWeekDayLastYear(d).date)
+      .sort();
+    const lyStart = lyWeekDates[0] ?? lwEnd;
+    const lyEnd = lyWeekDates[lyWeekDates.length - 1] ?? lwEnd;
+    const lwWeekDates = twRealDates.map(
+      (d) => addDays(new Date(d), -7).toISOString().split("T")[0],
+    );
+
+    const tyStart = selectedDate ?? twStart;
+    const tyEnd = selectedDate ?? twEnd;
+    const lwDayStart = selectedDate
+      ? addDays(new Date(selectedDate), -7).toISOString().split("T")[0]
+      : lwStart;
+    const lwDayEnd = selectedDate
+      ? addDays(new Date(selectedDate), -7).toISOString().split("T")[0]
+      : lwEnd;
+    const lyDayStart = selectedDate
+      ? sameWeekDayLastYear(selectedDate).date
+      : lyStart;
+    const lyDayEnd = selectedDate
+      ? sameWeekDayLastYear(selectedDate).date
+      : lyEnd;
+
+    let cancelled = false;
+    const fetch = async () => {
+      setItemsLoading(true);
+      try {
+        // Paged, not page 1. `subs/subs` caps a response at 1000 rows and
+        // reports `total_pages`; reading only the first page silently drops the
+        // tail of the window, because rows come back date-ordered. A busy
+        // department over a full week clears that cap, so this list was
+        // reporting a short week while the dept rows above it reported a whole
+        // one. Same helper Sub Dept Margins, Vendors and Item Actions use, so
+        // there is one paging implementation rather than four.
+        const [tyRaw, lwRaw, lyRaw] = await Promise.all([
+          fetchSubDeptRowsSafe(
+            context.url,
+            context.token,
+            selectedId,
+            tyStart,
+            tyEnd,
+            0,
+            storeId,
+            1,
+          ),
+          fetchSubDeptRowsSafe(
+            context.url,
+            context.token,
+            selectedId,
+            lwDayStart,
+            lwDayEnd,
+            0,
+            storeId,
+            1,
+          ),
+          fetchSubDeptRowsSafe(
+            context.url,
+            context.token,
+            selectedId,
+            lyDayStart,
+            lyDayEnd,
+            0,
+            storeId,
+            1,
+          ),
+        ]);
+        if (cancelled) return;
+
+        // withProductCode: the endpoint returns a department catch-all row
+        // (product_code 0, described as the department) alongside the real
+        // items. See ledgerUtils — it takes real money out of this list.
+        const tyItems: SubDeptMargin[] = withProductCode(
+          scopeToStoreNumber(tyRaw, storeNumber),
+        );
+        let lwItems: SubDeptMargin[] = withProductCode(
+          scopeToStoreNumber(lwRaw, storeNumber),
+        );
+        let lyItems: SubDeptMargin[] = withProductCode(
+          scopeToStoreNumber(lyRaw, storeNumber),
+        );
+
+        // Whole-week case: the fetched LW/LY rows can include days that
+        // don't actually correspond to any day in this TW week — filter down
+        // to the exact matched date set before aggregating, so item totals
+        // agree with the dept-level and store-level figures shown elsewhere
+        // in this same popup.
+        if (!selectedDate) {
+          const lwDateSet = new Set(lwWeekDates);
+          const lyDateSet = new Set(lyWeekDates);
+          lwItems = lwItems.filter((i) =>
+            lwDateSet.has(i.sale_date.split("T")[0]),
+          );
+          lyItems = lyItems.filter((i) =>
+            lyDateSet.has(i.sale_date.split("T")[0]),
+          );
+        }
+
+        const tyMap = aggregateByCode(tyItems);
+        const lwMap = aggregateByCode(lwItems);
+        const lyMap = aggregateByCode(lyItems);
+        const { tyForLW, tyForLY } = matchItemRows(tyItems, lwItems, lyItems);
+
+        const sorted = [...tyMap.entries()].sort((a, b) => b[1].qty - a[1].qty);
+
+        dispatch(
+          setSelectedSubDeptItems(
+            sorted.map(([code, ty]) => {
+              const lw = lwMap.get(code) ?? null;
+              const ly = lyMap.get(code) ?? null;
+              return {
+                productCode: code,
+                upc: code,
+                desc: ty.desc,
+                tyNet: ty.net,
+                tyQty: ty.qty,
+                tyWeight: ty.weight,
+                lwNet: lw?.net ?? null,
+                lwQty: lw?.qty ?? null,
+                lwWeight: lw?.weight ?? null,
+                lyNet: ly?.net ?? null,
+                lyQty: ly?.qty ?? null,
+                lyWeight: ly?.weight ?? null,
+                tyNetForLW: tyForLW.get(code)?.net ?? 0,
+                tyQtyForLW: tyForLW.get(code)?.qty ?? 0,
+                tyNetForLY: tyForLY.get(code)?.net ?? 0,
+                tyQtyForLY: tyForLY.get(code)?.qty ?? 0,
+              };
+            }),
+          ),
+        );
+        // Items that sold LW and/or LY but have no TY row at all — invisible
+        // in the normal TY-anchored list above since it's built from tyMap
+        // alone. Surfaced separately so someone can spot "this used to sell
+        // here" without it polluting the active list's severity counts.
+        const inactiveCodes = new Set(
+          [...lwMap.keys(), ...lyMap.keys()].filter((code) => !tyMap.has(code)),
+        );
+        const inactiveSorted = [...inactiveCodes].sort((a, b) => {
+          const aTotal = (lwMap.get(a)?.net ?? 0) + (lyMap.get(a)?.net ?? 0);
+          const bTotal = (lwMap.get(b)?.net ?? 0) + (lyMap.get(b)?.net ?? 0);
+          return bTotal - aTotal;
+        });
+        dispatch(
+          setInactiveSubDeptItems(
+            inactiveSorted.map((code) => {
+              const lw = lwMap.get(code) ?? null;
+              const ly = lyMap.get(code) ?? null;
+              return {
+                productCode: code,
+                upc: code,
+                desc: lw?.desc ?? ly?.desc ?? code,
+                tyNet: 0,
+                tyQty: 0,
+                tyWeight: 0,
+                hasTY: false,
+                lwNet: lw?.net ?? null,
+                lwQty: lw?.qty ?? null,
+                lwWeight: lw?.weight ?? null,
+                lyNet: ly?.net ?? null,
+                lyQty: ly?.qty ?? null,
+                lyWeight: ly?.weight ?? null,
+              };
+            }),
+          ),
+        );
+        dispatch(setLastFetchedItemsKey(itemsKey));
+      } finally {
+        if (!cancelled) setItemsLoading(false);
+      }
+    };
+    fetch();
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    selectedId,
+    selectedDate,
+    search.singleDate,
+    context.url,
+    context.token,
+    storeId,
+    storeNumber,
+  ]);
+
+  // Deliberately `total_sales - total_tax` and not `net_sales`. This began as
+  // a hold in Aug 2026 while the backend work was in flight, when the weekly
+  // totals above still read `net_sales` and the two disagreed by the coupon
+  // amount. Both endpoint families have been fixed since and the weekly totals
+  // now read this too, so the page is on one basis throughout.
+  const { rows, coverage: deptCoverage } = useMemo((): {
+    rows: DeptRow[];
+    coverage: Coverage;
+  } => {
+    const buildMap = (src: typeof subSales) =>
+      src.reduce(
+        (
+          acc: Record<
+            number,
+            {
+              net: number;
+              qty: number;
+              digital: number;
+              elecInstore: number;
+              elecStore: number;
+              storeCpn: number;
+            }
+          >,
+          s,
+        ) => {
+          if (!acc[s.sub_department])
+            acc[s.sub_department] = {
+              net: 0,
+              qty: 0,
+              digital: 0,
+              elecInstore: 0,
+              elecStore: 0,
+              storeCpn: 0,
+            };
+          acc[s.sub_department].net += s.total_sales - s.total_tax;
+          acc[s.sub_department].qty += s.qty;
+          acc[s.sub_department].digital += s.digital_coupons;
+          acc[s.sub_department].elecInstore += s.elec_instore_coupons;
+          acc[s.sub_department].elecStore += s.elec_store_coupons;
+          acc[s.sub_department].storeCpn += s.store_coupon;
+          return acc;
+        },
+        {},
+      );
+
+    const lwMap = buildMap(subSalesWk2);
+    const lyMap = buildMap(subSalesWk3);
+
+    /**
+     * The TW side of each comparison, restricted to the days that matched.
+     *
+     * `subSalesWk2`/`subSalesWk3` are filtered upstream to the matched date
+     * set; `subSales` is the whole TW week. Dividing one by the other is the
+     * bug this fixes, and it does not merely exaggerate — it inverts. Wic
+     * Grocery at store 590 has three of seven LY days: the full week's
+     * $1,591.91 over those three days' $1,069.40 reads +48.86%, while the
+     * same three TW days total $619.31, which is -42.09%. The sheet was
+     * calling a department up by half when it is down by nearly as much.
+     *
+     * LW and LY need separate subtotals because their matched sets differ —
+     * here LW is all seven days and LY is three.
+     */
+    const matched = matchDatedRows(subSales, subSalesWk2, subSalesWk3);
+    const twForLW = buildMap(matched.twForLW);
+    const twForLY = buildMap(matched.twForLY);
+    const coverage = matched.coverage;
+
+    const twMap = subSales.reduce(
+      (
+        acc: Record<
+          number,
+          {
+            desc: string;
+            net: number;
+            qty: number;
+            digital: number;
+            elecInstore: number;
+            elecStore: number;
+            storeCpn: number;
+          }
+        >,
+        s,
+      ) => {
+        if (!acc[s.sub_department]) {
+          acc[s.sub_department] = {
+            desc: s.sub_department_description,
+            net: 0,
+            qty: 0,
+            digital: 0,
+            elecInstore: 0,
+            elecStore: 0,
+            storeCpn: 0,
+          };
+        }
+        acc[s.sub_department].net += s.total_sales - s.total_tax;
+        acc[s.sub_department].qty += s.qty;
+        acc[s.sub_department].digital += s.digital_coupons;
+        acc[s.sub_department].elecInstore += s.elec_instore_coupons;
+        acc[s.sub_department].elecStore += s.elec_store_coupons;
+        acc[s.sub_department].storeCpn += s.store_coupon;
+        return acc;
+      },
+      {},
+    );
+
+    const sorted = Object.entries(twMap)
+      .map(([id, r]) => {
+        const numId = Number(id);
+        const lw = lwMap[numId];
+        const ly = lyMap[numId];
+        const lwNet = lw?.net ?? 0;
+        const lyNet = ly?.net ?? 0;
+        const lwQty = lw?.qty ?? 0;
+        const lyQty = ly?.qty ?? 0;
+        // Each percentage divides by the TW subtotal for its OWN comparison.
+        // `tw` below stays the whole week — it is the department's actual
+        // sales and the column header says so — but it is never the base.
+        const twLW = twForLW[numId];
+        const twLY = twForLY[numId];
+        const twNetForLW = twLW?.net ?? 0;
+        const twNetForLY = twLY?.net ?? 0;
+        const twQtyForLW = twLW?.qty ?? 0;
+        const twQtyForLY = twLY?.qty ?? 0;
+        return {
+          id: numId,
+          desc: r.desc,
+          tw: r.net,
+          lw: lwNet,
+          ly: lyNet,
+          hasLW: lwNet > 0,
+          hasLY: lyNet > 0,
+          vsLWPct: lwNet ? ((twNetForLW - lwNet) / lwNet) * 100 : 0,
+          vsLYPct: lyNet ? ((twNetForLY - lyNet) / lyNet) * 100 : 0,
+          vsLWQtyPct: lwQty ? ((twQtyForLW - lwQty) / lwQty) * 100 : 0,
+          vsLYQtyPct: lyQty ? ((twQtyForLY - lyQty) / lyQty) * 100 : 0,
+          qty: r.qty,
+          lwQty,
+          lyQty,
+          digital: r.digital,
+          lyDigital: ly?.digital ?? 0,
+          elecInstore: r.elecInstore,
+          lyElecInstore: ly?.elecInstore ?? 0,
+          elecStore: r.elecStore,
+          lyElecStore: ly?.elecStore ?? 0,
+          storeCpn: r.storeCpn,
+          lyStoreCpn: ly?.storeCpn ?? 0,
+        };
+      })
+      .sort((a, b) => {
+        const rankDiff =
+          severityRank(deptSeverity(a, coverage, threshold, gradingMetric)) -
+          severityRank(deptSeverity(b, coverage, threshold, gradingMetric));
+        if (rankDiff !== 0) return rankDiff;
+        const ap = isQty
+          ? basisPct(deptBasis(a, coverage), a.vsLWQtyPct, a.vsLYQtyPct)
+          : basisPct(deptBasis(a, coverage), a.vsLWPct, a.vsLYPct);
+        const bp = isQty
+          ? basisPct(deptBasis(b, coverage), b.vsLWQtyPct, b.vsLYQtyPct)
+          : basisPct(deptBasis(b, coverage), b.vsLWPct, b.vsLYPct);
+        // Ungraded: nothing to rank by, so biggest department first.
+        return ap === null || bp === null ? b.tw - a.tw : ap - bp;
+      });
+    return { rows: sorted, coverage };
+  }, [subSales, subSalesWk2, subSalesWk3, threshold, gradingMetric, isQty]);
+
+  const critCount = rows.filter(
+    (r) => deptSeverity(r, deptCoverage, threshold, gradingMetric) === "critical",
+  ).length;
+  const watchCount = rows.filter(
+    (r) => deptSeverity(r, deptCoverage, threshold, gradingMetric) === "watch",
+  ).length;
+  const healthyCount = rows.filter(
+    (r) => deptSeverity(r, deptCoverage, threshold, gradingMetric) === "healthy",
+  ).length;
+
+  const visible =
+    sevFilter === "all"
+      ? rows
+      : rows.filter(
+          (r) => deptSeverity(r, deptCoverage, threshold, gradingMetric) === sevFilter,
+        );
+
+  const handleDeptSortClick = (column: DeptSortColumn) => {
+    setDeptSort((prev) => {
+      // Sub dept is an identifier, not a measure — 1, 2, 3 … is the order
+      // someone means by "sort by sub dept", so it opens ascending where the
+      // measures open with the biggest number. Still tri-state either way:
+      // first click, reverse, off.
+      const first: "desc" | "asc" = column === "dept" ? "asc" : "desc";
+      if (prev?.column !== column) return { column, direction: first };
+      if (prev.direction === first)
+        return { column, direction: first === "desc" ? "asc" : "desc" };
+      return null;
+    });
+  };
+  const deptSortValue = (row: DeptRow, column: DeptSortColumn) =>
+    column === "dept"
+      ? row.id
+      : column === "ty"
+        ? isQty
+          ? row.qty
+          : row.tw
+        : column === "vsLW"
+          ? isQty
+            ? row.vsLWQtyPct
+            : row.vsLWPct
+          : isQty
+            ? row.vsLYQtyPct
+            : row.vsLYPct;
+  const sortedVisible = deptSort
+    ? [...visible].sort((a, b) => {
+        const diff =
+          deptSortValue(a, deptSort.column) - deptSortValue(b, deptSort.column);
+        return deptSort.direction === "desc" ? -diff : diff;
+      })
+    : visible;
+
+  const selected =
+    selectedId !== null
+      ? (rows.find((r) => r.id === selectedId) ?? null)
+      : null;
+  const cta = selected ? getCta(selected, deptCoverage, threshold, gradingMetric) : null;
+
+  const baseItems = useMemo(
+    () =>
+      itemActiveFilter === "inactive"
+        ? inactiveItems
+        : itemActiveFilter === "active"
+          ? items
+          : [...items, ...inactiveItems],
+    [itemActiveFilter, items, inactiveItems],
+  );
+
+  const itemsWithSev = useMemo(
+    () =>
+      baseItems.map((item) => ({
+        ...item,
+        sev: itemSeverity(item, itemThreshold, gradingMetric, deptCoverage),
+      })),
+    [baseItems, itemThreshold, gradingMetric, deptCoverage],
+  );
+
+  useEffect(() => {
+    dispatch(setExportSubDeptName(selected?.desc ?? ""));
+    dispatch(setExportSubDeptItems(selected ? itemsWithSev : []));
+  }, [itemsWithSev, selectedId]);
+
+  const itemCritCount = itemsWithSev.filter((i) => i.sev === "critical").length;
+  const itemWatchCount = itemsWithSev.filter((i) => i.sev === "watch").length;
+  const itemHealthyCount = itemsWithSev.filter(
+    (i) => i.sev === "healthy",
+  ).length;
+
+  // Independent of the active severity chip, so the context menu's
+  // "copy critical/watch/healthy" options always mean the same thing.
+  const allUpcs = useMemo(() => itemsWithSev.map((i) => i.upc), [itemsWithSev]);
+  const severityUpcs = useMemo(
+    () => ({
+      critical: itemsWithSev
+        .filter((i) => i.sev === "critical")
+        .map((i) => i.upc),
+      watch: itemsWithSev.filter((i) => i.sev === "watch").map((i) => i.upc),
+      healthy: itemsWithSev
+        .filter((i) => i.sev === "healthy")
+        .map((i) => i.upc),
+    }),
+    [itemsWithSev],
+  );
+
+  const visibleItems =
+    itemSevFilter === "all"
+      ? itemsWithSev
+      : itemsWithSev.filter((i) => i.sev === itemSevFilter);
+
+  const textFilteredItems = itemTextFilter.trim()
+    ? visibleItems.filter((i) => {
+        const q = itemTextFilter.trim().toLowerCase();
+        return (
+          String(i.upc).toLowerCase().includes(q) ||
+          String(i.desc).toLowerCase().includes(q)
+        );
+      })
+    : visibleItems;
+
+  const handleItemSortClick = (column: ItemSortColumn) => {
+    setItemSort((prev) => {
+      if (prev?.column !== column) return { column, direction: "desc" };
+      if (prev.direction === "desc") return { column, direction: "asc" };
+      return null;
+    });
+  };
+  // Nulls (no data for that period, e.g. an inactive item's TY or an
+  // item with no LW/LY match) always sort last, regardless of direction —
+  // otherwise "asc" would put them first, which reads as "worst" not "no data".
+  const itemSortValue = (
+    item: (typeof textFilteredItems)[number],
+    column: ItemSortColumn,
+  ) =>
+    column === "ty"
+      ? item.hasTY === false
+        ? null
+        : item.tyNet
+      : column === "lw"
+        ? item.lwNet
+        : item.lyNet;
+  const sortedItems = itemSort
+    ? [...textFilteredItems].sort((a, b) => {
+        const av = itemSortValue(a, itemSort.column);
+        const bv = itemSortValue(b, itemSort.column);
+        if (av === null && bv === null) return 0;
+        if (av === null) return 1;
+        if (bv === null) return -1;
+        const diff = av - bv;
+        return itemSort.direction === "desc" ? -diff : diff;
+      })
+    : textFilteredItems;
+
+  if (!rows.length) {
+    return (
+      <div className="flex items-center justify-center h-32 text-content text-sm">
+        No sub department data
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <div className="flex h-full">
+        {/* Left panel — signal list */}
+        <div
+          className="flex flex-col border-r border-gray-100"
+          style={{ width: "39.5%" }}
+        >
+          {/* Filter chips + threshold */}
+          <div className="flex flex-wrap items-center gap-1 p-2 border-b border-gray-100 bg-gray-100">
+            <button
+              onClick={() =>
+                setSevFilter((f) => (f === "critical" ? "all" : "critical"))
+              }
+              className={`text-[10px] font-semibold px-2 py-1 rounded-full bg-severity_critical_bg text-severity_critical_text transition-shadow ${
+                sevFilter === "critical"
+                  ? "ring-2 ring-severity_critical_text/40 shadow-sm"
+                  : ""
+              }`}
+            >
+              Crit ({critCount})
+            </button>
+            <button
+              onClick={() =>
+                setSevFilter((f) => (f === "watch" ? "all" : "watch"))
+              }
+              className={`text-[10px] font-semibold px-2 py-1 rounded-full bg-severity_watch_bg text-severity_watch_text transition-shadow ${
+                sevFilter === "watch"
+                  ? "ring-2 ring-severity_watch_text/40 shadow-sm"
+                  : ""
+              }`}
+            >
+              Watch ({watchCount})
+            </button>
+            <button
+              onClick={() =>
+                setSevFilter((f) => (f === "healthy" ? "all" : "healthy"))
+              }
+              className={`text-[10px] font-semibold px-2 py-1 rounded-full bg-severity_healthy_bg text-severity_healthy_text transition-shadow ${
+                sevFilter === "healthy"
+                  ? "ring-2 ring-severity_healthy_text/40 shadow-sm"
+                  : ""
+              }`}
+            >
+              OK ({healthyCount})
+            </button>
+            <div className="relative">
+              <button
+                ref={threshBtnRef}
+                onClick={() => setThreshOpen((v) => !v)}
+                className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors border ${chipClass(threshOpen)}`}
+              >
+                Thresh
+              </button>
+              {threshOpen && (
+                <div
+                  ref={threshPopRef}
+                  className="absolute top-full left-0 mt-1 p-1.5 rounded-md border border-gray-200 bg-custom-white shadow-lg z-20"
+                >
+                  <div className="flex items-center gap-2">
+                    <ThresholdSlider
+                      value={rawThreshold}
+                      onChange={(v) => dispatch(setSubDeptThreshold(v))}
+                      ariaLabel="Sub dept grading threshold, percent"
+                      className="w-[92px] flex-shrink-0"
+                    />
+                    <ThresholdFilter
+                      value={
+                        rawThreshold === null
+                          ? null
+                          : { op: "gt", amount: rawThreshold }
+                      }
+                      onChange={(v) =>
+                        dispatch(setSubDeptThreshold(v?.amount ?? null))
+                      }
+                      showOp={false}
+                      suffix="%"
+                      inputWidth={40}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2.5 px-3 py-1.5 border-b border-gray-100 flex-shrink-0">
+            <span className="w-2.5 flex-shrink-0" />
+            <button
+              onClick={() => handleDeptSortClick("dept")}
+              className="flex items-center gap-0.5 text-[11.5px] font-semibold uppercase tracking-wide text-content/80 hover:text-content flex-1 min-w-0"
+            >
+              Sub Dept
+              {deptSort?.column === "dept" &&
+                (deptSort.direction === "desc" ? (
+                  <ChevronDownIcon className="w-3 h-3" />
+                ) : (
+                  <ChevronUpIcon className="w-3 h-3" />
+                ))}
+            </button>
+            <div className="flex items-center gap-[14px]">
+              <button
+                onClick={() => handleDeptSortClick("ty")}
+                className="flex items-center justify-end gap-0.5 text-[11.5px] font-semibold uppercase tracking-wide text-content/80 hover:text-content flex-shrink-0 pl-2.5"
+                style={{ width: 64 }}
+              >
+                TY
+                {deptSort?.column === "ty" &&
+                  (deptSort.direction === "desc" ? (
+                    <ChevronDownIcon className="w-3 h-3" />
+                  ) : (
+                    <ChevronUpIcon className="w-3 h-3" />
+                  ))}
+              </button>
+              <button
+                onClick={() => handleDeptSortClick("vsLW")}
+                className="flex items-center justify-center gap-0.5 text-[11.5px] font-semibold uppercase tracking-wide text-content/80 hover:text-content flex-shrink-0"
+                style={{ width: PCT_COL_W }}
+              >
+                vs LW
+                {deptSort?.column === "vsLW" &&
+                  (deptSort.direction === "desc" ? (
+                    <ChevronDownIcon className="w-3 h-3" />
+                  ) : (
+                    <ChevronUpIcon className="w-3 h-3" />
+                  ))}
+              </button>
+              <button
+                onClick={() => handleDeptSortClick("vsLY")}
+                className="flex items-center justify-center gap-0.5 text-[11.5px] font-semibold uppercase tracking-wide text-content/80 hover:text-content flex-shrink-0"
+                style={{ width: PCT_COL_W }}
+              >
+                vs LY
+                {deptSort?.column === "vsLY" &&
+                  (deptSort.direction === "desc" ? (
+                    <ChevronDownIcon className="w-3 h-3" />
+                  ) : (
+                    <ChevronUpIcon className="w-3 h-3" />
+                  ))}
+              </button>
+            </div>
+          </div>
+
+          <div className="overflow-y-auto thin-scrollbar flex-1">
+            {sortedVisible.map((r) => {
+              const lwComplete = isCompleteCoverage(
+                deptCoverage.lwDayCount,
+                deptCoverage.dayCount,
+              );
+              const lyComplete = isCompleteCoverage(
+                deptCoverage.lyDayCount,
+                deptCoverage.dayCount,
+              );
+              const sev = deptSeverity(r, deptCoverage, threshold, gradingMetric);
+              const rowVsLWPct = isQty ? r.vsLWQtyPct : r.vsLWPct;
+              const rowVsLYPct = isQty ? r.vsLYQtyPct : r.vsLYPct;
+              const isSel = selectedId === r.id;
+              return (
+                <button
+                  key={r.id}
+                  onClick={() =>
+                    dispatch(setSelectedSubDeptId(isSel ? null : r.id))
+                  }
+                  className={`w-full flex items-center gap-2.5 p-3 text-left transition-colors border-l-2 border-b border-b-[#1e2a4a]/15 ${
+                    isSel
+                      ? "bg-row_selected border-row_selected_border"
+                      : "border-transparent hover:bg-gray-50"
+                  }`}
+                >
+                  <span
+                    className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
+                      sev ? severityDotClass[sev] : "bg-gray-400"
+                    }`}
+                  />
+                  <span
+                    title={r.desc}
+                    className="text-[12px] font-medium text-content truncate flex-1"
+                  >
+                    {r.desc}
+                  </span>
+                  <div className="flex items-center gap-[14px]">
+                    <span
+                      className="text-[12px] font-semibold text-content flex-shrink-0 pl-2.5 text-right"
+                      style={{ width: 64 }}
+                    >
+                      {isQty
+                        ? formatBigNumber(r.qty, 0)
+                        : formatCurrency2(r.tw)}
+                    </span>
+                    <span
+                      className={`text-[12px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${
+                        r.hasLW
+                          ? comparisonPillClass(rowVsLWPct, lwComplete, threshold)
+                          : "bg-gray-100 text-gray-400"
+                      }`}
+                      title={
+                        r.hasLW && !lwComplete
+                          ? `Last week covers ${deptCoverage.lwDayCount} of ${deptCoverage.dayCount} days, so it isn't used to grade.`
+                          : undefined
+                      }
+                      style={{ minWidth: PCT_COL_W }}
+                    >
+                      {r.hasLW ? formatPct(rowVsLWPct) : "—"}
+                    </span>
+                    <span
+                      className={`text-[12px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${
+                        r.hasLY
+                          ? comparisonPillClass(rowVsLYPct, lyComplete, threshold)
+                          : "bg-gray-100 text-gray-400"
+                      }`}
+                      title={
+                        r.hasLY && !lyComplete
+                          ? `Last year covers ${deptCoverage.lyDayCount} of ${deptCoverage.dayCount} days, so it isn't used to grade.`
+                          : undefined
+                      }
+                      style={{ minWidth: PCT_COL_W }}
+                    >
+                      {r.hasLY ? formatPct(rowVsLYPct) : "—"}
+                    </span>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Right panel */}
+        <div className="flex flex-col flex-1 min-w-0">
+          {/* Header row: selected name — doubles as the CTA insight toggle */}
+          {selected && cta && (
+            <div
+              className={`relative border-b ${ctaClasses(cta.severity).border}`}
+            >
+              <button
+                onClick={() => setCtaOpen((v) => !v)}
+                className={`w-full flex items-center gap-1.5 px-3 py-1.5 ${ctaClasses(cta.severity).bg} ${ctaClasses(cta.severity).hoverBg} transition-colors`}
+              >
+                {cta.severity === "critical" && (
+                  <ExclamationTriangleIcon
+                    className={`w-3.5 h-3.5 ${ctaClasses(cta.severity).text} flex-shrink-0`}
+                  />
+                )}
+                {cta.severity === "watch" && (
+                  <ExclamationCircleIcon
+                    className={`w-3.5 h-3.5 ${ctaClasses(cta.severity).text} flex-shrink-0`}
+                  />
+                )}
+                {cta.severity === "healthy" && (
+                  <CheckCircleIcon
+                    className={`w-3.5 h-3.5 ${ctaClasses(cta.severity).text} flex-shrink-0`}
+                  />
+                )}
+                <span
+                  className={`text-[12px] font-semibold truncate ${ctaClasses(cta.severity).text}`}
+                >
+                  {selected.desc}
+                </span>
+                <span
+                  className={`text-[12px] font-semibold flex-shrink-0 ${ctaClasses(cta.severity).text}`}
+                >
+                  Insight
+                </span>
+                <span className="flex-1" />
+                {ctaOpen ? (
+                  <ChevronUpIcon
+                    className={`w-3 h-3 flex-shrink-0 ${ctaClasses(cta.severity).text}`}
+                  />
+                ) : (
+                  <ChevronDownIcon
+                    className={`w-3 h-3 flex-shrink-0 ${ctaClasses(cta.severity).text}`}
+                  />
+                )}
+              </button>
+              {ctaOpen && (
+                <div
+                  className={`absolute top-full left-0 right-0 z-20 px-3 py-2 border-b shadow-lg ${ctaClasses(cta.severity).bg} ${ctaClasses(cta.severity).border}`}
+                >
+                  <span
+                    className={`text-[11px] leading-relaxed ${ctaClasses(cta.severity).text}`}
+                  >
+                    {cta.text}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {selected ? (
+            <>
+              <div className="flex flex-col flex-1 overflow-hidden">
+                {/* 3-col KPI grid: TY / LW / LY */}
+                <div className="grid grid-cols-3 divide-x divide-gray-100 border-b border-gray-100 bg-gray-50 leading-snug flex-shrink-0">
+                  <div className="px-4 py-3 text-center">
+                    <div className="text-[10px] font-bold uppercase tracking-wide text-content">
+                      TY Net Sales
+                    </div>
+                    <div className="text-[10px] font-bold text-content mt-0.5">
+                      {twDateLabel}
+                    </div>
+                    <div className="flex items-baseline justify-center gap-1 mt-0.5">
+                      <span className="text-[13px] font-bold text-content">
+                        {formatCurrency2(selected.tw)}
+                      </span>
+                      <span className="text-[10px] font-bold text-content">
+                        {selected.qty.toLocaleString()} u
+                      </span>
+                    </div>
+                  </div>
+                  <div className="px-4 py-3 text-center">
+                    <div className="text-[10px] font-bold uppercase tracking-wide text-content">
+                      vs Last Week
+                    </div>
+                    <div className="text-[10px] font-bold text-content mt-0.5">
+                      {lwDateLabel}
+                    </div>
+                    <div className="flex items-baseline justify-center gap-1.5 mt-0.5">
+                      <span className="text-[13px] font-bold text-content">
+                        {selected.hasLW ? formatCurrency2(selected.lw) : "—"}
+                      </span>
+                      {selected.lwQty > 0 && (
+                        <span className="text-[10px] font-bold text-content">
+                          {selected.lwQty.toLocaleString()} u
+                        </span>
+                      )}
+                      {selected.hasLW && (
+                        <span
+                          className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${comparisonPillClass(selected.vsLWPct, isCompleteCoverage(deptCoverage.lwDayCount, deptCoverage.dayCount), threshold)}`}
+                        >
+                          {formatPct(selected.vsLWPct)}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="px-4 py-3 text-center">
+                    <div className="text-[10px] font-bold uppercase tracking-wide text-content">
+                      vs Last Year
+                    </div>
+                    <div className="text-[10px] font-bold text-content mt-0.5">
+                      {lyDateLabel}
+                    </div>
+                    <div className="flex items-baseline justify-center gap-1.5 mt-0.5">
+                      <span className="text-[13px] font-bold text-content">
+                        {selected.hasLY ? formatCurrency2(selected.ly) : "—"}
+                      </span>
+                      {selected.lyQty > 0 && (
+                        <span className="text-[10px] font-bold text-content">
+                          {selected.lyQty.toLocaleString()} u
+                        </span>
+                      )}
+                      {selected.hasLY && (
+                        <span
+                          className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${comparisonPillClass(selected.vsLYPct, isCompleteCoverage(deptCoverage.lyDayCount, deptCoverage.dayCount), threshold)}`}
+                        >
+                          {formatPct(selected.vsLYPct)}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Items section */}
+                <div
+                  className="flex flex-col flex-1 overflow-hidden border-b border-gray-100 leading-snug"
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                    setCtxMenu({ x: e.clientX, y: e.clientY, upc: "" });
+                  }}
+                >
+                  {/* Items header */}
+                  <div className="flex items-center justify-between gap-1 px-3 py-1 bg-gray-100 border-b border-gray-100 flex-shrink-0">
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() =>
+                          setItemSevFilter((f) =>
+                            f === "critical" ? "all" : "critical",
+                          )
+                        }
+                        className={`text-[10px] font-semibold px-2 py-1 rounded-full bg-severity_critical_bg text-severity_critical_text transition-shadow ${
+                          itemSevFilter === "critical"
+                            ? "ring-2 ring-severity_critical_text/40 shadow-sm"
+                            : ""
+                        }`}
+                      >
+                        Crit ({itemCritCount})
+                      </button>
+                      <button
+                        onClick={() =>
+                          setItemSevFilter((f) =>
+                            f === "watch" ? "all" : "watch",
+                          )
+                        }
+                        className={`text-[10px] font-semibold px-2 py-1 rounded-full bg-severity_watch_bg text-severity_watch_text transition-shadow ${
+                          itemSevFilter === "watch"
+                            ? "ring-2 ring-severity_watch_text/40 shadow-sm"
+                            : ""
+                        }`}
+                      >
+                        Watch ({itemWatchCount})
+                      </button>
+                      <button
+                        onClick={() =>
+                          setItemSevFilter((f) =>
+                            f === "healthy" ? "all" : "healthy",
+                          )
+                        }
+                        className={`text-[10px] font-semibold px-2 py-1 rounded-full bg-severity_healthy_bg text-severity_healthy_text transition-shadow ${
+                          itemSevFilter === "healthy"
+                            ? "ring-2 ring-severity_healthy_text/40 shadow-sm"
+                            : ""
+                        }`}
+                      >
+                        OK ({itemHealthyCount})
+                      </button>
+                      <div className="relative">
+                        <button
+                          ref={itemThreshBtnRef}
+                          onClick={() => setItemThreshOpen((v) => !v)}
+                          className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium transition-colors border ${chipClass(itemThreshOpen)}`}
+                        >
+                          Thresh
+                        </button>
+                        {itemThreshOpen && (
+                          <div
+                            ref={itemThreshPopRef}
+                            className="absolute top-full left-0 mt-1 p-1.5 rounded-md border border-gray-200 bg-custom-white shadow-lg z-20"
+                          >
+                            <div className="flex items-center gap-2">
+                              <ThresholdSlider
+                                value={rawItemThreshold}
+                                onChange={(v) => dispatch(setItemThreshold(v))}
+                                ariaLabel="Item grading threshold, percent"
+                                className="w-[92px] flex-shrink-0"
+                              />
+                              <ThresholdFilter
+                                value={
+                                  rawItemThreshold === null
+                                    ? null
+                                    : { op: "gt", amount: rawItemThreshold }
+                                }
+                                onChange={(v) =>
+                                  dispatch(setItemThreshold(v?.amount ?? null))
+                                }
+                                showOp={false}
+                                suffix="%"
+                                inputWidth={40}
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-[140px]">
+                        <TextFilter
+                          value={itemTextFilter}
+                          onChange={setItemTextFilter}
+                          placeholder="UPC/Desc"
+                        />
+                      </div>
+                      <SelectFilter
+                        options={[
+                          { label: "Active", value: "active" },
+                          {
+                            label: `Inactive (${inactiveItems.length})`,
+                            value: "inactive",
+                          },
+                        ]}
+                        value={itemActiveFilter}
+                        onChange={setItemActiveFilter}
+                        placeholder="All items"
+                        className="w-[110px]"
+                      />
+                    </div>
+                  </div>
+
+                  {itemsLoading ? (
+                    <div className="px-4 py-3 text-[11px] text-content">
+                      Loading…
+                    </div>
+                  ) : textFilteredItems.length === 0 ? (
+                    <div className="px-4 py-3 text-[11px] text-content">
+                      No data
+                    </div>
+                  ) : (
+                    <div className="flex flex-col flex-1 overflow-hidden">
+                      {/* Column headers */}
+                      <div className="flex items-center gap-2.5 px-3 py-1 border-b border-gray-100 bg-gray-50 flex-shrink-0">
+                        <span className="w-[18px] flex-shrink-0" />
+                        <span className="text-[9px] font-semibold uppercase tracking-wide text-content flex-1">
+                          Items
+                        </span>
+                        <div className="flex items-center gap-[14px]">
+                          <button
+                            onClick={() => handleItemSortClick("ty")}
+                            className="flex items-center gap-0.5 text-[9px] font-semibold uppercase tracking-wide text-content hover:text-[#1e2a4a] flex-shrink-0 pl-2.5"
+                            style={{ width: 64 }}
+                          >
+                            TY
+                            {itemSort?.column === "ty" &&
+                              (itemSort.direction === "desc" ? (
+                                <ChevronDownIcon className="w-2.5 h-2.5" />
+                              ) : (
+                                <ChevronUpIcon className="w-2.5 h-2.5" />
+                              ))}
+                          </button>
+                          <button
+                            onClick={() => handleItemSortClick("lw")}
+                            className="flex items-center gap-0.5 text-[9px] font-semibold uppercase tracking-wide text-content hover:text-[#1e2a4a] flex-shrink-0"
+                            style={{ width: 64 }}
+                          >
+                            LW
+                            {itemSort?.column === "lw" &&
+                              (itemSort.direction === "desc" ? (
+                                <ChevronDownIcon className="w-2.5 h-2.5" />
+                              ) : (
+                                <ChevronUpIcon className="w-2.5 h-2.5" />
+                              ))}
+                          </button>
+                          <button
+                            onClick={() => handleItemSortClick("ly")}
+                            className="flex items-center gap-0.5 text-[9px] font-semibold uppercase tracking-wide text-content hover:text-[#1e2a4a] flex-shrink-0"
+                            style={{ width: 64 }}
+                          >
+                            LY
+                            {itemSort?.column === "ly" &&
+                              (itemSort.direction === "desc" ? (
+                                <ChevronDownIcon className="w-2.5 h-2.5" />
+                              ) : (
+                                <ChevronUpIcon className="w-2.5 h-2.5" />
+                              ))}
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="flex-1 overflow-y-auto thin-scrollbar">
+                        {sortedItems.map((item) => (
+                          <div
+                            key={item.productCode}
+                            className="flex items-start gap-2.5 px-3 py-2 border-b border-b-[#1e2a4a]/15 last:border-0"
+                            onContextMenu={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setCtxMenu({
+                                x: e.clientX,
+                                y: e.clientY,
+                                upc: item.upc,
+                              });
+                            }}
+                          >
+                            <SeverityBadge
+                              severity={item.sev}
+                              showBackground={false}
+                            />
+                            <div className="min-w-0 flex-1">
+                              <span className="text-[13px] font-medium text-content truncate block">
+                                {item.desc}
+                              </span>
+                              <span className="text-[11px] text-content block">
+                                {item.upc}
+                              </span>
+                            </div>
+                            <div className="flex items-start gap-[14px]">
+                              <div
+                                className="flex-shrink-0 pl-2.5"
+                                style={{ width: 64 }}
+                              >
+                                <div className="text-[13px] font-semibold text-content">
+                                  {item.hasTY === false
+                                    ? "—"
+                                    : isQty
+                                      ? item.tyQty.toLocaleString()
+                                      : formatCurrency2(item.tyNet)}
+                                </div>
+                                <div className="text-[10px] text-content">
+                                  {item.hasTY === false
+                                    ? ""
+                                    : isQty
+                                      ? formatCurrency2(item.tyNet)
+                                      : `${item.tyQty.toLocaleString()} u`}
+                                </div>
+                              </div>
+                              <div
+                                className="flex-shrink-0"
+                                style={{ width: 64 }}
+                              >
+                                <div className="text-[13px] font-semibold text-content">
+                                  {isQty
+                                    ? item.lwQty !== null
+                                      ? item.lwQty.toLocaleString()
+                                      : "—"
+                                    : item.lwNet !== null
+                                      ? formatCurrency2(item.lwNet)
+                                      : "—"}
+                                </div>
+                                <div className="text-[10px] text-content">
+                                  {isQty
+                                    ? item.lwNet !== null
+                                      ? formatCurrency2(item.lwNet)
+                                      : ""
+                                    : item.lwQty !== null
+                                      ? `${item.lwQty.toLocaleString()} u`
+                                      : ""}
+                                </div>
+                              </div>
+                              <div
+                                className="flex-shrink-0"
+                                style={{ width: 64 }}
+                              >
+                                <div className="text-[13px] font-semibold text-content">
+                                  {isQty
+                                    ? item.lyQty !== null
+                                      ? item.lyQty.toLocaleString()
+                                      : "—"
+                                    : item.lyNet !== null
+                                      ? formatCurrency2(item.lyNet)
+                                      : "—"}
+                                </div>
+                                <div className="text-[10px] text-content">
+                                  {isQty
+                                    ? item.lyNet !== null
+                                      ? formatCurrency2(item.lyNet)
+                                      : ""
+                                    : item.lyQty !== null
+                                      ? `${item.lyQty.toLocaleString()} u`
+                                      : ""}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="flex items-center justify-center h-full text-[12px] text-content">
+              Select a sub department
+            </div>
+          )}
+        </div>
+      </div>
+
+      {ctxMenu && (
+        <UpcContextMenu
+          x={ctxMenu.x}
+          y={ctxMenu.y}
+          upc={ctxMenu.upc}
+          allUpcs={allUpcs}
+          severityUpcs={severityUpcs}
+          onClose={() => setCtxMenu(null)}
+        />
+      )}
+    </>
+  );
+};
+
+export default PopupSubDeptList;

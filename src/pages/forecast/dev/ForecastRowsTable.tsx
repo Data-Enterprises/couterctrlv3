@@ -13,13 +13,13 @@ import {
   toggleTierFilter,
   clearTierFilter,
   resetRowValues,
-} from "../../../features/forecastDevSlice";
-import type { ForecastOutlierRow } from "../../../features/forecastSlice";
+} from "../../../features/dev/devForecastDevSlice";
+import type { ForecastOutlierRow } from "../../../features/dev/devForecastSlice";
 import { formatCurrency2 } from "../../../utils";
 import { useTriStateSort } from "../../../utils/useTriStateSort";
-import SortHeader, { PERF_SORT_HEADER } from "../../../components/SortHeader";
-import ColFilter from "../../upc/dev/components/ColFilter";
-import { colFilterInputStyle } from "../../upc/dev/components/colFilterInputStyle";
+import SortHeader, { PERF_SORT_HEADER } from "../../../components-dev/SortHeader";
+import ColFilter from "../../../components-dev/filters/ColFilterPopover";
+import { colInputStyle } from "../../../components-dev/filters/colFilterStyles";
 import {
   rankRows,
   tierCounts,
@@ -91,7 +91,7 @@ const ForecastRowsTable = ({
     forecastResults,
     tierFilter,
     initialRowData,
-  } = useAppSelector((s) => s.forecastDev);
+  } = useAppSelector((s) => s.dev.forecastDev);
   const singleDate = useAppSelector((s) => s.search.singleDate);
 
   const [batchAdDays, setBatchAdDays] = useState("");
@@ -490,7 +490,7 @@ const ForecastRowsTable = ({
               >
                 <input
                   autoFocus
-                  style={colFilterInputStyle}
+                  style={colInputStyle}
                   placeholder="Search UPC…"
                   value={draftUpc}
                   onChange={(e) => setDraftUpc(e.target.value)}
@@ -508,7 +508,7 @@ const ForecastRowsTable = ({
               >
                 <input
                   autoFocus
-                  style={colFilterInputStyle}
+                  style={colInputStyle}
                   placeholder="Search description…"
                   value={draftDesc}
                   onChange={(e) => setDraftDesc(e.target.value)}

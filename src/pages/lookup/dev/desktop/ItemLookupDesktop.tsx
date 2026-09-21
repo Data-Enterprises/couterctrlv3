@@ -16,7 +16,7 @@ import {
 } from "../lookupMetrics";
 
 const ItemLookupDesktop = () => {
-  const { selectedStore } = useAppSelector((s) => s.item);
+  const { selectedStore } = useAppSelector((s) => s.dev.item);
   const resolvedStoreName = useStoreName(selectedStore);
   const {
     queue,

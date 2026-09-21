@@ -1,16 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
-import ResizableModalShell from "../../../components/modals/ResizableModalShell";
+import ResizableModalShell from "../../../components-dev/modals/ResizableModalShell";
 import {
   setSelectedUpc,
   setNewRowAdDaysValue,
   setNewRowPriceValue,
   setItemNotes,
-} from "../../../features/forecastDevSlice";
+} from "../../../features/dev/devForecastDevSlice";
 import { formatCurrency2 } from "../../../utils";
-import { fitLinearDemand, predictQty } from "../utils";
-import { forecastUnits } from "../../priceSimulator/calc";
+import { fitLinearDemand, predictQty } from "../../../utils/forecastCalc";
+import { forecastUnits } from "../../../utils/priceSimCalc";
 import ForecastScenarios from "./ForecastScenarios";
 
 /**
@@ -37,7 +37,7 @@ const FIELD_LABEL = "text-[11px] font-medium text-content/85 ml-0.5";
 const ForecastCalcModal = () => {
   const dispatch = useAppDispatch();
   const { selectedUpc, forecastResults, rowData } = useAppSelector(
-    (s) => s.forecastDev,
+    (s) => s.dev.forecastDev,
   );
 
   const row = useMemo(

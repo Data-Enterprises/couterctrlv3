@@ -1,4 +1,4 @@
-import type { InfoGlossaryEntry } from "../../../components/InfoPopover";
+import type { InfoGlossaryEntry } from "../../../components-dev/InfoPopover";
 
 export const LOOKUP_INFO: { title: string; purpose: string; glossary: InfoGlossaryEntry[] } = {
   title: "Item Lookup",

@@ -2,7 +2,7 @@ import { formatCurrency2 } from "../../../../../utils";
 import CtaInsightStrip from "../../components/CtaInsightStrip";
 import KpiTileGrid from "../../components/KpiTileGrid";
 import type { KpiCell } from "../../types";
-import type { AssociationResult } from "../../../../../features/upcDevSlice";
+import type { AssociationResult } from "../../../../../features/dev/devUpcDevSlice";
 import {
   getDisplayItems,
   getDepartmentBreakdown,

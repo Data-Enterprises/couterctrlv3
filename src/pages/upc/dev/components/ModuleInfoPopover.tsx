@@ -1,6 +1,6 @@
 import { MODULE_INFO } from "../moduleInfo";
-import type { UpcDevTab } from "../../../../features/upcDevSlice";
-import InfoPopover from "../../../../components/InfoPopover";
+import type { UpcDevTab } from "../../../../features/dev/devUpcDevSlice";
+import InfoPopover from "../../../../components-dev/InfoPopover";
 
 interface Props {
   tab: UpcDevTab;

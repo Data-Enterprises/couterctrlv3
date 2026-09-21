@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import type { ItemLookupHistory } from "../../../features/itemLookupSlice";
+import type { ItemLookupHistory } from "../../../features/dev/devItemLookupSlice";
 import { isSaleRow } from "../../../utils/saleType";
 import {
   buildSaleTypeBreakdown,

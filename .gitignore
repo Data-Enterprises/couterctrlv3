@@ -32,3 +32,8 @@ counterctrl_meeting_talking_points.txt
 TODO.md
 handoff-DEV-NOTES.md
 handoff-PORTAL-README.md
+
+# Dead code parked during the dev/prod UI separation. Local only —
+# anything moved here is still recoverable from git history, since moving a
+# tracked file in is recorded as a deletion.
+trash/

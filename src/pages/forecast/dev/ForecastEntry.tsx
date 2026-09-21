@@ -1,18 +1,18 @@
 import { useRef } from "react";
 import { XMarkIcon } from "@heroicons/react/20/solid";
-import { useAppDispatch, useAppSelector } from "../../../hooks";
+import { useAppDispatch, useAppSelector, useSearchPick } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
-import StorePicker from "../../../components/storePicker/StorePicker";
-import SingleDatePicker from "../../../components/datePickers/SingleDatePicker";
-import EntryCardLoading from "../../../components/loading/EntryCardLoading";
-import { isAdListFile, parseAdListWorkbook } from "../adListParse";
+import StorePicker from "../../../components-dev/storePicker/StorePicker";
+import SingleDatePicker from "../../../components-dev/datePickers/SingleDatePicker";
+import EntryCardLoading from "../../../components-dev/loading/EntryCardLoading";
+import { isAdListFile, parseAdListWorkbook } from "./adListParse";
 import {
   addUpcs,
   setUpcText,
   removeUpc,
   clearUpcs,
   setUploadedAdList,
-} from "../../../features/forecastDevSlice";
+} from "../../../features/dev/devForecastDevSlice";
 import { getStoreName } from "../../../utils";
 import { isGroupSearch } from "../../../features/searchSlice";
 
@@ -62,11 +62,12 @@ const ForecastEntry = ({
   const fileRef = useRef<HTMLInputElement>(null);
   const adRef = useRef<HTMLInputElement>(null);
   const search = useAppSelector((s) => s.search);
+  const { nothingPicked, pickLabel } = useSearchPick();
   const assignedStores = useAppSelector((s) => s.user.assignedStores);
   // Dev's own list — see the note in forecastDevSlice. Nothing loaded here
   // reaches the legacy page or the UPC List page.
   const { upcs, upcText, adListRows, adListFileName } = useAppSelector(
-    (s) => s.forecastDev,
+    (s) => s.dev.forecastDev,
   );
 
   const handleParseText = () => {
@@ -270,10 +271,14 @@ const ForecastEntry = ({
             {/* run */}
             <button
               onClick={onSearch}
-              disabled={!upcs.length || isLoading}
+              disabled={!upcs.length || isLoading || nothingPicked}
               className="w-full py-2 text-sm font-semibold text-custom-white rounded-lg bg-[#1e2a4a] hover:bg-[#2a3a63] transition-colors cursor-pointer select-none disabled:opacity-50"
             >
-              {upcs.length > 1 ? `Forecast ${upcs.length} items` : "Forecast"}
+              {nothingPicked
+                ? pickLabel
+                : upcs.length > 1
+                  ? `Forecast ${upcs.length} items`
+                  : "Forecast"}
             </button>
           </div>
 

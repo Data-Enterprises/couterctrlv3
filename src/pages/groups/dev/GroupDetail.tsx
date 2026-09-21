@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { PencilIcon, TrashIcon } from "@heroicons/react/20/solid";
-import { useGroupCtx } from "..";
+import { useGroupCtx } from ".";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import {
   updateGroup,
@@ -9,12 +9,13 @@ import {
   addStoreToGroup,
   removeStoreFromGroup,
 } from "../../../api/groups";
-import type { Group, StoreWithGroupStatus } from "../../../features/groupSlice";
+import type { Group } from "../../../features/groupSlice";
+import type { StoreWithGroupStatus } from "../../../interfaces";
 import type { JsonError } from "../../../interfaces";
-import IconButton from "../../../components/IconButton";
-import ConfirmModal from "../../../components/ConfirmModal";
-import TextFilter from "../../../components/filters/TextFilter";
-import LoadingIndicator from "../../../components/loading/LoadingIndicator";
+import IconButton from "../../../components-dev/IconButton";
+import ConfirmModal from "../../../components-dev/ConfirmModal";
+import TextFilter from "../../../components-dev/filters/TextFilter";
+import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
 
 interface Props {
   group: Group;

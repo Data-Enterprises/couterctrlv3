@@ -1,4 +1,4 @@
-import type { AssociationItem } from "../../../../../features/upcDevSlice";
+import type { AssociationItem } from "../../../../../features/dev/devUpcDevSlice";
 
 // Seed items showing up in their own results isn't useful cross-merchandising
 // information the way it first seemed — it just re-lists what's already

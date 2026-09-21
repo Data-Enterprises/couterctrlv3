@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import ResizableModalShell from "../../../../components/modals/ResizableModalShell";
+import ResizableModalShell from "../../../../components-dev/modals/ResizableModalShell";
 import { ArrowDownTrayIcon, XMarkIcon } from "@heroicons/react/20/solid";
 import {
   buildSaleTypeBreakdown,
@@ -8,7 +8,7 @@ import {
   dayUnitCost,
 } from "../lookupMetrics";
 import type { DayBucket } from "../lookupMetrics";
-import type { QueueItem } from "../../../../features/itemLookupSlice";
+import type { QueueItem } from "../../../../features/dev/devItemLookupSlice";
 import { rowsToCsv, downloadCsv } from "../../../../utils/csvExport";
 
 interface LookupExportModalProps {

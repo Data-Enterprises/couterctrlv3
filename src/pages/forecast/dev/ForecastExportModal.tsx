@@ -1,10 +1,10 @@
 import { useMemo, useState } from "react";
 import { ArrowDownTrayIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useAppSelector } from "../../../hooks";
-import ResizableModalShell from "../../../components/modals/ResizableModalShell";
+import ResizableModalShell from "../../../components-dev/modals/ResizableModalShell";
 import { exportData } from "../../../utils/export";
 import { formatCurrency2 } from "../../../utils";
-import type { ForecastOutlierRow } from "../../../features/forecastSlice";
+import type { ForecastOutlierRow } from "../../../features/dev/devForecastSlice";
 import { rankRows, TIER_LABEL, type Tier } from "./forecastRanking";
 import type { RankEntry } from "./forecastRanking";
 
@@ -136,7 +136,7 @@ const ForecastExportModal = ({ onClose }: { onClose: () => void }) => {
     adListRows,
     storeids,
     tierFilter,
-  } = useAppSelector((s) => s.forecastDev);
+  } = useAppSelector((s) => s.dev.forecastDev);
   const singleDate = useAppSelector((s) => s.search.singleDate);
 
   const [mode, setMode] = useState<ModalMode>("presets");

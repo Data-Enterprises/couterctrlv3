@@ -1,5 +1,5 @@
 import { formatCurrency2 } from "../../../../../utils";
-import type { AssociationResult } from "../../../../../features/upcDevSlice";
+import type { AssociationResult } from "../../../../../features/dev/devUpcDevSlice";
 import type { KpiCell } from "../../types";
 import {
   getDisplayItems,

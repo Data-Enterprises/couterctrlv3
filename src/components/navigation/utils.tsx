@@ -20,9 +20,11 @@ import {
   ClockIcon,
   ShieldExclamationIcon,
   DocumentArrowUpIcon,
+  TicketIcon,
   // ScaleIcon, // Suggested Weight — commented out for publish
 } from "@heroicons/react/16/solid";
 import {
+  COMING_SOON_CATEGORY,
   COMING_SOON_LEVELS,
   PROGRAMMER_ONLY_LEVELS,
 } from "../../utils/comingSoon";
@@ -360,8 +362,8 @@ export const categories: NavCategory[] = [
         name: "Coupon Sales",
         href: "coupon-sales",
         icon: CouponIcon,
-        // Has its own three-screen mobile stack (pages/couponSales/mobile) —
-        // graded store list, per-store breakdown, receipts. The Data-category
+        // Has its own mobile view (pages/shared/eventPerf, shared with Loss
+        // Prevention) — store list, per-store report, receipts. The Data-category
         // Coupons page is a different report, not this one's phone version.
         mobile: true,
         children: [],
@@ -529,7 +531,7 @@ export const categories: NavCategory[] = [
    * entry back to the category it belongs to and restore `userLevels: ["*"]`.
    */
   {
-    name: "Coming Soon",
+    name: COMING_SOON_CATEGORY,
     icon: ClockIcon,
     pages: [
       {
@@ -622,6 +624,20 @@ export const categories: NavCategory[] = [
       //   isHovering: false,
       //   isVisible: true,
       // },
+      {
+        name: "Tickets",
+        href: "tickets",
+        icon: TicketIcon,
+        // An experiment on hold. Programmer tier: it is not answerable to a
+        // client, and like every Coming Soon page it only exists in the dev UI
+        // tree, against the dev API. Desktop only.
+        mobile: false,
+        children: [],
+        childOpen: false,
+        userLevels: PROGRAMMER_ONLY_LEVELS,
+        isHovering: false,
+        isVisible: true,
+      },
     ],
   },
 ];

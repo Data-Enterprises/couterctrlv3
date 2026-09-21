@@ -1,7 +1,7 @@
 import { useRef } from "react";
 import { XMarkIcon } from "@heroicons/react/20/solid";
 import { useUpcDevCtx } from "../hooks/useUpcDevCtx";
-import { useAppDispatch } from "../../../../hooks";
+import { useAppDispatch, useSearchPick } from "../../../../hooks";
 import {
   setDevUpcs,
   setDevUpcText,
@@ -9,11 +9,11 @@ import {
   clearDevUpcs,
   setDevActiveTab,
   UPC_DEV_TABS,
-} from "../../../../features/upcDevSlice";
+} from "../../../../features/dev/devUpcDevSlice";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 
-import StorePicker from "../../../../components/storePicker/StorePicker";
-import DatePickers from "../../../../components/datePickers/DatePickers";
+import StorePicker from "../../../../components-dev/storePicker/StorePicker";
+import DatePickers from "../../../../components-dev/datePickers/DatePickers";
 
 interface Props {
   onSearch: () => void;
@@ -33,6 +33,7 @@ const parseUpcs = (text: string): string[] =>
 
 const UpcSearchCard = ({ onSearch, onClose }: Props) => {
   const ctx = useUpcDevCtx();
+  const { nothingPicked, pickLabel } = useSearchPick();
   const dispatch = useAppDispatch();
   const toast = useToast();
   const fileRef = useRef<HTMLInputElement>(null);
@@ -194,9 +195,9 @@ const UpcSearchCard = ({ onSearch, onClose }: Props) => {
         <button
           onClick={onSearch}
           className="w-full py-2 text-sm font-semibold text-custom-white rounded-lg bg-[#1e2a4a] hover:bg-[#2a3a63] transition-colors cursor-pointer select-none disabled:opacity-50"
-          disabled={!ctx.upcs.length}
+          disabled={!ctx.upcs.length || nothingPicked}
         >
-          Search
+          {nothingPicked ? pickLabel : "Search"}
         </button>
 
       </div>

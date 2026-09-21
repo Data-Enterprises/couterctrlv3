@@ -1,0 +1,303 @@
+import { useState } from "react";
+import { useAppSelector } from "../../../hooks";
+import { formatCurrency2, formatBigNumber, formatDate } from "../../../utils";
+import LoadingIndicator from "../../../components/loading/LoadingIndicator";
+import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
+import ReceiversExportModal from "./ReceiversExportModal";
+
+const ReceiverDetailPanel = () => {
+  const [exportOpen, setExportOpen] = useState(false);
+  const state = useAppSelector((s) => s.prod.receivers);
+
+  const selectedReceiver = state.selectedInvoice
+    ? (state.list.find(
+        (r) => r.invoiceid.toString() === state.selectedInvoice,
+      ) ?? null)
+    : null;
+
+  const totals = state.totals[0] ?? null;
+  const hasDetails = state.details.length > 0 && !state.isFetchingDetails;
+
+  return (
+    <div
+      className="flex flex-col rounded-xl shadow-lg overflow-hidden bg-custom-white"
+      style={{ flex: 1, minWidth: 0 }}
+    >
+      {exportOpen && selectedReceiver && (
+        <ReceiversExportModal
+          onClose={() => setExportOpen(false)}
+          vendorName={selectedReceiver.vendor_name}
+          invoiceId={selectedReceiver.invoiceid}
+          referenceNumber={selectedReceiver.reference_number}
+          details={state.details}
+          totals={totals}
+        />
+      )}
+      {/* Navy header */}
+      <div
+        className="flex-shrink-0 px-4 py-[11px] flex items-start justify-between"
+        style={{ background: "#1e2a4a" }}
+      >
+        <div>
+          {selectedReceiver ? (
+            <>
+              <div className="text-[13px] font-semibold text-custom-white">
+                {selectedReceiver.vendor_name}
+                <span className="ml-2 text-[11px] font-normal text-custom-white">
+                  — {selectedReceiver.cashier_name} ·{" "}
+                  {formatDate(selectedReceiver.invoice_date.split("T")[0])}
+                </span>
+              </div>
+            </>
+          ) : (
+            <div className="text-[13px] font-semibold text-custom-white">
+              Receiver Detail
+            </div>
+          )}
+        </div>
+        {hasDetails && (
+          <div className="flex items-center gap-3 mt-0.5">
+            <button
+              onClick={() => setExportOpen(true)}
+              title="Export CSV"
+              className="text-custom-white/60 hover:text-custom-white transition-colors flex-shrink-0"
+            >
+              <ArrowDownTrayIcon className="w-4 h-4" />
+            </button>
+            <div className="w-px h-4 bg-custom-white/15 flex-shrink-0" />
+            <div className="flex items-baseline gap-1 flex-shrink-0">
+              <span className="text-[10px] uppercase tracking-wide text-custom-white">
+                Invoice
+              </span>
+              <span className="text-[13px] font-medium text-custom-white">
+                {selectedReceiver!.invoiceid}
+              </span>
+            </div>
+            <div className="w-px h-4 bg-custom-white/15 flex-shrink-0" />
+            <div className="flex items-baseline gap-1 flex-shrink-0">
+              <span className="text-[10px] uppercase tracking-wide text-custom-white">
+                Ref #
+              </span>
+              <span className="text-[13px] font-medium text-custom-white">
+                {selectedReceiver!.reference_number}
+              </span>
+            </div>
+            <div className="w-px h-4 bg-custom-white/15 flex-shrink-0" />
+            <div className="flex items-baseline gap-1 flex-shrink-0">
+              <span className="text-[10px] uppercase tracking-wide text-custom-white">
+                Items
+              </span>
+              <span className="text-[13px] font-medium text-custom-white">
+                {state.details.length}
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Empty — no receiver selected */}
+      {!selectedReceiver && (
+        <div className="flex-1 flex flex-col items-center justify-center gap-1">
+          <span className="text-[13px] font-medium text-content/60">
+            No receiver selected
+          </span>
+          <span className="text-[11px] text-content/40">
+            Select a receiver from the list to view its line items
+          </span>
+        </div>
+      )}
+
+      {/* Loading details */}
+      {selectedReceiver && state.isFetchingDetails && (
+        <div className="flex-1 relative">
+          <LoadingIndicator message="Loading details" />
+        </div>
+      )}
+
+      {/* Line items */}
+      {selectedReceiver && !state.isFetchingDetails && (
+        <>
+          {/* KPI strip */}
+          {totals && (
+            <div className="grid grid-cols-6 divide-x divide-[#1e2a4a]/15 border-b border-[#1e2a4a]/15 bg-gray-50 flex-shrink-0">
+              <div className="px-4 py-2 text-center">
+                <div className="text-[10px] font-bold uppercase tracking-wide text-content">
+                  Cases
+                </div>
+                <div className="text-[14px] font-bold text-content">
+                  {totals.cases}
+                </div>
+              </div>
+              <div className="px-4 py-2 text-center">
+                <div className="text-[10px] font-bold uppercase tracking-wide text-content">
+                  Units
+                </div>
+                <div className="text-[14px] font-bold text-content">
+                  {totals.units}
+                </div>
+              </div>
+              <div className="px-4 py-2 text-center">
+                <div className="text-[10px] font-bold uppercase tracking-wide text-content">
+                  U Cost
+                </div>
+                <div className="text-[14px] font-bold text-content">
+                  {formatCurrency2(totals.ucost)}
+                </div>
+              </div>
+              <div className="px-4 py-2 text-center">
+                <div className="text-[10px] font-bold uppercase tracking-wide text-content">
+                  Ext Cost
+                </div>
+                <div className="text-[14px] font-bold text-content">
+                  {formatCurrency2(totals.ext_cost)}
+                </div>
+              </div>
+              <div className="px-4 py-2 text-center">
+                <div className="text-[10px] font-bold uppercase tracking-wide text-content">
+                  Retail
+                </div>
+                <div className="text-[14px] font-bold text-content">
+                  {formatCurrency2(totals.retail)}
+                </div>
+              </div>
+              <div className="px-4 py-2 text-center">
+                <div className="text-[10px] font-bold uppercase tracking-wide text-content">
+                  Ext Retail
+                </div>
+                <div className="text-[14px] font-bold text-content">
+                  {formatCurrency2(totals.ext_retail)}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Table */}
+          <div className="flex-1 overflow-auto thin-scrollbar">
+            <table className="w-full border-collapse text-[12px]">
+              <thead>
+                <tr className="sticky top-0 bg-gray-50 border-b border-gray-100 z-10">
+                  <th className="text-right px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/85">
+                    #
+                  </th>
+                  <th className="text-left px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/85">
+                    UPC
+                  </th>
+                  <th
+                    className="text-left px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/85"
+                    style={{ width: "22%" }}
+                  >
+                    Description
+                  </th>
+                  <th className="text-right px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/85">
+                    Cases
+                  </th>
+                  <th className="text-right px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/85">
+                    Units
+                  </th>
+                  <th className="text-right px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/85 whitespace-nowrap">
+                    U Cost
+                  </th>
+                  <th className="text-right px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/85 whitespace-nowrap">
+                    Ext Cost
+                  </th>
+                  <th className="text-right px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/85">
+                    Retail
+                  </th>
+                  <th className="text-right px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/85 whitespace-nowrap">
+                    Ext Retail
+                  </th>
+                  <th className="text-right px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/85">
+                    GM
+                  </th>
+                  <th className="text-right px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/85">
+                    Free
+                  </th>
+                  <th className="text-right px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/85">
+                    Return
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#1e2a4a]/15 text-[13px]">
+                {state.details.map((item) => (
+                  <tr
+                    key={item.line_number}
+                    className="even:bg-row_stripe hover:bg-gray-50 transition-colors"
+                  >
+                    <td className="px-3 py-2 text-right tabular-nums text-content/85">
+                      {item.line_number}
+                    </td>
+                    <td className="px-3 py-2 tabular-nums text-content/85 whitespace-nowrap">
+                      {item.product_code}
+                    </td>
+                    <td className="px-3 py-2 font-medium text-content/85 truncate max-w-0">
+                      {item.product_description}
+                    </td>
+                    <td className="px-3 py-2 text-right tabular-nums text-content/85">
+                      {item.cases}
+                    </td>
+                    <td className="px-3 py-2 text-right tabular-nums text-content/85">
+                      {item.units}
+                    </td>
+                    <td className="px-3 py-2 text-right tabular-nums text-content/85">
+                      {formatCurrency2(item.ucost)}
+                    </td>
+                    <td className="px-3 py-2 text-right tabular-nums text-content/85">
+                      {formatCurrency2(item.ext_cost)}
+                    </td>
+                    <td className="px-3 py-2 text-right tabular-nums text-content/85">
+                      {formatCurrency2(item.retail)}
+                    </td>
+                    <td className="px-3 py-2 text-right tabular-nums font-semibold text-content/85">
+                      {formatCurrency2(item.ext_retail)}
+                    </td>
+                    <td className="px-3 py-2 text-right tabular-nums text-content/85">
+                      {formatBigNumber(item.gm, 2)}
+                    </td>
+                    <td className="px-3 py-2 text-right tabular-nums text-content/85">
+                      {item.free}
+                    </td>
+                    <td className="px-3 py-2 text-right tabular-nums text-content/85">
+                      {item.return}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+              {totals && (
+                <tfoot>
+                  <tr className="sticky bottom-0 bg-gray-50 border-t-2 border-content/70 font-bold text-[14px]">
+                    <td className="px-3 py-2"></td>
+                    <td className="px-3 py-2"></td>
+                    <td className="px-3 py-2 text-right text-content/85">Totals</td>
+                    <td className="px-3 py-2 text-right tabular-nums text-content/85">
+                      {totals.cases}
+                    </td>
+                    <td className="px-3 py-2 text-right tabular-nums text-content/85">
+                      {totals.units}
+                    </td>
+                    <td className="px-3 py-2 text-right tabular-nums text-content/85">
+                      {formatCurrency2(totals.ucost)}
+                    </td>
+                    <td className="px-3 py-2 text-right tabular-nums text-content/85">
+                      {formatCurrency2(totals.ext_cost)}
+                    </td>
+                    <td className="px-3 py-2 text-right tabular-nums text-content/85">
+                      {formatCurrency2(totals.retail)}
+                    </td>
+                    <td className="px-3 py-2 text-right tabular-nums text-content/85">
+                      {formatCurrency2(totals.ext_retail)}
+                    </td>
+                    <td className="px-3 py-2"></td>
+                    <td className="px-3 py-2"></td>
+                    <td className="px-3 py-2"></td>
+                  </tr>
+                </tfoot>
+              )}
+            </table>
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
+
+export default ReceiverDetailPanel;
