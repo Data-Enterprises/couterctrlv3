@@ -93,14 +93,25 @@ describe("the store layout", () => {
     }
   });
 
-  it("starts every dev slice as an exact copy of its prod twin", () => {
-    // A fork begins identical; only edits to the dev copy make them differ.
+  it("starts every field a dev slice shares with its prod twin the same", () => {
+    // A fork begins identical, and dev work is allowed to add or drop fields
+    // (dev User Management dropped the base-group sharing state, for one). What
+    // must not happen is a field both copies still carry starting differently —
+    // that is drift nobody chose.
     const state = setupStore().getState() as unknown as {
-      prod: Record<string, unknown>;
-      dev: Record<string, unknown>;
+      prod: Record<string, Record<string, unknown>>;
+      dev: Record<string, Record<string, unknown>>;
     };
     for (const key of Object.keys(devReducers)) {
-      expect(state.dev[key], `dev.${key} vs prod.${key}`).toEqual(state.prod[key]);
+      const dev = state.dev[key];
+      const prod = state.prod[key];
+      expect(prod, `prod.${key}`).toBeDefined();
+      for (const field of Object.keys(dev)) {
+        if (!(field in prod)) continue;
+        expect(dev[field], `dev.${key}.${field} vs prod.${key}.${field}`).toEqual(
+          prod[field],
+        );
+      }
     }
   });
 });

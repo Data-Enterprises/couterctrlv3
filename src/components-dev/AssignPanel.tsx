@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import TextFilter from "../../../../components-dev/filters/TextFilter";
+import TextFilter from "./filters/TextFilter";
 
 interface AssignPanelItem {
   id: number;

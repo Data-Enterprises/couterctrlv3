@@ -3,7 +3,7 @@ import { useToast } from "../../../../../components/toasts/hooks/useToast";
 import { setRefresh, setUserCompanyIds } from "../../../../../features/dev/devUsersSlice";
 import { assignUserToCompany } from "../../../../../api/user";
 import type { JsonError, UserCompany } from "../../../../../interfaces";
-import AssignPanel from "../../components/AssignPanel";
+import AssignPanel from "../../../../../components-dev/AssignPanel";
 
 const CompaniesTab = () => {
   const toast = useToast();

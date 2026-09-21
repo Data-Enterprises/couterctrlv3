@@ -15,7 +15,7 @@ import type {
   JsonError,
   UserCompany,
 } from "../../../../../interfaces";
-import AssignPanel from "../../components/AssignPanel";
+import AssignPanel from "../../../../../components-dev/AssignPanel";
 
 const BaseGroupsTab = () => {
   const toast = useToast();

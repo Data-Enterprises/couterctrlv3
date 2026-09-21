@@ -1,47 +1,30 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import { useOrganizationCtx } from "./hooks";
 import { useResizableBox } from "../../../hooks/useResizableBox";
 import ResizeHandle from "../../../components-dev/ResizeHandle";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import type {
-  BaseGroupJsonResp,
   JsonError,
   User,
   UserLevelJsonResp,
 } from "../../../interfaces";
 import { getAllUsers } from "../../../api/user";
 import { getUserLevels } from "../../../api/team";
-import { getBGAssignedToUserSplit } from "../../../api/baseGroups";
 import {
   setInactiveUsers,
   setRefresh as setUsersRefresh,
   setUserLevels,
   setUsers,
 } from "../../../features/dev/devUsersSlice";
-import {
-  setUsersExportOpen,
-  setBaseGroupExportOpen,
-  setStoresExportOpen,
-  setAuthorizedBaseGroupIds,
-} from "../../../features/dev/devOrganizationSlice";
+import { setUsersExportOpen } from "../../../features/dev/devOrganizationSlice";
 // import TeamLegacy from "../team/TeamLegacy";
 import Users from "./users/Users";
-import BaseGroups from "./baseGroups/BaseGroups";
-import StoresDirectory from "./stores/StoresDirectory";
 
-type Tab = "users" | "baseGroups" | "stores";
-
-const TAB_LABELS: Record<Tab, string> = {
-  users: "Users",
-  baseGroups: "Base Groups",
-  stores: "Stores",
-};
 
 const Organization = () => {
   const toast = useToast();
   const ctx = useOrganizationCtx();
-  const [tab, setTab] = useState<Tab>("users");
   const { width, height, boxRef, handleProps } = useResizableBox({
     storageKey: "organization-panel-size",
     defaultWidth: 1080,
@@ -61,27 +44,6 @@ const Organization = () => {
     ctx.dispatch(setUsersRefresh(true));
   }, []);
 
-  // The logged-in user's own base groups. The Base Groups form derives its
-  // authorized flag from these ids, so they are fetched here rather than at
-  // login (Organization is the only surface that reads them) and refetched on
-  // every mount, so a membership granted elsewhere is not stale all session.
-  // A user with no company_link rows makes the endpoint raise instead of
-  // returning empty arrays, so anything but error 0 is treated as "none".
-  useEffect(() => {
-    getBGAssignedToUserSplit(ctx.url, ctx.token, ctx.userid)
-      .then((resp) => {
-        const j: BaseGroupJsonResp = resp.data;
-        ctx.dispatch(
-          setAuthorizedBaseGroupIds(
-            j.error === 0 ? j.active.map((bg) => bg.id) : [],
-          ),
-        );
-      })
-      .catch((err: JsonError) => {
-        ctx.dispatch(setAuthorizedBaseGroupIds([]));
-        toast.error("Error fetching your base groups " + err.message);
-      });
-  }, [ctx.userid]);
 
   useEffect(() => {
     if (!ctx.refresh) return;
@@ -148,12 +110,7 @@ const Organization = () => {
           </span>
           <div className="flex-1" />
           <button
-            onClick={() => {
-              if (tab === "users") ctx.dispatch(setUsersExportOpen(true));
-              else if (tab === "baseGroups")
-                ctx.dispatch(setBaseGroupExportOpen(true));
-              else ctx.dispatch(setStoresExportOpen(true));
-            }}
+            onClick={() => ctx.dispatch(setUsersExportOpen(true))}
             title="Export CSV"
             className="w-[20px] h-[20px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/60 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
           >
@@ -161,26 +118,11 @@ const Organization = () => {
           </button>
         </div>
 
-        <div className="flex border-b border-gray-100 flex-shrink-0">
-          {(["users", "baseGroups", "stores"] as Tab[]).map((t) => (
-            <button
-              key={t}
-              onClick={() => setTab(t)}
-              className={`text-[12px] font-semibold py-2.5 px-4 whitespace-nowrap border-b-2 transition-colors ${
-                tab === t
-                  ? "border-[#1e2a4a] text-[#1e2a4a]"
-                  : "border-transparent text-content"
-              }`}
-            >
-              {TAB_LABELS[t]}
-            </button>
-          ))}
-        </div>
 
         <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
-          {tab === "users" && <Users />}
-          {tab === "baseGroups" && <BaseGroups />}
-          {tab === "stores" && <StoresDirectory />}
+          {/* Users only. Base groups live in Admin now (access only), and
+              Shared Groups gets its own Admin tab on the shared_groups router. */}
+          <Users />
         </div>
 
         <ResizeHandle {...handleProps} />

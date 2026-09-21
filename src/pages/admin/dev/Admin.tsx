@@ -12,6 +12,7 @@ import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import CompanyGrid from "./CompanyGrid";
 import StoreActivityComp from "./StoreActivityComp";
 import NewStoreName from "./NewStoreName";
+import BaseGroups from "./baseGroups/BaseGroups";
 
 /** `programmerOnly` tabs act on records that aren't scoped to anyone — creating
  *  and deleting companies is a change to the whole tenancy, not to one
@@ -20,6 +21,7 @@ const TABS: { id: AdminForm; label: string; programmerOnly?: boolean }[] = [
   { id: "companies", label: "Companies", programmerOnly: true },
   { id: "store_activity", label: "Store activity" },
   { id: "new_store_name", label: "New store name" },
+  { id: "base_groups", label: "Base groups" },
 ];
 
 const Admin = () => {
@@ -76,6 +78,8 @@ const Admin = () => {
         );
       case "new_store_name":
         return <NewStoreName />;
+      case "base_groups":
+        return <BaseGroups />;
     }
   };
 
@@ -83,7 +87,8 @@ const Admin = () => {
     (s) => s.inactive_or_missing_days > 0,
   ).length;
 
-  // Nav hides Admin below level 5, but nav visibility is not access control —
+  // The nav lists Admin from level 5 (prod still opens there), but the dev
+  // Admin opens at 7 — see ADMIN_MIN_LEVEL. Nav visibility is not access control —
   // the route is reachable by typing it. This is the actual gate.
   if (!context.canOpenAdmin) {
     return (
