@@ -4,10 +4,11 @@ import { useToast } from "../../../../components/toasts/hooks/useToast";
 import {
   assignBaseGroupToUser,
   deleteUserBaseGroupLink,
-  getBaseGroupsAssignedToUser,
 } from "../../../../api/team";
+import { getBaseGroupUsers } from "../../../../api/baseGroups";
 import type {
-  BaseGroupJsonResp,
+  BaseGroupUserRow,
+  BaseGroupUsersResp,
   CompanyBaseGroup,
   JsonError,
   User,
@@ -21,128 +22,102 @@ interface Props {
 
 // Assigning a user to a base group is an access grant and nothing more: it
 // writes the base group link (groups/assign_base_group_to_user) and removing
-// it deletes that link. Nothing is copied into the user's own store groups.
+// it deletes that link. Nothing is copied into the user's own store groups —
+// sharing is Shared Groups' job.
 //
-// There's no endpoint for "which users have this base group" directly, only
-// the reverse (a user's own base groups) — so each candidate's column is
-// resolved with its own call to that per-user endpoint (same one the
-// profile's own Base groups tab uses) rather than one bulk lookup.
+// Both columns come from groups/base_group_users in one call. That endpoint
+// doesn't carry user levels, so `users` (the full list, which does) is used to
+// keep anyone above the acting user's own level off both columns, as before.
 const BaseGroupUsersTab = ({ group, users }: Props) => {
   const ctx = useBaseGroupsCtx();
   const toast = useToast();
-  const [statusByUser, setStatusByUser] = useState<Record<number, boolean>>(
-    {},
-  );
+  const [assigned, setAssigned] = useState<BaseGroupUserRow[]>([]);
+  const [unassigned, setUnassigned] = useState<BaseGroupUserRow[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const candidates = users.filter(
-    (u) =>
-      u.companies.some((c) => c.company === group.company) &&
-      u.user_level <= ctx.userLevel,
-  );
-
-  // Tracks which group the in-flight lookups below belong to, so a response
-  // that resolves after the user has already switched to a different group
-  // doesn't get written into the new group's (just-reset) status map.
+  // A response for a group the reader has already left must not land here.
   const activeGroupId = useRef(group.id);
 
-  const fetchStatus = (userid: number, forGroupId: number) => {
-    getBaseGroupsAssignedToUser(ctx.url, ctx.token, userid)
+  const load = () => {
+    const forGroup = group.id;
+    activeGroupId.current = forGroup;
+    setLoading(true);
+    getBaseGroupUsers(ctx.url, ctx.token, group.id, group.company)
       .then((resp) => {
-        if (activeGroupId.current !== forGroupId) return;
-        const j: BaseGroupJsonResp = resp.data;
+        if (activeGroupId.current !== forGroup) return;
+        const j: BaseGroupUsersResp = resp.data;
         if (j.error === 0) {
-          const has = j.active.some((bg) => bg.id === forGroupId);
-          setStatusByUser((prev) => ({ ...prev, [userid]: has }));
+          setAssigned(j.assigned);
+          setUnassigned(j.unassigned);
+        } else {
+          toast.error(j.msg || "Could not load this group's users");
         }
       })
-      .catch((err: JsonError) => toast.error(err.message));
+      .catch((err: JsonError) => toast.error(err.message))
+      .finally(() => {
+        if (activeGroupId.current === forGroup) setLoading(false);
+      });
   };
 
-  // Reset and fetch together in one effect — splitting the reset into its
-  // own effect let the fetch effect's closure see stale (pre-reset)
-  // statusByUser from the previous group and skip users who happened to
-  // share the same id, permanently stalling their lookup.
   useEffect(() => {
-    activeGroupId.current = group.id;
-    setStatusByUser({});
-    candidates.forEach((u) => fetchStatus(u.id, group.id));
-  }, [group.id, candidates.map((u) => u.id).join(",")]);
+    setAssigned([]);
+    setUnassigned([]);
+    load();
+  }, [group.id]);
 
-  const resolvedCount = candidates.filter((u) => u.id in statusByUser).length;
-  const pendingCount = candidates.length - resolvedCount;
+  const levelOf = new Map(users.map((u) => [u.id, u.user_level]));
+  const withinReach = (r: BaseGroupUserRow) =>
+    (levelOf.get(r.userid) ?? 0) <= ctx.userLevel;
 
-  const handleAssign = (ids: number[]) => {
+  const run = (
+    ids: number[],
+    call: (userid: number) => Promise<{ data: { error: number } }>,
+    verb: string,
+  ) => {
     Promise.all(
       ids.map((userid) =>
-        assignBaseGroupToUser(ctx.url, ctx.token, userid, [group.id]).then(
-          (resp) => ({ userid, ok: resp.data.error === 0 }),
-        ),
+        call(userid).then((resp) => ({ userid, ok: resp.data.error === 0 })),
       ),
     )
       .then((results) => {
-        const succeeded = results.filter((r) => r.ok).map((r) => r.userid);
-        if (succeeded.length > 0) {
-          setStatusByUser((prev) => {
-            const next = { ...prev };
-            succeeded.forEach((id) => (next[id] = true));
-            return next;
-          });
-        }
-        const failed = results.length - succeeded.length;
-        if (failed > 0) toast.error(`${failed} user(s) could not be assigned`);
-        else toast.success("User(s) assigned");
+        const failed = results.filter((r) => !r.ok).length;
+        if (failed > 0) toast.error(`${failed} user(s) could not be ${verb}`);
+        else toast.success(`User(s) ${verb}`);
+        load();
       })
       .catch((err: JsonError) => toast.error(err.message));
   };
 
-  const handleUnassign = (ids: number[]) => {
-    Promise.all(
-      ids.map((userid) =>
-        deleteUserBaseGroupLink(ctx.url, ctx.token, userid, [group.id]).then(
-          (resp) => ({ userid, ok: resp.data.error === 0 }),
-        ),
-      ),
-    )
-      .then((results) => {
-        const succeeded = results.filter((r) => r.ok).map((r) => r.userid);
-        if (succeeded.length > 0) {
-          setStatusByUser((prev) => {
-            const next = { ...prev };
-            succeeded.forEach((id) => (next[id] = false));
-            return next;
-          });
-        }
-        const failed = results.length - succeeded.length;
-        if (failed > 0)
-          toast.error(`${failed} user(s) could not be unassigned`);
-        else toast.success("User(s) unassigned");
-      })
-      .catch((err: JsonError) => toast.error(err.message));
-  };
+  const handleAssign = (ids: number[]) =>
+    run(
+      ids,
+      (userid) => assignBaseGroupToUser(ctx.url, ctx.token, userid, [group.id]),
+      "assigned",
+    );
 
-  const unassigned = candidates.filter((u) => statusByUser[u.id] === false);
-  const assigned = candidates.filter((u) => statusByUser[u.id] === true);
+  const handleUnassign = (ids: number[]) =>
+    run(
+      ids,
+      (userid) => deleteUserBaseGroupLink(ctx.url, ctx.token, userid, [group.id]),
+      "unassigned",
+    );
+
+  const toItem = (r: BaseGroupUserRow) => ({
+    id: r.userid,
+    label: r.username,
+    sublabel: r.email ?? undefined,
+  });
 
   return (
     <div className="w-full">
-      {pendingCount > 0 && (
-        <div className="text-[10.5px] text-content/50 mb-2">
-          Resolving {pendingCount} more user{pendingCount === 1 ? "" : "s"}…
-        </div>
+      {loading && assigned.length + unassigned.length === 0 && (
+        <div className="text-[10.5px] text-content/50 mb-2">Loading users…</div>
       )}
       <AssignPanel
         leftTitle="Unassigned"
         rightTitle="Assigned"
-        leftItems={unassigned.map((u) => ({
-          id: u.id,
-          label: u.username,
-          sublabel: u.email,
-        }))}
-        rightItems={assigned.map((u) => ({
-          id: u.id,
-          label: u.username,
-          sublabel: u.email,
-        }))}
+        leftItems={unassigned.filter(withinReach).map(toItem)}
+        rightItems={assigned.filter(withinReach).map(toItem)}
         onAssign={handleAssign}
         onUnassign={handleUnassign}
       />

@@ -870,6 +870,72 @@ export interface CompanyJsonResp {
   companies: Company[];
 }
 
+/* ----------------------------------------------------------- shared groups */
+
+/** A store as the shared_groups router returns it. */
+export interface SharedGroupStore {
+  storeid: number;
+  store_number: string | null;
+  store_name: string | null;
+}
+
+/** A store group an owner builds and lets other users search with. A search
+ *  filter only: it never grants or revokes store access. */
+export interface SharedGroup {
+  id: number;
+  name: string;
+  company: number;
+  /** userid of whoever created it; their rows are the group's store list. */
+  owner: number;
+  stores: SharedGroupStore[];
+  /** Who it is shared with. Never includes the owner. */
+  userids: number[];
+}
+
+export interface SharedGroupUser {
+  userid: number;
+  username: string;
+  first_name: string | null;
+  last_name: string | null;
+  email: string | null;
+  shared_group_ids: number[];
+}
+
+/** A base group offered as a starting point: its name and stores. */
+export interface SharedGroupTemplate {
+  id: number;
+  name: string;
+  stores: SharedGroupStore[];
+}
+
+interface SharedGroupsEnvelope {
+  error: number;
+  success: boolean;
+  msg?: string;
+  company: number;
+}
+
+export type SharedGroupsResp = SharedGroupsEnvelope & { shared_groups: SharedGroup[] };
+export type SharedGroupUsersResp = SharedGroupsEnvelope & { users: SharedGroupUser[] };
+export type SharedGroupTemplatesResp = SharedGroupsEnvelope & { templates: SharedGroupTemplate[] };
+
+/** groups/base_group_users: everyone a base group's Users tab needs, in one call. */
+export interface BaseGroupUserRow {
+  userid: number;
+  username: string;
+  email: string | null;
+}
+
+export interface BaseGroupUsersResp {
+  error: number;
+  success: boolean;
+  msg?: string;
+  groupid: number;
+  company: number;
+  assigned: BaseGroupUserRow[];
+  unassigned: BaseGroupUserRow[];
+}
+
 export interface CompanyBaseGroup {
   id: number;
   name: string;

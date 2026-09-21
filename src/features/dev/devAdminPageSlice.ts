@@ -21,7 +21,8 @@ export type AdminForm =
   | "companies"
   | "store_activity"
   | "new_store_name"
-  | "base_groups";
+  | "base_groups"
+  | "shared_groups";
 
 interface AdminPageState {
   companies: Company[];
