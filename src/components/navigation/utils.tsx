@@ -547,7 +547,7 @@ export const categories: NavCategory[] = [
         isVisible: true,
       },
       // LP Actions: taken out of the nav while the rebuild is tested. The
-      // route stays (/lp-actions, dev mode only); restore this entry to list it.
+      // route is out too (main.tsx); restore both to bring it back.
       {
         name: "Sales Tracker",
         href: "sales-tracker",

@@ -34,6 +34,14 @@ interface AppState {
  */
 export const SHOW_API_ENV_SWITCH = true;
 
+/**
+ * Who gets the Mode switch, and so who can ever be in Dev mode. Level 9 only:
+ * level 7 is a client owner, and Dev mode shows every page's work in progress
+ * and the Coming Soon pages. Dev mode doesn't survive a reload (every session
+ * starts in Prod), so nobody below this can end up stranded in it.
+ */
+export const DEV_MODE_LEVEL = 9;
+
 export const initialState: AppState = {
   // Check the build/deploy commands in package.json if changes are needed
   // Prod on load; the avatar dropdown switches it. Must stay in step with

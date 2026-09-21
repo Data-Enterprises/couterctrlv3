@@ -13,6 +13,7 @@ import {
   resetAppSlice,
   setApiEnv,
   SHOW_API_ENV_SWITCH,
+  DEV_MODE_LEVEL,
 } from "../../features/appSlice";
 import { resetUserSlice } from "../../features/userSlice";
 import { resetSalesSlice } from "../../features/salesSlice";
@@ -321,12 +322,13 @@ const TitleBar = () => {
             {/* Which backend this session talks to — and so which UI tree
                 each page renders (prod or dev).
 
-                Owner and up (7, 8, 9): support and programmers. A segmented
+                Level 9 only (DEV_MODE_LEVEL): level 7 is a client owner, and
+                Dev mode shows work in progress. A segmented
                 control rather than a menu item, and the only row here that
                 does NOT close the dropdown — switching environments is
                 something you do and then verify, so the badge has to stay on
                 screen to confirm it took. */}
-            {SHOW_API_ENV_SWITCH && user.userLevel >= 7 ? (
+            {SHOW_API_ENV_SWITCH && user.userLevel === DEV_MODE_LEVEL ? (
               <div className="px-4 py-2.5 border-b border-gray-100 flex items-center gap-2">
                 <span className="text-[13px] font-medium text-content flex-1">
                   Mode
