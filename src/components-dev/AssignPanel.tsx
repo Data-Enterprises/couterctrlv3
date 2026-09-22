@@ -72,6 +72,10 @@ const AssignPanel = ({
     i.label.toLowerCase().includes(rightFilter.toLowerCase()),
   );
 
+  // The count says what the column shows: while a search narrows it, "4 of 17".
+  const countLabel = (shown: number, total: number) =>
+    shown === total ? String(total) : `${shown} of ${total}`;
+
   const toggleStaged = (id: number) => {
     setStaged((prev) => {
       const next = new Set(prev);
@@ -102,7 +106,7 @@ const AssignPanel = ({
     <div className="flex gap-3">
       <div className="flex-1 min-w-0 flex flex-col">
         <div className="text-[9px] font-bold uppercase tracking-wide text-content mb-1.5">
-          {leftTitle} ({leftItems.length})
+          {leftTitle} ({countLabel(filteredLeft.length, leftItems.length)})
         </div>
         <div className="mb-1.5">
           <TextFilter
@@ -162,7 +166,7 @@ const AssignPanel = ({
 
       <div className="flex-1 min-w-0 flex flex-col">
         <div className="text-[9px] font-bold uppercase tracking-wide text-content mb-1.5">
-          {rightTitle} ({rightItems.length})
+          {rightTitle} ({countLabel(filteredRight.length, rightItems.length)})
         </div>
         <div className="mb-1.5">
           <TextFilter
