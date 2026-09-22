@@ -106,7 +106,10 @@ const Groups = () => {
       .then((resp) => {
         const j = resp.data;
         if (j.error == "0") {
-          const groups = j.groups.filter((g: Group) => g.userid === ctx.userid);
+          // Own groups only, and never a shared one: prod has no shared groups.
+          const groups = j.groups.filter(
+            (g: Group) => g.userid === ctx.userid && !g.is_shared,
+          );
           dispatch(setGroups(groups));
         }
       })

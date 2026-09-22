@@ -5,43 +5,56 @@ import { useResizableBox } from "../../../hooks/useResizableBox";
 import ResizeHandle from "../../../components-dev/ResizeHandle";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import type {
-  BaseGroupJsonResp,
   JsonError,
   User,
   UserLevelJsonResp,
 } from "../../../interfaces";
 import { getAllUsers } from "../../../api/user";
 import { getUserLevels } from "../../../api/team";
-import { getBGAssignedToUserSplit } from "../../../api/baseGroups";
 import {
   setInactiveUsers,
   setRefresh as setUsersRefresh,
   setUserLevels,
   setUsers,
 } from "../../../features/dev/devUsersSlice";
-import {
-  setUsersExportOpen,
-  setBaseGroupExportOpen,
-  setStoresExportOpen,
-  setAuthorizedBaseGroupIds,
-} from "../../../features/dev/devOrganizationSlice";
-// import TeamLegacy from "../team/TeamLegacy";
+import { setUsersExportOpen } from "../../../features/dev/devOrganizationSlice";
 import Users from "./users/Users";
+import SharedGroups from "./sharedGroups/SharedGroups";
+import { SHARED_GROUP_OWNER_LEVEL } from "./sharedGroups/hooks";
 import BaseGroups from "./baseGroups/BaseGroups";
 import StoresDirectory from "./stores/StoresDirectory";
+import { UserGroupsPanel } from "../../groups/dev/Groups";
 
-type Tab = "users" | "baseGroups" | "stores";
+type Tab = "users" | "userGroups" | "sharedGroups" | "baseGroups" | "stores";
 
-const TAB_LABELS: Record<Tab, string> = {
-  users: "Users",
-  baseGroups: "Base Groups",
-  stores: "Stores",
-};
+/**
+ * The tabs, in order, and the lowest level that sees each. `null` is everyone.
+ *
+ * - Users: managers and up.
+ * - User Groups: everyone — their own store groups plus any shared group they
+ *   have (created or shared with them, read-only). The Store Groups page,
+ *   moved in; its own menu entry is hidden in dev mode.
+ * - Shared Groups: owners and up — every shared group in their companies, to
+ *   create, share and manage. The router enforces the same level.
+ * - Base Groups: owners and up. Access only.
+ * - Stores: everyone, and only the stores they're assigned to.
+ */
+const TABS: { id: Tab; label: string; minLevel: number | null }[] = [
+  { id: "users", label: "Users", minLevel: 5 },
+  { id: "userGroups", label: "User Groups", minLevel: null },
+  { id: "sharedGroups", label: "Shared Groups", minLevel: SHARED_GROUP_OWNER_LEVEL },
+  { id: "baseGroups", label: "Base Groups", minLevel: 7 },
+  { id: "stores", label: "Stores", minLevel: null },
+];
+
 
 const Organization = () => {
   const toast = useToast();
   const ctx = useOrganizationCtx();
-  const [tab, setTab] = useState<Tab>("users");
+  const tabs = TABS.filter((t) => t.minLevel === null || ctx.userLevel >= t.minLevel);
+  const [tab, setTab] = useState<Tab>(tabs[0]?.id ?? "userGroups");
+  const [storesExportOpen, setStoresExportOpen] = useState(false);
+  const canSeeUsers = tabs.some((t) => t.id === "users");
   const { width, height, boxRef, handleProps } = useResizableBox({
     storageKey: "organization-panel-size",
     defaultWidth: 1080,
@@ -58,33 +71,13 @@ const Organization = () => {
   // which would skip the fetch below entirely and show stale/legacy-shaped
   // data (e.g. missing inactive_users). Force a fresh fetch on every mount.
   useEffect(() => {
-    ctx.dispatch(setUsersRefresh(true));
+    if (canSeeUsers) ctx.dispatch(setUsersRefresh(true));
   }, []);
 
-  // The logged-in user's own base groups. The Base Groups form derives its
-  // authorized flag from these ids, so they are fetched here rather than at
-  // login (Organization is the only surface that reads them) and refetched on
-  // every mount, so a membership granted elsewhere is not stale all session.
-  // A user with no company_link rows makes the endpoint raise instead of
-  // returning empty arrays, so anything but error 0 is treated as "none".
-  useEffect(() => {
-    getBGAssignedToUserSplit(ctx.url, ctx.token, ctx.userid)
-      .then((resp) => {
-        const j: BaseGroupJsonResp = resp.data;
-        ctx.dispatch(
-          setAuthorizedBaseGroupIds(
-            j.error === 0 ? j.active.map((bg) => bg.id) : [],
-          ),
-        );
-      })
-      .catch((err: JsonError) => {
-        ctx.dispatch(setAuthorizedBaseGroupIds([]));
-        toast.error("Error fetching your base groups " + err.message);
-      });
-  }, [ctx.userid]);
 
+  // The users list only loads for people who get the Users tab.
   useEffect(() => {
-    if (!ctx.refresh) return;
+    if (!ctx.refresh || !canSeeUsers) return;
     getAllUsers(ctx.url, ctx.token)
       .then((resp) => {
         const j = resp.data;
@@ -132,8 +125,11 @@ const Organization = () => {
     ctx.dispatch(setUsersRefresh(false));
   }, [ctx.refresh]);
 
-  // Desktop only: no tablet layout (a tablet takes this page) and no mobile
-  // version (User Management is not on the mobile nav).
+  // Desktop only: no tablet or phone layout (a tablet or phone that reaches
+  // the page by address gets this one). The mobile layout for User Management
+  // and groups is being reworked, so dev has none for now.
+
+  const exportable = tab === "users" || tab === "stores";
 
   return (
     <div className="min-h-[calc(100vh-3rem)] pt-12 px-4 pb-4 flex justify-center">
@@ -147,40 +143,51 @@ const Organization = () => {
             User Management
           </span>
           <div className="flex-1" />
-          <button
-            onClick={() => {
-              if (tab === "users") ctx.dispatch(setUsersExportOpen(true));
-              else if (tab === "baseGroups")
-                ctx.dispatch(setBaseGroupExportOpen(true));
-              else ctx.dispatch(setStoresExportOpen(true));
-            }}
-            title="Export CSV"
-            className="w-[20px] h-[20px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/60 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
-          >
-            <ArrowDownTrayIcon className="w-3.5 h-3.5" />
-          </button>
+          {exportable && (
+            <button
+              onClick={() =>
+                tab === "users"
+                  ? ctx.dispatch(setUsersExportOpen(true))
+                  : setStoresExportOpen(true)
+              }
+              title="Export CSV"
+              className="w-[20px] h-[20px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/60 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
+            >
+              <ArrowDownTrayIcon className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
 
         <div className="flex border-b border-gray-100 flex-shrink-0">
-          {(["users", "baseGroups", "stores"] as Tab[]).map((t) => (
+          {tabs.map((t) => (
             <button
-              key={t}
-              onClick={() => setTab(t)}
+              key={t.id}
+              onClick={() => setTab(t.id)}
               className={`text-[12px] font-semibold py-2.5 px-4 whitespace-nowrap border-b-2 transition-colors ${
-                tab === t
+                tab === t.id
                   ? "border-[#1e2a4a] text-[#1e2a4a]"
                   : "border-transparent text-content"
               }`}
             >
-              {TAB_LABELS[t]}
+              {t.label}
             </button>
           ))}
         </div>
 
+
         <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
-          {tab === "users" && <Users />}
-          {tab === "baseGroups" && <BaseGroups />}
-          {tab === "stores" && <StoresDirectory />}
+          {tab === "users" && canSeeUsers && <Users />}
+          {tab === "userGroups" && <UserGroupsPanel />}
+          {tab === "sharedGroups" && ctx.userLevel >= SHARED_GROUP_OWNER_LEVEL && (
+            <SharedGroups />
+          )}
+          {tab === "baseGroups" && ctx.userLevel >= 7 && <BaseGroups />}
+          {tab === "stores" && (
+            <StoresDirectory
+              exportOpen={storesExportOpen}
+              onCloseExport={() => setStoresExportOpen(false)}
+            />
+          )}
         </div>
 
         <ResizeHandle {...handleProps} />

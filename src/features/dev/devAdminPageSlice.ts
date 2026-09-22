@@ -17,7 +17,10 @@ export const defaultComp: Company = {
   zip: 0,
 };
 
-export type AdminForm = "companies" | "store_activity" | "new_store_name";
+export type AdminForm =
+  | "companies"
+  | "store_activity"
+  | "new_store_name";
 
 interface AdminPageState {
   companies: Company[];

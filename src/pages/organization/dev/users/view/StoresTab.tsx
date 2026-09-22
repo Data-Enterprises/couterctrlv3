@@ -6,7 +6,7 @@ import { assignUserToStore, unassignUserFromStore } from "../../../../../api/tea
 import { setRefresh, setSelectedUserStores, setStoresAssignedForUser, setStoresUnassignedForUser } from "../../../../../features/dev/devUsersSlice";
 import { setRefreshStores } from "../../../../../features/userSlice";
 import type { JsonError, Store } from "../../../../../interfaces";
-import AssignPanel from "../../components/AssignPanel";
+import AssignPanel from "../../../../../components-dev/AssignPanel";
 
 const StoresTab = () => {
   const toast = useToast();

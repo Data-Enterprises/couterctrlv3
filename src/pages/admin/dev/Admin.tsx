@@ -42,8 +42,11 @@ const Admin = () => {
   // `adminForm` persists in the slice, so a level-5 user arriving after a
   // programmer used the same session would otherwise land on a tab that is no
   // longer in their strip — visible content under an invisible tab.
+  //
+  // The same goes for a tab that no longer exists at all (Base groups and
+  // Shared groups moved to User Management).
   useEffect(() => {
-    if (!context.isProgrammer && context.adminForm === "companies") {
+    if (!tabs.some((t) => t.id === context.adminForm)) {
       dispatch(setAdminForm("store_activity"));
     }
   }, [context.isProgrammer, context.adminForm]);
@@ -83,7 +86,8 @@ const Admin = () => {
     (s) => s.inactive_or_missing_days > 0,
   ).length;
 
-  // Nav hides Admin below level 5, but nav visibility is not access control —
+  // The nav lists Admin from level 5 (prod still opens there), but the dev
+  // Admin opens at 7 — see ADMIN_MIN_LEVEL. Nav visibility is not access control —
   // the route is reachable by typing it. This is the actual gate.
   if (!context.canOpenAdmin) {
     return (

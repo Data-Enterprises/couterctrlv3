@@ -161,3 +161,26 @@ export const getBGAssignedToUserSplit = async (
   });
   return json;
 };
+
+/**
+ * Everyone a base group's Users tab needs, in one call: `assigned` (linked to
+ * the group) and `unassigned` (active users of the company who aren't).
+ * Replaces one base_groups_assigned_to_user_split call per candidate.
+ */
+export const getBaseGroupUsers = async (
+  url: string,
+  token: string,
+  groupid: number,
+  company: number,
+) => {
+  const json = await axios({
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token,
+    },
+    url: url + "groups/base_group_users",
+    params: { groupid, company },
+  });
+  return json;
+};

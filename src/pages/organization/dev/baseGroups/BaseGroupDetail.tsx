@@ -1,30 +1,29 @@
 import { useEffect, useState } from "react";
-import { PencilIcon, TrashIcon } from "@heroicons/react/20/solid";
 import {
-  useOrganizationCtx,
-  useRefreshUserGroups,
-  useRefreshUserStores,
-} from "../hooks";
+  ArrowDownTrayIcon,
+  PencilIcon,
+  TrashIcon,
+} from "@heroicons/react/20/solid";
+import { useBaseGroupsCtx, type StoreSplit } from "./hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
-import type { CompanyBaseGroup, JsonError } from "../../../../interfaces";
+import type { CompanyBaseGroup, JsonError, User } from "../../../../interfaces";
 import {
   updateBaseGroup,
   deleteBaseGroup,
   assignStoreToBaseGroup,
   unAssignStoreToBaseGroup,
 } from "../../../../api/baseGroups";
-import { setBaseGroupExportOpen } from "../../../../features/dev/devOrganizationSlice";
-import AssignPanel from "../components/AssignPanel";
+import AssignPanel from "../../../../components-dev/AssignPanel";
 import IconButton from "../../../../components-dev/IconButton";
 import ConfirmModal from "../../../../components-dev/ConfirmModal";
 import BaseGroupUsersTab from "./BaseGroupUsersTab";
 import BaseGroupExportModal from "./BaseGroupExportModal";
-import type { StoreSplit } from "../types";
 
 interface Props {
   group: CompanyBaseGroup;
   companyName: string;
   stores: StoreSplit | undefined;
+  users: User[];
   onRefetchStores: () => void;
   onDeleted: () => void;
   onRenamed: (newName: string) => void;
@@ -34,17 +33,17 @@ const BaseGroupDetail = ({
   group,
   companyName,
   stores,
+  users,
   onRefetchStores,
   onDeleted,
   onRenamed,
 }: Props) => {
-  const ctx = useOrganizationCtx();
+  const ctx = useBaseGroupsCtx();
   const toast = useToast();
-  const refreshUserGroups = useRefreshUserGroups();
-  const refreshUserStores = useRefreshUserStores();
   const [editing, setEditing] = useState(false);
   const [nameDraft, setNameDraft] = useState(group.name);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [exportOpen, setExportOpen] = useState(false);
   const [subTab, setSubTab] = useState<"stores" | "users">("stores");
 
   useEffect(() => {
@@ -52,15 +51,8 @@ const BaseGroupDetail = ({
     setNameDraft(group.name);
     setConfirmDelete(false);
     setSubTab("stores");
-    ctx.dispatch(setBaseGroupExportOpen(false));
+    setExportOpen(false);
   }, [group.id, group.name]);
-
-  // Both actions below refresh the acting user's own data unconditionally
-  // rather than first checking whether they hold a store group from this base
-  // group. That check read groupSlice, which is only filled at login — so a
-  // store group created earlier in the same session (by syncing yourself) was
-  // invisible to it, and the case that most needed the refresh was the one it
-  // skipped.
 
   const handleSave = () => {
     if (nameDraft.trim() === group.name.trim()) {
@@ -71,17 +63,13 @@ const BaseGroupDetail = ({
       toast.error("Group name is required");
       return;
     }
-    // Trimmed for the same reason create is: the name is copied verbatim into
-    // user_groups.group_name and matched exactly by share/unshare, so padding
-    // here would follow the rename all the way down.
-    updateBaseGroup(ctx.url, ctx.token, group.id, nameDraft.trim(), group.company)
+    updateBaseGroup(ctx.url, ctx.token, group.id, nameDraft, group.company)
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
           toast.success("Base group updated");
           setEditing(false);
           onRenamed(nameDraft.trim());
-          refreshUserGroups();
         } else {
           toast.error(j.msg || "Could not update base group");
         }
@@ -94,19 +82,7 @@ const BaseGroupDetail = ({
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          // Deleting now unshares from every member first: their store group is
-          // torn down and any store no other base group of theirs grants is
-          // revoked. Say how many that touched rather than a bare "deleted".
-          toast.success(
-            j.user_count > 0
-              ? `Base group deleted · unshared from ${j.user_count} user${j.user_count === 1 ? "" : "s"}`
-              : "Base group deleted",
-          );
-          // The delete unshares from every member, so the acting user may have
-          // just lost a store group and, with it, any store no other base group
-          // of theirs still grants. Both caches have to come back.
-          refreshUserGroups();
-          refreshUserStores();
+          toast.success("Base group deleted");
           onDeleted();
         } else {
           toast.error(j.msg || "Could not delete base group");
@@ -166,6 +142,12 @@ const BaseGroupDetail = ({
           variant="danger"
           onClick={() => setConfirmDelete(true)}
         />
+        <div className="flex-1" />
+        <IconButton
+          icon={ArrowDownTrayIcon}
+          title="Export this group's stores to CSV"
+          onClick={() => setExportOpen(true)}
+        />
       </div>
       <div className="text-[11.5px] text-content/85 mb-2">{companyName}</div>
 
@@ -207,16 +189,11 @@ const BaseGroupDetail = ({
           </div>
         ))}
 
-      {subTab === "users" && (
-        <BaseGroupUsersTab
-          group={group}
-          assignedStoreCount={stores ? assigned.length : null}
-        />
-      )}
+      {subTab === "users" && <BaseGroupUsersTab group={group} users={users} />}
 
-      {ctx.baseGroupExportOpen && (
+      {exportOpen && (
         <BaseGroupExportModal
-          onClose={() => ctx.dispatch(setBaseGroupExportOpen(false))}
+          onClose={() => setExportOpen(false)}
           groupName={group.name}
           companyName={companyName}
           assigned={assigned}
@@ -227,7 +204,7 @@ const BaseGroupDetail = ({
       {confirmDelete && (
         <ConfirmModal
           title={`Delete ${group.name}?`}
-          message="This removes the group and unshares it from everyone holding it — their copy of the group is deleted, and any store no other base group of theirs grants is revoked. This can't be undone."
+          message="This removes the group and its store assignments. This can't be undone."
           onConfirm={handleDelete}
           onCancel={() => setConfirmDelete(false)}
         />

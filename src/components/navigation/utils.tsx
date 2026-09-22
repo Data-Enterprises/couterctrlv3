@@ -641,3 +641,26 @@ export const categories: NavCategory[] = [
     ],
   },
 ];
+
+/**
+ * The menu for the current mode.
+ *
+ * Prod gets `categories` exactly as they are. Dev mode — where User Management
+ * is being rebuilt — moves Store Groups into User Management as its User Groups
+ * tab, so there:
+ *   - Store Groups leaves the menu (its route still works), and
+ *   - User Management opens to everyone. It stays off the phone menu: its
+ *     mobile layout is being reworked, so dev has no phone version for now.
+ * The tabs inside User Management gate themselves by level.
+ */
+export const categoriesFor = (apiEnv: "dev" | "prod"): NavCategory[] =>
+  apiEnv !== "dev"
+    ? categories
+    : categories.map((cat) => ({
+        ...cat,
+        pages: cat.pages
+          .filter((p) => p.href !== "groups")
+          .map((p) =>
+            p.href === "user-management" ? { ...p, userLevels: ["*"] } : p,
+          ),
+      }));

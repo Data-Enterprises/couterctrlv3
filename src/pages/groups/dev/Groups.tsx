@@ -58,29 +58,32 @@ const NewGroupModal = ({
   );
 };
 
-const Groups = () => {
+/**
+ * The data side of the Groups screens, shared by the desktop panel and the
+ * phone view: loads the user's groups and keeps the mobile form state in step.
+ *
+ * Everything GET /groups/ returns: their own groups, the shared groups they
+ * created, and the shared groups other people shared with them. Shared ones
+ * carry the SHARED badge and open read-only, showing only the stores the
+ * user is assigned to; they're managed on User Management's Shared Groups tab.
+ *
+ * Reloaded on open rather than trusting the list fetched at sign-in, which is
+ * stale the moment a group is shared or unshared.
+ */
+const useGroupsData = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const ctx = useGroupCtx();
-  const { isMobile } = useAppSelector((state) => state.app);
-  const [selectedGroup, setSelectedGroupLocal] = useState<Group | null>(null);
-  const [search, setSearch] = useState("");
-  const [showNewGroupModal, setShowNewGroupModal] = useState(false);
-  const { width, height, boxRef, handleProps } = useResizableBox({
-    storageKey: "groups-panel-size",
-    defaultWidth: 820,
-    defaultHeight: 560,
-    minWidth: 600,
-    maxWidth: 1600,
-    minHeight: 420,
-    maxHeight: 950,
-  });
 
-  // These two effects only matter for the mobile view below — GroupsMobile
-  // still switches its own internal view off the
-  // shared selectedForm/createInput/storesWithGroupStatus slice fields, so
-  // this reset-on-tab-change behavior has to stay intact for them even
-  // though the new desktop view below never reads those fields itself.
+  // These two effects only matter for the mobile view — GroupsMobile still
+  // switches its own internal view off the shared selectedForm/createInput/
+  // storesWithGroupStatus slice fields, so this reset-on-tab-change behavior
+  // has to stay intact for them even though the desktop panel never reads
+  // those fields itself.
+  useEffect(() => {
+    dispatch(setRefreshGroups(true));
+  }, []);
+
   useEffect(() => {
     dispatch(setSelectedForm("create"));
     return () => {
@@ -98,28 +101,42 @@ const Groups = () => {
   }, [ctx.selectedForm]);
 
   useEffect(() => {
-    if (ctx.refreshGroups) getData();
-  }, [ctx.token, ctx.refreshGroups]);
-
-  const getData = () => {
+    if (!ctx.refreshGroups) return;
     getGroups(ctx.url, ctx.token)
       .then((resp) => {
         const j = resp.data;
         if (j.error == "0") {
-          const groups = j.groups.filter((g: Group) => g.userid === ctx.userid);
-          dispatch(setGroups(groups));
+          dispatch(setGroups(j.groups as Group[]));
         }
       })
       .catch((err: JsonError) => toast.error(err.message))
       .finally(() => dispatch(setRefreshGroups(false)));
-  };
+  }, [ctx.token, ctx.refreshGroups]);
+};
 
+/** The phone view of the user's own groups. */
+export const UserGroupsMobile = () => {
+  const dispatch = useAppDispatch();
+  useGroupsData();
   const handleFormSelect = (formType: GroupFormType) => {
     dispatch(setSelectedForm(formType));
   };
+  return <GroupsMobile handleFormSelect={handleFormSelect} />;
+};
 
-  // No tablet layout: a tablet takes the desktop page.
-  if (isMobile) return <GroupsMobile handleFormSelect={handleFormSelect} />;
+/**
+ * The desktop body — list on the left, a group's detail on the right — with
+ * no page frame of its own, so User Management can host it as its User Groups
+ * tab. The Store Groups page below wraps it in its own frame.
+ */
+export const UserGroupsPanel = () => {
+  const toast = useToast();
+  const dispatch = useAppDispatch();
+  const ctx = useGroupCtx();
+  const [selectedGroup, setSelectedGroupLocal] = useState<Group | null>(null);
+  const [search, setSearch] = useState("");
+  const [showNewGroupModal, setShowNewGroupModal] = useState(false);
+  useGroupsData();
 
   const filteredGroups = ctx.groups.filter((g) =>
     g.group_name.toLowerCase().includes(search.toLowerCase()),
@@ -160,6 +177,54 @@ const Groups = () => {
   };
 
   return (
+    <div className="flex flex-1 min-h-0 w-full">
+      <GroupsList
+        userid={ctx.userid}
+        groups={filteredGroups}
+        totalCount={ctx.groups.length}
+        selectedId={selectedGroup?.id ?? 0}
+        search={search}
+        onSearchChange={setSearch}
+        onSelect={setSelectedGroupLocal}
+        onOpenCreate={() => setShowNewGroupModal(true)}
+      />
+      {!selectedGroup ? (
+        <div className="flex-1 flex items-center justify-center text-[12px] text-content">
+          Select a group
+        </div>
+      ) : (
+        <GroupDetail
+          group={selectedGroup}
+          onRenamed={handleGroupRenamed}
+          onDeleted={handleGroupDeleted}
+        />
+      )}
+      {showNewGroupModal && (
+        <NewGroupModal
+          onCreate={handleCreateGroup}
+          onClose={() => setShowNewGroupModal(false)}
+        />
+      )}
+    </div>
+  );
+};
+
+const Groups = () => {
+  const { isMobile } = useAppSelector((state) => state.app);
+  const { width, height, boxRef, handleProps } = useResizableBox({
+    storageKey: "groups-panel-size",
+    defaultWidth: 820,
+    defaultHeight: 560,
+    minWidth: 600,
+    maxWidth: 1600,
+    minHeight: 420,
+    maxHeight: 950,
+  });
+
+  // No tablet layout: a tablet takes the desktop page.
+  if (isMobile) return <UserGroupsMobile />;
+
+  return (
     <div className="min-h-[calc(100vh-3rem)] pt-12 px-4 pb-4 flex justify-center bg-bkg">
       <div
         ref={boxRef}
@@ -171,37 +236,7 @@ const Groups = () => {
             Store Groups
           </span>
         </div>
-
-        <div className="flex flex-1 min-h-0 w-full">
-          <GroupsList
-            groups={filteredGroups}
-            totalCount={ctx.groups.length}
-            selectedId={selectedGroup?.id ?? 0}
-            search={search}
-            onSearchChange={setSearch}
-            onSelect={setSelectedGroupLocal}
-            onOpenCreate={() => setShowNewGroupModal(true)}
-          />
-          {!selectedGroup ? (
-            <div className="flex-1 flex items-center justify-center text-[12px] text-content">
-              Select a group
-            </div>
-          ) : (
-            <GroupDetail
-              group={selectedGroup}
-              onRenamed={handleGroupRenamed}
-              onDeleted={handleGroupDeleted}
-            />
-          )}
-        </div>
-
-        {showNewGroupModal && (
-          <NewGroupModal
-            onCreate={handleCreateGroup}
-            onClose={() => setShowNewGroupModal(false)}
-          />
-        )}
-
+        <UserGroupsPanel />
         <ResizeHandle {...handleProps} />
       </div>
     </div>

@@ -6,6 +6,7 @@ import { devReducers } from "./devReducers";
 import { resetAppSlice } from "../features/appSlice";
 import { setThreshold as prodSetLedgerThreshold } from "../features/salesLedgerSlice";
 import { setThreshold as devSetLedgerThreshold } from "../features/dev/devSalesLedgerSlice";
+import { setCouponSalesHasSearched } from "../features/couponSalesSlice";
 
 /** Every RTK action creator a module exports, by its action type.
  *
@@ -93,14 +94,25 @@ describe("the store layout", () => {
     }
   });
 
-  it("starts every dev slice as an exact copy of its prod twin", () => {
-    // A fork begins identical; only edits to the dev copy make them differ.
+  it("starts every field a dev slice shares with its prod twin the same", () => {
+    // A fork begins identical, and dev work is allowed to add or drop fields
+    // (dev User Management dropped the base-group sharing state, for one). What
+    // must not happen is a field both copies still carry starting differently —
+    // that is drift nobody chose.
     const state = setupStore().getState() as unknown as {
-      prod: Record<string, unknown>;
-      dev: Record<string, unknown>;
+      prod: Record<string, Record<string, unknown>>;
+      dev: Record<string, Record<string, unknown>>;
     };
     for (const key of Object.keys(devReducers)) {
-      expect(state.dev[key], `dev.${key} vs prod.${key}`).toEqual(state.prod[key]);
+      const dev = state.dev[key];
+      const prod = state.prod[key];
+      expect(prod, `prod.${key}`).toBeDefined();
+      for (const field of Object.keys(dev)) {
+        if (!(field in prod)) continue;
+        expect(dev[field], `dev.${key}.${field} vs prod.${key}.${field}`).toEqual(
+          prod[field],
+        );
+      }
     }
   });
 });
@@ -127,9 +139,19 @@ describe("the Sales fork", () => {
     expect(store.getState().dev.salesLedger.threshold).toEqual(before);
   });
 
+  it("clears the whole prod tree on sign-out, including slices no reset list names", () => {
+    // Coupon Sales was never in TitleBar's per-slice reset list, so it kept
+    // the last user's results; the prod tree now resets whole.
+    const store = setupStore();
+    store.dispatch(setCouponSalesHasSearched(true));
+    expect(store.getState().prod.couponSales.hasSearched).toBe(true);
+    store.dispatch(resetAppSlice());
+    expect(store.getState().prod.couponSales.hasSearched).toBe(false);
+  });
+
   it("clears the whole dev tree on sign-out", () => {
-    // Sign-out resets prod slice by slice; the dev tree resets on the one
-    // action every sign-out dispatches, so no fork can be forgotten.
+    // The dev tree resets on the one action every sign-out dispatches, so no
+    // fork can be forgotten.
     const store = setupStore();
     const initial = store.getState().dev.salesLedger.threshold;
     store.dispatch(devSetLedgerThreshold(CHANGED));

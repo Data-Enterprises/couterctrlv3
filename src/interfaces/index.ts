@@ -870,6 +870,76 @@ export interface CompanyJsonResp {
   companies: Company[];
 }
 
+/* ----------------------------------------------------------- shared groups */
+
+/** A store as the shared_groups router returns it on a group. */
+export interface SharedGroupStore {
+  storeid: number;
+  store_number: string | null;
+  store_name: string | null;
+}
+
+/** A user group its creator (level 7+) can share with other users so they can
+ *  search with it. No company, no base group; never grants or revokes store
+ *  access. */
+export interface SharedGroup {
+  id: number;
+  name: string;
+  stores: SharedGroupStore[];
+  /** Who it is shared with. Never includes the owner. */
+  userids: number[];
+}
+
+/** A row of GET /shared_groups/{id}/stores. */
+export interface SharedGroupStoreRow extends SharedGroupStore {
+  /** 1 when the store is in the group. */
+  active: number;
+  /** 0 when the owner has lost access to a store still in the group. */
+  assigned: number;
+}
+
+export interface SharedGroupUser {
+  userid: number;
+  username: string;
+  first_name: string | null;
+  last_name: string | null;
+  email: string | null;
+  user_level: number;
+  /** Which of the caller's shared groups this user already has. */
+  shared_group_ids: number[];
+}
+
+interface SharedGroupsEnvelope {
+  error: number;
+  success: boolean;
+  msg?: string;
+}
+
+export type SharedGroupsResp = SharedGroupsEnvelope & { shared_groups: SharedGroup[] };
+export type SharedGroupUsersResp = SharedGroupsEnvelope & { users: SharedGroupUser[] };
+export type SharedGroupStoresResp = SharedGroupsEnvelope & {
+  id: number;
+  name: string;
+  stores: SharedGroupStoreRow[];
+};
+
+/** groups/base_group_users: everyone a base group's Users tab needs, in one call. */
+export interface BaseGroupUserRow {
+  userid: number;
+  username: string;
+  email: string | null;
+}
+
+export interface BaseGroupUsersResp {
+  error: number;
+  success: boolean;
+  msg?: string;
+  groupid: number;
+  company: number;
+  assigned: BaseGroupUserRow[];
+  unassigned: BaseGroupUserRow[];
+}
+
 export interface CompanyBaseGroup {
   id: number;
   name: string;

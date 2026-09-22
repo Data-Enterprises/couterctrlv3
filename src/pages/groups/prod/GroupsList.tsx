@@ -65,13 +65,6 @@ const GroupsList = ({
               }`}
             >
               <span className="flex-1 truncate">{g.group_name}</span>
-              {/* Shared groups stay selectable — they just can't be edited,
-                  which GroupDetail spells out once one is open. */}
-              {g.is_shared && (
-                <span className="text-[9px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-700 flex-shrink-0">
-                  Shared
-                </span>
-              )}
             </button>
           );
         })}

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import TextFilter from "../../../../components-dev/filters/TextFilter";
+import TextFilter from "./filters/TextFilter";
 
 interface AssignPanelItem {
   id: number;
@@ -27,6 +27,9 @@ interface AssignPanelProps {
   // action has consumed it, say. The selection lives here, so a caller can't
   // clear it by resetting whatever it mirrored the ids into.
   rightSelectionResetKey?: number;
+  // What the buttons call the action. Defaults to Assign / Unassign; a panel
+  // whose action isn't an assignment says what it does (Shared Groups: Share).
+  verbs?: { assign: string; unassign: string };
 }
 
 // Shared staged dual-column assign/unassign control — used by the create-user
@@ -39,6 +42,7 @@ const AssignPanel = ({
   rightItems,
   onAssign,
   onUnassign,
+  verbs = { assign: "Assign", unassign: "Unassign" },
   assignAllScope = "filtered",
   onRightSelectionChange,
   rightSelectionResetKey,
@@ -67,6 +71,10 @@ const AssignPanel = ({
   const filteredRight = rightItems.filter((i) =>
     i.label.toLowerCase().includes(rightFilter.toLowerCase()),
   );
+
+  // The count says what the column shows: while a search narrows it, "4 of 17".
+  const countLabel = (shown: number, total: number) =>
+    shown === total ? String(total) : `${shown} of ${total}`;
 
   const toggleStaged = (id: number) => {
     setStaged((prev) => {
@@ -98,7 +106,7 @@ const AssignPanel = ({
     <div className="flex gap-3">
       <div className="flex-1 min-w-0 flex flex-col">
         <div className="text-[9px] font-bold uppercase tracking-wide text-content mb-1.5">
-          {leftTitle} ({leftItems.length})
+          {leftTitle} ({countLabel(filteredLeft.length, leftItems.length)})
         </div>
         <div className="mb-1.5">
           <TextFilter
@@ -138,7 +146,7 @@ const AssignPanel = ({
             disabled={staged.size === 0}
             className="flex-1 text-[11px] font-medium py-1.5 rounded-md text-custom-white bg-[#1e2a4a] hover:bg-[#1e2a4a]/85 disabled:bg-gray-300 disabled:cursor-not-allowed"
           >
-            Assign
+            {verbs.assign}
           </button>
           <button
             onClick={() =>
@@ -151,14 +159,14 @@ const AssignPanel = ({
             disabled={leftItems.length === 0}
             className="flex-1 text-[11px] font-medium py-1.5 rounded-md text-custom-white bg-[#1e2a4a] hover:bg-[#1e2a4a]/85 disabled:bg-gray-300 disabled:cursor-not-allowed"
           >
-            Assign all
+            {verbs.assign} all
           </button>
         </div>
       </div>
 
       <div className="flex-1 min-w-0 flex flex-col">
         <div className="text-[9px] font-bold uppercase tracking-wide text-content mb-1.5">
-          {rightTitle} ({rightItems.length})
+          {rightTitle} ({countLabel(filteredRight.length, rightItems.length)})
         </div>
         <div className="mb-1.5">
           <TextFilter
@@ -198,7 +206,7 @@ const AssignPanel = ({
             disabled={unstaged.size === 0}
             className="flex-1 text-[11px] font-medium py-1.5 rounded-md text-custom-white bg-red-600 hover:bg-red-600/85 disabled:bg-gray-300 disabled:cursor-not-allowed"
           >
-            Unassign
+            {verbs.unassign}
           </button>
           <button
             onClick={() =>
@@ -211,7 +219,7 @@ const AssignPanel = ({
             disabled={rightItems.length === 0}
             className="flex-1 text-[11px] font-medium py-1.5 rounded-md text-custom-white bg-red-600 hover:bg-red-600/85 disabled:bg-gray-300 disabled:cursor-not-allowed"
           >
-            Unassign all
+            {verbs.unassign} all
           </button>
         </div>
       </div>

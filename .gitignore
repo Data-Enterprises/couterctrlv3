@@ -37,3 +37,4 @@ handoff-PORTAL-README.md
 # anything moved here is still recoverable from git history, since moving a
 # tracked file in is recorded as a deletion.
 trash/
+html-s3-handoff.md

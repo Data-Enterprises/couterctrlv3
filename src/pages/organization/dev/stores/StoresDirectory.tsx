@@ -3,17 +3,22 @@ import { useOrganizationCtx } from "../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 import { getUserStores } from "../../../../api/user";
 import type { JsonError, Store } from "../../../../interfaces";
-import { setStoresExportOpen } from "../../../../features/dev/devOrganizationSlice";
 import TextFilter from "../../../../components-dev/filters/TextFilter";
 import StoresExportModal from "./StoresExportModal";
 
-// Read-only store directory — company/base-group assignment already lives on
-// the Users profile and Base Groups tabs, so this is just browse/search.
+// Read-only store directory: the stores the logged-in user is assigned to, for
+// browse/search/export. Open to every level, so it never lists anything beyond
+// what the viewer can already reach — no unassigned stores, even for level 9.
 // Fetches into its own local state rather than reusing state.user's
 // assignedStores/unassignedStores (those back the logged-in user's own nav/
 // permissions elsewhere and shouldn't double as generic "all stores" list
 // state for an admin browsing tool).
-const StoresDirectory = () => {
+interface Props {
+  exportOpen: boolean;
+  onCloseExport: () => void;
+}
+
+const StoresDirectory = ({ exportOpen, onCloseExport }: Props) => {
   const ctx = useOrganizationCtx();
   const toast = useToast();
   const [stores, setStores] = useState<Store[] | null>(null);
@@ -31,7 +36,7 @@ const StoresDirectory = () => {
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
-          setStores(validOnly([...j.assigned_stores, ...j.unassigned_stores]));
+          setStores(validOnly(j.assigned_stores));
         } else {
           toast.error(j.msg || "Error fetching stores");
         }
@@ -62,9 +67,9 @@ const StoresDirectory = () => {
         />
       </div>
 
-      {ctx.storesExportOpen && stores && (
+      {exportOpen && stores && (
         <StoresExportModal
-          onClose={() => ctx.dispatch(setStoresExportOpen(false))}
+          onClose={onCloseExport}
           allStores={stores}
           filteredStores={filtered}
         />

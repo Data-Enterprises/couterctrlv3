@@ -97,14 +97,14 @@ const combined = (
 ) as Reducer<DevState>;
 
 /**
- * The whole dev namespace resets on sign-out.
+ * The whole dev namespace resets on sign-out, and so does prod (prodReducer
+ * in pageReducers.ts).
  *
- * Sign-out resets each prod slice by name, one dispatch per slice in TitleBar.
- * Relying on the same for dev would mean every forked page adding its own
- * resets there, and a fork that forgot would hand the next person to sign in
- * on this device the last one's dev Sales. `resetAppSlice` is dispatched on
- * every sign-out, so keying the dev tree to it clears every dev slice there
- * is now and every one added later, with nothing to remember.
+ * A per-slice reset list would mean every forked page adding its own, and a
+ * fork that forgot would hand the next person to sign in on this device the
+ * last one's dev Sales. `resetAppSlice` is dispatched on every sign-out, so
+ * keying the dev tree to it clears every dev slice there is now and every one
+ * added later, with nothing to remember.
  */
 export const devReducer: Reducer<DevState> = (state, action) =>
   combined(action.type === resetAppSlice.type ? undefined : state, action);

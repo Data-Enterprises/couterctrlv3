@@ -6,8 +6,10 @@ import { isSupportUser } from "../../../utils/supportUsers";
  *  tenancy itself, not what someone is looking at, so it stays here alone. */
 export const PROGRAMMER_LEVEL = 9;
 
-/** Below this, Admin is not theirs to open at all. */
-export const ADMIN_MIN_LEVEL = 5;
+/** Below this, Admin is not theirs to open at all. Owner and up in the dev
+ *  Admin; the prod Admin still opens at 5. Only 7+ can reach dev mode anyway,
+ *  so this states the rule rather than changing who gets in today. */
+export const ADMIN_MIN_LEVEL = 7;
 
 /**
  * Admin's flat context, scoped to the signed-in user.
