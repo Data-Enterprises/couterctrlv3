@@ -5,7 +5,7 @@ import { createSharedGroup, getSharedGroups } from "../../../../api/sharedGroups
 import type { SharedGroup, SharedGroupsResp } from "../../../../interfaces";
 import TextFilter from "../../../../components-dev/filters/TextFilter";
 import SharedGroupDetail from "./SharedGroupDetail";
-import { errorText, useSharedGroupsCtx } from "./hooks";
+import { errorText, nameProblem, useSharedGroupsCtx } from "./hooks";
 
 type RightSide = { kind: "none" } | { kind: "create" } | { kind: "group"; id: number };
 
@@ -14,10 +14,18 @@ const NewSharedGroup = ({
   onCreate,
   onCancel,
 }: {
-  onCreate: (name: string) => void;
+  onCreate: (name: string) => Promise<void>;
   onCancel: () => void;
 }) => {
   const [name, setName] = useState("");
+  const [creating, setCreating] = useState(false);
+  // Only complain about a name once there's something typed.
+  const problem = name.trim() ? nameProblem(name) : null;
+  const submit = () => {
+    if (creating || nameProblem(name)) return;
+    setCreating(true);
+    Promise.resolve(onCreate(name)).finally(() => setCreating(false));
+  };
   return (
     <div className="max-w-[420px]">
       <div className="text-[16px] font-medium text-content mb-1">New shared group</div>
@@ -30,10 +38,14 @@ const NewSharedGroup = ({
         autoFocus
         value={name}
         onChange={(e) => setName(e.target.value)}
-        onKeyDown={(e) => e.key === "Enter" && name.trim() && onCreate(name)}
+        onKeyDown={(e) => e.key === "Enter" && submit()}
+        maxLength={100}
         placeholder="e.g. C-Store QSR"
         className="basic-input w-full bg-custom-white py-1.5 px-2 text-[12px]"
       />
+      <div className={`text-[11px] mt-1 min-h-[16px] ${problem ? "text-red-700" : "text-content/50"}`}>
+        {problem ?? "Letters, numbers, spaces, _ and -."}
+      </div>
       <div className="flex justify-end gap-2 mt-3">
         <button
           onClick={onCancel}
@@ -42,8 +54,8 @@ const NewSharedGroup = ({
           Cancel
         </button>
         <button
-          onClick={() => onCreate(name)}
-          disabled={!name.trim()}
+          onClick={submit}
+          disabled={!!nameProblem(name) || creating}
           className="text-[12px] font-medium px-3 py-1.5 rounded-md text-custom-white bg-[#1e2a4a] hover:bg-[#1e2a4a]/85 disabled:opacity-50"
         >
           Create
@@ -69,7 +81,7 @@ const SharedGroups = () => {
   const [search, setSearch] = useState("");
   const [right, setRight] = useState<RightSide>({ kind: "none" });
 
-  const fetchGroups = () => {
+  const fetchGroups = (): Promise<void> =>
     getSharedGroups(ctx.url, ctx.token)
       .then((resp) => {
         const j: SharedGroupsResp = resp.data;
@@ -77,7 +89,6 @@ const SharedGroups = () => {
         else toast.error(j.msg || "Could not load shared groups");
       })
       .catch((err) => toast.error(errorText(err)));
-  };
 
   useEffect(() => {
     fetchGroups();
@@ -88,20 +99,17 @@ const SharedGroups = () => {
   const selected =
     right.kind === "group" ? (groups ?? []).find((g) => g.id === right.id) ?? null : null;
 
-  const handleCreate = (name: string) => {
+  const handleCreate = (name: string): Promise<void> => {
     const trimmed = name.trim();
-    if (!trimmed) {
-      toast.error("Group name is required");
-      return;
-    }
-    createSharedGroup(ctx.url, ctx.token, trimmed)
+    return createSharedGroup(ctx.url, ctx.token, trimmed)
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
           toast.success("Shared group created");
-          fetchGroups();
-          // Straight to it — an empty group opens on its stores.
-          setRight({ kind: "group", id: j.id });
+          // Straight to it once the list has it — an empty group opens on its
+          // stores. Selecting before the list arrives would flash the empty
+          // "select a group" state.
+          return fetchGroups().then(() => setRight({ kind: "group", id: j.id }));
         } else {
           toast.error(j.msg || "Could not create the shared group");
         }
@@ -116,7 +124,9 @@ const SharedGroups = () => {
           <TextFilter
             value={search}
             onChange={setSearch}
-            placeholder="Search shared groups…"
+            placeholder={
+              groups ? `Search ${groups.length} shared group${groups.length === 1 ? "" : "s"}…` : "Search shared groups…"
+            }
             className="flex-1"
           />
           <button
