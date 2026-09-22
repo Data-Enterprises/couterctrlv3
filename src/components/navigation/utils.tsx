@@ -653,8 +653,49 @@ export const categories: NavCategory[] = [
  *     mobile layout is being reworked, so dev has no phone version for now.
  * The tabs inside User Management gate themselves by level.
  */
-export const categoriesFor = (apiEnv: "dev" | "prod"): NavCategory[] =>
-  apiEnv !== "dev"
+/**
+ * The routes that have a page in `src/legacy`.
+ *
+ * Legacy is not a smaller app, it is an older one: the pages that exist are
+ * the pages that existed then. A route with no legacy version is left out of
+ * the menu rather than quietly showing its live page, which would be the one
+ * thing a legacy view must not do — look current.
+ */
+export const LEGACY_PAGES = new Set([
+  "sales",
+  "loss-prevention",
+  "sub-dept-margins",
+  "cashiers",
+  "item-lookup",
+  "upc-upload",
+  "forecasting",
+  "orders",
+  "receivers",
+  "coupons",
+  "groups",
+  "user-management",
+  "admin",
+]);
+
+/** Whether a route (a `href` from the nav, or a pathname) has a legacy page. */
+export const hasLegacyPage = (path: string) =>
+  LEGACY_PAGES.has(path.replace(/^\//, ""));
+
+export const categoriesFor = (
+  apiEnv: "dev" | "prod",
+  uiMode: "live" | "legacy" = "live",
+): NavCategory[] => {
+  // Legacy answers first: it is prod-only, so there is no dev shape of it to
+  // reconcile, and a category that loses all its pages goes with them.
+  if (uiMode === "legacy") {
+    return categories
+      .map((cat) => ({
+        ...cat,
+        pages: cat.pages.filter((p) => LEGACY_PAGES.has(p.href)),
+      }))
+      .filter((cat) => cat.pages.length > 0);
+  }
+  return apiEnv !== "dev"
     ? categories
     : categories.map((cat) => ({
         ...cat,
@@ -664,3 +705,4 @@ export const categoriesFor = (apiEnv: "dev" | "prod"): NavCategory[] =>
             p.href === "user-management" ? { ...p, userLevels: ["*"] } : p,
           ),
       }));
+};

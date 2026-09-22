@@ -6,7 +6,7 @@ import logo from "../../assets/portal/logo.webp";
 import logoReversed from "../../assets/portal/logo-reversed.webp";
 import { ChevronDownIcon } from "@heroicons/react/16/solid";
 import { useAppSelector, useAppDispatch } from "../../hooks";
-import { categoriesFor } from "./utils";
+import { categoriesFor, hasLegacyPage } from "./utils";
 import { COMING_SOON_CATEGORY } from "../../utils/comingSoon";
 import { resetNav, setIsNavOpen, setLastRoute } from "../../features/navSlice";
 import {
@@ -191,7 +191,7 @@ const TitleBar = () => {
   const [avatarOpen, setAvatarOpen] = useState(false);
 
   const currentPath = location.pathname.replace(/^\//, "");
-  const categories = categoriesFor(context.apiEnv);
+  const categories = categoriesFor(context.apiEnv, context.uiMode);
   const activeCategory = categories.find((c) =>
     c.pages.some((p) => p.href === currentPath),
   );
@@ -356,8 +356,15 @@ const TitleBar = () => {
                     LIVE
                   </button>
                   <button
-                    onClick={() => dispatch(setUiMode("legacy"))}
-                    title="Legacy: the old pages, always on the prod API"
+                    onClick={() => {
+                      dispatch(setUiMode("legacy"));
+                      // The page you are on may not exist in Legacy. Leaving
+                      // the route alone would render its live version under a
+                      // menu that no longer lists it — a legacy view showing a
+                      // current page is the one thing it must not do.
+                      if (!hasLegacyPage(location.pathname)) navigate("/");
+                    }}
+                    title="Legacy: the old pages, on the legacy API"
                     className={`px-2.5 py-1 transition-colors ${
                       context.uiMode === "legacy"
                         ? "bg-amber-500 text-custom-white"
