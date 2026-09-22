@@ -47,17 +47,77 @@ export type LegacyRootState = RootState["legacy"] &
  * nothing here knows what one is, the legacy backend has no notion of them,
  * and a search against one would ask for stores this tree can't account for.
  */
+const groupCache = new WeakMap<
+  object,
+  WeakMap<object, LegacyRootState["group"]>
+>();
+
 const legacyGroup = (state: RootState): LegacyRootState["group"] => {
   const own = state.legacy.group;
-  const live = state.group.groups.filter((g) => !g.is_shared);
-  const liveSelection = state.group.selectedGroup.is_shared
+  const liveSlice = state.group;
+
+  // Keyed on both inputs, so this object only changes identity when one of
+  // them does — the way a plain slice read behaves. Caching the whole view per
+  // root state is not enough: every action makes a new root state, so a
+  // freshly derived `group` on each one is a new reference to any effect
+  // watching it, and an effect that dispatches then never stops.
+  let byLive = groupCache.get(own);
+  if (!byLive) {
+    byLive = new WeakMap();
+    groupCache.set(own, byLive);
+  }
+  const cached = byLive.get(liveSlice);
+  if (cached) return cached;
+
+  const live = liveSlice.groups.filter((g) => !g.is_shared);
+  const liveSelection = liveSlice.selectedGroup.is_shared
     ? emptyGroup
-    : state.group.selectedGroup;
-  return {
+    : liveSlice.selectedGroup;
+  const built = {
     ...own,
     groups: own.groups.length ? own.groups.filter((g) => !g.is_shared) : live,
     selectedGroup: own.selectedGroup.id ? own.selectedGroup : liveSelection,
   };
+  byLive.set(liveSlice, built);
+  return built;
+};
+
+/**
+ * The app slice as this tree sees it: the legacy API, its own token, and
+ * `devMode` off.
+ *
+ * Cached on the live slice for the same reason as `group`. These pages read
+ * `state.app` wholesale and watch it — `}, [context])` — so a new object on
+ * every action is a loop waiting to happen.
+ */
+const appCache = new WeakMap<object, LegacyRootState["app"]>();
+
+const legacyApp = (app: RootState["app"]): LegacyRootState["app"] => {
+  const cached = appCache.get(app);
+  if (cached) return cached;
+  const built = {
+    ...app,
+    devMode: false,
+    url: LEGACY_API_URL,
+    token: app.legacyToken,
+  };
+  appCache.set(app, built);
+  return built;
+};
+
+/**
+ * Same again for `search`, which only differs when the session was searching
+ * a shared group.
+ */
+const searchCache = new WeakMap<object, RootState["search"]>();
+
+const legacySearch = (search: RootState["search"]): RootState["search"] => {
+  if (search.type !== "Shared") return search;
+  const cached = searchCache.get(search);
+  if (cached) return cached;
+  const built = { ...search, type: "Group" as const };
+  searchCache.set(search, built);
+  return built;
 };
 
 /**
@@ -84,12 +144,7 @@ const build = (state: RootState): LegacyRootState =>
     forgotPassword: state.forgotPassword,
     ctxMenu: state.ctxMenu,
     itemScan: state.itemScan,
-    app: {
-      ...state.app,
-      devMode: false,
-      url: LEGACY_API_URL,
-      token: state.app.legacyToken,
-    },
+    app: legacyApp(state.app),
     ...state.legacy,
     // The old Store Groups page keeps its own form state here, but the list of
     // groups is loaded once at sign-in into the live slice. Without this the
@@ -102,10 +157,7 @@ const build = (state: RootState): LegacyRootState =>
     // Same reason: "Shared" is a search type these pages never had. A session
     // that was searching one arrives here asking for a group instead, with
     // nothing selected, rather than a type the picker can't render.
-    search:
-      state.search.type === "Shared"
-        ? { ...state.search, type: "Group" as const }
-        : state.search,
+    search: legacySearch(state.search),
   }) as LegacyRootState;
 
 const view = (state: RootState): LegacyRootState => {
@@ -125,9 +177,8 @@ const view = (state: RootState): LegacyRootState => {
  * selector bodies edited, and the ones that were missed would read `undefined`
  * at runtime rather than fail to compile.
  *
- * The view is rebuilt per call, which is why the equality function matters and
- * is passed straight through: what the store compares is what `select`
- * returns, not this object.
+ * The equality function is passed straight through: what the store compares is
+ * what `select` returns, not the view.
  */
 export const useLegacySelector = <T>(
   select: (state: LegacyRootState) => T,
