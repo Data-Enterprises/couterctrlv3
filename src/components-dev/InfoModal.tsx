@@ -47,45 +47,47 @@ const InfoModal = ({ page, section, isOpen, onClose }: InfoModalProps) => {
     <Modal
       isOpen={isOpen}
       onClose={onClose}
+      padded={false}
       modalClassName={
         isMobile
-          ? "bg-bkg w-full h-[92dvh]"
-          : "bg-bkg w-[660px] max-w-[92vw] h-[85vh]"
+          ? "bg-[#f4f7f8] w-full h-[92dvh] overflow-hidden"
+          : "bg-[#f4f7f8] w-[600px] max-w-[92vw] h-[85vh] overflow-hidden"
       }
     >
-      <div className="flex flex-col h-full min-h-0">
-        <div className="flex items-center justify-end flex-shrink-0 pb-1.5">
-          <button
-            onClick={onClose}
-            title="Close"
-            aria-label="Close help"
-            className="w-6 h-6 rounded-md flex items-center justify-center text-content/85 hover:text-content hover:bg-gray-100 transition-colors"
-          >
-            <XMarkIcon className="w-4 h-4" />
-          </button>
-        </div>
+      {/* The page fills the modal edge to edge: it has its own navy header and
+          its own background, so a frame around it reads as a second window. */}
+      <div className="relative w-full h-full">
+        {/* Behind the frame rather than in place of it, so clearing doesn't
+            restart the load. A cross-origin frame fires `onLoad` for S3's
+            error page too, so this only stays up while nothing at all has come
+            back — which is what a user needs telling about. */}
+        {!loaded && (
+          <div className="absolute inset-0 flex items-center justify-center px-6 text-center text-[12.5px] text-content/75">
+            Loading help…
+          </div>
+        )}
+        <iframe
+          // Re-navigates when the page or the section changes. Without it a
+          // mounted frame ignores a new hash and stays where it was.
+          key={src}
+          src={src}
+          title="Page help"
+          sandbox="allow-scripts"
+          onLoad={() => setLoaded(true)}
+          className="w-full h-full border-0"
+        />
 
-        <div className="relative flex-1 min-h-0">
-          {/* Sits behind the frame rather than replacing it, so the load isn't
-              restarted when it clears. A cross-origin frame fires `onLoad` for
-              S3's error page too, so this only stays up while nothing at all
-              has come back — which is what a user needs telling about. */}
-          {!loaded && (
-            <div className="absolute inset-0 flex items-center justify-center px-6 text-center text-[12.5px] text-content/75">
-              Loading help…
-            </div>
-          )}
-          <iframe
-            // Re-navigates when the page or the section changes. Without it a
-            // mounted frame ignores a new hash and stays where it was.
-            key={src}
-            src={src}
-            title="Page help"
-            sandbox="allow-scripts"
-            onLoad={() => setLoaded(true)}
-            className="w-full h-full rounded-lg border-0 bg-white"
-          />
-        </div>
+        {/* Over the page's own navy header, where the sheet has nothing but
+            its watermark. The page can't draw this itself — it doesn't know
+            it's in a modal. */}
+        <button
+          onClick={onClose}
+          title="Close"
+          aria-label="Close help"
+          className="absolute top-2.5 right-3 w-7 h-7 rounded-md flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+        >
+          <XMarkIcon className="w-4 h-4" />
+        </button>
       </div>
     </Modal>
   );
