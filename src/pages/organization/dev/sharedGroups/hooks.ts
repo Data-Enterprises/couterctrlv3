@@ -7,22 +7,15 @@ import type { SharedGroupStore } from "../../../../interfaces";
 export const SHARED_GROUP_OWNER_LEVEL = 7;
 
 /**
- * What the Shared Groups tab needs. The tab is owners and up only: they manage
- * every shared group in their companies — shared groups behave like user
- * groups, except they can be handed to other people. Anyone a group is shared
- * with sees it in their User Groups tab, read-only.
+ * What the Shared Groups tab needs. The tab is owners and up only, and lists
+ * the shared groups they created: a shared group is a user group its creator
+ * can share. Anyone it's shared with sees it in their User Groups tab,
+ * read-only.
  */
 export const useSharedGroupsCtx = () => {
   const { url, token } = useAppSelector((s) => s.app);
-  const { userid, userLevel, companies } = useAppSelector((s) => s.user);
-  return {
-    url,
-    token,
-    userid,
-    userLevel,
-    /** The caller's own companies — a new group belongs to one of them. */
-    companies: companies.map((c) => ({ id: c.company, name: c.name })),
-  };
+  const { userid, userLevel } = useAppSelector((s) => s.user);
+  return { url, token, userid, userLevel };
 };
 
 /** One store's label, the way every list on this tab prints it. */

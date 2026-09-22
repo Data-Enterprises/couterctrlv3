@@ -879,16 +879,12 @@ export interface SharedGroupStore {
   store_name: string | null;
 }
 
-/** A company's store group that owners (level 7+) share with other users so
- *  they can search with it. Behaves like a user group; never grants or revokes
- *  store access. */
+/** A user group its creator (level 7+) can share with other users so they can
+ *  search with it. No company, no base group; never grants or revokes store
+ *  access. */
 export interface SharedGroup {
   id: number;
   name: string;
-  company: number;
-  company_name: string | null;
-  /** userid of whoever created it; their rows are the group's store list. */
-  owner: number;
   stores: SharedGroupStore[];
   /** Who it is shared with. Never includes the owner. */
   userids: number[];
@@ -909,7 +905,7 @@ export interface SharedGroupUser {
   last_name: string | null;
   email: string | null;
   user_level: number;
-  /** Which of the company's shared groups this user already has. */
+  /** Which of the caller's shared groups this user already has. */
   shared_group_ids: number[];
 }
 
@@ -924,12 +920,7 @@ export type SharedGroupUsersResp = SharedGroupsEnvelope & { users: SharedGroupUs
 export type SharedGroupStoresResp = SharedGroupsEnvelope & {
   id: number;
   name: string;
-  company: number;
   stores: SharedGroupStoreRow[];
-};
-export type SharedGroupCompanyStoresResp = SharedGroupsEnvelope & {
-  company: number;
-  stores: SharedGroupStore[];
 };
 
 /** groups/base_group_users: everyone a base group's Users tab needs, in one call. */
