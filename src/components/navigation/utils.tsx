@@ -649,8 +649,8 @@ export const categories: NavCategory[] = [
  * is being rebuilt — moves Store Groups into User Management as its User Groups
  * tab, so there:
  *   - Store Groups leaves the menu (its route still works), and
- *   - User Management opens to everyone and appears on phones, where it shows
- *     just the user's own groups.
+ *   - User Management opens to everyone. It stays off the phone menu: its
+ *     mobile layout is being reworked, so dev has no phone version for now.
  * The tabs inside User Management gate themselves by level.
  */
 export const categoriesFor = (apiEnv: "dev" | "prod"): NavCategory[] =>
@@ -661,6 +661,6 @@ export const categoriesFor = (apiEnv: "dev" | "prod"): NavCategory[] =>
         pages: cat.pages
           .filter((p) => p.href !== "groups")
           .map((p) =>
-            p.href === "user-management" ? { ...p, userLevels: ["*"], mobile: true } : p,
+            p.href === "user-management" ? { ...p, userLevels: ["*"] } : p,
           ),
       }));

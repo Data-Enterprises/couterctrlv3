@@ -18,16 +18,12 @@ import {
   setUsers,
 } from "../../../features/dev/devUsersSlice";
 import { setUsersExportOpen } from "../../../features/dev/devOrganizationSlice";
-import { useAppSelector } from "../../../hooks";
 import Users from "./users/Users";
 import SharedGroups from "./sharedGroups/SharedGroups";
 import { SHARED_GROUP_OWNER_LEVEL } from "./sharedGroups/hooks";
 import BaseGroups from "./baseGroups/BaseGroups";
 import StoresDirectory from "./stores/StoresDirectory";
-import {
-  UserGroupsMobile,
-  UserGroupsPanel,
-} from "../../groups/dev/Groups";
+import { UserGroupsPanel } from "../../groups/dev/Groups";
 
 type Tab = "users" | "userGroups" | "sharedGroups" | "baseGroups" | "stores";
 
@@ -55,7 +51,6 @@ const TABS: { id: Tab; label: string; minLevel: number | null }[] = [
 const Organization = () => {
   const toast = useToast();
   const ctx = useOrganizationCtx();
-  const isMobile = useAppSelector((s) => s.app.isMobile);
   const tabs = TABS.filter((t) => t.minLevel === null || ctx.userLevel >= t.minLevel);
   const [tab, setTab] = useState<Tab>(tabs[0]?.id ?? "userGroups");
   const [storesExportOpen, setStoresExportOpen] = useState(false);
@@ -130,9 +125,9 @@ const Organization = () => {
     ctx.dispatch(setUsersRefresh(false));
   }, [ctx.refresh]);
 
-  // No tablet layout (a tablet takes this page). On a phone, User Management is
-  // just the user's own groups — the one tab that has a phone version.
-  if (isMobile) return <UserGroupsMobile />;
+  // Desktop only: no tablet or phone layout (a tablet or phone that reaches
+  // the page by address gets this one). The mobile layout for User Management
+  // and groups is being reworked, so dev has none for now.
 
   const exportable = tab === "users" || tab === "stores";
 

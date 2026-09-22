@@ -84,9 +84,8 @@ const useGroupsData = () => {
     dispatch(setRefreshGroups(true));
   }, []);
 
-  // The phone opens on the list of every group the user has.
   useEffect(() => {
-    dispatch(setSelectedForm("list"));
+    dispatch(setSelectedForm("create"));
     return () => {
       dispatch(setSelectedGroup(emptyGroup));
       dispatch(setCreateInput(""));

@@ -2711,5 +2711,4 @@ export type StoreWithGroupStatus = {
 };
 
 export type FilterOption = "all" | "active" | "inactive";
-/** "list" is the dev phone view of every group the user has (All / Mine / Shared). */
-export type GroupFormType = "list" | "create" | "update" | "delete" | "assign" | "";
+export type GroupFormType = "create" | "update" | "delete" | "assign" | "";
