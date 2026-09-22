@@ -1,6 +1,7 @@
 import { useSelector } from "react-redux";
 import type { RootState } from "../store";
 import { LEGACY_API_URL } from "../hooks/useLegacyApi";
+import { emptyGroup } from "./features/groupSlice";
 
 /**
  * The store as a legacy page expects to find it.
@@ -32,6 +33,33 @@ export type LegacyRootState = RootState["legacy"] &
     | "itemScan"
   > & { app: RootState["app"] & { devMode: boolean } };
 
+/**
+ * The legacy group slice, seeded from the live one.
+ *
+ * The list and the current pick are loaded once at sign-in, into the live
+ * slice, so without this the legacy store picker would open empty. But the
+ * legacy pages dispatch to their own slice — reading the live values
+ * unconditionally would mean a group picked in a legacy page never took,
+ * because the next render put the old answer back. So the legacy slice wins
+ * wherever it has something to say.
+ *
+ * Shared groups are left out either way. They came after these pages did:
+ * nothing here knows what one is, the legacy backend has no notion of them,
+ * and a search against one would ask for stores this tree can't account for.
+ */
+const legacyGroup = (state: RootState): LegacyRootState["group"] => {
+  const own = state.legacy.group;
+  const live = state.group.groups.filter((g) => !g.is_shared);
+  const liveSelection = state.group.selectedGroup.is_shared
+    ? emptyGroup
+    : state.group.selectedGroup;
+  return {
+    ...own,
+    groups: own.groups.length ? own.groups.filter((g) => !g.is_shared) : live,
+    selectedGroup: own.selectedGroup.id ? own.selectedGroup : liveSelection,
+  };
+};
+
 const view = (state: RootState): LegacyRootState =>
   ({
     // Session first, the legacy tree second: where both have a key — `group`,
@@ -39,7 +67,6 @@ const view = (state: RootState): LegacyRootState =>
     // the shape it was written against.
     nav: state.nav,
     user: state.user,
-    search: state.search,
     stores: state.stores,
     forgotPassword: state.forgotPassword,
     ctxMenu: state.ctxMenu,
@@ -54,11 +81,18 @@ const view = (state: RootState): LegacyRootState =>
     // The old Store Groups page keeps its own form state here, but the list of
     // groups is loaded once at sign-in into the live slice. Without this the
     // legacy store picker would have nothing to offer.
-    group: {
-      ...state.legacy.group,
-      groups: state.group.groups,
-      selectedGroup: state.group.selectedGroup,
-    },
+    //
+    // Shared groups are left out. They came after these pages did: nothing
+    // here knows what one is, the legacy backend has no notion of them, and a
+    // search against one would ask for stores this tree can't account for.
+    group: legacyGroup(state),
+    // Same reason: "Shared" is a search type these pages never had. A session
+    // that was searching one arrives here asking for a group instead, with
+    // nothing selected, rather than a type the picker can't render.
+    search:
+      state.search.type === "Shared"
+        ? { ...state.search, type: "Group" as const }
+        : state.search,
   }) as LegacyRootState;
 
 /**
