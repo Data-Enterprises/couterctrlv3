@@ -179,6 +179,7 @@ export const UserGroupsPanel = () => {
   return (
     <div className="flex flex-1 min-h-0 w-full">
       <GroupsList
+        userid={ctx.userid}
         groups={filteredGroups}
         totalCount={ctx.groups.length}
         selectedId={selectedGroup?.id ?? 0}
