@@ -13,7 +13,9 @@ import legacyGroupReducer from "../legacy/features/groupSlice";
 import legacyItemReducer from "../legacy/features/itemLookupSlice";
 import legacyLossPreventionReducer from "../legacy/features/lossPreventionSlice";
 import legacyLossPreventionLegacyReducer from "../legacy/features/lossPreventionLegacySlice";
+import legacyOrdersReducer from "../legacy/features/ordersSlice";
 import legacyOrdersLegacyReducer from "../legacy/features/ordersLegacySlice";
+import legacyQuicksightReducer from "../legacy/features/qsSlice";
 import legacyReceiversReducer from "../legacy/features/receiversSlice";
 import legacyReceiversLegacyReducer from "../legacy/features/receiversLegacySlice";
 import legacySalesReducer from "../legacy/features/salesSlice";
@@ -55,7 +57,9 @@ export const legacyReducers = {
   item: legacyItemReducer,
   lossPrevention: legacyLossPreventionReducer,
   lossPreventionLegacy: legacyLossPreventionLegacyReducer,
+  orders: legacyOrdersReducer,
   ordersLegacy: legacyOrdersLegacyReducer,
+  quicksight: legacyQuicksightReducer,
   receivers: legacyReceiversReducer,
   receiversLegacy: legacyReceiversLegacyReducer,
   sales: legacySalesReducer,

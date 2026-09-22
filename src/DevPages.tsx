@@ -27,6 +27,9 @@ import TeamLegacy from "./legacy/pages/team/TeamLegacy.tsx";
 import UpcListLegacy from "./legacy/pages/upc/UpcList.tsx";
 import ForecastingLegacy from "./legacy/pages/forecast/Forecasting.tsx";
 import SubDeptMarginsLegacy from "./legacy/pages/subDepts/SubDeptMarginsLegacy.tsx";
+import TitleBar from "./components/navigation/TitleBar.tsx";
+import TitleBarLegacy from "./legacy/components/navigation/TitleBarLegacy.tsx";
+import SideBarLegacy from "./legacy/components/navigation/SideBarLegacy.tsx";
 
 /**
  * Which generation of a page to render.
@@ -35,12 +38,30 @@ import SubDeptMarginsLegacy from "./legacy/pages/subDepts/SubDeptMarginsLegacy.t
  * inside the page. Legacy is the page as it was before the separation,
  * restored under `src/legacy` and pinned to the prod API.
  *
- * The nav is deliberately unchanged: Legacy is the same set of routes seen a
- * different way, not a different app with its own menu. A route with no legacy
- * version keeps showing the live page, which is why this is a per-page choice
- * rather than one switch around the router.
+ * Per page rather than one switch around the router, because the two sets are
+ * not the same: a route with no legacy version still has to render something,
+ * and what it renders is the live page. Switching into Legacy from such a
+ * route sends you Home (see TitleBar), so that page is not what you land on.
  */
 const useLegacy = () => useAppSelector((s) => s.app.uiMode) === "legacy";
+
+/**
+ * The frame, which is part of the page.
+ *
+ * Legacy is the app as it was, and it was a title bar with a sidebar under it
+ * — not today's menu with older pages hung off it. The old bar carries its own
+ * way back to Live, because the View switch lives in the live avatar menu and
+ * that menu is not on screen here.
+ */
+export const NavSwitch = () =>
+  useLegacy() ? (
+    <>
+      <TitleBarLegacy />
+      <SideBarLegacy />
+    </>
+  ) : (
+    <TitleBar />
+  );
 
 export const CashiersPage = () => (useLegacy() ? <CashiersLegacy /> : <Cashiers />);
 

@@ -191,7 +191,7 @@ const TitleBar = () => {
   const [avatarOpen, setAvatarOpen] = useState(false);
 
   const currentPath = location.pathname.replace(/^\//, "");
-  const categories = categoriesFor(context.apiEnv, context.uiMode);
+  const categories = categoriesFor(context.apiEnv);
   const activeCategory = categories.find((c) =>
     c.pages.some((p) => p.href === currentPath),
   );

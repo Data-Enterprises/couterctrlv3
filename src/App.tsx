@@ -7,7 +7,7 @@ import { useToast } from "./components/toasts/hooks/useToast";
 // Components
 import { Outlet } from "react-router";
 import Login from "./pages/home/Login";
-import TitleBar from "./components/navigation/TitleBar";
+import { NavSwitch } from "./DevPages";
 import UserDataLoader from "./components/UserDataLoader";
 import AccountSetupModal from "./components/accountSetup/AccountSetupModal";
 import { getUserStores } from "./api/user";
@@ -78,7 +78,7 @@ const App = () => {
       <UserDataLoader />
       {context.loggedIn ? (
         <div className="max-h-screen max-w-screen overflow-hidden">
-          <TitleBar />
+          <NavSwitch />
           <div
             data-testid="outlet-container"
             className={`${containerStyle} bg-bkg transition-all duration-300`}

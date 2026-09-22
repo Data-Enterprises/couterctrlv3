@@ -20,11 +20,9 @@ import {
   ClockIcon,
   ShieldExclamationIcon,
   DocumentArrowUpIcon,
-  TicketIcon,
   // ScaleIcon, // Suggested Weight — commented out for publish
 } from "@heroicons/react/16/solid";
 import {
-  COMING_SOON_CATEGORY,
   COMING_SOON_LEVELS,
   PROGRAMMER_ONLY_LEVELS,
 } from "../../utils/comingSoon";
@@ -362,8 +360,8 @@ export const categories: NavCategory[] = [
         name: "Coupon Sales",
         href: "coupon-sales",
         icon: CouponIcon,
-        // Has its own mobile view (pages/shared/eventPerf, shared with Loss
-        // Prevention) — store list, per-store report, receipts. The Data-category
+        // Has its own three-screen mobile stack (pages/couponSales/mobile) —
+        // graded store list, per-store breakdown, receipts. The Data-category
         // Coupons page is a different report, not this one's phone version.
         mobile: true,
         children: [],
@@ -531,7 +529,7 @@ export const categories: NavCategory[] = [
    * entry back to the category it belongs to and restore `userLevels: ["*"]`.
    */
   {
-    name: COMING_SOON_CATEGORY,
+    name: "Coming Soon",
     icon: ClockIcon,
     pages: [
       {
@@ -624,70 +622,6 @@ export const categories: NavCategory[] = [
       //   isHovering: false,
       //   isVisible: true,
       // },
-      {
-        name: "Tickets",
-        href: "tickets",
-        icon: TicketIcon,
-        // An experiment on hold. Programmer tier: it is not answerable to a
-        // client, and like every Coming Soon page it only exists in the dev UI
-        // tree, against the dev API. Desktop only.
-        mobile: false,
-        children: [],
-        childOpen: false,
-        userLevels: PROGRAMMER_ONLY_LEVELS,
-        isHovering: false,
-        isVisible: true,
-      },
     ],
   },
 ];
-
-/**
- * The menu for the current mode.
- *
- * Prod gets `categories` exactly as they are. Dev mode — where User Management
- * is being rebuilt — moves Store Groups into User Management as its User Groups
- * tab, so there:
- *   - Store Groups leaves the menu (its route still works), and
- *   - User Management opens to everyone. It stays off the phone menu: its
- *     mobile layout is being reworked, so dev has no phone version for now.
- * The tabs inside User Management gate themselves by level.
- */
-/**
- * The routes that have a page in `src/legacy`.
- *
- * Legacy renders its own frame, with the menu it had, so this is not used to
- * build a menu. It answers one question: whether the route you are standing on
- * exists over there, which decides where switching into Legacy leaves you.
- */
-export const LEGACY_PAGES = new Set([
-  "sales",
-  "loss-prevention",
-  "sub-dept-margins",
-  "cashiers",
-  "item-lookup",
-  "upc-upload",
-  "forecasting",
-  "orders",
-  "receivers",
-  "coupons",
-  "groups",
-  "user-management",
-  "admin",
-]);
-
-/** Whether a route (a `href` from the nav, or a pathname) has a legacy page. */
-export const hasLegacyPage = (path: string) =>
-  LEGACY_PAGES.has(path.replace(/^\//, ""));
-
-export const categoriesFor = (apiEnv: "dev" | "prod"): NavCategory[] =>
-  apiEnv !== "dev"
-    ? categories
-    : categories.map((cat) => ({
-        ...cat,
-        pages: cat.pages
-          .filter((p) => p.href !== "groups")
-          .map((p) =>
-            p.href === "user-management" ? { ...p, userLevels: ["*"] } : p,
-          ),
-      }));
