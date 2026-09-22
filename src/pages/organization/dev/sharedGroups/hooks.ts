@@ -1,10 +1,8 @@
-import { useStore } from "react-redux";
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
-import type { RootState } from "../../../../store";
+import { useForgetDeletedGroup } from "../../../../hooks/useForgetDeletedGroup";
 import { isForbidden } from "../../../../api/sharedGroups";
 import { getGroups } from "../../../../api/groups";
-import { emptyGroup, setGroups, type Group } from "../../../../features/groupSlice";
-import { setLastGroup, setSelectedGroup } from "../../../../features/searchSlice";
+import { setGroups, type Group } from "../../../../features/groupSlice";
 import type { SharedGroupStore } from "../../../../interfaces";
 
 /** Owner and up create, edit, share and delete shared groups; the router
@@ -29,22 +27,17 @@ export const useSharedGroupsCtx = () => {
  * of their shared groups is created, renamed or deleted.
  *
  * Given the id of a group that was just deleted, it also clears the search
- * selection if that group was the one picked, so nothing searches with a group
- * that no longer exists and the picker asks for a new one.
+ * selection if that group was the one picked (see useForgetDeletedGroup). The
+ * saved preference is the backend's job for shared groups: deleting one clears
+ * `last_group` for everyone who had it.
  */
 export const useRefreshMyGroups = () => {
   const dispatch = useAppDispatch();
-  const store = useStore<RootState>();
+  const forgetDeletedGroup = useForgetDeletedGroup();
   const { url, token } = useAppSelector((s) => s.app);
 
   return (deletedId?: number) => {
-    if (deletedId) {
-      const { lastGroup, selectedGroup } = store.getState().search;
-      if (lastGroup === deletedId || selectedGroup?.id === deletedId) {
-        dispatch(setLastGroup(0));
-        dispatch(setSelectedGroup(emptyGroup));
-      }
-    }
+    if (deletedId) forgetDeletedGroup(deletedId);
     getGroups(url, token)
       .then((resp) => {
         const j = resp.data;

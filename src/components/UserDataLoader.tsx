@@ -174,7 +174,10 @@ const UserDataLoader = () => {
       .catch((err: JsonError) => {
         toast.error(err.message);
       });
-  }, [user.userid]);
+    // Reloaded on a token change as well as a new user: switching Mode swaps
+    // the API and token, and the group list has to come from the API in use —
+    // the dev API returns groups shared with you, the prod one doesn't yet.
+  }, [user.userid, context.token]);
 
   useEffect(() => {
     if (readyToLogin.groups && readyToLogin.stores) {

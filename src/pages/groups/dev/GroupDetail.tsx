@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useForgetDeletedGroup } from "../../../hooks/useForgetDeletedGroup";
 import { PencilIcon, TrashIcon } from "@heroicons/react/20/solid";
 import { useGroupCtx } from ".";
 import { useToast } from "../../../components/toasts/hooks/useToast";
@@ -53,6 +54,7 @@ const GroupDetail = ({ group, onRenamed, onDeleted }: Props) => {
   // stores_assigned_to_user_group as this user, so only the group's stores
   // they're assigned to appear.
   const readOnly = group.is_shared;
+  const forgetDeletedGroup = useForgetDeletedGroup();
 
   useEffect(() => {
     setEditing(false);
@@ -104,6 +106,9 @@ const GroupDetail = ({ group, onRenamed, onDeleted }: Props) => {
         const j = resp.data;
         if (j.error == "0") {
           toast.success("Group deleted successfully");
+          // If this was the group the search is set to, stop using it — now
+          // and at the next sign-in.
+          forgetDeletedGroup(group.id, { persistPrefs: true });
           onDeleted();
         }
       })
