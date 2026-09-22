@@ -31,9 +31,20 @@ name that doesn't exist answers **403, not 404**. `src/constants/helpPages.ts`
 is what the app trusts for which pages exist — keep it in step when adding one.
 
 ```
-aws s3 sync htmlPages/dev  s3://mto2-html-pages/dev  --exclude "*" --include "*.html"
-aws s3 sync htmlPages/prod s3://mto2-html-pages/prod --exclude "*" --include "*.html"
+aws s3 cp htmlPages/dev s3://mto2-html-pages/dev --recursive --exclude "*" --include "*.html" --content-type "text/html; charset=utf-8" --cache-control "public, max-age=300, must-revalidate"
+aws s3 cp htmlPages/prod s3://mto2-html-pages/prod --recursive --exclude "*" --include "*.html" --content-type "text/html; charset=utf-8" --cache-control "public, max-age=300, must-revalidate"
 ```
+
+`cp --recursive`, not `sync`, and always with those two headers. The objects
+started life with **no `Cache-Control` at all**, which lets a browser cache them
+heuristically for as long as it likes — a page can be re-uploaded and the modal
+still shows the old one, with nothing to say why. `sync` also skips files whose
+size and timestamp match, so it won't repair a header on an object that is
+otherwise current. Five minutes is long enough to make reopening instant and
+short enough to see an edit land.
+
+After changing a page you are looking at, the tab still holds the old copy
+until its five minutes are up: hard-refresh the app (Ctrl+Shift+R) once.
 
 Nothing to redeploy on either side — the app reads whatever is in the bucket.
 `apiEnv` picks the folder, so dev mode shows `dev/` and prod mode shows `prod/`.
