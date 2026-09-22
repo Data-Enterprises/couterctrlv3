@@ -5,11 +5,13 @@ import axios from "axios";
  * users. They behave like the user's own store groups, except other people can
  * search with them. Nothing here grants or revokes store access.
  *
- * No company and no userid anywhere — who's calling comes from the login token,
- * and every call acts on the caller's own groups. Below owner level (7) the
- * router answers HTTP 403 rather than the usual `{ error: 1 }` envelope — see
- * `isForbidden`. Recipients never call it: groups shared with them come from
- * `GET /groups/` like their own.
+ * Every shared group belongs to one company (the company of its stores), and
+ * any owner in that company can manage it. Who's calling comes from the login
+ * token; only create and the two company lists name a company — everything
+ * else works it out from the group. Below owner level (7) the router answers
+ * HTTP 403 rather than the usual `{ error: 1 }` envelope — see `isForbidden`.
+ * Recipients never call it: groups shared with them come from `GET /groups/`
+ * like their own.
  */
 
 const call = (
@@ -18,6 +20,7 @@ const call = (
   method: "GET" | "POST" | "PUT" | "DELETE",
   path: string,
   data?: unknown,
+  params?: Record<string, unknown>,
 ) =>
   axios({
     method,
@@ -27,28 +30,35 @@ const call = (
     },
     url: url + "shared_groups/" + path,
     ...(data !== undefined ? { data } : {}),
+    ...(params ? { params } : {}),
   });
 
 /** The router's level gate answers with a status, not an envelope. */
 export const isForbidden = (err: unknown) =>
   (err as { response?: { status?: number } })?.response?.status === 403;
 
-/** The caller's own shared groups, each with its stores and recipients. */
+/** Every shared group in the caller's companies, with its company, stores and
+ *  recipients. */
 export const getSharedGroups = (url: string, token: string) =>
   call(url, token, "GET", "");
 
-/** People the caller can share with, each with `user_level` and which of the
- *  caller's groups they already have. */
-export const getSharedGroupUsers = (url: string, token: string) =>
-  call(url, token, "GET", "users");
+/** The company's active users (not the caller), each with `user_level` and
+ *  which of the company's shared groups they have. */
+export const getSharedGroupUsers = (url: string, token: string, company: number) =>
+  call(url, token, "GET", "users", undefined, { company });
 
-/** `storeids` is optional: a group can start empty, like a user group. */
+/** The caller's assigned stores in a company — the picker for a new group. */
+export const getSharedGroupCompanyStores = (url: string, token: string, company: number) =>
+  call(url, token, "GET", "stores", undefined, { company });
+
+/** A group needs a company and at least one of the caller's stores in it. */
 export const createSharedGroup = (
   url: string,
   token: string,
+  company: number,
   name: string,
-  storeids?: number[],
-) => call(url, token, "POST", "", storeids ? { name, storeids } : { name });
+  storeids: number[],
+) => call(url, token, "POST", "", { company, name, storeids });
 
 export const renameSharedGroup = (url: string, token: string, groupid: number, name: string) =>
   call(url, token, "PUT", String(groupid), { name });
@@ -57,9 +67,9 @@ export const renameSharedGroup = (url: string, token: string, groupid: number, n
 export const deleteSharedGroup = (url: string, token: string, groupid: number) =>
   call(url, token, "DELETE", String(groupid));
 
-/** The store picker: every store the caller is assigned to, `active` if it's
- *  in the group, plus any store still in the group they've lost access to
- *  (`assigned: 0`). */
+/** The store picker for a group: the caller's assigned stores in its company,
+ *  `active` if in the group, plus any store in the group the caller isn't
+ *  assigned to (`assigned: 0`). */
 export const getSharedGroupStores = (url: string, token: string, groupid: number) =>
   call(url, token, "GET", `${groupid}/stores`);
 

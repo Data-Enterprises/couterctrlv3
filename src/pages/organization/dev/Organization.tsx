@@ -21,6 +21,7 @@ import { setUsersExportOpen } from "../../../features/dev/devOrganizationSlice";
 import { useAppSelector } from "../../../hooks";
 import Users from "./users/Users";
 import SharedGroups from "./sharedGroups/SharedGroups";
+import { SHARED_GROUP_OWNER_LEVEL } from "./sharedGroups/hooks";
 import BaseGroups from "./baseGroups/BaseGroups";
 import StoresDirectory from "./stores/StoresDirectory";
 import {
@@ -34,18 +35,18 @@ type Tab = "users" | "userGroups" | "sharedGroups" | "baseGroups" | "stores";
  * The tabs, in order, and the lowest level that sees each. `null` is everyone.
  *
  * - Users: managers and up.
- * - User Groups: everyone — a person's own store groups (the Store Groups page,
- *   moved in; its own menu entry is hidden in dev mode).
- * - Shared Groups: everyone sees what's been shared with them, read-only;
- *   owners and up also make and share their own (gated inside the tab, and by
- *   the router).
+ * - User Groups: everyone — their own store groups plus any shared group they
+ *   have (created or shared with them, read-only). The Store Groups page,
+ *   moved in; its own menu entry is hidden in dev mode.
+ * - Shared Groups: owners and up — every shared group in their companies, to
+ *   create, share and manage. The router enforces the same level.
  * - Base Groups: owners and up. Access only.
  * - Stores: everyone, and only the stores they're assigned to.
  */
 const TABS: { id: Tab; label: string; minLevel: number | null }[] = [
   { id: "users", label: "Users", minLevel: 5 },
   { id: "userGroups", label: "User Groups", minLevel: null },
-  { id: "sharedGroups", label: "Shared Groups", minLevel: null },
+  { id: "sharedGroups", label: "Shared Groups", minLevel: SHARED_GROUP_OWNER_LEVEL },
   { id: "baseGroups", label: "Base Groups", minLevel: 7 },
   { id: "stores", label: "Stores", minLevel: null },
 ];
@@ -182,7 +183,9 @@ const Organization = () => {
         <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
           {tab === "users" && canSeeUsers && <Users />}
           {tab === "userGroups" && <UserGroupsPanel />}
-          {tab === "sharedGroups" && <SharedGroups />}
+          {tab === "sharedGroups" && ctx.userLevel >= SHARED_GROUP_OWNER_LEVEL && (
+            <SharedGroups />
+          )}
           {tab === "baseGroups" && ctx.userLevel >= 7 && <BaseGroups />}
           {tab === "stores" && (
             <StoresDirectory

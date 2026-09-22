@@ -60,13 +60,15 @@ const NewGroupModal = ({
 
 /**
  * The data side of the Groups screens, shared by the desktop panel and the
- * phone view: loads the user's own groups and keeps the mobile form state in
- * step.
+ * phone view: loads the user's groups and keeps the mobile form state in step.
  *
- * Own groups only, and never a shared one — those (including the per-user
- * copies the old base-group sharing made) live on User Management's Shared
- * Groups tab, and anything shared *with* this user shows in the store picker
- * under "Shared".
+ * Everything GET /groups/ returns: their own groups, the shared groups they
+ * created, and the shared groups other people shared with them. Shared ones
+ * carry the SHARED badge and open read-only, showing only the stores the
+ * user is assigned to; they're managed on User Management's Shared Groups tab.
+ *
+ * Reloaded on open rather than trusting the list fetched at sign-in, which is
+ * stale the moment a group is shared or unshared.
  */
 const useGroupsData = () => {
   const toast = useToast();
@@ -78,6 +80,10 @@ const useGroupsData = () => {
   // storesWithGroupStatus slice fields, so this reset-on-tab-change behavior
   // has to stay intact for them even though the desktop panel never reads
   // those fields itself.
+  useEffect(() => {
+    dispatch(setRefreshGroups(true));
+  }, []);
+
   useEffect(() => {
     dispatch(setSelectedForm("create"));
     return () => {
@@ -100,10 +106,7 @@ const useGroupsData = () => {
       .then((resp) => {
         const j = resp.data;
         if (j.error == "0") {
-          const groups = j.groups.filter(
-            (g: Group) => g.userid === ctx.userid && !g.is_shared,
-          );
-          dispatch(setGroups(groups));
+          dispatch(setGroups(j.groups as Group[]));
         }
       })
       .catch((err: JsonError) => toast.error(err.message))

@@ -33,13 +33,14 @@ interface Props {
 type Envelope = { error: number; msg?: string };
 
 /**
- * One of the owner's shared groups: its name, its stores, and who can search
- * with it.
+ * One shared group: its name, its stores, and who can search with it. Any
+ * owner in the group's company can manage it.
  *
- * Stores come from the owner's own assigned stores, and changes reach everyone
- * it's shared with. Sharing only puts the group in someone's store picker —
- * it never changes which stores they can open, and when they search with it
- * they only get the group's stores they're assigned to.
+ * Stores come from the owner's own assigned stores in that company, and
+ * changes reach everyone it's shared with. Sharing only puts the group in
+ * someone's store picker (and their User Groups tab) — it never changes which
+ * stores they can open, and they only get the group's stores they're
+ * assigned to.
  */
 const SharedGroupDetail = ({ group, onChanged, onDeleted }: Props) => {
   const ctx = useSharedGroupsCtx();
@@ -47,10 +48,8 @@ const SharedGroupDetail = ({ group, onChanged, onDeleted }: Props) => {
   const [editing, setEditing] = useState(false);
   const [nameDraft, setNameDraft] = useState(group.name);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  // A new, empty group opens on its stores — it can't be shared until it has some.
-  const [subTab, setSubTab] = useState<"users" | "stores">(
-    group.stores.length ? "users" : "stores",
-  );
+  // Opens on who it's shared with: create, then share.
+  const [subTab, setSubTab] = useState<"users" | "stores">("users");
   const [users, setUsers] = useState<SharedGroupUser[] | null>(null);
   const [stores, setStores] = useState<SharedGroupStoreRow[] | null>(null);
   const activeGroupId = useRef(group.id);
@@ -63,14 +62,14 @@ const SharedGroupDetail = ({ group, onChanged, onDeleted }: Props) => {
 
   useEffect(() => {
     activeGroupId.current = group.id;
-    setSubTab(group.stores.length ? "users" : "stores");
+    setSubTab("users");
     setUsers(null);
     setStores(null);
   }, [group.id]);
 
   const loadUsers = () => {
     const forGroup = group.id;
-    getSharedGroupUsers(ctx.url, ctx.token)
+    getSharedGroupUsers(ctx.url, ctx.token, group.company)
       .then((resp) => {
         if (activeGroupId.current !== forGroup) return;
         const j: SharedGroupUsersResp = resp.data;
@@ -196,8 +195,9 @@ const SharedGroupDetail = ({ group, onChanged, onDeleted }: Props) => {
         />
       </div>
       <div className="text-[11.5px] text-content/85 mb-2">
-        {group.stores.length} store{group.stores.length === 1 ? "" : "s"} · shared with{" "}
-        {recipients}
+        {group.company_name ?? `Company ${group.company}`} · {group.stores.length} store
+        {group.stores.length === 1 ? "" : "s"} · shared with {recipients}
+        {group.owner === ctx.userid ? " · created by you" : ""}
       </div>
 
       <div className="flex border-b border-gray-100 mb-4">
@@ -220,8 +220,9 @@ const SharedGroupDetail = ({ group, onChanged, onDeleted }: Props) => {
         ) : (
           <>
             <p className="text-[11px] text-content/60 mb-2">
-              From the stores you're assigned to. Changes reach everyone the group is shared
-              with. Once it's shared, a group keeps at least one store.
+              From the stores you're assigned to in this company. Changes reach everyone the
+              group is shared with. A shared group keeps at least one store; to empty it,
+              delete it.
             </p>
             <AssignPanel
               leftTitle="Your stores"
@@ -255,15 +256,10 @@ const SharedGroupDetail = ({ group, onChanged, onDeleted }: Props) => {
         ) : (
           <>
             <p className="text-[11px] text-content/60 mb-2">
-              Sharing puts the group in their store picker under Shared. It doesn't change
-              which stores they can open, and they only see the group's stores they're
-              assigned to.
+              Sharing puts the group in their User Groups and store picker. It doesn't
+              change which stores they can open, and they only see the group's stores
+              they're assigned to. People at your level or below, in this company.
             </p>
-            {group.stores.length === 0 && (
-              <p className="text-[11px] text-amber-800 mb-2">
-                Add stores before sharing this group.
-              </p>
-            )}
             <AssignPanel
               leftTitle="Not shared with"
               rightTitle="Shared with"

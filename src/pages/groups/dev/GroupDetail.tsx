@@ -48,10 +48,10 @@ const GroupDetail = ({ group, onRenamed, onDeleted }: Props) => {
   const [unassignedFilter, setUnassignedFilter] = useState("");
   const [assignedFilter, setAssignedFilter] = useState("");
 
-  // A shared group is the store group assignments/share_bg_with_users builds
-  // from a base group. Renaming it breaks the by-name lookup that share and
-  // unshare both use, and any store edit is reverted the next time the manager
-  // syncs — so it is shown but never edited here.
+  // A shared group is managed on User Management's Shared Groups tab (owners
+  // and up), so here it's shown but never edited. Its stores come from
+  // stores_assigned_to_user_group as this user, so only the group's stores
+  // they're assigned to appear.
   const readOnly = group.is_shared;
 
   useEffect(() => {
@@ -192,8 +192,9 @@ const GroupDetail = ({ group, onRenamed, onDeleted }: Props) => {
         </div>
         {readOnly && (
           <div className="text-[12px] text-content/75 mt-1">
-            Shared with you by a manager. The name and store list are managed
-            with the base group and can't be changed here.
+            {group.userid === ctx.userid
+              ? "A shared group you created. Manage its stores and who has it in User Management > Shared Groups."
+              : "Shared with you. Only its stores you're assigned to are shown, and only an owner can change it."}
           </div>
         )}
       </div>
