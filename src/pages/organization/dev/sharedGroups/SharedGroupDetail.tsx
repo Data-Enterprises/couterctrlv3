@@ -286,6 +286,10 @@ const SharedGroupDetail = ({ group, onChanged, onDeleted }: Props) => {
               they're assigned to. People at your level or below who share a company
               with you.
             </p>
+            <p className="text-[11px] text-content/75 mb-2">
+              You created this group, so you already have it — it's in your User Groups and
+              your store picker. You don't need to share it with yourself.
+            </p>
             {noStores && (
               <p className="text-[11px] text-amber-800 mb-2">
                 This group has no stores yet. Add some on the Stores tab before sharing it.
