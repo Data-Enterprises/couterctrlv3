@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Item Lookup — Help</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+  :root {
+    --navy: #1e2a4a;          /* app chrome */
+    --navy-2: #2a3a63;        /* chrome hover */
+    --bkg: #e4e9ef;           /* app background (bkg) */
+    --card: #ffffff;
+    --soft: #f4f7f8;          /* custom-white */
+    --ink: #1e293b;           /* content */
+    --ink-2: #475569;
+    --ink-3: #64748b;
+    --line: #dce5ef;          /* brand-line */
+    --line-2: #c8d5e4;
+    --on-navy: #f4f7f8;
+    --on-navy-2: #aeb9cf;
+    --green: #1e9e52;         /* brand-green */
+    --focus: #2563eb;
+    --display: "Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif;
+    --body: "Inter", "Segoe UI", system-ui, sans-serif;
+    --mono: "IBM Plex Mono", Consolas, ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bkg);
+    color: var(--ink);
+    font: 14px/1.55 var(--body);
+    -webkit-font-smoothing: antialiased;
+  }
+  .sheet {
+    max-width: 560px; margin: 0 auto; background: var(--soft);
+    min-height: 100vh; box-shadow: 0 10px 40px -24px rgba(15, 36, 64, .5);
+  }
+
+  /* header band — the app's navy chrome */
+  .chrome {
+    background: var(--navy); color: var(--on-navy);
+    padding: 18px 20px 18px;
+    position: relative; overflow: hidden;
+  }
+  .chrome::after {           /* the app's "?" mark, faint, as a watermark */
+    content: "?"; position: absolute; right: 14px; top: -18px;
+    font: 800 120px/1 var(--display); color: rgba(255, 255, 255, .06);
+    pointer-events: none;
+  }
+  .stamp {
+    display: inline-flex; align-items: center; gap: 8px;
+    font: 600 10.5px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase;
+    color: var(--on-navy-2);
+  }
+  .stamp .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+  h1 {
+    margin: 8px 0 6px; font: 700 22px/1.2 var(--display); letter-spacing: -.01em;
+    color: #fff; text-wrap: balance;
+  }
+  .purpose { margin: 0; max-width: 46ch; font-size: 13.5px; color: var(--on-navy-2); }
+
+  /* questions */
+  .body { padding: 16px 16px 8px; }
+  .eyebrow {
+    margin: 2px 4px 10px; font: 600 10.5px/1 var(--mono);
+    letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3);
+  }
+  .list { display: flex; flex-direction: column; gap: 8px; }
+  details {
+    background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+    transition: border-color .15s ease, box-shadow .15s ease;
+  }
+  details:hover { border-color: var(--line-2); }
+  details[open] { border-color: var(--line-2); box-shadow: 0 6px 18px -14px rgba(15, 36, 64, .45); }
+  summary {
+    list-style: none; cursor: pointer; position: relative;
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 12px 40px 12px 14px;
+    font: 600 14px/1.4 var(--display); color: var(--ink);
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary .q {
+    flex: none; width: 22px; height: 22px; margin-top: -1px; border-radius: 6px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: #eef2f7; color: var(--navy); font: 600 11px/1 var(--mono);
+    transition: background .15s ease, color .15s ease;
+  }
+  details[open] summary .q { background: var(--navy); color: #fff; }
+  summary::after {
+    content: ""; position: absolute; right: 16px; top: 18px; width: 7px; height: 7px;
+    border-right: 2px solid var(--ink-3); border-bottom: 2px solid var(--ink-3);
+    transform: rotate(45deg); transition: transform .2s ease;
+  }
+  details[open] summary::after { transform: rotate(-135deg); top: 21px; }
+  summary:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 10px; }
+  .a { padding: 0 16px 14px 46px; color: var(--ink-2); }
+  .a p { margin: 0 0 8px; }
+  .a p:last-child { margin-bottom: 0; }
+  .a strong { color: var(--ink); font-weight: 600; }
+
+  /* footer */
+  .foot {
+    margin: 14px 16px 18px; padding: 11px 14px; border-radius: 10px;
+    background: #eef2f7; color: var(--ink-2); font-size: 12.5px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .foot .mark {
+    flex: none; width: 22px; height: 22px; border-radius: 50%;
+    background: var(--navy); color: #fff; font: 700 12px/22px var(--display); text-align: center;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    details, summary .q, summary::after { transition: none; }
+  }
+
+  .stamp .tag {
+    margin-left: 2px; padding: 3px 6px; border-radius: 4px;
+    background: rgba(255, 255, 255, .1); color: var(--on-navy);
+  }
+  .jump { display: flex; gap: 6px; margin: 14px 0 0; flex-wrap: wrap; }
+  .jump a {
+    font: 600 11px/1 var(--mono); letter-spacing: .06em; text-transform: uppercase;
+    color: var(--on-navy); text-decoration: none; padding: 7px 10px; border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, .18);
+  }
+  .jump a:hover { background: var(--navy-2); }
+  .jump a:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+  .section + .section { margin-top: 22px; }
+  .section { scroll-margin-top: 12px; }
+  @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+  .terms {
+    margin: 0; background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+    overflow: hidden;
+  }
+  .term { padding: 12px 14px; }
+  .term + .term { border-top: 1px solid var(--line); }
+  .term dt { font: 600 13.5px/1.35 var(--display); color: var(--ink); margin: 0 0 3px; }
+  .term dd { margin: 0; color: var(--ink-2); }
+  .term ul { margin: 8px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
+  .term li {
+    padding: 8px 10px; border-radius: 8px; background: var(--soft); border: 1px solid var(--line);
+  }
+  .term li b { display: block; font: 600 12.5px/1.3 var(--display); color: var(--ink); margin-bottom: 2px; }
+  .group-head {
+    margin: 16px 4px 8px; font: 700 14px/1.3 var(--display); color: var(--navy);
+  }
+  .group-head:first-of-type { margin-top: 0; }
+  .group-note { margin: -4px 4px 8px; color: var(--ink-3); font-size: 12.5px; }
+
+  /* These pages are shown in the app's help modal, where the frame IS the
+     modal. The page fills it, the navy header stays put, and only what is
+     under it scrolls - a page that scrolled as a whole, inside a card, on a
+     background of another colour, read as a window inside a window. */
+  html, body { height: 100%; }
+  body { background: var(--soft); overflow: hidden; }
+  .sheet {
+    width: 100%; max-width: none; height: 100%; min-height: 0;
+    display: flex; flex-direction: column; box-shadow: none;
+  }
+  .chrome { flex: none; padding-right: 48px; }
+  /* The watermark sat exactly where the modal puts its close button. */
+  .chrome::after { content: none; }
+  .body {
+    flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 16px 20px 20px;
+    scrollbar-width: thin; scrollbar-color: var(--line-2) transparent;
+  }
+  /* Lines up with the header's own 20px rather than sitting 4px inside it. */
+  .eyebrow, .group-head, .group-note { margin-left: 0; margin-right: 0; }
+  .foot { margin: 16px 0 4px; }
+
+  /* Opened on its own in a wide browser window it goes back to a centred
+     column, so the lines don't sprawl. */
+  @media (min-width: 700px) { .sheet { max-width: 560px; } }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header class="chrome">
+    <div class="stamp"><span class="dot"></span>Help</div>
+    <h1>Item Lookup</h1>
+    <p class="purpose">See how specific items are selling at one store over the last 14 days, including margin, pricing and days with no sales.</p>
+  </header>
+  <main class="body">
+    <section class="section" id="questions">
+    <div class="eyebrow">Common questions</div>
+    <div class="list">
+    <details>
+      <summary><span class="q">Q</span><span>How do I look up items?</span></summary>
+      <div class="a"><p>Pick a store, then type or paste one or more UPCs, separated by commas or new lines. Click Search. The button stays off until you have picked a store and entered at least one UPC. To search again later, click the magnifying glass above the item list.</p></div>
+    </details>
+    <details>
+      <summary><span class="q">Q</span><span>What dates does it cover?</span></summary>
+      <div class="a"><p>Always the last 14 days, ending yesterday, because today's sales are still coming in. The dates are shown at the top of the item list. You can't change the range on this page.</p></div>
+    </details>
+    <details>
+      <summary><span class="q">Q</span><span>What is the list on the left?</span></summary>
+      <div class="a"><p>It shows every UPC you searched, with its margin once it has loaded. Each item loads on its own, so some may finish before others, and any item that can't be found shows a message. Click an item to see its full report on the right.</p></div>
+    </details>
+    <details>
+      <summary><span class="q">Q</span><span>What do Margin and Cost per unit mean?</span></summary>
+      <div class="a"><p>Margin is the amount sold less the cost of goods over the 14 days at this store. Cost per unit is what one unit cost you after any vendor allowance, not the invoice list price. Avg sold at is the amount divided by what sold, so it drops below the list price when the item was on promotion for part of the time.</p></div>
+    </details>
+    <details>
+      <summary><span class="q">Q</span><span>Why does it say "No cost on file"?</span></summary>
+      <div class="a"><p>No cost has been set up for the item, so a real margin can't be worked out. The page says so instead of showing a false 100% margin. New items often sell before their cost is entered.</p></div>
+    </details>
+    <details>
+      <summary><span class="q">Q</span><span>Why do some items show "lb" and a Weight column?</span></summary>
+      <div class="a"><p>Those items are sold by weight. Their cost, average price and totals count pounds, not scans. In the daily breakdown, Qty is the number of times it was rung up and Weight is the pounds sold.</p></div>
+    </details>
+    <details>
+      <summary><span class="q">Q</span><span>What do the warnings and the Longest gap mean?</span></summary>
+      <div class="a"><p>"Slowing down" means the second week sold fewer units than the first. "No sales in the last X days" means the item has not sold for two or more days up to yesterday, which can mean it is out of stock. Longest gap is the longest earlier stretch of days with no sales.</p></div>
+    </details>
+    <details>
+      <summary><span class="q">Q</span><span>What is "By sale type"?</span></summary>
+      <div class="a"><p>It splits the item's register lines into Sale, Backup (restored transactions), Cancelled and Voided, each shown as a share of sales. Everything else on the report counts Sale lines only. Click a type to see its days in the daily breakdown, then click Back to sales to return.</p></div>
+    </details>
+    <details>
+      <summary><span class="q">Q</span><span>My store has two locations. How do I see just one?</span></summary>
+      <div class="a"><p>Tabs appear above the item list, one for each location plus Both. Click a tab to switch, and every figure updates to match.</p></div>
+    </details>
+    <details>
+      <summary><span class="q">Q</span><span>Can I export the results?</span></summary>
+      <div class="a"><p>Yes. Click the download icon at the top of the report. You can choose a summary of all items, the daily breakdown for the item you're viewing, or all items by sale type. You can also pick your own columns. The file downloads as a CSV.</p></div>
+    </details>
+    </div>
+    </section>
+    <p class="foot"><span class="mark" aria-hidden="true">?</span><span>Still stuck? Contact your CounterCtrl representative.</span></p>
+  </main>
+</div>
+<script>
+  // Header pills scroll to their section in place, so they work the same
+  // whether this page is opened on its own or shown inside the app's modal.
+  document.querySelectorAll('.jump a[href^="#"]').forEach(function (a) {
+    a.addEventListener("click", function (ev) {
+      var target = document.getElementById(a.getAttribute("href").slice(1));
+      if (!target) return;
+      ev.preventDefault();
+      var still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      target.scrollIntoView({ behavior: still ? "auto" : "smooth", block: "start" });
+    });
+  });
+</script>
+</body>
+</html>

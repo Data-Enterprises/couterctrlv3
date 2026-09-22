@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Coupon Sales — Help</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+  :root {
+    --navy: #1e2a4a;          /* app chrome */
+    --navy-2: #2a3a63;        /* chrome hover */
+    --bkg: #e4e9ef;           /* app background (bkg) */
+    --card: #ffffff;
+    --soft: #f4f7f8;          /* custom-white */
+    --ink: #1e293b;           /* content */
+    --ink-2: #475569;
+    --ink-3: #64748b;
+    --line: #dce5ef;          /* brand-line */
+    --line-2: #c8d5e4;
+    --on-navy: #f4f7f8;
+    --on-navy-2: #aeb9cf;
+    --green: #1e9e52;         /* brand-green */
+    --focus: #2563eb;
+    --display: "Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif;
+    --body: "Inter", "Segoe UI", system-ui, sans-serif;
+    --mono: "IBM Plex Mono", Consolas, ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bkg);
+    color: var(--ink);
+    font: 14px/1.55 var(--body);
+    -webkit-font-smoothing: antialiased;
+  }
+  .sheet {
+    max-width: 560px; margin: 0 auto; background: var(--soft);
+    min-height: 100vh; box-shadow: 0 10px 40px -24px rgba(15, 36, 64, .5);
+  }
+
+  /* header band — the app's navy chrome */
+  .chrome {
+    background: var(--navy); color: var(--on-navy);
+    padding: 18px 20px 18px;
+    position: relative; overflow: hidden;
+  }
+  .chrome::after {           /* the app's "?" mark, faint, as a watermark */
+    content: "?"; position: absolute; right: 14px; top: -18px;
+    font: 800 120px/1 var(--display); color: rgba(255, 255, 255, .06);
+    pointer-events: none;
+  }
+  .stamp {
+    display: inline-flex; align-items: center; gap: 8px;
+    font: 600 10.5px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase;
+    color: var(--on-navy-2);
+  }
+  .stamp .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+  h1 {
+    margin: 8px 0 6px; font: 700 22px/1.2 var(--display); letter-spacing: -.01em;
+    color: #fff; text-wrap: balance;
+  }
+  .purpose { margin: 0; max-width: 46ch; font-size: 13.5px; color: var(--on-navy-2); }
+
+  /* questions */
+  .body { padding: 16px 16px 8px; }
+  .eyebrow {
+    margin: 2px 4px 10px; font: 600 10.5px/1 var(--mono);
+    letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3);
+  }
+  .list { display: flex; flex-direction: column; gap: 8px; }
+  details {
+    background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+    transition: border-color .15s ease, box-shadow .15s ease;
+  }
+  details:hover { border-color: var(--line-2); }
+  details[open] { border-color: var(--line-2); box-shadow: 0 6px 18px -14px rgba(15, 36, 64, .45); }
+  summary {
+    list-style: none; cursor: pointer; position: relative;
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 12px 40px 12px 14px;
+    font: 600 14px/1.4 var(--display); color: var(--ink);
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary .q {
+    flex: none; width: 22px; height: 22px; margin-top: -1px; border-radius: 6px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: #eef2f7; color: var(--navy); font: 600 11px/1 var(--mono);
+    transition: background .15s ease, color .15s ease;
+  }
+  details[open] summary .q { background: var(--navy); color: #fff; }
+  summary::after {
+    content: ""; position: absolute; right: 16px; top: 18px; width: 7px; height: 7px;
+    border-right: 2px solid var(--ink-3); border-bottom: 2px solid var(--ink-3);
+    transform: rotate(45deg); transition: transform .2s ease;
+  }
+  details[open] summary::after { transform: rotate(-135deg); top: 21px; }
+  summary:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 10px; }
+  .a { padding: 0 16px 14px 46px; color: var(--ink-2); }
+  .a p { margin: 0 0 8px; }
+  .a p:last-child { margin-bottom: 0; }
+  .a strong { color: var(--ink); font-weight: 600; }
+
+  /* footer */
+  .foot {
+    margin: 14px 16px 18px; padding: 11px 14px; border-radius: 10px;
+    background: #eef2f7; color: var(--ink-2); font-size: 12.5px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .foot .mark {
+    flex: none; width: 22px; height: 22px; border-radius: 50%;
+    background: var(--navy); color: #fff; font: 700 12px/22px var(--display); text-align: center;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    details, summary .q, summary::after { transition: none; }
+  }
+
+  .stamp .tag {
+    margin-left: 2px; padding: 3px 6px; border-radius: 4px;
+    background: rgba(255, 255, 255, .1); color: var(--on-navy);
+  }
+  .jump { display: flex; gap: 6px; margin: 14px 0 0; flex-wrap: wrap; }
+  .jump a {
+    font: 600 11px/1 var(--mono); letter-spacing: .06em; text-transform: uppercase;
+    color: var(--on-navy); text-decoration: none; padding: 7px 10px; border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, .18);
+  }
+  .jump a:hover { background: var(--navy-2); }
+  .jump a:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+  .section + .section { margin-top: 22px; }
+  .section { scroll-margin-top: 12px; }
+  @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+  .terms {
+    margin: 0; background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+    overflow: hidden;
+  }
+  .term { padding: 12px 14px; }
+  .term + .term { border-top: 1px solid var(--line); }
+  .term dt { font: 600 13.5px/1.35 var(--display); color: var(--ink); margin: 0 0 3px; }
+  .term dd { margin: 0; color: var(--ink-2); }
+  .term ul { margin: 8px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
+  .term li {
+    padding: 8px 10px; border-radius: 8px; background: var(--soft); border: 1px solid var(--line);
+  }
+  .term li b { display: block; font: 600 12.5px/1.3 var(--display); color: var(--ink); margin-bottom: 2px; }
+  .group-head {
+    margin: 16px 4px 8px; font: 700 14px/1.3 var(--display); color: var(--navy);
+  }
+  .group-head:first-of-type { margin-top: 0; }
+  .group-note { margin: -4px 4px 8px; color: var(--ink-3); font-size: 12.5px; }
+
+  /* These pages are shown in the app's help modal, where the frame IS the
+     modal. The page fills it, the navy header stays put, and only what is
+     under it scrolls - a page that scrolled as a whole, inside a card, on a
+     background of another colour, read as a window inside a window. */
+  html, body { height: 100%; }
+  body { background: var(--soft); overflow: hidden; }
+  .sheet {
+    width: 100%; max-width: none; height: 100%; min-height: 0;
+    display: flex; flex-direction: column; box-shadow: none;
+  }
+  .chrome { flex: none; padding-right: 48px; }
+  /* The watermark sat exactly where the modal puts its close button. */
+  .chrome::after { content: none; }
+  .body {
+    flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 16px 20px 20px;
+    scrollbar-width: thin; scrollbar-color: var(--line-2) transparent;
+  }
+  /* Lines up with the header's own 20px rather than sitting 4px inside it. */
+  .eyebrow, .group-head, .group-note { margin-left: 0; margin-right: 0; }
+  .foot { margin: 16px 0 4px; }
+
+  /* Opened on its own in a wide browser window it goes back to a centred
+     column, so the lines don't sprawl. */
+  @media (min-width: 700px) { .sheet { max-width: 560px; } }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header class="chrome">
+    <div class="stamp"><span class="dot"></span>Help<span class="tag">Dev</span></div>
+    <h1>Coupon Sales</h1>
+    <p class="purpose">Flags where coupons are coming off unusually large — either because a store has moved against its own recent norm, or because its average is simply high — so you can trace it down to the sub department, cashier or day behind it and read the actual transactions.</p>
+    <nav class="jump" aria-label="On this page"><a href="#questions">Common questions</a><a href="#terms">What the terms mean</a></nav>
+  </header>
+  <main class="body">
+    <section class="section" id="questions">
+    <div class="eyebrow">Common questions</div>
+    <div class="list">
+    <details>
+      <summary><span class="q">Q</span><span>What does this page show?</span></summary>
+      <div class="a"><p>Coupon activity for one week, store by store, compared with each store&#39;s own prior two weeks. Pick a store to break it down and read the actual transactions.</p></div>
+    </details>
+    <details>
+      <summary><span class="q">Q</span><span>How do I run a search?</span></summary>
+      <div class="a"><p>Choose a store or group and a week ending date, then click Load Coupon Sales. The week is the seven days ending on that date. To search again, click the magnifying glass at the top of the store list.</p></div>
+    </details>
+    <details>
+      <summary><span class="q">Q</span><span>What do Amount, Coupons, Avg and Trans mean?</span></summary>
+      <div class="a"><p>Amount is the total coupon dollars and Coupons (Count) is the number of coupons used. Avg is the amount divided by the number of coupons, the value of a typical coupon. Trans is the number of sales with at least one coupon on them.</p></div>
+    </details>
+    <details>
+      <summary><span class="q">Q</span><span>What is the difference between Trend and Avg $?</span></summary>
+      <div class="a"><p>Trend compares each store&#39;s average coupon with its own prior two weeks. Avg $ ignores history and checks whether the average coupon is over a set dollar amount. Use the threshold slider or box beside it to set the percentage rise (Trend) or dollar amount (Avg $).</p></div>
+    </details>
+    <details>
+      <summary><span class="q">Q</span><span>What do Critical, Watch and OK mean?</span></summary>
+      <div class="a"><p>Under Trend, Critical means the average coupon rose by more than the threshold, Watch means it rose but by less, and OK means it held or fell. A grey dot means there were no coupons in the prior two weeks to compare with. Under Avg $ there are only two: Critical if the average is over the dollar amount, OK if not.</p></div>
+    </details>
+    <details>
+      <summary><span class="q">Q</span><span>How do I break a store down?</span></summary>
+      <div class="a"><p>Click a store in the list. Use the Sub Dept, Cashier and Items tabs to choose how its coupons are grouped. Click a row to see only its transactions, and click Clear to show them all again.</p></div>
+    </details>
+    <details>
+      <summary><span class="q">Q</span><span>How do I look at a single day?</span></summary>
+      <div class="a"><p>With a store open, click a day card to narrow the totals, the breakdown and the transactions to that day. Click it again, or All Week, to go back. Each day is compared with the same weekday in the prior two weeks.</p></div>
+    </details>
+    <details>
+      <summary><span class="q">Q</span><span>How do I open a transaction?</span></summary>
+      <div class="a"><p>Click a transaction in the list to see the whole receipt, with the coupon lines highlighted and the coupons, tax, net and total at the bottom. Click Back to return to the list.</p></div>
+    </details>
+    <details>
+      <summary><span class="q">Q</span><span>How do I sort or filter the lists?</span></summary>
+      <div class="a"><p>Click a column heading such as Amount, Trans or Count to sort by it; click again to reverse it, and a third time to go back to worst first. Type in the filter box to narrow a list, or click Crit, Watch or OK to show only those.</p></div>
+    </details>
+    <details>
+      <summary><span class="q">Q</span><span>Can I export the data?</span></summary>
+      <div class="a"><p>Yes. With a store open, click the download icon in its title bar to save a CSV file. An open transaction has its own download icon too.</p></div>
+    </details>
+    </div>
+    </section>
+    <section class="section" id="terms">
+      <div class="eyebrow">What the terms mean</div>
+      <dl class="terms">
+      <div class="term"><dt>Avg coupon</dt><dd>Total coupon dollars divided by the number of coupon lines — the value of a typical single coupon. This is the graded number at every level of the page.</dd></div>
+      <div class="term"><dt>Trend vs Avg $</dt><dd>Two different questions, so the toggle picks one. Trend compares this week's average against the same store's prior two weeks. Avg $ ignores history and compares the average to a flat dollar line. A store steady at $8 for months is invisible to Trend and obvious to Avg $; a store moving $1 to $2 is the reverse.</dd></div>
+      <div class="term"><dt>Baseline</dt><dd>The two weeks before the searched week. Both weeks pool into one average rather than averaging two weekly averages, so a quiet week doesn't carry the same weight as a busy one. Nothing is halved: an average is already per-coupon, so two weeks compare directly against one.</dd></div>
+      <div class="term"><dt>Threshold</dt><dd>Follows the toggle. Under Trend it's the percentage rise that tips a row into critical; under Avg $ it's the dollar amount the average has to clear. The two are stored separately, so switching back and forth keeps both.</dd></div>
+      <div class="term"><dt>Grades</dt><dd>Under Trend: Critical is above the percentage threshold, Watch is up but under it, OK is flat or down, and Ungraded means the group had no coupons in the baseline weeks — unknown, not healthy. Under Avg $ there are only two: over the dollar line or not.</dd></div>
+      <div class="term"><dt>Day of week</dt><dd>Each day's average coupon against the same weekday in the baseline weeks — this Tuesday against those Tuesdays. Selecting a day narrows the KPIs, the breakdown rows and the transactions together.</dd></div>
+      <div class="term"><dt>Coupons</dt><dd>The number of coupons used — the count of coupon lines, and the denominator behind the average. Item quantity isn't shown because coupon lines don't reliably carry one.</dd></div>
+      <div class="term"><dt>Trans</dt><dd>Distinct transactions containing at least one coupon. Shown for context — it is never the denominator behind the average.</dd></div>
+      <div class="term"><dt>Sub Dept / Cashier</dt><dd>Two ways to break down the selected store, both graded the same way the store rows are, against that store's own baseline. Individual transactions are the exception: a single sale has no history to move against, so it is always judged on the dollar rule.</dd></div>
+      </dl>
+    </section>
+    <p class="foot"><span class="mark" aria-hidden="true">?</span><span>Still stuck? Contact your CounterCtrl representative.</span></p>
+  </main>
+</div>
+<script>
+  // Header pills scroll to their section in place, so they work the same
+  // whether this page is opened on its own or shown inside the app's modal.
+  document.querySelectorAll('.jump a[href^="#"]').forEach(function (a) {
+    a.addEventListener("click", function (ev) {
+      var target = document.getElementById(a.getAttribute("href").slice(1));
+      if (!target) return;
+      ev.preventDefault();
+      var still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      target.scrollIntoView({ behavior: still ? "auto" : "smooth", block: "start" });
+    });
+  });
+</script>
+</body>
+</html>

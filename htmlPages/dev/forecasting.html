@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Forecasting — Help</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+  :root {
+    --navy: #1e2a4a;          /* app chrome */
+    --navy-2: #2a3a63;        /* chrome hover */
+    --bkg: #e4e9ef;           /* app background (bkg) */
+    --card: #ffffff;
+    --soft: #f4f7f8;          /* custom-white */
+    --ink: #1e293b;           /* content */
+    --ink-2: #475569;
+    --ink-3: #64748b;
+    --line: #dce5ef;          /* brand-line */
+    --line-2: #c8d5e4;
+    --on-navy: #f4f7f8;
+    --on-navy-2: #aeb9cf;
+    --green: #1e9e52;         /* brand-green */
+    --focus: #2563eb;
+    --display: "Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif;
+    --body: "Inter", "Segoe UI", system-ui, sans-serif;
+    --mono: "IBM Plex Mono", Consolas, ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bkg);
+    color: var(--ink);
+    font: 14px/1.55 var(--body);
+    -webkit-font-smoothing: antialiased;
+  }
+  .sheet {
+    max-width: 560px; margin: 0 auto; background: var(--soft);
+    min-height: 100vh; box-shadow: 0 10px 40px -24px rgba(15, 36, 64, .5);
+  }
+
+  /* header band — the app's navy chrome */
+  .chrome {
+    background: var(--navy); color: var(--on-navy);
+    padding: 18px 20px 18px;
+    position: relative; overflow: hidden;
+  }
+  .chrome::after {           /* the app's "?" mark, faint, as a watermark */
+    content: "?"; position: absolute; right: 14px; top: -18px;
+    font: 800 120px/1 var(--display); color: rgba(255, 255, 255, .06);
+    pointer-events: none;
+  }
+  .stamp {
+    display: inline-flex; align-items: center; gap: 8px;
+    font: 600 10.5px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase;
+    color: var(--on-navy-2);
+  }
+  .stamp .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+  h1 {
+    margin: 8px 0 6px; font: 700 22px/1.2 var(--display); letter-spacing: -.01em;
+    color: #fff; text-wrap: balance;
+  }
+  .purpose { margin: 0; max-width: 46ch; font-size: 13.5px; color: var(--on-navy-2); }
+
+  /* questions */
+  .body { padding: 16px 16px 8px; }
+  .eyebrow {
+    margin: 2px 4px 10px; font: 600 10.5px/1 var(--mono);
+    letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3);
+  }
+  .list { display: flex; flex-direction: column; gap: 8px; }
+  details {
+    background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+    transition: border-color .15s ease, box-shadow .15s ease;
+  }
+  details:hover { border-color: var(--line-2); }
+  details[open] { border-color: var(--line-2); box-shadow: 0 6px 18px -14px rgba(15, 36, 64, .45); }
+  summary {
+    list-style: none; cursor: pointer; position: relative;
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 12px 40px 12px 14px;
+    font: 600 14px/1.4 var(--display); color: var(--ink);
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary .q {
+    flex: none; width: 22px; height: 22px; margin-top: -1px; border-radius: 6px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: #eef2f7; color: var(--navy); font: 600 11px/1 var(--mono);
+    transition: background .15s ease, color .15s ease;
+  }
+  details[open] summary .q { background: var(--navy); color: #fff; }
+  summary::after {
+    content: ""; position: absolute; right: 16px; top: 18px; width: 7px; height: 7px;
+    border-right: 2px solid var(--ink-3); border-bottom: 2px solid var(--ink-3);
+    transform: rotate(45deg); transition: transform .2s ease;
+  }
+  details[open] summary::after { transform: rotate(-135deg); top: 21px; }
+  summary:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 10px; }
+  .a { padding: 0 16px 14px 46px; color: var(--ink-2); }
+  .a p { margin: 0 0 8px; }
+  .a p:last-child { margin-bottom: 0; }
+  .a strong { color: var(--ink); font-weight: 600; }
+
+  /* footer */
+  .foot {
+    margin: 14px 16px 18px; padding: 11px 14px; border-radius: 10px;
+    background: #eef2f7; color: var(--ink-2); font-size: 12.5px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .foot .mark {
+    flex: none; width: 22px; height: 22px; border-radius: 50%;
+    background: var(--navy); color: #fff; font: 700 12px/22px var(--display); text-align: center;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    details, summary .q, summary::after { transition: none; }
+  }
+
+  .stamp .tag {
+    margin-left: 2px; padding: 3px 6px; border-radius: 4px;
+    background: rgba(255, 255, 255, .1); color: var(--on-navy);
+  }
+  .jump { display: flex; gap: 6px; margin: 14px 0 0; flex-wrap: wrap; }
+  .jump a {
+    font: 600 11px/1 var(--mono); letter-spacing: .06em; text-transform: uppercase;
+    color: var(--on-navy); text-decoration: none; padding: 7px 10px; border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, .18);
+  }
+  .jump a:hover { background: var(--navy-2); }
+  .jump a:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+  .section + .section { margin-top: 22px; }
+  .section { scroll-margin-top: 12px; }
+  @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+  .terms {
+    margin: 0; background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+    overflow: hidden;
+  }
+  .term { padding: 12px 14px; }
+  .term + .term { border-top: 1px solid var(--line); }
+  .term dt { font: 600 13.5px/1.35 var(--display); color: var(--ink); margin: 0 0 3px; }
+  .term dd { margin: 0; color: var(--ink-2); }
+  .term ul { margin: 8px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
+  .term li {
+    padding: 8px 10px; border-radius: 8px; background: var(--soft); border: 1px solid var(--line);
+  }
+  .term li b { display: block; font: 600 12.5px/1.3 var(--display); color: var(--ink); margin-bottom: 2px; }
+  .group-head {
+    margin: 16px 4px 8px; font: 700 14px/1.3 var(--display); color: var(--navy);
+  }
+  .group-head:first-of-type { margin-top: 0; }
+  .group-note { margin: -4px 4px 8px; color: var(--ink-3); font-size: 12.5px; }
+
+  /* These pages are shown in the app's help modal, where the frame IS the
+     modal. The page fills it, the navy header stays put, and only what is
+     under it scrolls - a page that scrolled as a whole, inside a card, on a
+     background of another colour, read as a window inside a window. */
+  html, body { height: 100%; }
+  body { background: var(--soft); overflow: hidden; }
+  .sheet {
+    width: 100%; max-width: none; height: 100%; min-height: 0;
+    display: flex; flex-direction: column; box-shadow: none;
+  }
+  .chrome { flex: none; padding-right: 48px; }
+  /* The watermark sat exactly where the modal puts its close button. */
+  .chrome::after { content: none; }
+  .body {
+    flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 16px 20px 20px;
+    scrollbar-width: thin; scrollbar-color: var(--line-2) transparent;
+  }
+  /* Lines up with the header's own 20px rather than sitting 4px inside it. */
+  .eyebrow, .group-head, .group-note { margin-left: 0; margin-right: 0; }
+  .foot { margin: 16px 0 4px; }
+
+  /* Opened on its own in a wide browser window it goes back to a centred
+     column, so the lines don't sprawl. */
+  @media (min-width: 700px) { .sheet { max-width: 560px; } }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header class="chrome">
+    <div class="stamp"><span class="dot"></span>Help<span class="tag">Dev</span></div>
+    <h1>Forecasting</h1>
+    <p class="purpose">Estimates what a list of items will sell in an ad week at a price you choose, using the last 90 days of that item's own price history at the selected stores. It is an estimate from past behaviour, not a promise.</p>
+    <nav class="jump" aria-label="On this page"><a href="#questions">Common questions</a><a href="#terms">What the terms mean</a></nav>
+  </header>
+  <main class="body">
+    <section class="section" id="questions">
+    <div class="eyebrow">Common questions</div>
+    <div class="list">
+    <details>
+      <summary><span class="q">Q</span><span>How do I start a forecast?</span></summary>
+      <div class="a"><p>Pick Store or Group, then pick a date. The 90 days of history end on that date. Paste UPCs and click Add, or use Upload CSV or Upload AD list, then click Forecast. The button reads "Select Store" or "Select Group" until you've picked one.</p></div>
+    </details>
+    <details>
+      <summary><span class="q">Q</span><span>How do I use an ad list?</span></summary>
+      <div class="a"><p>Click Upload AD list and choose an Excel (.xlsx) file with UPC and Ad Retail columns, plus Ad Count for multi-buy deals. Those items get an AD tag, and their ad price is used as the forecast price.</p></div>
+    </details>
+    <details>
+      <summary><span class="q">Q</span><span>Which items count toward the totals?</span></summary>
+      <div class="a"><p>Only the items ticked in the left panel. Every item is ticked after a search. The Driving, Supporting and Tail buttons narrow the grid further, and you can combine them.</p></div>
+    </details>
+    <details>
+      <summary><span class="q">Q</span><span>What price is each item forecast at?</span></summary>
+      <div class="a"><p>Each item starts at the price it sold the most units at in the 90 days. Ad list items start at their ad price instead. You can change the price with the toolbar or in the item's popup.</p></div>
+    </details>
+    <details>
+      <summary><span class="q">Q</span><span>What do Ad fcst, Total and Markdown mean?</span></summary>
+      <div class="a"><p>Ad fcst is the forecast units at the row's price over its ad days, or over 7 days if no ad days are set. Total is Ad fcst times the price. Markdown is the regular retail minus the price, times Ad fcst.</p></div>
+    </details>
+    <details>
+      <summary><span class="q">Q</span><span>What are Driving, Supporting and Tail?</span></summary>
+      <div class="a"><p>Items are ranked by forecast total. Driving is the fewest items that make up at least 80% of the forecast, Supporting takes it to 95%, and Tail is the rest. These show size, not performance. Click a band's header to fold it away.</p></div>
+    </details>
+    <details>
+      <summary><span class="q">Q</span><span>How do I change ad days, price or notes for many items at once?</span></summary>
+      <div class="a"><p>Enter ad days (1 to 7), a price or a note in the toolbar and click Apply. It changes only the rows on screen. Reset puts price and ad days back to how the search returned them, and Clear notes removes the notes.</p></div>
+    </details>
+    <details>
+      <summary><span class="q">Q</span><span>What happens when I double-click a row?</span></summary>
+      <div class="a"><p>A popup lists every price the item has sold at, with its forecast, and you can apply any of them in one click. A calculator lets you try a price and cost without changing the grid. Items marked "1pt" sold at only one price, so they have no popup.</p></div>
+    </details>
+    <details>
+      <summary><span class="q">Q</span><span>Why do some items have "no sales history"?</span></summary>
+      <div class="a"><p>The selected stores had no sales for those UPCs in the 90 days. Usually the item is new, discontinued, or the UPC is wrong. Click the note above the grid to see the list.</p></div>
+    </details>
+    <details>
+      <summary><span class="q">Q</span><span>Can I export the forecast?</span></summary>
+      <div class="a"><p>Yes. Click the download icon. You can download the selected items, all items, or the no-sales-history list. You can also choose Custom to pick your own columns. Rows download in rank order as CSV files.</p></div>
+    </details>
+    </div>
+    </section>
+    <section class="section" id="terms">
+      <div class="eyebrow">What the terms mean</div>
+      <dl class="terms">
+      <div class="term"><dt>How the forecast is built</dt><dd>Each item's 90-day history is a set of price points — a price, the units sold at it, and the days it was active. A demand curve is fitted through those points, the units at your chosen price are read off it, and that rate is projected over the forecast window. Fewer price points means a weaker fit, which is why the popup tells you how many there are.</dd></div>
+      <div class="term"><dt>Driving, Supporting, Tail</dt><dd>Items are ranked by what they contribute to the forecast total, then split into three bands. A band is a coverage floor, not a fixed share — it always lands on or above its cut, because the item that crosses the line stays in the band it crossed from. These are sizes, not grades: a Tail item isn't underperforming, it's small.<ul><li><b>Driving</b>The fewest items covering at least 80% of the forecast. Get these prices right and the total is roughly right.</li><li><b>Supporting</b>The next items, taking coverage to at least 95%.</li><li><b>Tail</b>Everything after that. Often most of the item count and almost none of the money — worth asking whether it earns its markdown.</li></ul></dd></div>
+      <div class="term"><dt>Rank and Share</dt><dd>Rank is the item's position by forecast total, biggest first — which is also the grid's default order until you sort a column. Share is its slice of that total. Both are worked out across everything ticked in the panel, before any filtering, so a share never changes meaning while you narrow the list.</dd></div>
+      <div class="term"><dt>Flags</dt><dd>Amber tags beside the UPC. They judge the forecast, never the item, and hovering one says what was measured.<ul><li><b>thin history</b>Two or fewer price points behind the fit. Only shown on Driving and Supporting items — a shaky number on 0.1% of the ad isn't worth the interruption.</li><li><b>untested price</b>The applied price has never been run on this item, so the forecast is extrapolated rather than observed.</li><li><b>markdown heavy</b>The item is taking a bigger share of the ad's markdown than of its revenue. Not wrong, but it's the one paying for the ad.</li><li><b>beats record</b>The forecast runs at more units per day than the item's best day in 90 days. Often the point of an ad — it just shouldn't arrive unannounced.</li></ul></dd></div>
+      <div class="term"><dt>Selecting and filtering</dt><dd>Ticking items in the left panel sets what the grid covers and what the totals add up. The band chips narrow that further, and they combine — Driving plus Tail is a valid view. UPC and Desc on the Item header search within whatever is left. Collapsing a band hides its rows but keeps them in scope; folding isn't filtering.</dd></div>
+      <div class="term"><dt>Qty sold</dt><dd>Units sold at the applied price over the 90 days — history, not a forecast. Shows a dash when the applied price was typed rather than taken from history, since the item never sold at it.</dd></div>
+      <div class="term"><dt>Active</dt><dd>Days out of 90 on which the item sold at least one unit anywhere in its price history. Not days on the shelf — an item can be stocked and sell nothing.</dd></div>
+      <div class="term"><dt>At price</dt><dd>Days at the applied price, out of the item's active days. Dashes for a typed price for the same reason Qty sold does.</dd></div>
+      <div class="term"><dt>Forecast</dt><dd>The window the forecast covers, in days. Always 7 today — the column exists because the window is meant to become configurable, and it is what Ad fcst falls back to when no ad days are set.</dd></div>
+      <div class="term"><dt>Ad days</dt><dd>How many days of the window the item is actually on ad. Setting it re-runs that row's forecast. A dash means it hasn't been set, and the row is forecast over the plain window.</dd></div>
+      <div class="term"><dt>Price</dt><dd>The price the row is forecast at. It starts as the item's highest-volume price point — the price it sold the most units at — not its current shelf price.</dd></div>
+      <div class="term"><dt>Ad fcst</dt><dd>Forecast units at the row's price over its ad days, or over the forecast window if no ad days are set.</dd></div>
+      <div class="term"><dt>Total</dt><dd>Ad fcst units multiplied by the row's price. Revenue, before any cost, and what the ranking is built on.</dd></div>
+      <div class="term"><dt>Markdown</dt><dd>What the discount costs across the forecast units: regular retail minus the row's price, times Ad fcst. Regular retail is the item's non-promo price as the backend records it — not necessarily what is ringing today. Zero when the row is priced at or above regular retail.</dd></div>
+      <div class="term"><dt>Setting values in bulk</dt><dd>The toolbar writes to the rows on screen — after the band chips and the column filters, not everything ticked. Filter to Tail and Apply touches Tail only.<ul><li><b>Apply</b>Writes ad days, price and a note in one go. Price and ad days skip single-price items; a note goes to all of them.</li><li><b>Reset</b>Puts price and ad days back to what the search returned. Notes are left alone — they're your writing, not an edit to the forecast.</li><li><b>Clear notes</b>Removes the note from those rows. Separate from Reset so neither does the other's job by accident.</li></ul></dd></div>
+      <div class="term"><dt>Notes</dt><dd>Free text against a row, set in bulk from the toolbar or on one item in its popup. Notes export with the rows.</dd></div>
+      <div class="term"><dt>The popup</dt><dd>Double-click a row for its price scenarios — every price the item has sold at, each costed out at the current ad days, with one click to apply. The calculator beside it prices something that isn't in the list; it reports back but writes nothing to the grid. The strip along the top is what the fit is standing on: regular retail, 90-day units, days active, and how many price points there are.</dd></div>
+      <div class="term"><dt>AD badge</dt><dd>The item came off an uploaded ad list. Its ad retail is used as the forecast price, and that price is treated as a real price point when the curve is fitted, even though the item may never have sold at it.</dd></div>
+      <div class="term"><dt>1pt badge</dt><dd>One price point in 90 days. There is no curve to fit, so the forecast is that single point projected forward — the price can't be changed and the popup won't open.</dd></div>
+      <div class="term"><dt>No sales history</dt><dd>UPCs the stores returned nothing for. Usually items new to the store, discontinued, or a bad UPC on the ad list. They export as their own list from the download button.</dd></div>
+      <div class="term"><dt>Export</dt><dd>Presets download whole datasets — selected items, all items, or the no-history list — and tick more than one to get a file each. Custom picks the columns and previews them first. Both open scoped to the bands you had on screen, and both let you change that. Rows export in rank order carrying their rank, band and share, so the CSV keeps the ordering's meaning.</dd></div>
+      </dl>
+    </section>
+    <p class="foot"><span class="mark" aria-hidden="true">?</span><span>Still stuck? Contact your CounterCtrl representative.</span></p>
+  </main>
+</div>
+<script>
+  // Header pills scroll to their section in place, so they work the same
+  // whether this page is opened on its own or shown inside the app's modal.
+  document.querySelectorAll('.jump a[href^="#"]').forEach(function (a) {
+    a.addEventListener("click", function (ev) {
+      var target = document.getElementById(a.getAttribute("href").slice(1));
+      if (!target) return;
+      ev.preventDefault();
+      var still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      target.scrollIntoView({ behavior: still ? "auto" : "smooth", block: "start" });
+    });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Forecasting — Help</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+  :root {
+    --navy: #1e2a4a;          /* app chrome */
+    --navy-2: #2a3a63;        /* chrome hover */
+    --bkg: #e4e9ef;           /* app background (bkg) */
+    --card: #ffffff;
+    --soft: #f4f7f8;          /* custom-white */
+    --ink: #1e293b;           /* content */
+    --ink-2: #475569;
+    --ink-3: #64748b;
+    --line: #dce5ef;          /* brand-line */
+    --line-2: #c8d5e4;
+    --on-navy: #f4f7f8;
+    --on-navy-2: #aeb9cf;
+    --green: #1e9e52;         /* brand-green */
+    --focus: #2563eb;
+    --display: "Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif;
+    --body: "Inter", "Segoe UI", system-ui, sans-serif;
+    --mono: "IBM Plex Mono", Consolas, ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bkg);
+    color: var(--ink);
+    font: 14px/1.55 var(--body);
+    -webkit-font-smoothing: antialiased;
+  }
+  .sheet {
+    max-width: 560px; margin: 0 auto; background: var(--soft);
+    min-height: 100vh; box-shadow: 0 10px 40px -24px rgba(15, 36, 64, .5);
+  }
+
+  /* header band — the app's navy chrome */
+  .chrome {
+    background: var(--navy); color: var(--on-navy);
+    padding: 18px 20px 18px;
+    position: relative; overflow: hidden;
+  }
+  .chrome::after {           /* the app's "?" mark, faint, as a watermark */
+    content: "?"; position: absolute; right: 14px; top: -18px;
+    font: 800 120px/1 var(--display); color: rgba(255, 255, 255, .06);
+    pointer-events: none;
+  }
+  .stamp {
+    display: inline-flex; align-items: center; gap: 8px;
+    font: 600 10.5px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase;
+    color: var(--on-navy-2);
+  }
+  .stamp .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+  h1 {
+    margin: 8px 0 6px; font: 700 22px/1.2 var(--display); letter-spacing: -.01em;
+    color: #fff; text-wrap: balance;
+  }
+  .purpose { margin: 0; max-width: 46ch; font-size: 13.5px; color: var(--on-navy-2); }
+
+  /* questions */
+  .body { padding: 16px 16px 8px; }
+  .eyebrow {
+    margin: 2px 4px 10px; font: 600 10.5px/1 var(--mono);
+    letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3);
+  }
+  .list { display: flex; flex-direction: column; gap: 8px; }
+  details {
+    background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+    transition: border-color .15s ease, box-shadow .15s ease;
+  }
+  details:hover { border-color: var(--line-2); }
+  details[open] { border-color: var(--line-2); box-shadow: 0 6px 18px -14px rgba(15, 36, 64, .45); }
+  summary {
+    list-style: none; cursor: pointer; position: relative;
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 12px 40px 12px 14px;
+    font: 600 14px/1.4 var(--display); color: var(--ink);
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary .q {
+    flex: none; width: 22px; height: 22px; margin-top: -1px; border-radius: 6px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: #eef2f7; color: var(--navy); font: 600 11px/1 var(--mono);
+    transition: background .15s ease, color .15s ease;
+  }
+  details[open] summary .q { background: var(--navy); color: #fff; }
+  summary::after {
+    content: ""; position: absolute; right: 16px; top: 18px; width: 7px; height: 7px;
+    border-right: 2px solid var(--ink-3); border-bottom: 2px solid var(--ink-3);
+    transform: rotate(45deg); transition: transform .2s ease;
+  }
+  details[open] summary::after { transform: rotate(-135deg); top: 21px; }
+  summary:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 10px; }
+  .a { padding: 0 16px 14px 46px; color: var(--ink-2); }
+  .a p { margin: 0 0 8px; }
+  .a p:last-child { margin-bottom: 0; }
+  .a strong { color: var(--ink); font-weight: 600; }
+
+  /* footer */
+  .foot {
+    margin: 14px 16px 18px; padding: 11px 14px; border-radius: 10px;
+    background: #eef2f7; color: var(--ink-2); font-size: 12.5px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .foot .mark {
+    flex: none; width: 22px; height: 22px; border-radius: 50%;
+    background: var(--navy); color: #fff; font: 700 12px/22px var(--display); text-align: center;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    details, summary .q, summary::after { transition: none; }
+  }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header class="chrome">
+    <div class="stamp"><span class="dot"></span>Help</div>
+    <h1>Forecasting</h1>
+    <p class="purpose">Estimate what a list of items will sell in an ad week at the price you choose, based on the last 90 days of sales history.</p>
+  </header>
+  <main class="body">
+    <div class="eyebrow">Common questions</div>
+    <div class="list">
+    <details>
+      <summary><span class="q">Q</span><span>How do I start a forecast?</span></summary>
+      <div class="a"><p>Pick Store or Group, then pick a date. The 90 days of history end on that date. Paste UPCs and click Add, or use Upload CSV or Upload AD list, then click Forecast. The button reads "Select Store" or "Select Group" until you've picked one.</p></div>
+    </details>
+    <details>
+      <summary><span class="q">Q</span><span>How do I use an ad list?</span></summary>
+      <div class="a"><p>Click Upload AD list and choose an Excel (.xlsx) file with UPC and Ad Retail columns, plus Ad Count for multi-buy deals. Those items get an AD tag, and their ad price is used as the forecast price.</p></div>
+    </details>
+    <details>
+      <summary><span class="q">Q</span><span>Which items count toward the totals?</span></summary>
+      <div class="a"><p>Only the items ticked in the left panel. Every item is ticked after a search. The Driving, Supporting and Tail buttons narrow the grid further, and you can combine them.</p></div>
+    </details>
+    <details>
+      <summary><span class="q">Q</span><span>What price is each item forecast at?</span></summary>
+      <div class="a"><p>Each item starts at the price it sold the most units at in the 90 days. Ad list items start at their ad price instead. You can change the price with the toolbar or in the item's popup.</p></div>
+    </details>
+    <details>
+      <summary><span class="q">Q</span><span>What do Ad fcst, Total and Markdown mean?</span></summary>
+      <div class="a"><p>Ad fcst is the forecast units at the row's price over its ad days, or over 7 days if no ad days are set. Total is Ad fcst times the price. Markdown is the regular retail minus the price, times Ad fcst.</p></div>
+    </details>
+    <details>
+      <summary><span class="q">Q</span><span>What are Driving, Supporting and Tail?</span></summary>
+      <div class="a"><p>Items are ranked by forecast total. Driving is the fewest items that make up at least 80% of the forecast, Supporting takes it to 95%, and Tail is the rest. These show size, not performance. Click a band's header to fold it away.</p></div>
+    </details>
+    <details>
+      <summary><span class="q">Q</span><span>How do I change ad days, price or notes for many items at once?</span></summary>
+      <div class="a"><p>Enter ad days (1 to 7), a price or a note in the toolbar and click Apply. It changes only the rows on screen. Reset puts price and ad days back to how the search returned them, and Clear notes removes the notes.</p></div>
+    </details>
+    <details>
+      <summary><span class="q">Q</span><span>What happens when I double-click a row?</span></summary>
+      <div class="a"><p>A popup lists every price the item has sold at, with its forecast, and you can apply any of them in one click. A calculator lets you try a price and cost without changing the grid. Items marked "1pt" sold at only one price, so they have no popup.</p></div>
+    </details>
+    <details>
+      <summary><span class="q">Q</span><span>Why do some items have "no sales history"?</span></summary>
+      <div class="a"><p>The selected stores had no sales for those UPCs in the 90 days. Usually the item is new, discontinued, or the UPC is wrong. Click the note above the grid to see the list.</p></div>
+    </details>
+    <details>
+      <summary><span class="q">Q</span><span>Can I export the forecast?</span></summary>
+      <div class="a"><p>Yes. Click the download icon. You can download the selected items, all items, or the no-sales-history list. You can also choose Custom to pick your own columns. Rows download in rank order as CSV files.</p></div>
+    </details>
+    </div>
+  </main>
+  <p class="foot"><span class="mark" aria-hidden="true">?</span><span>Still stuck? Contact your CounterCtrl representative.</span></p>
+</div>
+</body>
+</html>
