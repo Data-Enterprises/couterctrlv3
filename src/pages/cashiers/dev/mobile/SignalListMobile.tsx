@@ -11,7 +11,6 @@ import { fmtRangeLabel } from "../../../../utils/dateLabels";
 import { formatCurrency2, formatCurrencyCompact } from "../../../../utils";
 import { LENSES } from "../explorer/lensUtils";
 import { useCashierSignals } from "../useCashierSignals";
-import { CASHIERS_INFO } from "../cashiersInfo";
 
 /**
  * The explorer's signal list on mobile.
@@ -71,7 +70,7 @@ const SignalListMobile = ({
         dateRange={fmtRangeLabel(start, end)}
         storeName={scopeLabel}
         onSearch={onSearch}
-        info={CASHIERS_INFO}
+        helpPage="cashiers"
       />
 
       {/* The six figures desktop puts across the top, as six equal columns —

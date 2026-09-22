@@ -9,7 +9,6 @@ import { useAppSelector } from "../../../../hooks";
 import type { CouponItem } from "../../../../interfaces";
 import MobilePerfHeader from "../../../../components-dev/mobile/MobilePerfHeader";
 import HeaderIconButton from "../../../../components-dev/HeaderIconButton";
-import { COUPONS_INFO } from "../couponsInfo";
 import CpnExportSheet from "./CpnExportSheet";
 import CpnSortToggle from "./CpnSortToggle";
 import { sumCouponAmount } from "../../../../utils/couponValue";
@@ -94,7 +93,7 @@ const CpnStoreList = ({
         storeName={groupName}
         dateRange={dateRangeLabel}
         onSearch={onSearch}
-        info={COUPONS_INFO}
+        helpPage="coupons"
         actions={
           <>
             <CpnSortToggle value={sortMetric} onChange={onSortMetric} />

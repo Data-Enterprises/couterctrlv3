@@ -15,8 +15,7 @@ import {
   fetchSubDeptRowsSafe,
 } from "../../../../../utils/marginRows";
 import { withProductCode } from "../../shared/ledgerUtils";
-import { SALES_MOBILE_INFO } from "../../salesInfo";
-import MobileInfoSheet from "../../../../../components-dev/mobile/MobileInfoSheet";
+import InfoModal from "../../../../../components-dev/InfoModal";
 import MobileSortChips, {
   type SortOption,
 } from "../../../../../components-dev/mobile/MobileSortChips";
@@ -838,12 +837,11 @@ const SalesPerfMobile = () => {
         </div>
       </div>
 
-      {perf.infoOpen && (
-        <MobileInfoSheet
-          {...SALES_MOBILE_INFO}
-          onClose={() => dispatch(setPerfInfoOpen(false))}
-        />
-      )}
+      <InfoModal
+        page="sales"
+        isOpen={perf.infoOpen}
+        onClose={() => dispatch(setPerfInfoOpen(false))}
+      />
     </div>
   );
 };

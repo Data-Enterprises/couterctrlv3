@@ -1,13 +1,12 @@
-import InfoButton from "../../../components-dev/InfoButton";
+import PageInfoButton from "../../../components-dev/PageInfoButton";
 import CategoryRow from "./CategoryRow";
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useCallback } from "react";
 import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import TextFilter from "../../../components-dev/filters/TextFilter";
 import ThresholdFilter, {
   type ThresholdValue,
 } from "../../../components-dev/filters/ThresholdFilter";
-import InfoPopover from "../../../components-dev/InfoPopover";
 import SortHeader, { PERF_SORT_HEADER } from "../../../components-dev/SortHeader";
 import { useTriStateSort } from "../../../utils/useTriStateSort";
 import {
@@ -24,7 +23,6 @@ import {
   formatPct,
   type Severity,
 } from "../../../utils/severity";
-import { CATEGORIES_INFO } from "./categoriesInfo";
 import { isCompleteCoverage } from "../../../utils/grading";
 import {
   setTextFilter,
@@ -80,7 +78,6 @@ interface Props {
 
 const CategoryListPanel = ({ onSearchOpen }: Props) => {
   const dispatch = useAppDispatch();
-  const [infoOpen, setInfoOpen] = useState(false);
   const { sort, handleSort, applySort } = useTriStateSort<ListSortCol>();
   const cats = useAppSelector((s) => s.dev.categories);
   const { rows, metric, threshold, tierFilter, textFilter, selectedCategory } = cats;
@@ -331,15 +328,7 @@ const CategoryListPanel = ({ onSearchOpen }: Props) => {
           </div>
 
           <div className="relative flex-shrink-0">
-            <InfoButton onClick={() => setInfoOpen((prev) => !prev)} />
-            {infoOpen && (
-              <InfoPopover
-                title={CATEGORIES_INFO.title}
-                purpose={CATEGORIES_INFO.purpose}
-                glossary={CATEGORIES_INFO.glossary}
-                onClose={() => setInfoOpen(false)}
-              />
-            )}
+            <PageInfoButton page="categories" />
           </div>
         </div>
       </div>

@@ -5,7 +5,6 @@ import {
   ArrowDownTrayIcon,
 } from "@heroicons/react/20/solid";
 import MobilePerfHeader from "../../../../components-dev/mobile/MobilePerfHeader";
-import { COUPONS_INFO } from "../couponsInfo";
 import { useAppSelector } from "../../../../hooks";
 import { useAppDispatch } from "../../../../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
@@ -213,7 +212,7 @@ const CpnSectionDetail = ({
         storeName={sectionLabel}
         dateRange={dateRangeLabel}
         onBack={onBack}
-        info={COUPONS_INFO}
+        helpPage="coupons"
       />
 
       {/* KPI strip */}

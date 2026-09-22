@@ -3,7 +3,6 @@ import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import SelectFilter from "../../../../components-dev/filters/SelectFilter";
 import MobilePerfHeader from "../../../../components-dev/mobile/MobilePerfHeader";
 import HeaderIconButton from "../../../../components-dev/HeaderIconButton";
-import { ORDERS_INFO } from "../ordersInfo";
 import type { AllOrder } from "../../../../interfaces";
 import type { SelectedOrderKey } from "../../../../features/dev/devOrdersSlice";
 import type { Store } from "../../../../interfaces";
@@ -114,7 +113,7 @@ const OrdersListScreen = ({ orders, loading, selectedKey, assignedStores, groupS
         storeName={storeLabel}
         dateRange={dateLabel}
         onBack={onBack}
-        info={ORDERS_INFO}
+        helpPage="orders"
         actions={
           <HeaderIconButton onClick={onExport} title="Export CSV">
             <ArrowDownTrayIcon className="w-3.5 h-3.5" />

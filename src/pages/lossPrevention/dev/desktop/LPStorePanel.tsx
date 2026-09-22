@@ -1,4 +1,4 @@
-import InfoButton from "../../../../components-dev/InfoButton";
+import PageInfoButton from "../../../../components-dev/PageInfoButton";
 import { useMemo, useState } from "react";
 import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
 import { formatCurrency2, formatBigNumber, getStoreName, formatCurrencyCompact } from "../../../../utils";
@@ -10,9 +10,7 @@ import { severityDotClass } from "../../../../utils/severity";
 import { isNoDollarType, storeSeverity, directionalPillClass, weekRangeLabel } from "../gradingUtils";
 import TextFilter from "../../../../components-dev/filters/TextFilter";
 import SelectFilter from "../../../../components-dev/filters/SelectFilter";
-import InfoPopover from "../../../../components-dev/InfoPopover";
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
-import { LP_INFO } from "../lpInfo";
 import SortHeader, { PERF_SORT_HEADER } from "../../../../components-dev/SortHeader";
 import { useTriStateSort } from "../../../../utils/useTriStateSort";
 
@@ -36,7 +34,6 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch, 
   const cashier = useAppSelector((s) => s.dev.lossPrevention);
   const search = useAppSelector((s) => s.search);
   const assignedStores = useAppSelector((s) => s.user.assignedStores);
-  const [infoOpen, setInfoOpen] = useState(false);
   const [sevFilter, setSevFilter] = useState<SevFilter>("all");
   const [storeFilter, setStoreFilter] = useState("");
   const { sort, handleSort, applySort } = useTriStateSort<LpSortCol>();
@@ -214,15 +211,7 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch, 
           <div className="flex-1" />
           <span className="text-[9px] font-medium uppercase tracking-wide text-custom-white/35 flex-shrink-0">Exception activity vs baseline</span>
           <div className="relative flex-shrink-0">
-            <InfoButton onClick={() => setInfoOpen((prev) => !prev)} />
-            {infoOpen && (
-              <InfoPopover
-                title={LP_INFO.title}
-                purpose={LP_INFO.purpose}
-                glossary={LP_INFO.glossary}
-                onClose={() => setInfoOpen(false)}
-              />
-            )}
+            <PageInfoButton page="loss-prevention" />
           </div>
         </div>
       </div>

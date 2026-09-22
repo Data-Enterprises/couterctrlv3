@@ -24,8 +24,7 @@ import ItemDayChart from "./ItemDayChart";
 import LookupDayRows from "./LookupDayRows";
 import LocationTabs from "../../../components-dev/filters/LocationTabs";
 import InfoButton from "../../../components-dev/InfoButton";
-import MobileInfoSheet from "../../../components-dev/mobile/MobileInfoSheet";
-import { LOOKUP_REPORT_INFO } from "./lookupReportInfo";
+import InfoModal from "../../../components-dev/InfoModal";
 
 interface Props {
   description: string;
@@ -481,14 +480,11 @@ const LookupItemReport = ({
         </div>
       </div>
 
-      {infoOpen && (
-        <MobileInfoSheet
-          title={LOOKUP_REPORT_INFO.title}
-          purpose={LOOKUP_REPORT_INFO.purpose}
-          glossary={LOOKUP_REPORT_INFO.glossary}
-          onClose={() => setInfoOpen(false)}
-        />
-      )}
+      <InfoModal
+        page="item-lookup"
+        isOpen={infoOpen}
+        onClose={() => setInfoOpen(false)}
+      />
     </div>
   );
 };

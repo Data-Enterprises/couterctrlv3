@@ -1,13 +1,12 @@
-import InfoButton from "../../../components-dev/InfoButton";
+import PageInfoButton from "../../../components-dev/PageInfoButton";
 import VendorRow from "./VendorRow";
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useCallback } from "react";
 import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import TextFilter from "../../../components-dev/filters/TextFilter";
 import ThresholdFilter, {
   type ThresholdValue,
 } from "../../../components-dev/filters/ThresholdFilter";
-import InfoPopover from "../../../components-dev/InfoPopover";
 import SortHeader, { PERF_SORT_HEADER } from "../../../components-dev/SortHeader";
 import { useTriStateSort } from "../../../utils/useTriStateSort";
 import { formatCurrency2, formatCurrencyCompact } from "../../../utils";
@@ -26,7 +25,6 @@ import {
   isCompleteCoverage,
   type Tier,
 } from "../../../utils/grading";
-import { VENDORS_INFO } from "./vendorsInfo";
 import {
   setTextFilter,
   setTierFilter,
@@ -83,7 +81,6 @@ interface Props {
 
 const VendorListPanel = ({ onSearchOpen }: Props) => {
   const dispatch = useAppDispatch();
-  const [infoOpen, setInfoOpen] = useState(false);
   const { sort, handleSort, applySort } = useTriStateSort<ListSortCol>();
   const vend = useAppSelector((s) => s.dev.vendors);
   const { rows, metric, threshold, tierFilter, textFilter, selectedVendor } = vend;
@@ -375,15 +372,7 @@ const VendorListPanel = ({ onSearchOpen }: Props) => {
           </div>
 
           <div className="relative flex-shrink-0">
-            <InfoButton onClick={() => setInfoOpen((prev) => !prev)} />
-            {infoOpen && (
-              <InfoPopover
-                title={VENDORS_INFO.title}
-                purpose={VENDORS_INFO.purpose}
-                glossary={VENDORS_INFO.glossary}
-                onClose={() => setInfoOpen(false)}
-              />
-            )}
+            <PageInfoButton page="vendors" />
           </div>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import InfoButton from "../../../components-dev/InfoButton";
+import PageInfoButton from "../../../components-dev/PageInfoButton";
 import { useState, useMemo } from "react";
 import { applyStoreNumberToName, numbersByStoreId } from "../../../utils/storeIdentity";
 import { sumCouponAmount } from "../../../utils/couponValue";
@@ -7,8 +7,6 @@ import {
 } from "@heroicons/react/20/solid";
 import { useAppSelector, useStoreName } from "../../../hooks";
 import { formatCurrency2 } from "../../../utils";
-import InfoPopover from "../../../components-dev/InfoPopover";
-import { COUPONS_INFO } from "./couponsInfo";
 import { isGroupSearch } from "../../../features/searchSlice";
 
 interface CouponListPanelProps {
@@ -33,7 +31,6 @@ const CouponListPanel = ({
   const assignedStores = useAppSelector((s) => s.user.assignedStores);
 
   const [query, setQuery] = useState("");
-  const [infoOpen, setInfoOpen] = useState(false);
 
   const storeName = useStoreName(Number(search.lastStore));
   const isGroup = isGroupSearch(search.type);
@@ -175,15 +172,7 @@ const CouponListPanel = ({
           <div className="w-px h-4 bg-custom-white/15 flex-shrink-0" />
 
           <div className="relative flex-shrink-0">
-            <InfoButton onClick={() => setInfoOpen((prev) => !prev)} />
-            {infoOpen && (
-              <InfoPopover
-                title={COUPONS_INFO.title}
-                purpose={COUPONS_INFO.purpose}
-                glossary={COUPONS_INFO.glossary}
-                onClose={() => setInfoOpen(false)}
-              />
-            )}
+            <PageInfoButton page="coupons" />
           </div>
         </div>
       </div>

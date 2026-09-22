@@ -5,7 +5,6 @@ import type { CouponItem } from "../../../../interfaces";
 import type { GroupTab } from "./CouponsMobile";
 import MobilePerfHeader from "../../../../components-dev/mobile/MobilePerfHeader";
 import HeaderIconButton from "../../../../components-dev/HeaderIconButton";
-import { COUPONS_INFO } from "../couponsInfo";
 import CpnExportSheet from "./CpnExportSheet";
 import CpnSortToggle from "./CpnSortToggle";
 import { sumCouponAmount } from "../../../../utils/couponValue";
@@ -115,7 +114,7 @@ const CpnOverview = ({
         // lands on the search card — a second button to the same place would
         // just be noise.
         onSearch={isGroup ? onSearch : undefined}
-        info={COUPONS_INFO}
+        helpPage="coupons"
         actions={
           <>
             <CpnSortToggle value={sortMetric} onChange={onSortMetric} />

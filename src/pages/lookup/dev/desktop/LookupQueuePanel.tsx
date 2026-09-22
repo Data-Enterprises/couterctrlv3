@@ -1,13 +1,10 @@
-import InfoButton from "../../../../components-dev/InfoButton";
-import { useState } from "react";
+import PageInfoButton from "../../../../components-dev/PageInfoButton";
 import {
   ExclamationTriangleIcon,
   MagnifyingGlassIcon,
 } from "@heroicons/react/20/solid";
 import type { QueueItem } from "../../../../features/dev/devItemLookupSlice";
 import LocationTabs from "../../../../components-dev/filters/LocationTabs";
-import InfoPopover from "../../../../components-dev/InfoPopover";
-import { LOOKUP_INFO } from "../lookupInfo";
 
 interface LookupQueuePanelProps {
   storeName: string;
@@ -33,7 +30,6 @@ const LookupQueuePanel = ({
   selectedStoreNumber,
   onStoreNumberChange,
 }: LookupQueuePanelProps) => {
-  const [infoOpen, setInfoOpen] = useState(false);
   const loadedCount = queue.filter(
     (q) => q.status === "loaded" || q.status === "error",
   ).length;
@@ -86,15 +82,7 @@ const LookupQueuePanel = ({
           </span>
           <div className="flex-1" />
           <div className="relative flex-shrink-0">
-            <InfoButton onClick={() => setInfoOpen((prev) => !prev)} />
-            {infoOpen && (
-              <InfoPopover
-                title={LOOKUP_INFO.title}
-                purpose={LOOKUP_INFO.purpose}
-                glossary={LOOKUP_INFO.glossary}
-                onClose={() => setInfoOpen(false)}
-              />
-            )}
+            <PageInfoButton page="item-lookup" />
           </div>
         </div>
       </div>

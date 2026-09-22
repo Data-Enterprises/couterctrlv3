@@ -1,4 +1,4 @@
-import InfoButton from "../../../../components-dev/InfoButton";
+import PageInfoButton from "../../../../components-dev/PageInfoButton";
 import { useState, useMemo } from "react";
 import { MagnifyingGlassIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
 import type { GroupedOrderCard, SelectedOrderKey } from "../../../../features/dev/devOrdersSlice";
@@ -9,8 +9,6 @@ import FilterBar from "../../../../components-dev/filters/FilterBar";
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
 import TextFilter from "../../../../components-dev/filters/TextFilter";
 import SelectFilter, { type SelectFilterOption } from "../../../../components-dev/filters/SelectFilter";
-import InfoPopover from "../../../../components-dev/InfoPopover";
-import { ORDERS_INFO } from "../ordersInfo";
 import { isGroupSearch } from "../../../../features/searchSlice";
 
 interface Props {
@@ -54,7 +52,6 @@ const AvailableOrdersPanel = ({
     return withYear ? `${+m}/${+d}/${y}` : `${+m}/${+d}`;
   };
   const dateLabel = `${fmtRangePart(startDate)} – ${fmtRangePart(endDate, true)}`;
-  const [infoOpen, setInfoOpen] = useState(false);
   const [activeType, setActiveType] = useState("all");
   const [storeFilter, setStoreFilter] = useState("");
   const [dateFilter, setDateFilter] = useState("");
@@ -147,15 +144,7 @@ const isSelected = (order_date: string, order_type: string, storeid: number, sto
           )}
           <div className="flex-1" />
           <div className="relative flex-shrink-0">
-            <InfoButton onClick={() => setInfoOpen((prev) => !prev)} />
-            {infoOpen && (
-              <InfoPopover
-                title={ORDERS_INFO.title}
-                purpose={ORDERS_INFO.purpose}
-                glossary={ORDERS_INFO.glossary}
-                onClose={() => setInfoOpen(false)}
-              />
-            )}
+            <PageInfoButton page="orders" />
           </div>
         </div>
       </div>
