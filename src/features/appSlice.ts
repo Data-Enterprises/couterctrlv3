@@ -17,6 +17,15 @@ interface AppState {
   fetchingCredentials: boolean;
   /** Which API this session talks to — and so which UI tree each page renders. */
   apiEnv: "dev" | "prod";
+  /**
+   * Live is the app as published. Legacy is the pages the dev/prod separation
+   * replaced, kept for people who still need the old view of the data.
+   *
+   * It sits beside `apiEnv` rather than inside it because it answers a
+   * different question — which generation of the page, not which backend —
+   * and the two are not free to combine: legacy is prod-only.
+   */
+  uiMode: "live" | "legacy";
   prodToken: string;
   devToken: string;
 }
@@ -56,6 +65,7 @@ export const initialState: AppState = {
   isDesktop: true,
   fetchingCredentials: false,
   apiEnv: "prod",
+  uiMode: "live",
   prodToken: "",
   devToken: "",
 };
@@ -101,11 +111,26 @@ export const appSlice = createSlice({
       // so the credential has to travel with the base URL.
       state.token = action.payload === "dev" ? state.devToken : state.prodToken;
     },
+    /**
+     * Live <-> Legacy.
+     *
+     * Either direction lands on the prod API. Legacy pages read prod by
+     * construction and coming back out of Legacy on the dev API would drop the
+     * user somewhere they didn't ask to be, so the switch ends in prod both
+     * ways and the Mode row is disabled while Legacy is on.
+     */
+    setUiMode: (state, action: PayloadAction<"live" | "legacy">) => {
+      state.uiMode = action.payload;
+      state.apiEnv = "prod";
+      state.url = import.meta.env.VITE_API_URL_PROD;
+      state.token = state.prodToken;
+    },
     resetAppSlice: () => initialState,
   },
 });
 
 export const {
+  setUiMode,
   setToken,
   setLoggedIn,
   setForgotPassword,

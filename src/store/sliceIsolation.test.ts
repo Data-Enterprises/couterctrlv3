@@ -3,6 +3,7 @@ import { setupStore } from "./index";
 import { pageReducers } from "./pageReducers";
 import { sessionReducers } from "./sessionReducers";
 import { devReducers } from "./devReducers";
+import { legacyReducers } from "./legacyReducers";
 import { resetAppSlice } from "../features/appSlice";
 import { setThreshold as prodSetLedgerThreshold } from "../features/salesLedgerSlice";
 import { setThreshold as devSetLedgerThreshold } from "../features/dev/devSalesLedgerSlice";
@@ -27,6 +28,7 @@ const actionTypesOf = (mods: Record<string, unknown>) => {
 
 const prodModules = import.meta.glob("../features/*Slice.{ts,tsx}", { eager: true });
 const devModules = import.meta.glob("../features/dev/*Slice.{ts,tsx}", { eager: true });
+const legacyModules = import.meta.glob("../features/legacy/*Slice.{ts,tsx}", { eager: true });
 
 describe("dev and prod slices stay isolated", () => {
   /**
@@ -147,6 +149,48 @@ describe("the Sales fork", () => {
     expect(store.getState().prod.couponSales.hasSearched).toBe(true);
     store.dispatch(resetAppSlice());
     expect(store.getState().prod.couponSales.hasSearched).toBe(false);
+  });
+
+  it("mounts legacy slices under legacy only, never at the root", () => {
+    // A legacy page asks for a different shape than the page that replaced
+    // it, so it gets its own branch rather than sharing prod's slice. Mounted
+    // at the root it would also be reachable as a bare `state.<key>`, which is
+    // what the separation spent a release undoing.
+    const store = setupStore();
+    const root = store.getState() as Record<string, unknown>;
+    const legacy = root.legacy as Record<string, unknown>;
+
+    for (const key of Object.keys(legacyReducers)) {
+      expect(root, `legacy ${key} is mounted at the root`).not.toHaveProperty(key);
+      expect(legacy, `legacy ${key} is not mounted under legacy`).toHaveProperty(key);
+    }
+  });
+
+  it("gives the legacy tree its own branch of the store", () => {
+    expect(setupStore().getState()).toHaveProperty("legacy");
+  });
+
+  it("shares no action type between legacy and the trees it was cut from", () => {
+    const prod = actionTypesOf(prodModules);
+    const dev = actionTypesOf(devModules);
+    const legacy = actionTypesOf(legacyModules);
+
+    const shared = [...legacy.keys()]
+      .filter((type) => prod.has(type) || dev.has(type))
+      .map((type) => `${type}  (${legacy.get(type)})`);
+
+    expect(
+      shared,
+      "a legacy slice kept the `name` it had before the split — rename it to legacy*",
+    ).toEqual([]);
+  });
+
+  it("names every legacy action type so it reads as one", () => {
+    const offenders = [...actionTypesOf(legacyModules).entries()]
+      .filter(([type]) => !type.startsWith("legacy"))
+      .map(([type, path]) => `${type}  (${path})`);
+
+    expect(offenders).toEqual([]);
   });
 
   it("clears the whole dev tree on sign-out", () => {
