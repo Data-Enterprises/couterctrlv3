@@ -653,33 +653,6 @@ export const categories: NavCategory[] = [
  *     mobile layout is being reworked, so dev has no phone version for now.
  * The tabs inside User Management gate themselves by level.
  */
-/**
- * The routes that have a page in `src/legacy`.
- *
- * Legacy renders its own frame, with the menu it had, so this is not used to
- * build a menu. It answers one question: whether the route you are standing on
- * exists over there, which decides where switching into Legacy leaves you.
- */
-export const LEGACY_PAGES = new Set([
-  "sales",
-  "loss-prevention",
-  "sub-dept-margins",
-  "cashiers",
-  "item-lookup",
-  "upc-upload",
-  "forecasting",
-  "orders",
-  "receivers",
-  "coupons",
-  "groups",
-  "user-management",
-  "admin",
-]);
-
-/** Whether a route (a `href` from the nav, or a pathname) has a legacy page. */
-export const hasLegacyPage = (path: string) =>
-  LEGACY_PAGES.has(path.replace(/^\//, ""));
-
 export const categoriesFor = (apiEnv: "dev" | "prod"): NavCategory[] =>
   apiEnv !== "dev"
     ? categories

@@ -6,7 +6,8 @@ import logo from "../../assets/portal/logo.webp";
 import logoReversed from "../../assets/portal/logo-reversed.webp";
 import { ChevronDownIcon } from "@heroicons/react/16/solid";
 import { useAppSelector, useAppDispatch } from "../../hooks";
-import { categoriesFor, hasLegacyPage } from "./utils";
+import { categoriesFor } from "./utils";
+import { hasLegacyPage } from "../../constants/legacyPages";
 import { COMING_SOON_CATEGORY } from "../../utils/comingSoon";
 import { resetNav, setIsNavOpen, setLastRoute } from "../../features/navSlice";
 import {

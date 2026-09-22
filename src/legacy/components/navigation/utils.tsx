@@ -33,6 +33,8 @@ import UpcListIcon from "../../svgs/UpcListIcon";
 import DashboardIconV2 from "../../svgs/DashbordIconV2";
 import CouponIcon from "../../svgs/CouponIcon";
 
+import { LEGACY_ROUTES } from "../../../constants/legacyPages";
+
 export type Navigation = {
   name: string;
   href: string;
@@ -54,7 +56,7 @@ export type Navigation = {
  * 7 => Owner
  * 9 => Programmer
  */
-export const navigation: Navigation[] = [
+const allNavigation: Navigation[] = [
   {
     name: "Home",
     href: "/",
@@ -289,6 +291,19 @@ export const navigation: Navigation[] = [
     isVisible: true,
   },
 ];
+
+/**
+ * The menu, filtered to the pages this tree actually has.
+ *
+ * The array above is the nav as it stood at the cutover, and it already listed
+ * pages that never had a legacy version — Item Actions, the Price Opt pages,
+ * Invoices, Quicksight. Left in, they route to their live selves inside the
+ * legacy frame, which is the one thing a legacy view must not do: look
+ * current.
+ */
+export const navigation: Navigation[] = allNavigation.filter((n) =>
+  LEGACY_ROUTES.has(n.href),
+);
 
 export type NavCategory = {
   name: string;
