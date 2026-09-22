@@ -5,7 +5,7 @@ import { createSharedGroup, getSharedGroups } from "../../../../api/sharedGroups
 import type { SharedGroup, SharedGroupsResp } from "../../../../interfaces";
 import TextFilter from "../../../../components-dev/filters/TextFilter";
 import SharedGroupDetail from "./SharedGroupDetail";
-import { errorText, nameProblem, useSharedGroupsCtx } from "./hooks";
+import { errorText, nameProblem, useRefreshMyGroups, useSharedGroupsCtx } from "./hooks";
 
 type RightSide = { kind: "none" } | { kind: "create" } | { kind: "group"; id: number };
 
@@ -76,6 +76,7 @@ const NewSharedGroup = ({
 const SharedGroups = () => {
   const ctx = useSharedGroupsCtx();
   const toast = useToast();
+  const refreshMyGroups = useRefreshMyGroups();
 
   const [groups, setGroups] = useState<SharedGroup[] | null>(null);
   const [search, setSearch] = useState("");
@@ -106,6 +107,7 @@ const SharedGroups = () => {
         const j = resp.data;
         if (j.error === 0) {
           toast.success("Shared group created");
+          refreshMyGroups();
           // Straight to it once the list has it — an empty group opens on its
           // stores. Selecting before the list arrives would flash the empty
           // "select a group" state.
@@ -177,8 +179,13 @@ const SharedGroups = () => {
           <SharedGroupDetail
             group={selected}
             onChanged={fetchGroups}
+            onRenamed={() => {
+              fetchGroups();
+              refreshMyGroups();
+            }}
             onDeleted={() => {
               fetchGroups();
+              refreshMyGroups(selected.id);
               setRight({ kind: "none" });
             }}
           />

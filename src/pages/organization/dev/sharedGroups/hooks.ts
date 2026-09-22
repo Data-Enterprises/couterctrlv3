@@ -1,5 +1,10 @@
-import { useAppSelector } from "../../../../hooks";
+import { useStore } from "react-redux";
+import { useAppDispatch, useAppSelector } from "../../../../hooks";
+import type { RootState } from "../../../../store";
 import { isForbidden } from "../../../../api/sharedGroups";
+import { getGroups } from "../../../../api/groups";
+import { emptyGroup, setGroups, type Group } from "../../../../features/groupSlice";
+import { setLastGroup, setSelectedGroup } from "../../../../features/searchSlice";
 import type { SharedGroupStore } from "../../../../interfaces";
 
 /** Owner and up create, edit, share and delete shared groups; the router
@@ -16,6 +21,39 @@ export const useSharedGroupsCtx = () => {
   const { url, token } = useAppSelector((s) => s.app);
   const { userid, userLevel } = useAppSelector((s) => s.user);
   return { url, token, userid, userLevel };
+};
+
+/**
+ * Reloads the signed-in user's own group list — the app-wide one the store
+ * picker and User Groups read, otherwise only fetched at sign-in — after one
+ * of their shared groups is created, renamed or deleted.
+ *
+ * Given the id of a group that was just deleted, it also clears the search
+ * selection if that group was the one picked, so nothing searches with a group
+ * that no longer exists and the picker asks for a new one.
+ */
+export const useRefreshMyGroups = () => {
+  const dispatch = useAppDispatch();
+  const store = useStore<RootState>();
+  const { url, token } = useAppSelector((s) => s.app);
+
+  return (deletedId?: number) => {
+    if (deletedId) {
+      const { lastGroup, selectedGroup } = store.getState().search;
+      if (lastGroup === deletedId || selectedGroup?.id === deletedId) {
+        dispatch(setLastGroup(0));
+        dispatch(setSelectedGroup(emptyGroup));
+      }
+    }
+    getGroups(url, token)
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error == "0") dispatch(setGroups(j.groups as Group[]));
+      })
+      // The group itself was already changed; a stale picker is the only
+      // cost, and User Groups reloads the list whenever it opens.
+      .catch(() => {});
+  };
 };
 
 /**

@@ -27,6 +27,8 @@ interface Props {
   group: SharedGroup;
   /** Re-reads the owner's shared groups after any change to this one. */
   onChanged: () => void;
+  /** A rename also changes the name in the user's own group list. */
+  onRenamed: () => void;
   onDeleted: () => void;
 }
 
@@ -41,7 +43,7 @@ type Envelope = { error: number; msg?: string };
  * picker (and their User Groups tab) — it never changes which stores they can
  * open, and they only get the group's stores they're assigned to.
  */
-const SharedGroupDetail = ({ group, onChanged, onDeleted }: Props) => {
+const SharedGroupDetail = ({ group, onChanged, onRenamed, onDeleted }: Props) => {
   const ctx = useSharedGroupsCtx();
   const toast = useToast();
   const [editing, setEditing] = useState(false);
@@ -139,7 +141,7 @@ const SharedGroupDetail = ({ group, onChanged, onDeleted }: Props) => {
       "Could not rename the shared group",
       () => {
         setEditing(false);
-        onChanged();
+        onRenamed();
       },
     ).finally(() => {
       saving.current = false;
