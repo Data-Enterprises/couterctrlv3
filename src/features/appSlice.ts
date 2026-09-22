@@ -28,6 +28,8 @@ interface AppState {
   uiMode: "live" | "legacy";
   prodToken: string;
   devToken: string;
+  /** Legacy runs on its own API, so it has its own credential. */
+  legacyToken: string;
 }
 
 /**
@@ -68,6 +70,7 @@ export const initialState: AppState = {
   uiMode: "live",
   prodToken: "",
   devToken: "",
+  legacyToken: "",
 };
 
 export const appSlice = createSlice({
@@ -101,6 +104,9 @@ export const appSlice = createSlice({
     setProdToken: (state, action: PayloadAction<string>) => {
       state.prodToken = action.payload;
     },
+    setLegacyToken: (state, action: PayloadAction<string>) => {
+      state.legacyToken = action.payload;
+    },
     setApiEnv: (state, action: PayloadAction<"dev" | "prod">) => {
       state.apiEnv = action.payload;
       state.url =
@@ -131,6 +137,7 @@ export const appSlice = createSlice({
 
 export const {
   setUiMode,
+  setLegacyToken,
   setToken,
   setLoggedIn,
   setForgotPassword,

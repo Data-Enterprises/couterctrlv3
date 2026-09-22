@@ -1,3 +1,5 @@
+import { useAppSelector } from "./hooks";
+
 import Cashiers from "./pages/cashiers/Cashiers.tsx";
 import Sales from "./pages/sales/Sales.tsx";
 import LossPrevention from "./pages/lossPrevention/LossPrevention.tsx";
@@ -10,51 +12,65 @@ import Groups from "./pages/groups/Groups.tsx";
 import Organization from "./pages/organization/Organization.tsx";
 import UpcList from "./pages/upc/UpcList.tsx";
 import Forecasting from "./pages/forecast/Forecasting.tsx";
+import SubDeptMargins from "./pages/subDepts/SubDeptMargins.tsx";
 
-// No legacy branch: Cashiers has a prod and a dev tree, picked inside
-// pages/cashiers/Cashiers.tsx by the API switch.
-export const CashiersPage = () => <Cashiers />;
+import CashiersLegacy from "./legacy/pages/cashiers/CashiersLegacy.tsx";
+import SalesLegacy from "./legacy/pages/sales/SalesLegacy.tsx";
+import LossPreventionLegacy from "./legacy/pages/lossPrevention/LossPreventionLegacy.tsx";
+import OrdersLegacy from "./legacy/pages/orders/OrdersLegacy.tsx";
+import CouponsLegacy from "./legacy/pages/coupons/CouponsLegacy.tsx";
+import ReceiversLegacy from "./legacy/pages/receivers/ReceiversLegacy.tsx";
+import ItemLookupLegacy from "./legacy/pages/lookup/ItemLookupLegacy.tsx";
+import AdminLegacy from "./legacy/pages/admin/AdminLegacy.tsx";
+import GroupsLegacy from "./legacy/pages/groups/GroupsLegacy.tsx";
+import TeamLegacy from "./legacy/pages/team/TeamLegacy.tsx";
+import UpcListLegacy from "./legacy/pages/upc/UpcList.tsx";
+import ForecastingLegacy from "./legacy/pages/forecast/Forecasting.tsx";
+import SubDeptMarginsLegacy from "./legacy/pages/subDepts/SubDeptMarginsLegacy.tsx";
 
-// No legacy branch: Sales has a prod and a dev tree now, picked inside
-// pages/sales/Sales.tsx by the API switch. The legacy Sales page is in trash/.
-export const SalesPage = () => <Sales />;
+/**
+ * Which generation of a page to render.
+ *
+ * Live is what is published, and picks its prod or dev tree from `apiEnv`
+ * inside the page. Legacy is the page as it was before the separation,
+ * restored under `src/legacy` and pinned to the prod API.
+ *
+ * The nav is deliberately unchanged: Legacy is the same set of routes seen a
+ * different way, not a different app with its own menu. A route with no legacy
+ * version keeps showing the live page, which is why this is a per-page choice
+ * rather than one switch around the router.
+ */
+const useLegacy = () => useAppSelector((s) => s.app.uiMode) === "legacy";
 
-// No legacy branch: Loss Prevention has a prod and a dev tree, picked inside
-// pages/lossPrevention/LossPrevention.tsx by the API switch.
-export const LossPreventionPage = () => <LossPrevention />;
+export const CashiersPage = () => (useLegacy() ? <CashiersLegacy /> : <Cashiers />);
 
-// No legacy branch: Orders has a prod and a dev tree, picked inside
-// pages/orders/Orders.tsx by the API switch.
-export const OrdersPage = () => <Orders />;
+export const SalesPage = () => (useLegacy() ? <SalesLegacy /> : <Sales />);
 
-// No legacy branch: Coupons has a prod and a dev tree, picked inside
-// pages/coupons/Coupons.tsx by the API switch.
-export const CouponsPage = () => <Coupons />;
+export const LossPreventionPage = () =>
+  useLegacy() ? <LossPreventionLegacy /> : <LossPrevention />;
 
-// No legacy branch: Receivers has a prod and a dev tree, picked inside
-// pages/receivers/Receivers.tsx by the API switch.
-export const ReceiversPage = () => <Receivers />;
+export const OrdersPage = () => (useLegacy() ? <OrdersLegacy /> : <Orders />);
 
-// No legacy branch: the old UpcList is gone, and Upc List has a prod and a dev
-// tree, picked inside pages/upc/UpcList.tsx by the API switch.
-export const UpcPage = () => <UpcList />;
+export const CouponsPage = () => (useLegacy() ? <CouponsLegacy /> : <Coupons />);
 
-// No legacy branch: Item Lookup has a prod and a dev tree, picked inside
-// pages/lookup/ItemLookup.tsx by the API switch.
-export const ItemLookupPage = () => <ItemLookup />;
+export const ReceiversPage = () =>
+  useLegacy() ? <ReceiversLegacy /> : <Receivers />;
 
-// No legacy branch: Admin has a prod and a dev tree, picked inside
-// pages/admin/Admin.tsx by the API switch.
-export const AdminPage = () => <Admin />;
+export const UpcPage = () => (useLegacy() ? <UpcListLegacy /> : <UpcList />);
 
-// No legacy branch: the old Forecasting page is gone, and Forecasting has a
-// prod and a dev tree, picked inside pages/forecast/Forecasting.tsx.
-export const ForecastPage = () => <Forecasting />;
+export const ItemLookupPage = () =>
+  useLegacy() ? <ItemLookupLegacy /> : <ItemLookup />;
 
-// No legacy branch: Store Groups has a prod and a dev tree, picked inside
-// pages/groups/Groups.tsx by the API switch.
-export const GroupsPage = () => <Groups />;
+export const AdminPage = () => (useLegacy() ? <AdminLegacy /> : <Admin />);
 
-// No legacy branch: the Team page is gone, and User Management has a prod and
-// a dev tree, picked inside pages/organization/Organization.tsx.
-export const OrganizationPage = () => <Organization />;
+export const ForecastPage = () =>
+  useLegacy() ? <ForecastingLegacy /> : <Forecasting />;
+
+export const GroupsPage = () => (useLegacy() ? <GroupsLegacy /> : <Groups />);
+
+/** Legacy's is the old Team page, which User Management replaced. */
+export const OrganizationPage = () =>
+  useLegacy() ? <TeamLegacy /> : <Organization />;
+
+export const SubDeptMarginsPage = () =>
+  useLegacy() ? <SubDeptMarginsLegacy /> : <SubDeptMargins />;

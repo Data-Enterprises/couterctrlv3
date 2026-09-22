@@ -1,0 +1,91 @@
+import { formatDate } from ".";
+import { formatCurrency2 } from "../../../utils";
+import type { WeekTotal } from "../../../features/salesSlice";
+import { changeTextColor } from ".";
+import TotalsGridLvlThree from "./TotalsGridLvlThree";
+import CardLine from "./CardLine";
+
+interface TotalsGridLvlTwoProps {
+  week: WeekTotal[];
+  weekTotals: {
+    tyTotalSales: number;
+    lyTotalSales: number;
+    percentChange: number;
+    dollarChange: number;
+    atsTotalSales: number;
+  };
+  idx: number;
+  desc: string;
+}
+
+const TotalsGridLvlTwo = ({
+  week,
+  weekTotals,
+  idx,
+  desc = "",
+}: TotalsGridLvlTwoProps) => {
+  return (
+    <div className="text-[12px] px-2 py-1.5 rounded-lg shadow-lg bg-custom-white max-w-full border border-content/15 hover:shadow-md transition-shadow duration-200">
+      <div className="font-medium cursor-default select-none">
+        <div className="flex justify-between items-center">
+          <div className="text-content/60">
+            {desc} Week {idx}
+          </div>
+          <div className="text-[11px] text-content/90 flex items-center gap-1">
+            {formatDate(week[0].sale_date)} –{" "}
+            {formatDate(week[week.length - 1].sale_date)}
+          </div>
+        </div>
+        <div className="h-[1.5px] grid grid-cols-2 my-1">
+          <div className="bg-gradient-to-r from-content/15 to-custom-white"></div>
+          <div className="bg-gradient-to-l from-content/15 to-custom-white"></div>
+        </div>
+
+        <div className="grid grid-cols-[1fr_3fr] gap-2 my-2 text-[11px]">
+          <div className="bg-bkg/70 px-2 py-[2px] rounded-lg shadow-md border-2 border-content/15">
+            <div className="grid grid-cols-[1fr_auto] gap-x-2 gap-y-[1px] text-[11px] leading-5 mt-0.5">
+              <div className="text-content/60">TY Sales</div>
+              <div className="text-right">
+                {formatCurrency2(weekTotals.tyTotalSales)}
+              </div>
+
+              <div className="text-content/60">LY Sales</div>
+              <div className="text-right">
+                {formatCurrency2(weekTotals.lyTotalSales)}
+              </div>
+
+              <div className="text-content/60">ATS Sales</div>
+              <div className="text-right">
+                {formatCurrency2(weekTotals.atsTotalSales)}
+              </div>
+
+              <div className="text-content/60">$ vs LY</div>
+              <div
+                className={`text-right ${changeTextColor(weekTotals.dollarChange, 0)}`}
+              >
+                {formatCurrency2(weekTotals.dollarChange)}
+              </div>
+
+              <div className="text-content/60">% vs LY</div>
+              <div
+                className={`text-right ${changeTextColor(weekTotals.percentChange, 0)}`}
+              >
+                {weekTotals.percentChange.toFixed(2)}%
+              </div>
+            </div>
+          </div>
+
+          <CardLine data={week} />
+        </div>
+      </div>
+
+      <div className="overflow-hidden transition-all duration-200 grid grid-cols-4 gap-1.5">
+        {week.map((day, idx) => (
+          <TotalsGridLvlThree key={`${day.sale_date}-${idx}`} weekDay={day} />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default TotalsGridLvlTwo;

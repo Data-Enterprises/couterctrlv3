@@ -333,8 +333,12 @@ const TitleBar = () => {
                 a client cannot reach Legacy at all.
 
                 Above Mode because it decides for Mode: Legacy is prod-only,
-                so turning it on settles the row below it. */}
-            {SHOW_API_ENV_SWITCH && user.userLevel >= 7 ? (
+                so turning it on settles the row below it.
+
+                Level 9 only, narrower than Mode's 7+: these pages are kept
+                for reference, not for support work, and every one of them has
+                a live replacement that is the one to be looking at. */}
+            {SHOW_API_ENV_SWITCH && user.userLevel >= 9 ? (
               <div className="px-4 py-2.5 border-b border-gray-100 flex items-center gap-2">
                 <span className="text-[13px] font-medium text-content flex-1">
                   View

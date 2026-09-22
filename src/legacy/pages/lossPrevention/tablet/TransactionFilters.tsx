@@ -1,0 +1,103 @@
+import { useAppDispatch } from "../../../../hooks/index";
+import { useLPState } from "../hooks/useLPState";
+import { useLPActions } from "../hooks/useLPActions";
+import { formatCurrency2 } from "../../../utils";
+import FiltersModal from "../filters/FiltersModal";
+
+const filterOptions = [
+  "Sale Date",
+  "Total Sales",
+  "Total Qty",
+  "Transaction ID",
+  "Refresh",
+];
+
+const TransactionFilters = () => {
+  const dispatch = useAppDispatch();
+  const cashier = useLPState();
+  const actions = useLPActions();
+
+  const panelStyle =
+    "py-1.5 rounded-lg text-center shadow-md shadow-content/20 hover:bg-orange-200 cursor-pointer transition-all duration-200";
+
+  const activePanelStyle = (option: string) => {
+    const style = "bg-orange-500 text-custom-white font-semibold shadow-inner";
+    let result = false;
+    if (option === "Sale Date" && cashier.saleDateFilter) result = true;
+    if (option === "Total Sales" && cashier.salesThreshold) result = true;
+    if (option === "Total Qty" && cashier.qtyThreshold) result = true;
+    if (option === "Transaction ID" && cashier.transIdFilter) result = true;
+    return result ? style : "";
+  };
+
+  const renderFilterText = (type: string) => {
+    if (type === "Sale Date") {
+      return cashier.saleDateFilter || "Sale Date";
+    } else if (type === "Total Sales") {
+      const s = cashier.salesThreshold;
+      return s
+        ? `${s.op === "gt" ? "Over" : s.op === "lt" ? "Under" : "="} ${formatCurrency2(s.amount)}`
+        : "Total Sales";
+    } else if (type === "Total Qty") {
+      const q = cashier.qtyThreshold;
+      return q
+        ? `${q.op === "gt" ? "Over" : q.op === "lt" ? "Under" : "="} ${q.amount}`
+        : "Total Qty";
+    } else if (type === "Transaction ID") {
+      return cashier.transIdFilter || "Transaction ID";
+    } else {
+      return type;
+    }
+  };
+
+  const setFilterModal = (type: string) => {
+    if (type === "Refresh") {
+      dispatch(actions.setSalesThreshold(null));
+      dispatch(actions.setQtyThreshold(null));
+      dispatch(actions.setTransIdFilter(""));
+      dispatch(actions.setSaleDateFilter(""));
+      dispatch(actions.setFilterType(""));
+      dispatch(actions.setUpcFilter(""));
+      dispatch(actions.setDescFilter(""));
+      dispatch(actions.setSelectedPriceTypes([]));
+      return;
+    }
+
+    dispatch(actions.setFilterModalOpen(true));
+    dispatch(actions.setFilterType(type));
+  };
+
+  return (
+    <div
+      className={`bg-custom-white rounded-lg shadow-lg ${
+        !cashier.transList.length && "hidden"
+      }`}
+    >
+      <FiltersModal />
+      <div className="rounded-t-lg text-center py-0.5 text-sm font-medium">
+        Transaction Filters
+      </div>
+      <div className="grid grid-cols-2 h-[1.5px]">
+        <div className="bg-gradient-to-r from-content/60 to-custom-white"></div>
+        <div className="bg-gradient-to-l from-content/60 to-custom-white"></div>
+      </div>
+      <div className="grid text-sm p-2 gap-2">
+        {filterOptions.map((option, i) => (
+          <div
+            key={i}
+            data-testid={`cashier-table-filter-${option
+              .split(" ")
+              .join("-")
+              .toLowerCase()}`}
+            className={`${panelStyle} ${activePanelStyle(option)}`}
+            onClick={() => setFilterModal(option)}
+          >
+            {renderFilterText(option)}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default TransactionFilters;

@@ -34,10 +34,10 @@ import {
   GroupsPage,
   OrganizationPage,
   ForecastPage,
+  SubDeptMarginsPage,
 } from "./DevPages.tsx";
 import Settings from "./pages/settings/Settings.tsx";
 import Dashboard from "./pages/quicksight/Dashboard.tsx";
-import SubDeptMargins from "./pages/subDepts/SubDeptMargins.tsx";
 import Tickets from "./pages/tickets/Tickets.tsx";
 
 createRoot(document.getElementById("root")!).render(
@@ -81,7 +81,7 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="categories" element={<Categories />} />
                 <Route path="vendors" element={<Vendors />} />
                 <Route path="admin" element={<AdminPage />} />
-                <Route path="sub-dept-margins" element={<SubDeptMargins />} />
+                <Route path="sub-dept-margins" element={<SubDeptMarginsPage />} />
                 <Route path="cashiers" element={<CashiersPage />} />
                 <Route path="orders" element={<OrdersPage />} />
                 <Route path="tickets" element={<Tickets />} />

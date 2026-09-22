@@ -13,6 +13,7 @@ import {
   setFetchingCredentials,
   setProdToken,
   setDevToken,
+  setLegacyToken,
   SHOW_API_ENV_SWITCH,
 } from "../../features/appSlice";
 import {
@@ -238,6 +239,21 @@ const Login = () => {
               })
               .catch(() => {
                 /* cross-environment login failure is non-fatal */
+              });
+
+            // And the legacy API, which is a third backend rather than a
+            // second environment of this one. Same reasoning: the View switch
+            // is a pointer swap between credentials already in hand, so the
+            // token is fetched now and never mid-session. Non-fatal in the
+            // same way — legacy being down must not stop anyone signing in.
+            login(import.meta.env.VITE_API_URL_LEGACY, state.username, state.password, 0)
+              .then((legacyResp) => {
+                if (legacyResp.data.error === 0) {
+                  dispatch(setLegacyToken(legacyResp.data.access_token));
+                }
+              })
+              .catch(() => {
+                /* legacy login failure is non-fatal */
               });
           }
         } else {
