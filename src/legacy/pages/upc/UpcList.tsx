@@ -152,7 +152,11 @@ const UpcList = () => {
             const prices = Object.entries(
               (v as UpcForecast).metrics.prices,
             ).map(([price, qty]) => ({
-              price,
+              // The key is a string, and formatCurrency2 rejects strings
+              // outright — `Number.isFinite("9.99")` is false — so every price
+              // chip on a forecast card read "N/A". A number here is also what
+              // the rest of the page already treats this as.
+              price: Number(price),
               qty: typeof qty === "number" ? qty : (qty as any).qty,
             }));
             const dataObj = v as UpcForecast;
