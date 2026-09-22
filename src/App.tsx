@@ -24,6 +24,7 @@ const App = () => {
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
   const user = useAppSelector((state) => state.user);
+  const nav = useAppSelector((state) => state.nav);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -68,7 +69,16 @@ const App = () => {
     navigate("/");
   }, []);
 
-  const containerStyle = context.isMobile ? "h-full bg-bkg pb-14" : "w-full";
+  // Legacy brings its own frame: a rail down the left that the live layout
+  // has no room reserved for, so the page has to start clear of it — and the
+  // old sidebar expands over the page rather than pushing it, which is why the
+  // content behind it is dimmed and inert while it is open.
+  const legacy = context.uiMode === "legacy";
+  const containerStyle = context.isMobile
+    ? "h-full bg-bkg pb-14"
+    : legacy
+      ? "ml-12 min-w-[calc(100vw-3rem)] max-w-[calc(100vw-3rem)]"
+      : "w-full";
 
   return (
     <div
@@ -81,7 +91,7 @@ const App = () => {
           <NavSwitch />
           <div
             data-testid="outlet-container"
-            className={`${containerStyle} bg-bkg transition-all duration-300`}
+            className={`${containerStyle} bg-bkg ${legacy && nav.isNavOpen ? "opacity-20 pointer-events-none" : "opacity-100"} transition-all duration-300`}
           >
             {/* Renders only when the login response says the user still owes a
                 password change and/or a security question — otherwise null. */}
