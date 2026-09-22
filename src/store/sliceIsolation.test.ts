@@ -6,6 +6,7 @@ import { devReducers } from "./devReducers";
 import { resetAppSlice } from "../features/appSlice";
 import { setThreshold as prodSetLedgerThreshold } from "../features/salesLedgerSlice";
 import { setThreshold as devSetLedgerThreshold } from "../features/dev/devSalesLedgerSlice";
+import { setCouponSalesHasSearched } from "../features/couponSalesSlice";
 
 /** Every RTK action creator a module exports, by its action type.
  *
@@ -138,9 +139,19 @@ describe("the Sales fork", () => {
     expect(store.getState().dev.salesLedger.threshold).toEqual(before);
   });
 
+  it("clears the whole prod tree on sign-out, including slices no reset list names", () => {
+    // Coupon Sales was never in TitleBar's per-slice reset list, so it kept
+    // the last user's results; the prod tree now resets whole.
+    const store = setupStore();
+    store.dispatch(setCouponSalesHasSearched(true));
+    expect(store.getState().prod.couponSales.hasSearched).toBe(true);
+    store.dispatch(resetAppSlice());
+    expect(store.getState().prod.couponSales.hasSearched).toBe(false);
+  });
+
   it("clears the whole dev tree on sign-out", () => {
-    // Sign-out resets prod slice by slice; the dev tree resets on the one
-    // action every sign-out dispatches, so no fork can be forgotten.
+    // The dev tree resets on the one action every sign-out dispatches, so no
+    // fork can be forgotten.
     const store = setupStore();
     const initial = store.getState().dev.salesLedger.threshold;
     store.dispatch(devSetLedgerThreshold(CHANGED));

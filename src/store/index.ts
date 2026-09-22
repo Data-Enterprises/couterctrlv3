@@ -1,7 +1,7 @@
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 
 import { sessionReducers } from "./sessionReducers";
-import { pageReducers } from "./pageReducers";
+import { prodReducer } from "./pageReducers";
 import { devReducer } from "./devReducers";
 
 /**
@@ -11,7 +11,9 @@ import { devReducer } from "./devReducers";
  *   prod     — every page slice, holding answers from the prod API.
  *   dev      — forked copies of the page slices a dev page has changed.
  *
- * Both trees are registered once, at load. Nothing is swapped at runtime and
+ * Both trees are registered once, at load, and both reset whole on sign-out
+ * (keyed to `resetAppSlice` — see pageReducers.ts / devReducers.ts). Nothing
+ * is swapped at runtime and
  * `replaceReducer` is never called: flipping the environment changes which
  * branch a page reads, not which reducers exist.
  *
@@ -23,7 +25,7 @@ export const setupStore = () =>
   configureStore({
     reducer: combineReducers({
       ...sessionReducers,
-      prod: combineReducers(pageReducers),
+      prod: prodReducer,
       dev: devReducer,
     }),
   });

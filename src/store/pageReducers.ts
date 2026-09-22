@@ -1,4 +1,5 @@
-import type { Reducer } from "@reduxjs/toolkit";
+import { combineReducers, type Reducer } from "@reduxjs/toolkit";
+import { resetAppSlice } from "../features/appSlice";
 
 import salesReducer from "../features/salesSlice";
 import salesPerfReducer from "../features/salesPerfSlice";
@@ -81,3 +82,19 @@ export const pageReducers = {
   upcDev: upcDevReducer,
   tickets: ticketsReducer,
 } satisfies Record<string, Reducer>;
+
+const combinedProd = combineReducers(pageReducers);
+type ProdState = ReturnType<typeof combinedProd>;
+
+/**
+ * The whole prod namespace resets on sign-out, as the dev one does.
+ *
+ * Sign-out used to reset prod one slice at a time from a hand-kept list in
+ * TitleBar, and every page added since it was written was missing from it —
+ * Loss Prevention, Categories, Vendors, Sub Dept Margins, Admin and more kept
+ * the last user's results for whoever signed in next without a reload.
+ * `resetAppSlice` is dispatched on every sign-out, so keying the namespace to
+ * it clears every page slice there is now and every one added later.
+ */
+export const prodReducer: Reducer<ProdState> = (state, action) =>
+  combinedProd(action.type === resetAppSlice.type ? undefined : state, action);
