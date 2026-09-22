@@ -60,7 +60,20 @@ const legacyGroup = (state: RootState): LegacyRootState["group"] => {
   };
 };
 
-const view = (state: RootState): LegacyRootState =>
+/**
+ * One view per store state, cached on the state object itself.
+ *
+ * Redux hands out a new root state only when something changed, so caching on
+ * it gives every reader the same object — and the same `app`, the same
+ * `group` — until something actually moves. Rebuilt per call instead, every
+ * `useAppSelector((s) => s.app)` in five hundred files returned a new
+ * reference on every render, which is a render loop: React ran until it gave
+ * up with "Maximum update depth exceeded", and the page stopped responding to
+ * anything, navigation included.
+ */
+const cache = new WeakMap<RootState, LegacyRootState>();
+
+const build = (state: RootState): LegacyRootState =>
   ({
     // Session first, the legacy tree second: where both have a key — `group`,
     // whose slice was rewritten during the separation — the legacy page gets
@@ -94,6 +107,14 @@ const view = (state: RootState): LegacyRootState =>
         ? { ...state.search, type: "Group" as const }
         : state.search,
   }) as LegacyRootState;
+
+const view = (state: RootState): LegacyRootState => {
+  const cached = cache.get(state);
+  if (cached) return cached;
+  const built = build(state);
+  cache.set(state, built);
+  return built;
+};
 
 /**
  * `useAppSelector` for the legacy tree.
