@@ -50,7 +50,9 @@ const UserDataLoader = () => {
       case "2":
         return "Group";
       case "Shared":
-        return "Shared";
+        // Prod has no shared groups; there a saved "Shared" search is a Group
+        // search with nothing picked yet.
+        return context.apiEnv === "dev" ? "Shared" : "Group";
       case "3":
         return "Store";
       default:
@@ -158,13 +160,20 @@ const UserDataLoader = () => {
           const selectedGroup = j.groups.find(
             (g: Group) => g.id === search.lastGroup,
           );
-          if (selectedGroup) {
+          // Prod has no shared groups, so a saved shared group isn't restored
+          // there; the search asks for a group instead.
+          const usable =
+            selectedGroup &&
+            (!selectedGroup.is_shared || context.apiEnv === "dev");
+          if (usable) {
             dispatch(setSelectedGroup(selectedGroup));
             // The stored last_search_type predates "Shared", so a user whose
             // last pick was a shared group comes back as plain "Group" and
             // the picker would show it under the wrong list. The group itself
             // says which side it belongs to.
             if (selectedGroup.is_shared) dispatch(setType("Shared"));
+          } else if (selectedGroup?.is_shared) {
+            dispatch(setType("Group"));
           }
         }
       })

@@ -16,13 +16,8 @@ const SelectGroup = () => {
   const [query, setQuery] = useState<string>("");
   const [filtered, setFiltered] = useState<Group[]>([]);
 
-  // The dropdown shows one side or the other, never both: "Shared" lists the
-  // base groups a manager pushed to this user, "Group" the ones they built
-  // themselves. Both are ordinary user_groups rows, so everything downstream
-  // still treats the pick as a plain group id.
-  const scopedGroups = context.groups.filter((g) =>
-    context.type === "Shared" ? g.is_shared : !g.is_shared,
-  );
+  // Prod has no shared groups: only the user's own ordinary groups are offered.
+  const scopedGroups = context.groups.filter((g) => !g.is_shared);
 
   useEffect(() => {
     setFiltered(scopedGroups);

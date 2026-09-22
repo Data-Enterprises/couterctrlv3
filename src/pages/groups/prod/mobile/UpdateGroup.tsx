@@ -13,11 +13,7 @@ const UpdateGroup = () => {
   const { url, token, userid, groups, selectedGroup, createInput } =
     useGroupCtx();
 
-  // Shared groups are built and maintained by whoever shared the base group
-  // they came from, so they are not offered as an edit target here. Unlike the
-  // desktop page, these pickers exist only to choose something to change —
-  // there is no view mode a disabled row would still be useful in.
-  const editableGroups = groups.filter((g) => !g.is_shared);
+  const editableGroups = groups;
 
   const groupNames = groups.map((g) => g.group_name);
 

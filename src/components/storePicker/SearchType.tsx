@@ -23,24 +23,19 @@ const options: iOption[] = [
   { id: 2, name: "Group", type: "Group" },
 ];
 
-// Only offered when the user actually holds one. A shared group is a base
-// group a manager pushed to them, so most users have none and the option
-// would just be a dead choice that resolves to an empty list.
-const sharedOption: iOption = { id: 4, name: "Shared", type: "Shared" };
-
 const SearchType = ({ singleStoreOnly = false }: Props) => {
   const toast = useToast();
   const user = useAppSelector((state) => state.user);
   const context = useAppSelector((state) => state.app);
   const type = useAppSelector((state) => state.search.type);
   const nav = useAppSelector((state) => state.nav);
-  const groups = useAppSelector((state) => state.group.groups);
   const search = useAppSelector((state) => state.search);
   const [query, setQuery] = useState("");
   const dispatch = useDispatch();
 
-  const hasSharedGroups = groups.some((g) => g.is_shared);
-  const visibleOptions = hasSharedGroups ? [...options, sharedOption] : options;
+  // Prod has no shared groups, so there is no "Shared" option. A session set
+  // to Shared (switched in from dev mode) falls back to Group.
+  const visibleOptions = options;
 
   const componentRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
@@ -83,7 +78,8 @@ const SearchType = ({ singleStoreOnly = false }: Props) => {
         setQuery("Group");
         break;
       case "Shared":
-        setQuery("Shared");
+        dispatch(setType("Group"));
+        setQuery("Group");
         break;
       case "Store":
         setQuery("Store");
