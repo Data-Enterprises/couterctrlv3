@@ -26,6 +26,13 @@ interface AppState {
    * and the two are not free to combine: legacy is prod-only.
    */
   uiMode: "live" | "legacy";
+  /**
+   * Where you were last in Legacy, so the two views stop fighting over one
+   * value. `nav.lastRoute` is shared and persisted per API, so a legacy click
+   * overwrites the route live restores at sign-in; this is the legacy half,
+   * kept for the session only.
+   */
+  legacyLastRoute: string;
   prodToken: string;
   devToken: string;
   /** Legacy runs on its own API, so it has its own credential. */
@@ -68,6 +75,9 @@ export const initialState: AppState = {
   fetchingCredentials: false,
   apiEnv: "prod",
   uiMode: "live",
+  // Sales rather than Home: a real legacy page with data in it, and what
+  // the old sidebar already fell back to when a route was out of reach.
+  legacyLastRoute: "sales",
   prodToken: "",
   devToken: "",
   legacyToken: "",
@@ -125,6 +135,9 @@ export const appSlice = createSlice({
      * user somewhere they didn't ask to be, so the switch ends in prod both
      * ways and the Mode row is disabled while Legacy is on.
      */
+    setLegacyLastRoute: (state, action: PayloadAction<string>) => {
+      state.legacyLastRoute = action.payload;
+    },
     setUiMode: (state, action: PayloadAction<"live" | "legacy">) => {
       state.uiMode = action.payload;
       state.apiEnv = "prod";
@@ -137,6 +150,7 @@ export const appSlice = createSlice({
 
 export const {
   setUiMode,
+  setLegacyLastRoute,
   setLegacyToken,
   setToken,
   setLoggedIn,

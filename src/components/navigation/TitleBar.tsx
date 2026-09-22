@@ -7,7 +7,7 @@ import logoReversed from "../../assets/portal/logo-reversed.webp";
 import { ChevronDownIcon } from "@heroicons/react/16/solid";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { categoriesFor } from "./utils";
-import { hasLegacyPage } from "../../constants/legacyPages";
+import { legacyEntryPath } from "../../constants/legacyPages";
 import { COMING_SOON_CATEGORY } from "../../utils/comingSoon";
 import { resetNav, setIsNavOpen, setLastRoute } from "../../features/navSlice";
 import {
@@ -359,11 +359,17 @@ const TitleBar = () => {
                   <button
                     onClick={() => {
                       dispatch(setUiMode("legacy"));
-                      // The page you are on may not exist in Legacy. Leaving
-                      // the route alone would render its live version under a
-                      // menu that no longer lists it — a legacy view showing a
-                      // current page is the one thing it must not do.
-                      if (!hasLegacyPage(location.pathname)) navigate("/");
+                      // The page you are on may not exist in Legacy — Vendors,
+                      // say. Leaving the route alone would render its live
+                      // version under the legacy frame, which is the one thing
+                      // a legacy view must not do: look current. So it falls
+                      // back to where you last were over there, and to Sales
+                      // if that is nowhere yet.
+                      const to = legacyEntryPath(
+                        location.pathname,
+                        context.legacyLastRoute,
+                      );
+                      if (to) navigate(to);
                     }}
                     title="Legacy: the old pages, on the legacy API"
                     className={`px-2.5 py-1 transition-colors ${

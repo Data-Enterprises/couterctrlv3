@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useAppSelector } from "./hooks";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import { useAppDispatch } from "./hooks";
 import { useToast } from "./components/toasts/hooks/useToast";
 
@@ -13,6 +13,8 @@ import AccountSetupModal from "./components/accountSetup/AccountSetupModal";
 import { getUserStores } from "./api/user";
 import type { JsonError, Store } from "./interfaces";
 import { setAllAvailableStores } from "./features/storeSlice";
+import { setLegacyLastRoute } from "./features/appSlice";
+import { hasLegacyPage } from "./constants/legacyPages";
 import {
   setAssignedStores,
   setRefreshStores,
@@ -25,6 +27,7 @@ const App = () => {
   const context = useAppSelector((state) => state.app);
   const user = useAppSelector((state) => state.user);
   const nav = useAppSelector((state) => state.nav);
+  const location = useLocation();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -68,6 +71,16 @@ const App = () => {
   useEffect(() => {
     navigate("/");
   }, []);
+
+  // Remember where you are in Legacy, so switching back in returns you there
+  // rather than to whatever the live view was last doing. Recorded here rather
+  // than in the legacy sidebar: that file is restored as it shipped, and it
+  // knows nothing about a mode that did not exist then.
+  useEffect(() => {
+    if (context.uiMode !== "legacy") return;
+    if (!hasLegacyPage(location.pathname)) return;
+    dispatch(setLegacyLastRoute(location.pathname.replace(/^\//, "") || "/"));
+  }, [context.uiMode, location.pathname]);
 
   // Legacy brings its own frame: a rail down the left that the live layout
   // has no room reserved for, so the page has to start clear of it — and the
