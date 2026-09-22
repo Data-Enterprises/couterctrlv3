@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { PlusIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
-import { useBaseGroupsCtx, type StoreSplit } from "./hooks";
+import { useBaseGroupCompanies, useBaseGroupsCtx, type StoreSplit } from "./hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 import type {
   CompanyBaseGroup,
@@ -82,7 +82,7 @@ const NewGroupModal = ({
 };
 
 /**
- * Admin > Base Groups: create, rename and delete base groups, and assign
+ * User Management > Base Groups (owner level and up): create, rename and delete base groups, and assign
  * stores and users to them. Access only — see `useBaseGroupsCtx`.
  */
 const BaseGroups = () => {
@@ -105,7 +105,7 @@ const BaseGroups = () => {
   const [showNewGroupModal, setShowNewGroupModal] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
 
-  const visibleCompanies = ctx.companies;
+  const visibleCompanies = useBaseGroupCompanies();
 
   // The Users sub-tab picks from these. Fetched here rather than borrowed from
   // User Management, so the tab works on a session that never opened it.

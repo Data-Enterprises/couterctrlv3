@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import { useOrganizationCtx } from "./hooks";
 import { useResizableBox } from "../../../hooks/useResizableBox";
@@ -18,13 +18,47 @@ import {
   setUsers,
 } from "../../../features/dev/devUsersSlice";
 import { setUsersExportOpen } from "../../../features/dev/devOrganizationSlice";
-// import TeamLegacy from "../team/TeamLegacy";
+import { useAppSelector } from "../../../hooks";
 import Users from "./users/Users";
+import SharedGroups from "./sharedGroups/SharedGroups";
+import BaseGroups from "./baseGroups/BaseGroups";
+import StoresDirectory from "./stores/StoresDirectory";
+import {
+  UserGroupsMobile,
+  UserGroupsPanel,
+} from "../../groups/dev/Groups";
+
+type Tab = "users" | "userGroups" | "sharedGroups" | "baseGroups" | "stores";
+
+/**
+ * The tabs, in order, and the lowest level that sees each. `null` is everyone.
+ *
+ * - Users: managers and up.
+ * - User Groups: everyone — a person's own store groups (the Store Groups page,
+ *   moved in; its own menu entry is hidden in dev mode).
+ * - Shared Groups: everyone sees what's been shared with them, read-only;
+ *   owners and up also make and share their own (gated inside the tab, and by
+ *   the router).
+ * - Base Groups: owners and up. Access only.
+ * - Stores: everyone, and only the stores they're assigned to.
+ */
+const TABS: { id: Tab; label: string; minLevel: number | null }[] = [
+  { id: "users", label: "Users", minLevel: 5 },
+  { id: "userGroups", label: "User Groups", minLevel: null },
+  { id: "sharedGroups", label: "Shared Groups", minLevel: null },
+  { id: "baseGroups", label: "Base Groups", minLevel: 7 },
+  { id: "stores", label: "Stores", minLevel: null },
+];
 
 
 const Organization = () => {
   const toast = useToast();
   const ctx = useOrganizationCtx();
+  const isMobile = useAppSelector((s) => s.app.isMobile);
+  const tabs = TABS.filter((t) => t.minLevel === null || ctx.userLevel >= t.minLevel);
+  const [tab, setTab] = useState<Tab>(tabs[0]?.id ?? "userGroups");
+  const [storesExportOpen, setStoresExportOpen] = useState(false);
+  const canSeeUsers = tabs.some((t) => t.id === "users");
   const { width, height, boxRef, handleProps } = useResizableBox({
     storageKey: "organization-panel-size",
     defaultWidth: 1080,
@@ -41,12 +75,13 @@ const Organization = () => {
   // which would skip the fetch below entirely and show stale/legacy-shaped
   // data (e.g. missing inactive_users). Force a fresh fetch on every mount.
   useEffect(() => {
-    ctx.dispatch(setUsersRefresh(true));
+    if (canSeeUsers) ctx.dispatch(setUsersRefresh(true));
   }, []);
 
 
+  // The users list only loads for people who get the Users tab.
   useEffect(() => {
-    if (!ctx.refresh) return;
+    if (!ctx.refresh || !canSeeUsers) return;
     getAllUsers(ctx.url, ctx.token)
       .then((resp) => {
         const j = resp.data;
@@ -94,8 +129,11 @@ const Organization = () => {
     ctx.dispatch(setUsersRefresh(false));
   }, [ctx.refresh]);
 
-  // Desktop only: no tablet layout (a tablet takes this page) and no mobile
-  // version (User Management is not on the mobile nav).
+  // No tablet layout (a tablet takes this page). On a phone, User Management is
+  // just the user's own groups — the one tab that has a phone version.
+  if (isMobile) return <UserGroupsMobile />;
+
+  const exportable = tab === "users" || tab === "stores";
 
   return (
     <div className="min-h-[calc(100vh-3rem)] pt-12 px-4 pb-4 flex justify-center">
@@ -109,20 +147,49 @@ const Organization = () => {
             User Management
           </span>
           <div className="flex-1" />
-          <button
-            onClick={() => ctx.dispatch(setUsersExportOpen(true))}
-            title="Export CSV"
-            className="w-[20px] h-[20px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/60 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
-          >
-            <ArrowDownTrayIcon className="w-3.5 h-3.5" />
-          </button>
+          {exportable && (
+            <button
+              onClick={() =>
+                tab === "users"
+                  ? ctx.dispatch(setUsersExportOpen(true))
+                  : setStoresExportOpen(true)
+              }
+              title="Export CSV"
+              className="w-[20px] h-[20px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/60 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
+            >
+              <ArrowDownTrayIcon className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
+
+        <div className="flex border-b border-gray-100 flex-shrink-0">
+          {tabs.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              className={`text-[12px] font-semibold py-2.5 px-4 whitespace-nowrap border-b-2 transition-colors ${
+                tab === t.id
+                  ? "border-[#1e2a4a] text-[#1e2a4a]"
+                  : "border-transparent text-content"
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
         </div>
 
 
         <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
-          {/* Users only. Base groups live in Admin now (access only), and
-              Shared Groups gets its own Admin tab on the shared_groups router. */}
-          <Users />
+          {tab === "users" && canSeeUsers && <Users />}
+          {tab === "userGroups" && <UserGroupsPanel />}
+          {tab === "sharedGroups" && <SharedGroups />}
+          {tab === "baseGroups" && ctx.userLevel >= 7 && <BaseGroups />}
+          {tab === "stores" && (
+            <StoresDirectory
+              exportOpen={storesExportOpen}
+              onCloseExport={() => setStoresExportOpen(false)}
+            />
+          )}
         </div>
 
         <ResizeHandle {...handleProps} />

@@ -12,8 +12,6 @@ import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import CompanyGrid from "./CompanyGrid";
 import StoreActivityComp from "./StoreActivityComp";
 import NewStoreName from "./NewStoreName";
-import BaseGroups from "./baseGroups/BaseGroups";
-import SharedGroups from "./sharedGroups/SharedGroups";
 
 /** `programmerOnly` tabs act on records that aren't scoped to anyone — creating
  *  and deleting companies is a change to the whole tenancy, not to one
@@ -22,8 +20,6 @@ const TABS: { id: AdminForm; label: string; programmerOnly?: boolean }[] = [
   { id: "companies", label: "Companies", programmerOnly: true },
   { id: "store_activity", label: "Store activity" },
   { id: "new_store_name", label: "New store name" },
-  { id: "base_groups", label: "Base groups" },
-  { id: "shared_groups", label: "Shared groups" },
 ];
 
 const Admin = () => {
@@ -46,8 +42,11 @@ const Admin = () => {
   // `adminForm` persists in the slice, so a level-5 user arriving after a
   // programmer used the same session would otherwise land on a tab that is no
   // longer in their strip — visible content under an invisible tab.
+  //
+  // The same goes for a tab that no longer exists at all (Base groups and
+  // Shared groups moved to User Management).
   useEffect(() => {
-    if (!context.isProgrammer && context.adminForm === "companies") {
+    if (!tabs.some((t) => t.id === context.adminForm)) {
       dispatch(setAdminForm("store_activity"));
     }
   }, [context.isProgrammer, context.adminForm]);
@@ -80,10 +79,6 @@ const Admin = () => {
         );
       case "new_store_name":
         return <NewStoreName />;
-      case "base_groups":
-        return <BaseGroups />;
-      case "shared_groups":
-        return <SharedGroups />;
     }
   };
 

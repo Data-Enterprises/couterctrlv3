@@ -872,28 +872,30 @@ export interface CompanyJsonResp {
 
 /* ----------------------------------------------------------- shared groups */
 
-/** A store as the shared_groups router returns it. `company` comes back on
- *  /shared_groups/stores; a group's own stores don't carry it. */
+/** A store as the shared_groups router returns it on a group. */
 export interface SharedGroupStore {
   storeid: number;
   store_number: string | null;
   store_name: string | null;
-  company?: number;
-  company_name?: string | null;
 }
 
-/** A store group an owner builds and lets other users search with. A search
- *  filter only: it never grants or revokes store access. */
+/** A store group its owner (level 7+) shares with other users so they can
+ *  search with it. Behaves like a user group; never grants or revokes store
+ *  access. */
 export interface SharedGroup {
   id: number;
   name: string;
-  company: number;
-  company_name: string | null;
-  /** userid of whoever created it; their rows are the group's store list. */
-  owner: number;
   stores: SharedGroupStore[];
   /** Who it is shared with. Never includes the owner. */
   userids: number[];
+}
+
+/** A row of GET /shared_groups/{id}/stores. */
+export interface SharedGroupStoreRow extends SharedGroupStore {
+  /** 1 when the store is in the group. */
+  active: number;
+  /** 0 when the owner has lost access to a store still in the group. */
+  assigned: number;
 }
 
 export interface SharedGroupUser {
@@ -902,30 +904,24 @@ export interface SharedGroupUser {
   first_name: string | null;
   last_name: string | null;
   email: string | null;
+  user_level: number;
+  /** Which of the caller's own groups this user already has. */
   shared_group_ids: number[];
 }
 
-/** A base group offered as a starting point: its name and stores. */
-export interface SharedGroupTemplate {
-  id: number;
-  name: string;
-  company: number;
-  company_name: string | null;
-  stores: SharedGroupStore[];
-}
-
-/** Every read takes one company or several (?company=1,4,6) and echoes them. */
 interface SharedGroupsEnvelope {
   error: number;
   success: boolean;
   msg?: string;
-  companies: number[];
 }
 
 export type SharedGroupsResp = SharedGroupsEnvelope & { shared_groups: SharedGroup[] };
 export type SharedGroupUsersResp = SharedGroupsEnvelope & { users: SharedGroupUser[] };
-export type SharedGroupTemplatesResp = SharedGroupsEnvelope & { templates: SharedGroupTemplate[] };
-export type SharedGroupStoresResp = SharedGroupsEnvelope & { stores: SharedGroupStore[] };
+export type SharedGroupStoresResp = SharedGroupsEnvelope & {
+  id: number;
+  name: string;
+  stores: SharedGroupStoreRow[];
+};
 
 /** groups/base_group_users: everyone a base group's Users tab needs, in one call. */
 export interface BaseGroupUserRow {

@@ -20,9 +20,7 @@ export const defaultComp: Company = {
 export type AdminForm =
   | "companies"
   | "store_activity"
-  | "new_store_name"
-  | "base_groups"
-  | "shared_groups";
+  | "new_store_name";
 
 interface AdminPageState {
   companies: Company[];
