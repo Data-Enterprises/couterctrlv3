@@ -15,13 +15,13 @@ interface GroupsListProps {
   onOpenCreate: () => void;
 }
 
-type Show = "all" | "mine" | "shared";
+export type Show = "all" | "mine" | "shared";
 
 /** Who a group belongs to, from where the user stands. */
-const kindOf = (g: Group, userid: number): "mine" | "sharedByYou" | "sharedWithYou" =>
+export const kindOf = (g: Group, userid: number): "mine" | "sharedByYou" | "sharedWithYou" =>
   g.userid !== userid ? "sharedWithYou" : g.is_shared ? "sharedByYou" : "mine";
 
-const BADGE = {
+export const BADGE = {
   sharedByYou: { label: "Shared by you", cls: "bg-blue-50 text-blue-700" },
   sharedWithYou: { label: "Shared with you", cls: "bg-emerald-50 text-emerald-700" },
 } as const;

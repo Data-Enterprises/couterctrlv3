@@ -49,11 +49,8 @@ const SharedGroupDetail = ({ group, onChanged, onDeleted }: Props) => {
   // Enter saves and so does leaving the field; this keeps it to one request.
   const saving = useRef(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  // A new, empty group opens on its stores — it can't be shared until it has
-  // some. Otherwise it opens on who it's shared with.
-  const [subTab, setSubTab] = useState<"users" | "stores">(
-    group.stores.length ? "users" : "stores",
-  );
+  // Stores first, then who it's shared with — the order you build a group in.
+  const [subTab, setSubTab] = useState<"users" | "stores">("stores");
   const [users, setUsers] = useState<SharedGroupUser[] | null>(null);
   const [stores, setStores] = useState<SharedGroupStoreRow[] | null>(null);
   const activeGroupId = useRef(group.id);
@@ -66,7 +63,7 @@ const SharedGroupDetail = ({ group, onChanged, onDeleted }: Props) => {
 
   useEffect(() => {
     activeGroupId.current = group.id;
-    setSubTab(group.stores.length ? "users" : "stores");
+    setSubTab("stores");
     setUsers(null);
     setStores(null);
   }, [group.id]);
@@ -226,7 +223,7 @@ const SharedGroupDetail = ({ group, onChanged, onDeleted }: Props) => {
       </div>
 
       <div className="flex border-b border-gray-100 mb-4">
-        {(["users", "stores"] as const).map((t) => (
+        {(["stores", "users"] as const).map((t) => (
           <button
             key={t}
             onClick={() => setSubTab(t)}
