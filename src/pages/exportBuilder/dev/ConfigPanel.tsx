@@ -13,6 +13,8 @@ import { isPii } from "./piiColumns";
 import { parseProductCodes } from "./productCodes";
 import {
   setColumnFilter,
+  setSubDepartmentFilter,
+  setVendorFilter,
   setFlag,
   resetExportBuilder,
   setSelectedColumns,
@@ -147,6 +149,44 @@ const AllNone = ({
   </div>
 );
 
+/**
+ * The narrowing box that sits above a long list.
+ *
+ * At module scope, like Row: a component declared inside a render body is a
+ * new component type every render, React unmounts the old tree, and the input
+ * being typed into loses the focus after a single character. That is exactly
+ * what happened to the column search.
+ */
+const ListSearch = ({
+  value,
+  onChange,
+  label,
+  shown,
+  total,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  label: string;
+  shown: number;
+  total: number;
+}) => (
+  <div className="flex flex-col gap-1">
+    <input
+      type="search"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={label}
+      aria-label={label}
+      className="w-full border border-brand_line rounded-lg px-2.5 py-1.5 text-[12.5px]"
+    />
+    {value.trim().length > 0 && (
+      <span className="text-[11px] text-content/55">
+        {shown} of {total} shown · ticking is unaffected by the search
+      </span>
+    )}
+  </div>
+);
+
 const ConfigPanel = () => {
   const ctx = useExportBuilderCtx();
   const [open, setOpen] = useState<Section | null>(null);
@@ -157,6 +197,22 @@ const ConfigPanel = () => {
     .filter((c) =>
       c.name.toLowerCase().includes(ctx.columnFilter.toLowerCase()),
     );
+
+  // Both match on what is on screen: a sub department by its number or its
+  // description, a vendor by name or id, since people have only one of the two.
+  const subDeptQuery = ctx.subDepartmentFilter.trim().toLowerCase();
+  const shownSubDepartments = ctx.subDepartments.filter(
+    (s) =>
+      s.sub_department.toLowerCase().includes(subDeptQuery) ||
+      (s.sub_department_description ?? "").toLowerCase().includes(subDeptQuery),
+  );
+
+  const vendorQuery = ctx.vendorFilter.trim().toLowerCase();
+  const shownVendors = ctx.vendors.filter(
+    (v) =>
+      (v.vendor_name ?? "").toLowerCase().includes(vendorQuery) ||
+      v.vendor_id.toLowerCase().includes(vendorQuery),
+  );
 
   /**
    * The personal columns, on or off together.
@@ -312,8 +368,15 @@ const ConfigPanel = () => {
             }
             onNone={() => ctx.dispatch(setSelectedSubDepartments([]))}
           />
+          <ListSearch
+            label="Find a sub department..."
+            value={ctx.subDepartmentFilter}
+            onChange={(v) => ctx.dispatch(setSubDepartmentFilter(v))}
+            shown={shownSubDepartments.length}
+            total={ctx.subDepartments.length}
+          />
           <div className="overflow-y-auto thin-scrollbar flex flex-col max-h-[38vh]">
-            {ctx.subDepartments.map((s) => (
+            {shownSubDepartments.map((s) => (
               <Checkbox
                 key={s.sub_department}
                 checked={ctx.selectedSubDepartments.includes(s.sub_department)}
@@ -354,8 +417,15 @@ const ConfigPanel = () => {
             }
             onNone={() => ctx.dispatch(setSelectedVendors([]))}
           />
+          <ListSearch
+            label="Find a vendor..."
+            value={ctx.vendorFilter}
+            onChange={(v) => ctx.dispatch(setVendorFilter(v))}
+            shown={shownVendors.length}
+            total={ctx.vendors.length}
+          />
           <div className="overflow-y-auto thin-scrollbar flex flex-col max-h-[38vh]">
-            {ctx.vendors.map((v) => (
+            {shownVendors.map((v) => (
               <Checkbox
                 key={v.vendor_id}
                 checked={ctx.selectedVendors.includes(v.vendor_id)}
@@ -468,13 +538,12 @@ const ConfigPanel = () => {
               )}
             </div>
           )}
-          <input
-            type="search"
+          <ListSearch
+            label="Find a column..."
             value={ctx.columnFilter}
-            onChange={(e) => ctx.dispatch(setColumnFilter(e.target.value))}
-            placeholder="Find a column..."
-            aria-label="Find a column"
-            className="w-full border border-brand_line rounded-lg px-2.5 py-1.5 text-[12.5px]"
+            onChange={(v) => ctx.dispatch(setColumnFilter(v))}
+            shown={shown.length}
+            total={ctx.columns.length}
           />
           <div className="overflow-y-auto thin-scrollbar flex flex-col max-h-[38vh]">
             {shown.map((c) => (

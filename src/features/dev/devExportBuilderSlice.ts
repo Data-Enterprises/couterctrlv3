@@ -63,6 +63,9 @@ export interface ExportBuilderState {
    */
   columnOrder: string[];
   columnFilter: string;
+  /** Typing in a long list narrows what is shown, never what is selected. */
+  vendorFilter: string;
+  subDepartmentFilter: string;
   flags: ExportFlags;
 
   building: boolean;
@@ -107,6 +110,8 @@ export const initialState: ExportBuilderState = {
   productCodeText: "",
   columnOrder: [],
   columnFilter: "",
+  vendorFilter: "",
+  subDepartmentFilter: "",
   flags: {
     excludeVoids: false,
     fileFormat: "csv",
@@ -181,6 +186,8 @@ const devExportBuilderSlice = createSlice({
       state.selectedColumns = columns.map((c) => c.name);
       state.columnOrder = columns.map((c) => c.name);
       state.columnFilter = "";
+      state.vendorFilter = "";
+      state.subDepartmentFilter = "";
       // A new scope is a new question; the codes belonged to the old one.
       state.productCodes = [];
       state.productCodeText = "";
@@ -274,6 +281,12 @@ const devExportBuilderSlice = createSlice({
     setColumnFilter: (state, action: PayloadAction<string>) => {
       state.columnFilter = action.payload;
     },
+    setVendorFilter: (state, action: PayloadAction<string>) => {
+      state.vendorFilter = action.payload;
+    },
+    setSubDepartmentFilter: (state, action: PayloadAction<string>) => {
+      state.subDepartmentFilter = action.payload;
+    },
     setFlag: (
       state,
       action: PayloadAction<{
@@ -357,6 +370,8 @@ export const {
   moveColumn,
   setSelectedColumns,
   setColumnFilter,
+  setVendorFilter,
+  setSubDepartmentFilter,
   setProductCodeText,
   setProductCodes,
   setFlag,
