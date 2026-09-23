@@ -1,10 +1,15 @@
 import { describe, expect, it } from "vitest";
 import reducer, {
+  clearSelections,
+  dismissBuild,
+  finishExport,
   initialState,
   moveColumn,
   setConfig,
   setFlag,
+  setProductCodes,
   toggleColumn,
+  toggleSaleType,
 } from "./devExportBuilderSlice";
 
 const columns = ["sale_id", "sale_date", "qty", "price"].map((name) => ({
@@ -143,5 +148,59 @@ describe("reordering columns", () => {
   it("ignores a move for a column it does not have", () => {
     const s = reducer(loaded(), moveColumn({ name: "nope", to: 0 }));
     expect(s.columnOrder).toEqual(["sale_id", "sale_date", "qty", "price"]);
+  });
+});
+
+describe("the files a session has built", () => {
+  const built = (name: string, label: string) => ({
+    files: [{ key: `exports/${name}`, bytes: 1024, url: `https://s3/${name}` }],
+    rowsUploaded: 978,
+    elapsedSeconds: 0.9,
+    urlExpiresInMinutes: 60,
+    label,
+  });
+
+  it("keeps the last one when the next is built", () => {
+    // The bug this exists for: building the second file took the first one
+    // off the screen, and its link had fifty minutes left on it.
+    const one = reducer(loaded(), finishExport(built("a.csv", "week one")));
+    const two = reducer(one, finishExport(built("b.csv", "week two")));
+    expect(two.builds).toHaveLength(2);
+    expect(two.builds[0].label).toBe("week two");
+    expect(two.builds[1].files[0].url).toBe("https://s3/a.csv");
+  });
+
+  it("puts the bar back without losing the file", () => {
+    const after = reducer(
+      reducer(loaded(), finishExport(built("a.csv", "week one"))),
+      dismissBuild(),
+    );
+    expect(after.files).toEqual([]);
+    expect(after.builds).toHaveLength(1);
+  });
+});
+
+describe("clearing the picks", () => {
+  it("puts every list back to all of it and empties what was typed", () => {
+    const narrowed = reducer(
+      reducer(reducer(loaded(), toggleSaleType("Sale")), setProductCodes(["12"])),
+      setFlag({ voidFlag: 1 }),
+    );
+    expect(narrowed.selectedSaleTypes).toEqual(["Refunded"]);
+
+    const cleared = reducer(narrowed, clearSelections());
+    expect(cleared.selectedSaleTypes).toEqual(["Sale", "Refunded"]);
+    expect(cleared.productCodes).toEqual([]);
+    expect(cleared.flags.voidFlag).toBeNull();
+    expect(cleared.mode).toBe("lines");
+  });
+
+  it("leaves the loaded range alone, unlike a new search", () => {
+    // The magnifier is the one that throws the scope away; this is for asking
+    // a different question of the same data.
+    const cleared = reducer(loaded(), clearSelections());
+    expect(cleared.stores).toHaveLength(1);
+    expect(cleared.columns).toHaveLength(4);
+    expect(cleared.loaded).toBe(true);
   });
 });

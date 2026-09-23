@@ -2,7 +2,11 @@ import { ArrowDownTrayIcon, ClockIcon } from "@heroicons/react/24/outline";
 import { useExportBuilderCtx } from "./hooks";
 import { countPii } from "./piiColumns";
 import { aliasFor } from "./aggregates";
-import { openQuery } from "../../../features/dev/devExportBuilderSlice";
+import {
+  dismissBuild,
+  openQuery,
+  openDownloads,
+} from "../../../features/dev/devExportBuilderSlice";
 import { formatBigNumber } from "../../../utils";
 
 const mb = (bytes: number) => `${(bytes / 1024 / 1024).toFixed(1)} MB`;
@@ -98,13 +102,34 @@ const ExportBar = () => {
             </a>
           </div>
         ))}
-        <button
-          type="button"
-          onClick={ctx.build}
-          className="text-[11.5px] text-brand_navy_hover underline underline-offset-2 mt-2"
-        >
-          Build it again
-        </button>
+        <div className="flex items-center gap-4 mt-2">
+          <button
+            type="button"
+            onClick={() => ctx.dispatch(dismissBuild())}
+            className="text-[11.5px] font-semibold text-brand_navy_hover underline underline-offset-2"
+          >
+            Back to configuring
+          </button>
+          <button
+            type="button"
+            onClick={ctx.build}
+            className="text-[11.5px] text-brand_navy_hover underline underline-offset-2"
+          >
+            Build it again
+          </button>
+          {ctx.builds.length > 1 && (
+            <button
+              type="button"
+              onClick={() => ctx.dispatch(openDownloads(true))}
+              className="text-[11.5px] text-brand_navy_hover underline underline-offset-2"
+            >
+              All {ctx.builds.length} files
+            </button>
+          )}
+          <span className="text-[11px] text-content/55">
+            The file stays here while its link lasts, whatever you build next.
+          </span>
+        </div>
       </div>
     );
   }
@@ -179,6 +204,15 @@ const ExportBar = () => {
         * fifty sample rows and sends nothing, so it promises nothing the
         * product cannot keep.
         */}
+      {ctx.builds.length > 0 && (
+        <button
+          type="button"
+          onClick={() => ctx.dispatch(openDownloads(true))}
+          className="border border-custom-white/30 text-custom-white text-[13px] font-medium px-4 py-2.5 rounded-lg hover:bg-custom-white/10 transition-colors"
+        >
+          Files ({ctx.builds.length})
+        </button>
+      )}
       <button
         type="button"
         onClick={() => ctx.dispatch(openQuery(true))}

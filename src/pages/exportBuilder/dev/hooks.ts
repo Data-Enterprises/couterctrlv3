@@ -161,6 +161,45 @@ export const useExportBuilderCtx = () => {
   });
 
   /**
+   * One line describing what is about to be built.
+   *
+   * Kept with the build, because a list of four downloads called sales.csv,
+   * sales.csv, sales.csv and sales.csv is a list of four riddles. This is
+   * written at build time from the configuration that made it.
+   */
+  const describeBuild = () => {
+    const narrowed = [
+      config.selectedStoreIds.length < config.stores.length &&
+        `${config.selectedStoreIds.length} stores`,
+      config.selectedSaleTypes.length < config.saleTypes.length &&
+        `${config.selectedSaleTypes.length} sale types`,
+      config.selectedRingTypes.length < config.itemRingTypes.length &&
+        `${config.selectedRingTypes.length} ring types`,
+      config.selectedSubDepartments.length < config.subDepartments.length &&
+        `${config.selectedSubDepartments.length} sub departments`,
+      config.selectedVendors.length < config.vendors.length &&
+        `${config.selectedVendors.length} vendors`,
+      config.selectedCashiers.length < config.cashiers.length &&
+        `${config.selectedCashiers.length} cashiers`,
+      config.selectedSaleDates.length < config.saleDates.length &&
+        `${config.selectedSaleDates.length} days`,
+      config.productCodes.length > 0 && `${config.productCodes.length} codes`,
+      config.productDescriptions.length > 0 &&
+        `"${config.productDescriptions.join('", "')}"`,
+      config.flags.voidFlag === 0 && "no voids",
+      config.flags.voidFlag === 1 && "voids only",
+      config.flags.refundFlag === 0 && "no refunds",
+      config.flags.refundFlag === 1 && "refunds only",
+    ].filter(Boolean) as string[];
+
+    const shape = aggregating
+      ? `Summary by ${config.groupBy.join(", ")}`
+      : `${config.selectedColumns.length} of ${config.columns.length} columns`;
+
+    return [`${startDate} to ${endDate}`, shape, ...narrowed].join(" · ");
+  };
+
+  /**
    * The same rollup the endpoint would run, over the sample.
    *
    * The filters come first, because they are a WHERE and this is a GROUP BY.
@@ -342,6 +381,7 @@ export const useExportBuilderCtx = () => {
             rowsUploaded: j.rowsUploaded ?? 0,
             elapsedSeconds: j.elapsedSeconds ?? 0,
             urlExpiresInMinutes: j.urlExpiresInMinutes ?? 60,
+            label: describeBuild(),
           }),
         );
       })

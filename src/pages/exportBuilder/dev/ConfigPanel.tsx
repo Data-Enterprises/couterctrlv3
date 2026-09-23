@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
+  ArrowPathIcon,
   ChevronRightIcon,
   MagnifyingGlassIcon,
 } from "@heroicons/react/20/solid";
@@ -14,6 +15,7 @@ import { aliasFor, fnsFor, FN_LABELS } from "./aggregates";
 import { parseProductCodes, parseDescriptionTerms } from "./productCodes";
 import {
   setFlag,
+  clearSelections,
   setMode,
   toggleGroupBy,
   setGroupBy,
@@ -428,6 +430,18 @@ const ConfigPanel = () => {
         <span className="text-[11px] font-semibold uppercase tracking-wide text-content/60 flex-1">
           Configuration
         </span>
+        <button
+          type="button"
+          onClick={() => {
+            ctx.dispatch(clearSelections());
+            setOpen(null);
+          }}
+          title="Clear every pick — the loaded range stays"
+          aria-label="Clear every pick, keeping the loaded range"
+          className="w-[22px] h-[22px] rounded border border-brand_line_2 text-content/70 hover:text-content hover:border-brand_slate flex items-center justify-center transition-colors"
+        >
+          <ArrowPathIcon className="w-3.5 h-3.5" />
+        </button>
         <button
           type="button"
           onClick={() => ctx.dispatch(resetExportBuilder())}

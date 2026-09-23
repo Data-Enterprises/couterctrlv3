@@ -37,6 +37,26 @@ export interface ExportFlags {
  */
 export type ExportMode = "lines" | "summary";
 
+/**
+ * A file that was built, kept for as long as its link lives.
+ *
+ * The link is a presigned URL with an hour on it, so a built file is not a
+ * moment in the page's life — it is a thing you still have. Building a second
+ * one must not take the first one away: a week of stores is often four files,
+ * and losing the first three because the fourth finished is an hour of
+ * rebuilding.
+ */
+export interface ExportBuild {
+  id: string;
+  files: ExportFile[];
+  rowsUploaded: number;
+  elapsedSeconds: number;
+  urlExpiresInMinutes: number;
+  builtAt: number;
+  /** What this one was, in one line, so three files are not three riddles. */
+  label: string;
+}
+
 export interface ExportBuilderState {
   loadingConfig: boolean;
   /** Null until a config has been loaded; the page shows its search card. */
@@ -107,6 +127,8 @@ export interface ExportBuilderState {
   /** The query scratchpad: open, and the last thing typed into it. */
   queryOpen: boolean;
   querySql: string;
+  /** The list of built files, open. */
+  downloadsOpen: boolean;
 
   building: boolean;
   /** The statement the export would run, from a dry run. Null when closed. */
@@ -117,7 +139,10 @@ export interface ExportBuilderState {
     copyOptions: string;
   } | null;
   loadingSql: boolean;
+  /** The build just finished, shown in the bar until it is dismissed. */
   files: ExportFile[];
+  /** Every build of this session, newest first. */
+  builds: ExportBuild[];
   rowsUploaded: number;
   elapsedSeconds: number;
   urlExpiresInMinutes: number;
@@ -168,11 +193,13 @@ export const initialState: ExportBuilderState = {
 
   queryOpen: false,
   querySql: "",
+  downloadsOpen: false,
 
   building: false,
   sql: null,
   loadingSql: false,
   files: [],
+  builds: [],
   rowsUploaded: 0,
   elapsedSeconds: 0,
   urlExpiresInMinutes: 60,
@@ -471,6 +498,9 @@ const devExportBuilderSlice = createSlice({
     openQuery: (state, action: PayloadAction<boolean>) => {
       state.queryOpen = action.payload;
     },
+    openDownloads: (state, action: PayloadAction<boolean>) => {
+      state.downloadsOpen = action.payload;
+    },
     /** Kept so closing the window is not the same as losing the query. */
     setQuerySql: (state, action: PayloadAction<string>) => {
       state.querySql = action.payload;
@@ -508,6 +538,7 @@ const devExportBuilderSlice = createSlice({
         rowsUploaded: number;
         elapsedSeconds: number;
         urlExpiresInMinutes: number;
+        label: string;
       }>,
     ) => {
       state.building = false;
@@ -517,6 +548,61 @@ const devExportBuilderSlice = createSlice({
       state.elapsedSeconds = action.payload.elapsedSeconds;
       state.urlExpiresInMinutes = action.payload.urlExpiresInMinutes;
       state.builtAt = Date.now();
+      state.builds = [
+        {
+          id: `${state.builtAt}-${state.builds.length}`,
+          files: action.payload.files,
+          rowsUploaded: action.payload.rowsUploaded,
+          elapsedSeconds: action.payload.elapsedSeconds,
+          urlExpiresInMinutes: action.payload.urlExpiresInMinutes,
+          builtAt: state.builtAt,
+          label: action.payload.label,
+        },
+        ...state.builds,
+      ];
+    },
+    /**
+     * Put the bar back to the configuration without losing the file.
+     *
+     * The file stays in `builds` — this only takes the finished card off the
+     * screen, because the next thing after a download is usually the next
+     * export rather than staring at the last one.
+     */
+    dismissBuild: (state) => {
+      state.files = [];
+      state.exportError = null;
+    },
+    /**
+     * Every pick back to its default, with the loaded data left alone.
+     *
+     * Not the same as the magnifier, which throws away the scope too and
+     * sends you back to the search. This is for asking a different question
+     * of the same range, which is what people do after a download.
+     */
+    clearSelections: (state) => {
+      state.selectedStoreIds = state.stores.map((s) => s.storeid);
+      state.selectedSaleTypes = [...state.saleTypes];
+      state.selectedRingTypes = [...state.itemRingTypes];
+      state.selectedSubDepartments = state.subDepartments.map((s) =>
+        String(s.sub_department),
+      );
+      state.selectedVendors = state.vendors.map((v) => v.vendor_id);
+      state.selectedCashiers = state.cashiers.map((c) => c.cashier_number);
+      state.selectedSaleDates = [...state.saleDates];
+      state.selectedColumns = state.columns.map((c) => c.name);
+      state.columnOrder = state.columns.map((c) => c.name);
+      state.productCodes = [];
+      state.productDescriptions = [];
+      state.mode = "lines";
+      state.groupBy = [];
+      state.aggregates = [];
+      state.flags = { ...initialState.flags };
+      state.files = [];
+      state.exportError = null;
+    },
+    /** The links are gone from the page, not from S3 — they simply expire. */
+    clearBuilds: (state) => {
+      state.builds = [];
     },
     failExport: (state, action: PayloadAction<string>) => {
       state.building = false;
@@ -558,6 +644,7 @@ export const {
   removeAggregate,
   setColumnOrder,
   openQuery,
+  openDownloads,
   setQuerySql,
   setFlag,
   startSqlLoad,
@@ -567,6 +654,9 @@ export const {
   markExportSlow,
   finishExport,
   failExport,
+  dismissBuild,
+  clearSelections,
+  clearBuilds,
   resetExportBuilder,
 } = devExportBuilderSlice.actions;
 export default devExportBuilderSlice.reducer;
