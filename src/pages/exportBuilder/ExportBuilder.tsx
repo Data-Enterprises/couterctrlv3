@@ -4,7 +4,7 @@ import DevOnlyNotice from "../../components/DevOnlyNotice";
 import DevExportBuilder from "./dev/ExportBuilder";
 
 /**
- * Export Builder is a Coming Soon page: dev only.
+ * Sales Export is a Coming Soon page: dev only.
  *
  * It has a `pages/exportBuilder/dev` tree and no prod tree until it is
  * greenlit. The page renders only when the session is on the dev API — the

@@ -1,7 +1,7 @@
 import axios from "axios";
 
 /**
- * The two endpoints behind Export Builder.
+ * The two endpoints behind Sales Export.
  *
  * `export_preview` resolves a scope and describes the data: which stores the
  * search actually covers, which sale types are present in the window, every

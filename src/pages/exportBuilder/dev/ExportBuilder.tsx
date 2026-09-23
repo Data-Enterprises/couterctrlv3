@@ -5,7 +5,7 @@ import ExportBar from "./ExportBar";
 import { useExportBuilderCtx } from "./hooks";
 
 /**
- * Export Builder — pick a scope, narrow what goes in the file, build it.
+ * Sales Export — pick a scope, narrow what goes in the file, build it.
  *
  * Two calls and one screen. `export_preview` resolves the scope and describes
  * the data; every list on the left is that response. Narrowing is local, so
@@ -18,7 +18,7 @@ const ExportBuilder = () => {
   if (!ctx.loaded) {
     return (
       <SearchCard
-        title="Export Builder"
+        title="Sales Export"
         description="Pick a store or group and a date range. What comes back is the thing you configure: the stores it covers, the row types it holds and every column of the table."
         buttonLabel="Load config"
         loadingMessage="Reading the range..."
