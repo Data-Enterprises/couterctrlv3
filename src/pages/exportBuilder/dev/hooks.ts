@@ -90,6 +90,7 @@ export const useExportBuilderCtx = () => {
     ringTypes: config.selectedRingTypes,
     subDepartments: config.selectedSubDepartments,
     vendors: config.selectedVendors,
+    productCodes: config.productCodes,
     excludeVoids: config.flags.excludeVoids,
   });
 
@@ -174,6 +175,9 @@ export const useExportBuilderCtx = () => {
       vendorIds: all(config.selectedVendors, config.vendors)
         ? null
         : config.selectedVendors,
+      // Empty means no filter here, which is the endpoint's own reading of an
+      // empty list — and the right one, since nothing typed is nothing asked.
+      productCodes: config.productCodes.length ? config.productCodes : null,
       excludeVoids: config.flags.excludeVoids,
       fileFormat: config.flags.fileFormat,
       filePrefix: config.flags.filePrefix || null,

@@ -136,6 +136,9 @@ export interface ExportParams {
   subDepartments: number[] | null;
   /** `vendorIds`, not `vendors` — and text, despite looking numeric. */
   vendorIds: string[] | null;
+  /** Typed or pasted, not chosen from a list — the preview returns no code
+   *  catalog, and a window can hold tens of thousands of them. */
+  productCodes: string[] | null;
   excludeVoids: boolean;
   fileFormat: string;
   filePrefix: string | null;

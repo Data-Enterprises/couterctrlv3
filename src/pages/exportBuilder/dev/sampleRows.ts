@@ -1,10 +1,13 @@
 import type { ExportRow } from "../../../api/salesExport";
+import { normalizeProductCode } from "./productCodes";
 
 export interface RowFilters {
   saleTypes: string[];
   ringTypes: string[];
   subDepartments: string[];
   vendors: string[];
+  /** Empty means every code, not none: this list is typed, not chosen. */
+  productCodes: string[];
   excludeVoids: boolean;
 }
 
@@ -47,12 +50,16 @@ export const filterSampleRows = (rows: ExportRow[], filters: RowFilters) => {
   const ring = new Set(filters.ringTypes);
   const sub = new Set(filters.subDepartments.map(String));
   const vendor = new Set(filters.vendors.map(String));
+  const codes = new Set(filters.productCodes.map(normalizeProductCode));
 
   return rows.filter((row) => {
     if (!keeps(sale, row["sale_type"], lower)) return false;
     if (!keeps(ring, row["item_ring_type"])) return false;
     if (!keeps(sub, row["sub_department"])) return false;
     if (!keeps(vendor, row["vendor_id"])) return false;
+    if (codes.size && !codes.has(normalizeProductCode(row["product_code"]))) {
+      return false;
+    }
     // COALESCE(void_flag, 0) = 0, as the export writes it.
     if (filters.excludeVoids && Number(row["void_flag"] ?? 0) !== 0) {
       return false;

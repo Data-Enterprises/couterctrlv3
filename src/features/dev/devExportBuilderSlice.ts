@@ -44,6 +44,16 @@ export interface ExportBuilderState {
   selectedVendors: string[];
   selectedColumns: string[];
   /**
+   * Product codes the user supplied, rather than picked.
+   *
+   * Empty means no filter, unlike the four lists that come back from the
+   * preview: those describe what the window holds, so emptying one is a
+   * contradiction. This one starts empty and only ever narrows.
+   */
+  productCodes: string[];
+  /** What they typed, kept as typed, so the box does not fight them. */
+  productCodeText: string;
+  /**
    * Every column name in the order the file will write them.
    *
    * Starts as the table order the preview returned and moves when someone
@@ -93,6 +103,8 @@ export const initialState: ExportBuilderState = {
   selectedSubDepartments: [],
   selectedVendors: [],
   selectedColumns: [],
+  productCodes: [],
+  productCodeText: "",
   columnOrder: [],
   columnFilter: "",
   flags: {
@@ -169,6 +181,9 @@ const devExportBuilderSlice = createSlice({
       state.selectedColumns = columns.map((c) => c.name);
       state.columnOrder = columns.map((c) => c.name);
       state.columnFilter = "";
+      // A new scope is a new question; the codes belonged to the old one.
+      state.productCodes = [];
+      state.productCodeText = "";
       // A new scope means the last file describes a question nobody asked.
       state.files = [];
       state.builtAt = null;
@@ -249,6 +264,12 @@ const devExportBuilderSlice = createSlice({
     },
     setSelectedColumns: (state, action: PayloadAction<string[]>) => {
       state.selectedColumns = action.payload;
+    },
+    setProductCodeText: (state, action: PayloadAction<string>) => {
+      state.productCodeText = action.payload;
+    },
+    setProductCodes: (state, action: PayloadAction<string[]>) => {
+      state.productCodes = action.payload;
     },
     setColumnFilter: (state, action: PayloadAction<string>) => {
       state.columnFilter = action.payload;
@@ -336,6 +357,8 @@ export const {
   moveColumn,
   setSelectedColumns,
   setColumnFilter,
+  setProductCodeText,
+  setProductCodes,
   setFlag,
   startSqlLoad,
   setSql,

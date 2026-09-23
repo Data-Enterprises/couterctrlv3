@@ -10,6 +10,7 @@ import SelectFilter, {
 } from "../../../components-dev/filters/SelectFilter";
 import { useExportBuilderCtx } from "./hooks";
 import { isPii } from "./piiColumns";
+import { parseProductCodes } from "./productCodes";
 import {
   setColumnFilter,
   setFlag,
@@ -20,6 +21,8 @@ import {
   setSelectedStoreIds,
   setSelectedSubDepartments,
   setSelectedVendors,
+  setProductCodeText,
+  setProductCodes,
   toggleColumn,
   toggleRingType,
   toggleSaleType,
@@ -30,6 +33,7 @@ import {
 
 type Section =
   | "stores"
+  | "productCodes"
   | "saleTypes"
   | "ringTypes"
   | "subDepartments"
@@ -364,6 +368,54 @@ const ConfigPanel = () => {
                 }
               />
             ))}
+          </div>
+        </div>
+      </Row>
+
+      <Row
+        label="Product Codes"
+        isOpen={open === "productCodes"}
+        onToggle={() =>
+          setOpen(open === "productCodes" ? null : "productCodes")
+        }
+        summary={
+          ctx.productCodes.length === 0
+            ? "all"
+            : `${ctx.productCodes.length} code${ctx.productCodes.length === 1 ? "" : "s"}`
+        }
+      >
+        <div className="px-3 pb-3 flex flex-col gap-2">
+          <textarea
+            value={ctx.productCodeText}
+            onChange={(e) => {
+              ctx.dispatch(setProductCodeText(e.target.value));
+              ctx.dispatch(setProductCodes(parseProductCodes(e.target.value)));
+            }}
+            rows={3}
+            placeholder="Paste or type codes — commas, spaces or new lines"
+            aria-label="Product codes"
+            className="w-full border border-brand_line rounded-lg px-2.5 py-1.5 text-[12px] font-mono resize-y"
+          />
+          <div className="flex items-center gap-3">
+            <span className="text-[11.5px] text-content/60 flex-1">
+              {ctx.productCodes.length === 0
+                ? "Empty means every product."
+                : `${ctx.productCodes.length} code${
+                    ctx.productCodes.length === 1 ? "" : "s"
+                  } — anything that is not a number is ignored.`}
+            </span>
+            {ctx.productCodes.length > 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  ctx.dispatch(setProductCodeText(""));
+                  ctx.dispatch(setProductCodes([]));
+                }}
+                className="text-[11.5px] text-brand_navy_hover underline underline-offset-2"
+              >
+                clear
+              </button>
+            )}
           </div>
         </div>
       </Row>
