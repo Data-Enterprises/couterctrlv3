@@ -80,7 +80,9 @@ const CsvPreview = () => {
         <span className="text-[11.5px] text-content/60 flex-shrink-0">
           {drag.name
             ? `Moving ${drag.name}`
-            : "Drag a heading to reorder · scroll for the rest"}
+            : ctx.visibleRows.length === ctx.rows.length
+              ? "Drag a heading to reorder · scroll for the rest"
+              : `${ctx.visibleRows.length} of ${ctx.rows.length} sample lines match`}
         </span>
       </div>
 
@@ -141,7 +143,7 @@ const CsvPreview = () => {
               </tr>
             </thead>
             <tbody>
-              {ctx.rows.map((row, r) => (
+              {ctx.visibleRows.map((row, r) => (
                 <tr key={r}>
                   <td className="sticky left-0 z-10 bg-custom-white border-r border-brand_line border-b border-brand_line px-2 py-1.5 text-right text-content/50">
                     {r + 1}
@@ -172,6 +174,13 @@ const CsvPreview = () => {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {ctx.visibleRows.length === 0 && cols.length > 0 && (
+        <div className="px-4 py-3 border-t border-brand_line bg-custom-white text-[12px] text-content/70 flex-shrink-0">
+          None of the ten sample lines are of a type you have kept. The file can
+          still hold plenty — the sample is ten lines, not the first ten.
         </div>
       )}
 

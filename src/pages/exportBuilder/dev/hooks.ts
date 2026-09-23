@@ -19,6 +19,7 @@ import {
   startExport,
 } from "../../../features/dev/devExportBuilderSlice";
 import type { JsonError } from "../../../interfaces";
+import { filterSampleRows } from "./sampleRows";
 
 /** The load balancer gives up at 150s. The page says so at 120, so the
  *  explanation arrives before the failure does. */
@@ -45,6 +46,13 @@ export const useExportBuilderCtx = () => {
     .map((name) => state.columns.find((c) => c.name === name))
     .filter((c): c is NonNullable<typeof c> => Boolean(c))
     .filter((c) => state.selectedColumns.includes(c.name));
+
+  /** The sample rows the file would actually hold. */
+  const visibleRows = filterSampleRows(
+    state.rows,
+    state.selectedSaleTypes,
+    state.flags.excludeVoids,
+  );
 
   /**
    * One call, and everything the page offers comes out of it: the stores the
@@ -156,6 +164,7 @@ export const useExportBuilderCtx = () => {
     startDate,
     endDate,
     orderedColumns,
+    visibleRows,
     loadConfig,
     build,
   };

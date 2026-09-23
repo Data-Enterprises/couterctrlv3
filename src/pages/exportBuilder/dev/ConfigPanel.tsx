@@ -15,6 +15,52 @@ import {
 type Section = "stores" | "saleTypes" | "columns" | "output";
 
 /**
+ * One collapsible row.
+ *
+ * Declared here rather than inside ConfigPanel on purpose: a component
+ * defined in a render body is a NEW component type on every render, so React
+ * unmounts the old tree and mounts a fresh one — which took the focus out of
+ * the column search box after a single keystroke.
+ */
+const Row = ({
+  label,
+  summary,
+  isOpen,
+  onToggle,
+  children,
+  grow = false,
+}: {
+  label: string;
+  summary: string;
+  isOpen: boolean;
+  onToggle: () => void;
+  children: ReactNode;
+  grow?: boolean;
+}) => (
+  <div
+    className={`bg-custom-white border border-brand_line rounded-xl overflow-hidden flex flex-col ${
+      isOpen && grow ? "flex-1 min-h-0" : "flex-shrink-0"
+    }`}
+  >
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-expanded={isOpen}
+      className="w-full flex items-center gap-2 px-3 py-2.5 text-left flex-shrink-0"
+    >
+      <ChevronRightIcon
+        className={`w-3.5 h-3.5 flex-shrink-0 text-content/60 transition-transform duration-150 ${
+          isOpen ? "rotate-90" : ""
+        }`}
+      />
+      <span className="text-[13px] font-semibold flex-1">{label}</span>
+      <span className="text-[12px] text-content/60">{summary}</span>
+    </button>
+    {isOpen && children}
+  </div>
+);
+
+/**
  * The left panel: four rows that each open to show their own question.
  *
  * Stores, sale types and columns are the preview response and nothing else —
@@ -37,45 +83,6 @@ const ConfigPanel = () => {
       c.name.toLowerCase().includes(ctx.columnFilter.toLowerCase()),
     );
 
-  const Row = ({
-    section,
-    label,
-    summary,
-    children,
-    grow = false,
-  }: {
-    section: Section;
-    label: string;
-    summary: string;
-    children: ReactNode;
-    grow?: boolean;
-  }) => {
-    const isOpen = open === section;
-    return (
-      <div
-        className={`bg-custom-white border border-brand_line rounded-xl overflow-hidden flex flex-col ${
-          isOpen && grow ? "flex-1 min-h-0" : "flex-shrink-0"
-        }`}
-      >
-        <button
-          type="button"
-          onClick={() => setOpen(isOpen ? null : section)}
-          aria-expanded={isOpen}
-          className="w-full flex items-center gap-2 px-3 py-2.5 text-left flex-shrink-0"
-        >
-          <ChevronRightIcon
-            className={`w-3.5 h-3.5 flex-shrink-0 text-content/60 transition-transform duration-150 ${
-              isOpen ? "rotate-90" : ""
-            }`}
-          />
-          <span className="text-[13px] font-semibold flex-1">{label}</span>
-          <span className="text-[12px] text-content/60">{summary}</span>
-        </button>
-        {isOpen && children}
-      </div>
-    );
-  };
-
   const allStores = ctx.stores.length;
   const allTypes = ctx.saleTypes.length;
 
@@ -86,8 +93,9 @@ const ConfigPanel = () => {
       </span>
 
       <Row
-        section="stores"
         label="Stores"
+        isOpen={open === "stores"}
+        onToggle={() => setOpen(open === "stores" ? null : "stores")}
         summary={
           ctx.selectedStoreIds.length === allStores
             ? `all ${allStores}`
@@ -137,8 +145,9 @@ const ConfigPanel = () => {
       </Row>
 
       <Row
-        section="saleTypes"
         label="Sale Types"
+        isOpen={open === "saleTypes"}
+        onToggle={() => setOpen(open === "saleTypes" ? null : "saleTypes")}
         summary={
           ctx.selectedSaleTypes.length === allTypes
             ? `all ${allTypes}`
@@ -166,8 +175,9 @@ const ConfigPanel = () => {
       </Row>
 
       <Row
-        section="columns"
         label="Columns"
+        isOpen={open === "columns"}
+        onToggle={() => setOpen(open === "columns" ? null : "columns")}
         summary={
           ctx.selectedColumns.length === ctx.columns.length
             ? `all ${ctx.columns.length}`
@@ -240,8 +250,9 @@ const ConfigPanel = () => {
 
       {/* The export endpoint's switches, not the preview's data */}
       <Row
-        section="output"
         label="Output"
+        isOpen={open === "output"}
+        onToggle={() => setOpen(open === "output" ? null : "output")}
         summary={ctx.flags.fileFormat.toUpperCase()}
       >
         <div className="px-3 pb-3 flex flex-col gap-2.5">
