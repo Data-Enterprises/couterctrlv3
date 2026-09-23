@@ -4,7 +4,6 @@ import { getSaleTypes } from "../../../api/lossPrevention";
 import { useApiContext } from "../../../hooks/useApiContext";
 import EventPerfMobile from "../../shared/eventPerf/dev/EventPerfMobile";
 import { fetchLpEvents, fetchLpReceipt } from "../../../api/eventPerf/lpAdapter";
-import { LP_MOBILE_INFO } from "./lpInfo";
 import {
   resetCashierSlice,
   setSaleTypes,
@@ -113,7 +112,7 @@ const LossPrevention = () => {
             onProgress,
           )
         }
-        info={LP_MOBILE_INFO}
+        helpPage="loss-prevention"
         loadReceipt={(saleId, day, storeid) =>
           fetchLpReceipt(
             { url: api.url, token: api.token },

@@ -19,6 +19,7 @@ import ItemReport from "./pages/itemReport/ItemReport.tsx";
 import Invoices from "./pages/invoices/Invoices.tsx";
 import LpActions from "./pages/lpActions/LpActions.tsx";
 import SalesTracker from "./pages/salesTracker/SalesTracker.tsx";
+import ExportBuilder from "./pages/exportBuilder/ExportBuilder.tsx";
 // Suggested Weight — commented out for publish; dev-API only (see navigation/utils.tsx)
 // import Suggested from "./pages/suggested/Suggested.tsx";
 import {
@@ -34,10 +35,10 @@ import {
   GroupsPage,
   OrganizationPage,
   ForecastPage,
+  SubDeptMarginsPage,
 } from "./DevPages.tsx";
 import Settings from "./pages/settings/Settings.tsx";
 import Dashboard from "./pages/quicksight/Dashboard.tsx";
-import SubDeptMargins from "./pages/subDepts/SubDeptMargins.tsx";
 import Tickets from "./pages/tickets/Tickets.tsx";
 
 createRoot(document.getElementById("root")!).render(
@@ -72,6 +73,7 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="invoices" element={<Invoices />} />
                 <Route path="lp-actions" element={<LpActions />} />
                 <Route path="sales-tracker" element={<SalesTracker />} />
+                <Route path="sales-export" element={<ExportBuilder />} />
                 {/* <Route path="suggested-weight" element={<Suggested />} /> */}
                 <Route path="forecasting" element={<ForecastPage />} />
                 <Route path="quicksight" element={<Dashboard />} />
@@ -81,7 +83,7 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="categories" element={<Categories />} />
                 <Route path="vendors" element={<Vendors />} />
                 <Route path="admin" element={<AdminPage />} />
-                <Route path="sub-dept-margins" element={<SubDeptMargins />} />
+                <Route path="sub-dept-margins" element={<SubDeptMarginsPage />} />
                 <Route path="cashiers" element={<CashiersPage />} />
                 <Route path="orders" element={<OrdersPage />} />
                 <Route path="tickets" element={<Tickets />} />

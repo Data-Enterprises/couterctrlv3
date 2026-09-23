@@ -3,6 +3,7 @@ import { setupStore } from "./index";
 import { pageReducers } from "./pageReducers";
 import { sessionReducers } from "./sessionReducers";
 import { devReducers } from "./devReducers";
+import { legacyReducers } from "./legacyReducers";
 import { resetAppSlice } from "../features/appSlice";
 import { setThreshold as prodSetLedgerThreshold } from "../features/salesLedgerSlice";
 import { setThreshold as devSetLedgerThreshold } from "../features/dev/devSalesLedgerSlice";
@@ -27,6 +28,17 @@ const actionTypesOf = (mods: Record<string, unknown>) => {
 
 const prodModules = import.meta.glob("../features/*Slice.{ts,tsx}", { eager: true });
 const devModules = import.meta.glob("../features/dev/*Slice.{ts,tsx}", { eager: true });
+const legacyModules = import.meta.glob("../legacy/features/*Slice.{ts,tsx}", { eager: true });
+
+/**
+ * Dev slices with no prod twin, and no bug in that.
+ *
+ * A Coming Soon page has a dev tree and no prod tree until it is greenlit, so
+ * its slice is mounted under `dev` alone. Anything else missing from
+ * `pageReducers` is the failure the next test is looking for: a forked slice
+ * that never made it into prod, whose page reads undefined.
+ */
+const DEV_ONLY_SLICES = new Set(["exportBuilder"]);
 
 describe("dev and prod slices stay isolated", () => {
   /**
@@ -67,7 +79,7 @@ describe("dev and prod slices stay isolated", () => {
     // A forked slice that never made it into `devReducers` is mounted nowhere,
     // so its dev page silently reads undefined.
     const strays = Object.keys(devReducers).filter(
-      (k) => !(k in pageReducers),
+      (k) => !(k in pageReducers) && !DEV_ONLY_SLICES.has(k),
     );
     expect(strays, "dev slice with no prod counterpart").toEqual([]);
   });
@@ -104,6 +116,7 @@ describe("the store layout", () => {
       dev: Record<string, Record<string, unknown>>;
     };
     for (const key of Object.keys(devReducers)) {
+      if (DEV_ONLY_SLICES.has(key)) continue;
       const dev = state.dev[key];
       const prod = state.prod[key];
       expect(prod, `prod.${key}`).toBeDefined();
@@ -147,6 +160,52 @@ describe("the Sales fork", () => {
     expect(store.getState().prod.couponSales.hasSearched).toBe(true);
     store.dispatch(resetAppSlice());
     expect(store.getState().prod.couponSales.hasSearched).toBe(false);
+  });
+
+  it("mounts legacy slices under legacy only, never at the root", () => {
+    // A legacy page asks for a different shape than the page that replaced
+    // it, so it gets its own branch rather than sharing prod's slice. Mounted
+    // at the root it would also be reachable as a bare `state.<key>`, which is
+    // what the separation spent a release undoing.
+    const store = setupStore();
+    const root = store.getState() as Record<string, unknown>;
+    const legacy = root.legacy as Record<string, unknown>;
+
+    for (const key of Object.keys(legacyReducers)) {
+      expect(legacy, `legacy ${key} is not mounted under legacy`).toHaveProperty(key);
+      // `group` is the exception and is meant to be: the slice was rewritten
+      // during the separation, so the legacy tree carries its own copy beside
+      // the session one it shadows.
+      if (key in sessionReducers) continue;
+      expect(root, `legacy ${key} is mounted at the root`).not.toHaveProperty(key);
+    }
+  });
+
+  it("gives the legacy tree its own branch of the store", () => {
+    expect(setupStore().getState()).toHaveProperty("legacy");
+  });
+
+  it("shares no action type between legacy and the trees it was cut from", () => {
+    const prod = actionTypesOf(prodModules);
+    const dev = actionTypesOf(devModules);
+    const legacy = actionTypesOf(legacyModules);
+
+    const shared = [...legacy.keys()]
+      .filter((type) => prod.has(type) || dev.has(type))
+      .map((type) => `${type}  (${legacy.get(type)})`);
+
+    expect(
+      shared,
+      "a legacy slice kept the `name` it had before the split — rename it to legacy*",
+    ).toEqual([]);
+  });
+
+  it("names every legacy action type so it reads as one", () => {
+    const offenders = [...actionTypesOf(legacyModules).entries()]
+      .filter(([type]) => !type.startsWith("legacy"))
+      .map(([type, path]) => `${type}  (${path})`);
+
+    expect(offenders).toEqual([]);
   });
 
   it("clears the whole dev tree on sign-out", () => {

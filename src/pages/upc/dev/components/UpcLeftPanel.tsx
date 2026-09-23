@@ -1,12 +1,10 @@
-import InfoButton from "../../../../components-dev/InfoButton";
-import { useState } from "react";
+import PageInfoButton from "../../../../components-dev/PageInfoButton";
 import {
   MagnifyingGlassIcon,
 } from "@heroicons/react/16/solid";
 import { useAppSelector } from "../../../../hooks";
 import { useUpcDevCtx } from "../hooks/useUpcDevCtx";
 import UpcItemList from "./UpcItemList";
-import ModuleInfoPopover from "./ModuleInfoPopover";
 
 interface Props {
   onReSearch: () => void;
@@ -15,7 +13,6 @@ interface Props {
 const UpcLeftPanel = ({ onReSearch }: Props) => {
   const ctx = useUpcDevCtx();
   const searchState = useAppSelector((s) => s.search);
-  const [infoOpen, setInfoOpen] = useState(false);
 
   const locationLabel =
     searchState.type === "Store"
@@ -63,10 +60,13 @@ const UpcLeftPanel = ({ onReSearch }: Props) => {
             {locationLabel}
           </span>
 
-          <InfoButton onClick={() => setInfoOpen((prev) => !prev)} className="flex-shrink-0" />
+          <PageInfoButton
+            page="upc-list"
+            section={ctx.activeTab}
+            className="flex-shrink-0"
+          />
         </div>
 
-        {infoOpen && <ModuleInfoPopover tab={ctx.activeTab} onClose={() => setInfoOpen(false)} />}
       </div>
 
       <div className="flex-1 bg-custom-white flex flex-col min-h-0 overflow-hidden">

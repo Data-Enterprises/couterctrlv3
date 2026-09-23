@@ -17,8 +17,26 @@ interface AppState {
   fetchingCredentials: boolean;
   /** Which API this session talks to — and so which UI tree each page renders. */
   apiEnv: "dev" | "prod";
+  /**
+   * Live is the app as published. Legacy is the pages the dev/prod separation
+   * replaced, kept for people who still need the old view of the data.
+   *
+   * It sits beside `apiEnv` rather than inside it because it answers a
+   * different question — which generation of the page, not which backend —
+   * and the two are not free to combine: legacy is prod-only.
+   */
+  uiMode: "live" | "legacy";
+  /**
+   * Where you were last in Legacy, so the two views stop fighting over one
+   * value. `nav.lastRoute` is shared and persisted per API, so a legacy click
+   * overwrites the route live restores at sign-in; this is the legacy half,
+   * kept for the session only.
+   */
+  legacyLastRoute: string;
   prodToken: string;
   devToken: string;
+  /** Legacy runs on its own API, so it has its own credential. */
+  legacyToken: string;
 }
 
 /**
@@ -56,8 +74,13 @@ export const initialState: AppState = {
   isDesktop: true,
   fetchingCredentials: false,
   apiEnv: "prod",
+  uiMode: "live",
+  // Sales rather than Home: a real legacy page with data in it, and what
+  // the old sidebar already fell back to when a route was out of reach.
+  legacyLastRoute: "sales",
   prodToken: "",
   devToken: "",
+  legacyToken: "",
 };
 
 export const appSlice = createSlice({
@@ -91,6 +114,9 @@ export const appSlice = createSlice({
     setProdToken: (state, action: PayloadAction<string>) => {
       state.prodToken = action.payload;
     },
+    setLegacyToken: (state, action: PayloadAction<string>) => {
+      state.legacyToken = action.payload;
+    },
     setApiEnv: (state, action: PayloadAction<"dev" | "prod">) => {
       state.apiEnv = action.payload;
       state.url =
@@ -101,11 +127,31 @@ export const appSlice = createSlice({
       // so the credential has to travel with the base URL.
       state.token = action.payload === "dev" ? state.devToken : state.prodToken;
     },
+    /**
+     * Live <-> Legacy.
+     *
+     * Either direction lands on the prod API. Legacy pages read prod by
+     * construction and coming back out of Legacy on the dev API would drop the
+     * user somewhere they didn't ask to be, so the switch ends in prod both
+     * ways and the Mode row is disabled while Legacy is on.
+     */
+    setLegacyLastRoute: (state, action: PayloadAction<string>) => {
+      state.legacyLastRoute = action.payload;
+    },
+    setUiMode: (state, action: PayloadAction<"live" | "legacy">) => {
+      state.uiMode = action.payload;
+      state.apiEnv = "prod";
+      state.url = import.meta.env.VITE_API_URL_PROD;
+      state.token = state.prodToken;
+    },
     resetAppSlice: () => initialState,
   },
 });
 
 export const {
+  setUiMode,
+  setLegacyLastRoute,
+  setLegacyToken,
   setToken,
   setLoggedIn,
   setForgotPassword,

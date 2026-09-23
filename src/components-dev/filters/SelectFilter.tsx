@@ -12,9 +12,18 @@ interface SelectFilterProps {
   onChange: (v: string) => void;
   placeholder?: string;
   className?: string;
+  /**
+   * For a chooser rather than a filter.
+   *
+   * The active styling says "this is narrowing the list", which only reads
+   * that way when empty is the usual state. A field that always holds a value
+   * — a file format, say — would wear it permanently and stop meaning
+   * anything.
+   */
+  plain?: boolean;
 }
 
-const SelectFilter = ({ options, value, onChange, placeholder = "All", className = "" }: SelectFilterProps) => {
+const SelectFilter = ({ options, value, onChange, placeholder = "All", className = "", plain = false }: SelectFilterProps) => {
   const [open, setOpen] = useState(false);
   const btnRef = useRef<HTMLButtonElement>(null);
   const dropRef = useRef<HTMLDivElement>(null);
@@ -24,7 +33,7 @@ const SelectFilter = ({ options, value, onChange, placeholder = "All", className
   const label = selected?.label ?? placeholder;
   // Matches TextFilter: the filter_active tokens plus a ring mark a filter
   // that's narrowing the list. See TextFilter for why this isn't row_selected.
-  const isActive = value !== "";
+  const isActive = !plain && value !== "";
 
   const handleOpen = () => {
     if (btnRef.current) setRect(btnRef.current.getBoundingClientRect());

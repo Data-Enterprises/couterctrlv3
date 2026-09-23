@@ -85,8 +85,13 @@ const UserDataLoader = () => {
           const lastRoute = !prefs.last_route ? "/" : prefs.last_route;
           dispatch(setLastRoute(lastRoute));
 
-          // navigate to last route
-          if (lastRoute !== "/") {
+          // Picking up where you left off is a sign-in convenience, so it only
+          // applies when you have just signed in and are sitting on "/". This
+          // effect also re-runs whenever the token changes — switching API
+          // environment, or into Legacy — and from anywhere else that would
+          // throw you off the page you were on, mid-session, for no reason you
+          // could see.
+          if (lastRoute !== "/" && window.location.pathname === "/") {
             navigation(lastRoute);
           }
         }

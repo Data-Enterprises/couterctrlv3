@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
 import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
-import InfoButton from "../../../components-dev/InfoButton";
-import InfoPopover from "../../../components-dev/InfoPopover";
+import PageInfoButton from "../../../components-dev/PageInfoButton";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
 import {
   toggleCheckedUpc,
@@ -9,7 +8,6 @@ import {
   setListFilter,
 } from "../../../features/dev/devForecastDevSlice";
 import { formatCurrency2 } from "../../../utils";
-import { FORECAST_INFO } from "./forecastInfo";
 
 /**
  * The item panel.
@@ -31,7 +29,6 @@ const ForecastListPanel = ({ onReSearch }: Props) => {
     (s) => s.dev.forecastDev,
   );
   const [showSelectedOnly, setShowSelectedOnly] = useState(false);
-  const [infoOpen, setInfoOpen] = useState(false);
 
   const locationLabel =
     search.type === "Store"
@@ -89,15 +86,7 @@ const ForecastListPanel = ({ onReSearch }: Props) => {
           </span>
           <div className="flex-1" />
           <div className="relative flex-shrink-0">
-            <InfoButton onClick={() => setInfoOpen((p) => !p)} />
-            {infoOpen && (
-              <InfoPopover
-                title={FORECAST_INFO.title}
-                purpose={FORECAST_INFO.purpose}
-                glossary={FORECAST_INFO.glossary}
-                onClose={() => setInfoOpen(false)}
-              />
-            )}
+            <PageInfoButton page="forecasting" />
           </div>
         </div>
       </div>

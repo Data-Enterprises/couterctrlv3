@@ -2,7 +2,6 @@ import { useMemo, useState } from "react";
 import LocationTabs from "../../../../components-dev/filters/LocationTabs";
 import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import MobilePerfHeader from "../../../../components-dev/mobile/MobilePerfHeader";
-import { RECEIVERS_INFO } from "../receiversInfo";
 import { useAppSelector } from "../../../../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 import { getReceiverDetails } from "../../../../api/receivers";
@@ -179,7 +178,7 @@ const RcvReceiverList = ({
         storeName={storeName}
         dateRange={dateRangeLabel}
         onSearch={onSearch}
-        info={RECEIVERS_INFO}
+        helpPage="receivers"
       />
 
       <div className="flex-shrink-0 grid grid-cols-4 bg-custom-white border-b border-gray-100">

@@ -1,4 +1,4 @@
-import InfoButton from "../../../../../components-dev/InfoButton";
+import PageInfoButton from "../../../../../components-dev/PageInfoButton";
 import { useRef, useState } from "react";
 import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
 import { useAppDispatch, useAppSelector } from "../../../../../hooks";
@@ -28,8 +28,6 @@ import {
 } from "../../../../../utils/severity";
 import { isCompleteCoverage } from "../../../../../utils/grading";
 import type { SubDeptMargin } from "../../../../../interfaces";
-import InfoPopover from "../../../../../components-dev/InfoPopover";
-import { SUB_DEPT_MARGINS_INFO } from "../../subDeptMarginsInfo";
 import SortHeader, { PERF_SORT_HEADER } from "../../../../../components-dev/SortHeader";
 import { useTriStateSort } from "../../../../../utils/useTriStateSort";
 
@@ -82,7 +80,6 @@ const Sparkline = ({ values, stroke }: { values: number[]; stroke: string }) => 
 const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: Props) => {
   const ctx = useSubMarginCtx();
   const dispatch = useAppDispatch();
-  const [infoOpen, setInfoOpen] = useState(false);
   const { sort, handleSort, applySort } = useTriStateSort<SdSortCol>();
   const [sevFilter, setSevFilter] = useState<SevFilter>("all");
   const [subDeptFilter, setSubDeptFilter] = useState("");
@@ -340,15 +337,7 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: Props) => {
           </div>
 
           <div className="relative flex-shrink-0">
-            <InfoButton onClick={() => setInfoOpen((prev) => !prev)} />
-            {infoOpen && (
-              <InfoPopover
-                title={SUB_DEPT_MARGINS_INFO.title}
-                purpose={SUB_DEPT_MARGINS_INFO.purpose}
-                glossary={SUB_DEPT_MARGINS_INFO.glossary}
-                onClose={() => setInfoOpen(false)}
-              />
-            )}
+            <PageInfoButton page="sub-dept-margins" />
           </div>
         </div>
       </div>

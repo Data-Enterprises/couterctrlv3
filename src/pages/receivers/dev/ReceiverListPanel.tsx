@@ -1,4 +1,4 @@
-import InfoButton from "../../../components-dev/InfoButton";
+import PageInfoButton from "../../../components-dev/PageInfoButton";
 import { useState, useMemo } from "react";
 import {
   MagnifyingGlassIcon,
@@ -21,8 +21,6 @@ import LocationTabs from "../../../components-dev/filters/LocationTabs";
 import type { JsonError, ReceiverDetailsResponse } from "../../../interfaces";
 import SelectFilter from "../../../components-dev/filters/SelectFilter";
 import FilterBar from "../../../components-dev/filters/FilterBar";
-import InfoPopover from "../../../components-dev/InfoPopover";
-import { RECEIVERS_INFO } from "./receiversInfo";
 
 const ReceiverListPanel = ({ onOpenSearch }: { onOpenSearch: () => void }) => {
   const toast = useToast();
@@ -122,7 +120,6 @@ const ReceiverListPanel = ({ onOpenSearch }: { onOpenSearch: () => void }) => {
       ),
     );
   };
-  const [infoOpen, setInfoOpen] = useState(false);
   const hasFilters = !!vendorFilter || !!dateFilter;
 
   return (
@@ -171,15 +168,7 @@ const ReceiverListPanel = ({ onOpenSearch }: { onOpenSearch: () => void }) => {
           )}
           <div className="flex-1" />
           <div className="relative flex-shrink-0">
-            <InfoButton onClick={() => setInfoOpen((prev) => !prev)} />
-            {infoOpen && (
-              <InfoPopover
-                title={RECEIVERS_INFO.title}
-                purpose={RECEIVERS_INFO.purpose}
-                glossary={RECEIVERS_INFO.glossary}
-                onClose={() => setInfoOpen(false)}
-              />
-            )}
+            <PageInfoButton page="receivers" />
           </div>
         </div>
       </div>

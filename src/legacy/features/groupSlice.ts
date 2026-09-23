@@ -1,0 +1,103 @@
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+export type Group = {
+  id: number;
+  userid: number;
+  group_name: string;
+  is_shared: boolean;
+};
+
+// The blank Group used to clear a selection. Exported so the reset sites
+// across the Groups pages share one definition — is_shared was added to Group
+// after those literals were written, and each was its own compile error.
+export const emptyGroup: Group = {
+  id: 0,
+  userid: 0,
+  group_name: "",
+  is_shared: false,
+};
+
+export type StoreWithGroupStatus = {
+  store_number: string;
+  store_name: string;
+  storeid: number;
+  active: 1 | 0;
+};
+
+export type FilterOption = "all" | "active" | "inactive";
+export type GroupFormType = "create" | "update" | "delete" | "assign" | "";
+
+export interface GroupState {
+  groups: Group[];
+  selectedGroup: Group;
+  refreshGroups: boolean;
+  createInput: string;
+  filterOption: FilterOption;
+  storesWithGroupStatus: StoreWithGroupStatus[];
+  selectedForm: GroupFormType;
+}
+
+
+export const initialState: GroupState = {
+  groups: [],
+  refreshGroups: false,
+  createInput: "",
+  filterOption: "all",
+  selectedGroup: emptyGroup,
+  storesWithGroupStatus: [],
+  selectedForm: "",
+};
+
+const groupSlice = createSlice({
+  name: "legacyGroup",
+  initialState,
+  reducers: {
+    setGroups(state, action: PayloadAction<Group[]>) {
+      state.groups = action.payload;
+    },
+    setSelectedGroup(state, action: PayloadAction<Group>) {
+      state.selectedGroup = action.payload;
+    },
+    setRefreshGroups(state, action: PayloadAction<boolean>) {
+      state.refreshGroups = action.payload;
+    },
+    setCreateInput(state, action: PayloadAction<string>) {
+      state.createInput = action.payload;
+    },
+    setFilterOption(state, action: PayloadAction<FilterOption>) {
+      state.filterOption = action.payload;
+    },
+    setStoresWithGroupStatus(
+      state,
+      action: PayloadAction<StoreWithGroupStatus[]>
+    ) {
+      state.storesWithGroupStatus = action.payload;
+    },
+    updateStoresWithStatus: (state, action: PayloadAction<number>) => {
+      const storeId = action.payload;
+      state.storesWithGroupStatus = state.storesWithGroupStatus
+        .map((store) =>
+          store.storeid === storeId
+            ? { ...store, active: store.active === 1 ? 0 : 1 }
+            : store
+        )
+        .sort((a, b) => b.active - a.active) as StoreWithGroupStatus[];
+    },
+    setSelectedForm(state, action: PayloadAction<GroupFormType>) {
+      state.selectedForm = action.payload;
+    },
+    resetGroupState: () => initialState,
+  },
+});
+
+export const {
+  setGroups,
+  setSelectedGroup,
+  setRefreshGroups,
+  setCreateInput,
+  setFilterOption,
+  setStoresWithGroupStatus,
+  updateStoresWithStatus,
+  setSelectedForm,
+  resetGroupState,
+} = groupSlice.actions;
+export default groupSlice.reducer;

@@ -17,8 +17,8 @@ import type { RootState } from "../../../../store";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 import SearchCard from "../../../../components-dev/SearchCard";
 import BottomSheet from "../../../../components-dev/BottomSheet";
-import type { InfoGlossaryEntry } from "../../../../components-dev/InfoPopover";
-import MobileInfoSheet from "../../../../components-dev/mobile/MobileInfoSheet";
+import InfoModal from "../../../../components-dev/InfoModal";
+import type { HelpPage } from "../../../../constants/helpPages";
 import MobileSortChips, {
   type SortOption,
 } from "../../../../components-dev/mobile/MobileSortChips";
@@ -120,8 +120,8 @@ interface Props {
     day: string,
     storeid: number,
   ) => Promise<ReceiptLine[]>;
-  /** The page's mobile "?" copy — same shape as the desktop `*Info.ts`. */
-  info: { title: string; purpose: string; glossary: InfoGlossaryEntry[] };
+  /** Which help page the "?" opens — this screen serves more than one. */
+  helpPage: HelpPage;
 }
 
 const fmtInt = (n: number) => Math.round(n).toLocaleString("en-US");
@@ -167,7 +167,7 @@ const EventPerfMobile = ({
   measure,
   load,
   loadReceipt,
-  info,
+  helpPage,
 }: Props) => {
   const dispatch = useAppDispatch();
   const store = useStore<RootState>();
@@ -998,12 +998,11 @@ const EventPerfMobile = ({
         </BottomSheet>
       )}
 
-      {perf.infoOpen && (
-        <MobileInfoSheet
-          {...info}
-          onClose={() => dispatch(setEventInfoOpen(false))}
-        />
-      )}
+      <InfoModal
+        page={helpPage}
+        isOpen={perf.infoOpen}
+        onClose={() => dispatch(setEventInfoOpen(false))}
+      />
     </div>
   );
 };

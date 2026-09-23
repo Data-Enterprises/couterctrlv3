@@ -3,6 +3,7 @@ import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import { useOrganizationCtx } from "./hooks";
 import { useResizableBox } from "../../../hooks/useResizableBox";
 import ResizeHandle from "../../../components-dev/ResizeHandle";
+import PageInfoButton from "../../../components-dev/PageInfoButton";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import type {
   JsonError,
@@ -156,6 +157,12 @@ const Organization = () => {
               <ArrowDownTrayIcon className="w-3.5 h-3.5" />
             </button>
           )}
+          {/* The User Groups tab is the Store Groups page in dev, and has its
+              own help; every other tab is User Management's. */}
+          <PageInfoButton
+            page={tab === "userGroups" ? "store-groups" : "user-management"}
+            title="About this page"
+          />
         </div>
 
         <div className="flex border-b border-gray-100 flex-shrink-0">

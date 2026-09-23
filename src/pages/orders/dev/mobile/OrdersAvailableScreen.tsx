@@ -4,7 +4,6 @@ import type { GroupedOrderCard, SelectedOrderKey } from "../../../../features/de
 import TextFilter from "../../../../components-dev/filters/TextFilter";
 import SelectFilter, { type SelectFilterOption } from "../../../../components-dev/filters/SelectFilter";
 import MobilePerfHeader from "../../../../components-dev/mobile/MobilePerfHeader";
-import { ORDERS_INFO } from "../ordersInfo";
 import { useSearchScopeLabel } from "../../../../hooks/useSearchScopeLabel";
 
 interface Props {
@@ -100,7 +99,7 @@ const OrdersAvailableScreen = ({
         storeName={scopeLabel}
         dateRange={weekLabel}
         onSearch={onOpenSearch}
-        info={ORDERS_INFO}
+        helpPage="orders"
       />
 
       {/* Type tabs */}

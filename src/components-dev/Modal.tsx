@@ -9,6 +9,9 @@ interface ModalProps {
   children: React.ReactNode;
   modalClassName?: string;
   allowClickOutside?: boolean;
+  /** Off for content that owns its own edges — the help iframe fills the
+   *  modal, so the usual inset would frame it like a window in a window. */
+  padded?: boolean;
 }
 
 const Modal = ({
@@ -18,6 +21,7 @@ const Modal = ({
   children,
   modalClassName = "bg-bkg max-w-md w-full",
   allowClickOutside = true,
+  padded = true,
 }: ModalProps) => {
   const modalRef = useRef<HTMLDivElement>(null);
   const dispatch = useAppDispatch();
@@ -56,7 +60,7 @@ const Modal = ({
     >
       <div
         ref={modalRef}
-        className={`md:ml-12 mx-4 md:mx-0 p-2 ${modalClassName} rounded-xl shadow-xl`}
+        className={`md:ml-12 mx-4 md:mx-0 ${padded ? "p-2" : ""} ${modalClassName} rounded-xl shadow-xl`}
       >
         {children}
       </div>

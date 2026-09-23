@@ -1,0 +1,7 @@
+.scanner-container video {
+  border-radius: 12px; /* or whatever radius you want */
+  object-fit: cover; /* ensures proper cropping and aspect */
+  width: 100%;
+  height: 175px; /* match your container height */
+  display: block;
+}

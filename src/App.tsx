@@ -1,18 +1,20 @@
 import { useEffect } from "react";
 import { useAppSelector } from "./hooks";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import { useAppDispatch } from "./hooks";
 import { useToast } from "./components/toasts/hooks/useToast";
 
 // Components
 import { Outlet } from "react-router";
 import Login from "./pages/home/Login";
-import TitleBar from "./components/navigation/TitleBar";
+import { NavSwitch } from "./DevPages";
 import UserDataLoader from "./components/UserDataLoader";
 import AccountSetupModal from "./components/accountSetup/AccountSetupModal";
 import { getUserStores } from "./api/user";
 import type { JsonError, Store } from "./interfaces";
 import { setAllAvailableStores } from "./features/storeSlice";
+import { setLegacyLastRoute } from "./features/appSlice";
+import { hasLegacyPage } from "./constants/legacyPages";
 import {
   setAssignedStores,
   setRefreshStores,
@@ -24,6 +26,8 @@ const App = () => {
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
   const user = useAppSelector((state) => state.user);
+  const nav = useAppSelector((state) => state.nav);
+  const location = useLocation();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -68,7 +72,26 @@ const App = () => {
     navigate("/");
   }, []);
 
-  const containerStyle = context.isMobile ? "h-full bg-bkg pb-14" : "w-full";
+  // Remember where you are in Legacy, so switching back in returns you there
+  // rather than to whatever the live view was last doing. Recorded here rather
+  // than in the legacy sidebar: that file is restored as it shipped, and it
+  // knows nothing about a mode that did not exist then.
+  useEffect(() => {
+    if (context.uiMode !== "legacy") return;
+    if (!hasLegacyPage(location.pathname)) return;
+    dispatch(setLegacyLastRoute(location.pathname.replace(/^\//, "") || "/"));
+  }, [context.uiMode, location.pathname]);
+
+  // Legacy brings its own frame: a rail down the left that the live layout
+  // has no room reserved for, so the page has to start clear of it — and the
+  // old sidebar expands over the page rather than pushing it, which is why the
+  // content behind it is dimmed and inert while it is open.
+  const legacy = context.uiMode === "legacy";
+  const containerStyle = context.isMobile
+    ? "h-full bg-bkg pb-14"
+    : legacy
+      ? "ml-12 min-w-[calc(100vw-3rem)] max-w-[calc(100vw-3rem)]"
+      : "w-full";
 
   return (
     <div
@@ -78,10 +101,10 @@ const App = () => {
       <UserDataLoader />
       {context.loggedIn ? (
         <div className="max-h-screen max-w-screen overflow-hidden">
-          <TitleBar />
+          <NavSwitch />
           <div
             data-testid="outlet-container"
-            className={`${containerStyle} bg-bkg transition-all duration-300`}
+            className={`${containerStyle} bg-bkg ${legacy && nav.isNavOpen ? "opacity-20 pointer-events-none" : "opacity-100"} transition-all duration-300`}
           >
             {/* Renders only when the login response says the user still owes a
                 password change and/or a security question — otherwise null. */}

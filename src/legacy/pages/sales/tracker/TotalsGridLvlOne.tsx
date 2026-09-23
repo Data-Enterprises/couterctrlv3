@@ -1,0 +1,133 @@
+import { useSalesState } from "../hooks/useSalesState";
+import { useAppDispatch } from "../../../../hooks/index";
+import { formatCurrency2 } from "../../../utils";
+import { useSalesActions } from "../hooks/useSalesActions";
+import type { WeekTotal } from "../../../features/salesSlice";
+import { changeTextColor } from ".";
+import TotalsGridLvlTwo from "./TotalsGridLvlTwo";
+
+interface TotalsGridLvlOneProps {
+  desc: string;
+  totals: {
+    tyTotalSales: number;
+    lyTotalSales: number;
+    percentChange: number;
+    dollarChange: number;
+    atsTotalSales: number;
+  };
+  filtered: WeekTotal[][];
+  isLvlTwo?: boolean;
+  subId?: number;
+  isLast?: boolean;
+}
+
+const TotalsGridLvlOne = ({
+  desc,
+  totals,
+  filtered,
+  isLvlTwo = false,
+  subId,
+  isLast,
+}: TotalsGridLvlOneProps) => {
+  const { salesTrackerSelectedSubDept } = useSalesState();
+  const dispatch = useAppDispatch();
+  const actions = useSalesActions();
+  const calcTotals = (data: WeekTotal[][]) => {
+    const tyTotalSales = data.reduce((acc, weekGroup) => {
+      return (
+        acc + weekGroup.reduce((weekAcc, week) => weekAcc + week.salesTY, 0)
+      );
+    }, 0);
+
+    const lyTotalSales = data.reduce((acc, weekGroup) => {
+      return (
+        acc + weekGroup.reduce((weekAcc, week) => weekAcc + week.salesLY, 0)
+      );
+    }, 0);
+
+    const percentChange =
+      lyTotalSales === 0
+        ? 0
+        : ((tyTotalSales - lyTotalSales) / lyTotalSales) * 100;
+    const dollarChange = tyTotalSales - lyTotalSales;
+    const totalTrans = data.reduce((acc, weekGroup) => {
+      return (
+        acc +
+        weekGroup.reduce((weekAcc, week) => weekAcc + week.transaction_count, 0)
+      );
+    }, 0);
+    const atsTotalSales = totalTrans === 0 ? 0 : tyTotalSales / totalTrans;
+
+    return {
+      tyTotalSales,
+      lyTotalSales,
+      percentChange,
+      dollarChange,
+      atsTotalSales,
+    };
+  };
+
+  const handleRowClick = () => {
+    if (subId !== undefined) {
+      dispatch(actions.setSalesTrackerSelectedSubDept(subId));
+    }
+  };
+
+  if (!isLvlTwo) {
+    return (
+      <div
+        className={`text-[11px] transition-all last:rounded-b-lg duration-200 ${salesTrackerSelectedSubDept === subId ? "bg-orange-200 shadow-inner" : "bg-custom-white"}`}
+        onClick={handleRowClick}
+      >
+        <div className="grid grid-cols-[1.9fr_0.7fr_0.7fr_1fr_0.7fr_0.8fr] px-2 py-1 font-medium items-center cursor-pointer hover:bg-blue-200/50 transition-all duration-200">
+          <div className="">
+            <div className="">{desc}</div>
+          </div>
+          <div className="text-right">
+            {formatCurrency2(totals.tyTotalSales)}
+          </div>
+          <div className="text-right">
+            {formatCurrency2(totals.lyTotalSales)}
+          </div>
+          <div className="text-right">
+            {formatCurrency2(totals.atsTotalSales)}
+          </div>
+          <div
+            className={`text-right ${changeTextColor(totals.dollarChange, 0)}`}
+          >
+            {formatCurrency2(totals.dollarChange)}
+          </div>
+          <div
+            className={`text-right ${changeTextColor(totals.percentChange, 0)}`}
+          >
+            {totals.percentChange.toFixed(2)}%
+          </div>
+        </div>
+        {!isLast && <div className="border-b border-content/15"></div>}
+      </div>
+    );
+  }
+
+  /* Level 2 => weeks */
+  return (
+    <div className="">
+      <div className="grid gap-2">
+        {filtered.map((week, widx) => {
+          const desc = week[0].subDesc;
+          const weekTotals = calcTotals([week]);
+          return (
+            <TotalsGridLvlTwo
+              key={widx}
+              idx={widx + 1}
+              week={week}
+              weekTotals={weekTotals}
+              desc={desc}
+            />
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+export default TotalsGridLvlOne;

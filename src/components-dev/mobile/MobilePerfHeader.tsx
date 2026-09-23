@@ -1,11 +1,11 @@
-import { useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import {
   MagnifyingGlassIcon,
   ChevronLeftIcon,
 } from "@heroicons/react/20/solid";
-import InfoButton from "../InfoButton";
+import PageInfoButton from "../PageInfoButton";
 import HeaderIconButton from "../HeaderIconButton";
-import InfoPopover, { type InfoGlossaryEntry } from "../InfoPopover";
+import type { HelpPage } from "../../constants/helpPages";
 
 /**
  * The navy header shared by every mobile report — the Performance pages (Sub
@@ -23,10 +23,10 @@ import InfoPopover, { type InfoGlossaryEntry } from "../InfoPopover";
  * Data pages have the same problem one level down: their drill-downs are all
  * "a list of things under a heading", so each screen names what it is showing.
  *
- * The "?" opens the same `InfoPopover` desktop uses, from the same per-page
- * content file, which is also what replaced the severity legend that used to
- * sit on row two: the legend explained the colours and nothing else, and the
- * popover explains the whole page.
+ * The "?" opens the same help page desktop opens, for whichever page this
+ * header is naming. It is what replaced the severity legend that used to sit
+ * on row two: the legend explained the colours and nothing else, and the help
+ * explains the whole page.
  */
 
 interface Props {
@@ -51,9 +51,9 @@ interface Props {
    *  than a number the user dials in, and on the Data pages, which don't
    *  grade at all. */
   threshold?: ReactNode;
-  /** Optional: a page with no `*_INFO` content hides the "?" rather than
-   *  opening an empty card. */
-  info?: { title: string; purpose: string; glossary: InfoGlossaryEntry[] };
+  /** Optional: a page with no help page of its own hides the "?" rather
+   *  than opening a frame that 403s. */
+  helpPage?: HelpPage;
 }
 
 const MobilePerfHeader = ({
@@ -64,16 +64,12 @@ const MobilePerfHeader = ({
   onBack,
   actions,
   threshold,
-  info,
+  helpPage,
 }: Props) => {
-  const [infoOpen, setInfoOpen] = useState(false);
 
   return (
-    // `relative` so the popover anchors to the header rather than the page —
-    // InfoPopover positions itself `top-full right-0` against whatever
-    // container establishes the offset parent.
     <div
-      className="relative flex-shrink-0 px-3 pt-2 pb-2.5"
+      className="flex-shrink-0 px-3 pt-2 pb-2.5"
       style={{ background: "#1e2a4a" }}
     >
       {/* Row 1 — the store, then the week it covers */}
@@ -117,28 +113,12 @@ const MobilePerfHeader = ({
               {threshold}
             </div>
           )}
-          {info && (
-            <InfoButton
-              onClick={() => setInfoOpen((prev) => !prev)}
-              title={`About ${pageName}`}
-            />
+          {helpPage && (
+            <PageInfoButton page={helpPage} title={`About ${pageName}`} />
           )}
         </div>
       </div>
 
-      {infoOpen && info && (
-        <InfoPopover
-          title={info.title}
-          purpose={info.purpose}
-          glossary={info.glossary}
-          onClose={() => setInfoOpen(false)}
-          // No width override. The popover is `right-0` with min 260px / max
-          // 500px, so it grows leftward from the screen edge and stays on
-          // screen even at 320px. Passing `left-*`/`right-*` here would collide
-          // with its own positioning classes, and which one won would come down
-          // to CSS source order rather than anything readable.
-        />
-      )}
     </div>
   );
 };

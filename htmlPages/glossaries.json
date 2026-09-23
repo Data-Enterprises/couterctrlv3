@@ -1,0 +1,1238 @@
+{
+  "sales": {
+    "title": "Sales",
+    "purpose": "Shows which stores need attention first, then lets you drill into exactly where the problem is — by sub-department or by hour.",
+    "glossary": [
+      {
+        "term": "Critical / Watch / Healthy",
+        "desc": "Graded against last year, but only when last year has every day of the week. If it's missing days, the grade uses last week instead. Critical means down more than your threshold; Watch means down some, but not past it; Healthy means flat or up."
+      },
+      {
+        "term": "Grey percentages",
+        "desc": "That comparison is missing days — for example, last year only has 3 of the 7 days. The number is still shown, but it isn't used for the grade, because a partial week can't fairly call a store or department Critical."
+      },
+      {
+        "term": "Not graded (grey dot)",
+        "desc": "Neither last week nor last year has every day of the week, so there's no full-week comparison to grade on. These aren't counted under Critical, Watch or Healthy."
+      },
+      {
+        "term": "Threshold",
+        "desc": "How far a decline has to go before something's flagged Critical. You can set this separately for the store list, for sub-departments, and for hours — changing one doesn't affect the others."
+      },
+      {
+        "term": "Report total",
+        "desc": "The combined total across every store currently loaded, not the one store you have open. Easy to mistake for a single store's number."
+      },
+      {
+        "term": "Sales vs Qty",
+        "desc": "Swaps everything on the page from dollars to units sold, including every KPI and every grade."
+      },
+      {
+        "term": "vs Last Week / vs Last Year",
+        "desc": "Only compares days that exist in both periods, so a week still in progress won't look artificially worse just because fewer days have happened yet."
+      },
+      {
+        "term": "Avg basket (Hourly tab)",
+        "desc": "Total sales divided by number of transactions for that hour."
+      },
+      {
+        "term": "Inactive items (Sub dept tab → Items)",
+        "desc": "Sold last week or last year, but nothing yet this year. Listed last, so you can catch something that's quietly stopped selling."
+      }
+    ]
+  },
+  "sales-mobile": {
+    "title": "Sales",
+    "purpose": "This year against last year for the week you searched. Open a store to see its week, then open a sub department to see the items in it.",
+    "glossary": [
+      {
+        "term": "TY / LY",
+        "desc": "TY is the week you searched. LY is the same weekdays last year, matched day by day, so a Monday is compared with a Monday and a holiday with the same holiday."
+      },
+      {
+        "term": "Sales",
+        "desc": "Sales before tax, for whatever is in view — the whole search, or the store and day you have open."
+      },
+      {
+        "term": "The card at the top",
+        "desc": "The group as a whole, and the total every store below is part of. Open it for the group's week and its own breakdowns."
+      },
+      {
+        "term": "Open a store",
+        "desc": "Tap a store to open its report where it sits — its week, its total against last year, and what made it up. One opens at a time; the others shrink to a single line so the open one has the screen."
+      },
+      {
+        "term": "Transactions / Avg basket",
+        "desc": "Transactions is the number of receipts. Avg basket is sales divided by transactions. These come from the store's own figures, so they show a grey placeholder for a moment after you open a card."
+      },
+      {
+        "term": "Coupons",
+        "desc": "Every coupon redeemed, split by type: digital, electronic store, electronic in-store and paper store coupons."
+      },
+      {
+        "term": "View details",
+        "desc": "Opens the store's sub departments and hours on their own screen. Tap a sub department to see the items in it — those load the first time you open that department and are instant after. Back returns to the list with your card still open."
+      },
+      {
+        "term": "Tap a day",
+        "desc": "On the top card, scopes the whole screen — its figures and every store below. Inside a store's card it scopes that store only, and is cleared when you open a different one. Tap the same day again for the full week."
+      },
+      {
+        "term": "Sort by",
+        "desc": "Tap a chip to sort, again to reverse it, and a third time to go back to the order the search returned. Sales opens on the biggest, Change vs LY on the biggest drop; rows with nothing to compare stay at the bottom either way. Each list keeps its own sort."
+      },
+      {
+        "term": "Filter by store",
+        "desc": "Narrows a long list to the stores whose name or number matches what you type. It only hides rows — no figure changes."
+      },
+      {
+        "term": "Change %",
+        "desc": "This year against last year for that row. A dash means it sold nothing last year, so there is no percentage to show."
+      }
+    ]
+  },
+  "loss-prevention": {
+    "title": "Loss Prevention",
+    "purpose": "Flags cashiers and stores with unusual exception activity — voids, refunds, no-sales — so you can catch questionable transaction patterns early.",
+    "glossary": [
+      {
+        "term": "Baseline",
+        "desc": "Your (or that store's) own average over the prior 2 weeks — per week normally, or per that weekday when you've picked a day. Everything on this page is graded against that baseline, not against other stores or cashiers."
+      },
+      {
+        "term": "Selecting a day",
+        "desc": "Picking a day narrows the transaction list and the cashier list together, and the baseline narrows with them — a Wednesday is compared to the other Wednesdays in those 2 weeks, not to an average day. Exception activity swings a lot by day of week, so measuring a Saturday against a midweek average would flag every Saturday."
+      },
+      {
+        "term": "Critical / Watch / Healthy",
+        "desc": "Based on how many key metrics (transactions, quantity, dollar total, average ticket) are at or below baseline. This page flags when exception activity goes up — the opposite direction from a typical sales KPI, where up is good."
+      },
+      {
+        "term": "Ungraded (cashier list)",
+        "desc": "This cashier has nothing to compare against — either no transactions in the baseline window at all, or none on the weekday you've selected. Not the same as Healthy: it means there isn't enough history to grade them yet."
+      },
+      {
+        "term": "No baseline data (store list)",
+        "desc": "A store with no baseline at all defaults to showing Healthy. That's a lack of comparison data, not a confirmed clean bill of health — worth a second look rather than assuming it's fine."
+      },
+      {
+        "term": "Cashier grading",
+        "desc": "Each cashier is compared only to their own recent history, never ranked against other cashiers."
+      },
+      {
+        "term": "Avg ticket baseline",
+        "desc": "Shown as a straight weekly average, not combined like the other baseline figures, since it's already a per-transaction rate rather than a running total."
+      }
+    ]
+  },
+  "loss-prevention-mobile": {
+    "title": "Loss Prevention",
+    "purpose": "Exception activity — voids, refunds, no-sales and the rest — for the week you searched, next to the same stores' and cashiers' own prior two weeks. Nothing is graded: the two sit side by side and you draw the conclusion.",
+    "glossary": [
+      {
+        "term": "The big number",
+        "desc": "Exception transactions for whatever is in view — the whole week or the day you have tapped, for the store and exception type you have open. A transaction with two exceptions on it counts once."
+      },
+      {
+        "term": "WK / AVG",
+        "desc": "WK is the week you searched. AVG is the two weeks before it, added up and halved into one week's worth. With a day picked, AVG is that weekday in those two weeks, halved — so a Saturday is compared with an average Saturday."
+      },
+      {
+        "term": "Exception type",
+        "desc": "Tap the underlined title on the top card to choose one. The list shows every type with its own figures, so you can see which is worst before choosing. Picking one narrows the whole screen, including every store below; the first entry is every type at once."
+      },
+      {
+        "term": "The card at the top",
+        "desc": "All the stores you searched, together. Open it for the week's shape and its own cashiers and transactions."
+      },
+      {
+        "term": "Open a store",
+        "desc": "Tap a store to open its report where it sits. One opens at a time; the others shrink to a single line. Changing the exception type keeps your store open."
+      },
+      {
+        "term": "View details",
+        "desc": "Opens that store's cashiers and transactions on their own screen. Tap a cashier to see just their transactions, and a transaction to open the receipt. Back returns to the list with your card still open."
+      },
+      {
+        "term": "Tap a day",
+        "desc": "On the top card, scopes the whole screen — its figures and every store below. Inside a store's card it scopes that store only, and is cleared when you open a different one. Tap the same day again for the full week."
+      },
+      {
+        "term": "Sort by",
+        "desc": "Transactions and Amount put the biggest first. vs Avg puts the biggest rise over AVG first — the most extra exceptions, not the biggest percentage, so a cashier going from 1 to 3 does not outrank one going from 20 to 30. Store # and Name sort in order. Tap the same one again to reverse it, and once more to put the list back the way it arrived. Stores and Cashiers each remember their own sort."
+      },
+      {
+        "term": "Filter by store",
+        "desc": "Narrows a long list to the stores matching what you type. It only hides rows — no figure changes."
+      },
+      {
+        "term": "Transactions list",
+        "desc": "Newest first, because a run of exceptions in one evening is the pattern worth seeing. Search it by sale ID, cashier or lane."
+      },
+      {
+        "term": "Busiest",
+        "desc": "The day of the week with the most exception transactions for what is in view."
+      },
+      {
+        "term": "Per txn",
+        "desc": "The dollar amount divided by the number of transactions."
+      }
+    ]
+  },
+  "coupon-sales": {
+    "title": "Coupon Sales",
+    "purpose": "Flags where coupons are coming off unusually large — either because a store has moved against its own recent norm, or because its average is simply high — so you can trace it down to the sub department, cashier or day behind it and read the actual transactions.",
+    "glossary": [
+      {
+        "term": "Avg coupon",
+        "desc": "Total coupon dollars divided by the number of coupon lines — the value of a typical single coupon. This is the graded number at every level of the page."
+      },
+      {
+        "term": "Trend vs Avg $",
+        "desc": "Two different questions, so the toggle picks one. Trend compares this week's average against the same store's prior two weeks. Avg $ ignores history and compares the average to a flat dollar line. A store steady at $8 for months is invisible to Trend and obvious to Avg $; a store moving $1 to $2 is the reverse."
+      },
+      {
+        "term": "Baseline",
+        "desc": "The two weeks before the searched week. Both weeks pool into one average rather than averaging two weekly averages, so a quiet week doesn't carry the same weight as a busy one. Nothing is halved: an average is already per-coupon, so two weeks compare directly against one."
+      },
+      {
+        "term": "Threshold",
+        "desc": "Follows the toggle. Under Trend it's the percentage rise that tips a row into critical; under Avg $ it's the dollar amount the average has to clear. The two are stored separately, so switching back and forth keeps both."
+      },
+      {
+        "term": "Grades",
+        "desc": "Under Trend: Critical is above the percentage threshold, Watch is up but under it, OK is flat or down, and Ungraded means the group had no coupons in the baseline weeks — unknown, not healthy. Under Avg $ there are only two: over the dollar line or not."
+      },
+      {
+        "term": "Day of week",
+        "desc": "Each day's average coupon against the same weekday in the baseline weeks — this Tuesday against those Tuesdays. Selecting a day narrows the KPIs, the breakdown rows and the transactions together."
+      },
+      {
+        "term": "Coupons",
+        "desc": "The number of coupons used — the count of coupon lines, and the denominator behind the average. Item quantity isn't shown because coupon lines don't reliably carry one."
+      },
+      {
+        "term": "Trans",
+        "desc": "Distinct transactions containing at least one coupon. Shown for context — it is never the denominator behind the average."
+      },
+      {
+        "term": "Sub Dept / Cashier",
+        "desc": "Two ways to break down the selected store, both graded the same way the store rows are, against that store's own baseline. Individual transactions are the exception: a single sale has no history to move against, so it is always judged on the dollar rule."
+      }
+    ]
+  },
+  "coupon-sales-mobile": {
+    "title": "Coupon Sales",
+    "purpose": "Coupon dollars for the week you searched, next to the same stores' and cashiers' own prior two weeks, down to the receipt. Nothing is graded: the two sit side by side and you draw the conclusion.",
+    "glossary": [
+      {
+        "term": "The big number",
+        "desc": "Coupon dollars for whatever is in view — the whole week or the day you have tapped, for the store and coupon type you have open."
+      },
+      {
+        "term": "WK / AVG",
+        "desc": "WK is the week you searched. AVG is the two weeks before it, added up and halved into one week's worth. With a day picked, AVG is that weekday in those two weeks, halved — so a Saturday is compared with an average Saturday."
+      },
+      {
+        "term": "Coupon type",
+        "desc": "Tap the underlined title on the top card to choose one. The list shows every type with its own figures, so you can see which is biggest before choosing. Picking one narrows the whole screen, including every store below; the first entry is every type at once."
+      },
+      {
+        "term": "Coupons / Transactions",
+        "desc": "Coupons is the number of coupon lines. Transactions is the number of sales with at least one coupon on them. Per txn is coupon dollars divided by transactions."
+      },
+      {
+        "term": "The card at the top",
+        "desc": "All the stores you searched, together. Open it for the week's shape and its own cashiers and transactions."
+      },
+      {
+        "term": "Open a store",
+        "desc": "Tap a store to open its report where it sits. One opens at a time; the others shrink to a single line. Changing the coupon type keeps your store open."
+      },
+      {
+        "term": "View details",
+        "desc": "Opens that store's cashiers and transactions on their own screen. Tap a cashier to see just their transactions, and a transaction to open its coupon lines. Back returns to the list with your card still open."
+      },
+      {
+        "term": "Tap a day",
+        "desc": "On the top card, scopes the whole screen — its figures and every store below. Inside a store's card it scopes that store only, and is cleared when you open a different one. Tap the same day again for the full week."
+      },
+      {
+        "term": "Sort by",
+        "desc": "Amount and Transactions put the biggest first. vs Avg puts the biggest rise in dollars over AVG first — the most extra coupon money, not the biggest percentage. Store # and Name sort in order. Tap the same one again to reverse it, and once more to put the list back the way it arrived. Stores and Cashiers each remember their own sort."
+      },
+      {
+        "term": "Filter by store",
+        "desc": "Narrows a long list to the stores matching what you type. It only hides rows — no figure changes."
+      },
+      {
+        "term": "Transactions list",
+        "desc": "Newest first. Search it by sale ID, cashier or lane."
+      },
+      {
+        "term": "Busiest",
+        "desc": "The day of the week with the most coupon dollars for what is in view."
+      }
+    ]
+  },
+  "categories": {
+    "title": "Categories",
+    "purpose": "Shows which categories in a store are falling behind, then lets you drill into the day, the items, or the hour where the decline actually happened.",
+    "glossary": [
+      {
+        "term": "Crit / Watch / OK",
+        "desc": "Graded against last year, but only when last year has every day of the week. If it's missing days, the grade uses last week instead. Crit means down more than your threshold; Watch means down, but not past it; OK means flat or up. Click a chip to show only those; click it again to clear."
+      },
+      {
+        "term": "Ungraded",
+        "desc": "Neither last week nor last year has every day of the week, or neither has a figure at all, so there's no full-week comparison to grade on. Shown with a grey dot and not counted under Crit, Watch or OK. The chip only appears when some exist."
+      },
+      {
+        "term": "Grey percentages",
+        "desc": "That comparison is missing days — for example, last year only has 3 of the 7 days. The number is still shown, but it isn't used for the grade, because a partial week can't fairly call a category Crit. The header pills go grey the same way and show how many days matched."
+      },
+      {
+        "term": "Threshold",
+        "desc": "How far a decline has to go before a category is flagged Critical. The Items tab has its own separate threshold, since a single UPC moving is a smaller thing than a whole category moving."
+      },
+      {
+        "term": "Day strip",
+        "desc": "Picking a day narrows everything below it — the KPIs, the items, and the hours — to that day alone. Click the selected day again, or All Week, to go back to the full week."
+      },
+      {
+        "term": "Items tab",
+        "desc": "Every UPC in the open category, graded the same way the categories are. Selecting one shows its margin, contribution and day-of-week pattern, plus a plain-language read on what moved."
+      },
+      {
+        "term": "Contribution",
+        "desc": "An item's share of the whole category's sales, not of its own. It's how you tell a big decline on a small item from a small decline on the item carrying the category."
+      },
+      {
+        "term": "Item margin",
+        "desc": "Revenue less cost of goods, using the cost actually paid after any vendor allowance — and pounds rather than scans on anything sold by weight. Matches Sub Dept Margins and Item Lookup for the same item and day."
+      },
+      {
+        "term": "Hours tab",
+        "desc": "Loads on demand rather than with the page, since it's a much larger pull. Each hour is compared to the same hour last week and last year — 4pm being busy is true of every store, so only the change means anything."
+      },
+      {
+        "term": "Sales vs Qty",
+        "desc": "Swaps the whole page from dollars to units sold, including every KPI and every grade — categories and items alike."
+      },
+      {
+        "term": "vs LW / vs LY",
+        "desc": "Only compares days present in both periods, so a week still in progress isn't dragged down by days that haven't happened yet. A dash means there's no comparable period at all."
+      },
+      {
+        "term": "Uncategorized",
+        "desc": "Sales the POS recorded with no category attached. Worth clearing up — anything sitting here is invisible to every category figure on this page."
+      },
+      {
+        "term": "Export",
+        "desc": "Covers whatever the date pills are set to, so a single day exports that day. Categories are always the full list; items and hours cover the open category only."
+      }
+    ]
+  },
+  "categories-mobile": {
+    "title": "Categories",
+    "purpose": "Margin for one store's week against the same week last year, by category. Open one to see its figures, then its items, then a single item's week day by day. Nothing is graded: the two years sit side by side and you draw the conclusion.",
+    "glossary": [
+      {
+        "term": "The card at the top",
+        "desc": "The store you searched, for the whole week — its margin, and its sales against last year. It doesn't open, because what is inside it is the list of categories underneath."
+      },
+      {
+        "term": "TY margin / LY margin",
+        "desc": "Gross margin this year: sales minus cost of goods, as a percentage of sales. LY margin is the same for last year."
+      },
+      {
+        "term": "Bars",
+        "desc": "Sales this year (TY) against last year (LY) — on the cards, the day chart and every category and item in a list. The percentage says how healthy; the bars say how much was sold."
+      },
+      {
+        "term": "Gross profit / Cost",
+        "desc": "Sales before tax minus the cost of goods sold, and that cost — this year on the top row, last year beneath. Cost is what was actually paid after vendor allowances, and weighted items cost by the pound."
+      },
+      {
+        "term": "TY / LY",
+        "desc": "LY is the same weekdays last year, matched day by day, so a Monday is compared with a Monday. \"No history\" means we have no record for this store last year — not that it sold nothing."
+      },
+      {
+        "term": "Open a category",
+        "desc": "Tap it to open its report where it sits. One opens at a time; the others shrink to a single line so the one you opened has the screen."
+      },
+      {
+        "term": "Tap a day",
+        "desc": "Inside an open category, scopes that category to the day — its figures and its items. It belongs to that card only, and clears when you open a different one. Tap the same day again for the full week."
+      },
+      {
+        "term": "View items",
+        "desc": "Opens that category's items on their own screen. Tap an item to see its week day by day. Back returns to the list with your card still open."
+      },
+      {
+        "term": "Find an item or scan",
+        "desc": "Searches every item in the store's week, not just one category — by name, by UPC, or by scanning a barcode. Each result names the category it came from, and tapping one goes straight to that item's week."
+      },
+      {
+        "term": "Filtering and scanning a list",
+        "desc": "The box above a list narrows it to what you type, and the scan button fills it from a barcode. Inside a category that only covers its own items, so if a scan finds nothing the screen offers to search the whole store for it instead."
+      },
+      {
+        "term": "Sort by",
+        "desc": "Sales puts the biggest sellers first. Profit puts the biggest earners first. GPM puts the thinnest margins first. Change vs LY puts the biggest drop first; anything with no sales last year goes to the bottom. Name sorts A to Z. Tap the same one again to reverse it, and once more to put the list back the way it arrived."
+      },
+      {
+        "term": "Each page keeps its place",
+        "desc": "Sub Dept Margins, Vendors and Categories each remember their own search, sort and open card. Moving between them leaves the others as you left them."
+      },
+      {
+        "term": "Location",
+        "desc": "A few stores share one store ID across two locations. When that happens you can switch between them; the figures are never added together."
+      }
+    ]
+  },
+  "vendors": {
+    "title": "Vendors",
+    "purpose": "Shows which of a store's suppliers are falling behind, then lets you drill into the items and departments where it happened.",
+    "glossary": [
+      {
+        "term": "Crit / Watch / OK",
+        "desc": "Graded against last year, but only when last year has every day of the week. If it's missing days, the grade uses last week instead. Crit means down more than your threshold; Watch means down, but not past it; OK means flat or up. Click a chip to show only those; click it again to clear."
+      },
+      {
+        "term": "Ungraded",
+        "desc": "Neither last week nor last year has every day of the week, or neither has a figure at all, so there's no full-week comparison to grade on. Shown with a grey dot and not counted under Crit, Watch or OK. The chip only appears when some exist."
+      },
+      {
+        "term": "Grey percentages",
+        "desc": "That comparison is missing days — for example, last year only has 3 of the 7 days. The number is still shown, but it isn't used for the grade, because a partial week can't fairly call a vendor Crit. The header pills go grey the same way and show how many days matched."
+      },
+      {
+        "term": "Threshold",
+        "desc": "How far a decline has to go before a vendor is flagged Crit — points in margin mode, percent in sales mode. The Items tab has its own separate threshold, since a single UPC moving is a smaller thing than a whole vendor moving."
+      },
+      {
+        "term": "No vendor",
+        "desc": "Coupon (CPN) lines and anything else the POS books without a supplier. Kept in the list rather than dropped, so the vendors still add up to the store total — but it isn't a supplier, and a large bucket here is worth a look on its own."
+      },
+      {
+        "term": "Day strip",
+        "desc": "Picking a day narrows everything below it — the KPIs, the items, the departments — to that day alone. Click the selected day again, or All Week, to go back to the full week."
+      },
+      {
+        "term": "Items",
+        "desc": "Every UPC this vendor supplied, graded the same way the vendors are. Selecting one shows its margin, contribution and day-of-week pattern. Department-level breakdowns live on Sub Dept Margins rather than being repeated here."
+      },
+      {
+        "term": "Margin vs Sales",
+        "desc": "Swaps the whole page between gross margin and dollars, including every KPI and every grade — vendors and items alike. Margin moves are shown in POINTS, sales moves in percent; a two-point margin change is not a two percent change."
+      },
+      {
+        "term": "vs LW / vs LY",
+        "desc": "Only compares days present in both periods, so a week still in progress isn't dragged down by days that haven't happened yet. A dash means there's no comparable period at all."
+      },
+      {
+        "term": "Net sales and margin",
+        "desc": "Sales are net of tax and margin uses the same cost helper as Sub Dept Margins — net_cost before list, weight before scan count — so a vendor reconciles with the departments it sits in. The store figure in the header is weighted: dollars over dollars, not an average of the vendors' percentages."
+      },
+      {
+        "term": "Where the data comes from",
+        "desc": "Vendor is carried on the item rows, which arrive one department at a time. The page asks which departments sold this week, then walks all of them across three periods — which is why it takes longer to load than the pages above it."
+      },
+      {
+        "term": "Export",
+        "desc": "Covers whatever the date pills are set to, so a single day exports that day. Vendors are always the full list; items cover the open vendor only."
+      }
+    ]
+  },
+  "vendors-mobile": {
+    "title": "Vendors",
+    "purpose": "Margin for one store's week against the same week last year, by vendor. Open one to see its figures, then its items, then a single item's week day by day. Nothing is graded: the two years sit side by side and you draw the conclusion.",
+    "glossary": [
+      {
+        "term": "The card at the top",
+        "desc": "The store you searched, for the whole week — its margin, and its sales against last year. It doesn't open, because what is inside it is the list of vendors underneath."
+      },
+      {
+        "term": "TY margin / LY margin",
+        "desc": "Gross margin this year: sales minus cost of goods, as a percentage of sales. LY margin is the same for last year."
+      },
+      {
+        "term": "Bars",
+        "desc": "Sales this year (TY) against last year (LY) — on the cards, the day chart and every vendor and item in a list. The percentage says how healthy; the bars say how much was sold."
+      },
+      {
+        "term": "Gross profit / Cost",
+        "desc": "Sales before tax minus the cost of goods sold, and that cost — this year on the top row, last year beneath. Cost is what was actually paid after vendor allowances, and weighted items cost by the pound."
+      },
+      {
+        "term": "TY / LY",
+        "desc": "LY is the same weekdays last year, matched day by day, so a Monday is compared with a Monday. \"No history\" means we have no record for this store last year — not that it sold nothing."
+      },
+      {
+        "term": "Open a vendor",
+        "desc": "Tap it to open its report where it sits. One opens at a time; the others shrink to a single line so the one you opened has the screen."
+      },
+      {
+        "term": "Tap a day",
+        "desc": "Inside an open vendor, scopes that vendor to the day — its figures and its items. It belongs to that card only, and clears when you open a different one. Tap the same day again for the full week."
+      },
+      {
+        "term": "View items",
+        "desc": "Opens that vendor's items on their own screen. Tap an item to see its week day by day. Back returns to the list with your card still open."
+      },
+      {
+        "term": "Find an item or scan",
+        "desc": "Searches every item in the store's week, not just one vendor — by name, by UPC, or by scanning a barcode. Each result names the vendor it came from, and tapping one goes straight to that item's week."
+      },
+      {
+        "term": "Filtering and scanning a list",
+        "desc": "The box above a list narrows it to what you type, and the scan button fills it from a barcode. Inside a vendor that only covers its own items, so if a scan finds nothing the screen offers to search the whole store for it instead."
+      },
+      {
+        "term": "Sort by",
+        "desc": "Sales puts the biggest sellers first. Profit puts the biggest earners first. GPM puts the thinnest margins first. Change vs LY puts the biggest drop first; anything with no sales last year goes to the bottom. Name sorts A to Z. Tap the same one again to reverse it, and once more to put the list back the way it arrived."
+      },
+      {
+        "term": "Each page keeps its place",
+        "desc": "Sub Dept Margins, Vendors and Categories each remember their own search, sort and open card. Moving between them leaves the others as you left them."
+      },
+      {
+        "term": "Location",
+        "desc": "A few stores share one store ID across two locations. When that happens you can switch between them; the figures are never added together."
+      }
+    ]
+  },
+  "sub-dept-margins": {
+    "title": "Sub Dept Margins",
+    "purpose": "Shows which sub departments and items are losing margin, so you can catch pricing, cost, or volume problems before they add up.",
+    "glossary": [
+      {
+        "term": "Margin",
+        "desc": "Sales minus cost of goods, as a percentage of sales. It's gross margin, not full take-home profit — other costs like cost fees aren't subtracted from it."
+      },
+      {
+        "term": "Cost of goods",
+        "desc": "The cost actually paid after any vendor allowance, not the list price on the invoice — and pounds rather than scans on anything sold by weight. Categories and Item Lookup use the same figure, so all three pages agree on the same item and day."
+      },
+      {
+        "term": "Critical / Watch / Healthy",
+        "desc": "Graded against last year, but only when last year has every day of the week. If it's missing days, the grade uses last week instead. Critical means down more than your threshold; Watch means down some, but not past it; Healthy means flat or up."
+      },
+      {
+        "term": "Grey percentages",
+        "desc": "That comparison is missing days — for example, last year only has 3 of the 7 days. The number is still shown, but it isn't used for the grade, because a partial week can't fairly call a sub department Critical. The header pills go grey the same way and show how many days matched."
+      },
+      {
+        "term": "Not graded (grey dot)",
+        "desc": "Neither last week nor last year has every day of the week, so there's no full-week comparison to grade on. These aren't counted under Critical, Watch or Healthy."
+      },
+      {
+        "term": "Avg margin % (left panel header)",
+        "desc": "A straight average of each sub department's own margin, not weighted by sales. A handful of small departments looking fine doesn't mean your biggest sellers agree."
+      },
+      {
+        "term": "No Cost tab",
+        "desc": "Items with no usable cost data at all, so their margin can't be calculated. Pulled out here instead of quietly showing as 0%, which would look like break-even rather than \"unknown.\""
+      },
+      {
+        "term": "Ungraded (Items tab)",
+        "desc": "No full-week comparison for this item — last year and last week are both missing days, or have no sales for it — so it can't be graded either way."
+      },
+      {
+        "term": "COGS",
+        "desc": "Colored in reverse from other numbers: a COGS increase is flagged as bad, since rising cost eats into margin, even though the number itself is going up."
+      },
+      {
+        "term": "Contribution %",
+        "desc": "How much of the sub department's total sales this one item makes up, not the item's own change over time."
+      }
+    ]
+  },
+  "sub-dept-margins-mobile": {
+    "title": "Sub Dept Margins",
+    "purpose": "Margin for one store's week against the same week last year, by sub department. Open one to see its figures, then its items, then a single item's week day by day. Nothing is graded: the two years sit side by side and you draw the conclusion.",
+    "glossary": [
+      {
+        "term": "The card at the top",
+        "desc": "The store you searched, for the whole week — its margin, and its sales against last year. It doesn't open, because what is inside it is the list of sub departments underneath."
+      },
+      {
+        "term": "TY margin / LY margin",
+        "desc": "Gross margin this year: sales minus cost of goods, as a percentage of sales. LY margin is the same for last year."
+      },
+      {
+        "term": "Bars",
+        "desc": "Sales this year (TY) against last year (LY) — on the cards, the day chart and every sub department and item in a list. The percentage says how healthy; the bars say how much was sold."
+      },
+      {
+        "term": "Gross profit / Cost",
+        "desc": "Sales before tax minus the cost of goods sold, and that cost — this year on the top row, last year beneath. Cost is what was actually paid after vendor allowances, and weighted items cost by the pound."
+      },
+      {
+        "term": "TY / LY",
+        "desc": "LY is the same weekdays last year, matched day by day, so a Monday is compared with a Monday. \"No history\" means we have no record for this store last year — not that it sold nothing."
+      },
+      {
+        "term": "Open a sub department",
+        "desc": "Tap it to open its report where it sits. One opens at a time; the others shrink to a single line so the one you opened has the screen."
+      },
+      {
+        "term": "Tap a day",
+        "desc": "Inside an open sub department, scopes that sub department to the day — its figures and its items. It belongs to that card only, and clears when you open a different one. Tap the same day again for the full week."
+      },
+      {
+        "term": "View items",
+        "desc": "Opens that sub department's items on their own screen. Tap an item to see its week day by day. Back returns to the list with your card still open."
+      },
+      {
+        "term": "Find an item or scan",
+        "desc": "Searches every item in the store's week, not just one sub department — by name, by UPC, or by scanning a barcode. Each result names the sub department it came from, and tapping one goes straight to that item's week."
+      },
+      {
+        "term": "Filtering and scanning a list",
+        "desc": "The box above a list narrows it to what you type, and the scan button fills it from a barcode. Inside a sub department that only covers its own items, so if a scan finds nothing the screen offers to search the whole store for it instead."
+      },
+      {
+        "term": "Sort by",
+        "desc": "Sales puts the biggest sellers first. Profit puts the biggest earners first. GPM puts the thinnest margins first. Change vs LY puts the biggest drop first; anything with no sales last year goes to the bottom. Name sorts A to Z. Tap the same one again to reverse it, and once more to put the list back the way it arrived."
+      },
+      {
+        "term": "Each page keeps its place",
+        "desc": "Sub Dept Margins, Vendors and Categories each remember their own search, sort and open card. Moving between them leaves the others as you left them."
+      },
+      {
+        "term": "Location",
+        "desc": "A few stores share one store ID across two locations. When that happens you can switch between them; the figures are never added together."
+      }
+    ]
+  },
+  "cashiers": {
+    "title": "Cashiers",
+    "purpose": "Groups a week's exceptions — voids, refunds, no sales — so you can tell the difference between one person's behaviour and a problem with an item or a lane. It surfaces where to look; it does not accuse anyone.",
+    "glossary": [
+      {
+        "term": "Exception",
+        "desc": "The kind of transaction being examined, picked once per search because each one is its own query. The page lands on refunds or voids when the week has them, since those are what people usually come here for."
+      },
+      {
+        "term": "Lens",
+        "desc": "What the exceptions are grouped by. The same week reads differently through each, and switching costs nothing — it re-groups what is already loaded rather than fetching again.",
+        "subEntries": [
+          {
+            "label": "Store",
+            "desc": "One row per location. Where to start when a group was searched."
+          },
+          {
+            "label": "Cashier",
+            "desc": "One row per person. The behaviour view."
+          },
+          {
+            "label": "Item",
+            "desc": "One row per product. A single item across many cashiers usually means a bad tag or a wrong price, not theft."
+          },
+          {
+            "label": "Terminal",
+            "desc": "One row per lane. Isolates a broken scanner or a misconfigured register."
+          }
+        ]
+      },
+      {
+        "term": "Signal",
+        "desc": "One row in the list — a group of exception lines under the current lens, with the lines, transactions and dollars they account for."
+      },
+      {
+        "term": "The spread badge",
+        "desc": "The badge on each row, and the page's central judgement: is this one person, or is it the item or the lane? Anything a single cashier owns is behaviour; the same exception spread across several is almost always a bad tag, a wrong price, or a broken lane. It is a classification, not a grade — a wide signal is not worse than a single one, it is a different kind of problem, which is why it carries no red or green.",
+        "subEntries": [
+          {
+            "label": "On most lenses",
+            "desc": "Counts the distinct cashiers involved — one, two, or more."
+          },
+          {
+            "label": "On the Cashier lens",
+            "desc": "Counts distinct items instead. One person on one or two items is a narrower story than one person across a dozen."
+          },
+          {
+            "label": "unmapped upc",
+            "desc": "The item came back with no description at all. Almost always a catalogue gap rather than anything a cashier did."
+          }
+        ]
+      },
+      {
+        "term": "Lines vs transactions",
+        "desc": "One receipt can contribute many exception lines — the same item voided eleven times in a single sale. The list counts both, and the drill-down collapses to one row per transaction so the two never contradict each other."
+      },
+      {
+        "term": "1 of 13 · last",
+        "desc": "Where the exception sat in the receipt: how many of that transaction's lines it accounts for, out of the total. The amber \"last\" tag means it was the final line of the sale — the classic pattern for ringing a full order, then voiding at the end. Worth a look, not proof."
+      },
+      {
+        "term": "The summary line",
+        "desc": "The sentence above the transactions is the page reading its own numbers back — how many cashiers and items are involved, the most repeated item, and how many landed on a last line. It is a starting point for the question, not an answer to it."
+      },
+      {
+        "term": "Totals",
+        "desc": "The strip along the top covers the whole exception set for the week, not the selected signal: lines, transactions, dollars, and how many distinct stores, cashiers and items are involved."
+      },
+      {
+        "term": "Receipts",
+        "desc": "Tapping a transaction opens the full receipt — every line of the sale, not only the exception lines. That is what makes the line position above meaningful."
+      }
+    ]
+  },
+  "cashiers-mobile": {
+    "title": "Cashiers",
+    "purpose": "Groups a week's exceptions — voids, refunds, no sales — so you can tell the difference between one person's behaviour and a problem with an item or a lane. It surfaces where to look; it does not accuse anyone.",
+    "glossary": [
+      {
+        "term": "Exception",
+        "desc": "The kind of transaction being examined, picked once per search because each one is its own query. The page lands on refunds or voids when the week has them, since those are what people usually come here for."
+      },
+      {
+        "term": "Lens",
+        "desc": "What the exceptions are grouped by. The same week reads differently through each, and switching costs nothing — it re-groups what is already loaded rather than fetching again.",
+        "subEntries": [
+          {
+            "label": "Store",
+            "desc": "One row per location. Where to start when a group was searched."
+          },
+          {
+            "label": "Cashier",
+            "desc": "One row per person. The behaviour view."
+          },
+          {
+            "label": "Item",
+            "desc": "One row per product. A single item across many cashiers usually means a bad tag or a wrong price, not theft."
+          },
+          {
+            "label": "Terminal",
+            "desc": "One row per lane. Isolates a broken scanner or a misconfigured register."
+          }
+        ]
+      },
+      {
+        "term": "Signal",
+        "desc": "One row in the list — a group of exception lines under the current lens, with the lines, transactions and dollars they account for."
+      },
+      {
+        "term": "The spread badge",
+        "desc": "The badge on each row, and the page's central judgement: is this one person, or is it the item or the lane? Anything a single cashier owns is behaviour; the same exception spread across several is almost always a bad tag, a wrong price, or a broken lane. It is a classification, not a grade — a wide signal is not worse than a single one, it is a different kind of problem, which is why it carries no red or green.",
+        "subEntries": [
+          {
+            "label": "On most lenses",
+            "desc": "Counts the distinct cashiers involved — one, two, or more."
+          },
+          {
+            "label": "On the Cashier lens",
+            "desc": "Counts distinct items instead. One person on one or two items is a narrower story than one person across a dozen."
+          },
+          {
+            "label": "unmapped upc",
+            "desc": "The item came back with no description at all. Almost always a catalogue gap rather than anything a cashier did."
+          }
+        ]
+      },
+      {
+        "term": "Lines vs transactions",
+        "desc": "One receipt can contribute many exception lines — the same item voided eleven times in a single sale. The list counts both, and the drill-down collapses to one row per transaction so the two never contradict each other."
+      },
+      {
+        "term": "1 of 13 · last",
+        "desc": "Where the exception sat in the receipt: how many of that transaction's lines it accounts for, out of the total. The amber \"last\" tag means it was the final line of the sale — the classic pattern for ringing a full order, then voiding at the end. Worth a look, not proof."
+      },
+      {
+        "term": "The summary line",
+        "desc": "The sentence above the transactions is the page reading its own numbers back — how many cashiers and items are involved, the most repeated item, and how many landed on a last line. It is a starting point for the question, not an answer to it."
+      },
+      {
+        "term": "Totals",
+        "desc": "The strip along the top covers the whole exception set for the week, not the selected signal: lines, transactions, dollars, and how many distinct stores, cashiers and items are involved."
+      },
+      {
+        "term": "Receipts",
+        "desc": "Tapping a transaction opens the full receipt — every line of the sale, not only the exception lines. That is what makes the line position above meaningful."
+      }
+    ]
+  },
+  "coupons": {
+    "title": "Coupons",
+    "purpose": "See where coupon activity is concentrated — by store, sub department, date, or cashier — and drill into the actual transactions behind it.",
+    "glossary": [
+      {
+        "term": "All stores (group view)",
+        "desc": "The combined total across every store in the group, not one store's number."
+      },
+      {
+        "term": "Amt / Qty toggle",
+        "desc": "Switches the store list ranking between total coupon dollar amount and number of coupons used."
+      },
+      {
+        "term": "Sub dept / Date / Cashier tabs",
+        "desc": "Same coupon activity, just re-grouped a different way — not separate data sets."
+      },
+      {
+        "term": "Amount filter",
+        "desc": "Narrows the list to coupons within a dollar range; unrelated to grading or thresholds."
+      }
+    ]
+  },
+  "coupons-mobile": {
+    "title": "Coupons",
+    "purpose": "See where coupon activity is concentrated — by store, sub department, date, or cashier — and drill into the actual transactions behind it.",
+    "glossary": [
+      {
+        "term": "All stores (group view)",
+        "desc": "The combined total across every store in the group, not one store's number."
+      },
+      {
+        "term": "Amt / Qty toggle",
+        "desc": "Switches the store list ranking between total coupon dollar amount and number of coupons used."
+      },
+      {
+        "term": "Sub dept / Date / Cashier tabs",
+        "desc": "Same coupon activity, just re-grouped a different way — not separate data sets."
+      },
+      {
+        "term": "Amount filter",
+        "desc": "Narrows the list to coupons within a dollar range; unrelated to grading or thresholds."
+      }
+    ]
+  },
+  "forecasting": {
+    "title": "Forecast",
+    "purpose": "Estimates what a list of items will sell in an ad week at a price you choose, using the last 90 days of that item's own price history at the selected stores. It is an estimate from past behaviour, not a promise.",
+    "glossary": [
+      {
+        "term": "How the forecast is built",
+        "desc": "Each item's 90-day history is a set of price points — a price, the units sold at it, and the days it was active. A demand curve is fitted through those points, the units at your chosen price are read off it, and that rate is projected over the forecast window. Fewer price points means a weaker fit, which is why the popup tells you how many there are."
+      },
+      {
+        "term": "Driving, Supporting, Tail",
+        "desc": "Items are ranked by what they contribute to the forecast total, then split into three bands. A band is a coverage floor, not a fixed share — it always lands on or above its cut, because the item that crosses the line stays in the band it crossed from. These are sizes, not grades: a Tail item isn't underperforming, it's small.",
+        "subEntries": [
+          {
+            "label": "Driving",
+            "desc": "The fewest items covering at least 80% of the forecast. Get these prices right and the total is roughly right."
+          },
+          {
+            "label": "Supporting",
+            "desc": "The next items, taking coverage to at least 95%."
+          },
+          {
+            "label": "Tail",
+            "desc": "Everything after that. Often most of the item count and almost none of the money — worth asking whether it earns its markdown."
+          }
+        ]
+      },
+      {
+        "term": "Rank and Share",
+        "desc": "Rank is the item's position by forecast total, biggest first — which is also the grid's default order until you sort a column. Share is its slice of that total. Both are worked out across everything ticked in the panel, before any filtering, so a share never changes meaning while you narrow the list."
+      },
+      {
+        "term": "Flags",
+        "desc": "Amber tags beside the UPC. They judge the forecast, never the item, and hovering one says what was measured.",
+        "subEntries": [
+          {
+            "label": "thin history",
+            "desc": "Two or fewer price points behind the fit. Only shown on Driving and Supporting items — a shaky number on 0.1% of the ad isn't worth the interruption."
+          },
+          {
+            "label": "untested price",
+            "desc": "The applied price has never been run on this item, so the forecast is extrapolated rather than observed."
+          },
+          {
+            "label": "markdown heavy",
+            "desc": "The item is taking a bigger share of the ad's markdown than of its revenue. Not wrong, but it's the one paying for the ad."
+          },
+          {
+            "label": "beats record",
+            "desc": "The forecast runs at more units per day than the item's best day in 90 days. Often the point of an ad — it just shouldn't arrive unannounced."
+          }
+        ]
+      },
+      {
+        "term": "Selecting and filtering",
+        "desc": "Ticking items in the left panel sets what the grid covers and what the totals add up. The band chips narrow that further, and they combine — Driving plus Tail is a valid view. UPC and Desc on the Item header search within whatever is left. Collapsing a band hides its rows but keeps them in scope; folding isn't filtering."
+      },
+      {
+        "term": "Qty sold",
+        "desc": "Units sold at the applied price over the 90 days — history, not a forecast. Shows a dash when the applied price was typed rather than taken from history, since the item never sold at it."
+      },
+      {
+        "term": "Active",
+        "desc": "Days out of 90 on which the item sold at least one unit anywhere in its price history. Not days on the shelf — an item can be stocked and sell nothing."
+      },
+      {
+        "term": "At price",
+        "desc": "Days at the applied price, out of the item's active days. Dashes for a typed price for the same reason Qty sold does."
+      },
+      {
+        "term": "Forecast",
+        "desc": "The window the forecast covers, in days. Always 7 today — the column exists because the window is meant to become configurable, and it is what Ad fcst falls back to when no ad days are set."
+      },
+      {
+        "term": "Ad days",
+        "desc": "How many days of the window the item is actually on ad. Setting it re-runs that row's forecast. A dash means it hasn't been set, and the row is forecast over the plain window."
+      },
+      {
+        "term": "Price",
+        "desc": "The price the row is forecast at. It starts as the item's highest-volume price point — the price it sold the most units at — not its current shelf price."
+      },
+      {
+        "term": "Ad fcst",
+        "desc": "Forecast units at the row's price over its ad days, or over the forecast window if no ad days are set."
+      },
+      {
+        "term": "Total",
+        "desc": "Ad fcst units multiplied by the row's price. Revenue, before any cost, and what the ranking is built on."
+      },
+      {
+        "term": "Markdown",
+        "desc": "What the discount costs across the forecast units: regular retail minus the row's price, times Ad fcst. Regular retail is the item's non-promo price as the backend records it — not necessarily what is ringing today. Zero when the row is priced at or above regular retail."
+      },
+      {
+        "term": "Setting values in bulk",
+        "desc": "The toolbar writes to the rows on screen — after the band chips and the column filters, not everything ticked. Filter to Tail and Apply touches Tail only.",
+        "subEntries": [
+          {
+            "label": "Apply",
+            "desc": "Writes ad days, price and a note in one go. Price and ad days skip single-price items; a note goes to all of them."
+          },
+          {
+            "label": "Reset",
+            "desc": "Puts price and ad days back to what the search returned. Notes are left alone — they're your writing, not an edit to the forecast."
+          },
+          {
+            "label": "Clear notes",
+            "desc": "Removes the note from those rows. Separate from Reset so neither does the other's job by accident."
+          }
+        ]
+      },
+      {
+        "term": "Notes",
+        "desc": "Free text against a row, set in bulk from the toolbar or on one item in its popup. Notes export with the rows."
+      },
+      {
+        "term": "The popup",
+        "desc": "Double-click a row for its price scenarios — every price the item has sold at, each costed out at the current ad days, with one click to apply. The calculator beside it prices something that isn't in the list; it reports back but writes nothing to the grid. The strip along the top is what the fit is standing on: regular retail, 90-day units, days active, and how many price points there are."
+      },
+      {
+        "term": "AD badge",
+        "desc": "The item came off an uploaded ad list. Its ad retail is used as the forecast price, and that price is treated as a real price point when the curve is fitted, even though the item may never have sold at it."
+      },
+      {
+        "term": "1pt badge",
+        "desc": "One price point in 90 days. There is no curve to fit, so the forecast is that single point projected forward — the price can't be changed and the popup won't open."
+      },
+      {
+        "term": "No sales history",
+        "desc": "UPCs the stores returned nothing for. Usually items new to the store, discontinued, or a bad UPC on the ad list. They export as their own list from the download button."
+      },
+      {
+        "term": "Export",
+        "desc": "Presets download whole datasets — selected items, all items, or the no-history list — and tick more than one to get a file each. Custom picks the columns and previews them first. Both open scoped to the bands you had on screen, and both let you change that. Rows export in rank order carrying their rank, band and share, so the CSV keeps the ordering's meaning."
+      }
+    ]
+  },
+  "item-lookup": {
+    "title": "Item Lookup",
+    "purpose": "Look up specific UPCs at a store to see how they're actually performing — margin, pricing, and sales gaps — without digging through the full sales report.",
+    "glossary": [
+      {
+        "term": "Margin %",
+        "desc": "Amount less cost of goods, calculated fresh for this store over the last 14 days. Not carried over from wherever the UPC was copied from, so the same item can show different margins at different stores."
+      },
+      {
+        "term": "Cost / unit",
+        "desc": "What one unit cost you after any vendor allowance — not the list price on the invoice. An item on a vendor deal costs less than its invoice says, and this reflects that, which is why margin here matches Sub Dept Margins."
+      },
+      {
+        "term": "Cost / lb",
+        "desc": "The same figure on an item sold by weight. When you see \"lb\" instead of \"unit\", the item is priced on the scale and everything on this report counts pounds rather than scans."
+      },
+      {
+        "term": "Units vs. scans",
+        "desc": "On a scale item one scan can be several pounds — bananas ring about 2 lb at a time. Cost and margin count what was actually sold, not how many times the item was rung up. The daily breakdown shows both: Qty is the scans, Weight is the pounds."
+      },
+      {
+        "term": "Sale types",
+        "desc": "Every register line is a Sale, Backup (a transaction that was restored), Cancelled or Voided. Amount, margin, days sold and the daily breakdown count Sale lines only; the others are listed under By sale type, each as a share of sales."
+      },
+      {
+        "term": "Sale type timeline",
+        "desc": "Select a sale type to see its days in the daily breakdown. Cost and margin are left off for Backup, Cancelled and Voided, since they aren't sales. Select it again, or Back to sales, to return."
+      },
+      {
+        "term": "Avg sold at",
+        "desc": "Amount divided by what actually sold, so it stays comparable to the shelf price. Sits below it when the item spent part of the window on promotion."
+      },
+      {
+        "term": "Queue vs. Report",
+        "desc": "The queue (left) is your batch list and shows each item's status as it loads. The report (right) is the full 14-day detail for whichever one item you've selected."
+      },
+      {
+        "term": "14-day window",
+        "desc": "Ends yesterday, not today, since today's sales aren't finished posting yet."
+      },
+      {
+        "term": "Longest gap",
+        "desc": "The longest stretch of consecutive days with zero sales inside the 14-day window. A useful sign an item may be out of stock or delisted rather than just slow."
+      },
+      {
+        "term": "Slowing trend",
+        "desc": "Flags when the second week of the window sold noticeably fewer units than the first week, even if the item is still selling."
+      },
+      {
+        "term": "Loading status (queue)",
+        "desc": "Each queued UPC fetches independently, so some can finish while others are still loading or error out."
+      }
+    ]
+  },
+  "item-lookup-mobile": {
+    "title": "Item Lookup",
+    "purpose": "One item at one store over the last fourteen days — what it sold, what it sold at, and how that has moved. Nothing is graded: the figures sit as they are and you draw the conclusion.",
+    "glossary": [
+      {
+        "term": "The bar chart",
+        "desc": "One column per day, sized by what the item took. It is also this screen's only filter: tap a column to scope the figures beneath it to that day, and tap the same column again for the whole window. A day with no sales is a flat stub and cannot be tapped."
+      },
+      {
+        "term": "Pounds or a count",
+        "desc": "An item priced on the scale is measured in pounds; anything else is counted. You see one or the other, never both — a scale item rings a quantity of zero, so a count beside it would be a column of nothing. \"$7.68/lb\" is what it actually went out at, which moves with promotions."
+      },
+      {
+        "term": "Sold · 13 of 14 days",
+        "desc": "How many days in the window actually sold. Every per-day average divides by that number rather than by fourteen, so a slow fortnight is not made to look worse by the days the item never sold at all."
+      },
+      {
+        "term": "Per selling day",
+        "desc": "Takings divided by the days that sold. The figure beside it is the same for pounds or units."
+      },
+      {
+        "term": "Best day",
+        "desc": "The biggest day by takings inside the window, with what it took."
+      },
+      {
+        "term": "Share of window / vs typical day",
+        "desc": "Shown once a day is scoped. Share is that day against the whole window. Typical day compares it with the average of the days that SOLD — measured against the window it would flatter every day the item opened."
+      },
+      {
+        "term": "Cost and margin",
+        "desc": "Cost is what one unit cost after any vendor allowance, not the invoice list price, which is why margin here agrees with Sub Dept Margins. When no cost is on file the screen says so once, rather than reporting a margin computed from a cost of zero."
+      },
+      {
+        "term": "Shelf price",
+        "desc": "The item's list price, shown when there is no cost to report a margin against."
+      },
+      {
+        "term": "By sale type",
+        "desc": "Every register line is a Sale, Backup (a restored transaction), Cancelled or Voided. The headline figures count Sale lines only. Tap another type to read its days instead; tap it again to come back. Cost and margin are left off those, since they are not sales."
+      },
+      {
+        "term": "Day by day",
+        "desc": "Every day in the window, newest first, with what it took, how much moved and the rate it went out at. It is a list, not a control — the chart above is what scopes the screen, and the row for a scoped day is highlighted here so you can see which one the figures describe."
+      },
+      {
+        "term": "Slowing down",
+        "desc": "Appears when the second week of the window moved noticeably less than the first, even if the item is still selling."
+      },
+      {
+        "term": "No sales in the last N days",
+        "desc": "A run of days with nothing sold, counting back from the end of the window. Often a sign an item is out of stock or delisted rather than merely slow."
+      },
+      {
+        "term": "The window",
+        "desc": "Fourteen days ending yesterday, not today — today's sales have not finished posting."
+      },
+      {
+        "term": "Location",
+        "desc": "A few stores share one store ID across two locations. When that happens you can switch between them; the figures are never added together."
+      }
+    ]
+  },
+  "orders": {
+    "title": "Orders",
+    "purpose": "Browse store orders by type and date, then drill into line-item detail — pricing, cost, and profit for everything on that order.",
+    "glossary": [
+      {
+        "term": "Ext Retail",
+        "desc": "Price × quantity (or × weight for scalable items like produce/deli)."
+      },
+      {
+        "term": "Total Cost",
+        "desc": "Cost per unit × quantity (or weight), not the case cost."
+      },
+      {
+        "term": "Profit",
+        "desc": "Ext Retail minus Total Cost for that line item."
+      },
+      {
+        "term": "Select all stores",
+        "desc": "Pulls orders for the specific date you're viewing, not the full date range, even if you've got a wider range loaded."
+      }
+    ]
+  },
+  "orders-mobile": {
+    "title": "Orders",
+    "purpose": "Browse store orders by type and date, then drill into line-item detail — pricing, cost, and profit for everything on that order.",
+    "glossary": [
+      {
+        "term": "Ext Retail",
+        "desc": "Price × quantity (or × weight for scalable items like produce/deli)."
+      },
+      {
+        "term": "Total Cost",
+        "desc": "Cost per unit × quantity (or weight), not the case cost."
+      },
+      {
+        "term": "Profit",
+        "desc": "Ext Retail minus Total Cost for that line item."
+      },
+      {
+        "term": "Select all stores",
+        "desc": "Pulls orders for the specific date you're viewing, not the full date range, even if you've got a wider range loaded."
+      }
+    ]
+  },
+  "receivers": {
+    "title": "Receivers",
+    "purpose": "Browse a store's receiving history by vendor, then drill into any invoice to see what was actually received and at what cost.",
+    "glossary": [
+      {
+        "term": "Records",
+        "desc": "Total line-item rows across all loaded invoices, not the number of invoices."
+      },
+      {
+        "term": "Vendor ID / Date filters",
+        "desc": "Exact match only, not partial search."
+      },
+      {
+        "term": "Invoice totals",
+        "desc": "Calculated from the invoice's own line items, not pulled from a separate total on file."
+      }
+    ]
+  },
+  "receivers-mobile": {
+    "title": "Receivers",
+    "purpose": "Browse a store's receiving history by vendor, then drill into any invoice to see what was actually received and at what cost.",
+    "glossary": [
+      {
+        "term": "Records",
+        "desc": "Total line-item rows across all loaded invoices, not the number of invoices."
+      },
+      {
+        "term": "Vendor ID / Date filters",
+        "desc": "Exact match only, not partial search."
+      },
+      {
+        "term": "Invoice totals",
+        "desc": "Calculated from the invoice's own line items, not pulled from a separate total on file."
+      }
+    ]
+  },
+  "upc-list": {
+    "salesComp": {
+      "title": "Sales Comp",
+      "purpose": "Compares this year's sales to last year and recent weeks, to catch items underperforming their own history.",
+      "glossary": [
+        {
+          "term": "Peak day",
+          "desc": "The day generating the most dollars across your selection — not just the most common peak day per item, those can disagree, and we show both."
+        },
+        {
+          "term": "Avg daily / UPC",
+          "desc": "Average per active-selling day; days with zero sales aren't counted."
+        },
+        {
+          "term": "WoW trend",
+          "desc": "Compares each item's most recent complete week against the average of all complete weeks in range, not last week vs. the week before."
+        },
+        {
+          "term": "Heatmap",
+          "desc": "Cell color reflects average daily sales for that day-of-week.",
+          "subEntries": [
+            {
+              "label": "Global scale",
+              "desc": "Colored against the highest day-value across your entire selection, so colors are comparable row to row."
+            },
+            {
+              "label": "Per item scale",
+              "desc": "Colored against each UPC's own peak day, so its own weekly pattern shows clearly regardless of size."
+            }
+          ]
+        },
+        {
+          "term": "LY row",
+          "desc": "Shown when a product's expanded — same calendar weeks, one year back."
+        }
+      ]
+    },
+    "priceOpt": {
+      "title": "Price Opt",
+      "purpose": "Checks whether an item's current price is actually costing you profit, based on what price performed best historically.",
+      "glossary": [
+        {
+          "term": "Best price",
+          "desc": "The price point that generated the most total profit historically once your cost is known — not necessarily the one with the most revenue."
+        },
+        {
+          "term": "Profit at risk",
+          "desc": "Estimated dollars left on the table by staying at the current price instead of the best one, using historical quantity at each price as the estimate."
+        },
+        {
+          "term": "Units suppressed",
+          "desc": "Estimated units lost to being priced above the best price."
+        },
+        {
+          "term": "Elasticity",
+          "desc": "How much demand shifts with price; more negative means more price-sensitive."
+        },
+        {
+          "term": "Group searches",
+          "desc": "Show historical pricing only until you pick a store — needed to know your cost."
+        }
+      ]
+    },
+    "trend": {
+      "title": "Trend",
+      "purpose": "Flags items whose daily sales pattern is meaningfully shifting, and tries to tell you whether that's really about demand or just about the item not being stocked.",
+      "glossary": [
+        {
+          "term": "Reduced availability",
+          "desc": "Total volume dropped, but the daily rate held or improved — usually a stocking issue, not weaker demand."
+        },
+        {
+          "term": "Declining",
+          "desc": "Total volume and daily rate both dropped — a real demand decline."
+        },
+        {
+          "term": "Accelerating",
+          "desc": "A declining item where the rate of decline is getting worse."
+        },
+        {
+          "term": "Confidence",
+          "desc": "How reliable the trend estimate is; higher means the pattern is consistent, not noise."
+        }
+      ]
+    },
+    "association": {
+      "title": "Association",
+      "purpose": "Shows what else gets bought alongside your selected items, for cross-merchandising or understanding a purchase pattern.",
+      "glossary": [
+        {
+          "term": "Seed UPCs",
+          "desc": "The checked items feeding the search; uncheck any to narrow the basket set and refetch."
+        },
+        {
+          "term": "Attach rate",
+          "desc": "The share of baskets containing your seed items that also contained this product."
+        },
+        {
+          "term": "Exploring",
+          "desc": "Click any companion to re-root the panel around it and see its own associations; also reachable by right-clicking any item anywhere. The back link returns to your seed view instantly, no refetch."
+        }
+      ]
+    }
+  }
+}

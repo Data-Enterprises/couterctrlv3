@@ -31,7 +31,6 @@ import CpnSalesDetailPanel from "./components/CpnSalesDetailPanel";
 import CpnSalesExportModal from "./components/CpnSalesExportModal";
 import { buildStoreRows, storeKeyOf, totalsFor } from "./shared/couponGrading";
 import { isGroupSearch } from "../../../features/searchSlice";
-import { COUPON_SALES_MOBILE_INFO } from "./couponSalesInfo";
 
 const CouponSales = () => {
   const toast = useToast();
@@ -229,7 +228,7 @@ const CouponSales = () => {
           mobileLines.current = result.items;
           return result;
         }}
-        info={COUPON_SALES_MOBILE_INFO}
+        helpPage="coupon-sales"
         loadReceipt={async (saleId) =>
           couponReceipt(mobileLines.current, saleId)
         }

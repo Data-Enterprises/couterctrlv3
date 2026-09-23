@@ -28,13 +28,13 @@ import {
   sameWeekDayLastYear,
 } from "../../../../utils";
 import type { JsonError } from "../../../../interfaces";
+import type { HelpPage } from "../../../../constants/helpPages";
 import { shiftIso } from "../../../../utils/grading";
 import { applyStoreNumberToName } from "../../../../utils/storeIdentity";
 import MobileSortChips, {
   type SortOption,
 } from "../../../../components-dev/mobile/MobileSortChips";
-import MobileInfoSheet from "../../../../components-dev/mobile/MobileInfoSheet";
-import { itemPerfMobileInfo } from "./itemPerfInfo";
+import InfoModal from "../../../../components-dev/InfoModal";
 import {
   beginItemPerfLoad,
   setItemPerfDimension,
@@ -89,6 +89,13 @@ import { LY_COLOR, TY_COLOR } from "../../../../components-dev/mobile/perf/perfC
 
 /** How many recents sit in the page before the rest move to a sheet. */
 const RECENTS_INLINE = 3;
+
+/** Which help page each grouping opens. One screen, three pages. */
+const HELP_PAGE: Record<ItemDimension, HelpPage> = {
+  subdept: "sub-dept-margins",
+  vendor: "vendors",
+  category: "categories",
+};
 
 const pct = (v: number | null) => (v === null ? "—" : `${v.toFixed(2)}%`);
 
@@ -858,9 +865,11 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
     </>
   );
 
-  const infoSheet = perf.infoOpen && (
-    <MobileInfoSheet
-      {...itemPerfMobileInfo(dimension, title)}
+  // One screen serves all three groupings, so the help follows the dimension.
+  const infoSheet = (
+    <InfoModal
+      page={HELP_PAGE[dimension]}
+      isOpen={perf.infoOpen}
       onClose={() => dispatch(setItemPerfInfoOpen(false))}
     />
   );

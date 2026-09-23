@@ -1,0 +1,17 @@
+.ag-theme-alpine .ag-checkbox-input:focus,
+.ag-theme-alpine .ag-checkbox-input:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+.no-outline-on-focus:focus {
+  outline: none !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+.clicked-row {
+  background-color: #3b82f6 !important; /* your highlight color */
+  color: white; /* optional for text contrast */
+}

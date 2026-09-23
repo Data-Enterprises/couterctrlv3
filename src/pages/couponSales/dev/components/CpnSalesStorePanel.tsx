@@ -1,5 +1,5 @@
-import InfoButton from "../../../../components-dev/InfoButton";
-import { useMemo, useRef, useState } from "react";
+import PageInfoButton from "../../../../components-dev/PageInfoButton";
+import { useMemo, useRef } from "react";
 import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
 import { formatCurrency2, formatBigNumber, formatCurrencyCompact } from "../../../../utils";
@@ -18,8 +18,6 @@ import {
 import ThresholdFilter from "../../../../components-dev/filters/ThresholdFilter";
 import ThresholdSlider from "../../../../components-dev/filters/ThresholdSlider";
 import TextFilter from "../../../../components-dev/filters/TextFilter";
-import InfoPopover from "../../../../components-dev/InfoPopover";
-import { COUPON_SALES_INFO } from "../couponSalesInfo";
 import { couponDotClass, couponPillClass, type CouponRow, type CouponTotals } from "../shared/couponGrading";
 import SortHeader from "../../../../components-dev/SortHeader";
 import { useTriStateSort } from "../../../../utils/useTriStateSort";
@@ -40,7 +38,6 @@ interface Props {
 
 const CpnSalesStorePanel = ({ rows, totals, rangeLabel, onOpenSearch }: Props) => {
   const dispatch = useAppDispatch();
-  const [infoOpen, setInfoOpen] = useState(false);
   const rawThreshold = useAppSelector((s) => s.dev.couponSales.threshold);
   const activeThreshold = rawThreshold ?? COUPON_THRESHOLD_DEFAULT;
   const rawTrendThreshold = useAppSelector((s) => s.dev.couponSales.trendThreshold);
@@ -215,15 +212,7 @@ const CpnSalesStorePanel = ({ rows, totals, rangeLabel, onOpenSearch }: Props) =
           {/* About this view — sits after the threshold, matching Sales and
               Sub Dept Margins. */}
           <div className="relative flex-shrink-0">
-            <InfoButton onClick={() => setInfoOpen((o) => !o)} />
-            {infoOpen && (
-              <InfoPopover
-                title={COUPON_SALES_INFO.title}
-                purpose={COUPON_SALES_INFO.purpose}
-                glossary={COUPON_SALES_INFO.glossary}
-                onClose={() => setInfoOpen(false)}
-              />
-            )}
+            <PageInfoButton page="coupon-sales" />
           </div>
         </div>
       </div>

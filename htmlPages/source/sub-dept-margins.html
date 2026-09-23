@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sub Dept Margins — Help</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+  :root {
+    --navy: #1e2a4a;          /* app chrome */
+    --navy-2: #2a3a63;        /* chrome hover */
+    --bkg: #e4e9ef;           /* app background (bkg) */
+    --card: #ffffff;
+    --soft: #f4f7f8;          /* custom-white */
+    --ink: #1e293b;           /* content */
+    --ink-2: #475569;
+    --ink-3: #64748b;
+    --line: #dce5ef;          /* brand-line */
+    --line-2: #c8d5e4;
+    --on-navy: #f4f7f8;
+    --on-navy-2: #aeb9cf;
+    --green: #1e9e52;         /* brand-green */
+    --focus: #2563eb;
+    --display: "Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif;
+    --body: "Inter", "Segoe UI", system-ui, sans-serif;
+    --mono: "IBM Plex Mono", Consolas, ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bkg);
+    color: var(--ink);
+    font: 14px/1.55 var(--body);
+    -webkit-font-smoothing: antialiased;
+  }
+  .sheet {
+    max-width: 560px; margin: 0 auto; background: var(--soft);
+    min-height: 100vh; box-shadow: 0 10px 40px -24px rgba(15, 36, 64, .5);
+  }
+
+  /* header band — the app's navy chrome */
+  .chrome {
+    background: var(--navy); color: var(--on-navy);
+    padding: 18px 20px 18px;
+    position: relative; overflow: hidden;
+  }
+  .chrome::after {           /* the app's "?" mark, faint, as a watermark */
+    content: "?"; position: absolute; right: 14px; top: -18px;
+    font: 800 120px/1 var(--display); color: rgba(255, 255, 255, .06);
+    pointer-events: none;
+  }
+  .stamp {
+    display: inline-flex; align-items: center; gap: 8px;
+    font: 600 10.5px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase;
+    color: var(--on-navy-2);
+  }
+  .stamp .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+  h1 {
+    margin: 8px 0 6px; font: 700 22px/1.2 var(--display); letter-spacing: -.01em;
+    color: #fff; text-wrap: balance;
+  }
+  .purpose { margin: 0; max-width: 46ch; font-size: 13.5px; color: var(--on-navy-2); }
+
+  /* questions */
+  .body { padding: 16px 16px 8px; }
+  .eyebrow {
+    margin: 2px 4px 10px; font: 600 10.5px/1 var(--mono);
+    letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3);
+  }
+  .list { display: flex; flex-direction: column; gap: 8px; }
+  details {
+    background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+    transition: border-color .15s ease, box-shadow .15s ease;
+  }
+  details:hover { border-color: var(--line-2); }
+  details[open] { border-color: var(--line-2); box-shadow: 0 6px 18px -14px rgba(15, 36, 64, .45); }
+  summary {
+    list-style: none; cursor: pointer; position: relative;
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 12px 40px 12px 14px;
+    font: 600 14px/1.4 var(--display); color: var(--ink);
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary .q {
+    flex: none; width: 22px; height: 22px; margin-top: -1px; border-radius: 6px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: #eef2f7; color: var(--navy); font: 600 11px/1 var(--mono);
+    transition: background .15s ease, color .15s ease;
+  }
+  details[open] summary .q { background: var(--navy); color: #fff; }
+  summary::after {
+    content: ""; position: absolute; right: 16px; top: 18px; width: 7px; height: 7px;
+    border-right: 2px solid var(--ink-3); border-bottom: 2px solid var(--ink-3);
+    transform: rotate(45deg); transition: transform .2s ease;
+  }
+  details[open] summary::after { transform: rotate(-135deg); top: 21px; }
+  summary:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 10px; }
+  .a { padding: 0 16px 14px 46px; color: var(--ink-2); }
+  .a p { margin: 0 0 8px; }
+  .a p:last-child { margin-bottom: 0; }
+  .a strong { color: var(--ink); font-weight: 600; }
+
+  /* footer */
+  .foot {
+    margin: 14px 16px 18px; padding: 11px 14px; border-radius: 10px;
+    background: #eef2f7; color: var(--ink-2); font-size: 12.5px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .foot .mark {
+    flex: none; width: 22px; height: 22px; border-radius: 50%;
+    background: var(--navy); color: #fff; font: 700 12px/22px var(--display); text-align: center;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    details, summary .q, summary::after { transition: none; }
+  }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header class="chrome">
+    <div class="stamp"><span class="dot"></span>Help</div>
+    <h1>Sub Dept Margins</h1>
+    <p class="purpose">See one store’s week by sub department, against last week and last year, and drill into the items behind it.</p>
+  </header>
+  <main class="body">
+    <div class="eyebrow">Common questions</div>
+    <div class="list">
+    <details>
+      <summary><span class="q">Q</span><span>What does this page show?</span></summary>
+      <div class="a"><p>Every sub department in the store for the week, with this year (TY) against last week (vs LW) and last year (vs LY). The list puts the weakest first; click the TY, vs LW or vs LY heading to sort, and click a third time to go back.</p></div>
+    </details>
+    <details>
+      <summary><span class="q">Q</span><span>How do I pick a store and week?</span></summary>
+      <div class="a"><p>Choose a store and a week-ending date, then click Search. You get the seven days ending on that date. To change either later, click the magnifying glass next to the store name.</p></div>
+    </details>
+    <details>
+      <summary><span class="q">Q</span><span>What does the Margin / Sales switch do?</span></summary>
+      <div class="a"><p>It switches the list, the figures and the grades between gross margin and net sales. Margin is sales minus cost of goods, as a percentage of sales; margin changes are shown in points (pts) and sales changes in percent.</p></div>
+    </details>
+    <details>
+      <summary><span class="q">Q</span><span>What do Crit, Watch and OK mean?</span></summary>
+      <div class="a"><p>Each sub department is graded against last year, or against last week if last year is missing days. Crit means down by more than your Threshold, Watch means down but not past it, and OK means flat or up. Click a chip to show only those sub departments, click it again to show all; a grey dot means there was no full week to grade on.</p></div>
+    </details>
+    <details>
+      <summary><span class="q">Q</span><span>Why are some percentages grey, or say “3 of 7 days matched”?</span></summary>
+      <div class="a"><p>Last week or last year is missing some days of this week, so only the matching days are compared. The figure still shows, but it is grey and does not decide the grade, because a part week can’t fairly mark a sub department as Crit.</p></div>
+    </details>
+    <details>
+      <summary><span class="q">Q</span><span>How do I see a sub department and its items?</span></summary>
+      <div class="a"><p>Click it in the list. The right side shows its week against last week and last year, a day strip, and its items; click an item to see its sales, margin, contribution and quantity, plus each weekday.</p></div>
+    </details>
+    <details>
+      <summary><span class="q">Q</span><span>How do I look at just one day?</span></summary>
+      <div class="a"><p>Click a day in the strip of day cards. The figures and items below narrow to that day; click the day again, or All Week, to go back to the full week.</p></div>
+    </details>
+    <details>
+      <summary><span class="q">Q</span><span>What are the Cost and No Cost tabs?</span></summary>
+      <div class="a"><p>Cost shows each item’s cost and total cost of goods for the sub department. No Cost lists items with no cost on file, so their margin can’t be worked out.</p></div>
+    </details>
+    <details>
+      <summary><span class="q">Q</span><span>My store ID covers two locations. How do I see each one?</span></summary>
+      <div class="a"><p>Tabs appear under the header when that happens. Pick either location, or Both to see them together.</p></div>
+    </details>
+    <details>
+      <summary><span class="q">Q</span><span>Can I export this?</span></summary>
+      <div class="a"><p>Yes. Click the download icon in the sub department’s title bar to save a CSV, either a ready-made report such as Items, Cost or No Cost, or your own choice of columns.</p></div>
+    </details>
+    </div>
+  </main>
+  <p class="foot"><span class="mark" aria-hidden="true">?</span><span>Still stuck? Contact your CounterCtrl representative.</span></p>
+</div>
+</body>
+</html>

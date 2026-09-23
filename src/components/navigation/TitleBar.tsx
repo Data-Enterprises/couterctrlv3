@@ -7,11 +7,13 @@ import logoReversed from "../../assets/portal/logo-reversed.webp";
 import { ChevronDownIcon } from "@heroicons/react/16/solid";
 import { useAppSelector, useAppDispatch } from "../../hooks";
 import { categoriesFor } from "./utils";
+import { legacyEntryPath } from "../../constants/legacyPages";
 import { COMING_SOON_CATEGORY } from "../../utils/comingSoon";
 import { resetNav, setIsNavOpen, setLastRoute } from "../../features/navSlice";
 import {
   resetAppSlice,
   setApiEnv,
+  setUiMode,
   SHOW_API_ENV_SWITCH,
 } from "../../features/appSlice";
 import { resetUserSlice } from "../../features/userSlice";
@@ -327,12 +329,79 @@ const TitleBar = () => {
                 does NOT close the dropdown — switching environments is
                 something you do and then verify, so the badge has to stay on
                 screen to confirm it took. */}
-            {SHOW_API_ENV_SWITCH && user.userLevel >= 7 ? (
+            {/* Live / Legacy — the pages as published, or the ones the
+                dev/prod separation replaced. Same audience as Mode (7, 8, 9):
+                a client cannot reach Legacy at all.
+
+                Above Mode because it decides for Mode: Legacy is prod-only,
+                so turning it on settles the row below it.
+
+                Level 9 only, narrower than Mode's 7+: these pages are kept
+                for reference, not for support work, and every one of them has
+                a live replacement that is the one to be looking at. */}
+            {SHOW_API_ENV_SWITCH && user.userLevel >= 9 ? (
               <div className="px-4 py-2.5 border-b border-gray-100 flex items-center gap-2">
+                <span className="text-[13px] font-medium text-content flex-1">
+                  View
+                </span>
+                <div className="flex items-center rounded-full overflow-hidden border border-gray-200 text-[10px] font-bold select-none flex-shrink-0">
+                  <button
+                    onClick={() => dispatch(setUiMode("live"))}
+                    title="Live: the app as published"
+                    className={`px-2.5 py-1 transition-colors ${
+                      context.uiMode === "live"
+                        ? "bg-brand_navy text-custom-white"
+                        : "text-content/85 hover:bg-gray-50"
+                    }`}
+                  >
+                    LIVE
+                  </button>
+                  <button
+                    onClick={() => {
+                      dispatch(setUiMode("legacy"));
+                      // The page you are on may not exist in Legacy — Vendors,
+                      // say. Leaving the route alone would render its live
+                      // version under the legacy frame, which is the one thing
+                      // a legacy view must not do: look current. So it falls
+                      // back to where you last were over there, and to Sales
+                      // if that is nowhere yet.
+                      const to = legacyEntryPath(
+                        location.pathname,
+                        context.legacyLastRoute,
+                      );
+                      if (to) navigate(to);
+                    }}
+                    title="Legacy: the old pages, on the legacy API"
+                    className={`px-2.5 py-1 transition-colors ${
+                      context.uiMode === "legacy"
+                        ? "bg-amber-500 text-custom-white"
+                        : "text-content/85 hover:bg-gray-50"
+                    }`}
+                  >
+                    LEGACY
+                  </button>
+                </div>
+              </div>
+            ) : null}
+            {SHOW_API_ENV_SWITCH && user.userLevel >= 7 ? (
+              <div
+                className={`px-4 py-2.5 border-b border-gray-100 flex items-center gap-2 ${
+                  context.uiMode === "legacy" ? "opacity-40" : ""
+                }`}
+                title={
+                  context.uiMode === "legacy"
+                    ? "Legacy pages always use the prod API"
+                    : undefined
+                }
+              >
                 <span className="text-[13px] font-medium text-content flex-1">
                   Mode
                 </span>
-                <div className="flex items-center rounded-full overflow-hidden border border-gray-200 text-[10px] font-bold select-none flex-shrink-0">
+                <div
+                  className={`flex items-center rounded-full overflow-hidden border border-gray-200 text-[10px] font-bold select-none flex-shrink-0 ${
+                    context.uiMode === "legacy" ? "pointer-events-none" : ""
+                  }`}
+                >
                   <button
                     onClick={() => dispatch(setApiEnv("dev"))}
                     title="Dev mode: the dev API, the dev version of every page, and Coming Soon"

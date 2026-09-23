@@ -1,5 +1,5 @@
-import InfoButton from "../../../../components-dev/InfoButton";
-import { useState, useRef } from "react";
+import PageInfoButton from "../../../../components-dev/PageInfoButton";
+import { useRef } from "react";
 import { useAppSelector, useAppDispatch } from "../../../../hooks";
 import {
   setThreshold,
@@ -14,8 +14,6 @@ import {
 } from "@heroicons/react/20/solid";
 import ThresholdFilter from "../../../../components-dev/filters/ThresholdFilter";
 import ThresholdSlider from "../../../../components-dev/filters/ThresholdSlider";
-import InfoPopover from "../../../../components-dev/InfoPopover";
-import { SALES_LEDGER_INFO } from "../salesInfo";
 
 const THRESHOLD_DEFAULT = 9;
 
@@ -58,7 +56,6 @@ const LedgerHeader = ({
 }: LedgerHeaderProps) => {
   const dispatch = useAppDispatch();
   const threshold = useAppSelector((s) => s.dev.salesLedger.threshold);
-  const [infoOpen, setInfoOpen] = useState(false);
 
   const isQty = gradingMetric === "qty";
 
@@ -184,15 +181,7 @@ const LedgerHeader = ({
 
         {/* About this view */}
         <div className="relative flex-shrink-0">
-          <InfoButton onClick={() => setInfoOpen((prev) => !prev)} />
-          {infoOpen && (
-            <InfoPopover
-              title={SALES_LEDGER_INFO.title}
-              purpose={SALES_LEDGER_INFO.purpose}
-              glossary={SALES_LEDGER_INFO.glossary}
-              onClose={() => setInfoOpen(false)}
-            />
-          )}
+          <PageInfoButton page="sales" />
         </div>
       </div>
     </div>

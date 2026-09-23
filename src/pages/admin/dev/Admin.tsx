@@ -3,6 +3,7 @@ import { useAppDispatch } from "../../../hooks";
 import { useAdminPageCtx } from "./hooks";
 import { useResizableBox } from "../../../hooks/useResizableBox";
 import ResizeHandle from "../../../components-dev/ResizeHandle";
+import PageInfoButton from "../../../components-dev/PageInfoButton";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { setAdminForm, setCompanies } from "../../../features/dev/devAdminPageSlice";
 import type { AdminForm } from "../../../features/dev/devAdminPageSlice";
@@ -142,6 +143,8 @@ const Admin = () => {
               </button>
             </>
           )}
+          {context.adminForm !== "store_activity" && <div className="flex-1" />}
+          <PageInfoButton page="admin" title="About Admin" />
         </div>
 
         <div className="flex border-b border-gray-100 flex-shrink-0">
