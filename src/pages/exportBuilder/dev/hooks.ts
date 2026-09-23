@@ -11,6 +11,12 @@ import {
   type ExportResp,
 } from "../../../api/salesExport";
 import {
+  failSavedWork,
+  markSavedLoaded,
+  removeSaved,
+  setSaved,
+  startSavedWork,
+  upsertSaved,
   failConfigLoad,
   failExport,
   finishExport,
@@ -24,6 +30,15 @@ import {
 import type { JsonError } from "../../../interfaces";
 import { filterSampleRows } from "./sampleRows";
 import { aliasFor } from "./aggregates";
+import {
+  listSavedExports,
+  removeSavedExport,
+  saveSavedExport,
+  type SavedExport,
+  type SavedExportsResp,
+  type SavedExportResp,
+} from "../../../api/savedExports";
+import { planLoad, toPayload } from "./savedExports";
 import { rollupSampleRows } from "./rollup";
 
 /** The load balancer gives up at 150s. The page says so at 120, so the
@@ -360,6 +375,72 @@ export const useExportBuilderCtx = () => {
       });
   };
 
+  /**
+   * Saved configurations: list, save, remove, load.
+   *
+   * They live in one JSON file per user in S3 rather than in this page, so a
+   * report someone set up on Monday is still there on Friday and on another
+   * machine. The page holds the shape; the endpoint holds the file.
+   */
+  const loadSaved = () => {
+    dispatch(startSavedWork());
+    listSavedExports(url, token)
+      .then((resp) => {
+        const j = resp.data as SavedExportsResp;
+        if (j.error !== 0) {
+          dispatch(failSavedWork("Could not read your saved exports."));
+          return;
+        }
+        dispatch(setSaved(j.configs ?? []));
+      })
+      .catch((err: JsonError) =>
+        dispatch(failSavedWork("Could not read your saved exports: " + err.message)),
+      );
+  };
+
+  const saveCurrent = (name: string, id: string | null) => {
+    dispatch(startSavedWork());
+    saveSavedExport(url, token, {
+      id,
+      name,
+      payload: toPayload(config, config.querySql || undefined),
+    })
+      .then((resp) => {
+        const j = resp.data as SavedExportResp;
+        if (j.error !== 0 || !j.config) {
+          dispatch(failSavedWork("That did not save."));
+          return;
+        }
+        dispatch(upsertSaved(j.config));
+        toast.success(`Saved "${j.config.name}"`);
+      })
+      .catch((err: JsonError) =>
+        dispatch(failSavedWork("That did not save: " + err.message)),
+      );
+  };
+
+  const deleteSaved = (id: string) => {
+    dispatch(startSavedWork());
+    removeSavedExport(url, token, id)
+      .then(() => dispatch(removeSaved(id)))
+      .catch((err: JsonError) =>
+        dispatch(failSavedWork("That did not delete: " + err.message)),
+      );
+  };
+
+  /**
+   * Put a saved configuration onto the range that is open.
+   *
+   * Everything is intersected with what this range holds — a vendor that did
+   * not trade this month is not a filter, it is an empty file — and whatever
+   * fell out is reported rather than quietly dropped.
+   */
+  const applySaved = (saved: SavedExport) => {
+    const plan = planLoad(saved.payload, config);
+    plan.actions.forEach((action) => dispatch(action));
+    dispatch(markSavedLoaded({ id: saved.id, notes: plan.missing }));
+  };
+
   const build = () => {
     dispatch(startExport());
     const slowTimer = window.setTimeout(
@@ -410,6 +491,10 @@ export const useExportBuilderCtx = () => {
     endDate,
     orderedColumns,
     visibleRows,
+    loadSaved,
+    saveCurrent,
+    deleteSaved,
+    applySaved,
     aggregating,
     summary,
     blocked,

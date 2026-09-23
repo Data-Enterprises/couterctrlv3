@@ -6,6 +6,7 @@ import {
   dismissBuild,
   openQuery,
   openDownloads,
+  openSaved,
 } from "../../../features/dev/devExportBuilderSlice";
 import { formatBigNumber } from "../../../utils";
 
@@ -213,6 +214,13 @@ const ExportBar = () => {
           Files ({ctx.builds.length})
         </button>
       )}
+      <button
+        type="button"
+        onClick={() => ctx.dispatch(openSaved(true))}
+        className="border border-custom-white/30 text-custom-white text-[13px] font-medium px-4 py-2.5 rounded-lg hover:bg-custom-white/10 transition-colors"
+      >
+        Saved
+      </button>
       <button
         type="button"
         onClick={() => ctx.dispatch(openQuery(true))}

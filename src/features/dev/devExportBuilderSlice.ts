@@ -1,4 +1,5 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import type { SavedExport } from "../../api/savedExports";
 import type {
   ExportAggregate,
   ExportCashier,
@@ -127,6 +128,16 @@ export interface ExportBuilderState {
   /** The query scratchpad: open, and the last thing typed into it. */
   queryOpen: boolean;
   querySql: string;
+  /** Saved configurations, as they came back from S3. */
+  saved: SavedExport[];
+  savedLoaded: boolean;
+  savedBusy: boolean;
+  savedOpen: boolean;
+  savedError: string | null;
+  /** The saved configuration currently loaded, so Save can update it. */
+  savedCurrentId: string | null;
+  /** What the last load could not honour, shown until something changes. */
+  savedNotes: string[];
   /** The list of built files, open. */
   downloadsOpen: boolean;
 
@@ -193,6 +204,13 @@ export const initialState: ExportBuilderState = {
 
   queryOpen: false,
   querySql: "",
+  saved: [],
+  savedLoaded: false,
+  savedBusy: false,
+  savedOpen: false,
+  savedError: null,
+  savedCurrentId: null,
+  savedNotes: [],
   downloadsOpen: false,
 
   building: false,
@@ -501,6 +519,47 @@ const devExportBuilderSlice = createSlice({
     openDownloads: (state, action: PayloadAction<boolean>) => {
       state.downloadsOpen = action.payload;
     },
+    openSaved: (state, action: PayloadAction<boolean>) => {
+      state.savedOpen = action.payload;
+      if (action.payload) state.savedError = null;
+    },
+    startSavedWork: (state) => {
+      state.savedBusy = true;
+      state.savedError = null;
+    },
+    setSaved: (state, action: PayloadAction<SavedExport[]>) => {
+      state.savedBusy = false;
+      state.savedLoaded = true;
+      state.saved = action.payload;
+    },
+    /** One saved configuration back from a save: new or replacing its twin. */
+    upsertSaved: (state, action: PayloadAction<SavedExport>) => {
+      state.savedBusy = false;
+      const next = action.payload;
+      const at = state.saved.findIndex((s) => s.id === next.id);
+      state.saved =
+        at === -1
+          ? [next, ...state.saved]
+          : state.saved.map((s) => (s.id === next.id ? next : s));
+      state.savedCurrentId = next.id;
+    },
+    removeSaved: (state, action: PayloadAction<string>) => {
+      state.savedBusy = false;
+      state.saved = state.saved.filter((s) => s.id !== action.payload);
+      if (state.savedCurrentId === action.payload) state.savedCurrentId = null;
+    },
+    failSavedWork: (state, action: PayloadAction<string>) => {
+      state.savedBusy = false;
+      state.savedError = action.payload;
+    },
+    /** A saved configuration has just been applied, with what it could not do. */
+    markSavedLoaded: (
+      state,
+      action: PayloadAction<{ id: string; notes: string[] }>,
+    ) => {
+      state.savedCurrentId = action.payload.id;
+      state.savedNotes = action.payload.notes;
+    },
     /** Kept so closing the window is not the same as losing the query. */
     setQuerySql: (state, action: PayloadAction<string>) => {
       state.querySql = action.payload;
@@ -645,6 +704,13 @@ export const {
   setColumnOrder,
   openQuery,
   openDownloads,
+  openSaved,
+  startSavedWork,
+  setSaved,
+  upsertSaved,
+  removeSaved,
+  failSavedWork,
+  markSavedLoaded,
   setQuerySql,
   setFlag,
   startSqlLoad,
