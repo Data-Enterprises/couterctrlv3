@@ -26,6 +26,26 @@ const ExportBar = () => {
   const pii = countPii(ctx.selectedColumns);
   const nothingToBuild = ctx.blocked !== null;
 
+  /**
+   * Every filter that is actually narrowing something.
+   *
+   * A list left whole says nothing, so only the narrowed ones appear — the
+   * point is that a heavily filtered file should not look like a full one in
+   * the strip you are about to press.
+   */
+  const narrowed = [
+    ctx.selectedSaleTypes.length < ctx.saleTypes.length &&
+      `${ctx.selectedSaleTypes.length} of ${ctx.saleTypes.length} sale types`,
+    ctx.selectedRingTypes.length < ctx.itemRingTypes.length &&
+      `${ctx.selectedRingTypes.length} of ${ctx.itemRingTypes.length} ring types`,
+    ctx.selectedSubDepartments.length < ctx.subDepartments.length &&
+      `${ctx.selectedSubDepartments.length} of ${ctx.subDepartments.length} sub departments`,
+    ctx.selectedVendors.length < ctx.vendors.length &&
+      `${ctx.selectedVendors.length} of ${ctx.vendors.length} vendors`,
+    ctx.flags.excludeVoids && "voided lines excluded",
+    ctx.flags.ordered && "sorted",
+  ].filter(Boolean) as string[];
+
   if (ctx.files.length > 0) {
     return (
       <div className="flex-shrink-0 bg-card_bg border border-brand_green rounded-xl px-4 py-3">
@@ -93,12 +113,17 @@ const ExportBar = () => {
     <div className="flex-shrink-0 bg-[#1e2a4a] rounded-xl px-4 py-3 flex items-center gap-4">
       <div className="flex-1 min-w-0">
         <div className="text-[13px] font-semibold text-custom-white">
-          {ctx.selectedStoreIds.length} store
-          {ctx.selectedStoreIds.length === 1 ? "" : "s"} ·{" "}
-          {ctx.selectedColumns.length} column
-          {ctx.selectedColumns.length === 1 ? "" : "s"} ·{" "}
+          {ctx.selectedStoreIds.length} of {ctx.stores.length} store
+          {ctx.stores.length === 1 ? "" : "s"} ·{" "}
+          {ctx.selectedColumns.length} of {ctx.columns.length} column
+          {ctx.columns.length === 1 ? "" : "s"} ·{" "}
           {ctx.flags.fileFormat.toUpperCase()}
         </div>
+        {narrowed.length > 0 && (
+          <div className="text-[11.5px] text-custom-white/75 mt-1">
+            Filtered: {narrowed.join(" · ")}
+          </div>
+        )}
         {pii > 0 ? (
           <div className="flex items-center gap-2 mt-1">
             <span className="text-[11.5px] text-custom-white/75">
