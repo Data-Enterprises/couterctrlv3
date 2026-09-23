@@ -163,11 +163,56 @@ export type AggregateFn =
   | "count"
   | "count_distinct";
 
-/** One measure of an aggregated export. `column` is a column name, or `*`
- *  for count(*). */
+/** The scalar functions an expression may call. Closed, like the
+ *  aggregates: the name is a key on the endpoint, never text in a query. */
+export const EXPORT_CALLS = [
+  "nullif",
+  "coalesce",
+  "round",
+  "abs",
+  "greatest",
+  "least",
+] as const;
+export type ExportCall = (typeof EXPORT_CALLS)[number];
+
+/**
+ * A measure worked out from other measures, as a tree.
+ *
+ * Sent as JSON, never as SQL. The endpoint walks this and renders the
+ * statement itself — each `column` verified against information_schema and
+ * quoted, each `fn` and `name` a key into its own dictionary, each `value`
+ * bound — so a client can say what it wants computed without any of its text
+ * reaching the query. Same posture as the column list, no new surface.
+ *
+ * `sum(qty) * (max(price) / nullif(max(price_split), 0))` is one of these,
+ * four levels deep.
+ */
+export type ExportExpr =
+  | { kind: "column"; name: string }
+  | { kind: "literal"; value: number | string | boolean | null }
+  /** `column` is a column name, or `*` for count(*). */
+  | { kind: "agg"; fn: AggregateFn; column: string }
+  | { kind: "binary"; op: "+" | "-" | "*" | "/"; left: ExportExpr; right: ExportExpr }
+  | { kind: "neg"; expr: ExportExpr }
+  | { kind: "call"; name: ExportCall; args: ExportExpr[] };
+
+/**
+ * One measure of an aggregated export.
+ *
+ * `column` is a column name, or `*` for count(*). `alias` is what the column
+ * is called in the file; without it the endpoint derives one — total_sales_sum
+ * — which is right until someone has a name of their own for it.
+ */
 export interface ExportAggregate {
   column: string;
   fn: AggregateFn;
+  alias?: string;
+}
+
+/** A computed measure: a name, and the tree that works it out. */
+export interface ExportComputed {
+  alias: string;
+  expr: ExportExpr;
 }
 
 export interface ExportParams {
@@ -190,6 +235,14 @@ export interface ExportParams {
    */
   groupBy: string[] | null;
   aggregates: ExportAggregate[] | null;
+  /**
+   * Measures with arithmetic in them, which `aggregates` cannot express.
+   *
+   * A real query asks for
+   * `sum(qty) * (max(price) / nullif(max(price_split), 0)) - sum(total_sales)`
+   * in one column. Null when nothing is computed.
+   */
+  computed: ExportComputed[] | null;
   /** Lower-cased both sides by the endpoint, so casing here does not matter. */
   saleTypes: string[] | null;
   /** Matched as stored — no normalising, because these come straight off the

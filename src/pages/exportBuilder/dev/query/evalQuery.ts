@@ -238,6 +238,60 @@ const evaluate = (
   }
 };
 
+/** A measure of a summary: what it is called, and how it is worked out. */
+export interface MeasureItem {
+  alias: string;
+  expr: ValueExpr;
+}
+
+/**
+ * The summary a set of measures would produce, over these rows.
+ *
+ * The one piece of arithmetic on the page: the Summary preview and the query
+ * window both come through here, so a configuration built by hand and the
+ * query that produced it cannot disagree about what the numbers are.
+ *
+ * Aggregates are worked out per group first and the expressions read them
+ * back, which is the order SQL does it in — `sum(qty) * max(price)` is the
+ * group's total times the group's highest price, not a sum of products.
+ */
+export const rollupMeasures = (
+  rows: ExportRow[],
+  spec: {
+    groupBy: string[];
+    items: MeasureItem[];
+    columns: ExportColumn[];
+    ordered: boolean;
+  },
+) => {
+  const leaves = spec.items.flatMap((item) => aggLeaves(item.expr));
+  const aggregates = leaves.filter(
+    (leaf, i) =>
+      leaves.findIndex((o) => o.fn === leaf.fn && o.column === leaf.column) === i,
+  );
+
+  const rolled = rollupSampleRows(rows, {
+    groupBy: spec.groupBy,
+    aggregates,
+    columns: spec.columns,
+    ordered: spec.ordered,
+  });
+
+  const columns = [...spec.groupBy, ...spec.items.map((item) => item.alias)];
+  const out = rolled.rows.map((row) => {
+    const lookup = (fn: string, column: string) =>
+      row[aliasFor(column, fn as never)];
+    const next: ExportRow = {};
+    for (const key of spec.groupBy) next[key] = row[key];
+    for (const item of spec.items) {
+      next[item.alias] = evaluate(item.expr, row, lookup);
+    }
+    return next;
+  });
+
+  return { columns, rows: out };
+};
+
 /**
  * Run a parsed query over the sample rows.
  *
@@ -304,23 +358,18 @@ export const evalQuery = (
   let outRows: ExportRow[];
 
   if (aggregates.length > 0) {
-    const rolled = rollupSampleRows(kept, {
+    // Group keys come out of the select list here, not from groupBy, because
+    // a query may group by something it does not show.
+    const rolled = rollupMeasures(kept, {
       groupBy: query.groupBy,
-      aggregates,
+      items: query.select.map((s) => ({ alias: s.alias, expr: s.expr })),
       columns,
       ordered: false,
     });
-    // The rollup writes each aggregate under the endpoint's own name; the
-    // expressions read them back from there and the query's own names go on
-    // the result.
     outColumns = query.select.map((s) => s.alias);
     outRows = rolled.rows.map((row) => {
-      const lookup = (fn: string, column: string) =>
-        row[aliasFor(column, fn as never)];
       const next: ExportRow = {};
-      for (const item of query.select) {
-        next[item.alias] = evaluate(item.expr, row, lookup);
-      }
+      for (const item of query.select) next[item.alias] = row[item.alias];
       return next;
     });
   } else if (query.groupBy.length > 0) {

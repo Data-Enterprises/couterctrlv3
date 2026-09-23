@@ -1,7 +1,6 @@
 import { ArrowDownTrayIcon, ClockIcon } from "@heroicons/react/24/outline";
 import { useExportBuilderCtx } from "./hooks";
 import { countPii } from "./piiColumns";
-import { aliasFor } from "./aggregates";
 import {
   dismissBuild,
   openQuery,
@@ -166,9 +165,9 @@ const ExportBar = () => {
               }`}{" "}
           · {ctx.flags.fileFormat.toUpperCase()}
         </div>
-        {ctx.aggregating && ctx.aggregates.length > 0 && (
+        {ctx.aggregating && ctx.measureItems.length > 0 && (
           <div className="text-[11.5px] text-custom-white/75 mt-1 font-mono">
-            {ctx.aggregates.map((m) => aliasFor(m.column, m.fn)).join(" · ")}
+            {ctx.measureItems.map((m) => m.alias).join(" · ")}
           </div>
         )}
         {narrowed.length > 0 && (

@@ -1,7 +1,10 @@
 import type { UnknownAction } from "@reduxjs/toolkit";
+import type { ExportExpr } from "../../../api/salesExport";
 import type { SavedExportPayload } from "../../../api/savedExports";
+
 import {
   setAggregates,
+  setComputed,
   setColumnOrder,
   setFlag,
   setGroupBy,
@@ -17,6 +20,24 @@ import {
   setSelectedVendors,
   type ExportBuilderState,
 } from "../../../features/dev/devExportBuilderSlice";
+
+/** Every column an expression reaches, aggregated or not. */
+const columnsUnder = (expr: ExportExpr): string[] => {
+  switch (expr.kind) {
+    case "column":
+      return [expr.name];
+    case "agg":
+      return expr.column === "*" ? [] : [expr.column];
+    case "binary":
+      return [...columnsUnder(expr.left), ...columnsUnder(expr.right)];
+    case "neg":
+      return columnsUnder(expr.expr);
+    case "call":
+      return expr.args.flatMap(columnsUnder);
+    default:
+      return [];
+  }
+};
 
 /**
  * A list, as it should be saved.
@@ -40,6 +61,7 @@ export const toPayload = (
   columnOrder: config.columnOrder,
   groupBy: config.groupBy,
   aggregates: config.aggregates,
+  computed: config.computed,
   storeIds: narrowedOr(config.selectedStoreIds, config.stores),
   saleTypes: narrowedOr(config.selectedSaleTypes, config.saleTypes),
   ringTypes: narrowedOr(config.selectedRingTypes, config.itemRingTypes),
@@ -111,6 +133,21 @@ export const planLoad = (
       ),
     ),
   );
+
+  // A computed measure is only as good as the columns underneath it: one
+  // built on a column this table no longer has would be an error at build
+  // time rather than a missing column in the file.
+  const computed = (payload.computed ?? []).filter((m) =>
+    columnsUnder(m.expr).every((name) =>
+      config.columns.some((c) => c.name === name),
+    ),
+  );
+  if (computed.length < (payload.computed ?? []).length) {
+    missing.push(
+      `${(payload.computed ?? []).length - computed.length} computed measure(s) built on columns this table does not have`,
+    );
+  }
+  actions.push(setComputed(computed));
 
   const columns = payload.columns.filter((n) =>
     config.columns.some((c) => c.name === n),
@@ -186,6 +223,9 @@ export const describePayload = (payload: SavedExportPayload) => {
     payload.mode === "summary"
       ? `Summary by ${payload.groupBy.join(", ") || "nothing"}`
       : `${payload.columns.length} columns`,
+    payload.mode === "summary" &&
+      (payload.computed?.length ?? 0) > 0 &&
+      `${payload.computed?.length} computed`,
     payload.saleTypes && `${payload.saleTypes.length} sale types`,
     payload.subDepartments && `${payload.subDepartments.length} sub departments`,
     payload.vendors && `${payload.vendors.length} vendors`,

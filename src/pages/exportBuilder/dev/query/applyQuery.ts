@@ -1,6 +1,7 @@
 import type { UnknownAction } from "@reduxjs/toolkit";
 import {
   setAggregates,
+  setComputed,
   setColumnOrder,
   setFlag,
   setGroupBy,
@@ -25,17 +26,8 @@ import {
   type SelectItem,
 } from "./parseQuery";
 
-/**
- * How the expression reads, roughly, for saying what was dropped.
- *
- * Not a printer for the language — just enough to name the thing the
- * configuration cannot hold.
- */
-const sketch = (item: SelectItem) => {
-  const leaves = aggLeaves(item.expr);
-  const parts = leaves.map((l) => `${l.fn}(${l.column})`);
-  return item.alias + (parts.length ? ` — ${parts.join(" and ")}` : "");
-};
+/** An alias the endpoint will take: an identifier, and its own. */
+const USABLE_ALIAS = /^[A-Za-z_][A-Za-z0-9_]{0,62}$/;
 
 export interface ApplyPlan {
   actions: UnknownAction[];
@@ -128,40 +120,63 @@ export const planApply = (
   // is arithmetic the endpoint has no way to express — the window can work it
   // out, the file cannot hold it, and saying which is which is the point of
   // this list.
+  //
+  // A measure that IS one aggregate goes over as one; anything with
+  // arithmetic in it goes over as a computed measure, tree and all. Both
+  // keep the name they were given, because `AS lossGain` is the difference
+  // between a column someone can read and one they have to work out.
   const simple = query.select.filter((s) => s.expr.kind === "agg");
-  const computed = query.select.filter(
+  const computedItems = query.select.filter(
     (s) => s.expr.kind !== "agg" && aggLeaves(s.expr).length > 0,
   );
+
+  const named = (alias: string, fallback: string) => {
+    if (alias === fallback) return undefined;
+    if (USABLE_ALIAS.test(alias)) return alias;
+    leftBehind.push(
+      `AS ${alias} — a name in the file has to start with a letter and hold only letters, numbers and underscores, so this one is left to the endpoint`,
+    );
+    return undefined;
+  };
+
   const measures = simple.map((s) => {
     const node = s.expr as Extract<SelectItem["expr"], { kind: "agg" }>;
-    return { column: node.column, fn: node.fn };
+    const alias = named(s.alias, defaultAlias(node.column, node.fn));
+    return { column: node.column, fn: node.fn, ...(alias ? { alias } : {}) };
   });
 
+  const computed = computedItems
+    .filter((s) => {
+      if (USABLE_ALIAS.test(s.alias)) return true;
+      leftBehind.push(
+        `${s.alias} — a computed column needs a name of its own that is a plain identifier`,
+      );
+      return false;
+    })
+    .map((s) => ({ alias: s.alias, expr: s.expr }));
+
   if (measures.length > 0 || computed.length > 0) {
-    actions.push(setMode("summary"), setGroupBy(query.groupBy), setAggregates(measures));
+    actions.push(
+      setMode("summary"),
+      setGroupBy(query.groupBy),
+      setAggregates(measures),
+      setComputed(computed),
+    );
+    const counts = [
+      `${measures.length} measure${measures.length === 1 ? "" : "s"}`,
+      computed.length > 0 &&
+        `${computed.length} computed`,
+    ]
+      .filter(Boolean)
+      .join(" and ");
     applied.push(
       query.groupBy.length > 0
-        ? `Summary grouped by ${query.groupBy.join(", ")}, with ${measures.length} measure${measures.length === 1 ? "" : "s"}`
-        : `Summary with ${measures.length} measure${measures.length === 1 ? "" : "s"}`,
+        ? `Summary grouped by ${query.groupBy.join(", ")}, with ${counts}`
+        : `Summary with ${counts}`,
     );
     if (query.groupBy.length === 0) {
       leftBehind.push(
         "A total over everything with no GROUP BY — the export needs at least one key, so pick one before building",
-      );
-    }
-    for (const item of computed) {
-      leftBehind.push(
-        `${sketch(item)} — the file's measures are one column and one function, so the arithmetic around them cannot go in it`,
-      );
-    }
-    const renamed = simple.filter((s) => {
-      const node = s.expr as Extract<SelectItem["expr"], { kind: "agg" }>;
-      return s.alias !== defaultAlias(node.column, node.fn);
-    });
-    for (const s of renamed) {
-      const node = s.expr as Extract<SelectItem["expr"], { kind: "agg" }>;
-      leftBehind.push(
-        `AS ${s.alias} — the file names this ${defaultAlias(node.column, node.fn)}`,
       );
     }
   } else {

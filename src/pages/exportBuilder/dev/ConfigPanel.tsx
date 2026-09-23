@@ -12,6 +12,7 @@ import SelectFilter, {
 import { useExportBuilderCtx } from "./hooks";
 import { isPii } from "./piiColumns";
 import { aliasFor, fnsFor, FN_LABELS } from "./aggregates";
+import { sketchExpr } from "./query/sketchExpr";
 import { parseProductCodes, parseDescriptionTerms } from "./productCodes";
 import {
   setFlag,
@@ -21,7 +22,10 @@ import {
   setGroupBy,
   addAggregate,
   setAggregate,
+  setAggregateAlias,
+  setComputedAlias,
   removeAggregate,
+  removeComputed,
   resetExportBuilder,
   setSelectedColumns,
   setSelectedRingTypes,
@@ -1031,10 +1035,10 @@ const ConfigPanel = () => {
         isOpen={open === "measures"}
         onToggle={() => setOpen(open === "measures" ? null : "measures")}
         summary={
-          ctx.aggregates.length === 0
+          ctx.measureItems.length === 0
             ? "none yet"
-            : `${ctx.aggregates.length} measure${
-                ctx.aggregates.length === 1 ? "" : "s"
+            : `${ctx.measureItems.length} measure${
+                ctx.measureItems.length === 1 ? "" : "s"
               }`
         }
       >
@@ -1082,9 +1086,60 @@ const ConfigPanel = () => {
                   ×
                 </button>
               </div>
-              <span className="font-mono text-[10.5px] text-content/55">
-                {aliasFor(m.column, m.fn)}
-              </span>
+              <TextField
+                label={
+                  <span className="text-[11px] font-normal text-content/60">
+                    Called in the file
+                  </span>
+                }
+                value={m.alias ?? ""}
+                placeholder={aliasFor(m.column, m.fn)}
+                onChange={(value) =>
+                  ctx.dispatch(setAggregateAlias({ at: i, alias: value.trim() }))
+                }
+              />
+            </div>
+          ))}
+
+          {/*
+            * Computed measures come from the query window rather than from
+            * these two dropdowns: a column and a function cannot say
+            * `sum(qty) * max(price)`. They are shown here because this is
+            * where someone looks for what the file holds, and removable here
+            * because that is where they would look for that too.
+            */}
+          {ctx.computed.map((m, i) => (
+            <div
+              key={`computed-${i}`}
+              className="flex flex-col gap-1 border border-brand_line_2 rounded-lg p-2 bg-filter_active"
+            >
+              <div className="flex items-center gap-1.5">
+                <span className="flex-1 min-w-0 font-mono text-[11px] text-content/75 truncate">
+                  {sketchExpr(m.expr)}
+                </span>
+                <span className="text-[9.5px] font-semibold tracking-wide text-content/55">
+                  COMPUTED
+                </span>
+                <button
+                  type="button"
+                  onClick={() => ctx.dispatch(removeComputed(i))}
+                  aria-label={`Remove ${m.alias}`}
+                  className="w-[22px] h-[22px] flex-shrink-0 rounded border border-brand_line_2 text-content/60 hover:text-content hover:border-brand_slate transition-colors"
+                >
+                  ×
+                </button>
+              </div>
+              <TextField
+                label={
+                  <span className="text-[11px] font-normal text-content/60">
+                    Called in the file
+                  </span>
+                }
+                value={m.alias}
+                onChange={(value) =>
+                  ctx.dispatch(setComputedAlias({ at: i, alias: value.trim() }))
+                }
+              />
             </div>
           ))}
           <button
@@ -1096,9 +1151,10 @@ const ConfigPanel = () => {
           >
             add a measure
           </button>
-          {ctx.aggregates.length === 0 && (
+          {ctx.measureItems.length === 0 && (
             <span className="text-[11.5px] text-content/60">
-              A summary with no measures is just the list of groups.
+              A summary with no measures is just the list of groups. Arithmetic
+              between measures comes from the query window.
             </span>
           )}
         </div>

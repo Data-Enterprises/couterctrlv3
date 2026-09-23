@@ -1,4 +1,9 @@
 import { AGGREGATE_FNS, type AggregateFn } from "../aggregates";
+import {
+  EXPORT_CALLS,
+  type ExportCall,
+  type ExportExpr,
+} from "../../../../api/salesExport";
 
 /**
  * A small SQL, parsed here.
@@ -24,27 +29,15 @@ export type Literal = string | number | boolean | null;
  * output column, and a window that only understood `sum(qty)` would be a toy.
  * Aggregates are leaves of the tree — the arithmetic happens after they have
  * been worked out for the group, as it does in SQL.
+ *
+ * This is the export endpoint's `computed` shape, deliberately: a tree parsed
+ * here is a tree that can be sent, so a query that ran in this window becomes
+ * a file without anything being translated in between.
  */
-export type ValueExpr =
-  | { kind: "column"; name: string }
-  | { kind: "literal"; value: number | string | boolean | null }
-  /** `column` is a column name, or `*` for count(*). */
-  | { kind: "agg"; fn: AggregateFn; column: string }
-  | { kind: "binary"; op: "+" | "-" | "*" | "/"; left: ValueExpr; right: ValueExpr }
-  | { kind: "neg"; expr: ValueExpr }
-  | { kind: "call"; name: CallName; args: ValueExpr[] };
+export type ValueExpr = ExportExpr;
 
-/** The scalar functions worth having: the ones that guard a division or a
- *  null, which is what the arithmetic needs. */
-export const CALL_NAMES = [
-  "nullif",
-  "coalesce",
-  "round",
-  "abs",
-  "greatest",
-  "least",
-] as const;
-export type CallName = (typeof CALL_NAMES)[number];
+export const CALL_NAMES = EXPORT_CALLS;
+export type CallName = ExportCall;
 
 export interface SelectItem {
   expr: ValueExpr;
@@ -135,9 +128,20 @@ export class QueryError extends Error {
 
 interface Token {
   type: "word" | "number" | "string" | "op";
+  /** Folded to lower case for a word, as Postgres folds an unquoted name. */
   text: string;
   /** For a word: the upper-cased text, for keyword matching. */
   upper: string;
+  /**
+   * Exactly what was typed.
+   *
+   * Only aliases use it. An unquoted column name is folded because that is
+   * what Postgres does to find the column — but an alias is not looked up,
+   * it is written, and the export quotes it. So `AS TotalUnits` can be
+   * TotalUnits in the file's header rather than totalunits, which is what
+   * whoever typed it meant.
+   */
+  raw: string;
 }
 
 const OPERATORS = [
@@ -192,7 +196,7 @@ const tokenize = (sql: string): Token[] => {
         throw new QueryError("A quoted value is missing its closing '.");
       }
       i += 1;
-      tokens.push({ type: "string", text: value, upper: value });
+      tokens.push({ type: "string", text: value, upper: value, raw: value });
       continue;
     }
     if (ch === '"') {
@@ -207,7 +211,12 @@ const tokenize = (sql: string): Token[] => {
       }
       i += 1;
       // Quoted identifiers keep their case, as in Postgres.
-      tokens.push({ type: "word", text: value, upper: value.toUpperCase() });
+      tokens.push({
+        type: "word",
+        text: value,
+        upper: value.toUpperCase(),
+        raw: value,
+      });
       continue;
     }
     if (/[0-9]/.test(ch) || (ch === "." && /[0-9]/.test(sql[i + 1] ?? ""))) {
@@ -216,7 +225,7 @@ const tokenize = (sql: string): Token[] => {
         value += sql[i];
         i += 1;
       }
-      tokens.push({ type: "number", text: value, upper: value });
+      tokens.push({ type: "number", text: value, upper: value, raw: value });
       continue;
     }
     if (/[A-Za-z_]/.test(ch)) {
@@ -231,6 +240,7 @@ const tokenize = (sql: string): Token[] => {
         type: "word",
         text: value.toLowerCase(),
         upper: value.toUpperCase(),
+        raw: value,
       });
       continue;
     }
@@ -239,7 +249,12 @@ const tokenize = (sql: string): Token[] => {
       throw new QueryError(`I do not know what to do with "${ch}".`);
     }
     i += op.length;
-    tokens.push({ type: "op", text: op === "<>" ? "!=" : op, upper: op });
+    tokens.push({
+      type: "op",
+      text: op === "<>" ? "!=" : op,
+      upper: op,
+      raw: op,
+    });
   }
   return tokens;
 };
@@ -465,10 +480,13 @@ export const parseQuery = (sql: string): Query => {
           : `expr_${++unnamed}`;
     if (isWord("AS")) {
       take();
-      alias = columnName("after AS");
+      if (done() || peek().type !== "word") {
+        throw new QueryError("AS needs a name after it.");
+      }
+      alias = take().raw;
     } else if (!done() && peek().type === "word" && !CLAUSE_WORDS.has(peek().upper)) {
       // `sum(total_sales) total` — SQL allows the AS to be left out.
-      alias = take().text;
+      alias = take().raw;
     }
     return { expr, alias };
   };

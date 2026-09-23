@@ -39,7 +39,7 @@ import {
   type SavedExportResp,
 } from "../../../api/savedExports";
 import { planLoad, toPayload } from "./savedExports";
-import { rollupSampleRows } from "./rollup";
+import { rollupMeasures, type MeasureItem } from "./query/evalQuery";
 
 /** The load balancer gives up at 150s. The page says so at 120, so the
  *  explanation arrives before the failure does. */
@@ -134,7 +134,22 @@ export const useExportBuilderCtx = () => {
    * grouping by `qty` and also asking for its total is fine, but two measures
    * that both land on `qty_sum` is a file with a column written twice.
    */
-  const aliases = config.aggregates.map((m) => aliasFor(m.column, m.fn));
+  /**
+   * Every measure, plain or computed, as the file will name it.
+   *
+   * One list because the file has one header: a computed column called
+   * qty_sum and a measure that derives the same name are the same collision,
+   * and the endpoint refuses both.
+   */
+  const measureItems: MeasureItem[] = [
+    ...config.aggregates.map((m) => ({
+      alias: m.alias || aliasFor(m.column, m.fn),
+      expr: { kind: "agg" as const, fn: m.fn, column: m.column },
+    })),
+    ...config.computed.map((c) => ({ alias: c.alias, expr: c.expr })),
+  ];
+
+  const aliases = measureItems.map((m) => m.alias);
   const duplicate =
     aliases.find(
       (name, i) => aliases.indexOf(name) !== i || config.groupBy.includes(name),
@@ -144,7 +159,7 @@ export const useExportBuilderCtx = () => {
   const shapeProblem = aggregating
     ? config.groupBy.length === 0
       ? "Pick at least one column to group by."
-      : config.aggregates.length === 0
+      : measureItems.length === 0
         ? "Add at least one measure — a summary with no numbers in it is a list of the groups."
         : duplicate
           ? `Two of these would both be written as ${duplicate}. Change one of them.`
@@ -223,9 +238,9 @@ export const useExportBuilderCtx = () => {
    * says as much where the numbers are.
    */
   const summary = aggregating
-    ? rollupSampleRows(visibleRows, {
+    ? rollupMeasures(visibleRows, {
         groupBy: config.groupBy,
-        aggregates: config.aggregates,
+        items: measureItems,
         columns: config.columns,
         ordered: config.flags.ordered,
       })
@@ -310,6 +325,10 @@ export const useExportBuilderCtx = () => {
       columns: aggregating ? null : orderedColumns.map((c) => c.name),
       groupBy: aggregating ? config.groupBy : null,
       aggregates: aggregating ? config.aggregates : null,
+      // Null rather than an empty list, so a summary with nothing computed
+      // sends nothing rather than sending emptiness.
+      computed:
+        aggregating && config.computed.length > 0 ? config.computed : null,
       saleTypes: all(config.selectedSaleTypes, config.saleTypes)
         ? null
         : config.selectedSaleTypes,
@@ -491,6 +510,7 @@ export const useExportBuilderCtx = () => {
     endDate,
     orderedColumns,
     visibleRows,
+    measureItems,
     loadSaved,
     saveCurrent,
     deleteSaved,

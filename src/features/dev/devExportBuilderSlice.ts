@@ -2,6 +2,7 @@ import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { SavedExport } from "../../api/savedExports";
 import type {
   ExportAggregate,
+  ExportComputed,
   ExportCashier,
   ExportColumn,
   ExportFile,
@@ -120,8 +121,17 @@ export interface ExportBuilderState {
   mode: ExportMode;
   /** Column names, in the order they are grouped and written. */
   groupBy: string[];
-  /** `{ column, fn }`, where column may be `*` for count(*). */
+  /** `{ column, fn }`, where column may be `*` for count(*), plus a name of
+   *  its own when someone has given it one. */
   aggregates: ExportAggregate[];
+  /**
+   * Measures with arithmetic in them.
+   *
+   * Kept apart from the plain ones because they are a different thing to the
+   * endpoint — a tree it walks rather than a column and a function — and
+   * because only these can be built from a query rather than picked.
+   */
+  computed: ExportComputed[];
 
   flags: ExportFlags;
 
@@ -193,6 +203,7 @@ export const initialState: ExportBuilderState = {
   mode: "lines",
   groupBy: [],
   aggregates: [],
+  computed: [],
 
   flags: {
     voidFlag: null,
@@ -485,6 +496,32 @@ const devExportBuilderSlice = createSlice({
     setAggregates: (state, action: PayloadAction<ExportAggregate[]>) => {
       state.aggregates = action.payload;
     },
+    setComputed: (state, action: PayloadAction<ExportComputed[]>) => {
+      state.computed = action.payload;
+    },
+    removeComputed: (state, action: PayloadAction<number>) => {
+      state.computed = state.computed.filter((_, i) => i !== action.payload);
+    },
+    /** The name a measure carries into the file, or none to let the endpoint
+     *  derive one. */
+    setAggregateAlias: (
+      state,
+      action: PayloadAction<{ at: number; alias: string }>,
+    ) => {
+      const { at, alias } = action.payload;
+      state.aggregates = state.aggregates.map((m, i) =>
+        i === at ? { column: m.column, fn: m.fn, ...(alias ? { alias } : {}) } : m,
+      );
+    },
+    setComputedAlias: (
+      state,
+      action: PayloadAction<{ at: number; alias: string }>,
+    ) => {
+      const { at, alias } = action.payload;
+      state.computed = state.computed.map((m, i) =>
+        i === at ? { ...m, alias } : m,
+      );
+    },
     addAggregate: (state, action: PayloadAction<ExportAggregate>) => {
       state.aggregates = [...state.aggregates, action.payload];
     },
@@ -655,6 +692,7 @@ const devExportBuilderSlice = createSlice({
       state.mode = "lines";
       state.groupBy = [];
       state.aggregates = [];
+      state.computed = [];
       state.flags = { ...initialState.flags };
       state.files = [];
       state.exportError = null;
@@ -700,6 +738,10 @@ export const {
   addAggregate,
   setAggregate,
   setAggregates,
+  setAggregateAlias,
+  setComputed,
+  setComputedAlias,
+  removeComputed,
   removeAggregate,
   setColumnOrder,
   openQuery,

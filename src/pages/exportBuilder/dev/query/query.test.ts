@@ -158,6 +158,7 @@ describe("turning a query into the configuration", () => {
       "devExportBuilder/setMode",
       "devExportBuilder/setGroupBy",
       "devExportBuilder/setAggregates",
+      "devExportBuilder/setComputed",
     ]);
     expect(out.applied[0]).toMatch(/grouped by storeid/);
   });
@@ -188,9 +189,26 @@ describe("turning a query into the configuration", () => {
     expect(out.applied.join(" ")).toMatch(/Descriptions holding "milk"/);
   });
 
-  it("warns that the file names a measure its own way", () => {
+  it("carries the name a measure was given into the file", () => {
     const out = plan("select storeid, sum(qty) as pieces group by storeid");
-    expect(out.leftBehind.join(" ")).toMatch(/names this qty_sum/);
+    const measures = out.actions.find(
+      (a) => a.type === "devExportBuilder/setAggregates",
+    )?.payload as { alias?: string }[];
+    expect(measures[0].alias).toBe("pieces");
+    expect(out.leftBehind.join(" ")).not.toMatch(/qty_sum/);
+  });
+
+  it("leaves a name the endpoint could not use to the endpoint", () => {
+    // A quoted alias can be anything in Postgres; a column of a CSV that a
+    // client opens in Excel should not be.
+    const out = plan(
+      'select storeid, sum(qty) as "pieces sold!" group by storeid',
+    );
+    const measures = out.actions.find(
+      (a) => a.type === "devExportBuilder/setAggregates",
+    )?.payload as { alias?: string }[];
+    expect(measures[0].alias).toBeUndefined();
+    expect(out.leftBehind.join(" ")).toMatch(/plain identifier|only letters/);
   });
 });
 
@@ -236,7 +254,9 @@ ORDER BY vendor_id, sub_department`;
 
   it("runs it, arithmetic and all", () => {
     const out = evalQuery(parseQuery(CLIENT_QUERY), shelfRows, shelf);
-    // Unquoted names fold to lower case, here as in Postgres.
+    // Column names fold to lower case as Postgres folds them, but an alias
+    // is written rather than looked up — the export quotes it — so TotalUnits
+    // stays TotalUnits in the header.
     expect(out.columns).toEqual([
       "store_number",
       "vendor_id",
@@ -244,21 +264,21 @@ ORDER BY vendor_id, sub_department`;
       "product_code",
       "product_description",
       "terminal",
-      "totalunits",
-      "totaldollars",
-      "atreg",
-      "regunitprice",
-      "lossgain",
-      "packagedisc",
+      "TotalUnits",
+      "TotalDollars",
+      "atReg",
+      "RegUnitPrice",
+      "lossGain",
+      "PACKAGEDISC",
     ]);
     expect(out.rows).toHaveLength(1);
     expect(out.rows[0]).toMatchObject({
-      totalunits: 4,
-      totaldollars: 10,
-      regunitprice: 3,
-      atreg: 12,
-      lossgain: 2,
-      packagedisc: 1,
+      TotalUnits: 4,
+      TotalDollars: 10,
+      RegUnitPrice: 3,
+      atReg: 12,
+      lossGain: 2,
+      PACKAGEDISC: 1,
     });
   });
 
@@ -307,10 +327,67 @@ ORDER BY vendor_id, sub_department`;
     // endpoint can build. The three worked-out ones are not, and the export
     // would quietly come back without them if nobody said so.
     expect(out.applied.join(" ")).toMatch(/3 measures/);
-    const dropped = out.leftBehind.join(" ");
-    expect(dropped).toMatch(/atreg/);
-    expect(dropped).toMatch(/regunitprice/);
-    expect(dropped).toMatch(/lossgain/);
-    expect(dropped).toMatch(/one column and one function/);
+    // The worked-out ones travel as computed measures now, names and all.
+    expect(out.applied.join(" ")).toMatch(/3 computed/);
+    const computed = out.actions.find(
+      (a) => a.type === "devExportBuilder/setComputed",
+    )?.payload as { alias: string }[];
+    expect(computed.map((c) => c.alias)).toEqual([
+      "atReg",
+      "RegUnitPrice",
+      "lossGain",
+    ]);
+  });
+});
+
+describe("a computed measure on its way to the file", () => {
+  const shelf: ExportColumn[] = [
+    { name: "product_code", data_type: "character varying" },
+    { name: "qty", data_type: "numeric" },
+    { name: "total_sales", data_type: "numeric" },
+    { name: "price", data_type: "numeric" },
+    { name: "price_split", data_type: "numeric" },
+  ];
+
+  const config = {
+    ...initialState,
+    columns: shelf,
+    columnOrder: shelf.map((c) => c.name),
+    selectedColumns: shelf.map((c) => c.name),
+  };
+
+  const out = planApply(
+    parseQuery(
+      "select product_code, sum(qty) as Units," +
+        " (sum(qty) * (max(price) / nullif(max(price_split), 0))) - sum(total_sales) as lossGain" +
+        " group by product_code",
+    ),
+    config,
+  );
+
+  const computed = out.actions.find(
+    (a) => a.type === "devExportBuilder/setComputed",
+  )?.payload as { alias: string; expr: unknown }[];
+
+  it("travels as a tree, not as text", () => {
+    // Nothing the client types reaches the query: the endpoint walks this and
+    // renders the SQL itself, which is why there is no string here anywhere.
+    expect(computed).toHaveLength(1);
+    expect(computed[0].alias).toBe("lossGain");
+    expect(JSON.stringify(computed[0].expr)).toContain('"kind":"binary"');
+    expect(JSON.stringify(computed[0].expr)).toContain('"fn":"max"');
+    expect(JSON.stringify(computed[0].expr)).toContain('"name":"nullif"');
+  });
+
+  it("leaves the plain measure plain", () => {
+    const measures = out.actions.find(
+      (a) => a.type === "devExportBuilder/setAggregates",
+    )?.payload as { column: string; fn: string; alias?: string }[];
+    expect(measures).toEqual([{ column: "qty", fn: "sum", alias: "Units" }]);
+  });
+
+  it("does not report it as dropped any more", () => {
+    expect(out.leftBehind.join(" ")).not.toMatch(/lossGain/);
+    expect(out.applied.join(" ")).toMatch(/1 computed/);
   });
 });
