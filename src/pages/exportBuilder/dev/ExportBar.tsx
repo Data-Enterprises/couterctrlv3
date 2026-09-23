@@ -1,6 +1,7 @@
 import { ArrowDownTrayIcon, ClockIcon } from "@heroicons/react/24/outline";
 import { useExportBuilderCtx } from "./hooks";
 import { countPii } from "./piiColumns";
+import { aliasFor } from "./aggregates";
 import { formatBigNumber } from "../../../utils";
 
 const mb = (bytes: number) => `${(bytes / 1024 / 1024).toFixed(1)} MB`;
@@ -23,7 +24,8 @@ export const SHOW_SQL_BUTTON = false;
  */
 const ExportBar = () => {
   const ctx = useExportBuilderCtx();
-  const pii = countPii(ctx.selectedColumns);
+  // A summary carries whatever it groups by, so that is what to count.
+  const pii = countPii(ctx.aggregating ? ctx.groupBy : ctx.selectedColumns);
   const nothingToBuild = ctx.blocked !== null;
 
   /**
@@ -126,10 +128,18 @@ const ExportBar = () => {
         <div className="text-[13px] font-semibold text-custom-white">
           {ctx.selectedStoreIds.length} of {ctx.stores.length} store
           {ctx.stores.length === 1 ? "" : "s"} ·{" "}
-          {ctx.selectedColumns.length} of {ctx.columns.length} column
-          {ctx.columns.length === 1 ? "" : "s"} ·{" "}
-          {ctx.flags.fileFormat.toUpperCase()}
+          {ctx.aggregating
+            ? `grouped by ${ctx.groupBy.join(", ") || "nothing yet"}`
+            : `${ctx.selectedColumns.length} of ${ctx.columns.length} column${
+                ctx.columns.length === 1 ? "" : "s"
+              }`}{" "}
+          · {ctx.flags.fileFormat.toUpperCase()}
         </div>
+        {ctx.aggregating && ctx.aggregates.length > 0 && (
+          <div className="text-[11.5px] text-custom-white/75 mt-1 font-mono">
+            {ctx.aggregates.map((m) => aliasFor(m.column, m.fn)).join(" · ")}
+          </div>
+        )}
         {narrowed.length > 0 && (
           <div className="text-[11.5px] text-custom-white/75 mt-1">
             Filtered: {narrowed.join(" · ")}

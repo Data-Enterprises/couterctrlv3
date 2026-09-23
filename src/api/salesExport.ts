@@ -148,11 +148,48 @@ export interface ExportResp {
  * scope modes are never consulted here — the page has already resolved which
  * stores it means, including the shared-group rule.
  */
+/**
+ * The aggregate functions the endpoint will run.
+ *
+ * Closed on purpose: the name is a key into a dictionary on that side and
+ * never reaches the query as text, so anything outside this list is a 400
+ * rather than a surprise in the file.
+ */
+export type AggregateFn =
+  | "sum"
+  | "avg"
+  | "min"
+  | "max"
+  | "count"
+  | "count_distinct";
+
+/** One measure of an aggregated export. `column` is a column name, or `*`
+ *  for count(*). */
+export interface ExportAggregate {
+  column: string;
+  fn: AggregateFn;
+}
+
 export interface ExportParams {
   startDate: string;
   endDate: string;
   storeids: number[];
   columns: string[] | null;
+  /**
+   * Roll the lines up instead of writing them out.
+   *
+   * Both are required together and neither can be sent alongside `columns` —
+   * the file becomes the group keys and the measures, so a column list would
+   * have nothing to say about it. Null for a line-by-line export.
+   *
+   * The numbers are the table's own, not a report: raw lines include tender
+   * rows, voids, department transfers and untendered modifications, and REFUND
+   * is stored positive, so a store total here runs to roughly double what
+   * /sales/weekly says for the same window. The measure names carry the
+   * operation so a file cannot quietly be read as one.
+   */
+  groupBy: string[] | null;
+  aggregates: ExportAggregate[] | null;
   /** Lower-cased both sides by the endpoint, so casing here does not matter. */
   saleTypes: string[] | null;
   /** Matched as stored — no normalising, because these come straight off the

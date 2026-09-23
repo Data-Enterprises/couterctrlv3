@@ -1,5 +1,6 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type {
+  ExportAggregate,
   ExportCashier,
   ExportColumn,
   ExportFile,
@@ -26,6 +27,15 @@ export interface ExportFlags {
   filePrefix: string;
   ordered: boolean;
 }
+
+/**
+ * What the file is: every line, or a rollup of them.
+ *
+ * Not a filter — it decides the file's shape, so the column picker and the
+ * group/measure pickers are alternatives rather than two halves of one
+ * question. The endpoint refuses a request carrying both.
+ */
+export type ExportMode = "lines" | "summary";
 
 export interface ExportBuilderState {
   loadingConfig: boolean;
@@ -83,6 +93,12 @@ export interface ExportBuilderState {
    */
   columnOrder: string[];
 
+  mode: ExportMode;
+  /** Column names, in the order they are grouped and written. */
+  groupBy: string[];
+  /** `{ column, fn }`, where column may be `*` for count(*). */
+  aggregates: ExportAggregate[];
+
   flags: ExportFlags;
 
   building: boolean;
@@ -129,6 +145,10 @@ export const initialState: ExportBuilderState = {
   selectedColumns: [],
   productCodes: [],
   columnOrder: [],
+
+  mode: "lines",
+  groupBy: [],
+  aggregates: [],
 
   flags: {
     voidFlag: null,
@@ -368,6 +388,41 @@ const devExportBuilderSlice = createSlice({
     setProductCodes: (state, action: PayloadAction<string[]>) => {
       state.productCodes = action.payload;
     },
+    setMode: (state, action: PayloadAction<ExportMode>) => {
+      state.mode = action.payload;
+    },
+    /**
+     * Group keys are ordered, so a tick appends rather than sorting.
+     *
+     * That order is the file's column order and the endpoint's GROUP BY
+     * positions — storeid then sale_date reads differently from the reverse,
+     * and someone who ticked them in that order meant it.
+     */
+    toggleGroupBy: (state, action: PayloadAction<string>) => {
+      const c = action.payload;
+      state.groupBy = state.groupBy.includes(c)
+        ? state.groupBy.filter((x) => x !== c)
+        : [...state.groupBy, c];
+    },
+    setGroupBy: (state, action: PayloadAction<string[]>) => {
+      state.groupBy = action.payload;
+    },
+    addAggregate: (state, action: PayloadAction<ExportAggregate>) => {
+      state.aggregates = [...state.aggregates, action.payload];
+    },
+    setAggregate: (
+      state,
+      action: PayloadAction<{ at: number; measure: ExportAggregate }>,
+    ) => {
+      const { at, measure } = action.payload;
+      if (at < 0 || at >= state.aggregates.length) return;
+      state.aggregates = state.aggregates.map((m, i) =>
+        i === at ? measure : m,
+      );
+    },
+    removeAggregate: (state, action: PayloadAction<number>) => {
+      state.aggregates = state.aggregates.filter((_, i) => i !== action.payload);
+    },
     /**
      * The switches that changed, as a patch.
      *
@@ -453,6 +508,12 @@ export const {
   moveColumn,
   setSelectedColumns,
   setProductCodes,
+  setMode,
+  toggleGroupBy,
+  setGroupBy,
+  addAggregate,
+  setAggregate,
+  removeAggregate,
   setFlag,
   startSqlLoad,
   setSql,

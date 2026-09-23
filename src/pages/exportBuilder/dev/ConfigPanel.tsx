@@ -10,9 +10,16 @@ import SelectFilter, {
 } from "../../../components-dev/filters/SelectFilter";
 import { useExportBuilderCtx } from "./hooks";
 import { isPii } from "./piiColumns";
+import { aliasFor, fnsFor, FN_LABELS } from "./aggregates";
 import { parseProductCodes } from "./productCodes";
 import {
   setFlag,
+  setMode,
+  toggleGroupBy,
+  setGroupBy,
+  addAggregate,
+  setAggregate,
+  removeAggregate,
   resetExportBuilder,
   setSelectedColumns,
   setSelectedRingTypes,
@@ -35,6 +42,8 @@ import {
 
 type Section =
   | "stores"
+  | "groupBy"
+  | "measures"
   | "saleDates"
   | "cashiers"
   | "productCodes"
@@ -252,6 +261,7 @@ const ConfigPanel = () => {
   const [columnQuery, setColumnQuery] = useState("");
   const [vendorQueryText, setVendorQueryText] = useState("");
   const [cashierQueryText, setCashierQueryText] = useState("");
+  const [groupQuery, setGroupQuery] = useState("");
   const [subDeptQueryText, setSubDeptQueryText] = useState("");
   const [codeText, setCodeText] = useState("");
   const [fileName, setFileName] = useState(ctx.flags.filePrefix);
@@ -262,6 +272,7 @@ const ConfigPanel = () => {
     setVendorQueryText("");
     setSubDeptQueryText("");
     setCashierQueryText("");
+    setGroupQuery("");
     setCodeText("");
     // The output flags survive a reload, so this one is a resync, not a clear.
     //
@@ -325,6 +336,11 @@ const ConfigPanel = () => {
     );
   }, [ctx.subDepartments, subDeptQueryText]);
 
+  const shownGroupColumns = useMemo(() => {
+    const q = groupQuery.trim().toLowerCase();
+    return ctx.columns.filter((c) => c.name.toLowerCase().includes(q));
+  }, [ctx.columns, groupQuery]);
+
   const shownCashiers = useMemo(() => {
     const q = cashierQueryText.trim().toLowerCase();
     return ctx.cashiers.filter(
@@ -363,6 +379,33 @@ const ConfigPanel = () => {
       ),
     );
 
+  /**
+   * A measure's column changed, so its function may no longer be legal.
+   *
+   * sum and avg exist only for numeric columns — seven columns on this table
+   * look numeric and are varchar — and the endpoint rejects the pair rather
+   * than failing mid-export. Moving to the nearest allowed function keeps a
+   * row from sitting there invalid.
+   */
+  const changeMeasureColumn = (at: number, column: string) => {
+    const allowed = fnsFor(column, ctx.columns);
+    const current = ctx.aggregates[at]?.fn;
+    ctx.dispatch(
+      setAggregate({
+        at,
+        measure: {
+          column,
+          fn: current && allowed.includes(current) ? current : allowed[0],
+        },
+      }),
+    );
+  };
+
+  const measureColumns: SelectFilterOption[] = [
+    { value: "*", label: "All rows (count)" },
+    ...ctx.columns.map((c) => ({ value: c.name, label: c.name })),
+  ];
+
   const allStores = ctx.stores.length;
   const allTypes = ctx.saleTypes.length;
 
@@ -382,6 +425,36 @@ const ConfigPanel = () => {
           <MagnifyingGlassIcon className="w-3.5 h-3.5" />
         </button>
       </div>
+      {/*
+        * What the file is, not what is in it.
+        *
+        * Above the sections because it decides which of them apply: a summary
+        * has no column list and an export of the lines has nothing to group.
+        * The endpoint refuses a request that carries both.
+        */}
+      <div className="px-2.5 pb-2 flex-shrink-0">
+        <div className="flex rounded-lg border border-brand_line_2 overflow-hidden">
+          {([
+            ["lines", "Every line"],
+            ["summary", "Summary"],
+          ] as const).map(([value, label]) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => ctx.dispatch(setMode(value))}
+              aria-pressed={ctx.mode === value}
+              className={`flex-1 text-[12px] font-medium py-1.5 transition-colors ${
+                ctx.mode === value
+                  ? "bg-[#1e2a4a] text-custom-white"
+                  : "bg-card_bg text-content/70 hover:text-content"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="flex flex-col gap-2 px-2.5 pb-2.5 min-h-0 overflow-y-auto thin-scrollbar">
 
       <Row
@@ -706,6 +779,7 @@ const ConfigPanel = () => {
         </div>
       </Row>
 
+      {!ctx.aggregating && (
       <Row
         label="Columns"
         isOpen={open === "columns"}
@@ -795,6 +869,158 @@ const ConfigPanel = () => {
           </div>
         </div>
       </Row>
+
+      )}
+
+      {ctx.aggregating && (
+      <Row
+        label="Group By"
+        isOpen={open === "groupBy"}
+        onToggle={() => setOpen(open === "groupBy" ? null : "groupBy")}
+        summary={
+          ctx.groupBy.length === 0
+            ? "nothing yet"
+            : `${ctx.groupBy.length} key${ctx.groupBy.length === 1 ? "" : "s"}`
+        }
+      >
+        <div className="px-3 pb-3 flex flex-col gap-1.5">
+          <span className="text-[11px] text-content/55">
+            One row per combination of these, in the order you tick them.
+          </span>
+          {ctx.groupBy.length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              {ctx.groupBy.map((name, i) => (
+                <button
+                  key={name}
+                  type="button"
+                  onClick={() => ctx.dispatch(toggleGroupBy(name))}
+                  title="Remove this key"
+                  className="font-mono text-[10.5px] bg-filter_active border border-brand_line_2 rounded px-1.5 py-0.5"
+                >
+                  {i + 1}. {name} ×
+                </button>
+              ))}
+              <button
+                type="button"
+                onClick={() => ctx.dispatch(setGroupBy([]))}
+                className="text-[11px] text-brand_navy_hover underline underline-offset-2 px-1"
+              >
+                clear
+              </button>
+            </div>
+          )}
+          <ListSearch
+            label="Find a column..."
+            value={groupQuery}
+            onChange={setGroupQuery}
+            shown={shownGroupColumns.length}
+            total={ctx.columns.length}
+          />
+          <div className="overflow-y-auto thin-scrollbar flex flex-col max-h-[38vh]">
+            {shownGroupColumns.map((c) => (
+              <Checkbox
+                key={c.name}
+                checked={ctx.groupBy.includes(c.name)}
+                onChange={() => ctx.dispatch(toggleGroupBy(c.name))}
+                className={`w-full py-1.5 px-1 text-[12.5px] border-b border-brand_line last:border-0 ${
+                  isPii(c.name) ? "bg-amber-50" : ""
+                }`}
+                label={
+                  <span className="flex items-center gap-2 w-full min-w-0">
+                    <span className="font-mono text-[11.5px] flex-1 truncate">
+                      {c.name}
+                    </span>
+                    <span className="text-[10.5px] text-content/50">
+                      {c.data_type}
+                    </span>
+                  </span>
+                }
+              />
+            ))}
+          </div>
+        </div>
+      </Row>
+      )}
+
+      {ctx.aggregating && (
+      <Row
+        label="Measures"
+        isOpen={open === "measures"}
+        onToggle={() => setOpen(open === "measures" ? null : "measures")}
+        summary={
+          ctx.aggregates.length === 0
+            ? "none yet"
+            : `${ctx.aggregates.length} measure${
+                ctx.aggregates.length === 1 ? "" : "s"
+              }`
+        }
+      >
+        <div className="px-3 pb-3 flex flex-col gap-2">
+          <span className="text-[11px] text-content/55">
+            What to work out for each row. The name in the file carries the
+            operation, so nothing reads as something it is not.
+          </span>
+          {ctx.aggregates.map((m, i) => (
+            <div
+              key={`${m.column}-${m.fn}-${i}`}
+              className="flex flex-col gap-1 border border-brand_line rounded-lg p-2 bg-custom-white"
+            >
+              <div className="flex items-center gap-1.5">
+                <SelectFilter
+                  plain
+                  options={measureColumns}
+                  value={m.column}
+                  onChange={(value) => changeMeasureColumn(i, value)}
+                  className="flex-1 min-w-0"
+                />
+                <SelectFilter
+                  plain
+                  options={fnsFor(m.column, ctx.columns).map((fn) => ({
+                    value: fn,
+                    label: FN_LABELS[fn],
+                  }))}
+                  value={m.fn}
+                  onChange={(value) =>
+                    ctx.dispatch(
+                      setAggregate({
+                        at: i,
+                        measure: { column: m.column, fn: value as typeof m.fn },
+                      }),
+                    )
+                  }
+                  className="w-[130px] flex-shrink-0"
+                />
+                <button
+                  type="button"
+                  onClick={() => ctx.dispatch(removeAggregate(i))}
+                  aria-label={`Remove ${aliasFor(m.column, m.fn)}`}
+                  className="w-[22px] h-[22px] flex-shrink-0 rounded border border-brand_line_2 text-content/60 hover:text-content hover:border-brand_slate transition-colors"
+                >
+                  ×
+                </button>
+              </div>
+              <span className="font-mono text-[10.5px] text-content/55">
+                {aliasFor(m.column, m.fn)}
+              </span>
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={() =>
+              ctx.dispatch(addAggregate({ column: "*", fn: "count" }))
+            }
+            className="text-[11.5px] text-brand_navy_hover underline underline-offset-2 self-start"
+          >
+            add a measure
+          </button>
+          {ctx.aggregates.length === 0 && (
+            <span className="text-[11.5px] text-content/60">
+              A summary with no measures is just the list of groups.
+            </span>
+          )}
+        </div>
+      </Row>
+      )}
 
       {/* The export endpoint's switches, not the preview's data */}
       <Row

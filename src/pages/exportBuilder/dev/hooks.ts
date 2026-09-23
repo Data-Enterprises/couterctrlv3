@@ -23,6 +23,8 @@ import {
 } from "../../../features/dev/devExportBuilderSlice";
 import type { JsonError } from "../../../interfaces";
 import { filterSampleRows } from "./sampleRows";
+import { aliasFor } from "./aggregates";
+import { rollupSampleRows } from "./rollup";
 
 /** The load balancer gives up at 150s. The page says so at 120, so the
  *  explanation arrives before the failure does. */
@@ -108,14 +110,41 @@ export const useExportBuilderCtx = () => {
       : null,
   ].filter(Boolean) as string[];
 
+  const aggregating = config.mode === "summary";
+
+  /**
+   * A measure whose name another one already has.
+   *
+   * The endpoint refuses these, and it counts the group keys as taken too —
+   * grouping by `qty` and also asking for its total is fine, but two measures
+   * that both land on `qty_sum` is a file with a column written twice.
+   */
+  const aliases = config.aggregates.map((m) => aliasFor(m.column, m.fn));
+  const duplicate =
+    aliases.find(
+      (name, i) => aliases.indexOf(name) !== i || config.groupBy.includes(name),
+    ) ?? null;
+
+  /** What is wrong with the file's shape, as opposed to its filters. */
+  const shapeProblem = aggregating
+    ? config.groupBy.length === 0
+      ? "Pick at least one column to group by."
+      : config.aggregates.length === 0
+        ? "Add at least one measure — a summary with no numbers in it is a list of the groups."
+        : duplicate
+          ? `Two of these would both be written as ${duplicate}. Change one of them.`
+          : null
+    : config.selectedColumns.length === 0
+      ? "Pick at least one column."
+      : null;
+
   const blocked =
     config.selectedStoreIds.length === 0
       ? "Pick at least one store."
-      : config.selectedColumns.length === 0
-        ? "Pick at least one column."
-        : emptied.length > 0
+      : (shapeProblem ??
+        (emptied.length > 0
           ? `Every ${emptied.join(", ")} is unticked. The export reads an empty list as no filter at all, so the file would hold every one of them — tick at least one, or tick them all.`
-          : null;
+          : null));
 
   /** The sample rows the file would actually hold. */
   const visibleRows = filterSampleRows(config.rows, {
@@ -129,6 +158,23 @@ export const useExportBuilderCtx = () => {
     voidFlag: config.flags.voidFlag,
     refundFlag: config.flags.refundFlag,
   });
+
+  /**
+   * The same rollup the endpoint would run, over the sample.
+   *
+   * The filters come first, because they are a WHERE and this is a GROUP BY.
+   * Fifty lines cannot stand in for a month, so what this shows honestly is
+   * the file's columns and which group keys the data produces — the preview
+   * says as much where the numbers are.
+   */
+  const summary = aggregating
+    ? rollupSampleRows(visibleRows, {
+        groupBy: config.groupBy,
+        aggregates: config.aggregates,
+        columns: config.columns,
+        ordered: config.flags.ordered,
+      })
+    : { columns: [] as string[], rows: [] as typeof visibleRows };
 
   /**
    * One call, and everything the page offers comes out of it: the stores the
@@ -198,11 +244,17 @@ export const useExportBuilderCtx = () => {
       startDate,
       endDate,
       storeids: config.selectedStoreIds,
-      // Always the explicit list, never null. Null means "every column" to
-      // the endpoint, which is 102 — including the three provenance columns
-      // the preview withholds — and in the endpoint's own order. Either would
-      // hand back a file that is not the one on screen.
-      columns: orderedColumns.map((c) => c.name),
+      // Always the explicit list, never null — null means "every column" to
+      // the endpoint, which is 102, including the three provenance columns the
+      // preview withholds, and in the endpoint's own order. Either would hand
+      // back a file that is not the one on screen.
+      //
+      // Except when aggregating, where the endpoint refuses a column list
+      // outright: the output is the group keys and the measures, so a list of
+      // line columns has nothing to say about it.
+      columns: aggregating ? null : orderedColumns.map((c) => c.name),
+      groupBy: aggregating ? config.groupBy : null,
+      aggregates: aggregating ? config.aggregates : null,
       saleTypes: all(config.selectedSaleTypes, config.saleTypes)
         ? null
         : config.selectedSaleTypes,
@@ -312,6 +364,8 @@ export const useExportBuilderCtx = () => {
     endDate,
     orderedColumns,
     visibleRows,
+    aggregating,
+    summary,
     blocked,
     loadConfig,
     showSql,
