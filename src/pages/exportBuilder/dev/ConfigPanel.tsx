@@ -6,6 +6,7 @@ import {
   setColumnFilter,
   setFlag,
   setSelectedColumns,
+  setSelectedSaleTypes,
   setSelectedStoreIds,
   toggleColumn,
   toggleSaleType,
@@ -155,6 +156,22 @@ const ConfigPanel = () => {
         }
       >
         <div className="px-3 pb-3 flex flex-col gap-1.5">
+          <div className="flex gap-3 mb-0.5">
+            <button
+              type="button"
+              onClick={() => ctx.dispatch(setSelectedSaleTypes(ctx.saleTypes))}
+              className="text-[11.5px] text-brand_navy_hover underline underline-offset-2"
+            >
+              all
+            </button>
+            <button
+              type="button"
+              onClick={() => ctx.dispatch(setSelectedSaleTypes([]))}
+              className="text-[11.5px] text-brand_navy_hover underline underline-offset-2"
+            >
+              none
+            </button>
+          </div>
           {ctx.saleTypes.map((t) => (
             <label key={t} className="flex items-center gap-2 text-[12.5px]">
               <input

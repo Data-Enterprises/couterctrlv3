@@ -172,6 +172,9 @@ const devExportBuilderSlice = createSlice({
       next.splice(Math.max(0, Math.min(to, next.length)), 0, name);
       state.columnOrder = next;
     },
+    setSelectedSaleTypes: (state, action: PayloadAction<string[]>) => {
+      state.selectedSaleTypes = action.payload;
+    },
     setSelectedColumns: (state, action: PayloadAction<string[]>) => {
       state.selectedColumns = action.payload;
     },
@@ -235,6 +238,7 @@ export const {
   toggleStore,
   setSelectedStoreIds,
   toggleSaleType,
+  setSelectedSaleTypes,
   toggleColumn,
   moveColumn,
   setSelectedColumns,
