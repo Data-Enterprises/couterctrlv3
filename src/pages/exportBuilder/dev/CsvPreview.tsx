@@ -1,24 +1,56 @@
+import { useCallback, useRef } from "react";
 import { DocumentTextIcon } from "@heroicons/react/24/outline";
 import { useExportBuilderCtx } from "./hooks";
 import { isPii, maskValue } from "./piiColumns";
+import { useColumnDrag } from "./useColumnDrag";
+import { moveColumn } from "../../../features/dev/devExportBuilderSlice";
 
 /**
  * The right panel: the file, not a report.
  *
  * Same columns in the same order the export writes them, so ticking one on the
- * left adds a column here and to the CSV at once. The rows are the ten the
- * preview returned — unordered, because the endpoint takes them without an
- * ORDER BY, which is a fair sample of a short window and costs nothing.
+ * left adds a column here and to the CSV at once, and dragging a header
+ * changes both. The rows are the ten the preview returned — unordered, because
+ * the endpoint takes them without an ORDER BY, which is a fair sample of a
+ * short window and costs nothing.
  *
  * Personal columns show a mask rather than the value. The file carries the
  * real thing; this is a screen someone else can be standing behind.
  */
 const CsvPreview = () => {
   const ctx = useExportBuilderCtx();
-  const cols = ctx.columns.filter((c) => ctx.selectedColumns.includes(c.name));
+  const scroller = useRef<HTMLDivElement>(null);
+  const cols = ctx.orderedColumns;
+
+  /**
+   * The drag hands back a position among the VISIBLE columns; the order it
+   * lands in holds every column, hidden ones included. Dropping before a
+   * neighbour means taking that neighbour's place in the full order.
+   */
+  const drop = useCallback(
+    (name: string, toVisible: number) => {
+      const neighbour = cols[toVisible];
+      if (!neighbour) return;
+      const to = ctx.columnOrder.indexOf(neighbour.name);
+      ctx.dispatch(moveColumn({ name, to }));
+    },
+    [cols, ctx],
+  );
+
+  const drag = useColumnDrag(scroller, drop);
+
   const name = `${ctx.flags.filePrefix || "sales"}_${ctx.startDate}_${ctx.endDate}.${
     ctx.flags.fileFormat === "csv" ? "csv" : "txt"
   }`;
+
+  /** Alt+arrows do the same thing from the keyboard, since a drag cannot. */
+  const nudge = (colName: string, visibleIndex: number, by: -1 | 1) => {
+    const neighbour = cols[visibleIndex + by];
+    if (!neighbour) return;
+    ctx.dispatch(
+      moveColumn({ name: colName, to: ctx.columnOrder.indexOf(neighbour.name) }),
+    );
+  };
 
   return (
     <div className="flex-1 min-w-0 bg-card_bg border border-brand_line rounded-xl flex flex-col min-h-0 overflow-hidden">
@@ -34,7 +66,9 @@ const CsvPreview = () => {
         </span>
         <div className="flex-1" />
         <span className="text-[11.5px] text-content/60 flex-shrink-0">
-          {ctx.rows.length} sample rows
+          {drag.name
+            ? `Moving ${drag.name}`
+            : "Drag a heading to reorder · scroll for the rest"}
         </span>
       </div>
 
@@ -49,18 +83,44 @@ const CsvPreview = () => {
           </div>
         </div>
       ) : (
-        <div className="flex-1 overflow-auto thin-scrollbar">
-          <table className="border-collapse font-mono text-[11px]">
+        <div
+          ref={scroller}
+          className={`flex-1 overflow-auto thin-scrollbar ${
+            drag.name ? "select-none cursor-grabbing" : ""
+          }`}
+        >
+          <table className="border-collapse font-mono text-[11px] w-max">
             <thead>
               <tr>
-                <th className="sticky top-0 left-0 z-20 w-[38px] bg-row_selected border-b border-brand_line_2 border-r border-brand_line px-2 py-1.5 text-right text-content/50 font-medium"></th>
-                {cols.map((c) => (
+                <th className="sticky top-0 left-0 z-30 w-[38px] bg-row_selected border-b border-brand_line_2 border-r border-brand_line px-2 py-1.5"></th>
+                {cols.map((c, i) => (
                   <th
                     key={c.name}
-                    className={`sticky top-0 z-10 border-b border-brand_line_2 border-r border-brand_line px-2.5 py-1.5 text-left font-semibold whitespace-nowrap ${
-                      isPii(c.name)
-                        ? "bg-amber-50 text-amber-900"
-                        : "bg-row_selected text-content"
+                    ref={drag.registerCell(i)}
+                    onPointerDown={(e) => {
+                      if (e.button !== 0) return;
+                      e.preventDefault();
+                      drag.start(i, c.name, e);
+                    }}
+                    onKeyDown={(e) => {
+                      if (!e.altKey) return;
+                      if (e.key === "ArrowLeft") nudge(c.name, i, -1);
+                      if (e.key === "ArrowRight") nudge(c.name, i, 1);
+                    }}
+                    tabIndex={0}
+                    aria-label={`${c.name}, column ${i + 1} of ${cols.length}. Hold and drag to reorder, or alt plus arrow keys.`}
+                    style={{
+                      transform: `translateX(${drag.offsetFor(i)}px)`,
+                      transition: drag.name ? "none" : "transform 160ms ease",
+                      zIndex: drag.isDragging(i) ? 20 : undefined,
+                      position: drag.isDragging(i) ? "relative" : undefined,
+                    }}
+                    className={`sticky top-0 z-10 border-b border-brand_line_2 border-r border-brand_line px-2.5 py-1.5 text-left font-semibold whitespace-nowrap cursor-grab select-none ${
+                      drag.isDragging(i)
+                        ? "shadow-lg bg-filter_active text-content"
+                        : isPii(c.name)
+                          ? "bg-amber-50 text-amber-900"
+                          : "bg-row_selected text-content"
                     }`}
                   >
                     {c.name}
@@ -69,20 +129,24 @@ const CsvPreview = () => {
               </tr>
             </thead>
             <tbody>
-              {ctx.rows.map((row, i) => (
-                <tr key={i}>
+              {ctx.rows.map((row, r) => (
+                <tr key={r}>
                   <td className="sticky left-0 z-10 bg-custom-white border-r border-brand_line border-b border-brand_line px-2 py-1.5 text-right text-content/50">
-                    {i + 1}
+                    {r + 1}
                   </td>
-                  {cols.map((c) => {
+                  {cols.map((c, i) => {
                     const raw = row[c.name];
                     const masked = isPii(c.name);
                     return (
                       <td
                         key={c.name}
+                        style={{
+                          transform: `translateX(${drag.offsetFor(i)}px)`,
+                          transition: drag.name ? "none" : "transform 160ms ease",
+                        }}
                         className={`border-r border-b border-brand_line px-2.5 py-1.5 whitespace-nowrap ${
-                          masked ? "text-amber-900" : ""
-                        }`}
+                          drag.isDragging(i) ? "bg-filter_active/40" : ""
+                        } ${masked ? "text-amber-900" : ""}`}
                       >
                         {masked
                           ? maskValue(raw)
@@ -101,8 +165,8 @@ const CsvPreview = () => {
 
       <div className="flex items-center gap-3 px-4 py-2 bg-custom-white border-t border-brand_line flex-shrink-0">
         <span className="text-[11.5px] text-content/60">
-          Columns appear in the order they will be written. Personal values are
-          hidden here and written to the file.
+          Columns are written in the order shown. Personal values are hidden
+          here and written to the file.
         </span>
       </div>
     </div>

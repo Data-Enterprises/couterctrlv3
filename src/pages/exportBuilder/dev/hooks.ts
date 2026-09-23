@@ -37,6 +37,16 @@ export const useExportBuilderCtx = () => {
   const endDate = formatGoliathDate(search.endDate);
 
   /**
+   * The columns as the file will hold them: the user's order, narrowed to what
+   * is ticked. Derived once here so the preview table and the export request
+   * can never disagree about what the file looks like.
+   */
+  const orderedColumns = state.columnOrder
+    .map((name) => state.columns.find((c) => c.name === name))
+    .filter((c): c is NonNullable<typeof c> => Boolean(c))
+    .filter((c) => state.selectedColumns.includes(c.name));
+
+  /**
    * One call, and everything the page offers comes out of it: the stores the
    * scope resolved to, the sale types actually present, every column, and ten
    * sample rows. Narrowing afterwards is local — nothing here is asked twice.
@@ -80,7 +90,13 @@ export const useExportBuilderCtx = () => {
    * — the question of which stores was settled by the config call.
    */
   const build = () => {
-    const everyColumn = state.selectedColumns.length === state.columns.length;
+    // Null means "every column" to the endpoint, which also means its own
+    // order — so it is only safe while the order has not been touched.
+    const untouched = state.columnOrder.every(
+      (name, i) => state.columns[i]?.name === name,
+    );
+    const everyColumn =
+      untouched && state.selectedColumns.length === state.columns.length;
     const everyType = state.selectedSaleTypes.length === state.saleTypes.length;
     dispatch(startExport());
     const slowTimer = window.setTimeout(
@@ -94,7 +110,7 @@ export const useExportBuilderCtx = () => {
       storeids: state.selectedStoreIds,
       // Null means every column, which is not the same as listing all of them
       // — it is what the endpoint documents, and it keeps the request small.
-      columns: everyColumn ? null : state.selectedColumns,
+      columns: everyColumn ? null : orderedColumns.map((c) => c.name),
       saleTypes: everyType ? null : state.selectedSaleTypes,
       excludeVoids: state.flags.excludeVoids,
       fileFormat: state.flags.fileFormat,
@@ -133,5 +149,14 @@ export const useExportBuilderCtx = () => {
       });
   };
 
-  return { ...state, dispatch, search, startDate, endDate, loadConfig, build };
+  return {
+    ...state,
+    dispatch,
+    search,
+    startDate,
+    endDate,
+    orderedColumns,
+    loadConfig,
+    build,
+  };
 };

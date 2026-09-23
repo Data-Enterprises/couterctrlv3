@@ -31,6 +31,15 @@ export interface ExportBuilderState {
   selectedStoreIds: number[];
   selectedSaleTypes: string[];
   selectedColumns: string[];
+  /**
+   * Every column name in the order the file will write them.
+   *
+   * Starts as the table order the preview returned and moves when someone
+   * drags a header. Selection is a separate question — a column keeps its
+   * place in the order whether or not it is ticked, so unticking and ticking
+   * again puts it back where it was rather than at the end.
+   */
+  columnOrder: string[];
   columnFilter: string;
   flags: ExportFlags;
 
@@ -58,6 +67,7 @@ export const initialState: ExportBuilderState = {
   selectedStoreIds: [],
   selectedSaleTypes: [],
   selectedColumns: [],
+  columnOrder: [],
   columnFilter: "",
   flags: {
     excludeVoids: false,
@@ -112,6 +122,7 @@ const devExportBuilderSlice = createSlice({
       state.selectedStoreIds = stores.map((s) => s.storeid);
       state.selectedSaleTypes = [...saleTypes];
       state.selectedColumns = columns.map((c) => c.name);
+      state.columnOrder = columns.map((c) => c.name);
       state.columnFilter = "";
       // A new scope means the last file describes a question nobody asked.
       state.files = [];
@@ -137,16 +148,29 @@ const devExportBuilderSlice = createSlice({
     },
     toggleColumn: (state, action: PayloadAction<string>) => {
       const c = action.payload;
-      if (state.selectedColumns.includes(c)) {
-        state.selectedColumns = state.selectedColumns.filter((x) => x !== c);
-      } else {
-        // Kept in table order rather than click order: the file writes its
-        // columns where the table puts them, and this preview is the file.
-        const picked = new Set([...state.selectedColumns, c]);
-        state.selectedColumns = state.columns
-          .map((col) => col.name)
-          .filter((n) => picked.has(n));
-      }
+      // Only membership: where the column sits is `columnOrder`'s business.
+      state.selectedColumns = state.selectedColumns.includes(c)
+        ? state.selectedColumns.filter((x) => x !== c)
+        : [...state.selectedColumns, c];
+    },
+    /**
+     * Drag one column to another slot.
+     *
+     * Moves it within the full order, selected or not, so a hidden column
+     * keeps a sensible place for when it comes back. `to` is the index the
+     * column should end up at once it has been lifted out.
+     */
+    moveColumn: (
+      state,
+      action: PayloadAction<{ name: string; to: number }>,
+    ) => {
+      const { name, to } = action.payload;
+      const from = state.columnOrder.indexOf(name);
+      if (from === -1 || to === from) return;
+      const next = [...state.columnOrder];
+      next.splice(from, 1);
+      next.splice(Math.max(0, Math.min(to, next.length)), 0, name);
+      state.columnOrder = next;
     },
     setSelectedColumns: (state, action: PayloadAction<string[]>) => {
       state.selectedColumns = action.payload;
@@ -212,6 +236,7 @@ export const {
   setSelectedStoreIds,
   toggleSaleType,
   toggleColumn,
+  moveColumn,
   setSelectedColumns,
   setColumnFilter,
   setFlag,
