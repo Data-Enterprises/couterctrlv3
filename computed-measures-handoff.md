@@ -243,16 +243,16 @@ Merged and live on the dev tree, so each half lights up as it lands:
   endpoint's derived one.
 - Computed measures appear in the Measures section with the expression written
   out and a name of their own, removable there.
-- **Apply to configuration** in the query window carries both — aliases and the
-  arithmetic — instead of listing them as dropped.
-- The Summary preview computes them over the sample rows with the same evaluator
-  the query window uses, so what is on screen is the shape of what the file will
-  hold.
-- Saved exports carry them, and drop a computed measure whose columns are not in
-  the table the saved export is loaded against.
 - **Sort by** under Output lists the file's own columns; clicking one goes
-  ascending, descending, gone. Apply carries a query's ORDER BY into it, by name
-  or by position, and the preview is sorted the same way.
+  ascending, descending, gone.
+- **Apply to configuration** in the query window carries all of it — the names,
+  the arithmetic and the sort, by name or by position — instead of listing them
+  as dropped.
+- The Summary preview computes and sorts them over the sample rows with the same
+  evaluator the query window uses, so what is on screen is the shape of what the
+  file will hold.
+- Saved exports carry them, and drop a computed measure whose columns are not in
+  the table it is loaded against, or a sort key whose measure has gone.
 
 Until the endpoint takes them, a file built with a computed measure comes back
 without that column, and an alias comes back as the derived name.
