@@ -1,5 +1,6 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { SavedExport } from "../../api/savedExports";
+import type { SavedQuery } from "../../api/savedQueries";
 import type {
   ExportAggregate,
   ExportComputed,
@@ -141,6 +142,21 @@ export interface ExportBuilderState {
   /** The query scratchpad: open, and the last thing typed into it. */
   queryOpen: boolean;
   querySql: string;
+  /**
+   * The user's saved queries, fetched beside the preview.
+   *
+   * Beside it rather than when the window opens: the scope search is the one
+   * moment someone is already waiting, and a list that is there before it is
+   * asked for is the difference between a feature people use and one they
+   * discover.
+   */
+  queries: SavedQuery[];
+  queriesLoading: boolean;
+  queriesError: string | null;
+  /** The saved query the scratchpad is holding, so Save can mean replace. */
+  currentQueryId: number | null;
+  /** The last row deleted, kept whole so an undo can post it back. */
+  deletedQuery: SavedQuery | null;
   /** Saved configurations, as they came back from S3. */
   saved: SavedExport[];
   savedLoaded: boolean;
@@ -219,6 +235,11 @@ export const initialState: ExportBuilderState = {
 
   queryOpen: false,
   querySql: "",
+  queries: [],
+  queriesLoading: false,
+  queriesError: null,
+  currentQueryId: null,
+  deletedQuery: null,
   saved: [],
   savedLoaded: false,
   savedBusy: false,
@@ -622,6 +643,45 @@ const devExportBuilderSlice = createSlice({
     setQuerySql: (state, action: PayloadAction<string>) => {
       state.querySql = action.payload;
     },
+    startQueriesLoad: (state) => {
+      state.queriesLoading = true;
+      state.queriesError = null;
+    },
+    setQueries: (state, action: PayloadAction<SavedQuery[]>) => {
+      state.queriesLoading = false;
+      state.queries = action.payload;
+    },
+    failQueriesLoad: (state, action: PayloadAction<string>) => {
+      state.queriesLoading = false;
+      state.queriesError = action.payload;
+    },
+    /** A row back from a create or an update: new ones go on top, an edited
+     *  one stays where it was. */
+    upsertQuery: (state, action: PayloadAction<SavedQuery>) => {
+      const row = action.payload;
+      const at = state.queries.findIndex((q) => q.id === row.id);
+      state.queries =
+        at === -1
+          ? [row, ...state.queries]
+          : state.queries.map((q) => (q.id === row.id ? row : q));
+      state.currentQueryId = row.id;
+      state.queriesError = null;
+    },
+    /** The row is held, not dropped: the undo posts this very object back. */
+    forgetQuery: (state, action: PayloadAction<SavedQuery>) => {
+      const row = action.payload;
+      state.queries = state.queries.filter((q) => q.id !== row.id);
+      state.deletedQuery = row;
+      if (state.currentQueryId === row.id) state.currentQueryId = null;
+    },
+    clearDeletedQuery: (state) => {
+      state.deletedQuery = null;
+    },
+    /** Which saved query the scratchpad is holding; null once it is edited
+     *  into something else, or for text nobody has saved. */
+    setCurrentQuery: (state, action: PayloadAction<number | null>) => {
+      state.currentQueryId = action.payload;
+    },
     startSqlLoad: (state) => {
       state.loadingSql = true;
       state.exportError = null;
@@ -771,6 +831,13 @@ export const {
   openQuery,
   openDownloads,
   openSaved,
+  startQueriesLoad,
+  setQueries,
+  failQueriesLoad,
+  upsertQuery,
+  forgetQuery,
+  clearDeletedQuery,
+  setCurrentQuery,
   startSavedWork,
   setSaved,
   upsertSaved,

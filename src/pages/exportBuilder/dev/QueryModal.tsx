@@ -1,8 +1,14 @@
 import { useMemo, useState } from "react";
 import Modal from "../../../components-dev/Modal";
+import TextField from "../../../components-dev/inputs/TextField";
 import { useExportBuilderCtx } from "./hooks";
 import { isPii, maskValue } from "./piiColumns";
-import { openQuery, setQuerySql } from "../../../features/dev/devExportBuilderSlice";
+import {
+  openQuery,
+  setCurrentQuery,
+  setQuerySql,
+} from "../../../features/dev/devExportBuilderSlice";
+import type { SavedQuery } from "../../../api/savedQueries";
 import { parseQuery, QueryError, type Query } from "./query/parseQuery";
 import { evalQuery, type QueryResult } from "./query/evalQuery";
 import { planApply, type ApplyPlan } from "./query/applyQuery";
@@ -54,6 +60,34 @@ const QueryModal = () => {
     null,
   );
   const [plan, setPlan] = useState<ApplyPlan | null>(null);
+  const [name, setName] = useState("");
+
+  const current = ctx.queries.find((q) => q.id === ctx.currentQueryId) ?? null;
+
+  /**
+   * Open one of the saved ones.
+   *
+   * The id comes with it: Save then means replace that row rather than leave
+   * a second copy behind, which the table would happily take — names are not
+   * unique there.
+   */
+  const open = (query: SavedQuery) => {
+    setText(query.sql);
+    setName(query.name);
+    ctx.dispatch(setCurrentQuery(query.id));
+    setResult(null);
+    setParsed(null);
+    setError(null);
+    setPlan(null);
+  };
+
+  const save = () => {
+    ctx.saveQuery(name || `Query ${ctx.queries.length + 1}`, text, ctx.currentQueryId);
+  };
+
+  const saveAsNew = () => {
+    ctx.saveQuery(name || `Query ${ctx.queries.length + 1}`, text, null);
+  };
 
   const close = () => {
     ctx.dispatch(setQuerySql(text));
@@ -121,9 +155,31 @@ const QueryModal = () => {
           </button>
         </div>
 
+        {ctx.deletedQuery && (
+          <div className="flex items-center gap-3 flex-shrink-0 bg-custom-white border border-brand_line rounded-lg px-3 py-2">
+            <span className="text-[12px] text-content/75 flex-1">
+              Deleted "{ctx.deletedQuery.name}".
+            </span>
+            <button
+              type="button"
+              onClick={ctx.undoDeleteQuery}
+              className="text-[11.5px] font-semibold text-brand_navy_hover underline underline-offset-2"
+            >
+              Put it back
+            </button>
+          </div>
+        )}
+
         <textarea
           value={text}
-          onChange={(e) => setText(e.target.value)}
+          onChange={(e) => {
+            setText(e.target.value);
+            // Once the words are someone else's, Save is no longer a replace
+            // of the row it came from.
+            if (current && e.target.value !== current.sql) {
+              ctx.dispatch(setCurrentQuery(null));
+            }
+          }}
           onKeyDown={onKeyDown}
           rows={4}
           spellCheck={false}
@@ -161,6 +217,47 @@ const QueryModal = () => {
               example {i + 1}
             </button>
           ))}
+        </div>
+
+        {/*
+          * Saving lives under the buttons that run it, because that is the
+          * order it happens in: try it, then keep it.
+          */}
+        <div className="flex items-end gap-2 flex-shrink-0 flex-wrap">
+          <TextField
+            label={
+              <span className="text-[11px] font-normal text-content/60">
+                Name
+              </span>
+            }
+            value={name}
+            placeholder="Loss and gain by vendor"
+            onChange={setName}
+            className="w-[260px]"
+          />
+          <button
+            type="button"
+            onClick={save}
+            disabled={!text.trim() || !name.trim() || ctx.queriesLoading}
+            className="text-[12.5px] font-semibold px-4 py-1.5 rounded-lg border border-brand_line_2 hover:border-brand_slate transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            {current ? `Save "${current.name}"` : "Save"}
+          </button>
+          {current && (
+            <button
+              type="button"
+              onClick={saveAsNew}
+              disabled={!text.trim() || !name.trim()}
+              className="text-[12.5px] font-medium px-3 py-1.5 rounded-lg border border-brand_line_2 hover:border-brand_slate transition-colors disabled:opacity-40"
+            >
+              Save as new
+            </button>
+          )}
+          {ctx.queriesError && (
+            <span className="text-[11.5px] text-amber-900">
+              {ctx.queriesError}
+            </span>
+          )}
         </div>
 
         {error && (
@@ -264,6 +361,43 @@ const QueryModal = () => {
               )}
             </div>
           </>
+        )}
+
+        {ctx.queries.length > 0 && (
+          <div className="flex-shrink-0 flex flex-col gap-1.5 border-t border-brand_line pt-2.5">
+            <span className="text-[11px] font-semibold uppercase tracking-wide text-content/55">
+              Saved queries
+            </span>
+            <div className="flex flex-wrap gap-1.5 max-h-[16vh] overflow-y-auto thin-scrollbar">
+              {ctx.queries.map((query) => (
+                <span
+                  key={query.id}
+                  className={`flex items-center gap-1.5 border rounded-lg pl-2.5 pr-1 py-1 ${
+                    query.id === ctx.currentQueryId
+                      ? "border-brand_line_2 bg-filter_active"
+                      : "border-brand_line bg-custom-white"
+                  }`}
+                >
+                  <button
+                    type="button"
+                    onClick={() => open(query)}
+                    title={query.description ?? "Open this query"}
+                    className="text-[12px] font-medium max-w-[26ch] truncate"
+                  >
+                    {query.name}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => ctx.removeQuery(query)}
+                    aria-label={`Delete ${query.name}`}
+                    className="w-[18px] h-[18px] flex-shrink-0 rounded text-content/45 hover:text-content transition-colors"
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+            </div>
+          </div>
         )}
 
         {!result && !error && (

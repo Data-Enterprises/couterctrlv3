@@ -11,6 +11,13 @@ import {
   type ExportResp,
 } from "../../../api/salesExport";
 import {
+  clearDeletedQuery,
+  failQueriesLoad,
+  forgetQuery,
+  setCurrentQuery,
+  setQueries,
+  startQueriesLoad,
+  upsertQuery,
   failSavedWork,
   markSavedLoaded,
   removeSaved,
@@ -40,6 +47,16 @@ import {
   type SavedExportResp,
 } from "../../../api/savedExports";
 import { planLoad, toPayload } from "./savedExports";
+import {
+  createSavedQuery,
+  deleteSavedQuery,
+  listSavedQueries,
+  updateSavedQuery,
+  type DeletedQueryResp,
+  type SavedQueriesResp,
+  type SavedQuery,
+  type SavedQueryResp,
+} from "../../../api/savedQueries";
 import { rollupMeasures, type MeasureItem } from "./query/evalQuery";
 
 /** The load balancer gives up at 150s. The page says so at 120, so the
@@ -270,6 +287,116 @@ export const useExportBuilderCtx = () => {
     : { columns: [] as string[], rows: [] as typeof matchingRows };
 
   /**
+   * The user's saved queries.
+   *
+   * Filtered to this page's own label: the table is shared with the developer
+   * query window, whose rows are real SQL — REINDEX, INSERT INTO stores — and
+   * a developer who also uses this page should not find those in their export
+   * list.
+   */
+  const loadQueries = () => {
+    dispatch(startQueriesLoad());
+    listSavedQueries(url, token)
+      .then((resp) => {
+        const j = resp.data as SavedQueriesResp;
+        if (j.error !== 0) {
+          dispatch(failQueriesLoad("Could not read your saved queries."));
+          return;
+        }
+        dispatch(setQueries(j.queries ?? []));
+      })
+      .catch((err: JsonError) =>
+        dispatch(
+          failQueriesLoad("Could not read your saved queries: " + err.message),
+        ),
+      );
+  };
+
+  /**
+   * Save what is in the scratchpad.
+   *
+   * `id` decides which call it is: the row it was loaded from gets a PUT, and
+   * Save as sends null for a POST. Names are not unique on that table, so the
+   * page is what keeps Save from quietly making a second copy every time.
+   */
+  const saveQuery = (name: string, sql: string, id: number | null) => {
+    const trimmed = name.trim();
+    if (!trimmed || !sql.trim()) return;
+    const done = (resp: { data: unknown }) => {
+      const j = resp.data as SavedQueryResp;
+      if (j.error !== 0 || !j.query) {
+        dispatch(failQueriesLoad("That did not save."));
+        return;
+      }
+      // The write returns the whole row, so there is nothing to refetch.
+      dispatch(upsertQuery(j.query));
+      toast.success(`Saved "${j.query.name}"`);
+    };
+    const failed = (err: JsonError) =>
+      dispatch(failQueriesLoad("That did not save: " + err.message));
+
+    if (id === null) {
+      createSavedQuery(url, token, { name: trimmed, sql }).then(done, failed);
+    } else {
+      updateSavedQuery(url, token, id, { name: trimmed, sql }).then(done, failed);
+    }
+  };
+
+  /** A rename carries the name alone; the payload is not touched. */
+  const renameQuery = (id: number, name: string) => {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    updateSavedQuery(url, token, id, { name: trimmed })
+      .then((resp) => {
+        const j = resp.data as SavedQueryResp;
+        if (j.error === 0 && j.query) dispatch(upsertQuery(j.query));
+      })
+      .catch((err: JsonError) =>
+        dispatch(failQueriesLoad("That did not rename: " + err.message)),
+      );
+  };
+
+  const removeQuery = (query: SavedQuery) => {
+    // Gone from the list at once, with the row held for the undo — the
+    // endpoint hands the whole row back for exactly this.
+    dispatch(forgetQuery(query));
+    deleteSavedQuery(url, token, query.id)
+      .then((resp) => {
+        const j = resp.data as DeletedQueryResp;
+        if (j.error !== 0) {
+          dispatch(upsertQuery(query));
+          dispatch(clearDeletedQuery());
+          dispatch(failQueriesLoad("That did not delete."));
+        }
+      })
+      .catch((err: JsonError) => {
+        dispatch(upsertQuery(query));
+        dispatch(clearDeletedQuery());
+        dispatch(failQueriesLoad("That did not delete: " + err.message));
+      });
+  };
+
+  /** Posts the held row back; it returns with a new id, which is honest —
+   *  the old one is gone. */
+  const undoDeleteQuery = () => {
+    const row = config.deletedQuery;
+    if (!row) return;
+    dispatch(clearDeletedQuery());
+    createSavedQuery(url, token, {
+      name: row.name,
+      sql: row.sql,
+      description: row.description,
+    })
+      .then((resp) => {
+        const j = resp.data as SavedQueryResp;
+        if (j.error === 0 && j.query) dispatch(upsertQuery(j.query));
+      })
+      .catch((err: JsonError) =>
+        dispatch(failQueriesLoad("Could not put it back: " + err.message)),
+      );
+  };
+
+  /**
    * One call, and everything the page offers comes out of it: the stores the
    * scope resolved to, the sale types actually present, every column, and ten
    * sample rows. Narrowing afterwards is local — nothing here is asked twice.
@@ -277,6 +404,9 @@ export const useExportBuilderCtx = () => {
   const loadConfig = () => {
     const group = isGroupSearch(search.type);
     dispatch(startConfigLoad());
+    // Alongside the preview rather than after it: two independent calls, and
+    // the saved queries are ready by the time anyone opens the window.
+    loadQueries();
     getExportPreview(url, token, {
       startDate,
       endDate,
@@ -544,6 +674,12 @@ export const useExportBuilderCtx = () => {
     summary,
     blocked,
     loadConfig,
+    loadQueries,
+    saveQuery,
+    renameQuery,
+    removeQuery,
+    undoDeleteQuery,
+    setCurrentQuery,
     showSql,
     build,
   };
