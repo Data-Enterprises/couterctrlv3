@@ -182,6 +182,41 @@ describe("turning a query into the configuration", () => {
     expect(out.leftBehind.join(" ")).toMatch(/LIMIT/);
   });
 
+  it("carries the sort, by name and by position", () => {
+    // The client query sorts by two of its group keys; the example in the
+    // window sorts by the sixth output column.
+    const named = plan(
+      "select vendor_id, sub_department, sum(total_sales)" +
+        " group by vendor_id, sub_department" +
+        " order by vendor_id, sub_department",
+    );
+    expect(
+      named.actions.find((a) => a.type === "devExportBuilder/setOrderBy")?.payload,
+    ).toEqual([
+      { key: "vendor_id", desc: false },
+      { key: "sub_department", desc: false },
+    ]);
+    expect(named.applied.join(" ")).toMatch(/Sorted by vendor_id, sub_department/);
+    expect(named.leftBehind.join(" ")).not.toMatch(/ORDER BY/);
+
+    const positional = plan(
+      "select vendor_id, sum(total_sales) group by vendor_id order by 2 desc",
+    );
+    expect(
+      positional.actions.find((a) => a.type === "devExportBuilder/setOrderBy")
+        ?.payload,
+    ).toEqual([{ key: "total_sales_sum", desc: true }]);
+  });
+
+  it("will not sort by a column the file does not carry", () => {
+    // Postgres allows ORDER BY on a grouped column that is not selected; the
+    // file cannot, because the column is not in it to sort by.
+    const out = plan(
+      "select sum(total_sales) group by vendor_id order by vendor_id",
+    );
+    expect(out.leftBehind.join(" ")).toMatch(/does not carry that column/);
+  });
+
   it("carries a description search into the products filter", () => {
     // The % marks come off: the filter is a contains already, so putting them
     // in the term would look for a literal percent sign.

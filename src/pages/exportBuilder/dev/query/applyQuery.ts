@@ -3,6 +3,7 @@ import {
   setAggregates,
   setComputed,
   setColumnOrder,
+  setOrderBy,
   setFlag,
   setGroupBy,
   setMode,
@@ -346,10 +347,40 @@ export const planApply = (
     }
   }
 
+  /**
+   * The sort, in the file's own names.
+   *
+   * A query may sort by position — `order by 6` — or by an output name, and
+   * both have to land on a column the file actually has. Anything that does
+   * not is named rather than dropped: a file sorted by something other than
+   * what was asked for looks right and is not.
+   */
   if (query.orderBy.length > 0) {
-    leftBehind.push(
-      "ORDER BY — the file is sorted by its keys or not at all, which is the Sort switch under Output",
-    );
+    const outputs = query.star
+      ? config.columns.map((c) => c.name)
+      : query.select.map((s) => s.alias);
+
+    const sort = query.orderBy
+      .map(({ key, desc }) => {
+        const name = typeof key === "number" ? outputs[key - 1] : key;
+        if (!name || !outputs.includes(name)) {
+          leftBehind.push(
+            `ORDER BY ${key} — the file does not carry that column, so it cannot be sorted by it`,
+          );
+          return null;
+        }
+        return { key: name, desc };
+      })
+      .filter((s): s is { key: string; desc: boolean } => s !== null);
+
+    if (sort.length > 0) {
+      actions.push(setOrderBy(sort));
+      applied.push(
+        `Sorted by ${sort
+          .map((s) => `${s.key}${s.desc ? " (high to low)" : ""}`)
+          .join(", ")}`,
+      );
+    }
   }
   if (query.limit !== null) {
     leftBehind.push("LIMIT — an export is every row that matches");

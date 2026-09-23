@@ -26,6 +26,8 @@ import {
   setComputedAlias,
   removeAggregate,
   removeComputed,
+  setOrderBy,
+  toggleSortKey,
   resetExportBuilder,
   setSelectedColumns,
   setSelectedRingTypes,
@@ -1218,14 +1220,77 @@ const ConfigPanel = () => {
               className="w-full"
             />
           </label>
+          {/*
+            * The sort is the file's own columns, in the order they are
+            * clicked: ascending, descending, gone. Sorting by something the
+            * file does not carry is a question about rows nobody can see, so
+            * this offers nothing else.
+            */}
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-baseline gap-2">
+              <span className="text-[12px] font-medium text-content flex-1">
+                Sort by
+              </span>
+              {ctx.orderBy.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => ctx.dispatch(setOrderBy([]))}
+                  className="text-[11px] text-brand_navy_hover underline underline-offset-2"
+                >
+                  clear
+                </button>
+              )}
+            </div>
+            {ctx.orderBy.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                {ctx.orderBy.map((s, i) => (
+                  <button
+                    key={s.key}
+                    type="button"
+                    onClick={() => ctx.dispatch(toggleSortKey(s.key))}
+                    title="Click to turn it around, again to remove it"
+                    className="font-mono text-[10.5px] bg-filter_active border border-brand_line_2 rounded px-1.5 py-0.5"
+                  >
+                    {i + 1}. {s.key} {s.desc ? "\u2193" : "\u2191"}
+                  </button>
+                ))}
+              </div>
+            )}
+            <div className="flex flex-wrap gap-1 max-h-[18vh] overflow-y-auto thin-scrollbar">
+              {ctx.sortableKeys
+                .filter((key) => !ctx.orderBy.some((s) => s.key === key))
+                .map((key) => (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => ctx.dispatch(toggleSortKey(key))}
+                    className="font-mono text-[10.5px] bg-card_bg border border-brand_line rounded px-1.5 py-0.5 hover:border-brand_slate transition-colors"
+                  >
+                    + {key}
+                  </button>
+                ))}
+            </div>
+            <span className="text-[11px] text-content/55">
+              {ctx.orderBy.length === 0
+                ? "Unsorted unless the switch below is on. Sorting a long file takes longer to build."
+                : "Click a key to turn it around, again to drop it."}
+            </span>
+          </div>
           <Checkbox
             checked={ctx.flags.ordered}
             onChange={(value) => ctx.dispatch(setFlag({ ordered: value }))}
+            disabled={ctx.orderBy.length > 0}
             className="text-[12.5px]"
             label={
               <span className="flex items-center gap-2">
                 Sort the file
-                <span className="text-[11px] text-content/55">slower</span>
+                <span className="text-[11px] text-content/55">
+                  {ctx.orderBy.length > 0
+                    ? "the keys above win"
+                    : ctx.aggregating
+                      ? "by its group keys · slower"
+                      : "by store, date and line · slower"}
+                </span>
               </span>
             }
           />

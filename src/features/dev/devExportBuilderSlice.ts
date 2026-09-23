@@ -3,6 +3,7 @@ import type { SavedExport } from "../../api/savedExports";
 import type {
   ExportAggregate,
   ExportComputed,
+  ExportSort,
   ExportCashier,
   ExportColumn,
   ExportFile,
@@ -132,6 +133,8 @@ export interface ExportBuilderState {
    * because only these can be built from a query rather than picked.
    */
   computed: ExportComputed[];
+  /** What the file is sorted by; empty means the endpoint's own order. */
+  orderBy: ExportSort[];
 
   flags: ExportFlags;
 
@@ -204,6 +207,7 @@ export const initialState: ExportBuilderState = {
   groupBy: [],
   aggregates: [],
   computed: [],
+  orderBy: [],
 
   flags: {
     voidFlag: null,
@@ -499,6 +503,23 @@ const devExportBuilderSlice = createSlice({
     setComputed: (state, action: PayloadAction<ExportComputed[]>) => {
       state.computed = action.payload;
     },
+    setOrderBy: (state, action: PayloadAction<ExportSort[]>) => {
+      state.orderBy = action.payload;
+    },
+    /** Add a key, or turn the one that is already there around. */
+    toggleSortKey: (state, action: PayloadAction<string>) => {
+      const key = action.payload;
+      const at = state.orderBy.findIndex((s) => s.key === key);
+      if (at === -1) {
+        state.orderBy = [...state.orderBy, { key, desc: false }];
+        return;
+      }
+      // Ascending, then descending, then gone: three clicks and back to
+      // where it started, which is what a sort control usually does.
+      state.orderBy = state.orderBy[at].desc
+        ? state.orderBy.filter((s) => s.key !== key)
+        : state.orderBy.map((s) => (s.key === key ? { key, desc: true } : s));
+    },
     removeComputed: (state, action: PayloadAction<number>) => {
       state.computed = state.computed.filter((_, i) => i !== action.payload);
     },
@@ -693,6 +714,7 @@ const devExportBuilderSlice = createSlice({
       state.groupBy = [];
       state.aggregates = [];
       state.computed = [];
+      state.orderBy = [];
       state.flags = { ...initialState.flags };
       state.files = [];
       state.exportError = null;
@@ -742,6 +764,8 @@ export const {
   setComputed,
   setComputedAlias,
   removeComputed,
+  setOrderBy,
+  toggleSortKey,
   removeAggregate,
   setColumnOrder,
   openQuery,

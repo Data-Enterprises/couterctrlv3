@@ -6,6 +6,7 @@ import {
   setAggregates,
   setComputed,
   setColumnOrder,
+  setOrderBy,
   setFlag,
   setGroupBy,
   setMode,
@@ -62,6 +63,7 @@ export const toPayload = (
   groupBy: config.groupBy,
   aggregates: config.aggregates,
   computed: config.computed,
+  orderBy: config.orderBy,
   storeIds: narrowedOr(config.selectedStoreIds, config.stores),
   saleTypes: narrowedOr(config.selectedSaleTypes, config.saleTypes),
   ringTypes: narrowedOr(config.selectedRingTypes, config.itemRingTypes),
@@ -201,6 +203,25 @@ export const planLoad = (
       ),
     ),
   );
+
+  // A sort key is a column of the file, so it survives only as long as the
+  // measure or key it names does.
+  const sortable = new Set(
+    payload.mode === "summary"
+      ? [
+          ...payload.groupBy,
+          ...payload.aggregates.map((m) => m.alias ?? `${m.column}_${m.fn}`),
+          ...(payload.computed ?? []).map((m) => m.alias),
+        ]
+      : payload.columns,
+  );
+  const orderBy = (payload.orderBy ?? []).filter((s) => sortable.has(s.key));
+  if (orderBy.length < (payload.orderBy ?? []).length) {
+    missing.push(
+      "Part of the sort named a column this configuration no longer has",
+    );
+  }
+  actions.push(setOrderBy(orderBy));
 
   actions.push(setProductCodes(payload.productCodes));
   actions.push(setProductDescriptions(payload.productDescriptions));

@@ -29,6 +29,7 @@ import {
 } from "../../../features/dev/devExportBuilderSlice";
 import type { JsonError } from "../../../interfaces";
 import { filterSampleRows } from "./sampleRows";
+import { sortRows } from "./sortRows";
 import { aliasFor } from "./aggregates";
 import {
   listSavedExports,
@@ -177,7 +178,7 @@ export const useExportBuilderCtx = () => {
           : null));
 
   /** The sample rows the file would actually hold. */
-  const visibleRows = filterSampleRows(config.rows, {
+  const matchingRows = filterSampleRows(config.rows, {
     saleTypes: config.selectedSaleTypes,
     ringTypes: config.selectedRingTypes,
     subDepartments: config.selectedSubDepartments,
@@ -189,6 +190,21 @@ export const useExportBuilderCtx = () => {
     voidFlag: config.flags.voidFlag,
     refundFlag: config.flags.refundFlag,
   });
+
+  /**
+   * Every column the finished file has, which is what a sort may name.
+   *
+   * A summary's keys and measures, or the ticked columns — never anything
+   * else, because sorting by a column the file does not carry is a question
+   * about rows nobody can see.
+   */
+  const sortableKeys = aggregating
+    ? [...config.groupBy, ...measureItems.map((m) => m.alias)]
+    : orderedColumns.map((c) => c.name);
+
+  const visibleRows = aggregating
+    ? matchingRows
+    : sortRows(matchingRows, config.orderBy, config.columns);
 
   /**
    * One line describing what is about to be built.
@@ -238,13 +254,20 @@ export const useExportBuilderCtx = () => {
    * says as much where the numbers are.
    */
   const summary = aggregating
-    ? rollupMeasures(visibleRows, {
-        groupBy: config.groupBy,
-        items: measureItems,
-        columns: config.columns,
-        ordered: config.flags.ordered,
-      })
-    : { columns: [] as string[], rows: [] as typeof visibleRows };
+    ? (() => {
+        const rolled = rollupMeasures(matchingRows, {
+          groupBy: config.groupBy,
+          items: measureItems,
+          columns: config.columns,
+          // An explicit sort answers this; the key order is the fallback.
+          ordered: config.flags.ordered && config.orderBy.length === 0,
+        });
+        return {
+          columns: rolled.columns,
+          rows: sortRows(rolled.rows, config.orderBy, config.columns),
+        };
+      })()
+    : { columns: [] as string[], rows: [] as typeof matchingRows };
 
   /**
    * One call, and everything the page offers comes out of it: the stores the
@@ -362,6 +385,7 @@ export const useExportBuilderCtx = () => {
       // thing to keep in step.
       voidFlag: config.flags.voidFlag,
       refundFlag: config.flags.refundFlag,
+      orderBy: config.orderBy.length > 0 ? config.orderBy : null,
       fileFormat: config.flags.fileFormat,
       filePrefix: config.flags.filePrefix || null,
       ordered: config.flags.ordered,
@@ -511,6 +535,7 @@ export const useExportBuilderCtx = () => {
     orderedColumns,
     visibleRows,
     measureItems,
+    sortableKeys,
     loadSaved,
     saveCurrent,
     deleteSaved,

@@ -209,6 +209,19 @@ export interface ExportAggregate {
   alias?: string;
 }
 
+/**
+ * One key of the file's sort.
+ *
+ * `key` is a column of the file: a group key or a measure's name when the
+ * export is a summary, a selected column when it is the lines. Not an
+ * expression — sorting by something the file does not contain is a question
+ * about rows nobody can see.
+ */
+export interface ExportSort {
+  key: string;
+  desc: boolean;
+}
+
 /** A computed measure: a name, and the tree that works it out. */
 export interface ExportComputed {
   alias: string;
@@ -299,6 +312,15 @@ export interface ExportParams {
    * to send a switch it no longer uses.
    */
   excludeVoids?: boolean;
+  /**
+   * The file's sort, in order of precedence.
+   *
+   * Null or empty leaves `ordered` to mean what it always has: the line key
+   * for a plain export, the group keys for a summary. A non-empty list is the
+   * sort instead, whatever `ordered` says — an explicit answer beats a
+   * default, and a caller who sent one has already decided.
+   */
+  orderBy: ExportSort[] | null;
   fileFormat: string;
   filePrefix: string | null;
   ordered: boolean;

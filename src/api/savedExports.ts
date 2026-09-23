@@ -1,5 +1,9 @@
 import axios from "axios";
-import type { ExportAggregate, ExportComputed } from "./salesExport";
+import type {
+  ExportAggregate,
+  ExportComputed,
+  ExportSort,
+} from "./salesExport";
 
 /**
  * Saved configurations for Sales Export.
@@ -49,6 +53,7 @@ export interface SavedExportPayload {
   groupBy: string[];
   aggregates: ExportAggregate[];
   computed?: ExportComputed[];
+  orderBy?: ExportSort[];
   storeIds: number[] | null;
   saleTypes: string[] | null;
   ringTypes: string[] | null;
