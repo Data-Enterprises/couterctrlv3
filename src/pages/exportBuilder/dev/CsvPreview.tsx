@@ -10,9 +10,9 @@ import { moveColumn } from "../../../features/dev/devExportBuilderSlice";
  *
  * Same columns in the same order the export writes them, so ticking one on the
  * left adds a column here and to the CSV at once, and dragging a header
- * changes both. The rows are the ten the preview returned — unordered, because
- * the endpoint takes them without an ORDER BY, which is a fair sample of a
- * short window and costs nothing.
+ * changes both. The rows are the fifty the preview returned — unordered, so
+ * they show the file's shape accurately but not its variety: fifty rows from
+ * one scan position is often a single store and two sale types.
  *
  * Personal columns show a mask rather than the value. The file carries the
  * real thing; this is a screen someone else can be standing behind.
@@ -179,8 +179,9 @@ const CsvPreview = () => {
 
       {ctx.visibleRows.length === 0 && cols.length > 0 && (
         <div className="px-4 py-3 border-t border-brand_line bg-custom-white text-[12px] text-content/70 flex-shrink-0">
-          None of the ten sample lines are of a type you have kept. The file can
-          still hold plenty — the sample is ten lines, not the first ten.
+          None of the sample lines match what you have kept. The file can still
+          hold plenty: the sample is fifty lines taken where the scan landed,
+          often one store and a couple of sale types.
         </div>
       )}
 

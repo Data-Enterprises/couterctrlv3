@@ -1,5 +1,8 @@
 import { useState, type ReactNode } from "react";
-import { ChevronRightIcon } from "@heroicons/react/20/solid";
+import {
+  ChevronRightIcon,
+  MagnifyingGlassIcon,
+} from "@heroicons/react/20/solid";
 import Checkbox from "../../../components-dev/Checkbox";
 import TextField from "../../../components-dev/inputs/TextField";
 import SelectFilter, {
@@ -10,15 +13,29 @@ import { isPii } from "./piiColumns";
 import {
   setColumnFilter,
   setFlag,
+  resetExportBuilder,
   setSelectedColumns,
+  setSelectedRingTypes,
   setSelectedSaleTypes,
   setSelectedStoreIds,
+  setSelectedSubDepartments,
+  setSelectedVendors,
   toggleColumn,
+  toggleRingType,
   toggleSaleType,
   toggleStore,
+  toggleSubDepartment,
+  toggleVendor,
 } from "../../../features/dev/devExportBuilderSlice";
 
-type Section = "stores" | "saleTypes" | "columns" | "output";
+type Section =
+  | "stores"
+  | "saleTypes"
+  | "ringTypes"
+  | "subDepartments"
+  | "vendors"
+  | "columns"
+  | "output";
 
 /**
  * One collapsible row.
@@ -100,6 +117,46 @@ const FILE_FORMATS: SelectFilterOption[] = [
   { value: "binary", label: "Binary" },
 ];
 
+/** all / none, for the lists that have too many rows to tick by hand. */
+const AllNone = ({
+  onAll,
+  onNone,
+}: {
+  onAll: () => void;
+  onNone: () => void;
+}) => (
+  <div className="flex gap-3">
+    <button
+      type="button"
+      onClick={onAll}
+      className="text-[11.5px] text-brand_navy_hover underline underline-offset-2"
+    >
+      all
+    </button>
+    <button
+      type="button"
+      onClick={onNone}
+      className="text-[11.5px] text-brand_navy_hover underline underline-offset-2"
+    >
+      none
+    </button>
+  </div>
+);
+
+/**
+ * Said beside the three filters the export cannot take.
+ *
+ * `/sales/export` accepts saleTypes and nothing else, so these narrow what is
+ * on screen and not what is written. Saying it here is the difference between
+ * a filter and a lie.
+ */
+const PreviewOnly = () => (
+  <span className="text-[11px] text-content/55 leading-snug">
+    Narrows the sample only — the export endpoint does not take this filter
+    yet, so the file will hold every one of them.
+  </span>
+);
+
 const ConfigPanel = () => {
   const ctx = useExportBuilderCtx();
   const [open, setOpen] = useState<Section | null>(null);
@@ -134,9 +191,20 @@ const ConfigPanel = () => {
 
   return (
     <div className="w-[340px] flex-shrink-0 flex flex-col min-h-0 bg-custom-white border border-brand_line rounded-xl overflow-hidden">
-      <span className="text-[11px] font-semibold uppercase tracking-wide text-content/60 px-3 pt-3 pb-2 flex-shrink-0">
-        Configuration
-      </span>
+      <div className="flex items-center gap-2 px-3 pt-3 pb-2 flex-shrink-0">
+        <span className="text-[11px] font-semibold uppercase tracking-wide text-content/60 flex-1">
+          Configuration
+        </span>
+        <button
+          type="button"
+          onClick={() => ctx.dispatch(resetExportBuilder())}
+          title="New search — clears this configuration"
+          aria-label="New search, clears this configuration"
+          className="w-[22px] h-[22px] rounded border border-brand_line_2 text-content/70 hover:text-content hover:border-brand_slate flex items-center justify-center transition-colors"
+        >
+          <MagnifyingGlassIcon className="w-3.5 h-3.5" />
+        </button>
+      </div>
       <div className="flex flex-col gap-2 px-2.5 pb-2.5 min-h-0 overflow-y-auto thin-scrollbar">
 
       <Row
@@ -150,26 +218,12 @@ const ConfigPanel = () => {
         }
       >
         <div className="px-3 pb-3 flex flex-col gap-2">
-          <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={() =>
-                ctx.dispatch(
-                  setSelectedStoreIds(ctx.stores.map((s) => s.storeid)),
-                )
-              }
-              className="text-[11.5px] text-brand_navy_hover underline underline-offset-2"
-            >
-              all
-            </button>
-            <button
-              type="button"
-              onClick={() => ctx.dispatch(setSelectedStoreIds([]))}
-              className="text-[11.5px] text-brand_navy_hover underline underline-offset-2"
-            >
-              none
-            </button>
-          </div>
+          <AllNone
+            onAll={() =>
+              ctx.dispatch(setSelectedStoreIds(ctx.stores.map((s) => s.storeid)))
+            }
+            onNone={() => ctx.dispatch(setSelectedStoreIds([]))}
+          />
           <div className="overflow-y-auto thin-scrollbar flex flex-col max-h-[38vh]">
             {ctx.stores.map((s) => (
               <Checkbox
@@ -195,22 +249,10 @@ const ConfigPanel = () => {
         }
       >
         <div className="px-3 pb-3 flex flex-col gap-1.5">
-          <div className="flex gap-3 mb-0.5">
-            <button
-              type="button"
-              onClick={() => ctx.dispatch(setSelectedSaleTypes(ctx.saleTypes))}
-              className="text-[11.5px] text-brand_navy_hover underline underline-offset-2"
-            >
-              all
-            </button>
-            <button
-              type="button"
-              onClick={() => ctx.dispatch(setSelectedSaleTypes([]))}
-              className="text-[11.5px] text-brand_navy_hover underline underline-offset-2"
-            >
-              none
-            </button>
-          </div>
+          <AllNone
+            onAll={() => ctx.dispatch(setSelectedSaleTypes(ctx.saleTypes))}
+            onNone={() => ctx.dispatch(setSelectedSaleTypes([]))}
+          />
           {ctx.saleTypes.map((t) => (
             <Checkbox
               key={t}
@@ -229,6 +271,121 @@ const ConfigPanel = () => {
       </Row>
 
       <Row
+        label="Ring Types"
+        isOpen={open === "ringTypes"}
+        onToggle={() => setOpen(open === "ringTypes" ? null : "ringTypes")}
+        summary={
+          ctx.selectedRingTypes.length === ctx.itemRingTypes.length
+            ? `all ${ctx.itemRingTypes.length}`
+            : `${ctx.selectedRingTypes.length} of ${ctx.itemRingTypes.length}`
+        }
+      >
+        <div className="px-3 pb-3 flex flex-col gap-1.5">
+          <AllNone
+            onAll={() =>
+              ctx.dispatch(setSelectedRingTypes(ctx.itemRingTypes))
+            }
+            onNone={() => ctx.dispatch(setSelectedRingTypes([]))}
+          />
+          {ctx.itemRingTypes.map((r) => (
+            <Checkbox
+              key={r}
+              checked={ctx.selectedRingTypes.includes(r)}
+              onChange={() => ctx.dispatch(toggleRingType(r))}
+              label={r}
+              className="text-[12.5px]"
+            />
+          ))}
+          <PreviewOnly />
+        </div>
+      </Row>
+
+      <Row
+        label="Sub Departments"
+        isOpen={open === "subDepartments"}
+        onToggle={() =>
+          setOpen(open === "subDepartments" ? null : "subDepartments")
+        }
+        summary={
+          ctx.selectedSubDepartments.length === ctx.subDepartments.length
+            ? `all ${ctx.subDepartments.length}`
+            : `${ctx.selectedSubDepartments.length} of ${ctx.subDepartments.length}`
+        }
+      >
+        <div className="px-3 pb-3 flex flex-col gap-1.5">
+          <AllNone
+            onAll={() =>
+              ctx.dispatch(
+                setSelectedSubDepartments(
+                  ctx.subDepartments.map((s) => s.sub_department),
+                ),
+              )
+            }
+            onNone={() => ctx.dispatch(setSelectedSubDepartments([]))}
+          />
+          <div className="overflow-y-auto thin-scrollbar flex flex-col max-h-[38vh]">
+            {ctx.subDepartments.map((s) => (
+              <Checkbox
+                key={s.sub_department}
+                checked={ctx.selectedSubDepartments.includes(s.sub_department)}
+                onChange={() =>
+                  ctx.dispatch(toggleSubDepartment(s.sub_department))
+                }
+                className="py-1.5 text-[12.5px] border-b border-brand_line last:border-0"
+                label={
+                  <span className="flex items-center gap-2 min-w-0">
+                    <span className="font-medium">{s.sub_department}</span>
+                    <span className="truncate text-content/75">
+                      {s.sub_department_description}
+                    </span>
+                  </span>
+                }
+              />
+            ))}
+          </div>
+          <PreviewOnly />
+        </div>
+      </Row>
+
+      <Row
+        label="Vendors"
+        isOpen={open === "vendors"}
+        onToggle={() => setOpen(open === "vendors" ? null : "vendors")}
+        summary={
+          ctx.selectedVendors.length === ctx.vendors.length
+            ? `all ${ctx.vendors.length}`
+            : `${ctx.selectedVendors.length} of ${ctx.vendors.length}`
+        }
+      >
+        <div className="px-3 pb-3 flex flex-col gap-1.5">
+          <AllNone
+            onAll={() =>
+              ctx.dispatch(
+                setSelectedVendors(ctx.vendors.map((v) => v.vendor_id)),
+              )
+            }
+            onNone={() => ctx.dispatch(setSelectedVendors([]))}
+          />
+          <div className="overflow-y-auto thin-scrollbar flex flex-col max-h-[38vh]">
+            {ctx.vendors.map((v) => (
+              <Checkbox
+                key={v.vendor_id}
+                checked={ctx.selectedVendors.includes(v.vendor_id)}
+                onChange={() => ctx.dispatch(toggleVendor(v.vendor_id))}
+                className="py-1.5 text-[12.5px] border-b border-brand_line last:border-0"
+                label={
+                  <span className="truncate">
+                    {v.vendor_name || v.vendor_id}
+                  </span>
+                }
+              />
+            ))}
+          </div>
+          <PreviewOnly />
+        </div>
+      </Row>
+
+      <Row
         label="Columns"
         isOpen={open === "columns"}
         onToggle={() => setOpen(open === "columns" ? null : "columns")}
@@ -239,24 +396,12 @@ const ConfigPanel = () => {
         }
       >
         <div className="px-3 pb-3 flex flex-col gap-2">
-          <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={() =>
-                ctx.dispatch(setSelectedColumns(ctx.columns.map((c) => c.name)))
-              }
-              className="text-[11.5px] text-brand_navy_hover underline underline-offset-2"
-            >
-              all
-            </button>
-            <button
-              type="button"
-              onClick={() => ctx.dispatch(setSelectedColumns([]))}
-              className="text-[11.5px] text-brand_navy_hover underline underline-offset-2"
-            >
-              none
-            </button>
-          </div>
+          <AllNone
+            onAll={() =>
+              ctx.dispatch(setSelectedColumns(ctx.columns.map((c) => c.name)))
+            }
+            onNone={() => ctx.dispatch(setSelectedColumns([]))}
+          />
           {piiNames.length > 0 && (
             <div
               className={`flex items-center gap-2 rounded-lg px-2 py-1.5 border ${

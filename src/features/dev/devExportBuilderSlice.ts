@@ -4,6 +4,8 @@ import type {
   ExportFile,
   ExportRow,
   ExportStore,
+  ExportSubDepartment,
+  ExportVendor,
 } from "../../api/salesExport";
 
 /** What the export endpoint takes that the preview knows nothing about:
@@ -21,6 +23,9 @@ export interface ExportBuilderState {
   /** Null until a config has been loaded; the page shows its search card. */
   stores: ExportStore[];
   saleTypes: string[];
+  itemRingTypes: string[];
+  subDepartments: ExportSubDepartment[];
+  vendors: ExportVendor[];
   columns: ExportColumn[];
   rows: ExportRow[];
   hasData: boolean;
@@ -30,6 +35,17 @@ export interface ExportBuilderState {
   /** The picks, made against what came back and nothing else. */
   selectedStoreIds: number[];
   selectedSaleTypes: string[];
+  /**
+   * Ring types, sub departments and vendors narrow the SAMPLE only.
+   *
+   * `/sales/export` takes `saleTypes` and nothing else, so these three cannot
+   * reach the file until the endpoint accepts them. The page says so where
+   * they are, rather than quietly producing a CSV wider than what was on
+   * screen.
+   */
+  selectedRingTypes: string[];
+  selectedSubDepartments: string[];
+  selectedVendors: string[];
   selectedColumns: string[];
   /**
    * Every column name in the order the file will write them.
@@ -58,6 +74,9 @@ export const initialState: ExportBuilderState = {
   loadingConfig: false,
   stores: [],
   saleTypes: [],
+  itemRingTypes: [],
+  subDepartments: [],
+  vendors: [],
   columns: [],
   rows: [],
   hasData: false,
@@ -66,6 +85,9 @@ export const initialState: ExportBuilderState = {
 
   selectedStoreIds: [],
   selectedSaleTypes: [],
+  selectedRingTypes: [],
+  selectedSubDepartments: [],
+  selectedVendors: [],
   selectedColumns: [],
   columnOrder: [],
   columnFilter: "",
@@ -90,6 +112,9 @@ export const initialState: ExportBuilderState = {
 interface ConfigPayload {
   stores: ExportStore[];
   saleTypes: string[];
+  itemRingTypes: string[];
+  subDepartments: ExportSubDepartment[];
+  vendors: ExportVendor[];
   columns: ExportColumn[];
   rows: ExportRow[];
   hasData: boolean;
@@ -109,18 +134,33 @@ const devExportBuilderSlice = createSlice({
      * the file is the whole table until someone narrows it.
      */
     setConfig: (state, action: PayloadAction<ConfigPayload>) => {
-      const { stores, saleTypes, columns, rows, hasData, message } =
-        action.payload;
+      const {
+        stores,
+        saleTypes,
+        itemRingTypes,
+        subDepartments,
+        vendors,
+        columns,
+        rows,
+        hasData,
+        message,
+      } = action.payload;
       state.loadingConfig = false;
       state.loaded = true;
       state.stores = stores;
       state.saleTypes = saleTypes;
+      state.itemRingTypes = itemRingTypes;
+      state.subDepartments = subDepartments;
+      state.vendors = vendors;
       state.columns = columns;
       state.rows = rows;
       state.hasData = hasData;
       state.message = message;
       state.selectedStoreIds = stores.map((s) => s.storeid);
       state.selectedSaleTypes = [...saleTypes];
+      state.selectedRingTypes = [...itemRingTypes];
+      state.selectedSubDepartments = subDepartments.map((s) => s.sub_department);
+      state.selectedVendors = vendors.map((v) => v.vendor_id);
       state.selectedColumns = columns.map((c) => c.name);
       state.columnOrder = columns.map((c) => c.name);
       state.columnFilter = "";
@@ -174,6 +214,33 @@ const devExportBuilderSlice = createSlice({
     },
     setSelectedSaleTypes: (state, action: PayloadAction<string[]>) => {
       state.selectedSaleTypes = action.payload;
+    },
+    toggleRingType: (state, action: PayloadAction<string>) => {
+      const v = action.payload;
+      state.selectedRingTypes = state.selectedRingTypes.includes(v)
+        ? state.selectedRingTypes.filter((x) => x !== v)
+        : [...state.selectedRingTypes, v];
+    },
+    setSelectedRingTypes: (state, action: PayloadAction<string[]>) => {
+      state.selectedRingTypes = action.payload;
+    },
+    toggleSubDepartment: (state, action: PayloadAction<string>) => {
+      const v = action.payload;
+      state.selectedSubDepartments = state.selectedSubDepartments.includes(v)
+        ? state.selectedSubDepartments.filter((x) => x !== v)
+        : [...state.selectedSubDepartments, v];
+    },
+    setSelectedSubDepartments: (state, action: PayloadAction<string[]>) => {
+      state.selectedSubDepartments = action.payload;
+    },
+    toggleVendor: (state, action: PayloadAction<string>) => {
+      const v = action.payload;
+      state.selectedVendors = state.selectedVendors.includes(v)
+        ? state.selectedVendors.filter((x) => x !== v)
+        : [...state.selectedVendors, v];
+    },
+    setSelectedVendors: (state, action: PayloadAction<string[]>) => {
+      state.selectedVendors = action.payload;
     },
     setSelectedColumns: (state, action: PayloadAction<string[]>) => {
       state.selectedColumns = action.payload;
@@ -239,6 +306,12 @@ export const {
   setSelectedStoreIds,
   toggleSaleType,
   setSelectedSaleTypes,
+  toggleRingType,
+  setSelectedRingTypes,
+  toggleSubDepartment,
+  setSelectedSubDepartments,
+  toggleVendor,
+  setSelectedVendors,
   toggleColumn,
   moveColumn,
   setSelectedColumns,

@@ -48,11 +48,13 @@ export const useExportBuilderCtx = () => {
     .filter((c) => state.selectedColumns.includes(c.name));
 
   /** The sample rows the file would actually hold. */
-  const visibleRows = filterSampleRows(
-    state.rows,
-    state.selectedSaleTypes,
-    state.flags.excludeVoids,
-  );
+  const visibleRows = filterSampleRows(state.rows, {
+    saleTypes: state.selectedSaleTypes,
+    ringTypes: state.selectedRingTypes,
+    subDepartments: state.selectedSubDepartments,
+    vendors: state.selectedVendors,
+    excludeVoids: state.flags.excludeVoids,
+  });
 
   /**
    * One call, and everything the page offers comes out of it: the stores the
@@ -80,6 +82,9 @@ export const useExportBuilderCtx = () => {
           setConfig({
             stores: j.stores ?? [],
             saleTypes: j.saleTypes ?? [],
+            itemRingTypes: j.itemRingTypes ?? [],
+            subDepartments: j.subDepartments ?? [],
+            vendors: j.vendors ?? [],
             columns: j.columns ?? [],
             rows: j.rows ?? [],
             hasData: j.hasData,
@@ -98,13 +103,6 @@ export const useExportBuilderCtx = () => {
    * — the question of which stores was settled by the config call.
    */
   const build = () => {
-    // Null means "every column" to the endpoint, which also means its own
-    // order — so it is only safe while the order has not been touched.
-    const untouched = state.columnOrder.every(
-      (name, i) => state.columns[i]?.name === name,
-    );
-    const everyColumn =
-      untouched && state.selectedColumns.length === state.columns.length;
     const everyType = state.selectedSaleTypes.length === state.saleTypes.length;
     dispatch(startExport());
     const slowTimer = window.setTimeout(
@@ -116,9 +114,11 @@ export const useExportBuilderCtx = () => {
       startDate,
       endDate,
       storeids: state.selectedStoreIds,
-      // Null means every column, which is not the same as listing all of them
-      // — it is what the endpoint documents, and it keeps the request small.
-      columns: everyColumn ? null : orderedColumns.map((c) => c.name),
+      // Always the explicit list, never null. Null means "every column" to
+      // the endpoint, which is 102 — including the three provenance columns
+      // the preview withholds — and in the endpoint's own order. Either would
+      // hand back a file that is not the one on screen.
+      columns: orderedColumns.map((c) => c.name),
       saleTypes: everyType ? null : state.selectedSaleTypes,
       excludeVoids: state.flags.excludeVoids,
       fileFormat: state.flags.fileFormat,

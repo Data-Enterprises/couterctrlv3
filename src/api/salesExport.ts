@@ -40,13 +40,37 @@ export interface ExportColumn {
 /** A sample row: every column, keyed by column name. */
 export type ExportRow = Record<string, string | number | boolean | null>;
 
+/** A sub department present in the window: id to filter on, label to show. */
+export interface ExportSubDepartment {
+  sub_department: string;
+  sub_department_description: string;
+}
+
+export interface ExportVendor {
+  vendor_id: string;
+  vendor_name: string;
+}
+
 export interface ExportPreviewResp {
   error: number;
   success: boolean;
   stores: ExportStore[];
   storeids: number[];
   saleTypes: string[];
+  /** Every filter list holds only what this window actually contains, so no
+   *  option in the UI can come back empty. */
+  itemRingTypes: string[];
+  subDepartments: ExportSubDepartment[];
+  vendors: ExportVendor[];
+  /**
+   * 99, not 102: the preview withholds source_file_uri, source_file_etag and
+   * source_version_ts — import bookkeeping, identical down every row. The
+   * export still writes them if asked, which is why the page sends its column
+   * list explicitly rather than null.
+   */
   columns: ExportColumn[];
+  /** Up to 50, ~118 KB. Unordered, so they show the file's shape rather than
+   *  its variety — often one store and two sale types. */
   rows: ExportRow[];
   hasData: boolean;
   message: string | null;

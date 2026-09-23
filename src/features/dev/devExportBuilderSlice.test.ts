@@ -17,6 +17,9 @@ const loaded = () =>
     setConfig({
       stores: [{ storeid: 1, store_number: "945", store_name: "BG" }],
       saleTypes: ["Sale", "Refunded"],
+      itemRingTypes: ["ITEM"],
+      subDepartments: [{ sub_department: "10", sub_department_description: "Grocery" }],
+      vendors: [{ vendor_id: "50", vendor_name: "AWG" }],
       columns,
       rows: [],
       hasData: true,
@@ -34,6 +37,9 @@ describe("the export config", () => {
     expect(s.columnOrder).toEqual(["sale_id", "sale_date", "qty", "price"]);
     expect(s.selectedColumns).toEqual(s.columnOrder);
     expect(s.selectedSaleTypes).toEqual(["Sale", "Refunded"]);
+    expect(s.selectedRingTypes).toEqual(["ITEM"]);
+    expect(s.selectedSubDepartments).toEqual(["10"]);
+    expect(s.selectedVendors).toEqual(["50"]);
     expect(s.selectedStoreIds).toEqual([1]);
   });
 });
