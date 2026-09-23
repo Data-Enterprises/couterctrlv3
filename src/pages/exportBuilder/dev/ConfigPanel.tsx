@@ -143,20 +143,6 @@ const AllNone = ({
   </div>
 );
 
-/**
- * Said beside the three filters the export cannot take.
- *
- * `/sales/export` accepts saleTypes and nothing else, so these narrow what is
- * on screen and not what is written. Saying it here is the difference between
- * a filter and a lie.
- */
-const PreviewOnly = () => (
-  <span className="text-[11px] text-content/55 leading-snug">
-    Narrows the sample only — the export endpoint does not take this filter
-    yet, so the file will hold every one of them.
-  </span>
-);
-
 const ConfigPanel = () => {
   const ctx = useExportBuilderCtx();
   const [open, setOpen] = useState<Section | null>(null);
@@ -296,7 +282,6 @@ const ConfigPanel = () => {
               className="text-[12.5px]"
             />
           ))}
-          <PreviewOnly />
         </div>
       </Row>
 
@@ -343,7 +328,6 @@ const ConfigPanel = () => {
               />
             ))}
           </div>
-          <PreviewOnly />
         </div>
       </Row>
 
@@ -381,7 +365,6 @@ const ConfigPanel = () => {
               />
             ))}
           </div>
-          <PreviewOnly />
         </div>
       </Row>
 
@@ -523,19 +506,6 @@ const ConfigPanel = () => {
               <span className="flex items-center gap-2">
                 Sort the file
                 <span className="text-[11px] text-content/55">slower</span>
-              </span>
-            }
-          />
-          <Checkbox
-            checked={ctx.flags.dryRun}
-            onChange={(value) => ctx.dispatch(setFlag({ key: "dryRun", value }))}
-            className="text-[12.5px]"
-            label={
-              <span className="flex items-center gap-2">
-                Dry run
-                <span className="text-[11px] text-content/55">
-                  returns the SQL, writes nothing
-                </span>
               </span>
             }
           />

@@ -126,7 +126,16 @@ export interface ExportParams {
   endDate: string;
   storeids: number[];
   columns: string[] | null;
+  /** Lower-cased both sides by the endpoint, so casing here does not matter. */
   saleTypes: string[] | null;
+  /** Matched as stored — no normalising, because these come straight off the
+   *  preview, which reads them from the same column. */
+  itemRingTypes: string[] | null;
+  /** bigint[] on the endpoint: the numeric id, not the description, and a
+   *  number rather than the string the preview returns it as. */
+  subDepartments: number[] | null;
+  /** `vendorIds`, not `vendors` — and text, despite looking numeric. */
+  vendorIds: string[] | null;
   excludeVoids: boolean;
   fileFormat: string;
   filePrefix: string | null;
@@ -136,3 +145,21 @@ export interface ExportParams {
 
 export const runExport = (url: string, token: string, params: ExportParams) =>
   post(url, token, "sales/export", params);
+
+/**
+ * What `dryRun: true` answers with instead.
+ *
+ * Same endpoint, same request, same store resolution and column validation —
+ * it stops before writing anything and hands back the statement it would have
+ * run, and where the file would have gone.
+ */
+export interface ExportDryRunResp {
+  error: number;
+  success: boolean;
+  dryRun: true;
+  bucket: string;
+  filePath: string;
+  storeids: number[];
+  copyOptions: string;
+  query: string;
+}

@@ -6,6 +6,7 @@ import { formatGoliathDate } from "../../../utils";
 import {
   getExportPreview,
   runExport,
+  type ExportDryRunResp,
   type ExportPreviewResp,
   type ExportResp,
 } from "../../../api/salesExport";
@@ -15,8 +16,10 @@ import {
   finishExport,
   markExportSlow,
   setConfig,
+  setSql,
   startConfigLoad,
   startExport,
+  startSqlLoad,
 } from "../../../features/dev/devExportBuilderSlice";
 import type { JsonError } from "../../../interfaces";
 import { filterSampleRows } from "./sampleRows";
@@ -31,8 +34,8 @@ export const useExportBuilderCtx = () => {
   // Coming Soon: dev API only, by construction rather than by whichever
   // environment the session happens to be pointed at.
   const { url, token } = useDevApi();
-  const search = useAppSelector((state) => state.search);
-  const state = useAppSelector((s) => s.dev.exportBuilder);
+  const search = useAppSelector((s) => s.search);
+  const config = useAppSelector((s) => s.dev.exportBuilder);
 
   const startDate = formatGoliathDate(search.startDate);
   const endDate = formatGoliathDate(search.endDate);
@@ -42,18 +45,18 @@ export const useExportBuilderCtx = () => {
    * is ticked. Derived once here so the preview table and the export request
    * can never disagree about what the file looks like.
    */
-  const orderedColumns = state.columnOrder
-    .map((name) => state.columns.find((c) => c.name === name))
+  const orderedColumns = config.columnOrder
+    .map((name) => config.columns.find((c) => c.name === name))
     .filter((c): c is NonNullable<typeof c> => Boolean(c))
-    .filter((c) => state.selectedColumns.includes(c.name));
+    .filter((c) => config.selectedColumns.includes(c.name));
 
   /** The sample rows the file would actually hold. */
-  const visibleRows = filterSampleRows(state.rows, {
-    saleTypes: state.selectedSaleTypes,
-    ringTypes: state.selectedRingTypes,
-    subDepartments: state.selectedSubDepartments,
-    vendors: state.selectedVendors,
-    excludeVoids: state.flags.excludeVoids,
+  const visibleRows = filterSampleRows(config.rows, {
+    saleTypes: config.selectedSaleTypes,
+    ringTypes: config.selectedRingTypes,
+    subDepartments: config.selectedSubDepartments,
+    vendors: config.selectedVendors,
+    excludeVoids: config.flags.excludeVoids,
   });
 
   /**
@@ -102,30 +105,82 @@ export const useExportBuilderCtx = () => {
    * The stores are sent explicitly, so the scope modes never run on this side
    * — the question of which stores was settled by the config call.
    */
+  /**
+   * The request the page is about to send, as SQL.
+   *
+   * Same endpoint and the same body, with `dryRun` on: it resolves the stores
+   * and validates the columns exactly as a real run does, then stops before
+   * writing and answers with the statement instead. So what comes back is the
+   * query this configuration would actually run, not an approximation of it.
+   */
+  const params = () => {
+    // Null means "every one" to the endpoint, so a list that has not been
+    // narrowed is sent as null rather than as every value — same result, and
+    // it keeps the condition out of the SQL entirely.
+    const all = (picked: unknown[], available: unknown[]) =>
+      picked.length === available.length;
+    return {
+      startDate,
+      endDate,
+      storeids: config.selectedStoreIds,
+      // Always the explicit list, never null. Null means "every column" to
+      // the endpoint, which is 102 — including the three provenance columns
+      // the preview withholds — and in the endpoint's own order. Either would
+      // hand back a file that is not the one on screen.
+      columns: orderedColumns.map((c) => c.name),
+      saleTypes: all(config.selectedSaleTypes, config.saleTypes)
+        ? null
+        : config.selectedSaleTypes,
+      itemRingTypes: all(config.selectedRingTypes, config.itemRingTypes)
+        ? null
+        : config.selectedRingTypes,
+      subDepartments: all(config.selectedSubDepartments, config.subDepartments)
+        ? null
+        : config.selectedSubDepartments.map(Number),
+      vendorIds: all(config.selectedVendors, config.vendors)
+        ? null
+        : config.selectedVendors,
+      excludeVoids: config.flags.excludeVoids,
+      fileFormat: config.flags.fileFormat,
+      filePrefix: config.flags.filePrefix || null,
+      ordered: config.flags.ordered,
+      dryRun: false,
+    };
+  };
+
+  const showSql = () => {
+    dispatch(startSqlLoad());
+    runExport(url, token, { ...params(), dryRun: true })
+      .then((resp) => {
+        const j = resp.data as ExportDryRunResp;
+        if (j.error !== 0) {
+          dispatch(setSql(null));
+          toast.error("Could not read the query back");
+          return;
+        }
+        dispatch(
+          setSql({
+            query: j.query,
+            bucket: j.bucket,
+            filePath: j.filePath,
+            copyOptions: j.copyOptions,
+          }),
+        );
+      })
+      .catch((err: JsonError) => {
+        dispatch(setSql(null));
+        toast.error("Could not read the query back: " + err.message);
+      });
+  };
+
   const build = () => {
-    const everyType = state.selectedSaleTypes.length === state.saleTypes.length;
     dispatch(startExport());
     const slowTimer = window.setTimeout(
       () => dispatch(markExportSlow()),
       SLOW_AFTER_MS,
     );
 
-    runExport(url, token, {
-      startDate,
-      endDate,
-      storeids: state.selectedStoreIds,
-      // Always the explicit list, never null. Null means "every column" to
-      // the endpoint, which is 102 — including the three provenance columns
-      // the preview withholds — and in the endpoint's own order. Either would
-      // hand back a file that is not the one on screen.
-      columns: orderedColumns.map((c) => c.name),
-      saleTypes: everyType ? null : state.selectedSaleTypes,
-      excludeVoids: state.flags.excludeVoids,
-      fileFormat: state.flags.fileFormat,
-      filePrefix: state.flags.filePrefix || null,
-      ordered: state.flags.ordered,
-      dryRun: state.flags.dryRun,
-    })
+    runExport(url, token, params())
       .then((resp) => {
         window.clearTimeout(slowTimer);
         const j = resp.data as ExportResp;
@@ -149,7 +204,7 @@ export const useExportBuilderCtx = () => {
         // what happened rather than calling it a failure.
         dispatch(
           failExport(
-            state.slow
+            config.slow
               ? "The connection gave up before the file was ready. It is still being written, so try a shorter range rather than assuming it failed."
               : "The export failed: " + err.message,
           ),
@@ -158,7 +213,7 @@ export const useExportBuilderCtx = () => {
   };
 
   return {
-    ...state,
+    ...config,
     dispatch,
     search,
     startDate,
@@ -166,6 +221,7 @@ export const useExportBuilderCtx = () => {
     orderedColumns,
     visibleRows,
     loadConfig,
+    showSql,
     build,
   };
 };

@@ -41,6 +41,14 @@ describe("the sample rows a preview shows", () => {
     expect(ids(filterSampleRows(rows, { ...all, vendors: ["50"] }))).toEqual([1, 2]);
   });
 
+  it("matches ring type and vendor as stored, which is what the endpoint does", () => {
+    // sale_type is lower-cased on both sides by the endpoint; the other three
+    // are compared as they are. Folding them here would show rows the file
+    // will not contain.
+    expect(filterSampleRows(rows, { ...all, ringTypes: ["item"] })).toEqual([]);
+    expect(filterSampleRows(rows, { ...all, vendors: ["f0007"] })).toEqual([]);
+  });
+
   it("drops voided lines when the switch is on, null flags included", () => {
     expect(ids(filterSampleRows(rows, { ...all, excludeVoids: true }))).toEqual([1, 2, 4]);
   });

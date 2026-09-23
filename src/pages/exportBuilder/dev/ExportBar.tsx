@@ -6,6 +6,15 @@ import { formatBigNumber } from "../../../utils";
 const mb = (bytes: number) => `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 
 /**
+ * Show SQL: built, wired and off.
+ *
+ * It asks the export endpoint for the statement this configuration would run
+ * (`dryRun`), which is a support tool rather than something a client needs to
+ * see — so it stays hidden until someone asks for it. Flip this to true.
+ */
+export const SHOW_SQL_BUTTON = false;
+
+/**
  * The strip under the file: what will be built, then what was built.
  *
  * The download lands where the button was, with the configuration that made it
@@ -110,13 +119,23 @@ const ExportBar = () => {
           </div>
         )}
       </div>
+      {SHOW_SQL_BUTTON && (
+        <button
+          type="button"
+          onClick={ctx.showSql}
+          disabled={nothingToBuild || ctx.loadingSql}
+          className="border border-custom-white/30 text-custom-white text-[13px] font-medium px-4 py-2.5 rounded-lg hover:bg-custom-white/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          {ctx.loadingSql ? "Reading..." : "Show SQL"}
+        </button>
+      )}
       <button
         type="button"
         onClick={ctx.build}
         disabled={nothingToBuild}
         className="bg-custom-white text-[#1e2a4a] text-[13px] font-semibold px-5 py-2.5 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed"
       >
-        {ctx.flags.dryRun ? "Dry run" : "Build export"}
+        Build export
       </button>
     </div>
   );

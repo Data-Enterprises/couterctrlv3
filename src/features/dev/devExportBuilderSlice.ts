@@ -15,7 +15,6 @@ export interface ExportFlags {
   fileFormat: string;
   filePrefix: string;
   ordered: boolean;
-  dryRun: boolean;
 }
 
 export interface ExportBuilderState {
@@ -60,6 +59,14 @@ export interface ExportBuilderState {
   flags: ExportFlags;
 
   building: boolean;
+  /** The statement the export would run, from a dry run. Null when closed. */
+  sql: {
+    query: string;
+    bucket: string;
+    filePath: string;
+    copyOptions: string;
+  } | null;
+  loadingSql: boolean;
   files: ExportFile[];
   rowsUploaded: number;
   elapsedSeconds: number;
@@ -96,10 +103,11 @@ export const initialState: ExportBuilderState = {
     fileFormat: "csv",
     filePrefix: "sales",
     ordered: false,
-    dryRun: false,
   },
 
   building: false,
+  sql: null,
+  loadingSql: false,
   files: [],
   rowsUploaded: 0,
   elapsedSeconds: 0,
@@ -262,6 +270,21 @@ const devExportBuilderSlice = createSlice({
         state.flags[key] = value as boolean;
       }
     },
+    startSqlLoad: (state) => {
+      state.loadingSql = true;
+      state.exportError = null;
+    },
+    setSql: (
+      state,
+      action: PayloadAction<ExportBuilderState["sql"]>,
+    ) => {
+      state.loadingSql = false;
+      state.sql = action.payload;
+    },
+    closeSql: (state) => {
+      state.sql = null;
+      state.loadingSql = false;
+    },
     startExport: (state) => {
       state.building = true;
       state.slow = false;
@@ -317,6 +340,9 @@ export const {
   setSelectedColumns,
   setColumnFilter,
   setFlag,
+  startSqlLoad,
+  setSql,
+  closeSql,
   startExport,
   markExportSlow,
   finishExport,

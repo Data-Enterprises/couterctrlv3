@@ -2,6 +2,7 @@ import SearchCard from "../../../components-dev/SearchCard";
 import ConfigPanel from "./ConfigPanel";
 import CsvPreview from "./CsvPreview";
 import ExportBar from "./ExportBar";
+import SqlModal from "./SqlModal";
 import { useExportBuilderCtx } from "./hooks";
 
 /**
@@ -53,6 +54,7 @@ const ExportBuilder = () => {
             <CsvPreview />
           )}
           <ExportBar />
+          <SqlModal />
         </div>
       </div>
     </div>
