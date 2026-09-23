@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { ChevronRightIcon } from "@heroicons/react/20/solid";
+import Checkbox from "../../../components-dev/Checkbox";
 import { useExportBuilderCtx } from "./hooks";
 import { isPii } from "./piiColumns";
 import {
@@ -141,18 +142,13 @@ const ConfigPanel = () => {
           </div>
           <div className="overflow-y-auto thin-scrollbar flex flex-col max-h-[38vh]">
             {ctx.stores.map((s) => (
-              <label
+              <Checkbox
                 key={s.storeid}
-                className="flex items-center gap-2 py-1.5 text-[12.5px] border-b border-brand_line last:border-0"
-              >
-                <input
-                  type="checkbox"
-                  checked={ctx.selectedStoreIds.includes(s.storeid)}
-                  onChange={() => ctx.dispatch(toggleStore(s.storeid))}
-                  className="w-3.5 h-3.5 accent-[#1e2a4a]"
-                />
-                <span className="truncate">{storeLabel(s)}</span>
-              </label>
+                checked={ctx.selectedStoreIds.includes(s.storeid)}
+                onChange={() => ctx.dispatch(toggleStore(s.storeid))}
+                label={<span className="truncate">{storeLabel(s)}</span>}
+                className="py-1.5 text-[12.5px] border-b border-brand_line last:border-0"
+              />
             ))}
           </div>
         </div>
@@ -186,15 +182,13 @@ const ConfigPanel = () => {
             </button>
           </div>
           {ctx.saleTypes.map((t) => (
-            <label key={t} className="flex items-center gap-2 text-[12.5px]">
-              <input
-                type="checkbox"
-                checked={ctx.selectedSaleTypes.includes(t)}
-                onChange={() => ctx.dispatch(toggleSaleType(t))}
-                className="w-3.5 h-3.5 accent-[#1e2a4a]"
-              />
-              {t}
-            </label>
+            <Checkbox
+              key={t}
+              checked={ctx.selectedSaleTypes.includes(t)}
+              onChange={() => ctx.dispatch(toggleSaleType(t))}
+              label={t}
+              className="text-[12.5px]"
+            />
           ))}
           {allTypes === 0 && (
             <span className="text-[12px] text-content/60">
@@ -243,30 +237,29 @@ const ConfigPanel = () => {
           />
           <div className="overflow-y-auto thin-scrollbar flex flex-col max-h-[38vh]">
             {shown.map((c) => (
-              <label
+              <Checkbox
                 key={c.name}
-                className={`flex items-center gap-2 py-1.5 px-1 text-[12.5px] border-b border-brand_line last:border-0 ${
+                checked={ctx.selectedColumns.includes(c.name)}
+                onChange={() => ctx.dispatch(toggleColumn(c.name))}
+                className={`w-full py-1.5 px-1 text-[12.5px] border-b border-brand_line last:border-0 ${
                   isPii(c.name) ? "bg-amber-50" : ""
                 }`}
-              >
-                <input
-                  type="checkbox"
-                  checked={ctx.selectedColumns.includes(c.name)}
-                  onChange={() => ctx.dispatch(toggleColumn(c.name))}
-                  className="w-3.5 h-3.5 accent-[#1e2a4a]"
-                />
-                <span className="font-mono text-[11.5px] flex-1 truncate">
-                  {c.name}
-                </span>
-                {isPii(c.name) && (
-                  <span className="text-[9.5px] font-semibold tracking-wide text-amber-900">
-                    PERSONAL
+                label={
+                  <span className="flex items-center gap-2 w-full min-w-0">
+                    <span className="font-mono text-[11.5px] flex-1 truncate">
+                      {c.name}
+                    </span>
+                    {isPii(c.name) && (
+                      <span className="text-[9.5px] font-semibold tracking-wide text-amber-900">
+                        PERSONAL
+                      </span>
+                    )}
+                    <span className="text-[10.5px] text-content/50">
+                      {c.data_type}
+                    </span>
                   </span>
-                )}
-                <span className="text-[10.5px] text-content/50">
-                  {c.data_type}
-                </span>
-              </label>
+                }
+              />
             ))}
             {shown.length === 0 && (
               <span className="text-[12px] text-content/60 py-2">
@@ -320,47 +313,38 @@ const ConfigPanel = () => {
               className="flex-1 border border-brand_line rounded-lg px-2 py-1.5 text-[12.5px]"
             />
           </div>
-          <label className="flex items-center gap-2 text-[12.5px]">
-            <input
-              type="checkbox"
-              checked={ctx.flags.excludeVoids}
-              onChange={(e) =>
-                ctx.dispatch(
-                  setFlag({ key: "excludeVoids", value: e.target.checked }),
-                )
-              }
-              className="w-3.5 h-3.5 accent-[#1e2a4a]"
-            />
-            Exclude voided lines
-          </label>
-          <label className="flex items-center gap-2 text-[12.5px]">
-            <input
-              type="checkbox"
-              checked={ctx.flags.ordered}
-              onChange={(e) =>
-                ctx.dispatch(
-                  setFlag({ key: "ordered", value: e.target.checked }),
-                )
-              }
-              className="w-3.5 h-3.5 accent-[#1e2a4a]"
-            />
-            Sort the file
-            <span className="text-[11px] text-content/55">slower</span>
-          </label>
-          <label className="flex items-center gap-2 text-[12.5px]">
-            <input
-              type="checkbox"
-              checked={ctx.flags.dryRun}
-              onChange={(e) =>
-                ctx.dispatch(setFlag({ key: "dryRun", value: e.target.checked }))
-              }
-              className="w-3.5 h-3.5 accent-[#1e2a4a]"
-            />
-            Dry run
-            <span className="text-[11px] text-content/55">
-              returns the SQL, writes nothing
-            </span>
-          </label>
+          <Checkbox
+            checked={ctx.flags.excludeVoids}
+            onChange={(value) =>
+              ctx.dispatch(setFlag({ key: "excludeVoids", value }))
+            }
+            label="Exclude voided lines"
+            className="text-[12.5px]"
+          />
+          <Checkbox
+            checked={ctx.flags.ordered}
+            onChange={(value) => ctx.dispatch(setFlag({ key: "ordered", value }))}
+            className="text-[12.5px]"
+            label={
+              <span className="flex items-center gap-2">
+                Sort the file
+                <span className="text-[11px] text-content/55">slower</span>
+              </span>
+            }
+          />
+          <Checkbox
+            checked={ctx.flags.dryRun}
+            onChange={(value) => ctx.dispatch(setFlag({ key: "dryRun", value }))}
+            className="text-[12.5px]"
+            label={
+              <span className="flex items-center gap-2">
+                Dry run
+                <span className="text-[11px] text-content/55">
+                  returns the SQL, writes nothing
+                </span>
+              </span>
+            }
+          />
         </div>
       </Row>
     </div>
