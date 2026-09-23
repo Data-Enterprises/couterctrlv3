@@ -30,6 +30,16 @@ const prodModules = import.meta.glob("../features/*Slice.{ts,tsx}", { eager: tru
 const devModules = import.meta.glob("../features/dev/*Slice.{ts,tsx}", { eager: true });
 const legacyModules = import.meta.glob("../legacy/features/*Slice.{ts,tsx}", { eager: true });
 
+/**
+ * Dev slices with no prod twin, and no bug in that.
+ *
+ * A Coming Soon page has a dev tree and no prod tree until it is greenlit, so
+ * its slice is mounted under `dev` alone. Anything else missing from
+ * `pageReducers` is the failure the next test is looking for: a forked slice
+ * that never made it into prod, whose page reads undefined.
+ */
+const DEV_ONLY_SLICES = new Set(["exportBuilder"]);
+
 describe("dev and prod slices stay isolated", () => {
   /**
    * The failure this exists for.
@@ -69,7 +79,7 @@ describe("dev and prod slices stay isolated", () => {
     // A forked slice that never made it into `devReducers` is mounted nowhere,
     // so its dev page silently reads undefined.
     const strays = Object.keys(devReducers).filter(
-      (k) => !(k in pageReducers),
+      (k) => !(k in pageReducers) && !DEV_ONLY_SLICES.has(k),
     );
     expect(strays, "dev slice with no prod counterpart").toEqual([]);
   });
@@ -106,6 +116,7 @@ describe("the store layout", () => {
       dev: Record<string, Record<string, unknown>>;
     };
     for (const key of Object.keys(devReducers)) {
+      if (DEV_ONLY_SLICES.has(key)) continue;
       const dev = state.dev[key];
       const prod = state.prod[key];
       expect(prod, `prod.${key}`).toBeDefined();

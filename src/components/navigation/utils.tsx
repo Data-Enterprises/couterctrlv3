@@ -559,6 +559,19 @@ export const categories: NavCategory[] = [
         isVisible: true,
       },
       {
+        name: "Export Builder",
+        href: "export-builder",
+        icon: DocumentArrowUpIcon,
+        // Desktop only — a two-panel builder with a 102-column file in it has
+        // no phone form.
+        mobile: false,
+        children: [],
+        childOpen: false,
+        userLevels: COMING_SOON_LEVELS,
+        isHovering: false,
+        isVisible: true,
+      },
+      {
         name: "Sales Tracker",
         href: "sales-tracker",
         icon: ArrowTrendingUpIcon,
