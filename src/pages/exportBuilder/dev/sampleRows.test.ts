@@ -3,10 +3,10 @@ import { filterSampleRows, type RowFilters } from "./sampleRows";
 import type { ExportRow } from "../../../api/salesExport";
 
 const rows: ExportRow[] = [
-  { sale_id: 1, sale_type: "Sale", item_ring_type: "ITEM", sub_department: "10", vendor_id: "50", product_code: "1200000088", void_flag: 0 },
-  { sale_id: 2, sale_type: "Tender", item_ring_type: "TENDER", sub_department: "10", vendor_id: "50", product_code: "2100004411", void_flag: 0 },
-  { sale_id: 3, sale_type: "Voided", item_ring_type: "ITEM", sub_department: "20", vendor_id: "C0021", product_code: "0490000112.0", void_flag: 1 },
-  { sale_id: 4, sale_type: "sale", item_ring_type: "WIC", sub_department: "20", vendor_id: "F0007", product_code: "7770001234", void_flag: null },
+  { sale_id: 1, sale_type: "Sale", item_ring_type: "ITEM", sub_department: 10, vendor_id: "50", product_code: "1200000088", void_flag: 0 },
+  { sale_id: 2, sale_type: "Tender", item_ring_type: "TENDER", sub_department: 10, vendor_id: "50", product_code: "2100004411", void_flag: 0 },
+  { sale_id: 3, sale_type: "Voided", item_ring_type: "ITEM", sub_department: 20, vendor_id: "C0021", product_code: "0490000112.0", void_flag: 1 },
+  { sale_id: 4, sale_type: "sale", item_ring_type: "WIC", sub_department: 20, vendor_id: "F0007", product_code: "7770001234", void_flag: null },
 ];
 
 const all: RowFilters = {

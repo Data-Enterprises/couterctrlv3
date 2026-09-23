@@ -110,10 +110,12 @@ const storeLabel = ({
   store_name: string;
 }) =>
   (() => {
+    const name = String(store_name ?? "");
+    const id = String(store_number ?? "");
     // Compare the numbers, not the text: "1" is in "IGA 100" by accident.
-    const leading = store_name.match(/^\s*0*(\d+)/)?.[1];
-    const number = store_number.replace(/^0+/, "") || store_number;
-    return leading === number ? store_name : `${store_number} - ${store_name}`;
+    const leading = name.match(/^\s*0*(\d+)/)?.[1];
+    const number = id.replace(/^0+/, "") || id;
+    return leading === number ? name : `${id} - ${name}`;
   })();
 
 /** What the export endpoint accepts for `fileFormat`. */
@@ -203,15 +205,15 @@ const ConfigPanel = () => {
   const subDeptQuery = ctx.subDepartmentFilter.trim().toLowerCase();
   const shownSubDepartments = ctx.subDepartments.filter(
     (s) =>
-      s.sub_department.toLowerCase().includes(subDeptQuery) ||
+      String(s.sub_department).toLowerCase().includes(subDeptQuery) ||
       (s.sub_department_description ?? "").toLowerCase().includes(subDeptQuery),
   );
 
   const vendorQuery = ctx.vendorFilter.trim().toLowerCase();
   const shownVendors = ctx.vendors.filter(
     (v) =>
-      (v.vendor_name ?? "").toLowerCase().includes(vendorQuery) ||
-      v.vendor_id.toLowerCase().includes(vendorQuery),
+      String(v.vendor_name ?? "").toLowerCase().includes(vendorQuery) ||
+      String(v.vendor_id).toLowerCase().includes(vendorQuery),
   );
 
   /**
@@ -362,7 +364,7 @@ const ConfigPanel = () => {
             onAll={() =>
               ctx.dispatch(
                 setSelectedSubDepartments(
-                  ctx.subDepartments.map((s) => s.sub_department),
+                  ctx.subDepartments.map((s) => String(s.sub_department)),
                 ),
               )
             }
@@ -378,10 +380,12 @@ const ConfigPanel = () => {
           <div className="overflow-y-auto thin-scrollbar flex flex-col max-h-[38vh]">
             {shownSubDepartments.map((s) => (
               <Checkbox
-                key={s.sub_department}
-                checked={ctx.selectedSubDepartments.includes(s.sub_department)}
+                key={String(s.sub_department)}
+                checked={ctx.selectedSubDepartments.includes(
+                  String(s.sub_department),
+                )}
                 onChange={() =>
-                  ctx.dispatch(toggleSubDepartment(s.sub_department))
+                  ctx.dispatch(toggleSubDepartment(String(s.sub_department)))
                 }
                 className="py-1.5 text-[12.5px] border-b border-brand_line last:border-0"
                 label={

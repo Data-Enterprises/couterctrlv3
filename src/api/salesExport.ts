@@ -40,15 +40,28 @@ export interface ExportColumn {
 /** A sample row: every column, keyed by column name. */
 export type ExportRow = Record<string, string | number | boolean | null>;
 
-/** A sub department present in the window: id to filter on, label to show. */
+/**
+ * A sub department present in the window: id to filter on, label to show.
+ *
+ * `sub_department` arrives as a NUMBER — the column is a bigint and the router
+ * hands it back unconverted, whatever the written spec says. Typed as either
+ * so nothing here assumes one, and every use goes through String().
+ */
 export interface ExportSubDepartment {
-  sub_department: string;
+  sub_department: string | number;
   sub_department_description: string;
 }
 
+/**
+ * A vendor present in the window.
+ *
+ * `vendor_id` is text despite looking numeric ("148" and "B3389" both occur),
+ * and `vendor_name` is frequently null — the id is the only field that is
+ * always there, so it is what the list falls back to showing.
+ */
 export interface ExportVendor {
   vendor_id: string;
-  vendor_name: string;
+  vendor_name: string | null;
 }
 
 export interface ExportPreviewResp {

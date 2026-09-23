@@ -181,7 +181,11 @@ const devExportBuilderSlice = createSlice({
       state.selectedStoreIds = stores.map((s) => s.storeid);
       state.selectedSaleTypes = [...saleTypes];
       state.selectedRingTypes = [...itemRingTypes];
-      state.selectedSubDepartments = subDepartments.map((s) => s.sub_department);
+      // Held as strings whatever the endpoint sent, so a selection is one
+      // type everywhere and only becomes a number on the way back out.
+      state.selectedSubDepartments = subDepartments.map((s) =>
+        String(s.sub_department),
+      );
       state.selectedVendors = vendors.map((v) => v.vendor_id);
       state.selectedColumns = columns.map((c) => c.name);
       state.columnOrder = columns.map((c) => c.name);
