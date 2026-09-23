@@ -1,6 +1,10 @@
 import { useState, type ReactNode } from "react";
 import { ChevronRightIcon } from "@heroicons/react/20/solid";
 import Checkbox from "../../../components-dev/Checkbox";
+import TextField from "../../../components-dev/inputs/TextField";
+import SelectFilter, {
+  type SelectFilterOption,
+} from "../../../components-dev/filters/SelectFilter";
 import { useExportBuilderCtx } from "./hooks";
 import { isPii } from "./piiColumns";
 import {
@@ -37,7 +41,7 @@ const Row = ({
   onToggle: () => void;
   children: ReactNode;
 }) => (
-  <div className="bg-custom-white border border-brand_line rounded-xl overflow-hidden flex flex-col flex-shrink-0">
+  <div className="bg-card_bg border border-brand_line rounded-lg overflow-hidden flex flex-col flex-shrink-0">
     <button
       type="button"
       onClick={onToggle}
@@ -89,6 +93,13 @@ const storeLabel = ({
     return leading === number ? store_name : `${store_number} - ${store_name}`;
   })();
 
+/** What the export endpoint accepts for `fileFormat`. */
+const FILE_FORMATS: SelectFilterOption[] = [
+  { value: "csv", label: "CSV" },
+  { value: "text", label: "Text" },
+  { value: "binary", label: "Binary" },
+];
+
 const ConfigPanel = () => {
   const ctx = useExportBuilderCtx();
   const [open, setOpen] = useState<Section | null>(null);
@@ -100,14 +111,33 @@ const ConfigPanel = () => {
       c.name.toLowerCase().includes(ctx.columnFilter.toLowerCase()),
     );
 
+  /**
+   * The personal columns, on or off together.
+   *
+   * Eight of the 102 are customer identity, and the decision about them is one
+   * decision — hunting them out of a 102-row list one at a time is how half of
+   * them end up in the file by accident.
+   */
+  const piiNames = ctx.columns.map((c) => c.name).filter(isPii);
+  const piiOn = piiNames.some((n) => ctx.selectedColumns.includes(n));
+  const togglePii = (on: boolean) =>
+    ctx.dispatch(
+      setSelectedColumns(
+        on
+          ? [...new Set([...ctx.selectedColumns, ...piiNames])]
+          : ctx.selectedColumns.filter((n) => !isPii(n)),
+      ),
+    );
+
   const allStores = ctx.stores.length;
   const allTypes = ctx.saleTypes.length;
 
   return (
-    <div className="w-[340px] flex-shrink-0 flex flex-col gap-2 min-h-0 overflow-y-auto thin-scrollbar pr-0.5">
-      <span className="text-[11px] font-semibold uppercase tracking-wide text-content/60 px-0.5">
+    <div className="w-[340px] flex-shrink-0 flex flex-col min-h-0 bg-custom-white border border-brand_line rounded-xl overflow-hidden">
+      <span className="text-[11px] font-semibold uppercase tracking-wide text-content/60 px-3 pt-3 pb-2 flex-shrink-0">
         Configuration
       </span>
+      <div className="flex flex-col gap-2 px-2.5 pb-2.5 min-h-0 overflow-y-auto thin-scrollbar">
 
       <Row
         label="Stores"
@@ -227,6 +257,37 @@ const ConfigPanel = () => {
               none
             </button>
           </div>
+          {piiNames.length > 0 && (
+            <div
+              className={`flex items-center gap-2 rounded-lg px-2 py-1.5 border ${
+                piiOn
+                  ? "bg-amber-50 border-amber-200"
+                  : "bg-custom-white border-brand_line"
+              }`}
+            >
+              <Checkbox
+                checked={piiOn}
+                onChange={togglePii}
+                className="text-[12px] flex-1"
+                label={
+                  <span className="flex items-center gap-1.5">
+                    Personal columns
+                    <span className="text-[11px] text-content/55">
+                      {piiNames.filter((n) =>
+                        ctx.selectedColumns.includes(n),
+                      ).length}{" "}
+                      of {piiNames.length}
+                    </span>
+                  </span>
+                }
+              />
+              {piiOn && (
+                <span className="text-[9.5px] font-semibold tracking-wide text-amber-900">
+                  IN THE FILE
+                </span>
+              )}
+            </div>
+          )}
           <input
             type="search"
             value={ctx.columnFilter}
@@ -278,41 +339,29 @@ const ConfigPanel = () => {
         summary={ctx.flags.fileFormat.toUpperCase()}
       >
         <div className="px-3 pb-3 flex flex-col gap-2.5">
-          <div className="flex items-center gap-2">
-            <label htmlFor="eb-format" className="text-[12.5px] w-[86px]">
-              Format
-            </label>
-            <select
-              id="eb-format"
+          <label className="flex flex-col gap-1">
+            <span className="text-[12px] font-medium text-content">Format</span>
+            <SelectFilter
+              plain
+              options={FILE_FORMATS}
               value={ctx.flags.fileFormat}
-              onChange={(e) =>
-                ctx.dispatch(
-                  setFlag({ key: "fileFormat", value: e.target.value }),
-                )
+              onChange={(value) =>
+                ctx.dispatch(setFlag({ key: "fileFormat", value }))
               }
-              className="flex-1 border border-brand_line rounded-lg px-2 py-1.5 text-[12.5px] bg-card_bg"
-            >
-              <option value="csv">csv</option>
-              <option value="text">text</option>
-              <option value="binary">binary</option>
-            </select>
-          </div>
-          <div className="flex items-center gap-2">
-            <label htmlFor="eb-prefix" className="text-[12.5px] w-[86px]">
-              File name
-            </label>
-            <input
-              id="eb-prefix"
-              type="text"
-              value={ctx.flags.filePrefix}
-              onChange={(e) =>
-                ctx.dispatch(
-                  setFlag({ key: "filePrefix", value: e.target.value }),
-                )
-              }
-              className="flex-1 border border-brand_line rounded-lg px-2 py-1.5 text-[12.5px]"
+              className="w-full"
             />
-          </div>
+          </label>
+          <TextField
+            label="File name"
+            value={ctx.flags.filePrefix}
+            placeholder="sales"
+            hint={`${ctx.flags.filePrefix || "sales"}.${
+              ctx.flags.fileFormat === "csv" ? "csv" : "txt"
+            }`}
+            onChange={(value) =>
+              ctx.dispatch(setFlag({ key: "filePrefix", value }))
+            }
+          />
           <Checkbox
             checked={ctx.flags.excludeVoids}
             onChange={(value) =>
@@ -347,6 +396,7 @@ const ConfigPanel = () => {
           />
         </div>
       </Row>
+      </div>
     </div>
   );
 };
