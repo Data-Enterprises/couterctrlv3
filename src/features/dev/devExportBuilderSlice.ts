@@ -131,6 +131,41 @@ export const initialState: ExportBuilderState = {
   exportError: null,
 };
 
+/** The distinct pairs, folded to one entry per sub department number. */
+const mergeSubDepartments = (
+  rows: ExportSubDepartment[],
+): ExportSubDepartment[] => {
+  const names = new Map<string, string[]>();
+  for (const row of rows) {
+    const id = String(row.sub_department);
+    const label = String(row.sub_department_description ?? "").trim();
+    const seen = names.get(id) ?? [];
+    if (label && !seen.includes(label)) seen.push(label);
+    names.set(id, seen);
+  }
+  // Insertion order, so the endpoint's sort by number survives.
+  return [...names].map(([sub_department, labels]) => ({
+    sub_department,
+    sub_department_description: labels.join(" / "),
+  }));
+};
+
+/** The same fold for vendors: one row per id, names gathered. */
+const mergeVendors = (rows: ExportVendor[]): ExportVendor[] => {
+  const names = new Map<string, string[]>();
+  for (const row of rows) {
+    const id = String(row.vendor_id);
+    const label = String(row.vendor_name ?? "").trim();
+    const seen = names.get(id) ?? [];
+    if (label && !seen.includes(label)) seen.push(label);
+    names.set(id, seen);
+  }
+  return [...names].map(([vendor_id, labels]) => ({
+    vendor_id,
+    vendor_name: labels.join(" / ") || null,
+  }));
+};
+
 interface ConfigPayload {
   stores: ExportStore[];
   saleTypes: string[];
@@ -172,8 +207,17 @@ const devExportBuilderSlice = createSlice({
       state.stores = stores;
       state.saleTypes = saleTypes;
       state.itemRingTypes = itemRingTypes;
-      state.subDepartments = subDepartments;
-      state.vendors = vendors;
+      // One row per number, not per (number, description) pair.
+      //
+      // The endpoint returns the distinct pairs it finds, and stores disagree
+      // about what a number is called — 5 is Cigarettes in one and Tobacco in
+      // another, 30 is Beer in one and Money Orders in another. The filter is
+      // the number, so two rows for one number would be two ticks that mean
+      // the same thing; the names are gathered into one label instead.
+      state.subDepartments = mergeSubDepartments(subDepartments);
+      // Distinct pairs again: an id whose name differs between stores would
+      // otherwise be two ticks for one vendor.
+      state.vendors = mergeVendors(vendors);
       state.columns = columns;
       state.rows = rows;
       state.hasData = hasData;
@@ -183,10 +227,10 @@ const devExportBuilderSlice = createSlice({
       state.selectedRingTypes = [...itemRingTypes];
       // Held as strings whatever the endpoint sent, so a selection is one
       // type everywhere and only becomes a number on the way back out.
-      state.selectedSubDepartments = subDepartments.map((s) =>
+      state.selectedSubDepartments = state.subDepartments.map((s) =>
         String(s.sub_department),
       );
-      state.selectedVendors = vendors.map((v) => v.vendor_id);
+      state.selectedVendors = state.vendors.map((v) => v.vendor_id);
       state.selectedColumns = columns.map((c) => c.name);
       state.columnOrder = columns.map((c) => c.name);
       state.columnFilter = "";

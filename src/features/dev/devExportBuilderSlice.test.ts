@@ -44,6 +44,56 @@ describe("the export config", () => {
   });
 });
 
+describe("lists that come back as distinct pairs", () => {
+  const withDuplicates = () =>
+    reducer(
+      initialState,
+      setConfig({
+        stores: [],
+        saleTypes: [],
+        itemRingTypes: [],
+        // Real data: stores disagree about what a number is called, and the
+        // endpoint's DISTINCT is over the pair, so the number repeats.
+        subDepartments: [
+          { sub_department: 5, sub_department_description: "Cigarettes" },
+          { sub_department: 5, sub_department_description: "Tobacco" },
+          { sub_department: 30, sub_department_description: "Beer" },
+          { sub_department: 30, sub_department_description: "Money Orders" },
+          { sub_department: 45, sub_department_description: "Soft Drinks" },
+        ],
+        vendors: [
+          { vendor_id: "50", vendor_name: "AWG" },
+          { vendor_id: "50", vendor_name: "Associated Wholesale" },
+          { vendor_id: "148", vendor_name: null },
+        ],
+        columns,
+        rows: [],
+        hasData: true,
+        message: null,
+      }),
+    );
+
+  it("keeps one row per sub department number, naming both", () => {
+    const s = withDuplicates();
+    expect(s.subDepartments).toEqual([
+      { sub_department: "5", sub_department_description: "Cigarettes / Tobacco" },
+      { sub_department: "30", sub_department_description: "Beer / Money Orders" },
+      { sub_department: "45", sub_department_description: "Soft Drinks" },
+    ]);
+    // One tick per number, not per name.
+    expect(s.selectedSubDepartments).toEqual(["5", "30", "45"]);
+  });
+
+  it("keeps one row per vendor id, and leaves a nameless one nameless", () => {
+    const s = withDuplicates();
+    expect(s.vendors).toEqual([
+      { vendor_id: "50", vendor_name: "AWG / Associated Wholesale" },
+      { vendor_id: "148", vendor_name: null },
+    ]);
+    expect(s.selectedVendors).toEqual(["50", "148"]);
+  });
+});
+
 describe("reordering columns", () => {
   it("moves a column to the slot it was dropped on", () => {
     const s = reducer(loaded(), moveColumn({ name: "price", to: 0 }));
