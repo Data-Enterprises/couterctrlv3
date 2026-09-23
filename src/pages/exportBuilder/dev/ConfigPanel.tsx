@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
   ChevronRightIcon,
   MagnifyingGlassIcon,
@@ -12,9 +12,6 @@ import { useExportBuilderCtx } from "./hooks";
 import { isPii } from "./piiColumns";
 import { parseProductCodes } from "./productCodes";
 import {
-  setColumnFilter,
-  setSubDepartmentFilter,
-  setVendorFilter,
   setFlag,
   resetExportBuilder,
   setSelectedColumns,
@@ -23,7 +20,6 @@ import {
   setSelectedStoreIds,
   setSelectedSubDepartments,
   setSelectedVendors,
-  setProductCodeText,
   setProductCodes,
   toggleColumn,
   toggleRingType,
@@ -193,28 +189,74 @@ const ConfigPanel = () => {
   const ctx = useExportBuilderCtx();
   const [open, setOpen] = useState<Section | null>(null);
 
-  const shown = ctx.columnOrder
-    .map((name) => ctx.columns.find((c) => c.name === name))
-    .filter((c): c is NonNullable<typeof c> => Boolean(c))
-    .filter((c) =>
-      c.name.toLowerCase().includes(ctx.columnFilter.toLowerCase()),
-    );
+  /**
+   * Typing lives here, not in the store.
+   *
+   * A keystroke dispatched to Redux changes the slice object, and everything
+   * reading it re-renders — including the CSV table, which is fifty rows of up
+   * to ninety-nine columns. Five thousand cells diffed per character is what
+   * made these boxes feel heavy. None of this text is needed outside the
+   * panel, so none of it goes through the store.
+   */
+  const [columnQuery, setColumnQuery] = useState("");
+  const [vendorQueryText, setVendorQueryText] = useState("");
+  const [subDeptQueryText, setSubDeptQueryText] = useState("");
+  const [codeText, setCodeText] = useState("");
+
+  // A new config is a new scope; last question's typing does not belong to it.
+  useEffect(() => {
+    setColumnQuery("");
+    setVendorQueryText("");
+    setSubDeptQueryText("");
+    setCodeText("");
+  }, [ctx.columns]);
+
+  /**
+   * The codes do have to reach the store — they filter the sample and go to
+   * the endpoint — but not on every keystroke. Parsed a beat after typing
+   * stops, so a pasted column of four hundred codes costs one pass, not four
+   * hundred.
+   */
+  const parseTimer = useRef<number | undefined>(undefined);
+  useEffect(() => () => window.clearTimeout(parseTimer.current), []);
+  const onCodeText = (value: string) => {
+    setCodeText(value);
+    window.clearTimeout(parseTimer.current);
+    parseTimer.current = window.setTimeout(() => {
+      ctx.dispatch(setProductCodes(parseProductCodes(value)));
+    }, 250);
+  };
+
+  const shown = useMemo(() => {
+    const q = columnQuery.trim().toLowerCase();
+    return ctx.columnOrder
+      .map((name) => ctx.columns.find((c) => c.name === name))
+      .filter((c): c is NonNullable<typeof c> => Boolean(c))
+      .filter((c) => c.name.toLowerCase().includes(q));
+  }, [ctx.columnOrder, ctx.columns, columnQuery]);
 
   // Both match on what is on screen: a sub department by its number or its
   // description, a vendor by name or id, since people have only one of the two.
-  const subDeptQuery = ctx.subDepartmentFilter.trim().toLowerCase();
-  const shownSubDepartments = ctx.subDepartments.filter(
-    (s) =>
-      String(s.sub_department).toLowerCase().includes(subDeptQuery) ||
-      (s.sub_department_description ?? "").toLowerCase().includes(subDeptQuery),
-  );
+  const shownSubDepartments = useMemo(() => {
+    const q = subDeptQueryText.trim().toLowerCase();
+    return ctx.subDepartments.filter(
+      (s) =>
+        String(s.sub_department).toLowerCase().includes(q) ||
+        String(s.sub_department_description ?? "")
+          .toLowerCase()
+          .includes(q),
+    );
+  }, [ctx.subDepartments, subDeptQueryText]);
 
-  const vendorQuery = ctx.vendorFilter.trim().toLowerCase();
-  const shownVendors = ctx.vendors.filter(
-    (v) =>
-      String(v.vendor_name ?? "").toLowerCase().includes(vendorQuery) ||
-      String(v.vendor_id).toLowerCase().includes(vendorQuery),
-  );
+  const shownVendors = useMemo(() => {
+    const q = vendorQueryText.trim().toLowerCase();
+    return ctx.vendors.filter(
+      (v) =>
+        String(v.vendor_name ?? "")
+          .toLowerCase()
+          .includes(q) || String(v.vendor_id).toLowerCase().includes(q),
+    );
+  }, [ctx.vendors, vendorQueryText]);
 
   /**
    * The personal columns, on or off together.
@@ -372,8 +414,8 @@ const ConfigPanel = () => {
           />
           <ListSearch
             label="Find a sub department..."
-            value={ctx.subDepartmentFilter}
-            onChange={(v) => ctx.dispatch(setSubDepartmentFilter(v))}
+            value={subDeptQueryText}
+            onChange={setSubDeptQueryText}
             shown={shownSubDepartments.length}
             total={ctx.subDepartments.length}
           />
@@ -423,8 +465,8 @@ const ConfigPanel = () => {
           />
           <ListSearch
             label="Find a vendor..."
-            value={ctx.vendorFilter}
-            onChange={(v) => ctx.dispatch(setVendorFilter(v))}
+            value={vendorQueryText}
+            onChange={setVendorQueryText}
             shown={shownVendors.length}
             total={ctx.vendors.length}
           />
@@ -460,11 +502,8 @@ const ConfigPanel = () => {
       >
         <div className="px-3 pb-3 flex flex-col gap-2">
           <textarea
-            value={ctx.productCodeText}
-            onChange={(e) => {
-              ctx.dispatch(setProductCodeText(e.target.value));
-              ctx.dispatch(setProductCodes(parseProductCodes(e.target.value)));
-            }}
+            value={codeText}
+            onChange={(e) => onCodeText(e.target.value)}
             rows={3}
             placeholder="Paste or type codes — commas, spaces or new lines"
             aria-label="Product codes"
@@ -482,7 +521,8 @@ const ConfigPanel = () => {
               <button
                 type="button"
                 onClick={() => {
-                  ctx.dispatch(setProductCodeText(""));
+                  setCodeText("");
+                  window.clearTimeout(parseTimer.current);
                   ctx.dispatch(setProductCodes([]));
                 }}
                 className="text-[11.5px] text-brand_navy_hover underline underline-offset-2"
@@ -544,8 +584,8 @@ const ConfigPanel = () => {
           )}
           <ListSearch
             label="Find a column..."
-            value={ctx.columnFilter}
-            onChange={(v) => ctx.dispatch(setColumnFilter(v))}
+            value={columnQuery}
+            onChange={setColumnQuery}
             shown={shown.length}
             total={ctx.columns.length}
           />

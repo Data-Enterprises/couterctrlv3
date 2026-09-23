@@ -51,8 +51,6 @@ export interface ExportBuilderState {
    * contradiction. This one starts empty and only ever narrows.
    */
   productCodes: string[];
-  /** What they typed, kept as typed, so the box does not fight them. */
-  productCodeText: string;
   /**
    * Every column name in the order the file will write them.
    *
@@ -62,10 +60,7 @@ export interface ExportBuilderState {
    * again puts it back where it was rather than at the end.
    */
   columnOrder: string[];
-  columnFilter: string;
-  /** Typing in a long list narrows what is shown, never what is selected. */
-  vendorFilter: string;
-  subDepartmentFilter: string;
+
   flags: ExportFlags;
 
   building: boolean;
@@ -107,11 +102,8 @@ export const initialState: ExportBuilderState = {
   selectedVendors: [],
   selectedColumns: [],
   productCodes: [],
-  productCodeText: "",
   columnOrder: [],
-  columnFilter: "",
-  vendorFilter: "",
-  subDepartmentFilter: "",
+
   flags: {
     excludeVoids: false,
     fileFormat: "csv",
@@ -233,12 +225,8 @@ const devExportBuilderSlice = createSlice({
       state.selectedVendors = state.vendors.map((v) => v.vendor_id);
       state.selectedColumns = columns.map((c) => c.name);
       state.columnOrder = columns.map((c) => c.name);
-      state.columnFilter = "";
-      state.vendorFilter = "";
-      state.subDepartmentFilter = "";
       // A new scope is a new question; the codes belonged to the old one.
       state.productCodes = [];
-      state.productCodeText = "";
       // A new scope means the last file describes a question nobody asked.
       state.files = [];
       state.builtAt = null;
@@ -320,20 +308,8 @@ const devExportBuilderSlice = createSlice({
     setSelectedColumns: (state, action: PayloadAction<string[]>) => {
       state.selectedColumns = action.payload;
     },
-    setProductCodeText: (state, action: PayloadAction<string>) => {
-      state.productCodeText = action.payload;
-    },
     setProductCodes: (state, action: PayloadAction<string[]>) => {
       state.productCodes = action.payload;
-    },
-    setColumnFilter: (state, action: PayloadAction<string>) => {
-      state.columnFilter = action.payload;
-    },
-    setVendorFilter: (state, action: PayloadAction<string>) => {
-      state.vendorFilter = action.payload;
-    },
-    setSubDepartmentFilter: (state, action: PayloadAction<string>) => {
-      state.subDepartmentFilter = action.payload;
     },
     setFlag: (
       state,
@@ -417,10 +393,6 @@ export const {
   toggleColumn,
   moveColumn,
   setSelectedColumns,
-  setColumnFilter,
-  setVendorFilter,
-  setSubDepartmentFilter,
-  setProductCodeText,
   setProductCodes,
   setFlag,
   startSqlLoad,
