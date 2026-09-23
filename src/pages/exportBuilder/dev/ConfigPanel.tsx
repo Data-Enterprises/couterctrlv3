@@ -20,6 +20,8 @@ import {
   setSelectedStoreIds,
   setSelectedSubDepartments,
   setSelectedVendors,
+  setSelectedCashiers,
+  setSelectedSaleDates,
   setProductCodes,
   toggleColumn,
   toggleRingType,
@@ -27,10 +29,14 @@ import {
   toggleStore,
   toggleSubDepartment,
   toggleVendor,
+  toggleCashier,
+  toggleSaleDate,
 } from "../../../features/dev/devExportBuilderSlice";
 
 type Section =
   | "stores"
+  | "saleDates"
+  | "cashiers"
   | "productCodes"
   | "saleTypes"
   | "ringTypes"
@@ -113,6 +119,51 @@ const storeLabel = ({
     const number = id.replace(/^0+/, "") || id;
     return leading === number ? name : `${id} - ${name}`;
   })();
+
+/**
+ * The three states of a flag filter.
+ *
+ * "Only" is not a rarity here: the line someone is hunting for is usually the
+ * voided or refunded one, and a file of nothing else is the fastest way to
+ * find it. The endpoint reads null, 0 and 1 — and tests COALESCE(flag, 0)
+ * rather than equality, so "only refunds" catches every marker that column
+ * uses rather than the literal 1.
+ */
+const VOID_CHOICES: SelectFilterOption[] = [
+  { value: "all", label: "All lines" },
+  { value: "exclude", label: "Exclude voids" },
+  { value: "only", label: "Only voids" },
+];
+
+const REFUND_CHOICES: SelectFilterOption[] = [
+  { value: "all", label: "All lines" },
+  { value: "exclude", label: "Exclude refunds" },
+  { value: "only", label: "Only refunds" },
+];
+
+const flagToChoice = (flag: number | null) =>
+  flag === null ? "all" : flag ? "only" : "exclude";
+
+const choiceToFlag = (choice: string) =>
+  choice === "all" ? null : choice === "only" ? 1 : 0;
+
+/**
+ * A day, with its weekday.
+ *
+ * The weekday is the point of this list — "every Saturday in the month" is
+ * the question it exists to answer, and picking those out of bare dates means
+ * counting on your fingers. Read in UTC, because the strings are plain days
+ * and a local reading turns one of them into the evening before.
+ */
+const dayLabel = (day: string) => {
+  const at = new Date(day + "T00:00:00Z");
+  if (Number.isNaN(at.getTime())) return day;
+  const weekday = at.toLocaleDateString(undefined, {
+    weekday: "short",
+    timeZone: "UTC",
+  });
+  return `${weekday} · ${day}`;
+};
 
 /** What the export endpoint accepts for `fileFormat`. */
 const FILE_FORMATS: SelectFilterOption[] = [
@@ -200,15 +251,24 @@ const ConfigPanel = () => {
    */
   const [columnQuery, setColumnQuery] = useState("");
   const [vendorQueryText, setVendorQueryText] = useState("");
+  const [cashierQueryText, setCashierQueryText] = useState("");
   const [subDeptQueryText, setSubDeptQueryText] = useState("");
   const [codeText, setCodeText] = useState("");
+  const [fileName, setFileName] = useState(ctx.flags.filePrefix);
 
   // A new config is a new scope; last question's typing does not belong to it.
   useEffect(() => {
     setColumnQuery("");
     setVendorQueryText("");
     setSubDeptQueryText("");
+    setCashierQueryText("");
     setCodeText("");
+    // The output flags survive a reload, so this one is a resync, not a clear.
+    //
+    // Deliberately not keyed on the flag as well: the store gets the name a
+    // beat after typing stops, and reacting to that would write the settled
+    // value back over whatever had been typed in the meantime.
+    setFileName(ctx.flags.filePrefix);
   }, [ctx.columns]);
 
   /**
@@ -218,7 +278,24 @@ const ConfigPanel = () => {
    * hundred.
    */
   const parseTimer = useRef<number | undefined>(undefined);
-  useEffect(() => () => window.clearTimeout(parseTimer.current), []);
+  const nameTimer = useRef<number | undefined>(undefined);
+  useEffect(
+    () => () => {
+      window.clearTimeout(parseTimer.current);
+      window.clearTimeout(nameTimer.current);
+    },
+    [],
+  );
+
+  // The file name is read once, when the export runs, so it can settle first
+  // for the same reason the codes do.
+  const onFileName = (value: string) => {
+    setFileName(value);
+    window.clearTimeout(nameTimer.current);
+    nameTimer.current = window.setTimeout(() => {
+      ctx.dispatch(setFlag({ filePrefix: value }));
+    }, 250);
+  };
   const onCodeText = (value: string) => {
     setCodeText(value);
     window.clearTimeout(parseTimer.current);
@@ -247,6 +324,16 @@ const ConfigPanel = () => {
           .includes(q),
     );
   }, [ctx.subDepartments, subDeptQueryText]);
+
+  const shownCashiers = useMemo(() => {
+    const q = cashierQueryText.trim().toLowerCase();
+    return ctx.cashiers.filter(
+      (c) =>
+        String(c.cashier_name ?? "")
+          .toLowerCase()
+          .includes(q) || String(c.cashier_number).includes(q),
+    );
+  }, [ctx.cashiers, cashierQueryText]);
 
   const shownVendors = useMemo(() => {
     const q = vendorQueryText.trim().toLowerCase();
@@ -327,6 +414,44 @@ const ConfigPanel = () => {
           </div>
         </div>
       </Row>
+
+      {ctx.saleDates.length > 1 && (
+        <Row
+          label="Days"
+          isOpen={open === "saleDates"}
+          onToggle={() => setOpen(open === "saleDates" ? null : "saleDates")}
+          summary={
+            ctx.selectedSaleDates.length === ctx.saleDates.length
+              ? `all ${ctx.saleDates.length}`
+              : `${ctx.selectedSaleDates.length} of ${ctx.saleDates.length}`
+          }
+        >
+          <div className="px-3 pb-3 flex flex-col gap-1.5">
+            <AllNone
+              onAll={() => ctx.dispatch(setSelectedSaleDates(ctx.saleDates))}
+              onNone={() => ctx.dispatch(setSelectedSaleDates([]))}
+            />
+            <span className="text-[11px] text-content/55">
+              Particular days inside the range, not a second range.
+            </span>
+            <div className="overflow-y-auto thin-scrollbar flex flex-col max-h-[38vh]">
+              {ctx.saleDates.map((d) => (
+                <Checkbox
+                  key={d}
+                  checked={ctx.selectedSaleDates.includes(d)}
+                  onChange={() => ctx.dispatch(toggleSaleDate(d))}
+                  className="py-1.5 text-[12.5px] border-b border-brand_line last:border-0"
+                  label={
+                    <span className="font-mono text-[11.5px]">
+                      {dayLabel(d)}
+                    </span>
+                  }
+                />
+              ))}
+            </div>
+          </div>
+        </Row>
+      )}
 
       <Row
         label="Sale Types"
@@ -489,6 +614,53 @@ const ConfigPanel = () => {
       </Row>
 
       <Row
+        label="Cashiers"
+        isOpen={open === "cashiers"}
+        onToggle={() => setOpen(open === "cashiers" ? null : "cashiers")}
+        summary={
+          ctx.selectedCashiers.length === ctx.cashiers.length
+            ? `all ${ctx.cashiers.length}`
+            : `${ctx.selectedCashiers.length} of ${ctx.cashiers.length}`
+        }
+      >
+        <div className="px-3 pb-3 flex flex-col gap-1.5">
+          <AllNone
+            onAll={() =>
+              ctx.dispatch(
+                setSelectedCashiers(ctx.cashiers.map((c) => c.cashier_number)),
+              )
+            }
+            onNone={() => ctx.dispatch(setSelectedCashiers([]))}
+          />
+          <ListSearch
+            label="Find a cashier..."
+            value={cashierQueryText}
+            onChange={setCashierQueryText}
+            shown={shownCashiers.length}
+            total={ctx.cashiers.length}
+          />
+          <div className="overflow-y-auto thin-scrollbar flex flex-col max-h-[38vh]">
+            {shownCashiers.map((c) => (
+              <Checkbox
+                key={c.cashier_number}
+                checked={ctx.selectedCashiers.includes(c.cashier_number)}
+                onChange={() => ctx.dispatch(toggleCashier(c.cashier_number))}
+                className="py-1.5 text-[12.5px] border-b border-brand_line last:border-0"
+                label={
+                  <span className="flex items-center gap-2 min-w-0">
+                    <span className="font-mono text-[11.5px] text-content/70">
+                      {c.cashier_number}
+                    </span>
+                    <span className="truncate">{c.cashier_name || "—"}</span>
+                  </span>
+                }
+              />
+            ))}
+          </div>
+        </div>
+      </Row>
+
+      <Row
         label="Product Codes"
         isOpen={open === "productCodes"}
         onToggle={() =>
@@ -639,33 +811,51 @@ const ConfigPanel = () => {
               options={FILE_FORMATS}
               value={ctx.flags.fileFormat}
               onChange={(value) =>
-                ctx.dispatch(setFlag({ key: "fileFormat", value }))
+                ctx.dispatch(setFlag({ fileFormat: value }))
               }
               className="w-full"
             />
           </label>
           <TextField
             label="File name"
-            value={ctx.flags.filePrefix}
+            value={fileName}
             placeholder="sales"
-            hint={`${ctx.flags.filePrefix || "sales"}.${
+            hint={`${fileName || "sales"}.${
               ctx.flags.fileFormat === "csv" ? "csv" : "txt"
             }`}
-            onChange={(value) =>
-              ctx.dispatch(setFlag({ key: "filePrefix", value }))
-            }
+            onChange={onFileName}
           />
-          <Checkbox
-            checked={ctx.flags.excludeVoids}
-            onChange={(value) =>
-              ctx.dispatch(setFlag({ key: "excludeVoids", value }))
-            }
-            label="Exclude voided lines"
-            className="text-[12.5px]"
-          />
+          <label className="flex flex-col gap-1">
+            <span className="text-[12px] font-medium text-content">
+              Voided lines
+            </span>
+            <SelectFilter
+              plain
+              options={VOID_CHOICES}
+              value={flagToChoice(ctx.flags.voidFlag)}
+              onChange={(value) =>
+                ctx.dispatch(setFlag({ voidFlag: choiceToFlag(value) }))
+              }
+              className="w-full"
+            />
+          </label>
+          <label className="flex flex-col gap-1">
+            <span className="text-[12px] font-medium text-content">
+              Refunds
+            </span>
+            <SelectFilter
+              plain
+              options={REFUND_CHOICES}
+              value={flagToChoice(ctx.flags.refundFlag)}
+              onChange={(value) =>
+                ctx.dispatch(setFlag({ refundFlag: choiceToFlag(value) }))
+              }
+              className="w-full"
+            />
+          </label>
           <Checkbox
             checked={ctx.flags.ordered}
-            onChange={(value) => ctx.dispatch(setFlag({ key: "ordered", value }))}
+            onChange={(value) => ctx.dispatch(setFlag({ ordered: value }))}
             className="text-[12.5px]"
             label={
               <span className="flex items-center gap-2">

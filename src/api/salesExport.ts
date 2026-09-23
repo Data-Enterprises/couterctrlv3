@@ -64,6 +64,19 @@ export interface ExportVendor {
   vendor_name: string | null;
 }
 
+/**
+ * A cashier present in the window.
+ *
+ * `cashier_number` is a bigint on the table, unlike `vendor_id` — the filter
+ * takes numbers, not text. The name is spelled inconsistently between imports,
+ * so the endpoint folds on the number: one window returned 384 distinct
+ * (number, name) pairs for 188 actual cashiers.
+ */
+export interface ExportCashier {
+  cashier_number: number;
+  cashier_name: string | null;
+}
+
 export interface ExportPreviewResp {
   error: number;
   success: boolean;
@@ -75,6 +88,7 @@ export interface ExportPreviewResp {
   itemRingTypes: string[];
   subDepartments: ExportSubDepartment[];
   vendors: ExportVendor[];
+  cashiers: ExportCashier[];
   /**
    * 99, not 102: the preview withholds source_file_uri, source_file_etag and
    * source_version_ts — import bookkeeping, identical down every row. The
@@ -149,10 +163,40 @@ export interface ExportParams {
   subDepartments: number[] | null;
   /** `vendorIds`, not `vendors` — and text, despite looking numeric. */
   vendorIds: string[] | null;
+  /** `cashierNumbers`, and bigint — the one id on this endpoint that is not
+   *  text. */
+  cashierNumbers: number[] | null;
+  /**
+   * Particular days inside the range, as `YYYY-MM-DD`.
+   *
+   * Not a replacement for startDate/endDate, which stay required and still do
+   * the real work: they are what prunes the monthly partitions. This narrows
+   * within that window, for someone who wants three Saturdays rather than
+   * everything between them.
+   */
+  saleDates: string[] | null;
   /** Typed or pasted, not chosen from a list — the preview returns no code
    *  catalog, and a window can hold tens of thousands of them. */
   productCodes: string[] | null;
-  excludeVoids: boolean;
+  /**
+   * Null leaves the flag alone, 0 excludes flagged lines, 1 returns only them.
+   *
+   * Neither is an equality test on the endpoint, and that matters: both
+   * columns are nullable across roughly a third of rows, and `refund_flag` is
+   * not a boolean — it carries 1, 2 and 9, with 2 the most common marker. The
+   * endpoint tests COALESCE(flag, 0) against zero instead, so "only refunds"
+   * means every marker rather than the literal 1.
+   */
+  voidFlag: number | null;
+  refundFlag: number | null;
+  /**
+   * Superseded by `voidFlag: 0`, which is what this page sends.
+   *
+   * Still accepted by the endpoint for callers written before the flag
+   * existed, and `voidFlag` wins if both arrive. Optional here so nothing has
+   * to send a switch it no longer uses.
+   */
+  excludeVoids?: boolean;
   fileFormat: string;
   filePrefix: string | null;
   ordered: boolean;

@@ -1,5 +1,6 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type {
+  ExportCashier,
   ExportColumn,
   ExportFile,
   ExportRow,
@@ -11,7 +12,16 @@ import type {
 /** What the export endpoint takes that the preview knows nothing about:
  *  switches, not data. */
 export interface ExportFlags {
-  excludeVoids: boolean;
+  /**
+   * Null leaves the flag alone, 0 excludes flagged lines, 1 keeps only them.
+   *
+   * Three states rather than a tick because "only the voids" is a real
+   * question — the line someone is hunting for is usually the voided one.
+   * The endpoint tests COALESCE(flag, 0) against zero, so 1 means every
+   * marker it finds, not the literal 1.
+   */
+  voidFlag: number | null;
+  refundFlag: number | null;
   fileFormat: string;
   filePrefix: string;
   ordered: boolean;
@@ -25,6 +35,16 @@ export interface ExportBuilderState {
   itemRingTypes: string[];
   subDepartments: ExportSubDepartment[];
   vendors: ExportVendor[];
+  cashiers: ExportCashier[];
+  /**
+   * Every day the loaded range covers, as `YYYY-MM-DD`.
+   *
+   * Worked out from the search dates when the config loads rather than read
+   * off the response — the endpoint returns no day list, and a day with no
+   * sales is still a day someone can ask about. Frozen at load time so it
+   * describes the config on screen and not whatever the search card says now.
+   */
+  saleDates: string[];
   columns: ExportColumn[];
   rows: ExportRow[];
   hasData: boolean;
@@ -42,6 +62,8 @@ export interface ExportBuilderState {
   selectedRingTypes: string[];
   selectedSubDepartments: string[];
   selectedVendors: string[];
+  selectedCashiers: number[];
+  selectedSaleDates: string[];
   selectedColumns: string[];
   /**
    * Product codes the user supplied, rather than picked.
@@ -89,6 +111,8 @@ export const initialState: ExportBuilderState = {
   itemRingTypes: [],
   subDepartments: [],
   vendors: [],
+  cashiers: [],
+  saleDates: [],
   columns: [],
   rows: [],
   hasData: false,
@@ -100,12 +124,15 @@ export const initialState: ExportBuilderState = {
   selectedRingTypes: [],
   selectedSubDepartments: [],
   selectedVendors: [],
+  selectedCashiers: [],
+  selectedSaleDates: [],
   selectedColumns: [],
   productCodes: [],
   columnOrder: [],
 
   flags: {
-    excludeVoids: false,
+    voidFlag: null,
+    refundFlag: null,
     fileFormat: "csv",
     filePrefix: "sales",
     ordered: false,
@@ -164,6 +191,9 @@ interface ConfigPayload {
   itemRingTypes: string[];
   subDepartments: ExportSubDepartment[];
   vendors: ExportVendor[];
+  cashiers: ExportCashier[];
+  /** The days in the range, from the caller — not from the response. */
+  saleDates: string[];
   columns: ExportColumn[];
   rows: ExportRow[];
   hasData: boolean;
@@ -189,6 +219,8 @@ const devExportBuilderSlice = createSlice({
         itemRingTypes,
         subDepartments,
         vendors,
+        cashiers,
+        saleDates,
         columns,
         rows,
         hasData,
@@ -210,6 +242,11 @@ const devExportBuilderSlice = createSlice({
       // Distinct pairs again: an id whose name differs between stores would
       // otherwise be two ticks for one vendor.
       state.vendors = mergeVendors(vendors);
+      // No fold here: the endpoint already keys these on cashier_number and
+      // keeps the first name it finds, because the spellings vary far more
+      // than the sub department and vendor names do.
+      state.cashiers = cashiers;
+      state.saleDates = saleDates;
       state.columns = columns;
       state.rows = rows;
       state.hasData = hasData;
@@ -223,6 +260,8 @@ const devExportBuilderSlice = createSlice({
         String(s.sub_department),
       );
       state.selectedVendors = state.vendors.map((v) => v.vendor_id);
+      state.selectedCashiers = cashiers.map((c) => c.cashier_number);
+      state.selectedSaleDates = [...saleDates];
       state.selectedColumns = columns.map((c) => c.name);
       state.columnOrder = columns.map((c) => c.name);
       // A new scope is a new question; the codes belonged to the old one.
@@ -305,25 +344,41 @@ const devExportBuilderSlice = createSlice({
     setSelectedVendors: (state, action: PayloadAction<string[]>) => {
       state.selectedVendors = action.payload;
     },
+    toggleCashier: (state, action: PayloadAction<number>) => {
+      const v = action.payload;
+      state.selectedCashiers = state.selectedCashiers.includes(v)
+        ? state.selectedCashiers.filter((x) => x !== v)
+        : [...state.selectedCashiers, v];
+    },
+    setSelectedCashiers: (state, action: PayloadAction<number[]>) => {
+      state.selectedCashiers = action.payload;
+    },
+    toggleSaleDate: (state, action: PayloadAction<string>) => {
+      const v = action.payload;
+      state.selectedSaleDates = state.selectedSaleDates.includes(v)
+        ? state.selectedSaleDates.filter((x) => x !== v)
+        : [...state.selectedSaleDates, v];
+    },
+    setSelectedSaleDates: (state, action: PayloadAction<string[]>) => {
+      state.selectedSaleDates = action.payload;
+    },
     setSelectedColumns: (state, action: PayloadAction<string[]>) => {
       state.selectedColumns = action.payload;
     },
     setProductCodes: (state, action: PayloadAction<string[]>) => {
       state.productCodes = action.payload;
     },
-    setFlag: (
-      state,
-      action: PayloadAction<{
-        key: keyof ExportFlags;
-        value: boolean | string;
-      }>,
-    ) => {
-      const { key, value } = action.payload;
-      if (key === "fileFormat" || key === "filePrefix") {
-        state.flags[key] = value as string;
-      } else {
-        state.flags[key] = value as boolean;
-      }
+    /**
+     * The switches that changed, as a patch.
+     *
+     * A patch rather than a key/value pair: the flags are four different types
+     * now, and `{ key, value }` can only be typed as the cross product of
+     * every key with every value — which lets `ordered: 0` and
+     * `voidFlag: true` through. `Partial<ExportFlags>` types each switch as
+     * itself.
+     */
+    setFlag: (state, action: PayloadAction<Partial<ExportFlags>>) => {
+      Object.assign(state.flags, action.payload);
     },
     startSqlLoad: (state) => {
       state.loadingSql = true;
@@ -390,6 +445,10 @@ export const {
   setSelectedSubDepartments,
   toggleVendor,
   setSelectedVendors,
+  toggleCashier,
+  setSelectedCashiers,
+  toggleSaleDate,
+  setSelectedSaleDates,
   toggleColumn,
   moveColumn,
   setSelectedColumns,

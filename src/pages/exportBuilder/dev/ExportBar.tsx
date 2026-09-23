@@ -42,11 +42,18 @@ const ExportBar = () => {
       `${ctx.selectedSubDepartments.length} of ${ctx.subDepartments.length} sub departments`,
     ctx.selectedVendors.length < ctx.vendors.length &&
       `${ctx.selectedVendors.length} of ${ctx.vendors.length} vendors`,
+    ctx.selectedCashiers.length < ctx.cashiers.length &&
+      `${ctx.selectedCashiers.length} of ${ctx.cashiers.length} cashiers`,
+    ctx.selectedSaleDates.length < ctx.saleDates.length &&
+      `${ctx.selectedSaleDates.length} of ${ctx.saleDates.length} days`,
     ctx.productCodes.length > 0 &&
       `${ctx.productCodes.length} product code${
         ctx.productCodes.length === 1 ? "" : "s"
       }`,
-    ctx.flags.excludeVoids && "voided lines excluded",
+    ctx.flags.voidFlag === 0 && "voided lines excluded",
+    ctx.flags.voidFlag === 1 && "voided lines only",
+    ctx.flags.refundFlag === 0 && "refunds excluded",
+    ctx.flags.refundFlag === 1 && "refunds only",
     ctx.flags.ordered && "sorted",
   ].filter(Boolean) as string[];
 

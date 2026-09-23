@@ -3,6 +3,7 @@ import reducer, {
   initialState,
   moveColumn,
   setConfig,
+  setFlag,
   toggleColumn,
 } from "./devExportBuilderSlice";
 
@@ -20,6 +21,11 @@ const loaded = () =>
       itemRingTypes: ["ITEM"],
       subDepartments: [{ sub_department: "10", sub_department_description: "Grocery" }],
       vendors: [{ vendor_id: "50", vendor_name: "AWG" }],
+      cashiers: [
+        { cashier_number: 7, cashier_name: "D HALL" },
+        { cashier_number: 12, cashier_name: null },
+      ],
+      saleDates: ["2026-09-14", "2026-09-15"],
       columns,
       rows: [],
       hasData: true,
@@ -40,7 +46,24 @@ describe("the export config", () => {
     expect(s.selectedRingTypes).toEqual(["ITEM"]);
     expect(s.selectedSubDepartments).toEqual(["10"]);
     expect(s.selectedVendors).toEqual(["50"]);
+    expect(s.selectedCashiers).toEqual([7, 12]);
+    expect(s.selectedSaleDates).toEqual(["2026-09-14", "2026-09-15"]);
     expect(s.selectedStoreIds).toEqual([1]);
+  });
+});
+
+describe("the output switches", () => {
+  it("changes the one that was sent and leaves the rest alone", () => {
+    const s = reducer(loaded(), setFlag({ voidFlag: 1 }));
+    expect(s.flags.voidFlag).toBe(1);
+    expect(s.flags.refundFlag).toBeNull();
+    expect(s.flags.fileFormat).toBe("csv");
+    expect(s.flags.filePrefix).toBe("sales");
+  });
+
+  it("can put a flag back to leaving the column alone", () => {
+    const off = reducer(loaded(), setFlag({ refundFlag: 0 }));
+    expect(reducer(off, setFlag({ refundFlag: null })).flags.refundFlag).toBeNull();
   });
 });
 
@@ -66,6 +89,8 @@ describe("lists that come back as distinct pairs", () => {
           { vendor_id: "50", vendor_name: "Associated Wholesale" },
           { vendor_id: "148", vendor_name: null },
         ],
+        cashiers: [],
+        saleDates: [],
         columns,
         rows: [],
         hasData: true,

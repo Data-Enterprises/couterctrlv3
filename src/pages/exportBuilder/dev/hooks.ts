@@ -28,6 +28,33 @@ import { filterSampleRows } from "./sampleRows";
  *  explanation arrives before the failure does. */
 const SLOW_AFTER_MS = 120_000;
 
+/**
+ * A day list is only offered for a range someone could reasonably tick
+ * through. Past this the section is hidden and the range itself is the filter
+ * — a thousand checkboxes is not a question anyone answers.
+ */
+const MAX_DAYS = 366;
+
+/**
+ * Every day the range covers, inclusive, as `YYYY-MM-DD`.
+ *
+ * Built in UTC on purpose. Both ends are already plain days by the time they
+ * get here, and stepping a local Date by 24 hours skips or repeats one on the
+ * two days a year the clocks move — which would drop a day out of the list
+ * or offer the same one twice.
+ */
+export const daysInRange = (start: string, end: string) => {
+  const from = Date.parse(start + "T00:00:00Z");
+  const to = Date.parse(end + "T00:00:00Z");
+  if (Number.isNaN(from) || Number.isNaN(to) || to < from) return [];
+  const days: string[] = [];
+  const DAY = 86_400_000;
+  for (let at = from; at <= to && days.length <= MAX_DAYS; at += DAY) {
+    days.push(new Date(at).toISOString().slice(0, 10));
+  }
+  return days.length > MAX_DAYS ? [] : days;
+};
+
 export const useExportBuilderCtx = () => {
   const dispatch = useAppDispatch();
   const toast = useToast();
@@ -73,6 +100,12 @@ export const useExportBuilderCtx = () => {
     config.vendors.length > 0 && config.selectedVendors.length === 0
       ? "vendor"
       : null,
+    config.cashiers.length > 0 && config.selectedCashiers.length === 0
+      ? "cashier"
+      : null,
+    config.saleDates.length > 0 && config.selectedSaleDates.length === 0
+      ? "day"
+      : null,
   ].filter(Boolean) as string[];
 
   const blocked =
@@ -90,8 +123,11 @@ export const useExportBuilderCtx = () => {
     ringTypes: config.selectedRingTypes,
     subDepartments: config.selectedSubDepartments,
     vendors: config.selectedVendors,
+    cashiers: config.selectedCashiers,
+    saleDates: config.selectedSaleDates,
     productCodes: config.productCodes,
-    excludeVoids: config.flags.excludeVoids,
+    voidFlag: config.flags.voidFlag,
+    refundFlag: config.flags.refundFlag,
   });
 
   /**
@@ -123,6 +159,10 @@ export const useExportBuilderCtx = () => {
             itemRingTypes: j.itemRingTypes ?? [],
             subDepartments: j.subDepartments ?? [],
             vendors: j.vendors ?? [],
+            cashiers: j.cashiers ?? [],
+            // Not from the response: the endpoint returns no day list, and a
+            // day with no sales is still a day someone can ask to exclude.
+            saleDates: daysInRange(startDate, endDate),
             columns: j.columns ?? [],
             rows: j.rows ?? [],
             hasData: j.hasData,
@@ -175,10 +215,24 @@ export const useExportBuilderCtx = () => {
       vendorIds: all(config.selectedVendors, config.vendors)
         ? null
         : config.selectedVendors,
+      cashierNumbers: all(config.selectedCashiers, config.cashiers)
+        ? null
+        : config.selectedCashiers,
+      // Every day ticked is the range itself, which startDate and endDate
+      // already say — sending the list as well would add a predicate that
+      // cannot exclude anything.
+      saleDates: all(config.selectedSaleDates, config.saleDates)
+        ? null
+        : config.selectedSaleDates,
       // Empty means no filter here, which is the endpoint's own reading of an
       // empty list — and the right one, since nothing typed is nothing asked.
       productCodes: config.productCodes.length ? config.productCodes : null,
-      excludeVoids: config.flags.excludeVoids,
+      // `excludeVoids` is not sent at all. It is the older spelling of
+      // `voidFlag: 0`, the endpoint lets voidFlag win when both arrive, and
+      // sending a switch this page no longer reads would only be one more
+      // thing to keep in step.
+      voidFlag: config.flags.voidFlag,
+      refundFlag: config.flags.refundFlag,
       fileFormat: config.flags.fileFormat,
       filePrefix: config.flags.filePrefix || null,
       ordered: config.flags.ordered,
