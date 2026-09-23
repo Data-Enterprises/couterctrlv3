@@ -319,9 +319,17 @@ export const useExportBuilderCtx = () => {
    * Save as sends null for a POST. Names are not unique on that table, so the
    * page is what keeps Save from quietly making a second copy every time.
    */
-  const saveQuery = (name: string, sql: string, id: number | null) => {
+  const saveQuery = (
+    name: string,
+    sql: string,
+    id: number | null,
+    description = "",
+  ) => {
     const trimmed = name.trim();
     if (!trimmed || !sql.trim()) return;
+    // Blank is stored as null on that table, so blank is what is sent: an
+    // empty string would be a description someone has to notice and clear.
+    const note = description.trim() || null;
     const done = (resp: { data: unknown }) => {
       const j = resp.data as SavedQueryResp;
       if (j.error !== 0 || !j.query) {
@@ -336,9 +344,17 @@ export const useExportBuilderCtx = () => {
       dispatch(failQueriesLoad("That did not save: " + err.message));
 
     if (id === null) {
-      createSavedQuery(url, token, { name: trimmed, sql }).then(done, failed);
+      createSavedQuery(url, token, {
+        name: trimmed,
+        sql,
+        description: note,
+      }).then(done, failed);
     } else {
-      updateSavedQuery(url, token, id, { name: trimmed, sql }).then(done, failed);
+      updateSavedQuery(url, token, id, {
+        name: trimmed,
+        sql,
+        description: note,
+      }).then(done, failed);
     }
   };
 
