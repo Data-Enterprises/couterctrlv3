@@ -358,6 +358,8 @@ export const useExportBuilderCtx = () => {
 
   return {
     ...config,
+    /** The whole slice, for the few callers that translate it wholesale. */
+    config,
     dispatch,
     search,
     startDate,

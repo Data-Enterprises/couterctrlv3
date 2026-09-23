@@ -104,9 +104,17 @@ describe("the summary a rollup would produce", () => {
     expect(out.rows.map((r) => r.sub_department)).toEqual([5, 30, null]);
   });
 
-  it("has nothing to show until both halves are answered", () => {
-    expect(rollupSampleRows(rows, spec({ groupBy: [] })).rows).toEqual([]);
+  it("has nothing to show without a measure", () => {
     expect(rollupSampleRows(rows, spec({ aggregates: [] })).rows).toEqual([]);
+  });
+
+  it("rolls the lot into one row when there are no keys", () => {
+    // Which is what the query window does for `select sum(total_sales)`. The
+    // page itself never asks for this: the endpoint requires a key, and the
+    // export is blocked until there is one.
+    expect(rollupSampleRows(rows, spec({ groupBy: [] })).rows).toEqual([
+      { total_sales_sum: 37.5 },
+    ]);
   });
 });
 

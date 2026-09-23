@@ -52,7 +52,10 @@ export const rollupSampleRows = (rows: ExportRow[], spec: RollupSpec) => {
     ...aggregates.map((a) => aliasFor(a.column, a.fn)),
   ];
 
-  if (groupBy.length === 0 || aggregates.length === 0) {
+  // No measures is nothing to work out. No keys, on the other hand, is one
+  // row over everything — which the query window uses and the page does not,
+  // because the endpoint requires at least one key for an aggregated export.
+  if (aggregates.length === 0) {
     return { columns: outputColumns, rows: [] as ExportRow[] };
   }
 

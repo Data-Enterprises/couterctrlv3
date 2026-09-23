@@ -101,6 +101,10 @@ export interface ExportBuilderState {
 
   flags: ExportFlags;
 
+  /** The query scratchpad: open, and the last thing typed into it. */
+  queryOpen: boolean;
+  querySql: string;
+
   building: boolean;
   /** The statement the export would run, from a dry run. Null when closed. */
   sql: {
@@ -157,6 +161,9 @@ export const initialState: ExportBuilderState = {
     filePrefix: "sales",
     ordered: false,
   },
+
+  queryOpen: false,
+  querySql: "",
 
   building: false,
   sql: null,
@@ -385,6 +392,21 @@ const devExportBuilderSlice = createSlice({
     setSelectedColumns: (state, action: PayloadAction<string[]>) => {
       state.selectedColumns = action.payload;
     },
+    /**
+     * The whole order at once, for a query being applied.
+     *
+     * Dragging moves one column; this replaces the order outright, and any
+     * column the caller leaves out keeps its place behind the ones given.
+     */
+    setColumnOrder: (state, action: PayloadAction<string[]>) => {
+      const given = action.payload.filter((n) =>
+        state.columns.some((c) => c.name === n),
+      );
+      state.columnOrder = [
+        ...given,
+        ...state.columnOrder.filter((n) => !given.includes(n)),
+      ];
+    },
     setProductCodes: (state, action: PayloadAction<string[]>) => {
       state.productCodes = action.payload;
     },
@@ -406,6 +428,9 @@ const devExportBuilderSlice = createSlice({
     },
     setGroupBy: (state, action: PayloadAction<string[]>) => {
       state.groupBy = action.payload;
+    },
+    setAggregates: (state, action: PayloadAction<ExportAggregate[]>) => {
+      state.aggregates = action.payload;
     },
     addAggregate: (state, action: PayloadAction<ExportAggregate>) => {
       state.aggregates = [...state.aggregates, action.payload];
@@ -434,6 +459,13 @@ const devExportBuilderSlice = createSlice({
      */
     setFlag: (state, action: PayloadAction<Partial<ExportFlags>>) => {
       Object.assign(state.flags, action.payload);
+    },
+    openQuery: (state, action: PayloadAction<boolean>) => {
+      state.queryOpen = action.payload;
+    },
+    /** Kept so closing the window is not the same as losing the query. */
+    setQuerySql: (state, action: PayloadAction<string>) => {
+      state.querySql = action.payload;
     },
     startSqlLoad: (state) => {
       state.loadingSql = true;
@@ -513,7 +545,11 @@ export const {
   setGroupBy,
   addAggregate,
   setAggregate,
+  setAggregates,
   removeAggregate,
+  setColumnOrder,
+  openQuery,
+  setQuerySql,
   setFlag,
   startSqlLoad,
   setSql,

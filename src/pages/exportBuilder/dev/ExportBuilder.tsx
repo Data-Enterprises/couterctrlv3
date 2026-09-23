@@ -4,6 +4,7 @@ import CsvPreview from "./CsvPreview";
 import SummaryPreview from "./SummaryPreview";
 import ExportBar from "./ExportBar";
 import SqlModal from "./SqlModal";
+import QueryModal from "./QueryModal";
 import { useExportBuilderCtx } from "./hooks";
 
 /**
@@ -58,6 +59,7 @@ const ExportBuilder = () => {
           )}
           <ExportBar />
           <SqlModal />
+          {ctx.queryOpen && <QueryModal />}
         </div>
       </div>
     </div>

@@ -2,6 +2,7 @@ import { ArrowDownTrayIcon, ClockIcon } from "@heroicons/react/24/outline";
 import { useExportBuilderCtx } from "./hooks";
 import { countPii } from "./piiColumns";
 import { aliasFor } from "./aggregates";
+import { openQuery } from "../../../features/dev/devExportBuilderSlice";
 import { formatBigNumber } from "../../../utils";
 
 const mb = (bytes: number) => `${(bytes / 1024 / 1024).toFixed(1)} MB`;
@@ -169,6 +170,18 @@ const ExportBar = () => {
           </div>
         )}
       </div>
+      {/*
+        * Unlike Show SQL, this one is visible: it runs in the browser over the
+        * fifty sample rows and sends nothing, so it promises nothing the
+        * product cannot keep.
+        */}
+      <button
+        type="button"
+        onClick={() => ctx.dispatch(openQuery(true))}
+        className="border border-custom-white/30 text-custom-white text-[13px] font-medium px-4 py-2.5 rounded-lg hover:bg-custom-white/10 transition-colors"
+      >
+        Query sample
+      </button>
       {SHOW_SQL_BUTTON && (
         <button
           type="button"
