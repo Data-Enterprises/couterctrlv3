@@ -12,6 +12,8 @@ export interface RowFilters {
   saleDates: string[];
   /** Empty means every code, not none: this list is typed, not chosen. */
   productCodes: string[];
+  /** Words to find in the description; empty means every product. */
+  productDescriptions: string[];
   /** Null leaves the flag alone, 0 drops flagged rows, 1 keeps only them. */
   voidFlag: number | null;
   refundFlag: number | null;
@@ -70,6 +72,7 @@ export const filterSampleRows = (rows: ExportRow[], filters: RowFilters) => {
   const sub = new Set(filters.subDepartments.map(String));
   const vendor = new Set(filters.vendors.map(String));
   const codes = new Set(filters.productCodes.map(normalizeProductCode));
+  const terms = filters.productDescriptions.map((t) => t.toLowerCase());
   const cashier = new Set(filters.cashiers.map(String));
   const days = new Set(filters.saleDates);
 
@@ -87,6 +90,12 @@ export const filterSampleRows = (rows: ExportRow[], filters: RowFilters) => {
     }
     if (codes.size && !codes.has(normalizeProductCode(row["product_code"]))) {
       return false;
+    }
+    // A contains, without case: descriptions are written the way a till
+    // writes them, so this is the only match anyone can actually use.
+    if (terms.length) {
+      const description = String(row["product_description"] ?? "").toLowerCase();
+      if (!terms.some((t) => description.includes(t))) return false;
     }
     if (!keepsFlag(filters.voidFlag, row["void_flag"])) return false;
     if (!keepsFlag(filters.refundFlag, row["refund_flag"])) return false;

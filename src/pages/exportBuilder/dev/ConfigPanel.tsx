@@ -11,7 +11,7 @@ import SelectFilter, {
 import { useExportBuilderCtx } from "./hooks";
 import { isPii } from "./piiColumns";
 import { aliasFor, fnsFor, FN_LABELS } from "./aggregates";
-import { parseProductCodes } from "./productCodes";
+import { parseProductCodes, parseDescriptionTerms } from "./productCodes";
 import {
   setFlag,
   setMode,
@@ -30,6 +30,7 @@ import {
   setSelectedCashiers,
   setSelectedSaleDates,
   setProductCodes,
+  setProductDescriptions,
   toggleColumn,
   toggleRingType,
   toggleSaleType,
@@ -264,6 +265,7 @@ const ConfigPanel = () => {
   const [groupQuery, setGroupQuery] = useState("");
   const [subDeptQueryText, setSubDeptQueryText] = useState("");
   const [codeText, setCodeText] = useState("");
+  const [descriptionText, setDescriptionText] = useState("");
   const [fileName, setFileName] = useState(ctx.flags.filePrefix);
 
   // A new config is a new scope; last question's typing does not belong to it.
@@ -274,6 +276,7 @@ const ConfigPanel = () => {
     setCashierQueryText("");
     setGroupQuery("");
     setCodeText("");
+    setDescriptionText("");
     // The output flags survive a reload, so this one is a resync, not a clear.
     //
     // Deliberately not keyed on the flag as well: the store gets the name a
@@ -289,14 +292,24 @@ const ConfigPanel = () => {
    * hundred.
    */
   const parseTimer = useRef<number | undefined>(undefined);
+  const termTimer = useRef<number | undefined>(undefined);
   const nameTimer = useRef<number | undefined>(undefined);
   useEffect(
     () => () => {
       window.clearTimeout(parseTimer.current);
+      window.clearTimeout(termTimer.current);
       window.clearTimeout(nameTimer.current);
     },
     [],
   );
+
+  const onDescriptionText = (value: string) => {
+    setDescriptionText(value);
+    window.clearTimeout(termTimer.current);
+    termTimer.current = window.setTimeout(() => {
+      ctx.dispatch(setProductDescriptions(parseDescriptionTerms(value)));
+    }, 250);
+  };
 
   // The file name is read once, when the export runs, so it can settle first
   // for the same reason the codes do.
@@ -734,26 +747,36 @@ const ConfigPanel = () => {
       </Row>
 
       <Row
-        label="Product Codes"
+        label="Products"
         isOpen={open === "productCodes"}
         onToggle={() =>
           setOpen(open === "productCodes" ? null : "productCodes")
         }
         summary={
-          ctx.productCodes.length === 0
+          ctx.productCodes.length === 0 && ctx.productDescriptions.length === 0
             ? "all"
-            : `${ctx.productCodes.length} code${ctx.productCodes.length === 1 ? "" : "s"}`
+            : [
+                ctx.productCodes.length > 0 &&
+                  `${ctx.productCodes.length} code${ctx.productCodes.length === 1 ? "" : "s"}`,
+                ctx.productDescriptions.length > 0 &&
+                  `${ctx.productDescriptions.length} word${ctx.productDescriptions.length === 1 ? "" : "s"}`,
+              ]
+                .filter(Boolean)
+                .join(" · ")
         }
       >
         <div className="px-3 pb-3 flex flex-col gap-2">
-          <textarea
-            value={codeText}
-            onChange={(e) => onCodeText(e.target.value)}
-            rows={3}
-            placeholder="Paste or type codes — commas, spaces or new lines"
-            aria-label="Product codes"
-            className="w-full border border-brand_line rounded-lg px-2.5 py-1.5 text-[12px] font-mono resize-y"
-          />
+          <label className="flex flex-col gap-1">
+            <span className="text-[12px] font-medium text-content">Codes</span>
+            <textarea
+              value={codeText}
+              onChange={(e) => onCodeText(e.target.value)}
+              rows={3}
+              placeholder="Paste or type codes — commas, spaces or new lines"
+              aria-label="Product codes"
+              className="w-full border border-brand_line rounded-lg px-2.5 py-1.5 text-[12px] font-mono resize-y"
+            />
+          </label>
           <div className="flex items-center gap-3">
             <span className="text-[11.5px] text-content/60 flex-1">
               {ctx.productCodes.length === 0
@@ -776,6 +799,52 @@ const ConfigPanel = () => {
               </button>
             )}
           </div>
+
+          <label className="flex flex-col gap-1">
+            <span className="text-[12px] font-medium text-content">
+              Description holds
+            </span>
+            <textarea
+              value={descriptionText}
+              onChange={(e) => onDescriptionText(e.target.value)}
+              rows={2}
+              placeholder="MILK — one per line, or separated by commas"
+              aria-label="Product description words"
+              className="w-full border border-brand_line rounded-lg px-2.5 py-1.5 text-[12px] font-mono resize-y"
+            />
+          </label>
+          <div className="flex items-center gap-3">
+            <span className="text-[11.5px] text-content/60 flex-1">
+              {/*
+                * Not split on spaces, unlike the codes: WHOLE MILK is one
+                * thing to look for. A line is kept if its description holds
+                * any of these, case ignored.
+                */}
+              {ctx.productDescriptions.length === 0
+                ? "Found anywhere in the description, case ignored."
+                : `Any of: ${ctx.productDescriptions.join(", ")}`}
+            </span>
+            {ctx.productDescriptions.length > 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  setDescriptionText("");
+                  window.clearTimeout(termTimer.current);
+                  ctx.dispatch(setProductDescriptions([]));
+                }}
+                className="text-[11.5px] text-brand_navy_hover underline underline-offset-2"
+              >
+                clear
+              </button>
+            )}
+          </div>
+
+          {ctx.productCodes.length > 0 && ctx.productDescriptions.length > 0 && (
+            <span className="text-[11.5px] text-amber-900 bg-amber-50 border border-amber-200 rounded px-2 py-1.5">
+              Both are filled, so a line has to match a code AND a word. Clear
+              one to widen it.
+            </span>
+          )}
         </div>
       </Row>
 

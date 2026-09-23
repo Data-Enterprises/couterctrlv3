@@ -155,6 +155,7 @@ export const useExportBuilderCtx = () => {
     cashiers: config.selectedCashiers,
     saleDates: config.selectedSaleDates,
     productCodes: config.productCodes,
+    productDescriptions: config.productDescriptions,
     voidFlag: config.flags.voidFlag,
     refundFlag: config.flags.refundFlag,
   });
@@ -279,6 +280,9 @@ export const useExportBuilderCtx = () => {
       // Empty means no filter here, which is the endpoint's own reading of an
       // empty list — and the right one, since nothing typed is nothing asked.
       productCodes: config.productCodes.length ? config.productCodes : null,
+      productDescriptions: config.productDescriptions.length
+        ? config.productDescriptions
+        : null,
       // `excludeVoids` is not sent at all. It is the older spelling of
       // `voidFlag: 0`, the endpoint lets voidFlag win when both arrive, and
       // sending a switch this page no longer reads would only be one more

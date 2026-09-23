@@ -11,6 +11,25 @@
  * a stray header row ("UPC") would otherwise become a filter that matches
  * nothing and quietly empty the file.
  */
+/**
+ * Description terms, one per line or separated by commas.
+ *
+ * Not split on spaces, unlike the codes: "WHOLE MILK" is one thing to look
+ * for, and splitting it would quietly widen the filter to every line holding
+ * either word. Case is left alone here and ignored at both ends of the match.
+ */
+export const parseDescriptionTerms = (text: string) => {
+  const seen = new Set<string>();
+  return text
+    .split(/[\n,;\r]+/)
+    .map((term) => term.trim())
+    .filter((term) => {
+      if (term === "" || seen.has(term.toLowerCase())) return false;
+      seen.add(term.toLowerCase());
+      return true;
+    });
+};
+
 export const parseProductCodes = (text: string): string[] => {
   const seen = new Set<string>();
   for (const token of text.split(/[\n,;\r\t ]+/)) {

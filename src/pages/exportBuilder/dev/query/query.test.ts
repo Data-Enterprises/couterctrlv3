@@ -10,17 +10,17 @@ const columns: ExportColumn[] = [
   { name: "sale_date", data_type: "timestamp without time zone" },
   { name: "sale_type", data_type: "character varying" },
   { name: "vendor_id", data_type: "character varying" },
-  { name: "description", data_type: "character varying" },
+  { name: "product_description", data_type: "character varying" },
   { name: "total_sales", data_type: "numeric" },
   { name: "qty", data_type: "numeric" },
   { name: "void_flag", data_type: "smallint" },
 ];
 
 const rows: ExportRow[] = [
-  { storeid: 36, sale_date: "2026-09-14T08:00:00", sale_type: "Sale", vendor_id: "50", description: "WHOLE MILK", total_sales: 10, qty: 1, void_flag: 0 },
-  { storeid: 36, sale_date: "2026-09-14T09:00:00", sale_type: "Sale", vendor_id: "50", description: "BREAD", total_sales: 5, qty: 2, void_flag: 0 },
-  { storeid: 36, sale_date: "2026-09-15T10:00:00", sale_type: "Tender", vendor_id: "C0021", description: null, total_sales: 25, qty: null, void_flag: 1 },
-  { storeid: 41, sale_date: "2026-09-15T11:00:00", sale_type: "Sale", vendor_id: "50", description: "2% MILK", total_sales: 3, qty: 1, void_flag: null },
+  { storeid: 36, sale_date: "2026-09-14T08:00:00", sale_type: "Sale", vendor_id: "50", product_description: "WHOLE MILK", total_sales: 10, qty: 1, void_flag: 0 },
+  { storeid: 36, sale_date: "2026-09-14T09:00:00", sale_type: "Sale", vendor_id: "50", product_description: "BREAD", total_sales: 5, qty: 2, void_flag: 0 },
+  { storeid: 36, sale_date: "2026-09-15T10:00:00", sale_type: "Tender", vendor_id: "C0021", product_description: null, total_sales: 25, qty: null, void_flag: 1 },
+  { storeid: 41, sale_date: "2026-09-15T11:00:00", sale_type: "Sale", vendor_id: "50", product_description: "2% MILK", total_sales: 3, qty: 1, void_flag: null },
 ];
 
 const run = (sql: string) => evalQuery(parseQuery(sql), rows, columns);
@@ -70,7 +70,7 @@ describe("running a query against the sample", () => {
   });
 
   it("does ilike for when case is not the point", () => {
-    expect(run("select description where description ilike '%milk%'").rows).toHaveLength(2);
+    expect(run("select product_description where product_description ilike '%milk%'").rows).toHaveLength(2);
   });
 
   it("treats a null as matching nothing, including a comparison to null", () => {
@@ -120,8 +120,8 @@ describe("a query the window will not run", () => {
   });
 
   it("catches a column that is neither grouped nor measured", () => {
-    expect(fails("select description, sum(qty) group by storeid").message).toMatch(
-      /description has to be in the GROUP BY/,
+    expect(fails("select product_description, sum(qty) group by storeid").message).toMatch(
+      /product_description has to be in the GROUP BY/,
     );
   });
 
@@ -175,14 +175,142 @@ describe("turning a query into the configuration", () => {
 
   it("says what it could not carry over instead of dropping it quietly", () => {
     const out = plan(
-      "select * where description like '%MILK%' or storeid = 36 limit 5",
+      "select * where product_description like '%MILK%' or storeid = 36 limit 5",
     );
     expect(out.leftBehind.join(" ")).toMatch(/OR or NOT/);
     expect(out.leftBehind.join(" ")).toMatch(/LIMIT/);
   });
 
+  it("carries a description search into the products filter", () => {
+    // The % marks come off: the filter is a contains already, so putting them
+    // in the term would look for a literal percent sign.
+    const out = plan("select * where product_description ilike '%milk%'");
+    expect(out.applied.join(" ")).toMatch(/Descriptions holding "milk"/);
+  });
+
   it("warns that the file names a measure its own way", () => {
     const out = plan("select storeid, sum(qty) as pieces group by storeid");
     expect(out.leftBehind.join(" ")).toMatch(/names this qty_sum/);
+  });
+});
+
+describe("a query of the shape a client actually writes", () => {
+  // Verbatim from a real one, which is what found the hole: the window
+  // understood sum(qty) and had no idea what to do with the "/" in
+  // max(price) / nullif(max(price_split), 0).
+  const CLIENT_QUERY = `
+SELECT store_number, vendor_id, sub_department, product_code, product_description, terminal,
+SUM(qty) AS TotalUnits,
+SUM(total_sales) AS TotalDollars,
+SUM(qty)*(MAX(price)/NULLIF(MAX(price_split),0)) AS atReg,
+MAX(price)/NULLIF(MAX(price_split),0) AS RegUnitPrice,
+(SUM(qty)*(MAX(price)/NULLIF(MAX(price_split),0)))-SUM(total_sales) AS lossGain,
+SUM(package_discount) AS PACKAGEDISC
+WHERE sale_type = 'Sale'
+GROUP BY store_number, vendor_id, sub_department, product_code, product_description, terminal
+ORDER BY vendor_id, sub_department`;
+
+  const shelf: ExportColumn[] = [
+    { name: "store_number", data_type: "character varying" },
+    { name: "terminal", data_type: "bigint" },
+    { name: "sale_type", data_type: "character varying" },
+    { name: "vendor_id", data_type: "character varying" },
+    { name: "sub_department", data_type: "bigint" },
+    { name: "product_code", data_type: "character varying" },
+    { name: "product_description", data_type: "character varying" },
+    { name: "qty", data_type: "numeric" },
+    { name: "total_sales", data_type: "numeric" },
+    { name: "price", data_type: "numeric" },
+    { name: "price_split", data_type: "numeric" },
+    { name: "package_discount", data_type: "numeric" },
+  ];
+
+  // Two lines of the same item: four units that should have rung at $3.00
+  // each, sold for $10.00. The query exists to find the $2.00.
+  const shelfRows: ExportRow[] = [
+    { store_number: "036", terminal: 1, sale_type: "Sale", vendor_id: "50", sub_department: 5, product_code: "1200000088", product_description: "WHOLE MILK GAL", qty: 2, total_sales: 5, price: 3, price_split: 1, package_discount: 0.5 },
+    { store_number: "036", terminal: 1, sale_type: "Sale", vendor_id: "50", sub_department: 5, product_code: "1200000088", product_description: "WHOLE MILK GAL", qty: 2, total_sales: 5, price: 3, price_split: 1, package_discount: 0.5 },
+    // A tender line, which the WHERE drops.
+    { store_number: "036", terminal: 1, sale_type: "Tender", vendor_id: "50", sub_department: 5, product_code: "1200000088", product_description: "WHOLE MILK GAL", qty: 9, total_sales: 99, price: 0, price_split: 0, package_discount: 0 },
+  ];
+
+  it("runs it, arithmetic and all", () => {
+    const out = evalQuery(parseQuery(CLIENT_QUERY), shelfRows, shelf);
+    // Unquoted names fold to lower case, here as in Postgres.
+    expect(out.columns).toEqual([
+      "store_number",
+      "vendor_id",
+      "sub_department",
+      "product_code",
+      "product_description",
+      "terminal",
+      "totalunits",
+      "totaldollars",
+      "atreg",
+      "regunitprice",
+      "lossgain",
+      "packagedisc",
+    ]);
+    expect(out.rows).toHaveLength(1);
+    expect(out.rows[0]).toMatchObject({
+      totalunits: 4,
+      totaldollars: 10,
+      regunitprice: 3,
+      atreg: 12,
+      lossgain: 2,
+      packagedisc: 1,
+    });
+  });
+
+  it("divides by zero into a blank rather than falling over", () => {
+    // price_split is 0 on the tender lines, which is what NULLIF is guarding.
+    const out = evalQuery(
+      parseQuery(
+        "select store_number, max(price)/nullif(max(price_split),0) as unit group by store_number",
+      ),
+      shelfRows.filter((r) => r.sale_type === "Tender"),
+      shelf,
+    );
+    expect(out.rows[0].unit).toBeNull();
+  });
+
+  it("does arithmetic per line when nothing is grouped", () => {
+    const out = evalQuery(
+      parseQuery("select total_sales - package_discount as net where sale_type = 'Sale'"),
+      shelfRows,
+      shelf,
+    );
+    expect(out.rows.map((r) => r.net)).toEqual([4.5, 4.5]);
+  });
+
+  it("will not take arithmetic inside an aggregate", () => {
+    // sum(qty * price) is a different query from sum(qty) * max(price), and
+    // guessing which one was meant is worse than saying so.
+    try {
+      evalQuery(parseQuery("select sum(qty * price)"), shelfRows, shelf);
+    } catch (e) {
+      expect((e as QueryError).message).toMatch(/takes a single column/);
+      return;
+    }
+    throw new Error("expected that to be refused");
+  });
+
+  it("keeps the measures it can and names the ones it cannot", () => {
+    const config = {
+      ...initialState,
+      columns: shelf,
+      columnOrder: shelf.map((c) => c.name),
+      selectedColumns: shelf.map((c) => c.name),
+    };
+    const out = planApply(parseQuery(CLIENT_QUERY), config);
+    // sum(qty), sum(total_sales) and sum(package_discount) are measures the
+    // endpoint can build. The three worked-out ones are not, and the export
+    // would quietly come back without them if nobody said so.
+    expect(out.applied.join(" ")).toMatch(/3 measures/);
+    const dropped = out.leftBehind.join(" ");
+    expect(dropped).toMatch(/atreg/);
+    expect(dropped).toMatch(/regunitprice/);
+    expect(dropped).toMatch(/lossgain/);
+    expect(dropped).toMatch(/one column and one function/);
   });
 });

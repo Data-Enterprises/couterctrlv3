@@ -216,6 +216,18 @@ export interface ExportParams {
    *  catalog, and a window can hold tens of thousands of them. */
   productCodes: string[] | null;
   /**
+   * Words to find in `product_description`.
+   *
+   * Each one is a contains, matched without case — descriptions are written
+   * the way a till writes them ("WHOLE MILK GAL", "MILK 2% 1/2GAL"), so an
+   * exact match is a filter nobody can use. A line is kept if any of these
+   * appears in its description.
+   *
+   * Sent alongside the codes rather than folded into them: two filters that
+   * both narrow, like every other pair on this endpoint.
+   */
+  productDescriptions: string[] | null;
+  /**
    * Null leaves the flag alone, 0 excludes flagged lines, 1 returns only them.
    *
    * Neither is an equality test on the endpoint, and that matters: both

@@ -26,8 +26,24 @@ const EXAMPLES = [
   "select sale_type, count(*) group by sale_type order by 2 desc",
   "select * where total_sales > 20 limit 10",
   "select storeid, sale_date, sum(total_sales), count(*)\ngroup by storeid, sale_date\norder by 3 desc",
-  "select product_code, description, qty where description ilike '%milk%'",
+  "select product_code, product_description, qty\nwhere product_description ilike '%milk%'",
+  // The shape a client actually writes: what it should have rung at,
+  // against what it did.
+  "select product_code, product_description,\n  sum(qty) as units,\n  sum(total_sales) as dollars,\n  max(price) / nullif(max(price_split), 0) as reg_unit_price,\n  (sum(qty) * (max(price) / nullif(max(price_split), 0))) - sum(total_sales) as loss_gain\nwhere sale_type = 'Sale'\ngroup by product_code, product_description\norder by 6",
 ];
+
+/**
+ * A worked-out number carries floating point noise — 2.0000000000000004
+ * for two dollars. This is a sample, not a ledger: four places is plenty,
+ * and the noise says nothing true about the data.
+ */
+const cell = (value: unknown) => {
+  if (value === null || value === undefined) return "";
+  if (typeof value === "number" && !Number.isInteger(value)) {
+    return String(Number(value.toFixed(4)));
+  }
+  return String(value);
+};
 
 const QueryModal = () => {
   const ctx = useExportBuilderCtx();
@@ -231,11 +247,7 @@ const QueryModal = () => {
                               isPii(c) ? "text-amber-900" : ""
                             }`}
                           >
-                            {isPii(c)
-                              ? maskValue(raw)
-                              : raw === null || raw === undefined
-                                ? ""
-                                : String(raw)}
+                            {isPii(c) ? maskValue(raw) : cell(raw)}
                           </td>
                         );
                       })}
@@ -262,7 +274,9 @@ const QueryModal = () => {
               </div>
               <div className="text-[12.5px] text-content/70 mt-1.5 leading-relaxed">
                 SELECT, WHERE, GROUP BY, ORDER BY and LIMIT over the sample
-                rows. The numbers are the sample's, not the range's — what this
+                rows, with arithmetic between the measures — sum, avg, min,
+                max and count, with nullif, coalesce, round and abs around
+                them. The numbers are the sample's, not the range's: what this
                 answers is whether the question is the right one, and what the
                 values in a column actually look like.
               </div>

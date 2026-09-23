@@ -6,6 +6,7 @@ import {
   setGroupBy,
   setMode,
   setProductCodes,
+  setProductDescriptions,
   setSelectedCashiers,
   setSelectedColumns,
   setSelectedRingTypes,
@@ -16,7 +17,25 @@ import {
   setSelectedVendors,
   type ExportBuilderState,
 } from "../../../../features/dev/devExportBuilderSlice";
-import { defaultAlias, type Expr, type Query } from "./parseQuery";
+import {
+  aggLeaves,
+  defaultAlias,
+  type Expr,
+  type Query,
+  type SelectItem,
+} from "./parseQuery";
+
+/**
+ * How the expression reads, roughly, for saying what was dropped.
+ *
+ * Not a printer for the language — just enough to name the thing the
+ * configuration cannot hold.
+ */
+const sketch = (item: SelectItem) => {
+  const leaves = aggLeaves(item.expr);
+  const parts = leaves.map((l) => `${l.fn}(${l.column})`);
+  return item.alias + (parts.length ? ` — ${parts.join(" and ")}` : "");
+};
 
 export interface ApplyPlan {
   actions: UnknownAction[];
@@ -35,7 +54,8 @@ type FilterColumn =
   | "vendor_id"
   | "cashier_number"
   | "sale_date"
-  | "product_code";
+  | "product_code"
+  | "product_description";
 
 const FILTER_COLUMNS: FilterColumn[] = [
   "storeid",
@@ -46,6 +66,7 @@ const FILTER_COLUMNS: FilterColumn[] = [
   "cashier_number",
   "sale_date",
   "product_code",
+  "product_description",
 ];
 
 /** Every `col = x` and `col IN (...)` joined by AND, or null if anything else
@@ -101,11 +122,22 @@ export const planApply = (
   const leftBehind: string[] = [];
 
   // --- the shape ----------------------------------------------------------
-  const measures = query.select
-    .filter((s) => s.fn)
-    .map((s) => ({ column: s.column, fn: s.fn! }));
+  //
+  // The export builds a measure from a column and a function, so only a
+  // SELECT item that IS one aggregate can cross over. `sum(qty) * max(price)`
+  // is arithmetic the endpoint has no way to express — the window can work it
+  // out, the file cannot hold it, and saying which is which is the point of
+  // this list.
+  const simple = query.select.filter((s) => s.expr.kind === "agg");
+  const computed = query.select.filter(
+    (s) => s.expr.kind !== "agg" && aggLeaves(s.expr).length > 0,
+  );
+  const measures = simple.map((s) => {
+    const node = s.expr as Extract<SelectItem["expr"], { kind: "agg" }>;
+    return { column: node.column, fn: node.fn };
+  });
 
-  if (measures.length > 0) {
+  if (measures.length > 0 || computed.length > 0) {
     actions.push(setMode("summary"), setGroupBy(query.groupBy), setAggregates(measures));
     applied.push(
       query.groupBy.length > 0
@@ -117,18 +149,34 @@ export const planApply = (
         "A total over everything with no GROUP BY — the export needs at least one key, so pick one before building",
       );
     }
-    const renamed = query.select.filter(
-      (s) => s.fn && s.alias !== defaultAlias(s.column, s.fn),
-    );
-    for (const s of renamed) {
+    for (const item of computed) {
       leftBehind.push(
-        `AS ${s.alias} — the file names this ${defaultAlias(s.column, s.fn!)}`,
+        `${sketch(item)} — the file's measures are one column and one function, so the arithmetic around them cannot go in it`,
+      );
+    }
+    const renamed = simple.filter((s) => {
+      const node = s.expr as Extract<SelectItem["expr"], { kind: "agg" }>;
+      return s.alias !== defaultAlias(node.column, node.fn);
+    });
+    for (const s of renamed) {
+      const node = s.expr as Extract<SelectItem["expr"], { kind: "agg" }>;
+      leftBehind.push(
+        `AS ${s.alias} — the file names this ${defaultAlias(node.column, node.fn)}`,
       );
     }
   } else {
     const names = query.star
       ? config.columns.map((c) => c.name)
-      : query.select.map((s) => s.column);
+      : query.select.flatMap((s) =>
+          s.expr.kind === "column" ? [s.expr.name] : [],
+        );
+    for (const item of query.select) {
+      if (item.expr.kind !== "column") {
+        leftBehind.push(
+          `${item.alias} — a worked-out value, and the file holds columns of the table`,
+        );
+      }
+    }
     actions.push(setMode("lines"), setSelectedColumns(names));
     if (!query.star) {
       // The SELECT order is a column order; the rest keep their places behind.
@@ -164,6 +212,18 @@ export const planApply = (
           : part.kind === "in" && !part.negated
             ? (part.values.filter((v) => v !== null) as (string | number)[])
             : [];
+
+      // A LIKE on the description is the one pattern the configuration can
+      // hold, because that filter is a contains itself. The % marks come off:
+      // the filter puts them back.
+      if (part.kind === "like" && column === "product_description" && !part.negated) {
+        const term = part.pattern.replace(/^%+|%+$/g, "");
+        if (term && !term.includes("%") && !term.includes("_")) {
+          actions.push(setProductDescriptions([term]));
+          applied.push(`Descriptions holding "${term}"`);
+          continue;
+        }
+      }
 
       // The two flags are switches rather than lists.
       if (column === "void_flag" || column === "refund_flag") {
@@ -254,6 +314,17 @@ export const planApply = (
           const codes = wanted.map(String);
           actions.push(setProductCodes(codes));
           applied.push(`${codes.length} product code${codes.length === 1 ? "" : "s"}`);
+          break;
+        }
+        case "product_description": {
+          // An exact match becomes a contains, which is the only shape the
+          // filter has — wider than the query was, so it is said out loud.
+          const terms = wanted.map(String);
+          actions.push(setProductDescriptions(terms));
+          applied.push(`Descriptions holding ${terms.map((t) => `"${t}"`).join(", ")}`);
+          leftBehind.push(
+            "product_description was an exact match in the query and is a contains in the file",
+          );
           break;
         }
       }

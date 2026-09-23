@@ -5,10 +5,10 @@ import type { ExportRow } from "../../../api/salesExport";
 // refund_flag carries 2 and 9 as well as 1 in the real table, which is why
 // row 4 is marked with a 2: an equality test on 1 would miss it.
 const rows: ExportRow[] = [
-  { sale_id: 1, sale_type: "Sale", item_ring_type: "ITEM", sub_department: 10, vendor_id: "50", cashier_number: 7, sale_date: "2026-09-14T08:12:00", product_code: "1200000088", void_flag: 0, refund_flag: 0 },
-  { sale_id: 2, sale_type: "Tender", item_ring_type: "TENDER", sub_department: 10, vendor_id: "50", cashier_number: 7, sale_date: "2026-09-15T11:40:00", product_code: "2100004411", void_flag: 0, refund_flag: null },
-  { sale_id: 3, sale_type: "Voided", item_ring_type: "ITEM", sub_department: 20, vendor_id: "C0021", cashier_number: 12, sale_date: "2026-09-15T19:05:00", product_code: "0490000112.0", void_flag: 1, refund_flag: 0 },
-  { sale_id: 4, sale_type: "sale", item_ring_type: "WIC", sub_department: 20, vendor_id: "F0007", cashier_number: 12, sale_date: "2026-09-16T07:30:00", product_code: "7770001234", void_flag: null, refund_flag: 2 },
+  { sale_id: 1, sale_type: "Sale", item_ring_type: "ITEM", sub_department: 10, vendor_id: "50", cashier_number: 7, sale_date: "2026-09-14T08:12:00", product_code: "1200000088", product_description: "WHOLE MILK GAL", void_flag: 0, refund_flag: 0 },
+  { sale_id: 2, sale_type: "Tender", item_ring_type: "TENDER", sub_department: 10, vendor_id: "50", cashier_number: 7, sale_date: "2026-09-15T11:40:00", product_code: "2100004411", product_description: null, void_flag: 0, refund_flag: null },
+  { sale_id: 3, sale_type: "Voided", item_ring_type: "ITEM", sub_department: 20, vendor_id: "C0021", cashier_number: 12, sale_date: "2026-09-15T19:05:00", product_code: "0490000112.0", product_description: "MILK 2% 1/2GAL", void_flag: 1, refund_flag: 0 },
+  { sale_id: 4, sale_type: "sale", item_ring_type: "WIC", sub_department: 20, vendor_id: "F0007", cashier_number: 12, sale_date: "2026-09-16T07:30:00", product_code: "7770001234", product_description: "BREAD WHITE", void_flag: null, refund_flag: 2 },
 ];
 
 const all: RowFilters = {
@@ -19,6 +19,7 @@ const all: RowFilters = {
   cashiers: [7, 12],
   saleDates: ["2026-09-14", "2026-09-15", "2026-09-16"],
   productCodes: [],
+  productDescriptions: [],
   voidFlag: null,
   refundFlag: null,
 };
@@ -91,6 +92,29 @@ describe("the sample rows a preview shows", () => {
     expect(
       ids(filterSampleRows(rows, { ...all, productCodes: ["1200000088"] })),
     ).toEqual([1]);
+  });
+
+  it("finds a description anywhere in it, whatever the case", () => {
+    // Descriptions are written the way a till writes them, so a contains is
+    // the only match anyone can use — and a blank description is not a match.
+    expect(
+      ids(filterSampleRows(rows, { ...all, productDescriptions: ["milk"] })),
+    ).toEqual([1, 3]);
+    expect(
+      ids(filterSampleRows(rows, { ...all, productDescriptions: ["BREAD", "whole"] })),
+    ).toEqual([1, 4]);
+  });
+
+  it("narrows by code and description together, not either one", () => {
+    expect(
+      ids(
+        filterSampleRows(rows, {
+          ...all,
+          productCodes: ["1200000088"],
+          productDescriptions: ["bread"],
+        }),
+      ),
+    ).toEqual([]);
   });
 
   it("matches a code the table stored with a trailing .0", () => {

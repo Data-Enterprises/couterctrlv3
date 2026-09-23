@@ -1,7 +1,17 @@
 import type { ExportColumn, ExportRow } from "../../../../api/salesExport";
 import { isNumericType } from "../aggregates";
 import { rollupSampleRows } from "../rollup";
-import { QueryError, type Expr, type Literal, type Query } from "./parseQuery";
+import {
+  aggLeaves,
+  allColumns,
+  bareColumns,
+  QueryError,
+  type Expr,
+  type Literal,
+  type Query,
+  type ValueExpr,
+} from "./parseQuery";
+import { aliasFor } from "../aggregates";
 
 export interface QueryResult {
   columns: string[];
@@ -141,6 +151,93 @@ const comparesText = (expr: Expr | null): boolean => {
   }
 };
 
+/** A number, or null for anything that cannot be one. SQL arithmetic on a
+ *  null is null, and that is the useful answer here too. */
+const asNumber = (value: unknown) => {
+  if (value === null || value === undefined || value === "") return null;
+  const n = Number(value);
+  return Number.isNaN(n) ? null : n;
+};
+
+/**
+ * One value of the SELECT list, for one output row.
+ *
+ * `lookup` is where an aggregate's value comes from: the rolled-up row when
+ * the query groups, and nothing when it does not. Everything else is ordinary
+ * arithmetic with SQL's null rule — a null anywhere in a sum makes the sum
+ * null, and dividing by zero is null rather than an error, which is what
+ * NULLIF is usually written to produce anyway.
+ */
+const evaluate = (
+  expr: ValueExpr,
+  row: ExportRow,
+  lookup: (fn: string, column: string) => unknown,
+): string | number | boolean | null => {
+  switch (expr.kind) {
+    case "literal":
+      return expr.value;
+    case "column": {
+      const value = row[expr.name];
+      return value === undefined ? null : value;
+    }
+    case "agg": {
+      const value = lookup(expr.fn, expr.column);
+      return value === undefined ? null : (value as number | string | null);
+    }
+    case "neg": {
+      const value = asNumber(evaluate(expr.expr, row, lookup));
+      return value === null ? null : -value;
+    }
+    case "binary": {
+      const left = asNumber(evaluate(expr.left, row, lookup));
+      const right = asNumber(evaluate(expr.right, row, lookup));
+      if (left === null || right === null) return null;
+      switch (expr.op) {
+        case "+":
+          return left + right;
+        case "-":
+          return left - right;
+        case "*":
+          return left * right;
+        case "/":
+          // Postgres raises here; this is a scratchpad, and a thrown error
+          // in the middle of fifty rows tells you less than a blank cell.
+          return right === 0 ? null : left / right;
+      }
+      return null;
+    }
+    case "call": {
+      const args = expr.args.map((a) => evaluate(a, row, lookup));
+      switch (expr.name) {
+        case "nullif":
+          return args[0] === args[1] ? null : args[0];
+        case "coalesce":
+          return args.find((a) => a !== null && a !== undefined) ?? null;
+        case "abs": {
+          const n = asNumber(args[0]);
+          return n === null ? null : Math.abs(n);
+        }
+        case "round": {
+          const n = asNumber(args[0]);
+          const places = args.length > 1 ? (asNumber(args[1]) ?? 0) : 0;
+          if (n === null) return null;
+          const factor = 10 ** places;
+          return Math.round(n * factor) / factor;
+        }
+        case "greatest":
+        case "least": {
+          const numbers = args.map(asNumber).filter((n): n is number => n !== null);
+          if (numbers.length === 0) return null;
+          return expr.name === "greatest"
+            ? Math.max(...numbers)
+            : Math.min(...numbers);
+        }
+      }
+      return null;
+    }
+  }
+};
+
 /**
  * Run a parsed query over the sample rows.
  *
@@ -156,7 +253,7 @@ export const evalQuery = (
   const known = new Map(columns.map((c) => [c.name, c]));
 
   const referenced = [
-    ...query.select.filter((s) => s.column !== "*").map((s) => s.column),
+    ...query.select.flatMap((s) => allColumns(s.expr)).filter((c) => c !== "*"),
     ...columnsIn(query.where),
     ...query.groupBy,
   ];
@@ -169,16 +266,21 @@ export const evalQuery = (
     }
   }
 
-  const aggregates = query.select
-    .filter((s) => s.fn !== null)
-    .map((s) => ({ column: s.column, fn: s.fn! }));
-  const plain = query.select.filter((s) => s.fn === null);
+  // Every aggregate in every expression, once each: `sum(qty) * max(price)`
+  // is one output column and two things to work out per group.
+  const leaves = query.select.flatMap((s) => aggLeaves(s.expr));
+  const aggregates = leaves.filter(
+    (leaf, i) =>
+      leaves.findIndex((o) => o.fn === leaf.fn && o.column === leaf.column) === i,
+  );
 
   if (aggregates.length > 0) {
-    const ungrouped = plain.find((s) => !query.groupBy.includes(s.column));
+    const ungrouped = query.select
+      .flatMap((s) => bareColumns(s.expr))
+      .find((name) => !query.groupBy.includes(name));
     if (ungrouped) {
       throw new QueryError(
-        `${ungrouped.column} has to be in the GROUP BY, or inside a function.`,
+        `${ungrouped} has to be in the GROUP BY, or inside a function.`,
         "A query that mixes one row's value with a total of many has not said which row it means.",
       );
     }
@@ -208,20 +310,17 @@ export const evalQuery = (
       columns,
       ordered: false,
     });
-    // Back into the names the query asked for: `sum(total_sales) AS total`
-    // is called total, not total_sales_sum.
-    outColumns = [
-      ...query.groupBy,
-      ...query.select.filter((s) => s.fn).map((s) => s.alias),
-    ];
-    let measureAt = 0;
-    const renames = query.select
-      .filter((s) => s.fn)
-      .map((s) => ({ from: rolled.columns[query.groupBy.length + measureAt++], to: s.alias }));
+    // The rollup writes each aggregate under the endpoint's own name; the
+    // expressions read them back from there and the query's own names go on
+    // the result.
+    outColumns = query.select.map((s) => s.alias);
     outRows = rolled.rows.map((row) => {
+      const lookup = (fn: string, column: string) =>
+        row[aliasFor(column, fn as never)];
       const next: ExportRow = {};
-      for (const key of query.groupBy) next[key] = row[key];
-      for (const { from, to } of renames) next[to] = row[from];
+      for (const item of query.select) {
+        next[item.alias] = evaluate(item.expr, row, lookup);
+      }
       return next;
     });
   } else if (query.groupBy.length > 0) {
@@ -241,10 +340,15 @@ export const evalQuery = (
     outColumns = columns.map((c) => c.name);
     outRows = kept;
   } else {
+    // No aggregates: the expressions are per row, so `total_sales - qty`
+    // means this line's, not the group's.
+    const none = () => null;
     outColumns = query.select.map((s) => s.alias);
     outRows = kept.map((row) => {
       const next: ExportRow = {};
-      for (const item of query.select) next[item.alias] = row[item.column] ?? null;
+      for (const item of query.select) {
+        next[item.alias] = evaluate(item.expr, row, none);
+      }
       return next;
     });
   }

@@ -83,6 +83,9 @@ export interface ExportBuilderState {
    * contradiction. This one starts empty and only ever narrows.
    */
   productCodes: string[];
+  /** Words to find in product_description. Empty means every product, the
+   *  same as the codes. */
+  productDescriptions: string[];
   /**
    * Every column name in the order the file will write them.
    *
@@ -148,6 +151,7 @@ export const initialState: ExportBuilderState = {
   selectedSaleDates: [],
   selectedColumns: [],
   productCodes: [],
+  productDescriptions: [],
   columnOrder: [],
 
   mode: "lines",
@@ -293,6 +297,7 @@ const devExportBuilderSlice = createSlice({
       state.columnOrder = columns.map((c) => c.name);
       // A new scope is a new question; the codes belonged to the old one.
       state.productCodes = [];
+      state.productDescriptions = [];
       // A new scope means the last file describes a question nobody asked.
       state.files = [];
       state.builtAt = null;
@@ -409,6 +414,9 @@ const devExportBuilderSlice = createSlice({
     },
     setProductCodes: (state, action: PayloadAction<string[]>) => {
       state.productCodes = action.payload;
+    },
+    setProductDescriptions: (state, action: PayloadAction<string[]>) => {
+      state.productDescriptions = action.payload;
     },
     setMode: (state, action: PayloadAction<ExportMode>) => {
       state.mode = action.payload;
@@ -540,6 +548,7 @@ export const {
   moveColumn,
   setSelectedColumns,
   setProductCodes,
+  setProductDescriptions,
   setMode,
   toggleGroupBy,
   setGroupBy,

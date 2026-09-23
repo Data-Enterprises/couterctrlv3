@@ -16,14 +16,81 @@ import { AGGREGATE_FNS, type AggregateFn } from "../aggregates";
 
 export type Literal = string | number | boolean | null;
 
+/**
+ * A value in the SELECT list.
+ *
+ * An expression rather than a column, because the useful queries are
+ * expressions: `sum(qty) * (max(price) / nullif(max(price_split), 0))` is one
+ * output column, and a window that only understood `sum(qty)` would be a toy.
+ * Aggregates are leaves of the tree — the arithmetic happens after they have
+ * been worked out for the group, as it does in SQL.
+ */
+export type ValueExpr =
+  | { kind: "column"; name: string }
+  | { kind: "literal"; value: number | string | boolean | null }
+  /** `column` is a column name, or `*` for count(*). */
+  | { kind: "agg"; fn: AggregateFn; column: string }
+  | { kind: "binary"; op: "+" | "-" | "*" | "/"; left: ValueExpr; right: ValueExpr }
+  | { kind: "neg"; expr: ValueExpr }
+  | { kind: "call"; name: CallName; args: ValueExpr[] };
+
+/** The scalar functions worth having: the ones that guard a division or a
+ *  null, which is what the arithmetic needs. */
+export const CALL_NAMES = [
+  "nullif",
+  "coalesce",
+  "round",
+  "abs",
+  "greatest",
+  "least",
+] as const;
+export type CallName = (typeof CALL_NAMES)[number];
+
 export interface SelectItem {
-  /** A column name, or `*` for count(*) and SELECT *. */
-  column: string;
-  /** Null for a plain column. */
-  fn: AggregateFn | null;
+  expr: ValueExpr;
   /** What the result column is called. */
   alias: string;
 }
+
+/** Every aggregate in the tree, which is what has to be worked out per group. */
+export const aggLeaves = (expr: ValueExpr): { fn: AggregateFn; column: string }[] => {
+  switch (expr.kind) {
+    case "agg":
+      return [{ fn: expr.fn, column: expr.column }];
+    case "binary":
+      return [...aggLeaves(expr.left), ...aggLeaves(expr.right)];
+    case "neg":
+      return aggLeaves(expr.expr);
+    case "call":
+      return expr.args.flatMap(aggLeaves);
+    default:
+      return [];
+  }
+};
+
+/** Columns referred to outside an aggregate, which have to be grouped by. */
+export const bareColumns = (expr: ValueExpr): string[] => {
+  switch (expr.kind) {
+    case "column":
+      return [expr.name];
+    case "binary":
+      return [...bareColumns(expr.left), ...bareColumns(expr.right)];
+    case "neg":
+      return bareColumns(expr.expr);
+    case "call":
+      return expr.args.flatMap(bareColumns);
+    default:
+      return [];
+  }
+};
+
+/** Every column the query touches, aggregated or not. */
+export const allColumns = (expr: ValueExpr): string[] => [
+  ...bareColumns(expr),
+  ...aggLeaves(expr)
+    .map((a) => a.column)
+    .filter((c) => c !== "*"),
+];
 
 export type Comparison =
   | { kind: "cmp"; column: string; op: CmpOp; value: Literal }
@@ -73,7 +140,23 @@ interface Token {
   upper: string;
 }
 
-const OPERATORS = ["<=", ">=", "<>", "!=", "=", "<", ">", "(", ")", ",", "*", ";"];
+const OPERATORS = [
+  "<=",
+  ">=",
+  "<>",
+  "!=",
+  "=",
+  "<",
+  ">",
+  "(",
+  ")",
+  ",",
+  "*",
+  "/",
+  "+",
+  "-",
+  ";",
+];
 
 const tokenize = (sql: string): Token[] => {
   const tokens: Token[] = [];
@@ -259,50 +342,127 @@ export const parseQuery = (sql: string): Query => {
   const select: SelectItem[] = [];
   let star = false;
 
-  const selectItem = (): SelectItem => {
+  /** A call to one of the six aggregates, which is a leaf of an expression. */
+  const aggregateCall = (name: string): ValueExpr => {
+    expectOp("(");
+    let fn = name as AggregateFn;
+    if (isWord("DISTINCT")) {
+      take();
+      if (fn !== "count") throw new QueryError("DISTINCT only goes inside count().");
+      fn = "count_distinct";
+    }
+    let column: string;
     if (isOp("*")) {
       take();
-      star = true;
-      return { column: "*", fn: null, alias: "*" };
-    }
-    const name = columnName("in the SELECT list");
-    let fn: AggregateFn | null = null;
-    let column = name;
-
-    if (isOp("(")) {
-      if (!FN_NAMES.has(name) && name !== "count") {
+      if (fn !== "count") throw new QueryError(`${name}(*) is only a thing for count.`);
+      column = "*";
+    } else {
+      column = columnName(`inside ${name}()`);
+      if (!isOp(")")) {
         throw new QueryError(
-          `${name}() is not one of the functions this window runs.`,
-          `Use one of: ${AGGREGATE_FNS.join(", ")}.`,
+          `${name}() here takes a single column.`,
+          "Arithmetic goes outside the brackets: sum(qty) * max(price), not sum(qty * price).",
         );
       }
+    }
+    expectOp(")");
+    return { kind: "agg", fn, column };
+  };
+
+  const primary = (): ValueExpr => {
+    if (isOp("(")) {
       take();
-      fn = name as AggregateFn;
-      if (isWord("DISTINCT")) {
-        take();
-        if (fn !== "count") {
-          throw new QueryError("DISTINCT only goes inside count().");
-        }
-        fn = "count_distinct";
-      }
-      if (isOp("*")) {
-        take();
-        if (fn !== "count") {
-          throw new QueryError(`${name}(*) is only a thing for count.`);
-        }
-        column = "*";
-      } else {
-        column = columnName(`inside ${name}()`);
-      }
+      const inner = valueExpr();
       expectOp(")");
-    } else if (FN_NAMES.has(name)) {
+      return inner;
+    }
+    if (isOp("-")) {
+      take();
+      return { kind: "neg", expr: primary() };
+    }
+    if (done()) throw new QueryError("Something is missing from the SELECT list.");
+    const token = peek();
+    if (token.type === "number") {
+      take();
+      return { kind: "literal", value: Number(token.text) };
+    }
+    if (token.type === "string") {
+      take();
+      return { kind: "literal", value: token.text };
+    }
+    if (token.type !== "word") {
+      throw new QueryError(`I did not expect "${token.text}" in the SELECT list.`);
+    }
+    const name = take().text;
+    if (isOp("(")) {
+      if (FN_NAMES.has(name)) return aggregateCall(name);
+      if ((CALL_NAMES as readonly string[]).includes(name)) {
+        take();
+        const args: ValueExpr[] = [valueExpr()];
+        while (isOp(",")) {
+          take();
+          args.push(valueExpr());
+        }
+        expectOp(")");
+        return { kind: "call", name: name as CallName, args };
+      }
+      throw new QueryError(
+        `${name}() is not one of the functions this window runs.`,
+        `Aggregates: ${AGGREGATE_FNS.join(", ")}. Others: ${CALL_NAMES.join(", ")}.`,
+      );
+    }
+    if (FN_NAMES.has(name)) {
       throw new QueryError(
         `${name} is a function; it needs a column in brackets.`,
         `For example: ${name}(total_sales)`,
       );
     }
+    if (name === "null") return { kind: "literal", value: null };
+    if (name === "true") return { kind: "literal", value: true };
+    if (name === "false") return { kind: "literal", value: false };
+    return { kind: "column", name };
+  };
 
-    let alias = fn ? defaultAlias(column, fn) : column;
+  const multiplicative = (): ValueExpr => {
+    let left = primary();
+    while (isOp("*") || isOp("/")) {
+      const op = take().text as "*" | "/";
+      left = { kind: "binary", op, left, right: primary() };
+    }
+    return left;
+  };
+
+  function valueExpr(): ValueExpr {
+    let left = multiplicative();
+    while (isOp("+") || isOp("-")) {
+      const op = take().text as "+" | "-";
+      left = { kind: "binary", op, left, right: multiplicative() };
+    }
+    return left;
+  }
+
+  /** Where one SELECT item stops: a comma, or the next clause. */
+  const isSelectBreak = (token: Token) =>
+    (token.type === "op" && (token.text === "," || token.text === ";")) ||
+    (token.type === "word" && CLAUSE_WORDS.has(token.upper));
+
+  let unnamed = 0;
+  const selectItem = (): SelectItem => {
+    // A lone * is the whole row. Inside an expression it is a multiplication,
+    // which the parser above deals with.
+    if (isOp("*") && (tokens[at + 1] === undefined || isSelectBreak(tokens[at + 1]))) {
+      take();
+      star = true;
+      return { expr: { kind: "column", name: "*" }, alias: "*" };
+    }
+
+    const expr = valueExpr();
+    let alias =
+      expr.kind === "column"
+        ? expr.name
+        : expr.kind === "agg"
+          ? defaultAlias(expr.column, expr.fn)
+          : `expr_${++unnamed}`;
     if (isWord("AS")) {
       take();
       alias = columnName("after AS");
@@ -310,7 +470,7 @@ export const parseQuery = (sql: string): Query => {
       // `sum(total_sales) total` — SQL allows the AS to be left out.
       alias = take().text;
     }
-    return { column, fn, alias };
+    return { expr, alias };
   };
 
   select.push(selectItem());

@@ -53,6 +53,10 @@ const ExportBar = () => {
       `${ctx.productCodes.length} product code${
         ctx.productCodes.length === 1 ? "" : "s"
       }`,
+    ctx.productDescriptions.length > 0 &&
+      `description${ctx.productDescriptions.length === 1 ? "" : "s"} matching ${ctx.productDescriptions
+        .map((t) => `"${t}"`)
+        .join(", ")}`,
     ctx.flags.voidFlag === 0 && "voided lines excluded",
     ctx.flags.voidFlag === 1 && "voided lines only",
     ctx.flags.refundFlag === 0 && "refunds excluded",
