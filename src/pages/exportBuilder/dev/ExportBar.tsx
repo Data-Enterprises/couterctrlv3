@@ -24,8 +24,7 @@ export const SHOW_SQL_BUTTON = false;
 const ExportBar = () => {
   const ctx = useExportBuilderCtx();
   const pii = countPii(ctx.selectedColumns);
-  const nothingToBuild =
-    ctx.selectedStoreIds.length === 0 || ctx.selectedColumns.length === 0;
+  const nothingToBuild = ctx.blocked !== null;
 
   if (ctx.files.length > 0) {
     return (
@@ -110,6 +109,11 @@ const ExportBar = () => {
         ) : (
           <div className="text-[11.5px] text-custom-white/75 mt-1">
             A longer range across more stores takes longer to build.
+          </div>
+        )}
+        {ctx.blocked && (
+          <div className="text-[11.5px] text-amber-200 mt-1.5 max-w-[80ch]">
+            {ctx.blocked}
           </div>
         )}
         {ctx.exportError && (

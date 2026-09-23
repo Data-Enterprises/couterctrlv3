@@ -35,12 +35,9 @@ export interface ExportBuilderState {
   selectedStoreIds: number[];
   selectedSaleTypes: string[];
   /**
-   * Ring types, sub departments and vendors narrow the SAMPLE only.
-   *
-   * `/sales/export` takes `saleTypes` and nothing else, so these three cannot
-   * reach the file until the endpoint accepts them. The page says so where
-   * they are, rather than quietly producing a CSV wider than what was on
-   * screen.
+   * All four filters reach `/sales/export`, so what narrows the sample narrows
+   * the file. Each is matched there the way the endpoint matches it: sale_type
+   * lower-cased on both sides, the other three as stored.
    */
   selectedRingTypes: string[];
   selectedSubDepartments: string[];

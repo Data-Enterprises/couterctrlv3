@@ -50,6 +50,40 @@ export const useExportBuilderCtx = () => {
     .filter((c): c is NonNullable<typeof c> => Boolean(c))
     .filter((c) => config.selectedColumns.includes(c.name));
 
+  /**
+   * Why the export cannot run, or null.
+   *
+   * The empty-list case is the one worth catching: `if payload.saleTypes:` on
+   * the endpoint reads `[]` as "no filter given", so unticking every sale type
+   * would hand back a file holding all of them — while the sample on screen,
+   * which does mean "none", shows nothing at all. The two readings cannot both
+   * be served, so the page refuses to send it.
+   */
+  const emptied = [
+    config.saleTypes.length > 0 && config.selectedSaleTypes.length === 0
+      ? "sale type"
+      : null,
+    config.itemRingTypes.length > 0 && config.selectedRingTypes.length === 0
+      ? "ring type"
+      : null,
+    config.subDepartments.length > 0 &&
+    config.selectedSubDepartments.length === 0
+      ? "sub department"
+      : null,
+    config.vendors.length > 0 && config.selectedVendors.length === 0
+      ? "vendor"
+      : null,
+  ].filter(Boolean) as string[];
+
+  const blocked =
+    config.selectedStoreIds.length === 0
+      ? "Pick at least one store."
+      : config.selectedColumns.length === 0
+        ? "Pick at least one column."
+        : emptied.length > 0
+          ? `Every ${emptied.join(", ")} is unticked. The export reads an empty list as no filter at all, so the file would hold every one of them — tick at least one, or tick them all.`
+          : null;
+
   /** The sample rows the file would actually hold. */
   const visibleRows = filterSampleRows(config.rows, {
     saleTypes: config.selectedSaleTypes,
@@ -220,6 +254,7 @@ export const useExportBuilderCtx = () => {
     endDate,
     orderedColumns,
     visibleRows,
+    blocked,
     loadConfig,
     showSql,
     build,
