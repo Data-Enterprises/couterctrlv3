@@ -39,6 +39,18 @@ const CsvPreview = () => {
 
   const drag = useColumnDrag(scroller, drop);
 
+  /**
+   * The carried column tracks the cursor, so it must not lag behind a
+   * transition; the ones stepping aside should glide, which is the whole
+   * point. And on the frame a drop commits, nothing animates at all —
+   * offsets clear and the order changes together, and animating that reads
+   * as the column sliding back where it came from.
+   */
+  const motion = (index: number) =>
+    drag.settling || drag.isDragging(index)
+      ? "none"
+      : "transform 180ms cubic-bezier(.2,.8,.3,1)";
+
   const name = `${ctx.flags.filePrefix || "sales"}_${ctx.startDate}_${ctx.endDate}.${
     ctx.flags.fileFormat === "csv" ? "csv" : "txt"
   }`;
@@ -111,7 +123,7 @@ const CsvPreview = () => {
                     aria-label={`${c.name}, column ${i + 1} of ${cols.length}. Hold and drag to reorder, or alt plus arrow keys.`}
                     style={{
                       transform: `translateX(${drag.offsetFor(i)}px)`,
-                      transition: drag.name ? "none" : "transform 160ms ease",
+                      transition: motion(i),
                       zIndex: drag.isDragging(i) ? 20 : undefined,
                       position: drag.isDragging(i) ? "relative" : undefined,
                     }}
@@ -142,7 +154,7 @@ const CsvPreview = () => {
                         key={c.name}
                         style={{
                           transform: `translateX(${drag.offsetFor(i)}px)`,
-                          transition: drag.name ? "none" : "transform 160ms ease",
+                          transition: motion(i),
                         }}
                         className={`border-r border-b border-brand_line px-2.5 py-1.5 whitespace-nowrap ${
                           drag.isDragging(i) ? "bg-filter_active/40" : ""

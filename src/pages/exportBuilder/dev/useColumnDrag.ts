@@ -21,6 +21,15 @@ export interface ColumnDrag {
   isDragging: (index: number) => boolean;
   /** Where it would land — for the drop line and the announcement. */
   targetIndex: number;
+  /**
+   * True for the single frame in which a drop lands.
+   *
+   * The cells are sitting at an offset and the order is about to change
+   * underneath them, so both end at zero. Animating that is the column
+   * appearing to slide back where it came from — the transition has to be off
+   * for exactly that frame.
+   */
+  settling: boolean;
   start: (index: number, name: string, event: React.PointerEvent) => void;
   /** Header cells register here so their widths can be measured. */
   registerCell: (index: number) => (el: HTMLTableCellElement | null) => void;
@@ -45,6 +54,7 @@ export const useColumnDrag = (
 ): ColumnDrag => {
   const cells = useRef<(HTMLTableCellElement | null)[]>([]);
   const [active, setActive] = useState<Active | null>(null);
+  const [settling, setSettling] = useState(false);
   const activeRef = useRef<Active | null>(null);
   activeRef.current = active;
 
@@ -95,7 +105,13 @@ export const useColumnDrag = (
       const a = activeRef.current;
       if (a) {
         const to = targetIndexOf(a);
-        if (to !== a.index) onDrop(a.name, to);
+        if (to !== a.index) {
+          // Order changes and offsets clear in the same commit; the frame in
+          // between is the one that must not animate.
+          setSettling(true);
+          onDrop(a.name, to);
+          requestAnimationFrame(() => requestAnimationFrame(() => setSettling(false)));
+        }
       }
       setActive(null);
     };
@@ -118,6 +134,7 @@ export const useColumnDrag = (
 
   return {
     name: active?.name ?? null,
+    settling,
     targetIndex,
     isDragging: (index) => active?.index === index,
     offsetFor: (index) => {
