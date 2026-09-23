@@ -29,20 +29,14 @@ const Row = ({
   isOpen,
   onToggle,
   children,
-  grow = false,
 }: {
   label: string;
   summary: string;
   isOpen: boolean;
   onToggle: () => void;
   children: ReactNode;
-  grow?: boolean;
 }) => (
-  <div
-    className={`bg-custom-white border border-brand_line rounded-xl overflow-hidden flex flex-col ${
-      isOpen && grow ? "flex-1 min-h-0" : "flex-shrink-0"
-    }`}
-  >
+  <div className="bg-custom-white border border-brand_line rounded-xl overflow-hidden flex flex-col flex-shrink-0">
     <button
       type="button"
       onClick={onToggle}
@@ -73,6 +67,27 @@ const Row = ({
  * Everything starts shut. The summary on each row is the answer, so the panel
  * reads as a list of decisions already made; opening one is for changing it.
  */
+/**
+ * What to call a store in the list.
+ *
+ * `store_name` usually arrives with the number already in it ("001 - IGA
+ * GLASGOW KY"), so printing `store_number` beside it reads as two stores. The
+ * number is only prefixed when the name does not already carry it.
+ */
+const storeLabel = ({
+  store_number,
+  store_name,
+}: {
+  store_number: string;
+  store_name: string;
+}) =>
+  (() => {
+    // Compare the numbers, not the text: "1" is in "IGA 100" by accident.
+    const leading = store_name.match(/^\s*0*(\d+)/)?.[1];
+    const number = store_number.replace(/^0+/, "") || store_number;
+    return leading === number ? store_name : `${store_number} - ${store_name}`;
+  })();
+
 const ConfigPanel = () => {
   const ctx = useExportBuilderCtx();
   const [open, setOpen] = useState<Section | null>(null);
@@ -88,7 +103,7 @@ const ConfigPanel = () => {
   const allTypes = ctx.saleTypes.length;
 
   return (
-    <div className="w-[340px] flex-shrink-0 flex flex-col gap-2 min-h-0">
+    <div className="w-[340px] flex-shrink-0 flex flex-col gap-2 min-h-0 overflow-y-auto thin-scrollbar pr-0.5">
       <span className="text-[11px] font-semibold uppercase tracking-wide text-content/60 px-0.5">
         Configuration
       </span>
@@ -102,9 +117,8 @@ const ConfigPanel = () => {
             ? `all ${allStores}`
             : `${ctx.selectedStoreIds.length} of ${allStores}`
         }
-        grow
       >
-        <div className="px-3 pb-3 flex flex-col gap-2 min-h-0">
+        <div className="px-3 pb-3 flex flex-col gap-2">
           <div className="flex gap-3">
             <button
               type="button"
@@ -125,7 +139,7 @@ const ConfigPanel = () => {
               none
             </button>
           </div>
-          <div className="overflow-y-auto thin-scrollbar flex flex-col max-h-[300px]">
+          <div className="overflow-y-auto thin-scrollbar flex flex-col max-h-[38vh]">
             {ctx.stores.map((s) => (
               <label
                 key={s.storeid}
@@ -137,8 +151,7 @@ const ConfigPanel = () => {
                   onChange={() => ctx.dispatch(toggleStore(s.storeid))}
                   className="w-3.5 h-3.5 accent-[#1e2a4a]"
                 />
-                <span className="font-medium">{s.store_number}</span>
-                <span className="truncate text-content/75">{s.store_name}</span>
+                <span className="truncate">{storeLabel(s)}</span>
               </label>
             ))}
           </div>
@@ -200,9 +213,8 @@ const ConfigPanel = () => {
             ? `all ${ctx.columns.length}`
             : `${ctx.selectedColumns.length} of ${ctx.columns.length}`
         }
-        grow
       >
-        <div className="px-3 pb-3 flex flex-col gap-2 min-h-0 flex-1">
+        <div className="px-3 pb-3 flex flex-col gap-2">
           <div className="flex gap-3">
             <button
               type="button"
@@ -229,7 +241,7 @@ const ConfigPanel = () => {
             aria-label="Find a column"
             className="w-full border border-brand_line rounded-lg px-2.5 py-1.5 text-[12.5px]"
           />
-          <div className="flex-1 overflow-y-auto thin-scrollbar flex flex-col">
+          <div className="overflow-y-auto thin-scrollbar flex flex-col max-h-[38vh]">
             {shown.map((c) => (
               <label
                 key={c.name}
