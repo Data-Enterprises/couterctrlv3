@@ -342,9 +342,23 @@ def build(name, dev):
 """
 
 
+# Pages whose source IS the finished page: copied through untouched, to dev
+# only. A walk-through is not the Q&A shape `build` assembles, and a Coming
+# Soon page has no prod help to serve - but its source belongs in source/ with
+# the rest, or the next build writes every other page and drops this one.
+VERBATIM_DEV_ONLY = {"sales-export"}
+
 names = sorted(f[:-5] for f in os.listdir(SRC) if f.endswith(".html"))
+built = [n for n in names if n not in VERBATIM_DEV_ONLY]
+copied = [n for n in names if n in VERBATIM_DEV_ONLY]
+
 for mode, folder in OUT.items():
-    for n in names:
+    for n in built:
         out = build(n, dev=mode == "dev")
         open(os.path.join(folder, n + ".html"), "w", encoding="utf-8", newline="\n").write(out)
-    print(f"{mode:4} {len(names)} files -> {folder}")
+    if mode == "dev":
+        for n in copied:
+            src = open(os.path.join(SRC, n + ".html"), encoding="utf-8").read()
+            open(os.path.join(folder, n + ".html"), "w", encoding="utf-8", newline="\n").write(src)
+    count = len(built) + (len(copied) if mode == "dev" else 0)
+    print(f"{mode:4} {count} files -> {folder}")
