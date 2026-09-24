@@ -3,7 +3,11 @@ import reducer, {
   clearDeletedQuery,
   forgetQuery,
   initialState,
+  rememberBeforeApply,
+  setMode,
   setQueries,
+  setSelectedSaleTypes,
+  undoApply,
   upsertQuery,
 } from "../../../features/dev/devExportBuilderSlice";
 import type { SavedQuery } from "../../../api/savedQueries";
@@ -56,5 +60,53 @@ describe("the saved queries a session holds", () => {
 
   it("does not offer an undo for a row nobody deleted", () => {
     expect(initialState.deletedQuery).toBeNull();
+  });
+});
+
+describe("taking back an Apply", () => {
+  const picked = reducer(
+    initialState,
+    setQueries([]),
+  );
+
+  it("remembers the picks as they stood, and puts them back", () => {
+    // Applying a query rewrites the configuration behind the window. This is
+    // the only way back: the magnifier starts a new search and the circular
+    // arrow clears everything, and neither is "as it was a moment ago".
+    const before = {
+      ...picked,
+      mode: "lines" as const,
+      selectedSaleTypes: ["Sale"],
+      productCodes: ["1200000088"],
+    };
+    const remembered = reducer(before, rememberBeforeApply());
+
+    const applied = reducer(
+      reducer(remembered, setMode("summary")),
+      setSelectedSaleTypes(["Sale", "Tender"]),
+    );
+    expect(applied.mode).toBe("summary");
+
+    const back = reducer(applied, undoApply());
+    expect(back.mode).toBe("lines");
+    expect(back.selectedSaleTypes).toEqual(["Sale"]);
+    expect(back.productCodes).toEqual(["1200000088"]);
+    // One step back, not a history: the offer goes once it is taken.
+    expect(back.preApply).toBeNull();
+  });
+
+  it("offers nothing to undo until something has been applied", () => {
+    expect(initialState.preApply).toBeNull();
+    expect(reducer(initialState, undoApply())).toEqual(initialState);
+  });
+
+  it("does not reach the data, only the picks", () => {
+    const loaded = { ...picked, rows: [{ sale_id: 1 }], hasData: true };
+    const back = reducer(
+      reducer(reducer(loaded, rememberBeforeApply()), setMode("summary")),
+      undoApply(),
+    );
+    expect(back.rows).toHaveLength(1);
+    expect(back.hasData).toBe(true);
   });
 });

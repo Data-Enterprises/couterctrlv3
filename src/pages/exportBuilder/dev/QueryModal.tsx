@@ -5,8 +5,10 @@ import { useExportBuilderCtx } from "./hooks";
 import { isPii, maskValue } from "./piiColumns";
 import {
   openQuery,
+  rememberBeforeApply,
   setCurrentQuery,
   setQuerySql,
+  undoApply,
 } from "../../../features/dev/devExportBuilderSlice";
 import type { SavedQuery } from "../../../api/savedQueries";
 import { parseQuery, QueryError, type Query } from "./query/parseQuery";
@@ -136,9 +138,17 @@ const QueryModal = () => {
 
   const apply = () => {
     if (!parsed) return;
+    // Taken before the plan lands, because after it there is nothing left to
+    // remember.
+    ctx.dispatch(rememberBeforeApply());
     const next = planApply(parsed, ctx.config);
     next.actions.forEach((action) => ctx.dispatch(action));
     setPlan(next);
+  };
+
+  const undo = () => {
+    ctx.dispatch(undoApply());
+    setPlan(null);
   };
 
   /** Ctrl/Cmd+Enter runs it, which is what every other query box does. */
@@ -296,6 +306,16 @@ const QueryModal = () => {
             >
               Apply to configuration
             </button>
+            {ctx.preApply && (
+              <button
+                type="button"
+                onClick={undo}
+                title="Put the configuration back the way it was before Apply"
+                className="text-[12.5px] font-medium px-3 py-1.5 rounded-lg border border-brand_line_2 hover:border-brand_slate transition-colors"
+              >
+                Undo apply
+              </button>
+            )}
             <span className="text-[11px] text-content/50">Ctrl+Enter runs it</span>
             <div className="flex-1" />
             {EXAMPLES.map((example, i) => (
@@ -391,6 +411,13 @@ const QueryModal = () => {
                   · {line}
                 </div>
               ))}
+              <button
+                type="button"
+                onClick={undo}
+                className="text-[11.5px] font-semibold text-brand_navy_hover underline underline-offset-2 mt-1"
+              >
+                Undo apply
+              </button>
               {plan.leftBehind.length > 0 && (
                 <>
                   <div className="text-[11.5px] font-semibold text-amber-900 mt-1.5">

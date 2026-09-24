@@ -61,6 +61,34 @@ export interface ExportBuild {
   label: string;
 }
 
+/**
+ * The configuration as it stood, for one step back.
+ *
+ * Only the picks: the loaded data and the built files are not something an
+ * undo should reach. Apply is the one action in the query window that changes
+ * the page behind it, so it is the one that needs taking back.
+ */
+export type ConfigSnapshot = Pick<
+  ExportBuilderState,
+  | "mode"
+  | "groupBy"
+  | "aggregates"
+  | "computed"
+  | "orderBy"
+  | "selectedStoreIds"
+  | "selectedSaleTypes"
+  | "selectedRingTypes"
+  | "selectedSubDepartments"
+  | "selectedVendors"
+  | "selectedCashiers"
+  | "selectedSaleDates"
+  | "selectedColumns"
+  | "columnOrder"
+  | "productCodes"
+  | "productDescriptions"
+  | "flags"
+>;
+
 export interface ExportBuilderState {
   loadingConfig: boolean;
   /** Null until a config has been loaded; the page shows its search card. */
@@ -157,6 +185,9 @@ export interface ExportBuilderState {
   currentQueryId: number | null;
   /** The last row deleted, kept whole so an undo can post it back. */
   deletedQuery: SavedQuery | null;
+  /** The configuration before the last Apply, or null when there is
+   *  nothing to take back. */
+  preApply: ConfigSnapshot | null;
   /** Saved configurations, as they came back from S3. */
   saved: SavedExport[];
   savedLoaded: boolean;
@@ -240,6 +271,7 @@ export const initialState: ExportBuilderState = {
   queriesError: null,
   currentQueryId: null,
   deletedQuery: null,
+  preApply: null,
   saved: [],
   savedLoaded: false,
   savedBusy: false,
@@ -379,6 +411,8 @@ const devExportBuilderSlice = createSlice({
       // A new scope is a new question; the codes belonged to the old one.
       state.productCodes = [];
       state.productDescriptions = [];
+      // And the step back belonged to the old one too.
+      state.preApply = null;
       // A new scope means the last file describes a question nobody asked.
       state.files = [];
       state.builtAt = null;
@@ -682,6 +716,42 @@ const devExportBuilderSlice = createSlice({
     setCurrentQuery: (state, action: PayloadAction<number | null>) => {
       state.currentQueryId = action.payload;
     },
+    /**
+     * Keep the picks as they stand, before a query is applied over them.
+     *
+     * Taken from the state rather than passed in, so there is no way for the
+     * caller to snapshot something other than what is actually there. A
+     * second apply replaces the first: this is one step back, not a history.
+     */
+    rememberBeforeApply: (state) => {
+      state.preApply = {
+        mode: state.mode,
+        groupBy: state.groupBy,
+        aggregates: state.aggregates,
+        computed: state.computed,
+        orderBy: state.orderBy,
+        selectedStoreIds: state.selectedStoreIds,
+        selectedSaleTypes: state.selectedSaleTypes,
+        selectedRingTypes: state.selectedRingTypes,
+        selectedSubDepartments: state.selectedSubDepartments,
+        selectedVendors: state.selectedVendors,
+        selectedCashiers: state.selectedCashiers,
+        selectedSaleDates: state.selectedSaleDates,
+        selectedColumns: state.selectedColumns,
+        columnOrder: state.columnOrder,
+        productCodes: state.productCodes,
+        productDescriptions: state.productDescriptions,
+        flags: state.flags,
+      };
+    },
+    undoApply: (state) => {
+      if (!state.preApply) return;
+      Object.assign(state, state.preApply);
+      state.preApply = null;
+    },
+    forgetPreApply: (state) => {
+      state.preApply = null;
+    },
     startSqlLoad: (state) => {
       state.loadingSql = true;
       state.exportError = null;
@@ -776,6 +846,7 @@ const devExportBuilderSlice = createSlice({
       state.computed = [];
       state.orderBy = [];
       state.flags = { ...initialState.flags };
+      state.preApply = null;
       state.files = [];
       state.exportError = null;
     },
@@ -838,6 +909,9 @@ export const {
   forgetQuery,
   clearDeletedQuery,
   setCurrentQuery,
+  rememberBeforeApply,
+  undoApply,
+  forgetPreApply,
   startSavedWork,
   setSaved,
   upsertSaved,
