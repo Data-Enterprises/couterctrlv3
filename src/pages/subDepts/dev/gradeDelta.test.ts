@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getGradeDelta } from "./index";
-import type { SubDeptGrade } from "./index";
+import type { SubDeptGrade } from "../../../features/dev/devSubMarginSlice";
 
 /**
  * The same rule Vendors needed: a margin points delta is a comparison of two
