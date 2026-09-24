@@ -426,3 +426,26 @@ describe("a computed measure on its way to the file", () => {
     expect(out.applied.join(" ")).toMatch(/1 computed/);
   });
 });
+
+describe("a key that is grouped but not shown", () => {
+  it("says the file will carry it anyway", () => {
+    // SQL lets you group by something you do not select; a summary export
+    // cannot, because the keys are the rows. The window showed three columns
+    // and the file would have four.
+    const out = planApply(
+      parseQuery(
+        "select sum(total_sales) as total_sales, product_description" +
+          " group by product_description, sale_date",
+      ),
+      {
+        ...initialState,
+        columns: [
+          { name: "product_description", data_type: "character varying" },
+          { name: "sale_date", data_type: "timestamp without time zone" },
+          { name: "total_sales", data_type: "numeric" },
+        ],
+      },
+    );
+    expect(out.applied.join(" ")).toMatch(/sale_date will be a column in the file/);
+  });
+});

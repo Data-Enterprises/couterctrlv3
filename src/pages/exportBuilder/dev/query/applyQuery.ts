@@ -180,6 +180,26 @@ export const planApply = (
         "A total over everything with no GROUP BY — the export needs at least one key, so pick one before building",
       );
     }
+
+    /**
+     * A key that was grouped by but not selected.
+     *
+     * SQL lets a query group by something it does not show; a summary export
+     * cannot, because the group keys ARE the rows. So the file gets a column
+     * the window did not display, and that is worth saying before someone
+     * opens the download and finds it.
+     */
+    const unshown = query.groupBy.filter(
+      (key) =>
+        !query.select.some(
+          (s) => s.expr.kind === "column" && s.expr.name === key,
+        ),
+    );
+    if (unshown.length > 0) {
+      applied.push(
+        `${unshown.join(", ")} will be ${unshown.length === 1 ? "a column" : "columns"} in the file — a summary writes every key it groups by, even one the query did not select`,
+      );
+    }
   } else {
     const names = query.star
       ? config.columns.map((c) => c.name)
