@@ -122,35 +122,21 @@ const ExportBar = () => {
             >
               Download
             </a>
+            {/* The way out, beside the way on. Building again and the list of
+                past builds are both a click away once you are back. */}
+            <button
+              type="button"
+              onClick={() => ctx.dispatch(dismissBuild())}
+              className="text-[13px] font-medium px-4 py-2.5 rounded-lg border border-brand_line_2 hover:border-brand_slate transition-colors"
+            >
+              Go back
+            </button>
           </div>
         ))}
-        <div className="flex items-center gap-4 mt-2">
-          <button
-            type="button"
-            onClick={() => ctx.dispatch(dismissBuild())}
-            className="text-[11.5px] font-semibold text-brand_navy_hover underline underline-offset-2"
-          >
-            Back to configuring
-          </button>
-          <button
-            type="button"
-            onClick={ctx.build}
-            className="text-[11.5px] text-brand_navy_hover underline underline-offset-2"
-          >
-            Build it again
-          </button>
-          <button
-            type="button"
-            onClick={() => ctx.dispatch(openBuilds(true))}
-            className="text-[11.5px] text-brand_navy_hover underline underline-offset-2"
-          >
-            Previous builds
-          </button>
-          <span className="text-[11px] text-content/85">
-            {ctx.manifestWritten
-              ? "This build is in Previous builds, with the settings that made it."
-              : "This build has no manifest, so it will not appear in Previous builds — keep this link."}
-          </span>
+        <div className="text-[11px] text-content/85 mt-2">
+          {ctx.manifestWritten
+            ? "This build is in Previous builds, with the settings that made it."
+            : "This build has no manifest, so it will not appear in Previous builds — keep this link."}
         </div>
       </div>
     );

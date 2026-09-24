@@ -4,6 +4,7 @@ import ConfirmDelete from "../../../components-dev/ConfirmDelete";
 import TextField from "../../../components-dev/inputs/TextField";
 import { useExportBuilderCtx } from "./hooks";
 import {
+  clearSelections,
   forgetPreApply,
   rememberBeforeApply,
   setCurrentQuery,
@@ -549,14 +550,14 @@ const QueryPanel = () => {
         <ConfirmDelete
           what={current.name}
           kind="saved query"
-          detail="The box goes back to showing your configuration, which is untouched. Put it back is offered afterwards if it was a mistake."
+          detail="The picks it made go back to their defaults, and the range you searched stays. Put it back is offered afterwards if it was a mistake."
           onCancel={() => setDeleting(false)}
           onConfirm={() => {
             ctx.removeQuery(current);
-            // Its words go with it. Left in the box they read as a delete
-            // that did not happen — the name gone, the text still there and
-            // the panel calling it an edit.
-            setText(generated);
+            // The configuration was the query's, so it goes with the query.
+            // Leaving its picks behind under a name that no longer exists is
+            // how someone builds a file they can no longer explain.
+            ctx.dispatch(clearSelections());
             setEdited(false);
             setError(null);
             setPlan(null);
