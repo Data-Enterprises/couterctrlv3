@@ -975,9 +975,11 @@ const ConfigPanel = () => {
         isOpen={open === "groupBy"}
         onToggle={() => setOpen(open === "groupBy" ? null : "groupBy")}
         summary={
-          ctx.groupBy.length === 0
-            ? "nothing yet"
-            : `${ctx.groupBy.length} key${ctx.groupBy.length === 1 ? "" : "s"}`
+          ctx.groupBy.length > 0
+            ? `${ctx.groupBy.length} key${ctx.groupBy.length === 1 ? "" : "s"}`
+            : ctx.measureItems.length > 0
+              ? "needed for a summary"
+              : "nothing yet"
         }
       >
         <div className="px-3 pb-3 flex flex-col gap-1.5">
@@ -985,6 +987,13 @@ const ConfigPanel = () => {
             One row per combination of these, in the order you tick them.
             Ticking one makes the file a summary.
           </span>
+          {ctx.groupBy.length === 0 && ctx.measureItems.length > 0 && (
+            <span className="text-[11.5px] text-amber-900 bg-amber-50 border border-amber-200 rounded px-2 py-1.5">
+              There are measures but nothing to group them by, so the export
+              has nothing to put in a row. Pick a key — storeid for one row per
+              store, product_code for one per item.
+            </span>
+          )}
           {ctx.groupBy.length > 0 && (
             <div className="flex flex-wrap gap-1">
               {ctx.groupBy.map((name, i) => (

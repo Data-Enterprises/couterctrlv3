@@ -135,8 +135,8 @@ const SummaryPreview = () => {
       {columns.length > 0 && rows.length === 0 && (
         <div className="px-4 py-3 border-t border-brand_line bg-custom-white text-[12px] text-content/70 flex-shrink-0">
           None of the sample lines survive the filters, so there is nothing to
-          group here. The file can still hold plenty: the sample is fifty lines
-          taken where the scan landed.
+          group here. The file can still hold plenty: the sample is two hundred
+          lines taken where the scan landed.
         </div>
       )}
 

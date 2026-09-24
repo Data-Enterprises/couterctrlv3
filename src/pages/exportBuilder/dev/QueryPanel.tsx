@@ -176,7 +176,11 @@ const QueryPanel = () => {
           type="button"
           onClick={apply}
           disabled={!edited}
-          title="Turn this query into the configuration on the left"
+          title={
+            edited
+              ? "Turn this query into the configuration on the left"
+              : "This query already matches the configuration — there is nothing to apply"
+          }
           className="bg-[#1e2a4a] hover:bg-[#2a3a63] text-custom-white text-[12.5px] font-semibold px-4 py-1.5 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
         >
           Apply to configuration
@@ -201,7 +205,9 @@ const QueryPanel = () => {
           </button>
         )}
         <span className="text-[11px] text-content/50">
-          {edited ? "Ctrl+Enter applies it" : "Type to edit it"}
+          {edited
+            ? "Ctrl+Enter applies it"
+            : "Nothing to apply — this is already your configuration. Edit it to change the panel on the left."}
         </span>
         {ctx.queriesError && (
           <span className="text-[11.5px] text-amber-900">

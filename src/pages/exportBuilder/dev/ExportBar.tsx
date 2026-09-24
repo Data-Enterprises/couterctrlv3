@@ -192,11 +192,6 @@ const ExportBar = () => {
             A longer range across more stores takes longer to build.
           </div>
         )}
-        {ctx.blocked && (
-          <div className="text-[11.5px] text-amber-200 mt-1.5 max-w-[80ch]">
-            {ctx.blocked}
-          </div>
-        )}
         {ctx.exportError && (
           <div className="flex items-center gap-1.5 mt-1.5 text-[11.5px] text-amber-200">
             <ClockIcon className="w-3.5 h-3.5 flex-shrink-0" />
@@ -235,14 +230,25 @@ const ExportBar = () => {
           {ctx.loadingSql ? "Reading..." : "Show SQL"}
         </button>
       )}
-      <button
-        type="button"
-        onClick={ctx.build}
-        disabled={nothingToBuild}
-        className="bg-custom-white text-[#1e2a4a] text-[13px] font-semibold px-5 py-2.5 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed"
-      >
-        Build export
-      </button>
+      {/* The reason sits with the button, not only in the paragraph on the
+          left: a greyed button with its explanation ten inches away is a
+          button nobody knows how to un-grey. */}
+      <div className="flex flex-col items-end gap-1 flex-shrink-0">
+        <button
+          type="button"
+          onClick={ctx.build}
+          disabled={nothingToBuild}
+          title={ctx.blocked ?? undefined}
+          className="bg-custom-white text-[#1e2a4a] text-[13px] font-semibold px-5 py-2.5 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          Build export
+        </button>
+        {ctx.blocked && (
+          <span className="text-[11px] text-amber-200 text-right max-w-[34ch]">
+            {ctx.blocked}
+          </span>
+        )}
+      </div>
     </div>
   );
 };
