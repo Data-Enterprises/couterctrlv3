@@ -91,3 +91,30 @@ describe("a vendor who sold on the same day both weeks", () => {
     expect(row.lwPtsDelta).toBeCloseTo(6, 2);
   });
 });
+
+/**
+ * The detail panel works the same figures a second time — its own day strip
+ * and header, from the row's subtotals rather than from the precomputed
+ * fields. It needs the same rule, so this pins the rule rather than the code
+ * path: a margin needs sales, on both sides of a comparison.
+ */
+describe("the numbers the detail panel derives", () => {
+  const row = buildVendorRows(TW, LW, [], DATES)[0];
+
+  it("has a day with sales one week and not the other", () => {
+    const fri = row.days.find((d) => d.date === "2026-09-18")!;
+    expect(fri.twNet).toBe(0);
+    expect(fri.lwNet).toBe(12.5);
+  });
+
+  it("leaves that day's this-week side with no margin to show", () => {
+    // What the strip read as 0.00%, next to a 24-point drop.
+    const fri = row.days.find((d) => d.date === "2026-09-18")!;
+    expect(fri.twNet > 0).toBe(false);
+  });
+
+  it("keeps the week's own margin, which is real", () => {
+    expect(row.tyMarginPct).toBeCloseTo(24, 2);
+    expect(row.twNetForLW).toBe(0);
+  });
+});
