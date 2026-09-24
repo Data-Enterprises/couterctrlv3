@@ -108,6 +108,9 @@ const VendorListPanel = ({ onSearchOpen }: Props) => {
             : pctChange(r.twNetForLY, r.lyNet)
           : null;
         const pct = (n: number) => `${n.toFixed(2)}%`;
+        // A period with no sales has no margin to show. Zero would read as a
+        // week sold at cost.
+        const pctOrDash = (n: number | null) => (n === null ? "—" : pct(n));
         return {
           ...r,
           delta: vendorDelta(r, metric),
@@ -116,12 +119,12 @@ const VendorListPanel = ({ onSearchOpen }: Props) => {
           twText: isMargin ? pct(r.tyMarginPct) : formatCurrency2(r.twNet),
           lwText: r.hasLW
             ? isMargin
-              ? pct(r.lwMarginPct)
+              ? pctOrDash(r.lwMarginPct)
               : formatCurrency2(r.lwNet)
             : "—",
           lyText: r.hasLY
             ? isMargin
-              ? pct(r.lyMarginPct)
+              ? pctOrDash(r.lyMarginPct)
               : formatCurrency2(r.lyNet)
             : "—",
           lwPctText: fmtDelta(lwPct, isMargin),
