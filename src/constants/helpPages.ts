@@ -23,6 +23,7 @@ export const HELP_PAGES = [
   "orders",
   "receivers",
   "sales",
+  "sales-export",
   "store-groups",
   "sub-dept-margins",
   "upc-list",

@@ -3,7 +3,9 @@ import {
   ArrowPathIcon,
   ChevronRightIcon,
   MagnifyingGlassIcon,
+  QuestionMarkCircleIcon,
 } from "@heroicons/react/20/solid";
+import InfoModal from "../../../components-dev/InfoModal";
 import Checkbox from "../../../components-dev/Checkbox";
 import TextField from "../../../components-dev/inputs/TextField";
 import SelectFilter, {
@@ -288,6 +290,7 @@ const ListSearch = ({
 const ConfigPanel = () => {
   const ctx = useExportBuilderCtx();
   const [open, setOpen] = useState<Section | null>(null);
+  const [help, setHelp] = useState(false);
 
   /**
    * Typing lives here, not in the store.
@@ -477,6 +480,15 @@ const ConfigPanel = () => {
         <span className="text-[11px] font-semibold uppercase tracking-wide text-content/85 flex-1">
           Configuration
         </span>
+        <button
+          type="button"
+          onClick={() => setHelp(true)}
+          title="How this page works"
+          aria-label="How this page works"
+          className="w-[22px] h-[22px] rounded border border-brand_line_2 text-content/85 hover:text-content hover:border-brand_slate flex items-center justify-center transition-colors"
+        >
+          <QuestionMarkCircleIcon className="w-3.5 h-3.5" />
+        </button>
         <button
           type="button"
           onClick={() => {
@@ -1428,6 +1440,12 @@ const ConfigPanel = () => {
         </div>
       </Row>
       </div>
+
+      <InfoModal
+        page="sales-export"
+        isOpen={help}
+        onClose={() => setHelp(false)}
+      />
     </div>
   );
 };
