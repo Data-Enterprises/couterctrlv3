@@ -161,6 +161,8 @@ const DownloadsModal = () => {
                   {labelling === build.buildId ? (
                     <SelectFilter
                       plain
+                      searchable
+                      searchPlaceholder="Find a configuration..."
                       options={configOptions}
                       value={build.userQueryId ? String(build.userQueryId) : ""}
                       onChange={(value) => {

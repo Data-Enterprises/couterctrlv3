@@ -135,6 +135,8 @@ const QueryPanel = () => {
         {ctx.queries.length > 0 && (
           <SelectFilter
             plain
+            searchable
+            searchPlaceholder="Find a saved query..."
             placeholder="Open saved..."
             options={ctx.queries.map((q) => ({
               value: String(q.id),

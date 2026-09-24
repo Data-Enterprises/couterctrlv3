@@ -1064,6 +1064,8 @@ const ConfigPanel = () => {
               <div className="flex items-center gap-1.5">
                 <SelectFilter
                   plain
+                  searchable
+                  searchPlaceholder="Find a column..."
                   options={measureColumns}
                   value={m.column}
                   onChange={(value) => changeMeasureColumn(i, value)}
