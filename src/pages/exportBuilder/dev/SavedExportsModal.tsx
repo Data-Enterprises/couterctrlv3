@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { BookmarkIcon } from "@heroicons/react/24/outline";
 import Modal from "../../../components-dev/Modal";
+import ConfirmDelete from "../../../components-dev/ConfirmDelete";
 import TextField from "../../../components-dev/inputs/TextField";
 import { useExportBuilderCtx } from "./hooks";
 import { describePayload, toPayload } from "./savedExports";
@@ -30,6 +31,7 @@ const SavedExportsModal = () => {
   const ctx = useExportBuilderCtx();
   const [name, setName] = useState("");
   const [note, setNote] = useState("");
+  const [deleting, setDeleting] = useState<number | null>(null);
 
   // The list is read once a session, when someone first opens this.
   useEffect(() => {
@@ -181,7 +183,7 @@ const SavedExportsModal = () => {
               </button>
               <button
                 type="button"
-                onClick={() => ctx.deleteSaved(saved.id)}
+                onClick={() => setDeleting(saved.id)}
                 disabled={ctx.savedBusy}
                 aria-label={`Delete ${saved.name}`}
                 className="text-[12px] font-medium px-3 py-1.5 rounded-lg border border-brand_line_2 hover:border-brand_slate transition-colors disabled:opacity-40"
@@ -208,6 +210,19 @@ const SavedExportsModal = () => {
           )}
         </div>
       </div>
+
+      {deleting !== null && (
+        <ConfirmDelete
+          what={ctx.saved.find((s) => s.id === deleting)?.name ?? "this one"}
+          kind="configuration"
+          detail="Builds made from it keep its name and stay in Previous builds."
+          onCancel={() => setDeleting(null)}
+          onConfirm={() => {
+            ctx.deleteSaved(deleting);
+            setDeleting(null);
+          }}
+        />
+      )}
     </Modal>
   );
 };

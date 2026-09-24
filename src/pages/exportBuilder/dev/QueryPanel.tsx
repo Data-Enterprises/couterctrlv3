@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Modal from "../../../components-dev/Modal";
+import ConfirmDelete from "../../../components-dev/ConfirmDelete";
 import TextField from "../../../components-dev/inputs/TextField";
 import SelectFilter from "../../../components-dev/filters/SelectFilter";
 import { useExportBuilderCtx } from "./hooks";
@@ -46,6 +47,7 @@ const QueryPanel = () => {
   );
   const [plan, setPlan] = useState<ApplyPlan | null>(null);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [name, setName] = useState("");
   const [note, setNote] = useState("");
 
@@ -146,6 +148,7 @@ const QueryPanel = () => {
           </span>
         )}
         <div className="flex-1" />
+
         {ctx.queries.length > 0 && (
           <SelectFilter
             plain
@@ -158,22 +161,72 @@ const QueryPanel = () => {
             }))}
             value={current ? String(current.id) : ""}
             onChange={openSaved}
-            className="w-[150px]"
+            className="w-[160px]"
           />
         )}
-        <button
-          type="button"
-          onClick={() => {
-            setName(current?.name ?? "");
-            setNote(current?.description ?? "");
-            setSaving(true);
-          }}
-          className="text-[11.5px] text-brand_navy_hover underline underline-offset-2"
-        >
-          Save this
-        </button>
+
+        {/*
+          * The four things you can do to a saved query, where the saved query
+          * is — rather than behind a Save this that turned out to be all of
+          * them. Update is the common one, so it is the one that is a button.
+          */}
+        {current ? (
+          <>
+            <button
+              type="button"
+              onClick={() => ctx.saveQuery(current.name, text, current.id, current.description ?? "")}
+              title={`Replace "${current.name}" with what is in the box`}
+              className="text-[11.5px] font-semibold px-2.5 py-1 rounded border border-brand_line_2 hover:border-brand_slate transition-colors"
+            >
+              Update
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setName("");
+                setNote(current.description ?? "");
+                setSaving(true);
+              }}
+              className="text-[11.5px] text-brand_navy_hover underline underline-offset-2"
+            >
+              Save as new
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setName(current.name);
+                setNote(current.description ?? "");
+                setSaving(true);
+              }}
+              className="text-[11.5px] text-brand_navy_hover underline underline-offset-2"
+            >
+              Rename
+            </button>
+            <button
+              type="button"
+              onClick={() => setDeleting(true)}
+              className="text-[11.5px] text-brand_navy_hover underline underline-offset-2"
+            >
+              Delete
+            </button>
+          </>
+        ) : (
+          <button
+            type="button"
+            onClick={() => {
+              setName("");
+              setNote("");
+              setSaving(true);
+            }}
+            className="text-[11.5px] font-semibold px-2.5 py-1 rounded border border-brand_line_2 hover:border-brand_slate transition-colors"
+          >
+            Save this query
+          </button>
+        )}
       </div>
 
+      {/* Capped: dragged past the window, the grip on its corner goes with
+          it and there is no way left to drag it back. */}
       <textarea
         value={text}
         onChange={(e) => onText(e.target.value)}
@@ -182,7 +235,7 @@ const QueryPanel = () => {
         spellCheck={false}
         aria-label="The configuration, as a query"
         className="w-full border-0 px-3 py-2 text-[12px] font-mono resize-y bg-card_bg"
-        style={{ outline: "none" }}
+        style={{ outline: "none", minHeight: 88, maxHeight: "34vh" }}
       />
 
       <div className="flex items-center gap-2 px-3 py-2 border-t border-brand_line flex-wrap">
@@ -279,7 +332,11 @@ const QueryPanel = () => {
           modalClassName="bg-card_bg w-[520px] max-w-[92vw]"
         >
           <div className="flex flex-col gap-3 p-4">
-            <h2 className="text-[15px] font-semibold">Save this query</h2>
+            <h2 className="text-[15px] font-semibold">
+              {current && name === current.name
+                ? `Rename "${current.name}"`
+                : "Save this query"}
+            </h2>
             <TextField
               label="Name"
               value={name}
@@ -292,68 +349,60 @@ const QueryPanel = () => {
               placeholder="What it answers"
               onChange={setNote}
             />
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 justify-end">
+              <button
+                type="button"
+                onClick={() => setSaving(false)}
+                className="text-[12.5px] font-medium px-3 py-1.5 rounded-lg border border-brand_line_2 hover:border-brand_slate transition-colors"
+              >
+                Cancel
+              </button>
               <button
                 type="button"
                 onClick={() => {
-                  ctx.saveQuery(name, text, ctx.currentQueryId, note);
+                  // A name that is still the one it had means a rename; a new
+                  // one, or none loaded, means another row.
+                  const keeping =
+                    current && name.trim() === current.name ? current.id : null;
+                  ctx.saveQuery(name, text, keeping, note);
                   setSaving(false);
                 }}
                 disabled={!name.trim()}
                 className="bg-[#1e2a4a] hover:bg-[#2a3a63] text-custom-white text-[12.5px] font-semibold px-4 py-1.5 rounded-lg transition-colors disabled:opacity-40"
               >
-                {current ? `Update "${current.name}"` : "Save"}
-              </button>
-              {current && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    ctx.saveQuery(name, text, null, note);
-                    setSaving(false);
-                  }}
-                  disabled={!name.trim()}
-                  className="text-[12.5px] font-medium px-3 py-1.5 rounded-lg border border-brand_line_2 hover:border-brand_slate transition-colors disabled:opacity-40"
-                >
-                  Save as new
-                </button>
-              )}
-              <div className="flex-1" />
-              {current && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    ctx.removeQuery(current);
-                    setSaving(false);
-                  }}
-                  className="text-[11.5px] text-brand_navy_hover underline underline-offset-2"
-                >
-                  Delete
-                </button>
-              )}
-              <button
-                type="button"
-                onClick={() => setSaving(false)}
-                className="text-[12px] font-medium px-3 py-1.5 rounded-lg border border-brand_line_2 hover:border-brand_slate transition-colors"
-              >
-                Close
+                {current && name.trim() === current.name ? "Save changes" : "Save"}
               </button>
             </div>
-            {ctx.deletedQuery && (
-              <div className="flex items-center gap-3 text-[11.5px]">
-                <span className="text-content/70 flex-1">
-                  Deleted "{ctx.deletedQuery.name}".
-                </span>
-                <button
-                  type="button"
-                  onClick={ctx.undoDeleteQuery}
-                  className="font-semibold text-brand_navy_hover underline underline-offset-2"
-                >
-                  Put it back
-                </button>
-              </div>
-            )}
           </div>
         </Modal>
+      )}
+
+      {deleting && current && (
+        <ConfirmDelete
+          what={current.name}
+          kind="saved query"
+          detail="The text stays in the box, so you can save it again."
+          onCancel={() => setDeleting(false)}
+          onConfirm={() => {
+            ctx.removeQuery(current);
+            setDeleting(false);
+          }}
+        />
+      )}
+
+      {ctx.deletedQuery && (
+        <div className="bg-custom-white border-t border-brand_line px-3 py-2 flex items-center gap-3">
+          <span className="text-[11.5px] text-content/75 flex-1">
+            Deleted "{ctx.deletedQuery.name}".
+          </span>
+          <button
+            type="button"
+            onClick={ctx.undoDeleteQuery}
+            className="text-[11.5px] font-semibold text-brand_navy_hover underline underline-offset-2"
+          >
+            Put it back
+          </button>
+        </div>
       )}
     </div>
   );

@@ -4,6 +4,7 @@ import Modal from "../../../components-dev/Modal";
 import SelectFilter from "../../../components-dev/filters/SelectFilter";
 import { useExportBuilderCtx } from "./hooks";
 import { openBuilds } from "../../../features/dev/devExportBuilderSlice";
+import { requestToQuery } from "./query/configToQuery";
 import type { ExportBuild } from "../../../api/exportBuilds";
 
 const mb = (bytes: number) => `${(bytes / 1024 / 1024).toFixed(1)} MB`;
@@ -40,6 +41,7 @@ const ranAt = (iso: string) => {
 const DownloadsModal = () => {
   const ctx = useExportBuilderCtx();
   const [labelling, setLabelling] = useState<string | null>(null);
+  const [showing, setShowing] = useState<string | null>(null);
 
   const close = () => ctx.dispatch(openBuilds(false));
 
@@ -137,22 +139,37 @@ const DownloadsModal = () => {
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <div className="text-[13px] font-semibold">
-                      {build.startDate} to {build.endDate}
-                      <span className="font-normal text-content/60">
-                        {" "}
-                        · {build.storeCount} store
-                        {build.storeCount === 1 ? "" : "s"}
-                      </span>
+                    {/* The file's own name first: it is what lands in the
+                        downloads folder, and what someone asks about later. */}
+                    <div className="font-mono text-[12.5px] font-semibold truncate">
+                      {build.files.map((f) => f.key.split("/").pop()).join(", ") ||
+                        "no file"}
                     </div>
                     <div className="text-[11.5px] text-content/70 mt-0.5">
+                      {build.startDate} to {build.endDate} ·{" "}
+                      {build.storeCount} store
+                      {build.storeCount === 1 ? "" : "s"} ·{" "}
                       {build.rowsUploaded.toLocaleString()} rows ·{" "}
                       {mb(build.bytesUploaded)} ·{" "}
-                      {build.fileFormat.toUpperCase()} · built in{" "}
-                      {build.elapsedSeconds.toFixed(1)}s
+                      {build.fileFormat.toUpperCase()}
                     </div>
                     <div className="text-[11px] text-content/45 mt-0.5">
-                      ran {ranAt(build.createdAt)}
+                      ran {ranAt(build.createdAt)} · built in{" "}
+                      {build.elapsedSeconds.toFixed(1)}s
+                      {" · "}
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setShowing(
+                            showing === build.buildId ? null : build.buildId,
+                          )
+                        }
+                        className="text-brand_navy_hover underline underline-offset-2"
+                      >
+                        {showing === build.buildId
+                          ? "hide the query"
+                          : "the query it ran"}
+                      </button>
                     </div>
                   </div>
 
@@ -209,6 +226,17 @@ const DownloadsModal = () => {
                   )}
                 </div>
               ))}
+
+              {group.builds
+                .filter((build) => showing === build.buildId)
+                .map((build) => (
+                  <pre
+                    key={`${build.buildId}-query`}
+                    className="bg-custom-white border border-brand_line rounded-lg px-3 py-2 text-[11.5px] font-mono whitespace-pre-wrap break-words text-content"
+                  >
+                    {requestToQuery(build.request)}
+                  </pre>
+                ))}
             </div>
           ))}
 

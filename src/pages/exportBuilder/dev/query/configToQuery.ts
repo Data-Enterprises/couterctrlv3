@@ -1,4 +1,5 @@
 import type { ExportBuilderState } from "../../../../features/dev/devExportBuilderSlice";
+import type { ExportParams } from "../../../../api/salesExport";
 import type { MeasureItem } from "./evalQuery";
 import { sketchExpr } from "./sketchExpr";
 
@@ -120,5 +121,74 @@ export const configToQuery = (
     );
   }
 
+  return lines.join("\n");
+};
+
+/**
+ * A past build's payload, written out the same way.
+ *
+ * The manifest holds what was sent, which is a simpler thing to read than a
+ * configuration: a null list already means "every one of them", so there is
+ * nothing to compare against. Used to show what a build actually ran, a month
+ * after anyone remembers.
+ */
+export const requestToQuery = (request: Partial<ExportParams>) => {
+  const lines: string[] = [];
+  const list = (column: string, values: (string | number)[] | null | undefined, numeric = false) =>
+    values && values.length > 0 ? asList(column, values.map(String), numeric) : null;
+
+  const measures = [
+    ...(request.aggregates ?? []).map((m) => {
+      const body =
+        m.column === "*" ? "count(*)" : `${m.fn}(${m.column})`;
+      const derived =
+        m.column === "*" ? "row_count" : `${m.column}_${m.fn}`;
+      return !m.alias || m.alias === derived ? body : `${body} as ${m.alias}`;
+    }),
+    ...(request.computed ?? []).map((c) => `${sketchExpr(c.expr)} as ${c.alias}`),
+  ];
+
+  if (request.groupBy?.length || measures.length > 0) {
+    lines.push(`select ${[...(request.groupBy ?? []), ...measures].join(", ")}`);
+  } else if (request.columns?.length) {
+    lines.push(`select ${request.columns.join(", ")}`);
+  } else {
+    lines.push("select *");
+  }
+
+  const where = [
+    list("sale_type", request.saleTypes),
+    list("item_ring_type", request.itemRingTypes),
+    list("sub_department", request.subDepartments, true),
+    list("vendor_id", request.vendorIds),
+    list("cashier_number", request.cashierNumbers, true),
+    list("sale_date", request.saleDates),
+    list("product_code", request.productCodes),
+    request.productDescriptions?.length
+      ? request.productDescriptions
+          .map((term) => `product_description ilike '%${term}%'`)
+          .join(" or ")
+      : null,
+    request.voidFlag === null || request.voidFlag === undefined
+      ? null
+      : request.voidFlag
+        ? "void_flag <> 0"
+        : "void_flag = 0",
+    request.refundFlag === null || request.refundFlag === undefined
+      ? null
+      : request.refundFlag
+        ? "refund_flag <> 0"
+        : "refund_flag = 0",
+  ].filter(Boolean) as string[];
+
+  if (where.length > 0) lines.push(`where ${where.join("\n  and ")}`);
+  if (request.groupBy?.length) lines.push(`group by ${request.groupBy.join(", ")}`);
+  if (request.orderBy?.length) {
+    lines.push(
+      `order by ${request.orderBy
+        .map((s) => `${s.key}${s.desc ? " desc" : ""}`)
+        .join(", ")}`,
+    );
+  }
   return lines.join("\n");
 };
