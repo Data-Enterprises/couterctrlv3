@@ -86,6 +86,26 @@ const SLOW_AFTER_MS = 120_000;
 const MAX_DAYS = 366;
 
 /**
+ * The longest range this page will search.
+ *
+ * The preview reads every line in the window to work out what the filter
+ * lists hold, so its cost follows the range rather than the file — a quarter
+ * takes minutes and then hands back the same two hundred sample rows. The
+ * export itself has no such limit: build a month at a time, or ask for a
+ * longer one from a configuration once it is right.
+ */
+export const MAX_RANGE_DAYS = 31;
+
+/** Days from one to the other, inclusive, or 0 for a range that runs
+ *  backwards. Counted in UTC, like everything else here. */
+const countDays = (start: string, end: string) => {
+  const from = Date.parse(start + "T00:00:00Z");
+  const to = Date.parse(end + "T00:00:00Z");
+  if (Number.isNaN(from) || Number.isNaN(to) || to < from) return 0;
+  return Math.round((to - from) / 86_400_000) + 1;
+};
+
+/**
  * Every day the range covers, inclusive, as `YYYY-MM-DD`.
  *
  * Built in UTC on purpose. Both ends are already plain days by the time they
@@ -116,6 +136,15 @@ export const useExportBuilderCtx = () => {
 
   const startDate = formatGoliathDate(search.startDate);
   const endDate = formatGoliathDate(search.endDate);
+
+  /** Why the search card cannot run this range, or null. */
+  const rangeDays = countDays(startDate, endDate);
+  const searchBlocked =
+    rangeDays === 0
+      ? "The end date is before the start date."
+      : rangeDays > MAX_RANGE_DAYS
+        ? `That is ${rangeDays} days. This page reads every line in the range to work out what you can filter on, so it takes ${MAX_RANGE_DAYS} days at a time — pick a shorter range.`
+        : null;
 
   /**
    * The columns as the file will hold them: the user's order, narrowed to what
@@ -963,6 +992,7 @@ export const useExportBuilderCtx = () => {
     summary,
     staleBuild,
     blocked,
+    searchBlocked,
     loadConfig,
     loadBuilds,
     reloadBuild,

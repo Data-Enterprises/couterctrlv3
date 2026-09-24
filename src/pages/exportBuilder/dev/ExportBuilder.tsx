@@ -28,6 +28,7 @@ const ExportBuilder = () => {
         buttonLabel="Load config"
         loadingMessage="Reading the range..."
         loading={ctx.loadingConfig}
+        blocked={ctx.searchBlocked}
         onSearch={ctx.loadConfig}
       />
     );
