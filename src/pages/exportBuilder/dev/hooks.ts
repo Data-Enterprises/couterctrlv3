@@ -23,22 +23,6 @@ import {
   relabelBuild,
   setBuilds,
   startBuildsLoad,
-  setAggregates,
-  setComputed,
-  setOrderBy,
-  setColumnOrder,
-  setGroupBy,
-  setProductCodes,
-  setProductDescriptions,
-  setSelectedCashiers,
-  setSelectedPriceTypes,
-  setSelectedColumns,
-  setSelectedRingTypes,
-  setSelectedSaleDates,
-  setSelectedSaleTypes,
-  setSelectedSubDepartments,
-  setSelectedVendors,
-  setFlag,
   failSavedWork,
   markSavedLoaded,
   removeSaved,
@@ -76,8 +60,8 @@ import {
   type ExportBuild,
   type ExportBuildsResp,
 } from "../../../api/exportBuilds";
-import { setEndDate, setStartDate } from "../../../features/searchSlice";
 import { planLoad, toPayload } from "./savedExports";
+import type { SavedConfigPayload } from "../../../api/savedConfigs";
 import {
   createSavedQuery,
   deleteSavedQuery,
@@ -779,62 +763,68 @@ export const useExportBuilderCtx = () => {
    * else's dates is a hybrid nobody asked for — which means re-running the
    * preview for that scope.
    */
-  /** The settings of a build, onto a panel that has just been loaded. */
-  const applyRequest = (request: ExportBuild["request"]) => {
-    dispatch(setGroupBy(request.groupBy ?? []));
-    dispatch(setAggregates(request.aggregates ?? []));
-    dispatch(setComputed(request.computed ?? []));
-    dispatch(setOrderBy(request.orderBy ?? []));
-    if (request.columns?.length) {
-      dispatch(setSelectedColumns(request.columns));
-      dispatch(setColumnOrder(request.columns));
-    }
-    // A filter absent from the payload meant every one of them, which is
-    // what the lists hold already after a preview.
-    if (request.saleTypes) dispatch(setSelectedSaleTypes(request.saleTypes));
-    if (request.itemRingTypes) {
-      dispatch(setSelectedRingTypes(request.itemRingTypes));
-    }
-    if (request.subDepartments) {
-      dispatch(setSelectedSubDepartments(request.subDepartments.map(String)));
-    }
-    if (request.vendorIds) dispatch(setSelectedVendors(request.vendorIds));
-    if (request.cashierNumbers) {
-      dispatch(setSelectedCashiers(request.cashierNumbers));
-    }
-    if (request.priceTypes) dispatch(setSelectedPriceTypes(request.priceTypes));
-    if (request.saleDates) dispatch(setSelectedSaleDates(request.saleDates));
-    dispatch(setProductCodes(request.productCodes ?? []));
-    dispatch(setProductDescriptions(request.productDescriptions ?? []));
-    dispatch(
-      setFlag({
-        voidFlag: request.voidFlag ?? null,
-        refundFlag: request.refundFlag ?? null,
-        fileFormat: request.fileFormat ?? "csv",
-        dateFormat: request.dateFormat ?? "",
-        filePrefix: request.filePrefix ?? "sales",
-        ordered: request.ordered ?? false,
-      }),
-    );
-  };
-
   /**
-   * Put a past build back on screen, data and all.
+   * Put a past build's settings back on screen.
    *
-   * From the build, never from the config it names: the manifest is literally
-   * what produced that file, and the config row may have been edited or
-   * deleted since. The range comes back with it and the preview is re-run for
-   * that range — settings over somebody else's dates is a hybrid nobody asked
-   * for, and the filter lists would be the wrong window's.
+   * From the build, never from the configuration it names: the manifest is
+   * literally what produced that file, and the configuration row may have
+   * been edited or deleted since.
+   *
+   * The DATES are left alone on purpose. A build is a question asked of one
+   * window; reloading it is nearly always to ask the same question of a
+   * different one, and re-running the preview for last week's range is a
+   * three-second wait to undo. The days it pinned inside its own range go
+   * with them, and the note says so.
+   *
+   * Everything else is intersected with what the open range actually holds,
+   * through the same check a saved configuration goes through — including the
+   * price types, which are a different company's words often enough to
+   * matter.
    */
   const reloadBuild = (build: ExportBuild) => {
-    dispatch(openBuilds(false));
-    dispatch(setStartDate(build.startDate));
-    dispatch(setEndDate(build.endDate));
-    dispatch(markSavedLoaded({ id: build.userQueryId ?? 0, notes: [] }));
-    loadConfig({ start: build.startDate, end: build.endDate }, () =>
-      applyRequest(build.request),
+    const request = build.request;
+    const payload: SavedConfigPayload = {
+      v: 1,
+      mode: request.groupBy?.length ? "summary" : "lines",
+      columns: request.columns ?? [],
+      columnOrder: request.columns ?? [],
+      groupBy: request.groupBy ?? [],
+      aggregates: request.aggregates ?? [],
+      computed: request.computed ?? [],
+      orderBy: request.orderBy ?? [],
+      storeIds: request.storeids ?? null,
+      saleTypes: request.saleTypes ?? null,
+      ringTypes: request.itemRingTypes ?? null,
+      subDepartments: request.subDepartments?.map(String) ?? null,
+      vendors: request.vendorIds ?? null,
+      cashiers: request.cashierNumbers ?? null,
+      priceTypes: request.priceTypes ?? null,
+      productCodes: request.productCodes ?? [],
+      productDescriptions: request.productDescriptions ?? [],
+      flags: {
+        voidFlag: request.voidFlag ?? null,
+        refundFlag: request.refundFlag ?? null,
+        dateFormat: request.dateFormat ?? "",
+        fileFormat: request.fileFormat ?? "csv",
+        filePrefix: request.filePrefix ?? "sales",
+        ordered: request.ordered ?? false,
+      },
+    };
+
+    const plan = planLoad(payload, config);
+    plan.actions.forEach((action) => dispatch(action));
+    dispatch(
+      markSavedLoaded({
+        // Null for an ad-hoc build: there is no configuration behind it, and
+        // claiming one would put the wrong name on the next build.
+        id: build.userQueryId,
+        notes: [
+          `Loaded from the build of ${build.startDate} to ${build.endDate}. The dates on the search card were left as they are.`,
+          ...plan.missing,
+        ],
+      }),
     );
+    dispatch(openBuilds(false));
   };
 
   /**

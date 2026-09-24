@@ -171,3 +171,60 @@ describe("a row of a shared table", () => {
     expect(parseConfigRow(row('{"v":2,"mode":"lines"}'))).toBeNull();
   });
 });
+
+describe("a build reloaded onto the range that is open", () => {
+  it("drops the days it pinned inside its own range", () => {
+    // A build's days are absolute — the 14th and 15th of its own window — and
+    // the range on screen is somebody else's. The note says so; the days go.
+    const plan = planLoad(
+      { ...toPayload(september()), storeIds: null },
+      september({ saleDates: ["2026-10-05", "2026-10-06"] }),
+    );
+    expect(plan.missing.join(" ")).toMatch(/Days are not saved/);
+  });
+
+  it("checks the price types against the company that is open", () => {
+    // Saved against Food Giant, reopened against a company that says REG.
+    const saved = toPayload(
+      september({
+        priceTypes: [
+          { value: "Regular", label: "Regular" },
+          { value: "Sale", label: "Sale" },
+        ],
+        selectedPriceTypes: ["Regular"],
+      }),
+    );
+    const plan = planLoad(
+      saved,
+      september({
+        priceTypes: [
+          { value: "REG", label: "REG" },
+          { value: "", label: "(none)" },
+        ],
+        selectedPriceTypes: ["REG", ""],
+      }),
+    );
+    expect(plan.missing.join(" ")).toMatch(/price types this range does not have/);
+    expect(plan.missing.join(" ")).toMatch(/Regular/);
+  });
+
+  it("names the empty price type rather than showing a gap", () => {
+    const saved = toPayload(
+      september({
+        priceTypes: [
+          { value: "REG", label: "REG" },
+          { value: "", label: "(none)" },
+        ],
+        selectedPriceTypes: [""],
+      }),
+    );
+    const plan = planLoad(
+      saved,
+      september({
+        priceTypes: [{ value: "REG", label: "REG" }],
+        selectedPriceTypes: ["REG"],
+      }),
+    );
+    expect(plan.missing.join(" ")).toMatch(/\(none\)/);
+  });
+});

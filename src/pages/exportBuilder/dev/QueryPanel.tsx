@@ -60,6 +60,23 @@ const QueryPanel = () => {
     if (!edited) setText(generated);
   }, [generated, edited]);
 
+  /**
+   * A configuration replaced wholesale wins over an edit in progress.
+   *
+   * Loading a saved one, reloading a build or undoing an apply all put a
+   * different configuration on screen; half-typed text describing the last
+   * one is not worth keeping over it.
+   */
+  const stamp = useRef(ctx.configStamp);
+  useEffect(() => {
+    if (ctx.configStamp === stamp.current) return;
+    stamp.current = ctx.configStamp;
+    setText(generated);
+    setEdited(false);
+    setError(null);
+    setPlan(null);
+  }, [ctx.configStamp, generated]);
+
   const onText = (value: string) => {
     setText(value);
     setEdited(value !== generated);

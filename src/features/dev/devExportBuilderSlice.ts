@@ -183,6 +183,14 @@ export interface ExportBuilderState {
    *  nothing to take back. */
   preApply: ConfigSnapshot | null;
   /**
+   * Bumped whenever the whole configuration is replaced rather than nudged.
+   *
+   * The query box follows the ticks unless someone has typed in it, and a
+   * wholesale replacement has to win over that — the text they were part way
+   * through describes a configuration that is gone.
+   */
+  configStamp: number;
+  /**
    * Saved configurations — the questions, as rows of `user_queries`.
    *
    * Fetched beside the preview, because the scope search is the one moment
@@ -291,6 +299,7 @@ export const initialState: ExportBuilderState = {
   currentQueryId: null,
   deletedQuery: null,
   preApply: null,
+  configStamp: 0,
   saved: [],
   savedLoaded: false,
   savedBusy: false,
@@ -439,6 +448,7 @@ const devExportBuilderSlice = createSlice({
       state.selectedVendors = state.vendors.map((v) => v.vendor_id);
       state.selectedCashiers = cashiers.map((c) => c.cashier_number);
       state.selectedPriceTypes = priceTypes.map((p) => p.value);
+      state.configStamp += 1;
       state.selectedSaleDates = [...saleDates];
       state.selectedColumns = columns.map((c) => c.name);
       state.columnOrder = columns.map((c) => c.name);
@@ -706,12 +716,21 @@ const devExportBuilderSlice = createSlice({
       state.savedError = action.payload;
     },
     /** A saved configuration has just been applied, with what it could not do. */
+    /**
+     * A whole configuration has just been put on screen, with whatever the
+     * open range could not honour.
+     *
+     * `id` is null for a build that was run ad-hoc: there is no saved
+     * configuration behind it, and claiming one would put the wrong name on
+     * the next build.
+     */
     markSavedLoaded: (
       state,
-      action: PayloadAction<{ id: number; notes: string[] }>,
+      action: PayloadAction<{ id: number | null; notes: string[] }>,
     ) => {
       state.savedCurrentId = action.payload.id;
       state.savedNotes = action.payload.notes;
+      state.configStamp += 1;
     },
     /** Kept so closing the window is not the same as losing the query. */
     setQuerySql: (state, action: PayloadAction<string>) => {
@@ -788,6 +807,7 @@ const devExportBuilderSlice = createSlice({
       if (!state.preApply) return;
       Object.assign(state, state.preApply);
       state.preApply = null;
+      state.configStamp += 1;
     },
     forgetPreApply: (state) => {
       state.preApply = null;
@@ -920,6 +940,7 @@ const devExportBuilderSlice = createSlice({
       state.orderBy = [];
       state.flags = { ...initialState.flags };
       state.preApply = null;
+      state.configStamp += 1;
       state.files = [];
       state.exportError = null;
     },
