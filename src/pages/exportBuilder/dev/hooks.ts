@@ -28,7 +28,6 @@ import {
   setOrderBy,
   setColumnOrder,
   setGroupBy,
-  setMode,
   setProductCodes,
   setProductDescriptions,
   setSelectedCashiers,
@@ -172,7 +171,17 @@ export const useExportBuilderCtx = () => {
       : null,
   ].filter(Boolean) as string[];
 
-  const aggregating = config.mode === "summary";
+  /**
+   * The file's shape, read off the configuration rather than switched.
+   *
+   * Either half is enough to mean it: keys with no measures is a summary
+   * someone has not finished, and `blocked` says which half is missing. That
+   * is a better answer than quietly writing the lines instead.
+   */
+  const aggregating =
+    config.groupBy.length > 0 ||
+    config.aggregates.length > 0 ||
+    config.computed.length > 0;
 
   /**
    * A measure whose name another one already has.
@@ -751,7 +760,6 @@ export const useExportBuilderCtx = () => {
    */
   /** The settings of a build, onto a panel that has just been loaded. */
   const applyRequest = (request: ExportBuild["request"]) => {
-    dispatch(setMode(request.groupBy?.length ? "summary" : "lines"));
     dispatch(setGroupBy(request.groupBy ?? []));
     dispatch(setAggregates(request.aggregates ?? []));
     dispatch(setComputed(request.computed ?? []));

@@ -4,7 +4,7 @@ import reducer, {
   forgetQuery,
   initialState,
   rememberBeforeApply,
-  setMode,
+  setGroupBy,
   setQueries,
   setSelectedSaleTypes,
   undoApply,
@@ -75,20 +75,19 @@ describe("taking back an Apply", () => {
     // arrow clears everything, and neither is "as it was a moment ago".
     const before = {
       ...picked,
-      mode: "lines" as const,
       selectedSaleTypes: ["Sale"],
       productCodes: ["1200000088"],
     };
     const remembered = reducer(before, rememberBeforeApply());
 
     const applied = reducer(
-      reducer(remembered, setMode("summary")),
+      reducer(remembered, setGroupBy(["storeid"])),
       setSelectedSaleTypes(["Sale", "Tender"]),
     );
-    expect(applied.mode).toBe("summary");
+    expect(applied.groupBy).toEqual(["storeid"]);
 
     const back = reducer(applied, undoApply());
-    expect(back.mode).toBe("lines");
+    expect(back.groupBy).toEqual([]);
     expect(back.selectedSaleTypes).toEqual(["Sale"]);
     expect(back.productCodes).toEqual(["1200000088"]);
     // One step back, not a history: the offer goes once it is taken.
@@ -103,7 +102,7 @@ describe("taking back an Apply", () => {
   it("does not reach the data, only the picks", () => {
     const loaded = { ...picked, rows: [{ sale_id: 1 }], hasData: true };
     const back = reducer(
-      reducer(reducer(loaded, rememberBeforeApply()), setMode("summary")),
+      reducer(reducer(loaded, rememberBeforeApply()), setGroupBy(["storeid"])),
       undoApply(),
     );
     expect(back.rows).toHaveLength(1);

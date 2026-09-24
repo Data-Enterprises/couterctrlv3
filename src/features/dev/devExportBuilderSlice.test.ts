@@ -269,7 +269,7 @@ describe("clearing the picks", () => {
     expect(cleared.selectedSaleTypes).toEqual(["Sale", "Refunded"]);
     expect(cleared.productCodes).toEqual([]);
     expect(cleared.flags.voidFlag).toBeNull();
-    expect(cleared.mode).toBe("lines");
+    expect(cleared.groupBy).toEqual([]);
   });
 
   it("leaves the loaded range alone, unlike a new search", () => {

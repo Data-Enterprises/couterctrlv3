@@ -38,9 +38,13 @@ export interface ExportFlags {
 /**
  * What the file is: every line, or a rollup of them.
  *
- * Not a filter — it decides the file's shape, so the column picker and the
- * group/measure pickers are alternatives rather than two halves of one
- * question. The endpoint refuses a request carrying both.
+ * Nothing stores this. It is read off the configuration — group keys or
+ * measures mean a summary, and their absence means the lines — because a
+ * switch for it was one more thing to flip before you could see the section
+ * you wanted. Asking for a rollup IS asking for a rollup.
+ *
+ * The endpoint still refuses a request carrying both shapes, which is why
+ * this is decided in one place: `aggregating` in the page's hook.
  */
 export type ExportMode = "lines" | "summary";
 
@@ -53,7 +57,6 @@ export type ExportMode = "lines" | "summary";
  */
 export type ConfigSnapshot = Pick<
   ExportBuilderState,
-  | "mode"
   | "groupBy"
   | "aggregates"
   | "computed"
@@ -131,7 +134,6 @@ export interface ExportBuilderState {
    */
   columnOrder: string[];
 
-  mode: ExportMode;
   /** Column names, in the order they are grouped and written. */
   groupBy: string[];
   /** `{ column, fn }`, where column may be `*` for count(*), plus a name of
@@ -255,7 +257,6 @@ export const initialState: ExportBuilderState = {
   productDescriptions: [],
   columnOrder: [],
 
-  mode: "lines",
   groupBy: [],
   aggregates: [],
   computed: [],
@@ -547,9 +548,6 @@ const devExportBuilderSlice = createSlice({
     setProductDescriptions: (state, action: PayloadAction<string[]>) => {
       state.productDescriptions = action.payload;
     },
-    setMode: (state, action: PayloadAction<ExportMode>) => {
-      state.mode = action.payload;
-    },
     /**
      * Group keys are ordered, so a tick appends rather than sorting.
      *
@@ -739,7 +737,6 @@ const devExportBuilderSlice = createSlice({
      */
     rememberBeforeApply: (state) => {
       state.preApply = {
-        mode: state.mode,
         groupBy: state.groupBy,
         aggregates: state.aggregates,
         computed: state.computed,
@@ -887,7 +884,6 @@ const devExportBuilderSlice = createSlice({
       state.columnOrder = state.columns.map((c) => c.name);
       state.productCodes = [];
       state.productDescriptions = [];
-      state.mode = "lines";
       state.groupBy = [];
       state.aggregates = [];
       state.computed = [];
@@ -929,7 +925,6 @@ export const {
   setSelectedColumns,
   setProductCodes,
   setProductDescriptions,
-  setMode,
   toggleGroupBy,
   setGroupBy,
   addAggregate,

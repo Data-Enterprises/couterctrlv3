@@ -123,7 +123,6 @@ describe("loading one onto a different range", () => {
   it("drops a measure whose column is not in this table", () => {
     const saved = toPayload(
       september({
-        mode: "summary",
         groupBy: ["storeid", "gone_column"],
         aggregates: [
           { column: "total_sales", fn: "sum" },
@@ -161,7 +160,7 @@ describe("a row of a shared table", () => {
     const payload = toPayload(september());
     const parsed = parseConfigRow(row(JSON.stringify(payload)));
     expect(parsed?.id).toBe(7);
-    expect(parsed?.payload.mode).toBe("lines");
+    expect(parsed?.payload.groupBy).toEqual([]);
   });
 
   it("skips anything that is not, rather than breaking the list", () => {

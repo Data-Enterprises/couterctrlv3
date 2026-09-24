@@ -6,7 +6,6 @@ import {
   setOrderBy,
   setFlag,
   setGroupBy,
-  setMode,
   setProductCodes,
   setProductDescriptions,
   setSelectedCashiers,
@@ -158,7 +157,6 @@ export const planApply = (
 
   if (measures.length > 0 || computed.length > 0) {
     actions.push(
-      setMode("summary"),
       setGroupBy(query.groupBy),
       setAggregates(measures),
       setComputed(computed),
@@ -213,7 +211,10 @@ export const planApply = (
         );
       }
     }
-    actions.push(setMode("lines"), setSelectedColumns(names));
+    // Nothing to group and nothing to measure, which is what makes it the
+    // lines rather than a summary.
+    actions.push(setGroupBy([]), setAggregates([]), setComputed([]));
+    actions.push(setSelectedColumns(names));
     if (!query.star) {
       // The SELECT order is a column order; the rest keep their places behind.
       actions.push(

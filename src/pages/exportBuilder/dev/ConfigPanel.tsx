@@ -19,7 +19,6 @@ import { parseProductCodes, parseDescriptionTerms } from "./productCodes";
 import {
   setFlag,
   clearSelections,
-  setMode,
   toggleGroupBy,
   setGroupBy,
   addAggregate,
@@ -470,32 +469,26 @@ const ConfigPanel = () => {
         </button>
       </div>
       {/*
-        * What the file is, not what is in it.
+        * What the file is, read off the configuration rather than switched.
         *
-        * Above the sections because it decides which of them apply: a summary
-        * has no column list and an export of the lines has nothing to group.
-        * The endpoint refuses a request that carries both.
+        * Group keys or measures mean a summary; their absence means the
+        * lines. A switch for it meant flipping back and forth to reach the
+        * section you wanted, and asking for a rollup is already asking for
+        * a rollup.
         */}
       <div className="px-2.5 pb-2 flex-shrink-0">
-        <div className="flex rounded-lg border border-brand_line_2 overflow-hidden">
-          {([
-            ["lines", "Every line"],
-            ["summary", "Summary"],
-          ] as const).map(([value, label]) => (
-            <button
-              key={value}
-              type="button"
-              onClick={() => ctx.dispatch(setMode(value))}
-              aria-pressed={ctx.mode === value}
-              className={`flex-1 text-[12px] font-medium py-1.5 transition-colors ${
-                ctx.mode === value
-                  ? "bg-[#1e2a4a] text-custom-white"
-                  : "bg-card_bg text-content/70 hover:text-content"
-              }`}
-            >
-              {label}
-            </button>
-          ))}
+        <div className="flex items-baseline gap-2 rounded-lg border border-brand_line_2 bg-card_bg px-2.5 py-1.5">
+          <span className="text-[11px] font-semibold uppercase tracking-wide text-content/55">
+            File
+          </span>
+          <span className="text-[12px] font-semibold flex-1">
+            {ctx.aggregating ? "Summary" : "Every line"}
+          </span>
+          <span className="text-[11px] text-content/55">
+            {ctx.aggregating
+              ? `${ctx.groupBy.length} key${ctx.groupBy.length === 1 ? "" : "s"} · ${ctx.measureItems.length} measure${ctx.measureItems.length === 1 ? "" : "s"}`
+              : `${ctx.selectedColumns.length} of ${ctx.columns.length} columns`}
+          </span>
         </div>
       </div>
 
@@ -879,18 +872,25 @@ const ConfigPanel = () => {
         </div>
       </Row>
 
-      {!ctx.aggregating && (
       <Row
         label="Columns"
         isOpen={open === "columns"}
         onToggle={() => setOpen(open === "columns" ? null : "columns")}
         summary={
-          ctx.selectedColumns.length === ctx.columns.length
-            ? `all ${ctx.columns.length}`
-            : `${ctx.selectedColumns.length} of ${ctx.columns.length}`
+          ctx.aggregating
+            ? "not in this file"
+            : ctx.selectedColumns.length === ctx.columns.length
+              ? `all ${ctx.columns.length}`
+              : `${ctx.selectedColumns.length} of ${ctx.columns.length}`
         }
       >
         <div className="px-3 pb-3 flex flex-col gap-2">
+          {ctx.aggregating && (
+            <span className="text-[11.5px] text-amber-900 bg-amber-50 border border-amber-200 rounded px-2 py-1.5">
+              This file is a summary, so its columns are the keys and the
+              measures. Clear those to go back to exporting the lines.
+            </span>
+          )}
           <AllNone
             onAll={() =>
               ctx.dispatch(setSelectedColumns(ctx.columns.map((c) => c.name)))
@@ -970,9 +970,6 @@ const ConfigPanel = () => {
         </div>
       </Row>
 
-      )}
-
-      {ctx.aggregating && (
       <Row
         label="Group By"
         isOpen={open === "groupBy"}
@@ -986,6 +983,7 @@ const ConfigPanel = () => {
         <div className="px-3 pb-3 flex flex-col gap-1.5">
           <span className="text-[11px] text-content/55">
             One row per combination of these, in the order you tick them.
+            Ticking one makes the file a summary.
           </span>
           {ctx.groupBy.length > 0 && (
             <div className="flex flex-wrap gap-1">
@@ -1040,9 +1038,7 @@ const ConfigPanel = () => {
           </div>
         </div>
       </Row>
-      )}
 
-      {ctx.aggregating && (
       <Row
         label="Measures"
         isOpen={open === "measures"}
@@ -1172,7 +1168,6 @@ const ConfigPanel = () => {
           )}
         </div>
       </Row>
-      )}
 
       {/* The export endpoint's switches, not the preview's data */}
       <Row

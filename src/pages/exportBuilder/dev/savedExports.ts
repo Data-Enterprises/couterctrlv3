@@ -9,7 +9,6 @@ import {
   setOrderBy,
   setFlag,
   setGroupBy,
-  setMode,
   setProductCodes,
   setProductDescriptions,
   setSelectedCashiers,
@@ -56,7 +55,9 @@ export const toPayload = (
   config: ExportBuilderState,
 ): SavedConfigPayload => ({
   v: 1,
-  mode: config.mode,
+  // Kept in the payload for rows written before the shape was read off the
+  // configuration; nothing loads it.
+  mode: config.groupBy.length > 0 ? "summary" : "lines",
   columns: config.columnOrder.filter((n) => config.selectedColumns.includes(n)),
   columnOrder: config.columnOrder,
   groupBy: config.groupBy,
@@ -122,7 +123,6 @@ export const planLoad = (
     return kept.length > 0 ? kept : available;
   };
 
-  actions.push(setMode(payload.mode));
   actions.push(setGroupBy(payload.groupBy.filter((n) =>
     config.columns.some((c) => c.name === n),
   )));

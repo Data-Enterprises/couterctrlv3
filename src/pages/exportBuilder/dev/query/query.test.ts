@@ -154,8 +154,8 @@ describe("turning a query into the configuration", () => {
 
   it("makes a summary out of a grouped query", () => {
     const out = plan("select storeid, sum(total_sales) group by storeid");
+    // No mode to set: the keys and the measures are what make it a summary.
     expect(out.actions.map((a) => a.type)).toEqual([
-      "devExportBuilder/setMode",
       "devExportBuilder/setGroupBy",
       "devExportBuilder/setAggregates",
       "devExportBuilder/setComputed",

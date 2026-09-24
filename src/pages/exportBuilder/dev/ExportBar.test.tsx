@@ -5,7 +5,6 @@ import { setupStore } from "../../../store";
 import {
   addAggregate,
   setConfig,
-  setMode,
   toggleGroupBy,
 } from "../../../features/dev/devExportBuilderSlice";
 import ExportBar from "./ExportBar";
@@ -54,16 +53,16 @@ const buildButton = () =>
 
 describe("a summary the endpoint would refuse", () => {
   it("will not send one with no keys", () => {
-    renderBar((dispatch) => dispatch(setMode("summary")));
+    // A measure alone makes it a summary, and a summary needs a key.
+    renderBar((dispatch) =>
+      dispatch(addAggregate({ column: "*", fn: "count" })),
+    );
     expect(screen.getByText(/at least one column to group by/)).toBeTruthy();
     expect(buildButton().disabled).toBe(true);
   });
 
   it("will not send one with no measures", () => {
-    renderBar((dispatch) => {
-      dispatch(setMode("summary"));
-      dispatch(toggleGroupBy("storeid"));
-    });
+    renderBar((dispatch) => dispatch(toggleGroupBy("storeid")));
     expect(screen.getByText(/at least one measure/)).toBeTruthy();
     expect(buildButton().disabled).toBe(true);
   });
@@ -72,7 +71,6 @@ describe("a summary the endpoint would refuse", () => {
     // The endpoint answers 400 for a duplicate output column, which is a
     // wasted round trip for something visible here.
     renderBar((dispatch) => {
-      dispatch(setMode("summary"));
       dispatch(toggleGroupBy("storeid"));
       dispatch(addAggregate({ column: "total_sales", fn: "sum" }));
       dispatch(addAggregate({ column: "total_sales", fn: "sum" }));
@@ -86,7 +84,6 @@ describe("a summary the endpoint would refuse", () => {
     // total_sales_sum is not a thing anyone does, but the endpoint counts the
     // keys as taken and so does this.
     renderBar((dispatch) => {
-      dispatch(setMode("summary"));
       dispatch(toggleGroupBy("total_sales_sum"));
       dispatch(addAggregate({ column: "total_sales", fn: "sum" }));
     });
@@ -95,7 +92,6 @@ describe("a summary the endpoint would refuse", () => {
 
   it("sends a summary that answers both halves", () => {
     renderBar((dispatch) => {
-      dispatch(setMode("summary"));
       dispatch(toggleGroupBy("storeid"));
       dispatch(addAggregate({ column: "*", fn: "count" }));
     });
