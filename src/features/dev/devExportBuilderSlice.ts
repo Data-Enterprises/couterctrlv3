@@ -761,6 +761,7 @@ const devExportBuilderSlice = createSlice({
      *  one stays where it was. */
     upsertQuery: (state, action: PayloadAction<SavedQuery>) => {
       const row = action.payload;
+      state.deletedQuery = null;
       const at = state.queries.findIndex((q) => q.id === row.id);
       state.queries =
         at === -1
@@ -783,6 +784,7 @@ const devExportBuilderSlice = createSlice({
      *  into something else, or for text nobody has saved. */
     setCurrentQuery: (state, action: PayloadAction<number | null>) => {
       state.currentQueryId = action.payload;
+      state.deletedQuery = null;
     },
     /**
      * Keep the picks as they stand, before a query is applied over them.

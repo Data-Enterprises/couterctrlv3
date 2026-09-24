@@ -4,6 +4,7 @@ import ConfirmDelete from "../../../components-dev/ConfirmDelete";
 import TextField from "../../../components-dev/inputs/TextField";
 import { useExportBuilderCtx } from "./hooks";
 import {
+  clearDeletedQuery,
   clearSelections,
   forgetPreApply,
   rememberBeforeApply,
@@ -146,6 +147,22 @@ const QueryPanel = () => {
     ctx.dispatch(undoApply());
     setPlan(null);
   };
+
+  /**
+   * The undo is an offer, not a record.
+   *
+   * It used to sit under the box for the rest of the session, long after the
+   * moment it belonged to — and a standing offer to undo something you have
+   * stopped thinking about is just a line you learn to ignore.
+   */
+  useEffect(() => {
+    if (!ctx.deletedQuery) return;
+    const timer = window.setTimeout(
+      () => ctx.dispatch(clearDeletedQuery()),
+      20_000,
+    );
+    return () => window.clearTimeout(timer);
+  }, [ctx.deletedQuery, ctx]);
 
   /** Ctrl/Cmd+Enter applies, which is the only thing to do with it here. */
   const onKeyDown = (e: React.KeyboardEvent) => {
