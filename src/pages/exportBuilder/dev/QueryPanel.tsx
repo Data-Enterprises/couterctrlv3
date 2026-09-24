@@ -532,10 +532,17 @@ const QueryPanel = () => {
         <ConfirmDelete
           what={current.name}
           kind="saved query"
-          detail="The text stays in the box, so you can save it again."
+          detail="The box goes back to showing your configuration, which is untouched. Put it back is offered afterwards if it was a mistake."
           onCancel={() => setDeleting(false)}
           onConfirm={() => {
             ctx.removeQuery(current);
+            // Its words go with it. Left in the box they read as a delete
+            // that did not happen — the name gone, the text still there and
+            // the panel calling it an edit.
+            setText(generated);
+            setEdited(false);
+            setError(null);
+            setPlan(null);
             setDeleting(false);
           }}
         />
