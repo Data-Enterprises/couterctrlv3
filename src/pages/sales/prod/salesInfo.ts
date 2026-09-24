@@ -13,6 +13,7 @@ export const SALES_LEDGER_INFO: { title: string; purpose: string; glossary: Info
     { term: "vs Last Week / vs Last Year", desc: "Only compares days that exist in both periods, so a week still in progress won't look artificially worse just because fewer days have happened yet." },
     { term: "Avg basket (Hourly tab)", desc: "Total sales divided by number of transactions for that hour." },
     { term: "Inactive items (Sub dept tab → Items)", desc: "Sold last week or last year, but nothing yet this year. Listed last, so you can catch something that's quietly stopped selling." },
+    { term: "Export", desc: "The download icon in a store's report saves a CSV of the store you have open, for the dates the page is set to. Pick any of Weekly Summary, Sub Department, Sub Dept by Day and Hourly Breakdown, or build your own columns; with a sub department open, its items can go too. Figures are the rows behind the page, so this year, last week and last year each come as their own rows rather than the page's matched-day comparison." },
   ],
 };
 
