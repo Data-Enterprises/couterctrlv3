@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Modal from "../../../components-dev/Modal";
 import ConfirmDelete from "../../../components-dev/ConfirmDelete";
 import TextField from "../../../components-dev/inputs/TextField";
-import SelectFilter from "../../../components-dev/filters/SelectFilter";
 import { useExportBuilderCtx } from "./hooks";
 import {
   rememberBeforeApply,
@@ -48,6 +47,7 @@ const QueryPanel = () => {
   const [plan, setPlan] = useState<ApplyPlan | null>(null);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [library, setLibrary] = useState(false);
   const [name, setName] = useState("");
   const [note, setNote] = useState("");
 
@@ -118,6 +118,29 @@ const QueryPanel = () => {
 
   const current = ctx.queries.find((q) => q.id === ctx.currentQueryId) ?? null;
 
+  /**
+   * Something to save that is not saved already.
+   *
+   * The table takes duplicates happily, so this is what stops Save as new
+   * from quietly making a second copy of a query nobody changed — whether it
+   * is the one that is open or one further down the list. Editing the box or
+   * changing a tick on the left both count as changing it, because both
+   * change what the box says.
+   */
+  const twin = ctx.queries.find((q) => q.sql.trim() === text.trim()) ?? null;
+  const somethingNew = text.trim().length > 0 && twin === null;
+
+  /** One look for the whole row, so none of them reads as the odd one. */
+  const action =
+    "text-[11.5px] font-semibold px-2.5 py-1 rounded border border-brand_line_2 hover:border-brand_slate transition-colors disabled:opacity-40 disabled:cursor-not-allowed";
+
+  const when = (iso: string) => {
+    const at = new Date(iso);
+    return Number.isNaN(at.getTime())
+      ? ""
+      : at.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  };
+
   return (
     <div className="flex-shrink-0 bg-card_bg border border-brand_line rounded-xl flex flex-col overflow-hidden">
       {ctx.measureItems.length > 0 && ctx.groupBy.length === 0 && (
@@ -138,6 +161,20 @@ const QueryPanel = () => {
         <span className="text-[11px] font-semibold uppercase tracking-wide text-content/60">
           The configuration, as a query
         </span>
+        {current && (
+          <span className="flex items-center gap-1 text-[11.5px] font-semibold bg-filter_active border border-brand_line_2 rounded pl-1.5 pr-0.5 py-0.5">
+            <span className="max-w-[24ch] truncate">{current.name}</span>
+            <button
+              type="button"
+              onClick={() => ctx.dispatch(setCurrentQuery(null))}
+              aria-label={`Close ${current.name}`}
+              title="Close this query — the box and the configuration stay as they are"
+              className="w-[16px] h-[16px] rounded text-content/45 hover:text-content transition-colors"
+            >
+              ×
+            </button>
+          </span>
+        )}
         {edited ? (
           <span className="text-[11px] text-amber-900 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5">
             Edited — the file below is still the configuration's
@@ -149,80 +186,76 @@ const QueryPanel = () => {
         )}
         <div className="flex-1" />
 
-        {ctx.queries.length > 0 && (
-          <SelectFilter
-            plain
-            searchable
-            searchPlaceholder="Find a saved query..."
-            placeholder="Open saved..."
-            options={ctx.queries.map((q) => ({
-              value: String(q.id),
-              label: q.name,
-            }))}
-            value={current ? String(current.id) : ""}
-            onChange={openSaved}
-            className="w-[160px]"
-          />
-        )}
-
         {/*
-          * The four things you can do to a saved query, where the saved query
-          * is — rather than behind a Save this that turned out to be all of
-          * them. Update is the common one, so it is the one that is a button.
+          * The four things you can do to a saved query, always here so the
+          * row does not change shape as you work — the ones that need a
+          * query open say so by being off rather than by vanishing.
           */}
-        {current ? (
-          <>
-            <button
-              type="button"
-              onClick={() => ctx.saveQuery(current.name, text, current.id, current.description ?? "")}
-              title={`Replace "${current.name}" with what is in the box`}
-              className="text-[11.5px] font-semibold px-2.5 py-1 rounded border border-brand_line_2 hover:border-brand_slate transition-colors"
-            >
-              Update
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setName("");
-                setNote(current.description ?? "");
-                setSaving(true);
-              }}
-              className="text-[11.5px] text-brand_navy_hover underline underline-offset-2"
-            >
-              Save as new
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setName(current.name);
-                setNote(current.description ?? "");
-                setSaving(true);
-              }}
-              className="text-[11.5px] text-brand_navy_hover underline underline-offset-2"
-            >
-              Rename
-            </button>
-            <button
-              type="button"
-              onClick={() => setDeleting(true)}
-              className="text-[11.5px] text-brand_navy_hover underline underline-offset-2"
-            >
-              Delete
-            </button>
-          </>
-        ) : (
-          <button
-            type="button"
-            onClick={() => {
-              setName("");
-              setNote("");
-              setSaving(true);
-            }}
-            className="text-[11.5px] font-semibold px-2.5 py-1 rounded border border-brand_line_2 hover:border-brand_slate transition-colors"
-          >
-            Save this query
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={() => setLibrary(true)}
+          className={action}
+        >
+          Queries ({ctx.queries.length})
+        </button>
+        <button
+          type="button"
+          onClick={() =>
+            current &&
+            ctx.saveQuery(current.name, text, current.id, current.description ?? "")
+          }
+          disabled={!current}
+          title={
+            current
+              ? `Replace "${current.name}" with what is in the box`
+              : "Open a saved query first, or use Save as new"
+          }
+          className={action}
+        >
+          Update
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setName("");
+            setNote(current?.description ?? "");
+            setSaving(true);
+          }}
+          disabled={!somethingNew}
+          title={
+            somethingNew
+              ? "Keep this as another saved query"
+              : twin
+                ? `This is already saved as "${twin.name}"`
+                : "Nothing to save yet"
+          }
+          className={action}
+        >
+          Save as new
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            if (!current) return;
+            setName(current.name);
+            setNote(current.description ?? "");
+            setSaving(true);
+          }}
+          disabled={!current}
+          title={current ? undefined : "Nothing open to rename"}
+          className={action}
+        >
+          Rename
+        </button>
+        <button
+          type="button"
+          onClick={() => setDeleting(true)}
+          disabled={!current}
+          title={current ? undefined : "Nothing open to delete"}
+          className={action}
+        >
+          Delete
+        </button>
       </div>
 
       {/* Capped: dragged past the window, the grip on its corner goes with
@@ -272,8 +305,8 @@ const QueryPanel = () => {
           </button>
         )}
         <span
-          className={`text-[11.5px] ${
-            edited ? "text-content/60" : "text-content/80"
+          className={`text-[13.5px] font-semibold ${
+            edited ? "text-content/70" : "text-content/85"
           }`}
         >
           {edited
@@ -372,6 +405,86 @@ const QueryPanel = () => {
               >
                 {current && name.trim() === current.name ? "Save changes" : "Save"}
               </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {library && (
+        <Modal
+          isOpen
+          onClose={() => setLibrary(false)}
+          modalClassName="bg-card_bg w-[560px] max-w-[92vw] max-h-[80vh]"
+        >
+          <div className="flex flex-col gap-3 p-4 min-h-0">
+            <div className="flex items-baseline gap-3 flex-shrink-0">
+              <h2 className="text-[15px] font-semibold">Saved queries</h2>
+              <span className="text-[11.5px] text-content/60">
+                yours, newest first
+              </span>
+              <div className="flex-1" />
+              <button
+                type="button"
+                onClick={() => setLibrary(false)}
+                className="text-[12px] font-medium px-3 py-1.5 rounded-lg bg-[#1e2a4a] hover:bg-[#2a3a63] text-custom-white transition-colors"
+              >
+                Close
+              </button>
+            </div>
+
+            <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar flex flex-col gap-1.5">
+              {current && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    ctx.dispatch(setCurrentQuery(null));
+                    setLibrary(false);
+                  }}
+                  className="text-left border border-brand_line rounded-lg px-3 py-2 bg-custom-white hover:border-brand_slate transition-colors"
+                >
+                  <span className="block text-[13px] font-semibold">
+                    Close "{current.name}"
+                  </span>
+                  <span className="block text-[11.5px] text-content/70 mt-0.5">
+                    Work without a saved query open. The box and the
+                    configuration stay as they are.
+                  </span>
+                </button>
+              )}
+              {ctx.queries.map((query) => (
+                <button
+                  key={query.id}
+                  type="button"
+                  onClick={() => {
+                    openSaved(String(query.id));
+                    setLibrary(false);
+                  }}
+                  className={`text-left border rounded-lg px-3 py-2 transition-colors ${
+                    query.id === ctx.currentQueryId
+                      ? "border-brand_line_2 bg-filter_active"
+                      : "border-brand_line bg-custom-white hover:border-brand_slate"
+                  }`}
+                >
+                  <span className="block text-[13px] font-semibold">
+                    {query.name}
+                  </span>
+                  {query.description && (
+                    <span className="block text-[11.5px] text-content/70 mt-0.5">
+                      {query.description}
+                    </span>
+                  )}
+                  <span className="block text-[11px] text-content/45 mt-0.5">
+                    saved {when(query.updated_at || query.created_at)}
+                  </span>
+                </button>
+              ))}
+
+              {ctx.queries.length === 0 && (
+                <p className="text-[12.5px] text-content/70 py-6 text-center">
+                  Nothing saved yet. Build a configuration on the left, then
+                  Save as new to keep it.
+                </p>
+              )}
             </div>
           </div>
         </Modal>
