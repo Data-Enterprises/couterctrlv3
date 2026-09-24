@@ -34,7 +34,7 @@ const ConfirmDelete = ({
   >
     <div className="flex flex-col gap-3 p-4">
       <h2 className="text-[15px] font-semibold">Delete this {kind}?</h2>
-      <p className="text-[13px] text-content/75">
+      <p className="text-[13px] text-content/85">
         <span className="font-semibold text-content">{what}</span> will be
         gone. {detail}
       </p>

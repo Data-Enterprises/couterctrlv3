@@ -29,17 +29,17 @@ const SummaryPreview = () => {
   return (
     <div className="flex-1 min-w-0 bg-card_bg border border-brand_line rounded-xl flex flex-col min-h-0 overflow-hidden">
       <div className="flex items-center gap-3 px-4 py-2.5 bg-custom-white border-b border-brand_line flex-shrink-0">
-        <TableCellsIcon className="w-4 h-4 text-content/60 flex-shrink-0" />
+        <TableCellsIcon className="w-4 h-4 text-content/85 flex-shrink-0" />
         <span className="font-mono text-[12.5px] font-semibold truncate">
           {name}
         </span>
-        <span className="text-[11.5px] text-content/60 flex-shrink-0">
+        <span className="text-[11.5px] text-content/85 flex-shrink-0">
           {keys.length} key{keys.length === 1 ? "" : "s"} ·{" "}
           {ctx.aggregates.length} measure
           {ctx.aggregates.length === 1 ? "" : "s"}
         </span>
         <div className="flex-1" />
-        <span className="text-[11.5px] text-content/60 flex-shrink-0">
+        <span className="text-[11.5px] text-content/85 flex-shrink-0">
           {ctx.selectedStoreIds.length} store
           {ctx.selectedStoreIds.length === 1 ? "" : "s"}
         </span>
@@ -58,7 +58,7 @@ const SummaryPreview = () => {
         <div className="flex-1 flex items-center justify-center text-center px-6">
           <div className="max-w-[36ch]">
             <div className="text-[13px] font-semibold">Nothing to group yet</div>
-            <div className="text-[12.5px] text-content/70 mt-1.5">
+            <div className="text-[12.5px] text-content/85 mt-1.5">
               Pick what the rows should be on the left, then what to measure for
               each one.
             </div>
@@ -92,7 +92,7 @@ const SummaryPreview = () => {
             <tbody>
               {rows.map((row, r) => (
                 <tr key={r}>
-                  <td className="sticky left-0 z-10 bg-custom-white border-r border-brand_line border-b border-brand_line px-2 py-1.5 text-right text-content/50">
+                  <td className="sticky left-0 z-10 bg-custom-white border-r border-brand_line border-b border-brand_line px-2 py-1.5 text-right text-content/85">
                     {r + 1}
                   </td>
                   {columns.map((c) => {
@@ -133,7 +133,7 @@ const SummaryPreview = () => {
       )}
 
       {columns.length > 0 && rows.length === 0 && (
-        <div className="px-4 py-3 border-t border-brand_line bg-custom-white text-[12px] text-content/70 flex-shrink-0">
+        <div className="px-4 py-3 border-t border-brand_line bg-custom-white text-[12px] text-content/85 flex-shrink-0">
           None of the sample lines survive the filters, so there is nothing to
           group here. The file can still hold plenty: the sample is two hundred
           lines taken where the scan landed.
@@ -141,7 +141,7 @@ const SummaryPreview = () => {
       )}
 
       <div className="flex items-center gap-3 px-4 py-2 bg-custom-white border-t border-brand_line flex-shrink-0">
-        <span className="text-[11.5px] text-content/60">
+        <span className="text-[11.5px] text-content/85">
           Measure names carry the operation, so a file says what it holds.
           Totals here are the table's own lines — tender rows, voids and
           transfers included — not a sales report.

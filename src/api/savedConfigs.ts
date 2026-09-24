@@ -51,11 +51,19 @@ export interface SavedConfigPayload {
   subDepartments: string[] | null;
   vendors: string[] | null;
   cashiers: number[] | null;
+  /**
+   * The company's own words, which is why loading one checks them.
+   *
+   * Optional because rows written before price type existed have none, and a
+   * missing list means every one of them — the same as any other.
+   */
+  priceTypes?: string[] | null;
   productCodes: string[];
   productDescriptions: string[];
   flags: {
     voidFlag: number | null;
     refundFlag: number | null;
+    dateFormat?: string;
     fileFormat: string;
     filePrefix: string;
     ordered: boolean;

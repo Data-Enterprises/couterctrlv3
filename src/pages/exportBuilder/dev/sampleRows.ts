@@ -8,6 +8,9 @@ export interface RowFilters {
   vendors: string[];
   /** Numbers, unlike every other id here — cashier_number is a bigint. */
   cashiers: number[];
+  /** Matched as stored; "" is the lines that have none, which is a choice
+   *  rather than an absence. */
+  priceTypes: string[];
   /** `YYYY-MM-DD`, compared against the day part of the timestamp. */
   saleDates: string[];
   /** Empty means every code, not none: this list is typed, not chosen. */
@@ -74,6 +77,7 @@ export const filterSampleRows = (rows: ExportRow[], filters: RowFilters) => {
   const codes = new Set(filters.productCodes.map(normalizeProductCode));
   const terms = filters.productDescriptions.map((t) => t.toLowerCase());
   const cashier = new Set(filters.cashiers.map(String));
+  const price = new Set(filters.priceTypes);
   const days = new Set(filters.saleDates);
 
   return rows.filter((row) => {
@@ -82,6 +86,14 @@ export const filterSampleRows = (rows: ExportRow[], filters: RowFilters) => {
     if (!keeps(sub, row["sub_department"])) return false;
     if (!keeps(vendor, row["vendor_id"])) return false;
     if (!keeps(cashier, row["cashier_number"])) return false;
+    // Not `keeps`: an empty price type is a value here, so a row holding
+    // none is only kept when "" was picked.
+    if (price.size) {
+      const value = row["price_type"];
+      if (!price.has(value === null || value === undefined ? "" : String(value))) {
+        return false;
+      }
+    }
     // sale_date is a timestamp, and the endpoint casts it to a date to
     // compare — the first ten characters are that cast.
     if (days.size) {

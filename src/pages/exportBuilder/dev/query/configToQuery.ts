@@ -51,6 +51,9 @@ const whereLines = (config: ExportBuilderState) => {
       asList("cashier_number", config.selectedCashiers.map(String), true),
     );
   }
+  if (!whole(config.selectedPriceTypes, config.priceTypes)) {
+    lines.push(asList("price_type", config.selectedPriceTypes));
+  }
   if (!whole(config.selectedSaleDates, config.saleDates)) {
     lines.push(asList("sale_date", config.selectedSaleDates));
   }
@@ -162,6 +165,7 @@ export const requestToQuery = (request: Partial<ExportParams>) => {
     list("sub_department", request.subDepartments, true),
     list("vendor_id", request.vendorIds),
     list("cashier_number", request.cashierNumbers, true),
+    list("price_type", request.priceTypes),
     list("sale_date", request.saleDates),
     list("product_code", request.productCodes),
     request.productDescriptions?.length

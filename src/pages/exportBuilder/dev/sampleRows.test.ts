@@ -17,6 +17,7 @@ const all: RowFilters = {
   subDepartments: ["10", "20"],
   vendors: ["50", "C0021", "F0007"],
   cashiers: [7, 12],
+  priceTypes: [],
   saleDates: ["2026-09-14", "2026-09-15", "2026-09-16"],
   productCodes: [],
   productDescriptions: [],

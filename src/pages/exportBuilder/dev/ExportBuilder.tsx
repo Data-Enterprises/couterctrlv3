@@ -45,11 +45,11 @@ const ExportBuilder = () => {
                 <div className="text-[13.5px] font-semibold">
                   Nothing to export
                 </div>
-                <div className="text-[12.5px] text-content/70 mt-2 leading-relaxed">
+                <div className="text-[12.5px] text-content/85 mt-2 leading-relaxed">
                   {ctx.message ??
                     "There are no lines in this range for these stores."}
                 </div>
-                <div className="text-[12px] text-content/60 mt-3">
+                <div className="text-[12px] text-content/85 mt-3">
                   The column list is still here, so changing the dates keeps
                   every pick you have made.
                 </div>

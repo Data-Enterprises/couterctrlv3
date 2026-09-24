@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ArrowDownTrayIcon, ArrowPathIcon } from "@heroicons/react/24/outline";
 import Modal from "../../../components-dev/Modal";
+import ConfirmDelete from "../../../components-dev/ConfirmDelete";
 import SelectFilter from "../../../components-dev/filters/SelectFilter";
 import { useExportBuilderCtx } from "./hooks";
 import { openBuilds } from "../../../features/dev/devExportBuilderSlice";
@@ -42,6 +43,7 @@ const DownloadsModal = () => {
   const ctx = useExportBuilderCtx();
   const [labelling, setLabelling] = useState<string | null>(null);
   const [showing, setShowing] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<ExportBuild | null>(null);
 
   const close = () => ctx.dispatch(openBuilds(false));
 
@@ -76,7 +78,7 @@ const DownloadsModal = () => {
       <div className="flex flex-col gap-3 p-4 min-h-0">
         <div className="flex items-baseline gap-3 flex-shrink-0">
           <h2 className="text-[15px] font-semibold">Previous builds</h2>
-          <span className="text-[11.5px] text-content/60">
+          <span className="text-[11.5px] text-content/85">
             yours, newest first · links last {ctx.buildsExpireMinutes} min from
             this listing
           </span>
@@ -108,10 +110,10 @@ const DownloadsModal = () => {
           {groups.map((group) => (
             <div key={group.id ?? "adhoc"} className="flex flex-col gap-1.5">
               <div className="flex items-baseline gap-2">
-                <span className="text-[11px] font-semibold uppercase tracking-wide text-content/60">
+                <span className="text-[11px] font-semibold uppercase tracking-wide text-content/85">
                   {group.name}
                 </span>
-                <span className="text-[11px] text-content/45">
+                <span className="text-[11px] text-content/85">
                   {group.builds.length} build
                   {group.builds.length === 1 ? "" : "s"}
                 </span>
@@ -133,7 +135,7 @@ const DownloadsModal = () => {
                   >
                     <ArrowDownTrayIcon
                       className={`w-4 h-4 ${
-                        build.expired ? "text-content/40" : "text-brand_green"
+                        build.expired ? "text-content/85" : "text-brand_green"
                       }`}
                     />
                   </div>
@@ -145,7 +147,7 @@ const DownloadsModal = () => {
                       {build.files.map((f) => f.key.split("/").pop()).join(", ") ||
                         "no file"}
                     </div>
-                    <div className="text-[11.5px] text-content/70 mt-0.5">
+                    <div className="text-[11.5px] text-content/85 mt-0.5">
                       {build.startDate} to {build.endDate} ·{" "}
                       {build.storeCount} store
                       {build.storeCount === 1 ? "" : "s"} ·{" "}
@@ -153,7 +155,7 @@ const DownloadsModal = () => {
                       {mb(build.bytesUploaded)} ·{" "}
                       {build.fileFormat.toUpperCase()}
                     </div>
-                    <div className="text-[11px] text-content/45 mt-0.5">
+                    <div className="text-[11px] text-content/85 mt-0.5">
                       ran {ranAt(build.createdAt)} · built in{" "}
                       {build.elapsedSeconds.toFixed(1)}s
                       {" · "}
@@ -200,6 +202,16 @@ const DownloadsModal = () => {
 
                   <button
                     type="button"
+                    onClick={() => setDeleting(build)}
+                    aria-label={`Delete the build from ${build.startDate}`}
+                    title="Delete this build's file and its record"
+                    className="text-[11.5px] font-medium px-2.5 py-2 rounded-lg border border-brand_line_2 hover:border-brand_slate transition-colors flex-shrink-0"
+                  >
+                    Delete
+                  </button>
+
+                  <button
+                    type="button"
                     onClick={() => ctx.reloadBuild(build)}
                     title="Put this build's settings and dates back on the page"
                     className="flex items-center gap-1 text-[12.5px] font-medium px-3 py-2 rounded-lg border border-brand_line_2 hover:border-brand_slate transition-colors flex-shrink-0"
@@ -209,7 +221,7 @@ const DownloadsModal = () => {
                   </button>
 
                   {build.expired ? (
-                    <span className="text-[11.5px] text-content/60 text-right max-w-[14ch] flex-shrink-0">
+                    <span className="text-[11.5px] text-content/85 text-right max-w-[14ch] flex-shrink-0">
                       File is gone — build it again
                     </span>
                   ) : (
@@ -245,7 +257,7 @@ const DownloadsModal = () => {
               <div className="text-[13px] font-semibold">
                 {ctx.buildsLoading ? "Reading your builds..." : "No builds yet"}
               </div>
-              <div className="text-[12.5px] text-content/70 mt-1.5 max-w-[48ch] mx-auto">
+              <div className="text-[12.5px] text-content/85 mt-1.5 max-w-[48ch] mx-auto">
                 Every file you build lands here with the settings that made it,
                 so a month from now you can download it again or put those
                 settings back on the page.
@@ -254,6 +266,22 @@ const DownloadsModal = () => {
           )}
         </div>
       </div>
+
+      {deleting && (
+        <ConfirmDelete
+          what={
+            deleting.files.map((f) => f.key.split("/").pop()).join(", ") ||
+            `the build from ${deleting.startDate}`
+          }
+          kind="build"
+          detail="The file and its record go together, and there is no undo — the bucket keeps no previous version. The configuration it came from is untouched."
+          onCancel={() => setDeleting(null)}
+          onConfirm={() => {
+            ctx.removeBuild(deleting.buildId);
+            setDeleting(null);
+          }}
+        />
+      )}
     </Modal>
   );
 };

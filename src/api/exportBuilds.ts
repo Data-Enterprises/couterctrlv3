@@ -77,6 +77,31 @@ export interface BuildLinkResp {
   userQueryName: string | null;
 }
 
+export interface DeleteBuildResp {
+  error: number;
+  success: boolean;
+  filesDeleted: number;
+  bytesFreed: number;
+  keys: string[];
+}
+
+/**
+ * Remove a build's files and its manifest.
+ *
+ * There is no undo and there is nothing to restore: the bucket has versioning
+ * off, so there is no delete marker and no previous version. The endpoint
+ * cannot soften that, which is why the asking happens here.
+ *
+ * A 500 is a partial delete that names its counts, and retrying is safe —
+ * whatever went is already gone.
+ */
+export const deleteExportBuild = (url: string, token: string, buildId: string) =>
+  axios({
+    method: "DELETE",
+    headers: headers(token),
+    url: url + "sales/export_builds/" + encodeURIComponent(buildId),
+  });
+
 /**
  * Attach a saved config to a build that was run ad-hoc, or clear it.
  *

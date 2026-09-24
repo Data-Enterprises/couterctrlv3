@@ -77,6 +77,32 @@ export interface ExportCashier {
   cashier_name: string | null;
 }
 
+/**
+ * A price type present in the window.
+ *
+ * `{value, label}` rather than a bare string, because one member of the list
+ * is the ABSENCE of a value: `value: ""`, labelled `(none)`. Those lines are
+ * a real population — all of one company's, 15% of another's — so they are
+ * something to choose rather than something to lose the moment anyone filters.
+ *
+ * The vocabulary belongs to the company, not to the table: Food Giant says
+ * `Regular` and `Managers Special`, other companies say `REG` and `STOR`, and
+ * `TPR` is the only token they all share. So this list is only true for the
+ * stores in scope, and a saved configuration carrying one company's words is
+ * checked against it when it is loaded.
+ */
+export interface ExportPriceType {
+  value: string;
+  label: string;
+}
+
+/** A way of spelling dates in the file, as the endpoint offers them. */
+export interface ExportDateFormat {
+  value: string;
+  label: string;
+  example: string;
+}
+
 export interface ExportPreviewResp {
   error: number;
   success: boolean;
@@ -89,6 +115,9 @@ export interface ExportPreviewResp {
   subDepartments: ExportSubDepartment[];
   vendors: ExportVendor[];
   cashiers: ExportCashier[];
+  priceTypes: ExportPriceType[];
+  /** The Output date control is built from this, not from a list of ours. */
+  dateFormats: ExportDateFormat[];
   /**
    * 99, not 102: the preview withholds source_file_uri, source_file_etag and
    * source_version_ts — import bookkeeping, identical down every row. The
@@ -285,6 +314,14 @@ export interface ExportParams {
    *  text. */
   cashierNumbers: number[] | null;
   /**
+   * Matched as stored, from the preview's list for THESE stores.
+   *
+   * `""` selects the lines with no price type at all — the one list filter on
+   * this endpoint that does not drop its nulls, because for some companies
+   * those are all of them.
+   */
+  priceTypes: string[] | null;
+  /**
    * Particular days inside the range, as `YYYY-MM-DD`.
    *
    * Not a replacement for startDate/endDate, which stay required and still do
@@ -337,15 +374,17 @@ export interface ExportParams {
    */
   orderBy: ExportSort[] | null;
   /**
-   * PARKED. A Postgres pattern for every date and timestamp column in the
-   * file — `2026-09-14T00:00:00` is machine output in a spreadsheet.
+   * How dates are spelled in the file.
    *
-   * Not on the endpoint yet, so the page does not send it. Part 4 of
-   * computed-measures-handoff.md has the contract: a fixed set of patterns,
-   * validated by membership, the stored constant being what reaches the
-   * query.
+   * A key from the preview's `dateFormats`, not a pattern — the endpoint owns
+   * the vocabulary. Null or `iso` leaves them as COPY writes them.
+   *
+   * A date-only format flattens the columns that carry a real time
+   * (`sale_date_with_time`, `updated_at`); `sale_date` is midnight across the
+   * table, so nothing is lost there. Sorting stays chronological whatever is
+   * chosen: the endpoint sorts on the column, not on its spelling.
    */
-  // dateFormat: string | null;
+  dateFormat: string | null;
   fileFormat: string;
   /**
    * Names the file and the build's folder in S3.

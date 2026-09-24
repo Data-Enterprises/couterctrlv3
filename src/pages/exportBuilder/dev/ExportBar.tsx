@@ -50,6 +50,8 @@ const ExportBar = () => {
       `${ctx.selectedVendors.length} of ${ctx.vendors.length} vendors`,
     ctx.selectedCashiers.length < ctx.cashiers.length &&
       `${ctx.selectedCashiers.length} of ${ctx.cashiers.length} cashiers`,
+    ctx.selectedPriceTypes.length < ctx.priceTypes.length &&
+      `${ctx.selectedPriceTypes.length} of ${ctx.priceTypes.length} price types`,
     ctx.selectedSaleDates.length < ctx.saleDates.length &&
       `${ctx.selectedSaleDates.length} of ${ctx.saleDates.length} days`,
     ctx.productCodes.length > 0 &&
@@ -79,13 +81,13 @@ const ExportBar = () => {
               <div className="text-[13px] font-semibold truncate">
                 {f.key.split("/").pop()}
                 {ctx.builtQueryName && (
-                  <span className="font-normal text-content/60">
+                  <span className="font-normal text-content/85">
                     {" "}
                     · {ctx.builtQueryName}
                   </span>
                 )}
               </div>
-              <div className="text-[11.5px] text-content/70 mt-0.5">
+              <div className="text-[11.5px] text-content/85 mt-0.5">
                 {formatBigNumber(ctx.rowsUploaded, 0)} rows · {mb(f.bytes)} ·
                 built in {ctx.elapsedSeconds.toFixed(1)}s
               </div>
@@ -94,7 +96,7 @@ const ExportBar = () => {
               <div className="text-[11.5px] font-semibold text-amber-900">
                 Link expires in {ctx.urlExpiresInMinutes} min
               </div>
-              <div className="text-[11px] text-content/60 mt-0.5">
+              <div className="text-[11px] text-content/85 mt-0.5">
                 Build it again after that
               </div>
             </div>
@@ -129,7 +131,7 @@ const ExportBar = () => {
           >
             Previous builds
           </button>
-          <span className="text-[11px] text-content/55">
+          <span className="text-[11px] text-content/85">
             {ctx.manifestWritten
               ? "This build is in Previous builds, with the settings that made it."
               : "This build has no manifest, so it will not appear in Previous builds — keep this link."}
@@ -147,7 +149,7 @@ const ExportBar = () => {
           <div className="text-[13px] font-semibold text-custom-white">
             {ctx.slow ? "Still building" : "Building your file"}
           </div>
-          <div className="text-[11.5px] text-custom-white/75 mt-0.5">
+          <div className="text-[11.5px] text-custom-white/85 mt-0.5">
             {ctx.slow
               ? "This is past the point the connection usually waits. The file is still being written — if the link does not arrive, try a shorter range rather than assuming it failed."
               : "The file is written straight to storage, so nothing downloads yet."}
@@ -171,24 +173,24 @@ const ExportBar = () => {
           · {ctx.flags.fileFormat.toUpperCase()}
         </div>
         {ctx.aggregating && ctx.measureItems.length > 0 && (
-          <div className="text-[11.5px] text-custom-white/75 mt-1 font-mono">
+          <div className="text-[11.5px] text-custom-white/85 mt-1 font-mono">
             {ctx.measureItems.map((m) => m.alias).join(" · ")}
           </div>
         )}
         {narrowed.length > 0 && (
-          <div className="text-[11.5px] text-custom-white/75 mt-1">
+          <div className="text-[11.5px] text-custom-white/85 mt-1">
             Filtered: {narrowed.join(" · ")}
           </div>
         )}
         {pii > 0 ? (
           <div className="flex items-center gap-2 mt-1">
-            <span className="text-[11.5px] text-custom-white/75">
+            <span className="text-[11.5px] text-custom-white/85">
               Includes {pii} personal column{pii === 1 ? "" : "s"} — customer
               name, contact and location.
             </span>
           </div>
         ) : (
-          <div className="text-[11.5px] text-custom-white/75 mt-1">
+          <div className="text-[11.5px] text-custom-white/85 mt-1">
             A longer range across more stores takes longer to build.
           </div>
         )}

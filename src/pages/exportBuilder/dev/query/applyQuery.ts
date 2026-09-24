@@ -9,6 +9,7 @@ import {
   setProductCodes,
   setProductDescriptions,
   setSelectedCashiers,
+  setSelectedPriceTypes,
   setSelectedColumns,
   setSelectedRingTypes,
   setSelectedSaleDates,
@@ -45,6 +46,7 @@ type FilterColumn =
   | "sub_department"
   | "vendor_id"
   | "cashier_number"
+  | "price_type"
   | "sale_date"
   | "product_code"
   | "product_description";
@@ -56,6 +58,7 @@ const FILTER_COLUMNS: FilterColumn[] = [
   "sub_department",
   "vendor_id",
   "cashier_number",
+  "price_type",
   "sale_date",
   "product_code",
   "product_description",
@@ -355,6 +358,19 @@ export const planApply = (
           if (picked.length === 0) break;
           actions.push(setSelectedCashiers(picked));
           applied.push(`${picked.length} cashier${picked.length === 1 ? "" : "s"}`);
+          break;
+        }
+        case "price_type": {
+          // "" is a value here — the lines that carry no price type — so an
+          // empty string is picked rather than filtered out as blank.
+          const picked = config.priceTypes
+            .map((p) => p.value)
+            .filter((v) => wanted.some((w) => String(w) === v));
+          if (picked.length === 0) break;
+          actions.push(setSelectedPriceTypes(picked));
+          applied.push(
+            `Price types: ${picked.map((v) => (v === "" ? "(none)" : v)).join(", ")}`,
+          );
           break;
         }
         case "sale_date": {

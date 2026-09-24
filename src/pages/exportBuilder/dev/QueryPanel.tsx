@@ -158,7 +158,7 @@ const QueryPanel = () => {
       )}
 
       <div className="flex items-center gap-2 px-3 py-2 bg-custom-white border-b border-brand_line flex-wrap">
-        <span className="text-[11px] font-semibold uppercase tracking-wide text-content/60">
+        <span className="text-[11px] font-semibold uppercase tracking-wide text-content/85">
           The configuration, as a query
         </span>
         {current && (
@@ -169,7 +169,7 @@ const QueryPanel = () => {
               onClick={() => ctx.dispatch(setCurrentQuery(null))}
               aria-label={`Close ${current.name}`}
               title="Close this query — the box and the configuration stay as they are"
-              className="w-[16px] h-[16px] rounded text-content/45 hover:text-content transition-colors"
+              className="w-[16px] h-[16px] rounded text-content/85 hover:text-content transition-colors"
             >
               ×
             </button>
@@ -180,7 +180,7 @@ const QueryPanel = () => {
             Edited — the file below is still the configuration's
           </span>
         ) : (
-          <span className="text-[11px] text-content/50">
+          <span className="text-[11px] text-content/85">
             follows the panel on the left · runs nowhere
           </span>
         )}
@@ -306,7 +306,7 @@ const QueryPanel = () => {
         )}
         <span
           className={`text-[13.5px] font-semibold ${
-            edited ? "text-content/70" : "text-content/85"
+            edited ? "text-content/85" : "text-content/85"
           }`}
         >
           {edited
@@ -326,7 +326,7 @@ const QueryPanel = () => {
             {error.message}
           </div>
           {error.hint && (
-            <div className="text-[11.5px] text-amber-900/80 mt-1">
+            <div className="text-[11.5px] text-amber-900/85 mt-1">
               {error.hint}
             </div>
           )}
@@ -339,7 +339,7 @@ const QueryPanel = () => {
             Applied to the configuration
           </div>
           {plan.applied.map((line, i) => (
-            <div key={i} className="text-[11.5px] text-content/75 mt-0.5">
+            <div key={i} className="text-[11.5px] text-content/85 mt-0.5">
               · {line}
             </div>
           ))}
@@ -349,7 +349,7 @@ const QueryPanel = () => {
                 Not carried over
               </div>
               {plan.leftBehind.map((line, i) => (
-                <div key={i} className="text-[11.5px] text-amber-900/80">
+                <div key={i} className="text-[11.5px] text-amber-900/85">
                   · {line}
                 </div>
               ))}
@@ -419,7 +419,7 @@ const QueryPanel = () => {
           <div className="flex flex-col gap-3 p-4 min-h-0">
             <div className="flex items-baseline gap-3 flex-shrink-0">
               <h2 className="text-[15px] font-semibold">Saved queries</h2>
-              <span className="text-[11.5px] text-content/60">
+              <span className="text-[11.5px] text-content/85">
                 yours, newest first
               </span>
               <div className="flex-1" />
@@ -445,7 +445,7 @@ const QueryPanel = () => {
                   <span className="block text-[13px] font-semibold">
                     Close "{current.name}"
                   </span>
-                  <span className="block text-[11.5px] text-content/70 mt-0.5">
+                  <span className="block text-[11.5px] text-content/85 mt-0.5">
                     Work without a saved query open. The box and the
                     configuration stay as they are.
                   </span>
@@ -469,18 +469,18 @@ const QueryPanel = () => {
                     {query.name}
                   </span>
                   {query.description && (
-                    <span className="block text-[11.5px] text-content/70 mt-0.5">
+                    <span className="block text-[11.5px] text-content/85 mt-0.5">
                       {query.description}
                     </span>
                   )}
-                  <span className="block text-[11px] text-content/45 mt-0.5">
+                  <span className="block text-[11px] text-content/85 mt-0.5">
                     saved {when(query.updated_at || query.created_at)}
                   </span>
                 </button>
               ))}
 
               {ctx.queries.length === 0 && (
-                <p className="text-[12.5px] text-content/70 py-6 text-center">
+                <p className="text-[12.5px] text-content/85 py-6 text-center">
                   Nothing saved yet. Build a configuration on the left, then
                   Save as new to keep it.
                 </p>
@@ -505,7 +505,7 @@ const QueryPanel = () => {
 
       {ctx.deletedQuery && (
         <div className="bg-custom-white border-t border-brand_line px-3 py-2 flex items-center gap-3">
-          <span className="text-[11.5px] text-content/75 flex-1">
+          <span className="text-[11.5px] text-content/85 flex-1">
             Deleted "{ctx.deletedQuery.name}".
           </span>
           <button

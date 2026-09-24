@@ -5,6 +5,8 @@ import type { SavedQuery } from "../../api/savedQueries";
 import type {
   ExportAggregate,
   ExportComputed,
+  ExportDateFormat,
+  ExportPriceType,
   ExportSort,
   ExportCashier,
   ExportColumn,
@@ -28,7 +30,7 @@ export interface ExportFlags {
    */
   voidFlag: number | null;
   refundFlag: number | null;
-  /** A Postgres date pattern, or "" for the stored form. */
+  /** A key from the preview's `dateFormats`, or "" for as-stored. */
   dateFormat: string;
   fileFormat: string;
   filePrefix: string;
@@ -67,6 +69,7 @@ export type ConfigSnapshot = Pick<
   | "selectedSubDepartments"
   | "selectedVendors"
   | "selectedCashiers"
+  | "selectedPriceTypes"
   | "selectedSaleDates"
   | "selectedColumns"
   | "columnOrder"
@@ -84,6 +87,11 @@ export interface ExportBuilderState {
   subDepartments: ExportSubDepartment[];
   vendors: ExportVendor[];
   cashiers: ExportCashier[];
+  /** Present in this window, `{value,label}`, one of them the absence of a
+   *  value. */
+  priceTypes: ExportPriceType[];
+  /** The ways the endpoint will spell dates, as it offers them. */
+  dateFormats: ExportDateFormat[];
   /**
    * Every day the loaded range covers, as `YYYY-MM-DD`.
    *
@@ -111,6 +119,7 @@ export interface ExportBuilderState {
   selectedSubDepartments: string[];
   selectedVendors: string[];
   selectedCashiers: number[];
+  selectedPriceTypes: string[];
   selectedSaleDates: string[];
   selectedColumns: string[];
   /**
@@ -238,6 +247,8 @@ export const initialState: ExportBuilderState = {
   subDepartments: [],
   vendors: [],
   cashiers: [],
+  priceTypes: [],
+  dateFormats: [],
   saleDates: [],
   columns: [],
   rows: [],
@@ -251,6 +262,7 @@ export const initialState: ExportBuilderState = {
   selectedSubDepartments: [],
   selectedVendors: [],
   selectedCashiers: [],
+  selectedPriceTypes: [],
   selectedSaleDates: [],
   selectedColumns: [],
   productCodes: [],
@@ -351,6 +363,8 @@ interface ConfigPayload {
   subDepartments: ExportSubDepartment[];
   vendors: ExportVendor[];
   cashiers: ExportCashier[];
+  priceTypes: ExportPriceType[];
+  dateFormats: ExportDateFormat[];
   /** The days in the range, from the caller — not from the response. */
   saleDates: string[];
   columns: ExportColumn[];
@@ -379,6 +393,8 @@ const devExportBuilderSlice = createSlice({
         subDepartments,
         vendors,
         cashiers,
+        priceTypes,
+        dateFormats,
         saleDates,
         columns,
         rows,
@@ -405,6 +421,8 @@ const devExportBuilderSlice = createSlice({
       // keeps the first name it finds, because the spellings vary far more
       // than the sub department and vendor names do.
       state.cashiers = cashiers;
+      state.priceTypes = priceTypes;
+      state.dateFormats = dateFormats;
       state.saleDates = saleDates;
       state.columns = columns;
       state.rows = rows;
@@ -420,6 +438,7 @@ const devExportBuilderSlice = createSlice({
       );
       state.selectedVendors = state.vendors.map((v) => v.vendor_id);
       state.selectedCashiers = cashiers.map((c) => c.cashier_number);
+      state.selectedPriceTypes = priceTypes.map((p) => p.value);
       state.selectedSaleDates = [...saleDates];
       state.selectedColumns = columns.map((c) => c.name);
       state.columnOrder = columns.map((c) => c.name);
@@ -514,6 +533,15 @@ const devExportBuilderSlice = createSlice({
     },
     setSelectedCashiers: (state, action: PayloadAction<number[]>) => {
       state.selectedCashiers = action.payload;
+    },
+    togglePriceType: (state, action: PayloadAction<string>) => {
+      const v = action.payload;
+      state.selectedPriceTypes = state.selectedPriceTypes.includes(v)
+        ? state.selectedPriceTypes.filter((x) => x !== v)
+        : [...state.selectedPriceTypes, v];
+    },
+    setSelectedPriceTypes: (state, action: PayloadAction<string[]>) => {
+      state.selectedPriceTypes = action.payload;
     },
     toggleSaleDate: (state, action: PayloadAction<string>) => {
       const v = action.payload;
@@ -747,6 +775,7 @@ const devExportBuilderSlice = createSlice({
         selectedSubDepartments: state.selectedSubDepartments,
         selectedVendors: state.selectedVendors,
         selectedCashiers: state.selectedCashiers,
+        selectedPriceTypes: state.selectedPriceTypes,
         selectedSaleDates: state.selectedSaleDates,
         selectedColumns: state.selectedColumns,
         columnOrder: state.columnOrder,
@@ -879,6 +908,7 @@ const devExportBuilderSlice = createSlice({
       );
       state.selectedVendors = state.vendors.map((v) => v.vendor_id);
       state.selectedCashiers = state.cashiers.map((c) => c.cashier_number);
+      state.selectedPriceTypes = state.priceTypes.map((p) => p.value);
       state.selectedSaleDates = [...state.saleDates];
       state.selectedColumns = state.columns.map((c) => c.name);
       state.columnOrder = state.columns.map((c) => c.name);
@@ -918,6 +948,8 @@ export const {
   setSelectedVendors,
   toggleCashier,
   setSelectedCashiers,
+  togglePriceType,
+  setSelectedPriceTypes,
   toggleSaleDate,
   setSelectedSaleDates,
   toggleColumn,

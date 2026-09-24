@@ -39,6 +39,8 @@ const renderPanel = (over: { saleDates?: string[] } = {}) => {
       ],
       vendors,
       cashiers: [],
+      priceTypes: [],
+      dateFormats: [],
       saleDates: over.saleDates ?? [],
       columns: [{ name: "sale_id", data_type: "bigint" }],
       rows: [],

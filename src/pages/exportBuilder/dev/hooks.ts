@@ -31,6 +31,7 @@ import {
   setProductCodes,
   setProductDescriptions,
   setSelectedCashiers,
+  setSelectedPriceTypes,
   setSelectedColumns,
   setSelectedRingTypes,
   setSelectedSaleDates,
@@ -67,9 +68,11 @@ import {
   type SavedConfig,
 } from "../../../api/savedConfigs";
 import {
+  deleteExportBuild,
   linkExportBuild,
   listExportBuilds,
   type BuildLinkResp,
+  type DeleteBuildResp,
   type ExportBuild,
   type ExportBuildsResp,
 } from "../../../api/exportBuilds";
@@ -166,6 +169,9 @@ export const useExportBuilderCtx = () => {
     config.cashiers.length > 0 && config.selectedCashiers.length === 0
       ? "cashier"
       : null,
+    config.priceTypes.length > 0 && config.selectedPriceTypes.length === 0
+      ? "price type"
+      : null,
     config.saleDates.length > 0 && config.selectedSaleDates.length === 0
       ? "day"
       : null,
@@ -246,6 +252,7 @@ export const useExportBuilderCtx = () => {
     subDepartments: config.selectedSubDepartments,
     vendors: config.selectedVendors,
     cashiers: config.selectedCashiers,
+    priceTypes: config.selectedPriceTypes,
     saleDates: config.selectedSaleDates,
     productCodes: config.productCodes,
     productDescriptions: config.productDescriptions,
@@ -456,6 +463,8 @@ export const useExportBuilderCtx = () => {
             subDepartments: j.subDepartments ?? [],
             vendors: j.vendors ?? [],
             cashiers: j.cashiers ?? [],
+            priceTypes: j.priceTypes ?? [],
+            dateFormats: j.dateFormats ?? [],
             // Not from the response: the endpoint returns no day list, and a
             // day with no sales is still a day someone can ask to exclude.
             saleDates: daysInRange(
@@ -530,6 +539,9 @@ export const useExportBuilderCtx = () => {
       cashierNumbers: all(config.selectedCashiers, config.cashiers)
         ? null
         : config.selectedCashiers,
+      priceTypes: all(config.selectedPriceTypes, config.priceTypes)
+        ? null
+        : config.selectedPriceTypes,
       // Every day ticked is the range itself, which startDate and endDate
       // already say — sending the list as well would add a predicate that
       // cannot exclude anything.
@@ -549,10 +561,8 @@ export const useExportBuilderCtx = () => {
       voidFlag: config.flags.voidFlag,
       refundFlag: config.flags.refundFlag,
       orderBy: config.orderBy.length > 0 ? config.orderBy : null,
-      // PARKED: the endpoint does not take a date format yet — see
-      // dateFormats.ts. Sending one it ignores would be worse than not
-      // offering it, because the preview would format and the file would not.
-      // dateFormat: config.flags.dateFormat || null,
+      // A key from the preview's own list, not a pattern of ours.
+      dateFormat: config.flags.dateFormat || null,
       userQueryId: config.savedCurrentId,
       fileFormat: config.flags.fileFormat,
       filePrefix: config.flags.filePrefix || null,
@@ -681,12 +691,23 @@ export const useExportBuilderCtx = () => {
    * search time and again after a build, and never cached past the window the
    * response names.
    */
+  /**
+   * An answer that failed while reporting 200.
+   *
+   * The house convention on this router: a validation or permission failure
+   * raises properly, but an unexpected one is caught at the bottom of the
+   * endpoint and returned as 200 with `success: false`. So a database or S3
+   * failure reads as a successful request unless both are checked.
+   */
+  const failed = (j: { error?: number; success?: boolean }) =>
+    j.error !== 0 || j.success === false;
+
   const loadBuilds = () => {
     dispatch(startBuildsLoad());
     listExportBuilds(url, token)
       .then((resp) => {
         const j = resp.data as ExportBuildsResp;
-        if (j.error !== 0) {
+        if (failed(j)) {
           dispatch(failBuildsLoad("Could not read your past builds."));
           return;
         }
@@ -712,7 +733,7 @@ export const useExportBuilderCtx = () => {
     linkExportBuild(url, token, buildId, userQueryId)
       .then((resp) => {
         const j = resp.data as BuildLinkResp;
-        if (j.error !== 0) {
+        if (failed(j)) {
           dispatch(failBuildsLoad("Could not label that build."));
           return;
         }
@@ -781,6 +802,7 @@ export const useExportBuilderCtx = () => {
     if (request.cashierNumbers) {
       dispatch(setSelectedCashiers(request.cashierNumbers));
     }
+    if (request.priceTypes) dispatch(setSelectedPriceTypes(request.priceTypes));
     if (request.saleDates) dispatch(setSelectedSaleDates(request.saleDates));
     dispatch(setProductCodes(request.productCodes ?? []));
     dispatch(setProductDescriptions(request.productDescriptions ?? []));
@@ -789,6 +811,7 @@ export const useExportBuilderCtx = () => {
         voidFlag: request.voidFlag ?? null,
         refundFlag: request.refundFlag ?? null,
         fileFormat: request.fileFormat ?? "csv",
+        dateFormat: request.dateFormat ?? "",
         filePrefix: request.filePrefix ?? "sales",
         ordered: request.ordered ?? false,
       }),
@@ -814,6 +837,44 @@ export const useExportBuilderCtx = () => {
     );
   };
 
+  /**
+   * Delete a build, file and manifest together.
+   *
+   * The list is read again rather than patched: a partial delete is a real
+   * outcome on that endpoint, and the listing is the only thing that knows
+   * what is actually left.
+   */
+  const removeBuild = (buildId: string) => {
+    dispatch(startBuildsLoad());
+    deleteExportBuild(url, token, buildId)
+      .then((resp) => {
+        const j = resp.data as DeleteBuildResp;
+        if (failed(j)) {
+          dispatch(failBuildsLoad("That build could not be deleted."));
+          loadBuilds();
+          return;
+        }
+        toast.success(
+          `Deleted ${j.filesDeleted} file${j.filesDeleted === 1 ? "" : "s"}, freeing ${(
+            (j.bytesFreed ?? 0) /
+            1024 /
+            1024
+          ).toFixed(1)} MB`,
+        );
+        loadBuilds();
+      })
+      .catch((err: JsonError) => {
+        dispatch(
+          failBuildsLoad(
+            "That build could not be deleted: " +
+              err.message +
+              " — anything already removed stays removed, so trying again is safe.",
+          ),
+        );
+        loadBuilds();
+      });
+  };
+
   const build = () => {
     dispatch(startExport());
     const slowTimer = window.setTimeout(
@@ -825,7 +886,7 @@ export const useExportBuilderCtx = () => {
       .then((resp) => {
         window.clearTimeout(slowTimer);
         const j = resp.data as ExportResp;
-        if (j.error !== 0) {
+        if (j.error !== 0 || j.success === false) {
           dispatch(failExport("The export did not complete."));
           return;
         }
@@ -899,6 +960,7 @@ export const useExportBuilderCtx = () => {
     loadBuilds,
     reloadBuild,
     labelBuild,
+    removeBuild,
     loadQueries,
     saveQuery,
     renameQuery,

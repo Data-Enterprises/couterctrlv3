@@ -37,7 +37,7 @@ const SqlModal = () => {
       <div className="flex flex-col gap-3 p-4 min-h-0">
         <div className="flex items-baseline gap-3">
           <h2 className="text-[15px] font-semibold">The query this would run</h2>
-          <span className="text-[11.5px] text-content/60">
+          <span className="text-[11.5px] text-content/85">
             dry run · nothing was written
           </span>
           <div className="flex-1" />
@@ -62,11 +62,11 @@ const SqlModal = () => {
         </pre>
 
         <dl className="grid grid-cols-[110px_1fr] gap-x-3 gap-y-1.5 text-[12px]">
-          <dt className="text-content/60">Writes to</dt>
+          <dt className="text-content/85">Writes to</dt>
           <dd className="font-mono text-[11.5px] break-all">
             s3://{ctx.sql.bucket}/{ctx.sql.filePath}
           </dd>
-          <dt className="text-content/60">Copy options</dt>
+          <dt className="text-content/85">Copy options</dt>
           <dd className="font-mono text-[11.5px]">{ctx.sql.copyOptions}</dd>
         </dl>
       </div>

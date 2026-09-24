@@ -30,6 +30,8 @@ const renderBar = (setup: (dispatch: (a: unknown) => void) => void) => {
       subDepartments: [],
       vendors: [],
       cashiers: [],
+      priceTypes: [],
+      dateFormats: [],
       saleDates: [],
       columns: [
         { name: "storeid", data_type: "bigint" },

@@ -12,6 +12,7 @@ import {
   setProductCodes,
   setProductDescriptions,
   setSelectedCashiers,
+  setSelectedPriceTypes,
   setSelectedColumns,
   setSelectedRingTypes,
   setSelectedSaleTypes,
@@ -73,6 +74,7 @@ export const toPayload = (
   ),
   vendors: narrowedOr(config.selectedVendors, config.vendors),
   cashiers: narrowedOr(config.selectedCashiers, config.cashiers),
+  priceTypes: narrowedOr(config.selectedPriceTypes, config.priceTypes),
   productCodes: config.productCodes,
   productDescriptions: config.productDescriptions,
   flags: { ...config.flags },
@@ -198,6 +200,27 @@ export const planLoad = (
         payload.cashiers,
         config.cashiers.map((c) => c.cashier_number),
         "cashiers",
+      ),
+    ),
+  );
+
+  /**
+   * Price type is a per-company vocabulary, so a miss here is not a value
+   * that has gone — it is a word another company does not use.
+   *
+   * A configuration saved against Food Giant carries "Regular"; reopened
+   * against a company that says "REG", it would match nothing and write an
+   * empty file without a word. The endpoint deliberately does not check this
+   * — it would cost a scan and fire late — so it is checked where the list
+   * for these stores is already in hand.
+   */
+  actions.push(
+    setSelectedPriceTypes(
+      resolve(
+        payload.priceTypes ?? null,
+        config.priceTypes.map((p) => p.value),
+        "price types",
+        (value) => (String(value) === "" ? "(none)" : String(value)),
       ),
     ),
   );
