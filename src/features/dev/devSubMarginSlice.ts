@@ -42,15 +42,17 @@ export type StoreSalesTotals = {
 
 export type SubDeptGrade = {
   tyMarginPct: number;
-  lyMarginPct: number;
-  ptsDelta: number;
+  /** Null where the period had no sales, or where either side of a
+   *  comparison had none — see SubDeptGrade for the reasoning. */
+  lyMarginPct: number | null;
+  ptsDelta: number | null;
   noCostCount: number;
   tySales: number;
   lySales: number;
   vsLYSalesPct: number;
   lwSales: number;
-  lwMarginPct: number;
-  lwPtsDelta: number;
+  lwMarginPct: number | null;
+  lwPtsDelta: number | null;
   vsLWSalesPct: number;
   tyWeekOneMargins: SubDeptMargin[];
   lyWeekOneMargins: SubDeptMargin[];

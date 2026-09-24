@@ -188,29 +188,12 @@ export const buildVendorRows = (
       hasLW, hasLY,
       coverage,
       tyMarginPct: marginPct(twNet, twCogs),
-      lwMarginPct: lwNet > 0 ? marginPct(lwNet, lwCogs) : null,
-      lyMarginPct: lyNet > 0 ? marginPct(lyNet, lyCogs) : null,
-      /**
-       * Both sides of a points delta come from the SAME matched days, so a
-       * week still in progress isn't measured against a full prior one — and
-       * both sides need sales, because a margin is a rate and a rate needs
-       * something to be a rate OF.
-       *
-       * The matched days can leave one side empty. A vendor who sold Tuesday
-       * and Saturday this week and only Friday last week matches on Friday,
-       * where this week sold nothing: `marginPct` answers 0 for that, and the
-       * delta then reads as a 24-point collapse when both weeks in fact ran at
-       * the same margin. Null is the honest answer — there is no comparison to
-       * make — and it grades as Ungraded rather than Critical.
-       */
-      lwPtsDelta:
-        twNetForLW > 0 && lwNet > 0
-          ? marginPct(twNetForLW, twCogsForLW) - marginPct(lwNet, lwCogs)
-          : null,
-      lyPtsDelta:
-        twNetForLY > 0 && lyNet > 0
-          ? marginPct(twNetForLY, twCogsForLY) - marginPct(lyNet, lyCogs)
-          : null,
+      lwMarginPct: marginPct(lwNet, lwCogs),
+      lyMarginPct: marginPct(lyNet, lyCogs),
+      // Both sides of a points delta come from the SAME matched days, so a
+      // week still in progress isn't measured against a full prior one.
+      lwPtsDelta: marginPct(twNetForLW, twCogsForLW) - marginPct(lwNet, lwCogs),
+      lyPtsDelta: marginPct(twNetForLY, twCogsForLY) - marginPct(lyNet, lyCogs),
     });
   }
 

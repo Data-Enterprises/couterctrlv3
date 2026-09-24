@@ -12,8 +12,8 @@ import type { SubDeptMargin } from "../../../interfaces";
 export const gradeBasisOf = (grade: SubDeptGrade) =>
   gradeBasis(
     {
-      hasLY: grade.lySales > 0 || grade.lyMarginPct > 0,
-      hasLW: grade.lwSales > 0 || grade.lwMarginPct > 0,
+      hasLY: grade.lySales > 0 || (grade.lyMarginPct ?? 0) > 0,
+      hasLW: grade.lwSales > 0 || (grade.lwMarginPct ?? 0) > 0,
     },
     grade.coverage,
   );
@@ -70,7 +70,7 @@ export const buildDayComparisons = (
     );
   const pct = (n: number, c: number) => (n > 0 ? ((n - c) / n) * 100 : 0);
 
-  const hasLY = grade.lySales > 0 || grade.lyMarginPct > 0;
+  const hasLY = grade.lySales > 0 || (grade.lyMarginPct ?? 0) > 0;
   const refRows = hasLY ? grade.lyWeekOneMargins : grade.lwWeekOneMargins;
   const refDates = datesOf(refRows);
 
@@ -251,15 +251,19 @@ export interface MarginDayMatchedTotals {
   tySales: number;
   tyMarginPct: number;
   lwSales: number;
-  lwMarginPct: number;
+  /** Null where that period had no sales — a margin needs something to be a
+   *  margin of, and zero is a rate somebody earned. */
+  lwMarginPct: number | null;
   lySales: number;
-  lyMarginPct: number;
+  lyMarginPct: number | null;
   hasLW: boolean;
   hasLY: boolean;
   vsLWSalesPct: number;
   vsLYSalesPct: number;
-  ptsDelta: number;
-  lwPtsDelta: number;
+  /** Null where either matched side had no sales, so there is nothing to
+   *  compare rather than a collapse to report. */
+  ptsDelta: number | null;
+  lwPtsDelta: number | null;
 }
 
 /** Margin-side equivalent of computeDayMatchedTotals in
@@ -313,9 +317,9 @@ export const computeMarginDayMatched = (
     tySales,
     tyMarginPct: marginPct(tySales, tyCogsAll),
     lwSales: lwMatch.refNet,
-    lwMarginPct: marginPct(lwMatch.refNet, lwMatch.refCogs),
+    lwMarginPct: hasLW ? marginPct(lwMatch.refNet, lwMatch.refCogs) : null,
     lySales: lyMatch.refNet,
-    lyMarginPct: marginPct(lyMatch.refNet, lyMatch.refCogs),
+    lyMarginPct: hasLY ? marginPct(lyMatch.refNet, lyMatch.refCogs) : null,
     hasLW,
     hasLY,
     vsLWSalesPct: hasLW
@@ -324,16 +328,27 @@ export const computeMarginDayMatched = (
     vsLYSalesPct: hasLY
       ? ((lyMatch.tyNet - lyMatch.refNet) / lyMatch.refNet) * 100
       : 0,
-    // Margin percentages are rates, so both sides are scoped to the matched
-    // days — comparing a 3-day TY rate against a 7-day LW rate is the same
-    // category of error as doing it with totals.
-    ptsDelta: hasLY
-      ? marginPct(lyMatch.tyNet, lyMatch.tyCogs) -
-        marginPct(lyMatch.refNet, lyMatch.refCogs)
-      : 0,
-    lwPtsDelta: hasLW
-      ? marginPct(lwMatch.tyNet, lwMatch.tyCogs) -
-        marginPct(lwMatch.refNet, lwMatch.refCogs)
-      : 0,
+    /**
+      * Margin percentages are rates, so both sides are scoped to the matched
+      * days — comparing a 3-day TY rate against a 7-day LW rate is the same
+      * category of error as doing it with totals.
+      *
+      * And both sides need sales, because a rate needs something to be a rate
+      * OF. The matched days can leave THIS week's side empty while the prior
+      * one has something: a department selling on different days each week
+      * matches on a day it did not sell, `marginPct` answers 0 for that, and
+      * the delta reads as a collapse nobody can find. Null says there is no
+      * comparison, and grades ungraded — see the Vendors fix, same shape.
+      */
+    ptsDelta:
+      hasLY && lyMatch.tyNet > 0
+        ? marginPct(lyMatch.tyNet, lyMatch.tyCogs) -
+          marginPct(lyMatch.refNet, lyMatch.refCogs)
+        : null,
+    lwPtsDelta:
+      hasLW && lwMatch.tyNet > 0
+        ? marginPct(lwMatch.tyNet, lwMatch.tyCogs) -
+          marginPct(lwMatch.refNet, lwMatch.refCogs)
+        : null,
   };
 };
