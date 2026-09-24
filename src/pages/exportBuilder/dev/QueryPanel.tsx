@@ -118,6 +118,20 @@ const QueryPanel = () => {
 
   return (
     <div className="flex-shrink-0 bg-card_bg border border-brand_line rounded-xl flex flex-col overflow-hidden">
+      {ctx.measureItems.length > 0 && ctx.groupBy.length === 0 && (
+        <div className="bg-amber-100 border-b border-amber-300 px-3 py-2">
+          <span className="text-[12.5px] font-semibold text-amber-900">
+            This summary has no key to group by.
+          </span>{" "}
+          <span className="text-[12.5px] text-amber-900/85">
+            Measures need rows to sit in, so the export refuses a summary
+            without at least one. Pick one under <strong>Group By</strong> on
+            the left — storeid for one row per store, product_code for one per
+            item.
+          </span>
+        </div>
+      )}
+
       <div className="flex items-center gap-2 px-3 py-2 bg-custom-white border-b border-brand_line flex-wrap">
         <span className="text-[11px] font-semibold uppercase tracking-wide text-content/60">
           The configuration, as a query
@@ -204,10 +218,14 @@ const QueryPanel = () => {
             Undo apply
           </button>
         )}
-        <span className="text-[11px] text-content/50">
+        <span
+          className={`text-[11.5px] ${
+            edited ? "text-content/60" : "text-content/80"
+          }`}
+        >
           {edited
             ? "Ctrl+Enter applies it"
-            : "Nothing to apply — this is already your configuration. Edit it to change the panel on the left."}
+            : "Nothing to apply — this box already matches your configuration. Edit it and this button turns on."}
         </span>
         {ctx.queriesError && (
           <span className="text-[11.5px] text-amber-900">

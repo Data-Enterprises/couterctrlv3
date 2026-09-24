@@ -78,14 +78,21 @@ const Row = ({
   isOpen,
   onToggle,
   children,
+  warn = false,
 }: {
   label: string;
   summary: string;
   isOpen: boolean;
   onToggle: () => void;
   children: ReactNode;
+  /** This section is the one standing between here and a file. */
+  warn?: boolean;
 }) => (
-  <div className="bg-card_bg border border-brand_line rounded-lg overflow-hidden flex flex-col flex-shrink-0">
+  <div
+    className={`rounded-lg overflow-hidden flex flex-col flex-shrink-0 border ${
+      warn ? "bg-amber-50 border-amber-300" : "bg-card_bg border-brand_line"
+    }`}
+  >
     <button
       type="button"
       onClick={onToggle}
@@ -93,12 +100,24 @@ const Row = ({
       className="w-full flex items-center gap-2 px-3 py-2.5 text-left flex-shrink-0"
     >
       <ChevronRightIcon
-        className={`w-3.5 h-3.5 flex-shrink-0 text-content/60 transition-transform duration-150 ${
-          isOpen ? "rotate-90" : ""
-        }`}
+        className={`w-3.5 h-3.5 flex-shrink-0 transition-transform duration-150 ${
+          warn ? "text-amber-900" : "text-content/60"
+        } ${isOpen ? "rotate-90" : ""}`}
       />
-      <span className="text-[13px] font-semibold flex-1">{label}</span>
-      <span className="text-[12px] text-content/60">{summary}</span>
+      <span
+        className={`text-[13px] font-semibold flex-1 ${
+          warn ? "text-amber-900" : ""
+        }`}
+      >
+        {label}
+      </span>
+      <span
+        className={`text-[12px] ${
+          warn ? "text-amber-900 font-semibold" : "text-content/60"
+        }`}
+      >
+        {summary}
+      </span>
     </button>
     {isOpen && children}
   </div>
@@ -436,6 +455,16 @@ const ConfigPanel = () => {
     { value: "*", label: "All rows (count)" },
     ...ctx.columns.map((c) => ({ value: c.name, label: c.name })),
   ];
+
+  /**
+   * Measures, and nothing to group them by.
+   *
+   * The one configuration someone reaches by accident: adding a measure makes
+   * the file a summary, and a summary with no keys has no rows to put the
+   * numbers in. The endpoint refuses it, so the page points at the fix rather
+   * than greying a button and waiting.
+   */
+  const needsKey = ctx.measureItems.length > 0 && ctx.groupBy.length === 0;
 
   const allStores = ctx.stores.length;
   const allTypes = ctx.saleTypes.length;
@@ -972,6 +1001,7 @@ const ConfigPanel = () => {
 
       <Row
         label="Group By"
+        warn={needsKey}
         isOpen={open === "groupBy"}
         onToggle={() => setOpen(open === "groupBy" ? null : "groupBy")}
         summary={
