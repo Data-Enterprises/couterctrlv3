@@ -2,7 +2,8 @@ import { useCallback, useRef } from "react";
 import { DocumentTextIcon } from "@heroicons/react/24/outline";
 import { useExportBuilderCtx } from "./hooks";
 import { isPii, maskValue } from "./piiColumns";
-import { formatDateValue, isDateColumn } from "./dateFormats";
+// PARKED with the Dates control — see dateFormats.ts.
+// import { formatDateValue, isDateColumn } from "./dateFormats";
 import { useColumnDrag } from "./useColumnDrag";
 import { moveColumn } from "../../../features/dev/devExportBuilderSlice";
 
@@ -150,12 +151,12 @@ const CsvPreview = () => {
                     {r + 1}
                   </td>
                   {cols.map((c, i) => {
-                    const stored = row[c.name];
-                    // Written as the file will write it, so a format picked
-                    // on the left is visible here rather than at download.
-                    const raw = isDateColumn(c.data_type)
-                      ? formatDateValue(stored, ctx.flags.dateFormat)
-                      : stored;
+                    // PARKED: written as the file will write it, once the
+                    // endpoint can write it that way.
+                    // const raw = isDateColumn(c.data_type)
+                    //   ? formatDateValue(row[c.name], ctx.flags.dateFormat)
+                    //   : row[c.name];
+                    const raw = row[c.name];
                     const masked = isPii(c.name);
                     return (
                       <td

@@ -1,6 +1,19 @@
 import type { SelectFilterOption } from "../../../components-dev/filters/SelectFilter";
 
 /**
+ * PARKED, 2026-09-24. The endpoint does not take a date format.
+ *
+ * The final contract for /sales/export lists fileFormat, filePrefix,
+ * userQueryId and dryRun, and nothing about dates — so a page that formatted
+ * them would show 09/14/2026 in the preview and hand back a file holding
+ * 2026-09-14T00:00:00. Everything here is kept and switched off rather than
+ * deleted: the endpoint side is written up as Part 4 of
+ * computed-measures-handoff.md, and turning this back on is uncommenting the
+ * four places that call it.
+ */
+
+
+/**
  * How dates are written in the file.
  *
  * The table stores timestamps, so a date column arrives as

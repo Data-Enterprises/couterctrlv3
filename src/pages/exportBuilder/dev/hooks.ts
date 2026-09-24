@@ -532,7 +532,10 @@ export const useExportBuilderCtx = () => {
       voidFlag: config.flags.voidFlag,
       refundFlag: config.flags.refundFlag,
       orderBy: config.orderBy.length > 0 ? config.orderBy : null,
-      dateFormat: config.flags.dateFormat || null,
+      // PARKED: the endpoint does not take a date format yet — see
+      // dateFormats.ts. Sending one it ignores would be worse than not
+      // offering it, because the preview would format and the file would not.
+      // dateFormat: config.flags.dateFormat || null,
       fileFormat: config.flags.fileFormat,
       filePrefix: config.flags.filePrefix || null,
       ordered: config.flags.ordered,

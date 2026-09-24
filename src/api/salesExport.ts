@@ -322,14 +322,15 @@ export interface ExportParams {
    */
   orderBy: ExportSort[] | null;
   /**
-   * A Postgres pattern for every date and timestamp column in the file.
+   * PARKED. A Postgres pattern for every date and timestamp column in the
+   * file — `2026-09-14T00:00:00` is machine output in a spreadsheet.
    *
-   * Null leaves them as the table holds them — `2026-09-14T00:00:00`, which
-   * is machine output in a spreadsheet. The endpoint checks the pattern
-   * against a fixed set before it uses one, so this is a key by another name
-   * and not text reaching a query.
+   * Not on the endpoint yet, so the page does not send it. Part 4 of
+   * computed-measures-handoff.md has the contract: a fixed set of patterns,
+   * validated by membership, the stored constant being what reaches the
+   * query.
    */
-  dateFormat: string | null;
+  // dateFormat: string | null;
   fileFormat: string;
   filePrefix: string | null;
   ordered: boolean;
