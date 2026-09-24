@@ -111,9 +111,15 @@ const QueryPanel = () => {
     ctx.dispatch(setCurrentQuery(null));
   };
 
-  const apply = () => {
+  /**
+   * Make some text the configuration.
+   *
+   * The one path for it, because opening a saved query and pressing Apply are
+   * the same act: after either, the box and the panel say the same thing.
+   */
+  const applyText = (sql: string) => {
     try {
-      const parsed: Query = parseQuery(text);
+      const parsed: Query = parseQuery(sql);
       ctx.dispatch(rememberBeforeApply());
       const next = planApply(parsed, ctx.config);
       justApplied.current = true;
@@ -121,6 +127,7 @@ const QueryPanel = () => {
       setPlan(next);
       setError(null);
       setEdited(false);
+      return true;
     } catch (e) {
       setPlan(null);
       setError(
@@ -128,8 +135,11 @@ const QueryPanel = () => {
           ? { message: e.message, hint: e.hint }
           : { message: e instanceof Error ? e.message : "That did not parse." },
       );
+      return false;
     }
   };
+
+  const apply = () => applyText(text);
 
   const undo = () => {
     ctx.dispatch(undoApply());
@@ -144,14 +154,21 @@ const QueryPanel = () => {
     }
   };
 
+  /**
+   * Open a saved query — which means load it, not just show it.
+   *
+   * It used to put the text in the box and leave the panel on the left
+   * untouched, so the two disagreed the moment you picked one, and the box
+   * called it an edit you had not made. Opening applies it: the panel changes,
+   * anything the configuration cannot hold is reported, and if it will not
+   * parse the text stays put with the error under it.
+   */
   const openSaved = (id: string) => {
     const query = ctx.queries.find((q) => String(q.id) === id);
     if (!query) return;
     setText(query.sql);
-    setEdited(query.sql !== generated);
-    setError(null);
-    setPlan(null);
     ctx.dispatch(setCurrentQuery(query.id));
+    if (!applyText(query.sql)) setEdited(true);
   };
 
   const current = ctx.queries.find((q) => q.id === ctx.currentQueryId) ?? null;
