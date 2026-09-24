@@ -1,6 +1,6 @@
 import type { UnknownAction } from "@reduxjs/toolkit";
 import type { ExportExpr } from "../../../api/salesExport";
-import type { SavedExportPayload } from "../../../api/savedExports";
+import type { SavedConfigPayload } from "../../../api/savedConfigs";
 
 import {
   setAggregates,
@@ -54,8 +54,7 @@ const narrowedOr = <T>(picked: T[], available: unknown[]): T[] | null =>
 /** The configuration, in the shape that goes to S3. */
 export const toPayload = (
   config: ExportBuilderState,
-  querySql?: string,
-): SavedExportPayload => ({
+): SavedConfigPayload => ({
   v: 1,
   mode: config.mode,
   columns: config.columnOrder.filter((n) => config.selectedColumns.includes(n)),
@@ -76,7 +75,6 @@ export const toPayload = (
   productCodes: config.productCodes,
   productDescriptions: config.productDescriptions,
   flags: { ...config.flags },
-  ...(querySql ? { querySql } : {}),
 });
 
 export interface LoadPlan {
@@ -94,7 +92,7 @@ export interface LoadPlan {
  * covering two of its five stores is worse than one that says so.
  */
 export const planLoad = (
-  payload: SavedExportPayload,
+  payload: SavedConfigPayload,
   config: ExportBuilderState,
 ): LoadPlan => {
   const actions: UnknownAction[] = [];
@@ -139,14 +137,14 @@ export const planLoad = (
   // A computed measure is only as good as the columns underneath it: one
   // built on a column this table no longer has would be an error at build
   // time rather than a missing column in the file.
-  const computed = (payload.computed ?? []).filter((m) =>
+  const computed = (payload.computed).filter((m) =>
     columnsUnder(m.expr).every((name) =>
       config.columns.some((c) => c.name === name),
     ),
   );
-  if (computed.length < (payload.computed ?? []).length) {
+  if (computed.length < (payload.computed).length) {
     missing.push(
-      `${(payload.computed ?? []).length - computed.length} computed measure(s) built on columns this table does not have`,
+      `${(payload.computed).length - computed.length} computed measure(s) built on columns this table does not have`,
     );
   }
   actions.push(setComputed(computed));
@@ -211,12 +209,12 @@ export const planLoad = (
       ? [
           ...payload.groupBy,
           ...payload.aggregates.map((m) => m.alias ?? `${m.column}_${m.fn}`),
-          ...(payload.computed ?? []).map((m) => m.alias),
+          ...(payload.computed).map((m) => m.alias),
         ]
       : payload.columns,
   );
-  const orderBy = (payload.orderBy ?? []).filter((s) => sortable.has(s.key));
-  if (orderBy.length < (payload.orderBy ?? []).length) {
+  const orderBy = payload.orderBy.filter((s) => sortable.has(s.key));
+  if (orderBy.length < payload.orderBy.length) {
     missing.push(
       "Part of the sort named a column this configuration no longer has",
     );
@@ -239,14 +237,14 @@ export const planLoad = (
 };
 
 /** One line saying what a saved configuration is, for the list. */
-export const describePayload = (payload: SavedExportPayload) => {
+export const describePayload = (payload: SavedConfigPayload) => {
   const bits = [
     payload.mode === "summary"
       ? `Summary by ${payload.groupBy.join(", ") || "nothing"}`
       : `${payload.columns.length} columns`,
     payload.mode === "summary" &&
-      (payload.computed?.length ?? 0) > 0 &&
-      `${payload.computed?.length} computed`,
+      (payload.computed.length) > 0 &&
+      `${payload.computed.length} computed`,
     payload.saleTypes && `${payload.saleTypes.length} sale types`,
     payload.subDepartments && `${payload.subDepartments.length} sub departments`,
     payload.vendors && `${payload.vendors.length} vendors`,

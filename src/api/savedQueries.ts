@@ -14,9 +14,24 @@ import axios from "axios";
  * execute endpoint would hand every signed-in caller the database.
  */
 
-/** The label this page files its rows under, so a developer's own saved
- *  `REINDEX` note never shows up in the export page's list. */
+/**
+ * Two labels on one table, and they hold different things.
+ *
+ * A **config** is the contract's own convention: `project: "sales_export"`,
+ * with the configuration JSON in `sql`. That label is what the export's
+ * `userQueryId` points at.
+ *
+ * A **query** is this page's scratchpad text, which is not a configuration
+ * and would be nonsense to a build. It gets its own label so one GET does not
+ * come back holding both shapes.
+ *
+ * Both keep clear of the unlabelled rows: the table is shared with the
+ * developer query window, whose rows are real SQL — REINDEX, INSERT INTO
+ * stores — and a developer who also uses this page should not find those
+ * here.
+ */
 export const SALES_EXPORT_PROJECT = "sales_export";
+export const SALES_EXPORT_QUERY_PROJECT = "sales_export_query";
 
 export interface SavedQuery {
   id: number;
@@ -61,7 +76,7 @@ const headers = (token: string) => ({
 export const listSavedQueries = (
   url: string,
   token: string,
-  project = SALES_EXPORT_PROJECT,
+  project: string = SALES_EXPORT_QUERY_PROJECT,
 ) =>
   axios({
     method: "GET",
@@ -79,7 +94,7 @@ export const createSavedQuery = (
     method: "POST",
     headers: headers(token),
     url: url + "user_queries/",
-    data: { project: SALES_EXPORT_PROJECT, ...body },
+    data: { project: SALES_EXPORT_QUERY_PROJECT, ...body },
   });
 
 /**

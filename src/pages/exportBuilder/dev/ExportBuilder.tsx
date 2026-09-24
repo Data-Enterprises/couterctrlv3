@@ -62,7 +62,7 @@ const ExportBuilder = () => {
           <ExportBar />
           <SqlModal />
           {ctx.queryOpen && <QueryModal />}
-          {ctx.downloadsOpen && <DownloadsModal />}
+          {ctx.buildsOpen && <DownloadsModal />}
           {ctx.savedOpen && <SavedExportsModal />}
         </div>
       </div>

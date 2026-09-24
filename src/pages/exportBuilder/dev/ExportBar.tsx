@@ -4,7 +4,7 @@ import { countPii } from "./piiColumns";
 import {
   dismissBuild,
   openQuery,
-  openDownloads,
+  openBuilds,
   openSaved,
 } from "../../../features/dev/devExportBuilderSlice";
 import { formatBigNumber } from "../../../utils";
@@ -79,6 +79,12 @@ const ExportBar = () => {
             <div className="flex-1 min-w-0">
               <div className="text-[13px] font-semibold truncate">
                 {f.key.split("/").pop()}
+                {ctx.builtQueryName && (
+                  <span className="font-normal text-content/60">
+                    {" "}
+                    · {ctx.builtQueryName}
+                  </span>
+                )}
               </div>
               <div className="text-[11.5px] text-content/70 mt-0.5">
                 {formatBigNumber(ctx.rowsUploaded, 0)} rows · {mb(f.bytes)} ·
@@ -117,17 +123,17 @@ const ExportBar = () => {
           >
             Build it again
           </button>
-          {ctx.builds.length > 1 && (
-            <button
-              type="button"
-              onClick={() => ctx.dispatch(openDownloads(true))}
-              className="text-[11.5px] text-brand_navy_hover underline underline-offset-2"
-            >
-              All {ctx.builds.length} files
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={() => ctx.dispatch(openBuilds(true))}
+            className="text-[11.5px] text-brand_navy_hover underline underline-offset-2"
+          >
+            Previous builds
+          </button>
           <span className="text-[11px] text-content/55">
-            The file stays here while its link lasts, whatever you build next.
+            {ctx.manifestWritten
+              ? "This build is in Previous builds, with the settings that made it."
+              : "This build has no manifest, so it will not appear in Previous builds — keep this link."}
           </span>
         </div>
       </div>
@@ -201,16 +207,16 @@ const ExportBar = () => {
       </div>
       {/*
         * Unlike Show SQL, this one is visible: it runs in the browser over the
-        * fifty sample rows and sends nothing, so it promises nothing the
+        * sample rows and sends nothing, so it promises nothing the
         * product cannot keep.
         */}
       {ctx.builds.length > 0 && (
         <button
           type="button"
-          onClick={() => ctx.dispatch(openDownloads(true))}
+          onClick={() => ctx.dispatch(openBuilds(true))}
           className="border border-custom-white/30 text-custom-white text-[13px] font-medium px-4 py-2.5 rounded-lg hover:bg-custom-white/10 transition-colors"
         >
-          Files ({ctx.builds.length})
+          Previous builds ({ctx.builds.length})
         </button>
       )}
       <button

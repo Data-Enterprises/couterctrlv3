@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { planLoad, toPayload } from "./savedExports";
+import { parseConfigRow } from "../../../api/savedConfigs";
+import type { SavedQuery } from "../../../api/savedQueries";
 import { initialState } from "../../../features/dev/devExportBuilderSlice";
 import type { ExportBuilderState } from "../../../features/dev/devExportBuilderSlice";
 
@@ -139,5 +141,34 @@ describe("loading one onto a different range", () => {
   it("says that the days came back ticked", () => {
     const plan = planLoad(toPayload(september()), september());
     expect(plan.missing.join(" ")).toMatch(/Days are not saved/);
+  });
+});
+
+describe("a row of a shared table", () => {
+  const row = (sql: string, over: Partial<SavedQuery> = {}): SavedQuery => ({
+    id: 7,
+    userid: 45,
+    name: "Shrink by vendor",
+    description: null,
+    project: "sales_export",
+    sql,
+    created_at: "2026-09-24T18:30:12",
+    updated_at: "2026-09-24T18:30:12",
+    ...over,
+  });
+
+  it("reads one of ours", () => {
+    const payload = toPayload(september());
+    const parsed = parseConfigRow(row(JSON.stringify(payload)));
+    expect(parsed?.id).toBe(7);
+    expect(parsed?.payload.mode).toBe("lines");
+  });
+
+  it("skips anything that is not, rather than breaking the list", () => {
+    // The table is shared with the developer query window, whose rows hold
+    // real SQL. One of those in this list is a row to walk past.
+    expect(parseConfigRow(row("REINDEX TABLE sales_partitioned;"))).toBeNull();
+    expect(parseConfigRow(row("{}"))).toBeNull();
+    expect(parseConfigRow(row('{"v":2,"mode":"lines"}'))).toBeNull();
   });
 });

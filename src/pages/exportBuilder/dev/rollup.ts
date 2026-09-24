@@ -34,8 +34,8 @@ interface Bucket {
 /**
  * The sample, rolled up the way the endpoint would roll up the range.
  *
- * This is a preview of a SHAPE, not of the numbers: fifty lines cannot stand
- * in for a month, and the screen says so. What it does show truthfully is the
+ * This is a preview of a SHAPE, not of the numbers: two hundred lines cannot
+ * stand in for a month, and the screen says so. What it does show truthfully is the
  * file's columns, their names — `total_sales_sum`, the endpoint's own spelling
  * — and which group keys the data actually produces, including the null one
  * the tender lines fall into.

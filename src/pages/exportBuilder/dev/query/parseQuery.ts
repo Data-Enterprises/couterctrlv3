@@ -297,7 +297,7 @@ export const parseQuery = (sql: string): Query => {
     if (what) {
       throw new QueryError(
         `This window does not do ${what}.`,
-        "It runs the fifty sample rows through SELECT, WHERE, GROUP BY, ORDER BY and LIMIT — enough to check an idea, not a second database.",
+        "It runs the sample rows through SELECT, WHERE, GROUP BY, ORDER BY and LIMIT — enough to check an idea, not a second database.",
       );
     }
   }

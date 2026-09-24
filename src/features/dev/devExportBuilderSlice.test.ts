@@ -3,6 +3,8 @@ import reducer, {
   clearSelections,
   dismissBuild,
   finishExport,
+  relabelBuild,
+  setBuilds,
   initialState,
   moveColumn,
   setConfig,
@@ -11,6 +13,7 @@ import reducer, {
   toggleColumn,
   toggleSaleType,
 } from "./devExportBuilderSlice";
+import type { ExportBuild } from "../../api/exportBuilds";
 
 const columns = ["sale_id", "sale_date", "qty", "price"].map((name) => ({
   name,
@@ -151,32 +154,106 @@ describe("reordering columns", () => {
   });
 });
 
-describe("the files a session has built", () => {
-  const built = (name: string, label: string) => ({
-    files: [{ key: `exports/${name}`, bytes: 1024, url: `https://s3/${name}` }],
+describe("a build that has just finished", () => {
+  const built = (over: Partial<Parameters<typeof finishExport>[0]> = {}) => ({
+    files: [{ key: "sales/517/b1/sales.csv", bytes: 1024, url: "https://s3/b1" }],
     rowsUploaded: 978,
     elapsedSeconds: 0.9,
     urlExpiresInMinutes: 60,
-    label,
+    buildId: "sales_2026-09-13_2026-09-21_20260924_183012",
+    userQueryId: 30,
+    userQueryName: "Shrink by vendor",
+    manifestWritten: true,
+    ...over,
   });
 
-  it("keeps the last one when the next is built", () => {
-    // The bug this exists for: building the second file took the first one
-    // off the screen, and its link had fifty minutes left on it.
-    const one = reducer(loaded(), finishExport(built("a.csv", "week one")));
-    const two = reducer(one, finishExport(built("b.csv", "week two")));
-    expect(two.builds).toHaveLength(2);
-    expect(two.builds[0].label).toBe("week two");
-    expect(two.builds[1].files[0].url).toBe("https://s3/a.csv");
+  it("keeps what names it later", () => {
+    const s = reducer(loaded(), finishExport(built()));
+    expect(s.buildId).toBe("sales_2026-09-13_2026-09-21_20260924_183012");
+    expect(s.builtQueryName).toBe("Shrink by vendor");
+    expect(s.manifestWritten).toBe(true);
   });
 
-  it("puts the bar back without losing the file", () => {
+  it("notices a build that will not list", () => {
+    // The file is there and its manifest is not, so the link in hand is the
+    // only way back to it — worth saying rather than swallowing.
+    const s = reducer(loaded(), finishExport(built({ manifestWritten: false })));
+    expect(s.manifestWritten).toBe(false);
+  });
+
+  it("puts the bar back without touching the list", () => {
     const after = reducer(
-      reducer(loaded(), finishExport(built("a.csv", "week one"))),
+      reducer(loaded(), finishExport(built())),
       dismissBuild(),
     );
     expect(after.files).toEqual([]);
-    expect(after.builds).toHaveLength(1);
+    // The builds list is the server's, not a shelf this page keeps.
+    expect(after.builds).toEqual([]);
+  });
+});
+
+describe("the list of past builds", () => {
+  const build = (over: Partial<ExportBuild> = {}): ExportBuild => ({
+    buildId: "b1",
+    createdAt: "2026-09-24T18:30:12.190345+00:00",
+    startDate: "2026-09-13",
+    endDate: "2026-09-21",
+    storeids: [100080],
+    storeCount: 1,
+    userQueryId: null,
+    userQueryName: null,
+    rowsUploaded: 91432,
+    bytesUploaded: 38014192,
+    elapsedSeconds: 12.4,
+    fileFormat: "csv",
+    request: {},
+    expired: false,
+    files: [],
+    ...over,
+  });
+
+  it("takes the link window from the listing that minted the links", () => {
+    const s = reducer(
+      initialState,
+      setBuilds({ builds: [build()], expireMinutes: 15 }),
+    );
+    expect(s.buildsExpireMinutes).toBe(15);
+  });
+
+  it("relabels one build and leaves the others alone", () => {
+    const listed = reducer(
+      initialState,
+      setBuilds({
+        builds: [build({ buildId: "b1" }), build({ buildId: "b2" })],
+        expireMinutes: 60,
+      }),
+    );
+    const named = reducer(
+      listed,
+      relabelBuild({ buildId: "b2", userQueryId: 30, userQueryName: "Shrink" }),
+    );
+    expect(named.builds[0].userQueryName).toBeNull();
+    expect(named.builds[1].userQueryName).toBe("Shrink");
+  });
+
+  it("renames the build on screen when that is the one relabelled", () => {
+    const after = reducer(
+      reducer(
+        loaded(),
+        finishExport({
+          files: [],
+          rowsUploaded: 1,
+          elapsedSeconds: 1,
+          urlExpiresInMinutes: 60,
+          buildId: "b9",
+          userQueryId: null,
+          userQueryName: null,
+          manifestWritten: true,
+        }),
+      ),
+      relabelBuild({ buildId: "b9", userQueryId: 4, userQueryName: "Monthly" }),
+    );
+    expect(after.builtQueryName).toBe("Monthly");
   });
 });
 

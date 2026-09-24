@@ -489,9 +489,9 @@ const QueryModal = () => {
                 </table>
                 {result.rows.length === 0 && (
                   <div className="px-3 py-3 text-[12px] text-content/70">
-                    No rows. The sample is fifty lines taken where the scan
-                    landed, so a narrow question can come back empty here and
-                    still fill a file.
+                    No rows. The sample is two hundred lines taken where the
+                    scan landed, so a narrow question can come back empty here
+                    and still fill a file.
                   </div>
                 )}
               </div>

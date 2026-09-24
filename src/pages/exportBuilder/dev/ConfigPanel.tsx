@@ -161,6 +161,15 @@ const REFUND_CHOICES: SelectFilterOption[] = [
   { value: "only", label: "Only refunds" },
 ];
 
+/**
+ * What the endpoint will take as a file name.
+ *
+ * It names the build's folder in S3, one segment along from the one that
+ * makes a listing yours, so dots are refused outright rather than
+ * special-cased — `sales.csv` is a 400 there and is caught here first.
+ */
+const PREFIX_OK = /^[A-Za-z0-9_-]{1,60}$/;
+
 const flagToChoice = (flag: number | null) =>
   flag === null ? "all" : flag ? "only" : "exclude";
 
@@ -1208,9 +1217,18 @@ const ConfigPanel = () => {
             label="File name"
             value={fileName}
             placeholder="sales"
-            hint={`${fileName || "sales"}.${
-              ctx.flags.fileFormat === "csv" ? "csv" : "txt"
-            }`}
+            hint={
+              fileName && !PREFIX_OK.test(fileName) ? (
+                <span className="text-amber-900">
+                  Letters, digits, - and _ only, up to 60. It names the build's
+                  folder, so a dot is refused rather than cleaned up.
+                </span>
+              ) : (
+                `${fileName || "sales"}.${
+                  ctx.flags.fileFormat === "csv" ? "csv" : "txt"
+                }`
+              )
+            }
             onChange={onFileName}
           />
           <label className="flex flex-col gap-1">

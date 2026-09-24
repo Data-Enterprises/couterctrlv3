@@ -13,8 +13,8 @@ import { isPii, maskValue } from "./piiColumns";
  * keep.
  *
  * The numbers are the honest part to get right. They are this configuration's
- * arithmetic over the fifty sample lines, not over the range — a month does
- * not fit in fifty rows — so the strip above them says so plainly rather than
+ * arithmetic over the sample lines, not over the range — a month does
+ * not fit in two hundred rows — so the strip above them says so plainly rather than
  * letting a total on screen be read as the total in the file.
  */
 const SummaryPreview = () => {

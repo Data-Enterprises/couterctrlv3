@@ -3,7 +3,7 @@ import { BookmarkIcon } from "@heroicons/react/24/outline";
 import Modal from "../../../components-dev/Modal";
 import TextField from "../../../components-dev/inputs/TextField";
 import { useExportBuilderCtx } from "./hooks";
-import { describePayload } from "./savedExports";
+import { describePayload, toPayload } from "./savedExports";
 import { openSaved } from "../../../features/dev/devExportBuilderSlice";
 
 const when = (iso: string) => {
@@ -29,6 +29,7 @@ const when = (iso: string) => {
 const SavedExportsModal = () => {
   const ctx = useExportBuilderCtx();
   const [name, setName] = useState("");
+  const [note, setNote] = useState("");
 
   // The list is read once a session, when someone first opens this.
   useEffect(() => {
@@ -41,8 +42,9 @@ const SavedExportsModal = () => {
   const saveNew = () => {
     const trimmed = name.trim();
     if (!trimmed) return;
-    ctx.saveCurrent(trimmed, null);
+    ctx.saveCurrent(trimmed, null, note.trim() || null);
     setName("");
+    setNote("");
   };
 
   return (
@@ -55,7 +57,7 @@ const SavedExportsModal = () => {
         <div className="flex items-baseline gap-3 flex-shrink-0">
           <h2 className="text-[15px] font-semibold">Saved exports</h2>
           <span className="text-[11.5px] text-content/60">
-            yours, on any machine · the dates are never saved
+            yours, on any machine · a build made from one carries its name
           </span>
           <div className="flex-1" />
           <button
@@ -92,41 +94,7 @@ const SavedExportsModal = () => {
             Save the configuration on screen
           </div>
           <div className="text-[11.5px] text-content/60">
-            {describePayload({
-              v: 1,
-              mode: ctx.mode,
-              columns: ctx.orderedColumns.map((c) => c.name),
-              columnOrder: ctx.columnOrder,
-              groupBy: ctx.groupBy,
-              aggregates: ctx.aggregates,
-              storeIds:
-                ctx.selectedStoreIds.length === ctx.stores.length
-                  ? null
-                  : ctx.selectedStoreIds,
-              saleTypes:
-                ctx.selectedSaleTypes.length === ctx.saleTypes.length
-                  ? null
-                  : ctx.selectedSaleTypes,
-              ringTypes:
-                ctx.selectedRingTypes.length === ctx.itemRingTypes.length
-                  ? null
-                  : ctx.selectedRingTypes,
-              subDepartments:
-                ctx.selectedSubDepartments.length === ctx.subDepartments.length
-                  ? null
-                  : ctx.selectedSubDepartments,
-              vendors:
-                ctx.selectedVendors.length === ctx.vendors.length
-                  ? null
-                  : ctx.selectedVendors,
-              cashiers:
-                ctx.selectedCashiers.length === ctx.cashiers.length
-                  ? null
-                  : ctx.selectedCashiers,
-              productCodes: ctx.productCodes,
-              productDescriptions: ctx.productDescriptions,
-              flags: ctx.flags,
-            })}
+            {describePayload(toPayload(ctx.config))}
           </div>
           <div className="flex items-end gap-2">
             <TextField
@@ -134,7 +102,18 @@ const SavedExportsModal = () => {
               value={name}
               placeholder="Shrink by vendor"
               onChange={setName}
-              className="flex-1"
+              className="w-[200px]"
+            />
+            <TextField
+              label={
+                <span className="text-[11px] font-normal text-content/60">
+                  Description
+                </span>
+              }
+              value={note}
+              placeholder="What it answers"
+              onChange={setNote}
+              className="flex-1 min-w-0"
             />
             <button
               type="button"
@@ -147,7 +126,13 @@ const SavedExportsModal = () => {
             {current && (
               <button
                 type="button"
-                onClick={() => ctx.saveCurrent(current.name, current.id)}
+                onClick={() =>
+                  ctx.saveCurrent(
+                    current.name,
+                    current.id,
+                    note.trim() || current.description,
+                  )
+                }
                 disabled={ctx.savedBusy}
                 title={`Replace "${current.name}" with what is on screen`}
                 className="text-[12.5px] font-medium px-3 py-1.5 rounded-lg border border-brand_line_2 hover:border-brand_slate transition-colors disabled:opacity-40"
@@ -179,14 +164,15 @@ const SavedExportsModal = () => {
                   {describePayload(saved.payload)}
                 </div>
                 <div className="text-[11px] text-content/50 mt-0.5">
-                  saved {when(saved.updated || saved.created)}
-                  {saved.payload.querySql ? " · from a query" : ""}
+                  saved {when(saved.updated_at || saved.created_at)}
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => {
                   ctx.applySaved(saved);
+                  setName(saved.name);
+                  setNote(saved.description ?? "");
                   close();
                 }}
                 className="bg-[#1e2a4a] hover:bg-[#2a3a63] text-custom-white text-[12.5px] font-semibold px-4 py-1.5 rounded-lg transition-colors"

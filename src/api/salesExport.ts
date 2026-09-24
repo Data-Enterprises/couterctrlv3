@@ -96,8 +96,13 @@ export interface ExportPreviewResp {
    * list explicitly rather than null.
    */
   columns: ExportColumn[];
-  /** Up to 50, ~118 KB. Unordered, so they show the file's shape rather than
-   *  its variety — often one store and two sale types. */
+  /**
+   * 200 rows, around 520 KB — the payload budget rather than a query cost.
+   *
+   * Unordered, so they show the file's shape accurately but not its variety:
+   * two hundred rows from one scan position is often a handful of stores and
+   * a couple of sale types.
+   */
   rows: ExportRow[];
   hasData: boolean;
   message: string | null;
@@ -141,6 +146,16 @@ export interface ExportResp {
   bucket: string;
   filePath: string;
   storeids: number[];
+  /** The build's folder, and the key `export_build_link` takes. Opaque. */
+  buildId: string;
+  userQueryId: number | null;
+  userQueryName: string | null;
+  /**
+   * False means the file is there and its manifest is not — so this build
+   * will not appear in Previous Builds, and the link in hand is the only way
+   * back to it. Worth saying rather than swallowing.
+   */
+  manifestWritten: boolean;
 }
 
 /**
@@ -332,8 +347,23 @@ export interface ExportParams {
    */
   // dateFormat: string | null;
   fileFormat: string;
+  /**
+   * Names the file and the build's folder in S3.
+   *
+   * Letters, digits, `-` and `_` only, at most 60 — it sits beside the
+   * segment that makes a listing yours, so a dot is a 400 rather than
+   * something to special-case. `sales.csv` is not a valid prefix.
+   */
   filePrefix: string | null;
   ordered: boolean;
+  /**
+   * The saved config this build came from, or null for ad-hoc.
+   *
+   * Checked against the caller's own rows before any work starts, so a
+   * config that is not theirs is a 404 rather than a wasted export. It is
+   * what puts a name on the build in Previous Builds afterwards.
+   */
+  userQueryId: number | null;
   dryRun: boolean;
 }
 

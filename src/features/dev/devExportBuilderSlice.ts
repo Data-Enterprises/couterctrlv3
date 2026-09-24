@@ -1,5 +1,6 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { SavedExport } from "../../api/savedExports";
+import type { SavedConfig } from "../../api/savedConfigs";
+import type { ExportBuild } from "../../api/exportBuilds";
 import type { SavedQuery } from "../../api/savedQueries";
 import type {
   ExportAggregate,
@@ -42,26 +43,6 @@ export interface ExportFlags {
  * question. The endpoint refuses a request carrying both.
  */
 export type ExportMode = "lines" | "summary";
-
-/**
- * A file that was built, kept for as long as its link lives.
- *
- * The link is a presigned URL with an hour on it, so a built file is not a
- * moment in the page's life — it is a thing you still have. Building a second
- * one must not take the first one away: a week of stores is often four files,
- * and losing the first three because the fourth finished is an hour of
- * rebuilding.
- */
-export interface ExportBuild {
-  id: string;
-  files: ExportFile[];
-  rowsUploaded: number;
-  elapsedSeconds: number;
-  urlExpiresInMinutes: number;
-  builtAt: number;
-  /** What this one was, in one line, so three files are not three riddles. */
-  label: string;
-}
 
 /**
  * The configuration as it stood, for one step back.
@@ -190,14 +171,24 @@ export interface ExportBuilderState {
   /** The configuration before the last Apply, or null when there is
    *  nothing to take back. */
   preApply: ConfigSnapshot | null;
-  /** Saved configurations, as they came back from S3. */
-  saved: SavedExport[];
+  /**
+   * Saved configurations — the questions, as rows of `user_queries`.
+   *
+   * Fetched beside the preview, because the scope search is the one moment
+   * someone is already waiting.
+   */
+  saved: SavedConfig[];
   savedLoaded: boolean;
   savedBusy: boolean;
   savedOpen: boolean;
   savedError: string | null;
-  /** The saved configuration currently loaded, so Save can update it. */
-  savedCurrentId: string | null;
+  /**
+   * The configuration currently loaded.
+   *
+   * It rides with the build as `userQueryId`, which is what puts a name on
+   * that build in Previous Builds a week later. Null is ad-hoc, and normal.
+   */
+  savedCurrentId: number | null;
   /** What the last load could not honour, shown until something changes. */
   savedNotes: string[];
   /** The list of built files, open. */
@@ -216,6 +207,18 @@ export interface ExportBuilderState {
   files: ExportFile[];
   /** Every build of this session, newest first. */
   builds: ExportBuild[];
+  buildsLoading: boolean;
+  buildsError: string | null;
+  buildsOpen: boolean;
+  /** How long the links in that listing last, from the listing itself. */
+  buildsExpireMinutes: number;
+  /** The build just finished, beyond the files themselves. */
+  buildId: string | null;
+  builtQueryId: number | null;
+  builtQueryName: string | null;
+  /** False means the file is there and its manifest is not, so this build
+   *  will not appear in Previous Builds. */
+  manifestWritten: boolean;
   rowsUploaded: number;
   elapsedSeconds: number;
   urlExpiresInMinutes: number;
@@ -289,6 +292,14 @@ export const initialState: ExportBuilderState = {
   loadingSql: false,
   files: [],
   builds: [],
+  buildsLoading: false,
+  buildsError: null,
+  buildsOpen: false,
+  buildsExpireMinutes: 60,
+  buildId: null,
+  builtQueryId: null,
+  builtQueryName: null,
+  manifestWritten: true,
   rowsUploaded: 0,
   elapsedSeconds: 0,
   urlExpiresInMinutes: 60,
@@ -643,13 +654,13 @@ const devExportBuilderSlice = createSlice({
       state.savedBusy = true;
       state.savedError = null;
     },
-    setSaved: (state, action: PayloadAction<SavedExport[]>) => {
+    setSaved: (state, action: PayloadAction<SavedConfig[]>) => {
       state.savedBusy = false;
       state.savedLoaded = true;
       state.saved = action.payload;
     },
     /** One saved configuration back from a save: new or replacing its twin. */
-    upsertSaved: (state, action: PayloadAction<SavedExport>) => {
+    upsertSaved: (state, action: PayloadAction<SavedConfig>) => {
       state.savedBusy = false;
       const next = action.payload;
       const at = state.saved.findIndex((s) => s.id === next.id);
@@ -659,7 +670,7 @@ const devExportBuilderSlice = createSlice({
           : state.saved.map((s) => (s.id === next.id ? next : s));
       state.savedCurrentId = next.id;
     },
-    removeSaved: (state, action: PayloadAction<string>) => {
+    removeSaved: (state, action: PayloadAction<number>) => {
       state.savedBusy = false;
       state.saved = state.saved.filter((s) => s.id !== action.payload);
       if (state.savedCurrentId === action.payload) state.savedCurrentId = null;
@@ -671,7 +682,7 @@ const devExportBuilderSlice = createSlice({
     /** A saved configuration has just been applied, with what it could not do. */
     markSavedLoaded: (
       state,
-      action: PayloadAction<{ id: string; notes: string[] }>,
+      action: PayloadAction<{ id: number; notes: string[] }>,
     ) => {
       state.savedCurrentId = action.payload.id;
       state.savedNotes = action.payload.notes;
@@ -788,7 +799,10 @@ const devExportBuilderSlice = createSlice({
         rowsUploaded: number;
         elapsedSeconds: number;
         urlExpiresInMinutes: number;
-        label: string;
+        buildId: string;
+        userQueryId: number | null;
+        userQueryName: string | null;
+        manifestWritten: boolean;
       }>,
     ) => {
       state.building = false;
@@ -798,18 +812,48 @@ const devExportBuilderSlice = createSlice({
       state.elapsedSeconds = action.payload.elapsedSeconds;
       state.urlExpiresInMinutes = action.payload.urlExpiresInMinutes;
       state.builtAt = Date.now();
-      state.builds = [
-        {
-          id: `${state.builtAt}-${state.builds.length}`,
-          files: action.payload.files,
-          rowsUploaded: action.payload.rowsUploaded,
-          elapsedSeconds: action.payload.elapsedSeconds,
-          urlExpiresInMinutes: action.payload.urlExpiresInMinutes,
-          builtAt: state.builtAt,
-          label: action.payload.label,
-        },
-        ...state.builds,
-      ];
+      state.buildId = action.payload.buildId;
+      state.builtQueryId = action.payload.userQueryId;
+      state.builtQueryName = action.payload.userQueryName;
+      state.manifestWritten = action.payload.manifestWritten;
+    },
+    startBuildsLoad: (state) => {
+      state.buildsLoading = true;
+      state.buildsError = null;
+    },
+    setBuilds: (
+      state,
+      action: PayloadAction<{ builds: ExportBuild[]; expireMinutes: number }>,
+    ) => {
+      state.buildsLoading = false;
+      state.builds = action.payload.builds;
+      state.buildsExpireMinutes = action.payload.expireMinutes;
+    },
+    failBuildsLoad: (state, action: PayloadAction<string>) => {
+      state.buildsLoading = false;
+      state.buildsError = action.payload;
+    },
+    openBuilds: (state, action: PayloadAction<boolean>) => {
+      state.buildsOpen = action.payload;
+      if (action.payload) state.buildsError = null;
+    },
+    /** A build that has just been labelled, or had its label cleared. */
+    relabelBuild: (
+      state,
+      action: PayloadAction<{
+        buildId: string;
+        userQueryId: number | null;
+        userQueryName: string | null;
+      }>,
+    ) => {
+      const { buildId, userQueryId, userQueryName } = action.payload;
+      state.builds = state.builds.map((b) =>
+        b.buildId === buildId ? { ...b, userQueryId, userQueryName } : b,
+      );
+      if (state.buildId === buildId) {
+        state.builtQueryId = userQueryId;
+        state.builtQueryName = userQueryName;
+      }
     },
     /**
      * Put the bar back to the configuration without losing the file.
@@ -853,10 +897,7 @@ const devExportBuilderSlice = createSlice({
       state.files = [];
       state.exportError = null;
     },
-    /** The links are gone from the page, not from S3 — they simply expire. */
-    clearBuilds: (state) => {
-      state.builds = [];
-    },
+
     failExport: (state, action: PayloadAction<string>) => {
       state.building = false;
       state.exportError = action.payload;
@@ -932,7 +973,11 @@ export const {
   failExport,
   dismissBuild,
   clearSelections,
-  clearBuilds,
+  startBuildsLoad,
+  setBuilds,
+  failBuildsLoad,
+  openBuilds,
+  relabelBuild,
   resetExportBuilder,
 } = devExportBuilderSlice.actions;
 export default devExportBuilderSlice.reducer;

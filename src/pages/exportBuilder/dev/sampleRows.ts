@@ -57,7 +57,7 @@ const lower = (s: string) => s.toLowerCase();
 /**
  * The sample rows the file would hold, given the row filters.
  *
- * The preview returns its fifty rows before any row filter is applied — it
+ * The preview returns its two hundred rows before any row filter is applied — it
  * describes the window, not the export — so the same filters have to be
  * applied here. Without it, unticking Tender leaves tender lines sitting in a
  * preview of a file that will not have them.

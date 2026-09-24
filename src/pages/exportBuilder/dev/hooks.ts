@@ -18,6 +18,27 @@ import {
   setQueries,
   startQueriesLoad,
   upsertQuery,
+  failBuildsLoad,
+  openBuilds,
+  relabelBuild,
+  setBuilds,
+  startBuildsLoad,
+  setAggregates,
+  setComputed,
+  setOrderBy,
+  setColumnOrder,
+  setGroupBy,
+  setMode,
+  setProductCodes,
+  setProductDescriptions,
+  setSelectedCashiers,
+  setSelectedColumns,
+  setSelectedRingTypes,
+  setSelectedSaleDates,
+  setSelectedSaleTypes,
+  setSelectedSubDepartments,
+  setSelectedVendors,
+  setFlag,
   failSavedWork,
   markSavedLoaded,
   removeSaved,
@@ -39,13 +60,21 @@ import { filterSampleRows } from "./sampleRows";
 import { sortRows } from "./sortRows";
 import { aliasFor } from "./aggregates";
 import {
-  listSavedExports,
-  removeSavedExport,
-  saveSavedExport,
-  type SavedExport,
-  type SavedExportsResp,
-  type SavedExportResp,
-} from "../../../api/savedExports";
+  createSavedConfig,
+  deleteSavedConfig,
+  listSavedConfigs,
+  parseConfigRow,
+  updateSavedConfig,
+  type SavedConfig,
+} from "../../../api/savedConfigs";
+import {
+  linkExportBuild,
+  listExportBuilds,
+  type BuildLinkResp,
+  type ExportBuild,
+  type ExportBuildsResp,
+} from "../../../api/exportBuilds";
+import { setEndDate, setStartDate } from "../../../features/searchSlice";
 import { planLoad, toPayload } from "./savedExports";
 import {
   createSavedQuery,
@@ -186,8 +215,15 @@ export const useExportBuilderCtx = () => {
       ? "Pick at least one column."
       : null;
 
-  const blocked =
-    config.selectedStoreIds.length === 0
+  // The endpoint's own rule, so a bad name is caught before the wait
+  // rather than after it.
+  const badPrefix =
+    config.flags.filePrefix !== "" &&
+    !/^[A-Za-z0-9_-]{1,60}$/.test(config.flags.filePrefix);
+
+  const blocked = badPrefix
+    ? "The file name takes letters, digits, - and _ only, up to 60 characters."
+    : config.selectedStoreIds.length === 0
       ? "Pick at least one store."
       : (shapeProblem ??
         (emptied.length > 0
@@ -224,49 +260,10 @@ export const useExportBuilderCtx = () => {
     : sortRows(matchingRows, config.orderBy, config.columns);
 
   /**
-   * One line describing what is about to be built.
-   *
-   * Kept with the build, because a list of four downloads called sales.csv,
-   * sales.csv, sales.csv and sales.csv is a list of four riddles. This is
-   * written at build time from the configuration that made it.
-   */
-  const describeBuild = () => {
-    const narrowed = [
-      config.selectedStoreIds.length < config.stores.length &&
-        `${config.selectedStoreIds.length} stores`,
-      config.selectedSaleTypes.length < config.saleTypes.length &&
-        `${config.selectedSaleTypes.length} sale types`,
-      config.selectedRingTypes.length < config.itemRingTypes.length &&
-        `${config.selectedRingTypes.length} ring types`,
-      config.selectedSubDepartments.length < config.subDepartments.length &&
-        `${config.selectedSubDepartments.length} sub departments`,
-      config.selectedVendors.length < config.vendors.length &&
-        `${config.selectedVendors.length} vendors`,
-      config.selectedCashiers.length < config.cashiers.length &&
-        `${config.selectedCashiers.length} cashiers`,
-      config.selectedSaleDates.length < config.saleDates.length &&
-        `${config.selectedSaleDates.length} days`,
-      config.productCodes.length > 0 && `${config.productCodes.length} codes`,
-      config.productDescriptions.length > 0 &&
-        `"${config.productDescriptions.join('", "')}"`,
-      config.flags.voidFlag === 0 && "no voids",
-      config.flags.voidFlag === 1 && "voids only",
-      config.flags.refundFlag === 0 && "no refunds",
-      config.flags.refundFlag === 1 && "refunds only",
-    ].filter(Boolean) as string[];
-
-    const shape = aggregating
-      ? `Summary by ${config.groupBy.join(", ")}`
-      : `${config.selectedColumns.length} of ${config.columns.length} columns`;
-
-    return [`${startDate} to ${endDate}`, shape, ...narrowed].join(" · ");
-  };
-
-  /**
    * The same rollup the endpoint would run, over the sample.
    *
    * The filters come first, because they are a WHERE and this is a GROUP BY.
-   * Fifty lines cannot stand in for a month, so what this shows honestly is
+   * Two hundred lines cannot stand in for a month, so what this shows is
    * the file's columns and which group keys the data produces — the preview
    * says as much where the numbers are.
    */
@@ -420,9 +417,11 @@ export const useExportBuilderCtx = () => {
   const loadConfig = () => {
     const group = isGroupSearch(search.type);
     dispatch(startConfigLoad());
-    // Alongside the preview rather than after it: two independent calls, and
-    // the saved queries are ready by the time anyone opens the window.
+    // Alongside the preview rather than after it. None of the three waits on
+    // another, and the lists are ready by the time anyone looks for them.
     loadQueries();
+    loadSaved();
+    loadBuilds();
     getExportPreview(url, token, {
       startDate,
       endDate,
@@ -536,6 +535,7 @@ export const useExportBuilderCtx = () => {
       // dateFormats.ts. Sending one it ignores would be worse than not
       // offering it, because the preview would format and the file would not.
       // dateFormat: config.flags.dateFormat || null,
+      userQueryId: config.savedCurrentId,
       fileFormat: config.flags.fileFormat,
       filePrefix: config.flags.filePrefix || null,
       ordered: config.flags.ordered,
@@ -577,48 +577,145 @@ export const useExportBuilderCtx = () => {
    */
   const loadSaved = () => {
     dispatch(startSavedWork());
-    listSavedExports(url, token)
+    listSavedConfigs(url, token)
       .then((resp) => {
-        const j = resp.data as SavedExportsResp;
+        const j = resp.data as SavedQueriesResp;
         if (j.error !== 0) {
-          dispatch(failSavedWork("Could not read your saved exports."));
+          dispatch(failSavedWork("Could not read your saved configurations."));
           return;
         }
-        dispatch(setSaved(j.configs ?? []));
+        // A row that will not parse is skipped rather than shown: the table
+        // is shared, and one saved by hand is not ours to render.
+        dispatch(
+          setSaved(
+            (j.queries ?? [])
+              .map(parseConfigRow)
+              .filter((c): c is SavedConfig => c !== null),
+          ),
+        );
       })
       .catch((err: JsonError) =>
-        dispatch(failSavedWork("Could not read your saved exports: " + err.message)),
+        dispatch(
+          failSavedWork(
+            "Could not read your saved configurations: " + err.message,
+          ),
+        ),
       );
   };
 
-  const saveCurrent = (name: string, id: string | null) => {
+  /**
+   * Keep the configuration on screen.
+   *
+   * `id` decides the call: the row it was loaded from gets a PUT, and Save as
+   * new sends null for a POST. Names are not unique on that table, so this is
+   * what keeps Save from leaving a second copy every time.
+   */
+  const saveCurrent = (
+    name: string,
+    id: number | null,
+    description: string | null = null,
+  ) => {
+    const trimmed = name.trim();
+    if (!trimmed) return;
     dispatch(startSavedWork());
-    saveSavedExport(url, token, {
-      id,
-      name,
-      payload: toPayload(config, config.querySql || undefined),
-    })
-      .then((resp) => {
-        const j = resp.data as SavedExportResp;
-        if (j.error !== 0 || !j.config) {
-          dispatch(failSavedWork("That did not save."));
-          return;
-        }
-        dispatch(upsertSaved(j.config));
-        toast.success(`Saved "${j.config.name}"`);
-      })
-      .catch((err: JsonError) =>
-        dispatch(failSavedWork("That did not save: " + err.message)),
-      );
+    const payload = toPayload(config);
+    const done = (resp: { data: unknown }) => {
+      const j = resp.data as SavedQueryResp;
+      const saved = j.error === 0 && j.query ? parseConfigRow(j.query) : null;
+      if (!saved) {
+        dispatch(failSavedWork("That did not save."));
+        return;
+      }
+      dispatch(upsertSaved(saved));
+      toast.success(`Saved "${saved.name}"`);
+    };
+    const failed = (err: JsonError) =>
+      dispatch(failSavedWork("That did not save: " + err.message));
+
+    if (id === null) {
+      createSavedConfig(url, token, {
+        name: trimmed,
+        description,
+        payload,
+      }).then(done, failed);
+    } else {
+      updateSavedConfig(url, token, id, {
+        name: trimmed,
+        description,
+        payload,
+      }).then(done, failed);
+    }
   };
 
-  const deleteSaved = (id: string) => {
+  const deleteSaved = (id: number) => {
     dispatch(startSavedWork());
-    removeSavedExport(url, token, id)
+    deleteSavedConfig(url, token, id)
       .then(() => dispatch(removeSaved(id)))
       .catch((err: JsonError) =>
         dispatch(failSavedWork("That did not delete: " + err.message)),
       );
+  };
+
+  /**
+   * Past builds, from their manifests.
+   *
+   * Newest first, with links minted fresh by the listing — so this is read at
+   * search time and again after a build, and never cached past the window the
+   * response names.
+   */
+  const loadBuilds = () => {
+    dispatch(startBuildsLoad());
+    listExportBuilds(url, token)
+      .then((resp) => {
+        const j = resp.data as ExportBuildsResp;
+        if (j.error !== 0) {
+          dispatch(failBuildsLoad("Could not read your past builds."));
+          return;
+        }
+        dispatch(
+          setBuilds({
+            builds: j.builds ?? [],
+            expireMinutes: j.urlExpiresInMinutes ?? 60,
+          }),
+        );
+      })
+      .catch((err: JsonError) =>
+        dispatch(failBuildsLoad("Could not read your past builds: " + err.message)),
+      );
+  };
+
+  /**
+   * Attach a saved configuration to a build that was run ad-hoc, or clear it.
+   *
+   * Only the manifest changes. A 409 means another tab wrote it since this
+   * list was read, which is a reload rather than a retry.
+   */
+  const labelBuild = (buildId: string, userQueryId: number | null) => {
+    linkExportBuild(url, token, buildId, userQueryId)
+      .then((resp) => {
+        const j = resp.data as BuildLinkResp;
+        if (j.error !== 0) {
+          dispatch(failBuildsLoad("Could not label that build."));
+          return;
+        }
+        dispatch(
+          relabelBuild({
+            buildId: j.buildId,
+            userQueryId: j.userQueryId,
+            userQueryName: j.userQueryName,
+          }),
+        );
+      })
+      .catch((err: JsonError) => {
+        const status = (err as { status?: number }).status;
+        dispatch(
+          failBuildsLoad(
+            status === 409
+              ? "That build was changed somewhere else. Reload the list and try again."
+              : "Could not label that build: " + err.message,
+          ),
+        );
+      });
   };
 
   /**
@@ -628,10 +725,63 @@ export const useExportBuilderCtx = () => {
    * not trade this month is not a filter, it is an empty file — and whatever
    * fell out is reported rather than quietly dropped.
    */
-  const applySaved = (saved: SavedExport) => {
+  const applySaved = (saved: SavedConfig) => {
     const plan = planLoad(saved.payload, config);
     plan.actions.forEach((action) => dispatch(action));
     dispatch(markSavedLoaded({ id: saved.id, notes: plan.missing }));
+  };
+
+  /**
+   * Put a past build back on screen.
+   *
+   * From the build, not from the config it names: the manifest is literally
+   * what produced that file, and the config row may have been edited or
+   * deleted since. The range comes back too — a configuration over somebody
+   * else's dates is a hybrid nobody asked for — which means re-running the
+   * preview for that scope.
+   */
+  const reloadBuild = (build: ExportBuild) => {
+    const request = build.request;
+    dispatch(setMode(request.groupBy?.length ? "summary" : "lines"));
+    dispatch(setGroupBy(request.groupBy ?? []));
+    dispatch(setAggregates(request.aggregates ?? []));
+    dispatch(setComputed(request.computed ?? []));
+    dispatch(setOrderBy(request.orderBy ?? []));
+    if (request.columns?.length) {
+      dispatch(setSelectedColumns(request.columns));
+      dispatch(setColumnOrder(request.columns));
+    }
+    // A filter absent from the payload means every one of them, which is what
+    // the lists already hold after a preview.
+    if (request.saleTypes) dispatch(setSelectedSaleTypes(request.saleTypes));
+    if (request.itemRingTypes) {
+      dispatch(setSelectedRingTypes(request.itemRingTypes));
+    }
+    if (request.subDepartments) {
+      dispatch(setSelectedSubDepartments(request.subDepartments.map(String)));
+    }
+    if (request.vendorIds) dispatch(setSelectedVendors(request.vendorIds));
+    if (request.cashierNumbers) {
+      dispatch(setSelectedCashiers(request.cashierNumbers));
+    }
+    if (request.saleDates) dispatch(setSelectedSaleDates(request.saleDates));
+    dispatch(setProductCodes(request.productCodes ?? []));
+    dispatch(setProductDescriptions(request.productDescriptions ?? []));
+    dispatch(
+      setFlag({
+        voidFlag: request.voidFlag ?? null,
+        refundFlag: request.refundFlag ?? null,
+        fileFormat: request.fileFormat ?? "csv",
+        filePrefix: request.filePrefix ?? "sales",
+        ordered: request.ordered ?? false,
+      }),
+    );
+    dispatch(markSavedLoaded({ id: build.userQueryId ?? 0, notes: [] }));
+
+    // The scope last, because it is what sends the page back to the search.
+    dispatch(setStartDate(build.startDate));
+    dispatch(setEndDate(build.endDate));
+    dispatch(openBuilds(false));
   };
 
   const build = () => {
@@ -655,20 +805,42 @@ export const useExportBuilderCtx = () => {
             rowsUploaded: j.rowsUploaded ?? 0,
             elapsedSeconds: j.elapsedSeconds ?? 0,
             urlExpiresInMinutes: j.urlExpiresInMinutes ?? 60,
-            label: describeBuild(),
+            buildId: j.buildId,
+            userQueryId: j.userQueryId ?? null,
+            userQueryName: j.userQueryName ?? null,
+            // Absent from an older deploy reads as written, which is the
+            // state that needs no warning.
+            manifestWritten: j.manifestWritten !== false,
           }),
         );
+        // The listing mints its own links, so the new build appears with one.
+        loadBuilds();
       })
       .catch((err: JsonError) => {
         window.clearTimeout(slowTimer);
-        // A request cut off at the load balancer looks like a network failure
-        // here, but the file is usually still being written — so this says
-        // what happened rather than calling it a failure.
+        const status = (err as { status?: number }).status;
+        const detail = (err as { data?: { detail?: string } }).data?.detail;
+
+        // Each of these is a different thing to do next, so each says so.
+        //
+        // A 403 names a store this user no longer has, and a 400 names the
+        // columns it did not recognise: the endpoint puts the answer in the
+        // message, and swallowing it would leave someone guessing.
+        //
+        // The load balancer gives up at 150s and the browser reports that as
+        // a CORS failure rather than a timeout. The file is usually still
+        // being written, so it is not a failure to report as one.
         dispatch(
           failExport(
-            config.slow
-              ? "The connection gave up before the file was ready. It is still being written, so try a shorter range rather than assuming it failed."
-              : "The export failed: " + err.message,
+            status === 403
+              ? (detail ?? "One of these stores is no longer yours to export.")
+              : status === 400
+                ? (detail ?? "The endpoint refused this configuration.")
+                : status === 404
+                  ? "That saved configuration is gone. Save this one again before building."
+                  : !status || config.slow
+                    ? "The connection gave up before the file was ready — the load balancer stops waiting at 150 seconds. The file is probably still being written: look in Previous builds in a minute, or try a shorter range."
+                    : "The export failed: " + err.message,
           ),
         );
       });
@@ -694,6 +866,9 @@ export const useExportBuilderCtx = () => {
     summary,
     blocked,
     loadConfig,
+    loadBuilds,
+    reloadBuild,
+    labelBuild,
     loadQueries,
     saveQuery,
     renameQuery,
