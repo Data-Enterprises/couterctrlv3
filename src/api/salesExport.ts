@@ -64,6 +64,45 @@ export interface ExportVendor {
   vendor_name: string | null;
 }
 
+/**
+ * A cashier present in the window.
+ *
+ * `cashier_number` is a bigint on the table, unlike `vendor_id` — the filter
+ * takes numbers, not text. The name is spelled inconsistently between imports,
+ * so the endpoint folds on the number: one window returned 384 distinct
+ * (number, name) pairs for 188 actual cashiers.
+ */
+export interface ExportCashier {
+  cashier_number: number;
+  cashier_name: string | null;
+}
+
+/**
+ * A price type present in the window.
+ *
+ * `{value, label}` rather than a bare string, because one member of the list
+ * is the ABSENCE of a value: `value: ""`, labelled `(none)`. Those lines are
+ * a real population — all of one company's, 15% of another's — so they are
+ * something to choose rather than something to lose the moment anyone filters.
+ *
+ * The vocabulary belongs to the company, not to the table: Food Giant says
+ * `Regular` and `Managers Special`, other companies say `REG` and `STOR`, and
+ * `TPR` is the only token they all share. So this list is only true for the
+ * stores in scope, and a saved configuration carrying one company's words is
+ * checked against it when it is loaded.
+ */
+export interface ExportPriceType {
+  value: string;
+  label: string;
+}
+
+/** A way of spelling dates in the file, as the endpoint offers them. */
+export interface ExportDateFormat {
+  value: string;
+  label: string;
+  example: string;
+}
+
 export interface ExportPreviewResp {
   error: number;
   success: boolean;
@@ -75,6 +114,10 @@ export interface ExportPreviewResp {
   itemRingTypes: string[];
   subDepartments: ExportSubDepartment[];
   vendors: ExportVendor[];
+  cashiers: ExportCashier[];
+  priceTypes: ExportPriceType[];
+  /** The Output date control is built from this, not from a list of ours. */
+  dateFormats: ExportDateFormat[];
   /**
    * 99, not 102: the preview withholds source_file_uri, source_file_etag and
    * source_version_ts — import bookkeeping, identical down every row. The
@@ -82,8 +125,13 @@ export interface ExportPreviewResp {
    * list explicitly rather than null.
    */
   columns: ExportColumn[];
-  /** Up to 50, ~118 KB. Unordered, so they show the file's shape rather than
-   *  its variety — often one store and two sale types. */
+  /**
+   * 200 rows, around 520 KB — the payload budget rather than a query cost.
+   *
+   * Unordered, so they show the file's shape accurately but not its variety:
+   * two hundred rows from one scan position is often a handful of stores and
+   * a couple of sale types.
+   */
   rows: ExportRow[];
   hasData: boolean;
   message: string | null;
@@ -127,6 +175,16 @@ export interface ExportResp {
   bucket: string;
   filePath: string;
   storeids: number[];
+  /** The build's folder, and the key `export_build_link` takes. Opaque. */
+  buildId: string;
+  userQueryId: number | null;
+  userQueryName: string | null;
+  /**
+   * False means the file is there and its manifest is not — so this build
+   * will not appear in Previous Builds, and the link in hand is the only way
+   * back to it. Worth saying rather than swallowing.
+   */
+  manifestWritten: boolean;
 }
 
 /**
@@ -134,11 +192,114 @@ export interface ExportResp {
  * scope modes are never consulted here — the page has already resolved which
  * stores it means, including the shared-group rule.
  */
+/**
+ * The aggregate functions the endpoint will run.
+ *
+ * Closed on purpose: the name is a key into a dictionary on that side and
+ * never reaches the query as text, so anything outside this list is a 400
+ * rather than a surprise in the file.
+ */
+export type AggregateFn =
+  | "sum"
+  | "avg"
+  | "min"
+  | "max"
+  | "count"
+  | "count_distinct";
+
+/** The scalar functions an expression may call. Closed, like the
+ *  aggregates: the name is a key on the endpoint, never text in a query. */
+export const EXPORT_CALLS = [
+  "nullif",
+  "coalesce",
+  "round",
+  "abs",
+  "greatest",
+  "least",
+] as const;
+export type ExportCall = (typeof EXPORT_CALLS)[number];
+
+/**
+ * A measure worked out from other measures, as a tree.
+ *
+ * Sent as JSON, never as SQL. The endpoint walks this and renders the
+ * statement itself — each `column` verified against information_schema and
+ * quoted, each `fn` and `name` a key into its own dictionary, each `value`
+ * bound — so a client can say what it wants computed without any of its text
+ * reaching the query. Same posture as the column list, no new surface.
+ *
+ * `sum(qty) * (max(price) / nullif(max(price_split), 0))` is one of these,
+ * four levels deep.
+ */
+export type ExportExpr =
+  | { kind: "column"; name: string }
+  | { kind: "literal"; value: number | string | boolean | null }
+  /** `column` is a column name, or `*` for count(*). */
+  | { kind: "agg"; fn: AggregateFn; column: string }
+  | { kind: "binary"; op: "+" | "-" | "*" | "/"; left: ExportExpr; right: ExportExpr }
+  | { kind: "neg"; expr: ExportExpr }
+  | { kind: "call"; name: ExportCall; args: ExportExpr[] };
+
+/**
+ * One measure of an aggregated export.
+ *
+ * `column` is a column name, or `*` for count(*). `alias` is what the column
+ * is called in the file; without it the endpoint derives one — total_sales_sum
+ * — which is right until someone has a name of their own for it.
+ */
+export interface ExportAggregate {
+  column: string;
+  fn: AggregateFn;
+  alias?: string;
+}
+
+/**
+ * One key of the file's sort.
+ *
+ * `key` is a column of the file: a group key or a measure's name when the
+ * export is a summary, a selected column when it is the lines. Not an
+ * expression — sorting by something the file does not contain is a question
+ * about rows nobody can see.
+ */
+export interface ExportSort {
+  key: string;
+  desc: boolean;
+}
+
+/** A computed measure: a name, and the tree that works it out. */
+export interface ExportComputed {
+  alias: string;
+  expr: ExportExpr;
+}
+
 export interface ExportParams {
   startDate: string;
   endDate: string;
   storeids: number[];
   columns: string[] | null;
+  /**
+   * Roll the lines up instead of writing them out.
+   *
+   * Both are required together and neither can be sent alongside `columns` —
+   * the file becomes the group keys and the measures, so a column list would
+   * have nothing to say about it. Null for a line-by-line export.
+   *
+   * The numbers are the table's own, not a report: raw lines include tender
+   * rows, voids, department transfers and untendered modifications, and REFUND
+   * is stored positive, so a store total here runs to roughly double what
+   * /sales/weekly says for the same window. The measure names carry the
+   * operation so a file cannot quietly be read as one.
+   */
+  groupBy: string[] | null;
+  aggregates: ExportAggregate[] | null;
+  /**
+   * Measures with arithmetic in them, which `aggregates` cannot express.
+   *
+   * A real query asks for
+   * `sum(qty) * (max(price) / nullif(max(price_split), 0)) - sum(total_sales)`
+   * in one column. Null when nothing is computed.
+   */
+  computed: ExportComputed[] | null;
   /** Lower-cased both sides by the endpoint, so casing here does not matter. */
   saleTypes: string[] | null;
   /** Matched as stored — no normalising, because these come straight off the
@@ -149,13 +310,99 @@ export interface ExportParams {
   subDepartments: number[] | null;
   /** `vendorIds`, not `vendors` — and text, despite looking numeric. */
   vendorIds: string[] | null;
+  /** `cashierNumbers`, and bigint — the one id on this endpoint that is not
+   *  text. */
+  cashierNumbers: number[] | null;
+  /**
+   * Matched as stored, from the preview's list for THESE stores.
+   *
+   * `""` selects the lines with no price type at all — the one list filter on
+   * this endpoint that does not drop its nulls, because for some companies
+   * those are all of them.
+   */
+  priceTypes: string[] | null;
+  /**
+   * Particular days inside the range, as `YYYY-MM-DD`.
+   *
+   * Not a replacement for startDate/endDate, which stay required and still do
+   * the real work: they are what prunes the monthly partitions. This narrows
+   * within that window, for someone who wants three Saturdays rather than
+   * everything between them.
+   */
+  saleDates: string[] | null;
   /** Typed or pasted, not chosen from a list — the preview returns no code
    *  catalog, and a window can hold tens of thousands of them. */
   productCodes: string[] | null;
-  excludeVoids: boolean;
+  /**
+   * Words to find in `product_description`.
+   *
+   * Each one is a contains, matched without case — descriptions are written
+   * the way a till writes them ("WHOLE MILK GAL", "MILK 2% 1/2GAL"), so an
+   * exact match is a filter nobody can use. A line is kept if any of these
+   * appears in its description.
+   *
+   * Sent alongside the codes rather than folded into them: two filters that
+   * both narrow, like every other pair on this endpoint.
+   */
+  productDescriptions: string[] | null;
+  /**
+   * Null leaves the flag alone, 0 excludes flagged lines, 1 returns only them.
+   *
+   * Neither is an equality test on the endpoint, and that matters: both
+   * columns are nullable across roughly a third of rows, and `refund_flag` is
+   * not a boolean — it carries 1, 2 and 9, with 2 the most common marker. The
+   * endpoint tests COALESCE(flag, 0) against zero instead, so "only refunds"
+   * means every marker rather than the literal 1.
+   */
+  voidFlag: number | null;
+  refundFlag: number | null;
+  /**
+   * Superseded by `voidFlag: 0`, which is what this page sends.
+   *
+   * Still accepted by the endpoint for callers written before the flag
+   * existed, and `voidFlag` wins if both arrive. Optional here so nothing has
+   * to send a switch it no longer uses.
+   */
+  excludeVoids?: boolean;
+  /**
+   * The file's sort, in order of precedence.
+   *
+   * Null or empty leaves `ordered` to mean what it always has: the line key
+   * for a plain export, the group keys for a summary. A non-empty list is the
+   * sort instead, whatever `ordered` says — an explicit answer beats a
+   * default, and a caller who sent one has already decided.
+   */
+  orderBy: ExportSort[] | null;
+  /**
+   * How dates are spelled in the file.
+   *
+   * A key from the preview's `dateFormats`, not a pattern — the endpoint owns
+   * the vocabulary. Null or `iso` leaves them as COPY writes them.
+   *
+   * A date-only format flattens the columns that carry a real time
+   * (`sale_date_with_time`, `updated_at`); `sale_date` is midnight across the
+   * table, so nothing is lost there. Sorting stays chronological whatever is
+   * chosen: the endpoint sorts on the column, not on its spelling.
+   */
+  dateFormat: string | null;
   fileFormat: string;
+  /**
+   * Names the file and the build's folder in S3.
+   *
+   * Letters, digits, `-` and `_` only, at most 60 — it sits beside the
+   * segment that makes a listing yours, so a dot is a 400 rather than
+   * something to special-case. `sales.csv` is not a valid prefix.
+   */
   filePrefix: string | null;
   ordered: boolean;
+  /**
+   * The saved config this build came from, or null for ad-hoc.
+   *
+   * Checked against the caller's own rows before any work starts, so a
+   * config that is not theirs is a 404 rather than a wasted export. It is
+   * what puts a name on the build in Previous Builds afterwards.
+   */
+  userQueryId: number | null;
   dryRun: boolean;
 }
 

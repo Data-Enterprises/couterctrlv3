@@ -567,7 +567,11 @@ export const categories: NavCategory[] = [
         mobile: false,
         children: [],
         childOpen: false,
-        userLevels: COMING_SOON_LEVELS,
+        // Level 9 while it is being tested. It stays in Coming Soon, so it is
+        // still dev-API only — but a build here writes a real file to S3 from
+        // real store data, which is not something an owner should reach by
+        // wandering into the section.
+        userLevels: PROGRAMMER_ONLY_LEVELS,
         isHovering: false,
         isVisible: true,
       },

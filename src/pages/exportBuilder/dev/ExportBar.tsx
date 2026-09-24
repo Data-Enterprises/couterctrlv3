@@ -1,6 +1,11 @@
 import { ArrowDownTrayIcon, ClockIcon } from "@heroicons/react/24/outline";
 import { useExportBuilderCtx } from "./hooks";
 import { countPii } from "./piiColumns";
+import {
+  dismissBuild,
+  openBuilds,
+  openSaved,
+} from "../../../features/dev/devExportBuilderSlice";
 import { formatBigNumber } from "../../../utils";
 
 const mb = (bytes: number) => `${(bytes / 1024 / 1024).toFixed(1)} MB`;
@@ -23,7 +28,8 @@ export const SHOW_SQL_BUTTON = false;
  */
 const ExportBar = () => {
   const ctx = useExportBuilderCtx();
-  const pii = countPii(ctx.selectedColumns);
+  // A summary carries whatever it groups by, so that is what to count.
+  const pii = countPii(ctx.aggregating ? ctx.groupBy : ctx.selectedColumns);
   const nothingToBuild = ctx.blocked !== null;
 
   /**
@@ -42,17 +48,45 @@ const ExportBar = () => {
       `${ctx.selectedSubDepartments.length} of ${ctx.subDepartments.length} sub departments`,
     ctx.selectedVendors.length < ctx.vendors.length &&
       `${ctx.selectedVendors.length} of ${ctx.vendors.length} vendors`,
+    ctx.selectedCashiers.length < ctx.cashiers.length &&
+      `${ctx.selectedCashiers.length} of ${ctx.cashiers.length} cashiers`,
+    ctx.selectedPriceTypes.length < ctx.priceTypes.length &&
+      `${ctx.selectedPriceTypes.length} of ${ctx.priceTypes.length} price types`,
+    ctx.selectedSaleDates.length < ctx.saleDates.length &&
+      `${ctx.selectedSaleDates.length} of ${ctx.saleDates.length} days`,
     ctx.productCodes.length > 0 &&
       `${ctx.productCodes.length} product code${
         ctx.productCodes.length === 1 ? "" : "s"
       }`,
-    ctx.flags.excludeVoids && "voided lines excluded",
+    ctx.productDescriptions.length > 0 &&
+      `description${ctx.productDescriptions.length === 1 ? "" : "s"} matching ${ctx.productDescriptions
+        .map((t) => `"${t}"`)
+        .join(", ")}`,
+    ctx.flags.voidFlag === 0 && "voided lines excluded",
+    ctx.flags.voidFlag === 1 && "voided lines only",
+    ctx.flags.refundFlag === 0 && "refunds excluded",
+    ctx.flags.refundFlag === 1 && "refunds only",
     ctx.flags.ordered && "sorted",
   ].filter(Boolean) as string[];
 
   if (ctx.files.length > 0) {
     return (
-      <div className="flex-shrink-0 bg-card_bg border border-brand_green rounded-xl px-4 py-3">
+      <div
+        className={`flex-shrink-0 rounded-xl px-4 py-3 border ${
+          ctx.staleBuild
+            ? "bg-amber-50 border-amber-300"
+            : "bg-card_bg border-brand_green"
+        }`}
+      >
+        {/* A file left on screen while the configuration moves under it looks
+            like the answer and is not. */}
+        {ctx.staleBuild && (
+          <div className="text-[12px] font-semibold text-amber-900 mb-2">
+            The configuration has changed since this file was built — it does
+            not match what is on screen. Build export again for a file that
+            does.
+          </div>
+        )}
         {ctx.files.map((f) => (
           <div key={f.key} className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-brand_green_tint flex items-center justify-center flex-shrink-0">
@@ -61,8 +95,14 @@ const ExportBar = () => {
             <div className="flex-1 min-w-0">
               <div className="text-[13px] font-semibold truncate">
                 {f.key.split("/").pop()}
+                {ctx.builtQueryName && (
+                  <span className="font-normal text-content/85">
+                    {" "}
+                    · {ctx.builtQueryName}
+                  </span>
+                )}
               </div>
-              <div className="text-[11.5px] text-content/70 mt-0.5">
+              <div className="text-[11.5px] text-content/85 mt-0.5">
                 {formatBigNumber(ctx.rowsUploaded, 0)} rows · {mb(f.bytes)} ·
                 built in {ctx.elapsedSeconds.toFixed(1)}s
               </div>
@@ -71,7 +111,7 @@ const ExportBar = () => {
               <div className="text-[11.5px] font-semibold text-amber-900">
                 Link expires in {ctx.urlExpiresInMinutes} min
               </div>
-              <div className="text-[11px] text-content/60 mt-0.5">
+              <div className="text-[11px] text-content/85 mt-0.5">
                 Build it again after that
               </div>
             </div>
@@ -82,15 +122,22 @@ const ExportBar = () => {
             >
               Download
             </a>
+            {/* The way out, beside the way on. Building again and the list of
+                past builds are both a click away once you are back. */}
+            <button
+              type="button"
+              onClick={() => ctx.dispatch(dismissBuild())}
+              className="text-[13px] font-medium px-4 py-2.5 rounded-lg border border-brand_line_2 hover:border-brand_slate transition-colors"
+            >
+              Go back
+            </button>
           </div>
         ))}
-        <button
-          type="button"
-          onClick={ctx.build}
-          className="text-[11.5px] text-brand_navy_hover underline underline-offset-2 mt-2"
-        >
-          Build it again
-        </button>
+        <div className="text-[11px] text-content/85 mt-2">
+          {ctx.manifestWritten
+            ? "This build is in Previous builds, with the settings that made it."
+            : "This build has no manifest, so it will not appear in Previous builds — keep this link."}
+        </div>
       </div>
     );
   }
@@ -103,7 +150,7 @@ const ExportBar = () => {
           <div className="text-[13px] font-semibold text-custom-white">
             {ctx.slow ? "Still building" : "Building your file"}
           </div>
-          <div className="text-[11.5px] text-custom-white/75 mt-0.5">
+          <div className="text-[11.5px] text-custom-white/85 mt-0.5">
             {ctx.slow
               ? "This is past the point the connection usually waits. The file is still being written — if the link does not arrive, try a shorter range rather than assuming it failed."
               : "The file is written straight to storage, so nothing downloads yet."}
@@ -119,30 +166,33 @@ const ExportBar = () => {
         <div className="text-[13px] font-semibold text-custom-white">
           {ctx.selectedStoreIds.length} of {ctx.stores.length} store
           {ctx.stores.length === 1 ? "" : "s"} ·{" "}
-          {ctx.selectedColumns.length} of {ctx.columns.length} column
-          {ctx.columns.length === 1 ? "" : "s"} ·{" "}
-          {ctx.flags.fileFormat.toUpperCase()}
+          {ctx.aggregating
+            ? `grouped by ${ctx.groupBy.join(", ") || "nothing yet"}`
+            : `${ctx.selectedColumns.length} of ${ctx.columns.length} column${
+                ctx.columns.length === 1 ? "" : "s"
+              }`}{" "}
+          · {ctx.flags.fileFormat.toUpperCase()}
         </div>
+        {ctx.aggregating && ctx.measureItems.length > 0 && (
+          <div className="text-[11.5px] text-custom-white/85 mt-1 font-mono">
+            {ctx.measureItems.map((m) => m.alias).join(" · ")}
+          </div>
+        )}
         {narrowed.length > 0 && (
-          <div className="text-[11.5px] text-custom-white/75 mt-1">
+          <div className="text-[11.5px] text-custom-white/85 mt-1">
             Filtered: {narrowed.join(" · ")}
           </div>
         )}
         {pii > 0 ? (
           <div className="flex items-center gap-2 mt-1">
-            <span className="text-[11.5px] text-custom-white/75">
+            <span className="text-[11.5px] text-custom-white/85">
               Includes {pii} personal column{pii === 1 ? "" : "s"} — customer
               name, contact and location.
             </span>
           </div>
         ) : (
-          <div className="text-[11.5px] text-custom-white/75 mt-1">
+          <div className="text-[11.5px] text-custom-white/85 mt-1">
             A longer range across more stores takes longer to build.
-          </div>
-        )}
-        {ctx.blocked && (
-          <div className="text-[11.5px] text-amber-200 mt-1.5 max-w-[80ch]">
-            {ctx.blocked}
           </div>
         )}
         {ctx.exportError && (
@@ -152,6 +202,27 @@ const ExportBar = () => {
           </div>
         )}
       </div>
+      {/*
+        * Unlike Show SQL, this one is visible: it runs in the browser over the
+        * sample rows and sends nothing, so it promises nothing the
+        * product cannot keep.
+        */}
+      {ctx.builds.length > 0 && (
+        <button
+          type="button"
+          onClick={() => ctx.dispatch(openBuilds(true))}
+          className="border border-custom-white/30 text-custom-white text-[13px] font-medium px-4 py-2.5 rounded-lg hover:bg-custom-white/10 transition-colors"
+        >
+          Previous builds ({ctx.builds.length})
+        </button>
+      )}
+      <button
+        type="button"
+        onClick={() => ctx.dispatch(openSaved(true))}
+        className="border border-custom-white/30 text-custom-white text-[13px] font-medium px-4 py-2.5 rounded-lg hover:bg-custom-white/10 transition-colors"
+      >
+        Saved
+      </button>
       {SHOW_SQL_BUTTON && (
         <button
           type="button"
@@ -162,14 +233,25 @@ const ExportBar = () => {
           {ctx.loadingSql ? "Reading..." : "Show SQL"}
         </button>
       )}
-      <button
-        type="button"
-        onClick={ctx.build}
-        disabled={nothingToBuild}
-        className="bg-custom-white text-[#1e2a4a] text-[13px] font-semibold px-5 py-2.5 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed"
-      >
-        Build export
-      </button>
+      {/* The reason sits with the button, not only in the paragraph on the
+          left: a greyed button with its explanation ten inches away is a
+          button nobody knows how to un-grey. */}
+      <div className="flex flex-col items-end gap-1 flex-shrink-0">
+        <button
+          type="button"
+          onClick={ctx.build}
+          disabled={nothingToBuild}
+          title={ctx.blocked ?? undefined}
+          className="bg-custom-white text-[#1e2a4a] text-[13px] font-semibold px-5 py-2.5 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          Build export
+        </button>
+        {ctx.blocked && (
+          <span className="text-[11px] text-amber-200 text-right max-w-[34ch]">
+            {ctx.blocked}
+          </span>
+        )}
+      </div>
     </div>
   );
 };

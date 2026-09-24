@@ -24,7 +24,7 @@ const vendors = [
   { vendor_id: "148", vendor_name: null },
 ];
 
-const renderPanel = () => {
+const renderPanel = (over: { saleDates?: string[] } = {}) => {
   const store = setupStore();
   store.dispatch(
     setConfig({
@@ -38,6 +38,10 @@ const renderPanel = () => {
         { sub_department: 20, sub_department_description: "Produce" },
       ],
       vendors,
+      cashiers: [],
+      priceTypes: [],
+      dateFormats: [],
+      saleDates: over.saleDates ?? [],
       columns: [{ name: "sale_id", data_type: "bigint" }],
       rows: [],
       hasData: true,
@@ -126,5 +130,26 @@ describe("searching a long list", () => {
     expect(screen.getByRole("button", { name: /Vendors/ }).textContent).toContain(
       "all 4",
     );
+  });
+});
+
+describe("the day list", () => {
+  it("names the weekday, which is the question it exists to answer", async () => {
+    // "Every Saturday in the month" is the reason for picking days at all,
+    // and bare dates make that a counting exercise.
+    const user = userEvent.setup();
+    renderPanel({ saleDates: ["2026-09-12", "2026-09-13"] });
+
+    await user.click(screen.getByRole("button", { name: /Days/ }));
+    expect(
+      screen.getByRole("checkbox", { name: /Sat . 2026-09-12/ }),
+    ).toBeTruthy();
+  });
+
+  it("is not offered for a range that is a single day", () => {
+    // The range already says which day it is; a list of one is a decision
+    // with nothing to decide.
+    renderPanel({ saleDates: ["2026-09-12"] });
+    expect(screen.queryByRole("button", { name: /Days/ })).toBeNull();
   });
 });

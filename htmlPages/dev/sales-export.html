@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sales Export — Help</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+  :root {
+    --navy: #1e2a4a;          /* app chrome */
+    --navy-2: #2a3a63;        /* chrome hover */
+    --bkg: #e4e9ef;           /* app background (bkg) */
+    --card: #ffffff;
+    --soft: #f4f7f8;          /* custom-white */
+    --ink: #1e293b;           /* content */
+    --ink-2: #475569;
+    --ink-3: #64748b;
+    --line: #dce5ef;          /* brand-line */
+    --line-2: #c8d5e4;
+    --on-navy: #f4f7f8;
+    --on-navy-2: #aeb9cf;
+    --green: #1e9e52;         /* brand-green */
+    --amber: #96650f;
+    --amber-soft: #fdf6e7;
+    --amber-line: #f0dcae;
+    --focus: #2563eb;
+    --display: "Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif;
+    --body: "Inter", "Segoe UI", system-ui, sans-serif;
+    --mono: "IBM Plex Mono", Consolas, ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: var(--soft);
+    color: var(--ink);
+    font: 14px/1.6 var(--body);
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+  }
+
+  /* The frame IS the modal: the navy header stays put and only what is under
+     it scrolls, so the page does not read as a window inside a window. */
+  .sheet {
+    width: 100%; height: 100%; display: flex; flex-direction: column;
+    background: var(--soft);
+  }
+  .chrome {
+    flex: none; background: var(--navy); color: var(--on-navy);
+    padding: 18px 48px 18px 20px;
+  }
+  .stamp {
+    display: inline-flex; align-items: center; gap: 8px;
+    font: 600 10.5px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase;
+    color: var(--on-navy-2);
+  }
+  .stamp .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+  .stamp .tag {
+    margin-left: 2px; padding: 3px 6px; border-radius: 4px;
+    background: rgba(255, 255, 255, .1); color: var(--on-navy);
+  }
+  h1 {
+    margin: 8px 0 6px; font: 700 22px/1.2 var(--display); letter-spacing: -.01em;
+    color: #fff; text-wrap: balance;
+  }
+  .purpose { margin: 0; max-width: 52ch; font-size: 13.5px; color: var(--on-navy-2); }
+  .jump { display: flex; gap: 6px; margin: 14px 0 0; flex-wrap: wrap; }
+  .jump a {
+    font: 600 11px/1 var(--mono); letter-spacing: .06em; text-transform: uppercase;
+    color: var(--on-navy); text-decoration: none; padding: 7px 10px; border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, .18);
+  }
+  .jump a:hover { background: var(--navy-2); }
+  .jump a:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+
+  .body {
+    flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 18px 20px 24px;
+    scrollbar-width: thin; scrollbar-color: var(--line-2) transparent;
+  }
+  .section { scroll-margin-top: 12px; }
+  .section + .section { margin-top: 26px; }
+  .eyebrow {
+    margin: 0 0 10px; font: 600 10.5px/1 var(--mono);
+    letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3);
+  }
+  h2 { margin: 0 0 6px; font: 700 16px/1.3 var(--display); color: var(--navy); }
+  p { margin: 0 0 10px; color: var(--ink-2); }
+  p:last-child { margin-bottom: 0; }
+  strong { color: var(--ink); font-weight: 600; }
+  code {
+    font: 500 12.5px/1 var(--mono); background: #eef2f7; color: var(--navy);
+    padding: 2px 5px; border-radius: 4px;
+  }
+
+  /* numbered walk-through */
+  .steps { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .steps > li {
+    background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+    padding: 12px 14px 12px 46px; position: relative;
+  }
+  .steps > li::before {
+    counter-increment: step; content: counter(step);
+    position: absolute; left: 14px; top: 12px;
+    width: 22px; height: 22px; border-radius: 6px;
+    background: var(--navy); color: #fff;
+    font: 600 11px/22px var(--mono); text-align: center;
+  }
+  .steps { counter-reset: step; }
+  .steps h3 { margin: 0 0 4px; font: 600 14px/1.4 var(--display); color: var(--ink); }
+
+  /* plain cards, for the parts that are not steps */
+  .cards { display: flex; flex-direction: column; gap: 8px; }
+  .card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+    padding: 12px 14px;
+  }
+  .card h3 { margin: 0 0 3px; font: 600 13.5px/1.35 var(--display); color: var(--ink); }
+  .card p { margin: 0; font-size: 13.5px; }
+
+  .note {
+    margin: 12px 0 0; padding: 11px 13px; border-radius: 0 8px 8px 0;
+    background: var(--amber-soft); border-left: 3px solid var(--amber);
+    color: #6b4a0c; font-size: 13.5px;
+  }
+  .note strong { color: #4d350a; }
+
+  .foot {
+    margin: 22px 0 4px; padding: 11px 14px; border-radius: 10px;
+    background: #eef2f7; color: var(--ink-2); font-size: 12.5px;
+    display: flex; align-items: flex-start; gap: 10px;
+  }
+  .foot .mark {
+    flex: none; width: 22px; height: 22px; border-radius: 50%;
+    background: var(--navy); color: #fff; font: 700 12px/22px var(--display); text-align: center;
+  }
+
+  @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+  @media (min-width: 700px) { .sheet { max-width: 620px; margin: 0 auto; } }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header class="chrome">
+    <div class="stamp"><span class="dot"></span>Help<span class="tag">Dev</span></div>
+    <h1>Sales Export</h1>
+    <p class="purpose">Pull sales lines out of the database as a file you can open in Excel — every line, or a summary of them — and come back to any file you have built before.</p>
+    <nav class="jump" aria-label="On this page">
+      <a href="#start">Getting started</a>
+      <a href="#configure">Shaping the file</a>
+      <a href="#query">The query box</a>
+      <a href="#build">Building it</a>
+      <a href="#keep">Saving and coming back</a>
+      <a href="#know">Worth knowing</a>
+    </nav>
+  </header>
+
+  <main class="body">
+
+    <section class="section" id="start">
+      <div class="eyebrow">Getting started</div>
+      <h2>Three steps to a file</h2>
+      <ol class="steps">
+        <li>
+          <h3>Pick a store and a date range</h3>
+          <p>Same search card as everywhere else. Press <strong>Load config</strong>. This reads the range once and fills the whole page: the stores it covers, the values your filters can hold, every column of the line, and two hundred sample rows.</p>
+          <p><strong>Up to 31 days at a time.</strong> Working out what you can filter on means reading every line in the range, so a quarter would take minutes to hand back the same two hundred sample rows. Search a month, then build.</p>
+        </li>
+        <li>
+          <h3>Shape the file on the left</h3>
+          <p>Tick what you want in it. The panel on the right redraws as you go, so what is on screen is what the file will hold — same columns, same order.</p>
+        </li>
+        <li>
+          <h3>Press Build export</h3>
+          <p>The file is written straight to storage and you get a download link. Nothing downloads into the browser, so size is a wait rather than a problem.</p>
+        </li>
+      </ol>
+      <div class="note"><strong>Nothing you tick costs a round trip.</strong> The sample redraws from the rows already in hand. Only the first search and the build itself talk to the server.</div>
+    </section>
+
+    <section class="section" id="configure">
+      <div class="eyebrow">Shaping the file</div>
+      <h2>The configuration column</h2>
+      <p>Every section is shut until you open it, and the line on the right of each one is the answer — so the column reads as a list of decisions already made.</p>
+      <div class="cards">
+        <div class="card">
+          <h3>Stores, Days, Sale Types, Ring Types, Sub Departments, Vendors, Cashiers, Price Types</h3>
+          <p>Tick what to keep. Each list holds only what this range actually contains, so nothing you can pick comes back empty. Untick nothing and the whole list is included.</p>
+        </div>
+        <div class="card">
+          <h3>Products</h3>
+          <p>Paste or type product codes, and words to find in the description. A description word is a contains-match — <code>MILK</code> finds <code>WHOLE MILK GAL</code>. Fill both and a line has to match a code <em>and</em> a word.</p>
+        </div>
+        <div class="card">
+          <h3>Columns</h3>
+          <p>Which columns the file holds, and in what order — drag a heading on the preview to move one. Personal columns (customer name, contact, location) are marked and can be turned on or off together.</p>
+        </div>
+        <div class="card">
+          <h3>Group By and Aggregates</h3>
+          <p>These two make the file a <strong>summary</strong> instead of the lines. Group By is what each row is; Aggregates are the numbers worked out for it. Set one and the file changes shape — the panel says which shape it currently is at the top.</p>
+        </div>
+        <div class="card">
+          <h3>Output</h3>
+          <p>File name, format, how dates are spelled, whether voids and refunds are included, and what the file is sorted by.</p>
+        </div>
+      </div>
+      <div class="note"><strong>Unticking everything in a list is not a filter.</strong> The export reads an empty list as "no filter at all", so the file would hold every one of them. Build export stops and says which list to fix.</div>
+    </section>
+
+    <section class="section" id="query">
+      <div class="eyebrow">The query box</div>
+      <h2>Your configuration, written out</h2>
+      <p>The box above the preview is not a separate thing to keep in step — it <strong>is</strong> the configuration, written as a query. Tick a vendor on the left and a line appears in its <code>where</code>. Group by something and it becomes a rollup.</p>
+      <p>You can also go the other way. Edit the text and press <strong>Apply to configuration</strong>, and the panel on the left changes to match. Anything the configuration cannot hold is listed underneath rather than dropped quietly — a filter on a column the export has no setting for, for instance.</p>
+      <p>While the text matches your configuration there is nothing to apply, and the button says so. As soon as you type, the box is yours until you apply it or press <strong>Discard edits</strong> — and the preview below still shows the configuration, not your half-finished text.</p>
+      <div class="note"><strong>It runs nowhere.</strong> Nothing typed in that box is sent anywhere. The file is always built by the server from the configuration, from values it checks.</div>
+    </section>
+
+    <section class="section" id="build">
+      <div class="eyebrow">Building it</div>
+      <h2>What happens when you press Build</h2>
+      <p>The strip at the bottom is the summary of what is about to be built: how many stores, what shape, and every filter that is actually narrowing something. If the Build button is off, the reason is under it.</p>
+      <p>When it finishes you get the file, its size and row count, and a link that lasts an hour. <strong>Back to configuring</strong> puts the panel back without losing the file — it is in Previous builds either way.</p>
+      <div class="note"><strong>A long export can look like an error.</strong> The connection stops waiting after 150 seconds, and the browser reports that as a failure even though the file is usually still being written. If that happens, look in <strong>Previous builds</strong> a minute later before trying again.</div>
+    </section>
+
+    <section class="section" id="keep">
+      <div class="eyebrow">Saving and coming back</div>
+      <h2>Configurations, queries and past builds</h2>
+      <div class="cards">
+        <div class="card">
+          <h3>Saved configurations — the Saved button</h3>
+          <p>A named set of choices you can load again. It holds no dates on purpose: the report is the report, whether you run it for September or October. Load one onto any range.</p>
+        </div>
+        <div class="card">
+          <h3>Saved queries — Queries in the query box</h3>
+          <p>The text of a query, kept under a name and description. Opening one loads it — the panel on the left changes to match, and anything the configuration cannot hold is listed. Useful for the ones you write by hand.</p>
+        </div>
+        <div class="card">
+          <h3>Previous builds</h3>
+          <p>Every file you have built, newest first, grouped by the configuration it came from. Each one carries its file name, what it covered, and the query it ran.</p>
+        </div>
+      </div>
+      <p style="margin-top:12px"><strong>Reload</strong> puts a past build's settings back on the panel — from the build itself, so it is exactly what produced that file even if the configuration has changed since. It leaves your dates alone, so you can run last month's question against this month. <strong>Label</strong> attaches a configuration to a build you ran ad-hoc. <strong>Delete</strong> removes the file and its record.</p>
+      <div class="note"><strong>Links expire, and a delete is permanent.</strong> Download links last an hour and are made fresh each time the list is opened — so an old one stops working, but the file is still there. Deleting a build cannot be undone.</div>
+    </section>
+
+    <section class="section" id="know">
+      <div class="eyebrow">Worth knowing</div>
+      <h2>Three things that surprise people</h2>
+      <div class="cards">
+        <div class="card">
+          <h3>These numbers are not the sales reports'</h3>
+          <p>This is an extract of the raw lines — tender rows, voids, department transfers and untendered modifications are all in there, and refunds are stored positive. A store total from here runs roughly double what the sales pages say for the same window. That is the nature of the data, not an error.</p>
+        </div>
+        <div class="card">
+          <h3>The preview is a sample, not the file</h3>
+          <p>Two hundred rows taken wherever the scan landed — often a handful of stores and a couple of sale types. The columns are the file's; the rows are an illustration. A summary's numbers on screen are that sample's, not the range's, and the preview says so.</p>
+        </div>
+        <div class="card">
+          <h3>Price type words belong to the company</h3>
+          <p>One company says <code>Regular</code> and <code>Managers Special</code>, another says <code>REG</code> and <code>STOR</code>. The list you see is what these stores use. Load a configuration saved for a different company and the page tells you which of its price types do not exist here.</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="foot">
+      <span class="mark">?</span>
+      <span>Still stuck? Anything on this page that does not match what you are seeing is worth reporting — the page is new, and the fastest fixes come from someone saying which button did not do what they expected.</span>
+    </div>
+
+  </main>
+</div>
+</body>
+</html>

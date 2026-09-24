@@ -21,13 +21,36 @@ interface SelectFilterProps {
    * anything.
    */
   plain?: boolean;
+  /**
+   * A box at the top of the list that narrows it.
+   *
+   * For the lists that are long enough to be unusable without one — the
+   * table has ninety-nine columns, and scrolling to `total_sales` past
+   * `fsa_flag` is not picking, it is hunting.
+   */
+  searchable?: boolean;
+  searchPlaceholder?: string;
 }
 
-const SelectFilter = ({ options, value, onChange, placeholder = "All", className = "", plain = false }: SelectFilterProps) => {
+const SelectFilter = ({
+  options,
+  value,
+  onChange,
+  placeholder = "All",
+  className = "",
+  plain = false,
+  searchable = false,
+  searchPlaceholder = "Type to narrow...",
+}: SelectFilterProps) => {
   const [open, setOpen] = useState(false);
   const btnRef = useRef<HTMLButtonElement>(null);
   const dropRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
   const [rect, setRect] = useState<DOMRect | null>(null);
+  const [query, setQuery] = useState("");
+  /** Opening upward, because there was more room there. */
+  const [above, setAbove] = useState(false);
+  const [room, setRoom] = useState(220);
 
   const selected = options.find((o) => o.value === value);
   const label = selected?.label ?? placeholder;
@@ -36,14 +59,37 @@ const SelectFilter = ({ options, value, onChange, placeholder = "All", className
   const isActive = !plain && value !== "";
 
   const handleOpen = () => {
-    if (btnRef.current) setRect(btnRef.current.getBoundingClientRect());
+    if (btnRef.current) {
+      const box = btnRef.current.getBoundingClientRect();
+      setRect(box);
+      // A list that runs off the bottom of the window cannot be scrolled to,
+      // so it opens wherever there is room and is never taller than that.
+      const below = window.innerHeight - box.bottom - 12;
+      const over = box.top - 12;
+      const up = below < 180 && over > below;
+      setAbove(up);
+      setRoom(Math.max(140, Math.min(320, up ? over : below)));
+    }
+    setQuery("");
     setOpen((v) => !v);
   };
 
   const handleSelect = (v: string) => {
     onChange(v);
+    setQuery("");
     setOpen(false);
   };
+
+  // The box is the point of opening it, so the cursor starts there.
+  useEffect(() => {
+    if (open && searchable) searchRef.current?.focus();
+  }, [open, searchable]);
+
+  const narrowed = query.trim()
+    ? options.filter((o) =>
+        `${o.label} ${o.value}`.toLowerCase().includes(query.trim().toLowerCase()),
+      )
+    : options;
 
   useEffect(() => {
     if (!open) return;
@@ -93,38 +139,62 @@ const SelectFilter = ({ options, value, onChange, placeholder = "All", className
           ref={dropRef}
           style={{
             position: "fixed",
-            top: rect.bottom + 2,
+            top: above ? undefined : rect.bottom + 2,
+            bottom: above ? window.innerHeight - rect.top + 2 : undefined,
             left: rect.left,
-            width: Math.max(rect.width, 140),
+            width: Math.max(rect.width, 180),
             zIndex: 9999,
             background: "white",
             border: "1px solid rgba(30,42,74,0.12)",
             borderRadius: 6,
             boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
-            maxHeight: 220,
-            overflowY: "auto",
+            maxHeight: room,
             display: "flex",
             flexDirection: "column",
+            overflow: "hidden",
           }}
-          className="thin-scrollbar"
         >
-          <button
-            onClick={() => handleSelect("")}
-            className="w-full text-left px-3 py-2 text-[12px] hover:bg-gray-50 transition-colors"
-            style={{ color: value === "" ? "#1e2a4a" : "rgba(30,42,74,0.45)", fontWeight: value === "" ? 600 : 400 }}
-          >
-            {placeholder}
-          </button>
-          {options.map((o) => (
-            <button
-              key={o.value}
-              onClick={() => handleSelect(o.value)}
-              className="w-full text-left px-3 py-2 text-[12px] hover:bg-gray-50 transition-colors"
-              style={{ color: "#1e2a4a", fontWeight: value === o.value ? 600 : 400, background: value === o.value ? "rgba(30,42,74,0.04)" : undefined }}
-            >
-              {o.label}
-            </button>
-          ))}
+          {searchable && (
+            <div className="flex-shrink-0 border-b border-brand_line p-1.5">
+              <input
+                ref={searchRef}
+                type="search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder={searchPlaceholder}
+                aria-label={searchPlaceholder}
+                className="w-full border border-brand_line rounded px-2 py-1 text-[12px]"
+                style={{ outline: "none" }}
+              />
+            </div>
+          )}
+
+          <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar">
+            {!query.trim() && (
+              <button
+                onClick={() => handleSelect("")}
+                className="w-full text-left px-3 py-2 text-[12px] hover:bg-gray-50 transition-colors"
+                style={{ color: value === "" ? "#1e2a4a" : "rgba(30,42,74,0.45)", fontWeight: value === "" ? 600 : 400 }}
+              >
+                {placeholder}
+              </button>
+            )}
+            {narrowed.map((o) => (
+              <button
+                key={o.value}
+                onClick={() => handleSelect(o.value)}
+                className="w-full text-left px-3 py-2 text-[12px] hover:bg-gray-50 transition-colors"
+                style={{ color: "#1e2a4a", fontWeight: value === o.value ? 600 : 400, background: value === o.value ? "rgba(30,42,74,0.04)" : undefined }}
+              >
+                {o.label}
+              </button>
+            ))}
+            {narrowed.length === 0 && (
+              <div className="px-3 py-2 text-[12px] text-content/55">
+                Nothing matches that.
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>

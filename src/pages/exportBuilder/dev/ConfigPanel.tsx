@@ -1,8 +1,11 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
+  ArrowPathIcon,
   ChevronRightIcon,
   MagnifyingGlassIcon,
+  QuestionMarkCircleIcon,
 } from "@heroicons/react/20/solid";
+import InfoModal from "../../../components-dev/InfoModal";
 import Checkbox from "../../../components-dev/Checkbox";
 import TextField from "../../../components-dev/inputs/TextField";
 import SelectFilter, {
@@ -10,9 +13,23 @@ import SelectFilter, {
 } from "../../../components-dev/filters/SelectFilter";
 import { useExportBuilderCtx } from "./hooks";
 import { isPii } from "./piiColumns";
-import { parseProductCodes } from "./productCodes";
+import { aliasFor, fnsFor, FN_LABELS } from "./aggregates";
+import { sketchExpr } from "./query/sketchExpr";
+
+import { parseProductCodes, parseDescriptionTerms } from "./productCodes";
 import {
   setFlag,
+  clearSelections,
+  toggleGroupBy,
+  setGroupBy,
+  addAggregate,
+  setAggregate,
+  setAggregateAlias,
+  setComputedAlias,
+  removeAggregate,
+  removeComputed,
+  setOrderBy,
+  toggleSortKey,
   resetExportBuilder,
   setSelectedColumns,
   setSelectedRingTypes,
@@ -20,17 +37,29 @@ import {
   setSelectedStoreIds,
   setSelectedSubDepartments,
   setSelectedVendors,
+  setSelectedCashiers,
+  setSelectedPriceTypes,
+  setSelectedSaleDates,
   setProductCodes,
+  setProductDescriptions,
   toggleColumn,
   toggleRingType,
   toggleSaleType,
   toggleStore,
   toggleSubDepartment,
   toggleVendor,
+  toggleCashier,
+  togglePriceType,
+  toggleSaleDate,
 } from "../../../features/dev/devExportBuilderSlice";
 
 type Section =
   | "stores"
+  | "groupBy"
+  | "aggregates"
+  | "saleDates"
+  | "cashiers"
+  | "priceTypes"
   | "productCodes"
   | "saleTypes"
   | "ringTypes"
@@ -53,14 +82,21 @@ const Row = ({
   isOpen,
   onToggle,
   children,
+  warn = false,
 }: {
   label: string;
   summary: string;
   isOpen: boolean;
   onToggle: () => void;
   children: ReactNode;
+  /** This section is the one standing between here and a file. */
+  warn?: boolean;
 }) => (
-  <div className="bg-card_bg border border-brand_line rounded-lg overflow-hidden flex flex-col flex-shrink-0">
+  <div
+    className={`rounded-lg overflow-hidden flex flex-col flex-shrink-0 border ${
+      warn ? "bg-amber-50 border-amber-300" : "bg-card_bg border-brand_line"
+    }`}
+  >
     <button
       type="button"
       onClick={onToggle}
@@ -68,12 +104,24 @@ const Row = ({
       className="w-full flex items-center gap-2 px-3 py-2.5 text-left flex-shrink-0"
     >
       <ChevronRightIcon
-        className={`w-3.5 h-3.5 flex-shrink-0 text-content/60 transition-transform duration-150 ${
-          isOpen ? "rotate-90" : ""
-        }`}
+        className={`w-3.5 h-3.5 flex-shrink-0 transition-transform duration-150 ${
+          warn ? "text-amber-900" : "text-content/85"
+        } ${isOpen ? "rotate-90" : ""}`}
       />
-      <span className="text-[13px] font-semibold flex-1">{label}</span>
-      <span className="text-[12px] text-content/60">{summary}</span>
+      <span
+        className={`text-[13px] font-semibold flex-1 ${
+          warn ? "text-amber-900" : ""
+        }`}
+      >
+        {label}
+      </span>
+      <span
+        className={`text-[12px] ${
+          warn ? "text-amber-900 font-semibold" : "text-content/85"
+        }`}
+      >
+        {summary}
+      </span>
     </button>
     {isOpen && children}
   </div>
@@ -113,6 +161,60 @@ const storeLabel = ({
     const number = id.replace(/^0+/, "") || id;
     return leading === number ? name : `${id} - ${name}`;
   })();
+
+/**
+ * The three states of a flag filter.
+ *
+ * "Only" is not a rarity here: the line someone is hunting for is usually the
+ * voided or refunded one, and a file of nothing else is the fastest way to
+ * find it. The endpoint reads null, 0 and 1 — and tests COALESCE(flag, 0)
+ * rather than equality, so "only refunds" catches every marker that column
+ * uses rather than the literal 1.
+ */
+const VOID_CHOICES: SelectFilterOption[] = [
+  { value: "all", label: "All lines" },
+  { value: "exclude", label: "Exclude voids" },
+  { value: "only", label: "Only voids" },
+];
+
+const REFUND_CHOICES: SelectFilterOption[] = [
+  { value: "all", label: "All lines" },
+  { value: "exclude", label: "Exclude refunds" },
+  { value: "only", label: "Only refunds" },
+];
+
+/**
+ * What the endpoint will take as a file name.
+ *
+ * It names the build's folder in S3, one segment along from the one that
+ * makes a listing yours, so dots are refused outright rather than
+ * special-cased — `sales.csv` is a 400 there and is caught here first.
+ */
+const PREFIX_OK = /^[A-Za-z0-9_-]{1,60}$/;
+
+const flagToChoice = (flag: number | null) =>
+  flag === null ? "all" : flag ? "only" : "exclude";
+
+const choiceToFlag = (choice: string) =>
+  choice === "all" ? null : choice === "only" ? 1 : 0;
+
+/**
+ * A day, with its weekday.
+ *
+ * The weekday is the point of this list — "every Saturday in the month" is
+ * the question it exists to answer, and picking those out of bare dates means
+ * counting on your fingers. Read in UTC, because the strings are plain days
+ * and a local reading turns one of them into the evening before.
+ */
+const dayLabel = (day: string) => {
+  const at = new Date(day + "T00:00:00Z");
+  if (Number.isNaN(at.getTime())) return day;
+  const weekday = at.toLocaleDateString(undefined, {
+    weekday: "short",
+    timeZone: "UTC",
+  });
+  return `${weekday} · ${day}`;
+};
 
 /** What the export endpoint accepts for `fileFormat`. */
 const FILE_FORMATS: SelectFilterOption[] = [
@@ -178,7 +280,7 @@ const ListSearch = ({
       className="w-full border border-brand_line rounded-lg px-2.5 py-1.5 text-[12.5px]"
     />
     {value.trim().length > 0 && (
-      <span className="text-[11px] text-content/55">
+      <span className="text-[11px] text-content/85">
         {shown} of {total} shown · ticking is unaffected by the search
       </span>
     )}
@@ -188,6 +290,7 @@ const ListSearch = ({
 const ConfigPanel = () => {
   const ctx = useExportBuilderCtx();
   const [open, setOpen] = useState<Section | null>(null);
+  const [help, setHelp] = useState(false);
 
   /**
    * Typing lives here, not in the store.
@@ -200,15 +303,28 @@ const ConfigPanel = () => {
    */
   const [columnQuery, setColumnQuery] = useState("");
   const [vendorQueryText, setVendorQueryText] = useState("");
+  const [cashierQueryText, setCashierQueryText] = useState("");
+  const [groupQuery, setGroupQuery] = useState("");
   const [subDeptQueryText, setSubDeptQueryText] = useState("");
   const [codeText, setCodeText] = useState("");
+  const [descriptionText, setDescriptionText] = useState("");
+  const [fileName, setFileName] = useState(ctx.flags.filePrefix);
 
   // A new config is a new scope; last question's typing does not belong to it.
   useEffect(() => {
     setColumnQuery("");
     setVendorQueryText("");
     setSubDeptQueryText("");
+    setCashierQueryText("");
+    setGroupQuery("");
     setCodeText("");
+    setDescriptionText("");
+    // The output flags survive a reload, so this one is a resync, not a clear.
+    //
+    // Deliberately not keyed on the flag as well: the store gets the name a
+    // beat after typing stops, and reacting to that would write the settled
+    // value back over whatever had been typed in the meantime.
+    setFileName(ctx.flags.filePrefix);
   }, [ctx.columns]);
 
   /**
@@ -218,7 +334,34 @@ const ConfigPanel = () => {
    * hundred.
    */
   const parseTimer = useRef<number | undefined>(undefined);
-  useEffect(() => () => window.clearTimeout(parseTimer.current), []);
+  const termTimer = useRef<number | undefined>(undefined);
+  const nameTimer = useRef<number | undefined>(undefined);
+  useEffect(
+    () => () => {
+      window.clearTimeout(parseTimer.current);
+      window.clearTimeout(termTimer.current);
+      window.clearTimeout(nameTimer.current);
+    },
+    [],
+  );
+
+  const onDescriptionText = (value: string) => {
+    setDescriptionText(value);
+    window.clearTimeout(termTimer.current);
+    termTimer.current = window.setTimeout(() => {
+      ctx.dispatch(setProductDescriptions(parseDescriptionTerms(value)));
+    }, 250);
+  };
+
+  // The file name is read once, when the export runs, so it can settle first
+  // for the same reason the codes do.
+  const onFileName = (value: string) => {
+    setFileName(value);
+    window.clearTimeout(nameTimer.current);
+    nameTimer.current = window.setTimeout(() => {
+      ctx.dispatch(setFlag({ filePrefix: value }));
+    }, 250);
+  };
   const onCodeText = (value: string) => {
     setCodeText(value);
     window.clearTimeout(parseTimer.current);
@@ -248,6 +391,21 @@ const ConfigPanel = () => {
     );
   }, [ctx.subDepartments, subDeptQueryText]);
 
+  const shownGroupColumns = useMemo(() => {
+    const q = groupQuery.trim().toLowerCase();
+    return ctx.columns.filter((c) => c.name.toLowerCase().includes(q));
+  }, [ctx.columns, groupQuery]);
+
+  const shownCashiers = useMemo(() => {
+    const q = cashierQueryText.trim().toLowerCase();
+    return ctx.cashiers.filter(
+      (c) =>
+        String(c.cashier_name ?? "")
+          .toLowerCase()
+          .includes(q) || String(c.cashier_number).includes(q),
+    );
+  }, [ctx.cashiers, cashierQueryText]);
+
   const shownVendors = useMemo(() => {
     const q = vendorQueryText.trim().toLowerCase();
     return ctx.vendors.filter(
@@ -276,25 +434,107 @@ const ConfigPanel = () => {
       ),
     );
 
+  /**
+   * A measure's column changed, so its function may no longer be legal.
+   *
+   * sum and avg exist only for numeric columns — seven columns on this table
+   * look numeric and are varchar — and the endpoint rejects the pair rather
+   * than failing mid-export. Moving to the nearest allowed function keeps a
+   * row from sitting there invalid.
+   */
+  const changeMeasureColumn = (at: number, column: string) => {
+    const allowed = fnsFor(column, ctx.columns);
+    const current = ctx.aggregates[at]?.fn;
+    ctx.dispatch(
+      setAggregate({
+        at,
+        measure: {
+          column,
+          fn: current && allowed.includes(current) ? current : allowed[0],
+        },
+      }),
+    );
+  };
+
+  const measureColumns: SelectFilterOption[] = [
+    { value: "*", label: "All rows (count)" },
+    ...ctx.columns.map((c) => ({ value: c.name, label: c.name })),
+  ];
+
+  /**
+   * Measures, and nothing to group them by.
+   *
+   * The one configuration someone reaches by accident: adding a measure makes
+   * the file a summary, and a summary with no keys has no rows to put the
+   * numbers in. The endpoint refuses it, so the page points at the fix rather
+   * than greying a button and waiting.
+   */
+  const needsKey = ctx.measureItems.length > 0 && ctx.groupBy.length === 0;
+
   const allStores = ctx.stores.length;
   const allTypes = ctx.saleTypes.length;
 
   return (
     <div className="w-[340px] flex-shrink-0 flex flex-col min-h-0 bg-custom-white border border-brand_line rounded-xl overflow-hidden">
       <div className="flex items-center gap-2 px-3 pt-3 pb-2 flex-shrink-0">
-        <span className="text-[11px] font-semibold uppercase tracking-wide text-content/60 flex-1">
+        <span className="text-[11px] font-semibold uppercase tracking-wide text-content/85 flex-1">
           Configuration
         </span>
+        <button
+          type="button"
+          onClick={() => setHelp(true)}
+          title="How this page works"
+          aria-label="How this page works"
+          className="w-[22px] h-[22px] rounded border border-brand_line_2 text-content/85 hover:text-content hover:border-brand_slate flex items-center justify-center transition-colors"
+        >
+          <QuestionMarkCircleIcon className="w-3.5 h-3.5" />
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            ctx.dispatch(clearSelections());
+            setOpen(null);
+          }}
+          title="Clear every pick — the loaded range stays"
+          aria-label="Clear every pick, keeping the loaded range"
+          className="w-[22px] h-[22px] rounded border border-brand_line_2 text-content/85 hover:text-content hover:border-brand_slate flex items-center justify-center transition-colors"
+        >
+          <ArrowPathIcon className="w-3.5 h-3.5" />
+        </button>
         <button
           type="button"
           onClick={() => ctx.dispatch(resetExportBuilder())}
           title="New search — clears this configuration"
           aria-label="New search, clears this configuration"
-          className="w-[22px] h-[22px] rounded border border-brand_line_2 text-content/70 hover:text-content hover:border-brand_slate flex items-center justify-center transition-colors"
+          className="w-[22px] h-[22px] rounded border border-brand_line_2 text-content/85 hover:text-content hover:border-brand_slate flex items-center justify-center transition-colors"
         >
           <MagnifyingGlassIcon className="w-3.5 h-3.5" />
         </button>
       </div>
+      {/*
+        * What the file is, read off the configuration rather than switched.
+        *
+        * Group keys or measures mean a summary; their absence means the
+        * lines. A switch for it meant flipping back and forth to reach the
+        * section you wanted, and asking for a rollup is already asking for
+        * a rollup.
+        */}
+      <div className="px-2.5 pb-2 flex-shrink-0">
+        <div className="flex items-baseline gap-2 rounded-lg border border-brand_line_2 bg-card_bg px-2.5 py-1.5">
+          <span className="text-[11px] font-semibold uppercase tracking-wide text-content/85">
+            File
+          </span>
+          <span className="text-[12px] font-semibold flex-1">
+            {ctx.aggregating ? "Summary" : "Every line"}
+          </span>
+          <span className="text-[11px] text-content/85">
+            {ctx.aggregating
+              ? `${ctx.groupBy.length} key${ctx.groupBy.length === 1 ? "" : "s"} · ${ctx.measureItems.length} measure${ctx.measureItems.length === 1 ? "" : "s"}`
+              : `${ctx.selectedColumns.length} of ${ctx.columns.length} columns`}
+          </span>
+        </div>
+      </div>
+
       <div className="flex flex-col gap-2 px-2.5 pb-2.5 min-h-0 overflow-y-auto thin-scrollbar">
 
       <Row
@@ -328,6 +568,44 @@ const ConfigPanel = () => {
         </div>
       </Row>
 
+      {ctx.saleDates.length > 1 && (
+        <Row
+          label="Days"
+          isOpen={open === "saleDates"}
+          onToggle={() => setOpen(open === "saleDates" ? null : "saleDates")}
+          summary={
+            ctx.selectedSaleDates.length === ctx.saleDates.length
+              ? `all ${ctx.saleDates.length}`
+              : `${ctx.selectedSaleDates.length} of ${ctx.saleDates.length}`
+          }
+        >
+          <div className="px-3 pb-3 flex flex-col gap-1.5">
+            <AllNone
+              onAll={() => ctx.dispatch(setSelectedSaleDates(ctx.saleDates))}
+              onNone={() => ctx.dispatch(setSelectedSaleDates([]))}
+            />
+            <span className="text-[11px] text-content/85">
+              Particular days inside the range, not a second range.
+            </span>
+            <div className="overflow-y-auto thin-scrollbar flex flex-col max-h-[38vh]">
+              {ctx.saleDates.map((d) => (
+                <Checkbox
+                  key={d}
+                  checked={ctx.selectedSaleDates.includes(d)}
+                  onChange={() => ctx.dispatch(toggleSaleDate(d))}
+                  className="py-1.5 text-[12.5px] border-b border-brand_line last:border-0"
+                  label={
+                    <span className="font-mono text-[11.5px]">
+                      {dayLabel(d)}
+                    </span>
+                  }
+                />
+              ))}
+            </div>
+          </div>
+        </Row>
+      )}
+
       <Row
         label="Sale Types"
         isOpen={open === "saleTypes"}
@@ -353,7 +631,7 @@ const ConfigPanel = () => {
             />
           ))}
           {allTypes === 0 && (
-            <span className="text-[12px] text-content/60">
+            <span className="text-[12px] text-content/85">
               No sale types in this range.
             </span>
           )}
@@ -433,7 +711,7 @@ const ConfigPanel = () => {
                 label={
                   <span className="flex items-center gap-2 min-w-0">
                     <span className="font-medium">{s.sub_department}</span>
-                    <span className="truncate text-content/75">
+                    <span className="truncate text-content/85">
                       {s.sub_department_description}
                     </span>
                   </span>
@@ -489,28 +767,136 @@ const ConfigPanel = () => {
       </Row>
 
       <Row
-        label="Product Codes"
+        label="Cashiers"
+        isOpen={open === "cashiers"}
+        onToggle={() => setOpen(open === "cashiers" ? null : "cashiers")}
+        summary={
+          ctx.selectedCashiers.length === ctx.cashiers.length
+            ? `all ${ctx.cashiers.length}`
+            : `${ctx.selectedCashiers.length} of ${ctx.cashiers.length}`
+        }
+      >
+        <div className="px-3 pb-3 flex flex-col gap-1.5">
+          <AllNone
+            onAll={() =>
+              ctx.dispatch(
+                setSelectedCashiers(ctx.cashiers.map((c) => c.cashier_number)),
+              )
+            }
+            onNone={() => ctx.dispatch(setSelectedCashiers([]))}
+          />
+          <ListSearch
+            label="Find a cashier..."
+            value={cashierQueryText}
+            onChange={setCashierQueryText}
+            shown={shownCashiers.length}
+            total={ctx.cashiers.length}
+          />
+          <div className="overflow-y-auto thin-scrollbar flex flex-col max-h-[38vh]">
+            {shownCashiers.map((c) => (
+              <Checkbox
+                key={c.cashier_number}
+                checked={ctx.selectedCashiers.includes(c.cashier_number)}
+                onChange={() => ctx.dispatch(toggleCashier(c.cashier_number))}
+                className="py-1.5 text-[12.5px] border-b border-brand_line last:border-0"
+                label={
+                  <span className="flex items-center gap-2 min-w-0">
+                    <span className="font-mono text-[11.5px] text-content/85">
+                      {c.cashier_number}
+                    </span>
+                    <span className="truncate">{c.cashier_name || "—"}</span>
+                  </span>
+                }
+              />
+            ))}
+          </div>
+        </div>
+      </Row>
+
+      <Row
+        label="Price Types"
+        isOpen={open === "priceTypes"}
+        onToggle={() => setOpen(open === "priceTypes" ? null : "priceTypes")}
+        summary={
+          ctx.selectedPriceTypes.length === ctx.priceTypes.length
+            ? `all ${ctx.priceTypes.length}`
+            : `${ctx.selectedPriceTypes.length} of ${ctx.priceTypes.length}`
+        }
+      >
+        <div className="px-3 pb-3 flex flex-col gap-1.5">
+          <AllNone
+            onAll={() =>
+              ctx.dispatch(
+                setSelectedPriceTypes(ctx.priceTypes.map((p) => p.value)),
+              )
+            }
+            onNone={() => ctx.dispatch(setSelectedPriceTypes([]))}
+          />
+          <span className="text-[11px] text-content/85">
+            These words are the company's, not the table's — one company says
+            Regular, another says REG. This list is what these stores use.
+          </span>
+          {ctx.priceTypes.map((price) => (
+            <Checkbox
+              key={price.value}
+              checked={ctx.selectedPriceTypes.includes(price.value)}
+              onChange={() => ctx.dispatch(togglePriceType(price.value))}
+              className="text-[12.5px]"
+              label={
+                price.value === "" ? (
+                  <span className="flex items-center gap-1.5">
+                    {price.label}
+                    <span className="text-[11px] text-content/85">
+                      lines with no price type
+                    </span>
+                  </span>
+                ) : (
+                  price.label
+                )
+              }
+            />
+          ))}
+          {ctx.priceTypes.length === 0 && (
+            <span className="text-[12px] text-content/85">
+              No price types in this range.
+            </span>
+          )}
+        </div>
+      </Row>
+
+      <Row
+        label="Products"
         isOpen={open === "productCodes"}
         onToggle={() =>
           setOpen(open === "productCodes" ? null : "productCodes")
         }
         summary={
-          ctx.productCodes.length === 0
+          ctx.productCodes.length === 0 && ctx.productDescriptions.length === 0
             ? "all"
-            : `${ctx.productCodes.length} code${ctx.productCodes.length === 1 ? "" : "s"}`
+            : [
+                ctx.productCodes.length > 0 &&
+                  `${ctx.productCodes.length} code${ctx.productCodes.length === 1 ? "" : "s"}`,
+                ctx.productDescriptions.length > 0 &&
+                  `${ctx.productDescriptions.length} word${ctx.productDescriptions.length === 1 ? "" : "s"}`,
+              ]
+                .filter(Boolean)
+                .join(" · ")
         }
       >
         <div className="px-3 pb-3 flex flex-col gap-2">
-          <textarea
-            value={codeText}
-            onChange={(e) => onCodeText(e.target.value)}
-            rows={3}
-            placeholder="Paste or type codes — commas, spaces or new lines"
-            aria-label="Product codes"
-            className="w-full border border-brand_line rounded-lg px-2.5 py-1.5 text-[12px] font-mono resize-y"
-          />
+          <label className="flex flex-col gap-1">
+            <span className="text-[12px] font-medium text-content">Codes</span>
+            <textarea
+              value={codeText}
+              onChange={(e) => onCodeText(e.target.value)}
+              rows={3}
+              placeholder="Paste or type codes — commas, spaces or new lines"
+              aria-label="Product codes"
+              className="w-full border border-brand_line rounded-lg px-2.5 py-1.5 text-[12px] font-mono resize-y"
+            />
+          </label>
           <div className="flex items-center gap-3">
-            <span className="text-[11.5px] text-content/60 flex-1">
+            <span className="text-[11.5px] text-content/85 flex-1">
               {ctx.productCodes.length === 0
                 ? "Empty means every product."
                 : `${ctx.productCodes.length} code${
@@ -531,6 +917,52 @@ const ConfigPanel = () => {
               </button>
             )}
           </div>
+
+          <label className="flex flex-col gap-1">
+            <span className="text-[12px] font-medium text-content">
+              Description holds
+            </span>
+            <textarea
+              value={descriptionText}
+              onChange={(e) => onDescriptionText(e.target.value)}
+              rows={2}
+              placeholder="MILK — one per line, or separated by commas"
+              aria-label="Product description words"
+              className="w-full border border-brand_line rounded-lg px-2.5 py-1.5 text-[12px] font-mono resize-y"
+            />
+          </label>
+          <div className="flex items-center gap-3">
+            <span className="text-[11.5px] text-content/85 flex-1">
+              {/*
+                * Not split on spaces, unlike the codes: WHOLE MILK is one
+                * thing to look for. A line is kept if its description holds
+                * any of these, case ignored.
+                */}
+              {ctx.productDescriptions.length === 0
+                ? "Found anywhere in the description, case ignored."
+                : `Any of: ${ctx.productDescriptions.join(", ")}`}
+            </span>
+            {ctx.productDescriptions.length > 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  setDescriptionText("");
+                  window.clearTimeout(termTimer.current);
+                  ctx.dispatch(setProductDescriptions([]));
+                }}
+                className="text-[11.5px] text-brand_navy_hover underline underline-offset-2"
+              >
+                clear
+              </button>
+            )}
+          </div>
+
+          {ctx.productCodes.length > 0 && ctx.productDescriptions.length > 0 && (
+            <span className="text-[11.5px] text-amber-900 bg-amber-50 border border-amber-200 rounded px-2 py-1.5">
+              Both are filled, so a line has to match a code AND a word. Clear
+              one to widen it.
+            </span>
+          )}
         </div>
       </Row>
 
@@ -539,12 +971,20 @@ const ConfigPanel = () => {
         isOpen={open === "columns"}
         onToggle={() => setOpen(open === "columns" ? null : "columns")}
         summary={
-          ctx.selectedColumns.length === ctx.columns.length
-            ? `all ${ctx.columns.length}`
-            : `${ctx.selectedColumns.length} of ${ctx.columns.length}`
+          ctx.aggregating
+            ? "not in this file"
+            : ctx.selectedColumns.length === ctx.columns.length
+              ? `all ${ctx.columns.length}`
+              : `${ctx.selectedColumns.length} of ${ctx.columns.length}`
         }
       >
         <div className="px-3 pb-3 flex flex-col gap-2">
+          {ctx.aggregating && (
+            <span className="text-[11.5px] text-amber-900 bg-amber-50 border border-amber-200 rounded px-2 py-1.5">
+              This file is a summary, so its columns are the keys and the
+              measures. Clear those to go back to exporting the lines.
+            </span>
+          )}
           <AllNone
             onAll={() =>
               ctx.dispatch(setSelectedColumns(ctx.columns.map((c) => c.name)))
@@ -566,7 +1006,7 @@ const ConfigPanel = () => {
                 label={
                   <span className="flex items-center gap-1.5">
                     Personal columns
-                    <span className="text-[11px] text-content/55">
+                    <span className="text-[11px] text-content/85">
                       {piiNames.filter((n) =>
                         ctx.selectedColumns.includes(n),
                       ).length}{" "}
@@ -608,7 +1048,7 @@ const ConfigPanel = () => {
                         PERSONAL
                       </span>
                     )}
-                    <span className="text-[10.5px] text-content/50">
+                    <span className="text-[10.5px] text-content/85">
                       {c.data_type}
                     </span>
                   </span>
@@ -616,11 +1056,222 @@ const ConfigPanel = () => {
               />
             ))}
             {shown.length === 0 && (
-              <span className="text-[12px] text-content/60 py-2">
+              <span className="text-[12px] text-content/85 py-2">
                 No column matches that.
               </span>
             )}
           </div>
+        </div>
+      </Row>
+
+      <Row
+        label="Group By"
+        warn={needsKey}
+        isOpen={open === "groupBy"}
+        onToggle={() => setOpen(open === "groupBy" ? null : "groupBy")}
+        summary={
+          ctx.groupBy.length > 0
+            ? `${ctx.groupBy.length} key${ctx.groupBy.length === 1 ? "" : "s"}`
+            : ctx.measureItems.length > 0
+              ? "needed for aggregates"
+              : "nothing yet"
+        }
+      >
+        <div className="px-3 pb-3 flex flex-col gap-1.5">
+          <span className="text-[11px] text-content/85">
+            One row per combination of these, in the order you tick them.
+            Ticking one makes the file a summary.
+          </span>
+          {ctx.groupBy.length === 0 && ctx.measureItems.length > 0 && (
+            <span className="text-[11.5px] text-amber-900 bg-amber-50 border border-amber-200 rounded px-2 py-1.5">
+              There are measures but nothing to group them by, so the export
+              has nothing to put in a row. Pick a key — storeid for one row per
+              store, product_code for one per item.
+            </span>
+          )}
+          {ctx.groupBy.length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              {ctx.groupBy.map((name, i) => (
+                <button
+                  key={name}
+                  type="button"
+                  onClick={() => ctx.dispatch(toggleGroupBy(name))}
+                  title="Remove this key"
+                  className="font-mono text-[10.5px] bg-filter_active border border-brand_line_2 rounded px-1.5 py-0.5"
+                >
+                  {i + 1}. {name} ×
+                </button>
+              ))}
+              <button
+                type="button"
+                onClick={() => ctx.dispatch(setGroupBy([]))}
+                className="text-[11px] text-brand_navy_hover underline underline-offset-2 px-1"
+              >
+                clear
+              </button>
+            </div>
+          )}
+          <ListSearch
+            label="Find a column..."
+            value={groupQuery}
+            onChange={setGroupQuery}
+            shown={shownGroupColumns.length}
+            total={ctx.columns.length}
+          />
+          <div className="overflow-y-auto thin-scrollbar flex flex-col max-h-[38vh]">
+            {shownGroupColumns.map((c) => (
+              <Checkbox
+                key={c.name}
+                checked={ctx.groupBy.includes(c.name)}
+                onChange={() => ctx.dispatch(toggleGroupBy(c.name))}
+                className={`w-full py-1.5 px-1 text-[12.5px] border-b border-brand_line last:border-0 ${
+                  isPii(c.name) ? "bg-amber-50" : ""
+                }`}
+                label={
+                  <span className="flex items-center gap-2 w-full min-w-0">
+                    <span className="font-mono text-[11.5px] flex-1 truncate">
+                      {c.name}
+                    </span>
+                    <span className="text-[10.5px] text-content/85">
+                      {c.data_type}
+                    </span>
+                  </span>
+                }
+              />
+            ))}
+          </div>
+        </div>
+      </Row>
+
+      <Row
+        label="Aggregates"
+        isOpen={open === "aggregates"}
+        onToggle={() => setOpen(open === "aggregates" ? null : "aggregates")}
+        summary={
+          ctx.measureItems.length === 0
+            ? "none yet"
+            : `${ctx.measureItems.length} aggregate${
+                ctx.measureItems.length === 1 ? "" : "s"
+              }`
+        }
+      >
+        <div className="px-3 pb-3 flex flex-col gap-2">
+          <span className="text-[11px] text-content/85">
+            What to work out for each row. The name in the file carries the
+            operation, so nothing reads as something it is not.
+          </span>
+          {ctx.aggregates.map((m, i) => (
+            <div
+              key={`${m.column}-${m.fn}-${i}`}
+              className="flex flex-col gap-1 border border-brand_line rounded-lg p-2 bg-custom-white"
+            >
+              <div className="flex items-center gap-1.5">
+                <SelectFilter
+                  plain
+                  searchable
+                  searchPlaceholder="Find a column..."
+                  options={measureColumns}
+                  value={m.column}
+                  onChange={(value) => changeMeasureColumn(i, value)}
+                  className="flex-1 min-w-0"
+                />
+                <SelectFilter
+                  plain
+                  options={fnsFor(m.column, ctx.columns).map((fn) => ({
+                    value: fn,
+                    label: FN_LABELS[fn],
+                  }))}
+                  value={m.fn}
+                  onChange={(value) =>
+                    ctx.dispatch(
+                      setAggregate({
+                        at: i,
+                        measure: { column: m.column, fn: value as typeof m.fn },
+                      }),
+                    )
+                  }
+                  className="w-[130px] flex-shrink-0"
+                />
+                <button
+                  type="button"
+                  onClick={() => ctx.dispatch(removeAggregate(i))}
+                  aria-label={`Remove ${aliasFor(m.column, m.fn)}`}
+                  className="w-[22px] h-[22px] flex-shrink-0 rounded border border-brand_line_2 text-content/85 hover:text-content hover:border-brand_slate transition-colors"
+                >
+                  ×
+                </button>
+              </div>
+              <TextField
+                label={
+                  <span className="text-[11px] font-normal text-content/85">
+                    Called in the file
+                  </span>
+                }
+                value={m.alias ?? ""}
+                placeholder={aliasFor(m.column, m.fn)}
+                onChange={(value) =>
+                  ctx.dispatch(setAggregateAlias({ at: i, alias: value.trim() }))
+                }
+              />
+            </div>
+          ))}
+
+          {/*
+            * Computed measures come from the query window rather than from
+            * these two dropdowns: a column and a function cannot say
+            * `sum(qty) * max(price)`. They are shown here because this is
+            * where someone looks for what the file holds, and removable here
+            * because that is where they would look for that too.
+            */}
+          {ctx.computed.map((m, i) => (
+            <div
+              key={`computed-${i}`}
+              className="flex flex-col gap-1 border border-brand_line_2 rounded-lg p-2 bg-filter_active"
+            >
+              <div className="flex items-center gap-1.5">
+                <span className="flex-1 min-w-0 font-mono text-[11px] text-content/85 truncate">
+                  {sketchExpr(m.expr)}
+                </span>
+                <span className="text-[9.5px] font-semibold tracking-wide text-content/85">
+                  COMPUTED
+                </span>
+                <button
+                  type="button"
+                  onClick={() => ctx.dispatch(removeComputed(i))}
+                  aria-label={`Remove ${m.alias}`}
+                  className="w-[22px] h-[22px] flex-shrink-0 rounded border border-brand_line_2 text-content/85 hover:text-content hover:border-brand_slate transition-colors"
+                >
+                  ×
+                </button>
+              </div>
+              <TextField
+                label={
+                  <span className="text-[11px] font-normal text-content/85">
+                    Called in the file
+                  </span>
+                }
+                value={m.alias}
+                onChange={(value) =>
+                  ctx.dispatch(setComputedAlias({ at: i, alias: value.trim() }))
+                }
+              />
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={() =>
+              ctx.dispatch(addAggregate({ column: "*", fn: "count" }))
+            }
+            className="text-[11.5px] text-brand_navy_hover underline underline-offset-2 self-start"
+          >
+            add an aggregate
+          </button>
+          {ctx.measureItems.length === 0 && (
+            <span className="text-[11.5px] text-content/85">
+              A summary with no aggregates is just the list of groups.
+              Arithmetic between them comes from the query box.
+            </span>
+          )}
         </div>
       </Row>
 
@@ -639,44 +1290,162 @@ const ConfigPanel = () => {
               options={FILE_FORMATS}
               value={ctx.flags.fileFormat}
               onChange={(value) =>
-                ctx.dispatch(setFlag({ key: "fileFormat", value }))
+                ctx.dispatch(setFlag({ fileFormat: value }))
               }
               className="w-full"
             />
           </label>
+          {ctx.dateFormats.length > 0 && (
+            <label className="flex flex-col gap-1">
+              <span className="text-[12px] font-medium text-content">
+                Dates
+              </span>
+              <SelectFilter
+                plain
+                options={ctx.dateFormats.map((f) => ({
+                  value: f.value,
+                  label: `${f.label} — ${f.example}`,
+                }))}
+                value={ctx.flags.dateFormat}
+                onChange={(value) => ctx.dispatch(setFlag({ dateFormat: value }))}
+                className="w-full"
+              />
+              <span className="text-[11px] text-content/85">
+                How the file spells its date columns. The preview above shows
+                them as the table stores them. Sorting stays chronological
+                whichever is picked.
+              </span>
+            </label>
+          )}
           <TextField
             label="File name"
-            value={ctx.flags.filePrefix}
+            value={fileName}
             placeholder="sales"
-            hint={`${ctx.flags.filePrefix || "sales"}.${
-              ctx.flags.fileFormat === "csv" ? "csv" : "txt"
-            }`}
-            onChange={(value) =>
-              ctx.dispatch(setFlag({ key: "filePrefix", value }))
+            hint={
+              fileName && !PREFIX_OK.test(fileName) ? (
+                <span className="text-amber-900">
+                  Letters, digits, - and _ only, up to 60. It names the build's
+                  folder, so a dot is refused rather than cleaned up.
+                </span>
+              ) : (
+                `${fileName || "sales"}.${
+                  ctx.flags.fileFormat === "csv" ? "csv" : "txt"
+                }`
+              )
             }
+            onChange={onFileName}
           />
-          <Checkbox
-            checked={ctx.flags.excludeVoids}
-            onChange={(value) =>
-              ctx.dispatch(setFlag({ key: "excludeVoids", value }))
-            }
-            label="Exclude voided lines"
-            className="text-[12.5px]"
-          />
+          <label className="flex flex-col gap-1">
+            <span className="text-[12px] font-medium text-content">
+              Voided lines
+            </span>
+            <SelectFilter
+              plain
+              options={VOID_CHOICES}
+              value={flagToChoice(ctx.flags.voidFlag)}
+              onChange={(value) =>
+                ctx.dispatch(setFlag({ voidFlag: choiceToFlag(value) }))
+              }
+              className="w-full"
+            />
+          </label>
+          <label className="flex flex-col gap-1">
+            <span className="text-[12px] font-medium text-content">
+              Refunds
+            </span>
+            <SelectFilter
+              plain
+              options={REFUND_CHOICES}
+              value={flagToChoice(ctx.flags.refundFlag)}
+              onChange={(value) =>
+                ctx.dispatch(setFlag({ refundFlag: choiceToFlag(value) }))
+              }
+              className="w-full"
+            />
+          </label>
+          {/*
+            * The sort is the file's own columns, in the order they are
+            * clicked: ascending, descending, gone. Sorting by something the
+            * file does not carry is a question about rows nobody can see, so
+            * this offers nothing else.
+            */}
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-baseline gap-2">
+              <span className="text-[12px] font-medium text-content flex-1">
+                Sort by
+              </span>
+              {ctx.orderBy.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => ctx.dispatch(setOrderBy([]))}
+                  className="text-[11px] text-brand_navy_hover underline underline-offset-2"
+                >
+                  clear
+                </button>
+              )}
+            </div>
+            {ctx.orderBy.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                {ctx.orderBy.map((s, i) => (
+                  <button
+                    key={s.key}
+                    type="button"
+                    onClick={() => ctx.dispatch(toggleSortKey(s.key))}
+                    title="Click to turn it around, again to remove it"
+                    className="font-mono text-[10.5px] bg-filter_active border border-brand_line_2 rounded px-1.5 py-0.5"
+                  >
+                    {i + 1}. {s.key} {s.desc ? "\u2193" : "\u2191"}
+                  </button>
+                ))}
+              </div>
+            )}
+            <div className="flex flex-wrap gap-1 max-h-[18vh] overflow-y-auto thin-scrollbar">
+              {ctx.sortableKeys
+                .filter((key) => !ctx.orderBy.some((s) => s.key === key))
+                .map((key) => (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => ctx.dispatch(toggleSortKey(key))}
+                    className="font-mono text-[10.5px] bg-card_bg border border-brand_line rounded px-1.5 py-0.5 hover:border-brand_slate transition-colors"
+                  >
+                    + {key}
+                  </button>
+                ))}
+            </div>
+            <span className="text-[11px] text-content/85">
+              {ctx.orderBy.length === 0
+                ? "Unsorted unless the switch below is on. Sorting a long file takes longer to build."
+                : "Click a key to turn it around, again to drop it."}
+            </span>
+          </div>
           <Checkbox
             checked={ctx.flags.ordered}
-            onChange={(value) => ctx.dispatch(setFlag({ key: "ordered", value }))}
+            onChange={(value) => ctx.dispatch(setFlag({ ordered: value }))}
+            disabled={ctx.orderBy.length > 0}
             className="text-[12.5px]"
             label={
               <span className="flex items-center gap-2">
                 Sort the file
-                <span className="text-[11px] text-content/55">slower</span>
+                <span className="text-[11px] text-content/85">
+                  {ctx.orderBy.length > 0
+                    ? "the keys above win"
+                    : ctx.aggregating
+                      ? "by its group keys · slower"
+                      : "by store, date and line · slower"}
+                </span>
               </span>
             }
           />
         </div>
       </Row>
       </div>
+
+      <InfoModal
+        page="sales-export"
+        isOpen={help}
+        onClose={() => setHelp(false)}
+      />
     </div>
   );
 };

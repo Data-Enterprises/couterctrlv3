@@ -6,7 +6,7 @@ small script. No API is involved; the browser GETs them straight from S3.
 
 ```
 htmlPages/
-  source/       hand-written Q&A pages — the only files you edit by hand
+  source/       hand-written pages — the only files you edit by hand
   glossaries.json   each page's "?" glossary, dumped from the dev *Info.ts files
   build.py      writes both folders below
   prod/         generated: source + the modal layout
@@ -17,6 +17,13 @@ htmlPages/
 overwrites it, and dev and prod drift apart. Change `source/*.html` for wording
 that belongs in both, or `build.py` for anything dev-only (see `EDITS` and
 `USER_MGMT` in it).
+
+**Pages that are already finished HTML** — a walk-through rather than the Q&A
+shape `build` assembles — are listed in `VERBATIM_DEV_ONLY` at the foot of
+`build.py`. Their source is copied through untouched, to `dev/` only, because
+each belongs to a Coming Soon page with no prod help to serve. `sales-export`
+is the first: it lived in `dev/` alone for a day, where the next build would
+have overwritten it with an empty Q&A page.
 
 ## Build
 

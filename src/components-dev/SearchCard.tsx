@@ -26,6 +26,13 @@ interface SearchCardProps {
   backLabel?: string;
   top?: boolean;
   notice?: string;
+  /**
+   * Why this search cannot run, in a sentence.
+   *
+   * Turns the button off and says so above it. Different from `notice`, which
+   * is something worth knowing about a search that can go ahead.
+   */
+  blocked?: string | null;
   /** Shown in the mask while loading. Worth naming what is being fetched —
    *  group searches can run long enough that a bare "Loading..." reads as a
    *  hang. */
@@ -49,6 +56,7 @@ const SearchCard = ({
   backLabel = "Back to results",
   top = false,
   notice,
+  blocked = null,
   loadingMessage = "Loading...",
   extraControls,
 }: SearchCardProps) => {
@@ -123,9 +131,15 @@ const SearchCard = ({
 
             {extraControls}
 
+            {blocked && (
+              <div className="px-2.5 py-2 rounded-lg bg-amber-50 border border-amber-200 text-[11.5px] text-amber-900 leading-snug">
+                {blocked}
+              </div>
+            )}
+
             <button
               onClick={onSearch}
-              disabled={loading || nothingPicked}
+              disabled={loading || nothingPicked || blocked !== null}
               className="w-full py-2 text-sm font-semibold text-custom-white rounded-lg bg-[#1e2a4a] hover:bg-[#2a3a63] transition-colors cursor-pointer select-none disabled:opacity-50"
             >
               {/* The button says what it is waiting for rather than what it
