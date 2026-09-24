@@ -13,6 +13,7 @@ import { useExportBuilderCtx } from "./hooks";
 import { isPii } from "./piiColumns";
 import { aliasFor, fnsFor, FN_LABELS } from "./aggregates";
 import { sketchExpr } from "./query/sketchExpr";
+import { DATE_FORMATS } from "./dateFormats";
 import { parseProductCodes, parseDescriptionTerms } from "./productCodes";
 import {
   setFlag,
@@ -1182,6 +1183,23 @@ const ConfigPanel = () => {
               }
               className="w-full"
             />
+          </label>
+          <label className="flex flex-col gap-1">
+            <span className="text-[12px] font-medium text-content">
+              Dates
+            </span>
+            <SelectFilter
+              plain
+              options={DATE_FORMATS}
+              value={ctx.flags.dateFormat}
+              onChange={(value) =>
+                ctx.dispatch(setFlag({ dateFormat: value }))
+              }
+              className="w-full"
+            />
+            <span className="text-[11px] text-content/55">
+              Every date and timestamp column in the file.
+            </span>
           </label>
           <TextField
             label="File name"

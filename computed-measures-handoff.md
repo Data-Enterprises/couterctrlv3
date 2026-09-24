@@ -1,8 +1,8 @@
 # Named and computed measures — backend handoff
 
-Three additions to `/sales/export` so a client's own query can become a file: a
-**name** for a measure, a **measure worked out from other measures**, and a
-**sort of its own**.
+Four additions to `/sales/export` so a client's own query can become a file
+someone can read: a **name** for a measure, a **measure worked out from other
+measures**, a **sort of its own**, and a **date format**.
 
 Written 2026-09-23. The frontend is built and merged; it sends both today and
 the endpoint ignores one and cannot express the other.
@@ -200,6 +200,51 @@ existing caller's file changes.
 Sorting a large export costs what it has always cost. It is the caller's choice,
 the page labels it, and nothing here needs to guard it.
 
+## 4. `dateFormat` — how dates are written
+
+The table stores timestamps, so every date column leaves as
+`2026-09-14T00:00:00` and lands in a spreadsheet looking like machine output.
+A client opening a sales export wants `09/14/2026`.
+
+```python
+dateFormat: Optional[str] = None
+```
+
+One pattern for every `date` and `timestamp` column in the file, applied where
+the select list is built: `to_char({ident}, {pattern}) AS {ident}` for those
+columns, everything else untouched. Null leaves them exactly as they are today,
+so no existing caller's file changes.
+
+**Validate by membership, not by escaping.** The pattern is checked against a
+fixed set and the stored constant is what reaches the query — the caller's
+string is a key, never text:
+
+```python
+_DATE_FORMATS = {
+    "YYYY-MM-DD", "MM/DD/YYYY", "DD/MM/YYYY", "YYYY/MM/DD",
+    "MM/DD/YYYY HH24:MI", "YYYY-MM-DD HH24:MI:SS",
+}
+```
+
+Anything outside it is a 400 listing what is allowed. The page offers exactly
+these six and checks the same list before sending.
+
+**Which columns.** `date` and every flavour of `timestamp`, from the types the
+catalog already returns for the column check. Not `time`, which has no date in
+it, and not a varchar that happens to hold one — `to_char` would not take it
+anyway.
+
+**In a summary.** A group key that is a date gets the same treatment; a measure
+never needs it. Grouping by `to_char(sale_date, 'MM/DD/YYYY')` also changes what
+the groups ARE — every sale on the 14th falls together whatever the time — which
+is what someone grouping by a date wants, and worth knowing rather than
+discovering.
+
+**Sorting.** `ORDER BY` on a formatted date column sorts the text, so
+`MM/DD/YYYY` sorts by month. Sort on the underlying column and format the
+output, which the positional `ORDER BY` an aggregated export already uses does
+for free.
+
 ## Order of work
 
 1. `alias` on `SalesExportAggregate`. Small, independent, and it removes half of
@@ -211,6 +256,8 @@ the page labels it, and nothing here needs to guard it.
    lines around it.
 4. `computed` in the request model and in `_resolve_export_aggregation`, next to
    the loop that already builds the select list.
+5. `dateFormat`. A set, a membership test and a `to_char` wrap in the same
+   place the column list is built.
 
 ---
 
@@ -231,6 +278,9 @@ the page labels it, and nothing here needs to guard it.
 - `orderBy` by a group key, by a measure alias, and by a derived measure name.
 - `orderBy` naming a column that is not in the output → 400.
 - `orderBy` sent beside `ordered: true` → the explicit keys win.
+- `dateFormat` writes `09/14/2026`, and a column that is not a date is
+  untouched.
+- `dateFormat: "YYYY'; drop table users --"` → 400, from the membership test.
 - Nothing sent: every existing caller's file is byte-identical to before.
 
 ---
@@ -245,6 +295,9 @@ Merged and live on the dev tree, so each half lights up as it lands:
   out and a name of their own, removable there.
 - **Sort by** under Output lists the file's own columns; clicking one goes
   ascending, descending, gone.
+- **Dates** under Output picks one of the six patterns, and both previews write
+  their date columns that way — so a format chosen on the left is visible before
+  the download rather than after it.
 - **Apply to configuration** in the query window carries all of it — the names,
   the arithmetic and the sort, by name or by position — instead of listing them
   as dropped.

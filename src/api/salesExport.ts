@@ -321,6 +321,15 @@ export interface ExportParams {
    * default, and a caller who sent one has already decided.
    */
   orderBy: ExportSort[] | null;
+  /**
+   * A Postgres pattern for every date and timestamp column in the file.
+   *
+   * Null leaves them as the table holds them — `2026-09-14T00:00:00`, which
+   * is machine output in a spreadsheet. The endpoint checks the pattern
+   * against a fixed set before it uses one, so this is a key by another name
+   * and not text reaching a query.
+   */
+  dateFormat: string | null;
   fileFormat: string;
   filePrefix: string | null;
   ordered: boolean;

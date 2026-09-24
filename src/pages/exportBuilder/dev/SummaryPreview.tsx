@@ -1,6 +1,7 @@
 import { TableCellsIcon } from "@heroicons/react/24/outline";
 import { useExportBuilderCtx } from "./hooks";
 import { isPii, maskValue } from "./piiColumns";
+import { formatDateValue, isDateColumn } from "./dateFormats";
 
 /**
  * The right panel when the file is a rollup rather than the lines.
@@ -94,7 +95,13 @@ const SummaryPreview = () => {
                     {r + 1}
                   </td>
                   {columns.map((c) => {
-                    const raw = row[c];
+                    const stored = row[c];
+                    // A group key can be a date; a measure never is.
+                    const type = ctx.columns.find((col) => col.name === c);
+                    const raw =
+                      type && isDateColumn(type.data_type)
+                        ? formatDateValue(stored, ctx.flags.dateFormat)
+                        : stored;
                     const masked = isPii(c);
                     return (
                       <td

@@ -532,6 +532,7 @@ export const useExportBuilderCtx = () => {
       voidFlag: config.flags.voidFlag,
       refundFlag: config.flags.refundFlag,
       orderBy: config.orderBy.length > 0 ? config.orderBy : null,
+      dateFormat: config.flags.dateFormat || null,
       fileFormat: config.flags.fileFormat,
       filePrefix: config.flags.filePrefix || null,
       ordered: config.flags.ordered,

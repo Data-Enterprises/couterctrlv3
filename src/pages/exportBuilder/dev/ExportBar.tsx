@@ -225,7 +225,7 @@ const ExportBar = () => {
         onClick={() => ctx.dispatch(openQuery(true))}
         className="border border-custom-white/30 text-custom-white text-[13px] font-medium px-4 py-2.5 rounded-lg hover:bg-custom-white/10 transition-colors"
       >
-        Query sample
+        Query config
       </button>
       {SHOW_SQL_BUTTON && (
         <button

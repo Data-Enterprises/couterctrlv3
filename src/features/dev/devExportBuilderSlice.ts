@@ -27,6 +27,8 @@ export interface ExportFlags {
    */
   voidFlag: number | null;
   refundFlag: number | null;
+  /** A Postgres date pattern, or "" for the stored form. */
+  dateFormat: string;
   fileFormat: string;
   filePrefix: string;
   ordered: boolean;
@@ -259,6 +261,7 @@ export const initialState: ExportBuilderState = {
   flags: {
     voidFlag: null,
     refundFlag: null,
+    dateFormat: "",
     fileFormat: "csv",
     filePrefix: "sales",
     ordered: false,
