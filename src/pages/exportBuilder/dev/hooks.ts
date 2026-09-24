@@ -414,7 +414,10 @@ export const useExportBuilderCtx = () => {
    * scope resolved to, the sale types actually present, every column, and ten
    * sample rows. Narrowing afterwards is local — nothing here is asked twice.
    */
-  const loadConfig = () => {
+  const loadConfig = (
+    range?: { start: string; end: string },
+    after?: () => void,
+  ) => {
     const group = isGroupSearch(search.type);
     dispatch(startConfigLoad());
     // Alongside the preview rather than after it. None of the three waits on
@@ -423,8 +426,8 @@ export const useExportBuilderCtx = () => {
     loadSaved();
     loadBuilds();
     getExportPreview(url, token, {
-      startDate,
-      endDate,
+      startDate: range?.start ?? startDate,
+      endDate: range?.end ?? endDate,
       singleStore: group ? 0 : 1,
       useGroups: group ? 1 : 0,
       searchValue: group ? search.selectedGroup.id : search.selectedStore.storeid,
@@ -446,13 +449,19 @@ export const useExportBuilderCtx = () => {
             cashiers: j.cashiers ?? [],
             // Not from the response: the endpoint returns no day list, and a
             // day with no sales is still a day someone can ask to exclude.
-            saleDates: daysInRange(startDate, endDate),
+            saleDates: daysInRange(
+              range?.start ?? startDate,
+              range?.end ?? endDate,
+            ),
             columns: j.columns ?? [],
             rows: j.rows ?? [],
             hasData: j.hasData,
             message: j.message,
           }),
         );
+        // setConfig has just put every list back to all of it, so anything
+        // that means to narrow them has to land after it, not before.
+        after?.();
       })
       .catch((err: JsonError) => {
         dispatch(failConfigLoad());
@@ -740,8 +749,8 @@ export const useExportBuilderCtx = () => {
    * else's dates is a hybrid nobody asked for — which means re-running the
    * preview for that scope.
    */
-  const reloadBuild = (build: ExportBuild) => {
-    const request = build.request;
+  /** The settings of a build, onto a panel that has just been loaded. */
+  const applyRequest = (request: ExportBuild["request"]) => {
     dispatch(setMode(request.groupBy?.length ? "summary" : "lines"));
     dispatch(setGroupBy(request.groupBy ?? []));
     dispatch(setAggregates(request.aggregates ?? []));
@@ -751,8 +760,8 @@ export const useExportBuilderCtx = () => {
       dispatch(setSelectedColumns(request.columns));
       dispatch(setColumnOrder(request.columns));
     }
-    // A filter absent from the payload means every one of them, which is what
-    // the lists already hold after a preview.
+    // A filter absent from the payload meant every one of them, which is
+    // what the lists hold already after a preview.
     if (request.saleTypes) dispatch(setSelectedSaleTypes(request.saleTypes));
     if (request.itemRingTypes) {
       dispatch(setSelectedRingTypes(request.itemRingTypes));
@@ -776,12 +785,25 @@ export const useExportBuilderCtx = () => {
         ordered: request.ordered ?? false,
       }),
     );
-    dispatch(markSavedLoaded({ id: build.userQueryId ?? 0, notes: [] }));
+  };
 
-    // The scope last, because it is what sends the page back to the search.
+  /**
+   * Put a past build back on screen, data and all.
+   *
+   * From the build, never from the config it names: the manifest is literally
+   * what produced that file, and the config row may have been edited or
+   * deleted since. The range comes back with it and the preview is re-run for
+   * that range — settings over somebody else's dates is a hybrid nobody asked
+   * for, and the filter lists would be the wrong window's.
+   */
+  const reloadBuild = (build: ExportBuild) => {
+    dispatch(openBuilds(false));
     dispatch(setStartDate(build.startDate));
     dispatch(setEndDate(build.endDate));
-    dispatch(openBuilds(false));
+    dispatch(markSavedLoaded({ id: build.userQueryId ?? 0, notes: [] }));
+    loadConfig({ start: build.startDate, end: build.endDate }, () =>
+      applyRequest(build.request),
+    );
   };
 
   const build = () => {
