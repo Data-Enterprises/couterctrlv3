@@ -70,9 +70,24 @@ const andChain = (expr: Expr | null): Expr[] | null => {
     const right = andChain(expr.right);
     return left && right ? [...left, ...right] : null;
   }
-  if (expr.kind === "or" || expr.kind === "not") return null;
+  // An OR over one column is a set, which IS a thing the configuration can
+  // hold — `description ilike A or description ilike B` is the two-term
+  // search that generated it. An OR across columns is not.
+  if (expr.kind === "or") {
+    const parts = flattenOr(expr);
+    const column = parts[0] && "column" in parts[0] ? parts[0].column : null;
+    const oneColumn =
+      column !== null &&
+      parts.every((p) => "column" in p && p.column === column);
+    return oneColumn ? parts : null;
+  }
+  if (expr.kind === "not") return null;
   return [expr];
 };
+
+/** Every leaf of an OR chain, however it was nested. */
+const flattenOr = (expr: Expr): Expr[] =>
+  expr.kind === "or" ? [...flattenOr(expr.left), ...flattenOr(expr.right)] : [expr];
 
 const describe = (expr: Expr): string => {
   switch (expr.kind) {
@@ -235,6 +250,9 @@ export const planApply = (
   }
 
   // --- the filters --------------------------------------------------------
+  // Gathered across the loop, because an OR chain arrives as several parts
+  // that mean one filter.
+  const descriptions: string[] = [];
   const chain = andChain(query.where);
   if (chain === null) {
     leftBehind.push(
@@ -256,8 +274,9 @@ export const planApply = (
       if (part.kind === "like" && column === "product_description" && !part.negated) {
         const term = part.pattern.replace(/^%+|%+$/g, "");
         if (term && !term.includes("%") && !term.includes("_")) {
-          actions.push(setProductDescriptions([term]));
-          applied.push(`Descriptions holding "${term}"`);
+          // One op per term, so the second one appends rather than replacing
+          // the first — an OR chain arrives here as several parts.
+          descriptions.push(term);
           continue;
         }
       }
@@ -376,6 +395,13 @@ export const planApply = (
    * not is named rather than dropped: a file sorted by something other than
    * what was asked for looks right and is not.
    */
+  if (descriptions.length > 0) {
+    actions.push(setProductDescriptions(descriptions));
+    applied.push(
+      `Descriptions holding ${descriptions.map((t) => `"${t}"`).join(" or ")}`,
+    );
+  }
+
   if (query.orderBy.length > 0) {
     const outputs = query.star
       ? config.columns.map((c) => c.name)

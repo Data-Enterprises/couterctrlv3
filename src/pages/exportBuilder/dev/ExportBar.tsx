@@ -3,7 +3,6 @@ import { useExportBuilderCtx } from "./hooks";
 import { countPii } from "./piiColumns";
 import {
   dismissBuild,
-  openQuery,
   openBuilds,
   openSaved,
 } from "../../../features/dev/devExportBuilderSlice";
@@ -225,13 +224,6 @@ const ExportBar = () => {
         className="border border-custom-white/30 text-custom-white text-[13px] font-medium px-4 py-2.5 rounded-lg hover:bg-custom-white/10 transition-colors"
       >
         Saved
-      </button>
-      <button
-        type="button"
-        onClick={() => ctx.dispatch(openQuery(true))}
-        className="border border-custom-white/30 text-custom-white text-[13px] font-medium px-4 py-2.5 rounded-lg hover:bg-custom-white/10 transition-colors"
-      >
-        Query config
       </button>
       {SHOW_SQL_BUTTON && (
         <button

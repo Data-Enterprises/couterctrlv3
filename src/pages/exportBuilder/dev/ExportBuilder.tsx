@@ -4,7 +4,7 @@ import CsvPreview from "./CsvPreview";
 import SummaryPreview from "./SummaryPreview";
 import ExportBar from "./ExportBar";
 import SqlModal from "./SqlModal";
-import QueryModal from "./QueryModal";
+import QueryPanel from "./QueryPanel";
 import DownloadsModal from "./DownloadsModal";
 import SavedExportsModal from "./SavedExportsModal";
 import { useExportBuilderCtx } from "./hooks";
@@ -38,6 +38,7 @@ const ExportBuilder = () => {
       <div className="flex gap-3 flex-1 min-h-0">
         <ConfigPanel />
         <div className="flex-1 min-w-0 flex flex-col gap-3">
+          <QueryPanel />
           {!ctx.hasData ? (
             <div className="flex-1 bg-card_bg border border-brand_line rounded-xl flex items-center justify-center text-center px-6">
               <div className="max-w-[40ch]">
@@ -61,7 +62,6 @@ const ExportBuilder = () => {
           )}
           <ExportBar />
           <SqlModal />
-          {ctx.queryOpen && <QueryModal />}
           {ctx.buildsOpen && <DownloadsModal />}
           {ctx.savedOpen && <SavedExportsModal />}
         </div>
