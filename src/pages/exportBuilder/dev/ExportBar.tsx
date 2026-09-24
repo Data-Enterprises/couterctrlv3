@@ -71,7 +71,22 @@ const ExportBar = () => {
 
   if (ctx.files.length > 0) {
     return (
-      <div className="flex-shrink-0 bg-card_bg border border-brand_green rounded-xl px-4 py-3">
+      <div
+        className={`flex-shrink-0 rounded-xl px-4 py-3 border ${
+          ctx.staleBuild
+            ? "bg-amber-50 border-amber-300"
+            : "bg-card_bg border-brand_green"
+        }`}
+      >
+        {/* A file left on screen while the configuration moves under it looks
+            like the answer and is not. */}
+        {ctx.staleBuild && (
+          <div className="text-[12px] font-semibold text-amber-900 mb-2">
+            The configuration has changed since this file was built — it does
+            not match what is on screen. Build export again for a file that
+            does.
+          </div>
+        )}
         {ctx.files.map((f) => (
           <div key={f.key} className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-brand_green_tint flex items-center justify-center flex-shrink-0">

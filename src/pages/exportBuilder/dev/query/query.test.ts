@@ -155,7 +155,7 @@ describe("turning a query into the configuration", () => {
   it("makes a summary out of a grouped query", () => {
     const out = plan("select storeid, sum(total_sales) group by storeid");
     // No mode to set: the keys and the measures are what make it a summary.
-    expect(out.actions.map((a) => a.type)).toEqual([
+    expect(out.actions.map((a) => a.type).slice(0, 3)).toEqual([
       "devExportBuilder/setGroupBy",
       "devExportBuilder/setAggregates",
       "devExportBuilder/setComputed",
@@ -447,5 +447,63 @@ describe("a key that is grouped but not shown", () => {
       },
     );
     expect(out.applied.join(" ")).toMatch(/sale_date will be a column in the file/);
+  });
+});
+
+describe("a filter the query does not mention", () => {
+  const config = {
+    ...initialState,
+    columns,
+    columnOrder: columns.map((c) => c.name),
+    selectedColumns: columns.map((c) => c.name),
+    saleTypes: ["Sale", "Tender"],
+    selectedSaleTypes: ["Sale"],
+    saleDates: ["2026-09-04", "2026-09-05", "2026-09-06"],
+    selectedSaleDates: ["2026-09-04", "2026-09-05"],
+    productCodes: ["1200000088"],
+    flags: { ...initialState.flags, voidFlag: 0 },
+  };
+
+  const picked = (sql: string, type: string) =>
+    planApply(parseQuery(sql), config).actions.find(
+      (a) => a.type === `devExportBuilder/${type}`,
+    )?.payload;
+
+  it("widens it back to everything", () => {
+    // Deleting `sale_date in (...)` from the box has to mean every day. The
+    // box IS the configuration; a line taken out of it cannot stay in force.
+    expect(picked("select * where sale_type = 'Sale'", "setSelectedSaleDates")).toEqual([
+      "2026-09-04",
+      "2026-09-05",
+      "2026-09-06",
+    ]);
+    expect(picked("select * where sale_type = 'Sale'", "setProductCodes")).toEqual([]);
+    expect(picked("select * where sale_type = 'Sale'", "setFlag")).toEqual({
+      voidFlag: null,
+    });
+  });
+
+  it("leaves alone the one it does mention", () => {
+    expect(
+      picked("select * where sale_type = 'Tender'", "setSelectedSaleTypes"),
+    ).toEqual(["Tender"]);
+  });
+
+  it("says which filters it let go", () => {
+    const out = planApply(parseQuery("select * where sale_type = 'Sale'"), config);
+    expect(out.applied.join(" ")).toMatch(/Everything again for/);
+    expect(out.applied.join(" ")).toMatch(/days/);
+  });
+
+  it("touches nothing when the WHERE could not be read", () => {
+    // An OR across columns already leaves every filter alone; widening there
+    // would quietly throw away filters the query never spoke about.
+    const out = planApply(
+      parseQuery("select * where sale_type = 'Sale' or qty > 2"),
+      config,
+    );
+    expect(
+      out.actions.some((a) => a.type === "devExportBuilder/setSelectedSaleDates"),
+    ).toBe(false);
   });
 });

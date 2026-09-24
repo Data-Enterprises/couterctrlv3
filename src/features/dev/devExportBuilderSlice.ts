@@ -233,6 +233,14 @@ export interface ExportBuilderState {
   buildsExpireMinutes: number;
   /** The build just finished, beyond the files themselves. */
   buildId: string | null;
+  /**
+   * The request that produced the file on screen.
+   *
+   * Kept so the card can tell whether it still describes what is configured.
+   * A file built from two days, left on screen while the days are ticked back
+   * on, is a file that looks like the answer and is not.
+   */
+  builtRequest: string | null;
   builtQueryId: number | null;
   builtQueryName: string | null;
   /** False means the file is there and its manifest is not, so this build
@@ -319,6 +327,7 @@ export const initialState: ExportBuilderState = {
   buildsOpen: false,
   buildsExpireMinutes: 60,
   buildId: null,
+  builtRequest: null,
   builtQueryId: null,
   builtQueryName: null,
   manifestWritten: true,
@@ -849,6 +858,7 @@ const devExportBuilderSlice = createSlice({
         userQueryId: number | null;
         userQueryName: string | null;
         manifestWritten: boolean;
+        request: string;
       }>,
     ) => {
       state.building = false;
@@ -859,6 +869,7 @@ const devExportBuilderSlice = createSlice({
       state.urlExpiresInMinutes = action.payload.urlExpiresInMinutes;
       state.builtAt = Date.now();
       state.buildId = action.payload.buildId;
+      state.builtRequest = action.payload.request;
       state.builtQueryId = action.payload.userQueryId;
       state.builtQueryName = action.payload.userQueryName;
       state.manifestWritten = action.payload.manifestWritten;
@@ -910,6 +921,7 @@ const devExportBuilderSlice = createSlice({
      */
     dismissBuild: (state) => {
       state.files = [];
+      state.builtRequest = null;
       state.exportError = null;
     },
     /**

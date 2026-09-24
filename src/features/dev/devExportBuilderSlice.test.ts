@@ -168,6 +168,7 @@ describe("a build that has just finished", () => {
     userQueryId: 30,
     userQueryName: "Shrink by vendor",
     manifestWritten: true,
+    request: '{"storeids":[36]}',
     ...over,
   });
 
@@ -253,6 +254,7 @@ describe("the list of past builds", () => {
           userQueryId: null,
           userQueryName: null,
           manifestWritten: true,
+          request: "{}",
         }),
       ),
       relabelBuild({ buildId: "b9", userQueryId: 4, userQueryName: "Monthly" }),

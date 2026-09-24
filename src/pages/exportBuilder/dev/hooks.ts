@@ -865,6 +865,18 @@ export const useExportBuilderCtx = () => {
       });
   };
 
+  /**
+   * The file on screen no longer describes what is configured.
+   *
+   * Compared as the request itself, because that is the thing that decides
+   * what a file holds — a tick that changes nothing the endpoint sees should
+   * not make a good file look stale.
+   */
+  const staleBuild =
+    config.files.length > 0 &&
+    config.builtRequest !== null &&
+    config.builtRequest !== JSON.stringify(params());
+
   const build = () => {
     dispatch(startExport());
     const slowTimer = window.setTimeout(
@@ -872,7 +884,10 @@ export const useExportBuilderCtx = () => {
       SLOW_AFTER_MS,
     );
 
-    runExport(url, token, params())
+    // The same object that was sent, so the card can tell later whether it
+    // still describes what is on screen.
+    const sent = params();
+    runExport(url, token, sent)
       .then((resp) => {
         window.clearTimeout(slowTimer);
         const j = resp.data as ExportResp;
@@ -892,6 +907,7 @@ export const useExportBuilderCtx = () => {
             // Absent from an older deploy reads as written, which is the
             // state that needs no warning.
             manifestWritten: j.manifestWritten !== false,
+            request: JSON.stringify(sent),
           }),
         );
         // The listing mints its own links, so the new build appears with one.
@@ -945,6 +961,7 @@ export const useExportBuilderCtx = () => {
     applySaved,
     aggregating,
     summary,
+    staleBuild,
     blocked,
     loadConfig,
     loadBuilds,

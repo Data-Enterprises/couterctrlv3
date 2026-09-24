@@ -256,6 +256,8 @@ export const planApply = (
   // Gathered across the loop, because an OR chain arrives as several parts
   // that mean one filter.
   const descriptions: string[] = [];
+  /** Which columns the WHERE actually mentions. */
+  const mentioned = new Set<string>();
   const chain = andChain(query.where);
   if (chain === null) {
     leftBehind.push(
@@ -270,6 +272,8 @@ export const planApply = (
           : part.kind === "in" && !part.negated
             ? (part.values.filter((v) => v !== null) as (string | number)[])
             : [];
+
+      if (column) mentioned.add(column);
 
       // A LIKE on the description is the one pattern the configuration can
       // hold, because that filter is a contains itself. The % marks come off:
@@ -416,6 +420,77 @@ export const planApply = (
     applied.push(
       `Descriptions holding ${descriptions.map((t) => `"${t}"`).join(" or ")}`,
     );
+  }
+
+  /**
+   * A filter the query does not mention is not a filter.
+   *
+   * The box IS the configuration, so deleting `sale_date in (...)` from it
+   * has to mean every day — not "leave the days as they were". Without this,
+   * applying a query could only ever narrow, and a line you took out stayed
+   * in force invisibly.
+   *
+   * Only when the WHERE could be read at all: an OR across columns leaves
+   * every filter untouched, which is already said above.
+   */
+  if (chain !== null) {
+    const widened: string[] = [];
+    const widen = (column: string, action: UnknownAction, what: string) => {
+      if (mentioned.has(column)) return;
+      actions.push(action);
+      widened.push(what);
+    };
+
+    widen(
+      "storeid",
+      setSelectedStoreIds(config.stores.map((s) => s.storeid)),
+      "stores",
+    );
+    widen("sale_type", setSelectedSaleTypes([...config.saleTypes]), "sale types");
+    widen(
+      "item_ring_type",
+      setSelectedRingTypes([...config.itemRingTypes]),
+      "ring types",
+    );
+    widen(
+      "sub_department",
+      setSelectedSubDepartments(
+        config.subDepartments.map((s) => String(s.sub_department)),
+      ),
+      "sub departments",
+    );
+    widen(
+      "vendor_id",
+      setSelectedVendors(config.vendors.map((v) => v.vendor_id)),
+      "vendors",
+    );
+    widen(
+      "cashier_number",
+      setSelectedCashiers(config.cashiers.map((c) => c.cashier_number)),
+      "cashiers",
+    );
+    widen(
+      "price_type",
+      setSelectedPriceTypes(config.priceTypes.map((p) => p.value)),
+      "price types",
+    );
+    widen("sale_date", setSelectedSaleDates([...config.saleDates]), "days");
+    widen("product_code", setProductCodes([]), "product codes");
+    if (descriptions.length === 0) {
+      widen(
+        "product_description",
+        setProductDescriptions([]),
+        "description words",
+      );
+    }
+    widen("void_flag", setFlag({ voidFlag: null }), "the void filter");
+    widen("refund_flag", setFlag({ refundFlag: null }), "the refund filter");
+
+    if (widened.length > 0) {
+      applied.push(
+        `Everything again for ${widened.join(", ")} — the query does not narrow ${widened.length === 1 ? "it" : "them"}`,
+      );
+    }
   }
 
   if (query.orderBy.length > 0) {
