@@ -4,6 +4,7 @@ import ConfirmDelete from "../../../components-dev/ConfirmDelete";
 import TextField from "../../../components-dev/inputs/TextField";
 import { useExportBuilderCtx } from "./hooks";
 import {
+  forgetPreApply,
   rememberBeforeApply,
   setCurrentQuery,
   undoApply,
@@ -51,6 +52,16 @@ const QueryPanel = () => {
   const [name, setName] = useState("");
   const [note, setNote] = useState("");
 
+  /**
+   * An apply is over the moment the configuration moves again.
+   *
+   * What it did, and the offer to take it back, both describe one moment. A
+   * tick on the left is a new one: the report would then be describing
+   * something that is no longer true, and Undo would quietly throw away that
+   * tick along with the apply, since the snapshot it holds predates both.
+   */
+  const justApplied = useRef(false);
+
   // Untouched, the box follows the ticks. Touched, it is the person's until
   // they apply it or drop it.
   const last = useRef(generated);
@@ -58,7 +69,16 @@ const QueryPanel = () => {
     if (generated === last.current) return;
     last.current = generated;
     if (!edited) setText(generated);
-  }, [generated, edited]);
+
+    // The apply's own change to the configuration is not someone moving on
+    // from it.
+    if (justApplied.current) {
+      justApplied.current = false;
+      return;
+    }
+    setPlan(null);
+    if (ctx.preApply) ctx.dispatch(forgetPreApply());
+  }, [generated, edited, ctx]);
 
   /**
    * A configuration replaced wholesale wins over an edit in progress.
@@ -96,6 +116,7 @@ const QueryPanel = () => {
       const parsed: Query = parseQuery(text);
       ctx.dispatch(rememberBeforeApply());
       const next = planApply(parsed, ctx.config);
+      justApplied.current = true;
       next.actions.forEach((action) => ctx.dispatch(action));
       setPlan(next);
       setError(null);
