@@ -40,6 +40,7 @@ import {
 import Settings from "./pages/settings/Settings.tsx";
 import Dashboard from "./pages/quicksight/Dashboard.tsx";
 import Tickets from "./pages/tickets/Tickets.tsx";
+import ReleaseNotes from "./pages/releaseNotes/ReleaseNotes.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -87,6 +88,10 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="cashiers" element={<CashiersPage />} />
                 <Route path="orders" element={<OrdersPage />} />
                 <Route path="tickets" element={<Tickets />} />
+                {/* Not in the nav: nobody goes looking for it, but it is
+                    linkable once you are there, which is the point of a
+                    route rather than a sheet. */}
+                <Route path="release-notes" element={<ReleaseNotes />} />
               </Route>
             </Routes>
           </ToastProvider>

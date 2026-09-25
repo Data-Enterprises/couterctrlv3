@@ -9,7 +9,6 @@ import { useAppSelector, useAppDispatch } from "../../hooks";
 import { categoriesFor } from "./utils";
 import { legacyEntryPath } from "../../constants/legacyPages";
 import { COMING_SOON_CATEGORY } from "../../utils/comingSoon";
-import ReleaseNotesModal from "../../components-dev/ReleaseNotesModal";
 import { resetNav, setIsNavOpen, setLastRoute } from "../../features/navSlice";
 import {
   resetAppSlice,
@@ -191,7 +190,6 @@ const TitleBar = () => {
     categoryCloseTimer.current = setTimeout(() => setOpenCategory(null), 80);
   };
   const [avatarOpen, setAvatarOpen] = useState(false);
-  const [releaseNotesOpen, setReleaseNotesOpen] = useState(false);
 
   const currentPath = location.pathname.replace(/^\//, "");
   const categories = categoriesFor(context.apiEnv);
@@ -394,7 +392,7 @@ const TitleBar = () => {
               <button
                 onClick={() => {
                   setAvatarOpen(false);
-                  setReleaseNotesOpen(true);
+                  navigate("/release-notes");
                 }}
                 className="w-full text-left px-4 py-2.5 text-[13px] font-medium text-content hover:bg-gray-50 transition-colors border-b border-gray-100 flex items-center gap-2"
               >
@@ -663,13 +661,6 @@ const TitleBar = () => {
         </>
       )}
 
-      {/* The notes themselves, in the same frame the "?" uses — one file per
-          release now, so the history is still there rather than overwritten by
-          whatever shipped last. */}
-      <ReleaseNotesModal
-        isOpen={releaseNotesOpen}
-        onClose={() => setReleaseNotesOpen(false)}
-      />
     </>
   );
 };
