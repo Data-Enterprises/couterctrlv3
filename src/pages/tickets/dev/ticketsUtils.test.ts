@@ -2,12 +2,17 @@ import { describe, expect, it } from "vitest";
 import {
   attachmentProblem,
   isMine,
+  matchesFilters,
   onTab,
   tabCounts,
   visibleTickets,
   whenText,
 } from "./ticketsUtils";
 import type { Ticket } from "../../../api/tickets";
+import {
+  noFilters,
+  type TicketFilters,
+} from "../../../features/dev/devTicketsSlice";
 
 const ticket = (over: Partial<Ticket> = {}): Ticket =>
   ({
@@ -117,5 +122,47 @@ describe("a file the help desk will not take", () => {
     const why = attachmentProblem(file("big.png", 30 * 1024 * 1024), limits);
     expect(why).toMatch(/30\.0 MB/);
     expect(why).toMatch(/25\.0 MB/);
+  });
+});
+
+describe("the column filters", () => {
+  const rows = [
+    ticket({ id: 1, status: "open", company_name: "Houchens", priority: "high", assigned_tech: null, opened_by_name: "Mike Bedingfield" }),
+    ticket({ id: 2, status: "in_progress", company_name: "Grocery Basket", priority: "normal", assigned_tech: "Mike Tech", opened_by_name: "Admin Chick" }),
+    ticket({ id: 3, status: "waiting", company_name: "Food Giant", priority: "urgent", assigned_tech: "Stephen Tech", opened_by_name: "Manager Chick" }),
+  ];
+  const filters = (over: Partial<TicketFilters> = {}): TicketFilters => ({
+    ...noFilters,
+    ...over,
+  });
+
+  it("treats an untouched column as every row, not none", () => {
+    expect(rows.filter((t) => matchesFilters(t, filters()))).toHaveLength(3);
+  });
+
+  it("narrows on a list, and on text, case-insensitively", () => {
+    expect(
+      rows.filter((t) => matchesFilters(t, filters({ status: ["waiting"] }))),
+    ).toHaveLength(1);
+    expect(
+      rows.filter((t) => matchesFilters(t, filters({ company: "grocery" }))),
+    ).toHaveLength(1);
+  });
+
+  it("finds the unassigned by the word the column shows", () => {
+    // The cell says "Unassigned", so that is what someone types looking for
+    // one — the row has null there.
+    const found = rows.filter((t) =>
+      matchesFilters(t, filters({ assignee: "unassigned" })),
+    );
+    expect(found.map((t) => t.id)).toEqual([1]);
+  });
+
+  it("ands the columns together", () => {
+    expect(
+      rows.filter((t) =>
+        matchesFilters(t, filters({ status: ["open"], company: "Food Giant" })),
+      ),
+    ).toHaveLength(0);
   });
 });

@@ -1,7 +1,10 @@
 import { useEffect } from "react";
+import CheckBox from "../../../components-dev/inputs/CheckBox";
 import {
+  clearFilters,
   openNew,
   setAsClient,
+  setFilters,
   setSearch,
   setTab,
   type QueueTab,
@@ -73,19 +76,14 @@ const Tickets = () => {
           * this the client view is a screen nobody on the team can look at.
           */}
         {ctx.caps.canViewAll && (
-          <label
-            htmlFor="as-client"
-            className="flex items-center gap-2 text-[12px] text-content/85 bg-custom-white border border-brand_line rounded-lg px-3 py-2"
-          >
-            <input
-              id="as-client"
-              type="checkbox"
-              checked={ctx.asClient}
-              onChange={(e) => ctx.dispatch(setAsClient(e.target.checked))}
-              className="w-4 h-4"
-            />
-            View as a client
-          </label>
+          <CheckBox
+            id={1}
+            idExtension="as-client"
+            label="View as a client"
+            value={ctx.asClient}
+            onChange={(value) => ctx.dispatch(setAsClient(Boolean(value)))}
+            className="text-[12px] text-content/85 bg-custom-white border border-brand_line rounded-lg px-3 py-2.5 cursor-pointer select-none"
+          />
         )}
 
         <button
@@ -157,9 +155,12 @@ const Tickets = () => {
             onSelect={ctx.open}
             isTech={ctx.isTech}
             loading={ctx.loading}
+            filters={ctx.filters}
+            onFilters={(next) => ctx.dispatch(setFilters(next))}
+            onClearFilters={() => ctx.dispatch(clearFilters())}
           />
         </div>
-        <div className="w-[560px] flex-shrink-0 flex flex-col">
+        <div className="w-[380px] xl:w-[460px] 2xl:w-[560px] flex-shrink-0 flex flex-col">
           <TicketDetail ctx={ctx} />
         </div>
       </div>

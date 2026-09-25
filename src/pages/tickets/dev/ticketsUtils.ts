@@ -1,5 +1,8 @@
 import type { Ticket, TicketStatus } from "../../../api/tickets";
-import type { QueueTab } from "../../../features/dev/devTicketsSlice";
+import type {
+  QueueTab,
+  TicketFilters,
+} from "../../../features/dev/devTicketsSlice";
 
 /**
  * The filtering behind the tabs and the search box.
@@ -86,14 +89,48 @@ export const onTab = (ticket: Ticket, tab: QueueTab, userid: number) => {
   return true;
 };
 
+/** Case-insensitive contains, with an empty filter meaning every row. */
+const holds = (value: string | null, term: string) =>
+  term.trim() === "" ||
+  (value ?? "").toLowerCase().includes(term.trim().toLowerCase());
+
+/**
+ * The column filters.
+ *
+ * An empty list means every one of them rather than none — the same reading
+ * the export page's filters use, and the one people expect from a column
+ * heading they have not touched.
+ */
+export const matchesFilters = (ticket: Ticket, filters: TicketFilters) => {
+  if (filters.status.length && !filters.status.includes(ticket.status)) {
+    return false;
+  }
+  if (filters.priority.length && !filters.priority.includes(ticket.priority)) {
+    return false;
+  }
+  if (!holds(ticket.title, filters.title)) return false;
+  if (!holds(ticket.company_name, filters.company)) return false;
+  if (!holds(ticket.opened_by_name, filters.openedBy)) return false;
+  // An unassigned ticket answers to the word, since that is what the column
+  // says and what someone would type looking for one.
+  if (!holds(ticket.assigned_tech ?? "Unassigned", filters.assignee)) {
+    return false;
+  }
+  return true;
+};
+
 export const visibleTickets = (
   tickets: Ticket[],
   tab: QueueTab,
   search: string,
   userid: number,
+  filters?: TicketFilters,
 ) =>
   tickets.filter(
-    (ticket) => onTab(ticket, tab, userid) && matchesSearch(ticket, search),
+    (ticket) =>
+      onTab(ticket, tab, userid) &&
+      matchesSearch(ticket, search) &&
+      (!filters || matchesFilters(ticket, filters)),
   );
 
 /** What each tab would show, for the counts on the tabs themselves. */

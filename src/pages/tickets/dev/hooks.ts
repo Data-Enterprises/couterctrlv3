@@ -66,8 +66,15 @@ export const useTicketsCtx = () => {
   const canManage = tickets.caps.canManage && !tickets.asClient;
 
   const rows = useMemo(
-    () => visibleTickets(tickets.tickets, tickets.tab, tickets.search, userid),
-    [tickets.tickets, tickets.tab, tickets.search, userid],
+    () =>
+      visibleTickets(
+        tickets.tickets,
+        tickets.tab,
+        tickets.search,
+        userid,
+        tickets.filters,
+      ),
+    [tickets.tickets, tickets.tab, tickets.search, userid, tickets.filters],
   );
   const counts = useMemo(
     () => tabCounts(tickets.tickets, userid),

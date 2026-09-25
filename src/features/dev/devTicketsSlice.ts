@@ -42,6 +42,13 @@ export interface TicketsState {
   tab: QueueTab;
   search: string;
   company: number | null;
+  /**
+   * The column filters, the same client-side pass the tabs make.
+   *
+   * Every field they read is already on the row, so a filter costs nothing
+   * and the grid answers while someone is still reading down it.
+   */
+  filters: TicketFilters;
 
   newOpen: boolean;
   closingOpen: boolean;
@@ -57,6 +64,24 @@ export interface TicketsState {
    */
   asClient: boolean;
 }
+
+export interface TicketFilters {
+  status: string[];
+  priority: string[];
+  title: string;
+  company: string;
+  openedBy: string;
+  assignee: string;
+}
+
+export const noFilters: TicketFilters = {
+  status: [],
+  priority: [],
+  title: "",
+  company: "",
+  openedBy: "",
+  assignee: "",
+};
 
 export const initialState: TicketsState = {
   loading: false,
@@ -74,6 +99,7 @@ export const initialState: TicketsState = {
   tab: "all",
   search: "",
   company: null,
+  filters: noFilters,
   newOpen: false,
   closingOpen: false,
   asClient: false,
@@ -174,6 +200,12 @@ const devTicketsSlice = createSlice({
     setCompany: (state, action: PayloadAction<number | null>) => {
       state.company = action.payload;
     },
+    setFilters: (state, action: PayloadAction<Partial<TicketFilters>>) => {
+      state.filters = { ...state.filters, ...action.payload };
+    },
+    clearFilters: (state) => {
+      state.filters = noFilters;
+    },
     openNew: (state, action: PayloadAction<boolean>) => {
       state.newOpen = action.payload;
     },
@@ -189,6 +221,9 @@ const devTicketsSlice = createSlice({
       state.detail = null;
       state.comments = [];
       state.attachments = [];
+      // The client grid has none of the columns these filter, so a leftover
+      // one would narrow a list with nothing on screen to explain it.
+      state.filters = noFilters;
     },
     resetTickets: () => initialState,
   },
@@ -211,6 +246,8 @@ export const {
   setTab,
   setSearch,
   setCompany,
+  setFilters,
+  clearFilters,
   openNew,
   openClosing,
   setAsClient,

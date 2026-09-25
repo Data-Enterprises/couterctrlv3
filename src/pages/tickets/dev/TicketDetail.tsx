@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { PaperClipIcon } from "@heroicons/react/24/outline";
 import SelectFilter from "../../../components-dev/filters/SelectFilter";
+import CheckBox from "../../../components-dev/inputs/CheckBox";
 import { openClosing } from "../../../features/dev/devTicketsSlice";
 import type { TicketStatus } from "../../../api/tickets";
 import type { TicketsCtx } from "./hooks";
@@ -221,19 +222,14 @@ const TicketDetail = ({ ctx }: { ctx: TicketsCtx }) => {
         />
         <div className="flex items-center gap-3 flex-wrap">
           {ctx.canManage && (
-            <label
-              htmlFor="ticket-internal"
-              className="flex items-center gap-2 text-[12.5px]"
-            >
-              <input
-                id="ticket-internal"
-                type="checkbox"
-                checked={internal}
-                onChange={(e) => setInternal(e.target.checked)}
-                className="w-4 h-4"
-              />
-              Internal note
-            </label>
+            <CheckBox
+              id={2}
+              idExtension="internal-note"
+              label="Internal note"
+              value={internal}
+              onChange={(value) => setInternal(Boolean(value))}
+              className="text-[12.5px] cursor-pointer select-none"
+            />
           )}
           <div className="flex-1" />
           {fileError && (
