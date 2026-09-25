@@ -213,14 +213,10 @@ export const useTicketsCtx = () => {
       .then((resp) => {
         const j = resp.data as TicketListResp;
         if (ticketFailed(j) || !j.tickets) return;
-        const known = new Set(tickets.tickets.map((t) => t.id));
-        const moved = j.tickets.some(
-          (t) =>
-            !known.has(t.id) ||
-            tickets.tickets.find((k) => k.id === t.id)?.updated_at !==
-              t.updated_at,
-        );
-        if (moved) dispatch(setPending(j.tickets));
+        // Whether anything actually moved is decided in the reducer, where
+        // the current list is — this interval was created once and holds the
+        // closure it was born with.
+        dispatch(setPending(j.tickets));
       })
       .catch(() => {
         /* Same: the next one will ask again. */

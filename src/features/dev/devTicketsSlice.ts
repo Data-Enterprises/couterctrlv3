@@ -139,6 +139,8 @@ const devTicketsSlice = createSlice({
       state.loading = false;
       state.tickets = action.payload.tickets;
       state.caps = action.payload.caps;
+      // This IS the up-to-date list, so there is nothing left to offer.
+      state.pending = null;
     },
     failLoad: (state, action: PayloadAction<string>) => {
       state.loading = false;
@@ -249,8 +251,22 @@ const devTicketsSlice = createSlice({
       if (state.detail?.id === next.id) state.detail = next;
       state.tickets = state.tickets.map((t) => (t.id === next.id ? next : t));
     },
+    /**
+     * A queue a poll fetched — held only if it is genuinely different.
+     *
+     * The comparison happens HERE, against the state as it actually is,
+     * rather than in the hook. An interval created once holds the closure it
+     * was created with, so a comparison out there was measuring every poll
+     * against the empty list the page started with, and announcing news on a
+     * queue nobody had touched.
+     */
     setPending: (state, action: PayloadAction<Ticket[]>) => {
-      state.pending = action.payload;
+      const next = action.payload;
+      const held = new Map(state.tickets.map((t) => [t.id, t.updated_at]));
+      const moved =
+        next.length !== state.tickets.length ||
+        next.some((t) => held.get(t.id) !== t.updated_at);
+      state.pending = moved ? next : null;
     },
     /** Apply the held queue, which is the only thing that reorders it. */
     applyPending: (state) => {

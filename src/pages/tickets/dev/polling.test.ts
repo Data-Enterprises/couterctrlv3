@@ -117,6 +117,40 @@ describe("the queue is offered, not applied", () => {
     expect(held.pending).toHaveLength(2);
   });
 
+  it("offers nothing when the queue is the one already on screen", () => {
+    // The false alarm this exists for: an interval created once holds the
+    // closure it was born with, so comparing out in the hook measured every
+    // poll against the empty list the page started with, and announced news
+    // on a queue nobody had touched.
+    const same = reducer(listed, setPending([ticket({ id: 1 }), ticket({ id: 2 })]));
+    expect(same.pending).toBeNull();
+  });
+
+  it("notices a reply on a ticket that is already listed", () => {
+    // Same ids, same length — only updated_at moved, which is exactly what a
+    // reply somewhere else in the queue looks like.
+    const bumped = reducer(
+      listed,
+      setPending([
+        ticket({ id: 1, updated_at: "2026-09-25T11:00:00" }),
+        ticket({ id: 2 }),
+      ]),
+    );
+    expect(bumped.pending).toHaveLength(2);
+  });
+
+  it("stops offering once the list is brought up to date", () => {
+    const held = reducer(listed, setPending([ticket({ id: 3 }), ticket({ id: 1 })]));
+    const refreshed = reducer(
+      held,
+      setTickets({
+        tickets: [ticket({ id: 3 }), ticket({ id: 1 })],
+        caps: { canViewAll: true, canManage: true },
+      }),
+    );
+    expect(refreshed.pending).toBeNull();
+  });
+
   it("reorders only when somebody asks it to", () => {
     const applied = reducer(
       reducer(listed, setPending([ticket({ id: 3 }), ticket({ id: 1 })])),

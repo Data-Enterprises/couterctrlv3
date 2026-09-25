@@ -162,30 +162,41 @@ const Tickets = () => {
           className="flex-1 min-w-[220px] border border-brand_line rounded-lg px-3 py-2.5 text-[13px] bg-custom-white"
         />
 
+        {/*
+          * One control, not a control and a banner about it.
+          *
+          * Refresh already means "bring this up to date", so news of a queue
+          * that has moved belongs on the button rather than in a bar above
+          * the table saying the same thing in more words.
+          */}
         <button
           type="button"
-          onClick={ctx.load}
+          onClick={() => {
+            // A poll has already fetched the newer queue, so applying it is
+            // instant and costs no call. With nothing held, this is a real
+            // fetch as before.
+            if (ctx.pending) ctx.applyPending();
+            else ctx.load();
+          }}
           disabled={ctx.loading}
-          className="text-[12.5px] font-medium px-3 py-2.5 rounded-lg border border-brand_line_2 hover:border-brand_slate transition-colors disabled:opacity-40"
+          title={
+            ctx.pending
+              ? "The queue has moved since this list was read"
+              : undefined
+          }
+          className={`text-[12.5px] px-3 py-2.5 rounded-lg border transition-colors disabled:opacity-40 ${
+            ctx.pending
+              ? "font-semibold bg-filter_active border-filter_active_border text-brand_navy_hover"
+              : "font-medium border-brand_line_2 hover:border-brand_slate"
+          }`}
         >
-          {ctx.loading ? "Reading..." : "Refresh"}
+          {ctx.loading
+            ? "Reading..."
+            : ctx.pending
+              ? "Refresh · new activity"
+              : "Refresh"}
         </button>
       </div>
-
-      {ctx.pending && (
-        <div className="flex-shrink-0 flex items-center gap-3 bg-filter_active border border-filter_active_border rounded-lg px-3 py-2">
-          <span className="text-[12.5px] text-brand_navy_hover">
-            The queue has moved on since this list was read.
-          </span>
-          <button
-            type="button"
-            onClick={ctx.applyPending}
-            className="text-[12.5px] font-semibold text-brand_navy_hover underline underline-offset-2"
-          >
-            Bring it up to date
-          </button>
-        </div>
-      )}
 
       {ctx.error && (
         <div className="flex-shrink-0 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-[12.5px] text-amber-900">
