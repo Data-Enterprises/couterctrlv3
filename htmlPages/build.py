@@ -346,7 +346,7 @@ def build(name, dev):
 # only. A walk-through is not the Q&A shape `build` assembles, and a Coming
 # Soon page has no prod help to serve - but its source belongs in source/ with
 # the rest, or the next build writes every other page and drops this one.
-VERBATIM_DEV_ONLY = {"sales-export"}
+VERBATIM_DEV_ONLY = {"sales-export", "release-notes"}
 
 names = sorted(f[:-5] for f in os.listdir(SRC) if f.endswith(".html"))
 built = [n for n in names if n not in VERBATIM_DEV_ONLY]
