@@ -107,13 +107,23 @@ const Tickets = () => {
           />
         )}
 
-        <button
-          type="button"
-          onClick={() => ctx.dispatch(openNew(true))}
-          className="text-[13px] font-semibold px-4 py-2.5 rounded-lg bg-brand_navy text-custom-white hover:bg-brand_navy_hover transition-colors"
-        >
-          New ticket
-        </button>
+        {/*
+          * Filing is the client's action.
+          *
+          * A ticket takes its company from whoever opens it, so a tech filing
+          * one on a client's behalf would file it under ours — the endpoint
+          * refuses any other company outright. The button would be a way to
+          * misfile rather than a way to help, so a tech does not get one.
+          */}
+        {!ctx.isTech && (
+          <button
+            type="button"
+            onClick={() => ctx.dispatch(openNew(true))}
+            className="text-[13px] font-semibold px-4 py-2.5 rounded-lg bg-brand_navy text-custom-white hover:bg-brand_navy_hover transition-colors"
+          >
+            New ticket
+          </button>
+        )}
       </div>
 
       <div className="flex items-center gap-2 flex-wrap flex-shrink-0">

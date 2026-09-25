@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { PaperClipIcon } from "@heroicons/react/24/outline";
+import { CheckCircleIcon, PaperClipIcon } from "@heroicons/react/24/outline";
 import SelectFilter from "../../../components-dev/filters/SelectFilter";
 import CheckBox from "../../../components-dev/inputs/CheckBox";
 import { openClosing } from "../../../features/dev/devTicketsSlice";
@@ -11,6 +11,7 @@ import {
   STATUS_LABEL,
   attachmentProblem,
   fileSize,
+  resolutionLabel,
   stampText,
   whenText,
 } from "./ticketsUtils";
@@ -90,6 +91,8 @@ const TicketDetail = ({ ctx }: { ctx: TicketsCtx }) => {
     );
   }
 
+  const closed = ticket.status === "closed";
+
   const send = () => {
     ctx.reply(draft, internal);
     setDraft("");
@@ -124,27 +127,33 @@ const TicketDetail = ({ ctx }: { ctx: TicketsCtx }) => {
 
   return (
     <div className="flex-1 min-h-0 bg-card_bg border border-brand_line rounded-xl flex flex-col overflow-hidden">
-      <div className="flex-shrink-0 px-4 py-3 bg-custom-white border-b border-brand_line flex flex-col gap-2">
-        <div className="flex items-center gap-2.5 flex-wrap">
-          <span className="font-mono text-[12.5px] text-content/85">
-            {ticket.ticket_number}
-          </span>
-          <h2 className="text-[16px] font-semibold flex-1 min-w-0 truncate">
-            {ticket.title}
-          </h2>
-          <span
-            className={`text-[11.5px] font-semibold rounded px-2 py-0.5 ${STATUS_CLASS[ticket.status]}`}
-          >
-            {STATUS_LABEL[ticket.status]}
-          </span>
-          <span
-            className={`text-[11.5px] font-semibold rounded px-2 py-0.5 ${
-              PRIORITY_CLASS[ticket.priority] ?? PRIORITY_CLASS.normal
-            }`}
-          >
-            {ticket.priority[0].toUpperCase() + ticket.priority.slice(1)}
-          </span>
-        </div>
+      {/*
+        * The card's header, and it reads as one: the number, the title and
+        * the two pills that answer "where is this up to" before anything
+        * else does.
+        */}
+      <div className="flex-shrink-0 bg-brand_navy text-custom-white px-4 py-3 flex items-center gap-2.5 flex-wrap">
+        <span className="font-mono text-[12.5px] text-custom-white/85">
+          {ticket.ticket_number}
+        </span>
+        <h2 className="text-[16px] font-semibold flex-1 min-w-0 truncate">
+          {ticket.title}
+        </h2>
+        <span
+          className={`text-[11.5px] font-semibold rounded px-2 py-0.5 ${STATUS_CLASS[ticket.status]}`}
+        >
+          {STATUS_LABEL[ticket.status]}
+        </span>
+        <span
+          className={`text-[11.5px] font-semibold rounded px-2 py-0.5 ${
+            PRIORITY_CLASS[ticket.priority] ?? PRIORITY_CLASS.normal
+          }`}
+        >
+          {ticket.priority[0].toUpperCase() + ticket.priority.slice(1)}
+        </span>
+      </div>
+
+      <div className="flex-shrink-0 px-4 py-2.5 bg-custom-white border-b border-brand_line flex flex-col gap-2">
         <div className="text-[11.5px] text-content/85">
           {ctx.isTech && ticket.company_name ? `${ticket.company_name} · ` : ""}
           opened by {ticket.opened_by_name} · {stampText(ticket.created_at)} ·
@@ -152,8 +161,8 @@ const TicketDetail = ({ ctx }: { ctx: TicketsCtx }) => {
         </div>
 
         {ctx.canManage && (
-          <div className="flex items-center gap-2 flex-wrap pt-1">
-            {ticket.assignee_id !== ctx.userid && (
+          <div className="flex items-center gap-2 flex-wrap">
+            {ticket.assignee_id !== ctx.userid && !closed && (
               <button
                 type="button"
                 onClick={() => ctx.assign(ctx.userid)}
@@ -189,6 +198,36 @@ const TicketDetail = ({ ctx }: { ctx: TicketsCtx }) => {
         )}
       </div>
 
+      {/*
+        * A closed ticket says so plainly. It is the state people most often
+        * misread — the thread looks like any other conversation, and the one
+        * thing they need to know is that nobody is working on it.
+        */}
+      {closed && (
+        <div className="flex-shrink-0 flex items-center gap-2.5 px-4 py-2.5 bg-brand_green_tint border-b border-brand_line">
+          <CheckCircleIcon className="w-4 h-4 text-brand_green_darker flex-shrink-0" />
+          <span className="text-[12.5px] font-semibold text-brand_green_darker">
+            Closed{ticket.closed_at ? ` ${stampText(ticket.closed_at)}` : ""}
+          </span>
+          {resolutionLabel(ticket) && (
+            <span className="text-[11.5px] text-brand_green_darker">
+              · {resolutionLabel(ticket)}
+            </span>
+          )}
+          <div className="flex-1" />
+          {ctx.canManage && (
+            <button
+              type="button"
+              onClick={() => ctx.move("open")}
+              disabled={ctx.working}
+              className="text-[11.5px] font-semibold text-brand_green_darker underline underline-offset-2 disabled:opacity-40"
+            >
+              Reopen it
+            </button>
+          )}
+        </div>
+      )}
+
       <div
         ref={thread}
         onScroll={(e) => {
@@ -198,33 +237,56 @@ const TicketDetail = ({ ctx }: { ctx: TicketsCtx }) => {
         }}
         className="flex-1 min-h-0 overflow-y-auto thin-scrollbar px-4 py-3 flex flex-col gap-3"
       >
-        {ctx.comments.map((comment) => (
-          <div
-            key={comment.id}
-            className={`flex flex-col gap-1 ${
-              comment.is_internal
-                ? "bg-amber-50 border border-amber-200 rounded-lg p-3"
-                : ""
-            }`}
-          >
-            <div className="flex items-baseline gap-2 flex-wrap">
-              <span className="text-[13px] font-semibold">
-                {comment.userid === ctx.userid ? "You" : comment.author_name}
-              </span>
-              <span className="text-[11.5px] text-content/85">
-                {stampText(comment.created_at)}
-              </span>
-              {comment.is_internal && (
-                <span className="text-[10.5px] font-semibold uppercase tracking-wide text-amber-900">
-                  Internal note — never sent to a client
+        {ctx.comments.map((comment) => {
+          /*
+           * Yours on the right, theirs on the left — the shape every
+           * messaging app has taught people to read, so who said what is
+           * answered before anybody reads a name.
+           *
+           * An internal note keeps its amber whichever side it lands on: it
+           * is not a different speaker, it is a different audience, and
+           * losing that to the alignment would lose the only thing about it
+           * that matters.
+           */
+          const mine = comment.userid === ctx.userid;
+          return (
+            <div
+              key={comment.id}
+              className={`flex flex-col gap-1 max-w-[82%] ${
+                mine ? "self-end items-end" : "self-start items-start"
+              }`}
+            >
+              <div className="flex items-baseline gap-2 flex-wrap px-1">
+                <span className="text-[12.5px] font-semibold">
+                  {mine ? "You" : comment.author_name}
                 </span>
-              )}
+                <span className="text-[11px] text-content/85">
+                  {stampText(comment.created_at)}
+                </span>
+              </div>
+              <div
+                className={`rounded-2xl px-3.5 py-2.5 ${
+                  mine ? "rounded-br-sm" : "rounded-bl-sm"
+                } ${
+                  comment.is_internal
+                    ? "bg-amber-50 border border-amber-200"
+                    : mine
+                      ? "bg-brand_navy text-custom-white"
+                      : "bg-row_selected border border-brand_line"
+                }`}
+              >
+                {comment.is_internal && (
+                  <div className="text-[10.5px] font-semibold uppercase tracking-wide text-amber-900 mb-1">
+                    Internal note — never sent to a client
+                  </div>
+                )}
+                <p className="text-[13.5px] leading-relaxed whitespace-pre-wrap m-0">
+                  {comment.comment}
+                </p>
+              </div>
             </div>
-            <p className="text-[13.5px] leading-relaxed whitespace-pre-wrap m-0">
-              {comment.comment}
-            </p>
-          </div>
-        ))}
+          );
+        })}
 
         {ctx.comments.length === 0 && !ctx.detailLoading && (
           <p className="text-[12.5px] text-content/85">
@@ -233,7 +295,7 @@ const TicketDetail = ({ ctx }: { ctx: TicketsCtx }) => {
         )}
 
         {ctx.attachments.length > 0 && (
-          <div className="flex flex-col gap-1.5 border-t border-brand_line pt-3">
+          <div className="flex flex-col gap-1.5 border-t border-brand_line pt-3 mt-1">
             <span className="text-[10.5px] font-semibold uppercase tracking-wide text-content/85">
               Files · {ctx.attachments.length}
             </span>
@@ -257,6 +319,12 @@ const TicketDetail = ({ ctx }: { ctx: TicketsCtx }) => {
       </div>
 
       <div className="flex-shrink-0 border-t border-brand_line p-3 flex flex-col gap-2">
+        {closed && (
+          <span className="text-[11.5px] text-content/85">
+            This ticket is closed. A reply still posts, and brings it back to
+            the top of the queue.
+          </span>
+        )}
         <label htmlFor="ticket-reply" className="sr-only">
           Write a reply
         </label>

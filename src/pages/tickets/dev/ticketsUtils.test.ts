@@ -4,6 +4,7 @@ import {
   isMine,
   matchesFilters,
   onTab,
+  resolutionLabel,
   tabCounts,
   visibleTickets,
   whenText,
@@ -187,5 +188,24 @@ describe("files chosen before the ticket exists", () => {
   it("does not add the same file twice", () => {
     const once = add([], [file("lane3.png")]);
     expect(add(once, [file("lane3.png")])).toHaveLength(1);
+  });
+});
+
+describe("what kind of fix closed it", () => {
+  it("reads the reserved label closing wrote", () => {
+    // resolution_type has no column — it is stored as a type: label, which
+    // the lookups hide from the picker because nobody chooses it by hand.
+    const closed = ticket({
+      status: "closed",
+      labels: [
+        { id: 1, name: "Feature Request", color: "blue" },
+        { id: 2, name: "type:user_error", color: "grey" },
+      ],
+    });
+    expect(resolutionLabel(closed)).toBe("User error");
+  });
+
+  it("says nothing when the ticket carries no such label", () => {
+    expect(resolutionLabel(ticket({ labels: [] }))).toBeNull();
   });
 });

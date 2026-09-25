@@ -180,6 +180,21 @@ export const stampText = (iso: string) => {
       });
 };
 
+/**
+ * What kind of fix closed it, if anything says.
+ *
+ * Closing stores the resolution type as a reserved `type:` label rather than a
+ * column, so it rides along on the ticket like any other label. The lookups
+ * hide those from the picker — they are written by closing, not chosen by
+ * hand — which is why reading one back means looking here.
+ */
+export const resolutionLabel = (ticket: Ticket) => {
+  const found = ticket.labels?.find((l) => l.name.startsWith("type:"));
+  if (!found) return null;
+  const word = found.name.slice("type:".length).replace(/_/g, " ").trim();
+  return word ? word[0].toUpperCase() + word.slice(1) : null;
+};
+
 export const fileSize = (bytes: number) =>
   bytes >= 1024 * 1024
     ? `${(bytes / 1024 / 1024).toFixed(1)} MB`
