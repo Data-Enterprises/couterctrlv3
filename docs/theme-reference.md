@@ -179,7 +179,11 @@ lists things and analyses each one is built as **one screen**, in this order:
 2. **The nav bar**, attached under the scope card's information above a
    `border-gray-100` rule. Picking a module or a view is navigation, so it is
    a bar. A filter is not, and goes inside the card it filters.
-3. **The item cards**, one `MobilePerfCard` each, opening in place.
+3. **The find row**, in its own card directly under the scope card. Adding an
+   item is how you get anywhere on this screen, so it sits where it can be
+   reached without scrolling past everything already scanned — never at the
+   foot of the list.
+4. **The item cards**, one `MobilePerfCard` each, opening in place.
 
 There is no second screen, no page header slab and no back link inside the
 flow. The item's name and code live on its own card, which is the only place
