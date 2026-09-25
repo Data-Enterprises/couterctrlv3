@@ -11,6 +11,10 @@
  * Hand-written for now. It becomes generated output once the page source and
  * its build move into `tools/help/` — see the help-pages plan.
  */
+// `release-notes` is not a page's help: it is what the avatar menu's Release
+// Notes row opens. It rides here because it lives in the same bucket and is
+// shown by the same modal, and because this list is what makes a name that
+// isn't in S3 a compile error rather than error XML in the frame.
 export const HELP_PAGES = [
   "admin",
   "cashiers",
@@ -22,6 +26,7 @@ export const HELP_PAGES = [
   "loss-prevention",
   "orders",
   "receivers",
+  "release-notes",
   "sales",
   "sales-export",
   "store-groups",

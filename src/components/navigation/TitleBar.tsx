@@ -9,6 +9,8 @@ import { useAppSelector, useAppDispatch } from "../../hooks";
 import { categoriesFor } from "./utils";
 import { legacyEntryPath } from "../../constants/legacyPages";
 import { COMING_SOON_CATEGORY } from "../../utils/comingSoon";
+import { RELEASE_NOTES_DATE } from "../../constants/releaseNotes";
+import InfoModal from "../../components-dev/InfoModal";
 import { resetNav, setIsNavOpen, setLastRoute } from "../../features/navSlice";
 import {
   resetAppSlice,
@@ -190,6 +192,7 @@ const TitleBar = () => {
     categoryCloseTimer.current = setTimeout(() => setOpenCategory(null), 80);
   };
   const [avatarOpen, setAvatarOpen] = useState(false);
+  const [releaseNotesOpen, setReleaseNotesOpen] = useState(false);
 
   const currentPath = location.pathname.replace(/^\//, "");
   const categories = categoriesFor(context.apiEnv);
@@ -382,6 +385,23 @@ const TitleBar = () => {
                   </button>
                 </div>
               </div>
+            ) : null}
+            {/* What went out and what is waiting, straight from the bucket the
+                help pages come from. Dev mode only: these are our notes, they
+                name unreleased work, and the row would mean nothing to a
+                client sitting on prod. Under View because it describes the
+                app those switches move you around in. */}
+            {context.apiEnv === "dev" ? (
+              <button
+                onClick={() => {
+                  setAvatarOpen(false);
+                  setReleaseNotesOpen(true);
+                }}
+                className="w-full text-left px-4 py-2.5 text-[13px] font-medium text-content hover:bg-gray-50 transition-colors border-b border-gray-100 flex items-center gap-2"
+              >
+                <span className="flex-1">Release Notes</span>
+                <span className="text-[11px] text-content/60">{RELEASE_NOTES_DATE}</span>
+              </button>
             ) : null}
             {SHOW_API_ENV_SWITCH && user.userLevel >= 7 ? (
               <div
@@ -643,6 +663,13 @@ const TitleBar = () => {
           </div>
         </>
       )}
+
+      {/* The notes themselves, in the same frame the "?" uses. */}
+      <InfoModal
+        page="release-notes"
+        isOpen={releaseNotesOpen}
+        onClose={() => setReleaseNotesOpen(false)}
+      />
     </>
   );
 };
