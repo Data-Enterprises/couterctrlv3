@@ -12,6 +12,19 @@ import {
 } from "../../api/helpPages";
 
 /**
+ * The file name as a date somebody reads.
+ *
+ * Split rather than parsed: the name IS the date, and handing
+ * "2026-09-25" to `new Date` makes it midnight UTC, which is the day before
+ * for everyone west of Greenwich. A release note dated the 24th when the file
+ * says the 25th would be its own little mystery.
+ */
+const dateText = (name: string) => {
+  const [y, m, d] = name.split("-");
+  return y && m && d ? `${m}/${d}/${y}` : name;
+};
+
+/**
  * What went out, and when.
  *
  * A page rather than a sheet, because these are a document somebody reads
@@ -110,7 +123,7 @@ const ReleaseNotes = () => {
                   : "border-l-transparent text-content/85 hover:bg-bkg"
               }`}
             >
-              {one.name}
+              {dateText(one.name)}
             </button>
           ))}
 
