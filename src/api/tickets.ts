@@ -158,11 +158,25 @@ export interface TicketDetailResp extends TicketCaps {
   comments: TicketComment[];
 }
 
-export const getTicket = (url: string, token: string, id: number) =>
+/**
+ * The detail pane in one call, and the polling call.
+ *
+ * `since` is the highest comment id already held: only `comments` is trimmed
+ * by it. The ticket itself comes back in full every time on purpose — status
+ * and assignee can move under an open pane, and a thread that grew while the
+ * header quietly lied would be worse than not polling at all.
+ */
+export const getTicket = (
+  url: string,
+  token: string,
+  id: number,
+  since?: number,
+) =>
   axios({
     method: "GET",
     headers: headers(token),
     url: url + "tickets/" + id,
+    params: since ? { since } : {},
   });
 
 export const getTicketLookups = (url: string, token: string) =>
@@ -225,11 +239,19 @@ export const patchTicket = (
     data: body,
   });
 
-export const listTicketComments = (url: string, token: string, id: number) =>
+/** The thread alone. `getTicket` is the one to poll while a pane is open,
+ *  since this leaves the header behind. */
+export const listTicketComments = (
+  url: string,
+  token: string,
+  id: number,
+  since?: number,
+) =>
   axios({
     method: "GET",
     headers: headers(token),
     url: url + "tickets/" + id + "/comments",
+    params: since ? { since } : {},
   });
 
 /** `is_internal` needs canManage: a client asking for one gets a 403 rather

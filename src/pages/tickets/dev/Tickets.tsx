@@ -41,6 +41,27 @@ const Tickets = () => {
     if (ctx.caps.canManage) ctx.loadAssignees();
   }, [ctx.caps.canManage]);
 
+  /**
+   * Ask after the queue every thirty seconds, and hold what comes back.
+   *
+   * Applying it would reorder the list under whoever is reaching for a row,
+   * since it sorts by updated_at — so this only ever lights a bar. Email
+   * already covers "a ticket arrived", which is the case that matters; this
+   * is for the half hour somebody leaves the page open.
+   */
+  useEffect(() => {
+    let inFlight = false;
+    const tick = () => {
+      if (inFlight || document.visibilityState !== "visible") return;
+      inFlight = true;
+      void ctx.pollList().finally(() => {
+        inFlight = false;
+      });
+    };
+    const handle = window.setInterval(tick, 30000);
+    return () => window.clearInterval(handle);
+  }, []);
+
   const tabs: { key: QueueTab; label: string; count: number }[] = ctx.isTech
     ? [
         { key: "all", label: "All", count: ctx.counts.all },
@@ -140,6 +161,21 @@ const Tickets = () => {
           {ctx.loading ? "Reading..." : "Refresh"}
         </button>
       </div>
+
+      {ctx.pending && (
+        <div className="flex-shrink-0 flex items-center gap-3 bg-filter_active border border-filter_active_border rounded-lg px-3 py-2">
+          <span className="text-[12.5px] text-brand_navy_hover">
+            The queue has moved on since this list was read.
+          </span>
+          <button
+            type="button"
+            onClick={ctx.applyPending}
+            className="text-[12.5px] font-semibold text-brand_navy_hover underline underline-offset-2"
+          >
+            Bring it up to date
+          </button>
+        </div>
+      )}
 
       {ctx.error && (
         <div className="flex-shrink-0 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-[12.5px] text-amber-900">

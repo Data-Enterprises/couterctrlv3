@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { PaperClipIcon } from "@heroicons/react/24/outline";
 import SelectFilter from "../../../components-dev/filters/SelectFilter";
 import CheckBox from "../../../components-dev/inputs/CheckBox";
@@ -27,8 +27,52 @@ const TicketDetail = ({ ctx }: { ctx: TicketsCtx }) => {
   const [internal, setInternal] = useState(false);
   const [fileError, setFileError] = useState<string | null>(null);
   const picker = useRef<HTMLInputElement>(null);
+  const thread = useRef<HTMLDivElement>(null);
+  /** Was the reader at the bottom before this batch arrived? */
+  const wasAtBottom = useRef(true);
 
   const ticket = ctx.detail;
+  const ticketId = ctx.selectedId;
+  const commentCount = ctx.comments.length;
+
+  /**
+   * Ask every five seconds, while this pane is open and the tab is being
+   * looked at.
+   *
+   * There is no push: prod runs two tasks behind the load balancer, so a
+   * socket held open to one of them could not hear a reply that arrived at
+   * the other. At five seconds a reply lands in two or three, which reads as
+   * live for a help desk.
+   *
+   * The interval is scoped to this component, so closing the pane, picking
+   * another ticket or leaving the page all stop it. `inFlight` keeps a slow
+   * call from becoming a queue of overlapping ones.
+   */
+  useEffect(() => {
+    if (!ticketId) return;
+    let inFlight = false;
+    const tick = () => {
+      if (inFlight || document.visibilityState !== "visible") return;
+      inFlight = true;
+      void ctx.poll().finally(() => {
+        inFlight = false;
+      });
+    };
+    const handle = window.setInterval(tick, 5000);
+    return () => window.clearInterval(handle);
+  }, [ticketId]);
+
+  /**
+   * Follow the conversation, unless the reader has gone looking for
+   * something.
+   *
+   * A message arriving while somebody is three replies up should not yank
+   * them back down.
+   */
+  useEffect(() => {
+    const box = thread.current;
+    if (box && wasAtBottom.current) box.scrollTop = box.scrollHeight;
+  }, [commentCount]);
 
   if (!ticket) {
     return (
@@ -145,7 +189,15 @@ const TicketDetail = ({ ctx }: { ctx: TicketsCtx }) => {
         )}
       </div>
 
-      <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar px-4 py-3 flex flex-col gap-3">
+      <div
+        ref={thread}
+        onScroll={(e) => {
+          const box = e.currentTarget;
+          wasAtBottom.current =
+            box.scrollHeight - box.scrollTop - box.clientHeight < 80;
+        }}
+        className="flex-1 min-h-0 overflow-y-auto thin-scrollbar px-4 py-3 flex flex-col gap-3"
+      >
         {ctx.comments.map((comment) => (
           <div
             key={comment.id}

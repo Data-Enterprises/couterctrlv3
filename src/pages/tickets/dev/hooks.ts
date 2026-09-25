@@ -24,6 +24,10 @@ import {
 } from "../../../api/tickets";
 import {
   addComment,
+  appendComments,
+  applyPending,
+  refreshHeader,
+  setPending,
   endWork,
   failDetail,
   failLoad,
@@ -171,6 +175,62 @@ export const useTicketsCtx = () => {
       })
       .catch(() => {
         /* An empty list reads the same as none. */
+      });
+  };
+
+  /**
+   * Ask what is new on the open ticket.
+   *
+   * `since` trims the thread to what has not been seen; the ticket comes back
+   * whole, because status and assignee can move while a pane is open and a
+   * header that quietly lied would be worse than no polling.
+   *
+   * Nothing here touches `working` or the composer — a poll must never clear
+   * a spinner or a half-typed reply.
+   */
+  const poll = () => {
+    const id = tickets.selectedId;
+    if (!id) return Promise.resolve();
+    return getTicket(url, token, id, tickets.lastCommentId)
+      .then((resp) => {
+        const j = resp.data as TicketDetailResp;
+        if (ticketFailed(j)) return;
+        if (j.comments?.length) dispatch(appendComments(j.comments));
+        if (j.ticket) dispatch(refreshHeader(j.ticket));
+      })
+      .catch(() => {
+        /* A missed poll is the next one's problem. */
+      });
+  };
+
+  /**
+   * Ask what is new in the queue, and hold it.
+   *
+   * The list sorts by updated_at, so applying this would move rows under
+   * somebody reaching for one — they would watch TCK-14 jump because a reply
+   * landed on a different ticket, and click the wrong thing. Thirty seconds
+   * stale is a smaller problem than that, so it is offered rather than taken.
+   */
+  const pollList = () => {
+    return listTickets(
+      url,
+      token,
+      tickets.company ? { company: tickets.company } : {},
+    )
+      .then((resp) => {
+        const j = resp.data as TicketListResp;
+        if (ticketFailed(j) || !j.tickets) return;
+        const known = new Set(tickets.tickets.map((t) => t.id));
+        const moved = j.tickets.some(
+          (t) =>
+            !known.has(t.id) ||
+            tickets.tickets.find((k) => k.id === t.id)?.updated_at !==
+              t.updated_at,
+        );
+        if (moved) dispatch(setPending(j.tickets));
+      })
+      .catch(() => {
+        /* Same: the next one will ask again. */
       });
   };
 
@@ -328,6 +388,9 @@ export const useTicketsCtx = () => {
     counts,
     load,
     loadAssignees,
+    poll,
+    pollList,
+    applyPending: () => dispatch(applyPending()),
     open,
     file,
     reply,

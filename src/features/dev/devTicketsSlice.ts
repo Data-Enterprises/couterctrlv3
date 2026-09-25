@@ -35,6 +35,23 @@ export interface TicketsState {
   comments: TicketComment[];
   attachments: TicketAttachment[];
   detailLoading: boolean;
+  /**
+   * The highest comment id already rendered — the whole of the polling
+   * bookkeeping.
+   *
+   * Set when a ticket loads, when a poll brings comments, and when a reply is
+   * posted. That last one matters: the POST hands back the comment, so it is
+   * on screen immediately, and raising the mark is what stops the next poll
+   * handing it back a second time.
+   */
+  lastCommentId: number;
+  /**
+   * A newer queue, fetched and deliberately not applied.
+   *
+   * The list sorts by updated_at, so refreshing it in place moves rows under
+   * the hands of whoever is reaching for one. Held here and offered instead.
+   */
+  pending: Ticket[] | null;
   /** Set while a reply, an assign or a status change is in flight, so the
    *  thread cannot be double-posted. */
   working: boolean;
@@ -95,6 +112,8 @@ export const initialState: TicketsState = {
   comments: [],
   attachments: [],
   detailLoading: false,
+  lastCommentId: 0,
+  pending: null,
   working: false,
   tab: "all",
   search: "",
@@ -135,6 +154,8 @@ const devTicketsSlice = createSlice({
     selectTicket: (state, action: PayloadAction<number | null>) => {
       state.selectedId = action.payload;
       state.detailLoading = action.payload !== null;
+      // A different ticket's ids mean nothing here.
+      state.lastCommentId = 0;
       if (action.payload === null) {
         state.detail = null;
         state.comments = [];
@@ -152,6 +173,10 @@ const devTicketsSlice = createSlice({
       state.detailLoading = false;
       state.detail = action.payload.ticket;
       state.comments = action.payload.comments;
+      state.lastCommentId = action.payload.comments.reduce(
+        (high, c) => (c.id > high ? c.id : high),
+        0,
+      );
       // The detail carries the flags too, and it is the more recent answer.
       state.caps = action.payload.caps;
     },
@@ -188,7 +213,48 @@ const devTicketsSlice = createSlice({
     },
     addComment: (state, action: PayloadAction<TicketComment>) => {
       state.comments = [...state.comments, action.payload];
+      if (action.payload.id > state.lastCommentId) {
+        state.lastCommentId = action.payload.id;
+      }
       state.working = false;
+    },
+    /**
+     * What a poll brought back.
+     *
+     * Ids already held are dropped rather than trusted away — a reply posted
+     * and a poll in flight can cross, and the same comment appearing twice is
+     * the one bug people notice immediately.
+     */
+    appendComments: (state, action: PayloadAction<TicketComment[]>) => {
+      const known = new Set(state.comments.map((c) => c.id));
+      const fresh = action.payload.filter((c) => !known.has(c.id));
+      if (fresh.length === 0) return;
+      state.comments = [...state.comments, ...fresh];
+      state.lastCommentId = fresh.reduce(
+        (high, c) => (c.id > high ? c.id : high),
+        state.lastCommentId,
+      );
+    },
+    /**
+     * The ticket as a poll found it, without disturbing the thread.
+     *
+     * Separate from upsertTicket because that one ends a piece of work; a poll
+     * is not work, and must never clear a spinner somebody else's reply is
+     * waiting on.
+     */
+    refreshHeader: (state, action: PayloadAction<Ticket>) => {
+      const next = action.payload;
+      if (state.detail?.id === next.id) state.detail = next;
+      state.tickets = state.tickets.map((t) => (t.id === next.id ? next : t));
+    },
+    setPending: (state, action: PayloadAction<Ticket[]>) => {
+      state.pending = action.payload;
+    },
+    /** Apply the held queue, which is the only thing that reorders it. */
+    applyPending: (state) => {
+      if (!state.pending) return;
+      state.tickets = state.pending;
+      state.pending = null;
     },
 
     setTab: (state, action: PayloadAction<QueueTab>) => {
@@ -243,6 +309,10 @@ export const {
   endWork,
   upsertTicket,
   addComment,
+  appendComments,
+  refreshHeader,
+  setPending,
+  applyPending,
   setTab,
   setSearch,
   setCompany,
