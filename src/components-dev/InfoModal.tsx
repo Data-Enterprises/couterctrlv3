@@ -84,7 +84,7 @@ const InfoModal = ({ page, section, isOpen, onClose }: InfoModalProps) => {
           onClick={onClose}
           title="Close"
           aria-label="Close help"
-          className="absolute top-2.5 right-3 w-7 h-7 rounded-md flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+          className="absolute top-2.5 right-3 w-7 h-7 rounded-md flex items-center justify-center text-custom-white/70 hover:text-custom-white hover:bg-custom-white/10 transition-colors"
         >
           <XMarkIcon className="w-4 h-4" />
         </button>
