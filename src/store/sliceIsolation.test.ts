@@ -38,7 +38,10 @@ const legacyModules = import.meta.glob("../legacy/features/*Slice.{ts,tsx}", { e
  * `pageReducers` is the failure the next test is looking for: a forked slice
  * that never made it into prod, whose page reads undefined.
  */
-const DEV_ONLY_SLICES = new Set(["exportBuilder"]);
+// Tickets joined these when its mock was replaced: the prod slice held
+// seeded fake rows and nothing read it, since the page never renders on
+// the prod API at all.
+const DEV_ONLY_SLICES = new Set(["exportBuilder", "tickets"]);
 
 describe("dev and prod slices stay isolated", () => {
   /**
