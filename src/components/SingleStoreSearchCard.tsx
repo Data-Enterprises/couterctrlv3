@@ -111,7 +111,7 @@ const SingleStoreSearchCard = ({
              * to infer it from a field that looked the same before. */}
           {selectedStoreId > 0 && (
             <div className="flex items-center gap-1.5 rounded-lg bg-row_selected px-2.5 py-2 text-[11.5px] leading-snug text-content">
-              <CheckCircleIcon className="h-4 w-4 flex-none text-[#1e2a4a]" />
+              <CheckCircleIcon className="h-4 w-4 flex-none text-brand_navy" />
               <span className="min-w-0 truncate">
                 Searching <span className="font-semibold">{storeName}</span>
               </span>
@@ -123,7 +123,7 @@ const SingleStoreSearchCard = ({
           <button
             onClick={onSearch}
             disabled={selectedStoreId === 0 || loading}
-            className="w-full py-2 text-sm font-semibold text-custom-white rounded-lg bg-[#1e2a4a] hover:bg-[#2a3a63] transition-colors cursor-pointer select-none disabled:opacity-50"
+            className="w-full py-2 text-sm font-semibold text-custom-white rounded-lg bg-brand_navy hover:bg-brand_navy_hover transition-colors cursor-pointer select-none disabled:opacity-50"
           >
             {/* Names the missing step while it is disabled — see SearchCard.
                 Always a store here; this card never takes a group. */}
@@ -134,10 +134,10 @@ const SingleStoreSearchCard = ({
             <button
               onClick={onBack}
               className="flex w-full items-center justify-center gap-1.5 py-2.5 transition-colors"
-              style={{ background: "rgba(30,42,74,0.07)", borderRadius: 10 }}
+              style={{ background: "rgb(var(--color-brand-navy) / 0.07)", borderRadius: 10 }}
             >
-              <ArrowLeftIcon className="h-4 w-4 text-[#1e2a4a]" />
-              <span className="text-[13px] font-semibold text-[#1e2a4a] underline underline-offset-2">
+              <ArrowLeftIcon className="h-4 w-4 text-brand_navy" />
+              <span className="text-[13px] font-semibold text-brand_navy underline underline-offset-2">
                 {backLabel}
               </span>
             </button>

@@ -110,17 +110,17 @@ const SelectFilter = ({
         onClick={handleOpen}
         className={`w-full flex items-center justify-between rounded pl-1.5 pr-1 py-0.5 text-[12px] text-content outline-none cursor-pointer border transition-colors ${
           open
-            ? "bg-custom-white border-[#1e2a4a]"
+            ? "bg-custom-white border-brand_navy"
             : isActive
               ? "bg-filter_active border-filter_active_border ring-2 ring-filter_active_border/30"
-              : "bg-custom-white border-[#1e2a4a]/75 hover:border-[#1e2a4a]/50"
+              : "bg-custom-white border-brand_navy/75 hover:border-brand_navy/50"
         }`}
         style={{
           height: 24,
           boxShadow:
             open || isActive
-              ? "0 1px 4px rgba(30,42,74,0.18)"
-              : "0 1px 2px rgba(30,42,74,0.08)",
+              ? "0 1px 4px rgb(var(--color-brand-navy) / 0.18)"
+              : "0 1px 2px rgb(var(--color-brand-navy) / 0.08)",
         }}
       >
         <span
@@ -130,7 +130,7 @@ const SelectFilter = ({
           {label}
         </span>
         <ChevronDownIcon
-          className={`w-3 h-3 flex-shrink-0 ml-1 ${isActive ? "text-filter_active_border" : "text-[#1e2a4a]/60"}`}
+          className={`w-3 h-3 flex-shrink-0 ml-1 ${isActive ? "text-filter_active_border" : "text-brand_navy/60"}`}
         />
       </button>
 
@@ -145,7 +145,7 @@ const SelectFilter = ({
             width: Math.max(rect.width, 180),
             zIndex: 9999,
             background: "white",
-            border: "1px solid rgba(30,42,74,0.12)",
+            border: "1px solid rgb(var(--color-brand-navy) / 0.12)",
             borderRadius: 6,
             boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
             maxHeight: room,
@@ -174,7 +174,7 @@ const SelectFilter = ({
               <button
                 onClick={() => handleSelect("")}
                 className="w-full text-left px-3 py-2 text-[12px] hover:bg-gray-50 transition-colors"
-                style={{ color: value === "" ? "#1e2a4a" : "rgba(30,42,74,0.45)", fontWeight: value === "" ? 600 : 400 }}
+                style={{ color: value === "" ? "rgb(var(--color-brand-navy))" : "rgb(var(--color-brand-navy) / 0.45)", fontWeight: value === "" ? 600 : 400 }}
               >
                 {placeholder}
               </button>
@@ -184,7 +184,7 @@ const SelectFilter = ({
                 key={o.value}
                 onClick={() => handleSelect(o.value)}
                 className="w-full text-left px-3 py-2 text-[12px] hover:bg-gray-50 transition-colors"
-                style={{ color: "#1e2a4a", fontWeight: value === o.value ? 600 : 400, background: value === o.value ? "rgba(30,42,74,0.04)" : undefined }}
+                style={{ color: "rgb(var(--color-brand-navy))", fontWeight: value === o.value ? 600 : 400, background: value === o.value ? "rgb(var(--color-brand-navy) / 0.04)" : undefined }}
               >
                 {o.label}
               </button>

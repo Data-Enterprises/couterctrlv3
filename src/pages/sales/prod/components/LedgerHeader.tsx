@@ -83,7 +83,7 @@ const LedgerHeader = ({
 
 
   return (
-    <div className="bg-[#1e2a4a] rounded-t-xl px-4 pt-1 pb-2.5 flex flex-col gap-0">
+    <div className="bg-brand_navy rounded-t-xl px-4 pt-1 pb-2.5 flex flex-col gap-0">
       {/* Row 1: date | total + compact vs LW/LY pills.
           LW before LY, matching Sub Dept Margins and Vendors — and matching the
           column order in the list directly below this header, which has always

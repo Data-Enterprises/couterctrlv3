@@ -77,7 +77,7 @@ const FieldNotesPanel = ({ posts, open, onClose, returnFocusTo }: Props) => {
                       <span className="block font-mono text-[9.5px] tracking-[0.13em] uppercase text-brand_green_dark mb-1">
                         Newer
                       </span>
-                      <span className="block font-display text-[14px] font-bold text-brand_navy leading-[1.35]">
+                      <span className="block font-display text-[14px] font-bold text-portal_navy leading-[1.35]">
                         {newer.title}
                       </span>
                     </button>
@@ -90,7 +90,7 @@ const FieldNotesPanel = ({ posts, open, onClose, returnFocusTo }: Props) => {
                       <span className="block font-mono text-[9.5px] tracking-[0.13em] uppercase text-brand_green_dark mb-1">
                         Older
                       </span>
-                      <span className="block font-display text-[14px] font-bold text-brand_navy leading-[1.35]">
+                      <span className="block font-display text-[14px] font-bold text-portal_navy leading-[1.35]">
                         {older.title}
                       </span>
                     </button>

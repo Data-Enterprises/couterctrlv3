@@ -43,7 +43,7 @@ interface Props {
 const SPREAD_CLASS: Record<string, string> = {
   single: "bg-gray-100 text-content/85",
   narrow: "bg-gray-100 text-content/85",
-  wide: "bg-[#1e2a4a]/10 text-[#1e2a4a]",
+  wide: "bg-brand_navy/10 text-brand_navy",
   unmapped: "bg-amber-100 text-amber-800",
 };
 
@@ -78,7 +78,7 @@ const SignalListMobile = ({
           the same divided strip every other mobile KPI row uses. Amount is
           compacted because a full "$1,219.70" cannot fit a sixth of a phone
           without dropping under the 10px floor. */}
-      <div className="grid grid-cols-6 divide-x divide-gray-100 bg-custom-white border-b border-[#1e2a4a]/15 flex-shrink-0">
+      <div className="grid grid-cols-6 divide-x divide-gray-100 bg-custom-white border-b border-brand_navy/15 flex-shrink-0">
         {(
           [
             ["Lines", totals.exceptions.toLocaleString()],
@@ -104,7 +104,7 @@ const SignalListMobile = ({
           Desktop says so in its header; there is no room for that here, so it
           gets its own line rather than being left out. */}
       {explorerTruncated > 0 && (
-        <div className="px-3 py-1.5 bg-amber-50 border-b border-[#1e2a4a]/15 text-[11px] text-amber-900 flex-shrink-0">
+        <div className="px-3 py-1.5 bg-amber-50 border-b border-brand_navy/15 text-[11px] text-amber-900 flex-shrink-0">
           Capped — {explorerTruncated.toLocaleString()} more{" "}
           {explorerTruncated === 1 ? "transaction" : "transactions"} not
           loaded, so these totals run low.
@@ -115,7 +115,7 @@ const SignalListMobile = ({
           subtitle there, not a control, so it sits beside the tabs rather than
           pairing with them as a second dropdown — they are different axes and
           reading as a matched pair was misleading. */}
-      <div className="flex items-center gap-2 px-3 py-2 bg-custom-white border-b border-[#1e2a4a]/15 flex-shrink-0">
+      <div className="flex items-center gap-2 px-3 py-2 bg-custom-white border-b border-brand_navy/15 flex-shrink-0">
         <div className="flex gap-1.5 flex-1 overflow-x-auto">
           {LENSES.map((l) => (
             <button
@@ -123,7 +123,7 @@ const SignalListMobile = ({
               onClick={() => dispatch(setExplorerLens(l.key))}
               className={`flex-shrink-0 text-[11px] font-medium px-3 py-1 rounded-full border transition-colors ${
                 explorerLens === l.key
-                  ? "bg-[#1e2a4a] text-custom-white border-[#1e2a4a]"
+                  ? "bg-brand_navy text-custom-white border-brand_navy"
                   : "bg-custom-white text-content/85 border-gray-200"
               }`}
             >
@@ -140,7 +140,7 @@ const SignalListMobile = ({
         />
       </div>
 
-      <div className="flex items-center justify-between px-3 py-1.5 bg-gray-100 border-b border-[#1e2a4a]/15 flex-shrink-0 text-[10px] font-medium uppercase tracking-wide text-content/85">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-gray-100 border-b border-brand_navy/15 flex-shrink-0 text-[10px] font-medium uppercase tracking-wide text-content/85">
         <span>Signal</span>
         <span>Lines · trans · amount</span>
       </div>
@@ -160,7 +160,7 @@ const SignalListMobile = ({
             <button
               key={s.key}
               onClick={() => dispatch(openExplorerSignal(s.key))}
-              className="w-full px-3 py-2.5 bg-custom-white border-b border-[#1e2a4a]/15 even:bg-row_stripe text-left active:bg-gray-50"
+              className="w-full px-3 py-2.5 bg-custom-white border-b border-brand_navy/15 even:bg-row_stripe text-left active:bg-gray-50"
             >
               <div className="flex items-center gap-2">
                 <span className="flex-1 text-[12px] font-medium text-content truncate">

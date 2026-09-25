@@ -96,7 +96,7 @@ const ExplorerSearch = ({
         <button
           onClick={hasSaleTypes && exception ? onExplore : onFindExceptions}
           disabled={loading || nothingPicked || rangeTooWide || (hasSaleTypes && !exception)}
-          className="w-full py-2 text-sm font-semibold text-custom-white rounded-lg bg-[#1e2a4a] hover:bg-[#2a3a63] transition-colors cursor-pointer select-none disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full py-2 text-sm font-semibold text-custom-white rounded-lg bg-brand_navy hover:bg-brand_navy_hover transition-colors cursor-pointer select-none disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading
             ? message || "Loading…"

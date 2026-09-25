@@ -88,7 +88,7 @@ const InvoiceSheet = ({
       defaultWidth={1040}
       defaultHeight={680}
     >
-      <div className="bg-[#1e2a4a] px-4 py-2.5 flex-shrink-0">
+      <div className="bg-brand_navy px-4 py-2.5 flex-shrink-0">
         <div className="flex items-center gap-3">
           <div className="min-w-0">
             <p className="text-custom-white text-[13px] font-semibold truncate">

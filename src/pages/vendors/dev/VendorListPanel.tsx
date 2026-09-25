@@ -284,7 +284,7 @@ const VendorListPanel = ({ onSearchOpen }: Props) => {
       style={{ flexBasis: "35%", flexShrink: 0 }}
     >
       {/* Navy header — 2-row canonical pattern */}
-      <div className="bg-[#1e2a4a] rounded-t-xl px-4 pt-1 pb-2.5 flex flex-col gap-0">
+      <div className="bg-brand_navy rounded-t-xl px-4 pt-1 pb-2.5 flex flex-col gap-0">
         {/* Row 1: date range | store total + vs LW/LY pills. Store name moved
             down to row 2 beside the search button, matching Sub Dept Margins. */}
         <div className="flex items-center gap-2 min-h-[26px]">

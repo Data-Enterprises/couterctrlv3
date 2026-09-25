@@ -24,14 +24,14 @@ const TextFilter = ({
 
   return (
     <div
-      className={`flex items-center gap-1 rounded px-1.5 min-w-0 flex-1 border shadow-[0_1px_2px_rgba(30,42,74,0.08)] focus-within:border-[#1e2a4a] focus-within:shadow-[0_1px_4px_rgba(30,42,74,0.18)] transition-colors ${
+      className={`flex items-center gap-1 rounded px-1.5 min-w-0 flex-1 border shadow-[0_1px_2px_rgb(var(--color-brand-navy)/0.08)] focus-within:border-brand_navy focus-within:shadow-[0_1px_4px_rgb(var(--color-brand-navy)/0.18)] transition-colors ${
         isActive
           ? "bg-filter_active border-filter_active_border ring-2 ring-filter_active_border/30 shadow-sm"
-          : "bg-custom-white border-[#1e2a4a]/75 hover:border-[#1e2a4a]/50"
+          : "bg-custom-white border-brand_navy/75 hover:border-brand_navy/50"
       } ${className}`}
     >
       <MagnifyingGlassIcon
-        className={`w-3 h-3 flex-shrink-0 ${isActive ? "text-filter_active_border" : "text-[#1e2a4a]/75"}`}
+        className={`w-3 h-3 flex-shrink-0 ${isActive ? "text-filter_active_border" : "text-brand_navy/75"}`}
       />
       <input
         type="text"

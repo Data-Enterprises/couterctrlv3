@@ -31,7 +31,7 @@ const PostList = ({ posts, onSelect }: Props) => (
           <span className="block font-mono text-[9.5px] tracking-[0.11em] uppercase text-brand_green_dark">
             {post.date} &nbsp;·&nbsp; {post.category}
           </span>
-          <span className="block font-display text-[15.5px] font-bold text-brand_navy mt-1.5 tracking-[-0.02em] leading-[1.3]">
+          <span className="block font-display text-[15.5px] font-bold text-portal_navy mt-1.5 tracking-[-0.02em] leading-[1.3]">
             {post.title}
           </span>
           <span className="block text-[13px] text-brand_slate mt-[5px] leading-[1.5]">

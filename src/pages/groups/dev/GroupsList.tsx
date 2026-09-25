@@ -93,7 +93,7 @@ const GroupsList = ({
             onClick={() => setShow(id)}
             className={`flex-1 text-[11px] font-semibold py-1 rounded-md capitalize transition-colors ${
               show === id
-                ? "bg-[#1e2a4a] text-custom-white"
+                ? "bg-brand_navy text-custom-white"
                 : "text-content hover:bg-gray-100"
             }`}
           >

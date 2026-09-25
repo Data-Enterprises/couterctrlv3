@@ -51,7 +51,7 @@ const CaseTabs = ({ all, types, selected, onSelect }: Props) => {
             key={t.saleType}
             onClick={() => onSelect(t.saleType)}
             className={`px-3 py-1.5 text-[12px] font-medium border-b-2 transition-colors whitespace-nowrap flex items-center gap-1.5 ${
-              on ? "border-[#1e2a4a] text-content" : "border-transparent"
+              on ? "border-brand_navy text-content" : "border-transparent"
             }`}
           >
             {!isAll(t.saleType) && (

@@ -221,7 +221,7 @@ const PerfStoreReport = ({
         className={`mt-3 flex w-full items-center justify-center gap-1 rounded-lg border-t border-gray-100 py-2.5 text-[12.5px] font-bold transition-colors ${
           bundleLoading
             ? "bg-bkg text-content/85"
-            : "bg-[#1e2a4a] text-custom-white active:bg-[#2a3a62]"
+            : "bg-brand_navy text-custom-white active:bg-[#2a3a62]"
         }`}
       >
         {bundleLoading ? "Loading\u2026" : "View details"}

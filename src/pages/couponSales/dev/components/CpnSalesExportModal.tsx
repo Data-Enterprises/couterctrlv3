@@ -209,7 +209,7 @@ const CpnSalesExportModal = ({ storeCoupons }: Props) => {
       closeOnBackdrop={false}
     >
         {/* Header */}
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center px-4 py-3 bg-[#1e2a4a]">
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center px-4 py-3 bg-brand_navy">
           <div>
             <p className="text-custom-white text-[13px] font-semibold">Export CSV</p>
             <p className="text-custom-white text-[10px] mt-0.5">
@@ -223,7 +223,7 @@ const CpnSalesExportModal = ({ storeCoupons }: Props) => {
                 key={m}
                 onClick={() => setMode(m)}
                 className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors ${
-                  mode === m ? "bg-custom-white text-[#1e2a4a]" : "text-custom-white"
+                  mode === m ? "bg-custom-white text-brand_navy" : "text-custom-white"
                 }`}
               >
                 {m === "presets" ? "Presets" : "Custom"}
@@ -256,7 +256,7 @@ const CpnSalesExportModal = ({ storeCoupons }: Props) => {
                     onClick={() => setScope(sc.key)}
                     className={`text-[11px] px-2 py-1 rounded-md border transition-colors ${
                       scope === sc.key
-                        ? "border-[#1e2a4a] bg-row_selected text-content"
+                        ? "border-brand_navy bg-row_selected text-content"
                         : "border-gray-200 text-content hover:border-gray-300"
                     }`}
                   >
@@ -275,10 +275,10 @@ const CpnSalesExportModal = ({ storeCoupons }: Props) => {
                   type="checkbox"
                   checked={presets.has(pr.key)}
                   onChange={() => togglePreset(pr.key)}
-                  className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-[#1e2a4a] cursor-pointer flex-shrink-0"
+                  className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-brand_navy cursor-pointer flex-shrink-0"
                 />
                 <div>
-                  <p className="text-[13px] font-medium text-content group-hover:text-[#1e2a4a] transition-colors">
+                  <p className="text-[13px] font-medium text-content group-hover:text-brand_navy transition-colors">
                     {pr.label}
                   </p>
                   <p className="text-[11px] text-content/50 mt-0.5">{pr.desc}</p>
@@ -307,7 +307,7 @@ const CpnSalesExportModal = ({ storeCoupons }: Props) => {
                         type="radio"
                         checked={scope === sc.key}
                         onChange={() => setScope(sc.key)}
-                        className="accent-[#1e2a4a] h-3.5 w-3.5"
+                        className="accent-brand_navy h-3.5 w-3.5"
                       />
                       <span className="text-[12px] text-content">{sc.label}</span>
                     </label>
@@ -326,7 +326,7 @@ const CpnSalesExportModal = ({ storeCoupons }: Props) => {
                         type="checkbox"
                         checked={groupBy.has(d.key)}
                         onChange={() => toggleDim(d.key)}
-                        className="accent-[#1e2a4a] h-3.5 w-3.5 rounded flex-shrink-0"
+                        className="accent-brand_navy h-3.5 w-3.5 rounded flex-shrink-0"
                       />
                       <span className="text-[12px] text-content">{d.label}</span>
                     </label>
@@ -353,7 +353,7 @@ const CpnSalesExportModal = ({ storeCoupons }: Props) => {
                               return next;
                             })
                           }
-                          className="accent-[#1e2a4a] h-3.5 w-3.5 rounded flex-shrink-0"
+                          className="accent-brand_navy h-3.5 w-3.5 rounded flex-shrink-0"
                         />
                         <span
                           className={`text-[12px] flex-1 ${sel.enabled ? "text-content" : "text-content/40"}`}
@@ -458,7 +458,7 @@ const CpnSalesExportModal = ({ storeCoupons }: Props) => {
             <button
               onClick={handleExport}
               disabled={!canExport}
-              className="flex items-center gap-1.5 bg-[#1e2a4a] hover:bg-[#1e2a4a]/85 disabled:opacity-40 text-custom-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors"
+              className="flex items-center gap-1.5 bg-brand_navy hover:bg-brand_navy/85 disabled:opacity-40 text-custom-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors"
             >
               <ArrowDownTrayIcon className="w-3.5 h-3.5" />
               Download CSV

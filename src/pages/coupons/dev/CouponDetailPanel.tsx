@@ -91,10 +91,10 @@ const ColFilter = ({
   };
   const labelColor =
     open || active
-      ? "#1e2a4a"
+      ? "rgb(var(--color-brand-navy))"
       : hovered
-        ? "rgba(30,42,74,0.65)"
-        : "rgba(30,42,74,0.4)";
+        ? "rgb(var(--color-brand-navy) / 0.65)"
+        : "rgb(var(--color-brand-navy) / 0.4)";
 
   return (
     <div
@@ -113,9 +113,9 @@ const ColFilter = ({
       {active && appliedDisplay && (
         <span
           className="flex items-center gap-0.5 rounded px-1 py-0.5 flex-shrink-0"
-          style={{ background: "rgba(30,42,74,0.08)", maxWidth: 90 }}
+          style={{ background: "rgb(var(--color-brand-navy) / 0.08)", maxWidth: 90 }}
         >
-          <span className="text-[8px] font-medium text-[#1e2a4a] truncate">
+          <span className="text-[8px] font-medium text-brand_navy truncate">
             {appliedDisplay}
           </span>
           {onClear && (
@@ -124,7 +124,7 @@ const ColFilter = ({
                 e.stopPropagation();
                 onClear();
               }}
-              className="text-[8px] text-[#1e2a4a]/50 hover:text-[#1e2a4a] leading-none flex-shrink-0 ml-0.5"
+              className="text-[8px] text-brand_navy/50 hover:text-brand_navy leading-none flex-shrink-0 ml-0.5"
             >
               ✕
             </button>
@@ -143,7 +143,7 @@ const ColFilter = ({
             ...(align === "right" ? { right: 0 } : { left: 0 }),
             zIndex: 200,
             background: "white",
-            border: "1px solid rgba(30,42,74,0.12)",
+            border: "1px solid rgb(var(--color-brand-navy) / 0.12)",
             borderRadius: 6,
             boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
             padding: "10px 10px 8px",
@@ -154,7 +154,7 @@ const ColFilter = ({
           <button
             onClick={handleApply}
             className="mt-2 w-full flex items-center justify-center gap-1.5 rounded py-1 text-[10px] font-medium"
-            style={{ background: "#1e2a4a", color: "white" }}
+            style={{ background: "rgb(var(--color-brand-navy))", color: "white" }}
           >
             <MagnifyingGlassIcon className="w-3 h-3" />
             Apply
@@ -586,7 +586,7 @@ const CouponDetailPanel = ({
       {/* Navy header */}
       <div
         className="flex-shrink-0 px-4 py-[11px] flex items-start justify-between"
-        style={{ background: "#1e2a4a" }}
+        style={{ background: "rgb(var(--color-brand-navy))" }}
       >
         <div className="text-[13px] font-semibold text-custom-white">
           {headerTitle}
@@ -653,7 +653,7 @@ const CouponDetailPanel = ({
                 onClick={() => setGroupTab(t.key)}
                 className={`px-3 py-2 text-[12px] font-medium border-b-2 transition-colors whitespace-nowrap flex-shrink-0 ${
                   groupTab === t.key
-                    ? "border-[#1e2a4a] text-content"
+                    ? "border-brand_navy text-content"
                     : "border-transparent text-content/50 hover:text-content/70"
                 }`}
               >
@@ -857,7 +857,7 @@ const CouponDetailPanel = ({
                               </th>
                             </tr>
                           </thead>
-                          <tbody className="divide-y divide-[#1e2a4a]/15">
+                          <tbody className="divide-y divide-brand_navy/15">
                             {txLines.map((item: any, i: number) => {
                               const isCpn = item.is_coupon === 1;
                               const isTender = item.sale_type === "Tender";
@@ -996,12 +996,12 @@ const CouponDetailPanel = ({
                                   style={{
                                     width: "100%",
                                     fontSize: 11,
-                                    border: "1px solid rgba(30,42,74,0.15)",
+                                    border: "1px solid rgb(var(--color-brand-navy) / 0.15)",
                                     borderRadius: 4,
                                     padding: "4px 7px",
                                     outline: "none",
                                     color: "var(--color-text-primary)",
-                                    background: "rgba(30,42,74,0.03)",
+                                    background: "rgb(var(--color-brand-navy) / 0.03)",
                                   }}
                                   placeholder="Search UPC…"
                                   value={draftUpc}
@@ -1028,12 +1028,12 @@ const CouponDetailPanel = ({
                                   style={{
                                     width: "100%",
                                     fontSize: 11,
-                                    border: "1px solid rgba(30,42,74,0.15)",
+                                    border: "1px solid rgb(var(--color-brand-navy) / 0.15)",
                                     borderRadius: 4,
                                     padding: "4px 7px",
                                     outline: "none",
                                     color: "var(--color-text-primary)",
-                                    background: "rgba(30,42,74,0.03)",
+                                    background: "rgb(var(--color-brand-navy) / 0.03)",
                                   }}
                                   placeholder="Search product…"
                                   value={draftProduct}
@@ -1107,7 +1107,7 @@ const CouponDetailPanel = ({
                             </th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-[#1e2a4a]/5">
+                        <tbody className="divide-y divide-brand_navy/5">
                           {aggCouponRows.map((agg, idx) => {
                             const isExp = expandedCoupons.has(agg.product_code);
                             return (

@@ -29,7 +29,7 @@ const TextField = ({
 }: TextFieldProps) => (
   <label className={`flex flex-col gap-1 min-w-0 ${className}`}>
     <span className="text-[12px] font-medium text-content">{label}</span>
-    <span className="flex items-center rounded px-1.5 border border-[#1e2a4a]/75 bg-custom-white shadow-[0_1px_2px_rgba(30,42,74,0.08)] hover:border-[#1e2a4a]/50 focus-within:border-[#1e2a4a] focus-within:shadow-[0_1px_4px_rgba(30,42,74,0.18)] transition-colors">
+    <span className="flex items-center rounded px-1.5 border border-brand_navy/75 bg-custom-white shadow-[0_1px_2px_rgb(var(--color-brand-navy)/0.08)] hover:border-brand_navy/50 focus-within:border-brand_navy focus-within:shadow-[0_1px_4px_rgb(var(--color-brand-navy)/0.18)] transition-colors">
       <input
         type="text"
         value={value}

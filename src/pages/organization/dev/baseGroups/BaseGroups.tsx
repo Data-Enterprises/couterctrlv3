@@ -71,7 +71,7 @@ const NewGroupModal = ({
           </button>
           <button
             onClick={() => onCreate(name, Number(companyId))}
-            className="text-[12px] font-medium px-3 py-1.5 rounded-md text-custom-white bg-[#1e2a4a] hover:bg-[#1e2a4a]/85"
+            className="text-[12px] font-medium px-3 py-1.5 rounded-md text-custom-white bg-brand_navy hover:bg-brand_navy/85"
           >
             Create
           </button>
@@ -286,16 +286,16 @@ const BaseGroups = () => {
               >
                 <button
                   onClick={() => toggleCompany(c.id)}
-                  className="w-full flex items-center gap-2 bg-[#1e2a4a]/5 hover:bg-[#1e2a4a]/10 pl-3 pr-3 py-2 transition-colors"
+                  className="w-full flex items-center gap-2 bg-brand_navy/5 hover:bg-brand_navy/10 pl-3 pr-3 py-2 transition-colors"
                 >
                   <ChevronRightIcon
-                    className="w-3 h-3 text-[#1e2a4a]/60 flex-shrink-0 transition-transform"
+                    className="w-3 h-3 text-brand_navy/60 flex-shrink-0 transition-transform"
                     style={{ transform: isOpen ? "rotate(90deg)" : "rotate(0deg)" }}
                   />
-                  <span className="text-[12px] font-semibold text-[#1e2a4a] flex-1 text-left truncate">
+                  <span className="text-[12px] font-semibold text-brand_navy flex-1 text-left truncate">
                     {c.name}
                   </span>
-                  <span className="text-[11px] text-[#1e2a4a]/55 flex-shrink-0">
+                  <span className="text-[11px] text-brand_navy/55 flex-shrink-0">
                     {total !== undefined ? `${total} groups` : ""}
                   </span>
                 </button>

@@ -126,7 +126,7 @@ const SearchCard = ({
             <button
               onClick={onSearch}
               disabled={loading || nothingPicked}
-              className="w-full py-2 text-sm font-semibold text-custom-white rounded-lg bg-[#1e2a4a] hover:bg-[#2a3a63] transition-colors cursor-pointer select-none disabled:opacity-50"
+              className="w-full py-2 text-sm font-semibold text-custom-white rounded-lg bg-brand_navy hover:bg-brand_navy_hover transition-colors cursor-pointer select-none disabled:opacity-50"
             >
               {/* The button says what it is waiting for rather than what it
                   will do, so the disabled state names the missing step instead
@@ -143,10 +143,10 @@ const SearchCard = ({
               <button
                 onClick={onBack}
                 className="w-full py-2.5 flex items-center justify-center gap-1.5 transition-colors"
-                style={{ background: "rgba(30,42,74,0.07)", borderRadius: 10 }}
+                style={{ background: "rgb(var(--color-brand-navy) / 0.07)", borderRadius: 10 }}
               >
-                <ArrowLeftIcon className="w-4 h-4 text-[#1e2a4a]" />
-                <span className="text-[#1e2a4a] font-semibold text-[13px] underline underline-offset-2">
+                <ArrowLeftIcon className="w-4 h-4 text-brand_navy" />
+                <span className="text-brand_navy font-semibold text-[13px] underline underline-offset-2">
                   {backLabel}
                 </span>
               </button>

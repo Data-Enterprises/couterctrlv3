@@ -66,7 +66,7 @@ const LookupReportPanel = ({
     <div className="flex-1 min-w-0 shadow-lg">
       <div className="bg-custom-white rounded-xl shadow-sm overflow-hidden flex flex-col h-full">
         {/* 1-row navy header */}
-        <div className="flex-shrink-0 px-4 py-[10px] flex items-center justify-between gap-3 bg-[#1e2a4a]">
+        <div className="flex-shrink-0 px-4 py-[10px] flex items-center justify-between gap-3 bg-brand_navy">
           <div className="min-w-0">
             <div className="text-[13px] font-semibold text-custom-white leading-tight truncate">
               {description}
@@ -227,7 +227,7 @@ const LookupReportPanel = ({
             <button
               type="button"
               onClick={() => onSelectSaleType("Sale")}
-              className="text-[11px] font-semibold text-[#1e2a4a] hover:underline"
+              className="text-[11px] font-semibold text-brand_navy hover:underline"
             >
               Back to sales
             </button>

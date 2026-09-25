@@ -120,7 +120,7 @@ const CompanyFormModal = ({
             disabled={!canSubmit}
             className={`text-[12px] font-medium px-3.5 py-1.5 rounded-md text-custom-white ${
               canSubmit
-                ? "bg-[#1e2a4a] hover:bg-[#1e2a4a]/85"
+                ? "bg-brand_navy hover:bg-brand_navy/85"
                 : "bg-gray-300 cursor-not-allowed"
             }`}
           >

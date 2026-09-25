@@ -166,7 +166,7 @@ const NotSellingTab = ({
                 onClick={() => ctx.dispatch(setNotSellingStatus(s.key))}
                 className={`text-[11px] font-semibold px-2.5 py-1 rounded-full border transition-colors ${
                   on
-                    ? "bg-[#1e2a4a] text-custom-white border-[#1e2a4a]"
+                    ? "bg-brand_navy text-custom-white border-brand_navy"
                     : "bg-custom-white text-content/85 border-gray-200 hover:border-gray-300"
                 }`}
               >
@@ -260,7 +260,7 @@ const NotSellingTab = ({
                     e.preventDefault();
                     setCtxMenu({ x: e.clientX, y: e.clientY, upc: String(r.product_code) });
                   }}
-                  className="border-b border-[#1e2a4a]/15 even:bg-row_stripe hover:bg-gray-50 transition-colors"
+                  className="border-b border-brand_navy/15 even:bg-row_stripe hover:bg-gray-50 transition-colors"
                 >
                   <td className="px-3 py-2 text-content font-medium">
                     {r.product_description ?? String(r.product_code)}

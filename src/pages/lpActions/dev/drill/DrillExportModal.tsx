@@ -158,7 +158,7 @@ const DrillExportModal = ({
       minWidth={460}
       minHeight={380}
     >
-      <div className="grid grid-cols-[1fr_auto_1fr] items-center px-4 py-3 bg-[#1e2a4a]">
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center px-4 py-3 bg-brand_navy">
         <div className="min-w-0">
           <p className="text-custom-white text-[13px] font-semibold truncate">
             Export {saleType}
@@ -174,7 +174,7 @@ const DrillExportModal = ({
               onClick={() => setMode(m)}
               className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors ${
                 mode === m
-                  ? "bg-custom-white text-[#1e2a4a]"
+                  ? "bg-custom-white text-brand_navy"
                   : "text-custom-white"
               }`}
             >
@@ -205,10 +205,10 @@ const DrillExportModal = ({
                   type="checkbox"
                   checked={presets.has(p.id)}
                   onChange={() => togglePreset(p.id)}
-                  className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-[#1e2a4a] cursor-pointer flex-shrink-0"
+                  className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-brand_navy cursor-pointer flex-shrink-0"
                 />
                 <div>
-                  <p className="text-[13px] font-medium text-content group-hover:text-[#1e2a4a] transition-colors">
+                  <p className="text-[13px] font-medium text-content group-hover:text-brand_navy transition-colors">
                     {p.label}
                   </p>
                   <p className="text-[11px] text-content mt-0.5">
@@ -232,7 +232,7 @@ const DrillExportModal = ({
                     onClick={() => toggleFacet(f.key)}
                     className={`text-[12px] px-2.5 py-1 rounded-full border transition-colors ${
                       on
-                        ? "border-[#1e2a4a] bg-[#1e2a4a] text-custom-white"
+                        ? "border-brand_navy bg-brand_navy text-custom-white"
                         : "border-gray-200 text-content hover:bg-gray-50"
                     }`}
                   >
@@ -276,7 +276,7 @@ const DrillExportModal = ({
           <button
             onClick={download}
             disabled={ordered.length === 0 || rowCount === 0}
-            className="flex items-center gap-1.5 bg-[#1e2a4a] hover:bg-[#1e2a4a]/85 disabled:opacity-40 text-custom-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors"
+            className="flex items-center gap-1.5 bg-brand_navy hover:bg-brand_navy/85 disabled:opacity-40 text-custom-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors"
           >
             <ArrowDownTrayIcon className="w-3.5 h-3.5" />
             Download CSV

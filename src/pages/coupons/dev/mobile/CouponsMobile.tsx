@@ -282,7 +282,7 @@ const CouponsMobile = () => {
           <button
             onClick={getData}
             disabled={ctx.isFetching || nothingPicked}
-            className="w-full py-2.5 text-[12px] font-semibold text-custom-white rounded-xl bg-[#1e2a4a] hover:bg-[#2a3a63] disabled:opacity-60 transition-colors"
+            className="w-full py-2.5 text-[12px] font-semibold text-custom-white rounded-xl bg-brand_navy hover:bg-brand_navy_hover disabled:opacity-60 transition-colors"
           >
             {ctx.isFetching ? "Loading…" : nothingPicked ? pickLabel : "Load Coupons"}
           </button>

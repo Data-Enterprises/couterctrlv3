@@ -20,7 +20,7 @@ import ResizableModalShell from "../../../components-dev/modals/ResizableModalSh
 
 /* ── shared bits ──────────────────────────────────────────────────────────── */
 
-const NAVY = "#1e2a4a";
+const NAVY = "rgb(var(--color-brand-navy))";
 
 const P = ({ children }: { children: ReactNode }) => (
   <p className="text-[14px] leading-[1.65] text-content">{children}</p>
@@ -73,7 +73,7 @@ const Example = ({
   rows: { k: string; v: string; out?: boolean }[];
 }) => (
   <div className="border border-gray-200 rounded-lg overflow-hidden bg-custom-white">
-    <div className="px-3.5 py-2.5 border-b border-gray-200 bg-gray-50 text-[12px] font-bold uppercase tracking-[0.08em] text-[#1e2a4a]">
+    <div className="px-3.5 py-2.5 border-b border-gray-200 bg-gray-50 text-[12px] font-bold uppercase tracking-[0.08em] text-brand_navy">
       {head}
     </div>
     {rows.map((r) => (
@@ -87,7 +87,7 @@ const Example = ({
           {r.k}
         </span>
         <span
-          className={`tabular-nums ${r.out ? "font-bold text-[#1e2a4a] text-[15px]" : "font-medium text-content"}`}
+          className={`tabular-nums ${r.out ? "font-bold text-brand_navy text-[15px]" : "font-medium text-content"}`}
         >
           {r.v}
         </span>
@@ -100,7 +100,7 @@ const Defs = ({ rows }: { rows: { t: ReactNode; d: ReactNode }[] }) => (
   <dl className="flex flex-col gap-2.5 m-0">
     {rows.map((r, i) => (
       <div key={i} className="grid grid-cols-[8.5rem_1fr] gap-4 items-baseline">
-        <dt className="m-0 text-[14px] font-bold text-[#1e2a4a]">{r.t}</dt>
+        <dt className="m-0 text-[14px] font-bold text-brand_navy">{r.t}</dt>
         <dd className="m-0 text-[14px] leading-[1.65] text-content">{r.d}</dd>
       </div>
     ))}
@@ -112,7 +112,7 @@ const Note = ({ warn, children }: { warn?: boolean; children: ReactNode }) => (
     className={`border-l-4 px-4 py-3 rounded-r text-[14px] leading-[1.65] ${
       warn
         ? "border-severity_watch_text bg-severity_watch_bg text-severity_watch_text"
-        : "border-[#1e2a4a]/30 bg-gray-50 text-content"
+        : "border-brand_navy/30 bg-gray-50 text-content"
     }`}
   >
     {children}
@@ -167,7 +167,7 @@ const Formula = () => (
   <div className="rounded-lg border border-gray-200 bg-gray-50 overflow-hidden">
     <div className="px-3.5 py-3 border-b border-gray-200 bg-custom-white">
       <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-[15px] tabular-nums">
-        <span className="font-bold text-[#1e2a4a]">Suggested weight</span>
+        <span className="font-bold text-brand_navy">Suggested weight</span>
         <span className="text-content/85">=</span>
         <span className="font-semibold text-content">demand</span>
         <span className="text-content/85">&times;</span>
@@ -196,7 +196,7 @@ const Formula = () => (
         },
       ].map((r) => (
         <div key={r.t} className="grid grid-cols-[8.5rem_1fr] gap-4 px-3.5 py-2.5">
-          <dt className="m-0 text-[14px] font-bold text-[#1e2a4a]">{r.t}</dt>
+          <dt className="m-0 text-[14px] font-bold text-brand_navy">{r.t}</dt>
           <dd className="m-0 text-[14px] leading-[1.6] text-content">{r.d}</dd>
         </div>
       ))}
@@ -711,7 +711,7 @@ const SuggestedHelpModal = ({ onClose }: { onClose: () => void }) => {
         className="flex-1 overflow-y-auto thin-scrollbar bg-gray-50 px-5 py-5"
       >
         <nav className="rounded-lg border border-gray-200 bg-custom-white shadow-md px-4 py-3.5 mb-4">
-          <div className="text-[12px] font-bold uppercase tracking-[0.08em] text-[#1e2a4a] mb-2.5">
+          <div className="text-[12px] font-bold uppercase tracking-[0.08em] text-brand_navy mb-2.5">
             Questions
           </div>
           <ol className="flex flex-col gap-1.5 m-0 p-0 list-none">
@@ -721,10 +721,10 @@ const SuggestedHelpModal = ({ onClose }: { onClose: () => void }) => {
                   onClick={() => jump(sec.id)}
                   className="group w-full text-left flex items-baseline gap-3"
                 >
-                  <span className="w-5 flex-shrink-0 text-[13px] font-bold tabular-nums text-[#1e2a4a]/50 group-hover:text-[#1e2a4a] transition-colors">
+                  <span className="w-5 flex-shrink-0 text-[13px] font-bold tabular-nums text-brand_navy/50 group-hover:text-brand_navy transition-colors">
                     {i + 1}
                   </span>
-                  <span className="text-[14px] text-content group-hover:text-[#1e2a4a] group-hover:underline underline-offset-2 transition-colors">
+                  <span className="text-[14px] text-content group-hover:text-brand_navy group-hover:underline underline-offset-2 transition-colors">
                     {sec.q}
                   </span>
                 </button>
@@ -741,7 +741,7 @@ const SuggestedHelpModal = ({ onClose }: { onClose: () => void }) => {
             // text into the tab order.
             tabIndex={-1}
             className={`rounded-lg border bg-custom-white shadow-md outline-none mb-4 transition-colors duration-700 ${
-              landed === sec.id ? "border-[#1e2a4a]/40" : "border-gray-200"
+              landed === sec.id ? "border-brand_navy/40" : "border-gray-200"
             }`}
             style={{ scrollMarginTop: "0.5rem" }}
           >
@@ -754,14 +754,14 @@ const SuggestedHelpModal = ({ onClose }: { onClose: () => void }) => {
             <div className="flex items-baseline gap-3 px-5 pt-4 pb-3.5 border-b border-gray-100">
               <span
                 className={`w-6 flex-shrink-0 text-[13px] font-bold tabular-nums text-custom-white rounded text-center py-0.5 transition-colors duration-700 ${
-                  landed === sec.id ? "bg-[#1e2a4a]" : "bg-[#1e2a4a]/55"
+                  landed === sec.id ? "bg-brand_navy" : "bg-brand_navy/55"
                 }`}
               >
                 {i + 1}
               </span>
               <h2
                 className={`text-[19px] font-bold leading-snug m-0 tracking-[-0.01em] transition-colors duration-700 ${
-                  landed === sec.id ? "text-[#1e2a4a]" : "text-content"
+                  landed === sec.id ? "text-brand_navy" : "text-content"
                 }`}
               >
                 {sec.q}

@@ -20,7 +20,7 @@ const DayStrip = ({ perDay }: { perDay: number[] }) => {
             title={`${DOW[i]} — ${n}`}
             style={{ height: Math.max(2, Math.round((n / peak) * 18)) }}
             className={`w-3.5 rounded-sm ${
-              n === peak && n > 0 ? "bg-[#1e2a4a]" : "bg-gray-300"
+              n === peak && n > 0 ? "bg-brand_navy" : "bg-gray-300"
             }`}
           />
           <span className="text-[8.5px] text-content/85 leading-none">

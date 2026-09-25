@@ -41,7 +41,7 @@ const TrackerDetail = ({ row, plan, scopeLabel }: TrackerDetailProps) => {
 
   return (
     <div className="bg-custom-white rounded-xl shadow-sm overflow-hidden flex flex-col h-full">
-      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-3 flex-shrink-0 bg-[#1e2a4a]">
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-3 flex-shrink-0 bg-brand_navy">
         <p className="text-custom-white text-[13px] font-bold leading-tight justify-self-start truncate">
           {row.desc}
         </p>
@@ -140,7 +140,7 @@ const TrackerDetail = ({ row, plan, scopeLabel }: TrackerDetailProps) => {
               setAllWeeksOpen(allOpen ? [] : row.weeks.map((w) => w.index)),
             )
           }
-          className="text-[11.5px] font-semibold text-[#1e2a4a] hover:underline"
+          className="text-[11.5px] font-semibold text-brand_navy hover:underline"
         >
           {allOpen ? "Collapse all" : "Expand all"}
         </button>

@@ -54,7 +54,7 @@ const LookupQueuePanel = ({
     >
       <div
         className="flex-shrink-0 px-3 pt-1 pb-2.5 flex flex-col gap-0"
-        style={{ background: "#1e2a4a" }}
+        style={{ background: "rgb(var(--color-brand-navy))" }}
       >
         <div className="flex items-end gap-3 min-h-[24px]">
           <span className="text-[13px] font-semibold text-custom-white flex-shrink-0">
@@ -175,7 +175,7 @@ const LookupQueuePanel = ({
               <div
                 className={`w-3 h-3 rounded-full border-2 flex-shrink-0 ${
                   item.status === "loading"
-                    ? "border-gray-200 border-t-[#1e2a4a] animate-spin"
+                    ? "border-gray-200 border-t-brand_navy animate-spin"
                     : "border-gray-100"
                 }`}
               />

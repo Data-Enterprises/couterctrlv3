@@ -210,7 +210,7 @@ const RcvReceiverList = ({
         variant="bare"
       />
 
-      <div className="flex-1 overflow-y-auto divide-y divide-[#1e2a4a]/15 pb-14">
+      <div className="flex-1 overflow-y-auto divide-y divide-brand_navy/15 pb-14">
         {grouped.map((group) => {
           const isOpen = openDates.has(group.date);
           return (
@@ -243,7 +243,7 @@ const RcvReceiverList = ({
               </button>
 
               {isOpen && (
-                <div className="bg-gray-50 divide-y divide-[#1e2a4a]/15">
+                <div className="bg-gray-50 divide-y divide-brand_navy/15">
                   {group.items.map((r) => (
                     <button
                       key={`${r.invoiceid}-${r.invoice_date}`}

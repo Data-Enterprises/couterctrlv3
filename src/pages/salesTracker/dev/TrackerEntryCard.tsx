@@ -66,7 +66,7 @@ const TrackerEntryCard = ({
                 onClick={() => applyPreset(w)}
                 className={`flex-1 py-1.5 text-[12px] font-semibold transition-colors ${
                   activePreset === w
-                    ? "bg-[#1e2a4a] text-custom-white"
+                    ? "bg-brand_navy text-custom-white"
                     : "bg-custom-white text-content hover:bg-gray-50"
                 }`}
               >

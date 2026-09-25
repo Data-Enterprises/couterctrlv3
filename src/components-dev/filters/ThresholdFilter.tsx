@@ -35,16 +35,16 @@ const ThresholdFilter = ({
   const isDark = variant === "dark";
 
   const colors = {
-    bg: isDark ? "rgb(var(--color-custom-white) / 0.12)" : "rgba(30,42,74,0.06)",
-    bgInset: isDark ? "rgb(var(--color-custom-white) / 0.08)" : "rgba(30,42,74,0.06)",
-    opBg: isDark ? "rgb(var(--color-custom-white) / 0.15)" : "rgba(30,42,74,0.12)",
-    opColor: isDark ? "rgb(var(--color-custom-white))" : "#1e2a4a",
-    divider: isDark ? "rgb(var(--color-custom-white) / 0.15)" : "rgba(30,42,74,0.15)",
-    prefix: isDark ? "rgb(var(--color-custom-white) / 0.45)" : "rgba(30,42,74,0.45)",
+    bg: isDark ? "rgb(var(--color-custom-white) / 0.12)" : "rgb(var(--color-brand-navy) / 0.06)",
+    bgInset: isDark ? "rgb(var(--color-custom-white) / 0.08)" : "rgb(var(--color-brand-navy) / 0.06)",
+    opBg: isDark ? "rgb(var(--color-custom-white) / 0.15)" : "rgb(var(--color-brand-navy) / 0.12)",
+    opColor: isDark ? "rgb(var(--color-custom-white))" : "rgb(var(--color-brand-navy))",
+    divider: isDark ? "rgb(var(--color-custom-white) / 0.15)" : "rgb(var(--color-brand-navy) / 0.15)",
+    prefix: isDark ? "rgb(var(--color-custom-white) / 0.45)" : "rgb(var(--color-brand-navy) / 0.45)",
     text: isDark ? "rgb(var(--color-custom-white))" : "rgb(var(--color-content))",
     placeholder: isDark ? "rgb(var(--color-custom-white) / 0.3)" : undefined,
-    clear: isDark ? "rgb(var(--color-custom-white) / 0.4)" : "rgba(30,42,74,0.35)",
-    shadow: isDark ? "inset 0 1px 3px rgba(0,0,0,0.2)" : "inset 0 1px 3px rgba(30,42,74,0.1)",
+    clear: isDark ? "rgb(var(--color-custom-white) / 0.4)" : "rgb(var(--color-brand-navy) / 0.35)",
+    shadow: isDark ? "inset 0 1px 3px rgba(0,0,0,0.2)" : "inset 0 1px 3px rgb(var(--color-brand-navy) / 0.1)",
   };
 
   const hasRight = showClear || suffix;

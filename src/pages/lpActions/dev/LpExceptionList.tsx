@@ -204,7 +204,7 @@ const LpExceptionList = ({ onSearchOpen }: Props) => {
   return (
     <div className="flex-1 min-w-0 shadow-lg">
       <div className="bg-custom-white rounded-xl shadow-sm flex flex-col h-full">
-        <div className="flex-shrink-0 bg-[#1e2a4a] rounded-t-xl px-4 pt-1 pb-2.5 flex flex-col gap-0">
+        <div className="flex-shrink-0 bg-brand_navy rounded-t-xl px-4 pt-1 pb-2.5 flex flex-col gap-0">
           <div className="flex items-center gap-2 min-h-[26px]">
             <span className="min-w-0 flex-1 text-custom-white font-semibold text-[13px] truncate">
               {scopeLabel || "Exceptions"}

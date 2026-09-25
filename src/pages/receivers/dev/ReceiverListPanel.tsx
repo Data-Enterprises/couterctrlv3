@@ -130,7 +130,7 @@ const ReceiverListPanel = ({ onOpenSearch }: { onOpenSearch: () => void }) => {
       {/* Navy header */}
       <div
         className="flex-shrink-0 px-3 pt-1 pb-2.5 flex flex-col gap-0"
-        style={{ background: "#1e2a4a" }}
+        style={{ background: "rgb(var(--color-brand-navy))" }}
       >
         {/* Row 1: title + date | record count */}
         <div className="flex items-end gap-3 min-h-[24px]">
@@ -213,7 +213,7 @@ const ReceiverListPanel = ({ onOpenSearch }: { onOpenSearch: () => void }) => {
           </div>
         )}
 
-        <div className="divide-y divide-[#1e2a4a]/25">
+        <div className="divide-y divide-brand_navy/25">
           {grouped.map((group) => {
             const dateOpen = openDates.has(group.date) || hasFilters;
 
@@ -247,7 +247,7 @@ const ReceiverListPanel = ({ onOpenSearch }: { onOpenSearch: () => void }) => {
                       <div>Item count</div>
                       <div>Vendor</div>
                     </div>
-                    <div className="divide-y divide-[#1e2a4a]/15">
+                    <div className="divide-y divide-brand_navy/15">
                       {group.items.map((item) => {
                         const isSel =
                           state.selectedInvoice === item.invoiceid.toString();

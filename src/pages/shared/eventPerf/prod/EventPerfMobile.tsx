@@ -815,7 +815,7 @@ const EventPerfMobile = ({
                 <button
                   type="button"
                   onClick={() => dispatch(openEventDetail(true))}
-                  className="flex w-full items-center justify-center gap-1 rounded-lg bg-[#1e2a4a] py-2.5 text-[12.5px] font-bold text-custom-white active:bg-[#2a3a62]"
+                  className="flex w-full items-center justify-center gap-1 rounded-lg bg-brand_navy py-2.5 text-[12.5px] font-bold text-custom-white active:bg-[#2a3a62]"
                 >
                   View details
                   <ChevronRightIcon className="h-4 w-4" />

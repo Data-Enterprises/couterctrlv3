@@ -97,7 +97,7 @@ const InvoiceListPanel = ({ onSearchOpen }: Props) => {
   return (
     <div className="flex-1 min-w-0 shadow-lg">
       <div className="bg-custom-white rounded-xl shadow-sm flex flex-col h-full">
-        <div className="flex-shrink-0 bg-[#1e2a4a] rounded-t-xl px-4 pt-1 pb-2.5 flex flex-col gap-0">
+        <div className="flex-shrink-0 bg-brand_navy rounded-t-xl px-4 pt-1 pb-2.5 flex flex-col gap-0">
           <div className="flex items-center gap-2 min-h-[26px]">
             {/* The file name lives on the hover instead: it's how you'd tell
                 two downloads apart, but it isn't what the panel is about. */}

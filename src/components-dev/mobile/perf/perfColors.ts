@@ -7,7 +7,7 @@
  * Changing the screen's palette means changing this file and nothing else.
  *
  * WHY NOT NAVY
- * The app navy (#1e2a4a) is the header colour. A full-width navy bar on every
+ * The app navy (--color-brand-navy) is the header colour. A full-width navy bar on every
  * row put the same weight on the data as on the chrome above it, and a card of
  * them reads as heavy. These are lighter and clearly a data series rather than
  * a surface.

@@ -82,7 +82,7 @@ const BaseGroupsTab = () => {
             onClick={() => handleCompanySelect(c)}
             className={`text-[11px] px-3 py-1 rounded-full ${
               ctx.userCompany?.company === c.company
-                ? "bg-[#1e2a4a] text-custom-white"
+                ? "bg-brand_navy text-custom-white"
                 : "bg-custom-white border border-gray-200 text-content"
             }`}
           >

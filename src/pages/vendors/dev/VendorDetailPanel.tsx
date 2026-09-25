@@ -43,7 +43,7 @@ import { getVendorTier, rowsForVendor, marginPct } from "./vendorsUtils";
  *  navy every other panel uses rather than borrowing a verdict colour. */
 const headerBg = (tier: Tier) =>
   tier === "ungraded"
-    ? "bg-[#1e2a4a]"
+    ? "bg-brand_navy"
     : severityHeaderBgClass[tier as Severity];
 
 /** One KPI cell, matching the Sales strip. The date line is load-bearing: the

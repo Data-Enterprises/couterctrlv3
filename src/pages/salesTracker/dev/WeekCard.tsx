@@ -28,7 +28,7 @@ const HEAD =
 
 /** Two periods, not two verdicts — so navy and a lighter tint of it, never the
  *  severity palette. The comparison carries the judgement, the lines don't. */
-const TY_COLOR = "#1e2a4a";
+const TY_COLOR = "rgb(var(--color-brand-navy))";
 const LY_COLOR = "#8aa4c4";
 
 /**

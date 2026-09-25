@@ -354,7 +354,7 @@ const QueryPanel = () => {
               ? "Turn this query into the configuration on the left"
               : "This query already matches the configuration — there is nothing to apply"
           }
-          className="bg-[#1e2a4a] hover:bg-[#2a3a63] text-custom-white text-[12.5px] font-semibold px-4 py-1.5 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          className="bg-brand_navy hover:bg-brand_navy_hover text-custom-white text-[12.5px] font-semibold px-4 py-1.5 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
         >
           Apply to configuration
         </button>
@@ -474,7 +474,7 @@ const QueryPanel = () => {
                   setSaving(false);
                 }}
                 disabled={!name.trim()}
-                className="bg-[#1e2a4a] hover:bg-[#2a3a63] text-custom-white text-[12.5px] font-semibold px-4 py-1.5 rounded-lg transition-colors disabled:opacity-40"
+                className="bg-brand_navy hover:bg-brand_navy_hover text-custom-white text-[12.5px] font-semibold px-4 py-1.5 rounded-lg transition-colors disabled:opacity-40"
               >
                 {current && name.trim() === current.name ? "Save changes" : "Save"}
               </button>
@@ -499,7 +499,7 @@ const QueryPanel = () => {
               <button
                 type="button"
                 onClick={() => setLibrary(false)}
-                className="text-[12px] font-medium px-3 py-1.5 rounded-lg bg-[#1e2a4a] hover:bg-[#2a3a63] text-custom-white transition-colors"
+                className="text-[12px] font-medium px-3 py-1.5 rounded-lg bg-brand_navy hover:bg-brand_navy_hover text-custom-white transition-colors"
               >
                 Close
               </button>

@@ -113,7 +113,7 @@ const Admin = () => {
         className="relative max-w-[95vw] max-h-[calc(100vh-8rem)] flex flex-col rounded-xl shadow-lg overflow-hidden bg-custom-white self-start"
         style={{ width, height }}
       >
-        <div className="bg-[#1e2a4a] px-3 py-2 flex-shrink-0 flex items-center gap-3">
+        <div className="bg-brand_navy px-3 py-2 flex-shrink-0 flex items-center gap-3">
           <span className="text-custom-white font-semibold text-[13px] flex-shrink-0">
             Admin
           </span>
@@ -154,7 +154,7 @@ const Admin = () => {
               onClick={() => dispatch(setAdminForm(tab.id))}
               className={`text-[12px] font-semibold py-2.5 px-4 whitespace-nowrap border-b-2 transition-colors ${
                 context.adminForm === tab.id
-                  ? "border-[#1e2a4a] text-[#1e2a4a]"
+                  ? "border-brand_navy text-brand_navy"
                   : "border-transparent text-content"
               }`}
             >

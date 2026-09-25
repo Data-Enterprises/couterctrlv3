@@ -117,7 +117,7 @@ const SignalDetail = ({
           <div className="flex-shrink-0 flex items-center gap-2 px-3 py-2 bg-gray-100 border-b border-gray-100">
             <button
               onClick={() => setOpenTransaction(null)}
-              className="text-[12px] font-semibold text-[#1e2a4a] hover:text-[#1e2a4a]/70 transition-colors"
+              className="text-[12px] font-semibold text-brand_navy hover:text-brand_navy/70 transition-colors"
             >
               ← Back
             </button>
@@ -180,7 +180,7 @@ const SignalDetail = ({
             )}
           </div>
 
-          <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar divide-y divide-[#1e2a4a]/15">
+          <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar divide-y divide-brand_navy/15">
             {transactions.map((t) => (
               <button
                 key={t.saleId}

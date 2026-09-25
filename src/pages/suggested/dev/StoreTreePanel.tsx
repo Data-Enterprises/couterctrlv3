@@ -180,7 +180,7 @@ const StoreTreePanel = ({
               <div></div>
             </div>
 
-            <div className="divide-y divide-[#1e2a4a]/25">
+            <div className="divide-y divide-brand_navy/25">
               {shown.map((store) => {
                 const open = isOpen(store.storeid);
                 return (
@@ -235,7 +235,7 @@ const StoreTreePanel = ({
                           <div className="text-center">Items</div>
                           <div className="text-right">Order lb</div>
                         </div>
-                        <div className="divide-y divide-[#1e2a4a]/15">
+                        <div className="divide-y divide-brand_navy/15">
                           {store.departments.map((d) => {
                             const sel = isSelected(
                               store.storeid,

@@ -144,16 +144,16 @@ const NavSheet = ({
                 <div
                   className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
                   style={{
-                    background: isActive ? "#1e2a4a" : "rgba(30,42,74,0.07)",
+                    background: isActive ? "rgb(var(--color-brand-navy))" : "rgb(var(--color-brand-navy) / 0.07)",
                   }}
                 >
                   <page.icon
                     className="h-4 w-4"
-                    style={{ color: isActive ? "#fff" : "#1e2a4a" }}
+                    style={{ color: isActive ? "#fff" : "rgb(var(--color-brand-navy))" }}
                   />
                 </div>
                 <span
-                  className={`text-[13px] ${isActive ? "font-semibold text-[#1e2a4a]" : "font-medium text-content"}`}
+                  className={`text-[13px] ${isActive ? "font-semibold text-brand_navy" : "font-medium text-content"}`}
                 >
                   {page.name}
                 </span>
@@ -275,7 +275,7 @@ const TitleBar = () => {
         <div
           className={`w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-semibold flex-shrink-0 transition-colors duration-300 ease-in-out ${
             // A navy disc on a navy bar disappears, so dev inverts it.
-            onNavy ? "bg-custom-white text-[#1e2a4a]" : "bg-[#1e2a4a] text-custom-white"
+            onNavy ? "bg-custom-white text-brand_navy" : "bg-brand_navy text-custom-white"
           }`}
         >
           {(user.firstName?.[0] ?? "").toUpperCase()}
@@ -472,7 +472,7 @@ const TitleBar = () => {
         // The switch recolours the whole bar, so it eases rather than snaps.
         className={`h-12 w-full flex items-stretch select-none relative z-50 border-b transition-colors duration-300 ease-in-out ${
           onNavy
-            ? "bg-[#1e2a4a] text-custom-white border-[#1e2a4a]"
+            ? "bg-brand_navy text-custom-white border-brand_navy"
             : "bg-custom-white text-content border-gray-200"
         }`}
       >
@@ -532,7 +532,7 @@ const TitleBar = () => {
                           ? "bg-custom-white/15 text-custom-white font-semibold"
                           : "text-custom-white/85 font-medium hover:text-custom-white hover:bg-custom-white/10"
                         : isActive
-                          ? "bg-[#1e2a4a]/8 text-[#1e2a4a] font-semibold"
+                          ? "bg-brand_navy/8 text-brand_navy font-semibold"
                           : "text-content/85 font-medium hover:text-content hover:bg-bkg"
                     }`}
                   >
@@ -567,7 +567,7 @@ const TitleBar = () => {
                           className={({ isActive }) =>
                             `flex items-center gap-2 px-3 py-2 text-[12px] transition-colors ${
                               isActive
-                                ? "bg-gray-50 text-[#1e2a4a] font-medium"
+                                ? "bg-gray-50 text-brand_navy font-medium"
                                 : "text-content hover:bg-gray-50"
                             }`
                           }
@@ -649,7 +649,7 @@ const TitleBar = () => {
                   className="flex-1 flex flex-col items-center justify-center gap-1 transition-colors"
                   style={{
                     color:
-                      isActive || isOpen ? "#1e2a4a" : "rgba(30,42,74,0.35)",
+                      isActive || isOpen ? "rgb(var(--color-brand-navy))" : "rgb(var(--color-brand-navy) / 0.35)",
                   }}
                 >
                   <cat.icon className="h-5 w-5" />

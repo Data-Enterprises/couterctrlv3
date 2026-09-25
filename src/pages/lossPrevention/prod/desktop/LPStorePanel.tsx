@@ -177,7 +177,7 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch, 
   return (
     <div className="flex flex-col rounded-xl shadow-lg overflow-hidden bg-custom-white" style={{ width: "39%", flexShrink: 0 }}>
       {/* Navy header */}
-      <div className="flex-shrink-0 px-3 pt-1 pb-2.5 flex flex-col gap-0" style={{ background: "#1e2a4a" }}>
+      <div className="flex-shrink-0 px-3 pt-1 pb-2.5 flex flex-col gap-0" style={{ background: "rgb(var(--color-brand-navy))" }}>
         {/* Row 1: date | totals */}
         <div className="flex items-center gap-2 min-h-[24px]">
           <span className="text-[13px] font-semibold text-custom-white flex-shrink-0">{dateLabel}</span>
@@ -235,7 +235,7 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch, 
             onClick={() => onSaleTypeSelect(st.sale_type)}
             className={`flex-1 text-center px-2 py-2 text-[11px] font-medium whitespace-nowrap border-b-2 transition-colors ${
               selectedSaleType === st.sale_type
-                ? "border-[#1e2a4a] text-content"
+                ? "border-brand_navy text-content"
                 : "border-transparent text-content"
             }`}
           >
@@ -364,7 +364,7 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch, 
                     <button
                       key={`${detail.storeid}__${detail.store_number}`}
                       onClick={() => onStoreSelect(detail)}
-                      className={`w-full flex items-center gap-2.5 p-3 text-left transition-colors border-l-2 border-b border-b-[#1e2a4a]/15 ${
+                      className={`w-full flex items-center gap-2.5 p-3 text-left transition-colors border-l-2 border-b border-b-brand_navy/15 ${
                         isSel
                           ? "bg-row_selected border-row_selected_border"
                           : "border-transparent hover:bg-gray-50"

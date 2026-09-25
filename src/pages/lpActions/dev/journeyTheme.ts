@@ -16,4 +16,4 @@ export const SEV_FILL: Record<LpSeverity, string> = {
 
 /** Lanes and the unfocused timeline. A lane has no severity of its own — it is
  *  a place, not a behaviour. */
-export const NEUTRAL_FILL = "#1e2a4a";
+export const NEUTRAL_FILL = "rgb(var(--color-brand-navy))";

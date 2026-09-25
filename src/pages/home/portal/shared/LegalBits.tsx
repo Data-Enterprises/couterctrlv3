@@ -6,7 +6,7 @@
 /** All-caps blocks are shouted in the source precisely to be noticed, and
  *  inline caps disappear in a scrolling panel. Set them apart instead. */
 export const Notice = ({ children }: { children: string }) => (
-  <p className="text-[12.5px] leading-[1.6] font-semibold text-brand_navy bg-brand_paper border border-brand_line rounded-[10px] px-4 py-3.5 my-4">
+  <p className="text-[12.5px] leading-[1.6] font-semibold text-portal_navy bg-brand_paper border border-brand_line rounded-[10px] px-4 py-3.5 my-4">
     {children}
   </p>
 );

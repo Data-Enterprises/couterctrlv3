@@ -114,7 +114,7 @@ const AssignPanel = ({
               onClick={() => toggleStaged(item.id)}
               className={`px-2.5 py-1.5 text-[12px] border-b border-gray-100 cursor-pointer transition-colors ${
                 staged.has(item.id)
-                  ? "bg-[#1e2a4a] text-custom-white"
+                  ? "bg-brand_navy text-custom-white"
                   : "hover:bg-gray-50 text-content"
               }`}
             >
@@ -136,7 +136,7 @@ const AssignPanel = ({
           <button
             onClick={() => handleAssign(Array.from(staged))}
             disabled={staged.size === 0}
-            className="flex-1 text-[11px] font-medium py-1.5 rounded-md text-custom-white bg-[#1e2a4a] hover:bg-[#1e2a4a]/85 disabled:bg-gray-300 disabled:cursor-not-allowed"
+            className="flex-1 text-[11px] font-medium py-1.5 rounded-md text-custom-white bg-brand_navy hover:bg-brand_navy/85 disabled:bg-gray-300 disabled:cursor-not-allowed"
           >
             Assign
           </button>
@@ -149,7 +149,7 @@ const AssignPanel = ({
               )
             }
             disabled={leftItems.length === 0}
-            className="flex-1 text-[11px] font-medium py-1.5 rounded-md text-custom-white bg-[#1e2a4a] hover:bg-[#1e2a4a]/85 disabled:bg-gray-300 disabled:cursor-not-allowed"
+            className="flex-1 text-[11px] font-medium py-1.5 rounded-md text-custom-white bg-brand_navy hover:bg-brand_navy/85 disabled:bg-gray-300 disabled:cursor-not-allowed"
           >
             Assign all
           </button>

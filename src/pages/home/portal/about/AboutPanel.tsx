@@ -44,7 +44,7 @@ const SectionList = ({ section }: { section: AboutSection }) => {
               {String(i + 1).padStart(2, "0")}
             </span>
           )}
-          <b className="block font-display text-[14.5px] font-bold text-brand_navy mb-1">
+          <b className="block font-display text-[14.5px] font-bold text-portal_navy mb-1">
             {item.term}
           </b>
           {item.desc}
@@ -73,7 +73,7 @@ const Section = ({ section, first }: { section: AboutSection; first: boolean }) 
   );
 
   const heading = (
-    <h3 className="font-display text-[19px] font-extrabold text-brand_navy tracking-[-0.028em] leading-[1.12]">
+    <h3 className="font-display text-[19px] font-extrabold text-portal_navy tracking-[-0.028em] leading-[1.12]">
       {section.heading}
     </h3>
   );
@@ -110,7 +110,7 @@ const Section = ({ section, first }: { section: AboutSection; first: boolean }) 
               <span className="font-mono text-[9.5px] tracking-[0.13em] uppercase text-brand_slate_2 whitespace-nowrap pt-[3px]">
                 {f.k}
               </span>
-              <span className="text-right text-brand_navy font-medium">{f.v}</span>
+              <span className="text-right text-portal_navy font-medium">{f.v}</span>
             </div>
           ))}
         </div>
@@ -184,7 +184,7 @@ const AboutPanel = ({ open, onClose, onBookWalkthrough, returnFocusTo }: Props) 
   >
     <div className="px-8 pt-[26px] pb-[34px]">
       {/* mission — the one navy block in an otherwise light panel */}
-      <div className="bg-brand_navy rounded-xl px-[26px] py-6 mb-[34px]">
+      <div className="bg-portal_navy rounded-xl px-[26px] py-6 mb-[34px]">
         <span className="block font-mono text-[9.5px] font-semibold tracking-[0.17em] uppercase text-[#7FD1A0] mb-[9px]">
           {ABOUT_MISSION.kicker}
         </span>

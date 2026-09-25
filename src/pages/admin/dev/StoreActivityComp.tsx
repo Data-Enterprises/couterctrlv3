@@ -107,7 +107,7 @@ const StoreActivityComp = ({
             disabled={context.companyForm.id === 0}
             className={`mt-2 w-full text-[12px] font-medium py-1.5 rounded-md transition-colors text-custom-white ${
               context.companyForm.id > 0
-                ? "bg-[#1e2a4a] hover:bg-[#1e2a4a]/85"
+                ? "bg-brand_navy hover:bg-brand_navy/85"
                 : "bg-gray-300 cursor-not-allowed"
             }`}
           >
@@ -144,7 +144,7 @@ const StoreActivityComp = ({
               />
               <button
                 onClick={handleMissingClick}
-                className="text-[10px] font-medium text-[#1e2a4a] border border-gray-200 rounded-md px-2.5 py-1.5 flex-shrink-0"
+                className="text-[10px] font-medium text-brand_navy border border-gray-200 rounded-md px-2.5 py-1.5 flex-shrink-0"
               >
                 View all missing
               </button>
@@ -163,7 +163,7 @@ const StoreActivityComp = ({
               <div className="text-right">Active</div>
               <div className="text-right">Missing</div>
             </div>
-            <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar divide-y divide-[#1e2a4a]/15">
+            <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar divide-y divide-brand_navy/15">
               {context.filteredStoresActivity.map((s) => (
                 <div
                   key={s.storeid}

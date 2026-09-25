@@ -106,7 +106,7 @@ export const couponHeaderBgClass: Record<CouponTier, string> = {
   critical: "bg-red-600",
   watch: "bg-amber-500",
   ok: "bg-emerald-600",
-  ungraded: "bg-[#1e2a4a]",
+  ungraded: "bg-brand_navy",
 };
 
 export const couponPillClass: Record<CouponTier, string> = {

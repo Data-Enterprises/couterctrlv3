@@ -36,7 +36,7 @@ const ReceiverDetailPanel = () => {
       {/* Navy header */}
       <div
         className="flex-shrink-0 px-4 py-[11px] flex items-start justify-between"
-        style={{ background: "#1e2a4a" }}
+        style={{ background: "rgb(var(--color-brand-navy))" }}
       >
         <div>
           {selectedReceiver ? (
@@ -119,7 +119,7 @@ const ReceiverDetailPanel = () => {
         <>
           {/* KPI strip */}
           {totals && (
-            <div className="grid grid-cols-6 divide-x divide-[#1e2a4a]/15 border-b border-[#1e2a4a]/15 bg-gray-50 flex-shrink-0">
+            <div className="grid grid-cols-6 divide-x divide-brand_navy/15 border-b border-brand_navy/15 bg-gray-50 flex-shrink-0">
               <div className="px-4 py-2 text-center">
                 <div className="text-[10px] font-bold uppercase tracking-wide text-content">
                   Cases
@@ -217,7 +217,7 @@ const ReceiverDetailPanel = () => {
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#1e2a4a]/15 text-[13px]">
+              <tbody className="divide-y divide-brand_navy/15 text-[13px]">
                 {state.details.map((item) => (
                   <tr
                     key={item.line_number}

@@ -151,7 +151,7 @@ const CashierJourney = () => {
         className="bg-custom-white rounded-xl shadow-xl w-full max-w-[1120px] max-h-[92vh] flex flex-col overflow-hidden"
         onMouseDown={(e) => e.stopPropagation()}
       >
-        <div className="flex-shrink-0 bg-[#1e2a4a] px-4 py-2.5 flex items-start gap-3">
+        <div className="flex-shrink-0 bg-brand_navy px-4 py-2.5 flex items-start gap-3">
           <div className="min-w-0 flex-1">
             <p className="text-custom-white text-[13px] font-semibold truncate">
               {journey.cashierName}

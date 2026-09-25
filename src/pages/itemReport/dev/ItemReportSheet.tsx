@@ -224,7 +224,7 @@ const ItemReportSheet = ({
       <div className="bg-custom-white rounded-xl shadow-sm flex flex-col h-full">
         {/* Two rows split by a hairline, matching LedgerHeader: identity and
             the headline count above, the controls that change them below. */}
-        <div className="flex-shrink-0 bg-[#1e2a4a] rounded-t-xl px-4 pt-1 pb-2.5 flex flex-col gap-0">
+        <div className="flex-shrink-0 bg-brand_navy rounded-t-xl px-4 pt-1 pb-2.5 flex flex-col gap-0">
           {/* Row 1: store | what you are looking at | count + export */}
           <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 min-h-[26px]">
             <span className="text-custom-white font-semibold text-[13px] truncate justify-self-start">

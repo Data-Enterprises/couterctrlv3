@@ -104,7 +104,7 @@ const MarginPerfDaySidebar = ({ coverage }: Props) => {
         onClick={() => dispatch(actions.setSelectedWeekDay(""))}
         className={`flex flex-col rounded-md overflow-hidden flex-[1.3] border transition-colors ${
           allSelected
-            ? "border-[#1e2a4a] ring-2 ring-[#1e2a4a]/30"
+            ? "border-brand_navy ring-2 ring-brand_navy/30"
             : "border-gray-200 hover:border-gray-300"
         }`}
       >
@@ -167,7 +167,7 @@ const MarginPerfDaySidebar = ({ coverage }: Props) => {
             }
             className={`relative flex flex-col rounded-md overflow-hidden flex-1 border transition-colors ${
               isSelected
-                ? "border-[#1e2a4a] ring-2 ring-[#1e2a4a]/30"
+                ? "border-brand_navy ring-2 ring-brand_navy/30"
                 : "border-gray-200 hover:border-gray-300"
             }`}
           >

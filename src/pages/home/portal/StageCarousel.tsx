@@ -6,7 +6,7 @@ import { SLIDES, type ChipTone, type TitleSegment } from "./portalContent";
 const DURATION = 6000;
 
 const CHIP_TONE: Record<ChipTone, string> = {
-  neutral: "border-brand_line_2 text-brand_navy bg-custom-white",
+  neutral: "border-brand_line_2 text-portal_navy bg-custom-white",
   critical: "border-brand_danger_line text-brand_danger bg-brand_danger_bg",
   watch: "border-[#F3D9A8] text-[#9A5B04] bg-[#FEF8EC]",
   ok: "border-[#B7E3C8] text-brand_green_dark bg-brand_green_tint",
@@ -133,7 +133,7 @@ const StageCarousel = ({ onOpenNotes, paused: externallyPaused = false }: Props)
               {s.eyebrow}
             </span>
 
-            <h2 className="font-display text-brand_navy text-[clamp(30px,3.5vw,49px)] portal_short:text-[clamp(28px,3vw,40px)] font-extrabold mt-[18px] tracking-[-0.042em] leading-[1.06] text-balance">
+            <h2 className="font-display text-portal_navy text-[clamp(30px,3.5vw,49px)] portal_short:text-[clamp(28px,3vw,40px)] font-extrabold mt-[18px] tracking-[-0.042em] leading-[1.06] text-balance">
               <Title segments={s.title} />
             </h2>
 
@@ -148,7 +148,7 @@ const StageCarousel = ({ onOpenNotes, paused: externallyPaused = false }: Props)
                 {s.chips.map((c) => (
                   <span
                     key={c.text}
-                    className={`font-mono text-[10px] tracking-[0.11em] uppercase border rounded-md px-3 py-[7px] shadow-[0_1px_2px_rgba(15,36,64,.05)] ${CHIP_TONE[c.tone]}`}
+                    className={`font-mono text-[10px] tracking-[0.11em] uppercase border rounded-md px-3 py-[7px] shadow-[0_1px_2px_rgb(var(--color-portal-navy)/.05)] ${CHIP_TONE[c.tone]}`}
                   >
                     {c.text}
                   </span>
@@ -159,7 +159,7 @@ const StageCarousel = ({ onOpenNotes, paused: externallyPaused = false }: Props)
             {s.cta && (
               <button
                 onClick={(e) => onOpenNotes?.(e.currentTarget)}
-                className="mt-6 font-display font-semibold text-[14px] text-brand_navy bg-custom-white border border-brand_line_2 rounded-[9px] px-5 py-3 transition-colors hover:border-brand_green hover:text-brand_green_dark cursor-pointer"
+                className="mt-6 font-display font-semibold text-[14px] text-portal_navy bg-custom-white border border-brand_line_2 rounded-[9px] px-5 py-3 transition-colors hover:border-brand_green hover:text-brand_green_dark cursor-pointer"
               >
                 {s.cta}
               </button>
@@ -203,14 +203,14 @@ const StageCarousel = ({ onOpenNotes, paused: externallyPaused = false }: Props)
           <button
             onClick={() => go(idx - 1)}
             aria-label="Previous slide"
-            className="w-8 h-8 rounded-lg border border-brand_line_2 bg-custom-white text-brand_navy text-[13px] flex items-center justify-center transition-colors hover:bg-brand_paper hover:border-brand_green shadow-[0_1px_2px_rgba(15,36,64,.06)] cursor-pointer"
+            className="w-8 h-8 rounded-lg border border-brand_line_2 bg-custom-white text-portal_navy text-[13px] flex items-center justify-center transition-colors hover:bg-brand_paper hover:border-brand_green shadow-[0_1px_2px_rgb(var(--color-portal-navy)/.06)] cursor-pointer"
           >
             ‹
           </button>
           <button
             onClick={() => go(idx + 1)}
             aria-label="Next slide"
-            className="w-8 h-8 rounded-lg border border-brand_line_2 bg-custom-white text-brand_navy text-[13px] flex items-center justify-center transition-colors hover:bg-brand_paper hover:border-brand_green shadow-[0_1px_2px_rgba(15,36,64,.06)] cursor-pointer"
+            className="w-8 h-8 rounded-lg border border-brand_line_2 bg-custom-white text-portal_navy text-[13px] flex items-center justify-center transition-colors hover:bg-brand_paper hover:border-brand_green shadow-[0_1px_2px_rgb(var(--color-portal-navy)/.06)] cursor-pointer"
           >
             ›
           </button>

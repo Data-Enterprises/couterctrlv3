@@ -116,7 +116,7 @@ const ProductionTab = ({
           >
             {avgDay > 0 && (
               <div
-                className="absolute left-0 right-0 border-t border-dashed border-[#1e2a4a]/40 pointer-events-none"
+                className="absolute left-0 right-0 border-t border-dashed border-brand_navy/40 pointer-events-none"
                 style={{ bottom: `${Math.min((avgDay / maxRate) * 100, 100)}%` }}
               />
             )}
@@ -133,7 +133,7 @@ const ProductionTab = ({
                     style={{
                       height: lb > 0 ? `${Math.max((lb / maxRate) * 100, 3)}%` : 0,
                       background:
-                        hoverDay === d || d === peakDay ? "#1e2a4a" : "#1e2a4a99",
+                        hoverDay === d || d === peakDay ? "rgb(var(--color-brand-navy))" : "rgb(var(--color-brand-navy) / 0.6)",
                       opacity: hoverDay !== null && hoverDay !== d ? 0.55 : 1,
                     }}
                   />
@@ -227,7 +227,7 @@ const ProductionTab = ({
                       className="block h-full rounded-sm"
                       style={{
                         width: `${benchMax > 0 ? (b.lbPerItem / benchMax) * 100 : 0}%`,
-                        background: me ? "#1e2a4a" : "#1e2a4a99",
+                        background: me ? "rgb(var(--color-brand-navy))" : "rgb(var(--color-brand-navy) / 0.6)",
                       }}
                     />
                   </span>

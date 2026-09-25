@@ -156,7 +156,7 @@ const EventStoreReport = ({
         <button
           type="button"
           onClick={onViewDetails}
-          className="mt-3 flex w-full items-center justify-center gap-1 rounded-lg border-t border-gray-100 bg-[#1e2a4a] py-2.5 text-[12.5px] font-bold text-custom-white transition-colors active:bg-[#2a3a62]"
+          className="mt-3 flex w-full items-center justify-center gap-1 rounded-lg border-t border-gray-100 bg-brand_navy py-2.5 text-[12.5px] font-bold text-custom-white transition-colors active:bg-[#2a3a62]"
         >
           View details
           <ChevronRightIcon className="h-4 w-4" />

@@ -65,7 +65,7 @@ const SavedExportsModal = () => {
           <button
             type="button"
             onClick={close}
-            className="text-[12px] font-medium px-3 py-1.5 rounded-lg bg-[#1e2a4a] hover:bg-[#2a3a63] text-custom-white transition-colors"
+            className="text-[12px] font-medium px-3 py-1.5 rounded-lg bg-brand_navy hover:bg-brand_navy_hover text-custom-white transition-colors"
           >
             Close
           </button>
@@ -121,7 +121,7 @@ const SavedExportsModal = () => {
               type="button"
               onClick={saveNew}
               disabled={!name.trim() || ctx.savedBusy}
-              className="bg-[#1e2a4a] hover:bg-[#2a3a63] text-custom-white text-[12.5px] font-semibold px-4 py-1.5 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="bg-brand_navy hover:bg-brand_navy_hover text-custom-white text-[12.5px] font-semibold px-4 py-1.5 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               Save
             </button>
@@ -177,7 +177,7 @@ const SavedExportsModal = () => {
                   setNote(saved.description ?? "");
                   close();
                 }}
-                className="bg-[#1e2a4a] hover:bg-[#2a3a63] text-custom-white text-[12.5px] font-semibold px-4 py-1.5 rounded-lg transition-colors"
+                className="bg-brand_navy hover:bg-brand_navy_hover text-custom-white text-[12.5px] font-semibold px-4 py-1.5 rounded-lg transition-colors"
               >
                 Load
               </button>
