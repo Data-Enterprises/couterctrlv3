@@ -9,8 +9,7 @@ import { useAppSelector, useAppDispatch } from "../../hooks";
 import { categoriesFor } from "./utils";
 import { legacyEntryPath } from "../../constants/legacyPages";
 import { COMING_SOON_CATEGORY } from "../../utils/comingSoon";
-import { RELEASE_NOTES_DATE } from "../../constants/releaseNotes";
-import InfoModal from "../../components-dev/InfoModal";
+import ReleaseNotesModal from "../../components-dev/ReleaseNotesModal";
 import { resetNav, setIsNavOpen, setLastRoute } from "../../features/navSlice";
 import {
   resetAppSlice,
@@ -400,7 +399,7 @@ const TitleBar = () => {
                 className="w-full text-left px-4 py-2.5 text-[13px] font-medium text-content hover:bg-gray-50 transition-colors border-b border-gray-100 flex items-center gap-2"
               >
                 <span className="flex-1">Release Notes</span>
-                <span className="text-[11px] text-content/60">{RELEASE_NOTES_DATE}</span>
+                <span className="text-[11px] text-content/85">every release</span>
               </button>
             ) : null}
             {SHOW_API_ENV_SWITCH && user.userLevel >= 7 ? (
@@ -664,9 +663,10 @@ const TitleBar = () => {
         </>
       )}
 
-      {/* The notes themselves, in the same frame the "?" uses. */}
-      <InfoModal
-        page="release-notes"
+      {/* The notes themselves, in the same frame the "?" uses — one file per
+          release now, so the history is still there rather than overwritten by
+          whatever shipped last. */}
+      <ReleaseNotesModal
         isOpen={releaseNotesOpen}
         onClose={() => setReleaseNotesOpen(false)}
       />
