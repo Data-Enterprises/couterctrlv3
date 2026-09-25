@@ -25,11 +25,6 @@ each belongs to a Coming Soon page with no prod help to serve. `sales-export`
 is the first: it lived in `dev/` alone for a day, where the next build would
 have overwritten it with an empty Q&A page.
 
-`release-notes` is there too, and it is not a page's help at all: it is what
-the avatar menu's Release Notes row opens in dev mode. Refresh it from the
-latest dev report in `Documents\ccc-release-notes`, bump `RELEASE_NOTES_DATE`
-in `src/constants/releaseNotes.ts` in the same commit, rebuild, and upload.
-
 ## Build
 
 ```
