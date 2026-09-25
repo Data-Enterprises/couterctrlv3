@@ -35,11 +35,11 @@ const ColFilter = ({ label, active, align = "left", onApply, onClear, children }
       <button
         onClick={() => setOpen((v) => !v)}
         className={`flex items-center gap-1 text-[9px] font-semibold uppercase tracking-wide transition-colors select-none flex-shrink-0 ${
-          active ? "text-[#1e2a4a]" : "text-content"
+          active ? "text-brand_navy" : "text-content"
         }`}
       >
         {label}
-        {active && <span className="w-1 h-1 rounded-full bg-[#1e2a4a] flex-shrink-0" />}
+        {active && <span className="w-1 h-1 rounded-full bg-brand_navy flex-shrink-0" />}
       </button>
       {open && <div className="fixed inset-0 z-[199]" onClick={() => setOpen(false)} />}
       {open && (
@@ -50,7 +50,7 @@ const ColFilter = ({ label, active, align = "left", onApply, onClear, children }
             ...(align === "right" ? { right: 0 } : { left: 0 }),
             zIndex: 200,
             background: "white",
-            border: "1px solid rgba(30,42,74,0.12)",
+            border: "1px solid rgb(var(--color-brand-navy) / 0.12)",
             borderRadius: 6,
             boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
             padding: "10px 10px 8px",
@@ -62,7 +62,7 @@ const ColFilter = ({ label, active, align = "left", onApply, onClear, children }
             <button
               onClick={() => { onApply(); setOpen(false); }}
               className="flex-1 flex items-center justify-center gap-1 rounded py-1 text-[10px] font-medium"
-              style={{ background: "#1e2a4a", color: "white" }}
+              style={{ background: "rgb(var(--color-brand-navy))", color: "white" }}
             >
               <MagnifyingGlassIcon className="w-3 h-3" /> Apply
             </button>
@@ -95,12 +95,12 @@ interface ThreshInputProps {
 
 const inputStyle: React.CSSProperties = {
   fontSize: 11,
-  border: "1px solid rgba(30,42,74,0.15)",
+  border: "1px solid rgb(var(--color-brand-navy) / 0.15)",
   borderRadius: 4,
   padding: "4px 7px",
   outline: "none",
   color: "var(--color-text-primary)",
-  background: "rgba(30,42,74,0.03)",
+  background: "rgb(var(--color-brand-navy) / 0.03)",
 };
 
 const ThreshInput = ({ operator, value, onOperatorChange, onValueChange, placeholder }: ThreshInputProps) => (
@@ -237,7 +237,7 @@ const pricedUnitsLabel = (d: SubDeptCost) =>
 
   const arrow = (col: SortCol) => {
     if (sortCol !== col || !sortDir) return <span className="text-content"> ↕</span>;
-    return <span className="text-[#1e2a4a]"> {sortDir === "desc" ? "↓" : "↑"}</span>;
+    return <span className="text-brand_navy"> {sortDir === "desc" ? "↓" : "↑"}</span>;
   };
 
   const [ctxMenu, setCtxMenu] = useState<{ x: number; y: number; upc: string } | null>(null);
@@ -351,10 +351,10 @@ const pricedUnitsLabel = (d: SubDeptCost) =>
         displayData.map((item, i) => (
           <div
             key={`${item.product_code}-${i}`}
-            className="grid border-b border-b-[#1e2a4a]/15 hover:bg-gray-50 transition-colors"
+            className="grid border-b border-b-brand_navy/15 hover:bg-gray-50 transition-colors"
             style={{
               gridTemplateColumns: COLS,
-              background: i % 2 === 1 ? "rgba(30,42,74,0.015)" : undefined,
+              background: i % 2 === 1 ? "rgb(var(--color-brand-navy) / 0.015)" : undefined,
             }}
             onContextMenu={(e) => { e.stopPropagation(); openCtxMenu(e, item.product_code); }}
           >
@@ -363,7 +363,7 @@ const pricedUnitsLabel = (d: SubDeptCost) =>
             <div className="px-3 py-[9px] text-[13px] text-right tabular-nums text-content">{formatCurrency2(item.calculated_cost)}</div>
             <div className="px-3 py-[9px] text-[13px] text-right tabular-nums text-content">{formatCurrency2(item.cost)}</div>
             <div className="px-3 py-[9px] text-[13px] text-right tabular-nums text-content">{pricedUnitsLabel(item)}</div>
-            <div className="px-3 py-[9px] text-[13px] text-right tabular-nums font-semibold text-[#1e2a4a]">{formatCurrency2(item.total_cost)}</div>
+            <div className="px-3 py-[9px] text-[13px] text-right tabular-nums font-semibold text-brand_navy">{formatCurrency2(item.total_cost)}</div>
           </div>
         ))
       )}

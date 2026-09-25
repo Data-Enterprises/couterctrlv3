@@ -51,7 +51,7 @@ const SqlModal = () => {
           <button
             type="button"
             onClick={() => ctx.dispatch(closeSql())}
-            className="text-[12px] font-medium px-3 py-1.5 rounded-lg bg-[#1e2a4a] hover:bg-[#2a3a63] text-custom-white transition-colors"
+            className="text-[12px] font-medium px-3 py-1.5 rounded-lg bg-brand_navy hover:bg-brand_navy_hover text-custom-white transition-colors"
           >
             Close
           </button>

@@ -89,7 +89,7 @@ const CpnSalesStorePanel = ({ rows, totals, rangeLabel, onOpenSearch }: Props) =
   return (
     <div className="flex flex-col min-w-0 h-full shadow-lg">
       {/* ── Header ─────────────────────────────────────────────────────── */}
-      <div className="bg-[#1e2a4a] rounded-t-xl px-4 pt-1 pb-2.5 flex flex-col gap-0 flex-shrink-0">
+      <div className="bg-brand_navy rounded-t-xl px-4 pt-1 pb-2.5 flex flex-col gap-0 flex-shrink-0">
         {/* Row 1: range | labelled totals, matching LP's SALES/TRANS/QTY run */}
         <div className="flex items-center gap-2 min-h-[26px]">
           <span className="text-custom-white font-semibold text-[13px] flex-shrink-0">
@@ -331,7 +331,7 @@ const CpnSalesStorePanel = ({ rows, totals, rangeLabel, onOpenSearch }: Props) =
               <button
                 key={row.key}
                 onClick={() => dispatch(setSelectedCouponStore(row.key))}
-                className={`w-full flex items-center gap-2.5 p-3 text-left transition-colors border-l-2 border-b border-b-[#1e2a4a]/15 ${
+                className={`w-full flex items-center gap-2.5 p-3 text-left transition-colors border-l-2 border-b border-b-brand_navy/15 ${
                   isSel
                     ? "bg-row_selected border-row_selected_border"
                     : "border-transparent hover:bg-gray-50"

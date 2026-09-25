@@ -78,7 +78,7 @@ const CompanyGrid = () => {
         />
         <button
           onClick={() => setCreating(true)}
-          className="flex items-center gap-1 text-[11.5px] font-medium px-3 py-1.5 rounded-md text-custom-white bg-[#1e2a4a] hover:bg-[#1e2a4a]/85 flex-shrink-0"
+          className="flex items-center gap-1 text-[11.5px] font-medium px-3 py-1.5 rounded-md text-custom-white bg-brand_navy hover:bg-brand_navy/85 flex-shrink-0"
         >
           <PlusIcon className="w-3.5 h-3.5" />
           New company
@@ -94,7 +94,7 @@ const CompanyGrid = () => {
           <div>Contact email</div>
           <div></div>
         </div>
-        <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar divide-y divide-[#1e2a4a]/15">
+        <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar divide-y divide-brand_navy/15">
           {filtered.map((c) => (
             <div
               key={c.id}

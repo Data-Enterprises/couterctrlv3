@@ -23,7 +23,7 @@ const UpcRightPanel = () => {
     <div className="flex-1 min-w-0 shadow-lg">
       <div className="bg-custom-white rounded-xl shadow-sm overflow-hidden flex flex-col h-full">
         {/* 1-row navy header */}
-        <div className="flex-shrink-0 px-4 py-3 flex items-start justify-between bg-[#1e2a4a]">
+        <div className="flex-shrink-0 px-4 py-3 flex items-start justify-between bg-brand_navy">
           <div>
             <div className="text-[13px] font-semibold text-custom-white leading-tight">
               {activeTabLabel}
@@ -47,7 +47,7 @@ const UpcRightPanel = () => {
               onClick={() => dispatch(setDevActiveTab(tab.id))}
               className={`px-3 py-2 text-[12px] font-medium border-b-2 transition-colors whitespace-nowrap ${
                 ctx.activeTab === tab.id
-                  ? "border-[#1e2a4a] text-content"
+                  ? "border-brand_navy text-content"
                   : "border-transparent text-content"
               }`}
             >

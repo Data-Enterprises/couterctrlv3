@@ -35,9 +35,9 @@ const BeforeAfterBar = ({ label, descriptor, beforePct, afterPct, beforeDisplay,
         <span className="text-[11px] text-content/85 font-medium">of 100%</span>
       </div>
       <div className="flex items-center gap-1.5 mb-1">
-        <div className="flex-1 h-[20px] rounded bg-[#1e2a4a]/15">
+        <div className="flex-1 h-[20px] rounded bg-brand_navy/15">
           <div
-            className="h-full rounded bg-[#1e2a4a]/60"
+            className="h-full rounded bg-brand_navy/60"
             style={{ width: `${beforePct}%` }}
           />
         </div>

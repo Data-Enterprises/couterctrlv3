@@ -78,7 +78,7 @@ const StoresDirectory = () => {
           <div>Company ID</div>
           <div>Company name</div>
         </div>
-        <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar divide-y divide-[#1e2a4a]/15">
+        <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar divide-y divide-brand_navy/15">
           {!stores && (
             <div className="flex items-center justify-center py-8 text-[12px] text-content">
               Loading…

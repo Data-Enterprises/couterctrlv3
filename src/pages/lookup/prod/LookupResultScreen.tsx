@@ -76,7 +76,7 @@ const LookupResultScreen = ({
     <div className="min-h-[calc(100vh-56px)] bg-custom-white">
       <div
         className="flex-shrink-0 px-3 pt-2 pb-2.5"
-        style={{ background: "#1e2a4a" }}
+        style={{ background: "rgb(var(--color-brand-navy))" }}
       >
         <div className="flex items-center gap-2">
           <button
@@ -121,7 +121,7 @@ const LookupResultScreen = ({
       {/* Item identity and the screen's two controls. The breakdown's own
           "last 14 days" caption is gone — the window never changes, so it was
           a line of chrome restating a constant. */}
-      <div className="px-3.5 pt-3 pb-2 bg-custom-white border-b border-[#1e2a4a]/15">
+      <div className="px-3.5 pt-3 pb-2 bg-custom-white border-b border-brand_navy/15">
         <div className="text-[13px] font-semibold text-content truncate">
           {description}
         </div>
@@ -146,7 +146,7 @@ const LookupResultScreen = ({
       {/* Above the breakdown it drives, so picking a type and seeing its
           days happen in the same glance. */}
       {hasSaleTypeBreakdown(saleTypes) && (
-        <div className="pt-2.5 border-b border-[#1e2a4a]/15">
+        <div className="pt-2.5 border-b border-brand_navy/15">
           <div className="px-4 pb-1 text-[10px] font-medium uppercase tracking-wide text-content/85">
             By sale type · tap one for its days
           </div>
@@ -168,7 +168,7 @@ const LookupResultScreen = ({
           <button
             type="button"
             onClick={() => setSaleTypePick({ code: productCode, type: "Sale" })}
-            className="font-semibold text-[#1e2a4a] underline"
+            className="font-semibold text-brand_navy underline"
           >
             Back to sales
           </button>

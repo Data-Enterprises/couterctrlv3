@@ -28,7 +28,7 @@ const SubDeptRow = ({ row, isSelected, onClick }: SubDeptRowProps) => (
     // The left accent is drawn inset rather than as a border: a 2px border on
     // the row and none on the header would shift every cell 2px out of line
     // with the column above it.
-    className={`w-full grid items-center gap-3.5 px-4 py-3 text-left transition-colors border-b border-b-[#1e2a4a]/15 ${
+    className={`w-full grid items-center gap-3.5 px-4 py-3 text-left transition-colors border-b border-b-brand_navy/15 ${
       isSelected
         ? "bg-row_selected shadow-[inset_2px_0_0_0_rgb(var(--color-row-selected-border))]"
         : "hover:bg-gray-50"

@@ -999,7 +999,7 @@ const PopupSubDeptList = ({
                   onClick={() =>
                     dispatch(setSelectedSubDeptId(isSel ? null : r.id))
                   }
-                  className={`w-full flex items-center gap-2.5 p-3 text-left transition-colors border-l-2 border-b border-b-[#1e2a4a]/15 ${
+                  className={`w-full flex items-center gap-2.5 p-3 text-left transition-colors border-l-2 border-b border-b-brand_navy/15 ${
                     isSel
                       ? "bg-row_selected border-row_selected_border"
                       : "border-transparent hover:bg-gray-50"
@@ -1330,7 +1330,7 @@ const PopupSubDeptList = ({
                         <div className="flex items-center gap-[14px]">
                           <button
                             onClick={() => handleItemSortClick("ty")}
-                            className="flex items-center gap-0.5 text-[9px] font-semibold uppercase tracking-wide text-content hover:text-[#1e2a4a] flex-shrink-0 pl-2.5"
+                            className="flex items-center gap-0.5 text-[9px] font-semibold uppercase tracking-wide text-content hover:text-brand_navy flex-shrink-0 pl-2.5"
                             style={{ width: 64 }}
                           >
                             TY
@@ -1343,7 +1343,7 @@ const PopupSubDeptList = ({
                           </button>
                           <button
                             onClick={() => handleItemSortClick("lw")}
-                            className="flex items-center gap-0.5 text-[9px] font-semibold uppercase tracking-wide text-content hover:text-[#1e2a4a] flex-shrink-0"
+                            className="flex items-center gap-0.5 text-[9px] font-semibold uppercase tracking-wide text-content hover:text-brand_navy flex-shrink-0"
                             style={{ width: 64 }}
                           >
                             LW
@@ -1356,7 +1356,7 @@ const PopupSubDeptList = ({
                           </button>
                           <button
                             onClick={() => handleItemSortClick("ly")}
-                            className="flex items-center gap-0.5 text-[9px] font-semibold uppercase tracking-wide text-content hover:text-[#1e2a4a] flex-shrink-0"
+                            className="flex items-center gap-0.5 text-[9px] font-semibold uppercase tracking-wide text-content hover:text-brand_navy flex-shrink-0"
                             style={{ width: 64 }}
                           >
                             LY
@@ -1374,7 +1374,7 @@ const PopupSubDeptList = ({
                         {sortedItems.map((item) => (
                           <div
                             key={item.productCode}
-                            className="flex items-start gap-2.5 px-3 py-2 border-b border-b-[#1e2a4a]/15 last:border-0"
+                            className="flex items-start gap-2.5 px-3 py-2 border-b border-b-brand_navy/15 last:border-0"
                             onContextMenu={(e) => {
                               e.preventDefault();
                               e.stopPropagation();

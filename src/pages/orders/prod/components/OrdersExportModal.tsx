@@ -219,7 +219,7 @@ const OrdersExportModal = ({
       defaultHeight={960}
     >
         {/* Header */}
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center px-4 py-3 bg-[#1e2a4a]">
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center px-4 py-3 bg-brand_navy">
           <div>
             <p className="text-custom-white text-[13px] font-semibold">Export CSV</p>
             <p className="text-custom-white text-[10px] mt-0.5">{storeLabel} — {orderType}</p>
@@ -230,7 +230,7 @@ const OrdersExportModal = ({
                 key={m}
                 onClick={() => setMode(m)}
                 className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors ${
-                  mode === m ? "bg-custom-white text-[#1e2a4a]" : "text-custom-white"
+                  mode === m ? "bg-custom-white text-brand_navy" : "text-custom-white"
                 }`}
               >
                 {m === "presets" ? "Presets" : "Custom"}
@@ -253,10 +253,10 @@ const OrdersExportModal = ({
                   type="checkbox"
                   checked={selected.has("all")}
                   onChange={() => setSelected((p) => { const n = new Set(p); n.has("all") ? n.delete("all") : n.add("all"); return n; })}
-                  className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-[#1e2a4a] cursor-pointer flex-shrink-0"
+                  className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-brand_navy cursor-pointer flex-shrink-0"
                 />
                 <div>
-                  <p className="text-[13px] font-medium text-content group-hover:text-[#1e2a4a] transition-colors">All Orders</p>
+                  <p className="text-[13px] font-medium text-content group-hover:text-brand_navy transition-colors">All Orders</p>
                   <p className="text-[11px] text-content mt-0.5">
                     All {allOrders.length} line items for {storeLabel} — {orderType} on {dateLabel}
                   </p>
@@ -269,10 +269,10 @@ const OrdersExportModal = ({
                   checked={selected.has("selected")}
                   disabled={!hasSelected}
                   onChange={() => setSelected((p) => { const n = new Set(p); n.has("selected") ? n.delete("selected") : n.add("selected"); return n; })}
-                  className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-[#1e2a4a] cursor-pointer flex-shrink-0"
+                  className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-brand_navy cursor-pointer flex-shrink-0"
                 />
                 <div>
-                  <p className="text-[13px] font-medium text-content group-hover:text-[#1e2a4a] transition-colors">
+                  <p className="text-[13px] font-medium text-content group-hover:text-brand_navy transition-colors">
                     Selected Order {selectedOrder ? `#${selectedOrder.orderId}` : ""}
                   </p>
                   <p className="text-[11px] text-content mt-0.5">
@@ -295,16 +295,16 @@ const OrdersExportModal = ({
                       }
                       setSelected((p) => { const n = new Set(p); checking ? n.add("subDepts") : n.delete("subDepts"); return n; });
                     }}
-                    className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-[#1e2a4a] cursor-pointer flex-shrink-0"
+                    className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-brand_navy cursor-pointer flex-shrink-0"
                   />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
-                      <p className="text-[13px] font-medium text-content group-hover:text-[#1e2a4a] transition-colors">By Sub Depts</p>
+                      <p className="text-[13px] font-medium text-content group-hover:text-brand_navy transition-colors">By Sub Depts</p>
                       <div className="flex gap-1.5">
                         <button
                           onClick={(e) => { e.preventDefault(); applyPresetSubDepts(new Set(uniqueSubDepts.map((s) => s.id))); }}
                           disabled={allPresetSubDeptsSelected}
-                          className="text-[9px] text-[#1e2a4a] disabled:opacity-30 transition-colors"
+                          className="text-[9px] text-brand_navy disabled:opacity-30 transition-colors"
                         >
                           All
                         </button>
@@ -312,7 +312,7 @@ const OrdersExportModal = ({
                         <button
                           onClick={(e) => { e.preventDefault(); applyPresetSubDepts(new Set()); }}
                           disabled={noPresetSubDeptsSelected}
-                          className="text-[9px] text-[#1e2a4a] disabled:opacity-30 transition-colors"
+                          className="text-[9px] text-brand_navy disabled:opacity-30 transition-colors"
                         >
                           None
                         </button>
@@ -328,8 +328,8 @@ const OrdersExportModal = ({
                           onClick={(e) => { e.preventDefault(); togglePresetSubDept(s.id); }}
                           className={`text-[10px] px-2 py-1 rounded-full border transition-colors ${
                             presetSubDepts.has(s.id)
-                              ? "bg-[#1e2a4a] text-custom-white border-[#1e2a4a]"
-                              : "bg-custom-white text-content border-gray-200 hover:border-[#1e2a4a]/40"
+                              ? "bg-brand_navy text-custom-white border-brand_navy"
+                              : "bg-custom-white text-content border-gray-200 hover:border-brand_navy/40"
                           }`}
                         >
                           {s.id}
@@ -346,7 +346,7 @@ const OrdersExportModal = ({
               <button
                 onClick={handlePresetDownload}
                 disabled={selected.size === 0}
-                className="flex items-center gap-1.5 bg-[#1e2a4a] hover:bg-[#1e2a4a]/85 disabled:opacity-40 text-custom-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors"
+                className="flex items-center gap-1.5 bg-brand_navy hover:bg-brand_navy/85 disabled:opacity-40 text-custom-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors"
               >
                 <ArrowDownTrayIcon className="w-3.5 h-3.5" />
                 Download CSV
@@ -372,7 +372,7 @@ const OrdersExportModal = ({
                         <button
                           onClick={() => setCustomSubDepts(new Set(uniqueSubDepts.map((s) => s.id)))}
                           disabled={allSubDeptsSelected}
-                          className="text-[9px] text-[#1e2a4a] disabled:opacity-30 transition-colors"
+                          className="text-[9px] text-brand_navy disabled:opacity-30 transition-colors"
                         >
                           All
                         </button>
@@ -380,7 +380,7 @@ const OrdersExportModal = ({
                         <button
                           onClick={() => setCustomSubDepts(new Set())}
                           disabled={noSubDeptsSelected}
-                          className="text-[9px] text-[#1e2a4a] disabled:opacity-30 transition-colors"
+                          className="text-[9px] text-brand_navy disabled:opacity-30 transition-colors"
                         >
                           None
                         </button>
@@ -393,7 +393,7 @@ const OrdersExportModal = ({
                             type="checkbox"
                             checked={customSubDepts.has(s.id)}
                             onChange={() => toggleCustomSubDept(s.id)}
-                            className="accent-[#1e2a4a] h-3.5 w-3.5 rounded flex-shrink-0"
+                            className="accent-brand_navy h-3.5 w-3.5 rounded flex-shrink-0"
                           />
                           <span className="text-[12px] text-content truncate flex-1">{s.id}</span>
                           <span className="text-[10px] text-content flex-shrink-0">{s.count} ln</span>
@@ -413,7 +413,7 @@ const OrdersExportModal = ({
                           type="checkbox"
                           checked={groupBy.has(d.key)}
                           onChange={() => toggleGroupBy(d.key)}
-                          className="accent-[#1e2a4a] h-3.5 w-3.5 rounded flex-shrink-0"
+                          className="accent-brand_navy h-3.5 w-3.5 rounded flex-shrink-0"
                         />
                         <span className="text-[12px] text-content">{d.label}</span>
                       </label>
@@ -433,7 +433,7 @@ const OrdersExportModal = ({
                             type="checkbox"
                             checked={sel.enabled}
                             onChange={() => toggleMetric(m.key)}
-                            className="accent-[#1e2a4a] h-3.5 w-3.5 rounded flex-shrink-0"
+                            className="accent-brand_navy h-3.5 w-3.5 rounded flex-shrink-0"
                           />
                           <span className={`text-[12px] flex-1 ${sel.enabled ? "text-content" : "text-content/40"}`}>{m.label}</span>
                           <select
@@ -518,7 +518,7 @@ const OrdersExportModal = ({
               <button
                 onClick={handleCustomDownload}
                 disabled={!canCustomDownload}
-                className="flex items-center gap-1.5 bg-[#1e2a4a] hover:bg-[#1e2a4a]/85 disabled:opacity-40 text-custom-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors"
+                className="flex items-center gap-1.5 bg-brand_navy hover:bg-brand_navy/85 disabled:opacity-40 text-custom-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors"
               >
                 <ArrowDownTrayIcon className="w-3.5 h-3.5" />
                 Download CSV

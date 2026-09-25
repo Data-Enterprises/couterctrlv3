@@ -68,6 +68,9 @@ export default {
         brand_green_tint:
           "rgb(var(--color-brand-green-tint) / <alpha-value>)",
         brand_navy: "rgb(var(--color-brand-navy) / <alpha-value>)",
+        portal_navy: "rgb(var(--color-portal-navy) / <alpha-value>)",
+        portal_navy_hover:
+          "rgb(var(--color-portal-navy-hover) / <alpha-value>)",
         brand_navy_hover:
           "rgb(var(--color-brand-navy-hover) / <alpha-value>)",
         brand_slate: "rgb(var(--color-brand-slate) / <alpha-value>)",

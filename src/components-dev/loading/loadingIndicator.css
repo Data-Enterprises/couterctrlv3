@@ -1,7 +1,7 @@
 .loading-indicator {
   position: absolute;
   inset: 0;
-  background: rgba(30,42,74,0.04);
+  background: rgb(var(--color-brand-navy) / 0.04);
   backdrop-filter: blur(1px);
   display: flex;
   align-items: center;
@@ -10,7 +10,7 @@
 }
 
 .loading-pill {
-  background: #1e2a4a;
+  background: rgb(var(--color-brand-navy));
   border-radius: 20px;
   padding: 6px 16px;
   display: flex;

@@ -92,7 +92,7 @@ const PortalPanel = ({
       <div
         onClick={onClose}
         aria-hidden="true"
-        className={`fixed inset-0 z-[80] bg-[rgba(15,36,64,0.4)] backdrop-blur-[2px] transition-[opacity,visibility] duration-[220ms] ${
+        className={`fixed inset-0 z-[80] bg-[rgb(var(--color-portal-navy)/0.4)] backdrop-blur-[2px] transition-[opacity,visibility] duration-[220ms] ${
           open ? "opacity-100 visible" : "opacity-0 invisible"
         }`}
       />
@@ -114,14 +114,14 @@ const PortalPanel = ({
             <span className="font-mono text-[9.5px] tracking-[0.16em] uppercase text-brand_green_dark">
               {kicker}
             </span>
-            <h2 className="font-display text-[23px] font-extrabold text-brand_navy mt-[5px] tracking-[-0.03em] leading-[1.12]">
+            <h2 className="font-display text-[23px] font-extrabold text-portal_navy mt-[5px] tracking-[-0.03em] leading-[1.12]">
               {title}
             </h2>
           </div>
           <button
             onClick={onClose}
             aria-label="Close"
-            className="w-8 h-8 flex-none border border-brand_line bg-custom-white rounded-lg text-brand_slate text-[15px] leading-none flex items-center justify-center transition-colors hover:bg-bkg hover:text-brand_navy cursor-pointer"
+            className="w-8 h-8 flex-none border border-brand_line bg-custom-white rounded-lg text-brand_slate text-[15px] leading-none flex items-center justify-center transition-colors hover:bg-bkg hover:text-portal_navy cursor-pointer"
           >
             ✕
           </button>

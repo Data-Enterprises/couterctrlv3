@@ -142,7 +142,7 @@ const CpnExportSheet = ({ onClose, title, subtitle, rows }: CpnExportSheetProps)
           <button
             onClick={() => setSelectedStores(new Set(uniqueStores.map((s) => s.number)))}
             disabled={allSelected}
-            className="text-[10px] text-[#1e2a4a] disabled:text-content/40 transition-colors"
+            className="text-[10px] text-brand_navy disabled:text-content/40 transition-colors"
           >
             All
           </button>
@@ -150,7 +150,7 @@ const CpnExportSheet = ({ onClose, title, subtitle, rows }: CpnExportSheetProps)
           <button
             onClick={() => setSelectedStores(new Set())}
             disabled={noneSelected}
-            className="text-[10px] text-[#1e2a4a] disabled:text-content/40 transition-colors"
+            className="text-[10px] text-brand_navy disabled:text-content/40 transition-colors"
           >
             None
           </button>
@@ -163,7 +163,7 @@ const CpnExportSheet = ({ onClose, title, subtitle, rows }: CpnExportSheetProps)
               type="checkbox"
               checked={selectedStores.has(s.number)}
               onChange={() => toggleStore(s.number)}
-              className="accent-[#1e2a4a] h-3.5 w-3.5 rounded flex-shrink-0"
+              className="accent-brand_navy h-3.5 w-3.5 rounded flex-shrink-0"
             />
             <span className="text-[12px] text-content truncate flex-1">{s.name}</span>
             <span className="text-[10px] text-content/85 flex-shrink-0">#{s.number}</span>
@@ -186,7 +186,7 @@ const CpnExportSheet = ({ onClose, title, subtitle, rows }: CpnExportSheetProps)
               key={m}
               onClick={() => setMode(m)}
               className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors ${
-                mode === m ? "bg-[#1e2a4a] text-custom-white" : "text-content/85"
+                mode === m ? "bg-brand_navy text-custom-white" : "text-content/85"
               }`}
             >
               {m === "presets" ? "Presets" : "Custom"}
@@ -199,7 +199,7 @@ const CpnExportSheet = ({ onClose, title, subtitle, rows }: CpnExportSheetProps)
         <div className="px-4 py-4 space-y-4 max-h-[50vh] overflow-y-auto thin-scrollbar">
           {isMultiStore && <StoreFilter />}
           <div className="flex items-start gap-3">
-            <input type="checkbox" checked readOnly className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-[#1e2a4a] flex-shrink-0" />
+            <input type="checkbox" checked readOnly className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-brand_navy flex-shrink-0" />
             <div>
               <div className="text-[13px] font-medium text-content">Coupon Records</div>
               <div className="text-[11px] text-content/85 mt-0.5">
@@ -222,7 +222,7 @@ const CpnExportSheet = ({ onClose, title, subtitle, rows }: CpnExportSheetProps)
                     type="checkbox"
                     checked={groupBy.has(d.key)}
                     onChange={() => toggleGroupBy(d.key)}
-                    className="accent-[#1e2a4a] h-3.5 w-3.5 rounded flex-shrink-0"
+                    className="accent-brand_navy h-3.5 w-3.5 rounded flex-shrink-0"
                   />
                   <span className="text-[12px] text-content">{d.label}</span>
                 </label>
@@ -240,7 +240,7 @@ const CpnExportSheet = ({ onClose, title, subtitle, rows }: CpnExportSheetProps)
                       type="checkbox"
                       checked={sel.enabled}
                       onChange={() => toggleMetric(m.key)}
-                      className="accent-[#1e2a4a] h-3.5 w-3.5 rounded flex-shrink-0"
+                      className="accent-brand_navy h-3.5 w-3.5 rounded flex-shrink-0"
                     />
                     <span className={`text-[12px] flex-1 ${sel.enabled ? "text-content" : "text-content/85"}`}>{m.label}</span>
                     <select
@@ -275,7 +275,7 @@ const CpnExportSheet = ({ onClose, title, subtitle, rows }: CpnExportSheetProps)
         <button
           onClick={mode === "presets" ? handlePresetDownload : handleCustomDownload}
           disabled={mode === "presets" ? filteredRows.length === 0 : !columns.length || !aggRows.length}
-          className="flex items-center gap-1.5 bg-[#1e2a4a] hover:bg-[#1e2a4a]/85 disabled:opacity-40 text-custom-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors"
+          className="flex items-center gap-1.5 bg-brand_navy hover:bg-brand_navy/85 disabled:opacity-40 text-custom-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors"
         >
           <ArrowDownTrayIcon className="w-3.5 h-3.5" />
           Download CSV

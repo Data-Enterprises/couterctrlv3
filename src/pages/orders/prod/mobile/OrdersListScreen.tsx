@@ -32,8 +32,8 @@ const fmtDate = (iso: string) => {
 };
 
 const chipStyle = {
-  background: "rgba(30,42,74,0.06)",
-  boxShadow: "inset 0 1px 2px rgba(30,42,74,0.08)",
+  background: "rgb(var(--color-brand-navy) / 0.06)",
+  boxShadow: "inset 0 1px 2px rgb(var(--color-brand-navy) / 0.08)",
 };
 
 const MAX_CHIPS = 3;
@@ -47,7 +47,7 @@ const SubDeptChips = ({ subDepts }: { subDepts: string[] }) => {
         <span key={sd} className="text-[10px] bg-gray-100 text-content rounded px-1.5 py-0.5">{sd}</span>
       ))}
       {overflow.length > 0 && (
-        <span className="text-[10px] font-semibold bg-[#1e2a4a]/[0.07] text-content rounded px-1.5 py-0.5">
+        <span className="text-[10px] font-semibold bg-brand_navy/[0.07] text-content rounded px-1.5 py-0.5">
           +{overflow.length} more
         </span>
       )}
@@ -176,7 +176,7 @@ const OrdersListScreen = ({ orders, loading, selectedKey, assignedStores, groupS
               className="w-full px-4 py-3 border-b border-gray-100 text-left hover:bg-gray-50 active:bg-gray-100 transition-colors"
             >
               <div className="flex items-baseline justify-between gap-2">
-                <span className="text-[13px] font-semibold text-[#1e2a4a]">#{sel.orderId}</span>
+                <span className="text-[13px] font-semibold text-brand_navy">#{sel.orderId}</span>
                 {status && <span className="text-[10px] text-content flex-shrink-0">{status}</span>}
               </div>
               {/* Which store this order belongs to only matters — and only
@@ -187,7 +187,7 @@ const OrdersListScreen = ({ orders, loading, selectedKey, assignedStores, groupS
                 </div>
               )}
               <div className="flex items-baseline justify-between gap-2 mt-0.5">
-                <span className="text-[11px] font-semibold text-[#1e2a4a]">{formatCurrency2(eRet)}</span>
+                <span className="text-[11px] font-semibold text-brand_navy">{formatCurrency2(eRet)}</span>
                 <span className="text-[10px] text-content flex-shrink-0">
                   {formatCurrency2(eCost)} cost · {items.length} items
                 </span>

@@ -39,7 +39,7 @@ type Tab = "items" | "hours";
 /** Ungraded has no severity colour of its own, so the header falls back to the
  *  navy every other panel uses rather than borrowing a verdict colour. */
 const headerBg = (tier: CategoryTier) =>
-  tier === "ungraded" ? "bg-[#1e2a4a]" : severityHeaderBgClass[tier as Severity];
+  tier === "ungraded" ? "bg-brand_navy" : severityHeaderBgClass[tier as Severity];
 
 const tierOf = (pct: number | null, threshold: number): Severity | null => {
   if (pct === null) return null;
@@ -448,7 +448,7 @@ const CategoryDetailPanel = ({ onLoadHourly }: Props) => {
             }}
             className={`px-3 py-2 text-[12px] font-medium border-b-2 transition-colors ${
               tab === k
-                ? "border-[#1e2a4a] text-content"
+                ? "border-brand_navy text-content"
                 : "border-transparent text-content/70 hover:text-content/80"
             }`}
           >
@@ -508,7 +508,7 @@ const CategoryDetailPanel = ({ onLoadHourly }: Props) => {
           <div className="overflow-y-auto thin-scrollbar flex-1">
             {loadingHourly ? (
               <div className="flex items-center justify-center gap-2 h-24">
-                <div className="w-3.5 h-3.5 border-2 border-gray-200 border-t-[#1e2a4a] rounded-full animate-spin" />
+                <div className="w-3.5 h-3.5 border-2 border-gray-200 border-t-brand_navy rounded-full animate-spin" />
                 <span className="text-[11px] text-content">Loading hours…</span>
               </div>
             ) : shown.length === 0 ? (
@@ -520,7 +520,7 @@ const CategoryDetailPanel = ({ onLoadHourly }: Props) => {
                 <button
                   key={r.key}
                   onClick={() => pick(r.key)}
-                  className={`w-full flex items-center gap-2 px-3 py-2 text-left transition-colors border-l-2 border-b border-b-[#1e2a4a]/15 ${
+                  className={`w-full flex items-center gap-2 px-3 py-2 text-left transition-colors border-l-2 border-b border-b-brand_navy/15 ${
                     selectedKey === r.key
                       ? "bg-row_selected border-row_selected_border"
                       : "border-transparent hover:bg-gray-50"

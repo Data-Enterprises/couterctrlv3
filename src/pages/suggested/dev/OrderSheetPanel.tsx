@@ -295,7 +295,7 @@ const OrderSheetPanel = () => {
       {/* Navy header — one row, title left, actions and metadata right. */}
       <div
         className="flex-shrink-0 px-4 py-[11px] flex items-start justify-between"
-        style={{ background: "#1e2a4a" }}
+        style={{ background: "rgb(var(--color-brand-navy))" }}
       >
         <div>
           <div className="text-[13px] font-semibold text-custom-white">
@@ -365,7 +365,7 @@ const OrderSheetPanel = () => {
                   onClick={() => ctx.dispatch(setActiveTab(t.key))}
                   className={`px-4 py-2 text-[12px] font-semibold border-b-2 transition-colors ${
                     on
-                      ? "text-content border-[#1e2a4a] bg-custom-white"
+                      ? "text-content border-brand_navy bg-custom-white"
                       : "text-content/85 border-transparent hover:text-content"
                   }`}
                 >
@@ -445,7 +445,7 @@ const OrderSheetPanel = () => {
                   onClick={() => ctx.dispatch(setActionFilter("all"))}
                   className={`text-[12px] font-semibold px-2.5 py-1 rounded-full transition-shadow ${
                     ctx.actionFilter === "all"
-                      ? "bg-[#1e2a4a] text-custom-white"
+                      ? "bg-brand_navy text-custom-white"
                       : "bg-custom-white text-content/85 border border-gray-200"
                   }`}
                 >
@@ -602,7 +602,7 @@ const OrderSheetPanel = () => {
                               upc: String(r.product_code),
                             });
                           }}
-                          className="border-b border-[#1e2a4a]/15 even:bg-row_stripe hover:bg-gray-50 transition-colors cursor-pointer"
+                          className="border-b border-brand_navy/15 even:bg-row_stripe hover:bg-gray-50 transition-colors cursor-pointer"
                         >
                           <td className="px-3 py-2">
                             {(() => {

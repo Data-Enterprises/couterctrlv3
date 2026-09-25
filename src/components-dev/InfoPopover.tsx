@@ -33,7 +33,7 @@ const InfoPopover = ({ title, purpose, glossary, onClose, className }: InfoPopov
   return (
     <div
       ref={ref}
-      className={`absolute top-full right-0 min-w-[260px] max-w-[500px] bg-[#1e2a4a] rounded-b-lg shadow-xl overflow-hidden z-50 animate-slidedown ${className ?? ""}`}
+      className={`absolute top-full right-0 min-w-[260px] max-w-[500px] bg-brand_navy rounded-b-lg shadow-xl overflow-hidden z-50 animate-slidedown ${className ?? ""}`}
     >
       <div
         className="px-3.5 py-2.5 flex items-center justify-between flex-shrink-0 border-b"

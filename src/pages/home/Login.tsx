@@ -313,7 +313,7 @@ const Login = () => {
   return (
     <div
       data-testid="login-page"
-      className="font-body text-brand_navy bg-bkg grid h-dvh overflow-hidden grid-cols-[clamp(400px,29%,452px)_1fr] portal_stack:h-auto portal_stack:min-h-dvh portal_stack:overflow-visible portal_stack:grid-cols-1"
+      className="font-body text-portal_navy bg-bkg grid h-dvh overflow-hidden grid-cols-[clamp(400px,29%,452px)_1fr] portal_stack:h-auto portal_stack:min-h-dvh portal_stack:overflow-visible portal_stack:grid-cols-1"
     >
       <SignInRail
         username={state.username}

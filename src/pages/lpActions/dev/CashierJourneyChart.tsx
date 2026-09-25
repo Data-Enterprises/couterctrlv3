@@ -183,7 +183,7 @@ const CashierJourneyChart = ({ journey, selected, onSelect }: Props) => {
         cx={CX}
         cy={CY}
         r={34}
-        fill="#1e2a4a"
+        fill="rgb(var(--color-brand-navy))"
         onClick={() => onSelect(null)}
         className="cursor-pointer"
       />

@@ -118,7 +118,7 @@ const ExportBar = () => {
             <a
               href={f.url}
               download
-              className="bg-[#1e2a4a] hover:bg-[#2a3a63] text-custom-white text-[13px] font-semibold px-5 py-2.5 rounded-lg transition-colors"
+              className="bg-brand_navy hover:bg-brand_navy_hover text-custom-white text-[13px] font-semibold px-5 py-2.5 rounded-lg transition-colors"
             >
               Download
             </a>
@@ -144,7 +144,7 @@ const ExportBar = () => {
 
   if (ctx.building) {
     return (
-      <div className="flex-shrink-0 bg-[#1e2a4a] rounded-xl px-4 py-3 flex items-center gap-3">
+      <div className="flex-shrink-0 bg-brand_navy rounded-xl px-4 py-3 flex items-center gap-3">
         <div className="w-5 h-5 rounded-full border-2 border-custom-white/25 border-t-brand_green animate-spin flex-shrink-0" />
         <div className="flex-1">
           <div className="text-[13px] font-semibold text-custom-white">
@@ -161,7 +161,7 @@ const ExportBar = () => {
   }
 
   return (
-    <div className="flex-shrink-0 bg-[#1e2a4a] rounded-xl px-4 py-3 flex items-center gap-4">
+    <div className="flex-shrink-0 bg-brand_navy rounded-xl px-4 py-3 flex items-center gap-4">
       <div className="flex-1 min-w-0">
         <div className="text-[13px] font-semibold text-custom-white">
           {ctx.selectedStoreIds.length} of {ctx.stores.length} store
@@ -242,7 +242,7 @@ const ExportBar = () => {
           onClick={ctx.build}
           disabled={nothingToBuild}
           title={ctx.blocked ?? undefined}
-          className="bg-custom-white text-[#1e2a4a] text-[13px] font-semibold px-5 py-2.5 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed"
+          className="bg-custom-white text-brand_navy text-[13px] font-semibold px-5 py-2.5 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed"
         >
           Build export
         </button>

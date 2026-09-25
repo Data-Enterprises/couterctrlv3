@@ -24,12 +24,12 @@ const Stepper = ({ steps, current, completed, onStepClick }: StepperProps) => {
           >
             <span
               className={`w-[18px] h-[18px] rounded-full flex-shrink-0 flex items-center justify-center text-[9px] font-semibold ${
-                isActive || isDone ? "bg-[#1e2a4a] text-custom-white" : "bg-gray-200 text-content"
+                isActive || isDone ? "bg-brand_navy text-custom-white" : "bg-gray-200 text-content"
               }`}
             >
               {isDone ? "✓" : step.id}
             </span>
-            <span className={`text-[11px] ${isActive ? "font-semibold text-[#1e2a4a]" : isDone ? "text-content" : "text-content/40"}`}>
+            <span className={`text-[11px] ${isActive ? "font-semibold text-brand_navy" : isDone ? "text-content" : "text-content/40"}`}>
               {step.label}
             </span>
           </button>

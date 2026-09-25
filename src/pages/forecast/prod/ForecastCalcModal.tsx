@@ -131,7 +131,7 @@ const ForecastCalcModal = () => {
       defaultHeight={720}
     >
       {/* Title bar */}
-      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-3 bg-[#1e2a4a] flex-shrink-0">
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-3 bg-brand_navy flex-shrink-0">
         <p className="text-custom-white text-[13px] font-bold leading-tight justify-self-start truncate">
           {row.description}
         </p>
@@ -151,7 +151,7 @@ const ForecastCalcModal = () => {
             interpreted. Reg retail is the non-promo price and the baseline
             every Markdown figure is measured against; price points is how many
             distinct prices the demand curve is fitted through. */}
-      <div className="grid grid-cols-4 divide-x divide-[#1e2a4a]/15 border-b border-gray-100 bg-gray-50 flex-shrink-0">
+      <div className="grid grid-cols-4 divide-x divide-brand_navy/15 border-b border-gray-100 bg-gray-50 flex-shrink-0">
         {(
           [
             ["Reg retail", formatCurrency2(result.regular_retail_price)],
@@ -226,7 +226,7 @@ const ForecastCalcModal = () => {
                   setNewPrice(priceText);
                   setNewCost(costText);
                 }}
-                className="w-full py-1.5 text-[12px] font-semibold text-custom-white rounded-lg bg-[#1e2a4a] hover:bg-[#2a3a63] transition-colors"
+                className="w-full py-1.5 text-[12px] font-semibold text-custom-white rounded-lg bg-brand_navy hover:bg-brand_navy_hover transition-colors"
               >
                 Calculate
               </button>
@@ -275,7 +275,7 @@ const ForecastCalcModal = () => {
                   onClick={() =>
                     dispatch(setItemNotes({ upc: row.upc, notes: noteText }))
                   }
-                  className="px-3 text-[11px] font-medium text-[#1e2a4a] hover:underline"
+                  className="px-3 text-[11px] font-medium text-brand_navy hover:underline"
                 >
                   Save
                 </button>

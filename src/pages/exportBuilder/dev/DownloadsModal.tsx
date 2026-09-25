@@ -94,7 +94,7 @@ const DownloadsModal = () => {
           <button
             type="button"
             onClick={close}
-            className="text-[12px] font-medium px-3 py-1.5 rounded-lg bg-[#1e2a4a] hover:bg-[#2a3a63] text-custom-white transition-colors"
+            className="text-[12px] font-medium px-3 py-1.5 rounded-lg bg-brand_navy hover:bg-brand_navy_hover text-custom-white transition-colors"
           >
             Close
           </button>
@@ -230,7 +230,7 @@ const DownloadsModal = () => {
                         key={file.key}
                         href={file.url}
                         download
-                        className="bg-[#1e2a4a] hover:bg-[#2a3a63] text-custom-white text-[12.5px] font-semibold px-4 py-2 rounded-lg transition-colors flex-shrink-0"
+                        className="bg-brand_navy hover:bg-brand_navy_hover text-custom-white text-[12.5px] font-semibold px-4 py-2 rounded-lg transition-colors flex-shrink-0"
                       >
                         Download
                       </a>

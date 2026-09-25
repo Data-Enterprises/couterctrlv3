@@ -23,7 +23,7 @@ const Section = ({ section }: { section: TermsSection }) => {
 
   return (
     <section className="pt-[26px] mt-[26px] border-t border-brand_line first:border-t-0 first:mt-0 first:pt-0">
-      <h3 className="font-display text-[16.5px] font-extrabold text-brand_navy tracking-[-0.022em] leading-[1.2]">
+      <h3 className="font-display text-[16.5px] font-extrabold text-portal_navy tracking-[-0.022em] leading-[1.2]">
         <span className="font-mono text-[12px] font-semibold text-brand_green_dark mr-2">
           {section.number}.
         </span>
@@ -53,7 +53,7 @@ const Section = ({ section }: { section: TermsSection }) => {
         <dl className="mt-4">
           {section.subsections.map((sub) => (
             <div key={sub.id} className="mt-3.5 first:mt-0">
-              <dt className="font-display text-[13.5px] font-bold text-brand_navy">
+              <dt className="font-display text-[13.5px] font-bold text-portal_navy">
                 <span className="font-mono text-[11px] text-brand_green_dark mr-1.5">
                   ({sub.id})
                 </span>
@@ -69,10 +69,10 @@ const Section = ({ section }: { section: TermsSection }) => {
 
       {section.contact && (
         <address className="not-italic mt-4 border border-brand_line rounded-[10px] px-[18px] py-4 text-[13.8px] leading-[1.7] text-brand_slate">
-          <span className="block font-display text-[14.5px] font-bold text-brand_navy">
+          <span className="block font-display text-[14.5px] font-bold text-portal_navy">
             {section.contact.legal_name}
           </span>
-          <span className="block text-brand_navy">{section.contact.brand_name}</span>
+          <span className="block text-portal_navy">{section.contact.brand_name}</span>
           <span className="block mt-2">{section.contact.street}</span>
           <span className="block">{section.contact.city_state_zip}</span>
           <span className="block mt-2">

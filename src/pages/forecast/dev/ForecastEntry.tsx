@@ -159,7 +159,7 @@ const ForecastEntry = ({
             <button
               onClick={onClose}
               aria-label="Close search"
-              className="flex-shrink-0 -mt-1 -mr-1 p-1 rounded text-content/60 hover:text-content hover:bg-[#1e2a4a]/10 transition-colors"
+              className="flex-shrink-0 -mt-1 -mr-1 p-1 rounded text-content/60 hover:text-content hover:bg-brand_navy/10 transition-colors"
             >
               <XMarkIcon className="w-4 h-4" />
             </button>
@@ -243,7 +243,7 @@ const ForecastEntry = ({
                   {upcs.map((upc) => (
                     <span
                       key={upc}
-                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#1e2a4a]/10 text-[#1e2a4a]"
+                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-brand_navy/10 text-brand_navy"
                     >
                       {upc}
                       {adListRows[upc] && (
@@ -251,7 +251,7 @@ const ForecastEntry = ({
                       )}
                       <button
                         onClick={() => dispatch(removeUpc(upc))}
-                        className="text-[#1e2a4a]/85 hover:text-[#1e2a4a] transition-colors leading-none"
+                        className="text-brand_navy/85 hover:text-brand_navy transition-colors leading-none"
                       >
                         ×
                       </button>
@@ -272,7 +272,7 @@ const ForecastEntry = ({
             <button
               onClick={onSearch}
               disabled={!upcs.length || isLoading || nothingPicked}
-              className="w-full py-2 text-sm font-semibold text-custom-white rounded-lg bg-[#1e2a4a] hover:bg-[#2a3a63] transition-colors cursor-pointer select-none disabled:opacity-50"
+              className="w-full py-2 text-sm font-semibold text-custom-white rounded-lg bg-brand_navy hover:bg-brand_navy_hover transition-colors cursor-pointer select-none disabled:opacity-50"
             >
               {nothingPicked
                 ? pickLabel

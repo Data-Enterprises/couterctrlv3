@@ -169,7 +169,7 @@ export const BADGE_COLOR: Record<Severity, string> = {
 export const chipClass = (active: boolean, sev?: Severity) => {
   if (!active)
     return "bg-custom-white border border-gray-200 text-content hover:border-gray-400";
-  if (!sev) return "bg-[#1e2a4a] border-[#1e2a4a] text-custom-white";
+  if (!sev) return "bg-brand_navy border-brand_navy text-custom-white";
   const m: Record<Severity, string> = {
     critical: "bg-red-600 border-red-600 text-custom-white",
     watch: "bg-amber-500 border-amber-500 text-custom-white",

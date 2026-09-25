@@ -28,7 +28,7 @@ const UpcLeftPanel = ({ onReSearch }: Props) => {
   return (
     <div className="w-[300px] flex-shrink-0 shadow-lg flex flex-col overflow-hidden rounded-xl">
       {/* 2-row navy header */}
-      <div className="bg-[#1e2a4a] rounded-t-xl px-3 pt-1 pb-2.5 flex flex-col gap-0 flex-shrink-0 relative">
+      <div className="bg-brand_navy rounded-t-xl px-3 pt-1 pb-2.5 flex flex-col gap-0 flex-shrink-0 relative">
         {/* Row 1: title + UPC count */}
         <div className="flex items-start justify-between">
           <div>

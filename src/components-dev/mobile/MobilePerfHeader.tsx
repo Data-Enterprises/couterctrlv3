@@ -70,7 +70,7 @@ const MobilePerfHeader = ({
   return (
     <div
       className="flex-shrink-0 px-3 pt-2 pb-2.5"
-      style={{ background: "#1e2a4a" }}
+      style={{ background: "rgb(var(--color-brand-navy))" }}
     >
       {/* Row 1 — the store, then the week it covers */}
       <div className="flex items-baseline justify-between gap-2">

@@ -188,10 +188,10 @@ const ColFilter = ({
   };
   const labelColor =
     open || active
-      ? "#1e2a4a"
+      ? "rgb(var(--color-brand-navy))"
       : hovered
-        ? "rgba(30,42,74,0.65)"
-        : "rgba(30,42,74,0.4)";
+        ? "rgb(var(--color-brand-navy) / 0.65)"
+        : "rgb(var(--color-brand-navy) / 0.4)";
 
   return (
     <div ref={wrapRef} className="relative flex items-center gap-1 min-w-0">
@@ -208,9 +208,9 @@ const ColFilter = ({
       {active && appliedDisplay && (
         <span
           className="flex items-center gap-0.5 rounded px-1 py-0.5 flex-shrink-0"
-          style={{ background: "rgba(30,42,74,0.08)", maxWidth: 90 }}
+          style={{ background: "rgb(var(--color-brand-navy) / 0.08)", maxWidth: 90 }}
         >
-          <span className="text-[8px] font-medium text-[#1e2a4a] truncate">
+          <span className="text-[8px] font-medium text-brand_navy truncate">
             {appliedDisplay}
           </span>
           {onClear && (
@@ -219,7 +219,7 @@ const ColFilter = ({
                 e.stopPropagation();
                 onClear();
               }}
-              className="text-[8px] text-[#1e2a4a]/50 hover:text-[#1e2a4a] leading-none flex-shrink-0 ml-0.5"
+              className="text-[8px] text-brand_navy/50 hover:text-brand_navy leading-none flex-shrink-0 ml-0.5"
             >
               ✕
             </button>
@@ -239,7 +239,7 @@ const ColFilter = ({
             top: "calc(100% + 6px)",
             ...(align === "right" ? { right: 0 } : { left: 0 }),
             zIndex: 200,
-            border: "1px solid rgba(30,42,74,0.12)",
+            border: "1px solid rgb(var(--color-brand-navy) / 0.12)",
             borderRadius: 6,
             boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
             padding: "10px 10px 8px",
@@ -250,7 +250,7 @@ const ColFilter = ({
           <button
             onClick={handleApply}
             className="mt-2 w-full flex items-center justify-center gap-1.5 rounded py-1 text-[10px] font-medium text-custom-white"
-            style={{ background: "#1e2a4a" }}
+            style={{ background: "rgb(var(--color-brand-navy))" }}
           >
             <MagnifyingGlassIcon className="w-3 h-3" />
             Apply
@@ -539,12 +539,12 @@ const LPTransactionPanel = ({ onTransactionClick }: Props) => {
   const inputStyle: React.CSSProperties = {
     width: "100%",
     fontSize: 11,
-    border: "1px solid rgba(30,42,74,0.15)",
+    border: "1px solid rgb(var(--color-brand-navy) / 0.15)",
     borderRadius: 4,
     padding: "4px 7px",
     outline: "none",
     color: "var(--color-text-primary)",
-    background: "rgba(30,42,74,0.03)",
+    background: "rgb(var(--color-brand-navy) / 0.03)",
   };
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -703,7 +703,7 @@ const LPTransactionPanel = ({ onTransactionClick }: Props) => {
                           onClick={() =>
                             handleCashierClick(g.cashier_number, g.store_number)
                           }
-                          className={`w-full grid border-l-2 border-b border-b-[#1e2a4a]/15 transition-colors text-left ${
+                          className={`w-full grid border-l-2 border-b border-b-brand_navy/15 transition-colors text-left ${
                             isSel
                               ? "bg-row_selected border-row_selected_border"
                               : "border-transparent hover:bg-gray-50"
@@ -770,7 +770,7 @@ const LPTransactionPanel = ({ onTransactionClick }: Props) => {
                   <div className="flex-shrink-0 flex items-center gap-2 px-3 py-2 bg-gray-100 border-b border-gray-100">
                     <button
                       onClick={() => setSelectedOverview(null)}
-                      className="text-[12px] font-semibold text-[#1e2a4a] hover:text-[#1e2a4a]/70 transition-colors"
+                      className="text-[12px] font-semibold text-brand_navy hover:text-brand_navy/70 transition-colors"
                     >
                       ← Back
                     </button>
@@ -904,18 +904,18 @@ const LPTransactionPanel = ({ onTransactionClick }: Props) => {
                           filteredOverviews.map((o, i) => (
                             <div
                               key={o.transaction_id + i}
-                              className="grid border-b border-b-[#1e2a4a]/15 hover:bg-gray-50 transition-colors"
+                              className="grid border-b border-b-brand_navy/15 hover:bg-gray-50 transition-colors"
                               style={{
                                 gridTemplateColumns: "1fr 0.7fr 0.45fr 0.6fr",
                                 background:
                                   i % 2 === 1
-                                    ? "rgba(30,42,74,0.015)"
+                                    ? "rgb(var(--color-brand-navy) / 0.015)"
                                     : undefined,
                               }}
                             >
                               <button
                                 onClick={() => handleRowClick(o)}
-                                className="px-3 py-2 text-[13px] font-semibold text-[#1e2a4a] underline underline-offset-2 text-left truncate"
+                                className="px-3 py-2 text-[13px] font-semibold text-brand_navy underline underline-offset-2 text-left truncate"
                               >
                                 {o.transaction_id}
                               </button>

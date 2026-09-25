@@ -31,7 +31,7 @@ const ArticleView = ({ post, back, footerNav }: Props) => (
       {post.author}
     </div>
 
-    <h1 className="font-display text-[27px] font-extrabold text-brand_navy tracking-[-0.032em] leading-[1.14] mt-3">
+    <h1 className="font-display text-[27px] font-extrabold text-portal_navy tracking-[-0.032em] leading-[1.14] mt-3">
       {post.title}
     </h1>
 

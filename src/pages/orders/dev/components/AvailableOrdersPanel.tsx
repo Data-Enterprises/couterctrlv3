@@ -115,7 +115,7 @@ const isSelected = (order_date: string, order_type: string, storeid: number, sto
       style={{ flexBasis: "25%", minWidth: 0 }}
     >
       {/* Header */}
-      <div className="bg-[#1e2a4a] px-3 pt-1 pb-2.5 flex-shrink-0 flex flex-col gap-0">
+      <div className="bg-brand_navy px-3 pt-1 pb-2.5 flex-shrink-0 flex flex-col gap-0">
         {/* Row 1: title + date | totals */}
         <div className="flex items-end gap-3 min-h-[26px]">
           <span className="text-custom-white font-medium text-[13px] flex-shrink-0">Available Orders</span>
@@ -156,7 +156,7 @@ const isSelected = (order_date: string, order_type: string, storeid: number, sto
             onClick={() => { resetIfSelected(); setActiveType("all"); setOpenTypes(new Set()); }}
             className={`text-[10px] font-semibold py-2 whitespace-nowrap border-b-2 transition-colors flex-1 text-center ${
               activeType === "all"
-                ? "border-[#1e2a4a] text-[#1e2a4a]"
+                ? "border-brand_navy text-brand_navy"
                 : "border-transparent text-content"
             }`}
           >
@@ -168,7 +168,7 @@ const isSelected = (order_date: string, order_type: string, storeid: number, sto
               onClick={() => { resetIfSelected(); setActiveType(card.order_type); setOpenTypes(new Set()); }}
               className={`text-[10px] font-semibold py-2 whitespace-nowrap border-b-2 transition-colors flex-1 text-center ${
                 activeType === card.order_type
-                  ? "border-[#1e2a4a] text-[#1e2a4a]"
+                  ? "border-brand_navy text-brand_navy"
                   : "border-transparent text-content"
               }`}
             >
@@ -200,7 +200,7 @@ const isSelected = (order_date: string, order_type: string, storeid: number, sto
         <div className="px-3 pb-2 flex-shrink-0">
           <button
             onClick={() => onSelectAllStores(dateFilter, activeType, allVisibleStoreIds)}
-            className="w-full text-[11px] font-medium py-1.5 rounded-md border border-[#1e2a4a]/20 text-[#1e2a4a] hover:bg-[#1e2a4a]/5 transition-colors"
+            className="w-full text-[11px] font-medium py-1.5 rounded-md border border-brand_navy/20 text-brand_navy hover:bg-brand_navy/5 transition-colors"
           >
             Select all {allVisibleStoreIds.length} stores
           </button>
@@ -225,16 +225,16 @@ const isSelected = (order_date: string, order_type: string, storeid: number, sto
               {activeType === "all" && (
                 <button
                   onClick={() => toggleType(card.order_type)}
-                  className="w-full flex items-center gap-2 bg-[#1e2a4a]/5 hover:bg-[#1e2a4a]/10 pl-3 pr-3 py-2 transition-colors"
+                  className="w-full flex items-center gap-2 bg-brand_navy/5 hover:bg-brand_navy/10 pl-3 pr-3 py-2 transition-colors"
                 >
                   <ChevronRightIcon
-                    className="w-3 h-3 text-[#1e2a4a]/60 flex-shrink-0 transition-transform"
+                    className="w-3 h-3 text-brand_navy/60 flex-shrink-0 transition-transform"
                     style={{ transform: typeOpen ? "rotate(90deg)" : "rotate(0deg)" }}
                   />
-                  <span className="text-[12px] font-semibold text-[#1e2a4a] uppercase tracking-wide flex-1 text-left">
+                  <span className="text-[12px] font-semibold text-brand_navy uppercase tracking-wide flex-1 text-left">
                     {card.order_type}
                   </span>
-                  <span className="text-[11px] text-[#1e2a4a]">{card.dates.reduce((n, d) => n + d.stores.length, 0)}</span>
+                  <span className="text-[11px] text-brand_navy">{card.dates.reduce((n, d) => n + d.stores.length, 0)}</span>
                 </button>
               )}
 

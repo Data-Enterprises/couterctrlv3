@@ -206,18 +206,30 @@ body {
        data, and per the design direction red/green stay reserved for delta
        flags. Two different jobs, so two different tokens.
 
-       brand-navy is the handoff's #0F2440, a shade deeper than the app
-       chrome's #1e2a4a. Kept distinct rather than collapsed into one so the
-       marketing front door and the authenticated shell can diverge without
-       one silently restyling the other. */
+       portal-navy is the handoff's #0F2440, a shade deeper than the app
+       chrome's brand-navy below. Kept distinct rather than collapsed into
+       one so the marketing front door and the authenticated shell can
+       diverge without one silently restyling the other. It used to live in
+       brand-navy, which is why that token's name has no portal in it. */
     --color-brand-green: 30 158 82;
     --color-brand-green-dark: 23 128 63;
     /* Darkest green, for text on a tinted fill. Added in the Aug 2026 handoff
        revision: white on brand-green is only 3.4:1, on green-dark 5.0:1. */
     --color-brand-green-darker: 17 99 48;
     --color-brand-green-tint: 234 247 239;
-    --color-brand-navy: 15 36 64;
-    --color-brand-navy-hover: 27 58 99;
+    --color-portal-navy: 15 36 64;
+    --color-portal-navy-hover: 27 58 99;
+    /* The navy of the authenticated app. Headers, buttons, rails, focus
+       rings, every tree — they all paint from this one pair, so changing it
+       here changes the app.
+
+       This token used to hold the portal's #0F2440 and about two dozen
+       places used it, while the ~1,300 sites that make up the actual chrome
+       each carried #1e2a4a by hand and could not be restyled at all. It now
+       holds what the app was really painting, and the portal's shade moved
+       out to portal-navy above. */
+    --color-brand-navy: 30 42 74;
+    --color-brand-navy-hover: 42 58 99;
     --color-brand-slate: 90 108 132;
     /* Small mono labels (timestamps, fact keys, panel footers). The first
        handoff used #94A3B8 / #8D9CB0 here — measured at 2.5–2.8:1, below the
@@ -490,12 +502,12 @@ body {
     --track-fill: rgba(255, 255, 255, 0.85);
     --track-rest: rgba(255, 255, 255, 0.2);
     --thumb-bg: #ffffff;
-    --thumb-ring: #1e2a4a;
+    --thumb-ring: rgb(var(--color-brand-navy));
   }
   .threshold-range-light {
-    --track-fill: #1e2a4a;
-    --track-rest: rgba(30, 42, 74, 0.2);
-    --thumb-bg: #1e2a4a;
+    --track-fill: rgb(var(--color-brand-navy));
+    --track-rest: rgb(var(--color-brand-navy) / 0.2);
+    --thumb-bg: rgb(var(--color-brand-navy));
     --thumb-ring: #ffffff;
   }
   .threshold-range {
@@ -540,7 +552,7 @@ body {
     border-radius: 9999px;
     background: var(--thumb-bg);
     border: 2px solid var(--thumb-ring);
-    box-shadow: 0 0 0 1px rgba(30, 42, 74, 0.25);
+    box-shadow: 0 0 0 1px rgb(var(--color-brand-navy) / 0.25);
   }
   .threshold-range::-moz-range-thumb {
     width: 12px;

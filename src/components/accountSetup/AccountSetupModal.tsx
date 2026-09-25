@@ -149,7 +149,7 @@ const AccountSetupModal = () => {
       style={{ zIndex: 5000 }}
     >
       <div className="bg-custom-white rounded-xl shadow-2xl w-[462px] max-w-[92vw] overflow-hidden">
-        <div className="bg-[#1e2a4a] px-4 py-2.5 flex items-center gap-2">
+        <div className="bg-brand_navy px-4 py-2.5 flex items-center gap-2">
           <span className="text-custom-white text-[13px] font-semibold">
             {plan.length > 1 ? "Finish setting up your account" : STEP_TITLE[step]}
           </span>
@@ -168,7 +168,7 @@ const AccountSetupModal = () => {
               <span
                 key={s}
                 className={`flex-1 h-[3px] rounded-full ${
-                  i <= stepIndex ? "bg-[#1e2a4a]" : "bg-gray-200"
+                  i <= stepIndex ? "bg-brand_navy" : "bg-gray-200"
                 }`}
               />
             ))}
@@ -241,7 +241,7 @@ const AccountSetupModal = () => {
             disabled={!canSubmit || submitting}
             className={`w-full text-[12px] font-medium py-2 rounded-md text-custom-white transition-colors ${
               canSubmit && !submitting
-                ? "bg-[#1e2a4a] hover:bg-[#1e2a4a]/85"
+                ? "bg-brand_navy hover:bg-brand_navy/85"
                 : "bg-gray-300 cursor-not-allowed"
             }`}
           >

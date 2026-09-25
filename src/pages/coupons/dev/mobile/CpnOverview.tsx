@@ -158,7 +158,7 @@ const CpnOverview = ({
             onClick={() => onTabChange(t.key)}
             className={`px-3 py-2 text-[11px] font-medium border-b-2 transition-colors ${
               selectedTab === t.key
-                ? "border-[#1e2a4a] text-content font-semibold"
+                ? "border-brand_navy text-content font-semibold"
                 : "border-transparent text-content/85"
             }`}
           >

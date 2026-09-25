@@ -17,7 +17,7 @@ import type { ForecastOutlierRow } from "../../../features/dev/devForecastSlice"
 const COLS = "1fr 60px 44px 60px 84px 84px 56px";
 
 const HEAD =
-  "grid gap-1.5 px-2 py-1.5 border-b border-[#1e2a4a]/15 text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-shrink-0";
+  "grid gap-1.5 px-2 py-1.5 border-b border-brand_navy/15 text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-shrink-0";
 
 interface Props {
   pricesWithQty: number[][];
@@ -132,7 +132,7 @@ const ForecastScenarios = ({
           return (
             <div
               key={row.price}
-              className={`grid gap-1.5 items-center px-2 py-[7px] border-b border-[#1e2a4a]/15 last:border-b-0 ${
+              className={`grid gap-1.5 items-center px-2 py-[7px] border-b border-brand_navy/15 last:border-b-0 ${
                 isActive ? "bg-blue-50" : "even:bg-row_stripe hover:bg-gray-50"
               }`}
               style={{ gridTemplateColumns: COLS }}
@@ -175,7 +175,7 @@ const ForecastScenarios = ({
               ) : (
                 <button
                   onClick={() => onApply(row.price)}
-                  className="text-right text-[11px] font-medium text-[#1e2a4a] hover:underline"
+                  className="text-right text-[11px] font-medium text-brand_navy hover:underline"
                 >
                   apply
                 </button>

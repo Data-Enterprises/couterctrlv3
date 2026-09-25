@@ -388,7 +388,7 @@ const ItemMarginsTable = ({
   if (loading) {
     return (
       <div className="flex-1 min-h-0 flex items-center justify-center gap-2">
-        <div className="w-3.5 h-3.5 border-2 border-gray-200 border-t-[#1e2a4a] rounded-full animate-spin" />
+        <div className="w-3.5 h-3.5 border-2 border-gray-200 border-t-brand_navy rounded-full animate-spin" />
         <span className="text-[11px] text-content">Loading items…</span>
       </div>
     );
@@ -521,7 +521,7 @@ const ItemMarginsTable = ({
                       e.stopPropagation();
                       openCtxMenu(e, item.productCode);
                     }}
-                    className={`w-full flex items-center gap-2.5 p-3 text-left transition-colors border-l-2 border-b border-b-[#1e2a4a]/15 ${
+                    className={`w-full flex items-center gap-2.5 p-3 text-left transition-colors border-l-2 border-b border-b-brand_navy/15 ${
                       isSel
                         ? "bg-row_selected border-row_selected_border"
                         : "border-transparent hover:bg-gray-50"
@@ -654,7 +654,7 @@ const ItemMarginsTable = ({
               <div className="px-4 py-2.5 border-b border-gray-100">
                 <div className="grid grid-cols-[40%_1fr] gap-2">
                   {reportRows.length > 0 && (
-                    <div className="rounded-md border border-[#1e2a4a]/15 shadow-sm bg-gray-50 p-2.5 text-center flex flex-col justify-center">
+                    <div className="rounded-md border border-brand_navy/15 shadow-sm bg-gray-50 p-2.5 text-center flex flex-col justify-center">
                       <div className="text-[11px] font-semibold text-content">
                         {reportRows[0].label}
                       </div>
@@ -697,7 +697,7 @@ const ItemMarginsTable = ({
                   {/* Supporting metrics share one set of column headers so they
                       stay comparable to each other; prior values live in the
                       title attribute. */}
-                  <div className="rounded-md border border-[#1e2a4a]/15 shadow-sm bg-gray-50 px-2.5 py-1 flex flex-col justify-center">
+                  <div className="rounded-md border border-brand_navy/15 shadow-sm bg-gray-50 px-2.5 py-1 flex flex-col justify-center">
                     <div className="grid grid-cols-[1fr_56px_55px_55px] gap-1.5 pb-0.5 text-[11px] font-semibold uppercase tracking-wide text-content">
                       <span />
                       <span className="text-right">TY</span>
@@ -740,7 +740,7 @@ const ItemMarginsTable = ({
                   </div>
                 </div>
               </div>
-              <div className="border-t border-[#1e2a4a]/15 shadow-sm mx-4" />
+              <div className="border-t border-brand_navy/15 shadow-sm mx-4" />
 
               {selectedDetail && (
                 <div className="px-4 py-2.5">
@@ -807,7 +807,7 @@ const ItemMarginsTable = ({
                           return (
                             <div
                               key={d.wd}
-                              className="grid grid-cols-[10px_34px_1fr_92px_92px_92px] gap-2 items-center py-2 border-t border-[#1e2a4a]/15"
+                              className="grid grid-cols-[10px_34px_1fr_92px_92px_92px] gap-2 items-center py-2 border-t border-brand_navy/15"
                             >
                               <span
                                 className={`w-2 h-2 rounded-full ${
@@ -824,9 +824,9 @@ const ItemMarginsTable = ({
                                   length carries dollars, the dot carries the
                                   grade. */}
                               {d.sold ? (
-                                <span className="h-[12px] w-full rounded-full bg-[#1e2a4a]/15 block overflow-hidden">
+                                <span className="h-[12px] w-full rounded-full bg-brand_navy/15 block overflow-hidden">
                                   <span
-                                    className="h-full rounded-full bg-[#1e2a4a]/85 block"
+                                    className="h-full rounded-full bg-brand_navy/85 block"
                                     style={{
                                       width: `${maxTy > 0 ? (d.ty / maxTy) * 100 : 0}%`,
                                     }}

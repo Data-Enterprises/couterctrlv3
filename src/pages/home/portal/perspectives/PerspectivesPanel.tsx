@@ -42,7 +42,7 @@ const Pane = ({
       {seat.eyebrow}
     </span>
 
-    <h3 className="font-display text-[19px] font-extrabold text-brand_navy tracking-[-0.028em] leading-[1.12]">
+    <h3 className="font-display text-[19px] font-extrabold text-portal_navy tracking-[-0.028em] leading-[1.12]">
       {seat.question}
     </h3>
 
@@ -67,7 +67,7 @@ const Pane = ({
               key={item.title}
               className="text-[13.8px] leading-[1.6] text-brand_slate py-3 border-t border-brand_line first:border-t-0"
             >
-              <b className="block font-display text-[14.5px] font-bold text-brand_navy mb-1">
+              <b className="block font-display text-[14.5px] font-bold text-portal_navy mb-1">
                 {item.title}
               </b>
               {item.body}
@@ -86,7 +86,7 @@ const Pane = ({
       {seat.where.map((w) => (
         <span
           key={w}
-          className="font-mono text-[10px] tracking-[0.11em] uppercase border border-brand_line_2 text-brand_navy bg-custom-white rounded-md px-3 py-[7px] shadow-[0_1px_2px_rgba(15,36,64,.05)]"
+          className="font-mono text-[10px] tracking-[0.11em] uppercase border border-brand_line_2 text-portal_navy bg-custom-white rounded-md px-3 py-[7px] shadow-[0_1px_2px_rgb(var(--color-portal-navy)/.05)]"
         >
           {w}
         </span>
@@ -163,7 +163,7 @@ const PerspectivesPanel = ({
       <div className="px-8 pt-[26px] pb-[34px]">
         <p className="text-[14.5px] leading-[1.68] text-brand_slate">
           {PERSPECTIVES_PANEL.lead}
-          <b className="font-semibold text-brand_navy">
+          <b className="font-semibold text-portal_navy">
             {PERSPECTIVES_PANEL.leadEmphasis}
           </b>
           {PERSPECTIVES_PANEL.leadTail}
@@ -191,7 +191,7 @@ const PerspectivesPanel = ({
                 className={`font-display text-[13.5px] font-semibold px-3 pb-2.5 -mb-px border-b-2 transition-colors cursor-pointer ${
                   on
                     ? "border-brand_green text-brand_green_dark"
-                    : "border-transparent text-brand_slate hover:text-brand_navy"
+                    : "border-transparent text-brand_slate hover:text-portal_navy"
                 }`}
               >
                 {s.tabLabel}

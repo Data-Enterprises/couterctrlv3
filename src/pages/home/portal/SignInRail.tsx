@@ -70,7 +70,7 @@ const SignInRail = ({
       </div>
 
       <div>
-        <h1 className="font-display text-[25px] portal_shorter:text-[22px] font-extrabold text-brand_navy tracking-[-0.03em] leading-[1.12]">
+        <h1 className="font-display text-[25px] portal_shorter:text-[22px] font-extrabold text-portal_navy tracking-[-0.03em] leading-[1.12]">
           {SIGN_IN_COPY.heading}
         </h1>
         <p className="text-[13.5px] text-brand_slate mt-2 leading-[1.6]">
@@ -89,7 +89,7 @@ const SignInRail = ({
         )}
 
         <div className="mb-[15px]">
-          <label htmlFor="username" className="block text-[12.5px] font-semibold mb-[7px] text-brand_navy">
+          <label htmlFor="username" className="block text-[12.5px] font-semibold mb-[7px] text-portal_navy">
             {SIGN_IN_COPY.usernameLabel}
           </label>
           <input
@@ -105,7 +105,7 @@ const SignInRail = ({
             value={username}
             disabled={loading}
             onChange={(e) => onUsernameChange(e.target.value)}
-            className={`w-full px-3.5 py-3 font-body text-[15px] text-brand_navy bg-custom-white border rounded-lg outline-none transition-colors placeholder:text-brand_placeholder focus:border-brand_green focus:shadow-[0_0_0_3.5px_rgba(30,158,82,0.15)] ${
+            className={`w-full px-3.5 py-3 font-body text-[15px] text-portal_navy bg-custom-white border rounded-lg outline-none transition-colors placeholder:text-brand_placeholder focus:border-brand_green focus:shadow-[0_0_0_3.5px_rgba(30,158,82,0.15)] ${
               invalidField === "username" ? "border-brand_danger" : "border-brand_line_2"
             }`}
           />
@@ -160,7 +160,7 @@ const SignInRail = ({
           type="submit"
           disabled={loading}
           aria-busy={loading}
-          className="w-full flex items-center justify-center gap-2.5 font-display font-semibold text-[15px] text-custom-white bg-brand_navy rounded-lg px-[18px] py-3 transition-colors hover:bg-brand_navy_hover disabled:opacity-70 cursor-pointer"
+          className="w-full flex items-center justify-center gap-2.5 font-display font-semibold text-[15px] text-custom-white bg-portal_navy rounded-lg px-[18px] py-3 transition-colors hover:bg-portal_navy_hover disabled:opacity-70 cursor-pointer"
         >
           {loading && (
             <span

@@ -241,7 +241,7 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: Props) => {
       style={{ flexBasis: "35%", flexShrink: 0 }}
     >
       {/* Navy header — 2-row canonical pattern */}
-      <div className="bg-[#1e2a4a] rounded-t-xl px-4 pt-1 pb-2.5 flex flex-col gap-0">
+      <div className="bg-brand_navy rounded-t-xl px-4 pt-1 pb-2.5 flex flex-col gap-0">
 
         {/* Row 1: date range | primary value + vs LW/LY pills */}
         <div className="flex items-center gap-2 min-h-[26px]">
@@ -388,7 +388,7 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: Props) => {
       <div className="flex-1 overflow-hidden bg-custom-white rounded-b-xl shadow-sm border border-t-0 border-gray-100 flex flex-col">
         {loadingGrades && grades.length === 0 ? (
           <div className="flex-1 flex items-center justify-center gap-2">
-            <div className="w-3.5 h-3.5 border-2 border-gray-200 border-t-[#1e2a4a] rounded-full animate-spin" />
+            <div className="w-3.5 h-3.5 border-2 border-gray-200 border-t-brand_navy rounded-full animate-spin" />
             <span className="text-[11px] text-content">Grading sub departments…</span>
           </div>
         ) : (
@@ -462,7 +462,7 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: Props) => {
                     <button
                       key={id}
                       onClick={() => handleSubDeptClick(id)}
-                      className={`w-full flex items-center gap-2.5 p-3 text-left transition-colors border-l-2 border-b border-b-[#1e2a4a]/15 ${
+                      className={`w-full flex items-center gap-2.5 p-3 text-left transition-colors border-l-2 border-b border-b-brand_navy/15 ${
                         isSel
                           ? "bg-row_selected border-row_selected_border"
                           : "border-transparent hover:bg-gray-50"

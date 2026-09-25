@@ -535,7 +535,7 @@ const MarginPerfExportModal = ({
       defaultHeight={960}
     >
         {/* Header */}
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center px-4 py-3 bg-[#1e2a4a]">
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center px-4 py-3 bg-brand_navy">
           <div>
             <p className="text-custom-white text-[13px] font-semibold">Export CSV</p>
             <p className="text-custom-white text-[10px] mt-0.5">{subDeptName} · {storeName}</p>
@@ -546,7 +546,7 @@ const MarginPerfExportModal = ({
                 key={m}
                 onClick={() => setMode(m)}
                 className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors ${
-                  mode === m ? "bg-custom-white text-[#1e2a4a]" : "text-custom-white"
+                  mode === m ? "bg-custom-white text-brand_navy" : "text-custom-white"
                 }`}
               >
                 {m === "presets" ? "Presets" : "Custom"}
@@ -569,10 +569,10 @@ const MarginPerfExportModal = ({
                     type="checkbox"
                     checked={selected.has(id)}
                     onChange={() => setSelected((prev) => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; })}
-                    className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-[#1e2a4a] cursor-pointer flex-shrink-0"
+                    className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-brand_navy cursor-pointer flex-shrink-0"
                   />
                   <div>
-                    <p className="text-[13px] font-medium text-content group-hover:text-[#1e2a4a] transition-colors">{label}</p>
+                    <p className="text-[13px] font-medium text-content group-hover:text-brand_navy transition-colors">{label}</p>
                     <p className="text-[11px] text-content mt-0.5">{description}</p>
                   </div>
                 </label>
@@ -590,7 +590,7 @@ const MarginPerfExportModal = ({
                     if (checking && itemSevs.size === 0) setItemSevs(new Set(["critical", "watch", "healthy"]));
                     setSelected((prev) => { const n = new Set(prev); checking ? n.add("items_vs_ly") : n.delete("items_vs_ly"); return n; });
                   }}
-                  className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-[#1e2a4a] cursor-pointer flex-shrink-0"
+                  className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-brand_navy cursor-pointer flex-shrink-0"
                 />
                 <div className="flex-1 min-w-0">
                   <p className="text-[13px] font-medium text-content">Items vs Last Year</p>
@@ -638,7 +638,7 @@ const MarginPerfExportModal = ({
                     if (checking && deptSevs.size === 0) setDeptSevs(new Set(["critical"]));
                     setSelected((prev) => { const n = new Set(prev); checking ? n.add("all_depts") : n.delete("all_depts"); return n; });
                   }}
-                  className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-[#1e2a4a] cursor-pointer flex-shrink-0"
+                  className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-brand_navy cursor-pointer flex-shrink-0"
                 />
                 <div className="flex-1 min-w-0">
                   <p className="text-[13px] font-medium text-content">Graded Items — All Departments</p>
@@ -678,7 +678,7 @@ const MarginPerfExportModal = ({
                     if (checking && upcSevs.size === 0) setUpcSevs(new Set(["critical"]));
                     setSelected((prev) => { const n = new Set(prev); checking ? n.add("upc_list") : n.delete("upc_list"); return n; });
                   }}
-                  className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-[#1e2a4a] cursor-pointer flex-shrink-0"
+                  className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-brand_navy cursor-pointer flex-shrink-0"
                 />
                 <div className="flex-1 min-w-0">
                   <p className="text-[13px] font-medium text-content">UPC List</p>
@@ -699,7 +699,7 @@ const MarginPerfExportModal = ({
               <button
                 onClick={handlePresetDownload}
                 disabled={selected.size === 0}
-                className="flex items-center gap-1.5 bg-[#1e2a4a] hover:bg-[#1e2a4a]/85 disabled:opacity-40 text-custom-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors"
+                className="flex items-center gap-1.5 bg-brand_navy hover:bg-brand_navy/85 disabled:opacity-40 text-custom-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors"
               >
                 <ArrowDownTrayIcon className="w-3.5 h-3.5" />
                 Download CSV
@@ -723,7 +723,7 @@ const MarginPerfExportModal = ({
                           type="radio"
                           checked={source === s}
                           onChange={() => switchSource(s)}
-                          className="accent-[#1e2a4a] h-3.5 w-3.5"
+                          className="accent-brand_navy h-3.5 w-3.5"
                         />
                         <span className="text-[12px] text-content">{s === "ty" ? "This Year" : "Last Year"}</span>
                       </label>
@@ -740,7 +740,7 @@ const MarginPerfExportModal = ({
                           type="checkbox"
                           checked={groupBy.has(d.key)}
                           onChange={() => toggleGroupBy(d.key)}
-                          className="accent-[#1e2a4a] h-3.5 w-3.5 rounded flex-shrink-0"
+                          className="accent-brand_navy h-3.5 w-3.5 rounded flex-shrink-0"
                         />
                         <span className="text-[12px] text-content">{d.label}</span>
                       </label>
@@ -759,7 +759,7 @@ const MarginPerfExportModal = ({
                             type="checkbox"
                             checked={sel.enabled}
                             onChange={() => toggleMetric(m.key)}
-                            className="accent-[#1e2a4a] h-3.5 w-3.5 rounded flex-shrink-0"
+                            className="accent-brand_navy h-3.5 w-3.5 rounded flex-shrink-0"
                           />
                           <span className="text-[12px] flex-1 text-content">{m.label}</span>
                           <select
@@ -839,7 +839,7 @@ const MarginPerfExportModal = ({
               <button
                 onClick={handleCustomDownload}
                 disabled={!canCustomDownload}
-                className="flex items-center gap-1.5 bg-[#1e2a4a] hover:bg-[#1e2a4a]/85 disabled:opacity-40 text-custom-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors"
+                className="flex items-center gap-1.5 bg-brand_navy hover:bg-brand_navy/85 disabled:opacity-40 text-custom-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors"
               >
                 <ArrowDownTrayIcon className="w-3.5 h-3.5" />
                 Download CSV

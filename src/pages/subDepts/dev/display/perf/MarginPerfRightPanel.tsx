@@ -424,7 +424,7 @@ const MarginPerfRightPanel = () => {
       <div className="bg-custom-white rounded-xl shadow-sm overflow-hidden flex flex-col h-full">
         {/* ── Title bar — tinted to the selected sub dept's tier ── */}
         <div
-          className={`relative grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-3 flex-shrink-0 ${tier === "ungraded" ? "bg-[#1e2a4a]" : severityHeaderBgClass[tier]}`}
+          className={`relative grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-3 flex-shrink-0 ${tier === "ungraded" ? "bg-brand_navy" : severityHeaderBgClass[tier]}`}
         >
           <p className="text-custom-white text-[13px] font-bold leading-tight justify-self-start">
             {subDeptName}
@@ -588,7 +588,7 @@ const MarginPerfRightPanel = () => {
           <button
             className={`px-3 py-2 text-[12px] font-medium border-b-2 transition-colors ${
               ctx.subDeptGridView === "item"
-                ? "border-[#1e2a4a] text-content"
+                ? "border-brand_navy text-content"
                 : "border-transparent text-content"
             }`}
             onClick={() => dispatch(actions.setSubDeptGridView("item"))}
@@ -598,7 +598,7 @@ const MarginPerfRightPanel = () => {
           <button
             className={`px-3 py-2 text-[12px] font-medium border-b-2 transition-colors ${
               ctx.subDeptGridView === "cost"
-                ? "border-[#1e2a4a] text-content"
+                ? "border-brand_navy text-content"
                 : "border-transparent text-content"
             }`}
             onClick={handleCostTab}

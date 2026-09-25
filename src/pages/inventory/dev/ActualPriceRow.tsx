@@ -82,7 +82,7 @@ const ActualPriceRow = ({ point, isBest = false }: Props) => {
       </div>
 
       {open && (
-        <div className="bg-[#1e2a4a]/[0.03] border-b border-gray-100 pl-5 pr-2 py-1.5">
+        <div className="bg-brand_navy/[0.03] border-b border-gray-100 pl-5 pr-2 py-1.5">
           <div
             className="grid py-1 text-[9px] font-medium uppercase tracking-wide text-content/60"
             style={{ gridTemplateColumns: TXN_COLS }}

@@ -48,7 +48,7 @@ const PasswordField = ({ value, onChange, disabled, invalid }: Props) => {
 
   return (
     <div className="mb-[15px]">
-      <label htmlFor="password" className="block text-[12.5px] font-semibold mb-[7px] text-brand_navy">
+      <label htmlFor="password" className="block text-[12.5px] font-semibold mb-[7px] text-portal_navy">
         {SIGN_IN_COPY.passwordLabel}
       </label>
       <div className="relative">
@@ -68,7 +68,7 @@ const PasswordField = ({ value, onChange, disabled, invalid }: Props) => {
           onKeyUp={checkCaps}
           onFocus={checkCaps}
           onBlur={() => setCaps(false)}
-          className={`w-full py-3 pl-3.5 pr-[70px] font-body text-[15px] text-brand_navy bg-custom-white border rounded-lg outline-none transition-colors placeholder:text-brand_placeholder focus:border-brand_green focus:shadow-[0_0_0_3.5px_rgba(30,158,82,0.15)] ${
+          className={`w-full py-3 pl-3.5 pr-[70px] font-body text-[15px] text-portal_navy bg-custom-white border rounded-lg outline-none transition-colors placeholder:text-brand_placeholder focus:border-brand_green focus:shadow-[0_0_0_3.5px_rgba(30,158,82,0.15)] ${
             invalid ? "border-brand_danger" : "border-brand_line_2"
           }`}
         />
@@ -77,7 +77,7 @@ const PasswordField = ({ value, onChange, disabled, invalid }: Props) => {
           onClick={toggle}
           aria-pressed={shown}
           aria-label={shown ? "Hide password" : "Show password"}
-          className="absolute right-1.5 top-1/2 -translate-y-1/2 font-mono text-[10px] tracking-[0.1em] text-brand_slate px-2.5 py-1.5 rounded-md transition-colors hover:text-brand_navy hover:bg-bkg cursor-pointer"
+          className="absolute right-1.5 top-1/2 -translate-y-1/2 font-mono text-[10px] tracking-[0.1em] text-brand_slate px-2.5 py-1.5 rounded-md transition-colors hover:text-portal_navy hover:bg-bkg cursor-pointer"
         >
           {shown ? "HIDE" : "SHOW"}
         </button>

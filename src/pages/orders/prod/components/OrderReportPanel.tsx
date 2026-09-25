@@ -38,11 +38,11 @@ const MAX_CHIPS = 3;
 const colFilterInputStyle: React.CSSProperties = {
   width: "100%",
   fontSize: 11,
-  border: "1px solid rgba(30,42,74,0.15)",
+  border: "1px solid rgb(var(--color-brand-navy) / 0.15)",
   borderRadius: 4,
   padding: "4px 7px",
   outline: "none",
-  color: "#1e2a4a",
+  color: "rgb(var(--color-brand-navy))",
 };
 
 interface ColFilterProps {
@@ -87,10 +87,10 @@ const ColFilter = ({
   };
   const labelColor =
     open || active
-      ? "#1e2a4a"
+      ? "rgb(var(--color-brand-navy))"
       : hovered
-        ? "rgba(30,42,74,0.65)"
-        : "rgba(30,42,74,0.4)";
+        ? "rgb(var(--color-brand-navy) / 0.65)"
+        : "rgb(var(--color-brand-navy) / 0.4)";
 
   return (
     <div ref={wrapRef} className="relative flex items-center gap-1 min-w-0">
@@ -106,9 +106,9 @@ const ColFilter = ({
       {active && appliedDisplay && (
         <span
           className="flex items-center gap-0.5 rounded px-1 py-0.5 flex-shrink-0"
-          style={{ background: "rgba(30,42,74,0.08)", maxWidth: 90 }}
+          style={{ background: "rgb(var(--color-brand-navy) / 0.08)", maxWidth: 90 }}
         >
-          <span className="text-[8px] font-medium text-[#1e2a4a] truncate">
+          <span className="text-[8px] font-medium text-brand_navy truncate">
             {appliedDisplay}
           </span>
           {onClear && (
@@ -117,7 +117,7 @@ const ColFilter = ({
                 e.stopPropagation();
                 onClear();
               }}
-              className="text-[8px] text-[#1e2a4a] leading-none flex-shrink-0 ml-0.5"
+              className="text-[8px] text-brand_navy leading-none flex-shrink-0 ml-0.5"
             >
               ✕
             </button>
@@ -136,7 +136,7 @@ const ColFilter = ({
             ...(align === "right" ? { right: 0 } : { left: 0 }),
             zIndex: 200,
             background: "white",
-            border: "1px solid rgba(30,42,74,0.12)",
+            border: "1px solid rgb(var(--color-brand-navy) / 0.12)",
             borderRadius: 6,
             boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
             padding: "10px 10px 8px",
@@ -147,7 +147,7 @@ const ColFilter = ({
           <button
             onClick={handleApply}
             className="mt-2 w-full flex items-center justify-center gap-1.5 rounded py-1 text-[10px] font-medium"
-            style={{ background: "#1e2a4a", color: "white" }}
+            style={{ background: "rgb(var(--color-brand-navy))", color: "white" }}
           >
             <MagnifyingGlassIcon className="w-3 h-3" />
             Apply
@@ -170,7 +170,7 @@ const DescCell = ({ text }: { text: string }) => {
         {text}
       </div>
       {hovered && (
-        <div className="absolute left-0 top-full mt-1 z-50 bg-[#1e2a4a] rounded-lg shadow-lg px-2.5 py-1.5 whitespace-nowrap pointer-events-none">
+        <div className="absolute left-0 top-full mt-1 z-50 bg-brand_navy rounded-lg shadow-lg px-2.5 py-1.5 whitespace-nowrap pointer-events-none">
           <span className="text-[9px] text-custom-white">{text}</span>
         </div>
       )}
@@ -198,12 +198,12 @@ const SubDeptChips = ({ subDepts }: { subDepts: string[] }) => {
           onMouseEnter={() => setHovered(true)}
           onMouseLeave={() => setHovered(false)}
         >
-          <span className="text-[10px] font-medium bg-[#1e2a4a]/[0.06] border border-[#1e2a4a]/15 text-[#1e2a4a] rounded-full px-2 py-0.5 cursor-default">
+          <span className="text-[10px] font-medium bg-brand_navy/[0.06] border border-brand_navy/15 text-brand_navy rounded-full px-2 py-0.5 cursor-default">
             +{overflow.length}
           </span>
           {hovered && (
             <div
-              className="absolute right-0 top-full mt-1 z-50 bg-[#1e2a4a] rounded-lg shadow-lg px-2.5 py-2 flex flex-col gap-0.5"
+              className="absolute right-0 top-full mt-1 z-50 bg-brand_navy rounded-lg shadow-lg px-2.5 py-2 flex flex-col gap-0.5"
               style={{ minWidth: 100 }}
             >
               {overflow.map((sd) => (
@@ -233,7 +233,7 @@ const StoreLabel = ({ names }: { names: string[] }) => {
     >
       {names.length} stores
       {hovered && (
-        <div className="absolute left-0 top-full mt-1 z-50 bg-[#1e2a4a] rounded-lg shadow-lg px-2.5 py-1.5 flex flex-col gap-0.5 whitespace-nowrap">
+        <div className="absolute left-0 top-full mt-1 z-50 bg-brand_navy rounded-lg shadow-lg px-2.5 py-1.5 flex flex-col gap-0.5 whitespace-nowrap">
           {names.map((n) => (
             <span key={n} className="text-[9px] text-custom-white leading-relaxed">
               {n}
@@ -389,7 +389,7 @@ const OrderReportPanel = ({
       )}
 
       {/* Header */}
-      <div className="bg-[#1e2a4a] px-3 pt-1 pb-2 flex-shrink-0 flex flex-col gap-0">
+      <div className="bg-brand_navy px-3 pt-1 pb-2 flex-shrink-0 flex flex-col gap-0">
         {/* Row 1 */}
         <div className="flex items-end gap-3 min-h-[26px]">
           {selectedKey ? (
@@ -489,7 +489,7 @@ const OrderReportPanel = ({
                     <button
                       key={`${storeid}__${storenumber}-${orderId}`}
                       onClick={() => onSelectOrder(storeid, storenumber, orderId)}
-                      className={`w-full flex flex-col gap-1 rounded-lg border border-[#1e2a4a]/20 p-2 text-left transition-colors ${
+                      className={`w-full flex flex-col gap-1 rounded-lg border border-brand_navy/20 p-2 text-left transition-colors ${
                         isSel ? "bg-custom-white" : "bg-custom-white hover:bg-gray-50"
                       }`}
                       style={
@@ -499,7 +499,7 @@ const OrderReportPanel = ({
                       }
                     >
                       <div className="flex items-center justify-between gap-2">
-                        <span className="text-[13px] font-semibold text-[#1e2a4a]">
+                        <span className="text-[13px] font-semibold text-brand_navy">
                           #{orderId}
                         </span>
                         {items[0]?.status && (
@@ -523,7 +523,7 @@ const OrderReportPanel = ({
                           <span className="text-[12px] text-content">
                             Invoice total
                           </span>
-                          <span className="text-[12px] font-semibold text-[#1e2a4a]">
+                          <span className="text-[12px] font-semibold text-brand_navy">
                             {formatCurrency2(eRet)}
                           </span>
                         </div>
@@ -561,7 +561,7 @@ const OrderReportPanel = ({
               />
             ) : (
               <>
-                <div className="grid grid-cols-5 divide-x divide-[#1e2a4a]/15 border-b border-gray-100 bg-custom-white flex-shrink-0">
+                <div className="grid grid-cols-5 divide-x divide-brand_navy/15 border-b border-gray-100 bg-custom-white flex-shrink-0">
                   <div className="px-4 pt-2.5 pb-2 text-center min-w-0">
                     <div className="text-[10px] font-bold uppercase tracking-wide text-content">
                       Store #
@@ -734,7 +734,7 @@ const OrderReportPanel = ({
                       {visibleOrderItems.map((o) => (
                         <tr
                           key={`${o.storeid}-${o.line_number}`}
-                          className="border-b border-b-[#1e2a4a]/15 even:bg-row_stripe hover:bg-gray-50 transition-colors"
+                          className="border-b border-b-brand_navy/15 even:bg-row_stripe hover:bg-gray-50 transition-colors"
                         >
                           <td className="px-3 py-2 tabular-nums text-content">
                             {o.line_number}

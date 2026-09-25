@@ -47,7 +47,7 @@ const Checkbox = ({
         onChange={(e) => onChange(e.target.checked)}
         className="peer sr-only"
       />
-      <span className="w-[15px] h-[15px] rounded border border-brand_line_2 bg-card_bg transition-colors peer-checked:bg-[#1e2a4a] peer-checked:border-[#1e2a4a] peer-hover:border-brand_slate peer-focus-visible:ring-2 peer-focus-visible:ring-[#1e2a4a]/40 peer-focus-visible:ring-offset-1" />
+      <span className="w-[15px] h-[15px] rounded border border-brand_line_2 bg-card_bg transition-colors peer-checked:bg-brand_navy peer-checked:border-brand_navy peer-hover:border-brand_slate peer-focus-visible:ring-2 peer-focus-visible:ring-brand_navy/40 peer-focus-visible:ring-offset-1" />
       <svg
         viewBox="0 0 16 16"
         aria-hidden="true"
