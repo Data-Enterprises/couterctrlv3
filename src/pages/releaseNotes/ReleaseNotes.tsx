@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router";
+import { ArrowLeftIcon } from "@heroicons/react/20/solid";
 import { useAppSelector } from "../../hooks";
 import { useHelpPageUrl } from "../../hooks/useHelpPageUrl";
 import {
@@ -15,8 +17,12 @@ import {
  * A page rather than a sheet, because these are a document somebody reads
  * rather than something they glance at beside their work: dated, long, with
  * their own sections, and worth linking to when you want to send someone what
- * changed. A modal was squeezing a document authored around 860px into 600,
- * and making the dates share a strip with a close button.
+ * changed.
+ *
+ * The releases pick from a rail and the note fills everything else, edge to
+ * edge. No page header: the document carries its own title and date, and a
+ * second one above it was saying the same thing twice while taking room from
+ * the thing people came to read.
  *
  * Each release is its own file in the bucket, named by date, so the history
  * reads back rather than being overwritten by whatever shipped last.
@@ -27,6 +33,21 @@ const ReleaseNotes = () => {
     url: state.app.url,
     token: state.app.token,
   }));
+
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  /**
+   * Back to whatever they were reading.
+   *
+   * History, because that is the actual answer — the notes are reached from
+   * the avatar menu on any page, so there is no fixed place to return to.
+   * React Router keys the first entry of a session "default", which is how a
+   * link opened cold is told apart: going back from there would leave the app
+   * entirely, so it lands on the dashboard instead.
+   */
+  const goBack = () =>
+    location.key === "default" ? navigate("/") : navigate(-1);
 
   const [releases, setReleases] = useState<HelpRelease[]>([]);
   const [chosen, setChosen] = useState<string>("");
@@ -66,44 +87,49 @@ const ReleaseNotes = () => {
   const trouble = listProblem ?? problem;
 
   return (
-    <div className="h-[calc(100vh-3rem)] flex flex-col bg-bkg">
-      <div className="flex-shrink-0 px-4 py-3 flex items-end gap-4 flex-wrap">
-        <div className="flex-1 min-w-0">
-          <h1 className="text-[22px] font-semibold tracking-tight">
-            Release notes
-          </h1>
-          <p className="text-[12.5px] text-content/85 mt-0.5">
-            What went out, one file per release.{" "}
-            {apiEnv === "dev" ? "The dev set — our own notes." : "The client set."}
-          </p>
-        </div>
-        {releases.length > 0 && (
-          <span className="text-[12px] text-content/85">
-            {releases.length} release{releases.length === 1 ? "" : "s"}
-          </span>
-        )}
-      </div>
+    <div className="h-[calc(100vh-3rem)] flex overflow-hidden">
+      <div className="w-[180px] flex-shrink-0 flex flex-col bg-custom-white border-r border-brand_line">
+        <button
+          type="button"
+          onClick={goBack}
+          className="flex-shrink-0 flex items-center gap-1.5 px-4 py-3 text-[12.5px] font-semibold text-brand_navy_hover border-b border-brand_line hover:bg-bkg transition-colors"
+        >
+          <ArrowLeftIcon className="w-4 h-4" />
+          Back
+        </button>
 
-      {releases.length > 0 && (
-        <div className="flex-shrink-0 px-4 pb-3 flex items-center gap-2 flex-wrap">
+        <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar py-2">
           {releases.map((one) => (
             <button
               key={one.name}
               type="button"
               onClick={() => setChosen(one.name)}
-              className={`text-[12px] font-semibold px-3 py-1.5 rounded-lg border transition-colors ${
+              className={`w-full text-left px-4 py-2.5 text-[12.5px] font-semibold border-l-2 transition-colors ${
                 one.name === chosen
-                  ? "bg-brand_navy text-custom-white border-brand_navy"
-                  : "bg-card_bg border-brand_line hover:border-brand_slate"
+                  ? "border-l-brand_navy bg-row_selected text-content"
+                  : "border-l-transparent text-content/85 hover:bg-bkg"
               }`}
             >
               {one.name}
             </button>
           ))}
-        </div>
-      )}
 
-      <div className="flex-1 min-h-0 mx-4 mb-4 bg-card_bg border border-brand_line rounded-xl overflow-hidden relative">
+          {releases.length === 0 && !listProblem && (
+            <div className="px-4 py-3 text-[12px] text-content/85">
+              Reading the releases…
+            </div>
+          )}
+        </div>
+
+        {/* Which set these are, once, at the foot — the one thing the
+            document above cannot say for itself. */}
+        <div className="flex-shrink-0 px-4 py-2.5 border-t border-brand_line text-[11px] text-content/85">
+          {apiEnv === "dev" ? "Dev — our own notes" : "The client set"}
+          {releases.length > 0 && ` · ${releases.length}`}
+        </div>
+      </div>
+
+      <div className="flex-1 min-w-0 relative bg-bkg">
         {trouble && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-8 text-center">
             <span className="text-[13px] font-semibold">{trouble}</span>
@@ -137,7 +163,7 @@ const ReleaseNotes = () => {
             title="Release notes"
             sandbox="allow-scripts"
             onLoad={() => setLoaded(true)}
-            className="w-full h-full border-0"
+            className="w-full h-full border-0 block"
           />
         )}
       </div>
