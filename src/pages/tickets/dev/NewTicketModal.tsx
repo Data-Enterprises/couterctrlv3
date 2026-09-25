@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { XMarkIcon } from "@heroicons/react/20/solid";
 import Modal from "../../../components-dev/Modal";
 import TextField from "../../../components-dev/inputs/TextField";
 import SelectFilter from "../../../components-dev/filters/SelectFilter";
 import { openNew } from "../../../features/dev/devTicketsSlice";
 import type { TicketPriority } from "../../../api/tickets";
 import type { TicketsCtx } from "./hooks";
+import { attachmentProblem, fileSize } from "./ticketsUtils";
 
 /**
  * Filing one.
@@ -21,6 +23,32 @@ const NewTicketModal = ({ ctx }: { ctx: TicketsCtx }) => {
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState<TicketPriority>("normal");
   const [category, setCategory] = useState("");
+  const [files, setFiles] = useState<File[]>([]);
+  const [fileError, setFileError] = useState<string | null>(null);
+  const picker = useRef<HTMLInputElement>(null);
+
+  const limits = ctx.lookups?.attachments;
+
+  /**
+   * Take what the picker gave, minus what it cannot send.
+   *
+   * De-duplicated by name because a picker can be opened repeatedly, and
+   * checked here as well as by the endpoint — a ticket should not end up
+   * filed with half its evidence missing.
+   */
+  const addFiles = (list: FileList | null) => {
+    if (!list) return;
+    const chosen = Array.from(list);
+    const problem = chosen.map((f) => attachmentProblem(f, limits)).find(Boolean);
+    setFileError(problem ?? null);
+    const good = chosen.filter((f) => !attachmentProblem(f, limits));
+    setFiles((have) => {
+      const names = new Set(have.map((f) => f.name));
+      return [...have, ...good.filter((f) => !names.has(f.name))];
+    });
+    // Without this, picking the same file twice fires no change event.
+    if (picker.current) picker.current.value = "";
+  };
 
   const close = () => ctx.dispatch(openNew(false));
   const ready = title.trim() !== "" && description.trim() !== "";
@@ -102,9 +130,62 @@ const NewTicketModal = ({ ctx }: { ctx: TicketsCtx }) => {
           </label>
         </div>
 
+        <div className="flex flex-col gap-2">
+          <span className="text-[12.5px] font-medium">Screenshots</span>
+          <div className="flex items-center gap-3 flex-wrap">
+            <input
+              ref={picker}
+              type="file"
+              multiple
+              accept={limits?.extensions.join(",")}
+              className="hidden"
+              onChange={(e) => addFiles(e.target.files)}
+            />
+            <button
+              type="button"
+              onClick={() => picker.current?.click()}
+              className="text-[12.5px] font-medium px-3 py-1.5 rounded-lg border border-brand_line_2 hover:border-brand_slate transition-colors"
+            >
+              Choose files
+            </button>
+            <span className="text-[11.5px] text-content/85">
+              {limits
+                ? `${limits.extensions.join(" ")} · up to ${fileSize(limits.maxBytes)}`
+                : "A screenshot is usually the most useful thing you can send."}
+            </span>
+          </div>
+
+          {files.map((one) => (
+            <div
+              key={one.name}
+              className="flex items-center gap-2 bg-custom-white border border-brand_line rounded-lg px-3 py-1.5"
+            >
+              <span className="font-mono text-[12px] flex-1 min-w-0 truncate">
+                {one.name}
+              </span>
+              <span className="text-[11.5px] text-content/85">
+                {fileSize(one.size)}
+              </span>
+              <button
+                type="button"
+                onClick={() =>
+                  setFiles((have) => have.filter((f) => f.name !== one.name))
+                }
+                aria-label={`Remove ${one.name}`}
+                className="text-content/85 hover:text-content transition-colors"
+              >
+                <XMarkIcon className="w-4 h-4" />
+              </button>
+            </div>
+          ))}
+
+          {fileError && (
+            <span className="text-[11.5px] text-amber-900">{fileError}</span>
+          )}
+        </div>
+
         <p className="text-[11.5px] text-content/85 bg-custom-white border border-brand_line rounded-lg px-3 py-2 m-0">
           It files under your own company and lands in the queue unassigned.
-          You can attach a screenshot once it is open.
         </p>
 
         <div className="flex items-center justify-end gap-2">
@@ -118,17 +199,24 @@ const NewTicketModal = ({ ctx }: { ctx: TicketsCtx }) => {
           <button
             type="button"
             onClick={() =>
-              ctx.file({
-                title,
-                description,
-                priority,
-                category_id: category ? Number(category) : null,
-              })
+              void ctx.file(
+                {
+                  title,
+                  description,
+                  priority,
+                  category_id: category ? Number(category) : null,
+                },
+                files,
+              )
             }
             disabled={!ready || ctx.working}
             className="text-[12.5px] font-semibold px-5 py-1.5 rounded-lg bg-brand_navy text-custom-white hover:bg-brand_navy_hover transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            Send it
+            {ctx.working
+              ? files.length
+                ? "Sending and attaching..."
+                : "Sending..."
+              : "Send it"}
           </button>
         </div>
       </div>

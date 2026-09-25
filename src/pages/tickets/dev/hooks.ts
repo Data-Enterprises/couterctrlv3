@@ -234,30 +234,66 @@ export const useTicketsCtx = () => {
       });
   };
 
-  const file = (body: {
-    title: string;
-    description: string;
-    priority?: TicketPriority;
-    category_id?: number | null;
-  }) => {
+  /**
+   * File one, with whatever was attached to it.
+   *
+   * Two calls, because an upload needs a ticket id: create, then one upload
+   * per file. Sequential rather than parallel — each upload bumps
+   * `updated_at`, and a couple of screenshots is not worth racing.
+   *
+   * The failure case is the part that matters. **The ticket exists from the
+   * moment the create returns.** A file that then fails to upload must not be
+   * reported as a ticket that failed to send: that throws away something
+   * somebody already typed, and there is nothing to roll back to. So it says
+   * the ticket is filed, names the file that did not make it, and points at
+   * the Attach button on the ticket itself.
+   */
+  const fileTicket = async (
+    body: {
+      title: string;
+      description: string;
+      priority?: TicketPriority;
+      category_id?: number | null;
+    },
+    files: File[] = [],
+  ) => {
     dispatch(startWork());
-    createTicket(url, token, body)
-      .then((resp) => {
-        if (ticketFailed(resp.data) || !resp.data.ticket) {
-          dispatch(failLoad("That did not send."));
-          dispatch(endWork());
-          return;
-        }
-        const ticket = resp.data.ticket as Ticket;
-        dispatch(upsertTicket(ticket));
-        dispatch(openNew(false));
-        toast.success(`${ticket.ticket_number} is with the help desk`);
-        open(ticket.id);
-      })
-      .catch((err: JsonError) => {
+    let ticket: Ticket;
+    try {
+      const resp = await createTicket(url, token, body);
+      if (ticketFailed(resp.data) || !resp.data.ticket) {
+        dispatch(failLoad("That did not send."));
         dispatch(endWork());
-        failed("That did not send")(err);
-      });
+        return;
+      }
+      ticket = resp.data.ticket as Ticket;
+    } catch (err) {
+      dispatch(endWork());
+      failed("That did not send")(err as JsonError);
+      return;
+    }
+
+    const missed: string[] = [];
+    for (const one of files) {
+      try {
+        const up = await uploadTicketAttachment(url, token, ticket.id, one);
+        if (ticketFailed(up.data)) missed.push(one.name);
+      } catch {
+        missed.push(one.name);
+      }
+    }
+
+    dispatch(upsertTicket(ticket));
+    dispatch(openNew(false));
+    if (missed.length) {
+      toast.error(
+        `${ticket.ticket_number} was filed, but ${missed.join(", ")} did not upload. Attach it from the ticket.`,
+      );
+    } else {
+      toast.success(`${ticket.ticket_number} is with the help desk`);
+    }
+    // Opened last, so the pane shows the files already on it.
+    open(ticket.id);
   };
 
   const reply = (comment: string, internal: boolean) => {
@@ -392,7 +428,7 @@ export const useTicketsCtx = () => {
     pollList,
     applyPending: () => dispatch(applyPending()),
     open,
-    file,
+    file: fileTicket,
     reply,
     assign,
     move,

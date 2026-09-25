@@ -166,3 +166,26 @@ describe("the column filters", () => {
     ).toHaveLength(0);
   });
 });
+
+describe("files chosen before the ticket exists", () => {
+  const limits = { maxBytes: 26214400, extensions: [".png", ".csv"] };
+  const file = (name: string, size = 100) => ({ name, size }) as File;
+
+  /** What the modal does with a FileList: drop what cannot go, then
+   *  de-duplicate, since a picker can be opened again and again. */
+  const add = (have: File[], chosen: File[]) => {
+    const good = chosen.filter((f) => !attachmentProblem(f, limits));
+    const names = new Set(have.map((f) => f.name));
+    return [...have, ...good.filter((f) => !names.has(f.name))];
+  };
+
+  it("keeps the ones the endpoint would take", () => {
+    const kept = add([], [file("lane3.png"), file("payload.exe")]);
+    expect(kept.map((f) => f.name)).toEqual(["lane3.png"]);
+  });
+
+  it("does not add the same file twice", () => {
+    const once = add([], [file("lane3.png")]);
+    expect(add(once, [file("lane3.png")])).toHaveLength(1);
+  });
+});
