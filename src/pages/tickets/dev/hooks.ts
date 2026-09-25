@@ -11,7 +11,6 @@ import {
   getTicket,
   getTicketAssignees,
   getTicketLookups,
-  listTicketAttachments,
   listTickets,
   setTicketStatus,
   ticketFailed,
@@ -143,10 +142,9 @@ export const useTicketsCtx = () => {
   /**
    * Open one.
    *
-   * The detail carries the thread and both flags in a single call, so there is
-   * no window where the page has a ticket and does not yet know what may be
-   * done to it. Attachments are a second call because they are metadata
-   * nobody may look at.
+   * The detail carries the thread, the files and both flags in a single call,
+   * so there is no window where the page has a ticket and does not yet know
+   * what may be done to it.
    */
   const open = (id: number) => {
     dispatch(selectTicket(id));
@@ -161,21 +159,12 @@ export const useTicketsCtx = () => {
           setDetail({
             ticket: j.ticket,
             comments: j.comments ?? [],
+            attachments: j.attachments ?? [],
             caps: { canViewAll: j.canViewAll, canManage: j.canManage },
           }),
         );
       })
       .catch(failed("Could not open that ticket"));
-
-    listTicketAttachments(url, token, id)
-      .then((resp) => {
-        if (!ticketFailed(resp.data)) {
-          dispatch(setAttachments(resp.data.attachments ?? []));
-        }
-      })
-      .catch(() => {
-        /* An empty list reads the same as none. */
-      });
   };
 
   /**
@@ -197,6 +186,10 @@ export const useTicketsCtx = () => {
         if (ticketFailed(j)) return;
         if (j.comments?.length) dispatch(appendComments(j.comments));
         if (j.ticket) dispatch(refreshHeader(j.ticket));
+        // Replaced, not appended: attaching writes no comment, so `since`
+        // finds nothing and a file the other side just sent would never
+        // arrive. This is the line that makes a screenshot show up.
+        if (j.attachments) dispatch(setAttachments(j.attachments));
       })
       .catch(() => {
         /* A missed poll is the next one's problem. */
@@ -386,7 +379,7 @@ export const useTicketsCtx = () => {
           return;
         }
         dispatch(endWork());
-        open(id);
+        void poll();
       })
       .catch((err: JsonError) => {
         dispatch(endWork());

@@ -167,12 +167,14 @@ const devTicketsSlice = createSlice({
       action: PayloadAction<{
         ticket: Ticket;
         comments: TicketComment[];
+        attachments: TicketAttachment[];
         caps: TicketCaps;
       }>,
     ) => {
       state.detailLoading = false;
       state.detail = action.payload.ticket;
       state.comments = action.payload.comments;
+      state.attachments = action.payload.attachments;
       state.lastCommentId = action.payload.comments.reduce(
         (high, c) => (c.id > high ? c.id : high),
         0,

@@ -156,6 +156,15 @@ export interface TicketDetailResp extends TicketCaps {
   success: boolean;
   ticket: Ticket;
   comments: TicketComment[];
+  /**
+   * The files, in the same call — and whole on every poll.
+   *
+   * `since` trims the comments only. Attaching writes no comment, so there is
+   * no id for a cursor to move past: a list trimmed the same way would never
+   * show a screenshot the client just sent, which is the one thing a tech
+   * most wants to see.
+   */
+  attachments: TicketAttachment[];
 }
 
 /**
@@ -240,7 +249,7 @@ export const patchTicket = (
   });
 
 /** The thread alone. `getTicket` is the one to poll while a pane is open,
- *  since this leaves the header behind. */
+ *  since this leaves the header and the files behind. */
 export const listTicketComments = (
   url: string,
   token: string,
@@ -309,6 +318,14 @@ export const setTicketStatus = (
     data: body,
   });
 
+/**
+ * The files on a ticket, on their own.
+ *
+ * Rarely the one to reach for: `getTicket` already carries the same list, and
+ * carries it whole on every poll, so the pane keeps itself current without
+ * this. Here because the endpoint exists and something outside the pane may
+ * one day want it.
+ */
 export const listTicketAttachments = (url: string, token: string, id: number) =>
   axios({
     method: "GET",

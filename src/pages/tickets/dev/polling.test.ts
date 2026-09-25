@@ -6,12 +6,17 @@ import reducer, {
   initialState,
   refreshHeader,
   selectTicket,
+  setAttachments,
   setDetail,
   setPending,
   setTickets,
   startWork,
 } from "../../../features/dev/devTicketsSlice";
-import type { Ticket, TicketComment } from "../../../api/tickets";
+import type {
+  Ticket,
+  TicketAttachment,
+  TicketComment,
+} from "../../../api/tickets";
 
 const comment = (id: number): TicketComment =>
   ({
@@ -45,6 +50,7 @@ const opened = () =>
     setDetail({
       ticket: ticket(),
       comments: [comment(21), comment(22)],
+      attachments: [],
       caps: { canViewAll: true, canManage: true },
     }),
   );
@@ -118,5 +124,48 @@ describe("the queue is offered, not applied", () => {
     );
     expect(applied.tickets.map((t) => t.id)).toEqual([3, 1]);
     expect(applied.pending).toBeNull();
+  });
+});
+
+describe("a file that arrives with no comment to announce it", () => {
+  const attachment = (id: number) =>
+    ({
+      id,
+      original_filename: `shot-${id}.png`,
+      content_type: "image/png",
+      file_size: 2048,
+      uploaded_at: "2026-09-25T09:30:00",
+      uploaded_by_name: "Stephen Nelson",
+    }) as TicketAttachment;
+
+  it("is replaced from the poll, not appended like the thread", () => {
+    // The bug this exists for: `since` trims comments, and attaching writes
+    // none — so a screenshot the client just sent never showed up until the
+    // ticket was closed and reopened.
+    const withFile = reducer(opened(), setAttachments([attachment(1)]));
+    const polled = reducer(
+      withFile,
+      setAttachments([attachment(1), attachment(2)]),
+    );
+    expect(polled.attachments.map((a) => a.id)).toEqual([1, 2]);
+  });
+
+  it("goes back to nothing when the ticket has none", () => {
+    // Replacing means a removed file leaves too, rather than lingering.
+    const withFile = reducer(opened(), setAttachments([attachment(1)]));
+    expect(reducer(withFile, setAttachments([])).attachments).toEqual([]);
+  });
+
+  it("arrives with the ticket rather than in a second call", () => {
+    const loaded = reducer(
+      reducer(initialState, selectTicket(19)),
+      setDetail({
+        ticket: ticket(),
+        comments: [comment(21)],
+        attachments: [attachment(1)],
+        caps: { canViewAll: true, canManage: true },
+      }),
+    );
+    expect(loaded.attachments).toHaveLength(1);
   });
 });
