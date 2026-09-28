@@ -1,4 +1,6 @@
 import { useRef, useState } from "react";
+import { useAppSelector } from "../../../hooks";
+import { useLocation } from "react-router";
 import { XMarkIcon } from "@heroicons/react/20/solid";
 import Modal from "../../../components-dev/Modal";
 import TextField from "../../../components-dev/inputs/TextField";
@@ -7,6 +9,9 @@ import { openNew } from "../../../features/dev/devTicketsSlice";
 import type { TicketPriority } from "../../../api/tickets";
 import type { TicketsCtx } from "./hooks";
 import { attachmentProblem, fileSize } from "./ticketsUtils";
+import { getLastCall, lastCallAsFile } from "../../../utils/lastCall";
+import { originOf, searchSummary, suggestedTitle } from "./ticketOrigin";
+import CheckBox from "../../../components-dev/inputs/CheckBox";
 
 /**
  * Filing one.
@@ -17,14 +22,43 @@ import { attachmentProblem, fileSize } from "./ticketsUtils";
  * misfiling — so offering the choice would only be a way to fail.
  *
  * No assignee either. It lands in the queue and a tech takes it.
+ *
+ * Opened from another page's "Report an issue", it arrives knowing three
+ * things nobody had to type: which page, which category that page belongs to,
+ * and what was last asked for. The fourth — the response behind it — is
+ * offered rather than attached, because it is the client's data and they
+ * should see it leave.
  */
 const NewTicketModal = ({ ctx }: { ctx: TicketsCtx }) => {
-  const [title, setTitle] = useState("");
+  const location = useLocation();
+  const search = useAppSelector((state) => state.search);
+
+  const from = location.state as {
+    reportFrom?: string;
+    page?: string | null;
+    area?: string | null;
+  } | null;
+  const origin = from?.reportFrom
+    ? originOf({ ...from, reportFrom: from.reportFrom })
+    : null;
+  const summary = origin ? searchSummary(search) : null;
+  // Read once, at mount: a call made while the form is open is this page
+  // fetching its own queue, not what the client was looking at.
+  const [captured] = useState(() => (from?.reportFrom ? getLastCall() : null));
+
+  const [title, setTitle] = useState(origin ? suggestedTitle(origin) : "");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState<TicketPriority>("normal");
-  const [category, setCategory] = useState("");
+  const [category, setCategory] = useState(() => {
+    if (!origin?.category) return "";
+    const match = ctx.lookups?.categories?.find(
+      (c) => c.name === origin.category,
+    );
+    return match ? String(match.id) : "";
+  });
   const [files, setFiles] = useState<File[]>([]);
   const [fileError, setFileError] = useState<string | null>(null);
+  const [includeEvidence, setIncludeEvidence] = useState(true);
   const picker = useRef<HTMLInputElement>(null);
 
   const limits = ctx.lookups?.attachments;
@@ -78,9 +112,51 @@ const NewTicketModal = ({ ctx }: { ctx: TicketsCtx }) => {
         <div>
           <h2 className="text-[17px] font-semibold">New ticket</h2>
           <p className="text-[12.5px] text-content/85 mt-1">
-            Two fields are needed. Everything else the help desk works out.
+            {origin?.page
+              ? `About ${origin.page}. Two fields are needed; the rest is filled in.`
+              : "Two fields are needed. Everything else the help desk works out."}
           </p>
         </div>
+
+        {/*
+          * What came with you from the page.
+          *
+          * Shown rather than asked about. "Is this about your last search?"
+          * makes somebody remember; a line naming the store and the dates
+          * lets them check, and a tick they can clear means the data leaves
+          * only because they let it.
+          */}
+        {origin && (summary || captured) && (
+          <div className="rounded-lg border border-brand_line bg-bkg px-3 py-2.5">
+            <div className="font-mono text-[9.5px] uppercase tracking-wider text-content/85">
+              From {origin.area ? `${origin.area} · ` : ""}
+              {origin.page ?? origin.href}
+            </div>
+
+            {summary && (
+              <div className="mt-1 text-[12.5px] font-medium">{summary}</div>
+            )}
+
+            {captured && (
+              <div className="mt-2">
+                <CheckBox
+                  id={2}
+                  idExtension="ticket-evidence"
+                  label={`Attach what the page loaded (${captured.method} ${captured.path})`}
+                  value={includeEvidence}
+                  onChange={(value) => setIncludeEvidence(Boolean(value))}
+                  className="cursor-pointer select-none text-[12px] text-content"
+                />
+                <div className="mt-1 pl-1 text-[11px] text-content/85">
+                  {captured.status} ·{" "}
+                  {fileSize(new Blob([captured.body]).size)}
+                  {captured.truncated ? " · shortened" : ""} · goes on as a
+                  .json file
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         <TextField
           label="Title"
@@ -206,7 +282,9 @@ const NewTicketModal = ({ ctx }: { ctx: TicketsCtx }) => {
                   priority,
                   category_id: category ? Number(category) : null,
                 },
-                files,
+                captured && includeEvidence
+                  ? [...files, lastCallAsFile(captured)]
+                  : files,
               )
             }
             disabled={!ready || ctx.working}

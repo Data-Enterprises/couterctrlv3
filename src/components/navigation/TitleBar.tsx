@@ -400,6 +400,41 @@ const TitleBar = () => {
                 <span className="text-[11px] text-content/85">every release</span>
               </button>
             ) : null}
+            {/* File a ticket about the page you are on.
+                
+                Carries where you came from so the form can open with the page
+                named and its area pre-picked — the nav already knows both,
+                and asking somebody to describe where they were is asking
+                them to do the first half of the triage.
+
+                It navigates rather than opening a sheet in place: the help
+                desk is a dev tree page and this bar is shared, so the prod
+                tree cannot reach it. What was on screen survives the trip
+                anyway — the last response is held in a module, not in the
+                page that fetched it. */}
+            {context.apiEnv === "dev" ? (
+              <button
+                onClick={() => {
+                  setAvatarOpen(false);
+                  navigate("/tickets", {
+                    state: {
+                      reportFrom: location.pathname,
+                      // Already worked out for the nav's own highlight.
+                      page: activeCategory?.pages.find(
+                        (p) => p.href === currentPath,
+                      )?.name,
+                      area: activeCategory?.name,
+                    },
+                  });
+                }}
+                className="w-full text-left px-4 py-2.5 text-[13px] font-medium text-content hover:bg-gray-50 transition-colors border-b border-gray-100 flex items-center gap-2"
+              >
+                <span className="flex-1">Report an issue</span>
+                <span className="text-[11px] text-content/85">
+                  from this page
+                </span>
+              </button>
+            ) : null}
             {SHOW_API_ENV_SWITCH && user.userLevel >= 7 ? (
               <div
                 className={`px-4 py-2.5 border-b border-gray-100 flex items-center gap-2 ${

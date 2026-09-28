@@ -1,4 +1,5 @@
 import { useEffect, useMemo } from "react";
+import { useLocation } from "react-router";
 import {
   clearFilters,
   openNew,
@@ -46,11 +47,25 @@ import CloseTicketModal from "./CloseTicketModal";
  */
 const Tickets = () => {
   const ctx = useTicketsCtx();
+  const location = useLocation();
 
   useEffect(() => {
     // Once, on open: the queue and the pickers. Reloading is explicit.
     ctx.load();
   }, []);
+
+  /**
+   * Arrived from another page's "Report an issue".
+   *
+   * The form opens itself and reads the rest off the route state. Waiting on
+   * the lookups rather than firing at once: the category pre-fill resolves a
+   * name against them, and a form that opened first would open with it
+   * blank.
+   */
+  useEffect(() => {
+    const from = (location.state as { reportFrom?: string } | null)?.reportFrom;
+    if (from && ctx.lookups && !ctx.newOpen) ctx.dispatch(openNew(true));
+  }, [location.state, ctx.lookups]);
 
   useEffect(() => {
     // The assignee list is a tech's; asking for it without canManage is a 403.
