@@ -1,5 +1,6 @@
 import type { SearchState } from "../../../features/searchSlice";
 import { weekEnding } from "../../../utils/dates";
+import { formatDateSimple } from "../../../utils";
 
 /**
  * Where a ticket is being filed from, and what the page was showing.
@@ -111,18 +112,24 @@ const PAGE_DATES: Record<string, DateShape> = {
   quicksight: "none",
 };
 
+/** Every date on screen reads the way people write them here, and
+ *  formatDateSimple splits rather than parses — handing an ISO date to
+ *  `new Date` makes it midnight UTC, which is the day before for anyone west
+ *  of Greenwich. */
+const day = (iso: string) => (iso ? formatDateSimple(iso) : "");
+
 const datesFor = (search: SearchState, shape: DateShape): string => {
   if (shape === "none") return "";
-  if (shape === "single") return search.singleDate ?? "";
+  if (shape === "single") return day(search.singleDate ?? "");
   if (shape === "week") {
     if (!search.singleDate) return "";
     const { start, end } = weekEnding(search.singleDate);
-    return `week of ${start} – ${end}`;
+    return `week of ${day(start)} – ${day(end)}`;
   }
-  if (!search.startDate || !search.endDate) return search.singleDate ?? "";
+  if (!search.startDate || !search.endDate) return day(search.singleDate ?? "");
   return search.startDate === search.endDate
-    ? search.startDate
-    : `${search.startDate} – ${search.endDate}`;
+    ? day(search.startDate)
+    : `${day(search.startDate)} – ${day(search.endDate)}`;
 };
 
 /**
