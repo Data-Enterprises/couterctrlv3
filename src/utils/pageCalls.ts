@@ -26,6 +26,17 @@ export interface CapturedCall {
   path: string;
   status: number;
   at: number;
+  /**
+   * What was asked for — the query string on a GET, the posted body on a
+   * POST, capped hard because this is a label rather than a payload.
+   *
+   * Without it two calls to one endpoint are indistinguishable, and that is
+   * the normal case rather than an edge one: Loss Prevention asks
+   * `cashiers/cashier_table` for the baseline window and then for this week,
+   * and a tech opening the file would find the same dataset twice with
+   * nothing saying which was which.
+   */
+  request: string;
   /** Already stringified, already capped. */
   body: string;
   truncated: boolean;
@@ -118,6 +129,9 @@ const NEVER = [
 /** Per call. `/sales/export_preview` comes back around 520 KB. */
 const CAP = 256 * 1024;
 
+/** The request line is there to tell two calls apart, not to be read whole. */
+const REQUEST_CAP = 2 * 1024;
+
 /** Across everything one ticket carries, so a report is not heavier than the
  *  screenshots beside it. Groups are dropped largest-first. */
 export const BUDGET = 1024 * 1024;
@@ -153,9 +167,20 @@ export const armPageCalls = () => {
     url: string | undefined,
     status: number,
     data: unknown,
+    sent: unknown,
   ) => {
     const path = pathOf(url);
     if (!path || NEVER.some((re) => re.test(path))) return;
+
+    let request = "";
+    try {
+      const query = url?.includes("?") ? url.slice(url.indexOf("?") + 1) : "";
+      const posted =
+        typeof sent === "string" ? sent : sent ? JSON.stringify(sent) : "";
+      request = (query || posted).slice(0, REQUEST_CAP);
+    } catch {
+      request = "";
+    }
 
     let body: string;
     try {
@@ -172,6 +197,7 @@ export const armPageCalls = () => {
       path,
       status,
       at: Date.now(),
+      request,
       body: truncated ? `${body.slice(0, CAP)}\n\n[truncated]` : body,
       truncated,
     });
@@ -180,7 +206,13 @@ export const armPageCalls = () => {
 
   axios.interceptors.response.use(
     (resp) => {
-      keep(resp.config?.method, resp.config?.url, resp.status, resp.data);
+      keep(
+        resp.config?.method,
+        resp.config?.url,
+        resp.status,
+        resp.data,
+        resp.config?.data,
+      );
       return resp;
     },
     (error) => {
@@ -189,7 +221,13 @@ export const armPageCalls = () => {
       // below the application.
       const resp = error?.response;
       if (resp) {
-        keep(error.config?.method, error.config?.url, resp.status, resp.data);
+        keep(
+          error.config?.method,
+          error.config?.url,
+          resp.status,
+          resp.data,
+          error.config?.data,
+        );
       }
       return Promise.reject(error);
     },
@@ -293,9 +331,12 @@ export const groupAsFile = (group: CallGroup) => {
     [
       "\n\n// ---- ",
       `${group.method} ${group.path}`,
-      group.calls.length > 1 ? ` · page ${i + 1} of ${group.calls.length}` : "",
+      group.calls.length > 1 ? ` · ${i + 1} of ${group.calls.length}` : "",
       ` · ${call.status}`,
       ` · ${new Date(call.at).toISOString()}`,
+      // The one line that tells a baseline window from a current one.
+      call.request ? `
+// asked: ${call.request}` : "",
       call.truncated ? " · shortened" : "",
       "\n",
     ].join("");

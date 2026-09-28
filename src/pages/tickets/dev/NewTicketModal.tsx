@@ -140,7 +140,7 @@ const NewTicketModal = ({
           page has half a dozen datasets on it, so only the middle moves: the
           heading says what this is and Send it is the control that must never
           scroll out of reach, and neither is any use halfway up. */}
-      <div className="flex-shrink-0 px-5 pt-5 pb-3">
+      <div className="flex-shrink-0 px-4 pt-4 pb-2.5">
         <h2 className="text-[17px] font-semibold">New ticket</h2>
         <p className="text-[12.5px] text-content/85 mt-1">
           {origin?.page
@@ -149,7 +149,7 @@ const NewTicketModal = ({
         </p>
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto thin-scrollbar px-5 pb-5">
+      <div className="flex min-h-0 flex-1 flex-col gap-3.5 overflow-y-auto thin-scrollbar px-4 pb-4">
 
         {/*
           * What came with you from the page.
@@ -340,7 +340,7 @@ const NewTicketModal = ({
         </p>
       </div>
 
-      <div className="flex flex-shrink-0 items-center justify-end gap-2 border-t border-brand_line p-5 pt-3">
+      <div className="flex flex-shrink-0 items-center justify-end gap-2 border-t border-brand_line px-4 py-3">
           <button
             type="button"
             onClick={close}

@@ -13,14 +13,20 @@ import {
 armPageCalls();
 
 /** Push a response through the registered interceptors the way axios does. */
-const pass = (url: string, data: unknown, method = "get", status = 200) => {
+const pass = (
+  url: string,
+  data: unknown,
+  method = "get",
+  status = 200,
+  sent?: unknown,
+) => {
   const handlers = (
     axios.interceptors.response as unknown as {
       handlers: { fulfilled: (r: unknown) => unknown }[];
     }
   ).handlers.filter(Boolean);
   for (const h of handlers) {
-    h.fulfilled({ config: { url, method }, status, data });
+    h.fulfilled({ config: { url, method, data: sent }, status, data });
   }
 };
 
@@ -129,6 +135,39 @@ describe("pageCalls", () => {
     expect(call.body.length).toBeLessThan(300 * 1024);
     // Recorded for the tech in the file, not shown to whoever is filing.
     expect(groupAsFile(consolidate()[0]).name).toBe("get-sales-topten.json");
+  });
+
+  it("records what each call asked for, so two windows are told apart", () => {
+    // Loss Prevention asks one endpoint for the baseline and then for the
+    // current week. Same path, same method, one dataset, two windows.
+    const body = (startDate: string, endDate: string) =>
+      JSON.stringify({ startDate, endDate, singleStore: 2 });
+    pass(
+      `${API}/cashiers/cashier_table`,
+      { rows: [1] },
+      "post",
+      200,
+      body("2026-09-14", "2026-09-20"),
+    );
+    pass(
+      `${API}/cashiers/cashier_table`,
+      { rows: [2] },
+      "post",
+      200,
+      body("2026-09-21", "2026-09-27"),
+    );
+
+    const group = consolidate()[0];
+    expect(group.calls).toHaveLength(1 + 1);
+    expect(group.calls[0].request).toContain("2026-09-14");
+    expect(group.calls[1].request).toContain("2026-09-21");
+  });
+
+  it("takes a GET's question off the query string", () => {
+    pass(`${API}/sales/weekly?startDate=2026-09-21&endDate=2026-09-27`, {});
+    expect(getPageCalls()[0].request).toContain("startDate=2026-09-21");
+    // Still off the stored path, which is what the label is keyed on.
+    expect(getPageCalls()[0].path).toBe("/sales/weekly");
   });
 
   it("survives a body it cannot serialise", () => {

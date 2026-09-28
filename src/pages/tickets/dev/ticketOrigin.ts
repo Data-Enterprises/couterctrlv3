@@ -112,11 +112,30 @@ const PAGE_DATES: Record<string, DateShape> = {
   quicksight: "none",
 };
 
-/** Every date on screen reads the way people write them here, and
- *  formatDateSimple splits rather than parses — handing an ISO date to
- *  `new Date` makes it midnight UTC, which is the day before for anyone west
- *  of Greenwich. */
-const day = (iso: string) => (iso ? formatDateSimple(iso) : "");
+/**
+ * One date, as mm/dd/yyyy, whichever way it arrives.
+ *
+ * Two shapes reach this. The search slice stores what `formatDate` produced,
+ * which is already m/d/yyyy and unpadded; `weekEnding` returns what
+ * `setDates` produced, which is yyyy-mm-dd because the endpoints want it that
+ * way. Running the ISO formatter over an already-formatted date is what
+ * printed "undefined/undefined/9/27/2026" — it split on "-", found no parts,
+ * and pasted the undefineds in front.
+ *
+ * Splitting rather than parsing throughout: handing either shape to
+ * `new Date` invites the midnight-UTC shift that lands a date a day early
+ * west of Greenwich.
+ */
+const day = (value: string) => {
+  if (!value) return "";
+  const pad = (n: string) => n.padStart(2, "0");
+  if (value.includes("-")) {
+    const [y, m, d] = formatDateSimple(value).split("/");
+    return y && m && d ? `${y}/${m}/${d}` : value;
+  }
+  const [m, d, y] = value.split("/");
+  return m && d && y ? `${pad(m)}/${pad(d)}/${y}` : value;
+};
 
 const datesFor = (search: SearchState, shape: DateShape): string => {
   if (shape === "none") return "";
