@@ -405,24 +405,16 @@ const TicketDetail = ({ ctx }: { ctx: TicketsCtx }) => {
       </div>
 
       {/*
-        * A closed ticket takes the composer away from anyone who can reopen
-        * it: the control that undoes the state is already in the strip above,
-        * and a reply box under a green "Closed" banner invites a message into
-        * a thread nobody is watching.
+        * A closed ticket has no composer, for anybody.
         *
-        * A client keeps theirs. Reopening is a manage action and they do not
-        * have it, so hiding the box would leave them with a ticket that was
-        * closed too early and no way to say so — they would file a second one
-        * and the thread would be split across both.
+        * The thread stays readable — the whole history is the point of
+        * closing one properly — but nothing new goes into it. A tech reopens
+        * from the strip above; a client files a new ticket, which is also the
+        * honest answer, since a closed ticket that needs more work is usually
+        * a different piece of work.
         */}
-      {!(closed && ctx.canManage) && (
+      {!closed && (
       <div className="flex-shrink-0 border-t border-brand_line p-3 flex flex-col gap-2">
-        {closed && (
-          <span className="text-[11.5px] text-content/85">
-            This ticket is closed. A reply still posts, and brings it back to
-            the top of the queue.
-          </span>
-        )}
         <label htmlFor="ticket-reply" className="sr-only">
           Write a reply
         </label>

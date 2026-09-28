@@ -60,7 +60,7 @@ const TicketSidebar = ({ ticket, tickets, onSelect }: Props) => {
             Who sent it
           </span>
         </div>
-        <div className="mt-1 flex items-center gap-2 border-t border-custom-white/[0.08] pt-1.5">
+        <div className="flex items-center gap-2 pt-1.5 mt-1 border-t border-custom-white/[0.08]">
           <span className="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-custom-white/15 text-[10px] font-bold text-custom-white">
             {initialsOf(ticket.opened_by_name)}
           </span>
