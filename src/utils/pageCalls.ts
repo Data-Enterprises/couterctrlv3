@@ -31,15 +31,70 @@ export interface CapturedCall {
   truncated: boolean;
 }
 
-/** One endpoint, and everything the page got back from it. */
+/** One of the page's own datasets, and everything the page got back for it. */
 export interface CallGroup {
   key: string;
+  /** What this is, in the words the page uses. */
+  label: string;
   method: string;
   path: string;
   calls: CapturedCall[];
-  /** Total size of the bodies, for the budget and for the label. */
+  /** Total size of the bodies, for the budget. */
   bytes: number;
 }
+
+/**
+ * The datasets a page loads, by the endpoint behind them.
+ *
+ * This map is also the filter, and that is the point of writing it. An
+ * endpoint with no name here is not one of the page's datasets — it is the
+ * shell fetching the store list, the user's preferences or the nav's groups,
+ * which every page asks for and none of them is ever the culprit. Leaving
+ * those in was not just untidy: `stores/unassigned_stores` comes back around
+ * 300 KB, a third of a ticket's whole budget, and on a Sales report it pushed
+ * the page's own sub-department sales off the end for size.
+ *
+ * Names rather than paths because a client is the one reading them. `POST
+ * /hourly/hourly` asks somebody to guess whether the thing that looks wrong
+ * lives behind it; "Hourly sales" does not.
+ */
+const LABELS: Record<string, string> = {
+  "sales/weekly": "Weekly sales",
+  "sales/storedepts": "Store departments",
+  "sales/topten": "Top ten items",
+  "sales/export_builds": "Export builds",
+  "hourly/hourly": "Hourly sales",
+  "subs/sub_sales": "Sub department sales",
+  "subs/subs": "Sub departments",
+  "subs/sales_tracker": "Sales tracker",
+  "categories/cat_sales": "Category sales",
+  "categories/cats": "Categories",
+  "cashiers/cashier_table": "Cashiers",
+  "cashiers/transaction_ids": "Transactions",
+  "cashiers/transaction_list": "Transaction list",
+  "cashiers/transaction": "Transaction detail",
+  "cashiers/product_lookup": "Product lookup",
+  "items/itemlookup": "Item lookup",
+  "items/item_association": "Item associations",
+  "items/storelist": "Item store list",
+  "marketing/trend_detector": "Trend detection",
+  "marketing/upload_upcs": "UPC list",
+  "marketing/upload_upcs_daily_sales": "UPC daily sales",
+  "marketing/upload_upcs_price_optimizer": "Price optimisation",
+  "marketing/price_history_from_list": "Price history",
+  "orders/all_orders": "Orders",
+  "orders/available_order": "Available orders",
+  "receivers/": "Receivers",
+  "receivers/details": "Receiver detail",
+  "receivers/item_search": "Receiver item search",
+  "coupons/": "Coupons",
+  "suggested/order_weight": "Suggested order weight",
+  "quicksight/embed_url": "Analysis",
+};
+
+/** The page's word for an endpoint, or null when it is not the page's data. */
+export const labelFor = (path: string): string | null =>
+  LABELS[path.replace(/^\/+/, "")] ?? null;
 
 /**
  * Never captured.
@@ -165,9 +220,12 @@ export const clearPageCalls = () => {
 export const consolidate = (from: CapturedCall[] = calls): CallGroup[] => {
   const by = new Map<string, CallGroup>();
   for (const call of from) {
+    const label = labelFor(call.path);
+    if (!label) continue;
     const key = `${call.method} ${call.path}`;
     const group = by.get(key) ?? {
       key,
+      label,
       method: call.method,
       path: call.path,
       calls: [],
@@ -249,15 +307,14 @@ export const groupAsFile = (group: CallGroup) => {
   });
 };
 
-/** The line under a group's tick box — "3 pages · 214 KB". */
-export const groupNote = (group: CallGroup, size: (n: number) => string) => {
-  const status = group.calls[group.calls.length - 1]?.status ?? 0;
-  const many = group.calls.length > 1;
-  return [
-    many ? `${group.calls.length} pages` : String(status),
-    size(group.bytes),
-    group.calls.some((c) => c.truncated) ? "shortened" : "",
-  ]
+/**
+ * The line under a group's tick box.
+ *
+ * Size, and whether anything was cut. How many requests it took to fetch is
+ * ours to know — a dataset that arrived over nine pages is still one dataset,
+ * and saying so only invites the question of whether nine is bad.
+ */
+export const groupNote = (group: CallGroup, size: (n: number) => string) =>
+  [size(group.bytes), group.calls.some((c) => c.truncated) ? "shortened" : ""]
     .filter(Boolean)
     .join(" · ");
-};

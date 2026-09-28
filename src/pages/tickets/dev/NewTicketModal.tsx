@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { useAppSelector } from "../../../hooks";
-import { XMarkIcon } from "@heroicons/react/20/solid";
+import { ChevronDownIcon, XMarkIcon } from "@heroicons/react/20/solid";
 import Modal from "../../../components-dev/Modal";
 import TextField from "../../../components-dev/inputs/TextField";
 import SelectFilter from "../../../components-dev/filters/SelectFilter";
@@ -17,7 +17,7 @@ import {
   type CallGroup,
 } from "../../../utils/pageCalls";
 import { originOf, searchSummary, suggestedTitle } from "./ticketOrigin";
-import CheckBox from "../../../components-dev/inputs/CheckBox";
+import Checkbox from "../../../components-dev/Checkbox";
 
 /**
  * Filing one.
@@ -71,6 +71,9 @@ const NewTicketModal = ({
       : { kept: [] as CallGroup[], dropped: [] as CallGroup[] },
   );
   const [skip, setSkip] = useState<Set<string>>(new Set());
+  // Open when there is little to read, folded when the list would push the
+  // fields people actually have to fill in off the screen.
+  const [evidenceOpen, setEvidenceOpen] = useState(kept.length <= 3);
   const chosen = kept.filter((g) => !skip.has(g.key));
 
   const [title, setTitle] = useState(origin ? suggestedTitle(origin) : "");
@@ -132,9 +135,12 @@ const NewTicketModal = ({
     <Modal
       isOpen
       onClose={close}
-      modalClassName="bg-card_bg w-[620px] max-w-[94vw]"
+      modalClassName="bg-card_bg w-[620px] max-w-[94vw] max-h-[88vh] flex flex-col"
     >
-      <div className="flex flex-col gap-4 p-5">
+      {/* Header, body, footer: the form is taller than a laptop screen once a
+          page has half a dozen datasets on it, and Send it is the one control
+          that must never scroll out of reach. */}
+      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto thin-scrollbar p-5">
         <div>
           <h2 className="text-[17px] font-semibold">New ticket</h2>
           <p className="text-[12.5px] text-content/85 mt-1">
@@ -165,47 +171,62 @@ const NewTicketModal = ({
 
             {kept.length > 0 && (
               <div className="mt-2.5">
-                <div className="text-[11.5px] text-content/85">
-                  This page loaded {kept.length}{" "}
-                  {kept.length === 1 ? "thing" : "things"}. Attach them?
-                </div>
-                <div className="mt-1.5 flex flex-col gap-1">
-                  {kept.map((group) => (
-                    <div key={group.key} className="flex items-start gap-2">
-                      <CheckBox
-                        id={2}
-                        idExtension={`evidence-${group.key.replace(/[^a-z0-9]+/gi, "-")}`}
-                        label=""
-                        value={!skip.has(group.key)}
-                        onChange={(value) =>
+                <button
+                  type="button"
+                  onClick={() => setEvidenceOpen((v) => !v)}
+                  aria-expanded={evidenceOpen}
+                  className="flex w-full items-center gap-1.5 text-left text-[11.5px] text-content/85"
+                >
+                  <span className="flex-1">
+                    Attach what this page loaded ({chosen.length} of{" "}
+                    {kept.length})
+                  </span>
+                  <ChevronDownIcon
+                    className={`h-4 w-4 flex-none transition-transform duration-200 motion-reduce:transition-none ${
+                      evidenceOpen ? "" : "-rotate-90"
+                    }`}
+                  />
+                </button>
+
+                {/* Its own scroll, capped: a page with a dozen datasets
+                    should not be the reason somebody cannot reach the
+                    description field. */}
+                {evidenceOpen && (
+                  <div className="mt-1.5 flex max-h-[168px] flex-col gap-1 overflow-y-auto thin-scrollbar pr-1">
+                    {kept.map((group) => (
+                      <Checkbox
+                        key={group.key}
+                        checked={!skip.has(group.key)}
+                        onChange={(on) =>
                           setSkip((have) => {
                             const next = new Set(have);
-                            if (value) next.delete(group.key);
+                            if (on) next.delete(group.key);
                             else next.add(group.key);
                             return next;
                           })
                         }
-                        className="mt-[1px] cursor-pointer select-none"
+                        className="items-start"
+                        label={
+                          <span className="min-w-0">
+                            <span className="block truncate text-[12px] text-content">
+                              {group.label}
+                            </span>
+                            <span className="block text-[11px] text-content/85">
+                              {groupNote(group, fileSize)}
+                            </span>
+                          </span>
+                        }
                       />
-                      <div className="min-w-0 flex-1">
-                        <div className="truncate font-mono text-[11.5px] text-content">
-                          {group.method} {group.path}
-                        </div>
-                        <div className="text-[11px] text-content/85">
-                          {groupNote(group, fileSize)}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
 
                 {/* Named rather than silently missing: a tech reading the
                     ticket should know something was too big to send, not
-                    wonder why an endpoint is absent. */}
+                    wonder why a dataset is absent. */}
                 {dropped.length > 0 && (
                   <div className="mt-1.5 text-[11px] text-content/85">
-                    {dropped.length} left off for size —{" "}
-                    {dropped.map((g) => g.path).join(", ")}
+                    Left off for size — {dropped.map((g) => g.label).join(", ")}
                   </div>
                 )}
               </div>
@@ -318,8 +339,9 @@ const NewTicketModal = ({
         <p className="text-[11.5px] text-content/85 bg-custom-white border border-brand_line rounded-lg px-3 py-2 m-0">
           It files under your own company and lands in the queue unassigned.
         </p>
+      </div>
 
-        <div className="flex items-center justify-end gap-2">
+      <div className="flex flex-shrink-0 items-center justify-end gap-2 border-t border-brand_line p-5 pt-3">
           <button
             type="button"
             onClick={close}
@@ -349,7 +371,6 @@ const NewTicketModal = ({
                 : "Sending..."
               : "Send it"}
           </button>
-        </div>
       </div>
     </Modal>
   );
