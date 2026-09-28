@@ -137,18 +137,20 @@ const NewTicketModal = ({
       onClose={close}
       modalClassName="bg-card_bg w-[620px] max-w-[94vw] max-h-[88vh] flex flex-col"
     >
-      {/* Header, body, footer: the form is taller than a laptop screen once a
-          page has half a dozen datasets on it, and Send it is the one control
-          that must never scroll out of reach. */}
-      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto thin-scrollbar p-5">
-        <div>
-          <h2 className="text-[17px] font-semibold">New ticket</h2>
-          <p className="text-[12.5px] text-content/85 mt-1">
-            {origin?.page
-              ? `About ${origin.page}. Two fields are needed; the rest is filled in.`
-              : "Two fields are needed. Everything else the help desk works out."}
-          </p>
-        </div>
+      {/* Header, body, footer. The form is taller than a laptop screen once a
+          page has half a dozen datasets on it, so only the middle moves: the
+          heading says what this is and Send it is the control that must never
+          scroll out of reach, and neither is any use halfway up. */}
+      <div className="flex-shrink-0 px-5 pt-5 pb-3">
+        <h2 className="text-[17px] font-semibold">New ticket</h2>
+        <p className="text-[12.5px] text-content/85 mt-1">
+          {origin?.page
+            ? `About ${origin.page}. Two fields are needed; the rest is filled in.`
+            : "Two fields are needed. Everything else the help desk works out."}
+        </p>
+      </div>
+
+      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto thin-scrollbar px-5 pb-5">
 
         {/*
           * What came with you from the page.
