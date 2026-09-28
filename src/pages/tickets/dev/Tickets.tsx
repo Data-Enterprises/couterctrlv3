@@ -40,7 +40,8 @@ import CloseTicketModal from "./CloseTicketModal";
  * The two outer columns give way first. The sidebar is the least load-bearing,
  * so it goes below `xl`; the rail belongs to a tech triaging a queue, so a
  * client never has one — their five folders would read All open and Closed and
- * nothing else.
+ * nothing else. The status and priority pickers sit above the search box
+ * rather than in the rail, so a client keeps them when the rail goes.
  */
 const Tickets = () => {
   const ctx = useTicketsCtx();
@@ -98,12 +99,7 @@ const Tickets = () => {
         <TicketRail
           tab={ctx.tab}
           counts={ctx.counts}
-          filters={ctx.filters}
-          statusCounts={byStatus}
-          priorityCounts={byPriority}
           onTab={(tab) => ctx.dispatch(setTab(tab))}
-          onFilters={(next) => ctx.dispatch(setFilters(next))}
-          onClear={() => ctx.dispatch(clearFilters())}
           footer={
             /*
              * Dev only, and a preview of the layout rather than of the rules:
@@ -136,6 +132,11 @@ const Tickets = () => {
         loading={ctx.loading}
         search={ctx.search}
         onSearch={(value) => ctx.dispatch(setSearch(value))}
+        filters={ctx.filters}
+        onFilters={(next) => ctx.dispatch(setFilters(next))}
+        onClearFilters={() => ctx.dispatch(clearFilters())}
+        statusCounts={byStatus}
+        priorityCounts={byPriority}
         pending={Boolean(ctx.pending)}
         onRefresh={refresh}
         /*
