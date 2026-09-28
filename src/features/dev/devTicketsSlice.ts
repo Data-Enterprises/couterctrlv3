@@ -70,16 +70,6 @@ export interface TicketsState {
   newOpen: boolean;
   closingOpen: boolean;
 
-  /**
-   * Draw the client's view while holding a tech's token.
-   *
-   * Dev-only, and a preview of the LAYOUT only: the payload is still a tech's,
-   * internal notes included, because the filtering happens in the query. It
-   * exists because the page is level 9 and both flags trip at 8, so without it
-   * the client view is a screen nobody on the team can look at. Proving the
-   * filter needs a real non-tech account, not this.
-   */
-  asClient: boolean;
 }
 
 export interface TicketFilters {
@@ -121,7 +111,6 @@ export const initialState: TicketsState = {
   filters: noFilters,
   newOpen: false,
   closingOpen: false,
-  asClient: false,
 };
 
 const devTicketsSlice = createSlice({
@@ -296,19 +285,6 @@ const devTicketsSlice = createSlice({
     openClosing: (state, action: PayloadAction<boolean>) => {
       state.closingOpen = action.payload;
     },
-    /** The dev preview switch. Clears the open ticket, because the two views
-     *  do not show the same thing about one. */
-    setAsClient: (state, action: PayloadAction<boolean>) => {
-      state.asClient = action.payload;
-      state.tab = action.payload ? "all" : "all";
-      state.selectedId = null;
-      state.detail = null;
-      state.comments = [];
-      state.attachments = [];
-      // The client grid has none of the columns these filter, so a leftover
-      // one would narrow a list with nothing on screen to explain it.
-      state.filters = noFilters;
-    },
     resetTickets: () => initialState,
   },
 });
@@ -338,7 +314,6 @@ export const {
   clearFilters,
   openNew,
   openClosing,
-  setAsClient,
   resetTickets,
 } = devTicketsSlice.actions;
 

@@ -1,6 +1,9 @@
 import MultiSelectFilter from "../../../components-dev/filters/MultiSelectFilter";
 import type { Ticket, TicketStatus } from "../../../api/tickets";
-import type { TicketFilters } from "../../../features/dev/devTicketsSlice";
+import type {
+  QueueTab,
+  TicketFilters,
+} from "../../../features/dev/devTicketsSlice";
 import {
   PRIORITY_CLASS,
   STATUS_CLASS,
@@ -19,6 +22,15 @@ interface Props {
    *  Foodland" on their own ticket learns nothing. */
   isTech: boolean;
   loading: boolean;
+  tab: QueueTab;
+  counts: {
+    all: number;
+    unassigned: number;
+    mine: number;
+    urgent: number;
+    closed: number;
+  };
+  onTab: (tab: QueueTab) => void;
   search: string;
   onSearch: (value: string) => void;
   filters: TicketFilters;
@@ -39,6 +51,21 @@ interface Props {
 /** Closed has its own folder in the rail, so it is not one of the statuses
  *  you narrow an open pile by. */
 const STATUSES: TicketStatus[] = ["open", "in_progress", "waiting"];
+
+/** A tech triages five piles; a client has two, because Unassigned, Mine and
+ *  Urgent are all the same pile when every ticket is yours. */
+const QUEUE: { key: QueueTab; label: string }[] = [
+  { key: "all", label: "All" },
+  { key: "unassigned", label: "Unassigned" },
+  { key: "mine", label: "Mine" },
+  { key: "urgent", label: "Urgent" },
+  { key: "closed", label: "Closed" },
+];
+
+const CLIENT_QUEUE: { key: QueueTab; label: string }[] = [
+  { key: "all", label: "Open" },
+  { key: "closed", label: "Closed" },
+];
 
 const PRIORITIES = [
   { value: "urgent", label: "Urgent" },
@@ -72,6 +99,9 @@ const TicketInbox = ({
   onSelect,
   isTech,
   loading,
+  tab,
+  counts,
+  onTab,
   search,
   onSearch,
   filters,
@@ -87,8 +117,38 @@ const TicketInbox = ({
   const narrowed = filters.status.length > 0 || filters.priority.length > 0;
 
   return (
-    <div className="flex h-full w-[296px] flex-none flex-col border-r border-brand_line bg-custom-white xl:w-[320px] 2xl:w-[360px]">
+    <div className="flex h-full w-[312px] flex-none flex-col border-r border-brand_line bg-custom-white xl:w-[336px] 2xl:w-[378px]">
       <div className="flex-none border-b border-brand_line p-2.5">
+        {/* The queue, exclusive, above the two pickers that narrow it. A row
+            rather than a rail: five short words cost less across the top of
+            this column than a whole column of their own, and the thread is
+            what wanted the width back. */}
+        <div className="-mx-0.5 mb-2 flex gap-1 overflow-x-auto thin-scrollbar px-0.5 pb-0.5">
+          {(isTech ? QUEUE : CLIENT_QUEUE).map((q) => {
+            const active = tab === q.key;
+            return (
+              <button
+                key={q.key}
+                type="button"
+                onClick={() => onTab(q.key)}
+                aria-pressed={active}
+                className={`flex-none rounded-full border px-2.5 py-1 text-[11.5px] transition-colors ${
+                  active
+                    ? "border-brand_navy bg-brand_navy font-semibold text-custom-white"
+                    : "border-brand_line_2 bg-custom-white text-content/85 hover:border-brand_slate"
+                }`}
+              >
+                {q.label}{" "}
+                <span
+                  className={`tabular-nums ${active ? "text-custom-white/85" : "text-content/85"}`}
+                >
+                  {counts[q.key]}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
         <div className="flex items-center gap-1.5">
           <MultiSelectFilter
             options={STATUSES.map((s) => ({
@@ -231,9 +291,9 @@ const TicketInbox = ({
 
                 {/* Who to answer. A client already knows who they are, so
                     their rows name the tech instead. */}
-                <span className="mt-0.5 block truncate font-mono text-[11px] text-content/85">
+                <span className="mt-0.5 block truncate text-[11.5px] text-content/85">
                   {isTech
-                    ? t.opened_by_username
+                    ? t.opened_by_name
                     : (t.assigned_tech ?? "Unassigned")}
                 </span>
 

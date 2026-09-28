@@ -61,12 +61,12 @@ export const useTicketsCtx = () => {
   /**
    * Which view this is.
    *
-   * `canViewAll` decides it, and the dev preview can only ever take a view
-   * away — a client can never be shown the tech one by flipping a switch in
-   * the browser, because the flag it would have to forge is the server's.
+   * Both flags come back on every list and detail response, so the page reads
+   * the server's answer rather than deriving one from a user level. There is
+   * no client-side override: a view can only be what the payload allows.
    */
-  const isTech = tickets.caps.canViewAll && !tickets.asClient;
-  const canManage = tickets.caps.canManage && !tickets.asClient;
+  const isTech = tickets.caps.canViewAll;
+  const canManage = tickets.caps.canManage;
 
   const rows = useMemo(
     () =>

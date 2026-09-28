@@ -1,16 +1,13 @@
 import { useEffect, useMemo } from "react";
-import CheckBox from "../../../components-dev/inputs/CheckBox";
 import {
   clearFilters,
   openNew,
-  setAsClient,
   setFilters,
   setSearch,
   setTab,
 } from "../../../features/dev/devTicketsSlice";
 import { useTicketsCtx } from "./hooks";
 import { priorityCounts, statusCounts } from "./ticketsUtils";
-import TicketRail from "./TicketRail";
 import TicketInbox from "./TicketInbox";
 import TicketDetail from "./TicketDetail";
 import TicketSidebar from "./TicketSidebar";
@@ -31,17 +28,19 @@ import CloseTicketModal from "./CloseTicketModal";
  * is one screen to keep in step rather than two.
  *
  * LAYOUT
- * Four columns, in the order you use them: the rail picks a pile of work, the
- * inbox picks a ticket out of it, the thread is the ticket, and the sidebar is
- * who sent it. Nothing stacks above them — the page title and the tab strip
- * that used to sit there were spending two rows on what the rail now says down
- * the side, and the thread is the thing that wanted the height.
+ * Three columns, in the order you use them: the inbox picks a ticket, the
+ * thread is the ticket, and the sidebar is who sent it. Nothing stacks above
+ * them — the page title and the tab strip that used to sit there were spending
+ * two rows on what the inbox header now says in one, and the thread is the
+ * thing that wanted the height.
  *
- * The two outer columns give way first. The sidebar is the least load-bearing,
- * so it goes below `xl`; the rail belongs to a tech triaging a queue, so a
- * client never has one — their five folders would read All open and Closed and
- * nothing else. The status and priority pickers sit above the search box
- * rather than in the rail, so a client keeps them when the rail goes.
+ * The queue, its two narrowing pickers and the search box all live in the
+ * inbox header. They were briefly a rail of their own, which cost a whole
+ * column to say five short words and left the thread narrower than the list
+ * beside it.
+ *
+ * The sidebar is the least load-bearing column, so it is the one that goes
+ * below `xl`.
  */
 const Tickets = () => {
   const ctx = useTicketsCtx();
@@ -77,14 +76,8 @@ const Tickets = () => {
     return () => window.clearInterval(handle);
   }, []);
 
-  const byStatus = useMemo(
-    () => statusCounts(ctx.tickets),
-    [ctx.tickets],
-  );
-  const byPriority = useMemo(
-    () => priorityCounts(ctx.tickets),
-    [ctx.tickets],
-  );
+  const byStatus = useMemo(() => statusCounts(ctx.tickets), [ctx.tickets]);
+  const byPriority = useMemo(() => priorityCounts(ctx.tickets), [ctx.tickets]);
 
   const refresh = () => {
     // A poll has already fetched the newer queue, so applying it is instant
@@ -95,41 +88,15 @@ const Tickets = () => {
 
   return (
     <div className="flex h-[calc(100vh-3rem)] bg-bkg">
-      {ctx.isTech && (
-        <TicketRail
-          tab={ctx.tab}
-          counts={ctx.counts}
-          onTab={(tab) => ctx.dispatch(setTab(tab))}
-          footer={
-            /*
-             * Dev only, and a preview of the layout rather than of the rules:
-             * the payload is still a tech's, because the filtering happens in
-             * the query. The page is level 9 and both flags trip at 8, so
-             * without this the client view is a screen nobody on the team can
-             * look at.
-             */
-            ctx.caps.canViewAll ? (
-              <CheckBox
-                id={1}
-                idExtension="as-client"
-                label="View as a client"
-                value={ctx.asClient}
-                onChange={(value) =>
-                  ctx.dispatch(setAsClient(Boolean(value)))
-                }
-                className="cursor-pointer select-none rounded-md px-1 text-[11.5px] text-content/85"
-              />
-            ) : undefined
-          }
-        />
-      )}
-
       <TicketInbox
         rows={ctx.rows}
         selectedId={ctx.selectedId}
         onSelect={ctx.open}
         isTech={ctx.isTech}
         loading={ctx.loading}
+        tab={ctx.tab}
+        counts={ctx.counts}
+        onTab={(tab) => ctx.dispatch(setTab(tab))}
         search={ctx.search}
         onSearch={(value) => ctx.dispatch(setSearch(value))}
         filters={ctx.filters}
@@ -147,9 +114,7 @@ const Tickets = () => {
          * refuses any other company outright. The button would be a way to
          * misfile rather than a way to help, so a tech does not get one.
          */
-        onNew={
-          ctx.isTech ? undefined : () => ctx.dispatch(openNew(true))
-        }
+        onNew={ctx.isTech ? undefined : () => ctx.dispatch(openNew(true))}
         error={ctx.error}
       />
 
