@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { CheckCircleIcon, PaperClipIcon } from "@heroicons/react/24/outline";
+import { ChevronUpIcon } from "@heroicons/react/20/solid";
 import SelectFilter from "../../../components-dev/filters/SelectFilter";
 import CheckBox from "../../../components-dev/inputs/CheckBox";
 import { openClosing } from "../../../features/dev/devTicketsSlice";
@@ -27,6 +28,7 @@ const TicketDetail = ({ ctx }: { ctx: TicketsCtx }) => {
   const [draft, setDraft] = useState("");
   const [internal, setInternal] = useState(false);
   const [fileError, setFileError] = useState<string | null>(null);
+  const [filesOpen, setFilesOpen] = useState(false);
   const picker = useRef<HTMLInputElement>(null);
   const thread = useRef<HTMLDivElement>(null);
   /** Was the reader at the bottom before this batch arrived? */
@@ -228,6 +230,11 @@ const TicketDetail = ({ ctx }: { ctx: TicketsCtx }) => {
         </div>
       )}
 
+      {/* The thread and the files share this box: the files sit over the
+          conversation rather than after it, so opening them costs the reader
+          the bottom of the thread for as long as they are looking and gives
+          it straight back. */}
+      <div className="relative flex-1 min-h-0">
       <div
         ref={thread}
         onScroll={(e) => {
@@ -235,7 +242,7 @@ const TicketDetail = ({ ctx }: { ctx: TicketsCtx }) => {
           wasAtBottom.current =
             box.scrollHeight - box.scrollTop - box.clientHeight < 80;
         }}
-        className="flex-1 min-h-0 overflow-y-auto thin-scrollbar px-4 py-3 flex flex-col gap-3"
+        className="h-full overflow-y-auto thin-scrollbar px-4 py-3 flex flex-col gap-3"
       >
         {ctx.comments.map((comment) => {
           /*
@@ -294,28 +301,61 @@ const TicketDetail = ({ ctx }: { ctx: TicketsCtx }) => {
           </p>
         )}
 
-        {ctx.attachments.length > 0 && (
-          <div className="flex flex-col gap-1.5 border-t border-brand_line pt-3 mt-1">
-            <span className="text-[10.5px] font-semibold uppercase tracking-wide text-content/85">
+      </div>
+
+      {ctx.attachments.length > 0 && (
+        <div className="absolute inset-x-0 bottom-0 border-t border-brand_line bg-custom-white shadow-[0_-4px_12px_rgb(var(--color-brand-navy)/0.08)]">
+          <button
+            type="button"
+            onClick={() => setFilesOpen((v) => !v)}
+            aria-expanded={filesOpen}
+            className="flex w-full items-center gap-2 px-4 py-2 text-left transition-colors hover:bg-bkg"
+          >
+            <PaperClipIcon className="h-3.5 w-3.5 flex-shrink-0 text-content/85" />
+            <span className="flex-1 text-[10.5px] font-semibold uppercase tracking-wide text-content/85">
               Files · {ctx.attachments.length}
             </span>
-            {ctx.attachments.map((file) => (
-              <div key={file.id} className="flex items-center gap-2.5">
-                <PaperClipIcon className="w-3.5 h-3.5 text-content/85 flex-shrink-0" />
-                <button
-                  type="button"
-                  onClick={() => ctx.openAttachment(file.id)}
-                  className="font-mono text-[12px] text-brand_navy_hover underline underline-offset-2 truncate"
-                >
-                  {file.original_filename}
-                </button>
-                <span className="text-[11.5px] text-content/85 flex-shrink-0">
-                  {fileSize(file.file_size)} · {file.uploaded_by_name}
-                </span>
+            <ChevronUpIcon
+              className={`h-4 w-4 flex-shrink-0 text-content/85 transition-transform duration-300 motion-reduce:transition-none ${
+                filesOpen ? "rotate-180" : ""
+              }`}
+            />
+          </button>
+
+          {/*
+            * 0fr to 1fr rather than a height.
+            *
+            * The list is however long it is, so there is no pixel value to
+            * animate to without measuring it first — and a max-height picked
+            * to be "big enough" eases at the wrong speed for every list
+            * shorter than that. A grid row interpolates to the content's own
+            * height, so three files and thirty both take the same 300ms.
+            */}
+          <div
+            className="grid transition-[grid-template-rows] duration-300 ease-out motion-reduce:transition-none"
+            style={{ gridTemplateRows: filesOpen ? "1fr" : "0fr" }}
+          >
+            <div className="overflow-hidden">
+              <div className="flex max-h-[45vh] flex-col gap-1.5 overflow-y-auto thin-scrollbar px-4 pb-3">
+                {ctx.attachments.map((file) => (
+                  <div key={file.id} className="flex items-center gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() => ctx.openAttachment(file.id)}
+                      className="truncate font-mono text-[12px] text-brand_navy_hover underline underline-offset-2"
+                    >
+                      {file.original_filename}
+                    </button>
+                    <span className="flex-shrink-0 text-[11.5px] text-content/85">
+                      {fileSize(file.file_size)} · {file.uploaded_by_name}
+                    </span>
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
           </div>
-        )}
+        </div>
+      )}
       </div>
 
       <div className="flex-shrink-0 border-t border-brand_line p-3 flex flex-col gap-2">
