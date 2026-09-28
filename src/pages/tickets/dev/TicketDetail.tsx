@@ -13,6 +13,7 @@ import {
   attachmentProblem,
   fileSize,
   resolutionLabel,
+  visibleLabels,
   stampText,
   whenText,
 } from "./ticketsUtils";
@@ -156,10 +157,50 @@ const TicketDetail = ({ ctx }: { ctx: TicketsCtx }) => {
       </div>
 
       <div className="flex-shrink-0 px-4 py-2.5 bg-custom-white border-b border-brand_line flex flex-col gap-2">
-        <div className="text-[11.5px] text-content/85">
-          {ctx.isTech && ticket.company_name ? `${ticket.company_name} · ` : ""}
-          opened by {ticket.opened_by_name} · {stampText(ticket.created_at)} ·
-          updated {whenText(ticket.updated_at)}
+        {/*
+          * The ticket's own facts, under the header that names it. They were
+          * briefly in the right-hand sidebar, which put what this ticket IS
+          * two columns away from the thread it belongs to — the sidebar
+          * answers "who sent this", and that is a different question.
+          */}
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11.5px] text-content/85">
+          {ctx.isTech && ticket.company_name && (
+            <span className="font-semibold text-content">
+              {ticket.company_name}
+            </span>
+          )}
+          <span>opened by {ticket.opened_by_name}</span>
+          <span aria-hidden>·</span>
+          <span>{stampText(ticket.created_at)}</span>
+          <span aria-hidden>·</span>
+          <span>updated {whenText(ticket.updated_at)}</span>
+          {ticket.category_name && (
+            <>
+              <span aria-hidden>·</span>
+              <span>{ticket.category_name}</span>
+            </>
+          )}
+          {/* Who has it, for the readers who have no assign control below —
+              a client, and a tech without canManage. */}
+          {!ctx.canManage && (
+            <>
+              <span aria-hidden>·</span>
+              <span>
+                {ticket.assigned_tech
+                  ? `with ${ticket.assigned_tech}`
+                  : "unassigned"}
+              </span>
+            </>
+          )}
+          {visibleLabels(ticket).map((l) => (
+            <span
+              key={l.id}
+              className="rounded px-1.5 py-[1px] text-[10.5px] font-semibold"
+              style={{ background: `${l.color}22`, color: l.color }}
+            >
+              {l.name}
+            </span>
+          ))}
         </div>
 
         {ctx.canManage && (

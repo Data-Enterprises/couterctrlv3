@@ -308,3 +308,13 @@ export const openerStats = (tickets: Ticket[], ticket: Ticket) => {
   const top = [...byCategory.entries()].sort((a, b) => b[1] - a[1])[0] ?? null;
   return { filed: theirs.length, open, first, topCategory: top?.[0] ?? null };
 };
+
+/**
+ * The labels meant for a reader.
+ *
+ * `type:` is reserved: it carries the resolution and is read by
+ * `resolutionLabel`, which renders it as a word in the closed strip. Drawn
+ * raw it reads as "type:fixed", which is a database row on the screen.
+ */
+export const visibleLabels = (ticket: Ticket) =>
+  (ticket.labels ?? []).filter((l) => !l.name.startsWith("type:"));

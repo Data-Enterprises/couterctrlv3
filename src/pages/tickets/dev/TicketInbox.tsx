@@ -11,6 +11,7 @@ import {
   initialsOf,
   isUnread,
   snippetOf,
+  visibleLabels,
   whenText,
 } from "./ticketsUtils";
 
@@ -353,7 +354,7 @@ const TicketInbox = ({
                       {t.company_name}
                     </span>
                   )}
-                  {t.labels.map((l) => (
+                  {visibleLabels(t).map((l) => (
                     <span
                       key={l.id}
                       className="max-w-[110px] truncate rounded px-1.5 py-[1px] text-[10px] font-semibold"

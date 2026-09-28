@@ -5,7 +5,6 @@ import {
   alsoFrom,
   initialsOf,
   openerStats,
-  stampText,
   whenText,
 } from "./ticketsUtils";
 
@@ -31,6 +30,11 @@ const Fact = ({ label, value }: { label: string; value: string }) => (
 
 /**
  * Who filed this, and what else they have filed.
+ *
+ * Only that. The ticket's own facts — its number, when it was opened, its
+ * category, who has it — sit under the thread's header instead, where what a
+ * ticket IS is beside the conversation it belongs to rather than two columns
+ * away from it.
  *
  * Every figure here is read off the queue the page already holds, so opening
  * a ticket costs nothing extra. That is also the panel's limit: it can say
@@ -74,32 +78,6 @@ const TicketSidebar = ({ ticket, tickets, onSelect }: Props) => {
               {ticket.company_name}
             </div>
           </div>
-        </div>
-      )}
-
-      <Caption>This ticket</Caption>
-      <Fact label="Number" value={ticket.ticket_number} />
-      <Fact label="Opened" value={whenText(ticket.created_at)} />
-      {ticket.category_name && (
-        <Fact label="Category" value={ticket.category_name} />
-      )}
-      <Fact
-        label="Assigned"
-        value={ticket.assigned_tech ?? "Nobody yet"}
-      />
-      {ticket.due_at && <Fact label="Due" value={stampText(ticket.due_at)} />}
-
-      {ticket.labels.length > 0 && (
-        <div className="flex flex-wrap gap-1 px-3.5 pt-1.5">
-          {ticket.labels.map((l) => (
-            <span
-              key={l.id}
-              className="rounded px-1.5 py-[2px] text-[10px] font-semibold"
-              style={{ background: `${l.color}22`, color: l.color }}
-            >
-              {l.name}
-            </span>
-          ))}
         </div>
       )}
 
