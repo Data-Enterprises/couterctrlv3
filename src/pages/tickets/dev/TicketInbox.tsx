@@ -52,13 +52,19 @@ interface Props {
  *  you narrow an open pile by. */
 const STATUSES: TicketStatus[] = ["open", "in_progress", "waiting"];
 
-/** A tech triages five piles; a client has two, because Unassigned, Mine and
- *  Urgent are all the same pile when every ticket is yours. */
+/**
+ * The tabs, which are the piles you work through in order.
+ *
+ * Urgent is not one of them — it is a jump to whatever cannot wait, so it
+ * sits beside Refresh as a button that says how many, rather than as a fourth
+ * tab you would have to remember to look at. A client has two tabs and no
+ * urgent button: Unassigned, Mine and Urgent are all the same pile when every
+ * ticket is yours.
+ */
 const QUEUE: { key: QueueTab; label: string }[] = [
   { key: "all", label: "All" },
   { key: "unassigned", label: "Unassigned" },
   { key: "mine", label: "Mine" },
-  { key: "urgent", label: "Urgent" },
   { key: "closed", label: "Closed" },
 ];
 
@@ -117,31 +123,32 @@ const TicketInbox = ({
   const narrowed = filters.status.length > 0 || filters.priority.length > 0;
 
   return (
-    <div className="flex h-full w-[361px] flex-none flex-col border-r border-brand_line bg-custom-white xl:w-[390px] 2xl:w-[438px]">
+    <div className="flex h-full w-[379px] flex-none flex-col border-r border-brand_line bg-custom-white xl:w-[410px] 2xl:w-[460px]">
       <div className="flex-none border-b border-brand_line p-2.5">
-        {/* The queue, exclusive, above the two pickers that narrow it. A row
-            rather than a rail: five short words cost less across the top of
-            this column than a whole column of their own, and the thread is
-            what wanted the width back. */}
-        <div className="-mx-0.5 mb-2 flex gap-1 overflow-x-auto thin-scrollbar px-0.5 pb-0.5">
+        {/* Tabs, because they are exclusive and they are the top level of
+            this column — a row of pills read as four more filters beside the
+            two that actually are. */}
+        <div
+          role="tablist"
+          className="-mx-2.5 -mt-2.5 mb-2.5 flex gap-3 overflow-x-auto thin-scrollbar border-b border-brand_line px-2.5"
+        >
           {(isTech ? QUEUE : CLIENT_QUEUE).map((q) => {
             const active = tab === q.key;
             return (
               <button
                 key={q.key}
                 type="button"
+                role="tab"
+                aria-selected={active}
                 onClick={() => onTab(q.key)}
-                aria-pressed={active}
-                className={`flex-none rounded-full border px-2.5 py-1 text-[11.5px] transition-colors ${
+                className={`flex-none border-b-2 pb-2 pt-2.5 text-[12.5px] transition-colors ${
                   active
-                    ? "border-brand_navy bg-brand_navy font-semibold text-custom-white"
-                    : "border-brand_line_2 bg-custom-white text-content/85 hover:border-brand_slate"
+                    ? "border-brand_navy font-semibold text-content"
+                    : "border-transparent text-content/85 hover:border-brand_line_2"
                 }`}
               >
                 {q.label}{" "}
-                <span
-                  className={`tabular-nums ${active ? "text-custom-white/85" : "text-content/85"}`}
-                >
+                <span className="tabular-nums text-content/85">
                   {counts[q.key]}
                 </span>
               </button>
@@ -197,6 +204,28 @@ const TicketInbox = ({
             placeholder={isTech ? "Search the queue" : "Search your tickets"}
             className="min-w-0 flex-1 rounded-lg border border-brand_line bg-bkg px-3 py-2 text-[12.5px]"
           />
+          {/* Beside Refresh because both are "what has changed" — one asks,
+              the other already knows. Tinted only while there is something
+              to see: a zero in severity red is a false alarm every time the
+              queue is clean. */}
+          {isTech && (
+            <button
+              type="button"
+              onClick={() => onTab("urgent")}
+              aria-pressed={tab === "urgent"}
+              title="Tickets that cannot wait"
+              className={`flex-none rounded-lg border px-2.5 py-2 text-[12px] font-semibold transition-colors ${
+                tab === "urgent"
+                  ? "border-severity_critical_text bg-severity_critical_text text-custom-white"
+                  : counts.urgent > 0
+                    ? "border-severity_critical_text/25 bg-severity_critical_bg text-severity_critical_text"
+                    : "border-brand_line_2 text-content/85 hover:border-brand_slate"
+              }`}
+            >
+              Urgent{" "}
+              <span className="tabular-nums">{counts.urgent}</span>
+            </button>
+          )}
           <button
             type="button"
             onClick={onRefresh}
