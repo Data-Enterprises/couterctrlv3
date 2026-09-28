@@ -359,6 +359,9 @@ const NewTicketModal = ({
                   category_id: category ? Number(category) : null,
                 },
                 chosen.length ? [...files, ...chosen.map(groupAsFile)] : files,
+                // Filed from another page: there is no pane here to open it
+                // into, so the form closes and the toast is the receipt.
+                onClose,
               )
             }
             disabled={!ready || ctx.working}

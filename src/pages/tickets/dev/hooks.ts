@@ -256,6 +256,15 @@ export const useTicketsCtx = () => {
       category_id?: number | null;
     },
     files: File[] = [],
+    /**
+     * What to do once it is filed, when opening it is not the answer.
+     *
+     * The help desk opens the new ticket, because that is the screen it is
+     * on. A report filed from Sales has no detail pane to open it into, and
+     * fetching one would be a call whose result nothing draws — so that
+     * caller closes its own modal instead.
+     */
+    after?: (ticket: Ticket) => void,
   ) => {
     dispatch(startWork());
     let ticket: Ticket;
@@ -293,7 +302,8 @@ export const useTicketsCtx = () => {
       toast.success(`${ticket.ticket_number} is with the help desk`);
     }
     // Opened last, so the pane shows the files already on it.
-    open(ticket.id);
+    if (after) after(ticket);
+    else open(ticket.id);
   };
 
   const reply = (comment: string, internal: boolean) => {
