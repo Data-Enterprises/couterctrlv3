@@ -358,6 +358,18 @@ const TicketDetail = ({ ctx }: { ctx: TicketsCtx }) => {
       )}
       </div>
 
+      {/*
+        * A closed ticket takes the composer away from anyone who can reopen
+        * it: the control that undoes the state is already in the strip above,
+        * and a reply box under a green "Closed" banner invites a message into
+        * a thread nobody is watching.
+        *
+        * A client keeps theirs. Reopening is a manage action and they do not
+        * have it, so hiding the box would leave them with a ticket that was
+        * closed too early and no way to say so — they would file a second one
+        * and the thread would be split across both.
+        */}
+      {!(closed && ctx.canManage) && (
       <div className="flex-shrink-0 border-t border-brand_line p-3 flex flex-col gap-2">
         {closed && (
           <span className="text-[11.5px] text-content/85">
@@ -419,6 +431,7 @@ const TicketDetail = ({ ctx }: { ctx: TicketsCtx }) => {
           </button>
         </div>
       </div>
+      )}
     </div>
   );
 };
