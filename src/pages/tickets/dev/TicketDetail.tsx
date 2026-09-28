@@ -80,7 +80,7 @@ const TicketDetail = ({ ctx }: { ctx: TicketsCtx }) => {
 
   if (!ticket) {
     return (
-      <div className="flex-1 min-h-0 bg-custom-white flex items-center justify-center text-center px-6">
+      <div className="flex-1 min-h-0 overflow-hidden rounded-xl bg-custom-white shadow-lg flex items-center justify-center text-center px-6">
         <div className="max-w-[40ch]">
           <div className="text-[13px] font-semibold">
             {ctx.detailLoading ? "Opening..." : "Pick a ticket"}
@@ -129,13 +129,13 @@ const TicketDetail = ({ ctx }: { ctx: TicketsCtx }) => {
   ];
 
   return (
-    <div className="flex-1 min-h-0 bg-custom-white flex flex-col overflow-hidden">
+    <div className="flex-1 min-h-0 overflow-hidden rounded-xl bg-custom-white shadow-lg flex flex-col">
       {/*
         * The card's header, and it reads as one: the number, the title and
         * the two pills that answer "where is this up to" before anything
         * else does.
         */}
-      <div className="flex-shrink-0 bg-brand_navy text-custom-white px-4 py-3 flex items-center gap-2.5 flex-wrap">
+      <div className="flex-shrink-0 rounded-t-xl bg-brand_navy text-custom-white px-4 py-3 flex items-center gap-2.5 flex-wrap">
         <span className="font-mono text-[12.5px] text-custom-white/85">
           {ticket.ticket_number}
         </span>

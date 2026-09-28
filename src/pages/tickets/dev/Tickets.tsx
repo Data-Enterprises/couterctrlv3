@@ -39,8 +39,10 @@ import CloseTicketModal from "./CloseTicketModal";
  * column to say five short words and left the thread narrower than the list
  * beside it.
  *
- * The sidebar is the least load-bearing column, so it is the one that goes
- * below `xl`.
+ * Three panels on the page's own ground, the way every other list-and-detail
+ * screen in the app is built — rounded, shadowed, each under its own navy
+ * header. The sidebar is the least load-bearing column, so it is the one that
+ * goes below `xl`.
  */
 const Tickets = () => {
   const ctx = useTicketsCtx();
@@ -87,7 +89,7 @@ const Tickets = () => {
   };
 
   return (
-    <div className="flex h-[calc(100vh-3rem)] bg-bkg">
+    <div className="flex h-[calc(100vh-3rem)] gap-3 bg-bkg p-3">
       <TicketInbox
         rows={ctx.rows}
         selectedId={ctx.selectedId}

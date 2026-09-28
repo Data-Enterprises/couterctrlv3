@@ -124,7 +124,66 @@ const TicketInbox = ({
   const narrowed = filters.status.length > 0 || filters.priority.length > 0;
 
   return (
-    <div className="flex h-full w-[379px] flex-none flex-col border-r border-brand_line bg-custom-white xl:w-[410px] 2xl:w-[460px]">
+    <div className="flex h-full w-[379px] flex-none flex-col overflow-hidden rounded-xl bg-custom-white shadow-lg xl:w-[410px] 2xl:w-[460px]">
+      <div className="flex-shrink-0 rounded-t-xl bg-brand_navy px-4 pt-1 pb-2.5">
+        <div className="flex min-h-[24px] items-end gap-3">
+          <span className="flex-shrink-0 text-[13px] font-semibold text-custom-white">
+            {isTech ? "Queue" : "Your tickets"}
+          </span>
+          <div className="flex-1" />
+          <div className="flex flex-shrink-0 items-baseline gap-1">
+            <span className="text-[10px] uppercase tracking-wide text-custom-white/85">
+              Showing
+            </span>
+            <span className="text-[13px] font-medium tabular-nums text-custom-white">
+              {rows.length}
+            </span>
+          </div>
+        </div>
+
+        <div className="mt-1 flex items-center gap-2 border-t border-custom-white/[0.08] pt-1.5">
+          {/* Both answer "what has changed" — one asks, the other already
+              knows. Urgent is tinted only while there is something to see: a
+              zero in severity red is a false alarm every time the queue is
+              clean. */}
+          {isTech && (
+            <button
+              type="button"
+              onClick={() => onTab("urgent")}
+              aria-pressed={tab === "urgent"}
+              title="Tickets that cannot wait"
+              className={`flex-shrink-0 rounded border px-2 py-[3px] text-[11px] font-semibold transition-colors ${
+                tab === "urgent"
+                  ? "border-severity_critical_bg bg-severity_critical_bg text-severity_critical_text"
+                  : counts.urgent > 0
+                    ? "border-severity_critical_bg/40 text-severity_critical_bg"
+                    : "border-custom-white/20 text-custom-white/85 hover:border-custom-white/40"
+              }`}
+            >
+              Urgent <span className="tabular-nums">{counts.urgent}</span>
+            </button>
+          )}
+          <div className="flex-1" />
+          <button
+            type="button"
+            onClick={onRefresh}
+            disabled={loading}
+            title={
+              pending
+                ? "The queue has moved since this list was read"
+                : "Refresh"
+            }
+            className={`flex-shrink-0 rounded border px-2 py-[3px] text-[11px] font-medium transition-colors disabled:opacity-40 ${
+              pending
+                ? "border-filter_active_border bg-filter_active font-semibold text-brand_navy_hover"
+                : "border-custom-white/20 text-custom-white/85 hover:border-custom-white/40"
+            }`}
+          >
+            {loading ? "Reading…" : pending ? "New activity" : "Refresh"}
+          </button>
+        </div>
+      </div>
+
       <div className="flex-none border-b border-brand_line p-2.5">
         {/* Tabs, because they are exclusive and they are the top level of
             this column — a row of pills read as four more filters beside the
@@ -196,7 +255,7 @@ const TicketInbox = ({
           )}
         </div>
 
-        <div className="mt-2 flex items-center gap-2">
+        <div className="mt-2">
           <label htmlFor="ticket-search" className="sr-only">
             Search tickets
           </label>
@@ -206,48 +265,8 @@ const TicketInbox = ({
             value={search}
             onChange={(e) => onSearch(e.target.value)}
             placeholder={isTech ? "Search the queue" : "Search your tickets"}
-            className="min-w-0 flex-1 rounded-lg border border-brand_line bg-bkg px-3 py-2 text-[12.5px]"
+            className="w-full rounded-lg border border-brand_line bg-bkg px-3 py-2 text-[12.5px]"
           />
-          {/* Beside Refresh because both are "what has changed" — one asks,
-              the other already knows. Tinted only while there is something
-              to see: a zero in severity red is a false alarm every time the
-              queue is clean. */}
-          {isTech && (
-            <button
-              type="button"
-              onClick={() => onTab("urgent")}
-              aria-pressed={tab === "urgent"}
-              title="Tickets that cannot wait"
-              className={`flex-none rounded-lg border px-2.5 py-2 text-[12px] font-semibold transition-colors ${
-                tab === "urgent"
-                  ? "border-severity_critical_text bg-severity_critical_text text-custom-white"
-                  : counts.urgent > 0
-                    ? "border-severity_critical_text/25 bg-severity_critical_bg text-severity_critical_text"
-                    : "border-brand_line_2 text-content/85 hover:border-brand_slate"
-              }`}
-            >
-              Urgent{" "}
-              <span className="tabular-nums">{counts.urgent}</span>
-            </button>
-          )}
-          <button
-            type="button"
-            onClick={onRefresh}
-            disabled={loading}
-            title={
-              pending
-                ? "The queue has moved since this list was read"
-                : "Refresh"
-            }
-            aria-label="Refresh"
-            className={`flex-none rounded-lg border px-2.5 py-2 text-[12px] transition-colors disabled:opacity-40 ${
-              pending
-                ? "border-filter_active_border bg-filter_active font-semibold text-brand_navy_hover"
-                : "border-brand_line_2 hover:border-brand_slate"
-            }`}
-          >
-            {loading ? "…" : pending ? "New" : "↻"}
-          </button>
         </div>
 
         {onNew && (

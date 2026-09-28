@@ -53,23 +53,32 @@ const TicketSidebar = ({ ticket, tickets, onSelect }: Props) => {
   const others = alsoFrom(tickets, ticket);
 
   return (
-    <div className="flex h-full w-[248px] flex-none flex-col overflow-y-auto thin-scrollbar border-l border-brand_line bg-custom-white 2xl:w-[288px]">
-      <div className="flex items-center gap-2.5 px-3.5 pt-3.5">
-        <span className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-brand_slate text-[12px] font-bold text-custom-white">
-          {initialsOf(ticket.opened_by_name)}
-        </span>
-        <span className="min-w-0">
-          <span className="block truncate text-[13px] font-bold">
-            {ticket.opened_by_name}
+    <div className="flex h-full w-[248px] flex-none flex-col overflow-hidden rounded-xl bg-custom-white shadow-lg 2xl:w-[288px]">
+      <div className="flex-shrink-0 rounded-t-xl bg-brand_navy px-4 pt-1 pb-2.5">
+        <div className="flex min-h-[24px] items-end gap-3">
+          <span className="flex-shrink-0 text-[13px] font-semibold text-custom-white">
+            Who sent it
           </span>
-          <span className="block truncate font-mono text-[10.5px] text-content/85">
-            {ticket.opened_by_username}
+        </div>
+        <div className="mt-1 flex items-center gap-2 border-t border-custom-white/[0.08] pt-1.5">
+          <span className="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-custom-white/15 text-[10px] font-bold text-custom-white">
+            {initialsOf(ticket.opened_by_name)}
           </span>
-        </span>
+          <span className="min-w-0">
+            <span className="block truncate text-[12px] font-semibold text-custom-white">
+              {ticket.opened_by_name}
+            </span>
+            <span className="block truncate font-mono text-[10px] text-custom-white/85">
+              {ticket.opened_by_username}
+            </span>
+          </span>
+        </div>
       </div>
 
+      <div className="min-h-0 flex-1 overflow-y-auto thin-scrollbar">
+
       {ticket.company_name && (
-        <div className="mt-2.5 px-3.5">
+        <div className="mt-3 px-3.5">
           <div className="rounded-lg bg-bkg px-2.5 py-2">
             <div className="font-mono text-[9.5px] uppercase tracking-wider text-content/85">
               Company
@@ -122,6 +131,7 @@ const TicketSidebar = ({ ticket, tickets, onSelect }: Props) => {
           ))}
         </div>
       )}
+      </div>
     </div>
   );
 };
