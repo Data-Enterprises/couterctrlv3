@@ -48,10 +48,36 @@ export const parseScannedInvoices = async (
   return json;
 };
 
+/** AWG QBP539 electronic invoice files — decoded server-side, no OCR cost.
+ *  Logged to the same history as the scanned engines, as engine "awg_edi". */
+export const postEdiInvoice = async (
+  url: string,
+  token: string,
+  storeid: number,
+  files: File[],
+) => {
+  const formData = new FormData();
+  files.forEach((file) => formData.append("files", file));
+  formData.append("storeid", String(storeid));
+
+  const json = await axios({
+    method: "POST",
+    headers: {
+      "Content-Type": "multipart/form-data",
+      Authorization: `Bearer ${token}`,
+    },
+    url: url + "invoices/parse_edi",
+    data: formData,
+  });
+
+  return json;
+};
+
 export type InvoiceHistoryQuery = {
   /** Omitted entirely = every store the caller can see. */
   storeid?: number;
-  engine?: InvoiceEngine;
+  /** "awg_edi" runs come from postEdiInvoice, not an extraction engine. */
+  engine?: InvoiceEngine | "awg_edi";
   status?: InvoiceRunStatus;
   limit?: number;
   offset?: number;
