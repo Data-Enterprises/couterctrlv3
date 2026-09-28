@@ -117,7 +117,7 @@ const TicketInbox = ({
   const narrowed = filters.status.length > 0 || filters.priority.length > 0;
 
   return (
-    <div className="flex h-full w-[312px] flex-none flex-col border-r border-brand_line bg-custom-white xl:w-[336px] 2xl:w-[378px]">
+    <div className="flex h-full w-[328px] flex-none flex-col border-r border-brand_line bg-custom-white xl:w-[353px] 2xl:w-[397px]">
       <div className="flex-none border-b border-brand_line p-2.5">
         {/* The queue, exclusive, above the two pickers that narrow it. A row
             rather than a rail: five short words cost less across the top of
