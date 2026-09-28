@@ -8,7 +8,14 @@ import { openNew } from "../../../features/dev/devTicketsSlice";
 import type { TicketPriority } from "../../../api/tickets";
 import type { TicketsCtx } from "./hooks";
 import { attachmentProblem, fileSize } from "./ticketsUtils";
-import { getLastCall, lastCallAsFile } from "../../../utils/lastCall";
+import {
+  consolidate,
+  getPageCalls,
+  groupAsFile,
+  groupNote,
+  withinBudget,
+  type CallGroup,
+} from "../../../utils/pageCalls";
 import { originOf, searchSummary, suggestedTitle } from "./ticketOrigin";
 import CheckBox from "../../../components-dev/inputs/CheckBox";
 
@@ -47,9 +54,24 @@ const NewTicketModal = ({
     ? originOf({ reportFrom: from.from, page: from.page, area: from.area })
     : null;
   const summary = origin ? searchSummary(search, origin.href) : null;
-  // Read once, at mount: a call made while the form is open is this page
-  // fetching its own queue, not what the client was looking at.
-  const [captured] = useState(() => (from?.from ? getLastCall() : null));
+  /**
+   * Everything the page fetched, one entry per endpoint, read once at mount.
+   *
+   * Once, because a call made while the form is open is the form's own doing
+   * rather than anything the client was looking at. Grouped, because a paged
+   * fetch is several calls to one path and listing them separately makes one
+   * table look like twelve problems.
+   *
+   * Trimmed to a budget here rather than at send: somebody should not tick a
+   * box for something that is going to be dropped.
+   */
+  const [{ kept, dropped }] = useState(() =>
+    from?.from
+      ? withinBudget(consolidate(getPageCalls()))
+      : { kept: [] as CallGroup[], dropped: [] as CallGroup[] },
+  );
+  const [skip, setSkip] = useState<Set<string>>(new Set());
+  const chosen = kept.filter((g) => !skip.has(g.key));
 
   const [title, setTitle] = useState(origin ? suggestedTitle(origin) : "");
   const [description, setDescription] = useState("");
@@ -63,7 +85,6 @@ const NewTicketModal = ({
   });
   const [files, setFiles] = useState<File[]>([]);
   const [fileError, setFileError] = useState<string | null>(null);
-  const [includeEvidence, setIncludeEvidence] = useState(true);
   const picker = useRef<HTMLInputElement>(null);
 
   const limits = ctx.lookups?.attachments;
@@ -131,7 +152,7 @@ const NewTicketModal = ({
           * lets them check, and a tick they can clear means the data leaves
           * only because they let it.
           */}
-        {origin && (summary || captured) && (
+        {origin && (summary || kept.length > 0) && (
           <div className="rounded-lg border border-brand_line bg-bkg px-3 py-2.5">
             <div className="font-mono text-[9.5px] uppercase tracking-wider text-content/85">
               From {origin.area ? `${origin.area} · ` : ""}
@@ -142,22 +163,51 @@ const NewTicketModal = ({
               <div className="mt-1 text-[12.5px] font-medium">{summary}</div>
             )}
 
-            {captured && (
-              <div className="mt-2">
-                <CheckBox
-                  id={2}
-                  idExtension="ticket-evidence"
-                  label={`Attach what the page loaded (${captured.method} ${captured.path})`}
-                  value={includeEvidence}
-                  onChange={(value) => setIncludeEvidence(Boolean(value))}
-                  className="cursor-pointer select-none text-[12px] text-content"
-                />
-                <div className="mt-1 pl-1 text-[11px] text-content/85">
-                  {captured.status} ·{" "}
-                  {fileSize(new Blob([captured.body]).size)}
-                  {captured.truncated ? " · shortened" : ""} · goes on as a
-                  .json file
+            {kept.length > 0 && (
+              <div className="mt-2.5">
+                <div className="text-[11.5px] text-content/85">
+                  This page loaded {kept.length}{" "}
+                  {kept.length === 1 ? "thing" : "things"}. Attach them?
                 </div>
+                <div className="mt-1.5 flex flex-col gap-1">
+                  {kept.map((group) => (
+                    <div key={group.key} className="flex items-start gap-2">
+                      <CheckBox
+                        id={2}
+                        idExtension={`evidence-${group.key.replace(/[^a-z0-9]+/gi, "-")}`}
+                        label=""
+                        value={!skip.has(group.key)}
+                        onChange={(value) =>
+                          setSkip((have) => {
+                            const next = new Set(have);
+                            if (value) next.delete(group.key);
+                            else next.add(group.key);
+                            return next;
+                          })
+                        }
+                        className="mt-[1px] cursor-pointer select-none"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate font-mono text-[11.5px] text-content">
+                          {group.method} {group.path}
+                        </div>
+                        <div className="text-[11px] text-content/85">
+                          {groupNote(group, fileSize)}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Named rather than silently missing: a tech reading the
+                    ticket should know something was too big to send, not
+                    wonder why an endpoint is absent. */}
+                {dropped.length > 0 && (
+                  <div className="mt-1.5 text-[11px] text-content/85">
+                    {dropped.length} left off for size —{" "}
+                    {dropped.map((g) => g.path).join(", ")}
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -287,9 +337,7 @@ const NewTicketModal = ({
                   priority,
                   category_id: category ? Number(category) : null,
                 },
-                captured && includeEvidence
-                  ? [...files, lastCallAsFile(captured)]
-                  : files,
+                chosen.length ? [...files, ...chosen.map(groupAsFile)] : files,
               )
             }
             disabled={!ready || ctx.working}

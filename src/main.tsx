@@ -41,11 +41,11 @@ import Settings from "./pages/settings/Settings.tsx";
 import Dashboard from "./pages/quicksight/Dashboard.tsx";
 import Tickets from "./pages/tickets/Tickets.tsx";
 import ReleaseNotes from "./pages/releaseNotes/ReleaseNotes.tsx";
-import { armLastCall } from "./utils/lastCall.ts";
+import { armPageCalls } from "./utils/pageCalls.ts";
 
 // Before the first render, so nothing is missed — a ticket filed about the
-// screen somebody is looking at wants the call that drew it.
-armLastCall();
+// screen somebody is looking at wants every call that drew it.
+armPageCalls();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

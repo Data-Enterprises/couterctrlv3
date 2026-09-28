@@ -156,12 +156,12 @@ export const searchSummary = (
 /**
  * TODO — the second half of the evidence: what the page ENDED UP with.
  *
- * The attached response is the last HTTP call, and for a paged endpoint that
- * is the last page rather than the set. `fetchAllPages` walks the rest and
- * assembles the result in JavaScript, so no interceptor ever sees the whole
- * thing — Sales, Sub Dept Margins, Loss Prevention, Receivers, Categories and
- * Suggested all page, which is most of the screens a data problem turns up
- * on.
+ * The attachments are raw responses, grouped per endpoint. Capturing every
+ * call on the page covers paged endpoints as a side effect — `fetchAllPages`
+ * asks for each page over axios, so each page is captured and they group back
+ * together. What is still missing is the ASSEMBLED result: that object is
+ * built in JavaScript and never crosses the wire, and neither does anything
+ * the page computed from it.
  *
  * The assembled set is in Redux, and the dev slices are already keyed
  * (store/devReducers.ts), so the map is a sibling of PAGE_CATEGORY above:
