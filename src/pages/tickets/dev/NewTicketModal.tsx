@@ -12,7 +12,6 @@ import {
   consolidate,
   getPageCalls,
   groupAsFile,
-  groupNote,
   withinBudget,
   type CallGroup,
 } from "../../../utils/pageCalls";
@@ -207,15 +206,9 @@ const NewTicketModal = ({
                             return next;
                           })
                         }
-                        className="items-start"
                         label={
-                          <span className="min-w-0">
-                            <span className="block truncate text-[12px] text-content">
-                              {group.label}
-                            </span>
-                            <span className="block text-[11px] text-content/85">
-                              {groupNote(group, fileSize)}
-                            </span>
+                          <span className="min-w-0 truncate text-[12px] text-content">
+                            {group.label}
                           </span>
                         }
                       />
@@ -226,9 +219,13 @@ const NewTicketModal = ({
                 {/* Named rather than silently missing: a tech reading the
                     ticket should know something was too big to send, not
                     wonder why a dataset is absent. */}
+                {/* Named rather than silently missing: a tech reading the
+                    ticket should know something did not come, not wonder why
+                    a dataset is absent. */}
                 {dropped.length > 0 && (
                   <div className="mt-1.5 text-[11px] text-content/85">
-                    Left off for size — {dropped.map((g) => g.label).join(", ")}
+                    Too large to send —{" "}
+                    {dropped.map((g) => g.label).join(", ")}
                   </div>
                 )}
               </div>

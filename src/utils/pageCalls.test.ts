@@ -6,7 +6,6 @@ import {
   consolidate,
   getPageCalls,
   groupAsFile,
-  groupNote,
   withinBudget,
   type CallGroup,
 } from "./pageCalls";
@@ -26,7 +25,6 @@ const pass = (url: string, data: unknown, method = "get", status = 200) => {
 };
 
 const API = "https://api.example.com";
-const kb = (n: number) => `${n} KB`;
 
 describe("pageCalls", () => {
   beforeEach(clearPageCalls);
@@ -83,9 +81,8 @@ describe("pageCalls", () => {
     expect(groups).toHaveLength(2);
     const paged = groups.find((g) => g.path === "/cashiers/transaction_ids")!;
     expect(paged.calls).toHaveLength(3);
-    // How many requests it took is ours to know, not something a client
-    // reads off a tick box.
-    expect(groupNote(paged, kb)).not.toContain("pages");
+    // One dataset, whatever it took to fetch — the row shows only its name.
+    expect(paged.label).toBe("Transactions");
   });
 
   it("keeps a different method to the same path apart", () => {
@@ -130,7 +127,8 @@ describe("pageCalls", () => {
     expect(call.truncated).toBe(true);
     expect(call.body.endsWith("[truncated]")).toBe(true);
     expect(call.body.length).toBeLessThan(300 * 1024);
-    expect(groupNote(consolidate()[0], kb)).toContain("shortened");
+    // Recorded for the tech in the file, not shown to whoever is filing.
+    expect(groupAsFile(consolidate()[0]).name).toBe("get-sales-topten.json");
   });
 
   it("survives a body it cannot serialise", () => {

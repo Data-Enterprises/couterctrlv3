@@ -306,15 +306,3 @@ export const groupAsFile = (group: CallGroup) => {
     type: "application/json",
   });
 };
-
-/**
- * The line under a group's tick box.
- *
- * Size, and whether anything was cut. How many requests it took to fetch is
- * ours to know — a dataset that arrived over nine pages is still one dataset,
- * and saying so only invites the question of whether nine is bad.
- */
-export const groupNote = (group: CallGroup, size: (n: number) => string) =>
-  [size(group.bytes), group.calls.some((c) => c.truncated) ? "shortened" : ""]
-    .filter(Boolean)
-    .join(" · ");
