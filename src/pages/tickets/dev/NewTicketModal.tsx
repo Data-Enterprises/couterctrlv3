@@ -1,6 +1,5 @@
 import { useRef, useState } from "react";
 import { useAppSelector } from "../../../hooks";
-import { useLocation } from "react-router";
 import { XMarkIcon } from "@heroicons/react/20/solid";
 import Modal from "../../../components-dev/Modal";
 import TextField from "../../../components-dev/inputs/TextField";
@@ -29,22 +28,28 @@ import CheckBox from "../../../components-dev/inputs/CheckBox";
  * offered rather than attached, because it is the client's data and they
  * should see it leave.
  */
-const NewTicketModal = ({ ctx }: { ctx: TicketsCtx }) => {
-  const location = useLocation();
+const NewTicketModal = ({
+  ctx,
+  from,
+  onClose,
+}: {
+  ctx: TicketsCtx;
+  /** Where the reporter was when they raised it. Absent when the form is
+   *  opened from the help desk itself, which is nowhere in particular. */
+  from?: { from: string; page?: string; area?: string } | null;
+  /** Filing from another page closes back to that page rather than to the
+   *  queue, so the caller says what closing means. */
+  onClose?: () => void;
+}) => {
   const search = useAppSelector((state) => state.search);
 
-  const from = location.state as {
-    reportFrom?: string;
-    page?: string | null;
-    area?: string | null;
-  } | null;
-  const origin = from?.reportFrom
-    ? originOf({ ...from, reportFrom: from.reportFrom })
+  const origin = from?.from
+    ? originOf({ reportFrom: from.from, page: from.page, area: from.area })
     : null;
-  const summary = origin ? searchSummary(search) : null;
+  const summary = origin ? searchSummary(search, origin.href) : null;
   // Read once, at mount: a call made while the form is open is this page
   // fetching its own queue, not what the client was looking at.
-  const [captured] = useState(() => (from?.reportFrom ? getLastCall() : null));
+  const [captured] = useState(() => (from?.from ? getLastCall() : null));
 
   const [title, setTitle] = useState(origin ? suggestedTitle(origin) : "");
   const [description, setDescription] = useState("");
@@ -84,7 +89,7 @@ const NewTicketModal = ({ ctx }: { ctx: TicketsCtx }) => {
     if (picker.current) picker.current.value = "";
   };
 
-  const close = () => ctx.dispatch(openNew(false));
+  const close = () => (onClose ? onClose() : ctx.dispatch(openNew(false)));
   const ready = title.trim() !== "" && description.trim() !== "";
 
   const priorities = (ctx.lookups?.priorities ?? [

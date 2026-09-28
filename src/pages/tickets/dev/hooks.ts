@@ -117,6 +117,17 @@ export const useTicketsCtx = () => {
       })
       .catch(failed("Could not read the tickets"));
 
+    loadLookups();
+  };
+
+  /**
+   * The pickers on their own.
+   *
+   * Filing a ticket from another page needs the categories and the
+   * attachment limits and nothing else — pulling the whole queue to get them
+   * would fetch every ticket the reader can see for the sake of two lists.
+   */
+  const loadLookups = () => {
     getTicketLookups(url, token)
       .then((resp) => {
         if (!ticketFailed(resp.data)) dispatch(setLookups(resp.data));
@@ -412,6 +423,7 @@ export const useTicketsCtx = () => {
     rows,
     counts,
     load,
+    loadLookups,
     loadAssignees,
     poll,
     pollList,

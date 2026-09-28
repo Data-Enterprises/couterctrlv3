@@ -11,6 +11,7 @@ import { legacyEntryPath } from "../../constants/legacyPages";
 import { COMING_SOON_CATEGORY } from "../../utils/comingSoon";
 import { resetNav, setIsNavOpen, setLastRoute } from "../../features/navSlice";
 import {
+  openReportIssue,
   resetAppSlice,
   setApiEnv,
   setUiMode,
@@ -401,31 +402,28 @@ const TitleBar = () => {
               </button>
             ) : null}
             {/* File a ticket about the page you are on.
-                
-                Carries where you came from so the form can open with the page
-                named and its area pre-picked — the nav already knows both,
-                and asking somebody to describe where they were is asking
-                them to do the first half of the triage.
 
-                It navigates rather than opening a sheet in place: the help
-                desk is a dev tree page and this bar is shared, so the prod
-                tree cannot reach it. What was on screen survives the trip
-                anyway — the last response is held in a module, not in the
-                page that fetched it. */}
+                Raises a flag rather than navigating: sending somebody to the
+                help desk to describe a problem they are looking at asks them
+                to leave the evidence behind. App draws the form over
+                whatever page they are on.
+
+                The flag is on the shared slice because this bar is prod-tree
+                and the form is dev. It carries the page and its area, which
+                the nav has already worked out for its own highlight. */}
             {context.apiEnv === "dev" ? (
               <button
                 onClick={() => {
                   setAvatarOpen(false);
-                  navigate("/tickets", {
-                    state: {
-                      reportFrom: location.pathname,
-                      // Already worked out for the nav's own highlight.
+                  dispatch(
+                    openReportIssue({
+                      from: location.pathname,
                       page: activeCategory?.pages.find(
                         (p) => p.href === currentPath,
                       )?.name,
                       area: activeCategory?.name,
-                    },
-                  });
+                    }),
+                  );
                 }}
                 className="w-full text-left px-4 py-2.5 text-[13px] font-medium text-content hover:bg-gray-50 transition-colors border-b border-gray-100 flex items-center gap-2"
               >

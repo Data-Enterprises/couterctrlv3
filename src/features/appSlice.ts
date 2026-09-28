@@ -33,6 +33,15 @@ interface AppState {
    * kept for the session only.
    */
   legacyLastRoute: string;
+  /**
+   * Somebody asked to report an issue, and where from.
+   *
+   * On the shared slice rather than the tickets one because the title bar
+   * raises it and the title bar is prod-tree, which may not reach a dev
+   * slice. It carries the page's name and its area because the nav already
+   * worked both out for its own highlight — see ticketOrigin.
+   */
+  reportIssue: { from: string; page?: string; area?: string } | null;
   prodToken: string;
   devToken: string;
   /** Legacy runs on its own API, so it has its own credential. */
@@ -78,6 +87,7 @@ export const initialState: AppState = {
   // Sales rather than Home: a real legacy page with data in it, and what
   // the old sidebar already fell back to when a route was out of reach.
   legacyLastRoute: "sales",
+  reportIssue: null,
   prodToken: "",
   devToken: "",
   legacyToken: "",
@@ -135,6 +145,15 @@ export const appSlice = createSlice({
      * user somewhere they didn't ask to be, so the switch ends in prod both
      * ways and the Mode row is disabled while Legacy is on.
      */
+    openReportIssue: (
+      state,
+      action: PayloadAction<{ from: string; page?: string; area?: string }>,
+    ) => {
+      state.reportIssue = action.payload;
+    },
+    closeReportIssue: (state) => {
+      state.reportIssue = null;
+    },
     setLegacyLastRoute: (state, action: PayloadAction<string>) => {
       state.legacyLastRoute = action.payload;
     },
@@ -149,6 +168,8 @@ export const appSlice = createSlice({
 });
 
 export const {
+  openReportIssue,
+  closeReportIssue,
   setUiMode,
   setLegacyLastRoute,
   setLegacyToken,

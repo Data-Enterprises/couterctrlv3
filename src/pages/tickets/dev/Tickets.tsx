@@ -1,5 +1,4 @@
 import { useEffect, useMemo } from "react";
-import { useLocation } from "react-router";
 import {
   clearFilters,
   openNew,
@@ -47,50 +46,10 @@ import CloseTicketModal from "./CloseTicketModal";
  */
 const Tickets = () => {
   const ctx = useTicketsCtx();
-  const location = useLocation();
 
   useEffect(() => {
     // Once, on open: the queue and the pickers. Reloading is explicit.
     ctx.load();
-  }, []);
-
-  /**
-   * Arrived from another page's "Report an issue".
-   *
-   * The form opens itself and reads the rest off the route state. Waiting on
-   * the lookups rather than firing at once: the category pre-fill resolves a
-   * name against them, and a form that opened first would open with it
-   * blank.
-   */
-  useEffect(() => {
-    const from = (location.state as { reportFrom?: string } | null)?.reportFrom;
-    if (from && ctx.lookups && !ctx.newOpen) ctx.dispatch(openNew(true));
-  }, [location.state, ctx.lookups]);
-
-  useEffect(() => {
-    // The assignee list is a tech's; asking for it without canManage is a 403.
-    if (ctx.caps.canManage) ctx.loadAssignees();
-  }, [ctx.caps.canManage]);
-
-  /**
-   * Ask after the queue every thirty seconds, and hold what comes back.
-   *
-   * Applying it would reorder the list under whoever is reaching for a row,
-   * since it sorts by updated_at — so this only ever lights a bar. Email
-   * already covers "a ticket arrived", which is the case that matters; this
-   * is for the half hour somebody leaves the page open.
-   */
-  useEffect(() => {
-    let inFlight = false;
-    const tick = () => {
-      if (inFlight || document.visibilityState !== "visible") return;
-      inFlight = true;
-      void ctx.pollList().finally(() => {
-        inFlight = false;
-      });
-    };
-    const handle = window.setInterval(tick, 30000);
-    return () => window.clearInterval(handle);
   }, []);
 
   const byStatus = useMemo(() => statusCounts(ctx.tickets), [ctx.tickets]);

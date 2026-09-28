@@ -1,4 +1,5 @@
 import type { SearchState } from "../../../features/searchSlice";
+import { weekEnding } from "../../../utils/dates";
 
 /**
  * Where a ticket is being filed from, and what the page was showing.
@@ -74,6 +75,57 @@ export const originOf = (from: {
 };
 
 /**
+ * Which dates a page actually means.
+ *
+ * The search slice always carries all three — a start, an end and a single
+ * date — and a page reads whichever one matches the shape of its data. Sales
+ * is a week: it takes `singleDate` as the week's last day and works back
+ * seven, and its startDate and endDate say nothing about what is on screen.
+ * Printing those two on a Sales ticket is printing a range nobody searched.
+ *
+ * `SearchCard` has always taken this as a prop from the page, because the
+ * page is what knows. This map is the same answer for pages that are not
+ * rendering a search card at the moment somebody reports a problem.
+ *
+ * Unlisted means a plain start-to-end range, which is the common case.
+ */
+type DateShape = "range" | "single" | "week" | "none";
+
+const PAGE_DATES: Record<string, DateShape> = {
+  sales: "week",
+  "sales-tracker": "week",
+  categories: "week",
+  vendors: "week",
+  "sub-dept-margins": "week",
+  "coupon-sales": "week",
+  "loss-prevention": "single",
+  "lp-actions": "single",
+  forecasting: "single",
+  "item-report": "single",
+  cashiers: "single",
+  // Nothing on these is scoped to a date the user picked.
+  admin: "none",
+  "user-management": "none",
+  groups: "none",
+  tickets: "none",
+  quicksight: "none",
+};
+
+const datesFor = (search: SearchState, shape: DateShape): string => {
+  if (shape === "none") return "";
+  if (shape === "single") return search.singleDate ?? "";
+  if (shape === "week") {
+    if (!search.singleDate) return "";
+    const { start, end } = weekEnding(search.singleDate);
+    return `week of ${start} – ${end}`;
+  }
+  if (!search.startDate || !search.endDate) return search.singleDate ?? "";
+  return search.startDate === search.endDate
+    ? search.startDate
+    : `${search.startDate} – ${search.endDate}`;
+};
+
+/**
  * What they had asked for, in one line.
  *
  * Shown rather than asked about: "is this about your last search?" makes
@@ -81,7 +133,10 @@ export const originOf = (from: {
  * check. Returns null when nothing has been searched, so the offer does not
  * appear with nothing behind it.
  */
-export const searchSummary = (search: SearchState): string | null => {
+export const searchSummary = (
+  search: SearchState,
+  href: string,
+): string | null => {
   const where =
     search.type === "Store"
       ? search.selectedStore?.store_name
@@ -94,15 +149,38 @@ export const searchSummary = (search: SearchState): string | null => {
       : (search.selectedGroup?.group_name ?? null);
   if (!where) return null;
 
-  const when =
-    search.startDate && search.endDate
-      ? search.startDate === search.endDate
-        ? search.startDate
-        : `${search.startDate} – ${search.endDate}`
-      : (search.singleDate ?? "");
-
+  const when = datesFor(search, PAGE_DATES[href] ?? "range");
   return when ? `${where} · ${when}` : where;
 };
+
+/**
+ * TODO — the second half of the evidence: what the page ENDED UP with.
+ *
+ * The attached response is the last HTTP call, and for a paged endpoint that
+ * is the last page rather than the set. `fetchAllPages` walks the rest and
+ * assembles the result in JavaScript, so no interceptor ever sees the whole
+ * thing — Sales, Sub Dept Margins, Loss Prevention, Receivers, Categories and
+ * Suggested all page, which is most of the screens a data problem turns up
+ * on.
+ *
+ * The assembled set is in Redux, and the dev slices are already keyed
+ * (store/devReducers.ts), so the map is a sibling of PAGE_CATEGORY above:
+ *
+ *   "sub-dept-margins" -> subMargin      "upc-upload"  -> upcDev
+ *   "loss-prevention"  -> lossPrevention  "item-lookup" -> item
+ *
+ * Both are worth sending, because they answer different questions: the slice
+ * is what the page ended up showing, the raw call is what the server actually
+ * said, and when the transform is the bug the slice shows only the symptom.
+ *
+ * Three things to settle when this is picked up:
+ *   - a page can have two slices (Sub Dept Margins is subMargin on desktop
+ *     and itemPerf on mobile)
+ *   - a whole slice carries more than the page's own data — tickets holds
+ *     every company's queue for a tech, users and organization hold people
+ *   - size: a slice is bigger than one response, so this probably wants
+ *     named keys per page rather than the whole thing
+ */
 
 /** The title a page-filed ticket opens with, so it is never blank. */
 export const suggestedTitle = (origin: TicketOrigin) =>

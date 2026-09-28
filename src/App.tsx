@@ -10,6 +10,9 @@ import Login from "./pages/home/Login";
 import { NavSwitch } from "./DevPages";
 import UserDataLoader from "./components/UserDataLoader";
 import AccountSetupModal from "./components/accountSetup/AccountSetupModal";
+// Neither tree: the title bar raises the flag from prod and the form lives in
+// dev, and App is the one place that may hold both.
+import ReportIssueModal from "./pages/tickets/dev/ReportIssueModal";
 import { getUserStores } from "./api/user";
 import type { JsonError, Store } from "./interfaces";
 import { setAllAvailableStores } from "./features/storeSlice";
@@ -109,6 +112,10 @@ const App = () => {
             {/* Renders only when the login response says the user still owes a
                 password change and/or a security question — otherwise null. */}
             <AccountSetupModal />
+            {/* Drawn only while somebody has asked to report an issue, and
+                only on the dev API — the help desk it files into is a dev
+                tree page. */}
+            {context.apiEnv === "dev" && <ReportIssueModal />}
             <Outlet />
           </div>
         </div>
