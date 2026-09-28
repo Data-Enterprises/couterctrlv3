@@ -128,9 +128,12 @@ const TicketInbox = ({
         {/* Tabs, because they are exclusive and they are the top level of
             this column — a row of pills read as four more filters beside the
             two that actually are. */}
+        {/* `auto-cols-fr` rather than a fixed four, so the client's two
+            divide the same width evenly instead of leaving half the row
+            empty. */}
         <div
           role="tablist"
-          className="-mx-2.5 -mt-2.5 mb-2.5 flex gap-3 overflow-x-auto thin-scrollbar border-b border-brand_line px-2.5"
+          className="-mx-2.5 -mt-2.5 mb-2.5 grid auto-cols-fr grid-flow-col border-b border-brand_line px-2.5"
         >
           {(isTech ? QUEUE : CLIENT_QUEUE).map((q) => {
             const active = tab === q.key;
@@ -141,7 +144,7 @@ const TicketInbox = ({
                 role="tab"
                 aria-selected={active}
                 onClick={() => onTab(q.key)}
-                className={`flex-none border-b-2 pb-2 pt-2.5 text-[12.5px] transition-colors ${
+                className={`min-w-0 truncate border-b-2 px-1 pb-2 pt-2.5 text-center text-[12.5px] transition-colors ${
                   active
                     ? "border-brand_navy font-semibold text-content"
                     : "border-transparent text-content/85 hover:border-brand_line_2"
