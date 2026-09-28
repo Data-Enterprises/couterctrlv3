@@ -222,3 +222,89 @@ export const attachmentProblem = (
   }
   return null;
 };
+
+/**
+ * Initials for the inbox avatar.
+ *
+ * Two letters from the ends of the name, so "Randall Nunez" is RN and a
+ * single-word name still gets something. Mirrors the TitleBar avatar, which
+ * is the only other place in the app that draws one.
+ */
+export const initialsOf = (name: string | null) => {
+  const parts = (name ?? "").trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "?";
+  const first = parts[0][0] ?? "";
+  const last = parts.length > 1 ? (parts[parts.length - 1][0] ?? "") : "";
+  return (first + last).toUpperCase();
+};
+
+/**
+ * The two fields the inbox row has room for and the list endpoint does not
+ * send yet: a preview of the newest reply, and whether this reader has seen
+ * it.
+ *
+ * Read through here rather than off the row so there is one place to delete
+ * the cast when they arrive. A snippet needs the list query to carry the last
+ * comment; unread needs a per-user read marker, which is a real table and not
+ * something the client can infer — `updated_at` moves for an edit, an assign
+ * and a status change, none of which is a message anybody missed.
+ */
+export const snippetOf = (ticket: Ticket): string | null =>
+  (ticket as Ticket & { last_comment?: string | null }).last_comment ?? null;
+
+export const isUnread = (ticket: Ticket): boolean =>
+  (ticket as Ticket & { unread?: boolean }).unread === true;
+
+/** What each status folder would show. Open work only, matching `tabCounts`
+ *  — the Closed folder is the one place finished tickets live. */
+export const statusCounts = (tickets: Ticket[]) => {
+  const out: Record<string, number> = {};
+  for (const t of tickets) {
+    if (t.status === "closed") continue;
+    out[t.status] = (out[t.status] ?? 0) + 1;
+  }
+  return out;
+};
+
+/** The same, by priority. */
+export const priorityCounts = (tickets: Ticket[]) => {
+  const out: Record<string, number> = {};
+  for (const t of tickets) {
+    if (t.status === "closed") continue;
+    out[t.priority] = (out[t.priority] ?? 0) + 1;
+  }
+  return out;
+};
+
+/**
+ * Everything else this person has filed, newest first.
+ *
+ * The queue is already in memory and already holds every company a tech can
+ * see, so "their other tickets" costs no call — it is the list filtered by
+ * the opener, minus the one being read.
+ */
+export const alsoFrom = (tickets: Ticket[], ticket: Ticket, limit = 5) =>
+  tickets
+    .filter((t) => t.opened_by === ticket.opened_by && t.id !== ticket.id)
+    .sort((a, b) => b.updated_at.localeCompare(a.updated_at))
+    .slice(0, limit);
+
+/** How long this person has been filing, and how much. */
+export const openerStats = (tickets: Ticket[], ticket: Ticket) => {
+  const theirs = tickets.filter((t) => t.opened_by === ticket.opened_by);
+  const open = theirs.filter((t) => t.status !== "closed").length;
+  const first = theirs.reduce<string | null>(
+    (oldest, t) =>
+      oldest === null || t.created_at.localeCompare(oldest) < 0
+        ? t.created_at
+        : oldest,
+    null,
+  );
+  const byCategory = new Map<string, number>();
+  for (const t of theirs) {
+    if (!t.category_name) continue;
+    byCategory.set(t.category_name, (byCategory.get(t.category_name) ?? 0) + 1);
+  }
+  const top = [...byCategory.entries()].sort((a, b) => b[1] - a[1])[0] ?? null;
+  return { filed: theirs.length, open, first, topCategory: top?.[0] ?? null };
+};

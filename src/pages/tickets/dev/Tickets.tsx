@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import CheckBox from "../../../components-dev/inputs/CheckBox";
 import {
   clearFilters,
@@ -7,11 +7,13 @@ import {
   setFilters,
   setSearch,
   setTab,
-  type QueueTab,
 } from "../../../features/dev/devTicketsSlice";
 import { useTicketsCtx } from "./hooks";
-import TicketList from "./TicketList";
+import { priorityCounts, statusCounts } from "./ticketsUtils";
+import TicketRail from "./TicketRail";
+import TicketInbox from "./TicketInbox";
 import TicketDetail from "./TicketDetail";
+import TicketSidebar from "./TicketSidebar";
 import NewTicketModal from "./NewTicketModal";
 import CloseTicketModal from "./CloseTicketModal";
 
@@ -27,6 +29,18 @@ import CloseTicketModal from "./CloseTicketModal";
  * One route rather than two nav entries. The flags come back on every list and
  * detail response, so the page always knows which of itself to be, and there
  * is one screen to keep in step rather than two.
+ *
+ * LAYOUT
+ * Four columns, in the order you use them: the rail picks a pile of work, the
+ * inbox picks a ticket out of it, the thread is the ticket, and the sidebar is
+ * who sent it. Nothing stacks above them — the page title and the tab strip
+ * that used to sit there were spending two rows on what the rail now says down
+ * the side, and the thread is the thing that wanted the height.
+ *
+ * The two outer columns give way first. The sidebar is the least load-bearing,
+ * so it goes below `xl`; the rail belongs to a tech triaging a queue, so a
+ * client never has one — their five folders would read All open and Closed and
+ * nothing else.
  */
 const Tickets = () => {
   const ctx = useTicketsCtx();
@@ -62,165 +76,95 @@ const Tickets = () => {
     return () => window.clearInterval(handle);
   }, []);
 
-  const tabs: { key: QueueTab; label: string; count: number }[] = ctx.isTech
-    ? [
-        { key: "all", label: "All", count: ctx.counts.all },
-        { key: "unassigned", label: "Unassigned", count: ctx.counts.unassigned },
-        { key: "mine", label: "Mine", count: ctx.counts.mine },
-        { key: "urgent", label: "Urgent", count: ctx.counts.urgent },
-        { key: "closed", label: "Closed", count: ctx.counts.closed },
-      ]
-    : [
-        { key: "all", label: "Open", count: ctx.counts.all },
-        { key: "closed", label: "Closed", count: ctx.counts.closed },
-      ];
+  const byStatus = useMemo(
+    () => statusCounts(ctx.tickets),
+    [ctx.tickets],
+  );
+  const byPriority = useMemo(
+    () => priorityCounts(ctx.tickets),
+    [ctx.tickets],
+  );
+
+  const refresh = () => {
+    // A poll has already fetched the newer queue, so applying it is instant
+    // and costs no call. With nothing held, this is a real fetch as before.
+    if (ctx.pending) ctx.applyPending();
+    else ctx.load();
+  };
 
   return (
-    <div className="h-[calc(100vh-3rem)] flex flex-col gap-3 px-4 py-4 bg-bkg">
-
-      <div className="flex items-end gap-4 flex-shrink-0">
-        <div className="flex-1 min-w-0">
-          <h1 className="text-[22px] font-semibold tracking-tight">
-            {ctx.isTech ? "Client Help Desk" : "Support"}
-          </h1>
-          <p className="text-[12.5px] text-content/85 mt-0.5">
-            {ctx.isTech
-              ? "Every company's tickets, newest activity first."
-              : "Your company's tickets, and any you opened yourself."}
-          </p>
-        </div>
-
-        {/*
-          * Dev only, and a preview of the layout rather than of the rules:
-          * the payload is still a tech's, because the filtering happens in the
-          * query. The page is level 9 and both flags trip at 8, so without
-          * this the client view is a screen nobody on the team can look at.
-          */}
-        {ctx.caps.canViewAll && (
-          <CheckBox
-            id={1}
-            idExtension="as-client"
-            label="View as a client"
-            value={ctx.asClient}
-            onChange={(value) => ctx.dispatch(setAsClient(Boolean(value)))}
-            className="text-[12px] text-content/85 bg-custom-white border border-brand_line rounded-lg px-3 py-2.5 cursor-pointer select-none"
-          />
-        )}
-
-        {/*
-          * Filing is the client's action.
-          *
-          * A ticket takes its company from whoever opens it, so a tech filing
-          * one on a client's behalf would file it under ours — the endpoint
-          * refuses any other company outright. The button would be a way to
-          * misfile rather than a way to help, so a tech does not get one.
-          */}
-        {!ctx.isTech && (
-          <button
-            type="button"
-            onClick={() => ctx.dispatch(openNew(true))}
-            className="text-[13px] font-semibold px-4 py-2.5 rounded-lg bg-brand_navy text-custom-white hover:bg-brand_navy_hover transition-colors"
-          >
-            New ticket
-          </button>
-        )}
-      </div>
-
-      <div className="flex items-center gap-2 flex-wrap flex-shrink-0">
-        <div className="flex bg-card_bg border border-brand_line rounded-lg overflow-hidden">
-          {tabs.map((tab, i) => (
-            <button
-              key={tab.key}
-              type="button"
-              onClick={() => ctx.dispatch(setTab(tab.key))}
-              className={`text-[12.5px] px-3.5 py-2.5 transition-colors ${
-                i > 0 ? "border-l border-brand_line" : ""
-              } ${
-                ctx.tab === tab.key
-                  ? "bg-brand_slate text-custom-white font-semibold"
-                  : "hover:bg-custom-white"
-              }`}
-            >
-              {tab.label} {tab.count}
-            </button>
-          ))}
-        </div>
-
-        <label htmlFor="ticket-search" className="sr-only">
-          Search tickets
-        </label>
-        <input
-          id="ticket-search"
-          type="search"
-          value={ctx.search}
-          onChange={(e) => ctx.dispatch(setSearch(e.target.value))}
-          placeholder={
-            ctx.isTech
-              ? "Search title, number, company or person"
-              : "Search your tickets"
+    <div className="flex h-[calc(100vh-3rem)] bg-bkg">
+      {ctx.isTech && (
+        <TicketRail
+          tab={ctx.tab}
+          counts={ctx.counts}
+          filters={ctx.filters}
+          statusCounts={byStatus}
+          priorityCounts={byPriority}
+          onTab={(tab) => ctx.dispatch(setTab(tab))}
+          onFilters={(next) => ctx.dispatch(setFilters(next))}
+          onClear={() => ctx.dispatch(clearFilters())}
+          footer={
+            /*
+             * Dev only, and a preview of the layout rather than of the rules:
+             * the payload is still a tech's, because the filtering happens in
+             * the query. The page is level 9 and both flags trip at 8, so
+             * without this the client view is a screen nobody on the team can
+             * look at.
+             */
+            ctx.caps.canViewAll ? (
+              <CheckBox
+                id={1}
+                idExtension="as-client"
+                label="View as a client"
+                value={ctx.asClient}
+                onChange={(value) =>
+                  ctx.dispatch(setAsClient(Boolean(value)))
+                }
+                className="cursor-pointer select-none rounded-md px-1 text-[11.5px] text-content/85"
+              />
+            ) : undefined
           }
-          className="flex-1 min-w-[220px] border border-brand_line rounded-lg px-3 py-2.5 text-[13px] bg-custom-white"
         />
-
-        {/*
-          * One control, not a control and a banner about it.
-          *
-          * Refresh already means "bring this up to date", so news of a queue
-          * that has moved belongs on the button rather than in a bar above
-          * the table saying the same thing in more words.
-          */}
-        <button
-          type="button"
-          onClick={() => {
-            // A poll has already fetched the newer queue, so applying it is
-            // instant and costs no call. With nothing held, this is a real
-            // fetch as before.
-            if (ctx.pending) ctx.applyPending();
-            else ctx.load();
-          }}
-          disabled={ctx.loading}
-          title={
-            ctx.pending
-              ? "The queue has moved since this list was read"
-              : undefined
-          }
-          className={`text-[12.5px] px-3 py-2.5 rounded-lg border transition-colors disabled:opacity-40 ${
-            ctx.pending
-              ? "font-semibold bg-filter_active border-filter_active_border text-brand_navy_hover"
-              : "font-medium border-brand_line_2 hover:border-brand_slate"
-          }`}
-        >
-          {ctx.loading
-            ? "Reading..."
-            : ctx.pending
-              ? "Refresh · new activity"
-              : "Refresh"}
-        </button>
-      </div>
-
-      {ctx.error && (
-        <div className="flex-shrink-0 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-[12.5px] text-amber-900">
-          {ctx.error}
-        </div>
       )}
 
-      <div className="flex-1 min-h-0 flex gap-3">
-        <div className="flex-1 min-w-0 flex flex-col">
-          <TicketList
-            rows={ctx.rows}
-            selectedId={ctx.selectedId}
+      <TicketInbox
+        rows={ctx.rows}
+        selectedId={ctx.selectedId}
+        onSelect={ctx.open}
+        isTech={ctx.isTech}
+        loading={ctx.loading}
+        search={ctx.search}
+        onSearch={(value) => ctx.dispatch(setSearch(value))}
+        pending={Boolean(ctx.pending)}
+        onRefresh={refresh}
+        /*
+         * Filing is the client's action.
+         *
+         * A ticket takes its company from whoever opens it, so a tech filing
+         * one on a client's behalf would file it under ours — the endpoint
+         * refuses any other company outright. The button would be a way to
+         * misfile rather than a way to help, so a tech does not get one.
+         */
+        onNew={
+          ctx.isTech ? undefined : () => ctx.dispatch(openNew(true))
+        }
+        error={ctx.error}
+      />
+
+      <div className="flex min-w-0 flex-1 flex-col">
+        <TicketDetail ctx={ctx} />
+      </div>
+
+      {ctx.detail && (
+        <div className="hidden xl:flex">
+          <TicketSidebar
+            ticket={ctx.detail}
+            tickets={ctx.tickets}
             onSelect={ctx.open}
-            isTech={ctx.isTech}
-            loading={ctx.loading}
-            filters={ctx.filters}
-            onFilters={(next) => ctx.dispatch(setFilters(next))}
-            onClearFilters={() => ctx.dispatch(clearFilters())}
           />
         </div>
-        <div className="w-[380px] xl:w-[460px] 2xl:w-[560px] flex-shrink-0 flex flex-col">
-          <TicketDetail ctx={ctx} />
-        </div>
-      </div>
+      )}
 
       {ctx.newOpen && <NewTicketModal ctx={ctx} />}
       {ctx.closingOpen && <CloseTicketModal ctx={ctx} />}

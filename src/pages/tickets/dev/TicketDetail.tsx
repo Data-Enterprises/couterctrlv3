@@ -77,7 +77,7 @@ const TicketDetail = ({ ctx }: { ctx: TicketsCtx }) => {
 
   if (!ticket) {
     return (
-      <div className="flex-1 min-h-0 bg-card_bg border border-brand_line rounded-xl flex items-center justify-center text-center px-6">
+      <div className="flex-1 min-h-0 bg-custom-white flex items-center justify-center text-center px-6">
         <div className="max-w-[40ch]">
           <div className="text-[13px] font-semibold">
             {ctx.detailLoading ? "Opening..." : "Pick a ticket"}
@@ -126,7 +126,7 @@ const TicketDetail = ({ ctx }: { ctx: TicketsCtx }) => {
   ];
 
   return (
-    <div className="flex-1 min-h-0 bg-card_bg border border-brand_line rounded-xl flex flex-col overflow-hidden">
+    <div className="flex-1 min-h-0 bg-custom-white flex flex-col overflow-hidden">
       {/*
         * The card's header, and it reads as one: the number, the title and
         * the two pills that answer "where is this up to" before anything
