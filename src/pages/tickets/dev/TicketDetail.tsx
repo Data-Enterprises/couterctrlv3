@@ -242,7 +242,12 @@ const TicketDetail = ({ ctx }: { ctx: TicketsCtx }) => {
           wasAtBottom.current =
             box.scrollHeight - box.scrollTop - box.clientHeight < 80;
         }}
-        className="h-full overflow-y-auto thin-scrollbar px-4 py-3 flex flex-col gap-3"
+        // The collapsed Files bar sits over the foot of this box, so the
+        // thread reserves its height — otherwise the newest message, which
+        // is the one you are here to read, is the one underneath it.
+        className={`h-full overflow-y-auto thin-scrollbar px-4 pt-3 flex flex-col gap-3 ${
+          ctx.attachments.length > 0 ? "pb-14" : "pb-3"
+        }`}
       >
         {ctx.comments.map((comment) => {
           /*
