@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { ChevronLeftIcon } from "@heroicons/react/20/solid";
 import Modal from "../../../components-dev/Modal";
 import ConfirmDelete from "../../../components-dev/ConfirmDelete";
 import TextField from "../../../components-dev/inputs/TextField";
@@ -28,7 +29,12 @@ import { configToQuery } from "./query/configToQuery";
  * moment someone types, it stops being that and says so: the file below is
  * still the configuration's until Apply makes the two one thing again.
  */
-const QueryPanel = () => {
+interface Props {
+  configOpen: boolean;
+  onToggleConfig: () => void;
+}
+
+const QueryPanel = ({ configOpen, onToggleConfig }: Props) => {
   const ctx = useExportBuilderCtx();
 
   const generated = useMemo(
@@ -231,6 +237,21 @@ const QueryPanel = () => {
       )}
 
       <div className="flex items-center gap-2 px-3 py-2 bg-custom-white border-b border-brand_line flex-wrap">
+        {/* Here rather than on the panel itself: a control that hides
+            something cannot live inside the thing it hides. */}
+        <button
+          type="button"
+          onClick={onToggleConfig}
+          aria-expanded={configOpen}
+          title={configOpen ? "Hide the configuration" : "Show the configuration"}
+          className="flex-shrink-0 w-[22px] h-[22px] flex items-center justify-center rounded border border-brand_line_2 text-content/85 hover:border-brand_slate transition-colors"
+        >
+          <ChevronLeftIcon
+            className={`w-3.5 h-3.5 transition-transform duration-300 motion-reduce:transition-none ${
+              configOpen ? "" : "rotate-180"
+            }`}
+          />
+        </button>
         <span className="text-[11px] font-semibold uppercase tracking-wide text-content/85">
           The configuration, as a query
         </span>

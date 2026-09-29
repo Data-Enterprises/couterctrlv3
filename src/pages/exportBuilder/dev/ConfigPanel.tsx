@@ -475,7 +475,11 @@ const ConfigPanel = () => {
   const allTypes = ctx.saleTypes.length;
 
   return (
-    <div className="w-[340px] flex-shrink-0 flex flex-col min-h-0 bg-custom-white border border-brand_line rounded-xl overflow-hidden">
+    // Width belongs to the shell now, which animates it. This keeps its own
+    // so the contents hold their layout while the sleeve closes over them —
+    // text reflowing through a width transition is what makes one look
+    // broken rather than smooth.
+    <div className="w-[340px] h-full flex flex-col min-h-0 bg-custom-white border border-brand_line rounded-xl overflow-hidden">
       <div className="flex items-center gap-2 px-3 pt-3 pb-2 flex-shrink-0">
         <span className="text-[11px] font-semibold uppercase tracking-wide text-content/85 flex-1">
           Configuration
