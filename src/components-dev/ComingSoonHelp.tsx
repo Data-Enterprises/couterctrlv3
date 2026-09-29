@@ -8,41 +8,39 @@ import { comingSoonSection } from "../utils/comingSoonHelp";
 /** Served straight from `public/`, so this is a path and not a fetch. */
 const DOC = "/coming-soon.html";
 
+interface Props {
+  /** Passed through to InfoButton — these sit in navy panel headers. */
+  variant?: "navy" | "light";
+  className?: string;
+}
+
 /**
- * The "?" on a Coming Soon page, and the overview it opens.
+ * The "?" already on a Coming Soon page, opening the Coming Soon overview.
  *
- * Every other page carries its own "?" inside a panel header it already has.
- * The eight Coming Soon pages have eight different headers and no "?" between
- * them, so this sits in the app frame instead and works out which page it is
- * on from the route — which is also what decides where in the document it
- * opens.
+ * Drops in where each page had `InfoButton` plus an `InfoPopover` glossary:
+ * same button, same place in the same header, different thing behind it. The
+ * route decides which section of the document it opens at, so a page says
+ * nothing about itself here.
  *
  * **Not an S3 help page.** The rest of the "?" system fetches a signed URL and
  * re-signs it before it lapses, because those pages live in a bucket. This one
  * is a single client document that ships with the app, so it is a static file
  * in `public/` and the iframe loads it by path: nothing to sign, nothing to
- * expire, nothing to upload before it works. That also means it is right the
- * moment the branch is, which is the property that matters when it is being
- * shown rather than maintained.
+ * expire, nothing to upload before it works. It is also right the moment the
+ * branch is, which is the property that matters while it is being shown.
  *
- * Fixed under the title bar rather than in the page, so it lands in the same
- * place on all eight and no page has to make room for it — and it is a
- * deliberately reversible promise: a page leaves this document behind when it
- * is released, and gets the ordinary `PageInfoButton` in its own header.
- *
- * Renders nothing anywhere else. The route not being in the map is the whole
- * gate.
+ * Renders nothing on a route outside `comingSoonSection` — a released page
+ * that kept this button would open a document that no longer describes it.
  */
-const ComingSoonHelp = () => {
+const ComingSoonHelp = ({ variant = "navy", className }: Props) => {
   const { pathname } = useLocation();
   const [open, setOpen] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
   const section = comingSoonSection(pathname);
 
-  // A different page means a different anchor, so the frame has to re-navigate
-  // — and it should come up masked again rather than showing the last page's
-  // section for a frame.
+  // A different page means a different anchor, so the frame re-navigates — and
+  // it should come up masked rather than showing the last section for a frame.
   useEffect(() => {
     setLoaded(false);
   }, [section]);
@@ -51,24 +49,18 @@ const ComingSoonHelp = () => {
 
   return (
     <>
-      {/* z-40: under the modals, over the page. The title bar is h-12 and
-          holds z-50, so this clears it rather than competing with it. */}
-      <div className="fixed right-3 top-[56px] z-40">
-        {/* "light" rather than "navy": the navy variant is a 22px square meant
-            for a navy panel header, and this sits on the page. */}
-        <InfoButton
-          variant="light"
-          onClick={() => setOpen(true)}
-          title="About the Coming Soon pages"
-          className="border border-brand_navy/20 bg-custom-white shadow-md hover:border-brand_navy/40"
-        />
-      </div>
+      <InfoButton
+        variant={variant}
+        className={className}
+        onClick={() => setOpen(true)}
+        title="About the Coming Soon pages"
+      />
 
       <Modal
         isOpen={open}
         onClose={() => setOpen(false)}
         padded={false}
-        modalClassName="bg-custom-white w-[860px] max-w-[92vw] h-[85vh] overflow-hidden"
+        modalClassName="bg-custom-white w-[880px] max-w-[94vw] h-[88vh] overflow-hidden"
       >
         <div className="relative h-full w-full">
           {!loaded && (

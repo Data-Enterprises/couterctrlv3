@@ -15,7 +15,7 @@
   }
   * { box-sizing: border-box; }
   body {
-    margin: 0; padding-inline: 16px; padding-block: 32px 56px;
+    margin: 0; padding-inline: 10px; padding-block: 18px 32px;
     background: var(--bg); color: var(--text);
     font: 15px/1.55 "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
   }
@@ -29,17 +29,17 @@
   nav.toc a:hover { border-color: var(--accent); }
   a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .part {
-    background: var(--band); color: var(--band-ink); border-radius: 14px; padding: 16px 22px; margin: 30px 0 14px;
+    background: var(--band); color: var(--band-ink); border-radius: 14px; padding: 13px 17px; margin: 22px 0 12px;
     display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: baseline; justify-content: space-between;
   }
   .part h2 { margin: 0; font-size: 20px; color: var(--band-ink); }
   .part p { margin: 4px 0 0; font-size: 13.5px; color: var(--band-muted); max-width: 66ch; }
   .part-status { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--band-muted); white-space: nowrap; }
-  section { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 20px 22px; margin-bottom: 16px; }
+  section { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 15px 17px; margin-bottom: 12px; }
   .sec-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; margin-bottom: 10px; }
   section h2 { margin: 0; font-size: 18px; color: var(--ink); }
   .where { font-size: 13px; color: var(--muted); }
-  .row { display: grid; grid-template-columns: 150px 1fr; gap: 14px; padding: 10px 0; border-top: 1px solid var(--line); align-items: baseline; }
+  .row { display: grid; grid-template-columns: 112px 1fr; gap: 12px; padding: 9px 0; border-top: 1px solid var(--line); align-items: baseline; }
   .row:first-child { border-top: 0; padding-top: 2px; }
   .label { font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
   .row p { margin: 0 0 8px; max-width: 74ch; }
@@ -50,7 +50,7 @@
   .note { margin: 14px 0 0; padding: 10px 14px; border-radius: 10px; background: var(--note-bg); font-size: 14px; max-width: 74ch; }
   .note strong { color: var(--ink); }
   footer { margin-top: 24px; font-size: 12.5px; color: var(--muted); max-width: 74ch; }
-  @media (max-width: 560px) { .row { grid-template-columns: 1fr; gap: 4px; } h1 { font-size: 24px; } }
+  @media (max-width: 620px) { .row { grid-template-columns: 1fr; gap: 4px; } h1 { font-size: 24px; } }
 </style>
 </head>
 <body>

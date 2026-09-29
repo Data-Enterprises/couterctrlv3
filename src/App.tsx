@@ -13,9 +13,6 @@ import AccountSetupModal from "./components/accountSetup/AccountSetupModal";
 // Neither tree: the title bar raises the flag from prod and the form lives in
 // dev, and App is the one place that may hold both.
 import ReportIssueModal from "./pages/tickets/dev/ReportIssueModal";
-// Same case: the Coming Soon pages are dev-only, and their "?" opens the
-// dev tree's help modal.
-import ComingSoonHelp from "./components-dev/ComingSoonHelp";
 import { clearPageCalls } from "./utils/pageCalls";
 import { getUserStores } from "./api/user";
 import type { JsonError, Store } from "./interfaces";
@@ -125,9 +122,6 @@ const App = () => {
                 only on the dev API — the help desk it files into is a dev
                 tree page. */}
             {context.apiEnv === "dev" && <ReportIssueModal />}
-            {/* The "?" on the unreleased pages. Draws only on the routes in
-                its own map, so it costs the rest of the app nothing. */}
-            {context.apiEnv === "dev" && !context.isMobile && <ComingSoonHelp />}
             <Outlet />
           </div>
         </div>

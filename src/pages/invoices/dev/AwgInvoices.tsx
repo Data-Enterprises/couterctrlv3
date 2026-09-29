@@ -3,8 +3,7 @@ import { ArrowUpTrayIcon, MagnifyingGlassIcon } from "@heroicons/react/20/solid"
 import { useAppDispatch, useAppSelector } from "../../../hooks";
 import { useDevApi } from "../../../hooks/useDevApi";
 import { useToast } from "../../../components/toasts/hooks/useToast";
-import InfoButton from "../../../components-dev/InfoButton";
-import InfoPopover from "../../../components-dev/InfoPopover";
+import ComingSoonHelp from "../../../components-dev/ComingSoonHelp";
 import {
   clearInvoiceEdits,
   editInvoiceField,
@@ -26,7 +25,6 @@ import {
 } from "../../../api/invoices";
 import InvoicesEntry from "./InvoicesEntry";
 import InvoiceCard from "./InvoiceCard";
-import { INVOICES_INFO } from "./invoicesInfo";
 import { useAwgInvoices } from "./useAwgInvoices";
 import { parseAwgFile } from "./vendors/awg";
 import type { InvoiceEdit } from "./vendors/awg/applyEdit";
@@ -68,7 +66,6 @@ const AwgInvoices = () => {
   const storeid = useAppSelector((s) => s.search.selectedStore?.storeid);
 
   const [readOpen, setReadOpen] = useState(false);
-  const [infoOpen, setInfoOpen] = useState(false);
 
   const { rows, allReconciled, failedCount, warnings } = useAwgInvoices();
 
@@ -218,15 +215,7 @@ const AwgInvoices = () => {
               {fileName}
             </span>
             <div className="relative flex-shrink-0">
-              <InfoButton onClick={() => setInfoOpen((prev) => !prev)} />
-              {infoOpen && (
-                <InfoPopover
-                  title={INVOICES_INFO.title}
-                  purpose={INVOICES_INFO.purpose}
-                  glossary={INVOICES_INFO.glossary}
-                  onClose={() => setInfoOpen(false)}
-                />
-              )}
+              <ComingSoonHelp />
             </div>
           </div>
 

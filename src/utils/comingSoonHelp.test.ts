@@ -1,5 +1,5 @@
-import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import doc from "../../public/coming-soon.html?raw";
 import { categories } from "../components/navigation/utils";
 import { COMING_SOON_CATEGORY } from "./comingSoon";
 import { COMING_SOON_HELP_SECTIONS, comingSoonSection } from "./comingSoonHelp";
@@ -11,9 +11,7 @@ import { COMING_SOON_HELP_SECTIONS, comingSoonSection } from "./comingSoonHelp";
  * here would pass long after the section it names had been renamed.
  */
 const DOC_ANCHORS = new Set(
-  [...readFileSync("public/coming-soon.html", "utf8").matchAll(/id="([^"]+)"/g)].map(
-    (m) => m[1],
-  ),
+  [...doc.matchAll(/id="([^"]+)"/g)].map((m) => m[1]),
 );
 
 const comingSoonHrefs = () =>
