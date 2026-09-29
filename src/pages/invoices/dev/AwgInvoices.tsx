@@ -331,7 +331,8 @@ const AwgInvoices = () => {
         </section>
 
         {/* ── the invoices ───────────────────────────────────────── */}
-        <div className="thin-scrollbar flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pr-0.5">
+        <div className="thin-scrollbar min-h-0 flex-1 overflow-y-auto pr-0.5">
+          <div className="flex flex-col gap-3 pb-1">
         {visible.map((row) => (
           <InvoiceCard
             key={row.id}
@@ -357,6 +358,7 @@ const AwgInvoices = () => {
               : "No invoice matches that filter."}
           </p>
         )}
+          </div>
         </div>
       </div>
 
