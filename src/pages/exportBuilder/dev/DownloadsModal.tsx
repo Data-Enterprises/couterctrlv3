@@ -43,6 +43,7 @@ const DownloadsModal = () => {
   const ctx = useExportBuilderCtx();
   const [labelling, setLabelling] = useState<string | null>(null);
   const [showing, setShowing] = useState<string | null>(null);
+  const [parts, setParts] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<ExportBuild | null>(null);
 
   const close = () => ctx.dispatch(openBuilds(false));
@@ -146,9 +147,17 @@ const DownloadsModal = () => {
                   <div className="flex-1 min-w-0">
                     {/* The file's own name first: it is what lands in the
                         downloads folder, and what someone asks about later. */}
+                    {/* The first name, and a count. Joined, a split build
+                        ran past the row and truncated mid-word, so it named
+                        no file properly rather than one clearly. */}
                     <div className="font-mono text-[12.5px] font-semibold truncate">
-                      {build.files.map((f) => f.key.split("/").pop()).join(", ") ||
-                        "no file"}
+                      {build.files[0]?.key.split("/").pop() ?? "no file"}
+                      {build.files.length > 1 && (
+                        <span className="font-sans font-normal text-content/85">
+                          {" "}
+                          + {build.files.length - 1} more
+                        </span>
+                      )}
                     </div>
                     <div className="text-[11.5px] text-content/85 mt-0.5">
                       {build.startDate} to {build.endDate} ·{" "}
@@ -224,24 +233,71 @@ const DownloadsModal = () => {
                     Reload
                   </button>
 
+                  {/*
+                    * One control per build, not one per file.
+                    *
+                    * A split build drew a Download for every part, all
+                    * labelled the same — three identical buttons saying
+                    * nothing about which part each was, and enough of them to
+                    * push the rest of the row out of shape. Now the parts are
+                    * a list you open, and each one is named.
+                    */}
                   {build.expired ? (
                     <span className="text-[11.5px] text-content/85 text-right max-w-[14ch] flex-shrink-0">
                       File is gone — build it again
                     </span>
+                  ) : build.files.length === 1 ? (
+                    <a
+                      href={build.files[0].url}
+                      download
+                      className="bg-brand_navy hover:bg-brand_navy_hover text-custom-white text-[12.5px] font-semibold px-4 py-2 rounded-lg transition-colors flex-shrink-0"
+                    >
+                      Download
+                    </a>
                   ) : (
-                    build.files.map((file) => (
-                      <a
-                        key={file.key}
-                        href={file.url}
-                        download
-                        className="bg-brand_navy hover:bg-brand_navy_hover text-custom-white text-[12.5px] font-semibold px-4 py-2 rounded-lg transition-colors flex-shrink-0"
-                      >
-                        Download
-                      </a>
-                    ))
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setParts(parts === build.buildId ? null : build.buildId)
+                      }
+                      aria-expanded={parts === build.buildId}
+                      className="bg-brand_navy hover:bg-brand_navy_hover text-custom-white text-[12.5px] font-semibold px-4 py-2 rounded-lg transition-colors flex-shrink-0"
+                    >
+                      {build.files.length} files
+                    </button>
                   )}
                 </div>
               ))}
+
+              {group.builds
+                .filter(
+                  (build) =>
+                    parts === build.buildId && build.files.length > 1,
+                )
+                .map((build) => (
+                  <div
+                    key={`${build.buildId}-parts`}
+                    className="flex flex-col gap-1 bg-custom-white border border-brand_line rounded-lg px-3 py-2"
+                  >
+                    {build.files.map((file, i) => (
+                      <div
+                        key={file.key}
+                        className="flex items-center gap-3 text-[12px]"
+                      >
+                        <span className="min-w-0 flex-1 truncate font-mono">
+                          {file.key.split("/").pop()}
+                        </span>
+                        <a
+                          href={file.url}
+                          download
+                          className="flex-shrink-0 font-semibold text-brand_navy_hover underline underline-offset-2"
+                        >
+                          Part {i + 1}
+                        </a>
+                      </div>
+                    ))}
+                  </div>
+                ))}
 
               {group.builds
                 .filter((build) => showing === build.buildId)
