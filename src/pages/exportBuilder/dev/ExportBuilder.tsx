@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import SearchCard from "../../../components-dev/SearchCard";
 import ConfigPanel from "./ConfigPanel";
 import CsvPreview from "./CsvPreview";
@@ -27,6 +27,21 @@ const ExportBuilder = () => {
    * lists nobody has asked for yet is 340px the table does not get.
    */
   const [configOpen, setConfigOpen] = useState(false);
+
+  /**
+   * No animation on the very first paint.
+   *
+   * The sleeve starts closed, and a transition present from the first frame
+   * plays that as a movement — the column sweeps shut on arrival, which
+   * announces a panel nobody opened. The class arrives after the first
+   * render, so the page lands closed and only moves when somebody asks it
+   * to.
+   */
+  const [settled, setSettled] = useState(false);
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setSettled(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
   const ctx = useExportBuilderCtx();
 
   if (!ctx.loaded) {
@@ -59,9 +74,11 @@ const ExportBuilder = () => {
           * takes it back only while closed.
           */}
         <div
-          className={`flex-shrink-0 overflow-hidden transition-[width,margin] duration-300 ease-out motion-reduce:transition-none ${
-            configOpen ? "w-[340px]" : "w-0 -mr-3"
-          }`}
+          className={`flex-shrink-0 overflow-hidden ${
+            settled
+              ? "transition-[width,margin] duration-300 ease-out motion-reduce:transition-none"
+              : ""
+          } ${configOpen ? "w-[340px]" : "w-0 -mr-3"}`}
           aria-hidden={!configOpen}
         >
           <ConfigPanel />
