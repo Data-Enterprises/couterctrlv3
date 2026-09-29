@@ -98,7 +98,8 @@ describe("a summary the endpoint would refuse", () => {
       dispatch(addAggregate({ column: "*", fn: "count" }));
     });
     expect(buildButton().disabled).toBe(false);
-    expect(screen.getByText(/grouped by storeid/)).toBeTruthy();
-    expect(screen.getByText("row_count")).toBeTruthy();
+    // The bar counts what is configured; the panel beside it and the table
+    // above it are where the keys and the measures are named.
+    expect(screen.getByText(/1 key · 1 aggregate/)).toBeTruthy();
   });
 });
