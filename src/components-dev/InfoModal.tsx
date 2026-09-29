@@ -54,8 +54,8 @@ const InfoModal = ({ page, section, isOpen, onClose }: InfoModalProps) => {
       padded={false}
       modalClassName={
         isMobile
-          ? "bg-[#f4f7f8] w-full h-[92dvh] overflow-hidden"
-          : "bg-[#f4f7f8] w-[600px] max-w-[92vw] h-[85vh] overflow-hidden"
+          ? "bg-custom-white w-full h-[92dvh] overflow-hidden"
+          : "bg-custom-white w-[600px] max-w-[92vw] h-[85vh] overflow-hidden"
       }
     >
       {/* The page fills the modal edge to edge: it has its own navy header and
