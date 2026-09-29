@@ -306,21 +306,6 @@ const NewTicketModal = ({
           onChange={setTitle}
         />
 
-        <label className="flex flex-col gap-1.5">
-          <span className="text-[12.5px] font-medium">What is happening</span>
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            rows={5}
-            placeholder="Receipt printer stops after about ten receipts..."
-            className="w-full border border-brand_line rounded-lg px-3 py-2 text-[13.5px] resize-none bg-custom-white"
-          />
-          <span className="text-[11px] text-content/85">
-            This becomes the first message in the thread, so the tech reads it
-            where the conversation is.
-          </span>
-        </label>
-
         <div className="flex gap-3">
           <label className="flex-1 flex flex-col gap-1.5">
             <span className="text-[12.5px] font-medium">Priority</span>
@@ -392,6 +377,21 @@ const NewTicketModal = ({
             />
           </label>
         )}
+
+        <label className="flex flex-col gap-1.5">
+          <span className="text-[12.5px] font-medium">What is happening</span>
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            rows={5}
+            placeholder="Receipt printer stops after about ten receipts..."
+            className="w-full border border-brand_line rounded-lg px-3 py-2 text-[13.5px] resize-none bg-custom-white"
+          />
+          <span className="text-[11px] text-content/85">
+            This becomes the first message in the thread, so the tech reads it
+            where the conversation is.
+          </span>
+        </label>
 
         <div className="flex flex-col gap-2">
           <span className="text-[12.5px] font-medium">Screenshots</span>
