@@ -77,9 +77,9 @@ const DownloadsModal = () => {
     <Modal
       isOpen
       onClose={close}
-      modalClassName="bg-card_bg w-[860px] max-w-[94vw] max-h-[84vh]"
+      modalClassName="bg-card_bg w-[860px] max-w-[94vw] max-h-[84vh] flex flex-col"
     >
-      <div className="flex flex-col gap-3 p-4 min-h-0">
+      <div className="flex flex-1 flex-col gap-3 p-4 min-h-0">
         <div className="flex items-baseline gap-3 flex-shrink-0">
           <h2 className="text-[15px] font-semibold">Previous builds</h2>
           <span className="text-[11.5px] text-content/85">

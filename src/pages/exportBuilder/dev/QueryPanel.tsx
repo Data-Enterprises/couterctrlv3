@@ -492,9 +492,9 @@ const QueryPanel = ({ configOpen, onToggleConfig }: Props) => {
         <Modal
           isOpen
           onClose={() => setLibrary(false)}
-          modalClassName="bg-card_bg w-[560px] max-w-[92vw] max-h-[80vh]"
+          modalClassName="bg-card_bg w-[560px] max-w-[92vw] max-h-[80vh] flex flex-col"
         >
-          <div className="flex flex-col gap-3 p-4 min-h-0">
+          <div className="flex flex-1 flex-col gap-3 p-4 min-h-0">
             <div className="flex items-baseline gap-3 flex-shrink-0">
               <h2 className="text-[15px] font-semibold">Saved queries</h2>
               <span className="text-[11.5px] text-content/85">

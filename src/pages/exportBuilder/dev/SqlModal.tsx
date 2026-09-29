@@ -32,9 +32,9 @@ const SqlModal = () => {
     <Modal
       isOpen
       onClose={() => ctx.dispatch(closeSql())}
-      modalClassName="bg-card_bg w-[860px] max-w-[92vw] max-h-[85vh]"
+      modalClassName="bg-card_bg w-[860px] max-w-[92vw] max-h-[85vh] flex flex-col"
     >
-      <div className="flex flex-col gap-3 p-4 min-h-0">
+      <div className="flex flex-1 flex-col gap-3 p-4 min-h-0">
         <div className="flex items-baseline gap-3">
           <h2 className="text-[15px] font-semibold">The query this would run</h2>
           <span className="text-[11.5px] text-content/85">
