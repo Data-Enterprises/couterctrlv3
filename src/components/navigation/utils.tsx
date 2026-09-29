@@ -176,10 +176,10 @@ export const navigation: Navigation[] = [
     isVisible: true,
   },
   {
-    name: "Invoices",
+    name: "AWG Invoices",
     href: "invoices",
     icon: DocumentArrowUpIcon,
-    // Desktop only — reading a fixed-width file is a two-panel job.
+    // Desktop only — correcting a line means eight columns side by side.
     mobile: false,
     children: [],
     childOpen: false,
@@ -611,7 +611,7 @@ export const categories: NavCategory[] = [
         isVisible: true,
       },
       {
-        name: "Invoices",
+        name: "AWG Invoices",
         href: "invoices",
         icon: DocumentArrowUpIcon,
         mobile: false,

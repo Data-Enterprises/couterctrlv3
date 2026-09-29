@@ -77,6 +77,8 @@ const presentLines = (invoice: AwgInvoice): InvoiceLineRow[] =>
       lineNumber: index + 1,
       upc: text(record.fields.upc_code),
       description: text(record.fields.item_desc),
+      awgCode: text(record.fields.item_code_bil),
+      size: text(record.fields.size),
       pack: count(record.fields.pack).toString(),
       cases: count(record.fields.case_qty_billed).toString(),
       caseCost: money(record.fields.mbr_case_cost).toString(),

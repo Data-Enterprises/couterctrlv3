@@ -43,7 +43,7 @@ const InvoicesEntry = ({ onFile, error, onClose }: Props) => {
       <div className="bg-brand_navy px-4 py-2.5 flex items-start gap-3">
         <div className="min-w-0 flex-1">
           <p className="text-custom-white text-[13px] font-semibold">
-            {onClose ? "Read another file" : "Invoices"}
+            {onClose ? "Read another file" : "AWG Invoices"}
           </p>
           <p className="text-custom-white/85 text-[12px]">
             Drop an AWG electronic invoice file to read it. Every line is
