@@ -19,7 +19,14 @@ import { useExportBuilderCtx } from "./hooks";
  * then writes the file to storage and answers with a link.
  */
 const ExportBuilder = () => {
-  const [configOpen, setConfigOpen] = useState(true);
+  /**
+   * Closed on arrival.
+   *
+   * The page opens on the sample and the query, which is what somebody came
+   * to read — the configuration is where you go to change it, and 340px of
+   * lists nobody has asked for yet is 340px the table does not get.
+   */
+  const [configOpen, setConfigOpen] = useState(false);
   const ctx = useExportBuilderCtx();
 
   if (!ctx.loaded) {
