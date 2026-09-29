@@ -91,6 +91,23 @@ describe("applyEdits", () => {
     expect(result.lineItems[0].fields.item_desc).toBe("BST CH KETTLE JALAPENO");
   });
 
+  it("keeps an id field's leading zeros", () => {
+    // AWG codes and UPCs are `id` fields, so they pass through as typed.
+    // Coercing them as numbers would turn 016647 into 16647 and quietly
+    // change which item the line is about.
+    const [result] = applyEdits(
+      [invoice()],
+      [edit({ field: "item_code_bil", value: "016647" })],
+    );
+    expect(result.lineItems[0].fields.item_code_bil).toBe("016647");
+
+    const [upc] = applyEdits(
+      [invoice()],
+      [edit({ field: "upc_code", value: "0007003866473" })],
+    );
+    expect(upc.lineItems[0].fields.upc_code).toBe("0007003866473");
+  });
+
   it("rejects an unreadable money value and leaves the invoice alone", () => {
     const before = invoice();
     const [result] = applyEdits(
