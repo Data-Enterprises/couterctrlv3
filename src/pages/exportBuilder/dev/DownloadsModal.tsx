@@ -64,10 +64,13 @@ const DownloadsModal = () => {
   }
   groups.sort((a, b) => (a.id === null ? 1 : 0) - (b.id === null ? 1 : 0));
 
-  const configOptions = [
-    { value: "", label: "Ad-hoc (no configuration)" },
-    ...ctx.saved.map((c) => ({ value: String(c.id), label: c.name })),
-  ];
+  // The empty row is SelectFilter's `placeholder`, below — prepended here as
+  // well it showed twice, and under two different words, because this one was
+  // letting the placeholder fall back to its "All" default.
+  const configOptions = ctx.saved.map((c) => ({
+    value: String(c.id),
+    label: c.name,
+  }));
 
   return (
     <Modal
@@ -182,6 +185,7 @@ const DownloadsModal = () => {
                       plain
                       searchable
                       searchPlaceholder="Find a configuration..."
+                      placeholder="Ad-hoc (no configuration)"
                       options={configOptions}
                       value={build.userQueryId ? String(build.userQueryId) : ""}
                       onChange={(value) => {

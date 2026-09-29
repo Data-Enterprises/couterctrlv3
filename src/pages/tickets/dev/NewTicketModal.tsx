@@ -147,13 +147,11 @@ const NewTicketModal = ({
     "urgent",
   ]).map((p) => ({ value: p, label: p[0].toUpperCase() + p.slice(1) }));
 
-  const categories = [
-    { value: "", label: "None" },
-    ...(ctx.lookups?.categories ?? []).map((c) => ({
-      value: String(c.id),
-      label: c.name,
-    })),
-  ];
+  // No empty row here: SelectFilter draws one from `placeholder` already.
+  const categories = (ctx.lookups?.categories ?? []).map((c) => ({
+    value: String(c.id),
+    label: c.name,
+  }));
 
   return (
     <Modal
@@ -318,13 +316,10 @@ const NewTicketModal = ({
               searchable
               searchPlaceholder="Find a store..."
               placeholder="Not about one store"
-              options={[
-                { label: "Not about one store", value: "" },
-                ...myStores.map((s) => ({
-                  label: `${s.store_number} - ${s.store_name}`,
-                  value: String(s.storeid),
-                })),
-              ]}
+              options={myStores.map((s) => ({
+                label: `${s.store_number} - ${s.store_name}`,
+                value: String(s.storeid),
+              }))}
               value={storeId}
               onChange={setStoreId}
               className="w-full"

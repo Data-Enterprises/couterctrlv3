@@ -116,8 +116,8 @@ const TicketDetail = ({ ctx }: { ctx: TicketsCtx }) => {
     "closed",
   ]).map((s) => ({ value: s, label: STATUS_LABEL[s] }));
 
+  // No empty row here: SelectFilter draws one from `placeholder` already.
   const assigneeOptions = [
-    { value: "", label: "Unassigned" },
     ...ctx.assignees
       .filter((a) => a.is_active || a.userid === ticket.assignee_id)
       .map((a) => ({

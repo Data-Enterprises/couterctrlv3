@@ -170,7 +170,11 @@ const SelectFilter = ({
           )}
 
           <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar">
-            {!query.trim() && (
+            {/* Only when the caller has not supplied one of its own. Both
+                rows clear the selection, so two of them is two ways to do one
+                thing — and the pair read as different answers when the
+                caller's wording and the placeholder's did not match. */}
+            {!query.trim() && !options.some((o) => o.value === "") && (
               <button
                 onClick={() => handleSelect("")}
                 className="w-full text-left px-3 py-2 text-[12px] hover:bg-gray-50 transition-colors"
