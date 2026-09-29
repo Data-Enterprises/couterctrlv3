@@ -195,8 +195,7 @@ const CsvPreview = () => {
 
       <div className="flex items-center gap-3 px-4 py-2 bg-custom-white border-t border-brand_line flex-shrink-0">
         <span className="text-[11.5px] text-content/85">
-          Columns are written in the order shown. Personal values are hidden
-          here and written to the file.
+          Personal values are hidden here and written to the file.
         </span>
       </div>
     </div>

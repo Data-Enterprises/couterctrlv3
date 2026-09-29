@@ -252,11 +252,7 @@ const QueryPanel = () => {
           <span className="text-[11px] text-amber-900 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5">
             Edited — the file below is still the configuration's
           </span>
-        ) : (
-          <span className="text-[11px] text-content/85">
-            follows the panel on the left · runs nowhere
-          </span>
-        )}
+        ) : null}
         <div className="flex-1" />
 
         {/*
@@ -374,7 +370,7 @@ const QueryPanel = () => {
             title="Put the configuration back the way it was before Apply"
             className="text-[12.5px] font-medium px-3 py-1.5 rounded-lg border border-brand_line_2 hover:border-brand_slate transition-colors"
           >
-            Undo apply
+            Undo
           </button>
         )}
         <span
@@ -382,9 +378,7 @@ const QueryPanel = () => {
             edited ? "text-content/85" : "text-content/85"
           }`}
         >
-          {edited
-            ? "Ctrl+Enter applies it"
-            : "Nothing to apply — this box already matches your configuration. Edit it and this button turns on."}
+          {edited ? "Ctrl+Enter applies it" : ""}
         </span>
         {ctx.queriesError && (
           <span className="text-[11.5px] text-amber-900">
@@ -407,28 +401,18 @@ const QueryPanel = () => {
       )}
 
       {plan && (
+        plan.leftBehind.length > 0 && (
         <div className="bg-custom-white border-t border-brand_line px-3 py-2">
-          <div className="text-[12.5px] font-semibold">
-            Applied to the configuration
+          <div className="text-[11.5px] font-semibold text-amber-900">
+            Not carried over
           </div>
-          {plan.applied.map((line, i) => (
-            <div key={i} className="text-[11.5px] text-content/85 mt-0.5">
+          {plan.leftBehind.map((line, i) => (
+            <div key={i} className="text-[11.5px] text-amber-900/85">
               · {line}
             </div>
           ))}
-          {plan.leftBehind.length > 0 && (
-            <>
-              <div className="text-[11.5px] font-semibold text-amber-900 mt-1.5">
-                Not carried over
-              </div>
-              {plan.leftBehind.map((line, i) => (
-                <div key={i} className="text-[11.5px] text-amber-900/85">
-                  · {line}
-                </div>
-              ))}
-            </>
-          )}
         </div>
+        )
       )}
 
       {saving && (
