@@ -53,9 +53,9 @@ const SavedExportsModal = () => {
     <Modal
       isOpen
       onClose={close}
-      modalClassName="bg-card_bg w-[720px] max-w-[94vw] max-h-[82vh]"
+      modalClassName="bg-card_bg w-[720px] max-w-[94vw] max-h-[82vh] flex flex-col"
     >
-      <div className="flex flex-col gap-3 p-4 min-h-0">
+      <div className="flex flex-1 flex-col gap-3 p-4 min-h-0">
         <div className="flex items-baseline gap-3 flex-shrink-0">
           <h2 className="text-[15px] font-semibold">Saved exports</h2>
           <span className="text-[11.5px] text-content/85">
