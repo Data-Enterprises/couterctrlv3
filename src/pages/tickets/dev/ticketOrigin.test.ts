@@ -96,3 +96,36 @@ describe("searchSummary", () => {
     ).toBeNull();
   });
 });
+
+describe("a group search narrowed to stores", () => {
+  const group = searching({
+    type: "Group",
+    selectedGroup: { ...emptyGroup, id: 12, group_name: "Two Stores" },
+  });
+  const picked = [
+    { storeid: 369, store_number: "002", store_name: "IGA Irvington KY" },
+  ];
+
+  it("keeps the group and adds the stores the client is looking at", () => {
+    const scope = scopeOf(group, at("sales"), picked) as {
+      group: Record<string, unknown>;
+    };
+    expect(scope.group.id).toBe(12);
+    expect(scope.group.stores).toEqual(picked);
+  });
+
+  it("leaves the key out entirely when they did not narrow it", () => {
+    const scope = scopeOf(group, at("sales")) as {
+      group: Record<string, unknown>;
+    };
+    // Present and empty would read as "no stores", which is the opposite of
+    // "the whole group".
+    expect("stores" in scope.group).toBe(false);
+  });
+
+  it("names them in the line, with the ids", () => {
+    const line = scopeLine(group, at("sales"), picked);
+    expect(line).toContain("Two Stores");
+    expect(line).toContain("seen on IGA Irvington KY #002 (storeid 369)");
+  });
+});

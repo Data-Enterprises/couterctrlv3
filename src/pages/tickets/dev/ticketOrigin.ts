@@ -221,9 +221,18 @@ export const searchSummary = (
  * is already looking; the record rides along as a file, because storeid and
  * company are what a query needs and nobody wants them in prose.
  */
+export type PickedStore = {
+  storeid: number;
+  store_number: string;
+  store_name: string;
+};
+
 export const scopeOf = (
   search: SearchState,
   origin: TicketOrigin,
+  /** For a group search, the stores inside it the client is actually looking
+   *  at. Empty means the whole group, which is what the search was. */
+  stores: PickedStore[] = [],
 ): Record<string, unknown> => ({
   page: origin.page ?? origin.href,
   area: origin.area,
@@ -243,6 +252,12 @@ export const scopeOf = (
           id: search.selectedGroup?.id ?? null,
           group_name: search.selectedGroup?.group_name ?? null,
           is_shared: search.selectedGroup?.is_shared ?? null,
+          // Inside the group rather than beside it — these are a narrowing of
+          // it, and one self-contained key beats a second top-level shape
+          // that only exists sometimes. Absent rather than empty when they
+          // did not narrow: present and empty reads as "no stores", which is
+          // the opposite of "the whole group".
+          ...(stores.length ? { stores } : {}),
         },
       }),
   dates: {
@@ -262,6 +277,7 @@ export const scopeOf = (
 export const scopeLine = (
   search: SearchState,
   origin: TicketOrigin,
+  stores: PickedStore[] = [],
 ): string => {
   const where =
     search.type === "Store"
@@ -279,6 +295,11 @@ export const scopeLine = (
       : [
           search.selectedGroup?.group_name,
           search.selectedGroup?.id ? `group ${search.selectedGroup.id}` : null,
+          stores.length
+            ? `seen on ${stores
+                .map((s) => `${s.store_name} #${s.store_number} (storeid ${s.storeid})`)
+                .join(", ")}`
+            : null,
         ]
           .filter(Boolean)
           .join(" · ");

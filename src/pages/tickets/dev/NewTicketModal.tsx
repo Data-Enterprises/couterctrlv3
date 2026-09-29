@@ -1,5 +1,8 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAppSelector } from "../../../hooks";
+import { useDevApi } from "../../../hooks/useDevApi";
+import { getStoresAssignedToUserGroup } from "../../../api/groups";
+import MultiSelectFilter from "../../../components-dev/filters/MultiSelectFilter";
 import { ChevronDownIcon, XMarkIcon } from "@heroicons/react/20/solid";
 import Modal from "../../../components-dev/Modal";
 import TextField from "../../../components-dev/inputs/TextField";
@@ -56,6 +59,7 @@ const NewTicketModal = ({
   onClose?: () => void;
 }) => {
   const search = useAppSelector((state) => state.search);
+  const { url, token } = useDevApi();
 
   const origin = from?.from
     ? originOf({ reportFrom: from.from, page: from.page, area: from.area })
@@ -90,11 +94,50 @@ const NewTicketModal = ({
    *
    * One store means no question: it is the answer, chosen for them.
    */
+  /**
+   * The stores inside the group the page was searching.
+   *
+   * A group search says the problem is somewhere in the group, which is not
+   * the same as saying it is everywhere in it — a client is usually looking
+   * at one store's row and it is wrong. Fetched rather than filtered out of
+   * the user's own list: which stores are in a group is the group's answer,
+   * and the two lists overlap without matching.
+   *
+   * Only for a group; a store search has already named its store.
+   */
+  const groupId =
+    origin && search.type !== "Store" ? (search.selectedGroup?.id ?? 0) : 0;
+  const [groupStores, setGroupStores] = useState<
+    { storeid: number; store_number: string; store_name: string }[]
+  >([]);
+  const [pickedStores, setPickedStores] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (!groupId) return;
+    let live = true;
+    getStoresAssignedToUserGroup(url, token, ctx.userid, groupId)
+      .then((res) => {
+        if (!live) return;
+        const rows = (res.data?.stores ?? []).filter(
+          (s: { active: number }) => s.active === 1,
+        );
+        setGroupStores(rows);
+      })
+      // The picker simply does not appear; the group is still on the ticket.
+      .catch(() => undefined);
+    return () => {
+      live = false;
+    };
+  }, [groupId]);
+
   const myStores = useAppSelector((state) => state.user.assignedStores);
   const [storeId, setStoreId] = useState(() =>
     myStores.length === 1 ? String(myStores[0].storeid) : "",
   );
   const pickedStore = myStores.find((s) => String(s.storeid) === storeId);
+  const narrowedTo = groupStores.filter((s) =>
+    pickedStores.includes(String(s.storeid)),
+  );
   // Open when there is little to read, folded when the list would push the
   // fields people actually have to fill in off the screen.
   const [evidenceOpen, setEvidenceOpen] = useState(kept.length <= 3);
@@ -304,6 +347,29 @@ const NewTicketModal = ({
           </label>
         </div>
 
+        {/* A group search names the group; this names the stores inside it
+            the client is actually looking at. Optional — left empty the
+            ticket is about the group, which is what it was before. */}
+        {groupStores.length > 1 && (
+          <label className="flex flex-col gap-1.5">
+            <span className="text-[12.5px] font-medium">
+              Which stores{" "}
+              <span className="font-normal text-content/85">— optional</span>
+            </span>
+            <MultiSelectFilter
+              options={groupStores.map((s) => ({
+                label: `${s.store_number} - ${s.store_name}`,
+                value: String(s.storeid),
+              }))}
+              values={pickedStores}
+              onChange={setPickedStores}
+              placeholder="The whole group"
+              noun="stores"
+              className="w-full"
+            />
+          </label>
+        )}
+
         {/* Only when no page answered it already. */}
         {!origin && myStores.length > 1 && (
           <label className="flex flex-col gap-1.5">
@@ -413,7 +479,7 @@ const NewTicketModal = ({
                     ? `${description}
 
 —
-${scopeLine(search, origin)}`
+${scopeLine(search, origin, narrowedTo)}`
                     : pickedStore
                       ? `${description}
 
@@ -433,7 +499,7 @@ ${storeLine(pickedStore)}`
                         [
                           JSON.stringify(
                             origin
-                              ? scopeOf(search, origin)
+                              ? scopeOf(search, origin, narrowedTo)
                               : storeScope(pickedStore!),
                             null,
                             2,
