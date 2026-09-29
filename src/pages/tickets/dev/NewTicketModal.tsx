@@ -15,7 +15,15 @@ import {
   withinBudget,
   type CallGroup,
 } from "../../../utils/pageCalls";
-import { originOf, searchSummary, suggestedTitle } from "./ticketOrigin";
+import {
+  originOf,
+  scopeLine,
+  scopeOf,
+  searchSummary,
+  storeLine,
+  storeScope,
+  suggestedTitle,
+} from "./ticketOrigin";
 import Checkbox from "../../../components-dev/Checkbox";
 
 /**
@@ -70,6 +78,23 @@ const NewTicketModal = ({
       : { kept: [] as CallGroup[], dropped: [] as CallGroup[] },
   );
   const [skip, setSkip] = useState<Set<string>>(new Set());
+
+  /**
+   * Which store this is about, when nothing else says.
+   *
+   * A ticket filed from a page takes its store from the search that page was
+   * running. One filed from the help desk has no page behind it, so it asks —
+   * from the list already fetched at login, because a client's own stores are
+   * the only ones they could be reporting on and a free-text box invites a
+   * name nobody can look up.
+   *
+   * One store means no question: it is the answer, chosen for them.
+   */
+  const myStores = useAppSelector((state) => state.user.assignedStores);
+  const [storeId, setStoreId] = useState(() =>
+    myStores.length === 1 ? String(myStores[0].storeid) : "",
+  );
+  const pickedStore = myStores.find((s) => String(s.storeid) === storeId);
   // Open when there is little to read, folded when the list would push the
   // fields people actually have to fill in off the screen.
   const [evidenceOpen, setEvidenceOpen] = useState(kept.length <= 3);
@@ -281,6 +306,32 @@ const NewTicketModal = ({
           </label>
         </div>
 
+        {/* Only when no page answered it already. */}
+        {!origin && myStores.length > 1 && (
+          <label className="flex flex-col gap-1.5">
+            <span className="text-[12.5px] font-medium">
+              Which store{" "}
+              <span className="font-normal text-content/85">— optional</span>
+            </span>
+            <SelectFilter
+              plain
+              searchable
+              searchPlaceholder="Find a store..."
+              placeholder="Not about one store"
+              options={[
+                { label: "Not about one store", value: "" },
+                ...myStores.map((s) => ({
+                  label: `${s.store_number} - ${s.store_name}`,
+                  value: String(s.storeid),
+                })),
+              ]}
+              value={storeId}
+              onChange={setStoreId}
+              className="w-full"
+            />
+          </label>
+        )}
+
         <div className="flex flex-col gap-2">
           <span className="text-[12.5px] font-medium">Screenshots</span>
           <div className="flex items-center gap-3 flex-wrap">
@@ -354,11 +405,50 @@ const NewTicketModal = ({
               void ctx.file(
                 {
                   title,
-                  description,
+                  /*
+                   * The scope goes under what they wrote, not over it.
+                   *
+                   * It is the first message in the thread, so a tech reads
+                   * the problem in the reporter's own words and then the
+                   * store it happened on — which is the order they need them
+                   * in, and it keeps the client's sentence first on a screen
+                   * that is mostly theirs.
+                   */
+                  description: origin
+                    ? `${description}
+
+—
+${scopeLine(search, origin)}`
+                    : pickedStore
+                      ? `${description}
+
+—
+${storeLine(pickedStore)}`
+                      : description,
                   priority,
                   category_id: category ? Number(category) : null,
                 },
-                chosen.length ? [...files, ...chosen.map(groupAsFile)] : files,
+                origin || pickedStore
+                  ? [
+                      ...files,
+                      ...chosen.map(groupAsFile),
+                      // Store, company and dates as a record. The line in the
+                      // description says which store; this says which row.
+                      new File(
+                        [
+                          JSON.stringify(
+                            origin
+                              ? scopeOf(search, origin)
+                              : storeScope(pickedStore!),
+                            null,
+                            2,
+                          ),
+                        ],
+                        "scope.json",
+                        { type: "application/json" },
+                      ),
+                    ]
+                  : files,
                 // Filed from another page: there is no pane here to open it
                 // into, so the form closes and the toast is the receipt.
                 onClose,

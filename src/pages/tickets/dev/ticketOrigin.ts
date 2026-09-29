@@ -208,6 +208,125 @@ export const searchSummary = (
  *     named keys per page rather than the whole thing
  */
 
+/**
+ * The scope the ticket was filed under, as a record rather than a sentence.
+ *
+ * The panel showed the store and the dates and then sent neither — a tech
+ * opened "Issue on Sales" with no idea which store it was about. For a
+ * miscalculation that is the whole question, and the name on its own does not
+ * answer it: two stores share a storeid when they are two locations of one
+ * business, and a number is how you tell 369 from 370.
+ *
+ * Both halves go on the ticket. The line reads in the thread, where the tech
+ * is already looking; the record rides along as a file, because storeid and
+ * company are what a query needs and nobody wants them in prose.
+ */
+export const scopeOf = (
+  search: SearchState,
+  origin: TicketOrigin,
+): Record<string, unknown> => ({
+  page: origin.page ?? origin.href,
+  area: origin.area,
+  search_type: search.type,
+  ...(search.type === "Store"
+    ? {
+        store: {
+          storeid: search.selectedStore?.storeid ?? null,
+          store_number: search.selectedStore?.store_number ?? null,
+          store_name: search.selectedStore?.store_name ?? null,
+          company: search.selectedStore?.company ?? null,
+          company_name: search.selectedStore?.company_name ?? null,
+        },
+      }
+    : {
+        group: {
+          id: search.selectedGroup?.id ?? null,
+          group_name: search.selectedGroup?.group_name ?? null,
+          is_shared: search.selectedGroup?.is_shared ?? null,
+        },
+      }),
+  dates: {
+    shape: PAGE_DATES[origin.href] ?? "range",
+    start_date: search.startDate,
+    end_date: search.endDate,
+    single_date: search.singleDate,
+  },
+});
+
+/**
+ * The same thing in a sentence, for the foot of the first message.
+ *
+ * Carries the store number and the id as well as the name: the name is how
+ * somebody says which store, and the other two are how anybody looks it up.
+ */
+export const scopeLine = (
+  search: SearchState,
+  origin: TicketOrigin,
+): string => {
+  const where =
+    search.type === "Store"
+      ? [
+          search.selectedStore?.store_name,
+          search.selectedStore?.store_number
+            ? `#${search.selectedStore.store_number}`
+            : null,
+          search.selectedStore?.storeid
+            ? `storeid ${search.selectedStore.storeid}`
+            : null,
+        ]
+          .filter(Boolean)
+          .join(" · ")
+      : [
+          search.selectedGroup?.group_name,
+          search.selectedGroup?.id ? `group ${search.selectedGroup.id}` : null,
+        ]
+          .filter(Boolean)
+          .join(" · ");
+
+  const when = datesFor(search, PAGE_DATES[origin.href] ?? "range");
+  return [origin.page ?? origin.href, where, when].filter(Boolean).join(" · ");
+};
+
+/**
+ * The same two, for a ticket filed from the help desk itself.
+ *
+ * No page and no search behind it, so there is a store and nothing else —
+ * whichever one they picked out of their own assigned list. Kept beside
+ * `scopeOf` so both shapes of ticket describe a store the same way and a tech
+ * does not have to learn two.
+ */
+export const storeScope = (store: {
+  storeid: number;
+  store_number: string;
+  store_name: string;
+  company: number;
+  company_name: string;
+}): Record<string, unknown> => ({
+  page: null,
+  area: null,
+  search_type: "Store",
+  store: {
+    storeid: store.storeid,
+    store_number: store.store_number,
+    store_name: store.store_name,
+    company: store.company,
+    company_name: store.company_name,
+  },
+});
+
+export const storeLine = (store: {
+  storeid: number;
+  store_number: string;
+  store_name: string;
+}): string =>
+  [
+    store.store_name,
+    store.store_number ? `#${store.store_number}` : null,
+    store.storeid ? `storeid ${store.storeid}` : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
 /** The title a page-filed ticket opens with, so it is never blank. */
 export const suggestedTitle = (origin: TicketOrigin) =>
   origin.page ? `Issue on ${origin.page}` : "";
