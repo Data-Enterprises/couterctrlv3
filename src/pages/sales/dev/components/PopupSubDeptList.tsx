@@ -260,7 +260,9 @@ const PopupSubDeptList = ({
   const itemThreshPopRef = useRef<HTMLDivElement>(null);
   const [itemSevFilter, setItemSevFilter] = useState<SevFilter>("all");
   const [itemTextFilter, setItemTextFilter] = useState("");
-  const [itemActiveFilter, setItemActiveFilter] = useState("active");
+  // "" is the placeholder value, which shows active and inactive together —
+  // the question is almost always "what sold here", not "what still sells".
+  const [itemActiveFilter, setItemActiveFilter] = useState("");
   const [deptSort, setDeptSort] = useState<DeptSortState>(null);
   const [itemSort, setItemSort] = useState<ItemSortState>(null);
   const [itemsLoading, setItemsLoading] = useState(false);
@@ -617,7 +619,7 @@ const PopupSubDeptList = ({
       {},
     );
 
-    const sorted = Object.entries(twMap)
+    const twRows = Object.entries(twMap)
       .map(([id, r]) => {
         const numId = Number(id);
         const lw = lwMap[numId];
@@ -659,21 +661,79 @@ const PopupSubDeptList = ({
           storeCpn: r.storeCpn,
           lyStoreCpn: ly?.storeCpn ?? 0,
         };
-      })
-      .sort((a, b) => {
-        const rankDiff =
-          severityRank(deptSeverity(a, coverage, threshold, gradingMetric)) -
-          severityRank(deptSeverity(b, coverage, threshold, gradingMetric));
-        if (rankDiff !== 0) return rankDiff;
-        const ap = isQty
-          ? basisPct(deptBasis(a, coverage), a.vsLWQtyPct, a.vsLYQtyPct)
-          : basisPct(deptBasis(a, coverage), a.vsLWPct, a.vsLYPct);
-        const bp = isQty
-          ? basisPct(deptBasis(b, coverage), b.vsLWQtyPct, b.vsLYQtyPct)
-          : basisPct(deptBasis(b, coverage), b.vsLWPct, b.vsLYPct);
-        // Ungraded: nothing to rank by, so biggest department first.
-        return ap === null || bp === null ? b.tw - a.tw : ap - bp;
       });
+
+    /**
+     * Departments that sold LW and/or LY but have no TW row at all.
+     *
+     * The list above is anchored on `twMap`, so a department that sold
+     * nothing this week never becomes a row and vanishes from the panel
+     * entirely — which reads as "this department doesn't exist" when what
+     * happened is "this department stopped selling". That is the signal, not
+     * the absence of one.
+     *
+     * Merged into the one list rather than held behind a filter: a
+     * department at zero is a department the reader wants in front of them,
+     * and it grades like any other row. The item level keeps its inactive
+     * codes apart, but that list is hundreds long where this one is dozens.
+     */
+    const inactiveIds = [...new Set([...Object.keys(lwMap), ...Object.keys(lyMap)])]
+      .map(Number)
+      .filter((id) => !twMap[id]);
+    const inactive: DeptRow[] = inactiveIds
+      .map((id) => {
+        const lw = lwMap[id];
+        const ly = lyMap[id];
+        const lwNet = lw?.net ?? 0;
+        const lyNet = ly?.net ?? 0;
+        return {
+          id,
+          // `sub_sales` only names a department on a row it returned, so the
+          // name comes off whichever comparison week has one.
+          desc:
+            subSalesWk2.find((s) => s.sub_department === id)
+              ?.sub_department_description ??
+            subSalesWk3.find((s) => s.sub_department === id)
+              ?.sub_department_description ??
+            String(id),
+          tw: 0,
+          lw: lwNet,
+          ly: lyNet,
+          hasLW: lwNet > 0,
+          hasLY: lyNet > 0,
+          vsLWPct: lwNet ? -100 : 0,
+          vsLYPct: lyNet ? -100 : 0,
+          vsLWQtyPct: lw?.qty ? -100 : 0,
+          vsLYQtyPct: ly?.qty ? -100 : 0,
+          qty: 0,
+          lwQty: lw?.qty ?? 0,
+          lyQty: ly?.qty ?? 0,
+          digital: 0,
+          lyDigital: ly?.digital ?? 0,
+          elecInstore: 0,
+          lyElecInstore: ly?.elecInstore ?? 0,
+          elecStore: 0,
+          lyElecStore: ly?.elecStore ?? 0,
+          storeCpn: 0,
+          lyStoreCpn: ly?.storeCpn ?? 0,
+        };
+      });
+
+    const sorted = [...twRows, ...inactive].sort((a, b) => {
+      const rankDiff =
+        severityRank(deptSeverity(a, coverage, threshold, gradingMetric)) -
+        severityRank(deptSeverity(b, coverage, threshold, gradingMetric));
+      if (rankDiff !== 0) return rankDiff;
+      const ap = isQty
+        ? basisPct(deptBasis(a, coverage), a.vsLWQtyPct, a.vsLYQtyPct)
+        : basisPct(deptBasis(a, coverage), a.vsLWPct, a.vsLYPct);
+      const bp = isQty
+        ? basisPct(deptBasis(b, coverage), b.vsLWQtyPct, b.vsLYQtyPct)
+        : basisPct(deptBasis(b, coverage), b.vsLWPct, b.vsLYPct);
+      // Ungraded: nothing to rank by, so biggest department first.
+      return ap === null || bp === null ? b.tw - a.tw : ap - bp;
+    });
+
     return { rows: sorted, coverage };
   }, [subSales, subSalesWk2, subSalesWk3, threshold, gradingMetric, isQty]);
 
