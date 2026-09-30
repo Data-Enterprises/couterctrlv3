@@ -718,9 +718,14 @@ const VendorExportModal = ({
           ),
         )}`,
       );
+    // No section title on this one. It is the only preset written to be read
+    // back in - by UPC List, Item Actions and Forecasting - and its single
+    // `UPC` column header already names it. A title above that header is a
+    // second header: the paste box drops it (digits only), but a spreadsheet
+    // shows two heading rows and the file stops looking like a list of UPCs.
     if (selected.has("upc_list") && upcSevs.size > 0)
       sections.push(
-        `${title("UPC List")}\n${buildUpcListCsv(
+        buildUpcListCsv(
           collectGradedItems(
             pickedVendors,
             scopedAll,
@@ -728,7 +733,7 @@ const VendorExportModal = ({
             gradingMetric,
             upcSevs,
           ),
-        )}`,
+        ),
       );
     if (!sections.length) return;
     // The store-wide presets aren't about the open vendor, so a file made only
