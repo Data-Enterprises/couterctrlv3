@@ -504,7 +504,12 @@ const MarginPerfExportModal = ({
     }
     if (selected.has("upc_list") && upcSevs.size > 0) {
       const items = collectGradedItems(pickedDepts, grades, threshold, gradingMetric, upcSevs);
-      sections.push(`UPC List\n${buildUpcListCsv(items)}`);
+      // No section title on this one. It is the only preset written to be read
+      // back in - by UPC List, Item Actions and Forecasting - and its single
+      // `UPC` column header already names it. A title above that header is a
+      // second header: the paste box drops it (digits only), but a spreadsheet
+      // shows two heading rows and the file stops looking like a list of UPCs.
+      sections.push(buildUpcListCsv(items));
     }
     if (!sections.length) return;
     // The store-wide presets aren't about the open department, so a file made
