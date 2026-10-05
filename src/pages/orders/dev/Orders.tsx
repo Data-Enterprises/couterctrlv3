@@ -1,34 +1,50 @@
-import { useState } from "react";
-import { applyStoreNumberToName, numbersByStoreId } from "../../../utils/storeIdentity";
+import { useMemo, useState } from "react";
 import { useOrdersCtx } from "./hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
-import { getAllOrders, getAvailableOrders } from "../../../api/orders";
+import { getAllOrders } from "../../../api/orders";
 import { getStoresAssignedToUserGroup } from "../../../api/groups";
 import {
   setAllOrders,
-  setAvailableOrders,
-  setGroupedAvailableOrders,
-  setSelectedOrderKey,
-  setSelectedOrder,
   setLoadingAllOrders,
-  setLoadingAvailableOrders,
   setOrdersExportModalOpen,
+  setOrdersFilter,
+  clearOrdersFilters,
   setUniqueSubs,
-  type GroupedOrderCard,
+  type OrdersFilters,
   type UniqueSub,
 } from "../../../features/dev/devOrdersSlice";
 import { setSelectedGroupStores } from "../../../features/userSlice";
-import type { AllOrderResp, AvailableOrderResp, JsonError, Store } from "../../../interfaces";
+import type { AllOrder, AllOrderResp, JsonError, Store } from "../../../interfaces";
 import { getCogs, getERet, ordersCols } from ".";
 import { formatGoliathDate } from "../../../utils";
 
 import SearchCard from "../../../components-dev/SearchCard";
 import ExportModal from "../../../components-dev/modals/ExportModal";
-import AvailableOrdersPanel from "./components/AvailableOrdersPanel";
+import OrdersConfigPanel from "./components/OrdersConfigPanel";
 import OrderReportPanel from "./components/OrderReportPanel";
 import OrdersMobile from "./mobile/OrdersMobile";
 import { isGroupSearch } from "../../../features/searchSlice";
 
+/**
+ * Orders, as one fetch and a configuration.
+ *
+ * It used to ask `available_order` what orders existed, draw them as cards,
+ * and fetch one card's line items when you picked it. Everything downstream
+ * was then scoped to a single store, date and order type — which is why there
+ * was no way to ask for one sub department across every order, or to export
+ * more than one order at a time.
+ *
+ * Now the search fetches every line in the range once, from `all_orders`, and
+ * the left panel narrows it. `all_orders` is a superset of `available_order`
+ * — same storeid, storenumber, order_date, order_type and record_count, plus
+ * the sub department, the item and the costs — so nothing the old left panel
+ * showed was lost by dropping the first call.
+ *
+ * The filtering lives here rather than in the slice. Six independent filters
+ * reducing one list is a single pass over the result; six reducers each
+ * recomputing `filteredOrders` would run it six times and only the last one
+ * would be right.
+ */
 const Orders = () => {
   const ctx = useOrdersCtx();
   const toast = useToast();
@@ -41,231 +57,154 @@ const Orders = () => {
         .then((resp) => {
           const j = resp.data;
           if (j.error === 0) {
-            const activeStores = j.stores.filter((s: any) => s.active);
+            // `active` rides the group response, not Store itself.
+            const activeStores = (j.stores as (Store & { active?: boolean })[]).filter(
+              (s) => s.active,
+            );
             ctx.dispatch(setSelectedGroupStores(activeStores));
-            const storeids: number[] = activeStores.map((s: Store) => s.storeid);
-            fetchAvailable(storeids);
+            fetchAllLines(activeStores.map((s: Store) => s.storeid));
           } else {
             toast.warn(j.msg);
           }
         })
         .catch((err: JsonError) => toast.error(err.message));
     } else {
-      fetchAvailable([ctx.lastStore]);
+      fetchAllLines([ctx.lastStore]);
     }
   };
 
-  const fetchAvailable = (storeids: number[]) => {
-    ctx.dispatch(setAvailableOrders([]));
-    ctx.dispatch(setGroupedAvailableOrders([]));
+  /**
+   * Every line item in the range, in one call.
+   *
+   * No order type and no single date: the whole point is that the panel
+   * decides those afterwards, out of what actually came back.
+   */
+  const fetchAllLines = (storeids: number[]) => {
+    setNotice(undefined);
+    ctx.dispatch(clearOrdersFilters());
     ctx.dispatch(setAllOrders([]));
-    ctx.dispatch(setSelectedOrderKey(null));
-    ctx.dispatch(setSelectedOrder(null));
+    ctx.dispatch(setLoadingAllOrders(true));
 
     const start = formatGoliathDate(ctx.startDate);
     const end = formatGoliathDate(ctx.endDate);
 
-    ctx.dispatch(setLoadingAvailableOrders(true));
-    getAvailableOrders(ctx.url, ctx.token, start, end, storeids)
+    getAllOrders(ctx.url, ctx.token, start, end, storeids)
       .then((resp) => {
-        const j: AvailableOrderResp = resp.data;
+        const j: AllOrderResp = resp.data;
         if (j.error !== 0) {
           toast.warn(j.msg);
           return;
         }
-        if (j.error === 0) {
-          setNotice(
-            j.orders.length === 0
-              ? "No orders came back for this search."
-              : undefined,
-          );
-          ctx.dispatch(setAvailableOrders(j.orders));
-
-          // Group by order_type → order_date → stores (frequency = appearances per type+date+store)
-          //
-          // Keyed on storeid + storenumber, not storeid alone: a few storeids
-          // cover two physical locations, and merging them here would show one
-          // row with both stores frequency summed behind it.
-          const numbersById = numbersByStoreId(
-            j.orders,
-            (o) => o.storeid,
-            (o) => o.storenumber,
-          );
-          const typeMap = new Map<
-            string,
-            Map<string, Map<string, { storeid: number; storenumber: string; frequency: number }>>
-          >();
-          for (const o of j.orders) {
-            if (!typeMap.has(o.order_type)) typeMap.set(o.order_type, new Map());
-            const dateMap = typeMap.get(o.order_type)!;
-            if (!dateMap.has(o.order_date)) dateMap.set(o.order_date, new Map());
-            const storeMap = dateMap.get(o.order_date)!;
-            const key = `${o.storeid}__${o.storenumber}`;
-            const entry = storeMap.get(key);
-            if (entry) entry.frequency += 1;
-            else storeMap.set(key, { storeid: o.storeid, storenumber: o.storenumber, frequency: 1 });
-          }
-
-          const cards: GroupedOrderCard[] = Array.from(typeMap.entries())
-            .sort(([a], [b]) => a.localeCompare(b))
-            .map(([order_type, dateMap]) => ({
-              order_type,
-              dates: Array.from(dateMap.entries())
-                .sort(([a], [b]) => b.localeCompare(a)) // most recent first
-                .map(([order_date, storeMap]) => ({
-                  order_date,
-                  stores: Array.from(storeMap.values()).map(({ storeid, storenumber, frequency }) => {
-                    const assigned = ctx.assignedStores.find((s) => s.storeid === storeid);
-                    return {
-                      storeid,
-                      storenumber,
-                      // assignedStores resolves by storeid, so co-located
-                      // locations share a name — rewrite the embedded number.
-                      store_name: applyStoreNumberToName(
-                        assigned?.store_name ?? String(storeid),
-                        storenumber,
-                        numbersById[storeid] ?? [],
-                      ),
-                      frequency,
-                    };
-                  }),
-                })),
-            }));
-
-          ctx.dispatch(setGroupedAvailableOrders(cards));
+        if (j.orders.length === 0) {
+          setNotice("No orders came back for this search.");
+          return;
         }
-      })
-      .catch((err: JsonError) => toast.error(err.message))
-      .finally(() => ctx.dispatch(setLoadingAvailableOrders(false)));
-  };
 
-  // storenumbers null = every location under those storeids (select-all path).
-  const fetchOrderDetails = (start_date: string, end_date: string, order_type: string, storeids: number[], storenumbers: string[] | null = null) => {
-    ctx.dispatch(setSelectedOrderKey({ order_date: start_date, order_date_end: end_date, order_type, storeids, storenumbers }));
-    ctx.dispatch(setSelectedOrder(null));
-    ctx.dispatch(setAllOrders([]));
+        // Same per-line derivation the old per-order fetch did, so a line
+        // means the same thing it always did.
+        const lines = j.orders.map((o) => {
+          const base_cost = o.base_cost ?? 0;
+          const net_cost = o.net_cost ?? 0;
+          const weight = o.weight ?? 0;
+          const casesize = o.casesize ?? 0;
+          const e_ret = getERet(o.qty, weight, o.active_retail_price, o.scalable);
+          const cogs = getCogs(base_cost, o.qty, o.scalable, weight, casesize);
+          return { ...o, e_ret, base_cost, net_cost, weight, casesize, cogs, rev: e_ret - cogs };
+        });
 
-    ctx.dispatch(setLoadingAllOrders(true));
-    getAllOrders(ctx.url, ctx.token, start_date, end_date, storeids)
-      .then((resp) => {
-        const j: AllOrderResp = resp.data;
-        if (j.error === 0) {
-          if (j.orders.length === 0) {
-            toast.warn("No orders came back for this search.");
-          }
-          // Fetched by storeid, so a co-located storeid returns both
-          // locations — keep only the one(s) actually selected.
-          const scopedOrders = storenumbers
-            ? j.orders.filter((o) => storenumbers.includes(o.storenumber))
-            : j.orders;
-          const ordersWERet = scopedOrders.map((o) => {
-            const base_cost = o.base_cost ?? 0;
-            const net_cost = o.net_cost ?? 0;
-            const weight = o.weight ?? 0;
-            const casesize = o.casesize ?? 0;
-            const e_ret = getERet(o.qty, weight, o.active_retail_price, o.scalable);
-            const cogs = getCogs(base_cost, o.qty, o.scalable, weight, casesize);
-            const rev = e_ret - cogs;
-            return { ...o, e_ret, base_cost, net_cost, weight, casesize, cogs, rev };
-          });
+        const uniqueSubs = lines.reduce((acc: UniqueSub[], o) => {
+          const found = acc.find((a) => a.subId === o.sub_department);
+          if (found) found.count += 1;
+          else
+            acc.push({
+              desc: o.sub_department_description ?? "null",
+              subId: o.sub_department,
+              count: 1,
+            });
+          return acc;
+        }, []);
 
-          const uniqueSubs = ordersWERet.reduce((acc: UniqueSub[], o) => {
-            if (!acc.some((a) => a.subId === o.sub_department)) {
-              acc.push({
-                desc: o.sub_department_description ?? "null",
-                subId: o.sub_department,
-                count: ordersWERet.filter((f) => f.sub_department === o.sub_department).length,
-              });
-            }
-            return acc;
-          }, []);
-
-          ctx.dispatch(setUniqueSubs(uniqueSubs));
-          ctx.dispatch(setAllOrders(ordersWERet));
-        } else {
-          toast.warn(j.msg);
-        }
+        ctx.dispatch(setUniqueSubs(uniqueSubs));
+        ctx.dispatch(setAllOrders(lines));
       })
       .catch((err: JsonError) => toast.error(err.message))
       .finally(() => ctx.dispatch(setLoadingAllOrders(false)));
   };
 
-  const handleSelectStore = (order_date: string, order_type: string, storeid: number, storenumber: string) => {
-    fetchOrderDetails(order_date, order_date, order_type, [storeid], [storenumber]);
-  };
+  /** One pass, all six filters. Empty means all, per filter. */
+  const filteredLines = useMemo(() => {
+    const f = ctx.filters;
+    const types = new Set(f.orderTypes);
+    const stores = new Set(f.storeNumbers);
+    const dates = new Set(f.dates);
+    const subs = new Set(f.subIds);
+    const codes = new Set(f.productCodes);
+    const ids = new Set(f.orderIds);
 
-  // No date filter selected → span the whole search range instead of one day.
-  const handleSelectAllStores = (order_date: string, order_type: string, storeids: number[]) => {
-    if (order_date) {
-      fetchOrderDetails(order_date, order_date, order_type, storeids);
-    } else {
-      fetchOrderDetails(formatGoliathDate(ctx.startDate), formatGoliathDate(ctx.endDate), order_type, storeids);
-    }
-  };
+    return ctx.allOrders.filter((o: AllOrder) => {
+      if (types.size && !types.has(o.order_type)) return false;
+      if (stores.size && !stores.has(o.storenumber)) return false;
+      if (dates.size && !dates.has(o.order_date)) return false;
+      if (subs.size && !subs.has(o.sub_department)) return false;
+      if (codes.size && !codes.has(String(o.product_code))) return false;
+      if (ids.size && !ids.has(o.order_id)) return false;
+      return true;
+    });
+  }, [ctx.allOrders, ctx.filters]);
 
   if (ctx.isMobile) return <OrdersMobile />;
 
-  const hasData = ctx.groupedAvailableOrders.length > 0;
+  const hasData = ctx.allOrders.length > 0;
 
-  if (!hasData && !ctx.loadingAvailableOrders) {
+  if (!hasData && !ctx.loadingAllOrders) {
     return (
       <SearchCard
         title="Orders"
-        description="Select a store or group and date range to find available orders."
-        buttonLabel="Find orders"
+        description="Select a store or group and date range to load every order in it."
+        buttonLabel="Load orders"
         onSearch={handleSearch}
-        loading={ctx.loadingAvailableOrders}
-        loadingMessage="Finding orders..."
+        loading={ctx.loadingAllOrders}
+        loadingMessage="Loading orders..."
         notice={notice}
       />
     );
   }
+
+  const scopeLabel = isGroupSearch(ctx.type)
+    ? (ctx.selectedGroup?.group_name ?? "Group")
+    : (ctx.selectedStore?.store_name ?? "Store");
 
   return (
     <div className="h-[calc(100vh-3rem)] overflow-hidden p-4 flex gap-3">
       <ExportModal
         resizable
         isOpen={ctx.ordersExportModalOpen}
-        data={
-          ctx.selectedOrder !== null
-            ? ctx.allOrders.filter(
-                (o) => o.order_id === ctx.selectedOrder!.orderId && o.storeid === ctx.selectedOrder!.storeid,
-              )
-            : []
-        }
+        data={filteredLines}
         columns={ordersCols}
         onClose={() => ctx.dispatch(setOrdersExportModalOpen(false))}
       />
 
-      <AvailableOrdersPanel
-        cards={ctx.groupedAvailableOrders}
-        selectedKey={ctx.selectedOrderKey}
-        loading={ctx.loadingAvailableOrders}
-        onSelectStore={handleSelectStore}
-        onSelectAllStores={handleSelectAllStores}
-        onOpenSearch={() => setSearchModalOpen(true)}
-        onReset={() => {
-          ctx.dispatch(setSelectedOrderKey(null));
-          ctx.dispatch(setSelectedOrder(null));
-          ctx.dispatch(setAllOrders([]));
-        }}
+      <OrdersConfigPanel
+        lines={ctx.allOrders}
+        filters={ctx.filters}
+        onChange={(key: keyof OrdersFilters, values) =>
+          ctx.dispatch(setOrdersFilter({ key, values }))
+        }
+        onClear={() => ctx.dispatch(clearOrdersFilters())}
+        loading={ctx.loadingAllOrders}
+        matched={filteredLines.length}
         startDate={ctx.startDate}
         endDate={ctx.endDate}
-        type={ctx.type}
-        selectedGroup={ctx.selectedGroup}
-        selectedStore={ctx.selectedStore}
-        groupStores={ctx.selectedGroupStores}
+        onOpenSearch={() => setSearchModalOpen(true)}
+        scopeLabel={scopeLabel}
       />
 
       <OrderReportPanel
-        orders={ctx.allOrders}
+        lines={filteredLines}
         loading={ctx.loadingAllOrders}
-        selectedKey={ctx.selectedOrderKey}
-        selectedOrder={ctx.selectedOrder}
-        assignedStores={ctx.assignedStores}
-        onSelectOrder={(storeid, storenumber, orderId) => ctx.dispatch(setSelectedOrder(orderId === null ? null : { storeid, storenumber, orderId }))}
         onExport={() => ctx.dispatch(setOrdersExportModalOpen(true))}
       />
+
       {searchModalOpen && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
@@ -274,11 +213,14 @@ const Orders = () => {
           <div className="w-full max-w-sm mx-4" onClick={(e) => e.stopPropagation()}>
             <SearchCard
               title="Orders"
-              description="Select a store or group and date range to find available orders."
-              buttonLabel="Find orders"
-              onSearch={() => { setSearchModalOpen(false); handleSearch(); }}
-              loading={ctx.loadingAvailableOrders}
-              loadingMessage="Finding orders..."
+              description="Select a store or group and date range to load every order in it."
+              buttonLabel="Load orders"
+              onSearch={() => {
+                setSearchModalOpen(false);
+                handleSearch();
+              }}
+              loading={ctx.loadingAllOrders}
+              loadingMessage="Loading orders..."
             />
           </div>
         </div>

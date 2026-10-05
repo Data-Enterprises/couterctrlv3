@@ -29,6 +29,7 @@ export const useOrdersCtx = () => {
     orderStatusFilter,
     subIdsFilter,
     uniqueSubs,
+    filters,
   } = ordersState;
 
   return {
@@ -61,6 +62,7 @@ export const useOrdersCtx = () => {
     token,
     type,
     uniqueSubs,
+    filters,
     url,
     userid,
     filteredAvailableOrders,
