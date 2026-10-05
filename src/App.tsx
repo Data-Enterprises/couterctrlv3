@@ -14,6 +14,8 @@ import { getUserStores } from "./api/user";
 import type { JsonError, Store } from "./interfaces";
 import { setAllAvailableStores } from "./features/storeSlice";
 import { setLegacyLastRoute } from "./features/appSlice";
+import { setLastRoute } from "./features/navSlice";
+import { isComingSoonRoute } from "./components/navigation/utils";
 import { hasLegacyPage } from "./constants/legacyPages";
 import {
   setAssignedStores,
@@ -81,6 +83,22 @@ const App = () => {
     if (!hasLegacyPage(location.pathname)) return;
     dispatch(setLegacyLastRoute(location.pathname.replace(/^\//, "") || "/"));
   }, [context.uiMode, location.pathname]);
+
+  // Switching to prod while sitting on a Coming Soon page used to leave you
+  // on DevOnlyNotice. Its own note says that page is "only reached by typing
+  // the URL" — the mode toggle was the exception, and it is a dead end: there
+  // is nothing on it to move you along, and it reads as a page that broke
+  // rather than one this environment does not carry. Clients can reach dev, so
+  // this is a path somebody will take rather than a developer's own mess.
+  //
+  // `replace` so Back does not return to it, and the stored route follows, the
+  // same way the sign-in restore corrects it.
+  useEffect(() => {
+    if (context.apiEnv === "dev") return;
+    if (!isComingSoonRoute(location.pathname)) return;
+    dispatch(setLastRoute("sales"));
+    navigate("/sales", { replace: true });
+  }, [context.apiEnv, location.pathname]);
 
   // Legacy brings its own frame: a rail down the left that the live layout
   // has no room reserved for, so the page has to start clear of it — and the
