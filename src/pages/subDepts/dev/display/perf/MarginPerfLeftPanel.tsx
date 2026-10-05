@@ -154,9 +154,21 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: Props) => {
   const avgMarginPct = grades.length
     ? grades.reduce((acc, g) => acc + g.grade.tyMarginPct, 0) / grades.length
     : null;
-  const avgDelta = grades.length
-    ? grades.reduce((acc, g) => acc + g.grade.ptsDelta, 0) / grades.length
-    : null;
+  /**
+   * Averaged over the departments that HAVE the comparison, not over all of
+   * them. A department with nothing to compare used to contribute a zero,
+   * which is a real margin somebody earned and pulled the store average
+   * toward flat.
+   */
+  const avgOf = (pick: (g: (typeof grades)[number]) => number | null) => {
+    const values = grades
+      .map(pick)
+      .filter((v): v is number => v !== null);
+    return values.length
+      ? values.reduce((acc, v) => acc + v, 0) / values.length
+      : null;
+  };
+  const avgDelta = avgOf((g) => g.grade.ptsDelta);
   // Store-level figures come from sales/weekly (day-matched), matching the
   // Sales page header exactly. Summing the sub-dept grades is a different
   // quantity — it also compared a partial TY week against a full LW one — so
@@ -178,9 +190,7 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: Props) => {
     storeSalesTotals && storeSalesTotals.lwSales > 0
       ? storeSalesTotals.vsLWSalesPct
       : totalLwSales > 0 ? ((totalTySales - totalLwSales) / totalLwSales) * 100 : null;
-  const avgLwDelta = grades.length
-    ? grades.reduce((acc, g) => acc + g.grade.lwPtsDelta, 0) / grades.length
-    : null;
+  const avgLwDelta = avgOf((g) => g.grade.lwPtsDelta);
 
   const threshValue = rawGradingThreshold === null ? null : { op: "gt" as const, amount: rawGradingThreshold };
 
@@ -440,7 +450,7 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: Props) => {
               ) : (
                 visibleRows.map(({ id, grade, tier, name }) => {
                   const isSel = ctx.selectedSubDeptId === id;
-                  const hasLY = grade.lyMarginPct > 0 || grade.lySales > 0;
+                  const hasLY = (grade.lyMarginPct ?? 0) > 0 || grade.lySales > 0;
                   const hasLW = grade.lwSales > 0;
 
                   const tyValue =
@@ -449,14 +459,16 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: Props) => {
                       : formatCurrency2(grade.tySales);
                   const lwPct = gradingMetric === "margin" ? grade.lwPtsDelta : grade.vsLWSalesPct;
                   const lyPct = gradingMetric === "margin" ? grade.ptsDelta : grade.vsLYSalesPct;
-                  const lwDisplay =
-                    gradingMetric === "margin"
-                      ? `${lwPct >= 0 ? "+" : ""}${lwPct.toFixed(2)} pts`
-                      : `${lwPct >= 0 ? "+" : ""}${lwPct.toFixed(2)}%`;
-                  const lyDisplay =
-                    gradingMetric === "margin"
-                      ? `${lyPct >= 0 ? "+" : ""}${lyPct.toFixed(2)} pts`
-                      : `${lyPct >= 0 ? "+" : ""}${lyPct.toFixed(2)}%`;
+                  // Null is a department the week cannot be compared for, so
+                  // it reads as a dash rather than a number nobody can act on.
+                  const fmtDelta = (v: number | null) =>
+                    v === null
+                      ? "—"
+                      : gradingMetric === "margin"
+                        ? `${v >= 0 ? "+" : ""}${v.toFixed(2)} pts`
+                        : `${v >= 0 ? "+" : ""}${v.toFixed(2)}%`;
+                  const lwDisplay = fmtDelta(lwPct);
+                  const lyDisplay = fmtDelta(lyPct);
 
                   return (
                     <button

@@ -2430,13 +2430,20 @@ export interface VendorRow {
    *  comparison grades only when it covers every day; see utils/grading. */
   coverage: Coverage;
 
-  /** Margin points, computed from the DAY-MATCHED subtotals so a partial week
-   *  isn't compared against a full one. Positive means margin improved. */
+  /**
+   * Margin points, computed from the DAY-MATCHED subtotals so a partial week
+   * isn't compared against a full one. Positive means margin improved.
+   *
+   * Null where there is nothing to take a margin on: a period with no sales
+   * has no margin, and a delta needs sales on BOTH matched sides. Not zero —
+   * zero is a real margin somebody earned, and the difference between the two
+   * is a vendor reading as Critical for a week nobody can compare.
+   */
   tyMarginPct: number;
-  lwMarginPct: number;
-  lyMarginPct: number;
-  lwPtsDelta: number;
-  lyPtsDelta: number;
+  lwMarginPct: number | null;
+  lyMarginPct: number | null;
+  lwPtsDelta: number | null;
+  lyPtsDelta: number | null;
 }
 
 /** One TW day for one vendor, with its aligned comparisons.
