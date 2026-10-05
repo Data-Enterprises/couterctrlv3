@@ -10,6 +10,7 @@ import { getGroups } from "../api/groups";
 import { setUserId } from "../features/userSlice";
 import { setGroups, type Group } from "../features/groupSlice";
 import { setLastRoute } from "../features/navSlice";
+import { isComingSoonRoute } from "./navigation/utils";
 import {
   setLastStore,
   setLastGroup,
@@ -82,7 +83,17 @@ const UserDataLoader = () => {
               : getDefaultType(prefs.last_search_type);
           dispatch(setType(type));
 
-          const lastRoute = !prefs.last_route ? "/" : prefs.last_route;
+          const stored = !prefs.last_route ? "/" : prefs.last_route;
+          // A Coming Soon page exists on the dev API only, and signing in
+          // always lands on prod. Somebody who was last on one was in dev when
+          // they left, so restoring it here drops them on the under
+          // construction placeholder — a dead end, and one that looks like the
+          // app is broken rather than like a page they cannot reach from here.
+          // Sales is where they would have gone anyway.
+          const lastRoute =
+            context.apiEnv !== "dev" && isComingSoonRoute(stored)
+              ? "sales"
+              : stored;
           dispatch(setLastRoute(lastRoute));
 
           // Picking up where you left off is a sign-in convenience, so it only
