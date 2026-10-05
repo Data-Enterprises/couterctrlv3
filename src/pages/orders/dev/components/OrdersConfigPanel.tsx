@@ -23,7 +23,8 @@ interface Props {
 /** Same three-digit pad the report panel uses on store numbers. */
 const padStoreNumber = (n: string | number) => String(n).padStart(3, "0");
 
-const fmtDate = (iso: string) => {
+/** For order_date on a line, which is ISO. */
+const fmtOrderDate = (iso: string) => {
   const [y, m, d] = iso.split("T")[0].split("-");
   return `${+m}/${+d}/${y}`;
 };
@@ -89,7 +90,7 @@ const OrdersConfigPanel = ({
         })),
       dates: [...dates]
         .sort((a, b) => b.localeCompare(a))
-        .map((v) => ({ value: v, label: fmtDate(v) })),
+        .map((v) => ({ value: v, label: fmtOrderDate(v) })),
       subs: [...subs.entries()]
         .sort(([, a], [, b]) => a.localeCompare(b))
         .map(([id, desc]) => ({ value: String(id), label: desc })),
@@ -134,11 +135,11 @@ const OrdersConfigPanel = ({
           </button>
         </div>
         <div className="pt-1.5 mt-1 border-t border-custom-white/[0.08] flex items-baseline gap-2">
-          <span className="text-custom-white/85 text-[10px] truncate">
+          <span className="text-custom-white/85 text-[12px] truncate">
             {scopeLabel}
           </span>
-          <span className="text-custom-white/85 text-[10px] flex-shrink-0 ml-auto">
-            {fmtDate(startDate)} – {fmtDate(endDate)}
+          <span className="text-custom-white/85 text-[12px] flex-shrink-0 ml-auto">
+            {startDate} – {endDate}
           </span>
         </div>
       </div>
