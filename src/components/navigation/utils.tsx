@@ -681,3 +681,20 @@ export const categoriesFor = (apiEnv: "dev" | "prod"): NavCategory[] =>
             p.href === "user-management" ? { ...p, userLevels: ["*"] } : p,
           ),
       }));
+
+/**
+ * Is this route one of the unreleased pages?
+ *
+ * Read off the Coming Soon category rather than listed again, so a page
+ * joining or leaving it needs nothing here. Routes are stored as bare hrefs
+ * ("sales", "item-report"), but a leading slash is tolerated because the
+ * value has also been a pathname in places.
+ */
+export const isComingSoonRoute = (route: string): boolean => {
+  const href = route.replace(/^\//, "");
+  return (
+    categories
+      .find((c) => c.name === COMING_SOON_CATEGORY)
+      ?.pages.some((p) => p.href === href) ?? false
+  );
+};
