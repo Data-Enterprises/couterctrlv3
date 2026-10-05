@@ -698,3 +698,23 @@ export const isComingSoonRoute = (route: string): boolean => {
       ?.pages.some((p) => p.href === href) ?? false
   );
 };
+
+/**
+ * Routes that exist on the dev API only, whether or not the menu offers them.
+ *
+ * The Coming Soon pages render `DevOnlyNotice` on prod; Release Notes would
+ * render perfectly well, which is the more dangerous case — its avatar entry
+ * is dev-gated because the notes name unreleased work, but the route itself
+ * is reachable by typing it, and nothing about the page says it should not
+ * have been.
+ *
+ * Release Notes is named here rather than read off the nav because it is
+ * deliberately not in the nav at all.
+ */
+const DEV_ONLY_ROUTES = new Set(["release-notes"]);
+
+/** The test both the sign-in restore and the mode switch use. */
+export const isDevOnlyRoute = (route: string): boolean => {
+  const href = route.replace(/^\//, "");
+  return DEV_ONLY_ROUTES.has(href) || isComingSoonRoute(href);
+};

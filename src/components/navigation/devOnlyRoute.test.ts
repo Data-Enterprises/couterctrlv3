@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { categories, isComingSoonRoute } from "./utils";
+import { categories, isComingSoonRoute, isDevOnlyRoute } from "./utils";
 import { COMING_SOON_CATEGORY } from "../../utils/comingSoon";
 
 const comingSoonHrefs =
@@ -26,5 +26,23 @@ describe("isComingSoonRoute", () => {
   it("says no to the empty route", () => {
     expect(isComingSoonRoute("/")).toBe(false);
     expect(isComingSoonRoute("")).toBe(false);
+  });
+});
+
+describe("isDevOnlyRoute", () => {
+  it("covers the Coming Soon pages", () => {
+    expect(comingSoonHrefs.filter((h) => !isDevOnlyRoute(h))).toEqual([]);
+  });
+
+  it("covers Release Notes, which is not in the nav at all", () => {
+    expect(isComingSoonRoute("release-notes")).toBe(false);
+    expect(isDevOnlyRoute("release-notes")).toBe(true);
+    expect(isDevOnlyRoute("/release-notes")).toBe(true);
+  });
+
+  it("says no to released pages", () => {
+    for (const href of ["sales", "orders", "item-lookup", "/"]) {
+      expect([href, isDevOnlyRoute(href)]).toEqual([href, false]);
+    }
   });
 });
