@@ -1,16 +1,11 @@
 import type { AllOrder } from "../../../interfaces";
 import type { OrdersFilters } from "../../../features/dev/devOrdersSlice";
+import type { SortState } from "../../../utils/useTriStateSort";
 
 export type SortKey = "order" | "seq" | "qty" | "ext_retail" | "profit";
-export type SortDir = "asc" | "desc";
 
-/** What the grid is narrowed by on top of the configuration panel. */
-export type GridNarrowing = {
-  upc: string;
-  desc: string;
-  sort: SortKey;
-  dir: SortDir;
-};
+/** Null is the list's own order, which is what the tri-state cycle returns to. */
+export type GridSort = SortState<SortKey>;
 
 /**
  * The configuration panel's six filters, applied in one pass.
@@ -37,7 +32,7 @@ export const applyFilters = (lines: AllOrder[], f: OrdersFilters): AllOrder[] =>
   });
 };
 
-const sortValue = (o: AllOrder, key: SortKey): number => {
+export const sortValue = (o: AllOrder, key: SortKey): number => {
   switch (key) {
     case "seq":
       return o.line_number;
@@ -53,35 +48,30 @@ const sortValue = (o: AllOrder, key: SortKey): number => {
 };
 
 /**
- * The grid's own narrowing: its two column searches, then its sort.
+ * The list's own order: by order, then by line within it.
  *
- * Separate from `applyFilters` because the two are set in different places —
- * the panel on the left, these in the grid's own header — but they have to be
- * composed in one known order, or the export and the screen disagree about
- * what "the rows" means.
+ * This is what the tri-state sort returns to on its third click, so it has to
+ * be an order worth coming back to rather than whatever the API happened to
+ * send. Order number first because the grid spans many orders now, and a line
+ * number means nothing without the order it belongs to.
  */
-export const applyGrid = (rows: AllOrder[], n: GridNarrowing): AllOrder[] => {
-  const upc = n.upc.trim().toLowerCase();
-  const desc = n.desc.trim().toLowerCase();
+export const defaultOrder = (rows: AllOrder[]): AllOrder[] =>
+  [...rows].sort(
+    (a, b) => a.order_id - b.order_id || a.line_number - b.line_number,
+  );
 
-  const matched = rows.filter((o) => {
-    if (upc && !String(o.product_code).toLowerCase().includes(upc)) return false;
-    if (desc && !o.description.toLowerCase().includes(desc)) return false;
-    return true;
-  });
-
-  return [...matched].sort((a, b) => {
-    const d = sortValue(a, n.sort) - sortValue(b, n.sort);
-    // Inside one order the line number is the only order that means anything,
-    // so it is always the tiebreak.
-    const tie = d !== 0 ? d : a.order_id - b.order_id || a.line_number - b.line_number;
-    return n.dir === "asc" ? tie : -tie;
-  });
-};
-
-/** Everything, in the order the screen shows it. */
+/**
+ * Everything, in the order the screen shows it.
+ *
+ * `applySort` hands the rows back untouched when nothing is sorted, which is
+ * why the default order goes on first rather than being a fourth branch.
+ */
 export const buildRows = (
   lines: AllOrder[],
   filters: OrdersFilters,
-  narrowing: GridNarrowing,
-): AllOrder[] => applyGrid(applyFilters(lines, filters), narrowing);
+  applySort: (
+    rows: AllOrder[],
+    value: (row: AllOrder, col: SortKey) => number | null,
+  ) => AllOrder[],
+): AllOrder[] =>
+  applySort(defaultOrder(applyFilters(lines, filters)), sortValue);

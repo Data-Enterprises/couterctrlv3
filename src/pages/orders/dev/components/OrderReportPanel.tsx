@@ -1,18 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
 import { ArrowDownTrayIcon } from "@heroicons/react/16/solid";
-import ColFilter from "../../../../components-dev/filters/ColFilter";
-import { colInputStyle } from "../../../../components-dev/filters/colFilterStyles";
 import EmptyPrompt from "../../../../components-dev/EmptyPrompt";
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
+import SortHeader from "../../../../components-dev/SortHeader";
 import { formatCurrency2 } from "../../../../utils";
 import type { AllOrder } from "../../../../interfaces";
-import type { GridNarrowing, SortKey } from "../ordersRows";
+import type { GridSort, SortKey } from "../ordersRows";
 
 interface Props {
   /** Already filtered, searched and sorted by the page. */
   rows: AllOrder[];
-  narrowing: GridNarrowing;
-  onNarrow: (n: GridNarrowing) => void;
+  sort: GridSort;
+  onSort: (col: SortKey) => void;
   loading: boolean;
   onExport: () => void;
 }
@@ -34,24 +33,14 @@ interface Props {
  */
 const OrderReportPanel = ({
   rows,
-  narrowing,
-  onNarrow,
+  sort,
+  onSort,
   loading,
   onExport,
 }: Props) => {
-  // Drafts only — a ColFilter types into these and applies on demand, and
-  // what is applied lives with the page so the export sees it too.
-  const [draftUpc, setDraftUpc] = useState(narrowing.upc);
-  const [draftDesc, setDraftDesc] = useState(narrowing.desc);
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(500);
 
-  const sort = narrowing.sort;
-  const dir = narrowing.dir;
-  const appliedUpc = narrowing.upc;
-  const appliedDesc = narrowing.desc;
-  const setAppliedUpc = (upc: string) => onNarrow({ ...narrowing, upc });
-  const setAppliedDesc = (desc: string) => onNarrow({ ...narrowing, desc });
 
   const visible = rows;
 
@@ -89,29 +78,17 @@ const OrderReportPanel = ({
     return { eRet, cogs, weight, stores: stores.size, orders: orders.size };
   }, [visible]);
 
-  const onSort = (key: SortKey) => {
-    onNarrow(
-      sort === key
-        ? { ...narrowing, dir: dir === "asc" ? "desc" : "asc" }
-        : { ...narrowing, sort: key, dir: "asc" },
-    );
-  };
 
-  const arrow = (key: SortKey) =>
-    sort === key ? (dir === "asc" ? " ↑" : " ↓") : "";
-
+  /** Right-aligned and sortable, on the shared tri-state header. */
   const numHead = (key: SortKey, label: string, width: number) => (
-    <th
-      className="text-right px-3 py-2 whitespace-nowrap"
-      style={{ width }}
-    >
-      <button
-        onClick={() => onSort(key)}
-        className="w-full text-right text-[9px] font-semibold uppercase tracking-wide text-content hover:text-brand_navy transition-colors"
-      >
-        {label}
-        {arrow(key)}
-      </button>
+    <th className="px-3 py-2" style={{ width }}>
+      <SortHeader
+        col={key}
+        label={label}
+        sort={sort}
+        onSort={onSort}
+        className="ml-auto text-[9px] font-semibold uppercase tracking-wide text-content hover:text-brand_navy"
+      />
     </th>
   );
 
@@ -171,43 +148,17 @@ const OrderReportPanel = ({
                 <tr className="border-b border-b-brand_navy/15">
                   {numHead("order", "Order #", 90)}
                   {numHead("seq", "Seq #", 70)}
-                  <th className="text-left px-3 py-2" style={{ width: 100 }}>
-                    <ColFilter
-                      label="UPC"
-                      active={!!appliedUpc}
-                      onApply={() => setAppliedUpc(draftUpc)}
-                      onClear={() => {
-                        setAppliedUpc("");
-                        setDraftUpc("");
-                      }}
-                    >
-                      <input
-                        autoFocus
-                        style={colInputStyle}
-                        placeholder="Search UPC…"
-                        value={draftUpc}
-                        onChange={(e) => setDraftUpc(e.target.value)}
-                      />
-                    </ColFilter>
+                  <th
+                    className="text-left px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content whitespace-nowrap"
+                    style={{ width: 100 }}
+                  >
+                    UPC
                   </th>
-                  <th className="text-left px-3 py-2" style={{ width: 220 }}>
-                    <ColFilter
-                      label="Description"
-                      active={!!appliedDesc}
-                      onApply={() => setAppliedDesc(draftDesc)}
-                      onClear={() => {
-                        setAppliedDesc("");
-                        setDraftDesc("");
-                      }}
-                    >
-                      <input
-                        autoFocus
-                        style={colInputStyle}
-                        placeholder="Search…"
-                        value={draftDesc}
-                        onChange={(e) => setDraftDesc(e.target.value)}
-                      />
-                    </ColFilter>
+                  <th
+                    className="text-left px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content whitespace-nowrap"
+                    style={{ width: 220 }}
+                  >
+                    Description
                   </th>
                   <th
                     className="text-left px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content whitespace-nowrap"

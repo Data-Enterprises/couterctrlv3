@@ -16,7 +16,9 @@ import {
 import { setSelectedGroupStores } from "../../../features/userSlice";
 import type { AllOrderResp, JsonError, Store } from "../../../interfaces";
 import { getCogs, getERet } from ".";
-import { buildRows, type GridNarrowing } from "./ordersRows";
+import { buildRows } from "./ordersRows";
+import { useTriStateSort } from "../../../utils/useTriStateSort";
+import type { SortKey } from "./ordersRows";
 import { formatGoliathDate } from "../../../utils";
 
 import SearchCard from "../../../components-dev/SearchCard";
@@ -52,19 +54,13 @@ const Orders = () => {
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [notice, setNotice] = useState<string | undefined>(undefined);
   /**
-   * The grid's own searches and sort live here rather than in the panel.
+   * The grid's sort lives here rather than in the panel.
    *
-   * They used to be local to the report panel, which meant the export —
-   * raised from this level — read a different set of rows from the one on
-   * screen: unsorted, and ignoring both column searches. Holding them here
-   * is what makes "export what I am looking at" true.
+   * It used to be local to the report panel, which meant the export —
+   * raised from this level — wrote the rows in whatever order the API
+   * returned rather than the order on screen.
    */
-  const [narrowing, setNarrowing] = useState<GridNarrowing>({
-    upc: "",
-    desc: "",
-    sort: "order",
-    dir: "asc",
-  });
+  const { sort, handleSort, applySort } = useTriStateSort<SortKey>();
 
   const handleSearch = () => {
     if (isGroupSearch(ctx.type)) {
@@ -148,8 +144,10 @@ const Orders = () => {
 
   /** One list, built once — the grid draws it and the export writes it. */
   const gridRows = useMemo(
-    () => buildRows(ctx.allOrders, ctx.filters, narrowing),
-    [ctx.allOrders, ctx.filters, narrowing],
+    () => buildRows(ctx.allOrders, ctx.filters, applySort),
+    // `sort` rather than `applySort`: the helper is rebuilt every render and
+    // closes over the state that actually decides the order.
+    [ctx.allOrders, ctx.filters, sort],
   );
 
   const scopeLabel = isGroupSearch(ctx.type)
@@ -180,7 +178,7 @@ const Orders = () => {
         <OrdersExportModal
           lines={ctx.allOrders}
           filters={ctx.filters}
-          narrowing={narrowing}
+          applySort={applySort}
           scopeLabel={scopeLabel}
           startDate={ctx.startDate}
           endDate={ctx.endDate}
@@ -205,8 +203,8 @@ const Orders = () => {
 
       <OrderReportPanel
         rows={gridRows}
-        narrowing={narrowing}
-        onNarrow={setNarrowing}
+        sort={sort}
+        onSort={handleSort}
         loading={ctx.loadingAllOrders}
         onExport={() => ctx.dispatch(setOrdersExportModalOpen(true))}
       />

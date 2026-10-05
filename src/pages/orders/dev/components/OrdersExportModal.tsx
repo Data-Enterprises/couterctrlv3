@@ -4,7 +4,7 @@ import MultiSelectFilter from "../../../../components-dev/filters/MultiSelectFil
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 import type { AllOrder } from "../../../../interfaces";
 import type { OrdersFilters } from "../../../../features/dev/devOrdersSlice";
-import { buildRows, type GridNarrowing } from "../ordersRows";
+import { buildRows, type SortKey } from "../ordersRows";
 import { ORDER_EXPORT_COLUMNS } from "../ordersExportColumns";
 
 interface Props {
@@ -12,8 +12,11 @@ interface Props {
   lines: AllOrder[];
   /** What the left panel has selected — the modal opens on this. */
   filters: OrdersFilters;
-  /** The grid's own searches and sort, so the file matches the screen. */
-  narrowing: GridNarrowing;
+  /** The grid's sort, so the file comes out in the order on screen. */
+  applySort: (
+    rows: AllOrder[],
+    value: (row: AllOrder, col: SortKey) => number | null,
+  ) => AllOrder[];
   /** For the default file name. */
   scopeLabel: string;
   startDate: string;
@@ -43,15 +46,14 @@ const csvCell = (v: unknown) => {
  * next most common is that file for one more store, without disturbing the
  * screen to get it.
  *
- * The grid's own column searches and its sort ride along through
- * `narrowing`, so the file is in the order you were reading and holds the
- * rows you had left. That is the whole point of the change: before this, the
- * export read a different set from the grid and nobody could tell.
+ * The grid's sort rides along, so the file comes out in the order you were
+ * reading it — including the list's own order when nothing is sorted. Before
+ * that it wrote whatever order the API returned and nobody could tell.
  */
 const OrdersExportModal = ({
   lines,
   filters,
-  narrowing,
+  applySort,
   scopeLabel,
   startDate,
   endDate,
@@ -66,8 +68,8 @@ const OrdersExportModal = ({
   );
 
   const rows = useMemo(
-    () => buildRows(lines, draft, narrowing),
-    [lines, draft, narrowing],
+    () => buildRows(lines, draft, applySort),
+    [lines, draft, applySort],
   );
 
   /** Empty means every column, the same way the filters read. */
@@ -268,15 +270,6 @@ const OrdersExportModal = ({
               </Field>
             </div>
           </div>
-
-          {(narrowing.upc || narrowing.desc) && (
-            <p className="rounded bg-filter_active px-2.5 py-1.5 text-[11px] text-content">
-              The grid&rsquo;s own search is still on
-              {narrowing.upc ? ` — UPC “${narrowing.upc}”` : ""}
-              {narrowing.desc ? `${narrowing.upc ? " and" : " —"} description “${narrowing.desc}”` : ""}
-              , and the file keeps it.
-            </p>
-          )}
         </div>
 
         <div className="flex items-center gap-3 border-t border-gray-100 px-4 py-2.5 flex-shrink-0">
