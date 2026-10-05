@@ -6,15 +6,16 @@ import EmptyPrompt from "../../../../components-dev/EmptyPrompt";
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
 import { formatCurrency2 } from "../../../../utils";
 import type { AllOrder } from "../../../../interfaces";
+import type { GridNarrowing, SortKey } from "../ordersRows";
 
 interface Props {
-  /** Whatever survived the configuration panel. */
-  lines: AllOrder[];
+  /** Already filtered, searched and sorted by the page. */
+  rows: AllOrder[];
+  narrowing: GridNarrowing;
+  onNarrow: (n: GridNarrowing) => void;
   loading: boolean;
   onExport: () => void;
 }
-
-type SortKey = "order" | "seq" | "qty" | "ext_retail" | "profit";
 
 /**
  * Every line the configuration lets through, as one grid.
@@ -31,54 +32,28 @@ type SortKey = "order" | "seq" | "qty" | "ext_retail" | "profit";
  * The KPIs count what is on screen rather than what one order holds: no store
  * number and no order number, because the grid can be showing many of each.
  */
-const OrderReportPanel = ({ lines, loading, onExport }: Props) => {
-  const [draftUpc, setDraftUpc] = useState("");
-  const [appliedUpc, setAppliedUpc] = useState("");
-  const [draftDesc, setDraftDesc] = useState("");
-  const [appliedDesc, setAppliedDesc] = useState("");
-  const [sort, setSort] = useState<SortKey>("order");
-  const [dir, setDir] = useState<"asc" | "desc">("asc");
+const OrderReportPanel = ({
+  rows,
+  narrowing,
+  onNarrow,
+  loading,
+  onExport,
+}: Props) => {
+  // Drafts only — a ColFilter types into these and applies on demand, and
+  // what is applied lives with the page so the export sees it too.
+  const [draftUpc, setDraftUpc] = useState(narrowing.upc);
+  const [draftDesc, setDraftDesc] = useState(narrowing.desc);
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(100);
 
-  const visible = useMemo(() => {
-    const matched = lines.filter((o) => {
-      if (
-        appliedUpc &&
-        !String(o.product_code).toLowerCase().includes(appliedUpc.toLowerCase())
-      )
-        return false;
-      if (
-        appliedDesc &&
-        !o.description.toLowerCase().includes(appliedDesc.toLowerCase())
-      )
-        return false;
-      return true;
-    });
+  const sort = narrowing.sort;
+  const dir = narrowing.dir;
+  const appliedUpc = narrowing.upc;
+  const appliedDesc = narrowing.desc;
+  const setAppliedUpc = (upc: string) => onNarrow({ ...narrowing, upc });
+  const setAppliedDesc = (desc: string) => onNarrow({ ...narrowing, desc });
 
-    const by = (o: AllOrder) => {
-      switch (sort) {
-        case "seq":
-          return o.line_number;
-        case "qty":
-          return o.qty;
-        case "ext_retail":
-          return o.e_ret ?? 0;
-        case "profit":
-          return (o.e_ret ?? 0) - (o.cogs ?? 0);
-        default:
-          return o.order_id;
-      }
-    };
-
-    return [...matched].sort((a, b) => {
-      const d = by(a) - by(b);
-      // Inside one order the line number is the only order that means
-      // anything, so it is always the tiebreak.
-      const tie = d !== 0 ? d : a.order_id - b.order_id || a.line_number - b.line_number;
-      return dir === "asc" ? tie : -tie;
-    });
-  }, [lines, appliedUpc, appliedDesc, sort, dir]);
+  const visible = rows;
 
   const pageCount = Math.max(1, Math.ceil(visible.length / pageSize));
   // Clamped rather than reset in an effect: a narrower filter can leave the
@@ -94,7 +69,7 @@ const OrderReportPanel = ({ lines, loading, onExport }: Props) => {
   // page 7 of the old one means nothing in it.
   useEffect(() => {
     setPage(0);
-  }, [lines, sort, dir, appliedUpc, appliedDesc, pageSize]);
+  }, [rows, pageSize]);
 
   /** The whole filtered set, not the page — a total of 100 rows is not a
    *  total of anything somebody asked for. */
@@ -115,11 +90,11 @@ const OrderReportPanel = ({ lines, loading, onExport }: Props) => {
   }, [visible]);
 
   const onSort = (key: SortKey) => {
-    if (sort === key) setDir((d) => (d === "asc" ? "desc" : "asc"));
-    else {
-      setSort(key);
-      setDir("asc");
-    }
+    onNarrow(
+      sort === key
+        ? { ...narrowing, dir: dir === "asc" ? "desc" : "asc" }
+        : { ...narrowing, sort: key, dir: "asc" },
+    );
   };
 
   const arrow = (key: SortKey) =>
@@ -174,7 +149,7 @@ const OrderReportPanel = ({ lines, loading, onExport }: Props) => {
         <div className="flex-1 relative">
           <LoadingIndicator message="Loading orders" />
         </div>
-      ) : lines.length === 0 ? (
+      ) : rows.length === 0 ? (
         <EmptyPrompt
           title="Nothing matches"
           description="Widen the configuration on the left to bring lines back."

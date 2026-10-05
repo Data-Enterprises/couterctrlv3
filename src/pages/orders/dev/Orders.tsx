@@ -14,12 +14,13 @@ import {
   type UniqueSub,
 } from "../../../features/dev/devOrdersSlice";
 import { setSelectedGroupStores } from "../../../features/userSlice";
-import type { AllOrder, AllOrderResp, JsonError, Store } from "../../../interfaces";
-import { getCogs, getERet, ordersCols } from ".";
+import type { AllOrderResp, JsonError, Store } from "../../../interfaces";
+import { getCogs, getERet } from ".";
+import { buildRows, type GridNarrowing } from "./ordersRows";
 import { formatGoliathDate } from "../../../utils";
 
 import SearchCard from "../../../components-dev/SearchCard";
-import ExportModal from "../../../components-dev/modals/ExportModal";
+import OrdersExportModal from "./components/OrdersExportModal";
 import OrdersConfigPanel from "./components/OrdersConfigPanel";
 import OrderReportPanel from "./components/OrderReportPanel";
 import OrdersMobile from "./mobile/OrdersMobile";
@@ -50,6 +51,20 @@ const Orders = () => {
   const toast = useToast();
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [notice, setNotice] = useState<string | undefined>(undefined);
+  /**
+   * The grid's own searches and sort live here rather than in the panel.
+   *
+   * They used to be local to the report panel, which meant the export —
+   * raised from this level — read a different set of rows from the one on
+   * screen: unsorted, and ignoring both column searches. Holding them here
+   * is what makes "export what I am looking at" true.
+   */
+  const [narrowing, setNarrowing] = useState<GridNarrowing>({
+    upc: "",
+    desc: "",
+    sort: "order",
+    dir: "asc",
+  });
 
   const handleSearch = () => {
     if (isGroupSearch(ctx.type)) {
@@ -131,26 +146,15 @@ const Orders = () => {
       .finally(() => ctx.dispatch(setLoadingAllOrders(false)));
   };
 
-  /** One pass, all six filters. Empty means all, per filter. */
-  const filteredLines = useMemo(() => {
-    const f = ctx.filters;
-    const types = new Set(f.orderTypes);
-    const stores = new Set(f.storeNumbers);
-    const dates = new Set(f.dates);
-    const subs = new Set(f.subIds);
-    const codes = new Set(f.productCodes);
-    const ids = new Set(f.orderIds);
+  /** One list, built once — the grid draws it and the export writes it. */
+  const gridRows = useMemo(
+    () => buildRows(ctx.allOrders, ctx.filters, narrowing),
+    [ctx.allOrders, ctx.filters, narrowing],
+  );
 
-    return ctx.allOrders.filter((o: AllOrder) => {
-      if (types.size && !types.has(o.order_type)) return false;
-      if (stores.size && !stores.has(o.storenumber)) return false;
-      if (dates.size && !dates.has(o.order_date)) return false;
-      if (subs.size && !subs.has(o.sub_department)) return false;
-      if (codes.size && !codes.has(String(o.product_code))) return false;
-      if (ids.size && !ids.has(o.order_id)) return false;
-      return true;
-    });
-  }, [ctx.allOrders, ctx.filters]);
+  const scopeLabel = isGroupSearch(ctx.type)
+    ? (ctx.selectedGroup?.group_name ?? "Group")
+    : (ctx.selectedStore?.store_name ?? "Store");
 
   if (ctx.isMobile) return <OrdersMobile />;
 
@@ -170,19 +174,19 @@ const Orders = () => {
     );
   }
 
-  const scopeLabel = isGroupSearch(ctx.type)
-    ? (ctx.selectedGroup?.group_name ?? "Group")
-    : (ctx.selectedStore?.store_name ?? "Store");
-
   return (
     <div className="h-[calc(100vh-3rem)] overflow-hidden p-4 flex gap-3">
-      <ExportModal
-        resizable
-        isOpen={ctx.ordersExportModalOpen}
-        data={filteredLines}
-        columns={ordersCols}
-        onClose={() => ctx.dispatch(setOrdersExportModalOpen(false))}
-      />
+      {ctx.ordersExportModalOpen && (
+        <OrdersExportModal
+          lines={ctx.allOrders}
+          filters={ctx.filters}
+          narrowing={narrowing}
+          scopeLabel={scopeLabel}
+          startDate={ctx.startDate}
+          endDate={ctx.endDate}
+          onClose={() => ctx.dispatch(setOrdersExportModalOpen(false))}
+        />
+      )}
 
       <OrdersConfigPanel
         lines={ctx.allOrders}
@@ -192,7 +196,7 @@ const Orders = () => {
         }
         onClear={() => ctx.dispatch(clearOrdersFilters())}
         loading={ctx.loadingAllOrders}
-        matched={filteredLines.length}
+        matched={gridRows.length}
         startDate={ctx.startDate}
         endDate={ctx.endDate}
         onOpenSearch={() => setSearchModalOpen(true)}
@@ -200,7 +204,9 @@ const Orders = () => {
       />
 
       <OrderReportPanel
-        lines={filteredLines}
+        rows={gridRows}
+        narrowing={narrowing}
+        onNarrow={setNarrowing}
         loading={ctx.loadingAllOrders}
         onExport={() => ctx.dispatch(setOrdersExportModalOpen(true))}
       />
