@@ -16,6 +16,7 @@ same list forward.
 | One header on the exported UPC list | cherry-picked from `tickets_help_desk` |
 | A margin delta needs sales on both sides | merged `vendor_margin_no_lw_sales` |
 | Sales Export polish — 6 commits | cherry-picked from `tickets_help_desk` |
+| Help pages + release notes — 7 commits, plus the route gated to dev | cherry-picked from `tickets_help_desk` |
 
 ## Awaiting green light
 
@@ -23,12 +24,11 @@ Status is against this branch as it stands, tested 2026-10-05.
 
 | Work | Size | Applies | Waiting on |
 | --- | --- | --- | --- |
-| Help pages + release notes | 7 commits | clean | approval |
 | AWG Invoices — cards that open, editable rows | 3 commits | clean | approval |
 | Mobile store seeding — the three item pages | 1 commit | clean | approval |
 | `prod_help_export_entry` — the "?" explains Export | 1 commit | clean merge | approval |
 | `scanner_exp` — camera confirm + scan gun | 1 commit | clean merge | **a device test on the MC2200** |
-| Tickets — the Client Help Desk | 36 commits | clean **after** help pages | approval |
+| Tickets — the Client Help Desk | 36 commits | clean | approval |
 | Coming Soon "?" | 3 commits | clean **after** Tickets + AWG Invoices | approval |
 | `orders_polish` | 8 commits | **conflicts** (3 files) | rebase, then approval |
 | `lp_case_file` — LP Actions rebuild | 4 commits | **conflicts** (19 files) | `/lp` mounted on dev, then a rebase |
