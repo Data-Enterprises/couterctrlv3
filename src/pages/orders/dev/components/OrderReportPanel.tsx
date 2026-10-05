@@ -44,7 +44,7 @@ const OrderReportPanel = ({
   const [draftUpc, setDraftUpc] = useState(narrowing.upc);
   const [draftDesc, setDraftDesc] = useState(narrowing.desc);
   const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(100);
+  const [pageSize, setPageSize] = useState(500);
 
   const sort = narrowing.sort;
   const dir = narrowing.dir;
