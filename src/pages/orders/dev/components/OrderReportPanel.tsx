@@ -186,7 +186,7 @@ const OrderReportPanel = ({
                 {paged.map((o) => (
                   <tr
                     key={`${o.storenumber}-${o.order_id}-${o.line_number}`}
-                    className="border-b border-b-brand_navy/15 even:bg-row_stripe hover:bg-gray-50 transition-colors"
+                    className="border-b border-b-brand_navy/15 even:bg-row_stripe"
                   >
                     <td className="px-3 py-2 text-right tabular-nums font-semibold text-content">
                       {o.order_id}
