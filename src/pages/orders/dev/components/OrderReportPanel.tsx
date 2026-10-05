@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ArrowDownTrayIcon } from "@heroicons/react/16/solid";
 import ColFilter from "../../../../components-dev/filters/ColFilter";
 import { colInputStyle } from "../../../../components-dev/filters/colFilterStyles";
@@ -38,6 +38,8 @@ const OrderReportPanel = ({ lines, loading, onExport }: Props) => {
   const [appliedDesc, setAppliedDesc] = useState("");
   const [sort, setSort] = useState<SortKey>("order");
   const [dir, setDir] = useState<"asc" | "desc">("asc");
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(100);
 
   const visible = useMemo(() => {
     const matched = lines.filter((o) => {
@@ -78,6 +80,24 @@ const OrderReportPanel = ({ lines, loading, onExport }: Props) => {
     });
   }, [lines, appliedUpc, appliedDesc, sort, dir]);
 
+  const pageCount = Math.max(1, Math.ceil(visible.length / pageSize));
+  // Clamped rather than reset in an effect: a narrower filter can leave the
+  // current page past the end, and a render that shows nothing while an
+  // effect catches up is a flash of "no rows" on a set that has plenty.
+  const safePage = Math.min(page, pageCount - 1);
+  const paged = useMemo(
+    () => visible.slice(safePage * pageSize, safePage * pageSize + pageSize),
+    [visible, safePage, pageSize],
+  );
+
+  // A new result, a new sort or a new column filter is a different list, and
+  // page 7 of the old one means nothing in it.
+  useEffect(() => {
+    setPage(0);
+  }, [lines, sort, dir, appliedUpc, appliedDesc, pageSize]);
+
+  /** The whole filtered set, not the page — a total of 100 rows is not a
+   *  total of anything somebody asked for. */
   const totals = useMemo(() => {
     let eRet = 0;
     let cogs = 0;
@@ -237,7 +257,7 @@ const OrderReportPanel = ({ lines, loading, onExport }: Props) => {
                 </tr>
               </thead>
               <tbody className="bg-custom-white">
-                {visible.map((o) => (
+                {paged.map((o) => (
                   <tr
                     key={`${o.storenumber}-${o.order_id}-${o.line_number}`}
                     className="border-b border-b-brand_navy/15 even:bg-row_stripe hover:bg-gray-50 transition-colors"
@@ -291,11 +311,84 @@ const OrderReportPanel = ({ lines, loading, onExport }: Props) => {
               </tbody>
             </table>
           </div>
+
+          <div className="flex items-center gap-3 border-t border-gray-100 px-3 py-1.5 flex-shrink-0">
+            <span className="text-[11px] text-content/85">
+              {visible.length === 0
+                ? "No rows"
+                : `${(safePage * pageSize + 1).toLocaleString()}–${Math.min(
+                    (safePage + 1) * pageSize,
+                    visible.length,
+                  ).toLocaleString()} of ${visible.length.toLocaleString()}`}
+            </span>
+
+            <label className="flex items-center gap-1.5 text-[11px] text-content/85">
+              Rows
+              <select
+                value={pageSize}
+                onChange={(e) => setPageSize(Number(e.target.value))}
+                className="rounded border border-content/20 bg-custom-white px-1.5 py-0.5 text-[11px] text-content"
+                style={{ outline: "none" }}
+              >
+                {[100, 250, 500, 1000].map((n) => (
+                  <option key={n} value={n}>
+                    {n}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <div className="flex-1" />
+
+            <div className="flex items-center gap-1">
+              <PagerButton
+                label="First"
+                disabled={safePage === 0}
+                onClick={() => setPage(0)}
+              />
+              <PagerButton
+                label="Prev"
+                disabled={safePage === 0}
+                onClick={() => setPage(safePage - 1)}
+              />
+              <span className="px-1.5 text-[11px] font-medium text-content tabular-nums">
+                {safePage + 1} / {pageCount}
+              </span>
+              <PagerButton
+                label="Next"
+                disabled={safePage >= pageCount - 1}
+                onClick={() => setPage(safePage + 1)}
+              />
+              <PagerButton
+                label="Last"
+                disabled={safePage >= pageCount - 1}
+                onClick={() => setPage(pageCount - 1)}
+              />
+            </div>
+          </div>
         </>
       )}
     </div>
   );
 };
+
+const PagerButton = ({
+  label,
+  disabled,
+  onClick,
+}: {
+  label: string;
+  disabled: boolean;
+  onClick: () => void;
+}) => (
+  <button
+    onClick={onClick}
+    disabled={disabled}
+    className="rounded border border-content/20 px-2 py-0.5 text-[11px] font-medium text-content/85 transition-colors hover:border-content/35 hover:text-content disabled:opacity-50"
+  >
+    {label}
+  </button>
+);
 
 const Kpi = ({ label, value }: { label: string; value: string }) => (
   <div className="px-4 pt-2.5 pb-2 text-center min-w-0">
