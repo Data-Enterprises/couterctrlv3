@@ -85,6 +85,10 @@ export default {
         brand_danger_line:
           "rgb(var(--color-brand-danger-line) / <alpha-value>)",
         row_stripe: "rgb(var(--color-row-stripe) / <alpha-value>)",
+        store_open: "rgb(var(--color-store-open) / <alpha-value>)",
+        store_open_tint: "rgb(var(--color-store-open-tint) / <alpha-value>)",
+        store_compare: "rgb(var(--color-store-compare) / <alpha-value>)",
+        store_compare_tint: "rgb(var(--color-store-compare-tint) / <alpha-value>)",
         severity_critical_bg:
           "rgb(var(--color-severity-critical-bg) / <alpha-value>)",
         severity_critical_text:

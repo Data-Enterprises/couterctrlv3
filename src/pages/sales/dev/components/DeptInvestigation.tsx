@@ -120,6 +120,11 @@ interface ColumnDef {
   /** A column that can be narrowed. The popover lives in the heading, which
    *  is where this app puts column filters everywhere else. */
   filter?: FilterKind;
+  /** Whose figure this is. Eight of the columns belong to one store or the
+   *  other and read identically without it — the tint is what stops somebody
+   *  comparing 015 LW against 015 LY and thinking they have compared the
+   *  stores. */
+  of?: "open" | "compare";
   /** `{mine}` and `{theirs}` are filled with the two store numbers, so a
    *  heading names the store rather than leaving the reader to remember
    *  which side of the comparison it is. */
@@ -129,6 +134,23 @@ interface ColumnDef {
   sort?: Col;
   render: (r: ItemVerdict, fmt: Fmt) => ReactNode;
 }
+
+/** Tints, not solids: 11px mono has to stay readable on top of them. The
+ *  heading takes the solid as a top rule, which is what groups the columns
+ *  without a second header row. */
+const tintOf = (c: ColumnDef) =>
+  c.of === "open"
+    ? "bg-store_open_tint"
+    : c.of === "compare"
+      ? "bg-store_compare_tint"
+      : "";
+
+const ruleOf = (c: ColumnDef) =>
+  c.of === "open"
+    ? "border-t-2 border-t-store_open"
+    : c.of === "compare"
+      ? "border-t-2 border-t-store_compare"
+      : "border-t-2 border-t-transparent";
 
 const label = (c: ColumnDef, t: InvestigationTarget) =>
   c.label.replace("{mine}", t.storeNumber).replace("{theirs}", t.compareStoreNumber);
@@ -209,11 +231,11 @@ const COLUMNS: ColumnDef[] = [
     ),
   },
   {
-    key: "mineTy", label: "{mine} TY", width: 92, right: true, sort: "mine",
+    key: "mineTy", of: "open", label: "{mine} TY", width: 92, right: true, sort: "mine",
     render: (r, fmt) => <span className="font-semibold">{fmt(r.mineTy)}</span>,
   },
   {
-    key: "theirsTy", label: "{theirs} TY", width: 92, right: true, sort: "theirs",
+    key: "theirsTy", of: "compare", label: "{theirs} TY", width: 92, right: true, sort: "theirs",
     render: (r, fmt) => fmt(r.theirsTy),
   },
   {
@@ -235,16 +257,16 @@ const COLUMNS: ColumnDef[] = [
       </span>
     ),
   },
-  { key: "mineLw", label: "{mine} LW", width: 90, right: true, sort: "mineLw", render: (r, fmt) => fmt(r.mineLw) },
-  { key: "theirsLw", label: "{theirs} LW", width: 90, right: true, sort: "theirsLw", render: (r, fmt) => fmt(r.theirsLw) },
-  { key: "mineLy", label: "{mine} LY", width: 90, right: true, sort: "mineLy", render: (r, fmt) => fmt(r.mineLy) },
-  { key: "theirsLy", label: "{theirs} LY", width: 90, right: true, sort: "theirsLy", render: (r, fmt) => fmt(r.theirsLy) },
+  { key: "mineLw", of: "open", label: "{mine} LW", width: 90, right: true, sort: "mineLw", render: (r, fmt) => fmt(r.mineLw) },
+  { key: "theirsLw", of: "compare", label: "{theirs} LW", width: 90, right: true, sort: "theirsLw", render: (r, fmt) => fmt(r.theirsLw) },
+  { key: "mineLy", of: "open", label: "{mine} LY", width: 90, right: true, sort: "mineLy", render: (r, fmt) => fmt(r.mineLy) },
+  { key: "theirsLy", of: "compare", label: "{theirs} LY", width: 90, right: true, sort: "theirsLy", render: (r, fmt) => fmt(r.theirsLy) },
   {
-    key: "mineUnits", label: "{mine} units", width: 88, right: true, sort: "mineUnits",
+    key: "mineUnits", of: "open", label: "{mine} units", width: 88, right: true, sort: "mineUnits",
     render: (r) => r.mineUnits.toLocaleString("en-US"),
   },
   {
-    key: "theirsUnits", label: "{theirs} units", width: 88, right: true, sort: "theirsUnits",
+    key: "theirsUnits", of: "compare", label: "{theirs} units", width: 88, right: true, sort: "theirsUnits",
     render: (r) => r.theirsUnits.toLocaleString("en-US"),
   },
   {
@@ -429,9 +451,13 @@ const DeptInvestigation = ({
         >
           ‹ Back to the comparison
         </button>
-        <span className="text-custom-white/85 text-[12.5px] truncate">
+        <span className="text-custom-white/85 text-[12.5px] truncate flex items-center gap-1.5 min-w-0">
+          <span className="w-2.5 h-2.5 rounded-sm bg-store_open flex-shrink-0" />
           <span className="font-semibold text-custom-white">{target.storeName}</span>
-          {" · "}{target.subDeptName}{" · "}week ending {twEnd}{" · against "}
+          <span className="truncate">
+            {" · "}{target.subDeptName}{" · "}week ending {twEnd}{" · against"}
+          </span>
+          <span className="w-2.5 h-2.5 rounded-sm bg-store_compare flex-shrink-0" />
           <span className="font-semibold text-custom-white">{target.compareStoreName}</span>
         </span>
         <button
@@ -547,7 +573,7 @@ const DeptInvestigation = ({
                     <th
                       key={c.key}
                       style={{ minWidth: c.width }}
-                      className="sticky top-0 z-10 bg-custom-white border-b border-brand_line_2 border-r border-brand_line px-2.5 py-1.5 text-left font-semibold whitespace-nowrap"
+                      className={`sticky top-0 z-10 border-b border-brand_line_2 border-r border-brand_line px-2.5 py-1.5 text-left font-semibold whitespace-nowrap ${ruleOf(c)} ${tintOf(c) || "bg-custom-white"}`}
                     >
                       {c.filter ? (
                         <ColFilter
@@ -635,7 +661,6 @@ const DeptInvestigation = ({
                       e.preventDefault();
                       setCtx({ x: e.clientX, y: e.clientY, upc: r.productCode });
                     }}
-                    className="hover:bg-gray-50"
                   >
                     <td className="sticky left-0 z-10 bg-custom-white border-r border-brand_line border-b border-brand_line px-2 py-1.5 text-right text-content/85">
                       {i + 1}
@@ -643,7 +668,7 @@ const DeptInvestigation = ({
                     {COLUMNS.map((c) => (
                       <td
                         key={c.key}
-                        className={`border-r border-b border-brand_line px-2.5 py-1.5 whitespace-nowrap ${c.right ? "text-right" : ""}`}
+                        className={`border-r border-b border-brand_line px-2.5 py-1.5 whitespace-nowrap ${c.right ? "text-right" : ""} ${tintOf(c)}`}
                       >
                         {c.render(r, fmt)}
                       </td>

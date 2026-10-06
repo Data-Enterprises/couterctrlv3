@@ -256,6 +256,18 @@ body {
     --color-delta-positive-text: 16 96 56;
     --color-delta-negative-bg: 242 209 209;
     --color-delta-negative-text: 142 16 16;
+    /* The two stores in a comparison.
+       NOT the TY/LY series colours in perfColors: those say which YEAR a
+       figure is, and these say which STORE. Reusing them would have a
+       store-against-store grid quietly claiming to be a year-on-year one.
+       Blue against slate, so they differ in saturation as well as hue and
+       neither collides with the delta or severity families carrying the
+       verdicts in the same grid. The tints are for filling a column behind
+       11px text; the solids are for a chart series or a swatch. */
+    --color-store-open: 23 142 198;
+    --color-store-open-tint: 234 244 251;
+    --color-store-compare: 90 108 132;
+    --color-store-compare-tint: 239 241 244;
     --color-content: 30 41 59;
     --color-themeText: 30 41 59;
     --color-sidebar: 0 168 235;
