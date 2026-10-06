@@ -37,23 +37,20 @@ const totalsBySubDept = (rows: SubSale[], metric: GradingMetric) =>
 
 type Col = "mine" | "theirs" | "tyDiff" | "lwDiff" | "lyDiff";
 
-/** Each store's own week, then the three differences. The two totals are
- *  narrower than the pills beside them: a figure needs its digits, a pill
- *  needs its digits plus a sign and its padding. */
-const COLS = "minmax(180px,1fr) 118px 118px 136px 136px 136px";
+/** Each store's own week, then the three differences. The totals are wider
+ *  than their figures need because they are headed by a store name, and a
+ *  header that has to be guessed at is not naming anything. */
+const COLS = "minmax(170px,1fr) 164px 164px 136px 136px 136px";
 
 /** Six columns do not fit a 52% panel, so the grid scrolls sideways inside
  *  its own container rather than crushing the department name. */
-const GRID_MIN = 800;
+const GRID_MIN = 906;
 
 const HEAD =
   "sticky top-0 z-10 bg-custom-white grid items-center gap-2.5 px-2 py-1.5 border-b border-brand_navy/15";
 
 interface Props {
   openStoreName: string;
-  /** Heads the open store's totals column. The number alone, because the
-   *  full name is already in the line above and would not fit a column. */
-  openStoreNumber: string;
   compareStoreId: number;
   /** Co-located stores share a storeid, so the rows have to be narrowed by
    *  number as well — the same scoping the detail panel does for its own. */
@@ -71,7 +68,6 @@ interface Props {
 
 const SubDeptSideBySide = ({
   openStoreName,
-  openStoreNumber,
   compareStoreId,
   compareStoreNumber,
   compareStoreName,
@@ -257,15 +253,16 @@ const SubDeptSideBySide = ({
               {/* Each store's own week first, so the difference beside it can
                   be checked rather than taken on trust — a department one
                   store simply does not carry reads very differently from one
-                  where it is being beaten. Headed by store number and the
-                  period, so a column says what it holds without the caption
-                  above having to be read first — the names are in that line
-                  and neither would fit a column this wide.
+                  where it is being beaten. Headed by the store and the
+                  period, so a column says whose figure it holds without the
+                  caption above having to be read first. `min-w-0` is what
+                  lets a long name truncate in its track instead of running
+                  into the next column; the full name is on the title.
 
                   Plain figures, not pills. These are totals, and a pill is
                   this page's shape for a comparison. */}
-              <SortHeader col="mine" label={`${openStoreNumber} TY`} sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-start`} />
-              <SortHeader col="theirs" label={`${compareStoreNumber} TY`} sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-start`} />
+              <SortHeader col="mine" label={`${openStoreName} TY`} sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-start min-w-0`} />
+              <SortHeader col="theirs" label={`${compareStoreName} TY`} sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-start min-w-0`} />
               {/* Then the same three comparisons the store grid makes, one
                   department at a time, and sorted the same way. */}
               <SortHeader col="tyDiff" label="vs TY" sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-start`} />

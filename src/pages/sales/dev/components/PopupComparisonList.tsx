@@ -160,7 +160,6 @@ const PopupComparisonList = ({
     return (
       <SubDeptSideBySide
         openStoreName={openStoreName}
-        openStoreNumber={storeNumber}
         compareStoreId={picked.storeid}
         compareStoreNumber={picked.storeNumber}
         compareStoreName={nameOf(picked)}
