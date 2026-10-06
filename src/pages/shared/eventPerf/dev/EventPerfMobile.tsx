@@ -72,7 +72,7 @@ import type { ReceiptLine } from "./receiptTypes";
 import PairedBars from "../../../../components-dev/mobile/perf/PairedBars";
 import PerfDayChart from "../../../../components-dev/mobile/perf/PerfDayChart";
 import PerfCardHeader from "../../../../components-dev/mobile/perf/PerfCardHeader";
-import { TY_COLOR } from "../../../../components-dev/mobile/perf/perfColors";
+import { TY_COLOR, TY_SWATCH_BG } from "../../../../components-dev/mobile/perf/perfColors";
 import MobilePerfCard from "../../../../components-dev/mobile/MobilePerfCard";
 import MobilePerfDetail from "../../../../components-dev/mobile/MobilePerfDetail";
 import EventStoreReport from "./EventStoreReport";
@@ -791,7 +791,7 @@ const EventPerfMobile = ({
                   <span className="inline-flex items-center gap-1.5">
                     <span
                       className="h-2 w-3.5 rounded-sm"
-                      style={{ background: TY_COLOR }}
+                      style={{ background: TY_SWATCH_BG }}
                     />
                     This week
                   </span>

@@ -2,7 +2,7 @@ import { ChevronRightIcon } from "@heroicons/react/20/solid";
 import { formatCurrency2 } from "../../../../utils";
 import PairedBars from "../../../../components-dev/mobile/perf/PairedBars";
 import PerfDayChart from "../../../../components-dev/mobile/perf/PerfDayChart";
-import { LY_COLOR, TY_COLOR } from "../../../../components-dev/mobile/perf/perfColors";
+import { LY_COLOR, TY_SWATCH_BG } from "../../../../components-dev/mobile/perf/perfColors";
 import type { EventTotals } from "./eventPerfData";
 
 const fmtInt = (n: number) => Math.round(n).toLocaleString("en-US");
@@ -71,7 +71,7 @@ const EventStoreReport = ({
           <span className="inline-flex items-center gap-1.5">
             <span
               className="h-2 w-3.5 rounded-sm"
-              style={{ background: TY_COLOR }}
+              style={{ background: TY_SWATCH_BG }}
             />
             This week
           </span>

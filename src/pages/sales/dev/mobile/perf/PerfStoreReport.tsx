@@ -3,7 +3,7 @@ import { formatCurrency2 } from "../../../../../utils";
 import type { PerfDay, PerfTotals } from "./perfData";
 import PairedBars from "../../../../../components-dev/mobile/perf/PairedBars";
 import PerfDayChart from "../../../../../components-dev/mobile/perf/PerfDayChart";
-import { COUPON_COLORS, COUPON_LABELS, LY_COLOR, TY_COLOR } from "../../../../../components-dev/mobile/perf/perfColors";
+import { COUPON_COLORS, COUPON_LABELS, LY_COLOR, TY_SWATCH_BG } from "../../../../../components-dev/mobile/perf/perfColors";
 
 /** Darkest to lightest, so the stack and the legend agree. */
 const COUPON_KEYS = ["digital", "elecStore", "elecInstore", "store"] as const;
@@ -65,7 +65,7 @@ const PerfStoreReport = ({
         <span className="inline-flex items-center gap-1.5">
           <span
             className="h-2 w-3.5 rounded-sm"
-            style={{ background: TY_COLOR }}
+            style={{ background: TY_SWATCH_BG }}
           />
           This year
         </span>

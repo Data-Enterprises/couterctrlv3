@@ -1,9 +1,9 @@
 import type { PerfDay } from "../../../utils/perfPairs";
 import {
-  LOSER_OPACITY,
+  DOWN_COLOR,
   LY_COLOR,
-  TY_COLOR,
   UNSCOPED_OPACITY,
+  UP_COLOR,
 } from "./perfColors";
 
 interface Props {
@@ -35,14 +35,16 @@ const PerfDayChart = ({ days, selected, onToggle }: Props) => {
       {days.map((d) => {
         const isSel = selected === d.iso;
         const dim = selected !== null && !isSel;
-        const tyWins = d.ty >= d.ly;
+        // Same rule as the bars: the TY column says which way the day went,
+        // the LY column stays neutral as the thing it went against.
+        const tyColour = d.ty >= d.ly ? UP_COLOR : DOWN_COLOR;
 
-        const col = (value: number, colour: string, loser: boolean) => (
+        const col = (value: number, colour: string) => (
           <span
             // Height and opacity are the two things that move: the figures
-            // change when the scope does, and the dimming changes when a day
-            // is picked. Easing both means switching view, swiping a lens or
-            // tapping a day redraws the week rather than cutting to it.
+            // change when the scope does, and the scoping dim changes when a
+            // day is picked. Easing both means switching view, swiping a lens
+            // or tapping a day redraws the week rather than cutting to it.
             //
             // The columns are keyed by date through the button above, so React
             // keeps the same nodes across a scope change and the transition
@@ -53,7 +55,7 @@ const PerfDayChart = ({ days, selected, onToggle }: Props) => {
             style={{
               height: `${Math.max((value / max) * 80, 2)}px`,
               background: colour,
-              opacity: dim ? UNSCOPED_OPACITY : loser ? LOSER_OPACITY : 1,
+              opacity: dim ? UNSCOPED_OPACITY : 1,
             }}
           />
         );
@@ -67,8 +69,8 @@ const PerfDayChart = ({ days, selected, onToggle }: Props) => {
             className="flex min-w-0 flex-1 flex-col items-center gap-1 rounded-lg py-1 active:bg-bkg"
           >
             <span className="flex h-[80px] w-full items-end justify-center gap-[3px]">
-              {col(d.ty, TY_COLOR, !tyWins)}
-              {col(d.ly, LY_COLOR, tyWins)}
+              {col(d.ty, tyColour)}
+              {col(d.ly, LY_COLOR)}
             </span>
             <span
               className={`text-[11.5px] ${isSel ? "font-bold text-content" : "font-medium text-content/85"}`}
