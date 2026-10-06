@@ -52,6 +52,7 @@ import {
 import PopupDaySidebar from "./PopupDaySidebar";
 import PopupComparisonList from "./PopupComparisonList";
 import SubDeptSideBySide from "./SubDeptSideBySide";
+import HourlySideBySide from "./HourlySideBySide";
 import type { LedgerRowData } from "./LedgerRow";
 import PopupSubDeptList from "./PopupSubDeptList";
 import PopupHourlyView from "./PopupHourlyView";
@@ -845,6 +846,27 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
             twRealDates={twRealDates}
           />
           )
+        ) : counterpart ? (
+          /* Hourly answers to the same counterpart as Sub depts: one choice,
+             every tab that can compare. */
+          <HourlySideBySide
+            openStoreName={headerStoreName}
+            openStoreNumber={selection.storeNumber}
+            compareStoreId={counterpart.storeid}
+            compareStoreNumber={counterpart.storeNumber}
+            compareStoreName={counterpart.storeName}
+            twStart={twStart}
+            twEnd={twEnd}
+            lwStart={lwStart}
+            lwEnd={lwEnd}
+            lyStart={lyStart}
+            lyEnd={lyEnd}
+            lwWeekDates={lwWeekDates}
+            lyWeekDates={lyWeekDates}
+            selectedDate={selectedDate}
+            gradingMetric={gradingMetric}
+            onBack={() => dispatch(setCounterpart(null))}
+          />
         ) : (
           <PopupHourlyView
             twDateLabel={twDateLabel}
