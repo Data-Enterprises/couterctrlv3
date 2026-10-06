@@ -73,9 +73,18 @@ interface SalesLedgerState {
   tab: LedgerTab;
   selectedDate: string | null;
   investigation: InvestigationTarget | null;
-  /** The where-to-look matrix, which takes the page the same way the
-   *  investigation does. Not a tab on the ledger: nine stores by twenty
-   *  departments does not fit half a page. */
+  /**
+   * Which group view the right panel rests on.
+   *
+   * Both answer a question about the GROUP, which is why they are two tabs
+   * rather than one screen hidden behind the other: "stores" ranks the
+   * stores, "departments" breaks every store into its departments. The
+   * investigation below them is about selected stores instead, which is a
+   * different scope and so a different screen.
+   */
+  groupView: "stores" | "departments";
+  /** The departments view, taken full width. Nine stores by twenty
+   *  departments is readable in half a page and comfortable in all of it. */
   matrixOpen: boolean;
 
   // Loading
@@ -147,6 +156,7 @@ const initialState: SalesLedgerState = {
   tab: "subdept",
   selectedDate: null,
   investigation: null,
+  groupView: "stores",
   matrixOpen: false,
   ledgerLoading: false,
   reportLoading: false,
@@ -211,8 +221,17 @@ const salesLedgerSlice = createSlice({
       // a grid the reader has already finished with.
       if (action.payload !== null) state.matrixOpen = false;
     },
+    setGroupView: (
+      state,
+      action: PayloadAction<"stores" | "departments">,
+    ) => {
+      state.groupView = action.payload;
+    },
     setMatrixOpen: (state, action: PayloadAction<boolean>) => {
       state.matrixOpen = action.payload;
+      // Expanding is the same view with more room, so coming back from it
+      // lands on the tab it expanded from rather than on the store list.
+      if (action.payload) state.groupView = "departments";
     },
     setLedgerSelectedDate: (state, action: PayloadAction<string | null>) => {
       state.selectedDate = action.payload;
@@ -390,6 +409,7 @@ export const {
   setLedgerSelection,
   setLedgerTab,
   setInvestigation,
+  setGroupView,
   setMatrixOpen,
   setLedgerSelectedDate,
   setLedgerLoading,

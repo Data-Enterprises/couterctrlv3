@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { useAppDispatch } from "../../../../hooks";
 import {
+  setGroupView,
   setInvestigation,
   setMatrixOpen,
 } from "../../../../features/dev/devSalesLedgerSlice";
@@ -67,6 +68,9 @@ interface Props {
    *  the ledger and what counts as worth opening here. An index IS a
    *  percentage of expected, so the two are the same unit. */
   threshold: number;
+  /** Full width, or the right panel. The same view either way — only the
+   *  room changes, and so does what the header offers. */
+  expanded: boolean;
   twStart: string;
   twEnd: string;
   lwStart: string;
@@ -79,6 +83,7 @@ const DeptMatrixPanel = ({
   stores,
   gradingMetric,
   threshold,
+  expanded,
   twStart,
   twEnd,
   lwStart,
@@ -144,24 +149,49 @@ const DeptMatrixPanel = ({
 
   return (
     <div className="h-full flex flex-col overflow-hidden bg-custom-white rounded-xl shadow-sm">
-      <div className="flex-shrink-0 flex items-center gap-3 px-4 py-2.5 bg-brand_navy">
-        <button
-          onClick={close}
-          className="text-custom-white text-[12.5px] font-semibold hover:underline"
-        >
-          ‹ Back to the ledger
-        </button>
-        <span className="text-custom-white/85 text-[12.5px] truncate">
-          Where to look · week ending {twEnd} ·{" "}
-          <span className="font-semibold text-custom-white">100</span> is the
-          contribution that store usually makes in that department
-        </span>
-        {!loading && matrix && !soloStore && (
-          <span className="ml-auto flex-shrink-0 text-custom-white/85 text-[12px]">
-            <span className="font-semibold text-custom-white">{flaggedCount}</span>{" "}
-            of {cellCount} cells past ±{threshold}
-          </span>
+      <div className="flex-shrink-0 flex items-center gap-1 px-4 py-2.5 bg-brand_navy">
+        {expanded ? (
+          <button
+            onClick={close}
+            className="text-custom-white text-[12.5px] font-semibold hover:underline mr-2"
+          >
+            ‹ Back to the ledger
+          </button>
+        ) : (
+          <button
+            onClick={() => dispatch(setGroupView("stores"))}
+            className="text-custom-white/85 text-[12px] font-semibold px-2.5 py-1 rounded hover:bg-custom-white/10 hover:text-custom-white transition-colors"
+          >
+            By store
+          </button>
         )}
+        <span
+          className={
+            expanded
+              ? "text-custom-white text-[12.5px] font-semibold"
+              : "text-custom-white text-[12px] font-semibold px-2.5 py-1 rounded bg-custom-white/15"
+          }
+        >
+          By department
+        </span>
+
+        <span className="ml-auto flex items-center gap-3 flex-shrink-0">
+          {!loading && matrix && !soloStore && (
+            <span className="text-custom-white/85 text-[12px]">
+              <span className="font-semibold text-custom-white">{flaggedCount}</span>{" "}
+              of {cellCount} past ±{threshold}
+            </span>
+          )}
+          {!expanded && (
+            <button
+              onClick={() => dispatch(setMatrixOpen(true))}
+              title="Take the whole page"
+              className="text-custom-white text-[11.5px] font-semibold px-2 py-1 rounded border border-custom-white/30 hover:bg-custom-white/10 transition-colors"
+            >
+              Expand ⤢
+            </button>
+          )}
+        </span>
       </div>
 
       {loading ? (

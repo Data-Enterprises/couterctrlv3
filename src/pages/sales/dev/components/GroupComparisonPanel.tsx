@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useAppDispatch } from "../../../../hooks";
-import { setMatrixOpen } from "../../../../features/dev/devSalesLedgerSlice";
+import { setGroupView } from "../../../../features/dev/devSalesLedgerSlice";
 import { formatCurrencyCompact, formatBigNumber } from "../../../../utils";
 import { applyStoreNumberToName } from "../shared/ledgerUtils";
 import {
@@ -158,21 +158,21 @@ const GroupComparisonPanel = ({
 
   return (
     <div className="bg-custom-white rounded-xl shadow-sm overflow-hidden flex flex-col h-full">
-      <div className="flex items-center justify-between gap-2 px-4 py-3 flex-shrink-0 bg-brand_navy">
-        <p className="text-custom-white text-[13px] font-bold leading-tight">
-          Where each store stands
-        </p>
-        {/* Where "The whole window" used to sit. That line restated the day
-            strip immediately below it, which already shows its own selection
-            — so it was spending the one prominent slot in this header saying
-            something the screen was saying anyway. The way on to the
-            comparison is worth more. */}
+      <div className="flex items-center gap-1 px-4 py-3 flex-shrink-0 bg-brand_navy">
+        <span className="text-custom-white text-[12px] font-semibold px-2.5 py-1 rounded bg-custom-white/15">
+          By store
+        </span>
+        {/* The other half of the group's question, as a tab rather than a
+            door. Both views are about the GROUP: this one ranks the stores,
+            the other breaks each one into its departments. Where "The whole
+            window" used to sit — that line restated the day strip directly
+            below it, which shows its own selection anyway. */}
         <button
-          onClick={() => dispatch(setMatrixOpen(true))}
+          onClick={() => dispatch(setGroupView("departments"))}
           title="Every store against every department, on one scale"
-          className="flex-shrink-0 text-custom-white text-[12px] font-semibold px-2.5 py-1 rounded border border-custom-white/30 hover:bg-custom-white/10 transition-colors"
+          className="flex-shrink-0 text-custom-white/85 text-[12px] font-semibold px-2.5 py-1 rounded hover:bg-custom-white/10 hover:text-custom-white transition-colors"
         >
-          Compare by department ›
+          By department
         </button>
       </div>
 

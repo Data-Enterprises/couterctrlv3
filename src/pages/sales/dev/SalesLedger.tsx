@@ -72,6 +72,7 @@ const SalesLedger = () => {
     // is still the day you meant when you open a store.
     selectedDate,
     investigation,
+    groupView,
     matrixOpen,
   } = useAppSelector((state) => state.dev.salesLedger);
   const { assignedStores } = useAppSelector((state) => state.user);
@@ -512,6 +513,7 @@ const SalesLedger = () => {
             stores={matrixStores}
             gradingMetric={gradingMetric}
             threshold={activeThreshold}
+            expanded
             {...getDateRanges()}
           />
         </div>
@@ -654,6 +656,14 @@ const SalesLedger = () => {
                 selection={selection}
                 onClose={handlePopupClose}
                 groupRows={ledgerRows}
+              />
+            ) : ledgerRows.length > 1 && groupView === "departments" ? (
+              <DeptMatrixPanel
+                stores={matrixStores}
+                gradingMetric={gradingMetric}
+                threshold={activeThreshold}
+                expanded={false}
+                {...getDateRanges()}
               />
             ) : ledgerRows.length > 1 ? (
               /* The panel's resting state on a group search. The reference is
