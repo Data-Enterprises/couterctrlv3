@@ -20,10 +20,10 @@ import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice
  * subtracting two percentages never gives a percentage.
  */
 
-type Col = "tyGap" | "lwGap" | "lyGap";
+type Col = "mineTy" | "theirsTy" | "tyGap" | "lwGap" | "lyGap";
 
-const COLS = "minmax(170px,1fr) 136px 136px 136px";
-const GRID_MIN = 620;
+const COLS = "minmax(160px,1fr) 116px 116px 130px 130px 130px";
+const GRID_MIN = 800;
 
 const HEAD =
   "sticky top-0 z-10 bg-custom-white grid items-center gap-2.5 px-2 py-1.5 border-b border-brand_navy/15";
@@ -117,7 +117,15 @@ const PopupComparisonList = ({
     .sort((a, b) => tyGap(b) - tyGap(a));
 
   const sorted = applySort(others, (row, col) =>
-    col === "tyGap" ? tyGap(row) : col === "lwGap" ? lwGap(row) : lyGap(row),
+    col === "mineTy"
+      ? open.ty
+      : col === "theirsTy"
+        ? row.ty
+        : col === "tyGap"
+          ? tyGap(row)
+          : col === "lwGap"
+            ? lwGap(row)
+            : lyGap(row),
   );
 
   const nameOf = (r: ComparisonRow) =>
@@ -148,6 +156,16 @@ const PopupComparisonList = ({
   const cells = (r: ComparisonRow) => (
     <>
       <span className="min-w-0 truncate font-medium">{nameOf(r)}</span>
+      {/* The two figures the difference comes out of. The open store's is
+          the same on every row — that is the point: it is the line all of
+          them are measured from, and seeing it beside each one is what makes
+          the pill checkable rather than something to take on trust. */}
+      <span className="tabular-nums font-semibold text-[14px] bg-store_open_tint -mx-1 px-1 py-[7px]">
+        {fmt(open.ty)}
+      </span>
+      <span className="tabular-nums text-[14px] text-content/85 bg-store_compare_tint -mx-1 px-1 py-[7px]">
+        {fmt(r.ty)}
+      </span>
       {diffPill(money(tyGap(r)), tyGap(r))}
       {diffPill(money(lwGap(r)), lwGap(r))}
       {diffPill(money(lyGap(r)), lyGap(r))}
@@ -189,9 +207,10 @@ const PopupComparisonList = ({
           <span className="text-[11.5px] font-semibold uppercase tracking-wide text-content/85">
             Store
           </span>
+          <SortHeader col="mineTy" label={`${storeNumber} TY`} sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-start min-w-0`} />
+          <SortHeader col="theirsTy" label="Store TY" sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-start min-w-0`} />
           {/* Each one is this store's movement against the open store's, over
-              the same comparison. Nothing here is a figure the ledger already
-              shows. */}
+              the same comparison. */}
           <SortHeader col="tyGap" label="vs TY" sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-start`} />
           <SortHeader col="lwGap" label="vs LW" sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-start`} />
           <SortHeader col="lyGap" label="vs LY" sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-start`} />

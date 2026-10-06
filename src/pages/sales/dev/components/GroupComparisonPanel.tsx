@@ -29,16 +29,16 @@ import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice
  * `scopeToDay`'s rows to the same function.
  */
 
-type Col = "shareTy" | "shareLw" | "shareLy";
+type Col = "ty" | "shareTy" | "shareLw" | "shareLy";
 
 /** The house desktop grid: a column template, gap-2.5, navy hairlines and a
  *  zebra stripe — the same shape ForecastRowsTable and the margin grids use. */
-const COLS = "minmax(170px,1fr) 100px 132px 132px 132px";
+const COLS = "minmax(170px,1fr) 100px 112px 126px 126px 126px";
 
 /** What the columns need before the store name gets anything. Eleven of them
  *  do not fit a 52% panel on a laptop, so the grid scrolls sideways inside its
  *  own container rather than crushing the name — the page itself never does. */
-const GRID_MIN = 666;
+const GRID_MIN = 790;
 
 const HEAD =
   "sticky top-0 z-10 bg-custom-white grid items-center gap-2.5 px-2 py-1.5 border-b border-brand_navy/15";
@@ -129,11 +129,13 @@ const GroupComparisonPanel = ({
   );
 
   const sorted = applySort(byContribution, (row, col) =>
-    col === "shareTy"
-      ? row.shareTy
-      : col === "shareLw"
-        ? row.shareLw
-        : row.shareLy,
+    col === "ty"
+      ? row.ty
+      : col === "shareTy"
+        ? row.shareTy
+        : col === "shareLw"
+          ? row.shareLw
+          : row.shareLy,
   );
 
   const excludedTotal = Object.values(group.excludedBy).reduce((a, b) => a + b, 0);
@@ -247,6 +249,11 @@ const GroupComparisonPanel = ({
             {/* One cell, read as a sentence: what it holds now, then what it
                 usually holds. The period "usually" means is named here once
                 rather than marked on every row. */}
+            {/* The money itself, before the shares. A contribution of 13.1%
+                means nothing until you know whether it is 13.1% of a big week
+                or a small one, and the reader should not have to go back to
+                the ledger for it. */}
+            <SortHeader col="ty" label="TY" sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-end`} />
             {/* One per period: the slice of the group this store was in each
                 of them. Read across and the movement is the story. */}
             <SortHeader col="shareTy" label="Contribution → TY" sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-end`} />
@@ -328,6 +335,10 @@ const Row = ({
             {row.excluded ? EXCLUDED_LABEL[row.excluded] : "—"}
           </span>
         )}
+      </span>
+
+      <span className="text-right tabular-nums font-semibold text-[14px]">
+        {fmt(row.ty)}
       </span>
 
       {/* Expected rides the tooltip: it is the working behind the standing,
