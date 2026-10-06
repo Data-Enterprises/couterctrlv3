@@ -14,6 +14,8 @@ import { formatCurrency2, formatBigNumber } from "../../../../utils";
 import SortHeader from "../../../../components-dev/SortHeader";
 import ColFilter from "../../../../components-dev/filters/ColFilterPopover";
 import { colInputStyle } from "../../../../components-dev/filters/colFilterStyles";
+import UpcContextMenu from "../../../../components-dev/UpcContextMenu";
+import { rowsToCsv, downloadCsv } from "../../../../utils/csvExport";
 import { useTriStateSort } from "../../../../utils/useTriStateSort";
 import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice";
 
@@ -156,6 +158,35 @@ const sortValue = (r: ItemVerdict, col: Col): number | null => {
   }
 };
 
+/**
+ * The same columns, as a file.
+ *
+ * Raw numbers, not the screen's formatted strings: "$1,870.68" is text to a
+ * spreadsheet and will not sum. Dates and names come through as they read.
+ *
+ * It exports what is FILTERED, not what is drawn — the 300-row cap is a
+ * rendering limit, and a file that quietly stopped at the same place would be
+ * wrong in a way nobody could see.
+ */
+const CSV_HEADERS = [
+  "item", "upc", "vendor", "cause", "cause_owner",
+  "mine_ty", "theirs_ty", "difference",
+  "mine_lw", "theirs_lw", "mine_ly", "theirs_ly",
+  "mine_units", "theirs_units",
+  "units_ratio", "dollars_ratio", "price_ratio", "sell_through",
+  "ordered_qty", "received_units",
+];
+
+const csvRow = (r: ItemVerdict) => [
+  r.description, r.productCode, r.vendorName,
+  CAUSE_LABEL[r.cause], CAUSE_OWNER[r.cause],
+  r.mineTy, r.theirsTy, r.gap,
+  r.mineLw, r.theirsLw, r.mineLy, r.theirsLy,
+  r.mineUnits, r.theirsUnits,
+  r.ratios.units, r.ratios.dollars, r.ratios.price, r.ratios.sellThrough,
+  r.orderedQty, r.receivedUnits,
+];
+
 const COLUMNS: ColumnDef[] = [
   {
     key: "item", label: "Item", width: 250, filter: "item",
@@ -266,6 +297,7 @@ const DeptInvestigation = ({
   const [upcQ, setUpcQ] = useState("");
   const [upcDraft, setUpcDraft] = useState("");
   const [vendorQ, setVendorQ] = useState("");
+  const [ctx, setCtx] = useState<{ x: number; y: number; upc: string } | null>(null);
 
   const isQty = gradingMetric === "qty";
   const fmt = (v: number) => (isQty ? formatBigNumber(v, 0) : formatCurrency2(v));
@@ -337,6 +369,36 @@ const DeptInvestigation = ({
   };
 
   const filtered = only !== null || !!itemQ || !!upcQ || !!vendorQ;
+
+  /** Everything the filters left, not the 300 that are drawn. */
+  const exportCsv = () => {
+    if (!target) return;
+    const name = [
+      "investigation",
+      target.storeNumber,
+      target.subDeptName.replace(/[^A-Za-z0-9]+/g, "-"),
+      twEnd,
+    ].join("_");
+    downloadCsv(rowsToCsv(CSV_HEADERS, sorted.map(csvRow)), `${name}.csv`);
+  };
+
+  /**
+   * Copying by CAUSE rather than by severity.
+   *
+   * The shared menu offers critical/watch/healthy out of the box, which are
+   * threshold grades and mean nothing here. Causes are what somebody acts on:
+   * the never-ordered list goes to a buyer and the didn't-arrive list goes to
+   * a vendor, so those are the two lists worth having on a clipboard.
+   *
+   * Over the FILTERED set, so what gets copied is what is on screen.
+   */
+  const copyActions = CAUSE_ORDER.filter((c) => c !== "ahead")
+    .map((c) => ({ cause: c, upcs: shown.filter((i) => i.cause === c).map((i) => i.productCode) }))
+    .filter((g) => g.upcs.length > 0)
+    .map((g) => ({
+      label: `Copy ${CAUSE_LABEL[g.cause].toLowerCase()} UPCs · ${g.upcs.length}`,
+      onClick: () => navigator.clipboard.writeText(g.upcs.join(", ")),
+    }));
   const clearAll = () => {
     setOnly(null);
     setItemQ(""); setItemDraft("");
@@ -372,8 +434,16 @@ const DeptInvestigation = ({
           {" · "}{target.subDeptName}{" · "}week ending {twEnd}{" · against "}
           <span className="font-semibold text-custom-white">{target.compareStoreName}</span>
         </span>
+        <button
+          onClick={exportCsv}
+          disabled={sorted.length === 0}
+          title="Every filtered row, as a CSV"
+          className="ml-auto flex-shrink-0 text-custom-white text-[12px] font-semibold px-2.5 py-1 rounded border border-custom-white/30 hover:bg-custom-white/10 disabled:opacity-40 transition-colors"
+        >
+          Export CSV
+        </button>
         <span
-          className={`ml-auto flex-shrink-0 text-[13px] font-semibold px-2.5 py-1 rounded ${
+          className={`flex-shrink-0 text-[13px] font-semibold px-2.5 py-1 rounded ${
             summary.gap < 0
               ? "bg-delta_negative_bg text-delta_negative_text"
               : "bg-delta_positive_bg text-delta_positive_text"
@@ -559,7 +629,14 @@ const DeptInvestigation = ({
                   opaque white — a stripe would stop dead under it. */}
               <tbody>
                 {capped.map((r, i) => (
-                  <tr key={r.productCode} className="hover:bg-gray-50">
+                  <tr
+                    key={r.productCode}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      setCtx({ x: e.clientX, y: e.clientY, upc: r.productCode });
+                    }}
+                    className="hover:bg-gray-50"
+                  >
                     <td className="sticky left-0 z-10 bg-custom-white border-r border-brand_line border-b border-brand_line px-2 py-1.5 text-right text-content/85">
                       {i + 1}
                     </td>
@@ -608,6 +685,17 @@ const DeptInvestigation = ({
               </button>
             )}
           </div>
+
+          {ctx && (
+            <UpcContextMenu
+              x={ctx.x}
+              y={ctx.y}
+              upc={ctx.upc}
+              allUpcs={shown.map((i) => i.productCode)}
+              extraActions={copyActions}
+              onClose={() => setCtx(null)}
+            />
+          )}
         </>
       )}
     </div>
