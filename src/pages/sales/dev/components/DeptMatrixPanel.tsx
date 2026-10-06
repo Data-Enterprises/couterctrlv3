@@ -49,6 +49,21 @@ const OVER: Array<[string, string]> = [
 
 const STEP = 9;
 
+/**
+ * How much wider a department's band is than a store's.
+ *
+ * The page threshold is calibrated for a store's whole week. One department
+ * inside one store swings far harder — a slow Tuesday in Hot Deli moves it
+ * 20 points and means nothing — so grading a department on the store's number
+ * paints half the grid. At ±9 this grid flagged 134 of 288 cells, which is
+ * not a shortlist, it is wallpaper.
+ *
+ * The same reasoning, and the same factor, as `compareForView` widening its
+ * bands for a single day: a thinner baseline needs a wider band before it is
+ * saying anything.
+ */
+const DEPT_BAND = 2;
+
 const shade = (index: number | null, band: number) => {
   if (index === null) return { background: "", color: "" };
   const d = index - 100;
@@ -64,9 +79,10 @@ interface Props {
    *  number there. */
   stores: MatrixStore[];
   gradingMetric: GradingMetric;
-  /** The page's own threshold, so one control governs the severity dots in
-   *  the ledger and what counts as worth opening here. An index IS a
-   *  percentage of expected, so the two are the same unit. */
+  /** The page's own threshold, widened by DEPT_BAND. One control still
+   *  governs the ledger's dots and this grid, and an index IS a percentage
+   *  of expected, so the two are the same unit — a department simply needs
+   *  more of it before it is worth a look. */
   threshold: number;
   /** Full width, or the right panel. The same view either way — only the
    *  room changes, and so does what the header offers. */
@@ -107,6 +123,8 @@ const DeptMatrixPanel = ({
 
   const { matrix, loading, answered, asked, problem } = useDeptMatrix(args);
 
+  const band = threshold * DEPT_BAND;
+
   const close = () => dispatch(setMatrixOpen(false));
 
   const open = (m: Matrix, cell: Cell, deptName: string) => {
@@ -138,11 +156,11 @@ const DeptMatrixPanel = ({
     return matrix.rows.reduce(
       (a, r) =>
         a +
-        matrix.columns.filter((c) => flagged(r.cells.get(c.subDept)?.index ?? null, threshold))
+        matrix.columns.filter((c) => flagged(r.cells.get(c.subDept)?.index ?? null, band))
           .length,
       0,
     );
-  }, [matrix, threshold]);
+  }, [matrix, band]);
 
   const cellCount = (matrix?.rows.length ?? 0) * (matrix?.columns.length ?? 0);
   const soloStore = (matrix?.rows.length ?? 0) < 2;
@@ -179,7 +197,7 @@ const DeptMatrixPanel = ({
           {!loading && matrix && !soloStore && (
             <span className="text-custom-white/85 text-[12px]">
               <span className="font-semibold text-custom-white">{flaggedCount}</span>{" "}
-              of {cellCount} past ±{threshold}
+              of {cellCount} past ±{band}
             </span>
           )}
           {!expanded && (
@@ -236,14 +254,27 @@ const DeptMatrixPanel = ({
                   {matrix.columns.map((c) => (
                     <th
                       key={c.subDept}
-                      className="sticky top-0 z-10 bg-custom-white border-b border-brand_line_2 border-r border-brand_line px-2.5 py-1.5 text-center font-semibold uppercase tracking-wide text-content/85 whitespace-nowrap min-w-[92px]"
+                      className="sticky top-0 z-10 bg-custom-white border-b border-brand_line_2 border-r border-brand_line px-2 py-1.5 text-center font-semibold uppercase tracking-wide text-content/85 w-[74px] max-w-[74px]"
                       title={c.name}
                     >
-                      {c.name}
+                      {/* Twenty departments do not fit across a panel, and
+                          "Taxable Grocery" is not worth 140px of it. The
+                          column is sized for its figures; the full name is
+                          on the title and in the cell tooltips. */}
+                      <span className="block truncate">{c.name}</span>
                     </th>
                   ))}
-                  <th className="sticky top-0 right-0 z-30 bg-bkg border-b border-brand_line_2 border-l border-brand_line px-2.5 py-1.5 text-center font-semibold uppercase tracking-wide text-content/85 min-w-[84px]">
-                    Store
+                  {/* Not "Store" twice: this is the store across every
+                      department it can be measured in, which is a different
+                      figure from the name on the left. The shadow is what
+                      makes it read as sitting OVER the columns it covers
+                      rather than cutting one in half. */}
+                  <th
+                    className="sticky top-0 right-0 z-30 bg-bkg border-b border-brand_line_2 border-l-2 border-l-brand_navy/25 px-2.5 py-1.5 text-center font-semibold uppercase tracking-wide text-content/85 min-w-[76px]"
+                    style={{ boxShadow: "-6px 0 8px -6px rgb(var(--color-brand-navy) / 0.25)" }}
+                    title="This store across every department it can be measured in"
+                  >
+                    All
                   </th>
                 </tr>
               </thead>
@@ -257,12 +288,12 @@ const DeptMatrixPanel = ({
                     {matrix.columns.map((c) => {
                       const cell = r.cells.get(c.subDept);
                       const idx = cell?.index ?? null;
-                      const on = flagged(idx, threshold);
-                      const tone = shade(idx, threshold);
+                      const on = flagged(idx, band);
+                      const tone = shade(idx, band);
                       return (
                         <td
                           key={c.subDept}
-                          className="border-r border-b border-brand_line p-0 text-center"
+                          className="border-r border-b border-brand_line p-0 text-center w-[74px] max-w-[74px]"
                         >
                           <button
                             type="button"
@@ -274,7 +305,7 @@ const DeptMatrixPanel = ({
                                 : `${r.storeName} · ${c.name} · nothing to measure against`
                             }
                             style={tone.background ? tone : undefined}
-                            className={`w-full h-full px-2.5 py-1.5 font-mono text-[11px] tabular-nums transition-colors disabled:cursor-default ${
+                            className={`w-full h-full px-2 py-1.5 font-mono text-[11px] tabular-nums transition-colors disabled:cursor-default ${
                               on ? "font-bold" : "font-medium text-content"
                             } ${tone.background ? "" : "hover:bg-gray-50"}`}
                           >
@@ -289,12 +320,13 @@ const DeptMatrixPanel = ({
                     })}
 
                     <td
-                      className="sticky right-0 z-10 bg-custom-white border-l border-brand_line border-b border-brand_line px-2.5 py-1.5 text-center tabular-nums font-bold"
-                      style={
-                        flagged(r.index, threshold)
+                      className="sticky right-0 z-10 bg-custom-white border-l-2 border-l-brand_navy/25 border-b border-brand_line px-2.5 py-1.5 text-center tabular-nums font-bold"
+                      style={{
+                        boxShadow: "-6px 0 8px -6px rgb(var(--color-brand-navy) / 0.25)",
+                        ...(flagged(r.index, band)
                           ? { color: (r.index ?? 100) < 100 ? "#8e1010" : "#185fa5" }
-                          : undefined
-                      }
+                          : {}),
+                      }}
                     >
                       {r.index ?? "—"}
                     </td>
@@ -311,7 +343,7 @@ const DeptMatrixPanel = ({
             </span>
             <span className="flex items-center gap-1.5">
               <span className="w-3 h-3 rounded-sm border border-brand_line_2 bg-custom-white" />
-              Within ±{threshold}
+              Within ±{band}
             </span>
             <span className="flex items-center gap-1.5">
               <span className="w-3 h-3 rounded-sm" style={{ background: OVER[3][0] }} />
@@ -323,9 +355,8 @@ const DeptMatrixPanel = ({
               </span>
             )}
             {matrix.blanks > 0 && (
-              <span>
-                {matrix.blanks} blank — no last year or last week covering the
-                week, so there is nothing to measure them against
+              <span title="No last year or last week covering the week, so there is nothing to measure these against">
+                {matrix.blanks} blank
               </span>
             )}
             <span className="ml-auto">Click a cell to open its investigation</span>
