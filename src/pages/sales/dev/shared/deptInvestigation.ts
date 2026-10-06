@@ -332,6 +332,138 @@ export const summarise = (items: ItemVerdict[]): Summary => {
 };
 
 
+
+/* ------------------------------------------------------------------ */
+/* The gap, decomposed                                                 */
+/* ------------------------------------------------------------------ */
+
+export interface Step {
+  cause: Cause;
+  dollars: number;
+}
+
+export interface Decomposition {
+  /** What the comparison store did. The bar the walk starts from. */
+  theirs: number;
+  /** What this store did. Where it lands. */
+  mine: number;
+  steps: Step[];
+}
+
+/**
+ * From their week to ours, one cause at a time.
+ *
+ * EXACT, not modelled. Every item's gap is `mineTy - theirsTy`, so summing
+ * them is `mineTotal - theirsTotal` by construction: the walk starts on their
+ * number, takes each cause in turn, and lands on ours with nothing left over.
+ * There is no "expected at their rate" anywhere in it, which means no
+ * assumption a reader has to accept before the chart means anything.
+ *
+ * Causes come back in CAUSE_ORDER — the order they are owned in, worst first
+ * — rather than by size, so the same shape reads the same way twice.
+ */
+export const decompose = (items: ItemVerdict[]): Decomposition => {
+  const byCause = new Map<Cause, number>();
+  let mine = 0;
+  let theirs = 0;
+
+  items.forEach((i) => {
+    mine += i.mineTy;
+    theirs += i.theirsTy;
+    byCause.set(i.cause, (byCause.get(i.cause) ?? 0) + i.gap);
+  });
+
+  return {
+    theirs,
+    mine,
+    steps: CAUSE_ORDER.filter((c) => byCause.has(c)).map((c) => ({
+      cause: c,
+      dollars: byCause.get(c) as number,
+    })),
+  };
+};
+
+/* ------------------------------------------------------------------ */
+/* The same gap, as a hierarchy                                        */
+/* ------------------------------------------------------------------ */
+
+export interface Tile {
+  /** Identity at this level — a cause key, a vendor name, or a UPC. */
+  key: string;
+  label: string;
+  /** Always positive: area cannot encode a sign, so this side of the screen
+   *  is about losses and the tiles say how big. */
+  value: number;
+  items: number;
+  /** Whether there is a level under this one worth opening. */
+  deeper: boolean;
+}
+
+/**
+ * What to draw at one level of the drill.
+ *
+ * Cause, then vendor, then item — the order a finding narrows in. Six items
+ * all failing to arrive from one vendor on one order date is ONE missed
+ * delivery, and no item-by-item read ever surfaces that; the vendor level is
+ * the whole reason this view exists.
+ *
+ * Losses only. A store that is ahead on an item has nothing to explain, and
+ * mixing winners in would have the areas cancelling each other.
+ */
+export const tilesAt = (items: ItemVerdict[], path: string[]): Tile[] => {
+  const losses = items.filter((i) => i.gap < 0);
+
+  const roll = (
+    rows: ItemVerdict[],
+    keyOf: (i: ItemVerdict) => string,
+    labelOf: (i: ItemVerdict) => string,
+    deeper: boolean,
+  ): Tile[] => {
+    const m = new Map<string, { label: string; value: number; items: number }>();
+    rows.forEach((i) => {
+      const k = keyOf(i);
+      const t = m.get(k) ?? { label: labelOf(i), value: 0, items: 0 };
+      t.value += Math.abs(i.gap);
+      t.items += 1;
+      m.set(k, t);
+    });
+    return [...m.entries()]
+      .map(([key, t]) => ({ key, label: t.label, value: t.value, items: t.items, deeper }))
+      .sort((a, b) => b.value - a.value);
+  };
+
+  if (path.length === 0) {
+    return roll(
+      losses.filter((i) => i.cause !== "ahead"),
+      (i) => i.cause,
+      (i) => i.cause,
+      true,
+    );
+  }
+
+  const inCause = losses.filter((i) => i.cause === path[0]);
+
+  if (path.length === 1) {
+    return roll(
+      inCause,
+      (i) => i.vendorName || "Unknown vendor",
+      (i) => i.vendorName || "Unknown vendor",
+      true,
+    );
+  }
+
+  return inCause
+    .filter((i) => (i.vendorName || "Unknown vendor") === path[1])
+    .map((i) => ({
+      key: i.productCode,
+      label: i.description,
+      value: Math.abs(i.gap),
+      items: 1,
+      deeper: false,
+    }))
+    .sort((a, b) => b.value - a.value);
+};
+
 /* ------------------------------------------------------------------ */
 /* One item's supply, in date order                                    */
 /* ------------------------------------------------------------------ */

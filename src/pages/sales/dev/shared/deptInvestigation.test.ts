@@ -4,9 +4,11 @@ import {
   causeOf,
   judge,
   ladderFor,
+  decompose,
   ratiosOf,
   summarise,
   supplyTimeline,
+  tilesAt,
   DEFAULT_BANDS,
   type ItemFacts,
 } from "./deptInvestigation";
@@ -496,5 +498,83 @@ describe("supplyTimeline", () => {
 
   it("is empty for an item with no supply at all", () => {
     expect(supplyTimeline("ZZZ", [order("A", 1)], [receiver([["A", 1]])])).toEqual([]);
+  });
+});
+
+
+describe("decompose", () => {
+  const items = [
+    judge(facts({ productCode: "a", mineTy: 0, theirsTy: 1000 })),
+    judge(facts({ productCode: "b", mineTy: 300, theirsTy: 2000, mineUnits: 200, theirsUnits: 1400, orderedQty: 6 })),
+    judge(facts({ productCode: "c", mineTy: 900, theirsTy: 300 })),
+  ];
+
+  it("walks from their week to ours with nothing left over", () => {
+    const d = decompose(items);
+    const landed = d.steps.reduce((a, s) => a + s.dollars, d.theirs);
+    expect(d.theirs).toBe(3300);
+    expect(d.mine).toBe(1200);
+    // Exact by construction: the gaps ARE mine minus theirs, item by item.
+    expect(landed).toBe(d.mine);
+  });
+
+  it("keeps a winner as a step up rather than hiding it", () => {
+    const ahead = decompose(items).steps.find((s) => s.cause === "ahead");
+    expect(ahead?.dollars).toBe(600);
+  });
+
+  it("orders the steps by who owns them, not by size", () => {
+    expect(decompose(items).steps.map((s) => s.cause)).toEqual([
+      "never-ordered",
+      "not-received",
+      "ahead",
+    ]);
+  });
+
+  it("is a flat walk when there is nothing to explain", () => {
+    const d = decompose([judge(facts({ mineTy: 500, theirsTy: 500 }))]);
+    expect(d.theirs).toBe(d.mine);
+  });
+});
+
+describe("tilesAt", () => {
+  const items = [
+    judge(facts({ productCode: "a", vendorName: "P&G", mineTy: 0, theirsTy: 1000, orderedQty: 4 })),
+    judge(facts({ productCode: "b", vendorName: "P&G", mineTy: 0, theirsTy: 600, orderedQty: 2 })),
+    judge(facts({ productCode: "c", vendorName: "Coke", mineTy: 0, theirsTy: 400 })),
+    judge(facts({ productCode: "d", vendorName: "Coke", mineTy: 900, theirsTy: 300 })),
+  ];
+
+  it("opens on causes, biggest first", () => {
+    const t = tilesAt(items, []);
+    expect(t.map((x) => x.key)).toEqual(["not-received", "never-ordered"]);
+    expect(t[0].value).toBe(1600);
+    expect(t[0].items).toBe(2);
+  });
+
+  it("leaves winners out — area cannot carry a sign", () => {
+    expect(tilesAt(items, []).map((x) => x.key)).not.toContain("ahead");
+  });
+
+  it("drills a cause into its vendors, which is where a cluster shows", () => {
+    const t = tilesAt(items, ["not-received"]);
+    expect(t).toHaveLength(1);
+    expect(t[0].key).toBe("P&G");
+    expect(t[0].value).toBe(1600);
+  });
+
+  it("drills a vendor into its items, and stops there", () => {
+    const t = tilesAt(items, ["not-received", "P&G"]);
+    expect(t.map((x) => x.key)).toEqual(["a", "b"]);
+    expect(t.every((x) => x.deeper === false)).toBe(true);
+  });
+
+  it("does not leak an item from another cause into a vendor's tiles", () => {
+    expect(tilesAt(items, ["never-ordered", "Coke"]).map((x) => x.key)).toEqual(["c"]);
+  });
+
+  it("buckets a missing vendor name rather than dropping the item", () => {
+    const t = tilesAt([judge(facts({ vendorName: "", mineTy: 0, theirsTy: 90 }))], ["never-ordered"]);
+    expect(t[0].key).toBe("Unknown vendor");
   });
 });

@@ -16,6 +16,7 @@ import ColFilter from "../../../../components-dev/filters/ColFilterPopover";
 import { colInputStyle } from "../../../../components-dev/filters/colFilterStyles";
 import UpcContextMenu from "../../../../components-dev/UpcContextMenu";
 import ItemEvidence from "./ItemEvidence";
+import GapBreakdown from "./GapBreakdown";
 import { rowsToCsv, downloadCsv } from "../../../../utils/csvExport";
 import { useTriStateSort } from "../../../../utils/useTriStateSort";
 import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice";
@@ -324,6 +325,10 @@ const DeptInvestigation = ({
   /** Which item's evidence is open. Held here rather than in the slice: it
    *  belongs to this screen and means nothing once you leave it. */
   const [picked, setPicked] = useState<string | null>(null);
+  /** The grid, or the two pictures of the same numbers. Not a different
+   *  screen: the cause filter is shared, so switching views keeps whatever
+   *  the reader had narrowed to. */
+  const [view, setView] = useState<"items" | "breakdown">("items");
 
   const isQty = gradingMetric === "qty";
   const fmt = (v: number) => (isQty ? formatBigNumber(v, 0) : formatCurrency2(v));
@@ -517,7 +522,22 @@ const DeptInvestigation = ({
           </p>
         )}
 
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="inline-flex rounded-full border border-brand_line overflow-hidden mr-1">
+            {(["items", "breakdown"] as const).map((v) => (
+              <button
+                key={v}
+                onClick={() => setView(v)}
+                className={`text-[12px] font-semibold px-2.5 py-1 transition-colors ${
+                  view === v
+                    ? "bg-brand_navy text-custom-white"
+                    : "bg-custom-white text-content hover:bg-gray-50"
+                }`}
+              >
+                {v === "items" ? "Items" : "Breakdown"}
+              </button>
+            ))}
+          </span>
           <button
             onClick={() => setOnly(null)}
             className={`text-[12px] font-semibold px-2.5 py-1 rounded-full border transition-colors ${
@@ -574,6 +594,20 @@ const DeptInvestigation = ({
               at 11px, a sticky heading row and a sticky row number. Dense is
               the point — a department is hundreds of items and an airy list
               shows eight of them. */}
+          {view === "breakdown" ? (
+            <GapBreakdown
+              items={items}
+              fmt={fmt}
+              openStoreNumber={target.storeNumber}
+              compareStoreNumber={target.compareStoreNumber}
+              only={only}
+              onPickCause={setOnly}
+              onPickItem={(code) => {
+                setPicked(code);
+                setView("items");
+              }}
+            />
+          ) : (
           <div className="flex-1 min-h-0 flex overflow-hidden">
           <div className="flex-1 min-w-0 overflow-auto thin-scrollbar">
             <table className="border-collapse font-mono text-[11px] w-max">
@@ -727,6 +761,7 @@ const DeptInvestigation = ({
             />
           )}
           </div>
+          )}
 
           <div className="flex-shrink-0 flex items-center gap-3 px-4 py-2 border-t border-brand_line bg-custom-white text-[11.5px] text-content/85">
             <span>
