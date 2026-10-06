@@ -599,7 +599,7 @@ const TitleBar = () => {
         >
           <span
             title="Dev mode: this session is on the dev API"
-            className="px-3 py-1.5 rounded-full bg-emerald-500 text-custom-white text-[11px] font-bold tracking-wide leading-none whitespace-nowrap select-none"
+            className="px-3 py-1.5 rounded-full bg-custom-white text-brand_navy text-[11px] font-bold tracking-wide leading-none whitespace-nowrap select-none"
           >
             DEV MODE
           </span>
