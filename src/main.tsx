@@ -87,20 +87,16 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="cashiers" element={<CashiersPage />} />
                 <Route path="orders" element={<OrdersPage />} />
                 <Route path="tickets" element={<Tickets />} />
-                {/* Release Notes is unmounted until the help endpoints are
-                    deployed: the page can neither list the notes nor sign a
-                    link to one without them, and the bucket prefix they live
-                    under is not public the way dev/ and prod/ are.
+                {/* Release Notes was here. Unmounted until the help endpoints
+                    are deployed: the page can neither list the notes nor sign
+                    a link to one without them, and the bucket prefix they
+                    live under is not public the way dev/ and prod/ are.
 
-                    A redirect rather than nothing at all, because the route
-                    outlives the page — a stored last_route still points here
-                    for anyone who visited, and an unmatched path renders a
-                    blank content area, which reads as a broken app. Restore
-                    the real element here and the row in TitleBar together. */}
-                <Route
-                  path="release-notes"
-                  element={<Navigate to="/sales" replace />}
-                />
+                    Gone rather than redirected — nobody has it as their
+                    last_route, and it was never in the nav, so there is no
+                    path left that expects it to answer. ReleaseNotes.tsx is
+                    untouched; restoring it is this route and the row in
+                    TitleBar. */}
               </Route>
             </Routes>
           </ToastProvider>

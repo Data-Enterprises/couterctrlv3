@@ -1,26 +1,35 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { useAppSelector } from ".";
-import {
-  getHelpPageUrl,
-  helpFailed,
-  type HelpEnv,
-  type HelpKind,
-  type HelpPageUrlResp,
-} from "../api/helpPages";
-import type { JsonError } from "../interfaces";
+import type { HelpKind } from "../api/helpPages";
 
 /**
- * A signed URL for one help page or release note, kept fresh.
+ * The URL of one help page or release note.
  *
- * Shared by the "?" sheet and the release notes page because the expiry
- * handling is the part worth writing once. The frame these go into is
- * cross-origin, so an expired link renders S3's own 403 INSIDE it — no error,
- * no event, nothing this code can see. Anything left open longer than the
- * link's life would quietly become an AWS error page, so it is re-signed a
- * minute early rather than discovered dead by whoever comes back to it.
+ * TEMPORARY: back on the public bucket, built from `VITE_HELP_PAGES_URL_*`,
+ * until `help/page_url` is deployed. The signed-URL version is in git — see
+ * "Help pages come from the API, signed, on the click" — and the whole of it
+ * lives in this file, so turning it back on is restoring one module. The hook's
+ * shape is deliberately unchanged for that reason: callers keep `src`,
+ * `problem` and `retry` and do not know which way the URL arrived.
  *
- * `enabled` is what stops a closed sheet asking for links nobody wants.
+ * The bucket grants anonymous `s3:GetObject` on `dev/` and `prod/`, which is
+ * what makes this possible at all — the frame is sandboxed without
+ * `allow-same-origin`, so there are no headers to authenticate with and
+ * nothing but a public URL can load in it.
+ *
+ * `problem` is always null here, and that is honest rather than lazy: a
+ * cross-origin frame reports nothing about what it loaded, so a missing page
+ * renders S3's own error XML inside the frame and this code never hears about
+ * it. That is why `constants/helpPages.ts` is a list rather than a probe. The
+ * signed version had real errors to report because it made a real request.
  */
+
+/** Which bucket folder, by the flag that already picks the API. */
+const baseFor = (apiEnv: string) =>
+  apiEnv === "dev"
+    ? import.meta.env.VITE_HELP_PAGES_URL_DEV
+    : import.meta.env.VITE_HELP_PAGES_URL_PROD;
+
 export const useHelpPageUrl = ({
   name,
   kind = "help",
@@ -32,60 +41,37 @@ export const useHelpPageUrl = ({
   section?: string;
   enabled: boolean;
 }) => {
-  const { apiEnv, url, token } = useAppSelector((state) => ({
-    apiEnv: state.app.apiEnv,
-    url: state.app.url,
-    token: state.app.token,
-  }));
+  const apiEnv = useAppSelector((state) => state.app.apiEnv);
 
-  const [src, setSrc] = useState("");
-  const [problem, setProblem] = useState<string | null>(null);
-  const timer = useRef<number | null>(null);
+  const src = useMemo(() => {
+    // An empty src is what stops a closed sheet loading a page nobody asked
+    // for, and what makes reopening it re-navigate the frame.
+    if (!enabled || !name) return "";
 
-  const fetchUrl = useCallback(() => {
-    if (!name) return;
-    setProblem(null);
-    getHelpPageUrl(url, token, { name, env: apiEnv as HelpEnv, kind })
-      .then((resp) => {
-        const j = resp.data as HelpPageUrlResp;
-        if (helpFailed(j) || !j.url) {
-          setProblem("That page could not be opened.");
-          return;
-        }
-        setSrc(section ? `${j.url}#${section}` : j.url);
-        if (timer.current) window.clearTimeout(timer.current);
-        timer.current = window.setTimeout(
-          fetchUrl,
-          Math.max(30, (j.expires_in ?? 900) - 60) * 1000,
-        );
-      })
-      .catch((err: JsonError) => {
-        const status = (err as { status?: number }).status;
-        setProblem(
-          status === 404
-            ? "There is no page here yet."
-            : status === 403
-              ? "That page is not available on this account."
-              : "The page could not be loaded.",
-        );
-      });
-  }, [name, kind, section, url, token, apiEnv]);
+    const base = baseFor(apiEnv);
+    if (!base) return "";
 
-  useEffect(() => {
-    if (!enabled) {
-      // Stop re-signing and drop the link, so coming back asks for a fresh
-      // one rather than reusing a stale one.
-      if (timer.current) window.clearTimeout(timer.current);
-      timer.current = null;
-      setSrc("");
-      return;
-    }
-    fetchUrl();
-    return () => {
-      if (timer.current) window.clearTimeout(timer.current);
-      timer.current = null;
-    };
-  }, [enabled, fetchUrl]);
+    // `release/{env}/{name}.html`, against `{env}/{name}.html` for help. Built
+    // from the same env var by dropping the folder off the end, because the
+    // release notes sit beside the two help folders rather than inside one.
+    //
+    // This will 403: the release prefix is NOT public the way dev/ and prod/
+    // are, so a release note cannot be read this way at all. The route is
+    // unmounted for exactly that reason and nothing reaches this branch today
+    // — it is written out so that restoring the route does not also quietly
+    // restore a wrong URL.
+    const url =
+      kind === "release"
+        ? `${base.replace(/\/(dev|prod)$/, "")}/release/${apiEnv}/${name}.html`
+        : `${base}/${name}.html`;
 
-  return { src, problem, retry: fetchUrl };
+    return section ? `${url}#${section}` : url;
+  }, [enabled, name, kind, section, apiEnv]);
+
+  // Kept so callers do not change shape. There is no request to retry: the
+  // frame owns the load, and re-navigating it is what the `key` on the iframe
+  // already does when `src` changes.
+  const retry = useCallback(() => {}, []);
+
+  return { src, problem: null as string | null, retry };
 };
