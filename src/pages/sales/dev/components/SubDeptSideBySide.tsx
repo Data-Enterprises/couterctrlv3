@@ -35,16 +35,25 @@ const totalsBySubDept = (rows: SubSale[], metric: GradingMetric) =>
     return acc;
   }, {});
 
-type Col = "tyDiff" | "lwDiff" | "lyDiff";
+type Col = "mine" | "theirs" | "tyDiff" | "lwDiff" | "lyDiff";
 
-const COLS = "minmax(180px,1fr) 136px 136px 136px";
-const GRID_MIN = 620;
+/** Each store's own week, then the three differences. The two totals are
+ *  narrower than the pills beside them: a figure needs its digits, a pill
+ *  needs its digits plus a sign and its padding. */
+const COLS = "minmax(180px,1fr) 118px 118px 136px 136px 136px";
+
+/** Six columns do not fit a 52% panel, so the grid scrolls sideways inside
+ *  its own container rather than crushing the department name. */
+const GRID_MIN = 800;
 
 const HEAD =
   "sticky top-0 z-10 bg-custom-white grid items-center gap-2.5 px-2 py-1.5 border-b border-brand_navy/15";
 
 interface Props {
   openStoreName: string;
+  /** Heads the open store's totals column. The number alone, because the
+   *  full name is already in the line above and would not fit a column. */
+  openStoreNumber: string;
   compareStoreId: number;
   /** Co-located stores share a storeid, so the rows have to be narrowed by
    *  number as well — the same scoping the detail panel does for its own. */
@@ -62,6 +71,7 @@ interface Props {
 
 const SubDeptSideBySide = ({
   openStoreName,
+  openStoreNumber,
   compareStoreId,
   compareStoreNumber,
   compareStoreName,
@@ -181,11 +191,15 @@ const SubDeptSideBySide = ({
   }, [theirs, subSales, subSalesWk2, subSalesWk3, gradingMetric]);
 
   const sorted = applySort(rows, (row, col) =>
-    col === "tyDiff"
-      ? row.tyDiff
-      : col === "lwDiff"
-        ? row.lwDiff
-        : row.lyDiff,
+    col === "mine"
+      ? row.a
+      : col === "theirs"
+        ? row.b
+        : col === "tyDiff"
+          ? row.tyDiff
+          : col === "lwDiff"
+            ? row.lwDiff
+            : row.lyDiff,
   );
 
   /** The ledger's pill shape, carrying direction only: two stores are not a
@@ -240,9 +254,20 @@ const SubDeptSideBySide = ({
               <span className="text-[11.5px] font-semibold uppercase tracking-wide text-content/85">
                 Sub dept
               </span>
-              {/* The same three comparisons the store grid makes, one
-                  department at a time, and sorted the same way. Both stores
-                  are named in the line above, so neither needs a column. */}
+              {/* Each store's own week first, so the difference beside it can
+                  be checked rather than taken on trust — a department one
+                  store simply does not carry reads very differently from one
+                  where it is being beaten. Headed by store number and the
+                  period, so a column says what it holds without the caption
+                  above having to be read first — the names are in that line
+                  and neither would fit a column this wide.
+
+                  Plain figures, not pills. These are totals, and a pill is
+                  this page's shape for a comparison. */}
+              <SortHeader col="mine" label={`${openStoreNumber} TY`} sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-start`} />
+              <SortHeader col="theirs" label={`${compareStoreNumber} TY`} sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-start`} />
+              {/* Then the same three comparisons the store grid makes, one
+                  department at a time, and sorted the same way. */}
               <SortHeader col="tyDiff" label="vs TY" sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-start`} />
               <SortHeader col="lwDiff" label="vs LW" sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-start`} />
               <SortHeader col="lyDiff" label="vs LY" sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-start`} />
@@ -254,11 +279,12 @@ const SubDeptSideBySide = ({
                 className="grid gap-2.5 items-center px-2 py-[11px] border-b border-brand_navy/15 last:border-b-0 even:bg-row_stripe text-[13px] text-content"
                 style={{ gridTemplateColumns: COLS }}
               >
-                <span
-                  className="min-w-0 truncate font-medium"
-                  title={`${openStoreName} ${fmt(r.a)} · ${compareStoreName} ${fmt(r.b)}`}
-                >
-                  {r.name}
+                <span className="min-w-0 truncate font-medium">{r.name}</span>
+                <span className="tabular-nums font-semibold" title={openStoreName}>
+                  {fmt(r.a)}
+                </span>
+                <span className="tabular-nums text-content/85" title={compareStoreName}>
+                  {fmt(r.b)}
                 </span>
                 {diffPill(r.tyDiff)}
                 {diffPill(r.lwDiff)}
