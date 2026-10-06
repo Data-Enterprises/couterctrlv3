@@ -40,7 +40,6 @@ import {
 import Settings from "./pages/settings/Settings.tsx";
 import Dashboard from "./pages/quicksight/Dashboard.tsx";
 import Tickets from "./pages/tickets/Tickets.tsx";
-import ReleaseNotes from "./pages/releaseNotes/ReleaseNotes.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -88,10 +87,20 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="cashiers" element={<CashiersPage />} />
                 <Route path="orders" element={<OrdersPage />} />
                 <Route path="tickets" element={<Tickets />} />
-                {/* Not in the nav: nobody goes looking for it, but it is
-                    linkable once you are there, which is the point of a
-                    route rather than a sheet. */}
-                <Route path="release-notes" element={<ReleaseNotes />} />
+                {/* Release Notes is unmounted until the help endpoints are
+                    deployed: the page can neither list the notes nor sign a
+                    link to one without them, and the bucket prefix they live
+                    under is not public the way dev/ and prod/ are.
+
+                    A redirect rather than nothing at all, because the route
+                    outlives the page — a stored last_route still points here
+                    for anyone who visited, and an unmatched path renders a
+                    blank content area, which reads as a broken app. Restore
+                    the real element here and the row in TitleBar together. */}
+                <Route
+                  path="release-notes"
+                  element={<Navigate to="/sales" replace />}
+                />
               </Route>
             </Routes>
           </ToastProvider>
