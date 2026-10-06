@@ -49,6 +49,8 @@ import {
   ArrowDownTrayIcon /*, ExclamationTriangleIcon */,
 } from "@heroicons/react/20/solid";
 import PopupDaySidebar from "./PopupDaySidebar";
+import StoreComparisonBlock from "./StoreComparisonBlock";
+import type { LedgerRowData } from "./LedgerRow";
 import PopupSubDeptList from "./PopupSubDeptList";
 import PopupHourlyView from "./PopupHourlyView";
 import { ClipboardDocumentListIcon } from "@heroicons/react/20/solid";
@@ -63,6 +65,9 @@ import GhostFlames from "./GhostFlames";
 interface StoreDetailPopupProps {
   selection: StoreSelection;
   onClose: () => void;
+  /** Every store in the current search, so this one can be placed among them.
+   *  Absent on a single-store search, where there is no reference set. */
+  groupRows?: LedgerRowData[];
 }
 
 // Category tab (and its cat_sales fetch below) is commented out for now —
@@ -76,7 +81,7 @@ const fmtDate = (d: string) =>
     day: "numeric",
   });
 
-const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
+const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
   const dispatch = useAppDispatch();
   // Item Actions is unreleased, so the way in goes with it. A button that
   // navigates somewhere the nav says does not exist is worse than no button.
@@ -755,6 +760,20 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
           onSelect={(date) => dispatch(setLedgerSelectedDate(date))}
         />
       </div>
+
+      {/* Where this store stands — against its group, or against a sibling.
+          Above the tabs because it answers the question the store was opened
+          to ask; the tabs below break the same week down. */}
+      {groupRows && groupRows.length > 1 && (
+        <StoreComparisonBlock
+          rows={groupRows}
+          storeid={selection.storeId}
+          storeNumber={selection.storeNumber}
+          gradingMetric={gradingMetric}
+          threshold={itemThreshold}
+          selectedDate={selectedDate}
+        />
+      )}
 
       {/* Tabs */}
       <div className="flex items-center border-b border-gray-100 px-3 flex-shrink-0">

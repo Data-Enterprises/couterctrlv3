@@ -3,6 +3,9 @@ import type { LedgerRowData } from "../components/LedgerRow";
 import type { DayDot } from "../../../../interfaces";
 import {
   DEFAULT_BANDS,
+  compareForView,
+  groupDays,
+  selectionFor,
   MIN_STORES_FOR_RANK,
   compareStores,
   exclusionOf,
@@ -351,5 +354,72 @@ describe("scopeToDay", () => {
     const a = byId(compareStores(rows, "sales"), 1);
     expect(a.gapPct).toBeCloseTo(50, 1);
     expect(a.verdict).toBe("consistent");
+  });
+});
+
+describe("compareForView", () => {
+  const rows = [store(1, 108, 100), store(2, 100, 100)];
+
+  it("judges against the page's own threshold", () => {
+    // Store 1: +8% on itself, and +3.85% against what its usual share
+    // predicts. Both figures sit either side of these two cuts.
+    const wide = compareForView(rows, "sales", 9, null).rows[0];
+    expect(wide.gapPct).toBeCloseTo(3.85, 1);
+    expect(wide.verdict).toBe("consistent"); // 3.85 is inside a 9 band
+
+    const tight = compareForView(rows, "sales", 3, null).rows[0];
+    expect(tight.verdict).toBe("rising"); // and outside a 3 one, with the
+    // store itself up 8%, which is what earns Rising rather than the gap alone
+  });
+
+  it("widens the band once a day is selected", () => {
+    const day = "2026-09-24";
+    const tight = compareForView(rows, "sales", 2, day).rows[0];
+    const wide = compareForView(rows, "sales", 2, null).rows[0];
+    // Same figures either way; only the cut they are judged against moves.
+    expect(tight.gapPct).toBeCloseTo(wide.gapPct as number, 6);
+    expect(tight.verdict).toBe("consistent");
+    expect(wide.verdict).toBe("rising");
+  });
+});
+
+describe("groupDays", () => {
+  it("sums the group's week by date", () => {
+    const days = groupDays([store(1, 700, 350), store(2, 700, 700)]);
+    expect(days).toHaveLength(7);
+    expect(days[0].twNet).toBeCloseTo(200, 6);
+    expect(days[0].lyNet).toBeCloseTo(150, 6);
+  });
+
+  it("keeps a date null only when no store can compare on it", () => {
+    const some = groupDays([store(1, 700, null), store(2, 700, 700)]);
+    expect(some[0].lyNet).toBeCloseTo(100, 6);
+
+    const none = groupDays([store(1, 700, null), store(2, 700, null)]);
+    expect(none[0].lyNet).toBeNull();
+  });
+
+  it("hands the dates back in order", () => {
+    const days = groupDays([store(1, 700, 700)]);
+    const sorted = [...days].sort((a, b) => a.sale_date.localeCompare(b.sale_date));
+    expect(days.map((d) => d.sale_date)).toEqual(sorted.map((d) => d.sale_date));
+  });
+});
+
+describe("selectionFor", () => {
+  it("spans the store's own days, sorted", () => {
+    const sel = selectionFor(store(1, 700, 700));
+    expect(sel.mode).toBe("weekly");
+    expect(sel.start).toBe("2026-09-21");
+    expect(sel.end).toBe("2026-09-27");
+    expect(sel.days).toHaveLength(7);
+  });
+
+  it("carries the co-located numbers the detail panel labels with", () => {
+    const sel = selectionFor(
+      store(1, 700, 700, { store_number: "369", storeNumbersForId: ["369", "370"] }),
+    );
+    expect(sel.storeNumbersForId).toEqual(["369", "370"]);
+    expect(sel.storeNumber).toBe("369");
   });
 });

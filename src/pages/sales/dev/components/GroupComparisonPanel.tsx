@@ -2,10 +2,8 @@ import { useMemo } from "react";
 import { formatCurrency2, formatBigNumber } from "../../../../utils";
 import { applyStoreNumberToName } from "../shared/ledgerUtils";
 import {
-  compareStores,
+  compareForView,
   groupDays,
-  scopeToDay,
-  DEFAULT_BANDS,
   type ComparisonRow,
   type Excluded,
   type Verdict,
@@ -104,25 +102,11 @@ const GroupComparisonPanel = ({
   const days = useMemo(() => groupDays(rows), [rows]);
 
   // A day selection narrows the rows before any of the comparison runs, so
-  // every share, expectation and verdict below belongs to that day alone.
-  const scoped = useMemo(
-    () => (selectedDate ? scopeToDay(rows, selectedDate) : rows),
-    [rows, selectedDate],
-  );
-
+  // every share, expectation and verdict below belongs to that day alone —
+  // with wider bands, because one day against one day is a thinner baseline.
   const group = useMemo(
-    () =>
-      compareStores(scoped, gradingMetric, {
-        // One day against one day is a far thinner baseline than a week
-        // against a week. The same cut that reads well over seven days
-        // colours the grid on noise over one, so it widens while a day is
-        // selected.
-        pct: selectedDate ? threshold * 2 : threshold,
-        sharePoints: selectedDate
-          ? DEFAULT_BANDS.sharePoints * 2
-          : DEFAULT_BANDS.sharePoints,
-      }),
-    [scoped, gradingMetric, threshold, selectedDate],
+    () => compareForView(rows, gradingMetric, threshold, selectedDate),
+    [rows, gradingMetric, threshold, selectedDate],
   );
 
   const sorted = applySort(group.rows, (row, col) =>

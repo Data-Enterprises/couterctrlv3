@@ -401,3 +401,24 @@ export const selectionFor = (row: LedgerRowData): StoreSelection => {
     severity: row.severity,
   };
 };
+
+/**
+ * The comparison as a view asks for it: scoped to the selected day, if any,
+ * with the bands the scope deserves.
+ *
+ * Shared so the group view and a store's own comparison cannot disagree about
+ * what the same search means. The doubling is a starting value, not a measured
+ * one — see the plan's open decisions.
+ */
+export const compareForView = (
+  rows: LedgerRowData[],
+  metric: GradingMetric,
+  threshold: number,
+  selectedDate: string | null,
+): GroupComparison =>
+  compareStores(selectedDate ? scopeToDay(rows, selectedDate) : rows, metric, {
+    pct: selectedDate ? threshold * 2 : threshold,
+    sharePoints: selectedDate
+      ? DEFAULT_BANDS.sharePoints * 2
+      : DEFAULT_BANDS.sharePoints,
+  });

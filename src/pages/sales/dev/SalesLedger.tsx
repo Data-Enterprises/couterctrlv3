@@ -597,6 +597,7 @@ const SalesLedger = () => {
               <StoreDetailPopup
                 selection={selection}
                 onClose={handlePopupClose}
+                groupRows={ledgerRows}
               />
             ) : ledgerRows.length > 1 ? (
               /* The panel's resting state on a group search. The reference is
