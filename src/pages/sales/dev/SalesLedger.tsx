@@ -26,6 +26,7 @@ import {
   setLedgerLoading,
   setLedgerSelection,
   setLedgerSelectedDate,
+  toggleComparisonStore,
   reQueryLedger,
 } from "../../../features/dev/devSalesLedgerSlice";
 import { useToast } from "../../../components/toasts/hooks/useToast";
@@ -69,6 +70,7 @@ const SalesLedger = () => {
     // Shared with the store popup on purpose: a day picked in the group view
     // is still the day you meant when you open a store.
     selectedDate,
+    comparisonOff,
   } = useAppSelector((state) => state.dev.salesLedger);
   const { assignedStores } = useAppSelector((state) => state.user);
 
@@ -99,6 +101,14 @@ const SalesLedger = () => {
 
   const handlePopupClose = useCallback(
     () => dispatch(setLedgerSelection(null)),
+    [dispatch],
+  );
+
+  // Stable, like handleRowClick above — LedgerRow is memoized and an inline
+  // arrow would defeat it for every row on every render.
+  const handleToggleComparison = useCallback(
+    (row: { storeid: number; store_number: string }) =>
+      dispatch(toggleComparisonStore(`${row.storeid}__${row.store_number}`)),
     [dispatch],
   );
 
@@ -382,6 +392,12 @@ const SalesLedger = () => {
       })
     : sevFilteredRows;
 
+  // What the comparison answers for. Ticking a store out changes the group
+  // total, so every other store's share, expected and standing move with it.
+  const comparedRows = ledgerRows.filter(
+    (r) => !comparisonOff.includes(`${r.storeid}__${r.store_number}`),
+  );
+
   const visibleRows = applySort(textFilteredRows, (row, col) =>
     col === "ty" ? row.twTotal : col === "vsLW" ? row.vsLWPct : row.vsLYPct,
   );
@@ -582,6 +598,18 @@ const SalesLedger = () => {
                     gradingMetric={gradingMetric}
                     threshold={activeThreshold}
                     onClick={handleRowClick}
+                    // Only on a group: a single store has nothing to be
+                    // compared with, so there is nothing to tick it out of.
+                    inComparison={
+                      ledgerRows.length > 1
+                        ? !comparisonOff.includes(
+                            `${row.storeid}__${row.store_number}`,
+                          )
+                        : undefined
+                    }
+                    onToggleComparison={
+                      ledgerRows.length > 1 ? handleToggleComparison : undefined
+                    }
                   />
                 ))}
               </div>
@@ -597,7 +625,7 @@ const SalesLedger = () => {
               <StoreDetailPopup
                 selection={selection}
                 onClose={handlePopupClose}
-                groupRows={ledgerRows}
+                groupRows={comparedRows}
               />
             ) : ledgerRows.length > 1 ? (
               /* The panel's resting state on a group search. The reference is
@@ -609,7 +637,7 @@ const SalesLedger = () => {
                  Rows, not the search type: a storeid carrying two locations is
                  a group too, the same test the header hero uses. */
               <GroupComparisonPanel
-                rows={ledgerRows}
+                rows={comparedRows}
                 gradingMetric={gradingMetric}
                 threshold={activeThreshold}
                 selectedDate={selectedDate}

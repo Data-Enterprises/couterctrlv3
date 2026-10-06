@@ -3,6 +3,7 @@ import { formatCurrencyCompact } from "../../../../utils";
 import { useStoreName } from "../../../../hooks";
 import { severityDotClass, pillClass, PCT_COL_W } from "./utils";
 import { applyStoreNumberToName } from "../shared/ledgerUtils";
+import Checkbox from "../../../../components-dev/Checkbox";
 import { selectionFor } from "../shared/storeComparison";
 import type { Severity } from "../../../../utils/severity";
 import {
@@ -68,6 +69,11 @@ interface LedgerRowProps {
    *  threshold slider that moves every frame. */
   threshold: number;
   onClick: (selection: StoreSelection) => void;
+  /** Whether this store is in the comparison. Undefined on a single-store
+   *  search, where there is no group to be in or out of, and the box is not
+   *  drawn at all. */
+  inComparison?: boolean;
+  onToggleComparison?: (row: LedgerRowData) => void;
 }
 
 const formatPct = (pct: number) => `${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%`;
@@ -131,6 +137,8 @@ const LedgerRow = ({
   gradingMetric,
   threshold,
   onClick,
+  inComparison,
+  onToggleComparison,
 }: LedgerRowProps) => {
   const storeName = useStoreName(row.storeid, row.store_name);
   // No-op unless this storeid is co-located; see applyStoreNumberToName.
@@ -146,15 +154,40 @@ const LedgerRow = ({
   // same way this row does.
   const handleClick = () => onClick(selectionFor(row));
 
+  const showBox = inComparison !== undefined && !!onToggleComparison;
+
   return (
-    <button
-      onClick={handleClick}
-      className={`w-full flex items-center gap-2.5 p-3 text-left transition-colors border-l-2 border-b border-b-brand_navy/15 ${
+    /* A div rather than a button: the tick is its own control and a button
+       cannot hold another one. The row still behaves as a button — click,
+       Enter and Space all open the store. */
+    <div
+      className={`w-full flex items-center transition-colors border-l-2 border-b border-b-brand_navy/15 ${
         isSelected
           ? "bg-row_selected border-row_selected_border"
           : "border-transparent hover:bg-gray-50"
       }`}
     >
+      {showBox && (
+        <span className="pl-3 flex-shrink-0">
+          <Checkbox
+            checked={inComparison}
+            onChange={() => onToggleComparison(row)}
+            ariaLabel={`Include ${displayName} in the comparison`}
+          />
+        </span>
+      )}
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={handleClick}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            handleClick();
+          }
+        }}
+        className="flex-1 min-w-0 flex items-center gap-2.5 p-3 text-left cursor-pointer"
+      >
       <span
         className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
           // Grey: neither last week nor last year covers the whole week, so
@@ -208,7 +241,8 @@ const LedgerRow = ({
           period="last year"
         />
       </div>
-    </button>
+      </div>
+    </div>
   );
 };
 

@@ -1,12 +1,6 @@
 import { useMemo } from "react";
-import { formatCurrencyCompact, formatBigNumber } from "../../../../utils";
 import { applyStoreNumberToName } from "../shared/ledgerUtils";
-import {
-  compareForView,
-  type ComparisonRow,
-  type Excluded,
-  type Verdict,
-} from "../shared/storeComparison";
+import { compareForView, type ComparisonRow } from "../shared/storeComparison";
 import SortHeader, { PERF_SORT_HEADER } from "../../../../components-dev/SortHeader";
 import { useTriStateSort } from "../../../../utils/useTriStateSort";
 import type { LedgerRowData } from "./LedgerRow";
@@ -24,39 +18,19 @@ import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice
  * subtracting two percentages never gives a percentage.
  */
 
-type Col = "shareTy" | "gapPct" | "ownPct" | "vsOpen";
+type Col = "ownLwPct" | "ownLyPct" | "vsOpen";
 
-const COLS = "minmax(140px,1fr) 88px 72px 76px 76px 76px";
-const GRID_MIN = 620;
+const COLS = "minmax(160px,1fr) 80px 80px 96px";
+const GRID_MIN = 440;
 
 const HEAD =
   "sticky top-0 z-10 bg-custom-white grid items-center gap-2.5 px-2 py-1.5 border-b border-brand_navy/15";
-
-const VERDICT_LABEL: Record<Verdict, string> = {
-  rising: "Rising",
-  consistent: "Consistent",
-  falling: "Falling",
-};
-
-const VERDICT_CLASS: Record<Verdict, string> = {
-  rising: "bg-delta_positive_bg text-delta_positive_text",
-  consistent: "bg-gray-100 text-content/85",
-  falling: "bg-delta_negative_bg text-delta_negative_text",
-};
-
-const EXCLUDED_LABEL: Record<Excluded, string> = {
-  "no-baseline": "No baseline",
-  "partial-week": "Short week",
-  "nothing-to-compare": "Nothing to compare",
-};
 
 const pct1 = (v: number | null) =>
   v === null ? "—" : `${v >= 0 ? "+" : ""}${v.toFixed(1)}%`;
 
 const points1 = (v: number | null) =>
   v === null ? "—" : `${v >= 0 ? "+" : ""}${v.toFixed(1)} pt`;
-
-const share1 = (v: number | null) => (v === null ? "—" : `${(v * 100).toFixed(1)}%`);
 
 const toneOf = (v: number | null) =>
   v === null || v === 0
@@ -83,10 +57,6 @@ const PopupComparisonList = ({
   selectedDate,
 }: Props) => {
   const { sort, handleSort, applySort } = useTriStateSort<Col>();
-  const isQty = gradingMetric === "qty";
-  const fmt = (v: number | null) =>
-    v === null ? "—" : isQty ? formatBigNumber(v, 0) : formatCurrencyCompact(v);
-
   const group = useMemo(
     () => compareForView(rows, gradingMetric, threshold, selectedDate),
     [rows, gradingMetric, threshold, selectedDate],
@@ -112,13 +82,11 @@ const PopupComparisonList = ({
     r.ownPct === null || open.ownPct === null ? null : r.ownPct - open.ownPct;
 
   const sorted = applySort(others, (row, col) =>
-    col === "shareTy"
-      ? row.shareTy
-      : col === "gapPct"
-        ? row.gapPct
-        : col === "ownPct"
-          ? row.ownPct
-          : vsOpen(row),
+    col === "ownLwPct"
+      ? row.ownLwPct
+      : col === "ownLyPct"
+        ? row.ownLyPct
+        : vsOpen(row),
   );
 
   const nameOf = (r: ComparisonRow) =>
@@ -126,37 +94,15 @@ const PopupComparisonList = ({
 
   const cells = (r: ComparisonRow, isOpen: boolean) => (
     <>
-      <span className="min-w-0 truncate font-medium">
-        {nameOf(r)}
-        {r.rank !== null && (
-          <span className="ml-1.5 text-[11px] text-content/85">#{r.rank}</span>
-        )}
-      </span>
-
-      <span className="min-w-0">
-        {r.verdict ? (
-          <span
-            className={`inline-block text-[11px] font-semibold px-2 py-0.5 rounded ${VERDICT_CLASS[r.verdict]}`}
-          >
-            {VERDICT_LABEL[r.verdict]}
-          </span>
-        ) : (
-          <span className="inline-block text-[11px] font-semibold px-2 py-0.5 rounded bg-severity_watch_bg text-severity_watch_text truncate max-w-full">
-            {r.excluded ? EXCLUDED_LABEL[r.excluded] : "—"}
-          </span>
-        )}
-      </span>
-
-      <span className="text-right tabular-nums">{share1(r.shareTy)}</span>
-      <span className="text-right tabular-nums">
-        {fmt(r.gapValue)}
-        <span className="block text-[11px] text-content/85">{pct1(r.gapPct)}</span>
-      </span>
-      <span className="text-right tabular-nums">{pct1(r.ownPct)}</span>
+      <span className="min-w-0 truncate font-medium">{nameOf(r)}</span>
+      <span className="text-right tabular-nums">{pct1(r.ownLwPct)}</span>
+      <span className="text-right tabular-nums">{pct1(r.ownLyPct)}</span>
+      {/* The one thing this tab is for. Both sides are percentages, so the
+          distance between them is points. */}
       <span
         className={`text-right tabular-nums font-semibold ${isOpen ? "text-content/85" : toneOf(vsOpen(r))}`}
       >
-        {isOpen ? "—" : points1(vsOpen(r))}
+        {isOpen ? "this store" : points1(vsOpen(r))}
       </span>
     </>
   );
@@ -168,19 +114,9 @@ const PopupComparisonList = ({
           <span className="text-[11.5px] font-semibold uppercase tracking-wide text-content/85">
             Store
           </span>
-          <span className="text-[11.5px] font-semibold uppercase tracking-wide text-content/85">
-            Standing
-          </span>
-          <SortHeader col="shareTy" label="Share" sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-end`} />
-          <SortHeader col="gapPct" label="Gap" sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-end`} />
-          <SortHeader
-            col="ownPct"
-            label={open.basis === "LW" ? "vs LW" : "vs LY"}
-            sort={sort}
-            onSort={handleSort}
-            className={`${PERF_SORT_HEADER} justify-end`}
-          />
-          <SortHeader col="vsOpen" label="vs open" sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-end`} />
+          <SortHeader col="ownLwPct" label="vs LW" sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-end`} />
+          <SortHeader col="ownLyPct" label="vs LY" sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-end`} />
+          <SortHeader col="vsOpen" label="vs this store" sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-end`} />
         </div>
 
         {/* The open store, pinned. Everything in the last column is a distance

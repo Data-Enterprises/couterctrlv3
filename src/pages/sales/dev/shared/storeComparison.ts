@@ -74,6 +74,12 @@ export interface ComparisonRow {
   /** The store against itself on the same basis. The one figure on this row
    *  that no sibling can move — see `verdictOf`. */
   ownPct: number | null;
+  /** The store against last week and against last year, both always shown.
+   *  `ownPct` above is whichever of these its basis points at — these two are
+   *  the plain figures, so a reader never has to work out which they are
+   *  looking at. */
+  ownLwPct: number;
+  ownLyPct: number;
 
   /** Position by the active metric among counted stores, 1-based. Null in a
    *  group too small for a rank to say anything. */
@@ -303,6 +309,8 @@ export const compareStores = (
       gapValue,
       gapPct,
       ownPct,
+      ownLwPct: row.vsLWPct,
+      ownLyPct: row.vsLYPct,
       rank: rankByStore.get(row.storeid) ?? null,
       verdict: verdictOf(gapPct, ownPct ?? 0, bands),
       excluded,
