@@ -83,6 +83,7 @@ import {
 import MobilePerfCard from "../../../../components-dev/mobile/MobilePerfCard";
 import MobilePerfDetail from "../../../../components-dev/mobile/MobilePerfDetail";
 import PairedBars from "../../../../components-dev/mobile/perf/PairedBars";
+import PerfDelta from "../../../../components-dev/mobile/perf/PerfDelta";
 import PerfDayChart from "../../../../components-dev/mobile/perf/PerfDayChart";
 import PerfCardHeader from "../../../../components-dev/mobile/perf/PerfCardHeader";
 import { LY_COLOR, TY_COLOR, TY_SWATCH_BG } from "../../../../components-dev/mobile/perf/perfColors";
@@ -641,6 +642,25 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
             {cardNoLy ? "no history" : pct(totals.gpmLy)}
           </span>
         </div>
+        {/* Points, not percent. This card's headline is a margin, so its TY
+            minus LY is a move in margin POINTS — 28.40% against 26.30% is
+            "+2.10 pts", and calling that "+2.10%" would be read as a 2% gain
+            on the margin itself. Every other Performance card differences a
+            money figure and needs no such label. */}
+        {totals.gpm !== null && totals.gpmLy !== null && (
+          <div className="ml-auto flex flex-col items-end pb-0.5">
+            <span className="mb-1 font-mono text-[9.5px] uppercase tracking-wider text-content/85">
+              +/-
+            </span>
+            <PerfDelta
+              ty={totals.gpm}
+              ly={totals.gpmLy}
+              format={(n) => `${n.toFixed(2)} pts`}
+              unavailable={cardNoLy}
+              className="!text-[20px]"
+            />
+          </div>
+        )}
       </div>
 
       <div className="mt-3">
@@ -677,7 +697,7 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
           { k: "LY gross profit", v: totals.profitLy, ly: true },
           { k: "LY cost", v: totals.cogsLy, ly: true },
         ].map(({ k, v, ly }) => (
-          <div key={k} className="flex flex-col">
+          <div key={k} className="flex flex-col items-center text-center">
             <span className="font-mono text-[9.5px] uppercase tracking-wider text-content/85">
               {k}
             </span>

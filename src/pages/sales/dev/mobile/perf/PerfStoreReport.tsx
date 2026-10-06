@@ -3,6 +3,7 @@ import { formatCurrency2 } from "../../../../../utils";
 import type { PerfDay, PerfTotals } from "./perfData";
 import PairedBars from "../../../../../components-dev/mobile/perf/PairedBars";
 import PerfDayChart from "../../../../../components-dev/mobile/perf/PerfDayChart";
+import PerfDelta from "../../../../../components-dev/mobile/perf/PerfDelta";
 import { COUPON_COLORS, COUPON_LABELS, LY_COLOR, TY_SWATCH_BG } from "../../../../../components-dev/mobile/perf/perfColors";
 
 /** Darkest to lightest, so the stack and the legend agree. */
@@ -88,8 +89,16 @@ const PerfStoreReport = ({
 
     {/* ── the figure, then the comparison ────────────────────────── */}
     <div className="px-3.5 pb-3 pt-1.5">
-      <div className="font-display text-[32px] font-extrabold leading-none tracking-tight text-content">
-        {formatCurrency2(totals.sales)}
+      <div className="flex flex-wrap items-baseline gap-x-2.5">
+        <span className="font-display text-[32px] font-extrabold leading-none tracking-tight text-content">
+          {formatCurrency2(totals.sales)}
+        </span>
+        <PerfDelta
+          ty={totals.sales}
+          ly={totals.salesLy}
+          unavailable={noLy}
+          className="ml-auto"
+        />
       </div>
 
       <div className="mt-2.5">
@@ -127,7 +136,7 @@ const PerfStoreReport = ({
             ["Coupons", formatCurrency2(totals.coupons), true],
           ] as const
         ).map(([k, v, fromBundle]) => (
-          <div key={k} className="flex flex-col">
+          <div key={k} className="flex flex-col items-center text-center">
             <span className="font-mono text-[9.5px] uppercase tracking-wider text-content/85">
               {k}
             </span>

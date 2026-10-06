@@ -78,6 +78,7 @@ import {
   type PairSort,
 } from "./perfData";
 import PairedBars from "../../../../../components-dev/mobile/perf/PairedBars";
+import PerfDelta from "../../../../../components-dev/mobile/perf/PerfDelta";
 import PerfCardHeader from "../../../../../components-dev/mobile/perf/PerfCardHeader";
 import MobilePerfCard from "../../../../../components-dev/mobile/MobilePerfCard";
 import MobilePerfDetail from "../../../../../components-dev/mobile/MobilePerfDetail";
@@ -688,8 +689,16 @@ const SalesPerfMobile = () => {
                   a peer. */}
               {!groupOpen && (
                 <div className="px-3.5 pb-3.5 pt-1.5">
-                  <div className="font-display text-[24px] font-extrabold leading-none tracking-tight text-content">
-                    {formatCurrency2(groupTotals.sales)}
+                  <div className="flex flex-wrap items-baseline gap-x-2.5">
+                    <span className="font-display text-[24px] font-extrabold leading-none tracking-tight text-content">
+                      {formatCurrency2(groupTotals.sales)}
+                    </span>
+                    <PerfDelta
+                      ty={groupTotals.sales}
+                      ly={groupTotals.salesLy}
+                      unavailable={noLyHistory(groupMatch, null)}
+                      className="ml-auto"
+                    />
                   </div>
                   <div className="mt-2.5">
                     <PairedBars

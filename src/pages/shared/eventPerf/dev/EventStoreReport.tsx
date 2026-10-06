@@ -2,6 +2,7 @@ import { ChevronRightIcon } from "@heroicons/react/20/solid";
 import { formatCurrency2 } from "../../../../utils";
 import PairedBars from "../../../../components-dev/mobile/perf/PairedBars";
 import PerfDayChart from "../../../../components-dev/mobile/perf/PerfDayChart";
+import PerfDelta from "../../../../components-dev/mobile/perf/PerfDelta";
 import { LY_COLOR, TY_SWATCH_BG } from "../../../../components-dev/mobile/perf/perfColors";
 import type { EventTotals } from "./eventPerfData";
 
@@ -95,8 +96,15 @@ const EventStoreReport = ({
         <div className="text-[11px] font-semibold text-content/85">
           {heroCaption}
         </div>
-        <div className="mt-1 font-display text-[30px] font-extrabold leading-none tracking-tight text-content">
-          {fmt(value)}
+        <div className="mt-1 flex flex-wrap items-baseline gap-x-2.5">
+          <span className="font-display text-[30px] font-extrabold leading-none tracking-tight text-content">
+            {fmt(value)}
+          </span>
+          {/* Same gate as the bar below: no baseline at this level means there
+              is nothing to difference against. */}
+          {base !== null && (
+            <PerfDelta ty={value} ly={base} format={fmt} className="ml-auto" />
+          )}
         </div>
 
         {/* No second bar when the comparison period has nothing at this level —
@@ -139,7 +147,7 @@ const EventStoreReport = ({
               ["Busiest", busiest],
             ] as [string, string][]
           ).map(([k, v]) => (
-            <div key={k} className="flex flex-col">
+            <div key={k} className="flex flex-col items-center text-center">
               <span className="font-mono text-[9.5px] uppercase tracking-wider text-content/85">
                 {k}
               </span>

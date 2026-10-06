@@ -254,6 +254,14 @@ body {
     --color-severity-healthy-text: 14 99 49;
     --color-delta-positive-bg: 209 242 225;
     --color-delta-positive-text: 16 96 56;
+    /* A lighter stop for the same job, where the delta is a GRAPHIC rather
+       than type: the mobile Performance bars read heavy in the text stop,
+       which is tuned to carry 4.5:1 as small text and is nearly the darkest
+       green in the theme. Graphics answer to 3:1, so this can breathe. Same
+       pixel as brand-green-dark, deliberately duplicated rather than borrowed
+       — brand green is the portal's accent, and a bar that quietly follows a
+       marketing colour is a bar that changes for the wrong reason. */
+    --color-delta-positive-mid: 23 128 63;
     --color-delta-negative-bg: 242 209 209;
     --color-delta-negative-text: 142 16 16;
     --color-content: 30 41 59;

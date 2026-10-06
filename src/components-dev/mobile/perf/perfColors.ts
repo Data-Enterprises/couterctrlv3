@@ -48,14 +48,18 @@ export const TY_COLOR = "#178ec6";
 export const LY_COLOR = "#5a6c84";
 
 /**
- * This year, at or above last year. --color-delta-positive-text.
+ * This year, at or above last year. --color-delta-positive-mid.
  *
  * The delta family rather than the severity family: these say which way a
- * figure moved, not whether it passed a threshold. Taken at the `text` stop
- * because the `bg` stops are pale tints meant to sit behind type, and a bar
- * that pale disappears against the card.
+ * figure moved, not whether it passed a threshold.
+ *
+ * The `mid` stop, not `text`. The text stop is tuned to carry 4.5:1 as small
+ * type and is nearly the darkest green in the theme — as a solid bar it read
+ * closer to black than to green. A bar is a graphic and answers to 3:1, so it
+ * can take a lighter stop and still be read. The `bg` stops are pale tints
+ * meant to sit behind type and disappear against the card entirely.
  */
-export const UP_COLOR = "#106038";
+export const UP_COLOR = "#17803f";
 
 /** This year, below last year. --color-delta-negative-text, the partner to
  *  UP_COLOR above and chosen on the same grounds. */
