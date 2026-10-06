@@ -25,6 +25,8 @@ import {
   setHasSearched,
   setLedgerLoading,
   setLedgerSelection,
+  setLedgerTab,
+  type LedgerTab,
   setLedgerSelectedDate,
   reQueryLedger,
 } from "../../../features/dev/devSalesLedgerSlice";
@@ -99,18 +101,27 @@ const SalesLedger = () => {
   //
   // Clicking the store that is already open closes it, which is how you get
   // back to the group view without reaching for the X.
-  const handleRowClick = useCallback(
-    (s: Parameters<typeof setLedgerSelection>[0]) =>
-      dispatch(
-        setLedgerSelection(
-          s &&
-            selectionRef.current?.storeId === s.storeId &&
-            selectionRef.current?.storeNumber === s.storeNumber
-            ? null
-            : s,
-        ),
-      ),
+  //
+  // `tab` is where the click CAME FROM, not a preference. Opening a store
+  // from the ledger is "show me this store", which is its departments;
+  // opening one from the group comparison is "show me this store against the
+  // others", which is the Comparison tab. Carrying the last tab over instead
+  // answers whichever question the reader asked previously.
+  const openStore = useCallback(
+    (s: Parameters<typeof setLedgerSelection>[0], tab: LedgerTab) => {
+      const closing =
+        s &&
+        selectionRef.current?.storeId === s.storeId &&
+        selectionRef.current?.storeNumber === s.storeNumber;
+      if (!closing && s) dispatch(setLedgerTab(tab));
+      dispatch(setLedgerSelection(closing ? null : s));
+    },
     [dispatch],
+  );
+
+  const handleRowClick = useCallback(
+    (s: Parameters<typeof setLedgerSelection>[0]) => openStore(s, "subdept"),
+    [openStore],
   );
 
   // Read inside the stable handler above without making it depend on the
@@ -680,7 +691,10 @@ const SalesLedger = () => {
                 threshold={activeThreshold}
                 selectedDate={selectedDate}
                 onSelectDay={(d) => dispatch(setLedgerSelectedDate(d))}
-                onSelectStore={(row) => handleRowClick(selectionFor(row))}
+                /* From the group comparison, so the store opens on the tab
+                   that continues that question rather than on its own
+                   departments. */
+                onSelectStore={(row) => openStore(selectionFor(row), "comparison")}
               />
             ) : (
               <EmptyPrompt
