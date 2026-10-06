@@ -1,6 +1,9 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
-import { setInvestigation } from "../../../../features/dev/devSalesLedgerSlice";
+import {
+  setInvestigation,
+  type InvestigationTarget,
+} from "../../../../features/dev/devSalesLedgerSlice";
 import { useDeptInvestigation, type Stage } from "../hooks/useDeptInvestigation";
 import {
   SUPPLY_LOOKBACK_DAYS,
@@ -8,7 +11,9 @@ import {
 } from "../shared/investigationData";
 import type { Cause, ItemVerdict } from "../shared/deptInvestigation";
 import { formatCurrency2, formatBigNumber } from "../../../../utils";
-import SortHeader, { PERF_SORT_HEADER } from "../../../../components-dev/SortHeader";
+import SortHeader from "../../../../components-dev/SortHeader";
+import ColFilter from "../../../../components-dev/filters/ColFilterPopover";
+import { colInputStyle } from "../../../../components-dev/filters/colFilterStyles";
 import { useTriStateSort } from "../../../../utils/useTriStateSort";
 import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice";
 
@@ -29,13 +34,23 @@ import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice
  * is reading it needs to say why.
  */
 
-type Col = "mine" | "theirs" | "gap";
+type Col =
+  | "mine" | "theirs" | "gap"
+  | "mineLw" | "theirsLw" | "mineLy" | "theirsLy"
+  | "mineUnits" | "theirsUnits"
+  | "price" | "sellThrough" | "ordered" | "received";
 
-const COLS = "minmax(220px,1fr) 150px 130px 130px 140px";
-const GRID_MIN = 900;
-
-const HEAD =
-  "sticky top-0 z-10 bg-custom-white grid items-center gap-2.5 px-3 py-1.5 border-b border-brand_navy/15";
+/**
+ * How many rows are drawn.
+ *
+ * A department is hundreds of items and the table is one DOM node per cell,
+ * so the whole of Soft Drinks is forty thousand of them. The list is ordered
+ * by the biggest difference, which means the tail is the part nobody scrolls
+ * to — and the cause chips above narrow the set when somebody does want it.
+ * The footer says how many were left out rather than pretending this is all
+ * of them.
+ */
+const ROW_CAP = 300;
 
 const CAUSE_LABEL: Record<Cause, string> = {
   "never-ordered": "Never ordered",
@@ -89,6 +104,140 @@ const CAUSE_ORDER: Cause[] = [
   "ahead",
 ];
 
+
+/* ------------------------------------------------------------------ */
+/* The columns                                                         */
+/* ------------------------------------------------------------------ */
+
+type Fmt = (v: number) => string;
+
+type FilterKind = "item" | "upc" | "vendor" | "cause";
+
+interface ColumnDef {
+  key: string;
+  /** A column that can be narrowed. The popover lives in the heading, which
+   *  is where this app puts column filters everywhere else. */
+  filter?: FilterKind;
+  /** `{mine}` and `{theirs}` are filled with the two store numbers, so a
+   *  heading names the store rather than leaving the reader to remember
+   *  which side of the comparison it is. */
+  label: string;
+  width: number;
+  right?: boolean;
+  sort?: Col;
+  render: (r: ItemVerdict, fmt: Fmt) => ReactNode;
+}
+
+const label = (c: ColumnDef, t: InvestigationTarget) =>
+  c.label.replace("{mine}", t.storeNumber).replace("{theirs}", t.compareStoreNumber);
+
+/** A ratio reads as a multiple, which is how somebody says it out loud —
+ *  "we did two fifths of their units". Null stays a dash: there is no ratio
+ *  to a store that sold none, and 0 would read as a result. */
+const mult = (v: number | null) => (v === null ? "—" : `${v.toFixed(2)}×`);
+
+const pct = (v: number | null) => (v === null ? "—" : `${Math.round(v * 100)}%`);
+
+const sortValue = (r: ItemVerdict, col: Col): number | null => {
+  switch (col) {
+    case "mine": return r.mineTy;
+    case "theirs": return r.theirsTy;
+    case "gap": return r.gap;
+    case "mineLw": return r.mineLw;
+    case "theirsLw": return r.theirsLw;
+    case "mineLy": return r.mineLy;
+    case "theirsLy": return r.theirsLy;
+    case "mineUnits": return r.mineUnits;
+    case "theirsUnits": return r.theirsUnits;
+    case "price": return r.ratios.price;
+    case "sellThrough": return r.ratios.sellThrough;
+    case "ordered": return r.orderedQty;
+    case "received": return r.receivedUnits;
+  }
+};
+
+const COLUMNS: ColumnDef[] = [
+  {
+    key: "item", label: "Item", width: 250, filter: "item",
+    render: (r) => <span className="font-semibold">{r.description}</span>,
+  },
+  { key: "upc", label: "UPC", width: 120, filter: "upc", render: (r) => r.productCode },
+  {
+    key: "vendor", label: "Vendor", width: 150, filter: "vendor",
+    render: (r) => r.vendorName || <span className="text-content/85">—</span>,
+  },
+  {
+    key: "cause", label: "Cause", width: 118, filter: "cause",
+    render: (r) => (
+      <span
+        className={`inline-block px-1.5 py-0.5 rounded font-semibold ${CAUSE_CLASS[r.cause]}`}
+        title={CAUSE_OWNER[r.cause]}
+      >
+        {CAUSE_LABEL[r.cause]}
+      </span>
+    ),
+  },
+  {
+    key: "mineTy", label: "{mine} TY", width: 92, right: true, sort: "mine",
+    render: (r, fmt) => <span className="font-semibold">{fmt(r.mineTy)}</span>,
+  },
+  {
+    key: "theirsTy", label: "{theirs} TY", width: 92, right: true, sort: "theirs",
+    render: (r, fmt) => fmt(r.theirsTy),
+  },
+  {
+    key: "gap", label: "Difference", width: 104, right: true, sort: "gap",
+    // The ledger's pill, sized for a dense row: the comparison styling is
+    // the same everywhere on this page, and a graded figure that changes
+    // shape per grid is one a reader has to re-learn.
+    render: (r, fmt) => (
+      <span
+        className={`inline-block px-1.5 py-0.5 rounded font-semibold ${
+          r.gap === 0
+            ? "bg-gray-100 text-content/85"
+            : r.gap > 0
+              ? "bg-delta_positive_bg text-delta_positive_text"
+              : "bg-delta_negative_bg text-delta_negative_text"
+        }`}
+      >
+        {r.gap >= 0 ? "+" : "−"}{fmt(Math.abs(r.gap))}
+      </span>
+    ),
+  },
+  { key: "mineLw", label: "{mine} LW", width: 90, right: true, sort: "mineLw", render: (r, fmt) => fmt(r.mineLw) },
+  { key: "theirsLw", label: "{theirs} LW", width: 90, right: true, sort: "theirsLw", render: (r, fmt) => fmt(r.theirsLw) },
+  { key: "mineLy", label: "{mine} LY", width: 90, right: true, sort: "mineLy", render: (r, fmt) => fmt(r.mineLy) },
+  { key: "theirsLy", label: "{theirs} LY", width: 90, right: true, sort: "theirsLy", render: (r, fmt) => fmt(r.theirsLy) },
+  {
+    key: "mineUnits", label: "{mine} units", width: 88, right: true, sort: "mineUnits",
+    render: (r) => r.mineUnits.toLocaleString("en-US"),
+  },
+  {
+    key: "theirsUnits", label: "{theirs} units", width: 88, right: true, sort: "theirsUnits",
+    render: (r) => r.theirsUnits.toLocaleString("en-US"),
+  },
+  {
+    // Units and dollars moving apart is what names a price problem, so the
+    // realised-price ratio earns a column of its own.
+    key: "price", label: "Price vs", width: 82, right: true, sort: "price",
+    render: (r) => mult(r.ratios.price),
+  },
+  {
+    key: "ordered", label: "Ordered", width: 78, right: true, sort: "ordered",
+    render: (r) =>
+      r.orderedQty > 0 ? r.orderedQty.toLocaleString("en-US") : <span className="text-content/85">none</span>,
+  },
+  {
+    key: "received", label: "Received", width: 84, right: true, sort: "received",
+    render: (r) =>
+      r.receivedUnits > 0 ? r.receivedUnits.toLocaleString("en-US") : <span className="text-content/85">none</span>,
+  },
+  {
+    key: "sellThrough", label: "Sell-thru", width: 84, right: true, sort: "sellThrough",
+    render: (r) => pct(r.ratios.sellThrough),
+  },
+];
+
 interface Props {
   gradingMetric: GradingMetric;
   twStart: string;
@@ -112,6 +261,11 @@ const DeptInvestigation = ({
   const target = useAppSelector((state) => state.dev.salesLedger.investigation);
   const { sort, handleSort, applySort } = useTriStateSort<Col>();
   const [only, setOnly] = useState<Cause | null>(null);
+  const [itemQ, setItemQ] = useState("");
+  const [itemDraft, setItemDraft] = useState("");
+  const [upcQ, setUpcQ] = useState("");
+  const [upcDraft, setUpcDraft] = useState("");
+  const [vendorQ, setVendorQ] = useState("");
 
   const isQty = gradingMetric === "qty";
   const fmt = (v: number) => (isQty ? formatBigNumber(v, 0) : formatCurrency2(v));
@@ -140,14 +294,58 @@ const DeptInvestigation = ({
 
   const { stage, items, summary, problem } = useDeptInvestigation(args);
 
-  const shown = useMemo(
-    () => (only ? items.filter((i) => i.cause === only) : items),
-    [items, only],
+  /** Every vendor in the department, so the vendor filter is a list to pick
+   *  from rather than a spelling to guess at. */
+  const vendors = useMemo(
+    () =>
+      [...new Set(items.map((i) => i.vendorName).filter(Boolean))].sort(
+        (a, b) => a.localeCompare(b),
+      ),
+    [items],
   );
 
-  const sorted = applySort(shown, (row, col) =>
-    col === "mine" ? row.mineTy : col === "theirs" ? row.theirsTy : row.gap,
-  );
+  const shown = useMemo(() => {
+    const item = itemQ.trim().toLowerCase();
+    const upc = upcQ.trim().toLowerCase();
+    return items.filter(
+      (i) =>
+        (!only || i.cause === only) &&
+        (!item || i.description.toLowerCase().includes(item)) &&
+        (!upc || i.productCode.toLowerCase().includes(upc)) &&
+        (!vendorQ || i.vendorName === vendorQ),
+    );
+  }, [items, only, itemQ, upcQ, vendorQ]);
+
+  const filterActive = (k: FilterKind) =>
+    k === "item" ? !!itemQ
+      : k === "upc" ? !!upcQ
+        : k === "vendor" ? !!vendorQ
+          : only !== null;
+
+  /** Text filters commit on Apply; the two pickers have already committed by
+   *  the time the button is reachable, so Apply just closes the popover. */
+  const applyFilter = (k: FilterKind) => {
+    if (k === "item") setItemQ(itemDraft);
+    if (k === "upc") setUpcQ(upcDraft);
+  };
+
+  const clearFilter = (k: FilterKind) => {
+    if (k === "item") { setItemQ(""); setItemDraft(""); }
+    if (k === "upc") { setUpcQ(""); setUpcDraft(""); }
+    if (k === "vendor") setVendorQ("");
+    if (k === "cause") setOnly(null);
+  };
+
+  const filtered = only !== null || !!itemQ || !!upcQ || !!vendorQ;
+  const clearAll = () => {
+    setOnly(null);
+    setItemQ(""); setItemDraft("");
+    setUpcQ(""); setUpcDraft("");
+    setVendorQ("");
+  };
+
+  const sorted = applySort(shown, (row, col) => sortValue(row, col));
+  const capped = sorted.slice(0, ROW_CAP);
 
   if (!target) return null;
 
@@ -264,80 +462,156 @@ const DeptInvestigation = ({
           {problem}
         </div>
       ) : (
-        <div className="flex-1 min-h-0 overflow-auto thin-scrollbar">
-          <div style={{ minWidth: GRID_MIN }}>
-            <div className={HEAD} style={{ gridTemplateColumns: COLS }}>
-              <span className="text-[11.5px] font-semibold uppercase tracking-wide text-content/85">
-                Item
-              </span>
-              <span className="text-[11.5px] font-semibold uppercase tracking-wide text-content/85">
-                Cause
-              </span>
-              <SortHeader col="mine" label={`${target.storeNumber} TY`} sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-start min-w-0`} />
-              <SortHeader col="theirs" label={`${target.compareStoreNumber} TY`} sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-start min-w-0`} />
-              <SortHeader col="gap" label="Difference" sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-start min-w-0`} />
-            </div>
+        <>
+          {/* The Sales Export preview's grid, which is this app's language for
+              a lot of columns at once: one real table, every cell ruled, mono
+              at 11px, a sticky heading row and a sticky row number. Dense is
+              the point — a department is hundreds of items and an airy list
+              shows eight of them. */}
+          <div className="flex-1 min-h-0 overflow-auto thin-scrollbar">
+            <table className="border-collapse font-mono text-[11px] w-max">
+              <thead>
+                <tr>
+                  <th className="sticky top-0 left-0 z-30 w-[44px] bg-bkg border-b border-brand_line_2 border-r border-brand_line px-2 py-1.5"></th>
+                  {COLUMNS.map((c) => (
+                    <th
+                      key={c.key}
+                      style={{ minWidth: c.width }}
+                      className="sticky top-0 z-10 bg-custom-white border-b border-brand_line_2 border-r border-brand_line px-2.5 py-1.5 text-left font-semibold whitespace-nowrap"
+                    >
+                      {c.filter ? (
+                        <ColFilter
+                          label={label(c, target)}
+                          labelSize="text-[11px]"
+                          active={filterActive(c.filter)}
+                          onApply={() => applyFilter(c.filter as FilterKind)}
+                          onClear={() => clearFilter(c.filter as FilterKind)}
+                        >
+                          {c.filter === "item" && (
+                            <input
+                              autoFocus
+                              style={colInputStyle}
+                              placeholder="Search item…"
+                              value={itemDraft}
+                              onChange={(e) => setItemDraft(e.target.value)}
+                            />
+                          )}
+                          {c.filter === "upc" && (
+                            <input
+                              autoFocus
+                              style={colInputStyle}
+                              placeholder="Search UPC…"
+                              value={upcDraft}
+                              onChange={(e) => setUpcDraft(e.target.value)}
+                            />
+                          )}
+                          {/* Vendor and cause are both closed sets, so they
+                              are picked rather than typed — a vendor name is
+                              not something anyone spells from memory. They
+                              apply on change, since there is nothing to
+                              finish typing. */}
+                          {c.filter === "vendor" && (
+                            <select
+                              style={colInputStyle}
+                              value={vendorQ}
+                              onChange={(e) => setVendorQ(e.target.value)}
+                            >
+                              <option value="">Every vendor</option>
+                              {vendors.map((v) => (
+                                <option key={v} value={v}>{v}</option>
+                              ))}
+                            </select>
+                          )}
+                          {c.filter === "cause" && (
+                            <select
+                              style={colInputStyle}
+                              value={only ?? ""}
+                              onChange={(e) =>
+                                setOnly((e.target.value || null) as Cause | null)
+                              }
+                            >
+                              <option value="">Every cause</option>
+                              {CAUSE_ORDER.filter((x) => byCause.has(x)).map((x) => (
+                                <option key={x} value={x}>{CAUSE_LABEL[x]}</option>
+                              ))}
+                            </select>
+                          )}
+                        </ColFilter>
+                      ) : c.sort ? (
+                        <SortHeader
+                          col={c.sort}
+                          label={label(c, target)}
+                          sort={sort}
+                          onSort={handleSort}
+                          className="text-[11px] font-semibold uppercase tracking-wide text-content/85 hover:text-content"
+                        />
+                      ) : (
+                        <span className="uppercase tracking-wide text-content/85">
+                          {label(c, target)}
+                        </span>
+                      )}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              {/* No zebra stripe: every cell is ruled, which is what
+                  separates the rows here, and the sticky number column is
+                  opaque white — a stripe would stop dead under it. */}
+              <tbody>
+                {capped.map((r, i) => (
+                  <tr key={r.productCode} className="hover:bg-gray-50">
+                    <td className="sticky left-0 z-10 bg-custom-white border-r border-brand_line border-b border-brand_line px-2 py-1.5 text-right text-content/85">
+                      {i + 1}
+                    </td>
+                    {COLUMNS.map((c) => (
+                      <td
+                        key={c.key}
+                        className={`border-r border-b border-brand_line px-2.5 py-1.5 whitespace-nowrap ${c.right ? "text-right" : ""}`}
+                      >
+                        {c.render(r, fmt)}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
 
-            {sorted.map((r) => (
-              <Row key={r.productCode} row={r} fmt={fmt} />
-            ))}
-
-            {sorted.length === 0 && stage !== "sales" && (
+            {capped.length === 0 && stage !== "sales" && (
               <div className="px-4 py-8 text-center text-[12.5px] text-content/85">
                 Nothing in this department to compare.
               </div>
             )}
           </div>
-        </div>
+
+          <div className="flex-shrink-0 flex items-center gap-3 px-4 py-2 border-t border-brand_line bg-custom-white text-[11.5px] text-content/85">
+            <span>
+              {shown.length > ROW_CAP ? (
+                <>
+                  Showing the {ROW_CAP} biggest differences of {shown.length}.
+                  Narrow it with a heading filter — what is left out is the
+                  tail, and nothing in it is larger than the last row here.
+                </>
+              ) : (
+                <>
+                  {shown.length} {shown.length === 1 ? "item" : "items"}
+                  {filtered ? ` of ${items.length}` : ""} · ordered by the
+                  biggest difference
+                </>
+              )}
+            </span>
+            {filtered && (
+              <button
+                onClick={clearAll}
+                className="flex-shrink-0 font-semibold text-brand_navy_hover hover:underline"
+              >
+                Clear filters
+              </button>
+            )}
+          </div>
+        </>
       )}
     </div>
   );
 };
-
-const Row = ({
-  row,
-  fmt,
-}: {
-  row: ItemVerdict;
-  fmt: (v: number) => string;
-}) => (
-  <div
-    className="grid gap-2.5 items-center px-3 py-[11px] border-b border-brand_navy/15 last:border-b-0 even:bg-row_stripe hover:bg-gray-50 text-[13px] text-content"
-    style={{ gridTemplateColumns: COLS }}
-  >
-    <span className="min-w-0 truncate font-medium" title={row.vendorName}>
-      {row.description}
-      <span className="ml-2 text-[11px] text-content/85">{row.productCode}</span>
-    </span>
-
-    <span className="min-w-0">
-      <span
-        className={`inline-block text-[11.5px] font-semibold px-2 py-0.5 rounded ${CAUSE_CLASS[row.cause]}`}
-        title={CAUSE_OWNER[row.cause]}
-      >
-        {CAUSE_LABEL[row.cause]}
-      </span>
-    </span>
-
-    <span className="tabular-nums font-semibold text-[14px]">{fmt(row.mineTy)}</span>
-    <span className="tabular-nums text-[14px] text-content/85">{fmt(row.theirsTy)}</span>
-
-    <span className="flex justify-start">
-      <span
-        className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center whitespace-nowrap ${
-          row.gap === 0
-            ? "bg-gray-100 text-content/85"
-            : row.gap > 0
-              ? "bg-delta_positive_bg text-delta_positive_text"
-              : "bg-delta_negative_bg text-delta_negative_text"
-        }`}
-        style={{ minWidth: 112 }}
-      >
-        {row.gap >= 0 ? "+" : "−"}
-        {fmt(Math.abs(row.gap))}
-      </span>
-    </span>
-  </div>
-);
 
 export default DeptInvestigation;
