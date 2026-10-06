@@ -113,9 +113,10 @@ const GroupComparisonPanel = ({
   );
 
   // Biggest contributor first by default, which is the order somebody reads a
-  // group in — and the same order as the rank beside the name. Stores with no
-  // contribution to state are the set-aside ones, so they fall to the bottom.
-  // A column sort is a lens over this, and the third click returns to it.
+  // group in — the position is the row's place in the list, so it does not
+  // also need printing. Stores with no contribution to state are the set-aside
+  // ones, so they fall to the bottom. A column sort is a lens over this, and
+  // the third click returns to it.
   const byContribution = useMemo(
     () =>
       [...group.rows].sort(
@@ -304,12 +305,7 @@ const Row = ({
       className="grid gap-2.5 items-center px-2 py-[11px] border-b border-brand_navy/15 last:border-b-0 even:bg-row_stripe hover:bg-gray-50 cursor-pointer text-[13px] text-content"
       style={{ gridTemplateColumns: COLS }}
     >
-      <span className="min-w-0 truncate font-medium">
-        {name}
-        {row.rank !== null && (
-          <span className="ml-1.5 text-[11px] text-content/85">#{row.rank}</span>
-        )}
-      </span>
+      <span className="min-w-0 truncate font-medium">{name}</span>
 
       <span className="min-w-0">
         {row.verdict ? (
