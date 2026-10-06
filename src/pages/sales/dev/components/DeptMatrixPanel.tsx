@@ -4,7 +4,7 @@ import {
   setInvestigation,
   setMatrixOpen,
 } from "../../../../features/dev/devSalesLedgerSlice";
-import { useDeptMatrix } from "../hooks/useDeptMatrix";
+import { useDeptMatrix, type MatrixStore } from "../hooks/useDeptMatrix";
 import { bestIn, flagged, type Cell, type Matrix } from "../shared/deptMatrix";
 import { applyStoreNumberToName } from "../shared/ledgerUtils";
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
@@ -58,9 +58,10 @@ const shade = (index: number | null, band: number) => {
 };
 
 interface Props {
-  useGroups: number;
-  searchValue: number;
-  singleStore: number;
+  /** The searched stores, straight off the ledger rows — no second call to
+   *  find out who is in the group, and co-located stores are already split by
+   *  number there. */
+  stores: MatrixStore[];
   gradingMetric: GradingMetric;
   /** The page's own threshold, so one control governs the severity dots in
    *  the ledger and what counts as worth opening here. An index IS a
@@ -75,9 +76,7 @@ interface Props {
 }
 
 const DeptMatrixPanel = ({
-  useGroups,
-  searchValue,
-  singleStore,
+  stores,
   gradingMetric,
   threshold,
   twStart,
@@ -91,22 +90,17 @@ const DeptMatrixPanel = ({
 
   const args = useMemo(
     () => ({
-      useGroups,
-      searchValue,
-      singleStore,
+      stores,
       tw: { start: twStart, end: twEnd },
       lw: { start: lwStart, end: lwEnd },
       ly: { start: lyStart, end: lyEnd },
       metric: gradingMetric,
       enabled: true,
     }),
-    [
-      useGroups, searchValue, singleStore, gradingMetric,
-      twStart, twEnd, lwStart, lwEnd, lyStart, lyEnd,
-    ],
+    [stores, gradingMetric, twStart, twEnd, lwStart, lwEnd, lyStart, lyEnd],
   );
 
-  const { matrix, loading, problem } = useDeptMatrix(args);
+  const { matrix, loading, answered, asked, problem } = useDeptMatrix(args);
 
   const close = () => dispatch(setMatrixOpen(false));
 
@@ -293,6 +287,11 @@ const DeptMatrixPanel = ({
               <span className="w-3 h-3 rounded-sm" style={{ background: OVER[3][0] }} />
               Over it
             </span>
+            {answered < asked && (
+              <span className="font-semibold text-severity_watch_text">
+                {answered} of {asked} stores answered
+              </span>
+            )}
             {matrix.blanks > 0 && (
               <span>
                 {matrix.blanks} blank — no last year or last week covering the

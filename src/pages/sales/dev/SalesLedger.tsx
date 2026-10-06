@@ -374,6 +374,20 @@ const SalesLedger = () => {
     [baseLedgerRows, activeThreshold],
   );
 
+  /** The matrix asks one store at a time, and these are the stores the
+   *  search already found — so no second call to resolve the group, and
+   *  co-located stores arrive already split by number. */
+  const matrixStores = useMemo(
+    () =>
+      ledgerRows.map((r) => ({
+        storeid: r.storeid,
+        storeNumber: r.store_number,
+        storeName: r.store_name,
+      })),
+    [ledgerRows],
+  );
+
+
   const criticalRows = ledgerRows.filter((r) => r.severity === "critical");
   const watchRows = ledgerRows.filter((r) => r.severity === "watch");
   const healthyRows = ledgerRows.filter((r) => r.severity === "healthy");
@@ -495,11 +509,7 @@ const SalesLedger = () => {
            fit half a page. */
         <div className="h-[calc(100vh-5rem)]">
           <DeptMatrixPanel
-            useGroups={isGroupSearch(search.type) ? 1 : 0}
-            singleStore={isGroupSearch(search.type) ? 0 : 1}
-            searchValue={
-              isGroupSearch(search.type) ? search.lastGroup : search.lastStore
-            }
+            stores={matrixStores}
             gradingMetric={gradingMetric}
             threshold={activeThreshold}
             {...getDateRanges()}
