@@ -88,20 +88,25 @@ const PopupComparisonList = ({
   const others = group.rows.filter((r) => keyOf(r) !== keyOf(open));
 
   /**
-   * This store's week against the open store's, in each of the three periods.
+   * The OPEN store's week against this row's, in each of the three periods.
    *
-   * Money, not points: "Glasgow did $80.8K more than Louisville this week" is
+   * That direction, and not the other way about, because the panel is about
+   * the open store: green has to mean the store you are looking at is ahead.
+   * Subtracting the other way reads as a verdict on whichever store the row
+   * happens to be, which is backwards on a page you opened to ask about one.
+   *
+   * Money, not points: "Leitchfield is $28.6K behind Louisville this week" is
    * the sentence somebody says out loud, and it is the one thing neither
    * store's own row — here or in the ledger — can tell you.
    *
    * Null where the store has nothing for that period, so there is no
    * comparison to state rather than a zero implying one.
    */
-  const tyGap = (r: ComparisonRow) => r.ty - open.ty;
+  const tyGap = (r: ComparisonRow) => open.ty - r.ty;
   const lwGap = (r: ComparisonRow) =>
-    r.hasLW && open.hasLW ? r.lw - open.lw : null;
+    r.hasLW && open.hasLW ? open.lw - r.lw : null;
   const lyGap = (r: ComparisonRow) =>
-    r.hasLY && open.hasLY ? r.ly - open.ly : null;
+    r.hasLY && open.hasLY ? open.ly - r.ly : null;
 
   const sorted = applySort(others, (row, col) =>
     col === "tyGap" ? tyGap(row) : col === "lwGap" ? lwGap(row) : lyGap(row),
@@ -113,7 +118,7 @@ const PopupComparisonList = ({
   /** The pill shape the ledger uses, carrying direction only. Two stores are
    *  not a baseline for each other, so there is no threshold to grade on. */
   const diffPill = (text: string, sign: number | null) => (
-    <span className="flex justify-end">
+    <span className="flex justify-start">
       <span
         className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center whitespace-nowrap ${
           sign === null || sign === 0
@@ -165,6 +170,11 @@ const PopupComparisonList = ({
   return (
     <div className="h-full overflow-auto thin-scrollbar">
       <div style={{ minWidth: GRID_MIN }}>
+        <p className="px-2 py-2 text-[12px] text-content/85 border-b border-gray-100">
+          How <span className="font-semibold text-content">{openStoreName}</span>{" "}
+          stands against each store — ahead in green, behind in red.
+        </p>
+
         <div className={HEAD} style={{ gridTemplateColumns: COLS }}>
           <span className="text-[11.5px] font-semibold uppercase tracking-wide text-content/85">
             Store
@@ -172,9 +182,9 @@ const PopupComparisonList = ({
           {/* Each one is this store's movement against the open store's, over
               the same comparison. Nothing here is a figure the ledger already
               shows. */}
-          <SortHeader col="tyGap" label="vs TY" sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-end`} />
-          <SortHeader col="lwGap" label="vs LW" sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-end`} />
-          <SortHeader col="lyGap" label="vs LY" sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-end`} />
+          <SortHeader col="tyGap" label="vs TY" sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-start`} />
+          <SortHeader col="lwGap" label="vs LW" sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-start`} />
+          <SortHeader col="lyGap" label="vs LY" sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-start`} />
         </div>
 
         {sorted.map((r) => (

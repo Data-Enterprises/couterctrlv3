@@ -5,6 +5,8 @@ import { useAppSelector } from "../../../../hooks";
 import { useSalesState } from "../hooks/useSalesState";
 import { scopeToStoreNumber } from "../shared/ledgerUtils";
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
+import SortHeader, { PERF_SORT_HEADER } from "../../../../components-dev/SortHeader";
+import { useTriStateSort } from "../../../../utils/useTriStateSort";
 import type { SubSale } from "../../../../interfaces";
 import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice";
 
@@ -33,8 +35,10 @@ const totalsBySubDept = (rows: SubSale[], metric: GradingMetric) =>
     return acc;
   }, {});
 
-const COLS = "minmax(150px,1fr) 128px 128px 124px 124px 124px";
-const GRID_MIN = 800;
+type Col = "tyDiff" | "lwDiff" | "lyDiff";
+
+const COLS = "minmax(180px,1fr) 136px 136px 136px";
+const GRID_MIN = 620;
 
 const HEAD =
   "sticky top-0 z-10 bg-custom-white grid items-center gap-2.5 px-2 py-1.5 border-b border-brand_navy/15";
@@ -70,6 +74,7 @@ const SubDeptSideBySide = ({
   gradingMetric,
   onBack,
 }: Props) => {
+  const { sort, handleSort, applySort } = useTriStateSort<Col>();
   const context = useAppSelector((state) => state.app);
   // The open store's three weeks are already here — the panel fetched them
   // for its own Sub dept tab, which is why only the counterpart is asked for.
@@ -169,13 +174,24 @@ const SubDeptSideBySide = ({
           lyDiff: at(mineLy, id) - at(theirLy, id),
         };
       })
+      // Biggest department first by default, which is the order somebody
+      // reads a department list in. A column sort is a lens over that, and
+      // the third click returns to it.
       .sort((x, y) => y.a - x.a);
   }, [theirs, subSales, subSalesWk2, subSalesWk3, gradingMetric]);
+
+  const sorted = applySort(rows, (row, col) =>
+    col === "tyDiff"
+      ? row.tyDiff
+      : col === "lwDiff"
+        ? row.lwDiff
+        : row.lyDiff,
+  );
 
   /** The ledger's pill shape, carrying direction only: two stores are not a
    *  baseline for each other, so there is no threshold to grade against. */
   const diffPill = (v: number) => (
-    <span className="flex justify-end">
+    <span className="flex justify-start">
       <span
         className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center whitespace-nowrap ${
           v === 0
@@ -202,7 +218,10 @@ const SubDeptSideBySide = ({
           ‹ All stores
         </button>
         <span className="text-[12px] text-content/85 truncate">
-          {openStoreName} against {compareStoreName}
+          How <span className="font-semibold text-content">{openStoreName}</span>{" "}
+          stands against{" "}
+          <span className="font-semibold text-content">{compareStoreName}</span>,
+          department by department
         </span>
       </div>
 
@@ -221,43 +240,25 @@ const SubDeptSideBySide = ({
               <span className="text-[11.5px] font-semibold uppercase tracking-wide text-content/85">
                 Sub dept
               </span>
-              <span
-                className="text-[11.5px] font-semibold uppercase tracking-wide text-content/85 text-right truncate"
-                title={openStoreName}
-              >
-                {openStoreName}
-              </span>
-              <span
-                className="text-[11.5px] font-semibold uppercase tracking-wide text-content/85 text-right truncate"
-                title={compareStoreName}
-              >
-                {compareStoreName}
-              </span>
               {/* The same three comparisons the store grid makes, one
-                  department at a time. */}
-              <span className="text-[11.5px] font-semibold uppercase tracking-wide text-content/85 text-right">
-                vs TY
-              </span>
-              <span className="text-[11.5px] font-semibold uppercase tracking-wide text-content/85 text-right">
-                vs LW
-              </span>
-              <span className="text-[11.5px] font-semibold uppercase tracking-wide text-content/85 text-right">
-                vs LY
-              </span>
+                  department at a time, and sorted the same way. Both stores
+                  are named in the line above, so neither needs a column. */}
+              <SortHeader col="tyDiff" label="vs TY" sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-start`} />
+              <SortHeader col="lwDiff" label="vs LW" sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-start`} />
+              <SortHeader col="lyDiff" label="vs LY" sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-start`} />
             </div>
 
-            {rows.map((r) => (
+            {sorted.map((r) => (
               <div
                 key={r.id}
                 className="grid gap-2.5 items-center px-2 py-[11px] border-b border-brand_navy/15 last:border-b-0 even:bg-row_stripe text-[13px] text-content"
                 style={{ gridTemplateColumns: COLS }}
               >
-                <span className="min-w-0 truncate font-medium">{r.name}</span>
-                <span className="text-right tabular-nums font-semibold">
-                  {fmt(r.a)}
-                </span>
-                <span className="text-right tabular-nums font-semibold">
-                  {fmt(r.b)}
+                <span
+                  className="min-w-0 truncate font-medium"
+                  title={`${openStoreName} ${fmt(r.a)} · ${compareStoreName} ${fmt(r.b)}`}
+                >
+                  {r.name}
                 </span>
                 {diffPill(r.tyDiff)}
                 {diffPill(r.lwDiff)}
