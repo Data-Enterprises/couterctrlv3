@@ -73,6 +73,10 @@ interface SalesLedgerState {
   tab: LedgerTab;
   selectedDate: string | null;
   investigation: InvestigationTarget | null;
+  /** The where-to-look matrix, which takes the page the same way the
+   *  investigation does. Not a tab on the ledger: nine stores by twenty
+   *  departments does not fit half a page. */
+  matrixOpen: boolean;
 
   // Loading
   ledgerLoading: boolean;
@@ -143,6 +147,7 @@ const initialState: SalesLedgerState = {
   tab: "subdept",
   selectedDate: null,
   investigation: null,
+  matrixOpen: false,
   ledgerLoading: false,
   reportLoading: false,
   top10Loading: false,
@@ -201,6 +206,13 @@ const salesLedgerSlice = createSlice({
       action: PayloadAction<InvestigationTarget | null>,
     ) => {
       state.investigation = action.payload;
+      // Opening an investigation from the matrix leaves the matrix behind,
+      // so Back from the investigation returns to the ledger rather than to
+      // a grid the reader has already finished with.
+      if (action.payload !== null) state.matrixOpen = false;
+    },
+    setMatrixOpen: (state, action: PayloadAction<boolean>) => {
+      state.matrixOpen = action.payload;
     },
     setLedgerSelectedDate: (state, action: PayloadAction<string | null>) => {
       state.selectedDate = action.payload;
@@ -378,6 +390,7 @@ export const {
   setLedgerSelection,
   setLedgerTab,
   setInvestigation,
+  setMatrixOpen,
   setLedgerSelectedDate,
   setLedgerLoading,
   setReportLoading,

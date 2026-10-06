@@ -1,4 +1,6 @@
 import { useMemo } from "react";
+import { useAppDispatch } from "../../../../hooks";
+import { setMatrixOpen } from "../../../../features/dev/devSalesLedgerSlice";
 import { formatCurrencyCompact, formatBigNumber } from "../../../../utils";
 import { applyStoreNumberToName } from "../shared/ledgerUtils";
 import {
@@ -97,6 +99,7 @@ const GroupComparisonPanel = ({
   onSelectStore,
 }: Props) => {
   const { sort, handleSort, applySort } = useTriStateSort<Col>();
+  const dispatch = useAppDispatch();
   const isQty = gradingMetric === "qty";
 
   const fmt = (v: number | null) =>
@@ -159,6 +162,13 @@ const GroupComparisonPanel = ({
         <p className="text-custom-white text-[13px] font-bold leading-tight">
           Where each store stands
         </p>
+        <button
+          onClick={() => dispatch(setMatrixOpen(true))}
+          title="Every store against every department, on one scale"
+          className="flex-shrink-0 text-custom-white text-[11.5px] font-semibold px-2 py-1 rounded border border-custom-white/30 hover:bg-custom-white/10 transition-colors"
+        >
+          By department ›
+        </button>
         <span className="text-custom-white/85 text-[11.5px]">
           {selectedDate
             ? `${new Date(selectedDate + "T12:00:00").toLocaleDateString("en-US", {

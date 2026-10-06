@@ -32,6 +32,7 @@ import { useToast } from "../../../components/toasts/hooks/useToast";
 import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
 import EmptyPrompt from "../../../components-dev/EmptyPrompt";
 import DeptInvestigation from "./components/DeptInvestigation";
+import DeptMatrixPanel from "./components/DeptMatrixPanel";
 import GroupComparisonPanel from "./components/GroupComparisonPanel";
 import { selectionFor } from "./shared/storeComparison";
 import LedgerEntryCard from "./components/LedgerEntryCard";
@@ -71,6 +72,7 @@ const SalesLedger = () => {
     // is still the day you meant when you open a store.
     selectedDate,
     investigation,
+    matrixOpen,
   } = useAppSelector((state) => state.dev.salesLedger);
   const { assignedStores } = useAppSelector((state) => state.user);
 
@@ -486,6 +488,22 @@ const SalesLedger = () => {
            back button able to put the reader where they were. */
         <div className="h-[calc(100vh-5rem)]">
           <DeptInvestigation gradingMetric={gradingMetric} {...getDateRanges()} />
+        </div>
+      ) : matrixOpen ? (
+        /* Where to look, before which store. Full width for the same reason
+           the investigation is: nine stores by twenty departments does not
+           fit half a page. */
+        <div className="h-[calc(100vh-5rem)]">
+          <DeptMatrixPanel
+            useGroups={isGroupSearch(search.type) ? 1 : 0}
+            singleStore={isGroupSearch(search.type) ? 0 : 1}
+            searchValue={
+              isGroupSearch(search.type) ? search.lastGroup : search.lastStore
+            }
+            gradingMetric={gradingMetric}
+            threshold={activeThreshold}
+            {...getDateRanges()}
+          />
         </div>
       ) : (
         <div className="flex gap-4 h-[calc(100vh-5rem)]">
