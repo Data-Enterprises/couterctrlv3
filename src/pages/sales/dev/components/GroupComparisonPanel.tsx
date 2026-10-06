@@ -112,7 +112,19 @@ const GroupComparisonPanel = ({
     [rows, gradingMetric, threshold, selectedDate],
   );
 
-  const sorted = applySort(group.rows, (row, col) =>
+  // Biggest contributor first by default, which is the order somebody reads a
+  // group in — and the same order as the rank beside the name. Stores with no
+  // contribution to state are the set-aside ones, so they fall to the bottom.
+  // A column sort is a lens over this, and the third click returns to it.
+  const byContribution = useMemo(
+    () =>
+      [...group.rows].sort(
+        (a, b) => (b.shareTy ?? -1) - (a.shareTy ?? -1),
+      ),
+    [group.rows],
+  );
+
+  const sorted = applySort(byContribution, (row, col) =>
     col === "shareTy"
       ? row.shareTy
       : col === "shareLw"
