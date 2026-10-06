@@ -53,17 +53,6 @@ interface SalesLedgerState {
   selection: StoreSelection | null;
   tab: LedgerTab;
   selectedDate: string | null;
-  /**
-   * Stores ticked out of the comparison, keyed `storeid__storeNumber`.
-   *
-   * Only the comparison honours this — the ledger still lists them and the
-   * header still totals them, because a store you are not comparing against
-   * is still a store you searched. Dropping one changes the group total, so
-   * every other store's share, expected and standing move with it, which is
-   * the point: "how are we doing without the new location" is a question the
-   * group answers wrong until you can ask it.
-   */
-  comparisonOff: string[];
 
   // Loading
   ledgerLoading: boolean;
@@ -133,7 +122,6 @@ const initialState: SalesLedgerState = {
   selection: null,
   tab: "subdept",
   selectedDate: null,
-  comparisonOff: [],
   ledgerLoading: false,
   reportLoading: false,
   top10Loading: false,
@@ -189,14 +177,6 @@ const salesLedgerSlice = createSlice({
     },
     setLedgerSelectedDate: (state, action: PayloadAction<string | null>) => {
       state.selectedDate = action.payload;
-    },
-    toggleComparisonStore: (state, action: PayloadAction<string>) => {
-      const at = state.comparisonOff.indexOf(action.payload);
-      if (at === -1) state.comparisonOff.push(action.payload);
-      else state.comparisonOff.splice(at, 1);
-    },
-    clearComparisonOff: (state) => {
-      state.comparisonOff = [];
     },
     setLedgerLoading: (state, action: PayloadAction<boolean>) => {
       state.ledgerLoading = action.payload;
@@ -318,7 +298,6 @@ const salesLedgerSlice = createSlice({
     reQueryLedger: (state) => {
       state.selection = null;
       state.selectedDate = null;
-      state.comparisonOff = [];
       state.lastFetchedStoreKey = null;
       state.rawSubs = [];
       state.rawLWSubs = [];
@@ -372,8 +351,6 @@ export const {
   setLedgerSelection,
   setLedgerTab,
   setLedgerSelectedDate,
-  toggleComparisonStore,
-  clearComparisonOff,
   setLedgerLoading,
   setReportLoading,
   setTop10Loading,
