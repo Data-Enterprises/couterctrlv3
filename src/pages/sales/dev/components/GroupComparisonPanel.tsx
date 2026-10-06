@@ -162,22 +162,18 @@ const GroupComparisonPanel = ({
         <p className="text-custom-white text-[13px] font-bold leading-tight">
           Where each store stands
         </p>
+        {/* Where "The whole window" used to sit. That line restated the day
+            strip immediately below it, which already shows its own selection
+            — so it was spending the one prominent slot in this header saying
+            something the screen was saying anyway. The way on to the
+            comparison is worth more. */}
         <button
           onClick={() => dispatch(setMatrixOpen(true))}
           title="Every store against every department, on one scale"
-          className="flex-shrink-0 text-custom-white text-[11.5px] font-semibold px-2 py-1 rounded border border-custom-white/30 hover:bg-custom-white/10 transition-colors"
+          className="flex-shrink-0 text-custom-white text-[12px] font-semibold px-2.5 py-1 rounded border border-custom-white/30 hover:bg-custom-white/10 transition-colors"
         >
-          By department ›
+          Compare by department ›
         </button>
-        <span className="text-custom-white/85 text-[11.5px]">
-          {selectedDate
-            ? `${new Date(selectedDate + "T12:00:00").toLocaleDateString("en-US", {
-                weekday: "long",
-                month: "short",
-                day: "numeric",
-              })} only`
-            : "The whole window"}
-        </span>
       </div>
 
       {/* KPI tiles — every one recomputes when a day is picked, which is why
