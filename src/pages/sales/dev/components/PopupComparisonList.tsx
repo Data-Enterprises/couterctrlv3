@@ -23,8 +23,8 @@ import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice
 
 type Col = "ownLwPct" | "ownLyPct" | "vsOpen";
 
-const COLS = "minmax(160px,1fr) 92px 92px 96px";
-const GRID_MIN = 470;
+const COLS = "minmax(180px,1fr) 108px 108px 120px";
+const GRID_MIN = 520;
 
 const HEAD =
   "sticky top-0 z-10 bg-custom-white grid items-center gap-2.5 px-2 py-1.5 border-b border-brand_navy/15";
@@ -102,7 +102,7 @@ const PopupComparisonList = ({
   const nameOf = (r: ComparisonRow) =>
     applyStoreNumberToName(r.storeName, r.storeNumber, r.storeNumbersForId);
 
-  const cells = (r: ComparisonRow, isOpen: boolean) => (
+  const cells = (r: ComparisonRow) => (
     <>
       <span className="min-w-0 truncate font-medium">{nameOf(r)}</span>
       {/* Graded the same way the ledger grades them, so a figure reads the
@@ -131,10 +131,8 @@ const PopupComparisonList = ({
       </span>
       {/* The one thing this tab is for. Both sides are percentages, so the
           distance between them is points. */}
-      <span
-        className={`text-right tabular-nums font-semibold ${isOpen ? "text-content/85" : toneOf(vsOpen(r))}`}
-      >
-        {isOpen ? "this store" : points1(vsOpen(r))}
+      <span className={`text-right tabular-nums font-semibold ${toneOf(vsOpen(r))}`}>
+        {points1(vsOpen(r))}
       </span>
     </>
   );
@@ -166,15 +164,6 @@ const PopupComparisonList = ({
           <SortHeader col="vsOpen" label="vs this store" sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-end`} />
         </div>
 
-        {/* The open store, pinned. Everything in the last column is a distance
-            from this row, so it has to be on screen. */}
-        <div
-          className="grid gap-2.5 items-center px-2 py-[7px] border-b-2 border-brand_navy/25 bg-row_selected text-[13px] text-content"
-          style={{ gridTemplateColumns: COLS }}
-        >
-          {cells(open, true)}
-        </div>
-
         {sorted.map((r) => (
           <div
             key={keyOf(r)}
@@ -191,7 +180,7 @@ const PopupComparisonList = ({
             className="grid gap-2.5 items-center px-2 py-[7px] border-b border-brand_navy/15 last:border-b-0 even:bg-row_stripe hover:bg-gray-50 cursor-pointer text-[13px] text-content"
             style={{ gridTemplateColumns: COLS }}
           >
-            {cells(r, false)}
+            {cells(r)}
           </div>
         ))}
 

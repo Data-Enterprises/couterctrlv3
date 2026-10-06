@@ -5,6 +5,7 @@ import { useAppSelector } from "../../../../hooks";
 import { useSalesState } from "../hooks/useSalesState";
 import { scopeToStoreNumber } from "../shared/ledgerUtils";
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
+import { PCT_COL_W } from "./utils";
 import type { SubSale } from "../../../../interfaces";
 import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice";
 
@@ -33,8 +34,8 @@ const totalsBySubDept = (rows: SubSale[], metric: GradingMetric) =>
     return acc;
   }, {});
 
-const COLS = "minmax(140px,1fr) 92px 92px 92px";
-const GRID_MIN = 440;
+const COLS = "minmax(160px,1fr) 118px 118px 128px";
+const GRID_MIN = 530;
 
 const HEAD =
   "sticky top-0 z-10 bg-custom-white grid items-center gap-2.5 px-2 py-1.5 border-b border-brand_navy/15";
@@ -174,17 +175,24 @@ const SubDeptSideBySide = ({
                 <span className="min-w-0 truncate font-medium">{r.name}</span>
                 <span className="text-right tabular-nums">{fmt(r.a)}</span>
                 <span className="text-right tabular-nums">{fmt(r.b)}</span>
-                <span
-                  className={`text-right tabular-nums font-semibold ${
-                    r.diff === 0
-                      ? "text-content"
-                      : r.diff > 0
-                        ? "text-delta_positive_text"
-                        : "text-delta_negative_text"
-                  }`}
-                >
-                  {r.diff >= 0 ? "+" : "−"}
-                  {fmt(Math.abs(r.diff))}
+                {/* The ledger's pill shape, so a figure in this grid reads
+                    like a figure anywhere else. Direction only — two stores
+                    are not a baseline for each other, so there is no
+                    threshold for this to be graded against. */}
+                <span className="flex justify-end">
+                  <span
+                    className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center whitespace-nowrap ${
+                      r.diff === 0
+                        ? "bg-gray-100 text-content/85"
+                        : r.diff > 0
+                          ? "bg-delta_positive_bg text-delta_positive_text"
+                          : "bg-delta_negative_bg text-delta_negative_text"
+                    }`}
+                    style={{ minWidth: PCT_COL_W }}
+                  >
+                    {r.diff >= 0 ? "+" : "−"}
+                    {fmt(Math.abs(r.diff))}
+                  </span>
                 </span>
               </div>
             ))}
