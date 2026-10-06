@@ -47,12 +47,32 @@ export type Top10Item = {
 /** `sev` is null when the item isn't graded — neither comparison covers the week. */
 export type ExportSubDeptItem = Top10Item & { sev: "critical" | "watch" | "healthy" | null };
 
+/**
+ * The sub-department investigation the page is holding open.
+ *
+ * It takes over the whole page rather than a panel, so it lives beside
+ * `selection` rather than inside it: closing the investigation has to put the
+ * reader back on the store and department they came from, and that is only
+ * possible if the two survive each other. Desktop only.
+ */
+export interface InvestigationTarget {
+  storeid: number;
+  storeNumber: string;
+  storeName: string;
+  compareStoreid: number;
+  compareStoreNumber: string;
+  compareStoreName: string;
+  subDept: number;
+  subDeptName: string;
+}
+
 interface SalesLedgerState {
   // Navigation (shared desktop + mobile)
   hasSearched: boolean;
   selection: StoreSelection | null;
   tab: LedgerTab;
   selectedDate: string | null;
+  investigation: InvestigationTarget | null;
 
   // Loading
   ledgerLoading: boolean;
@@ -122,6 +142,7 @@ const initialState: SalesLedgerState = {
   selection: null,
   tab: "subdept",
   selectedDate: null,
+  investigation: null,
   ledgerLoading: false,
   reportLoading: false,
   top10Loading: false,
@@ -174,6 +195,12 @@ const salesLedgerSlice = createSlice({
     },
     setLedgerTab: (state, action: PayloadAction<LedgerTab>) => {
       state.tab = action.payload;
+    },
+    setInvestigation: (
+      state,
+      action: PayloadAction<InvestigationTarget | null>,
+    ) => {
+      state.investigation = action.payload;
     },
     setLedgerSelectedDate: (state, action: PayloadAction<string | null>) => {
       state.selectedDate = action.payload;
@@ -350,6 +377,7 @@ export const {
   setHasSearched,
   setLedgerSelection,
   setLedgerTab,
+  setInvestigation,
   setLedgerSelectedDate,
   setLedgerLoading,
   setReportLoading,

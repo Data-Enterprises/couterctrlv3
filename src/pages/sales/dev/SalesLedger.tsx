@@ -31,6 +31,7 @@ import {
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
 import EmptyPrompt from "../../../components-dev/EmptyPrompt";
+import DeptInvestigation from "./components/DeptInvestigation";
 import GroupComparisonPanel from "./components/GroupComparisonPanel";
 import { selectionFor } from "./shared/storeComparison";
 import LedgerEntryCard from "./components/LedgerEntryCard";
@@ -69,6 +70,7 @@ const SalesLedger = () => {
     // Shared with the store popup on purpose: a day picked in the group view
     // is still the day you meant when you open a store.
     selectedDate,
+    investigation,
   } = useAppSelector((state) => state.dev.salesLedger);
   const { assignedStores } = useAppSelector((state) => state.user);
 
@@ -475,6 +477,15 @@ const SalesLedger = () => {
       {loading ? (
         <div className="relative h-[calc(100vh-3rem)]">
           <LoadingIndicator message="Loading store ledger" />
+        </div>
+      ) : investigation ? (
+        /* The page's full-width state. Four steps in, the question has
+           outgrown a panel, so the ledger and the report both give way
+           rather than the investigation opening inside one of them. The
+           ledger selection survives underneath, which is what makes the
+           back button able to put the reader where they were. */
+        <div className="h-[calc(100vh-5rem)]">
+          <DeptInvestigation gradingMetric={gradingMetric} {...getDateRanges()} />
         </div>
       ) : (
         <div className="flex gap-4 h-[calc(100vh-5rem)]">

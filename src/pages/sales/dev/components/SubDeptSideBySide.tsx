@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { getSubs } from "../../../../api/sales";
 import { formatCurrency2, formatBigNumber } from "../../../../utils";
-import { useAppSelector } from "../../../../hooks";
+import { useAppDispatch, useAppSelector } from "../../../../hooks";
+import { setInvestigation } from "../../../../features/dev/devSalesLedgerSlice";
 import { useSalesState } from "../hooks/useSalesState";
 import { scopeToStoreNumber } from "../shared/ledgerUtils";
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
@@ -51,6 +52,10 @@ const HEAD =
 
 interface Props {
   openStoreName: string;
+  /** Needed to open the investigation, which is about one named store's
+   *  supply chain and so cannot work from the name alone. */
+  openStoreId: number;
+  openStoreNumber: string;
   compareStoreId: number;
   /** Co-located stores share a storeid, so the rows have to be narrowed by
    *  number as well — the same scoping the detail panel does for its own. */
@@ -68,6 +73,8 @@ interface Props {
 
 const SubDeptSideBySide = ({
   openStoreName,
+  openStoreId,
+  openStoreNumber,
   compareStoreId,
   compareStoreNumber,
   compareStoreName,
@@ -81,6 +88,7 @@ const SubDeptSideBySide = ({
   onBack,
 }: Props) => {
   const { sort, handleSort, applySort } = useTriStateSort<Col>();
+  const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
   // The open store's three weeks are already here — the panel fetched them
   // for its own Sub dept tab, which is why only the counterpart is asked for.
@@ -198,6 +206,29 @@ const SubDeptSideBySide = ({
             : row.lyDiff,
   );
 
+  /**
+   * Hand the page over to the investigation.
+   *
+   * Both stores travel with it: the question there is why THIS store is behind
+   * THAT one in this department, and neither half of that survives being
+   * re-derived from a name. The ledger selection is left alone underneath, so
+   * coming back lands on the store and the department rather than on the
+   * search.
+   */
+  const openInvestigation = (subDept: number, subDeptName: string) =>
+    dispatch(
+      setInvestigation({
+        storeid: openStoreId,
+        storeNumber: openStoreNumber,
+        storeName: openStoreName,
+        compareStoreid: compareStoreId,
+        compareStoreNumber,
+        compareStoreName,
+        subDept,
+        subDeptName,
+      }),
+    );
+
   /** The ledger's pill shape, carrying direction only: two stores are not a
    *  baseline for each other, so there is no threshold to grade against. */
   const diffPill = (v: number) => (
@@ -273,7 +304,17 @@ const SubDeptSideBySide = ({
             {sorted.map((r) => (
               <div
                 key={r.id}
-                className="grid gap-2.5 items-center px-2 py-[11px] border-b border-brand_navy/15 last:border-b-0 even:bg-row_stripe text-[13px] text-content"
+                role="button"
+                tabIndex={0}
+                onClick={() => openInvestigation(r.id, r.name)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    openInvestigation(r.id, r.name);
+                  }
+                }}
+                title={`Why ${openStoreName} is behind in ${r.name}`}
+                className="grid gap-2.5 items-center px-2 py-[11px] border-b border-brand_navy/15 last:border-b-0 even:bg-row_stripe hover:bg-gray-50 cursor-pointer text-[13px] text-content"
                 style={{ gridTemplateColumns: COLS }}
               >
                 <span className="min-w-0 truncate font-medium">{r.name}</span>
