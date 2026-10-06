@@ -302,13 +302,13 @@ const Row = ({
       <span className="min-w-0">
         {row.verdict ? (
           <span
-            className={`inline-block text-[11px] font-semibold px-2 py-0.5 rounded ${VERDICT_CLASS[row.verdict]}`}
+            className={`inline-block text-[12px] font-semibold px-2 py-0.5 rounded ${VERDICT_CLASS[row.verdict]}`}
           >
             {VERDICT_LABEL[row.verdict]}
           </span>
         ) : (
           <span
-            className="inline-block text-[11px] font-semibold px-2 py-0.5 rounded bg-severity_watch_bg text-severity_watch_text truncate max-w-full"
+            className="inline-block text-[12px] font-semibold px-2 py-0.5 rounded bg-severity_watch_bg text-severity_watch_text truncate max-w-full"
             title={row.excluded ? EXCLUDED_WHY[row.excluded] : undefined}
           >
             {row.excluded ? EXCLUDED_LABEL[row.excluded] : "—"}
@@ -319,7 +319,7 @@ const Row = ({
       {/* Expected rides the tooltip: it is the working behind the standing,
           and nobody acts on the intermediate step. */}
       <span
-        className="text-right tabular-nums font-semibold"
+        className="text-right tabular-nums font-semibold text-[14px]"
         title={
           row.expected === null
             ? undefined
@@ -328,10 +328,10 @@ const Row = ({
       >
         {share1(row.shareTy)}
       </span>
-      <span className="text-right tabular-nums text-content/85">
+      <span className="text-right tabular-nums text-[14px] text-content/85">
         {share1(row.shareLw)}
       </span>
-      <span className="text-right tabular-nums text-content/85">
+      <span className="text-right tabular-nums text-[14px] text-content/85">
         {share1(row.shareLy)}
       </span>
 
