@@ -27,16 +27,16 @@ import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice
  * `scopeToDay`'s rows to the same function.
  */
 
-type Col = "shareTy";
+type Col = "shareTy" | "shareLw" | "shareLy";
 
 /** The house desktop grid: a column template, gap-2.5, navy hairlines and a
  *  zebra stripe — the same shape ForecastRowsTable and the margin grids use. */
-const COLS = "minmax(180px,1fr) 104px 150px 150px";
+const COLS = "minmax(170px,1fr) 100px 132px 132px 132px";
 
 /** What the columns need before the store name gets anything. Eleven of them
  *  do not fit a 52% panel on a laptop, so the grid scrolls sideways inside its
  *  own container rather than crushing the name — the page itself never does. */
-const GRID_MIN = 600;
+const GRID_MIN = 666;
 
 const HEAD =
   "sticky top-0 z-10 bg-custom-white grid items-center gap-2.5 px-2 py-1.5 border-b border-brand_navy/15";
@@ -76,11 +76,11 @@ const EXCLUDED_LABEL: Record<Excluded, string> = {
 
 const EXCLUDED_WHY: Record<Excluded, string> = {
   "no-baseline":
-    "Nothing on file for last year or last week, so there is no share this store can be said to usually hold.",
+    "Nothing on file for last year or last week, so there is no contribution this store can be said to usually make.",
   "partial-week":
-    "Neither last year nor last week covers the whole week. A partial period understates the usual share, which would make a short week look like a win.",
+    "Neither last year nor last week covers the whole week. A partial period understates the usual contribution, which would make a short week look like a win.",
   "nothing-to-compare":
-    "The period this store would be measured against recorded nothing, so its usual share cannot be worked out.",
+    "The period this store would be measured against recorded nothing, so its usual contribution cannot be worked out.",
 };
 
 const pct1 = (v: number | null) =>
@@ -105,15 +105,20 @@ const GroupComparisonPanel = ({
   const days = useMemo(() => groupDays(rows), [rows]);
 
   // A day selection narrows the rows before any of the comparison runs, so
-  // every share, expectation and verdict below belongs to that day alone —
+  // every contribution, expectation and verdict below belongs to that day alone —
   // with wider bands, because one day against one day is a thinner baseline.
   const group = useMemo(
     () => compareForView(rows, gradingMetric, threshold, selectedDate),
     [rows, gradingMetric, threshold, selectedDate],
   );
 
-  // One sortable column left, so the callback ignores which.
-  const sorted = applySort(group.rows, (row) => row.shareTy);
+  const sorted = applySort(group.rows, (row, col) =>
+    col === "shareTy"
+      ? row.shareTy
+      : col === "shareLw"
+        ? row.shareLw
+        : row.shareLy,
+  );
 
   const excludedTotal = Object.values(group.excludedBy).reduce((a, b) => a + b, 0);
   const excludedReasons = (Object.keys(group.excludedBy) as Excluded[])
@@ -166,7 +171,7 @@ const GroupComparisonPanel = ({
           String(group.counted),
           excludedTotal ? `${excludedTotal} set aside · ${excludedReasons}` : "all comparable",
           excludedTotal
-            ? "A store missing from either window would shift every other store's usual share by its own weight."
+            ? "A store missing from either window would shift every other store's usual contribution by its own weight."
             : undefined,
         )}
         {tile(
@@ -223,10 +228,11 @@ const GroupComparisonPanel = ({
             {/* One cell, read as a sentence: what it holds now, then what it
                 usually holds. The period "usually" means is named here once
                 rather than marked on every row. */}
-            <SortHeader col="shareTy" label="Share → LY" sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-end`} />
-            <span className="text-[11.5px] font-semibold uppercase tracking-wide text-content/85 text-right">
-              Share → LW
-            </span>
+            {/* One per period: the slice of the group this store was in each
+                of them. Read across and the movement is the story. */}
+            <SortHeader col="shareTy" label="Contribution → TY" sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-end`} />
+            <SortHeader col="shareLw" label="Contribution → LW" sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-end`} />
+            <SortHeader col="shareLy" label="Contribution → LY" sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-end`} />
           </div>
 
           <div>
@@ -310,23 +316,23 @@ const Row = ({
         )}
       </span>
 
-      {/* What it holds now, then what it held in each period. Expected rides
-          the tooltip: it is the working behind the standing, and nobody acts
-          on the intermediate step. */}
+      {/* Expected rides the tooltip: it is the working behind the standing,
+          and nobody acts on the intermediate step. */}
       <span
-        className="text-right tabular-nums"
+        className="text-right tabular-nums font-semibold"
         title={
           row.expected === null
             ? undefined
-            : `Expected ${fmt(row.expected)} — the group's week at this store's usual share`
+            : `Expected ${fmt(row.expected)} — the group's week at this store's usual contribution`
         }
       >
         {share1(row.shareTy)}
-        <span className="text-content/85"> → {share1(row.shareLy)}</span>
       </span>
-      <span className="text-right tabular-nums">
-        {share1(row.shareTy)}
-        <span className="text-content/85"> → {share1(row.shareLw)}</span>
+      <span className="text-right tabular-nums text-content/85">
+        {share1(row.shareLw)}
+      </span>
+      <span className="text-right tabular-nums text-content/85">
+        {share1(row.shareLy)}
       </span>
 
     </div>

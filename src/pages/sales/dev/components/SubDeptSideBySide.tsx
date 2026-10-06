@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { getSubs } from "../../../../api/sales";
-import { formatCurrencyCompact, formatBigNumber } from "../../../../utils";
+import { formatCurrency2, formatBigNumber } from "../../../../utils";
 import { useAppSelector } from "../../../../hooks";
 import { useSalesState } from "../hooks/useSalesState";
 import { scopeToStoreNumber } from "../shared/ledgerUtils";
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
-import { PCT_COL_W } from "./utils";
 import type { SubSale } from "../../../../interfaces";
 import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice";
 
@@ -34,8 +33,8 @@ const totalsBySubDept = (rows: SubSale[], metric: GradingMetric) =>
     return acc;
   }, {});
 
-const COLS = "minmax(160px,1fr) 118px 118px 128px";
-const GRID_MIN = 530;
+const COLS = "minmax(150px,1fr) 136px 136px 148px";
+const GRID_MIN = 600;
 
 const HEAD =
   "sticky top-0 z-10 bg-custom-white grid items-center gap-2.5 px-2 py-1.5 border-b border-brand_navy/15";
@@ -70,7 +69,7 @@ const SubDeptSideBySide = ({
 
   const isQty = gradingMetric === "qty";
   const fmt = (v: number) =>
-    isQty ? formatBigNumber(v, 0) : formatCurrencyCompact(v);
+    isQty ? formatBigNumber(v, 0) : formatCurrency2(v);
 
   useEffect(() => {
     let live = true;
@@ -173,8 +172,12 @@ const SubDeptSideBySide = ({
                 style={{ gridTemplateColumns: COLS }}
               >
                 <span className="min-w-0 truncate font-medium">{r.name}</span>
-                <span className="text-right tabular-nums">{fmt(r.a)}</span>
-                <span className="text-right tabular-nums">{fmt(r.b)}</span>
+                <span className="text-right tabular-nums font-semibold">
+                  {fmt(r.a)}
+                </span>
+                <span className="text-right tabular-nums font-semibold">
+                  {fmt(r.b)}
+                </span>
                 {/* The ledger's pill shape, so a figure in this grid reads
                     like a figure anywhere else. Direction only — two stores
                     are not a baseline for each other, so there is no
@@ -188,7 +191,7 @@ const SubDeptSideBySide = ({
                           ? "bg-delta_positive_bg text-delta_positive_text"
                           : "bg-delta_negative_bg text-delta_negative_text"
                     }`}
-                    style={{ minWidth: PCT_COL_W }}
+                    style={{ minWidth: 112 }}
                   >
                     {r.diff >= 0 ? "+" : "−"}
                     {fmt(Math.abs(r.diff))}

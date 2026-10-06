@@ -2,10 +2,9 @@ import { useMemo, useState } from "react";
 import { applyStoreNumberToName } from "../shared/ledgerUtils";
 import { compareForView, type ComparisonRow } from "../shared/storeComparison";
 import SortHeader, { PERF_SORT_HEADER } from "../../../../components-dev/SortHeader";
-import DeltaPill from "./DeltaPill";
 import SubDeptSideBySide from "./SubDeptSideBySide";
-import { isCompleteCoverage } from "../shared/ledgerUtils";
 import { useTriStateSort } from "../../../../utils/useTriStateSort";
+import { PCT_COL_W } from "./utils";
 import type { LedgerRowData } from "./LedgerRow";
 import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice";
 
@@ -21,23 +20,16 @@ import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice
  * subtracting two percentages never gives a percentage.
  */
 
-type Col = "ownLwPct" | "ownLyPct" | "vsOpen";
+type Col = "lwGap" | "lyGap";
 
-const COLS = "minmax(180px,1fr) 108px 108px 120px";
-const GRID_MIN = 520;
+const COLS = "minmax(200px,1fr) 136px 136px";
+const GRID_MIN = 500;
 
 const HEAD =
   "sticky top-0 z-10 bg-custom-white grid items-center gap-2.5 px-2 py-1.5 border-b border-brand_navy/15";
 
 const points1 = (v: number | null) =>
   v === null ? "—" : `${v >= 0 ? "+" : ""}${v.toFixed(1)} pt`;
-
-const toneOf = (v: number | null) =>
-  v === null || v === 0
-    ? "text-content"
-    : v > 0
-      ? "text-delta_positive_text"
-      : "text-delta_negative_text";
 
 interface Props {
   rows: LedgerRowData[];
@@ -87,56 +79,63 @@ const PopupComparisonList = ({
 
   const others = group.rows.filter((r) => keyOf(r) !== keyOf(open));
 
-  /** How far this store's own movement is from the open store's, in points. */
-  const vsOpen = (r: ComparisonRow) =>
-    r.ownPct === null || open.ownPct === null ? null : r.ownPct - open.ownPct;
+  /**
+   * How much better or worse this store moved than the open one, over the
+   * same comparison.
+   *
+   * Both sides are percentages, so the distance between them is POINTS. This
+   * is the whole tab: the open store is down 16% on last year and this one is
+   * down 7%, so this one is 9 points better — which is a thing neither store's
+   * own figure says, and neither does the ledger.
+   *
+   * Null when either store has nothing for that period; there is no
+   * comparison to state rather than a zero to imply one.
+   */
+  const lwGap = (r: ComparisonRow) =>
+    r.hasLW && open.hasLW ? r.ownLwPct - open.ownLwPct : null;
+  const lyGap = (r: ComparisonRow) =>
+    r.hasLY && open.hasLY ? r.ownLyPct - open.ownLyPct : null;
 
   const sorted = applySort(others, (row, col) =>
-    col === "ownLwPct"
-      ? row.ownLwPct
-      : col === "ownLyPct"
-        ? row.ownLyPct
-        : vsOpen(row),
+    col === "lwGap" ? lwGap(row) : lyGap(row),
   );
 
   const nameOf = (r: ComparisonRow) =>
     applyStoreNumberToName(r.storeName, r.storeNumber, r.storeNumbersForId);
 
-  const cells = (r: ComparisonRow) => (
-    <>
-      <span className="min-w-0 truncate font-medium">{nameOf(r)}</span>
-      {/* Graded the same way the ledger grades them, so a figure reads the
-          same wherever it appears. */}
-      <span className="flex justify-end">
-        <DeltaPill
-          has={r.hasLW}
-          pct={r.ownLwPct}
-          threshold={threshold}
-          complete={isCompleteCoverage(r.lwDayCount, r.dayCount)}
-          matched={r.lwDayCount}
-          days={r.dayCount}
-          period="last week"
-        />
+  /** The pill shape the ledger uses, carrying direction only. Two stores are
+   *  not a baseline for each other, so there is no threshold to grade on. */
+  const diffPill = (text: string, sign: number | null) => (
+    <span className="flex justify-end">
+      <span
+        className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center whitespace-nowrap ${
+          sign === null || sign === 0
+            ? "bg-gray-100 text-content/85"
+            : sign > 0
+              ? "bg-delta_positive_bg text-delta_positive_text"
+              : "bg-delta_negative_bg text-delta_negative_text"
+        }`}
+        style={{ minWidth: PCT_COL_W }}
+      >
+        {text}
       </span>
-      <span className="flex justify-end">
-        <DeltaPill
-          has={r.hasLY}
-          pct={r.ownLyPct}
-          threshold={threshold}
-          complete={isCompleteCoverage(r.lyDayCount, r.dayCount)}
-          matched={r.lyDayCount}
-          days={r.dayCount}
-          period="last year"
-        />
-      </span>
-      {/* The one thing this tab is for. Both sides are percentages, so the
-          distance between them is points. */}
-      <span className={`text-right tabular-nums font-semibold ${toneOf(vsOpen(r))}`}>
-        {points1(vsOpen(r))}
-      </span>
-    </>
+    </span>
   );
 
+  const cells = (r: ComparisonRow) => {
+    const lw = lwGap(r);
+    const ly = lyGap(r);
+    return (
+      <>
+        <span className="min-w-0 truncate font-medium">{nameOf(r)}</span>
+        {diffPill(lw === null ? "—" : points1(lw), lw)}
+        {diffPill(ly === null ? "—" : points1(ly), ly)}
+      </>
+    );
+  };
+
+  // Picking a store swaps this list for its departments beside the open
+  // store's — the next step of the same question.
   if (picked) {
     return (
       <SubDeptSideBySide
@@ -159,9 +158,11 @@ const PopupComparisonList = ({
           <span className="text-[11.5px] font-semibold uppercase tracking-wide text-content/85">
             Store
           </span>
-          <SortHeader col="ownLwPct" label="vs LW" sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-end`} />
-          <SortHeader col="ownLyPct" label="vs LY" sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-end`} />
-          <SortHeader col="vsOpen" label="vs this store" sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-end`} />
+          {/* Each one is this store's movement against the open store's, over
+              the same comparison. Nothing here is a figure the ledger already
+              shows. */}
+          <SortHeader col="lwGap" label="vs LW" sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-end`} />
+          <SortHeader col="lyGap" label="vs LY" sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-end`} />
         </div>
 
         {sorted.map((r) => (
