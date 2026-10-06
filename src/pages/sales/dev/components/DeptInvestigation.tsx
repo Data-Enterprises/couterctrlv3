@@ -454,6 +454,20 @@ const DeptInvestigation = ({
     (c) => c !== "ahead" && (byCause.get(c)?.dollars ?? 0) < 0,
   ).slice(0, 3);
 
+  /**
+   * What is actually lost, which is NOT the net.
+   *
+   * A store can be well ahead overall and still have a department's worth of
+   * items it never ordered. Writing "of the $13,380 gap, $2,494 never got
+   * ordered" when the store is $13,380 AHEAD is simply false — the gap is not
+   * a gap, and the shortfall is a different number that still needs fixing.
+   */
+  const shortfall = CAUSE_ORDER.filter((c) => c !== "ahead").reduce(
+    (a, c) => a + Math.min(0, byCause.get(c)?.dollars ?? 0),
+    0,
+  );
+  const aheadBy = byCause.get("ahead")?.dollars ?? 0;
+
   const close = () => dispatch(setInvestigation(null));
 
   return (
@@ -500,7 +514,19 @@ const DeptInvestigation = ({
       <div className="flex-shrink-0 px-4 py-3 border-b border-brand_navy/15">
         {stage !== "failed" && worst.length > 0 && (
           <p className="text-[13.5px] text-content leading-relaxed mb-2.5">
-            Of the {fmt(Math.abs(summary.gap))} gap,{" "}
+            {summary.gap >= 0 ? (
+              <>
+                Ahead by{" "}
+                <span className="font-semibold text-delta_positive_text">
+                  {fmt(summary.gap)}
+                </span>
+                , and still losing{" "}
+                <span className="font-semibold">{fmt(Math.abs(shortfall))}</span>
+                :{" "}
+              </>
+            ) : (
+              <>Of the {fmt(Math.abs(summary.gap))} behind,{" "}</>
+            )}
             {worst.map((c, i) => (
               <span key={c}>
                 {i > 0 && (i === worst.length - 1 ? " and " : ", ")}
@@ -519,6 +545,11 @@ const DeptInvestigation = ({
               </span>
             ))}
             .
+            {summary.gap < 0 && aheadBy > 0 && (
+              <span className="text-content/85">
+                {" "}Offset by {fmt(aheadBy)} where we are ahead.
+              </span>
+            )}
           </p>
         )}
 
