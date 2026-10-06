@@ -9,6 +9,8 @@ import {
   type Verdict,
 } from "../shared/storeComparison";
 import PopupDaySidebar from "./PopupDaySidebar";
+import DeltaPill from "./DeltaPill";
+import { isCompleteCoverage } from "../shared/ledgerUtils";
 import SortHeader, { PERF_SORT_HEADER } from "../../../../components-dev/SortHeader";
 import { useTriStateSort } from "../../../../utils/useTriStateSort";
 import type { LedgerRowData } from "./LedgerRow";
@@ -27,16 +29,16 @@ import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice
  * `scopeToDay`'s rows to the same function.
  */
 
-type Col = "shareTy" | "ownLwPct" | "ownLyPct" | "gapPct";
+type Col = "shareTy" | "ownLwPct" | "ownLyPct";
 
 /** The house desktop grid: a column template, gap-2.5, navy hairlines and a
  *  zebra stripe — the same shape ForecastRowsTable and the margin grids use. */
-const COLS = "minmax(140px,1fr) 90px 126px 66px 66px 90px";
+const COLS = "minmax(140px,1fr) 90px 124px 124px 74px 74px";
 
 /** What the columns need before the store name gets anything. Eleven of them
  *  do not fit a 52% panel on a laptop, so the grid scrolls sideways inside its
  *  own container rather than crushing the name — the page itself never does. */
-const GRID_MIN = 640;
+const GRID_MIN = 666;
 
 const HEAD =
   "sticky top-0 z-10 bg-custom-white grid items-center gap-2.5 px-2 py-1.5 border-b border-brand_navy/15";
@@ -117,16 +119,8 @@ const GroupComparisonPanel = ({
       ? row.shareTy
       : col === "ownLwPct"
         ? row.ownLwPct
-        : col === "ownLyPct"
-          ? row.ownLyPct
-          : row.gapPct,
+        : row.ownLyPct,
   );
-
-  // Named once above the column rather than marked on every row. Rows that
-  // used the other period are the exception, and they say so in the tooltip.
-  const lyCount = group.rows.filter((r) => r.basis === "LY").length;
-  const lwCount = group.rows.filter((r) => r.basis === "LW").length;
-  const basisLabel = lyCount === 0 && lwCount === 0 ? "" : lyCount >= lwCount ? "LY" : "LW";
 
   const excludedTotal = Object.values(group.excludedBy).reduce((a, b) => a + b, 0);
   const excludedReasons = (Object.keys(group.excludedBy) as Excluded[])
@@ -236,16 +230,12 @@ const GroupComparisonPanel = ({
             {/* One cell, read as a sentence: what it holds now, then what it
                 usually holds. The period "usually" means is named here once
                 rather than marked on every row. */}
-            <SortHeader
-              col="shareTy"
-              label={`Share → usual${basisLabel ? ` (${basisLabel})` : ""}`}
-              sort={sort}
-              onSort={handleSort}
-              className={`${PERF_SORT_HEADER} justify-end`}
-            />
+            <SortHeader col="shareTy" label="Share → LY" sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-end`} />
+            <span className="text-[11.5px] font-semibold uppercase tracking-wide text-content/85 text-right">
+              Share → LW
+            </span>
             <SortHeader col="ownLwPct" label="vs LW" sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-end`} />
             <SortHeader col="ownLyPct" label="vs LY" sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-end`} />
-            <SortHeader col="gapPct" label="Gap" sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-end`} />
           </div>
 
           <div>
@@ -254,6 +244,7 @@ const GroupComparisonPanel = ({
                 key={`${r.storeid}__${r.storeNumber}`}
                 row={r}
                 fmt={fmt}
+                threshold={threshold}
                 onSelect={() => {
                   const original = rows.find(
                     (x) =>
@@ -279,10 +270,12 @@ const GroupComparisonPanel = ({
 const Row = ({
   row,
   fmt,
+  threshold,
   onSelect,
 }: {
   row: ComparisonRow;
   fmt: (v: number | null) => string;
+  threshold: number;
   onSelect: () => void;
 }) => {
   const name = applyStoreNumberToName(
@@ -329,8 +322,9 @@ const Row = ({
         )}
       </span>
 
-      {/* Now, then usual. Expected rides the tooltip: it is the working
-          behind the gap, and nobody acts on it. */}
+      {/* What it holds now, then what it held in each period. Expected rides
+          the tooltip: it is the working behind the standing, and nobody acts
+          on the intermediate step. */}
       <span
         className="text-right tabular-nums"
         title={
@@ -340,15 +334,36 @@ const Row = ({
         }
       >
         {share1(row.shareTy)}
-        <span className="text-content/85"> → {share1(row.usualShare)}</span>
+        <span className="text-content/85"> → {share1(row.shareLy)}</span>
+      </span>
+      <span className="text-right tabular-nums">
+        {share1(row.shareTy)}
+        <span className="text-content/85"> → {share1(row.shareLw)}</span>
       </span>
 
-      <span className="text-right tabular-nums">{pct1(row.ownLwPct)}</span>
-      <span className="text-right tabular-nums">{pct1(row.ownLyPct)}</span>
-
-      <span className="text-right tabular-nums">
-        {fmt(row.gapValue)}
-        <span className="block text-[11px] text-content/85">{pct1(row.gapPct)}</span>
+      {/* The same pill the ledger draws, so a store's figure reads the same
+          two feet to the left. */}
+      <span className="flex justify-end">
+        <DeltaPill
+          has={row.hasLW}
+          pct={row.ownLwPct}
+          threshold={threshold}
+          complete={isCompleteCoverage(row.lwDayCount, row.dayCount)}
+          matched={row.lwDayCount}
+          days={row.dayCount}
+          period="last week"
+        />
+      </span>
+      <span className="flex justify-end">
+        <DeltaPill
+          has={row.hasLY}
+          pct={row.ownLyPct}
+          threshold={threshold}
+          complete={isCompleteCoverage(row.lyDayCount, row.dayCount)}
+          matched={row.lyDayCount}
+          days={row.dayCount}
+          period="last year"
+        />
       </span>
     </div>
   );

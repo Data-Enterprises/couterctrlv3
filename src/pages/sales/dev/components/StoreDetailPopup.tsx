@@ -801,6 +801,9 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
               gradingMetric={gradingMetric}
               threshold={itemThreshold}
               selectedDate={selectedDate}
+              openStoreName={headerStoreName}
+              twStart={twStart}
+              twEnd={twEnd}
             />
           ) : null
         ) : tab === "subdept" ? (

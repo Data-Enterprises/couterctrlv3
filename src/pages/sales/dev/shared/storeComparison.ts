@@ -80,6 +80,13 @@ export interface ComparisonRow {
    *  looking at. */
   ownLwPct: number;
   ownLyPct: number;
+  /** Coverage, carried so a comparison figure can be drawn the way the ledger
+   *  draws it — greyed when the period does not cover the whole week. */
+  hasLW: boolean;
+  hasLY: boolean;
+  dayCount: number;
+  lwDayCount: number;
+  lyDayCount: number;
 
   /** Position by the active metric among counted stores, 1-based. Null in a
    *  group too small for a rank to say anything. */
@@ -311,6 +318,11 @@ export const compareStores = (
       ownPct,
       ownLwPct: row.vsLWPct,
       ownLyPct: row.vsLYPct,
+      hasLW: row.hasLW,
+      hasLY: row.hasLY,
+      dayCount: row.dayCount,
+      lwDayCount: row.lwDayCount,
+      lyDayCount: row.lyDayCount,
       rank: rankByStore.get(row.storeid) ?? null,
       verdict: verdictOf(gapPct, ownPct ?? 0, bands),
       excluded,

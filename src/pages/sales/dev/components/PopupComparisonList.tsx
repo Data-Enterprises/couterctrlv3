@@ -1,7 +1,10 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { applyStoreNumberToName } from "../shared/ledgerUtils";
 import { compareForView, type ComparisonRow } from "../shared/storeComparison";
 import SortHeader, { PERF_SORT_HEADER } from "../../../../components-dev/SortHeader";
+import DeltaPill from "./DeltaPill";
+import SubDeptSideBySide from "./SubDeptSideBySide";
+import { isCompleteCoverage } from "../shared/ledgerUtils";
 import { useTriStateSort } from "../../../../utils/useTriStateSort";
 import type { LedgerRowData } from "./LedgerRow";
 import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice";
@@ -20,14 +23,11 @@ import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice
 
 type Col = "ownLwPct" | "ownLyPct" | "vsOpen";
 
-const COLS = "minmax(160px,1fr) 80px 80px 96px";
-const GRID_MIN = 440;
+const COLS = "minmax(160px,1fr) 92px 92px 96px";
+const GRID_MIN = 470;
 
 const HEAD =
   "sticky top-0 z-10 bg-custom-white grid items-center gap-2.5 px-2 py-1.5 border-b border-brand_navy/15";
-
-const pct1 = (v: number | null) =>
-  v === null ? "—" : `${v >= 0 ? "+" : ""}${v.toFixed(1)}%`;
 
 const points1 = (v: number | null) =>
   v === null ? "—" : `${v >= 0 ? "+" : ""}${v.toFixed(1)} pt`;
@@ -46,6 +46,10 @@ interface Props {
   gradingMetric: GradingMetric;
   threshold: number;
   selectedDate: string | null;
+  /** The open store's own name and week, for the departments view. */
+  openStoreName: string;
+  twStart: string;
+  twEnd: string;
 }
 
 const PopupComparisonList = ({
@@ -55,8 +59,14 @@ const PopupComparisonList = ({
   gradingMetric,
   threshold,
   selectedDate,
+  openStoreName,
+  twStart,
+  twEnd,
 }: Props) => {
   const { sort, handleSort, applySort } = useTriStateSort<Col>();
+  // Which store's departments to put beside this one's. Held here rather than
+  // in the slice: it belongs to this tab and means nothing once you leave it.
+  const [picked, setPicked] = useState<ComparisonRow | null>(null);
   const group = useMemo(
     () => compareForView(rows, gradingMetric, threshold, selectedDate),
     [rows, gradingMetric, threshold, selectedDate],
@@ -95,8 +105,30 @@ const PopupComparisonList = ({
   const cells = (r: ComparisonRow, isOpen: boolean) => (
     <>
       <span className="min-w-0 truncate font-medium">{nameOf(r)}</span>
-      <span className="text-right tabular-nums">{pct1(r.ownLwPct)}</span>
-      <span className="text-right tabular-nums">{pct1(r.ownLyPct)}</span>
+      {/* Graded the same way the ledger grades them, so a figure reads the
+          same wherever it appears. */}
+      <span className="flex justify-end">
+        <DeltaPill
+          has={r.hasLW}
+          pct={r.ownLwPct}
+          threshold={threshold}
+          complete={isCompleteCoverage(r.lwDayCount, r.dayCount)}
+          matched={r.lwDayCount}
+          days={r.dayCount}
+          period="last week"
+        />
+      </span>
+      <span className="flex justify-end">
+        <DeltaPill
+          has={r.hasLY}
+          pct={r.ownLyPct}
+          threshold={threshold}
+          complete={isCompleteCoverage(r.lyDayCount, r.dayCount)}
+          matched={r.lyDayCount}
+          days={r.dayCount}
+          period="last year"
+        />
+      </span>
       {/* The one thing this tab is for. Both sides are percentages, so the
           distance between them is points. */}
       <span
@@ -106,6 +138,21 @@ const PopupComparisonList = ({
       </span>
     </>
   );
+
+  if (picked) {
+    return (
+      <SubDeptSideBySide
+        openStoreName={openStoreName}
+        compareStoreId={picked.storeid}
+        compareStoreNumber={picked.storeNumber}
+        compareStoreName={nameOf(picked)}
+        twStart={twStart}
+        twEnd={twEnd}
+        gradingMetric={gradingMetric}
+        onBack={() => setPicked(null)}
+      />
+    );
+  }
 
   return (
     <div className="h-full overflow-auto thin-scrollbar">
@@ -131,7 +178,17 @@ const PopupComparisonList = ({
         {sorted.map((r) => (
           <div
             key={keyOf(r)}
-            className="grid gap-2.5 items-center px-2 py-[7px] border-b border-brand_navy/15 last:border-b-0 even:bg-row_stripe hover:bg-gray-50 text-[13px] text-content"
+            role="button"
+            tabIndex={0}
+            onClick={() => setPicked(r)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                setPicked(r);
+              }
+            }}
+            title={`Departments: ${nameOf(r)} beside ${openStoreName}`}
+            className="grid gap-2.5 items-center px-2 py-[7px] border-b border-brand_navy/15 last:border-b-0 even:bg-row_stripe hover:bg-gray-50 cursor-pointer text-[13px] text-content"
             style={{ gridTemplateColumns: COLS }}
           >
             {cells(r, false)}

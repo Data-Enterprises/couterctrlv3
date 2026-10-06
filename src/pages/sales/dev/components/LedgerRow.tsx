@@ -1,15 +1,12 @@
 import { memo } from "react";
 import { formatCurrencyCompact } from "../../../../utils";
 import { useStoreName } from "../../../../hooks";
-import { severityDotClass, pillClass, PCT_COL_W } from "./utils";
+import { severityDotClass } from "./utils";
+import DeltaPill from "./DeltaPill";
 import { applyStoreNumberToName } from "../shared/ledgerUtils";
 import { selectionFor } from "../shared/storeComparison";
 import type { Severity } from "../../../../utils/severity";
-import {
-  isCompleteCoverage,
-  comparisonPillClass,
-  type GradeBasis,
-} from "../shared/ledgerUtils";
+import { isCompleteCoverage, type GradeBasis } from "../shared/ledgerUtils";
 import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice";
 
 import type { DayDot, StoreSelection } from "../../../../interfaces";
@@ -71,8 +68,6 @@ interface LedgerRowProps {
   onClick: (selection: StoreSelection) => void;
 }
 
-const formatPct = (pct: number) => `${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%`;
-
 /**
  * Graded on the same three bands as the rest of the app, via the shared
  * `pillClass`.
@@ -88,43 +83,6 @@ const formatPct = (pct: number) => `${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%`;
  * Categories and the other performance pages already use. Nothing new is being
  * invented here; Sales was the one page that had drifted off it.
  */
-const DeltaPill = ({
-  has,
-  pct,
-  threshold,
-  complete,
-  matched,
-  days,
-  period,
-}: {
-  has: boolean;
-  pct: number;
-  threshold: number;
-  /** False when the comparison is missing days. It still shows its figure,
-   *  in grey: a partial week can't grade a store, so it doesn't get the
-   *  colour that says it did. */
-  complete: boolean;
-  matched: number;
-  days: number;
-  period: "last week" | "last year";
-}) => (
-  <span
-    className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${
-      has
-        ? comparisonPillClass(pct, complete, threshold)
-        : // Null is the shared helper's own "no comparison" case.
-          pillClass(null, threshold)
-    }`}
-    style={{ minWidth: PCT_COL_W }}
-    title={
-      has && !complete
-        ? `Only ${matched} of ${days} days have a matching day ${period}, so this isn't used to grade the store.`
-        : undefined
-    }
-  >
-    {has ? formatPct(pct) : "—"}
-  </span>
-);
 
 const LedgerRow = ({
   row,
