@@ -49,7 +49,7 @@ import {
   ArrowDownTrayIcon /*, ExclamationTriangleIcon */,
 } from "@heroicons/react/20/solid";
 import PopupDaySidebar from "./PopupDaySidebar";
-import StoreComparisonBlock from "./StoreComparisonBlock";
+import PopupComparisonList from "./PopupComparisonList";
 import type { LedgerRowData } from "./LedgerRow";
 import PopupSubDeptList from "./PopupSubDeptList";
 import PopupHourlyView from "./PopupHourlyView";
@@ -73,7 +73,7 @@ interface StoreDetailPopupProps {
 // Category tab (and its cat_sales fetch below) is commented out for now —
 // uncomment this, the getCats-related imports above, and the marked blocks
 // below to bring it back.
-type PopupTab = "subdept" | "hourly" /* | "category" */;
+type PopupTab = "subdept" | "hourly" | "comparison" /* | "category" */;
 
 const fmtDate = (d: string) =>
   new Date(d + "T12:00:00").toLocaleDateString("en-US", {
@@ -82,6 +82,9 @@ const fmtDate = (d: string) =>
   });
 
 const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
+  // A search of one store has no reference set, so there is nothing to
+  // compare against and the tab is never offered.
+  const hasGroup = !!groupRows && groupRows.length > 1;
   const dispatch = useAppDispatch();
   // Item Actions is unreleased, so the way in goes with it. A button that
   // navigates somewhere the nav says does not exist is worse than no button.
@@ -761,23 +764,14 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
         />
       </div>
 
-      {/* Where this store stands — against its group, or against a sibling.
-          Above the tabs because it answers the question the store was opened
-          to ask; the tabs below break the same week down. */}
-      {groupRows && groupRows.length > 1 && (
-        <StoreComparisonBlock
-          rows={groupRows}
-          storeid={selection.storeId}
-          storeNumber={selection.storeNumber}
-          gradingMetric={gradingMetric}
-          threshold={itemThreshold}
-          selectedDate={selectedDate}
-        />
-      )}
-
       {/* Tabs */}
       <div className="flex items-center border-b border-gray-100 px-3 flex-shrink-0">
-        {(["subdept", "hourly"] as PopupTab[]).map((t) => (
+        {/* Comparison only when there are siblings to compare with — a
+            single-store search has no reference set, so the tab is not
+            offered rather than opening on an empty one. */}
+        {((hasGroup
+          ? ["subdept", "hourly", "comparison"]
+          : ["subdept", "hourly"]) as PopupTab[]).map((t) => (
           <button
             key={t}
             onClick={() => dispatch(setLedgerTab(t))}
@@ -787,7 +781,7 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
                 : "border-transparent text-content"
             }`}
           >
-            {t === "subdept" ? "Sub dept" : "Hourly"}
+            {t === "subdept" ? "Sub dept" : t === "hourly" ? "Hourly" : "Comparison"}
           </button>
         ))}
       </div>
@@ -798,6 +792,17 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
           <div className="relative h-full">
             <LoadingIndicator message="Loading store detail" />
           </div>
+        ) : tab === "comparison" ? (
+          hasGroup ? (
+            <PopupComparisonList
+              rows={groupRows as LedgerRowData[]}
+              storeid={selection.storeId}
+              storeNumber={selection.storeNumber}
+              gradingMetric={gradingMetric}
+              threshold={itemThreshold}
+              selectedDate={selectedDate}
+            />
+          ) : null
         ) : tab === "subdept" ? (
           <PopupSubDeptList
             twDateLabel={twDateLabel}

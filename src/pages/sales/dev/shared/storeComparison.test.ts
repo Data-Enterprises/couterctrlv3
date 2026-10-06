@@ -3,6 +3,7 @@ import type { LedgerRowData } from "../components/LedgerRow";
 import type { DayDot } from "../../../../interfaces";
 import {
   DEFAULT_BANDS,
+  basisOf,
   compareForView,
   groupDays,
   selectionFor,
@@ -73,29 +74,58 @@ const store = (
 const byId = (g: ReturnType<typeof compareStores>, id: number) =>
   g.rows.find((r) => r.storeid === id)!;
 
-describe("exclusionOf", () => {
-  it("sets aside a store with no last year at all", () => {
-    expect(exclusionOf(store(1, 100, null), "sales")).toBe("no-last-year");
+describe("basisOf", () => {
+  it("measures against last year when it covers the whole week", () => {
+    expect(basisOf(store(1, 100, 90), "sales")).toBe("LY");
   });
 
-  it("sets aside a short week, which would understate its usual share", () => {
-    const partial = store(1, 100, 100, { lyDayCount: 3 });
-    expect(exclusionOf(partial, "sales")).toBe("partial-week");
+  it("falls back to last week when last year is short", () => {
+    const shortLy = store(1, 100, 100, {
+      lyDayCount: 3,
+      hasLW: true,
+      lwDayCount: 7,
+      lwTotal: 80,
+      lwQty: 8,
+    });
+    expect(basisOf(shortLy, "sales")).toBe("LW");
   });
 
-  it("sets aside a store that rang nothing last year", () => {
-    const fresh = store(1, 100, 0);
-    expect(exclusionOf(fresh, "sales")).toBe("nothing-last-year");
+  it("falls back to last week when there is no last year at all", () => {
+    const noLy = store(1, 100, null, {
+      hasLW: true,
+      lwDayCount: 7,
+      lwTotal: 80,
+      lwQty: 8,
+    });
+    expect(basisOf(noLy, "sales")).toBe("LW");
   });
 
-  it("counts an ordinary store", () => {
-    expect(exclusionOf(store(1, 100, 90), "sales")).toBeNull();
+  it("has no basis when neither period covers the week", () => {
+    expect(basisOf(store(1, 100, null), "sales")).toBeNull();
   });
 
-  it("asks in the active metric — a scale store can ring dollars on no units", () => {
+  it("has no basis when the period it would use recorded nothing", () => {
+    expect(basisOf(store(1, 100, 0), "sales")).toBeNull();
+  });
+
+  it("asks in the active metric", () => {
     const row = store(1, 100, 100, { lyQty: 0 });
-    expect(exclusionOf(row, "sales")).toBeNull();
-    expect(exclusionOf(row, "qty")).toBe("nothing-last-year");
+    expect(basisOf(row, "sales")).toBe("LY");
+    expect(basisOf(row, "qty")).toBeNull();
+  });
+});
+
+describe("exclusionOf", () => {
+  it("names a store with nothing to measure against", () => {
+    expect(exclusionOf(store(1, 100, null), "sales")).toBe("no-baseline");
+  });
+
+  it("names a store whose period recorded nothing", () => {
+    expect(exclusionOf(store(1, 100, 0), "sales")).toBe("nothing-to-compare");
+  });
+
+  it("says nothing about a store that has a basis", () => {
+    expect(exclusionOf(store(1, 100, 90), "sales")).toBeNull();
   });
 });
 
@@ -144,7 +174,7 @@ describe("compareStores — the sibling collapse", () => {
 
   it("lifts its share too, so share and gap agree on a lie", () => {
     const a = byId(group(), 1);
-    expect(a.shareDelta).toBeGreaterThan(0);
+    expect(a.shareTy as number).toBeGreaterThan(a.usualShare as number);
   });
 
   it("still does not call it Rising, because the store itself is flat", () => {
@@ -173,7 +203,8 @@ describe("compareStores — standing still in a group that moved", () => {
     const steady = byId(g, 1);
     expect(steady.ownPct).toBe(0);
     expect(steady.expected).toBe(125_000);
-    expect(steady.shareDelta).toBeLessThan(0); // ground given up
+    // Ground given up: it holds less of the group than it used to.
+    expect(steady.shareTy as number).toBeLessThan(steady.usualShare as number);
     expect(steady.verdict).toBe("falling");
   });
 
@@ -198,9 +229,9 @@ describe("compareStores — the counted set", () => {
     expect(g.rows).toHaveLength(3);
 
     const out = byId(g, 2);
-    expect(out.excluded).toBe("no-last-year");
+    expect(out.excluded).toBe("no-baseline");
     expect(out.verdict).toBeNull();
-    expect(out.contribution).toBeNull();
+    expect(out.shareTy).toBeNull();
     expect(out.expected).toBeNull();
   });
 
@@ -215,9 +246,9 @@ describe("compareStores — the counted set", () => {
       "sales",
     );
     expect(g.excludedBy).toEqual({
-      "no-last-year": 1,
+      "no-baseline": 1,
       "partial-week": 1,
-      "nothing-last-year": 1,
+      "nothing-to-compare": 1,
     });
   });
 
@@ -227,8 +258,8 @@ describe("compareStores — the counted set", () => {
       "sales",
     );
     const sum = g.rows
-      .filter((r) => r.contribution !== null)
-      .reduce((acc, r) => acc + (r.contribution as number), 0);
+      .filter((r) => r.shareTy !== null)
+      .reduce((acc, r) => acc + (r.shareTy as number), 0);
     expect(sum).toBeCloseTo(1, 10);
   });
 });
@@ -331,7 +362,7 @@ describe("scopeToDay", () => {
   it("tells a day with no counterpart from a day that rang nothing", () => {
     const noLastYear = scopeToDay([store(1, 700, null)], day)[0];
     expect(noLastYear.hasLY).toBe(false);
-    expect(exclusionOf(noLastYear, "sales")).toBe("no-last-year");
+    expect(exclusionOf(noLastYear, "sales")).toBe("no-baseline");
 
     const rangNothing = scopeToDay([store(1, 0, 700)], day)[0];
     expect(rangNothing.hasLY).toBe(true);
@@ -343,7 +374,7 @@ describe("scopeToDay", () => {
     const absent = scopeToDay([store(1, 700, 700)], "2026-12-25")[0];
     expect(absent.days).toEqual([]);
     expect(absent.dayCount).toBe(0);
-    expect(exclusionOf(absent, "sales")).toBe("no-last-year");
+    expect(exclusionOf(absent, "sales")).toBe("no-baseline");
   });
 
   it("keeps the sibling-collapse guard when scoped to a day", () => {

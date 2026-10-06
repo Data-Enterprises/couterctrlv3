@@ -1,4 +1,5 @@
-import { isCompleteCoverage } from "../../../../utils/grading";
+import type { GradeBasis } from "../../../../utils/grading";
+import { gradeBasis, basisPct } from "./ledgerUtils";
 import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice";
 import type { DayDot, StoreSelection } from "../../../../interfaces";
 import type { LedgerRowData } from "../components/LedgerRow";
@@ -20,10 +21,7 @@ export type Verdict = "rising" | "consistent" | "falling";
 
 /** Why a store has no verdict. Named, because "Not comparable" with no reason
  *  invites the reader to assume the page is broken. */
-export type Excluded =
-  | "no-last-year"
-  | "partial-week"
-  | "nothing-last-year";
+export type Excluded = "no-baseline" | "partial-week" | "nothing-to-compare";
 
 export interface Bands {
   /**
@@ -53,14 +51,18 @@ export interface ComparisonRow {
    * have a counterpart last year. Mixing a seven-day store with a three-day
    * one is how a short week reads as lost share.
    */
+  /** The store's own figure on the matched-day base of its basis. */
   ty: number;
-  ly: number;
 
-  /** Share of the group now, and the share it normally holds. 0–1. */
-  contribution: number | null;
+  /** Share of the group, now and in each comparison period. 0–1. */
+  shareTy: number | null;
+  shareLw: number | null;
+  shareLy: number | null;
+  /** The share the basis says it usually holds — shareLy, or shareLw when
+   *  there is no whole last year. */
   usualShare: number | null;
-  /** contribution − usualShare, in percentage POINTS. */
-  shareDelta: number | null;
+  /** Which period that is. Null means the row has no standing. */
+  basis: GradeBasis;
 
   /** What this store should have done, given the group's week and its own
    *  usual size. */
@@ -69,9 +71,9 @@ export interface ComparisonRow {
   /** gapValue / expected, as a percentage. */
   gapPct: number | null;
 
-  /** The store against its own last year. The one figure on this row that no
-   *  sibling can move — see `verdictOf`. */
-  ownPct: number;
+  /** The store against itself on the same basis. The one figure on this row
+   *  that no sibling can move — see `verdictOf`. */
+  ownPct: number | null;
 
   /** Position by the active metric among counted stores, 1-based. Null in a
    *  group too small for a rank to say anything. */
@@ -85,6 +87,7 @@ export interface GroupComparison {
   rows: ComparisonRow[];
   /** Sums over counted stores only. */
   groupTy: number;
+  groupLw: number;
   groupLy: number;
   /** The group against last year, as a sum of sums — never a mean of rates. */
   groupVsLyPct: number | null;
@@ -113,26 +116,59 @@ export const MIN_STORES_FOR_RANK = 4;
 const pick = (dollars: number, qty: number, metric: GradingMetric) =>
   metric === "qty" ? qty : dollars;
 
+type BasisRow = Pick<
+  LedgerRowData,
+  | "hasLY"
+  | "hasLW"
+  | "dayCount"
+  | "lyDayCount"
+  | "lwDayCount"
+  | "lyTotal"
+  | "lyQty"
+  | "lwTotal"
+  | "lwQty"
+>;
+
 /**
- * Why this store is not comparable, or null if it is.
+ * Which period this store is measured against: last year, else last week.
  *
- * Order matters: a store with no last year at all is a different message from
- * one whose week is short, and the first test that matches is the one worth
- * printing.
+ * The same rule and the same helper the severity dot already grades on, so a
+ * store's standing and its dot never disagree about which week they mean.
+ * Last year only when it covers the whole week — a short last year understates
+ * the usual share, which understates expected, which turns a bad week into a
+ * win.
+ *
+ * Null is a real answer, not a fallback to "fine".
+ */
+export const basisOf = (row: BasisRow, metric: GradingMetric): GradeBasis => {
+  const basis = gradeBasis(row);
+  if (basis === null) return null;
+  // Dividing by this is how a store with no history takes an infinite share
+  // of the group.
+  const base =
+    basis === "LY"
+      ? pick(row.lyTotal, row.lyQty, metric)
+      : pick(row.lwTotal, row.lwQty, metric);
+  return base > 0 ? basis : null;
+};
+
+/**
+ * Why a store has no basis, for the row to say so.
+ *
+ * Three different problems, because they read differently to whoever is
+ * looking: nothing on file at all, something on file that does not cover the
+ * week, and a whole week that recorded nothing.
  */
 export const exclusionOf = (
-  row: Pick<
-    LedgerRowData,
-    "hasLY" | "lyDayCount" | "dayCount" | "lyTotal" | "lyQty"
-  >,
+  row: BasisRow,
   metric: GradingMetric,
 ): Excluded | null => {
-  if (!row.hasLY) return "no-last-year";
-  if (!isCompleteCoverage(row.lyDayCount, row.dayCount)) return "partial-week";
-  // Dividing by this is how a store with no history last year takes an
-  // infinite share of the group.
-  if (pick(row.lyTotal, row.lyQty, metric) <= 0) return "nothing-last-year";
-  return null;
+  if (basisOf(row, metric) !== null) return null;
+  if (!row.hasLY && !row.hasLW) return "no-baseline";
+  // Something is on file; gradeBasis rejecting it means neither period covers
+  // the whole week.
+  if (gradeBasis(row) === null) return "partial-week";
+  return "nothing-to-compare";
 };
 
 /**
@@ -189,26 +225,36 @@ export const compareStores = (
   bands: Bands = DEFAULT_BANDS,
 ): GroupComparison => {
   const excludedBy: Record<Excluded, number> = {
-    "no-last-year": 0,
+    "no-baseline": 0,
     "partial-week": 0,
-    "nothing-last-year": 0,
+    "nothing-to-compare": 0,
   };
 
   const graded = rows.map((r) => {
+    const basis = basisOf(r, metric);
     const excluded = exclusionOf(r, metric);
     if (excluded) excludedBy[excluded] += 1;
     return {
       row: r,
+      basis,
       excluded,
-      // The matched-day base on both sides, so the two are the same week.
-      ty: pick(r.twTotalForLY, r.twQtyForLY, metric),
+      // The TW side of the comparison is the matched-day base of whichever
+      // period this store is measured against, so both sides are the same
+      // days.
+      ty: pick(
+        basis === "LW" ? r.twTotalForLW : r.twTotalForLY,
+        basis === "LW" ? r.twQtyForLW : r.twQtyForLY,
+        metric,
+      ),
       ly: pick(r.lyTotal, r.lyQty, metric),
+      lw: pick(r.lwTotal, r.lwQty, metric),
     };
   });
 
   const counted = graded.filter((g) => g.excluded === null);
   const groupTy = counted.reduce((acc, g) => acc + g.ty, 0);
   const groupLy = counted.reduce((acc, g) => acc + g.ly, 0);
+  const groupLw = counted.reduce((acc, g) => acc + g.lw, 0);
 
   // Sums, never a mean of rates: one small store up 300% must not move the
   // group's figure.
@@ -222,15 +268,14 @@ export const compareStores = (
     order.forEach((g, i) => rankByStore.set(g.row.storeid, i + 1));
   }
 
-  const out: ComparisonRow[] = graded.map(({ row, excluded, ty, ly }) => {
-    const comparable = excluded === null && groupTy > 0 && groupLy > 0;
+  const out: ComparisonRow[] = graded.map(({ row, basis, excluded, ty, ly, lw }) => {
+    const comparable = excluded === null && groupTy > 0;
 
-    const contribution = comparable ? ty / groupTy : null;
-    const usualShare = comparable ? ly / groupLy : null;
-    const shareDelta =
-      contribution !== null && usualShare !== null
-        ? (contribution - usualShare) * 100
-        : null;
+    const shareTy = comparable ? ty / groupTy : null;
+    const shareLy = comparable && groupLy > 0 ? ly / groupLy : null;
+    const shareLw = comparable && groupLw > 0 ? lw / groupLw : null;
+    // The share its own basis says it usually holds.
+    const usualShare = basis === "LY" ? shareLy : basis === "LW" ? shareLw : null;
 
     const expected = usualShare !== null ? groupTy * usualShare : null;
     const gapValue = expected !== null ? ty - expected : null;
@@ -239,22 +284,27 @@ export const compareStores = (
         ? (gapValue / expected) * 100
         : null;
 
+    // Its own movement on the same basis — against last year, or last week
+    // when that is what it is being measured by.
+    const ownPct = basisPct(basis, row.vsLWPct, row.vsLYPct);
+
     return {
       storeid: row.storeid,
       storeName: row.store_name,
       storeNumber: row.store_number,
       storeNumbersForId: row.storeNumbersForId,
       ty,
-      ly,
-      contribution,
+      shareTy,
+      shareLw,
+      shareLy,
       usualShare,
-      shareDelta,
+      basis,
       expected,
       gapValue,
       gapPct,
-      ownPct: row.vsLYPct,
+      ownPct,
       rank: rankByStore.get(row.storeid) ?? null,
-      verdict: verdictOf(gapPct, row.vsLYPct, bands),
+      verdict: verdictOf(gapPct, ownPct ?? 0, bands),
       excluded,
     };
   });
@@ -274,6 +324,7 @@ export const compareStores = (
   return {
     rows: out,
     groupTy,
+    groupLw,
     groupLy,
     groupVsLyPct,
     counted: counted.length,
@@ -315,10 +366,14 @@ export const scopeToDay = (
     const day = r.days.find((d) => d.sale_date.split("T")[0] === wanted);
     const hasLY = day?.lyNet !== null && day?.lyNet !== undefined;
 
+    const hasLW = day?.lwNet !== null && day?.lwNet !== undefined;
+
     const twNet = day?.twNet ?? 0;
     const twQty = day?.twQty ?? 0;
     const lyNet = hasLY ? (day?.lyNet as number) : 0;
     const lyQty = hasLY ? (day?.lyQty ?? 0) : 0;
+    const lwNet = hasLW ? (day?.lwNet as number) : 0;
+    const lwQty = hasLW ? (day?.lwQty ?? 0) : 0;
 
     return {
       ...r,
@@ -327,6 +382,8 @@ export const scopeToDay = (
       twQty,
       lyTotal: lyNet,
       lyQty,
+      lwTotal: lwNet,
+      lwQty,
       // On a single day the matched base and the day itself are the same
       // figure — there is only one day to match.
       twTotalForLY: hasLY ? twNet : 0,
@@ -337,7 +394,12 @@ export const scopeToDay = (
       dayCount: day ? 1 : 0,
       lyDayCount: hasLY ? 1 : 0,
       hasLY,
+      hasLW,
+      lwDayCount: hasLW ? 1 : 0,
+      twTotalForLW: hasLW ? twNet : 0,
+      twQtyForLW: hasLW ? twQty : 0,
       vsLYPct: hasLY && lyNet > 0 ? ((twNet - lyNet) / lyNet) * 100 : 0,
+      vsLWPct: hasLW && lwNet > 0 ? ((twNet - lwNet) / lwNet) * 100 : 0,
       vsLYDollar: hasLY ? twNet - lyNet : 0,
     };
   });

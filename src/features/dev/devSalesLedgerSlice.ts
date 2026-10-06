@@ -14,7 +14,7 @@ import type {
 
 export type GradingMetric = "sales" | "qty";
 
-export type LedgerTab = "subdept" | "hourly" | "category";
+export type LedgerTab = "subdept" | "hourly" | "comparison" | "category";
 export type SevFilter = "all" | "critical" | "watch" | "healthy";
 export type OpenSheetType = "subdept" | "hourly" | null;
 

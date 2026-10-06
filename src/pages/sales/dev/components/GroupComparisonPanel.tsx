@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { formatCurrency2, formatBigNumber } from "../../../../utils";
+import { formatCurrencyCompact, formatBigNumber } from "../../../../utils";
 import { applyStoreNumberToName } from "../shared/ledgerUtils";
 import {
   compareForView,
@@ -27,14 +27,19 @@ import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice
  * `scopeToDay`'s rows to the same function.
  */
 
-type Col =
-  | "ty"
-  | "contribution"
-  | "shareDelta"
-  | "expected"
-  | "gap"
-  | "gapPct"
-  | "ownPct";
+type Col = "shareTy" | "shareLw" | "shareLy" | "expected" | "gapPct";
+
+/** The house desktop grid: a column template, gap-2.5, navy hairlines and a
+ *  zebra stripe — the same shape ForecastRowsTable and the margin grids use. */
+const COLS = "minmax(140px,1fr) 88px 68px 68px 68px 84px 84px";
+
+/** What the columns need before the store name gets anything. Eleven of them
+ *  do not fit a 52% panel on a laptop, so the grid scrolls sideways inside its
+ *  own container rather than crushing the name — the page itself never does. */
+const GRID_MIN = 690;
+
+const HEAD =
+  "sticky top-0 z-10 bg-custom-white grid items-center gap-2.5 px-2 py-1.5 border-b border-brand_navy/15";
 
 interface Props {
   rows: LedgerRowData[];
@@ -64,24 +69,22 @@ const VERDICT_CLASS: Record<Verdict, string> = {
 };
 
 const EXCLUDED_LABEL: Record<Excluded, string> = {
-  "no-last-year": "No last year",
+  "no-baseline": "No baseline",
   "partial-week": "Short week",
-  "nothing-last-year": "Nothing last year",
+  "nothing-to-compare": "Nothing to compare",
 };
 
 const EXCLUDED_WHY: Record<Excluded, string> = {
-  "no-last-year": "No matching week last year, so there is no usual share to compare against.",
+  "no-baseline":
+    "Nothing on file for last year or last week, so there is no share this store can be said to usually hold.",
   "partial-week":
-    "Last year covers only part of this week. A partial week understates the store's usual share, which would make a bad week look like a win.",
-  "nothing-last-year":
-    "The store recorded nothing last year, so its usual share cannot be worked out.",
+    "Neither last year nor last week covers the whole week. A partial period understates the usual share, which would make a short week look like a win.",
+  "nothing-to-compare":
+    "The period this store would be measured against recorded nothing, so its usual share cannot be worked out.",
 };
 
 const pct1 = (v: number | null) =>
   v === null ? "—" : `${v >= 0 ? "+" : ""}${v.toFixed(1)}%`;
-
-const points1 = (v: number | null) =>
-  v === null ? "—" : `${v >= 0 ? "+" : ""}${v.toFixed(1)} pt`;
 
 const share1 = (v: number | null) => (v === null ? "—" : `${(v * 100).toFixed(1)}%`);
 
@@ -97,7 +100,7 @@ const GroupComparisonPanel = ({
   const isQty = gradingMetric === "qty";
 
   const fmt = (v: number | null) =>
-    v === null ? "—" : isQty ? formatBigNumber(v, 0) : formatCurrency2(v);
+    v === null ? "—" : isQty ? formatBigNumber(v, 0) : formatCurrencyCompact(v);
 
   const days = useMemo(() => groupDays(rows), [rows]);
 
@@ -110,19 +113,15 @@ const GroupComparisonPanel = ({
   );
 
   const sorted = applySort(group.rows, (row, col) =>
-    col === "ty"
-      ? row.ty
-      : col === "contribution"
-        ? row.contribution
-        : col === "shareDelta"
-          ? row.shareDelta
+    col === "shareTy"
+      ? row.shareTy
+      : col === "shareLw"
+        ? row.shareLw
+        : col === "shareLy"
+          ? row.shareLy
           : col === "expected"
             ? row.expected
-            : col === "gap"
-              ? row.gapValue
-              : col === "gapPct"
-                ? row.gapPct
-                : row.ownPct,
+            : row.gapPct,
   );
 
   const excludedTotal = Object.values(group.excludedBy).reduce((a, b) => a + b, 0);
@@ -202,36 +201,42 @@ const GroupComparisonPanel = ({
         )}
       </div>
 
-      <div className="flex-1 min-h-0 flex overflow-hidden">
-        {/* The same day selector the store popup uses, one level up: these are
-            the group's seven days rather than one store's. */}
-        <div className="flex-shrink-0 overflow-y-auto thin-scrollbar border-r border-gray-100">
-          <PopupDaySidebar
-            days={days}
-            selectedDate={selectedDate}
-            gradingMetric={gradingMetric}
-            onSelect={onSelectDay}
-          />
-        </div>
+      {/* The same day selector the store popup uses, one level up: the group's
+          seven days rather than one store's.
 
-        <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
-          <div className="flex items-center gap-2 px-3 py-1.5 border-b border-gray-100 flex-shrink-0">
-            <span className="text-[11.5px] font-semibold uppercase tracking-wide text-content/85 flex-1 min-w-0">
+          Full width and above the grid, not beside it. Despite the name it is
+          a horizontal strip — its cards are flex-1 and divide whatever width
+          they are given, so a shrink-to-fit wrapper makes them sprawl. It also
+          draws its own border-b. */}
+      <div className="flex-shrink-0">
+        <PopupDaySidebar
+          days={days}
+          selectedDate={selectedDate}
+          gradingMetric={gradingMetric}
+          onSelect={onSelectDay}
+        />
+      </div>
+
+      <div className="flex-1 min-h-0 flex overflow-hidden">
+        <div className="flex-1 min-w-0 overflow-auto thin-scrollbar">
+          <div style={{ minWidth: GRID_MIN }}>
+          <div className={HEAD} style={{ gridTemplateColumns: COLS }}>
+            <span className="text-[11.5px] font-semibold uppercase tracking-wide text-content/85">
               Store
             </span>
-            <SortHeader col="ty" label="TY" sort={sort} onSort={handleSort} width={70} className={`${PERF_SORT_HEADER} justify-end`} />
-            <SortHeader col="contribution" label="Share" sort={sort} onSort={handleSort} width={64} className={`${PERF_SORT_HEADER} justify-end`} />
-            <SortHeader col="shareDelta" label="Δ pts" sort={sort} onSort={handleSort} width={56} className={`${PERF_SORT_HEADER} justify-end`} />
-            <SortHeader col="expected" label="Expected" sort={sort} onSort={handleSort} width={74} className={`${PERF_SORT_HEADER} justify-end`} />
-            <SortHeader col="gap" label="Gap" sort={sort} onSort={handleSort} width={74} className={`${PERF_SORT_HEADER} justify-end`} />
-            <SortHeader col="gapPct" label="Gap %" sort={sort} onSort={handleSort} width={60} className={`${PERF_SORT_HEADER} justify-end`} />
-            <SortHeader col="ownPct" label="vs LY" sort={sort} onSort={handleSort} width={60} className={`${PERF_SORT_HEADER} justify-end`} />
-            <span className="w-[86px] text-[11.5px] font-semibold uppercase tracking-wide text-content/85 text-right">
+            {/* Beside the name, because it is the answer and the figures that
+                follow are the working. */}
+            <span className="text-[11.5px] font-semibold uppercase tracking-wide text-content/85">
               Standing
             </span>
+            <SortHeader col="shareTy" label="Share TY" sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-end`} />
+            <SortHeader col="shareLw" label="Share LW" sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-end`} />
+            <SortHeader col="shareLy" label="Share LY" sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-end`} />
+            <SortHeader col="expected" label="Expected" sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-end`} />
+            <SortHeader col="gapPct" label="Gap" sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-end`} />
           </div>
 
-          <div className="flex-1 overflow-y-auto thin-scrollbar">
+          <div>
             {sorted.map((r) => (
               <Row
                 key={`${r.storeid}__${r.storeNumber}`}
@@ -251,6 +256,7 @@ const GroupComparisonPanel = ({
                 Nothing to compare in this search.
               </div>
             )}
+          </div>
           </div>
         </div>
       </div>
@@ -274,70 +280,71 @@ const Row = ({
   );
 
   return (
-    <button
+    <div
+      role="button"
+      tabIndex={0}
       onClick={onSelect}
-      className="w-full flex items-center gap-2 px-3 py-2 border-b border-gray-50 text-left hover:bg-row_selected transition-colors"
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onSelect();
+        }
+      }}
+      className="grid gap-2.5 items-center px-2 py-[7px] border-b border-brand_navy/15 last:border-b-0 even:bg-row_stripe hover:bg-gray-50 cursor-pointer text-[13px] text-content"
+      style={{ gridTemplateColumns: COLS }}
     >
-      <span className="flex-1 min-w-0 truncate text-[12.5px] font-medium text-content">
+      <span className="min-w-0 truncate font-medium">
         {name}
         {row.rank !== null && (
-          <span className="ml-1.5 text-[10.5px] text-content/85">#{row.rank}</span>
+          <span className="ml-1.5 text-[11px] text-content/85">#{row.rank}</span>
         )}
       </span>
 
-      <span className="w-[70px] text-right text-[12.5px] tabular-nums text-content">
-        {fmt(row.ty)}
-      </span>
-
-      <span className="w-[64px] text-right text-[12.5px] tabular-nums text-content">
-        {share1(row.contribution)}
-        {/* The share it normally holds, under the one it holds now — the two
-            only mean anything beside each other. */}
-        <span className="block text-[10px] text-content/85">
-          {share1(row.usualShare)}
-        </span>
-      </span>
-
-      <span className="w-[56px] text-right text-[12px] tabular-nums text-content/85">
-        {points1(row.shareDelta)}
-      </span>
-
-      <span className="w-[74px] text-right text-[12.5px] tabular-nums text-content/85">
-        {fmt(row.expected)}
-      </span>
-
-      <span className="w-[74px] text-right text-[12.5px] tabular-nums text-content">
-        {fmt(row.gapValue)}
-      </span>
-
-      <span className="w-[60px] text-right text-[12.5px] tabular-nums text-content">
-        {pct1(row.gapPct)}
-      </span>
-
-      {/* Its own movement, in its own column. It is the one figure on the row
-          a sibling cannot move, so anyone arguing with the standing wants to
-          see it without opening anything. */}
-      <span className="w-[60px] text-right text-[12.5px] tabular-nums text-content">
-        {pct1(row.ownPct)}
-      </span>
-
-      <span className="w-[86px] flex justify-end">
+      <span className="min-w-0">
         {row.verdict ? (
           <span
-            className={`text-[10.5px] font-semibold px-2 py-0.5 rounded ${VERDICT_CLASS[row.verdict]}`}
+            className={`inline-block text-[11px] font-semibold px-2 py-0.5 rounded ${VERDICT_CLASS[row.verdict]}`}
           >
             {VERDICT_LABEL[row.verdict]}
           </span>
         ) : (
           <span
-            className="text-[10.5px] font-semibold px-2 py-0.5 rounded bg-severity_watch_bg text-severity_watch_text"
+            className="inline-block text-[11px] font-semibold px-2 py-0.5 rounded bg-severity_watch_bg text-severity_watch_text truncate max-w-full"
             title={row.excluded ? EXCLUDED_WHY[row.excluded] : undefined}
           >
             {row.excluded ? EXCLUDED_LABEL[row.excluded] : "—"}
           </span>
         )}
       </span>
-    </button>
+
+      {/* Three shares, each named in the header rather than stacked: what it
+          holds now, and what it held in the two periods it could be measured
+          against. The bold one is the basis its standing actually used. */}
+      <span className={`text-right tabular-nums ${row.basis === null ? "" : "font-semibold"}`}>
+        {share1(row.shareTy)}
+      </span>
+      <span
+        className={`text-right tabular-nums ${row.basis === "LW" ? "font-semibold text-content" : "text-content/85"}`}
+      >
+        {share1(row.shareLw)}
+      </span>
+      <span
+        className={`text-right tabular-nums ${row.basis === "LY" ? "font-semibold text-content" : "text-content/85"}`}
+      >
+        {share1(row.shareLy)}
+      </span>
+
+      <span
+        className="text-right tabular-nums text-content/85"
+        title="Group TY × the share this store usually holds — what its own weight predicts."
+      >
+        {fmt(row.expected)}
+      </span>
+      <span className="text-right tabular-nums">
+        {fmt(row.gapValue)}
+        <span className="block text-[11px] text-content/85">{pct1(row.gapPct)}</span>
+      </span>
+    </div>
   );
 };
 
