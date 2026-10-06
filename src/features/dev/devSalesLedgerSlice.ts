@@ -15,6 +15,26 @@ import type {
 export type GradingMetric = "sales" | "qty";
 
 export type LedgerTab = "subdept" | "hourly" | "comparison" | "category";
+
+/**
+ * The store the open one is being measured against.
+ *
+ * Page state rather than a tab's own, because it is the same question on
+ * every tab: pick 018 in Stores and Sub Depts and Hourly are both comparing
+ * against 018 until it changes. A counterpart held per tab would let two tabs
+ * disagree about who "they" are, which is the kind of thing nobody notices
+ * until the numbers do not add up.
+ *
+ * Null is the resting state and is NOT an error: a tab with no counterpart is
+ * the single-store view it has always been. Only a group search can set one,
+ * so a single-store entry behaves exactly as it does today.
+ */
+export interface Counterpart {
+  storeid: number;
+  /** Co-located stores share a storeid, so the number is part of the identity. */
+  storeNumber: string;
+  storeName: string;
+}
 export type SevFilter = "all" | "critical" | "watch" | "healthy";
 export type OpenSheetType = "subdept" | "hourly" | null;
 
@@ -73,6 +93,7 @@ interface SalesLedgerState {
   tab: LedgerTab;
   selectedDate: string | null;
   investigation: InvestigationTarget | null;
+  counterpart: Counterpart | null;
   /**
    * Which group view the right panel rests on.
    *
@@ -156,6 +177,7 @@ const initialState: SalesLedgerState = {
   tab: "subdept",
   selectedDate: null,
   investigation: null,
+  counterpart: null,
   groupView: "stores",
   matrixOpen: false,
   ledgerLoading: false,
@@ -206,7 +228,18 @@ const salesLedgerSlice = createSlice({
       state,
       action: PayloadAction<StoreSelection | null>,
     ) => {
-      state.selection = action.payload;
+      // Opening a different store drops the counterpart. "018 against 018"
+      // is not a comparison, and silently keeping a counterpart that is now
+      // the open store is worse than asking again.
+      const next = action.payload;
+      const changed =
+        next?.storeId !== state.selection?.storeId ||
+        next?.storeNumber !== state.selection?.storeNumber;
+      if (changed) state.counterpart = null;
+      state.selection = next;
+    },
+    setCounterpart: (state, action: PayloadAction<Counterpart | null>) => {
+      state.counterpart = action.payload;
     },
     setLedgerTab: (state, action: PayloadAction<LedgerTab>) => {
       state.tab = action.payload;
@@ -408,6 +441,7 @@ export const {
   setHasSearched,
   setLedgerSelection,
   setLedgerTab,
+  setCounterpart,
   setInvestigation,
   setGroupView,
   setMatrixOpen,

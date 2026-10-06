@@ -16,6 +16,7 @@ import {
 } from "../../../../features/dev/devSalesSlice";
 import {
   setLedgerTab,
+  setCounterpart,
   setLedgerSelectedDate,
   setRawSubs,
   setRawLWSubs,
@@ -50,6 +51,7 @@ import {
 } from "@heroicons/react/20/solid";
 import PopupDaySidebar from "./PopupDaySidebar";
 import PopupComparisonList from "./PopupComparisonList";
+import SubDeptSideBySide from "./SubDeptSideBySide";
 import type { LedgerRowData } from "./LedgerRow";
 import PopupSubDeptList from "./PopupSubDeptList";
 import PopupHourlyView from "./PopupHourlyView";
@@ -104,6 +106,7 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
     exportSubDeptName,
     lastFetchedStoreKey,
     gradingMetric,
+    counterpart,
   } = useAppSelector((state) => state.dev.salesLedger);
   const isQty = gradingMetric === "qty";
   // const { weeklySales, weeklySalesLastWeek, weeklySalesLastYear } =
@@ -766,7 +769,7 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
 
       {/* Tabs */}
       <div className="flex items-center border-b border-gray-100 px-3 flex-shrink-0">
-        {/* Comparison only when there are siblings to compare with — a
+        {/* Stores only when there are siblings to compare with — a
             single-store search has no reference set, so the tab is not
             offered rather than opening on an empty one. */}
         {((hasGroup
@@ -781,7 +784,7 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
                 : "border-transparent text-content"
             }`}
           >
-            {t === "subdept" ? "Sub dept" : t === "hourly" ? "Hourly" : "Comparison"}
+            {t === "subdept" ? "Sub depts" : t === "hourly" ? "Hourly" : "Stores"}
           </button>
         ))}
       </div>
@@ -802,15 +805,36 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
               threshold={itemThreshold}
               selectedDate={selectedDate}
               openStoreName={headerStoreName}
+            />
+          ) : null
+        ) : tab === "subdept" ? (
+          /* With a counterpart chosen in Stores, this tab IS the comparison;
+             without one it is the store's own departments, graded, exactly as
+             a single-store search has always had it. The counterpart is page
+             state, so Hourly will answer to the same choice once it can.
+
+             PLACEHOLDER SHAPE: the two-pane layout goes here — department
+             list on the left, the focused department and the way into its
+             items on the right. For now it hands off to the side-by-side
+             that already does this comparison. */
+          counterpart ? (
+            <SubDeptSideBySide
+              openStoreName={headerStoreName}
+              openStoreId={selection.storeId}
+              openStoreNumber={selection.storeNumber}
+              compareStoreId={counterpart.storeid}
+              compareStoreNumber={counterpart.storeNumber}
+              compareStoreName={counterpart.storeName}
               twStart={twStart}
               twEnd={twEnd}
               lwStart={lwStart}
               lwEnd={lwEnd}
               lyStart={lyStart}
               lyEnd={lyEnd}
+              gradingMetric={gradingMetric}
+              onBack={() => dispatch(setCounterpart(null))}
             />
-          ) : null
-        ) : tab === "subdept" ? (
+          ) : (
           <PopupSubDeptList
             twDateLabel={twDateLabel}
             lwDateLabel={lwDateLabel}
@@ -820,6 +844,7 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
             selectedDate={selectedDate}
             twRealDates={twRealDates}
           />
+          )
         ) : (
           <PopupHourlyView
             twDateLabel={twDateLabel}

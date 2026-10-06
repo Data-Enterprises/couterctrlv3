@@ -1,8 +1,12 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
+import { useAppDispatch, useAppSelector } from "../../../../hooks";
+import {
+  setCounterpart,
+  setLedgerTab,
+} from "../../../../features/dev/devSalesLedgerSlice";
 import { applyStoreNumberToName } from "../shared/ledgerUtils";
 import { compareForView, type ComparisonRow } from "../shared/storeComparison";
 import SortHeader, { PERF_SORT_HEADER } from "../../../../components-dev/SortHeader";
-import SubDeptSideBySide from "./SubDeptSideBySide";
 import { formatCurrency2, formatBigNumber } from "../../../../utils";
 import { useTriStateSort } from "../../../../utils/useTriStateSort";
 import type { LedgerRowData } from "./LedgerRow";
@@ -35,14 +39,7 @@ interface Props {
   gradingMetric: GradingMetric;
   threshold: number;
   selectedDate: string | null;
-  /** The open store's own name and week, for the departments view. */
   openStoreName: string;
-  twStart: string;
-  twEnd: string;
-  lwStart: string;
-  lwEnd: string;
-  lyStart: string;
-  lyEnd: string;
 }
 
 const PopupComparisonList = ({
@@ -53,17 +50,12 @@ const PopupComparisonList = ({
   threshold,
   selectedDate,
   openStoreName,
-  twStart,
-  twEnd,
-  lwStart,
-  lwEnd,
-  lyStart,
-  lyEnd,
 }: Props) => {
   const { sort, handleSort, applySort } = useTriStateSort<Col>();
-  // Which store's departments to put beside this one's. Held here rather than
-  // in the slice: it belongs to this tab and means nothing once you leave it.
-  const [picked, setPicked] = useState<ComparisonRow | null>(null);
+  const dispatch = useAppDispatch();
+  const counterpart = useAppSelector(
+    (state) => state.dev.salesLedger.counterpart,
+  );
   const isQty = gradingMetric === "qty";
   const fmt = (v: number) =>
     isQty ? formatBigNumber(v, 0) : formatCurrency2(v);
@@ -131,6 +123,26 @@ const PopupComparisonList = ({
   const nameOf = (r: ComparisonRow) =>
     applyStoreNumberToName(r.storeName, r.storeNumber, r.storeNumbersForId);
 
+  /**
+   * This tab's job: choose who "they" is.
+   *
+   * It used to swap itself for a department grid, which made the comparison
+   * something you could only have while standing on this tab. The choice is
+   * page state now, so Sub depts and Hourly are both comparing against this
+   * store the moment it is picked — and landing on Sub depts is the point,
+   * because that is where the departments are.
+   */
+  const pick = (r: ComparisonRow) => {
+    dispatch(
+      setCounterpart({
+        storeid: r.storeid,
+        storeNumber: r.storeNumber,
+        storeName: nameOf(r),
+      }),
+    );
+    dispatch(setLedgerTab("subdept"));
+  };
+
   /** The pill shape the ledger uses, carrying direction only. Two stores are
    *  not a baseline for each other, so there is no threshold to grade on. */
   const diffPill = (text: string, sign: number | null) => (
@@ -172,35 +184,13 @@ const PopupComparisonList = ({
     </>
   );
 
-  // Picking a store swaps this list for its departments beside the open
-  // store's — the next step of the same question.
-  if (picked) {
-    return (
-      <SubDeptSideBySide
-        openStoreName={openStoreName}
-        openStoreId={storeid}
-        openStoreNumber={storeNumber}
-        compareStoreId={picked.storeid}
-        compareStoreNumber={picked.storeNumber}
-        compareStoreName={nameOf(picked)}
-        twStart={twStart}
-        twEnd={twEnd}
-        lwStart={lwStart}
-        lwEnd={lwEnd}
-        lyStart={lyStart}
-        lyEnd={lyEnd}
-        gradingMetric={gradingMetric}
-        onBack={() => setPicked(null)}
-      />
-    );
-  }
-
   return (
     <div className="h-full overflow-auto thin-scrollbar">
       <div style={{ minWidth: GRID_MIN }}>
         <p className="px-2 py-2 text-[12px] text-content/85 border-b border-gray-100">
           How <span className="font-semibold text-content">{openStoreName}</span>{" "}
-          stands against each store — ahead in green, behind in red.
+          stands against each store — ahead in green, behind in red. Pick one to
+          compare department by department.
         </p>
 
         <div className={HEAD} style={{ gridTemplateColumns: COLS }}>
@@ -221,15 +211,20 @@ const PopupComparisonList = ({
             key={keyOf(r)}
             role="button"
             tabIndex={0}
-            onClick={() => setPicked(r)}
+            onClick={() => pick(r)}
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") {
                 e.preventDefault();
-                setPicked(r);
+                pick(r);
               }
             }}
-            title={`Departments: ${nameOf(r)} beside ${openStoreName}`}
-            className="grid gap-2.5 items-center px-2 py-[7px] border-b border-brand_navy/15 last:border-b-0 even:bg-row_stripe hover:bg-gray-50 cursor-pointer text-[13px] text-content"
+            title={`Compare ${openStoreName} against ${nameOf(r)}, department by department`}
+            className={`grid gap-2.5 items-center px-2 py-[7px] border-b border-brand_navy/15 last:border-b-0 hover:bg-gray-50 cursor-pointer text-[13px] text-content ${
+              counterpart?.storeid === r.storeid &&
+              counterpart?.storeNumber === r.storeNumber
+                ? "bg-row_selected border-row_selected_border"
+                : "even:bg-row_stripe"
+            }`}
             style={{ gridTemplateColumns: COLS }}
           >
             {cells(r)}
