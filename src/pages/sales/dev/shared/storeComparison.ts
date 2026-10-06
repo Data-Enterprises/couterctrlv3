@@ -1,5 +1,6 @@
 import { isCompleteCoverage } from "../../../../utils/grading";
 import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice";
+import type { DayDot, StoreSelection } from "../../../../interfaces";
 import type { LedgerRowData } from "../components/LedgerRow";
 
 /**
@@ -340,4 +341,63 @@ export const scopeToDay = (
       vsLYDollar: hasLY ? twNet - lyNet : 0,
     };
   });
+};
+
+/**
+ * The group's week as one set of days, for the day card.
+ *
+ * Summed across stores per date. `lyNet` stays `null` only when no store had a
+ * counterpart for that date at all — otherwise it is the sum over the stores
+ * that did, which is the same matched-day treatment
+ * `computeDayMatchedTotals` applies one level down. A date one store cannot
+ * compare on is still a real comparison for the rest of the group.
+ */
+export const groupDays = (rows: LedgerRowData[]): DayDot[] => {
+  const byDate = new Map<string, DayDot>();
+
+  for (const row of rows) {
+    for (const d of row.days) {
+      const key = d.sale_date.split("T")[0];
+      const at = byDate.get(key);
+      if (!at) {
+        byDate.set(key, { ...d, sale_date: key });
+        continue;
+      }
+      at.twNet += d.twNet;
+      at.twQty += d.twQty;
+      if (d.lyNet !== null) at.lyNet = (at.lyNet ?? 0) + d.lyNet;
+      if (d.lyQty !== null) at.lyQty = (at.lyQty ?? 0) + d.lyQty;
+      if (d.lwNet !== null) at.lwNet = (at.lwNet ?? 0) + d.lwNet;
+      if (d.lwQty !== null) at.lwQty = (at.lwQty ?? 0) + d.lwQty;
+    }
+  }
+
+  return [...byDate.values()].sort((a, b) =>
+    a.sale_date.localeCompare(b.sale_date),
+  );
+};
+
+/**
+ * The selection a ledger row opens with.
+ *
+ * Extracted from `LedgerRow`'s own click handler so the group comparison can
+ * open a store the same way the ledger does. Two constructions of this would
+ * drift, and the detail panel reads every field — a selection built slightly
+ * differently is a detail panel showing a slightly different week.
+ */
+export const selectionFor = (row: LedgerRowData): StoreSelection => {
+  const sortedDays = [...row.days].sort((a, b) =>
+    a.sale_date.localeCompare(b.sale_date),
+  );
+  return {
+    storeId: row.storeid,
+    storeName: row.store_name,
+    storeNumber: row.store_number,
+    storeNumbersForId: row.storeNumbersForId,
+    start: sortedDays[0]?.sale_date.split("T")[0] ?? "",
+    end: sortedDays[sortedDays.length - 1]?.sale_date.split("T")[0] ?? "",
+    mode: "weekly",
+    days: sortedDays,
+    severity: row.severity,
+  };
 };

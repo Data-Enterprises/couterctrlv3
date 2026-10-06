@@ -25,11 +25,14 @@ import {
   setHasSearched,
   setLedgerLoading,
   setLedgerSelection,
+  setLedgerSelectedDate,
   reQueryLedger,
 } from "../../../features/dev/devSalesLedgerSlice";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
 import EmptyPrompt from "../../../components-dev/EmptyPrompt";
+import GroupComparisonPanel from "./components/GroupComparisonPanel";
+import { selectionFor } from "./shared/storeComparison";
 import LedgerEntryCard from "./components/LedgerEntryCard";
 import StoreDetailPopup from "./components/StoreDetailPopup";
 import LedgerHeader from "./components/LedgerHeader";
@@ -63,6 +66,9 @@ const SalesLedger = () => {
     ledgerLoading: loading,
     threshold,
     gradingMetric,
+    // Shared with the store popup on purpose: a day picked in the group view
+    // is still the day you meant when you open a store.
+    selectedDate,
   } = useAppSelector((state) => state.dev.salesLedger);
   const { assignedStores } = useAppSelector((state) => state.user);
 
@@ -591,6 +597,23 @@ const SalesLedger = () => {
               <StoreDetailPopup
                 selection={selection}
                 onClose={handlePopupClose}
+              />
+            ) : ledgerRows.length > 1 ? (
+              /* The panel's resting state on a group search. The reference is
+                 the group, which the search already chose, so standing inside
+                 it is a fact about the search rather than a benchmark anyone
+                 sets — and this half of the page was an empty prompt until
+                 somebody clicked a store.
+
+                 Rows, not the search type: a storeid carrying two locations is
+                 a group too, the same test the header hero uses. */
+              <GroupComparisonPanel
+                rows={ledgerRows}
+                gradingMetric={gradingMetric}
+                threshold={activeThreshold}
+                selectedDate={selectedDate}
+                onSelectDay={(d) => dispatch(setLedgerSelectedDate(d))}
+                onSelectStore={(row) => handleRowClick(selectionFor(row))}
               />
             ) : (
               <EmptyPrompt

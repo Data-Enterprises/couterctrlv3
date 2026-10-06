@@ -3,6 +3,7 @@ import { formatCurrencyCompact } from "../../../../utils";
 import { useStoreName } from "../../../../hooks";
 import { severityDotClass, pillClass, PCT_COL_W } from "./utils";
 import { applyStoreNumberToName } from "../shared/ledgerUtils";
+import { selectionFor } from "../shared/storeComparison";
 import type { Severity } from "../../../../utils/severity";
 import {
   isCompleteCoverage,
@@ -141,26 +142,9 @@ const LedgerRow = ({
   const isQty = gradingMetric === "qty";
   const fmtMetric = (dollars: number, qty: number) =>
     isQty ? qty.toLocaleString() : formatCurrencyCompact(dollars);
-  const sortedDays = [...row.days].sort((a, b) =>
-    a.sale_date.localeCompare(b.sale_date),
-  );
-  const weekStart = sortedDays[0]?.sale_date.split("T")[0] ?? "";
-  const weekEnd =
-    sortedDays[sortedDays.length - 1]?.sale_date.split("T")[0] ?? "";
-
-  const handleClick = () => {
-    onClick({
-      storeId: row.storeid,
-      storeName: row.store_name,
-      storeNumber: row.store_number,
-      storeNumbersForId: row.storeNumbersForId,
-      start: weekStart,
-      end: weekEnd,
-      mode: "weekly",
-      days: sortedDays,
-      severity: row.severity,
-    });
-  };
+  // Built in shared/storeComparison so the group comparison opens a store the
+  // same way this row does.
+  const handleClick = () => onClick(selectionFor(row));
 
   return (
     <button
