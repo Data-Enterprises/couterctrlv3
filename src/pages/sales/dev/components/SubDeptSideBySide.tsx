@@ -6,8 +6,6 @@ import { setInvestigation } from "../../../../features/dev/devSalesLedgerSlice";
 import { useSalesState } from "../hooks/useSalesState";
 import { scopeToStoreNumber } from "../shared/ledgerUtils";
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
-import SortHeader, { PERF_SORT_HEADER } from "../../../../components-dev/SortHeader";
-import { useTriStateSort } from "../../../../utils/useTriStateSort";
 import type { SubSale } from "../../../../interfaces";
 import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice";
 
@@ -36,19 +34,21 @@ const totalsBySubDept = (rows: SubSale[], metric: GradingMetric) =>
     return acc;
   }, {});
 
-type Col = "mine" | "theirs" | "tyDiff" | "lwDiff" | "lyDiff";
+/** One department, both stores, across the three periods. */
+interface Row {
+  id: number;
+  name: string;
+  /** The open store's week. */
+  a: number;
+  /** The counterpart's. */
+  b: number;
+  tyDiff: number;
+  lwDiff: number;
+  lyDiff: number;
+}
 
-/** Each store's own week, then the three differences. The totals are wider
- *  than their figures need because they are headed by a store name, and a
- *  header that has to be guessed at is not naming anything. */
-const COLS = "minmax(170px,1fr) 164px 164px 136px 136px 136px";
-
-/** Six columns do not fit a 52% panel, so the grid scrolls sideways inside
- *  its own container rather than crushing the department name. */
-const GRID_MIN = 906;
-
-const HEAD =
-  "sticky top-0 z-10 bg-custom-white grid items-center gap-2.5 px-2 py-1.5 border-b border-brand_navy/15";
+/** A real minus, not a hyphen: these sit in tabular figures beside a plus. */
+const MINUS = "\u2212";
 
 interface Props {
   openStoreName: string;
@@ -87,7 +87,6 @@ const SubDeptSideBySide = ({
   gradingMetric,
   onBack,
 }: Props) => {
-  const { sort, handleSort, applySort } = useTriStateSort<Col>();
   const dispatch = useAppDispatch();
   const context = useAppSelector((state) => state.app);
   // The open store's three weeks are already here — the panel fetched them
@@ -194,26 +193,48 @@ const SubDeptSideBySide = ({
       .sort((x, y) => y.a - x.a);
   }, [theirs, subSales, subSalesWk2, subSalesWk3, gradingMetric]);
 
-  const sorted = applySort(rows, (row, col) =>
-    col === "mine"
-      ? row.a
-      : col === "theirs"
-        ? row.b
-        : col === "tyDiff"
-          ? row.tyDiff
-          : col === "lwDiff"
-            ? row.lwDiff
-            : row.lyDiff,
-  );
+  /**
+   * Money or mix.
+   *
+   * In money a bigger store is bigger in almost everything, which is true and
+   * is not a finding - eleven green rows tell you one thing you already knew.
+   * Mix divides each department by its OWN store's week, so size drops out
+   * and what is left is what the two actually lean on.
+   */
+  const [mode, setMode] = useState<"money" | "mix">("money");
+  const [picked, setPicked] = useState<number | null>(null);
+
+  const mineTotal = rows.reduce((t, r) => t + r.a, 0);
+  const theirsTotal = rows.reduce((t, r) => t + r.b, 0);
+  const shareMine = (r: Row) => (mineTotal > 0 ? (r.a / mineTotal) * 100 : 0);
+  const shareTheirs = (r: Row) => (theirsTotal > 0 ? (r.b / theirsTotal) * 100 : 0);
+
+  // One scale for both bars, so a bar's length means the same thing on every
+  // row and for either store.
+  const barMax =
+    mode === "money"
+      ? Math.max(1, ...rows.flatMap((r) => [r.a, r.b]))
+      : Math.max(1, ...rows.flatMap((r) => [shareMine(r), shareTheirs(r)]));
+
+  const widthOf = (v: number) => Math.min(100, (v / barMax) * 100) + "%";
+  const gapOf = (r: Row) =>
+    mode === "money" ? r.tyDiff : shareMine(r) - shareTheirs(r);
+  const gapText = (r: Row) => {
+    const g = gapOf(r);
+    const sign = g >= 0 ? "+" : MINUS;
+    return mode === "money"
+      ? sign + fmt(Math.abs(g))
+      : sign + Math.abs(g).toFixed(1) + " pts";
+  };
+
+  const focus = rows.find((r) => r.id === picked) ?? rows[0] ?? null;
 
   /**
    * Hand the page over to the investigation.
    *
-   * Both stores travel with it: the question there is why THIS store is behind
-   * THAT one in this department, and neither half of that survives being
-   * re-derived from a name. The ledger selection is left alone underneath, so
-   * coming back lands on the store and the department rather than on the
-   * search.
+   * Both stores travel with it: the question there is why THIS store is
+   * behind THAT one in this department, and neither half survives being
+   * re-derived from a name.
    */
   const openInvestigation = (subDept: number, subDeptName: string) =>
     dispatch(
@@ -229,113 +250,224 @@ const SubDeptSideBySide = ({
       }),
     );
 
-  /** The ledger's pill shape, carrying direction only: two stores are not a
-   *  baseline for each other, so there is no threshold to grade against. */
-  const diffPill = (v: number) => (
-    <span className="flex justify-start">
+  const COLS = "minmax(110px,1fr) minmax(90px,2fr) 104px";
+
+  const stat = (key: string, v: number) => (
+    <div className="flex items-baseline gap-2 px-3 py-2 bg-custom-white">
+      <span className="text-[11.5px] text-content/85 w-[52px] flex-shrink-0">{key}</span>
       <span
-        className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center whitespace-nowrap ${
-          v === 0
-            ? "bg-gray-100 text-content/85"
-            : v > 0
-              ? "bg-delta_positive_bg text-delta_positive_text"
-              : "bg-delta_negative_bg text-delta_negative_text"
+        className={`ml-auto tabular-nums text-[13.5px] font-bold ${
+          v >= 0 ? "text-delta_positive_text" : "text-delta_negative_text"
         }`}
-        style={{ minWidth: 108 }}
       >
-        {v >= 0 ? "+" : "−"}
+        {v >= 0 ? "+" : MINUS}
         {fmt(Math.abs(v))}
       </span>
-    </span>
+    </div>
   );
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
-      <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-100 flex-shrink-0 bg-gray-50">
+      <div className="flex items-center gap-2 px-3 py-2 border-b border-brand_navy/15 flex-shrink-0 bg-gray-50">
         <button
           onClick={onBack}
-          className="text-[12px] font-semibold text-content hover:underline"
+          className="text-[12px] font-semibold text-content hover:underline flex-shrink-0"
         >
-          ‹ All stores
+          &lsaquo; All stores
         </button>
         <span className="text-[12px] text-content/85 truncate">
           How <span className="font-semibold text-content">{openStoreName}</span>{" "}
           stands against{" "}
-          <span className="font-semibold text-content">{compareStoreName}</span>,
-          department by department
+          <span className="font-semibold text-content">{compareStoreName}</span>
+        </span>
+
+        <span className="ml-auto inline-flex rounded-full border border-brand_line overflow-hidden flex-shrink-0">
+          {(["money", "mix"] as const).map((m) => (
+            <button
+              key={m}
+              onClick={() => setMode(m)}
+              className={`text-[11.5px] font-semibold px-2.5 py-1 transition-colors ${
+                mode === m
+                  ? "bg-brand_navy text-custom-white"
+                  : "bg-custom-white text-content hover:bg-gray-50"
+              }`}
+            >
+              {m === "money" ? "Money" : "Mix"}
+            </button>
+          ))}
         </span>
       </div>
 
       {failed ? (
         <div className="flex-1 flex items-center justify-center px-4 text-center text-[12.5px] text-content/85">
-          That store's departments could not be loaded.
+          That store&rsquo;s departments could not be loaded.
         </div>
       ) : !theirs ? (
         <div className="relative flex-1">
           <LoadingIndicator message="Loading departments" />
         </div>
       ) : (
-        <div className="flex-1 overflow-auto thin-scrollbar">
-          <div style={{ minWidth: GRID_MIN }}>
-            <div className={HEAD} style={{ gridTemplateColumns: COLS }}>
-              <span className="text-[11.5px] font-semibold uppercase tracking-wide text-content/85">
-                Sub dept
+        <div className="flex-1 min-h-0 flex overflow-hidden">
+          <div className="flex-1 min-w-0 flex flex-col border-r border-brand_navy/15">
+            <div
+              className="flex-shrink-0 grid gap-2.5 items-center px-3 py-1.5 border-b border-brand_navy/15 text-[11px] font-semibold uppercase tracking-wide text-content/85"
+              style={{ gridTemplateColumns: COLS }}
+            >
+              <span>Sub dept</span>
+              <span>
+                {openStoreNumber} against {compareStoreNumber}
               </span>
-              {/* Each store's own week first, so the difference beside it can
-                  be checked rather than taken on trust — a department one
-                  store simply does not carry reads very differently from one
-                  where it is being beaten. Headed by the store and the
-                  period, so a column says whose figure it holds without the
-                  caption above having to be read first. `min-w-0` is what
-                  lets a long name truncate in its track instead of running
-                  into the next column; the full name is on the title.
-
-                  Plain figures, not pills. These are totals, and a pill is
-                  this page's shape for a comparison. */}
-              <SortHeader col="mine" label={`${openStoreName} TY`} sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-start min-w-0`} />
-              <SortHeader col="theirs" label={`${compareStoreName} TY`} sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-start min-w-0`} />
-              {/* Then the same three comparisons the store grid makes, one
-                  department at a time, and sorted the same way. */}
-              <SortHeader col="tyDiff" label="vs TY" sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-start`} />
-              <SortHeader col="lwDiff" label="vs LW" sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-start`} />
-              <SortHeader col="lyDiff" label="vs LY" sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-start`} />
+              <span className="text-right">{mode === "money" ? "vs TY" : "Share"}</span>
             </div>
 
-            {sorted.map((r) => (
-              <div
-                key={r.id}
-                role="button"
-                tabIndex={0}
-                onClick={() => openInvestigation(r.id, r.name)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    openInvestigation(r.id, r.name);
-                  }
-                }}
-                title={`Why ${openStoreName} is behind in ${r.name}`}
-                className="grid gap-2.5 items-center px-2 py-[11px] border-b border-brand_navy/15 last:border-b-0 even:bg-row_stripe hover:bg-gray-50 cursor-pointer text-[13px] text-content"
-                style={{ gridTemplateColumns: COLS }}
-              >
-                <span className="min-w-0 truncate font-medium">{r.name}</span>
-                <span className="tabular-nums font-semibold" title={openStoreName}>
-                  {fmt(r.a)}
-                </span>
-                <span className="tabular-nums text-content/85" title={compareStoreName}>
-                  {fmt(r.b)}
-                </span>
-                {diffPill(r.tyDiff)}
-                {diffPill(r.lwDiff)}
-                {diffPill(r.lyDiff)}
-              </div>
-            ))}
+            <div className="flex-1 min-h-0 overflow-auto thin-scrollbar">
+              {rows.map((r) => {
+                const g = gapOf(r);
+                const on = focus?.id === r.id;
+                return (
+                  <button
+                    key={r.id}
+                    onClick={() => setPicked(r.id)}
+                    className={`w-full text-left grid gap-2.5 items-center px-3 py-2 border-b border-brand_navy/15 transition-colors ${
+                      on
+                        ? "bg-row_selected border-row_selected_border"
+                        : "hover:bg-gray-50"
+                    }`}
+                    style={{ gridTemplateColumns: COLS }}
+                  >
+                    <span className="min-w-0 truncate text-[12.5px] font-medium text-content">
+                      {r.name}
+                    </span>
 
-            {rows.length === 0 && (
-              <div className="px-3 py-6 text-center text-[12.5px] text-content/85">
-                Neither store recorded departments this week.
-              </div>
-            )}
+                    {/* Two bars on one scale: length is the week, the pair is
+                        the comparison. A single diverging bar shows the gap
+                        and throws away how big either store actually is. */}
+                    <span className="grid gap-[3px] min-w-0">
+                      <span className="block h-2 rounded-sm bg-bkg">
+                        <span
+                          className="block h-2 rounded-sm bg-store_open"
+                          style={{ width: widthOf(mode === "money" ? r.a : shareMine(r)) }}
+                        />
+                      </span>
+                      {/* A department they do not carry gets a hatched full
+                          track, not a zero-width bar nobody can see. */}
+                      <span className="block h-2 rounded-sm bg-bkg">
+                        <span
+                          className="block h-2 rounded-sm"
+                          style={
+                            r.b === 0
+                              ? {
+                                  width: "100%",
+                                  background:
+                                    "repeating-linear-gradient(45deg, rgb(var(--color-severity-watch-bg)) 0 4px, transparent 4px 8px)",
+                                }
+                              : {
+                                  width: widthOf(mode === "money" ? r.b : shareTheirs(r)),
+                                  background: "rgb(var(--color-store-compare))",
+                                }
+                          }
+                        />
+                      </span>
+                    </span>
+
+                    <span
+                      className={`text-right tabular-nums text-[12px] font-semibold ${
+                        g >= 0 ? "text-delta_positive_text" : "text-delta_negative_text"
+                      }`}
+                    >
+                      {gapText(r)}
+                    </span>
+                  </button>
+                );
+              })}
+
+              {rows.length === 0 && (
+                <div className="px-3 py-6 text-center text-[12.5px] text-content/85">
+                  Neither store recorded departments this week.
+                </div>
+              )}
+            </div>
           </div>
+
+          {focus && (
+            <div className="w-[320px] flex-shrink-0 flex flex-col p-3 gap-3 overflow-auto thin-scrollbar">
+              <div>
+                <div className="text-[15px] font-bold text-content leading-snug">
+                  {focus.name}
+                </div>
+                {focus.b === 0 && (
+                  <span className="inline-block mt-1.5 text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded bg-severity_watch_bg text-severity_watch_text">
+                    {compareStoreNumber} carries none
+                  </span>
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div className="rounded-md px-2.5 py-2 bg-store_open_tint">
+                  <div className="text-[10px] font-bold uppercase tracking-wide text-content/85">
+                    {openStoreNumber}
+                  </div>
+                  <div className="text-[15px] font-bold tabular-nums text-content mt-0.5">
+                    {fmt(focus.a)}
+                  </div>
+                </div>
+                <div className="rounded-md px-2.5 py-2 bg-store_compare_tint">
+                  <div className="text-[10px] font-bold uppercase tracking-wide text-content/85">
+                    {compareStoreNumber}
+                  </div>
+                  <div className="text-[15px] font-bold tabular-nums text-content mt-0.5">
+                    {fmt(focus.b)}
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid gap-px bg-brand_navy/15 rounded-md overflow-hidden">
+                {stat("vs TY", focus.tyDiff)}
+                {stat("vs LW", focus.lwDiff)}
+                {stat("vs LY", focus.lyDiff)}
+              </div>
+
+              <p className="text-[11.5px] text-content/85 leading-relaxed">
+                This department is{" "}
+                <span className="font-semibold text-content">
+                  {shareMine(focus).toFixed(1)}%
+                </span>{" "}
+                of {openStoreNumber}&rsquo;s week and{" "}
+                <span className="font-semibold text-content">
+                  {shareTheirs(focus).toFixed(1)}%
+                </span>{" "}
+                of {compareStoreNumber}&rsquo;s
+                {Math.abs(shareMine(focus) - shareTheirs(focus)) < 0.5 ? (
+                  <> &mdash; near enough the same lean.</>
+                ) : (
+                  <>
+                    {" "}
+                    &mdash;{" "}
+                    <span className="font-semibold text-content">
+                      {Math.abs(shareMine(focus) - shareTheirs(focus)).toFixed(1)} points
+                    </span>{" "}
+                    heavier at{" "}
+                    {shareMine(focus) > shareTheirs(focus)
+                      ? openStoreNumber
+                      : compareStoreNumber}
+                    .
+                  </>
+                )}
+              </p>
+
+              {/* The way into the items, named and pinned, rather than a row
+                  click somebody has to discover. */}
+              <button
+                onClick={() => openInvestigation(focus.id, focus.name)}
+                className="mt-auto w-full flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-md bg-brand_navy hover:bg-brand_navy_hover text-custom-white text-[12.5px] font-bold transition-colors"
+              >
+                Investigate {focus.name} items &rarr;
+              </button>
+              <p className="text-[10.5px] text-content/85 text-center leading-snug">
+                Items, causes and supply for this department at both stores
+              </p>
+            </div>
+          )}
         </div>
       )}
     </div>
