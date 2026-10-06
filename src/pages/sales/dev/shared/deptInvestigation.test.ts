@@ -6,6 +6,7 @@ import {
   ladderFor,
   ratiosOf,
   summarise,
+  supplyTimeline,
   DEFAULT_BANDS,
   type ItemFacts,
 } from "./deptInvestigation";
@@ -60,12 +61,16 @@ const row = (over: Partial<SubDeptMargin> = {}): SubDeptMargin => ({
   ...over,
 });
 
-const order = (code: string, qty: number) =>
-  ({ product_code: code, qty } as AllOrder);
+const order = (code: string, qty: number, over: Partial<AllOrder> = {}) =>
+  ({ product_code: code, qty, ...over }) as AllOrder;
 
-const receiver = (lines: Array<[string, number]>) =>
+const receiver = (
+  lines: Array<[string, number]>,
+  over: Partial<ReceiverItemSearchReceiver> = {},
+) =>
   ({
     lines: lines.map(([product_code, units]) => ({ product_code, units })),
+    ...over,
   }) as ReceiverItemSearchReceiver;
 
 const point = (over: Partial<SubsPricePoint> = {}): SubsPricePoint => ({
@@ -418,5 +423,78 @@ describe("ladderFor", () => {
     const odd = [point({ product_code: "Z", price: 3, units: 9, transactions: 0, net_sales: 27 })];
     expect(ladderFor(odd, "Z").points[0].unitsPerBasket).toBeNull();
     expect(ladderFor(odd, "Z").unitsPerBasket).toBeNull();
+  });
+});
+
+
+describe("supplyTimeline", () => {
+  it("reads forwards, oldest first", () => {
+    const out = supplyTimeline(
+      "A",
+      [order("A", 10, { order_date: "2026-09-29" })],
+      [receiver([["A", 12]], { invoice_date: "2026-09-24", invoiceid: 1 })],
+    );
+    expect(out.map((e) => e.date)).toEqual(["2026-09-24", "2026-09-29"]);
+  });
+
+  it("keeps the day and drops the timestamp both endpoints send", () => {
+    const out = supplyTimeline("A", [order("A", 1, { order_date: "2026-09-22T00:00:00" })], []);
+    expect(out[0].date).toBe("2026-09-22");
+  });
+
+  it("names the unit rather than assuming the two agree", () => {
+    const out = supplyTimeline(
+      "A",
+      [order("A", 10, { order_date: "2026-09-22" })],
+      [receiver([["A", 24]], { invoice_date: "2026-09-24" })],
+    );
+    expect(out[0]).toMatchObject({ kind: "ordered", amount: 10, unit: "cases" });
+    expect(out[1]).toMatchObject({ kind: "received", amount: 24, unit: "units" });
+  });
+
+  it("never invents a 'short' event", () => {
+    // 10 cases ordered, 2 units in. Saying "8 short" would divide units by
+    // cases; the two events are shown and the reader draws the conclusion.
+    const out = supplyTimeline(
+      "A",
+      [order("A", 10, { order_date: "2026-09-22" })],
+      [receiver([["A", 2]], { invoice_date: "2026-10-03" })],
+    );
+    expect(out.map((e) => e.kind)).toEqual(["ordered", "received"]);
+  });
+
+  it("shows an order with nothing against it as exactly that", () => {
+    const out = supplyTimeline("A", [order("A", 10, { order_date: "2026-09-22" })], []);
+    expect(out).toHaveLength(1);
+    expect(out[0].kind).toBe("ordered");
+  });
+
+  it("ignores other items on the same order and the same invoice", () => {
+    const out = supplyTimeline(
+      "A",
+      [order("A", 1, { order_date: "2026-09-22" }), order("B", 9, { order_date: "2026-09-22" })],
+      [receiver([["B", 50], ["A", 4]], { invoice_date: "2026-09-24" })],
+    );
+    expect(out).toHaveLength(2);
+    expect(out[1].amount).toBe(4);
+  });
+
+  it("reads every line of every receiver, not just the first", () => {
+    const out = supplyTimeline("A", [], [
+      receiver([["A", 2]], { invoice_date: "2026-09-24", invoiceid: 1 }),
+      receiver([["A", 3]], { invoice_date: "2026-09-30", invoiceid: 2 }),
+    ]);
+    expect(out.map((e) => e.amount)).toEqual([2, 3]);
+  });
+
+  it("carries the vendor and invoice so an event can be chased", () => {
+    const out = supplyTimeline("A", [], [
+      receiver([["A", 2]], { invoice_date: "2026-09-24", invoiceid: 884120, vendor_name: "P&G" }),
+    ]);
+    expect(out[0].detail).toBe("P&G · inv 884120");
+  });
+
+  it("is empty for an item with no supply at all", () => {
+    expect(supplyTimeline("ZZZ", [order("A", 1)], [receiver([["A", 1]])])).toEqual([]);
   });
 });

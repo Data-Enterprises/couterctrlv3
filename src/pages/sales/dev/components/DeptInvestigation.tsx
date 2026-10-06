@@ -15,6 +15,7 @@ import SortHeader from "../../../../components-dev/SortHeader";
 import ColFilter from "../../../../components-dev/filters/ColFilterPopover";
 import { colInputStyle } from "../../../../components-dev/filters/colFilterStyles";
 import UpcContextMenu from "../../../../components-dev/UpcContextMenu";
+import ItemEvidence from "./ItemEvidence";
 import { rowsToCsv, downloadCsv } from "../../../../utils/csvExport";
 import { useTriStateSort } from "../../../../utils/useTriStateSort";
 import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice";
@@ -320,6 +321,9 @@ const DeptInvestigation = ({
   const [upcDraft, setUpcDraft] = useState("");
   const [vendorQ, setVendorQ] = useState("");
   const [ctx, setCtx] = useState<{ x: number; y: number; upc: string } | null>(null);
+  /** Which item's evidence is open. Held here rather than in the slice: it
+   *  belongs to this screen and means nothing once you leave it. */
+  const [picked, setPicked] = useState<string | null>(null);
 
   const isQty = gradingMetric === "qty";
   const fmt = (v: number) => (isQty ? formatBigNumber(v, 0) : formatCurrency2(v));
@@ -346,7 +350,8 @@ const DeptInvestigation = ({
     [target, twStart, twEnd, lwStart, lwEnd, lyStart, lyEnd, gradingMetric],
   );
 
-  const { stage, items, summary, problem } = useDeptInvestigation(args);
+  const { stage, items, summary, problem, sales, orders, receipts } =
+    useDeptInvestigation(args);
 
   /** Every vendor in the department, so the vendor filter is a list to pick
    *  from rather than a spelling to guess at. */
@@ -369,6 +374,11 @@ const DeptInvestigation = ({
         (!vendorQ || i.vendorName === vendorQ),
     );
   }, [items, only, itemQ, upcQ, vendorQ]);
+
+  const pickedItem = useMemo(
+    () => items.find((i) => i.productCode === picked) ?? null,
+    [items, picked],
+  );
 
   const filterActive = (k: FilterKind) =>
     k === "item" ? !!itemQ
@@ -564,7 +574,8 @@ const DeptInvestigation = ({
               at 11px, a sticky heading row and a sticky row number. Dense is
               the point — a department is hundreds of items and an airy list
               shows eight of them. */}
-          <div className="flex-1 min-h-0 overflow-auto thin-scrollbar">
+          <div className="flex-1 min-h-0 flex overflow-hidden">
+          <div className="flex-1 min-w-0 overflow-auto thin-scrollbar">
             <table className="border-collapse font-mono text-[11px] w-max">
               <thead>
                 <tr>
@@ -657,12 +668,27 @@ const DeptInvestigation = ({
                 {capped.map((r, i) => (
                   <tr
                     key={r.productCode}
+                    onClick={() =>
+                      setPicked((p) => (p === r.productCode ? null : r.productCode))
+                    }
+                    className="cursor-pointer"
                     onContextMenu={(e) => {
                       e.preventDefault();
                       setCtx({ x: e.clientX, y: e.clientY, upc: r.productCode });
                     }}
                   >
-                    <td className="sticky left-0 z-10 bg-custom-white border-r border-brand_line border-b border-brand_line px-2 py-1.5 text-right text-content/85">
+                    {/* Selection shows on the gutter, not on the row: every
+                        other cell paints its own background — the two store
+                        tints especially — so a row-level fill would appear on
+                        half the row and look broken. The house pair, where it
+                        can be seen. */}
+                    <td
+                      className={`sticky left-0 z-10 border-r border-brand_line border-b border-brand_line px-2 py-1.5 text-right ${
+                        picked === r.productCode
+                          ? "bg-row_selected border-row_selected_border border-l-2 font-bold text-content"
+                          : "bg-custom-white text-content/85"
+                      }`}
+                    >
                       {i + 1}
                     </td>
                     {COLUMNS.map((c) => (
@@ -685,6 +711,23 @@ const DeptInvestigation = ({
             )}
           </div>
 
+          {pickedItem && target && (
+            <ItemEvidence
+              item={pickedItem}
+              openStoreNumber={target.storeNumber}
+              compareStoreNumber={target.compareStoreNumber}
+              mineOrders={orders.mine}
+              theirsOrders={orders.theirs}
+              mineReceipts={receipts.mine}
+              theirsReceipts={receipts.theirs}
+              minePoints={sales?.minePoints ?? []}
+              theirsPoints={sales?.theirsPoints ?? []}
+              supplyReady={stage === "done"}
+              onClose={() => setPicked(null)}
+            />
+          )}
+          </div>
+
           <div className="flex-shrink-0 flex items-center gap-3 px-4 py-2 border-t border-brand_line bg-custom-white text-[11.5px] text-content/85">
             <span>
               {shown.length > ROW_CAP ? (
@@ -697,7 +740,7 @@ const DeptInvestigation = ({
                 <>
                   {shown.length} {shown.length === 1 ? "item" : "items"}
                   {filtered ? ` of ${items.length}` : ""} · ordered by the
-                  biggest difference
+                  biggest difference · click one for its evidence
                 </>
               )}
             </span>
