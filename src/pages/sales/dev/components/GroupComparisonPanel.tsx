@@ -289,7 +289,7 @@ const Row = ({
           onSelect();
         }
       }}
-      className="grid gap-2.5 items-center px-2 py-[7px] border-b border-brand_navy/15 last:border-b-0 even:bg-row_stripe hover:bg-gray-50 cursor-pointer text-[13px] text-content"
+      className="grid gap-2.5 items-center px-2 py-[11px] border-b border-brand_navy/15 last:border-b-0 even:bg-row_stripe hover:bg-gray-50 cursor-pointer text-[13px] text-content"
       style={{ gridTemplateColumns: COLS }}
     >
       <span className="min-w-0 truncate font-medium">

@@ -3,8 +3,8 @@ import { applyStoreNumberToName } from "../shared/ledgerUtils";
 import { compareForView, type ComparisonRow } from "../shared/storeComparison";
 import SortHeader, { PERF_SORT_HEADER } from "../../../../components-dev/SortHeader";
 import SubDeptSideBySide from "./SubDeptSideBySide";
+import { formatCurrency2, formatBigNumber } from "../../../../utils";
 import { useTriStateSort } from "../../../../utils/useTriStateSort";
-import { PCT_COL_W } from "./utils";
 import type { LedgerRowData } from "./LedgerRow";
 import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice";
 
@@ -20,16 +20,13 @@ import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice
  * subtracting two percentages never gives a percentage.
  */
 
-type Col = "lwGap" | "lyGap";
+type Col = "tyGap" | "lwGap" | "lyGap";
 
-const COLS = "minmax(200px,1fr) 136px 136px";
-const GRID_MIN = 500;
+const COLS = "minmax(170px,1fr) 136px 136px 136px";
+const GRID_MIN = 620;
 
 const HEAD =
   "sticky top-0 z-10 bg-custom-white grid items-center gap-2.5 px-2 py-1.5 border-b border-brand_navy/15";
-
-const points1 = (v: number | null) =>
-  v === null ? "—" : `${v >= 0 ? "+" : ""}${v.toFixed(1)} pt`;
 
 interface Props {
   rows: LedgerRowData[];
@@ -42,6 +39,10 @@ interface Props {
   openStoreName: string;
   twStart: string;
   twEnd: string;
+  lwStart: string;
+  lwEnd: string;
+  lyStart: string;
+  lyEnd: string;
 }
 
 const PopupComparisonList = ({
@@ -54,11 +55,18 @@ const PopupComparisonList = ({
   openStoreName,
   twStart,
   twEnd,
+  lwStart,
+  lwEnd,
+  lyStart,
+  lyEnd,
 }: Props) => {
   const { sort, handleSort, applySort } = useTriStateSort<Col>();
   // Which store's departments to put beside this one's. Held here rather than
   // in the slice: it belongs to this tab and means nothing once you leave it.
   const [picked, setPicked] = useState<ComparisonRow | null>(null);
+  const isQty = gradingMetric === "qty";
+  const fmt = (v: number) =>
+    isQty ? formatBigNumber(v, 0) : formatCurrency2(v);
   const group = useMemo(
     () => compareForView(rows, gradingMetric, threshold, selectedDate),
     [rows, gradingMetric, threshold, selectedDate],
@@ -80,24 +88,23 @@ const PopupComparisonList = ({
   const others = group.rows.filter((r) => keyOf(r) !== keyOf(open));
 
   /**
-   * How much better or worse this store moved than the open one, over the
-   * same comparison.
+   * This store's week against the open store's, in each of the three periods.
    *
-   * Both sides are percentages, so the distance between them is POINTS. This
-   * is the whole tab: the open store is down 16% on last year and this one is
-   * down 7%, so this one is 9 points better — which is a thing neither store's
-   * own figure says, and neither does the ledger.
+   * Money, not points: "Glasgow did $80.8K more than Louisville this week" is
+   * the sentence somebody says out loud, and it is the one thing neither
+   * store's own row — here or in the ledger — can tell you.
    *
-   * Null when either store has nothing for that period; there is no
-   * comparison to state rather than a zero to imply one.
+   * Null where the store has nothing for that period, so there is no
+   * comparison to state rather than a zero implying one.
    */
+  const tyGap = (r: ComparisonRow) => r.ty - open.ty;
   const lwGap = (r: ComparisonRow) =>
-    r.hasLW && open.hasLW ? r.ownLwPct - open.ownLwPct : null;
+    r.hasLW && open.hasLW ? r.lw - open.lw : null;
   const lyGap = (r: ComparisonRow) =>
-    r.hasLY && open.hasLY ? r.ownLyPct - open.ownLyPct : null;
+    r.hasLY && open.hasLY ? r.ly - open.ly : null;
 
   const sorted = applySort(others, (row, col) =>
-    col === "lwGap" ? lwGap(row) : lyGap(row),
+    col === "tyGap" ? tyGap(row) : col === "lwGap" ? lwGap(row) : lyGap(row),
   );
 
   const nameOf = (r: ComparisonRow) =>
@@ -115,24 +122,24 @@ const PopupComparisonList = ({
               ? "bg-delta_positive_bg text-delta_positive_text"
               : "bg-delta_negative_bg text-delta_negative_text"
         }`}
-        style={{ minWidth: PCT_COL_W }}
+        style={{ minWidth: 112 }}
       >
         {text}
       </span>
     </span>
   );
 
-  const cells = (r: ComparisonRow) => {
-    const lw = lwGap(r);
-    const ly = lyGap(r);
-    return (
-      <>
-        <span className="min-w-0 truncate font-medium">{nameOf(r)}</span>
-        {diffPill(lw === null ? "—" : points1(lw), lw)}
-        {diffPill(ly === null ? "—" : points1(ly), ly)}
-      </>
-    );
-  };
+  const money = (v: number | null) =>
+    v === null ? "—" : `${v >= 0 ? "+" : "−"}${fmt(Math.abs(v))}`;
+
+  const cells = (r: ComparisonRow) => (
+    <>
+      <span className="min-w-0 truncate font-medium">{nameOf(r)}</span>
+      {diffPill(money(tyGap(r)), tyGap(r))}
+      {diffPill(money(lwGap(r)), lwGap(r))}
+      {diffPill(money(lyGap(r)), lyGap(r))}
+    </>
+  );
 
   // Picking a store swaps this list for its departments beside the open
   // store's — the next step of the same question.
@@ -145,6 +152,10 @@ const PopupComparisonList = ({
         compareStoreName={nameOf(picked)}
         twStart={twStart}
         twEnd={twEnd}
+        lwStart={lwStart}
+        lwEnd={lwEnd}
+        lyStart={lyStart}
+        lyEnd={lyEnd}
         gradingMetric={gradingMetric}
         onBack={() => setPicked(null)}
       />
@@ -161,6 +172,7 @@ const PopupComparisonList = ({
           {/* Each one is this store's movement against the open store's, over
               the same comparison. Nothing here is a figure the ledger already
               shows. */}
+          <SortHeader col="tyGap" label="vs TY" sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-end`} />
           <SortHeader col="lwGap" label="vs LW" sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-end`} />
           <SortHeader col="lyGap" label="vs LY" sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-end`} />
         </div>

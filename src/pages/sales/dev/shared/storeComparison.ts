@@ -53,6 +53,10 @@ export interface ComparisonRow {
    */
   /** The store's own figure on the matched-day base of its basis. */
   ty: number;
+  /** Each comparison period's figure, for stating a difference between two
+   *  stores in money rather than in points. */
+  lw: number;
+  ly: number;
 
   /** Share of the group, now and in each comparison period. 0–1. */
   shareTy: number | null;
@@ -307,6 +311,8 @@ export const compareStores = (
       storeNumber: row.store_number,
       storeNumbersForId: row.storeNumbersForId,
       ty,
+      lw,
+      ly,
       shareTy,
       shareLw,
       shareLy,

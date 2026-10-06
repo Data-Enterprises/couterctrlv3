@@ -804,6 +804,10 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
               openStoreName={headerStoreName}
               twStart={twStart}
               twEnd={twEnd}
+              lwStart={lwStart}
+              lwEnd={lwEnd}
+              lyStart={lyStart}
+              lyEnd={lyEnd}
             />
           ) : null
         ) : tab === "subdept" ? (

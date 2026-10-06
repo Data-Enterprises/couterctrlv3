@@ -33,8 +33,8 @@ const totalsBySubDept = (rows: SubSale[], metric: GradingMetric) =>
     return acc;
   }, {});
 
-const COLS = "minmax(150px,1fr) 136px 136px 148px";
-const GRID_MIN = 600;
+const COLS = "minmax(150px,1fr) 128px 128px 124px 124px 124px";
+const GRID_MIN = 800;
 
 const HEAD =
   "sticky top-0 z-10 bg-custom-white grid items-center gap-2.5 px-2 py-1.5 border-b border-brand_navy/15";
@@ -48,6 +48,10 @@ interface Props {
   compareStoreName: string;
   twStart: string;
   twEnd: string;
+  lwStart: string;
+  lwEnd: string;
+  lyStart: string;
+  lyEnd: string;
   gradingMetric: GradingMetric;
   onBack: () => void;
 }
@@ -59,12 +63,22 @@ const SubDeptSideBySide = ({
   compareStoreName,
   twStart,
   twEnd,
+  lwStart,
+  lwEnd,
+  lyStart,
+  lyEnd,
   gradingMetric,
   onBack,
 }: Props) => {
   const context = useAppSelector((state) => state.app);
-  const { subSales } = useSalesState();
-  const [theirs, setTheirs] = useState<SubSale[] | null>(null);
+  // The open store's three weeks are already here — the panel fetched them
+  // for its own Sub dept tab, which is why only the counterpart is asked for.
+  const { subSales, subSalesWk2, subSalesWk3 } = useSalesState();
+  const [theirs, setTheirs] = useState<{
+    tw: SubSale[];
+    lw: SubSale[];
+    ly: SubSale[];
+  } | null>(null);
   const [failed, setFailed] = useState(false);
 
   const isQty = gradingMetric === "qty";
@@ -75,49 +89,108 @@ const SubDeptSideBySide = ({
     let live = true;
     setTheirs(null);
     setFailed(false);
-    getSubs(context.url, context.token, twStart, twEnd, 0, compareStoreId, 1)
-      .then((resp) => {
+    const ask = (from: string, to: string) =>
+      getSubs(context.url, context.token, from, to, 0, compareStoreId, 1);
+
+    Promise.all([
+      ask(twStart, twEnd),
+      ask(lwStart, lwEnd),
+      ask(lyStart, lyEnd),
+    ])
+      .then(([tw, lw, ly]) => {
         if (!live) return;
         // Same unpacking the detail panel does: the house convention is a 200
-        // carrying `error`, so `error === 0` is the success test.
-        setTheirs(
+        // carrying `error`, so `error === 0` is the success test. Scoped by
+        // store NUMBER, because co-located stores share an id.
+        const take = (resp: { data: { error: number; subs: SubSale[] } }) =>
           resp.data.error === 0
-            ? scopeToStoreNumber(resp.data.subs as SubSale[], compareStoreNumber)
-            : [],
-        );
+            ? scopeToStoreNumber(resp.data.subs, compareStoreNumber)
+            : [];
+        setTheirs({ tw: take(tw), lw: take(lw), ly: take(ly) });
       })
       .catch(() => live && setFailed(true));
     return () => {
       live = false;
     };
-  }, [context.url, context.token, twStart, twEnd, compareStoreId, compareStoreNumber]);
+  }, [
+    context.url,
+    context.token,
+    twStart,
+    twEnd,
+    lwStart,
+    lwEnd,
+    lyStart,
+    lyEnd,
+    compareStoreId,
+    compareStoreNumber,
+  ]);
 
   const rows = useMemo(() => {
     if (!theirs) return [];
-    // Already the open store's own week — the panel scoped it on the way in.
-    const mine = totalsBySubDept(subSales, gradingMetric);
-    const yours = totalsBySubDept(theirs, gradingMetric);
+    // Already the open store's own weeks — the panel scoped them on the way in.
+    const mineTw = totalsBySubDept(subSales, gradingMetric);
+    const mineLw = totalsBySubDept(subSalesWk2, gradingMetric);
+    const mineLy = totalsBySubDept(subSalesWk3, gradingMetric);
+    const theirTw = totalsBySubDept(theirs.tw, gradingMetric);
+    const theirLw = totalsBySubDept(theirs.lw, gradingMetric);
+    const theirLy = totalsBySubDept(theirs.ly, gradingMetric);
 
-    // Every department either store has — one of them not carrying a
-    // department is a finding, not a row to drop.
+    // Every department either store has in any week — one of them not
+    // carrying a department is a finding, not a row to drop.
     const ids = [
-      ...new Set([...Object.keys(mine), ...Object.keys(yours)].map(Number)),
+      ...new Set(
+        [mineTw, mineLw, mineLy, theirTw, theirLw, theirLy]
+          .flatMap((m) => Object.keys(m))
+          .map(Number),
+      ),
     ];
+
+    const at = (
+      m: Record<number, { name: string; value: number }>,
+      id: number,
+    ) => m[id]?.value ?? 0;
 
     return ids
       .map((id) => {
-        const a = mine[id]?.value ?? 0;
-        const b = yours[id]?.value ?? 0;
+        const a = at(mineTw, id);
+        const b = at(theirTw, id);
         return {
           id,
-          name: mine[id]?.name ?? yours[id]?.name ?? `Sub dept ${id}`,
+          name:
+            mineTw[id]?.name ??
+            theirTw[id]?.name ??
+            mineLy[id]?.name ??
+            theirLy[id]?.name ??
+            `Sub dept ${id}`,
           a,
           b,
-          diff: a - b,
+          tyDiff: a - b,
+          lwDiff: at(mineLw, id) - at(theirLw, id),
+          lyDiff: at(mineLy, id) - at(theirLy, id),
         };
       })
       .sort((x, y) => y.a - x.a);
-  }, [theirs, subSales, gradingMetric]);
+  }, [theirs, subSales, subSalesWk2, subSalesWk3, gradingMetric]);
+
+  /** The ledger's pill shape, carrying direction only: two stores are not a
+   *  baseline for each other, so there is no threshold to grade against. */
+  const diffPill = (v: number) => (
+    <span className="flex justify-end">
+      <span
+        className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center whitespace-nowrap ${
+          v === 0
+            ? "bg-gray-100 text-content/85"
+            : v > 0
+              ? "bg-delta_positive_bg text-delta_positive_text"
+              : "bg-delta_negative_bg text-delta_negative_text"
+        }`}
+        style={{ minWidth: 108 }}
+      >
+        {v >= 0 ? "+" : "−"}
+        {fmt(Math.abs(v))}
+      </span>
+    </span>
+  );
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
@@ -160,15 +233,23 @@ const SubDeptSideBySide = ({
               >
                 {compareStoreName}
               </span>
+              {/* The same three comparisons the store grid makes, one
+                  department at a time. */}
               <span className="text-[11.5px] font-semibold uppercase tracking-wide text-content/85 text-right">
-                Diff
+                vs TY
+              </span>
+              <span className="text-[11.5px] font-semibold uppercase tracking-wide text-content/85 text-right">
+                vs LW
+              </span>
+              <span className="text-[11.5px] font-semibold uppercase tracking-wide text-content/85 text-right">
+                vs LY
               </span>
             </div>
 
             {rows.map((r) => (
               <div
                 key={r.id}
-                className="grid gap-2.5 items-center px-2 py-[7px] border-b border-brand_navy/15 last:border-b-0 even:bg-row_stripe text-[13px] text-content"
+                className="grid gap-2.5 items-center px-2 py-[11px] border-b border-brand_navy/15 last:border-b-0 even:bg-row_stripe text-[13px] text-content"
                 style={{ gridTemplateColumns: COLS }}
               >
                 <span className="min-w-0 truncate font-medium">{r.name}</span>
@@ -178,25 +259,9 @@ const SubDeptSideBySide = ({
                 <span className="text-right tabular-nums font-semibold">
                   {fmt(r.b)}
                 </span>
-                {/* The ledger's pill shape, so a figure in this grid reads
-                    like a figure anywhere else. Direction only — two stores
-                    are not a baseline for each other, so there is no
-                    threshold for this to be graded against. */}
-                <span className="flex justify-end">
-                  <span
-                    className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center whitespace-nowrap ${
-                      r.diff === 0
-                        ? "bg-gray-100 text-content/85"
-                        : r.diff > 0
-                          ? "bg-delta_positive_bg text-delta_positive_text"
-                          : "bg-delta_negative_bg text-delta_negative_text"
-                    }`}
-                    style={{ minWidth: 112 }}
-                  >
-                    {r.diff >= 0 ? "+" : "−"}
-                    {fmt(Math.abs(r.diff))}
-                  </span>
-                </span>
+                {diffPill(r.tyDiff)}
+                {diffPill(r.lwDiff)}
+                {diffPill(r.lyDiff)}
               </div>
             ))}
 
