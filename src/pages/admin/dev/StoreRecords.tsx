@@ -2,8 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import {
   PencilIcon,
   PlusIcon,
-  NoSymbolIcon,
-  ArrowUturnLeftIcon,
+  LockClosedIcon,
+  LockOpenIcon,
 } from "@heroicons/react/20/solid";
 import { useAdminPageCtx } from "./hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
@@ -53,7 +53,7 @@ const COLS = "grid-cols-[13%_35%_30%_22%]";
  * grid implying a state it cannot read.
  */
 const SERVICE_NOTE =
-  "The store record carries no status the frontend can read, so both actions are safe to repeat.";
+  "Closing a store marks the record closed from today; nothing is deleted. The frontend cannot read which stores are already closed, so both actions appear on every row and both are safe to repeat.";
 
 const StoreRecords = () => {
   const toast = useToast();
@@ -157,9 +157,7 @@ const StoreRecords = () => {
           return;
         }
         toast.success(
-          `${store.store_name} ${
-            next === "deactivate" ? "taken out of service" : "put back in service"
-          }`,
+          `${store.store_name} ${next === "deactivate" ? "closed" : "re-opened"}`,
         );
         setDeactivating(null);
       })
@@ -203,9 +201,7 @@ const StoreRecords = () => {
           <div>Number</div>
           <div>Name</div>
           <div>Company</div>
-          <div className="text-right" title={SERVICE_NOTE}>
-            Rename · service
-          </div>
+          <div></div>
         </div>
 
         <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar divide-y divide-brand_navy/15">
@@ -227,13 +223,13 @@ const StoreRecords = () => {
                   onClick={() => setEditing(s)}
                 />
                 <IconButton
-                  icon={ArrowUturnLeftIcon}
-                  title="Put back in service"
+                  icon={LockOpenIcon}
+                  title={`Re-open ${s.store_name}`}
                   onClick={() => changeStatus(s, "reactivate")}
                 />
                 <IconButton
-                  icon={NoSymbolIcon}
-                  title="Take out of service"
+                  icon={LockClosedIcon}
+                  title={`Close ${s.store_name}`}
                   variant="danger"
                   onClick={() => setDeactivating(s)}
                 />
@@ -254,7 +250,7 @@ const StoreRecords = () => {
         </div>
       </div>
 
-      <p className="text-[12px] text-content/85 mt-2 leading-snug">
+      <p className="text-[12px] text-content/85 mt-2 leading-snug max-w-[760px]">
         {SERVICE_NOTE}
       </p>
 
@@ -276,9 +272,9 @@ const StoreRecords = () => {
 
       {deactivating && (
         <ConfirmModal
-          title={`Take ${deactivating.store_name} out of service?`}
-          message="It stops being offered for new work. Putting it back is one click on the same row."
-          confirmLabel="Take out of service"
+          title={`Close ${deactivating.store_name}?`}
+          message="The record stays and nothing is lost — it is marked closed from today. Re-opening it is one click on the same row."
+          confirmLabel="Close store"
           onConfirm={() => changeStatus(deactivating, "deactivate")}
           onCancel={() => setDeactivating(null)}
         />
