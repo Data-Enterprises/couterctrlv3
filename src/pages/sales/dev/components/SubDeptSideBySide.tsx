@@ -3,6 +3,7 @@ import { getSubs } from "../../../../api/sales";
 import { formatCurrency2, formatBigNumber } from "../../../../utils";
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
 import { setInvestigation } from "../../../../features/dev/devSalesLedgerSlice";
+import { rememberCounterpart } from "../../../../features/dev/devSalesCacheSlice";
 import { useSalesState } from "../hooks/useSalesState";
 import { scopeToStoreNumber } from "../shared/ledgerUtils";
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
@@ -135,11 +136,23 @@ const SubDeptSideBySide = ({
   // The open store's three weeks are already here — the panel fetched them
   // for its own Sub dept tab, which is why only the counterpart is asked for.
   const { subSales, subSalesWk2, subSalesWk3 } = useSalesState();
-  const [theirs, setTheirs] = useState<{
-    tw: SubSale[];
-    lw: SubSale[];
-    ly: SubSale[];
-  } | null>(null);
+
+  /**
+   * The counterpart's three weeks, held across the trip into the items.
+   *
+   * There is no local copy: the cache IS the state. Going Back from an
+   * investigation unmounts this component, and keeping the rows here meant
+   * the same three requests every time somebody came back to pick another
+   * department. The entry is dropped when a new search runs.
+   */
+  const cacheKey = [
+    compareStoreId,
+    compareStoreNumber,
+    twStart, twEnd, lwStart, lwEnd, lyStart, lyEnd,
+  ].join("|");
+  const theirs = useAppSelector(
+    (state) => state.dev.salesCache.counterpart[cacheKey],
+  );
   const [failed, setFailed] = useState(false);
 
   const isQty = gradingMetric === "qty";
@@ -150,8 +163,8 @@ const SubDeptSideBySide = ({
   const cash = (v: number) => formatCurrency2(v);
 
   useEffect(() => {
+    if (theirs) return;
     let live = true;
-    setTheirs(null);
     setFailed(false);
     const ask = (from: string, to: string) =>
       getSubs(context.url, context.token, from, to, 0, compareStoreId, 1);
@@ -170,7 +183,12 @@ const SubDeptSideBySide = ({
           resp.data.error === 0
             ? scopeToStoreNumber(resp.data.subs, compareStoreNumber)
             : [];
-        setTheirs({ tw: take(tw), lw: take(lw), ly: take(ly) });
+        dispatch(
+          rememberCounterpart({
+            key: cacheKey,
+            value: { tw: take(tw), lw: take(lw), ly: take(ly) },
+          }),
+        );
       })
       .catch(() => live && setFailed(true));
     return () => {
@@ -187,6 +205,9 @@ const SubDeptSideBySide = ({
     lyEnd,
     compareStoreId,
     compareStoreNumber,
+    cacheKey,
+    theirs,
+    dispatch,
   ]);
 
   const rows = useMemo(() => {

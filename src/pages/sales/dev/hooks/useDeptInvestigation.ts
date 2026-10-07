@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useAppSelector } from "../../../../hooks";
+import { useAppDispatch, useAppSelector } from "../../../../hooks";
+import { rememberInvestigation } from "../../../../features/dev/devSalesCacheSlice";
 import {
   codesIn,
   fetchOrders,
   fetchReceipts,
   fetchSales,
+  scopeKey,
   type OrdersWave,
   type ReceiptsWave,
   type SalesWave,
@@ -63,6 +65,7 @@ export interface Args {
 }
 
 export const useDeptInvestigation = (args: Args): Investigation => {
+  const dispatch = useAppDispatch();
   const { url, token } = useAppSelector((state) => ({
     url: state.app.url,
     token: state.app.token,
@@ -103,12 +106,33 @@ export const useDeptInvestigation = (args: Args): Investigation => {
     ],
   );
 
+  /** Everything this department was already told, if it has been opened
+   *  since the last search. Going back and opening it again is the common
+   *  move, and it used to cost all nine requests a second time. */
+  const key = scopeKey(scope);
+  const cached = useAppSelector(
+    (state) => state.dev.salesCache.investigation[key],
+  );
+
   // Held in a ref as well so the cascade can read the latest without the
   // effect depending on state it sets itself.
   const run = useRef(0);
 
   useEffect(() => {
     if (!enabled) return;
+
+    // Already in hand. Restored whole rather than re-staged, so the screen
+    // opens finished instead of replaying three waves of loading text over
+    // data it never gave up.
+    if (cached) {
+      run.current++;
+      setSales(cached.sales);
+      setOrders(cached.orders);
+      setReceipts(cached.receipts);
+      setStage("done");
+      setProblem(null);
+      return;
+    }
 
     const ticket = ++run.current;
     const live = () => ticket === run.current;
@@ -146,13 +170,21 @@ export const useDeptInvestigation = (args: Args): Investigation => {
       if (!live()) return;
       setReceipts(receiptsWave);
       setStage("done");
+
+      // Only a complete set is kept — see the note on InvestigationWaves.
+      dispatch(
+        rememberInvestigation({
+          key,
+          value: { sales: salesWave, orders: ordersWave, receipts: receiptsWave },
+        }),
+      );
     })();
 
     return () => {
       // Bumping the ticket is what makes an in-flight cascade stop writing.
       run.current++;
     };
-  }, [scope, enabled]);
+  }, [scope, enabled, cached, key, dispatch]);
 
   const items = useMemo(
     () =>

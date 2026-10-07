@@ -38,7 +38,12 @@ const legacyModules = import.meta.glob("../legacy/features/*Slice.{ts,tsx}", { e
  * `pageReducers` is the failure the next test is looking for: a forked slice
  * that never made it into prod, whose page reads undefined.
  */
-const DEV_ONLY_SLICES = new Set(["exportBuilder"]);
+const DEV_ONLY_SLICES = new Set([
+  "exportBuilder",
+  // What the Sales comparison has already fetched. The comparison itself is
+  // dev-only, so there is nothing in prod for it to be a twin of.
+  "salesCache",
+]);
 
 describe("dev and prod slices stay isolated", () => {
   /**

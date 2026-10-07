@@ -84,6 +84,26 @@ export interface Scope {
   ly: Window;
 }
 
+/**
+ * One string that stands for everything a fetch depends on.
+ *
+ * The cache key, and the effect's identity. It lists the scope's fields by
+ * hand rather than stringifying the object: a key built by serialising
+ * whatever happens to be on Scope would silently start missing cache every
+ * time somebody added a field that has nothing to do with the request — which
+ * is exactly how `metric` came to be invalidating nine calls.
+ */
+export const scopeKey = (s: Scope) =>
+  [
+    s.url,
+    s.mine.storeid, s.mine.storeNumber,
+    s.theirs.storeid, s.theirs.storeNumber,
+    s.subDept,
+    s.tw.start, s.tw.end,
+    s.lw.start, s.lw.end,
+    s.ly.start, s.ly.end,
+  ].join("|");
+
 /** The supply window, derived from the sales week's end. */
 export const supplyWindow = (tw: Window): Window => ({
   start: shiftIso(tw.end, -SUPPLY_LOOKBACK_DAYS),
