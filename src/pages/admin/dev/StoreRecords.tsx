@@ -226,17 +226,20 @@ const StoreRecords = () => {
         </div>
       </div>
 
-      {/* Right: the two jobs, stacked. */}
-      <div className="flex-1 min-w-0 overflow-auto thin-scrollbar p-4 flex flex-col gap-3.5">
+      {/* Right: the two jobs, side by side. Stacked they ran down a column
+          far taller than either needed while the width beside them went
+          unused — and neither job is a step in the other, so there is no
+          order to preserve by putting one under the other. */}
+      <div className="flex-1 min-w-0 overflow-auto thin-scrollbar p-4 flex flex-wrap items-start gap-x-6 gap-y-4">
 
-        <section>
+        <section className="flex-1 min-w-[300px] max-w-[420px]">
           <h3 className="text-[13px] font-bold text-content">Add a store</h3>
           <p className="text-[11.5px] text-content/85 mt-0.5 mb-2">
             Creates the store record. Assigning it to users and groups is done
             in User Management.
           </p>
 
-          <div className="grid gap-2 max-w-[420px]">
+          <div className="grid gap-2">
             <div className="grid gap-1">
               <Input
                 value={newNumber}
@@ -284,9 +287,9 @@ const StoreRecords = () => {
           </div>
         </section>
 
-        <section className="border-t border-gray-100 pt-3">
+        <section className="flex-1 min-w-[280px] max-w-[420px] border-l border-gray-100 pl-6 max-[760px]:border-l-0 max-[760px]:pl-0 max-[760px]:border-t max-[760px]:pt-3">
           <h3 className="text-[13px] font-bold text-content">In or out of service</h3>
-          <p className="text-[11.5px] text-content/85 mt-0.5 mb-2 max-w-[560px]">
+          <p className="text-[11.5px] text-content/85 mt-0.5 mb-2 leading-snug">
             {STATE_UNKNOWN}
           </p>
 
@@ -295,7 +298,7 @@ const StoreRecords = () => {
               Pick a store on the left.
             </p>
           ) : (
-            <div className="max-w-[420px]">
+            <div>
               <div className="rounded-md bg-bkg px-2.5 py-1.5 flex items-baseline gap-2">
                 <span className="text-[12.5px] font-semibold text-content truncate">
                   {selected.store_name}
@@ -305,7 +308,7 @@ const StoreRecords = () => {
                 </span>
               </div>
 
-              <div className="flex gap-2 mt-2">
+              <div className="flex flex-wrap gap-2 mt-2">
                 <button
                   onClick={() => changeStatus("deactivate")}
                   disabled={!!pending}
