@@ -37,7 +37,7 @@ const TABS: { id: AdminForm; label: string; programmerOnly?: boolean }[] = [
 const PANEL: Record<AdminForm, { key: string; width: number; height: number }> = {
   companies: { key: "admin-panel-size", width: 820, height: 640 },
   store_activity: { key: "admin-panel-size", width: 820, height: 640 },
-  store_records: { key: "admin-panel-size-stores", width: 800, height: 560 },
+  store_records: { key: "admin-panel-size-stores", width: 900, height: 620 },
 };
 
 const Admin = () => {
