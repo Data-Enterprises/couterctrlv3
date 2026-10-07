@@ -32,6 +32,7 @@ import { squarify } from "../shared/treemapLayout";
 const CAUSE_LABEL: Record<Cause, string> = {
   "never-ordered": "Never ordered",
   "not-received": "Didn't arrive",
+  cost: "Costing more",
   "not-moving": "Not moving",
   "price-mix": "Price / mix",
   ahead: "We're ahead",
@@ -41,6 +42,7 @@ const CAUSE_LABEL: Record<Cause, string> = {
 const CAUSE_OWNER: Record<Cause, string> = {
   "never-ordered": "buyer",
   "not-received": "vendor",
+  cost: "buying terms",
   "not-moving": "merchandising",
   "price-mix": "same units, less money",
   ahead: "ours to keep",
@@ -49,11 +51,20 @@ const CAUSE_OWNER: Record<Cause, string> = {
 
 /** Ordered dark to light by how much somebody can do about it, so the bar
  *  reads left to right as most actionable first. */
+/**
+ * One hue per cause, matching the chip tones in `DeptInvestigation`.
+ *
+ * The two views share a cause filter, so a reader moves between them with a
+ * cause already in mind — violet in the chip row and brown in the treemap
+ * reads as two different findings. Solid enough to carry white type, which
+ * is what a tile has to do at any size.
+ */
 const CAUSE_FILL: Record<Cause, string> = {
   "never-ordered": "#931010",
   "not-received": "#b06a1a",
-  "not-moving": "#4c6079",
-  "price-mix": "#6f8299",
+  cost: "#5b21b6",
+  "not-moving": "#1e4e8c",
+  "price-mix": "#155e75",
   unclassified: "#a3b0c2",
   ahead: "#106038",
 };
@@ -103,7 +114,7 @@ const GapBreakdown = ({
         <h3 className="text-[12.5px] font-bold text-content">
           What {openStoreNumber} is losing
         </h3>
-        <span className="text-[11.5px] text-content/85">
+        <span className="text-[13.5px] text-content/85">
           against {compareStoreNumber} · click a band to hold that cause
         </span>
         <span className="ml-auto text-[15px] font-bold tabular-nums text-delta_negative_text">
@@ -156,7 +167,7 @@ const GapBreakdown = ({
                 key={s.cause}
                 type="button"
                 onClick={() => onPickCause(s.cause === only ? null : s.cause)}
-                className="flex items-center gap-1.5 text-[11.5px]"
+                className="flex items-center gap-1.5 text-[13.5px]"
               >
                 <span
                   className="w-2.5 h-2.5 rounded-sm flex-shrink-0"
@@ -180,7 +191,7 @@ const GapBreakdown = ({
           {/* The counterweight, stated rather than drawn. As a step in a walk
               it dwarfed every loss; as a sentence it says the same thing and
               costs nothing. */}
-          <p className="text-[11.5px] text-content/85 mt-3">
+          <p className="text-[13.5px] text-content/85 mt-3">
             Offset by{" "}
             <span className="font-semibold text-delta_positive_text">
               {fmt(ahead)}
@@ -204,7 +215,7 @@ const GapBreakdown = ({
         <h3 className="text-[12.5px] font-bold text-content">
           Where it concentrates
         </h3>
-        <span className="text-[11.5px] text-content/85">
+        <span className="text-[13.5px] text-content/85">
           area is money · cause, then vendor, then item
         </span>
       </div>
@@ -215,7 +226,7 @@ const GapBreakdown = ({
             key={`${c}__${i}`}
             type="button"
             onClick={() => setPath(path.slice(0, i))}
-            className={`text-[11.5px] font-semibold px-2 py-0.5 rounded-full border transition-colors ${
+            className={`text-[13.5px] font-semibold px-2 py-0.5 rounded-full border transition-colors ${
               i === crumbs.length - 1
                 ? "bg-filter_active border-filter_active_border text-content"
                 : "bg-custom-white border-brand_line text-content hover:bg-gray-50"

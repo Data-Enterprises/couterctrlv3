@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from "react";
+import { useMemo, useRef, useState, type ReactNode } from "react";
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
 import {
   setInvestigation,
@@ -42,6 +42,7 @@ type Col =
   | "mine" | "theirs" | "gap"
   | "mineLw" | "theirsLw" | "mineLy" | "theirsLy"
   | "mineUnits" | "theirsUnits"
+  | "mineCost" | "theirsCost" | "costPenalty" | "marginDiff"
   | "price" | "sellThrough" | "ordered" | "received";
 
 /**
@@ -59,6 +60,7 @@ const ROW_CAP = 300;
 const CAUSE_LABEL: Record<Cause, string> = {
   "never-ordered": "Never ordered",
   "not-received": "Didn't arrive",
+  cost: "Costing more",
   "not-moving": "Not moving",
   "price-mix": "Price / mix",
   ahead: "We're ahead",
@@ -70,22 +72,47 @@ const CAUSE_LABEL: Record<Cause, string> = {
 const CAUSE_OWNER: Record<Cause, string> = {
   "never-ordered": "buyer",
   "not-received": "vendor",
+  cost: "buying terms",
   "not-moving": "merchandising",
   "price-mix": "same units, less money",
   ahead: "ours to keep",
   unclassified: "worth a look",
 };
 
-/** Severity for the two supply failures, which are ordered — a buyer's miss
- *  is worse and more fixable than a price difference. Neutral for the rest,
- *  and the delta tokens where a figure carries direction. */
-const CAUSE_CLASS: Record<Cause, string> = {
-  "never-ordered": "bg-severity_critical_bg text-severity_critical_text",
-  "not-received": "bg-severity_watch_bg text-severity_watch_text",
-  "not-moving": "bg-gray-100 text-content/85",
-  "price-mix": "bg-gray-100 text-content/85",
-  ahead: "bg-delta_positive_bg text-delta_positive_text",
-  unclassified: "bg-gray-100 text-content/85",
+/**
+ * One tone per cause, worn everywhere that cause appears.
+ *
+ * The same shape Item Actions uses for its piles: the chip carries its colour
+ * all the time, and selecting it adds a ring in its own tone rather than
+ * swapping the fill for a generic highlight. A chip that only colours itself
+ * once you click it cannot be scanned, which is the whole job of the row.
+ *
+ * Six distinct hues rather than three greys, because these go to six
+ * different people. `GapBreakdown` paints the same causes in the same
+ * order — a cause that is violet here and grey in the treemap is two
+ * findings as far as a reader is concerned.
+ */
+const CAUSE_TONE: Record<Cause, { chip: string; ring: string }> = {
+  "never-ordered": {
+    chip: "bg-severity_critical_bg text-severity_critical_text",
+    ring: "ring-severity_critical_text/40",
+  },
+  "not-received": {
+    chip: "bg-severity_watch_bg text-severity_watch_text",
+    ring: "ring-severity_watch_text/40",
+  },
+  // Violet, the tone Item Actions gives anything that is settled with a
+  // vendor rather than on the shelf. Buying terms are exactly that.
+  cost: { chip: "bg-violet-50 text-violet-900", ring: "ring-violet-900/40" },
+  "not-moving": { chip: "bg-blue-50 text-blue-900", ring: "ring-blue-900/40" },
+  "price-mix": { chip: "bg-cyan-50 text-cyan-900", ring: "ring-cyan-900/40" },
+  ahead: {
+    chip: "bg-delta_positive_bg text-delta_positive_text",
+    ring: "ring-delta_positive_text/40",
+  },
+  // Grey is the honest colour for "we could not say". Giving it a hue would
+  // put it on the same footing as the five findings that mean something.
+  unclassified: { chip: "bg-gray-100 text-content/85", ring: "ring-content/30" },
 };
 
 /** What is still outstanding, and what the screen cannot say yet because of
@@ -102,6 +129,7 @@ const STAGE_NOTE: Record<Stage, string | null> = {
 const CAUSE_ORDER: Cause[] = [
   "never-ordered",
   "not-received",
+  "cost",
   "not-moving",
   "price-mix",
   "unclassified",
@@ -135,6 +163,16 @@ interface ColumnDef {
   right?: boolean;
   sort?: Col;
   render: (r: ItemVerdict, fmt: Fmt) => ReactNode;
+  /**
+   * This column's total, across the FILTERED set rather than the 300 rows
+   * drawn. A footer that summed only what fits would be wrong by whatever
+   * the cap left out, and nothing on screen would say so.
+   *
+   * Columns with no total leave it off: a per-unit cost and a ratio cannot
+   * be added across items, and a blended figure over a case of soda and a
+   * candy bar is a number that looks right and means nothing.
+   */
+  foot?: (rows: ItemVerdict[], fmt: Fmt) => ReactNode;
 }
 
 /** Tints, not solids: 11px mono has to stay readable on top of them. The
@@ -162,7 +200,57 @@ const label = (c: ColumnDef, t: InvestigationTarget) =>
  *  to a store that sold none, and 0 would read as a result. */
 const mult = (v: number | null) => (v === null ? "—" : `${v.toFixed(2)}×`);
 
+/**
+ * Always money, never the page's metric.
+ *
+ * The sales columns follow the Sales/Quantity toggle, and in quantity mode
+ * `fmt` renders a unit count. Cost and margin are dollars either way — see
+ * `mineSales` in the shared math — so they format themselves and ignore the
+ * formatter the column is handed.
+ */
+const cash = (v: number) => formatCurrency2(v);
+
 const pct = (v: number | null) => (v === null ? "—" : `${Math.round(v * 100)}%`);
+
+const sum = (rows: ItemVerdict[], pick: (r: ItemVerdict) => number | null) =>
+  rows.reduce((a, r) => a + (pick(r) ?? 0), 0);
+
+/** A plain total, in whatever the page's metric is. */
+const money =
+  (pick: (r: ItemVerdict) => number | null) =>
+  (rows: ItemVerdict[], fmt: Fmt) =>
+    fmt(sum(rows, pick));
+
+/** A total that carries direction, in the same pill its column's cells use. */
+const signedWith =
+  (pick: (r: ItemVerdict) => number | null, force?: Fmt) =>
+  (rows: ItemVerdict[], fmt: Fmt) => {
+    const v = sum(rows, pick);
+    const show = force ?? fmt;
+    return (
+      <span
+        className={`inline-block px-1.5 py-0.5 rounded font-bold ${
+          v === 0
+            ? "bg-gray-100 text-content/85"
+            : v > 0
+              ? "bg-delta_positive_bg text-delta_positive_text"
+              : "bg-delta_negative_bg text-delta_negative_text"
+        }`}
+      >
+        {v >= 0 ? "+" : "−"}{show(Math.abs(v))}
+      </span>
+    );
+  };
+
+const signed = (pick: (r: ItemVerdict) => number | null) => signedWith(pick);
+/** The money columns, which do not follow the page's metric. */
+const signedCash = (pick: (r: ItemVerdict) => number | null) =>
+  signedWith(pick, (v) => formatCurrency2(v));
+
+/** A count, which is a count whichever metric the page is in. */
+const counted =
+  (pick: (r: ItemVerdict) => number) => (rows: ItemVerdict[]) =>
+    sum(rows, pick).toLocaleString("en-US");
 
 const sortValue = (r: ItemVerdict, col: Col): number | null => {
   switch (col) {
@@ -175,6 +263,10 @@ const sortValue = (r: ItemVerdict, col: Col): number | null => {
     case "theirsLy": return r.theirsLy;
     case "mineUnits": return r.mineUnits;
     case "theirsUnits": return r.theirsUnits;
+    case "mineCost": return r.margins.minePerUnit;
+    case "theirsCost": return r.margins.theirsPerUnit;
+    case "costPenalty": return r.margins.costPenalty;
+    case "marginDiff": return r.margins.diff;
     case "price": return r.ratios.price;
     case "sellThrough": return r.ratios.sellThrough;
     case "ordered": return r.orderedQty;
@@ -197,6 +289,8 @@ const CSV_HEADERS = [
   "mine_ty", "theirs_ty", "difference",
   "mine_lw", "theirs_lw", "mine_ly", "theirs_ly",
   "mine_units", "theirs_units",
+  "mine_cogs", "theirs_cogs", "mine_cost_per_unit", "theirs_cost_per_unit",
+  "cost_gap", "mine_margin", "theirs_margin", "margin_difference",
   "units_ratio", "dollars_ratio", "price_ratio", "sell_through",
   "ordered_qty", "received_units",
 ];
@@ -207,6 +301,8 @@ const csvRow = (r: ItemVerdict) => [
   r.mineTy, r.theirsTy, r.gap,
   r.mineLw, r.theirsLw, r.mineLy, r.theirsLy,
   r.mineUnits, r.theirsUnits,
+  r.mineCogs, r.theirsCogs, r.margins.minePerUnit, r.margins.theirsPerUnit,
+  r.margins.costPenalty, r.margins.mine, r.margins.theirs, r.margins.diff,
   r.ratios.units, r.ratios.dollars, r.ratios.price, r.ratios.sellThrough,
   r.orderedQty, r.receivedUnits,
 ];
@@ -215,6 +311,12 @@ const COLUMNS: ColumnDef[] = [
   {
     key: "item", label: "Item", width: 250, filter: "item",
     render: (r) => <span className="font-semibold">{r.description}</span>,
+    foot: (rows) => (
+      <span className="uppercase tracking-wide">
+        Totals · {rows.length.toLocaleString("en-US")}{" "}
+        {rows.length === 1 ? "item" : "items"}
+      </span>
+    ),
   },
   { key: "upc", label: "UPC", width: 120, filter: "upc", render: (r) => r.productCode },
   {
@@ -225,7 +327,7 @@ const COLUMNS: ColumnDef[] = [
     key: "cause", label: "Cause", width: 118, filter: "cause",
     render: (r) => (
       <span
-        className={`inline-block px-1.5 py-0.5 rounded font-semibold ${CAUSE_CLASS[r.cause]}`}
+        className={`inline-block px-1.5 py-0.5 rounded font-semibold ${CAUSE_TONE[r.cause].chip}`}
         title={CAUSE_OWNER[r.cause]}
       >
         {CAUSE_LABEL[r.cause]}
@@ -233,15 +335,39 @@ const COLUMNS: ColumnDef[] = [
     ),
   },
   {
-    key: "mineTy", of: "open", label: "{mine} TY", width: 92, right: true, sort: "mine",
+    key: "mineTy", of: "open", label: "{mine} TY", width: 92, right: true, sort: "mine",
+    foot: money((r) => r.mineTy),
     render: (r, fmt) => <span className="font-semibold">{fmt(r.mineTy)}</span>,
   },
   {
-    key: "theirsTy", of: "compare", label: "{theirs} TY", width: 92, right: true, sort: "theirs",
+    key: "theirsTy", of: "compare", label: "{theirs} TY", width: 92, right: true, sort: "theirs",
+    foot: money((r) => r.theirsTy),
     render: (r, fmt) => fmt(r.theirsTy),
   },
   {
+    key: "marginDiff", label: "Margin diff", width: 104, right: true,
+    sort: "marginDiff", foot: signedCash((r) => r.margins.diff),
+    // Direction only, through the delta tokens. Margin is NOT graded: two
+    // stores are not a baseline for each other, so there is no threshold
+    // this could be measured against — green is up, red is down, nothing
+    // more is being claimed.
+    render: (r) => (
+      <span
+        className={`inline-block px-1.5 py-0.5 rounded font-semibold ${
+          r.margins.diff === 0
+            ? "bg-gray-100 text-content/85"
+            : r.margins.diff > 0
+              ? "bg-delta_positive_bg text-delta_positive_text"
+              : "bg-delta_negative_bg text-delta_negative_text"
+        }`}
+      >
+        {r.margins.diff >= 0 ? "+" : "−"}{cash(Math.abs(r.margins.diff))}
+      </span>
+    ),
+  },
+  {
     key: "gap", label: "Difference", width: 104, right: true, sort: "gap",
+    foot: signed((r) => r.gap),
     // The ledger's pill, sized for a dense row: the comparison styling is
     // the same everywhere on this page, and a graded figure that changes
     // shape per grid is one a reader has to re-learn.
@@ -259,17 +385,52 @@ const COLUMNS: ColumnDef[] = [
       </span>
     ),
   },
-  { key: "mineLw", of: "open", label: "{mine} LW", width: 90, right: true, sort: "mineLw", render: (r, fmt) => fmt(r.mineLw) },
-  { key: "theirsLw", of: "compare", label: "{theirs} LW", width: 90, right: true, sort: "theirsLw", render: (r, fmt) => fmt(r.theirsLw) },
-  { key: "mineLy", of: "open", label: "{mine} LY", width: 90, right: true, sort: "mineLy", render: (r, fmt) => fmt(r.mineLy) },
-  { key: "theirsLy", of: "compare", label: "{theirs} LY", width: 90, right: true, sort: "theirsLy", render: (r, fmt) => fmt(r.theirsLy) },
+  { key: "mineLw", of: "open", label: "{mine} LW", width: 90, right: true, sort: "mineLw", render: (r, fmt) => fmt(r.mineLw), foot: money((r) => r.mineLw) },
+  { key: "theirsLw", of: "compare", label: "{theirs} LW", width: 90, right: true, sort: "theirsLw", render: (r, fmt) => fmt(r.theirsLw), foot: money((r) => r.theirsLw) },
+  { key: "mineLy", of: "open", label: "{mine} LY", width: 90, right: true, sort: "mineLy", render: (r, fmt) => fmt(r.mineLy), foot: money((r) => r.mineLy) },
+  { key: "theirsLy", of: "compare", label: "{theirs} LY", width: 90, right: true, sort: "theirsLy", render: (r, fmt) => fmt(r.theirsLy), foot: money((r) => r.theirsLy) },
   {
     key: "mineUnits", of: "open", label: "{mine} units", width: 88, right: true, sort: "mineUnits",
     render: (r) => r.mineUnits.toLocaleString("en-US"),
+    foot: counted((r) => r.mineUnits),
   },
   {
     key: "theirsUnits", of: "compare", label: "{theirs} units", width: 88, right: true, sort: "theirsUnits",
     render: (r) => r.theirsUnits.toLocaleString("en-US"),
+    foot: counted((r) => r.theirsUnits),
+  },
+  {
+    key: "mineCost", of: "open", label: "{mine} cost/u", width: 92, right: true,
+    sort: "mineCost",
+    render: (r) =>
+      r.margins.minePerUnit === null ? "—" : cash(r.margins.minePerUnit),
+  },
+  {
+    key: "theirsCost", of: "compare", label: "{theirs} cost/u", width: 92,
+    right: true, sort: "theirsCost",
+    render: (r) =>
+      r.margins.theirsPerUnit === null ? "—" : cash(r.margins.theirsPerUnit),
+  },
+  {
+    // What the per-unit difference took on the units WE sold. Money, not a
+    // ratio: "$112 on 488 units" is the sentence somebody acts on.
+    key: "costPenalty", label: "Cost gap", width: 98, right: true,
+    sort: "costPenalty", foot: signedCash((r) => r.margins.costPenalty),
+    render: (r) => {
+      const v = r.margins.costPenalty;
+      if (v === null || Math.abs(v) < 0.005) return "—";
+      return (
+        <span
+          className={`inline-block px-1.5 py-0.5 rounded font-semibold ${
+            v > 0
+              ? "bg-delta_positive_bg text-delta_positive_text"
+              : "bg-delta_negative_bg text-delta_negative_text"
+          }`}
+        >
+          {v >= 0 ? "+" : "−"}{cash(Math.abs(v))}
+        </span>
+      );
+    },
   },
   {
     // Units and dollars moving apart is what names a price problem, so the
@@ -279,11 +440,13 @@ const COLUMNS: ColumnDef[] = [
   },
   {
     key: "ordered", label: "Ordered", width: 78, right: true, sort: "ordered",
+    foot: counted((r) => r.orderedQty),
     render: (r) =>
       r.orderedQty > 0 ? r.orderedQty.toLocaleString("en-US") : <span className="text-content/85">none</span>,
   },
   {
     key: "received", label: "Received", width: 84, right: true, sort: "received",
+    foot: counted((r) => r.receivedUnits),
     render: (r) =>
       r.receivedUnits > 0 ? r.receivedUnits.toLocaleString("en-US") : <span className="text-content/85">none</span>,
   },
@@ -385,6 +548,18 @@ const DeptInvestigation = ({
     [items, picked],
   );
 
+  /**
+   * The last item the rail showed, kept through the close.
+   *
+   * The rail slides out over 200ms, and unmounting its contents on the frame
+   * the selection clears would empty the panel before it has finished moving
+   * — the slide would be of a blank box. Written during render deliberately:
+   * an effect would run a frame late, which is exactly the frame that shows.
+   */
+  const lastEvidence = useRef<ItemVerdict | null>(null);
+  if (pickedItem) lastEvidence.current = pickedItem;
+  const evidence = pickedItem ?? lastEvidence.current;
+
   const filterActive = (k: FilterKind) =>
     k === "item" ? !!itemQ
       : k === "upc" ? !!upcQ
@@ -468,6 +643,21 @@ const DeptInvestigation = ({
   );
   const aheadBy = byCause.get("ahead")?.dollars ?? 0;
 
+  /**
+   * Sales and margin can point opposite ways, and the headline has to say so.
+   *
+   * A department can sell more than its counterpart and keep less, because it
+   * buys the same goods for more. Reporting only the sales gap calls that a
+   * win — which is the thing the cost cause exists to catch, so the sentence
+   * at the top cannot go on ignoring it.
+   */
+  const marginGap = items.reduce((a, i) => a + i.margins.diff, 0);
+  const costPenalty = items.reduce(
+    (a, i) => a + Math.min(0, i.margins.costPenalty ?? 0),
+    0,
+  );
+  const disagree = summary.gap >= 0 && marginGap < 0;
+
   const close = () => dispatch(setInvestigation(null));
 
   return (
@@ -509,11 +699,29 @@ const DeptInvestigation = ({
         </span>
       </div>
 
-      {/* The headline is a sentence, not a dashboard. Each bucket goes to a
-          different person, which is the only reason to separate them. */}
-      <div className="flex-shrink-0 px-4 py-3 border-b border-brand_navy/15">
-        {stage !== "failed" && worst.length > 0 && (
-          <p className="text-[13.5px] text-content leading-relaxed mb-2.5">
+      {/*
+        The finding, in the colour of the figure it is explaining.
+
+        A sentence on white above a row of white chips above a line of grey
+        type read as one undifferentiated block, and the most important thing
+        on the screen was the part nobody's eye stopped on. The strip takes
+        the same tone as the total in the header — one band for behind, the
+        other for ahead — so the two agree at a glance instead of making the
+        reader check the sign.
+      */}
+      <div
+        className={`flex-shrink-0 px-4 py-3 border-b border-brand_navy/15 ${
+          summary.gap < 0 ? "bg-delta_negative_bg" : "bg-delta_positive_bg"
+        }`}
+      >
+        {stage !== "failed" && worst.length > 0 ? (
+          <p className="text-[13.5px] text-content leading-relaxed">
+            {disagree && (
+              <span className="block mb-1.5 font-semibold text-delta_negative_text">
+                Ahead on sales by {fmt(summary.gap)} and behind on margin by{" "}
+                {cash(Math.abs(marginGap))}.
+              </span>
+            )}
             {summary.gap >= 0 ? (
               <>
                 Ahead by{" "}
@@ -537,11 +745,13 @@ const DeptInvestigation = ({
                   ? "never got ordered"
                   : c === "not-received"
                     ? "was ordered and never arrived"
-                    : c === "not-moving"
-                      ? "is on the shelf not moving"
-                      : c === "price-mix"
-                        ? "is price, not volume"
-                        : "has no cause yet"}
+                    : c === "cost"
+                      ? "is bought for more than they pay"
+                      : c === "not-moving"
+                        ? "is on the shelf not moving"
+                        : c === "price-mix"
+                          ? "is price, not volume"
+                          : "has no cause yet"}
               </span>
             ))}
             .
@@ -550,30 +760,61 @@ const DeptInvestigation = ({
                 {" "}Offset by {fmt(aheadBy)} where we are ahead.
               </span>
             )}
+            {costPenalty < 0 && (
+              <span className="text-content/85">
+                {" "}Buying the same goods for more took another{" "}
+                <span className="font-semibold text-content">
+                  {cash(Math.abs(costPenalty))}
+                </span>{" "}
+                of margin.
+              </span>
+            )}
+          </p>
+        ) : (
+          <p className="text-[13.5px] text-content leading-relaxed">
+            {stage === "failed"
+              ? "This department could not be read."
+              : `Nothing in this department is behind ${target.compareStoreName}.`}
           </p>
         )}
+      </div>
 
+      {/*
+        Tabs, not a segmented pill.
+
+        These are two views of the same set, which is what a tab is for. The
+        pill put them in the filter row dressed as a filter, so the one
+        control that changes what KIND of thing you are looking at sat among
+        nine that change how much of it you see.
+      */}
+      <div className="flex-shrink-0 flex items-end gap-1 px-4 border-b border-brand_navy/15">
+        {(["items", "breakdown"] as const).map((v) => (
+          <button
+            key={v}
+            onClick={() => setView(v)}
+            className={`-mb-px border-b-2 px-3.5 py-2 text-[13px] font-semibold transition-colors ${
+              view === v
+                ? "border-brand_navy text-content"
+                : "border-transparent text-content/85 hover:text-content"
+            }`}
+          >
+            {v === "items" ? "Items" : "Breakdown"}
+            {v === "items" && (
+              <span className="ml-1.5 tabular-nums font-normal text-content/85">
+                {shown.length.toLocaleString("en-US")}
+              </span>
+            )}
+          </button>
+        ))}
+      </div>
+
+      <div className="flex-shrink-0 px-4 py-2.5 border-b border-brand_navy/15">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="inline-flex rounded-full border border-brand_line overflow-hidden mr-1">
-            {(["items", "breakdown"] as const).map((v) => (
-              <button
-                key={v}
-                onClick={() => setView(v)}
-                className={`text-[12px] font-semibold px-2.5 py-1 transition-colors ${
-                  view === v
-                    ? "bg-brand_navy text-custom-white"
-                    : "bg-custom-white text-content hover:bg-gray-50"
-                }`}
-              >
-                {v === "items" ? "Items" : "Breakdown"}
-              </button>
-            ))}
-          </span>
           <button
             onClick={() => setOnly(null)}
-            className={`text-[12px] font-semibold px-2.5 py-1 rounded-full border transition-colors ${
+            className={`text-[12px] font-semibold px-2.5 py-1 rounded-full border transition-shadow ${
               only === null
-                ? "bg-filter_active border-filter_active_border text-content"
+                ? "bg-filter_active border-filter_active_border text-content ring-2 ring-filter_active_border shadow-sm"
                 : "bg-custom-white border-brand_line text-content hover:bg-gray-50"
             }`}
           >
@@ -586,14 +827,12 @@ const DeptInvestigation = ({
                 key={c}
                 onClick={() => setOnly(only === c ? null : c)}
                 title={CAUSE_OWNER[c]}
-                className={`text-[12px] font-semibold px-2.5 py-1 rounded-full border transition-colors ${
-                  only === c
-                    ? "bg-filter_active border-filter_active_border text-content"
-                    : "bg-custom-white border-brand_line text-content hover:bg-gray-50"
-                }`}
+                className={`text-[12px] font-semibold px-2.5 py-1 rounded-full border border-transparent transition-shadow ${
+                  CAUSE_TONE[c].chip
+                } ${only === c ? `ring-2 shadow-sm ${CAUSE_TONE[c].ring}` : ""}`}
               >
                 {CAUSE_LABEL[c]}
-                <span className="ml-1.5 text-content/85">
+                <span className="ml-1.5 font-normal tabular-nums">
                   {t?.items} · {fmt(Math.abs(t?.dollars ?? 0))}
                 </span>
               </button>
@@ -603,7 +842,7 @@ const DeptInvestigation = ({
 
         {/* The windows do not line up, and the screen says so rather than
             letting the grid imply every column is diagnosed. */}
-        <p className="text-[11px] text-content/85 mt-2.5">
+        <p className="text-[13px] text-content/85 mt-2.5">
           Causes explain this week against {target.compareStoreName}. Orders and
           deliveries are read over {SUPPLY_LOOKBACK_DAYS} days
           ({supply.start} to {supply.end}) — they cannot account for the LW or
@@ -767,6 +1006,28 @@ const DeptInvestigation = ({
                   </tr>
                 ))}
               </tbody>
+
+              {/* Sticky to the bottom of the scroller, so the totals are
+                  readable from row 1 as well as row 300. Over the filtered
+                  set — the count in the first cell says how many that is,
+                  which is the number the cap can disagree with. */}
+              {capped.length > 0 && (
+                <tfoot>
+                  <tr>
+                    <td className="sticky bottom-0 left-0 z-30 bg-bkg border-t-2 border-t-brand_line_2 border-r border-brand_line px-2 py-1.5" />
+                    {COLUMNS.map((c) => (
+                      <td
+                        key={c.key}
+                        className={`sticky bottom-0 z-20 border-t-2 border-t-brand_line_2 border-r border-brand_line px-2.5 py-1.5 font-bold whitespace-nowrap ${
+                          c.right ? "text-right" : ""
+                        } ${tintOf(c) || "bg-bkg"}`}
+                      >
+                        {c.foot ? c.foot(shown, fmt) : null}
+                      </td>
+                    ))}
+                  </tr>
+                </tfoot>
+              )}
             </table>
 
             {capped.length === 0 && stage !== "sales" && (
@@ -776,11 +1037,26 @@ const DeptInvestigation = ({
             )}
           </div>
 
-          {pickedItem && target && (
+          {/*
+            The rail moves instead of appearing.
+
+            Clicking a row used to shove 520px of grid sideways in a single
+            frame, which is a jolt in the one place the reader is trying to
+            hold their position — the row they just clicked. The width is
+            what animates; the contents keep their own 520px and are clipped,
+            so nothing inside reflows on the way in or out.
+          */}
+          <div
+            className={`flex-shrink-0 overflow-hidden transition-[width] duration-200 ease-out motion-reduce:transition-none ${
+              pickedItem ? "w-[520px]" : "w-0"
+            }`}
+          >
+           <div className="w-[520px] h-full">
+            {evidence && target && (
             <ItemEvidence
-              item={pickedItem}
-              openStoreNumber={target.storeNumber}
-              compareStoreNumber={target.compareStoreNumber}
+              item={evidence}
+              openStoreName={target.storeName}
+              compareStoreName={target.compareStoreName}
               mineOrders={orders.mine}
               theirsOrders={orders.theirs}
               mineReceipts={receipts.mine}
@@ -790,11 +1066,13 @@ const DeptInvestigation = ({
               supplyReady={stage === "done"}
               onClose={() => setPicked(null)}
             />
-          )}
+            )}
+           </div>
+          </div>
           </div>
           )}
 
-          <div className="flex-shrink-0 flex items-center gap-3 px-4 py-2 border-t border-brand_line bg-custom-white text-[11.5px] text-content/85">
+          <div className="flex-shrink-0 flex items-center gap-3 px-4 py-2 border-t border-brand_line bg-custom-white text-[13.5px] text-content/85">
             <span>
               {shown.length > ROW_CAP ? (
                 <>
