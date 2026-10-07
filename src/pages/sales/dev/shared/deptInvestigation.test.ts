@@ -4,6 +4,7 @@ import {
   causeOf,
   judge,
   ladderFor,
+  marginsOf,
   decompose,
   ratiosOf,
   summarise,
@@ -31,6 +32,13 @@ const facts = (over: Partial<ItemFacts> = {}): ItemFacts => ({
   theirsLy: 0,
   mineUnits: 0,
   theirsUnits: 0,
+  mineCogs: 0,
+  theirsCogs: 0,
+  // In money mode the metric figure and the dollar figure are the same
+  // number, so a test states its sales once and the factory mirrors them.
+  // Where they diverge — quantity mode — is tested explicitly.
+  mineSales: over.mineTy ?? 0,
+  theirsSales: over.theirsTy ?? 0,
   orderedQty: 0,
   receivedUnits: 0,
   ...over,
@@ -576,5 +584,165 @@ describe("tilesAt", () => {
   it("buckets a missing vendor name rather than dropping the item", () => {
     const t = tilesAt([judge(facts({ vendorName: "", mineTy: 0, theirsTy: 90 }))], ["never-ordered"]);
     expect(t[0].key).toBe("Unknown vendor");
+  });
+});
+
+describe("cost as a cause", () => {
+  /** Ahead on sales, dearer to buy. 1.41 a unit against 1.18. */
+  const dearer = facts({
+    mineTy: 912.4, mineUnits: 488, mineCogs: 688.08,
+    theirsTy: 741.15, theirsUnits: 402, theirsCogs: 474.36,
+  });
+
+  it("fires even when the item is AHEAD on sales", () => {
+    // The whole point. Settling "ahead" on the sales gap called this a win:
+    // it sold $171 more and made $42 less.
+    expect(dearer.mineTy - dearer.theirsTy).toBeGreaterThan(0);
+    expect(causeOf(dearer)).toBe("cost");
+  });
+
+  it("still puts a supply failure first — ordered and not delivered", () => {
+    // Nothing reached the shelf, so what it would have cost is moot.
+    const missing = facts({
+      mineTy: 0, mineUnits: 0, mineCogs: 0,
+      theirsTy: 741.15, theirsUnits: 402, theirsCogs: 474.36,
+      orderedQty: 10,
+    });
+    expect(causeOf(missing)).toBe("not-received");
+  });
+
+  it("still puts a supply failure first — never ordered at all", () => {
+    const missing = facts({
+      mineTy: 0, mineUnits: 0, mineCogs: 0,
+      theirsTy: 741.15, theirsUnits: 402, theirsCogs: 474.36,
+    });
+    expect(causeOf(missing)).toBe("never-ordered");
+  });
+
+  it("needs the gap to be wide enough", () => {
+    // 2% dearer is inside the band and is not a finding.
+    const close = facts({
+      mineTy: 900, mineUnits: 500, mineCogs: 510,
+      theirsTy: 900, theirsUnits: 500, theirsCogs: 500,
+    });
+    expect(causeOf(close)).not.toBe("cost");
+  });
+
+  it("needs the gap to be worth real money", () => {
+    // 40% dearer, on four units: eighty pence. Noise, not a buying problem.
+    const tiny = facts({
+      mineTy: 12, mineUnits: 4, mineCogs: 2.8,
+      theirsTy: 12, theirsUnits: 4, theirsCogs: 2,
+    });
+    expect(causeOf(tiny)).not.toBe("cost");
+  });
+
+  it("never fires on being CHEAPER to buy", () => {
+    const cheaper = facts({
+      mineTy: 900, mineUnits: 500, mineCogs: 400,
+      theirsTy: 900, theirsUnits: 500, theirsCogs: 600,
+    });
+    expect(causeOf(cheaper)).not.toBe("cost");
+  });
+
+  it("says nothing without units on both sides to divide by", () => {
+    const noUnits = facts({
+      mineTy: 900, mineUnits: 0, mineCogs: 400,
+      theirsTy: 900, theirsUnits: 500, theirsCogs: 300,
+    });
+    expect(causeOf(noUnits)).not.toBe("cost");
+  });
+});
+
+describe("marginsOf", () => {
+  const dearer = facts({
+    mineTy: 912.4, mineUnits: 488, mineCogs: 688.08,
+    theirsTy: 741.15, theirsUnits: 402, theirsCogs: 474.36,
+  });
+
+  it("is sales less what the goods cost", () => {
+    const m = marginsOf(dearer);
+    expect(m.mine).toBeCloseTo(224.32, 2);
+    expect(m.theirs).toBeCloseTo(266.79, 2);
+  });
+
+  it("can be negative while the sales gap is positive", () => {
+    const m = marginsOf(dearer);
+    expect(dearer.mineTy - dearer.theirsTy).toBeCloseTo(171.25, 2);
+    expect(m.diff).toBeCloseTo(-42.47, 2);
+  });
+
+  it("gives cost per unit each side", () => {
+    const m = marginsOf(dearer);
+    expect(m.minePerUnit).toBeCloseTo(1.41, 2);
+    expect(m.theirsPerUnit).toBeCloseTo(1.18, 2);
+  });
+
+  it("states the penalty in money on the units WE sold", () => {
+    // (1.18 - 1.41) x 488. Negative because we pay more.
+    expect(marginsOf(dearer).costPenalty).toBeCloseTo(-112.24, 1);
+  });
+
+  it("has no per-unit cost or penalty without units", () => {
+    const m = marginsOf(facts({ mineTy: 10, theirsTy: 10 }));
+    expect(m.minePerUnit).toBeNull();
+    expect(m.theirsPerUnit).toBeNull();
+    expect(m.costPenalty).toBeNull();
+  });
+});
+
+describe("buildFacts and cost", () => {
+  const base = {
+    mineLw: [], mineLy: [], theirsLw: [], theirsLy: [],
+    orders: [], receivers: [], metric: "sales" as const,
+  };
+
+  it("sums cogs per LINE rather than deriving it from a total", () => {
+    // Two days, a case of 12 at 24.00 — 2.00 a unit — 5 then 7 units.
+    const out = buildFacts({
+      ...base,
+      mineTw: [
+        row({ total_sales: 30, qty: 5, net_cost: 24, cost: 26, case_size: 12 }),
+        row({ total_sales: 42, qty: 7, net_cost: 24, cost: 26, case_size: 12 }),
+      ],
+      theirsTw: [],
+    });
+    expect(out[0].mineCogs).toBeCloseTo(24, 5);
+  });
+
+  it("takes net_cost over list cost, as the shared helper does", () => {
+    // list 26, net 24 — the allowance is the whole point of the helper.
+    const out = buildFacts({
+      ...base,
+      mineTw: [row({ total_sales: 30, qty: 12, net_cost: 24, cost: 26, case_size: 12 })],
+      theirsTw: [],
+    });
+    expect(out[0].mineCogs).toBeCloseTo(24, 5);
+  });
+
+  it("takes weight over qty on a scale item", () => {
+    // Rung 3 times for 6.3 lb at 1.00 a lb: 6.30, not 3.00.
+    const out = buildFacts({
+      ...base,
+      mineTw: [row({ total_sales: 12, qty: 3, weight: 6.3, net_cost: 1, cost: 1, case_size: 0 })],
+      theirsTw: [],
+    });
+    expect(out[0].mineCogs).toBeCloseTo(6.3, 5);
+  });
+
+  it("builds margin from money even when the page is counting units", () => {
+    // The page's metric drives mineTy; it must not drive margin. Taking a
+    // unit count away from a cost gives a number that looks like money and
+    // is not — here it would have said 5 - 10 = -5 and coloured it red.
+    const out = buildFacts({
+      ...base,
+      metric: "qty",
+      mineTw: [row({ total_sales: 30, qty: 5, net_cost: 24, cost: 26, case_size: 12 })],
+      theirsTw: [],
+    });
+    expect(out[0].mineTy).toBe(5);
+    expect(out[0].mineSales).toBeCloseTo(30, 5);
+    expect(out[0].mineCogs).toBeCloseTo(10, 5);
+    expect(out[0].margins.mine).toBeCloseTo(20, 5);
   });
 });

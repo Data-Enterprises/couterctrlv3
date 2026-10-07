@@ -4,6 +4,7 @@ import type {
   SubDeptMargin,
   SubsPricePoint,
 } from "../../../../interfaces";
+import { calculateCogs } from "../../../../utils/cogs";
 import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice";
 
 /**
@@ -31,6 +32,7 @@ import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice
 export type Cause =
   | "never-ordered"
   | "not-received"
+  | "cost"
   | "not-moving"
   | "price-mix"
   | "ahead"
@@ -40,12 +42,20 @@ export interface Bands {
   /** How far a realised price has to move before it is the explanation.
    *  0.08 = 8% either way. */
   price: number;
+  /**
+   * How much dearer a unit has to be to buy before that is the explanation.
+   *
+   * Tighter than the price band, because a buying difference is a standing
+   * one. A sell price moves with a promotion and comes back; paying 5% more
+   * for the same case is every case, every week, until somebody renegotiates.
+   */
+  cost: number;
   /** Dollars below which an item is not worth a verdict. Rounding and a
    *  single unit of drift are not findings. */
   floor: number;
 }
 
-export const DEFAULT_BANDS: Bands = { price: 0.08, floor: 5 };
+export const DEFAULT_BANDS: Bands = { price: 0.08, cost: 0.05, floor: 5 };
 
 /** One item's week at both stores, with the open store's supply events.
  *
@@ -66,8 +76,48 @@ export interface ItemFacts {
   theirsLy: number;
   mineUnits: number;
   theirsUnits: number;
+  /**
+   * What the goods cost each store, through the shared `calculateCogs`.
+   *
+   * Not a cost column read straight off the row: that helper takes `net_cost`
+   * over `cost`, because list price ignores a vendor allowance that roughly
+   * half of any delivery carries, and `weight` over `qty`, because on a scale
+   * item qty counts rings rather than pounds. Both mistakes are worth whole
+   * percentage points of margin — see the note on the helper.
+   */
+  mineCogs: number;
+  theirsCogs: number;
+  /**
+   * Sales in MONEY, whatever metric the page is set to.
+   *
+   * `mineTy` is the metric figure and becomes a unit count when the page is
+   * switched to quantity. Margin is money less money — pairing a unit count
+   * with a cost would produce a confident number that means nothing — so the
+   * dollars are carried separately and margin is always built from these.
+   */
+  mineSales: number;
+  theirsSales: number;
   orderedQty: number;
   receivedUnits: number;
+}
+
+export interface Margins {
+  /** Sales less what the goods cost, per store. */
+  mine: number;
+  theirs: number;
+  /** Ours minus theirs, from the open store's side. */
+  diff: number;
+  /** Cost per unit, each. Null without units to divide by. */
+  minePerUnit: number | null;
+  theirsPerUnit: number | null;
+  /**
+   * What the per-unit difference took on the units WE sold.
+   *
+   * Negative when we pay more. Deliberately not a ratio: "you paid $0.23 more
+   * a unit on 488 units" is the sentence somebody acts on, and a percentage
+   * hides how much of it there was.
+   */
+  costPenalty: number | null;
 }
 
 export interface Ratios {
@@ -88,6 +138,7 @@ export interface ItemVerdict extends ItemFacts {
   gap: number;
   cause: Cause;
   ratios: Ratios;
+  margins: Margins;
 }
 
 const ratio = (mine: number, theirs: number): number | null =>
@@ -95,6 +146,41 @@ const ratio = (mine: number, theirs: number): number | null =>
 
 const realised = (money: number, units: number): number | null =>
   units > 0 ? money / units : null;
+
+export const marginsOf = (f: ItemFacts): Margins => {
+  const minePerUnit = realised(f.mineCogs, f.mineUnits);
+  const theirsPerUnit = realised(f.theirsCogs, f.theirsUnits);
+  // Dollars, not `mineTy` — see the note on `mineSales`.
+  const mine = f.mineSales - f.mineCogs;
+  const theirs = f.theirsSales - f.theirsCogs;
+  return {
+    mine,
+    theirs,
+    diff: mine - theirs,
+    minePerUnit,
+    theirsPerUnit,
+    costPenalty:
+      minePerUnit !== null && theirsPerUnit !== null
+        ? (theirsPerUnit - minePerUnit) * f.mineUnits
+        : null,
+  };
+};
+
+/**
+ * Is this item dearer to buy than it is at the other store, by enough and for
+ * enough money to be worth saying?
+ *
+ * Both tests, because either alone lies: a 40% gap on nine units of something
+ * is noise, and a penny a unit on ten thousand units is a rounding difference
+ * in the data rather than a buying problem.
+ */
+const costsMore = (f: ItemFacts, bands: Bands): boolean => {
+  const m = marginsOf(f);
+  if (m.minePerUnit === null || m.theirsPerUnit === null) return false;
+  if (m.theirsPerUnit <= 0) return false;
+  if (m.minePerUnit / m.theirsPerUnit - 1 <= bands.cost) return false;
+  return Math.abs(m.costPenalty ?? 0) >= bands.floor;
+};
 
 /**
  * Which of the causes fits this item.
@@ -108,16 +194,23 @@ const realised = (money: number, units: number): number | null =>
  */
 export const causeOf = (f: ItemFacts, bands: Bands = DEFAULT_BANDS): Cause => {
   const gap = f.mineTy - f.theirsTy;
-  if (gap >= 0) return "ahead";
-  if (Math.abs(gap) < bands.floor) return "unclassified";
-
   const ordered = f.orderedQty > 0;
   const received = f.receivedUnits > 0;
 
-  // Nothing on an order and nothing sold: the buyer never bought it.
-  if (!ordered && !received && f.mineTy === 0) return "never-ordered";
-  // On an order, nothing against it: the vendor never delivered.
-  if (ordered && !received) return "not-received";
+  // The two supply failures come first wherever the sales landed: an item
+  // that never reached the shelf cannot be explained by what it cost or what
+  // it was priced at.
+  if (!ordered && !received && f.mineTy === 0 && f.theirsTy > 0)
+    return "never-ordered";
+  if (ordered && !received && gap < 0) return "not-received";
+
+  // Then buying terms — BEFORE "ahead", and that order is the point. An item
+  // can sell more here and still make less, because it is bought for more.
+  // Settling "ahead" on the sales gap alone called that a win.
+  if (costsMore(f, bands)) return "cost";
+
+  if (gap >= 0) return "ahead";
+  if (Math.abs(gap) < bands.floor) return "unclassified";
 
   const mine = realised(f.mineTy, f.mineUnits);
   const theirs = realised(f.theirsTy, f.theirsUnits);
@@ -147,6 +240,7 @@ export const judge = (f: ItemFacts, bands: Bands = DEFAULT_BANDS): ItemVerdict =
   gap: f.mineTy - f.theirsTy,
   cause: causeOf(f, bands),
   ratios: ratiosOf(f),
+  margins: marginsOf(f),
 });
 
 /* ------------------------------------------------------------------ */
@@ -161,6 +255,11 @@ const money = (r: SubDeptMargin, metric: GradingMetric) =>
 interface Tally {
   money: number;
   units: number;
+  /** Summed per LINE, never derived from a total. Cost is per day and per
+   *  item, and a week's cost is the sum of its days. */
+  cogs: number;
+  /** Always money, even when `money` above is a unit count. */
+  dollars: number;
   description: string;
   vendorName: string;
 }
@@ -173,12 +272,22 @@ const tally = (rows: SubDeptMargin[], metric: GradingMetric) =>
       acc[key] = {
         money: 0,
         units: 0,
+        cogs: 0,
+        dollars: 0,
         description: r.product_description,
         vendorName: r.vendor_name,
       };
     }
     acc[key].money += money(r, metric);
     acc[key].units += r.qty;
+    acc[key].dollars += r.total_sales - r.total_tax;
+    acc[key].cogs += calculateCogs(
+      r.net_cost,
+      r.cost,
+      r.case_size,
+      r.qty,
+      r.weight,
+    );
     return acc;
   }, {});
 
@@ -228,8 +337,11 @@ export const buildFacts = (input: InvestigationInput): ItemVerdict[] => {
     ]),
   ];
 
-  const at = (m: Record<string, Tally>, c: string, field: "money" | "units") =>
-    m[c]?.[field] ?? 0;
+  const at = (
+    m: Record<string, Tally>,
+    c: string,
+    field: "money" | "units" | "cogs" | "dollars",
+  ) => m[c]?.[field] ?? 0;
 
   return codes
     .map((c) =>
@@ -250,6 +362,10 @@ export const buildFacts = (input: InvestigationInput): ItemVerdict[] => {
           theirsLy: at(tLy, c, "money"),
           mineUnits: at(mTw, c, "units"),
           theirsUnits: at(tTw, c, "units"),
+          mineCogs: at(mTw, c, "cogs"),
+          theirsCogs: at(tTw, c, "cogs"),
+          mineSales: at(mTw, c, "dollars"),
+          theirsSales: at(tTw, c, "dollars"),
           orderedQty: orderedBy[c] ?? 0,
           receivedUnits: receivedBy[c] ?? 0,
         },
@@ -287,6 +403,7 @@ export interface Summary {
 const CAUSE_ORDER: Cause[] = [
   "never-ordered",
   "not-received",
+  "cost",
   "not-moving",
   "price-mix",
   "unclassified",
