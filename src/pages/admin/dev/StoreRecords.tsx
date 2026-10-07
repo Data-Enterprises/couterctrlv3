@@ -24,6 +24,8 @@ import {
   closedOn,
   statusOf,
   statusReported,
+  withClosedMark,
+  withoutClosedMark,
   type StatusFilter,
 } from "./storeStatus";
 
@@ -154,24 +156,60 @@ const StoreRecords = () => {
       .finally(() => setSaving(false));
   };
 
+  /**
+   * Close or re-open a store, and move the CLOSED marker in its name with it.
+   *
+   * The name has carried the state for years — "614 - PW CLOSED" — and
+   * everything outside this page still reads it that way, so writing
+   * `deactivated_at` without touching the name would leave half the app
+   * disagreeing with the other half.
+   *
+   * The status call goes FIRST because it is the real change; the rename is
+   * the label catching up. If the rename then fails, the store is genuinely
+   * closed and only its name is stale, and the toast says exactly that rather
+   * than reporting a success that was half of one. There is no transaction
+   * across two endpoints, so the order is the only thing deciding which half
+   * survives a failure — and the status is the half worth keeping.
+   */
   const changeStatus = (store: Store, next: "deactivate" | "reactivate") => {
     const call = next === "deactivate" ? deactivateStore : reactivateStore;
+    const verb = next === "deactivate" ? "closed" : "re-opened";
+    const wanted =
+      next === "deactivate"
+        ? withClosedMark(store.store_name)
+        : withoutClosedMark(store.store_name);
+
     call(context.url, context.token, store.storeid)
-      .then((resp) => {
+      .then(async (resp) => {
         const j = resp.data;
         if (j.error !== 0) {
           toast.error(j.msg || "The store could not be updated");
           return;
         }
-        toast.success(
-          `${store.store_name} ${next === "deactivate" ? "closed" : "re-opened"}`,
-        );
         setDeactivating(null);
-        // The row's status and its one lock both change with this, so the
-        // list is re-read rather than patched locally.
-        fetchStores();
+
+        if (wanted === store.store_name) {
+          toast.success(`${store.store_name} ${verb}`);
+          return;
+        }
+
+        try {
+          const r = await setNewStoreName(
+            context.url,
+            context.token,
+            store.storeid,
+            wanted,
+          );
+          if (r.data.error !== 0) throw new Error(r.data.msg ?? "rename failed");
+          toast.success(`${wanted} ${verb}`);
+        } catch {
+          toast.warn(
+            `${store.store_name} ${verb}, but the name could not be updated to "${wanted}". Rename it with the pencil.`,
+          );
+        }
       })
-      .catch((err: JsonError) => toast.error(err.message));
+      .catch((err: JsonError) => toast.error(err.message))
+      .finally(() => fetchStores());
   };
 
   const companyOptions = context.companies.map((c) => ({
@@ -327,7 +365,7 @@ const StoreRecords = () => {
       {deactivating && (
         <ConfirmModal
           title={`Close ${deactivating.store_name}?`}
-          message="The record stays and nothing is lost — it is marked closed from today. Re-opening it is one click on the same row."
+          message={`The record stays and nothing is lost — it is marked closed from today and renamed to "${withClosedMark(deactivating.store_name)}". Re-opening it is one click on the same row.`}
           confirmLabel="Close store"
           onConfirm={() => changeStatus(deactivating, "deactivate")}
           onCancel={() => setDeactivating(null)}

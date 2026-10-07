@@ -56,3 +56,39 @@ export const closedOn = (v: string) => {
         year: "numeric",
       });
 };
+
+/* ------------------------------------------------------------------ */
+/* The CLOSED marker in the name                                       */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Stores already carry their state in the name — "614 - PW CLOSED",
+ * "042 - IGA COOKEVILLE TN CLOSED" — because for years the name was the only
+ * place to put it. Everywhere outside this page still reads that marker, so
+ * closing a store has to keep writing it or half the app disagrees with the
+ * other half.
+ *
+ * Case-insensitive and repeat-tolerant on the way out: names have been edited
+ * by hand for a long time and "SAL CLOSED Closed" exists in the wild.
+ */
+const TRAILING_CLOSED = /(\s+closed)+\s*$/i;
+
+/** True if the name already ends in the marker, however it is cased. */
+export const hasClosedMark = (name: string) => TRAILING_CLOSED.test(name);
+
+/** The name a closed store should carry. Adding it twice is not an edit. */
+export const withClosedMark = (name: string) => {
+  const base = name.trim();
+  return hasClosedMark(base) ? base : `${base} CLOSED`;
+};
+
+/**
+ * The name an open store should carry.
+ *
+ * Falls back to the original when stripping would leave nothing — a store
+ * actually named "CLOSED" is a bad name, and an empty one is worse.
+ */
+export const withoutClosedMark = (name: string) => {
+  const stripped = name.replace(TRAILING_CLOSED, "").trim();
+  return stripped === "" ? name.trim() : stripped;
+};
