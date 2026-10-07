@@ -13,6 +13,7 @@ import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import CompanyGrid from "./CompanyGrid";
 import StoreActivityComp from "./StoreActivityComp";
 import NewStoreName from "./NewStoreName";
+import StoreRecords from "./StoreRecords";
 
 /** `programmerOnly` tabs act on records that aren't scoped to anyone — creating
  *  and deleting companies is a change to the whole tenancy, not to one
@@ -21,6 +22,7 @@ const TABS: { id: AdminForm; label: string; programmerOnly?: boolean }[] = [
   { id: "companies", label: "Companies", programmerOnly: true },
   { id: "store_activity", label: "Store activity" },
   { id: "new_store_name", label: "New store name" },
+  { id: "store_records", label: "Stores" },
 ];
 
 const Admin = () => {
@@ -80,6 +82,8 @@ const Admin = () => {
         );
       case "new_store_name":
         return <NewStoreName />;
+      case "store_records":
+        return <StoreRecords />;
     }
   };
 
