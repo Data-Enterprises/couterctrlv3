@@ -19,20 +19,37 @@ import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice
  * in the slice — the detail panel fetched them to draw its own Sub dept tab —
  * so only the counterpart is asked for.
  *
- * One week, one figure each, and the difference. Nothing is graded here: two
- * stores are not a baseline for each other, so a severity colour would be
- * claiming something the data cannot support. The difference carries direction
- * and nothing more.
+ * Nothing is graded here: two stores are not a baseline for each other, so a
+ * severity colour would be claiming something the data cannot support. What
+ * the colour carries is direction, and nothing more.
+ *
+ * The right rail is where the investigation warms up. By the time somebody
+ * clicks through to the items they should already know whether the gap is
+ * widening, whether to expect a price problem or a volume one, and whether
+ * this department is even where the damage is.
  */
+
+/** One department's week at one store. Money and units are both kept whatever
+ *  the page's metric is: the rail compares them against each other, and that
+ *  question has no answer if only one of them was summed. */
+interface Totals {
+  name: string;
+  money: number;
+  units: number;
+}
 
 /** `total_sales - total_tax`, the basis the whole page is on — see the note in
  *  PopupSubDeptList for why it is not `net_sales`. */
-const totalsBySubDept = (rows: SubSale[], metric: GradingMetric) =>
-  rows.reduce<Record<number, { name: string; value: number }>>((acc, s) => {
+const totalsBySubDept = (rows: SubSale[]) =>
+  rows.reduce<Record<number, Totals>>((acc, s) => {
     if (!acc[s.sub_department])
-      acc[s.sub_department] = { name: s.sub_department_description, value: 0 };
-    acc[s.sub_department].value +=
-      metric === "qty" ? s.qty : s.total_sales - s.total_tax;
+      acc[s.sub_department] = {
+        name: s.sub_department_description,
+        money: 0,
+        units: 0,
+      };
+    acc[s.sub_department].money += s.total_sales - s.total_tax;
+    acc[s.sub_department].units += s.qty;
     return acc;
   }, {});
 
@@ -40,20 +57,41 @@ const totalsBySubDept = (rows: SubSale[], metric: GradingMetric) =>
 interface Row {
   id: number;
   name: string;
-  /** The open store's week. */
+  /** The open store's week, in the page's metric. */
   a: number;
   /** The counterpart's. */
   b: number;
+  /** Always money and always units, whatever the metric is set to. */
+  aMoney: number;
+  bMoney: number;
+  aUnits: number;
+  bUnits: number;
   tyDiff: number;
   lwDiff: number;
   lyDiff: number;
 }
 
-/** The three sortable headings. `bars` sorts by what the bars draw. */
+/** The three sortable headings. `bars` sorts by what the bar draws. */
 type Column = "name" | "bars" | "gap";
 
 /** A real minus, not a hyphen: these sit in tabular figures beside a plus. */
-const MINUS = "\u2212";
+const MINUS = "−";
+
+/** The open store's own colour is its verdict — ahead or behind in this
+ *  department. The counterpart keeps one colour throughout: it is what is
+ *  being measured against, and colouring it too would be grading a store
+ *  nobody opened the page to ask about. */
+const AHEAD = "rgb(var(--color-delta-positive-text))";
+const BEHIND = "rgb(var(--color-delta-negative-text))";
+const COMPARE = "rgb(var(--color-store-compare))";
+
+const ordinal = (n: number) => {
+  const tens = n % 100;
+  if (tens >= 11 && tens <= 13) return `${n}th`;
+  return `${n}${["th", "st", "nd", "rd"][n % 10] ?? "th"}`;
+};
+
+const pct1 = (v: number) => `${Math.abs(v).toFixed(1)}%`;
 
 interface Props {
   openStoreName: string;
@@ -107,6 +145,9 @@ const SubDeptSideBySide = ({
   const isQty = gradingMetric === "qty";
   const fmt = (v: number) =>
     isQty ? formatBigNumber(v, 0) : formatCurrency2(v);
+  /** Money, whatever the page is counting. The rail's price sentence is
+   *  about dollars either way. */
+  const cash = (v: number) => formatCurrency2(v);
 
   useEffect(() => {
     let live = true;
@@ -151,12 +192,12 @@ const SubDeptSideBySide = ({
   const rows = useMemo(() => {
     if (!theirs) return [];
     // Already the open store's own weeks — the panel scoped them on the way in.
-    const mineTw = totalsBySubDept(subSales, gradingMetric);
-    const mineLw = totalsBySubDept(subSalesWk2, gradingMetric);
-    const mineLy = totalsBySubDept(subSalesWk3, gradingMetric);
-    const theirTw = totalsBySubDept(theirs.tw, gradingMetric);
-    const theirLw = totalsBySubDept(theirs.lw, gradingMetric);
-    const theirLy = totalsBySubDept(theirs.ly, gradingMetric);
+    const mineTw = totalsBySubDept(subSales);
+    const mineLw = totalsBySubDept(subSalesWk2);
+    const mineLy = totalsBySubDept(subSalesWk3);
+    const theirTw = totalsBySubDept(theirs.tw);
+    const theirLw = totalsBySubDept(theirs.lw);
+    const theirLy = totalsBySubDept(theirs.ly);
 
     // Every department either store has in any week — one of them not
     // carrying a department is a finding, not a row to drop.
@@ -168,10 +209,10 @@ const SubDeptSideBySide = ({
       ),
     ];
 
-    const at = (
-      m: Record<number, { name: string; value: number }>,
-      id: number,
-    ) => m[id]?.value ?? 0;
+    const money = (m: Record<number, Totals>, id: number) => m[id]?.money ?? 0;
+    const units = (m: Record<number, Totals>, id: number) => m[id]?.units ?? 0;
+    const at = (m: Record<number, Totals>, id: number) =>
+      isQty ? units(m, id) : money(m, id);
 
     return ids
       .map((id) => {
@@ -187,6 +228,10 @@ const SubDeptSideBySide = ({
             `Sub dept ${id}`,
           a,
           b,
+          aMoney: money(mineTw, id),
+          bMoney: money(theirTw, id),
+          aUnits: units(mineTw, id),
+          bUnits: units(theirTw, id),
           tyDiff: a - b,
           lwDiff: at(mineLw, id) - at(theirLw, id),
           lyDiff: at(mineLy, id) - at(theirLy, id),
@@ -196,17 +241,8 @@ const SubDeptSideBySide = ({
       // reads a department list in. A column sort is a lens over that, and
       // the third click returns to it.
       .sort((x, y) => y.a - x.a);
-  }, [theirs, subSales, subSalesWk2, subSalesWk3, gradingMetric]);
+  }, [theirs, subSales, subSalesWk2, subSalesWk3, isQty]);
 
-  /**
-   * Money or mix.
-   *
-   * In money a bigger store is bigger in almost everything, which is true and
-   * is not a finding - eleven green rows tell you one thing you already knew.
-   * Mix divides each department by its OWN store's week, so size drops out
-   * and what is left is what the two actually lean on.
-   */
-  const [mode, setMode] = useState<"money" | "mix">("money");
   const [picked, setPicked] = useState<number | null>(null);
 
   /** The house tri-state: unsorted → desc → asc → back to the list's own
@@ -216,25 +252,32 @@ const SubDeptSideBySide = ({
   const mineTotal = rows.reduce((t, r) => t + r.a, 0);
   const theirsTotal = rows.reduce((t, r) => t + r.b, 0);
   const shareMine = (r: Row) => (mineTotal > 0 ? (r.a / mineTotal) * 100 : 0);
-  const shareTheirs = (r: Row) => (theirsTotal > 0 ? (r.b / theirsTotal) * 100 : 0);
+  const shareTheirs = (r: Row) =>
+    theirsTotal > 0 ? (r.b / theirsTotal) * 100 : 0;
 
-  // One scale for both bars, so a bar's length means the same thing on every
-  // row and for either store.
-  const barMax =
-    mode === "money"
-      ? Math.max(1, ...rows.flatMap((r) => [r.a, r.b]))
-      : Math.max(1, ...rows.flatMap((r) => [shareMine(r), shareTheirs(r)]));
+  /**
+   * One bar per row, split between the two stores.
+   *
+   * Its WIDTH is the pair's combined week against the biggest department, so
+   * a big department still looks big; the SPLIT inside it is each store's
+   * share of that pair. Two bars on one scale asked the reader to compare two
+   * lengths, which is the hardest comparison there is to make by eye — a
+   * split point is read in one go.
+   *
+   * Clamped at zero for the geometry only. A department can finish a week
+   * negative on refunds, and a negative width is not a thing; the figures
+   * beside the bar stay as they are.
+   */
+  const pairOf = (r: Row) => Math.max(0, r.a) + Math.max(0, r.b);
+  const biggestPair = Math.max(1, ...rows.map(pairOf));
+  const barWidth = (r: Row) => `${(pairOf(r) / biggestPair) * 100}%`;
+  const mineShare = (r: Row) =>
+    pairOf(r) > 0 ? `${(Math.max(0, r.a) / pairOf(r)) * 100}%` : "0%";
+  const theirsShare = (r: Row) =>
+    pairOf(r) > 0 ? `${(Math.max(0, r.b) / pairOf(r)) * 100}%` : "0%";
 
-  const widthOf = (v: number) => Math.min(100, (v / barMax) * 100) + "%";
-  const gapOf = (r: Row) =>
-    mode === "money" ? r.tyDiff : shareMine(r) - shareTheirs(r);
-  const gapText = (r: Row) => {
-    const g = gapOf(r);
-    const sign = g >= 0 ? "+" : MINUS;
-    return mode === "money"
-      ? sign + fmt(Math.abs(g))
-      : sign + Math.abs(g).toFixed(1) + " pts";
-  };
+  const gapText = (r: Row) =>
+    (r.tyDiff >= 0 ? "+" : MINUS) + fmt(Math.abs(r.tyDiff));
 
   /**
    * Sorted, or handed back in the default order.
@@ -243,25 +286,19 @@ const SubDeptSideBySide = ({
    * a department list sorted alphabetically is a real way to find one, so it
    * gets its own comparator rather than being left unsortable.
    *
-   * The bars column sorts by whatever the bars are DRAWING: the open store's
-   * money, or its share of the week in mix mode. Sorting a bar by a figure it
-   * is not showing is the kind of thing that makes a column feel broken.
+   * The bars column sorts by the pair's combined week, which is what the
+   * bar's length now is. Sorting a bar by a figure it is not showing is the
+   * kind of thing that makes a column feel broken.
    */
   const ordered = useMemo(() => {
     if (sort?.col === "name") {
       const dir = sort.dir === "asc" ? 1 : -1;
       return [...rows].sort((a, b) => a.name.localeCompare(b.name) * dir);
     }
-    return applySort(rows, (r, c) =>
-      c === "bars"
-        ? mode === "money"
-          ? r.a
-          : shareMine(r)
-        : gapOf(r),
-    );
-    // `applySort` and `gapOf` are re-made every render; the state they close
-    // over — the sort, the mode and the two totals — is what actually moves.
-  }, [rows, sort, mode, mineTotal, theirsTotal]);
+    return applySort(rows, (r, c) => (c === "bars" ? pairOf(r) : r.tyDiff));
+    // `applySort` and `pairOf` are re-made every render; the state they close
+    // over — the sort and the rows — is what actually moves.
+  }, [rows, sort]);
 
   const focus = ordered.find((r) => r.id === picked) ?? ordered[0] ?? null;
 
@@ -291,9 +328,73 @@ const SubDeptSideBySide = ({
   const SORT_HEAD =
     "text-[11px] font-semibold uppercase tracking-wide text-content/85 hover:text-content";
 
-  const stat = (key: string, v: number) => (
+  /* ---------------------------------------------------------------- */
+  /* The rail                                                          */
+  /* ---------------------------------------------------------------- */
+
+  /** Where this department ranks inside each store's own week. Context for
+   *  the figures above it: $28K means one thing in the biggest department
+   *  and another in the eleventh. */
+  const rankIn = (r: Row, side: "a" | "b") =>
+    [...rows].sort((x, y) => y[side] - x[side]).findIndex((x) => x.id === r.id) +
+    1;
+
+  /**
+   * Last week against this week, said rather than left to be subtracted.
+   *
+   * Only the LW → TY move, because that is what a week's figures can support.
+   * The bars above show where last year sat; calling three points a trend
+   * would be reading more into them than they hold.
+   */
+  const trendOf = (r: Row) => {
+    const widened = Math.abs(r.tyDiff) > Math.abs(r.lwDiff);
+    if (r.tyDiff >= 0 && r.lwDiff < 0)
+      return "Behind last week and ahead this week — the turn is recent, so it is not yet a trend.";
+    if (r.tyDiff < 0 && r.lwDiff >= 0)
+      return "Ahead last week and behind this week.";
+    if (r.tyDiff < 0)
+      return widened
+        ? "Behind last week and further behind this week."
+        : "Behind last week and less so this week.";
+    return widened
+      ? "Ahead last week and further ahead this week."
+      : "Ahead last week and less so this week.";
+  };
+
+  /**
+   * Units against money — the cause the items grid is about to be asked
+   * about, read before it has loaded.
+   *
+   * Units and money moving apart is a price or a mix difference; moving
+   * together is a volume one. Saying which to expect here is the difference
+   * between opening the grid to look and opening it to check.
+   */
+  const priceRead = (r: Row) => {
+    if (r.aUnits <= 0 || r.bUnits <= 0 || r.bMoney <= 0) return null;
+    const theirsPer = r.bMoney / r.bUnits;
+    if (theirsPer <= 0) return null;
+    const pricePct = (r.aMoney / r.aUnits / theirsPer - 1) * 100;
+    return {
+      unitsPct: (r.aUnits / r.bUnits - 1) * 100,
+      moneyPct: (r.aMoney / r.bMoney - 1) * 100,
+      pricePct,
+      // A realised price within a few points is the same price; whatever is
+      // left over is volume.
+      price: Math.abs(pricePct) > 5,
+    };
+  };
+
+  const storeGap = rows.reduce((t, r) => t + r.tyDiff, 0);
+  const worst = [...rows]
+    .filter((r) => r.tyDiff < 0)
+    .sort((a, b) => a.tyDiff - b.tyDiff)
+    .slice(0, 2);
+
+  const statRow = (key: string, v: number) => (
     <div className="flex items-baseline gap-2 px-3 py-2 bg-custom-white">
-      <span className="text-[11.5px] text-content/85 w-[52px] flex-shrink-0">{key}</span>
+      <span className="text-[12px] text-content/85 w-[52px] flex-shrink-0">
+        {key}
+      </span>
       <span
         className={`ml-auto tabular-nums text-[13.5px] font-bold ${
           v >= 0 ? "text-delta_positive_text" : "text-delta_negative_text"
@@ -305,35 +406,83 @@ const SubDeptSideBySide = ({
     </div>
   );
 
+  /** The same department's gap in each period, off a shared baseline, so
+   *  widening and closing are a shape rather than three numbers to subtract
+   *  in your head. */
+  const trendBars = (r: Row) => {
+    const periods = [
+      { label: "Last year", v: r.lyDiff },
+      { label: "Last week", v: r.lwDiff },
+      { label: "This week", v: r.tyDiff },
+    ];
+    const biggest = Math.max(1, ...periods.map((p) => Math.abs(p.v)));
+    return (
+      <div className="grid grid-cols-3 gap-2 items-end">
+        {periods.map((p) => (
+          <div key={p.label}>
+            <div className="h-[46px] flex items-end justify-center">
+              <span
+                className="block w-[26px] rounded-t-sm"
+                style={{
+                  height: `${Math.max(4, (Math.abs(p.v) / biggest) * 46)}px`,
+                  background: p.v >= 0 ? AHEAD : BEHIND,
+                }}
+              />
+            </div>
+            <div className="h-px bg-brand_navy/15 my-1" />
+            <div className="text-[12px] font-semibold uppercase tracking-wide text-content/85 text-center">
+              {p.label}
+            </div>
+            <div
+              className={`text-[12px] font-bold tabular-nums text-center ${
+                p.v >= 0
+                  ? "text-delta_positive_text"
+                  : "text-delta_negative_text"
+              }`}
+            >
+              {p.v >= 0 ? "+" : MINUS}
+              {fmt(Math.abs(p.v))}
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  const read = focus ? priceRead(focus) : null;
+
   return (
     <div className="h-full flex flex-col overflow-hidden">
-      <div className="flex items-center gap-2 px-3 py-2 border-b border-brand_navy/15 flex-shrink-0 bg-gray-50">
+      <div className="flex items-center gap-3 px-3 py-2 border-b border-brand_navy/15 flex-shrink-0 bg-gray-50">
         <button
           onClick={onBack}
           className="text-[12px] font-semibold text-content hover:underline flex-shrink-0"
         >
           &lsaquo; All stores
         </button>
-        <span className="text-[12px] text-content/85 truncate">
-          How <span className="font-semibold text-content">{openStoreName}</span>{" "}
-          stands against{" "}
-          <span className="font-semibold text-content">{compareStoreName}</span>
-        </span>
 
-        <span className="ml-auto inline-flex rounded-full border border-brand_line overflow-hidden flex-shrink-0">
-          {(["money", "mix"] as const).map((m) => (
-            <button
-              key={m}
-              onClick={() => setMode(m)}
-              className={`text-[11.5px] font-semibold px-2.5 py-1 transition-colors ${
-                mode === m
-                  ? "bg-brand_navy text-custom-white"
-                  : "bg-custom-white text-content hover:bg-gray-50"
-              }`}
-            >
-              {m === "money" ? "Money" : "Mix"}
-            </button>
-          ))}
+        {/* Which colour is whose. The sentence that used to sit here named
+            both stores for a third time — the heading below and this legend
+            already say it, and the tab says where you are. */}
+        <span className="ml-auto flex items-center gap-3 flex-shrink-0">
+          <span className="flex items-center gap-1.5 text-[11.5px] text-content/85">
+            <span
+              className="w-2.5 h-2.5 rounded-sm"
+              style={{ background: AHEAD }}
+            />
+            <span
+              className="w-2.5 h-2.5 rounded-sm"
+              style={{ background: BEHIND }}
+            />
+            ahead / behind
+          </span>
+          <span className="flex items-center gap-1.5 text-[11.5px] text-content/85 min-w-0">
+            <span
+              className="w-2.5 h-2.5 rounded-sm flex-shrink-0"
+              style={{ background: COMPARE }}
+            />
+            <span className="truncate">{compareStoreName}</span>
+          </span>
         </span>
       </div>
 
@@ -349,7 +498,7 @@ const SubDeptSideBySide = ({
         <div className="flex-1 min-h-0 flex overflow-hidden">
           <div className="flex-1 min-w-0 flex flex-col border-r border-brand_navy/15">
             <div
-              className="flex-shrink-0 grid gap-2.5 items-center px-3 py-1.5 border-b border-brand_navy/15 text-[11px] font-semibold uppercase tracking-wide text-content/85"
+              className="flex-shrink-0 grid gap-2.5 items-center px-3 py-1.5 border-b border-brand_navy/15"
               style={{ gridTemplateColumns: COLS }}
             >
               <SortHeader
@@ -359,9 +508,9 @@ const SubDeptSideBySide = ({
                 onSort={handleSort}
                 className={SORT_HEAD}
               />
-              {/* Both names in full. Two numbers over a pair of bars asked
-                  the reader to hold a mapping in their head; the names say
-                  it outright, and truncate before they crowd the gap. */}
+              {/* Both names in full. Two numbers over a bar asked the reader
+                  to hold a mapping in their head; the names say it outright,
+                  and truncate before they crowd the difference. */}
               <SortHeader
                 col="bars"
                 label={`${openStoreName} vs ${compareStoreName}`}
@@ -369,9 +518,11 @@ const SubDeptSideBySide = ({
                 onSort={handleSort}
                 className={`min-w-0 ${SORT_HEAD}`}
               />
+              {/* "Diff", not "vs TY": it is not a comparison TO this year,
+                  it is this year's difference between two stores. */}
               <SortHeader
                 col="gap"
-                label={mode === "money" ? "vs TY" : "Share"}
+                label="Diff"
                 sort={sort}
                 onSort={handleSort}
                 className={`justify-end ${SORT_HEAD}`}
@@ -380,8 +531,8 @@ const SubDeptSideBySide = ({
 
             <div className="flex-1 min-h-0 overflow-auto thin-scrollbar">
               {ordered.map((r) => {
-                const g = gapOf(r);
                 const on = focus?.id === r.id;
+                const none = r.b === 0 && r.a > 0;
                 return (
                   <button
                     key={r.id}
@@ -397,40 +548,45 @@ const SubDeptSideBySide = ({
                       {r.name}
                     </span>
 
-                    {/* Two bars on one scale: length is the week, the pair is
-                        the comparison. A single diverging bar shows the gap
-                        and throws away how big either store actually is. */}
-                    <span className="grid gap-[3px] min-w-0">
-                      <span className="block h-2 rounded-sm bg-bkg">
+                    <span className="flex items-center gap-1 min-w-0">
+                      <span
+                        className="relative block h-[18px] rounded-sm overflow-hidden bg-bkg"
+                        style={{ width: barWidth(r) }}
+                      >
                         <span
-                          className="block h-2 rounded-sm bg-store_open"
-                          style={{ width: widthOf(mode === "money" ? r.a : shareMine(r)) }}
+                          className="absolute left-0 top-0 h-full"
+                          style={{
+                            width: mineShare(r),
+                            background: r.tyDiff >= 0 ? AHEAD : BEHIND,
+                          }}
+                        />
+                        <span
+                          className="absolute right-0 top-0 h-full"
+                          style={{ width: theirsShare(r), background: COMPARE }}
                         />
                       </span>
-                      {/* A department they do not carry gets a hatched full
-                          track, not a zero-width bar nobody can see. */}
-                      <span className="block h-2 rounded-sm bg-bkg">
+
+                      {/* A department they do not carry would otherwise be
+                          one solid bar, indistinguishable from their simply
+                          having much less. The hatch sits OUTSIDE the bar so
+                          the bar's own width stays honest. */}
+                      {none && (
                         <span
-                          className="block h-2 rounded-sm"
-                          style={
-                            r.b === 0
-                              ? {
-                                  width: "100%",
-                                  background:
-                                    "repeating-linear-gradient(45deg, rgb(var(--color-severity-watch-bg)) 0 4px, transparent 4px 8px)",
-                                }
-                              : {
-                                  width: widthOf(mode === "money" ? r.b : shareTheirs(r)),
-                                  background: "rgb(var(--color-store-compare))",
-                                }
-                          }
+                          title={`${compareStoreName} carries none`}
+                          className="h-[18px] w-3.5 rounded-sm flex-shrink-0"
+                          style={{
+                            background:
+                              "repeating-linear-gradient(45deg, rgb(var(--color-store-compare)) 0 3px, transparent 3px 6px)",
+                          }}
                         />
-                      </span>
+                      )}
                     </span>
 
                     <span
                       className={`text-right tabular-nums text-[12px] font-semibold ${
-                        g >= 0 ? "text-delta_positive_text" : "text-delta_negative_text"
+                        r.tyDiff >= 0
+                          ? "text-delta_positive_text"
+                          : "text-delta_negative_text"
                       }`}
                     >
                       {gapText(r)}
@@ -448,70 +604,170 @@ const SubDeptSideBySide = ({
           </div>
 
           {focus && (
-            <div className="w-[320px] flex-shrink-0 flex flex-col p-3 gap-3 overflow-auto thin-scrollbar">
+            <div className="w-[360px] flex-shrink-0 flex flex-col p-3 gap-3 overflow-auto thin-scrollbar">
               <div>
                 <div className="text-[15px] font-bold text-content leading-snug">
                   {focus.name}
                 </div>
-                {focus.b === 0 && (
-                  <span className="inline-block mt-1.5 text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded bg-severity_watch_bg text-severity_watch_text">
-                    {compareStoreNumber} carries none
-                  </span>
-                )}
+                <div className="text-[12px] text-content/85 mt-1 leading-snug">
+                  {rankIn(focus, "a") === 1 && rankIn(focus, "b") === 1 ? (
+                    <>Biggest department at both stores</>
+                  ) : (
+                    <>
+                      {ordinal(rankIn(focus, "a"))} biggest at {openStoreName},{" "}
+                      {ordinal(rankIn(focus, "b"))} at {compareStoreName}
+                    </>
+                  )}
+                  {" · "}
+                  {pct1(shareMine(focus))} of {openStoreName}&rsquo;s week,{" "}
+                  {pct1(shareTheirs(focus))} of {compareStoreName}&rsquo;s
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-2">
-                <div className="rounded-md px-2.5 py-2 bg-store_open_tint">
-                  <div className="text-[10px] font-bold uppercase tracking-wide text-content/85">
-                    {openStoreNumber}
+                {/* The open store's box takes the same verdict colour its bar
+                    does, so the rail and the row agree. */}
+                <div
+                  className={`rounded-md px-2.5 py-2 min-w-0 ${
+                    focus.tyDiff >= 0
+                      ? "bg-delta_positive_bg"
+                      : "bg-delta_negative_bg"
+                  }`}
+                >
+                  <div className="text-[12px] font-bold uppercase tracking-wide text-content/85 leading-tight">
+                    {openStoreName}
                   </div>
-                  <div className="text-[15px] font-bold tabular-nums text-content mt-0.5">
+                  <div
+                    className={`text-[15px] font-bold tabular-nums mt-0.5 ${
+                      focus.tyDiff >= 0
+                        ? "text-delta_positive_text"
+                        : "text-delta_negative_text"
+                    }`}
+                  >
                     {fmt(focus.a)}
                   </div>
+                  <div className="text-[12px] text-content/85 tabular-nums mt-0.5">
+                    {pct1(shareMine(focus))} ·{" "}
+                    {formatBigNumber(focus.aUnits, 0)} units
+                  </div>
                 </div>
-                <div className="rounded-md px-2.5 py-2 bg-store_compare_tint">
-                  <div className="text-[10px] font-bold uppercase tracking-wide text-content/85">
-                    {compareStoreNumber}
+                <div className="rounded-md px-2.5 py-2 min-w-0 bg-store_compare_tint">
+                  <div className="text-[12px] font-bold uppercase tracking-wide text-content/85 leading-tight">
+                    {compareStoreName}
                   </div>
                   <div className="text-[15px] font-bold tabular-nums text-content mt-0.5">
                     {fmt(focus.b)}
                   </div>
+                  <div className="text-[12px] text-content/85 tabular-nums mt-0.5">
+                    {pct1(shareTheirs(focus))} ·{" "}
+                    {formatBigNumber(focus.bUnits, 0)} units
+                  </div>
                 </div>
               </div>
 
-              <div className="grid gap-px bg-brand_navy/15 rounded-md overflow-hidden">
-                {stat("vs TY", focus.tyDiff)}
-                {stat("vs LW", focus.lwDiff)}
-                {stat("vs LY", focus.lyDiff)}
+              {focus.b === 0 && (
+                <span className="self-start text-[12px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded bg-severity_watch_bg text-severity_watch_text">
+                  {compareStoreName} carries none
+                </span>
+              )}
+
+              <div className="rounded-md border border-brand_navy/15 px-2.5 py-2.5">
+                <div className="text-[12px] font-bold uppercase tracking-wide text-content/85 mb-2">
+                  Is the gap closing?
+                </div>
+                {trendBars(focus)}
+                <p className="text-[12.5px] text-content/85 leading-relaxed mt-2">
+                  {trendOf(focus)}
+                </p>
               </div>
 
-              <p className="text-[11.5px] text-content/85 leading-relaxed">
-                This department is{" "}
-                <span className="font-semibold text-content">
-                  {shareMine(focus).toFixed(1)}%
-                </span>{" "}
-                of {openStoreNumber}&rsquo;s week and{" "}
-                <span className="font-semibold text-content">
-                  {shareTheirs(focus).toFixed(1)}%
-                </span>{" "}
-                of {compareStoreNumber}&rsquo;s
-                {Math.abs(shareMine(focus) - shareTheirs(focus)) < 0.5 ? (
-                  <> &mdash; near enough the same lean.</>
-                ) : (
-                  <>
-                    {" "}
-                    &mdash;{" "}
+              {read && (
+                <div className="rounded-md border border-brand_navy/15 px-2.5 py-2.5">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className="text-[12px] font-bold uppercase tracking-wide text-content/85">
+                      Units against money
+                    </span>
+                    <span className="ml-auto text-[12px] font-bold px-1.5 py-0.5 rounded-full bg-gray-100 text-content/85 whitespace-nowrap">
+                      {read.price
+                        ? "Expect price, not volume"
+                        : "Expect volume, not price"}
+                    </span>
+                  </div>
+                  <p className="text-[12.5px] text-content/85 leading-relaxed">
+                    {openStoreName} sold{" "}
                     <span className="font-semibold text-content">
-                      {Math.abs(shareMine(focus) - shareTheirs(focus)).toFixed(1)} points
+                      {pct1(read.unitsPct)}{" "}
+                      {read.unitsPct >= 0 ? "more" : "fewer"} units
                     </span>{" "}
-                    heavier at{" "}
-                    {shareMine(focus) > shareTheirs(focus)
-                      ? openStoreNumber
-                      : compareStoreNumber}
-                    .
-                  </>
-                )}
-              </p>
+                    and took{" "}
+                    <span className="font-semibold text-content">
+                      {pct1(read.moneyPct)}{" "}
+                      {read.moneyPct >= 0 ? "more" : "less"} money
+                    </span>{" "}
+                    &mdash; it is ringing this department{" "}
+                    <span className="font-semibold text-content">
+                      {pct1(read.pricePct)}{" "}
+                      {read.pricePct >= 0 ? "dearer" : "cheaper"} a unit
+                    </span>
+                    . The items grid splits that between real price and mix.
+                  </p>
+                </div>
+              )}
+
+              <div className="rounded-md border border-brand_navy/15 px-2.5 py-2.5">
+                <div className="text-[12px] font-bold uppercase tracking-wide text-content/85 mb-1.5">
+                  Against the whole week
+                </div>
+                <p className="text-[12.5px] text-content/85 leading-relaxed">
+                  {openStoreName} is{" "}
+                  <span
+                    className={`font-semibold ${
+                      storeGap >= 0
+                        ? "text-delta_positive_text"
+                        : "text-delta_negative_text"
+                    }`}
+                  >
+                    {cash(Math.abs(storeGap))}{" "}
+                    {storeGap >= 0 ? "ahead of" : "behind"}
+                  </span>{" "}
+                  {compareStoreName} across every department.
+                  {focus.tyDiff >= 0 && storeGap < 0 && (
+                    <>
+                      {" "}
+                      {focus.name} is one of the places it is ahead, offsetting{" "}
+                      <span className="font-semibold text-content">
+                        {pct1((focus.tyDiff / Math.abs(storeGap)) * 100)}
+                      </span>{" "}
+                      of that.
+                    </>
+                  )}
+                  {focus.tyDiff < 0 && storeGap < 0 && (
+                    <>
+                      {" "}
+                      {focus.name} is{" "}
+                      <span className="font-semibold text-content">
+                        {pct1((focus.tyDiff / storeGap) * 100)}
+                      </span>{" "}
+                      of it.
+                    </>
+                  )}
+                  {worst.length > 0 && (
+                    <>
+                      {" "}The departments costing the most are{" "}
+                      <span className="font-semibold text-content">
+                        {worst.map((w) => w.name).join(" and ")}
+                      </span>
+                      .
+                    </>
+                  )}
+                </p>
+              </div>
+
+              <div className="grid gap-px bg-brand_navy/15 rounded-md overflow-hidden">
+                {statRow("vs TY", focus.tyDiff)}
+                {statRow("vs LW", focus.lwDiff)}
+                {statRow("vs LY", focus.lyDiff)}
+              </div>
 
               {/* The way into the items, named and pinned, rather than a row
                   click somebody has to discover. */}
@@ -521,8 +777,9 @@ const SubDeptSideBySide = ({
               >
                 Investigate {focus.name} items &rarr;
               </button>
-              <p className="text-[10.5px] text-content/85 text-center leading-snug">
-                Items, causes and supply for this department at both stores
+              <p className="text-[12px] text-content/85 text-center leading-snug">
+                Items, causes, cost and supply for this department at both
+                stores
               </p>
             </div>
           )}
