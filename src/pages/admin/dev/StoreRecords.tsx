@@ -39,7 +39,7 @@ import TextFilter from "../../../components-dev/filters/TextFilter";
  * wrong half the time.
  */
 const STATE_UNKNOWN =
-  "This list does not report which stores are already out of service — the store record carries no status the frontend can read. Both actions are safe to repeat.";
+  "The store record carries no status the frontend can read, so both actions are safe to repeat.";
 
 type Pending = "create" | "deactivate" | "reactivate" | null;
 
@@ -126,7 +126,7 @@ const StoreRecords = () => {
           toast.error(j.msg || "The store could not be created");
           return;
         }
-        toast.success(`${trimmedNumber} – ${trimmedName} created`);
+        toast.success(`${trimmedName} created`);
         setNewNumber("");
         setNewName("");
         setNewCompany("");
@@ -148,7 +148,7 @@ const StoreRecords = () => {
           return;
         }
         toast.success(
-          `${selected.store_number} – ${selected.store_name} ${
+          `${selected.store_name} ${
             next === "deactivate" ? "taken out of service" : "put back in service"
           }`,
         );
@@ -174,12 +174,16 @@ const StoreRecords = () => {
           placeholder="All companies"
           className="w-full mb-2"
         />
-        <TextFilter
-          value={search}
-          onChange={setSearch}
-          placeholder="Search number or name…"
-          className="w-full mb-2"
-        />
+        {/* In a row of its own: TextFilter's root is flex-1, which means
+            width in the toolbar it was built for and height in a column —
+            without this it grows to fill the panel. */}
+        <div className="flex mb-2">
+          <TextFilter
+            value={search}
+            onChange={setSearch}
+            placeholder="Search number or name…"
+          />
+        </div>
 
         <div className="flex-1 min-h-0 overflow-auto thin-scrollbar border border-gray-200 rounded">
           {filtered.map((s) => {
@@ -196,8 +200,11 @@ const StoreRecords = () => {
                     : "hover:bg-gray-50"
                 }`}
               >
+                {/* The name already carries the number - "043 - PLF ATHENS
+                    TN" - so printing both reads "43 - 043 - PLF ATHENS TN".
+                    NewStoreName shows the name alone for the same reason. */}
                 <div className="text-[12.5px] font-medium text-content truncate">
-                  {s.store_number} – {s.store_name}
+                  {s.store_name}
                 </div>
                 <div className="text-[11px] text-content/85 truncate">
                   {s.company_name}
@@ -220,22 +227,21 @@ const StoreRecords = () => {
       </div>
 
       {/* Right: the two jobs, stacked. */}
-      <div className="flex-1 min-w-0 overflow-auto thin-scrollbar p-4 flex flex-col gap-5">
+      <div className="flex-1 min-w-0 overflow-auto thin-scrollbar p-4 flex flex-col gap-3.5">
 
         <section>
           <h3 className="text-[13px] font-bold text-content">Add a store</h3>
-          <p className="text-[11.5px] text-content/85 mt-0.5 mb-2.5">
+          <p className="text-[11.5px] text-content/85 mt-0.5 mb-2">
             Creates the store record. Assigning it to users and groups is done
             in User Management.
           </p>
 
-          <div className="grid gap-2.5 max-w-[420px]">
+          <div className="grid gap-2 max-w-[420px]">
             <div className="grid gap-1">
               <Input
                 value={newNumber}
                 setValue={setNewNumber}
                 label="Store number"
-                className="w-full"
               />
               {numberTaken && (
                 <span className="text-[11px] font-semibold text-brand_danger">
@@ -249,13 +255,16 @@ const StoreRecords = () => {
               value={newName}
               setValue={setNewName}
               label="Store name"
-              className="w-full"
             />
 
-            <label className="grid gap-1">
-              <span className="text-[11px] font-semibold uppercase tracking-wide text-content/85">
-                Company
-              </span>
+            {/* Input draws its own label, so this one is written to match
+                it rather than in the uppercase caption style used elsewhere
+                on the page - three fields in a column should not have two
+                label treatments between them. */}
+            <div>
+              <div className="flex justify-between text-[11px] md:text-[13px] items-end pr-1.5 leading-tight">
+                <label className="font-medium pl-0.5">Company</label>
+              </div>
               <SelectFilter
                 options={companyOptions}
                 value={newCompany}
@@ -263,21 +272,21 @@ const StoreRecords = () => {
                 placeholder="Pick a company"
                 className="w-full"
               />
-            </label>
+            </div>
 
             <button
               onClick={handleCreate}
               disabled={!canCreate}
-              className="justify-self-start mt-0.5 px-3.5 py-2 rounded-md bg-brand_navy hover:bg-brand_navy_hover disabled:opacity-40 disabled:hover:bg-brand_navy text-custom-white text-[12.5px] font-semibold transition-colors"
+              className="justify-self-start mt-0.5 px-3.5 py-1.5 rounded-md bg-brand_navy hover:bg-brand_navy_hover disabled:opacity-40 disabled:hover:bg-brand_navy text-custom-white text-[12.5px] font-semibold transition-colors"
             >
               {pending === "create" ? "Creating…" : "Create store"}
             </button>
           </div>
         </section>
 
-        <section className="border-t border-gray-100 pt-4">
+        <section className="border-t border-gray-100 pt-3">
           <h3 className="text-[13px] font-bold text-content">In or out of service</h3>
-          <p className="text-[11.5px] text-content/85 mt-0.5 mb-2.5 max-w-[520px] leading-relaxed">
+          <p className="text-[11.5px] text-content/85 mt-0.5 mb-2 max-w-[560px]">
             {STATE_UNKNOWN}
           </p>
 
@@ -287,27 +296,27 @@ const StoreRecords = () => {
             </p>
           ) : (
             <div className="max-w-[420px]">
-              <div className="rounded-md bg-bkg px-3 py-2.5">
-                <div className="text-[13px] font-semibold text-content">
-                  {selected.store_number} – {selected.store_name}
-                </div>
-                <div className="text-[11.5px] text-content/85 mt-0.5">
+              <div className="rounded-md bg-bkg px-2.5 py-1.5 flex items-baseline gap-2">
+                <span className="text-[12.5px] font-semibold text-content truncate">
+                  {selected.store_name}
+                </span>
+                <span className="text-[11px] text-content/85 truncate">
                   {selected.company_name}
-                </div>
+                </span>
               </div>
 
-              <div className="flex gap-2 mt-2.5">
+              <div className="flex gap-2 mt-2">
                 <button
                   onClick={() => changeStatus("deactivate")}
                   disabled={!!pending}
-                  className="px-3.5 py-2 rounded-md bg-brand_danger_bg border border-brand_danger_line text-brand_danger text-[12.5px] font-semibold disabled:opacity-40 hover:brightness-95 transition-[filter]"
+                  className="px-3.5 py-1.5 rounded-md bg-brand_danger_bg border border-brand_danger_line text-brand_danger text-[12.5px] font-semibold disabled:opacity-40 hover:brightness-95 transition-[filter]"
                 >
                   {pending === "deactivate" ? "Working…" : "Take out of service"}
                 </button>
                 <button
                   onClick={() => changeStatus("reactivate")}
                   disabled={!!pending}
-                  className="px-3.5 py-2 rounded-md bg-custom-white border border-brand_line text-content text-[12.5px] font-semibold disabled:opacity-40 hover:bg-gray-50 transition-colors"
+                  className="px-3.5 py-1.5 rounded-md bg-custom-white border border-brand_line text-content text-[12.5px] font-semibold disabled:opacity-40 hover:bg-gray-50 transition-colors"
                 >
                   {pending === "reactivate" ? "Working…" : "Put back in service"}
                 </button>
