@@ -41,7 +41,35 @@ import StoreFormModal, { type StoreForm } from "./StoreFormModal";
  * editing the list its own chrome is drawn from.
  */
 
-const COLS = "grid-cols-[13%_35%_30%_22%]";
+const COLS = "grid-cols-[13%_33%_26%_14%_14%]";
+
+/**
+ * Open, closed, or not reported.
+ *
+ * `deactivated_at` is optional on Store because only this endpoint returns
+ * it. `undefined` means nobody asked and `null` means asked and open — the
+ * difference decides whether this grid can show a status at all, so it is
+ * kept rather than collapsed to a boolean.
+ */
+type Status = "open" | "closed" | "unknown";
+
+const statusOf = (s: Store): Status =>
+  s.deactivated_at === undefined
+    ? "unknown"
+    : s.deactivated_at === null
+      ? "open"
+      : "closed";
+
+type StatusFilter = "all" | "open" | "closed";
+
+/** The day it closed, for the row. The column is a timestamp; nobody needs
+ *  the time it happened at. */
+const closedOn = (v: string) => {
+  const d = new Date(v);
+  return Number.isNaN(d.getTime())
+    ? ""
+    : d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+};
 
 /**
  * Nothing the frontend fetches says whether a store is already deactivated.
@@ -52,8 +80,9 @@ const COLS = "grid-cols-[13%_35%_30%_22%]";
  * idempotent on the server, and the column header says so rather than the
  * grid implying a state it cannot read.
  */
-const SERVICE_NOTE =
-  "Closing a store marks the record closed from today; nothing is deleted. The frontend cannot read which stores are already closed, so both actions appear on every row and both are safe to repeat.";
+/** Shown only while the endpoint is not reporting status — see `statusOf`. */
+const UNKNOWN_NOTE =
+  "This list is not reporting which stores are already closed, so every row offers both actions. Both are safe to repeat.";
 
 const StoreRecords = () => {
   const toast = useToast();
@@ -62,6 +91,7 @@ const StoreRecords = () => {
   const [stores, setStores] = useState<Store[] | null>(null);
   const [search, setSearch] = useState("");
   const [companyFilter, setCompanyFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
 
   const [creating, setCreating] = useState(false);
   const [editing, setEditing] = useState<Store | null>(null);
@@ -93,6 +123,13 @@ const StoreRecords = () => {
 
   useEffect(fetchStores, []);
 
+  /** Whether the endpoint is reporting status at all. One store answering is
+   *  enough: the field is either in the select or it is not. */
+  const statusKnown = useMemo(
+    () => (stores ?? []).some((s) => s.deactivated_at !== undefined),
+    [stores],
+  );
+
   const filtered = useMemo(() => {
     if (!stores) return [];
     const q = search.trim().toLowerCase();
@@ -102,9 +139,15 @@ const StoreRecords = () => {
         ? s.store_name.toLowerCase().includes(q) ||
           s.store_number.toLowerCase().includes(q)
         : true;
-      return byCompany && bySearch;
+      // A row whose status is unknown is never filtered OUT by a status
+      // choice — hiding rows on a question the data cannot answer would
+      // quietly shorten the list for no reason the reader can see.
+      const st = statusOf(s);
+      const byStatus =
+        statusFilter === "all" || st === "unknown" || st === statusFilter;
+      return byCompany && bySearch && byStatus;
     });
-  }, [stores, search, companyFilter]);
+  }, [stores, search, companyFilter, statusFilter]);
 
   const handleCreate = (form: StoreForm) => {
     setSaving(true);
@@ -160,6 +203,9 @@ const StoreRecords = () => {
           `${store.store_name} ${next === "deactivate" ? "closed" : "re-opened"}`,
         );
         setDeactivating(null);
+        // The row's status and its one lock both change with this, so the
+        // list is re-read rather than patched locally.
+        fetchStores();
       })
       .catch((err: JsonError) => toast.error(err.message));
   };
@@ -179,6 +225,18 @@ const StoreRecords = () => {
           placeholder="All companies"
           className="w-[190px] flex-shrink-0"
         />
+        {statusKnown && (
+          <SelectFilter
+            options={[
+              { value: "open", label: "Open" },
+              { value: "closed", label: "Closed" },
+            ]}
+            value={statusFilter === "all" ? "" : statusFilter}
+            onChange={(v) => setStatusFilter((v || "all") as StatusFilter)}
+            placeholder="Open and closed"
+            className="w-[150px] flex-shrink-0"
+          />
+        )}
         <TextFilter
           value={search}
           onChange={setSearch}
@@ -201,6 +259,7 @@ const StoreRecords = () => {
           <div>Number</div>
           <div>Name</div>
           <div>Company</div>
+          <div>{statusKnown ? "Status" : ""}</div>
           <div></div>
         </div>
 
@@ -216,23 +275,42 @@ const StoreRecords = () => {
                   it is left as it is rather than stripped. */}
               <div className="truncate">{s.store_name}</div>
               <div className="truncate">{s.company_name}</div>
+
+              <div className="truncate">
+                {statusOf(s) === "closed" && (
+                  <span
+                    className="inline-block text-[11px] font-semibold px-1.5 py-0.5 rounded bg-severity_watch_bg text-severity_watch_text"
+                    title={`Closed ${closedOn(s.deactivated_at as string)}`}
+                  >
+                    Closed
+                  </span>
+                )}
+              </div>
+
               <div className="flex items-center justify-end gap-1">
                 <IconButton
                   icon={PencilIcon}
-                  title="Rename"
+                  title={`Rename ${s.store_name}`}
                   onClick={() => setEditing(s)}
                 />
-                <IconButton
-                  icon={LockOpenIcon}
-                  title={`Re-open ${s.store_name}`}
-                  onClick={() => changeStatus(s, "reactivate")}
-                />
-                <IconButton
-                  icon={LockClosedIcon}
-                  title={`Close ${s.store_name}`}
-                  variant="danger"
-                  onClick={() => setDeactivating(s)}
-                />
+                {/* One lock once the status is readable: closed rows offer
+                    the way back, open rows the way out. Both only while the
+                    endpoint is not saying which. */}
+                {statusOf(s) !== "open" && (
+                  <IconButton
+                    icon={LockOpenIcon}
+                    title={`Re-open ${s.store_name}`}
+                    onClick={() => changeStatus(s, "reactivate")}
+                  />
+                )}
+                {statusOf(s) !== "closed" && (
+                  <IconButton
+                    icon={LockClosedIcon}
+                    title={`Close ${s.store_name}`}
+                    variant="danger"
+                    onClick={() => setDeactivating(s)}
+                  />
+                )}
               </div>
             </div>
           ))}
@@ -250,9 +328,11 @@ const StoreRecords = () => {
         </div>
       </div>
 
-      <p className="text-[12px] text-content/85 mt-2 leading-snug max-w-[760px]">
-        {SERVICE_NOTE}
-      </p>
+      {!statusKnown && stores !== null && (
+        <p className="text-[12px] text-content/85 mt-2 leading-snug max-w-[760px]">
+          {UNKNOWN_NOTE}
+        </p>
+      )}
 
       {(creating || editing) && (
         <StoreFormModal
