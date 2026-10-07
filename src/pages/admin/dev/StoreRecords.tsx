@@ -276,6 +276,11 @@ const StoreRecords = () => {
               <div className="truncate">{s.store_name}</div>
               <div className="truncate">{s.company_name}</div>
 
+              {/* A pill either way once the status is reported, from one
+                  family so the two read as a pair. Nothing at all while it
+                  is unknown — a blank cell says "not reported", and an
+                  "Active" pill on a store nobody has asked about would be a
+                  claim rather than a reading. */}
               <div className="truncate">
                 {statusOf(s) === "closed" && (
                   <span
@@ -283,6 +288,11 @@ const StoreRecords = () => {
                     title={`Closed ${closedOn(s.deactivated_at as string)}`}
                   >
                     Closed
+                  </span>
+                )}
+                {statusOf(s) === "open" && (
+                  <span className="inline-block text-[11px] font-semibold px-1.5 py-0.5 rounded bg-severity_healthy_bg text-severity_healthy_text">
+                    Active
                   </span>
                 )}
               </div>
