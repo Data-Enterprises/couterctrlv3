@@ -13,7 +13,6 @@ import type {
   SubMarginsPricePointsResp,
   SubsPricePoint,
 } from "../../../../interfaces";
-import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice";
 
 /**
  * Fetching for the sub-department investigation, in three waves.
@@ -65,6 +64,15 @@ export interface Store {
   name: string;
 }
 
+/**
+ * What identifies a fetch — and nothing else.
+ *
+ * The page's Sales/Quantity metric used to sit here. Nothing in this file
+ * ever read it: it is applied in `buildFacts`, over rows that are the same
+ * either way. But it made the scope a different object, so flipping the
+ * toggle threw away three waves of data and asked for all nine requests
+ * again to arrive at arithmetic that could have been redone in place.
+ */
 export interface Scope {
   url: string;
   token: string;
@@ -74,7 +82,6 @@ export interface Scope {
   tw: Window;
   lw: Window;
   ly: Window;
-  metric: GradingMetric;
 }
 
 /** The supply window, derived from the sales week's end. */
@@ -299,15 +306,25 @@ export const fetchReceipts = async (
   return { mine, theirs };
 };
 
-/** Every product code either store sold, which is what the receipt search is
- *  asked for. An item neither store rang cannot be part of the gap. */
-export const codesIn = (sales: SalesWave): string[] => [
-  ...new Set(
-    [
-      sales.mineTw, sales.mineLw, sales.mineLy,
-      sales.theirsTw, sales.theirsLw, sales.theirsLy,
-    ]
-      .flat()
-      .map((r) => r.product_code),
-  ),
-];
+/**
+ * Every product code either store sold, which is what the receipt search is
+ * asked for. An item neither store rang cannot be part of the gap.
+ *
+ * Coerced and sifted, because the field is typed `string` and the payload
+ * does not always agree: a sub-department line with no item behind it comes
+ * back carrying a numeric `0`. `item_search` validates its body, so one of
+ * those rejects the whole request — 422, no receipts at all, and every item
+ * in the department stuck on "still reading deliveries". A code of 0 could
+ * never match a receiver line anyway, so it is dropped rather than quoted.
+ */
+export const codesIn = (sales: SalesWave): string[] =>
+  [
+    ...new Set(
+      [
+        sales.mineTw, sales.mineLw, sales.mineLy,
+        sales.theirsTw, sales.theirsLw, sales.theirsLy,
+      ]
+        .flat()
+        .map((r) => String(r.product_code ?? "").trim()),
+    ),
+  ].filter((c) => c !== "" && Number(c) !== 0);

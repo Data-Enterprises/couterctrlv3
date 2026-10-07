@@ -98,6 +98,30 @@ describe("codesIn", () => {
     });
     expect(codes.sort()).toEqual(["A", "B", "C"]);
   });
+
+  /**
+   * The field is typed `string` and the payload does not always agree.
+   *
+   * A sub-department line with no item behind it comes back carrying a
+   * numeric 0. `item_search` validates its body, so one of those took the
+   * whole receipt request down with a 422 — no deliveries for any item in
+   * the department, and every row stuck reading "still reading deliveries".
+   */
+  it("drops a code the payload sent as a number instead of a string", () => {
+    const codes = codesIn({
+      mineTw: [
+        row({ product_code: "A" }),
+        row({ product_code: 0 as unknown as string }),
+      ],
+      mineLw: [], mineLy: [],
+      theirsTw: [row({ product_code: "" })],
+      theirsLw: [], theirsLy: [],
+      minePoints: [],
+      theirsPoints: [],
+    });
+    expect(codes).toEqual(["A"]);
+    expect(codes.every((c) => typeof c === "string")).toBe(true);
+  });
 });
 
 describe("fetchSales", () => {

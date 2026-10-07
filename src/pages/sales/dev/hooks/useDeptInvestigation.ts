@@ -88,7 +88,7 @@ export const useDeptInvestigation = (args: Args): Investigation => {
 
   const scope = useMemo<Scope>(
     () => ({
-      url, token, subDept, metric,
+      url, token, subDept,
       mine: { storeid: mineId, storeNumber: mineNo, name: mineName },
       theirs: { storeid: theirsId, storeNumber: theirsNo, name: theirsName },
       tw: { start: tw.start, end: tw.end },
@@ -96,7 +96,8 @@ export const useDeptInvestigation = (args: Args): Investigation => {
       ly: { start: ly.start, end: ly.end },
     }),
     [
-      url, token, subDept, metric,
+      // No `metric`: it is applied over the rows, not asked for — see Scope.
+      url, token, subDept,
       mineId, mineNo, mineName, theirsId, theirsNo, theirsName,
       tw.start, tw.end, lw.start, lw.end, ly.start, ly.end,
     ],
@@ -160,10 +161,10 @@ export const useDeptInvestigation = (args: Args): Investigation => {
             ...sales,
             orders: orders.mine,
             receivers: receipts.mine,
-            metric: scope.metric,
+            metric,
           })
         : [],
-    [sales, orders, receipts, scope.metric],
+    [sales, orders, receipts, metric],
   );
 
   const summary = useMemo(() => summarise(items), [items]);
