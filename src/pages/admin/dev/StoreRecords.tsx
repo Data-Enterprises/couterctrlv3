@@ -20,6 +20,12 @@ import SelectFilter from "../../../components-dev/filters/SelectFilter";
 import IconButton from "../../../components-dev/IconButton";
 import ConfirmModal from "../../../components-dev/ConfirmModal";
 import StoreFormModal, { type StoreForm } from "./StoreFormModal";
+import {
+  closedOn,
+  statusOf,
+  statusReported,
+  type StatusFilter,
+} from "./storeStatus";
 
 /**
  * The store records, as a grid.
@@ -43,43 +49,6 @@ import StoreFormModal, { type StoreForm } from "./StoreFormModal";
 
 const COLS = "grid-cols-[13%_33%_26%_14%_14%]";
 
-/**
- * Open, closed, or not reported.
- *
- * `deactivated_at` is optional on Store because only this endpoint returns
- * it. `undefined` means nobody asked and `null` means asked and open — the
- * difference decides whether this grid can show a status at all, so it is
- * kept rather than collapsed to a boolean.
- */
-type Status = "open" | "closed" | "unknown";
-
-const statusOf = (s: Store): Status =>
-  s.deactivated_at === undefined
-    ? "unknown"
-    : s.deactivated_at === null
-      ? "open"
-      : "closed";
-
-type StatusFilter = "all" | "open" | "closed";
-
-/** The day it closed, for the row. The column is a timestamp; nobody needs
- *  the time it happened at. */
-const closedOn = (v: string) => {
-  const d = new Date(v);
-  return Number.isNaN(d.getTime())
-    ? ""
-    : d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-};
-
-/**
- * Nothing the frontend fetches says whether a store is already deactivated.
- *
- * `Store` carries no `deactivated_at`, and the activity figures on the other
- * tab count days with sales — a different question, since a live store can
- * post nothing all week. So every row offers both actions, both are
- * idempotent on the server, and the column header says so rather than the
- * grid implying a state it cannot read.
- */
 /** Shown only while the endpoint is not reporting status — see `statusOf`. */
 const UNKNOWN_NOTE =
   "This list is not reporting which stores are already closed, so every row offers both actions. Both are safe to repeat.";
@@ -123,12 +92,7 @@ const StoreRecords = () => {
 
   useEffect(fetchStores, []);
 
-  /** Whether the endpoint is reporting status at all. One store answering is
-   *  enough: the field is either in the select or it is not. */
-  const statusKnown = useMemo(
-    () => (stores ?? []).some((s) => s.deactivated_at !== undefined),
-    [stores],
-  );
+  const statusKnown = useMemo(() => statusReported(stores ?? []), [stores]);
 
   const filtered = useMemo(() => {
     if (!stores) return [];
