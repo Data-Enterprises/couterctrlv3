@@ -6,6 +6,8 @@ import { setInvestigation } from "../../../../features/dev/devSalesLedgerSlice";
 import { useSalesState } from "../hooks/useSalesState";
 import { scopeToStoreNumber } from "../shared/ledgerUtils";
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
+import SortHeader from "../../../../components-dev/SortHeader";
+import { useTriStateSort } from "../../../../utils/useTriStateSort";
 import type { SubSale } from "../../../../interfaces";
 import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice";
 
@@ -46,6 +48,9 @@ interface Row {
   lwDiff: number;
   lyDiff: number;
 }
+
+/** The three sortable headings. `bars` sorts by what the bars draw. */
+type Column = "name" | "bars" | "gap";
 
 /** A real minus, not a hyphen: these sit in tabular figures beside a plus. */
 const MINUS = "\u2212";
@@ -204,6 +209,10 @@ const SubDeptSideBySide = ({
   const [mode, setMode] = useState<"money" | "mix">("money");
   const [picked, setPicked] = useState<number | null>(null);
 
+  /** The house tri-state: unsorted → desc → asc → back to the list's own
+   *  order, which here is biggest department first. */
+  const { sort, handleSort, applySort } = useTriStateSort<Column>();
+
   const mineTotal = rows.reduce((t, r) => t + r.a, 0);
   const theirsTotal = rows.reduce((t, r) => t + r.b, 0);
   const shareMine = (r: Row) => (mineTotal > 0 ? (r.a / mineTotal) * 100 : 0);
@@ -227,7 +236,34 @@ const SubDeptSideBySide = ({
       : sign + Math.abs(g).toFixed(1) + " pts";
   };
 
-  const focus = rows.find((r) => r.id === picked) ?? rows[0] ?? null;
+  /**
+   * Sorted, or handed back in the default order.
+   *
+   * The name column cannot go through `applySort`, which compares numbers —
+   * a department list sorted alphabetically is a real way to find one, so it
+   * gets its own comparator rather than being left unsortable.
+   *
+   * The bars column sorts by whatever the bars are DRAWING: the open store's
+   * money, or its share of the week in mix mode. Sorting a bar by a figure it
+   * is not showing is the kind of thing that makes a column feel broken.
+   */
+  const ordered = useMemo(() => {
+    if (sort?.col === "name") {
+      const dir = sort.dir === "asc" ? 1 : -1;
+      return [...rows].sort((a, b) => a.name.localeCompare(b.name) * dir);
+    }
+    return applySort(rows, (r, c) =>
+      c === "bars"
+        ? mode === "money"
+          ? r.a
+          : shareMine(r)
+        : gapOf(r),
+    );
+    // `applySort` and `gapOf` are re-made every render; the state they close
+    // over — the sort, the mode and the two totals — is what actually moves.
+  }, [rows, sort, mode, mineTotal, theirsTotal]);
+
+  const focus = ordered.find((r) => r.id === picked) ?? ordered[0] ?? null;
 
   /**
    * Hand the page over to the investigation.
@@ -250,7 +286,10 @@ const SubDeptSideBySide = ({
       }),
     );
 
-  const COLS = "minmax(110px,1fr) minmax(90px,2fr) 104px";
+  const COLS = "minmax(110px,1fr) minmax(90px,1.9fr) 104px";
+
+  const SORT_HEAD =
+    "text-[11px] font-semibold uppercase tracking-wide text-content/85 hover:text-content";
 
   const stat = (key: string, v: number) => (
     <div className="flex items-baseline gap-2 px-3 py-2 bg-custom-white">
@@ -313,15 +352,34 @@ const SubDeptSideBySide = ({
               className="flex-shrink-0 grid gap-2.5 items-center px-3 py-1.5 border-b border-brand_navy/15 text-[11px] font-semibold uppercase tracking-wide text-content/85"
               style={{ gridTemplateColumns: COLS }}
             >
-              <span>Sub dept</span>
-              <span>
-                {openStoreNumber} against {compareStoreNumber}
-              </span>
-              <span className="text-right">{mode === "money" ? "vs TY" : "Share"}</span>
+              <SortHeader
+                col="name"
+                label="Sub dept"
+                sort={sort}
+                onSort={handleSort}
+                className={SORT_HEAD}
+              />
+              {/* Both names in full. Two numbers over a pair of bars asked
+                  the reader to hold a mapping in their head; the names say
+                  it outright, and truncate before they crowd the gap. */}
+              <SortHeader
+                col="bars"
+                label={`${openStoreName} vs ${compareStoreName}`}
+                sort={sort}
+                onSort={handleSort}
+                className={`min-w-0 ${SORT_HEAD}`}
+              />
+              <SortHeader
+                col="gap"
+                label={mode === "money" ? "vs TY" : "Share"}
+                sort={sort}
+                onSort={handleSort}
+                className={`justify-end ${SORT_HEAD}`}
+              />
             </div>
 
             <div className="flex-1 min-h-0 overflow-auto thin-scrollbar">
-              {rows.map((r) => {
+              {ordered.map((r) => {
                 const g = gapOf(r);
                 const on = focus?.id === r.id;
                 return (
@@ -381,7 +439,7 @@ const SubDeptSideBySide = ({
                 );
               })}
 
-              {rows.length === 0 && (
+              {ordered.length === 0 && (
                 <div className="px-3 py-6 text-center text-[12.5px] text-content/85">
                   Neither store recorded departments this week.
                 </div>
