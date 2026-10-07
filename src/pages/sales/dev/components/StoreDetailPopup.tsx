@@ -770,11 +770,15 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
 
       {/* Tabs */}
       <div className="flex items-center border-b border-gray-100 px-3 flex-shrink-0">
-        {/* Stores only when there are siblings to compare with — a
-            single-store search has no reference set, so the tab is not
-            offered rather than opening on an empty one. */}
+        {/* Stores leads: choosing a counterpart there is what Sub depts
+            and Hourly then compare against, so it is the first step of the
+            flow rather than the last tab on the row.
+
+            Only when there are siblings to compare with — a single-store
+            search has no reference set, so the tab is not offered rather
+            than opening on an empty one. */}
         {((hasGroup
-          ? ["subdept", "hourly", "comparison"]
+          ? ["comparison", "subdept", "hourly"]
           : ["subdept", "hourly"]) as PopupTab[]).map((t) => (
           <button
             key={t}

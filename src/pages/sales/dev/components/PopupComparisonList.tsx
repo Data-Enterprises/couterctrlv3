@@ -24,9 +24,9 @@ import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice
  * subtracting two percentages never gives a percentage.
  */
 
-type Col = "mineTy" | "theirsTy" | "tyGap" | "lwGap" | "lyGap";
+type Col = "theirsTy" | "tyGap" | "lwGap" | "lyGap";
 
-const COLS = "minmax(160px,1fr) 116px 116px 130px 130px 130px";
+const COLS = "minmax(160px,1fr) 140px 130px 130px 130px";
 const GRID_MIN = 800;
 
 const HEAD =
@@ -109,15 +109,13 @@ const PopupComparisonList = ({
     .sort((a, b) => tyGap(b) - tyGap(a));
 
   const sorted = applySort(others, (row, col) =>
-    col === "mineTy"
-      ? open.ty
-      : col === "theirsTy"
-        ? row.ty
-        : col === "tyGap"
-          ? tyGap(row)
-          : col === "lwGap"
-            ? lwGap(row)
-            : lyGap(row),
+    col === "theirsTy"
+      ? row.ty
+      : col === "tyGap"
+        ? tyGap(row)
+        : col === "lwGap"
+          ? lwGap(row)
+          : lyGap(row),
   );
 
   const nameOf = (r: ComparisonRow) =>
@@ -168,14 +166,12 @@ const PopupComparisonList = ({
   const cells = (r: ComparisonRow) => (
     <>
       <span className="min-w-0 truncate font-medium">{nameOf(r)}</span>
-      {/* The two figures the difference comes out of. The open store's is
-          the same on every row — that is the point: it is the line all of
-          them are measured from, and seeing it beside each one is what makes
-          the pill checkable rather than something to take on trust. */}
-      <span className="tabular-nums font-semibold text-[14px] bg-store_open_tint -mx-1 px-1 py-[7px]">
-        {fmt(open.ty)}
-      </span>
-      <span className="tabular-nums text-[14px] text-content/85 bg-store_compare_tint -mx-1 px-1 py-[7px]">
+      {/* This row's own week. The open store's used to sit beside it, on the
+          argument that seeing both made the pill checkable — but it is the
+          same figure on every row, so eight copies of it bought one
+          subtraction and cost the one column that differs. It is stated
+          once, above. */}
+      <span className="tabular-nums font-semibold text-[14px] bg-store_compare_tint -mx-1 px-1 py-[7px]">
         {fmt(r.ty)}
       </span>
       {diffPill(money(tyGap(r)), tyGap(r))}
@@ -189,6 +185,9 @@ const PopupComparisonList = ({
       <div style={{ minWidth: GRID_MIN }}>
         <p className="px-2 py-2 text-[12px] text-content/85 border-b border-gray-100">
           How <span className="font-semibold text-content">{openStoreName}</span>{" "}
+          <span className="font-semibold text-content tabular-nums">
+            {fmt(open.ty)}
+          </span>{" "}
           stands against each store — ahead in green, behind in red. Pick one to
           compare department by department.
         </p>
@@ -197,7 +196,6 @@ const PopupComparisonList = ({
           <span className="text-[11.5px] font-semibold uppercase tracking-wide text-content/85">
             Store
           </span>
-          <SortHeader col="mineTy" label={`${storeNumber} TY`} sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-start min-w-0`} />
           <SortHeader col="theirsTy" label="Store TY" sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-start min-w-0`} />
           {/* Each one is this store's movement against the open store's, over
               the same comparison. */}
