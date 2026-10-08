@@ -429,31 +429,35 @@ const DeptReport = ({
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
-      <div className="flex items-center gap-3 px-3 py-2 border-b border-brand_navy/15 flex-shrink-0 bg-gray-50">
-        <button
-          onClick={onBack}
-          className="text-[12px] font-semibold text-content hover:underline flex-shrink-0"
-        >
-          &lsaquo; All stores
-        </button>
-      </div>
-
       <div className="flex-1 min-h-0 overflow-auto thin-scrollbar">
-        {/* The accounting, stated so the three figures check against each
-            other rather than being read one at a time. */}
-        <div className="px-4 pt-3 pb-2.5 border-b border-brand_navy/15">
-          <p className="text-[15.5px] leading-snug text-content max-w-[1020px] mb-2.5">
-            <span className="font-bold">
-              {openStoreName} took {money(Math.abs(netGap))}{" "}
-              {netGap < 0 ? "less than" : "more than"} {compareStoreName}
-            </span>.{" "}
-            {shown.length > 0 && (
-              <>
-                {word(shown.length)} of the {report.under.length} departments
-                running under account for {Math.round(shownShare * 100)}% of it.
-              </>
-            )}
-          </p>
+        {/* The way back shares the headline's line rather than taking a bar
+            of its own: a strip holding one short link was costing as much
+            height as the sentence it sat above. */}
+        <div className="px-4 pt-2.5 pb-2.5 border-b border-brand_navy/15">
+          <div className="flex items-baseline gap-3 mb-2">
+            <button
+              onClick={onBack}
+              className="flex-shrink-0 text-[12px] font-semibold text-content hover:underline"
+            >
+              &lsaquo; All stores
+            </button>
+            <p className="text-[15px] leading-snug text-content min-w-0">
+              <span className="font-bold">
+                {openStoreName} is {money(Math.abs(netGap))}{" "}
+                {netGap < 0 ? "behind" : "ahead of"} {compareStoreName}
+              </span>.{" "}
+              {shown.length > 0 && (
+                <>
+                  {/* Never "of it". A store can be ahead overall and still
+                      have departments running under, and "of it" then points
+                      at the wrong figure by a mile. */}
+                  {word(shown.length)} of the {report.under.length} departments
+                  running under are {Math.round(shownShare * 100)}% of the
+                  shortfall.
+                </>
+              )}
+            </p>
+          </div>
 
           {band(
             "Under", underTotal, "text-delta_negative_text",
