@@ -570,7 +570,7 @@ const SubDeptSideBySide = ({
 
                     <span className="flex items-center gap-1 min-w-0">
                       <span
-                        className="relative block h-[18px] rounded-full overflow-hidden bg-bkg"
+                        className="relative block h-[18px] rounded-md overflow-hidden bg-bkg"
                         style={{ width: barWidth(r) }}
                       >
                         <span
@@ -592,7 +592,7 @@ const SubDeptSideBySide = ({
                       {none && (
                         <span
                           title={`${compareStoreName} carries none`}
-                          className="h-[18px] w-3.5 rounded-full flex-shrink-0"
+                          className="h-[18px] w-3.5 rounded-md flex-shrink-0"
                           style={{
                             background:
                               "repeating-linear-gradient(45deg, rgb(var(--color-store-compare)) 0 3px, transparent 3px 6px)",
@@ -623,7 +623,7 @@ const SubDeptSideBySide = ({
           </div>
 
           {focus && (
-            <div className="w-[360px] flex-shrink-0 flex flex-col p-3 gap-3 overflow-auto thin-scrollbar">
+            <div className="w-[396px] flex-shrink-0 flex flex-col p-3 gap-3 overflow-auto thin-scrollbar">
               <div>
                 <div className="text-[15px] font-bold text-content leading-snug">
                   {focus.name}
