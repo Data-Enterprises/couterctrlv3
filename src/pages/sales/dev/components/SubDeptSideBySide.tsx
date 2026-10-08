@@ -91,7 +91,7 @@ const MINUS = "−";
  */
 const AHEAD = "bg-emerald-600";
 const BEHIND = "bg-red-600";
-const COMPARE = "bg-store_compare";
+const COMPARE = "bg-store_compare/85";
 
 const ordinal = (n: number) => {
   const tens = n % 100;
@@ -450,7 +450,7 @@ const SubDeptSideBySide = ({
           <div key={p.label}>
             <div className="h-[46px] flex items-end justify-center">
               <span
-                className={`block w-[26px] rounded-t-sm ${
+                className={`block w-[26px] rounded ${
                   p.v >= 0 ? AHEAD : BEHIND
                 }`}
                 style={{
