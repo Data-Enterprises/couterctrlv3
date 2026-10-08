@@ -100,13 +100,15 @@ const Row = ({ row, tone, openStoreName, compareStoreName, onInvestigate }: RowP
         <span className="text-[13.5px] leading-snug text-content/85 flex-1 min-w-0 basis-[290px]">
           {row.says}
         </span>
+        {/* Just the verb. The shape travels with the target and decides
+            where this lands, so spelling the destination out on the button
+            only asked the reader to re-read what the sentence beside it has
+            already said. */}
         <button
           onClick={() => onInvestigate(row)}
           className="flex-shrink-0 text-[12.5px] font-bold text-brand_navy_hover hover:underline whitespace-nowrap"
         >
-          {row.focus === "price"
-            ? "Open items · start with the price ladder →"
-            : "Open items · start with orders →"}
+          Investigate &rarr;
         </button>
       </div>
 
