@@ -352,7 +352,7 @@ const DeptReport = ({
   }
 
   const {
-    shown, folded, steep, over, underTotal, overTotal, netGap, shownShare,
+    shown, folded, steep, over, underTotal, overTotal, netGap,
   } = report;
 
   const toneOf = (i: number, ramp: string[]) =>
@@ -375,7 +375,7 @@ const DeptReport = ({
       .map((p, i) => ({ ...p, fill: toneOf(i, ramp) }))
       .concat(tailValue > 0 ? [{ name: tailName, v: tailValue, fill: TAIL }] : []);
     return (
-      <div key={label} className="mb-2">
+      <div key={label}>
         <div className="flex items-center gap-2.5">
           <span
             className={`w-[54px] flex-shrink-0 text-[12px] font-bold uppercase tracking-wide ${tone}`}
@@ -433,32 +433,21 @@ const DeptReport = ({
         {/* The way back shares the headline's line rather than taking a bar
             of its own: a strip holding one short link was costing as much
             height as the sentence it sat above. */}
-        <div className="px-4 pt-2.5 pb-2.5 border-b border-brand_navy/15">
-          <div className="flex items-baseline gap-3 mb-2">
+        <div className="px-4 pt-2.5 pb-2 border-b border-brand_navy/15">
+          <div className="flex items-baseline gap-3 mb-2.5">
             <button
               onClick={onBack}
               className="flex-shrink-0 text-[12px] font-semibold text-content hover:underline"
             >
               &lsaquo; All stores
             </button>
-            <p className="text-[15px] leading-snug text-content min-w-0">
-              <span className="font-bold">
-                {openStoreName} is {money(Math.abs(netGap))}{" "}
-                {netGap < 0 ? "behind" : "ahead of"} {compareStoreName}
-              </span>.{" "}
-              {shown.length > 0 && (
-                <>
-                  {/* Never "of it". A store can be ahead overall and still
-                      have departments running under, and "of it" then points
-                      at the wrong figure by a mile. */}
-                  {word(shown.length)} of the {report.under.length} departments
-                  running under are {Math.round(shownShare * 100)}% of the
-                  shortfall.
-                </>
-              )}
+            <p className="text-[15px] font-bold leading-snug text-content min-w-0">
+              {openStoreName} is {money(Math.abs(netGap))}{" "}
+              {netGap < 0 ? "behind" : "ahead of"} {compareStoreName}
             </p>
           </div>
 
+          <div className="space-y-2">
           {band(
             "Under", underTotal, "text-delta_negative_text",
             shown.map((r) => ({ name: r.name, v: -r.gap })),
@@ -473,22 +462,21 @@ const DeptReport = ({
             over.slice(4).reduce((t, r) => t + r.gap, 0),
             GREENS,
           )}
+          </div>
         </div>
 
-        {/* Said once, in front of the rows it governs. */}
-        <div className="flex items-start gap-6 flex-wrap px-4 py-2 bg-gray-50 border-b border-brand_navy/15">
-          <span className="text-[12px] font-bold uppercase tracking-wide text-content/85 flex-shrink-0">
-            Every gap splits two ways
-          </span>
-          <span className="text-[12.5px] text-content/85">
+        {/* A caption, not a lecture. Everything on this screen is a
+            difference, so saying "the difference in" inside each definition
+            was three words spent twice to say what the page already is. */}
+        <div className="flex items-baseline gap-5 flex-wrap px-4 py-1.5 bg-gray-50 border-b border-brand_navy/15 text-[12.5px] text-content/85">
+          <span>
             <span className="font-bold text-volume_text">Volume</span> &mdash;
-            the difference in how much went out of the door.
+            how much went out of the door
           </span>
-          <span className="text-[12.5px] text-content/85">
+          <span>
             <span className="font-bold text-rate_text">Price &amp; mix</span>{" "}
-            &mdash; the difference in what each unit brought in.
+            &mdash; what each unit brought in
           </span>
-
         </div>
 
         {rowsOf(shown, REDS)}
