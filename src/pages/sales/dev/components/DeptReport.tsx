@@ -68,43 +68,65 @@ const SUBHEAD =
 interface RowProps {
   row: ReportRow;
   tone: string;
+  open: boolean;
+  onToggle: () => void;
   openStoreName: string;
   compareStoreName: string;
   onInvestigate: (row: ReportRow) => void;
 }
 
-const Row = ({ row, tone, openStoreName, compareStoreName, onInvestigate }: RowProps) => {
+/**
+ * One department: the finding, and its evidence on request.
+ *
+ * The strip alone is the guidance — which department, how much, and what
+ * happened. Everything beneath it exists to be checked against that claim,
+ * which is a different job and does not need doing until somebody asks for
+ * it.
+ *
+ * Open, the three groups carry their own column labels. That is only
+ * affordable because one row is open at a time: printed under every
+ * department at once they came to forty header cells for ten rows of
+ * figures, in three different table shapes, and the page read as a pile.
+ */
+const Row = ({
+  row, tone, open, onToggle, openStoreName, compareStoreName, onInvestigate,
+}: RowProps) => {
   const unit = row.weighed ? "lb" : "units";
   const periods = [
     { label: "Last year", v: row.lyGap },
     { label: "Last week", v: row.lwGap },
     { label: "This week", v: row.gap },
   ];
+  const tallest = Math.max(1, ...periods.map((p) => Math.abs(p.v)));
 
   return (
-    <div className="px-4 py-2.5 border-b border-brand_navy/15">
-      {/* The finding on one line: which department, how much, and what
-          happened. The rule down its left edge is this department's colour
-          in the band above, so a row and its segment there are one object. */}
+    <div className="px-4 py-1.5">
       <div
         className={`flex items-baseline gap-2.5 flex-wrap px-3 py-2 rounded ${
           row.gap < 0 ? "bg-delta_negative_bg" : "bg-delta_positive_bg"
         }`}
         style={{ borderLeft: `3px solid ${tone}` }}
       >
-        <span className="text-[15px] font-bold text-content">{row.name}</span>
-        <span
-          className={`text-[15px] font-bold tabular-nums whitespace-nowrap ${deltaText(row.gap)}`}
+        {/* The strip toggles and Investigate is its own control: a button
+            inside a button is not a thing, so they sit side by side. */}
+        <button
+          onClick={onToggle}
+          aria-expanded={open}
+          className="flex items-baseline gap-2.5 flex-wrap flex-1 min-w-0 text-left"
         >
-          {signed(row.gap)}
-        </span>
-        <span className="text-[13.5px] leading-snug text-content/85 flex-1 min-w-0 basis-[290px]">
-          {row.says}
-        </span>
-        {/* Just the verb. The shape travels with the target and decides
-            where this lands, so spelling the destination out on the button
-            only asked the reader to re-read what the sentence beside it has
-            already said. */}
+          <span className="text-[13px] text-content/85 w-3 flex-shrink-0">
+            {open ? "⌄" : "›"}
+          </span>
+          <span className="text-[15px] font-bold text-content">{row.name}</span>
+          <span
+            className={`text-[15px] font-bold tabular-nums whitespace-nowrap ${deltaText(row.gap)}`}
+          >
+            {signed(row.gap)}
+          </span>
+          <span className="text-[13.5px] leading-snug text-content/85 min-w-0">
+            {row.says}
+          </span>
+        </button>
         <button
           onClick={() => onInvestigate(row)}
           className="flex-shrink-0 text-[12.5px] font-bold text-brand_navy_hover hover:underline whitespace-nowrap"
@@ -113,107 +135,118 @@ const Row = ({ row, tone, openStoreName, compareStoreName, onInvestigate }: RowP
         </button>
       </div>
 
-      <div className="flex gap-10 items-start mt-2 px-0.5 flex-wrap">
-        {/* STORE metrics: totals as the payload states them. */}
-        <div className="w-[318px] flex-shrink-0">
-          <div className={`${HEAD} pb-1 border-b border-brand_navy/15`}>
-            Each store
-          </div>
-          <div
-            className="grid gap-x-2.5 gap-y-0.5 mt-1.5 text-[12.5px] tabular-nums"
-            style={{ gridTemplateColumns: "minmax(0,1fr) 92px 62px" }}
-          >
-            <span className={SUBHEAD}>Store</span>
-            <span className={`${SUBHEAD} text-right`}>Sales</span>
-            <span className={`${SUBHEAD} text-right`}>{unit}</span>
-
-            <span className="min-w-0 truncate font-semibold text-content" title={openStoreName}>
-              {openStoreName}
-            </span>
-            <span className={`text-right font-bold whitespace-nowrap ${deltaText(row.gap)}`}>
-              {money(row.mine)}
-            </span>
-            <span
-              className={`text-right font-bold ${deltaText(row.mineUnits - row.theirsUnits)}`}
-            >
-              {count(row.mineUnits)}
-            </span>
-
-            <span className="min-w-0 truncate text-content/85" title={compareStoreName}>
-              {compareStoreName}
-            </span>
-            <span className="text-right text-content/85 whitespace-nowrap">
-              {money(row.theirs)}
-            </span>
-            <span className="text-right text-content/85">{count(row.theirsUnits)}</span>
-          </div>
-        </div>
-
-        {/* DIFFERENCE metrics: neither is a figure either store reported. */}
-        <div className="w-[212px] flex-shrink-0">
-          <div className={`${HEAD} pb-1 border-b border-brand_navy/15`}>
-            The gap, split
-          </div>
-          <div
-            className="grid gap-x-3 mt-1.5"
-            style={{ gridTemplateColumns: "86px minmax(0,1fr)" }}
-          >
-            <span className={SUBHEAD}>Part</span>
-            <span className={`${SUBHEAD} text-right`}>Amount</span>
-          </div>
-          {row.split === null ? (
-            <p className="text-[12.5px] text-content/85 leading-snug mt-1.5">
-              No units at {compareStoreName} to compare against.
-            </p>
-          ) : (
-            <div
-              className="grid gap-x-3 gap-y-1 mt-0.5"
-              style={{ gridTemplateColumns: "86px minmax(0,1fr)" }}
-            >
-              <span
-                className="text-[12px] font-bold uppercase tracking-wide text-volume_text"
-                title="How much went out of the door: the unit difference, valued at the other store's rate for the week."
-              >
-                Volume
-              </span>
-              <span
-                className={`text-[13px] font-bold tabular-nums text-right whitespace-nowrap ${deltaText(row.split.volume)}`}
-              >
-                {signed(row.split.volume)}
-              </span>
-              <span
-                className="text-[12px] font-bold uppercase tracking-wide text-rate_text"
-                title="What each unit brought in: the per-unit difference across our own units. A real price change, a different set of items selling, or both."
-              >
-                Price &amp; mix
-              </span>
-              <span
-                className={`text-[13px] font-bold tabular-nums text-right whitespace-nowrap ${deltaText(row.split.rate)}`}
-              >
-                {signed(row.split.rate)}
-              </span>
+      {open && (
+        <div className="flex gap-10 items-start mt-2 mb-1 px-3 flex-wrap">
+          <div className="w-[318px] flex-shrink-0">
+            <div className={`${HEAD} pb-1 border-b border-brand_navy/15`}>
+              Each store
             </div>
-          )}
-        </div>
+            <div
+              className="grid gap-x-2.5 gap-y-0.5 mt-1.5 text-[12.5px] tabular-nums"
+              style={{ gridTemplateColumns: "minmax(0,1fr) 92px 62px" }}
+            >
+              <span className={SUBHEAD}>Store</span>
+              <span className={`${SUBHEAD} text-right`}>Sales</span>
+              <span className={`${SUBHEAD} text-right`}>{unit}</span>
 
-        <div className="w-[258px] flex-shrink-0">
-          <div className={`${HEAD} pb-1 border-b border-brand_navy/15`}>
-            Week by week
+              <span className="min-w-0 truncate font-semibold text-content" title={openStoreName}>
+                {openStoreName}
+              </span>
+              <span className={`text-right font-bold whitespace-nowrap ${deltaText(row.gap)}`}>
+                {money(row.mine)}
+              </span>
+              <span
+                className={`text-right font-bold ${deltaText(row.mineUnits - row.theirsUnits)}`}
+              >
+                {count(row.mineUnits)}
+              </span>
+
+              <span className="min-w-0 truncate text-content/85" title={compareStoreName}>
+                {compareStoreName}
+              </span>
+              <span className="text-right text-content/85 whitespace-nowrap">
+                {money(row.theirs)}
+              </span>
+              <span className="text-right text-content/85">{count(row.theirsUnits)}</span>
+            </div>
           </div>
-          <div className="grid grid-cols-3 gap-2.5 mt-1.5">
-            {periods.map((p) => (
-              <div key={p.label} className="min-w-0">
-                <div className={`${SUBHEAD} whitespace-nowrap`}>{p.label}</div>
-                <div
-                  className={`text-[13px] font-bold tabular-nums whitespace-nowrap mt-px ${deltaText(p.v)}`}
+
+          <div className="w-[212px] flex-shrink-0">
+            <div className={`${HEAD} pb-1 border-b border-brand_navy/15`}>
+              The gap, split
+            </div>
+            {row.split === null ? (
+              <p className="text-[12.5px] text-content/85 leading-snug mt-1.5">
+                No units at {compareStoreName} to compare against.
+              </p>
+            ) : (
+              <div
+                className="grid gap-x-3 gap-y-1 mt-1.5"
+                style={{ gridTemplateColumns: "86px minmax(0,1fr)" }}
+              >
+                <span className={SUBHEAD}>Part</span>
+                <span className={`${SUBHEAD} text-right`}>Amount</span>
+                <span
+                  className="text-[12px] font-bold uppercase tracking-wide text-volume_text"
+                  title="How much went out of the door: the unit difference, valued at the other store's rate for the week."
                 >
-                  {signed(p.v)}
-                </div>
+                  Volume
+                </span>
+                <span
+                  className={`text-[13px] font-bold tabular-nums text-right whitespace-nowrap ${deltaText(row.split.volume)}`}
+                >
+                  {signed(row.split.volume)}
+                </span>
+                <span
+                  className="text-[12px] font-bold uppercase tracking-wide text-rate_text"
+                  title="What each unit brought in: the per-unit difference across our own units. A real price change, a different set of items selling, or both."
+                >
+                  Price &amp; mix
+                </span>
+                <span
+                  className={`text-[13px] font-bold tabular-nums text-right whitespace-nowrap ${deltaText(row.split.rate)}`}
+                >
+                  {signed(row.split.rate)}
+                </span>
               </div>
-            ))}
+            )}
+          </div>
+
+          {/* Drawn rather than listed. Widening or closing is a slope, and
+              three figures make the reader do the subtraction to see it —
+              the one place on this screen where a picture beats the text. */}
+          <div className="w-[258px] flex-shrink-0">
+            <div className={`${HEAD} pb-1 border-b border-brand_navy/15`}>
+              Week by week
+            </div>
+            <div className="grid grid-cols-3 gap-2.5 mt-1.5">
+              {periods.map((p) => (
+                <div key={p.label} className="min-w-0">
+                  <div className="h-[34px] flex items-end justify-center">
+                    <span
+                      className={`block w-[26px] rounded ${
+                        p.v >= 0 ? "bg-emerald-500" : "bg-red-500"
+                      }`}
+                      style={{
+                        height: `${Math.max(3, (Math.abs(p.v) / tallest) * 34)}px`,
+                      }}
+                    />
+                  </div>
+                  <div className="h-px bg-brand_navy/15 my-1" />
+                  <div className={`${SUBHEAD} text-center whitespace-nowrap`}>
+                    {p.label}
+                  </div>
+                  <div
+                    className={`text-[12.5px] font-bold tabular-nums text-center whitespace-nowrap ${deltaText(p.v)}`}
+                  >
+                    {signed(p.v)}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
@@ -340,6 +373,12 @@ const DeptReport = ({
       }),
     );
 
+  /**
+   * Which department is showing its evidence. One at a time, and none on
+   * arrival: the strips are the guidance, and opening all of them on landing
+   * is the information dump this report exists instead of.
+   */
+  const [openRow, setOpenRow] = useState<number | null>(null);
   const [openUnder, setOpenUnder] = useState(false);
   const [openOver, setOpenOver] = useState(false);
 
@@ -428,6 +467,8 @@ const DeptReport = ({
         key={r.id}
         row={r}
         tone={toneOf(i, ramp)}
+        open={openRow === r.id}
+        onToggle={() => setOpenRow((cur) => (cur === r.id ? null : r.id))}
         openStoreName={openStoreName}
         compareStoreName={compareStoreName}
         onInvestigate={investigate}
