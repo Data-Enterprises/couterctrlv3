@@ -7,6 +7,7 @@ import { rememberCounterpart } from "../../../../features/dev/devSalesCacheSlice
 import { useSalesState } from "../hooks/useSalesState";
 import { scopeToStoreNumber } from "../shared/ledgerUtils";
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
+import PageInfoButton from "../../../../components-dev/PageInfoButton";
 import {
   buildReport,
   totalsFrom,
@@ -169,7 +170,10 @@ const Row = ({ row, tone, openStoreName, compareStoreName, onInvestigate }: RowP
               className="grid gap-x-3 gap-y-1 mt-0.5"
               style={{ gridTemplateColumns: "86px minmax(0,1fr)" }}
             >
-              <span className="text-[12px] font-bold uppercase tracking-wide text-volume_text">
+              <span
+                className="text-[12px] font-bold uppercase tracking-wide text-volume_text"
+                title="How much went out of the door: the unit difference, valued at the other store's rate for the week."
+              >
                 Volume
               </span>
               <span
@@ -177,7 +181,10 @@ const Row = ({ row, tone, openStoreName, compareStoreName, onInvestigate }: RowP
               >
                 {signed(row.split.volume)}
               </span>
-              <span className="text-[12px] font-bold uppercase tracking-wide text-rate_text">
+              <span
+                className="text-[12px] font-bold uppercase tracking-wide text-rate_text"
+                title="What each unit brought in: the per-unit difference across our own units. A real price change, a different set of items selling, or both."
+              >
                 Price &amp; mix
               </span>
               <span
@@ -445,6 +452,17 @@ const DeptReport = ({
               {openStoreName} is {money(Math.abs(netGap))}{" "}
               {netGap < 0 ? "behind" : "ahead of"} {compareStoreName}
             </p>
+            {/* What volume and price & mix mean lives here rather than in a
+                strip above the rows. It is a definition, read once and then
+                never again, and a standing caption charges every later visit
+                for the one time it was useful. */}
+            <PageInfoButton
+              page="sales"
+              section="gap-split"
+              variant="light"
+              title="How a gap is split"
+              className="ml-auto flex-shrink-0 -my-1"
+            />
           </div>
 
           <div className="space-y-2">
@@ -463,20 +481,6 @@ const DeptReport = ({
             GREENS,
           )}
           </div>
-        </div>
-
-        {/* A caption, not a lecture. Everything on this screen is a
-            difference, so saying "the difference in" inside each definition
-            was three words spent twice to say what the page already is. */}
-        <div className="flex items-baseline gap-5 flex-wrap px-4 py-1.5 bg-gray-50 border-b border-brand_navy/15 text-[12.5px] text-content/85">
-          <span>
-            <span className="font-bold text-volume_text">Volume</span> &mdash;
-            how much went out of the door
-          </span>
-          <span>
-            <span className="font-bold text-rate_text">Price &amp; mix</span>{" "}
-            &mdash; what each unit brought in
-          </span>
         </div>
 
         {rowsOf(shown, REDS)}
