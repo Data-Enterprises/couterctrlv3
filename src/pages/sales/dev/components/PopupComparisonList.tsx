@@ -99,14 +99,17 @@ const PopupComparisonList = ({
   const lyGap = (r: ComparisonRow) =>
     r.hasLY && open.hasLY ? open.ly - r.ly : null;
 
-  // Ordered on this week by default, the way the group grid opens on
-  // contribution: the stores this one is furthest ahead of at the top, the
-  // ones it is furthest behind at the bottom, so the list reads as a standing
-  // rather than as whatever order the ledger handed the rows over in. A column
-  // sort is a lens over this and the third click returns to it.
+  // Ordered on this week by default: the stores this one is furthest BEHIND at
+  // the top, the ones it is furthest ahead of at the bottom.
+  //
+  // Worst first, which is how every Performance list on this page opens. The
+  // reason somebody picks a counterpart at all is to go and find out why they
+  // are losing to it — so the store that costs the most should not be the one
+  // they have to scroll to. A column sort is a lens over this and the third
+  // click returns to it.
   const others = group.rows
     .filter((r) => keyOf(r) !== keyOf(open))
-    .sort((a, b) => tyGap(b) - tyGap(a));
+    .sort((a, b) => tyGap(a) - tyGap(b));
 
   const sorted = applySort(others, (row, col) =>
     col === "theirsTy"
