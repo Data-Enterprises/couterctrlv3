@@ -96,7 +96,7 @@ const MINUS = "−";
  */
 const AHEAD = "bg-emerald-500";
 const BEHIND = "bg-red-500";
-const COMPARE = "bg-store_compare/70";
+const COMPARE = "bg-store_compare/50";
 
 const ordinal = (n: number) => {
   const tens = n % 100;
