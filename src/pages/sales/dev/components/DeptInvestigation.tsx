@@ -126,6 +126,20 @@ const STAGE_NOTE: Record<Stage, string | null> = {
   failed: null,
 };
 
+/**
+ * The piles the department's own shape points at.
+ *
+ * The report works out whether a gap is volume or price before anybody opens
+ * this screen, and that reading says which causes are worth looking at first.
+ * It MARKS them and does not apply them: a department can be entirely volume
+ * and have no item flagged never-ordered, and landing somebody on an empty
+ * grid would hide that disagreement instead of showing it.
+ */
+const SUGGESTED: Record<string, Cause[]> = {
+  orders: ["never-ordered", "not-received"],
+  price: ["price-mix"],
+};
+
 const CAUSE_ORDER: Cause[] = [
   "never-ordered",
   "not-received",
@@ -658,6 +672,8 @@ const DeptInvestigation = ({
   );
   const disagree = summary.gap >= 0 && marginGap < 0;
 
+  const suggested = SUGGESTED[target.focus ?? ""] ?? [];
+
   const close = () => dispatch(setInvestigation(null));
 
   return (
@@ -826,9 +842,17 @@ const DeptInvestigation = ({
               <button
                 key={c}
                 onClick={() => setOnly(only === c ? null : c)}
-                title={CAUSE_OWNER[c]}
-                className={`text-[12px] font-semibold px-2.5 py-1 rounded-full border border-transparent transition-shadow ${
+                title={
+                  suggested.includes(c)
+                    ? `${CAUSE_OWNER[c]} — where this department's shape points`
+                    : CAUSE_OWNER[c]
+                }
+                className={`text-[12px] font-semibold px-2.5 py-1 rounded-full border transition-shadow ${
                   CAUSE_TONE[c].chip
+                } ${
+                  suggested.includes(c)
+                    ? "border-dashed border-content/40"
+                    : "border-transparent"
                 } ${only === c ? `ring-2 shadow-sm ${CAUSE_TONE[c].ring}` : ""}`}
               >
                 {CAUSE_LABEL[c]}

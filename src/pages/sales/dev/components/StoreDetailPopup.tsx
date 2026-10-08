@@ -51,7 +51,7 @@ import {
 } from "@heroicons/react/20/solid";
 import PopupDaySidebar from "./PopupDaySidebar";
 import PopupComparisonList from "./PopupComparisonList";
-import SubDeptSideBySide from "./SubDeptSideBySide";
+import DeptReport from "./DeptReport";
 import HourlySideBySide from "./HourlySideBySide";
 import type { LedgerRowData } from "./LedgerRow";
 import PopupSubDeptList from "./PopupSubDeptList";
@@ -818,12 +818,12 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
              a single-store search has always had it. The counterpart is page
              state, so Hourly will answer to the same choice once it can.
 
-             PLACEHOLDER SHAPE: the two-pane layout goes here — department
-             list on the left, the focused department and the way into its
-             items on the right. For now it hands off to the side-by-side
-             that already does this comparison. */
+             With one, it is a report rather than a list: a list ordered by
+             department size put the biggest departments at the top, which
+             are the ones most likely to be level, so the only way to find
+             the problem was to click around until you hit it. */
           counterpart ? (
-            <SubDeptSideBySide
+            <DeptReport
               openStoreName={headerStoreName}
               openStoreId={selection.storeId}
               openStoreNumber={selection.storeNumber}
@@ -836,7 +836,6 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
               lwEnd={lwEnd}
               lyStart={lyStart}
               lyEnd={lyEnd}
-              gradingMetric={gradingMetric}
               onBack={() => dispatch(setCounterpart(null))}
             />
           ) : (

@@ -89,6 +89,8 @@ export default {
         store_open_tint: "rgb(var(--color-store-open-tint) / <alpha-value>)",
         store_compare: "rgb(var(--color-store-compare) / <alpha-value>)",
         store_compare_tint: "rgb(var(--color-store-compare-tint) / <alpha-value>)",
+        volume_text: "rgb(var(--color-volume-text) / <alpha-value>)",
+        rate_text: "rgb(var(--color-rate-text) / <alpha-value>)",
         severity_critical_bg:
           "rgb(var(--color-severity-critical-bg) / <alpha-value>)",
         severity_critical_text:

@@ -84,6 +84,15 @@ export interface InvestigationTarget {
   compareStoreName: string;
   subDept: number;
   subDeptName: string;
+  /**
+   * Which pile the department-level shape points at, carried through from
+   * the report so the investigation can mark it.
+   *
+   * A suggestion, never a filter: a department can be entirely volume and
+   * have no item flagged never-ordered, and that disagreement is a finding
+   * rather than an empty grid.
+   */
+  focus?: "orders" | "price" | "unknown";
 }
 
 interface SalesLedgerState {

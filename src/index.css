@@ -268,6 +268,13 @@ body {
     --color-store-open-tint: 234 244 251;
     --color-store-compare: 90 108 132;
     --color-store-compare-tint: 239 241 244;
+    /* The two halves a sales gap splits into. Not severity and not delta:
+       neither is good or bad on its own, they are the two things a gap can
+       be MADE of, and a reader has to tell one from the other at a glance.
+       Blue and teal rather than two reds, so they separate by hue where the
+       figures beside them are already carrying direction in red/green. */
+    --color-volume-text: 30 63 122;
+    --color-rate-text: 20 85 95;
     --color-content: 30 41 59;
     --color-themeText: 30 41 59;
     --color-sidebar: 0 168 235;
