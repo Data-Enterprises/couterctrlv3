@@ -84,14 +84,19 @@ const MINUS = "−";
  * being measured against, and colouring it too would be grading a store
  * nobody opened the page to ask about.
  *
- * The same pair the detail panel's own title bar is tinted with, not the
- * `delta_*_text` tokens. Those are tuned to be READ, as small dark type on a
- * light background, and a solid 18px block of them goes muddy — a bar is not
- * text and does not want text's contrast.
+ * One step lighter than the pair the detail panel's title bar is tinted
+ * with, and not the `delta_*_text` tokens at all. Those are tuned to be
+ * READ, as small dark type on a light background, and a solid 18px block of
+ * them goes muddy — a bar is not text and does not want text's contrast.
+ *
+ * Solid rather than the 600s at reduced alpha, which would have been the
+ * tidier way to lighten them: these bars sit on the selected row as well as
+ * on white, and a translucent fill would come out a different colour on each.
+ * The slate can take alpha because it is the half nobody is reading.
  */
-const AHEAD = "bg-emerald-600";
-const BEHIND = "bg-red-600";
-const COMPARE = "bg-store_compare/85";
+const AHEAD = "bg-emerald-500";
+const BEHIND = "bg-red-500";
+const COMPARE = "bg-store_compare/70";
 
 const ordinal = (n: number) => {
   const tens = n % 100;
