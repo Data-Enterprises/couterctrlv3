@@ -107,7 +107,7 @@ describe("the sentence", () => {
   it("names both sides when both are material", () => {
     expect(
       d({ mine: 9284.4, mineUnits: 4012, theirs: 17704.51, theirsUnits: 5171 }),
-    ).toBe("Sold 1,159 fewer units than 020, and took less for every unit it did sell.");
+    ).toBe("Sold 1,159 fewer units, and took less for every unit it did sell.");
   });
 
   /** $166 against $6,635 is not a price problem, and saying so would send
@@ -115,12 +115,12 @@ describe("the sentence", () => {
   it("suppresses a side worth under a tenth of the other", () => {
     expect(
       d({ mine: 11600, mineUnits: 1995, theirs: 18400.77, theirsUnits: 3120 }),
-    ).toBe("Sold 1,125 fewer units than 020, at much the same take per unit.");
+    ).toBe("Sold 1,125 fewer units, at much the same take per unit.");
   });
 
   it("says BUT when the two pull against each other", () => {
     expect(d({ mine: 4019.78, mineUnits: 2300, theirs: 8000, theirsUnits: 2050 })).toBe(
-      "Sold 250 more units than 020, but took less for every unit it did sell.",
+      "Sold 250 more units, but took less for every unit it did sell.",
     );
   });
 
@@ -138,7 +138,18 @@ describe("the sentence", () => {
 
   it("says so when there is nothing to compare against", () => {
     expect(d({ mine: 900, mineUnits: 200, theirs: 0, theirsUnits: 0 })).toBe(
-      "020 sold none of this department, so there is nothing to compare it against.",
+      "020 sold none of this department.",
+    );
+  });
+
+  /**
+   * The identity puts the whole gap on volume and leaves rate at zero, which
+   * is right — but "at much the same take per unit" then claims a pricing
+   * fact about a department that never rang a single unit.
+   */
+  it("says nothing about price when we sold none of it", () => {
+    expect(d({ mine: 0, mineUnits: 0, theirs: 4211.21, theirsUnits: 548 })).toBe(
+      "Sold none of this department.",
     );
   });
 });

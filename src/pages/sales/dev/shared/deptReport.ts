@@ -100,20 +100,27 @@ export const sentenceFor = (
   s: Split | null,
   them: string,
 ): string => {
+  // Selling NONE of a department is not a thing the split can describe: the
+  // rate half comes out at zero because there are no units to price, and
+  // "at much the same take per unit" then claims a pricing fact about a
+  // department that never rang. The absence is the whole finding.
+  if (d.mineUnits <= 0 && d.theirsUnits > 0) {
+    return "Sold none of this department.";
+  }
   const unit = d.weighed ? "lb" : "units";
   const one = d.weighed ? "pound" : "unit";
   const n = (v: number) => Math.round(v).toLocaleString("en-US");
 
   if (s === null) {
-    return `${them} sold none of this department, so there is nothing to compare it against.`;
+    return `${them} sold none of this department.`;
   }
 
   const unitGap = d.mineUnits - d.theirsUnits;
   const small = (a: number, b: number) => Math.abs(a) < Math.abs(b) * 0.1;
 
   const first = small(s.volume, s.rate)
-    ? `Sold much the same ${d.weighed ? "weight" : "volume"} as ${them}`
-    : `Sold ${n(Math.abs(unitGap))} ${unitGap < 0 ? "fewer" : "more"} ${unit} than ${them}`;
+    ? `Sold much the same ${d.weighed ? "weight" : "volume"}`
+    : `Sold ${n(Math.abs(unitGap))} ${unitGap < 0 ? "fewer" : "more"} ${unit}`;
 
   const second = small(s.rate, s.volume)
     ? `at much the same take per ${one}`

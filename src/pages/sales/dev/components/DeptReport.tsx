@@ -116,7 +116,7 @@ const Row = ({ row, tone, openStoreName, compareStoreName, onInvestigate }: RowP
         {/* STORE metrics: totals as the payload states them. */}
         <div className="w-[318px] flex-shrink-0">
           <div className={`${HEAD} pb-1 border-b border-brand_navy/15`}>
-            What each store did
+            Each store
           </div>
           <div
             className="grid gap-x-2.5 gap-y-0.5 mt-1.5 text-[12.5px] tabular-nums"
@@ -151,7 +151,7 @@ const Row = ({ row, tone, openStoreName, compareStoreName, onInvestigate }: RowP
         {/* DIFFERENCE metrics: neither is a figure either store reported. */}
         <div className="w-[212px] flex-shrink-0">
           <div className={`${HEAD} pb-1 border-b border-brand_navy/15`}>
-            What the gap is made of
+            The gap, split
           </div>
           <div
             className="grid gap-x-3 mt-1.5"
@@ -191,7 +191,7 @@ const Row = ({ row, tone, openStoreName, compareStoreName, onInvestigate }: RowP
 
         <div className="w-[258px] flex-shrink-0">
           <div className={`${HEAD} pb-1 border-b border-brand_navy/15`}>
-            The gap, week by week
+            Week by week
           </div>
           <div className="grid grid-cols-3 gap-2.5 mt-1.5">
             {periods.map((p) => (
@@ -436,9 +436,6 @@ const DeptReport = ({
         >
           &lsaquo; All stores
         </button>
-        <span className="ml-auto text-[12px] text-content/85 truncate">
-          Week ending {twEnd}
-        </span>
       </div>
 
       <div className="flex-1 min-h-0 overflow-auto thin-scrollbar">
@@ -449,8 +446,7 @@ const DeptReport = ({
             <span className="font-bold">
               {openStoreName} took {money(Math.abs(netGap))}{" "}
               {netGap < 0 ? "less than" : "more than"} {compareStoreName}
-            </span>{" "}
-            in the week ending {twEnd}.{" "}
+            </span>.{" "}
             {shown.length > 0 && (
               <>
                 {word(shown.length)} of the {report.under.length} departments
@@ -488,9 +484,7 @@ const DeptReport = ({
             <span className="font-bold text-rate_text">Price &amp; mix</span>{" "}
             &mdash; the difference in what each unit brought in.
           </span>
-          <span className="text-[12.5px] text-content/85">
-            The two add back to the gap exactly.
-          </span>
+
         </div>
 
         {rowsOf(shown, REDS)}
@@ -514,9 +508,7 @@ const DeptReport = ({
                   {folded.length === 1 ? "department is" : "departments are"} under{" "}
                   {compareStoreName}
                 </span>
-                <span className="text-[12.5px] text-content/85">
-                  the same rows, folded away
-                </span>
+
                 <span className="ml-auto text-[13.5px] font-bold tabular-nums text-delta_negative_text">
                   {signed(folded.reduce((t, r) => t + r.gap, 0))}
                 </span>
@@ -562,9 +554,7 @@ const DeptReport = ({
                   {over.length === 1 ? "department is" : "departments are"} over{" "}
                   {compareStoreName}
                 </span>
-                <span className="text-[12.5px] text-content/85">
-                  the same rows, the other way round
-                </span>
+
                 <span className="ml-auto text-[13.5px] font-bold tabular-nums text-delta_positive_text">
                   {signed(overTotal)}
                 </span>
@@ -575,15 +565,13 @@ const DeptReport = ({
         </div>
 
         <p className="px-4 pb-4 text-[12px] leading-relaxed text-content/85 max-w-[1010px]">
-          Sales and units are the department totals as reported. Volume values
-          the unit difference at {compareStoreName}&rsquo;s rate for the week;
-          price &amp; mix is the rest, and the two add back to the gap exactly.
-          They are named, not separated: a department takes less per unit
-          because it priced lower, because a different set of items sold, or
-          both &mdash; telling those apart needs the real price and cost
-          points, which come off the items. A department that rings by weight
-          is counted in pounds. Departments show in full until they account for
-          60% of what is under; the rest fold away, ranked the same way.
+          Volume values the unit difference at {compareStoreName}&rsquo;s rate
+          for the week; price &amp; mix is the rest. The two add back to the
+          gap exactly, and they are named rather than separated: a department
+          takes less per unit because it priced lower, because a different set
+          of items sold, or both &mdash; telling those apart needs the real
+          price and cost points, which come off the items. A department that
+          rings by weight is counted in pounds.
         </p>
       </div>
     </div>
