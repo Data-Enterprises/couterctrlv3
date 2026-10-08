@@ -78,13 +78,20 @@ type Column = "name" | "bars" | "gap";
 /** A real minus, not a hyphen: these sit in tabular figures beside a plus. */
 const MINUS = "−";
 
-/** The open store's own colour is its verdict — ahead or behind in this
- *  department. The counterpart keeps one colour throughout: it is what is
- *  being measured against, and colouring it too would be grading a store
- *  nobody opened the page to ask about. */
-const AHEAD = "rgb(var(--color-delta-positive-text))";
-const BEHIND = "rgb(var(--color-delta-negative-text))";
-const COMPARE = "rgb(var(--color-store-compare))";
+/**
+ * The open store's own colour is its verdict — ahead or behind in this
+ * department. The counterpart keeps one colour throughout: it is what is
+ * being measured against, and colouring it too would be grading a store
+ * nobody opened the page to ask about.
+ *
+ * The same pair the detail panel's own title bar is tinted with, not the
+ * `delta_*_text` tokens. Those are tuned to be READ, as small dark type on a
+ * light background, and a solid 18px block of them goes muddy — a bar is not
+ * text and does not want text's contrast.
+ */
+const AHEAD = "bg-emerald-600";
+const BEHIND = "bg-red-600";
+const COMPARE = "bg-store_compare";
 
 const ordinal = (n: number) => {
   const tens = n % 100;
@@ -443,10 +450,11 @@ const SubDeptSideBySide = ({
           <div key={p.label}>
             <div className="h-[46px] flex items-end justify-center">
               <span
-                className="block w-[26px] rounded-t-sm"
+                className={`block w-[26px] rounded-t-sm ${
+                  p.v >= 0 ? AHEAD : BEHIND
+                }`}
                 style={{
                   height: `${Math.max(4, (Math.abs(p.v) / biggest) * 46)}px`,
-                  background: p.v >= 0 ? AHEAD : BEHIND,
                 }}
               />
             </div>
@@ -487,21 +495,12 @@ const SubDeptSideBySide = ({
             already say it, and the tab says where you are. */}
         <span className="ml-auto flex items-center gap-3 flex-shrink-0">
           <span className="flex items-center gap-1.5 text-[11.5px] text-content/85">
-            <span
-              className="w-2.5 h-2.5 rounded-sm"
-              style={{ background: AHEAD }}
-            />
-            <span
-              className="w-2.5 h-2.5 rounded-sm"
-              style={{ background: BEHIND }}
-            />
+            <span className={`w-2.5 h-2.5 rounded-sm ${AHEAD}`} />
+            <span className={`w-2.5 h-2.5 rounded-sm ${BEHIND}`} />
             ahead / behind
           </span>
           <span className="flex items-center gap-1.5 text-[11.5px] text-content/85 min-w-0">
-            <span
-              className="w-2.5 h-2.5 rounded-sm flex-shrink-0"
-              style={{ background: COMPARE }}
-            />
+            <span className={`w-2.5 h-2.5 rounded-sm flex-shrink-0 ${COMPARE}`} />
             <span className="truncate">{compareStoreName}</span>
           </span>
         </span>
@@ -575,15 +574,14 @@ const SubDeptSideBySide = ({
                         style={{ width: barWidth(r) }}
                       >
                         <span
-                          className="absolute left-0 top-0 h-full"
-                          style={{
-                            width: mineShare(r),
-                            background: r.tyDiff >= 0 ? AHEAD : BEHIND,
-                          }}
+                          className={`absolute left-0 top-0 h-full ${
+                            r.tyDiff >= 0 ? AHEAD : BEHIND
+                          }`}
+                          style={{ width: mineShare(r) }}
                         />
                         <span
-                          className="absolute right-0 top-0 h-full"
-                          style={{ width: theirsShare(r), background: COMPARE }}
+                          className={`absolute right-0 top-0 h-full ${COMPARE}`}
+                          style={{ width: theirsShare(r) }}
                         />
                       </span>
 
