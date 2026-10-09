@@ -140,6 +140,13 @@ const STAGE_NOTE: Record<Stage, string | null> = {
   failed: null,
 };
 
+/** "003 - IGA HUNTSVILLE AL" is a heading, not a tab. The number is what
+ *  the rest of the screen calls it anyway. */
+const shortStore = (name: string) => {
+  const lead = name.trim().split(/[\s-]/)[0];
+  return /^\d+$/.test(lead) ? lead : name;
+};
+
 /* ------------------------------------------------------------------ */
 /* One card at a time                                                  */
 /* ------------------------------------------------------------------ */
@@ -329,7 +336,7 @@ const SkCard = ({ rows = 4 }: { rows?: number }) => (
  */
 const TabSkeleton = ({ tab }: { tab: "holds" | "items" | "supply" | "act" }) => (
   <div className="flex-1 min-h-0 overflow-auto thin-scrollbar bg-bkg px-4 py-5">
-    <div className="max-w-[1180px] mx-auto flex flex-col gap-4" role="status">
+    <div className="flex flex-col gap-4" role="status">
       <LoadNote>
         {tab === "holds" || tab === "items" ? (
           <>
@@ -913,84 +920,24 @@ const HoldsPanel = ({
 
   return (
     <div className="flex-1 min-h-0 overflow-auto thin-scrollbar bg-bkg px-4 py-5">
-      <div className="max-w-[1180px] mx-auto flex flex-col gap-5">
+      <div className="flex flex-col gap-5">
 
-        {/* Three ways of asking the same question, so they are peers and
-            share one frame. Across a row they were three cards none of them
-            was wide enough for; down a rail the third went unread. */}
-        <Carousel
-          slides={[
-            {
-              label: "Week by week",
-              body: (
-                <>
-                  <p className="text-[12px] text-content/85 leading-snug mb-2.5">
-                    Against itself: a standing difference, or something that
-                    broke this week.
-                  </p>
-                  <Weeks vitals={vitals} cash={cash} />
-                </>
-              ),
-            },
-            {
-              label: `Against ${them}`,
-              body: (
-                <>
-                  <p className="text-[12px] text-content/85 leading-snug mb-2.5">
-                    One rule for all three, so measures that disagree are seen
-                    to.
-                  </p>
-                  <Index vitals={vitals} them={them} cash={cash} />
-                </>
-              ),
-            },
-            ...(vendors.length > 0
-              ? [
-                  {
-                    label: "Who supplies it",
-                    count: vendors.length,
-                    body: (
-                      <>
-                        <p className="text-[12px] text-content/85 leading-snug mb-2.5">
-                          The shortfall by vendor. Pick one to narrow the
-                          items.
-                        </p>
-                        <div className="flex flex-col gap-1.5">
-                          {vendors.map((v) => (
-                            <button
-                              key={v.vendorName}
-                              onClick={() => onVendor(v.vendorName)}
-                              className="flex items-center gap-2.5 text-left rounded px-1 py-0.5 hover:bg-bkg transition-colors"
-                            >
-                              <span className="w-[120px] flex-shrink-0 truncate text-[12.5px] text-content">
-                                {v.vendorName}
-                              </span>
-                              <span className="flex-1 min-w-0 h-2 rounded-sm bg-bkg">
-                                <span
-                                  className="block h-2 rounded-sm bg-red-500"
-                                  style={{
-                                    width: `${(Math.abs(v.dollars) / widestVendor) * 100}%`,
-                                  }}
-                                />
-                              </span>
-                              <span className="w-[80px] flex-shrink-0 text-right text-[12.5px] font-bold tabular-nums text-delta_negative_text">
-                                {"−"}
-                                {cash(Math.abs(v.dollars))}
-                              </span>
-                            </button>
-                          ))}
-                        </div>
-                      </>
-                    ),
-                  },
-                ]
-              : []),
-          ]}
-        />
-
-        <div className="rounded-lg bg-custom-white shadow-md px-5 py-4">
-          <div className="flex flex-col gap-4 min-w-0 max-w-[840px]">
-            <p className="text-[20px] font-semibold leading-snug text-content">
+        {/* The finding first, across the width, then the evidence under it:
+            the hero on the left and the three supporting cards beside it.
+            The carousel sat above all of this for a while, which put three
+            charts in front of the sentence they are there to support. */}
+        {/* Left: the finding and the three cards that qualify it, one over
+            the other. Right: the items it is made of. Side by side the hero
+            and the charts crowded each other and the list sat alone under
+            both of them. */}
+        <div
+          className="grid gap-5 items-start"
+          style={{ gridTemplateColumns: "minmax(0,0.85fr) minmax(0,1fr)" }}
+        >
+          <div className="flex flex-col gap-5 min-w-0">
+          <div className="rounded-lg bg-custom-white shadow-md px-5 py-4 min-w-0">
+            <div className="flex flex-col gap-4 min-w-0">
+              <p className="text-[18px] font-semibold leading-snug text-content">
               <span
                 className={
                   holds.verdict === "holds"
@@ -1090,12 +1037,86 @@ const HoldsPanel = ({
                 of margin on top of the sales gap.
               </p>
             )}
+            </div>
           </div>
-        </div>
 
-        <div className="rounded-lg bg-custom-white shadow-md px-5 py-4">
+        {/* Three ways of asking the same question, so they are peers and
+            share one frame. Across a row they were three cards none of them
+            was wide enough for; down a rail the third went unread. */}
+        <Carousel
+          slides={[
+            {
+              label: "Week by week",
+              body: (
+                <>
+                  <p className="text-[12px] text-content/85 leading-snug mb-2.5">
+                    Against itself: a standing difference, or something that
+                    broke this week.
+                  </p>
+                  <Weeks vitals={vitals} cash={cash} />
+                </>
+              ),
+            },
+            {
+              label: `Against ${shortStore(them)}`,
+              body: (
+                <>
+                  <p className="text-[12px] text-content/85 leading-snug mb-2.5">
+                    One rule for all three, so measures that disagree are seen
+                    to.
+                  </p>
+                  <Index vitals={vitals} them={them} cash={cash} />
+                </>
+              ),
+            },
+            ...(vendors.length > 0
+              ? [
+                  {
+                    label: "Who supplies it",
+                    count: vendors.length,
+                    body: (
+                      <>
+                        <p className="text-[12px] text-content/85 leading-snug mb-2.5">
+                          The shortfall by vendor. Pick one to narrow the
+                          items.
+                        </p>
+                        <div className="flex flex-col gap-1.5">
+                          {vendors.map((v) => (
+                            <button
+                              key={v.vendorName}
+                              onClick={() => onVendor(v.vendorName)}
+                              className="flex items-center gap-2.5 text-left rounded px-1 py-0.5 hover:bg-bkg transition-colors"
+                            >
+                              <span className="w-[120px] flex-shrink-0 truncate text-[12.5px] text-content">
+                                {v.vendorName}
+                              </span>
+                              <span className="flex-1 min-w-0 h-2 rounded-sm bg-bkg">
+                                <span
+                                  className="block h-2 rounded-sm bg-red-500"
+                                  style={{
+                                    width: `${(Math.abs(v.dollars) / widestVendor) * 100}%`,
+                                  }}
+                                />
+                              </span>
+                              <span className="w-[80px] flex-shrink-0 text-right text-[12.5px] font-bold tabular-nums text-delta_negative_text">
+                                {"−"}
+                                {cash(Math.abs(v.dollars))}
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    ),
+                  },
+                ]
+              : []),
+          ]}
+        />
+          </div>
+
+          <div className="rounded-lg bg-custom-white shadow-md px-5 py-4 min-w-0">
           <div className="flex flex-col gap-4 min-w-0">
-            <p className="text-[20px] font-semibold leading-snug text-content max-w-[840px]">
+            <p className="text-[18px] font-semibold leading-snug text-content">
               {spread.says}
             </p>
 
@@ -1161,6 +1182,7 @@ const HoldsPanel = ({
                 See every item &rarr;
               </button>
             </div>
+          </div>
           </div>
         </div>
       </div>
@@ -1422,7 +1444,7 @@ const SupplyPanel = ({
 
   return (
     <div className="flex-1 min-h-0 overflow-auto thin-scrollbar bg-bkg px-4 py-5">
-      <div className="max-w-[1180px] mx-auto flex flex-col gap-5">
+      <div className="flex flex-col gap-5">
 
         {/* The tab opens with its finding, like every other one. It used to
             open with two cards of counts and leave the reader to subtract. */}
@@ -1657,7 +1679,7 @@ const ActPanel = ({
 
   return (
     <div className="flex-1 min-h-0 overflow-auto thin-scrollbar px-4 py-4">
-      <div className="max-w-[920px] mx-auto flex flex-col gap-4">
+      <div className="max-w-[1100px] flex flex-col gap-4">
         <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))" }}>
           {owned.map((d) => (
             <div

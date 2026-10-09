@@ -479,12 +479,15 @@ body {
 }
 
 @layer utilities {
+  .no-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox, and Chrome 121+ */
+  }
+
   .no-scrollbar::-webkit-scrollbar {
     width: 0em;
     height: 0em;
     display: none;
-    -ms-overflow-style: none; /* IE and Edge */
-    scrollbar-width: none; /* Firefox */
   }
 
   /* Skips layout and paint for rows scrolled out of view. Categories can return
