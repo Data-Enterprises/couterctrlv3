@@ -484,209 +484,132 @@ const COLUMNS: ColumnDef[] = [
 
 
 /* ------------------------------------------------------------------ */
-/* Step 1 + 2 · does it hold, and where is it                          */
+/* Check · does it hold, and where is it                               */
 /* ------------------------------------------------------------------ */
 
-const Bucket = ({
-  label,
-  bucket,
-  tone,
+const Card = ({
+  title,
+  note,
+  children,
 }: {
-  label: string;
-  bucket: { items: number; dollars: number };
-  tone: string;
+  title: string;
+  note?: string;
+  children: React.ReactNode;
 }) => (
-  <div className="flex items-baseline gap-3 py-2 border-b border-brand_navy/15 last:border-b-0">
-    <span className="text-[13px] text-content/85 min-w-0">{label}</span>
-    <span className="ml-auto text-[13px] text-content/85 tabular-nums whitespace-nowrap">
-      {bucket.items.toLocaleString("en-US")} items
-    </span>
-    <span
-      className={`text-[13.5px] font-bold tabular-nums whitespace-nowrap w-[96px] text-right ${
-        bucket.items === 0 ? "text-content/85" : tone
-      }`}
-    >
-      {bucket.dollars >= 0 ? "+" : "−"}
-      {formatCurrency2(Math.abs(bucket.dollars))}
-    </span>
+  <div className="rounded-lg bg-gray-50 px-4 py-3.5">
+    <div className="text-[12px] font-bold uppercase tracking-wide text-content/85">
+      {title}
+    </div>
+    {note && (
+      <p className="text-[12px] text-content/85 leading-snug mt-1">{note}</p>
+    )}
+    <div className="mt-3">{children}</div>
   </div>
 );
 
-/**
- * The department against itself and against the counterpart.
- *
- * Both read off the sales wave, so they draw with the rest of this tab. They
- * are here rather than in the prose because neither is a sentence: a gap
- * widening or closing is a slope, and three measures disagreeing with each
- * other is a shape.
- */
-const Vitals = ({
+/** The department against itself: a standing difference, or something that
+ *  broke in the last seven days. Values above the bars, because the labels
+ *  below already anchor them and a figure under a bar reads as its caption
+ *  rather than as its height. */
+const Weeks = ({
   vitals,
-  spread,
-  them,
   cash,
-  onVendor,
 }: {
   vitals: VitalsShape;
-  spread: Spread;
-  them: string;
   cash: (v: number) => string;
-  onVendor: (vendor: string) => void;
 }) => {
   const tallest = Math.max(1, ...vitals.weeks.map((w) => Math.abs(w.gap)));
-  /** Nothing rang here at all — the index has no rule to sit on. */
-  const sellsNone = vitals.index.every((m) => m.mine === 0);
-  const vendors = spread.byVendor.slice(0, 6);
-  const widestVendor = Math.max(1, Math.abs(vendors[0]?.dollars ?? 0));
-  // The rule sits two thirds along, so a department running well OVER its
-  // counterpart still has somewhere to go.
-  const RULE = 66.666;
-
   return (
-    <div className="flex flex-col gap-3">
-      <div className="rounded-md border border-brand_navy/15 px-3.5 py-3">
-        <div className="text-[12px] font-bold uppercase tracking-wide text-content/85">
-          The gap, week by week
+    <div className="grid grid-cols-3 gap-3">
+      {vitals.weeks.map((w) => (
+        <div key={w.label} className="flex flex-col">
+          <div
+            className={`text-[12.5px] font-bold tabular-nums text-center whitespace-nowrap ${
+              w.gap >= 0 ? "text-delta_positive_text" : "text-delta_negative_text"
+            }`}
+          >
+            {w.gap >= 0 ? "+" : "−"}
+            {cash(Math.abs(w.gap))}
+          </div>
+          <div className="h-[56px] flex items-end justify-center mt-1">
+            <span
+              className={`block w-full rounded-t-sm ${
+                w.gap >= 0 ? "bg-emerald-500" : "bg-red-500"
+              }`}
+              style={{ height: `${Math.max(3, (Math.abs(w.gap) / tallest) * 56)}px` }}
+            />
+          </div>
+          <div className="h-px bg-brand_navy/15" />
+          <div className="text-[12px] font-semibold uppercase tracking-wide text-content/85 text-center whitespace-nowrap mt-1">
+            {w.label}
+          </div>
         </div>
-        <p className="text-[12px] text-content/85 leading-snug mt-0.5">
-          Against itself: a standing difference, or something that broke this
-          week.
-        </p>
-        <div className="grid grid-cols-3 gap-2.5 mt-3">
-          {vitals.weeks.map((w) => (
-            <div key={w.label}>
-              <div className="h-[52px] flex items-end justify-center">
-                <span
-                  className={`block w-7 rounded ${
-                    w.gap >= 0 ? "bg-emerald-500" : "bg-red-500"
-                  }`}
-                  style={{
-                    height: `${Math.max(3, (Math.abs(w.gap) / tallest) * 52)}px`,
-                  }}
-                />
-              </div>
-              <div className="h-px bg-brand_navy/15 my-1" />
-              <div className="text-[12px] font-bold uppercase tracking-wide text-content/85 text-center whitespace-nowrap">
-                {w.label}
-              </div>
-              <div
-                className={`text-[12.5px] font-bold tabular-nums text-center whitespace-nowrap ${
-                  w.gap >= 0
-                    ? "text-delta_positive_text"
-                    : "text-delta_negative_text"
+      ))}
+    </div>
+  );
+};
+
+/** Sales, units and margin on ONE rule, the counterpart at 100, so measures
+ *  that disagree are seen to disagree. */
+const Index = ({
+  vitals,
+  them,
+  cash,
+}: {
+  vitals: VitalsShape;
+  them: string;
+  cash: (v: number) => string;
+}) => {
+  // Three bars pinned at zero say nothing, in the one case where the reason
+  // they are at zero IS the finding.
+  if (vitals.index.every((m) => m.mine === 0)) {
+    return (
+      <p className="text-[13px] leading-relaxed text-content/85">
+        This store rang none of it at all, so there is nothing to put on the
+        rule. {them} took{" "}
+        <span className="font-semibold text-delta_negative_text">
+          {cash(vitals.index[0].theirs)}
+        </span>
+        .
+      </p>
+    );
+  }
+  // Two thirds along, so a department running well OVER still has room.
+  const RULE = 66.666;
+  return (
+    <div className="flex flex-col gap-2.5">
+      {vitals.index.map((m) => {
+        const over = (m.pct ?? 0) >= 100;
+        return (
+          <div key={m.label} className="flex items-center gap-2.5">
+            <span className="w-[52px] flex-shrink-0 text-[12px] font-semibold uppercase tracking-wide text-content/85">
+              {m.label}
+            </span>
+            <span className="relative flex-1 min-w-0 h-2.5 rounded-sm bg-bkg">
+              <span
+                className={`absolute left-0 top-0 h-2.5 rounded-sm ${
+                  over ? "bg-emerald-500" : "bg-red-500"
                 }`}
-              >
-                {w.gap >= 0 ? "+" : "−"}
-                {cash(Math.abs(w.gap))}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="rounded-md border border-brand_navy/15 px-3.5 py-3">
-        <div className="text-[12px] font-bold uppercase tracking-wide text-content/85">
-          Against {them}
-        </div>
-        <p className="text-[12px] text-content/85 leading-snug mt-0.5">
-          One rule for all three, so measures that disagree are seen to.
-        </p>
-        {sellsNone ? (
-          /* Three bars pinned at zero said nothing, in the one case where
-             the reason they are at zero IS the finding. */
-          <p className="text-[13px] leading-relaxed text-content/85 mt-2.5">
-            This store rang none of this department at all, so there is
-            nothing to put on the rule. {them} took{" "}
-            <span className="font-semibold text-delta_negative_text">
-              {cash(vitals.index[0].theirs)}
-            </span>{" "}
-            of it.
-          </p>
-        ) : (
-        <div className="flex flex-col gap-2.5 mt-3">
-          {vitals.index.map((m) => {
-            const over = (m.pct ?? 0) >= 100;
-            return (
-              <div key={m.label} className="flex items-center gap-2.5">
-                <span className="w-[52px] flex-shrink-0 text-[12px] font-bold uppercase tracking-wide text-content/85">
-                  {m.label}
-                </span>
-                <span className="relative flex-1 min-w-0 h-3 rounded-sm bg-bkg">
-                  <span
-                    className={`absolute left-0 top-0 h-3 rounded-sm ${
-                      over ? "bg-emerald-500" : "bg-red-500"
-                    }`}
-                    style={{
-                      width: `${Math.min(100, ((m.pct ?? 0) / 150) * 100)}%`,
-                    }}
-                  />
-                  <span
-                    className="absolute top-[-3px] w-px h-[18px] bg-brand_navy/40"
-                    style={{ left: `${RULE}%` }}
-                  />
-                </span>
-                <span
-                  className={`w-[46px] flex-shrink-0 text-right text-[12.5px] font-bold tabular-nums ${
-                    over
-                      ? "text-delta_positive_text"
-                      : "text-delta_negative_text"
-                  }`}
-                >
-                  {m.pct === null ? "—" : `${Math.round(m.pct)}%`}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-        )}
-        {!sellsNone && (
-          <p className="text-[12px] text-content/85 leading-snug mt-2.5">
-            The rule is {them} at 100.
-          </p>
-        )}
-      </div>
-
-      {/* Who supplies the shortfall.
-
-          One vendor owning most of it is the cluster worth finding: a buyer
-          raising one account closes more than chasing thirty items across
-          nine. It is here on every department rather than only on the ones
-          too spread to list, because a concentrated department can still be
-          one vendor's. */}
-      {vendors.length > 0 && (
-        <div className="rounded-md border border-brand_navy/15 px-3.5 py-3">
-          <div className="text-[12px] font-bold uppercase tracking-wide text-content/85">
-            Who supplies it
+                style={{ width: `${Math.min(100, ((m.pct ?? 0) / 150) * 100)}%` }}
+              />
+              <span
+                className="absolute -top-1 w-px h-[18px] bg-brand_navy/40"
+                style={{ left: `${RULE}%` }}
+              />
+            </span>
+            <span
+              className={`w-[46px] flex-shrink-0 text-right text-[12.5px] font-bold tabular-nums ${
+                over ? "text-delta_positive_text" : "text-delta_negative_text"
+              }`}
+            >
+              {m.pct === null ? "—" : `${Math.round(m.pct)}%`}
+            </span>
           </div>
-          <p className="text-[12px] text-content/85 leading-snug mt-0.5">
-            The shortfall by vendor. Pick one to narrow the items.
-          </p>
-          <div className="flex flex-col gap-1.5 mt-3">
-            {vendors.map((v) => (
-              <button
-                key={v.vendorName}
-                onClick={() => onVendor(v.vendorName)}
-                className="flex items-center gap-2.5 text-left rounded px-1 py-0.5 hover:bg-gray-50 transition-colors"
-              >
-                <span className="w-[108px] flex-shrink-0 truncate text-[12.5px] text-content">
-                  {v.vendorName}
-                </span>
-                <span className="flex-1 min-w-0 h-2.5 rounded-sm bg-bkg">
-                  <span
-                    className="block h-2.5 rounded-sm bg-red-500"
-                    style={{
-                      width: `${(Math.abs(v.dollars) / widestVendor) * 100}%`,
-                    }}
-                  />
-                </span>
-                <span className="w-[72px] flex-shrink-0 text-right text-[12.5px] font-bold tabular-nums text-delta_negative_text">
-                  {"−"}{cash(Math.abs(v.dollars))}
-                </span>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+        );
+      })}
+      <p className="text-[12px] text-content/85 leading-snug">
+        The rule is {them} at 100.
+      </p>
     </div>
   );
 };
@@ -717,188 +640,259 @@ const HoldsPanel = ({
   onPickItem: (code: string) => void;
   onVendor: (vendor: string) => void;
 }) => {
+  const buckets = [
+    { label: `Rang at ${them}, not here`, b: holds.onlyTheirs, tone: "bg-red-500" },
+    { label: "Rang at both, less here", b: holds.bothLess, tone: "bg-red-500" },
+    { label: "Rang at both, more here", b: holds.bothMore, tone: "bg-emerald-500" },
+  ];
+  const moved = buckets.reduce((t, x) => t + Math.abs(x.b.dollars), 0);
+  /** The one row with money in it leads. Three rows where two are zero makes
+   *  the reader find the finding; the figure IS the finding. */
+  const lead = [...buckets].sort(
+    (a, b) => Math.abs(b.b.dollars) - Math.abs(a.b.dollars),
+  )[0];
+
   const shortfall = spread.ranked.reduce((t, i) => t - i.gap, 0);
   const top = spread.ranked.slice(0, 10);
   const widest = Math.abs(top[0]?.gap ?? 1);
+  const vendors = spread.byVendor.slice(0, 6);
+  const widestVendor = Math.max(1, Math.abs(vendors[0]?.dollars ?? 0));
+
+  const COLS = "minmax(0,1.55fr) minmax(290px,0.8fr)";
 
   return (
-    <div className="flex-1 min-h-0 overflow-auto thin-scrollbar px-4 py-4">
-      {/* The reading runs down one column and the pictures sit beside it,
-          rather than interrupting the prose. Both are the same sales wave,
-          so neither waits for the other. */}
-      <div
-        className="max-w-[1180px] mx-auto grid gap-8 items-start"
-        style={{ gridTemplateColumns: "minmax(0,1.5fr) minmax(300px,0.85fr)" }}
-      >
-       <div className="flex flex-col gap-7 min-w-0">
+    <div className="flex-1 min-h-0 overflow-auto thin-scrollbar px-4 py-5">
+      <div className="max-w-[1180px] mx-auto flex flex-col gap-6">
 
-        <section className="flex flex-col gap-3">
-          <p className="text-[19px] font-semibold leading-snug text-content">
-            <span
-              className={
-                holds.verdict === "holds"
-                  ? "text-delta_positive_text"
-                  : "text-severity_watch_text"
-              }
-            >
-              {holds.verdict === "holds" ? "It holds." : "Not as the report put it."}
-            </span>{" "}
-            {holds.says}
-          </p>
-
-          <div className="rounded-md border border-brand_navy/15 px-3 py-1">
-            <Bucket
-              label={`Rang at ${them}, not here`}
-              bucket={holds.onlyTheirs}
-              tone="text-delta_negative_text"
-            />
-            <Bucket
-              label="Rang at both, less here"
-              bucket={holds.bothLess}
-              tone="text-delta_negative_text"
-            />
-            <Bucket
-              label="Rang at both, more here"
-              bucket={holds.bothMore}
-              tone="text-delta_positive_text"
-            />
-          </div>
-          <p className="text-[12.5px] text-content/85 leading-relaxed">
-            Sales only, so this is settled before any cause is named — and
-            before anything can change under you.
-          </p>
-
-          {summary.gap >= 0 && marginGap < 0 && (
-            <p className="text-[13px] leading-relaxed rounded-md bg-severity_watch_bg text-severity_watch_text px-3 py-2">
-              <span className="font-bold">
-                Ahead on sales, behind on margin.
+        {/* Each card sits beside the section it serves, rather than all of
+            them stacking in one rail away from what they are evidence for. */}
+        <div className="grid gap-8 items-start" style={{ gridTemplateColumns: COLS }}>
+          <div className="flex flex-col gap-4 min-w-0">
+            <p className="text-[20px] font-semibold leading-snug text-content">
+              <span
+                className={
+                  holds.verdict === "holds"
+                    ? "text-delta_positive_text"
+                    : "text-severity_watch_text"
+                }
+              >
+                {holds.verdict === "holds" ? "It holds." : "Not as the report put it."}
               </span>{" "}
-              This department took {cash(summary.gap)} more and kept{" "}
-              {cash(Math.abs(marginGap))} less, because it buys the same goods
-              for more. The sales view alone calls this a win.
+              {holds.says}
             </p>
-          )}
-          {costPenalty < 0 && summary.gap < 0 && (
-            <p className="text-[12.5px] text-content/85 leading-relaxed">
-              Buying the same goods for more took another{" "}
-              <span className="font-semibold text-content">
-                {cash(Math.abs(costPenalty))}
-              </span>{" "}
-              of margin on top of the sales gap.
-            </p>
-          )}
-        </section>
 
-        <div className="flex items-center gap-3 text-[13px] text-content/85">
-          <span className="w-px h-6 bg-brand_navy/15 ml-2" />
-          {holds.verdict === "holds"
-            ? "So the call stands. Is it a few big items, or many small ones?"
-            : "So the shape is different. Where does it sit?"}
-        </div>
+            <div className="flex items-baseline gap-3 flex-wrap">
+              <span
+                className={`text-[34px] font-bold tabular-nums leading-none ${
+                  lead.b.dollars >= 0
+                    ? "text-delta_positive_text"
+                    : "text-delta_negative_text"
+                }`}
+              >
+                {lead.b.dollars >= 0 ? "+" : "−"}
+                {cash(Math.abs(lead.b.dollars))}
+              </span>
+              <span className="text-[13.5px] text-content/85 min-w-0">
+                <span className="font-semibold text-content">
+                  {lead.b.items.toLocaleString("en-US")} items
+                </span>{" "}
+                {lead.label.toLowerCase()}
+              </span>
+            </div>
 
-        <section className="flex flex-col gap-3">
-          <p className="text-[19px] font-semibold leading-snug text-content">
-            {spread.says}
-          </p>
+            {moved > 0 && (
+              <span className="flex h-2 rounded-sm overflow-hidden bg-bkg">
+                {buckets.map((x) => (
+                  <span
+                    key={x.label}
+                    className={`block h-2 ${x.tone}`}
+                    style={{ width: `${(Math.abs(x.b.dollars) / moved) * 100}%` }}
+                    title={`${x.label} · ${cash(Math.abs(x.b.dollars))}`}
+                  />
+                ))}
+              </span>
+            )}
 
-          {/* What the ten biggest carry against everything else. A share bar
-              rather than a list, because when it is spread the list is the
-              thing that misleads. */}
-          <div className="flex h-7 rounded overflow-hidden">
-            <span
-              className="flex items-center px-2.5 text-[12px] font-bold text-custom-white bg-delta_negative_text whitespace-nowrap"
-              style={{ width: `${Math.max(6, spread.topTenShare * 100)}%` }}
-            >
-              {Math.round(spread.topTenShare * 100)}%
-            </span>
-            <span
-              className="flex items-center px-2.5 text-[12px] font-semibold text-delta_negative_text bg-delta_negative_bg whitespace-nowrap min-w-0"
-              style={{ width: `${Math.max(6, (1 - spread.topTenShare) * 100)}%` }}
-            >
-              {Math.max(0, spread.ranked.length - 10).toLocaleString("en-US")} more
-              · {cash(shortfall - top.reduce((t, i) => t - i.gap, 0))}
-            </span>
-          </div>
-
-          {spread.concentrated ? (
             <div className="flex flex-col">
-              {top.map((i, ix) => (
-                <button
-                  key={i.productCode}
-                  onClick={() => onPickItem(i.productCode)}
-                  className="grid gap-3 items-center px-1.5 py-1.5 border-b border-brand_navy/15 hover:bg-gray-50 rounded text-left"
-                  style={{ gridTemplateColumns: "22px minmax(0,1fr) 110px 96px" }}
+              {buckets.map((x) => (
+                <div
+                  key={x.label}
+                  className="flex items-baseline gap-2.5 py-1.5 border-b border-brand_navy/15 last:border-b-0"
                 >
-                  <span className="text-[12px] text-content/85 tabular-nums">
-                    {ix + 1}
+                  <span
+                    className={`w-2.5 h-2.5 rounded-sm flex-shrink-0 self-center ${
+                      x.b.items === 0 ? "bg-bkg" : x.tone
+                    }`}
+                  />
+                  <span className="text-[13px] text-content/85 min-w-0">
+                    {x.label}
                   </span>
-                  <span className="min-w-0 truncate text-[12.5px] font-mono text-content">
-                    {i.description}
+                  <span className="ml-auto text-[12.5px] text-content/85 tabular-nums whitespace-nowrap">
+                    {x.b.items.toLocaleString("en-US")} items
                   </span>
-                  <span className="h-2.5 rounded-sm bg-delta_negative_text/75">
-                    <span
-                      className="block h-2.5 rounded-sm bg-delta_negative_text"
-                      style={{ width: `${(Math.abs(i.gap) / widest) * 100}%` }}
-                    />
+                  <span
+                    className={`w-[96px] text-right text-[13px] font-bold tabular-nums whitespace-nowrap ${
+                      x.b.items === 0
+                        ? "text-content/85"
+                        : x.b.dollars >= 0
+                          ? "text-delta_positive_text"
+                          : "text-delta_negative_text"
+                    }`}
+                  >
+                    {x.b.dollars >= 0 ? "+" : "−"}
+                    {cash(Math.abs(x.b.dollars))}
                   </span>
-                  <span className="text-right text-[12.5px] font-bold tabular-nums text-delta_negative_text">
-                    {"−"}{formatCurrency2(Math.abs(i.gap))}
-                  </span>
-                </button>
+                </div>
               ))}
             </div>
-          ) : (
-            <>
-              <p className="text-[12.5px] text-content/85 leading-relaxed">
-                A top ten would let somebody believe it mattered, so the
-                shortfall is grouped by who supplies it instead.
+
+            <p className="text-[12.5px] text-content/85 leading-relaxed">
+              Sales only, so this is settled before any cause is named — and
+              before anything can change under you.
+            </p>
+
+            {summary.gap >= 0 && marginGap < 0 && (
+              <p className="text-[13px] leading-relaxed rounded-md bg-severity_watch_bg text-severity_watch_text px-3 py-2">
+                <span className="font-bold">Ahead on sales, behind on margin.</span>{" "}
+                This department took {cash(summary.gap)} more and kept{" "}
+                {cash(Math.abs(marginGap))} less, because it buys the same goods
+                for more.
               </p>
-              <div className="flex flex-col">
-                {spread.byVendor.slice(0, 8).map((v) => (
+            )}
+            {costPenalty < 0 && summary.gap < 0 && (
+              <p className="text-[12.5px] text-content/85 leading-relaxed">
+                Buying the same goods for more took another{" "}
+                <span className="font-semibold text-content">
+                  {cash(Math.abs(costPenalty))}
+                </span>{" "}
+                of margin on top of the sales gap.
+              </p>
+            )}
+          </div>
+
+          <div className="flex flex-col gap-3">
+            <Card
+              title="The gap, week by week"
+              note="Against itself: a standing difference, or something that broke this week."
+            >
+              <Weeks vitals={vitals} cash={cash} />
+            </Card>
+            <Card
+              title={`Against ${them}`}
+              note="One rule for all three, so measures that disagree are seen to."
+            >
+              <Index vitals={vitals} them={them} cash={cash} />
+            </Card>
+          </div>
+        </div>
+
+        <div className="flex justify-center">
+          <span className="text-[13px] text-content/85 bg-gray-50 rounded-full px-4 py-1.5">
+            {holds.verdict === "holds"
+              ? "So the call stands. Is it a few big items, or many small ones?"
+              : "So the shape is different. Where does it sit?"}
+          </span>
+        </div>
+
+        <div className="grid gap-8 items-start" style={{ gridTemplateColumns: COLS }}>
+          <div className="flex flex-col gap-4 min-w-0">
+            <p className="text-[20px] font-semibold leading-snug text-content">
+              {spread.says}
+            </p>
+
+            <span className="flex h-2 rounded-sm overflow-hidden bg-bkg">
+              <span
+                className="block h-2 bg-red-500"
+                style={{ width: `${Math.max(4, spread.topTenShare * 100)}%` }}
+              />
+            </span>
+
+            <div className="flex flex-col">
+              {top.map((i, ix) => (
+                <div key={i.productCode}>
                   <button
-                    key={v.vendorName}
-                    onClick={() => onVendor(v.vendorName)}
-                    className="grid gap-3 items-center px-1.5 py-1.5 border-b border-brand_navy/15 hover:bg-gray-50 rounded text-left"
-                    style={{ gridTemplateColumns: "minmax(0,1fr) 110px 86px 96px" }}
+                    onClick={() => onPickItem(i.productCode)}
+                    className="w-full grid gap-3 items-center px-1.5 py-1.5 border-b border-brand_navy/15 hover:bg-gray-50 rounded text-left"
+                    style={{ gridTemplateColumns: "22px minmax(0,1fr) 120px 96px" }}
                   >
-                    <span className="min-w-0 truncate text-[13px] font-medium text-content">
-                      {v.vendorName}
+                    <span className="text-[12px] text-content/85 tabular-nums">
+                      {ix + 1}
                     </span>
-                    <span className="h-2.5 rounded-sm bg-bkg">
+                    <span className="min-w-0 truncate text-[12.5px] font-mono text-content">
+                      {i.description}
+                    </span>
+                    <span className="h-2 rounded-sm bg-bkg">
                       <span
-                        className="block h-2.5 rounded-sm bg-delta_negative_text"
-                        style={{
-                          width: `${(Math.abs(v.dollars) / Math.abs(spread.byVendor[0].dollars)) * 100}%`,
-                        }}
+                        className="block h-2 rounded-sm bg-red-500"
+                        style={{ width: `${(Math.abs(i.gap) / widest) * 100}%` }}
                       />
                     </span>
-                    <span className="text-right text-[12.5px] text-content/85 tabular-nums">
-                      {v.items.toLocaleString("en-US")} items
-                    </span>
                     <span className="text-right text-[12.5px] font-bold tabular-nums text-delta_negative_text">
-                      {"−"}{formatCurrency2(Math.abs(v.dollars))}
+                      {"−"}
+                      {cash(Math.abs(i.gap))}
                     </span>
                   </button>
-                ))}
-              </div>
-            </>
-          )}
+                  {/* The conclusion drawn in the list it is about, rather
+                      than only stated above it. */}
+                  {spread.toHalf > 0 && ix === spread.toHalf - 1 && (
+                    <div className="flex items-center gap-2 py-1">
+                      <span className="h-px flex-1 bg-delta_negative_text/40" />
+                      <span className="text-[11.5px] font-bold uppercase tracking-wide text-delta_negative_text whitespace-nowrap">
+                        half the shortfall
+                      </span>
+                      <span className="h-px flex-1 bg-delta_negative_text/40" />
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
 
-          <p className="text-[12.5px] text-content/85 leading-relaxed">
-            {summary.byCause.length > 0
-              ? "Next: why so many. That needs orders and deliveries."
-              : ""}
-          </p>
-        </section>
-       </div>
+            <p className="text-[12.5px] text-content/85 leading-relaxed">
+              {spread.ranked.length.toLocaleString("en-US")} items behind ·
+              ordered by the biggest difference · click one for its evidence ·{" "}
+              {cash(shortfall)} in all
+            </p>
+          </div>
 
-       <Vitals
-         vitals={vitals}
-         spread={spread}
-         them={them}
-         cash={cash}
-         onVendor={onVendor}
-       />
+          <div className="flex flex-col gap-3">
+            {vendors.length > 0 && (
+              /* Beside the list it filters, and still in view while it
+                 scrolls. One vendor owning most of a shortfall is the
+                 cluster worth finding: raising one account closes more than
+                 chasing thirty items across nine. */
+              <Card
+                title="Who supplies it"
+                note="The shortfall by vendor. Pick one to narrow the items."
+              >
+                <div className="flex flex-col gap-1.5">
+                  {vendors.map((v) => (
+                    <button
+                      key={v.vendorName}
+                      onClick={() => onVendor(v.vendorName)}
+                      className="flex items-center gap-2.5 text-left rounded px-1 py-0.5 hover:bg-custom-white transition-colors"
+                    >
+                      <span className="w-[104px] flex-shrink-0 truncate text-[12.5px] text-content">
+                        {v.vendorName}
+                      </span>
+                      <span className="flex-1 min-w-0 h-2 rounded-sm bg-bkg">
+                        <span
+                          className="block h-2 rounded-sm bg-red-500"
+                          style={{
+                            width: `${(Math.abs(v.dollars) / widestVendor) * 100}%`,
+                          }}
+                        />
+                      </span>
+                      <span className="w-[72px] flex-shrink-0 text-right text-[12.5px] font-bold tabular-nums text-delta_negative_text">
+                        {"−"}
+                        {cash(Math.abs(v.dollars))}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </Card>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
