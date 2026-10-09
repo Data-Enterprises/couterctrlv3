@@ -1,4 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
+import {
+  CheckCircleIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+  ExclamationCircleIcon,
+  ExclamationTriangleIcon,
+} from "@heroicons/react/20/solid";
+import { CTA_SEVERITY_CLASSES, type Severity } from "../../../../utils/severity";
 import { getSubs } from "../../../../api/sales";
 import { formatCurrency2 } from "../../../../utils";
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
@@ -218,7 +226,9 @@ const Block = ({
   title: string;
   children: React.ReactNode;
 }) => (
-  <div className="border-t border-brand_navy/15 pt-2.5 mt-3">
+  /* A rule BETWEEN blocks, which the first one is not under — against the
+     strip above it, it read as a stray line with a gap over it. */
+  <div className="border-t border-brand_navy/15 pt-2.5 mt-3 first:border-t-0 first:pt-0 first:mt-0">
     <div className="text-[10px] font-bold uppercase tracking-wide text-content/85 mb-1.5">
       {title}
     </div>
@@ -241,7 +251,9 @@ const Detail = ({
   onInvestigate: (row: ReportRow) => void;
 }) => {
   const ahead = row.gap >= 0;
-  const tone = ahead ? "text-delta_positive_text" : "text-delta_negative_text";
+  /* Closed. It lays over the panel rather than pushing it down, so an open
+     strip on arrival would cover the first thing the panel has to show. */
+  const [open, setOpen] = useState(false);
   const unitWord = row.weighed ? "lb" : "units";
   const oneWord = row.weighed ? "lb" : "unit";
 
@@ -257,23 +269,68 @@ const Detail = ({
     { label: "This week", v: row.gap },
   ];
 
+  /**
+   * Critical where a gate actually failed, watch where none did and it is
+   * merely down, healthy where it is ahead.
+   *
+   * "A little less of everything" passed all three checks — calling that
+   * critical beside a department that rang nothing would make the strongest
+   * colour on the page mean "behind by any amount", which is what the gap
+   * figure beside it already says.
+   */
+  const sev: Severity = ahead
+    ? "healthy"
+    : row.chain.finding === "a-little-less" || row.chain.finding === "level"
+      ? "watch"
+      : "critical";
+  const cta = CTA_SEVERITY_CLASSES[sev];
+  const Mark_ =
+    sev === "critical"
+      ? ExclamationTriangleIcon
+      : sev === "watch"
+        ? ExclamationCircleIcon
+        : CheckCircleIcon;
+
   return (
-    <div className="flex-1 min-w-0 flex flex-col overflow-auto thin-scrollbar px-4 py-3">
-      <div className="flex items-baseline gap-3">
-        <span className="min-w-0 truncate text-[15px] font-bold text-content">
-          {row.name}
-        </span>
-        <span
-          className={`ml-auto text-[15px] font-bold tabular-nums whitespace-nowrap ${tone}`}
+    <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
+      {/* The same strip the single-store tab opens a department with: the
+          name, what it is worth, and the finding folded behind it. */}
+      <div className={`relative flex-shrink-0 border-b ${cta.border}`}>
+        <button
+          onClick={() => setOpen((v) => !v)}
+          aria-expanded={open}
+          className={`w-full flex items-center gap-2 px-4 py-2 text-left transition-colors ${cta.bg} ${cta.hoverBg}`}
         >
-          {signed(row.gap)}
-        </span>
+          <Mark_ className={`w-4 h-4 flex-shrink-0 ${cta.text}`} />
+          <span className={`min-w-0 truncate text-[14px] font-bold ${cta.text}`}>
+            {row.name}
+          </span>
+          <span
+            className={`ml-auto flex-shrink-0 text-[14px] font-bold tabular-nums ${cta.text}`}
+          >
+            {signed(row.gap)}
+          </span>
+          {open ? (
+            <ChevronUpIcon className={`w-3.5 h-3.5 flex-shrink-0 ${cta.text}`} />
+          ) : (
+            <ChevronDownIcon className={`w-3.5 h-3.5 flex-shrink-0 ${cta.text}`} />
+          )}
+        </button>
+
+        {/* Over the panel, not above it. Pushing the blocks down meant
+            every open and close moved the whole column, and the reader lost
+            their place in the thing the strip is describing. */}
+        {open && (
+          <p
+            className={`absolute top-full left-0 right-0 z-20 px-4 py-2.5 border-b shadow-lg text-[12.5px] leading-snug ${cta.bg} ${cta.border} ${cta.text}`}
+          >
+            <span className="font-bold">{row.chain.says.lead}</span>
+            {row.chain.says.tail}
+          </p>
+        )}
       </div>
 
-      <p className="text-[12.5px] leading-snug text-content mt-1.5">
-        <span className={`font-bold ${tone}`}>{row.chain.says.lead}</span>
-        {row.chain.says.tail}
-      </p>
+      <div className="flex-1 min-h-0 overflow-auto thin-scrollbar px-4 py-3 flex flex-col">
 
       {/* Three checks in order, and the first one to fail is the finding.
           A green tick says only that this check was not the problem — a
@@ -372,6 +429,7 @@ const Detail = ({
       >
         {row.chain.cta} &rarr;
       </button>
+      </div>
     </div>
   );
 };
