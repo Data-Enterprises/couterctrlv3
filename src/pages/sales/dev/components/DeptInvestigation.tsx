@@ -989,7 +989,7 @@ const HoldsPanel = ({
                   className="flex items-baseline gap-2.5 py-1.5 border-b border-brand_navy/15 last:border-b-0"
                 >
                   <span
-                    className={`w-2.5 h-2.5 rounded-sm flex-shrink-0 self-center ${
+                    className={`w-2.5 h-2.5 rounded-full flex-shrink-0 self-center ${
                       x.b.items === 0 ? "bg-bkg" : x.tone
                     }`}
                   />
@@ -1015,7 +1015,7 @@ const HoldsPanel = ({
               ))}
             </div>
 
-            <p className="text-[12.5px] text-content/85 leading-relaxed">
+            <p className="text-[13.5px] text-content/85 leading-relaxed">
               Sales only, so this is settled before any cause is named — and
               before anything can change under you.
             </p>
@@ -1029,7 +1029,7 @@ const HoldsPanel = ({
               </p>
             )}
             {costPenalty < 0 && summary.gap < 0 && (
-              <p className="text-[12.5px] text-content/85 leading-relaxed">
+              <p className="text-[13.5px] text-content/85 leading-relaxed">
                 Buying the same goods for more took another{" "}
                 <span className="font-semibold text-content">
                   {cash(Math.abs(costPenalty))}
