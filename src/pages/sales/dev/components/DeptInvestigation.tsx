@@ -542,9 +542,6 @@ const HoldsPanel = ({
       <div className="max-w-[920px] mx-auto flex flex-col gap-7">
 
         <section className="flex flex-col gap-3">
-          <div className="text-[12px] font-bold uppercase tracking-wide text-content/85">
-            1 · Does it hold?
-          </div>
           <p className="text-[19px] font-semibold leading-snug text-content">
             <span
               className={
@@ -609,9 +606,6 @@ const HoldsPanel = ({
         </div>
 
         <section className="flex flex-col gap-3">
-          <div className="text-[12px] font-bold uppercase tracking-wide text-content/85">
-            2 · Where is it?
-          </div>
           <p className="text-[19px] font-semibold leading-snug text-content">
             {spread.says}
           </p>
@@ -748,10 +742,6 @@ const ActPanel = ({
   return (
     <div className="flex-1 min-h-0 overflow-auto thin-scrollbar px-4 py-4">
       <div className="max-w-[920px] mx-auto flex flex-col gap-4">
-        <div className="text-[12px] font-bold uppercase tracking-wide text-content/85">
-          5 · Who fixes it?
-        </div>
-
         <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))" }}>
           {owned.map((d) => (
             <div
@@ -1065,21 +1055,28 @@ const DeptInvestigation = ({
 
   const close = () => dispatch(setInvestigation(null));
 
-  /** The bar's own content. `answer` is a thunk because a tab that is still
-   *  waiting must not evaluate a conclusion it does not have yet. */
+  /**
+   * The bar's own content.
+   *
+   * Named for what each one IS rather than for the question it answers:
+   * three questions in a row read as a quiz, and numbering them 1, 3 and 5
+   * left two gaps nobody could account for. The conclusion beneath each name
+   * is where the question gets answered.
+   *
+   * `answer` is a thunk because a tab that is still waiting must not
+   * evaluate a conclusion it does not have yet.
+   */
   const TABS = [
     {
       key: "holds" as const,
-      n: 1,
-      title: "Does it hold?",
+      title: "Check",
       needsAll: false,
       answer: () =>
         holds.verdict === "holds" ? "It holds" : "The items say otherwise",
     },
     {
       key: "items" as const,
-      n: 3,
-      title: "What is it?",
+      title: "Items",
       needsAll: true,
       answer: () => {
         const lead = summary.byCause.find((c) => c.cause !== "ahead" && c.dollars < 0);
@@ -1090,8 +1087,7 @@ const DeptInvestigation = ({
     },
     {
       key: "act" as const,
-      n: 5,
-      title: "Who fixes it?",
+      title: "Hand-off",
       needsAll: true,
       answer: () => {
         const owned = desks.filter((d) => d.actionable);
@@ -1186,16 +1182,17 @@ const DeptInvestigation = ({
               }`}
             >
               <span className="flex items-center gap-2">
+                {/* Ready or not, without spending a numeral on it. */}
                 <span
-                  className={`w-5 h-5 rounded-full text-[11px] font-bold flex items-center justify-center flex-shrink-0 ${
+                  className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
                     waiting
-                      ? "border border-dashed border-content/40 text-content/85"
-                      : "bg-brand_navy text-custom-white"
+                      ? "border border-content/40"
+                      : on
+                        ? "bg-brand_navy"
+                        : "bg-content/40"
                   }`}
-                >
-                  {t.n}
-                </span>
-                <span className="text-[13px] font-bold text-content">
+                />
+                <span className="text-[13.5px] font-bold text-content">
                   {t.title}
                 </span>
               </span>
