@@ -166,6 +166,9 @@ export default {
            instead of smudged onto it. */
         card: "0 4px 6px -1px rgb(var(--color-brand-navy) / 0.18), 0 2px 4px -2px rgb(var(--color-brand-navy) / 0.14)",
         "card-sm": "0 1px 3px rgb(var(--color-brand-navy) / 0.14), 0 1px 2px rgb(var(--color-brand-navy) / 0.10)",
+        /* A panel laid OVER something, not sitting on the page: it has to
+           read as a layer or the grid shows through it as texture. */
+        rail: "-12px 0 32px rgb(var(--color-brand-navy) / 0.20), -2px 0 6px rgb(var(--color-brand-navy) / 0.12)",
       },
       keyframes: {
         nbDrop: {

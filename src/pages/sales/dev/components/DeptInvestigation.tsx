@@ -2475,7 +2475,7 @@ const DeptInvestigation = ({
             </p>
           </div>
 
-          <div className="flex-1 min-h-0 flex overflow-hidden">
+          <div className="relative flex-1 min-h-0 flex overflow-hidden">
           {/* The grid and the strip under it are one column of the row; the
               rail is the other. Left as siblings of the rail the pager
               became a SECOND column — the grid shrank to its own width and
@@ -2720,20 +2720,24 @@ const DeptInvestigation = ({
           </div>
 
           {/*
-            The rail moves instead of appearing.
+            The rail lays OVER the grid rather than beside it.
 
-            Clicking a row used to shove 520px of grid sideways in a single
-            frame, which is a jolt in the one place the reader is trying to
-            hold their position — the row they just clicked. The width is
-            what animates; the contents keep their own 520px and are clipped,
-            so nothing inside reflows on the way in or out.
+            Taking its 520px out of the row reflowed every column underneath
+            it, so opening a row moved the row that was opened. Over the top
+            nothing behind it shifts, and the columns a reader was reading
+            are still where they were when the rail closes.
+
+            It slides in rather than appearing, and carries a shadow heavy
+            enough to read as a layer — against a dense grid a plain white
+            panel reads as a hole in it.
           */}
           <div
-            className={`flex-shrink-0 overflow-hidden transition-[width] duration-200 ease-out motion-reduce:transition-none ${
-              pickedItem ? "w-[520px]" : "w-0"
+            className={`absolute top-0 right-0 bottom-0 z-20 w-[520px] shadow-rail transition-transform duration-200 ease-out motion-reduce:transition-none ${
+              pickedItem ? "translate-x-0" : "translate-x-full"
             }`}
+            aria-hidden={!pickedItem}
           >
-           <div className="w-[520px] h-full">
+           <div className="w-[520px] h-full border-l-2 border-brand_navy/25">
             {evidence && target && (
             <ItemEvidence
               item={evidence}

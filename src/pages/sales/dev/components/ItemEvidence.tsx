@@ -519,14 +519,16 @@ const ItemEvidence = ({
 
       {/* What the grid's Cause column means, spelled out. A label is a
           claim; this says what each store did. */}
+      {/* The card wears the cause it names. A white card with a coloured
+          chip on it made the colour a label ABOUT the verdict; the verdict
+          is the thing that has a colour, and it is the same one the row in
+          the grid behind is wearing. */}
       <div className="flex-shrink-0 px-4 pb-3">
-        <div className="rounded-lg bg-custom-white shadow-card-sm px-3.5 py-3">
-          <span
-            className={`inline-block text-[11.5px] font-bold px-2 py-0.5 rounded ${CAUSE_TONE[item.cause].chip}`}
-          >
+        <div className={`rounded-lg px-3.5 py-3 ${CAUSE_TONE[item.cause].chip}`}>
+          <span className="text-[11px] font-bold uppercase tracking-wide">
             {CAUSE_LABEL[item.cause]}
           </span>
-          <p className="text-[13.5px] leading-snug text-content mt-1.5">
+          <p className="text-[13.5px] leading-snug mt-1">
             {evidenceSays(item, openStoreName, compareStoreName)}
           </p>
         </div>
