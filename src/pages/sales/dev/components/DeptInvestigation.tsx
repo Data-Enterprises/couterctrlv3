@@ -174,10 +174,28 @@ const Carousel = ({ slides }: { slides: Slide[] }) => {
   const track = useRef<HTMLDivElement>(null);
   const [at, setAt] = useState(0);
 
+  /**
+   * Where a click is taking it, while it is still on the way.
+   *
+   * A smooth `scrollTo` fires `scroll` for every frame of its animation, so
+   * the handler below read the position it was LEAVING and set the tab back
+   * to it — the underline jumped to the new tab, back to the old one, then
+   * forward again. The journey is ignored; only the arrival counts.
+   */
+  const bound = useRef<number | null>(null);
+  const giveUp = useRef(0);
+
   const go = (i: number) => {
     const el = track.current;
     if (!el) return;
     const n = Math.max(0, Math.min(slides.length - 1, i));
+    bound.current = n;
+    /* And if it never lands exactly — a sub-pixel width, an interrupted
+       animation — stop waiting, or a swipe would stop moving the tabs. */
+    window.clearTimeout(giveUp.current);
+    giveUp.current = window.setTimeout(() => {
+      bound.current = null;
+    }, 600);
     el.scrollTo({ left: n * el.clientWidth, behavior: "smooth" });
     setAt(n);
   };
@@ -225,7 +243,13 @@ const Carousel = ({ slides }: { slides: Slide[] }) => {
         ref={track}
         onScroll={() => {
           const el = track.current;
-          if (el) setAt(Math.round(el.scrollLeft / Math.max(1, el.clientWidth)));
+          if (!el) return;
+          const i = Math.round(el.scrollLeft / Math.max(1, el.clientWidth));
+          if (bound.current !== null) {
+            if (i === bound.current) bound.current = null;
+            return;
+          }
+          setAt(i);
         }}
         className="flex overflow-x-auto no-scrollbar snap-x snap-mandatory overscroll-x-contain"
       >
@@ -1686,6 +1710,35 @@ const ActPanel = ({
   return (
     <div className="flex-1 min-h-0 overflow-auto thin-scrollbar px-4 py-4">
       <div className="max-w-[1100px] flex flex-col gap-4">
+        {/* Above the cards, not under them. These are the piles nobody is
+            being handed, and a reader who has already read four lists has
+            stopped looking for a fifth thing — which is how a shortfall
+            goes quiet. */}
+        {quiet.map((d) => (
+          <div
+            key={d.cause}
+            className="flex items-center gap-3 flex-wrap rounded-lg bg-bkg shadow-card-sm px-4 py-2.5"
+          >
+            <span className="text-[12px] font-bold uppercase tracking-wide text-content/85 flex-shrink-0">
+              {CAUSE_LABEL[d.cause]}
+            </span>
+            <span className="text-[14px] font-bold tabular-nums text-delta_negative_text flex-shrink-0">
+              {"−"}
+              {cash(Math.abs(d.dollars))}
+            </span>
+            <span className="text-[13px] leading-snug text-content/85 min-w-0">
+              {d.says} Nothing here names anything to act on, so it goes on no
+              list.
+            </span>
+            <button
+              onClick={() => onShow(d.cause)}
+              className="ml-auto flex-shrink-0 px-3 py-1.5 rounded-md bg-custom-white shadow-card-sm text-[12px] font-bold text-content hover:bg-brand_navy/5 transition-colors"
+            >
+              Show in grid &rarr;
+            </button>
+          </div>
+        ))}
+
         <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))" }}>
           {owned.map((d) => (
             <div
@@ -1752,21 +1805,6 @@ const ActPanel = ({
           ))}
         </div>
 
-        {/* Stated, and handed to nobody. A shortfall that quietly vanishes
-            from the hand-off is one somebody finds again later and trusts
-            less for having been dropped. */}
-        {quiet.map((d) => (
-          <p
-            key={d.cause}
-            className="text-[13px] leading-relaxed text-content/85 border-l-2 border-brand_navy/15 pl-3"
-          >
-            <span className="font-semibold text-content">
-              {CAUSE_LABEL[d.cause]} · {cash(Math.abs(d.dollars))}
-            </span>{" "}
-            {d.says} It goes on no list, because nothing here names anything to
-            act on.
-          </p>
-        ))}
       </div>
     </div>
   );
@@ -2147,16 +2185,6 @@ const DeptInvestigation = ({
         >
           Export CSV
         </button>
-        <span
-          className={`flex-shrink-0 text-[13px] font-semibold px-2.5 py-1 rounded ${
-            summary.gap < 0
-              ? "bg-delta_negative_bg text-delta_negative_text"
-              : "bg-delta_positive_bg text-delta_positive_text"
-          }`}
-        >
-          {summary.gap >= 0 ? "+" : "−"}
-          {fmt(Math.abs(summary.gap))}
-        </span>
       </div>
 
       {/*

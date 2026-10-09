@@ -203,6 +203,14 @@ const ListRow = ({
 
 /** A headed block, so the panel reads as sections rather than a column of
  *  loose figures. */
+/** Red behind, green ahead, black level — level is not a finding. */
+const against = (mine: number, theirs: number) =>
+  mine < theirs
+    ? "text-delta_negative_text"
+    : mine > theirs
+      ? "text-delta_positive_text"
+      : "text-content";
+
 const Block = ({
   title,
   children,
@@ -285,16 +293,16 @@ const Detail = ({
               style={{ width: `${(Math.abs(split.rate) / splitSize) * 100}%` }}
             />
           </span>
-          <div className="flex justify-between gap-4 text-[11.5px] text-content/85 mt-1">
+          <div className="flex justify-between gap-4 text-[12.5px] text-content/85 mt-1">
             <span>
-              {row.weighed ? "Pounds" : "Units"}{" "}
-              <span className="font-bold tabular-nums text-content">
+              {row.weighed ? "Weight" : "Units"}{" "}
+              <span className="font-semibold tabular-nums text-content">
                 {signed(split.volume)}
               </span>
             </span>
             <span>
               Take per {oneWord}{" "}
-              <span className="font-bold tabular-nums text-content">
+              <span className="font-semibold tabular-nums text-content">
                 {signed(split.rate)}
               </span>
             </span>
@@ -303,7 +311,7 @@ const Detail = ({
       )}
 
       <Block title="The gap, week by week">
-        <div className="flex gap-4 flex-wrap text-[11.5px] text-content/85">
+        <div className="flex gap-4 flex-wrap text-[12.5px] text-content/85">
           {weeks.map((w) => (
             <span key={w.label}>
               {w.label}{" "}
@@ -320,20 +328,31 @@ const Detail = ({
       </Block>
 
       <Block title="What each store rang">
-        <div className="flex gap-4 flex-wrap text-[11.5px] text-content/85">
+        <div className="flex gap-4 flex-wrap text-[12.5px] text-content/85">
           <span>
             Sales{" "}
-            <span className="font-bold tabular-nums text-content">
+            {/* This store's own figure carries the direction: level is not a
+                finding, so it stays black rather than claiming one. */}
+            <span className={`font-semibold tabular-nums ${against(row.mine, row.theirs)}`}>
               {money(row.mine)}
             </span>{" "}
-            vs {money(row.theirs)}
+            vs{" "}
+            <span className="font-semibold tabular-nums text-content">
+              {money(row.theirs)}
+            </span>
           </span>
           <span>
-            {row.weighed ? "Pounds" : "Units"}{" "}
-            <span className="font-bold tabular-nums text-content">
+            {row.weighed ? "Weight" : "Units"}{" "}
+            <span
+              className={`font-semibold tabular-nums ${against(row.mineUnits, row.theirsUnits)}`}
+            >
               {Math.round(row.mineUnits).toLocaleString("en-US")}
             </span>{" "}
-            vs {Math.round(row.theirsUnits).toLocaleString("en-US")} {unitWord}
+            vs{" "}
+            <span className="font-semibold tabular-nums text-content">
+              {Math.round(row.theirsUnits).toLocaleString("en-US")}
+            </span>{" "}
+            {unitWord}
           </span>
         </div>
       </Block>
