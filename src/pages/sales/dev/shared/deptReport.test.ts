@@ -164,6 +164,22 @@ describe("the chain", () => {
     expect(c.gates[2].value).toBe(NOT_CHECKED);
   });
 
+  /** Both gates pass and the store is three thousand dollars up. "Level
+   *  with the other store" was tolerable while these were a count in a
+   *  footer; each one gets a panel of its own now. */
+  it("calls a department that is ahead ahead, not level", () => {
+    const c = run({ mine: 13000, mineUnits: 1300, theirs: 10000, theirsUnits: 1000 });
+    expect(c.finding).toBe("ahead");
+    expect(c.says.lead).toBe("Ahead");
+    expect(c.says.tail).toContain("30% more units");
+  });
+
+  /** Level still means level: the same money, so neither word applies. */
+  it("keeps level for a department that matches", () => {
+    const c = run({ mine: 10000, mineUnits: 1000, theirs: 10000, theirsUnits: 1000 });
+    expect(c.finding).toBe("level");
+  });
+
   it("lets the split decide which gate leads when both fail", () => {
     // Units down a tenth, rate down by half: the rate carries the gap, so
     // reading the gates left to right would blame the wrong one.

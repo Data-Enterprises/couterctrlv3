@@ -10,7 +10,6 @@ import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicato
 import PageInfoButton from "../../../../components-dev/PageInfoButton";
 import {
   buildReport,
-  NOT_CHECKED,
   totalsFrom,
   type Finding,
   type Gate,
@@ -62,26 +61,16 @@ const numberOf = (name: string, fallback: string) => {
   return /^\d+$/.test(lead) ? lead : fallback;
 };
 
-/** What a set of departments that failed the same gate is called. */
-const GROUP_SAYS: Record<Finding, string> = {
+/** What a department's chain concluded, in the fewest words that are true. */
+const FINDING_SAYS: Record<Finding, string> = {
   "nothing-rung": "Nothing rung",
   "fewer-units": "Sold fewer units",
   "lower-price": "Took less per unit",
   "different-mix": "Selling a different mix",
   "a-little-less": "A little less of everything",
+  ahead: "Ahead",
   level: "Level",
 };
-
-/**
- * A capped name column, not a share of the row.
- *
- * At `1fr` the name sat alone in two hundred pixels of nothing, the figure
- * floated in the middle, and the sentence began a third of the way across —
- * three islands with two voids between them. Capped, the name, the money
- * and the sentence read as one run, and what is left over falls after the
- * sentence, where text ending is what a reader expects.
- */
-const COLS = "10px minmax(0,216px) 104px minmax(0,1fr) 148px";
 
 /** Pass, fail, or never reached. A tick, a cross, or an empty ring. */
 const Mark = ({ state }: { state: Gate["state"] }) => (
@@ -101,10 +90,10 @@ const Mark = ({ state }: { state: Gate["state"] }) => (
 /**
  * One gate, as a tile.
  *
- * The trail these replace ran the three checks together on one line, which
- * read as a sentence about a sentence. Three tiles put the question above
- * the figure and let the failing one carry the tint, so what was checked
- * and what it found are read at a glance rather than parsed.
+ * Run together on one line the three checks read as a sentence about a
+ * sentence. Three tiles put the question above the figure and let the
+ * failing one carry the tint, so what was checked and what it found are
+ * read at a glance rather than parsed.
  */
 const Tile = ({ gate }: { gate: Gate }) => {
   const fail = gate.state === "fail";
@@ -140,230 +129,214 @@ const Tile = ({ gate }: { gate: Gate }) => {
   );
 };
 
-/** The square that opens every row: red where it is behind, green ahead.
- *  `top` for a row of two lines, where centring would float it. */
-const Pip = ({ ahead = false, top = false }: { ahead?: boolean; top?: boolean }) => (
-  <span
-    className={`block w-2.5 h-2.5 rounded-sm ${top ? "mt-[5px]" : ""} ${
-      ahead ? "bg-delta_positive_text" : "bg-delta_negative_text"
-    }`}
-  />
-);
-
-/** Show 9 / Hide, the same control on every collapsible row. */
-const Expander = ({
-  open,
-  count,
-  onClick,
-}: {
-  open: boolean;
-  count: number;
-  onClick: () => void;
-}) => (
-  <button
-    onClick={onClick}
-    className="justify-self-end flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-brand_navy/25 hover:bg-bkg transition-colors text-[12px] font-bold text-content whitespace-nowrap"
-  >
-    {open ? "Hide" : `Show ${count}`}
-    <span className="text-[10px] leading-none">{open ? "▲" : "▼"}</span>
-  </button>
-);
-
-/* ------------------------------------------------------------------ *//* ------------------------------------------------------------------ */
-/* One line                                                            */
+/* ------------------------------------------------------------------ */
+/* The list                                                            */
 /* ------------------------------------------------------------------ */
 
-interface RowProps {
+/**
+ * One department in the left column.
+ *
+ * Every department is here, not only the ones that carry the shortfall.
+ * The cut still decides what the headline counts and what the bar draws,
+ * but a department left off the list entirely is one somebody has to take
+ * on trust, and the point of the panel beside it is that nothing has to be
+ * taken on trust.
+ *
+ * The row does nothing but change what that panel is showing. Every action
+ * lives on the right, so there is no part of this list where clicking the
+ * wrong thing does something unexpected.
+ */
+const ListRow = ({
+  row,
+  selected,
+  onSelect,
+}: {
   row: ReportRow;
-  /** Inside the cut gets the solid button, the rest a link. Both go to the
-   *  same place — the weight only says where to start. */
-  lead: boolean;
-  onInvestigate: (row: ReportRow) => void;
-}
-
-const Row = ({ row, lead, onInvestigate }: RowProps) => (
-  <div className="px-4 py-2.5 border-b-2 border-brand_navy/20">
-    {/* Centred, not top-aligned: the button is half again the height of the
-        text beside it, and aligning to the top left a band of dead space
-        under the sentence that read as a gap between two rows. */}
-    <div
-      className="grid gap-4 items-center"
-      style={{ gridTemplateColumns: COLS }}
+  selected: boolean;
+  onSelect: () => void;
+}) => {
+  const ahead = row.gap >= 0;
+  return (
+    <button
+      onClick={onSelect}
+      className={`w-full text-left px-3 py-1.5 border-b border-b-brand_navy/15 border-l-2 transition-colors ${
+        selected
+          ? "bg-row_selected border-row_selected_border"
+          : "border-transparent hover:bg-gray-50"
+      }`}
     >
-      <Pip />
-
-      <span className="min-w-0 truncate text-[13px] font-bold text-content leading-snug">
-        {row.name}
-      </span>
-
-      <span className="text-right text-[13px] font-bold tabular-nums text-delta_negative_text leading-snug">
-        {signed(row.gap)}
-      </span>
-
-      <span className="block text-[12.5px] leading-snug text-content">
-        <span className="font-bold text-delta_negative_text">
-          {row.chain.says.lead}
+      <span className="flex items-center gap-2">
+        <span
+          className={`block w-2 h-2 rounded-sm flex-shrink-0 ${
+            ahead ? "bg-delta_positive_text" : "bg-delta_negative_text"
+          }`}
+        />
+        <span className="flex-1 min-w-0 truncate text-[12px] font-semibold text-content">
+          {row.name}
         </span>
-        {row.chain.says.tail}
-      </span>
-
-      {/* Named by the gate that failed. "Check the mix" rather than "Check
-          prices" where the take per unit is half the other store's: that is
-          not a department that priced low, and comparing price tags would
-          send somebody to the one place the answer is not. */}
-      {lead ? (
-        <button
-          onClick={() => onInvestigate(row)}
-          className="justify-self-end px-3.5 py-1.5 rounded-md bg-brand_navy hover:bg-brand_navy_hover text-custom-white text-[12px] font-bold transition-colors whitespace-nowrap"
+        <span
+          className={`text-[12px] font-bold tabular-nums whitespace-nowrap ${
+            ahead ? "text-delta_positive_text" : "text-delta_negative_text"
+          }`}
         >
-          {row.chain.cta} &rarr;
-        </button>
-      ) : (
-        <button
-          onClick={() => onInvestigate(row)}
-          className="justify-self-end text-[12px] font-bold text-brand_navy_hover hover:underline whitespace-nowrap"
-        >
-          Investigate &rarr;
-        </button>
-      )}
-
-      {/* The gates in order, under the sentence they hold up. Somebody who
-          does not care takes the sentence; somebody who does can see what
-          it rests on without opening anything. */}
-      <span
-        className="grid grid-cols-3 gap-2.5 mt-1.5"
-        style={{ gridColumn: "2 / 5" }}
-      >
-        {row.chain.gates.map((g) => (
-          <Tile key={g.name} gate={g} />
-        ))}
+          {signed(row.gap)}
+        </span>
       </span>
+      <span className="block pl-4 text-[11px] text-content/85 truncate">
+        {FINDING_SAYS[row.chain.finding]}
+      </span>
+    </button>
+  );
+};
+
+/* ------------------------------------------------------------------ */
+/* The panel                                                           */
+/* ------------------------------------------------------------------ */
+
+/** A headed block, so the panel reads as sections rather than a column of
+ *  loose figures. */
+const Block = ({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) => (
+  <div className="border-t border-brand_navy/15 pt-2.5 mt-3">
+    <div className="text-[10px] font-bold uppercase tracking-wide text-content/85 mb-1.5">
+      {title}
     </div>
+    {children}
   </div>
 );
 
-/* ------------------------------------------------------------------ */
-/* Several departments, one finding                                    */
-/* ------------------------------------------------------------------ */
-
 /**
- * What a folded row shows once it is opened.
+ * The selected department, in full.
  *
- * The group header names the finding they share, so a sub-row repeating it
- * would be the padding this report exists instead of — except where they
- * are ahead, which the header cannot say per department. There the units
- * carry it: a department $3,000 up because it sold half again as much is a
- * different store from one that took more for the same volume.
+ * What the single column could never fit: the sentence, the three gates
+ * with a column each, the exact split behind the sentence, and how the
+ * same subtraction ran in the two earlier weeks.
  */
-const subSays = (row: ReportRow, ahead: boolean) => {
-  if (!ahead) return row.chain.says.lead;
-  const sold = row.chain.gates[1];
-  return sold.value === NOT_CHECKED ? "Ahead" : `Sold ${sold.value}`;
-};
-
-interface GroupProps {
-  rows: ReportRow[];
-  /** Positive magnitude, whichever way it runs. */
-  total: number;
-  says: string;
-  ahead?: boolean;
-  open: boolean;
-  onToggle: () => void;
+const Detail = ({
+  row,
+  onInvestigate,
+}: {
+  row: ReportRow;
   onInvestigate: (row: ReportRow) => void;
-}
-
-/**
- * Departments that failed the same gate, as one line that opens.
- *
- * Four that rang nothing are one problem with one owner, and four rows
- * saying it four times is noise. But the fold used to end in a button that
- * dropped straight into the FIRST of them, which is a department nobody
- * chose — so it opens in place instead, and each one keeps its own way in.
- */
-const GroupBlock = ({
-  rows, total, says, ahead = false, open, onToggle, onInvestigate,
-}: GroupProps) => {
+}) => {
+  const ahead = row.gap >= 0;
   const tone = ahead ? "text-delta_positive_text" : "text-delta_negative_text";
+  const unitWord = row.weighed ? "lb" : "units";
+  const oneWord = row.weighed ? "lb" : "unit";
+
+  /* The identity behind the sentence: the gap is exactly what the missing
+     units would have taken at THEIR rate, plus what our own units lost at
+     our rate. One bar, because they are two halves of one figure. */
+  const split = row.split;
+  const splitSize = split ? Math.abs(split.volume) + Math.abs(split.rate) : 0;
+
+  const weeks = [
+    { label: "Last year", v: row.lyGap },
+    { label: "Last week", v: row.lwGap },
+    { label: "This week", v: row.gap },
+  ];
+
   return (
-    <div className="border-b-2 border-brand_navy/20">
-      <div
-        className="grid gap-4 items-start px-4 py-2.5"
-        style={{ gridTemplateColumns: COLS }}
-      >
-        <Pip ahead={ahead} top />
-
-        <span className="min-w-0">
-          <span className="flex items-center gap-2">
-            <span className="flex-shrink-0 min-w-[22px] text-center px-1.5 py-0.5 rounded bg-bkg text-[11.5px] font-bold tabular-nums text-content">
-              {rows.length}
-            </span>
-            <span className="text-[13px] font-bold text-content leading-snug">
-              departments
-            </span>
-          </span>
-          {/* A few names and a count. Spelling out twelve wrapped to six
-              lines and left this row three times the height of the ones
-              above it, and nobody reads the twelfth name anyway. */}
-          <span
-            className="block text-[11.5px] text-content/85 leading-snug mt-0.5 truncate"
-            title={rows.map((r) => r.name).join(", ")}
-          >
-            {rows.slice(0, 3).map((r) => r.name).join(", ")}
-            {rows.length > 3 && ` and ${rows.length - 3} more`}
-          </span>
+    <div className="flex-1 min-w-0 flex flex-col overflow-auto thin-scrollbar px-4 py-3">
+      <div className="flex items-baseline gap-3">
+        <span className="min-w-0 truncate text-[15px] font-bold text-content">
+          {row.name}
         </span>
-
-        <span className={`text-right text-[13px] font-bold tabular-nums leading-snug ${tone}`}>
-          {signed(ahead ? total : -total)}
+        <span
+          className={`ml-auto text-[15px] font-bold tabular-nums whitespace-nowrap ${tone}`}
+        >
+          {signed(row.gap)}
         </span>
-
-        <span className={`text-[12.5px] font-bold leading-snug ${tone}`}>
-          {says}
-        </span>
-
-        <Expander open={open} count={rows.length} onClick={onToggle} />
       </div>
 
-      {/* Hung off the row above, not laid beside it.
+      <p className="text-[12.5px] leading-snug text-content mt-1.5">
+        <span className={`font-bold ${tone}`}>{row.chain.says.lead}</span>
+        {row.chain.says.tail}
+      </p>
 
-          Flat rows on a tinted band read as a second table spliced in at
-          the same weight as the first. A rail running down under the pip
-          says whose contents these are, and the columns still line up with
-          the rows above because the rail lives inside the pip's own cell. */}
-      {open && (
-        <div className="bg-bkg">
-          {rows.map((r, i) => (
-            <div
-              key={r.id}
-              className={`grid gap-4 items-center px-4 py-1.5 ${
-                i > 0 ? "border-t border-brand_navy/10" : ""
-              }`}
-              style={{ gridTemplateColumns: COLS }}
-            >
+      <div className="grid grid-cols-3 gap-2.5 mt-3">
+        {row.chain.gates.map((g) => (
+          <Tile key={g.name} gate={g} />
+        ))}
+      </div>
+
+      {split && splitSize > 0 && (
+        <Block title="What the gap is made of">
+          <span className="flex h-2 rounded-sm overflow-hidden bg-bkg">
+            <span
+              className={`block ${ahead ? "bg-delta_positive_text" : "bg-delta_negative_text"}`}
+              style={{ width: `${(Math.abs(split.volume) / splitSize) * 100}%` }}
+            />
+            <span
+              className={`block opacity-50 ${ahead ? "bg-delta_positive_text" : "bg-delta_negative_text"}`}
+              style={{ width: `${(Math.abs(split.rate) / splitSize) * 100}%` }}
+            />
+          </span>
+          <div className="flex justify-between gap-4 text-[11.5px] text-content/85 mt-1">
+            <span>
+              {row.weighed ? "Pounds" : "Units"}{" "}
+              <span className="font-bold tabular-nums text-content">
+                {signed(split.volume)}
+              </span>
+            </span>
+            <span>
+              Take per {oneWord}{" "}
+              <span className="font-bold tabular-nums text-content">
+                {signed(split.rate)}
+              </span>
+            </span>
+          </div>
+        </Block>
+      )}
+
+      <Block title="The gap, week by week">
+        <div className="flex gap-4 flex-wrap text-[11.5px] text-content/85">
+          {weeks.map((w) => (
+            <span key={w.label}>
+              {w.label}{" "}
               <span
-                className={`block w-[2px] self-stretch mx-auto ${
-                  ahead ? "bg-delta_positive_text/30" : "bg-delta_negative_text/30"
+                className={`font-bold tabular-nums ${
+                  w.v >= 0 ? "text-delta_positive_text" : "text-delta_negative_text"
                 }`}
-              />
-              <span className="min-w-0 truncate pl-3 text-[12.5px] font-semibold text-content">
-                {r.name}
-              </span>
-              <span className={`text-right text-[12.5px] font-semibold tabular-nums ${tone}`}>
-                {signed(r.gap)}
-              </span>
-              <span className="text-[12.5px] text-content/85 truncate">
-                {subSays(r, ahead)}
-              </span>
-              <button
-                onClick={() => onInvestigate(r)}
-                className="justify-self-end text-[12px] font-bold text-brand_navy_hover hover:underline whitespace-nowrap"
               >
-                Investigate &rarr;
-              </button>
-            </div>
+                {signed(w.v)}
+              </span>
+            </span>
           ))}
         </div>
-      )}
+      </Block>
+
+      <Block title="What each store rang">
+        <div className="flex gap-4 flex-wrap text-[11.5px] text-content/85">
+          <span>
+            Sales{" "}
+            <span className="font-bold tabular-nums text-content">
+              {money(row.mine)}
+            </span>{" "}
+            vs {money(row.theirs)}
+          </span>
+          <span>
+            {row.weighed ? "Pounds" : "Units"}{" "}
+            <span className="font-bold tabular-nums text-content">
+              {Math.round(row.mineUnits).toLocaleString("en-US")}
+            </span>{" "}
+            vs {Math.round(row.theirsUnits).toLocaleString("en-US")} {unitWord}
+          </span>
+        </div>
+      </Block>
+
+      {/* Pinned, so it is in the same place whatever the panel had to say. */}
+      <button
+        onClick={() => onInvestigate(row)}
+        className="mt-auto self-start px-3.5 py-1.5 rounded-md bg-brand_navy hover:bg-brand_navy_hover text-custom-white text-[12px] font-bold transition-colors whitespace-nowrap"
+      >
+        {row.chain.cta} &rarr;
+      </button>
     </div>
   );
 };
@@ -421,10 +394,8 @@ const DeptReport = ({
     (state) => state.dev.salesCache.counterpart[cacheKey],
   );
   const [failed, setFailed] = useState(false);
-  const [showAll, setShowAll] = useState(false);
-  /** Which folds are open, by finding — plus "ahead" for the green one. */
-  const [open, setOpen] = useState<Record<string, boolean>>({});
-  const toggle = (k: string) => setOpen((o) => ({ ...o, [k]: !o[k] }));
+  /** The department the panel is showing, by id. */
+  const [picked, setPicked] = useState<number | null>(null);
 
   useEffect(() => {
     if (theirs) return;
@@ -507,194 +478,151 @@ const DeptReport = ({
     );
   }
 
-  const { shown, folded, byFinding, underTotal, overTotal, over, netGap } = report;
+  const { shown, folded, underTotal, overTotal, over, netGap } = report;
 
   /**
-   * What prints after the cut.
+   * Every department, worst first.
    *
-   * Departments that failed the SAME gate collapse into one line: four that
-   * rang nothing are one problem with one owner, and four rows saying it
-   * four times is the padding this report exists instead of. Whatever is
-   * left over is listed on its own, a few at a time, and the remainder is a
-   * count in the footer.
+   * The cut still does its work — it decides what the headline counts and
+   * what the bar draws — but it no longer decides what is on screen. A
+   * department folded away is one somebody has to take on trust, and with
+   * a panel sitting beside the list there is room to show all of them.
    */
-  const grouped = new Set(
-    byFinding
-      .filter((g) => g.rows.filter((r) => folded.includes(r)).length > 1)
-      .map((g) => g.finding),
-  );
-  const loose = folded.filter((r) => !grouped.has(r.chain.finding));
-  const groups = byFinding
-    .filter((g) => grouped.has(g.finding))
-    .map((g) => {
-      const rows = g.rows.filter((r) => folded.includes(r));
-      return { finding: g.finding, rows, total: rows.reduce((t, r) => t - r.gap, 0) };
-    });
+  const rows = [...shown, ...folded, ...over].sort((x, y) => x.gap - y.gap);
 
-  const LOOSE_CAP = 3;
-  const listed = showAll ? loose : loose.slice(0, LOOSE_CAP);
-  const rest = loose.slice(listed.length);
-  const restTotal = rest.reduce((t, r) => t - r.gap, 0);
+  /** The first row until somebody picks another, so the panel is never
+   *  empty and never opens on a department nobody chose. */
+  const selected = rows.find((r) => r.id === picked) ?? rows[0] ?? null;
 
   /**
-   * The shortfall as one bar, a segment a printed row, in the order the
-   * rows come.
+   * The shortfall as one bar: a segment for each department the headline
+   * counts, then one for everything else under.
    *
-   * It is a legend as much as a figure: the first block IS the first line,
-   * so "two departments hold most of it" is seen before it is read. What
-   * the store is ahead on stays off the bar — netting them would hide both
-   * — and is named beside it instead.
+   * A segment a row would be fifteen slivers and a muddy opacity ladder.
+   * These are the departments the sentence above is about, and the tail is
+   * the rest, which is exactly what the sentence leaves out.
    */
+  const restUnder = folded.reduce((t, r) => t - r.gap, 0);
   const segments = [
-    ...shown.map((r) => ({ key: `d${r.id}`, size: -r.gap })),
-    ...listed.map((r) => ({ key: `l${r.id}`, size: -r.gap })),
-    ...groups.map((g) => ({ key: g.finding, size: g.total })),
-    ...(rest.length ? [{ key: "rest", size: restTotal }] : []),
+    ...shown.map((r) => ({ key: `d${r.id}`, size: -r.gap, lead: true })),
+    ...(restUnder > 0 ? [{ key: "rest", size: restUnder, lead: false }] : []),
   ].filter((x) => x.size > 0);
   const underCount = shown.length + folded.length;
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
-      <div className="flex-1 min-h-0 overflow-auto thin-scrollbar">
-        <div className="px-4 pt-2.5 pb-3 border-b-2 border-brand_navy/20">
-          <div className="flex items-center gap-2 flex-wrap text-[11.5px] text-content/85">
-            <button
-              onClick={onBack}
-              className="font-semibold text-content hover:underline flex-shrink-0"
-            >
-              &lsaquo; All stores
-            </button>
-            <span>&middot;</span>
-            <span className="truncate">vs {compareStoreName}</span>
-            <span>&middot;</span>
-            <span
-              className={`font-bold ${
-                netGap < 0 ? "text-delta_negative_text" : "text-delta_positive_text"
-              }`}
-            >
-              {signed(netGap)} {netGap < 0 ? "behind" : "ahead"} overall
-            </span>
-            <PageInfoButton
-              page="sales"
-              section="gap-split"
-              variant="light"
-              title="How a department is checked"
-              className="ml-auto flex-shrink-0 -my-1"
-            />
-          </div>
-
-          {/* The whole report in one line: how much, and how concentrated. */}
-          <p className="text-[16.5px] font-bold leading-snug text-content mt-1.5">
-            {shown.length === 0 ? (
-              <>Nothing is under {compareStoreName}.</>
-            ) : (
-              <>
-                {word(shown.length)}{" "}
-                {shown.length === 1 ? "department holds" : "departments hold"}{" "}
-                <span className="text-delta_negative_text">
-                  {money(shown.reduce((t, r) => t - r.gap, 0))}
-                </span>{" "}
-                of the shortfall
-              </>
-            )}
-          </p>
-
-          {underTotal > 0 && (
-            <>
-              <span className="flex h-2.5 rounded-sm overflow-hidden bg-bkg mt-2.5">
-                {segments.map((seg, i) => (
-                  <span
-                    key={seg.key}
-                    className="block bg-delta_negative_text"
-                    style={{
-                      width: `${(seg.size / underTotal) * 100}%`,
-                      opacity: Math.max(0.3, 1 - i * 0.17),
-                    }}
-                  />
-                ))}
-              </span>
-
-              {/* Both totals, where the bar can be read against them. They
-                  used to sit in a strip under the last row, which is the
-                  one place somebody reading the top of a report does not
-                  look. */}
-              <div className="flex items-baseline gap-4 flex-wrap mt-1.5 text-[11.5px] text-content/85">
-                <span>
-                  <span className="font-bold tabular-nums text-delta_negative_text">
-                    {signed(-underTotal)}
-                  </span>{" "}
-                  under, across {underCount}{" "}
-                  {underCount === 1 ? "department" : "departments"}
-                </span>
-                {over.length > 0 && (
-                  <span className="ml-auto">
-                    offset by{" "}
-                    <span className="font-bold tabular-nums text-delta_positive_text">
-                      {signed(overTotal)}
-                    </span>{" "}
-                    where {numberOf(openStoreName, openStoreNumber)} is ahead
-                  </span>
-                )}
-              </div>
-            </>
-          )}
+      <div className="flex-shrink-0 px-4 pt-2.5 pb-3 border-b-2 border-brand_navy/20">
+        <div className="flex items-center gap-2 flex-wrap text-[11.5px] text-content/85">
+          <button
+            onClick={onBack}
+            className="font-semibold text-content hover:underline flex-shrink-0"
+          >
+            &lsaquo; All stores
+          </button>
+          <span>&middot;</span>
+          <span className="truncate">vs {compareStoreName}</span>
+          <span>&middot;</span>
+          <span
+            className={`font-bold ${
+              netGap < 0 ? "text-delta_negative_text" : "text-delta_positive_text"
+            }`}
+          >
+            {signed(netGap)} {netGap < 0 ? "behind" : "ahead"} overall
+          </span>
+          <PageInfoButton
+            page="sales"
+            section="gap-split"
+            variant="light"
+            title="How a department is checked"
+            className="ml-auto flex-shrink-0 -my-1"
+          />
         </div>
 
-        {shown.map((r) => (
-          <Row key={r.id} row={r} lead onInvestigate={investigate} />
-        ))}
-        {listed.map((r) => (
-          <Row key={r.id} row={r} lead={false} onInvestigate={investigate} />
-        ))}
+        {/* The whole report in one line: how much, and how concentrated. */}
+        <p className="text-[16.5px] font-bold leading-snug text-content mt-1.5">
+          {shown.length === 0 ? (
+            <>Nothing is under {compareStoreName}.</>
+          ) : (
+            <>
+              {word(shown.length)}{" "}
+              {shown.length === 1 ? "department holds" : "departments hold"}{" "}
+              <span className="text-delta_negative_text">
+                {money(shown.reduce((t, r) => t - r.gap, 0))}
+              </span>{" "}
+              of the shortfall
+            </>
+          )}
+        </p>
 
-        {groups.map((g) => (
-          <GroupBlock
-            key={g.finding}
-            rows={g.rows}
-            total={g.total}
-            says={GROUP_SAYS[g.finding]}
-            open={!!open[g.finding]}
-            onToggle={() => toggle(g.finding)}
-            onInvestigate={investigate}
-          />
-        ))}
-
-        {/* Where the store is ahead, on the same terms. It was a count in
-            the footer, which made a department $3,000 up unreachable — and
-            a store that is ahead somewhere usually knows why, which is the
-            one thing in here that can be copied. */}
-        {over.length > 0 && (
-          <GroupBlock
-            rows={over}
-            total={overTotal}
-            says={`Ahead of ${numberOf(compareStoreName, compareStoreNumber)}`}
-            ahead
-            open={!!open.ahead}
-            onToggle={() => toggle("ahead")}
-            onInvestigate={investigate}
-          />
-        )}
-
-        {loose.length > LOOSE_CAP && (
-          <div className="flex items-center gap-2 px-4 py-2.5">
-            <span className="text-[12px] text-content/85">
-              {rest.length > 0 ? (
-                <>
-                  {rest.length} more under{" "}
-                  <span className="font-semibold tabular-nums text-delta_negative_text">
-                    {signed(-restTotal)}
-                  </span>
-                </>
-              ) : (
-                <>All departments shown</>
-              )}
+        {underTotal > 0 && (
+          <>
+            <span className="flex h-2.5 rounded-sm overflow-hidden bg-bkg mt-2.5">
+              {segments.map((seg, i) => (
+                <span
+                  key={seg.key}
+                  className="block bg-delta_negative_text"
+                  style={{
+                    width: `${(seg.size / underTotal) * 100}%`,
+                    opacity: seg.lead ? Math.max(0.55, 1 - i * 0.2) : 0.3,
+                  }}
+                />
+              ))}
             </span>
-            <button
-              onClick={() => setShowAll((v) => !v)}
-              className="ml-auto text-[12px] font-bold text-brand_navy_hover hover:underline flex-shrink-0"
-            >
-              {showAll ? "Show less" : "Show all"} &rsaquo;
-            </button>
+
+            <div className="flex items-baseline gap-4 flex-wrap mt-1.5 text-[11.5px] text-content/85">
+              <span>
+                <span className="font-bold tabular-nums text-delta_negative_text">
+                  {signed(-underTotal)}
+                </span>{" "}
+                under, across {underCount}{" "}
+                {underCount === 1 ? "department" : "departments"}
+              </span>
+              {over.length > 0 && (
+                <span className="ml-auto">
+                  offset by{" "}
+                  <span className="font-bold tabular-nums text-delta_positive_text">
+                    {signed(overTotal)}
+                  </span>{" "}
+                  where {numberOf(openStoreName, openStoreNumber)} is ahead
+                </span>
+              )}
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* The same two panels the single-store tab uses: a list to scan, and
+          the thing it points at. One row of evidence could never carry a
+          name, a figure, a sentence, a button and three gates across a full
+          width — split in two, each half has room to be read. */}
+      <div className="flex-1 min-h-0 flex">
+        <div
+          className="flex flex-col min-h-0 border-r border-brand_navy/15"
+          style={{ width: "39.5%" }}
+        >
+          <div className="flex-shrink-0 flex items-center gap-2 px-3 py-1.5 border-b border-brand_navy/15 text-[10px] font-bold uppercase tracking-wide text-content/85">
+            <span className="w-2 flex-shrink-0" />
+            <span className="flex-1 min-w-0">Sub dept</span>
+            <span>Gap</span>
+          </div>
+
+          <div className="flex-1 min-h-0 overflow-auto thin-scrollbar">
+            {rows.map((r) => (
+              <ListRow
+                key={r.id}
+                row={r}
+                selected={selected?.id === r.id}
+                onSelect={() => setPicked(r.id)}
+              />
+            ))}
+          </div>
+        </div>
+
+        {selected ? (
+          <Detail row={selected} onInvestigate={investigate} />
+        ) : (
+          <div className="flex-1 flex items-center justify-center px-4 text-center text-[12.5px] text-content/85">
+            No departments to compare.
           </div>
         )}
       </div>

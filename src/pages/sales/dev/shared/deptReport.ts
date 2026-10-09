@@ -123,6 +123,7 @@ export type Finding =
   | "lower-price"
   | "different-mix"
   | "a-little-less"
+  | "ahead"
   | "level";
 
 /** Where the items view should land, and what the button says. */
@@ -175,6 +176,7 @@ const FOCUS: Record<Finding, Focus> = {
   "lower-price": "price",
   "different-mix": "mix",
   "a-little-less": "unknown",
+  ahead: "unknown",
   level: "unknown",
 };
 
@@ -236,7 +238,12 @@ export const chainFor = (d: DeptTotals, g: Gates = DEFAULT_GATES): Chain => {
   if (!rang) {
     finding = "nothing-rung";
   } else if (soldOk && rateOk) {
-    finding = d.mine < d.theirs ? "a-little-less" : "level";
+    // Level means level. A department three thousand dollars up passed both
+    // gates too, and calling that "level with the other store" was fine
+    // while these were a count in a footer — it is not, now that each one
+    // gets a panel of its own to say it in.
+    finding =
+      d.mine < d.theirs ? "a-little-less" : d.mine > d.theirs ? "ahead" : "level";
   } else if (soldOk) {
     finding = rateGap !== null && rateGap <= -g.mix ? "different-mix" : "lower-price";
   } else if (rateOk) {
@@ -273,6 +280,14 @@ export const chainFor = (d: DeptTotals, g: Gates = DEFAULT_GATES): Chain => {
                 lead: "Took " + cash(perUnit) + " less per " + one,
                 tail: " — far more than a price difference.",
               }
+            : finding === "ahead"
+              ? {
+                  lead: "Ahead",
+                  tail:
+                    unitGap !== null && unitGap > 0
+                      ? ", on " + pct(unitGap) + " more " + unit + "."
+                      : " on a higher take per " + one + ".",
+                }
             : finding === "a-little-less"
               ? {
                   lead: "A little less of everything",
