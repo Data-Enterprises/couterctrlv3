@@ -17,6 +17,13 @@ same list forward.
 | A margin delta needs sales on both sides | merged `vendor_margin_no_lw_sales` |
 | Sales Export polish — 6 commits | cherry-picked from `tickets_help_desk` |
 | Help pages + release notes — 7 commits, plus the route gated to dev | cherry-picked from `tickets_help_desk` |
+| Mobile Performance — bars by direction, the money difference, the DEV MODE pill | built on this branch |
+| **`formatDate` prints a bare date on its own day** — **client-facing** | built on this branch |
+
+**This branch is no longer dev-only.** The `formatDate` fix lands in a shared
+util, so it corrects Receivers, Coupons and Coupon Sales in the prod tree as
+well — dates a client reads today are a day early. The publish needs a prod
+release note and the sign-in "last updated" date, which it did not before.
 
 ## Awaiting green light
 
