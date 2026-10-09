@@ -842,9 +842,9 @@ const Index = ({
             <span className="w-[52px] flex-shrink-0 text-[12px] font-semibold uppercase tracking-wide text-content/85">
               {m.label}
             </span>
-            <span className="relative flex-1 min-w-0 h-2.5 rounded-sm bg-bkg">
+            <span className="relative flex-1 min-w-0 h-[10.5px] rounded-sm bg-bkg">
               <span
-                className={`absolute left-0 top-0 h-2.5 rounded-sm ${
+                className={`absolute left-0 top-0 h-[10.5px] rounded-sm ${
                   over ? "bg-emerald-500" : "bg-red-500"
                 }`}
                 style={{ width: `${Math.min(100, ((m.pct ?? 0) / 150) * 100)}%` }}
@@ -970,7 +970,7 @@ const HoldsPanel = ({
             </div>
 
             {moved > 0 && (
-              <span className="flex h-2 rounded-sm overflow-hidden bg-bkg">
+              <span className="flex h-[8.4px] rounded-sm overflow-hidden bg-bkg">
                 {buckets.map((x) => (
                   <span
                     key={x.label}
@@ -1090,9 +1090,9 @@ const HoldsPanel = ({
                               <span className="w-[120px] flex-shrink-0 truncate text-[12.5px] text-content">
                                 {v.vendorName}
                               </span>
-                              <span className="flex-1 min-w-0 h-2 rounded-sm bg-bkg">
+                              <span className="flex-1 min-w-0 h-[8.4px] rounded-sm bg-bkg">
                                 <span
-                                  className="block h-2 rounded-sm bg-red-500"
+                                  className="block h-[8.4px] rounded-sm bg-red-500"
                                   style={{
                                     width: `${(Math.abs(v.dollars) / widestVendor) * 100}%`,
                                   }}
@@ -1120,9 +1120,9 @@ const HoldsPanel = ({
               {spread.says}
             </p>
 
-            <span className="flex h-2 rounded-sm overflow-hidden bg-bkg">
+            <span className="flex h-[8.4px] rounded-sm overflow-hidden bg-bkg">
               <span
-                className="block h-2 bg-red-500"
+                className="block h-[8.4px] bg-red-500"
                 style={{ width: `${Math.max(4, spread.topTenShare * 100)}%` }}
               />
             </span>
@@ -1141,9 +1141,9 @@ const HoldsPanel = ({
                     <span className="min-w-0 truncate text-[12.5px] font-mono text-content">
                       {i.description}
                     </span>
-                    <span className="h-2 rounded-sm bg-bkg">
+                    <span className="h-[8.4px] rounded-sm bg-bkg">
                       <span
-                        className="block h-2 rounded-sm bg-red-500"
+                        className="block h-[8.4px] rounded-sm bg-red-500"
                         style={{ width: `${(Math.abs(i.gap) / widest) * 100}%` }}
                       />
                     </span>

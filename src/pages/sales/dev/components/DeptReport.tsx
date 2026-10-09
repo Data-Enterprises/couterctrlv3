@@ -275,7 +275,7 @@ const Detail = ({
 
       {split && splitSize > 0 && (
         <Block title="What the gap is made of">
-          <span className="flex h-2 rounded-sm overflow-hidden bg-bkg">
+          <span className="flex h-[8.4px] rounded-sm overflow-hidden bg-bkg">
             <span
               className={`block ${ahead ? "bg-emerald-500" : "bg-red-500"}`}
               style={{ width: `${(Math.abs(split.volume) / splitSize) * 100}%` }}
@@ -564,7 +564,7 @@ const DeptReport = ({
 
         {underTotal > 0 && (
           <>
-            <span className="flex h-2.5 rounded-sm overflow-hidden bg-bkg mt-2.5">
+            <span className="flex h-[10.5px] rounded-sm overflow-hidden bg-bkg mt-2.5">
               {segments.map((seg, i) => (
                 <span
                   key={seg.key}
