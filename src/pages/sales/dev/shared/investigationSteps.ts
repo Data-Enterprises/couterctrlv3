@@ -272,3 +272,53 @@ export const desksOf = (
     })
     .sort((a, b) => a.dollars - b.dollars);
 };
+
+/* ------------------------------------------------------------------ */
+/* The department's own vitals                                         */
+/* ------------------------------------------------------------------ */
+
+export interface Vitals {
+  /** The gap to the counterpart in each of the three periods. "Against
+   *  itself" — whether this is a standing difference or something that broke
+   *  in the last seven days. */
+  weeks: { label: string; gap: number }[];
+  /**
+   * This store as a percentage of the counterpart, on three measures.
+   *
+   * One rule for all three, so measures that disagree are SEEN to disagree:
+   * units at 102 beside sales at 76 is a department selling as much and
+   * taking less, and reading that out of six absolute figures is work the
+   * eye should not have to do.
+   */
+  index: { label: string; mine: number; theirs: number; pct: number | null }[];
+}
+
+export const vitalsOf = (items: ItemVerdict[]): Vitals => {
+  const sum = (pick: (i: ItemVerdict) => number) =>
+    items.reduce((t, i) => t + pick(i), 0);
+
+  const mineSales = sum((i) => i.mineSales);
+  const theirsSales = sum((i) => i.theirsSales);
+  const mineUnits = sum((i) => i.mineUnits);
+  const theirsUnits = sum((i) => i.theirsUnits);
+  const mineMargin = sum((i) => i.margins.mine);
+  const theirsMargin = sum((i) => i.margins.theirs);
+
+  // Null rather than zero where there is nothing to be a percentage OF: a
+  // counterpart that took nothing is not a store we are at 0% of.
+  const share = (mine: number, theirs: number) =>
+    theirs > 0 ? (mine / theirs) * 100 : null;
+
+  return {
+    weeks: [
+      { label: "Last year", gap: sum((i) => i.mineLy) - sum((i) => i.theirsLy) },
+      { label: "Last week", gap: sum((i) => i.mineLw) - sum((i) => i.theirsLw) },
+      { label: "This week", gap: mineSales - theirsSales },
+    ],
+    index: [
+      { label: "Sales", mine: mineSales, theirs: theirsSales, pct: share(mineSales, theirsSales) },
+      { label: "Units", mine: mineUnits, theirs: theirsUnits, pct: share(mineUnits, theirsUnits) },
+      { label: "Margin", mine: mineMargin, theirs: theirsMargin, pct: share(mineMargin, theirsMargin) },
+    ],
+  };
+};

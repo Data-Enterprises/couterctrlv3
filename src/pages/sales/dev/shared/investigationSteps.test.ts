@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { desksOf, holdsUp, spreadOf } from "./investigationSteps";
+import { desksOf, holdsUp, spreadOf, vitalsOf } from "./investigationSteps";
 import { judge, type ItemFacts, type ItemVerdict } from "./deptInvestigation";
 
 const facts = (over: Partial<ItemFacts> = {}): ItemFacts => ({
@@ -208,5 +208,36 @@ describe("5 · who fixes it", () => {
     for (let i = 1; i < desks.length; i += 1) {
       expect(desks[i - 1].dollars).toBeLessThanOrEqual(desks[i].dollars);
     }
+  });
+});
+
+
+describe("the department's vitals", () => {
+  const dept = () => [
+    item({
+      productCode: "a",
+      mineTy: 400, mineUnits: 100, mineCogs: 300,
+      theirsTy: 500, theirsUnits: 100, theirsCogs: 320,
+      mineLw: 380, theirsLw: 500, mineLy: 520, theirsLy: 500,
+    }),
+  ];
+
+  it("carries the gap in all three periods", () => {
+    const v = vitalsOf(dept());
+    expect(v.weeks.map((w) => w.gap)).toEqual([20, -120, -100]);
+  });
+
+  /** Sales down and units level is a department selling as much and taking
+   *  less — the divergence a reader should not have to compute. */
+  it("indexes each measure against the counterpart", () => {
+    const v = vitalsOf(dept());
+    expect(v.index.find((i) => i.label === "Sales")?.pct).toBeCloseTo(80, 6);
+    expect(v.index.find((i) => i.label === "Units")?.pct).toBeCloseTo(100, 6);
+    expect(v.index.find((i) => i.label === "Margin")?.pct).toBeCloseTo(100 * 100 / 180, 6);
+  });
+
+  it("gives no percentage where there is nothing to be one of", () => {
+    const v = vitalsOf([item({ mineTy: 90, mineUnits: 9 })]);
+    expect(v.index.find((i) => i.label === "Sales")?.pct).toBeNull();
   });
 });

@@ -20,11 +20,12 @@ import {
   desksOf,
   holdsUp,
   spreadOf,
-  FOCUS_SAYS,
+  vitalsOf,
   OWNER_LABEL,
   type Desk,
   type Holds,
   type Spread,
+  type Vitals as VitalsShape,
 } from "../shared/investigationSteps";
 import { rowsToCsv, downloadCsv } from "../../../../utils/csvExport";
 import { useTriStateSort } from "../../../../utils/useTriStateSort";
@@ -509,11 +510,126 @@ const Bucket = ({
   </div>
 );
 
+/**
+ * The department against itself and against the counterpart.
+ *
+ * Both read off the sales wave, so they draw with the rest of this tab. They
+ * are here rather than in the prose because neither is a sentence: a gap
+ * widening or closing is a slope, and three measures disagreeing with each
+ * other is a shape.
+ */
+const Vitals = ({
+  vitals,
+  them,
+  cash,
+}: {
+  vitals: VitalsShape;
+  them: string;
+  cash: (v: number) => string;
+}) => {
+  const tallest = Math.max(1, ...vitals.weeks.map((w) => Math.abs(w.gap)));
+  // The rule sits two thirds along, so a department running well OVER its
+  // counterpart still has somewhere to go.
+  const RULE = 66.666;
+
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="rounded-md border border-brand_navy/15 px-3.5 py-3">
+        <div className="text-[12px] font-bold uppercase tracking-wide text-content/85">
+          The gap, week by week
+        </div>
+        <p className="text-[12px] text-content/85 leading-snug mt-0.5">
+          Against itself: a standing difference, or something that broke this
+          week.
+        </p>
+        <div className="grid grid-cols-3 gap-2.5 mt-3">
+          {vitals.weeks.map((w) => (
+            <div key={w.label}>
+              <div className="h-[52px] flex items-end justify-center">
+                <span
+                  className={`block w-7 rounded ${
+                    w.gap >= 0 ? "bg-emerald-500" : "bg-red-500"
+                  }`}
+                  style={{
+                    height: `${Math.max(3, (Math.abs(w.gap) / tallest) * 52)}px`,
+                  }}
+                />
+              </div>
+              <div className="h-px bg-brand_navy/15 my-1" />
+              <div className="text-[12px] font-bold uppercase tracking-wide text-content/85 text-center whitespace-nowrap">
+                {w.label}
+              </div>
+              <div
+                className={`text-[12.5px] font-bold tabular-nums text-center whitespace-nowrap ${
+                  w.gap >= 0
+                    ? "text-delta_positive_text"
+                    : "text-delta_negative_text"
+                }`}
+              >
+                {w.gap >= 0 ? "+" : "−"}
+                {cash(Math.abs(w.gap))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="rounded-md border border-brand_navy/15 px-3.5 py-3">
+        <div className="text-[12px] font-bold uppercase tracking-wide text-content/85">
+          Against {them}
+        </div>
+        <p className="text-[12px] text-content/85 leading-snug mt-0.5">
+          One rule for all three, so measures that disagree are seen to.
+        </p>
+        <div className="flex flex-col gap-2.5 mt-3">
+          {vitals.index.map((m) => {
+            const over = (m.pct ?? 0) >= 100;
+            return (
+              <div key={m.label} className="flex items-center gap-2.5">
+                <span className="w-[52px] flex-shrink-0 text-[12px] font-bold uppercase tracking-wide text-content/85">
+                  {m.label}
+                </span>
+                <span className="relative flex-1 min-w-0 h-3 rounded-sm bg-bkg">
+                  <span
+                    className={`absolute left-0 top-0 h-3 rounded-sm ${
+                      over ? "bg-emerald-500" : "bg-red-500"
+                    }`}
+                    style={{
+                      width: `${Math.min(100, ((m.pct ?? 0) / 150) * 100)}%`,
+                    }}
+                  />
+                  <span
+                    className="absolute top-[-3px] w-px h-[18px] bg-brand_navy/40"
+                    style={{ left: `${RULE}%` }}
+                  />
+                </span>
+                <span
+                  className={`w-[46px] flex-shrink-0 text-right text-[12.5px] font-bold tabular-nums ${
+                    over
+                      ? "text-delta_positive_text"
+                      : "text-delta_negative_text"
+                  }`}
+                >
+                  {m.pct === null ? "—" : `${Math.round(m.pct)}%`}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+        <p className="text-[12px] text-content/85 leading-snug mt-2.5">
+          The rule is {them} at 100.
+        </p>
+      </div>
+    </div>
+  );
+};
+
 const HoldsPanel = ({
   holds,
   spread,
   summary,
   them,
+  vitals,
   cash,
   marginGap,
   costPenalty,
@@ -524,6 +640,7 @@ const HoldsPanel = ({
   spread: Spread;
   summary: Summary;
   them: string;
+  vitals: VitalsShape;
   cash: (v: number) => string;
   /** Sales and margin can point opposite ways, and nothing else on the
    *  screen would say so. Both come off the sales wave, so this belongs in
@@ -539,7 +656,14 @@ const HoldsPanel = ({
 
   return (
     <div className="flex-1 min-h-0 overflow-auto thin-scrollbar px-4 py-4">
-      <div className="max-w-[920px] mx-auto flex flex-col gap-7">
+      {/* The reading runs down one column and the pictures sit beside it,
+          rather than interrupting the prose. Both are the same sales wave,
+          so neither waits for the other. */}
+      <div
+        className="max-w-[1180px] mx-auto grid gap-8 items-start"
+        style={{ gridTemplateColumns: "minmax(0,1.5fr) minmax(300px,0.85fr)" }}
+      >
+       <div className="flex flex-col gap-7 min-w-0">
 
         <section className="flex flex-col gap-3">
           <p className="text-[19px] font-semibold leading-snug text-content">
@@ -699,6 +823,9 @@ const HoldsPanel = ({
               : ""}
           </p>
         </section>
+       </div>
+
+       <Vitals vitals={vitals} them={them} cash={cash} />
       </div>
     </div>
   );
@@ -936,6 +1063,7 @@ const DeptInvestigation = ({
     [items, target?.focus],
   );
   const spread = useMemo(() => spreadOf(items), [items]);
+  const vitals = useMemo(() => vitalsOf(items), [items]);
   const desks = useMemo(() => desksOf(items, cash), [items]);
 
   /**
@@ -1138,23 +1266,6 @@ const DeptInvestigation = ({
       </div>
 
       {/*
-        The notebook opens by restating what sent the reader here.
-
-        The report worked its call out of department totals; the steps below
-        take it to the items. Saying it again costs a line and means nobody
-        has to hold it in their head across a screen change.
-      */}
-      <div className="flex-shrink-0 px-4 py-2.5 border-b border-brand_navy/15">
-        <p className="text-[14px] leading-snug text-content">
-          The report said {target.subDeptName} was behind because{" "}
-          <span className="font-semibold">
-            {FOCUS_SAYS[target.focus ?? "unknown"]}
-          </span>
-          . <span className="text-content/85">Let&rsquo;s check.</span>
-        </p>
-      </div>
-
-      {/*
         The steps, as tabs.
 
         One scrolling page would put the hand-off below three hundred rows of
@@ -1221,6 +1332,7 @@ const DeptInvestigation = ({
               spread={spread}
               summary={summary}
               them={target.compareStoreName}
+              vitals={vitals}
               cash={cash}
               marginGap={marginGap}
               costPenalty={costPenalty}
