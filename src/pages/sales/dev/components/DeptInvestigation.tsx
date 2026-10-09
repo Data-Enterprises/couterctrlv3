@@ -140,6 +140,112 @@ const STAGE_NOTE: Record<Stage, string | null> = {
 };
 
 /* ------------------------------------------------------------------ */
+/* One card at a time                                                  */
+/* ------------------------------------------------------------------ */
+
+export interface Slide {
+  label: string;
+  /** Printed in the tab. A zero is worth saying — an empty deliveries list
+   *  is the finding, not a missing section. */
+  count?: number;
+  body: ReactNode;
+}
+
+/**
+ * Several cards in one card's space.
+ *
+ * Three supporting cards stacked down a column made the page a scroll, and
+ * the third was never read. They are peers — three ways of asking the same
+ * question — so they share one frame and the reader picks. Named tabs
+ * rather than dots alone, because a dot does not say what it hides.
+ *
+ * It is a scroll container, so a trackpad swipe works and the tabs stay
+ * honest about where it ended up.
+ */
+const Carousel = ({ slides }: { slides: Slide[] }) => {
+  const track = useRef<HTMLDivElement>(null);
+  const [at, setAt] = useState(0);
+
+  const go = (i: number) => {
+    const el = track.current;
+    if (!el) return;
+    const n = Math.max(0, Math.min(slides.length - 1, i));
+    el.scrollTo({ left: n * el.clientWidth, behavior: "smooth" });
+    setAt(n);
+  };
+
+  return (
+    <div className="rounded-lg bg-custom-white shadow-md overflow-hidden flex flex-col min-w-0">
+      <div className="flex items-center gap-0.5 px-2 pt-1.5 border-b border-brand_navy/15">
+        {slides.map((sl, i) => (
+          <button
+            key={sl.label}
+            onClick={() => go(i)}
+            aria-current={i === at}
+            className={`relative px-2.5 pt-1.5 pb-2 text-[11px] font-bold uppercase tracking-wide whitespace-nowrap transition-colors ${
+              i === at ? "text-content" : "text-content/85 hover:text-content"
+            }`}
+          >
+            {sl.label}
+            {sl.count !== undefined && (
+              <span className="ml-1.5 px-1.5 py-0.5 rounded-full bg-bkg text-[10px] tabular-nums tracking-normal">
+                {sl.count}
+              </span>
+            )}
+            {i === at && (
+              <span className="absolute left-1.5 right-1.5 -bottom-px h-0.5 bg-brand_navy" />
+            )}
+          </button>
+        ))}
+
+        <span className="ml-auto flex gap-1 pb-1">
+          {[-1, 1].map((step) => (
+            <button
+              key={step}
+              onClick={() => go(at + step)}
+              disabled={step < 0 ? at === 0 : at === slides.length - 1}
+              aria-label={step < 0 ? "Previous" : "Next"}
+              className="w-7 h-7 rounded-md border border-brand_navy/20 text-[12px] text-content hover:bg-bkg disabled:opacity-35 disabled:hover:bg-transparent transition-colors"
+            >
+              {step < 0 ? "‹" : "›"}
+            </button>
+          ))}
+        </span>
+      </div>
+
+      <div
+        ref={track}
+        onScroll={() => {
+          const el = track.current;
+          if (el) setAt(Math.round(el.scrollLeft / Math.max(1, el.clientWidth)));
+        }}
+        className="flex overflow-x-auto no-scrollbar snap-x snap-mandatory overscroll-x-contain"
+      >
+        {slides.map((sl) => (
+          <div
+            key={sl.label}
+            className="flex-none w-full snap-start px-4 py-3.5 min-w-0"
+          >
+            {sl.body}
+          </div>
+        ))}
+      </div>
+
+      <div className="flex justify-center gap-1.5 pb-2.5" aria-hidden>
+        {slides.map((sl, i) => (
+          <span
+            key={sl.label}
+            className={`h-1.5 rounded-full transition-all ${
+              i === at ? "w-4 bg-brand_navy" : "w-1.5 bg-brand_navy/25"
+            }`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+/* ------------------------------------------------------------------ */
 /* Waiting                                                             */
 /* ------------------------------------------------------------------ */
 
@@ -193,7 +299,7 @@ const Waves = ({ sales, all }: { sales: boolean; all: boolean }) => {
 
 /** Why the screen is holding something back, beside a light that says it is
  *  still working. Shaped like a sentence, not a spinner. */
-const LoadNote = ({ children }: { children: React.ReactNode }) => (
+const LoadNote = ({ children }: { children: ReactNode }) => (
   <div className="flex items-center gap-2.5 rounded-lg bg-custom-white shadow-md px-4 py-2.5">
     <span className="w-2 h-2 rounded-full bg-brand_navy_hover animate-pulse flex-shrink-0" />
     <span className="text-[13px] leading-snug text-content/85">{children}</span>
@@ -650,26 +756,6 @@ const COLUMNS: ColumnDef[] = [
 /* Check · does it hold, and where is it                               */
 /* ------------------------------------------------------------------ */
 
-const Card = ({
-  title,
-  note,
-  children,
-}: {
-  title: string;
-  note?: string;
-  children: React.ReactNode;
-}) => (
-  <div className="h-full rounded-lg bg-custom-white shadow-md px-4 py-3.5">
-    <div className="text-[12px] font-bold uppercase tracking-wide text-content/85">
-      {title}
-    </div>
-    {note && (
-      <p className="text-[12px] text-content/85 leading-snug mt-1">{note}</p>
-    )}
-    <div className="mt-3">{children}</div>
-  </div>
-);
-
 /** The department against itself: a standing difference, or something that
  *  broke in the last seven days. Values above the bars, because the labels
  *  below already anchor them and a figure under a bar reads as its caption
@@ -821,63 +907,83 @@ const HoldsPanel = ({
   const vendors = spread.byVendor.slice(0, 6);
   const widestVendor = Math.max(1, Math.abs(vendors[0]?.dollars ?? 0));
 
-  const CARDS = "repeat(auto-fit, minmax(280px, 1fr))";
 
   return (
     <div className="flex-1 min-h-0 overflow-auto thin-scrollbar bg-bkg px-4 py-5">
       <div className="max-w-[1180px] mx-auto flex flex-col gap-5">
 
-        {/* Each card sits beside the section it serves, rather than all of
-            them stacking in one rail away from what they are evidence for. */}
-        {/* One row, equal heights. Beside each section these left a ragged
-            edge and a column of dead space under every card; across the top
-            they align, and the prose below runs straight down. */}
-        <div className="grid gap-4 items-stretch" style={{ gridTemplateColumns: CARDS }}>
-          <Card
-            title="The gap, week by week"
-            note="Against itself: a standing difference, or something that broke this week."
-          >
-            <Weeks vitals={vitals} cash={cash} />
-          </Card>
-          <Card
-            title={`Against ${them}`}
-            note="One rule for all three, so measures that disagree are seen to."
-          >
-            <Index vitals={vitals} them={them} cash={cash} />
-          </Card>
-          {vendors.length > 0 && (
-            <Card
-              title="Who supplies it"
-              note="The shortfall by vendor. Pick one to narrow the items."
-            >
-              <div className="flex flex-col gap-1.5">
-                {vendors.map((v) => (
-                  <button
-                    key={v.vendorName}
-                    onClick={() => onVendor(v.vendorName)}
-                    className="flex items-center gap-2.5 text-left rounded px-1 py-0.5 hover:bg-bkg transition-colors"
-                  >
-                    <span className="w-[96px] flex-shrink-0 truncate text-[12.5px] text-content">
-                      {v.vendorName}
-                    </span>
-                    <span className="flex-1 min-w-0 h-2 rounded-sm bg-bkg">
-                      <span
-                        className="block h-2 rounded-sm bg-red-500"
-                        style={{
-                          width: `${(Math.abs(v.dollars) / widestVendor) * 100}%`,
-                        }}
-                      />
-                    </span>
-                    <span className="w-[72px] flex-shrink-0 text-right text-[12.5px] font-bold tabular-nums text-delta_negative_text">
-                      {"−"}
-                      {cash(Math.abs(v.dollars))}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </Card>
-          )}
-        </div>
+        {/* Three ways of asking the same question, so they are peers and
+            share one frame. Across a row they were three cards none of them
+            was wide enough for; down a rail the third went unread. */}
+        <Carousel
+          slides={[
+            {
+              label: "Week by week",
+              body: (
+                <>
+                  <p className="text-[12px] text-content/85 leading-snug mb-2.5">
+                    Against itself: a standing difference, or something that
+                    broke this week.
+                  </p>
+                  <Weeks vitals={vitals} cash={cash} />
+                </>
+              ),
+            },
+            {
+              label: `Against ${them}`,
+              body: (
+                <>
+                  <p className="text-[12px] text-content/85 leading-snug mb-2.5">
+                    One rule for all three, so measures that disagree are seen
+                    to.
+                  </p>
+                  <Index vitals={vitals} them={them} cash={cash} />
+                </>
+              ),
+            },
+            ...(vendors.length > 0
+              ? [
+                  {
+                    label: "Who supplies it",
+                    count: vendors.length,
+                    body: (
+                      <>
+                        <p className="text-[12px] text-content/85 leading-snug mb-2.5">
+                          The shortfall by vendor. Pick one to narrow the
+                          items.
+                        </p>
+                        <div className="flex flex-col gap-1.5">
+                          {vendors.map((v) => (
+                            <button
+                              key={v.vendorName}
+                              onClick={() => onVendor(v.vendorName)}
+                              className="flex items-center gap-2.5 text-left rounded px-1 py-0.5 hover:bg-bkg transition-colors"
+                            >
+                              <span className="w-[120px] flex-shrink-0 truncate text-[12.5px] text-content">
+                                {v.vendorName}
+                              </span>
+                              <span className="flex-1 min-w-0 h-2 rounded-sm bg-bkg">
+                                <span
+                                  className="block h-2 rounded-sm bg-red-500"
+                                  style={{
+                                    width: `${(Math.abs(v.dollars) / widestVendor) * 100}%`,
+                                  }}
+                                />
+                              </span>
+                              <span className="w-[80px] flex-shrink-0 text-right text-[12.5px] font-bold tabular-nums text-delta_negative_text">
+                                {"−"}
+                                {cash(Math.abs(v.dollars))}
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    ),
+                  },
+                ]
+              : []),
+          ]}
+        />
 
         <div className="rounded-lg bg-custom-white shadow-md px-5 py-4">
           <div className="flex flex-col gap-4 min-w-0 max-w-[840px]">
@@ -1080,7 +1186,6 @@ const onDay = (d: string) =>
  * and the panel should not grow to sixty rows tall.
  */
 const Ledger = ({
-  title,
   note,
   rows,
   rightLabel,
@@ -1089,7 +1194,6 @@ const Ledger = ({
   them,
   empty,
 }: {
-  title: string;
   note: string;
   rows: SupplyRecord[];
   rightLabel: string;
@@ -1103,17 +1207,14 @@ const Ledger = ({
     "text-[12px] font-bold uppercase tracking-wide text-content/85";
 
   return (
-    <div className="rounded-lg bg-custom-white shadow-md px-5 py-4">
-      <div className={head}>{title}</div>
-      <p className="text-[12px] text-content/85 leading-snug mt-1">{note}</p>
+    <>
+      <p className="text-[12px] text-content/85 leading-snug mb-2.5">{note}</p>
 
       {rows.length === 0 ? (
-        <p className="text-[13px] text-content/85 leading-relaxed mt-3">
-          {empty}
-        </p>
+        <p className="text-[13px] text-content/85 leading-relaxed">{empty}</p>
       ) : (
         <>
-          <div className="flex items-center gap-3 mt-3 pb-1.5 border-b border-brand_navy/15">
+          <div className="flex items-center gap-3 pb-1.5 border-b border-brand_navy/15">
             <span className={`${head} w-[58px]`}>Date</span>
             <span className={`${head} w-[76px]`}>#</span>
             <span className={`${head} w-[150px] truncate`}>Store</span>
@@ -1173,7 +1274,7 @@ const Ledger = ({
           </div>
         </>
       )}
-    </div>
+    </>
   );
 };
 
@@ -1265,80 +1366,104 @@ const SupplyPanel = ({
           </div>
         )}
 
-        <div className="rounded-lg bg-custom-white shadow-md px-5 py-4">
-          <div className="text-[12px] font-bold uppercase tracking-wide text-content/85">
-            Who delivered, and how much
-          </div>
-          <p className="text-[12px] text-content/85 leading-snug mt-1">
-            Units received in this department over the window, by vendor.
-          </p>
+        {/* Three answers to one question, so they share one frame rather
+            than running down the page in three cards of their own. The
+            counts are in the tabs because a zero is the finding here: no
+            deliveries at all is the thing worth reading, not a section that
+            looks missing. */}
+        <Carousel
+          slides={[
+            {
+              label: "Orders",
+              count: supply.orders.length,
+              body: (
+                <Ledger
+                  note={`Every order carrying an item from this department, newest first. ${us} and ${them} on one list.`}
+                  rows={supply.orders}
+                  rightLabel="Status"
+                  right={(r) => r.status ?? "—"}
+                  us={us}
+                  them={them}
+                  empty="Neither store placed an order in this department over the window. That is the finding, not a gap in the data."
+                />
+              ),
+            },
+            {
+              label: "Deliveries",
+              count: supply.deliveries.length,
+              body: (
+                <Ledger
+                  note="Every invoice that carried an item from this department. An invoice that carried none of it is not listed."
+                  rows={supply.deliveries}
+                  rightLabel="Cost"
+                  right={(r) => cash(r.cost)}
+                  us={us}
+                  them={them}
+                  empty="Neither store took a delivery in this department over the window."
+                />
+              ),
+            },
+            {
+              label: "Who delivered",
+              count: rows.length,
+              body: (
+                <>
+                  <p className="text-[12px] text-content/85 leading-snug mb-2.5">
+                    Units received in this department over the window, by
+                    vendor.
+                  </p>
 
-          <div
-            className="grid gap-x-4 gap-y-0 mt-3 text-[12.5px]"
-            style={{ gridTemplateColumns: "minmax(0,1fr) 92px 92px 92px" }}
-          >
-            <span className="text-[12px] font-bold uppercase tracking-wide text-content/85 pb-1.5 border-b border-brand_navy/15">
-              Vendor
-            </span>
-            <span className="text-[12px] font-bold uppercase tracking-wide text-content/85 text-right pb-1.5 border-b border-brand_navy/15 truncate">
-              Here
-            </span>
-            <span className="text-[12px] font-bold uppercase tracking-wide text-content/85 text-right pb-1.5 border-b border-brand_navy/15 truncate">
-              There
-            </span>
-            <span className="text-[12px] font-bold uppercase tracking-wide text-content/85 text-right pb-1.5 border-b border-brand_navy/15">
-              Cost here
-            </span>
+                  {rows.length === 0 ? (
+                    <p className="text-[13px] text-content/85 leading-relaxed">
+                      Neither store took a delivery in this department over the
+                      window.
+                    </p>
+                  ) : (
+                    <div
+                      className="grid gap-x-4 gap-y-0 text-[12.5px]"
+                      style={{ gridTemplateColumns: "minmax(0,1fr) 92px 92px 92px" }}
+                    >
+                      <span className="text-[12px] font-bold uppercase tracking-wide text-content/85 pb-1.5 border-b border-brand_navy/15">
+                        Vendor
+                      </span>
+                      <span className="text-[12px] font-bold uppercase tracking-wide text-content/85 text-right pb-1.5 border-b border-brand_navy/15 truncate">
+                        Here
+                      </span>
+                      <span className="text-[12px] font-bold uppercase tracking-wide text-content/85 text-right pb-1.5 border-b border-brand_navy/15 truncate">
+                        There
+                      </span>
+                      <span className="text-[12px] font-bold uppercase tracking-wide text-content/85 text-right pb-1.5 border-b border-brand_navy/15">
+                        Cost here
+                      </span>
 
-            {rows.map((r) => (
-              <Fragment key={r.name}>
-                <span className="min-w-0 truncate py-1.5 border-b border-brand_navy/15 text-content">
-                  {r.name}
-                </span>
-                <span
-                  className={`text-right tabular-nums py-1.5 border-b border-brand_navy/15 ${
-                    r.mine ? "font-semibold text-content" : "text-delta_negative_text"
-                  }`}
-                >
-                  {r.mine ? n(r.mine.units) : "none"}
-                </span>
-                <span className="text-right tabular-nums py-1.5 border-b border-brand_navy/15 text-content/85">
-                  {r.theirs ? n(r.theirs.units) : "none"}
-                </span>
-                <span className="text-right tabular-nums py-1.5 border-b border-brand_navy/15 text-content/85">
-                  {r.mine ? cash(r.mine.cost) : "—"}
-                </span>
-              </Fragment>
-            ))}
-          </div>
-
-          {rows.length === 0 && (
-            <p className="text-[13px] text-content/85 leading-relaxed mt-3">
-              Neither store took a delivery in this department over the window.
-            </p>
-          )}
-        </div>
-
-        <Ledger
-          title="The orders themselves"
-          note={`Every order carrying an item from this department, newest first. ${us} and ${them} on one list.`}
-          rows={supply.orders}
-          rightLabel="Status"
-          right={(r) => r.status ?? "—"}
-          us={us}
-          them={them}
-          empty="Neither store placed an order in this department over the window. That is the finding, not a gap in the data."
-        />
-
-        <Ledger
-          title="The deliveries themselves"
-          note="Every invoice that carried an item from this department. An invoice that carried none of it is not listed."
-          rows={supply.deliveries}
-          rightLabel="Cost"
-          right={(r) => cash(r.cost)}
-          us={us}
-          them={them}
-          empty="Neither store took a delivery in this department over the window."
+                      {rows.map((r) => (
+                        <Fragment key={r.name}>
+                          <span className="min-w-0 truncate py-1.5 border-b border-brand_navy/15 text-content">
+                            {r.name}
+                          </span>
+                          <span
+                            className={`text-right tabular-nums py-1.5 border-b border-brand_navy/15 ${
+                              r.mine
+                                ? "font-semibold text-content"
+                                : "text-delta_negative_text"
+                            }`}
+                          >
+                            {r.mine ? n(r.mine.units) : "none"}
+                          </span>
+                          <span className="text-right tabular-nums py-1.5 border-b border-brand_navy/15 text-content/85">
+                            {r.theirs ? n(r.theirs.units) : "none"}
+                          </span>
+                          <span className="text-right tabular-nums py-1.5 border-b border-brand_navy/15 text-content/85">
+                            {r.mine ? cash(r.mine.cost) : "—"}
+                          </span>
+                        </Fragment>
+                      ))}
+                    </div>
+                  )}
+                </>
+              ),
+            },
+          ]}
         />
 
         <p className="text-[12.5px] text-content/85 leading-relaxed max-w-[840px]">
