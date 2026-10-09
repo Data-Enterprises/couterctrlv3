@@ -2579,6 +2579,15 @@ const DeptInvestigation = ({
                     className="cursor-pointer select-none"
                     onContextMenu={(e) => {
                       e.preventDefault();
+                      /* Right-clicking outside the selection selects that
+                         row first, the way a grid does: otherwise the menu
+                         offers to copy nine rows that are nowhere near the
+                         one under the cursor. Inside it, the selection
+                         stands. */
+                      if (!chosen.has(r.productCode)) {
+                        anchor.current = r.productCode;
+                        setChosen(new Set([r.productCode]));
+                      }
                       setCtx({ x: e.clientX, y: e.clientY, upc: r.productCode });
                     }}
                   >
@@ -2770,7 +2779,23 @@ const DeptInvestigation = ({
               y={ctx.y}
               upc={ctx.upc}
               allUpcs={shown.map((i) => i.productCode)}
-              extraActions={copyActions}
+              extraActions={
+                /* The selection first, because a reader who has just picked
+                   out nine rows is right-clicking about those nine rows.
+                   "Ctrl-C" in a status strip is a thing you have to already
+                   know; a menu item is a thing you find. */
+                chosen.size > 0
+                  ? [
+                      {
+                        label: `Copy ${chosen.size} selected ${
+                          chosen.size === 1 ? "row" : "rows"
+                        }`,
+                        onClick: copyChosen,
+                      },
+                      ...copyActions,
+                    ]
+                  : copyActions
+              }
               onClose={() => setCtx(null)}
             />
           )}

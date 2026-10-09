@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import {
   ladderFor,
   ladderSays,
@@ -446,6 +446,40 @@ const Ladder = ({
   );
 };
 
+/**
+ * A section that folds.
+ *
+ * The panel is four sections deep and a reader chasing one of them should
+ * not scroll past the other three every time. Open by default: a panel of
+ * shut drawers makes somebody open all four to find out what is in them.
+ */
+const Fold = ({
+  title,
+  children,
+}: {
+  title: string;
+  children: ReactNode;
+}) => {
+  const [open, setOpen] = useState(true);
+  return (
+    <section className="pt-4">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className="w-full flex items-center gap-2 text-left group"
+      >
+        <span className="text-[12px] font-bold uppercase tracking-wide text-content/85 group-hover:text-content transition-colors">
+          {title}
+        </span>
+        <span className="ml-auto flex-shrink-0 text-[10px] text-content/85">
+          {open ? "▲" : "▼"}
+        </span>
+      </button>
+      {open && <div className="mt-2">{children}</div>}
+    </section>
+  );
+};
+
 const ItemEvidence = ({
   item,
   openStoreName,
@@ -464,6 +498,10 @@ const ItemEvidence = ({
   const code = item.productCode;
   const mineEvents = supplyTimeline(code, mineOrders, mineReceipts);
   const theirEvents = supplyTimeline(code, theirsOrders, theirsReceipts);
+  /* Open: the verdict is why the panel exists. Foldable because somebody
+     walking the pile with the arrows has read it by the third item and
+     wants the figures higher up the screen. */
+  const [says, setSays] = useState(true);
   const mineLadder = ladderFor(minePoints, code);
   const theirLadder = ladderFor(theirsPoints, code);
 
@@ -517,6 +555,14 @@ const ItemEvidence = ({
               &rsaquo;
             </button>
             <button
+              onClick={() => setSays((v) => !v)}
+              aria-expanded={says}
+              aria-label={says ? "Hide the verdict" : "Show the verdict"}
+              className="w-7 h-7 rounded text-[10px] hover:bg-current/10 transition-colors"
+            >
+              {says ? "▲" : "▼"}
+            </button>
+            <button
               onClick={onClose}
               aria-label="Close"
               className="w-7 h-7 rounded text-[12px] font-semibold hover:bg-current/10 transition-colors"
@@ -528,26 +574,24 @@ const ItemEvidence = ({
 
         {/* What the grid's Cause column means, spelled out. A label is a
             claim; this says what each store did. */}
-        <div className="mt-2.5 pt-2.5 border-t border-current/15">
-          <span className="text-[11px] font-bold uppercase tracking-wide">
-            {CAUSE_LABEL[item.cause]}
-          </span>
-          <p className="text-[13.5px] leading-snug mt-1">
-            {evidenceSays(item, openStoreName, compareStoreName)}
-          </p>
-        </div>
+        {says && (
+          <div className="mt-2.5 pt-2.5 border-t border-current/15">
+            <span className="text-[11px] font-bold uppercase tracking-wide">
+              {CAUSE_LABEL[item.cause]}
+            </span>
+            <p className="text-[13.5px] leading-snug mt-1">
+              {evidenceSays(item, openStoreName, compareStoreName)}
+            </p>
+          </div>
+        )}
       </div>
 
       <div className="flex-1 min-h-0 overflow-auto thin-scrollbar px-4 pb-4">
-        <h3 className="text-[12px] font-bold uppercase tracking-wide text-content/85 mb-2">
-          Side by side
-        </h3>
-        <SideBySide item={item} mine={openStoreName} theirs={compareStoreName} />
+        <Fold title="Side by side">
+          <SideBySide item={item} mine={openStoreName} theirs={compareStoreName} />
+        </Fold>
 
-        <section className="pt-5">
-          <h3 className="text-[12px] font-bold uppercase tracking-wide text-content/85 mb-2">
-            Ordered, then received
-          </h3>
+        <Fold title="Ordered, then received">
           {/* One line when there is nothing on either side. Two empty
               timelines side by side took a third of the panel to say
               nothing twice. */}
@@ -564,12 +608,9 @@ const ItemEvidence = ({
               <Timeline events={theirEvents} ready={supplyReady} tint={THEIRS} label={compareStoreName} />
             </div>
           )}
-        </section>
+        </Fold>
 
-        <section className="pt-5">
-          <h3 className="text-[12px] font-bold uppercase tracking-wide text-content/85 mb-2">
-            What it actually rang at
-          </h3>
+        <Fold title="What it actually rang at">
           {/* One above the other. Side by side each card had half a
               panel for a chart, a ladder and a sentence, and the store
               that rang nothing still took its half to say so. */}
@@ -577,7 +618,7 @@ const ItemEvidence = ({
             <Ladder ladder={mineLadder} label={openStoreName} mine />
             <Ladder ladder={theirLadder} label={compareStoreName} mine={false} />
           </div>
-        </section>
+        </Fold>
       </div>
     </div>
   );
