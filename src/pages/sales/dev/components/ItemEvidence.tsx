@@ -472,13 +472,21 @@ const ItemEvidence = ({
 
   return (
     <div className="w-[520px] h-full flex-shrink-0 flex flex-col overflow-hidden bg-custom-white border-l border-brand_navy/15">
-      <div className="flex-shrink-0 px-4 py-3 border-b border-brand_navy/15">
+      {/* One header, in the cause's own colour.
+
+          A white bar with a tinted card slung under it read as two headers
+          with a seam between them — and the seam fell between the item's
+          name and the sentence about that item, which belong together. The
+          cause is what the panel is about, so the panel's head wears it. */}
+      <div
+        className={`flex-shrink-0 px-4 py-3 border-b border-brand_navy/15 ${CAUSE_TONE[item.cause].chip}`}
+      >
         <div className="flex items-start gap-2">
           <div className="min-w-0">
-            <div className="text-[13.5px] font-bold text-content leading-snug">
+            <div className="text-[14px] font-bold leading-snug">
               {item.description}
             </div>
-            <div className="text-[13.5px] text-brand_slate mt-0.5 truncate">
+            <div className="text-[12.5px] opacity-80 mt-0.5 truncate">
               {code}
               {item.vendorName ? ` · ${item.vendorName}` : ""}
             </div>
@@ -487,14 +495,16 @@ const ItemEvidence = ({
               The arrows follow whatever the grid is filtered to, and the
               count says which pile that is. */}
           <div className="ml-auto flex items-center gap-1 flex-shrink-0">
-            <span className="text-[12px] text-content/85 tabular-nums whitespace-nowrap mr-1">
+            <span className="text-[12px] opacity-80 tabular-nums whitespace-nowrap mr-1">
               {position.at + 1} of {position.of.toLocaleString("en-US")}
             </span>
+            {/* Borders and hovers off the inherited ink, so the controls
+                belong to whichever colour the cause brought with it. */}
             <button
               onClick={() => onStep(-1)}
               disabled={position.at <= 0}
               aria-label="Previous item"
-              className="w-7 h-7 rounded border border-brand_line text-content/85 hover:text-content hover:bg-gray-50 disabled:opacity-40 transition-colors"
+              className="w-7 h-7 rounded border border-current/25 hover:bg-current/10 disabled:opacity-40 transition-colors"
             >
               &lsaquo;
             </button>
@@ -502,29 +512,23 @@ const ItemEvidence = ({
               onClick={() => onStep(1)}
               disabled={position.at >= position.of - 1}
               aria-label="Next item"
-              className="w-7 h-7 rounded border border-brand_line text-content/85 hover:text-content hover:bg-gray-50 disabled:opacity-40 transition-colors"
+              className="w-7 h-7 rounded border border-current/25 hover:bg-current/10 disabled:opacity-40 transition-colors"
             >
               &rsaquo;
             </button>
             <button
               onClick={onClose}
               aria-label="Close"
-              className="w-7 h-7 rounded text-[12px] font-semibold text-content/85 hover:text-content hover:bg-gray-50 transition-colors"
+              className="w-7 h-7 rounded text-[12px] font-semibold hover:bg-current/10 transition-colors"
             >
               ✕
             </button>
           </div>
         </div>
-      </div>
 
-      {/* What the grid's Cause column means, spelled out. A label is a
-          claim; this says what each store did. */}
-      {/* The card wears the cause it names. A white card with a coloured
-          chip on it made the colour a label ABOUT the verdict; the verdict
-          is the thing that has a colour, and it is the same one the row in
-          the grid behind is wearing. */}
-      <div className="flex-shrink-0 px-4 pb-3">
-        <div className={`rounded-lg px-3.5 py-3 ${CAUSE_TONE[item.cause].chip}`}>
+        {/* What the grid's Cause column means, spelled out. A label is a
+            claim; this says what each store did. */}
+        <div className="mt-2.5 pt-2.5 border-t border-current/15">
           <span className="text-[11px] font-bold uppercase tracking-wide">
             {CAUSE_LABEL[item.cause]}
           </span>
