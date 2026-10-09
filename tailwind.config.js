@@ -164,8 +164,8 @@ export default {
            rather than lifting it. These carry the navy the rest of the
            chrome is built from, so a card reads as sitting on the page
            instead of smudged onto it. */
-        card: "0 1px 3px rgb(var(--color-brand-navy) / 0.14), 0 1px 2px rgb(var(--color-brand-navy) / 0.10)",
-        "card-sm": "0 1px 2px rgb(var(--color-brand-navy) / 0.12)",
+        card: "0 4px 6px -1px rgb(var(--color-brand-navy) / 0.18), 0 2px 4px -2px rgb(var(--color-brand-navy) / 0.14)",
+        "card-sm": "0 1px 3px rgb(var(--color-brand-navy) / 0.14), 0 1px 2px rgb(var(--color-brand-navy) / 0.10)",
       },
       keyframes: {
         nbDrop: {

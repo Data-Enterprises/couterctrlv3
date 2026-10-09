@@ -1023,26 +1023,17 @@ const HoldsPanel = ({
               ))}
             </div>
 
-            {/* The caveats belong together and belong apart from the
-                figures: two lines a card's gap apart read as two separate
-                afterthoughts rather than as the terms the card is read
-                under. */}
-            <div className="rounded-md bg-bkg px-3.5 py-3 flex flex-col gap-1.5">
-              <p className="text-[13.5px] text-content/85 leading-relaxed">
-                Sales only, so this is settled before any cause is named —
-                and before anything can change under you.
+            {/* Only when there is a cost penalty to report. The block is
+                the note, so with nothing to note there is no block. */}
+            {costPenalty < 0 && summary.gap < 0 && (
+              <p className="text-[13.5px] text-content/85 leading-relaxed rounded-md bg-bkg px-3.5 py-3">
+                Buying the same goods for more took another{" "}
+                <span className="font-semibold text-content">
+                  {cash(Math.abs(costPenalty))}
+                </span>{" "}
+                of margin on top of the sales gap.
               </p>
-
-              {costPenalty < 0 && summary.gap < 0 && (
-                <p className="text-[13.5px] text-content/85 leading-relaxed">
-                  Buying the same goods for more took another{" "}
-                  <span className="font-semibold text-content">
-                    {cash(Math.abs(costPenalty))}
-                  </span>{" "}
-                  of margin on top of the sales gap.
-                </p>
-              )}
-            </div>
+            )}
 
             {summary.gap >= 0 && marginGap < 0 && (
               <p className="text-[13px] leading-relaxed rounded-md bg-severity_watch_bg text-severity_watch_text px-3 py-2">
