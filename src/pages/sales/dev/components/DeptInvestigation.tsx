@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, type ReactNode } from "react";
+import { Fragment, useMemo, useRef, useState, type ReactNode } from "react";
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
 import {
   setInvestigation,
@@ -20,11 +20,13 @@ import {
   desksOf,
   holdsUp,
   spreadOf,
+  supplyOf,
   vitalsOf,
   OWNER_LABEL,
   type Desk,
   type Holds,
   type Spread,
+  type Supply,
   type Vitals as VitalsShape,
 } from "../shared/investigationSteps";
 import { rowsToCsv, downloadCsv } from "../../../../utils/csvExport";
@@ -821,14 +823,6 @@ const HoldsPanel = ({
           </div>
         </div>
 
-        <div className="flex justify-center">
-          <span className="text-[13px] text-content/85 bg-custom-white shadow-sm rounded-full px-4 py-1.5">
-            {holds.verdict === "holds"
-              ? "So the call stands. Is it a few big items, or many small ones?"
-              : "So the shape is different. Where does it sit?"}
-          </span>
-        </div>
-
         <div className="rounded-lg bg-custom-white shadow-md px-5 py-4">
           <div className="flex flex-col gap-4 min-w-0">
             <p className="text-[20px] font-semibold leading-snug text-content max-w-[840px]">
@@ -889,6 +883,189 @@ const HoldsPanel = ({
             </p>
           </div>
         </div>
+      </div>
+    </div>
+  );
+};
+
+/* ------------------------------------------------------------------ */
+/* Supply · the orders and the invoices themselves                     */
+/* ------------------------------------------------------------------ */
+
+const Figure = ({ label, value }: { label: string; value: string }) => (
+  <div className="flex items-baseline gap-3 py-1.5 border-b border-brand_navy/15 last:border-b-0">
+    <span className="text-[13px] text-content/85 min-w-0">{label}</span>
+    <span className="ml-auto text-[14px] font-bold tabular-nums text-content whitespace-nowrap">
+      {value}
+    </span>
+  </div>
+);
+
+/**
+ * What each store ordered, and what actually turned up.
+ *
+ * Everywhere else the notebook takes its own word for a cause: an item is
+ * labelled never-ordered and the reader is asked to believe there is no
+ * order. This is the orders and the invoices, both stores side by side, so
+ * the label can be checked rather than trusted.
+ */
+const SupplyPanel = ({
+  supply,
+  them,
+  us,
+  window,
+  cash,
+  waiting,
+}: {
+  supply: Supply;
+  them: string;
+  us: string;
+  window: { start: string; end: string };
+  cash: (v: number) => string;
+  waiting: boolean;
+}) => {
+  if (waiting) {
+    return (
+      <div className="flex-1 min-h-0 overflow-auto thin-scrollbar bg-bkg px-4 py-5">
+        <div className="max-w-[1180px] mx-auto rounded-lg bg-custom-white shadow-md px-5 py-4">
+          <p className="text-[14px] leading-relaxed text-content/85">
+            Reading orders and deliveries. Until they land there is nothing to
+            show here, and a half-read window would make a store look as
+            though it ordered less than it did.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const n = (v: number) => Math.round(v).toLocaleString("en-US");
+  const sides = [
+    { label: us, side: supply.mine, mine: true },
+    { label: them, side: supply.theirs, mine: false },
+  ];
+
+  // Every vendor either store took a delivery from, biggest first.
+  const names = [
+    ...new Set([
+      ...supply.mine.vendors.map((v) => v.name),
+      ...supply.theirs.vendors.map((v) => v.name),
+    ]),
+  ];
+  const rows = names
+    .map((name) => ({
+      name,
+      mine: supply.mine.vendors.find((v) => v.name === name) ?? null,
+      theirs: supply.theirs.vendors.find((v) => v.name === name) ?? null,
+    }))
+    .sort(
+      (a, b) =>
+        (b.theirs?.units ?? 0) + (b.mine?.units ?? 0) -
+        ((a.theirs?.units ?? 0) + (a.mine?.units ?? 0)),
+    );
+
+  return (
+    <div className="flex-1 min-h-0 overflow-auto thin-scrollbar bg-bkg px-4 py-5">
+      <div className="max-w-[1180px] mx-auto flex flex-col gap-5">
+
+        <div className="grid gap-4" style={{ gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))" }}>
+          {sides.map((x) => (
+            <div
+              key={x.label}
+              className="rounded-lg bg-custom-white shadow-md px-4 py-3.5"
+            >
+              <div className="text-[12px] font-bold uppercase tracking-wide text-content/85 truncate">
+                {x.label}
+              </div>
+              <div className="mt-2.5">
+                <Figure label="Orders placed" value={n(x.side.orders)} />
+                <Figure label="Lines on them" value={n(x.side.orderLines)} />
+                <Figure label="Units ordered" value={n(x.side.orderedUnits)} />
+                <Figure label="Deliveries" value={n(x.side.deliveries)} />
+                <Figure label="Units received" value={n(x.side.receivedUnits)} />
+                <Figure label="Cost received" value={cash(x.side.receivedCost)} />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* A supplier they buy from and we do not is a buying decision, not
+            an accident — and it is the one thing in here somebody can act on
+            without opening a single item. */}
+        {supply.onlyTheirs.length > 0 && (
+          <div className="rounded-lg bg-severity_watch_bg px-5 py-4">
+            <p className="text-[14px] leading-relaxed text-severity_watch_text">
+              <span className="font-bold">
+                {supply.onlyTheirs.length === 1
+                  ? "One vendor delivers to them and not here"
+                  : `${supply.onlyTheirs.length} vendors deliver to them and not here`}
+                :
+              </span>{" "}
+              {supply.onlyTheirs.join(", ")}.
+            </p>
+          </div>
+        )}
+
+        <div className="rounded-lg bg-custom-white shadow-md px-5 py-4">
+          <div className="text-[12px] font-bold uppercase tracking-wide text-content/85">
+            Who delivered, and how much
+          </div>
+          <p className="text-[12px] text-content/85 leading-snug mt-1">
+            Units received in this department over the window, by vendor.
+          </p>
+
+          <div
+            className="grid gap-x-4 gap-y-0 mt-3 text-[12.5px]"
+            style={{ gridTemplateColumns: "minmax(0,1fr) 92px 92px 92px" }}
+          >
+            <span className="text-[12px] font-bold uppercase tracking-wide text-content/85 pb-1.5 border-b border-brand_navy/15">
+              Vendor
+            </span>
+            <span className="text-[12px] font-bold uppercase tracking-wide text-content/85 text-right pb-1.5 border-b border-brand_navy/15 truncate">
+              Here
+            </span>
+            <span className="text-[12px] font-bold uppercase tracking-wide text-content/85 text-right pb-1.5 border-b border-brand_navy/15 truncate">
+              There
+            </span>
+            <span className="text-[12px] font-bold uppercase tracking-wide text-content/85 text-right pb-1.5 border-b border-brand_navy/15">
+              Cost here
+            </span>
+
+            {rows.map((r) => (
+              <Fragment key={r.name}>
+                <span className="min-w-0 truncate py-1.5 border-b border-brand_navy/15 text-content">
+                  {r.name}
+                </span>
+                <span
+                  className={`text-right tabular-nums py-1.5 border-b border-brand_navy/15 ${
+                    r.mine ? "font-semibold text-content" : "text-delta_negative_text"
+                  }`}
+                >
+                  {r.mine ? n(r.mine.units) : "none"}
+                </span>
+                <span className="text-right tabular-nums py-1.5 border-b border-brand_navy/15 text-content/85">
+                  {r.theirs ? n(r.theirs.units) : "none"}
+                </span>
+                <span className="text-right tabular-nums py-1.5 border-b border-brand_navy/15 text-content/85">
+                  {r.mine ? cash(r.mine.cost) : "—"}
+                </span>
+              </Fragment>
+            ))}
+          </div>
+
+          {rows.length === 0 && (
+            <p className="text-[13px] text-content/85 leading-relaxed mt-3">
+              Neither store took a delivery in this department over the window.
+            </p>
+          )}
+        </div>
+
+        <p className="text-[12.5px] text-content/85 leading-relaxed max-w-[840px]">
+          Read over {SUPPLY_LOOKBACK_DAYS} days ({window.start} to{" "}
+          {window.end}), which does not line up with the sales week. It can
+          account for this week and says nothing about last week or last year.
+          A return is taken back off what arrived, because a return is not a
+          delivery.
+        </p>
       </div>
     </div>
   );
@@ -1062,7 +1239,7 @@ const DeptInvestigation = ({
    * The cause filter is shared across them, so moving between steps keeps
    * whatever the reader had narrowed to.
    */
-  const [tab, setTab] = useState<"holds" | "items" | "act">("holds");
+  const [tab, setTab] = useState<"holds" | "items" | "supply" | "act">("holds");
 
   const isQty = gradingMetric === "qty";
   const fmt = (v: number) => (isQty ? formatBigNumber(v, 0) : formatCurrency2(v));
@@ -1127,6 +1304,10 @@ const DeptInvestigation = ({
   );
   const spread = useMemo(() => spreadOf(items), [items]);
   const vitals = useMemo(() => vitalsOf(items), [items]);
+  const supply = useMemo(
+    () => supplyOf(orders, receipts, items),
+    [orders, receipts, items],
+  );
   const desks = useMemo(() => desksOf(items, cash), [items]);
 
   /**
@@ -1217,7 +1398,7 @@ const DeptInvestigation = ({
 
   if (!target) return null;
 
-  const supply = supplyWindow({ start: twStart, end: twEnd });
+  const supply_ = supplyWindow({ start: twStart, end: twEnd });
   const byCause = new Map(summary.byCause.map((c) => [c.cause, c]));
   /**
    * Sales and margin can point opposite ways, and the headline has to say so.
@@ -1275,6 +1456,13 @@ const DeptInvestigation = ({
           ? `${CAUSE_LABEL[lead.cause]} · ${cash(Math.abs(lead.dollars))}`
           : "Nothing behind";
       },
+    },
+    {
+      key: "supply" as const,
+      title: "Supply",
+      needsAll: true,
+      answer: () =>
+        `${supply.mine.orders} ${supply.mine.orders === 1 ? "order" : "orders"} here, ${supply.theirs.orders} there`,
     },
     {
       key: "act" as const,
@@ -1340,7 +1528,7 @@ const DeptInvestigation = ({
         Each carries its own conclusion once it has one, so the bar is a
         summary of the whole notebook and not just a way to move around it.
       */}
-      <div className="flex-shrink-0 grid grid-cols-3 border-b border-brand_navy/15">
+      <div className="flex-shrink-0 grid grid-cols-4 border-b border-brand_navy/15">
         {TABS.map((t) => {
           const waiting = t.needsAll && stage !== "done" && stage !== "failed";
           const on = tab === t.key;
@@ -1407,6 +1595,17 @@ const DeptInvestigation = ({
                 setVendorQ(v);
                 setTab("items");
               }}
+            />
+          )}
+
+          {tab === "supply" && (
+            <SupplyPanel
+              supply={supply}
+              us={target.storeName}
+              them={target.compareStoreName}
+              window={supply_}
+              cash={cash}
+              waiting={stage !== "done" && stage !== "failed"}
             />
           )}
 
@@ -1486,8 +1685,8 @@ const DeptInvestigation = ({
             <p className="text-[13px] text-content/85 mt-2.5">
               Causes explain this week against {target.compareStoreName}.
               Orders and deliveries are read over {SUPPLY_LOOKBACK_DAYS} days
-              ({supply.start} to {supply.end}) — they cannot account for the
-              LW or LY columns.
+              ({supply_.start} to {supply_.end}) — they cannot account for
+              the LW or LY columns.
               {STAGE_NOTE[stage] && (
                 <span className="ml-1.5 font-semibold">{STAGE_NOTE[stage]}</span>
               )}

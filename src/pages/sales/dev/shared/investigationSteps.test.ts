@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { desksOf, holdsUp, spreadOf, vitalsOf } from "./investigationSteps";
+import { desksOf, holdsUp, spreadOf, supplyOf, vitalsOf } from "./investigationSteps";
 import { judge, type ItemFacts, type ItemVerdict } from "./deptInvestigation";
 
 const facts = (over: Partial<ItemFacts> = {}): ItemFacts => ({
@@ -239,5 +239,77 @@ describe("the department's vitals", () => {
   it("gives no percentage where there is nothing to be one of", () => {
     const v = vitalsOf([item({ mineTy: 90, mineUnits: 9 })]);
     expect(v.index.find((i) => i.label === "Sales")?.pct).toBeNull();
+  });
+});
+
+describe("supply · the proof behind the labels", () => {
+  const order = (id: number, code: string, qty: number) => ({
+    order_id: id, product_code: code, qty, vendor_name: "AWG",
+  });
+  const inv = (id: number, vendor: string, lines: [string, number, number, number][]) => ({
+    invoiceid: id,
+    vendor_name: vendor,
+    lines: lines.map(([product_code, units, ext_cost, item_return]) => ({
+      product_code, units, ext_cost, item_return,
+    })),
+  });
+  const of = (code: string) => item({ productCode: code, theirsTy: 10, theirsUnits: 1 });
+
+  it("counts orders, not order lines", () => {
+    const s = supplyOf(
+      { mine: [order(1, "a", 5), order(1, "b", 3), order(2, "a", 2)], theirs: [] },
+      { mine: [], theirs: [] },
+      [of("a"), of("b")],
+    );
+    expect(s.mine.orders).toBe(2);
+    expect(s.mine.orderLines).toBe(3);
+    expect(s.mine.orderedUnits).toBe(10);
+  });
+
+  /** Both payloads are department-wide; a line for an item this comparison
+   *  is not about would put units on a store's figures nobody is reading. */
+  it("ignores lines for items outside the comparison", () => {
+    const s = supplyOf(
+      { mine: [order(1, "a", 5), order(2, "zzz", 99)], theirs: [] },
+      { mine: [inv(7, "AWG", [["a", 4, 20, 0], ["zzz", 50, 400, 0]])], theirs: [] },
+      [of("a")],
+    );
+    expect(s.mine.orderedUnits).toBe(5);
+    expect(s.mine.receivedUnits).toBe(4);
+    expect(s.mine.receivedCost).toBeCloseTo(20, 6);
+  });
+
+  /** A return is not a delivery. Counting one as units arriving would close
+   *  a gap that is still open. */
+  it("takes a return back off what arrived", () => {
+    const s = supplyOf(
+      { mine: [], theirs: [] },
+      { mine: [inv(7, "AWG", [["a", 10, 50, 0]]), inv(8, "AWG", [["a", 4, 20, 1]])], theirs: [] },
+      [of("a")],
+    );
+    expect(s.mine.receivedUnits).toBe(6);
+  });
+
+  it("names the vendors that deliver to one store and not the other", () => {
+    const s = supplyOf(
+      { mine: [], theirs: [] },
+      {
+        mine: [inv(1, "AWG", [["a", 5, 25, 0]])],
+        theirs: [inv(2, "AWG", [["a", 5, 25, 0]]), inv(3, "LIPARI", [["a", 9, 40, 0]])],
+      },
+      [of("a")],
+    );
+    expect(s.onlyTheirs).toEqual(["LIPARI"]);
+    expect(s.onlyMine).toEqual([]);
+  });
+
+  it("does not count an invoice that carried nothing in this department", () => {
+    const s = supplyOf(
+      { mine: [], theirs: [] },
+      { mine: [inv(1, "AWG", [["zzz", 5, 25, 0]])], theirs: [] },
+      [of("a")],
+    );
+    expect(s.mine.deliveries).toBe(0);
+    expect(s.mine.vendors).toEqual([]);
   });
 });

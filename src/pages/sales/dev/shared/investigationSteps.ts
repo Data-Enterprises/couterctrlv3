@@ -322,3 +322,126 @@ export const vitalsOf = (items: ItemVerdict[]): Vitals => {
     ],
   };
 };
+
+/* ------------------------------------------------------------------ */
+/* Supply · what each store ordered, and what arrived                  */
+/* ------------------------------------------------------------------ */
+
+/**
+ * The proof behind "never ordered".
+ *
+ * Everything else in this notebook takes our word for a cause: an item is
+ * labelled never-ordered and the reader is asked to believe there is no
+ * order. These are the orders and the invoices themselves, both stores side
+ * by side, so the label can be checked rather than trusted.
+ *
+ * Read over the SUPPLY window — a fortnight — which does not line up with
+ * the sales week. It can account for this week and says nothing about last
+ * week or last year.
+ */
+export interface SupplyVendor {
+  name: string;
+  units: number;
+  cost: number;
+}
+
+export interface StoreSupply {
+  /** Distinct orders, not lines: five lines on one order is one order. */
+  orders: number;
+  orderLines: number;
+  orderedUnits: number;
+  deliveries: number;
+  receivedUnits: number;
+  receivedCost: number;
+  vendors: SupplyVendor[];
+}
+
+export interface Supply {
+  mine: StoreSupply;
+  theirs: StoreSupply;
+  /** Vendors that delivered to one store and not the other. A supplier they
+   *  buy from and we do not is a buying decision, not an accident. */
+  onlyTheirs: string[];
+  onlyMine: string[];
+}
+
+interface OrderLine {
+  order_id: number;
+  product_code: string;
+  qty: number;
+  vendor_name: string;
+}
+
+interface ReceiptLine {
+  product_code: string;
+  units: number;
+  ext_cost: number;
+  item_return: number;
+}
+
+interface Receipt {
+  invoiceid: number;
+  vendor_name: string;
+  lines: ReceiptLine[];
+}
+
+const sideOf = (
+  orders: OrderLine[],
+  receipts: Receipt[],
+  codes: Set<string>,
+): StoreSupply => {
+  // Both payloads are department-wide; narrow to the items this comparison
+  // is actually about, or a store's figures carry lines nobody is looking at.
+  const lines = orders.filter((o) => codes.has(String(o.product_code)));
+  const vendors = new Map<string, SupplyVendor>();
+  let deliveries = 0;
+  let receivedUnits = 0;
+  let receivedCost = 0;
+
+  for (const r of receipts) {
+    const mine = r.lines.filter((l) => codes.has(String(l.product_code)));
+    if (mine.length === 0) continue;
+    deliveries += 1;
+    const name = r.vendor_name || "Unknown vendor";
+    const at = vendors.get(name) ?? { name, units: 0, cost: 0 };
+    for (const l of mine) {
+      // A return is not a delivery, and counting one as units arriving
+      // would close a gap that is still open.
+      const units = l.item_return ? -l.units : l.units;
+      at.units += units;
+      at.cost += l.ext_cost;
+      receivedUnits += units;
+      receivedCost += l.ext_cost;
+    }
+    vendors.set(name, at);
+  }
+
+  return {
+    orders: new Set(lines.map((o) => o.order_id)).size,
+    orderLines: lines.length,
+    orderedUnits: lines.reduce((t, o) => t + o.qty, 0),
+    deliveries,
+    receivedUnits,
+    receivedCost,
+    vendors: [...vendors.values()].sort((a, b) => b.units - a.units),
+  };
+};
+
+export const supplyOf = (
+  orders: { mine: OrderLine[]; theirs: OrderLine[] },
+  receipts: { mine: Receipt[]; theirs: Receipt[] },
+  items: ItemVerdict[],
+): Supply => {
+  const codes = new Set(items.map((i) => i.productCode));
+  const mine = sideOf(orders.mine, receipts.mine, codes);
+  const theirs = sideOf(orders.theirs, receipts.theirs, codes);
+  const mineNames = new Set(mine.vendors.map((v) => v.name));
+  const theirNames = new Set(theirs.vendors.map((v) => v.name));
+
+  return {
+    mine,
+    theirs,
+    onlyTheirs: theirs.vendors.filter((v) => !mineNames.has(v.name)).map((v) => v.name),
+    onlyMine: mine.vendors.filter((v) => !theirNames.has(v.name)).map((v) => v.name),
+  };
+};
