@@ -136,8 +136,10 @@ const STAGE_NOTE: Record<Stage, string | null> = {
  * grid would hide that disagreement instead of showing it.
  */
 const SUGGESTED: Record<string, Cause[]> = {
+  ringing: ["never-ordered"],
   orders: ["never-ordered", "not-received"],
   price: ["price-mix"],
+  mix: ["price-mix"],
 };
 
 const CAUSE_ORDER: Cause[] = [

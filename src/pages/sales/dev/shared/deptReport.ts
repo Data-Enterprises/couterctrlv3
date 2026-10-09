@@ -80,62 +80,187 @@ export const splitGap = (d: DeptTotals): Split | null => {
   };
 };
 
-/** Where in the items the evidence for this shape lives. It points; it does
- *  not filter — a department can be all volume with no item flagged never
- *  ordered, and that disagreement is itself worth seeing. */
-export type Focus = "orders" | "price" | "unknown";
-
-export const focusOf = (s: Split | null): Focus =>
-  s === null ? "unknown" : Math.abs(s.volume) >= Math.abs(s.rate) ? "orders" : "price";
+/* ------------------------------------------------------------------ */
+/* The chain                                                           */
+/* ------------------------------------------------------------------ */
 
 /**
- * The two effects as one sentence.
+ * Three gates, asked in order, and the first one that fails is the finding.
  *
- * A side under a tenth of the other is not a finding: saying "and took
- * slightly less per unit" about $166 against $6,635 sends somebody to look at
- * a price that is fine.
+ * This replaced printing the volume / price & mix split. The split is an
+ * exact decomposition and it tells nobody where to start: it describes a gap
+ * rather than triaging it. "Did it ring, did it sell, did it take the same
+ * per unit" is a sequence somebody can act on, and it degrades properly —
+ * a department this store sells none of simply stops at the first gate
+ * instead of producing a half that has to be explained away.
+ *
+ * The split survives underneath. Where two gates fail it decides which one
+ * leads, because the arithmetic knows which is carrying more of the gap and
+ * a left-to-right reading does not.
  */
-export const sentenceFor = (
-  d: DeptTotals,
-  s: Split | null,
-  them: string,
-): string => {
-  // Selling NONE of a department is not a thing the split can describe: the
-  // rate half comes out at zero because there are no units to price, and
-  // "at much the same take per unit" then claims a pricing fact about a
-  // department that never rang. The absence is the whole finding.
-  if (d.mineUnits <= 0 && d.theirsUnits > 0) {
-    return "Sold none of this department.";
-  }
+export type GateName = "rung" | "sold" | "rate";
+
+export interface Gate {
+  name: GateName;
+  /** `skipped` where an earlier gate made this one meaningless — there is no
+   *  rate to compare when nothing rang. Drawn grey, not as a failure. */
+  state: "pass" | "fail" | "skipped";
+  /** The figures behind the mark, for the trail under the sentence. */
+  detail: string;
+}
+
+export type Finding =
+  | "nothing-rung"
+  | "fewer-units"
+  | "lower-price"
+  | "different-mix"
+  | "a-little-less"
+  | "level";
+
+/** Where the items view should land, and what the button says. */
+export type Focus = "ringing" | "orders" | "price" | "mix" | "unknown";
+
+export interface Chain {
+  gates: Gate[];
+  finding: Finding;
+  says: string;
+  focus: Focus;
+  cta: string;
+}
+
+export interface Gates {
+  /** Units this far under the counterpart's is a volume failure. */
+  units: number;
+  /** A realised rate this far under is a rate failure. */
+  rate: number;
+  /**
+   * A rate gap wider than this is not a shelf price.
+   *
+   * Half the take per pound is not a department that priced low, it is a
+   * department selling something else — mince against ribeye. No amount of
+   * repricing closes it, so sending somebody to compare price tags would
+   * send them to the one place the answer is not.
+   */
+  mix: number;
+}
+
+export const DEFAULT_GATES: Gates = { units: 0.05, rate: 0.05, mix: 0.25 };
+
+const CTA: Record<Focus, string> = {
+  ringing: "Check ringing",
+  orders: "Check orders",
+  price: "Check prices",
+  mix: "Check the mix",
+  unknown: "Investigate",
+};
+
+const FOCUS: Record<Finding, Focus> = {
+  "nothing-rung": "ringing",
+  "fewer-units": "orders",
+  "lower-price": "price",
+  "different-mix": "mix",
+  "a-little-less": "unknown",
+  level: "unknown",
+};
+
+const cash = (v: number) =>
+  "$" + v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const whole = (v: number) => Math.round(v).toLocaleString("en-US");
+const pct = (v: number) => Math.round(Math.abs(v) * 100) + "%";
+
+export const chainFor = (d: DeptTotals, g: Gates = DEFAULT_GATES): Chain => {
   const unit = d.weighed ? "lb" : "units";
-  const one = d.weighed ? "pound" : "unit";
-  const n = (v: number) => Math.round(v).toLocaleString("en-US");
+  const one = d.weighed ? "lb" : "unit";
 
-  if (s === null) {
-    return `${them} sold none of this department.`;
+  const rang = d.mine > 0 || d.mineUnits > 0;
+  const comparable = d.mineUnits > 0 && d.theirsUnits > 0;
+  const unitGap = d.theirsUnits > 0 ? d.mineUnits / d.theirsUnits - 1 : null;
+  const mineRate = d.mineUnits > 0 ? d.mine / d.mineUnits : null;
+  const theirsRate = d.theirsUnits > 0 ? d.theirs / d.theirsUnits : null;
+  const rateGap =
+    mineRate !== null && theirsRate !== null && theirsRate > 0
+      ? mineRate / theirsRate - 1
+      : null;
+
+  const soldOk = unitGap === null || unitGap >= -g.units;
+  const rateOk = rateGap === null || rateGap >= -g.rate;
+
+  const gates: Gate[] = [
+    {
+      name: "rung",
+      state: rang ? "pass" : "fail",
+      detail: rang
+        ? cash(d.mine) + " rung"
+        : cash(0) + " against " + cash(d.theirs),
+    },
+    {
+      name: "sold",
+      state: !rang ? "skipped" : soldOk ? "pass" : "fail",
+      detail:
+        !rang || unitGap === null
+          ? "Sold"
+          : "Sold " + pct(unitGap) + (unitGap < 0 ? " fewer " : " more ") + unit,
+    },
+    {
+      name: "rate",
+      // A take per unit, never a price: it is money over units, and no
+      // customer paid it. The real price points come off the items.
+      state: !comparable ? "skipped" : rateOk ? "pass" : "fail",
+      detail:
+        mineRate === null || theirsRate === null
+          ? "Take per " + one
+          : cash(mineRate) + " a " + one + " against " + cash(theirsRate),
+    },
+  ];
+
+  let finding: Finding;
+  if (!rang) {
+    finding = "nothing-rung";
+  } else if (soldOk && rateOk) {
+    finding = d.mine < d.theirs ? "a-little-less" : "level";
+  } else if (soldOk) {
+    finding = rateGap !== null && rateGap <= -g.mix ? "different-mix" : "lower-price";
+  } else if (rateOk) {
+    finding = "fewer-units";
+  } else {
+    // Both gates down. The split knows which half is carrying more of the
+    // gap; reading left to right would always blame volume.
+    const s = splitGap(d);
+    const volumeLeads = s === null || Math.abs(s.volume) >= Math.abs(s.rate);
+    finding = volumeLeads
+      ? "fewer-units"
+      : rateGap !== null && rateGap <= -g.mix
+        ? "different-mix"
+        : "lower-price";
   }
 
-  const unitGap = d.mineUnits - d.theirsUnits;
-  const small = (a: number, b: number) => Math.abs(a) < Math.abs(b) * 0.1;
+  const perUnit =
+    mineRate !== null && theirsRate !== null ? theirsRate - mineRate : 0;
 
-  const first = small(s.volume, s.rate)
-    ? `Sold much the same ${d.weighed ? "weight" : "volume"}`
-    : `Sold ${n(Math.abs(unitGap))} ${unitGap < 0 ? "fewer" : "more"} ${unit}`;
+  const says =
+    finding === "nothing-rung"
+      ? "Nothing rung all week."
+      : finding === "fewer-units"
+        ? "Sold " + pct(unitGap ?? 0) + " fewer " + unit + ", " +
+          whole(Math.abs(d.theirsUnits - d.mineUnits)) + " " + unit + " behind."
+        : finding === "lower-price"
+          ? "Took " + cash(perUnit) + " less per " + one + "."
+          : finding === "different-mix"
+            ? "Took " + cash(perUnit) + " less per " + one +
+              " \u2014 far more than a price difference."
+            : finding === "a-little-less"
+              ? "A little less of everything, with nothing standing out."
+              : "Level with the other store.";
 
-  const second = small(s.rate, s.volume)
-    ? `at much the same take per ${one}`
-    : `${s.volume * s.rate < 0 ? "but took" : "and took"} ${
-        s.rate < 0 ? "less" : "more"
-      } for every ${one} it did sell`;
-
-  return `${first}, ${second}.`;
+  const focus = FOCUS[finding];
+  return { gates, finding, says, focus, cta: CTA[focus] };
 };
 
 export interface ReportRow extends DeptTotals {
   gap: number;
+  /** Kept, not printed: it is what decides which gate leads when two fail. */
   split: Split | null;
-  says: string;
-  focus: Focus;
+  chain: Chain;
   /** How far behind in its OWN terms, 0–1. Negative where it is ahead. */
   dropoff: number;
 }
@@ -167,6 +292,14 @@ export interface Report {
    * actually broken rather than merely smaller.
    */
   steep: ReportRow[];
+  /**
+   * Departments that failed the SAME gate, biggest group first.
+   *
+   * Four departments that rang nothing are one problem with one owner, not
+   * four rows. Grouping them is better triage than a size ranking, and it
+   * catches the small-but-broken department the dollar cut can never reach.
+   */
+  byFinding: { finding: Finding; rows: ReportRow[]; total: number }[];
   underTotal: number;
   overTotal: number;
   /** Under netted against over — the figure the Stores tab shows. */
@@ -175,24 +308,20 @@ export interface Report {
   shownShare: number;
 }
 
-const rowOf = (d: DeptTotals, them: string): ReportRow => {
-  const split = splitGap(d);
-  return {
-    ...d,
-    gap: d.mine - d.theirs,
-    split,
-    says: sentenceFor(d, split, them),
-    focus: focusOf(split),
-    dropoff: d.theirs > 0 ? (d.theirs - d.mine) / d.theirs : 0,
-  };
-};
+const rowOf = (d: DeptTotals, gates: Gates): ReportRow => ({
+  ...d,
+  gap: d.mine - d.theirs,
+  split: splitGap(d),
+  chain: chainFor(d, gates),
+  dropoff: d.theirs > 0 ? (d.theirs - d.mine) / d.theirs : 0,
+});
 
 export const buildReport = (
   depts: DeptTotals[],
-  them: string,
   bands: Bands = DEFAULT_BANDS,
+  gates: Gates = DEFAULT_GATES,
 ): Report => {
-  const rows = depts.map((d) => rowOf(d, them));
+  const rows = depts.map((d) => rowOf(d, gates));
   const under = rows
     .filter((r) => r.gap < 0)
     .sort((a, b) => a.gap - b.gap);
@@ -232,8 +361,23 @@ export const buildReport = (
 
   const shownTotal = shown.reduce((t, r) => t - r.gap, 0);
 
+  const grouped = new Map<Finding, ReportRow[]>();
+  for (const r of under) {
+    const at = grouped.get(r.chain.finding);
+    if (at) at.push(r);
+    else grouped.set(r.chain.finding, [r]);
+  }
+  const byFinding = [...grouped.entries()]
+    .map(([finding, rows]) => ({
+      finding,
+      rows,
+      total: rows.reduce((t, r) => t - r.gap, 0),
+    }))
+    .sort((a, b) => b.total - a.total);
+
   return {
     under,
+    byFinding,
     over,
     shown,
     folded,

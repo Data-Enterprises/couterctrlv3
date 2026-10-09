@@ -123,15 +123,43 @@ const Row = ({
           >
             {signed(row.gap)}
           </span>
-          <span className="text-[13.5px] leading-snug text-content/85 min-w-0">
-            {row.says}
+          <span className="min-w-0">
+            <span className="block text-[13.5px] font-semibold leading-snug text-content">
+              {row.chain.says}
+            </span>
+            {/* How it got there. Each gate in order, the one that failed
+                marked — so the sentence above is a claim with its working
+                shown rather than an assertion to take on trust. */}
+            <span className="flex items-center gap-1.5 flex-wrap mt-0.5">
+              {row.chain.gates.map((g, i) => (
+                <span key={g.name} className="flex items-center gap-1.5">
+                  {i > 0 && <span className="text-content/85 text-[11px]">&rsaquo;</span>}
+                  <span
+                    className={`text-[12px] whitespace-nowrap ${
+                      g.state === "fail"
+                        ? "font-bold text-delta_negative_text"
+                        : g.state === "pass"
+                          ? "text-content/85"
+                          : "text-content/85 opacity-60"
+                    }`}
+                  >
+                    {g.state === "fail" ? "✕ " : g.state === "pass" ? "✓ " : ""}
+                    {g.detail}
+                  </span>
+                </span>
+              ))}
+            </span>
           </span>
         </button>
+        {/* Named by the gate that failed. "Check the mix" rather than
+            "Check prices" where the take per unit is half the other store's:
+            that is not a department that priced low, and comparing price tags
+            would send somebody to the one place the answer is not. */}
         <button
           onClick={() => onInvestigate(row)}
-          className="flex-shrink-0 text-[12.5px] font-bold text-brand_navy_hover hover:underline whitespace-nowrap"
+          className="flex-shrink-0 self-center text-[12.5px] font-bold text-brand_navy_hover hover:underline whitespace-nowrap"
         >
-          Investigate &rarr;
+          {row.chain.cta} &rarr;
         </button>
       </div>
 
@@ -350,9 +378,8 @@ const DeptReport = ({
         theirsLw: theirs.lw,
         theirsLy: theirs.ly,
       }),
-      compareStoreName,
     );
-  }, [theirs, subSales, subSalesWk2, subSalesWk3, compareStoreName]);
+  }, [theirs, subSales, subSalesWk2, subSalesWk3]);
 
   /** Both stores travel with it: the question there is why THIS store is
    *  behind THAT one in this department, and neither half survives being
@@ -369,7 +396,7 @@ const DeptReport = ({
         compareStoreName,
         subDept: row.id,
         subDeptName: row.name,
-        focus: row.focus,
+        focus: row.chain.focus,
       }),
     );
 

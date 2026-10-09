@@ -92,7 +92,7 @@ export interface InvestigationTarget {
    * have no item flagged never-ordered, and that disagreement is a finding
    * rather than an empty grid.
    */
-  focus?: "orders" | "price" | "unknown";
+  focus?: "ringing" | "orders" | "price" | "mix" | "unknown";
 }
 
 interface SalesLedgerState {

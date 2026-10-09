@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
   buildReport,
-  focusOf,
-  sentenceFor,
+  chainFor,
   splitGap,
   totalsFrom,
   type Bands,
   type DeptTotals,
+  type Gates,
 } from "./deptReport";
 import type { SubSale } from "../../../../interfaces";
 
@@ -90,67 +90,79 @@ describe("splitting a gap", () => {
   });
 });
 
-describe("where to look first", () => {
-  it("sends a volume-shaped gap to orders and a rate-shaped one to price", () => {
-    expect(focusOf({ volume: -6634, rate: -166 })).toBe("orders");
-    expect(focusOf({ volume: 975, rate: -4955 })).toBe("price");
-    expect(focusOf(null)).toBe("unknown");
-  });
-});
+describe("the chain", () => {
+  const gates: Gates = { units: 0.05, rate: 0.05, mix: 0.25 };
+  const run = (o: Partial<DeptTotals>) => chainFor(dept(o), gates);
+  const marks = (o: Partial<DeptTotals>) => run(o).gates.map((g) => g.state);
 
-describe("the sentence", () => {
-  const d = (o: Partial<DeptTotals>) => {
-    const x = dept(o);
-    return sentenceFor(x, splitGap(x), "020");
-  };
-
-  it("names both sides when both are material", () => {
-    expect(
-      d({ mine: 9284.4, mineUnits: 4012, theirs: 17704.51, theirsUnits: 5171 }),
-    ).toBe("Sold 1,159 fewer units, and took less for every unit it did sell.");
+  /** Nothing to compare: the later gates are meaningless, not failures. */
+  it("stops at the first gate when nothing rang", () => {
+    const c = run({ mine: 0, mineUnits: 0, theirs: 4887.47, theirsUnits: 661 });
+    expect(c.finding).toBe("nothing-rung");
+    expect(c.gates.map((g) => g.state)).toEqual(["fail", "skipped", "skipped"]);
+    expect(c.says).toBe("Nothing rung all week.");
+    expect(c.focus).toBe("ringing");
+    expect(c.cta).toBe("Check ringing");
   });
 
-  /** $166 against $6,635 is not a price problem, and saying so would send
-   *  somebody to look at a price that is fine. */
-  it("suppresses a side worth under a tenth of the other", () => {
-    expect(
-      d({ mine: 11600, mineUnits: 1995, theirs: 18400.77, theirsUnits: 3120 }),
-    ).toBe("Sold 1,125 fewer units, at much the same take per unit.");
+  it("calls a unit shortfall a volume problem", () => {
+    const c = run({ mine: 7000, mineUnits: 1400, theirs: 10000, theirsUnits: 2000 });
+    expect(c.finding).toBe("fewer-units");
+    expect(marks({ mine: 7000, mineUnits: 1400, theirs: 10000, theirsUnits: 2000 }))
+      .toEqual(["pass", "fail", "pass"]);
+    expect(c.cta).toBe("Check orders");
   });
 
-  it("says BUT when the two pull against each other", () => {
-    expect(d({ mine: 4019.78, mineUnits: 2300, theirs: 8000, theirsUnits: 2050 })).toBe(
-      "Sold 250 more units, but took less for every unit it did sell.",
-    );
-  });
-
-  it("counts a weighed department in pounds", () => {
-    expect(
-      d({
-        weighed: true,
-        mine: 9284.4,
-        mineUnits: 4012,
-        theirs: 17704.51,
-        theirsUnits: 5171,
-      }),
-    ).toContain("1,159 fewer lb");
-  });
-
-  it("says so when there is nothing to compare against", () => {
-    expect(d({ mine: 900, mineUnits: 200, theirs: 0, theirsUnits: 0 })).toBe(
-      "020 sold none of this department.",
-    );
+  /** Sold MORE and still took less: the volume gate passes and the rate gate
+   *  is the whole finding. */
+  it("reads a modest rate shortfall as price", () => {
+    const c = run({ mine: 9000, mineUnits: 1050, theirs: 9500, theirsUnits: 1000 });
+    expect(c.finding).toBe("lower-price");
+    expect(c.focus).toBe("price");
+    expect(c.cta).toBe("Check prices");
   });
 
   /**
-   * The identity puts the whole gap on volume and leaves rate at zero, which
-   * is right — but "at much the same take per unit" then claims a pricing
-   * fact about a department that never rang a single unit.
+   * Half the take per pound is not a department that priced low — it is
+   * selling something else. Sending somebody to compare price tags would
+   * send them to the one place the answer is not.
    */
-  it("says nothing about price when we sold none of it", () => {
-    expect(d({ mine: 0, mineUnits: 0, theirs: 4211.21, theirsUnits: 548 })).toBe(
-      "Sold none of this department.",
-    );
+  it("reads a wide rate shortfall as mix, not price", () => {
+    // Meat by #, real: $4.70 a lb against $8.75.
+    const c = run({
+      weighed: true,
+      mine: 13113.23, mineUnits: 2789.434,
+      theirs: 23251.47, theirsUnits: 2658.102,
+    });
+    expect(c.finding).toBe("different-mix");
+    expect(c.cta).toBe("Check the mix");
+    expect(c.says).toContain("far more than a price difference");
+    expect(c.gates[2].detail).toBe("$4.70 a lb against $8.75");
+  });
+
+  /** A take per unit is money over units — a figure no customer paid — so
+   *  the trail says "a lb against", never "per lb". */
+  it("never words the rate as a price", () => {
+    const c = run({ mine: 9000, mineUnits: 1000, theirs: 9500, theirsUnits: 1000 });
+    expect(c.gates[2].detail).not.toContain("vs");
+    expect(c.gates[2].detail).toContain("against");
+  });
+
+  it("lets the split decide which gate leads when both fail", () => {
+    // Units down a tenth, rate down by half: the rate carries the gap, so
+    // reading the gates left to right would blame the wrong one.
+    const c = run({ mine: 4500, mineUnits: 900, theirs: 10000, theirsUnits: 1000 });
+    expect(marks({ mine: 4500, mineUnits: 900, theirs: 10000, theirsUnits: 1000 }))
+      .toEqual(["pass", "fail", "fail"]);
+    expect(c.finding).toBe("different-mix");
+  });
+
+  it("says so when both are inside the gates and it is still behind", () => {
+    // 3% fewer at 3% less compounds to 6% behind with nothing to point at.
+    const c = run({ mine: 9409, mineUnits: 970, theirs: 10000, theirsUnits: 1000 });
+    expect(c.finding).toBe("a-little-less");
+    expect(c.focus).toBe("unknown");
+    expect(c.cta).toBe("Investigate");
   });
 });
 
@@ -173,7 +185,7 @@ describe("what the report prints", () => {
   it("prints the department that carries the cut past the line", () => {
     // 30 -> 50 -> 60. The third is tested at a running total of 50%, which
     // is under the cut, so it prints even though it takes the total past it.
-    const r = buildReport(spread(), "020", bands);
+    const r = buildReport(spread(), bands);
     expect(r.shown.map((x) => x.name)).toEqual(["D0", "D1", "D2"]);
     expect(r.shownShare).toBeCloseTo(0.6, 6);
   });
@@ -183,7 +195,7 @@ describe("what the report prints", () => {
       dept({ id: 1, name: "Big", mine: 10, mineUnits: 5, theirs: 1000, theirsUnits: 50 }),
       dept({ id: 2, name: "Small", mine: 95, mineUnits: 10, theirs: 100, theirsUnits: 10 }),
     ];
-    expect(buildReport(depts, "020", bands).shown.map((x) => x.name)).toEqual(["Big"]);
+    expect(buildReport(depts, bands).shown.map((x) => x.name)).toEqual(["Big"]);
   });
 
   it("separates over from under and nets them", () => {
@@ -191,7 +203,7 @@ describe("what the report prints", () => {
       dept({ id: 1, mine: 60, mineUnits: 6, theirs: 100, theirsUnits: 10 }),
       dept({ id: 2, mine: 130, mineUnits: 13, theirs: 100, theirsUnits: 10 }),
     ];
-    const r = buildReport(depts, "020", bands);
+    const r = buildReport(depts, bands);
     expect(r.underTotal).toBeCloseTo(40, 6);
     expect(r.overTotal).toBeCloseTo(30, 6);
     expect(r.netGap).toBeCloseTo(-10, 6);
@@ -205,7 +217,7 @@ describe("what the report prints", () => {
     const depts = spread().concat([
       dept({ id: 99, name: "Halved", mine: 4, mineUnits: 2, theirs: 12, theirsUnits: 6 }),
     ]);
-    const r = buildReport(depts, "020", bands);
+    const r = buildReport(depts, bands);
     expect(r.shown.map((x) => x.name)).not.toContain("Halved");
     expect(r.steep.map((x) => x.name)).toEqual(["Halved"]);
     expect(r.steep[0].dropoff).toBeCloseTo(2 / 3, 6);
@@ -215,15 +227,52 @@ describe("what the report prints", () => {
     const depts = [
       dept({ id: 1, name: "Big", mine: 10, mineUnits: 5, theirs: 1000, theirsUnits: 50 }),
     ];
-    const r = buildReport(depts, "020", bands);
+    const r = buildReport(depts, bands);
     expect(r.shown.map((x) => x.name)).toEqual(["Big"]);
     expect(r.steep).toEqual([]);
   });
 
   it("prints everything when there is nothing to apportion", () => {
-    const r = buildReport([dept({ id: 1, mine: 100, theirs: 100 })], "020", bands);
+    const r = buildReport([dept({ id: 1, mine: 100, theirs: 100 })], bands);
     expect(r.underTotal).toBe(0);
     expect(r.shownShare).toBe(0);
+  });
+});
+
+describe("grouping by what failed", () => {
+  const bands: Bands = { cut: 0.6, steep: 0.4 };
+
+  /**
+   * Four departments that rang nothing are one problem with one owner. A
+   * size ranking scatters them; this is what catches the small-but-broken
+   * one the dollar cut can never reach.
+   */
+  it("collects the departments that failed the same gate", () => {
+    const silent = (id: number, theirs: number) =>
+      dept({ id, name: `S${id}`, mine: 0, mineUnits: 0, theirs, theirsUnits: 100 });
+    const r = buildReport(
+      [
+        dept({ id: 1, name: "Big", mine: 7000, mineUnits: 1400, theirs: 10000, theirsUnits: 2000 }),
+        silent(2, 900),
+        silent(3, 400),
+        silent(4, 150),
+      ],
+      bands,
+    );
+    const quiet = r.byFinding.find((g) => g.finding === "nothing-rung");
+    expect(quiet?.rows.map((x) => x.name)).toEqual(["S2", "S3", "S4"]);
+    expect(quiet?.total).toBeCloseTo(1450, 6);
+  });
+
+  it("puts the costliest group first", () => {
+    const r = buildReport(
+      [
+        dept({ id: 1, name: "Quiet", mine: 0, mineUnits: 0, theirs: 500, theirsUnits: 50 }),
+        dept({ id: 2, name: "Thin", mine: 7000, mineUnits: 1400, theirs: 10000, theirsUnits: 2000 }),
+      ],
+      bands,
+    );
+    expect(r.byFinding[0].finding).toBe("fewer-units");
   });
 });
 
