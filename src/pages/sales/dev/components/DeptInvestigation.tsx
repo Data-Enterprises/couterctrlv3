@@ -1877,6 +1877,59 @@ const DeptInvestigation = ({
    * selected row is somewhere the reader cannot see, which reads as the
    * click having done nothing.
    */
+  /**
+   * Click, shift-click, ctrl-click — the three a grid is expected to answer.
+   *
+   * Shift measures from the anchor through the SORTED list rather than the
+   * page, so a range that crosses a page boundary is still a range; what is
+   * off-screen is still selected and still copies.
+   */
+  const pickRow = (e: { shiftKey: boolean; ctrlKey: boolean; metaKey: boolean }, code: string) => {
+    const add = e.ctrlKey || e.metaKey;
+    if (e.shiftKey && anchor.current) {
+      const a = sorted.findIndex((r) => r.productCode === anchor.current);
+      const b = sorted.findIndex((r) => r.productCode === code);
+      if (a >= 0 && b >= 0) {
+        const span = sorted
+          .slice(Math.min(a, b), Math.max(a, b) + 1)
+          .map((r) => r.productCode);
+        setChosen(new Set(add ? [...chosen, ...span] : span));
+        return;
+      }
+    }
+    anchor.current = code;
+    if (add) {
+      const next = new Set(chosen);
+      if (next.has(code)) next.delete(code);
+      else next.add(code);
+      setChosen(next);
+    } else {
+      setChosen(new Set([code]));
+    }
+  };
+
+  /**
+   * The chosen rows on the clipboard as tab-separated text.
+   *
+   * Tabs rather than commas: a spreadsheet pastes TSV straight into cells,
+   * where an item description carrying a comma would split across two of
+   * them. The same columns the CSV export writes, so a copied row and a
+   * downloaded one are the same row.
+   */
+  const copyChosen = () => {
+    if (chosen.size === 0) return;
+    const lines = sorted
+      .filter((r) => chosen.has(r.productCode))
+      .map((r) =>
+        csvRow(r)
+          .map((v) => (v === null ? "" : String(v)))
+          .join("\t"),
+      );
+    navigator.clipboard.writeText(
+      [CSV_HEADERS.join("\t"), ...lines].join("\n"),
+    );
+  };
+
   const show = (code: string) => {
     const i = sorted.findIndex((r) => r.productCode === code);
     if (i >= 0) setPage(Math.floor(i / PAGE_ROWS));
@@ -1974,12 +2027,45 @@ const DeptInvestigation = ({
   /** Which page of the grid is showing, from 0. */
   const [page, setPage] = useState(0);
 
+  /**
+   * Rows picked out, by product code.
+   *
+   * The grid is a spreadsheet to everybody who uses one, and the thing they
+   * try first is dragging across rows to take them somewhere else. Click
+   * selects, shift extends, ctrl adds, and the copy keys put it on the
+   * clipboard as tab-separated text — which is what a spreadsheet pastes.
+   *
+   * Opening the evidence moves to a double click for the same reason: a
+   * single click on a spreadsheet row selects it, and a panel that opened
+   * on the way to selecting three rows would be in the way three times.
+   */
+  const [chosen, setChosen] = useState<Set<string>>(new Set());
+  /** Where a shift-range measures from. */
+  const anchor = useRef<string | null>(null);
+
   const sorted = applySort(shown, (row, col) => sortValue(row, col));
   const pages = Math.max(1, Math.ceil(sorted.length / PAGE_ROWS));
   /* Clamped rather than reset: a filter that shortens the list below the
      current page should land on the last one, not throw the reader back to
      the first. */
   const at_ = Math.min(page, pages - 1);
+
+  /**
+   * The page numbers worth printing: the first, the last, and a few either
+   * side of where you are, with gaps for the rest.
+   *
+   * Two hundred pages of buttons is not navigation. `null` is a gap.
+   */
+  const pageWindow: (number | null)[] = (() => {
+    if (pages <= 7) return [...Array(pages).keys()];
+    const near = new Set([0, pages - 1, at_, at_ - 1, at_ + 1]);
+    const out: (number | null)[] = [];
+    for (let p = 0; p < pages; p += 1) {
+      if (near.has(p)) out.push(p);
+      else if (out[out.length - 1] !== null) out.push(null);
+    }
+    return out;
+  })();
   const from = at_ * PAGE_ROWS;
   const capped = sorted.slice(from, from + PAGE_ROWS);
 
@@ -2032,10 +2118,22 @@ const DeptInvestigation = ({
 
   /* Escape goes back, the way it does everywhere else that opens over the
      page. Bound to the document because the focus may be anywhere inside
-     three hundred rows by the time somebody wants out. */
+     three hundred rows by the time somebody wants out.
+
+     The copy keys ride along: ctrl-C with rows chosen puts them on the
+     clipboard, and without any it does nothing, so an ordinary copy of
+     selected text is left alone. */
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") close();
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "c" && chosen.size > 0) {
+        e.preventDefault();
+        copyChosen();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "a" && tab === "items") {
+        e.preventDefault();
+        setChosen(new Set(sorted.map((r) => r.productCode)));
+      }
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
@@ -2471,10 +2569,9 @@ const DeptInvestigation = ({
                 {capped.map((r, i) => (
                   <tr
                     key={r.productCode}
-                    onClick={() =>
-                      setPicked((p) => (p === r.productCode ? null : r.productCode))
-                    }
-                    className="cursor-pointer"
+                    onClick={(e) => pickRow(e, r.productCode)}
+                    onDoubleClick={() => show(r.productCode)}
+                    className="cursor-pointer select-none"
                     onContextMenu={(e) => {
                       e.preventDefault();
                       setCtx({ x: e.clientX, y: e.clientY, upc: r.productCode });
@@ -2487,7 +2584,7 @@ const DeptInvestigation = ({
                         can be seen. */}
                     <td
                       className={`sticky left-0 z-10 border-r border-brand_line border-b border-brand_line px-2 py-1.5 text-right ${
-                        picked === r.productCode
+                        picked === r.productCode || chosen.has(r.productCode)
                           ? "bg-row_selected border-row_selected_border border-l-2 font-bold text-content"
                           : "bg-custom-white text-content/85"
                       }`}
@@ -2549,33 +2646,65 @@ const DeptInvestigation = ({
               totals row above it is over the whole filtered set, not this
               page — which is the figure anybody reading totals wants. */}
           {sorted.length > 0 && (
-            <div className="flex-shrink-0 flex items-center gap-3 px-4 py-2 border-t border-brand_line bg-custom-white text-[12.5px] text-content/85">
-              <span className="tabular-nums">
-                {(from + 1).toLocaleString("en-US")}–{Math.min(from + PAGE_ROWS, sorted.length).toLocaleString("en-US")}{" "}
+            <div className="flex-shrink-0 flex items-center gap-3 flex-wrap px-4 py-2 border-t border-brand_line bg-custom-white text-[12.5px] text-content/85">
+              <span>
+                <span className="font-semibold text-content tabular-nums">
+                  {(from + 1).toLocaleString("en-US")}–{Math.min(from + PAGE_ROWS, sorted.length).toLocaleString("en-US")}
+                </span>{" "}
                 of {sorted.length.toLocaleString("en-US")}
-                {sorted.length !== items.length && (
-                  <span className="text-content/85">
-                    {" "}filtered from {items.length.toLocaleString("en-US")}
-                  </span>
+                {sorted.length !== items.length &&
+                  ` filtered from ${items.length.toLocaleString("en-US")}`}{" "}
+                &middot; ordered by the biggest difference &middot;{" "}
+                {chosen.size > 0 ? (
+                  <>
+                    <span className="font-semibold text-content">
+                      {chosen.size.toLocaleString("en-US")} selected
+                    </span>{" "}
+                    &middot; ctrl-C to copy
+                  </>
+                ) : (
+                  "double-click a row for its evidence"
                 )}
               </span>
 
               {pages > 1 && (
-                <span className="ml-auto flex items-center gap-2">
+                <span className="ml-auto flex items-center gap-1">
                   <button
                     onClick={() => setPage(Math.max(0, at_ - 1))}
                     disabled={at_ === 0}
-                    className="px-2.5 py-1 rounded-md border border-brand_navy/25 font-bold hover:bg-bkg disabled:opacity-35 disabled:hover:bg-transparent transition-colors"
+                    className="px-2.5 py-1 rounded-md font-semibold hover:bg-bkg disabled:opacity-35 disabled:hover:bg-transparent transition-colors"
                   >
                     {"‹"} Prev
                   </button>
-                  <span className="tabular-nums whitespace-nowrap">
-                    Page {at_ + 1} of {pages}
-                  </span>
+
+                  {/* Numbered, in a window around where you are. Prev and
+                      Next alone made page 5 of 5 four presses away and gave
+                      no sense of how much was behind the page in view. */}
+                  {pageWindow.map((p, i) =>
+                    p === null ? (
+                      <span key={`gap${i}`} className="px-1 text-content/85">
+                        &hellip;
+                      </span>
+                    ) : (
+                      <button
+                        key={p}
+                        onClick={() => setPage(p)}
+                        aria-current={p === at_}
+                        className={`min-w-[28px] px-2 py-1 rounded-md font-semibold tabular-nums transition-colors ${
+                          p === at_
+                            ? "bg-brand_navy text-custom-white"
+                            : "hover:bg-bkg text-content"
+                        }`}
+                      >
+                        {p + 1}
+                      </button>
+                    ),
+                  )}
+
                   <button
                     onClick={() => setPage(Math.min(pages - 1, at_ + 1))}
                     disabled={at_ >= pages - 1}
-                    className="px-2.5 py-1 rounded-md border border-brand_navy/25 font-bold hover:bg-bkg disabled:opacity-35 disabled:hover:bg-transparent transition-colors"
+                    className="px-2.5 py-1 rounded-md font-semibold hover:bg-bkg disabled:opacity-35 disabled:hover:bg-transparent transition-colors"
                   >
                     Next {"›"}
                   </button>
