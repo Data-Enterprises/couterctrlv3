@@ -57,18 +57,6 @@ const WORDS = [
 ];
 const word = (n: number) => WORDS[n] ?? String(n);
 
-/**
- * The store number as the page spells it elsewhere.
- *
- * `storeNumber` comes off the row unpadded — "3" where every label on the
- * screen says "003". The name already carries the padded form, so it is
- * read off there rather than padded to a width nobody has stated.
- */
-const numberOf = (name: string, fallback: string) => {
-  const lead = name.trim().split(/[\s-]/)[0];
-  return /^\d+$/.test(lead) ? lead : fallback;
-};
-
 /** The left list: marker, name, the money, and the units behind it. */
 const LIST_COLS = "10px minmax(0,1fr) 88px 76px";
 
@@ -329,11 +317,11 @@ const Detail = ({
           className={`w-full flex items-center gap-2 px-4 py-2 text-left transition-colors ${cta.bg} ${cta.hoverBg}`}
         >
           <Mark_ className={`w-4 h-4 flex-shrink-0 ${cta.text}`} />
-          <span className={`min-w-0 truncate text-[14px] font-bold ${cta.text}`}>
+          <span className={`min-w-0 truncate text-[14px] font-semibold ${cta.text}`}>
             {row.name}
           </span>
           <span
-            className={`ml-auto flex-shrink-0 text-[14px] font-bold tabular-nums ${cta.text}`}
+            className={`ml-auto flex-shrink-0 text-[14px] font-semibold tabular-nums ${cta.text}`}
           >
             {signed(row.gap)}
           </span>
@@ -598,7 +586,8 @@ const DeptReport = ({
     );
   }
 
-  const { shown, folded, underTotal, overTotal, over, netGap } = report;
+  const { shown, folded, underTotal, overTotal, over, netGap, shownShare } =
+    report;
 
   /**
    * Every department, worst first.
@@ -614,98 +603,101 @@ const DeptReport = ({
    *  empty and never opens on a department nobody chose. */
   const selected = rows.find((r) => r.id === picked) ?? rows[0] ?? null;
 
-  /**
-   * The shortfall as one bar: a segment for each department the headline
-   * counts, then one for everything else under.
-   *
-   * A segment a row would be fifteen slivers and a muddy opacity ladder.
-   * These are the departments the sentence above is about, and the tail is
-   * the rest, which is exactly what the sentence leaves out.
-   */
-  const restUnder = folded.reduce((t, r) => t - r.gap, 0);
-  const segments = [
-    ...shown.map((r) => ({ key: `d${r.id}`, size: -r.gap, lead: true })),
-    ...(restUnder > 0 ? [{ key: "rest", size: restUnder, lead: false }] : []),
-  ].filter((x) => x.size > 0);
-  const underCount = shown.length + folded.length;
-
   return (
     <div className="h-full flex flex-col overflow-hidden">
+      {/* Back, the headline and the counterpart on one line. They were two
+          rows, the first of which was a 28px band holding four words and a
+          question mark — most of it whitespace nobody was reading. */}
       <div className="flex-shrink-0 px-4 pt-2.5 pb-3 border-b-2 border-brand_navy/20">
-        <div className="flex items-center gap-2 flex-wrap text-[11.5px] text-content/85">
+        <div className="flex items-center gap-2.5">
           <button
             onClick={onBack}
-            className="font-semibold text-content hover:underline flex-shrink-0"
+            title="Back to all stores"
+            className="flex-shrink-0 w-6 h-6 rounded-md border border-brand_navy/25 text-[13px] font-bold text-content hover:bg-bkg transition-colors"
           >
-            &lsaquo; All stores
+            {"‹"}
           </button>
-          <span>&middot;</span>
-          <span className="truncate">vs {compareStoreName}</span>
-          <span>&middot;</span>
-          <span
-            className={`font-bold ${
-              netGap < 0 ? "text-delta_negative_text" : "text-delta_positive_text"
-            }`}
-          >
-            {signed(netGap)} {netGap < 0 ? "behind" : "ahead"} overall
+
+          <p className="min-w-0 flex-1 text-[16.5px] font-bold leading-snug text-content truncate">
+            {shown.length === 0 ? (
+              <>Nothing is under {compareStoreName}.</>
+            ) : (
+              <>
+                {word(shown.length)}{" "}
+                {shown.length === 1 ? "department holds" : "departments hold"}{" "}
+                <span className="text-delta_negative_text">
+                  {money(shown.reduce((t, r) => t - r.gap, 0))}
+                </span>{" "}
+                of the shortfall
+              </>
+            )}
+          </p>
+
+          <span className="flex-shrink-0 text-[11.5px] text-content/85 truncate max-w-[220px]">
+            vs {compareStoreName}
           </span>
           <PageInfoButton
             page="sales"
             section="gap-split"
             variant="light"
             title="How a department is checked"
-            className="ml-auto flex-shrink-0 -my-1"
+            className="flex-shrink-0 -my-1"
           />
         </div>
 
-        {/* The whole report in one line: how much, and how concentrated. */}
-        <p className="text-[16.5px] font-bold leading-snug text-content mt-1.5">
-          {shown.length === 0 ? (
-            <>Nothing is under {compareStoreName}.</>
-          ) : (
-            <>
-              {word(shown.length)}{" "}
-              {shown.length === 1 ? "department holds" : "departments hold"}{" "}
-              <span className="text-delta_negative_text">
-                {money(shown.reduce((t, r) => t - r.gap, 0))}
-              </span>{" "}
-              of the shortfall
-            </>
-          )}
-        </p>
-
         {underTotal > 0 && (
           <>
-            <span className="flex h-[10.5px] rounded-sm overflow-hidden bg-bkg mt-2.5">
-              {segments.map((seg, i) => (
-                <span
-                  key={seg.key}
-                  className="block bg-red-500"
-                  style={{
-                    width: `${(seg.size / underTotal) * 100}%`,
-                    opacity: seg.lead ? Math.max(0.55, 1 - i * 0.2) : 0.3,
-                  }}
-                />
-              ))}
+            {/* Two parts, each saying what it is. Fifteen slivers down an
+                opacity ladder showed the same split and left the reader to
+                work out where the headline's three ended. */}
+            <span className="flex h-6 rounded-md overflow-hidden bg-bkg mt-2.5 text-[11.5px] font-semibold">
+              <span
+                className="flex items-center px-2.5 bg-red-500 text-custom-white whitespace-nowrap overflow-hidden"
+                style={{ width: `${Math.max(8, shownShare * 100)}%` }}
+              >
+                <span className="truncate">
+                  {shown.length}{" "}
+                  {shown.length === 1 ? "department" : "departments"} &middot;{" "}
+                  {Math.round(shownShare * 100)}%
+                </span>
+              </span>
+              {folded.length > 0 && (
+                <span className="flex items-center px-2.5 text-content/85 whitespace-nowrap overflow-hidden">
+                  <span className="truncate">
+                    {folded.length} others &middot;{" "}
+                    {Math.round((1 - shownShare) * 100)}%
+                  </span>
+                </span>
+              )}
             </span>
 
-            <div className="flex items-baseline gap-4 flex-wrap mt-1.5 text-[11.5px] text-content/85">
+            <div className="flex items-baseline gap-5 flex-wrap mt-1.5 text-[11.5px] text-content/85">
               <span>
                 <span className="font-bold tabular-nums text-delta_negative_text">
                   {signed(-underTotal)}
                 </span>{" "}
-                under, across {underCount}{" "}
-                {underCount === 1 ? "department" : "departments"}
+                under
               </span>
               {over.length > 0 && (
-                <span className="ml-auto">
-                  offset by{" "}
+                <span>
                   <span className="font-bold tabular-nums text-delta_positive_text">
                     {signed(overTotal)}
                   </span>{" "}
-                  where {numberOf(openStoreName, openStoreNumber)} is ahead
+                  ahead
                 </span>
               )}
+              <span>
+                <span
+                  className={`font-bold tabular-nums ${
+                    netGap < 0
+                      ? "text-delta_negative_text"
+                      : "text-delta_positive_text"
+                  }`}
+                >
+                  {signed(netGap)}
+                </span>{" "}
+                net
+              </span>
             </div>
           </>
         )}
