@@ -10,8 +10,10 @@ import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicato
 import PageInfoButton from "../../../../components-dev/PageInfoButton";
 import {
   buildReport,
+  NOT_CHECKED,
   totalsFrom,
   type Finding,
+  type Gate,
   type ReportRow,
 } from "../shared/deptReport";
 import type { SubSale } from "../../../../interfaces";
@@ -58,9 +60,94 @@ const GROUP_SAYS: Record<Finding, string> = {
   level: "Level",
 };
 
-const COLS = "minmax(0,1fr) 112px minmax(0,2.4fr) 156px";
+const COLS = "10px minmax(0,1fr) 112px minmax(0,2.2fr) 150px";
 
-/* ------------------------------------------------------------------ */
+/** Pass, fail, or never reached. A tick, a cross, or an empty ring. */
+const Mark = ({ state }: { state: Gate["state"] }) => (
+  <span
+    className={`w-[17px] h-[17px] flex-shrink-0 rounded-full flex items-center justify-center text-[11px] font-bold leading-none ${
+      state === "fail"
+        ? "bg-delta_negative_text text-custom-white"
+        : state === "pass"
+          ? "bg-delta_positive_bg text-delta_positive_text"
+          : "border border-content/40 text-transparent"
+    }`}
+  >
+    {state === "fail" ? "✕" : state === "pass" ? "✓" : "·"}
+  </span>
+);
+
+/**
+ * One gate, as a tile.
+ *
+ * The trail these replace ran the three checks together on one line, which
+ * read as a sentence about a sentence. Three tiles put the question above
+ * the figure and let the failing one carry the tint, so what was checked
+ * and what it found are read at a glance rather than parsed.
+ */
+const Tile = ({ gate }: { gate: Gate }) => {
+  const fail = gate.state === "fail";
+  const skipped = gate.state === "skipped";
+  return (
+    <div
+      className={`flex items-center gap-2.5 min-w-0 rounded-md px-3 py-2 ${
+        fail ? "bg-delta_negative_bg" : "bg-custom-white border border-brand_navy/15"
+      }`}
+    >
+      <Mark state={gate.state} />
+      <span className="min-w-0">
+        <span
+          className={`block text-[10.5px] font-bold uppercase tracking-wide leading-tight ${
+            fail ? "text-delta_negative_text" : "text-content/85"
+          }`}
+        >
+          {gate.label}
+        </span>
+        <span
+          className={`block text-[13px] font-semibold tabular-nums truncate leading-tight mt-0.5 ${
+            fail
+              ? "text-delta_negative_text"
+              : skipped
+                ? "text-content/85"
+                : "text-content"
+          }`}
+        >
+          {gate.value}
+        </span>
+      </span>
+    </div>
+  );
+};
+
+/** The square that opens every row: red where it is behind, green ahead. */
+const Pip = ({ ahead = false }: { ahead?: boolean }) => (
+  <span
+    className={`block w-2.5 h-2.5 rounded-sm mt-[5px] ${
+      ahead ? "bg-delta_positive_text" : "bg-delta_negative_text"
+    }`}
+  />
+);
+
+/** Show 9 / Hide, the same control on every collapsible row. */
+const Expander = ({
+  open,
+  count,
+  onClick,
+}: {
+  open: boolean;
+  count: number;
+  onClick: () => void;
+}) => (
+  <button
+    onClick={onClick}
+    className="justify-self-end flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-brand_navy/25 hover:bg-bkg transition-colors text-[12.5px] font-bold text-content whitespace-nowrap"
+  >
+    {open ? "Hide" : `Show ${count}`}
+    <span className="text-[10px] leading-none">{open ? "▲" : "▼"}</span>
+  </button>
+);
+
+/* ------------------------------------------------------------------ *//* ------------------------------------------------------------------ */
 /* One line                                                            */
 /* ------------------------------------------------------------------ */
 
@@ -73,19 +160,21 @@ interface RowProps {
 }
 
 const Row = ({ row, lead, onInvestigate }: RowProps) => (
-  <div
-    className="grid gap-4 items-start px-4 py-3 border-b border-brand_navy/15"
-    style={{ gridTemplateColumns: COLS }}
-  >
-    <span className="min-w-0 truncate text-[14px] font-bold text-content leading-snug">
-      {row.name}
-    </span>
+  <div className="px-4 py-3.5 border-b border-brand_navy/15">
+    <div
+      className="grid gap-4 items-start"
+      style={{ gridTemplateColumns: COLS }}
+    >
+      <Pip />
 
-    <span className="text-right text-[14px] font-bold tabular-nums text-delta_negative_text leading-snug">
-      {signed(row.gap)}
-    </span>
+      <span className="min-w-0 truncate text-[14px] font-bold text-content leading-snug">
+        {row.name}
+      </span>
 
-    <span className="min-w-0">
+      <span className="text-right text-[14px] font-bold tabular-nums text-delta_negative_text leading-snug">
+        {signed(row.gap)}
+      </span>
+
       <span className="block text-[13.5px] leading-snug text-content">
         <span className="font-bold text-delta_negative_text">
           {row.chain.says.lead}
@@ -93,51 +182,154 @@ const Row = ({ row, lead, onInvestigate }: RowProps) => (
         {row.chain.says.tail}
       </span>
 
-      {/* The gates in order, the failing one marked. Somebody who does not
-          care takes the sentence; somebody who does can see what it rests
-          on without opening anything. */}
-      <span className="flex items-center gap-1.5 flex-wrap mt-1">
-        {row.chain.gates.map((g, i) => (
-          <span key={g.name} className="flex items-center gap-1.5">
-            {i > 0 && <span className="text-[11px] text-content/85">&rsaquo;</span>}
-            <span
-              className={`text-[12px] whitespace-nowrap ${
-                g.state === "fail"
-                  ? "font-bold text-delta_negative_text"
-                  : g.state === "pass"
-                    ? "text-content/85"
-                    : "text-content/85 opacity-60"
-              }`}
-            >
-              {g.state === "fail" ? "✕ " : g.state === "pass" ? "✓ " : ""}
-              {g.detail}
-            </span>
-          </span>
+      {/* Named by the gate that failed. "Check the mix" rather than "Check
+          prices" where the take per unit is half the other store's: that is
+          not a department that priced low, and comparing price tags would
+          send somebody to the one place the answer is not. */}
+      {lead ? (
+        <button
+          onClick={() => onInvestigate(row)}
+          className="justify-self-end px-3.5 py-2 rounded-md bg-brand_navy hover:bg-brand_navy_hover text-custom-white text-[12.5px] font-bold transition-colors whitespace-nowrap"
+        >
+          {row.chain.cta} &rarr;
+        </button>
+      ) : (
+        <button
+          onClick={() => onInvestigate(row)}
+          className="justify-self-end text-[12.5px] font-bold text-brand_navy_hover hover:underline whitespace-nowrap"
+        >
+          Investigate &rarr;
+        </button>
+      )}
+
+      {/* The gates in order, under the sentence they hold up. Somebody who
+          does not care takes the sentence; somebody who does can see what
+          it rests on without opening anything. */}
+      <span
+        className="grid grid-cols-3 gap-2.5 mt-2.5"
+        style={{ gridColumn: "2 / 5" }}
+      >
+        {row.chain.gates.map((g) => (
+          <Tile key={g.name} gate={g} />
         ))}
       </span>
-    </span>
-
-    {/* Named by the gate that failed. "Check the mix" rather than "Check
-        prices" where the take per unit is half the other store's: that is
-        not a department that priced low, and comparing price tags would
-        send somebody to the one place the answer is not. */}
-    {lead ? (
-      <button
-        onClick={() => onInvestigate(row)}
-        className="justify-self-end px-3.5 py-2 rounded-md bg-brand_navy hover:bg-brand_navy_hover text-custom-white text-[12.5px] font-bold transition-colors whitespace-nowrap"
-      >
-        {row.chain.cta} &rarr;
-      </button>
-    ) : (
-      <button
-        onClick={() => onInvestigate(row)}
-        className="justify-self-end text-[12.5px] font-bold text-brand_navy_hover hover:underline whitespace-nowrap"
-      >
-        Investigate &rarr;
-      </button>
-    )}
+    </div>
   </div>
 );
+
+/* ------------------------------------------------------------------ */
+/* Several departments, one finding                                    */
+/* ------------------------------------------------------------------ */
+
+/**
+ * What a folded row shows once it is opened.
+ *
+ * The group header names the finding they share, so a sub-row repeating it
+ * would be the padding this report exists instead of — except where they
+ * are ahead, which the header cannot say per department. There the units
+ * carry it: a department $3,000 up because it sold half again as much is a
+ * different store from one that took more for the same volume.
+ */
+const subSays = (row: ReportRow, ahead: boolean) => {
+  if (!ahead) return row.chain.says.lead;
+  const sold = row.chain.gates[1];
+  return sold.value === NOT_CHECKED ? "Ahead" : `Sold ${sold.value}`;
+};
+
+interface GroupProps {
+  rows: ReportRow[];
+  /** Positive magnitude, whichever way it runs. */
+  total: number;
+  says: string;
+  ahead?: boolean;
+  open: boolean;
+  onToggle: () => void;
+  onInvestigate: (row: ReportRow) => void;
+}
+
+/**
+ * Departments that failed the same gate, as one line that opens.
+ *
+ * Four that rang nothing are one problem with one owner, and four rows
+ * saying it four times is noise. But the fold used to end in a button that
+ * dropped straight into the FIRST of them, which is a department nobody
+ * chose — so it opens in place instead, and each one keeps its own way in.
+ */
+const GroupBlock = ({
+  rows, total, says, ahead = false, open, onToggle, onInvestigate,
+}: GroupProps) => {
+  const tone = ahead ? "text-delta_positive_text" : "text-delta_negative_text";
+  return (
+    <div className="border-b border-brand_navy/15">
+      <div
+        className="grid gap-4 items-start px-4 py-3"
+        style={{ gridTemplateColumns: COLS }}
+      >
+        <Pip ahead={ahead} />
+
+        <span className="min-w-0">
+          <span className="flex items-center gap-2">
+            <span className="flex-shrink-0 min-w-[22px] text-center px-1.5 py-0.5 rounded bg-bkg text-[12px] font-bold tabular-nums text-content">
+              {rows.length}
+            </span>
+            <span className="text-[14px] font-bold text-content leading-snug">
+              departments
+            </span>
+          </span>
+          {/* A few names and a count. Spelling out twelve wrapped to six
+              lines and left this row three times the height of the ones
+              above it, and nobody reads the twelfth name anyway. */}
+          <span
+            className="block text-[12px] text-content/85 leading-snug mt-0.5 truncate"
+            title={rows.map((r) => r.name).join(", ")}
+          >
+            {rows.slice(0, 3).map((r) => r.name).join(", ")}
+            {rows.length > 3 && ` and ${rows.length - 3} more`}
+          </span>
+        </span>
+
+        <span className={`text-right text-[14px] font-bold tabular-nums leading-snug ${tone}`}>
+          {signed(ahead ? total : -total)}
+        </span>
+
+        <span className={`text-[13.5px] font-bold leading-snug ${tone}`}>
+          {says}
+        </span>
+
+        <Expander open={open} count={rows.length} onClick={onToggle} />
+      </div>
+
+      {open && (
+        <div className="bg-bkg">
+          {rows.map((r) => (
+            <div
+              key={r.id}
+              className="grid gap-4 items-center px-4 py-2 border-t border-brand_navy/10"
+              style={{ gridTemplateColumns: COLS }}
+            >
+              <span />
+              <span className="min-w-0 truncate pl-3 text-[13px] font-semibold text-content">
+                {r.name}
+              </span>
+              <span className={`text-right text-[13px] font-bold tabular-nums ${tone}`}>
+                {signed(r.gap)}
+              </span>
+              <span className="text-[13px] text-content/85 truncate">
+                {subSays(r, ahead)}
+              </span>
+              <button
+                onClick={() => onInvestigate(r)}
+                className="justify-self-end text-[12.5px] font-bold text-brand_navy_hover hover:underline whitespace-nowrap"
+              >
+                Investigate &rarr;
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
 /* ------------------------------------------------------------------ */
 
@@ -193,6 +385,9 @@ const DeptReport = ({
   );
   const [failed, setFailed] = useState(false);
   const [showAll, setShowAll] = useState(false);
+  /** Which folds are open, by finding — plus "ahead" for the green one. */
+  const [open, setOpen] = useState<Record<string, boolean>>({});
+  const toggle = (k: string) => setOpen((o) => ({ ...o, [k]: !o[k] }));
 
   useEffect(() => {
     if (theirs) return;
@@ -304,10 +499,27 @@ const DeptReport = ({
   const rest = loose.slice(listed.length);
   const restTotal = rest.reduce((t, r) => t - r.gap, 0);
 
+  /**
+   * The shortfall as one bar, a segment a printed row, in the order the
+   * rows come.
+   *
+   * It is a legend as much as a figure: the first block IS the first line,
+   * so "two departments hold most of it" is seen before it is read. What
+   * the store is ahead on stays off the bar — netting them would hide both
+   * — and is named beside it instead.
+   */
+  const segments = [
+    ...shown.map((r) => ({ key: `d${r.id}`, size: -r.gap })),
+    ...listed.map((r) => ({ key: `l${r.id}`, size: -r.gap })),
+    ...groups.map((g) => ({ key: g.finding, size: g.total })),
+    ...(rest.length ? [{ key: "rest", size: restTotal }] : []),
+  ].filter((x) => x.size > 0);
+  const underCount = shown.length + folded.length;
+
   return (
     <div className="h-full flex flex-col overflow-hidden">
       <div className="flex-1 min-h-0 overflow-auto thin-scrollbar">
-        <div className="px-4 pt-3 pb-3">
+        <div className="px-4 pt-3 pb-4 border-b border-brand_navy/15">
           <div className="flex items-center gap-2 flex-wrap text-[12px] text-content/85">
             <button
               onClick={onBack}
@@ -349,6 +561,46 @@ const DeptReport = ({
               </>
             )}
           </p>
+
+          {underTotal > 0 && (
+            <>
+              <span className="flex h-2.5 rounded-sm overflow-hidden bg-bkg mt-2.5">
+                {segments.map((seg, i) => (
+                  <span
+                    key={seg.key}
+                    className="block bg-delta_negative_text"
+                    style={{
+                      width: `${(seg.size / underTotal) * 100}%`,
+                      opacity: Math.max(0.3, 1 - i * 0.17),
+                    }}
+                  />
+                ))}
+              </span>
+
+              {/* Both totals, where the bar can be read against them. They
+                  used to sit in a strip under the last row, which is the
+                  one place somebody reading the top of a report does not
+                  look. */}
+              <div className="flex items-baseline gap-4 flex-wrap mt-1.5 text-[12px] text-content/85">
+                <span>
+                  <span className="font-bold tabular-nums text-delta_negative_text">
+                    {signed(-underTotal)}
+                  </span>{" "}
+                  under, across {underCount}{" "}
+                  {underCount === 1 ? "department" : "departments"}
+                </span>
+                {over.length > 0 && (
+                  <span className="ml-auto">
+                    offset by{" "}
+                    <span className="font-bold tabular-nums text-delta_positive_text">
+                      {signed(overTotal)}
+                    </span>{" "}
+                    where {openStoreNumber} is ahead
+                  </span>
+                )}
+              </div>
+            </>
+          )}
         </div>
 
         {shown.map((r) => (
@@ -359,72 +611,55 @@ const DeptReport = ({
         ))}
 
         {groups.map((g) => (
-          <div
+          <GroupBlock
             key={g.finding}
-            className="grid gap-4 items-start px-4 py-3 border-b border-brand_navy/15"
-            style={{ gridTemplateColumns: COLS }}
-          >
-            <span className="min-w-0">
-              <span className="block text-[14px] font-bold text-content leading-snug">
-                {word(g.rows.length)} departments
-              </span>
-              {/* A few names and a count. Spelling out twelve wrapped to six
-                  lines and left this row three times the height of the ones
-                  above it, which is most of what made the list look ragged —
-                  and nobody reads the twelfth name anyway. */}
-              <span
-                className="block text-[12px] text-content/85 leading-snug mt-0.5 truncate"
-                title={g.rows.map((r) => r.name).join(", ")}
-              >
-                {g.rows.slice(0, 3).map((r) => r.name).join(", ")}
-                {g.rows.length > 3 &&
-                  ` and ${g.rows.length - 3} more`}
-              </span>
-            </span>
-            <span className="text-right text-[14px] font-bold tabular-nums text-delta_negative_text leading-snug">
-              {signed(-g.total)}
-            </span>
-            <span className="text-[13.5px] font-bold text-delta_negative_text leading-snug">
-              {GROUP_SAYS[g.finding]}
-            </span>
-            <button
-              onClick={() => investigate(g.rows[0])}
-              className="justify-self-end text-[12.5px] font-bold text-brand_navy_hover hover:underline whitespace-nowrap"
-            >
-              Show &rarr;
-            </button>
-          </div>
+            rows={g.rows}
+            total={g.total}
+            says={GROUP_SAYS[g.finding]}
+            open={!!open[g.finding]}
+            onToggle={() => toggle(g.finding)}
+            onInvestigate={investigate}
+          />
         ))}
 
-        <div className="flex items-center gap-2 flex-wrap px-4 py-3 text-[12.5px] text-content/85">
-          {rest.length > 0 && (
-            <>
-              <span>
-                {rest.length} more under{" "}
-                <span className="font-semibold tabular-nums text-delta_negative_text">
-                  {signed(-restTotal)}
-                </span>
-              </span>
-              <span>&middot;</span>
-            </>
-          )}
-          <span>
-            {over.length} ahead{" "}
-            <span className="font-semibold tabular-nums text-delta_positive_text">
-              {signed(overTotal)}
+        {/* Where the store is ahead, on the same terms. It was a count in
+            the footer, which made a department $3,000 up unreachable — and
+            a store that is ahead somewhere usually knows why, which is the
+            one thing in here that can be copied. */}
+        {over.length > 0 && (
+          <GroupBlock
+            rows={over}
+            total={overTotal}
+            says={`Ahead of ${compareStoreNumber}`}
+            ahead
+            open={!!open.ahead}
+            onToggle={() => toggle("ahead")}
+            onInvestigate={investigate}
+          />
+        )}
+
+        {loose.length > LOOSE_CAP && (
+          <div className="flex items-center gap-2 px-4 py-3">
+            <span className="text-[12.5px] text-content/85">
+              {rest.length > 0 ? (
+                <>
+                  {rest.length} more under{" "}
+                  <span className="font-semibold tabular-nums text-delta_negative_text">
+                    {signed(-restTotal)}
+                  </span>
+                </>
+              ) : (
+                <>All departments shown</>
+              )}
             </span>
-          </span>
-          <span>&middot;</span>
-          <span className="tabular-nums">{signed(-underTotal)} under in all</span>
-          {loose.length > LOOSE_CAP && (
             <button
               onClick={() => setShowAll((v) => !v)}
-              className="ml-auto font-semibold text-brand_navy_hover hover:underline flex-shrink-0"
+              className="ml-auto text-[12.5px] font-bold text-brand_navy_hover hover:underline flex-shrink-0"
             >
               {showAll ? "Show less" : "Show all"} &rsaquo;
             </button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );

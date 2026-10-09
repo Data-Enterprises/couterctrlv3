@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildReport,
   chainFor,
+  NOT_CHECKED,
   splitGap,
   totalsFrom,
   type Bands,
@@ -139,15 +140,28 @@ describe("the chain", () => {
     expect(c.cta).toBe("Check the mix");
     expect(c.says.lead).toBe("Took $4.05 less per lb");
     expect(c.says.tail).toContain("far more than a price difference");
-    expect(c.gates[2].detail).toBe("$4.70 a lb against $8.75");
+    expect(c.gates[2].value).toBe("$4.70 vs $8.75");
   });
 
-  /** A take per unit is money over units — a figure no customer paid — so
-   *  the trail says "a lb against", never "per lb". */
-  it("never words the rate as a price", () => {
-    const c = run({ mine: 9000, mineUnits: 1000, theirs: 9500, theirsUnits: 1000 });
-    expect(c.gates[2].detail).not.toContain("vs");
-    expect(c.gates[2].detail).toContain("against");
+  /** A take per unit is money over units — a figure no customer paid. The
+   *  tile is headed "Take per lb" and never "Per lb", which would read as a
+   *  shelf price and send somebody to compare price tags. */
+  it("never heads the rate as a price", () => {
+    const c = run({
+      weighed: true,
+      mine: 9000, mineUnits: 1000, theirs: 9500, theirsUnits: 1000,
+    });
+    expect(c.gates[2].label).toBe("Take per lb");
+    expect(c.gates[2].value).toBe("$9.00 vs $9.50");
+  });
+
+  /** A gate the chain never reached says so, rather than showing a figure
+   *  that was never weighed against anything. */
+  it("marks a gate it never reached as unchecked", () => {
+    const c = run({ mine: 0, mineUnits: 0, theirs: 4997.18, theirsUnits: 600 });
+    expect(c.gates[0].value).toBe("$0.00 vs $4,997.18");
+    expect(c.gates[1].value).toBe(NOT_CHECKED);
+    expect(c.gates[2].value).toBe(NOT_CHECKED);
   });
 
   it("lets the split decide which gate leads when both fail", () => {

@@ -105,8 +105,16 @@ export interface Gate {
   /** `skipped` where an earlier gate made this one meaningless — there is no
    *  rate to compare when nothing rang. Drawn grey, not as a failure. */
   state: "pass" | "fail" | "skipped";
-  /** The figures behind the mark, for the trail under the sentence. */
-  detail: string;
+  /**
+   * What the gate is, and what it found — kept apart because the row draws
+   * them apart: the label heads a tile and the figures sit under it.
+   *
+   * The rate's label carries the word "take" deliberately. It is money over
+   * units, a figure no customer paid, and a tile headed "PER LB" would put
+   * the one reading back that the sentence works to avoid.
+   */
+  label: string;
+  value: string;
 }
 
 export type Finding =
@@ -175,6 +183,9 @@ const cash = (v: number) =>
 const whole = (v: number) => Math.round(v).toLocaleString("en-US");
 const pct = (v: number) => Math.round(Math.abs(v) * 100) + "%";
 
+/** What a gate the chain never reached shows instead of a figure. */
+export const NOT_CHECKED = "Not checked";
+
 export const chainFor = (d: DeptTotals, g: Gates = DEFAULT_GATES): Chain => {
   const unit = d.weighed ? "lb" : "units";
   const one = d.weighed ? "lb" : "unit";
@@ -196,27 +207,28 @@ export const chainFor = (d: DeptTotals, g: Gates = DEFAULT_GATES): Chain => {
     {
       name: "rung",
       state: rang ? "pass" : "fail",
-      detail: rang
-        ? cash(d.mine) + " rung"
-        : cash(0) + " against " + cash(d.theirs),
+      label: "Rung",
+      value: rang ? cash(d.mine) : cash(0) + " vs " + cash(d.theirs),
     },
     {
       name: "sold",
       state: !rang ? "skipped" : soldOk ? "pass" : "fail",
-      detail:
+      label: "Sold",
+      value:
         !rang || unitGap === null
-          ? "Sold"
-          : "Sold " + pct(unitGap) + (unitGap < 0 ? " fewer " : " more ") + unit,
+          ? NOT_CHECKED
+          : pct(unitGap) + (unitGap < 0 ? " fewer " : " more ") + unit,
     },
     {
       name: "rate",
       // A take per unit, never a price: it is money over units, and no
       // customer paid it. The real price points come off the items.
       state: !comparable ? "skipped" : rateOk ? "pass" : "fail",
-      detail:
+      label: "Take per " + one,
+      value:
         mineRate === null || theirsRate === null
-          ? "Take per " + one
-          : cash(mineRate) + " a " + one + " against " + cash(theirsRate),
+          ? NOT_CHECKED
+          : cash(mineRate) + " vs " + cash(theirsRate),
     },
   ];
 
