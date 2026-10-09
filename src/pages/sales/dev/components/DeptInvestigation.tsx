@@ -1,4 +1,4 @@
-import { Fragment, useMemo, useRef, useState, type ReactNode } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
 import {
   setInvestigation,
@@ -875,6 +875,7 @@ const HoldsPanel = ({
   costPenalty,
   onPickItem,
   onVendor,
+  onSeeAll,
 }: {
   holds: Holds;
   spread: Spread;
@@ -889,6 +890,7 @@ const HoldsPanel = ({
   costPenalty: number;
   onPickItem: (code: string) => void;
   onVendor: (vendor: string) => void;
+  onSeeAll: () => void;
 }) => {
   const buckets = [
     { label: `Rang at ${them}, not here`, b: holds.onlyTheirs, tone: "bg-red-500" },
@@ -1144,11 +1146,21 @@ const HoldsPanel = ({
               ))}
             </div>
 
-            <p className="text-[12.5px] text-content/85 leading-relaxed">
-              {spread.ranked.length.toLocaleString("en-US")} items behind ·
-              ordered by the biggest difference · click one for its evidence ·{" "}
-              {cash(shortfall)} in all
-            </p>
+            {/* The list is the ten biggest; the way to the rest belongs
+                beside the sentence that says so, not three tabs away. */}
+            <div className="flex items-center gap-4 flex-wrap">
+              <p className="text-[12.5px] text-content/85 leading-relaxed">
+                {spread.ranked.length.toLocaleString("en-US")} items behind ·
+                ordered by the biggest difference · click one for its evidence
+                · {cash(shortfall)} in all
+              </p>
+              <button
+                onClick={onSeeAll}
+                className="ml-auto flex-shrink-0 text-[12px] font-bold px-3 py-1.5 rounded-md border border-brand_navy/25 text-content hover:bg-bkg transition-colors whitespace-nowrap"
+              >
+                See every item &rarr;
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -1968,7 +1980,46 @@ const DeptInvestigation = ({
     if (next) setPicked(next.productCode);
   };
 
-  const close = () => dispatch(setInvestigation(null));
+  /**
+   * Going back takes as long as it looks like it takes.
+   *
+   * Unmounting on the click swapped a full page for another full page
+   * between two frames, which reads as a jump cut rather than as going
+   * back. The notebook plays its exit first and drops itself after, so the
+   * ledger arrives into space the notebook has already left.
+   */
+  const [leaving, setLeaving] = useState(false);
+  const close = () => {
+    if (leaving) return;
+    setLeaving(true);
+    window.setTimeout(() => dispatch(setInvestigation(null)), 220);
+  };
+
+  /* Escape goes back, the way it does everywhere else that opens over the
+     page. Bound to the document because the focus may be anywhere inside
+     three hundred rows by the time somebody wants out. */
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") close();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [leaving]);
+
+  /* The way out takes the focus on arrival: it is where a reader who came
+     in by keyboard expects to be, and it is the one control on the page
+     that is in the same place on every tab. */
+  const backRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    backRef.current?.focus({ preventScroll: true });
+  }, []);
+
+  /** True for as long as the entrance runs, so it plays once. */
+  const [fresh, setFresh] = useState(true);
+  useEffect(() => {
+    const t = window.setTimeout(() => setFresh(false), 700);
+    return () => window.clearTimeout(t);
+  }, []);
 
   /**
    * The bar's own content.
@@ -2021,12 +2072,20 @@ const DeptInvestigation = ({
   ];
 
   return (
-    <div className="h-full flex flex-col overflow-hidden bg-custom-white rounded-xl shadow-sm">
+    <div
+      className={`h-full flex flex-col overflow-hidden bg-custom-white rounded-xl shadow-sm ${
+        leaving ? "animate-nb-leave" : ""
+      }`}
+    >
 
-      <div className="flex-shrink-0 flex items-center gap-3 px-4 py-2.5 bg-brand_navy">
+      {/* The chrome arrives before the contents, top down: the header says
+          where you are, the tabs say what is here, and the panel fills in
+          under them. Arriving all at once read as a page swap. */}
+      <div className="flex-shrink-0 flex items-center gap-3 px-4 py-2.5 bg-brand_navy animate-nb-drop motion-reduce:animate-none">
         <button
+          ref={backRef}
           onClick={close}
-          className="text-custom-white text-[12.5px] font-semibold hover:underline"
+          className="text-custom-white text-[12.5px] font-semibold hover:underline rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-custom-white/70"
         >
           ‹ Back to the comparison
         </button>
@@ -2072,7 +2131,10 @@ const DeptInvestigation = ({
         Each carries its own conclusion once it has one, so the bar is a
         summary of the whole notebook and not just a way to move around it.
       */}
-      <div className="flex-shrink-0 grid grid-cols-4 border-b border-brand_navy/15">
+      <div
+        className="flex-shrink-0 grid grid-cols-4 border-b border-brand_navy/15 animate-nb-drop motion-reduce:animate-none"
+        style={{ animationDelay: "70ms" }}
+      >
         {TABS.map((t) => {
           const waiting = t.needsAll ? !allIn : !salesIn;
           const on = tab === t.key;
@@ -2125,7 +2187,15 @@ const DeptInvestigation = ({
           {problem}
         </div>
       ) : (
-        <>
+        /* Once, on arrival. Replaying it on every tab switch would put
+           a third of a second between the click and the answer, which
+           is the opposite of what the notebook is for. */
+        <div
+          className={`flex-1 min-h-0 flex flex-col overflow-hidden ${
+            fresh ? "animate-nb-rise motion-reduce:animate-none" : ""
+          }`}
+          style={fresh ? { animationDelay: "130ms" } : undefined}
+        >
           {tab === "holds" && !salesIn && <TabSkeleton tab="holds" />}
           {tab === "items" && !salesIn && <TabSkeleton tab="items" />}
           {tab === "supply" && !allIn && <TabSkeleton tab="supply" />}
@@ -2147,6 +2217,10 @@ const DeptInvestigation = ({
               }}
               onVendor={(v) => {
                 setVendorQ(v);
+                setTab("items");
+              }}
+              onSeeAll={() => {
+                setOnly(null);
                 setTab("items");
               }}
             />
@@ -2504,7 +2578,7 @@ const DeptInvestigation = ({
               onClose={() => setCtx(null)}
             />
           )}
-        </>
+        </div>
       )}
     </div>
   );

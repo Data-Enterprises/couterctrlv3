@@ -160,6 +160,18 @@ export default {
       },
 
       keyframes: {
+        nbDrop: {
+          "0%": { opacity: "0", transform: "translateY(-14px)" },
+          "100%": { opacity: "1", transform: "none" },
+        },
+        nbRise: {
+          "0%": { opacity: "0", transform: "translateY(14px)" },
+          "100%": { opacity: "1", transform: "none" },
+        },
+        nbLeave: {
+          "0%": { opacity: "1", transform: "none" },
+          "100%": { opacity: "0", transform: "translateY(12px)" },
+        },
         appear: {
           "0%": {
             opacity: "0",
@@ -261,6 +273,9 @@ export default {
       },
 
       animation: {
+        "nb-drop": "nbDrop 0.34s cubic-bezier(0.2,0.7,0.2,1) both",
+        "nb-rise": "nbRise 0.38s cubic-bezier(0.2,0.7,0.2,1) both",
+        "nb-leave": "nbLeave 0.26s ease forwards",
         "spin-slower": "spin 35s ease infinite",
         "spin-slow": "spin 25s ease-in-out infinite reverse",
         appear: "appear .3s ease-in-out forwards",
