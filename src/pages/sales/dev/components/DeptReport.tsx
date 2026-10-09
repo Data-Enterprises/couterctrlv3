@@ -59,18 +59,6 @@ const WORDS = [
 ];
 const word = (n: number) => WORDS[n] ?? String(n);
 
-/**
- * The store number as the page spells it elsewhere.
- *
- * `storeNumber` comes off the row unpadded — "3" where every label on the
- * screen says "003". The name already carries the padded form, so it is
- * read off there rather than padded to a width nobody has stated.
- */
-const numberOf = (name: string, fallback: string) => {
-  const lead = name.trim().split(/[\s-]/)[0];
-  return /^\d+$/.test(lead) ? lead : fallback;
-};
-
 /** The left list: marker, name, the money, and the units behind it. */
 const LIST_COLS = "10px minmax(0,1fr) 88px 76px";
 
@@ -279,7 +267,6 @@ const Block = ({
  */
 const Measure = ({
   title,
-  value,
   mine,
   theirs,
   us,
@@ -288,7 +275,6 @@ const Measure = ({
   better,
 }: {
   title: string;
-  value: string;
   mine: number;
   theirs: number;
   us: string;
@@ -303,21 +289,40 @@ const Measure = ({
   const good = better === "more" ? up : !up;
 
   return (
-    <div className="rounded-lg bg-bkg px-3.5 py-3 min-w-0">
-      <div className="text-[10px] font-bold uppercase tracking-wide text-content/85">
-        {title}
-      </div>
-      <div className="text-[19px] font-bold tabular-nums text-content leading-none mt-1.5">
-        {value}
+    <div className="rounded-lg bg-bkg px-3.5 py-2.5 min-w-0">
+      {/* The verdict rides the heading. Under the bars it was a third line
+          saying what the two bars had just shown. */}
+      <div className="flex items-baseline gap-3">
+        <span className="text-[10px] font-bold uppercase tracking-wide text-content/85">
+          {title}
+        </span>
+        <span
+          className={`ml-auto text-[11.5px] font-semibold truncate ${
+            pct === null || pct === 0
+              ? "text-content/85"
+              : good
+                ? "text-delta_positive_text"
+                : "text-delta_negative_text"
+          }`}
+        >
+          {pct === null
+            ? `${them} rang none of it`
+            : pct === 0
+              ? `Level with ${them}`
+              : `${pct}% ${up ? "more" : "less"} than ${them}`}
+        </span>
       </div>
 
-      <div className="flex flex-col gap-1 mt-2.5">
+      <div className="flex flex-col gap-1 mt-2">
         {[
           { label: us, v: mine, tone: "bg-store_open" },
           { label: them, v: theirs, tone: "bg-store_compare" },
         ].map((b) => (
-          <span key={b.label} className="flex items-center gap-2 text-[11px]">
-            <span className="w-[34px] flex-shrink-0 truncate text-content/85">
+          <span key={b.label} className="flex items-center gap-2.5 text-[11.5px]">
+            <span
+              className="w-[168px] flex-shrink-0 truncate text-content/85"
+              title={b.label}
+            >
               {b.label}
             </span>
             <span className="flex-1 min-w-0 h-[8.4px] rounded-sm bg-custom-white">
@@ -326,30 +331,12 @@ const Measure = ({
                 style={{ width: `${(Math.abs(b.v) / widest) * 100}%` }}
               />
             </span>
-            <span className="w-[76px] flex-shrink-0 text-right tabular-nums text-content whitespace-nowrap">
+            <span className="w-[92px] flex-shrink-0 text-right tabular-nums font-semibold text-content whitespace-nowrap">
               {fmt(b.v)}
             </span>
           </span>
         ))}
       </div>
-
-      {pct !== null && pct !== 0 && (
-        <p
-          className={`text-[11.5px] mt-2 ${
-            good ? "text-delta_positive_text" : "text-delta_negative_text"
-          }`}
-        >
-          {pct}% {up ? "more" : "less"} than {them}
-        </p>
-      )}
-      {pct === 0 && (
-        <p className="text-[11.5px] mt-2 text-content/85">Level with {them}</p>
-      )}
-      {pct === null && (
-        <p className="text-[11.5px] mt-2 text-content/85">
-          {them} rang none of it
-        </p>
-      )}
     </div>
   );
 };
@@ -361,13 +348,13 @@ const Detail = ({
   onInvestigate,
 }: {
   row: ReportRow;
-  /** Store numbers, short enough to label a bar. */
+  /** Full store names: a number is what the row is keyed by, not what
+   *  anybody calls it. */
   us: string;
   them: string;
   onInvestigate: (row: ReportRow) => void;
 }) => {
   const ahead = row.gap >= 0;
-  const tone = ahead ? "text-delta_positive_text" : "text-delta_negative_text";
   /* Closed. It lays over the panel rather than pushing it down, so an open
      strip on arrival would cover the first thing the panel has to show. */
   const [open, setOpen] = useState(false);
@@ -379,15 +366,7 @@ const Detail = ({
   const split = row.split;
   const splitSize = split ? Math.abs(split.volume) + Math.abs(split.rate) : 0;
 
-  const weeks = [
-    { label: "Last year", v: row.lyGap },
-    { label: "Last week", v: row.lwGap },
-    { label: "This week", v: row.gap },
-  ];
-  const widestWeek = Math.max(1, ...weeks.map((w) => Math.abs(w.v)));
 
-  const mineRate = row.mineUnits > 0 ? row.mine / row.mineUnits : null;
-  const theirsRate = row.theirsUnits > 0 ? row.theirs / row.theirsUnits : null;
 
   /** Wider or narrower, not bigger or smaller: a gap is a distance. */
   const againstWeek = (when: string, then: number) => {
@@ -497,6 +476,15 @@ const Detail = ({
                 </div>
               </>
             )}
+
+            {/* And how it compares with itself. A gap that has always been
+                there is a different job from one that opened this week, and
+                it belongs with the rest of what is true of the gap rather
+                than in a card of its own beside the stores. */}
+            <p className={`text-[11.5px] mt-2 ${cta.text}`}>
+              {againstWeek("last week", row.lwGap)} &middot;{" "}
+              {againstWeek("last year", row.lyGap)}
+            </p>
           </div>
         )}
       </div>
@@ -534,42 +522,9 @@ const Detail = ({
       </Block>
 
       <Block title={`This week against ${them}`}>
-        <div className="grid gap-2.5" style={{ gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))" }}>
-          {/* The gap against itself, which is the one card that is not a
-              comparison between stores. Three weeks, so a gap that has
-              always been there is told apart from one that opened. */}
-          <div className="rounded-lg bg-bkg px-3.5 py-3 min-w-0">
-            <div className="text-[10px] font-bold uppercase tracking-wide text-content/85">
-              Gap this week
-            </div>
-            <div className={`text-[19px] font-bold tabular-nums leading-none mt-1.5 ${tone}`}>
-              {signed(row.gap)}
-            </div>
-
-            <div className="flex items-end gap-1.5 h-9 mt-2.5">
-              {weeks.map((w) => (
-                <span
-                  key={w.label}
-                  title={`${w.label} ${signed(w.v)}`}
-                  className={`w-6 rounded-sm ${
-                    w.v >= 0 ? "bg-emerald-500" : "bg-red-500"
-                  } ${w.label === "This week" ? "" : "opacity-45"}`}
-                  style={{
-                    height: `${Math.max(8, (Math.abs(w.v) / widestWeek) * 100)}%`,
-                  }}
-                />
-              ))}
-            </div>
-
-            <p className="text-[11.5px] mt-2 text-content/85">
-              {againstWeek("last week", row.lwGap)} &middot;{" "}
-              {againstWeek("last year", row.lyGap)}
-            </p>
-          </div>
-
+        <div className="flex flex-col gap-2.5">
           <Measure
             title="Sales"
-            value={money(row.mine)}
             mine={row.mine}
             theirs={row.theirs}
             us={us}
@@ -579,7 +534,6 @@ const Detail = ({
           />
           <Measure
             title={row.weighed ? "Weight" : "Units"}
-            value={whole(row.mineUnits)}
             mine={row.mineUnits}
             theirs={row.theirsUnits}
             us={us}
@@ -587,18 +541,6 @@ const Detail = ({
             fmt={whole}
             better="more"
           />
-          {mineRate !== null && theirsRate !== null && (
-            <Measure
-              title={`Take per ${oneWord}`}
-              value={money(mineRate)}
-              mine={mineRate}
-              theirs={theirsRate}
-              us={us}
-              them={them}
-              fmt={money}
-              better="more"
-            />
-          )}
         </div>
       </Block>
 
@@ -896,8 +838,8 @@ const DeptReport = ({
         {selected ? (
           <Detail
             row={selected}
-            us={numberOf(openStoreName, openStoreNumber)}
-            them={numberOf(compareStoreName, compareStoreNumber)}
+            us={openStoreName}
+            them={compareStoreName}
             onInvestigate={investigate}
           />
         ) : (
