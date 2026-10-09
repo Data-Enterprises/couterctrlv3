@@ -48,6 +48,8 @@ import type { SubSale } from "../../../../interfaces";
  */
 
 const money = (v: number) => formatCurrency2(v);
+/** Whole units, with the measure where the department rings by weight. */
+const whole = (v: number) => Math.round(v).toLocaleString("en-US");
 const signed = (v: number) =>
   (v >= 0 ? "+" : "−") + formatCurrency2(Math.abs(v));
 
@@ -56,6 +58,18 @@ const WORDS = [
   "Nine", "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen",
 ];
 const word = (n: number) => WORDS[n] ?? String(n);
+
+/**
+ * The store number as the page spells it elsewhere.
+ *
+ * `storeNumber` comes off the row unpadded — "3" where every label on the
+ * screen says "003". The name already carries the padded form, so it is
+ * read off there rather than padded to a width nobody has stated.
+ */
+const numberOf = (name: string, fallback: string) => {
+  const lead = name.trim().split(/[\s-]/)[0];
+  return /^\d+$/.test(lead) ? lead : fallback;
+};
 
 /** The left list: marker, name, the money, and the units behind it. */
 const LIST_COLS = "10px minmax(0,1fr) 88px 76px";
@@ -226,14 +240,6 @@ const ListRow = ({
 
 /** A headed block, so the panel reads as sections rather than a column of
  *  loose figures. */
-/** Red behind, green ahead, black level — level is not a finding. */
-const against = (mine: number, theirs: number) =>
-  mine < theirs
-    ? "text-delta_negative_text"
-    : mine > theirs
-      ? "text-delta_positive_text"
-      : "text-content";
-
 const Block = ({
   title,
   children,
@@ -258,18 +264,107 @@ const Block = ({
  * with a column each, the exact split behind the sentence, and how the
  * same subtraction ran in the two earlier weeks.
  */
+/**
+ * One measure, both stores, with the sentence that compares them.
+ *
+ * Two figures and a "vs" asked the reader to divide. The bars do it: the
+ * shorter one is this store, the longer one is the other, and the line
+ * underneath says by how much in the only terms anybody repeats out loud.
+ */
+const Measure = ({
+  title,
+  value,
+  mine,
+  theirs,
+  us,
+  them,
+  fmt,
+  better,
+}: {
+  title: string;
+  value: string;
+  mine: number;
+  theirs: number;
+  us: string;
+  them: string;
+  fmt: (v: number) => string;
+  /** Which direction is good. Take per unit being up is not a shortfall. */
+  better: "more" | "less";
+}) => {
+  const widest = Math.max(Math.abs(mine), Math.abs(theirs), 1);
+  const pct = theirs === 0 ? null : Math.round(Math.abs(mine / theirs - 1) * 100);
+  const up = mine > theirs;
+  const good = better === "more" ? up : !up;
+
+  return (
+    <div className="rounded-lg bg-bkg px-3.5 py-3 min-w-0">
+      <div className="text-[10px] font-bold uppercase tracking-wide text-content/85">
+        {title}
+      </div>
+      <div className="text-[19px] font-bold tabular-nums text-content leading-none mt-1.5">
+        {value}
+      </div>
+
+      <div className="flex flex-col gap-1 mt-2.5">
+        {[
+          { label: us, v: mine, tone: "bg-store_open" },
+          { label: them, v: theirs, tone: "bg-store_compare" },
+        ].map((b) => (
+          <span key={b.label} className="flex items-center gap-2 text-[11px]">
+            <span className="w-[34px] flex-shrink-0 truncate text-content/85">
+              {b.label}
+            </span>
+            <span className="flex-1 min-w-0 h-[8.4px] rounded-sm bg-custom-white">
+              <span
+                className={`block h-[8.4px] rounded-sm ${b.tone}`}
+                style={{ width: `${(Math.abs(b.v) / widest) * 100}%` }}
+              />
+            </span>
+            <span className="w-[76px] flex-shrink-0 text-right tabular-nums text-content whitespace-nowrap">
+              {fmt(b.v)}
+            </span>
+          </span>
+        ))}
+      </div>
+
+      {pct !== null && pct !== 0 && (
+        <p
+          className={`text-[11.5px] mt-2 ${
+            good ? "text-delta_positive_text" : "text-delta_negative_text"
+          }`}
+        >
+          {pct}% {up ? "more" : "less"} than {them}
+        </p>
+      )}
+      {pct === 0 && (
+        <p className="text-[11.5px] mt-2 text-content/85">Level with {them}</p>
+      )}
+      {pct === null && (
+        <p className="text-[11.5px] mt-2 text-content/85">
+          {them} rang none of it
+        </p>
+      )}
+    </div>
+  );
+};
+
 const Detail = ({
   row,
+  us,
+  them,
   onInvestigate,
 }: {
   row: ReportRow;
+  /** Store numbers, short enough to label a bar. */
+  us: string;
+  them: string;
   onInvestigate: (row: ReportRow) => void;
 }) => {
   const ahead = row.gap >= 0;
+  const tone = ahead ? "text-delta_positive_text" : "text-delta_negative_text";
   /* Closed. It lays over the panel rather than pushing it down, so an open
      strip on arrival would cover the first thing the panel has to show. */
   const [open, setOpen] = useState(false);
-  const unitWord = row.weighed ? "lb" : "units";
   const oneWord = row.weighed ? "lb" : "unit";
 
   /* The identity behind the sentence: the gap is exactly what the missing
@@ -283,6 +378,28 @@ const Detail = ({
     { label: "Last week", v: row.lwGap },
     { label: "This week", v: row.gap },
   ];
+  const widestWeek = Math.max(1, ...weeks.map((w) => Math.abs(w.v)));
+
+  const mineRate = row.mineUnits > 0 ? row.mine / row.mineUnits : null;
+  const theirsRate = row.theirsUnits > 0 ? row.theirs / row.theirsUnits : null;
+
+  /** Wider or narrower, not bigger or smaller: a gap is a distance. */
+  const againstWeek = (when: string, then: number) => {
+    const move = Math.abs(row.gap) - Math.abs(then);
+    if (Math.abs(move) < 0.005) return `the same as ${when}`;
+    return (
+      <>
+        <span
+          className={`font-semibold ${
+            move > 0 ? "text-delta_negative_text" : "text-delta_positive_text"
+          }`}
+        >
+          {money(Math.abs(move))} {move > 0 ? "wider" : "narrower"}
+        </span>{" "}
+        than {when}
+      </>
+    );
+  };
 
   /**
    * Critical where a gate actually failed, watch where none did and it is
@@ -390,50 +507,72 @@ const Detail = ({
         </Block>
       )}
 
-      <Block title="The gap, week by week">
-        <div className="flex gap-4 flex-wrap text-[12.5px] text-content/85">
-          {weeks.map((w) => (
-            <span key={w.label}>
-              {w.label}{" "}
-              <span
-                className={`font-bold tabular-nums ${
-                  w.v >= 0 ? "text-delta_positive_text" : "text-delta_negative_text"
-                }`}
-              >
-                {signed(w.v)}
-              </span>
-            </span>
-          ))}
-        </div>
-      </Block>
+      <Block title={`This week against ${them}`}>
+        <div className="grid gap-2.5" style={{ gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))" }}>
+          {/* The gap against itself, which is the one card that is not a
+              comparison between stores. Three weeks, so a gap that has
+              always been there is told apart from one that opened. */}
+          <div className="rounded-lg bg-bkg px-3.5 py-3 min-w-0">
+            <div className="text-[10px] font-bold uppercase tracking-wide text-content/85">
+              Gap this week
+            </div>
+            <div className={`text-[19px] font-bold tabular-nums leading-none mt-1.5 ${tone}`}>
+              {signed(row.gap)}
+            </div>
 
-      <Block title="What each store rang">
-        <div className="flex gap-4 flex-wrap text-[12.5px] text-content/85">
-          <span>
-            Sales{" "}
-            {/* This store's own figure carries the direction: level is not a
-                finding, so it stays black rather than claiming one. */}
-            <span className={`font-semibold tabular-nums ${against(row.mine, row.theirs)}`}>
-              {money(row.mine)}
-            </span>{" "}
-            vs{" "}
-            <span className="font-semibold tabular-nums text-content">
-              {money(row.theirs)}
-            </span>
-          </span>
-          <span>
-            {row.weighed ? "Weight" : "Units"}{" "}
-            <span
-              className={`font-semibold tabular-nums ${against(row.mineUnits, row.theirsUnits)}`}
-            >
-              {Math.round(row.mineUnits).toLocaleString("en-US")}
-            </span>{" "}
-            vs{" "}
-            <span className="font-semibold tabular-nums text-content">
-              {Math.round(row.theirsUnits).toLocaleString("en-US")}
-            </span>{" "}
-            {unitWord}
-          </span>
+            <div className="flex items-end gap-1.5 h-9 mt-2.5">
+              {weeks.map((w) => (
+                <span
+                  key={w.label}
+                  title={`${w.label} ${signed(w.v)}`}
+                  className={`w-6 rounded-sm ${
+                    w.v >= 0 ? "bg-emerald-500" : "bg-red-500"
+                  } ${w.label === "This week" ? "" : "opacity-45"}`}
+                  style={{
+                    height: `${Math.max(8, (Math.abs(w.v) / widestWeek) * 100)}%`,
+                  }}
+                />
+              ))}
+            </div>
+
+            <p className="text-[11.5px] mt-2 text-content/85">
+              {againstWeek("last week", row.lwGap)} &middot;{" "}
+              {againstWeek("last year", row.lyGap)}
+            </p>
+          </div>
+
+          <Measure
+            title="Sales"
+            value={money(row.mine)}
+            mine={row.mine}
+            theirs={row.theirs}
+            us={us}
+            them={them}
+            fmt={money}
+            better="more"
+          />
+          <Measure
+            title={row.weighed ? "Weight" : "Units"}
+            value={whole(row.mineUnits)}
+            mine={row.mineUnits}
+            theirs={row.theirsUnits}
+            us={us}
+            them={them}
+            fmt={whole}
+            better="more"
+          />
+          {mineRate !== null && theirsRate !== null && (
+            <Measure
+              title={`Take per ${oneWord}`}
+              value={money(mineRate)}
+              mine={mineRate}
+              theirs={theirsRate}
+              us={us}
+              them={them}
+              fmt={money}
+              better="more"
+            />
+          )}
         </div>
       </Block>
 
@@ -736,7 +875,12 @@ const DeptReport = ({
         </div>
 
         {selected ? (
-          <Detail row={selected} onInvestigate={investigate} />
+          <Detail
+            row={selected}
+            us={numberOf(openStoreName, openStoreNumber)}
+            them={numberOf(compareStoreName, compareStoreNumber)}
+            onInvestigate={investigate}
+          />
         ) : (
           <div className="flex-1 flex items-center justify-center px-4 text-center text-[12.5px] text-content/85">
             No departments to compare.
