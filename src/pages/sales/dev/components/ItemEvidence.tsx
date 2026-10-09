@@ -462,7 +462,9 @@ const Fold = ({
 }) => {
   const [open, setOpen] = useState(true);
   return (
-    <section className="pt-4">
+    /* A seam between sections, not a frame around them: at /15 and above
+       it ruled the panel into boxes and competed with the figures. */
+    <section className="pt-3 mt-3 border-t border-brand_navy/10 first:border-t-0 first:mt-0">
       <button
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
@@ -517,7 +519,7 @@ const ItemEvidence = ({
           name and the sentence about that item, which belong together. The
           cause is what the panel is about, so the panel's head wears it. */}
       <div
-        className={`flex-shrink-0 px-4 py-3 border-b border-brand_navy/15 ${CAUSE_TONE[item.cause].chip}`}
+        className={`relative z-20 flex-shrink-0 px-4 py-3 border-b border-brand_navy/15 ${CAUSE_TONE[item.cause].chip}`}
       >
         <div className="flex items-start gap-2">
           <div className="min-w-0">
@@ -532,7 +534,8 @@ const ItemEvidence = ({
           {/* Walking the pile beats going back to the grid for every item.
               The arrows follow whatever the grid is filtered to, and the
               count says which pile that is. */}
-          <div className="ml-auto flex items-center gap-1 flex-shrink-0">
+          <div className="ml-auto flex flex-col items-end gap-1 flex-shrink-0">
+            <div className="flex items-center gap-1">
             <span className="text-[12px] opacity-80 tabular-nums whitespace-nowrap mr-1">
               {position.at + 1} of {position.of.toLocaleString("en-US")}
             </span>
@@ -555,27 +558,36 @@ const ItemEvidence = ({
               &rsaquo;
             </button>
             <button
-              onClick={() => setSays((v) => !v)}
-              aria-expanded={says}
-              aria-label={says ? "Hide the verdict" : "Show the verdict"}
-              className="w-7 h-7 rounded text-[10px] hover:bg-current/10 transition-colors"
-            >
-              {says ? "▲" : "▼"}
-            </button>
-            <button
               onClick={onClose}
               aria-label="Close"
               className="w-7 h-7 rounded text-[12px] font-semibold hover:bg-current/10 transition-colors"
             >
               ✕
             </button>
+            </div>
+
+            {/* Words, not a chevron. A caret beside a close button is one
+                more unlabelled glyph in a row of them, and this one hides
+                the sentence the panel opens with. */}
+            <button
+              onClick={() => setSays((v) => !v)}
+              aria-expanded={says}
+              className="text-[11.5px] font-semibold underline underline-offset-2 opacity-80 hover:opacity-100 transition-opacity whitespace-nowrap"
+            >
+              {says ? "Hide details" : "View details"}
+            </button>
           </div>
         </div>
 
         {/* What the grid's Cause column means, spelled out. A label is a
             claim; this says what each store did. */}
+        {/* Over the sections, not above them. Opening it pushed three
+            headings down the panel, so the thing a reader had their eye on
+            moved every time they asked what the cause was. */}
         {says && (
-          <div className="mt-2.5 pt-2.5 border-t border-current/15">
+          <div
+            className={`absolute top-full left-0 right-0 px-4 py-2.5 border-b border-brand_navy/15 shadow-card ${CAUSE_TONE[item.cause].chip}`}
+          >
             <span className="text-[11px] font-bold uppercase tracking-wide">
               {CAUSE_LABEL[item.cause]}
             </span>
