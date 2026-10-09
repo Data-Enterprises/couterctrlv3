@@ -496,7 +496,7 @@ const Card = ({
   note?: string;
   children: React.ReactNode;
 }) => (
-  <div className="rounded-lg bg-bkg shadow-sm px-4 py-3.5">
+  <div className="h-full rounded-lg bg-custom-white shadow-md px-4 py-3.5">
     <div className="text-[12px] font-bold uppercase tracking-wide text-content/85">
       {title}
     </div>
@@ -585,7 +585,7 @@ const Index = ({
             <span className="w-[52px] flex-shrink-0 text-[12px] font-semibold uppercase tracking-wide text-content/85">
               {m.label}
             </span>
-            <span className="relative flex-1 min-w-0 h-2.5 rounded-sm bg-custom-white">
+            <span className="relative flex-1 min-w-0 h-2.5 rounded-sm bg-bkg">
               <span
                 className={`absolute left-0 top-0 h-2.5 rounded-sm ${
                   over ? "bg-emerald-500" : "bg-red-500"
@@ -658,16 +658,66 @@ const HoldsPanel = ({
   const vendors = spread.byVendor.slice(0, 6);
   const widestVendor = Math.max(1, Math.abs(vendors[0]?.dollars ?? 0));
 
-  const COLS = "minmax(0,1.55fr) minmax(290px,0.8fr)";
+  const CARDS = "repeat(auto-fit, minmax(280px, 1fr))";
 
   return (
-    <div className="flex-1 min-h-0 overflow-auto thin-scrollbar px-4 py-5">
-      <div className="max-w-[1180px] mx-auto flex flex-col gap-6">
+    <div className="flex-1 min-h-0 overflow-auto thin-scrollbar bg-bkg px-4 py-5">
+      <div className="max-w-[1180px] mx-auto flex flex-col gap-5">
 
         {/* Each card sits beside the section it serves, rather than all of
             them stacking in one rail away from what they are evidence for. */}
-        <div className="grid gap-8 items-start" style={{ gridTemplateColumns: COLS }}>
-          <div className="flex flex-col gap-4 min-w-0 rounded-lg bg-bkg shadow-sm px-5 py-4">
+        {/* One row, equal heights. Beside each section these left a ragged
+            edge and a column of dead space under every card; across the top
+            they align, and the prose below runs straight down. */}
+        <div className="grid gap-4 items-stretch" style={{ gridTemplateColumns: CARDS }}>
+          <Card
+            title="The gap, week by week"
+            note="Against itself: a standing difference, or something that broke this week."
+          >
+            <Weeks vitals={vitals} cash={cash} />
+          </Card>
+          <Card
+            title={`Against ${them}`}
+            note="One rule for all three, so measures that disagree are seen to."
+          >
+            <Index vitals={vitals} them={them} cash={cash} />
+          </Card>
+          {vendors.length > 0 && (
+            <Card
+              title="Who supplies it"
+              note="The shortfall by vendor. Pick one to narrow the items."
+            >
+              <div className="flex flex-col gap-1.5">
+                {vendors.map((v) => (
+                  <button
+                    key={v.vendorName}
+                    onClick={() => onVendor(v.vendorName)}
+                    className="flex items-center gap-2.5 text-left rounded px-1 py-0.5 hover:bg-bkg transition-colors"
+                  >
+                    <span className="w-[96px] flex-shrink-0 truncate text-[12.5px] text-content">
+                      {v.vendorName}
+                    </span>
+                    <span className="flex-1 min-w-0 h-2 rounded-sm bg-bkg">
+                      <span
+                        className="block h-2 rounded-sm bg-red-500"
+                        style={{
+                          width: `${(Math.abs(v.dollars) / widestVendor) * 100}%`,
+                        }}
+                      />
+                    </span>
+                    <span className="w-[72px] flex-shrink-0 text-right text-[12.5px] font-bold tabular-nums text-delta_negative_text">
+                      {"−"}
+                      {cash(Math.abs(v.dollars))}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </Card>
+          )}
+        </div>
+
+        <div className="rounded-lg bg-custom-white shadow-md px-5 py-4">
+          <div className="flex flex-col gap-4 min-w-0 max-w-[840px]">
             <p className="text-[20px] font-semibold leading-snug text-content">
               <span
                 className={
@@ -701,7 +751,7 @@ const HoldsPanel = ({
             </div>
 
             {moved > 0 && (
-              <span className="flex h-2 rounded-sm overflow-hidden bg-custom-white">
+              <span className="flex h-2 rounded-sm overflow-hidden bg-bkg">
                 {buckets.map((x) => (
                   <span
                     key={x.label}
@@ -721,7 +771,7 @@ const HoldsPanel = ({
                 >
                   <span
                     className={`w-2.5 h-2.5 rounded-sm flex-shrink-0 self-center ${
-                      x.b.items === 0 ? "bg-custom-white" : x.tone
+                      x.b.items === 0 ? "bg-bkg" : x.tone
                     }`}
                   />
                   <span className="text-[13px] text-content/85 min-w-0">
@@ -769,38 +819,23 @@ const HoldsPanel = ({
               </p>
             )}
           </div>
-
-          <div className="flex flex-col gap-3">
-            <Card
-              title="The gap, week by week"
-              note="Against itself: a standing difference, or something that broke this week."
-            >
-              <Weeks vitals={vitals} cash={cash} />
-            </Card>
-            <Card
-              title={`Against ${them}`}
-              note="One rule for all three, so measures that disagree are seen to."
-            >
-              <Index vitals={vitals} them={them} cash={cash} />
-            </Card>
-          </div>
         </div>
 
         <div className="flex justify-center">
-          <span className="text-[13px] text-content/85 bg-bkg rounded-full px-4 py-1.5">
+          <span className="text-[13px] text-content/85 bg-custom-white shadow-sm rounded-full px-4 py-1.5">
             {holds.verdict === "holds"
               ? "So the call stands. Is it a few big items, or many small ones?"
               : "So the shape is different. Where does it sit?"}
           </span>
         </div>
 
-        <div className="grid gap-8 items-start" style={{ gridTemplateColumns: COLS }}>
-          <div className="flex flex-col gap-4 min-w-0 rounded-lg bg-bkg shadow-sm px-5 py-4">
-            <p className="text-[20px] font-semibold leading-snug text-content">
+        <div className="rounded-lg bg-custom-white shadow-md px-5 py-4">
+          <div className="flex flex-col gap-4 min-w-0">
+            <p className="text-[20px] font-semibold leading-snug text-content max-w-[840px]">
               {spread.says}
             </p>
 
-            <span className="flex h-2 rounded-sm overflow-hidden bg-custom-white">
+            <span className="flex h-2 rounded-sm overflow-hidden bg-bkg">
               <span
                 className="block h-2 bg-red-500"
                 style={{ width: `${Math.max(4, spread.topTenShare * 100)}%` }}
@@ -812,7 +847,7 @@ const HoldsPanel = ({
                 <div key={i.productCode}>
                   <button
                     onClick={() => onPickItem(i.productCode)}
-                    className="w-full grid gap-3 items-center px-1.5 py-1.5 border-b border-brand_navy/15 hover:bg-custom-white rounded text-left"
+                    className="w-full grid gap-3 items-center px-1.5 py-1.5 border-b border-brand_navy/15 hover:bg-bkg rounded text-left"
                     style={{ gridTemplateColumns: "22px minmax(0,1fr) 120px 96px" }}
                   >
                     <span className="text-[12px] text-content/85 tabular-nums">
@@ -821,7 +856,7 @@ const HoldsPanel = ({
                     <span className="min-w-0 truncate text-[12.5px] font-mono text-content">
                       {i.description}
                     </span>
-                    <span className="h-2 rounded-sm bg-custom-white">
+                    <span className="h-2 rounded-sm bg-bkg">
                       <span
                         className="block h-2 rounded-sm bg-red-500"
                         style={{ width: `${(Math.abs(i.gap) / widest) * 100}%` }}
@@ -852,45 +887,6 @@ const HoldsPanel = ({
               ordered by the biggest difference · click one for its evidence ·{" "}
               {cash(shortfall)} in all
             </p>
-          </div>
-
-          <div className="flex flex-col gap-3">
-            {vendors.length > 0 && (
-              /* Beside the list it filters, and still in view while it
-                 scrolls. One vendor owning most of a shortfall is the
-                 cluster worth finding: raising one account closes more than
-                 chasing thirty items across nine. */
-              <Card
-                title="Who supplies it"
-                note="The shortfall by vendor. Pick one to narrow the items."
-              >
-                <div className="flex flex-col gap-1.5">
-                  {vendors.map((v) => (
-                    <button
-                      key={v.vendorName}
-                      onClick={() => onVendor(v.vendorName)}
-                      className="flex items-center gap-2.5 text-left rounded px-1 py-0.5 hover:bg-custom-white transition-colors"
-                    >
-                      <span className="w-[104px] flex-shrink-0 truncate text-[12.5px] text-content">
-                        {v.vendorName}
-                      </span>
-                      <span className="flex-1 min-w-0 h-2 rounded-sm bg-custom-white">
-                        <span
-                          className="block h-2 rounded-sm bg-red-500"
-                          style={{
-                            width: `${(Math.abs(v.dollars) / widestVendor) * 100}%`,
-                          }}
-                        />
-                      </span>
-                      <span className="w-[72px] flex-shrink-0 text-right text-[12.5px] font-bold tabular-nums text-delta_negative_text">
-                        {"−"}
-                        {cash(Math.abs(v.dollars))}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </Card>
-            )}
           </div>
         </div>
       </div>
