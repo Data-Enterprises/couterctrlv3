@@ -24,7 +24,6 @@ import {
   OWNER_LABEL,
   type Desk,
   type Holds,
-  type Owner,
   type Spread,
 } from "../shared/investigationSteps";
 import { rowsToCsv, downloadCsv } from "../../../../utils/csvExport";
@@ -150,18 +149,6 @@ const SUGGESTED: Record<string, Cause[]> = {
   orders: ["never-ordered", "not-received"],
   price: ["price-mix"],
   mix: ["price-mix"],
-};
-
-/** Who a cause belongs to, mirrored from the steps module so a line and its
- *  card never disagree about who is being sent the list. */
-const CAUSE_DESK: Record<Cause, Owner> = {
-  "never-ordered": "buyer",
-  "not-received": "vendor",
-  cost: "buyer",
-  "price-mix": "price",
-  "not-moving": null,
-  unclassified: null,
-  ahead: null,
 };
 
 const CAUSE_ORDER: Cause[] = [
@@ -719,62 +706,6 @@ const HoldsPanel = ({
           </p>
         </section>
       </div>
-    </div>
-  );
-};
-
-/* ------------------------------------------------------------------ */
-/* Step 3's lead-in · one line per cause, with its owner                */
-/* ------------------------------------------------------------------ */
-
-const CauseLines = ({
-  summary,
-  only,
-  onPick,
-  cash,
-}: {
-  summary: Summary;
-  only: Cause | null;
-  onPick: (c: Cause | null) => void;
-  cash: (v: number) => string;
-}) => {
-  const lines = summary.byCause
-    .filter((c) => c.cause !== "ahead")
-    .sort((a, b) => a.dollars - b.dollars);
-  if (lines.length === 0) return null;
-
-  return (
-    <div className="flex-shrink-0 flex flex-col gap-1.5 px-4 pt-3">
-      {lines.map((c) => {
-        const owner = CAUSE_DESK[c.cause];
-        const clickable = c.cause !== "unclassified";
-        return (
-          <button
-            key={c.cause}
-            disabled={!clickable}
-            onClick={() => onPick(only === c.cause ? null : c.cause)}
-            className={`flex items-center gap-3 text-left px-3 py-2 rounded-md border transition-colors ${
-              only === c.cause
-                ? "border-filter_active_border bg-filter_active"
-                : "border-brand_navy/15 hover:bg-gray-50"
-            } ${clickable ? "" : "cursor-default"}`}
-          >
-            <span
-              className={`w-1 self-stretch rounded-sm flex-shrink-0 ${CAUSE_TONE[c.cause].chip}`}
-            />
-            <span className="text-[13.5px] leading-snug text-content min-w-0">
-              <span className="font-bold text-delta_negative_text">
-                {cash(Math.abs(c.dollars))}
-              </span>{" "}
-              is {c.items.toLocaleString("en-US")}{" "}
-              {c.items === 1 ? "item" : "items"} · {CAUSE_LABEL[c.cause].toLowerCase()}
-            </span>
-            <span className="ml-auto text-[12px] font-semibold text-content/85 whitespace-nowrap">
-              {owner ? `→ ${OWNER_LABEL[owner]}` : "no owner"}
-            </span>
-          </button>
-        );
-      })}
     </div>
   );
 };
@@ -1338,12 +1269,6 @@ const DeptInvestigation = ({
             hidden={tab !== "items"}
             className={tab === "items" ? "flex-1 min-h-0 flex flex-col overflow-hidden" : ""}
           >
-          <CauseLines
-            summary={summary}
-            only={only}
-            onPick={setOnly}
-            cash={cash}
-          />
           <div className="flex-shrink-0 px-4 py-2.5 border-b border-brand_navy/15">
             <div className="flex flex-wrap items-center gap-2">
               <button
