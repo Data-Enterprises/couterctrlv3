@@ -77,9 +77,9 @@ const Mark = ({ state }: { state: Gate["state"] }) => (
   <span
     className={`w-[17px] h-[17px] flex-shrink-0 rounded-full flex items-center justify-center text-[11px] font-bold leading-none ${
       state === "fail"
-        ? "bg-delta_negative_text text-custom-white"
+        ? "bg-red-500 text-custom-white"
         : state === "pass"
-          ? "bg-delta_positive_bg text-delta_positive_text"
+          ? "bg-emerald-500 text-custom-white"
           : "border border-content/40 text-transparent"
     }`}
   >
@@ -168,7 +168,7 @@ const ListRow = ({
       <span className="flex items-center gap-2">
         <span
           className={`block w-2 h-2 rounded-sm flex-shrink-0 ${
-            ahead ? "bg-delta_positive_text" : "bg-delta_negative_text"
+            ahead ? "bg-emerald-500" : "bg-red-500"
           }`}
         />
         <span className="flex-1 min-w-0 truncate text-[12px] font-semibold text-content">
@@ -269,11 +269,11 @@ const Detail = ({
         <Block title="What the gap is made of">
           <span className="flex h-2 rounded-sm overflow-hidden bg-bkg">
             <span
-              className={`block ${ahead ? "bg-delta_positive_text" : "bg-delta_negative_text"}`}
+              className={`block ${ahead ? "bg-emerald-500" : "bg-red-500"}`}
               style={{ width: `${(Math.abs(split.volume) / splitSize) * 100}%` }}
             />
             <span
-              className={`block opacity-50 ${ahead ? "bg-delta_positive_text" : "bg-delta_negative_text"}`}
+              className={`block opacity-50 ${ahead ? "bg-emerald-500" : "bg-red-500"}`}
               style={{ width: `${(Math.abs(split.rate) / splitSize) * 100}%` }}
             />
           </span>
@@ -560,7 +560,7 @@ const DeptReport = ({
               {segments.map((seg, i) => (
                 <span
                   key={seg.key}
-                  className="block bg-delta_negative_text"
+                  className="block bg-red-500"
                   style={{
                     width: `${(seg.size / underTotal) * 100}%`,
                     opacity: seg.lead ? Math.max(0.55, 1 - i * 0.2) : 0.3,

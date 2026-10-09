@@ -1135,11 +1135,11 @@ const HoldsPanel = ({
                       than only stated above it. */}
                   {spread.toHalf > 0 && ix === spread.toHalf - 1 && (
                     <div className="flex items-center gap-2 py-1">
-                      <span className="h-px flex-1 bg-delta_negative_text/40" />
+                      <span className="h-px flex-1 bg-red-500/50" />
                       <span className="text-[11.5px] font-bold uppercase tracking-wide text-delta_negative_text whitespace-nowrap">
                         half the shortfall
                       </span>
-                      <span className="h-px flex-1 bg-delta_negative_text/40" />
+                      <span className="h-px flex-1 bg-red-500/50" />
                     </div>
                   )}
                 </div>
