@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { desksOf, holdsUp, spreadOf, supplyOf, vitalsOf } from "./investigationSteps";
+import { desksOf, holdsUp, spreadOf, supplyOf, supplySays, vitalsOf } from "./investigationSteps";
 import { judge, type ItemFacts, type ItemVerdict } from "./deptInvestigation";
 
 const facts = (over: Partial<ItemFacts> = {}): ItemFacts => ({
@@ -368,6 +368,54 @@ describe("supply · the proof behind the labels", () => {
       [of("a")],
     );
     expect(s.deliveries[0]).toMatchObject({ id: 8, date: "2026-10-03", units: -4 });
+  });
+
+  /* ---------------- the sentence over the counts ---------------- */
+
+  const says = (
+    orders: { mine: ReturnType<typeof order>[]; theirs: ReturnType<typeof order>[] },
+    receipts: { mine: ReturnType<typeof inv>[]; theirs: ReturnType<typeof inv>[] },
+  ) => supplySays(supplyOf(orders, receipts, [of("a")]), "002", "003");
+
+  it("leads with what happened, not with the counts", () => {
+    const r = says(
+      { mine: [order(1, "a", 359)], theirs: [order(2, "a", 8904)] },
+      { mine: [], theirs: [] },
+    );
+    expect(r.lead).toBe("Both stores ordered. Neither took a delivery in the window.");
+    expect(r.tail).toContain("003 ordered 8,904 units on 1 order.");
+    expect(r.tail).toContain("002 ordered 359 on 1 order.");
+  });
+
+  /** One store ordering and the other not is the finding, and a sentence
+   *  that said "both" would bury it under two counts. */
+  it("names the store when only one of them ordered", () => {
+    const r = says({ mine: [], theirs: [order(2, "a", 50)] }, { mine: [], theirs: [] });
+    expect(r.lead).toBe("Only 003 ordered. Neither took a delivery in the window.");
+  });
+
+  it("says so when neither store ordered at all", () => {
+    const r = says({ mine: [], theirs: [] }, { mine: [], theirs: [] });
+    expect(r.lead).toBe(
+      "Neither store ordered this department. Neither took a delivery in the window.",
+    );
+    expect(r.tail).toBe("");
+  });
+
+  /** A status they all agree on is worth a clause. A mix of them is a
+   *  column in the list, not a sentence. */
+  it("adds the status only when every order agrees on one", () => {
+    const same = says(
+      { mine: [order(1, "a", 5, "2026-09-30", "OPEN")], theirs: [order(2, "a", 7, "2026-10-01", "OPEN")] },
+      { mine: [], theirs: [] },
+    );
+    expect(same.tail).toContain("All 2 read OPEN.");
+
+    const mixed = says(
+      { mine: [order(1, "a", 5, "2026-09-30", "OPEN")], theirs: [order(2, "a", 7, "2026-10-01", "SENT")] },
+      { mine: [], theirs: [] },
+    );
+    expect(mixed.tail).not.toContain("read");
   });
 
   it("keeps an invoice carrying nothing in this department off the list", () => {

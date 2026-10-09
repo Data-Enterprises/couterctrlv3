@@ -21,6 +21,7 @@ import {
   holdsUp,
   spreadOf,
   supplyOf,
+  supplySays,
   vitalsOf,
   OWNER_LABEL,
   type Desk,
@@ -1159,15 +1160,6 @@ const HoldsPanel = ({
 /* Supply · the orders and the invoices themselves                     */
 /* ------------------------------------------------------------------ */
 
-const Figure = ({ label, value }: { label: string; value: string }) => (
-  <div className="flex items-baseline gap-3 py-1.5 border-b border-brand_navy/15 last:border-b-0">
-    <span className="text-[13px] text-content/85 min-w-0">{label}</span>
-    <span className="ml-auto text-[14px] font-bold tabular-nums text-content whitespace-nowrap">
-      {value}
-    </span>
-  </div>
-);
-
 /** Sep 24, from an ISO date that may or may not carry a time behind it. */
 const onDay = (d: string) =>
   new Date(d.slice(0, 10) + "T12:00:00").toLocaleDateString("en-US", {
@@ -1279,6 +1271,101 @@ const Ledger = ({
 };
 
 /**
+ * Every order and every delivery, on the window they were read over.
+ *
+ * Two counts side by side cannot show that one store placed a single order
+ * of nine thousand units while the other placed three totalling a few
+ * hundred — nor that a lane is empty, which is the strongest way to say
+ * nothing arrived. Dot area follows units, so the big order looks big.
+ */
+const Timeline = ({
+  orders,
+  deliveries,
+  window,
+  us,
+  them,
+}: {
+  orders: SupplyRecord[];
+  deliveries: SupplyRecord[];
+  window: { start: string; end: string };
+  us: string;
+  them: string;
+}) => {
+  const day = (d: string) => Date.parse(d.slice(0, 10) + "T12:00:00");
+  const from = day(window.start);
+  const span = Math.max(1, day(window.end) - from);
+  const at = (d: string) =>
+    Math.min(100, Math.max(0, ((day(d) - from) / span) * 100));
+  /* Area, not width: a 9,000-unit order beside a 2-unit one would be
+     invisible on a linear scale and absurd on a square one. */
+  const size = (units: number) =>
+    Math.max(9, Math.min(28, 8 + Math.sqrt(Math.abs(units)) * 0.25));
+
+  const lanes = [
+    { label: us, tone: "bg-store_open", rows: orders.filter((o) => o.mine) },
+    { label: them, tone: "bg-store_compare", rows: orders.filter((o) => !o.mine) },
+    { label: "Delivered", tone: "", rows: deliveries },
+  ];
+
+  const ticks = [0, 25, 50, 75, 100];
+  const tickDay = (p: number) =>
+    new Date(from + (span * p) / 100).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    });
+
+  return (
+    <div className="flex flex-col gap-1">
+      {lanes.map((lane) => (
+        <div key={lane.label} className="flex items-center gap-3">
+          <span className="w-[108px] flex-shrink-0 truncate text-[11.5px] font-semibold text-content/85">
+            {lane.label}
+          </span>
+          <span className="relative flex-1 min-w-0 h-11 border-b border-dashed border-brand_navy/20">
+            {lane.rows.length === 0 ? (
+              <span className="absolute inset-0 flex items-center text-[12px] italic text-content/85">
+                Nothing
+              </span>
+            ) : (
+              lane.rows.map((r) => (
+                <span
+                  key={`${r.mine ? "m" : "t"}-${r.id}`}
+                  title={`${r.vendor} · ${Math.round(r.units).toLocaleString("en-US")} units`}
+                  className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 flex flex-col items-center"
+                  style={{ left: `${at(r.date)}%` }}
+                >
+                  <span
+                    className={`block rounded-full ${
+                      lane.tone || (r.mine ? "bg-store_open" : "bg-store_compare")
+                    }`}
+                    style={{ width: size(r.units), height: size(r.units) }}
+                  />
+                </span>
+              ))
+            )}
+          </span>
+        </div>
+      ))}
+
+      <div className="flex items-center gap-3">
+        <span className="w-[108px] flex-shrink-0" />
+        <span className="relative flex-1 min-w-0 h-4">
+          {ticks.map((p) => (
+            <span
+              key={p}
+              className="absolute -translate-x-1/2 text-[11px] text-content/85 whitespace-nowrap"
+              style={{ left: `${p}%` }}
+            >
+              {tickDay(p)}
+            </span>
+          ))}
+        </span>
+      </div>
+    </div>
+  );
+};
+
+/**
  * What each store ordered, and what actually turned up.
  *
  * Everywhere else the notebook takes its own word for a cause: an item is
@@ -1300,10 +1387,7 @@ const SupplyPanel = ({
   cash: (v: number) => string;
 }) => {
   const n = (v: number) => Math.round(v).toLocaleString("en-US");
-  const sides = [
-    { label: us, side: supply.mine, mine: true },
-    { label: them, side: supply.theirs, mine: false },
-  ];
+  const says = supplySays(supply, us, them);
 
   // Every vendor either store took a delivery from, biggest first.
   const names = [
@@ -1328,25 +1412,86 @@ const SupplyPanel = ({
     <div className="flex-1 min-h-0 overflow-auto thin-scrollbar bg-bkg px-4 py-5">
       <div className="max-w-[1180px] mx-auto flex flex-col gap-5">
 
-        <div className="grid gap-4" style={{ gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))" }}>
-          {sides.map((x) => (
-            <div
-              key={x.label}
-              className="rounded-lg bg-custom-white shadow-md px-4 py-3.5"
-            >
-              <div className="text-[12px] font-bold uppercase tracking-wide text-content/85 truncate">
-                {x.label}
-              </div>
-              <div className="mt-2.5">
-                <Figure label="Orders placed" value={n(x.side.orders)} />
-                <Figure label="Lines on them" value={n(x.side.orderLines)} />
-                <Figure label="Units ordered" value={n(x.side.orderedUnits)} />
-                <Figure label="Deliveries" value={n(x.side.deliveries)} />
-                <Figure label="Units received" value={n(x.side.receivedUnits)} />
-                <Figure label="Cost received" value={cash(x.side.receivedCost)} />
-              </div>
+        {/* The tab opens with its finding, like every other one. It used to
+            open with two cards of counts and leave the reader to subtract. */}
+        <p className="text-[20px] font-semibold leading-snug text-content max-w-[840px]">
+          {says.lead}
+        </p>
+        {says.tail && (
+          <p className="text-[13px] leading-relaxed text-content/85 max-w-[840px] -mt-3">
+            {says.tail}
+          </p>
+        )}
+
+        <div className="grid gap-4" style={{ gridTemplateColumns: "repeat(auto-fit,minmax(340px,1fr))" }}>
+          <div className="rounded-lg bg-custom-white shadow-md px-4 py-3.5 min-w-0">
+            <div className="text-[12px] font-bold uppercase tracking-wide text-content/85">
+              Over the window
             </div>
-          ))}
+            <p className="text-[12px] text-content/85 leading-snug mt-1 mb-3">
+              Dot size is units ordered. An empty lane means nothing arrived.
+            </p>
+            <Timeline
+              orders={supply.orders}
+              deliveries={supply.deliveries}
+              window={window}
+              us={us}
+              them={them}
+            />
+          </div>
+
+          {/* One column each, so "359 against 8,934" is read rather than
+              worked out from two cards facing away from each other. */}
+          <div className="rounded-lg bg-custom-white shadow-md px-4 py-3.5 min-w-0">
+            <div className="text-[12px] font-bold uppercase tracking-wide text-content/85">
+              Side by side
+            </div>
+            <div
+              className="grid gap-x-3 mt-2.5 text-[13px]"
+              style={{ gridTemplateColumns: "minmax(0,1fr) 108px 108px" }}
+            >
+              <span className="pb-1.5 border-b border-brand_navy/15" />
+              <span className="flex items-center justify-end gap-1.5 pb-1.5 border-b border-brand_navy/15 text-[11.5px] font-bold uppercase tracking-wide text-content/85 truncate">
+                <span className="w-2 h-2 rounded-sm bg-store_open flex-shrink-0" />
+                {us}
+              </span>
+              <span className="flex items-center justify-end gap-1.5 pb-1.5 border-b border-brand_navy/15 text-[11.5px] font-bold uppercase tracking-wide text-content/85 truncate">
+                <span className="w-2 h-2 rounded-sm bg-store_compare flex-shrink-0" />
+                {them}
+              </span>
+
+              {[
+                { label: "Orders placed", m: supply.mine.orders, t: supply.theirs.orders, fmt: n },
+                { label: "Lines on them", m: supply.mine.orderLines, t: supply.theirs.orderLines, fmt: n },
+                { label: "Units ordered", m: supply.mine.orderedUnits, t: supply.theirs.orderedUnits, fmt: n },
+                { label: "Deliveries", m: supply.mine.deliveries, t: supply.theirs.deliveries, fmt: n },
+                { label: "Units received", m: supply.mine.receivedUnits, t: supply.theirs.receivedUnits, fmt: n },
+                { label: "Cost received", m: supply.mine.receivedCost, t: supply.theirs.receivedCost, fmt: cash },
+              ].map((row) => (
+                <Fragment key={row.label}>
+                  <span className="py-1.5 border-b border-brand_navy/15 text-content/85 truncate">
+                    {row.label}
+                  </span>
+                  {/* A zero is muted rather than bold: nothing is not a
+                      figure, and three bold noughts read as data. */}
+                  <span
+                    className={`text-right tabular-nums py-1.5 border-b border-brand_navy/15 ${
+                      row.m === 0 ? "text-content/85" : "font-bold text-content"
+                    }`}
+                  >
+                    {row.fmt(row.m)}
+                  </span>
+                  <span
+                    className={`text-right tabular-nums py-1.5 border-b border-brand_navy/15 ${
+                      row.t === 0 ? "text-content/85" : "font-semibold text-content"
+                    }`}
+                  >
+                    {row.fmt(row.t)}
+                  </span>
+                </Fragment>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* A supplier they buy from and we do not is a buying decision, not

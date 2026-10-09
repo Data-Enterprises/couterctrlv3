@@ -518,6 +518,67 @@ const deliveryRecords = (
 const newestFirst = (a: SupplyRecord, b: SupplyRecord) =>
   b.date.localeCompare(a.date) || b.id - a.id;
 
+/**
+ * What the orders and deliveries amount to, in a sentence.
+ *
+ * Every other tab opens with its finding; this one opened with two cards of
+ * counts and left the reader to subtract. The lead is what happened, the
+ * tail is the arithmetic behind it.
+ *
+ * It never says why. "Nobody ordered it" is a fact about the orders; whose
+ * fault that is belongs to the hand-off, which knows about owners.
+ */
+export const supplySays = (
+  supply: Supply,
+  us: string,
+  them: string,
+): { lead: string; tail: string } => {
+  const m = supply.mine;
+  const t = supply.theirs;
+  const whole = (v: number) => Math.round(v).toLocaleString("en-US");
+  const many = (n: number, one: string) => `${n} ${one}${n === 1 ? "" : "s"}`;
+
+  const ordered =
+    m.orders > 0 && t.orders > 0
+      ? "Both stores ordered."
+      : m.orders > 0
+        ? `Only ${us} ordered.`
+        : t.orders > 0
+          ? `Only ${them} ordered.`
+          : "Neither store ordered this department.";
+
+  const took =
+    m.deliveries > 0 && t.deliveries > 0
+      ? "Both took deliveries."
+      : m.deliveries > 0
+        ? `Only ${us} took a delivery.`
+        : t.deliveries > 0
+          ? `Only ${them} took a delivery.`
+          : "Neither took a delivery in the window.";
+
+  const counts = [
+    t.orders > 0
+      ? `${them} ordered ${whole(t.orderedUnits)} units on ${many(t.orders, "order")}.`
+      : "",
+    m.orders > 0
+      ? `${us} ordered ${whole(m.orderedUnits)} on ${many(m.orders, "order")}.`
+      : "",
+  ].filter(Boolean);
+
+  /* A status every order agrees on is worth a clause; a mix of them is a
+     column in the list, not a sentence. */
+  const states = [...new Set(supply.orders.map((o) => o.status).filter(Boolean))];
+  if (states.length === 1 && supply.orders.length > 0) {
+    counts.push(
+      supply.orders.length === 1
+        ? `It reads ${states[0]}.`
+        : `All ${supply.orders.length} read ${states[0]}.`,
+    );
+  }
+
+  return { lead: `${ordered} ${took}`, tail: counts.join(" ") };
+};
+
 export const supplyOf = (
   orders: { mine: OrderLine[]; theirs: OrderLine[] },
   receipts: { mine: Receipt[]; theirs: Receipt[] },
