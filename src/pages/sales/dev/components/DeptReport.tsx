@@ -90,21 +90,21 @@ const Tile = ({ gate }: { gate: Gate }) => {
   const skipped = gate.state === "skipped";
   return (
     <div
-      className={`flex items-center gap-2.5 min-w-0 rounded-md px-3 py-2 ${
+      className={`flex items-center gap-2.5 min-w-0 rounded-md px-3 py-1.5 ${
         fail ? "bg-delta_negative_bg" : "bg-custom-white border border-brand_navy/15"
       }`}
     >
       <Mark state={gate.state} />
       <span className="min-w-0">
         <span
-          className={`block text-[10.5px] font-bold uppercase tracking-wide leading-tight ${
+          className={`block text-[10px] font-bold uppercase tracking-wide leading-tight ${
             fail ? "text-delta_negative_text" : "text-content/85"
           }`}
         >
           {gate.label}
         </span>
         <span
-          className={`block text-[13px] font-semibold tabular-nums truncate leading-tight mt-0.5 ${
+          className={`block text-[12.5px] font-semibold tabular-nums truncate leading-tight mt-0.5 ${
             fail
               ? "text-delta_negative_text"
               : skipped
@@ -119,10 +119,11 @@ const Tile = ({ gate }: { gate: Gate }) => {
   );
 };
 
-/** The square that opens every row: red where it is behind, green ahead. */
-const Pip = ({ ahead = false }: { ahead?: boolean }) => (
+/** The square that opens every row: red where it is behind, green ahead.
+ *  `top` for a row of two lines, where centring would float it. */
+const Pip = ({ ahead = false, top = false }: { ahead?: boolean; top?: boolean }) => (
   <span
-    className={`block w-2.5 h-2.5 rounded-sm mt-[5px] ${
+    className={`block w-2.5 h-2.5 rounded-sm ${top ? "mt-[5px]" : ""} ${
       ahead ? "bg-delta_positive_text" : "bg-delta_negative_text"
     }`}
   />
@@ -140,7 +141,7 @@ const Expander = ({
 }) => (
   <button
     onClick={onClick}
-    className="justify-self-end flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-brand_navy/25 hover:bg-bkg transition-colors text-[12.5px] font-bold text-content whitespace-nowrap"
+    className="justify-self-end flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-brand_navy/25 hover:bg-bkg transition-colors text-[12px] font-bold text-content whitespace-nowrap"
   >
     {open ? "Hide" : `Show ${count}`}
     <span className="text-[10px] leading-none">{open ? "▲" : "▼"}</span>
@@ -160,22 +161,25 @@ interface RowProps {
 }
 
 const Row = ({ row, lead, onInvestigate }: RowProps) => (
-  <div className="px-4 py-3.5 border-b border-brand_navy/15">
+  <div className="px-4 py-2.5 border-b-2 border-brand_navy/20">
+    {/* Centred, not top-aligned: the button is half again the height of the
+        text beside it, and aligning to the top left a band of dead space
+        under the sentence that read as a gap between two rows. */}
     <div
-      className="grid gap-4 items-start"
+      className="grid gap-4 items-center"
       style={{ gridTemplateColumns: COLS }}
     >
       <Pip />
 
-      <span className="min-w-0 truncate text-[14px] font-bold text-content leading-snug">
+      <span className="min-w-0 truncate text-[13px] font-bold text-content leading-snug">
         {row.name}
       </span>
 
-      <span className="text-right text-[14px] font-bold tabular-nums text-delta_negative_text leading-snug">
+      <span className="text-right text-[13px] font-bold tabular-nums text-delta_negative_text leading-snug">
         {signed(row.gap)}
       </span>
 
-      <span className="block text-[13.5px] leading-snug text-content">
+      <span className="block text-[12.5px] leading-snug text-content">
         <span className="font-bold text-delta_negative_text">
           {row.chain.says.lead}
         </span>
@@ -189,14 +193,14 @@ const Row = ({ row, lead, onInvestigate }: RowProps) => (
       {lead ? (
         <button
           onClick={() => onInvestigate(row)}
-          className="justify-self-end px-3.5 py-2 rounded-md bg-brand_navy hover:bg-brand_navy_hover text-custom-white text-[12.5px] font-bold transition-colors whitespace-nowrap"
+          className="justify-self-end px-3.5 py-2 rounded-md bg-brand_navy hover:bg-brand_navy_hover text-custom-white text-[12px] font-bold transition-colors whitespace-nowrap"
         >
           {row.chain.cta} &rarr;
         </button>
       ) : (
         <button
           onClick={() => onInvestigate(row)}
-          className="justify-self-end text-[12.5px] font-bold text-brand_navy_hover hover:underline whitespace-nowrap"
+          className="justify-self-end text-[12px] font-bold text-brand_navy_hover hover:underline whitespace-nowrap"
         >
           Investigate &rarr;
         </button>
@@ -206,7 +210,7 @@ const Row = ({ row, lead, onInvestigate }: RowProps) => (
           does not care takes the sentence; somebody who does can see what
           it rests on without opening anything. */}
       <span
-        className="grid grid-cols-3 gap-2.5 mt-2.5"
+        className="grid grid-cols-3 gap-2.5 mt-2"
         style={{ gridColumn: "2 / 5" }}
       >
         {row.chain.gates.map((g) => (
@@ -260,19 +264,19 @@ const GroupBlock = ({
 }: GroupProps) => {
   const tone = ahead ? "text-delta_positive_text" : "text-delta_negative_text";
   return (
-    <div className="border-b border-brand_navy/15">
+    <div className="border-b-2 border-brand_navy/20">
       <div
-        className="grid gap-4 items-start px-4 py-3"
+        className="grid gap-4 items-start px-4 py-2.5"
         style={{ gridTemplateColumns: COLS }}
       >
-        <Pip ahead={ahead} />
+        <Pip ahead={ahead} top />
 
         <span className="min-w-0">
           <span className="flex items-center gap-2">
-            <span className="flex-shrink-0 min-w-[22px] text-center px-1.5 py-0.5 rounded bg-bkg text-[12px] font-bold tabular-nums text-content">
+            <span className="flex-shrink-0 min-w-[22px] text-center px-1.5 py-0.5 rounded bg-bkg text-[11.5px] font-bold tabular-nums text-content">
               {rows.length}
             </span>
-            <span className="text-[14px] font-bold text-content leading-snug">
+            <span className="text-[13px] font-bold text-content leading-snug">
               departments
             </span>
           </span>
@@ -280,7 +284,7 @@ const GroupBlock = ({
               lines and left this row three times the height of the ones
               above it, and nobody reads the twelfth name anyway. */}
           <span
-            className="block text-[12px] text-content/85 leading-snug mt-0.5 truncate"
+            className="block text-[11.5px] text-content/85 leading-snug mt-0.5 truncate"
             title={rows.map((r) => r.name).join(", ")}
           >
             {rows.slice(0, 3).map((r) => r.name).join(", ")}
@@ -288,11 +292,11 @@ const GroupBlock = ({
           </span>
         </span>
 
-        <span className={`text-right text-[14px] font-bold tabular-nums leading-snug ${tone}`}>
+        <span className={`text-right text-[13px] font-bold tabular-nums leading-snug ${tone}`}>
           {signed(ahead ? total : -total)}
         </span>
 
-        <span className={`text-[13.5px] font-bold leading-snug ${tone}`}>
+        <span className={`text-[12.5px] font-bold leading-snug ${tone}`}>
           {says}
         </span>
 
@@ -304,22 +308,22 @@ const GroupBlock = ({
           {rows.map((r) => (
             <div
               key={r.id}
-              className="grid gap-4 items-center px-4 py-2 border-t border-brand_navy/10"
+              className="grid gap-4 items-center px-4 py-1.5 border-t border-brand_navy/20"
               style={{ gridTemplateColumns: COLS }}
             >
               <span />
-              <span className="min-w-0 truncate pl-3 text-[13px] font-semibold text-content">
+              <span className="min-w-0 truncate pl-3 text-[12.5px] font-semibold text-content">
                 {r.name}
               </span>
-              <span className={`text-right text-[13px] font-bold tabular-nums ${tone}`}>
+              <span className={`text-right text-[12.5px] font-bold tabular-nums ${tone}`}>
                 {signed(r.gap)}
               </span>
-              <span className="text-[13px] text-content/85 truncate">
+              <span className="text-[12.5px] text-content/85 truncate">
                 {subSays(r, ahead)}
               </span>
               <button
                 onClick={() => onInvestigate(r)}
-                className="justify-self-end text-[12.5px] font-bold text-brand_navy_hover hover:underline whitespace-nowrap"
+                className="justify-self-end text-[12px] font-bold text-brand_navy_hover hover:underline whitespace-nowrap"
               >
                 Investigate &rarr;
               </button>
@@ -519,8 +523,8 @@ const DeptReport = ({
   return (
     <div className="h-full flex flex-col overflow-hidden">
       <div className="flex-1 min-h-0 overflow-auto thin-scrollbar">
-        <div className="px-4 pt-3 pb-4 border-b border-brand_navy/15">
-          <div className="flex items-center gap-2 flex-wrap text-[12px] text-content/85">
+        <div className="px-4 pt-2.5 pb-3 border-b-2 border-brand_navy/20">
+          <div className="flex items-center gap-2 flex-wrap text-[11.5px] text-content/85">
             <button
               onClick={onBack}
               className="font-semibold text-content hover:underline flex-shrink-0"
@@ -547,7 +551,7 @@ const DeptReport = ({
           </div>
 
           {/* The whole report in one line: how much, and how concentrated. */}
-          <p className="text-[18px] font-bold leading-snug text-content mt-1.5">
+          <p className="text-[16.5px] font-bold leading-snug text-content mt-1.5">
             {shown.length === 0 ? (
               <>Nothing is under {compareStoreName}.</>
             ) : (
@@ -581,7 +585,7 @@ const DeptReport = ({
                   used to sit in a strip under the last row, which is the
                   one place somebody reading the top of a report does not
                   look. */}
-              <div className="flex items-baseline gap-4 flex-wrap mt-1.5 text-[12px] text-content/85">
+              <div className="flex items-baseline gap-4 flex-wrap mt-1.5 text-[11.5px] text-content/85">
                 <span>
                   <span className="font-bold tabular-nums text-delta_negative_text">
                     {signed(-underTotal)}
@@ -639,8 +643,8 @@ const DeptReport = ({
         )}
 
         {loose.length > LOOSE_CAP && (
-          <div className="flex items-center gap-2 px-4 py-3">
-            <span className="text-[12.5px] text-content/85">
+          <div className="flex items-center gap-2 px-4 py-2.5">
+            <span className="text-[12px] text-content/85">
               {rest.length > 0 ? (
                 <>
                   {rest.length} more under{" "}
@@ -654,7 +658,7 @@ const DeptReport = ({
             </span>
             <button
               onClick={() => setShowAll((v) => !v)}
-              className="ml-auto text-[12.5px] font-bold text-brand_navy_hover hover:underline flex-shrink-0"
+              className="ml-auto text-[12px] font-bold text-brand_navy_hover hover:underline flex-shrink-0"
             >
               {showAll ? "Show less" : "Show all"} &rsaquo;
             </button>
