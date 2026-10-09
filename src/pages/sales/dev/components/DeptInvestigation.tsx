@@ -1903,9 +1903,13 @@ const DeptInvestigation = ({
       if (next.has(code)) next.delete(code);
       else next.add(code);
       setChosen(next);
-    } else {
-      setChosen(new Set([code]));
+      return;
     }
+    /* Clicking the one row that is already picked out clears it. Without
+       this the only way back to nothing selected is a modifier, and a
+       reader who selected a row by accident has no plain way to undo it. */
+    const only = chosen.size === 1 && chosen.has(code);
+    setChosen(only ? new Set() : new Set([code]));
   };
 
   /**
@@ -1929,6 +1933,9 @@ const DeptInvestigation = ({
       [CSV_HEADERS.join("\t"), ...lines].join("\n"),
     );
   };
+
+  /** Picked out, either by the selection or by the rail. */
+  const isOn = (code: string) => picked === code || chosen.has(code);
 
   const show = (code: string) => {
     const i = sorted.findIndex((r) => r.productCode === code);
@@ -2591,14 +2598,14 @@ const DeptInvestigation = ({
                       setCtx({ x: e.clientX, y: e.clientY, upc: r.productCode });
                     }}
                   >
-                    {/* Selection shows on the gutter, not on the row: every
-                        other cell paints its own background — the two store
-                        tints especially — so a row-level fill would appear on
-                        half the row and look broken. The house pair, where it
-                        can be seen. */}
+                    {/* The whole row, not just the gutter. The store
+                        columns paint their own tint, so a selected row used
+                        to show the fill on the index alone and nowhere else
+                        — the fill wins over the tint while the row is
+                        picked out, and the tints come back when it is not. */}
                     <td
                       className={`sticky left-0 z-10 border-r border-brand_line border-b border-brand_line px-2 py-1.5 text-right ${
-                        picked === r.productCode || chosen.has(r.productCode)
+                        isOn(r.productCode)
                           ? "bg-row_selected border-row_selected_border border-l-2 font-bold text-content"
                           : "bg-custom-white text-content/85"
                       }`}
@@ -2608,7 +2615,9 @@ const DeptInvestigation = ({
                     {COLUMNS.map((c) => (
                       <td
                         key={c.key}
-                        className={`border-r border-b border-brand_line px-2.5 py-1.5 whitespace-nowrap ${c.right ? "text-right" : ""} ${tintOf(c)}`}
+                        className={`border-r border-b border-brand_line px-2.5 py-1.5 whitespace-nowrap ${c.right ? "text-right" : ""} ${
+                          isOn(r.productCode) ? "bg-row_selected" : tintOf(c)
+                        }`}
                       >
                         {/* Masked until the orders and deliveries are in.
                             Every item reads "not moving" on sales alone,
