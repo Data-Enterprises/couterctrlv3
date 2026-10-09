@@ -101,14 +101,22 @@ const Tile = ({ gate }: { gate: Gate }) => {
   return (
     <div
       className={`flex items-center gap-2.5 min-w-0 rounded-md px-3 py-1.5 ${
-        fail ? "bg-delta_negative_bg" : "bg-custom-white border border-brand_navy/15"
+        fail
+          ? "bg-delta_negative_bg"
+          : skipped
+            ? "bg-custom-white border border-brand_navy/15"
+            : "bg-delta_positive_bg"
       }`}
     >
       <Mark state={gate.state} />
       <span className="min-w-0">
         <span
           className={`block text-[10px] font-bold uppercase tracking-wide leading-tight ${
-            fail ? "text-delta_negative_text" : "text-content/85"
+            fail
+              ? "text-delta_negative_text"
+              : skipped
+                ? "text-content/85"
+                : "text-delta_positive_text"
           }`}
         >
           {gate.label}
@@ -119,7 +127,7 @@ const Tile = ({ gate }: { gate: Gate }) => {
               ? "text-delta_negative_text"
               : skipped
                 ? "text-content/85"
-                : "text-content"
+                : "text-delta_positive_text"
           }`}
         >
           {gate.value}
@@ -167,7 +175,7 @@ const ListRow = ({
     >
       <span className="flex items-center gap-2">
         <span
-          className={`block w-2 h-2 rounded-sm flex-shrink-0 ${
+          className={`block w-2 h-2 rounded-full flex-shrink-0 ${
             ahead ? "bg-emerald-500" : "bg-red-500"
           }`}
         />
