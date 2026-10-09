@@ -2476,7 +2476,12 @@ const DeptInvestigation = ({
           </div>
 
           <div className="flex-1 min-h-0 flex overflow-hidden">
-          <div className="flex-1 min-w-0 overflow-auto thin-scrollbar">
+          {/* The grid and the strip under it are one column of the row; the
+              rail is the other. Left as siblings of the rail the pager
+              became a SECOND column — the grid shrank to its own width and
+              the pager floated in the middle of the space beside it. */}
+          <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
+          <div className="flex-1 min-h-0 overflow-auto thin-scrollbar">
             <table className="border-collapse font-mono text-[11px] w-max">
               <thead>
                 <tr>
@@ -2712,6 +2717,7 @@ const DeptInvestigation = ({
               )}
             </div>
           )}
+          </div>
 
           {/*
             The rail moves instead of appearing.
