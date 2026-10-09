@@ -98,7 +98,7 @@ export const splitGap = (d: DeptTotals): Split | null => {
  * leads, because the arithmetic knows which is carrying more of the gap and
  * a left-to-right reading does not.
  */
-export type GateName = "rung" | "sold" | "rate";
+export type GateName = "gap" | "sold" | "rate";
 
 export interface Gate {
   name: GateName;
@@ -206,11 +206,22 @@ export const chainFor = (d: DeptTotals, g: Gates = DEFAULT_GATES): Chain => {
   const rateOk = rateGap === null || rateGap >= -g.rate;
 
   const gates: Gate[] = [
+    /*
+     * The gap itself, not a check on it.
+     *
+     * This slot used to ask whether the department rang anything at all —
+     * true of almost every department, so the tile was green almost always,
+     * including on departments five figures down. A green that cannot fail
+     * is not a signal, and a false green costs more than a missing one: it
+     * tells a reader something is fine.
+     *
+     * The gap can go either way and is the figure the other two explain.
+     */
     {
-      name: "rung",
-      state: rang ? "pass" : "fail",
-      label: "Rung",
-      value: rang ? cash(d.mine) : cash(0) + " vs " + cash(d.theirs),
+      name: "gap",
+      state: d.mine >= d.theirs ? "pass" : "fail",
+      label: "Sales gap",
+      value: (d.mine - d.theirs >= 0 ? "+" : "−") + cash(Math.abs(d.mine - d.theirs)),
     },
     {
       name: "sold",

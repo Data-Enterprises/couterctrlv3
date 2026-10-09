@@ -110,8 +110,9 @@ describe("the chain", () => {
   it("calls a unit shortfall a volume problem", () => {
     const c = run({ mine: 7000, mineUnits: 1400, theirs: 10000, theirsUnits: 2000 });
     expect(c.finding).toBe("fewer-units");
+    // The first mark is the gap itself: behind, so it fails.
     expect(marks({ mine: 7000, mineUnits: 1400, theirs: 10000, theirsUnits: 2000 }))
-      .toEqual(["pass", "fail", "pass"]);
+      .toEqual(["fail", "fail", "pass"]);
     expect(c.cta).toBe("Check orders");
   });
 
@@ -159,7 +160,7 @@ describe("the chain", () => {
    *  that was never weighed against anything. */
   it("marks a gate it never reached as unchecked", () => {
     const c = run({ mine: 0, mineUnits: 0, theirs: 4997.18, theirsUnits: 600 });
-    expect(c.gates[0].value).toBe("$0.00 vs $4,997.18");
+    expect(c.gates[0].value).toBe("−$4,997.18");
     expect(c.gates[1].value).toBe(NOT_CHECKED);
     expect(c.gates[2].value).toBe(NOT_CHECKED);
   });
@@ -185,7 +186,7 @@ describe("the chain", () => {
     // reading the gates left to right would blame the wrong one.
     const c = run({ mine: 4500, mineUnits: 900, theirs: 10000, theirsUnits: 1000 });
     expect(marks({ mine: 4500, mineUnits: 900, theirs: 10000, theirsUnits: 1000 }))
-      .toEqual(["pass", "fail", "fail"]);
+      .toEqual(["fail", "fail", "fail"]);
     expect(c.finding).toBe("different-mix");
   });
 
