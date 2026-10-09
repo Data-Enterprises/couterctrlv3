@@ -139,6 +139,166 @@ const STAGE_NOTE: Record<Stage, string | null> = {
   failed: null,
 };
 
+/* ------------------------------------------------------------------ */
+/* Waiting                                                             */
+/* ------------------------------------------------------------------ */
+
+/**
+ * One shimmering bar, the house shape for a figure on its way.
+ *
+ * Widths are passed rather than random: a random width reshuffles on every
+ * render and makes a waiting block flicker.
+ */
+const Bar = ({ w = "100%", h = 12 }: { w?: string; h?: number }) => (
+  <span
+    className="block rounded bg-gray-200 animate-pulse"
+    style={{ width: w, height: h }}
+    aria-hidden
+  />
+);
+
+/**
+ * Which of the three waves are in.
+ *
+ * The notebook is readable in stages — sales answer the first two tabs and
+ * orders and deliveries answer the last two — so a single spinner would be
+ * lying in both directions at once. Three lights say which half of the
+ * screen is settled and which is still moving.
+ */
+const Waves = ({ sales, all }: { sales: boolean; all: boolean }) => {
+  const lamps = [
+    { label: "Sales", lit: sales },
+    { label: "Orders", lit: all },
+    { label: "Deliveries", lit: all },
+  ];
+  return (
+    <span
+      className="hidden lg:flex items-center gap-3 flex-shrink-0"
+      role="status"
+      aria-label={all ? "All data loaded" : "Loading"}
+    >
+      {lamps.map((l) => (
+        <span key={l.label} className="flex items-center gap-1.5">
+          <span
+            className={`w-2 h-2 rounded-full ${
+              l.lit ? "bg-severity_ok_text" : "bg-severity_watch_text animate-pulse"
+            }`}
+          />
+          <span className="text-[11.5px] text-custom-white/85">{l.label}</span>
+        </span>
+      ))}
+    </span>
+  );
+};
+
+/** Why the screen is holding something back, beside a light that says it is
+ *  still working. Shaped like a sentence, not a spinner. */
+const LoadNote = ({ children }: { children: React.ReactNode }) => (
+  <div className="flex items-center gap-2.5 rounded-lg bg-custom-white shadow-md px-4 py-2.5">
+    <span className="w-2 h-2 rounded-full bg-brand_navy_hover animate-pulse flex-shrink-0" />
+    <span className="text-[13px] leading-snug text-content/85">{children}</span>
+  </div>
+);
+
+const NAME_W = ["78%", "62%", "85%", "55%", "72%", "68%", "90%", "60%"];
+
+/** A card's worth of bars. */
+const SkCard = ({ rows = 4 }: { rows?: number }) => (
+  <div className="rounded-lg bg-custom-white shadow-md px-5 py-4 flex flex-col gap-2.5">
+    <Bar w="46%" h={13} />
+    {Array.from({ length: rows }, (_, i) => (
+      <Bar key={i} w={NAME_W[i % NAME_W.length]} />
+    ))}
+  </div>
+);
+
+/**
+ * The tab, mid-load, drawn in the shape of what is coming.
+ *
+ * Each says what it is waiting for and why it is not guessing: a tab that
+ * showed its figures and then changed them when the next wave landed would
+ * be worse than one that waited, because the reader would have acted on the
+ * first version.
+ */
+const TabSkeleton = ({ tab }: { tab: "holds" | "items" | "supply" | "act" }) => (
+  <div className="flex-1 min-h-0 overflow-auto thin-scrollbar bg-bkg px-4 py-5">
+    <div className="max-w-[1180px] mx-auto flex flex-col gap-4" role="status">
+      <LoadNote>
+        {tab === "holds" || tab === "items" ? (
+          <>
+            <span className="font-bold text-content">
+              Reading this week&rsquo;s sales for both stores.
+            </span>{" "}
+            The check appears as soon as they land.
+          </>
+        ) : (
+          <>
+            <span className="font-bold text-content">
+              Reading orders and deliveries.
+            </span>{" "}
+            Until they land a vendor&rsquo;s miss cannot be told from a
+            merchandising one, so this stays masked rather than changing
+            under you.
+          </>
+        )}
+      </LoadNote>
+
+      {tab === "holds" && (
+        <>
+          <Bar w="64%" h={22} />
+          <div
+            className="grid gap-4"
+            style={{ gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))" }}
+          >
+            <SkCard rows={3} />
+            <SkCard rows={3} />
+            <SkCard rows={3} />
+          </div>
+          <SkCard rows={6} />
+        </>
+      )}
+
+      {tab === "items" && (
+        <>
+          <div className="flex gap-2">
+            {[110, 150, 140, 130].map((w) => (
+              <Bar key={w} w={`${w}px`} h={24} />
+            ))}
+          </div>
+          <SkCard rows={8} />
+        </>
+      )}
+
+      {tab === "supply" && (
+        <>
+          <Bar w="58%" h={22} />
+          <div
+            className="grid gap-4"
+            style={{ gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))" }}
+          >
+            <SkCard rows={5} />
+            <SkCard rows={5} />
+          </div>
+          <SkCard rows={4} />
+        </>
+      )}
+
+      {tab === "act" && (
+        <>
+          <Bar w="52%" h={22} />
+          <div
+            className="grid gap-4"
+            style={{ gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))" }}
+          >
+            <SkCard rows={5} />
+            <SkCard rows={4} />
+          </div>
+        </>
+      )}
+    </div>
+  </div>
+);
+
 /**
  * The piles the department's own shape points at.
  *
@@ -1031,29 +1191,13 @@ const SupplyPanel = ({
   us,
   window,
   cash,
-  waiting,
 }: {
   supply: Supply;
   them: string;
   us: string;
   window: { start: string; end: string };
   cash: (v: number) => string;
-  waiting: boolean;
 }) => {
-  if (waiting) {
-    return (
-      <div className="flex-1 min-h-0 overflow-auto thin-scrollbar bg-bkg px-4 py-5">
-        <div className="max-w-[1180px] mx-auto rounded-lg bg-custom-white shadow-md px-5 py-4">
-          <p className="text-[14px] leading-relaxed text-content/85">
-            Reading orders and deliveries. Until they land there is nothing to
-            show here, and a half-read window would make a store look as
-            though it ordered less than it did.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
   const n = (v: number) => Math.round(v).toLocaleString("en-US");
   const sides = [
     { label: us, side: supply.mine, mine: true },
@@ -1219,28 +1363,13 @@ const ActPanel = ({
   onShow,
   onExport,
   onPickItem,
-  waiting,
 }: {
   desks: Desk[];
   cash: (v: number) => string;
   onShow: (c: Cause) => void;
   onExport: (d: Desk) => void;
   onPickItem: (code: string) => void;
-  waiting: boolean;
 }) => {
-  if (waiting) {
-    return (
-      <div className="flex-1 min-h-0 overflow-auto thin-scrollbar px-4 py-4">
-        <div className="max-w-[920px] mx-auto rounded-md border border-dashed border-severity_watch_text/40 bg-severity_watch_bg px-4 py-4">
-          <p className="text-[14px] leading-relaxed text-severity_watch_text">
-            The lists are written once the causes are final, so nobody is sent
-            a list that changes after they have read it.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
   const owned = desks.filter((d) => d.actionable);
   const quiet = desks.filter((d) => !d.actionable);
 
@@ -1406,6 +1535,12 @@ const DeptInvestigation = ({
 
   const { stage, items, summary, problem, sales, orders, receipts } =
     useDeptInvestigation(args);
+
+  /* `stage` names the wave still OUTSTANDING. Sales answer the first two
+     tabs; the last two need orders and deliveries as well, and a failure
+     stops the waiting rather than hanging on it. */
+  const salesIn = stage !== "sales";
+  const allIn = stage === "done" || stage === "failed";
 
   /** Every vendor in the department, so the vendor filter is a list to pick
    *  from rather than a spelling to guess at. */
@@ -1634,6 +1769,7 @@ const DeptInvestigation = ({
           <span className="w-2.5 h-2.5 rounded-sm bg-store_compare flex-shrink-0" />
           <span className="font-semibold text-custom-white">{target.compareStoreName}</span>
         </span>
+        <Waves sales={salesIn} all={allIn} />
         <button
           onClick={exportCsv}
           disabled={sorted.length === 0}
@@ -1668,7 +1804,7 @@ const DeptInvestigation = ({
       */}
       <div className="flex-shrink-0 grid grid-cols-4 border-b border-brand_navy/15">
         {TABS.map((t) => {
-          const waiting = t.needsAll && stage !== "done" && stage !== "failed";
+          const waiting = t.needsAll ? !allIn : !salesIn;
           const on = tab === t.key;
           return (
             <button
@@ -1696,13 +1832,18 @@ const DeptInvestigation = ({
                   {t.title}
                 </span>
               </span>
-              <span
-                className={`block text-[12px] mt-0.5 truncate ${
-                  waiting ? "italic text-content/85" : "text-content/85"
-                }`}
-              >
-                {waiting ? "Waiting on orders and deliveries" : t.answer()}
-              </span>
+              {/* A bar rather than a word. "Waiting on orders" under four
+                  tabs at once read as four problems; a bar is plainly a
+                  figure that has not arrived. */}
+              {waiting ? (
+                <span className="block mt-1.5 mb-1 pl-[15px]">
+                  <Bar w="72%" h={10} />
+                </span>
+              ) : (
+                <span className="block text-[12px] mt-0.5 truncate text-content/85">
+                  {t.answer()}
+                </span>
+              )}
             </button>
           );
         })}
@@ -1715,7 +1856,12 @@ const DeptInvestigation = ({
         </div>
       ) : (
         <>
-          {tab === "holds" && (
+          {tab === "holds" && !salesIn && <TabSkeleton tab="holds" />}
+          {tab === "items" && !salesIn && <TabSkeleton tab="items" />}
+          {tab === "supply" && !allIn && <TabSkeleton tab="supply" />}
+          {tab === "act" && !allIn && <TabSkeleton tab="act" />}
+
+          {tab === "holds" && salesIn && (
             <HoldsPanel
               holds={holds}
               spread={spread}
@@ -1736,18 +1882,17 @@ const DeptInvestigation = ({
             />
           )}
 
-          {tab === "supply" && (
+          {tab === "supply" && allIn && (
             <SupplyPanel
               supply={supply}
               us={target.storeName}
               them={target.compareStoreName}
               window={supply_}
               cash={cash}
-              waiting={stage !== "done" && stage !== "failed"}
             />
           )}
 
-          {tab === "act" && (
+          {tab === "act" && allIn && (
             <ActPanel
               desks={desks}
               cash={cash}
@@ -1760,7 +1905,6 @@ const DeptInvestigation = ({
                 setPicked(code);
                 setTab("items");
               }}
-              waiting={stage !== "done" && stage !== "failed"}
             />
           )}
 
@@ -1775,8 +1919,12 @@ const DeptInvestigation = ({
               number. Dense is the point — a department is hundreds of items
               and an airy list shows eight of them. */}
           <div
-            hidden={tab !== "items"}
-            className={tab === "items" ? "flex-1 min-h-0 flex flex-col overflow-hidden" : ""}
+            hidden={tab !== "items" || !salesIn}
+            className={
+              tab === "items" && salesIn
+                ? "flex-1 min-h-0 flex flex-col overflow-hidden"
+                : ""
+            }
           >
           <div className="flex-shrink-0 px-4 py-2.5 border-b border-brand_navy/15">
             <div className="flex flex-wrap items-center gap-2">
@@ -1790,7 +1938,14 @@ const DeptInvestigation = ({
               >
                 All {items.length} items
               </button>
-              {CAUSE_ORDER.filter((c) => byCause.has(c)).map((c) => {
+              {!allIn &&
+                [120, 148, 132].map((w) => (
+                  <span key={w} className="py-1">
+                    <Bar w={`${w}px`} h={22} />
+                  </span>
+                ))}
+              {allIn &&
+                CAUSE_ORDER.filter((c) => byCause.has(c)).map((c) => {
                 const t = byCause.get(c);
                 return (
                   <button
@@ -1814,8 +1969,8 @@ const DeptInvestigation = ({
                       {t?.items} · {fmt(Math.abs(t?.dollars ?? 0))}
                     </span>
                   </button>
-                );
-              })}
+                  );
+                })}
             </div>
 
             {/* The windows do not line up, and the screen says so rather than
@@ -1953,7 +2108,16 @@ const DeptInvestigation = ({
                         key={c.key}
                         className={`border-r border-b border-brand_line px-2.5 py-1.5 whitespace-nowrap ${c.right ? "text-right" : ""} ${tintOf(c)}`}
                       >
-                        {c.render(r, fmt)}
+                        {/* Masked until the orders and deliveries are in.
+                            Every item reads "not moving" on sales alone,
+                            which is a different accusation from the one it
+                            will carry a second later — and the reader may
+                            have acted on it by then. */}
+                        {c.key === "cause" && !allIn ? (
+                          <Bar w="88%" h={14} />
+                        ) : (
+                          c.render(r, fmt)
+                        )}
                       </td>
                     ))}
                   </tr>
