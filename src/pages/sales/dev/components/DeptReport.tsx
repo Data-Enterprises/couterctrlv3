@@ -327,8 +327,15 @@ const Measure = ({
               : good
                 ? "bg-emerald-500"
                 : "bg-red-500",
+            /* The figure matches its own bar: two marks for one reading,
+               and a black number beside a red bar reads as a correction. */
+            ink: pct === null || pct === 0
+              ? "text-content"
+              : good
+                ? "text-delta_positive_text"
+                : "text-delta_negative_text",
           },
-          { label: them, v: theirs, tone: "bg-store_compare" },
+          { label: them, v: theirs, tone: "bg-store_compare", ink: "text-content" },
         ].map((b) => (
           <span key={b.label} className="flex items-center gap-2.5 text-[13px]">
             <span
@@ -337,13 +344,13 @@ const Measure = ({
             >
               {b.label}
             </span>
-            <span className="flex-1 min-w-0 h-[8.8px] rounded-sm bg-custom-white">
+            <span className="flex-1 min-w-0 h-[9.2px] rounded-sm bg-custom-white">
               <span
-                className={`block h-[8.8px] rounded-sm ${b.tone}`}
+                className={`block h-[9.2px] rounded-sm ${b.tone}`}
                 style={{ width: `${(Math.abs(b.v) / widest) * 100}%` }}
               />
             </span>
-            <span className="w-[104px] flex-shrink-0 text-right tabular-nums font-semibold text-content whitespace-nowrap">
+            <span className={`w-[104px] flex-shrink-0 text-right tabular-nums font-semibold whitespace-nowrap ${b.ink}`}>
               {fmt(b.v)}
             </span>
           </span>
