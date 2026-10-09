@@ -27,6 +27,7 @@ import {
   type Holds,
   type Spread,
   type Supply,
+  type SupplyRecord,
   type Vitals as VitalsShape,
 } from "../shared/investigationSteps";
 import { rowsToCsv, downloadCsv } from "../../../../utils/csvExport";
@@ -901,6 +902,121 @@ const Figure = ({ label, value }: { label: string; value: string }) => (
   </div>
 );
 
+/** Sep 24, from an ISO date that may or may not carry a time behind it. */
+const onDay = (d: string) =>
+  new Date(d.slice(0, 10) + "T12:00:00").toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
+
+/**
+ * Both stores' orders, or both stores' invoices, on one dated list.
+ *
+ * Interleaved rather than split into two columns, because the finding is
+ * usually a date: four orders there and one here reads straight down, where
+ * two separate lists have to be held side by side and counted.
+ *
+ * It scrolls at a fixed height. A busy department can run to sixty invoices
+ * and the panel should not grow to sixty rows tall.
+ */
+const Ledger = ({
+  title,
+  note,
+  rows,
+  rightLabel,
+  right,
+  us,
+  them,
+  empty,
+}: {
+  title: string;
+  note: string;
+  rows: SupplyRecord[];
+  rightLabel: string;
+  right: (r: SupplyRecord) => string;
+  us: string;
+  them: string;
+  empty: string;
+}) => {
+  const n = (v: number) => Math.round(v).toLocaleString("en-US");
+  const head =
+    "text-[12px] font-bold uppercase tracking-wide text-content/85";
+
+  return (
+    <div className="rounded-lg bg-custom-white shadow-md px-5 py-4">
+      <div className={head}>{title}</div>
+      <p className="text-[12px] text-content/85 leading-snug mt-1">{note}</p>
+
+      {rows.length === 0 ? (
+        <p className="text-[13px] text-content/85 leading-relaxed mt-3">
+          {empty}
+        </p>
+      ) : (
+        <>
+          <div className="flex items-center gap-3 mt-3 pb-1.5 border-b border-brand_navy/15">
+            <span className={`${head} w-[58px]`}>Date</span>
+            <span className={`${head} w-[76px]`}>#</span>
+            <span className={`${head} w-[150px] truncate`}>Store</span>
+            <span className={`${head} flex-1 min-w-0 truncate`}>Vendor</span>
+            <span className={`${head} w-[46px] text-right`}>Lines</span>
+            <span className={`${head} w-[64px] text-right`}>Units</span>
+            <span className={`${head} w-[92px] text-right truncate`}>
+              {rightLabel}
+            </span>
+          </div>
+
+          <div className="max-h-[310px] overflow-auto thin-scrollbar">
+            {rows.map((r) => (
+              <div
+                key={`${r.mine ? "m" : "t"}-${r.id}`}
+                className="flex items-center gap-3 py-1.5 text-[12.5px] border-b border-brand_navy/15 last:border-b-0"
+              >
+                <span className="w-[58px] text-content/85 whitespace-nowrap">
+                  {onDay(r.date)}
+                </span>
+                <span className="w-[76px] tabular-nums text-content truncate">
+                  {r.id}
+                </span>
+                <span className="w-[150px] flex items-center gap-1.5 min-w-0">
+                  <span
+                    className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
+                      r.mine ? "bg-store_open" : "bg-store_compare"
+                    }`}
+                  />
+                  <span
+                    className={`truncate ${
+                      r.mine ? "font-semibold text-content" : "text-content/85"
+                    }`}
+                  >
+                    {r.mine ? us : them}
+                  </span>
+                </span>
+                <span className="flex-1 min-w-0 truncate text-content/85">
+                  {r.vendor}
+                </span>
+                <span className="w-[46px] text-right tabular-nums text-content/85">
+                  {r.lines}
+                </span>
+                {/* A negative here is a return, and it should look like one. */}
+                <span
+                  className={`w-[64px] text-right tabular-nums whitespace-nowrap ${
+                    r.units < 0 ? "text-delta_negative_text" : "text-content"
+                  }`}
+                >
+                  {n(r.units)}
+                </span>
+                <span className="w-[92px] text-right tabular-nums text-content/85 whitespace-nowrap truncate">
+                  {right(r)}
+                </span>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
+
 /**
  * What each store ordered, and what actually turned up.
  *
@@ -1058,6 +1174,28 @@ const SupplyPanel = ({
             </p>
           )}
         </div>
+
+        <Ledger
+          title="The orders themselves"
+          note={`Every order carrying an item from this department, newest first. ${us} and ${them} on one list.`}
+          rows={supply.orders}
+          rightLabel="Status"
+          right={(r) => r.status ?? "—"}
+          us={us}
+          them={them}
+          empty="Neither store placed an order in this department over the window. That is the finding, not a gap in the data."
+        />
+
+        <Ledger
+          title="The deliveries themselves"
+          note="Every invoice that carried an item from this department. An invoice that carried none of it is not listed."
+          rows={supply.deliveries}
+          rightLabel="Cost"
+          right={(r) => cash(r.cost)}
+          us={us}
+          them={them}
+          empty="Neither store took a delivery in this department over the window."
+        />
 
         <p className="text-[12.5px] text-content/85 leading-relaxed max-w-[840px]">
           Read over {SUPPLY_LOOKBACK_DAYS} days ({window.start} to{" "}

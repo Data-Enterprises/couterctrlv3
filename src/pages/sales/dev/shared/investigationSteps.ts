@@ -356,9 +356,33 @@ export interface StoreSupply {
   vendors: SupplyVendor[];
 }
 
+/**
+ * One order, or one invoice, as the document itself rather than a total.
+ *
+ * The counts above answer "how many"; these answer "which ones, and when".
+ * A buyer checking a never-ordered label wants the dates, because four
+ * orders at the other store and one here is the finding, and two counts
+ * side by side hide the week it stopped.
+ */
+export interface SupplyRecord {
+  id: number;
+  date: string;
+  vendor: string;
+  /** Lines in THIS department, not on the whole document. */
+  lines: number;
+  units: number;
+  cost: number;
+  /** Orders carry one; invoices do not. */
+  status: string | null;
+  mine: boolean;
+}
+
 export interface Supply {
   mine: StoreSupply;
   theirs: StoreSupply;
+  /** Both stores' documents, newest first. */
+  orders: SupplyRecord[];
+  deliveries: SupplyRecord[];
   /** Vendors that delivered to one store and not the other. A supplier they
    *  buy from and we do not is a buying decision, not an accident. */
   onlyTheirs: string[];
@@ -367,6 +391,8 @@ export interface Supply {
 
 interface OrderLine {
   order_id: number;
+  order_date: string;
+  status: string;
   product_code: string;
   qty: number;
   vendor_name: string;
@@ -381,6 +407,7 @@ interface ReceiptLine {
 
 interface Receipt {
   invoiceid: number;
+  invoice_date: string;
   vendor_name: string;
   lines: ReceiptLine[];
 }
@@ -427,6 +454,70 @@ const sideOf = (
   };
 };
 
+/**
+ * The department's order lines folded back into the orders they came on.
+ *
+ * Five lines on one order is one record, matching the `orders` count above:
+ * a list that showed five would say the store ordered five times.
+ */
+const orderRecords = (
+  lines: OrderLine[],
+  codes: Set<string>,
+  mine: boolean,
+): SupplyRecord[] => {
+  const by = new Map<number, SupplyRecord>();
+  for (const o of lines) {
+    if (!codes.has(String(o.product_code))) continue;
+    const at =
+      by.get(o.order_id) ??
+      {
+        id: o.order_id,
+        date: o.order_date,
+        vendor: o.vendor_name || "Unknown vendor",
+        lines: 0,
+        units: 0,
+        cost: 0,
+        status: o.status || null,
+        mine,
+      };
+    at.lines += 1;
+    at.units += o.qty;
+    by.set(o.order_id, at);
+  }
+  return [...by.values()];
+};
+
+/** The invoices, counted the same way `deliveries` counts them. */
+const deliveryRecords = (
+  receipts: Receipt[],
+  codes: Set<string>,
+  mine: boolean,
+): SupplyRecord[] =>
+  receipts
+    .map((r) => {
+      const lines = r.lines.filter((l) => codes.has(String(l.product_code)));
+      return {
+        id: r.invoiceid,
+        date: r.invoice_date,
+        vendor: r.vendor_name || "Unknown vendor",
+        lines: lines.length,
+        units: lines.reduce(
+          (t, l) => t + (l.item_return ? -l.units : l.units),
+          0,
+        ),
+        cost: lines.reduce((t, l) => t + l.ext_cost, 0),
+        status: null,
+        mine,
+      };
+    })
+    // An invoice carrying nothing in this department did not deliver it,
+    // however many other lines it had.
+    .filter((r) => r.lines > 0);
+
+/** Newest first, with the id breaking a tie so the order is stable. */
+const newestFirst = (a: SupplyRecord, b: SupplyRecord) =>
+  b.date.localeCompare(a.date) || b.id - a.id;
+
 export const supplyOf = (
   orders: { mine: OrderLine[]; theirs: OrderLine[] },
   receipts: { mine: Receipt[]; theirs: Receipt[] },
@@ -441,6 +532,14 @@ export const supplyOf = (
   return {
     mine,
     theirs,
+    orders: [
+      ...orderRecords(orders.mine, codes, true),
+      ...orderRecords(orders.theirs, codes, false),
+    ].sort(newestFirst),
+    deliveries: [
+      ...deliveryRecords(receipts.mine, codes, true),
+      ...deliveryRecords(receipts.theirs, codes, false),
+    ].sort(newestFirst),
     onlyTheirs: theirs.vendors.filter((v) => !mineNames.has(v.name)).map((v) => v.name),
     onlyMine: mine.vendors.filter((v) => !theirNames.has(v.name)).map((v) => v.name),
   };

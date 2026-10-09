@@ -243,11 +243,23 @@ describe("the department's vitals", () => {
 });
 
 describe("supply · the proof behind the labels", () => {
-  const order = (id: number, code: string, qty: number) => ({
-    order_id: id, product_code: code, qty, vendor_name: "AWG",
+  const order = (
+    id: number,
+    code: string,
+    qty: number,
+    order_date = "2026-09-30",
+    status = "SENT",
+  ) => ({
+    order_id: id, order_date, status, product_code: code, qty, vendor_name: "AWG",
   });
-  const inv = (id: number, vendor: string, lines: [string, number, number, number][]) => ({
+  const inv = (
+    id: number,
+    vendor: string,
+    lines: [string, number, number, number][],
+    invoice_date = "2026-10-01",
+  ) => ({
     invoiceid: id,
+    invoice_date,
     vendor_name: vendor,
     lines: lines.map(([product_code, units, ext_cost, item_return]) => ({
       product_code, units, ext_cost, item_return,
@@ -311,5 +323,59 @@ describe("supply · the proof behind the labels", () => {
     );
     expect(s.mine.deliveries).toBe(0);
     expect(s.mine.vendors).toEqual([]);
+  });
+
+  /* ---------------- the documents themselves ---------------- */
+
+  /** The list has to count orders the way the summary counts them, or one
+   *  says a store ordered twice while the other lists three. */
+  it("lists one record per order, carrying its date and status", () => {
+    const s = supplyOf(
+      {
+        mine: [order(1, "a", 5, "2026-09-24"), order(1, "b", 3, "2026-09-24")],
+        theirs: [order(2, "a", 7, "2026-10-02", "RECEIVED")],
+      },
+      { mine: [], theirs: [] },
+      [of("a"), of("b")],
+    );
+    expect(s.orders).toHaveLength(2);
+    // Newest first, so the two stores interleave by date rather than sitting
+    // in two blocks that have to be read against each other.
+    expect(s.orders[0]).toMatchObject({
+      id: 2, date: "2026-10-02", status: "RECEIVED", lines: 1, units: 7, mine: false,
+    });
+    expect(s.orders[1]).toMatchObject({
+      id: 1, date: "2026-09-24", lines: 2, units: 8, mine: true,
+    });
+  });
+
+  it("leaves out-of-department lines off the records too", () => {
+    const s = supplyOf(
+      { mine: [order(1, "a", 5), order(2, "zzz", 99)], theirs: [] },
+      { mine: [inv(7, "AWG", [["a", 4, 20, 0], ["zzz", 50, 400, 0]])], theirs: [] },
+      [of("a")],
+    );
+    expect(s.orders).toHaveLength(1);
+    expect(s.orders[0]).toMatchObject({ id: 1, units: 5, lines: 1 });
+    expect(s.deliveries[0]).toMatchObject({ id: 7, units: 4, lines: 1 });
+    expect(s.deliveries[0].cost).toBeCloseTo(20, 6);
+  });
+
+  it("shows a return as the negative units it is", () => {
+    const s = supplyOf(
+      { mine: [], theirs: [] },
+      { mine: [inv(8, "AWG", [["a", 4, 20, 1]], "2026-10-03")], theirs: [] },
+      [of("a")],
+    );
+    expect(s.deliveries[0]).toMatchObject({ id: 8, date: "2026-10-03", units: -4 });
+  });
+
+  it("keeps an invoice carrying nothing in this department off the list", () => {
+    const s = supplyOf(
+      { mine: [], theirs: [] },
+      { mine: [inv(1, "AWG", [["zzz", 5, 25, 0]])], theirs: [] },
+      [of("a")],
+    );
+    expect(s.deliveries).toEqual([]);
   });
 });
