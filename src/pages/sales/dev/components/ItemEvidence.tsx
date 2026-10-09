@@ -1,5 +1,8 @@
 import {
   ladderFor,
+  CAUSE_LABEL,
+  CAUSE_TONE,
+  evidenceSays,
   supplyTimeline,
   type ItemVerdict,
   type PriceLadder,
@@ -65,26 +68,6 @@ interface Props {
 const money = (v: number) => formatCurrency2(v);
 const count = (v: number) => formatBigNumber(v, 0);
 
-/** One figure in a tinted box, in the colour of the store it belongs to. */
-const Figure = ({
-  label,
-  value,
-  tint,
-}: {
-  label: string;
-  value: string;
-  tint: string;
-}) => (
-  <div className={`rounded-md px-2.5 py-2 min-w-0 ${tint}`}>
-    <div className="text-[12px] font-bold uppercase tracking-wide text-content/85 leading-tight">
-      {label}
-    </div>
-    <div className="text-[15px] font-bold tabular-nums text-content mt-0.5">
-      {value}
-    </div>
-  </div>
-);
-
 /**
  * Sold for, cost to buy, kept.
  *
@@ -93,7 +76,19 @@ const Figure = ({
  * to look at the shelf price, when the shelf price was fine and the invoice
  * was not.
  */
-const Money = ({
+/** A figure the store does not have. Dashes rather than $0.00, which is a
+ *  measurement and this is an absence. */
+const NONE = "—";
+
+/**
+ * The item, both stores, one table.
+ *
+ * It used to be three pairs of tinted boxes stacked down the panel: six
+ * figures in six frames, with the reader doing the subtraction. One row a
+ * measure puts the pair side by side and prints the difference, which is
+ * the number the panel exists to explain.
+ */
+const SideBySide = ({
   item,
   mine,
   theirs,
@@ -103,111 +98,94 @@ const Money = ({
   theirs: string;
 }) => {
   const m = item.margins;
-  const MINE_BG = "bg-store_open_tint";
-  const THEIRS_BG = "bg-store_compare_tint";
+  const noCost = item.mineCogs === 0 && item.theirsCogs === 0;
 
-  // No cost on either store's lines is not a finding of equal margins — it
-  // is no answer at all, and three pairs of boxes repeating the sales figure
-  // would say the opposite.
-  if (item.mineCogs === 0 && item.theirsCogs === 0) {
-    return (
-      <section className="pt-3">
-        <h3 className="text-[12px] font-bold text-content mb-2">
-          What it cost to buy
-        </h3>
-        <p className="text-[12.5px] text-content/85 leading-relaxed">
+  const rows: {
+    label: string;
+    us: string;
+    them: string;
+    gap: number | null;
+  }[] = [
+    {
+      label: "Sold for",
+      us: money(item.mineSales),
+      them: money(item.theirsSales),
+      gap: item.mineSales - item.theirsSales,
+    },
+    {
+      label: "Cost per unit",
+      us: m.minePerUnit === null ? NONE : money(m.minePerUnit),
+      them: m.theirsPerUnit === null ? NONE : money(m.theirsPerUnit),
+      // Dearer is worse, so the sign is flipped: paying MORE is the gap.
+      gap:
+        m.minePerUnit === null || m.theirsPerUnit === null
+          ? null
+          : m.theirsPerUnit - m.minePerUnit,
+    },
+    {
+      label: "Made",
+      us: noCost ? NONE : money(m.mine),
+      them: noCost ? NONE : money(m.theirs),
+      gap: noCost ? null : m.diff,
+    },
+  ];
+
+  return (
+    <div className="rounded-lg bg-custom-white shadow-card-sm overflow-hidden">
+      <div
+        className="grid gap-x-3 px-3 pt-2.5 pb-1.5 border-b border-brand_navy/15 text-[11.5px] font-bold uppercase tracking-wide text-content/85"
+        style={{ gridTemplateColumns: "minmax(0,1fr) 84px 84px 84px" }}
+      >
+        <span />
+        <span className="flex items-center justify-end gap-1.5 truncate">
+          <span className="w-2 h-2 rounded-full bg-store_open flex-shrink-0" />
+          {mine}
+        </span>
+        <span className="flex items-center justify-end gap-1.5 truncate">
+          <span className="w-2 h-2 rounded-full bg-store_compare flex-shrink-0" />
+          {theirs}
+        </span>
+        <span className="text-right">Gap</span>
+      </div>
+
+      {rows.map((r) => (
+        <div
+          key={r.label}
+          className="grid gap-x-3 px-3 py-2 border-b border-brand_navy/15 last:border-b-0 text-[13.5px]"
+          style={{ gridTemplateColumns: "minmax(0,1fr) 84px 84px 84px" }}
+        >
+          <span className="text-content/85 truncate">{r.label}</span>
+          <span className="text-right tabular-nums font-semibold text-content bg-store_open_tint/50 -my-2 py-2 px-1">
+            {r.us}
+          </span>
+          <span className="text-right tabular-nums font-semibold text-content">
+            {r.them}
+          </span>
+          <span
+            className={`text-right tabular-nums font-bold ${
+              r.gap === null
+                ? "text-content/85"
+                : r.gap < 0
+                  ? "text-delta_negative_text"
+                  : r.gap > 0
+                    ? "text-delta_positive_text"
+                    : "text-content"
+            }`}
+          >
+            {r.gap === null
+              ? NONE
+              : (r.gap < 0 ? "−" : r.gap > 0 ? "+" : "") + money(Math.abs(r.gap))}
+          </span>
+        </div>
+      ))}
+
+      {noCost && (
+        <p className="px-3 py-2 text-[12px] text-content/85 leading-snug border-t border-brand_navy/15">
           No cost came through on either store&rsquo;s lines this week, so what
           this item makes cannot be said.
         </p>
-      </section>
-    );
-  }
-
-  const perUnit =
-    m.minePerUnit !== null && m.theirsPerUnit !== null
-      ? m.minePerUnit - m.theirsPerUnit
-      : null;
-  // A hundredth of a cent either way is rounding in the data, not a buy.
-  const dearer = perUnit !== null && perUnit > 0.0001;
-  const cheaper = perUnit !== null && perUnit < -0.0001;
-  // Money, not the page's metric — `item.gap` follows the Sales/Quantity
-  // toggle and this sentence is about dollars.
-  const salesGap = item.mineSales - item.theirsSales;
-
-  return (
-    <>
-      <section className="pt-3">
-        <h3 className="text-[12px] font-bold text-content mb-2">
-          What it sold for
-        </h3>
-        <div className="grid grid-cols-2 gap-2">
-          <Figure label={mine} value={money(item.mineSales)} tint={MINE_BG} />
-          <Figure label={theirs} value={money(item.theirsSales)} tint={THEIRS_BG} />
-        </div>
-      </section>
-
-      <section className="pt-4">
-        <h3 className="text-[12px] font-bold text-content mb-2">
-          What it cost to buy, per unit
-        </h3>
-        <div className="grid grid-cols-2 gap-2">
-          <Figure
-            label={mine}
-            value={m.minePerUnit === null ? "—" : money(m.minePerUnit)}
-            tint={MINE_BG}
-          />
-          <Figure
-            label={theirs}
-            value={m.theirsPerUnit === null ? "—" : money(m.theirsPerUnit)}
-            tint={THEIRS_BG}
-          />
-        </div>
-
-        {/* The per-unit difference, said in money on the units that actually
-            sold. A percentage here hides how much of it there was. */}
-        {(dearer || cheaper) && perUnit !== null && (
-          <p
-            className={`mt-2 rounded px-2.5 py-2 text-[12.5px] leading-snug ${
-              dearer
-                ? "bg-severity_watch_bg text-severity_watch_text"
-                : "bg-delta_positive_bg text-delta_positive_text"
-            }`}
-          >
-            {mine} pays{" "}
-            <span className="font-bold">
-              {money(Math.abs(perUnit))} {dearer ? "more" : "less"}
-            </span>{" "}
-            a unit. On the {count(item.mineUnits)} units it sold, that is{" "}
-            <span className="font-bold">
-              {money(Math.abs(m.costPenalty ?? 0))}
-            </span>{" "}
-            {dearer
-              ? "of margin gone before anything else happened."
-              : "of margin earned on the buy alone."}
-          </p>
-        )}
-      </section>
-
-      <section className="pt-4">
-        <h3 className="text-[12px] font-bold text-content mb-2">
-          What it actually made
-        </h3>
-        <div className="grid grid-cols-2 gap-2">
-          <Figure label={mine} value={money(m.mine)} tint={MINE_BG} />
-          <Figure label={theirs} value={money(m.theirs)} tint={THEIRS_BG} />
-        </div>
-
-        {/* The case the grid cannot make on its own. */}
-        {salesGap > 0 && m.diff < 0 && (
-          <p className="mt-2 rounded px-2.5 py-2 bg-severity_watch_bg text-severity_watch_text text-[12.5px] leading-snug">
-            <span className="font-bold">Ahead on sales, behind on margin.</span>{" "}
-            {mine} sold {money(salesGap)} more of this and still made{" "}
-            {money(Math.abs(m.diff))} less, because it buys the item for more.
-            The sales view alone calls this a win.
-          </p>
-        )}
-      </section>
-    </>
+      )}
+    </div>
   );
 };
 
@@ -384,6 +362,9 @@ const ItemEvidence = ({
               The arrows follow whatever the grid is filtered to, and the
               count says which pile that is. */}
           <div className="ml-auto flex items-center gap-1 flex-shrink-0">
+            <span className="text-[12px] text-content/85 tabular-nums whitespace-nowrap mr-1">
+              {position.at + 1} of {position.of.toLocaleString("en-US")}
+            </span>
             <button
               onClick={() => onStep(-1)}
               disabled={position.at <= 0}
@@ -411,26 +392,51 @@ const ItemEvidence = ({
         </div>
       </div>
 
-      <div className="px-4 pb-2 text-[12px] text-content/85 tabular-nums">
-        {position.at + 1} of {position.of.toLocaleString("en-US")}
-        {position.within ? ` in ${position.within.toLowerCase()}` : ""}
+      {/* What the grid's Cause column means, spelled out. A label is a
+          claim; this says what each store did. */}
+      <div className="flex-shrink-0 px-4 pb-3">
+        <div className="rounded-lg bg-custom-white shadow-card-sm px-3.5 py-3">
+          <span
+            className={`inline-block text-[11.5px] font-bold px-2 py-0.5 rounded ${CAUSE_TONE[item.cause].chip}`}
+          >
+            {CAUSE_LABEL[item.cause]}
+          </span>
+          <p className="text-[13.5px] leading-snug text-content mt-1.5">
+            {evidenceSays(item, openStoreName, compareStoreName)}
+          </p>
+        </div>
       </div>
 
       <div className="flex-1 min-h-0 overflow-auto thin-scrollbar px-4 pb-4">
-        <Money item={item} mine={openStoreName} theirs={compareStoreName} />
+        <h3 className="text-[12px] font-bold uppercase tracking-wide text-content/85 mb-2">
+          Side by side
+        </h3>
+        <SideBySide item={item} mine={openStoreName} theirs={compareStoreName} />
 
         <section className="pt-5">
-          <h3 className="text-[12px] font-bold text-content mb-2">
+          <h3 className="text-[12px] font-bold uppercase tracking-wide text-content/85 mb-2">
             Ordered, then received
           </h3>
-          <div className="grid grid-cols-2 gap-4">
-            <Timeline events={mineEvents} ready={supplyReady} tint={MINE} label={openStoreName} />
-            <Timeline events={theirEvents} ready={supplyReady} tint={THEIRS} label={compareStoreName} />
-          </div>
+          {/* One line when there is nothing on either side. Two empty
+              timelines side by side took a third of the panel to say
+              nothing twice. */}
+          {supplyReady && mineEvents.length === 0 && theirEvents.length === 0 ? (
+            <p className="text-[13px] leading-relaxed text-content/85 rounded-lg bg-bkg px-3.5 py-3">
+              <span className="font-semibold text-content">
+                Neither store ordered or received it
+              </span>{" "}
+              in the window. That is the finding, not a gap in the data.
+            </p>
+          ) : (
+            <div className="grid grid-cols-2 gap-4">
+              <Timeline events={mineEvents} ready={supplyReady} tint={MINE} label={openStoreName} />
+              <Timeline events={theirEvents} ready={supplyReady} tint={THEIRS} label={compareStoreName} />
+            </div>
+          )}
         </section>
 
         <section className="pt-5">
-          <h3 className="text-[12px] font-bold text-content mb-2">
+          <h3 className="text-[12px] font-bold uppercase tracking-wide text-content/85 mb-2">
             What it actually rang at
           </h3>
           <div className="grid grid-cols-2 gap-4">

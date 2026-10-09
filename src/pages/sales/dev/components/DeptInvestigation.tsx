@@ -9,7 +9,14 @@ import {
   SUPPLY_LOOKBACK_DAYS,
   supplyWindow,
 } from "../shared/investigationData";
-import type { Cause, ItemVerdict, Summary } from "../shared/deptInvestigation";
+import {
+  CAUSE_LABEL,
+  CAUSE_OWNER,
+  CAUSE_TONE,
+  type Cause,
+  type ItemVerdict,
+  type Summary,
+} from "../shared/deptInvestigation";
 import { formatCurrency2, formatBigNumber } from "../../../../utils";
 import SortHeader from "../../../../components-dev/SortHeader";
 import ColFilter from "../../../../components-dev/filters/ColFilterPopover";
@@ -73,64 +80,6 @@ type Col =
  * could reach.
  */
 const PAGE_ROWS = 50;
-
-const CAUSE_LABEL: Record<Cause, string> = {
-  "never-ordered": "Never ordered",
-  "not-received": "Didn't arrive",
-  cost: "Costing more",
-  "not-moving": "Not moving",
-  "price-mix": "Price / mix",
-  ahead: "We're ahead",
-  unclassified: "No cause found",
-};
-
-/** Who owns the fix. The whole reason the causes are named separately is that
- *  they go to three different people. */
-const CAUSE_OWNER: Record<Cause, string> = {
-  "never-ordered": "buyer",
-  "not-received": "vendor",
-  cost: "buying terms",
-  "not-moving": "merchandising",
-  "price-mix": "same units, less money",
-  ahead: "ours to keep",
-  unclassified: "worth a look",
-};
-
-/**
- * One tone per cause, worn everywhere that cause appears.
- *
- * The same shape Item Actions uses for its piles: the chip carries its colour
- * all the time, and selecting it adds a ring in its own tone rather than
- * swapping the fill for a generic highlight. A chip that only colours itself
- * once you click it cannot be scanned, which is the whole job of the row.
- *
- * Six distinct hues rather than three greys, because these go to six
- * different people. `GapBreakdown` paints the same causes in the same
- * order — a cause that is violet here and grey in the treemap is two
- * findings as far as a reader is concerned.
- */
-const CAUSE_TONE: Record<Cause, { chip: string; ring: string }> = {
-  "never-ordered": {
-    chip: "bg-severity_critical_bg text-severity_critical_text",
-    ring: "ring-severity_critical_text/40",
-  },
-  "not-received": {
-    chip: "bg-severity_watch_bg text-severity_watch_text",
-    ring: "ring-severity_watch_text/40",
-  },
-  // Violet, the tone Item Actions gives anything that is settled with a
-  // vendor rather than on the shelf. Buying terms are exactly that.
-  cost: { chip: "bg-violet-50 text-violet-900", ring: "ring-violet-900/40" },
-  "not-moving": { chip: "bg-blue-50 text-blue-900", ring: "ring-blue-900/40" },
-  "price-mix": { chip: "bg-cyan-50 text-cyan-900", ring: "ring-cyan-900/40" },
-  ahead: {
-    chip: "bg-delta_positive_bg text-delta_positive_text",
-    ring: "ring-delta_positive_text/40",
-  },
-  // Grey is the honest colour for "we could not say". Giving it a hue would
-  // put it on the same footing as the five findings that mean something.
-  unclassified: { chip: "bg-gray-100 text-content/85", ring: "ring-content/30" },
-};
 
 /** What is still outstanding, and what the screen cannot say yet because of
  *  it. A cause that sharpens as data lands has to explain itself. */

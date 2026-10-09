@@ -235,6 +235,118 @@ export const ratiosOf = (f: ItemFacts): Ratios => {
   };
 };
 
+/* ------------------------------------------------------------------ */
+/* What a cause is called, and what it wears                           */
+/* ------------------------------------------------------------------ */
+
+/* Beside the Cause they describe rather than inside one of the two
+   components that need them: the grid and the evidence rail must agree on
+   every word and every tint, and a copy in each is two places to drift. */
+
+export const CAUSE_LABEL: Record<Cause, string> = {
+  "never-ordered": "Never ordered",
+  "not-received": "Didn't arrive",
+  cost: "Costing more",
+  "not-moving": "Not moving",
+  "price-mix": "Price / mix",
+  ahead: "We're ahead",
+  unclassified: "No cause found",
+};
+
+/** Who owns the fix. The whole reason the causes are named separately is that
+ *  they go to three different people. */
+export const CAUSE_OWNER: Record<Cause, string> = {
+  "never-ordered": "buyer",
+  "not-received": "vendor",
+  cost: "buying terms",
+  "not-moving": "merchandising",
+  "price-mix": "same units, less money",
+  ahead: "ours to keep",
+  unclassified: "worth a look",
+};
+
+/**
+ * One tone per cause, worn everywhere that cause appears.
+ *
+ * The same shape Item Actions uses for its piles: the chip carries its colour
+ * all the time, and selecting it adds a ring in its own tone rather than
+ * swapping the fill for a generic highlight. A chip that only colours itself
+ * once you click it cannot be scanned, which is the whole job of the row.
+ *
+ * Six distinct hues rather than three greys, because these go to six
+ * different people. `GapBreakdown` paints the same causes in the same
+ * order — a cause that is violet here and grey in the treemap is two
+ * findings as far as a reader is concerned.
+ */
+export const CAUSE_TONE: Record<Cause, { chip: string; ring: string }> = {
+  "never-ordered": {
+    chip: "bg-severity_critical_bg text-severity_critical_text",
+    ring: "ring-severity_critical_text/40",
+  },
+  "not-received": {
+    chip: "bg-severity_watch_bg text-severity_watch_text",
+    ring: "ring-severity_watch_text/40",
+  },
+  // Violet, the tone Item Actions gives anything that is settled with a
+  // vendor rather than on the shelf. Buying terms are exactly that.
+  cost: { chip: "bg-violet-50 text-violet-900", ring: "ring-violet-900/40" },
+  "not-moving": { chip: "bg-blue-50 text-blue-900", ring: "ring-blue-900/40" },
+  "price-mix": { chip: "bg-cyan-50 text-cyan-900", ring: "ring-cyan-900/40" },
+  ahead: {
+    chip: "bg-delta_positive_bg text-delta_positive_text",
+    ring: "ring-delta_positive_text/40",
+  },
+  // Grey is the honest colour for "we could not say". Giving it a hue would
+  // put it on the same footing as the five findings that mean something.
+  unclassified: { chip: "bg-gray-100 text-content/85", ring: "ring-content/30" },
+};
+
+/**
+ * The item in a sentence, which is what the rail opens with.
+ *
+ * The grid's Cause column is a label; a label on its own is a claim. This
+ * says what each store did, in the order a reader needs it: what happened
+ * here, then what it was worth there.
+ *
+ * It names no owner and no remedy. Whose job it is belongs to the hand-off,
+ * which knows about desks; this knows about one item.
+ */
+export const evidenceSays = (
+  item: ItemVerdict,
+  us: string,
+  them: string,
+): string => {
+  const cash = (v: number) =>
+    "$" + Math.abs(v).toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  const theirs = `${them} sold ${cash(item.theirsSales)} of it and made ${cash(item.margins.theirs)}.`;
+
+  switch (item.cause) {
+    case "never-ordered":
+      return `${us} never ordered or rang it. ${theirs}`;
+    case "not-received":
+      return `${us} ordered it and it never arrived. ${theirs}`;
+    case "cost": {
+      const per = item.margins.minePerUnit !== null && item.margins.theirsPerUnit !== null
+        ? item.margins.minePerUnit - item.margins.theirsPerUnit
+        : null;
+      return per === null
+        ? `Both stores sold it, and ${us} buys it for more.`
+        : `Both stores sold it. ${us} buys it for ${cash(per)} more a unit, which cost ${cash(item.margins.costPenalty ?? 0)} on the units it sold.`;
+    }
+    case "price-mix":
+      return `${us} sold it and took ${cash(item.mineSales)} against ${cash(item.theirsSales)} — less per unit, not fewer of them.`;
+    case "not-moving":
+      return `${us} has it and sold ${cash(item.mineSales)} against ${cash(item.theirsSales)}. Nothing in this data says why.`;
+    case "ahead":
+      return `${us} sold ${cash(item.mineSales)} of it against ${cash(item.theirsSales)}, and is ${cash(item.mineSales - item.theirsSales)} ahead on it.`;
+    default:
+      return `${us} sold ${cash(item.mineSales)} of it against ${cash(item.theirsSales)}.`;
+  }
+};
+
 export const judge = (f: ItemFacts, bands: Bands = DEFAULT_BANDS): ItemVerdict => ({
   ...f,
   gap: f.mineTy - f.theirsTy,

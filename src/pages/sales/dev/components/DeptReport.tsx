@@ -275,11 +275,19 @@ const Detail = ({
         {row.chain.says.tail}
       </p>
 
-      <div className="grid grid-cols-3 gap-2.5 mt-3">
-        {row.chain.gates.map((g) => (
-          <Tile key={g.name} gate={g} />
-        ))}
-      </div>
+      {/* Three checks in order, and the first one to fail is the finding.
+          A green tick says only that this check was not the problem — a
+          department can pass "rung" by ringing anything at all and still be
+          five thousand down, which is exactly what the row's own red is
+          about. The heading is here so the two colours are plainly
+          answering different questions. */}
+      <Block title="Where it breaks down">
+        <div className="grid grid-cols-3 gap-2.5">
+          {row.chain.gates.map((g) => (
+            <Tile key={g.name} gate={g} />
+          ))}
+        </div>
+      </Block>
 
       {split && splitSize > 0 && (
         <Block title="What the gap is made of">
