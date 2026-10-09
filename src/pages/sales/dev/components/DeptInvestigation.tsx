@@ -496,7 +496,7 @@ const Card = ({
   note?: string;
   children: React.ReactNode;
 }) => (
-  <div className="rounded-lg bg-gray-50 px-4 py-3.5">
+  <div className="rounded-lg bg-bkg shadow-sm px-4 py-3.5">
     <div className="text-[12px] font-bold uppercase tracking-wide text-content/85">
       {title}
     </div>
@@ -585,7 +585,7 @@ const Index = ({
             <span className="w-[52px] flex-shrink-0 text-[12px] font-semibold uppercase tracking-wide text-content/85">
               {m.label}
             </span>
-            <span className="relative flex-1 min-w-0 h-2.5 rounded-sm bg-bkg">
+            <span className="relative flex-1 min-w-0 h-2.5 rounded-sm bg-custom-white">
               <span
                 className={`absolute left-0 top-0 h-2.5 rounded-sm ${
                   over ? "bg-emerald-500" : "bg-red-500"
@@ -667,7 +667,7 @@ const HoldsPanel = ({
         {/* Each card sits beside the section it serves, rather than all of
             them stacking in one rail away from what they are evidence for. */}
         <div className="grid gap-8 items-start" style={{ gridTemplateColumns: COLS }}>
-          <div className="flex flex-col gap-4 min-w-0">
+          <div className="flex flex-col gap-4 min-w-0 rounded-lg bg-bkg shadow-sm px-5 py-4">
             <p className="text-[20px] font-semibold leading-snug text-content">
               <span
                 className={
@@ -701,7 +701,7 @@ const HoldsPanel = ({
             </div>
 
             {moved > 0 && (
-              <span className="flex h-2 rounded-sm overflow-hidden bg-bkg">
+              <span className="flex h-2 rounded-sm overflow-hidden bg-custom-white">
                 {buckets.map((x) => (
                   <span
                     key={x.label}
@@ -721,7 +721,7 @@ const HoldsPanel = ({
                 >
                   <span
                     className={`w-2.5 h-2.5 rounded-sm flex-shrink-0 self-center ${
-                      x.b.items === 0 ? "bg-bkg" : x.tone
+                      x.b.items === 0 ? "bg-custom-white" : x.tone
                     }`}
                   />
                   <span className="text-[13px] text-content/85 min-w-0">
@@ -787,7 +787,7 @@ const HoldsPanel = ({
         </div>
 
         <div className="flex justify-center">
-          <span className="text-[13px] text-content/85 bg-gray-50 rounded-full px-4 py-1.5">
+          <span className="text-[13px] text-content/85 bg-bkg rounded-full px-4 py-1.5">
             {holds.verdict === "holds"
               ? "So the call stands. Is it a few big items, or many small ones?"
               : "So the shape is different. Where does it sit?"}
@@ -795,12 +795,12 @@ const HoldsPanel = ({
         </div>
 
         <div className="grid gap-8 items-start" style={{ gridTemplateColumns: COLS }}>
-          <div className="flex flex-col gap-4 min-w-0">
+          <div className="flex flex-col gap-4 min-w-0 rounded-lg bg-bkg shadow-sm px-5 py-4">
             <p className="text-[20px] font-semibold leading-snug text-content">
               {spread.says}
             </p>
 
-            <span className="flex h-2 rounded-sm overflow-hidden bg-bkg">
+            <span className="flex h-2 rounded-sm overflow-hidden bg-custom-white">
               <span
                 className="block h-2 bg-red-500"
                 style={{ width: `${Math.max(4, spread.topTenShare * 100)}%` }}
@@ -812,7 +812,7 @@ const HoldsPanel = ({
                 <div key={i.productCode}>
                   <button
                     onClick={() => onPickItem(i.productCode)}
-                    className="w-full grid gap-3 items-center px-1.5 py-1.5 border-b border-brand_navy/15 hover:bg-gray-50 rounded text-left"
+                    className="w-full grid gap-3 items-center px-1.5 py-1.5 border-b border-brand_navy/15 hover:bg-custom-white rounded text-left"
                     style={{ gridTemplateColumns: "22px minmax(0,1fr) 120px 96px" }}
                   >
                     <span className="text-[12px] text-content/85 tabular-nums">
@@ -821,7 +821,7 @@ const HoldsPanel = ({
                     <span className="min-w-0 truncate text-[12.5px] font-mono text-content">
                       {i.description}
                     </span>
-                    <span className="h-2 rounded-sm bg-bkg">
+                    <span className="h-2 rounded-sm bg-custom-white">
                       <span
                         className="block h-2 rounded-sm bg-red-500"
                         style={{ width: `${(Math.abs(i.gap) / widest) * 100}%` }}
@@ -874,7 +874,7 @@ const HoldsPanel = ({
                       <span className="w-[104px] flex-shrink-0 truncate text-[12.5px] text-content">
                         {v.vendorName}
                       </span>
-                      <span className="flex-1 min-w-0 h-2 rounded-sm bg-bkg">
+                      <span className="flex-1 min-w-0 h-2 rounded-sm bg-custom-white">
                         <span
                           className="block h-2 rounded-sm bg-red-500"
                           style={{
@@ -940,7 +940,7 @@ const ActPanel = ({
           {owned.map((d) => (
             <div
               key={d.cause}
-              className="flex flex-col gap-2.5 rounded-md border border-brand_navy/15 p-3.5"
+              className="flex flex-col gap-2.5 rounded-lg bg-bkg shadow-sm p-4"
             >
               <span className="text-[12px] font-bold uppercase tracking-wide text-content/85">
                 {CAUSE_LABEL[d.cause]} ·{" "}
@@ -987,13 +987,13 @@ const ActPanel = ({
                 </button>
                 <button
                   onClick={() => onExport(d)}
-                  className="px-3 py-1.5 rounded-md border border-brand_line text-[12px] font-bold text-content hover:bg-gray-50 transition-colors"
+                  className="px-3 py-1.5 rounded-md bg-custom-white text-[12px] font-bold text-content hover:bg-brand_navy/5 transition-colors"
                 >
                   Export
                 </button>
                 <button
                   onClick={() => onShow(d.cause)}
-                  className="px-3 py-1.5 rounded-md border border-brand_line text-[12px] font-bold text-content hover:bg-gray-50 transition-colors"
+                  className="px-3 py-1.5 rounded-md bg-custom-white text-[12px] font-bold text-content hover:bg-brand_navy/5 transition-colors"
                 >
                   Show in grid
                 </button>
