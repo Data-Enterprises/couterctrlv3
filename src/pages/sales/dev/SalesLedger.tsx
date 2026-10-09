@@ -96,11 +96,15 @@ const SalesLedger = () => {
   // Clicking the store that is already open closes it, which is how you get
   // back to the group view without reaching for the X.
   //
-  // `tab` is where the click CAME FROM, not a preference. Opening a store
-  // from the ledger is "show me this store", which is its departments;
-  // opening one from the group comparison is "show me this store against the
-  // others", which is the Comparison tab. Carrying the last tab over instead
-  // answers whichever question the reader asked previously.
+  // A store opens on Stores, which is the first step of the comparison: who
+  // to measure it against. Picking a counterpart there is what Sub depts and
+  // Hourly then answer to, so landing on a department breakdown skips the
+  // question the rest of the panel is built on.
+  //
+  // Except on a single-store search, where there are no siblings and the tab
+  // is not offered at all — opening on it there would show a blank panel.
+  // Carrying the LAST tab over instead would answer whichever question the
+  // reader happened to ask previously.
   const openStore = useCallback(
     (s: Parameters<typeof setLedgerSelection>[0], tab: LedgerTab) => {
       const closing =
@@ -114,7 +118,10 @@ const SalesLedger = () => {
   );
 
   const handleRowClick = useCallback(
-    (s: Parameters<typeof setLedgerSelection>[0]) => openStore(s, "subdept"),
+    (s: Parameters<typeof setLedgerSelection>[0]) =>
+      // Read through a ref: depending on the rows would give this a new
+      // identity whenever they changed and defeat the memo on every row.
+      openStore(s, rowsRef.current.length > 1 ? "comparison" : "subdept"),
     [openStore],
   );
 
@@ -123,6 +130,9 @@ const SalesLedger = () => {
   // the memo on every row.
   const selectionRef = useRef(selection);
   selectionRef.current = selection;
+
+  /** How many stores the search returned, for the stable handler above. */
+  const rowsRef = useRef<unknown[]>([]);
 
   const handlePopupClose = useCallback(
     () => dispatch(setLedgerSelection(null)),
@@ -312,6 +322,7 @@ const SalesLedger = () => {
     () => regradeLedgerRows(baseLedgerRows, activeThreshold),
     [baseLedgerRows, activeThreshold],
   );
+  rowsRef.current = ledgerRows;
 
   /** The matrix asks one store at a time, and these are the stores the
    *  search already found — so no second call to resolve the group, and
