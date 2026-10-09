@@ -100,7 +100,8 @@ describe("the chain", () => {
     const c = run({ mine: 0, mineUnits: 0, theirs: 4887.47, theirsUnits: 661 });
     expect(c.finding).toBe("nothing-rung");
     expect(c.gates.map((g) => g.state)).toEqual(["fail", "skipped", "skipped"]);
-    expect(c.says).toBe("Nothing rung all week.");
+    expect(c.says.lead).toBe("Nothing rung");
+    expect(c.says.tail).toBe(" all week.");
     expect(c.focus).toBe("ringing");
     expect(c.cta).toBe("Check ringing");
   });
@@ -136,7 +137,8 @@ describe("the chain", () => {
     });
     expect(c.finding).toBe("different-mix");
     expect(c.cta).toBe("Check the mix");
-    expect(c.says).toContain("far more than a price difference");
+    expect(c.says.lead).toBe("Took $4.05 less per lb");
+    expect(c.says.tail).toContain("far more than a price difference");
     expect(c.gates[2].detail).toBe("$4.70 a lb against $8.75");
   });
 

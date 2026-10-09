@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { getSubs } from "../../../../api/sales";
-import { formatCurrency2, formatBigNumber } from "../../../../utils";
+import { formatCurrency2 } from "../../../../utils";
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
 import { setInvestigation } from "../../../../features/dev/devSalesLedgerSlice";
 import { rememberCounterpart } from "../../../../features/dev/devSalesCacheSlice";
@@ -11,6 +11,7 @@ import PageInfoButton from "../../../../components-dev/PageInfoButton";
 import {
   buildReport,
   totalsFrom,
+  type Finding,
   type ReportRow,
 } from "../shared/deptReport";
 import type { SubSale } from "../../../../interfaces";
@@ -22,30 +23,24 @@ import type { SubSale } from "../../../../interfaces";
  * tab stays the store's own graded departments, which is a different question
  * and already answered.
  *
- * It replaced a list because a list made the reader hunt. Ordered by
- * department SIZE, the top rows were the biggest departments, which are the
- * ones most likely to be level; the only way to find the problem was to click
- * around until you hit it. This leads instead: it says what the gap is, where
- * it concentrates, and what shape each of those has, before anybody clicks
- * anything.
+ * One line a department: what it is, what it costs, what went wrong, and the
+ * button that goes and looks. Under each, the three gates in order with the
+ * failing one marked, so the sentence is a claim with its working shown
+ * rather than an assertion to take on trust.
+ *
+ * There is nothing to expand. An earlier pass hid a tray of figures behind
+ * every row and it read as a pile — three sub-tables in three shapes, each
+ * re-declaring its own headers, with the finding competing against them for
+ * the eye. The trail of checks IS the evidence, and it fits on one line.
  *
  * Every figure comes from rows already fetched. Nothing item-level appears
  * here — that costs nine requests a department and is the investigation's
  * whole job. The report NAMES a diagnosis; the investigation proves it.
  */
 
-/** A ramp for the band, darkest first. Six is enough: past that the cut has
- *  printed more departments than a reader is going to hold anyway. */
-const REDS = ["#9f1f36", "#b83142", "#c9505e", "#d9707d", "#e68e99", "#eca5ad"];
-const GREENS = ["#0f7a4f", "#1a9c66", "#45b88a", "#86d4b4", "#a9e0c8", "#c9ecdd"];
-const TAIL = "#c3ccd6";
-
 const money = (v: number) => formatCurrency2(v);
 const signed = (v: number) =>
   (v >= 0 ? "+" : "−") + formatCurrency2(Math.abs(v));
-const short = (v: number) =>
-  "$" + (Math.round(Math.abs(v) / 100) / 10).toFixed(1) + "K";
-const count = (v: number) => formatBigNumber(v, 0);
 
 const WORDS = [
   "No", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight",
@@ -53,231 +48,96 @@ const WORDS = [
 ];
 const word = (n: number) => WORDS[n] ?? String(n);
 
-const deltaText = (v: number) =>
-  v >= 0 ? "text-delta_positive_text" : "text-delta_negative_text";
+/** What a set of departments that failed the same gate is called. */
+const GROUP_SAYS: Record<Finding, string> = {
+  "nothing-rung": "Nothing rung",
+  "fewer-units": "Sold fewer units",
+  "lower-price": "Took less per unit",
+  "different-mix": "Selling a different mix",
+  "a-little-less": "A little less of everything",
+  level: "Level",
+};
 
-const HEAD =
-  "text-[12px] font-bold uppercase tracking-wide text-content/85";
-const SUBHEAD =
-  "text-[12px] font-bold uppercase tracking-wide text-content/85";
+const COLS = "minmax(0,1fr) 112px minmax(0,2.4fr) 156px";
 
 /* ------------------------------------------------------------------ */
-/* One department                                                      */
+/* One line                                                            */
 /* ------------------------------------------------------------------ */
 
 interface RowProps {
   row: ReportRow;
-  tone: string;
-  open: boolean;
-  onToggle: () => void;
-  openStoreName: string;
-  compareStoreName: string;
+  /** Inside the cut gets the solid button, the rest a link. Both go to the
+   *  same place — the weight only says where to start. */
+  lead: boolean;
   onInvestigate: (row: ReportRow) => void;
 }
 
-/**
- * One department: the finding, and its evidence on request.
- *
- * The strip alone is the guidance — which department, how much, and what
- * happened. Everything beneath it exists to be checked against that claim,
- * which is a different job and does not need doing until somebody asks for
- * it.
- *
- * Open, the three groups carry their own column labels. That is only
- * affordable because one row is open at a time: printed under every
- * department at once they came to forty header cells for ten rows of
- * figures, in three different table shapes, and the page read as a pile.
- */
-const Row = ({
-  row, tone, open, onToggle, openStoreName, compareStoreName, onInvestigate,
-}: RowProps) => {
-  const unit = row.weighed ? "lb" : "units";
-  const periods = [
-    { label: "Last year", v: row.lyGap },
-    { label: "Last week", v: row.lwGap },
-    { label: "This week", v: row.gap },
-  ];
-  const tallest = Math.max(1, ...periods.map((p) => Math.abs(p.v)));
+const Row = ({ row, lead, onInvestigate }: RowProps) => (
+  <div
+    className="grid gap-4 items-center px-4 py-3 border-b border-brand_navy/15"
+    style={{ gridTemplateColumns: COLS }}
+  >
+    <span className="min-w-0 truncate text-[14px] font-bold text-content">
+      {row.name}
+    </span>
 
-  return (
-    <div className="px-4 py-1.5">
-      <div
-        className={`flex items-baseline gap-2.5 flex-wrap px-3 py-2 rounded ${
-          row.gap < 0 ? "bg-delta_negative_bg" : "bg-delta_positive_bg"
-        }`}
-        style={{ borderLeft: `3px solid ${tone}` }}
-      >
-        {/* The strip toggles and Investigate is its own control: a button
-            inside a button is not a thing, so they sit side by side. */}
-        <button
-          onClick={onToggle}
-          aria-expanded={open}
-          className="flex items-baseline gap-2.5 flex-wrap flex-1 min-w-0 text-left"
-        >
-          <span className="text-[13px] text-content/85 w-3 flex-shrink-0">
-            {open ? "⌄" : "›"}
-          </span>
-          <span className="text-[15px] font-bold text-content">{row.name}</span>
-          <span
-            className={`text-[15px] font-bold tabular-nums whitespace-nowrap ${deltaText(row.gap)}`}
-          >
-            {signed(row.gap)}
-          </span>
-          <span className="min-w-0">
-            <span className="block text-[13.5px] font-semibold leading-snug text-content">
-              {row.chain.says}
-            </span>
-            {/* How it got there. Each gate in order, the one that failed
-                marked — so the sentence above is a claim with its working
-                shown rather than an assertion to take on trust. */}
-            <span className="flex items-center gap-1.5 flex-wrap mt-0.5">
-              {row.chain.gates.map((g, i) => (
-                <span key={g.name} className="flex items-center gap-1.5">
-                  {i > 0 && <span className="text-content/85 text-[11px]">&rsaquo;</span>}
-                  <span
-                    className={`text-[12px] whitespace-nowrap ${
-                      g.state === "fail"
-                        ? "font-bold text-delta_negative_text"
-                        : g.state === "pass"
-                          ? "text-content/85"
-                          : "text-content/85 opacity-60"
-                    }`}
-                  >
-                    {g.state === "fail" ? "✕ " : g.state === "pass" ? "✓ " : ""}
-                    {g.detail}
-                  </span>
-                </span>
-              ))}
-            </span>
-          </span>
-        </button>
-        {/* Named by the gate that failed. "Check the mix" rather than
-            "Check prices" where the take per unit is half the other store's:
-            that is not a department that priced low, and comparing price tags
-            would send somebody to the one place the answer is not. */}
-        <button
-          onClick={() => onInvestigate(row)}
-          className="flex-shrink-0 self-center text-[12.5px] font-bold text-brand_navy_hover hover:underline whitespace-nowrap"
-        >
-          {row.chain.cta} &rarr;
-        </button>
-      </div>
+    <span className="text-right text-[14px] font-bold tabular-nums text-delta_negative_text">
+      {signed(row.gap)}
+    </span>
 
-      {open && (
-        <div className="flex gap-10 items-start mt-2 mb-1 px-3 flex-wrap">
-          <div className="w-[318px] flex-shrink-0">
-            <div className={`${HEAD} pb-1 border-b border-brand_navy/15`}>
-              Each store
-            </div>
-            <div
-              className="grid gap-x-2.5 gap-y-0.5 mt-1.5 text-[12.5px] tabular-nums"
-              style={{ gridTemplateColumns: "minmax(0,1fr) 92px 62px" }}
+    <span className="min-w-0">
+      <span className="block text-[13.5px] leading-snug text-content">
+        <span className="font-bold text-delta_negative_text">
+          {row.chain.says.lead}
+        </span>
+        {row.chain.says.tail}
+      </span>
+
+      {/* The gates in order, the failing one marked. Somebody who does not
+          care takes the sentence; somebody who does can see what it rests
+          on without opening anything. */}
+      <span className="flex items-center gap-1.5 flex-wrap mt-1">
+        {row.chain.gates.map((g, i) => (
+          <span key={g.name} className="flex items-center gap-1.5">
+            {i > 0 && <span className="text-[11px] text-content/85">&rsaquo;</span>}
+            <span
+              className={`text-[12px] whitespace-nowrap ${
+                g.state === "fail"
+                  ? "font-bold text-delta_negative_text"
+                  : g.state === "pass"
+                    ? "text-content/85"
+                    : "text-content/85 opacity-60"
+              }`}
             >
-              <span className={SUBHEAD}>Store</span>
-              <span className={`${SUBHEAD} text-right`}>Sales</span>
-              <span className={`${SUBHEAD} text-right`}>{unit}</span>
+              {g.state === "fail" ? "✕ " : g.state === "pass" ? "✓ " : ""}
+              {g.detail}
+            </span>
+          </span>
+        ))}
+      </span>
+    </span>
 
-              <span className="min-w-0 truncate font-semibold text-content" title={openStoreName}>
-                {openStoreName}
-              </span>
-              <span className={`text-right font-bold whitespace-nowrap ${deltaText(row.gap)}`}>
-                {money(row.mine)}
-              </span>
-              <span
-                className={`text-right font-bold ${deltaText(row.mineUnits - row.theirsUnits)}`}
-              >
-                {count(row.mineUnits)}
-              </span>
-
-              <span className="min-w-0 truncate text-content/85" title={compareStoreName}>
-                {compareStoreName}
-              </span>
-              <span className="text-right text-content/85 whitespace-nowrap">
-                {money(row.theirs)}
-              </span>
-              <span className="text-right text-content/85">{count(row.theirsUnits)}</span>
-            </div>
-          </div>
-
-          <div className="w-[212px] flex-shrink-0">
-            <div className={`${HEAD} pb-1 border-b border-brand_navy/15`}>
-              The gap, split
-            </div>
-            {row.split === null ? (
-              <p className="text-[12.5px] text-content/85 leading-snug mt-1.5">
-                No units at {compareStoreName} to compare against.
-              </p>
-            ) : (
-              <div
-                className="grid gap-x-3 gap-y-1 mt-1.5"
-                style={{ gridTemplateColumns: "86px minmax(0,1fr)" }}
-              >
-                <span className={SUBHEAD}>Part</span>
-                <span className={`${SUBHEAD} text-right`}>Amount</span>
-                <span
-                  className="text-[12px] font-bold uppercase tracking-wide text-volume_text"
-                  title="How much went out of the door: the unit difference, valued at the other store's rate for the week."
-                >
-                  Volume
-                </span>
-                <span
-                  className={`text-[13px] font-bold tabular-nums text-right whitespace-nowrap ${deltaText(row.split.volume)}`}
-                >
-                  {signed(row.split.volume)}
-                </span>
-                <span
-                  className="text-[12px] font-bold uppercase tracking-wide text-rate_text"
-                  title="What each unit brought in: the per-unit difference across our own units. A real price change, a different set of items selling, or both."
-                >
-                  Price &amp; mix
-                </span>
-                <span
-                  className={`text-[13px] font-bold tabular-nums text-right whitespace-nowrap ${deltaText(row.split.rate)}`}
-                >
-                  {signed(row.split.rate)}
-                </span>
-              </div>
-            )}
-          </div>
-
-          {/* Drawn rather than listed. Widening or closing is a slope, and
-              three figures make the reader do the subtraction to see it —
-              the one place on this screen where a picture beats the text. */}
-          <div className="w-[258px] flex-shrink-0">
-            <div className={`${HEAD} pb-1 border-b border-brand_navy/15`}>
-              Week by week
-            </div>
-            <div className="grid grid-cols-3 gap-2.5 mt-1.5">
-              {periods.map((p) => (
-                <div key={p.label} className="min-w-0">
-                  <div className="h-[34px] flex items-end justify-center">
-                    <span
-                      className={`block w-[26px] rounded ${
-                        p.v >= 0 ? "bg-emerald-500" : "bg-red-500"
-                      }`}
-                      style={{
-                        height: `${Math.max(3, (Math.abs(p.v) / tallest) * 34)}px`,
-                      }}
-                    />
-                  </div>
-                  <div className="h-px bg-brand_navy/15 my-1" />
-                  <div className={`${SUBHEAD} text-center whitespace-nowrap`}>
-                    {p.label}
-                  </div>
-                  <div
-                    className={`text-[12.5px] font-bold tabular-nums text-center whitespace-nowrap ${deltaText(p.v)}`}
-                  >
-                    {signed(p.v)}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
+    {/* Named by the gate that failed. "Check the mix" rather than "Check
+        prices" where the take per unit is half the other store's: that is
+        not a department that priced low, and comparing price tags would
+        send somebody to the one place the answer is not. */}
+    {lead ? (
+      <button
+        onClick={() => onInvestigate(row)}
+        className="justify-self-end px-3.5 py-2 rounded-md bg-brand_navy hover:bg-brand_navy_hover text-custom-white text-[12.5px] font-bold transition-colors whitespace-nowrap"
+      >
+        {row.chain.cta} &rarr;
+      </button>
+    ) : (
+      <button
+        onClick={() => onInvestigate(row)}
+        className="justify-self-end text-[12.5px] font-bold text-brand_navy_hover hover:underline whitespace-nowrap"
+      >
+        Investigate &rarr;
+      </button>
+    )}
+  </div>
+);
 
 /* ------------------------------------------------------------------ */
 
@@ -332,6 +192,7 @@ const DeptReport = ({
     (state) => state.dev.salesCache.counterpart[cacheKey],
   );
   const [failed, setFailed] = useState(false);
+  const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
     if (theirs) return;
@@ -382,9 +243,8 @@ const DeptReport = ({
   }, [theirs, subSales, subSalesWk2, subSalesWk3]);
 
   /** Both stores travel with it: the question there is why THIS store is
-   *  behind THAT one in this department, and neither half survives being
-   *  re-derived from a name. The focus travels too, so the investigation can
-   *  mark the pile this shape points at. */
+   *  behind THAT one in this department. The gate that failed travels too,
+   *  so the investigation can mark the pile it points at. */
   const investigate = (row: ReportRow) =>
     dispatch(
       setInvestigation({
@@ -399,15 +259,6 @@ const DeptReport = ({
         focus: row.chain.focus,
       }),
     );
-
-  /**
-   * Which department is showing its evidence. One at a time, and none on
-   * arrival: the strips are the guidance, and opening all of them on landing
-   * is the information dump this report exists instead of.
-   */
-  const [openRow, setOpenRow] = useState<number | null>(null);
-  const [openUnder, setOpenUnder] = useState(false);
-  const [openOver, setOpenOver] = useState(false);
 
   if (failed) {
     return (
@@ -424,219 +275,147 @@ const DeptReport = ({
     );
   }
 
-  const {
-    shown, folded, steep, over, underTotal, overTotal, netGap,
-  } = report;
+  const { shown, folded, byFinding, underTotal, overTotal, over, netGap } = report;
 
-  const toneOf = (i: number, ramp: string[]) =>
-    ramp[Math.min(i, ramp.length - 1)];
+  /**
+   * What prints after the cut.
+   *
+   * Departments that failed the SAME gate collapse into one line: four that
+   * rang nothing are one problem with one owner, and four rows saying it
+   * four times is the padding this report exists instead of. Whatever is
+   * left over is listed on its own, a few at a time, and the remainder is a
+   * count in the footer.
+   */
+  const grouped = new Set(
+    byFinding
+      .filter((g) => g.rows.filter((r) => folded.includes(r)).length > 1)
+      .map((g) => g.finding),
+  );
+  const loose = folded.filter((r) => !grouped.has(r.chain.finding));
+  const groups = byFinding
+    .filter((g) => grouped.has(g.finding))
+    .map((g) => {
+      const rows = g.rows.filter((r) => folded.includes(r));
+      return { finding: g.finding, rows, total: rows.reduce((t, r) => t - r.gap, 0) };
+    });
 
-  /** One band. Both share the UNDER scale, so the departments running over
-   *  are SEEN against those running under rather than being a second number
-   *  to hold against the first. */
-  const band = (
-    label: string,
-    total: number,
-    tone: string,
-    parts: { name: string; v: number }[],
-    tailName: string,
-    tailValue: number,
-    ramp: string[],
-  ) => {
-    const scale = Math.max(1, underTotal);
-    const segs = parts
-      .map((p, i) => ({ ...p, fill: toneOf(i, ramp) }))
-      .concat(tailValue > 0 ? [{ name: tailName, v: tailValue, fill: TAIL }] : []);
-    return (
-      <div key={label}>
-        <div className="flex items-center gap-2.5">
-          <span
-            className={`w-[54px] flex-shrink-0 text-[12px] font-bold uppercase tracking-wide ${tone}`}
-          >
-            {label}
-          </span>
-          <span className="flex-1 min-w-0 flex h-[18px] rounded overflow-hidden bg-bkg">
-            {segs.map((p) => (
-              <span
-                key={p.name}
-                title={`${p.name} ${money(p.v)}`}
-                className="block h-full"
-                style={{ background: p.fill, width: `${(p.v / scale) * 100}%` }}
-              />
-            ))}
-          </span>
-          <span
-            className={`w-[104px] flex-shrink-0 text-right text-[13.5px] font-bold tabular-nums ${tone}`}
-          >
-            {label === "Under" ? "−" : "+"}
-            {money(total)}
-          </span>
-        </div>
-        <div className="flex items-center gap-3.5 flex-wrap mt-1 pl-[64px]">
-          {segs.map((p) => (
-            <span key={p.name} className="flex items-center gap-1.5 text-[12px] text-content/85">
-              <span
-                className="inline-block w-2.5 h-2.5 rounded-sm"
-                style={{ background: p.fill }}
-              />
-              <span className="font-semibold text-content">{p.name}</span>
-              <span className="tabular-nums">{short(p.v)}</span>
-            </span>
-          ))}
-        </div>
-      </div>
-    );
-  };
-
-  const rowsOf = (list: ReportRow[], ramp: string[]) =>
-    list.map((r, i) => (
-      <Row
-        key={r.id}
-        row={r}
-        tone={toneOf(i, ramp)}
-        open={openRow === r.id}
-        onToggle={() => setOpenRow((cur) => (cur === r.id ? null : r.id))}
-        openStoreName={openStoreName}
-        compareStoreName={compareStoreName}
-        onInvestigate={investigate}
-      />
-    ));
+  const LOOSE_CAP = 3;
+  const listed = showAll ? loose : loose.slice(0, LOOSE_CAP);
+  const rest = loose.slice(listed.length);
+  const restTotal = rest.reduce((t, r) => t - r.gap, 0);
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
       <div className="flex-1 min-h-0 overflow-auto thin-scrollbar">
-        {/* The way back shares the headline's line rather than taking a bar
-            of its own: a strip holding one short link was costing as much
-            height as the sentence it sat above. */}
-        <div className="px-4 pt-2.5 pb-2 border-b border-brand_navy/15">
-          <div className="flex items-baseline gap-3 mb-2.5">
+        <div className="px-4 pt-3 pb-3">
+          <div className="flex items-center gap-2 flex-wrap text-[12px] text-content/85">
             <button
               onClick={onBack}
-              className="flex-shrink-0 text-[12px] font-semibold text-content hover:underline"
+              className="font-semibold text-content hover:underline flex-shrink-0"
             >
               &lsaquo; All stores
             </button>
-            <p className="text-[15px] font-bold leading-snug text-content min-w-0">
-              {openStoreName} is {money(Math.abs(netGap))}{" "}
-              {netGap < 0 ? "behind" : "ahead of"} {compareStoreName}
-            </p>
-            {/* What volume and price & mix mean lives here rather than in a
-                strip above the rows. It is a definition, read once and then
-                never again, and a standing caption charges every later visit
-                for the one time it was useful. */}
+            <span>&middot;</span>
+            <span className="truncate">vs {compareStoreName}</span>
+            <span>&middot;</span>
+            <span
+              className={`font-bold ${
+                netGap < 0 ? "text-delta_negative_text" : "text-delta_positive_text"
+              }`}
+            >
+              {signed(netGap)} {netGap < 0 ? "behind" : "ahead"} overall
+            </span>
             <PageInfoButton
               page="sales"
               section="gap-split"
               variant="light"
-              title="How a gap is split"
+              title="How a department is checked"
               className="ml-auto flex-shrink-0 -my-1"
             />
           </div>
 
-          <div className="space-y-2">
-          {band(
-            "Under", underTotal, "text-delta_negative_text",
-            shown.map((r) => ({ name: r.name, v: -r.gap })),
-            `the other ${folded.length}`,
-            folded.reduce((t, r) => t - r.gap, 0),
-            REDS,
-          )}
-          {band(
-            "Over", overTotal, "text-delta_positive_text",
-            over.slice(0, 4).map((r) => ({ name: r.name, v: r.gap })),
-            `the other ${Math.max(0, over.length - 4)}`,
-            over.slice(4).reduce((t, r) => t + r.gap, 0),
-            GREENS,
-          )}
-          </div>
+          {/* The whole report in one line: how much, and how concentrated. */}
+          <p className="text-[18px] font-bold leading-snug text-content mt-1.5">
+            {shown.length === 0 ? (
+              <>Nothing is under {compareStoreName}.</>
+            ) : (
+              <>
+                {word(shown.length)}{" "}
+                {shown.length === 1 ? "department holds" : "departments hold"}{" "}
+                <span className="text-delta_negative_text">
+                  {money(shown.reduce((t, r) => t - r.gap, 0))}
+                </span>{" "}
+                of what {openStoreNumber} is missing
+              </>
+            )}
+          </p>
         </div>
 
-        {rowsOf(shown, REDS)}
+        {shown.map((r) => (
+          <Row key={r.id} row={r} lead onInvestigate={investigate} />
+        ))}
+        {listed.map((r) => (
+          <Row key={r.id} row={r} lead={false} onInvestigate={investigate} />
+        ))}
 
-        {shown.length === 0 && (
-          <div className="px-4 py-8 text-center text-[12.5px] text-content/85">
-            Nothing in this store is behind {compareStoreName}.
+        {groups.map((g) => (
+          <div
+            key={g.finding}
+            className="grid gap-4 items-center px-4 py-3 border-b border-brand_navy/15"
+            style={{ gridTemplateColumns: COLS }}
+          >
+            <span className="min-w-0">
+              <span className="block text-[14px] font-bold text-content">
+                {word(g.rows.length)} departments
+              </span>
+              <span className="block text-[12px] text-content/85 leading-snug mt-0.5">
+                {g.rows.map((r) => r.name).join(", ")}
+              </span>
+            </span>
+            <span className="text-right text-[14px] font-bold tabular-nums text-delta_negative_text self-start">
+              {signed(-g.total)}
+            </span>
+            <span className="text-[13.5px] font-bold text-delta_negative_text self-start">
+              {GROUP_SAYS[g.finding]}
+            </span>
+            <button
+              onClick={() => investigate(g.rows[0])}
+              className="justify-self-end self-start text-[12.5px] font-bold text-brand_navy_hover hover:underline whitespace-nowrap"
+            >
+              Show &rarr;
+            </button>
           </div>
-        )}
+        ))}
 
-        <div className="px-4 py-2.5">
-          {folded.length > 0 && (
-            <div className="border border-brand_navy/15 rounded-md mb-2">
-              <button
-                onClick={() => setOpenUnder((v) => !v)}
-                className="w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-gray-50 transition-colors"
-              >
-                <span className="text-content/85">{openUnder ? "⌄" : "›"}</span>
-                <span className="text-[13px] font-bold text-content">
-                  {word(folded.length)} more{" "}
-                  {folded.length === 1 ? "department is" : "departments are"} under{" "}
-                  {compareStoreName}
+        <div className="flex items-center gap-2 flex-wrap px-4 py-3 text-[12.5px] text-content/85">
+          {rest.length > 0 && (
+            <>
+              <span>
+                {rest.length} more under{" "}
+                <span className="font-semibold tabular-nums text-delta_negative_text">
+                  {signed(-restTotal)}
                 </span>
-
-                <span className="ml-auto text-[13.5px] font-bold tabular-nums text-delta_negative_text">
-                  {signed(folded.reduce((t, r) => t + r.gap, 0))}
-                </span>
-              </button>
-
-              {/* The cut ranks by money, so a small department running at half
-                  its counterpart can never surface. That is the one case the
-                  ranking is blind to by construction, so it is named rather
-                  than left to be found. These are PART of the count above. */}
-              {steep.length > 0 && (
-                <div className="flex items-baseline gap-2 flex-wrap px-3 pb-2.5 pt-2 border-t border-dashed border-brand_navy/15 pl-9">
-                  <span className="text-[12.5px] font-bold text-severity_watch_text flex-shrink-0">
-                    {word(steep.length)} {steep.length === 1 ? "is" : "are"} more than 40%
-                    behind:
-                  </span>
-                  {steep.map((r) => (
-                    <span key={r.id} className="text-[12.5px] text-content/85 whitespace-nowrap">
-                      <span className="font-semibold text-content">{r.name}</span>{" "}
-                      <span className="font-semibold tabular-nums text-delta_negative_text">
-                        {signed(r.gap)}
-                      </span>{" "}
-                      <span className="tabular-nums">
-                        ({Math.round(r.dropoff * 100)}% behind)
-                      </span>
-                    </span>
-                  ))}
-                </div>
-              )}
-
-              {openUnder && <div className="border-t border-brand_navy/15">{rowsOf(folded, [TAIL])}</div>}
-            </div>
+              </span>
+              <span>&middot;</span>
+            </>
           )}
-
-          {over.length > 0 && (
-            <div className="border border-brand_navy/15 rounded-md">
-              <button
-                onClick={() => setOpenOver((v) => !v)}
-                className="w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-gray-50 transition-colors"
-              >
-                <span className="text-content/85">{openOver ? "⌄" : "›"}</span>
-                <span className="text-[13px] font-bold text-content">
-                  {word(over.length)}{" "}
-                  {over.length === 1 ? "department is" : "departments are"} over{" "}
-                  {compareStoreName}
-                </span>
-
-                <span className="ml-auto text-[13.5px] font-bold tabular-nums text-delta_positive_text">
-                  {signed(overTotal)}
-                </span>
-              </button>
-              {openOver && <div className="border-t border-brand_navy/15">{rowsOf(over, GREENS)}</div>}
-            </div>
+          <span>
+            {over.length} ahead{" "}
+            <span className="font-semibold tabular-nums text-delta_positive_text">
+              {signed(overTotal)}
+            </span>
+          </span>
+          <span>&middot;</span>
+          <span className="tabular-nums">{signed(-underTotal)} under in all</span>
+          {loose.length > LOOSE_CAP && (
+            <button
+              onClick={() => setShowAll((v) => !v)}
+              className="ml-auto font-semibold text-brand_navy_hover hover:underline flex-shrink-0"
+            >
+              {showAll ? "Show less" : "Show all"} &rsaquo;
+            </button>
           )}
         </div>
-
-        <p className="px-4 pb-4 text-[12px] leading-relaxed text-content/85 max-w-[1010px]">
-          Volume values the unit difference at {compareStoreName}&rsquo;s rate
-          for the week; price &amp; mix is the rest. The two add back to the
-          gap exactly, and they are named rather than separated: a department
-          takes less per unit because it priced lower, because a different set
-          of items sold, or both &mdash; telling those apart needs the real
-          price and cost points, which come off the items. A department that
-          rings by weight is counted in pounds.
-        </p>
       </div>
     </div>
   );

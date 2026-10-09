@@ -120,10 +120,17 @@ export type Finding =
 /** Where the items view should land, and what the button says. */
 export type Focus = "ringing" | "orders" | "price" | "mix" | "unknown";
 
+/** The sentence, split where the emphasis falls. `lead` is the finding
+ *  itself and carries the weight; `tail` is what qualifies it. */
+export interface Says {
+  lead: string;
+  tail: string;
+}
+
 export interface Chain {
   gates: Gate[];
   finding: Finding;
-  says: string;
+  says: Says;
   focus: Focus;
   cta: string;
 }
@@ -237,20 +244,29 @@ export const chainFor = (d: DeptTotals, g: Gates = DEFAULT_GATES): Chain => {
   const perUnit =
     mineRate !== null && theirsRate !== null ? theirsRate - mineRate : 0;
 
-  const says =
+  const says: Says =
     finding === "nothing-rung"
-      ? "Nothing rung all week."
+      ? { lead: "Nothing rung", tail: " all week." }
       : finding === "fewer-units"
-        ? "Sold " + pct(unitGap ?? 0) + " fewer " + unit + ", " +
-          whole(Math.abs(d.theirsUnits - d.mineUnits)) + " " + unit + " behind."
+        ? {
+            lead: "Sold " + pct(unitGap ?? 0) + " fewer " + unit,
+            tail:
+              ", " + whole(Math.abs(d.theirsUnits - d.mineUnits)) + " " +
+              unit + " behind.",
+          }
         : finding === "lower-price"
-          ? "Took " + cash(perUnit) + " less per " + one + "."
+          ? { lead: "Took " + cash(perUnit) + " less per " + one, tail: "." }
           : finding === "different-mix"
-            ? "Took " + cash(perUnit) + " less per " + one +
-              " \u2014 far more than a price difference."
+            ? {
+                lead: "Took " + cash(perUnit) + " less per " + one,
+                tail: " — far more than a price difference.",
+              }
             : finding === "a-little-less"
-              ? "A little less of everything, with nothing standing out."
-              : "Level with the other store.";
+              ? {
+                  lead: "A little less of everything",
+                  tail: ", with nothing standing out.",
+                }
+              : { lead: "Level", tail: " with the other store." };
 
   const focus = FOCUS[finding];
   return { gates, finding, says, focus, cta: CTA[focus] };
