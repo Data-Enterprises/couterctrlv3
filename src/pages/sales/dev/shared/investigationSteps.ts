@@ -1,5 +1,5 @@
 import type { Cause, ItemVerdict } from "./deptInvestigation";
-import type { Finding } from "./deptReport";
+import type { Focus } from "./deptReport";
 
 /**
  * The three steps the items grid does not already answer.
@@ -48,15 +48,29 @@ export interface Holds {
   says: string;
 }
 
-/** A supply-shaped symptom expects the shortfall to sit in items we did not
- *  ring at all; a rate-shaped one expects it in items we did. */
-const EXPECTS_SUPPLY: Record<Finding, boolean> = {
-  "nothing-rung": true,
-  "fewer-units": true,
-  "lower-price": false,
-  "different-mix": false,
-  "a-little-less": true,
-  level: true,
+/**
+ * A supply-shaped symptom expects the shortfall to sit in items we did not
+ * ring at all; a rate-shaped one expects it in items we did.
+ *
+ * Keyed on the report's `focus` because that is what travels with the
+ * target — the gate it points at is the same reading as the finding it came
+ * from, one step shorter.
+ */
+const EXPECTS_SUPPLY: Record<Focus, boolean> = {
+  ringing: true,
+  orders: true,
+  price: false,
+  mix: false,
+  unknown: true,
+};
+
+/** How the report put it, for the line that opens the notebook. */
+export const FOCUS_SAYS: Record<Focus, string> = {
+  ringing: "nothing rang here all week",
+  orders: "it sold fewer units than the other store",
+  price: "it took less for every unit it did sell",
+  mix: "it is selling a different mix",
+  unknown: "it is a little under across the board",
 };
 
 const add = (b: Bucket, gap: number): Bucket => ({
@@ -64,7 +78,7 @@ const add = (b: Bucket, gap: number): Bucket => ({
   dollars: b.dollars + gap,
 });
 
-export const holdsUp = (items: ItemVerdict[], finding: Finding): Holds => {
+export const holdsUp = (items: ItemVerdict[], focus: Focus): Holds => {
   let onlyTheirs: Bucket = { items: 0, dollars: 0 };
   let bothLess: Bucket = { items: 0, dollars: 0 };
   let bothMore: Bucket = { items: 0, dollars: 0 };
@@ -82,7 +96,7 @@ export const holdsUp = (items: ItemVerdict[], finding: Finding): Holds => {
 
   const supplyLed =
     Math.abs(onlyTheirs.dollars) >= Math.abs(bothLess.dollars);
-  const verdict = EXPECTS_SUPPLY[finding] === supplyLed ? "holds" : "overturned";
+  const verdict = EXPECTS_SUPPLY[focus] === supplyLed ? "holds" : "overturned";
 
   const says =
     verdict === "holds"

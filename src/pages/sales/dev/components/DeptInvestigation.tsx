@@ -9,14 +9,24 @@ import {
   SUPPLY_LOOKBACK_DAYS,
   supplyWindow,
 } from "../shared/investigationData";
-import type { Cause, ItemVerdict } from "../shared/deptInvestigation";
+import type { Cause, ItemVerdict, Summary } from "../shared/deptInvestigation";
 import { formatCurrency2, formatBigNumber } from "../../../../utils";
 import SortHeader from "../../../../components-dev/SortHeader";
 import ColFilter from "../../../../components-dev/filters/ColFilterPopover";
 import { colInputStyle } from "../../../../components-dev/filters/colFilterStyles";
 import UpcContextMenu from "../../../../components-dev/UpcContextMenu";
 import ItemEvidence from "./ItemEvidence";
-import GapBreakdown from "./GapBreakdown";
+import {
+  desksOf,
+  holdsUp,
+  spreadOf,
+  FOCUS_SAYS,
+  OWNER_LABEL,
+  type Desk,
+  type Holds,
+  type Owner,
+  type Spread,
+} from "../shared/investigationSteps";
 import { rowsToCsv, downloadCsv } from "../../../../utils/csvExport";
 import { useTriStateSort } from "../../../../utils/useTriStateSort";
 import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice";
@@ -140,6 +150,18 @@ const SUGGESTED: Record<string, Cause[]> = {
   orders: ["never-ordered", "not-received"],
   price: ["price-mix"],
   mix: ["price-mix"],
+};
+
+/** Who a cause belongs to, mirrored from the steps module so a line and its
+ *  card never disagree about who is being sent the list. */
+const CAUSE_DESK: Record<Cause, Owner> = {
+  "never-ordered": "buyer",
+  "not-received": "vendor",
+  cost: "buyer",
+  "price-mix": "price",
+  "not-moving": null,
+  unclassified: null,
+  ahead: null,
 };
 
 const CAUSE_ORDER: Cause[] = [
@@ -351,12 +373,12 @@ const COLUMNS: ColumnDef[] = [
     ),
   },
   {
-    key: "mineTy", of: "open", label: "{mine} TY", width: 92, right: true, sort: "mine",
+    key: "mineTy", of: "open", label: "{mine} TY", width: 92, right: true, sort: "mine",
     foot: money((r) => r.mineTy),
     render: (r, fmt) => <span className="font-semibold">{fmt(r.mineTy)}</span>,
   },
   {
-    key: "theirsTy", of: "compare", label: "{theirs} TY", width: 92, right: true, sort: "theirs",
+    key: "theirsTy", of: "compare", label: "{theirs} TY", width: 92, right: true, sort: "theirs",
     foot: money((r) => r.theirsTy),
     render: (r, fmt) => fmt(r.theirsTy),
   },
@@ -472,6 +494,419 @@ const COLUMNS: ColumnDef[] = [
   },
 ];
 
+
+/* ------------------------------------------------------------------ */
+/* Step 1 + 2 · does it hold, and where is it                          */
+/* ------------------------------------------------------------------ */
+
+const Bucket = ({
+  label,
+  bucket,
+  tone,
+}: {
+  label: string;
+  bucket: { items: number; dollars: number };
+  tone: string;
+}) => (
+  <div className="flex items-baseline gap-3 py-2 border-b border-brand_navy/15 last:border-b-0">
+    <span className="text-[13px] text-content/85 min-w-0">{label}</span>
+    <span className="ml-auto text-[13px] text-content/85 tabular-nums whitespace-nowrap">
+      {bucket.items.toLocaleString("en-US")} items
+    </span>
+    <span
+      className={`text-[13.5px] font-bold tabular-nums whitespace-nowrap w-[96px] text-right ${tone}`}
+    >
+      {bucket.dollars >= 0 ? "+" : "−"}
+      {formatCurrency2(Math.abs(bucket.dollars))}
+    </span>
+  </div>
+);
+
+const HoldsPanel = ({
+  holds,
+  spread,
+  summary,
+  them,
+  cash,
+  marginGap,
+  costPenalty,
+  onPickItem,
+  onVendor,
+}: {
+  holds: Holds;
+  spread: Spread;
+  summary: Summary;
+  them: string;
+  cash: (v: number) => string;
+  /** Sales and margin can point opposite ways, and nothing else on the
+   *  screen would say so. Both come off the sales wave, so this belongs in
+   *  the step that draws first. */
+  marginGap: number;
+  costPenalty: number;
+  onPickItem: (code: string) => void;
+  onVendor: (vendor: string) => void;
+}) => {
+  const shortfall = spread.ranked.reduce((t, i) => t - i.gap, 0);
+  const top = spread.ranked.slice(0, 10);
+  const widest = Math.abs(top[0]?.gap ?? 1);
+
+  return (
+    <div className="flex-1 min-h-0 overflow-auto thin-scrollbar px-4 py-4">
+      <div className="max-w-[920px] mx-auto flex flex-col gap-7">
+
+        <section className="flex flex-col gap-3">
+          <div className="text-[12px] font-bold uppercase tracking-wide text-content/85">
+            1 · Does it hold?
+          </div>
+          <p className="text-[19px] font-semibold leading-snug text-content">
+            <span
+              className={
+                holds.verdict === "holds"
+                  ? "text-delta_positive_text"
+                  : "text-severity_watch_text"
+              }
+            >
+              {holds.verdict === "holds" ? "It holds." : "Not as the report put it."}
+            </span>{" "}
+            {holds.says}
+          </p>
+
+          <div className="rounded-md border border-brand_navy/15 px-3 py-1">
+            <Bucket
+              label={`Rang at ${them}, not here`}
+              bucket={holds.onlyTheirs}
+              tone="text-delta_negative_text"
+            />
+            <Bucket
+              label="Rang at both, less here"
+              bucket={holds.bothLess}
+              tone="text-delta_negative_text"
+            />
+            <Bucket
+              label="Rang at both, more here"
+              bucket={holds.bothMore}
+              tone="text-delta_positive_text"
+            />
+          </div>
+          <p className="text-[12.5px] text-content/85 leading-relaxed">
+            Sales only, so this is settled before any cause is named — and
+            before anything can change under you.
+          </p>
+
+          {summary.gap >= 0 && marginGap < 0 && (
+            <p className="text-[13px] leading-relaxed rounded-md bg-severity_watch_bg text-severity_watch_text px-3 py-2">
+              <span className="font-bold">
+                Ahead on sales, behind on margin.
+              </span>{" "}
+              This department took {cash(summary.gap)} more and kept{" "}
+              {cash(Math.abs(marginGap))} less, because it buys the same goods
+              for more. The sales view alone calls this a win.
+            </p>
+          )}
+          {costPenalty < 0 && summary.gap < 0 && (
+            <p className="text-[12.5px] text-content/85 leading-relaxed">
+              Buying the same goods for more took another{" "}
+              <span className="font-semibold text-content">
+                {cash(Math.abs(costPenalty))}
+              </span>{" "}
+              of margin on top of the sales gap.
+            </p>
+          )}
+        </section>
+
+        <div className="flex items-center gap-3 text-[13px] text-content/85">
+          <span className="w-px h-6 bg-brand_navy/15 ml-2" />
+          {holds.verdict === "holds"
+            ? "So the call stands. Is it a few big items, or many small ones?"
+            : "So the shape is different. Where does it sit?"}
+        </div>
+
+        <section className="flex flex-col gap-3">
+          <div className="text-[12px] font-bold uppercase tracking-wide text-content/85">
+            2 · Where is it?
+          </div>
+          <p className="text-[19px] font-semibold leading-snug text-content">
+            {spread.says}
+          </p>
+
+          {/* What the ten biggest carry against everything else. A share bar
+              rather than a list, because when it is spread the list is the
+              thing that misleads. */}
+          <div className="flex h-7 rounded overflow-hidden">
+            <span
+              className="flex items-center px-2.5 text-[12px] font-bold text-custom-white bg-delta_negative_text whitespace-nowrap"
+              style={{ width: `${Math.max(6, spread.topTenShare * 100)}%` }}
+            >
+              {Math.round(spread.topTenShare * 100)}%
+            </span>
+            <span
+              className="flex items-center px-2.5 text-[12px] font-semibold text-delta_negative_text bg-delta_negative_bg whitespace-nowrap min-w-0"
+              style={{ width: `${Math.max(6, (1 - spread.topTenShare) * 100)}%` }}
+            >
+              {Math.max(0, spread.ranked.length - 10).toLocaleString("en-US")} more
+              · {cash(shortfall - top.reduce((t, i) => t - i.gap, 0))}
+            </span>
+          </div>
+
+          {spread.concentrated ? (
+            <div className="flex flex-col">
+              {top.map((i, ix) => (
+                <button
+                  key={i.productCode}
+                  onClick={() => onPickItem(i.productCode)}
+                  className="grid gap-3 items-center px-1.5 py-1.5 border-b border-brand_navy/15 hover:bg-gray-50 rounded text-left"
+                  style={{ gridTemplateColumns: "22px minmax(0,1fr) 110px 96px" }}
+                >
+                  <span className="text-[12px] text-content/85 tabular-nums">
+                    {ix + 1}
+                  </span>
+                  <span className="min-w-0 truncate text-[12.5px] font-mono text-content">
+                    {i.description}
+                  </span>
+                  <span className="h-2.5 rounded-sm bg-delta_negative_text/75">
+                    <span
+                      className="block h-2.5 rounded-sm bg-delta_negative_text"
+                      style={{ width: `${(Math.abs(i.gap) / widest) * 100}%` }}
+                    />
+                  </span>
+                  <span className="text-right text-[12.5px] font-bold tabular-nums text-delta_negative_text">
+                    {"−"}{formatCurrency2(Math.abs(i.gap))}
+                  </span>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <>
+              <p className="text-[12.5px] text-content/85 leading-relaxed">
+                A top ten would let somebody believe it mattered, so the
+                shortfall is grouped by who supplies it instead.
+              </p>
+              <div className="flex flex-col">
+                {spread.byVendor.slice(0, 8).map((v) => (
+                  <button
+                    key={v.vendorName}
+                    onClick={() => onVendor(v.vendorName)}
+                    className="grid gap-3 items-center px-1.5 py-1.5 border-b border-brand_navy/15 hover:bg-gray-50 rounded text-left"
+                    style={{ gridTemplateColumns: "minmax(0,1fr) 110px 86px 96px" }}
+                  >
+                    <span className="min-w-0 truncate text-[13px] font-medium text-content">
+                      {v.vendorName}
+                    </span>
+                    <span className="h-2.5 rounded-sm bg-bkg">
+                      <span
+                        className="block h-2.5 rounded-sm bg-delta_negative_text"
+                        style={{
+                          width: `${(Math.abs(v.dollars) / Math.abs(spread.byVendor[0].dollars)) * 100}%`,
+                        }}
+                      />
+                    </span>
+                    <span className="text-right text-[12.5px] text-content/85 tabular-nums">
+                      {v.items.toLocaleString("en-US")} items
+                    </span>
+                    <span className="text-right text-[12.5px] font-bold tabular-nums text-delta_negative_text">
+                      {"−"}{formatCurrency2(Math.abs(v.dollars))}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+
+          <p className="text-[12.5px] text-content/85 leading-relaxed">
+            {summary.byCause.length > 0
+              ? "Next: why so many. That needs orders and deliveries."
+              : ""}
+          </p>
+        </section>
+      </div>
+    </div>
+  );
+};
+
+/* ------------------------------------------------------------------ */
+/* Step 3's lead-in · one line per cause, with its owner                */
+/* ------------------------------------------------------------------ */
+
+const CauseLines = ({
+  summary,
+  only,
+  onPick,
+  cash,
+}: {
+  summary: Summary;
+  only: Cause | null;
+  onPick: (c: Cause | null) => void;
+  cash: (v: number) => string;
+}) => {
+  const lines = summary.byCause
+    .filter((c) => c.cause !== "ahead")
+    .sort((a, b) => a.dollars - b.dollars);
+  if (lines.length === 0) return null;
+
+  return (
+    <div className="flex-shrink-0 flex flex-col gap-1.5 px-4 pt-3">
+      {lines.map((c) => {
+        const owner = CAUSE_DESK[c.cause];
+        const clickable = c.cause !== "unclassified";
+        return (
+          <button
+            key={c.cause}
+            disabled={!clickable}
+            onClick={() => onPick(only === c.cause ? null : c.cause)}
+            className={`flex items-center gap-3 text-left px-3 py-2 rounded-md border transition-colors ${
+              only === c.cause
+                ? "border-filter_active_border bg-filter_active"
+                : "border-brand_navy/15 hover:bg-gray-50"
+            } ${clickable ? "" : "cursor-default"}`}
+          >
+            <span
+              className={`w-1 self-stretch rounded-sm flex-shrink-0 ${CAUSE_TONE[c.cause].chip}`}
+            />
+            <span className="text-[13.5px] leading-snug text-content min-w-0">
+              <span className="font-bold text-delta_negative_text">
+                {cash(Math.abs(c.dollars))}
+              </span>{" "}
+              is {c.items.toLocaleString("en-US")}{" "}
+              {c.items === 1 ? "item" : "items"} · {CAUSE_LABEL[c.cause].toLowerCase()}
+            </span>
+            <span className="ml-auto text-[12px] font-semibold text-content/85 whitespace-nowrap">
+              {owner ? `→ ${OWNER_LABEL[owner]}` : "no owner"}
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
+};
+
+/* ------------------------------------------------------------------ */
+/* Step 5 · who fixes it                                               */
+/* ------------------------------------------------------------------ */
+
+const ActPanel = ({
+  desks,
+  cash,
+  onShow,
+  onExport,
+  onPickItem,
+  waiting,
+}: {
+  desks: Desk[];
+  cash: (v: number) => string;
+  onShow: (c: Cause) => void;
+  onExport: (d: Desk) => void;
+  onPickItem: (code: string) => void;
+  waiting: boolean;
+}) => {
+  if (waiting) {
+    return (
+      <div className="flex-1 min-h-0 overflow-auto thin-scrollbar px-4 py-4">
+        <div className="max-w-[920px] mx-auto rounded-md border border-dashed border-severity_watch_text/40 bg-severity_watch_bg px-4 py-4">
+          <p className="text-[14px] leading-relaxed text-severity_watch_text">
+            The lists are written once the causes are final, so nobody is sent
+            a list that changes after they have read it.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const owned = desks.filter((d) => d.actionable);
+  const quiet = desks.filter((d) => !d.actionable);
+
+  return (
+    <div className="flex-1 min-h-0 overflow-auto thin-scrollbar px-4 py-4">
+      <div className="max-w-[920px] mx-auto flex flex-col gap-4">
+        <div className="text-[12px] font-bold uppercase tracking-wide text-content/85">
+          5 · Who fixes it?
+        </div>
+
+        <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))" }}>
+          {owned.map((d) => (
+            <div
+              key={d.cause}
+              className="flex flex-col gap-2.5 rounded-md border border-brand_navy/15 p-3.5"
+            >
+              <span className="text-[12px] font-bold uppercase tracking-wide text-content/85">
+                {CAUSE_LABEL[d.cause]} ·{" "}
+                <span className="text-delta_negative_text">
+                  {cash(Math.abs(d.dollars))}
+                </span>
+              </span>
+              <span className="text-[15px] font-bold text-content">
+                {"→"} {OWNER_LABEL[d.owner as "buyer" | "vendor" | "price"]}
+              </span>
+              <p className="text-[13px] leading-relaxed text-content/85">{d.says}</p>
+
+              <ul className="flex flex-col gap-1">
+                {d.items.slice(0, 4).map((i) => (
+                  <li key={i.productCode} className="flex items-baseline gap-2">
+                    <button
+                      onClick={() => onPickItem(i.productCode)}
+                      className="min-w-0 truncate text-left text-[12px] font-mono text-brand_navy_hover hover:underline"
+                    >
+                      {i.description}
+                    </button>
+                    <span className="ml-auto text-[12px] tabular-nums text-delta_negative_text whitespace-nowrap">
+                      {"−"}{formatCurrency2(Math.abs(i.gap))}
+                    </span>
+                  </li>
+                ))}
+                {d.items.length > 4 && (
+                  <li className="text-[12px] text-content/85">
+                    + {(d.items.length - 4).toLocaleString("en-US")} more
+                  </li>
+                )}
+              </ul>
+
+              <div className="flex flex-wrap gap-2 mt-auto pt-1">
+                <button
+                  onClick={() =>
+                    navigator.clipboard.writeText(
+                      d.items.map((i) => i.productCode).join(", "),
+                    )
+                  }
+                  className="px-3 py-1.5 rounded-md bg-brand_navy hover:bg-brand_navy_hover text-custom-white text-[12px] font-bold transition-colors"
+                >
+                  Copy UPCs
+                </button>
+                <button
+                  onClick={() => onExport(d)}
+                  className="px-3 py-1.5 rounded-md border border-brand_line text-[12px] font-bold text-content hover:bg-gray-50 transition-colors"
+                >
+                  Export
+                </button>
+                <button
+                  onClick={() => onShow(d.cause)}
+                  className="px-3 py-1.5 rounded-md border border-brand_line text-[12px] font-bold text-content hover:bg-gray-50 transition-colors"
+                >
+                  Show in grid
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Stated, and handed to nobody. A shortfall that quietly vanishes
+            from the hand-off is one somebody finds again later and trusts
+            less for having been dropped. */}
+        {quiet.map((d) => (
+          <p
+            key={d.cause}
+            className="text-[13px] leading-relaxed text-content/85 border-l-2 border-brand_navy/15 pl-3"
+          >
+            <span className="font-semibold text-content">
+              {CAUSE_LABEL[d.cause]} · {cash(Math.abs(d.dollars))}
+            </span>{" "}
+            {d.says} It goes on no list, because nothing here names anything to
+            act on.
+          </p>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 interface Props {
   gradingMetric: GradingMetric;
   twStart: string;
@@ -504,10 +939,19 @@ const DeptInvestigation = ({
   /** Which item's evidence is open. Held here rather than in the slice: it
    *  belongs to this screen and means nothing once you leave it. */
   const [picked, setPicked] = useState<string | null>(null);
-  /** The grid, or the two pictures of the same numbers. Not a different
-   *  screen: the cause filter is shared, so switching views keeps whatever
-   *  the reader had narrowed to. */
-  const [view, setView] = useState<"items" | "breakdown">("items");
+  /**
+   * Which step is on screen.
+   *
+   * Tabs rather than one long scroll: the grid alone is three hundred rows,
+   * and a page that puts the hand-off below it leaves the last step
+   * reachable only by a shortcut. The three split on the WAVE boundary —
+   * "holds" needs sales alone and draws at once, the other two wait — so the
+   * structure carries the loading rather than fighting it.
+   *
+   * The cause filter is shared across them, so moving between steps keeps
+   * whatever the reader had narrowed to.
+   */
+  const [tab, setTab] = useState<"holds" | "items" | "act">("holds");
 
   const isQty = gradingMetric === "qty";
   const fmt = (v: number) => (isQty ? formatBigNumber(v, 0) : formatCurrency2(v));
@@ -564,6 +1008,15 @@ const DeptInvestigation = ({
     [items, picked],
   );
 
+  /* The three steps the grid does not answer. All three are arithmetic over
+     items already in hand, so changing tab asks for nothing. */
+  const holds = useMemo(
+    () => holdsUp(items, target?.focus ?? "unknown"),
+    [items, target?.focus],
+  );
+  const spread = useMemo(() => spreadOf(items), [items]);
+  const desks = useMemo(() => desksOf(items, cash), [items]);
+
   /**
    * The last item the rail showed, kept through the close.
    *
@@ -597,6 +1050,19 @@ const DeptInvestigation = ({
   };
 
   const filtered = only !== null || !!itemQ || !!upcQ || !!vendorQ;
+
+  /** One desk's list, named for who it is going to. The whole-grid export
+   *  in the header is a different file and says so. */
+  const exportDesk = (d: Desk) => {
+    if (!target) return;
+    const name = [
+      target.storeNumber,
+      target.subDeptName.replace(/[^A-Za-z0-9]+/g, "-"),
+      CAUSE_LABEL[d.cause].replace(/[^A-Za-z0-9]+/g, "-"),
+      twEnd,
+    ].join("_");
+    downloadCsv(rowsToCsv(CSV_HEADERS, d.items.map(csvRow)), `${name}.csv`);
+  };
 
   /** Everything the filters left, not the 300 that are drawn. */
   const exportCsv = () => {
@@ -641,24 +1107,6 @@ const DeptInvestigation = ({
 
   const supply = supplyWindow({ start: twStart, end: twEnd });
   const byCause = new Map(summary.byCause.map((c) => [c.cause, c]));
-  const worst = CAUSE_ORDER.filter(
-    (c) => c !== "ahead" && (byCause.get(c)?.dollars ?? 0) < 0,
-  ).slice(0, 3);
-
-  /**
-   * What is actually lost, which is NOT the net.
-   *
-   * A store can be well ahead overall and still have a department's worth of
-   * items it never ordered. Writing "of the $13,380 gap, $2,494 never got
-   * ordered" when the store is $13,380 AHEAD is simply false — the gap is not
-   * a gap, and the shortfall is a different number that still needs fixing.
-   */
-  const shortfall = CAUSE_ORDER.filter((c) => c !== "ahead").reduce(
-    (a, c) => a + Math.min(0, byCause.get(c)?.dollars ?? 0),
-    0,
-  );
-  const aheadBy = byCause.get("ahead")?.dollars ?? 0;
-
   /**
    * Sales and margin can point opposite ways, and the headline has to say so.
    *
@@ -672,11 +1120,56 @@ const DeptInvestigation = ({
     (a, i) => a + Math.min(0, i.margins.costPenalty ?? 0),
     0,
   );
-  const disagree = summary.gap >= 0 && marginGap < 0;
 
   const suggested = SUGGESTED[target.focus ?? ""] ?? [];
 
+  /** Stepping walks the list the GRID is showing, not every item in the
+   *  department: arrowing through "never ordered" should not wander out of
+   *  it halfway down. */
+  const at = capped.findIndex((r) => r.productCode === picked);
+  const stepItem = (d: number) => {
+    const next = capped[at + d];
+    if (next) setPicked(next.productCode);
+  };
+
   const close = () => dispatch(setInvestigation(null));
+
+  /** The bar's own content. `answer` is a thunk because a tab that is still
+   *  waiting must not evaluate a conclusion it does not have yet. */
+  const TABS = [
+    {
+      key: "holds" as const,
+      n: 1,
+      title: "Does it hold?",
+      needsAll: false,
+      answer: () =>
+        holds.verdict === "holds" ? "It holds" : "The items say otherwise",
+    },
+    {
+      key: "items" as const,
+      n: 3,
+      title: "What is it?",
+      needsAll: true,
+      answer: () => {
+        const lead = summary.byCause.find((c) => c.cause !== "ahead" && c.dollars < 0);
+        return lead
+          ? `${CAUSE_LABEL[lead.cause]} · ${cash(Math.abs(lead.dollars))}`
+          : "Nothing behind";
+      },
+    },
+    {
+      key: "act" as const,
+      n: 5,
+      title: "Who fixes it?",
+      needsAll: true,
+      answer: () => {
+        const owned = desks.filter((d) => d.actionable);
+        return owned.length
+          ? `${owned.length} ${owned.length === 1 ? "list" : "lists"} to hand out`
+          : "Nothing to hand out";
+      },
+    },
+  ];
 
   return (
     <div className="h-full flex flex-col overflow-hidden bg-custom-white rounded-xl shadow-sm">
@@ -718,166 +1211,75 @@ const DeptInvestigation = ({
       </div>
 
       {/*
-        The finding, in the colour of the figure it is explaining.
+        The notebook opens by restating what sent the reader here.
 
-        A sentence on white above a row of white chips above a line of grey
-        type read as one undifferentiated block, and the most important thing
-        on the screen was the part nobody's eye stopped on. The strip takes
-        the same tone as the total in the header — one band for behind, the
-        other for ahead — so the two agree at a glance instead of making the
-        reader check the sign.
+        The report worked its call out of department totals; the steps below
+        take it to the items. Saying it again costs a line and means nobody
+        has to hold it in their head across a screen change.
       */}
-      <div
-        className={`flex-shrink-0 px-4 py-3 border-b border-brand_navy/15 ${
-          summary.gap < 0 ? "bg-delta_negative_bg" : "bg-delta_positive_bg"
-        }`}
-      >
-        {stage !== "failed" && worst.length > 0 ? (
-          <p className="text-[13.5px] text-content leading-relaxed">
-            {disagree && (
-              <span className="block mb-1.5 font-semibold text-delta_negative_text">
-                Ahead on sales by {fmt(summary.gap)} and behind on margin by{" "}
-                {cash(Math.abs(marginGap))}.
-              </span>
-            )}
-            {summary.gap >= 0 ? (
-              <>
-                Ahead by{" "}
-                <span className="font-semibold text-delta_positive_text">
-                  {fmt(summary.gap)}
-                </span>
-                , and still losing{" "}
-                <span className="font-semibold">{fmt(Math.abs(shortfall))}</span>
-                :{" "}
-              </>
-            ) : (
-              <>Of the {fmt(Math.abs(summary.gap))} behind,{" "}</>
-            )}
-            {worst.map((c, i) => (
-              <span key={c}>
-                {i > 0 && (i === worst.length - 1 ? " and " : ", ")}
-                <span className="font-semibold">
-                  {fmt(Math.abs(byCause.get(c)?.dollars ?? 0))}
-                </span>{" "}
-                {c === "never-ordered"
-                  ? "never got ordered"
-                  : c === "not-received"
-                    ? "was ordered and never arrived"
-                    : c === "cost"
-                      ? "is bought for more than they pay"
-                      : c === "not-moving"
-                        ? "is on the shelf not moving"
-                        : c === "price-mix"
-                          ? "is price, not volume"
-                          : "has no cause yet"}
-              </span>
-            ))}
-            .
-            {summary.gap < 0 && aheadBy > 0 && (
-              <span className="text-content/85">
-                {" "}Offset by {fmt(aheadBy)} where we are ahead.
-              </span>
-            )}
-            {costPenalty < 0 && (
-              <span className="text-content/85">
-                {" "}Buying the same goods for more took another{" "}
-                <span className="font-semibold text-content">
-                  {cash(Math.abs(costPenalty))}
-                </span>{" "}
-                of margin.
-              </span>
-            )}
-          </p>
-        ) : (
-          <p className="text-[13.5px] text-content leading-relaxed">
-            {stage === "failed"
-              ? "This department could not be read."
-              : `Nothing in this department is behind ${target.compareStoreName}.`}
-          </p>
-        )}
+      <div className="flex-shrink-0 px-4 py-2.5 border-b border-brand_navy/15">
+        <p className="text-[14px] leading-snug text-content">
+          The report said {target.subDeptName} was behind because{" "}
+          <span className="font-semibold">
+            {FOCUS_SAYS[target.focus ?? "unknown"]}
+          </span>
+          . <span className="text-content/85">Let&rsquo;s check.</span>
+        </p>
       </div>
 
       {/*
-        Tabs, not a segmented pill.
+        The steps, as tabs.
 
-        These are two views of the same set, which is what a tab is for. The
-        pill put them in the filter row dressed as a filter, so the one
-        control that changes what KIND of thing you are looking at sat among
-        nine that change how much of it you see.
+        One scrolling page would put the hand-off below three hundred rows of
+        grid, where only a shortcut reaches it. The three split on the WAVE
+        boundary: the first needs sales alone and draws at once, the other
+        two wait for orders and deliveries — so a tab that is not ready says
+        what it is waiting for rather than showing a figure that will move.
+
+        Each carries its own conclusion once it has one, so the bar is a
+        summary of the whole notebook and not just a way to move around it.
       */}
-      <div className="flex-shrink-0 flex items-end gap-1 px-4 border-b border-brand_navy/15">
-        {(["items", "breakdown"] as const).map((v) => (
-          <button
-            key={v}
-            onClick={() => setView(v)}
-            className={`-mb-px border-b-2 px-3.5 py-2 text-[13px] font-semibold transition-colors ${
-              view === v
-                ? "border-brand_navy text-content"
-                : "border-transparent text-content/85 hover:text-content"
-            }`}
-          >
-            {v === "items" ? "Items" : "Breakdown"}
-            {v === "items" && (
-              <span className="ml-1.5 tabular-nums font-normal text-content/85">
-                {shown.length.toLocaleString("en-US")}
-              </span>
-            )}
-          </button>
-        ))}
-      </div>
-
-      <div className="flex-shrink-0 px-4 py-2.5 border-b border-brand_navy/15">
-        <div className="flex flex-wrap items-center gap-2">
-          <button
-            onClick={() => setOnly(null)}
-            className={`text-[12px] font-semibold px-2.5 py-1 rounded-full border transition-shadow ${
-              only === null
-                ? "bg-filter_active border-filter_active_border text-content ring-2 ring-filter_active_border shadow-sm"
-                : "bg-custom-white border-brand_line text-content hover:bg-gray-50"
-            }`}
-          >
-            All {items.length} items
-          </button>
-          {CAUSE_ORDER.filter((c) => byCause.has(c)).map((c) => {
-            const t = byCause.get(c);
-            return (
-              <button
-                key={c}
-                onClick={() => setOnly(only === c ? null : c)}
-                title={
-                  suggested.includes(c)
-                    ? `${CAUSE_OWNER[c]} — where this department's shape points`
-                    : CAUSE_OWNER[c]
-                }
-                className={`text-[12px] font-semibold px-2.5 py-1 rounded-full border transition-shadow ${
-                  CAUSE_TONE[c].chip
-                } ${
-                  suggested.includes(c)
-                    ? "border-dashed border-content/40"
-                    : "border-transparent"
-                } ${only === c ? `ring-2 shadow-sm ${CAUSE_TONE[c].ring}` : ""}`}
-              >
-                {CAUSE_LABEL[c]}
-                <span className="ml-1.5 font-normal tabular-nums">
-                  {t?.items} · {fmt(Math.abs(t?.dollars ?? 0))}
+      <div className="flex-shrink-0 grid grid-cols-3 border-b border-brand_navy/15">
+        {TABS.map((t) => {
+          const waiting = t.needsAll && stage !== "done" && stage !== "failed";
+          const on = tab === t.key;
+          return (
+            <button
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              aria-current={on}
+              className={`text-left px-4 py-2 border-b-2 transition-colors min-w-0 ${
+                on
+                  ? "border-brand_navy bg-custom-white"
+                  : "border-transparent hover:bg-gray-50"
+              }`}
+            >
+              <span className="flex items-center gap-2">
+                <span
+                  className={`w-5 h-5 rounded-full text-[11px] font-bold flex items-center justify-center flex-shrink-0 ${
+                    waiting
+                      ? "border border-dashed border-content/40 text-content/85"
+                      : "bg-brand_navy text-custom-white"
+                  }`}
+                >
+                  {t.n}
                 </span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* The windows do not line up, and the screen says so rather than
-            letting the grid imply every column is diagnosed. */}
-        <p className="text-[13px] text-content/85 mt-2.5">
-          Causes explain this week against {target.compareStoreName}. Orders and
-          deliveries are read over {SUPPLY_LOOKBACK_DAYS} days
-          ({supply.start} to {supply.end}) — they cannot account for the LW or
-          LY columns.
-          {STAGE_NOTE[stage] && (
-            <span className="ml-1.5 font-semibold">{STAGE_NOTE[stage]}</span>
-          )}
-        </p>
+                <span className="text-[13px] font-bold text-content">
+                  {t.title}
+                </span>
+              </span>
+              <span
+                className={`block text-[12px] mt-0.5 truncate ${
+                  waiting ? "italic text-content/85" : "text-content/85"
+                }`}
+              >
+                {waiting ? "Waiting on orders and deliveries" : t.answer()}
+              </span>
+            </button>
+          );
+        })}
       </div>
+
 
       {problem ? (
         <div className="flex-1 flex items-center justify-center px-6 text-center text-[13px] text-content/85">
@@ -885,25 +1287,116 @@ const DeptInvestigation = ({
         </div>
       ) : (
         <>
-          {/* The Sales Export preview's grid, which is this app's language for
-              a lot of columns at once: one real table, every cell ruled, mono
-              at 11px, a sticky heading row and a sticky row number. Dense is
-              the point — a department is hundreds of items and an airy list
-              shows eight of them. */}
-          {view === "breakdown" ? (
-            <GapBreakdown
-              items={items}
-              fmt={fmt}
-              openStoreNumber={target.storeNumber}
-              compareStoreNumber={target.compareStoreNumber}
-              only={only}
-              onPickCause={setOnly}
+          {tab === "holds" && (
+            <HoldsPanel
+              holds={holds}
+              spread={spread}
+              summary={summary}
+              them={target.compareStoreName}
+              cash={cash}
+              marginGap={marginGap}
+              costPenalty={costPenalty}
               onPickItem={(code) => {
                 setPicked(code);
-                setView("items");
+                setTab("items");
+              }}
+              onVendor={(v) => {
+                setVendorQ(v);
+                setTab("items");
               }}
             />
-          ) : (
+          )}
+
+          {tab === "act" && (
+            <ActPanel
+              desks={desks}
+              cash={cash}
+              onShow={(c) => {
+                setOnly(c);
+                setTab("items");
+              }}
+              onExport={exportDesk}
+              onPickItem={(code) => {
+                setPicked(code);
+                setTab("items");
+              }}
+              waiting={stage !== "done" && stage !== "failed"}
+            />
+          )}
+
+          {/* The grid stays MOUNTED behind `hidden` rather than being
+              unmounted with the tab. Three hundred rows is too much to
+              rebuild on every switch, and keeping it alive preserves the
+              scroll position and the active filter — which matters, because
+              step 5's "Show in grid" lands the reader in it.
+
+              The Sales Export preview's grid: one real table, every cell
+              ruled, mono at 11px, a sticky heading row and a sticky row
+              number. Dense is the point — a department is hundreds of items
+              and an airy list shows eight of them. */}
+          <div
+            hidden={tab !== "items"}
+            className={tab === "items" ? "flex-1 min-h-0 flex flex-col overflow-hidden" : ""}
+          >
+          <CauseLines
+            summary={summary}
+            only={only}
+            onPick={setOnly}
+            cash={cash}
+          />
+          <div className="flex-shrink-0 px-4 py-2.5 border-b border-brand_navy/15">
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                onClick={() => setOnly(null)}
+                className={`text-[12px] font-semibold px-2.5 py-1 rounded-full border transition-shadow ${
+                  only === null
+                    ? "bg-filter_active border-filter_active_border text-content ring-2 ring-filter_active_border shadow-sm"
+                    : "bg-custom-white border-brand_line text-content hover:bg-gray-50"
+                }`}
+              >
+                All {items.length} items
+              </button>
+              {CAUSE_ORDER.filter((c) => byCause.has(c)).map((c) => {
+                const t = byCause.get(c);
+                return (
+                  <button
+                    key={c}
+                    onClick={() => setOnly(only === c ? null : c)}
+                    title={
+                      suggested.includes(c)
+                        ? `${CAUSE_OWNER[c]} — where this department's shape points`
+                        : CAUSE_OWNER[c]
+                    }
+                    className={`text-[12px] font-semibold px-2.5 py-1 rounded-full border transition-shadow ${
+                      CAUSE_TONE[c].chip
+                    } ${
+                      suggested.includes(c)
+                        ? "border-dashed border-content/40"
+                        : "border-transparent"
+                    } ${only === c ? `ring-2 shadow-sm ${CAUSE_TONE[c].ring}` : ""}`}
+                  >
+                    {CAUSE_LABEL[c]}
+                    <span className="ml-1.5 font-normal tabular-nums">
+                      {t?.items} · {fmt(Math.abs(t?.dollars ?? 0))}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* The windows do not line up, and the screen says so rather than
+                letting the grid imply every column is diagnosed. */}
+            <p className="text-[13px] text-content/85 mt-2.5">
+              Causes explain this week against {target.compareStoreName}.
+              Orders and deliveries are read over {SUPPLY_LOOKBACK_DAYS} days
+              ({supply.start} to {supply.end}) — they cannot account for the
+              LW or LY columns.
+              {STAGE_NOTE[stage] && (
+                <span className="ml-1.5 font-semibold">{STAGE_NOTE[stage]}</span>
+              )}
+            </p>
+          </div>
+
           <div className="flex-1 min-h-0 flex overflow-hidden">
           <div className="flex-1 min-w-0 overflow-auto thin-scrollbar">
             <table className="border-collapse font-mono text-[11px] w-max">
@@ -1090,15 +1583,24 @@ const DeptInvestigation = ({
               minePoints={sales?.minePoints ?? []}
               theirsPoints={sales?.theirsPoints ?? []}
               supplyReady={stage === "done"}
+              position={{
+                at: Math.max(0, at),
+                of: capped.length,
+                within: only ? CAUSE_LABEL[only] : null,
+              }}
+              onStep={stepItem}
               onClose={() => setPicked(null)}
             />
             )}
            </div>
           </div>
           </div>
-          )}
+          </div>
 
-          <div className="flex-shrink-0 flex items-center gap-3 px-4 py-2 border-t border-brand_line bg-custom-white text-[13.5px] text-content/85">
+          <div
+            hidden={tab !== "items"}
+            className="flex-shrink-0 flex items-center gap-3 px-4 py-2 border-t border-brand_line bg-custom-white text-[13.5px] text-content/85"
+          >
             <span>
               {shown.length > ROW_CAP ? (
                 <>

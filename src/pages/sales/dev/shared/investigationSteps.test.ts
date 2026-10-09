@@ -58,7 +58,7 @@ const money = (v: number) => "$" + v.toFixed(2);
 
 describe("1 · does it hold", () => {
   it("holds when a supply call lands on items we never rang", () => {
-    const h = holdsUp([...absent(5, 100), ...weaker(2, 40, 50)], "fewer-units");
+    const h = holdsUp([...absent(5, 100), ...weaker(2, 40, 50)], "orders");
     expect(h.verdict).toBe("holds");
     expect(h.onlyTheirs.items).toBe(5);
     expect(h.onlyTheirs.dollars).toBeCloseTo(-500, 6);
@@ -71,13 +71,13 @@ describe("1 · does it hold", () => {
    * the next four steps are about price, not supply.
    */
   it("overturns a volume call when the items were all here", () => {
-    const h = holdsUp([...weaker(8, 40, 90), ...absent(1, 20)], "fewer-units");
+    const h = holdsUp([...weaker(8, 40, 90), ...absent(1, 20)], "orders");
     expect(h.verdict).toBe("overturned");
     expect(h.says).toContain("they took less");
   });
 
   it("overturns a price call when the items were never rung", () => {
-    const h = holdsUp([...absent(6, 100), ...weaker(1, 40, 50)], "lower-price");
+    const h = holdsUp([...absent(6, 100), ...weaker(1, 40, 50)], "price");
     expect(h.verdict).toBe("overturned");
     expect(h.says).toContain("never rang");
   });
@@ -85,7 +85,7 @@ describe("1 · does it hold", () => {
   it("counts items we are ahead on separately", () => {
     const h = holdsUp(
       [...weaker(2, 40, 90), ...weaker(1, 120, 60)],
-      "lower-price",
+      "price",
     );
     expect(h.bothMore.items).toBe(1);
     expect(h.bothMore.dollars).toBeCloseTo(60, 6);
@@ -95,7 +95,7 @@ describe("1 · does it hold", () => {
   it("reads presence from units, not from sales", () => {
     const h = holdsUp(
       [item({ mineTy: 0, mineUnits: 4, theirsTy: 90, theirsUnits: 10 })],
-      "lower-price",
+      "price",
     );
     expect(h.onlyTheirs.items).toBe(0);
     expect(h.bothLess.items).toBe(1);

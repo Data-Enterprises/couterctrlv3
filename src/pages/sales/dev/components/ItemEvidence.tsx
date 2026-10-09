@@ -55,6 +55,10 @@ interface Props {
    *  say "still reading" instead of "nothing was ever delivered" — which are
    *  opposite answers. */
   supplyReady: boolean;
+  /** Where this item sits in the list the grid is currently showing, so
+   *  stepping through a filtered pile does not quietly walk out of it. */
+  position: { at: number; of: number; within: string | null };
+  onStep: (delta: number) => void;
   onClose: () => void;
 }
 
@@ -350,6 +354,8 @@ const ItemEvidence = ({
   minePoints,
   theirsPoints,
   supplyReady,
+  position,
+  onStep,
   onClose,
 }: Props) => {
   const code = item.productCode;
@@ -374,14 +380,40 @@ const ItemEvidence = ({
               {item.vendorName ? ` · ${item.vendorName}` : ""}
             </div>
           </div>
-          <button
-            onClick={onClose}
-            aria-label="Close"
-            className="ml-auto flex-shrink-0 text-[12px] font-semibold text-content/85 hover:text-content"
-          >
-            ✕
-          </button>
+          {/* Walking the pile beats going back to the grid for every item.
+              The arrows follow whatever the grid is filtered to, and the
+              count says which pile that is. */}
+          <div className="ml-auto flex items-center gap-1 flex-shrink-0">
+            <button
+              onClick={() => onStep(-1)}
+              disabled={position.at <= 0}
+              aria-label="Previous item"
+              className="w-7 h-7 rounded border border-brand_line text-content/85 hover:text-content hover:bg-gray-50 disabled:opacity-40 transition-colors"
+            >
+              &lsaquo;
+            </button>
+            <button
+              onClick={() => onStep(1)}
+              disabled={position.at >= position.of - 1}
+              aria-label="Next item"
+              className="w-7 h-7 rounded border border-brand_line text-content/85 hover:text-content hover:bg-gray-50 disabled:opacity-40 transition-colors"
+            >
+              &rsaquo;
+            </button>
+            <button
+              onClick={onClose}
+              aria-label="Close"
+              className="w-7 h-7 rounded text-[12px] font-semibold text-content/85 hover:text-content hover:bg-gray-50 transition-colors"
+            >
+              ✕
+            </button>
+          </div>
         </div>
+      </div>
+
+      <div className="px-4 pb-2 text-[12px] text-content/85 tabular-nums">
+        {position.at + 1} of {position.of.toLocaleString("en-US")}
+        {position.within ? ` in ${position.within.toLowerCase()}` : ""}
       </div>
 
       <div className="flex-1 min-h-0 overflow-auto thin-scrollbar px-4 pb-4">
