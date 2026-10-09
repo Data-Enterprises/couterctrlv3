@@ -69,6 +69,15 @@ const numberOf = (name: string, fallback: string) => {
   return /^\d+$/.test(lead) ? lead : fallback;
 };
 
+/** The left list: marker, name, the money, and the units behind it. */
+const LIST_COLS = "10px minmax(0,1fr) 88px 76px";
+
+/** Whole units, signed, with the measure where it is not pieces. */
+const units = (v: number, weighed: boolean) =>
+  (v >= 0 ? "+" : "−") +
+  Math.abs(Math.round(v)).toLocaleString("en-US") +
+  (weighed ? " lb" : "");
+
 /** What a department's chain concluded, in the fewest words that are true. */
 const FINDING_SAYS: Record<Finding, string> = {
   "nothing-rung": "Nothing rung",
@@ -181,21 +190,39 @@ const ListRow = ({
           : "border-transparent hover:bg-gray-50"
       }`}
     >
-      <span className="flex items-center gap-2">
+      <span
+        className="grid items-center gap-2"
+        style={{ gridTemplateColumns: LIST_COLS }}
+      >
         <span
           className={`block w-2 h-2 rounded-full flex-shrink-0 ${
             ahead ? "bg-emerald-500" : "bg-red-500"
           }`}
         />
-        <span className="flex-1 min-w-0 truncate text-[12px] font-semibold text-content">
+        <span className="min-w-0 truncate text-[12px] font-semibold text-content">
           {row.name}
         </span>
         <span
-          className={`text-[12px] font-bold tabular-nums whitespace-nowrap ${
+          className={`text-right text-[12px] font-bold tabular-nums whitespace-nowrap ${
             ahead ? "text-delta_positive_text" : "text-delta_negative_text"
           }`}
         >
           {signed(row.gap)}
+        </span>
+        {/* The units behind the money. A department down four thousand
+            dollars on nine hundred fewer units is a different problem from
+            one down four thousand on the same units, and the sentence
+            underneath can only say which after the fact. */}
+        <span
+          className={`text-right text-[12px] tabular-nums whitespace-nowrap ${
+            row.mineUnits - row.theirsUnits >= 0
+              ? "text-delta_positive_text"
+              : "text-delta_negative_text"
+          }`}
+        >
+          {row.theirsUnits === 0 && row.mineUnits === 0
+            ? "—"
+            : units(row.mineUnits - row.theirsUnits, row.weighed)}
         </span>
       </span>
       <span className="block pl-4 text-[11px] text-content/85 truncate">
@@ -693,10 +720,15 @@ const DeptReport = ({
           className="flex flex-col min-h-0 border-r border-brand_navy/15"
           style={{ width: "39.5%" }}
         >
-          <div className="flex-shrink-0 flex items-center gap-2 px-3 py-1.5 border-b border-brand_navy/15 text-[10px] font-bold uppercase tracking-wide text-content/85">
-            <span className="w-2 flex-shrink-0" />
-            <span className="flex-1 min-w-0">Sub dept</span>
-            <span>Gap</span>
+          <div
+            className="flex-shrink-0 grid items-center gap-2 px-3 py-1.5 border-b border-brand_navy/15 text-[10px] font-bold uppercase tracking-wide text-content/85"
+            style={{ gridTemplateColumns: LIST_COLS }}
+          >
+            <span />
+            <span className="min-w-0">Sub dept</span>
+            {/* "Gap" was unambiguous while it was the only one. */}
+            <span className="text-right">Sales gap</span>
+            <span className="text-right">Units</span>
           </div>
 
           <div className="flex-1 min-h-0 overflow-auto thin-scrollbar">
