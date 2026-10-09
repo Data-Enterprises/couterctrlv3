@@ -183,7 +183,7 @@ const Carousel = ({ slides }: { slides: Slide[] }) => {
   };
 
   return (
-    <div className="rounded-lg bg-custom-white shadow-md overflow-hidden flex flex-col min-w-0">
+    <div className="rounded-lg bg-custom-white shadow-card overflow-hidden flex flex-col min-w-0">
       <div className="flex items-center gap-0.5 px-2 pt-1.5 border-b border-brand_navy/15">
         {slides.map((sl, i) => (
           <button
@@ -308,7 +308,7 @@ const Waves = ({ sales, all }: { sales: boolean; all: boolean }) => {
 /** Why the screen is holding something back, beside a light that says it is
  *  still working. Shaped like a sentence, not a spinner. */
 const LoadNote = ({ children }: { children: ReactNode }) => (
-  <div className="flex items-center gap-2.5 rounded-lg bg-custom-white shadow-md px-4 py-2.5">
+  <div className="flex items-center gap-2.5 rounded-lg bg-custom-white shadow-card px-4 py-2.5">
     <span className="w-2 h-2 rounded-full bg-brand_navy_hover animate-pulse flex-shrink-0" />
     <span className="text-[13px] leading-snug text-content/85">{children}</span>
   </div>
@@ -318,7 +318,7 @@ const NAME_W = ["78%", "62%", "85%", "55%", "72%", "68%", "90%", "60%"];
 
 /** A card's worth of bars. */
 const SkCard = ({ rows = 4 }: { rows?: number }) => (
-  <div className="rounded-lg bg-custom-white shadow-md px-5 py-4 flex flex-col gap-2.5">
+  <div className="rounded-lg bg-custom-white shadow-card px-5 py-4 flex flex-col gap-2.5">
     <Bar w="46%" h={13} />
     {Array.from({ length: rows }, (_, i) => (
       <Bar key={i} w={NAME_W[i % NAME_W.length]} />
@@ -935,39 +935,47 @@ const HoldsPanel = ({
           style={{ gridTemplateColumns: "minmax(0,0.85fr) minmax(0,1fr)" }}
         >
           <div className="flex flex-col gap-5 min-w-0">
-          <div className="rounded-lg bg-custom-white shadow-md px-5 py-4 min-w-0">
+          <div className="rounded-lg bg-custom-white shadow-card px-5 py-4 min-w-0">
             <div className="flex flex-col gap-4 min-w-0">
-              <p className="text-[18px] font-semibold leading-snug text-content">
-              <span
-                className={
-                  holds.verdict === "holds"
-                    ? "text-delta_positive_text"
-                    : "text-severity_watch_text"
-                }
-              >
-                {holds.verdict === "holds" ? "It holds." : "Not as the report put it."}
-              </span>{" "}
-              {holds.says}
-            </p>
+              {/* The finding and the figure that carries it, on one tint —
+                  the same block the caveats sit in at the foot of the card.
+                  Between them the card has its claim and its size; what
+                  follows is the working. */}
+              <div className="rounded-md bg-bkg px-3.5 py-3 flex flex-col gap-2.5">
+                <p className="text-[18px] font-semibold leading-snug text-content">
+                  <span
+                    className={
+                      holds.verdict === "holds"
+                        ? "text-delta_positive_text"
+                        : "text-severity_watch_text"
+                    }
+                  >
+                    {holds.verdict === "holds"
+                      ? "It holds."
+                      : "Not as the report put it."}
+                  </span>{" "}
+                  {holds.says}
+                </p>
 
-            <div className="flex items-baseline gap-3 flex-wrap">
-              <span
-                className={`text-[34px] font-bold tabular-nums leading-none ${
-                  lead.b.dollars >= 0
-                    ? "text-delta_positive_text"
-                    : "text-delta_negative_text"
-                }`}
-              >
-                {lead.b.dollars >= 0 ? "+" : "−"}
-                {cash(Math.abs(lead.b.dollars))}
-              </span>
-              <span className="text-[13.5px] text-content/85 min-w-0">
-                <span className="font-semibold text-content">
-                  {lead.b.items.toLocaleString("en-US")} items
-                </span>{" "}
-                {lead.label.toLowerCase()}
-              </span>
-            </div>
+                <div className="flex items-baseline gap-3 flex-wrap">
+                  <span
+                    className={`text-[34px] font-bold tabular-nums leading-none ${
+                      lead.b.dollars >= 0
+                        ? "text-delta_positive_text"
+                        : "text-delta_negative_text"
+                    }`}
+                  >
+                    {lead.b.dollars >= 0 ? "+" : "−"}
+                    {cash(Math.abs(lead.b.dollars))}
+                  </span>
+                  <span className="text-[13.5px] text-content/85 min-w-0">
+                    <span className="font-semibold text-content">
+                      {lead.b.items.toLocaleString("en-US")} items
+                    </span>{" "}
+                    {lead.label.toLowerCase()}
+                  </span>
+                </div>
+              </div>
 
             {moved > 0 && (
               <span className="flex h-[8.4px] rounded-sm overflow-hidden bg-bkg">
@@ -1121,7 +1129,7 @@ const HoldsPanel = ({
         />
           </div>
 
-          <div className="rounded-lg bg-custom-white shadow-md px-5 py-4 min-w-0">
+          <div className="rounded-lg bg-custom-white shadow-card px-5 py-4 min-w-0">
           <div className="flex flex-col gap-4 min-w-0">
             <p className="text-[18px] font-semibold leading-snug text-content">
               {spread.says}
@@ -1465,7 +1473,7 @@ const SupplyPanel = ({
         )}
 
         <div className="grid gap-4" style={{ gridTemplateColumns: "repeat(auto-fit,minmax(340px,1fr))" }}>
-          <div className="rounded-lg bg-custom-white shadow-md px-4 py-3.5 min-w-0">
+          <div className="rounded-lg bg-custom-white shadow-card px-4 py-3.5 min-w-0">
             <div className="text-[12px] font-bold uppercase tracking-wide text-content/85">
               Over the window
             </div>
@@ -1483,7 +1491,7 @@ const SupplyPanel = ({
 
           {/* One column each, so "359 against 8,934" is read rather than
               worked out from two cards facing away from each other. */}
-          <div className="rounded-lg bg-custom-white shadow-md px-4 py-3.5 min-w-0">
+          <div className="rounded-lg bg-custom-white shadow-card px-4 py-3.5 min-w-0">
             <div className="text-[12px] font-bold uppercase tracking-wide text-content/85">
               Side by side
             </div>
@@ -1691,7 +1699,7 @@ const ActPanel = ({
           {owned.map((d) => (
             <div
               key={d.cause}
-              className="flex flex-col gap-2.5 rounded-lg bg-bkg shadow-sm p-4"
+              className="flex flex-col gap-2.5 rounded-lg bg-bkg shadow-card-sm p-4"
             >
               <span className="text-[12px] font-bold uppercase tracking-wide text-content/85">
                 {CAUSE_LABEL[d.cause]} ·{" "}
@@ -1926,8 +1934,6 @@ const DeptInvestigation = ({
     if (k === "cause") setOnly(null);
   };
 
-  const filtered = only !== null || !!itemQ || !!upcQ || !!vendorQ;
-
   /** One desk's list, named for who it is going to. The whole-grid export
    *  in the header is a different file and says so. */
   const exportDesk = (d: Desk) => {
@@ -1970,13 +1976,6 @@ const DeptInvestigation = ({
       label: `Copy ${CAUSE_LABEL[g.cause].toLowerCase()} UPCs · ${g.upcs.length}`,
       onClick: () => navigator.clipboard.writeText(g.upcs.join(", ")),
     }));
-  const clearAll = () => {
-    setOnly(null);
-    setItemQ(""); setItemDraft("");
-    setUpcQ(""); setUpcDraft("");
-    setVendorQ("");
-  };
-
   const sorted = applySort(shown, (row, col) => sortValue(row, col));
   const capped = sorted.slice(0, ROW_CAP);
 
@@ -2102,7 +2101,7 @@ const DeptInvestigation = ({
 
   return (
     <div
-      className={`h-full flex flex-col overflow-hidden bg-custom-white rounded-xl shadow-sm ${
+      className={`h-full flex flex-col overflow-hidden bg-custom-white rounded-xl shadow-card-sm ${
         leaving ? "animate-nb-leave" : ""
       }`}
     >
@@ -2111,23 +2110,44 @@ const DeptInvestigation = ({
           where you are, the tabs say what is here, and the panel fills in
           under them. Arriving all at once read as a page swap. */}
       <div className="flex-shrink-0 flex items-center gap-3 px-4 py-2.5 bg-brand_navy animate-nb-drop motion-reduce:animate-none">
+        {/* The department is what the notebook is about, so it leads. Then
+            who against whom, then when — and the way out says where it
+            goes once, not in six words every time. */}
         <button
           ref={backRef}
           onClick={close}
-          className="text-custom-white text-[12.5px] font-semibold hover:underline rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-custom-white/70"
+          title="Back to the comparison"
+          className="flex-shrink-0 text-custom-white text-[12.5px] font-semibold hover:underline rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-custom-white/70"
         >
-          ‹ Back to the comparison
+          ‹ Back
         </button>
-        <span className="text-custom-white/85 text-[12.5px] truncate flex items-center gap-1.5 min-w-0">
-          <span className="w-2.5 h-2.5 rounded-sm bg-store_open flex-shrink-0" />
-          <span className="font-semibold text-custom-white">{target.storeName}</span>
-          <span className="truncate">
-            {" · "}{target.subDeptName}{" · "}week ending {twEnd}{" · against"}
+
+        <span className="flex items-center gap-2 min-w-0 text-[12.5px] text-custom-white/85">
+          <span className="font-semibold text-custom-white truncate">
+            {target.subDeptName}
           </span>
-          <span className="w-2.5 h-2.5 rounded-sm bg-store_compare flex-shrink-0" />
-          <span className="font-semibold text-custom-white">{target.compareStoreName}</span>
+          <span className="flex-shrink-0 opacity-50">|</span>
+          <span className="flex items-center gap-1.5 min-w-0">
+            <span className="w-2.5 h-2.5 rounded-full bg-store_open flex-shrink-0" />
+            <span className="font-semibold text-custom-white truncate">
+              {target.storeName}
+            </span>
+          </span>
+          <span className="flex-shrink-0">vs</span>
+          <span className="flex items-center gap-1.5 min-w-0">
+            <span className="w-2.5 h-2.5 rounded-full bg-store_compare flex-shrink-0" />
+            <span className="font-semibold text-custom-white truncate">
+              {target.compareStoreName}
+            </span>
+          </span>
+          <span className="hidden xl:inline flex-shrink-0 whitespace-nowrap">
+            {" · week ending "}{twEnd}
+          </span>
         </span>
-        <Waves sales={salesIn} all={allIn} />
+
+        {/* Only while something is still coming. Three lit lamps said
+            nothing, forever, in the busiest strip on the page. */}
+        {!allIn && <Waves sales={salesIn} all={allIn} />}
         <button
           onClick={exportCsv}
           disabled={sorted.length === 0}
@@ -2305,7 +2325,7 @@ const DeptInvestigation = ({
                 onClick={() => setOnly(null)}
                 className={`text-[12px] font-semibold px-2.5 py-1 rounded-full border transition-shadow ${
                   only === null
-                    ? "bg-filter_active border-filter_active_border text-content ring-2 ring-filter_active_border shadow-sm"
+                    ? "bg-filter_active border-filter_active_border text-content ring-2 ring-filter_active_border shadow-card-sm"
                     : "bg-custom-white border-brand_line text-content hover:bg-gray-50"
                 }`}
               >
@@ -2335,7 +2355,7 @@ const DeptInvestigation = ({
                       suggested.includes(c)
                         ? "border-dashed border-content/40"
                         : "border-transparent"
-                    } ${only === c ? `ring-2 shadow-sm ${CAUSE_TONE[c].ring}` : ""}`}
+                    } ${only === c ? `ring-2 shadow-card-sm ${CAUSE_TONE[c].ring}` : ""}`}
                   >
                     {CAUSE_LABEL[c]}
                     <span className="ml-1.5 font-normal tabular-nums">
@@ -2566,35 +2586,6 @@ const DeptInvestigation = ({
            </div>
           </div>
           </div>
-          </div>
-
-          <div
-            hidden={tab !== "items"}
-            className="flex-shrink-0 flex items-center gap-3 px-4 py-2 border-t border-brand_line bg-custom-white text-[13.5px] text-content/85"
-          >
-            <span>
-              {shown.length > ROW_CAP ? (
-                <>
-                  Showing the {ROW_CAP} biggest differences of {shown.length}.
-                  Narrow it with a heading filter — what is left out is the
-                  tail, and nothing in it is larger than the last row here.
-                </>
-              ) : (
-                <>
-                  {shown.length} {shown.length === 1 ? "item" : "items"}
-                  {filtered ? ` of ${items.length}` : ""} · ordered by the
-                  biggest difference · click one for its evidence
-                </>
-              )}
-            </span>
-            {filtered && (
-              <button
-                onClick={clearAll}
-                className="flex-shrink-0 font-semibold text-brand_navy_hover hover:underline"
-              >
-                Clear filters
-              </button>
-            )}
           </div>
 
           {ctx && (

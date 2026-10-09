@@ -159,6 +159,14 @@ export default {
         mixed_surface: {},
       },
 
+      boxShadow: {
+        /* Tailwind's own shadows are neutral black, which greys a card
+           rather than lifting it. These carry the navy the rest of the
+           chrome is built from, so a card reads as sitting on the page
+           instead of smudged onto it. */
+        card: "0 1px 3px rgb(var(--color-brand-navy) / 0.14), 0 1px 2px rgb(var(--color-brand-navy) / 0.10)",
+        "card-sm": "0 1px 2px rgb(var(--color-brand-navy) / 0.12)",
+      },
       keyframes: {
         nbDrop: {
           "0%": { opacity: "0", transform: "translateY(-14px)" },
