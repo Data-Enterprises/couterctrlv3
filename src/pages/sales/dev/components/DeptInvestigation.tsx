@@ -502,7 +502,9 @@ const Bucket = ({
       {bucket.items.toLocaleString("en-US")} items
     </span>
     <span
-      className={`text-[13.5px] font-bold tabular-nums whitespace-nowrap w-[96px] text-right ${tone}`}
+      className={`text-[13.5px] font-bold tabular-nums whitespace-nowrap w-[96px] text-right ${
+        bucket.items === 0 ? "text-content/85" : tone
+      }`}
     >
       {bucket.dollars >= 0 ? "+" : "−"}
       {formatCurrency2(Math.abs(bucket.dollars))}
@@ -520,14 +522,22 @@ const Bucket = ({
  */
 const Vitals = ({
   vitals,
+  spread,
   them,
   cash,
+  onVendor,
 }: {
   vitals: VitalsShape;
+  spread: Spread;
   them: string;
   cash: (v: number) => string;
+  onVendor: (vendor: string) => void;
 }) => {
   const tallest = Math.max(1, ...vitals.weeks.map((w) => Math.abs(w.gap)));
+  /** Nothing rang here at all — the index has no rule to sit on. */
+  const sellsNone = vitals.index.every((m) => m.mine === 0);
+  const vendors = spread.byVendor.slice(0, 6);
+  const widestVendor = Math.max(1, Math.abs(vendors[0]?.dollars ?? 0));
   // The rule sits two thirds along, so a department running well OVER its
   // counterpart still has somewhere to go.
   const RULE = 66.666;
@@ -581,6 +591,18 @@ const Vitals = ({
         <p className="text-[12px] text-content/85 leading-snug mt-0.5">
           One rule for all three, so measures that disagree are seen to.
         </p>
+        {sellsNone ? (
+          /* Three bars pinned at zero said nothing, in the one case where
+             the reason they are at zero IS the finding. */
+          <p className="text-[13px] leading-relaxed text-content/85 mt-2.5">
+            This store rang none of this department at all, so there is
+            nothing to put on the rule. {them} took{" "}
+            <span className="font-semibold text-delta_negative_text">
+              {cash(vitals.index[0].theirs)}
+            </span>{" "}
+            of it.
+          </p>
+        ) : (
         <div className="flex flex-col gap-2.5 mt-3">
           {vitals.index.map((m) => {
             const over = (m.pct ?? 0) >= 100;
@@ -616,10 +638,55 @@ const Vitals = ({
             );
           })}
         </div>
-        <p className="text-[12px] text-content/85 leading-snug mt-2.5">
-          The rule is {them} at 100.
-        </p>
+        )}
+        {!sellsNone && (
+          <p className="text-[12px] text-content/85 leading-snug mt-2.5">
+            The rule is {them} at 100.
+          </p>
+        )}
       </div>
+
+      {/* Who supplies the shortfall.
+
+          One vendor owning most of it is the cluster worth finding: a buyer
+          raising one account closes more than chasing thirty items across
+          nine. It is here on every department rather than only on the ones
+          too spread to list, because a concentrated department can still be
+          one vendor's. */}
+      {vendors.length > 0 && (
+        <div className="rounded-md border border-brand_navy/15 px-3.5 py-3">
+          <div className="text-[12px] font-bold uppercase tracking-wide text-content/85">
+            Who supplies it
+          </div>
+          <p className="text-[12px] text-content/85 leading-snug mt-0.5">
+            The shortfall by vendor. Pick one to narrow the items.
+          </p>
+          <div className="flex flex-col gap-1.5 mt-3">
+            {vendors.map((v) => (
+              <button
+                key={v.vendorName}
+                onClick={() => onVendor(v.vendorName)}
+                className="flex items-center gap-2.5 text-left rounded px-1 py-0.5 hover:bg-gray-50 transition-colors"
+              >
+                <span className="w-[108px] flex-shrink-0 truncate text-[12.5px] text-content">
+                  {v.vendorName}
+                </span>
+                <span className="flex-1 min-w-0 h-2.5 rounded-sm bg-bkg">
+                  <span
+                    className="block h-2.5 rounded-sm bg-red-500"
+                    style={{
+                      width: `${(Math.abs(v.dollars) / widestVendor) * 100}%`,
+                    }}
+                  />
+                </span>
+                <span className="w-[72px] flex-shrink-0 text-right text-[12.5px] font-bold tabular-nums text-delta_negative_text">
+                  {"−"}{cash(Math.abs(v.dollars))}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -825,7 +892,13 @@ const HoldsPanel = ({
         </section>
        </div>
 
-       <Vitals vitals={vitals} them={them} cash={cash} />
+       <Vitals
+         vitals={vitals}
+         spread={spread}
+         them={them}
+         cash={cash}
+         onVendor={onVendor}
+       />
       </div>
     </div>
   );
