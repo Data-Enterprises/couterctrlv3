@@ -60,16 +60,19 @@ type Col =
   | "price" | "sellThrough" | "ordered" | "received";
 
 /**
- * How many rows are drawn.
+ * How many rows a page holds.
  *
- * A department is hundreds of items and the table is one DOM node per cell,
- * so the whole of Soft Drinks is forty thousand of them. The list is ordered
- * by the biggest difference, which means the tail is the part nobody scrolls
- * to — and the cause chips above narrow the set when somebody does want it.
- * The footer says how many were left out rather than pretending this is all
- * of them.
+ * A department can run to several thousand items, which is more than a
+ * scroll can carry and more than a browser enjoys laying out. It used to
+ * print the biggest three hundred and say so in a footer, which meant the
+ * tail was unreachable: the chips could narrow it, but an item outside the
+ * top three hundred of every filter could not be got to at all.
+ *
+ * Paged instead. The order is still biggest difference first, so page one
+ * is what the cap used to show, and every later page is the tail nobody
+ * could reach.
  */
-const ROW_CAP = 300;
+const PAGE_ROWS = 50;
 
 const CAUSE_LABEL: Record<Cause, string> = {
   "never-ordered": "Never ordered",
@@ -1917,6 +1920,20 @@ const DeptInvestigation = ({
     [items, picked],
   );
 
+  /**
+   * An item chosen anywhere else lands on the page that holds it.
+   *
+   * The Check tab's list and the hand-off's lists both pick an item and
+   * switch to the grid. Without this the grid stays on page one and the
+   * selected row is somewhere the reader cannot see, which reads as the
+   * click having done nothing.
+   */
+  const show = (code: string) => {
+    const i = sorted.findIndex((r) => r.productCode === code);
+    if (i >= 0) setPage(Math.floor(i / PAGE_ROWS));
+    setPicked(code);
+  };
+
   /* The three steps the grid does not answer. All three are arithmetic over
      items already in hand, so changing tab asks for nothing. */
   const holds = useMemo(
@@ -2005,8 +2022,17 @@ const DeptInvestigation = ({
       label: `Copy ${CAUSE_LABEL[g.cause].toLowerCase()} UPCs · ${g.upcs.length}`,
       onClick: () => navigator.clipboard.writeText(g.upcs.join(", ")),
     }));
+  /** Which page of the grid is showing, from 0. */
+  const [page, setPage] = useState(0);
+
   const sorted = applySort(shown, (row, col) => sortValue(row, col));
-  const capped = sorted.slice(0, ROW_CAP);
+  const pages = Math.max(1, Math.ceil(sorted.length / PAGE_ROWS));
+  /* Clamped rather than reset: a filter that shortens the list below the
+     current page should land on the last one, not throw the reader back to
+     the first. */
+  const at_ = Math.min(page, pages - 1);
+  const from = at_ * PAGE_ROWS;
+  const capped = sorted.slice(from, from + PAGE_ROWS);
 
   if (!target) return null;
 
@@ -2030,10 +2056,13 @@ const DeptInvestigation = ({
 
   /** Stepping walks the list the GRID is showing, not every item in the
    *  department: arrowing through "never ordered" should not wander out of
-   *  it halfway down. */
-  const at = capped.findIndex((r) => r.productCode === picked);
+   *  it halfway down. It walks the whole filtered list rather than the
+   *  page, because a page boundary is a fact about the table and not about
+   *  the items — the page follows the rail instead. */
+  const at = sorted.findIndex((r) => r.productCode === picked);
   const stepItem = (d: number) => {
-    const next = capped[at + d];
+    const next = sorted[at + d];
+    if (next) setPage(Math.floor((at + d) / PAGE_ROWS));
     if (next) setPicked(next.productCode);
   };
 
@@ -2089,13 +2118,16 @@ const DeptInvestigation = ({
    * `answer` is a thunk because a tab that is still waiting must not
    * evaluate a conclusion it does not have yet.
    */
+  /* The conclusion a tab has reached, in as few words as will carry it.
+     These are read four at a time across the top of the page, so a phrase
+     that is fine on its own becomes a paragraph here — the tab says what it
+     found, and the tab itself says the rest. */
   const TABS = [
     {
       key: "holds" as const,
       title: "Check",
       needsAll: false,
-      answer: () =>
-        holds.verdict === "holds" ? "It holds" : "The items say otherwise",
+      answer: () => (holds.verdict === "holds" ? "Holds" : "Doesn’t hold"),
     },
     {
       key: "items" as const,
@@ -2103,9 +2135,7 @@ const DeptInvestigation = ({
       needsAll: true,
       answer: () => {
         const lead = summary.byCause.find((c) => c.cause !== "ahead" && c.dollars < 0);
-        return lead
-          ? `${CAUSE_LABEL[lead.cause]} · ${cash(Math.abs(lead.dollars))}`
-          : "Nothing behind";
+        return lead ? CAUSE_LABEL[lead.cause] : "Nothing behind";
       },
     },
     {
@@ -2113,7 +2143,7 @@ const DeptInvestigation = ({
       title: "Supply",
       needsAll: true,
       answer: () =>
-        `${supply.mine.orders} ${supply.mine.orders === 1 ? "order" : "orders"} here, ${supply.theirs.orders} there`,
+        `${supply.mine.orders} vs ${supply.theirs.orders} orders`,
     },
     {
       key: "act" as const,
@@ -2122,8 +2152,8 @@ const DeptInvestigation = ({
       answer: () => {
         const owned = desks.filter((d) => d.actionable);
         return owned.length
-          ? `${owned.length} ${owned.length === 1 ? "list" : "lists"} to hand out`
-          : "Nothing to hand out";
+          ? `${owned.length} ${owned.length === 1 ? "list" : "lists"}`
+          : "No lists";
       },
     },
   ];
@@ -2280,7 +2310,7 @@ const DeptInvestigation = ({
               marginGap={marginGap}
               costPenalty={costPenalty}
               onPickItem={(code) => {
-                setPicked(code);
+                show(code);
                 setTab("items");
               }}
               onVendor={(v) => {
@@ -2314,7 +2344,7 @@ const DeptInvestigation = ({
               }}
               onExport={exportDesk}
               onPickItem={(code) => {
-                setPicked(code);
+                show(code);
                 setTab("items");
               }}
             />
@@ -2537,9 +2567,9 @@ const DeptInvestigation = ({
               </tbody>
 
               {/* Sticky to the bottom of the scroller, so the totals are
-                  readable from row 1 as well as row 300. Over the filtered
-                  set — the count in the first cell says how many that is,
-                  which is the number the cap can disagree with. */}
+                  readable from the first row as well as the last. Over the
+                  whole filtered set rather than this page: a total of fifty
+                  rows is not a total of anything anybody asked about. */}
               {capped.length > 0 && (
                 <tfoot>
                   <tr>
@@ -2565,6 +2595,45 @@ const DeptInvestigation = ({
               </div>
             )}
           </div>
+
+          {/* Outside the scroller, so it stays put while the rows move. The
+              totals row above it is over the whole filtered set, not this
+              page — which is the figure anybody reading totals wants. */}
+          {sorted.length > 0 && (
+            <div className="flex-shrink-0 flex items-center gap-3 px-4 py-2 border-t border-brand_line bg-custom-white text-[12.5px] text-content/85">
+              <span className="tabular-nums">
+                {(from + 1).toLocaleString("en-US")}–{Math.min(from + PAGE_ROWS, sorted.length).toLocaleString("en-US")}{" "}
+                of {sorted.length.toLocaleString("en-US")}
+                {sorted.length !== items.length && (
+                  <span className="text-content/85">
+                    {" "}filtered from {items.length.toLocaleString("en-US")}
+                  </span>
+                )}
+              </span>
+
+              {pages > 1 && (
+                <span className="ml-auto flex items-center gap-2">
+                  <button
+                    onClick={() => setPage(Math.max(0, at_ - 1))}
+                    disabled={at_ === 0}
+                    className="px-2.5 py-1 rounded-md border border-brand_navy/25 font-bold hover:bg-bkg disabled:opacity-35 disabled:hover:bg-transparent transition-colors"
+                  >
+                    {"‹"} Prev
+                  </button>
+                  <span className="tabular-nums whitespace-nowrap">
+                    Page {at_ + 1} of {pages}
+                  </span>
+                  <button
+                    onClick={() => setPage(Math.min(pages - 1, at_ + 1))}
+                    disabled={at_ >= pages - 1}
+                    className="px-2.5 py-1 rounded-md border border-brand_navy/25 font-bold hover:bg-bkg disabled:opacity-35 disabled:hover:bg-transparent transition-colors"
+                  >
+                    Next {"›"}
+                  </button>
+                </span>
+              )}
+            </div>
+          )}
 
           {/*
             The rail moves instead of appearing.
@@ -2595,7 +2664,7 @@ const DeptInvestigation = ({
               supplyReady={stage === "done"}
               position={{
                 at: Math.max(0, at),
-                of: capped.length,
+                of: sorted.length,
                 within: only ? CAUSE_LABEL[only] : null,
               }}
               onStep={stepItem}
