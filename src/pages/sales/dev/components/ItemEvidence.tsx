@@ -1,11 +1,14 @@
+import { useState } from "react";
 import {
   ladderFor,
+  ladderSays,
   CAUSE_LABEL,
   CAUSE_TONE,
   evidenceSays,
   supplyTimeline,
   type ItemVerdict,
   type PriceLadder,
+  type PricePoint,
   type SupplyEvent,
 } from "../shared/deptInvestigation";
 import { formatCurrency2, formatBigNumber } from "../../../../utils";
@@ -250,76 +253,198 @@ const Timeline = ({
   </div>
 );
 
-const Ladder = ({
-  ladder,
-  tint,
-  label,
-}: {
-  ladder: PriceLadder;
-  tint: string;
-  label: string;
-}) => (
-  <div className="min-w-0">
-    <div className={`flex items-baseline gap-2 text-[13px] font-semibold uppercase tracking-wide text-content/85 pb-1.5 border-b-2 leading-tight ${tint}`}>
-      <span className="min-w-0">{label}</span>
-      {ladder.promo && (
-        <span className="text-[12px] font-bold px-1.5 py-0.5 rounded bg-delta_positive_bg text-delta_positive_text normal-case tracking-normal">
-          Promotion
-        </span>
-      )}
-    </div>
+/**
+ * Units sold at each price, in ten-cent steps.
+ *
+ * The ladder is exact and unshaped: thirteen rows, and the fact that four
+ * fifths of the units went inside one dime takes adding up to see. Binned,
+ * that shape is the picture — one tall bar and a scatter of stubs either
+ * side, or two towers, which is a different week entirely.
+ *
+ * Bars are units, not money: the question is what customers actually paid,
+ * and money would make a dear price with three sales look like a busy one.
+ */
+const PriceChart = ({ points }: { points: PricePoint[] }) => {
+  if (points.length < 2) return null;
 
-    {ladder.points.length === 0 ? (
-      <p className="text-[12px] text-content/85 pt-2.5">Nothing rang this week.</p>
-    ) : (
-      <>
-        {ladder.points.map((p) => (
-          <div key={p.price} className="py-2 border-b border-brand_navy/15">
-            <div className="flex items-baseline gap-2">
-              <span className="text-[16px] font-bold tabular-nums text-content">
-                {money(p.price)}
-              </span>
-              <span className="ml-auto text-[13.5px] text-content/85 tabular-nums">
-                {count(p.units)} units · {p.days}d
-              </span>
-            </div>
-            <div className="flex items-baseline gap-2 mt-1 text-[13.5px] text-content/85 tabular-nums">
-              <span>{count(p.transactions)} baskets</span>
-              {/* Units over baskets is the one figure only the transaction
-                  count can give, and it is how a multi-buy shows itself. */}
-              <span
-                className={`ml-auto font-semibold ${
-                  (p.unitsPerBasket ?? 0) >= 1.5
-                    ? "text-delta_positive_text"
-                    : "text-content"
-                }`}
-              >
-                {p.unitsPerBasket === null ? "—" : p.unitsPerBasket.toFixed(2)} per basket
-              </span>
-            </div>
-          </div>
-        ))}
+  const bins = new Map<number, number>();
+  for (const p of points) {
+    const k = Math.round(Math.floor(p.price * 10 + 1e-9)) / 10;
+    bins.set(k, (bins.get(k) ?? 0) + p.units);
+  }
+  const keys = [...bins.keys()].sort((x, y) => x - y);
+  const lo = keys[0];
+  const hi = keys[keys.length - 1] + 0.1;
+  const tallest = Math.max(...bins.values());
+  const widest = points.reduce((m, p) => (p.units > m.units ? p : m), points[0]);
+  const hot = Math.round(Math.floor(widest.price * 10 + 1e-9)) / 10;
 
-        {/* The contrast that justifies the whole payload: on two prices the
-            average is a figure nobody ever paid. */}
-        {ladder.points.length > 1 && ladder.blended !== null && (
-          <div className="mt-2 rounded bg-severity_watch_bg text-severity_watch_text px-2.5 py-2">
-            <div className="text-[12px] font-bold uppercase tracking-wide">
-              An average would say
-            </div>
-            <div className="text-[14px] font-bold tabular-nums mt-0.5">
-              {money(ladder.blended)}
-            </div>
-            <div className="text-[13px] mt-0.5 leading-snug">
-              A price no customer paid. It rang at{" "}
-              {ladder.points.map((p) => money(p.price)).join(" and ")}.
-            </div>
-          </div>
-        )}
-      </>
-    )}
+  const W = 440;
+  const H = 96;
+  const base = H - 18;
+  const span = Math.max(0.1, hi - lo);
+  const at = (p: number) => ((p - lo) / span) * W;
+  const bw = Math.max(3, (W / (span * 10)) - 2);
+
+  /* Four marks across, whatever the span: a tick a bin would be forty of
+     them on a department that rings in cents. */
+  const ticks = [0, 1, 2, 3].map((i) => lo + (span * i) / 3);
+
+  return (
+    <svg
+      viewBox={`0 0 ${W} ${H}`}
+      className="w-full h-auto"
+      role="img"
+      aria-label={`Units sold at each price, in ten-cent steps. Most at ${money(widest.price)}.`}
+    >
+      <line x1={0} x2={W} y1={base} y2={base} className="stroke-brand_navy/20" />
+      {keys.map((k) => {
+        const u = bins.get(k) ?? 0;
+        const h = Math.max(2, (u / tallest) * (base - 6));
+        return (
+          <rect
+            key={k}
+            x={at(k) + 1}
+            y={base - h}
+            width={bw}
+            height={h}
+            rx={2}
+            className={k === hot ? "fill-brand_navy" : "fill-brand_navy/35"}
+          >
+            <title>
+              {money(k)}–{money(k + 0.09)} · {count(u)} units
+            </title>
+          </rect>
+        );
+      })}
+      {ticks.map((t, i) => (
+        <text
+          key={i}
+          x={Math.min(W - 2, Math.max(2, at(t)))}
+          y={H - 4}
+          textAnchor={i === 0 ? "start" : i === 3 ? "end" : "middle"}
+          className="fill-content/85 text-[9px]"
+        >
+          {money(t)}
+        </text>
+      ))}
+    </svg>
+  );
+};
+
+/** One price, and what went out at it. */
+const Rung = ({ p }: { p: PricePoint }) => (
+  <div className="flex items-baseline gap-2.5 py-1.5 border-b border-brand_navy/15 last:border-b-0">
+    <span className="w-[62px] flex-shrink-0 text-[15px] font-bold tabular-nums text-content">
+      {money(p.price)}
+    </span>
+    <span className="min-w-0 flex-1 text-[12px] text-content/85 tabular-nums truncate">
+      {count(p.units)} units · {p.days}d · {count(p.transactions)} baskets
+    </span>
+    {/* Units over baskets is the one figure only the transaction count can
+        give, and it is how a multi-buy shows itself. */}
+    <span
+      className={`flex-shrink-0 text-right text-[12px] tabular-nums ${
+        (p.unitsPerBasket ?? 0) >= 1.5
+          ? "font-bold text-delta_positive_text"
+          : "text-content/85"
+      }`}
+    >
+      {p.unitsPerBasket === null ? "—" : `${p.unitsPerBasket.toFixed(2)} per basket`}
+    </span>
   </div>
 );
+
+/** How many prices print before the rest folds away. */
+const LADDER_SHOWN = 4;
+
+const Ladder = ({
+  ladder,
+  label,
+  mine,
+}: {
+  ladder: PriceLadder;
+  label: string;
+  mine: boolean;
+}) => {
+  const [all, setAll] = useState(false);
+
+  if (ladder.points.length === 0) {
+    return (
+      <p className="flex items-center gap-2 text-[13px] text-content/85">
+        <span
+          className={`w-2 h-2 rounded-full flex-shrink-0 ${
+            mine ? "bg-store_open" : "bg-store_compare"
+          }`}
+        />
+        <span className="font-semibold text-content">{label}</span>
+        rang none of it this week.
+      </p>
+    );
+  }
+
+  /* Biggest first. The ladder was in price order, which puts the price that
+     sold three units above the one that sold a hundred and thirty-five as
+     often as not. */
+  const byUnits = [...ladder.points].sort((x, y) => y.units - x.units);
+  const shown = all ? byUnits : byUnits.slice(0, LADDER_SHOWN);
+  const says = ladderSays(ladder);
+
+  return (
+    <div className="rounded-lg bg-custom-white shadow-card-sm px-3.5 py-3">
+      <div className="flex items-center gap-2">
+        <span
+          className={`w-2 h-2 rounded-full flex-shrink-0 ${
+            mine ? "bg-store_open" : "bg-store_compare"
+          }`}
+        />
+        <span className="min-w-0 truncate text-[13px] font-bold text-content">
+          {label}
+        </span>
+        {ladder.promo && (
+          <span className="flex-shrink-0 text-[11px] font-bold px-1.5 py-0.5 rounded bg-delta_positive_bg text-delta_positive_text">
+            Promotion
+          </span>
+        )}
+      </div>
+
+      {says && (
+        <p className="text-[12.5px] leading-snug text-content/85 mt-1.5">{says}</p>
+      )}
+
+      <div className="mt-2">
+        <PriceChart points={ladder.points} />
+      </div>
+
+      <div className="mt-1">
+        {shown.map((p) => (
+          <Rung key={p.price} p={p} />
+        ))}
+      </div>
+
+      {byUnits.length > LADDER_SHOWN && (
+        <button
+          onClick={() => setAll((v) => !v)}
+          className="mt-1.5 text-[12px] font-bold text-brand_navy_hover hover:underline"
+        >
+          {all
+            ? "Show fewer"
+            : `Show all ${byUnits.length} prices`}
+        </button>
+      )}
+
+      {/* The contrast that justifies the whole payload: on two prices the
+          average is a figure nobody ever paid. */}
+      {ladder.points.length > 1 && ladder.blended !== null && (
+        <p className="mt-2 rounded-md bg-severity_watch_bg text-severity_watch_text px-2.5 py-1.5 text-[12px] leading-snug">
+          An average would call it{" "}
+          <span className="font-bold tabular-nums">{money(ladder.blended)}</span>{" "}
+          — a price no customer paid.
+        </p>
+      )}
+    </div>
+  );
+};
 
 const ItemEvidence = ({
   item,
@@ -439,9 +564,12 @@ const ItemEvidence = ({
           <h3 className="text-[12px] font-bold uppercase tracking-wide text-content/85 mb-2">
             What it actually rang at
           </h3>
-          <div className="grid grid-cols-2 gap-4">
-            <Ladder ladder={mineLadder} tint={MINE} label={openStoreName} />
-            <Ladder ladder={theirLadder} tint={THEIRS} label={compareStoreName} />
+          {/* One above the other. Side by side each card had half a
+              panel for a chart, a ladder and a sentence, and the store
+              that rang nothing still took its half to say so. */}
+          <div className="flex flex-col gap-3">
+            <Ladder ladder={mineLadder} label={openStoreName} mine />
+            <Ladder ladder={theirLadder} label={compareStoreName} mine={false} />
           </div>
         </section>
       </div>

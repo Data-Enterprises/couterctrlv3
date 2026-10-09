@@ -302,6 +302,59 @@ export const CAUSE_TONE: Record<Cause, { chip: string; ring: string }> = {
 };
 
 /**
+ * What a week of prices amounts to, in a sentence.
+ *
+ * The ladder underneath is every price in order, which answers "what did it
+ * ring at" exactly and "what did it mostly ring at" not at all — a reader
+ * has to add up thirteen rows to see that four fifths of the units went at
+ * one price. This says it, and the ladder proves it.
+ *
+ * Null where there is nothing to summarise: no prices, or one, where the
+ * ladder's single row already is the sentence.
+ */
+export const ladderSays = (ladder: PriceLadder): string | null => {
+  const pts = ladder.points;
+  if (pts.length < 2) return null;
+
+  const cash = (v: number) =>
+    "$" + v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const whole = (v: number) => Math.round(v).toLocaleString("en-US");
+
+  const prices = pts.map((p) => p.price);
+  const lo = Math.min(...prices);
+  const hi = Math.max(...prices);
+  const total = pts.reduce((t, p) => t + p.units, 0);
+
+  /* The band the units actually went at: the modal price and anything
+     within a dime of it, which is where a scale item's rounding lands and
+     a genuine second price does not. */
+  const near = ladder.modal === null
+    ? []
+    : pts.filter((p) => Math.abs(p.price - ladder.modal!) <= 0.1);
+  const nearUnits = near.reduce((t, p) => t + p.units, 0);
+  const nearLo = near.length ? Math.min(...near.map((p) => p.price)) : null;
+  const nearHi = near.length ? Math.max(...near.map((p) => p.price)) : null;
+
+  const where =
+    nearLo === null
+      ? ""
+      : nearLo === nearHi
+        ? ` Most units went at ${cash(nearLo)} (${whole(nearUnits)} of ${whole(total)}).`
+        : ` Most units went at ${cash(nearLo)}–${cash(nearHi!)} (${whole(nearUnits)} of ${whole(total)}).`;
+
+  /* A basket taking several at once is the one thing only the transaction
+     count can tell you, and it is usually a multi-buy nobody mentioned. */
+  const multi = [...pts]
+    .filter((p) => (p.unitsPerBasket ?? 0) >= 1.5)
+    .sort((a, b) => b.units - a.units)[0];
+  const deal = multi
+    ? ` At ${cash(multi.price)} a basket took ${multi.unitsPerBasket!.toFixed(1)} at a time.`
+    : "";
+
+  return `Rang at ${pts.length} prices from ${cash(lo)} to ${cash(hi)}.${where}${deal}`;
+};
+
+/**
  * The item in a sentence, which is what the rail opens with.
  *
  * The grid's Cause column is a label; a label on its own is a claim. This

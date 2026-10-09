@@ -4,6 +4,8 @@ import {
   causeOf,
   judge,
   ladderFor,
+  ladderSays,
+  type PriceLadder,
   marginsOf,
   decompose,
   ratiosOf,
@@ -744,5 +746,56 @@ describe("buildFacts and cost", () => {
     expect(out[0].mineSales).toBeCloseTo(30, 5);
     expect(out[0].mineCogs).toBeCloseTo(10, 5);
     expect(out[0].margins.mine).toBeCloseTo(20, 5);
+  });
+});
+
+describe("ladderSays", () => {
+  const pt = (
+    price: number,
+    units: number,
+    transactions = units,
+    days = 1,
+  ) => ({
+    price,
+    units,
+    transactions,
+    netSales: price * units,
+    days,
+    unitsPerBasket: transactions > 0 ? units / transactions : null,
+  });
+
+  const of = (points: ReturnType<typeof pt>[]): PriceLadder => ({
+    points,
+    modal: points.length
+      ? points.reduce((m, p) => (p.units > m.units ? p : m)).price
+      : null,
+    blended: null,
+    unitsPerBasket: null,
+    promo: false,
+  });
+
+  /** One price is its own summary; the ladder's single row says it. */
+  it("says nothing about a single price", () => {
+    expect(ladderSays(of([pt(5, 100)]))).toBeNull();
+    expect(ladderSays(of([]))).toBeNull();
+  });
+
+  it("gives the span and where the units went", () => {
+    const say = ladderSays(of([pt(5.0, 135), pt(4.99, 40), pt(6.19, 3)]))!;
+    expect(say).toContain("Rang at 3 prices from $4.99 to $6.19.");
+    // $4.99 and $5.00 are one price as far as a shopper is concerned.
+    expect(say).toContain("Most units went at $4.99–$5.00 (175 of 178).");
+  });
+
+  /** Units over baskets is the only thing the transaction count can tell
+   *  you, so a basket taking four at a time is worth the clause. */
+  it("names a multi-buy when a basket took several at once", () => {
+    const say = ladderSays(of([pt(5.0, 140, 35), pt(6.5, 10, 10)]))!;
+    expect(say).toContain("At $5.00 a basket took 4.0 at a time.");
+  });
+
+  it("leaves the clause off when every basket took one", () => {
+    const say = ladderSays(of([pt(5.0, 140, 140), pt(6.5, 10, 10)]))!;
+    expect(say).not.toContain("at a time");
   });
 });
