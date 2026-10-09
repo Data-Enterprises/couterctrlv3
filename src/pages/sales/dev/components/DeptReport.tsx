@@ -293,11 +293,11 @@ const Measure = ({
       {/* The verdict rides the heading. Under the bars it was a third line
           saying what the two bars had just shown. */}
       <div className="flex items-baseline gap-3">
-        <span className="text-[10px] font-bold uppercase tracking-wide text-content/85">
+        <span className="text-[11.5px] font-bold uppercase tracking-wide text-content/85">
           {title}
         </span>
         <span
-          className={`ml-auto text-[11.5px] font-semibold truncate ${
+          className={`ml-auto text-[13px] font-semibold truncate ${
             pct === null || pct === 0
               ? "text-content/85"
               : good
@@ -315,23 +315,35 @@ const Measure = ({
 
       <div className="flex flex-col gap-1 mt-2">
         {[
-          { label: us, v: mine, tone: "bg-store_open" },
+          /* This store's bar carries the verdict; the other store's is the
+             reference it is measured against, so it stays neutral. A pair
+             of brand colours said which store without saying how it went,
+             which is the only thing the card is for. */
+          {
+            label: us,
+            v: mine,
+            tone: pct === null || pct === 0
+              ? "bg-store_compare"
+              : good
+                ? "bg-emerald-500"
+                : "bg-red-500",
+          },
           { label: them, v: theirs, tone: "bg-store_compare" },
         ].map((b) => (
-          <span key={b.label} className="flex items-center gap-2.5 text-[11.5px]">
+          <span key={b.label} className="flex items-center gap-2.5 text-[13px]">
             <span
               className="w-[168px] flex-shrink-0 truncate text-content/85"
               title={b.label}
             >
               {b.label}
             </span>
-            <span className="flex-1 min-w-0 h-[8.4px] rounded-sm bg-custom-white">
+            <span className="flex-1 min-w-0 h-[8.8px] rounded-sm bg-custom-white">
               <span
-                className={`block h-[8.4px] rounded-sm ${b.tone}`}
+                className={`block h-[8.8px] rounded-sm ${b.tone}`}
                 style={{ width: `${(Math.abs(b.v) / widest) * 100}%` }}
               />
             </span>
-            <span className="w-[92px] flex-shrink-0 text-right tabular-nums font-semibold text-content whitespace-nowrap">
+            <span className="w-[104px] flex-shrink-0 text-right tabular-nums font-semibold text-content whitespace-nowrap">
               {fmt(b.v)}
             </span>
           </span>
