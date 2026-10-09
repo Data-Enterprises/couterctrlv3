@@ -74,14 +74,14 @@ interface RowProps {
 
 const Row = ({ row, lead, onInvestigate }: RowProps) => (
   <div
-    className="grid gap-4 items-center px-4 py-3 border-b border-brand_navy/15"
+    className="grid gap-4 items-start px-4 py-3 border-b border-brand_navy/15"
     style={{ gridTemplateColumns: COLS }}
   >
-    <span className="min-w-0 truncate text-[14px] font-bold text-content">
+    <span className="min-w-0 truncate text-[14px] font-bold text-content leading-snug">
       {row.name}
     </span>
 
-    <span className="text-right text-[14px] font-bold tabular-nums text-delta_negative_text">
+    <span className="text-right text-[14px] font-bold tabular-nums text-delta_negative_text leading-snug">
       {signed(row.gap)}
     </span>
 
@@ -345,7 +345,7 @@ const DeptReport = ({
                 <span className="text-delta_negative_text">
                   {money(shown.reduce((t, r) => t - r.gap, 0))}
                 </span>{" "}
-                of what {openStoreNumber} is missing
+                of the shortfall
               </>
             )}
           </p>
@@ -361,26 +361,35 @@ const DeptReport = ({
         {groups.map((g) => (
           <div
             key={g.finding}
-            className="grid gap-4 items-center px-4 py-3 border-b border-brand_navy/15"
+            className="grid gap-4 items-start px-4 py-3 border-b border-brand_navy/15"
             style={{ gridTemplateColumns: COLS }}
           >
             <span className="min-w-0">
-              <span className="block text-[14px] font-bold text-content">
+              <span className="block text-[14px] font-bold text-content leading-snug">
                 {word(g.rows.length)} departments
               </span>
-              <span className="block text-[12px] text-content/85 leading-snug mt-0.5">
-                {g.rows.map((r) => r.name).join(", ")}
+              {/* A few names and a count. Spelling out twelve wrapped to six
+                  lines and left this row three times the height of the ones
+                  above it, which is most of what made the list look ragged —
+                  and nobody reads the twelfth name anyway. */}
+              <span
+                className="block text-[12px] text-content/85 leading-snug mt-0.5 truncate"
+                title={g.rows.map((r) => r.name).join(", ")}
+              >
+                {g.rows.slice(0, 3).map((r) => r.name).join(", ")}
+                {g.rows.length > 3 &&
+                  ` and ${g.rows.length - 3} more`}
               </span>
             </span>
-            <span className="text-right text-[14px] font-bold tabular-nums text-delta_negative_text self-start">
+            <span className="text-right text-[14px] font-bold tabular-nums text-delta_negative_text leading-snug">
               {signed(-g.total)}
             </span>
-            <span className="text-[13.5px] font-bold text-delta_negative_text self-start">
+            <span className="text-[13.5px] font-bold text-delta_negative_text leading-snug">
               {GROUP_SAYS[g.finding]}
             </span>
             <button
               onClick={() => investigate(g.rows[0])}
-              className="justify-self-end self-start text-[12.5px] font-bold text-brand_navy_hover hover:underline whitespace-nowrap"
+              className="justify-self-end text-[12.5px] font-bold text-brand_navy_hover hover:underline whitespace-nowrap"
             >
               Show &rarr;
             </button>
