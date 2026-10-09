@@ -256,12 +256,22 @@ describe("fetchOrders", () => {
 
   it("resolves empty rather than throwing, so the grid survives", async () => {
     getAllOrders.mockRejectedValue(new Error("network"));
-    await expect(fetchOrders(scope)).resolves.toEqual({ mine: [], theirs: [] });
+    await expect(fetchOrders(scope)).resolves.toEqual({
+      mine: [],
+      theirs: [],
+      allMine: [],
+      allTheirs: [],
+    });
   });
 
   it("treats error 1 the same way", async () => {
     getAllOrders.mockResolvedValue({ data: { error: 1, msg: "nope" } });
-    await expect(fetchOrders(scope)).resolves.toEqual({ mine: [], theirs: [] });
+    await expect(fetchOrders(scope)).resolves.toEqual({
+      mine: [],
+      theirs: [],
+      allMine: [],
+      allTheirs: [],
+    });
   });
 });
 

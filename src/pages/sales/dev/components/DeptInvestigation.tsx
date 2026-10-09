@@ -5,9 +5,12 @@ import {
   type InvestigationTarget,
 } from "../../../../features/dev/devSalesLedgerSlice";
 import { useDeptInvestigation, type Stage } from "../hooks/useDeptInvestigation";
+import type { AllOrder } from "../../../../interfaces";
 import {
   SUPPLY_LOOKBACK_DAYS,
   supplyWindow,
+  type OrdersWave,
+  type ReceiptsWave,
 } from "../shared/investigationData";
 import {
   CAUSE_LABEL,
@@ -1184,109 +1187,6 @@ const onDay = (d: string) =>
   });
 
 /**
- * Both stores' orders, or both stores' invoices, on one dated list.
- *
- * Interleaved rather than split into two columns, because the finding is
- * usually a date: four orders there and one here reads straight down, where
- * two separate lists have to be held side by side and counted.
- *
- * It scrolls at a fixed height. A busy department can run to sixty invoices
- * and the panel should not grow to sixty rows tall.
- */
-const Ledger = ({
-  note,
-  rows,
-  rightLabel,
-  right,
-  us,
-  them,
-  empty,
-}: {
-  note: string;
-  rows: SupplyRecord[];
-  rightLabel: string;
-  right: (r: SupplyRecord) => string;
-  us: string;
-  them: string;
-  empty: string;
-}) => {
-  const n = (v: number) => Math.round(v).toLocaleString("en-US");
-  const head =
-    "text-[12px] font-bold uppercase tracking-wide text-content/85";
-
-  return (
-    <>
-      <p className="text-[12px] text-content/85 leading-snug mb-2.5">{note}</p>
-
-      {rows.length === 0 ? (
-        <p className="text-[13px] text-content/85 leading-relaxed">{empty}</p>
-      ) : (
-        <>
-          <div className="flex items-center gap-3 pb-1.5 border-b border-brand_navy/15">
-            <span className={`${head} w-[58px]`}>Date</span>
-            <span className={`${head} w-[76px]`}>#</span>
-            <span className={`${head} w-[150px] truncate`}>Store</span>
-            <span className={`${head} flex-1 min-w-0 truncate`}>Vendor</span>
-            <span className={`${head} w-[46px] text-right`}>Lines</span>
-            <span className={`${head} w-[64px] text-right`}>Units</span>
-            <span className={`${head} w-[92px] text-right truncate`}>
-              {rightLabel}
-            </span>
-          </div>
-
-          <div className="max-h-[310px] overflow-auto thin-scrollbar">
-            {rows.map((r) => (
-              <div
-                key={`${r.mine ? "m" : "t"}-${r.id}`}
-                className="flex items-center gap-3 py-1.5 text-[12.5px] border-b border-brand_navy/15 last:border-b-0"
-              >
-                <span className="w-[58px] text-content/85 whitespace-nowrap">
-                  {onDay(r.date)}
-                </span>
-                <span className="w-[76px] tabular-nums text-content truncate">
-                  {r.id}
-                </span>
-                <span className="w-[150px] flex items-center gap-1.5 min-w-0">
-                  <span
-                    className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
-                      r.mine ? "bg-store_open" : "bg-store_compare"
-                    }`}
-                  />
-                  <span
-                    className={`truncate ${
-                      r.mine ? "font-semibold text-content" : "text-content/85"
-                    }`}
-                  >
-                    {r.mine ? us : them}
-                  </span>
-                </span>
-                <span className="flex-1 min-w-0 truncate text-content/85">
-                  {r.vendor}
-                </span>
-                <span className="w-[46px] text-right tabular-nums text-content/85">
-                  {r.lines}
-                </span>
-                {/* A negative here is a return, and it should look like one. */}
-                <span
-                  className={`w-[64px] text-right tabular-nums whitespace-nowrap ${
-                    r.units < 0 ? "text-delta_negative_text" : "text-content"
-                  }`}
-                >
-                  {n(r.units)}
-                </span>
-                <span className="w-[92px] text-right tabular-nums text-content/85 whitespace-nowrap truncate">
-                  {right(r)}
-                </span>
-              </div>
-            ))}
-          </div>
-        </>
-      )}
-    </>
-  );
-};
-
-/**
  * Every order and every delivery, on the window they were read over.
  *
  * Two counts side by side cannot show that one store placed a single order
@@ -1389,21 +1289,218 @@ const Timeline = ({
  * order. This is the orders and the invoices, both stores side by side, so
  * the label can be checked rather than trusted.
  */
+/**
+ * One order or invoice, and the department's lines on it.
+ *
+ * The lines are the ones this department owns: the orders wave is filtered
+ * to the sub-department before it is ever stored, so "89 lines" is 89 Meat
+ * lines and not the size of the order. The heading says so, because a buyer
+ * reading it will otherwise take it for the whole document.
+ */
+interface DocLine {
+  code: string;
+  description: string;
+  units: number;
+  cost: number;
+}
+
+const Document = ({
+  rec,
+  lines,
+  whole,
+  cash,
+  isOrder,
+}: {
+  rec: SupplyRecord;
+  /** This department's lines on it. */
+  lines: DocLine[];
+  /** Every line on it, where the whole document is in hand. */
+  whole: DocLine[] | null;
+  cash: (v: number) => string;
+  isOrder: boolean;
+}) => {
+  const [open, setOpen] = useState(false);
+  const [everything, setEverything] = useState(false);
+  const rows = everything && whole ? whole : lines;
+  const n = (v: number) => Math.round(v).toLocaleString("en-US");
+
+  return (
+    <div className="border-b border-brand_navy/15 last:border-b-0">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className="w-full grid gap-3 items-center px-1.5 py-2 text-left hover:bg-bkg rounded transition-colors"
+        style={{ gridTemplateColumns: "62px 16px minmax(0,1fr) 88px minmax(0,110px) 62px 76px" }}
+      >
+        <span className="text-[12px] text-content/85 whitespace-nowrap">
+          {onDay(rec.date)}
+        </span>
+        <span
+          className={`block w-2 h-2 rounded-full ${
+            rec.mine ? "bg-store_open" : "bg-store_compare"
+          }`}
+        />
+        <span
+          className={`min-w-0 truncate text-[12.5px] ${
+            rec.mine ? "font-semibold text-content" : "text-content/85"
+          }`}
+        >
+          {rec.vendor}
+        </span>
+        <span className="text-[12.5px] tabular-nums text-content truncate">
+          #{rec.id}
+        </span>
+        <span className="text-[11.5px] text-content/85 truncate">
+          {isOrder ? rec.status ?? "—" : cash(rec.cost)}
+        </span>
+        <span className="text-right text-[11.5px] text-content/85 tabular-nums">
+          {rec.lines}
+        </span>
+        <span
+          className={`text-right text-[12.5px] font-bold tabular-nums whitespace-nowrap ${
+            rec.units < 0 ? "text-delta_negative_text" : "text-content"
+          }`}
+        >
+          {n(rec.units)}
+        </span>
+      </button>
+
+      {open && (
+        <div className="bg-bkg px-1.5 pb-2">
+          {/* The department's lines, or the order entire. A buyer looking
+              at an order wants to know what else is on it before they ring
+              anybody about it — and the whole document came down with the
+              same request, so it costs nothing to offer. */}
+          {whole && whole.length > lines.length && (
+            <div className="flex items-center gap-2 px-2 py-1.5">
+              {[
+                { on: false, label: `This department · ${lines.length}` },
+                { on: true, label: `Whole order · ${whole.length}` },
+              ].map((o) => (
+                <button
+                  key={o.label}
+                  onClick={() => setEverything(o.on)}
+                  aria-pressed={everything === o.on}
+                  className={`text-[11.5px] font-semibold px-2 py-0.5 rounded transition-colors ${
+                    everything === o.on
+                      ? "bg-brand_navy text-custom-white"
+                      : "text-content/85 hover:bg-custom-white"
+                  }`}
+                >
+                  {o.label}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {rows.length === 0 ? (
+            <p className="text-[12px] text-content/85 py-2 px-2">
+              No lines in this department on it.
+            </p>
+          ) : (
+            rows.map((l) => (
+              <div
+                key={l.code}
+                className="grid gap-3 items-center px-2 py-1 text-[12px] border-t border-brand_navy/10"
+                style={{ gridTemplateColumns: "110px minmax(0,1fr) 76px 86px" }}
+              >
+                <span className="font-mono text-content/85 truncate">{l.code}</span>
+                <span className="min-w-0 truncate text-content">
+                  {l.description}
+                </span>
+                <span className="text-right tabular-nums text-content">
+                  {n(l.units)}
+                </span>
+                <span className="text-right tabular-nums text-content/85">
+                  {l.cost === 0 ? "—" : cash(l.cost)}
+                </span>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+/**
+ * What each store ordered, and what actually turned up.
+ *
+ * The same shape the Check tab uses: a verdict card over an evidence
+ * carousel on the left, and the list the verdict is about on the right.
+ */
 const SupplyPanel = ({
   supply,
   them,
   us,
   window,
   cash,
+  orders,
+  receipts,
+  upcQuery,
+  onUpcQuery,
 }: {
   supply: Supply;
   them: string;
   us: string;
   window: { start: string; end: string };
   cash: (v: number) => string;
+  orders: OrdersWave;
+  receipts: ReceiptsWave;
+  /** UPCs carried over from the grid, comma or space separated. */
+  upcQuery: string;
+  onUpcQuery: (v: string) => void;
 }) => {
   const n = (v: number) => Math.round(v).toLocaleString("en-US");
   const says = supplySays(supply, us, them);
+
+  /* The codes the reader is asking about, if any. Commas, spaces or new
+     lines, because all three are what a paste brings with it. */
+  const wanted = new Set(
+    upcQuery.split(/[\s,]+/).map((x) => x.trim()).filter(Boolean),
+  );
+
+  const asLines = (rows: AllOrder[]): DocLine[] =>
+    rows.map((o) => ({
+      code: String(o.product_code),
+      description: o.description,
+      units: o.qty,
+      cost: 0,
+    }));
+
+  /** An order's lines in this department. */
+  const orderLines = (id: number, mine: boolean) =>
+    asLines((mine ? orders.mine : orders.theirs).filter((o) => o.order_id === id));
+
+  /** And the same order entire, which came down with the same request. */
+  const wholeOrder = (id: number, mine: boolean) =>
+    asLines(
+      (mine ? orders.allMine : orders.allTheirs).filter((o) => o.order_id === id),
+    );
+
+  const invoiceLines = (id: number, mine: boolean) =>
+    (mine ? receipts.mine : receipts.theirs)
+      .filter((r) => r.invoiceid === id)
+      .flatMap((r) =>
+        r.lines.map((l) => ({
+          code: String(l.product_code),
+          description: l.product_description,
+          units: l.item_return ? -l.units : l.units,
+          cost: l.ext_cost,
+        })),
+      );
+
+  /* A document matches when any of its lines carries a code asked for. */
+  const matches = (rec: SupplyRecord, isOrder: boolean) =>
+    wanted.size === 0 ||
+    (isOrder ? orderLines(rec.id, rec.mine) : invoiceLines(rec.id, rec.mine))
+      .some((l) => wanted.has(l.code));
+
+  const shownOrders = supply.orders.filter((r) => matches(r, true));
+  const shownDeliveries = supply.deliveries.filter((r) => matches(r, false));
+
+  const orderedTotal = supply.mine.orderedUnits + supply.theirs.orderedUnits;
+  const states = [...new Set(supply.orders.map((o) => o.status).filter(Boolean))];
 
   // Every vendor either store took a delivery from, biggest first.
   const names = [
@@ -1412,228 +1509,355 @@ const SupplyPanel = ({
       ...supply.theirs.vendors.map((v) => v.name),
     ]),
   ];
-  const rows = names
+  const vendorRows = names
     .map((name) => ({
       name,
       mine: supply.mine.vendors.find((v) => v.name === name) ?? null,
       theirs: supply.theirs.vendors.find((v) => v.name === name) ?? null,
     }))
     .sort(
-      (a, b) =>
-        (b.theirs?.units ?? 0) + (b.mine?.units ?? 0) -
-        ((a.theirs?.units ?? 0) + (a.mine?.units ?? 0)),
+      (x, y) =>
+        (y.theirs?.units ?? 0) + (y.mine?.units ?? 0) -
+        ((x.theirs?.units ?? 0) + (x.mine?.units ?? 0)),
     );
+
+  const sides = [
+    { label: "Orders placed", m: supply.mine.orders, t: supply.theirs.orders, fmt: n },
+    { label: "Lines on them", m: supply.mine.orderLines, t: supply.theirs.orderLines, fmt: n },
+    { label: "Units ordered", m: supply.mine.orderedUnits, t: supply.theirs.orderedUnits, fmt: n },
+    { label: "Deliveries", m: supply.mine.deliveries, t: supply.theirs.deliveries, fmt: n },
+    { label: "Units received", m: supply.mine.receivedUnits, t: supply.theirs.receivedUnits, fmt: n },
+    { label: "Cost received", m: supply.mine.receivedCost, t: supply.theirs.receivedCost, fmt: cash },
+  ];
 
   return (
     <div className="flex-1 min-h-0 overflow-auto thin-scrollbar bg-custom-white px-4 py-5">
-      <div className="flex flex-col gap-5">
-
-        {/* The tab opens with its finding, like every other one. It used to
-            open with two cards of counts and leave the reader to subtract. */}
-        <p className="text-[20px] font-semibold leading-snug text-content max-w-[840px]">
-          {says.lead}
-        </p>
-        {says.tail && (
-          <p className="text-[13px] leading-relaxed text-content/85 max-w-[840px] -mt-3">
-            {says.tail}
-          </p>
-        )}
-
-        <div className="grid gap-4" style={{ gridTemplateColumns: "repeat(auto-fit,minmax(340px,1fr))" }}>
-          <div className="rounded-lg bg-custom-white shadow-card px-4 py-3.5 min-w-0">
-            <div className="text-[12px] font-bold uppercase tracking-wide text-content/85">
-              Over the window
+      <div
+        className="grid gap-5 items-start"
+        style={{ gridTemplateColumns: "minmax(0,1fr) minmax(0,1.1fr)" }}
+      >
+        <div className="flex flex-col gap-5 min-w-0">
+          <div className="rounded-lg bg-custom-white shadow-card px-5 py-4 min-w-0">
+            <div className="rounded-md bg-bkg px-3.5 py-3 flex flex-col gap-2.5">
+              <p className="text-[18px] font-semibold leading-snug text-content">
+                {says.lead}
+              </p>
+              <div className="flex items-baseline gap-3 flex-wrap">
+                <span className="text-[34px] font-bold tabular-nums leading-none text-content">
+                  {n(supply.mine.orderedUnits)}
+                </span>
+                <span className="text-[13.5px] text-content/85 min-w-0">
+                  units ordered here, against{" "}
+                  <span className="font-semibold text-content">
+                    {n(supply.theirs.orderedUnits)}
+                  </span>{" "}
+                  at {them}
+                </span>
+              </div>
             </div>
-            <p className="text-[12px] text-content/85 leading-snug mt-1 mb-3">
-              Dot size is units ordered. An empty lane means nothing arrived.
-            </p>
-            <Timeline
-              orders={supply.orders}
-              deliveries={supply.deliveries}
-              window={window}
-              us={us}
-              them={them}
-            />
-          </div>
 
-          {/* One column each, so "359 against 8,934" is read rather than
-              worked out from two cards facing away from each other. */}
-          <div className="rounded-lg bg-custom-white shadow-card px-4 py-3.5 min-w-0">
-            <div className="text-[12px] font-bold uppercase tracking-wide text-content/85">
-              Side by side
-            </div>
-            <div
-              className="grid gap-x-3 mt-2.5 text-[13px]"
-              style={{ gridTemplateColumns: "minmax(0,1fr) 108px 108px" }}
-            >
-              <span className="pb-1.5 border-b border-brand_navy/15" />
-              <span className="flex items-center justify-end gap-1.5 pb-1.5 border-b border-brand_navy/15 text-[11.5px] font-bold uppercase tracking-wide text-content/85 truncate">
-                <span className="w-2 h-2 rounded-sm bg-store_open flex-shrink-0" />
-                {us}
+            {orderedTotal > 0 && (
+              <span className="flex h-[9.2px] rounded-sm overflow-hidden bg-bkg mt-3">
+                <span
+                  className="block bg-store_open"
+                  style={{ width: `${(supply.mine.orderedUnits / orderedTotal) * 100}%` }}
+                />
+                <span
+                  className="block bg-store_compare"
+                  style={{ width: `${(supply.theirs.orderedUnits / orderedTotal) * 100}%` }}
+                />
               </span>
-              <span className="flex items-center justify-end gap-1.5 pb-1.5 border-b border-brand_navy/15 text-[11.5px] font-bold uppercase tracking-wide text-content/85 truncate">
-                <span className="w-2 h-2 rounded-sm bg-store_compare flex-shrink-0" />
-                {them}
-              </span>
+            )}
 
+            <div className="flex flex-col mt-2">
               {[
-                { label: "Orders placed", m: supply.mine.orders, t: supply.theirs.orders, fmt: n },
-                { label: "Lines on them", m: supply.mine.orderLines, t: supply.theirs.orderLines, fmt: n },
-                { label: "Units ordered", m: supply.mine.orderedUnits, t: supply.theirs.orderedUnits, fmt: n },
-                { label: "Deliveries", m: supply.mine.deliveries, t: supply.theirs.deliveries, fmt: n },
-                { label: "Units received", m: supply.mine.receivedUnits, t: supply.theirs.receivedUnits, fmt: n },
-                { label: "Cost received", m: supply.mine.receivedCost, t: supply.theirs.receivedCost, fmt: cash },
-              ].map((row) => (
-                <Fragment key={row.label}>
-                  <span className="py-1.5 border-b border-brand_navy/15 text-content/85 truncate">
-                    {row.label}
-                  </span>
-                  {/* A zero is muted rather than bold: nothing is not a
-                      figure, and three bold noughts read as data. */}
+                { tone: "bg-store_open", label: `Ordered at ${us}`, count: `${supply.mine.orders} orders`, value: `${n(supply.mine.orderedUnits)} units` },
+                { tone: "bg-store_compare", label: `Ordered at ${them}`, count: `${supply.theirs.orders} orders`, value: `${n(supply.theirs.orderedUnits)} units` },
+                {
+                  tone: "",
+                  label: "Received at either store",
+                  count: `${supply.mine.deliveries + supply.theirs.deliveries} deliveries`,
+                  value: cash(supply.mine.receivedCost + supply.theirs.receivedCost),
+                },
+              ].map((r) => (
+                <div
+                  key={r.label}
+                  className="flex items-center gap-2.5 py-1.5 border-b border-brand_navy/15 last:border-b-0"
+                >
                   <span
-                    className={`text-right tabular-nums py-1.5 border-b border-brand_navy/15 ${
-                      row.m === 0 ? "text-content/85" : "font-bold text-content"
+                    className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
+                      r.tone || "border-2 border-content/40"
                     }`}
-                  >
-                    {row.fmt(row.m)}
+                  />
+                  <span className="text-[13px] text-content/85 min-w-0 truncate">
+                    {r.label}
                   </span>
-                  <span
-                    className={`text-right tabular-nums py-1.5 border-b border-brand_navy/15 ${
-                      row.t === 0 ? "text-content/85" : "font-semibold text-content"
-                    }`}
-                  >
-                    {row.fmt(row.t)}
+                  <span className="ml-auto text-[12.5px] text-content/85 tabular-nums whitespace-nowrap">
+                    {r.count}
                   </span>
-                </Fragment>
+                  <span className="w-[104px] text-right text-[13px] font-bold tabular-nums text-content whitespace-nowrap">
+                    {r.value}
+                  </span>
+                </div>
               ))}
             </div>
-          </div>
-        </div>
 
-        {/* A supplier they buy from and we do not is a buying decision, not
-            an accident — and it is the one thing in here somebody can act on
-            without opening a single item. */}
-        {supply.onlyTheirs.length > 0 && (
-          <div className="rounded-lg bg-severity_watch_bg px-5 py-4">
-            <p className="text-[14px] leading-relaxed text-severity_watch_text">
-              <span className="font-bold">
-                {supply.onlyTheirs.length === 1
-                  ? "One vendor delivers to them and not here"
-                  : `${supply.onlyTheirs.length} vendors deliver to them and not here`}
-                :
-              </span>{" "}
-              {supply.onlyTheirs.join(", ")}.
+            <p className="text-[13.5px] text-content/85 leading-relaxed rounded-md bg-bkg px-3.5 py-3 mt-3">
+              {states.length === 1 && supply.orders.length > 0 && (
+                <>
+                  All{" "}
+                  <span className="font-semibold text-content">
+                    {supply.orders.length} orders
+                  </span>{" "}
+                  read {states[0]}.{" "}
+                </>
+              )}
+              Read over {SUPPLY_LOOKBACK_DAYS} days ({window.start} to{" "}
+              {window.end}), which does not line up with the sales week — so
+              it explains this week and says nothing about last week or last
+              year. A return is taken back off what arrived.
             </p>
           </div>
-        )}
 
-        {/* Three answers to one question, so they share one frame rather
-            than running down the page in three cards of their own. The
-            counts are in the tabs because a zero is the finding here: no
-            deliveries at all is the thing worth reading, not a section that
-            looks missing. */}
-        <Carousel
-          slides={[
-            {
-              label: "Orders",
-              count: supply.orders.length,
-              body: (
-                <Ledger
-                  note={`Every order carrying an item from this department, newest first. ${us} and ${them} on one list.`}
-                  rows={supply.orders}
-                  rightLabel="Status"
-                  right={(r) => r.status ?? "—"}
-                  us={us}
-                  them={them}
-                  empty="Neither store placed an order in this department over the window. That is the finding, not a gap in the data."
-                />
-              ),
-            },
-            {
-              label: "Deliveries",
-              count: supply.deliveries.length,
-              body: (
-                <Ledger
-                  note="Every invoice that carried an item from this department. An invoice that carried none of it is not listed."
-                  rows={supply.deliveries}
-                  rightLabel="Cost"
-                  right={(r) => cash(r.cost)}
-                  us={us}
-                  them={them}
-                  empty="Neither store took a delivery in this department over the window."
-                />
-              ),
-            },
-            {
-              label: "Who delivered",
-              count: rows.length,
-              body: (
-                <>
-                  <p className="text-[12px] text-content/85 leading-snug mb-2.5">
-                    Units received in this department over the window, by
-                    vendor.
-                  </p>
+          {/* A supplier they buy from and we do not is a buying decision, not
+              an accident — and it is the one thing in here somebody can act
+              on without opening a single item. */}
+          {supply.onlyTheirs.length > 0 && (
+            <div className="rounded-lg bg-severity_watch_bg px-5 py-4">
+              <p className="text-[14px] leading-relaxed text-severity_watch_text">
+                <span className="font-bold">
+                  {supply.onlyTheirs.length === 1
+                    ? "One vendor delivers to them and not here"
+                    : `${supply.onlyTheirs.length} vendors deliver to them and not here`}
+                  :
+                </span>{" "}
+                {supply.onlyTheirs.join(", ")}.
+              </p>
+            </div>
+          )}
 
-                  {rows.length === 0 ? (
-                    <p className="text-[13px] text-content/85 leading-relaxed">
-                      Neither store took a delivery in this department over the
-                      window.
+          <Carousel
+            slides={[
+              {
+                label: "Over the window",
+                body: (
+                  <>
+                    <p className="text-[12px] text-content/85 leading-snug mb-2.5">
+                      Dot size is units ordered. An empty lane means nothing
+                      arrived.
                     </p>
-                  ) : (
-                    <div
-                      className="grid gap-x-4 gap-y-0 text-[12.5px]"
-                      style={{ gridTemplateColumns: "minmax(0,1fr) 92px 92px 92px" }}
-                    >
-                      <span className="text-[12px] font-bold uppercase tracking-wide text-content/85 pb-1.5 border-b border-brand_navy/15">
-                        Vendor
-                      </span>
-                      <span className="text-[12px] font-bold uppercase tracking-wide text-content/85 text-right pb-1.5 border-b border-brand_navy/15 truncate">
-                        Here
-                      </span>
-                      <span className="text-[12px] font-bold uppercase tracking-wide text-content/85 text-right pb-1.5 border-b border-brand_navy/15 truncate">
-                        There
-                      </span>
-                      <span className="text-[12px] font-bold uppercase tracking-wide text-content/85 text-right pb-1.5 border-b border-brand_navy/15">
-                        Cost here
-                      </span>
+                    <Timeline
+                      orders={supply.orders}
+                      deliveries={supply.deliveries}
+                      window={window}
+                      us={us}
+                      them={them}
+                    />
+                  </>
+                ),
+              },
+              {
+                label: "Side by side",
+                body: (
+                  <div
+                    className="grid gap-x-3 text-[13px]"
+                    style={{ gridTemplateColumns: "minmax(0,1fr) 108px 108px" }}
+                  >
+                    <span className="pb-1.5 border-b border-brand_navy/15" />
+                    <span className="flex items-center justify-end gap-1.5 pb-1.5 border-b border-brand_navy/15 text-[11.5px] font-bold uppercase tracking-wide text-content/85 truncate">
+                      <span className="w-2 h-2 rounded-full bg-store_open flex-shrink-0" />
+                      {us}
+                    </span>
+                    <span className="flex items-center justify-end gap-1.5 pb-1.5 border-b border-brand_navy/15 text-[11.5px] font-bold uppercase tracking-wide text-content/85 truncate">
+                      <span className="w-2 h-2 rounded-full bg-store_compare flex-shrink-0" />
+                      {them}
+                    </span>
 
-                      {rows.map((r) => (
-                        <Fragment key={r.name}>
-                          <span className="min-w-0 truncate py-1.5 border-b border-brand_navy/15 text-content">
-                            {r.name}
-                          </span>
-                          <span
-                            className={`text-right tabular-nums py-1.5 border-b border-brand_navy/15 ${
-                              r.mine
-                                ? "font-semibold text-content"
-                                : "text-delta_negative_text"
-                            }`}
-                          >
-                            {r.mine ? n(r.mine.units) : "none"}
-                          </span>
-                          <span className="text-right tabular-nums py-1.5 border-b border-brand_navy/15 text-content/85">
-                            {r.theirs ? n(r.theirs.units) : "none"}
-                          </span>
-                          <span className="text-right tabular-nums py-1.5 border-b border-brand_navy/15 text-content/85">
-                            {r.mine ? cash(r.mine.cost) : "—"}
-                          </span>
-                        </Fragment>
-                      ))}
-                    </div>
-                  )}
-                </>
-              ),
-            },
-          ]}
-        />
+                    {sides.map((row) => (
+                      <Fragment key={row.label}>
+                        <span className="py-1.5 border-b border-brand_navy/15 text-content/85 truncate">
+                          {row.label}
+                        </span>
+                        <span
+                          className={`text-right tabular-nums py-1.5 border-b border-brand_navy/15 ${
+                            row.m === 0 ? "text-content/85" : "font-bold text-content"
+                          }`}
+                        >
+                          {row.fmt(row.m)}
+                        </span>
+                        <span
+                          className={`text-right tabular-nums py-1.5 border-b border-brand_navy/15 ${
+                            row.t === 0 ? "text-content/85" : "font-semibold text-content"
+                          }`}
+                        >
+                          {row.fmt(row.t)}
+                        </span>
+                      </Fragment>
+                    ))}
+                  </div>
+                ),
+              },
+              ...(vendorRows.length > 0
+                ? [
+                    {
+                      label: "Who delivered",
+                      count: vendorRows.length,
+                      body: (
+                        <div
+                          className="grid gap-x-4 text-[12.5px]"
+                          style={{ gridTemplateColumns: "minmax(0,1fr) 84px 84px 84px" }}
+                        >
+                          {["Vendor", "Here", "There", "Cost here"].map((h, i) => (
+                            <span
+                              key={h}
+                              className={`text-[11.5px] font-bold uppercase tracking-wide text-content/85 pb-1.5 border-b border-brand_navy/15 ${
+                                i > 0 ? "text-right" : ""
+                              }`}
+                            >
+                              {h}
+                            </span>
+                          ))}
+                          {vendorRows.map((r) => (
+                            <Fragment key={r.name}>
+                              <span className="min-w-0 truncate py-1.5 border-b border-brand_navy/15 text-content">
+                                {r.name}
+                              </span>
+                              <span
+                                className={`text-right tabular-nums py-1.5 border-b border-brand_navy/15 ${
+                                  r.mine ? "font-semibold text-content" : "text-delta_negative_text"
+                                }`}
+                              >
+                                {r.mine ? n(r.mine.units) : "none"}
+                              </span>
+                              <span className="text-right tabular-nums py-1.5 border-b border-brand_navy/15 text-content/85">
+                                {r.theirs ? n(r.theirs.units) : "none"}
+                              </span>
+                              <span className="text-right tabular-nums py-1.5 border-b border-brand_navy/15 text-content/85">
+                                {r.mine ? cash(r.mine.cost) : "—"}
+                              </span>
+                            </Fragment>
+                          ))}
+                        </div>
+                      ),
+                    },
+                  ]
+                : []),
+            ]}
+          />
+        </div>
 
-        <p className="text-[12.5px] text-content/85 leading-relaxed max-w-[840px]">
-          Read over {SUPPLY_LOOKBACK_DAYS} days ({window.start} to{" "}
-          {window.end}), which does not line up with the sales week. It can
-          account for this week and says nothing about last week or last year.
-          A return is taken back off what arrived, because a return is not a
-          delivery.
-        </p>
+        {/* The documents themselves, which is what the left column is about. */}
+        <div className="rounded-lg bg-custom-white shadow-card px-5 py-4 min-w-0">
+          <div className="flex items-baseline gap-3 flex-wrap">
+            <p className="text-[18px] font-semibold leading-snug text-content min-w-0">
+              {supply.orders.length}{" "}
+              {supply.orders.length === 1 ? "order" : "orders"}
+              {states.length === 1 ? `, all still ${states[0]!.toLowerCase()}` : ""}
+              {supply.deliveries.length === 0 ? " — none of them delivered." : "."}
+            </p>
+          </div>
+
+          {/* Paste the codes from the grid and the lists narrow to the
+              documents that carry them. The grid's own right-click menu
+              fills this in, so nobody has to retype a UPC to find out
+              whether it was ever ordered. */}
+          <div className="flex items-center gap-2 mt-2.5">
+            <input
+              value={upcQuery}
+              onChange={(e) => onUpcQuery(e.target.value)}
+              placeholder="Paste UPCs to find the orders carrying them"
+              className="flex-1 min-w-0 text-[12.5px] px-2.5 py-1.5 rounded-md border border-brand_line bg-custom-white text-content placeholder:text-content/85 focus:outline-none focus:ring-2 focus:ring-brand_navy/25"
+            />
+            {wanted.size > 0 && (
+              <button
+                onClick={() => onUpcQuery("")}
+                className="flex-shrink-0 text-[12px] font-semibold text-brand_navy_hover hover:underline"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+          {wanted.size > 0 && (
+            <p className="text-[12px] text-content/85 mt-1.5">
+              {wanted.size} {wanted.size === 1 ? "code" : "codes"} ·{" "}
+              {shownOrders.length} of {supply.orders.length}{" "}
+              {supply.orders.length === 1 ? "order" : "orders"} and{" "}
+              {shownDeliveries.length} of {supply.deliveries.length} carry
+              {shownOrders.length + shownDeliveries.length === 1 ? "s" : ""} them.
+            </p>
+          )}
+
+          <div
+            className="grid gap-3 mt-3 pb-1.5 border-b border-brand_navy/15 text-[11px] font-bold uppercase tracking-wide text-content/85"
+            style={{ gridTemplateColumns: "62px 16px minmax(0,1fr) 88px minmax(0,110px) 62px 76px" }}
+          >
+            <span>Date</span>
+            <span />
+            <span>Vendor</span>
+            <span>Order</span>
+            <span>Status</span>
+            <span className="text-right" title="Lines in this department, not on the whole order">
+              Dept lines
+            </span>
+            <span className="text-right">Units</span>
+          </div>
+
+          <div className="mt-0.5">
+            {shownOrders.map((r) => (
+              <Document
+                key={`o${r.mine ? "m" : "t"}-${r.id}`}
+                rec={r}
+                lines={orderLines(r.id, r.mine)}
+                whole={wholeOrder(r.id, r.mine)}
+                cash={cash}
+                isOrder
+              />
+            ))}
+            {shownOrders.length === 0 && (
+              <p className="text-[13px] text-content/85 leading-relaxed py-3">
+                {supply.orders.length === 0
+                  ? "Neither store placed an order in this department over the window. That is the finding, not a gap in the data."
+                  : "No order in the window carries any of those codes."}
+              </p>
+            )}
+          </div>
+
+          {supply.deliveries.length > 0 && (
+            <>
+              <div className="text-[11px] font-bold uppercase tracking-wide text-content/85 mt-4 mb-1">
+                Deliveries
+              </div>
+              <div>
+                {shownDeliveries.map((r) => (
+                  <Document
+                    key={`d${r.mine ? "m" : "t"}-${r.id}`}
+                    rec={r}
+                    lines={invoiceLines(r.id, r.mine)}
+                    /* The receipt search asks for the matched lines only —
+                       whole invoices would be several hundred documents'
+                       worth of lines nothing reads — so an invoice has no
+                       "whole document" to offer. */
+                    whole={null}
+                    cash={cash}
+                    isOrder={false}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+
+          {supply.deliveries.length === 0 && (
+            <div className="rounded-md border border-dashed border-brand_navy/25 px-3.5 py-2.5 mt-4">
+              <div className="text-[11px] font-bold uppercase tracking-wide text-content/85">
+                Deliveries &middot; 0
+              </div>
+              <p className="text-[12.5px] text-content/85 leading-snug mt-0.5">
+                No invoice carried an item from this department, at either
+                store.
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -2034,6 +2258,9 @@ const DeptInvestigation = ({
   /** Which page of the grid is showing, from 0. */
   const [page, setPage] = useState(0);
 
+  /** Codes the Supply tab is narrowed to, carried over from the grid. */
+  const [supplyUpcs, setSupplyUpcs] = useState("");
+
   /**
    * Rows picked out, by product code.
    *
@@ -2385,6 +2612,10 @@ const DeptInvestigation = ({
               them={target.compareStoreName}
               window={supply_}
               cash={cash}
+              orders={orders}
+              receipts={receipts}
+              upcQuery={supplyUpcs}
+              onUpcQuery={setSupplyUpcs}
             />
           )}
 
@@ -2800,6 +3031,17 @@ const DeptInvestigation = ({
                           chosen.size === 1 ? "row" : "rows"
                         }`,
                         onClick: copyChosen,
+                      },
+                      {
+                        /* The question a buyer asks of a never-ordered item
+                           is "was it ever on an order at all" — which is
+                           two tabs away and, until now, a UPC retyped by
+                           hand. */
+                        label: `Find ${chosen.size} in orders and deliveries`,
+                        onClick: () => {
+                          setSupplyUpcs([...chosen].join(" "));
+                          setTab("supply");
+                        },
                       },
                       ...copyActions,
                     ]

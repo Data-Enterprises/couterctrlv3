@@ -48,7 +48,12 @@ export interface Investigation {
   problem: string | null;
 }
 
-const NO_ORDERS: OrdersWave = { mine: [], theirs: [] };
+const NO_ORDERS: OrdersWave = {
+  mine: [],
+  theirs: [],
+  allMine: [],
+  allTheirs: [],
+};
 const NO_RECEIPTS: ReceiptsWave = { mine: [], theirs: [] };
 
 export interface Args {

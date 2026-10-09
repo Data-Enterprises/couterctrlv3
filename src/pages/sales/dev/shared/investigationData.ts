@@ -206,8 +206,19 @@ export const fetchSales = async (scope: Scope): Promise<SalesWave> => {
 /* ------------------------------------------------------------------ */
 
 export interface OrdersWave {
+  /** This department's lines, which is what every figure is built from. */
   mine: AllOrder[];
   theirs: AllOrder[];
+  /**
+   * Every line on those same orders, department or not.
+   *
+   * The call fetches whole orders and the filter above throws the rest
+   * away. Keeping it costs one array and makes "show me the whole order"
+   * free — without it, looking at the other half of an order a buyer is
+   * holding would be a request per order.
+   */
+  allMine: AllOrder[];
+  allTheirs: AllOrder[];
 }
 
 /**
@@ -236,22 +247,28 @@ export const fetchOrders = async (scope: Scope): Promise<OrdersWave> => {
       ids,
     );
     const j: AllOrderResp = resp.data;
-    if (j.error !== 0) return { mine: [], theirs: [] };
+    if (j.error !== 0) return { mine: [], theirs: [], allMine: [], allTheirs: [] };
 
-    const inDept = (j.orders ?? []).filter(
-      (o) => o.sub_department === scope.subDept,
-    );
+    const all = j.orders ?? [];
+    const inDept = all.filter((o) => o.sub_department === scope.subDept);
     // `AllOrder` spells it `storenumber`, with no underscore.
-    const forStore = (s: Store) =>
+    const forStore = (rows: AllOrder[]) => (s: Store) =>
       scopeRowsToStore(
-        inDept.filter((o) => o.storeid === s.storeid),
+        rows.filter((o) => o.storeid === s.storeid),
         s.storeNumber,
         (o) => o.storenumber,
       );
+    const dept = forStore(inDept);
+    const whole = forStore(all);
 
-    return { mine: forStore(scope.mine), theirs: forStore(scope.theirs) };
+    return {
+      mine: dept(scope.mine),
+      theirs: dept(scope.theirs),
+      allMine: whole(scope.mine),
+      allTheirs: whole(scope.theirs),
+    };
   } catch {
-    return { mine: [], theirs: [] };
+    return { mine: [], theirs: [], allMine: [], allTheirs: [] };
   }
 };
 
