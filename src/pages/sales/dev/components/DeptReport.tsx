@@ -50,6 +50,18 @@ const WORDS = [
 ];
 const word = (n: number) => WORDS[n] ?? String(n);
 
+/**
+ * The store number as the page spells it elsewhere.
+ *
+ * `storeNumber` comes off the row unpadded — "3" where every label on the
+ * screen says "003". The name already carries the padded form, so it is
+ * read off there rather than padded to a width nobody has stated.
+ */
+const numberOf = (name: string, fallback: string) => {
+  const lead = name.trim().split(/[\s-]/)[0];
+  return /^\d+$/.test(lead) ? lead : fallback;
+};
+
 /** What a set of departments that failed the same gate is called. */
 const GROUP_SAYS: Record<Finding, string> = {
   "nothing-rung": "Nothing rung",
@@ -60,7 +72,16 @@ const GROUP_SAYS: Record<Finding, string> = {
   level: "Level",
 };
 
-const COLS = "10px minmax(0,1fr) 112px minmax(0,2.2fr) 150px";
+/**
+ * A capped name column, not a share of the row.
+ *
+ * At `1fr` the name sat alone in two hundred pixels of nothing, the figure
+ * floated in the middle, and the sentence began a third of the way across —
+ * three islands with two voids between them. Capped, the name, the money
+ * and the sentence read as one run, and what is left over falls after the
+ * sentence, where text ending is what a reader expects.
+ */
+const COLS = "10px minmax(0,216px) 104px minmax(0,1fr) 148px";
 
 /** Pass, fail, or never reached. A tick, a cross, or an empty ring. */
 const Mark = ({ state }: { state: Gate["state"] }) => (
@@ -193,7 +214,7 @@ const Row = ({ row, lead, onInvestigate }: RowProps) => (
       {lead ? (
         <button
           onClick={() => onInvestigate(row)}
-          className="justify-self-end px-3.5 py-2 rounded-md bg-brand_navy hover:bg-brand_navy_hover text-custom-white text-[12px] font-bold transition-colors whitespace-nowrap"
+          className="justify-self-end px-3.5 py-1.5 rounded-md bg-brand_navy hover:bg-brand_navy_hover text-custom-white text-[12px] font-bold transition-colors whitespace-nowrap"
         >
           {row.chain.cta} &rarr;
         </button>
@@ -210,7 +231,7 @@ const Row = ({ row, lead, onInvestigate }: RowProps) => (
           does not care takes the sentence; somebody who does can see what
           it rests on without opening anything. */}
       <span
-        className="grid grid-cols-3 gap-2.5 mt-2"
+        className="grid grid-cols-3 gap-2.5 mt-1.5"
         style={{ gridColumn: "2 / 5" }}
       >
         {row.chain.gates.map((g) => (
@@ -303,19 +324,31 @@ const GroupBlock = ({
         <Expander open={open} count={rows.length} onClick={onToggle} />
       </div>
 
+      {/* Hung off the row above, not laid beside it.
+
+          Flat rows on a tinted band read as a second table spliced in at
+          the same weight as the first. A rail running down under the pip
+          says whose contents these are, and the columns still line up with
+          the rows above because the rail lives inside the pip's own cell. */}
       {open && (
         <div className="bg-bkg">
-          {rows.map((r) => (
+          {rows.map((r, i) => (
             <div
               key={r.id}
-              className="grid gap-4 items-center px-4 py-1.5 border-t border-brand_navy/20"
+              className={`grid gap-4 items-center px-4 py-1.5 ${
+                i > 0 ? "border-t border-brand_navy/10" : ""
+              }`}
               style={{ gridTemplateColumns: COLS }}
             >
-              <span />
+              <span
+                className={`block w-[2px] self-stretch mx-auto ${
+                  ahead ? "bg-delta_positive_text/30" : "bg-delta_negative_text/30"
+                }`}
+              />
               <span className="min-w-0 truncate pl-3 text-[12.5px] font-semibold text-content">
                 {r.name}
               </span>
-              <span className={`text-right text-[12.5px] font-bold tabular-nums ${tone}`}>
+              <span className={`text-right text-[12.5px] font-semibold tabular-nums ${tone}`}>
                 {signed(r.gap)}
               </span>
               <span className="text-[12.5px] text-content/85 truncate">
@@ -599,7 +632,7 @@ const DeptReport = ({
                     <span className="font-bold tabular-nums text-delta_positive_text">
                       {signed(overTotal)}
                     </span>{" "}
-                    where {openStoreNumber} is ahead
+                    where {numberOf(openStoreName, openStoreNumber)} is ahead
                   </span>
                 )}
               </div>
@@ -634,7 +667,7 @@ const DeptReport = ({
           <GroupBlock
             rows={over}
             total={overTotal}
-            says={`Ahead of ${compareStoreNumber}`}
+            says={`Ahead of ${numberOf(compareStoreName, compareStoreNumber)}`}
             ahead
             open={!!open.ahead}
             onToggle={() => toggle("ahead")}
