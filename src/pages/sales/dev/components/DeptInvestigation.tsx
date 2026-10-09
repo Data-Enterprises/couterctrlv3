@@ -335,7 +335,7 @@ const SkCard = ({ rows = 4 }: { rows?: number }) => (
  * first version.
  */
 const TabSkeleton = ({ tab }: { tab: "holds" | "items" | "supply" | "act" }) => (
-  <div className="flex-1 min-h-0 overflow-auto thin-scrollbar bg-bkg px-4 py-5">
+  <div className="flex-1 min-h-0 overflow-auto thin-scrollbar bg-custom-white px-4 py-5">
     <div className="flex flex-col gap-4" role="status">
       <LoadNote>
         {tab === "holds" || tab === "items" ? (
@@ -919,7 +919,7 @@ const HoldsPanel = ({
 
 
   return (
-    <div className="flex-1 min-h-0 overflow-auto thin-scrollbar bg-bkg px-4 py-5">
+    <div className="flex-1 min-h-0 overflow-auto thin-scrollbar bg-custom-white px-4 py-5">
       <div className="flex flex-col gap-5">
 
         {/* The finding first, across the width, then the evidence under it:
@@ -1015,10 +1015,26 @@ const HoldsPanel = ({
               ))}
             </div>
 
-            <p className="text-[13.5px] text-content/85 leading-relaxed">
-              Sales only, so this is settled before any cause is named — and
-              before anything can change under you.
-            </p>
+            {/* The caveats belong together and belong apart from the
+                figures: two lines a card's gap apart read as two separate
+                afterthoughts rather than as the terms the card is read
+                under. */}
+            <div className="rounded-md bg-bkg px-3.5 py-3 flex flex-col gap-1.5">
+              <p className="text-[13.5px] text-content/85 leading-relaxed">
+                Sales only, so this is settled before any cause is named —
+                and before anything can change under you.
+              </p>
+
+              {costPenalty < 0 && summary.gap < 0 && (
+                <p className="text-[13.5px] text-content/85 leading-relaxed">
+                  Buying the same goods for more took another{" "}
+                  <span className="font-semibold text-content">
+                    {cash(Math.abs(costPenalty))}
+                  </span>{" "}
+                  of margin on top of the sales gap.
+                </p>
+              )}
+            </div>
 
             {summary.gap >= 0 && marginGap < 0 && (
               <p className="text-[13px] leading-relaxed rounded-md bg-severity_watch_bg text-severity_watch_text px-3 py-2">
@@ -1026,15 +1042,6 @@ const HoldsPanel = ({
                 This department took {cash(summary.gap)} more and kept{" "}
                 {cash(Math.abs(marginGap))} less, because it buys the same goods
                 for more.
-              </p>
-            )}
-            {costPenalty < 0 && summary.gap < 0 && (
-              <p className="text-[13.5px] text-content/85 leading-relaxed">
-                Buying the same goods for more took another{" "}
-                <span className="font-semibold text-content">
-                  {cash(Math.abs(costPenalty))}
-                </span>{" "}
-                of margin on top of the sales gap.
               </p>
             )}
             </div>
@@ -1443,7 +1450,7 @@ const SupplyPanel = ({
     );
 
   return (
-    <div className="flex-1 min-h-0 overflow-auto thin-scrollbar bg-bkg px-4 py-5">
+    <div className="flex-1 min-h-0 overflow-auto thin-scrollbar bg-custom-white px-4 py-5">
       <div className="flex flex-col gap-5">
 
         {/* The tab opens with its finding, like every other one. It used to
