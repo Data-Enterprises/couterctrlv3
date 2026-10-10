@@ -72,15 +72,17 @@ beforeEach(() => {
 describe("supplyWindow", () => {
   it("reads back from the sales week's END, not its start", () => {
     expect(supplyWindow(scope.tw)).toEqual({
-      start: "2026-09-20",
+      start: "2026-08-23",
       end: "2026-10-04",
     });
   });
 
-  it("is a fortnight, independent of how long the sales window is", () => {
-    expect(SUPPLY_LOOKBACK_DAYS).toBe(14);
+  /** The span is the constant's, not the sales window's: a year of sales
+   *  still reads six weeks of supply. */
+  it("is six weeks, independent of how long the sales window is", () => {
+    expect(SUPPLY_LOOKBACK_DAYS).toBe(42);
     const long = supplyWindow({ start: "2026-01-01", end: "2026-10-04" });
-    expect(long.start).toBe("2026-09-20");
+    expect(long.start).toBe("2026-08-23");
   });
 });
 
@@ -207,7 +209,7 @@ describe("fetchOrders", () => {
   it("asks over the supply window, not the sales week", async () => {
     getAllOrders.mockResolvedValue({ data: { error: 0, orders: [] } });
     await fetchOrders(scope);
-    expect(getAllOrders.mock.calls[0][2]).toBe("2026-09-20");
+    expect(getAllOrders.mock.calls[0][2]).toBe("2026-08-23");
     expect(getAllOrders.mock.calls[0][3]).toBe("2026-10-04");
   });
 

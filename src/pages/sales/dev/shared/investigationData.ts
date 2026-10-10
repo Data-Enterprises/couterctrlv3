@@ -42,14 +42,23 @@ const SINGLE_STORE = 1;
  * How far back orders and receipts are read.
  *
  * Deliberately NOT the sales week. These are different questions: a department
- * can be down this week because a delivery failed a fortnight ago, and reading
+ * can be down this week because a delivery failed a month ago, and reading
  * deliveries over the same seven days would answer "was it received in the
  * week you happened to pick" — true, useless, and easy to act on wrongly.
  *
- * Fourteen days covers the order-to-shelf cycle twice over without reaching so
- * far back that a receipt stops being evidence about this week.
+ * Six weeks, because the window decides what "never ordered" means and a
+ * fortnight was deciding it wrongly. Fast-moving grocery turns inside two
+ * weeks, but a slow category is ordered monthly or less — and on those the
+ * old window called an item never ordered when the order sat three weeks
+ * back, which is the one direction this can be wrong quietly: it accuses a
+ * buyer of not ordering something they did order.
+ *
+ * Six weeks covers a monthly cycle with slack either side. It costs nothing
+ * on orders, which come down in one request whatever the span, and it costs
+ * pages on receipts, which are walked per store — the slowest wave gets
+ * slower, and that is the trade.
  */
-export const SUPPLY_LOOKBACK_DAYS = 14;
+export const SUPPLY_LOOKBACK_DAYS = 42;
 
 export interface Window {
   start: string;
