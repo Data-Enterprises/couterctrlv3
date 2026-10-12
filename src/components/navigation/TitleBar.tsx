@@ -387,7 +387,20 @@ const TitleBar = () => {
                 help pages come from. Dev mode only: these are our notes, they
                 name unreleased work, and the row would mean nothing to a
                 client sitting on prod. Under View because it describes the
-                app those switches move you around in. */}
+                app those switches move you around in.
+
+                HIDDEN until `help/releases` and `help/page_url` are deployed.
+                The page needs the API to list the notes AND to sign each one:
+                the files sit under `release/{env}/{name}.html` in the help
+                bucket, and unlike `dev/` and `prod/` that prefix is not
+                public — anonymous GETs answer AccessDenied, and the frame is
+                anonymous. So the row would open a page that can only report
+                it cannot read anything.
+
+                Uncomment as-is once the endpoint is up; nothing else about
+                the page changed. The route stays mounted, so the URL still
+                works for testing it. */}
+            {/*
             {context.apiEnv === "dev" ? (
               <button
                 onClick={() => {
@@ -400,6 +413,7 @@ const TitleBar = () => {
                 <span className="text-[11px] text-content/85">every release</span>
               </button>
             ) : null}
+            */}
             {SHOW_API_ENV_SWITCH && user.userLevel >= 7 ? (
               <div
                 className={`px-4 py-2.5 border-b border-gray-100 flex items-center gap-2 ${

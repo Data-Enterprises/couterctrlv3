@@ -40,7 +40,11 @@ const SortHeader = <C extends string>({
     style={width === undefined ? undefined : { width }}
     title={`Sort by ${label}`}
   >
-    {label}
+    {/* In a span so a caller that constrains the button — a grid track plus
+        `min-w-0` — gets a label that truncates instead of one that overflows
+        into the next column. Every other caller is flex-shrink-0 and sizes to
+        its content, where this does nothing. */}
+    <span className="truncate">{label}</span>
     {sort?.col === col &&
       (sort.dir === "desc" ? (
         <ChevronDownIcon className="w-3 h-3 flex-shrink-0" />

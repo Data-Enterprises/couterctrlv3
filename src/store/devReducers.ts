@@ -3,6 +3,7 @@ import { resetAppSlice } from "../features/appSlice";
 
 import devSalesReducer from "../features/dev/devSalesSlice";
 import devSalesLedgerReducer from "../features/dev/devSalesLedgerSlice";
+import devSalesCacheReducer from "../features/dev/devSalesCacheSlice";
 import devSalesPerfReducer from "../features/dev/devSalesPerfSlice";
 import devEventPerfReducer from "../features/dev/devEventPerfSlice";
 import devLossPreventionReducer from "../features/dev/devLossPreventionSlice";
@@ -54,6 +55,7 @@ import devExportBuilderReducer from "../features/dev/devExportBuilderSlice";
 export const devReducers = {
   sales: devSalesReducer,
   salesLedger: devSalesLedgerReducer,
+  salesCache: devSalesCacheReducer,
   salesPerf: devSalesPerfReducer,
   eventPerf: devEventPerfReducer,
   lossPrevention: devLossPreventionReducer,

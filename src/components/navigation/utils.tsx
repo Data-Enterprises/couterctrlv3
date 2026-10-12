@@ -21,7 +21,7 @@ import {
   ShieldExclamationIcon,
   DocumentArrowUpIcon,
   TicketIcon,
-  // ScaleIcon, // Suggested Weight — commented out for publish
+  ScaleIcon,
 } from "@heroicons/react/16/solid";
 import {
   COMING_SOON_CATEGORY,
@@ -140,6 +140,19 @@ export const navigation: Navigation[] = [
   // Two different gates, per page: see the category's docblock. LP Actions and
   // Sales Tracker are absent from this list entirely, which is why neither
   // appears below.
+  {
+    name: "Comparison",
+    href: "comparison",
+    icon: ScaleIcon,
+    // Desktop only — the matrix is a store by every department and has no
+    // phone form.
+    mobile: false,
+    children: [],
+    childOpen: false,
+    userLevels: COMING_SOON_LEVELS,
+    isHovering: false,
+    isVisible: true,
+  },
   {
     name: "Item Actions",
     href: "item-report",
@@ -534,6 +547,17 @@ export const categories: NavCategory[] = [
     name: COMING_SOON_CATEGORY,
     icon: ClockIcon,
     pages: [
+      {
+        name: "Comparison",
+        href: "comparison",
+        icon: ScaleIcon,
+        mobile: false,
+        children: [],
+        childOpen: false,
+        userLevels: COMING_SOON_LEVELS,
+        isHovering: false,
+        isVisible: true,
+      },
       {
         name: "Item Actions",
         href: "item-report",

@@ -14,7 +14,27 @@ import type {
 
 export type GradingMetric = "sales" | "qty";
 
-export type LedgerTab = "subdept" | "hourly" | "category";
+export type LedgerTab = "subdept" | "hourly" | "comparison" | "category";
+
+/**
+ * The store the open one is being measured against.
+ *
+ * Page state rather than a tab's own, because it is the same question on
+ * every tab: pick 018 in Stores and Sub Depts and Hourly are both comparing
+ * against 018 until it changes. A counterpart held per tab would let two tabs
+ * disagree about who "they" are, which is the kind of thing nobody notices
+ * until the numbers do not add up.
+ *
+ * Null is the resting state and is NOT an error: a tab with no counterpart is
+ * the single-store view it has always been. Only a group search can set one,
+ * so a single-store entry behaves exactly as it does today.
+ */
+export interface Counterpart {
+  storeid: number;
+  /** Co-located stores share a storeid, so the number is part of the identity. */
+  storeNumber: string;
+  storeName: string;
+}
 export type SevFilter = "all" | "critical" | "watch" | "healthy";
 export type OpenSheetType = "subdept" | "hourly" | null;
 
@@ -47,12 +67,55 @@ export type Top10Item = {
 /** `sev` is null when the item isn't graded — neither comparison covers the week. */
 export type ExportSubDeptItem = Top10Item & { sev: "critical" | "watch" | "healthy" | null };
 
+/**
+ * The sub-department investigation the page is holding open.
+ *
+ * It takes over the whole page rather than a panel, so it lives beside
+ * `selection` rather than inside it: closing the investigation has to put the
+ * reader back on the store and department they came from, and that is only
+ * possible if the two survive each other. Desktop only.
+ */
+export interface InvestigationTarget {
+  storeid: number;
+  storeNumber: string;
+  storeName: string;
+  compareStoreid: number;
+  compareStoreNumber: string;
+  compareStoreName: string;
+  subDept: number;
+  subDeptName: string;
+  /**
+   * Which pile the department-level shape points at, carried through from
+   * the report so the investigation can mark it.
+   *
+   * A suggestion, never a filter: a department can be entirely volume and
+   * have no item flagged never-ordered, and that disagreement is a finding
+   * rather than an empty grid.
+   */
+  focus?: "ringing" | "orders" | "price" | "mix" | "unknown";
+}
+
 interface SalesLedgerState {
   // Navigation (shared desktop + mobile)
   hasSearched: boolean;
   selection: StoreSelection | null;
   tab: LedgerTab;
   selectedDate: string | null;
+  investigation: InvestigationTarget | null;
+  counterpart: Counterpart | null;
+  /**
+   * Which group view the right panel rests on.
+   *
+   * Both answer a question about the GROUP, which is why they are two tabs
+   * rather than one screen hidden behind the other: "stores" ranks the
+   * stores, "departments" breaks every store into its departments. The
+   * investigation below them is about selected stores instead, which is a
+   * different scope and so a different screen.
+   */
+  groupView: "stores" | "departments";
+  /** The departments view, taken full width. Nine stores by twenty
+   *  departments is readable in half a page and comfortable in all of it. */
+  matrixOpen: boolean;
 
   // Loading
   ledgerLoading: boolean;
@@ -122,6 +185,10 @@ const initialState: SalesLedgerState = {
   selection: null,
   tab: "subdept",
   selectedDate: null,
+  investigation: null,
+  counterpart: null,
+  groupView: "stores",
+  matrixOpen: false,
   ledgerLoading: false,
   reportLoading: false,
   top10Loading: false,
@@ -170,10 +237,43 @@ const salesLedgerSlice = createSlice({
       state,
       action: PayloadAction<StoreSelection | null>,
     ) => {
-      state.selection = action.payload;
+      // Opening a different store drops the counterpart. "018 against 018"
+      // is not a comparison, and silently keeping a counterpart that is now
+      // the open store is worse than asking again.
+      const next = action.payload;
+      const changed =
+        next?.storeId !== state.selection?.storeId ||
+        next?.storeNumber !== state.selection?.storeNumber;
+      if (changed) state.counterpart = null;
+      state.selection = next;
+    },
+    setCounterpart: (state, action: PayloadAction<Counterpart | null>) => {
+      state.counterpart = action.payload;
     },
     setLedgerTab: (state, action: PayloadAction<LedgerTab>) => {
       state.tab = action.payload;
+    },
+    setInvestigation: (
+      state,
+      action: PayloadAction<InvestigationTarget | null>,
+    ) => {
+      state.investigation = action.payload;
+      // Opening an investigation from the matrix leaves the matrix behind,
+      // so Back from the investigation returns to the ledger rather than to
+      // a grid the reader has already finished with.
+      if (action.payload !== null) state.matrixOpen = false;
+    },
+    setGroupView: (
+      state,
+      action: PayloadAction<"stores" | "departments">,
+    ) => {
+      state.groupView = action.payload;
+    },
+    setMatrixOpen: (state, action: PayloadAction<boolean>) => {
+      state.matrixOpen = action.payload;
+      // Expanding is the same view with more room, so coming back from it
+      // lands on the tab it expanded from rather than on the store list.
+      if (action.payload) state.groupView = "departments";
     },
     setLedgerSelectedDate: (state, action: PayloadAction<string | null>) => {
       state.selectedDate = action.payload;
@@ -350,6 +450,10 @@ export const {
   setHasSearched,
   setLedgerSelection,
   setLedgerTab,
+  setCounterpart,
+  setInvestigation,
+  setGroupView,
+  setMatrixOpen,
   setLedgerSelectedDate,
   setLedgerLoading,
   setReportLoading,

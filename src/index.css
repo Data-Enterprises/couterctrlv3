@@ -264,6 +264,25 @@ body {
     --color-delta-positive-mid: 23 128 63;
     --color-delta-negative-bg: 242 209 209;
     --color-delta-negative-text: 142 16 16;
+    /* The two stores in a comparison.
+       NOT the TY/LY series colours in perfColors: those say which YEAR a
+       figure is, and these say which STORE. Reusing them would have a
+       store-against-store grid quietly claiming to be a year-on-year one.
+       Blue against slate, so they differ in saturation as well as hue and
+       neither collides with the delta or severity families carrying the
+       verdicts in the same grid. The tints are for filling a column behind
+       11px text; the solids are for a chart series or a swatch. */
+    --color-store-open: 23 142 198;
+    --color-store-open-tint: 234 244 251;
+    --color-store-compare: 90 108 132;
+    --color-store-compare-tint: 239 241 244;
+    /* The two halves a sales gap splits into. Not severity and not delta:
+       neither is good or bad on its own, they are the two things a gap can
+       be MADE of, and a reader has to tell one from the other at a glance.
+       Blue and teal rather than two reds, so they separate by hue where the
+       figures beside them are already carrying direction in red/green. */
+    --color-volume-text: 30 63 122;
+    --color-rate-text: 20 85 95;
     --color-content: 30 41 59;
     --color-themeText: 30 41 59;
     --color-sidebar: 0 168 235;
@@ -468,12 +487,15 @@ body {
 }
 
 @layer utilities {
+  .no-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox, and Chrome 121+ */
+  }
+
   .no-scrollbar::-webkit-scrollbar {
     width: 0em;
     height: 0em;
     display: none;
-    -ms-overflow-style: none; /* IE and Edge */
-    scrollbar-width: none; /* Firefox */
   }
 
   /* Skips layout and paint for rows scrolled out of view. Categories can return
