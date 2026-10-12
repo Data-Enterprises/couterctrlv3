@@ -118,10 +118,10 @@ const SalesLedger = () => {
   );
 
   const handleRowClick = useCallback(
-    (s: Parameters<typeof setLedgerSelection>[0]) =>
-      // Read through a ref: depending on the rows would give this a new
-      // identity whenever they changed and defeat the memo on every row.
-      openStore(s, rowsRef.current.length > 1 ? "comparison" : "subdept"),
+    // Sub depts, which is the first tab and the one that answers the
+    // question the store was clicked with. Stores is a step taken from
+    // there, not the landing.
+    (s: Parameters<typeof setLedgerSelection>[0]) => openStore(s, "subdept"),
     [openStore],
   );
 
@@ -130,9 +130,6 @@ const SalesLedger = () => {
   // the memo on every row.
   const selectionRef = useRef(selection);
   selectionRef.current = selection;
-
-  /** How many stores the search returned, for the stable handler above. */
-  const rowsRef = useRef<unknown[]>([]);
 
   const handlePopupClose = useCallback(
     () => dispatch(setLedgerSelection(null)),
@@ -322,7 +319,6 @@ const SalesLedger = () => {
     () => regradeLedgerRows(baseLedgerRows, activeThreshold),
     [baseLedgerRows, activeThreshold],
   );
-  rowsRef.current = ledgerRows;
 
   /** The matrix asks one store at a time, and these are the stores the
    *  search already found — so no second call to resolve the group, and
