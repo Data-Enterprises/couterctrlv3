@@ -500,10 +500,11 @@ const ItemEvidence = ({
   const code = item.productCode;
   const mineEvents = supplyTimeline(code, mineOrders, mineReceipts);
   const theirEvents = supplyTimeline(code, theirsOrders, theirsReceipts);
-  /* Open: the verdict is why the panel exists. Foldable because somebody
-     walking the pile with the arrows has read it by the third item and
-     wants the figures higher up the screen. */
-  const [says, setSays] = useState(true);
+  /* Closed. It lays over the sections below it, so opening with it down
+     would cover the first thing the panel has to show — and a reader who
+     clicked an item already knows which item they clicked. "View details"
+     brings it back. */
+  const [says, setSays] = useState(false);
   const mineLadder = ladderFor(minePoints, code);
   const theirLadder = ladderFor(theirsPoints, code);
 

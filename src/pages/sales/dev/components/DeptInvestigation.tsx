@@ -2129,33 +2129,17 @@ const DeptInvestigation = ({
       setChosen(next);
       return;
     }
-    /* Clicking the one row that is already picked out clears it. Without
-       this the only way back to nothing selected is a modifier, and a
-       reader who selected a row by accident has no plain way to undo it. */
+
+    /* A plain click opens the item. Shift and ctrl are what build a
+       selection to copy, and they never open anything — so picking out
+       nine rows does not throw the panel open nine times.
+
+       Clicking the row that is already open closes it again, which is also
+       the way back to nothing selected. */
     const only = chosen.size === 1 && chosen.has(code);
     setChosen(only ? new Set() : new Set([code]));
-  };
-
-  /**
-   * The chosen rows on the clipboard as tab-separated text.
-   *
-   * Tabs rather than commas: a spreadsheet pastes TSV straight into cells,
-   * where an item description carrying a comma would split across two of
-   * them. The same columns the CSV export writes, so a copied row and a
-   * downloaded one are the same row.
-   */
-  const copyChosen = () => {
-    if (chosen.size === 0) return;
-    const lines = sorted
-      .filter((r) => chosen.has(r.productCode))
-      .map((r) =>
-        csvRow(r)
-          .map((v) => (v === null ? "" : String(v)))
-          .join("\t"),
-      );
-    navigator.clipboard.writeText(
-      [CSV_HEADERS.join("\t"), ...lines].join("\n"),
-    );
+    if (only) setPicked(null);
+    else show(code);
   };
 
   /** Picked out, either by the selection or by the rail. */
@@ -2352,22 +2336,10 @@ const DeptInvestigation = ({
 
   /* Escape goes back, the way it does everywhere else that opens over the
      page. Bound to the document because the focus may be anywhere inside
-     three hundred rows by the time somebody wants out.
-
-     The copy keys ride along: ctrl-C with rows chosen puts them on the
-     clipboard, and without any it does nothing, so an ordinary copy of
-     selected text is left alone. */
+     three hundred rows by the time somebody wants out. */
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") close();
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "c" && chosen.size > 0) {
-        e.preventDefault();
-        copyChosen();
-      }
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "a" && tab === "items") {
-        e.preventDefault();
-        setChosen(new Set(sorted.map((r) => r.productCode)));
-      }
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
@@ -2813,7 +2785,6 @@ const DeptInvestigation = ({
                   <tr
                     key={r.productCode}
                     onClick={(e) => pickRow(e, r.productCode)}
-                    onDoubleClick={() => show(r.productCode)}
                     className="cursor-pointer select-none"
                     onContextMenu={(e) => {
                       e.preventDefault();
@@ -2910,14 +2881,11 @@ const DeptInvestigation = ({
                   ` filtered from ${items.length.toLocaleString("en-US")}`}{" "}
                 &middot; ordered by the biggest difference &middot;{" "}
                 {chosen.size > 0 ? (
-                  <>
-                    <span className="font-semibold text-content">
-                      {chosen.size.toLocaleString("en-US")} selected
-                    </span>{" "}
-                    &middot; ctrl-C to copy
-                  </>
+                  <span className="font-semibold text-content">
+                    {chosen.size.toLocaleString("en-US")} selected
+                  </span>
                 ) : (
-                  "double-click a row for its evidence"
+                  "click a row for its evidence"
                 )}
               </span>
 
@@ -3026,12 +2994,6 @@ const DeptInvestigation = ({
                    know; a menu item is a thing you find. */
                 chosen.size > 0
                   ? [
-                      {
-                        label: `Copy ${chosen.size} selected ${
-                          chosen.size === 1 ? "row" : "rows"
-                        }`,
-                        onClick: copyChosen,
-                      },
                       {
                         /* The question a buyer asks of a never-ordered item
                            is "was it ever on an order at all" — which is
