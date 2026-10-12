@@ -13,6 +13,36 @@ export type UniqueSub = {
   count: number;
 }
 
+/**
+ * The left panel's configuration, as six independent multi-selects.
+ *
+ * Every one of them is read off the line items that came back, so there is
+ * nothing to pick that is not really in the result. Empty means all, the same
+ * convention MultiSelectFilter uses: an untouched filter has to produce the
+ * whole set or the panel silently empties the export before anyone has
+ * touched it.
+ *
+ * Stores are keyed by storenumber rather than storeid — a few storeids cover
+ * two physical locations, and those are separate stores.
+ */
+export type OrdersFilters = {
+  orderTypes: string[];
+  storeNumbers: string[];
+  dates: string[];
+  subIds: number[];
+  productCodes: string[];
+  orderIds: number[];
+};
+
+export const EMPTY_ORDERS_FILTERS: OrdersFilters = {
+  orderTypes: [],
+  storeNumbers: [],
+  dates: [],
+  subIds: [],
+  productCodes: [],
+  orderIds: [],
+};
+
 export type GroupedOrderStore = {
   storeid: number;
   // A few storeids cover two physical locations; storenumber is what tells
@@ -69,6 +99,7 @@ interface OrdersState {
   orderStatusFilter: OrderStatus;
   subIdsFilter: number[];
   uniqueSubs: UniqueSub[];
+  filters: OrdersFilters;
 }
 
 const initialState: OrdersState = {
@@ -92,6 +123,7 @@ const initialState: OrdersState = {
   orderStatusFilter: "",
   subIdsFilter: [],
   uniqueSubs: [],
+  filters: EMPTY_ORDERS_FILTERS,
 };
 
 const ordersSlice = createSlice({
@@ -182,6 +214,19 @@ const ordersSlice = createSlice({
     setUniqueSubs: (state, action: PayloadAction<UniqueSub[]>) => {
       state.uniqueSubs = action.payload;
     },
+    /** One filter at a time; the panel owns which. */
+    setOrdersFilter: (
+      state,
+      action: PayloadAction<{ key: keyof OrdersFilters; values: (string | number)[] }>,
+    ) => {
+      // The cast is the price of one setter for six arrays. The key decides
+      // the element type and the panel only ever sends the matching one.
+      (state.filters[action.payload.key] as (string | number)[]) =
+        action.payload.values;
+    },
+    clearOrdersFilters: (state) => {
+      state.filters = EMPTY_ORDERS_FILTERS;
+    },
     resetOrdersState: () => initialState,
   },
 });
@@ -208,5 +253,7 @@ export const {
   setOrderStatusFilter,
   setSubIdsFilter,
   setUniqueSubs,
+  setOrdersFilter,
+  clearOrdersFilters,
 } = ordersSlice.actions;
 export default ordersSlice.reducer;

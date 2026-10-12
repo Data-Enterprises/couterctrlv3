@@ -1,533 +1,309 @@
-import { useState, useMemo } from "react";
-import ResizableModalShell from "../../../../components-dev/modals/ResizableModalShell";
-import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/20/solid";
+import { useMemo, useState } from "react";
+import { XMarkIcon, ArrowDownTrayIcon } from "@heroicons/react/16/solid";
+import MultiSelectFilter from "../../../../components-dev/filters/MultiSelectFilter";
+import { useToast } from "../../../../components/toasts/hooks/useToast";
 import type { AllOrder } from "../../../../interfaces";
-import type { SelectedOrder } from "../../../../features/dev/devOrdersSlice";
-import { fmtNum, rowsToCsv, downloadCsv, aggregateRows } from "../../../../utils/csvExport";
-import type { AggFn, AggRow } from "../../../../utils/csvExport";
-import { buildOrdersCsv, DIMS, METRICS, AGG_OPTIONS } from "./ordersExportShared";
+import type { OrdersFilters } from "../../../../features/dev/devOrdersSlice";
+import { buildRows, type SortKey } from "../ordersRows";
+import { ORDER_EXPORT_COLUMNS } from "../ordersExportColumns";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-interface OrdersExportModalProps {
+interface Props {
+  /** Every line the search returned, before any filter. */
+  lines: AllOrder[];
+  /** What the left panel has selected — the modal opens on this. */
+  filters: OrdersFilters;
+  /** The grid's sort, so the file comes out in the order on screen. */
+  applySort: (
+    rows: AllOrder[],
+    value: (row: AllOrder, col: SortKey) => number | null,
+  ) => AllOrder[];
+  /** For the default file name. */
+  scopeLabel: string;
+  startDate: string;
+  endDate: string;
   onClose: () => void;
-  storeNames: string[];
-  orderType: string;
-  dateLabel: string; // pre-formatted — a single date, or "MM/DD/YYYY – MM/DD/YYYY" for a range
-  allOrders: AllOrder[];        // full set for selected store+date+type
-  selectedOrderItems: AllOrder[]; // line items for selected order (empty if none)
-  selectedOrder: SelectedOrder;
 }
 
-type ModalMode = "presets" | "custom";
-type ExportDataset = "all" | "selected" | "subDepts";
+const slug = (s: string) => s.replace(/[^a-z0-9]+/gi, "_").replace(/^_|_$/g, "");
 
-interface MetricSelection { fn: AggFn; enabled: boolean }
+const csvCell = (v: unknown) => {
+  if (v === null || v === undefined) return "";
+  const s = String(v);
+  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+};
 
-const PREVIEW_ROWS = 5;
-
-// ─── Component ────────────────────────────────────────────────────────────────
-
+/**
+ * Export, as the grid you are already looking at.
+ *
+ * The page used to carry preset sections — all orders, the selected order, by
+ * sub department — because the export was the only place that could narrow
+ * anything. The configuration panel does that now, so the presets were three
+ * names for "the rows on screen" and the modal is the simpler thing: name it,
+ * choose columns, go.
+ *
+ * It opens on the panel's filters rather than ignoring them, and they stay
+ * editable here — the common case is the file you are looking at, and the
+ * next most common is that file for one more store, without disturbing the
+ * screen to get it.
+ *
+ * The grid's sort rides along, so the file comes out in the order you were
+ * reading it — including the list's own order when nothing is sorted. Before
+ * that it wrote whatever order the API returned and nobody could tell.
+ */
 const OrdersExportModal = ({
+  lines,
+  filters,
+  applySort,
+  scopeLabel,
+  startDate,
+  endDate,
   onClose,
-  storeNames,
-  orderType,
-  dateLabel,
-  allOrders,
-  selectedOrderItems,
-  selectedOrder,
-}: OrdersExportModalProps) => {
-  const isMultiStore = storeNames.length > 1;
-  const storeLabel = isMultiStore ? `${storeNames.length} stores` : (storeNames[0] ?? "");
+}: Props) => {
+  const toast = useToast();
 
-  // ── Preset state ──
-  const [mode, setMode] = useState<ModalMode>("presets");
-  // No default selections — the user must explicitly choose what to export.
-  const [selected, setSelected] = useState<Set<ExportDataset>>(() => new Set());
+  const [draft, setDraft] = useState<OrdersFilters>(filters);
+  const [columns, setColumns] = useState<string[]>([]);
+  const [name, setName] = useState(
+    `${slug(scopeLabel)}_${slug(startDate)}_${slug(endDate)}`,
+  );
 
-  // sub_department_description can come back null despite the AllOrder type
-  // saying string (same fallback used elsewhere for this field, e.g. Orders.tsx).
-  const uniqueSubDepts = useMemo(() => {
-    const map = new Map<string, { id: string; count: number }>();
-    allOrders.forEach((o) => {
-      const key = o.sub_department_description ?? "null";
-      const existing = map.get(key);
-      if (existing) existing.count += 1;
-      else map.set(key, { id: key, count: 1 });
-    });
-    return Array.from(map.values()).sort((a, b) => a.id.localeCompare(b.id));
-  }, [allOrders]);
+  const rows = useMemo(
+    () => buildRows(lines, draft, applySort),
+    [lines, draft, applySort],
+  );
 
-  const isMultiSubDept = uniqueSubDepts.length > 1;
-
-  // ── Custom mode Sub Depts filter — no default selections ──
-  const [customSubDepts, setCustomSubDepts] = useState<Set<string>>(() => new Set());
-
-  const toggleCustomSubDept = (id: string) =>
-    setCustomSubDepts((prev) => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
-
-  const allSubDeptsSelected = customSubDepts.size === uniqueSubDepts.length;
-  const noSubDeptsSelected = customSubDepts.size === 0;
-
-  const customFilteredOrders = useMemo(
+  /** Empty means every column, the same way the filters read. */
+  const chosen = useMemo(
     () =>
-      allOrders.filter((o) => !isMultiSubDept || customSubDepts.has(o.sub_department_description ?? "null")),
-    [allOrders, customSubDepts, isMultiSubDept],
+      columns.length === 0
+        ? ORDER_EXPORT_COLUMNS
+        : ORDER_EXPORT_COLUMNS.filter((c) => columns.includes(c.field)),
+    [columns],
   );
 
-  // ── Presets mode "By Sub Depts" filter — deliberately separate state from
-  // Custom mode's, so toggling one doesn't affect the other. No default selections. ──
-  const [presetSubDepts, setPresetSubDepts] = useState<Set<string>>(() => new Set());
-
-  // Selecting a sub dept here also activates the "By Sub Depts" checkbox
-  // (and clearing them all back out deactivates it), so the two stay in sync.
-  const applyPresetSubDepts = (next: Set<string>) => {
-    setPresetSubDepts(next);
-    setSelected((prev) => {
-      const n = new Set(prev);
-      if (next.size > 0) n.add("subDepts"); else n.delete("subDepts");
-      return n;
-    });
-  };
-
-  const togglePresetSubDept = (id: string) => {
-    const next = new Set(presetSubDepts);
-    next.has(id) ? next.delete(id) : next.add(id);
-    applyPresetSubDepts(next);
-  };
-
-  const allPresetSubDeptsSelected = presetSubDepts.size === uniqueSubDepts.length;
-  const noPresetSubDeptsSelected = presetSubDepts.size === 0;
-
-  const presetSubDeptFilteredOrders = useMemo(
-    () => allOrders.filter((o) => presetSubDepts.has(o.sub_department_description ?? "null")),
-    [allOrders, presetSubDepts],
-  );
-
-  // No default selections — Group By and Metrics both start empty.
-  const [groupBy, setGroupBy] = useState<Set<string>>(new Set());
-  const [metrics, setMetrics] = useState<Map<string, MetricSelection>>(
-    new Map([
-      ["qty",                 { fn: "sum", enabled: false }],
-      ["e_ret",               { fn: "sum", enabled: false }],
-      ["cogs",                { fn: "sum", enabled: false }],
-      ["active_retail_price", { fn: "avg", enabled: false }],
-      ["profit",              { fn: "sum", enabled: false }],
-      ["margin",              { fn: "avg", enabled: false }],
-      ["weight",              { fn: "sum", enabled: false }],
-    ])
-  );
-
-  const toggleGroupBy = (key: string) =>
-    setGroupBy((prev) => { const n = new Set(prev); n.has(key) ? n.delete(key) : n.add(key); return n; });
-
-  const toggleMetric = (key: string) =>
-    setMetrics((prev) => { const n = new Map(prev); const c = n.get(key)!; n.set(key, { ...c, enabled: !c.enabled }); return n; });
-
-  const setMetricFn = (key: string, fn: AggFn) =>
-    setMetrics((prev) => { const n = new Map(prev); const c = n.get(key)!; n.set(key, { ...c, fn }); return n; });
-
-  // ── Flat rows for custom builder ── Profit/Margin/Edited aren't raw
-  // AllOrder fields, so they're computed here before aggregation.
-  const flatRows = useMemo<AggRow[]>(
-    () =>
-      customFilteredOrders.map((o) => {
-        const profit = o.e_ret - o.cogs;
-        const margin = o.e_ret > 0 ? (profit / o.e_ret) * 100 : 0;
-        return {
-          ...o,
-          profit,
-          margin,
-          edited_label: o.edited ? "Yes" : "No",
-        } as unknown as AggRow;
-      }),
-    [customFilteredOrders],
-  );
-
-  // ── Aggregated result ──
-  const { aggRows, columns } = useMemo(() => {
-    const activeDims = DIMS.filter((d) => groupBy.has(d.key));
-    const activeMetrics = METRICS
-      .map((m) => ({ ...m, sel: metrics.get(m.key) }))
-      .filter((m) => m.sel?.enabled)
-      .map((m) => ({ key: m.key, fn: m.sel!.fn, label: m.label }));
-
-    const aggRows = aggregateRows(
-      flatRows,
-      activeDims.map((d) => d.key),
-      activeMetrics.map((m) => ({ key: m.key, fn: m.fn })),
-    );
-
-    const display = aggRows.map((row) => {
-      const out: Record<string, string> = {};
-      for (const d of activeDims) out[d.key] = String(row[d.key] ?? "");
-      for (const m of activeMetrics) {
-        const colKey = `${m.fn}__${m.key}`;
-        const val = Number(row[colKey]);
-        out[colKey] = m.fn === "count" ? String(Math.round(val)) : fmtNum(val);
-      }
-      return out;
-    });
-
-    const columns = [
-      ...activeDims.map((d) => ({ key: d.key, label: d.label })),
-      ...activeMetrics.map((m) => ({
-        key: `${m.fn}__${m.key}`,
-        label: `${m.fn.charAt(0).toUpperCase() + m.fn.slice(1)} ${m.label}`,
-      })),
-    ];
-
-    return { aggRows: display, columns };
-  }, [flatRows, groupBy, metrics]);
-
-  // ── Preset download ──
-  const handlePresetDownload = () => {
-    const sections: string[] = [];
-    if (selected.has("all"))      sections.push(buildOrdersCsv(allOrders, `All Orders — ${storeLabel} ${orderType} ${dateLabel}`));
-    if (selected.has("selected") && selectedOrderItems.length) sections.push(buildOrdersCsv(selectedOrderItems, `Order #${selectedOrder?.orderId}`));
-    if (selected.has("subDepts") && presetSubDeptFilteredOrders.length) {
-      sections.push(buildOrdersCsv(presetSubDeptFilteredOrders, `By Sub Depts (${presetSubDepts.size} of ${uniqueSubDepts.length}) — ${storeLabel} ${orderType} ${dateLabel}`));
+  /** Options come off the lines, not the type, so nothing offered is absent. */
+  const options = useMemo(() => {
+    const types = new Set<string>();
+    const stores = new Map<string, string>();
+    const dates = new Set<string>();
+    const subs = new Map<number, string>();
+    const codes = new Map<string, string>();
+    const ids = new Set<number>();
+    for (const o of lines) {
+      if (o.order_type) types.add(o.order_type);
+      if (o.storenumber) stores.set(o.storenumber, o.storename ?? o.storenumber);
+      if (o.order_date) dates.add(o.order_date);
+      if (o.sub_department != null)
+        subs.set(o.sub_department, o.sub_department_description ?? "No department");
+      if (o.product_code) codes.set(String(o.product_code), o.description ?? "");
+      if (o.order_id != null) ids.add(o.order_id);
     }
-    if (!sections.length) return;
-    // Combined multi-store exports are named by order type + date only — a store
-    // count isn't a meaningful filename slug. Single-store exports keep the name.
-    const safeName = (isMultiStore ? orderType : `${storeLabel}_${orderType}`).replace(/[^a-z0-9]/gi, "_");
-    const safeDateLabel = dateLabel.replace(/[^a-z0-9]/gi, "_");
-    downloadCsv(sections.join("\n\n"), `${safeName}_${safeDateLabel}.csv`);
+    const d = (iso: string) => {
+      const [y, m, dd] = iso.split("T")[0].split("-");
+      return `${+m}/${+dd}/${y}`;
+    };
+    return {
+      types: [...types].sort().map((v) => ({ value: v, label: v })),
+      stores: [...stores.entries()]
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([n, nm]) => ({ value: n, label: `${n} — ${nm}` })),
+      dates: [...dates].sort((a, b) => b.localeCompare(a)).map((v) => ({ value: v, label: d(v) })),
+      subs: [...subs.entries()]
+        .sort(([, a], [, b]) => a.localeCompare(b))
+        .map(([id, desc]) => ({ value: String(id), label: desc })),
+      codes: [...codes.entries()]
+        .sort(([, a], [, b]) => a.localeCompare(b))
+        .map(([c, desc]) => ({ value: c, label: desc ? `${c} — ${desc}` : c })),
+      ids: [...ids].sort((a, b) => a - b).map((v) => ({ value: String(v), label: `#${v}` })),
+    };
+  }, [lines]);
+
+  const set = (key: keyof OrdersFilters, values: (string | number)[]) =>
+    setDraft((d) => ({ ...d, [key]: values }));
+
+  const handleExport = () => {
+    if (!name.trim()) {
+      toast.warn("Name the file before exporting.");
+      return;
+    }
+    if (rows.length === 0) {
+      toast.warn("Nothing to export with these filters.");
+      return;
+    }
+
+    const header = chosen.map((c) => csvCell(c.headerName)).join(",");
+    const body = rows
+      .map((r) => chosen.map((c) => csvCell(r[c.field as keyof AllOrder])).join(","))
+      .join("\n");
+
+    const blob = new Blob([`${header}\n${body}`], {
+      type: "text/csv;charset=utf-8;",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${name.trim().replace(/\.csv$/i, "")}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
     onClose();
   };
-
-  // ── Custom download ──
-  const handleCustomDownload = () => {
-    if (!columns.length || !aggRows.length) return;
-    const headers = columns.map((c) => c.label);
-    const rows = aggRows.map((r) => columns.map((c) => r[c.key] ?? ""));
-    const safeName = (isMultiStore ? orderType : `${storeLabel}_${orderType}`).replace(/[^a-z0-9]/gi, "_");
-    const safeDateLabel = dateLabel.replace(/[^a-z0-9]/gi, "_");
-    downloadCsv(rowsToCsv(headers, rows), `${safeName}_custom_${safeDateLabel}.csv`);
-    onClose();
-  };
-
-  const hasSelected = selectedOrder !== null && selectedOrderItems.length > 0;
-  const canCustomDownload = columns.length > 0 && aggRows.length > 0;
 
   return (
-    <ResizableModalShell
-      onClose={onClose}
-      storageKey="export-modal:orders:v2"
-      defaultWidth={1140}
-      defaultHeight={960}
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+      onClick={onClose}
     >
-        {/* Header */}
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center px-4 py-3 bg-brand_navy">
-          <div>
-            <p className="text-custom-white text-[13px] font-semibold">Export CSV</p>
-            <p className="text-custom-white text-[10px] mt-0.5">{storeLabel} — {orderType}</p>
-          </div>
-          <div className="flex items-center gap-0.5 bg-custom-white/10 rounded-md p-0.5">
-            {(["presets", "custom"] as ModalMode[]).map((m) => (
-              <button
-                key={m}
-                onClick={() => setMode(m)}
-                className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors ${
-                  mode === m ? "bg-custom-white text-brand_navy" : "text-custom-white"
-                }`}
-              >
-                {m === "presets" ? "Presets" : "Custom"}
-              </button>
-            ))}
-          </div>
-          <button onClick={onClose} className="text-custom-white/60 hover:text-custom-white transition-colors justify-self-end">
-            <XMarkIcon className="w-4 h-4" />
+      <div
+        className="flex max-h-[88vh] w-[560px] max-w-[94vw] flex-col overflow-hidden rounded-xl bg-custom-white shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center gap-2 bg-brand_navy px-4 py-2.5 flex-shrink-0">
+          <span className="flex-1 text-[13px] font-medium text-custom-white">
+            Export order lines
+          </span>
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            className="text-custom-white/85 transition-colors hover:text-custom-white"
+          >
+            <XMarkIcon className="h-4 w-4" />
           </button>
         </div>
 
-        {/* ── PRESETS MODE ── */}
-        {mode === "presets" && (
-          <>
-            <div className="px-4 pt-4 pb-2 space-y-3">
-              <p className="text-[11px] text-content uppercase tracking-wide font-medium">Select data to include</p>
+        <div className="flex-1 overflow-y-auto thin-scrollbar p-4 flex flex-col gap-4">
+          <div>
+            <span className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-content/85">
+              File name
+            </span>
+            <div className="flex items-center rounded border border-brand_navy/75 bg-custom-white px-2">
+              <input
+                autoFocus
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleExport()}
+                className="min-w-0 flex-1 border-0 bg-transparent py-1.5 text-[13px] text-content"
+                style={{ outline: "none", boxShadow: "none" }}
+              />
+              <span className="flex-shrink-0 text-[12px] text-content/85">.csv</span>
+            </div>
+          </div>
 
-              <label className="flex items-start gap-3 cursor-pointer group">
-                <input
-                  type="checkbox"
-                  checked={selected.has("all")}
-                  onChange={() => setSelected((p) => { const n = new Set(p); n.has("all") ? n.delete("all") : n.add("all"); return n; })}
-                  className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-brand_navy cursor-pointer flex-shrink-0"
+          <div>
+            <span className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-content/85">
+              Columns
+            </span>
+            <MultiSelectFilter
+              options={ORDER_EXPORT_COLUMNS.map((c) => ({
+                value: c.field,
+                label: c.headerName,
+              }))}
+              values={columns}
+              onChange={(v) => setColumns(v)}
+              placeholder={`All ${ORDER_EXPORT_COLUMNS.length} columns`}
+              noun="columns"
+            />
+          </div>
+
+          <div>
+            <div className="mb-2 flex items-baseline gap-2">
+              <span className="text-[10px] font-semibold uppercase tracking-wide text-content/85">
+                Filters
+              </span>
+              <span className="text-[11px] text-content/85">
+                opened on what the panel has selected
+              </span>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Order types">
+                <MultiSelectFilter
+                  options={options.types}
+                  values={draft.orderTypes}
+                  onChange={(v) => set("orderTypes", v)}
+                  placeholder="All order types"
+                  noun="types"
                 />
-                <div>
-                  <p className="text-[13px] font-medium text-content group-hover:text-brand_navy transition-colors">All Orders</p>
-                  <p className="text-[11px] text-content mt-0.5">
-                    All {allOrders.length} line items for {storeLabel} — {orderType} on {dateLabel}
-                  </p>
-                </div>
-              </label>
-
-              <label className={`flex items-start gap-3 ${hasSelected ? "cursor-pointer" : ""} cursor-pointer group`}>
-                <input
-                  type="checkbox"
-                  checked={selected.has("selected")}
-                  disabled={!hasSelected}
-                  onChange={() => setSelected((p) => { const n = new Set(p); n.has("selected") ? n.delete("selected") : n.add("selected"); return n; })}
-                  className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-brand_navy cursor-pointer flex-shrink-0"
+              </Field>
+              <Field label="Stores">
+                <MultiSelectFilter
+                  options={options.stores}
+                  values={draft.storeNumbers}
+                  onChange={(v) => set("storeNumbers", v)}
+                  placeholder="All stores"
+                  noun="stores"
                 />
-                <div>
-                  <p className="text-[13px] font-medium text-content group-hover:text-brand_navy transition-colors">
-                    Selected Order {selectedOrder ? `#${selectedOrder.orderId}` : ""}
-                  </p>
-                  <p className="text-[11px] text-content mt-0.5">
-                    {hasSelected ? `${selectedOrderItems.length} line items for order #${selectedOrder?.orderId}` : "Select an order from the list to enable"}
-                  </p>
-                </div>
-              </label>
-
-              {isMultiSubDept && (
-                <label className="flex items-start gap-3 cursor-pointer group">
-                  <input
-                    type="checkbox"
-                    checked={selected.has("subDepts")}
-                    onChange={() => {
-                      const checking = !selected.has("subDepts");
-                      if (checking) {
-                        if (noPresetSubDeptsSelected) setPresetSubDepts(new Set(uniqueSubDepts.map((s) => s.id)));
-                      } else {
-                        setPresetSubDepts(new Set());
-                      }
-                      setSelected((p) => { const n = new Set(p); checking ? n.add("subDepts") : n.delete("subDepts"); return n; });
-                    }}
-                    className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-brand_navy cursor-pointer flex-shrink-0"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <p className="text-[13px] font-medium text-content group-hover:text-brand_navy transition-colors">By Sub Depts</p>
-                      <div className="flex gap-1.5">
-                        <button
-                          onClick={(e) => { e.preventDefault(); applyPresetSubDepts(new Set(uniqueSubDepts.map((s) => s.id))); }}
-                          disabled={allPresetSubDeptsSelected}
-                          className="text-[9px] text-brand_navy disabled:opacity-30 transition-colors"
-                        >
-                          All
-                        </button>
-                        <span className="text-[9px] text-content">·</span>
-                        <button
-                          onClick={(e) => { e.preventDefault(); applyPresetSubDepts(new Set()); }}
-                          disabled={noPresetSubDeptsSelected}
-                          className="text-[9px] text-brand_navy disabled:opacity-30 transition-colors"
-                        >
-                          None
-                        </button>
-                      </div>
-                    </div>
-                    <p className="text-[11px] text-content mt-0.5">
-                      {presetSubDeptFilteredOrders.length} line items across {presetSubDepts.size} of {uniqueSubDepts.length} sub depts
-                    </p>
-                    <div className="flex flex-wrap gap-1.5 mt-2">
-                      {uniqueSubDepts.map((s) => (
-                        <button
-                          key={s.id}
-                          onClick={(e) => { e.preventDefault(); togglePresetSubDept(s.id); }}
-                          className={`text-[10px] px-2 py-1 rounded-full border transition-colors ${
-                            presetSubDepts.has(s.id)
-                              ? "bg-brand_navy text-custom-white border-brand_navy"
-                              : "bg-custom-white text-content border-gray-200 hover:border-brand_navy/40"
-                          }`}
-                        >
-                          {s.id}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </label>
-              )}
+              </Field>
+              <Field label="Order dates">
+                <MultiSelectFilter
+                  options={options.dates}
+                  values={draft.dates}
+                  onChange={(v) => set("dates", v)}
+                  placeholder="All dates"
+                  noun="dates"
+                />
+              </Field>
+              <Field label="Sub departments">
+                <MultiSelectFilter
+                  options={options.subs}
+                  values={draft.subIds.map(String)}
+                  onChange={(v) => set("subIds", v.map(Number))}
+                  placeholder="All sub departments"
+                  noun="departments"
+                />
+              </Field>
+              <Field label="Items">
+                <MultiSelectFilter
+                  options={options.codes}
+                  values={draft.productCodes}
+                  onChange={(v) => set("productCodes", v)}
+                  placeholder="All items"
+                  noun="items"
+                />
+              </Field>
+              <Field label="Order numbers">
+                <MultiSelectFilter
+                  options={options.ids}
+                  values={draft.orderIds.map(String)}
+                  onChange={(v) => set("orderIds", v.map(Number))}
+                  placeholder="All orders"
+                  noun="orders"
+                />
+              </Field>
             </div>
+          </div>
+        </div>
 
-            <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 mt-2">
-              <button onClick={onClose} className="text-[12px] text-content transition-colors">Cancel</button>
-              <button
-                onClick={handlePresetDownload}
-                disabled={selected.size === 0}
-                className="flex items-center gap-1.5 bg-brand_navy hover:bg-brand_navy/85 disabled:opacity-40 text-custom-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors"
-              >
-                <ArrowDownTrayIcon className="w-3.5 h-3.5" />
-                Download CSV
-              </button>
-            </div>
-          </>
-        )}
-
-        {/* ── CUSTOM MODE ── */}
-        {mode === "custom" && (
-          <>
-            <div className="grid grid-cols-[220px_1fr] divide-x divide-gray-100 min-h-[360px] max-h-[calc(100vh-220px)] overflow-hidden">
-
-              {/* Left: config */}
-              <div className="overflow-y-auto no-scrollbar p-4 space-y-5">
-
-                {/* Sub Depts */}
-                {isMultiSubDept && (
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="text-[10px] font-semibold uppercase tracking-wide text-content">Sub Depts</p>
-                      <div className="flex gap-1.5">
-                        <button
-                          onClick={() => setCustomSubDepts(new Set(uniqueSubDepts.map((s) => s.id)))}
-                          disabled={allSubDeptsSelected}
-                          className="text-[9px] text-brand_navy disabled:opacity-30 transition-colors"
-                        >
-                          All
-                        </button>
-                        <span className="text-[9px] text-content">·</span>
-                        <button
-                          onClick={() => setCustomSubDepts(new Set())}
-                          disabled={noSubDeptsSelected}
-                          className="text-[9px] text-brand_navy disabled:opacity-30 transition-colors"
-                        >
-                          None
-                        </button>
-                      </div>
-                    </div>
-                    <div className="space-y-1.5 max-h-36 overflow-y-auto thin-scrollbar pr-1">
-                      {uniqueSubDepts.map((s) => (
-                        <label key={s.id} className="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={customSubDepts.has(s.id)}
-                            onChange={() => toggleCustomSubDept(s.id)}
-                            className="accent-brand_navy h-3.5 w-3.5 rounded flex-shrink-0"
-                          />
-                          <span className="text-[12px] text-content truncate flex-1">{s.id}</span>
-                          <span className="text-[10px] text-content flex-shrink-0">{s.count} ln</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Group by */}
-                <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-wide text-content mb-2">Group By</p>
-                  <div className="space-y-1.5">
-                    {DIMS.map((d) => (
-                      <label key={d.key} className="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={groupBy.has(d.key)}
-                          onChange={() => toggleGroupBy(d.key)}
-                          className="accent-brand_navy h-3.5 w-3.5 rounded flex-shrink-0"
-                        />
-                        <span className="text-[12px] text-content">{d.label}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Metrics */}
-                <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-wide text-content mb-2">Metrics</p>
-                  <div className="space-y-2">
-                    {METRICS.map((m) => {
-                      const sel = metrics.get(m.key)!;
-                      return (
-                        <div key={m.key} className="flex items-center gap-1.5">
-                          <input
-                            type="checkbox"
-                            checked={sel.enabled}
-                            onChange={() => toggleMetric(m.key)}
-                            className="accent-brand_navy h-3.5 w-3.5 rounded flex-shrink-0"
-                          />
-                          <span className={`text-[12px] flex-1 ${sel.enabled ? "text-content" : "text-content/40"}`}>{m.label}</span>
-                          <select
-                            value={sel.fn}
-                            disabled={!sel.enabled}
-                            onChange={(e) => setMetricFn(m.key, e.target.value as AggFn)}
-                            className="text-[10px] border border-gray-200 rounded px-1 py-0.5 text-content disabled:opacity-30 bg-custom-white outline-none"
-                            style={{ minWidth: 52 }}
-                          >
-                            {AGG_OPTIONS.map((o) => (
-                              <option key={o.value} value={o.value}>{o.label}</option>
-                            ))}
-                          </select>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <p className="text-[10px] text-content italic leading-relaxed">
-                  Working on {customFilteredOrders.length} of {allOrders.length} line items
-                  {isMultiSubDept ? ` · ${customSubDepts.size} of ${uniqueSubDepts.length} sub depts` : ""}
-                  {" "}for {orderType} on {dateLabel}.
-                </p>
-              </div>
-
-              {/* Right: preview */}
-              <div className="flex flex-col min-w-0">
-                <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-100 flex-shrink-0">
-                  <p className="text-[11px] font-semibold text-content uppercase tracking-wide">Preview</p>
-                  <span className="text-[10px] text-content">
-                    {aggRows.length === 0
-                      ? "No data — select at least one group or metric"
-                      : `Showing ${Math.min(PREVIEW_ROWS, aggRows.length)} of ${aggRows.length} rows`}
-                  </span>
-                </div>
-
-                {columns.length === 0 ? (
-                  <div className="flex-1 flex items-center justify-center p-6 text-center">
-                    <p className="text-[12px] text-content leading-relaxed">
-                      Select at least one group-by dimension<br />or metric to see a preview.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="flex-1 overflow-auto thin-scrollbar">
-                    <table className="min-w-full text-[11px] border-collapse">
-                      <thead className="sticky top-0 bg-gray-50 z-10">
-                        <tr>
-                          {columns.map((c) => (
-                            <th key={c.key} className="text-left px-3 py-2 text-content font-semibold border-b border-gray-100 whitespace-nowrap">
-                              {c.label}
-                            </th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {aggRows.slice(0, PREVIEW_ROWS).map((row, i) => (
-                          <tr key={i} className={i % 2 === 0 ? "bg-custom-white" : "bg-gray-50/50"}>
-                            {columns.map((c) => (
-                              <td key={c.key} className="px-3 py-1.5 text-content whitespace-nowrap border-b border-gray-50">
-                                {row[c.key] ?? "—"}
-                              </td>
-                            ))}
-                          </tr>
-                        ))}
-                        {aggRows.length > PREVIEW_ROWS && (
-                          <tr>
-                            <td colSpan={columns.length} className="px-3 py-2 text-[10px] text-content italic">
-                              + {aggRows.length - PREVIEW_ROWS} more rows in download…
-                            </td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
-              <button onClick={onClose} className="text-[12px] text-content transition-colors">Cancel</button>
-              <button
-                onClick={handleCustomDownload}
-                disabled={!canCustomDownload}
-                className="flex items-center gap-1.5 bg-brand_navy hover:bg-brand_navy/85 disabled:opacity-40 text-custom-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors"
-              >
-                <ArrowDownTrayIcon className="w-3.5 h-3.5" />
-                Download CSV
-              </button>
-            </div>
-          </>
-        )}
-    </ResizableModalShell>
+        <div className="flex items-center gap-3 border-t border-gray-100 px-4 py-2.5 flex-shrink-0">
+          <span className="flex-1 text-[12px] text-content/85">
+            {rows.length.toLocaleString()} line{rows.length === 1 ? "" : "s"} ·{" "}
+            {chosen.length} column{chosen.length === 1 ? "" : "s"}
+          </span>
+          <button
+            onClick={onClose}
+            className="rounded border border-content/20 px-3 py-1 text-[12px] font-medium text-content/85 transition-colors hover:border-content/35 hover:text-content"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleExport}
+            disabled={rows.length === 0}
+            className="flex items-center gap-1.5 rounded bg-brand_navy px-3 py-1 text-[12px] font-semibold text-custom-white transition-colors hover:bg-brand_navy_hover disabled:opacity-50"
+          >
+            <ArrowDownTrayIcon className="h-3.5 w-3.5" />
+            Export
+          </button>
+        </div>
+      </div>
+    </div>
   );
 };
+
+const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
+  <div>
+    <span className="mb-1 block text-[10px] font-medium text-content/85">
+      {label}
+    </span>
+    {children}
+  </div>
+);
 
 export default OrdersExportModal;
