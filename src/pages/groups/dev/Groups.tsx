@@ -48,7 +48,7 @@ const NewGroupModal = ({
           </button>
           <button
             onClick={() => onCreate(name)}
-            className="text-[12px] font-medium px-3 py-1.5 rounded-md text-custom-white bg-[#1e2a4a] hover:bg-[#1e2a4a]/85"
+            className="text-[12px] font-medium px-3 py-1.5 rounded-md text-custom-white bg-brand_navy hover:bg-brand_navy/85"
           >
             Create
           </button>
@@ -231,7 +231,7 @@ const Groups = () => {
         className="relative max-w-[95vw] max-h-[calc(100vh-8rem)] flex flex-col rounded-xl shadow-lg overflow-hidden bg-custom-white self-start"
         style={{ width, height }}
       >
-        <div className="bg-[#1e2a4a] px-3 py-2 flex-shrink-0 flex items-center gap-3">
+        <div className="bg-brand_navy px-3 py-2 flex-shrink-0 flex items-center gap-3">
           <span className="text-custom-white font-semibold text-[13px] flex-shrink-0">
             Store Groups
           </span>

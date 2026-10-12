@@ -245,7 +245,7 @@ const StepAssignments = ({
               Companies
             </span>
           </div>
-          <div className="flex-1 overflow-y-auto thin-scrollbar divide-y divide-[#1e2a4a]/15">
+          <div className="flex-1 overflow-y-auto thin-scrollbar divide-y divide-brand_navy/15">
             {ctx.companies.map((c) => {
               const isActive = activeCompany === c.company;
               const count = companyCounts[c.company] ?? 0;
@@ -254,14 +254,14 @@ const StepAssignments = ({
                   key={c.id}
                   onClick={() => selectCompany(c.company)}
                   className={`w-full flex items-center justify-between gap-2 px-3 py-2 text-left text-[12px] transition-colors ${
-                    isActive ? "bg-[#1e2a4a] text-custom-white" : "hover:bg-gray-50 text-content"
+                    isActive ? "bg-brand_navy text-custom-white" : "hover:bg-gray-50 text-content"
                   }`}
                 >
                   <span className="truncate">{c.name}</span>
                   {count > 0 && (
                     <span
                       className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full flex-shrink-0 ${
-                        isActive ? "bg-custom-white/20 text-custom-white" : "bg-[#1e2a4a]/10 text-[#1e2a4a]"
+                        isActive ? "bg-custom-white/20 text-custom-white" : "bg-brand_navy/10 text-brand_navy"
                       }`}
                     >
                       {count}
@@ -285,7 +285,7 @@ const StepAssignments = ({
               placeholder="Search base groups…"
             />
           </div>
-          <div className="flex-1 overflow-y-auto thin-scrollbar divide-y divide-[#1e2a4a]/15">
+          <div className="flex-1 overflow-y-auto thin-scrollbar divide-y divide-brand_navy/15">
             {filteredGroups.map((group) => {
               const isOpen = expandedGroups.has(group.id);
               const inGroup = selectedStores.filter((s) => s.base_group === group.id).length;
@@ -295,9 +295,9 @@ const StepAssignments = ({
                   key={group.id}
                   onClick={() => toggleGroupExpand(group)}
                   className={`w-full flex items-start justify-between gap-2 px-3 py-2 text-left transition-colors ${
-                    isOpen ? "bg-[#1e2a4a]/5" : "hover:bg-gray-50"
+                    isOpen ? "bg-brand_navy/5" : "hover:bg-gray-50"
                   }`}
-                  style={isOpen ? { boxShadow: "inset 2px 0 0 #1e2a4a" } : undefined}
+                  style={isOpen ? { boxShadow: "inset 2px 0 0 rgb(var(--color-brand-navy))" } : undefined}
                 >
                   <div className="min-w-0">
                     <div className="text-[12.5px] font-medium text-content truncate">{group.name}</div>
@@ -342,7 +342,7 @@ const StepAssignments = ({
               className="w-[150px] flex-shrink-0"
             />
           </div>
-          <div className="flex-1 overflow-y-auto thin-scrollbar divide-y divide-[#1e2a4a]/15">
+          <div className="flex-1 overflow-y-auto thin-scrollbar divide-y divide-brand_navy/15">
             {openGroups.length === 0 && (
               <div className="flex items-center justify-center h-full text-[11px] text-content/60 p-6 text-center">
                 Select a base group to see its stores
@@ -383,7 +383,7 @@ const StepAssignments = ({
                     </span>
                   </button>
                   {!isCollapsed && (
-                  <div className="px-2 divide-y divide-[#1e2a4a]/15">
+                  <div className="px-2 divide-y divide-brand_navy/15">
                     {stores.map((s) => {
                       const isSelected = inGroup.some((sel) => sel.storeid === s.storeid);
                       return (
@@ -439,7 +439,7 @@ const StepAssignments = ({
         <button
           onClick={onContinue}
           disabled={!canContinue}
-          className={`text-[12px] font-medium px-4 py-1.5 rounded-md text-custom-white ${canContinue ? "bg-[#1e2a4a] hover:bg-[#1e2a4a]/85" : "bg-gray-300 cursor-not-allowed"}`}
+          className={`text-[12px] font-medium px-4 py-1.5 rounded-md text-custom-white ${canContinue ? "bg-brand_navy hover:bg-brand_navy/85" : "bg-gray-300 cursor-not-allowed"}`}
         >
           Continue
         </button>

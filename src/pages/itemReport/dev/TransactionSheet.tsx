@@ -264,7 +264,7 @@ const TransactionSheet = ({
       defaultWidth={760}
       defaultHeight={600}
     >
-      <div className="bg-[#1e2a4a] px-4 py-2.5 flex-shrink-0 flex items-center gap-2.5">
+      <div className="bg-brand_navy px-4 py-2.5 flex-shrink-0 flex items-center gap-2.5">
         {inBasket && (
           <button
             onClick={() => setOpenSale(null)}
@@ -419,12 +419,12 @@ const TransactionSheet = ({
               <div
                 key={r.sale.sale_id}
                 onClick={() => setOpenSale(r.sale)}
-                className={`grid gap-3 px-4 py-2 items-center border-b border-gray-100 cursor-pointer hover:bg-[#1e2a4a]/[0.06] ${
+                className={`grid gap-3 px-4 py-2 items-center border-b border-gray-100 cursor-pointer hover:bg-brand_navy/[0.06] ${
                   i % 2 === 1 ? "bg-row_stripe" : ""
                 }`}
                 style={{ gridTemplateColumns: LIST_COLS }}
               >
-                <span className="text-[12px] font-medium text-[#1e2a4a] underline underline-offset-2 truncate">
+                <span className="text-[12px] font-medium text-brand_navy underline underline-offset-2 truncate">
                   {saleNumber(r.sale.sale_id)}
                 </span>
                 <span className={cell}>

@@ -18,7 +18,7 @@ interface Props {
 }
 
 const CaseHeader = ({ core, onBack, backLabel, onOpenPlot }: Props) => (
-  <div className="flex-shrink-0 bg-[#1e2a4a] px-4 py-2 flex items-center gap-3">
+  <div className="flex-shrink-0 bg-brand_navy px-4 py-2 flex items-center gap-3">
     <button
       onClick={onBack}
       title={`Back to ${backLabel}`}

@@ -43,7 +43,7 @@ import { getVendorTier, rowsForVendor, marginPct } from "./vendorsUtils";
  *  navy every other panel uses rather than borrowing a verdict colour. */
 const headerBg = (tier: Tier) =>
   tier === "ungraded"
-    ? "bg-[#1e2a4a]"
+    ? "bg-brand_navy"
     : severityHeaderBgClass[tier as Severity];
 
 /** One KPI cell, matching the Sales strip. The date line is load-bearing: the
@@ -117,10 +117,12 @@ const VendorDetailPanel = () => {
   /** A net/COGS pair reduced to whichever number the toggle is showing, and the
    *  string for it. Margin is a percentage, sales are dollars — they never
    *  share a formatter. */
-  const valueOf = (net: number, cogs: number) =>
-    isMargin ? marginPct(net, cogs) : net;
-  const fmt = (v: number) =>
-    isMargin ? `${v.toFixed(2)}%` : formatCurrency2(v);
+  const valueOf = (net: number, cogs: number): number | null =>
+    isMargin ? (net > 0 ? marginPct(net, cogs) : null) : net;
+  /** Null prints as a dash: a day with no sales has no margin, and 0.00%
+   *  reads as a day sold at cost. In sales mode zero is a real figure. */
+  const fmt = (v: number | null) =>
+    v === null ? "—" : isMargin ? `${v.toFixed(2)}%` : formatCurrency2(v);
 
   /** Points in margin mode, percent in sales mode — the same contract
    *  vendorDelta has, and the reason the two can't share a formatter either. */
@@ -131,7 +133,12 @@ const VendorDetailPanel = () => {
     baseCogs: number,
   ) =>
     isMargin
-      ? marginPct(twNet, twCogs) - marginPct(baseNet, baseCogs)
+      ? // Both sides need sales. The matched days can leave this week's side
+        // empty — a vendor selling on different days each week — and taking a
+        // margin on nothing gave 0%, which read as a collapse.
+        twNet > 0 && baseNet > 0
+        ? marginPct(twNet, twCogs) - marginPct(baseNet, baseCogs)
+        : null
       : pctChange(twNet, baseNet);
 
   const row = useMemo(

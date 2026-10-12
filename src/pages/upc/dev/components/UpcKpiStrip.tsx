@@ -35,7 +35,7 @@ const UpcKpiStrip = () => {
 
   return (
     <div
-      className="grid divide-x divide-[#1e2a4a]/15 border-b border-gray-100 bg-gray-50 flex-shrink-0"
+      className="grid divide-x divide-brand_navy/15 border-b border-gray-100 bg-gray-50 flex-shrink-0"
       style={{ gridTemplateColumns: `repeat(${kpis.length}, 1fr)` }}
     >
       {kpis.map((kpi, i) => (

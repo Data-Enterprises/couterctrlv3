@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import SearchCard from "../../../components-dev/SearchCard";
 import ConfigPanel from "./ConfigPanel";
 import CsvPreview from "./CsvPreview";
@@ -18,6 +19,29 @@ import { useExportBuilderCtx } from "./hooks";
  * then writes the file to storage and answers with a link.
  */
 const ExportBuilder = () => {
+  /**
+   * Closed on arrival.
+   *
+   * The page opens on the sample and the query, which is what somebody came
+   * to read — the configuration is where you go to change it, and 340px of
+   * lists nobody has asked for yet is 340px the table does not get.
+   */
+  const [configOpen, setConfigOpen] = useState(false);
+
+  /**
+   * No animation on the very first paint.
+   *
+   * The sleeve starts closed, and a transition present from the first frame
+   * plays that as a movement — the column sweeps shut on arrival, which
+   * announces a panel nobody opened. The class arrives after the first
+   * render, so the page lands closed and only moves when somebody asks it
+   * to.
+   */
+  const [settled, setSettled] = useState(false);
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setSettled(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
   const ctx = useExportBuilderCtx();
 
   if (!ctx.loaded) {
@@ -37,9 +61,33 @@ const ExportBuilder = () => {
   return (
     <div className="h-[calc(100vh-3rem)] bg-bkg flex flex-col p-3 gap-3">
       <div className="flex gap-3 flex-1 min-h-0">
-        <ConfigPanel />
+        {/*
+          * The sleeve, not the panel, is what moves.
+          *
+          * Width animates here while ConfigPanel keeps its own 340px inside,
+          * so the controls hold their layout as the edge travels over them.
+          * Animating the panel itself reflows every label on every frame,
+          * which reads as broken rather than as sliding.
+          *
+          * `gap-3` sits between two children, so the closed sleeve keeps a
+          * 12px gutter it does not need — hence the negative margin, which
+          * takes it back only while closed.
+          */}
+        <div
+          className={`flex-shrink-0 overflow-hidden ${
+            settled
+              ? "transition-[width,margin] duration-300 ease-out motion-reduce:transition-none"
+              : ""
+          } ${configOpen ? "w-[340px]" : "w-0 -mr-3"}`}
+          aria-hidden={!configOpen}
+        >
+          <ConfigPanel />
+        </div>
         <div className="flex-1 min-w-0 flex flex-col gap-3">
-          <QueryPanel />
+          <QueryPanel
+            configOpen={configOpen}
+            onToggleConfig={() => setConfigOpen((v) => !v)}
+          />
           {!ctx.hasData ? (
             <div className="flex-1 bg-card_bg border border-brand_line rounded-xl flex items-center justify-center text-center px-6">
               <div className="max-w-[40ch]">

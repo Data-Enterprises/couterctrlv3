@@ -109,7 +109,7 @@ const OrdersAvailableScreen = ({
           <button
             onClick={() => { setActiveType("all"); setDateFilter(""); setOpenTypes(new Set()); }}
             className={`text-[10px] font-semibold py-2 whitespace-nowrap border-b-2 transition-colors flex-1 text-center ${
-              activeType === "all" ? "border-[#1e2a4a] text-[#1e2a4a]" : "border-transparent text-content"
+              activeType === "all" ? "border-brand_navy text-brand_navy" : "border-transparent text-content"
             }`}
           >
             All
@@ -119,7 +119,7 @@ const OrdersAvailableScreen = ({
               key={card.order_type}
               onClick={() => { setActiveType(card.order_type); setDateFilter(""); setOpenTypes(new Set()); }}
               className={`text-[10px] font-semibold py-2 whitespace-nowrap border-b-2 transition-colors flex-1 text-center ${
-                activeType === card.order_type ? "border-[#1e2a4a] text-[#1e2a4a]" : "border-transparent text-content"
+                activeType === card.order_type ? "border-brand_navy text-brand_navy" : "border-transparent text-content"
               }`}
             >
               {card.order_type}
@@ -146,7 +146,7 @@ const OrdersAvailableScreen = ({
         <div className="px-3 py-2 border-b border-gray-100 bg-custom-white flex-shrink-0">
           <button
             onClick={() => onSelectAllStores(dateFilter, activeType, allVisibleStoreIds)}
-            className="w-full text-[11px] font-medium py-2 rounded-md border border-[#1e2a4a]/20 text-[#1e2a4a] transition-colors"
+            className="w-full text-[11px] font-medium py-2 rounded-md border border-brand_navy/20 text-brand_navy transition-colors"
           >
             Select all {allVisibleStoreIds.length} stores
           </button>
@@ -172,16 +172,16 @@ const OrdersAvailableScreen = ({
               {activeType === "all" && (
                 <button
                   onClick={() => toggleType(card.order_type)}
-                  className="w-full flex items-center gap-2 bg-[#1e2a4a]/5 hover:bg-[#1e2a4a]/10 px-4 py-2.5 transition-colors"
+                  className="w-full flex items-center gap-2 bg-brand_navy/5 hover:bg-brand_navy/10 px-4 py-2.5 transition-colors"
                 >
                   <ChevronRightIcon
-                    className="w-3 h-3 text-[#1e2a4a]/60 flex-shrink-0 transition-transform"
+                    className="w-3 h-3 text-brand_navy/60 flex-shrink-0 transition-transform"
                     style={{ transform: typeOpen ? "rotate(90deg)" : "rotate(0deg)" }}
                   />
-                  <span className="text-[11px] font-semibold text-[#1e2a4a] uppercase tracking-wide flex-1 text-left">
+                  <span className="text-[11px] font-semibold text-brand_navy uppercase tracking-wide flex-1 text-left">
                     {card.order_type}
                   </span>
-                  <span className="text-[10px] text-[#1e2a4a]">
+                  <span className="text-[10px] text-brand_navy">
                     {card.dates.reduce((n, d) => n + d.stores.length, 0)}
                   </span>
                 </button>

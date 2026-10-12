@@ -16,6 +16,7 @@ import {
 } from "../../../../features/dev/devSalesSlice";
 import {
   setLedgerTab,
+  setCounterpart,
   setLedgerSelectedDate,
   setRawSubs,
   setRawLWSubs,
@@ -49,6 +50,10 @@ import {
   ArrowDownTrayIcon /*, ExclamationTriangleIcon */,
 } from "@heroicons/react/20/solid";
 import PopupDaySidebar from "./PopupDaySidebar";
+import PopupComparisonList from "./PopupComparisonList";
+import DeptReport from "./DeptReport";
+import HourlySideBySide from "./HourlySideBySide";
+import type { LedgerRowData } from "./LedgerRow";
 import PopupSubDeptList from "./PopupSubDeptList";
 import PopupHourlyView from "./PopupHourlyView";
 import { ClipboardDocumentListIcon } from "@heroicons/react/20/solid";
@@ -63,12 +68,15 @@ import GhostFlames from "./GhostFlames";
 interface StoreDetailPopupProps {
   selection: StoreSelection;
   onClose: () => void;
+  /** Every store in the current search, so this one can be placed among them.
+   *  Absent on a single-store search, where there is no reference set. */
+  groupRows?: LedgerRowData[];
 }
 
 // Category tab (and its cat_sales fetch below) is commented out for now —
 // uncomment this, the getCats-related imports above, and the marked blocks
 // below to bring it back.
-type PopupTab = "subdept" | "hourly" /* | "category" */;
+type PopupTab = "subdept" | "hourly" | "comparison" /* | "category" */;
 
 const fmtDate = (d: string) =>
   new Date(d + "T12:00:00").toLocaleDateString("en-US", {
@@ -76,7 +84,10 @@ const fmtDate = (d: string) =>
     day: "numeric",
   });
 
-const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
+const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
+  // A search of one store has no reference set, so there is nothing to
+  // compare against and the tab is never offered.
+  const hasGroup = !!groupRows && groupRows.length > 1;
   const dispatch = useAppDispatch();
   // Item Actions is unreleased, so the way in goes with it. A button that
   // navigates somewhere the nav says does not exist is worse than no button.
@@ -96,6 +107,7 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
     exportSubDeptName,
     lastFetchedStoreKey,
     gradingMetric,
+    counterpart,
   } = useAppSelector((state) => state.dev.salesLedger);
   const isQty = gradingMetric === "qty";
   // const { weeklySales, weeklySalesLastWeek, weeklySalesLastYear } =
@@ -558,7 +570,7 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
           // Navy when the store wasn't graded — tinting it would claim a verdict.
           selection.severity
             ? severityHeaderBgClass[selection.severity]
-            : "bg-[#1e2a4a]"
+            : "bg-brand_navy"
         }`}
       >
         {showFlames && <GhostFlames />}
@@ -758,17 +770,27 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
 
       {/* Tabs */}
       <div className="flex items-center border-b border-gray-100 px-3 flex-shrink-0">
-        {(["subdept", "hourly"] as PopupTab[]).map((t) => (
+        {/* Sub depts leads: it is the tab that answers the question the
+            page was opened with, and it reads the same whether or not a
+            counterpart has been chosen. Stores sits beside it as the place
+            that chooses one.
+
+            Stores shows only when there are siblings to compare with — a
+            single-store search has no reference set, so the tab is not
+            offered rather than opening on an empty one. */}
+        {((hasGroup
+          ? ["subdept", "comparison", "hourly"]
+          : ["subdept", "hourly"]) as PopupTab[]).map((t) => (
           <button
             key={t}
             onClick={() => dispatch(setLedgerTab(t))}
             className={`px-3 py-1.5 text-[12px] font-medium border-b-2 transition-colors ${
               tab === t
-                ? "border-[#1e2a4a] text-content"
+                ? "border-brand_navy text-content"
                 : "border-transparent text-content"
             }`}
           >
-            {t === "subdept" ? "Sub dept" : "Hourly"}
+            {t === "subdept" ? "Sub depts" : t === "hourly" ? "Hourly" : "Stores"}
           </button>
         ))}
       </div>
@@ -779,7 +801,45 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
           <div className="relative h-full">
             <LoadingIndicator message="Loading store detail" />
           </div>
+        ) : tab === "comparison" ? (
+          hasGroup ? (
+            <PopupComparisonList
+              rows={groupRows as LedgerRowData[]}
+              storeid={selection.storeId}
+              storeNumber={selection.storeNumber}
+              gradingMetric={gradingMetric}
+              threshold={itemThreshold}
+              selectedDate={selectedDate}
+              openStoreName={headerStoreName}
+            />
+          ) : null
         ) : tab === "subdept" ? (
+          /* With a counterpart chosen in Stores, this tab IS the comparison;
+             without one it is the store's own departments, graded, exactly as
+             a single-store search has always had it. The counterpart is page
+             state, so Hourly will answer to the same choice once it can.
+
+             With one, it is a report rather than a list: a list ordered by
+             department size put the biggest departments at the top, which
+             are the ones most likely to be level, so the only way to find
+             the problem was to click around until you hit it. */
+          counterpart ? (
+            <DeptReport
+              openStoreName={headerStoreName}
+              openStoreId={selection.storeId}
+              openStoreNumber={selection.storeNumber}
+              compareStoreId={counterpart.storeid}
+              compareStoreNumber={counterpart.storeNumber}
+              compareStoreName={counterpart.storeName}
+              twStart={twStart}
+              twEnd={twEnd}
+              lwStart={lwStart}
+              lwEnd={lwEnd}
+              lyStart={lyStart}
+              lyEnd={lyEnd}
+              onBack={() => dispatch(setCounterpart(null))}
+            />
+          ) : (
           <PopupSubDeptList
             twDateLabel={twDateLabel}
             lwDateLabel={lwDateLabel}
@@ -788,6 +848,28 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
             storeNumber={selection.storeNumber}
             selectedDate={selectedDate}
             twRealDates={twRealDates}
+          />
+          )
+        ) : counterpart ? (
+          /* Hourly answers to the same counterpart as Sub depts: one choice,
+             every tab that can compare. */
+          <HourlySideBySide
+            openStoreName={headerStoreName}
+            openStoreNumber={selection.storeNumber}
+            compareStoreId={counterpart.storeid}
+            compareStoreNumber={counterpart.storeNumber}
+            compareStoreName={counterpart.storeName}
+            twStart={twStart}
+            twEnd={twEnd}
+            lwStart={lwStart}
+            lwEnd={lwEnd}
+            lyStart={lyStart}
+            lyEnd={lyEnd}
+            lwWeekDates={lwWeekDates}
+            lyWeekDates={lyWeekDates}
+            selectedDate={selectedDate}
+            gradingMetric={gradingMetric}
+            onBack={() => dispatch(setCounterpart(null))}
           />
         ) : (
           <PopupHourlyView

@@ -77,7 +77,7 @@ const DrillPanel = ({
               onClick={() => onFacet(f.key)}
               className={`text-[11.5px] px-2 py-0.5 rounded border transition-colors ${
                 on
-                  ? "border-[#1e2a4a] bg-[#1e2a4a] text-custom-white"
+                  ? "border-brand_navy bg-brand_navy text-custom-white"
                   : "border-gray-200 text-content hover:bg-gray-50"
               }`}
             >

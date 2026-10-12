@@ -62,7 +62,7 @@ const DailyBreakdown = ({ buckets, weighed, saleType = "Sale" }: DailyBreakdownP
       {/* Amount / Qty / COGS / Margin — the same figures the desktop report
           totals on, so a phone and a desk agree on the summary. */}
       <div
-        className={`grid ${isSale ? "grid-cols-4" : "grid-cols-2"} divide-x divide-gray-100 border-b border-[#1e2a4a]/15 flex-shrink-0 bg-custom-white`}
+        className={`grid ${isSale ? "grid-cols-4" : "grid-cols-2"} divide-x divide-gray-100 border-b border-brand_navy/15 flex-shrink-0 bg-custom-white`}
       >
         {tile("Amount", formatCurrency2(totalRevenue))}
         {tile(
@@ -85,7 +85,7 @@ const DailyBreakdown = ({ buckets, weighed, saleType = "Sale" }: DailyBreakdownP
       </div>
 
       <div
-        className="grid px-4 py-1.5 text-[10px] font-medium uppercase tracking-wide text-content/85 border-b border-[#1e2a4a]/15"
+        className="grid px-4 py-1.5 text-[10px] font-medium uppercase tracking-wide text-content/85 border-b border-brand_navy/15"
         style={grid}
       >
         <span>Date</span>
@@ -113,7 +113,7 @@ const DailyBreakdown = ({ buckets, weighed, saleType = "Sale" }: DailyBreakdownP
           return (
             <div
               key={b.date}
-              className={`grid px-4 py-2 text-[12px] border-b border-[#1e2a4a]/15 even:bg-row_stripe ${
+              className={`grid px-4 py-2 text-[12px] border-b border-brand_navy/15 even:bg-row_stripe ${
                 b.hasSale ? "" : "text-content/85"
               }`}
               style={grid}

@@ -68,7 +68,7 @@ const SignalTransactionsMobile = ({ onBack }: { onBack: () => void }) => {
   return (
     <>
       <div className="flex flex-col h-[calc(100dvh-3rem)] bg-gray-50 overflow-hidden">
-        <div className="bg-[#1e2a4a] px-3 pt-2 pb-2.5 flex items-start gap-3 flex-shrink-0">
+        <div className="bg-brand_navy px-3 pt-2 pb-2.5 flex items-start gap-3 flex-shrink-0">
           <button
             onClick={onBack}
             aria-label="Back to signals"
@@ -86,13 +86,13 @@ const SignalTransactionsMobile = ({ onBack }: { onBack: () => void }) => {
           </div>
         </div>
 
-        <div className="px-3 py-2 bg-custom-white border-b border-[#1e2a4a]/15 flex-shrink-0">
+        <div className="px-3 py-2 bg-custom-white border-b border-brand_navy/15 flex-shrink-0">
           <p className="text-[11px] leading-relaxed text-content/85">
             {describeSignal(signal, explorerLens)}
           </p>
         </div>
 
-        <div className="grid grid-cols-3 divide-x divide-gray-100 bg-custom-white border-b border-[#1e2a4a]/15 flex-shrink-0">
+        <div className="grid grid-cols-3 divide-x divide-gray-100 bg-custom-white border-b border-brand_navy/15 flex-shrink-0">
           <div className="px-3 py-2">
             <div className="text-[10px] font-medium uppercase tracking-wide text-content/85">
               Trans
@@ -119,7 +119,7 @@ const SignalTransactionsMobile = ({ onBack }: { onBack: () => void }) => {
           </div>
         </div>
 
-        <div className="flex items-center justify-between px-3 py-1.5 bg-gray-100 border-b border-[#1e2a4a]/15 flex-shrink-0 text-[10px] font-medium uppercase tracking-wide text-content/85">
+        <div className="flex items-center justify-between px-3 py-1.5 bg-gray-100 border-b border-brand_navy/15 flex-shrink-0 text-[10px] font-medium uppercase tracking-wide text-content/85">
           <span>Transaction · cashier</span>
           <span>Lines · qty · amount</span>
         </div>
@@ -130,7 +130,7 @@ const SignalTransactionsMobile = ({ onBack }: { onBack: () => void }) => {
             <button
               key={r.saleId}
               onClick={() => dispatch(setExplorerReceipt(r.saleId))}
-              className="w-full px-3 py-2.5 bg-custom-white border-b border-[#1e2a4a]/15 even:bg-row_stripe text-left active:bg-gray-50"
+              className="w-full px-3 py-2.5 bg-custom-white border-b border-brand_navy/15 even:bg-row_stripe text-left active:bg-gray-50"
             >
               <div className="flex items-center gap-2">
                 <span className="text-[12px] font-medium text-content">

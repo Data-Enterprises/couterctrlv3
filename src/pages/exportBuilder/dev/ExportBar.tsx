@@ -33,11 +33,13 @@ const ExportBar = () => {
   const nothingToBuild = ctx.blocked !== null;
 
   /**
-   * Every filter that is actually narrowing something.
+   * How many filters are actually narrowing something.
    *
-   * A list left whole says nothing, so only the narrowed ones appear — the
-   * point is that a heavily filtered file should not look like a full one in
-   * the strip you are about to press.
+   * Counted rather than listed. Spelled out in full this was the third copy
+   * of the configuration on one screen, after the panel that sets it and the
+   * table that shows its result — but a heavily filtered file should still
+   * not look like a full one in the strip you are about to press, so the
+   * count stays.
    */
   const narrowed = [
     ctx.selectedSaleTypes.length < ctx.saleTypes.length &&
@@ -118,7 +120,7 @@ const ExportBar = () => {
             <a
               href={f.url}
               download
-              className="bg-[#1e2a4a] hover:bg-[#2a3a63] text-custom-white text-[13px] font-semibold px-5 py-2.5 rounded-lg transition-colors"
+              className="bg-brand_navy hover:bg-brand_navy_hover text-custom-white text-[13px] font-semibold px-5 py-2.5 rounded-lg transition-colors"
             >
               Download
             </a>
@@ -144,7 +146,7 @@ const ExportBar = () => {
 
   if (ctx.building) {
     return (
-      <div className="flex-shrink-0 bg-[#1e2a4a] rounded-xl px-4 py-3 flex items-center gap-3">
+      <div className="flex-shrink-0 bg-brand_navy rounded-xl px-4 py-3 flex items-center gap-3">
         <div className="w-5 h-5 rounded-full border-2 border-custom-white/25 border-t-brand_green animate-spin flex-shrink-0" />
         <div className="flex-1">
           <div className="text-[13px] font-semibold text-custom-white">
@@ -152,8 +154,8 @@ const ExportBar = () => {
           </div>
           <div className="text-[11.5px] text-custom-white/85 mt-0.5">
             {ctx.slow
-              ? "This is past the point the connection usually waits. The file is still being written — if the link does not arrive, try a shorter range rather than assuming it failed."
-              : "The file is written straight to storage, so nothing downloads yet."}
+              ? "Past the point the connection usually waits. It is still being written — if no link arrives, try a shorter range."
+              : "Written straight to storage — nothing downloads here."}
           </div>
         </div>
       </div>
@@ -161,38 +163,38 @@ const ExportBar = () => {
   }
 
   return (
-    <div className="flex-shrink-0 bg-[#1e2a4a] rounded-xl px-4 py-3 flex items-center gap-4">
+    <div className="flex-shrink-0 bg-brand_navy rounded-xl px-4 py-3 flex items-center gap-4">
       <div className="flex-1 min-w-0">
+        {/*
+          * Counts, not lists.
+          *
+          * The keys, the aggregates and the narrowing were all spelled out
+          * here in full, and every one of them is already open on the panel
+          * to the left in the same words — while the table above shows the
+          * columns themselves. Three restatements of one configuration, and
+          * the one people read is the table.
+          */}
         <div className="text-[13px] font-semibold text-custom-white">
           {ctx.selectedStoreIds.length} of {ctx.stores.length} store
           {ctx.stores.length === 1 ? "" : "s"} ·{" "}
           {ctx.aggregating
-            ? `grouped by ${ctx.groupBy.join(", ") || "nothing yet"}`
+            ? `${ctx.groupBy.length} key${ctx.groupBy.length === 1 ? "" : "s"} · ${
+                ctx.measureItems.length
+              } aggregate${ctx.measureItems.length === 1 ? "" : "s"}`
             : `${ctx.selectedColumns.length} of ${ctx.columns.length} column${
                 ctx.columns.length === 1 ? "" : "s"
               }`}{" "}
           · {ctx.flags.fileFormat.toUpperCase()}
-        </div>
-        {ctx.aggregating && ctx.measureItems.length > 0 && (
-          <div className="text-[11.5px] text-custom-white/85 mt-1 font-mono">
-            {ctx.measureItems.map((m) => m.alias).join(" · ")}
-          </div>
-        )}
-        {narrowed.length > 0 && (
-          <div className="text-[11.5px] text-custom-white/85 mt-1">
-            Filtered: {narrowed.join(" · ")}
-          </div>
-        )}
-        {pii > 0 ? (
-          <div className="flex items-center gap-2 mt-1">
-            <span className="text-[11.5px] text-custom-white/85">
-              Includes {pii} personal column{pii === 1 ? "" : "s"} — customer
-              name, contact and location.
+          {narrowed.length > 0 && (
+            <span className="font-normal text-custom-white/85">
+              {" "}
+              · {narrowed.length} filter{narrowed.length === 1 ? "" : "s"}
             </span>
-          </div>
-        ) : (
+          )}
+        </div>
+        {pii > 0 && (
           <div className="text-[11.5px] text-custom-white/85 mt-1">
-            A longer range across more stores takes longer to build.
+            Includes {pii} personal column{pii === 1 ? "" : "s"}
           </div>
         )}
         {ctx.exportError && (
@@ -242,7 +244,7 @@ const ExportBar = () => {
           onClick={ctx.build}
           disabled={nothingToBuild}
           title={ctx.blocked ?? undefined}
-          className="bg-custom-white text-[#1e2a4a] text-[13px] font-semibold px-5 py-2.5 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed"
+          className="bg-custom-white text-brand_navy text-[13px] font-semibold px-5 py-2.5 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed"
         >
           Build export
         </button>

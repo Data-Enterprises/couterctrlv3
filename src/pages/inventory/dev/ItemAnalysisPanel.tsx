@@ -89,7 +89,7 @@ const ItemAnalysisPanel = ({ product, actual }: Props) => {
   return (
     <div className="flex-1 min-w-0 shadow-lg">
       <div className="bg-custom-white rounded-xl shadow-sm overflow-hidden flex flex-col h-full">
-        <div className="flex-shrink-0 px-4 py-[10px] bg-[#1e2a4a]">
+        <div className="flex-shrink-0 px-4 py-[10px] bg-brand_navy">
           <div className="text-[13px] font-semibold text-custom-white leading-tight truncate">
             {product.description}
           </div>

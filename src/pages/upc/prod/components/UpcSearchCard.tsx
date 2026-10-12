@@ -88,7 +88,7 @@ const UpcSearchCard = ({ onSearch, onClose }: Props) => {
             <button
               onClick={onClose}
               aria-label="Close search"
-              className="flex-shrink-0 -mt-1 -mr-1 p-1 rounded text-content/60 hover:text-content hover:bg-[#1e2a4a]/10 transition-colors"
+              className="flex-shrink-0 -mt-1 -mr-1 p-1 rounded text-content/60 hover:text-content hover:bg-brand_navy/10 transition-colors"
             >
               <XMarkIcon className="w-4 h-4" />
             </button>
@@ -107,7 +107,7 @@ const UpcSearchCard = ({ onSearch, onClose }: Props) => {
                 onClick={() => dispatch(setDevActiveTab(tab.id))}
                 className={`px-2.5 py-1 text-[11px] font-medium rounded border transition-colors ${
                   ctx.activeTab === tab.id
-                    ? "bg-[#1e2a4a] border-[#1e2a4a] text-custom-white"
+                    ? "bg-brand_navy border-brand_navy text-custom-white"
                     : "border-content/20 text-content/85 hover:text-content hover:border-content/35"
                 }`}
               >
@@ -176,12 +176,12 @@ const UpcSearchCard = ({ onSearch, onClose }: Props) => {
               {ctx.upcs.map((upc) => (
                 <span
                   key={upc}
-                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#1e2a4a]/10 text-[#1e2a4a]"
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-brand_navy/10 text-brand_navy"
                 >
                   {upc}
                   <button
                     onClick={() => dispatch(removeDevUpc(upc))}
-                    className="text-[#1e2a4a]/85 hover:text-[#1e2a4a] transition-colors leading-none"
+                    className="text-brand_navy/85 hover:text-brand_navy transition-colors leading-none"
                   >
                     ×
                   </button>
@@ -194,7 +194,7 @@ const UpcSearchCard = ({ onSearch, onClose }: Props) => {
         {/* run */}
         <button
           onClick={onSearch}
-          className="w-full py-2 text-sm font-semibold text-custom-white rounded-lg bg-[#1e2a4a] hover:bg-[#2a3a63] transition-colors cursor-pointer select-none disabled:opacity-50"
+          className="w-full py-2 text-sm font-semibold text-custom-white rounded-lg bg-brand_navy hover:bg-brand_navy_hover transition-colors cursor-pointer select-none disabled:opacity-50"
           disabled={!ctx.upcs.length || nothingPicked}
         >
           {nothingPicked ? pickLabel : "Search"}

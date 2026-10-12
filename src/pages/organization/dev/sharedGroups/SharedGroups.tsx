@@ -56,7 +56,7 @@ const NewSharedGroup = ({
         <button
           onClick={submit}
           disabled={!!nameProblem(name) || creating}
-          className="text-[12px] font-medium px-3 py-1.5 rounded-md text-custom-white bg-[#1e2a4a] hover:bg-[#1e2a4a]/85 disabled:opacity-50"
+          className="text-[12px] font-medium px-3 py-1.5 rounded-md text-custom-white bg-brand_navy hover:bg-brand_navy/85 disabled:opacity-50"
         >
           Create
         </button>

@@ -49,7 +49,7 @@ const LensPanel = ({
             onClick={() => onLensChange(l.key)}
             className={`text-[11.5px] font-medium px-2.5 py-1 rounded-full transition-colors ${
               lens === l.key
-                ? "bg-[#1e2a4a] text-custom-white"
+                ? "bg-brand_navy text-custom-white"
                 : "bg-gray-50 text-content hover:bg-gray-100"
             }`}
           >
@@ -71,7 +71,7 @@ const LensPanel = ({
         <div>Lines · transactions</div>
       </div>
 
-      <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar divide-y divide-[#1e2a4a]/15">
+      <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar divide-y divide-brand_navy/15">
         {signals.length === 0 && (
           <div className="flex items-center justify-center py-8 text-[12px] text-content">
             No matches

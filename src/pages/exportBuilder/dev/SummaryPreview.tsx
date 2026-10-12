@@ -47,10 +47,9 @@ const SummaryPreview = () => {
 
       <div className="px-4 py-2 bg-amber-50 border-b border-amber-200 flex-shrink-0">
         <span className="text-[11.5px] text-amber-900">
-          These rows are this summary run over the {ctx.visibleRows.length}{" "}
-          sample line{ctx.visibleRows.length === 1 ? "" : "s"} — the columns are
-          the file's, the numbers are not. The file is built from every line in
-          the range.
+          Sample numbers, from {ctx.visibleRows.length} line
+          {ctx.visibleRows.length === 1 ? "" : "s"}. The file is built from the
+          whole range.
         </span>
       </div>
 
@@ -140,13 +139,6 @@ const SummaryPreview = () => {
         </div>
       )}
 
-      <div className="flex items-center gap-3 px-4 py-2 bg-custom-white border-t border-brand_line flex-shrink-0">
-        <span className="text-[11.5px] text-content/85">
-          Measure names carry the operation, so a file says what it holds.
-          Totals here are the table's own lines — tender rows, voids and
-          transfers included — not a sales report.
-        </span>
-      </div>
     </div>
   );
 };

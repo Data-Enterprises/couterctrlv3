@@ -237,7 +237,7 @@ const GroupDetail = ({ group, onRenamed, onDeleted }: Props) => {
                     <button
                       onClick={() => handleToggle(s.storeid, "unassigned")}
                       disabled={pending.has(s.storeid)}
-                      className="w-5 h-5 flex-shrink-0 flex items-center justify-center rounded text-[13px] font-semibold text-[#1e2a4a] border border-gray-200 hover:bg-gray-50 disabled:cursor-not-allowed transition-colors"
+                      className="w-5 h-5 flex-shrink-0 flex items-center justify-center rounded text-[13px] font-semibold text-brand_navy border border-gray-200 hover:bg-gray-50 disabled:cursor-not-allowed transition-colors"
                     >
                       +
                     </button>

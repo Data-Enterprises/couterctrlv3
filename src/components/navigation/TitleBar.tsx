@@ -11,6 +11,7 @@ import { legacyEntryPath } from "../../constants/legacyPages";
 import { COMING_SOON_CATEGORY } from "../../utils/comingSoon";
 import { resetNav, setIsNavOpen, setLastRoute } from "../../features/navSlice";
 import {
+  openReportIssue,
   resetAppSlice,
   setApiEnv,
   setUiMode,
@@ -144,16 +145,16 @@ const NavSheet = ({
                 <div
                   className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
                   style={{
-                    background: isActive ? "#1e2a4a" : "rgba(30,42,74,0.07)",
+                    background: isActive ? "rgb(var(--color-brand-navy))" : "rgb(var(--color-brand-navy) / 0.07)",
                   }}
                 >
                   <page.icon
                     className="h-4 w-4"
-                    style={{ color: isActive ? "#fff" : "#1e2a4a" }}
+                    style={{ color: isActive ? "#fff" : "rgb(var(--color-brand-navy))" }}
                   />
                 </div>
                 <span
-                  className={`text-[13px] ${isActive ? "font-semibold text-[#1e2a4a]" : "font-medium text-content"}`}
+                  className={`text-[13px] ${isActive ? "font-semibold text-brand_navy" : "font-medium text-content"}`}
                 >
                   {page.name}
                 </span>
@@ -275,7 +276,7 @@ const TitleBar = () => {
         <div
           className={`w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-semibold flex-shrink-0 transition-colors duration-300 ease-in-out ${
             // A navy disc on a navy bar disappears, so dev inverts it.
-            onNavy ? "bg-custom-white text-[#1e2a4a]" : "bg-[#1e2a4a] text-custom-white"
+            onNavy ? "bg-custom-white text-brand_navy" : "bg-brand_navy text-custom-white"
           }`}
         >
           {(user.firstName?.[0] ?? "").toUpperCase()}
@@ -383,6 +384,69 @@ const TitleBar = () => {
                 </div>
               </div>
             ) : null}
+            {/* What went out and what is waiting, straight from the bucket the
+                help pages come from. Dev mode only: these are our notes, they
+                name unreleased work, and the row would mean nothing to a
+                client sitting on prod. Under View because it describes the
+                app those switches move you around in.
+
+                HIDDEN until `help/releases` and `help/page_url` are deployed.
+                The page needs the API to list the notes AND to sign each one:
+                the files sit under `release/{env}/{name}.html` in the help
+                bucket, and unlike `dev/` and `prod/` that prefix is not
+                public — anonymous GETs answer AccessDenied, and the frame is
+                anonymous. So the row would open a page that can only report
+                it cannot read anything.
+
+                Uncomment as-is once the endpoint is up; nothing else about
+                the page changed. The route stays mounted, so the URL still
+                works for testing it. */}
+            {/*
+            {context.apiEnv === "dev" ? (
+              <button
+                onClick={() => {
+                  setAvatarOpen(false);
+                  navigate("/release-notes");
+                }}
+                className="w-full text-left px-4 py-2.5 text-[13px] font-medium text-content hover:bg-gray-50 transition-colors border-b border-gray-100 flex items-center gap-2"
+              >
+                <span className="flex-1">Release Notes</span>
+                <span className="text-[11px] text-content/85">every release</span>
+              </button>
+            ) : null}
+            */}
+            {/* File a ticket about the page you are on.
+
+                Raises a flag rather than navigating: sending somebody to the
+                help desk to describe a problem they are looking at asks them
+                to leave the evidence behind. App draws the form over
+                whatever page they are on.
+
+                The flag is on the shared slice because this bar is prod-tree
+                and the form is dev. It carries the page and its area, which
+                the nav has already worked out for its own highlight. */}
+            {context.apiEnv === "dev" ? (
+              <button
+                onClick={() => {
+                  setAvatarOpen(false);
+                  dispatch(
+                    openReportIssue({
+                      from: location.pathname,
+                      page: activeCategory?.pages.find(
+                        (p) => p.href === currentPath,
+                      )?.name,
+                      area: activeCategory?.name,
+                    }),
+                  );
+                }}
+                className="w-full text-left px-4 py-2.5 text-[13px] font-medium text-content hover:bg-gray-50 transition-colors border-b border-gray-100 flex items-center gap-2"
+              >
+                <span className="flex-1">Report an issue</span>
+                <span className="text-[11px] text-content/85">
+                  from this page
+                </span>
+              </button>
+            ) : null}
             {SHOW_API_ENV_SWITCH && user.userLevel >= 7 ? (
               <div
                 className={`px-4 py-2.5 border-b border-gray-100 flex items-center gap-2 ${
@@ -455,7 +519,7 @@ const TitleBar = () => {
         // The switch recolours the whole bar, so it eases rather than snaps.
         className={`h-12 w-full flex items-stretch select-none relative z-50 border-b transition-colors duration-300 ease-in-out ${
           onNavy
-            ? "bg-[#1e2a4a] text-custom-white border-[#1e2a4a]"
+            ? "bg-brand_navy text-custom-white border-brand_navy"
             : "bg-custom-white text-content border-gray-200"
         }`}
       >
@@ -515,7 +579,7 @@ const TitleBar = () => {
                           ? "bg-custom-white/15 text-custom-white font-semibold"
                           : "text-custom-white/85 font-medium hover:text-custom-white hover:bg-custom-white/10"
                         : isActive
-                          ? "bg-[#1e2a4a]/8 text-[#1e2a4a] font-semibold"
+                          ? "bg-brand_navy/8 text-brand_navy font-semibold"
                           : "text-content/85 font-medium hover:text-content hover:bg-bkg"
                     }`}
                   >
@@ -550,7 +614,7 @@ const TitleBar = () => {
                           className={({ isActive }) =>
                             `flex items-center gap-2 px-3 py-2 text-[12px] transition-colors ${
                               isActive
-                                ? "bg-gray-50 text-[#1e2a4a] font-medium"
+                                ? "bg-gray-50 text-brand_navy font-medium"
                                 : "text-content hover:bg-gray-50"
                             }`
                           }
@@ -582,7 +646,7 @@ const TitleBar = () => {
         >
           <span
             title="Dev mode: this session is on the dev API"
-            className="px-3 py-1.5 rounded-full bg-emerald-500 text-custom-white text-[11px] font-bold tracking-wide leading-none whitespace-nowrap select-none"
+            className="px-3 py-1.5 rounded-full bg-custom-white text-brand_navy text-[11px] font-bold tracking-wide leading-none whitespace-nowrap select-none"
           >
             DEV MODE
           </span>
@@ -632,7 +696,7 @@ const TitleBar = () => {
                   className="flex-1 flex flex-col items-center justify-center gap-1 transition-colors"
                   style={{
                     color:
-                      isActive || isOpen ? "#1e2a4a" : "rgba(30,42,74,0.35)",
+                      isActive || isOpen ? "rgb(var(--color-brand-navy))" : "rgb(var(--color-brand-navy) / 0.35)",
                   }}
                 >
                   <cat.icon className="h-5 w-5" />
@@ -643,6 +707,7 @@ const TitleBar = () => {
           </div>
         </>
       )}
+
     </>
   );
 };

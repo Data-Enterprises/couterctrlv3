@@ -5,19 +5,16 @@ import {
   toggleLpType,
 } from "../../../features/dev/devLpActionsSlice";
 import type { LpSevFilter } from "../../../features/dev/devLpActionsSlice";
-import InfoButton from "../../../components-dev/InfoButton";
-import InfoPopover from "../../../components-dev/InfoPopover";
+import ComingSoonHelp from "../../../components-dev/ComingSoonHelp";
 import HeaderIconButton from "../../../components-dev/HeaderIconButton";
 import {
   MagnifyingGlassIcon,
   ChevronRightIcon,
   ChevronDownIcon,
 } from "@heroicons/react/20/solid";
-import { LP_ACTIONS_INFO } from "./lpActionsInfo";
 import type { ExceptionRow, LpSeverity, TypeGroup } from "./lpActionsMetrics";
 import { buildTypeGroups } from "./lpActionsMetrics";
 import { useMemo } from "react";
-import { useState } from "react";
 
 /**
  * Every store-and-exception pair, worst movement first.
@@ -181,7 +178,6 @@ const LpExceptionList = ({ onSearchOpen }: Props) => {
   const { rows, sevFilter, weeks, scopeLabel } = useAppSelector(
     (s) => s.dev.lpActions,
   );
-  const [infoOpen, setInfoOpen] = useState(false);
 
   const counts = {
     investigate: rows.filter((r) => r.severity === "investigate").length,
@@ -204,7 +200,7 @@ const LpExceptionList = ({ onSearchOpen }: Props) => {
   return (
     <div className="flex-1 min-w-0 shadow-lg">
       <div className="bg-custom-white rounded-xl shadow-sm flex flex-col h-full">
-        <div className="flex-shrink-0 bg-[#1e2a4a] rounded-t-xl px-4 pt-1 pb-2.5 flex flex-col gap-0">
+        <div className="flex-shrink-0 bg-brand_navy rounded-t-xl px-4 pt-1 pb-2.5 flex flex-col gap-0">
           <div className="flex items-center gap-2 min-h-[26px]">
             <span className="min-w-0 flex-1 text-custom-white font-semibold text-[13px] truncate">
               {scopeLabel || "Exceptions"}
@@ -224,15 +220,7 @@ const LpExceptionList = ({ onSearchOpen }: Props) => {
             </span>
             <div className="flex-1" />
             <div className="relative flex-shrink-0">
-              <InfoButton onClick={() => setInfoOpen((v) => !v)} />
-              {infoOpen && (
-                <InfoPopover
-                  title={LP_ACTIONS_INFO.title}
-                  purpose={LP_ACTIONS_INFO.purpose}
-                  glossary={LP_ACTIONS_INFO.glossary}
-                  onClose={() => setInfoOpen(false)}
-                />
-              )}
+              <ComingSoonHelp />
             </div>
           </div>
         </div>

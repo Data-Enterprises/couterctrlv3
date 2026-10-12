@@ -422,7 +422,7 @@ const CpnSalesDetailPanel = ({
             }}
             className={`px-3 py-1.5 text-[12px] font-medium border-b-2 transition-colors ${
               breakdown === t.key
-                ? "border-[#1e2a4a] text-content"
+                ? "border-brand_navy text-content"
                 : "border-transparent text-content"
             }`}
           >
@@ -732,7 +732,7 @@ const CpnSalesDetailPanel = ({
                           ))}
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-[#1e2a4a]/15">
+                      <tbody className="divide-y divide-brand_navy/15">
                         {txLines.map((item, i) => {
                           const isCpn = item.is_coupon === 1;
                           const isTender = item.sale_type === "Tender";

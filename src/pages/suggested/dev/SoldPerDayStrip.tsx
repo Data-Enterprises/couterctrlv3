@@ -81,7 +81,7 @@ const SoldPerDayStrip = ({ daily, dailyAvg }: SoldPerDayStripProps) => {
       >
         {avgPct !== null && (
           <div
-            className="absolute left-0 right-0 border-t border-dashed border-[#1e2a4a]/40 pointer-events-none"
+            className="absolute left-0 right-0 border-t border-dashed border-brand_navy/40 pointer-events-none"
             style={{ bottom: `${Math.min(avgPct, 100)}%` }}
           />
         )}
@@ -102,10 +102,10 @@ const SoldPerDayStrip = ({ daily, dailyAvg }: SoldPerDayStripProps) => {
                 height: d.weight > 0 ? `${Math.max((d.weight / max) * 100, 4)}%` : 0,
                 background:
                   hover === i
-                    ? "#1e2a4a"
+                    ? "rgb(var(--color-brand-navy))"
                     : isWeekend(d.date)
-                      ? "#1e2a4a"
-                      : "#1e2a4a99",
+                      ? "rgb(var(--color-brand-navy))"
+                      : "rgb(var(--color-brand-navy) / 0.6)",
                 opacity: hover !== null && hover !== i ? 0.55 : 1,
               }}
             />

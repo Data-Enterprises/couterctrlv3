@@ -87,7 +87,7 @@ const Stage = ({ onNavigate, onOpenPerspective, paused }: Props) => {
             <button
               key={item.key}
               onClick={(e) => onNavigate?.(item.key, e.currentTarget)}
-              className="font-display text-[13.5px] font-semibold text-custom-white bg-brand_green rounded-lg px-4 py-2.5 ml-2 whitespace-nowrap transition-colors hover:bg-brand_green_dark shadow-[0_1px_2px_rgba(15,36,64,.08)] cursor-pointer portal_stack:ml-auto portal_narrow:w-full portal_narrow:ml-0 portal_narrow:mt-2 portal_narrow:text-center"
+              className="font-display text-[13.5px] font-semibold text-custom-white bg-brand_green rounded-lg px-4 py-2.5 ml-2 whitespace-nowrap transition-colors hover:bg-brand_green_dark shadow-[0_1px_2px_rgb(var(--color-portal-navy)/.08)] cursor-pointer portal_stack:ml-auto portal_narrow:w-full portal_narrow:ml-0 portal_narrow:mt-2 portal_narrow:text-center"
             >
               {item.label}
             </button>
@@ -95,7 +95,7 @@ const Stage = ({ onNavigate, onOpenPerspective, paused }: Props) => {
             <button
               key={item.key}
               onClick={(e) => onNavigate?.(item.key, e.currentTarget)}
-              className="font-body text-[13.5px] font-medium text-brand_slate px-3 py-2 rounded-[7px] transition-colors hover:text-brand_navy hover:bg-custom-white/75 cursor-pointer portal_narrow:text-[12.5px] portal_narrow:px-2.5"
+              className="font-body text-[13.5px] font-medium text-brand_slate px-3 py-2 rounded-[7px] transition-colors hover:text-portal_navy hover:bg-custom-white/75 cursor-pointer portal_narrow:text-[12.5px] portal_narrow:px-2.5"
             >
               {item.label}
             </button>
@@ -115,7 +115,7 @@ const Stage = ({ onNavigate, onOpenPerspective, paused }: Props) => {
           <span className="flex-none font-mono text-[9.5px] font-semibold tracking-[0.18em] uppercase text-brand_green_dark leading-none [writing-mode:vertical-rl] rotate-180 portal_narrow:hidden">
             {MISSION.label}
           </span>
-          <p className="flex-1 min-w-0 font-display text-[clamp(15px,1.5vw,21px)] font-bold leading-[1.32] tracking-[-0.025em] text-brand_navy portal_narrow:basis-full portal_narrow:text-[15px]">
+          <p className="flex-1 min-w-0 font-display text-[clamp(15px,1.5vw,21px)] font-bold leading-[1.32] tracking-[-0.025em] text-portal_navy portal_narrow:basis-full portal_narrow:text-[15px]">
             {MISSION.lead}
             <em className="not-italic text-brand_green_dark">{MISSION.emphasis}</em>
             {MISSION.tail}
@@ -140,7 +140,7 @@ const Stage = ({ onNavigate, onOpenPerspective, paused }: Props) => {
               <button
                 key={b.id}
                 onClick={(e) => onOpenPerspective?.(b.id, e.currentTarget)}
-                className="font-display text-[12.5px] font-semibold text-brand_navy bg-custom-white border border-brand_line_2 rounded-full px-[15px] py-[7px] whitespace-nowrap transition-[color,border-color,background-color,transform] hover:text-brand_green_dark hover:border-brand_green_dark hover:bg-brand_green_tint hover:-translate-y-px cursor-pointer portal_narrow:text-[12px] portal_narrow:px-3"
+                className="font-display text-[12.5px] font-semibold text-portal_navy bg-custom-white border border-brand_line_2 rounded-full px-[15px] py-[7px] whitespace-nowrap transition-[color,border-color,background-color,transform] hover:text-brand_green_dark hover:border-brand_green_dark hover:bg-brand_green_tint hover:-translate-y-px cursor-pointer portal_narrow:text-[12px] portal_narrow:px-3"
               >
                 {b.label}
               </button>

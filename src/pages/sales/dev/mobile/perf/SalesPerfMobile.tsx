@@ -11,7 +11,7 @@ import { useToast } from "../../../../../components/toasts/hooks/useToast";
 import SearchCard from "../../../../../components-dev/SearchCard";
 import { getHourly, getSubs, getWeekly } from "../../../../../api/sales";
 import {
-  fetchSubDeptRows,
+  fetchSubDeptRowsOrEmpty,
   fetchSubDeptRowsSafe,
 } from "../../../../../utils/marginRows";
 import { withProductCode } from "../../shared/ledgerUtils";
@@ -78,6 +78,7 @@ import {
   type PairSort,
 } from "./perfData";
 import PairedBars from "../../../../../components-dev/mobile/perf/PairedBars";
+import PerfDelta from "../../../../../components-dev/mobile/perf/PerfDelta";
 import PerfCardHeader from "../../../../../components-dev/mobile/perf/PerfCardHeader";
 import MobilePerfCard from "../../../../../components-dev/mobile/MobilePerfCard";
 import MobilePerfDetail from "../../../../../components-dev/mobile/MobilePerfDetail";
@@ -391,7 +392,21 @@ const SalesPerfMobile = () => {
 
     dispatch(setPerfItemLoading(key));
     Promise.all([
-      fetchSubDeptRows(context.url, context.token, subId, twStart, twEnd, 0, storeid, 1),
+      // "No records" is a real answer here, not a failure: a department can
+      // sell nothing this week and still be in the list, because the list is
+      // built from either year. Throwing on it put the drill on a toast and a
+      // spinner that never resolved. A rejection — network, auth, 5xx — still
+      // throws and still toasts.
+      fetchSubDeptRowsOrEmpty(
+        context.url,
+        context.token,
+        subId,
+        twStart,
+        twEnd,
+        0,
+        storeid,
+        1,
+      ),
       // Last year resolves empty rather than throwing. A store with no history
       // for this department answers the LY window with an error, and letting
       // that reject the pair put the whole list on "Error loading items" while
@@ -584,6 +599,12 @@ const SalesPerfMobile = () => {
         onQuery: (q) => dispatch(setPerfItemQuery(q)),
         partial: itemMatch ? isPartialMatch(itemMatch) : false,
         note: itemMatch ? matchedNote(itemMatch) : "",
+        // Nothing sold this week, but the department is in the list because
+        // last year's rows put it there. The pairs still render — every one
+        // at $0.00 against its last-year figure — so the list needs to say
+        // why rather than leave the reader to infer it from a column of
+        // zeroes.
+        noTy: !!openItems && openItems.ty.length === 0 && openItems.ly.length > 0,
       }}
     />
   ) : null;
@@ -688,8 +709,16 @@ const SalesPerfMobile = () => {
                   a peer. */}
               {!groupOpen && (
                 <div className="px-3.5 pb-3.5 pt-1.5">
-                  <div className="font-display text-[24px] font-extrabold leading-none tracking-tight text-content">
-                    {formatCurrency2(groupTotals.sales)}
+                  <div className="flex flex-wrap items-baseline gap-x-2.5">
+                    <span className="font-display text-[24px] font-extrabold leading-none tracking-tight text-content">
+                      {formatCurrency2(groupTotals.sales)}
+                    </span>
+                    <PerfDelta
+                      ty={groupTotals.sales}
+                      ly={groupTotals.salesLy}
+                      unavailable={noLyHistory(groupMatch, null)}
+                      className="ml-auto"
+                    />
                   </div>
                   <div className="mt-2.5">
                     <PairedBars

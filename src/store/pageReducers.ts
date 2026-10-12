@@ -33,7 +33,6 @@ import ordersReducer from "../features/ordersSlice";
 import salesLedgerReducer from "../features/salesLedgerSlice";
 import salesTrackerReducer from "../features/salesTrackerSlice";
 import upcDevReducer from "../features/upcDevSlice";
-import ticketsReducer from "../features/ticketsSlice";
 
 /**
  * State that holds an answer from an API.
@@ -80,7 +79,6 @@ export const pageReducers = {
   salesLedger: salesLedgerReducer,
   salesTracker: salesTrackerReducer,
   upcDev: upcDevReducer,
-  tickets: ticketsReducer,
 } satisfies Record<string, Reducer>;
 
 const combinedProd = combineReducers(pageReducers);

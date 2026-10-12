@@ -270,7 +270,7 @@ const LPExportModal = ({
       defaultHeight={960}
     >
         {/* Header */}
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center px-4 py-3 bg-[#1e2a4a]">
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center px-4 py-3 bg-brand_navy">
           <div>
             <p className="text-custom-white text-[13px] font-semibold">Export CSV</p>
             <p className="text-custom-white/55 text-[10px] mt-0.5">{storeName} — {saleType}</p>
@@ -281,7 +281,7 @@ const LPExportModal = ({
                 key={m}
                 onClick={() => setMode(m)}
                 className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors ${
-                  mode === m ? "bg-custom-white text-[#1e2a4a]" : "text-custom-white/70 hover:text-custom-white"
+                  mode === m ? "bg-custom-white text-brand_navy" : "text-custom-white/70 hover:text-custom-white"
                 }`}
               >
                 {m === "presets" ? "Presets" : "Custom"}
@@ -304,10 +304,10 @@ const LPExportModal = ({
                   type="checkbox"
                   checked={selected.has("transactions")}
                   onChange={() => setSelected((p) => { const n = new Set(p); n.has("transactions") ? n.delete("transactions") : n.add("transactions"); return n; })}
-                  className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-[#1e2a4a] cursor-pointer flex-shrink-0"
+                  className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-brand_navy cursor-pointer flex-shrink-0"
                 />
                 <div>
-                  <p className="text-[13px] font-medium text-content group-hover:text-[#1e2a4a] transition-colors">Transaction List</p>
+                  <p className="text-[13px] font-medium text-content group-hover:text-brand_navy transition-colors">Transaction List</p>
                   <p className="text-[11px] text-content/50 mt-0.5">{transactions.length} transactions currently in view (filters applied)</p>
                 </div>
               </label>
@@ -325,7 +325,7 @@ const LPExportModal = ({
                     }
                     setSelected((p) => { const n = new Set(p); checking ? n.add("cashiers") : n.delete("cashiers"); return n; });
                   }}
-                  className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-[#1e2a4a] cursor-pointer flex-shrink-0"
+                  className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-brand_navy cursor-pointer flex-shrink-0"
                 />
                 <div className="flex-1 min-w-0">
                   <p className="text-[13px] font-medium text-content">Cashier Summary</p>
@@ -359,7 +359,7 @@ const LPExportModal = ({
               <button
                 onClick={handlePresetDownload}
                 disabled={selected.size === 0}
-                className="flex items-center gap-1.5 bg-[#1e2a4a] hover:bg-[#1e2a4a]/85 disabled:opacity-40 text-custom-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors"
+                className="flex items-center gap-1.5 bg-brand_navy hover:bg-brand_navy/85 disabled:opacity-40 text-custom-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors"
               >
                 <ArrowDownTrayIcon className="w-3.5 h-3.5" />
                 Download CSV
@@ -386,7 +386,7 @@ const LPExportModal = ({
                           type="radio"
                           checked={source === s}
                           onChange={() => switchSource(s)}
-                          className="accent-[#1e2a4a] h-3.5 w-3.5"
+                          className="accent-brand_navy h-3.5 w-3.5"
                         />
                         <span className="text-[12px] text-content capitalize">{s === "transactions" ? "Transaction List" : "Cashier Summary"}</span>
                       </label>
@@ -404,7 +404,7 @@ const LPExportModal = ({
                           type="checkbox"
                           checked={groupBy.has(d.key)}
                           onChange={() => toggleGroupBy(d.key)}
-                          className="accent-[#1e2a4a] h-3.5 w-3.5 rounded flex-shrink-0"
+                          className="accent-brand_navy h-3.5 w-3.5 rounded flex-shrink-0"
                         />
                         <span className="text-[12px] text-content">{d.label}</span>
                       </label>
@@ -424,7 +424,7 @@ const LPExportModal = ({
                             type="checkbox"
                             checked={sel.enabled}
                             onChange={() => toggleMetric(m.key)}
-                            className="accent-[#1e2a4a] h-3.5 w-3.5 rounded flex-shrink-0"
+                            className="accent-brand_navy h-3.5 w-3.5 rounded flex-shrink-0"
                           />
                           <span className={`text-[12px] flex-1 ${sel.enabled ? "text-content" : "text-content/40"}`}>{m.label}</span>
                           <select
@@ -503,7 +503,7 @@ const LPExportModal = ({
               <button
                 onClick={handleCustomDownload}
                 disabled={!canCustomDownload}
-                className="flex items-center gap-1.5 bg-[#1e2a4a] hover:bg-[#1e2a4a]/85 disabled:opacity-40 text-custom-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors"
+                className="flex items-center gap-1.5 bg-brand_navy hover:bg-brand_navy/85 disabled:opacity-40 text-custom-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors"
               >
                 <ArrowDownTrayIcon className="w-3.5 h-3.5" />
                 Download CSV

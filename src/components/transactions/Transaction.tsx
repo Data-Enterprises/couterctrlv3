@@ -272,7 +272,7 @@ const Transaction = ({ trans, compact, saleType }: TransactionProps) => {
           return (
             <div
               key={i}
-              className="grid gap-2 py-1.5 border-b border-b-[#1e2a4a]/15 items-center even:bg-row_stripe"
+              className="grid gap-2 py-1.5 border-b border-b-brand_navy/15 items-center even:bg-row_stripe"
               style={{ gridTemplateColumns: COLS }}
             >
               <div className="text-[10px] text-content truncate">

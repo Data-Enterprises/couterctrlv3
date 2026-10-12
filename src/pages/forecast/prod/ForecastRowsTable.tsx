@@ -39,7 +39,7 @@ import {
  *
  * Rows are a CSS grid on a shared column template, the same construction
  * `AssociationItemsTable` uses — sticky uppercase header, `even:bg-row_stripe`,
- * `border-[#1e2a4a]/15` rules. No table element and no grid library: the rows
+ * `border-brand_navy/15` rules. No table element and no grid library: the rows
  * are a flat list with one tri-state sort, which `useTriStateSort` already
  * does for every other Performance list.
  *
@@ -52,7 +52,7 @@ import {
 const COLS = "1fr 109px 66px 58px 58px 62px 58px 64px 58px 80px 50px 80px";
 
 const HEAD =
-  "sticky top-0 z-10 bg-custom-white grid items-center gap-2.5 px-2 py-1.5 border-b border-[#1e2a4a]/15";
+  "sticky top-0 z-10 bg-custom-white grid items-center gap-2.5 px-2 py-1.5 border-b border-brand_navy/15";
 
 type SortCol =
   "qtySold" | "adFcst" | "fcstTotal" | "markdownDollars" | "fcstPrice";
@@ -264,7 +264,7 @@ const ForecastRowsTable = ({
     <div className="flex-1 min-w-0 shadow-lg">
       <div className="bg-custom-white rounded-xl overflow-hidden flex flex-col h-full">
         {/* 1-row navy header */}
-        <div className="flex-shrink-0 px-4 py-3 flex items-center justify-between bg-[#1e2a4a]">
+        <div className="flex-shrink-0 px-4 py-3 flex items-center justify-between bg-brand_navy">
           <div className="text-[13px] font-semibold text-custom-white leading-tight">
             Last 90 days ending {singleDate}
           </div>
@@ -278,7 +278,7 @@ const ForecastRowsTable = ({
         </div>
 
         {/* KPI strip */}
-        <div className="grid grid-cols-4 divide-x divide-[#1e2a4a]/15 border-b border-gray-100 bg-gray-50 flex-shrink-0">
+        <div className="grid grid-cols-4 divide-x divide-brand_navy/15 border-b border-gray-100 bg-gray-50 flex-shrink-0">
           {[
             ["Items", String(rows.length)],
             ["Ad fcst units", totals.units.toLocaleString()],
@@ -330,7 +330,7 @@ const ForecastRowsTable = ({
           {tierFilter.length > 0 && (
             <button
               onClick={() => dispatch(clearTierFilter())}
-              className="text-[11px] font-medium text-[#1e2a4a] hover:underline px-1"
+              className="text-[11px] font-medium text-brand_navy hover:underline px-1"
             >
               Clear
             </button>
@@ -382,7 +382,7 @@ const ForecastRowsTable = ({
               !searched.length ||
               (!batchAdDays && !batchPrice && !batchNotes.trim())
             }
-            className="text-[11px] font-semibold px-2.5 py-1 rounded bg-[#1e2a4a] text-custom-white hover:bg-[#2a3a63] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+            className="text-[11px] font-semibold px-2.5 py-1 rounded bg-brand_navy text-custom-white hover:bg-brand_navy_hover transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
           >
             Apply
           </button>
@@ -573,7 +573,7 @@ const ForecastRowsTable = ({
                           ? `Show the ${band} band`
                           : `Collapse the ${band} band`
                       }
-                      className="w-full flex items-center gap-2.5 px-2 py-2 bg-[#1e2a4ad9] hover:bg-[#1e2a4a] transition-colors"
+                      className="w-full flex items-center gap-2.5 px-2 py-2 bg-brand_navy/85 hover:bg-brand_navy transition-colors"
                     >
                       {collapsed.has(band) ? (
                         <ChevronRightIcon className="w-3.5 h-3.5 text-custom-white flex-shrink-0" />
@@ -606,7 +606,7 @@ const ForecastRowsTable = ({
                           ? "Only one price point — nothing to model"
                           : "Double-click for the calculator"
                       }
-                      className={`grid gap-2.5 items-center pl-1.5 pr-2 py-[7px] border-b border-[#1e2a4a]/15 last:border-b-0 border-l-4 ${
+                      className={`grid gap-2.5 items-center pl-1.5 pr-2 py-[7px] border-b border-brand_navy/15 last:border-b-0 border-l-4 ${
                         entry ? TIER_STRIPE[entry.tier] : "border-l-transparent"
                       } ${row.singlePrice ? "" : "even:bg-row_stripe hover:bg-gray-50"}`}
                       style={{ gridTemplateColumns: COLS }}

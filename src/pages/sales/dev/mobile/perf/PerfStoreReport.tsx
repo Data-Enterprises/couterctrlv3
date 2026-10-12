@@ -3,7 +3,8 @@ import { formatCurrency2 } from "../../../../../utils";
 import type { PerfDay, PerfTotals } from "./perfData";
 import PairedBars from "../../../../../components-dev/mobile/perf/PairedBars";
 import PerfDayChart from "../../../../../components-dev/mobile/perf/PerfDayChart";
-import { COUPON_COLORS, COUPON_LABELS, LY_COLOR, TY_COLOR } from "../../../../../components-dev/mobile/perf/perfColors";
+import PerfDelta from "../../../../../components-dev/mobile/perf/PerfDelta";
+import { COUPON_COLORS, COUPON_LABELS, LY_COLOR, TY_SWATCH_BG } from "../../../../../components-dev/mobile/perf/perfColors";
 
 /** Darkest to lightest, so the stack and the legend agree. */
 const COUPON_KEYS = ["digital", "elecStore", "elecInstore", "store"] as const;
@@ -65,7 +66,7 @@ const PerfStoreReport = ({
         <span className="inline-flex items-center gap-1.5">
           <span
             className="h-2 w-3.5 rounded-sm"
-            style={{ background: TY_COLOR }}
+            style={{ background: TY_SWATCH_BG }}
           />
           This year
         </span>
@@ -88,8 +89,16 @@ const PerfStoreReport = ({
 
     {/* ── the figure, then the comparison ────────────────────────── */}
     <div className="px-3.5 pb-3 pt-1.5">
-      <div className="font-display text-[32px] font-extrabold leading-none tracking-tight text-content">
-        {formatCurrency2(totals.sales)}
+      <div className="flex flex-wrap items-baseline gap-x-2.5">
+        <span className="font-display text-[32px] font-extrabold leading-none tracking-tight text-content">
+          {formatCurrency2(totals.sales)}
+        </span>
+        <PerfDelta
+          ty={totals.sales}
+          ly={totals.salesLy}
+          unavailable={noLy}
+          className="ml-auto"
+        />
       </div>
 
       <div className="mt-2.5">
@@ -127,7 +136,7 @@ const PerfStoreReport = ({
             ["Coupons", formatCurrency2(totals.coupons), true],
           ] as const
         ).map(([k, v, fromBundle]) => (
-          <div key={k} className="flex flex-col">
+          <div key={k} className="flex flex-col items-center text-center">
             <span className="font-mono text-[9.5px] uppercase tracking-wider text-content/85">
               {k}
             </span>
@@ -221,7 +230,7 @@ const PerfStoreReport = ({
         className={`mt-3 flex w-full items-center justify-center gap-1 rounded-lg border-t border-gray-100 py-2.5 text-[12.5px] font-bold transition-colors ${
           bundleLoading
             ? "bg-bkg text-content/85"
-            : "bg-[#1e2a4a] text-custom-white active:bg-[#2a3a62]"
+            : "bg-brand_navy text-custom-white active:bg-[#2a3a62]"
         }`}
       >
         {bundleLoading ? "Loading\u2026" : "View details"}

@@ -230,7 +230,7 @@ const SharedGroupDetail = ({ group, onChanged, onRenamed, onDeleted }: Props) =>
             key={t}
             onClick={() => setSubTab(t)}
             className={`text-[12px] font-semibold py-2 px-4 capitalize border-b-2 transition-colors ${
-              subTab === t ? "border-[#1e2a4a] text-[#1e2a4a]" : "border-transparent text-content"
+              subTab === t ? "border-brand_navy text-brand_navy" : "border-transparent text-content"
             }`}
           >
             {t}

@@ -161,7 +161,7 @@ const CashierJourneyChart = ({ journey, selected, onSelect }: Props) => {
               x={p.x}
               y={p.y + 3.5}
               textAnchor="middle"
-              fill="#fff"
+              className="fill-custom-white"
               style={{ fontSize: 10, fontWeight: 700 }}
             >
               {t.count}
@@ -183,7 +183,7 @@ const CashierJourneyChart = ({ journey, selected, onSelect }: Props) => {
         cx={CX}
         cy={CY}
         r={34}
-        fill="#1e2a4a"
+        fill="rgb(var(--color-brand-navy))"
         onClick={() => onSelect(null)}
         className="cursor-pointer"
       />
@@ -191,7 +191,7 @@ const CashierJourneyChart = ({ journey, selected, onSelect }: Props) => {
         x={CX}
         y={CY - 2}
         textAnchor="middle"
-        fill="#fff"
+        className="fill-custom-white"
         style={{ fontSize: 11, fontWeight: 700 }}
       >
         {journey.total}
@@ -200,7 +200,7 @@ const CashierJourneyChart = ({ journey, selected, onSelect }: Props) => {
         x={CX}
         y={CY + 11}
         textAnchor="middle"
-        fill="#fff"
+        className="fill-custom-white"
         fillOpacity={0.85}
         style={{ fontSize: 9 }}
       >

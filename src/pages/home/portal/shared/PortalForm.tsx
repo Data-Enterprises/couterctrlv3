@@ -45,7 +45,7 @@ interface Props {
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
 const FIELD_CLASS =
-  "w-full px-3 py-2.5 font-body text-[14px] text-brand_navy bg-custom-white border rounded-lg outline-none transition-colors placeholder:text-brand_placeholder focus:border-brand_green focus:shadow-[0_0_0_3.5px_rgba(30,158,82,0.15)]";
+  "w-full px-3 py-2.5 font-body text-[14px] text-portal_navy bg-custom-white border rounded-lg outline-none transition-colors placeholder:text-brand_placeholder focus:border-brand_green focus:shadow-[0_0_0_3.5px_rgba(30,158,82,0.15)]";
 
 const PortalForm = ({
   intro,
@@ -116,7 +116,7 @@ const PortalForm = ({
             >
               <label
                 htmlFor={f.id}
-                className="text-[12.5px] font-semibold text-brand_navy mb-[7px]"
+                className="text-[12.5px] font-semibold text-portal_navy mb-[7px]"
               >
                 {f.label}
                 {f.required && <span className="text-brand_green"> *</span>}
@@ -171,7 +171,7 @@ const PortalForm = ({
       <button
         onClick={handleSubmit}
         disabled={sending}
-        className="w-full mt-5 font-display font-semibold text-[15px] text-custom-white bg-brand_navy rounded-lg px-[18px] py-3 transition-colors hover:bg-brand_navy_hover disabled:opacity-50 cursor-pointer"
+        className="w-full mt-5 font-display font-semibold text-[15px] text-custom-white bg-portal_navy rounded-lg px-[18px] py-3 transition-colors hover:bg-portal_navy_hover disabled:opacity-50 cursor-pointer"
       >
         {sending ? "Sending…" : submitLabel}
       </button>

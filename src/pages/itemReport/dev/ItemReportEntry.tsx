@@ -191,12 +191,12 @@ const ItemReportEntry = ({
             {upcs.map((upc) => (
               <span
                 key={upc}
-                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#1e2a4a]/10 text-[#1e2a4a]"
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-brand_navy/10 text-brand_navy"
               >
                 {upc}
                 <button
                   onClick={() => dispatch(removePendingUpc(upc))}
-                  className="text-[#1e2a4a]/85 hover:text-[#1e2a4a] transition-colors leading-none"
+                  className="text-brand_navy/85 hover:text-brand_navy transition-colors leading-none"
                 >
                   ×
                 </button>

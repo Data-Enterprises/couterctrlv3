@@ -179,6 +179,16 @@ export interface Store {
   store_name: string;
   company: number;
   company_name: string;
+  /**
+   * When the store was closed, or null while it is open.
+   *
+   * Optional because only `stores/unassigned_stores` returns it — everywhere
+   * else a Store is built without it, and `undefined` has to stay
+   * distinguishable from `null`: the first means nobody asked, the second
+   * means asked and open. Admin's store grid reads exactly that difference
+   * and falls back to offering both actions when it cannot tell.
+   */
+  deactivated_at?: string | null;
 }
 
 export interface UnassignedStore {
@@ -2430,13 +2440,20 @@ export interface VendorRow {
    *  comparison grades only when it covers every day; see utils/grading. */
   coverage: Coverage;
 
-  /** Margin points, computed from the DAY-MATCHED subtotals so a partial week
-   *  isn't compared against a full one. Positive means margin improved. */
+  /**
+   * Margin points, computed from the DAY-MATCHED subtotals so a partial week
+   * isn't compared against a full one. Positive means margin improved.
+   *
+   * Null where there is nothing to take a margin on: a period with no sales
+   * has no margin, and a delta needs sales on BOTH matched sides. Not zero —
+   * zero is a real margin somebody earned, and the difference between the two
+   * is a vendor reading as Critical for a week nobody can compare.
+   */
   tyMarginPct: number;
-  lwMarginPct: number;
-  lyMarginPct: number;
-  lwPtsDelta: number;
-  lyPtsDelta: number;
+  lwMarginPct: number | null;
+  lyMarginPct: number | null;
+  lwPtsDelta: number | null;
+  lyPtsDelta: number | null;
 }
 
 /** One TW day for one vendor, with its aligned comparisons.
@@ -2624,6 +2641,11 @@ export interface InvoiceLineRow {
   lineNumber: number;
   upc: string;
   description: string;
+  /** The vendor's own item number, which is what a call to AWG is about — the
+   *  UPC identifies the product, this identifies their billing of it. */
+  awgCode: string;
+  /** Pack size as the vendor prints it ("8 OZ", "CARTON"), not a number. */
+  size: string;
   /** Selling units per case — the bridge between a case cost and a unit
    *  retail, without which the two columns look like they should match. */
   pack: string;

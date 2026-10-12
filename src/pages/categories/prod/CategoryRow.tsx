@@ -54,7 +54,7 @@ const CategoryRow = ({
   return (
     <button
       onClick={handleClick}
-      className={`list-row-skip w-full flex items-center gap-2.5 p-3 text-left transition-colors border-l-2 border-b border-b-[#1e2a4a]/15 ${
+      className={`list-row-skip w-full flex items-center gap-2.5 p-3 text-left transition-colors border-l-2 border-b border-b-brand_navy/15 ${
         isSelected
           ? "bg-row_selected border-row_selected_border"
           : "border-transparent hover:bg-gray-50"

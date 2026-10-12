@@ -2,7 +2,8 @@ import { ChevronRightIcon } from "@heroicons/react/20/solid";
 import { formatCurrency2 } from "../../../../utils";
 import PairedBars from "../../../../components-dev/mobile/perf/PairedBars";
 import PerfDayChart from "../../../../components-dev/mobile/perf/PerfDayChart";
-import { LY_COLOR, TY_COLOR } from "../../../../components-dev/mobile/perf/perfColors";
+import PerfDelta from "../../../../components-dev/mobile/perf/PerfDelta";
+import { LY_COLOR, TY_SWATCH_BG } from "../../../../components-dev/mobile/perf/perfColors";
 import type { EventTotals } from "./eventPerfData";
 
 const fmtInt = (n: number) => Math.round(n).toLocaleString("en-US");
@@ -71,7 +72,7 @@ const EventStoreReport = ({
           <span className="inline-flex items-center gap-1.5">
             <span
               className="h-2 w-3.5 rounded-sm"
-              style={{ background: TY_COLOR }}
+              style={{ background: TY_SWATCH_BG }}
             />
             This week
           </span>
@@ -95,8 +96,15 @@ const EventStoreReport = ({
         <div className="text-[11px] font-semibold text-content/85">
           {heroCaption}
         </div>
-        <div className="mt-1 font-display text-[30px] font-extrabold leading-none tracking-tight text-content">
-          {fmt(value)}
+        <div className="mt-1 flex flex-wrap items-baseline gap-x-2.5">
+          <span className="font-display text-[30px] font-extrabold leading-none tracking-tight text-content">
+            {fmt(value)}
+          </span>
+          {/* Same gate as the bar below: no baseline at this level means there
+              is nothing to difference against. */}
+          {base !== null && (
+            <PerfDelta ty={value} ly={base} format={fmt} className="ml-auto" />
+          )}
         </div>
 
         {/* No second bar when the comparison period has nothing at this level —
@@ -139,7 +147,7 @@ const EventStoreReport = ({
               ["Busiest", busiest],
             ] as [string, string][]
           ).map(([k, v]) => (
-            <div key={k} className="flex flex-col">
+            <div key={k} className="flex flex-col items-center text-center">
               <span className="font-mono text-[9.5px] uppercase tracking-wider text-content/85">
                 {k}
               </span>
@@ -156,7 +164,7 @@ const EventStoreReport = ({
         <button
           type="button"
           onClick={onViewDetails}
-          className="mt-3 flex w-full items-center justify-center gap-1 rounded-lg border-t border-gray-100 bg-[#1e2a4a] py-2.5 text-[12.5px] font-bold text-custom-white transition-colors active:bg-[#2a3a62]"
+          className="mt-3 flex w-full items-center justify-center gap-1 rounded-lg border-t border-gray-100 bg-brand_navy py-2.5 text-[12.5px] font-bold text-custom-white transition-colors active:bg-[#2a3a62]"
         >
           View details
           <ChevronRightIcon className="h-4 w-4" />

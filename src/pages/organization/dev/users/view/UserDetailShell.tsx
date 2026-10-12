@@ -70,7 +70,7 @@ const UserDetailShell = ({ onBack }: UserDetailShellProps) => {
       </button>
 
       <div className="flex items-center gap-3 mb-4">
-        <div className="w-11 h-11 rounded-full bg-[#1e2a4a] text-custom-white flex items-center justify-center text-[15px] font-medium flex-shrink-0">
+        <div className="w-11 h-11 rounded-full bg-brand_navy text-custom-white flex items-center justify-center text-[15px] font-medium flex-shrink-0">
           {initials}
         </div>
         <div className="flex-1 min-w-0">
@@ -97,7 +97,7 @@ const UserDetailShell = ({ onBack }: UserDetailShellProps) => {
             key={t.id}
             onClick={() => setTab(t.id)}
             className={`text-[12px] font-semibold py-2 whitespace-nowrap border-b-2 flex-1 text-center ${
-              tab === t.id ? "border-[#1e2a4a] text-[#1e2a4a]" : "border-transparent text-content"
+              tab === t.id ? "border-brand_navy text-brand_navy" : "border-transparent text-content"
             }`}
           >
             {t.label}

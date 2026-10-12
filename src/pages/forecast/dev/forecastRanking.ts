@@ -110,7 +110,7 @@ export const TIER_LABEL: Record<Tier, string> = {
 /** Left-edge stripe. A navy ramp — this is weight, not a verdict, so it stays
  *  out of the red/amber/green register the graded pages own. */
 export const TIER_STRIPE: Record<Tier, string> = {
-  A: "border-l-[#1e2a4a]",
+  A: "border-l-brand_navy",
   B: "border-l-[#8a93a8]",
   C: "border-l-[#dfe2e9]",
 };
@@ -121,22 +121,22 @@ export const TIER_STRIPE: Record<Tier, string> = {
  * navy ramp instead of the severity palette — these are weights, not verdicts.
  */
 export const TIER_CHIP_BASE: Record<Tier, string> = {
-  A: "bg-[#1e2a4a]/10 text-[#1e2a4a]",
+  A: "bg-brand_navy/10 text-brand_navy",
   B: "bg-[#8a93a8]/25 text-content",
   C: "bg-[#dfe2e9] text-content",
 };
 
 export const TIER_CHIP_ON: Record<Tier, string> = {
-  A: "ring-2 ring-[#1e2a4a]/40 shadow-sm",
+  A: "ring-2 ring-brand_navy/40 shadow-sm",
   B: "ring-2 ring-[#8a93a8]/60 shadow-sm",
   C: "ring-2 ring-[#8a93a8]/45 shadow-sm",
 };
 
 /** On the navy band bar, where a light chip would disappear. */
 export const TIER_CHIP_ON_NAVY: Record<Tier, string> = {
-  A: "bg-custom-white text-[#1e2a4a]",
-  B: "bg-custom-white text-[#1e2a4a]",
-  C: "bg-custom-white text-[#1e2a4a]",
+  A: "bg-custom-white text-brand_navy",
+  B: "bg-custom-white text-brand_navy",
+  C: "bg-custom-white text-brand_navy",
 };
 
 export const tierCounts = (ranks: Map<string, RankEntry>) => {

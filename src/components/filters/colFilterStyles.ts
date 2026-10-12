@@ -9,10 +9,10 @@
 export const colInputStyle: React.CSSProperties = {
   width: "100%",
   fontSize: 11,
-  border: "1px solid rgba(30,42,74,0.15)",
+  border: "1px solid rgb(var(--color-brand-navy) / 0.15)",
   borderRadius: 4,
   padding: "4px 7px",
   outline: "none",
   color: "var(--color-text-primary)",
-  background: "rgba(30,42,74,0.03)",
+  background: "rgb(var(--color-brand-navy) / 0.03)",
 };

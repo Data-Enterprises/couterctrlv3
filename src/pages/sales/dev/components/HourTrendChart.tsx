@@ -9,7 +9,7 @@ interface HourTrendChartProps {
 
 const HourTrendChart = ({ days, hasLW, hasLY }: HourTrendChartProps) => {
   const lineData = [
-    { id: "TY", data: days.map((d) => ({ x: d.label, y: d.tw })), color: "#1e2a4a" },
+    { id: "TY", data: days.map((d) => ({ x: d.label, y: d.tw })), color: "rgb(var(--color-brand-navy))" },
     ...(hasLW ? [{ id: "LW", data: days.map((d) => ({ x: d.label, y: d.lw })), color: "#f59e0b" }] : []),
     ...(hasLY ? [{ id: "LY", data: days.map((d) => ({ x: d.label, y: d.ly })), color: "#3b82f6" }] : []),
   ];

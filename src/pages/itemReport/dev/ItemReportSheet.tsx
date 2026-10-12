@@ -18,10 +18,8 @@ import { colInputStyle } from "../../../components-dev/filters/colFilterStyles";
 import SelectFilter from "../../../components-dev/filters/SelectFilter";
 import HeaderIconButton from "../../../components-dev/HeaderIconButton";
 import { ACTION_TONE } from "./actionTone";
-import InfoButton from "../../../components-dev/InfoButton";
-import InfoPopover from "../../../components-dev/InfoPopover";
+import ComingSoonHelp from "../../../components-dev/ComingSoonHelp";
 import DetailPopover from "./DetailPopover";
-import { ITEM_REPORT_INFO } from "./itemReportInfo";
 import {
   ACTION_LABEL,
   ACTION_RANK,
@@ -162,7 +160,6 @@ const ItemReportSheet = ({
   const dept = useAppSelector((s) => s.dev.itemReport.deptFilter);
   const vendor = useAppSelector((s) => s.dev.itemReport.vendorFilter);
   // Popover open/closed — ephemeral, and the same shape LedgerHeader uses.
-  const [infoOpen, setInfoOpen] = useState(false);
   const [noReceiverOpen, setNoReceiverOpen] = useState(false);
   // Draft stays local — a half-typed UPC is not page state, and only the value
   // behind Apply changes what the list shows. Same split ItemMarginsTable uses.
@@ -224,7 +221,7 @@ const ItemReportSheet = ({
       <div className="bg-custom-white rounded-xl shadow-sm flex flex-col h-full">
         {/* Two rows split by a hairline, matching LedgerHeader: identity and
             the headline count above, the controls that change them below. */}
-        <div className="flex-shrink-0 bg-[#1e2a4a] rounded-t-xl px-4 pt-1 pb-2.5 flex flex-col gap-0">
+        <div className="flex-shrink-0 bg-brand_navy rounded-t-xl px-4 pt-1 pb-2.5 flex flex-col gap-0">
           {/* Row 1: store | what you are looking at | count + export */}
           <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 min-h-[26px]">
             <span className="text-custom-white font-semibold text-[13px] truncate justify-self-start">
@@ -263,19 +260,7 @@ const ItemReportSheet = ({
             <div className="w-px h-4 bg-custom-white/15 flex-shrink-0" />
 
             <div className="relative flex-shrink-0">
-              <InfoButton onClick={() => setInfoOpen((prev) => !prev)} />
-              {infoOpen && (
-                <InfoPopover
-                  title={ITEM_REPORT_INFO.title}
-                  purpose={ITEM_REPORT_INFO.purpose}
-                  glossary={ITEM_REPORT_INFO.glossary}
-                  onClose={() => setInfoOpen(false)}
-                  /* 20% wider than the shared default (260/500). This page has
-                     six actions to define plus their evidence columns, and at
-                     the standard width every entry wrapped to four lines. */
-                  className="min-w-[312px] max-w-[600px]"
-                />
-              )}
+              <ComingSoonHelp />
             </div>
           </div>
         </div>

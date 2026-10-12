@@ -25,7 +25,7 @@ const RecentLookupsStrip = ({
     return (
       <div>
         <div
-          className="grid gap-2 items-baseline pb-1.5 border-b border-[#1e2a4a]/15"
+          className="grid gap-2 items-baseline pb-1.5 border-b border-brand_navy/15"
           style={{ gridTemplateColumns: COLS }}
         >
           <span className="text-[10px] font-semibold text-content/85 uppercase tracking-wide">
@@ -49,7 +49,7 @@ const RecentLookupsStrip = ({
             <button
               key={r.productCode}
               onClick={() => onSelect(r.productCode)}
-              className="w-full grid gap-2 items-baseline py-2 border-b border-[#1e2a4a]/15 even:bg-row_stripe text-left"
+              className="w-full grid gap-2 items-baseline py-2 border-b border-brand_navy/15 even:bg-row_stripe text-left"
               style={{ gridTemplateColumns: COLS }}
             >
               <span className="text-[12px] font-medium text-content truncate">

@@ -102,7 +102,7 @@ const MobilePerfDetail = <K extends string>({
                   onClick={() => onTab(t.key)}
                   className={`rounded-lg border py-2 text-[11.5px] font-bold transition-colors ${
                     on
-                      ? "border-[#1e2a4a] bg-[#1e2a4a] text-custom-white"
+                      ? "border-brand_navy bg-brand_navy text-custom-white"
                       : "border-gray-200 bg-bkg text-content active:bg-gray-100"
                   }`}
                 >

@@ -1,7 +1,7 @@
 import { useSalesState } from "./hooks/useSalesState";
 import { useState, useRef, useMemo, useCallback } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
-import { getWeekly, getHourly } from "../../../api/sales";
+import { getWeekly } from "../../../api/sales";
 import { getStoresAssignedToUserGroup } from "../../../api/groups";
 import { addDays, formatGoliathDate, sameWeekDayLastYear } from "../../../utils";
 import { buildLedgerRows, regradeLedgerRows } from "./shared/ledgerUtils";
@@ -10,26 +10,27 @@ import {
   setWeeklySales,
   setWeeklySalesLastWeek,
   setWeeklySalesLastYear,
-  setHourlySales,
-  setHourlySalesLastWeek,
-  setHourlySalesLastYear,
   concatWeeklySales,
   concatWeeklySalesLastWeek,
   concatWeeklySalesLastYear,
-  concatHourlySales,
-  concatHourlySalesLastWeek,
-  concatHourlySalesLastYear,
   reQuery,
 } from "../../../features/dev/devSalesSlice";
 import {
   setHasSearched,
   setLedgerLoading,
   setLedgerSelection,
+  setLedgerTab,
+  type LedgerTab,
+  setLedgerSelectedDate,
   reQueryLedger,
 } from "../../../features/dev/devSalesLedgerSlice";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
 import EmptyPrompt from "../../../components-dev/EmptyPrompt";
+import DeptInvestigation from "./components/DeptInvestigation";
+import DeptMatrixPanel from "./components/DeptMatrixPanel";
+import GroupComparisonPanel from "./components/GroupComparisonPanel";
+import { selectionFor } from "./shared/storeComparison";
 import LedgerEntryCard from "./components/LedgerEntryCard";
 import StoreDetailPopup from "./components/StoreDetailPopup";
 import LedgerHeader from "./components/LedgerHeader";
@@ -63,6 +64,12 @@ const SalesLedger = () => {
     ledgerLoading: loading,
     threshold,
     gradingMetric,
+    // Shared with the store popup on purpose: a day picked in the group view
+    // is still the day you meant when you open a store.
+    selectedDate,
+    investigation,
+    groupView,
+    matrixOpen,
   } = useAppSelector((state) => state.dev.salesLedger);
   const { assignedStores } = useAppSelector((state) => state.user);
 
@@ -85,11 +92,44 @@ const SalesLedger = () => {
 
   // Stable identity — an inline arrow here would be a new prop on every
   // render and would defeat the memo on LedgerRow entirely.
-  const handleRowClick = useCallback(
-    (s: Parameters<typeof setLedgerSelection>[0]) =>
-      dispatch(setLedgerSelection(s)),
+  //
+  // Clicking the store that is already open closes it, which is how you get
+  // back to the group view without reaching for the X.
+  //
+  // A store opens on Stores, which is the first step of the comparison: who
+  // to measure it against. Picking a counterpart there is what Sub depts and
+  // Hourly then answer to, so landing on a department breakdown skips the
+  // question the rest of the panel is built on.
+  //
+  // Except on a single-store search, where there are no siblings and the tab
+  // is not offered at all — opening on it there would show a blank panel.
+  // Carrying the LAST tab over instead would answer whichever question the
+  // reader happened to ask previously.
+  const openStore = useCallback(
+    (s: Parameters<typeof setLedgerSelection>[0], tab: LedgerTab) => {
+      const closing =
+        s &&
+        selectionRef.current?.storeId === s.storeId &&
+        selectionRef.current?.storeNumber === s.storeNumber;
+      if (!closing && s) dispatch(setLedgerTab(tab));
+      dispatch(setLedgerSelection(closing ? null : s));
+    },
     [dispatch],
   );
+
+  const handleRowClick = useCallback(
+    // Sub depts, which is the first tab and the one that answers the
+    // question the store was clicked with. Stores is a step taken from
+    // there, not the landing.
+    (s: Parameters<typeof setLedgerSelection>[0]) => openStore(s, "subdept"),
+    [openStore],
+  );
+
+  // Read inside the stable handler above without making it depend on the
+  // selection — a new identity every time the selection changed would defeat
+  // the memo on every row.
+  const selectionRef = useRef(selection);
+  selectionRef.current = selection;
 
   const handlePopupClose = useCallback(
     () => dispatch(setLedgerSelection(null)),
@@ -186,47 +226,14 @@ const SalesLedger = () => {
                   store.storeid,
                   1,
                 ),
-                getHourly(
-                  context.url,
-                  context.token,
-                  twStart,
-                  twEnd,
-                  0,
-                  store.storeid,
-                  1,
-                ),
-                getHourly(
-                  context.url,
-                  context.token,
-                  lwStart,
-                  lwEnd,
-                  0,
-                  store.storeid,
-                  1,
-                ),
-                getHourly(
-                  context.url,
-                  context.token,
-                  lyStart,
-                  lyEnd,
-                  0,
-                  store.storeid,
-                  1,
-                ),
               ])
-                .then(([tw, lw, ly, h, lh, lhy]) => {
+                .then(([tw, lw, ly]) => {
                   if (tw.data.error === 0)
                     dispatch(concatWeeklySales(tw.data.sales));
                   if (lw.data.error === 0)
                     dispatch(concatWeeklySalesLastWeek(lw.data.sales));
                   if (ly.data.error === 0)
                     dispatch(concatWeeklySalesLastYear(ly.data.sales));
-                  if (h.data.error === 0)
-                    dispatch(concatHourlySales(h.data.subs));
-                  if (lh.data.error === 0)
-                    dispatch(concatHourlySalesLastWeek(lh.data.subs));
-                  if (lhy.data.error === 0)
-                    dispatch(concatHourlySalesLastYear(lhy.data.subs));
                 })
                 .catch(() => {}),
             ),
@@ -241,8 +248,7 @@ const SalesLedger = () => {
 
     // Standard path: single store or small group
     try {
-      const [twResp, lwResp, lyResp, hourlyResp, lwHourlyResp, lyHourlyResp] =
-        await Promise.all([
+      const [twResp, lwResp, lyResp] = await Promise.all([
           getWeekly(
             context.url,
             context.token,
@@ -262,33 +268,6 @@ const SalesLedger = () => {
             singleStore,
           ),
           getWeekly(
-            context.url,
-            context.token,
-            lyStart,
-            lyEnd,
-            useGroups,
-            searchValue,
-            singleStore,
-          ),
-          getHourly(
-            context.url,
-            context.token,
-            twStart,
-            twEnd,
-            useGroups,
-            searchValue,
-            singleStore,
-          ),
-          getHourly(
-            context.url,
-            context.token,
-            lwStart,
-            lwEnd,
-            useGroups,
-            searchValue,
-            singleStore,
-          ),
-          getHourly(
             context.url,
             context.token,
             lyStart,
@@ -303,12 +282,6 @@ const SalesLedger = () => {
         dispatch(setWeeklySalesLastWeek(lwResp.data.sales));
       if (lyResp.data.error === 0)
         dispatch(setWeeklySalesLastYear(lyResp.data.sales));
-      if (hourlyResp.data.error === 0)
-        dispatch(setHourlySales(hourlyResp.data.subs));
-      if (lwHourlyResp.data.error === 0)
-        dispatch(setHourlySalesLastWeek(lwHourlyResp.data.subs));
-      if (lyHourlyResp.data.error === 0)
-        dispatch(setHourlySalesLastYear(lyHourlyResp.data.subs));
     } catch (err: any) {
       toast.error(err.message);
       setFetchFailed(true);
@@ -346,6 +319,20 @@ const SalesLedger = () => {
     () => regradeLedgerRows(baseLedgerRows, activeThreshold),
     [baseLedgerRows, activeThreshold],
   );
+
+  /** The matrix asks one store at a time, and these are the stores the
+   *  search already found — so no second call to resolve the group, and
+   *  co-located stores arrive already split by number. */
+  const matrixStores = useMemo(
+    () =>
+      ledgerRows.map((r) => ({
+        storeid: r.storeid,
+        storeNumber: r.store_number,
+        storeName: r.store_name,
+      })),
+    [ledgerRows],
+  );
+
 
   const criticalRows = ledgerRows.filter((r) => r.severity === "critical");
   const watchRows = ledgerRows.filter((r) => r.severity === "watch");
@@ -452,6 +439,28 @@ const SalesLedger = () => {
       {loading ? (
         <div className="relative h-[calc(100vh-3rem)]">
           <LoadingIndicator message="Loading store ledger" />
+        </div>
+      ) : investigation ? (
+        /* The page's full-width state. Four steps in, the question has
+           outgrown a panel, so the ledger and the report both give way
+           rather than the investigation opening inside one of them. The
+           ledger selection survives underneath, which is what makes the
+           back button able to put the reader where they were. */
+        <div className="h-[calc(100vh-5rem)]">
+          <DeptInvestigation gradingMetric={gradingMetric} {...getDateRanges()} />
+        </div>
+      ) : matrixOpen ? (
+        /* Where to look, before which store. Full width for the same reason
+           the investigation is: nine stores by twenty departments does not
+           fit half a page. */
+        <div className="h-[calc(100vh-5rem)]">
+          <DeptMatrixPanel
+            stores={matrixStores}
+            gradingMetric={gradingMetric}
+            threshold={activeThreshold}
+            expanded
+            {...getDateRanges()}
+          />
         </div>
       ) : (
         <div className="flex gap-4 h-[calc(100vh-5rem)]">
@@ -591,6 +600,35 @@ const SalesLedger = () => {
               <StoreDetailPopup
                 selection={selection}
                 onClose={handlePopupClose}
+                groupRows={ledgerRows}
+              />
+            ) : ledgerRows.length > 1 && groupView === "departments" ? (
+              <DeptMatrixPanel
+                stores={matrixStores}
+                gradingMetric={gradingMetric}
+                threshold={activeThreshold}
+                expanded={false}
+                {...getDateRanges()}
+              />
+            ) : ledgerRows.length > 1 ? (
+              /* The panel's resting state on a group search. The reference is
+                 the group, which the search already chose, so standing inside
+                 it is a fact about the search rather than a benchmark anyone
+                 sets — and this half of the page was an empty prompt until
+                 somebody clicked a store.
+
+                 Rows, not the search type: a storeid carrying two locations is
+                 a group too, the same test the header hero uses. */
+              <GroupComparisonPanel
+                rows={ledgerRows}
+                gradingMetric={gradingMetric}
+                threshold={activeThreshold}
+                selectedDate={selectedDate}
+                onSelectDay={(d) => dispatch(setLedgerSelectedDate(d))}
+                /* From the group comparison, so the store opens on the tab
+                   that continues that question rather than on its own
+                   departments. */
+                onSelectStore={(row) => openStore(selectionFor(row), "comparison")}
               />
             ) : (
               <EmptyPrompt

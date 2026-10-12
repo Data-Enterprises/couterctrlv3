@@ -154,9 +154,21 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: Props) => {
   const avgMarginPct = grades.length
     ? grades.reduce((acc, g) => acc + g.grade.tyMarginPct, 0) / grades.length
     : null;
-  const avgDelta = grades.length
-    ? grades.reduce((acc, g) => acc + g.grade.ptsDelta, 0) / grades.length
-    : null;
+  /**
+   * Averaged over the departments that HAVE the comparison, not over all of
+   * them. A department with nothing to compare used to contribute a zero,
+   * which is a real margin somebody earned and pulled the store average
+   * toward flat.
+   */
+  const avgOf = (pick: (g: (typeof grades)[number]) => number | null) => {
+    const values = grades
+      .map(pick)
+      .filter((v): v is number => v !== null);
+    return values.length
+      ? values.reduce((acc, v) => acc + v, 0) / values.length
+      : null;
+  };
+  const avgDelta = avgOf((g) => g.grade.ptsDelta);
   // Store-level figures come from sales/weekly (day-matched), matching the
   // Sales page header exactly. Summing the sub-dept grades is a different
   // quantity — it also compared a partial TY week against a full LW one — so
@@ -178,9 +190,7 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: Props) => {
     storeSalesTotals && storeSalesTotals.lwSales > 0
       ? storeSalesTotals.vsLWSalesPct
       : totalLwSales > 0 ? ((totalTySales - totalLwSales) / totalLwSales) * 100 : null;
-  const avgLwDelta = grades.length
-    ? grades.reduce((acc, g) => acc + g.grade.lwPtsDelta, 0) / grades.length
-    : null;
+  const avgLwDelta = avgOf((g) => g.grade.lwPtsDelta);
 
   const threshValue = rawGradingThreshold === null ? null : { op: "gt" as const, amount: rawGradingThreshold };
 
@@ -241,7 +251,7 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: Props) => {
       style={{ flexBasis: "35%", flexShrink: 0 }}
     >
       {/* Navy header — 2-row canonical pattern */}
-      <div className="bg-[#1e2a4a] rounded-t-xl px-4 pt-1 pb-2.5 flex flex-col gap-0">
+      <div className="bg-brand_navy rounded-t-xl px-4 pt-1 pb-2.5 flex flex-col gap-0">
 
         {/* Row 1: date range | primary value + vs LW/LY pills */}
         <div className="flex items-center gap-2 min-h-[26px]">
@@ -388,7 +398,7 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: Props) => {
       <div className="flex-1 overflow-hidden bg-custom-white rounded-b-xl shadow-sm border border-t-0 border-gray-100 flex flex-col">
         {loadingGrades && grades.length === 0 ? (
           <div className="flex-1 flex items-center justify-center gap-2">
-            <div className="w-3.5 h-3.5 border-2 border-gray-200 border-t-[#1e2a4a] rounded-full animate-spin" />
+            <div className="w-3.5 h-3.5 border-2 border-gray-200 border-t-brand_navy rounded-full animate-spin" />
             <span className="text-[11px] text-content">Grading sub departments…</span>
           </div>
         ) : (
@@ -440,7 +450,7 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: Props) => {
               ) : (
                 visibleRows.map(({ id, grade, tier, name }) => {
                   const isSel = ctx.selectedSubDeptId === id;
-                  const hasLY = grade.lyMarginPct > 0 || grade.lySales > 0;
+                  const hasLY = (grade.lyMarginPct ?? 0) > 0 || grade.lySales > 0;
                   const hasLW = grade.lwSales > 0;
 
                   const tyValue =
@@ -449,20 +459,22 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: Props) => {
                       : formatCurrency2(grade.tySales);
                   const lwPct = gradingMetric === "margin" ? grade.lwPtsDelta : grade.vsLWSalesPct;
                   const lyPct = gradingMetric === "margin" ? grade.ptsDelta : grade.vsLYSalesPct;
-                  const lwDisplay =
-                    gradingMetric === "margin"
-                      ? `${lwPct >= 0 ? "+" : ""}${lwPct.toFixed(2)} pts`
-                      : `${lwPct >= 0 ? "+" : ""}${lwPct.toFixed(2)}%`;
-                  const lyDisplay =
-                    gradingMetric === "margin"
-                      ? `${lyPct >= 0 ? "+" : ""}${lyPct.toFixed(2)} pts`
-                      : `${lyPct >= 0 ? "+" : ""}${lyPct.toFixed(2)}%`;
+                  // Null is a department the week cannot be compared for, so
+                  // it reads as a dash rather than a number nobody can act on.
+                  const fmtDelta = (v: number | null) =>
+                    v === null
+                      ? "—"
+                      : gradingMetric === "margin"
+                        ? `${v >= 0 ? "+" : ""}${v.toFixed(2)} pts`
+                        : `${v >= 0 ? "+" : ""}${v.toFixed(2)}%`;
+                  const lwDisplay = fmtDelta(lwPct);
+                  const lyDisplay = fmtDelta(lyPct);
 
                   return (
                     <button
                       key={id}
                       onClick={() => handleSubDeptClick(id)}
-                      className={`w-full flex items-center gap-2.5 p-3 text-left transition-colors border-l-2 border-b border-b-[#1e2a4a]/15 ${
+                      className={`w-full flex items-center gap-2.5 p-3 text-left transition-colors border-l-2 border-b border-b-brand_navy/15 ${
                         isSel
                           ? "bg-row_selected border-row_selected_border"
                           : "border-transparent hover:bg-gray-50"

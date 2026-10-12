@@ -278,7 +278,7 @@ const LookupItemReport = ({
                       }
                       className={`block w-full border-l-2 border-t border-gray-100 px-3.5 py-2.5 text-left first:border-t-0 ${
                         isSelected
-                          ? "border-l-[#1e2a4a] bg-row_selected"
+                          ? "border-l-brand_navy bg-row_selected"
                           : "border-l-transparent active:bg-bkg"
                       }`}
                     >

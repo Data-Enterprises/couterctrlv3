@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { XMarkIcon } from "@heroicons/react/16/solid";
 import Modal from "./Modal";
 import { useAppSelector } from "../hooks";
+import { useHelpPageUrl } from "../hooks/useHelpPageUrl";
 import { HAS_MOBILE, type HelpPage } from "../constants/helpPages";
 
 interface InfoModalProps {
@@ -17,31 +18,34 @@ interface InfoModalProps {
 /**
  * The "?" help, as the page's own HTML in an iframe.
  *
- * The pages live in S3 (`dev/` and `prod/` folders, public read) and are
- * complete documents — their own `<head>`, font links, a `<style>` block that
- * defines `:root` variables the app also uses, and a small script for the jump
- * pills. That rules out `innerHTML`: the head would be dropped, the style block
- * would redefine those variables for the whole app, and the script would never
- * run. An iframe keeps all three inside the frame.
+ * The pages live in S3 and are fetched by signed URL when this opens — one
+ * round trip before the frame has anything to load, which the old public
+ * bucket did not have, hence the mask. `useHelpPageUrl` keeps the link fresh
+ * while the sheet is open; see it for why that matters.
+ *
+ * They are complete documents — their own `<head>`, font links, a `<style>`
+ * block that defines `:root` variables the app also uses, and a small script
+ * for the jump pills. That rules out `innerHTML`: the head would be dropped,
+ * the style block would redefine those variables for the whole app, and the
+ * script would never run. An iframe keeps all three inside the frame.
  *
  * `sandbox="allow-scripts"` and deliberately **not** `allow-same-origin` —
  * together the two let a page out of the sandbox, and nothing here needs it.
- *
- * There is no API call. The browser GETs a public URL; no token, no CORS, no
- * `api/` function. Which folder it reads follows `apiEnv`, the same flag that
- * picks the API base URL, so the help matches the app the user is looking at.
  */
 const InfoModal = ({ page, section, isOpen, onClose }: InfoModalProps) => {
-  const apiEnv = useAppSelector((state) => state.app.apiEnv);
   const isMobile = useAppSelector((state) => state.app.isMobile);
   const [loaded, setLoaded] = useState(false);
 
-  const base =
-    apiEnv === "dev"
-      ? import.meta.env.VITE_HELP_PAGES_URL_DEV
-      : import.meta.env.VITE_HELP_PAGES_URL_PROD;
   const name = isMobile && HAS_MOBILE.has(page) ? `${page}-mobile` : page;
-  const src = `${base}/${name}.html${section ? `#${section}` : ""}`;
+  const { src, problem, retry } = useHelpPageUrl({
+    name,
+    section,
+    enabled: isOpen,
+  });
+
+  useEffect(() => {
+    setLoaded(false);
+  }, [src]);
 
   return (
     <Modal
@@ -50,8 +54,8 @@ const InfoModal = ({ page, section, isOpen, onClose }: InfoModalProps) => {
       padded={false}
       modalClassName={
         isMobile
-          ? "bg-[#f4f7f8] w-full h-[92dvh] overflow-hidden"
-          : "bg-[#f4f7f8] w-[600px] max-w-[92vw] h-[85vh] overflow-hidden"
+          ? "bg-custom-white w-full h-[92dvh] overflow-hidden"
+          : "bg-custom-white w-[600px] max-w-[92vw] h-[85vh] overflow-hidden"
       }
     >
       {/* The page fills the modal edge to edge: it has its own navy header and
@@ -61,21 +65,41 @@ const InfoModal = ({ page, section, isOpen, onClose }: InfoModalProps) => {
             restart the load. A cross-origin frame fires `onLoad` for S3's
             error page too, so this only stays up while nothing at all has come
             back — which is what a user needs telling about. */}
-        {!loaded && (
-          <div className="absolute inset-0 flex items-center justify-center px-6 text-center text-[12.5px] text-content/75">
-            Loading help…
+        {!loaded && !problem && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 px-6 text-center">
+            <div className="w-6 h-6 rounded-full border-2 border-brand_line_2 border-t-brand_navy animate-spin" />
+            <span className="text-[12.5px] text-content/85">
+              {src ? "Loading help…" : "Fetching the page…"}
+            </span>
           </div>
         )}
-        <iframe
-          // Re-navigates when the page or the section changes. Without it a
-          // mounted frame ignores a new hash and stays where it was.
-          key={src}
-          src={src}
-          title="Page help"
-          sandbox="allow-scripts"
-          onLoad={() => setLoaded(true)}
-          className="w-full h-full border-0"
-        />
+
+        {problem && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-8 text-center">
+            <span className="text-[13px] font-semibold">{problem}</span>
+            <button
+              type="button"
+              onClick={retry}
+              className="text-[12.5px] font-semibold text-brand_navy_hover underline underline-offset-2"
+            >
+              Try again
+            </button>
+          </div>
+        )}
+
+        {src && !problem && (
+          <iframe
+            // Re-navigates when the link, the page or the section changes.
+            // Without it a mounted frame ignores a new hash and stays where it
+            // was.
+            key={src}
+            src={src}
+            title="Page help"
+            sandbox="allow-scripts"
+            onLoad={() => setLoaded(true)}
+            className="w-full h-full border-0"
+          />
+        )}
 
         {/* Over the page's own navy header, where the sheet has nothing but
             its watermark. The page can't draw this itself — it doesn't know
@@ -84,7 +108,7 @@ const InfoModal = ({ page, section, isOpen, onClose }: InfoModalProps) => {
           onClick={onClose}
           title="Close"
           aria-label="Close help"
-          className="absolute top-2.5 right-3 w-7 h-7 rounded-md flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+          className="absolute top-2.5 right-3 w-7 h-7 rounded-md flex items-center justify-center text-custom-white/70 hover:text-custom-white hover:bg-custom-white/10 transition-colors"
         >
           <XMarkIcon className="w-4 h-4" />
         </button>

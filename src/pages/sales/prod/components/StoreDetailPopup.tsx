@@ -549,7 +549,7 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
           // Navy when the store wasn't graded — tinting it would claim a verdict.
           selection.severity
             ? severityHeaderBgClass[selection.severity]
-            : "bg-[#1e2a4a]"
+            : "bg-brand_navy"
         }`}
       >
         {showFlames && <GhostFlames />}
@@ -727,7 +727,7 @@ const StoreDetailPopup = ({ selection }: StoreDetailPopupProps) => {
             onClick={() => dispatch(setLedgerTab(t))}
             className={`px-3 py-1.5 text-[12px] font-medium border-b-2 transition-colors ${
               tab === t
-                ? "border-[#1e2a4a] text-content"
+                ? "border-brand_navy text-content"
                 : "border-transparent text-content"
             }`}
           >

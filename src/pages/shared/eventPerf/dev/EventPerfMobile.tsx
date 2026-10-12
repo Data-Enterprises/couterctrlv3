@@ -72,7 +72,8 @@ import type { ReceiptLine } from "./receiptTypes";
 import PairedBars from "../../../../components-dev/mobile/perf/PairedBars";
 import PerfDayChart from "../../../../components-dev/mobile/perf/PerfDayChart";
 import PerfCardHeader from "../../../../components-dev/mobile/perf/PerfCardHeader";
-import { TY_COLOR } from "../../../../components-dev/mobile/perf/perfColors";
+import PerfDelta from "../../../../components-dev/mobile/perf/PerfDelta";
+import { TY_COLOR, TY_SWATCH_BG } from "../../../../components-dev/mobile/perf/perfColors";
 import MobilePerfCard from "../../../../components-dev/mobile/MobilePerfCard";
 import MobilePerfDetail from "../../../../components-dev/mobile/MobilePerfDetail";
 import EventStoreReport from "./EventStoreReport";
@@ -714,8 +715,19 @@ const EventPerfMobile = ({
               <div className="mt-1 text-[11px] font-semibold text-content/85">
                 {heroCaption}
               </div>
-              <div className="mt-1 font-display text-[31px] font-extrabold leading-none tracking-tight text-content">
-                {fmt(valueOf(current))}
+              <div className="mt-1 flex flex-wrap items-baseline gap-x-2.5">
+                <span className="font-display text-[31px] font-extrabold leading-none tracking-tight text-content">
+                  {fmt(valueOf(current))}
+                </span>
+                {/* Same gate as the bar below. */}
+                {baseOf(current) !== null && (
+                  <PerfDelta
+                    ty={valueOf(current)}
+                    ly={baseOf(current) as number}
+                    format={fmt}
+                    className="ml-auto"
+                  />
+                )}
               </div>
 
               {/* No second bar when the comparison period has nothing at this
@@ -754,7 +766,7 @@ const EventPerfMobile = ({
                     ["Busiest", cardBusiest[pageIndex] ?? "—"],
                   ] as [string, string][]
                 ).map(([k, v]) => (
-                  <div key={k} className="flex flex-col">
+                  <div key={k} className="flex flex-col items-center text-center">
                     <span className="font-mono text-[10px] uppercase tracking-wider text-content/85">
                       {k}
                     </span>
@@ -791,7 +803,7 @@ const EventPerfMobile = ({
                   <span className="inline-flex items-center gap-1.5">
                     <span
                       className="h-2 w-3.5 rounded-sm"
-                      style={{ background: TY_COLOR }}
+                      style={{ background: TY_SWATCH_BG }}
                     />
                     This week
                   </span>
@@ -815,7 +827,7 @@ const EventPerfMobile = ({
                 <button
                   type="button"
                   onClick={() => dispatch(openEventDetail(true))}
-                  className="flex w-full items-center justify-center gap-1 rounded-lg bg-[#1e2a4a] py-2.5 text-[12.5px] font-bold text-custom-white active:bg-[#2a3a62]"
+                  className="flex w-full items-center justify-center gap-1 rounded-lg bg-brand_navy py-2.5 text-[12.5px] font-bold text-custom-white active:bg-[#2a3a62]"
                 >
                   View details
                   <ChevronRightIcon className="h-4 w-4" />

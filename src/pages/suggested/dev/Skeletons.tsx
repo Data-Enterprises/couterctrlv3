@@ -46,7 +46,7 @@ export const StoreListSkeleton = ({ rows = 8 }: { rows?: number }) => (
     {Array.from({ length: rows }, (_, i) => (
       <div
         key={i}
-        className={`grid ${STORE_COLS} items-center gap-2 px-3 py-3 border-b border-[#1e2a4a]/10`}
+        className={`grid ${STORE_COLS} items-center gap-2 px-3 py-3 border-b border-brand_navy/10`}
       >
         <Bar w={NAME_W[i % NAME_W.length]} />
         <div className="flex justify-center">
@@ -83,7 +83,7 @@ export const SheetSkeleton = ({ rows = 12 }: { rows?: number }) => (
     {Array.from({ length: rows }, (_, i) => (
       <div
         key={i}
-        className="grid grid-cols-[1fr_128px_110px_130px] items-center gap-3 px-3 py-2.5 border-b border-[#1e2a4a]/10"
+        className="grid grid-cols-[1fr_128px_110px_130px] items-center gap-3 px-3 py-2.5 border-b border-brand_navy/10"
       >
         <Bar w={NAME_W[i % NAME_W.length]} />
         <Bar w="80%" />

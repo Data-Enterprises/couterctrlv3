@@ -1,793 +1,328 @@
-import { useState, useMemo, useRef, useEffect } from "react";
-import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
+import { useEffect, useMemo, useState } from "react";
+import { ArrowDownTrayIcon } from "@heroicons/react/16/solid";
 import EmptyPrompt from "../../../../components-dev/EmptyPrompt";
-import SelectFilter from "../../../../components-dev/filters/SelectFilter";
-import {
-  ArrowDownTrayIcon,
-  MagnifyingGlassIcon,
-} from "@heroicons/react/20/solid";
+import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
+import SortHeader from "../../../../components-dev/SortHeader";
+import { formatCurrency2 } from "../../../../utils";
 import type { AllOrder } from "../../../../interfaces";
-import type {
-  SelectedOrderKey,
-  SelectedOrder,
-} from "../../../../features/dev/devOrdersSlice";
-import type { Store } from "../../../../interfaces";
-import { formatCurrency2, resolveStoreName } from "../../../../utils";
-import { useAppSelector } from "../../../../hooks";
-import OrdersExportModal from "./OrdersExportModal";
+import type { GridSort, SortKey } from "../ordersRows";
 
 interface Props {
-  orders: AllOrder[];
+  /** Already filtered, searched and sorted by the page. */
+  rows: AllOrder[];
+  sort: GridSort;
+  onSort: (col: SortKey) => void;
   loading: boolean;
-  selectedKey: SelectedOrderKey;
-  selectedOrder: SelectedOrder;
-  assignedStores: Store[];
-  onSelectOrder: (storeid: number, storenumber: string, orderId: number | null) => void;
   onExport: () => void;
 }
 
-const fmtDate = (iso: string) => {
-  const [y, m, d] = iso.split("T")[0].split("-");
-  return `${m}/${d}/${y}`;
-};
-
-const padStoreNumber = (n: string | number) => String(n).padStart(3, "0");
-
-const MAX_CHIPS = 3;
-
-const colFilterInputStyle: React.CSSProperties = {
-  width: "100%",
-  fontSize: 11,
-  border: "1px solid rgba(30,42,74,0.15)",
-  borderRadius: 4,
-  padding: "4px 7px",
-  outline: "none",
-  color: "#1e2a4a",
-};
-
-interface ColFilterProps {
-  label: string;
-  active: boolean;
-  appliedDisplay?: string;
-  align?: "left" | "right";
-  onApply: () => void;
-  onClear?: () => void;
-  children: React.ReactNode;
-}
-
-const ColFilter = ({
-  label,
-  active,
-  appliedDisplay,
-  align = "left",
-  onApply,
-  onClear,
-  children,
-}: ColFilterProps) => {
-  const [open, setOpen] = useState(false);
-  const [hovered, setHovered] = useState(false);
-  const wrapRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    const close = (e: MouseEvent) => {
-      if (wrapRef.current && !wrapRef.current.contains(e.target as Node))
-        setOpen(false);
-    };
-    document.addEventListener("mousedown", close);
-    return () => document.removeEventListener("mousedown", close);
-  }, [open]);
-
-  const handleApply = () => {
-    onApply();
-    setOpen(false);
-  };
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") handleApply();
-  };
-  const labelColor =
-    open || active
-      ? "#1e2a4a"
-      : hovered
-        ? "rgba(30,42,74,0.65)"
-        : "rgba(30,42,74,0.4)";
-
-  return (
-    <div ref={wrapRef} className="relative flex items-center gap-1 min-w-0">
-      <button
-        onClick={() => setOpen((v) => !v)}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
-        className="flex items-center gap-0.5 text-[9px] font-semibold uppercase tracking-wide transition-colors select-none flex-shrink-0"
-        style={{ color: labelColor }}
-      >
-        {label}
-      </button>
-      {active && appliedDisplay && (
-        <span
-          className="flex items-center gap-0.5 rounded px-1 py-0.5 flex-shrink-0"
-          style={{ background: "rgba(30,42,74,0.08)", maxWidth: 90 }}
-        >
-          <span className="text-[8px] font-medium text-[#1e2a4a] truncate">
-            {appliedDisplay}
-          </span>
-          {onClear && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onClear();
-              }}
-              className="text-[8px] text-[#1e2a4a] leading-none flex-shrink-0 ml-0.5"
-            >
-              ✕
-            </button>
-          )}
-        </span>
-      )}
-      {open && (
-        <div className="fixed inset-0 z-[199]" onClick={() => setOpen(false)} />
-      )}
-      {open && (
-        <div
-          onKeyDown={handleKeyDown}
-          style={{
-            position: "absolute",
-            top: "calc(100% + 6px)",
-            ...(align === "right" ? { right: 0 } : { left: 0 }),
-            zIndex: 200,
-            background: "white",
-            border: "1px solid rgba(30,42,74,0.12)",
-            borderRadius: 6,
-            boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
-            padding: "10px 10px 8px",
-            minWidth: 176,
-          }}
-        >
-          {children}
-          <button
-            onClick={handleApply}
-            className="mt-2 w-full flex items-center justify-center gap-1.5 rounded py-1 text-[10px] font-medium"
-            style={{ background: "#1e2a4a", color: "white" }}
-          >
-            <MagnifyingGlassIcon className="w-3 h-3" />
-            Apply
-          </button>
-        </div>
-      )}
-    </div>
-  );
-};
-
-const DescCell = ({ text }: { text: string }) => {
-  const [hovered, setHovered] = useState(false);
-  return (
-    <div
-      className="relative"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
-      <div className="overflow-hidden text-ellipsis whitespace-nowrap">
-        {text}
-      </div>
-      {hovered && (
-        <div className="absolute left-0 top-full mt-1 z-50 bg-[#1e2a4a] rounded-lg shadow-lg px-2.5 py-1.5 whitespace-nowrap pointer-events-none">
-          <span className="text-[9px] text-custom-white">{text}</span>
-        </div>
-      )}
-    </div>
-  );
-};
-
-const SubDeptChips = ({ subDepts }: { subDepts: string[] }) => {
-  const [hovered, setHovered] = useState(false);
-  const visible = subDepts.slice(0, MAX_CHIPS);
-  const overflow = subDepts.slice(MAX_CHIPS);
-  return (
-    <div className="flex flex-wrap gap-1.5 items-center">
-      {visible.map((sd) => (
-        <span
-          key={sd}
-          className="text-[10px] font-medium bg-gray-100 border border-gray-200 text-content rounded-full px-2 py-0.5"
-        >
-          {sd}
-        </span>
-      ))}
-      {overflow.length > 0 && (
-        <div
-          className="relative inline-flex"
-          onMouseEnter={() => setHovered(true)}
-          onMouseLeave={() => setHovered(false)}
-        >
-          <span className="text-[10px] font-medium bg-[#1e2a4a]/[0.06] border border-[#1e2a4a]/15 text-[#1e2a4a] rounded-full px-2 py-0.5 cursor-default">
-            +{overflow.length}
-          </span>
-          {hovered && (
-            <div
-              className="absolute right-0 top-full mt-1 z-50 bg-[#1e2a4a] rounded-lg shadow-lg px-2.5 py-2 flex flex-col gap-0.5"
-              style={{ minWidth: 100 }}
-            >
-              {overflow.map((sd) => (
-                <span
-                  key={sd}
-                  className="text-[9px] text-custom-white leading-relaxed whitespace-nowrap"
-                >
-                  {sd}
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-};
-
-const StoreLabel = ({ names }: { names: string[] }) => {
-  const [hovered, setHovered] = useState(false);
-  if (names.length <= 1) return <>{names[0] ?? ""}</>;
-  return (
-    <span
-      className="relative inline-block cursor-default"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
-      {names.length} stores
-      {hovered && (
-        <div className="absolute left-0 top-full mt-1 z-50 bg-[#1e2a4a] rounded-lg shadow-lg px-2.5 py-1.5 flex flex-col gap-0.5 whitespace-nowrap">
-          {names.map((n) => (
-            <span key={n} className="text-[9px] text-custom-white leading-relaxed">
-              {n}
-            </span>
-          ))}
-        </div>
-      )}
-    </span>
-  );
-};
-
+/**
+ * Every line the configuration lets through, as one grid.
+ *
+ * It used to be a split pane: a list of orders down the left, and the lines of
+ * whichever one you clicked on the right. That list is gone, because the left
+ * panel now does the narrowing and a second list of orders inside the report
+ * was asking the same question twice.
+ *
+ * The consequence is that a row no longer belongs to an order you already
+ * picked, so the grid leads with the order number and sorts on it by default
+ * — without that a thousand lines from forty orders are in no order at all.
+ *
+ * The KPIs count what is on screen rather than what one order holds: no store
+ * number and no order number, because the grid can be showing many of each.
+ */
 const OrderReportPanel = ({
-  orders,
+  rows,
+  sort,
+  onSort,
   loading,
-  selectedKey,
-  selectedOrder,
-  assignedStores,
-  onSelectOrder,
+  onExport,
 }: Props) => {
-  const groupStores = useAppSelector((s) => s.user.selectedGroupStores);
-  const [subDeptFilter, setSubDeptFilter] = useState<string>("");
-  const [exportOpen, setExportOpen] = useState(false);
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(500);
 
-  const [draftUpc, setDraftUpc] = useState("");
-  const [appliedUpc, setAppliedUpc] = useState("");
-  const [draftDesc, setDraftDesc] = useState("");
-  const [appliedDesc, setAppliedDesc] = useState("");
-  const [appliedSubDept, setAppliedSubDept] = useState("");
 
+  const visible = rows;
+
+  const pageCount = Math.max(1, Math.ceil(visible.length / pageSize));
+  // Clamped rather than reset in an effect: a narrower filter can leave the
+  // current page past the end, and a render that shows nothing while an
+  // effect catches up is a flash of "no rows" on a set that has plenty.
+  const safePage = Math.min(page, pageCount - 1);
+  const paged = useMemo(
+    () => visible.slice(safePage * pageSize, safePage * pageSize + pageSize),
+    [visible, safePage, pageSize],
+  );
+
+  // A new result, a new sort or a new column filter is a different list, and
+  // page 7 of the old one means nothing in it.
   useEffect(() => {
-    setDraftUpc("");
-    setAppliedUpc("");
-    setDraftDesc("");
-    setAppliedDesc("");
-    setAppliedSubDept("");
-  }, [selectedOrder]);
+    setPage(0);
+  }, [rows, pageSize]);
 
-  // groupStores covers stores in the searched group the user isn't personally
-  // assigned to — without it those rows showed a bare "Store 412".
-  const storeNames = useMemo(
-    () =>
-      selectedKey
-        ? selectedKey.storeids.map((id) =>
-            resolveStoreName(assignedStores, groupStores, id, `Store ${id}`),
-          )
-        : [],
-    [selectedKey, assignedStores, groupStores],
+  /** The whole filtered set, not the page — a total of 100 rows is not a
+   *  total of anything somebody asked for. */
+  const totals = useMemo(() => {
+    let eRet = 0;
+    let cogs = 0;
+    let weight = 0;
+    const stores = new Set<string>();
+    const orders = new Set<string>();
+    for (const o of visible) {
+      eRet += o.e_ret ?? 0;
+      cogs += o.cogs ?? 0;
+      weight += o.weight ?? 0;
+      stores.add(o.storenumber);
+      orders.add(`${o.storenumber}:${o.order_id}`);
+    }
+    return { eRet, cogs, weight, stores: stores.size, orders: orders.size };
+  }, [visible]);
+
+
+  /** Right-aligned and sortable, on the shared tri-state header. */
+  const numHead = (key: SortKey, label: string, width: number) => (
+    <th className="px-3 py-2" style={{ width }}>
+      <SortHeader
+        col={key}
+        label={label}
+        sort={sort}
+        onSort={onSort}
+        className="ml-auto text-[9px] font-semibold uppercase tracking-wide text-content hover:text-brand_navy"
+      />
+    </th>
   );
 
-  const dateLabel = selectedKey
-    ? selectedKey.order_date === selectedKey.order_date_end
-      ? fmtDate(selectedKey.order_date)
-      : `${fmtDate(selectedKey.order_date)} – ${fmtDate(selectedKey.order_date_end)}`
-    : "";
-
-  const filteredOrders = selectedKey
-    ? orders.filter((o) => o.order_type === selectedKey.order_type)
-    : orders;
-
-  const allSubDepts = useMemo(
-    () =>
-      Array.from(
-        new Set(
-          filteredOrders
-            .map((o) => o.sub_department_description)
-            .filter(Boolean),
-        ),
-      ).sort(),
-    [filteredOrders],
+  const plainHead = (label: string, width: number) => (
+    <th
+      className="text-right px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content whitespace-nowrap"
+      style={{ width }}
+    >
+      {label}
+    </th>
   );
-
-  const subFilteredOrders = subDeptFilter
-    ? filteredOrders.filter(
-        (o) => o.sub_department_description === subDeptFilter,
-      )
-    : filteredOrders;
-
-  const uniqueOrderKeys = useMemo(() => {
-    // storenumber is part of the key — a co-located storeid can return two
-    // locations at once, and they are separate stores, not one.
-    const map = new Map<string, { storeid: number; storenumber: string; orderId: number }>();
-    subFilteredOrders.forEach((o) => {
-      const key = `${o.storeid}__${o.storenumber}:${o.order_id}`;
-      if (!map.has(key))
-        map.set(key, { storeid: o.storeid, storenumber: o.storenumber, orderId: o.order_id });
-    });
-    return Array.from(map.values()).sort(
-      (a, b) =>
-        a.orderId - b.orderId ||
-        a.storeid - b.storeid ||
-        a.storenumber.localeCompare(b.storenumber),
-    );
-  }, [subFilteredOrders]);
-
-  const orderItems =
-    selectedOrder !== null
-      ? [
-          ...filteredOrders.filter(
-            (o) =>
-              o.order_id === selectedOrder.orderId &&
-              o.storeid === selectedOrder.storeid &&
-              o.storenumber === selectedOrder.storenumber,
-          ),
-        ].sort((a, b) => a.line_number - b.line_number)
-      : [];
-
-  const selectedExtRetail = orderItems.reduce((s, o) => s + (o.e_ret ?? 0), 0);
-  const selectedCost = orderItems.reduce((s, o) => s + (o.cogs ?? 0), 0);
-
-  const orderSubDepts = useMemo(
-    () =>
-      Array.from(
-        new Set(
-          orderItems.map((o) => o.sub_department_description).filter(Boolean),
-        ),
-      ).sort(),
-    [orderItems],
-  );
-
-  const visibleOrderItems = useMemo(() => {
-    return orderItems.filter((o) => {
-      if (
-        appliedUpc &&
-        !String(o.product_code).toLowerCase().includes(appliedUpc.toLowerCase())
-      )
-        return false;
-      if (
-        appliedDesc &&
-        !o.description.toLowerCase().includes(appliedDesc.toLowerCase())
-      )
-        return false;
-      if (appliedSubDept && o.sub_department_description !== appliedSubDept)
-        return false;
-      return true;
-    });
-  }, [orderItems, appliedUpc, appliedDesc, appliedSubDept]);
 
   return (
     <div
       className="flex flex-col rounded-xl shadow-lg overflow-hidden bg-custom-white"
       style={{ flex: 1, minWidth: 0 }}
     >
-      {exportOpen && selectedKey && (
-        <OrdersExportModal
-          onClose={() => setExportOpen(false)}
-          storeNames={storeNames}
-          orderType={selectedKey.order_type}
-          dateLabel={dateLabel}
-          allOrders={filteredOrders}
-          selectedOrderItems={orderItems}
-          selectedOrder={selectedOrder}
-        />
-      )}
-
-      {/* Header */}
-      <div className="bg-[#1e2a4a] px-3 pt-1 pb-2 flex-shrink-0 flex flex-col gap-0">
-        {/* Row 1 */}
-        <div className="flex items-end gap-3 min-h-[26px]">
-          {selectedKey ? (
-            <>
-              <span className="text-custom-white font-medium text-[13px] flex-shrink-0">
-                <StoreLabel names={storeNames} /> — {selectedKey.order_type}
-              </span>
-              <span className="text-custom-white text-[10px] flex-shrink-0">
-                {dateLabel}
-              </span>
-            </>
-          ) : (
-            <span className="text-custom-white font-medium text-[13px]">
-              Order Report
-            </span>
-          )}
-          <div className="flex-1" />
-          {selectedKey && !loading && filteredOrders.length > 0 && (
-            <button
-              onClick={() => setExportOpen(true)}
-              title="Export CSV"
-              className="text-custom-white/60 hover:text-custom-white transition-colors flex-shrink-0"
-            >
-              <ArrowDownTrayIcon className="w-4 h-4" />
-            </button>
-          )}
-        </div>
+      <div className="bg-brand_navy px-3 pt-2 pb-2.5 flex-shrink-0 flex items-center gap-3">
+        <span className="text-custom-white font-medium text-[13px]">
+          Order lines
+        </span>
+        <div className="flex-1" />
+        {!loading && visible.length > 0 && (
+          <button
+            onClick={onExport}
+            title="Export CSV"
+            className="text-custom-white/85 hover:text-custom-white transition-colors flex-shrink-0"
+          >
+            <ArrowDownTrayIcon className="w-4 h-4" />
+          </button>
+        )}
       </div>
 
-      {/* Empty — no store selected */}
-      {!selectedKey && (
-        <EmptyPrompt
-          title="No order selected"
-          description="Select a store from the list to view its orders"
-        />
-      )}
-
-      {/* Loading */}
-      {selectedKey && loading && (
+      {loading ? (
         <div className="flex-1 relative">
           <LoadingIndicator message="Loading orders" />
         </div>
-      )}
-
-      {/* Split pane */}
-      {selectedKey && !loading && (
-        <div className="flex flex-1 min-h-0">
-          {/* Left: order list */}
-          <div
-            className="flex flex-col border-r border-gray-100 flex-shrink-0"
-            style={{ width: "24%" }}
-          >
-            <div className="flex items-center gap-2 px-2.5 py-1.5 border-b border-gray-100 flex-shrink-0">
-              <span className="text-[9px] font-bold uppercase tracking-wide text-content flex-shrink-0">
-                Orders
-              </span>
-              {allSubDepts.length > 0 && (
-                <SelectFilter
-                  options={allSubDepts.map((sd) => ({ value: sd, label: sd }))}
-                  value={subDeptFilter}
-                  onChange={(v) => {
-                    setSubDeptFilter(v);
-                    onSelectOrder(0, "", null);
-                  }}
-                  placeholder="All sub depts"
-                  className="flex-1 min-w-0"
-                />
-              )}
-            </div>
-            <div className="flex-1 overflow-y-auto thin-scrollbar p-2 flex flex-col gap-2">
-              {uniqueOrderKeys.length === 0 ? (
-                <div className="flex items-center justify-center py-8 text-[11px] text-content">
-                  No orders found
-                </div>
-              ) : (
-                uniqueOrderKeys.map(({ storeid, storenumber, orderId }) => {
-                  const sameOrder = (o: { order_id: number; storeid: number; storenumber: string }) =>
-                    o.order_id === orderId &&
-                    o.storeid === storeid &&
-                    o.storenumber === storenumber;
-                  const items = subFilteredOrders.filter(sameOrder);
-                  const allItems = filteredOrders.filter(sameOrder);
-                  const eRet = items.reduce((s, o) => s + (o.e_ret ?? 0), 0);
-                  const eCost = items.reduce((s, o) => s + (o.cogs ?? 0), 0);
-                  const subDepts = Array.from(
-                    new Set(
-                      allItems
-                        .map((o) => o.sub_department_description)
-                        .filter(Boolean),
-                    ),
-                  );
-                  const isSel =
-                    selectedOrder?.orderId === orderId &&
-                    selectedOrder?.storeid === storeid &&
-                    selectedOrder?.storenumber === storenumber;
-                  return (
-                    <button
-                      key={`${storeid}__${storenumber}-${orderId}`}
-                      onClick={() => onSelectOrder(storeid, storenumber, orderId)}
-                      className={`w-full flex flex-col gap-1 rounded-lg border border-[#1e2a4a]/20 p-2 text-left transition-colors ${
-                        isSel ? "bg-custom-white" : "bg-custom-white hover:bg-gray-50"
-                      }`}
-                      style={
-                        isSel
-                          ? { boxShadow: "inset 0 0 8px rgba(37,99,235,0.22)" }
-                          : undefined
-                      }
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="text-[13px] font-semibold text-[#1e2a4a]">
-                          #{orderId}
-                        </span>
-                        {items[0]?.status && (
-                          <span className="text-[10px] font-medium text-content bg-gray-100 rounded-full px-2 py-0.5 flex-shrink-0">
-                            {items[0].status}
-                          </span>
-                        )}
-                      </div>
-                      {storeNames.length > 1 && (
-                        <span className="text-[11px] text-content truncate font-medium">
-                          {resolveStoreName(
-                            assignedStores,
-                            groupStores,
-                            storeid,
-                            `Store ${storeid}`,
-                          )}
-                        </span>
-                      )}
-                      <div className="flex flex-col gap-1">
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="text-[12px] text-content">
-                            Invoice total
-                          </span>
-                          <span className="text-[12px] font-semibold text-[#1e2a4a]">
-                            {formatCurrency2(eRet)}
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="text-[12px] text-content">
-                            Ext cost
-                          </span>
-                          <span className="text-[12px] font-semibold text-content">
-                            {formatCurrency2(eCost)}
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="text-[12px] text-content">
-                            Items
-                          </span>
-                          <span className="text-[12px] font-semibold text-content">
-                            {items.length}
-                          </span>
-                        </div>
-                      </div>
-                      <SubDeptChips subDepts={subDepts} />
-                    </button>
-                  );
-                })
-              )}
-            </div>
+      ) : rows.length === 0 ? (
+        <EmptyPrompt
+          title="Nothing matches"
+          description="Widen the configuration on the left to bring lines back."
+        />
+      ) : (
+        <>
+          <div className="grid grid-cols-6 divide-x divide-brand_navy/15 border-b border-gray-100 bg-custom-white flex-shrink-0">
+            <Kpi label="Lines" value={visible.length.toLocaleString()} />
+            <Kpi label="Orders" value={totals.orders.toLocaleString()} />
+            <Kpi label="Stores" value={totals.stores.toLocaleString()} />
+            <Kpi label="Weight" value={totals.weight.toLocaleString(undefined, { maximumFractionDigits: 2 })} />
+            <Kpi label="Ext retail" value={formatCurrency2(totals.eRet)} />
+            <Kpi label="Ext cost" value={formatCurrency2(totals.cogs)} />
           </div>
 
-          {/* Right: line items */}
-          <div className="flex flex-col flex-1 min-w-0 min-h-0">
-            {selectedOrder === null ? (
-              <EmptyPrompt
-                title="No order selected"
-                description="Select an order from the list to view its line items"
+          <div className="flex-1 overflow-auto thin-scrollbar min-h-0">
+            <table className="w-full text-[11px] border-collapse">
+              <thead className="sticky top-0 z-10 bg-custom-white">
+                <tr className="border-b border-b-brand_navy/15">
+                  {numHead("order", "Order #", 90)}
+                  {numHead("seq", "Seq #", 70)}
+                  <th
+                    className="text-left px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content whitespace-nowrap"
+                    style={{ width: 100 }}
+                  >
+                    UPC
+                  </th>
+                  <th
+                    className="text-left px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content whitespace-nowrap"
+                    style={{ width: 220 }}
+                  >
+                    Description
+                  </th>
+                  <th
+                    className="text-left px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content whitespace-nowrap"
+                    style={{ width: 130 }}
+                  >
+                    Sub dept
+                  </th>
+                  <th
+                    className="text-left px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content whitespace-nowrap"
+                    style={{ width: 70 }}
+                  >
+                    Store
+                  </th>
+                  {numHead("qty", "Qty", 60)}
+                  {plainHead("Cost", 80)}
+                  {plainHead("Ext cost", 90)}
+                  {plainHead("Retail", 80)}
+                  {numHead("ext_retail", "Ext retail", 95)}
+                  {numHead("profit", "Profit", 90)}
+                  {plainHead("Margin", 70)}
+                  {plainHead("Weight", 70)}
+                </tr>
+              </thead>
+              <tbody className="bg-custom-white">
+                {paged.map((o) => (
+                  <tr
+                    key={`${o.storenumber}-${o.order_id}-${o.line_number}`}
+                    className="border-b border-b-brand_navy/15 even:bg-row_stripe"
+                  >
+                    <td className="px-3 py-2 text-right tabular-nums font-semibold text-content">
+                      {o.order_id}
+                    </td>
+                    <td className="px-3 py-2 text-right tabular-nums text-content">
+                      {o.line_number}
+                    </td>
+                    <td className="px-3 py-2 tabular-nums text-content whitespace-nowrap">
+                      {o.product_code}
+                    </td>
+                    <td className="px-3 py-2 font-medium text-content max-w-0 truncate">
+                      {o.description}
+                    </td>
+                    <td className="px-3 py-2 text-content whitespace-nowrap">
+                      {o.sub_department_description}
+                    </td>
+                    <td className="px-3 py-2 tabular-nums text-content whitespace-nowrap">
+                      {o.storenumber}
+                    </td>
+                    <td className="px-3 py-2 text-right tabular-nums text-content">
+                      {o.qty}
+                    </td>
+                    <td className="px-3 py-2 text-right tabular-nums text-content">
+                      {o.casesize > 0 ? formatCurrency2(o.base_cost / o.casesize) : "—"}
+                    </td>
+                    <td className="px-3 py-2 text-right tabular-nums text-content">
+                      {formatCurrency2(o.cogs)}
+                    </td>
+                    <td className="px-3 py-2 text-right tabular-nums text-content">
+                      {formatCurrency2(o.active_retail_price)}
+                    </td>
+                    <td className="px-3 py-2 text-right tabular-nums font-semibold text-content">
+                      {formatCurrency2(o.e_ret)}
+                    </td>
+                    <td className="px-3 py-2 text-right tabular-nums font-semibold text-content">
+                      {formatCurrency2(o.e_ret - o.cogs)}
+                    </td>
+                    <td className="px-3 py-2 text-right tabular-nums text-content">
+                      {o.e_ret > 0
+                        ? `${(((o.e_ret - o.cogs) / o.e_ret) * 100).toFixed(1)}%`
+                        : "—"}
+                    </td>
+                    <td className="px-3 py-2 text-right tabular-nums text-content">
+                      {o.weight ?? "—"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="flex items-center gap-3 border-t border-gray-100 px-3 py-1.5 flex-shrink-0">
+            <span className="text-[11px] text-content/85">
+              {visible.length === 0
+                ? "No rows"
+                : `${(safePage * pageSize + 1).toLocaleString()}–${Math.min(
+                    (safePage + 1) * pageSize,
+                    visible.length,
+                  ).toLocaleString()} of ${visible.length.toLocaleString()}`}
+            </span>
+
+            <label className="flex items-center gap-1.5 text-[11px] text-content/85">
+              Rows
+              <select
+                value={pageSize}
+                onChange={(e) => setPageSize(Number(e.target.value))}
+                className="rounded border border-content/20 bg-custom-white px-1.5 py-0.5 text-[11px] text-content"
+                style={{ outline: "none" }}
+              >
+                {[100, 250, 500, 1000].map((n) => (
+                  <option key={n} value={n}>
+                    {n}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <div className="flex-1" />
+
+            <div className="flex items-center gap-1">
+              <PagerButton
+                label="First"
+                disabled={safePage === 0}
+                onClick={() => setPage(0)}
               />
-            ) : (
-              <>
-                <div className="grid grid-cols-5 divide-x divide-[#1e2a4a]/15 border-b border-gray-100 bg-custom-white flex-shrink-0">
-                  <div className="px-4 pt-2.5 pb-2 text-center min-w-0">
-                    <div className="text-[10px] font-bold uppercase tracking-wide text-content">
-                      Store #
-                    </div>
-                    <div className="text-[13px] font-bold text-content truncate">
-                      {padStoreNumber(
-                        assignedStores.find(
-                          (s) => s.storeid === selectedOrder?.storeid,
-                        )?.store_number ?? (selectedOrder?.storeid ?? ""),
-                      )}
-                    </div>
-                  </div>
-                  <div className="px-4 pt-2.5 pb-2 text-center">
-                    <div className="text-[10px] font-bold uppercase tracking-wide text-content">
-                      Order
-                    </div>
-                    <div className="text-[13px] font-bold text-content">
-                      #{selectedOrder?.orderId}
-                    </div>
-                  </div>
-                  <div className="px-4 pt-2.5 pb-2 text-center">
-                    <div className="text-[10px] font-bold uppercase tracking-wide text-content">
-                      Items
-                    </div>
-                    <div className="text-[13px] font-bold text-content">
-                      {orderItems.length}
-                    </div>
-                  </div>
-                  <div className="px-4 pt-2.5 pb-2 text-center">
-                    <div className="text-[10px] font-bold uppercase tracking-wide text-content">
-                      Ext retail
-                    </div>
-                    <div className="text-[13px] font-bold text-content">
-                      {formatCurrency2(selectedExtRetail)}
-                    </div>
-                  </div>
-                  <div className="px-4 pt-2.5 pb-2 text-center">
-                    <div className="text-[10px] font-bold uppercase tracking-wide text-content">
-                      Ext cost
-                    </div>
-                    <div className="text-[13px] font-bold text-content">
-                      {formatCurrency2(selectedCost)}
-                    </div>
-                  </div>
-                </div>
-                <div className="flex-1 overflow-auto thin-scrollbar">
-                  <table className="min-w-full border-collapse text-[12px]">
-                    <thead>
-                      <tr className="sticky top-0 bg-[#f4f4f6] border-b border-gray-100 z-10">
-                        <th
-                          className="text-right px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content whitespace-nowrap"
-                          style={{ width: 60 }}
-                        >
-                          Seq #
-                        </th>
-                        <th className="text-left px-3 py-2" style={{ width: 100 }}>
-                          <ColFilter
-                            label="UPC"
-                            active={!!appliedUpc}
-                            appliedDisplay={appliedUpc}
-                            onApply={() => setAppliedUpc(draftUpc)}
-                            onClear={() => {
-                              setAppliedUpc("");
-                              setDraftUpc("");
-                            }}
-                          >
-                            <input
-                              autoFocus
-                              style={colFilterInputStyle}
-                              placeholder="Search UPC…"
-                              value={draftUpc}
-                              onChange={(e) => setDraftUpc(e.target.value)}
-                            />
-                          </ColFilter>
-                        </th>
-                        <th className="text-left px-3 py-2" style={{ width: 220 }}>
-                          <ColFilter
-                            label="Description"
-                            active={!!appliedDesc}
-                            appliedDisplay={appliedDesc}
-                            onApply={() => setAppliedDesc(draftDesc)}
-                            onClear={() => {
-                              setAppliedDesc("");
-                              setDraftDesc("");
-                            }}
-                          >
-                            <input
-                              autoFocus
-                              style={colFilterInputStyle}
-                              placeholder="Search…"
-                              value={draftDesc}
-                              onChange={(e) => setDraftDesc(e.target.value)}
-                            />
-                          </ColFilter>
-                        </th>
-                        <th
-                          className="text-left px-3 py-2 whitespace-nowrap"
-                          style={{ width: 120 }}
-                        >
-                          <ColFilter
-                            label="Sub dept"
-                            active={!!appliedSubDept}
-                            appliedDisplay={appliedSubDept}
-                            onApply={() => {}}
-                            onClear={() => setAppliedSubDept("")}
-                          >
-                            <SelectFilter
-                              options={orderSubDepts.map((sd) => ({
-                                value: sd,
-                                label: sd,
-                              }))}
-                              value={appliedSubDept}
-                              onChange={setAppliedSubDept}
-                              placeholder="All sub depts"
-                              className="w-full"
-                            />
-                          </ColFilter>
-                        </th>
-                        <th
-                          className="text-right px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content"
-                          style={{ width: 60 }}
-                        >
-                          Qty
-                        </th>
-                        <th
-                          className="text-right px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content whitespace-nowrap"
-                          style={{ width: 80 }}
-                        >
-                          Cost
-                        </th>
-                        <th
-                          className="text-right px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content whitespace-nowrap"
-                          style={{ width: 90 }}
-                        >
-                          Ext cost
-                        </th>
-                        <th
-                          className="text-right px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content"
-                          style={{ width: 80 }}
-                        >
-                          Retail
-                        </th>
-                        <th
-                          className="text-right px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content whitespace-nowrap"
-                          style={{ width: 90 }}
-                        >
-                          Ext retail
-                        </th>
-                        <th
-                          className="text-right px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content whitespace-nowrap"
-                          style={{ width: 90 }}
-                        >
-                          Profit
-                        </th>
-                        <th
-                          className="text-right px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content whitespace-nowrap"
-                          style={{ width: 70 }}
-                        >
-                          Margin
-                        </th>
-                        <th
-                          className="text-right px-3 py-2 text-[9px] font-semibold uppercase tracking-wide text-content whitespace-nowrap"
-                          style={{ width: 70 }}
-                        >
-                          Weight
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-custom-white">
-                      {visibleOrderItems.map((o) => (
-                        <tr
-                          key={`${o.storeid}-${o.line_number}`}
-                          className="border-b border-b-[#1e2a4a]/15 even:bg-row_stripe hover:bg-gray-50 transition-colors"
-                        >
-                          <td className="px-3 py-2 tabular-nums text-content">
-                            {o.line_number}
-                          </td>
-                          <td className="px-3 py-2 tabular-nums text-content whitespace-nowrap">
-                            {o.product_code}
-                          </td>
-                          <td className="px-3 py-2 font-medium text-content max-w-0 cursor-default">
-                            <DescCell text={o.description} />
-                          </td>
-                          <td className="px-3 py-2 text-content whitespace-nowrap">
-                            {o.sub_department_description}
-                          </td>
-                          <td className="px-3 py-2 text-right tabular-nums text-content">
-                            {o.qty}
-                          </td>
-                          <td className="px-3 py-2 text-right tabular-nums text-content">
-                            {o.casesize > 0
-                              ? formatCurrency2(o.base_cost / o.casesize)
-                              : "—"}
-                          </td>
-                          <td className="px-3 py-2 text-right tabular-nums text-content">
-                            {formatCurrency2(o.cogs)}
-                          </td>
-                          <td className="px-3 py-2 text-right tabular-nums text-content">
-                            {formatCurrency2(o.active_retail_price)}
-                          </td>
-                          <td className="px-3 py-2 text-right tabular-nums font-semibold text-content">
-                            {formatCurrency2(o.e_ret)}
-                          </td>
-                          <td className="px-3 py-2 text-right tabular-nums font-semibold text-content">
-                            {formatCurrency2(o.e_ret - o.cogs)}
-                          </td>
-                          <td className="px-3 py-2 text-right tabular-nums text-content">
-                            {o.e_ret > 0
-                              ? `${(((o.e_ret - o.cogs) / o.e_ret) * 100).toFixed(1)}%`
-                              : "—"}
-                          </td>
-                          <td className="px-3 py-2 text-right tabular-nums text-content">
-                            {o.weight ?? "—"}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </>
-            )}
+              <PagerButton
+                label="Prev"
+                disabled={safePage === 0}
+                onClick={() => setPage(safePage - 1)}
+              />
+              <span className="px-1.5 text-[11px] font-medium text-content tabular-nums">
+                {safePage + 1} / {pageCount}
+              </span>
+              <PagerButton
+                label="Next"
+                disabled={safePage >= pageCount - 1}
+                onClick={() => setPage(safePage + 1)}
+              />
+              <PagerButton
+                label="Last"
+                disabled={safePage >= pageCount - 1}
+                onClick={() => setPage(pageCount - 1)}
+              />
+            </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   );
 };
+
+const PagerButton = ({
+  label,
+  disabled,
+  onClick,
+}: {
+  label: string;
+  disabled: boolean;
+  onClick: () => void;
+}) => (
+  <button
+    onClick={onClick}
+    disabled={disabled}
+    className="rounded border border-content/20 px-2 py-0.5 text-[11px] font-medium text-content/85 transition-colors hover:border-content/35 hover:text-content disabled:opacity-50"
+  >
+    {label}
+  </button>
+);
+
+const Kpi = ({ label, value }: { label: string; value: string }) => (
+  <div className="px-4 pt-2.5 pb-2 text-center min-w-0">
+    <div className="text-[10px] font-bold uppercase tracking-wide text-content">
+      {label}
+    </div>
+    <div className="text-[13px] font-bold text-content truncate">{value}</div>
+  </div>
+);
 
 export default OrderReportPanel;

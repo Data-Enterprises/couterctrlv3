@@ -40,10 +40,10 @@ const InvoicesEntry = ({ onFile, error, onClose }: Props) => {
 
   return (
     <div className="bg-custom-white rounded-xl shadow-sm w-full max-w-[560px] overflow-hidden">
-      <div className="bg-[#1e2a4a] px-4 py-2.5 flex items-start gap-3">
+      <div className="bg-brand_navy px-4 py-2.5 flex items-start gap-3">
         <div className="min-w-0 flex-1">
           <p className="text-custom-white text-[13px] font-semibold">
-            {onClose ? "Read another file" : "Invoices"}
+            {onClose ? "Read another file" : "AWG Invoices"}
           </p>
           <p className="text-custom-white/85 text-[12px]">
             Drop an AWG electronic invoice file to read it. Every line is
@@ -81,11 +81,11 @@ const InvoicesEntry = ({ onFile, error, onClose }: Props) => {
           }}
           className={`w-full flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed py-10 transition-colors ${
             dragging
-              ? "border-[#1e2a4a] bg-filter_active"
-              : "border-gray-200 hover:border-[#1e2a4a]/40 hover:bg-gray-50"
+              ? "border-brand_navy bg-filter_active"
+              : "border-gray-200 hover:border-brand_navy/40 hover:bg-gray-50"
           }`}
         >
-          <DocumentArrowUpIcon className="w-6 h-6 text-[#1e2a4a]" />
+          <DocumentArrowUpIcon className="w-6 h-6 text-brand_navy" />
           <span className="text-[13px] font-medium text-content">
             Drop a file here, or click to choose one
           </span>

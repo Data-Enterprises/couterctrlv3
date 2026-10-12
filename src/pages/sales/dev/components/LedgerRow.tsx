@@ -1,14 +1,12 @@
 import { memo } from "react";
 import { formatCurrencyCompact } from "../../../../utils";
 import { useStoreName } from "../../../../hooks";
-import { severityDotClass, pillClass, PCT_COL_W } from "./utils";
+import { severityDotClass } from "./utils";
+import DeltaPill from "./DeltaPill";
 import { applyStoreNumberToName } from "../shared/ledgerUtils";
+import { selectionFor } from "../shared/storeComparison";
 import type { Severity } from "../../../../utils/severity";
-import {
-  isCompleteCoverage,
-  comparisonPillClass,
-  type GradeBasis,
-} from "../shared/ledgerUtils";
+import { isCompleteCoverage, type GradeBasis } from "../shared/ledgerUtils";
 import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice";
 
 import type { DayDot, StoreSelection } from "../../../../interfaces";
@@ -66,10 +64,9 @@ interface LedgerRowProps {
    *  dot does. Passed rather than selected here: the row is memoized against a
    *  threshold slider that moves every frame. */
   threshold: number;
+  /** Clicking the row that is already open closes it — see SalesLedger. */
   onClick: (selection: StoreSelection) => void;
 }
-
-const formatPct = (pct: number) => `${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%`;
 
 /**
  * Graded on the same three bands as the rest of the app, via the shared
@@ -86,43 +83,6 @@ const formatPct = (pct: number) => `${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%`;
  * Categories and the other performance pages already use. Nothing new is being
  * invented here; Sales was the one page that had drifted off it.
  */
-const DeltaPill = ({
-  has,
-  pct,
-  threshold,
-  complete,
-  matched,
-  days,
-  period,
-}: {
-  has: boolean;
-  pct: number;
-  threshold: number;
-  /** False when the comparison is missing days. It still shows its figure,
-   *  in grey: a partial week can't grade a store, so it doesn't get the
-   *  colour that says it did. */
-  complete: boolean;
-  matched: number;
-  days: number;
-  period: "last week" | "last year";
-}) => (
-  <span
-    className={`text-[13px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${
-      has
-        ? comparisonPillClass(pct, complete, threshold)
-        : // Null is the shared helper's own "no comparison" case.
-          pillClass(null, threshold)
-    }`}
-    style={{ minWidth: PCT_COL_W }}
-    title={
-      has && !complete
-        ? `Only ${matched} of ${days} days have a matching day ${period}, so this isn't used to grade the store.`
-        : undefined
-    }
-  >
-    {has ? formatPct(pct) : "—"}
-  </span>
-);
 
 const LedgerRow = ({
   row,
@@ -141,31 +101,14 @@ const LedgerRow = ({
   const isQty = gradingMetric === "qty";
   const fmtMetric = (dollars: number, qty: number) =>
     isQty ? qty.toLocaleString() : formatCurrencyCompact(dollars);
-  const sortedDays = [...row.days].sort((a, b) =>
-    a.sale_date.localeCompare(b.sale_date),
-  );
-  const weekStart = sortedDays[0]?.sale_date.split("T")[0] ?? "";
-  const weekEnd =
-    sortedDays[sortedDays.length - 1]?.sale_date.split("T")[0] ?? "";
-
-  const handleClick = () => {
-    onClick({
-      storeId: row.storeid,
-      storeName: row.store_name,
-      storeNumber: row.store_number,
-      storeNumbersForId: row.storeNumbersForId,
-      start: weekStart,
-      end: weekEnd,
-      mode: "weekly",
-      days: sortedDays,
-      severity: row.severity,
-    });
-  };
+  // Built in shared/storeComparison so the group comparison opens a store the
+  // same way this row does.
+  const handleClick = () => onClick(selectionFor(row));
 
   return (
     <button
       onClick={handleClick}
-      className={`w-full flex items-center gap-2.5 p-3 text-left transition-colors border-l-2 border-b border-b-[#1e2a4a]/15 ${
+      className={`w-full flex items-center gap-2.5 p-3 text-left transition-colors border-l-2 border-b border-b-brand_navy/15 ${
         isSelected
           ? "bg-row_selected border-row_selected_border"
           : "border-transparent hover:bg-gray-50"

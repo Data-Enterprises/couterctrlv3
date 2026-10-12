@@ -21,7 +21,6 @@ import {
   ShieldExclamationIcon,
   DocumentArrowUpIcon,
   TicketIcon,
-  // ScaleIcon, // Suggested Weight — commented out for publish
 } from "@heroicons/react/16/solid";
 import {
   COMING_SOON_CATEGORY,
@@ -176,10 +175,10 @@ export const navigation: Navigation[] = [
     isVisible: true,
   },
   {
-    name: "Invoices",
+    name: "AWG Invoices",
     href: "invoices",
     icon: DocumentArrowUpIcon,
-    // Desktop only — reading a fixed-width file is a two-panel job.
+    // Desktop only — correcting a line means eight columns side by side.
     mobile: false,
     children: [],
     childOpen: false,
@@ -611,7 +610,7 @@ export const categories: NavCategory[] = [
         isVisible: true,
       },
       {
-        name: "Invoices",
+        name: "AWG Invoices",
         href: "invoices",
         icon: DocumentArrowUpIcon,
         mobile: false,
@@ -645,13 +644,18 @@ export const categories: NavCategory[] = [
         name: "Tickets",
         href: "tickets",
         icon: TicketIcon,
-        // An experiment on hold. Programmer tier: it is not answerable to a
-        // client, and like every Coming Soon page it only exists in the dev UI
-        // tree, against the dev API. Desktop only.
+        // Owner and up, so the client half can be tested by somebody who
+        // really is one: both capability flags trip at level 8, so a level-7
+        // account gets the client view from the server rather than from a
+        // preview switch. That is the only way to prove the internal-note
+        // filter, which has never been exercised by a non-tech.
+        //
+        // Still Coming Soon: dev UI tree only, against the dev API, desktop
+        // only.
         mobile: false,
         children: [],
         childOpen: false,
-        userLevels: PROGRAMMER_ONLY_LEVELS,
+        userLevels: COMING_SOON_LEVELS,
         isHovering: false,
         isVisible: true,
       },
@@ -681,3 +685,40 @@ export const categoriesFor = (apiEnv: "dev" | "prod"): NavCategory[] =>
             p.href === "user-management" ? { ...p, userLevels: ["*"] } : p,
           ),
       }));
+
+/**
+ * Is this route one of the unreleased pages?
+ *
+ * Read off the Coming Soon category rather than listed again, so a page
+ * joining or leaving it needs nothing here. Routes are stored as bare hrefs
+ * ("sales", "item-report"), but a leading slash is tolerated because the
+ * value has also been a pathname in places.
+ */
+export const isComingSoonRoute = (route: string): boolean => {
+  const href = route.replace(/^\//, "");
+  return (
+    categories
+      .find((c) => c.name === COMING_SOON_CATEGORY)
+      ?.pages.some((p) => p.href === href) ?? false
+  );
+};
+
+/**
+ * Routes that exist on the dev API only, whether or not the menu offers them.
+ *
+ * The Coming Soon pages render `DevOnlyNotice` on prod; Release Notes would
+ * render perfectly well, which is the more dangerous case — its avatar entry
+ * is dev-gated because the notes name unreleased work, but the route itself
+ * is reachable by typing it, and nothing about the page says it should not
+ * have been.
+ *
+ * Release Notes is named here rather than read off the nav because it is
+ * deliberately not in the nav at all.
+ */
+const DEV_ONLY_ROUTES = new Set(["release-notes"]);
+
+/** The test both the sign-in restore and the mode switch use. */
+export const isDevOnlyRoute = (route: string): boolean => {
+  const href = route.replace(/^\//, "");
+  return DEV_ONLY_ROUTES.has(href) || isComingSoonRoute(href);
+};

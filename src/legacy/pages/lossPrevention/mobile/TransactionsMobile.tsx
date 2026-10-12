@@ -221,7 +221,7 @@ const TransactionsMobile = ({ onBack }: Props) => {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="bg-[#1e2a4a] px-4 pt-3 pb-4 flex items-start gap-3 flex-shrink-0">
+      <div className="bg-brand_navy px-4 pt-3 pb-4 flex items-start gap-3 flex-shrink-0">
         <button
           onClick={onBack}
           className="text-custom-white/85 mt-0.5 flex-shrink-0"
@@ -379,7 +379,7 @@ const TransactionsMobile = ({ onBack }: Props) => {
                   setSortCol(null);
                 }
               }}
-              className={`text-[10px] font-semibold uppercase tracking-wide text-right ${isActive ? "text-[#1e2a4a]" : "text-content/85"}`}
+              className={`text-[10px] font-semibold uppercase tracking-wide text-right ${isActive ? "text-brand_navy" : "text-content/85"}`}
             >
               {label}
               {arrow}
@@ -408,12 +408,12 @@ const TransactionsMobile = ({ onBack }: Props) => {
               className="w-full grid px-4 py-3.5 border-b border-gray-100 hover:bg-gray-50 active:bg-gray-100 transition-colors text-left"
               style={{
                 gridTemplateColumns: "1fr 0.6fr 0.55fr 0.7fr",
-                background: i % 2 === 1 ? "rgba(30,42,74,0.015)" : undefined,
+                background: i % 2 === 1 ? "rgb(var(--color-brand-navy) / 0.015)" : undefined,
               }}
             >
               <span
                 className="text-[12px] font-semibold underline truncate"
-                style={{ color: "#1e2a4a", textUnderlineOffset: 2 }}
+                style={{ color: "rgb(var(--color-brand-navy))", textUnderlineOffset: 2 }}
               >
                 #{ov.transaction_id}
               </span>

@@ -14,5 +14,6 @@ export const SUB_DEPT_MARGINS_INFO: { title: string; purpose: string; glossary: 
     { term: "Ungraded (Items tab)", desc: "No full-week comparison for this item — last year and last week are both missing days, or have no sales for it — so it can't be graded either way." },
     { term: "COGS", desc: "Colored in reverse from other numbers: a COGS increase is flagged as bad, since rising cost eats into margin, even though the number itself is going up." },
     { term: "Contribution %", desc: "How much of the sub department's total sales this one item makes up, not the item's own change over time." },
+    { term: "Export", desc: "The download icon in the sub department's title bar saves a CSV of the open sub department, for the dates the page is set to. Pick any of Items Report, Cost Analysis, No Cost Items and Items vs Last Year, or build your own columns and choose how they add up." },
   ],
 };

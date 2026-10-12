@@ -31,6 +31,7 @@ import type { JsonError } from "../../../../interfaces";
 import type { HelpPage } from "../../../../constants/helpPages";
 import { shiftIso } from "../../../../utils/grading";
 import { applyStoreNumberToName } from "../../../../utils/storeIdentity";
+import { setLastStore } from "../../../../features/searchSlice";
 import MobileSortChips, {
   type SortOption,
 } from "../../../../components-dev/mobile/MobileSortChips";
@@ -83,9 +84,10 @@ import {
 import MobilePerfCard from "../../../../components-dev/mobile/MobilePerfCard";
 import MobilePerfDetail from "../../../../components-dev/mobile/MobilePerfDetail";
 import PairedBars from "../../../../components-dev/mobile/perf/PairedBars";
+import PerfDelta from "../../../../components-dev/mobile/perf/PerfDelta";
 import PerfDayChart from "../../../../components-dev/mobile/perf/PerfDayChart";
 import PerfCardHeader from "../../../../components-dev/mobile/perf/PerfCardHeader";
-import { LY_COLOR, TY_COLOR } from "../../../../components-dev/mobile/perf/perfColors";
+import { LY_COLOR, TY_COLOR, TY_SWATCH_BG } from "../../../../components-dev/mobile/perf/perfColors";
 
 /** How many recents sit in the page before the rest move to a sheet. */
 const RECENTS_INLINE = 3;
@@ -145,6 +147,7 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
   const context = useAppSelector((s) => s.app);
   const search = useAppSelector((s) => s.search);
   const assignedStores = useAppSelector((s) => s.user.assignedStores);
+  const lastStore = useAppSelector((s) => s.search.lastStore);
   const perf = useAppSelector((s) => s.dev.itemPerf);
 
   /**
@@ -231,7 +234,31 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
     dispatch(setItemPerfDimension(dimension));
   }, [dimension]);
 
+  /**
+   * Start on the store the app already knows about.
+   *
+   * These three pages keep a snapshot each, and the first visit to one starts
+   * from nothing — so arriving at Categories after searching Sub Dept Margins
+   * asked for the same store again. Sub Dept Margins and Vendors hand each
+   * other their rows because they share an endpoint; Categories reads a
+   * different one and never qualified, which is why only some of them
+   * remembered.
+   *
+   * `lastStore` is the app's own answer to "which store were they looking
+   * at", so seeding from it covers all three, and covers arriving from Sales
+   * or anywhere else that sets it. Only a store still assigned to this user:
+   * a stale id would preselect something they cannot search.
+   */
+  useEffect(() => {
+    if (perf.storeId !== 0 || lastStore === 0) return;
+    if (!assignedStores.some((s) => s.storeid === lastStore)) return;
+    dispatch(setItemPerfStore(lastStore));
+  }, [perf.storeId, lastStore, assignedStores, dispatch]);
+
   const fetchItems = async () => {
+    // So the next page — and the next visit — starts here rather than asking
+    // again.
+    dispatch(setLastStore(perf.storeId));
     // Stamped so a result from an earlier load, or another page's, is dropped
     // by the slice rather than landing on this screen.
     const gen = perf.loadGen + 1;
@@ -641,6 +668,25 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
             {cardNoLy ? "no history" : pct(totals.gpmLy)}
           </span>
         </div>
+        {/* Points, not percent. This card's headline is a margin, so its TY
+            minus LY is a move in margin POINTS — 28.40% against 26.30% is
+            "+2.10 pts", and calling that "+2.10%" would be read as a 2% gain
+            on the margin itself. Every other Performance card differences a
+            money figure and needs no such label. */}
+        {totals.gpm !== null && totals.gpmLy !== null && (
+          <div className="ml-auto flex flex-col items-end pb-0.5">
+            <span className="mb-1 font-mono text-[9.5px] uppercase tracking-wider text-content/85">
+              +/-
+            </span>
+            <PerfDelta
+              ty={totals.gpm}
+              ly={totals.gpmLy}
+              format={(n) => `${n.toFixed(2)} pts`}
+              unavailable={cardNoLy}
+              className="!text-[20px]"
+            />
+          </div>
+        )}
       </div>
 
       <div className="mt-3">
@@ -677,7 +723,7 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
           { k: "LY gross profit", v: totals.profitLy, ly: true },
           { k: "LY cost", v: totals.cogsLy, ly: true },
         ].map(({ k, v, ly }) => (
-          <div key={k} className="flex flex-col">
+          <div key={k} className="flex flex-col items-center text-center">
             <span className="font-mono text-[9.5px] uppercase tracking-wider text-content/85">
               {k}
             </span>
@@ -1241,7 +1287,7 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
                           <span className="inline-flex items-center gap-1.5">
                             <span
                               className="h-2 w-3.5 rounded-sm"
-                              style={{ background: TY_COLOR }}
+                              style={{ background: TY_SWATCH_BG }}
                             />
                             This year
                           </span>
@@ -1266,7 +1312,7 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
                         <button
                           type="button"
                           onClick={() => dispatch(openItemDetail(true))}
-                          className="flex w-full items-center justify-center gap-1 rounded-lg bg-[#1e2a4a] py-2.5 text-[12.5px] font-bold text-custom-white active:bg-[#2a3a62]"
+                          className="flex w-full items-center justify-center gap-1 rounded-lg bg-brand_navy py-2.5 text-[12.5px] font-bold text-custom-white active:bg-[#2a3a62]"
                         >
                           View items
                           <ChevronRightIcon className="h-4 w-4" />

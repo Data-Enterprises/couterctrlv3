@@ -47,7 +47,7 @@ import type { SeatId } from "./portal/perspectives/perspectivesContent";
 import { getBlogs, getBlogFile } from "../../api/portal";
 import { POSTS, toPosts, type Post } from "../../content/posts";
 
-const VERSION = "Last updated 9/22/2026 @ 11:33 PM CST";
+const VERSION = "Last updated 10/12/2026 @ 3:02 PM CST";
 
 /** PLACEHOLDER: `/html_pages/` only exists on the dev API today, and this page
  *  runs before sign-in, so it cannot follow `apiEnv` (which now defaults to
@@ -313,7 +313,7 @@ const Login = () => {
   return (
     <div
       data-testid="login-page"
-      className="font-body text-brand_navy bg-bkg grid h-dvh overflow-hidden grid-cols-[clamp(400px,29%,452px)_1fr] portal_stack:h-auto portal_stack:min-h-dvh portal_stack:overflow-visible portal_stack:grid-cols-1"
+      className="font-body text-portal_navy bg-bkg grid h-dvh overflow-hidden grid-cols-[clamp(400px,29%,452px)_1fr] portal_stack:h-auto portal_stack:min-h-dvh portal_stack:overflow-visible portal_stack:grid-cols-1"
     >
       <SignInRail
         username={state.username}

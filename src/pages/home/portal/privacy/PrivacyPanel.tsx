@@ -35,7 +35,7 @@ const Block = ({ block }: { block: NamedBlock }) => {
   return (
     <div className="mt-4 border border-brand_line rounded-[10px] px-[18px] py-[15px]">
       <div className="flex items-start justify-between gap-3">
-        <span className="font-display text-[14px] font-bold text-brand_navy leading-[1.35]">
+        <span className="font-display text-[14px] font-bold text-portal_navy leading-[1.35]">
           {blockTitle(block)}
         </span>
         {stated && (
@@ -72,7 +72,7 @@ const Section = ({ section }: { section: PrivacySection }) => {
 
   return (
     <section className="pt-[26px] mt-[26px] border-t border-brand_line first:border-t-0 first:mt-0 first:pt-0">
-      <h3 className="font-display text-[16.5px] font-extrabold text-brand_navy tracking-[-0.022em] leading-[1.2]">
+      <h3 className="font-display text-[16.5px] font-extrabold text-portal_navy tracking-[-0.022em] leading-[1.2]">
         <span className="font-mono text-[12px] font-semibold text-brand_green_dark mr-2">
           {section.id}.
         </span>
@@ -122,7 +122,7 @@ const Section = ({ section }: { section: PrivacySection }) => {
 
       {section.contact && (
         <address className="not-italic mt-4 border border-brand_line rounded-[10px] px-[18px] py-4 text-[13.8px] leading-[1.7] text-brand_slate">
-          <span className="block font-display text-[14.5px] font-bold text-brand_navy">
+          <span className="block font-display text-[14.5px] font-bold text-portal_navy">
             {section.contact.company}
           </span>
           <span className="block">{section.contact.relationship}</span>

@@ -12,7 +12,7 @@ import type { CompanyJsonResp, JsonError } from "../../../interfaces";
 import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import CompanyGrid from "./CompanyGrid";
 import StoreActivityComp from "./StoreActivityComp";
-import NewStoreName from "./NewStoreName";
+import StoreRecords from "./StoreRecords";
 
 /** `programmerOnly` tabs act on records that aren't scoped to anyone — creating
  *  and deleting companies is a change to the whole tenancy, not to one
@@ -20,18 +20,36 @@ import NewStoreName from "./NewStoreName";
 const TABS: { id: AdminForm; label: string; programmerOnly?: boolean }[] = [
   { id: "companies", label: "Companies", programmerOnly: true },
   { id: "store_activity", label: "Store activity" },
-  { id: "new_store_name", label: "New store name" },
+  { id: "store_records", label: "Stores" },
 ];
+
+/**
+ * What size each tab wants, and where that tab remembers being dragged to.
+ *
+ * A grid of companies and a two-field form do not want the same panel, and
+ * before this they shared one: whichever you resized last decided the other.
+ * Each tab carries its own key, so a drag is remembered per tab rather than
+ * across all of them.
+ *
+ * Companies and Store activity keep the original key and defaults, so nobody
+ * loses the size they had already set.
+ */
+const PANEL: Record<AdminForm, { key: string; width: number; height: number }> = {
+  companies: { key: "admin-panel-size", width: 820, height: 640 },
+  store_activity: { key: "admin-panel-size", width: 820, height: 640 },
+  store_records: { key: "admin-panel-size-stores", width: 900, height: 620 },
+};
 
 const Admin = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const context = useAdminPageCtx();
   const [exportOpen, setExportOpen] = useState(false);
+  const panel = PANEL[context.adminForm] ?? PANEL.companies;
   const { width, height, boxRef, handleProps } = useResizableBox({
-    storageKey: "admin-panel-size",
-    defaultWidth: 820,
-    defaultHeight: 640,
+    storageKey: panel.key,
+    defaultWidth: panel.width,
+    defaultHeight: panel.height,
     minWidth: 600,
     maxWidth: 1600,
     minHeight: 450,
@@ -78,8 +96,8 @@ const Admin = () => {
             setExportOpen={setExportOpen}
           />
         );
-      case "new_store_name":
-        return <NewStoreName />;
+      case "store_records":
+        return <StoreRecords />;
     }
   };
 
@@ -113,7 +131,7 @@ const Admin = () => {
         className="relative max-w-[95vw] max-h-[calc(100vh-8rem)] flex flex-col rounded-xl shadow-lg overflow-hidden bg-custom-white self-start"
         style={{ width, height }}
       >
-        <div className="bg-[#1e2a4a] px-3 py-2 flex-shrink-0 flex items-center gap-3">
+        <div className="bg-brand_navy px-3 py-2 flex-shrink-0 flex items-center gap-3">
           <span className="text-custom-white font-semibold text-[13px] flex-shrink-0">
             Admin
           </span>
@@ -154,7 +172,7 @@ const Admin = () => {
               onClick={() => dispatch(setAdminForm(tab.id))}
               className={`text-[12px] font-semibold py-2.5 px-4 whitespace-nowrap border-b-2 transition-colors ${
                 context.adminForm === tab.id
-                  ? "border-[#1e2a4a] text-[#1e2a4a]"
+                  ? "border-brand_navy text-brand_navy"
                   : "border-transparent text-content"
               }`}
             >

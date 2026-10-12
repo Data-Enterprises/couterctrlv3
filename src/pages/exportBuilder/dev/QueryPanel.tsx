@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { ChevronLeftIcon } from "@heroicons/react/20/solid";
 import Modal from "../../../components-dev/Modal";
 import ConfirmDelete from "../../../components-dev/ConfirmDelete";
 import TextField from "../../../components-dev/inputs/TextField";
@@ -28,7 +29,12 @@ import { configToQuery } from "./query/configToQuery";
  * moment someone types, it stops being that and says so: the file below is
  * still the configuration's until Apply makes the two one thing again.
  */
-const QueryPanel = () => {
+interface Props {
+  configOpen: boolean;
+  onToggleConfig: () => void;
+}
+
+const QueryPanel = ({ configOpen, onToggleConfig }: Props) => {
   const ctx = useExportBuilderCtx();
 
   const generated = useMemo(
@@ -231,6 +237,21 @@ const QueryPanel = () => {
       )}
 
       <div className="flex items-center gap-2 px-3 py-2 bg-custom-white border-b border-brand_line flex-wrap">
+        {/* Here rather than on the panel itself: a control that hides
+            something cannot live inside the thing it hides. */}
+        <button
+          type="button"
+          onClick={onToggleConfig}
+          aria-expanded={configOpen}
+          title={configOpen ? "Hide the configuration" : "Show the configuration"}
+          className="flex-shrink-0 w-[22px] h-[22px] flex items-center justify-center rounded border border-brand_line_2 text-content/85 hover:border-brand_slate transition-colors"
+        >
+          <ChevronLeftIcon
+            className={`w-3.5 h-3.5 transition-transform duration-300 motion-reduce:transition-none ${
+              configOpen ? "" : "rotate-180"
+            }`}
+          />
+        </button>
         <span className="text-[11px] font-semibold uppercase tracking-wide text-content/85">
           The configuration, as a query
         </span>
@@ -252,11 +273,7 @@ const QueryPanel = () => {
           <span className="text-[11px] text-amber-900 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5">
             Edited — the file below is still the configuration's
           </span>
-        ) : (
-          <span className="text-[11px] text-content/85">
-            follows the panel on the left · runs nowhere
-          </span>
-        )}
+        ) : null}
         <div className="flex-1" />
 
         {/*
@@ -354,7 +371,7 @@ const QueryPanel = () => {
               ? "Turn this query into the configuration on the left"
               : "This query already matches the configuration — there is nothing to apply"
           }
-          className="bg-[#1e2a4a] hover:bg-[#2a3a63] text-custom-white text-[12.5px] font-semibold px-4 py-1.5 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          className="bg-brand_navy hover:bg-brand_navy_hover text-custom-white text-[12.5px] font-semibold px-4 py-1.5 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
         >
           Apply to configuration
         </button>
@@ -374,7 +391,7 @@ const QueryPanel = () => {
             title="Put the configuration back the way it was before Apply"
             className="text-[12.5px] font-medium px-3 py-1.5 rounded-lg border border-brand_line_2 hover:border-brand_slate transition-colors"
           >
-            Undo apply
+            Undo
           </button>
         )}
         <span
@@ -382,9 +399,7 @@ const QueryPanel = () => {
             edited ? "text-content/85" : "text-content/85"
           }`}
         >
-          {edited
-            ? "Ctrl+Enter applies it"
-            : "Nothing to apply — this box already matches your configuration. Edit it and this button turns on."}
+          {edited ? "Ctrl+Enter applies it" : ""}
         </span>
         {ctx.queriesError && (
           <span className="text-[11.5px] text-amber-900">
@@ -407,28 +422,18 @@ const QueryPanel = () => {
       )}
 
       {plan && (
+        plan.leftBehind.length > 0 && (
         <div className="bg-custom-white border-t border-brand_line px-3 py-2">
-          <div className="text-[12.5px] font-semibold">
-            Applied to the configuration
+          <div className="text-[11.5px] font-semibold text-amber-900">
+            Not carried over
           </div>
-          {plan.applied.map((line, i) => (
-            <div key={i} className="text-[11.5px] text-content/85 mt-0.5">
+          {plan.leftBehind.map((line, i) => (
+            <div key={i} className="text-[11.5px] text-amber-900/85">
               · {line}
             </div>
           ))}
-          {plan.leftBehind.length > 0 && (
-            <>
-              <div className="text-[11.5px] font-semibold text-amber-900 mt-1.5">
-                Not carried over
-              </div>
-              {plan.leftBehind.map((line, i) => (
-                <div key={i} className="text-[11.5px] text-amber-900/85">
-                  · {line}
-                </div>
-              ))}
-            </>
-          )}
         </div>
+        )
       )}
 
       {saving && (
@@ -474,7 +479,7 @@ const QueryPanel = () => {
                   setSaving(false);
                 }}
                 disabled={!name.trim()}
-                className="bg-[#1e2a4a] hover:bg-[#2a3a63] text-custom-white text-[12.5px] font-semibold px-4 py-1.5 rounded-lg transition-colors disabled:opacity-40"
+                className="bg-brand_navy hover:bg-brand_navy_hover text-custom-white text-[12.5px] font-semibold px-4 py-1.5 rounded-lg transition-colors disabled:opacity-40"
               >
                 {current && name.trim() === current.name ? "Save changes" : "Save"}
               </button>
@@ -487,9 +492,9 @@ const QueryPanel = () => {
         <Modal
           isOpen
           onClose={() => setLibrary(false)}
-          modalClassName="bg-card_bg w-[560px] max-w-[92vw] max-h-[80vh]"
+          modalClassName="bg-card_bg w-[560px] max-w-[92vw] max-h-[80vh] flex flex-col"
         >
-          <div className="flex flex-col gap-3 p-4 min-h-0">
+          <div className="flex flex-1 flex-col gap-3 p-4 min-h-0">
             <div className="flex items-baseline gap-3 flex-shrink-0">
               <h2 className="text-[15px] font-semibold">Saved queries</h2>
               <span className="text-[11.5px] text-content/85">
@@ -499,7 +504,7 @@ const QueryPanel = () => {
               <button
                 type="button"
                 onClick={() => setLibrary(false)}
-                className="text-[12px] font-medium px-3 py-1.5 rounded-lg bg-[#1e2a4a] hover:bg-[#2a3a63] text-custom-white transition-colors"
+                className="text-[12px] font-medium px-3 py-1.5 rounded-lg bg-brand_navy hover:bg-brand_navy_hover text-custom-white transition-colors"
               >
                 Close
               </button>

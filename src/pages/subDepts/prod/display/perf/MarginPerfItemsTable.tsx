@@ -96,12 +96,12 @@ const ColFilter = ({
       <button
         onClick={() => setOpen((v) => !v)}
         className={`flex items-center gap-1 text-[9px] font-semibold uppercase tracking-wide transition-colors select-none flex-shrink-0 ${
-          active ? "text-[#1e2a4a]" : "text-content"
+          active ? "text-brand_navy" : "text-content"
         }`}
       >
         {label}
         {active && (
-          <span className="w-1 h-1 rounded-full bg-[#1e2a4a] flex-shrink-0" />
+          <span className="w-1 h-1 rounded-full bg-brand_navy flex-shrink-0" />
         )}
       </button>
       {open && (
@@ -115,7 +115,7 @@ const ColFilter = ({
             top: "calc(100% + 6px)",
             ...(align === "right" ? { right: 0 } : { left: 0 }),
             zIndex: 200,
-            border: "1px solid rgba(30,42,74,0.12)",
+            border: "1px solid rgb(var(--color-brand-navy) / 0.12)",
             borderRadius: 6,
             boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
             padding: "10px 10px 8px",
@@ -130,7 +130,7 @@ const ColFilter = ({
                 setOpen(false);
               }}
               className="flex-1 flex items-center justify-center gap-1 rounded py-1 text-[10px] font-medium text-custom-white"
-              style={{ background: "#1e2a4a" }}
+              style={{ background: "rgb(var(--color-brand-navy))" }}
             >
               <MagnifyingGlassIcon className="w-3 h-3" /> Apply
             </button>
@@ -155,12 +155,12 @@ const ColFilter = ({
 const colInputStyle: React.CSSProperties = {
   width: "100%",
   fontSize: 11,
-  border: "1px solid rgba(30,42,74,0.15)",
+  border: "1px solid rgb(var(--color-brand-navy) / 0.15)",
   borderRadius: 4,
   padding: "4px 7px",
   outline: "none",
   color: "var(--color-text-primary)",
-  background: "rgba(30,42,74,0.03)",
+  background: "rgb(var(--color-brand-navy) / 0.03)",
 };
 
 interface Props {
@@ -687,7 +687,7 @@ const MarginPerfItemsTable = ({
                       e.stopPropagation();
                       openCtxMenu(e, item.productCode);
                     }}
-                    className={`w-full flex items-center gap-2.5 p-3 text-left transition-colors border-l-2 border-b border-b-[#1e2a4a]/15 ${
+                    className={`w-full flex items-center gap-2.5 p-3 text-left transition-colors border-l-2 border-b border-b-brand_navy/15 ${
                       isSel
                         ? "bg-row_selected border-row_selected_border"
                         : "border-transparent hover:bg-gray-50"
@@ -828,7 +828,7 @@ const MarginPerfItemsTable = ({
                     one number. */}
                 <div className="grid grid-cols-[40%_1fr] gap-2">
                   {reportRows.length > 0 && (
-                    <div className="rounded-md border border-[#1e2a4a]/15 shadow-sm bg-gray-50 p-2.5 text-center flex flex-col justify-center">
+                    <div className="rounded-md border border-brand_navy/15 shadow-sm bg-gray-50 p-2.5 text-center flex flex-col justify-center">
                       <div className="text-[11px] font-semibold text-content">
                         {reportRows[0].label}
                       </div>
@@ -874,7 +874,7 @@ const MarginPerfItemsTable = ({
                       the lead metric earns a self-contained card, these earn
                       being comparable to each other. Prior values live in the
                       title attribute; the lead card still shows them inline. */}
-                  <div className="rounded-md border border-[#1e2a4a]/15 shadow-sm bg-gray-50 px-2.5 py-1 flex flex-col justify-center">
+                  <div className="rounded-md border border-brand_navy/15 shadow-sm bg-gray-50 px-2.5 py-1 flex flex-col justify-center">
                     <div className="grid grid-cols-[1fr_56px_55px_55px] gap-1.5 pb-0.5 text-[11px] font-semibold uppercase tracking-wide text-content">
                       <span />
                       <span className="text-right">TY</span>
@@ -917,7 +917,7 @@ const MarginPerfItemsTable = ({
                   </div>
                 </div>
               </div>
-              <div className="border-t border-[#1e2a4a]/15 shadow-sm mx-4" />
+              <div className="border-t border-brand_navy/15 shadow-sm mx-4" />
 
               {selectedDetail && (
                 <div className="px-4 py-2.5">
@@ -987,7 +987,7 @@ const MarginPerfItemsTable = ({
                           return (
                             <div
                               key={d.wd}
-                              className="grid grid-cols-[10px_34px_1fr_92px_92px_92px] gap-2 items-center py-2 border-t border-[#1e2a4a]/15"
+                              className="grid grid-cols-[10px_34px_1fr_92px_92px_92px] gap-2 items-center py-2 border-t border-brand_navy/15"
                             >
                               <span
                                 className={`w-2 h-2 rounded-full ${
@@ -1004,9 +1004,9 @@ const MarginPerfItemsTable = ({
                                   stays neutral too: length carries dollars, and
                                   the dot is the only thing asserting a grade. */}
                               {d.sold ? (
-                                <span className="h-[12px] w-full rounded-full bg-[#1e2a4a]/15 block overflow-hidden">
+                                <span className="h-[12px] w-full rounded-full bg-brand_navy/15 block overflow-hidden">
                                   <span
-                                    className="h-full rounded-full bg-[#1e2a4a]/85 block"
+                                    className="h-full rounded-full bg-brand_navy/85 block"
                                     style={{
                                       width: `${maxTy > 0 ? (d.ty / maxTy) * 100 : 0}%`,
                                     }}

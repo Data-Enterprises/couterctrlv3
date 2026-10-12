@@ -48,12 +48,12 @@ export const ColFilter = ({
       <button
         onClick={() => setOpen((v) => !v)}
         className={`flex items-center gap-1 text-[9px] font-semibold uppercase tracking-wide transition-colors select-none flex-shrink-0 ${
-          active ? "text-[#1e2a4a]" : "text-content"
+          active ? "text-brand_navy" : "text-content"
         }`}
       >
         {label}
         {active && (
-          <span className="w-1 h-1 rounded-full bg-[#1e2a4a] flex-shrink-0" />
+          <span className="w-1 h-1 rounded-full bg-brand_navy flex-shrink-0" />
         )}
       </button>
       {open && (
@@ -67,7 +67,7 @@ export const ColFilter = ({
             top: "calc(100% + 6px)",
             left: 0,
             zIndex: 200,
-            border: "1px solid rgba(30,42,74,0.12)",
+            border: "1px solid rgb(var(--color-brand-navy) / 0.12)",
             borderRadius: 6,
             boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
             padding: "10px 10px 8px",
@@ -82,7 +82,7 @@ export const ColFilter = ({
                 setOpen(false);
               }}
               className="flex-1 flex items-center justify-center gap-1 rounded py-1 text-[10px] font-medium text-custom-white"
-              style={{ background: "#1e2a4a" }}
+              style={{ background: "rgb(var(--color-brand-navy))" }}
             >
               <MagnifyingGlassIcon className="w-3 h-3" /> Apply
             </button>

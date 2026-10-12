@@ -52,13 +52,13 @@ const UpcItemList = () => {
         <div className="flex gap-2">
           <button
             onClick={handleSelectAll}
-            className="text-[10px] text-[#1e2a4a] font-medium hover:underline"
+            className="text-[10px] text-brand_navy font-medium hover:underline"
           >
             All
           </button>
           <button
             onClick={handleDeselectAll}
-            className="text-[10px] text-[#1e2a4a] hover:text-content/85"
+            className="text-[10px] text-brand_navy hover:text-content/85"
           >
             None
           </button>
@@ -94,7 +94,7 @@ const UpcItemList = () => {
                 <div
                   className={`flex-shrink-0 w-3.5 h-3.5 rounded border transition-colors ${
                     selected
-                      ? "bg-[#1e2a4a] border-[#1e2a4a]"
+                      ? "bg-brand_navy border-brand_navy"
                       : "border-gray-300 bg-custom-white"
                   }`}
                 >

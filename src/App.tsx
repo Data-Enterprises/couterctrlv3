@@ -10,10 +10,16 @@ import Login from "./pages/home/Login";
 import { NavSwitch } from "./DevPages";
 import UserDataLoader from "./components/UserDataLoader";
 import AccountSetupModal from "./components/accountSetup/AccountSetupModal";
+// Neither tree: the title bar raises the flag from prod and the form lives in
+// dev, and App is the one place that may hold both.
+import ReportIssueModal from "./pages/tickets/dev/ReportIssueModal";
+import { clearPageCalls } from "./utils/pageCalls";
 import { getUserStores } from "./api/user";
 import type { JsonError, Store } from "./interfaces";
 import { setAllAvailableStores } from "./features/storeSlice";
 import { setLegacyLastRoute } from "./features/appSlice";
+import { setLastRoute } from "./features/navSlice";
+import { isDevOnlyRoute } from "./components/navigation/utils";
 import { hasLegacyPage } from "./constants/legacyPages";
 import {
   setAssignedStores,
@@ -29,6 +35,11 @@ const App = () => {
   const nav = useAppSelector((state) => state.nav);
   const location = useLocation();
   const navigate = useNavigate();
+
+  // What the last page fetched is not evidence about this one.
+  useEffect(() => {
+    clearPageCalls();
+  }, [location.pathname]);
 
   useEffect(() => {
     if (user.refreshStores) {
@@ -82,6 +93,32 @@ const App = () => {
     dispatch(setLegacyLastRoute(location.pathname.replace(/^\//, "") || "/"));
   }, [context.uiMode, location.pathname]);
 
+  // Switching to prod while sitting on a dev-only route used to leave you on
+  // it, and the two cases fail differently.
+  //
+  // A Coming Soon page becomes DevOnlyNotice — a dead end with nothing on it
+  // to move you along, reading as a page that broke rather than one this
+  // environment does not carry. That page's own note says it is "only reached
+  // by typing the URL"; the mode toggle was the exception it did not know
+  // about.
+  //
+  // Release Notes is the worse one, because it works. Its avatar entry is
+  // dev-gated — the notes name unreleased work — but the route is not, so a
+  // client switched to prod would sit there reading them with nothing on
+  // screen suggesting they should not.
+  //
+  // Clients can reach dev, so this is a path somebody takes rather than a
+  // developer's own mess.
+  //
+  // `replace` so Back does not return to it, and the stored route follows, the
+  // same way the sign-in restore corrects it.
+  useEffect(() => {
+    if (context.apiEnv === "dev") return;
+    if (!isDevOnlyRoute(location.pathname)) return;
+    dispatch(setLastRoute("sales"));
+    navigate("/sales", { replace: true });
+  }, [context.apiEnv, location.pathname]);
+
   // Legacy brings its own frame: a rail down the left that the live layout
   // has no room reserved for, so the page has to start clear of it — and the
   // old sidebar expands over the page rather than pushing it, which is why the
@@ -109,6 +146,10 @@ const App = () => {
             {/* Renders only when the login response says the user still owes a
                 password change and/or a security question — otherwise null. */}
             <AccountSetupModal />
+            {/* Drawn only while somebody has asked to report an issue, and
+                only on the dev API — the help desk it files into is a dev
+                tree page. */}
+            {context.apiEnv === "dev" && <ReportIssueModal />}
             <Outlet />
           </div>
         </div>

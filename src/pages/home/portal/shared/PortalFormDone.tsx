@@ -25,7 +25,7 @@ const PortalFormDone = ({ firstName, message, recap }: Props) => (
       </svg>
     </div>
 
-    <h3 className="font-display text-[21px] font-extrabold text-brand_navy tracking-[-0.03em] mt-5">
+    <h3 className="font-display text-[21px] font-extrabold text-portal_navy tracking-[-0.03em] mt-5">
       Thanks, {firstName}.
     </h3>
     <p className="text-[14.5px] leading-[1.65] text-brand_slate mt-2.5 max-w-[42ch] mx-auto">
@@ -42,7 +42,7 @@ const PortalFormDone = ({ firstName, message, recap }: Props) => (
             <span className="font-mono text-[9.5px] tracking-[0.13em] uppercase text-brand_slate_2 whitespace-nowrap pt-[3px]">
               {r.k}
             </span>
-            <span className="text-right text-brand_navy font-medium break-words">{r.v}</span>
+            <span className="text-right text-portal_navy font-medium break-words">{r.v}</span>
           </div>
         ))}
       </div>

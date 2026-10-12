@@ -54,7 +54,7 @@ const LocationTabs = ({
             }
             className={`px-3 py-1.5 text-[12px] font-medium border-b-2 transition-colors ${
               active
-                ? "border-[#1e2a4a] text-content"
+                ? "border-brand_navy text-content"
                 : "border-transparent text-content/60 hover:text-content"
             }`}
           >

@@ -102,7 +102,7 @@ const InventoryTreePanel = ({
        level here carries full product descriptions. */
     <div className="flex-shrink-0 shadow-lg" style={{ width: "26%" }}>
       <div className="bg-custom-white rounded-xl shadow-sm overflow-hidden flex flex-col h-full">
-        <div className="flex-shrink-0 px-4 py-[10px] flex items-center justify-between gap-3 bg-[#1e2a4a]">
+        <div className="flex-shrink-0 px-4 py-[10px] flex items-center justify-between gap-3 bg-brand_navy">
           <div className="min-w-0">
             <div className="text-[13px] font-semibold text-custom-white leading-tight truncate">
               {title}

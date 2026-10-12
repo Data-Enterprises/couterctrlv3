@@ -48,7 +48,7 @@ const BaseGroupExportModal = ({
       defaultWidth={560}
       defaultHeight={560}
     >
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center px-4 py-3 bg-[#1e2a4a]">
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center px-4 py-3 bg-brand_navy">
           <div>
             <p className="text-custom-white text-[13px] font-semibold">Export CSV</p>
             <p className="text-custom-white text-[10px] mt-0.5">
@@ -83,10 +83,10 @@ const BaseGroupExportModal = ({
                   return n;
                 })
               }
-              className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-[#1e2a4a] cursor-pointer flex-shrink-0"
+              className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-brand_navy cursor-pointer flex-shrink-0"
             />
             <div>
-              <p className="text-[13px] font-medium text-content group-hover:text-[#1e2a4a] transition-colors">
+              <p className="text-[13px] font-medium text-content group-hover:text-brand_navy transition-colors">
                 Assigned stores
               </p>
               <p className="text-[12px] text-content mt-0.5">
@@ -109,10 +109,10 @@ const BaseGroupExportModal = ({
                   return n;
                 })
               }
-              className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-[#1e2a4a] cursor-pointer flex-shrink-0"
+              className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-brand_navy cursor-pointer flex-shrink-0"
             />
             <div>
-              <p className="text-[13px] font-medium text-content group-hover:text-[#1e2a4a] transition-colors">
+              <p className="text-[13px] font-medium text-content group-hover:text-brand_navy transition-colors">
                 Unassigned stores
               </p>
               <p className="text-[12px] text-content mt-0.5">
@@ -129,7 +129,7 @@ const BaseGroupExportModal = ({
           <button
             onClick={handleDownload}
             disabled={selected.size === 0}
-            className="flex items-center gap-1.5 bg-[#1e2a4a] hover:bg-[#1e2a4a]/85 disabled:opacity-40 text-custom-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors"
+            className="flex items-center gap-1.5 bg-brand_navy hover:bg-brand_navy/85 disabled:opacity-40 text-custom-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors"
           >
             <ArrowDownTrayIcon className="w-3.5 h-3.5" />
             Download CSV

@@ -1,5 +1,5 @@
 import { formatCurrency2 } from "../../../utils";
-import { LOSER_OPACITY, LY_COLOR, TY_COLOR } from "./perfColors";
+import { DOWN_COLOR, LY_COLOR, TY_COLOR, UP_COLOR } from "./perfColors";
 
 interface Props {
   ty: number;
@@ -31,7 +31,9 @@ interface Props {
 /**
  * This year against last year, as two bars on a shared scale.
  *
- * The larger of the pair sits at full strength and the smaller steps back.
+ * The TY bar is green when it is at or above last year and red when it is
+ * below. The LY bar stays neutral: it is the thing being measured against, not
+ * a competitor, and colouring it too would put two verdicts on one row.
  *
  * Both the length and the dimming animate, so tapping a day or swiping a lens
  * redistributes the list in front of you instead of cutting to a new
@@ -40,9 +42,9 @@ interface Props {
  * product, so those nodes survive the change and have something to animate;
  * switching tabs replaces them outright and lands without motion, which is
  * right, because that is a new list rather than this one changing.
- * That is the only thing opacity encodes — which figure is bigger — and it is
- * deliberately NOT a judgment. A store ahead of last year and a store behind
- * it get the same treatment; only the position of the full-strength bar moves.
+ * Nothing is dimmed any more. The shorter bar used to step back to say which
+ * of the pair was smaller, which the two lengths already said; now that hue
+ * carries the comparison, both bars read at full strength.
  *
  * Replaces the half-donut the legacy Sales view used. That ring split its
  * circumference between the two years, which makes the whole ring TY + LY —
@@ -59,15 +61,11 @@ const PairedBars = ({
   lyUnavailable = false,
 }: Props) => {
   const safeMax = max > 0 ? max : 1;
-  // Nothing to lose to, so this year is never the dimmed one.
-  const tyWins = lyUnavailable || ty >= ly;
+  // No comparison on file is not a rise: with nothing to be above, the bar
+  // stays the neutral blue rather than claiming a gain from nothing.
+  const tyColour = lyUnavailable ? TY_COLOR : ty >= ly ? UP_COLOR : DOWN_COLOR;
 
-  const bar = (
-    label: string,
-    value: number,
-    colour: string,
-    dimmed: boolean,
-  ) => (
+  const bar = (label: string, value: number, colour: string) => (
     <div className="flex items-center gap-2">
       <span className="w-5 flex-none font-mono text-[9.5px] font-semibold tracking-wider text-content/85">
         {label}
@@ -91,14 +89,10 @@ const PairedBars = ({
           style={{
             transform: `scaleX(${Math.max(value / safeMax, 0.01)})`,
             background: colour,
-            opacity: dimmed ? LOSER_OPACITY : 1,
           }}
         />
       </span>
-      <span
-        className="min-w-[76px] flex-none text-right text-[12.5px] font-bold text-content"
-        style={{ opacity: dimmed ? LOSER_OPACITY : 1 }}
-      >
+      <span className="min-w-[76px] flex-none text-right text-[12.5px] font-bold text-content">
         {format(value)}
       </span>
     </div>
@@ -106,7 +100,7 @@ const PairedBars = ({
 
   return (
     <div className="flex flex-col gap-1.5">
-      {bar(labels[0], ty, TY_COLOR, !tyWins)}
+      {bar(labels[0], ty, tyColour)}
       {lyUnavailable ? (
         <div className="flex items-center gap-2">
           <span className="w-5 flex-none font-mono text-[9.5px] font-semibold tracking-wider text-content/85">
@@ -117,7 +111,7 @@ const PairedBars = ({
           </span>
         </div>
       ) : (
-        bar(labels[1], ly, LY_COLOR, tyWins)
+        bar(labels[1], ly, LY_COLOR)
       )}
     </div>
   );

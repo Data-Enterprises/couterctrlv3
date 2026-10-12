@@ -7,8 +7,8 @@ import { useToast } from "../../../../components/toasts/hooks/useToast";
 import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 
 const chipStyle = {
-  background: "rgba(30,42,74,0.06)",
-  boxShadow: "inset 0 1px 2px rgba(30,42,74,0.08)",
+  background: "rgb(var(--color-brand-navy) / 0.06)",
+  boxShadow: "inset 0 1px 2px rgb(var(--color-brand-navy) / 0.08)",
 };
 
 interface Props {
@@ -171,7 +171,7 @@ const Transaction = ({ trans }: Props) => {
       <div className="flex-shrink-0 px-4 pt-2.5 pb-3 border-b border-gray-100">
         <div className="flex items-start justify-between gap-2 mb-2">
           <div>
-            <div className="text-[13px] font-medium text-[#1e2a4a]">
+            <div className="text-[13px] font-medium text-brand_navy">
               {first.cashier_name}
             </div>
             <div className="text-[11px] text-content/70 mt-0.5">
@@ -181,13 +181,13 @@ const Transaction = ({ trans }: Props) => {
           <div className="flex gap-1.5 flex-shrink-0">
             <button
               onClick={handleEmail}
-              className="flex items-center gap-1 text-[11px] font-medium bg-[#1e2a4a] text-custom-white rounded-md px-2.5 py-1.5"
+              className="flex items-center gap-1 text-[11px] font-medium bg-brand_navy text-custom-white rounded-md px-2.5 py-1.5"
             >
               Email
             </button>
             <button
               onClick={handleExport}
-              className="flex items-center gap-1.5 text-[11px] font-medium bg-[#1e2a4a] text-custom-white rounded-md px-2.5 py-1.5"
+              className="flex items-center gap-1.5 text-[11px] font-medium bg-brand_navy text-custom-white rounded-md px-2.5 py-1.5"
             >
               <ArrowDownTrayIcon className="w-3 h-3" />
               CSV

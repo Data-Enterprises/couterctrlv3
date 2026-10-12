@@ -51,7 +51,7 @@ const ForecastListPanel = ({ onReSearch }: Props) => {
   return (
     <div className="w-[300px] flex-shrink-0 shadow-lg flex flex-col overflow-hidden rounded-xl">
       {/* 2-row navy header — same metrics as LookupQueuePanel's */}
-      <div className="bg-[#1e2a4a] rounded-t-xl px-3 pt-1 pb-2.5 flex flex-col gap-0 flex-shrink-0 relative">
+      <div className="bg-brand_navy rounded-t-xl px-3 pt-1 pb-2.5 flex flex-col gap-0 flex-shrink-0 relative">
         <div className="flex items-end gap-3 min-h-[24px]">
           <span className="text-[13px] font-semibold text-custom-white flex-shrink-0">
             Forecast
@@ -108,13 +108,13 @@ const ForecastListPanel = ({ onReSearch }: Props) => {
           <div className="flex gap-2 flex-shrink-0">
             <button
               onClick={() => dispatch(setCheckedUpcs(visible.map((r) => r.upc)))}
-              className="text-[10px] text-[#1e2a4a] font-medium hover:underline"
+              className="text-[10px] text-brand_navy font-medium hover:underline"
             >
               All
             </button>
             <button
               onClick={() => dispatch(setCheckedUpcs([]))}
-              className="text-[10px] text-[#1e2a4a] hover:text-content/85"
+              className="text-[10px] text-brand_navy hover:text-content/85"
             >
               None
             </button>
@@ -123,7 +123,7 @@ const ForecastListPanel = ({ onReSearch }: Props) => {
             <button
               onClick={() => setShowSelectedOnly((p) => !p)}
               className={`text-[10px] font-medium transition-colors ${
-                showSelectedOnly ? "text-[#1e2a4a] underline" : "text-content/85"
+                showSelectedOnly ? "text-brand_navy underline" : "text-content/85"
               }`}
             >
               Only
@@ -156,7 +156,7 @@ const ForecastListPanel = ({ onReSearch }: Props) => {
                   <div
                     className={`flex-shrink-0 mt-[1px] w-3.5 h-3.5 rounded border transition-colors ${
                       checked
-                        ? "bg-[#1e2a4a] border-[#1e2a4a]"
+                        ? "bg-brand_navy border-brand_navy"
                         : "border-gray-300 bg-custom-white"
                     }`}
                   >

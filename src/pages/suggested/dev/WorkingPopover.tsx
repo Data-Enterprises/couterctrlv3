@@ -50,7 +50,7 @@ const Row = ({
     </span>
     <span
       className={`text-[12px] tabular-nums ${
-        strong ? "font-bold text-[#1e2a4a] text-[13px]" : "text-content"
+        strong ? "font-bold text-brand_navy text-[13px]" : "text-content"
       }`}
     >
       {v}
@@ -107,7 +107,7 @@ const WorkingPopover = ({
     >
       <div
         className="px-3 py-2 flex items-start justify-between gap-2"
-        style={{ background: "#1e2a4a" }}
+        style={{ background: "rgb(var(--color-brand-navy))" }}
       >
         <div className="min-w-0">
           <div className="text-[12px] font-semibold text-custom-white truncate">

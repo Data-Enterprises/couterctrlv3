@@ -126,7 +126,7 @@ const NewStoreName = () => {
               onClick={() => setAssignedFilter(f)}
               className={`flex-1 text-[10px] px-2 py-1 capitalize ${
                 assignedFilter === f
-                  ? "bg-[#1e2a4a] text-custom-white"
+                  ? "bg-brand_navy text-custom-white"
                   : "bg-custom-white border border-gray-200 text-content"
               }`}
             >
@@ -203,7 +203,7 @@ const NewStoreName = () => {
             disabled={!canSubmit}
             className={`w-full text-[12px] font-medium py-1.5 rounded-md text-custom-white ${
               canSubmit
-                ? "bg-[#1e2a4a] hover:bg-[#1e2a4a]/85"
+                ? "bg-brand_navy hover:bg-brand_navy/85"
                 : "bg-gray-300 cursor-not-allowed"
             }`}
           >

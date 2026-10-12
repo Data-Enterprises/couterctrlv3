@@ -235,7 +235,7 @@ const UpcExportModal = ({ onClose }: Props) => {
       defaultHeight={520}
     >
         {/* header */}
-        <div className="bg-[#1e2a4a] px-5 py-3 flex items-center justify-between">
+        <div className="bg-brand_navy px-5 py-3 flex items-center justify-between">
           <div>
             <div className="text-[13px] font-semibold text-custom-white">Export CSV</div>
             <div className="text-[10px] mt-0.5" style={{ color: "rgb(var(--color-custom-white) / 0.50)" }}>
@@ -261,7 +261,7 @@ const UpcExportModal = ({ onClose }: Props) => {
                       type="radio"
                       checked={exportShape === s.id}
                       onChange={() => setExportShape(s.id)}
-                      className="accent-[#1e2a4a]"
+                      className="accent-brand_navy"
                     />
                     <span className="text-[11px] text-content/85">{s.label}</span>
                   </label>
@@ -282,7 +282,7 @@ const UpcExportModal = ({ onClose }: Props) => {
                     type="radio"
                     checked={selectedPreset === p.id}
                     onChange={() => setSelectedPreset(p.id)}
-                    className="accent-[#1e2a4a]"
+                    className="accent-brand_navy"
                   />
                   <span className="text-[11px] text-content/85">{p.label}</span>
                 </label>
@@ -299,7 +299,7 @@ const UpcExportModal = ({ onClose }: Props) => {
           <button
             onClick={handleExport}
             className="w-full py-2.5 rounded-lg text-[12px] font-semibold text-custom-white flex items-center justify-center gap-2 transition-opacity"
-            style={{ background: "#1e2a4a" }}
+            style={{ background: "rgb(var(--color-brand-navy))" }}
           >
             <ArrowDownTrayIcon className="h-3.5 w-3.5" />
             Download CSV

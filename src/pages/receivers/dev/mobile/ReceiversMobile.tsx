@@ -151,10 +151,10 @@ const ReceiversMobile = () => {
             <button
               onClick={handleBackToResults}
               className="w-full py-2.5 flex items-center justify-center gap-1.5 transition-colors"
-              style={{ background: "rgba(30,42,74,0.07)", borderRadius: 10 }}
+              style={{ background: "rgb(var(--color-brand-navy) / 0.07)", borderRadius: 10 }}
             >
-              <ArrowLeftIcon className="w-4 h-4 text-[#1e2a4a]" />
-              <span className="text-[#1e2a4a] font-semibold text-[13px] underline underline-offset-2">
+              <ArrowLeftIcon className="w-4 h-4 text-brand_navy" />
+              <span className="text-brand_navy font-semibold text-[13px] underline underline-offset-2">
                 Back to results
               </span>
             </button>

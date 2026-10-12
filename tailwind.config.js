@@ -68,6 +68,9 @@ export default {
         brand_green_tint:
           "rgb(var(--color-brand-green-tint) / <alpha-value>)",
         brand_navy: "rgb(var(--color-brand-navy) / <alpha-value>)",
+        portal_navy: "rgb(var(--color-portal-navy) / <alpha-value>)",
+        portal_navy_hover:
+          "rgb(var(--color-portal-navy-hover) / <alpha-value>)",
         brand_navy_hover:
           "rgb(var(--color-brand-navy-hover) / <alpha-value>)",
         brand_slate: "rgb(var(--color-brand-slate) / <alpha-value>)",
@@ -82,6 +85,12 @@ export default {
         brand_danger_line:
           "rgb(var(--color-brand-danger-line) / <alpha-value>)",
         row_stripe: "rgb(var(--color-row-stripe) / <alpha-value>)",
+        store_open: "rgb(var(--color-store-open) / <alpha-value>)",
+        store_open_tint: "rgb(var(--color-store-open-tint) / <alpha-value>)",
+        store_compare: "rgb(var(--color-store-compare) / <alpha-value>)",
+        store_compare_tint: "rgb(var(--color-store-compare-tint) / <alpha-value>)",
+        volume_text: "rgb(var(--color-volume-text) / <alpha-value>)",
+        rate_text: "rgb(var(--color-rate-text) / <alpha-value>)",
         severity_critical_bg:
           "rgb(var(--color-severity-critical-bg) / <alpha-value>)",
         severity_critical_text:
@@ -150,7 +159,30 @@ export default {
         mixed_surface: {},
       },
 
+      boxShadow: {
+        /* Tailwind's own shadows are neutral black, which greys a card
+           rather than lifting it. These carry the navy the rest of the
+           chrome is built from, so a card reads as sitting on the page
+           instead of smudged onto it. */
+        card: "0 4px 6px -1px rgb(var(--color-brand-navy) / 0.18), 0 2px 4px -2px rgb(var(--color-brand-navy) / 0.14)",
+        "card-sm": "0 1px 3px rgb(var(--color-brand-navy) / 0.14), 0 1px 2px rgb(var(--color-brand-navy) / 0.10)",
+        /* A panel laid OVER something, not sitting on the page: it has to
+           read as a layer or the grid shows through it as texture. */
+        rail: "-12px 0 32px rgb(var(--color-brand-navy) / 0.20), -2px 0 6px rgb(var(--color-brand-navy) / 0.12)",
+      },
       keyframes: {
+        nbDrop: {
+          "0%": { opacity: "0", transform: "translateY(-14px)" },
+          "100%": { opacity: "1", transform: "none" },
+        },
+        nbRise: {
+          "0%": { opacity: "0", transform: "translateY(14px)" },
+          "100%": { opacity: "1", transform: "none" },
+        },
+        nbLeave: {
+          "0%": { opacity: "1", transform: "none" },
+          "100%": { opacity: "0", transform: "translateY(12px)" },
+        },
         appear: {
           "0%": {
             opacity: "0",
@@ -252,6 +284,9 @@ export default {
       },
 
       animation: {
+        "nb-drop": "nbDrop 0.34s cubic-bezier(0.2,0.7,0.2,1) both",
+        "nb-rise": "nbRise 0.38s cubic-bezier(0.2,0.7,0.2,1) both",
+        "nb-leave": "nbLeave 0.26s ease forwards",
         "spin-slower": "spin 35s ease infinite",
         "spin-slow": "spin 25s ease-in-out infinite reverse",
         appear: "appear .3s ease-in-out forwards",

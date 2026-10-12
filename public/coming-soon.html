@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CounterCtrl Coming Soon Pages</title>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #e4e9ef; --card: #ffffff; --ink: #0f2440; --text: #1e293b; --muted: #475569;
+    --line: #dce5ef; --accent: #1b3a63;
+    --band: #0f2440; --band-ink: #f4f7f8; --band-muted: #aeb9cf;
+    --note-bg: #fffbeb;
+    --pill-bg: #eef1f9; --pill-ink: #3b3a6b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding-inline: 10px; padding-block: 18px 32px;
+    background: var(--bg); color: var(--text);
+    font: 15px/1.55 "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; }
+  .eyebrow, .label, .part-status { font-family: Consolas, "SFMono-Regular", ui-monospace, monospace; }
+  .eyebrow { font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  h1 { margin: 8px 0 6px; font-size: 28px; line-height: 1.2; color: var(--ink); }
+  .lede { margin: 0 0 8px; color: var(--muted); max-width: 68ch; }
+  nav.toc { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+  nav.toc a { font-size: 13px; color: var(--ink); text-decoration: none; background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px; }
+  nav.toc a:hover { border-color: var(--accent); }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .part {
+    background: var(--band); color: var(--band-ink); border-radius: 14px; padding: 13px 17px; margin: 22px 0 12px;
+    display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: baseline; justify-content: space-between;
+  }
+  .part h2 { margin: 0; font-size: 20px; color: var(--band-ink); }
+  .part p { margin: 4px 0 0; font-size: 13.5px; color: var(--band-muted); max-width: 66ch; }
+  .part-status { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--band-muted); white-space: nowrap; }
+  section { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 15px 17px; margin-bottom: 12px; }
+  .sec-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; margin-bottom: 10px; }
+  section h2 { margin: 0; font-size: 18px; color: var(--ink); }
+  .where { font-size: 13px; color: var(--muted); }
+  .row { display: grid; grid-template-columns: 112px 1fr; gap: 12px; padding: 9px 0; border-top: 1px solid var(--line); align-items: baseline; }
+  .row:first-child { border-top: 0; padding-top: 2px; }
+  .label { font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+  .row p { margin: 0 0 8px; max-width: 74ch; }
+  .row p:last-child { margin-bottom: 0; }
+  .row strong { color: var(--ink); }
+  .row ul { margin: 0; padding-left: 18px; max-width: 74ch; }
+  .row li { padding: 2px 0; }
+  .note { margin: 14px 0 0; padding: 10px 14px; border-radius: 10px; background: var(--note-bg); font-size: 14px; max-width: 74ch; }
+  .note strong { color: var(--ink); }
+  footer { margin-top: 24px; font-size: 12.5px; color: var(--muted); max-width: 74ch; }
+  @media (max-width: 620px) { .row { grid-template-columns: 1fr; gap: 4px; } h1 { font-size: 24px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">CounterCtrl &middot; Coming Soon &middot; September 29, 2026</div>
+    <h1>What's in the Coming Soon section</h1>
+    <p class="lede">
+      Eight pages that are built and working, and not yet switched on for everyone. Each one below says what it
+      does, how you would use it, where its numbers come from, and why it behaves the way it does.
+    </p>
+    <p class="lede">
+      "Coming Soon" is a section of the menu rather than a rough draft. A page arrives there once it is finished
+      enough to be used against real store data, and it stays there while the people who own the decision run it on
+      their own stores. Two things are true of every page in the section: it is visible only to selected accounts,
+      and it runs on our development copy of the app &mdash; the same database and the same real numbers, on a
+      version clients are not pointed at. Releasing a page means moving it out of this section; nothing about how it
+      works changes on that day.
+    </p>
+    <nav class="toc" aria-label="Pages">
+      <a href="#item-actions">Item Actions</a>
+      <a href="#sales-tracker">Sales Tracker</a>
+      <a href="#help-desk">Client Help Desk</a>
+      <a href="#sales-export">Sales Export</a>
+      <a href="#price-opt">Price Opt</a>
+      <a href="#invoices">AWG Invoices</a>
+      <a href="#lp-actions">LP Actions</a>
+      <a href="#next">Also in the works</a>
+    </nav>
+  </header>
+
+  <div class="part">
+    <div>
+      <h2>Open to owners and account managers</h2>
+      <p>Finished, usable, and in front of the people who decide whether they ship. Feedback from real use is the
+      point of this stage.</p>
+    </div>
+    <span class="part-status">In trial</span>
+  </div>
+
+  <section id="item-actions">
+    <div class="sec-head">
+      <h2>Item Actions</h2>
+      <span class="where">Desktop &middot; one store, one week, a list of items</span>
+    </div>
+    <div class="row">
+      <span class="label">What it does</span>
+      <div>
+        <p>Takes a list of items that need attention and gets you to <strong>the one call worth making on each</strong>.
+        Every row compares what sold against what was delivered, so a stocking problem and a demand problem stop
+        looking alike. Each item comes back with a suggested next step and the evidence behind it:</p>
+        <ul>
+          <li><strong>Reorder</strong> &mdash; the shelf emptied mid-week, or the last delivery has all sold, or nothing has come in for over two weeks.</li>
+          <li><strong>Call vendor</strong> &mdash; cost that will not hold still: repeated changes, a rise that stayed up, a cost bouncing around. Each finding is dated.</li>
+          <li><strong>Reprice</strong> &mdash; ringing below cost. Either the tag itself is wrong, or a promotion is underwater, with the days it has run and the money given away.</li>
+          <li><strong>Investigate</strong> &mdash; in stock, priced right, still not moving.</li>
+          <li><strong>No action</strong> &mdash; flagged upstream, but it holds up here.</li>
+          <li><strong>Insufficient</strong> &mdash; not enough on file to say anything, said plainly rather than guessed at.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="row">
+      <span class="label">How you use it</span>
+      <div>
+        <p>Pick a store, a week, and the items. The items can be typed, pasted, or uploaded as the file that Sub Dept
+        Margins and Vendors already export &mdash; so the usual route is to spot the flagged departments on a
+        performance page, export them, and hand that file straight to this page.</p>
+        <p>The report appears first and the delivery history fills in behind it, because sales are quick to read and
+        deliveries are not. Clicking a row opens a panel for that one item: its deliveries, the prices the register
+        actually charged, and the individual transactions.</p>
+      </div>
+    </div>
+    <div class="row">
+      <span class="label">Where the numbers come from</span>
+      <div>
+        <p>Two sources, both already in CounterCtrl. <strong>Sales</strong> come from the weekly item and
+        sub-department figures &mdash; the same numbers behind Sub Dept Margins, so a row here agrees with the page you
+        came from. <strong>Deliveries</strong> come from received invoices, read back 90 days whatever week you picked,
+        so "never received" means genuinely absent rather than outside your dates. Register-level prices for a single
+        item are fetched only when you open that item.</p>
+      </div>
+    </div>
+    <div class="row">
+      <span class="label">Why it works this way</span>
+      <div>
+        <p><strong>It suggests, it does not conclude.</strong> The data can point at a likely cause; confirming it is
+        still a person's job, and a tool that promises more than that loses the trust it runs on.</p>
+        <p><strong>Units, not dollars.</strong> Sales being down can mean fewer sold or a lower price. Units being down
+        can only mean fewer left the shelf.</p>
+        <p><strong>Stores whose orders never reach us still get graded.</strong> Orders received electronically do not
+        come through the scan this delivery data is built from, so a store can trade normally and show no invoices at
+        all. Those items used to land in one unhelpful pile. They are now judged on what sales alone can prove &mdash;
+        price against cost, and trend &mdash; and only the two suggestions that genuinely need a delivery trail are
+        withheld. Where no invoice exists, cost falls back to the week's average and the row says so.</p>
+        <p><strong>It cannot see stock on hand.</strong> Nothing in the data reports an opening count, and shrink,
+        damage and transfers are invisible to it, so the delivery column reads as a change rather than a count. The
+        page states that rather than implying an inventory it does not have.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="sales-tracker">
+    <div class="sec-head">
+      <h2>Sales Tracker</h2>
+      <span class="where">Desktop &middot; one store or a group</span>
+    </div>
+    <div class="row">
+      <span class="label">What it does</span>
+      <p>Tracks every sub department against the same weeks last year, as a row of week cards you can open to see the
+      days inside. Sales this year and last, the gap in dollars and in percent, and average transaction size beside
+      them.</p>
+    </div>
+    <div class="row">
+      <span class="label">How you use it</span>
+      <div>
+        <p>Search a store or a group and a date range. Each week becomes a card; each department is a row you can expand
+        for the individual days. Green is ahead of last year, red is behind. The whole thing exports.</p>
+        <p>Average transaction size answers the question the totals raise: whether a change came from more baskets or
+        bigger ones.</p>
+      </div>
+    </div>
+    <div class="row">
+      <span class="label">Where the numbers come from</span>
+      <p>Day-level sub-department totals, asked for as an explicit list of dates rather than a range &mdash; this year's
+      days and their partners from last year in the same request. Both sides are net sales counted the same way, so the
+      two figures are comparable.</p>
+    </div>
+    <div class="row">
+      <span class="label">Why it works this way</span>
+      <div>
+        <p><strong>Same weekday, not same date.</strong> A Saturday is always measured against a Saturday, because a
+        calendar-date comparison puts a weekend against a Tuesday and calls the difference a trend. Holidays are matched
+        to the real holiday last year instead, and where that means two days share one partner, the day is marked with a
+        star rather than quietly counted twice.</p>
+        <p><strong>A missing day reads as a dash, not a zero.</strong> Where last year has no matching day at all, those
+        days are left out of the totals on both sides &mdash; otherwise a store that opened mid-year shows a collapse
+        that never happened.</p>
+        <p><strong>No grading here.</strong> The tracker reports movement and leaves the judgement to you. Severity
+        rankings live on the performance pages, where a threshold you set decides them.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="help-desk">
+    <div class="sec-head">
+      <h2>Client Help Desk</h2>
+      <span class="where">Desktop &middot; two views, decided by who you are</span>
+    </div>
+    <div class="row">
+      <span class="label">What it does</span>
+      <p>Support tickets inside CounterCtrl, with the whole conversation on each one. As a client you see your own
+      company's tickets and the replies on them. As a support tech you see the queue across every company, plus the
+      internal notes that clients never see.</p>
+    </div>
+    <div class="row">
+      <span class="label">How you use it</span>
+      <div>
+        <p>Three columns in the order you use them: the list picks a ticket, the middle is the conversation, and the
+        right-hand panel is who sent it. Status and priority are the first things anyone asks about a ticket, so they
+        sit in its header.</p>
+        <p>You can <strong>file a ticket from any page</strong>, and the page you were on travels with it &mdash;
+        including a screenshot, attached before the ticket ever opens, so support sees what you saw. An open ticket
+        updates itself every few seconds. The queue is politer about it: the Refresh button lights up and says there is
+        new activity, and pressing it applies what has already arrived.</p>
+      </div>
+    </div>
+    <div class="row">
+      <span class="label">Where the numbers come from</span>
+      <p>Its own tables: the tickets, their comments, their attachments, and the support-tech roster. Which company a
+      ticket belongs to and who opened it are resolved from the user records at the time you ask, so a ticket follows
+      the person rather than carrying a stale copy of their details.</p>
+    </div>
+    <div class="row">
+      <span class="label">Why it works this way</span>
+      <div>
+        <p><strong>Which view you get is the server's answer, not the screen's guess.</strong> The rule lives with the
+        data, and internal notes are filtered out before they are ever sent &mdash; not hidden once they arrive. A
+        ticket outside your scope is not refused, it simply does not exist for you, so nobody learns what they cannot
+        see.</p>
+        <p><strong>Four statuses, not three</strong> &mdash; open, in progress, waiting, closed. "Waiting" is the one
+        that was missing, and it is the honest state for a ticket that is back with the client.</p>
+        <p><strong>Attachments are handed over only when opened.</strong> A file gets a time-limited link at the moment
+        you click it; nothing hands out links for files nobody opens.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="part">
+    <div>
+      <h2>Still internal while we test</h2>
+      <p>These work. They also write real files, touch money, or name a person &mdash; so they stay with our own
+      accounts until every question a client could ask about them has an answer.</p>
+    </div>
+    <span class="part-status">Internal</span>
+  </div>
+
+  <section id="sales-export">
+    <div class="sec-head">
+      <h2>Sales Export</h2>
+      <span class="where">Desktop &middot; builds a file you download</span>
+    </div>
+    <div class="row">
+      <span class="label">What it does</span>
+      <p>Builds a sales file to your own specification rather than to a report's. Pick the stores and dates, choose
+      which columns go in it and which lines to keep, and the file is written and handed back as a download. Either line
+      by line, or summarised &mdash; grouped by whatever you choose, with totals beside the groups.</p>
+    </div>
+    <div class="row">
+      <span class="label">How you use it</span>
+      <div>
+        <p>Search a store or group and a range. The page then <strong>describes your own data back to you</strong>:
+        which stores the search actually covered, which sale types occur in that window, every column available, and ten
+        sample rows. Every list you narrow by is built from that answer, so there is nothing to pick that is not really
+        there.</p>
+        <p>Narrowing happens on screen, so the sample redraws as you tick. When it looks right, build the file &mdash;
+        and save the setup as a <strong>named configuration</strong> you can reload later onto any range.
+        <strong>Previous Builds</strong> keeps every file you have made alongside the exact question that produced it:
+        the dates, the stores, the row count, and the download.</p>
+      </div>
+    </div>
+    <div class="row">
+      <span class="label">Where the numbers come from</span>
+      <p>The sales detail table itself &mdash; one row per register line, with about a hundred columns on it. This is
+      the layer underneath every sales report in the app, which is what makes the page useful and also what makes the
+      notes below necessary. The file is written straight from the database to secure storage and downloaded from there,
+      so the data never travels through the app. Saved configurations sit with your own saved work, and a configuration
+      that is not yours cannot be loaded.</p>
+    </div>
+    <div class="row">
+      <span class="label">Why it works this way</span>
+      <div>
+        <p><strong>A total from this file will not match a sales report, and that is correct.</strong> Raw register lines
+        include tender rows, voids, department transfers and untendered modifications, and refunds are stored as
+        positive numbers &mdash; so a store total taken from here runs to roughly double what the weekly sales page
+        reports for the same window. Each summarised column is named after the operation that produced it, so a file
+        cannot quietly be read as a report. Anything that has to reconcile against a report should start from the
+        report.</p>
+        <p><strong>Personal columns are marked, and their sample values stay off the screen.</strong> Customer name,
+        address, phone and the rest are flagged in the picker, and the preview shows the column without showing a real
+        person's details &mdash; a preview gets read over someone's shoulder far more often than a file gets opened. The
+        file you build contains the real values.</p>
+        <p><strong>The preview is capped at 31 days; the export is not.</strong> Describing your data means reading every
+        line in the window, so the preview's cost follows the range while it hands back the same ten sample rows either
+        way. Get the setup right on a month, then run it on whatever range you need.</p>
+        <p><strong>A build is a record, not a bookmark.</strong> Configurations are meant to be renamed and edited; a
+        build is the question exactly as it was asked that day, written beside the file and never rewritten &mdash;
+        which is what makes a file from six weeks ago explainable.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="price-opt">
+    <div class="sec-head">
+      <h2>Price Opt &mdash; Sub Department, and Price Opt &mdash; Vendor</h2>
+      <span class="where">Desktop &middot; one store at a time &middot; two ways into the same analysis</span>
+    </div>
+    <div class="row">
+      <span class="label">What it does</span>
+      <p>Shows one item's price points two ways: the prices you would <em>estimate</em> from daily sales totals, and the
+      prices the register <strong>actually charged</strong>, side by side. The gap between the two columns is the
+      finding &mdash; a price on the estimated side with no counterpart on the actual side never existed. A suggested
+      price sits underneath, read off the actual side only.</p>
+    </div>
+    <div class="row">
+      <span class="label">How you use it</span>
+      <div>
+        <p>Two pages, because there are two ways people look for the item. <strong>Sub Department</strong> opens a
+        department and lists the items in it, loading nothing until you open one. <strong>Vendor</strong> groups the same
+        items by who supplies them. From the item rightward the two are identical.</p>
+        <p>The vendor page has more to do up front: the supplier is recorded on the item line rather than on the
+        department, so every department has to be read before a single vendor can be named. That is why it is a separate
+        page with an honest two-step loading message, instead of a toggle that quietly costs forty times as much.</p>
+      </div>
+    </div>
+    <div class="row">
+      <span class="label">Where the numbers come from</span>
+      <p>The estimated side uses the daily department and item roll-ups the performance pages already read. The actual
+      side goes to the receipts: the item's own transactions are located by barcode and then opened, up to a few hundred
+      of them, and the page tells you when it has capped that rather than pretending it read everything.</p>
+    </div>
+    <div class="row">
+      <span class="label">Why it works this way</span>
+      <div>
+        <p><strong>Only the register gets a vote.</strong> An estimate divides a day's dollars by a day's units, so
+        nineteen sales at $13.99 and one at $12.99 produce a price of $13.88 that nobody was ever charged. That is fine
+        as an observation and disqualifying as a recommendation, so the suggestion ignores it.</p>
+        <p><strong>One store at a time</strong>, like the margin pages this sits beneath. Price points are decided per
+        store, and averaging them across a group is how a real problem in one store disappears.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="invoices">
+    <div class="sec-head">
+      <h2>AWG Invoices</h2>
+      <span class="where">Desktop &middot; reads a file you already receive</span>
+    </div>
+    <div class="row">
+      <span class="label">What it does</span>
+      <p>Reads AWG's electronic invoice file and shows what it says &mdash; every invoice in the file, every line on the
+      invoice, with cost, retail, allowances, cases and margin. Each invoice is checked against its own printed totals
+      before you are shown a single figure.</p>
+    </div>
+    <div class="row">
+      <span class="label">How you use it</span>
+      <p>Open the file. Each invoice becomes a card that says <strong>Reconciled</strong> or <strong>Did not
+      reconcile</strong>, and you can filter straight to the failures. If a line was misread you can correct the cell,
+      and the totals and all four checks re-run on the spot.</p>
+    </div>
+    <div class="row">
+      <span class="label">Where the numbers come from</span>
+      <p><strong>Nothing but the file, and it never leaves the computer.</strong> The invoice is decoded in the browser:
+      no upload, no database, no copy kept. Close the tab and it is gone.</p>
+    </div>
+    <div class="row">
+      <span class="label">Why it works this way</span>
+      <div>
+        <p><strong>Four checks, to the cent.</strong> Cost, extended retail, allowances and cases are each added up from
+        the detail lines and compared to the invoice's own summary. All four matching is the only proof the page offers
+        that the file was read correctly, which is why it sits above the numbers rather than in a footnote. Where a check
+        fails, the card names which one and by how much &mdash; an invoice that does not add up should not be acted on or
+        passed along.</p>
+        <p><strong>Money is held as whole cents.</strong> Ordinary decimal arithmetic drifts by fractions of a cent
+        across a few hundred lines, which is enough to make a perfectly good invoice fail its own reconciliation.
+        Nothing is rounded here until it is printed on screen.</p>
+        <p><strong>Margin is worked out from the lines</strong>, not read from any reported field, because a margin that
+        disagrees with the two numbers printed beside it would be worse than none. Fields the format does not carry are
+        left blank rather than shown as zero.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="lp-actions">
+    <div class="sec-head">
+      <h2>LP Actions</h2>
+      <span class="where">Desktop &middot; one store or a group &middot; loss prevention</span>
+    </div>
+    <div class="row">
+      <span class="label">What it does</span>
+      <div>
+        <p>Takes every exception type at a store &mdash; voids, no sales, refunds, the rest &mdash; and judges each one
+        <strong>against its own recent history</strong> rather than against other stores. The question is what changed,
+        not what is highest: a lane that always voids eleven times a week is not news, and one that went from four to
+        forty is.</p>
+        <p>Each type comes back as <strong>Investigate</strong>, <strong>Watch</strong> or <strong>Steady</strong>. Open
+        one and the cashiers behind it are ranked by how far each moved against their own weekly normal; open a cashier
+        and you get their case &mdash; the pattern by hour and by week, the items involved, and the receipts
+        themselves.</p>
+      </div>
+    </div>
+    <div class="row">
+      <span class="label">How you use it</span>
+      <p>Pick a store or group and a week-ending date. Four weeks are read: the week being graded, plus three of history
+      to compare it against. <strong>Add week</strong> extends that, up to a quarter. Adding a week re-grades the whole
+      page rather than just adding a column, because a wider history changes every verdict on it.</p>
+    </div>
+    <div class="row">
+      <span class="label">Where the numbers come from</span>
+      <p>Register exception lines &mdash; the same receipt-level data behind the existing Loss Prevention screens. One
+      pass establishes which exception types occurred in your scope at all, then each week is read in a single request:
+      every line carries its own store, cashier and exception type, so one call per week covers every combination the
+      page shows. Receipts are opened only when you ask for one.</p>
+    </div>
+    <div class="row">
+      <span class="label">Why it works this way</span>
+      <div>
+        <p><strong>It is deliberately not a leaderboard.</strong> Ranking by volume returns the busiest operator every
+        single time, because the busiest operator has the most of everything. Ranking by movement against a person's own
+        normal is the only version of this list worth a manager's morning.</p>
+        <p><strong>Thin weeks are left alone.</strong> Under five occurrences in the latest week, a type stays Steady no
+        matter what the percentage says &mdash; two becoming six is a 200% rise and no information.</p>
+        <p><strong>A baseline widens as you add history</strong>, so a spike can be downgraded once there is more to
+        compare it against. That is the point of asking for more weeks, and it is why the page would rather show a
+        verdict that can move than one that looks certain.</p>
+      </div>
+    </div>
+    <div class="note"><strong>Why this one is still internal:</strong> the grading rule is settled, and the case file
+    behind an individual cashier is still being built out. Putting a name in front of a manager is the
+    highest-consequence thing this app does, so it stays with us until that evidence is complete.</div>
+  </section>
+
+  <div class="part" id="next">
+    <div>
+      <h2>Also in the works</h2>
+      <p>Built, and waiting on the piece that is not the page's to finish.</p>
+    </div>
+    <span class="part-status">Not in the menu yet</span>
+  </div>
+
+  <section>
+    <div class="sec-head">
+      <h2>Suggested Order Weight</h2>
+      <span class="where">Scale departments &mdash; anything sold by the pound</span>
+    </div>
+    <div class="row">
+      <span class="label">What it does</span>
+      <p>Suggests how many pounds to order for a by-the-pound department, from what it has really been selling on each
+      day of the week, how long an order takes to arrive, and how many days it has to cover. It shows its working: the
+      weekday rates it used, ordered against sold over the lookback, and the items that have stopped selling.</p>
+    </div>
+    <div class="row">
+      <span class="label">Where it stands</span>
+      <p>The page is finished and kept out of the menu entirely, because the calculation behind it is only deployed to
+      our development environment. It appears the day that ships &mdash; nothing about the page itself needs to
+      change.</p>
+    </div>
+  </section>
+
+  <footer>
+    Prepared September 29, 2026. Every page above runs against real store data today; what is being decided is when each
+    one belongs in front of everybody. Written from the pages themselves rather than from a plan, so where a page states
+    a limit here, that is the limit it states on screen.
+  </footer>
+
+</div>
+</body>
+</html>

@@ -73,7 +73,7 @@ const SaleTypeBreakdown = ({
             }
             className={`${grid} ${px} w-full py-2 text-left text-[12px] tabular-nums border-b border-gray-50 border-l-2 transition-colors ${
               isSelected
-                ? "bg-row_selected border-l-[#1e2a4a] font-semibold text-content"
+                ? "bg-row_selected border-l-brand_navy font-semibold text-content"
                 : "border-l-transparent text-content hover:bg-gray-50"
             }`}
             style={gridStyle}

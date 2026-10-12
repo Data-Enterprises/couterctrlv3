@@ -6,9 +6,7 @@ import {
   toggleItemReportSection,
 } from "../../../features/dev/devItemReportSlice";
 import { ChevronDownIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
-import InfoButton from "../../../components-dev/InfoButton";
-import InfoPopover from "../../../components-dev/InfoPopover";
-import { ITEM_REPORT_RAIL_INFO } from "./itemReportRailInfo";
+import ComingSoonHelp from "../../../components-dev/ComingSoonHelp";
 import { formatCurrency2, formatDateSimple } from "../../../utils";
 import { formatPct, pillClass } from "../../../utils/severity";
 import { actualPricePoints, unitPrice } from "../../../utils/pricePoints";
@@ -138,7 +136,7 @@ const Block = ({
   onToggle: () => void;
   children: React.ReactNode;
 }) => (
-  <div className="px-3 py-2.5 border-b border-[#1e2a4a]/15">
+  <div className="px-3 py-2.5 border-b border-brand_navy/15">
     {/* The whole heading is the hit area, not just the chevron — a 12px target
         in a panel this narrow is a miss waiting to happen. */}
     <div
@@ -207,7 +205,7 @@ const ReceiptDetail = ({ line }: { line: ReceiptLine }) => {
   const dispatch = useAppDispatch();
 
   return (
-    <div className="bg-gray-50 border-l-2 border-[#1e2a4a]">
+    <div className="bg-gray-50 border-l-2 border-brand_navy">
       <div className="px-2.5 py-1.5 text-[12px] font-medium text-content truncate">
         {line.vendorName}
       </div>
@@ -281,13 +279,13 @@ const Kpis = ({
     onClick?: () => void;
   }[];
 }) => (
-  <div className="grid grid-cols-3 divide-x divide-[#1e2a4a]/15 border-t border-[#1e2a4a]/15">
+  <div className="grid grid-cols-3 divide-x divide-brand_navy/15 border-t border-brand_navy/15">
     {cells.map((c) => (
       <div
         key={c.label}
         onClick={c.onClick}
         className={`px-2 py-1.5 text-center min-w-0 ${
-          c.onClick ? "cursor-pointer hover:bg-[#1e2a4a]/[0.06]" : ""
+          c.onClick ? "cursor-pointer hover:bg-brand_navy/[0.06]" : ""
         }`}
       >
         <div className="text-[10px] font-bold uppercase tracking-wide text-content">
@@ -298,7 +296,7 @@ const Kpis = ({
             c.flagged
               ? "text-severity_watch_text"
               : c.onClick
-                ? "text-[#1e2a4a] underline underline-offset-2"
+                ? "text-brand_navy underline underline-offset-2"
                 : "text-content"
           }`}
         >
@@ -345,7 +343,7 @@ const ShowAll = ({
 }) => (
   <button
     onClick={onToggle}
-    className="mt-1 pl-1 text-[12px] font-medium text-[#1e2a4a] underline underline-offset-2 hover:opacity-75 transition-opacity"
+    className="mt-1 pl-1 text-[12px] font-medium text-brand_navy underline underline-offset-2 hover:opacity-75 transition-opacity"
   >
     {expanded ? "Show fewer" : `Show all ${total}`}
   </button>
@@ -406,7 +404,6 @@ const ItemReportRail = ({
    *  selected item that closes on its own — the route-change argument that put
    *  the rest of this page in Redux doesn't apply. */
   const [openPrice, setOpenPrice] = useState<number | null>(null);
-  const [infoOpen, setInfoOpen] = useState(false);
   const [actionOpen, setActionOpen] = useState(false);
   /** Sections showing their full list. Local, not slice: unlike a fold — which
    *  is a standing preference — this is about the item currently in front of
@@ -536,7 +533,7 @@ const ItemReportRail = ({
   return (
     <div className="flex-shrink-0 shadow-lg" style={{ width: "38%" }}>
       <div className="bg-custom-white rounded-xl shadow-sm flex flex-col h-full">
-        <div className="flex-shrink-0 px-4 py-3 bg-[#1e2a4a] rounded-t-xl flex items-start gap-2">
+        <div className="flex-shrink-0 px-4 py-3 bg-brand_navy rounded-t-xl flex items-start gap-2">
           <div className="min-w-0 flex-1">
             <div className="text-[13px] font-semibold text-custom-white leading-tight">
               {item.description}
@@ -551,16 +548,7 @@ const ItemReportRail = ({
               things the left panel's "?" was explaining from across the page,
               or not at all. */}
           <div className="relative flex-shrink-0">
-            <InfoButton onClick={() => setInfoOpen((prev) => !prev)} />
-            {infoOpen && (
-              <InfoPopover
-                title={ITEM_REPORT_RAIL_INFO.title}
-                purpose={ITEM_REPORT_RAIL_INFO.purpose}
-                glossary={ITEM_REPORT_RAIL_INFO.glossary}
-                onClose={() => setInfoOpen(false)}
-                className="min-w-[300px] max-w-[520px]"
-              />
-            )}
+            <ComingSoonHelp />
           </div>
         </div>
 
@@ -578,7 +566,7 @@ const ItemReportRail = ({
             behind it, and on a Reprice that runs to three lines. */}
         {action && evidence && (
           <div
-            className={`relative flex-shrink-0 border-b border-[#1e2a4a]/15 ${ACTION_TONE[action].row}`}
+            className={`relative flex-shrink-0 border-b border-brand_navy/15 ${ACTION_TONE[action].row}`}
           >
             <button
               onClick={() => setActionOpen((o) => !o)}

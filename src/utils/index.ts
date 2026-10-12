@@ -36,7 +36,28 @@ export const resolveStoreName = (
   );
 };
 
+/** A bare `yyyy-mm-dd`, with nothing after it. */
+const DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/;
+
+/**
+ * A date as mm/d/yyyy.
+ *
+ * A date-only string is read as text, never through `new Date`. The spec parses
+ * `2026-09-22` as UTC midnight, and the getters below are local — so west of
+ * Greenwich every bare date printed as the day before. The data this is handed
+ * is full of them: `invoice_date` on Receivers arrives with no time at all, and
+ * the Coupons panels split the time off `sale_date` before calling this, which
+ * put a whole screen of dates one day early.
+ *
+ * Anything carrying a time still goes through `Date`. A datetime with no zone
+ * already parses as local and is correct, and the JS date strings some callers
+ * pass (`new Date().toString()`) are not ISO at all.
+ */
 export const formatDate = (date: string) => {
+  if (DATE_ONLY.test(date)) {
+    const [year, month, day] = date.split("-");
+    return `${+month}/${+day}/${year}`;
+  }
   const dte = new Date(date);
   const month = dte.getMonth() + 1;
   const day = dte.getDate();

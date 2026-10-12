@@ -108,6 +108,9 @@ const VendorListPanel = ({ onSearchOpen }: Props) => {
             : pctChange(r.twNetForLY, r.lyNet)
           : null;
         const pct = (n: number) => `${n.toFixed(2)}%`;
+        // A period with no sales has no margin to show. Zero would read as a
+        // week sold at cost.
+        const pctOrDash = (n: number | null) => (n === null ? "—" : pct(n));
         return {
           ...r,
           delta: vendorDelta(r, metric),
@@ -116,12 +119,12 @@ const VendorListPanel = ({ onSearchOpen }: Props) => {
           twText: isMargin ? pct(r.tyMarginPct) : formatCurrency2(r.twNet),
           lwText: r.hasLW
             ? isMargin
-              ? pct(r.lwMarginPct)
+              ? pctOrDash(r.lwMarginPct)
               : formatCurrency2(r.lwNet)
             : "—",
           lyText: r.hasLY
             ? isMargin
-              ? pct(r.lyMarginPct)
+              ? pctOrDash(r.lyMarginPct)
               : formatCurrency2(r.lyNet)
             : "—",
           lwPctText: fmtDelta(lwPct, isMargin),
@@ -281,7 +284,7 @@ const VendorListPanel = ({ onSearchOpen }: Props) => {
       style={{ flexBasis: "35%", flexShrink: 0 }}
     >
       {/* Navy header — 2-row canonical pattern */}
-      <div className="bg-[#1e2a4a] rounded-t-xl px-4 pt-1 pb-2.5 flex flex-col gap-0">
+      <div className="bg-brand_navy rounded-t-xl px-4 pt-1 pb-2.5 flex flex-col gap-0">
         {/* Row 1: date range | store total + vs LW/LY pills. Store name moved
             down to row 2 beside the search button, matching Sub Dept Margins. */}
         <div className="flex items-center gap-2 min-h-[26px]">

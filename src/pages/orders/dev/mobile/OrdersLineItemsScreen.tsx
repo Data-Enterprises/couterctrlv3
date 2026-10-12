@@ -20,8 +20,8 @@ const fmtDate = (iso: string) => {
 };
 
 const chipStyle = {
-  background: "rgba(30,42,74,0.06)",
-  boxShadow: "inset 0 1px 2px rgba(30,42,74,0.08)",
+  background: "rgb(var(--color-brand-navy) / 0.06)",
+  boxShadow: "inset 0 1px 2px rgb(var(--color-brand-navy) / 0.08)",
 };
 
 const OrdersLineItemsScreen = ({ orders, selectedKey, selectedOrder, assignedStores, groupStores, onExport }: Props) => {
@@ -55,7 +55,7 @@ const OrdersLineItemsScreen = ({ orders, selectedKey, selectedOrder, assignedSto
       <div className="px-4 pt-1 pb-3 border-b border-gray-100 flex-shrink-0">
         <div className="flex items-start justify-between gap-2 mb-1">
           <div>
-            <div className="text-[13px] font-medium text-[#1e2a4a]">{storeName}</div>
+            <div className="text-[13px] font-medium text-brand_navy">{storeName}</div>
             {/* The order's own date, not selectedKey.order_date — that's the
                 start of the fetched range, and "select all stores" with no
                 date filter spans the whole search window. */}

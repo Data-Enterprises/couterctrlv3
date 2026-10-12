@@ -1,323 +1,320 @@
-/**
- * Dev copy of `features/ticketsSlice.ts`, mounted at `state.dev.tickets` and read only
- * by `pages/tickets/dev`. Edit this one while changing dev tickets; when dev is
- * promoted, it replaces the prod slice. See src/store/devReducers.ts.
- */
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { UserLevel } from "../../interfaces";
 import type {
   Ticket,
-  TicketMsg,
+  TicketAssignee,
   TicketAttachment,
-  TicketConfig,
-  TicketTemplate,
-  ApiKey,
-  TicketDoc,
-} from "../../interfaces/tickets";
-import {
-  MOCK_TICKETS,
-  MOCK_MESSAGES,
-  MOCK_ATTACHMENTS,
-  MOCK_CONFIGS,
-  MOCK_TEMPLATES,
-  MOCK_API_KEYS,
-  MOCK_DOCS,
-  MOCK_STAFF,
-  type MockStaffUser,
-} from "../ticketsMockData";
+  TicketCaps,
+  TicketComment,
+  TicketLookups,
+} from "../../api/tickets";
 
-export type TicketsTab =
-  | "tickets"
-  | "history"
-  | "configs"
-  | "templates"
-  | "apiKeys"
-  | "docs";
+/**
+ * The Client Help Desk.
+ *
+ * One page serving two views. Which one a person gets is not decided here and
+ * not derived from their user level — it arrives with the data, as
+ * `canViewAll` and `canManage` on every list and detail response. The page
+ * reads those; nothing else is allowed to guess.
+ */
 
-export type QuickFilter = "all" | "unassigned" | "mine" | "urgent";
+/** All / Unassigned / Mine / Urgent, and the client's Open / Closed. Every
+ *  one of them is a filter over rows already in hand. */
+export type QueueTab = "all" | "unassigned" | "mine" | "urgent" | "closed";
 
-interface TicketsState {
-  activeTab: TicketsTab;
-  /** The full user-level list, for the elevated-access check. Tickets fetches
-   *  and keeps its own copy rather than borrowing User Management's. */
-  userLevels: UserLevel[];
-
+export interface TicketsState {
+  loading: boolean;
+  error: string | null;
   tickets: Ticket[];
-  messages: TicketMsg[];
+  caps: TicketCaps;
+  lookups: TicketLookups | null;
+  assignees: TicketAssignee[];
+
+  /** The open ticket, its thread and its files. */
+  selectedId: number | null;
+  detail: Ticket | null;
+  comments: TicketComment[];
   attachments: TicketAttachment[];
-  configs: TicketConfig[];
-  templates: TicketTemplate[];
-  apiKeys: ApiKey[];
-  docs: TicketDoc[];
-  staff: MockStaffUser[];
+  detailLoading: boolean;
+  /**
+   * The highest comment id already rendered — the whole of the polling
+   * bookkeeping.
+   *
+   * Set when a ticket loads, when a poll brings comments, and when a reply is
+   * posted. That last one matters: the POST hands back the comment, so it is
+   * on screen immediately, and raising the mark is what stops the next poll
+   * handing it back a second time.
+   */
+  lastCommentId: number;
+  /**
+   * A newer queue, fetched and deliberately not applied.
+   *
+   * The list sorts by updated_at, so refreshing it in place moves rows under
+   * the hands of whoever is reaching for one. Held here and offered instead.
+   */
+  pending: Ticket[] | null;
+  /** Set while a reply, an assign or a status change is in flight, so the
+   *  thread cannot be double-posted. */
+  working: boolean;
 
-  // Tickets tab — filters live here (not local useState) so they survive
-  // switching tabs/navigating away and back, same reasoning as Organization's
-  // usersGridFilters.
-  selectedTicketId: number | null;
-  quickFilter: QuickFilter;
-  searchText: string;
-  statusFilter: "" | Ticket["status"];
-  companyFilter: number | "";
-  replyDraft: string;
-  replyIsInternal: boolean;
+  tab: QueueTab;
+  search: string;
+  company: number | null;
+  /**
+   * The column filters, the same client-side pass the tabs make.
+   *
+   * Every field they read is already on the row, so a filter costs nothing
+   * and the grid answers while someone is still reading down it.
+   */
+  filters: TicketFilters;
 
-  // History tab
-  historyCompanyFilter: number | "";
+  newOpen: boolean;
+  closingOpen: boolean;
 
-  // List search text for the simpler CRUD tabs
-  configSearchText: string;
-  templateSearchText: string;
-  docSearchText: string;
 }
 
-const initialState: TicketsState = {
-  activeTab: "tickets",
-  userLevels: [],
+export interface TicketFilters {
+  status: string[];
+  priority: string[];
+  title: string;
+  company: string;
+  openedBy: string;
+  assignee: string;
+}
 
-  tickets: MOCK_TICKETS,
-  messages: MOCK_MESSAGES,
-  attachments: MOCK_ATTACHMENTS,
-  configs: MOCK_CONFIGS,
-  templates: MOCK_TEMPLATES,
-  apiKeys: MOCK_API_KEYS,
-  docs: MOCK_DOCS,
-  staff: MOCK_STAFF,
-
-  selectedTicketId: null,
-  quickFilter: "all",
-  searchText: "",
-  statusFilter: "",
-  companyFilter: "",
-  replyDraft: "",
-  replyIsInternal: false,
-
-  historyCompanyFilter: "",
-
-  configSearchText: "",
-  templateSearchText: "",
-  docSearchText: "",
+export const noFilters: TicketFilters = {
+  status: [],
+  priority: [],
+  title: "",
+  company: "",
+  openedBy: "",
+  assignee: "",
 };
 
-const nextId = (rows: { id: number }[]) =>
-  rows.reduce((max, r) => Math.max(max, r.id), 0) + 1;
+export const initialState: TicketsState = {
+  loading: false,
+  error: null,
+  tickets: [],
+  caps: { canViewAll: false, canManage: false },
+  lookups: null,
+  assignees: [],
+  selectedId: null,
+  detail: null,
+  comments: [],
+  attachments: [],
+  detailLoading: false,
+  lastCommentId: 0,
+  pending: null,
+  working: false,
+  tab: "all",
+  search: "",
+  company: null,
+  filters: noFilters,
+  newOpen: false,
+  closingOpen: false,
+};
 
-const ticketsSlice = createSlice({
-  // Distinct from the prod slice's "tickets": Redux matches actions on this
-  // string alone, so sharing it would move prod and dev together.
+const devTicketsSlice = createSlice({
   name: "devTickets",
   initialState,
   reducers: {
-    setTicketUserLevels: (state, action: PayloadAction<UserLevel[]>) => {
-      state.userLevels = action.payload;
+    startLoad: (state) => {
+      state.loading = true;
+      state.error = null;
     },
-    setActiveTab: (state, action: PayloadAction<TicketsTab>) => {
-      state.activeTab = action.payload;
+    setTickets: (
+      state,
+      action: PayloadAction<{ tickets: Ticket[]; caps: TicketCaps }>,
+    ) => {
+      state.loading = false;
+      state.tickets = action.payload.tickets;
+      state.caps = action.payload.caps;
+      // This IS the up-to-date list, so there is nothing left to offer.
+      state.pending = null;
     },
-    setSelectedTicketId: (state, action: PayloadAction<number | null>) => {
-      state.selectedTicketId = action.payload;
-      state.replyDraft = "";
-      state.replyIsInternal = false;
+    failLoad: (state, action: PayloadAction<string>) => {
+      state.loading = false;
+      state.error = action.payload;
     },
-    setQuickFilter: (state, action: PayloadAction<QuickFilter>) => {
-      state.quickFilter = action.payload;
+    setLookups: (state, action: PayloadAction<TicketLookups>) => {
+      state.lookups = action.payload;
     },
-    setSearchText: (state, action: PayloadAction<string>) => {
-      state.searchText = action.payload;
-    },
-    setStatusFilter: (state, action: PayloadAction<"" | Ticket["status"]>) => {
-      state.statusFilter = action.payload;
-    },
-    setCompanyFilter: (state, action: PayloadAction<number | "">) => {
-      state.companyFilter = action.payload;
-    },
-    setReplyDraft: (state, action: PayloadAction<string>) => {
-      state.replyDraft = action.payload;
-    },
-    setReplyIsInternal: (state, action: PayloadAction<boolean>) => {
-      state.replyIsInternal = action.payload;
-    },
-    setHistoryCompanyFilter: (state, action: PayloadAction<number | "">) => {
-      state.historyCompanyFilter = action.payload;
-    },
-    setConfigSearchText: (state, action: PayloadAction<string>) => {
-      state.configSearchText = action.payload;
-    },
-    setTemplateSearchText: (state, action: PayloadAction<string>) => {
-      state.templateSearchText = action.payload;
-    },
-    setDocSearchText: (state, action: PayloadAction<string>) => {
-      state.docSearchText = action.payload;
+    setAssignees: (state, action: PayloadAction<TicketAssignee[]>) => {
+      state.assignees = action.payload;
     },
 
-    createTicket: (
+    selectTicket: (state, action: PayloadAction<number | null>) => {
+      state.selectedId = action.payload;
+      state.detailLoading = action.payload !== null;
+      // A different ticket's ids mean nothing here.
+      state.lastCommentId = 0;
+      if (action.payload === null) {
+        state.detail = null;
+        state.comments = [];
+        state.attachments = [];
+      }
+    },
+    setDetail: (
       state,
       action: PayloadAction<{
-        subject: string;
-        company: number;
-        company_name: string;
-        product: string;
-        priority: Ticket["priority"];
-        opened_by: number;
-        body: string;
+        ticket: Ticket;
+        comments: TicketComment[];
+        attachments: TicketAttachment[];
+        caps: TicketCaps;
       }>,
     ) => {
-      const now = action.payload;
-      const id = nextId(state.tickets);
-      const created_at = new Date().toISOString();
-      const ticket: Ticket = {
-        id,
-        subject: now.subject,
-        status: "open",
-        priority: now.priority,
-        company: now.company,
-        company_name: now.company_name,
-        product: now.product,
-        assignee_id: null,
-        opened_by: now.opened_by,
-        created_at,
-        updated_at: created_at,
-        closed_at: null,
-      };
-      state.tickets.unshift(ticket);
-      state.messages.push({
-        id: nextId(state.messages),
-        ticket_id: id,
-        author_id: now.opened_by,
-        body: now.body,
-        is_internal_note: false,
-        created_at,
-      });
-    },
-    updateTicketStatus: (
-      state,
-      action: PayloadAction<{ id: number; status: Ticket["status"] }>,
-    ) => {
-      const ticket = state.tickets.find((t) => t.id === action.payload.id);
-      if (!ticket) return;
-      ticket.status = action.payload.status;
-      const now = new Date().toISOString();
-      ticket.updated_at = now;
-      ticket.closed_at = action.payload.status === "closed" ? now : null;
-    },
-    updateTicketPriority: (
-      state,
-      action: PayloadAction<{ id: number; priority: Ticket["priority"] }>,
-    ) => {
-      const ticket = state.tickets.find((t) => t.id === action.payload.id);
-      if (!ticket) return;
-      ticket.priority = action.payload.priority;
-      ticket.updated_at = new Date().toISOString();
-    },
-    assignTicket: (
-      state,
-      action: PayloadAction<{ id: number; assignee_id: number | null }>,
-    ) => {
-      const ticket = state.tickets.find((t) => t.id === action.payload.id);
-      if (!ticket) return;
-      ticket.assignee_id = action.payload.assignee_id;
-      ticket.updated_at = new Date().toISOString();
-    },
-    addMessage: (
-      state,
-      action: PayloadAction<{
-        ticket_id: number;
-        author_id: number;
-        body: string;
-        is_internal_note: boolean;
-      }>,
-    ) => {
-      const now = new Date().toISOString();
-      state.messages.push({
-        id: nextId(state.messages),
-        ...action.payload,
-        created_at: now,
-      });
-      const ticket = state.tickets.find(
-        (t) => t.id === action.payload.ticket_id,
+      state.detailLoading = false;
+      state.detail = action.payload.ticket;
+      state.comments = action.payload.comments;
+      state.attachments = action.payload.attachments;
+      state.lastCommentId = action.payload.comments.reduce(
+        (high, c) => (c.id > high ? c.id : high),
+        0,
       );
-      if (ticket) ticket.updated_at = now;
-      state.replyDraft = "";
-      state.replyIsInternal = false;
+      // The detail carries the flags too, and it is the more recent answer.
+      state.caps = action.payload.caps;
+    },
+    setAttachments: (state, action: PayloadAction<TicketAttachment[]>) => {
+      state.attachments = action.payload;
+    },
+    failDetail: (state, action: PayloadAction<string>) => {
+      state.detailLoading = false;
+      state.error = action.payload;
     },
 
-    addConfig: (
-      state,
-      action: PayloadAction<Omit<TicketConfig, "id">>,
-    ) => {
-      state.configs.push({ id: nextId(state.configs), ...action.payload });
+    startWork: (state) => {
+      state.working = true;
+      state.error = null;
     },
-    deleteConfig: (state, action: PayloadAction<number>) => {
-      state.configs = state.configs.filter((c) => c.id !== action.payload);
+    endWork: (state) => {
+      state.working = false;
+    },
+    /**
+     * A ticket that has just changed, from whichever endpoint returned it.
+     *
+     * The list row is replaced in place rather than refetched, and moved to
+     * the front, because the list is ordered by updated_at and anything that
+     * returns a ticket has just bumped it.
+     */
+    upsertTicket: (state, action: PayloadAction<Ticket>) => {
+      const next = action.payload;
+      state.tickets = [
+        next,
+        ...state.tickets.filter((t) => t.id !== next.id),
+      ];
+      if (state.detail?.id === next.id) state.detail = next;
+      state.working = false;
+    },
+    addComment: (state, action: PayloadAction<TicketComment>) => {
+      state.comments = [...state.comments, action.payload];
+      if (action.payload.id > state.lastCommentId) {
+        state.lastCommentId = action.payload.id;
+      }
+      state.working = false;
+    },
+    /**
+     * What a poll brought back.
+     *
+     * Ids already held are dropped rather than trusted away — a reply posted
+     * and a poll in flight can cross, and the same comment appearing twice is
+     * the one bug people notice immediately.
+     */
+    appendComments: (state, action: PayloadAction<TicketComment[]>) => {
+      const known = new Set(state.comments.map((c) => c.id));
+      const fresh = action.payload.filter((c) => !known.has(c.id));
+      if (fresh.length === 0) return;
+      state.comments = [...state.comments, ...fresh];
+      state.lastCommentId = fresh.reduce(
+        (high, c) => (c.id > high ? c.id : high),
+        state.lastCommentId,
+      );
+    },
+    /**
+     * The ticket as a poll found it, without disturbing the thread.
+     *
+     * Separate from upsertTicket because that one ends a piece of work; a poll
+     * is not work, and must never clear a spinner somebody else's reply is
+     * waiting on.
+     */
+    refreshHeader: (state, action: PayloadAction<Ticket>) => {
+      const next = action.payload;
+      if (state.detail?.id === next.id) state.detail = next;
+      state.tickets = state.tickets.map((t) => (t.id === next.id ? next : t));
+    },
+    /**
+     * A queue a poll fetched — held only if it is genuinely different.
+     *
+     * The comparison happens HERE, against the state as it actually is,
+     * rather than in the hook. An interval created once holds the closure it
+     * was created with, so a comparison out there was measuring every poll
+     * against the empty list the page started with, and announcing news on a
+     * queue nobody had touched.
+     */
+    setPending: (state, action: PayloadAction<Ticket[]>) => {
+      const next = action.payload;
+      const held = new Map(state.tickets.map((t) => [t.id, t.updated_at]));
+      const moved =
+        next.length !== state.tickets.length ||
+        next.some((t) => held.get(t.id) !== t.updated_at);
+      state.pending = moved ? next : null;
+    },
+    /** Apply the held queue, which is the only thing that reorders it. */
+    applyPending: (state) => {
+      if (!state.pending) return;
+      state.tickets = state.pending;
+      state.pending = null;
     },
 
-    addTemplate: (
-      state,
-      action: PayloadAction<Omit<TicketTemplate, "id">>,
-    ) => {
-      state.templates.push({ id: nextId(state.templates), ...action.payload });
+    setTab: (state, action: PayloadAction<QueueTab>) => {
+      state.tab = action.payload;
     },
-    deleteTemplate: (state, action: PayloadAction<number>) => {
-      state.templates = state.templates.filter((t) => t.id !== action.payload);
+    setSearch: (state, action: PayloadAction<string>) => {
+      state.search = action.payload;
     },
-
-    addApiKey: (state, action: PayloadAction<{ label: string }>) => {
-      state.apiKeys.push({
-        id: nextId(state.apiKeys),
-        label: action.payload.label,
-        key_prefix: `tk_live_${Math.random().toString(36).slice(2, 6)}`,
-        created_at: new Date().toISOString(),
-        last_used_at: null,
-        revoked: false,
-      });
+    setCompany: (state, action: PayloadAction<number | null>) => {
+      state.company = action.payload;
     },
-    revokeApiKey: (state, action: PayloadAction<number>) => {
-      const key = state.apiKeys.find((k) => k.id === action.payload);
-      if (key) key.revoked = true;
+    setFilters: (state, action: PayloadAction<Partial<TicketFilters>>) => {
+      state.filters = { ...state.filters, ...action.payload };
     },
-
-    addDoc: (state, action: PayloadAction<Omit<TicketDoc, "id" | "updated_at">>) => {
-      state.docs.push({
-        id: nextId(state.docs),
-        ...action.payload,
-        updated_at: new Date().toISOString(),
-      });
+    clearFilters: (state) => {
+      state.filters = noFilters;
     },
-    deleteDoc: (state, action: PayloadAction<number>) => {
-      state.docs = state.docs.filter((d) => d.id !== action.payload);
+    openNew: (state, action: PayloadAction<boolean>) => {
+      state.newOpen = action.payload;
     },
-
-    resetTicketsState: () => initialState,
+    openClosing: (state, action: PayloadAction<boolean>) => {
+      state.closingOpen = action.payload;
+    },
+    resetTickets: () => initialState,
   },
 });
 
 export const {
-  setTicketUserLevels,
-  setActiveTab,
-  setSelectedTicketId,
-  setQuickFilter,
-  setSearchText,
-  setStatusFilter,
-  setCompanyFilter,
-  setReplyDraft,
-  setReplyIsInternal,
-  setHistoryCompanyFilter,
-  setConfigSearchText,
-  setTemplateSearchText,
-  setDocSearchText,
-  createTicket,
-  updateTicketStatus,
-  updateTicketPriority,
-  assignTicket,
-  addMessage,
-  addConfig,
-  deleteConfig,
-  addTemplate,
-  deleteTemplate,
-  addApiKey,
-  revokeApiKey,
-  addDoc,
-  deleteDoc,
-  resetTicketsState,
-} = ticketsSlice.actions;
-export default ticketsSlice.reducer;
+  startLoad,
+  setTickets,
+  failLoad,
+  setLookups,
+  setAssignees,
+  selectTicket,
+  setDetail,
+  setAttachments,
+  failDetail,
+  startWork,
+  endWork,
+  upsertTicket,
+  addComment,
+  appendComments,
+  refreshHeader,
+  setPending,
+  applyPending,
+  setTab,
+  setSearch,
+  setCompany,
+  setFilters,
+  clearFilters,
+  openNew,
+  openClosing,
+  resetTickets,
+} = devTicketsSlice.actions;
+
+export default devTicketsSlice.reducer;

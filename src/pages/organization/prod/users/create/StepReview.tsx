@@ -61,7 +61,7 @@ const StepReview = ({
   return (
     <div className="max-w-[460px]">
       <div className="flex items-center gap-3 mb-4">
-        <div className="w-11 h-11 rounded-full bg-[#1e2a4a] text-custom-white flex items-center justify-center text-[15px] font-medium flex-shrink-0">
+        <div className="w-11 h-11 rounded-full bg-brand_navy text-custom-white flex items-center justify-center text-[15px] font-medium flex-shrink-0">
           {initials}
         </div>
         <div>
@@ -191,7 +191,7 @@ const StepReview = ({
           disabled={!canSubmit}
           className={`w-full text-[13px] font-medium py-2.5 rounded-lg text-custom-white ${
             canSubmit
-              ? "bg-[#1e2a4a] hover:bg-[#1e2a4a]/85"
+              ? "bg-brand_navy hover:bg-brand_navy/85"
               : "bg-gray-300 cursor-not-allowed"
           }`}
         >
