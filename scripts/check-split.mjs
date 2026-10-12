@@ -59,6 +59,10 @@ for (const f of files) {
   const re = /(import|export)(\s+type)?\s*([^'";]*?)\s*from\s*["'](\.[^"']*)["']|import\s*\(\s*["'](\.[^"']*)["']\s*\)|import\s+["'](\.[^"']*)["']/g;
   for (const m of src.matchAll(re)) {
     const spec = m[4] || m[5] || m[6];
+    // `./thing.html?raw`, `?url`, `?inline` — Vite hands back the file's
+    // contents or its URL, not a module. There is no edge to record and no
+    // .ts to resolve to, and the target is often outside src (public/).
+    if (/\?(raw|url|inline)$/.test(spec)) continue;
     const to = resolve(f, spec);
     if (!to) { unresolved.push(`${f} -> ${spec}`); continue; }
     every.push(to);

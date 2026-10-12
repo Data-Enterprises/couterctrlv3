@@ -189,10 +189,10 @@ export const navigation: Navigation[] = [
     isVisible: true,
   },
   {
-    name: "Invoices",
+    name: "AWG Invoices",
     href: "invoices",
     icon: DocumentArrowUpIcon,
-    // Desktop only — reading a fixed-width file is a two-panel job.
+    // Desktop only — correcting a line means eight columns side by side.
     mobile: false,
     children: [],
     childOpen: false,
@@ -635,7 +635,7 @@ export const categories: NavCategory[] = [
         isVisible: true,
       },
       {
-        name: "Invoices",
+        name: "AWG Invoices",
         href: "invoices",
         icon: DocumentArrowUpIcon,
         mobile: false,
@@ -669,13 +669,18 @@ export const categories: NavCategory[] = [
         name: "Tickets",
         href: "tickets",
         icon: TicketIcon,
-        // An experiment on hold. Programmer tier: it is not answerable to a
-        // client, and like every Coming Soon page it only exists in the dev UI
-        // tree, against the dev API. Desktop only.
+        // Owner and up, so the client half can be tested by somebody who
+        // really is one: both capability flags trip at level 8, so a level-7
+        // account gets the client view from the server rather than from a
+        // preview switch. That is the only way to prove the internal-note
+        // filter, which has never been exercised by a non-tech.
+        //
+        // Still Coming Soon: dev UI tree only, against the dev API, desktop
+        // only.
         mobile: false,
         children: [],
         childOpen: false,
-        userLevels: PROGRAMMER_ONLY_LEVELS,
+        userLevels: COMING_SOON_LEVELS,
         isHovering: false,
         isVisible: true,
       },

@@ -1,7 +1,7 @@
 import { useAppSelector } from "../../hooks";
 import { DEV_API_URL } from "../../hooks/useDevApi";
 import DevOnlyNotice from "../../components/DevOnlyNotice";
-import DevInvoices from "./dev/Invoices";
+import DevInvoices from "./dev/AwgInvoices";
 
 /**
  * Invoices is a Coming Soon page: dev only.

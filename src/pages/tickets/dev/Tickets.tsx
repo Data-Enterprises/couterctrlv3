@@ -1,118 +1,115 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
+import {
+  clearFilters,
+  openNew,
+  setFilters,
+  setSearch,
+  setTab,
+} from "../../../features/dev/devTicketsSlice";
 import { useTicketsCtx } from "./hooks";
-import { useResizableBox } from "../../../hooks/useResizableBox";
-import ResizeHandle from "../../../components-dev/ResizeHandle";
-import { getUserLevels } from "../../../api/team";
-import { setTicketUserLevels } from "../../../features/dev/devTicketsSlice";
-import { useToast } from "../../../components/toasts/hooks/useToast";
-import type { JsonError, UserLevelJsonResp } from "../../../interfaces";
-import { setActiveTab, type TicketsTab } from "../../../features/dev/devTicketsSlice";
-import { isElevatedTicketUser } from "./access";
-import TicketsTabView from "./tickets/TicketsTab";
-import HistoryTab from "./history/HistoryTab";
-import ConfigsTab from "./configs/ConfigsTab";
-import TemplatesTab from "./templates/TemplatesTab";
-import ApiKeysTab from "./apiKeys/ApiKeysTab";
-import TicketDocsTab from "./docs/TicketDocsTab";
+import { priorityCounts, statusCounts } from "./ticketsUtils";
+import TicketInbox from "./TicketInbox";
+import TicketDetail from "./TicketDetail";
+import TicketSidebar from "./TicketSidebar";
+import NewTicketModal from "./NewTicketModal";
+import CloseTicketModal from "./CloseTicketModal";
 
-const ALL_TABS: { id: TicketsTab; label: string; elevatedOnly?: boolean }[] = [
-  { id: "tickets", label: "Tickets" },
-  { id: "configs", label: "Configs" },
-  { id: "templates", label: "Templates" },
-  { id: "apiKeys", label: "API keys", elevatedOnly: true },
-  { id: "docs", label: "Ticket docs" },
-  { id: "history", label: "History" },
-];
-
+/**
+ * The Client Help Desk — one page, two views.
+ *
+ * Which view someone gets is decided by the server and arrives with the data:
+ * `canViewAll` brings the queue, every company's tickets and the internal
+ * notes; without it the page is a client's own tickets and the conversation on
+ * them. Nothing here derives that from a user level, because the rule lives
+ * server-side and the two would drift the first time a level moved.
+ *
+ * One route rather than two nav entries. The flags come back on every list and
+ * detail response, so the page always knows which of itself to be, and there
+ * is one screen to keep in step rather than two.
+ *
+ * LAYOUT
+ * Three columns, in the order you use them: the inbox picks a ticket, the
+ * thread is the ticket, and the sidebar is who sent it. Nothing stacks above
+ * them — the page title and the tab strip that used to sit there were spending
+ * two rows on what the inbox header now says in one, and the thread is the
+ * thing that wanted the height.
+ *
+ * The queue, its two narrowing pickers and the search box all live in the
+ * inbox header. They were briefly a rail of their own, which cost a whole
+ * column to say five short words and left the thread narrower than the list
+ * beside it.
+ *
+ * Three panels on the page's own ground, the way every other list-and-detail
+ * screen in the app is built — rounded, shadowed, each under its own navy
+ * header. The sidebar is the least load-bearing column, so it is the one that
+ * goes below `xl`.
+ */
 const Tickets = () => {
   const ctx = useTicketsCtx();
-  const toast = useToast();
-  const isElevated = isElevatedTicketUser(ctx.userLevel, ctx.userLevels);
-  const visibleTabs = ALL_TABS.filter((t) => !t.elevatedOnly || isElevated);
-
-  const { width, height, boxRef, handleProps } = useResizableBox({
-    storageKey: "tickets-panel-size",
-    defaultWidth: 1120,
-    defaultHeight: 640,
-    minWidth: 760,
-    maxWidth: 1600,
-    minHeight: 450,
-    maxHeight: 950,
-  });
 
   useEffect(() => {
-    if (ctx.userLevels.length > 0) return;
-    getUserLevels(ctx.url, ctx.token)
-      .then((resp) => {
-        const j: UserLevelJsonResp = resp.data;
-        if (j.error === 0) ctx.dispatch(setTicketUserLevels(j.levels));
-      })
-      .catch((err: JsonError) => toast.error(err.message));
+    // Once, on open: the queue and the pickers. Reloading is explicit.
+    ctx.load();
   }, []);
 
-  // A non-elevated user could have been on API keys before their level was
-  // re-evaluated (or before userLevels finished loading) — bounce back to
-  // Tickets rather than leaving them stranded on a tab they can't see.
-  useEffect(() => {
-    if (ctx.activeTab === "apiKeys" && !isElevated) {
-      ctx.dispatch(setActiveTab("tickets"));
-    }
-  }, [ctx.activeTab, isElevated]);
+  const byStatus = useMemo(() => statusCounts(ctx.tickets), [ctx.tickets]);
+  const byPriority = useMemo(() => priorityCounts(ctx.tickets), [ctx.tickets]);
 
-  const renderTab = () => {
-    switch (ctx.activeTab) {
-      case "tickets":
-        return <TicketsTabView isElevated={isElevated} />;
-      case "history":
-        return <HistoryTab isElevated={isElevated} />;
-      case "configs":
-        return <ConfigsTab isElevated={isElevated} />;
-      case "templates":
-        return <TemplatesTab />;
-      case "apiKeys":
-        return isElevated ? <ApiKeysTab /> : null;
-      case "docs":
-        return <TicketDocsTab />;
-      default:
-        return null;
-    }
+  const refresh = () => {
+    // A poll has already fetched the newer queue, so applying it is instant
+    // and costs no call. With nothing held, this is a real fetch as before.
+    if (ctx.pending) ctx.applyPending();
+    else ctx.load();
   };
 
   return (
-    <div className="min-h-[calc(100vh-3rem)] pt-12 px-4 pb-4 flex justify-center">
-      <div
-        ref={boxRef}
-        className="relative max-w-[95vw] max-h-[calc(100vh-8rem)] flex flex-col rounded-xl shadow-lg overflow-hidden bg-custom-white self-start"
-        style={{ width, height }}
-      >
-        <div className="bg-[#1e2a4a] px-3 py-2 flex-shrink-0 flex items-center gap-3">
-          <span className="text-custom-white font-semibold text-[13px] flex-shrink-0">
-            Client Help Desk
-          </span>
-        </div>
+    <div className="flex h-[calc(100vh-3rem)] gap-3 bg-bkg p-3">
+      <TicketInbox
+        rows={ctx.rows}
+        selectedId={ctx.selectedId}
+        onSelect={ctx.open}
+        isTech={ctx.isTech}
+        loading={ctx.loading}
+        tab={ctx.tab}
+        counts={ctx.counts}
+        onTab={(tab) => ctx.dispatch(setTab(tab))}
+        search={ctx.search}
+        onSearch={(value) => ctx.dispatch(setSearch(value))}
+        filters={ctx.filters}
+        onFilters={(next) => ctx.dispatch(setFilters(next))}
+        onClearFilters={() => ctx.dispatch(clearFilters())}
+        statusCounts={byStatus}
+        priorityCounts={byPriority}
+        pending={Boolean(ctx.pending)}
+        onRefresh={refresh}
+        /*
+         * Filing is the client's action.
+         *
+         * A ticket takes its company from whoever opens it, so a tech filing
+         * one on a client's behalf would file it under ours — the endpoint
+         * refuses any other company outright. The button would be a way to
+         * misfile rather than a way to help, so a tech does not get one.
+         */
+        onNew={ctx.isTech ? undefined : () => ctx.dispatch(openNew(true))}
+        error={ctx.error}
+      />
 
-        <div className="flex border-b border-gray-100 flex-shrink-0">
-          {visibleTabs.map((t) => (
-            <button
-              key={t.id}
-              onClick={() => ctx.dispatch(setActiveTab(t.id))}
-              className={`text-[12px] font-semibold py-2.5 px-4 whitespace-nowrap border-b-2 transition-colors ${
-                ctx.activeTab === t.id
-                  ? "border-[#1e2a4a] text-[#1e2a4a]"
-                  : "border-transparent text-content"
-              }`}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
-
-        <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
-          {renderTab()}
-        </div>
-
-        <ResizeHandle {...handleProps} />
+      <div className="flex min-w-0 flex-1 flex-col">
+        <TicketDetail ctx={ctx} />
       </div>
+
+      {ctx.detail && (
+        <div className="hidden xl:flex">
+          <TicketSidebar
+            ticket={ctx.detail}
+            tickets={ctx.tickets}
+            onSelect={ctx.open}
+          />
+        </div>
+      )}
+
+      {ctx.newOpen && <NewTicketModal ctx={ctx} />}
+      {ctx.closingOpen && <CloseTicketModal ctx={ctx} />}
     </div>
   );
 };

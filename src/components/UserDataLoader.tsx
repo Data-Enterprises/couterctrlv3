@@ -8,7 +8,7 @@ import { getUserStores, getUserPrefs } from "../api/user";
 import { getGroups } from "../api/groups";
 
 import { setUserId } from "../features/userSlice";
-import { setGroups, type Group } from "../features/groupSlice";
+import { emptyGroup, setGroups, type Group } from "../features/groupSlice";
 import { setLastRoute } from "../features/navSlice";
 import { isDevOnlyRoute } from "./navigation/utils";
 import {
@@ -189,8 +189,21 @@ const UserDataLoader = () => {
             // the picker would show it under the wrong list. The group itself
             // says which side it belongs to.
             if (selectedGroup.is_shared) dispatch(setType("Shared"));
-          } else if (selectedGroup?.is_shared) {
-            dispatch(setType("Group"));
+          } else {
+            /**
+             * Nothing to restore, so nothing stays selected.
+             *
+             * This used to move the TYPE back to Group and leave the group
+             * itself alone, which is how a shared group ended up showing
+             * under Group: prod's picker lists only `!is_shared`, so the
+             * selection was a name the list it sat above could not contain.
+             * Switching Mode makes that the normal case rather than an edge
+             * one — the search slice survives the switch, the group list is
+             * refetched from the other API, and a group that exists in one
+             * need not exist in the other at all.
+             */
+            dispatch(setSelectedGroup(emptyGroup));
+            if (search.type === "Shared") dispatch(setType("Group"));
           }
         }
       })

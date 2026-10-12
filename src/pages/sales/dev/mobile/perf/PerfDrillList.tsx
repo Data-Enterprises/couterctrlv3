@@ -67,6 +67,8 @@ interface ItemProps {
   onQuery: (q: string) => void;
   partial: boolean;
   note: string;
+  /** Nothing sold this week — the rows on screen are last year's, at $0.00. */
+  noTy: boolean;
 }
 
 interface Props {
@@ -198,6 +200,12 @@ const PerfDrillList = ({
           dir={items.sortDir}
           onChange={items.onSort}
         />
+
+        {!shownDay && items.noTy && (
+          <p className="border-b border-gray-100 bg-gray-100 px-3.5 py-2 text-[11.5px] font-semibold text-content">
+            Nothing sold this week. Showing last year's items.
+          </p>
+        )}
 
         {!shownDay && items.partial && (
           <p className="border-b border-gray-100 bg-gray-100 px-3.5 py-2 text-[11.5px] font-semibold text-content">

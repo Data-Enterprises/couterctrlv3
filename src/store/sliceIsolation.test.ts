@@ -43,6 +43,10 @@ const DEV_ONLY_SLICES = new Set([
   // What the Sales comparison has already fetched. The comparison itself is
   // dev-only, so there is nothing in prod for it to be a twin of.
   "salesCache",
+  // Tickets joined these when its mock was replaced: the prod slice held
+  // seeded fake rows and nothing read it, since the page never renders on
+  // the prod API at all.
+  "tickets",
 ]);
 
 describe("dev and prod slices stay isolated", () => {

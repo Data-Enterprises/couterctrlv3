@@ -11,6 +11,7 @@ import { legacyEntryPath } from "../../constants/legacyPages";
 import { COMING_SOON_CATEGORY } from "../../utils/comingSoon";
 import { resetNav, setIsNavOpen, setLastRoute } from "../../features/navSlice";
 import {
+  openReportIssue,
   resetAppSlice,
   setApiEnv,
   setUiMode,
@@ -414,6 +415,38 @@ const TitleBar = () => {
               </button>
             ) : null}
             */}
+            {/* File a ticket about the page you are on.
+
+                Raises a flag rather than navigating: sending somebody to the
+                help desk to describe a problem they are looking at asks them
+                to leave the evidence behind. App draws the form over
+                whatever page they are on.
+
+                The flag is on the shared slice because this bar is prod-tree
+                and the form is dev. It carries the page and its area, which
+                the nav has already worked out for its own highlight. */}
+            {context.apiEnv === "dev" ? (
+              <button
+                onClick={() => {
+                  setAvatarOpen(false);
+                  dispatch(
+                    openReportIssue({
+                      from: location.pathname,
+                      page: activeCategory?.pages.find(
+                        (p) => p.href === currentPath,
+                      )?.name,
+                      area: activeCategory?.name,
+                    }),
+                  );
+                }}
+                className="w-full text-left px-4 py-2.5 text-[13px] font-medium text-content hover:bg-gray-50 transition-colors border-b border-gray-100 flex items-center gap-2"
+              >
+                <span className="flex-1">Report an issue</span>
+                <span className="text-[11px] text-content/85">
+                  from this page
+                </span>
+              </button>
+            ) : null}
             {SHOW_API_ENV_SWITCH && user.userLevel >= 7 ? (
               <div
                 className={`px-4 py-2.5 border-b border-gray-100 flex items-center gap-2 ${

@@ -2641,6 +2641,11 @@ export interface InvoiceLineRow {
   lineNumber: number;
   upc: string;
   description: string;
+  /** The vendor's own item number, which is what a call to AWG is about — the
+   *  UPC identifies the product, this identifies their billing of it. */
+  awgCode: string;
+  /** Pack size as the vendor prints it ("8 OZ", "CARTON"), not a number. */
+  size: string;
   /** Selling units per case — the bridge between a case cost and a unit
    *  retail, without which the two columns look like they should match. */
   pack: string;

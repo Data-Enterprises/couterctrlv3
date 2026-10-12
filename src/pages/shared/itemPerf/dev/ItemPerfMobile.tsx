@@ -31,6 +31,7 @@ import type { JsonError } from "../../../../interfaces";
 import type { HelpPage } from "../../../../constants/helpPages";
 import { shiftIso } from "../../../../utils/grading";
 import { applyStoreNumberToName } from "../../../../utils/storeIdentity";
+import { setLastStore } from "../../../../features/searchSlice";
 import MobileSortChips, {
   type SortOption,
 } from "../../../../components-dev/mobile/MobileSortChips";
@@ -146,6 +147,7 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
   const context = useAppSelector((s) => s.app);
   const search = useAppSelector((s) => s.search);
   const assignedStores = useAppSelector((s) => s.user.assignedStores);
+  const lastStore = useAppSelector((s) => s.search.lastStore);
   const perf = useAppSelector((s) => s.dev.itemPerf);
 
   /**
@@ -232,7 +234,31 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
     dispatch(setItemPerfDimension(dimension));
   }, [dimension]);
 
+  /**
+   * Start on the store the app already knows about.
+   *
+   * These three pages keep a snapshot each, and the first visit to one starts
+   * from nothing — so arriving at Categories after searching Sub Dept Margins
+   * asked for the same store again. Sub Dept Margins and Vendors hand each
+   * other their rows because they share an endpoint; Categories reads a
+   * different one and never qualified, which is why only some of them
+   * remembered.
+   *
+   * `lastStore` is the app's own answer to "which store were they looking
+   * at", so seeding from it covers all three, and covers arriving from Sales
+   * or anywhere else that sets it. Only a store still assigned to this user:
+   * a stale id would preselect something they cannot search.
+   */
+  useEffect(() => {
+    if (perf.storeId !== 0 || lastStore === 0) return;
+    if (!assignedStores.some((s) => s.storeid === lastStore)) return;
+    dispatch(setItemPerfStore(lastStore));
+  }, [perf.storeId, lastStore, assignedStores, dispatch]);
+
   const fetchItems = async () => {
+    // So the next page — and the next visit — starts here rather than asking
+    // again.
+    dispatch(setLastStore(perf.storeId));
     // Stamped so a result from an earlier load, or another page's, is dropped
     // by the slice rather than landing on this screen.
     const gen = perf.loadGen + 1;

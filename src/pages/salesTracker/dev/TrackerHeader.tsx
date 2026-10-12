@@ -1,13 +1,10 @@
-import { useState } from "react";
 import {
   MagnifyingGlassIcon,
   MinusIcon,
   PlusIcon,
 } from "@heroicons/react/20/solid";
 import { formatCurrencyCompact } from "../../../utils";
-import InfoButton from "../../../components-dev/InfoButton";
-import InfoPopover from "../../../components-dev/InfoPopover";
-import { SALES_TRACKER_INFO } from "./salesTrackerInfo";
+import ComingSoonHelp from "../../../components-dev/ComingSoonHelp";
 import { signedPct } from "./trackerTone";
 
 interface TrackerHeaderProps {
@@ -46,7 +43,6 @@ const TrackerHeader = ({
   pctChange,
   onOpenSearch,
 }: TrackerHeaderProps) => {
-  const [infoOpen, setInfoOpen] = useState(false);
 
   return (
     <div className="bg-brand_navy rounded-t-xl px-4 pt-1 pb-2.5 flex flex-col gap-0">
@@ -123,15 +119,7 @@ const TrackerHeader = ({
         <div className="w-px h-4 bg-custom-white/15 flex-shrink-0" />
 
         <div className="relative flex-shrink-0">
-          <InfoButton onClick={() => setInfoOpen((prev) => !prev)} />
-          {infoOpen && (
-            <InfoPopover
-              title={SALES_TRACKER_INFO.title}
-              purpose={SALES_TRACKER_INFO.purpose}
-              glossary={SALES_TRACKER_INFO.glossary}
-              onClose={() => setInfoOpen(false)}
-            />
-          )}
+          <ComingSoonHelp />
         </div>
       </div>
     </div>

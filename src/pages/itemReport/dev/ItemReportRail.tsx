@@ -6,9 +6,7 @@ import {
   toggleItemReportSection,
 } from "../../../features/dev/devItemReportSlice";
 import { ChevronDownIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
-import InfoButton from "../../../components-dev/InfoButton";
-import InfoPopover from "../../../components-dev/InfoPopover";
-import { ITEM_REPORT_RAIL_INFO } from "./itemReportRailInfo";
+import ComingSoonHelp from "../../../components-dev/ComingSoonHelp";
 import { formatCurrency2, formatDateSimple } from "../../../utils";
 import { formatPct, pillClass } from "../../../utils/severity";
 import { actualPricePoints, unitPrice } from "../../../utils/pricePoints";
@@ -406,7 +404,6 @@ const ItemReportRail = ({
    *  selected item that closes on its own — the route-change argument that put
    *  the rest of this page in Redux doesn't apply. */
   const [openPrice, setOpenPrice] = useState<number | null>(null);
-  const [infoOpen, setInfoOpen] = useState(false);
   const [actionOpen, setActionOpen] = useState(false);
   /** Sections showing their full list. Local, not slice: unlike a fold — which
    *  is a standing preference — this is about the item currently in front of
@@ -551,16 +548,7 @@ const ItemReportRail = ({
               things the left panel's "?" was explaining from across the page,
               or not at all. */}
           <div className="relative flex-shrink-0">
-            <InfoButton onClick={() => setInfoOpen((prev) => !prev)} />
-            {infoOpen && (
-              <InfoPopover
-                title={ITEM_REPORT_RAIL_INFO.title}
-                purpose={ITEM_REPORT_RAIL_INFO.purpose}
-                glossary={ITEM_REPORT_RAIL_INFO.glossary}
-                onClose={() => setInfoOpen(false)}
-                className="min-w-[300px] max-w-[520px]"
-              />
-            )}
+            <ComingSoonHelp />
           </div>
         </div>
 
