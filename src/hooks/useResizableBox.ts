@@ -40,7 +40,7 @@ export const useResizableBox = ({
   maxHeight = 1100,
   heightProperty = "height",
 }: UseResizableBoxOptions) => {
-  const [size, setSize] = useState<Size>(() => {
+  const read = (): Size => {
     try {
       const stored = localStorage.getItem(storageKey);
       if (stored) {
@@ -54,7 +54,26 @@ export const useResizableBox = ({
       // Malformed or inaccessible storage — fall back to defaults.
     }
     return { width: defaultWidth, height: defaultHeight };
-  });
+  };
+
+  const [size, setSize] = useState<Size>(read);
+
+  /**
+   * A caller that changes its key wants a different remembered size — one
+   * key per Admin tab, say, so a narrow form is not stuck with the width a
+   * wide grid was dragged to.
+   *
+   * Done DURING RENDER rather than in an effect, which looks odd and is the
+   * documented way to adjust state when a prop changes. It has to be
+   * synchronous: the persist effect below writes `size` under `storageKey`,
+   * so a frame where the new key is paired with the old size would save the
+   * old size over whatever the new key had.
+   */
+  const [keyInState, setKeyInState] = useState(storageKey);
+  if (keyInState !== storageKey) {
+    setKeyInState(storageKey);
+    setSize(read());
+  }
   const [isResizing, setIsResizing] = useState(false);
   const boxRef = useRef<HTMLDivElement>(null);
   const dragStart = useRef({ x: 0, y: 0, width: defaultWidth, height: defaultHeight });
