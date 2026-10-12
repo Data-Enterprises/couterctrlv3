@@ -87,11 +87,6 @@ interface Props {
   /** Full width, or the right panel. The same view either way — only the
    *  room changes, and so does what the header offers. */
   expanded: boolean;
-  /** Where Back goes when the panel is expanded. Sales collapses it to the
-   *  ledger; the Comparison page returns to its search, and a header reading
-   *  "Back to the ledger" on a page with no ledger is a lie. */
-  onBack?: () => void;
-  backLabel?: string;
   twStart: string;
   twEnd: string;
   lwStart: string;
@@ -105,8 +100,6 @@ const DeptMatrixPanel = ({
   gradingMetric,
   threshold,
   expanded,
-  onBack,
-  backLabel = "Back to the ledger",
   twStart,
   twEnd,
   lwStart,
@@ -132,7 +125,7 @@ const DeptMatrixPanel = ({
 
   const band = threshold * DEPT_BAND;
 
-  const close = () => (onBack ? onBack() : dispatch(setMatrixOpen(false)));
+  const close = () => dispatch(setMatrixOpen(false));
 
   const open = (m: Matrix, cell: Cell, deptName: string) => {
     const store = m.rows.find(
@@ -180,7 +173,7 @@ const DeptMatrixPanel = ({
             onClick={close}
             className="text-custom-white text-[12.5px] font-semibold hover:underline mr-2"
           >
-            ‹ {backLabel}
+            ‹ Back to the ledger
           </button>
         ) : (
           <button

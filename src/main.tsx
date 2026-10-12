@@ -15,7 +15,6 @@ import Categories from "./pages/categories/Categories.tsx";
 import Vendors from "./pages/vendors/Vendors.tsx";
 import InventorySubDept from "./pages/inventory/InventorySubDept.tsx";
 import InventoryVendor from "./pages/inventory/InventoryVendor.tsx";
-import Comparison from "./pages/comparison/Comparison.tsx";
 import ItemReport from "./pages/itemReport/ItemReport.tsx";
 import Invoices from "./pages/invoices/Invoices.tsx";
 import LpActions from "./pages/lpActions/LpActions.tsx";
@@ -75,7 +74,6 @@ createRoot(document.getElementById("root")!).render(
                   element={<InventorySubDept />}
                 />
                 <Route path="inventory-vendor" element={<InventoryVendor />} />
-                <Route path="comparison" element={<Comparison />} />
                 <Route path="item-report" element={<ItemReport />} />
                 <Route path="invoices" element={<Invoices />} />
                 <Route path="lp-actions" element={<LpActions />} />
