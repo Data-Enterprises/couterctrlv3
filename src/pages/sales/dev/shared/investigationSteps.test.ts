@@ -14,6 +14,7 @@ const facts = (over: Partial<ItemFacts> = {}): ItemFacts => ({
   theirsLy: 0,
   mineUnits: 0,
   theirsUnits: 0,
+  weighted: false,
   mineCogs: 0,
   theirsCogs: 0,
   mineSales: over.mineTy ?? 0,

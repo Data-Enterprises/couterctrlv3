@@ -5,6 +5,7 @@ import type {
   SubsPricePoint,
 } from "../../../../interfaces";
 import { calculateCogs } from "../../../../utils/cogs";
+import { isWeighted, pricedUnits } from "../../../../utils/pricedUnits";
 import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice";
 
 /**
@@ -76,6 +77,15 @@ export interface ItemFacts {
   theirsLy: number;
   mineUnits: number;
   theirsUnits: number;
+  /**
+   * Sold by weight, so `mineUnits` is pounds and the realised figure is a
+   * price PER POUND.
+   *
+   * Carried on the fact rather than worked out again wherever it is needed:
+   * every label, every ratio and the price ladder all have to agree about
+   * which unit the item is in, and a second derivation is a second answer.
+   */
+  weighted: boolean;
   /**
    * What the goods cost each store, through the shared `calculateCogs`.
    *
@@ -323,6 +333,15 @@ export const ladderSays = (ladder: PriceLadder): string | null => {
   const prices = pts.map((p) => p.price);
   const lo = Math.min(...prices);
   const hi = Math.max(...prices);
+
+  /* A weighted item has no price ladder to summarise. Saying it "rang at 4
+     prices from $7.62 to $8.46" states as a pricing fact what is really four
+     packages of different sizes, and the reader acts on it. */
+  if (ladder.weighted)
+    return (
+      `Sold by weight. ${whole(pts.length)} rings between ${cash(lo)} and ${cash(hi)}, ` +
+      "which is the spread of package sizes rather than of prices — the rate is the price per pound above."
+    );
   const total = pts.reduce((t, p) => t + p.units, 0);
 
   /* The band the units actually went at: the modal price and anything
@@ -415,16 +434,30 @@ export const judge = (f: ItemFacts, bands: Bands = DEFAULT_BANDS): ItemVerdict =
 /** `total_sales - total_tax`, the basis the whole Sales page is on — see the
  *  note in PopupSubDeptList for why it is not `net_sales`. */
 const money = (r: SubDeptMargin, metric: GradingMetric) =>
-  metric === "qty" ? r.qty : r.total_sales - r.total_tax;
+  // On quantity, the figure is the unit the item is PRICED in — pounds on a
+  // scale item, where `qty` counts rings. Same rule as the cost beside it.
+  metric === "qty" ? pricedUnits(r.qty, r.weight) : r.total_sales - r.total_tax;
 
 interface Tally {
   money: number;
+  /**
+   * Units in the unit the item is PRICED in.
+   *
+   * `pricedUnits`, not `qty`: on a scale item qty counts rings and weight
+   * carries the pounds, which is the rule `calculateCogs` below already
+   * follows and the rule the realised price depends on. Counting rings here
+   * made a 1.7 lb ring of ground beef read as one unit at $8.46 — a package
+   * total presented as a shelf price.
+   */
   units: number;
   /** Summed per LINE, never derived from a total. Cost is per day and per
    *  item, and a week's cost is the sum of its days. */
   cogs: number;
   /** Always money, even when `money` above is a unit count. */
   dollars: number;
+  /** Any row for this item carried a weight, so its units are pounds and its
+   *  realised figure is a price per pound. */
+  weighted: boolean;
   description: string;
   vendorName: string;
 }
@@ -439,12 +472,14 @@ const tally = (rows: SubDeptMargin[], metric: GradingMetric) =>
         units: 0,
         cogs: 0,
         dollars: 0,
+        weighted: false,
         description: r.product_description,
         vendorName: r.vendor_name,
       };
     }
     acc[key].money += money(r, metric);
-    acc[key].units += r.qty;
+    acc[key].units += pricedUnits(r.qty, r.weight);
+    if (isWeighted(r.weight)) acc[key].weighted = true;
     acc[key].dollars += r.total_sales - r.total_tax;
     acc[key].cogs += calculateCogs(
       r.net_cost,
@@ -527,6 +562,9 @@ export const buildFacts = (input: InvestigationInput): ItemVerdict[] => {
           theirsLy: at(tLy, c, "money"),
           mineUnits: at(mTw, c, "units"),
           theirsUnits: at(tTw, c, "units"),
+          // Either store selling it by weight makes it a weighted item; the
+          // two cannot be on different units for the same product code.
+          weighted: !!(mTw[c]?.weighted || tTw[c]?.weighted),
           mineCogs: at(mTw, c, "cogs"),
           theirsCogs: at(tTw, c, "cogs"),
           mineSales: at(mTw, c, "dollars"),
@@ -846,14 +884,28 @@ export interface PriceLadder {
   blended: number | null;
   unitsPerBasket: number | null;
   /** More than one price, and far enough apart to be a decision rather than
-   *  a scale item's rounding. */
+   *  a scale item's rounding. Never true on a weighted item — see `weighted`. */
   promo: boolean;
+  /**
+   * The item is sold by weight, so these points are NOT a price ladder.
+   *
+   * The price-points endpoint carries no weight column: it divides a ring's
+   * money by its scan count, which on a scale item is 1. So each "price" here
+   * is what one package TOTALLED — $8.46 for 1.7 lb of ground beef — and the
+   * spread between them is the spread of package sizes, not of prices.
+   *
+   * Everything that reads a shelf price out of these points has to stop at
+   * this flag. The price per pound is on the item facts, from money over
+   * pounds, and is the only per-unit figure this data can honestly produce.
+   */
+  weighted: boolean;
 }
 
 export const ladderFor = (
   points: SubsPricePoint[],
   productCode: string,
   bands: Bands = DEFAULT_BANDS,
+  weighted = false,
 ): PriceLadder => {
   const mine = points
     .filter((p) => p.product_code === productCode)
@@ -880,6 +932,10 @@ export const ladderFor = (
     modal: mine.length ? mine[0].price : null,
     blended: units > 0 ? sales / units : null,
     unitsPerBasket: txns > 0 ? units / txns : null,
-    promo: mine.length > 1 && spread > bands.price,
+    // A weighted item rings a different total on every package, so the
+    // spread is always wide and would flag a promotion on every scale item in
+    // the department. Only a per-unit price can carry that claim.
+    promo: !weighted && mine.length > 1 && spread > bands.price,
+    weighted,
   };
 };
