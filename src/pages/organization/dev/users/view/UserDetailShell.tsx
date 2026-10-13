@@ -6,15 +6,17 @@ import { setAllSelectedBaseGroups } from "../../../../../features/dev/devBaseGro
 import type { JsonError } from "../../../../../interfaces";
 import { roles } from "../../constants";
 import BasicInfoTab from "./BasicInfoTab";
-import CompaniesTab from "./CompaniesTab";
-import BaseGroupsTab from "./BaseGroupsTab";
-import StoresTab from "./StoresTab";
+import AccessTab from "./AccessTab";
 
+/**
+ * Two tabs, not four. Companies, base groups and stores were three screens
+ * asking three halves of one question, each saving on its own — and between
+ * them they could not express a company with no stores, which had no row to
+ * tick anywhere. They are now one panel with one Save.
+ */
 const TABS = [
   { id: 1, label: "Basic info" },
-  { id: 2, label: "Companies" },
-  { id: 3, label: "Base groups" },
-  { id: 4, label: "Stores" },
+  { id: 2, label: "Access" },
 ];
 
 interface UserDetailShellProps {
@@ -53,11 +55,7 @@ const UserDetailShell = ({ onBack }: UserDetailShellProps) => {
       case 1:
         return <BasicInfoTab />;
       case 2:
-        return <CompaniesTab />;
-      case 3:
-        return <BaseGroupsTab />;
-      case 4:
-        return <StoresTab />;
+        return <AccessTab />;
       default:
         return null;
     }
