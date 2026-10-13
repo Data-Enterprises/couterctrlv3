@@ -149,16 +149,40 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
     [sourceUsers],
   );
 
-  const companyOptions = useMemo(
-    () => [
+  /**
+   * The companies actually present in this grid, with how many people are in
+   * each.
+   *
+   * It used to list the viewer's own companies, which was wrong in both
+   * directions once programmers could be handed any company: it offered
+   * companies nobody in the list belongs to, and hid the ones that people in
+   * the list DO belong to but the viewer does not. Either way an option could
+   * filter to nothing, or a company sitting in front of you had no option.
+   *
+   * Reading them off the rows keeps every option matching at least one person,
+   * for every level, and needs no second source to stay in step. A company
+   * with nobody in it is absent — which is the same answer the filter would
+   * have given.
+   */
+  const companyOptions = useMemo(() => {
+    const counts = new Map<number, { name: string; count: number }>();
+    sourceUsers.forEach((u) =>
+      u.companies.forEach((c) => {
+        const seen = counts.get(c.company);
+        if (seen) seen.count += 1;
+        else counts.set(c.company, { name: c.name, count: 1 });
+      }),
+    );
+    return [
       { value: NO_COMPANY_VALUE, label: `No company (${noCompanyCount})` },
-      ...ctx.companies.map((c) => ({
-        value: String(c.company),
-        label: c.name,
-      })),
-    ],
-    [ctx.companies, noCompanyCount],
-  );
+      ...Array.from(counts.entries())
+        .sort((a, b) => a[1].name.localeCompare(b[1].name))
+        .map(([id, { name, count }]) => ({
+          value: String(id),
+          label: `${name} (${count})`,
+        })),
+    ];
+  }, [sourceUsers, noCompanyCount]);
 
   const handleEdit = (u: User) => {
     ctx.dispatch(setSelectedUserId(u.id));
