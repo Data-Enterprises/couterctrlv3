@@ -4,6 +4,7 @@ import { CameraIcon, ExclamationTriangleIcon } from "@heroicons/react/20/solid";
 import SingleStoreSearchCard from "../../../components-dev/SingleStoreSearchCard";
 import { setSelectedStore } from "../../../features/dev/devItemLookupSlice";
 import DevUpcScanner from "./DevUpcScanner";
+import { useScanGun } from "../../../components-dev/scanner/useScanGun";
 import RecentLookupsStrip from "./RecentLookupsStrip";
 import RecentLookupsCard from "./RecentLookupsCard";
 
@@ -50,6 +51,19 @@ const LookupEntryScreen = ({
     onSearch(upc);
   };
 
+  // A scan gun trigger pull is a camera read: already normalized, it searches
+  // at once. With no store picked there is nothing to search against yet, so
+  // the code waits in the field (the camera button is disabled for the same
+  // reason) and Search runs it once a store is chosen.
+  const gun = useScanGun((upc) => {
+    if (!hasStore) {
+      setManualUpc(upc);
+      return;
+    }
+    setManualUpc("");
+    handleScan(upc);
+  });
+
   return (
     // pb-14 clears the fixed bottom tab bar — 56px, outside document flow, so
     // nothing reserves space for it and the last recent row sits underneath it.
@@ -79,6 +93,8 @@ const LookupEntryScreen = ({
 
           <input
             type="text"
+            ref={gun.ref}
+            inputMode={gun.inputMode}
             value={manualUpc}
             onChange={(e) => setManualUpc(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleManualSearch()}

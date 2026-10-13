@@ -18,6 +18,7 @@ import SingleStoreSearchCard from "../../../../components-dev/SingleStoreSearchC
 import SingleDatePicker from "../../../../components-dev/datePickers/SingleDatePicker";
 import BottomSheet from "../../../../components-dev/BottomSheet";
 import ScannerView from "../../../../components-dev/scanner/ScannerView";
+import { useScanGun } from "../../../../components-dev/scanner/useScanGun";
 import { fetchItemRows } from "./fetchItemRows";
 import {
   addDays,
@@ -149,6 +150,11 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
   const assignedStores = useAppSelector((s) => s.user.assignedStores);
   const lastStore = useAppSelector((s) => s.search.lastStore);
   const perf = useAppSelector((s) => s.dev.itemPerf);
+  // A scan gun trigger pull, on either item field, does exactly what a camera
+  // read does: the normalized code becomes the query and the camera closes.
+  // One per field — only one of the two screens is up at a time.
+  const searchGun = useScanGun((upc) => dispatch(scannedUpc(upc)));
+  const listGun = useScanGun((upc) => dispatch(scannedUpc(upc)));
 
   /**
    * Which of the four screens is on.
@@ -756,10 +762,11 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
             <MagnifyingGlassIcon className="h-4 w-4 flex-none text-content/85" />
             <input
               id="item-perf-list-filter"
+              ref={listGun.ref}
               value={perf.itemQuery}
               onChange={(e) => dispatch(setItemQuery(e.target.value))}
               placeholder="Description or UPC"
-              inputMode="search"
+              inputMode={listGun.inputMode ?? "search"}
               enterKeyHint="search"
               aria-label="Filter items"
               className="min-w-0 flex-1 border-0 bg-transparent py-2.5 text-[14px] text-content placeholder:text-content/85"
@@ -1003,10 +1010,11 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
           <div className="mt-2 flex gap-2">
             <input
               id="item-perf-search"
+              ref={searchGun.ref}
               value={perf.itemQuery}
               onChange={(e) => dispatch(setItemQuery(e.target.value))}
               placeholder="Item name or UPC"
-              inputMode="search"
+              inputMode={searchGun.inputMode ?? "search"}
               enterKeyHint="search"
               className="min-w-0 flex-1 rounded-lg border-0 bg-bkg px-3 py-2.5 text-[14px] text-content placeholder:text-content/85"
               style={{
