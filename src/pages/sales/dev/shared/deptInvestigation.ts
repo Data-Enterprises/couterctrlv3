@@ -339,7 +339,7 @@ export const ladderSays = (ladder: PriceLadder): string | null => {
      packages of different sizes, and the reader acts on it. */
   if (ladder.weighted)
     return (
-      `Sold by weight. ${whole(pts.length)} rings between ${cash(lo)} and ${cash(hi)}, ` +
+      `Sold by weight. ${whole(pts.length)} package sizes between ${cash(lo)} and ${cash(hi)}, ` +
       "which is the spread of package sizes rather than of prices — the rate is the price per pound above."
     );
   const total = pts.reduce((t, p) => t + p.units, 0);
