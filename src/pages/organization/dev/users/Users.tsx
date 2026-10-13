@@ -6,7 +6,7 @@ import {
   setSelectedUserId,
 } from "../../../../features/dev/devUsersSlice";
 import UserGrid from "./UserGrid";
-import CreateUserWizard from "./create/CreateUserWizard";
+import AddUserPage from "./create/AddUserPage";
 import UserDetailShell from "./view/UserDetailShell";
 
 type View = "grid" | "create";
@@ -30,7 +30,7 @@ const Users = () => {
 
   if (view === "create") {
     return (
-      <CreateUserWizard
+      <AddUserPage
         onComplete={() => setView("grid")}
         onCancel={() => setView("grid")}
       />
