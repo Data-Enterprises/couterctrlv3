@@ -34,6 +34,7 @@ const facts = (over: Partial<ItemFacts> = {}): ItemFacts => ({
   theirsLy: 0,
   mineUnits: 0,
   theirsUnits: 0,
+  weighted: false,
   mineCogs: 0,
   theirsCogs: 0,
   // In money mode the metric figure and the dollar figure are the same
@@ -239,6 +240,80 @@ describe("buildFacts", () => {
     expect(out).toHaveLength(1);
     expect(out[0].mineTy).toBe(300);
     expect(out[0].mineUnits).toBe(14);
+  });
+
+  describe("items sold by weight", () => {
+    /* The failure this guards: 160 packages of chicken thighs weighing 506 lb
+       counted as 160 units, so the realised price read $4.30 a package where
+       the shelf said $1.36 a pound — and the cost beside it, which already
+       followed weight, disagreed with it. */
+    it("counts pounds, not rings", () => {
+      const out = buildFacts({
+        ...base,
+        mineTw: [
+          row({ total_sales: 688.19, total_tax: 0, qty: 160, weight: 506.03 }),
+        ],
+        theirsTw: [],
+      });
+      expect(out[0].mineUnits).toBeCloseTo(506.03, 2);
+      expect(out[0].weighted).toBe(true);
+    });
+
+    it("still counts rings where nothing was weighed", () => {
+      const out = buildFacts({
+        ...base,
+        mineTw: [row({ total_sales: 100, total_tax: 0, qty: 25, weight: 0 })],
+        theirsTw: [],
+      });
+      expect(out[0].mineUnits).toBe(25);
+      expect(out[0].weighted).toBe(false);
+    });
+
+    it("counts pounds on the quantity metric too", () => {
+      const out = buildFacts({
+        ...base,
+        metric: "qty",
+        mineTw: [row({ total_sales: 688.19, qty: 160, weight: 506.03 })],
+        theirsTw: [],
+      });
+      expect(out[0].mineTy).toBeCloseTo(506.03, 2);
+    });
+
+    it("makes the realised figure a price per pound", () => {
+      const out = buildFacts({
+        ...base,
+        mineTw: [
+          row({ total_sales: 688.19, total_tax: 0, qty: 160, weight: 506.03 }),
+        ],
+        theirsTw: [
+          row({
+            store_number: "020",
+            total_sales: 344.1,
+            total_tax: 0,
+            qty: 80,
+            weight: 253.0,
+          }),
+        ],
+      });
+      // Both stores sell it at the same $1.36/lb, so the price ratio is 1 —
+      // which counting rings would have reported as 1 as well, by accident.
+      // What matters is that the figure behind it is a rate per pound.
+      const mine = out[0].mineTy / out[0].mineUnits;
+      expect(mine).toBeCloseTo(1.36, 2);
+    });
+
+    it("is weighted when either store weighs it", () => {
+      const out = buildFacts({
+        ...base,
+        mineTw: [row({ total_sales: 10, qty: 2, weight: 0 })],
+        theirsTw: [
+          row({ store_number: "020", total_sales: 10, qty: 2, weight: 7.5 }),
+        ],
+      });
+      // One product code cannot be in pounds at one store and rings at
+      // another, so the pair is read in the unit either of them priced it in.
+      expect(out[0].weighted).toBe(true);
+    });
   });
 
   it("uses sales net of tax, not net_sales", () => {
@@ -764,8 +839,12 @@ describe("ladderSays", () => {
     unitsPerBasket: transactions > 0 ? units / transactions : null,
   });
 
-  const of = (points: ReturnType<typeof pt>[]): PriceLadder => ({
+  const of = (
+    points: ReturnType<typeof pt>[],
+    weighted = false,
+  ): PriceLadder => ({
     points,
+    weighted,
     modal: points.length
       ? points.reduce((m, p) => (p.units > m.units ? p : m)).price
       : null,
@@ -797,5 +876,53 @@ describe("ladderSays", () => {
   it("leaves the clause off when every basket took one", () => {
     const say = ladderSays(of([pt(5.0, 140, 140), pt(6.5, 10, 10)]))!;
     expect(say).not.toContain("at a time");
+  });
+});
+
+describe("a ladder for an item sold by weight", () => {
+  const pt = (price: number, units: number, transactions = units, days = 1) => ({
+    storeid: 1,
+    store_number: "010",
+    store_name: "Leitchfield",
+    product_code: "0001",
+    product_description: "Ground beef",
+    price,
+    units,
+    transactions,
+    net_sales: price * units,
+    first_sold: "2026-10-01",
+    last_sold: "2026-10-01",
+    days,
+    days_sold: ["2026-10-01"],
+  });
+
+  /* The screenshot this came from: four packages of 75% lean ground beef
+     ringing $7.62, $7.97, $8.11 and $8.46, every one of them a single scan.
+     The endpoint divides money by scan count, so each "price" is a package
+     total and the spread between them is the spread of package sizes. */
+  const rings = [pt(8.46, 1), pt(8.11, 1), pt(7.97, 1), pt(7.62, 1)];
+
+  it("does not call a spread of package sizes a promotion", () => {
+    expect(ladderFor(rings, "0001").promo).toBe(true);
+    expect(ladderFor(rings, "0001", undefined, true).promo).toBe(false);
+  });
+
+  it("says what the figures actually are", () => {
+    const say = ladderSays(ladderFor(rings, "0001", undefined, true));
+    expect(say).toContain("Sold by weight");
+    expect(say).toContain("package sizes");
+    // And never the claim it used to make.
+    expect(say).not.toContain("Rang at");
+    expect(say).not.toContain("Most units went at");
+  });
+
+  it("leaves an unweighted ladder reading as prices", () => {
+    const say = ladderSays(ladderFor(rings, "0001"));
+    expect(say).toContain("Rang at");
+  });
+
+  it("carries the flag so the panel can label pounds", () => {
+    expect(ladderFor(rings, "0001", undefined, true).weighted).toBe(true);
+    expect(ladderFor(rings, "0001").weighted).toBe(false);
   });
 });

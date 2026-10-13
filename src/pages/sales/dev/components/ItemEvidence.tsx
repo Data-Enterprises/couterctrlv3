@@ -264,7 +264,13 @@ const Timeline = ({
  * Bars are units, not money: the question is what customers actually paid,
  * and money would make a dear price with three sales look like a busy one.
  */
-const PriceChart = ({ points }: { points: PricePoint[] }) => {
+const PriceChart = ({
+  points,
+  unit,
+}: {
+  points: PricePoint[];
+  unit: string;
+}) => {
   if (points.length < 2) return null;
 
   const bins = new Map<number, number>();
@@ -312,7 +318,7 @@ const PriceChart = ({ points }: { points: PricePoint[] }) => {
             className={k === hot ? "fill-brand_navy" : "fill-brand_navy/35"}
           >
             <title>
-              {money(k)}–{money(k + 0.09)} · {count(u)} units
+              {money(k)}–{money(k + 0.09)} · {count(u)} {unit}
             </title>
           </rect>
         );
@@ -333,13 +339,13 @@ const PriceChart = ({ points }: { points: PricePoint[] }) => {
 };
 
 /** One price, and what went out at it. */
-const Rung = ({ p }: { p: PricePoint }) => (
+const Rung = ({ p, unit }: { p: PricePoint; unit: string }) => (
   <div className="flex items-baseline gap-2.5 py-1.5 border-b border-brand_navy/15 last:border-b-0">
     <span className="w-[62px] flex-shrink-0 text-[15px] font-bold tabular-nums text-content">
       {money(p.price)}
     </span>
     <span className="min-w-0 flex-1 text-[12px] text-content/85 tabular-nums truncate">
-      {count(p.units)} units · {p.days}d · {count(p.transactions)} baskets
+      {count(p.units)} {unit} · {p.days}d · {count(p.transactions)} baskets
     </span>
     {/* Units over baskets is the one figure only the transaction count can
         give, and it is how a multi-buy shows itself. */}
@@ -386,6 +392,13 @@ const Ladder = ({
   /* Biggest first. The ladder was in price order, which puts the price that
      sold three units above the one that sold a hundred and thirty-five as
      often as not. */
+  /* The same two words `pricedUnitLabel` uses, from the flag rather than a
+     weight: these points carry no weight column, which is exactly why the
+     flag exists. On a weighted item the figures beside each ring are pounds,
+     and an unlabelled count silently changes meaning between items in the
+     same department. */
+  const unit = ladder.weighted ? "lb" : "ea";
+
   const byUnits = [...ladder.points].sort((x, y) => y.units - x.units);
   const shown = all ? byUnits : byUnits.slice(0, LADDER_SHOWN);
   const says = ladderSays(ladder);
@@ -406,6 +419,14 @@ const Ladder = ({
             Promotion
           </span>
         )}
+        {/* Where the Promotion chip would have been. A scale item rings a
+            different total on every package, so the old chip fired on all of
+            them — this says what the spread actually is. */}
+        {ladder.weighted && (
+          <span className="flex-shrink-0 text-[11px] font-bold px-1.5 py-0.5 rounded bg-severity_watch_bg text-severity_watch_text">
+            By weight
+          </span>
+        )}
       </div>
 
       {says && (
@@ -413,12 +434,12 @@ const Ladder = ({
       )}
 
       <div className="mt-2">
-        <PriceChart points={ladder.points} />
+        <PriceChart points={ladder.points} unit={unit} />
       </div>
 
       <div className="mt-1">
         {shown.map((p) => (
-          <Rung key={p.price} p={p} />
+          <Rung key={p.price} p={p} unit={unit} />
         ))}
       </div>
 
@@ -505,8 +526,12 @@ const ItemEvidence = ({
      clicked an item already knows which item they clicked. "View details"
      brings it back. */
   const [says, setSays] = useState(false);
-  const mineLadder = ladderFor(minePoints, code);
-  const theirLadder = ladderFor(theirsPoints, code);
+  /* Weighted items have no price ladder to read: the price-points endpoint
+     divides money by scan count, which is 1 on a scale item, so each "price"
+     is what one package totalled. The flag stops the ladder claiming
+     otherwise and stops every scale item flagging a promotion. */
+  const mineLadder = ladderFor(minePoints, code, undefined, item.weighted);
+  const theirLadder = ladderFor(theirsPoints, code, undefined, item.weighted);
 
   const MINE = "border-b-store_open";
   const THEIRS = "border-b-store_compare";

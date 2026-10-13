@@ -740,7 +740,7 @@ const COLUMNS: ColumnDef[] = [
 
 
 /* ------------------------------------------------------------------ */
-/* Check · does it hold, and where is it                               */
+/* Summary · does it hold, and where is it                               */
 /* ------------------------------------------------------------------ */
 
 /** The department against itself: a standing difference, or something that
@@ -1426,7 +1426,7 @@ const Document = ({
 /**
  * What each store ordered, and what actually turned up.
  *
- * The same shape the Check tab uses: a verdict card over an evidence
+ * The same shape the Summary tab uses: a verdict card over an evidence
  * carousel on the left, and the list the verdict is about on the right.
  */
 const SupplyPanel = ({
@@ -2096,7 +2096,7 @@ const DeptInvestigation = ({
   /**
    * An item chosen anywhere else lands on the page that holds it.
    *
-   * The Check tab's list and the hand-off's lists both pick an item and
+   * The Summary tab's list and the hand-off's lists both pick an item and
    * switch to the grid. Without this the grid stays on page one and the
    * selected row is somewhere the reader cannot see, which reads as the
    * click having done nothing.
@@ -2378,7 +2378,7 @@ const DeptInvestigation = ({
   const TABS = [
     {
       key: "holds" as const,
-      title: "Check",
+      title: "Summary",
       needsAll: false,
       answer: () => (holds.verdict === "holds" ? "Holds" : "Doesn’t hold"),
     },

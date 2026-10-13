@@ -39,8 +39,8 @@ import SortHeader, { PERF_SORT_HEADER } from "../../../components-dev/SortHeader
 import { useTriStateSort } from "../../../utils/useTriStateSort";
 import { PCT_COL_W } from "./components/utils";
 import type { SevFilter } from "./components/utils";
-import TextFilter from "../../../components-dev/filters/TextFilter";
 import { isGroupSearch } from "../../../features/searchSlice";
+import StoreColFilter from "./components/StoreColFilter";
 
 type SortColumn = "ty" | "vsLW" | "vsLY";
 
@@ -529,20 +529,14 @@ const SalesLedger = () => {
                   OK ({healthyRows.length})
                 </button>
               </div>
-              <TextFilter
-                value={storeFilter}
-                onChange={setStoreFilter}
-                placeholder="Filter by store…"
-                className="max-w-[230px]"
-              />
             </div>
 
             {/* Unified store list — sorted critical → watch → healthy */}
             <div className="flex-1 overflow-hidden bg-custom-white rounded-b-xl shadow-sm border border-t-0 border-gray-100 flex flex-col">
               <div className="flex items-center gap-2.5 px-3 py-1.5 border-b border-gray-100 flex-shrink-0">
                 <span className="w-2 flex-shrink-0" />
-                <span className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-1">
-                  Store
+                <span className="flex-1 min-w-0 flex items-center">
+                  <StoreColFilter value={storeFilter} onApply={setStoreFilter} />
                 </span>
                 <div className="flex items-center gap-[14px]">
                   <SortHeader

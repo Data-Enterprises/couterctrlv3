@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useAppDispatch } from "../../../../hooks";
 import { setGroupView } from "../../../../features/dev/devSalesLedgerSlice";
 import { formatCurrencyCompact, formatBigNumber } from "../../../../utils";
@@ -11,6 +11,7 @@ import {
   type Verdict,
 } from "../shared/storeComparison";
 import PopupDaySidebar from "./PopupDaySidebar";
+import StoreColFilter from "./StoreColFilter";
 import SortHeader, { PERF_SORT_HEADER } from "../../../../components-dev/SortHeader";
 import { useTriStateSort } from "../../../../utils/useTriStateSort";
 import type { LedgerRowData } from "./LedgerRow";
@@ -128,7 +129,27 @@ const GroupComparisonPanel = ({
     [group.rows],
   );
 
-  const sorted = applySort(byContribution, (row, col) =>
+  /**
+   * Searching the group for one store.
+   *
+   * Local to this panel: it narrows which rows are listed, not which stores
+   * the comparison is computed from. Every contribution and standing on screen
+   * is still measured against the whole group — a filter that quietly changed
+   * the denominator would make a store's share of the group move because
+   * somebody typed in a box.
+   */
+  const [storeFilter, setStoreFilter] = useState("");
+  const searched = useMemo(() => {
+    const q = storeFilter.trim().toLowerCase();
+    if (!q) return byContribution;
+    return byContribution.filter(
+      (r) =>
+        r.storeName.toLowerCase().includes(q) ||
+        r.storeNumber.toLowerCase().includes(q),
+    );
+  }, [byContribution, storeFilter]);
+
+  const sorted = applySort(searched, (row, col) =>
     col === "ty"
       ? row.ty
       : col === "shareTy"
@@ -238,8 +259,12 @@ const GroupComparisonPanel = ({
         <div className="flex-1 min-w-0 overflow-auto thin-scrollbar">
           <div style={{ minWidth: GRID_MIN }}>
           <div className={HEAD} style={{ gridTemplateColumns: COLS }}>
-            <span className="text-[11.5px] font-semibold uppercase tracking-wide text-content/85">
-              Store
+            <span className="min-w-0 flex items-center">
+              <StoreColFilter
+                value={storeFilter}
+                onApply={setStoreFilter}
+                labelSize="text-[11.5px]"
+              />
             </span>
             {/* Beside the name, because it is the answer and the two figures
                 that follow are the working. */}

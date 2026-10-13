@@ -102,6 +102,9 @@ export const useAdminPageCtx = () => {
     token,
     userid,
     userLevel,
+    /** The companies the signed-in person holds, as the login response gave
+     *  them. `.company` is the company id; `.id` is the assignment row. */
+    userCompanies,
     isProgrammer,
     canSeeAllStores,
     canOpenAdmin,

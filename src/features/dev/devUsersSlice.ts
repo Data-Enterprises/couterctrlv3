@@ -11,6 +11,7 @@ import type {
   UnassignedStore,
   UserCompany,
   UserLevel,
+  Company,
 } from "../../interfaces";
 
 export type UserData = {
@@ -82,6 +83,17 @@ interface UsersState {
   selectedUserStores: UserStores;
   companyModalOpen: boolean;
   userCompanyIds: number[];
+  /**
+   * Every company on the system, for programmers only.
+   *
+   * `state.user.companies` is what the signed-in user HOLDS — it comes off the
+   * login response — so the Companies tab could only ever offer a company the
+   * person doing the assigning was already in. A programmer setting up a new
+   * client holds none of it, which left the database as the only way to make
+   * the link. Fetched once on the page for level 9, empty for everybody else,
+   * who keep being offered their own.
+   */
+  allCompanies: Company[];
   baseGroupModalOpen: boolean;
   selectedCompanyId: number;
   userLevels: UserLevel[];
@@ -114,6 +126,7 @@ const initialState: UsersState = {
   },
   companyModalOpen: false,
   userCompanyIds: [],
+  allCompanies: [],
   baseGroupModalOpen: false,
   selectedCompanyId: 0,
   userLevels: [],
@@ -259,6 +272,9 @@ export const usersSlice = createSlice({
     setUserCompanyIds: (state, action: PayloadAction<number[]>) => {
       state.userCompanyIds = action.payload;
     },
+    setAllCompanies: (state, action: PayloadAction<Company[]>) => {
+      state.allCompanies = action.payload;
+    },
     updateUserCompanies: (state, action: PayloadAction<UserCompany[]>) => {
       const id = state.selectedUserId;
       const idx = state.users.findIndex((u) => u.id === id);
@@ -338,6 +354,7 @@ export const {
   setStoresUnassignedForUser,
   setCompanyModalOpen,
   setUserCompanyIds,
+  setAllCompanies,
   updateUserCompanies,
   setBaseGroupModalOpen,
   setSelectedCompanyId,
