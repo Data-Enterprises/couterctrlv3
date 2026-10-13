@@ -339,13 +339,14 @@ const PriceChart = ({
 };
 
 /** One price, and what went out at it. */
-const Rung = ({ p, unit }: { p: PricePoint; unit: string }) => (
+const Rung = ({ p, weighed }: { p: PricePoint; weighed: boolean }) => (
   <div className="flex items-baseline gap-2.5 py-1.5 border-b border-brand_navy/15 last:border-b-0">
     <span className="w-[62px] flex-shrink-0 text-[15px] font-bold tabular-nums text-content">
       {money(p.price)}
     </span>
     <span className="min-w-0 flex-1 text-[12px] text-content/85 tabular-nums truncate">
-      {count(p.units)} {unit} · {p.days}d · {count(p.transactions)} baskets
+      {count(p.units)} {weighed ? (p.units === 1 ? "ring" : "rings") : "ea"} ·{" "}
+      {p.days}d · {count(p.transactions)} baskets
     </span>
     {/* Units over baskets is the one figure only the transaction count can
         give, and it is how a multi-buy shows itself. */}
@@ -392,12 +393,15 @@ const Ladder = ({
   /* Biggest first. The ladder was in price order, which puts the price that
      sold three units above the one that sold a hundred and thirty-five as
      often as not. */
-  /* The same two words `pricedUnitLabel` uses, from the flag rather than a
-     weight: these points carry no weight column, which is exactly why the
-     flag exists. On a weighted item the figures beside each ring are pounds,
-     and an unlabelled count silently changes meaning between items in the
-     same department. */
-  const unit = ladder.weighted ? "lb" : "ea";
+  /*
+     NOT pounds. These points carry no weight column — that absence is the
+     whole reason the weighted flag exists — so `units` here is the number of
+     times the item was SCANNED, and one scan of sirloin is whatever the
+     package happened to weigh. Labelling it "lb" said a pound was sold and
+     made a 1.7 lb ring read as 1 lb. The sentence above the ladder already
+     counts these as rings; this agrees with it.
+  */
+  const unit = ladder.weighted ? "rings" : "ea";
 
   const byUnits = [...ladder.points].sort((x, y) => y.units - x.units);
   const shown = all ? byUnits : byUnits.slice(0, LADDER_SHOWN);
@@ -439,7 +443,7 @@ const Ladder = ({
 
       <div className="mt-1">
         {shown.map((p) => (
-          <Rung key={p.price} p={p} unit={unit} />
+          <Rung key={p.price} p={p} weighed={ladder.weighted} />
         ))}
       </div>
 
