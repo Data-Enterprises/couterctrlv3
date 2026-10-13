@@ -1,10 +1,11 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
 import {
   setCounterpart,
   setLedgerTab,
 } from "../../../../features/dev/devSalesLedgerSlice";
 import { applyStoreNumberToName } from "../shared/ledgerUtils";
+import StoreColFilter from "./StoreColFilter";
 import { compareForView, type ComparisonRow } from "../shared/storeComparison";
 import SortHeader, { PERF_SORT_HEADER } from "../../../../components-dev/SortHeader";
 import { formatCurrency2, formatBigNumber } from "../../../../utils";
@@ -111,7 +112,25 @@ const PopupComparisonList = ({
     .filter((r) => keyOf(r) !== keyOf(open))
     .sort((a, b) => tyGap(a) - tyGap(b));
 
-  const sorted = applySort(others, (row, col) =>
+  /**
+   * Searching the list for one store.
+   *
+   * Narrows which stores are listed, not what the open store is measured
+   * against — every gap on screen is still this store against that one, and
+   * the figures do not move when the list does.
+   */
+  const [storeFilter, setStoreFilter] = useState("");
+  const searched = useMemo(() => {
+    const q = storeFilter.trim().toLowerCase();
+    if (!q) return others;
+    return others.filter(
+      (r) =>
+        r.storeName.toLowerCase().includes(q) ||
+        r.storeNumber.toLowerCase().includes(q),
+    );
+  }, [others, storeFilter]);
+
+  const sorted = applySort(searched, (row, col) =>
     col === "theirsTy"
       ? row.ty
       : col === "tyGap"
@@ -196,8 +215,8 @@ const PopupComparisonList = ({
         </p>
 
         <div className={HEAD} style={{ gridTemplateColumns: COLS }}>
-          <span className="text-[11.5px] font-semibold uppercase tracking-wide text-content/85">
-            Store
+          <span className="min-w-0 flex items-center">
+            <StoreColFilter value={storeFilter} onApply={setStoreFilter} />
           </span>
           <SortHeader col="theirsTy" label="Store TY" sort={sort} onSort={handleSort} className={`${PERF_SORT_HEADER} justify-start min-w-0`} />
           {/* Each one is this store's movement against the open store's, over
