@@ -3,8 +3,15 @@ import { PencilIcon, TrashIcon, PlusIcon } from "@heroicons/react/20/solid";
 import { useAdminPageCtx } from "./hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { setRefresh } from "../../../features/dev/devAdminPageSlice";
-import { createCompany, updateCompany, deleteCompany } from "../../../api/company";
-import type { Company, JsonError } from "../../../interfaces";
+import {
+  createCompany,
+  updateCompany,
+  deleteCompany,
+  getCompanies,
+} from "../../../api/company";
+import { assignUserToCompany } from "../../../api/user";
+import { setCompanies as setUserCompanies } from "../../../features/userSlice";
+import type { Company, CompanyJsonResp, JsonError } from "../../../interfaces";
 import TextFilter from "../../../components-dev/filters/TextFilter";
 import IconButton from "../../../components-dev/IconButton";
 import ConfirmModal from "../../../components-dev/ConfirmModal";
@@ -27,15 +34,70 @@ const CompanyGrid = () => {
     return context.companies.filter((c) => c.name.toLowerCase().includes(q));
   }, [context.companies, search]);
 
+  /**
+   * Put the new company on the account that made it.
+   *
+   * Without this a company is born with nobody in it, and the only way in was
+   * a row written by hand in RDS: the Companies tab in User Management can
+   * only offer companies the assigner already holds, and the creator holds
+   * this one least of all.
+   *
+   * `assign_user_to_company` REPLACES rather than appends — see legacy's
+   * AssignCompanyToUser, which sends the new ids plus every existing one — so
+   * the whole set travels or the rest are silently dropped off the most
+   * privileged account on the system.
+   *
+   * The id comes from a re-read rather than the response: `create_company`
+   * answers with `error`/`success` and no id. The new company is the one that
+   * was not there a moment ago; where two appear at once, because somebody
+   * else was creating at the same time, the name settles it. If neither finds
+   * it, the company is still created and the grid still refreshes — only the
+   * assignment is skipped, and it says so rather than claiming otherwise.
+   */
+  const claimNewCompany = async (before: Set<number>, name: string) => {
+    const resp = await getCompanies(context.url, context.token);
+    const j: CompanyJsonResp = resp.data;
+    if (j.error !== 0) return false;
+
+    const appeared = j.companies.filter((c) => !before.has(c.id));
+    const created =
+      appeared.length === 1
+        ? appeared[0]
+        : appeared.find((c) => c.name === name);
+    if (!created) return false;
+
+    const mine = context.userCompanies.map((c) => c.company);
+    const assigned = await assignUserToCompany(
+      context.url,
+      context.token,
+      context.userid,
+      [...mine, created.id],
+    );
+    if (assigned.data.error !== 0) return false;
+    // The login response seeded `user.companies` and this just changed it.
+    // Left stale, the next assignment this session would send yesterday's set
+    // and drop the company that was just claimed.
+    context.dispatch(setUserCompanies(assigned.data.companies));
+    return true;
+  };
+
   const handleCreate = (form: Company) => {
+    // Read before the create, so what appears after it can be told apart.
+    const before = new Set(context.companies.map((c) => c.id));
     createCompany(context.url, context.token, form)
-      .then((resp) => {
+      .then(async (resp) => {
         const j = resp.data;
-        if (j.error === 0) {
-          toast.success("Company created successfully");
-          setCreating(false);
-          context.dispatch(setRefresh(true));
-        }
+        if (j.error !== 0) return;
+        setCreating(false);
+        context.dispatch(setRefresh(true));
+        const claimed = await claimNewCompany(before, form.name).catch(
+          () => false,
+        );
+        toast.success(
+          claimed
+            ? "Company created and assigned to you"
+            : "Company created — assign it to yourself in User Management",
+        );
       })
       .catch((err: JsonError) => toast.error(err.message));
   };

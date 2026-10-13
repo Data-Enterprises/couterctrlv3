@@ -6,13 +6,16 @@ import ResizeHandle from "../../../components-dev/ResizeHandle";
 import PageInfoButton from "../../../components-dev/PageInfoButton";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import type {
+  CompanyJsonResp,
   JsonError,
   User,
   UserLevelJsonResp,
 } from "../../../interfaces";
 import { getAllUsers } from "../../../api/user";
 import { getUserLevels } from "../../../api/team";
+import { getCompanies } from "../../../api/company";
 import {
+  setAllCompanies,
   setInactiveUsers,
   setRefresh as setUsersRefresh,
   setUserLevels,
@@ -123,6 +126,20 @@ const Organization = () => {
         if (j.error === 0) ctx.dispatch(setUserLevels(j.levels));
       })
       .catch((err: JsonError) => toast.error(err.message));
+    // Programmers assign companies they do not themselves hold — setting up a
+    // new client is exactly that case. Everybody else keeps being offered the
+    // companies on their own account, which is all they have any business
+    // handing out, so this call is not made for them at all.
+    if (ctx.isProgrammer) {
+      getCompanies(ctx.url, ctx.token)
+        .then((resp) => {
+          const j: CompanyJsonResp = resp.data;
+          if (j.error === 0) ctx.dispatch(setAllCompanies(j.companies));
+        })
+        .catch((err: JsonError) =>
+          toast.error("Error fetching companies " + err.message),
+        );
+    }
     ctx.dispatch(setUsersRefresh(false));
   }, [ctx.refresh]);
 
