@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
-import { getItemLookupSingleStore } from "../../../api/itemLookup";
+import { getScanLookup } from "../../../api/scanner";
 import {
   markRowError,
   markUnnamed,
@@ -17,55 +17,14 @@ import {
  * to, which is the mistake worth catching. A barcode scanner will not hand us
  * garbled digits; it will happily hand us the right digits off the wrong tag.
  *
- * One call site, one function, on purpose: the endpoint underneath it is being
- * replaced, and when it is, nothing outside this file should need to know.
+ * The raw scan is what goes out, untouched. `scanner/lookup` generates every
+ * form the code might be stored as and asks the database which exists, because
+ * the stored `product_code` keeps its leading digit when the UPC did not begin
+ * with a zero and drops it when it did — a split nothing on this side can tell
+ * apart from the barcode alone. `normalizeUpc` is still used for dedupe, where
+ * one stable key per scan is all that is wanted, but it has no part in the
+ * lookup.
  */
-
-/**
- * How much history to ask for.
- *
- * `items/itemlookup/{storeid}` is a sales query: it answers with register
- * lines, and a name only because those lines carry one. We want the name and
- * throw the rest away, so we ask for the least it will give us.
- *
- * This number goes away entirely once the endpoint returns a description from
- * the item master — which is also the only thing that will let a never-sold
- * item be named, and a never-sold item is exactly what gets a new shelf tag.
- */
-const RESOLVE_DAYS = 1;
-
-/**
- * Which of the row's two codes the lookup gets.
- *
- * OPEN — the endpoint is getting server-side normalization. Until that lands,
- * send the normalized code, which is what every existing caller of this
- * endpoint sends. After it lands this becomes `row.raw` and the frontend stops
- * having an opinion about UPC shapes at all.
- */
-const codeForLookup = (row: ScanRow) => row.code;
-
-interface LookupResp {
-  error: number;
-  description?: string | null;
-  product_code?: string;
-  history?: { product_description?: string; sale_date: string }[];
-}
-
-/**
- * The name, from wherever the response happens to carry one.
- *
- * Mirrors `itemDescription` in Item Lookup's `lookupMetrics` rather than
- * importing it: the two page trees are promoted independently, and a shared
- * import between them would mean promoting one could change the other. Three
- * lines is a better price than that coupling.
- */
-const describe = (resp: LookupResp): string => {
-  if (resp.description) return resp.description;
-  const named = (resp.history ?? [])
-    .filter((h) => h.product_description)
-    .sort((a, b) => b.sale_date.localeCompare(a.sale_date));
-  return named[0]?.product_description ?? "";
-};
 
 export const useScanResolve = () => {
   const dispatch = useAppDispatch();
@@ -76,31 +35,29 @@ export const useScanResolve = () => {
     async (row: ScanRow) => {
       if (!storeId) return;
       try {
-        const resp = await getItemLookupSingleStore(
-          url,
-          token,
-          codeForLookup(row),
-          storeId,
-          RESOLVE_DAYS,
-        );
-        const data: LookupResp = resp.data;
-        // A non-zero error means the request failed, not that the item is
-        // absent — the same distinction Item Lookup's queue keeps, and for the
-        // same reason: a row that claims "no such item" because the connection
-        // dropped is a lie the clerk would act on.
+        const { data } = await getScanLookup(url, token, storeId, row.raw);
+        // `error: 1` is the lookup falling over, which says nothing about
+        // whether the item exists. A 200 with a null code is the answer "not
+        // sold here" — an ordinary one, and the row says unverified rather
+        // than claiming something is wrong.
         if (data.error !== 0) {
           dispatch(markRowError(row.code));
           return;
         }
-        const description = describe(data);
-        if (!description) {
+        if (!data.product_description) {
           dispatch(markUnnamed(row.code));
           return;
         }
         dispatch(
-          nameRow({ code: row.code, description, productCode: data.product_code }),
+          nameRow({
+            code: row.code,
+            description: data.product_description,
+            productCode: data.product_code ?? undefined,
+          }),
         );
       } catch {
+        // Never asked, or never answered. Same reasoning: unexplained, not
+        // absent.
         dispatch(markRowError(row.code));
       }
     },
