@@ -2,6 +2,7 @@ import Quagga from "@ericblade/quagga2";
 import { useEffect, useRef, useState } from "react";
 import { useMediaDevices } from "react-media-devices";
 import { normalizeUpc } from ".";
+import { createReadConfirmer, createRepeatGuard } from "./confirmRead";
 
 const CONSTRAINTS = {
   video: { facingMode: "environment", width: 1280, height: 720 },
@@ -45,8 +46,16 @@ const cameraMessage = (err: unknown) => {
 };
 
 interface Props {
-  /** Fires once per read, with the code already normalized. */
-  onDetected: (upc: string) => void;
+  /**
+   * Fires once per confirmed read.
+   *
+   * Takes the code twice: normalized for a lookup, and the raw decode exactly
+   * as it is printed on the tag. `normalizeUpc` drops the check digit and a
+   * leading zero, and neither can be put back — so a page that has to show or
+   * send the printed code needs the second argument. Callers that only search
+   * can ignore it.
+   */
+  onDetected: (upc: string, raw: string) => void;
 }
 
 /**
@@ -134,10 +143,17 @@ const ScannerView = ({ onDetected }: Props) => {
       },
     );
 
+    // Two guards between a decode and the page, both per camera session:
+    // confirm it is a real read, then that it is not the same code again. See
+    // confirmRead — one frame is not a read, and a code left in the guide
+    // re-confirms a few frames later, which only shows up on a screen that
+    // keeps scanning.
+    const confirm = createReadConfirmer();
+    const accept = createRepeatGuard();
     Quagga.onDetected((result) => {
-      const code = result.codeResult.code;
-      if (!code) return;
-      cb.current(normalizeUpc(code));
+      const code = confirm(result);
+      if (!code || !accept(code)) return;
+      cb.current(normalizeUpc(code), code);
     });
 
     return () => {

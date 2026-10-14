@@ -21,6 +21,7 @@ import {
   ShieldExclamationIcon,
   DocumentArrowUpIcon,
   TicketIcon,
+  QrCodeIcon,
 } from "@heroicons/react/16/solid";
 import {
   COMING_SOON_CATEGORY,
@@ -570,6 +571,21 @@ export const categories: NavCategory[] = [
         // still dev-API only — but a build here writes a real file to S3 from
         // real store data, which is not something an owner should reach by
         // wandering into the section.
+        userLevels: PROGRAMMER_ONLY_LEVELS,
+        isHovering: false,
+        isVisible: true,
+      },
+      {
+        name: "Upc Scanner",
+        href: "upc-scanner",
+        icon: QrCodeIcon,
+        // The first mobile-only page in here. Scanning needs a scanner, so the
+        // desktop route renders a notice rather than a second build of it.
+        mobile: true,
+        children: [],
+        childOpen: false,
+        // Level 9 while the file format is open: a send writes a real file a
+        // client's tag printer picks up. Same reasoning as Sales Export.
         userLevels: PROGRAMMER_ONLY_LEVELS,
         isHovering: false,
         isVisible: true,

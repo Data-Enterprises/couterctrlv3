@@ -82,7 +82,7 @@ export const useIsScanGunDevice = (): boolean => {
  * Listens natively on `beforeinput`: React's onBeforeInput is a polyfill that
  * doesn't carry `inputType`.
  */
-export const useScanGun = (onScan: (upc: string) => void) => {
+export const useScanGun = (onScan: (upc: string, raw: string) => void) => {
   const isGun = useIsScanGunDevice();
   const [typing, setTyping] = useState(false);
 
@@ -104,7 +104,9 @@ export const useScanGun = (onScan: (upc: string) => void) => {
     const onBeforeInput = (e: InputEvent) => {
       if (!isWedgeScan(e)) return;
       if (e.cancelable) e.preventDefault();
-      cb.current(normalizeUpc(e.data));
+      // Normalized for a lookup, raw as printed — same pair the camera hands
+      // back, since a page showing the code needs the digits the clerk sees.
+      cb.current(normalizeUpc(e.data), e.data);
     };
     const onPointerDown = () => setTyping(true);
     const onBlur = () => {
