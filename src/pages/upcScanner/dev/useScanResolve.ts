@@ -26,6 +26,20 @@ import {
  * lookup.
  */
 
+/**
+ * Codes with a lookup already in the air.
+ *
+ * Module scope, not a ref, and that is the point: a ref dies with the
+ * component, so leaving the screen and coming back — or React's development
+ * double-mount — would ask again for a row that was already being fetched.
+ * Nothing strands here either, because the `finally` below runs whether or not
+ * anything is still mounted to see the answer.
+ *
+ * Keyed by store as well as code, since the same UPC at a different store is a
+ * different question.
+ */
+const inFlight = new Set<string>();
+
 export const useScanResolve = () => {
   const dispatch = useAppDispatch();
   const { url, token } = useAppSelector((s) => s.app);
@@ -34,6 +48,9 @@ export const useScanResolve = () => {
   return useCallback(
     async (row: ScanRow) => {
       if (!storeId) return;
+      const key = `${storeId}:${row.code}`;
+      if (inFlight.has(key)) return;
+      inFlight.add(key);
       try {
         const { data } = await getScanLookup(url, token, storeId, row.raw);
         // `error: 1` is the lookup falling over, which says nothing about
@@ -59,6 +76,8 @@ export const useScanResolve = () => {
         // Never asked, or never answered. Same reasoning: unexplained, not
         // absent.
         dispatch(markRowError(row.code));
+      } finally {
+        inFlight.delete(key);
       }
     },
     [dispatch, url, token, storeId],

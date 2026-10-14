@@ -18,10 +18,10 @@ const UpcScanner = () => {
 
   return (
     <div className="flex h-[calc(100vh-3rem)] flex-col items-center justify-center gap-2 px-4 text-center">
-      <div className="text-sm font-semibold text-content/85">
+      <div className="text-sm font-semibold text-content/95">
         Open this one on the handheld
       </div>
-      <div className="max-w-xs text-xs text-content/85">
+      <div className="max-w-xs text-xs text-content/95">
         Upc Scanner collects shelf-tag barcodes with a scan gun or a phone
         camera, so it runs on the device doing the scanning.
       </div>

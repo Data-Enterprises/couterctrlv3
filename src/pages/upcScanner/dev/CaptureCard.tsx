@@ -56,14 +56,13 @@ const CaptureCard = ({ onScan }: CaptureCardProps) => {
   };
 
   return (
-    <section className="rounded-2xl border border-gray-200 bg-custom-white shadow-md p-3 flex flex-col gap-2">
-      <label
-        htmlFor="upc-capture"
-        className="font-mono text-[9.5px] uppercase tracking-wide text-brand_slate/85"
-      >
-        {isGun ? "Scan or type a UPC" : "Scan a barcode"}
-      </label>
-
+    // No card of its own: the capture sits inside the scope card, under the
+    // store it is scanning for. They were two cards saying one thing.
+    //
+    // No label above the field either. On a handheld the field IS the scanner
+    // and its placeholder already says what to do — a caption over it is a line
+    // of small grey text earning nothing on a screen this size.
+    <div className="flex flex-col gap-2">
       {!isGun && (
         <>
           <ScannerView
@@ -74,7 +73,7 @@ const CaptureCard = ({ onScan }: CaptureCardProps) => {
           />
           <div className="flex items-center gap-2">
             <div className="flex-1 h-px bg-content/15" />
-            <span className="text-[10.5px] text-content/85">or type it</span>
+            <span className="text-[10.5px] text-content/95">or type it</span>
             <div className="flex-1 h-px bg-content/15" />
           </div>
         </>
@@ -89,17 +88,18 @@ const CaptureCard = ({ onScan }: CaptureCardProps) => {
           value={field}
           onChange={(e) => setField(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && submitTyped()}
-          placeholder={isGun ? "Pull the trigger…" : "UPC"}
+          placeholder={isGun ? "Pull the trigger" : "Type a UPC"}
           aria-label="UPC"
-          className={`basic-input bg-brand_paper min-w-0 flex-1 font-mono tracking-wider text-content ${
-            isGun ? "h-12 text-[17px]" : "h-10 text-[15px]"
-          }`}
+          className="basic-input bg-brand_paper h-12 min-w-0 flex-1 font-mono text-[19px] tracking-wider text-content"
         />
+        {/* Always there, so typing a code has a visible destination — it just
+            does nothing until there is a code to add. A trigger pull never
+            needs it: the scan is in the batch before the digits appear here. */}
         <button
           type="button"
           onClick={submitTyped}
           disabled={!ENTERABLE.test(field.trim())}
-          className="h-10 shrink-0 rounded-lg bg-brand_navy px-4 text-[13px] font-semibold text-custom-white disabled:bg-brand_navy/20 disabled:text-content/40"
+          className="h-12 shrink-0 rounded-lg bg-brand_navy px-5 text-[16px] font-bold text-custom-white disabled:bg-brand_navy/20 disabled:text-content/40"
         >
           Add
         </button>
@@ -107,18 +107,15 @@ const CaptureCard = ({ onScan }: CaptureCardProps) => {
 
       <div className="flex items-center gap-1.5">
         <span
-          className={`h-[7px] w-[7px] shrink-0 rounded-full ${
+          className={`h-2 w-2 shrink-0 rounded-full ${
             isGun ? "bg-severity_healthy_text" : "bg-brand_navy"
           }`}
         />
-        <span className="text-[11px] font-semibold text-content/85">
-          {isGun ? "Scanner armed" : "Camera on"}
-        </span>
-        <span className="text-[11px] text-content/85">
-          {isGun ? "— tap the field if it stops reading" : "— hold the tag in the frame"}
+        <span className="text-[13px] font-semibold text-content">
+          {isGun ? "Ready to scan" : "Camera on"}
         </span>
       </div>
-    </section>
+    </div>
   );
 };
 

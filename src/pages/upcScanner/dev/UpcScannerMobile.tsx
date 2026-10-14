@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
 import SingleStoreSearchCard from "../../../components-dev/SingleStoreSearchCard";
@@ -38,13 +38,6 @@ const UpcScannerMobile = () => {
   const [sheetOpen, setSheetOpen] = useState(false);
 
   const store = assignedStores.find((s) => s.storeid === storeId);
-  const unverified = rows.filter((r) => r.status !== "named").length;
-  const lastScan = rows.length
-    ? new Date(Math.max(...rows.map((r) => r.at))).toLocaleTimeString("en-US", {
-        hour: "numeric",
-        minute: "2-digit",
-      })
-    : "—";
 
   const handleScan = (code: string, raw: string, source: ScanSource) => {
     // A code already in the batch adds no row — the file is one row per UPC.
@@ -60,14 +53,14 @@ const UpcScannerMobile = () => {
   // replaces it with a new one, and that one needs a name just as much. Doing
   // it here means every path is covered by construction, including the ones
   // added later.
-  const inFlight = useRef(new Set<string>());
+  //
+  // Asking twice is `resolve`'s problem, not this effect's — it holds the
+  // in-flight set itself, outside the component, so a remount mid-lookup does
+  // not re-ask. Terminates either way: resolve always moves a row off
+  // `pending`, and one it cannot name is left `error` rather than retried.
   useEffect(() => {
     rows.forEach((row) => {
-      if (row.status !== "pending" || inFlight.current.has(row.code)) return;
-      inFlight.current.add(row.code);
-      // Terminates: resolve always moves the row off `pending`, and a row it
-      // cannot name is left `error` rather than retried in a loop.
-      void resolve(row).finally(() => inFlight.current.delete(row.code));
+      if (row.status === "pending") void resolve(row);
     });
   }, [rows, resolve]);
 
@@ -101,10 +94,21 @@ const UpcScannerMobile = () => {
   }
 
   return (
-    <div className="flex h-[calc(100dvh-3rem)] flex-col gap-3 overflow-hidden p-3 pb-14">
-      {/* 1. The scope card. Store, the batch's headline figure, and the way
-          back to the store list. Never collapses. */}
-      <section className="shrink-0 rounded-2xl border border-gray-200 bg-custom-white shadow-md p-3">
+    // The screen scrolls; the list is not asked to fit.
+    //
+    // It used to be a fixed-height column with the list on `flex-1`, which is
+    // fine on a tall phone and wrong on a handheld: the scope card, the capture
+    // card, the send bar and the tab bar take their share first, and on a short
+    // screen there is nothing left — the list collapsed to a sliver and a scan
+    // that had landed looked like a scan that had not. Letting the page scroll
+    // means rows are always rendered at their own height, and the send bar
+    // sticks to the bottom so it stays reachable without pinning everything
+    // above it.
+    <div className="h-[calc(100dvh-3rem)] overflow-y-auto pb-14">
+      <div className="flex flex-col gap-3 p-3">
+      {/* 1. The scope card, which is also the capture. Which store, and the
+          field that scans for it — one card, because they are one thought. */}
+      <section className="rounded-2xl border border-gray-200 bg-custom-white shadow-md p-3">
         <div className="flex items-start gap-2">
           <button
             type="button"
@@ -118,11 +122,10 @@ const UpcScannerMobile = () => {
             <MagnifyingGlassIcon className="h-[17px] w-[17px]" />
           </button>
           <div className="min-w-0 flex-1">
-            <div className="font-display text-[15px] font-bold tracking-tight text-content/85">
-              {store ? `${store.store_number} — ${store.store_name}` : `Store ${storeId}`}
-            </div>
-            <div className="mt-0.5 font-mono text-[9.5px] uppercase tracking-wide text-brand_slate/85">
-              Shelf tag batch
+            {/* `store_name` already leads with the store's number — "001 - IGA
+                GLASGOW KY" — so prefixing store_number prints it twice. */}
+            <div className="font-display text-[17px] font-bold tracking-tight text-content">
+              {store?.store_name ?? `Store ${storeId}`}
             </div>
           </div>
           {/* Opens in place rather than on its own screen — there is one
@@ -137,7 +140,7 @@ const UpcScannerMobile = () => {
         </div>
 
         {infoOpen && (
-          <p className="mt-2 rounded-lg bg-bkg p-2.5 text-[11.5px] leading-relaxed text-content/85">
+          <p className="mt-2 rounded-lg bg-bkg p-2.5 text-[11.5px] leading-relaxed text-content/95">
             Scan the shelf tags you need printed. Each code is checked against
             this store, so a tag scanned off the wrong shelf shows up here
             before it becomes a wrong label — and any code can be corrected in
@@ -146,30 +149,10 @@ const UpcScannerMobile = () => {
           </p>
         )}
 
-        <div className="mt-2.5 flex items-baseline gap-2">
-          <span className="font-display text-[31px] font-extrabold leading-none tracking-tight text-content/85">
-            {rows.length}
-          </span>
-          <span className="pb-1 font-mono text-[9.5px] font-semibold uppercase tracking-wide text-brand_slate/85">
-            UPCs collected
-          </span>
-        </div>
-
-        <div className="mt-2.5 grid grid-cols-2 gap-2.5 border-t border-gray-100 pt-2.5">
-          <div>
-            <div className="font-mono text-[9.5px] uppercase tracking-wide text-brand_slate/85">
-              Last scan
-            </div>
-            <div className="mt-0.5 text-[15px] font-bold text-content/85">{lastScan}</div>
-          </div>
-          <div>
-            <div className="font-mono text-[9.5px] uppercase tracking-wide text-brand_slate/85">
-              Unverified
-            </div>
-            <div className="mt-0.5 text-[15px] font-bold text-content/85">
-              {rows.length ? unverified : "—"}
-            </div>
-          </div>
+        {/* 2. The capture, in the same card as the store it scans for. No
+            count: the list below is the count, and the send button names it. */}
+        <div className="mt-3">
+          <CaptureCard onScan={handleScan} />
         </div>
       </section>
 
@@ -177,17 +160,17 @@ const UpcScannerMobile = () => {
         <section className="shrink-0 rounded-2xl border border-gray-200 bg-custom-white shadow-md p-3">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <div className="font-display text-[14px] font-bold text-content/85">
+              <div className="font-display text-[14px] font-bold text-content/95">
                 {sent.count} UPCs sent for tags
               </div>
-              <div className="mt-1 break-all font-mono text-[11px] text-brand_slate/85">
+              <div className="mt-1 break-all font-mono text-[11px] text-brand_slate/95">
                 {sent.file}
               </div>
             </div>
             <button
               type="button"
               onClick={() => dispatch(setSent(null))}
-              className="shrink-0 font-mono text-[9.5px] uppercase tracking-wide text-content/85 underline"
+              className="shrink-0 font-mono text-[9.5px] uppercase tracking-wide text-content/95 underline"
             >
               Dismiss
             </button>
@@ -195,30 +178,24 @@ const UpcScannerMobile = () => {
         </section>
       )}
 
-      {/* 2. The find row, in its own card, directly under the scope card. */}
-      <CaptureCard onScan={handleScan} />
-
       {/* 3. What has been scanned. */}
       <BatchList />
 
-      <div className="shrink-0">
-        {unverified > 0 && (
-          <p className="pb-1.5 text-[11px] font-semibold text-content/85">
-            {unverified} {unverified === 1 ? "code has" : "codes have"} no item name —
-            worth a look before sending.
-          </p>
-        )}
-        <button
-          type="button"
-          disabled={rows.length === 0}
-          onClick={() => setSheetOpen(true)}
-          className="h-[46px] w-full rounded-xl bg-brand_navy font-display text-[14.5px] font-bold tracking-tight text-custom-white shadow-md disabled:bg-brand_navy/20 disabled:text-content/40 disabled:shadow-none"
-        >
-          {rows.length ? `Send ${rows.length} UPCs for tags` : "Send for tags"}
-        </button>
-      </div>
+      {/* In the flow, not pinned. Pinned, it printed itself over the top of
+          the list on a short screen — which is the whole screen here. */}
+      <button
+        type="button"
+        disabled={rows.length === 0}
+        onClick={() => setSheetOpen(true)}
+        className="h-14 w-full rounded-xl bg-brand_navy font-display text-[17px] font-bold tracking-tight text-custom-white shadow-md disabled:bg-brand_navy/20 disabled:text-content/40 disabled:shadow-none"
+      >
+        {rows.length === 0
+          ? "Send for tags"
+          : `Send ${rows.length} ${rows.length === 1 ? "tag" : "tags"}`}
+      </button>
 
-      {sheetOpen && <SendSheet onClose={() => setSheetOpen(false)} />}
+        {sheetOpen && <SendSheet onClose={() => setSheetOpen(false)} />}
+      </div>
     </div>
   );
 };

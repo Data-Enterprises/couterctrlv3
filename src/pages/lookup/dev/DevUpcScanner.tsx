@@ -9,6 +9,7 @@ import {
   setUpcCode,
 } from "../../../features/itemScanSlice";
 import { normalizeUpc } from "../../../components-dev/scanner";
+import { createReadConfirmer } from "../../../components-dev/scanner/confirmRead";
 import "./dev-scanner.css";
 
 interface DevUpcScannerProps {
@@ -85,11 +86,14 @@ const DevUpcScanner = ({ handleScan, retryKey }: DevUpcScannerProps) => {
       },
     );
 
+    // Stop on a confirmed read, not the first decode — see confirmRead.
+    const confirm = createReadConfirmer();
     Quagga.onDetected((result) => {
+      const code = confirm(result);
+      if (!code) return;
       Quagga.stop();
       Quagga.offDetected();
-      const code = result.codeResult.code;
-      const normalized = code ? normalizeUpc(code) : "";
+      const normalized = normalizeUpc(code);
       dispatch(setUpcCode(normalized));
       dispatch(setPause(true));
       handleScan(normalized);

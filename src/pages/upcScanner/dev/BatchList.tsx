@@ -25,9 +25,9 @@ import {
 /** The note under the code, for each thing the lookup can tell us. */
 const noteFor = (row: ScanRow): string => {
   if (row.status === "named") return row.description ?? "";
-  if (row.status === "pending") return "Looking up…";
-  if (row.status === "error") return "Couldn't check this one";
-  return "No sales on record — unverified";
+  if (row.status === "pending") return "Checking…";
+  if (row.status === "error") return "Couldn't check";
+  return "No item name";
 };
 
 const ENTERABLE = /^\d{8,14}$/;
@@ -55,18 +55,7 @@ const EditRow = ({ row }: { row: ScanRow }) => {
 
   return (
     <div className="border-b border-gray-100 bg-brand_paper px-3 py-2.5">
-      <div className="flex items-center justify-between">
-        <span className="font-mono text-[9.5px] uppercase tracking-wide text-brand_slate/85">
-          Fix this code
-        </span>
-        <button
-          type="button"
-          onClick={() => dispatch(beginEdit(null))}
-          className="font-mono text-[9.5px] uppercase tracking-wide text-content/85 underline"
-        >
-          Cancel
-        </button>
-      </div>
+      <div className="text-[14px] font-bold text-content">Fix this code</div>
       <input
         autoFocus
         type="text"
@@ -75,18 +64,25 @@ const EditRow = ({ row }: { row: ScanRow }) => {
         aria-label="Correct this UPC"
         onChange={(e) => setDraft(e.target.value)}
         onKeyDown={(e) => e.key === "Enter" && save()}
-        className="basic-input bg-custom-white mt-1.5 h-11 font-mono text-[17px] font-semibold tracking-wider"
+        className="basic-input bg-custom-white mt-2 h-14 font-mono text-[19px] font-semibold tracking-wider text-content"
       />
-      <p className="mt-1.5 text-[11px] text-content/85">
-        Re-scan the tag to replace it, or type the digits off the package.
-      </p>
-      <div className="mt-2 flex gap-2">
+      <p className="mt-1.5 text-[14px] text-content">Or re-scan the tag to replace it.</p>
+      {/* Three across, all full-height: on a handheld every one of these has to
+          be comfortably hittable, which the old corner Cancel was not. */}
+      <div className="mt-2.5 flex gap-2">
+        <button
+          type="button"
+          onClick={() => dispatch(beginEdit(null))}
+          className="h-12 flex-1 rounded-lg border border-brand_line_2 text-[15px] font-bold text-content"
+        >
+          Cancel
+        </button>
         <button
           type="button"
           onClick={() => dispatch(removeRow(row.raw))}
-          className="h-11 flex-1 rounded-lg border border-brand_danger_line text-[13px] font-semibold text-brand_danger"
+          className="h-12 flex-1 rounded-lg border border-brand_danger_line text-[15px] font-bold text-brand_danger"
         >
-          Drop it
+          Remove
         </button>
         {row.status === "error" && draft.trim() === row.raw ? (
           // Nothing is wrong with the code — the lookup just never answered —
@@ -95,7 +91,7 @@ const EditRow = ({ row }: { row: ScanRow }) => {
           <button
             type="button"
             onClick={() => dispatch(retryRow(row.raw))}
-            className="h-11 flex-1 rounded-lg bg-brand_navy text-[13px] font-semibold text-custom-white"
+            className="h-12 flex-1 rounded-lg bg-brand_navy text-[15px] font-bold text-custom-white"
           >
             Check again
           </button>
@@ -104,7 +100,7 @@ const EditRow = ({ row }: { row: ScanRow }) => {
             type="button"
             onClick={save}
             disabled={!ENTERABLE.test(draft.trim()) || draft.trim() === row.raw}
-            className="h-11 flex-1 rounded-lg bg-brand_navy text-[13px] font-semibold text-custom-white disabled:bg-brand_navy/20 disabled:text-content/40"
+            className="h-12 flex-1 rounded-lg bg-brand_navy text-[15px] font-bold text-custom-white disabled:bg-brand_navy/20 disabled:text-content/40"
           >
             Save
           </button>
@@ -119,26 +115,14 @@ const BatchList = () => {
   const { rows, editing } = useAppSelector((s) => s.dev.upcScanner);
 
   return (
-    <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-gray-200 bg-custom-white shadow-md">
-      <div className="flex shrink-0 items-center justify-between border-b border-gray-100 px-3 pb-2 pt-2.5">
-        <span className="font-mono text-[9.5px] uppercase tracking-wide text-brand_slate/85">
-          In this batch
-        </span>
-        <span className="font-mono text-[9.5px] uppercase tracking-wide text-brand_slate/85">
-          {rows.length ? "Newest first" : "Nothing yet"}
-        </span>
-      </div>
-
-      <div className="min-h-0 flex-1 overflow-y-auto">
+    <section className="overflow-hidden rounded-2xl border border-gray-200 bg-custom-white shadow-md">
+      <div>
         {rows.length === 0 ? (
-          <div className="flex h-full flex-col items-center justify-center gap-2 px-7 py-6 text-center">
-            <div className="font-display text-[14px] font-bold text-content/85">
-              Nothing scanned yet
+          <div className="px-5 py-7 text-center">
+            <div className="font-display text-[16px] font-bold text-content">
+              Scanned items land here
             </div>
-            <p className="text-[11.5px] text-content/85">
-              Scan a shelf tag and it lands here with the item name beside it.
-              Fix anything that looks wrong, then send the batch for tags.
-            </p>
+            <p className="mt-1 text-[14px] text-content">Modify or remove from here.</p>
           </div>
         ) : (
           rows.map((row) =>
@@ -149,20 +133,29 @@ const BatchList = () => {
                 key={row.raw}
                 className="flex items-center gap-2 border-b border-gray-100 px-3 py-2"
               >
+                {/* The item's name leads. It is what the clerk is checking
+                    against the shelf in front of them; the digits are only
+                    there to be corrected, so they sit underneath. */}
                 <button
                   type="button"
                   onClick={() => dispatch(beginEdit(row.raw))}
-                  className="min-w-0 flex-1 text-left"
+                  className="min-w-0 flex-1 py-0.5 text-left"
                 >
-                  <div className="font-mono text-[13.5px] font-semibold tracking-wider text-content/85">
-                    {row.raw}
+                  <div className="flex items-center gap-2">
+                    {row.status === "pending" && (
+                      // Same inline spinner the rest of the dev tree uses.
+                      <span className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-brand_line_2 border-t-brand_navy" />
+                    )}
+                    <span className="truncate text-[16px] font-semibold text-content">
+                      {noteFor(row)}
+                    </span>
                   </div>
-                  <div className="truncate text-[11px] font-medium text-brand_slate/85">
-                    {noteFor(row)}
+                  <div className="mt-0.5 font-mono text-[13px] tracking-wider text-brand_slate">
+                    {row.raw}
                   </div>
                 </button>
                 {row.repeatedAt !== undefined && (
-                  <span className="shrink-0 rounded bg-brand_navy/[0.09] px-1.5 py-0.5 font-mono text-[9.5px] font-semibold uppercase tracking-wide text-brand_navy">
+                  <span className="shrink-0 rounded bg-brand_navy/[0.09] px-2 py-1 text-[12px] font-bold text-brand_navy">
                     Already in
                   </span>
                 )}
@@ -170,7 +163,7 @@ const BatchList = () => {
                   type="button"
                   aria-label={`Remove ${row.raw} from the batch`}
                   onClick={() => dispatch(removeRow(row.raw))}
-                  className="-my-2 -mr-2 flex h-11 w-11 shrink-0 items-center justify-center text-brand_slate/85"
+                  className="-my-2 -mr-2 flex h-11 w-11 shrink-0 items-center justify-center text-brand_slate/95"
                 >
                   <XMarkIcon className="h-4 w-4" />
                 </button>
