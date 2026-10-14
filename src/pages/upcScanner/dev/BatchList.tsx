@@ -6,6 +6,7 @@ import {
   beginEdit,
   removeRow,
   replaceRow,
+  retryRow,
   type ScanRow,
 } from "../../../features/dev/devUpcScannerSlice";
 
@@ -87,14 +88,27 @@ const EditRow = ({ row }: { row: ScanRow }) => {
         >
           Drop it
         </button>
-        <button
-          type="button"
-          onClick={save}
-          disabled={!ENTERABLE.test(draft.trim()) || draft.trim() === row.raw}
-          className="h-11 flex-1 rounded-lg bg-brand_navy text-[13px] font-semibold text-custom-white disabled:bg-brand_navy/20 disabled:text-content/40"
-        >
-          Save
-        </button>
+        {row.status === "error" && draft.trim() === row.raw ? (
+          // Nothing is wrong with the code — the lookup just never answered —
+          // so the useful action is asking again, not retyping digits that are
+          // probably already right.
+          <button
+            type="button"
+            onClick={() => dispatch(retryRow(row.raw))}
+            className="h-11 flex-1 rounded-lg bg-brand_navy text-[13px] font-semibold text-custom-white"
+          >
+            Check again
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={save}
+            disabled={!ENTERABLE.test(draft.trim()) || draft.trim() === row.raw}
+            className="h-11 flex-1 rounded-lg bg-brand_navy text-[13px] font-semibold text-custom-white disabled:bg-brand_navy/20 disabled:text-content/40"
+          >
+            Save
+          </button>
+        )}
       </div>
     </div>
   );

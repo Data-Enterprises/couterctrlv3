@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
 import SingleStoreSearchCard from "../../../components-dev/SingleStoreSearchCard";
@@ -47,14 +47,29 @@ const UpcScannerMobile = () => {
     : "—";
 
   const handleScan = (code: string, raw: string, source: ScanSource) => {
-    const at = Date.now();
-    // A code already in the batch adds no row — the file is one row per UPC —
-    // so there is nothing new to look up either. `addScan` stamps the row it
-    // repeats so the clerk still sees the tag react.
-    const known = rows.some((r) => r.code === code);
-    dispatch(addScan({ raw, code, source, at }));
-    if (!known) resolve({ raw, code, source, at, status: "pending" });
+    // A code already in the batch adds no row — the file is one row per UPC.
+    // `addScan` stamps the row it repeats instead, so the clerk still sees the
+    // tag react rather than reading the silence as a scan that failed.
+    dispatch(addScan({ raw, code, source, at: Date.now() }));
   };
+
+  // Anything still pending gets looked up, wherever it came from.
+  //
+  // Keyed off the rows rather than called beside the scan, because a scan is
+  // not the only way a row becomes pending: correcting a code in the list
+  // replaces it with a new one, and that one needs a name just as much. Doing
+  // it here means every path is covered by construction, including the ones
+  // added later.
+  const inFlight = useRef(new Set<string>());
+  useEffect(() => {
+    rows.forEach((row) => {
+      if (row.status !== "pending" || inFlight.current.has(row.code)) return;
+      inFlight.current.add(row.code);
+      // Terminates: resolve always moves the row off `pending`, and a row it
+      // cannot name is left `error` rather than retried in a loop.
+      void resolve(row).finally(() => inFlight.current.delete(row.code));
+    });
+  }, [rows, resolve]);
 
   if (!storeId || picking) {
     const switching = storeId > 0 && draftStore > 0 && draftStore !== storeId;

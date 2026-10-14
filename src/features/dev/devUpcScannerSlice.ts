@@ -154,6 +154,18 @@ const slice = createSlice({
       if (row) row.status = "error";
     },
 
+    /**
+     * Ask again about a row whose lookup never answered.
+     *
+     * Dropping one connection should not leave a row permanently unexplained,
+     * and the clerk has no way to tell a dead request from a real absence —
+     * which is the whole reason the two statuses are separate.
+     */
+    retryRow: (state, { payload }: PayloadAction<string>) => {
+      const row = state.rows.find((r) => r.raw === payload);
+      if (row) row.status = "pending";
+    },
+
     removeRow: (state, { payload }: PayloadAction<string>) => {
       state.rows = state.rows.filter((r) => r.raw !== payload);
       if (state.editing === payload) state.editing = null;
@@ -232,6 +244,7 @@ export const {
   nameRow,
   markUnnamed,
   markRowError,
+  retryRow,
   removeRow,
   beginEdit,
   replaceRow,
