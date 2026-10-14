@@ -3,7 +3,8 @@ import { useAppDispatch, useAppSelector } from "../../../hooks";
 import { CameraIcon, ExclamationTriangleIcon } from "@heroicons/react/20/solid";
 import SingleStoreSearchCard from "../../../components-dev/SingleStoreSearchCard";
 import { setSelectedStore } from "../../../features/dev/devItemLookupSlice";
-import DevUpcScanner from "./DevUpcScanner";
+import { setError } from "../../../features/itemScanSlice";
+import ScannerView from "../../../components-dev/scanner/ScannerView";
 import { useScanGun } from "../../../components-dev/scanner/useScanGun";
 import RecentLookupsStrip from "./RecentLookupsStrip";
 import RecentLookupsCard from "./RecentLookupsCard";
@@ -105,7 +106,16 @@ const LookupEntryScreen = ({
           <div className="relative">
             {cameraOpen ? (
               <>
-                <DevUpcScanner handleScan={handleScan} retryKey={retryKey} />
+                {/* The shared camera. This screen answers one question, so it
+                    stops on the read, and it keeps its own error panel below —
+                    passing `onError` is what tells the component not to print
+                    the message a second time inside the frame. */}
+                <ScannerView
+                  onDetected={handleScan}
+                  stopOnRead
+                  retryKey={retryKey}
+                  onError={(message) => dispatch(setError(message))}
+                />
                 <button
                   className="mt-1.5 text-[11.5px] text-content/85 underline"
                   onClick={() => setCameraOpen(false)}
