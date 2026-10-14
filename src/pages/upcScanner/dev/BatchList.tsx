@@ -9,6 +9,7 @@ import {
   retryRow,
   type ScanRow,
 } from "../../../features/dev/devUpcScannerSlice";
+import { isEnterableUpc } from "./upcEntry";
 
 /**
  * What has been scanned, newest first, with any row correctable in place.
@@ -30,8 +31,6 @@ const noteFor = (row: ScanRow): string => {
   return "No item name";
 };
 
-const ENTERABLE = /^\d{8,14}$/;
-
 const EditRow = ({ row }: { row: ScanRow }) => {
   const dispatch = useAppDispatch();
   const [draft, setDraft] = useState(row.raw);
@@ -42,7 +41,7 @@ const EditRow = ({ row }: { row: ScanRow }) => {
 
   const save = () => {
     const next = draft.trim();
-    if (!ENTERABLE.test(next)) return;
+    if (!isEnterableUpc(next)) return;
     dispatch(
       replaceRow({
         raw: row.raw,
@@ -99,7 +98,7 @@ const EditRow = ({ row }: { row: ScanRow }) => {
           <button
             type="button"
             onClick={save}
-            disabled={!ENTERABLE.test(draft.trim()) || draft.trim() === row.raw}
+            disabled={!isEnterableUpc(draft) || draft.trim() === row.raw}
             className="h-12 flex-1 rounded-lg bg-brand_navy text-[15px] font-bold text-custom-white disabled:bg-brand_navy/20 disabled:text-content/40"
           >
             Save

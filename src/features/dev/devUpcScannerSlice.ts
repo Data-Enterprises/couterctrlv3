@@ -106,6 +106,14 @@ const slice = createSlice({
       state,
       { payload }: PayloadAction<{ raw: string; code: string; source: ScanSource; at: number }>,
     ) => {
+      // The mark says "that one, just now", so only the newest scan carries
+      // it. Left to accumulate it stops meaning anything: scan a tag twice,
+      // scan four more, and the first is still flagged halfway down the list
+      // with nothing having happened to it.
+      state.rows.forEach((row) => {
+        row.repeatedAt = undefined;
+      });
+
       const existing = state.rows.find((r) => r.code === payload.code);
       if (existing) {
         existing.repeatedAt = payload.at;

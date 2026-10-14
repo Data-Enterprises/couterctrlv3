@@ -1,33 +1,31 @@
 import { useState } from "react";
+import { BackspaceIcon, MagnifyingGlassIcon } from "@heroicons/react/20/solid";
 import ScannerView from "../../../components-dev/scanner/ScannerView";
 import { normalizeUpc } from "../../../components-dev/scanner";
-import {
-  useIsScanGunDevice,
-  useScanGun,
-} from "../../../components-dev/scanner/useScanGun";
+import { useScanGun } from "../../../components-dev/scanner/useScanGun";
+import { TY_COLOR } from "../../../components-dev/mobile/perf/perfColors";
 import type { ScanSource } from "../../../features/dev/devUpcScannerSlice";
+import { isEnterableUpc } from "./upcEntry";
 
 /**
- * Where a UPC gets into the batch. One card, two faces, the device picks.
+ * Where a UPC gets into the batch.
  *
- * On scan-gun hardware the capture is a focused text field: the wedge commits
- * the barcode into whatever is focused, so a field that owns focus *is* the
- * scanner, and there is no viewfinder to show. On a phone with no gun the same
- * slot holds the camera, live, with a small typed field under it — the
- * camera's own failure messages all end in "type the UPC instead", so
- * something has to be there when they fire.
+ * The same row as Performance mobile's "Find an item": the field, one button
+ * that changes job with the field's contents, and a clear beside it once there
+ * is something to clear. Three ways in, all ending in the same callback:
  *
- * Both faces stay armed for as long as the screen is open. The gun's field is
- * always ready, so the camera is too: opening it per item is unworkable at
- * fifty tags.
+ *   1. A scan gun. The wedge commits the barcode into whatever is focused, so
+ *      the field owns focus and a trigger pull needs no button at all.
+ *   2. The camera, opened from the button and closed the same way. It also
+ *      closes itself on a read — one tag is one trip to the camera, and
+ *      leaving it running over a list you are now reading is just a hot phone.
+ *   3. Typing, then the button. The only one that needs a press, because
+ *      nothing else can say when a typed code is finished.
  *
- * It sits directly under the scope card and never at the foot of the list —
- * adding an item is how you get anywhere on this screen, so it has to be
- * reachable without scrolling past everything already scanned.
+ * The camera is offered on every device, gun hardware included. A handheld's
+ * own camera is worse than its scanner but it is there, and gating it on the
+ * device would mean the one device we can test on could never show it.
  */
-
-/** The same shape a wedge scan has to have: digits only, 8 through 14. */
-const ENTERABLE = /^\d{8,14}$/;
 
 interface CaptureCardProps {
   /** Both codes, every time: normalized for the lookup, raw as printed. */
@@ -35,86 +33,106 @@ interface CaptureCardProps {
 }
 
 const CaptureCard = ({ onScan }: CaptureCardProps) => {
-  const isGun = useIsScanGunDevice();
   const [field, setField] = useState("");
+  // Closed on arrival: it holds the camera, a decode loop and a chunk of the
+  // screen, none of which is wanted by someone who came here to type a code or
+  // read back what they have collected.
+  const [cameraOpen, setCameraOpen] = useState(false);
 
   // A scan lands in the visible field first, then becomes a row. That order is
   // deliberate: the clerk sees the digits the scanner actually read before
   // anything is looked up, so a bad read is visible rather than inferred from
-  // a list entry. The code stays in the field afterwards until the next scan
-  // replaces it.
+  // a list entry.
   const gun = useScanGun((code, raw) => {
+    setCameraOpen(false);
     setField(raw);
     onScan(code, raw, "gun");
   });
 
   const submitTyped = () => {
     const raw = field.trim();
-    if (!ENTERABLE.test(raw)) return;
+    if (!isEnterableUpc(raw)) return;
     onScan(normalizeUpc(raw), raw, "typed");
     setField("");
   };
 
   return (
-    // No card of its own: the capture sits inside the scope card, under the
-    // store it is scanning for. They were two cards saying one thing.
-    //
-    // No label above the field either. On a handheld the field IS the scanner
-    // and its placeholder already says what to do — a caption over it is a line
-    // of small grey text earning nothing on a screen this size.
     <div className="flex flex-col gap-2">
-      {!isGun && (
-        <>
-          <ScannerView
-            onDetected={(code, raw) => {
-              setField(raw);
-              onScan(code, raw, "camera");
-            }}
-          />
-          <div className="flex items-center gap-2">
-            <div className="flex-1 h-px bg-content/15" />
-            <span className="text-[10.5px] text-content/95">or type it</span>
-            <div className="flex-1 h-px bg-content/15" />
-          </div>
-        </>
-      )}
-
-      <div className="flex items-center gap-2">
+      <div className="flex gap-2">
         <input
           id="upc-capture"
           type="text"
           ref={gun.ref}
           inputMode={gun.inputMode ?? "numeric"}
+          enterKeyHint="done"
           value={field}
-          onChange={(e) => setField(e.target.value)}
+          onChange={(e) => {
+            // Typing closes the camera. Someone keying a code has stopped
+            // pointing the phone at anything, and the button under their thumb
+            // has already turned into the one that adds it.
+            setCameraOpen(false);
+            setField(e.target.value);
+          }}
           onKeyDown={(e) => e.key === "Enter" && submitTyped()}
-          placeholder={isGun ? "Pull the trigger" : "Type a UPC"}
+          placeholder="Scan or type a UPC"
           aria-label="UPC"
-          className="basic-input bg-brand_paper h-12 min-w-0 flex-1 font-mono text-[19px] tracking-wider text-content"
+          className="min-w-0 flex-1 rounded-lg border-0 bg-bkg px-3 py-3 text-[16px] text-content placeholder:text-content/95"
+          style={{ outline: "none", WebkitAppearance: "none", boxShadow: "none" }}
         />
-        {/* Always there, so typing a code has a visible destination — it just
-            does nothing until there is a code to add. A trigger pull never
-            needs it: the scan is in the batch before the digits appear here. */}
+        {/* One button, two jobs — with an empty field there is nothing to add,
+            and with a code in it the camera would only overwrite what was just
+            typed. */}
         <button
           type="button"
-          onClick={submitTyped}
-          disabled={!ENTERABLE.test(field.trim())}
-          className="h-12 shrink-0 rounded-lg bg-brand_navy px-5 text-[16px] font-bold text-custom-white disabled:bg-brand_navy/20 disabled:text-content/40"
+          onClick={field ? submitTyped : () => setCameraOpen((open) => !open)}
+          aria-label={field ? "Add this UPC" : "Scan a barcode"}
+          aria-pressed={!field && cameraOpen}
+          // The same accent Perf mobile's scan button uses, so the control
+          // reads as the same control on both screens.
+          className="flex-none rounded-lg px-3 text-custom-white"
+          style={{ background: TY_COLOR }}
         >
-          Add
+          {field ? (
+            <MagnifyingGlassIcon className="h-[18px] w-[18px]" />
+          ) : (
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              aria-hidden="true"
+            >
+              <path d="M3 7V5a2 2 0 012-2h2M17 3h2a2 2 0 012 2v2M21 17v2a2 2 0 01-2 2h-2M7 21H5a2 2 0 01-2-2v-2M7 8v8M11 8v8M15 8v8" />
+            </svg>
+          )}
         </button>
+        {field && (
+          <button
+            type="button"
+            onClick={() => setField("")}
+            aria-label="Clear"
+            className="flex-none rounded-lg bg-bkg px-3 text-content/95"
+          >
+            <BackspaceIcon className="h-[18px] w-[18px]" />
+          </button>
+        )}
       </div>
 
-      <div className="flex items-center gap-1.5">
-        <span
-          className={`h-2 w-2 shrink-0 rounded-full ${
-            isGun ? "bg-severity_healthy_text" : "bg-brand_navy"
-          }`}
+      {cameraOpen && (
+        <ScannerView
+          onDetected={(code, raw) => {
+            // Closes on the read. The code is in the field and in the batch,
+            // and what the clerk wants next is to look at the row, not at a
+            // live picture of the shelf.
+            setCameraOpen(false);
+            setField(raw);
+            onScan(code, raw, "camera");
+          }}
         />
-        <span className="text-[13px] font-semibold text-content">
-          {isGun ? "Ready to scan" : "Camera on"}
-        </span>
-      </div>
+      )}
     </div>
   );
 };

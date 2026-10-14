@@ -11,9 +11,6 @@ import { useSendBatch } from "./useSendBatch";
  * does not need to know there is a file, let alone see its columns.
  */
 
-/** Enough items to recognise the batch, before it turns into a wall of text. */
-const PREVIEW_ROWS = 5;
-
 const SendSheet = ({ onClose }: { onClose: () => void }) => {
   const { rows, storeId, sending } = useAppSelector((s) => s.dev.upcScanner);
   const { assignedStores } = useAppSelector((s) => s.user);
@@ -23,7 +20,6 @@ const SendSheet = ({ onClose }: { onClose: () => void }) => {
   const storeName =
     assignedStores.find((s) => s.storeid === storeId)?.store_name ?? "";
   const unverified = rows.filter((r) => r.status !== "named").length;
-  const shown = rows.slice(0, PREVIEW_ROWS);
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col justify-end">
@@ -41,8 +37,13 @@ const SendSheet = ({ onClose }: { onClose: () => void }) => {
         </h2>
         <div className="mt-1 text-[12px] font-semibold text-content/95">{storeName}</div>
 
-        <div className="mt-3 overflow-hidden rounded-xl border border-brand_line bg-brand_paper">
-          {shown.map((row) => (
+        {/* Every item, scrolling inside a bounded box rather than the first
+            handful over "and 4 more". The point of this sheet is checking what
+            is about to go, and a list that stops short of the batch cannot be
+            checked — while one that runs the full length pushes the Send
+            button off a handheld screen. */}
+        <div className="mt-3 max-h-[45vh] overflow-y-auto overscroll-contain rounded-xl border border-brand_line bg-brand_paper">
+          {rows.map((row) => (
             <div
               key={row.raw}
               className="border-b border-brand_line px-3 py-2 last:border-b-0"
@@ -55,11 +56,6 @@ const SendSheet = ({ onClose }: { onClose: () => void }) => {
               </div>
             </div>
           ))}
-          {rows.length > shown.length && (
-            <div className="border-t border-brand_line px-3 py-2 text-[12px] font-semibold text-brand_slate/95">
-              and {rows.length - shown.length} more
-            </div>
-          )}
         </div>
 
         {unverified > 0 && (
