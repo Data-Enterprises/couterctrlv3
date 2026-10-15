@@ -30,7 +30,12 @@ import {
   sameWeekDayLastYear,
 } from "../../../../../utils";
 import { isGroupSearch } from "../../../../../features/searchSlice";
-import type { JsonError, SubDeptMargin } from "../../../../../interfaces";
+import type {
+  HourlySale,
+  JsonError,
+  SubDeptMargin,
+  SubSale,
+} from "../../../../../interfaces";
 import {
   cachePerfItems,
   cachePerfStoreData,
@@ -76,6 +81,11 @@ import {
   sortPairs,
   storeKeyOf,
   type PairSort,
+  pickComparison,
+  resolveWeekComparison,
+  cmpLabels,
+  cmpShort,
+  type CmpBasis,
 } from "./perfData";
 import PairedBars from "../../../../../components-dev/mobile/perf/PairedBars";
 import PerfDelta from "../../../../../components-dev/mobile/perf/PerfDelta";
@@ -93,9 +103,9 @@ const DETAIL_TABS: DetailTab<"subs" | "hours">[] = [
   { key: "hours", label: "Hours" },
 ];
 
-const STORE_SORTS: SortOption<PairSort>[] = [
+const storeSorts = (basis: CmpBasis): SortOption<PairSort>[] => [
   { key: "sales", label: "Sales" },
-  { key: "change", label: "Change vs LY" },
+  { key: "change", label: `Change vs ${cmpShort(basis)}` },
   { key: "name", label: "Store #" },
 ];
 
@@ -168,6 +178,13 @@ const SalesPerfMobile = () => {
     (_, i) =>
       sameWeekDayLastYear(addDays(twStart, i).toISOString().split("T")[0]).date,
   ).sort();
+  /** The same week, seven days back. Fetched beside last year on every call,
+   *  and used only where last year came back empty — a store onboarded this
+   *  year has no last year, and one bar is not a comparison. Asking for both
+   *  up front rather than refetching on a miss keeps it to one round trip:
+   *  the miss is only known once the answer is in. */
+  const lwStart = addDays(twStart, -7).toISOString().split("T")[0];
+  const lwEnd = addDays(twEnd, -7).toISOString().split("T")[0];
 
   /** Sub-department and hourly rows for one scope, both periods. */
   const fetchBundle = async (
@@ -176,18 +193,34 @@ const SalesPerfMobile = () => {
     single: number,
   ): Promise<PerfBundle> => {
     const args = [grouped, value, single] as const;
-    const [hTy, hLy, sTy, sLy] = await Promise.all([
+    const [hTy, hLy, hLw, sTy, sLy, sLw] = await Promise.all([
       getHourly(context.url, context.token, twStart, twEnd, ...args),
       getHourly(context.url, context.token, lyDates[0], lyDates[6], ...args),
+      getHourly(context.url, context.token, lwStart, lwEnd, ...args),
       getSubs(context.url, context.token, twStart, twEnd, ...args),
       getSubs(context.url, context.token, lyDates[0], lyDates[6], ...args),
+      getSubs(context.url, context.token, lwStart, lwEnd, ...args),
     ]);
     // getHourly and getSubs both answer on `.subs`, not `.sales`.
+    const rows = (r: { data: { error: number; subs: unknown[] } }) =>
+      r.data.error === 0 ? r.data.subs : [];
+    // A bundle is one store, so subs and hours fall back together. Deciding
+    // them separately could show Subs against last year and Hours against
+    // last week on one card, which is two different questions side by side.
+    const hourly = pickComparison(
+      rows(hLy) as HourlySale[],
+      rows(hLw) as HourlySale[],
+    );
+    const subs = pickComparison(
+      rows(sLy) as SubSale[],
+      rows(sLw) as SubSale[],
+    );
     return {
-      hourlyTy: hTy.data.error === 0 ? hTy.data.subs : [],
-      hourlyLy: hLy.data.error === 0 ? hLy.data.subs : [],
-      subsTy: sTy.data.error === 0 ? sTy.data.subs : [],
-      subsLy: sLy.data.error === 0 ? sLy.data.subs : [],
+      hourlyTy: rows(hTy) as HourlySale[],
+      hourlyLy: hourly.rows,
+      subsTy: rows(sTy) as SubSale[],
+      subsLy: subs.rows,
+      basis: subs.basis === "lw" && hourly.basis === "lw" ? "lw" : subs.basis,
     };
   };
 
@@ -197,9 +230,10 @@ const SalesPerfMobile = () => {
     dispatch(clearPerfStoreCache());
     try {
       const args = [useGroups, searchValue, singleStore] as const;
-      const [wTy, wLy, bundle] = await Promise.all([
+      const [wTy, wLy, wLw, bundle] = await Promise.all([
         getWeekly(context.url, context.token, twStart, twEnd, ...args),
         getWeekly(context.url, context.token, lyDates[0], lyDates[6], ...args),
+        getWeekly(context.url, context.token, lwStart, lwEnd, ...args),
         // A group search no longer loads a group-wide breakdown: there is
         // nowhere on screen to show one now that Subs and Hours live inside a
         // store card, and each card fetches its own on the way open. A single
@@ -210,12 +244,13 @@ const SalesPerfMobile = () => {
           : Promise.resolve(emptyBundle()),
       ]);
 
-      dispatch(
-        setPerfWeek({
-          ty: wTy.data.error === 0 ? wTy.data.sales : [],
-          ly: wLy.data.error === 0 ? wLy.data.sales : [],
-        }),
+      const ty = wTy.data.error === 0 ? wTy.data.sales : [];
+      const cmp = resolveWeekComparison(
+        ty,
+        wLy.data.error === 0 ? wLy.data.sales : [],
+        wLw.data.error === 0 ? wLw.data.sales : [],
       );
+      dispatch(setPerfWeek({ ty, ly: cmp.rows, basis: cmp.basis }));
       dispatch(setPerfGroupData(bundle));
       dispatch(setPerfHasSearched(true));
     } catch (err) {
@@ -421,12 +456,31 @@ const SalesPerfMobile = () => {
         storeid,
         1,
       ),
+      // And last week, for the store that has no last year to answer with.
+      // Safe for the same reason as the line above.
+      fetchSubDeptRowsSafe(
+        context.url,
+        context.token,
+        subId,
+        lwStart,
+        lwEnd,
+        0,
+        storeid,
+        1,
+      ),
     ])
-      .then(([ty, ly]) =>
+      .then(([ty, ly, lw]) => {
+        // Scoped to the store before the pick, so the choice is made on the
+        // rows this department actually has rather than the whole payload.
+        const cmp = pickComparison(scoped(ly), scoped(lw));
         dispatch(
-          cachePerfItems({ key, items: { ty: scoped(ty), ly: scoped(ly) }, gen }),
-        ),
-      )
+          cachePerfItems({
+            key,
+            items: { ty: scoped(ty), ly: cmp.rows, basis: cmp.basis },
+            gen,
+          }),
+        );
+      })
       .catch((err: JsonError) => {
         dispatch(failPerfItems(key));
         toast.error("Error loading items: " + err.message);
@@ -548,6 +602,30 @@ const SalesPerfMobile = () => {
 
   /** storeid alone is not unique — some ids carry two store numbers — so the
    *  set keys on both or two real stores would count as one. */
+  /**
+   * What the GROUP card is comparing against.
+   *
+   * Only "last week" when every store fell back to it. A group with one new
+   * shop and nine old ones is still overwhelmingly a last-year comparison,
+   * and labelling the whole total "LW" to account for the newcomer would
+   * misdescribe the nine. The total itself is the sum of whatever each store
+   * had, which is the honest figure either way.
+   */
+  const groupBasis: CmpBasis = useMemo(() => {
+    const all = Object.values(perf.cmpBasis);
+    return all.length > 0 && all.every((b) => b === "lw") ? "lw" : "ly";
+  }, [perf.cmpBasis]);
+
+  /** The drill list follows the card it opened from: one store's rows compare
+   *  the way that store's card does, and the group's follow the group. */
+  const drillBasis: CmpBasis =
+    // The bundle's own answer first: subs and hours are fetched separately
+    // from the weekly rows, and a store can have a last year for one and not
+    // the other. Falling back to the card's basis covers a bundle that has
+    // not been fetched yet.
+    active.basis ??
+    (groupOpen ? groupBasis : (perf.cmpBasis[openKey ?? ""] ?? groupBasis));
+
   const storeCount = new Set(
     perf.weekTy.map((r) => `${r.storeid}__${r.store_number}`),
   ).size;
@@ -580,6 +658,7 @@ const SalesPerfMobile = () => {
       onSort={(key) => dispatch(setPerfSort({ dimension: drillDim, sort: key }))}
       listPartial={listPartial}
       listNote={matchedNote(weekMatch)}
+      basis={drillBasis}
       shownDay={cardDay}
       loading={bundleLoading}
       allowItems={itemScope !== null}
@@ -599,6 +678,9 @@ const SalesPerfMobile = () => {
         onQuery: (q) => dispatch(setPerfItemQuery(q)),
         partial: itemMatch ? isPartialMatch(itemMatch) : false,
         note: itemMatch ? matchedNote(itemMatch) : "",
+        // The items' own fetch decides for itself — a department can have no
+        // last year in a store that otherwise does.
+        basis: openItems?.basis ?? drillBasis,
         // Nothing sold this week, but the department is in the list because
         // last year's rows put it there. The pairs still render — every one
         // at $0.00 against its last-year figure — so the list needs to say
@@ -726,6 +808,7 @@ const SalesPerfMobile = () => {
                       ly={groupTotals.salesLy}
                       max={Math.max(groupTotals.sales, groupTotals.salesLy)}
                       compact
+                      labels={cmpLabels(groupBasis)}
                       lyUnavailable={noLyHistory(groupMatch, null)}
                     />
                   </div>
@@ -738,6 +821,7 @@ const SalesPerfMobile = () => {
                   selectedDay={shownGroupDay}
                   onToggleDay={(iso) => dispatch(togglePerfGroupDay(iso))}
                   noLy={cardNoLy}
+                  basis={groupBasis}
                   totals={totals}
                   bundleLoading={bundleLoading}
                   totalsPartial={totalsPartial}
@@ -752,7 +836,7 @@ const SalesPerfMobile = () => {
           {isGroupSearch(search.type) && (
             <section className="overflow-hidden rounded-2xl border border-gray-200 bg-custom-white shadow-md">
               <MobileSortChips
-                options={STORE_SORTS}
+                options={storeSorts(groupBasis)}
                 value={perf.storeSort?.key ?? null}
                 dir={
                   perf.storeSort
@@ -851,6 +935,7 @@ const SalesPerfMobile = () => {
                         selectedDay={shownDay}
                         onToggleDay={(iso) => dispatch(togglePerfDay(iso))}
                         noLy={cardNoLy}
+                        basis={perf.cmpBasis[p.key] ?? "ly"}
                         totals={totals}
                         bundleLoading={bundleLoading}
                         totalsPartial={totalsPartial}

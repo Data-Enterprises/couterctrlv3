@@ -140,7 +140,12 @@ const sortOptions = (
   return [
     ...(measure === "amount" ? size.reverse() : size),
     { key: "change", label: "vs Avg" },
-    { key: "name", label: by === "store" ? "Store #" : "Name" },
+    // Store number only. It is an identifier, and running down the stores in
+    // order is a real way to read the list; sorting cashiers or lanes
+    // alphabetically is not, so those lose the chip.
+    ...(by === "store"
+      ? [{ key: "name" as const, label: "Store #" }]
+      : []),
   ];
 };
 
@@ -750,7 +755,7 @@ const EventPerfMobile = ({
                 </div>
               )}
 
-              <div className="mt-3.5 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-gray-100 pt-3">
+              <div className="mt-3.5 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-brand_line pt-3">
                 {(
                   [
                     ...(measure === "amount"
@@ -988,7 +993,7 @@ const EventPerfMobile = ({
                     dispatch(setEventLens(lens));
                     setTypePickerOpen(false);
                   }}
-                  className={`flex w-full items-baseline gap-3 border-t border-gray-100 px-1 py-3 text-left first:border-t-0 ${
+                  className={`flex w-full items-baseline gap-3 border-t border-brand_line px-1 py-3 text-left first:border-t-0 ${
                     active ? "bg-row_selected" : "active:bg-bkg"
                   }`}
                 >

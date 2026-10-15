@@ -4,7 +4,11 @@
  * promoted, it replaces the prod slice. See src/store/devReducers.ts.
  */
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import { cycleSort, type SortState } from "../../utils/perfPairs";
+import {
+  cycleSort,
+  type CmpBasis,
+  type SortState,
+} from "../../utils/perfPairs";
 import type { CatItem, SubDeptMargin } from "../../interfaces";
 import { storeNumbersIn } from "../../utils/storeIdentity";
 
@@ -139,6 +143,8 @@ interface ItemPerfState {
    * whole fetch and leave the page on its search card.
    */
   lyMissing: boolean;
+  /** Which period the comparison is drawn from. */
+  cmpBasis: CmpBasis;
 
   /**
    * The expanded card in the group list, or null when they are all closed.
@@ -290,6 +296,7 @@ const initialState: ItemPerfState = {
   itemsTy: [],
   itemsLy: [],
   lyMissing: false,
+  cmpBasis: "ly",
   openGroup: null,
   detailOpen: false,
   searchOpen: false,
@@ -335,6 +342,9 @@ const itemPerfSlice = createSlice({
         ty: ItemRow[];
         /** Null when last year could not be read at all — see `lyMissing`. */
         ly: ItemRow[] | null;
+        /** Which period `ly` actually holds. This page is one store, so one
+         *  answer covers the screen. */
+        basis: CmpBasis;
         gen: number;
         source: ItemSource;
         /** Week-ending ISO date the rows were fetched for. */
@@ -357,6 +367,7 @@ const itemPerfSlice = createSlice({
       state.itemsTy = action.payload.ty;
       state.itemsLy = action.payload.ly ?? [];
       state.lyMissing = action.payload.ly === null;
+      state.cmpBasis = action.payload.basis;
       // A new window invalidates every drill into the old one.
       state.openGroup = null;
       state.detailOpen = false;

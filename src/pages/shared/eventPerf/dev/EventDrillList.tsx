@@ -108,7 +108,7 @@ const EventDrillList = ({
     <button
       type="button"
       onClick={onShowMore}
-      className="block w-full border-t border-gray-100 py-3 text-center text-[12px] font-semibold active:bg-bkg"
+      className="block w-full border-t border-brand_line py-3 text-center text-[12px] font-semibold active:bg-bkg"
       style={{ color: TY_COLOR }}
     >
       Show more
@@ -122,7 +122,7 @@ const EventDrillList = ({
         {/* The crumb only appears when a person was opened. Reaching receipts
             by tab means the whole store's, which has nothing to back out to. */}
         {cashierLabel && (
-          <div className="flex items-center gap-2 border-b border-gray-100 px-3.5 py-2">
+          <div className="flex items-center gap-2 border-b border-brand_line px-3.5 py-2">
             <button
               type="button"
               onClick={onClearCashier}
@@ -138,7 +138,7 @@ const EventDrillList = ({
           </div>
         )}
 
-        <div className="border-b border-gray-100 px-3.5 py-2">
+        <div className="border-b border-brand_line px-3.5 py-2">
           <input
             id="event-receipt-search"
             value={query}
@@ -166,7 +166,7 @@ const EventDrillList = ({
                 key={t.saleId}
                 type="button"
                 onClick={() => onOpenReceipt(t.saleId)}
-                className="block w-full border-t border-gray-100 px-3.5 py-3 text-left first:border-t-0 active:bg-bkg"
+                className="block w-full border-t border-brand_line px-3.5 py-3 text-left first:border-t-0 active:bg-bkg"
               >
                 <div className="flex items-baseline gap-2">
                   <span className="min-w-0 flex-1 truncate font-display text-[13.5px] font-semibold text-content">
@@ -216,7 +216,7 @@ const EventDrillList = ({
               key={r.key}
               type="button"
               onClick={() => onSelectCashier({ key: r.key, label: r.label })}
-              className="block w-full border-t border-gray-100 px-3.5 py-3 text-left first:border-t-0 active:bg-bkg"
+              className="block w-full border-t border-brand_line px-3.5 py-3 text-left first:border-t-0 active:bg-bkg"
             >
               <div className="flex items-baseline gap-2">
                 <span className="min-w-0 flex-1 truncate font-display text-[13.5px] font-semibold text-content">
