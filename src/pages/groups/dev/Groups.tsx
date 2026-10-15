@@ -12,6 +12,8 @@ import { useGroupCtx } from ".";
 import GroupsMobile from "./mobile/GroupsMobile";
 import GroupsList from "./GroupsList";
 import GroupDetail from "./GroupDetail";
+import SharedGroups from "../../organization/dev/sharedGroups/SharedGroups";
+import { SHARED_GROUP_OWNER_LEVEL } from "../../organization/dev/sharedGroups/hooks";
 
 const NewGroupModal = ({
   onCreate,
@@ -209,8 +211,27 @@ export const UserGroupsPanel = () => {
   );
 };
 
+type GroupsTab = "user" | "shared";
+
+/**
+ * Config → Groups: the two kinds of group a person owns.
+ *
+ * Both lived as tabs inside User Management for a while, which put them beside
+ * Companies, Base Groups and Stores — and those are three ways of saying who
+ * may see what, decided by an administrator. These two are not that. A user
+ * group is somebody's own saved set of their own stores, and a shared group is
+ * one of those passed to a colleague. Neither grants anything, and neither is
+ * an admin's to set, so sitting under User Management made them look like
+ * access controls.
+ *
+ * Mobile keeps user groups only: shared groups has no phone tree, and a tab
+ * strip of one is not a tab strip.
+ */
 const Groups = () => {
   const { isMobile } = useAppSelector((state) => state.app);
+  const { userLevel } = useAppSelector((state) => state.user);
+  const [tab, setTab] = useState<GroupsTab>("user");
+  const canShare = userLevel >= SHARED_GROUP_OWNER_LEVEL;
   const { width, height, boxRef, handleProps } = useResizableBox({
     storageKey: "groups-panel-size",
     defaultWidth: 820,
@@ -233,10 +254,37 @@ const Groups = () => {
       >
         <div className="bg-brand_navy px-3 py-2 flex-shrink-0 flex items-center gap-3">
           <span className="text-custom-white font-semibold text-[13px] flex-shrink-0">
-            Store Groups
+            Groups
           </span>
         </div>
-        <UserGroupsPanel />
+
+        {/* Only when there is a choice to make. Below the sharing level this
+            page is store groups and nothing else, and one tab would be
+            chrome pretending to be a decision. */}
+        {canShare && (
+          <div className="flex border-b border-gray-100 flex-shrink-0">
+            {(
+              [
+                ["user", "User Groups"],
+                ["shared", "Shared Groups"],
+              ] as [GroupsTab, string][]
+            ).map(([id, label]) => (
+              <button
+                key={id}
+                onClick={() => setTab(id)}
+                className={`text-[12px] font-semibold py-2.5 px-4 whitespace-nowrap border-b-2 transition-colors ${
+                  tab === id
+                    ? "border-brand_navy text-brand_navy"
+                    : "border-transparent text-content"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {tab === "shared" && canShare ? <SharedGroups /> : <UserGroupsPanel />}
         <ResizeHandle {...handleProps} />
       </div>
     </div>

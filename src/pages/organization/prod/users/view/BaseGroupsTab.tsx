@@ -56,7 +56,10 @@ const BaseGroupsTab = () => {
   };
 
   const submitAssign = (ids: number[]) => {
-    assignBaseGroupToUser(ctx.url, ctx.token, ctx.selectedUserId, ids)
+    // "all": the whole group — this screen ticks groups, never stores.
+    // Explicit because the argument is required; the server's own default
+    // of "selected" is refused when no storeids come with it.
+    assignBaseGroupToUser(ctx.url, ctx.token, ctx.selectedUserId, ids, "all")
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0 && ctx.userCompany) getData(ctx.userCompany);

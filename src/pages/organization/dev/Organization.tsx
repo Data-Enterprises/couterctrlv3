@@ -1,8 +1,31 @@
 import { useEffect, useState } from "react";
 import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import { useOrganizationCtx } from "./hooks";
-import { useResizableBox } from "../../../hooks/useResizableBox";
-import ResizeHandle from "../../../components-dev/ResizeHandle";
+
+/**
+ * Owner. Companies, base groups and stores each decide who may see what,
+ * which is an administrator's job rather than a manager's. Levels run
+ * 1 basic, 2 user, 5 manager, 7 owner, 9 programmer.
+ */
+const OWNER_LEVEL = 7;
+
+/**
+ * What each tab is worth before its content says otherwise.
+ *
+ * The three access tabs are a list beside a panel and want the width; the
+ * users grid is a table and wants a little less. Heights are explicit because
+ * every one of these scrolls internally — their columns and grids have no
+ * natural height to hug, so `auto` would collapse them to nothing. A view
+ * that knows better overrides this with `usePanelFit`, which is how the Add
+ * user wizard gets its own size per step.
+ */
+const TAB_FIT: Record<Tab, PanelFit> = {
+  users: { width: 1200, height: 660 },
+  companies: { width: 1320, height: 660 },
+  baseGroups: { width: 1320, height: 660 },
+  stores: { width: 1320, height: 660 },
+};
+import { PanelFitContext, type PanelFit } from "./panelFit";
 import PageInfoButton from "../../../components-dev/PageInfoButton";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import type {
@@ -23,13 +46,11 @@ import {
 } from "../../../features/dev/devUsersSlice";
 import { setUsersExportOpen } from "../../../features/dev/devOrganizationSlice";
 import Users from "./users/Users";
-import SharedGroups from "./sharedGroups/SharedGroups";
-import { SHARED_GROUP_OWNER_LEVEL } from "./sharedGroups/hooks";
 import BaseGroups from "./baseGroups/BaseGroups";
-import StoresDirectory from "./stores/StoresDirectory";
-import { UserGroupsPanel } from "../../groups/dev/Groups";
+import Companies from "./companies/Companies";
+import StoresTab from "./stores/StoresTab";
 
-type Tab = "users" | "userGroups" | "sharedGroups" | "baseGroups" | "stores";
+type Tab = "users" | "companies" | "baseGroups" | "stores";
 
 /**
  * The tabs, in order, and the lowest level that sees each. `null` is everyone.
@@ -45,10 +66,15 @@ type Tab = "users" | "userGroups" | "sharedGroups" | "baseGroups" | "stores";
  */
 const TABS: { id: Tab; label: string; minLevel: number | null }[] = [
   { id: "users", label: "Users", minLevel: 5 },
-  { id: "userGroups", label: "User Groups", minLevel: null },
-  { id: "sharedGroups", label: "Shared Groups", minLevel: SHARED_GROUP_OWNER_LEVEL },
-  { id: "baseGroups", label: "Base Groups", minLevel: 7 },
-  { id: "stores", label: "Stores", minLevel: null },
+  // Owner and up for all three. Each decides who may see what — the company
+  // boundary, the groups inside it, and the stores themselves — which is an
+  // administrator's job and not a manager's.
+  //
+  // Companies sits first because it is the outer boundary: a group only
+  // reaches somebody who holds the company it belongs to.
+  { id: "companies", label: "Companies", minLevel: OWNER_LEVEL },
+  { id: "baseGroups", label: "Base Groups", minLevel: OWNER_LEVEL },
+  { id: "stores", label: "Stores", minLevel: OWNER_LEVEL },
 ];
 
 
@@ -58,16 +84,18 @@ const Organization = () => {
   const tabs = TABS.filter((t) => t.minLevel === null || ctx.userLevel >= t.minLevel);
   const [tab, setTab] = useState<Tab>(tabs[0]?.id ?? "userGroups");
   const [storesExportOpen, setStoresExportOpen] = useState(false);
+  /**
+   * The size the open view asks for.
+   *
+   * The panel used to be a dragged rectangle whose size was remembered, which
+   * meant every view inherited whatever shape the last one was left in — the
+   * Add user wizard opened as a column of fields against an acre of empty
+   * card at the remembered 1600px. Nothing here is a canvas somebody needs
+   * more room on; each view has a size that fits it, so each view says what
+   * that is and the panel takes it.
+   */
+  const [fit, setFit] = useState<PanelFit | null>(null);
   const canSeeUsers = tabs.some((t) => t.id === "users");
-  const { width, height, boxRef, handleProps } = useResizableBox({
-    storageKey: "organization-panel-size",
-    defaultWidth: 1080,
-    defaultHeight: 640,
-    minWidth: 700,
-    maxWidth: 1600,
-    minHeight: 450,
-    maxHeight: 950,
-  });
 
   // usersSlice is shared with the legacy Team page (no forked slice), so
   // switching Live -> Preview mounts this component with whatever
@@ -149,12 +177,19 @@ const Organization = () => {
 
   const exportable = tab === "users" || tab === "stores";
 
+  /** What the open view asked for, else what the tab is worth. */
+  const size = fit ?? TAB_FIT[tab];
+
   return (
     <div className="min-h-[calc(100vh-3rem)] pt-12 px-4 pb-4 flex justify-center">
       <div
-        ref={boxRef}
-        className="relative max-w-[95vw] max-h-[calc(100vh-8rem)] flex flex-col rounded-xl shadow-lg overflow-hidden bg-custom-white self-start"
-        style={{ width, height }}
+        className="relative max-w-[95vw] max-h-[calc(100vh-8rem)] flex flex-col rounded-xl shadow-lg overflow-hidden bg-custom-white self-start transition-[width,height] duration-200 ease-out motion-reduce:transition-none"
+        style={{
+          width: size.width,
+          // Auto lets the card end where the form ends. max-h still caps it,
+          // so a long form scrolls inside rather than running off the page.
+          height: size.height === "auto" ? undefined : size.height,
+        }}
       >
         <div className="bg-brand_navy px-3 py-2 flex-shrink-0 flex items-center gap-3">
           <span className="text-custom-white font-semibold text-[13px] flex-shrink-0">
@@ -174,12 +209,7 @@ const Organization = () => {
               <ArrowDownTrayIcon className="w-3.5 h-3.5" />
             </button>
           )}
-          {/* The User Groups tab is the Store Groups page in dev, and has its
-              own help; every other tab is User Management's. */}
-          <PageInfoButton
-            page={tab === "userGroups" ? "store-groups" : "user-management"}
-            title="About this page"
-          />
+          <PageInfoButton page="user-management" title="About this page" />
         </div>
 
         <div className="flex border-b border-gray-100 flex-shrink-0">
@@ -200,21 +230,19 @@ const Organization = () => {
 
 
         <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
+          <PanelFitContext.Provider value={setFit}>
           {tab === "users" && canSeeUsers && <Users />}
-          {tab === "userGroups" && <UserGroupsPanel />}
-          {tab === "sharedGroups" && ctx.userLevel >= SHARED_GROUP_OWNER_LEVEL && (
-            <SharedGroups />
-          )}
-          {tab === "baseGroups" && ctx.userLevel >= 7 && <BaseGroups />}
-          {tab === "stores" && (
-            <StoresDirectory
+          {tab === "companies" && ctx.userLevel >= OWNER_LEVEL && <Companies />}
+          {tab === "baseGroups" && ctx.userLevel >= OWNER_LEVEL && <BaseGroups />}
+          {tab === "stores" && ctx.userLevel >= OWNER_LEVEL && (
+            <StoresTab
               exportOpen={storesExportOpen}
               onCloseExport={() => setStoresExportOpen(false)}
             />
           )}
+          </PanelFitContext.Provider>
         </div>
 
-        <ResizeHandle {...handleProps} />
       </div>
     </div>
   );

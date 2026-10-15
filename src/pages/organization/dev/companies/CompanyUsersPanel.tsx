@@ -1,0 +1,162 @@
+import { useMemo, useState } from "react";
+import { useBaseGroupsCtx } from "../baseGroups/hooks";
+import { useToast } from "../../../../components/toasts/hooks/useToast";
+import { assignUserToCompany } from "../../../../api/user";
+import type { JsonError, User } from "../../../../interfaces";
+import AssignPanel from "../../../../components-dev/AssignPanel";
+import {
+  planAdd,
+  planRemove,
+  summarize,
+  type CompanyPlan,
+  type MemberUser,
+  type UserOutcome,
+} from "./companyMembership";
+
+/**
+ * Who holds one company.
+ *
+ * Both columns are built from the users already loaded rather than fetched per
+ * company, because `GET users/` returns each user's whole `companies` list —
+ * which is also the thing that makes the writes safe. See
+ * `companyMembership`: `assign_user_to_company` replaces, so every call has to
+ * carry the user's full resulting list, not the one company this screen is
+ * about.
+ *
+ * Users above the acting user's own level are kept out of both columns, the
+ * same guard the base group users tab applies. The endpoint takes a bare
+ * userid with no level check, so this is the only thing stopping a level 7
+ * rearranging a level 9.
+ */
+const CompanyUsersPanel = ({
+  company,
+  users,
+  onChanged,
+}: {
+  company: { id: number; name: string };
+  users: User[];
+  /** Re-read the users, so both columns show what the server now holds. */
+  onChanged: () => void;
+}) => {
+  const ctx = useBaseGroupsCtx();
+  const toast = useToast();
+  const [moving, setMoving] = useState(false);
+
+  const reachable = useMemo(
+    () => users.filter((u) => u.user_level <= ctx.userLevel),
+    [users, ctx.userLevel],
+  );
+
+  /** `UserCompany.company` is the company id; `.id` is the link row, which is
+   *  a different number and the one easy to grab by mistake. */
+  const asMember = (u: User): MemberUser => ({
+    id: u.id,
+    companies: (u.companies ?? []).map((c) => c.company),
+  });
+
+  const holds = (u: User) =>
+    (u.companies ?? []).some((c) => c.company === company.id);
+
+  const assigned = reachable.filter(holds);
+  const unassigned = reachable.filter((u) => !holds(u));
+
+  const byId = useMemo(
+    () => new Map(reachable.map((u) => [u.id, u])),
+    [reachable],
+  );
+
+  /**
+   * Send a plan.
+   *
+   * One call per user, `allSettled`, because these are independent writes with
+   * no transaction around them and the first refusal must not hide the rest.
+   * The refetch afterwards means the columns show what the server holds rather
+   * than what was asked of it.
+   */
+  const run = async (plans: CompanyPlan[], direction: "in" | "out") => {
+    if (plans.length === 0) {
+      toast.success(summarize([], company.name, direction).text);
+      return;
+    }
+    setMoving(true);
+
+    const settled = await Promise.allSettled(
+      plans.map((p) =>
+        assignUserToCompany(ctx.url, ctx.token, p.userid, p.companies),
+      ),
+    );
+
+    const outcomes: UserOutcome[] = settled.map((res, i) => {
+      const userid = plans[i].userid;
+      if (res.status === "rejected") {
+        return {
+          userid,
+          ok: false,
+          reason: (res.reason as JsonError).message ?? "The server refused it.",
+        };
+      }
+      const j = res.value.data;
+      return j.error === 0
+        ? { userid, ok: true }
+        : { userid, ok: false, reason: j.msg ?? "The server refused it." };
+    });
+
+    const summary = summarize(outcomes, company.name, direction);
+    setMoving(false);
+    onChanged();
+    if (summary.tone === "success") toast.success(summary.text);
+    else toast.error(summary.text);
+  };
+
+  const pick = (ids: number[]) =>
+    ids.map((id) => byId.get(id)).filter((u): u is User => u !== undefined);
+
+  const handleAssign = (ids: number[]) =>
+    void run(planAdd(pick(ids).map(asMember), company.id), "in");
+
+  const handleUnassign = (ids: number[]) =>
+    void run(planRemove(pick(ids).map(asMember), company.id), "out");
+
+  const toItem = (u: User) => ({
+    id: u.id,
+    label: u.username,
+    sublabel: u.email || undefined,
+  });
+
+  return (
+    <div className="w-full">
+      <div className="flex items-baseline justify-between gap-2 mb-2">
+        <div>
+          <span className="text-[15px] font-semibold text-content">
+            {company.name}
+          </span>
+          <span className="text-[11.5px] text-content/85 ml-2">
+            {assigned.length} user{assigned.length === 1 ? "" : "s"}
+          </span>
+        </div>
+        <span className="h-4 text-[11px] font-semibold text-content/85">
+          {moving ? "Saving…" : ""}
+        </span>
+      </div>
+
+      <p className="text-[11.5px] text-content/85 leading-snug mb-2 max-w-[680px]">
+        A company is the outer boundary of what somebody can see. Base groups
+        belong to one, and a person only reaches a group inside a company they
+        hold — so taking this away hides their groups in it, and the stores
+        those granted.
+      </p>
+
+      <AssignPanel
+        leftTitle="Not in this company"
+        rightTitle="In this company"
+        leftItems={unassigned.map(toItem)}
+        rightItems={assigned.map(toItem)}
+        onAssign={handleAssign}
+        onUnassign={handleUnassign}
+        assignAllScope="global"
+      />
+    </div>
+  );
+};
+
+export default CompanyUsersPanel;

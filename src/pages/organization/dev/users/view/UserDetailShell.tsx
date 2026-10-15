@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { ArrowLeftIcon } from "@heroicons/react/20/solid";
 import { useOrganizationCtx } from "../../hooks";
 import { useToast } from "../../../../../components/toasts/hooks/useToast";
 import { getBGAssignedToUserSplit } from "../../../../../api/baseGroups";
@@ -6,15 +7,17 @@ import { setAllSelectedBaseGroups } from "../../../../../features/dev/devBaseGro
 import type { JsonError } from "../../../../../interfaces";
 import { roles } from "../../constants";
 import BasicInfoTab from "./BasicInfoTab";
-import CompaniesTab from "./CompaniesTab";
-import BaseGroupsTab from "./BaseGroupsTab";
-import StoresTab from "./StoresTab";
+import AccessTab from "./AccessTab";
 
+/**
+ * Two tabs, not four. Companies, base groups and stores were three screens
+ * asking three halves of one question, each saving on its own — and between
+ * them they could not express a company with no stores, which had no row to
+ * tick anywhere. They are now one panel with one Save.
+ */
 const TABS = [
   { id: 1, label: "Basic info" },
-  { id: 2, label: "Companies" },
-  { id: 3, label: "Base groups" },
-  { id: 4, label: "Stores" },
+  { id: 2, label: "Access" },
 ];
 
 interface UserDetailShellProps {
@@ -53,11 +56,7 @@ const UserDetailShell = ({ onBack }: UserDetailShellProps) => {
       case 1:
         return <BasicInfoTab />;
       case 2:
-        return <CompaniesTab />;
-      case 3:
-        return <BaseGroupsTab />;
-      case 4:
-        return <StoresTab />;
+        return <AccessTab />;
       default:
         return null;
     }
@@ -65,39 +64,59 @@ const UserDetailShell = ({ onBack }: UserDetailShellProps) => {
 
   return (
     <div className="flex-1 flex flex-col min-h-0 p-4 w-full">
-      <button onClick={onBack} className="text-[11px] text-content/60 mb-3 self-start">
-        ← Back to users
-      </button>
+      {/* Breadcrumb rather than a back arrow: it says where you are as well
+          as where you came from, and the whole page is one level deep. */}
+      <div className="flex items-center gap-2 mb-2.5 flex-shrink-0">
+        <button
+          onClick={onBack}
+          className="flex items-center gap-1 text-[11.5px] font-semibold px-2 py-1 -ml-2 rounded-md text-brand_navy hover:bg-gray-50"
+        >
+          <ArrowLeftIcon className="w-3.5 h-3.5" />
+          Back to users
+        </button>
+        <span className="text-[11.5px] text-content/85" aria-hidden="true">
+          /
+        </span>
+        <span className="text-[11.5px] text-content/85 truncate">
+          {ctx.userInfo.first_name} {ctx.userInfo.last_name}
+        </span>
+      </div>
 
-      <div className="flex items-center gap-3 mb-4">
-        <div className="w-11 h-11 rounded-full bg-brand_navy text-custom-white flex items-center justify-center text-[15px] font-medium flex-shrink-0">
+      <div className="flex items-center gap-3 mb-3 flex-shrink-0">
+        <div className="w-11 h-11 rounded-full bg-brand_navy text-custom-white flex items-center justify-center text-[15px] font-bold flex-shrink-0">
           {initials}
         </div>
         <div className="flex-1 min-w-0">
-          <div className="text-[15px] font-medium text-content">
-            {ctx.userInfo.first_name} {ctx.userInfo.last_name}
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-[17px] font-bold text-content">
+              {ctx.userInfo.first_name} {ctx.userInfo.last_name}
+            </span>
+            {/* One chip, not two. Role and level are read together -- "Multi
+                Store, Owner" is a single description of what this person is. */}
+            {(roleLabel || levelLabel) && (
+              <span className="text-[10.5px] font-semibold px-2.5 py-0.5 rounded-full bg-filter_active text-brand_navy">
+                {[roleLabel, levelLabel].filter(Boolean).join(" · ")}
+              </span>
+            )}
           </div>
-          <div className="text-[11.5px] text-content/60">
+          <div className="text-[12px] text-content/85 mt-0.5">
             {ctx.userInfo.username} · {ctx.userInfo.email}
-          </div>
-          <div className="flex gap-1.5 mt-1.5">
-            <span className="text-[10.5px] font-medium px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700">
-              {roleLabel}
-            </span>
-            <span className="text-[10.5px] font-medium px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700">
-              {levelLabel}
-            </span>
           </div>
         </div>
       </div>
 
-      <div className="flex border-b border-gray-100 mb-4 flex-shrink-0">
+      {/* Left-aligned and sized to their words. Stretched across the panel
+          they read as a segmented control -- two halves of one thing rather
+          than two places to go. */}
+      <div className="flex gap-6 border-b border-gray-100 mb-4 flex-shrink-0">
         {TABS.map((t) => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
-            className={`text-[12px] font-semibold py-2 whitespace-nowrap border-b-2 flex-1 text-center ${
-              tab === t.id ? "border-brand_navy text-brand_navy" : "border-transparent text-content"
+            className={`text-[13px] font-semibold pb-2 whitespace-nowrap border-b-2 ${
+              tab === t.id
+                ? "border-brand_navy text-brand_navy"
+                : "border-transparent text-content/85 hover:text-content"
             }`}
           >
             {t.label}

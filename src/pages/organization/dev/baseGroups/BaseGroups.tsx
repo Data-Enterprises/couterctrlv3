@@ -1,14 +1,22 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { PlusIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
 import { useBaseGroupCompanies, useBaseGroupsCtx, type StoreSplit } from "./hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 import type {
+  BaseGroup,
   CompanyBaseGroup,
   JsonError,
   Store,
   User,
 } from "../../../../interfaces";
 import { getAllUsers } from "../../../../api/user";
+import { getBaseGroupsAssignedToUser } from "../../../../api/team";
+import {
+  companiesWithHeldGroups,
+  heldGroupIds,
+  visibleCompanyList,
+  visibleGroups,
+} from "../scoping";
 import {
   getBaseGroups,
   getAllStoresInBaseGroup,
@@ -104,8 +112,49 @@ const BaseGroups = () => {
   const [search, setSearch] = useState("");
   const [showNewGroupModal, setShowNewGroupModal] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
+  /** Which base groups the signed-in person holds. Empty and unused for
+   *  anyone who sees everything — see the fetch below. */
+  const [myGroups, setMyGroups] = useState<BaseGroup[]>([]);
 
-  const visibleCompanies = useBaseGroupCompanies();
+  const allCompanies = useBaseGroupCompanies();
+
+  /**
+   * Holding a company is not enough to administer every group in it.
+   *
+   * An owner at Houchens who holds East and HC North administers those two;
+   * Conventional belongs to the same company and is not theirs to hand out.
+   * Letting them would be handing out access they do not have themselves,
+   * which is privilege escalation however little anyone meant it that way.
+   *
+   * Not fetched for someone who sees everything: the answer would not narrow
+   * anything, and asking for it would make the page wait on a call it is
+   * going to ignore.
+   */
+  useEffect(() => {
+    if (ctx.canSeeAllCompanies) return;
+    getBaseGroupsAssignedToUser(ctx.url, ctx.token, ctx.userid)
+      .then((resp) => {
+        const j = resp.data;
+        // The held half. `inactive` is every other group in their companies.
+        setMyGroups(j.error === 0 ? ((j.active ?? []) as BaseGroup[]) : []);
+      })
+      .catch((err: JsonError) =>
+        toast.error("Error fetching your base groups " + err.message),
+      );
+  }, [ctx.canSeeAllCompanies, ctx.url, ctx.token, ctx.userid]);
+
+  const held = useMemo(() => heldGroupIds(myGroups), [myGroups]);
+  const heldCompanies = useMemo(
+    () => companiesWithHeldGroups(myGroups),
+    [myGroups],
+  );
+
+  /** A company whose every group belongs to somebody else is a row that opens
+   *  onto nothing, so it is not listed. */
+  const visibleCompanies = useMemo(
+    () => visibleCompanyList(allCompanies, ctx.canSeeAllCompanies, heldCompanies),
+    [allCompanies, ctx.canSeeAllCompanies, heldCompanies],
+  );
 
   // The Users sub-tab picks from these. Fetched here rather than borrowed from
   // User Management, so the tab works on a session that never opened it.
@@ -231,7 +280,11 @@ const BaseGroups = () => {
 
   const searching = search.trim().length > 0;
   const matchedGroups = (companyId: number) => {
-    const groups = companyGroups[companyId] ?? [];
+    const groups = visibleGroups(
+      companyGroups[companyId] ?? [],
+      ctx.canSeeAllCompanies,
+      held,
+    );
     if (!searching) return groups;
     return groups.filter((g) =>
       g.name.toLowerCase().includes(search.toLowerCase()),
@@ -278,7 +331,12 @@ const BaseGroups = () => {
             const groups = matchedGroups(c.id);
             if (searching && groups.length === 0) return null;
             const isOpen = searching || expandedCompanies.has(c.id);
-            const total = companyGroups[c.id]?.length;
+            // Counts what the reader can actually open, not what the company
+            // holds — "12 groups" above two rows is a list that looks broken.
+            const total = companyGroups[c.id]
+              ? visibleGroups(companyGroups[c.id], ctx.canSeeAllCompanies, held)
+                  .length
+              : undefined;
             return (
               <div
                 key={c.id}

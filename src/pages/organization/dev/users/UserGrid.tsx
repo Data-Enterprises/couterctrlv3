@@ -23,7 +23,7 @@ import {
 import { deleteUser, reactivateUser, getBaseGroupsAssignedToUser } from "../../../../api/team";
 import { getUserStores } from "../../../../api/user";
 import { getAllStoresInBaseGroup } from "../../../../api/baseGroups";
-import type { BaseGroupJsonResp, JsonError, Store, User } from "../../../../interfaces";
+import type { BaseGroup, JsonError, Store, User } from "../../../../interfaces";
 import { roles } from "../constants";
 import SelectFilter from "../../../../components-dev/filters/SelectFilter";
 import TextFilter from "../../../../components-dev/filters/TextFilter";
@@ -149,16 +149,40 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
     [sourceUsers],
   );
 
-  const companyOptions = useMemo(
-    () => [
+  /**
+   * The companies actually present in this grid, with how many people are in
+   * each.
+   *
+   * It used to list the viewer's own companies, which was wrong in both
+   * directions once programmers could be handed any company: it offered
+   * companies nobody in the list belongs to, and hid the ones that people in
+   * the list DO belong to but the viewer does not. Either way an option could
+   * filter to nothing, or a company sitting in front of you had no option.
+   *
+   * Reading them off the rows keeps every option matching at least one person,
+   * for every level, and needs no second source to stay in step. A company
+   * with nobody in it is absent — which is the same answer the filter would
+   * have given.
+   */
+  const companyOptions = useMemo(() => {
+    const counts = new Map<number, { name: string; count: number }>();
+    sourceUsers.forEach((u) =>
+      u.companies.forEach((c) => {
+        const seen = counts.get(c.company);
+        if (seen) seen.count += 1;
+        else counts.set(c.company, { name: c.name, count: 1 });
+      }),
+    );
+    return [
       { value: NO_COMPANY_VALUE, label: `No company (${noCompanyCount})` },
-      ...ctx.companies.map((c) => ({
-        value: String(c.company),
-        label: c.name,
-      })),
-    ],
-    [ctx.companies, noCompanyCount],
-  );
+      ...Array.from(counts.entries())
+        .sort((a, b) => a[1].name.localeCompare(b[1].name))
+        .map(([id, { name, count }]) => ({
+          value: String(id),
+          label: `${name} (${count})`,
+        })),
+    ];
+  }, [sourceUsers, noCompanyCount]);
 
   const handleEdit = (u: User) => {
     ctx.dispatch(setSelectedUserId(u.id));
@@ -176,14 +200,18 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
         getBaseGroupsAssignedToUser(ctx.url, ctx.token, u.id),
         getUserStores(ctx.url, ctx.token, u.id),
       ]);
-      const bgJson: BaseGroupJsonResp = bgResp.data;
+      const bgJson = bgResp.data;
       const storesJson = storesResp.data;
       if (bgJson.error !== 0 || storesJson.error !== 0) {
         toast.error("Could not load this user's assignments to duplicate");
         return;
       }
 
-      const groups = bgJson.active.map((g) => ({
+      // `active` is the held half of the split, which is what a duplicate
+      // copies. (This read `.active` all along and was right to; a previous
+      // pass "fixed" it to `.groups` on the mistaken belief that this call
+      // hits the unsplit endpoint. It does not.)
+      const groups = ((bgJson.active ?? []) as BaseGroup[]).map((g) => ({
         id: g.id,
         name: g.name,
         company: g.company,
@@ -404,7 +432,7 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
               return (
                 <div
                   key={u.id}
-                  className={`grid grid-cols-[12%_12%_12%_22%_11%_10%_11%_7rem] px-3 py-2 text-[13px] items-center transition-colors [content-visibility:auto] [contain-intrinsic-size:0_40px] ${outranked ? "bg-gray-50 text-content/75" : "text-content even:bg-row_stripe hover:bg-gray-50"}`}
+                  className={`grid grid-cols-[12%_12%_12%_22%_11%_10%_11%_7rem] px-3 py-2 text-[13px] items-center transition-colors [content-visibility:auto] [contain-intrinsic-size:0_40px] ${outranked ? "bg-gray-50 text-content/85" : "text-content even:bg-row_stripe hover:bg-gray-50"}`}
                 >
                   <div className="truncate">{u.username}</div>
                   <div className="truncate">{u.first_name || "—"}</div>
@@ -415,7 +443,7 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
                   <div className="truncate">{formatDate(u.last_visit)}</div>
                   <div className="flex items-center justify-end gap-1">
                     {outranked ? (
-                      <span className="text-[10px] italic text-content/75">
+                      <span className="text-[10px] italic text-content/85">
                         Unauthorized
                       </span>
                     ) : showInactive ? (
@@ -480,7 +508,7 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
               </div>
               <button
                 onClick={() => setSecurityUser(null)}
-                className="text-[11px] text-content/60"
+                className="text-[11px] text-content/85"
               >
                 Close
               </button>

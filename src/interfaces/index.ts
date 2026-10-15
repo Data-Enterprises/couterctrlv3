@@ -229,12 +229,34 @@ export interface User {
   security_answer: string;
 }
 
+/**
+ * How a user holds a base group.
+ *
+ * `all` is the whole group and whatever is added to it later; `selected` is
+ * only the stores picked from it. The distinction lives in
+ * `user_base_group_link.mode` and is what makes a base group grant anything
+ * at all — before it, the link was bookkeeping and the stores were fanned out
+ * into `assigned` by hand.
+ */
+export type GrantMode = "all" | "selected";
+
 export interface BaseGroup {
   id: number;
   name: string;
   company: number;
   company_name: string;
   active: 1 | 0;
+  /** Null when the user does not hold the group — `active` is 0 then too. */
+  mode: GrantMode | null;
+}
+
+/** One store a user picked, and the group they picked it through. */
+export interface UserGroupPick {
+  groupid: number;
+  storeid: number;
+  group_name: string;
+  store_number: string | null;
+  store_name: string | null;
 }
 
 export interface BaseGroupJsonResp {
