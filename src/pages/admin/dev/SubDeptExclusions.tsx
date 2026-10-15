@@ -106,6 +106,12 @@ const SubDeptExclusions = () => {
   const [catalog, setCatalog] = useState<SubDeptCatalogRow[] | null>(null);
   const [exclusions, setExclusions] = useState<SubDeptExclusionRow[]>([]);
   const [loading, setLoading] = useState(false);
+  /** Which catalogue batch is in flight, when the scope takes more than one.
+   *  Null while a single batch is enough to answer. */
+  const [progress, setProgress] = useState<{
+    done: number;
+    total: number;
+  } | null>(null);
   const [saving, setSaving] = useState(false);
   const [open, setOpen] = useState<string | null>(null);
   const [pending, setPending] = useState<{
@@ -199,23 +205,26 @@ const SubDeptExclusions = () => {
     }
     let live = true;
     setLoading(true);
+    setProgress(null);
     Promise.all([
-      getSubDeptCatalog(context.url, context.token, scopeIds, Number(days)),
+      getSubDeptCatalog(
+        context.url,
+        context.token,
+        scopeIds,
+        Number(days),
+        (done, total) => {
+          if (live && total > 1) setProgress({ done, total });
+        },
+      ),
       getSubDeptExclusions(context.url, context.token, scopeIds),
     ])
-      .then(([catResp, exclResp]) => {
+      .then(([catalogRows, exclResp]) => {
         if (!live) return;
-        const c = catResp.data;
         const e = exclResp.data;
-        if (c.error !== 0) {
-          toast.error(c.msg || "Could not read the sub departments");
-          setCatalog([]);
-          return;
-        }
         if (e.error !== 0) {
           toast.error(e.msg || "Could not read the current exclusions");
         }
-        setCatalog(c.data ?? []);
+        setCatalog(catalogRows);
         setExclusions(e.error === 0 ? (e.data ?? []) : []);
       })
       .catch((err: JsonError & { response?: { status?: number } }) => {
@@ -227,7 +236,11 @@ const SubDeptExclusions = () => {
             : err.message,
         );
       })
-      .finally(() => live && setLoading(false));
+      .finally(() => {
+        if (!live) return;
+        setLoading(false);
+        setProgress(null);
+      });
     return () => {
       live = false;
     };
@@ -530,7 +543,10 @@ const SubDeptExclusions = () => {
 
           {loading && (
             <div className="flex items-center justify-center py-8 text-[12px] text-content">
-              Reading sub departments…
+              Reading sub departments
+              {progress
+                ? ` — ${progress.done} of ${progress.total} batches`
+                : "…"}
             </div>
           )}
           {!loading && noStores && (

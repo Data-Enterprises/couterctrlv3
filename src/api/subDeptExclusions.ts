@@ -28,23 +28,27 @@ export interface SubDeptCatalogRow {
 }
 
 /**
- * Which sub departments each store has, and when each last rang.
+ * How many stores to ask for at once.
  *
- * One call for the whole list. `sales_partitioned` is partitioned on
- * `sale_date`, so the endpoint's `days` bound is what keeps it quick — the
- * same grouping unbounded scans every partition and takes over a minute for a
- * single store.
+ * The endpoint is bounded on `sale_date` and runs with a raised `work_mem`,
+ * and it is still a grouped scan of `sales_partitioned`: measured at the
+ * 120-day default, 25 stores comes back in about 1.6s while 109 does not
+ * finish inside the gateway's 110s at all. So a chain is asked for in
+ * batches rather than in one call that cannot succeed.
  *
- * Carries no sales figures on purpose: net sales is `subs/sub_sales`' number,
- * and a second nearly-equal one here would just disagree with the Sales page.
+ * Sequentially, not in parallel — the server is holding 64MB of `work_mem`
+ * per sort node to make each batch fast, and firing five of them at once
+ * spends the thing that made them fast.
  */
-export const getSubDeptCatalog = async (
+export const CATALOG_BATCH = 25;
+
+const catalogCall = async (
   url: string,
   token: string,
   storeids: number[],
-  days: number = 120,
-) => {
-  const json = await axios({
+  days: number,
+) =>
+  axios({
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -53,7 +57,47 @@ export const getSubDeptCatalog = async (
     url: url + "stores/sub_department_catalog",
     params: { storeids: storeids.join(","), days },
   });
-  return json;
+
+/**
+ * Which sub departments each store has, and when each last rang.
+ *
+ * `sales_partitioned` is partitioned on `sale_date`, so the endpoint's `days`
+ * bound is what keeps this quick — the same grouping unbounded scans every
+ * partition and takes over a minute for a single store.
+ *
+ * Carries no sales figures on purpose: net sales is `subs/sub_sales`' number,
+ * and a second nearly-equal one here would just disagree with the Sales page.
+ *
+ * Batched at `CATALOG_BATCH`. `onProgress` is called as each batch lands, so a
+ * five-batch chain can say which batch it is on rather than showing eight
+ * seconds of the same spinner.
+ */
+export const getSubDeptCatalog = async (
+  url: string,
+  token: string,
+  storeids: number[],
+  days: number = 120,
+  onProgress?: (done: number, total: number) => void,
+): Promise<SubDeptCatalogRow[]> => {
+  const batches: number[][] = [];
+  for (let i = 0; i < storeids.length; i += CATALOG_BATCH) {
+    batches.push(storeids.slice(i, i + CATALOG_BATCH));
+  }
+
+  const rows: SubDeptCatalogRow[] = [];
+  for (let i = 0; i < batches.length; i++) {
+    const resp = await catalogCall(url, token, batches[i], days);
+    const j = resp.data;
+    // A batch that fails is not a partial answer to fall back on: the store
+    // whose departments are missing looks exactly like a store with none, and
+    // the form would offer nothing to exclude there with no sign why.
+    if (j.error !== 0) {
+      throw new Error(j.msg || "Could not read the sub departments");
+    }
+    rows.push(...(j.data ?? []));
+    onProgress?.(i + 1, batches.length);
+  }
+  return rows;
 };
 
 /**
