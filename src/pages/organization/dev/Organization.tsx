@@ -33,7 +33,7 @@ import { setUsersExportOpen } from "../../../features/dev/devOrganizationSlice";
 import Users from "./users/Users";
 import BaseGroups from "./baseGroups/BaseGroups";
 import Companies from "./companies/Companies";
-import StoresDirectory from "./stores/StoresDirectory";
+import StoresTab from "./stores/StoresTab";
 
 type Tab = "users" | "companies" | "baseGroups" | "stores";
 
@@ -226,7 +226,7 @@ const Organization = () => {
           {tab === "companies" && ctx.userLevel >= OWNER_LEVEL && <Companies />}
           {tab === "baseGroups" && ctx.userLevel >= OWNER_LEVEL && <BaseGroups />}
           {tab === "stores" && ctx.userLevel >= OWNER_LEVEL && (
-            <StoresDirectory
+            <StoresTab
               exportOpen={storesExportOpen}
               onCloseExport={() => setStoresExportOpen(false)}
             />
