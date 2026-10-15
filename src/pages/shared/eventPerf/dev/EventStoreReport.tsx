@@ -55,7 +55,7 @@ const EventStoreReport = ({
     measure === "amount" ? totals.baselineAmount : totals.baselineTransactions;
 
   return (
-    <div className="border-t border-gray-100">
+    <div className="border-t border-brand_line">
       {/* ── the week ─────────────────────────────────────────────── */}
       <div className="px-3.5 pb-1 pt-2.5">
         <PerfDayChart
@@ -128,7 +128,7 @@ const EventStoreReport = ({
         )}
 
         {/* ── what made it up ───────────────────────────────────── */}
-        <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2.5 border-t border-gray-100 pt-2.5">
+        <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2.5 border-t border-brand_line pt-2.5">
           {(
             [
               // The hero is dollars on Coupon Sales and a count on LP, so each
@@ -164,7 +164,7 @@ const EventStoreReport = ({
         <button
           type="button"
           onClick={onViewDetails}
-          className="mt-3 flex w-full items-center justify-center gap-1 rounded-lg border-t border-gray-100 bg-brand_navy py-2.5 text-[12.5px] font-bold text-custom-white transition-colors active:bg-[#2a3a62]"
+          className="mt-3 flex w-full items-center justify-center gap-1 rounded-lg border-t border-brand_line bg-brand_navy py-2.5 text-[12.5px] font-bold text-custom-white transition-colors active:bg-[#2a3a62]"
         >
           View details
           <ChevronRightIcon className="h-4 w-4" />

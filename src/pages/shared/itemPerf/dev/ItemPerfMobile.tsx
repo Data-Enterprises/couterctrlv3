@@ -1,11 +1,4 @@
-import {
-  useDeferredValue,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { Fragment, useDeferredValue, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   BackspaceIcon,
   ChevronLeftIcon,
@@ -85,6 +78,10 @@ import MobilePerfCard from "../../../../components-dev/mobile/MobilePerfCard";
 import MobilePerfDetail from "../../../../components-dev/mobile/MobilePerfDetail";
 import PairedBars from "../../../../components-dev/mobile/perf/PairedBars";
 import PerfDelta from "../../../../components-dev/mobile/perf/PerfDelta";
+import {
+  asLastYearSlots,
+  type CmpBasis,
+} from "../../../../utils/perfPairs";
 import PerfDayChart from "../../../../components-dev/mobile/perf/PerfDayChart";
 import PerfCardHeader from "../../../../components-dev/mobile/perf/PerfCardHeader";
 import { LY_COLOR, TY_COLOR, TY_SWATCH_BG } from "../../../../components-dev/mobile/perf/perfColors";
@@ -104,13 +101,18 @@ const pct = (v: number | null) => (v === null ? "—" : `${v.toFixed(2)}%`);
 const fmtChange = (v: number) =>
   `${v > 0 ? "+" : v < 0 ? "\u2212" : ""}${Math.abs(v).toFixed(1)}%`;
 
-const SORTS: SortOption<MarginSort>[] = [
+const sorts = (basis: CmpBasis): SortOption<MarginSort>[] => [
   { key: "sales", label: "Sales" },
   { key: "profit", label: "Profit" },
   { key: "gpm", label: "GPM" },
-  { key: "change", label: "Change vs LY" },
-  { key: "name", label: "Name" },
+  { key: "change", label: `Change vs ${cmpShort(basis)}` },
 ];
+
+/** What to call the comparison. A figure drawn from last week that says "LY"
+ *  is worse than no label at all. */
+const cmpShort = (basis: CmpBasis) => (basis === "lw" ? "LW" : "LY");
+const cmpWord = (basis: CmpBasis) =>
+  basis === "lw" ? "Last week" : "Last year";
 
 interface Props {
   /** What this page groups by. One per page — the same rows could group the
@@ -209,6 +211,13 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
       ).sort(),
     [twStart],
   );
+  /** The same week, seven days back — the fallback for a store with no last
+   *  year. Fetched alongside rather than after a miss: the miss is only known
+   *  once the answer is in, and a second round trip there is a visible wait. */
+  const lwDates = useMemo(
+    () => [shiftIso(twStart, -7), shiftIso(twEnd, -7)],
+    [twStart, twEnd],
+  );
 
   /** The week ON SCREEN — the one the rows were loaded for. The search date
    *  is shared with every other page, so reading it here relabelled this week
@@ -283,13 +292,35 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
        * that traded nothing last year, and that one really should read as a
        * rise from zero.
        */
-      const [ty, ly] = await Promise.all([
+      const [ty, ly, lw] = await Promise.all([
         fetchItemRows(dimension, scope, twStart, twEnd),
         fetchItemRows(dimension, scope, lyDates[0], lyDates[6]).catch(
           () => null,
         ),
+        fetchItemRows(dimension, scope, lwDates[0], lwDates[1]).catch(
+          () => null,
+        ),
       ]);
-      dispatch(setItemPerfRows({ ty, ly, gen, source, end: twEnd }));
+      // No last year means both "the endpoint had no records" — which is what
+      // a store onboarded this year answers with, and which `fetchSubDeptRows`
+      // raises rather than returns — and an outright failure. Either way there
+      // is nothing to compare against, so last week stands in where it can.
+      //
+      // Re-dated into last year's slots before it is stored, so `_day` comes
+      // out of `priceRows` already matching what every builder below looks
+      // for. See `asLastYearSlots`.
+      const haveLy = ly !== null && ly.length > 0;
+      const cmp = haveLy ? ly : lw && lw.length > 0 ? asLastYearSlots(lw) : null;
+      dispatch(
+        setItemPerfRows({
+          ty,
+          ly: cmp,
+          basis: haveLy || cmp === null ? "ly" : "lw",
+          gen,
+          source,
+          end: twEnd,
+        }),
+      );
     } catch (err) {
       dispatch(failItemPerfLoad(gen));
       toast.error("Error loading items: " + (err as JsonError).message);
@@ -344,6 +375,8 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
    */
   const weekNoLy = perf.lyMissing || noLyHistory(weekMatch, null);
   const cardNoLy = perf.lyMissing || noLyHistory(weekMatch, perf.selectedDay);
+  /** One store per screen here, so one answer covers every bar on it. */
+  const basis = perf.cmpBasis;
 
   /** The item screen reports on one item; everything else reports on the
    *  group that is open, or the whole store. Search spans the store, so it
@@ -501,6 +534,21 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
     [ty, itemCode, weekDates],
   );
 
+  /** The open item's week, by date, so each day row can draw its own pair. */
+  const dayPairs = useMemo(
+    () => new Map(days.map((d) => [d.iso, d])),
+    [days],
+  );
+  /** One scale for the seven days, so Monday and Saturday are comparable.
+   *  Last year is left out of it when there is no history, the same way the
+   *  list scale is — otherwise every bar is measured against a zero nobody
+   *  recorded. */
+  const dayMax = useMemo(
+    () =>
+      Math.max(...days.map((d) => Math.max(d.ty, cardNoLy ? 0 : d.ly)), 1),
+    [days, cardNoLy],
+  );
+
   /**
    * What the blue button does once there is something in the field.
    *
@@ -555,7 +603,7 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
         dispatch(setRecentsOpen(false));
         dispatch(selectPerfItem(r.key));
       }}
-      className="block w-full border-t border-gray-100 px-3.5 py-3 text-left active:bg-bkg"
+      className="block w-full border-t border-brand_line px-3.5 py-3 text-left active:bg-bkg"
     >
       <div className="flex items-baseline gap-2">
         <span className="min-w-0 flex-1 truncate font-display text-[13.5px] font-semibold text-content">
@@ -650,40 +698,53 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
    *  the item screen — same question, different scope. */
   const summaryBody = (
     <div className="px-3.5 pb-3.5 pt-2">
-      <div className="flex items-end gap-5">
-        <div className="flex flex-col">
+      {/* Three even thirds, not a flex row with the +/- shoved right by
+          `ml-auto`. That left TY and LY touching and the difference stranded
+          at the far edge, reading as a separate thing bolted on rather than
+          the third term of one comparison. A grid also holds the columns put
+          when "no history" replaces a figure and the widths change.
+
+          Sizes are set by the widest case, which is 100.00% — seven glyphs in
+          a third of a phone-width card. At 26px that overran its column and
+          drew straight over the LY figure, because a grid cell does not clip
+          what overflows it. 20px fits at 375px wide with room to spare, and
+          `min-w-0` with `truncate` means a longer string would cut rather
+          than overlap again. */}
+      <div className="grid grid-cols-3 items-end gap-2">
+        <div className="flex min-w-0 flex-col">
           <span className="mb-1 font-mono text-[9.5px] uppercase tracking-wider text-content/85">
             TY margin
           </span>
-          <span className="font-display text-[31px] font-extrabold leading-none tracking-tight text-content">
+          <span className="truncate font-display text-[20px] font-extrabold leading-none tracking-tight text-content">
             {pct(totals.gpm)}
           </span>
         </div>
-        <div className="flex flex-col pb-0.5">
+        <div className="flex min-w-0 flex-col pb-0.5">
           <span className="mb-1 font-mono text-[9.5px] uppercase tracking-wider text-content/85">
             LY margin
           </span>
           {/* No record isn't a 0% margin. */}
-          <span className="font-display text-[20px] font-bold leading-none tracking-tight text-content/85">
+          <span className="truncate font-display text-[17px] font-bold leading-none tracking-tight text-content/85">
             {cardNoLy ? "no history" : pct(totals.gpmLy)}
           </span>
         </div>
-        {/* Points, not percent. This card's headline is a margin, so its TY
-            minus LY is a move in margin POINTS — 28.40% against 26.30% is
-            "+2.10 pts", and calling that "+2.10%" would be read as a 2% gain
-            on the margin itself. Every other Performance card differences a
-            money figure and needs no such label. */}
+        {/* Bare number, no unit. This is a move in margin POINTS — 28.40%
+            against 26.30% is "+2.10" — so a "%" would be wrong, reading as a
+            2% gain on the margin itself. "pts" said so explicitly but wrapped
+            onto a second line in a column this narrow; sat under a "+/-"
+            heading between two figures both labelled "margin", the unit is
+            already the only one it could be. */}
         {totals.gpm !== null && totals.gpmLy !== null && (
-          <div className="ml-auto flex flex-col items-end pb-0.5">
+          <div className="flex min-w-0 flex-col items-end pb-0.5">
             <span className="mb-1 font-mono text-[9.5px] uppercase tracking-wider text-content/85">
               +/-
             </span>
             <PerfDelta
               ty={totals.gpm}
               ly={totals.gpmLy}
-              format={(n) => `${n.toFixed(2)} pts`}
+              format={(n) => n.toFixed(2)}
               unavailable={cardNoLy}
-              className="!text-[20px]"
+              className="!text-[17px] whitespace-nowrap"
             />
           </div>
         )}
@@ -704,17 +765,18 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
           ty={totals.sales}
           ly={totals.salesLy}
           max={Math.max(totals.sales, totals.salesLy)}
+          labels={["TY", cmpShort(basis)]}
           compact
           lyUnavailable={cardNoLy}
         />
         {totalsPartial && (
           <p className="mt-1.5 inline-block rounded bg-gray-200 px-1.5 py-0.5 text-[11px] font-semibold text-content">
-            Last year: {weekMatch.lyDays} of {weekMatch.days} days matched
+            {cmpWord(basis)}: {weekMatch.lyDays} of {weekMatch.days} days matched
           </p>
         )}
       </div>
 
-      <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2.5 border-t border-gray-100 pt-2.5">
+      <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2.5 border-t border-brand_line pt-2.5">
         {/* Columns are the figure, rows are the year: each LY tile sits
             directly under the TY one it compares with. */}
         {[
@@ -751,7 +813,7 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
   ) => (
     <>
       {withQuery && (
-        <div className="border-b border-gray-100 px-3.5 py-2">
+        <div className="border-b border-brand_line px-3.5 py-2">
           <div className="flex items-center gap-2 rounded-lg bg-bkg px-3">
             <MagnifyingGlassIcon className="h-4 w-4 flex-none text-content/85" />
             <input
@@ -812,17 +874,17 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
         </div>
       )}
       <MobileSortChips
-        options={SORTS}
+        options={sorts(basis)}
         value={activeSort?.key ?? null}
         dir={activeSortDir}
         onChange={onSort}
       />
-      <p className="border-b border-gray-100 px-3.5 py-1.5 font-mono text-[10px] uppercase tracking-wider text-content/85">
-        Bars: sales, TY vs LY
+      <p className="border-b border-brand_line px-3.5 py-1.5 font-mono text-[10px] uppercase tracking-wider text-content/85">
+        Bars: sales, TY vs {cmpShort(basis)}
       </p>
       {listPartial && (
-        <p className="border-b border-gray-100 bg-gray-100 px-3.5 py-2 text-[11.5px] font-semibold text-content">
-          Last year: {weekMatch.lyDays} of {weekMatch.days} days matched
+        <p className="border-b border-brand_line bg-gray-100 px-3.5 py-2 text-[11.5px] font-semibold text-content">
+          {cmpWord(basis)}: {weekMatch.lyDays} of {weekMatch.days} days matched
         </p>
       )}
       {building ? (
@@ -863,7 +925,7 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
               key={r.key}
               type="button"
               onClick={() => onRow(r)}
-              className="block w-full border-t border-gray-100 px-3.5 py-3 text-left first:border-t-0 active:bg-bkg"
+              className="block w-full border-t border-brand_line px-3.5 py-3 text-left first:border-t-0 active:bg-bkg"
             >
               <div className="flex items-baseline gap-2">
                 <span className="min-w-0 flex-1 truncate font-display text-[13.5px] font-semibold text-content">
@@ -882,6 +944,7 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
                   ty={r.sales}
                   ly={r.salesLy}
                   max={listMax}
+                  labels={["TY", cmpShort(basis)]}
                   lyUnavailable={listNoLy}
                 />
               </div>
@@ -894,7 +957,7 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
         <button
           type="button"
           onClick={() => dispatch(showMoreItems())}
-          className="block w-full border-t border-gray-100 py-3 text-center text-[12px] font-semibold active:bg-bkg"
+          className="block w-full border-t border-brand_line py-3 text-center text-[12px] font-semibold active:bg-bkg"
           style={{ color: TY_COLOR }}
         >
           Show{" "}
@@ -936,13 +999,18 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
           levelKey={`item|${itemCode ?? ""}`}
         >
           {summaryBody}
-          <table className="w-full border-collapse border-t border-gray-100 text-[12.5px]">
+          {/* brand_line, not gray-100, for every rule in this table. The card
+              is custom-white (#f4f7f8) and gray-100 is #f3f4f6 — one step
+              apart, so the dividers were being drawn, just not in a colour
+              anyone could see. brand_line is the theme's hairline token and
+              is subtle without being invisible. */}
+          <table className="w-full border-collapse border-t border-brand_line text-[12.5px]">
             <thead>
               <tr>
                 {["Day", "Sales", "Qty", "GPM"].map((h, i) => (
                   <th
                     key={h}
-                    className={`border-b border-gray-100 px-2 py-2 font-mono text-[9.5px] font-semibold uppercase tracking-wider text-content/85 ${
+                    className={`border-b border-brand_line px-2 py-2 font-mono text-[9.5px] font-semibold uppercase tracking-wider text-content/85 ${
                       i === 0 ? "pl-3.5 text-left" : "text-right"
                     }`}
                   >
@@ -952,24 +1020,52 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
               </tr>
             </thead>
             <tbody>
-              {dailyRows.map((d) => (
-                <tr key={d.iso}>
-                  <td className="border-b border-gray-100 py-2.5 pl-3.5 font-display text-[13px] font-semibold text-content">
-                    {d.label}
-                  </td>
-                  {/* A dash, not a zero: the item did not sell that day, which
-                      is not the same as selling nothing. */}
-                  <td className="border-b border-gray-100 px-2 py-2.5 text-right text-content/85">
-                    {d.absent ? "—" : formatCurrency2(d.sales)}
-                  </td>
-                  <td className="border-b border-gray-100 px-2 py-2.5 text-right text-content/85">
-                    {d.absent ? "—" : d.units.toLocaleString("en-US")}
-                  </td>
-                  <td className="border-b border-gray-100 px-2 py-2.5 pr-3.5 text-right font-bold text-content">
-                    {d.absent ? "—" : pct(d.gpm)}
-                  </td>
-                </tr>
-              ))}
+              {dailyRows.map((d) => {
+                // `days` is the same week already scoped to this item for the
+                // card above, so the day's last year is in hand — no second
+                // pass over the rows to put a comparison under each day.
+                const pair = dayPairs.get(d.iso);
+                return (
+                  <Fragment key={d.iso}>
+                    {/* The figures keep their own row so the four columns stay
+                        in line with the header; the bars take a borderless row
+                        under them and carry the divider for the pair. A single
+                        row cannot do both — a bar spanning four columns and
+                        figures sitting in them are different geometries. */}
+                    <tr>
+                      <td className="pb-1 pt-2.5 pl-3.5 font-display text-[13px] font-semibold text-content">
+                        {d.label}
+                      </td>
+                      {/* A dash, not a zero: the item did not sell that day,
+                          which is not the same as selling nothing. */}
+                      <td className="px-2 pb-1 pt-2.5 text-right text-content/85">
+                        {d.absent ? "—" : formatCurrency2(d.sales)}
+                      </td>
+                      <td className="px-2 pb-1 pt-2.5 text-right text-content/85">
+                        {d.absent ? "—" : d.units.toLocaleString("en-US")}
+                      </td>
+                      <td className="px-2 pb-1 pt-2.5 pr-3.5 text-right font-bold text-content">
+                        {d.absent ? "—" : pct(d.gpm)}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td
+                        colSpan={4}
+                        className="border-b border-brand_line px-3.5 pb-2.5"
+                      >
+                        <PairedBars
+                          ty={pair?.ty ?? d.sales}
+                          ly={pair?.ly ?? 0}
+                          max={dayMax}
+                          labels={["TY", cmpShort(basis)]}
+                          lyUnavailable={cardNoLy}
+                          compact
+                        />
+                      </td>
+                    </tr>
+                  </Fragment>
+                );
+              })}
             </tbody>
           </table>
         </MobilePerfDetail>
@@ -1080,7 +1176,7 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
                   <button
                     type="button"
                     onClick={() => dispatch(setRecentsOpen(true))}
-                    className="block w-full border-t border-gray-100 py-2.5 text-center text-[12px] font-semibold active:bg-bkg"
+                    className="block w-full border-t border-brand_line py-2.5 text-center text-[12px] font-semibold active:bg-bkg"
                     style={{ color: TY_COLOR }}
                   >
                     {recents.length - RECENTS_INLINE} more recent
@@ -1199,7 +1295,7 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
           {/* ── the groups ──────────────────────────────────────── */}
           <section className="overflow-hidden rounded-2xl border border-gray-200 bg-custom-white shadow-md">
             <MobileSortChips
-              options={SORTS}
+              options={sorts(basis)}
               value={activeSort?.key ?? null}
               dir={activeSortDir}
               onChange={onSort}
@@ -1263,6 +1359,7 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
                         ty={r.sales}
                         ly={r.salesLy}
                         max={listMax}
+                        labels={["TY", cmpShort(basis)]}
                         lyUnavailable={listNoLy}
                       />
                     }
@@ -1274,7 +1371,7 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
                       )
                     }
                   >
-                    <div className="border-t border-gray-100">
+                    <div className="border-t border-brand_line">
                       <div className="px-3.5 pb-1 pt-3">
                         <PerfDayChart
                           days={days}
@@ -1296,7 +1393,7 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
                               className="h-2 w-3.5 rounded-sm"
                               style={{ background: LY_COLOR }}
                             />
-                            {weekNoLy ? "Last year: no history" : "Last year"}
+                            {weekNoLy ? `${cmpWord(basis)}: no history` : cmpWord(basis)}
                           </span>
                         </div>
                         <p className="px-1 pt-1 text-[12px] text-content/85">

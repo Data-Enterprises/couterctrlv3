@@ -97,6 +97,19 @@ const SingleStoreSearchCard = ({
             valueKey="storeid"
             onSelect={(id) => onStoreSelect(Number(id))}
             defaultQuery={selectedStoreId > 0 ? storeName : ""}
+            // The store is usually chosen before this card is ever seen — it
+            // rides in on `last_store` — but `stores` is fetched, so on the
+            // first render `storeName` is still "". SingleSelect seeds its
+            // input from `defaultQuery` once, at mount, so without this the
+            // field latched onto that empty string and stayed blank while the
+            // "Searching ..." line underneath named the store correctly. Two
+            // controls disagreeing about whether anything is selected reads as
+            // a bug, because it is one.
+            //
+            // Safe to opt in here: the only things that move `defaultQuery`
+            // are the store list arriving and the selection changing, and on
+            // both the field should say what is selected.
+            resetQuery
             innerClass="text-[13px] py-1"
             listClass="text-[13px]"
           />

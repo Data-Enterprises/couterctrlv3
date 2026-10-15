@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { getCoupons } from "../../../api/coupons";
@@ -32,14 +32,26 @@ import CpnSalesExportModal from "./components/CpnSalesExportModal";
 import { buildStoreRows, storeKeyOf, totalsFor } from "./shared/couponGrading";
 import { isGroupSearch } from "../../../features/searchSlice";
 
+/**
+ * The week's coupon lines, kept for the mobile receipt sheet — every line of
+ * every sale is already in hand, so opening one is a filter not a fetch.
+ *
+ * Module scope, not a ref. The rows these belong to live in the eventPerf
+ * slice and survive leaving the page; a ref dies with the component. Coming
+ * back to Coupon Sales therefore repainted the transaction list from the
+ * slice while the receipt resolved against an empty array, and every sale
+ * reported "No lines came back" over a list that was showing its amount.
+ * Rows and lines come out of one payload and are only ever replaced together
+ * by `load` below, so they want one lifetime.
+ */
+let mobileLines: CouponItem[] = [];
+
 const CouponSales = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const { url, token, isMobile } = useAppSelector((s) => s.app);
   const api = useApiContext();
-  /** The week's coupon lines, kept for the mobile receipt sheet — every line
-   *  of every sale is already in hand, so opening one is a filter not a fetch. */
-  const mobileLines = useRef<CouponItem[]>([]);
+
   const { userid, assignedStores, selectedGroupStores } = useAppSelector(
     (s) => s.user,
   );
@@ -225,12 +237,12 @@ const CouponSales = () => {
             },
             onProgress,
           );
-          mobileLines.current = result.items;
+          mobileLines = result.items;
           return result;
         }}
         helpPage="coupon-sales"
         loadReceipt={async (saleId) =>
-          couponReceipt(mobileLines.current, saleId)
+          couponReceipt(mobileLines, saleId)
         }
       />
     );

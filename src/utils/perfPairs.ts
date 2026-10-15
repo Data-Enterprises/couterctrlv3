@@ -111,6 +111,63 @@ export const dayOf = (r: { sale_date: string }) => r.sale_date.split("T")[0];
  */
 export const lyDateFor = (tyIso: string) => sameWeekDayLastYear(tyIso).date;
 
+/** Which period a comparison is actually drawn from. */
+export type CmpBasis = "ly" | "lw";
+
+/** The this-year date a LAST WEEK row belongs to: seven days on. */
+const tyDateForLw = (lwIso: string) => {
+  const d = new Date(`${lwIso}T12:00:00`);
+  d.setDate(d.getDate() + 7);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+};
+
+/**
+ * Re-date last-week rows into the slots last year would have filled.
+ *
+ * A new store has no last year, so the comparison falls back to last week —
+ * but every matcher downstream pairs a this-year day with `lyDateFor(day)`,
+ * and last week's real dates answer none of those. Rather than thread a basis
+ * through `matchWeek`, `pairBy`, `noLyHistory`, `buildDays` and the dozen
+ * call sites that reach them, each row is moved to the date its this-year
+ * partner would look for: last week's day -> that day plus seven -> that
+ * day's last-year slot.
+ *
+ * THE DATES ON THESE ROWS ARE NO LONGER THEIR OWN. That is safe only because
+ * nothing renders a comparison row's date — `lyDates` and `lyAll` are
+ * membership sets used for matching, every visible date comes off the
+ * this-year side, and the notes count days rather than naming them. If a
+ * screen ever needs to SHOW which day a comparison figure came from, this
+ * shortcut has to go and the basis has to be threaded properly.
+ *
+ * The mapping is a bijection — seven weekdays onto the same seven weekdays —
+ * so a week that straddles a holiday shift lines up exactly as last year's
+ * would have, because both sides go through `lyDateFor`.
+ */
+export const asLastYearSlots = <T extends { sale_date: string }>(
+  rows: T[],
+): T[] =>
+  rows.map((r) => ({ ...r, sale_date: lyDateFor(tyDateForLw(dayOf(r))) }));
+
+/**
+ * Last year if it has anything for this scope, otherwise last week.
+ *
+ * The fallback is per scope, not per screen: a group that onboarded one store
+ * this year should compare the other nine against last year rather than drop
+ * the whole list to last week for the newcomer's sake.
+ *
+ * Emptiness is the test, not row count — an endpoint with no history answers
+ * with nothing at all, while a store that traded nothing answers with zeroes,
+ * and those must not be confused. That is the same distinction `noLyHistory`
+ * draws downstream.
+ */
+export const pickComparison = <T extends { sale_date: string }>(
+  ly: T[],
+  lw: T[],
+): { rows: T[]; basis: CmpBasis } =>
+  ly.length > 0
+    ? { rows: ly, basis: "ly" }
+    : { rows: asLastYearSlots(lw), basis: "lw" };
+
 /** Every sales row type carries both, so one key works across all of them.
  *
  *  Keyed on the pair because storeid alone is not unique — some ids carry two
