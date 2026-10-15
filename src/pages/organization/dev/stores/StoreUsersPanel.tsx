@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useBaseGroupsCtx } from "../baseGroups/hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 import {
@@ -81,9 +81,31 @@ const StoreUsersPanel = ({
     load();
   }, [store.storeid]);
 
-  const levelOf = new Map(users.map((u) => [u.id, u.user_level]));
-  const withinReach = (r: { userid: number }) =>
-    (levelOf.get(r.userid) ?? 0) <= ctx.userLevel;
+  const levelOf = useMemo(
+    () => new Map(users.map((u) => [u.id, u.user_level])),
+    [users],
+  );
+
+  /**
+   * Whether this person is the viewer's to see and change.
+   *
+   * **Fails closed.** A userid with no level behind it is hidden rather than
+   * shown: the endpoint takes a bare userid and checks no levels, so this is
+   * the only thing standing between a level 7 and a level 9's access, and a
+   * guard that defaults to "probably fine" is not a guard. An unknown level
+   * only happens when the user list has not arrived, or when it somehow does
+   * not contain somebody the store does — and in both cases showing them is
+   * the wrong way to be wrong.
+   */
+  const withinReach = (r: { userid: number }) => {
+    const level = levelOf.get(r.userid);
+    return level !== undefined && level <= ctx.userLevel;
+  };
+
+  /** Until the list lands every level is unknown, so every row would be
+   *  hidden — which reads as "this store has nobody" rather than "still
+   *  loading". Say the second one. */
+  const levelsKnown = users.length > 0;
 
   const run = async (userids: number[], direction: "in" | "out") => {
     if (userids.length === 0) return;
@@ -158,6 +180,12 @@ const StoreUsersPanel = ({
           </>
         )}
       </p>
+
+      {!levelsKnown && (
+        <div className="text-[11.5px] text-content/85 mb-2">
+          Loading users…
+        </div>
+      )}
 
       <AssignPanel
         leftTitle="Not assigned"

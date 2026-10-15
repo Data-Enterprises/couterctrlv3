@@ -62,8 +62,16 @@ const StoresTab = ({ exportOpen, onCloseExport }: Props) => {
 
   useEffect(loadStores, [loadStores]);
 
-  /** For the level guard inside the panel — the assignment endpoints take a
-   *  bare userid and check no levels. */
+  /**
+   * Every user, for the level guard inside the panel.
+   *
+   * Deliberately unscoped, unlike the grid's own list. This is not what gets
+   * displayed — the columns come from `store_users`, which the server scopes
+   * to the store's company — it is only the source of truth for *levels*.
+   * Scoping it would mean a userid the store has and this list does not, and
+   * the guard fails closed, so a legitimate person would silently vanish from
+   * the panel. More levels known is strictly safer here.
+   */
   useEffect(() => {
     getAllUsers(ctx.url, ctx.token)
       .then((resp) => {

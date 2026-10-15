@@ -214,8 +214,6 @@ const Login = () => {
           // is worth prefilling next time.
           if (remember) saveRememberedUsername(state.username);
           setUseImpersonation(0);
-          // The other environment's token, purely so the LIVE/PREVIEW switch
-          // works the instant it's offered. Skipped entirely while
           // The other environment's token, fetched up front because the
           // dropdown switch is a pointer swap between two held credentials
           // rather than a re-auth — flipping with an empty slot just 401s.
