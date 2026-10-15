@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useBaseGroupsCtx } from "./hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 import {
@@ -66,9 +66,29 @@ const BaseGroupUsersTab = ({ group, users }: Props) => {
     load();
   }, [group.id]);
 
-  const levelOf = new Map(users.map((u) => [u.id, u.user_level]));
-  const withinReach = (r: BaseGroupUserRow) =>
-    (levelOf.get(r.userid) ?? 0) <= ctx.userLevel;
+  const levelOf = useMemo(
+    () => new Map(users.map((u) => [u.id, u.user_level])),
+    [users],
+  );
+
+  /**
+   * Whether this person is the viewer's to see and change.
+   *
+   * **Fails closed.** This used to read `?? 0`, so a userid with no level
+   * behind it counted as level 0 and was shown — and until the user list
+   * lands that is every row. `assign_base_group_to_user` takes a bare userid
+   * and checks no levels, so this is the only thing between a level 7 and a
+   * level 9's access, and one that defaults to "probably fine" is not a
+   * guard.
+   */
+  const withinReach = (r: BaseGroupUserRow) => {
+    const level = levelOf.get(r.userid);
+    return level !== undefined && level <= ctx.userLevel;
+  };
+
+  /** Until the levels arrive every row is hidden, which reads as "this group
+   *  has nobody" rather than "still loading". Say the second one. */
+  const levelsKnown = users.length > 0;
 
   /**
    * Run one call per user and say what happened.
@@ -148,8 +168,9 @@ const BaseGroupUsersTab = ({ group, users }: Props) => {
 
   return (
     <div className="w-full">
-      {loading && assigned.length + unassigned.length === 0 && (
-        <div className="text-[10.5px] text-content/50 mb-2">Loading users…</div>
+      {((loading && assigned.length + unassigned.length === 0) ||
+        !levelsKnown) && (
+        <div className="text-[11px] text-content/85 mb-2">Loading users…</div>
       )}
       <AssignPanel
         leftTitle="Unassigned"
