@@ -64,7 +64,7 @@ const BasicInfoTab = () => {
 
   return (
     <div className="max-w-[450px]">
-      <div className="text-[10.5px] font-semibold uppercase tracking-wide text-content/60 mb-1.5">
+      <div className="text-[10.5px] font-semibold uppercase tracking-wide text-content/85 mb-1.5">
         Authorization
       </div>
       <div className="grid grid-cols-2 gap-3 mb-4">
@@ -119,7 +119,7 @@ const BasicInfoTab = () => {
         </div>
       </div>
 
-      <div className="text-[10.5px] font-semibold uppercase tracking-wide text-content/60 mb-1.5">
+      <div className="text-[10.5px] font-semibold uppercase tracking-wide text-content/85 mb-1.5">
         Identity
       </div>
       <div className="grid grid-cols-2 gap-3 mb-4">
@@ -142,7 +142,7 @@ const BasicInfoTab = () => {
         />
       </div>
 
-      <div className="text-[10.5px] font-semibold uppercase tracking-wide text-content/60 mb-1.5">
+      <div className="text-[10.5px] font-semibold uppercase tracking-wide text-content/85 mb-1.5">
         Name
       </div>
       <div className="grid grid-cols-2 gap-3 mb-5">

@@ -63,7 +63,7 @@ const UserDetailShell = ({ onBack }: UserDetailShellProps) => {
 
   return (
     <div className="flex-1 flex flex-col min-h-0 p-4 w-full">
-      <button onClick={onBack} className="text-[11px] text-content/60 mb-3 self-start">
+      <button onClick={onBack} className="text-[11px] text-content/85 mb-3 self-start">
         ← Back to users
       </button>
 
@@ -75,14 +75,14 @@ const UserDetailShell = ({ onBack }: UserDetailShellProps) => {
           <div className="text-[15px] font-medium text-content">
             {ctx.userInfo.first_name} {ctx.userInfo.last_name}
           </div>
-          <div className="text-[11.5px] text-content/60">
+          <div className="text-[11.5px] text-content/85">
             {ctx.userInfo.username} · {ctx.userInfo.email}
           </div>
           <div className="flex gap-1.5 mt-1.5">
-            <span className="text-[10.5px] font-medium px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700">
+            <span className="text-[10.5px] font-medium px-2.5 py-0.5 rounded-full bg-filter_active text-brand_navy">
               {roleLabel}
             </span>
-            <span className="text-[10.5px] font-medium px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700">
+            <span className="text-[10.5px] font-medium px-2.5 py-0.5 rounded-full bg-filter_active text-brand_navy">
               {levelLabel}
             </span>
           </div>

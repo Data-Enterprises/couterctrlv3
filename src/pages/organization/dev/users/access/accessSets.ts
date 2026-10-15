@@ -189,6 +189,58 @@ export const emptySelectedGroupIds = (sets: AccessSets): number[] =>
     .filter((g) => g.mode === "selected" && g.storeids.length === 0)
     .map((g) => g.groupid);
 
+/** A store the person ends up with, and what accounts for it. */
+export interface EffectiveStore {
+  storeid: number;
+  /** The group that grants it. */
+  groupid: number;
+  /** How that group is held — `all` means the store arrived without anyone
+   *  naming it, and that a future store will arrive the same way. */
+  mode: GrantMode;
+}
+
+/**
+ * Every store the picks add up to, with the group that accounts for each.
+ *
+ * `rosters` is each group's full store list, which only the panel has — the
+ * group grant itself names no stores when the mode is `all`, so the roster is
+ * the only way to say what "all" currently amounts to. A group with no roster
+ * loaded contributes nothing rather than guessing at zero stores, so a count
+ * built from this is honest about still loading.
+ *
+ * One row per store, not per grant: two groups can both contain store 053 and
+ * the person has it once. The lowest group id wins so the attribution does not
+ * change between renders — and an `all` group wins over a `selected` one,
+ * because that is the stronger claim: it keeps granting the store whatever
+ * happens to the picks.
+ */
+export const effectiveStores = (
+  picks: AccessPicks,
+  rosters: Record<number, { storeid: number }[]>,
+): EffectiveStore[] => {
+  const byStore = new Map<number, EffectiveStore>();
+
+  heldGroupIds(picks)
+    .slice()
+    .sort((a, b) => a - b)
+    .forEach((groupid) => {
+      const mode = modeOf(picks, groupid);
+      const ids =
+        mode === "all"
+          ? (rosters[groupid] ?? []).map((s) => s.storeid)
+          : picksInGroup(picks, groupid).map((s) => s.storeid);
+
+      ids.forEach((storeid) => {
+        const held = byStore.get(storeid);
+        if (held === undefined || (held.mode === "selected" && mode === "all")) {
+          byStore.set(storeid, { storeid, groupid, mode });
+        }
+      });
+    });
+
+  return [...byStore.values()].sort((a, b) => a.storeid - b.storeid);
+};
+
 const same = (a: number[], b: number[]) => {
   if (a.length !== b.length) return false;
   const set = new Set(a);

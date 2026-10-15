@@ -88,7 +88,7 @@ const UserFields = ({ onValidityChange }: UserFieldsProps) => {
 
   return (
     <div className="min-w-[500px] max-w-[500px]">
-      <div className="text-[10.5px] font-semibold uppercase tracking-wide text-content/60 mb-1.5">
+      <div className="text-[10.5px] font-semibold uppercase tracking-wide text-content/85 mb-1.5">
         Authorization
       </div>
       <div className="grid grid-cols-2 gap-3 mb-4">
@@ -143,7 +143,7 @@ const UserFields = ({ onValidityChange }: UserFieldsProps) => {
         </div>
       </div>
 
-      <div className="text-[10.5px] font-semibold uppercase tracking-wide text-content/60 mb-1.5">
+      <div className="text-[10.5px] font-semibold uppercase tracking-wide text-content/85 mb-1.5">
         Identity
       </div>
       <div className="grid grid-cols-2 gap-3 mb-4">
@@ -171,7 +171,7 @@ const UserFields = ({ onValidityChange }: UserFieldsProps) => {
         />
       </div>
 
-      <div className="text-[10.5px] font-semibold uppercase tracking-wide text-content/60 mb-1.5">
+      <div className="text-[10.5px] font-semibold uppercase tracking-wide text-content/85 mb-1.5">
         Name
       </div>
       <div className="grid grid-cols-2 gap-3 mb-4">
@@ -193,7 +193,7 @@ const UserFields = ({ onValidityChange }: UserFieldsProps) => {
         />
       </div>
 
-      <div className="text-[10.5px] font-semibold uppercase tracking-wide text-content/60 mb-1.5">
+      <div className="text-[10.5px] font-semibold uppercase tracking-wide text-content/85 mb-1.5">
         Security
       </div>
       <div className="grid grid-cols-2 gap-3 mb-5">

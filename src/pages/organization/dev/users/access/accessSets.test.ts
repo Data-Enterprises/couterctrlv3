@@ -3,6 +3,7 @@ import {
   accessSets,
   changedGrants,
   changedSets,
+  effectiveStores,
   emptySelectedGroupIds,
   hasChanges,
   modeOf,
@@ -230,5 +231,68 @@ describe("hasChanges", () => {
       picks({ companies: [21], baseGroups: [4], modes: { 4: "all" } }),
     );
     expect(hasChanges(next, before)).toBe(true);
+  });
+});
+
+describe("effectiveStores", () => {
+  const rosters = {
+    4: [{ storeid: 53 }, { storeid: 56 }, { storeid: 71 }],
+    9: [{ storeid: 53 }, { storeid: 76 }],
+  };
+
+  it("counts a whole group from its roster, which the grant does not name", () => {
+    const got = effectiveStores(
+      picks({ baseGroups: [4], modes: { 4: "all" } }),
+      rosters,
+    );
+    expect(got.map((e) => e.storeid)).toEqual([53, 56, 71]);
+    expect(got.every((e) => e.mode === "all")).toBe(true);
+  });
+
+  it("counts only the picks for a selected group", () => {
+    const got = effectiveStores(picks({ stores: [store(56, 4)] }), rosters);
+    expect(got).toEqual([{ storeid: 56, groupid: 4, mode: "selected" }]);
+  });
+
+  it("holds a store once when two groups both contain it", () => {
+    const got = effectiveStores(
+      picks({ baseGroups: [4, 9], modes: { 4: "all", 9: "all" } }),
+      rosters,
+    );
+    expect(got.map((e) => e.storeid)).toEqual([53, 56, 71, 76]);
+  });
+
+  it("attributes a shared store to the auto group, the stronger claim", () => {
+    // 53 is in both. Held as a pick in 4 and automatically in 9, it survives
+    // the pick being removed, so 9 is what actually accounts for it.
+    const got = effectiveStores(
+      picks({
+        baseGroups: [4, 9],
+        modes: { 9: "all" },
+        stores: [store(53, 4)],
+      }),
+      rosters,
+    );
+    expect(got.find((e) => e.storeid === 53)).toEqual({
+      storeid: 53,
+      groupid: 9,
+      mode: "all",
+    });
+  });
+
+  it("contributes nothing for a roster that has not loaded", () => {
+    const got = effectiveStores(
+      picks({ baseGroups: [12], modes: { 12: "all" } }),
+      rosters,
+    );
+    expect(got).toEqual([]);
+  });
+
+  it("is stable in store order", () => {
+    const got = effectiveStores(
+      picks({ stores: [store(76, 9), store(53, 9)] }),
+      rosters,
+    );
+    expect(got.map((e) => e.storeid)).toEqual([53, 76]);
   });
 });

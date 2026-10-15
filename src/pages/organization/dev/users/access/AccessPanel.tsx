@@ -1,12 +1,22 @@
 import { useEffect, useMemo, useState } from "react";
 import { useOrganizationCtx } from "../../hooks";
 import { useToast } from "../../../../../components/toasts/hooks/useToast";
-import { getBaseGroups, getAllStoresInBaseGroup } from "../../../../../api/baseGroups";
-import type { CompanyBaseGroup, JsonError, Store } from "../../../../../interfaces";
+import {
+  getBaseGroups,
+  getAllStoresInBaseGroup,
+} from "../../../../../api/baseGroups";
+import type {
+  CompanyBaseGroup,
+  GrantMode,
+  JsonError,
+  Store,
+} from "../../../../../interfaces";
 import type { SelectableStore } from "../../types";
-import type { AccessPicks } from "./accessSets";
+import { modeOf, type AccessPicks, NO_PICKS } from "./accessSets";
 import TextFilter from "../../../../../components-dev/filters/TextFilter";
 import SelectFilter from "../../../../../components-dev/filters/SelectFilter";
+import Checkbox from "../../../../../components-dev/Checkbox";
+import GrantModeChip from "./GrantModeChip";
 
 interface AccessPanelProps {
   picks: AccessPicks;
@@ -17,21 +27,60 @@ interface AccessPanelProps {
       prev: Record<number, CompanyBaseGroup[]>,
     ) => Record<number, CompanyBaseGroup[]>,
   ) => void;
+  /** Locks every group to picking stores, and to one store in total. The
+   *  single-store role cannot hold a whole group — the server refuses it —
+   *  so the control that would ask is not offered. */
+  singleStoreOnly?: boolean;
+  /** The mode a group takes when it is first held, from the Access type step.
+   *  Per-group override still applies: the whole of East plus two stores out
+   *  of HC North is the common real case. */
+  defaultMode?: GrantMode;
+  /**
+   * Each group's full roster, lifted so a caller can count what `all` adds up
+   * to — the grant itself names no stores in that mode, so the roster is the
+   * only source for the number. Lifted for the same reason `companyGroups`
+   * is: Review needs it and must not fetch it a second time.
+   */
+  groupStores: Record<number, Store[]>;
+  onGroupStoresChange: (
+    updater: (prev: Record<number, Store[]>) => Record<number, Store[]>,
+  ) => void;
 }
 
-// Three-column drill-down: companies -> base groups in the active company
-// (with live selected/total counts) -> stores for every group the admin has
-// expanded. Replaces the old single-column accordion, but keeps its one
-// genuinely useful trait — several groups can stay expanded and stacked at
-// once in the third column — just scoped to one company's groups instead of
-// spanning the whole page, so companies/groups no longer scroll out of view
-// while picking stores. companyGroups stays lifted to CreateUserWizard so
-// Review can resolve base group names too.
+/**
+ * Three-column drill-down: companies → base groups in the active company →
+ * stores for every group the admin has expanded.
+ *
+ * Replaces the old single-column accordion, but keeps its one genuinely
+ * useful trait — several groups can stay expanded and stacked at once in the
+ * third column — scoped to one company's groups instead of spanning the whole
+ * page, so companies and groups no longer scroll out of view while picking
+ * stores. `companyGroups` stays lifted to the caller so Review can resolve
+ * base group names too.
+ *
+ * ### What the middle column's mode control decides
+ *
+ * A held group is held one of two ways, and the difference is the whole point
+ * of the screen:
+ *
+ * - **Auto** — the whole group, and any store added to it later. The third
+ *   column becomes a read-only preview, because there is nothing to pick:
+ *   the answer is "all of them, including the ones that do not exist yet".
+ * - **Pick stores** — only what is ticked. The third column gets checkboxes,
+ *   and a store added to the group later does *not* reach this person.
+ *
+ * Switching to Auto leaves any ticks in place but stops sending them, so
+ * switching back does not lose the picks someone just made.
+ */
 const AccessPanel = ({
   picks,
   onPicksChange,
   companyGroups,
   onCompanyGroupsChange,
+  singleStoreOnly = false,
+  defaultMode = "selected",
+  groupStores,
+  onGroupStoresChange,
 }: AccessPanelProps) => {
   const toast = useToast();
   const ctx = useOrganizationCtx();
@@ -62,31 +111,51 @@ const AccessPanel = ({
   const toggleCompanyPick = (id: number) =>
     onPicksChange({ ...picks, companies: toggleIn(picks.companies, id) });
 
-  const toggleGroupPick = (id: number) =>
-    onPicksChange({ ...picks, baseGroups: toggleIn(picks.baseGroups, id) });
+  /** Unticking a group drops its ticked stores with it. Leaving them behind
+   *  would keep the group held, since a ticked store holds its own group. */
+  const toggleGroupPick = (id: number) => {
+    const held = picks.baseGroups.includes(id);
+    onPicksChange({
+      ...picks,
+      baseGroups: toggleIn(picks.baseGroups, id),
+      stores: held
+        ? picks.stores.filter((s) => s.base_group !== id)
+        : picks.stores,
+      // Newly held groups take the Access type step's answer. An existing
+      // mode is left alone, so re-ticking a group restores how it was held.
+      modes:
+        held || picks.modes[id] !== undefined
+          ? picks.modes
+          : { ...picks.modes, [id]: singleStoreOnly ? "selected" : defaultMode },
+    });
+  };
+
+  const setMode = (id: number, mode: GrantMode) =>
+    onPicksChange({
+      ...picks,
+      // Holding a group is implied by choosing how to hold it.
+      baseGroups: picks.baseGroups.includes(id)
+        ? picks.baseGroups
+        : [...picks.baseGroups, id],
+      modes: { ...picks.modes, [id]: mode },
+    });
 
   const [activeCompany, setActiveCompany] = useState<number | null>(null);
   // Which groups are selected for viewing — drives the middle column's
   // highlight and which groups get a section in the stores column at all.
-  // Clicking a group in the middle column toggles this.
-  const [expandedGroups, setExpandedGroups] = useState<Set<number>>(
-    new Set(),
-  );
-  // Purely which selected groups' store checklists are visually collapsed
-  // within the stores column — independent of expandedGroups above. Clicking
-  // a section's own header in the stores column toggles this (a real
-  // accordion: the header always stays, only its body hides), and never
-  // touches whether the group is selected at all.
+  const [expandedGroups, setExpandedGroups] = useState<Set<number>>(new Set());
+  // Purely which groups' store lists are visually collapsed within the stores
+  // column — independent of expandedGroups. Clicking a section's own header
+  // toggles this (a real accordion: the header stays, only its body hides),
+  // and never touches whether the group is held.
   const [collapsedSections, setCollapsedSections] = useState<Set<number>>(
     new Set(),
   );
-  const [groupStores, setGroupStores] = useState<Record<number, Store[]>>({});
   const [groupSearch, setGroupSearch] = useState("");
   const [storeSearch, setStoreSearch] = useState("");
-  // Controlled value for the "Jump to selected" dropdown in the stores
-  // column — always resets to "" right after a pick (see handleJumpToGroup).
-  // It's a scroll-to shortcut among already-selected groups, not a display
-  // filter, so it never competes with expandedGroups or collapsedSections.
+  // Controlled value for the "Jump to selected" dropdown — always resets to
+  // "" right after a pick. It is a scroll-to shortcut among already-expanded
+  // groups, not a display filter, so it never competes with expandedGroups.
   const [storeGroupFilter, setStoreGroupFilter] = useState("");
 
   useEffect(() => {
@@ -137,7 +206,7 @@ const AccessPanel = ({
         const j = resp.data;
         if (j.error === 0) {
           const valid = validOnly(j.assigned_stores);
-          setGroupStores((prev) => ({ ...prev, [groupId]: valid }));
+          onGroupStoresChange((prev) => ({ ...prev, [groupId]: valid }));
           return valid;
         }
         return [];
@@ -148,10 +217,10 @@ const AccessPanel = ({
       });
   };
 
-  // Eagerly fetch every group's store roster once its company becomes
-  // active, so the base-groups column can show real "X of Y" counts before
-  // any group is expanded — the old accordion only fetched a group's stores
-  // on first expand, but this layout needs totals up front to be useful.
+  // Eagerly fetch every group's roster once its company becomes active, so
+  // the middle column can show real "X of Y" counts before any group is
+  // expanded — the old accordion only fetched on first expand, but this
+  // layout needs totals up front to be useful.
   useEffect(() => {
     if (!activeCompany) return;
     const groups = companyGroups[activeCompany];
@@ -169,8 +238,6 @@ const AccessPanel = ({
     });
   };
 
-  // Accordion toggle for a section's body within the stores column — the
-  // header (and the group's selected state) stays put either way.
   const toggleSectionCollapse = (groupId: number) => {
     setCollapsedSections((prev) => {
       const next = new Set(prev);
@@ -189,9 +256,15 @@ const AccessPanel = ({
           (s) => !(s.storeid === store.storeid && s.base_group === group.id),
         ),
       );
-    } else {
-      onChange([...selectedStores, { ...store, base_group: group.id }]);
+      return;
     }
+    // One store, total — not one per group. The server enforces it either way
+    // and refuses the whole call, so the panel replaces rather than adds.
+    if (singleStoreOnly) {
+      onChange([{ ...store, base_group: group.id }]);
+      return;
+    }
+    onChange([...selectedStores, { ...store, base_group: group.id }]);
   };
 
   const handleSelectAllForGroup = async (group: CompanyBaseGroup) => {
@@ -200,16 +273,20 @@ const AccessPanel = ({
     const allSelected = stores.length > 0 && inGroup.length === stores.length;
     if (allSelected) {
       onChange(selectedStores.filter((s) => s.base_group !== group.id));
-    } else {
-      const toAdd = stores
-        .filter((s) => !inGroup.some((sel) => sel.storeid === s.storeid))
-        .map((s) => ({ ...s, base_group: group.id }));
-      onChange([...selectedStores.filter((s) => s.base_group !== group.id), ...inGroup, ...toAdd]);
+      return;
     }
+    const toAdd = stores
+      .filter((s) => !inGroup.some((sel) => sel.storeid === s.storeid))
+      .map((s) => ({ ...s, base_group: group.id }));
+    onChange([
+      ...selectedStores.filter((s) => s.base_group !== group.id),
+      ...inGroup,
+      ...toAdd,
+    ]);
   };
 
-  // Per-company badge — how many selected stores belong to each company, so
-  // switching away from one doesn't hide that it already has picks.
+  // Per-company badge — how many picked stores belong to each company, so
+  // switching away from one does not hide that it already has picks.
   const companyCounts = useMemo(() => {
     const map: Record<number, number> = {};
     selectedStores.forEach((s) => {
@@ -218,34 +295,24 @@ const AccessPanel = ({
     return map;
   }, [selectedStores]);
 
-  const rollup = useMemo(() => {
-    const byGroup = new Map<number, SelectableStore[]>();
-    selectedStores.forEach((s) => {
-      const list = byGroup.get(s.base_group) ?? [];
-      list.push(s);
-      byGroup.set(s.base_group, list);
-    });
-    return Array.from(byGroup.entries()).map(([groupId, stores]) => ({
-      groupId,
-      count: stores.length,
-      total: groupStores[groupId]?.length ?? stores.length,
-      groupName: groupsById[groupId]?.name ?? "",
-      companyId: groupsById[groupId]?.company,
-    }));
-  }, [selectedStores, groupStores, groupsById]);
-
-  const groupsInActiveCompany = activeCompany ? (companyGroups[activeCompany] ?? []) : [];
+  const groupsInActiveCompany = activeCompany
+    ? (companyGroups[activeCompany] ?? [])
+    : [];
   const filteredGroups = groupsInActiveCompany.filter((g) =>
     g.name.toLowerCase().includes(groupSearch.toLowerCase()),
   );
-  const openGroups = groupsInActiveCompany.filter((g) => expandedGroups.has(g.id));
+  const openGroups = groupsInActiveCompany.filter((g) =>
+    expandedGroups.has(g.id),
+  );
 
-  // Scoped to openGroups only — this is a jump-to-section shortcut for
-  // groups you've already expanded (useful once several are stacked), not a
-  // way to expand a new one. It's a one-shot action, not a display filter:
-  // it scrolls then immediately resets to the placeholder. expandedGroups
-  // stays the single source of truth for what column 3 shows, so collapsing
-  // a group (click it again in the middle column) always works.
+  /** Held groups set to pick stores with nothing picked. The server answers
+   *  400 for these, so they are named on screen before the save is tried. */
+  const emptyPicks = picks.baseGroups.filter(
+    (id) =>
+      modeOf(picks, id) === "selected" &&
+      !selectedStores.some((s) => s.base_group === id),
+  );
+
   const handleJumpToGroup = (value: string) => {
     if (!value) return;
     const groupId = Number(value);
@@ -265,7 +332,10 @@ const AccessPanel = ({
     <div className="w-full h-full flex flex-col min-h-0">
       <div className="flex-1 min-h-0 flex border border-gray-100 rounded-lg overflow-hidden">
         {/* Companies */}
-        <div className="flex flex-col border-r border-gray-100 flex-shrink-0" style={{ width: 220 }}>
+        <div
+          className="flex flex-col border-r border-gray-100 flex-shrink-0"
+          style={{ width: 220 }}
+        >
           <div className="px-3 py-2.5 border-b border-gray-100 flex-shrink-0">
             <span className="text-[9px] font-bold uppercase tracking-wide text-content">
               Companies
@@ -275,30 +345,31 @@ const AccessPanel = ({
             {companyList.map((c) => {
               const isActive = activeCompany === c.id;
               const count = companyCounts[c.id] ?? 0;
-              const picked = picks.companies.includes(c.id);
               return (
                 <div
                   key={c.id}
-                  className={`w-full flex items-center gap-2 pl-2 pr-3 transition-colors ${
-                    isActive ? "bg-brand_navy text-custom-white" : "hover:bg-gray-50 text-content"
+                  className={`w-full flex items-center gap-2 pl-2.5 pr-3 transition-colors ${
+                    isActive
+                      ? "bg-brand_navy text-custom-white"
+                      : "hover:bg-gray-50 text-content"
                   }`}
                 >
-                  <input
-                    type="checkbox"
-                    checked={picked}
+                  <Checkbox
+                    checked={picks.companies.includes(c.id)}
                     onChange={() => toggleCompanyPick(c.id)}
-                    title={`Assign ${c.name} itself`}
-                    className="flex-shrink-0"
+                    ariaLabel={`Assign ${c.name} itself`}
                   />
                   <button
                     onClick={() => selectCompany(c.id)}
-                    className="flex-1 min-w-0 flex items-center justify-between gap-2 py-2 text-left text-[12px]"
+                    className="flex-1 min-w-0 flex items-center justify-between gap-2 py-2 text-left text-[12px] font-medium"
                   >
                     <span className="truncate">{c.name}</span>
                     {count > 0 && (
                       <span
-                        className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full flex-shrink-0 ${
-                          isActive ? "bg-custom-white/20 text-custom-white" : "bg-brand_navy/10 text-brand_navy"
+                        className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full flex-shrink-0 ${
+                          isActive
+                            ? "bg-custom-white/20 text-custom-white"
+                            : "bg-brand_navy/10 text-brand_navy"
                         }`}
                       >
                         {count}
@@ -312,7 +383,10 @@ const AccessPanel = ({
         </div>
 
         {/* Base groups in the active company */}
-        <div className="flex flex-col border-r border-gray-100 flex-shrink-0" style={{ width: 260 }}>
+        <div
+          className="flex flex-col border-r border-gray-100 flex-shrink-0"
+          style={{ width: 288 }}
+        >
           <div className="px-3 py-2.5 border-b border-gray-100 flex-shrink-0">
             <span className="text-[9px] font-bold uppercase tracking-wide text-content block mb-1.5">
               Base groups {activeCompany ? `in ${companyName(activeCompany)}` : ""}
@@ -326,38 +400,82 @@ const AccessPanel = ({
           <div className="flex-1 overflow-y-auto thin-scrollbar divide-y divide-brand_navy/15">
             {filteredGroups.map((group) => {
               const isOpen = expandedGroups.has(group.id);
-              const inGroup = selectedStores.filter((s) => s.base_group === group.id).length;
+              const held = picks.baseGroups.includes(group.id);
+              const mode = modeOf(picks, group.id);
+              const inGroup = selectedStores.filter(
+                (s) => s.base_group === group.id,
+              ).length;
               const total = groupStores[group.id]?.length;
               return (
                 <div
                   key={group.id}
-                  className={`w-full flex items-start gap-2 pl-2 pr-3 transition-colors ${
+                  className={`w-full pl-2.5 pr-3 py-1.5 transition-colors ${
                     isOpen ? "bg-brand_navy/5" : "hover:bg-gray-50"
                   }`}
-                  style={isOpen ? { boxShadow: "inset 2px 0 0 rgb(var(--color-brand-navy))" } : undefined}
+                  style={
+                    isOpen
+                      ? {
+                          boxShadow:
+                            "inset 2px 0 0 rgb(var(--color-brand-navy))",
+                        }
+                      : undefined
+                  }
                 >
-                  <input
-                    type="checkbox"
-                    checked={picks.baseGroups.includes(group.id)}
-                    onChange={() => toggleGroupPick(group.id)}
-                    title={`Assign ${group.name} itself`}
-                    className="flex-shrink-0 mt-2.5"
-                  />
-                  <button
-                    onClick={() => toggleGroupExpand(group)}
-                    className="flex-1 min-w-0 text-left py-2"
-                  >
-                  <div className="min-w-0">
-                    <div className="text-[12.5px] font-medium text-content truncate">{group.name}</div>
-                    <div className="text-[10.5px] text-content/60">
-                      {total === undefined
-                        ? "Loading…"
-                        : inGroup > 0
-                          ? `${inGroup} of ${total} selected`
-                          : `${total} stores`}
-                    </div>
+                  <div className="flex items-start gap-2">
+                    <Checkbox
+                      checked={held}
+                      onChange={() => toggleGroupPick(group.id)}
+                      ariaLabel={`Give ${group.name} to this person`}
+                      className="mt-1"
+                    />
+                    <button
+                      onClick={() => toggleGroupExpand(group)}
+                      className="flex-1 min-w-0 text-left"
+                    >
+                      <div className="text-[12.5px] font-semibold text-content truncate">
+                        {group.name}
+                      </div>
+                      <div className="text-[10.5px] text-content/85">
+                        {total === undefined
+                          ? "Loading…"
+                          : held && mode === "all"
+                            ? `all ${total} stores, and new ones`
+                            : inGroup > 0
+                              ? `${inGroup} of ${total} picked`
+                              : `${total} stores`}
+                      </div>
+                    </button>
                   </div>
-                  </button>
+
+                  {/* Only once the group is actually held — the question
+                      "how" has no meaning before "whether". */}
+                  {held && (
+                    <div className="flex items-center gap-1 mt-1.5 ml-6">
+                      {!singleStoreOnly && (
+                        <div className="inline-flex rounded-md overflow-hidden border border-brand_line_2">
+                          {(
+                            [
+                              ["all", "Auto"],
+                              ["selected", "Pick stores"],
+                            ] as [GrantMode, string][]
+                          ).map(([value, label]) => (
+                            <button
+                              key={value}
+                              onClick={() => setMode(group.id, value)}
+                              className={`text-[10px] font-semibold px-2 py-0.5 transition-colors ${
+                                mode === value
+                                  ? "bg-brand_navy text-custom-white"
+                                  : "bg-custom-white text-content hover:bg-gray-50"
+                              }`}
+                            >
+                              {label}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      <GrantModeChip mode={mode} />
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -387,18 +505,23 @@ const AccessPanel = ({
               }))}
               value={storeGroupFilter}
               onChange={handleJumpToGroup}
-              placeholder="Jump to selected…"
+              placeholder="Jump to group…"
               className="w-[150px] flex-shrink-0"
             />
           </div>
           <div className="flex-1 overflow-y-auto thin-scrollbar divide-y divide-brand_navy/15">
             {openGroups.length === 0 && (
-              <div className="flex items-center justify-center h-full text-[11px] text-content/60 p-6 text-center">
-                Select a base group to see its stores
+              <div className="flex items-center justify-center h-full text-[11px] text-content/85 p-6 text-center">
+                Pick a base group to see its stores
               </div>
             )}
             {openGroups.map((group) => {
-              const inGroup = selectedStores.filter((s) => s.base_group === group.id);
+              const held = picks.baseGroups.includes(group.id);
+              const mode = modeOf(picks, group.id);
+              const preview = held && mode === "all";
+              const inGroup = selectedStores.filter(
+                (s) => s.base_group === group.id,
+              );
               const total = groupStores[group.id]?.length;
               const isCollapsed = collapsedSections.has(group.id);
               const stores = (groupStores[group.id] ?? []).filter((s) =>
@@ -412,47 +535,83 @@ const AccessPanel = ({
                   >
                     <span className="flex items-center gap-1.5 min-w-0">
                       <span
-                        className={`text-[10px] text-content/50 flex-shrink-0 transition-transform ${isCollapsed ? "" : "rotate-90"}`}
+                        className={`text-[10px] text-content/85 flex-shrink-0 transition-transform ${
+                          isCollapsed ? "" : "rotate-90"
+                        }`}
                       >
                         ▶
                       </span>
                       <span className="text-[11px] font-semibold text-content truncate">
-                        {group.name} — {inGroup.length}
-                        {total !== undefined ? ` of ${total}` : ""}
+                        {group.name}
+                        {preview
+                          ? total !== undefined
+                            ? ` — all ${total}`
+                            : ""
+                          : ` — ${inGroup.length}${
+                              total !== undefined ? ` of ${total}` : ""
+                            }`}
                       </span>
+                      {held && <GrantModeChip mode={mode} />}
                     </span>
-                    <span
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleSelectAllForGroup(group);
-                      }}
-                      className="text-[10.5px] text-blue-700 font-medium flex-shrink-0"
-                    >
-                      Select all
-                    </span>
+                    {/* No Select all on a preview: there is nothing to select,
+                        and the whole group is already the answer. */}
+                    {!preview && !singleStoreOnly && (
+                      <span
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSelectAllForGroup(group);
+                        }}
+                        className="text-[10.5px] text-brand_navy font-semibold flex-shrink-0 hover:underline"
+                      >
+                        Select all
+                      </span>
+                    )}
                   </button>
                   {!isCollapsed && (
-                  <div className="px-2 divide-y divide-brand_navy/15">
-                    {stores.map((s) => {
-                      const isSelected = inGroup.some((sel) => sel.storeid === s.storeid);
-                      return (
-                        <label
-                          key={s.storeid}
-                          className="flex items-center gap-2 py-1.5 px-1 text-[12px] text-content cursor-pointer"
-                        >
-                          <input
-                            type="checkbox"
-                            checked={isSelected}
-                            onChange={() => toggleStore(s, group)}
-                          />
-                          {s.store_name}
-                        </label>
-                      );
-                    })}
-                    {groupStores[group.id] === undefined && (
-                      <div className="py-3 text-[11px] text-content/60 text-center">Loading…</div>
-                    )}
-                  </div>
+                    <div className="px-2 divide-y divide-brand_navy/15">
+                      {preview && (
+                        <p className="text-[10.5px] text-content/85 leading-snug px-1 py-1.5">
+                          Read only — this person has the whole group. Stores
+                          added to it later will appear for them automatically.
+                        </p>
+                      )}
+                      {stores.map((s) => {
+                        const isSelected = inGroup.some(
+                          (sel) => sel.storeid === s.storeid,
+                        );
+                        return preview ? (
+                          <div
+                            key={s.storeid}
+                            className="flex items-center gap-2 py-1.5 px-1 text-[12px] text-content/85"
+                          >
+                            <span className="tabular-nums font-semibold w-[42px] flex-shrink-0">
+                              {s.store_number}
+                            </span>
+                            <span className="truncate">{s.store_name}</span>
+                          </div>
+                        ) : (
+                          <div
+                            key={s.storeid}
+                            className="flex items-center gap-2 py-1.5 px-1 text-[12px] text-content"
+                          >
+                            <Checkbox
+                              checked={isSelected}
+                              onChange={() => toggleStore(s, group)}
+                              ariaLabel={`Pick ${s.store_name}`}
+                            />
+                            <span className="tabular-nums font-semibold w-[42px] flex-shrink-0">
+                              {s.store_number}
+                            </span>
+                            <span className="truncate">{s.store_name}</span>
+                          </div>
+                        );
+                      })}
+                      {groupStores[group.id] === undefined && (
+                        <div className="py-3 text-[11px] text-content/85 text-center">
+                          Loading…
+                        </div>
+                      )}
+                    </div>
                   )}
                 </div>
               );
@@ -461,31 +620,54 @@ const AccessPanel = ({
         </div>
       </div>
 
-      <div className="bg-gray-50 rounded-lg px-3 py-2.5 mt-4">
+      {emptyPicks.length > 0 && (
+        <div className="mt-2 px-3 py-2 rounded-lg bg-brand_danger_bg border border-brand_danger_line flex-shrink-0">
+          <span className="text-[11.5px] text-content">
+            <span className="font-semibold">
+              {emptyPicks
+                .map((id) => groupsById[id]?.name ?? `Group ${id}`)
+                .join(", ")}
+            </span>{" "}
+            {emptyPicks.length === 1 ? "is" : "are"} set to pick stores with
+            none picked. Pick at least one store, switch to Auto, or untick the
+            group.
+          </span>
+        </div>
+      )}
+
+      <div className="bg-bkg rounded-lg px-3 py-2.5 mt-3 shadow-card-sm">
         <div className="flex items-center justify-between mb-1">
           <span className="text-[12px] font-semibold text-content">
-            Selected — {picks.companies.length} companies, {picks.baseGroups.length}{" "}
-            base groups, {selectedStores.length} stores
+            {picks.companies.length} companies, {picks.baseGroups.length} base
+            groups, {selectedStores.length} stores picked
           </span>
           <button
-            onClick={() =>
-              onPicksChange({ companies: [], baseGroups: [], stores: [] })
-            }
-            className="text-[10.5px] text-blue-700 font-medium"
+            onClick={() => onPicksChange(NO_PICKS)}
+            className="text-[10.5px] text-brand_navy font-semibold hover:underline"
           >
             Clear all
           </button>
         </div>
-        {rollup.length === 0 ? (
-          <div className="text-[11.5px] text-content/50">Nothing selected yet</div>
+        {picks.baseGroups.length === 0 ? (
+          <div className="text-[11.5px] text-content/85">
+            Nothing selected yet
+          </div>
         ) : (
           <div className="text-[11.5px] text-content/85 leading-relaxed max-h-[60px] overflow-y-auto thin-scrollbar">
-            {rollup.map((r, i) => (
-              <span key={r.groupId}>
-                {i > 0 && "; "}
-                {companyName(r.companyId ?? 0)}: {r.groupName} ({r.count})
-              </span>
-            ))}
+            {picks.baseGroups.map((id, i) => {
+              const group = groupsById[id];
+              const mode = modeOf(picks, id);
+              const count = selectedStores.filter(
+                (s) => s.base_group === id,
+              ).length;
+              return (
+                <span key={id}>
+                  {i > 0 && "; "}
+                  {companyName(group?.company ?? 0)}: {group?.name ?? `#${id}`}{" "}
+                  {mode === "all" ? "(all)" : `(${count})`}
+                </span>
+              );
+            })}
           </div>
         )}
       </div>
