@@ -46,19 +46,22 @@ interface CreateUserWizardProps {
 /**
  * What the panel should be while each step is open.
  *
- * Every step but Assignments hugs its own content: they are forms, and a form
- * stretched to a dragged 1600px rectangle reads as one that failed to load.
+ * Every step gets a real height rather than hugging its content. `auto` reads
+ * well on paper and clips in practice: the panel is capped at the viewport,
+ * and with no definite height of its own the flex chain inside it never
+ * establishes a scroll container — so a form taller than the cap lost its
+ * bottom rather than scrolling, and a step scrolled part-way lost its top.
+ * A number plus that cap gives both: the panel fits the step on a tall
+ * screen, and the step scrolls inside it on a short one.
  *
- * Assignments is the exception and needs a number. Its three columns scroll
- * independently, so the content has no natural height to hug — auto would
- * collapse all three to nothing. The width is what the columns actually need:
- * 220 for companies, 288 for base groups, and enough left for store names.
+ * The widths are what each step actually needs — step one is a form beside
+ * its aside, assignments is four columns, the other two are reading.
  */
 const STEP_FIT: Record<WizardStep, PanelFit> = {
-  identity: { width: 1060, height: "auto" },
-  type: { width: 1000, height: "auto" },
+  identity: { width: 1180, height: 680 },
+  type: { width: 1020, height: 560 },
   assignments: { width: 1360, height: 700 },
-  review: { width: 1060, height: "auto" },
+  review: { width: 1100, height: 700 },
 };
 
 /** Roles that may hold exactly one store and no whole group. Matched on the
