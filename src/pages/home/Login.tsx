@@ -190,11 +190,13 @@ const Login = () => {
         if (j.error == 0) {
           dispatch(setToken(j.access_token));
           // Login runs against `context.url`, so this token belongs to
-          // whichever environment `apiEnv` currently points at. It has to be
-          // filed under that one specifically: `useDevApi`
-          // (AccountSetupModal) reads `devToken` directly, and if the dev slot
-          // is empty it carries an empty string and 401s for everyone below
-          // role 9.
+          // whichever environment `apiEnv` currently points at, and has to be
+          // filed under that one specifically. `useDevApi` reads `devToken`
+          // directly, and an empty slot there means `Bearer ` with nothing
+          // after it: Export Builder, Invoices and the Inventory pages all
+          // take that route. (AccountSetupModal used to and no longer does —
+          // it follows the signed-in environment now, since both share one
+          // RDS.)
           dispatch(
             context.apiEnv === "dev"
               ? setDevToken(j.access_token)

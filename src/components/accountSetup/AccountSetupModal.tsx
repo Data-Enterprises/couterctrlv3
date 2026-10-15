@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../hooks";
-import { useDevApi } from "../../hooks/useDevApi";
 import { useToast } from "../toasts/hooks/useToast";
 import {
   getSecurityQuestions,
@@ -36,10 +35,22 @@ const STEP_BLURB: Record<Step, string> = {
 const AccountSetupModal = () => {
   const toast = useToast();
   const dispatch = useAppDispatch();
-  // Pinned to the dev API — these changes have to persist there regardless of
-  // which environment the user is currently browsing.
-  const { url, token } = useDevApi();
-  const appToken = useAppSelector((state) => state.app.token);
+  // The environment the person is actually signed in to.
+  //
+  // This was pinned to the dev API, on the reasoning that the changes had to
+  // persist there whichever environment was being browsed. Both environments
+  // read and write one RDS, so that reasoning does not hold: the row lands in
+  // the same place either way, and the security questions endpoint is on prod
+  // now too.
+  //
+  // Un-pinning fixes more than tidiness. `useDevApi` is unconditional — it
+  // hands back DEV_API_URL and `devToken` to everybody — and this modal mounts
+  // in App.tsx for every signed-in user, so a prod user was being sent to the
+  // dev backend to set up their own account. It also ends a race: `devToken`
+  // is filled by a fire-and-forget second login that lands well after
+  // `state.app.token` has already opened this modal, so the first request went
+  // out as `Bearer ` with nothing after it and came back 401.
+  const { url, token } = useAppSelector((state) => state.app);
   const user = useAppSelector((state) => state.user);
 
   const [stepIndex, setStepIndex] = useState(0);
@@ -58,7 +69,7 @@ const AccountSetupModal = () => {
   // password step dispatches setResetPassword(0), which would renumber the
   // header and drop the user out of the sequence before step 2 renders.
   const planRef = useRef<Step[] | null>(null);
-  if (planRef.current === null && appToken) {
+  if (planRef.current === null && token) {
     const plan: Step[] = [];
     if (user.resetPassword === 1) plan.push("password");
     if (user.securityQuestionId === 0) plan.push("security");
@@ -67,8 +78,12 @@ const AccountSetupModal = () => {
   const plan = planRef.current;
   const needsSecurity = plan?.includes("security") ?? false;
 
+  // The token guard is belt and braces now rather than the fix: the token
+  // this reads is the one that opened the modal, so it is already there. It
+  // stays because an empty string still makes a request worth not sending,
+  // and `url`/`token` belong in the deps of an effect that uses them.
   useEffect(() => {
-    if (!needsSecurity) return;
+    if (!needsSecurity || !token) return;
     getSecurityQuestions(url, token)
       .then((resp) => {
         const j = resp.data;
@@ -78,7 +93,7 @@ const AccountSetupModal = () => {
       .catch((err: JsonError) =>
         toast.error("Error getting security questions: " + err.message),
       );
-  }, [needsSecurity]);
+  }, [needsSecurity, token, url]);
 
   if (!plan || finished) return null;
 
