@@ -9,9 +9,11 @@ import {
 interface Props {
   /** What this row is — a store, a sub department, a vendor, a category. */
   label: string;
-  /** The figure beside the name, preformatted. Neutral: no grading on mobile
-   *  Performance, so this is information and never a verdict. */
-  change: string;
+  /** The figure beside the name, already formatted and already coloured —
+   *  callers pass `PerfChange`, which greens a rise, reds a fall and leaves
+   *  an exactly-flat week plain. A direction flag, not a grade: nothing here
+   *  is measured against a threshold. */
+  change: ReactNode;
   /** A flag on the change, e.g. a short comparison period. */
   flagged?: boolean;
   flagNote?: string;

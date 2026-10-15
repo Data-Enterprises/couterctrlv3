@@ -77,6 +77,7 @@ import {
 import MobilePerfCard from "../../../../components-dev/mobile/MobilePerfCard";
 import MobilePerfDetail from "../../../../components-dev/mobile/MobilePerfDetail";
 import PairedBars from "../../../../components-dev/mobile/perf/PairedBars";
+import PerfChange from "../../../../components-dev/mobile/perf/PerfChange";
 import PerfDelta from "../../../../components-dev/mobile/perf/PerfDelta";
 import {
   asLastYearSlots,
@@ -1353,7 +1354,7 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
                 <div key={r.key} ref={isOpen ? openCard : undefined}>
                   <MobilePerfCard
                     label={r.label}
-                    change={change === null ? "—" : fmtChange(change)}
+                    change={<PerfChange pct={change} format={fmtChange} />}
                     bars={
                       <PairedBars
                         ty={r.sales}

@@ -8,6 +8,7 @@ import MobileSortChips, {
   type SortOption,
 } from "../../../../../components-dev/mobile/MobileSortChips";
 import PairedBars from "../../../../../components-dev/mobile/perf/PairedBars";
+import PerfChange from "../../../../../components-dev/mobile/perf/PerfChange";
 import { TY_COLOR } from "../../../../../components-dev/mobile/perf/perfColors";
 import {
   cmpLabels,
@@ -282,7 +283,7 @@ const PerfDrillList = ({
                     {p.label}
                   </span>
                   <span className="flex-none text-[12px] font-semibold text-content/85">
-                    {change === null ? "—" : fmtChange(change)}
+                    <PerfChange pct={change} format={fmtChange} />
                   </span>
                 </div>
                 <div className="font-mono text-[10px] tracking-wider text-content/85">
@@ -353,7 +354,7 @@ const PerfDrillList = ({
                     read off the rows. Neutral: no grading on mobile. A dash
                     when last year sold nothing. */}
                 <span className="flex-none text-[12px] font-semibold text-content/85">
-                  {change === null ? "—" : fmtChange(change)}
+                  <PerfChange pct={change} format={fmtChange} />
                 </span>
                 {opensItems && (
                   <ChevronRightIcon className="h-4 w-4 flex-none self-center text-content/85" />

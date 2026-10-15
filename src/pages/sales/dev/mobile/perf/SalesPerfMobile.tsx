@@ -88,6 +88,7 @@ import {
   type CmpBasis,
 } from "./perfData";
 import PairedBars from "../../../../../components-dev/mobile/perf/PairedBars";
+import PerfChange from "../../../../../components-dev/mobile/perf/PerfChange";
 import PerfDelta from "../../../../../components-dev/mobile/perf/PerfDelta";
 import PerfCardHeader from "../../../../../components-dev/mobile/perf/PerfCardHeader";
 import MobilePerfCard from "../../../../../components-dev/mobile/MobilePerfCard";
@@ -893,7 +894,7 @@ const SalesPerfMobile = () => {
                 <div key={p.key} ref={isOpen ? openCard : undefined}>
                   <MobilePerfCard
                     label={p.label}
-                    change={change === null ? "—" : fmtChange(change)}
+                    change={<PerfChange pct={change} format={fmtChange} />}
                     flagged={isPartialMatch(p)}
                     flagNote={matchedNote(p)}
                     bars={

@@ -912,9 +912,32 @@ const EventPerfMobile = ({
                     <MobilePerfCard
                       label={r.label}
                       change={
-                        measure === "amount"
-                          ? formatCurrency2(r.amount)
-                          : fmtInt(r.transactions)
+                        // The week against its baseline, signed, rather than
+                        // the week's own figure — which the WK bar directly
+                        // below already states, so the slot was spending the
+                        // card's most prominent corner saying it twice.
+                        //
+                        // A difference, not a percentage: this page measures
+                        // coupon dollars and exception counts, where a store
+                        // going 1 to 3 is not a bigger move than one going 20
+                        // to 30.
+                        // That is the same rule the "vs Avg" sort orders on.
+                        //
+                        // No baseline means nothing to difference against —
+                        // LP's baseline knows stores but never people — so
+                        // those rows keep showing their own figure.
+                        r.baseline === null ? (
+                          fmt(measure === "amount" ? r.amount : r.transactions)
+                        ) : (
+                          <PerfDelta
+                            ty={
+                              measure === "amount" ? r.amount : r.transactions
+                            }
+                            ly={r.baseline}
+                            format={fmt}
+                            className="!text-[12px] !font-semibold"
+                          />
+                        )
                       }
                       open={isOpen}
                       minimised={!isOpen && perf.selectedStoreKey !== null}
