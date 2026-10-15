@@ -27,10 +27,17 @@ import Users from "./users/Users";
 import SharedGroups from "./sharedGroups/SharedGroups";
 import { SHARED_GROUP_OWNER_LEVEL } from "./sharedGroups/hooks";
 import BaseGroups from "./baseGroups/BaseGroups";
+import Companies from "./companies/Companies";
 import StoresDirectory from "./stores/StoresDirectory";
 import { UserGroupsPanel } from "../../groups/dev/Groups";
 
-type Tab = "users" | "userGroups" | "sharedGroups" | "baseGroups" | "stores";
+type Tab =
+  | "users"
+  | "userGroups"
+  | "sharedGroups"
+  | "companies"
+  | "baseGroups"
+  | "stores";
 
 /**
  * The tabs, in order, and the lowest level that sees each. `null` is everyone.
@@ -48,6 +55,9 @@ const TABS: { id: Tab; label: string; minLevel: number | null }[] = [
   { id: "users", label: "Users", minLevel: 5 },
   { id: "userGroups", label: "User Groups", minLevel: null },
   { id: "sharedGroups", label: "Shared Groups", minLevel: SHARED_GROUP_OWNER_LEVEL },
+  // Companies sits before Base Groups because it is the outer boundary: a
+  // group only reaches somebody who holds the company it belongs to.
+  { id: "companies", label: "Companies", minLevel: 7 },
   { id: "baseGroups", label: "Base Groups", minLevel: 7 },
   { id: "stores", label: "Stores", minLevel: null },
 ];
@@ -222,6 +232,7 @@ const Organization = () => {
           {tab === "sharedGroups" && ctx.userLevel >= SHARED_GROUP_OWNER_LEVEL && (
             <SharedGroups />
           )}
+          {tab === "companies" && ctx.userLevel >= 7 && <Companies />}
           {tab === "baseGroups" && ctx.userLevel >= 7 && <BaseGroups />}
           {tab === "stores" && (
             <StoresDirectory
