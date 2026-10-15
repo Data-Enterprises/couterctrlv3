@@ -103,7 +103,7 @@ const CashiersMobile = () => {
 
   if (!hasData || explorerMobileSearchOpen) {
     return (
-      <div className="h-[calc(100dvh-3rem)] overflow-y-auto">
+      <div className="h-[calc(100dvh-3rem)] overflow-y-auto bg-bkg">
         <div className="mx-4 pt-4 pb-2">
           <SearchCard
             top

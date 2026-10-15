@@ -46,6 +46,33 @@ const clockDigits = (raw: string | null | undefined): string | null => {
   return digits.length % 2 === 1 ? `0${digits}` : digits;
 };
 
+/**
+ * What the signal list is a list OF, for the drill's Back control.
+ *
+ * "Back to signals" is the developer's word for it. On screen the list is
+ * stores, or cashiers, or items — the lens decides — and a reader who just
+ * tapped a store expects to go back to stores. Plural of the lens label,
+ * lowercased, so it reads as a destination rather than a heading.
+ */
+export const lensListLabel = (lens: ExplorerLens) => {
+  const label = LENSES.find((l) => l.key === lens)?.label ?? "signal";
+  return `${label.toLowerCase()}s`;
+};
+
+/**
+ * The transaction number a till receipt is printed with.
+ *
+ * `sale_id` is a backend compound — store, transaction, lane, then the date as
+ * "1550-417853-1-10-14-2026". Only the second field is the number anyone in a
+ * store can act on: it is what is on the paper, what a till lookup takes and
+ * what a customer reads out. The rest is addressing.
+ *
+ * Falls back to the whole id rather than an empty cell, so an unexpected shape
+ * is visible instead of silently blank.
+ */
+export const transactionLabel = (saleId: string) =>
+  saleId.split("-")[1] ?? saleId;
+
 export const parseHour = (raw: string | null | undefined): number | null => {
   const digits = clockDigits(raw);
   if (!digits) return null;

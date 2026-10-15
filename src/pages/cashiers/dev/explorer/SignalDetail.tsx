@@ -7,6 +7,7 @@ import {
   formatClock,
   groupSignalByTransaction,
   receiptLinesFor,
+  transactionLabel,
   type Signal,
 } from "./lensUtils";
 import { formatCurrency2 } from "../../../../utils";
@@ -19,7 +20,6 @@ interface SignalDetailProps {
   transactionLengths: Record<string, number>;
 }
 
-const transactionLabel = (saleId: string) => saleId.split("-")[1] ?? saleId;
 
 // Scalable items come back with fractional qty (weight), so only show decimals
 // when there actually are any.
