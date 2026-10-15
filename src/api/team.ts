@@ -38,13 +38,21 @@ export const getBaseGroupsAssignedToUser = async (
  *
  * One mode per call, so a user holding East as `all` and South as `selected`
  * is two calls. See `useAccessSave`.
+ *
+ * **`mode` is required, deliberately.** There is no safe default to fall back
+ * on: the server's own is `'selected'`, and `'selected'` with no storeids is
+ * refused outright — so a caller that omits it does not get the old
+ * behaviour, it gets a 400. Defaulting to `'all'` here instead would be worse
+ * in a different way, silently handing over a whole group and every store
+ * later added to it. Required means the question gets answered at each call
+ * site, and a new caller that forgets will not compile.
  */
 export const assignBaseGroupToUser = async (
   url: string,
   token: string,
   userid: number,
   groupid: number[],
-  mode: GrantMode = "selected",
+  mode: GrantMode,
   storeids?: number[],
 ) => {
   const json = await axios({
