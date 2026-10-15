@@ -20,12 +20,15 @@ import type {
 } from "../../../../../interfaces";
 import AccessPanel from "../access/AccessPanel";
 import EffectiveStoresPanel from "./EffectiveStoresPanel";
+import EmptyPicksNotice from "../access/EmptyPicksNotice";
 import {
   accessSets,
   changedSets,
   emptySelectedGroupIds,
   groupCompanies,
   hasChanges,
+  modeOf,
+  NO_PICKS,
   type AccessPicks,
 } from "../access/accessSets";
 import { useExistingAccess } from "../access/useExistingAccess";
@@ -80,14 +83,9 @@ const AccessTab = () => {
     getBaseGroupsAssignedToUser(ctx.url, ctx.token, ctx.selectedUserId)
       .then((resp) => {
         const j = resp.data;
-        // `active` is 1 when the person holds the group; the endpoint returns
-        // every group in their companies either way, so the rest is the list
-        // of what they could be given, not what they have.
-        setHeldGroups(
-          j.error === 0
-            ? ((j.groups ?? []) as BaseGroup[]).filter((g) => g.active === 1)
-            : [],
-        );
+        // `active` is already the held half — the endpoint splits them, and
+        // `inactive` is what they could be given rather than what they have.
+        setHeldGroups(j.error === 0 ? ((j.active ?? []) as BaseGroup[]) : []);
       })
       .catch((err: JsonError) =>
         toast.error("Error fetching base groups " + err.message),
@@ -152,6 +150,36 @@ const AccessTab = () => {
   const emptyGroups = emptySelectedGroupIds(next);
   const canSave = dirty && !saving && emptyGroups.length === 0;
 
+  /** Ticked stores, which only `selected` groups have — an Auto group's
+   *  stores are included without anybody naming them. */
+  const picked = picks.stores.filter(
+    (s) => modeOf(picks, s.base_group) === "selected",
+  ).length;
+
+  /**
+   * "East (Houchens)" for a group with nothing picked.
+   *
+   * Resolved from the groups this person holds, not from the panel's loaded
+   * companies — the panel only knows a group whose company you have browsed
+   * to, so it said "Group 54" for exactly the ones worth warning about.
+   */
+  const emptyLabels = useMemo(
+    () =>
+      emptyGroups.map((id) => {
+        const held = heldGroups.find((g) => g.id === id);
+        if (held) {
+          return held.company_name
+            ? `${held.name} (${held.company_name})`
+            : held.name;
+        }
+        const browsed = Object.values(companyGroups)
+          .flat()
+          .find((g) => g.id === id);
+        return browsed?.name ?? `Group ${id}`;
+      }),
+    [emptyGroups, heldGroups, companyGroups],
+  );
+
   const summary = () => {
     const bits: string[] = [];
     if (changed.grants.length > 0) {
@@ -192,24 +220,18 @@ const AccessTab = () => {
 
   return (
     <div className="w-full h-full flex flex-col min-h-0">
-      <div className="flex flex-wrap items-center justify-between gap-2 mb-2 flex-shrink-0">
-        <span className="text-[11.5px] text-content/85">
-          {dirty
-            ? `Unsaved changes — ${summary()}`
-            : "Companies and base groups this person holds, and what they add up to"}
-        </span>
-        <button
-          onClick={handleSave}
-          disabled={!canSave}
-          className={`text-[12px] font-medium px-4 py-1.5 rounded-md text-custom-white ${
-            canSave
-              ? "bg-brand_navy hover:bg-brand_navy/85"
-              : "bg-gray-300 cursor-not-allowed"
-          }`}
-        >
-          {saving ? "Saving…" : "Save access"}
-        </button>
-      </div>
+      <p className="text-[11.5px] text-content/85 mb-2 flex-shrink-0 leading-snug">
+        Pick companies, base groups and individual stores. Effective stores
+        shows what they add up to.
+      </p>
+
+      {/* Above the card, not under it: a warning read after the thing it
+          warns about has already been scrolled past. */}
+      {emptyLabels.length > 0 && (
+        <div className="mb-2 flex-shrink-0">
+          <EmptyPicksNotice labels={emptyLabels} />
+        </div>
+      )}
 
       {failure && (
         <div className="mb-2 px-3 py-2 rounded-lg bg-brand_danger_bg border border-brand_danger_line flex-shrink-0">
@@ -225,25 +247,61 @@ const AccessTab = () => {
         </div>
       )}
 
-      <div className="flex-1 min-h-0 flex gap-3">
-        <div className="flex-1 min-w-0">
-          <AccessPanel
-            picks={picks}
-            onPicksChange={setPicks}
-            companyGroups={companyGroups}
-            onCompanyGroupsChange={setCompanyGroups}
-            groupStores={groupStores}
-            onGroupStoresChange={setGroupStores}
-          />
-        </div>
-        <div className="w-[320px] flex-shrink-0 hidden lg:block">
-          <EffectiveStoresPanel
-            picks={picks}
-            companyGroups={companyGroups}
-            groupStores={groupStores}
-            directStoreIds={existing.carried.stores}
-            assignedStores={ctx.selectedUserStores.assigned}
-          />
+      <div className="flex-1 min-h-0 flex flex-col">
+        <AccessPanel
+          picks={picks}
+          onPicksChange={setPicks}
+          companyGroups={companyGroups}
+          onCompanyGroupsChange={setCompanyGroups}
+          groupStores={groupStores}
+          onGroupStoresChange={setGroupStores}
+          hideFooter
+          hideEmptyNotice
+          rightColumn={
+            <EffectiveStoresPanel
+              picks={picks}
+              companyGroups={companyGroups}
+              groupStores={groupStores}
+              directStoreIds={existing.carried.stores}
+              assignedStores={ctx.selectedUserStores.assigned}
+            />
+          }
+        />
+
+        {/* One bar under the card: what is picked on the left, what to do
+            about it on the right. The Save button lives here rather than up
+            by the title so it sits beside the thing it saves. */}
+        <div className="flex flex-wrap items-center justify-between gap-3 px-3 py-2.5 mt-2 rounded-lg bg-bkg shadow-card-sm flex-shrink-0">
+          <div className="text-[12px] text-content min-w-0">
+            <span className="font-semibold">
+              {picks.baseGroups.length} base group
+              {picks.baseGroups.length === 1 ? "" : "s"}, {picked} store
+              {picked === 1 ? "" : "s"} picked
+            </span>
+            <span className="text-content/85">
+              {" · "}
+              {dirty ? summary() : "No unsaved changes"}
+            </span>
+          </div>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <button
+              onClick={() => setPicks(NO_PICKS)}
+              className="text-[11.5px] font-semibold text-brand_navy hover:underline"
+            >
+              Clear all
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={!canSave}
+              className={`text-[12px] font-medium px-4 py-1.5 rounded-md text-custom-white ${
+                canSave
+                  ? "bg-brand_navy hover:bg-brand_navy/85"
+                  : "bg-gray-300 cursor-not-allowed"
+              }`}
+            >
+              {saving ? "Saving…" : "Save access"}
+            </button>
+          </div>
         </div>
       </div>
     </div>

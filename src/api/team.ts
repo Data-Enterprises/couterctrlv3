@@ -2,7 +2,19 @@ import axios from "axios";
 import type { UserData } from "../features/usersSlice";
 import type { GrantMode } from "../interfaces";
 
-// groups/base_groups_assigned_to_user
+/**
+ * Every base group in the user's companies, split by whether they hold it.
+ *
+ * Returns `{ active, inactive }` — **not** `{ groups }`. The name and the old
+ * comment both said `base_groups_assigned_to_user`, which is a real endpoint
+ * returning the other shape, and three callers read `j.groups` off this one
+ * and silently got `undefined`. It calls the `_split` twin; the name is left
+ * alone because four other callers already read it correctly.
+ *
+ * `active` rows are the ones the user holds, each carrying its `mode` —
+ * `all` or `selected`. That is the whole list Edit user needs: no filtering,
+ * because the split already did it.
+ */
 export const getBaseGroupsAssignedToUser = async (
   url: string,
   token: string,

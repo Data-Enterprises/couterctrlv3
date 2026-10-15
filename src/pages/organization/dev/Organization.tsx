@@ -8,9 +8,24 @@ import { useOrganizationCtx } from "./hooks";
  * 1 basic, 2 user, 5 manager, 7 owner, 9 programmer.
  */
 const OWNER_LEVEL = 7;
-import { useResizableBox } from "../../../hooks/useResizableBox";
+
+/**
+ * What each tab is worth before its content says otherwise.
+ *
+ * The three access tabs are a list beside a panel and want the width; the
+ * users grid is a table and wants a little less. Heights are explicit because
+ * every one of these scrolls internally — their columns and grids have no
+ * natural height to hug, so `auto` would collapse them to nothing. A view
+ * that knows better overrides this with `usePanelFit`, which is how the Add
+ * user wizard gets its own size per step.
+ */
+const TAB_FIT: Record<Tab, PanelFit> = {
+  users: { width: 1200, height: 660 },
+  companies: { width: 1320, height: 660 },
+  baseGroups: { width: 1320, height: 660 },
+  stores: { width: 1320, height: 660 },
+};
 import { PanelFitContext, type PanelFit } from "./panelFit";
-import ResizeHandle from "../../../components-dev/ResizeHandle";
 import PageInfoButton from "../../../components-dev/PageInfoButton";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import type {
@@ -70,25 +85,17 @@ const Organization = () => {
   const [tab, setTab] = useState<Tab>(tabs[0]?.id ?? "userGroups");
   const [storesExportOpen, setStoresExportOpen] = useState(false);
   /**
-   * A size the open view asked for, overriding the dragged one.
+   * The size the open view asks for.
    *
-   * A grid wants to be dragged — it is a list somebody wants more or less of.
-   * A form does not: it has one correct size, and at the panel's remembered
-   * 1600px the Add user wizard was a column of fields against an acre of
-   * empty card. While a fit is set the drag handle goes away rather than
-   * fighting it.
+   * The panel used to be a dragged rectangle whose size was remembered, which
+   * meant every view inherited whatever shape the last one was left in — the
+   * Add user wizard opened as a column of fields against an acre of empty
+   * card at the remembered 1600px. Nothing here is a canvas somebody needs
+   * more room on; each view has a size that fits it, so each view says what
+   * that is and the panel takes it.
    */
   const [fit, setFit] = useState<PanelFit | null>(null);
   const canSeeUsers = tabs.some((t) => t.id === "users");
-  const { width, height, boxRef, handleProps } = useResizableBox({
-    storageKey: "organization-panel-size",
-    defaultWidth: 1080,
-    defaultHeight: 640,
-    minWidth: 700,
-    maxWidth: 1600,
-    minHeight: 450,
-    maxHeight: 950,
-  });
 
   // usersSlice is shared with the legacy Team page (no forked slice), so
   // switching Live -> Preview mounts this component with whatever
@@ -170,16 +177,18 @@ const Organization = () => {
 
   const exportable = tab === "users" || tab === "stores";
 
+  /** What the open view asked for, else what the tab is worth. */
+  const size = fit ?? TAB_FIT[tab];
+
   return (
     <div className="min-h-[calc(100vh-3rem)] pt-12 px-4 pb-4 flex justify-center">
       <div
-        ref={boxRef}
         className="relative max-w-[95vw] max-h-[calc(100vh-8rem)] flex flex-col rounded-xl shadow-lg overflow-hidden bg-custom-white self-start transition-[width,height] duration-200 ease-out motion-reduce:transition-none"
         style={{
-          width: fit?.width ?? width,
+          width: size.width,
           // Auto lets the card end where the form ends. max-h still caps it,
           // so a long form scrolls inside rather than running off the page.
-          height: fit === null ? height : fit.height === "auto" ? undefined : fit.height,
+          height: size.height === "auto" ? undefined : size.height,
         }}
       >
         <div className="bg-brand_navy px-3 py-2 flex-shrink-0 flex items-center gap-3">
@@ -234,9 +243,6 @@ const Organization = () => {
           </PanelFitContext.Provider>
         </div>
 
-        {/* Hidden while the content is driving the size: a handle that moves
-            a width the next render overwrites is a broken control. */}
-        {fit === null && <ResizeHandle {...handleProps} />}
       </div>
     </div>
   );

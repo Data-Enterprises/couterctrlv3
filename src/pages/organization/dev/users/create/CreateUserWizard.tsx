@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { ArrowLeftIcon } from "@heroicons/react/20/solid";
 import { useOrganizationCtx } from "../../hooks";
 import { useToast } from "../../../../../components/toasts/hooks/useToast";
 import { createUser } from "../../../../../api/team";
@@ -18,7 +19,6 @@ import AccessPanel from "../access/AccessPanel";
 import Stepper from "./Stepper";
 import {
   STEP_ORDER,
-  STEP_TITLE,
   type WizardStep,
 } from "./wizardSteps";
 import { usePanelFit, type PanelFit } from "../../panelFit";
@@ -55,10 +55,10 @@ interface CreateUserWizardProps {
  * 220 for companies, 288 for base groups, and enough left for store names.
  */
 const STEP_FIT: Record<WizardStep, PanelFit> = {
-  identity: { width: 1000, height: "auto" },
-  type: { width: 880, height: "auto" },
-  assignments: { width: 1360, height: 660 },
-  review: { width: 940, height: "auto" },
+  identity: { width: 1060, height: "auto" },
+  type: { width: 1000, height: "auto" },
+  assignments: { width: 1360, height: 700 },
+  review: { width: 1060, height: "auto" },
 };
 
 /** Roles that may hold exactly one store and no whole group. Matched on the
@@ -241,42 +241,27 @@ const CreateUserWizard = ({ onComplete, onCancel }: CreateUserWizardProps) => {
   };
 
   return (
-    <div className="w-full h-full flex flex-col min-h-0 px-4 pt-3 pb-4">
-      <div className="flex items-center justify-between gap-3 mb-3 flex-shrink-0">
-        <div className="flex items-baseline gap-2">
-          <h2 className="text-[15px] font-semibold text-content">Add user</h2>
-          <span className="text-[11.5px] text-content/85">
-            Step {at + 1} of {STEP_ORDER.length} · {STEP_TITLE[step]}
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={onCancel}
-            className="text-[12px] font-medium px-3 py-1.5 rounded-md border border-brand_line text-content hover:bg-gray-50"
-          >
-            Cancel
-          </button>
-          {at > 0 && (
-            <button
-              onClick={back}
-              disabled={saving}
-              className="text-[12px] font-medium px-3 py-1.5 rounded-md border border-brand_line text-content hover:bg-gray-50"
-            >
-              Back
-            </button>
-          )}
-          <button
-            onClick={isLast ? handleCreate : advance}
-            disabled={!canAdvance || saving || stranded !== null}
-            className={`text-[12px] font-medium px-4 py-1.5 rounded-md text-custom-white ${
-              canAdvance && !saving && stranded === null
-                ? "bg-brand_navy hover:bg-brand_navy/85"
-                : "bg-gray-300 cursor-not-allowed"
-            }`}
-          >
-            {isLast ? (saving ? "Creating…" : "Create user") : "Continue"}
-          </button>
-        </div>
+    <div className="w-full h-full flex flex-col min-h-0 px-4 pt-3 pb-0">
+      <div className="flex items-center gap-2 mb-2 flex-shrink-0">
+        <button
+          onClick={onCancel}
+          className="flex items-center gap-1 text-[11.5px] font-semibold px-2 py-1 -ml-2 rounded-md text-brand_navy hover:bg-gray-50"
+        >
+          <ArrowLeftIcon className="w-3.5 h-3.5" />
+          Back to users
+        </button>
+        <span className="text-[11.5px] text-content/85" aria-hidden="true">
+          /
+        </span>
+        <span className="text-[11.5px] text-content/85">Add user</span>
+      </div>
+
+      <h2 className="text-[17px] font-bold text-content mb-2.5 flex-shrink-0">
+        Add user
+      </h2>
+
+      <div className="flex-shrink-0 mb-4">
+        <Stepper current={step} furthest={furthest} onGoTo={goTo} />
       </div>
 
       {/* Danger, not severity: the severity family grades data against a
@@ -309,47 +294,82 @@ const CreateUserWizard = ({ onComplete, onCancel }: CreateUserWizardProps) => {
         </div>
       )}
 
-      <div className="flex-1 min-h-0 flex gap-4">
-        <div className="flex-shrink-0 w-[152px] pt-1">
-          <Stepper current={step} furthest={furthest} onGoTo={goTo} />
-        </div>
+      <div className="flex-1 min-h-0 flex flex-col overflow-auto thin-scrollbar">
+        {step === "identity" && (
+          <UserFields onValidityChange={setIdentityValid} />
+        )}
 
-        <div className="flex-1 min-w-0 flex flex-col min-h-0 overflow-auto thin-scrollbar">
-          {step === "identity" && (
-            <UserFields onValidityChange={setIdentityValid} />
-          )}
+        {step === "type" && (
+          <StepAccessType
+            value={accessType}
+            onChange={setAccessType}
+            who={
+              `${ctx.userInfo.first_name} ${ctx.userInfo.last_name}`.trim() ||
+              ctx.userInfo.username
+            }
+            singleStoreOnly={singleStoreOnly}
+          />
+        )}
 
-          {step === "type" && (
-            <StepAccessType
-              value={accessType}
-              onChange={setAccessType}
+        {step === "assignments" && (
+          <div className="flex-1 min-h-0 flex flex-col">
+            <AccessPanel
+              picks={picks}
+              onPicksChange={setPicks}
+              companyGroups={companyGroups}
+              onCompanyGroupsChange={setCompanyGroups}
+              groupStores={groupStores}
+              onGroupStoresChange={setGroupStores}
+              defaultMode={accessType}
               singleStoreOnly={singleStoreOnly}
             />
-          )}
+          </div>
+        )}
 
-          {step === "assignments" && (
-            <div className="flex-1 min-h-0 flex flex-col">
-              <AccessPanel
-                picks={picks}
-                onPicksChange={setPicks}
-                companyGroups={companyGroups}
-                onCompanyGroupsChange={setCompanyGroups}
-                groupStores={groupStores}
-                onGroupStoresChange={setGroupStores}
-                defaultMode={accessType}
-                singleStoreOnly={singleStoreOnly}
-              />
-            </div>
-          )}
+        {step === "review" && (
+          <StepReview
+            picks={picks}
+            companyIds={sets.companyIds}
+            companyGroups={companyGroups}
+            groupStores={groupStores}
+            onGoTo={goTo}
+          />
+        )}
+      </div>
 
-          {step === "review" && (
-            <StepReview
-              picks={picks}
-              companyIds={sets.companyIds}
-              companyGroups={companyGroups}
-              groupStores={groupStores}
-            />
+      {/* Sticky, because the assignments step is taller than the panel and
+          the way forward should not be below the fold of a scroll area. */}
+      <div className="sticky bottom-0 flex flex-wrap items-center justify-between gap-3 px-4 py-3 -mx-4 mt-3 bg-custom-white border-t border-gray-100 flex-shrink-0">
+        <button
+          onClick={onCancel}
+          className="text-[12px] font-semibold px-2 py-1.5 rounded-md text-brand_navy hover:bg-gray-50"
+        >
+          Cancel
+        </button>
+        <div className="flex items-center gap-2.5">
+          <span className="text-[11.5px] text-content/85">
+            Step {at + 1} of {STEP_ORDER.length}
+          </span>
+          {at > 0 && (
+            <button
+              onClick={back}
+              disabled={saving}
+              className="text-[12px] font-medium px-3.5 py-1.5 rounded-md border border-brand_line text-content hover:bg-gray-50"
+            >
+              Back
+            </button>
           )}
+          <button
+            onClick={isLast ? handleCreate : advance}
+            disabled={!canAdvance || saving || stranded !== null}
+            className={`text-[12px] font-medium px-4 py-1.5 rounded-md text-custom-white ${
+              canAdvance && !saving && stranded === null
+                ? "bg-brand_navy hover:bg-brand_navy/85"
+                : "bg-gray-300 cursor-not-allowed"
+            }`}
+          >
+            {isLast ? (saving ? "Creating…" : "Create user") : "Continue"}
+          </button>
         </div>
       </div>
     </div>

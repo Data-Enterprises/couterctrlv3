@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useOrganizationCtx } from "../../hooks";
 import { useToast } from "../../../../../components/toasts/hooks/useToast";
 import {
@@ -17,6 +17,7 @@ import TextFilter from "../../../../../components-dev/filters/TextFilter";
 import SelectFilter from "../../../../../components-dev/filters/SelectFilter";
 import Checkbox from "../../../../../components-dev/Checkbox";
 import GrantModeChip from "./GrantModeChip";
+import EmptyPicksNotice from "./EmptyPicksNotice";
 
 interface AccessPanelProps {
   picks: AccessPicks;
@@ -45,6 +46,22 @@ interface AccessPanelProps {
   onGroupStoresChange: (
     updater: (prev: Record<number, Store[]>) => Record<number, Store[]>,
   ) => void;
+  /**
+   * A fourth column inside the same card — Edit user puts the effective store
+   * list there.
+   *
+   * In the card rather than beside it because it is the consequence of the
+   * three columns to its left, and a reader comparing "what I ticked" against
+   * "what that adds up to" should not be crossing a gap between two panels to
+   * do it.
+   */
+  rightColumn?: ReactNode;
+  /** Hide the built-in summary strip, for a caller supplying its own footer
+   *  with the Save button in it. */
+  hideFooter?: boolean;
+  /** Hide the empty-picks notice, for a caller placing its own higher up the
+   *  screen where a warning is read before the thing it warns about. */
+  hideEmptyNotice?: boolean;
 }
 
 /**
@@ -81,6 +98,9 @@ const AccessPanel = ({
   defaultMode = "selected",
   groupStores,
   onGroupStoresChange,
+  rightColumn,
+  hideFooter = false,
+  hideEmptyNotice = false,
 }: AccessPanelProps) => {
   const toast = useToast();
   const ctx = useOrganizationCtx();
@@ -580,10 +600,20 @@ const AccessPanel = ({
                           (sel) => sel.storeid === s.storeid,
                         );
                         return preview ? (
+                          // Ticked and disabled, not plain text. Every store
+                          // here IS included — an unticked row beside a held
+                          // group reads as "not granted", which is the
+                          // opposite of what Auto means.
                           <div
                             key={s.storeid}
                             className="flex items-center gap-2 py-1.5 px-1 text-[12px] text-content/85"
                           >
+                            <Checkbox
+                              checked
+                              disabled
+                              onChange={() => undefined}
+                              ariaLabel={`${s.store_name} is included automatically`}
+                            />
                             <span className="tabular-nums font-semibold w-[42px] flex-shrink-0">
                               {s.store_number}
                             </span>
@@ -618,23 +648,25 @@ const AccessPanel = ({
             })}
           </div>
         </div>
+
+        {rightColumn && (
+          <div className="w-[300px] flex-shrink-0 border-l border-gray-100 hidden xl:flex flex-col min-h-0">
+            {rightColumn}
+          </div>
+        )}
       </div>
 
-      {emptyPicks.length > 0 && (
-        <div className="mt-2 px-3 py-2 rounded-lg bg-brand_danger_bg border border-brand_danger_line flex-shrink-0">
-          <span className="text-[11.5px] text-content">
-            <span className="font-semibold">
-              {emptyPicks
-                .map((id) => groupsById[id]?.name ?? `Group ${id}`)
-                .join(", ")}
-            </span>{" "}
-            {emptyPicks.length === 1 ? "is" : "are"} set to pick stores with
-            none picked. Pick at least one store, switch to Auto, or untick the
-            group.
-          </span>
+      {!hideEmptyNotice && (
+        <div className="mt-2">
+          <EmptyPicksNotice
+            labels={emptyPicks.map(
+              (id) => groupsById[id]?.name ?? `Group ${id}`,
+            )}
+          />
         </div>
       )}
 
+      {!hideFooter && (
       <div className="bg-bkg rounded-lg px-3 py-2.5 mt-3 shadow-card-sm">
         <div className="flex items-center justify-between mb-1">
           <span className="text-[12px] font-semibold text-content">
@@ -675,6 +707,7 @@ const AccessPanel = ({
           </div>
         )}
       </div>
+      )}
     </div>
   );
 };

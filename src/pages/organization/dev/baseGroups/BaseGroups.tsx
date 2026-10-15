@@ -135,7 +135,8 @@ const BaseGroups = () => {
     getBaseGroupsAssignedToUser(ctx.url, ctx.token, ctx.userid)
       .then((resp) => {
         const j = resp.data;
-        setMyGroups(j.error === 0 ? ((j.groups ?? []) as BaseGroup[]) : []);
+        // The held half. `inactive` is every other group in their companies.
+        setMyGroups(j.error === 0 ? ((j.active ?? []) as BaseGroup[]) : []);
       })
       .catch((err: JsonError) =>
         toast.error("Error fetching your base groups " + err.message),

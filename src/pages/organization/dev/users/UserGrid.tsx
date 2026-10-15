@@ -207,17 +207,15 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
         return;
       }
 
-      // `base_groups_assigned_to_user` returns one `groups` list with an
-      // `active` flag per row, not the active/inactive pair its `_split` twin
-      // returns. Reading `.active` as an array threw on every duplicate, and
-      // the catch below reported it as "could not load".
-      const groups = ((bgJson.groups ?? []) as BaseGroup[])
-        .filter((g) => g.active === 1)
-        .map((g) => ({
-          id: g.id,
-          name: g.name,
-          company: g.company,
-        }));
+      // `active` is the held half of the split, which is what a duplicate
+      // copies. (This read `.active` all along and was right to; a previous
+      // pass "fixed" it to `.groups` on the mistaken belief that this call
+      // hits the unsplit endpoint. It does not.)
+      const groups = ((bgJson.active ?? []) as BaseGroup[]).map((g) => ({
+        id: g.id,
+        name: g.name,
+        company: g.company,
+      }));
       const assignedStores: Store[] = storesJson.assigned_stores.filter(
         (s: Store) => s.store_name != null,
       );

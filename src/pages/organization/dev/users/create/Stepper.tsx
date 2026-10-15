@@ -1,17 +1,17 @@
 import { CheckIcon } from "@heroicons/react/20/solid";
-import {
-  STEP_ORDER,
-  STEP_TITLE,
-  type WizardStep,
-} from "./wizardSteps";
+import { STEP_ORDER, STEP_TITLE, type WizardStep } from "./wizardSteps";
 
 /**
- * The wizard's left rail.
+ * The four steps, across the top.
  *
- * A completed step is clickable and an upcoming one is not: going back to
- * change an answer is normal, and skipping ahead past a step that gates the
- * next one is not. The rail is the only way back, so it stays visible on
- * every step rather than being replaced by a Back button alone.
+ * Horizontal rather than a side rail: it is a progress indicator, and the
+ * thing a reader wants from it — how far along, how much left — is read along
+ * a line. A rail down the side spends a column of the widest screen in the
+ * app on four words.
+ *
+ * A finished step is clickable and an unreached one is not. Going back to
+ * change an answer is normal; skipping ahead past a step that gates the next
+ * one is not.
  */
 const Stepper = ({
   current,
@@ -24,53 +24,61 @@ const Stepper = ({
   furthest: WizardStep;
   onGoTo: (step: WizardStep) => void;
 }) => {
-  const index = (s: WizardStep) => STEP_ORDER.indexOf(s);
-  const currentAt = index(current);
-  const furthestAt = index(furthest);
+  const currentAt = STEP_ORDER.indexOf(current);
+  const furthestAt = STEP_ORDER.indexOf(furthest);
 
   return (
-    <div className="flex flex-col gap-0.5">
+    <ol className="flex flex-wrap items-center gap-3 bg-custom-white rounded-lg shadow-card px-5 py-3 list-none m-0">
       {STEP_ORDER.map((step, i) => {
         const done = i < currentAt;
         const isCurrent = step === current;
         const reachable = i <= furthestAt;
         return (
-          <button
+          <li
             key={step}
-            onClick={() => reachable && onGoTo(step)}
-            disabled={!reachable}
-            className={`flex items-center gap-2 px-2 py-1.5 rounded-lg text-left transition-colors ${
-              isCurrent
-                ? "bg-custom-white shadow-card-sm"
-                : reachable
-                  ? "hover:bg-custom-white/60"
-                  : "cursor-default"
-            }`}
+            className="flex items-center gap-2.5 flex-1 min-w-[150px]"
           >
-            <span
-              className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 border ${
-                done || isCurrent
-                  ? "bg-brand_navy border-brand_navy text-custom-white"
-                  : "bg-custom-white border-brand_line_2 text-content/85"
+            <button
+              onClick={() => reachable && onGoTo(step)}
+              disabled={!reachable}
+              aria-current={isCurrent ? "step" : undefined}
+              className={`flex items-center gap-2.5 ${
+                reachable && !isCurrent ? "hover:opacity-85" : "cursor-default"
               }`}
             >
-              {done ? <CheckIcon className="w-3 h-3" /> : i + 1}
-            </span>
-            <span
-              className={`text-[12px] whitespace-nowrap ${
-                isCurrent
-                  ? "font-semibold text-content"
-                  : reachable
-                    ? "font-medium text-content"
-                    : "font-medium text-content/85"
-              }`}
-            >
-              {STEP_TITLE[step]}
-            </span>
-          </button>
+              <span
+                className={`w-7 h-7 rounded-full flex items-center justify-center text-[12.5px] font-bold flex-shrink-0 border-2 ${
+                  done || isCurrent
+                    ? "bg-brand_navy border-brand_navy text-custom-white"
+                    : "bg-custom-white border-brand_line_2 text-content/85"
+                }`}
+              >
+                {done ? <CheckIcon className="w-4 h-4" /> : i + 1}
+              </span>
+              <span
+                className={`text-[12.5px] whitespace-nowrap ${
+                  isCurrent
+                    ? "font-bold text-content"
+                    : done
+                      ? "font-semibold text-content"
+                      : "font-medium text-content/85"
+                }`}
+              >
+                {STEP_TITLE[step]}
+              </span>
+            </button>
+            {i < STEP_ORDER.length - 1 && (
+              <span
+                aria-hidden="true"
+                className={`flex-1 min-w-[16px] h-0.5 rounded-full ${
+                  done ? "bg-brand_navy" : "bg-brand_line_2"
+                }`}
+              />
+            )}
+          </li>
         );
       })}
-    </div>
+    </ol>
   );
 };
 
