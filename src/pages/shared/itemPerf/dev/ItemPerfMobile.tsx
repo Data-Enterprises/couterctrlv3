@@ -613,9 +613,9 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
         <span className="flex-none font-display text-[13px] font-bold tabular-nums text-content">
           {pct(r.gpm)}
         </span>
-        <ChevronRightIcon className="h-4 w-4 flex-none text-content/85" />
+        <ChevronRightIcon className="h-4 w-4 flex-none text-content/95" />
       </div>
-      <div className="mt-0.5 truncate text-[11px] tabular-nums text-content/85">
+      <div className="mt-0.5 truncate text-[11px] tabular-nums text-content/95">
         {r.sub} · {formatCurrency2(r.sales)}
       </div>
     </button>
@@ -713,7 +713,7 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
           than overlap again. */}
       <div className="grid grid-cols-3 items-end gap-2">
         <div className="flex min-w-0 flex-col">
-          <span className="mb-1 font-mono text-[9.5px] uppercase tracking-wider text-content/85">
+          <span className="mb-1 font-mono text-[9.5px] uppercase tracking-wider text-content/95">
             TY margin
           </span>
           <span className="truncate font-display text-[20px] font-extrabold leading-none tracking-tight text-content">
@@ -721,11 +721,11 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
           </span>
         </div>
         <div className="flex min-w-0 flex-col pb-0.5">
-          <span className="mb-1 font-mono text-[9.5px] uppercase tracking-wider text-content/85">
+          <span className="mb-1 font-mono text-[9.5px] uppercase tracking-wider text-content/95">
             LY margin
           </span>
           {/* No record isn't a 0% margin. */}
-          <span className="truncate font-display text-[17px] font-bold leading-none tracking-tight text-content/85">
+          <span className="truncate font-display text-[17px] font-bold leading-none tracking-tight text-content/95">
             {cardNoLy ? "no history" : pct(totals.gpmLy)}
           </span>
         </div>
@@ -737,7 +737,7 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
             already the only one it could be. */}
         {totals.gpm !== null && totals.gpmLy !== null && (
           <div className="flex min-w-0 flex-col items-end pb-0.5">
-            <span className="mb-1 font-mono text-[9.5px] uppercase tracking-wider text-content/85">
+            <span className="mb-1 font-mono text-[9.5px] uppercase tracking-wider text-content/95">
               +/-
             </span>
             <PerfDelta
@@ -752,7 +752,7 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
       </div>
 
       <div className="mt-3">
-        <div className="mb-1.5 flex items-baseline justify-between font-mono text-[10px] uppercase tracking-wider text-content/85">
+        <div className="mb-1.5 flex items-baseline justify-between font-mono text-[10px] uppercase tracking-wider text-content/95">
           <span>Sales</span>
           <span>
             {selectedItem
@@ -787,12 +787,12 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
           { k: "LY cost", v: totals.cogsLy, ly: true },
         ].map(({ k, v, ly }) => (
           <div key={k} className="flex flex-col items-center text-center">
-            <span className="font-mono text-[9.5px] uppercase tracking-wider text-content/85">
+            <span className="font-mono text-[9.5px] uppercase tracking-wider text-content/95">
               {k}
             </span>
             <span
               className={`font-display text-[15px] font-bold ${
-                ly ? "text-content/85" : "text-content"
+                ly ? "text-content/95" : "text-content"
               }`}
             >
               {ly && cardNoLy ? "no history" : formatCurrency2(v)}
@@ -816,7 +816,7 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
       {withQuery && (
         <div className="border-b border-brand_line px-3.5 py-2">
           <div className="flex items-center gap-2 rounded-lg bg-bkg px-3">
-            <MagnifyingGlassIcon className="h-4 w-4 flex-none text-content/85" />
+            <MagnifyingGlassIcon className="h-4 w-4 flex-none text-content/95" />
             <input
               id="item-perf-list-filter"
               value={perf.itemQuery}
@@ -837,7 +837,7 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
                 type="button"
                 onClick={() => dispatch(setItemQuery(""))}
                 aria-label="Clear filter"
-                className="-mr-1 flex h-7 w-7 flex-none items-center justify-center rounded-full text-content/85 active:bg-custom-white"
+                className="-mr-1 flex h-7 w-7 flex-none items-center justify-center rounded-full text-content/95 active:bg-custom-white"
               >
                 <BackspaceIcon className="h-4 w-4" />
               </button>
@@ -880,7 +880,7 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
         dir={activeSortDir}
         onChange={onSort}
       />
-      <p className="border-b border-brand_line px-3.5 py-1.5 font-mono text-[10px] uppercase tracking-wider text-content/85">
+      <p className="border-b border-brand_line px-3.5 py-1.5 font-mono text-[10px] uppercase tracking-wider text-content/95">
         Bars: sales, TY vs {cmpShort(basis)}
       </p>
       {listPartial && (
@@ -892,7 +892,7 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
         // Held back 200ms by the animation delay, so the quick transitions
         // this also covers never flash a spinner.
         <div
-          className="flex items-center justify-center gap-2 px-4 py-10 text-[12.5px] text-content/85"
+          className="flex items-center justify-center gap-2 px-4 py-10 text-[12.5px] text-content/95"
           style={{ animation: "delayed-fade-in 140ms ease-out 200ms both" }}
         >
           <span
@@ -902,7 +902,7 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
           Building the list...
         </div>
       ) : shown.length === 0 ? (
-        <div className="px-4 py-8 text-center text-[12.5px] text-content/85">
+        <div className="px-4 py-8 text-center text-[12.5px] text-content/95">
           {emptyText}
           {/* A scan is scoped to the list it was made in, so on Vendors and
               Categories especially it can miss an item the store really does
@@ -935,9 +935,9 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
                 <span className="flex-none font-display text-[13px] font-bold text-content">
                   {pct(r.gpm)}
                 </span>
-                <ChevronRightIcon className="h-4 w-4 flex-none text-content/85" />
+                <ChevronRightIcon className="h-4 w-4 flex-none text-content/95" />
               </div>
-              <div className="mt-0.5 truncate text-[11px] text-content/85">
+              <div className="mt-0.5 truncate text-[11px] text-content/95">
                 {r.sub}
               </div>
               <div className="mt-2">
@@ -966,7 +966,7 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
             "en-US",
           )}{" "}
           more
-          <span className="text-content/85">
+          <span className="text-content/95">
             {" "}
             · {(visibleRows.length - shown.length).toLocaleString("en-US")} left
           </span>
@@ -1011,7 +1011,7 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
                 {["Day", "Sales", "Qty", "GPM"].map((h, i) => (
                   <th
                     key={h}
-                    className={`border-b border-brand_line px-2 py-2 font-mono text-[9.5px] font-semibold uppercase tracking-wider text-content/85 ${
+                    className={`border-b border-brand_line px-2 py-2 font-mono text-[9.5px] font-semibold uppercase tracking-wider text-content/95 ${
                       i === 0 ? "pl-3.5 text-left" : "text-right"
                     }`}
                   >
@@ -1039,10 +1039,10 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
                       </td>
                       {/* A dash, not a zero: the item did not sell that day,
                           which is not the same as selling nothing. */}
-                      <td className="px-2 pb-1 pt-2.5 text-right text-content/85">
+                      <td className="px-2 pb-1 pt-2.5 text-right text-content/95">
                         {d.absent ? "—" : formatCurrency2(d.sales)}
                       </td>
-                      <td className="px-2 pb-1 pt-2.5 text-right text-content/85">
+                      <td className="px-2 pb-1 pt-2.5 text-right text-content/95">
                         {d.absent ? "—" : d.units.toLocaleString("en-US")}
                       </td>
                       <td className="px-2 pb-1 pt-2.5 pr-3.5 text-right font-bold text-content">
@@ -1091,7 +1091,7 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
           <p className="font-display text-[15px] font-bold text-content">
             Find an item
           </p>
-          <p className="font-mono text-[11px] tracking-tight text-content/85">
+          <p className="font-mono text-[11px] tracking-tight text-content/95">
             Anywhere in the store · {windowLabel}
           </p>
 
@@ -1148,7 +1148,7 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
                 type="button"
                 onClick={() => dispatch(setItemQuery(""))}
                 aria-label="Clear"
-                className="flex-none rounded-lg bg-bkg px-3 text-content/85"
+                className="flex-none rounded-lg bg-bkg px-3 text-content/95"
               >
                 <BackspaceIcon className="h-[18px] w-[18px]" />
               </button>
@@ -1169,7 +1169,7 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
                 of every item in the store is not a useful thing to land on. */}
             {!query && recents.length > 0 && (
               <section className="overflow-hidden rounded-2xl border border-gray-200 bg-custom-white shadow-md">
-                <div className="px-3.5 pb-1 pt-3 font-mono text-[9.5px] uppercase tracking-wider text-content/85">
+                <div className="px-3.5 pb-1 pt-3 font-mono text-[9.5px] uppercase tracking-wider text-content/95">
                   Recent items
                 </div>
                 {recents.slice(0, RECENTS_INLINE).map(recentRow)}
@@ -1191,7 +1191,7 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
                 <p className="text-[13px] font-semibold text-content">
                   Search the whole store
                 </p>
-                <p className="mt-1 text-[12px] text-content/85">
+                <p className="mt-1 text-[12px] text-content/95">
                   Type a name or UPC, or scan a barcode. Results carry the
                   department they came from.
                 </p>
@@ -1209,7 +1209,7 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
 
         {perf.recentsOpen && (
           <BottomSheet onClose={() => dispatch(setRecentsOpen(false))}>
-            <div className="px-4 pb-1 pt-2 font-mono text-[9.5px] uppercase tracking-wider text-content/85">
+            <div className="px-4 pb-1 pt-2 font-mono text-[9.5px] uppercase tracking-wider text-content/95">
               Recent items
             </div>
             {recents.map(recentRow)}
@@ -1289,7 +1289,7 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
             onClick={() => dispatch(openItemSearch(true))}
             className="flex items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-custom-white py-3 text-[12.5px] font-bold text-content shadow-md active:bg-bkg"
           >
-            <MagnifyingGlassIcon className="h-4 w-4 text-content/85" />
+            <MagnifyingGlassIcon className="h-4 w-4 text-content/95" />
             Find an item or scan
           </button>
 
@@ -1303,7 +1303,7 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
             />
             <div className="px-3.5 py-2">
               <div className="flex items-center gap-2 rounded-lg bg-bkg px-3">
-                <MagnifyingGlassIcon className="h-4 w-4 flex-none text-content/85" />
+                <MagnifyingGlassIcon className="h-4 w-4 flex-none text-content/95" />
                 <input
                   id="item-perf-group-filter"
                   value={groupFilter}
@@ -1324,7 +1324,7 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
                     type="button"
                     onClick={() => setGroupFilter("")}
                     aria-label="Clear filter"
-                    className="-mr-1 flex h-7 w-7 flex-none items-center justify-center rounded-full text-content/85 active:bg-custom-white"
+                    className="-mr-1 flex h-7 w-7 flex-none items-center justify-center rounded-full text-content/95 active:bg-custom-white"
                   >
                     <BackspaceIcon className="h-4 w-4" />
                   </button>
@@ -1335,13 +1335,13 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
 
           {building ? (
             <section
-              className="rounded-2xl border border-gray-200 bg-custom-white px-4 py-10 text-center text-[12.5px] text-content/85 shadow-md"
+              className="rounded-2xl border border-gray-200 bg-custom-white px-4 py-10 text-center text-[12.5px] text-content/95 shadow-md"
               style={{ animation: "delayed-fade-in 140ms ease-out 200ms both" }}
             >
               Building the list...
             </section>
           ) : shown.length === 0 ? (
-            <section className="rounded-2xl border border-gray-200 bg-custom-white px-4 py-8 text-center text-[12.5px] text-content/85 shadow-md">
+            <section className="rounded-2xl border border-gray-200 bg-custom-white px-4 py-8 text-center text-[12.5px] text-content/95 shadow-md">
               {groupFilter.trim()
                 ? `Nothing matches "${groupFilter.trim()}".`
                 : "Nothing recorded for this selection."}
@@ -1381,7 +1381,7 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
                           selected={listFor.day}
                           onToggle={(iso) => dispatch(toggleItemPerfDay(iso))}
                         />
-                        <div className="mt-1 flex flex-wrap gap-x-3.5 gap-y-1 px-1 text-[12px] text-content/85">
+                        <div className="mt-1 flex flex-wrap gap-x-3.5 gap-y-1 px-1 text-[12px] text-content/95">
                           <span className="inline-flex items-center gap-1.5">
                             <span
                               className="h-2 w-3.5 rounded-sm"
@@ -1397,7 +1397,7 @@ const ItemPerfMobile = ({ dimension, title, listLabel }: Props) => {
                             {weekNoLy ? `${cmpWord(basis)}: no history` : cmpWord(basis)}
                           </span>
                         </div>
-                        <p className="px-1 pt-1 text-[12px] text-content/85">
+                        <p className="px-1 pt-1 text-[12px] text-content/95">
                           {perf.selectedDay
                             ? "Tap the selected day again for the full week."
                             : "Tap a day to scope this department to it."}

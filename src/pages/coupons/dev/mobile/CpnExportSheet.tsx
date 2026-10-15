@@ -137,7 +137,7 @@ const CpnExportSheet = ({ onClose, title, subtitle, rows }: CpnExportSheetProps)
   const StoreFilter = () => (
     <div>
       <div className="flex items-center justify-between mb-2">
-        <div className="text-[10px] font-semibold uppercase tracking-wide text-content/85">Stores</div>
+        <div className="text-[10px] font-semibold uppercase tracking-wide text-content/95">Stores</div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setSelectedStores(new Set(uniqueStores.map((s) => s.number)))}
@@ -146,7 +146,7 @@ const CpnExportSheet = ({ onClose, title, subtitle, rows }: CpnExportSheetProps)
           >
             All
           </button>
-          <span className="text-[10px] text-content/40">·</span>
+          <span className="text-[10px] text-content/95">·</span>
           <button
             onClick={() => setSelectedStores(new Set())}
             disabled={noneSelected}
@@ -166,7 +166,7 @@ const CpnExportSheet = ({ onClose, title, subtitle, rows }: CpnExportSheetProps)
               className="accent-brand_navy h-3.5 w-3.5 rounded flex-shrink-0"
             />
             <span className="text-[12px] text-content truncate flex-1">{s.name}</span>
-            <span className="text-[10px] text-content/85 flex-shrink-0">#{s.number}</span>
+            <span className="text-[10px] text-content/95 flex-shrink-0">#{s.number}</span>
           </label>
         ))}
       </div>
@@ -178,7 +178,7 @@ const CpnExportSheet = ({ onClose, title, subtitle, rows }: CpnExportSheetProps)
       <div className="flex items-center justify-between px-4 pb-3 border-b border-gray-100">
         <div className="min-w-0">
           <div className="text-[13px] font-bold text-content">Export CSV</div>
-          <div className="text-[10px] text-content/85 mt-0.5 truncate">{subtitle}</div>
+          <div className="text-[10px] text-content/95 mt-0.5 truncate">{subtitle}</div>
         </div>
         <div className="flex items-center gap-0.5 bg-content/5 rounded-md p-0.5 flex-shrink-0">
           {(["presets", "custom"] as ModalMode[]).map((m) => (
@@ -186,7 +186,7 @@ const CpnExportSheet = ({ onClose, title, subtitle, rows }: CpnExportSheetProps)
               key={m}
               onClick={() => setMode(m)}
               className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors ${
-                mode === m ? "bg-brand_navy text-custom-white" : "text-content/85"
+                mode === m ? "bg-brand_navy text-custom-white" : "text-content/95"
               }`}
             >
               {m === "presets" ? "Presets" : "Custom"}
@@ -202,7 +202,7 @@ const CpnExportSheet = ({ onClose, title, subtitle, rows }: CpnExportSheetProps)
             <input type="checkbox" checked readOnly className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 accent-brand_navy flex-shrink-0" />
             <div>
               <div className="text-[13px] font-medium text-content">Coupon Records</div>
-              <div className="text-[11px] text-content/85 mt-0.5">
+              <div className="text-[11px] text-content/95 mt-0.5">
                 {filteredRows.length} rows
                 {isMultiStore && selectedStores.size < uniqueStores.length ? ` · ${selectedStores.size} of ${uniqueStores.length} stores` : ""}
                 {" · "}{title}
@@ -214,7 +214,7 @@ const CpnExportSheet = ({ onClose, title, subtitle, rows }: CpnExportSheetProps)
         <div className="px-4 py-4 space-y-5 max-h-[50vh] overflow-y-auto thin-scrollbar">
           {isMultiStore && <StoreFilter />}
           <div>
-            <div className="text-[10px] font-semibold uppercase tracking-wide text-content/85 mb-2">Group By</div>
+            <div className="text-[10px] font-semibold uppercase tracking-wide text-content/95 mb-2">Group By</div>
             <div className="space-y-2">
               {DIMS.map((d) => (
                 <label key={d.key} className="flex items-center gap-2">
@@ -230,7 +230,7 @@ const CpnExportSheet = ({ onClose, title, subtitle, rows }: CpnExportSheetProps)
             </div>
           </div>
           <div>
-            <div className="text-[10px] font-semibold uppercase tracking-wide text-content/85 mb-2">Metrics</div>
+            <div className="text-[10px] font-semibold uppercase tracking-wide text-content/95 mb-2">Metrics</div>
             <div className="space-y-2">
               {METRICS.map((m) => {
                 const sel = metrics.get(m.key)!;
@@ -242,7 +242,7 @@ const CpnExportSheet = ({ onClose, title, subtitle, rows }: CpnExportSheetProps)
                       onChange={() => toggleMetric(m.key)}
                       className="accent-brand_navy h-3.5 w-3.5 rounded flex-shrink-0"
                     />
-                    <span className={`text-[12px] flex-1 ${sel.enabled ? "text-content" : "text-content/85"}`}>{m.label}</span>
+                    <span className={`text-[12px] flex-1 ${sel.enabled ? "text-content" : "text-content/95"}`}>{m.label}</span>
                     <select
                       value={sel.fn}
                       disabled={!sel.enabled}
@@ -260,7 +260,7 @@ const CpnExportSheet = ({ onClose, title, subtitle, rows }: CpnExportSheetProps)
               })}
             </div>
           </div>
-          <div className="text-[10px] text-content/85">
+          <div className="text-[10px] text-content/95">
             {columns.length === 0
               ? "Select at least one group-by or metric"
               : `${aggRows.length} row${aggRows.length === 1 ? "" : "s"} will be exported`}
@@ -269,7 +269,7 @@ const CpnExportSheet = ({ onClose, title, subtitle, rows }: CpnExportSheetProps)
       )}
 
       <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
-        <button onClick={onClose} className="text-[12px] text-content/85">
+        <button onClick={onClose} className="text-[12px] text-content/95">
           Cancel
         </button>
         <button

@@ -68,7 +68,7 @@ const PerfStoreReport = ({
         selected={selectedDay}
         onToggle={onToggleDay}
       />
-      <div className="mt-1 flex gap-3.5 px-1 text-[12px] text-content/85">
+      <div className="mt-1 flex gap-3.5 px-1 text-[12px] text-content/95">
         <span className="inline-flex items-center gap-1.5">
           <span
             className="h-2 w-3.5 rounded-sm"
@@ -86,7 +86,7 @@ const PerfStoreReport = ({
           {noLy ? `${cmpWord(basis)}: no history` : cmpWord(basis)}
         </span>
       </div>
-      <p className="px-1 pt-1 text-[12px] text-content/85">
+      <p className="px-1 pt-1 text-[12px] text-content/95">
         {selectedDay
           ? "Tap the selected day again for the full week."
           : "Tap a day to scope this store to it."}
@@ -144,7 +144,7 @@ const PerfStoreReport = ({
           ] as const
         ).map(([k, v, fromBundle]) => (
           <div key={k} className="flex flex-col items-center text-center">
-            <span className="font-mono text-[9.5px] uppercase tracking-wider text-content/85">
+            <span className="font-mono text-[9.5px] uppercase tracking-wider text-content/95">
               {k}
             </span>
             {fromBundle && bundleLoading ? (
@@ -178,7 +178,7 @@ const PerfStoreReport = ({
                   className="h-2 w-2 flex-none rounded-sm"
                   style={{ background: COUPON_COLORS[k] }}
                 />
-                <span className="flex-1 truncate text-content/85">
+                <span className="flex-1 truncate text-content/95">
                   {COUPON_LABELS[k]}
                 </span>
                 <span className="block h-[13px] w-12 animate-pulse rounded bg-gray-200" />
@@ -210,7 +210,7 @@ const PerfStoreReport = ({
             {COUPON_KEYS.map((k) => (
               <div
                 key={k}
-                className="flex items-center gap-1.5 text-[12px] text-content/85"
+                className="flex items-center gap-1.5 text-[12px] text-content/95"
               >
                 <span
                   className="h-2 w-2 flex-none rounded-sm"
@@ -236,7 +236,7 @@ const PerfStoreReport = ({
         onClick={onViewDetails}
         className={`mt-3 flex w-full items-center justify-center gap-1 rounded-lg border-t border-brand_line py-2.5 text-[12.5px] font-bold transition-colors ${
           bundleLoading
-            ? "bg-bkg text-content/85"
+            ? "bg-bkg text-content/95"
             : "bg-brand_navy text-custom-white active:bg-[#2a3a62]"
         }`}
       >

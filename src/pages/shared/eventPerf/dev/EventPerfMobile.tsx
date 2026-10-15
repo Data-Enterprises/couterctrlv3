@@ -520,7 +520,7 @@ const EventPerfMobile = ({
             className="mx-auto mb-3 h-7 w-7 animate-spin rounded-full border-2 border-gray-200"
             style={{ borderTopColor: TY_COLOR }}
           />
-          <div className="text-[12.5px] text-content/85">
+          <div className="text-[12.5px] text-content/95">
             {perf.loadingMessage || "Loading..."}
           </div>
         </div>
@@ -717,7 +717,7 @@ const EventPerfMobile = ({
             />
 
             <div className="px-4 pb-4 pt-2">
-              <div className="mt-1 text-[11px] font-semibold text-content/85">
+              <div className="mt-1 text-[11px] font-semibold text-content/95">
                 {heroCaption}
               </div>
               <div className="mt-1 flex flex-wrap items-baseline gap-x-2.5">
@@ -748,7 +748,7 @@ const EventPerfMobile = ({
                     format={fmt}
                     compact
                   />
-                  <p className="mt-1.5 text-[11px] text-content/85">
+                  <p className="mt-1.5 text-[11px] text-content/95">
                     WK {groupDayLabel ? "selected day" : "this week"} · AVG
                     prior 2-wk avg{groupDayLabel ? ", same weekday" : ""}
                   </p>
@@ -772,7 +772,7 @@ const EventPerfMobile = ({
                   ] as [string, string][]
                 ).map(([k, v]) => (
                   <div key={k} className="flex flex-col items-center text-center">
-                    <span className="font-mono text-[10px] uppercase tracking-wider text-content/85">
+                    <span className="font-mono text-[10px] uppercase tracking-wider text-content/95">
                       {k}
                     </span>
                     <span className="font-display text-[15px] font-bold text-content">
@@ -804,7 +804,7 @@ const EventPerfMobile = ({
                   selected={shownGroup.day}
                   onToggle={(iso) => dispatch(toggleEventGroupDay(iso))}
                 />
-                <div className="mt-1 flex gap-3.5 px-1 text-[12px] text-content/85">
+                <div className="mt-1 flex gap-3.5 px-1 text-[12px] text-content/95">
                   <span className="inline-flex items-center gap-1.5">
                     <span
                       className="h-2 w-3.5 rounded-sm"
@@ -820,7 +820,7 @@ const EventPerfMobile = ({
                     Prior 2-wk avg
                   </span>
                 </div>
-                <p className="px-1 pt-1 text-[12px] text-content/85">
+                <p className="px-1 pt-1 text-[12px] text-content/95">
                   {shownGroup.day
                     ? "Tap the selected day again for the full week."
                     : multiStore
@@ -858,7 +858,7 @@ const EventPerfMobile = ({
               />
               <div className="px-3.5 py-2">
                 <div className="flex items-center gap-2 rounded-lg bg-bkg px-3">
-                  <MagnifyingGlassIcon className="h-4 w-4 flex-none text-content/85" />
+                  <MagnifyingGlassIcon className="h-4 w-4 flex-none text-content/95" />
                   <input
                     id="event-store-filter"
                     value={storeFilter}
@@ -879,7 +879,7 @@ const EventPerfMobile = ({
                       type="button"
                       onClick={() => setStoreFilter("")}
                       aria-label="Clear filter"
-                      className="-mr-1 flex h-7 w-7 flex-none items-center justify-center rounded-full text-content/85 active:bg-custom-white"
+                      className="-mr-1 flex h-7 w-7 flex-none items-center justify-center rounded-full text-content/95 active:bg-custom-white"
                     >
                       <XMarkIcon className="h-4 w-4" />
                     </button>
@@ -893,13 +893,13 @@ const EventPerfMobile = ({
           {multiStore &&
             (listBuilding ? (
               <section
-                className="rounded-2xl border border-gray-200 bg-custom-white px-4 py-10 text-center text-[12.5px] text-content/85 shadow-md"
+                className="rounded-2xl border border-gray-200 bg-custom-white px-4 py-10 text-center text-[12.5px] text-content/95 shadow-md"
                 style={{ animation: "delayed-fade-in 140ms ease-out 200ms both" }}
               >
                 Building the list...
               </section>
             ) : listRows.length === 0 ? (
-              <section className="rounded-2xl border border-gray-200 bg-custom-white px-4 py-8 text-center text-[12.5px] text-content/85 shadow-md">
+              <section className="rounded-2xl border border-gray-200 bg-custom-white px-4 py-8 text-center text-[12.5px] text-content/95 shadow-md">
                 {storeFilter.trim()
                   ? `No store matches "${storeFilter.trim()}".`
                   : "Nothing recorded for this selection."}
@@ -984,7 +984,7 @@ const EventPerfMobile = ({
               style={{ color: TY_COLOR }}
             >
               Show {ROWS_PER_PAGE} more
-              <span className="text-content/85">
+              <span className="text-content/95">
                 {" "}
                 · {fmtInt(visibleStores.length - listRows.length)} left
               </span>
@@ -999,7 +999,7 @@ const EventPerfMobile = ({
             <h2 className="font-display text-[15px] font-bold text-content">
               Type
             </h2>
-            <p className="pb-2 pt-0.5 text-[12px] text-content/85">
+            <p className="pb-2 pt-0.5 text-[12px] text-content/95">
               Scopes the whole screen, including the stores below.
             </p>
             {/* Each row carries its own figures, so the choice is made from the
@@ -1023,7 +1023,7 @@ const EventPerfMobile = ({
                   <span className="min-w-0 flex-1 truncate font-display text-[13.5px] font-semibold text-content">
                     {lens ?? allLabel}
                   </span>
-                  <span className="flex-none text-[12px] text-content/85">
+                  <span className="flex-none text-[12px] text-content/95">
                     {measure === "amount"
                       ? `${fmtInt(t.transactions)} txns`
                       : formatCurrency2(t.amount)}
@@ -1072,12 +1072,12 @@ const Total = ({
 }) => (
   <div className="flex items-baseline gap-3 py-0.5">
     <span
-      className={`flex-1 font-mono uppercase tracking-wider ${strong ? "text-[12px] font-bold text-content" : "text-[11px] text-content/85"}`}
+      className={`flex-1 font-mono uppercase tracking-wider ${strong ? "text-[12px] font-bold text-content" : "text-[11px] text-content/95"}`}
     >
       {label}
     </span>
     <span
-      className={`flex-none font-mono tabular-nums ${strong ? "text-[14px] font-bold text-content" : "text-[12px] text-content/85"}`}
+      className={`flex-none font-mono tabular-nums ${strong ? "text-[14px] font-bold text-content" : "text-[12px] text-content/95"}`}
     >
       {value}
     </span>
@@ -1115,7 +1115,7 @@ const Receipt = ({
         <div className="font-mono text-[13px] font-bold uppercase tracking-wider text-content">
           {txn.storeName}
         </div>
-        <div className="mt-0.5 font-mono text-[11px] text-content/85">
+        <div className="mt-0.5 font-mono text-[11px] text-content/95">
           {[txn.cashierName, txn.terminal ? `Lane ${txn.terminal}` : "", when]
             .filter(Boolean)
             .join("  ·  ")}
@@ -1125,7 +1125,7 @@ const Receipt = ({
 
       <div className="mx-auto w-full max-w-md overflow-y-auto px-5 pb-6">
         {status === "loading" ? (
-          <div className="py-8 text-center font-mono text-[12px] text-content/85">
+          <div className="py-8 text-center font-mono text-[12px] text-content/95">
             Loading receipt...
           </div>
         ) : status === "error" ? (
@@ -1136,7 +1136,7 @@ const Receipt = ({
             again.
           </div>
         ) : lines.length === 0 ? (
-          <div className="py-8 text-center font-mono text-[12px] text-content/85">
+          <div className="py-8 text-center font-mono text-[12px] text-content/95">
             No lines came back for this transaction.
           </div>
         ) : (
@@ -1151,7 +1151,7 @@ const Receipt = ({
                 <span className="min-w-0 flex-1 font-mono text-[12px] uppercase leading-snug text-content">
                   {l.description}
                   {Math.abs(l.qty) !== 1 && l.qty !== 0 && (
-                    <span className="mt-0.5 block text-[11px] normal-case text-content/85">
+                    <span className="mt-0.5 block text-[11px] normal-case text-content/95">
                       {l.qty.toLocaleString("en-US")} @{" "}
                       {formatCurrency2(l.amount / l.qty)}
                     </span>

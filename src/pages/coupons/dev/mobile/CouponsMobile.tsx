@@ -268,7 +268,7 @@ const CouponsMobile = () => {
         <div className="bg-custom-white rounded-2xl shadow-lg p-4 flex flex-col gap-3">
           <div>
             <div className="text-[15px] font-bold text-content">Coupons</div>
-            <div className="text-[10px] text-content/85 mt-1">
+            <div className="text-[10px] text-content/95 mt-1">
               Select a store or group and date range to load coupon activity.
             </div>
           </div>

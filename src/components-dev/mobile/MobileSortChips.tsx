@@ -52,7 +52,7 @@ const MobileSortChips = <K extends string>({
     className="flex items-center gap-2 overflow-x-auto border-b border-brand_line py-2 pl-3.5"
   >
     {label && (
-      <span className="flex-shrink-0 font-mono text-[10px] uppercase tracking-wider text-content/85">
+      <span className="flex-shrink-0 font-mono text-[10px] uppercase tracking-wider text-content/95">
         {label}
       </span>
     )}
@@ -66,7 +66,7 @@ const MobileSortChips = <K extends string>({
         className={`flex-shrink-0 rounded-full border px-3 py-1 text-[11px] font-medium transition-colors ${
           value === o.key
             ? "border-brand_navy bg-brand_navy text-custom-white"
-            : "border-gray-200 bg-custom-white text-content/85"
+            : "border-gray-200 bg-custom-white text-content/95"
         }`}
       >
         {o.label}

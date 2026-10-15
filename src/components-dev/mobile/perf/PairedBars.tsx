@@ -67,7 +67,7 @@ const PairedBars = ({
 
   const bar = (label: string, value: number, colour: string) => (
     <div className="flex items-center gap-2">
-      <span className="w-5 flex-none font-mono text-[9.5px] font-semibold tracking-wider text-content/85">
+      <span className="w-5 flex-none font-mono text-[9.5px] font-semibold tracking-wider text-content/95">
         {label}
       </span>
       <span
@@ -103,10 +103,10 @@ const PairedBars = ({
       {bar(labels[0], ty, tyColour)}
       {lyUnavailable ? (
         <div className="flex items-center gap-2">
-          <span className="w-5 flex-none font-mono text-[9.5px] font-semibold tracking-wider text-content/85">
+          <span className="w-5 flex-none font-mono text-[9.5px] font-semibold tracking-wider text-content/95">
             {labels[1]}
           </span>
-          <span className="flex-1 text-[11px] text-content/85">
+          <span className="flex-1 text-[11px] text-content/95">
             no history on file
           </span>
         </div>

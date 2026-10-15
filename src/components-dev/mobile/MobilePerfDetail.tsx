@@ -80,7 +80,7 @@ const MobilePerfDetail = <K extends string>({
         <p className="truncate font-display text-[15px] font-bold text-content">
           {scopeName}
         </p>
-        <p className="font-mono text-[11px] tracking-tight text-content/85">
+        <p className="font-mono text-[11px] tracking-tight text-content/95">
           {when}
         </p>
 

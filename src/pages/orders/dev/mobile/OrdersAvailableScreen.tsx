@@ -174,7 +174,7 @@ const OrdersAvailableScreen = ({
                   className="w-full flex items-center gap-2 bg-brand_navy/5 hover:bg-brand_navy/10 px-4 py-2.5 transition-colors"
                 >
                   <ChevronRightIcon
-                    className="w-3 h-3 text-brand_navy/60 flex-shrink-0 transition-transform"
+                    className="w-3 h-3 text-brand_navy/95 flex-shrink-0 transition-transform"
                     style={{ transform: typeOpen ? "rotate(90deg)" : "rotate(0deg)" }}
                   />
                   <span className="text-[11px] font-semibold text-brand_navy uppercase tracking-wide flex-1 text-left">

@@ -77,7 +77,7 @@ const MobilePerfHeader = ({
         <span className="text-[12px] font-semibold text-custom-white truncate">
           {storeName}
         </span>
-        <span className="text-[11px] text-custom-white/85 flex-shrink-0">
+        <span className="text-[11px] text-custom-white/95 flex-shrink-0">
           {dateRange}
         </span>
       </div>
@@ -107,7 +107,7 @@ const MobilePerfHeader = ({
             <div className="flex items-center gap-1.5">
               {/* Generic label, matching desktop — the page name beside it
                   already says what is being graded. */}
-              <span className="text-[10px] text-custom-white/85">
+              <span className="text-[10px] text-custom-white/95">
                 Threshold
               </span>
               {threshold}

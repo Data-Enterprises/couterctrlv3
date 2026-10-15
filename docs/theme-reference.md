@@ -99,13 +99,18 @@ revision. Do not reintroduce them.
 
 ## 3. Opacity
 
-**Text never goes below `/85`.** This is the rule most easily broken by eye,
+**Text never goes below `/95`.** This is the rule most easily broken by eye,
 because 70% still looks readable on a bright monitor and does not on a phone in
 a store.
 
+Raised from `/85` in Oct 2026. The old floor was set against a monitor; at
+arm's length outdoors the difference between 85% and full strength is the
+difference between reading a figure and guessing it, and these screens are read
+standing in a shop.
+
 ```jsx
-text-content/85     ✓
-text-content/70     ✗
+text-content/95     ✓
+text-content/85     ✗
 ```
 
 Four exceptions, all of which the audit already skips:
@@ -125,7 +130,7 @@ Fills and borders may go below 85% freely — `border-brand_navy/15`,
 
 | Rule | Value |
 | --- | --- |
-| Text opacity floor | `/85` |
+| Text opacity floor | `/95` |
 | Font floor | `text-[10px]` for body; `text-[9.5px]` only for mono uppercase captions |
 | Italic | Never |
 | Severity chips on Performance pages | None. Mobile Performance does not grade. |

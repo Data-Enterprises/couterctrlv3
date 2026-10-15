@@ -192,7 +192,7 @@ const RcvReceiverList = ({
             key={label}
             className="px-2.5 py-1.5 border-r border-gray-100 last:border-r-0"
           >
-            <div className="text-[10px] font-semibold uppercase tracking-wide text-content/85">
+            <div className="text-[10px] font-semibold uppercase tracking-wide text-content/95">
               {label}
             </div>
             <div className="text-[12px] font-bold text-content mt-0.5 tabular-nums">
@@ -222,12 +222,12 @@ const RcvReceiverList = ({
                   {fmtDate(group.date)}
                 </span>
                 <div className="flex items-center gap-2 flex-shrink-0">
-                  <span className="text-[10px] text-content/85 tabular-nums">
+                  <span className="text-[10px] text-content/95 tabular-nums">
                     {group.items.length}{" "}
                     {group.items.length === 1 ? "invoice" : "invoices"}
                   </span>
                   <svg
-                    className="w-4 h-4 text-content/85 transition-transform"
+                    className="w-4 h-4 text-content/95 transition-transform"
                     style={{
                       transform: isOpen ? "rotate(90deg)" : "rotate(0deg)",
                     }}
@@ -252,11 +252,11 @@ const RcvReceiverList = ({
                       <div className="flex-1 min-w-0">
                         <div className="text-[12px] font-medium text-content truncate">
                           #{r.invoiceid}
-                          <span className="ml-2 text-[11px] text-content/85 truncate">
+                          <span className="ml-2 text-[11px] text-content/95 truncate">
                             {r.vendor_name}
                           </span>
                         </div>
-                        <div className="text-[10px] text-content/85 mt-0.5">
+                        <div className="text-[10px] text-content/95 mt-0.5">
                           {r.items} items
                         </div>
                       </div>
@@ -275,11 +275,11 @@ const RcvReceiverList = ({
             <div>
               <div className="text-[13px] font-bold text-content">
                 #{selectedReceiver.reference_number}
-                <span className="ml-2 text-[10px] font-normal text-content/85">
+                <span className="ml-2 text-[10px] font-normal text-content/95">
                   {selectedReceiver.cashier_name}
                 </span>
               </div>
-              <div className="text-[10px] text-content/85 mt-0.5">
+              <div className="text-[10px] text-content/95 mt-0.5">
                 {fmtDate(selectedReceiver.invoice_date)} ·{" "}
                 {selectedReceiver.items} items
               </div>
@@ -287,7 +287,7 @@ const RcvReceiverList = ({
             {details.length > 0 && (
               <button
                 onClick={handleExport}
-                className="flex items-center gap-1 px-2 py-1 rounded border border-gray-200 text-content/85 hover:text-content hover:border-gray-300 transition-colors flex-shrink-0"
+                className="flex items-center gap-1 px-2 py-1 rounded border border-gray-200 text-content/95 hover:text-content hover:border-gray-300 transition-colors flex-shrink-0"
               >
                 <ArrowDownTrayIcon className="w-3.5 h-3.5" />
                 <span className="text-[10px] font-medium">Export</span>
@@ -296,7 +296,7 @@ const RcvReceiverList = ({
           </div>
 
           {loadingDetails || details.length === 0 ? (
-            <div className="py-8 text-center text-[11px] text-content/85">
+            <div className="py-8 text-center text-[11px] text-content/95">
               {loadingDetails ? "Loading line items…" : "No line items"}
             </div>
           ) : (
@@ -328,7 +328,7 @@ const RcvReceiverList = ({
                     key={label}
                     className="px-2.5 py-1.5 border-r border-gray-100 last:border-r-0"
                   >
-                    <div className="text-[10px] font-semibold uppercase tracking-wide text-content/85">
+                    <div className="text-[10px] font-semibold uppercase tracking-wide text-content/95">
                       {label}
                     </div>
                     <div className="text-[11px] font-bold text-content mt-0.5 tabular-nums">
@@ -346,7 +346,7 @@ const RcvReceiverList = ({
                   (h, i) => (
                     <div
                       key={h}
-                      className={`text-[10px] font-semibold uppercase tracking-wide text-content/85 ${i > 0 ? "text-right" : ""}`}
+                      className={`text-[10px] font-semibold uppercase tracking-wide text-content/95 ${i > 0 ? "text-right" : ""}`}
                     >
                       {h}
                     </div>
@@ -365,7 +365,7 @@ const RcvReceiverList = ({
                       <div className="text-[10px] text-content truncate">
                         {item.product_description}
                       </div>
-                      <div className="text-[10px] text-content/85">
+                      <div className="text-[10px] text-content/95">
                         {item.product_code}
                       </div>
                     </div>
@@ -388,7 +388,7 @@ const RcvReceiverList = ({
               </div>
 
               <div className="flex items-center justify-between px-3 py-2 border-t border-gray-100 bg-gray-50">
-                <span className="text-[10px] text-content/85 tabular-nums">
+                <span className="text-[10px] text-content/95 tabular-nums">
                   {totals?.cases ?? details.reduce((s, d) => s + d.cases, 0)} cs
                   · {totals?.units ?? details.reduce((s, d) => s + d.units, 0)}{" "}
                   un

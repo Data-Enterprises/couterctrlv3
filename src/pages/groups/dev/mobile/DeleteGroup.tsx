@@ -99,7 +99,7 @@ const DeleteGroup = () => {
               <span className="font-medium">{selectedGroup.group_name}</span>
               <span>?</span>
             </div>
-            <div className="font-medium text-center text-content/60">
+            <div className="font-medium text-center text-content/95">
               Be advised, this action cannot be undone
             </div>
             <div className="grid grid-cols-2 gap-2 mt-4">

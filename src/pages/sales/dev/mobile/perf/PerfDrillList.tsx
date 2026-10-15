@@ -166,7 +166,7 @@ const PerfDrillList = ({
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center gap-2 px-4 py-10 text-[12.5px] text-content/85">
+      <div className="flex items-center justify-center gap-2 px-4 py-10 text-[12.5px] text-content/95">
         <span
           className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-gray-200"
           style={{ borderTopColor: TY_COLOR }}
@@ -194,7 +194,7 @@ const PerfDrillList = ({
               {openSubDept.label}
             </span>
             {!items.loading && (
-              <span className="flex-none text-[12px] text-content/85">
+              <span className="flex-none text-[12px] text-content/95">
                 {items.query.trim()
                   ? `${items.pairs.length} of ${items.total}`
                   : `${items.total} ${items.total === 1 ? "item" : "items"}`}
@@ -205,7 +205,7 @@ const PerfDrillList = ({
 
         <div className="border-b border-brand_line px-3.5 py-2">
           <div className="flex items-center gap-2 rounded-lg bg-bkg px-3">
-            <MagnifyingGlassIcon className="h-4 w-4 flex-none text-content/85" />
+            <MagnifyingGlassIcon className="h-4 w-4 flex-none text-content/95" />
             <input
               id={`perf-item-search-${openSubDept.id}`}
               value={items.query}
@@ -226,7 +226,7 @@ const PerfDrillList = ({
                 type="button"
                 onClick={() => items.onQuery("")}
                 aria-label="Clear search"
-                className="-mr-1 flex h-7 w-7 flex-none items-center justify-center rounded-full text-content/85 active:bg-custom-white"
+                className="-mr-1 flex h-7 w-7 flex-none items-center justify-center rounded-full text-content/95 active:bg-custom-white"
               >
                 <XMarkIcon className="h-4 w-4" />
               </button>
@@ -254,7 +254,7 @@ const PerfDrillList = ({
         )}
 
         {items.loading ? (
-          <div className="flex items-center justify-center gap-2 px-4 py-10 text-[12.5px] text-content/85">
+          <div className="flex items-center justify-center gap-2 px-4 py-10 text-[12.5px] text-content/95">
             <span
               className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-gray-200"
               style={{ borderTopColor: TY_COLOR }}
@@ -262,7 +262,7 @@ const PerfDrillList = ({
             Loading items...
           </div>
         ) : items.pairs.length === 0 ? (
-          <div className="px-4 py-8 text-center text-[12.5px] text-content/85">
+          <div className="px-4 py-8 text-center text-[12.5px] text-content/95">
             {items.query.trim()
               ? `Nothing matches "${items.query.trim()}".`
               : `No items sold ${shownDay ? "on this day" : "this week or last year"}.`}
@@ -282,11 +282,11 @@ const PerfDrillList = ({
                   <span className="min-w-0 flex-1 truncate font-display text-[13.5px] font-semibold text-content">
                     {p.label}
                   </span>
-                  <span className="flex-none text-[12px] font-semibold text-content/85">
+                  <span className="flex-none text-[12px] font-semibold text-content/95">
                     <PerfChange pct={change} format={fmtChange} />
                   </span>
                 </div>
-                <div className="font-mono text-[10px] tracking-wider text-content/85">
+                <div className="font-mono text-[10px] tracking-wider text-content/95">
                   {p.key}
                 </div>
                 <Bars ty={p.ty} ly={p.ly} noLy={p.noLy} max={itemMax} basis={items.basis} />
@@ -312,7 +312,7 @@ const PerfDrillList = ({
           and on the group card, where rows lead nowhere, its absence is the
           honest signal. */}
       {opensItems && (
-        <p className="border-b border-brand_line px-3.5 py-2.5 text-[12px] text-content/85">
+        <p className="border-b border-brand_line px-3.5 py-2.5 text-[12px] text-content/95">
           Open a sub department to see its items.
         </p>
       )}
@@ -324,7 +324,7 @@ const PerfDrillList = ({
       )}
 
       {pairs.length === 0 ? (
-        <div className="px-4 py-8 text-center text-[12.5px] text-content/85">
+        <div className="px-4 py-8 text-center text-[12.5px] text-content/95">
           Nothing recorded for this selection.
         </div>
       ) : (
@@ -353,11 +353,11 @@ const PerfDrillList = ({
                 {/* The figure the Change sort orders on, so that order can be
                     read off the rows. Neutral: no grading on mobile. A dash
                     when last year sold nothing. */}
-                <span className="flex-none text-[12px] font-semibold text-content/85">
+                <span className="flex-none text-[12px] font-semibold text-content/95">
                   <PerfChange pct={change} format={fmtChange} />
                 </span>
                 {opensItems && (
-                  <ChevronRightIcon className="h-4 w-4 flex-none self-center text-content/85" />
+                  <ChevronRightIcon className="h-4 w-4 flex-none self-center text-content/95" />
                 )}
               </div>
               <Bars ty={p.ty} ly={p.ly} noLy={p.noLy} max={listMax} basis={basis} />

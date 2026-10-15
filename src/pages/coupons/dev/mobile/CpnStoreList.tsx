@@ -119,7 +119,7 @@ const CpnStoreList = ({
             key={label}
             className="px-2.5 py-1.5 border-r border-gray-100 last:border-r-0"
           >
-            <div className="text-[10px] font-semibold uppercase tracking-wide text-content/85">
+            <div className="text-[10px] font-semibold uppercase tracking-wide text-content/95">
               {label}
             </div>
             <div className="text-[12px] font-bold text-content mt-0.5 tabular-nums">
@@ -141,14 +141,14 @@ const CpnStoreList = ({
           <span className="text-[12px] font-semibold text-content flex-1 truncate">
             All stores
           </span>
-          <span className="text-[10px] text-content/85 flex-shrink-0">
+          <span className="text-[10px] text-content/95 flex-shrink-0">
             {coupons.length}
           </span>
           <span className="text-[11px] font-semibold text-content flex-shrink-0 tabular-nums">
             {formatCurrency2(totalAmount)}
           </span>
           <svg
-            className="w-4 h-4 text-content/85 flex-shrink-0"
+            className="w-4 h-4 text-content/95 flex-shrink-0"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -167,14 +167,14 @@ const CpnStoreList = ({
             <span className="text-[12px] font-medium text-content flex-1 truncate">
               {name}
             </span>
-            <span className="text-[10px] text-content/85 flex-shrink-0">
+            <span className="text-[10px] text-content/95 flex-shrink-0">
               {count}
             </span>
             <span className="text-[11px] font-semibold text-content flex-shrink-0 tabular-nums">
               {formatCurrency2(total)}
             </span>
             <svg
-              className="w-4 h-4 text-content/85 flex-shrink-0"
+              className="w-4 h-4 text-content/95 flex-shrink-0"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
