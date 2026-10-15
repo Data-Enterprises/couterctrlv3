@@ -23,10 +23,15 @@ import GrantModeChip from "../access/GrantModeChip";
  */
 const StepReview = ({
   picks,
+  companyIds,
   companyGroups,
   groupStores,
 }: {
   picks: AccessPicks;
+  /** The companies that will actually be written — ticked ones plus the one
+   *  every held group belongs to. Not `picks.companies`, which counted only
+   *  the ticks and read 0 beside a group that plainly had a company. */
+  companyIds: number[];
   companyGroups: Record<number, CompanyBaseGroup[]>;
   groupStores: Record<number, Store[]>;
 }) => {
@@ -70,7 +75,7 @@ const StepReview = ({
   const name = `${info.first_name} ${info.last_name}`.trim() || info.username;
 
   const stats: { value: string; label: string }[] = [
-    { value: String(picks.companies.length), label: "Companies" },
+    { value: String(companyIds.length), label: "Companies" },
     { value: String(autoGroups.length), label: "Groups (auto)" },
     { value: String(fixedGroups.length), label: "Groups (fixed)" },
     {
@@ -152,13 +157,13 @@ const StepReview = ({
         </div>
       )}
 
-      {picks.companies.length > 0 && (
+      {companyIds.length > 0 && (
         <>
           <div className="text-[9px] font-bold uppercase tracking-wide text-content mt-3 mb-1.5">
             Companies
           </div>
           <div className="bg-custom-white rounded-lg shadow-card px-5 py-3 text-[12px] text-content">
-            {picks.companies.map((id) => companyName(id)).join(", ")}
+            {companyIds.map((id) => companyName(id)).join(", ")}
           </div>
         </>
       )}

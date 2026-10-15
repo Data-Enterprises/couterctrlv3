@@ -21,11 +21,13 @@ import {
   STEP_TITLE,
   type WizardStep,
 } from "./wizardSteps";
+import { usePanelFit, type PanelFit } from "../../panelFit";
 import StepAccessType from "./StepAccessType";
 import StepReview from "./StepReview";
 import {
   accessSets,
   emptySelectedGroupIds,
+  groupCompanies,
   NO_PICKS,
   type AccessPicks,
 } from "../access/accessSets";
@@ -40,6 +42,24 @@ interface CreateUserWizardProps {
   onComplete: () => void;
   onCancel: () => void;
 }
+
+/**
+ * What the panel should be while each step is open.
+ *
+ * Every step but Assignments hugs its own content: they are forms, and a form
+ * stretched to a dragged 1600px rectangle reads as one that failed to load.
+ *
+ * Assignments is the exception and needs a number. Its three columns scroll
+ * independently, so the content has no natural height to hug — auto would
+ * collapse all three to nothing. The width is what the columns actually need:
+ * 220 for companies, 288 for base groups, and enough left for store names.
+ */
+const STEP_FIT: Record<WizardStep, PanelFit> = {
+  identity: { width: 1000, height: "auto" },
+  type: { width: 880, height: "auto" },
+  assignments: { width: 1360, height: 660 },
+  review: { width: 940, height: "auto" },
+};
 
 /** Roles that may hold exactly one store and no whole group. Matched on the
  *  role text the form carries, lowercased, because that is what the user
@@ -86,6 +106,8 @@ const CreateUserWizard = ({ onComplete, onCancel }: CreateUserWizardProps) => {
 
   const singleStoreOnly = isSingleStoreRole(String(ctx.userInfo.role ?? ""));
 
+  usePanelFit(STEP_FIT[step]);
+
   useEffect(() => {
     ctx.dispatch(resetUserInfo());
 
@@ -128,7 +150,14 @@ const CreateUserWizard = ({ onComplete, onCancel }: CreateUserWizardProps) => {
     });
   }, [singleStoreOnly]);
 
-  const sets = useMemo(() => accessSets(picks), [picks]);
+  // A held group contributes its company. Without it an Auto grant sent no
+  // company at all — there are no picked stores in that mode to supply one —
+  // and every endpoint that reads a user's base groups filters on
+  // `company_link`, so the group vanished from the screen the moment it saved.
+  const sets = useMemo(
+    () => accessSets(picks, undefined, groupCompanies(companyGroups)),
+    [picks, companyGroups],
+  );
   const emptyGroups = emptySelectedGroupIds(sets);
   const hasAccess = sets.companyIds.length > 0 || sets.grants.length > 0;
 
@@ -212,7 +241,7 @@ const CreateUserWizard = ({ onComplete, onCancel }: CreateUserWizardProps) => {
   };
 
   return (
-    <div className="w-full h-full flex flex-col min-h-0">
+    <div className="w-full h-full flex flex-col min-h-0 px-4 pt-3 pb-4">
       <div className="flex items-center justify-between gap-3 mb-3 flex-shrink-0">
         <div className="flex items-baseline gap-2">
           <h2 className="text-[15px] font-semibold text-content">Add user</h2>
@@ -316,6 +345,7 @@ const CreateUserWizard = ({ onComplete, onCancel }: CreateUserWizardProps) => {
           {step === "review" && (
             <StepReview
               picks={picks}
+              companyIds={sets.companyIds}
               companyGroups={companyGroups}
               groupStores={groupStores}
             />

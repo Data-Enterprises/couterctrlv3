@@ -126,7 +126,25 @@ const heldGroupIds = (picks: AccessPicks) =>
   uniq([...picks.baseGroups, ...picks.stores.map((s) => s.base_group)]);
 
 /**
- * The three lists exactly as they go to the endpoints.
+ * Each base group's company, keyed by group id.
+ *
+ * Flattened from the panel's per-company group lists, which is the only place
+ * the pairing exists on the client.
+ */
+export const groupCompanies = (
+  companyGroups: Record<number, { id: number; company: number }[]>,
+): Record<number, number> => {
+  const map: Record<number, number> = {};
+  Object.values(companyGroups)
+    .flat()
+    .forEach((g) => {
+      map[g.id] = g.company;
+    });
+  return map;
+};
+
+/**
+ * The lists exactly as they go to the endpoints.
  *
  * Zeros and nulls are dropped rather than sent: a store created without its
  * base-group link carries `base_group` as null, and passing that through put
@@ -136,11 +154,19 @@ const heldGroupIds = (picks: AccessPicks) =>
 export const accessSets = (
   picks: AccessPicks,
   carried: CarriedAccess = NO_CARRY,
+  groupCompany: Record<number, number> = {},
 ): AccessSets => ({
   companyIds: uniq([
     ...carried.companies,
     ...picks.companies,
     ...picks.stores.map((s) => s.company),
+    // **A held group brings its company with it.** Without this, granting a
+    // group in `all` mode added no company at all — there are no picked
+    // stores in that mode to contribute one — and both
+    // `base_groups_assigned_to_user` and its `_split` twin filter on
+    // `company_link`. The grant wrote its rows and then no screen could see
+    // the group, which reads exactly like the stores never arriving.
+    ...heldGroupIds(picks).map((id) => groupCompany[id]),
   ]),
   grants: heldGroupIds(picks)
     .map((groupid) => {

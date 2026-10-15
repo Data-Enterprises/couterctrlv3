@@ -1,6 +1,10 @@
 import { useMemo } from "react";
 import { useOrganizationCtx } from "../../hooks";
-import type { GrantMode, UserGroupPick } from "../../../../../interfaces";
+import type {
+  BaseGroup,
+  GrantMode,
+  UserGroupPick,
+} from "../../../../../interfaces";
 import type { SelectableStore } from "../../types";
 import type { AccessPicks, CarriedAccess } from "./accessSets";
 
@@ -36,8 +40,15 @@ export interface ExistingAccess {
  * store with group 0 and left a comment admitting the guess — a store from
  * `users/stores` carried no group, and inventing one assigned a group nobody
  * chose. The provenance is real now, so the guess is gone.
+ *
+ * `heldGroups` is passed in rather than read from the base-group slice. The
+ * dev slice's `setUserBaseGroups` is dispatched by nothing in this tree — only
+ * the legacy pages fill their own copy — so `activeBaseGroups` was always
+ * empty here. Every user looked as though they held no groups, which made the
+ * panel show nothing and a save re-grant everything.
  */
 export const useExistingAccess = (
+  heldGroups: BaseGroup[],
   groupPicks: UserGroupPick[],
 ): ExistingAccess => {
   const ctx = useOrganizationCtx();
@@ -53,7 +64,6 @@ export const useExistingAccess = (
   );
 
   return useMemo(() => {
-    const groups = ctx.activeBaseGroups;
     const stores = ctx.selectedUserStores.assigned;
     const seen = (companyId: number) => visibleCompanyIds.has(companyId);
 
@@ -61,11 +71,13 @@ export const useExistingAccess = (
      *  carry — joined from the stores the detail screen already loaded. */
     const storeById = new Map(stores.map((s) => [s.storeid, s]));
 
-    const heldGroups = groups.filter((g) => seen(g.company));
-    const heldIds = new Set(heldGroups.map((g) => g.id));
+    /** Scoped to companies this editor can see — the panel cannot show the
+     *  rest, so offering an edit to them would be an edit that never lands. */
+    const visibleGroups = heldGroups.filter((g) => seen(g.company));
+    const heldIds = new Set(visibleGroups.map((g) => g.id));
 
     const modes: Record<number, GrantMode> = {};
-    heldGroups.forEach((g) => {
+    visibleGroups.forEach((g) => {
       // `mode` is null only when the user does not hold the group, and these
       // are the ones they hold — but the endpoint's default is the safe
       // reading either way.
@@ -94,7 +106,7 @@ export const useExistingAccess = (
     return {
       picks: {
         companies: ctx.userCompanyIds.filter(seen),
-        baseGroups: heldGroups.map((g) => g.id),
+        baseGroups: visibleGroups.map((g) => g.id),
         modes,
         stores: pickedStores,
       },
@@ -110,7 +122,7 @@ export const useExistingAccess = (
   }, [
     visibleCompanyIds,
     ctx.userCompanyIds,
-    ctx.activeBaseGroups,
+    heldGroups,
     ctx.selectedUserStores.assigned,
     groupPicks,
   ]);

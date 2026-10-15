@@ -23,7 +23,7 @@ import {
 import { deleteUser, reactivateUser, getBaseGroupsAssignedToUser } from "../../../../api/team";
 import { getUserStores } from "../../../../api/user";
 import { getAllStoresInBaseGroup } from "../../../../api/baseGroups";
-import type { BaseGroupJsonResp, JsonError, Store, User } from "../../../../interfaces";
+import type { BaseGroup, JsonError, Store, User } from "../../../../interfaces";
 import { roles } from "../constants";
 import SelectFilter from "../../../../components-dev/filters/SelectFilter";
 import TextFilter from "../../../../components-dev/filters/TextFilter";
@@ -200,18 +200,24 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
         getBaseGroupsAssignedToUser(ctx.url, ctx.token, u.id),
         getUserStores(ctx.url, ctx.token, u.id),
       ]);
-      const bgJson: BaseGroupJsonResp = bgResp.data;
+      const bgJson = bgResp.data;
       const storesJson = storesResp.data;
       if (bgJson.error !== 0 || storesJson.error !== 0) {
         toast.error("Could not load this user's assignments to duplicate");
         return;
       }
 
-      const groups = bgJson.active.map((g) => ({
-        id: g.id,
-        name: g.name,
-        company: g.company,
-      }));
+      // `base_groups_assigned_to_user` returns one `groups` list with an
+      // `active` flag per row, not the active/inactive pair its `_split` twin
+      // returns. Reading `.active` as an array threw on every duplicate, and
+      // the catch below reported it as "could not load".
+      const groups = ((bgJson.groups ?? []) as BaseGroup[])
+        .filter((g) => g.active === 1)
+        .map((g) => ({
+          id: g.id,
+          name: g.name,
+          company: g.company,
+        }));
       const assignedStores: Store[] = storesJson.assigned_stores.filter(
         (s: Store) => s.store_name != null,
       );

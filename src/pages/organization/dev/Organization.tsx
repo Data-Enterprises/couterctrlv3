@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import { useOrganizationCtx } from "./hooks";
 import { useResizableBox } from "../../../hooks/useResizableBox";
+import { PanelFitContext, type PanelFit } from "./panelFit";
 import ResizeHandle from "../../../components-dev/ResizeHandle";
 import PageInfoButton from "../../../components-dev/PageInfoButton";
 import { useToast } from "../../../components/toasts/hooks/useToast";
@@ -58,6 +59,16 @@ const Organization = () => {
   const tabs = TABS.filter((t) => t.minLevel === null || ctx.userLevel >= t.minLevel);
   const [tab, setTab] = useState<Tab>(tabs[0]?.id ?? "userGroups");
   const [storesExportOpen, setStoresExportOpen] = useState(false);
+  /**
+   * A size the open view asked for, overriding the dragged one.
+   *
+   * A grid wants to be dragged — it is a list somebody wants more or less of.
+   * A form does not: it has one correct size, and at the panel's remembered
+   * 1600px the Add user wizard was a column of fields against an acre of
+   * empty card. While a fit is set the drag handle goes away rather than
+   * fighting it.
+   */
+  const [fit, setFit] = useState<PanelFit | null>(null);
   const canSeeUsers = tabs.some((t) => t.id === "users");
   const { width, height, boxRef, handleProps } = useResizableBox({
     storageKey: "organization-panel-size",
@@ -153,8 +164,13 @@ const Organization = () => {
     <div className="min-h-[calc(100vh-3rem)] pt-12 px-4 pb-4 flex justify-center">
       <div
         ref={boxRef}
-        className="relative max-w-[95vw] max-h-[calc(100vh-8rem)] flex flex-col rounded-xl shadow-lg overflow-hidden bg-custom-white self-start"
-        style={{ width, height }}
+        className="relative max-w-[95vw] max-h-[calc(100vh-8rem)] flex flex-col rounded-xl shadow-lg overflow-hidden bg-custom-white self-start transition-[width,height] duration-200 ease-out motion-reduce:transition-none"
+        style={{
+          width: fit?.width ?? width,
+          // Auto lets the card end where the form ends. max-h still caps it,
+          // so a long form scrolls inside rather than running off the page.
+          height: fit === null ? height : fit.height === "auto" ? undefined : fit.height,
+        }}
       >
         <div className="bg-brand_navy px-3 py-2 flex-shrink-0 flex items-center gap-3">
           <span className="text-custom-white font-semibold text-[13px] flex-shrink-0">
@@ -200,6 +216,7 @@ const Organization = () => {
 
 
         <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
+          <PanelFitContext.Provider value={setFit}>
           {tab === "users" && canSeeUsers && <Users />}
           {tab === "userGroups" && <UserGroupsPanel />}
           {tab === "sharedGroups" && ctx.userLevel >= SHARED_GROUP_OWNER_LEVEL && (
@@ -212,9 +229,12 @@ const Organization = () => {
               onCloseExport={() => setStoresExportOpen(false)}
             />
           )}
+          </PanelFitContext.Provider>
         </div>
 
-        <ResizeHandle {...handleProps} />
+        {/* Hidden while the content is driving the size: a handle that moves
+            a width the next render overwrites is a broken control. */}
+        {fit === null && <ResizeHandle {...handleProps} />}
       </div>
     </div>
   );

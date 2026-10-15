@@ -5,6 +5,7 @@ import {
   changedSets,
   effectiveStores,
   emptySelectedGroupIds,
+  groupCompanies,
   hasChanges,
   modeOf,
   NO_PICKS,
@@ -294,5 +295,66 @@ describe("effectiveStores", () => {
       rosters,
     );
     expect(got.map((e) => e.storeid)).toEqual([53, 76]);
+  });
+});
+
+describe("groupCompanies", () => {
+  it("flattens the panel's per-company lists into group to company", () => {
+    expect(
+      groupCompanies({
+        7: [
+          { id: 4, company: 7 },
+          { id: 9, company: 7 },
+        ],
+        21: [{ id: 12, company: 21 }],
+      }),
+    ).toEqual({ 4: 7, 9: 7, 12: 21 });
+  });
+});
+
+describe("a held group brings its company", () => {
+  // The bug this covers: granting a group in `all` mode wrote no company at
+  // all, because only picked stores contributed one and `all` picks none.
+  // Every endpoint that reads a user's base groups filters on company_link,
+  // so the group saved and then no screen could see it.
+  const groupCompany = { 4: 7, 9: 21 };
+
+  it("sends the company of a group held as all, with nothing ticked", () => {
+    const sets = accessSets(
+      picks({ baseGroups: [4], modes: { 4: "all" } }),
+      undefined,
+      groupCompany,
+    );
+    expect(sets.companyIds).toEqual([7]);
+  });
+
+  it("sends it for a group held only through picked stores", () => {
+    const sets = accessSets(
+      picks({ stores: [store(53, 9, 21)] }),
+      undefined,
+      groupCompany,
+    );
+    expect(sets.companyIds).toEqual([21]);
+  });
+
+  it("does not duplicate a company that was also ticked", () => {
+    const sets = accessSets(
+      picks({ companies: [7], baseGroups: [4], modes: { 4: "all" } }),
+      undefined,
+      groupCompany,
+    );
+    expect(sets.companyIds).toEqual([7]);
+  });
+
+  it("carries on when a group's company is not known yet", () => {
+    // The panel may not have loaded that company's groups. Better to send the
+    // rest than to put an undefined in the middle of an id array.
+    const sets = accessSets(
+      picks({ baseGroups: [4, 99], modes: { 4: "all", 99: "all" } }),
+      undefined,
+      groupCompany,
+    );
+    expect(sets.companyIds).toEqual([7]);
+    expect(sets.grants).toHaveLength(2);
   });
 });

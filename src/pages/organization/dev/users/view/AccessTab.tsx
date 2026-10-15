@@ -2,13 +2,17 @@ import { useEffect, useMemo, useState } from "react";
 import { useOrganizationCtx } from "../../hooks";
 import { useToast } from "../../../../../components/toasts/hooks/useToast";
 import { getUserStores } from "../../../../../api/user";
-import { getUserGroupPicks } from "../../../../../api/team";
+import {
+  getBaseGroupsAssignedToUser,
+  getUserGroupPicks,
+} from "../../../../../api/team";
 import {
   setRefresh,
   setSelectedUserStores,
   setUserCompanyIds,
 } from "../../../../../features/dev/devUsersSlice";
 import type {
+  BaseGroup,
   CompanyBaseGroup,
   JsonError,
   Store,
@@ -20,6 +24,7 @@ import {
   accessSets,
   changedSets,
   emptySelectedGroupIds,
+  groupCompanies,
   hasChanges,
   type AccessPicks,
 } from "../access/accessSets";
@@ -48,8 +53,9 @@ const AccessTab = () => {
   const ctx = useOrganizationCtx();
   const saveAccess = useAccessSave();
 
+  const [heldGroups, setHeldGroups] = useState<BaseGroup[]>([]);
   const [groupPicks, setGroupPicks] = useState<UserGroupPick[]>([]);
-  const existing = useExistingAccess(groupPicks);
+  const existing = useExistingAccess(heldGroups, groupPicks);
 
   const [picks, setPicks] = useState<AccessPicks>(existing.picks);
   const [companyGroups, setCompanyGroups] = useState<
@@ -60,15 +66,33 @@ const AccessTab = () => {
   const [failure, setFailure] = useState<AccessOutcome | null>(null);
 
   /**
-   * The two things the grid row does not carry: the person's stores, and which
-   * group each picked store came through.
+   * The three things the grid row does not carry: the base groups the person
+   * holds and how, their stores, and which group each picked store came
+   * through.
    *
-   * Both are needed before the panel can be seeded — without the picks every
-   * store would look direct, and a save would then revoke nothing and grant
-   * nothing.
+   * All three are needed before the panel can be seeded. Without the groups
+   * the screen shows an empty panel for somebody who holds plenty — the bug
+   * that made a freshly granted group look like it had never saved. Without
+   * the picks every store looks direct, and the save then revokes nothing.
    */
   const loadHeld = () => {
     if (!ctx.selectedUserId) return;
+    getBaseGroupsAssignedToUser(ctx.url, ctx.token, ctx.selectedUserId)
+      .then((resp) => {
+        const j = resp.data;
+        // `active` is 1 when the person holds the group; the endpoint returns
+        // every group in their companies either way, so the rest is the list
+        // of what they could be given, not what they have.
+        setHeldGroups(
+          j.error === 0
+            ? ((j.groups ?? []) as BaseGroup[]).filter((g) => g.active === 1)
+            : [],
+        );
+      })
+      .catch((err: JsonError) =>
+        toast.error("Error fetching base groups " + err.message),
+      );
+
     const noNulls = (arr: Store[]) => arr.filter((s) => s.store_name !== null);
     getUserStores(ctx.url, ctx.token, ctx.selectedUserId)
       .then((resp) => {
@@ -104,13 +128,24 @@ const AccessTab = () => {
     setFailure(null);
   }, [existing.picks]);
 
+  /** A held group contributes its company, so an Auto grant creates the
+   *  company link the group reads require. Seeded from the groups the person
+   *  already holds, so it works before any company is opened in the panel. */
+  const groupCompany = useMemo(() => {
+    const fromPanel = groupCompanies(companyGroups);
+    heldGroups.forEach((g) => {
+      if (fromPanel[g.id] === undefined) fromPanel[g.id] = g.company;
+    });
+    return fromPanel;
+  }, [companyGroups, heldGroups]);
+
   const before = useMemo(
-    () => accessSets(existing.picks, existing.carried),
-    [existing],
+    () => accessSets(existing.picks, existing.carried, groupCompany),
+    [existing, groupCompany],
   );
   const next = useMemo(
-    () => accessSets(picks, existing.carried),
-    [picks, existing.carried],
+    () => accessSets(picks, existing.carried, groupCompany),
+    [picks, existing.carried, groupCompany],
   );
   const changed = changedSets(next, before);
   const dirty = hasChanges(next, before);

@@ -638,8 +638,12 @@ const AccessPanel = ({
       <div className="bg-bkg rounded-lg px-3 py-2.5 mt-3 shadow-card-sm">
         <div className="flex items-center justify-between mb-1">
           <span className="text-[12px] font-semibold text-content">
-            {picks.companies.length} companies, {picks.baseGroups.length} base
-            groups, {selectedStores.length} stores picked
+            {/* No company tally: a held group carries its own company now, so
+                a count of ticks would read 0 beside a group that plainly has
+                one. Review shows what is actually written. */}
+            {picks.baseGroups.length} base group
+            {picks.baseGroups.length === 1 ? "" : "s"}, {selectedStores.length}{" "}
+            store{selectedStores.length === 1 ? "" : "s"} picked
           </span>
           <button
             onClick={() => onPicksChange(NO_PICKS)}
