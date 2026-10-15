@@ -1,5 +1,6 @@
 import axios from "axios";
 import type { UserData } from "../features/usersSlice";
+import type { GrantMode } from "../interfaces";
 
 // groups/base_groups_assigned_to_user
 export const getBaseGroupsAssignedToUser = async (
@@ -22,11 +23,29 @@ export const getBaseGroupsAssignedToUser = async (
 };
 
 // groups/assign_base_group_to_user
+/**
+ * Grant base groups to a user, in one mode.
+ *
+ * `all` hands over the whole group and whatever is added to it later; the
+ * endpoint writes the roster into `assigned` and records no provenance,
+ * because the group itself is the reason.
+ *
+ * `selected` hands over `storeids` only, and they must already be in the
+ * group — the endpoint drops any that are not rather than granting a store
+ * the group does not contain. Those picks are recorded in `assigned_via`, so
+ * revoking the group later removes exactly them and leaves alone any store
+ * another group still accounts for.
+ *
+ * One mode per call, so a user holding East as `all` and South as `selected`
+ * is two calls. See `useAccessSave`.
+ */
 export const assignBaseGroupToUser = async (
   url: string,
   token: string,
   userid: number,
   groupid: number[],
+  mode: GrantMode = "selected",
+  storeids?: number[],
 ) => {
   const json = await axios({
     method: "POST",
@@ -38,7 +57,36 @@ export const assignBaseGroupToUser = async (
     data: {
       userid,
       groupid,
+      mode,
+      ...(mode === "selected" ? { storeids: storeids ?? [] } : {}),
     },
+  });
+  return json;
+};
+
+/**
+ * Which stores a user picked, and through which group.
+ *
+ * The other half of `mode`: that says a group is held as `selected`, this
+ * says which stores were selected in it. A group held as `all` has no rows
+ * here at all, and its absence is the answer rather than a gap.
+ *
+ * Replaces the guess the access panel used to make — a store from
+ * `users/stores` carried no group, so it was tagged with group 0.
+ */
+export const getUserGroupPicks = async (
+  url: string,
+  token: string,
+  userid: number,
+) => {
+  const json = await axios({
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    url: url + "groups/user_group_picks",
+    params: { userid },
   });
   return json;
 };

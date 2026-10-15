@@ -1,7 +1,8 @@
+import type { GrantMode, Store } from "../../../../../interfaces";
 import type { SelectableStore } from "../../types";
 
 /**
- * What a person is given, as three independent sets.
+ * What a person is given, as companies, base groups, and stores.
  *
  * The wizard used to derive companies and base groups from the stores that
  * were ticked, reading `store.company` and `store.base_group` off each one.
@@ -24,6 +25,14 @@ export interface AccessPicks {
   companies: number[];
   /** Base groups ticked in their own column. */
   baseGroups: number[];
+  /**
+   * How each ticked group is held. Missing means `selected`, matching the
+   * endpoint's own default and today's behaviour.
+   *
+   * `all` is the whole group and whatever joins it later — the auto grant.
+   * `selected` is only the stores ticked in the third column.
+   */
+  modes: Record<number, GrantMode>;
   /** Stores ticked, each tagged with the group it was picked through. */
   stores: SelectableStore[];
 }
@@ -32,41 +41,97 @@ export interface AccessPicks {
  * Ids the person already holds that this screen never showed.
  *
  * Every list here is rendered scoped — a level 7 is offered their own
- * companies, and the stores they can see — while the save REPLACES. Without
- * carrying the unseen ids through, saving access would quietly strip whatever
- * the editor was not entitled to look at. The panel renders a subset; it
- * always saves the full set.
+ * companies, and the stores they can see — while the company save REPLACES.
+ * Without carrying the unseen ids through, saving access would quietly strip
+ * whatever the editor was not entitled to look at.
+ *
+ * **Base groups are no longer carried.** `assign_base_group_to_user` replaces
+ * one group at a time now, so a group left out of the call is a group left
+ * alone — and that is the only safe thing to do with a group whose picks this
+ * editor cannot see. Sending it would either wipe its picks or be refused for
+ * having none.
  *
  * Empty on a new user, who holds nothing yet.
  */
 export interface CarriedAccess {
   companies: number[];
-  baseGroups: number[];
+  /**
+   * Stores held that no pick on this screen explains — direct assignments,
+   * and the rosters of groups held as `all`.
+   *
+   * **Display only. Never written.** Store access flows through group grants
+   * now, so there is nothing for this panel to send: the rows already exist,
+   * and re-sending them after a revocation would put back exactly what the
+   * revocation removed. They are here so the effective list can show them and
+   * say where they came from.
+   */
   stores: number[];
 }
 
 export const NO_CARRY: CarriedAccess = {
   companies: [],
-  baseGroups: [],
   stores: [],
 };
 
+export const NO_PICKS: AccessPicks = {
+  companies: [],
+  baseGroups: [],
+  modes: {},
+  stores: [],
+};
+
+/** One base group grant, exactly as it goes to the endpoint. */
+export interface GroupGrant {
+  groupid: number;
+  mode: GrantMode;
+  /** Empty for `all`, which needs no store list. */
+  storeids: number[];
+}
+
+/**
+ * What goes to the endpoints.
+ *
+ * There is deliberately no store list. Every store this screen grants is
+ * picked inside a base group, so it travels in that group's grant, where it
+ * gets an `assigned_via` row and can therefore be revoked precisely later. A
+ * store written straight to `assigned` has no provenance and no group change
+ * can ever take it back — right for a legacy direct assignment, wrong for
+ * anything this panel does.
+ */
 export interface AccessSets {
   companyIds: number[];
-  baseGroupIds: number[];
-  storeIds: number[];
+  /** One entry per group the person should hold, in id order. */
+  grants: GroupGrant[];
 }
 
 const uniq = (ids: number[]) =>
   Array.from(new Set(ids.filter((id) => Number.isFinite(id) && id !== 0)));
 
+/** How a group is held, with the endpoint's default applied. */
+export const modeOf = (picks: AccessPicks, groupid: number): GrantMode =>
+  picks.modes[groupid] ?? "selected";
+
+/** The stores ticked inside one group. */
+export const picksInGroup = (picks: AccessPicks, groupid: number): Store[] =>
+  picks.stores.filter((s) => s.base_group === groupid);
+
 /**
- * The three lists exactly as they go to the three endpoints.
+ * Every group the person should end up holding.
+ *
+ * A group counts as held when it was ticked in its own right, OR when a store
+ * was ticked inside it — ticking stores in East and never ticking East itself
+ * still means East, held as `selected`.
+ */
+const heldGroupIds = (picks: AccessPicks) =>
+  uniq([...picks.baseGroups, ...picks.stores.map((s) => s.base_group)]);
+
+/**
+ * The three lists exactly as they go to the endpoints.
  *
  * Zeros and nulls are dropped rather than sent: a store created without its
  * base-group link carries `base_group` as null, and passing that through put
  * a null in the middle of an id array the backend then had to make sense of.
- * Dropping it loses nothing — the group was never there to assign.
+ * Those stores become `directStoreIds` instead, which is what they are.
  */
 export const accessSets = (
   picks: AccessPicks,
@@ -77,13 +142,52 @@ export const accessSets = (
     ...picks.companies,
     ...picks.stores.map((s) => s.company),
   ]),
-  baseGroupIds: uniq([
-    ...carried.baseGroups,
-    ...picks.baseGroups,
-    ...picks.stores.map((s) => s.base_group),
-  ]),
-  storeIds: uniq([...carried.stores, ...picks.stores.map((s) => s.storeid)]),
+  grants: heldGroupIds(picks)
+    .map((groupid) => {
+      const mode = modeOf(picks, groupid);
+      return {
+        groupid,
+        mode,
+        storeids:
+          mode === "all"
+            ? []
+            : uniq(picksInGroup(picks, groupid).map((s) => s.storeid)),
+      };
+    })
+    .sort((a, b) => a.groupid - b.groupid),
 });
+
+/**
+ * Groups held before and not now.
+ *
+ * Revocation has to be explicit, because the grant call only ever writes the
+ * groups it is given. A group dropped from the panel and never mentioned
+ * again would otherwise stay granted.
+ */
+export const revokedGroupIds = (
+  next: AccessSets,
+  before: AccessSets,
+): number[] => {
+  const keep = new Set(next.grants.map((g) => g.groupid));
+  return before.grants
+    .map((g) => g.groupid)
+    .filter((id) => !keep.has(id))
+    .sort((a, b) => a - b);
+};
+
+/**
+ * Groups that cannot be saved as they stand.
+ *
+ * A group held as `selected` with nothing selected is not a state the
+ * endpoint accepts — it answers 400, because "these stores and no stores" is
+ * not a grant. It is a real thing to land in, though: tick East, set it to
+ * Pick stores, tick nothing. So it is named here and the UI blocks on it
+ * rather than letting the save fail per group.
+ */
+export const emptySelectedGroupIds = (sets: AccessSets): number[] =>
+  sets.grants
+    .filter((g) => g.mode === "selected" && g.storeids.length === 0)
+    .map((g) => g.groupid);
 
 const same = (a: number[], b: number[]) => {
   if (a.length !== b.length) return false;
@@ -91,24 +195,39 @@ const same = (a: number[], b: number[]) => {
   return b.every((id) => set.has(id));
 };
 
+const sameGrant = (a: GroupGrant, b: GroupGrant) =>
+  a.groupid === b.groupid &&
+  a.mode === b.mode &&
+  same(a.storeids, b.storeids);
+
 /**
- * Which of the three actually moved.
+ * Which groups actually moved, and whether the companies did.
  *
- * One Save button, up to three calls. Sending all three every time is
- * harmless in result — they replace, so the same set written twice is the
- * same set — but it means ticking one store rewrites the person's companies
- * and groups as well, and any staleness anywhere in the panel lands on all
- * three levels at once. Only what changed goes out.
+ * One Save button, one call per group that changed. Re-granting every group
+ * every time is harmless in result — each call replaces that group — but it
+ * means ticking one store in East rewrites South as well, and each rewrite
+ * deletes and re-inserts rows that were already right.
  *
- * Order is not compared, because none of the three endpoints keeps one.
+ * Order inside `storeids` is not compared, because the endpoint sorts them.
  */
+export const changedGrants = (
+  next: AccessSets,
+  before: AccessSets,
+): GroupGrant[] => {
+  const prev = new Map(before.grants.map((g) => [g.groupid, g]));
+  return next.grants.filter((g) => {
+    const was = prev.get(g.groupid);
+    return was === undefined || !sameGrant(g, was);
+  });
+};
+
 export const changedSets = (next: AccessSets, before: AccessSets) => ({
   companies: !same(next.companyIds, before.companyIds),
-  baseGroups: !same(next.baseGroupIds, before.baseGroupIds),
-  stores: !same(next.storeIds, before.storeIds),
+  grants: changedGrants(next, before),
+  revoke: revokedGroupIds(next, before),
 });
 
 export const hasChanges = (next: AccessSets, before: AccessSets) => {
   const c = changedSets(next, before);
-  return c.companies || c.baseGroups || c.stores;
+  return c.companies || c.grants.length > 0 || c.revoke.length > 0;
 };
