@@ -88,6 +88,7 @@ import {
   type CmpBasis,
 } from "./perfData";
 import PairedBars from "../../../../../components-dev/mobile/perf/PairedBars";
+import PerfChange from "../../../../../components-dev/mobile/perf/PerfChange";
 import PerfDelta from "../../../../../components-dev/mobile/perf/PerfDelta";
 import PerfCardHeader from "../../../../../components-dev/mobile/perf/PerfCardHeader";
 import MobilePerfCard from "../../../../../components-dev/mobile/MobilePerfCard";
@@ -847,7 +848,7 @@ const SalesPerfMobile = () => {
               />
               <div className="px-3.5 py-2">
                 <div className="flex items-center gap-2 rounded-lg bg-bkg px-3">
-                  <MagnifyingGlassIcon className="h-4 w-4 flex-none text-content/85" />
+                  <MagnifyingGlassIcon className="h-4 w-4 flex-none text-content/95" />
                   <input
                     id="perf-store-filter"
                     value={storeFilter}
@@ -868,7 +869,7 @@ const SalesPerfMobile = () => {
                       type="button"
                       onClick={() => setStoreFilter("")}
                       aria-label="Clear filter"
-                      className="-mr-1 flex h-7 w-7 flex-none items-center justify-center rounded-full text-content/85 active:bg-custom-white"
+                      className="-mr-1 flex h-7 w-7 flex-none items-center justify-center rounded-full text-content/95 active:bg-custom-white"
                     >
                       <XMarkIcon className="h-4 w-4" />
                     </button>
@@ -880,7 +881,7 @@ const SalesPerfMobile = () => {
 
           {/* ── the stores ──────────────────────────────────────── */}
           {visibleStores.length === 0 ? (
-            <section className="rounded-2xl border border-gray-200 bg-custom-white px-4 py-8 text-center text-[12.5px] text-content/85 shadow-md">
+            <section className="rounded-2xl border border-gray-200 bg-custom-white px-4 py-8 text-center text-[12.5px] text-content/95 shadow-md">
               {storeFilter.trim()
                 ? `No store matches "${storeFilter.trim()}".`
                 : "Nothing recorded for this week."}
@@ -893,7 +894,7 @@ const SalesPerfMobile = () => {
                 <div key={p.key} ref={isOpen ? openCard : undefined}>
                   <MobilePerfCard
                     label={p.label}
-                    change={change === null ? "—" : fmtChange(change)}
+                    change={<PerfChange pct={change} format={fmtChange} />}
                     flagged={isPartialMatch(p)}
                     flagNote={matchedNote(p)}
                     bars={

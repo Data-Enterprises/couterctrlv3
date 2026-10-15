@@ -227,7 +227,7 @@ const CpnSectionDetail = ({
             key={label}
             className="px-2.5 py-1.5 border-r border-gray-100 last:border-r-0"
           >
-            <div className="text-[10px] font-semibold uppercase tracking-wide text-content/85">
+            <div className="text-[10px] font-semibold uppercase tracking-wide text-content/95">
               {label}
             </div>
             <div className="text-[12px] font-bold text-content mt-0.5 tabular-nums">
@@ -252,17 +252,17 @@ const CpnSectionDetail = ({
                 className="w-full flex items-center gap-2 px-3 py-2.5 text-left active:bg-gray-50"
               >
                 {isExp ? (
-                  <ChevronDownIcon className="w-3.5 h-3.5 text-content/85 flex-shrink-0" />
+                  <ChevronDownIcon className="w-3.5 h-3.5 text-content/95 flex-shrink-0" />
                 ) : (
-                  <ChevronRightIcon className="w-3.5 h-3.5 text-content/85 flex-shrink-0" />
+                  <ChevronRightIcon className="w-3.5 h-3.5 text-content/95 flex-shrink-0" />
                 )}
                 <span className="flex-1 text-[11px] font-medium text-content truncate">
                   {agg.product_description}
                 </span>
-                <span className="text-[10px] text-content/85 flex-shrink-0">
+                <span className="text-[10px] text-content/95 flex-shrink-0">
                   {agg.product_code}
                 </span>
-                <span className="text-[10px] text-content/85 flex-shrink-0">
+                <span className="text-[10px] text-content/95 flex-shrink-0">
                   {agg.count}×
                 </span>
                 <span className="text-[11px] font-semibold text-content flex-shrink-0 tabular-nums">
@@ -275,7 +275,7 @@ const CpnSectionDetail = ({
                     {["Cashier", "Date", "Trans #", "Amt"].map((h, i) => (
                       <div
                         key={h}
-                        className={`text-[10px] font-semibold uppercase tracking-wide text-content/85 ${i === 3 ? "text-right" : ""}`}
+                        className={`text-[10px] font-semibold uppercase tracking-wide text-content/95 ${i === 3 ? "text-right" : ""}`}
                       >
                         {h}
                       </div>
@@ -287,13 +287,13 @@ const CpnSectionDetail = ({
                       onClick={() => handleUseClick(use)}
                       className="w-full grid grid-cols-4 gap-2 px-3 py-2 bg-gray-50/60 border-b border-gray-100 last:border-0 text-left active:bg-blue-50/40"
                     >
-                      <span className="text-[10px] text-content/85 truncate">
+                      <span className="text-[10px] text-content/95 truncate">
                         {use.cashier_name}
                       </span>
-                      <span className="text-[10px] text-content/85">
+                      <span className="text-[10px] text-content/95">
                         {formatDate(use.sale_date.split("T")[0])}
                       </span>
-                      <span className="text-[10px] text-content/85 tabular-nums">
+                      <span className="text-[10px] text-content/95 tabular-nums">
                         #{use.sale_id}
                       </span>
                       <span className="text-[10px] font-semibold text-content text-right tabular-nums">
@@ -316,12 +316,12 @@ const CpnSectionDetail = ({
               <div className="text-[13px] font-bold text-content">
                 {txMeta?.cashier_name ?? "Loading…"}
                 {txMeta?.terminal && (
-                  <span className="ml-2 text-[10px] font-normal text-content/85">
+                  <span className="ml-2 text-[10px] font-normal text-content/95">
                     Terminal {txMeta.terminal}
                   </span>
                 )}
               </div>
-              <div className="text-[10px] text-content/85 mt-0.5">
+              <div className="text-[10px] text-content/95 mt-0.5">
                 {txMeta?.sale_date
                   ? formatDate(txMeta.sale_date.split("T")[0])
                   : ""}
@@ -333,14 +333,14 @@ const CpnSectionDetail = ({
             {txLines.length > 0 && (
               <button
                 onClick={handleExport}
-                className="flex items-center gap-1 px-2 py-1 rounded border border-gray-200 text-content/85 hover:text-content hover:border-gray-300 transition-colors flex-shrink-0"
+                className="flex items-center gap-1 px-2 py-1 rounded border border-gray-200 text-content/95 hover:text-content hover:border-gray-300 transition-colors flex-shrink-0"
               >
                 <ArrowDownTrayIcon className="w-3.5 h-3.5" />
               </button>
             )}
           </div>
           {txLines.length === 0 ? (
-            <div className="py-8 text-center text-[11px] text-content/85">
+            <div className="py-8 text-center text-[11px] text-content/95">
               Loading transaction…
             </div>
           ) : (
@@ -353,7 +353,7 @@ const CpnSectionDetail = ({
                   {["#", "Description", "Qty", "Total", "Type"].map((h, i) => (
                     <div
                       key={h}
-                      className={`text-[10px] font-semibold uppercase tracking-wide text-content/85 ${
+                      className={`text-[10px] font-semibold uppercase tracking-wide text-content/95 ${
                         i >= 2 && i <= 3
                           ? "text-right"
                           : i === 4
@@ -377,7 +377,7 @@ const CpnSectionDetail = ({
                         background: isCpn ? "rgba(234,179,8,0.06)" : undefined,
                       }}
                     >
-                      <span className="text-[10px] text-content/85 tabular-nums">
+                      <span className="text-[10px] text-content/95 tabular-nums">
                         {item.line_number}
                       </span>
                       <span
@@ -385,7 +385,7 @@ const CpnSectionDetail = ({
                       >
                         {item.product_description}
                       </span>
-                      <span className="text-[10px] text-content/85 text-right">
+                      <span className="text-[10px] text-content/95 text-right">
                         {item.qty > 0 ? item.qty : "—"}
                       </span>
                       <span
@@ -423,13 +423,13 @@ const CpnSectionDetail = ({
                     </span>
                   </span>
                 )}
-                <span className="text-[10px] text-content/85">
+                <span className="text-[10px] text-content/95">
                   Tax{" "}
                   <span className="text-content font-semibold">
                     {formatCurrency2(txTax)}
                   </span>
                 </span>
-                <span className="text-[10px] text-content/85">
+                <span className="text-[10px] text-content/95">
                   Net{" "}
                   <span className="text-content font-semibold">
                     {formatCurrency2(txNet)}

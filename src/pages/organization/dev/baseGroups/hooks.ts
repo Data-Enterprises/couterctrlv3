@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAppSelector } from "../../../../hooks";
 import { getCompanies } from "../../../../api/company";
-import { isSupportUser } from "../../../../utils/supportUsers";
+import { seesEverything } from "../scoping";
 import type { Company, JsonError, Store } from "../../../../interfaces";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 
@@ -16,13 +16,15 @@ export type StoreSplit = { assigned: Store[]; unassigned: Store[] };
  */
 export const useBaseGroupsCtx = () => {
   const { url, token } = useAppSelector((s) => s.app);
-  const { userLevel, email, companies } = useAppSelector((s) => s.user);
+  const { userid, userLevel, email, companies } = useAppSelector((s) => s.user);
   return {
     url,
     token,
+    userid,
     userLevel,
-    /** Programmers and DCR support see every company; everyone else, their own. */
-    canSeeAllCompanies: userLevel === 9 || isSupportUser(email),
+    /** Programmers and DCR support see every company; everyone else, their own.
+     *  Defined once in `../scoping`, because three tabs ask it. */
+    canSeeAllCompanies: seesEverything(userLevel, email),
     ownCompanies: companies.map((c) => ({ id: c.company, name: c.name })),
   };
 };

@@ -187,11 +187,15 @@ const CreateUserWizard = ({ onComplete, onCancel }: CreateUserWizardProps) => {
     }
 
     try {
+      // "all": the whole group. This wizard picks groups, not stores within
+      // them. Explicit because the argument is required — the server's
+      // default of "selected" is refused without storeids.
       const bgResp = await assignBaseGroupToUser(
         ctx.url,
         ctx.token,
         userid,
         bgIds,
+        "all",
       );
       if (bgResp.data.error !== 0) return;
     } catch (err) {

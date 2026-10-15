@@ -13,6 +13,7 @@ import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
 import CompanyGrid from "./CompanyGrid";
 import StoreActivityComp from "./StoreActivityComp";
 import StoreRecords from "./StoreRecords";
+import SubDeptExclusions from "./SubDeptExclusions";
 
 /** `programmerOnly` tabs act on records that aren't scoped to anyone — creating
  *  and deleting companies is a change to the whole tenancy, not to one
@@ -21,6 +22,10 @@ const TABS: { id: AdminForm; label: string; programmerOnly?: boolean }[] = [
   { id: "companies", label: "Companies", programmerOnly: true },
   { id: "store_activity", label: "Store activity" },
   { id: "store_records", label: "Stores" },
+  // Not programmerOnly. It changes what a customer reads as their net sales,
+  // which is exactly the question support fields during onboarding — and the
+  // alternative they have today is pgAdmin.
+  { id: "sub_exclusions", label: "Sub dept exclusions" },
 ];
 
 /**
@@ -38,6 +43,9 @@ const PANEL: Record<AdminForm, { key: string; width: number; height: number }> =
   companies: { key: "admin-panel-size", width: 820, height: 640 },
   store_activity: { key: "admin-panel-size", width: 820, height: 640 },
   store_records: { key: "admin-panel-size-stores", width: 900, height: 620 },
+  // Wider: a department row carries a name, a number, a sentence about where
+  // it stands across the chain, and a date.
+  sub_exclusions: { key: "admin-panel-size-subexcl", width: 1040, height: 660 },
 };
 
 const Admin = () => {
@@ -98,6 +106,8 @@ const Admin = () => {
         );
       case "store_records":
         return <StoreRecords />;
+      case "sub_exclusions":
+        return <SubDeptExclusions />;
     }
   };
 

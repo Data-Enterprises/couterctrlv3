@@ -57,7 +57,11 @@ const strip = (src) =>
  * The component libraries (src/components and src/components-dev) are outside
  * src/pages and have never been scanned by this audit.
  */
-const isTreeCopy = (p) => /^src\/pages\/[^/]+\/prod\//.test(p);
+// `.*` rather than `[^/]+`: the shared pages keep their prod copy two levels
+// down (src/pages/shared/eventPerf/prod/), so a single segment missed them and
+// the whole frozen tree was being audited as if it were live code. Invisible
+// while dev and prod agreed; it surfaced the moment a floor moved.
+const isTreeCopy = (p) => /^src\/pages\/.*\/prod\//.test(p);
 
 const isLegacy = (p) =>
   /legacy/i.test(p) || /tabletComps/.test(p) || /Tablet\.tsx$/.test(p);
@@ -66,7 +70,7 @@ const isMobile = (p) => /mobile/i.test(p);
 /** The mobile floors (font size, opacity, no-italic) are dev-mobile rules.
  *  These trees have never been through the dev refactor, so a hit there is
  *  un-migrated legacy rather than drift — counted separately. */
-const NO_DEV_FORK = new Set(["cashiers", "forecast", "home", "priceSimulator",
+const NO_DEV_FORK = new Set(["forecast", "home", "priceSimulator",
                              "quicksight", "tickets", "settings"]);
 
 /* ── rules ──────────────────────────────────────────────────────────────── */
@@ -120,9 +124,9 @@ const RULES = [
     scope: MOBILE,
     // A dimmed lone separator glyph is decoration, not unreadable text.
     lineSkip: /className="[^"]*">\s*[·•|/\-]\s*</,
-    why: "dev mobile text-colour opacity floor is /85",
+    why: "dev mobile text-colour opacity floor is /95",
     // disabled:/placeholder: states are meant to read as dimmed — not drift.
-    re: /(?<!(?:disabled|placeholder|hover|focus|group-hover):)\btext-[a-z_0-9-]+\/(?:[1-9]|[1-7][0-9]|8[0-4])\b/g,
+    re: /(?<!(?:disabled|placeholder|hover|focus|group-hover):)\btext-[a-z_0-9-]+\/(?:[1-9]|[1-8][0-9]|9[0-4])\b/g,
   },
   {
     id: "navy-header-padding",

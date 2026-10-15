@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useBaseGroupsCtx } from "./hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 import {
@@ -14,6 +14,7 @@ import type {
   User,
 } from "../../../../interfaces";
 import AssignPanel from "../../../../components-dev/AssignPanel";
+import { callReason } from "./storeMembership";
 
 interface Props {
   group: CompanyBaseGroup;
@@ -65,38 +66,95 @@ const BaseGroupUsersTab = ({ group, users }: Props) => {
     load();
   }, [group.id]);
 
-  const levelOf = new Map(users.map((u) => [u.id, u.user_level]));
-  const withinReach = (r: BaseGroupUserRow) =>
-    (levelOf.get(r.userid) ?? 0) <= ctx.userLevel;
+  const levelOf = useMemo(
+    () => new Map(users.map((u) => [u.id, u.user_level])),
+    [users],
+  );
 
-  const run = (
+  /**
+   * Whether this person is the viewer's to see and change.
+   *
+   * **Fails closed.** This used to read `?? 0`, so a userid with no level
+   * behind it counted as level 0 and was shown — and until the user list
+   * lands that is every row. `assign_base_group_to_user` takes a bare userid
+   * and checks no levels, so this is the only thing between a level 7 and a
+   * level 9's access, and one that defaults to "probably fine" is not a
+   * guard.
+   */
+  const withinReach = (r: BaseGroupUserRow) => {
+    const level = levelOf.get(r.userid);
+    return level !== undefined && level <= ctx.userLevel;
+  };
+
+  /** Until the levels arrive every row is hidden, which reads as "this group
+   *  has nobody" rather than "still loading". Say the second one. */
+  const levelsKnown = users.length > 0;
+
+  /**
+   * Run one call per user and say what happened.
+   *
+   * `allSettled`, not `all`: the server refuses some of these with a 400 —
+   * a single-store user cannot be handed a whole group — and that throws.
+   * Under `Promise.all` one refusal abandoned the whole batch and reported
+   * "Request failed with status code 400", which is both wrong (the others
+   * may well have worked) and useless (it does not say why).
+   *
+   * The reason comes out of FastAPI's `detail`, which never reaches a
+   * `.then`. See `callReason`.
+   */
+  const run = async (
     ids: number[],
-    call: (userid: number) => Promise<{ data: { error: number } }>,
+    call: (userid: number) => Promise<{ data: { error: number; msg?: string } }>,
     verb: string,
   ) => {
-    Promise.all(
-      ids.map((userid) =>
-        call(userid).then((resp) => ({ userid, ok: resp.data.error === 0 })),
-      ),
-    )
-      .then((results) => {
-        const failed = results.filter((r) => !r.ok).length;
-        if (failed > 0) toast.error(`${failed} user(s) could not be ${verb}`);
-        else toast.success(`User(s) ${verb}`);
-        load();
+    const settled = await Promise.allSettled(ids.map((userid) => call(userid)));
+
+    const failures = settled
+      .map((res, i) => {
+        if (res.status === "rejected") {
+          return { userid: ids[i], reason: callReason(res.reason) };
+        }
+        return res.value.data.error === 0
+          ? null
+          : {
+              userid: ids[i],
+              reason: res.value.data.msg ?? "The server refused it.",
+            };
       })
-      .catch((err: JsonError) => toast.error(err.message));
+      .filter((f): f is { userid: number; reason: string } => f !== null);
+
+    const done = ids.length - failures.length;
+    load();
+
+    if (failures.length === 0) {
+      toast.success(`${done} user${done === 1 ? "" : "s"} ${verb}`);
+      return;
+    }
+    // The reason is the useful half, so it goes in the message rather than
+    // a bare count. They are usually all the same reason.
+    const reason = failures[0].reason;
+    toast.error(
+      done > 0
+        ? `${done} ${verb}, ${failures.length} could not be. ${reason}`
+        : `Could not be ${verb}. ${reason}`,
+    );
   };
 
   const handleAssign = (ids: number[]) =>
-    run(
+    void run(
       ids,
-      (userid) => assignBaseGroupToUser(ctx.url, ctx.token, userid, [group.id]),
+      // "all": the whole group, and whatever is added to it later. That is
+      // what this screen means — it assigns a GROUP to people, and has no
+      // store picker, so a "selected" grant would have nothing to name.
+      // Explicit because the argument is required: the server defaults to
+      // "selected" and then refuses it for having no storeids.
+      (userid) =>
+        assignBaseGroupToUser(ctx.url, ctx.token, userid, [group.id], "all"),
       "assigned",
     );
 
   const handleUnassign = (ids: number[]) =>
-    run(
+    void run(
       ids,
       (userid) => deleteUserBaseGroupLink(ctx.url, ctx.token, userid, [group.id]),
       "unassigned",
@@ -110,8 +168,9 @@ const BaseGroupUsersTab = ({ group, users }: Props) => {
 
   return (
     <div className="w-full">
-      {loading && assigned.length + unassigned.length === 0 && (
-        <div className="text-[10.5px] text-content/50 mb-2">Loading users…</div>
+      {((loading && assigned.length + unassigned.length === 0) ||
+        !levelsKnown) && (
+        <div className="text-[11px] text-content/85 mb-2">Loading users…</div>
       )}
       <AssignPanel
         leftTitle="Unassigned"

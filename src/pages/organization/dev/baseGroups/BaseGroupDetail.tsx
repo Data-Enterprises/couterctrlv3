@@ -10,9 +10,15 @@ import type { CompanyBaseGroup, JsonError, User } from "../../../../interfaces";
 import {
   updateBaseGroup,
   deleteBaseGroup,
-  assignStoreToBaseGroup,
-  unAssignStoreToBaseGroup,
+  assignStoreToBaseGroups,
+  unassignStoreFromBaseGroup,
 } from "../../../../api/baseGroups";
+import {
+  callReason,
+  summarizeAssign,
+  summarizeUnassign,
+  type StoreOutcome,
+} from "./storeMembership";
 import AssignPanel from "../../../../components-dev/AssignPanel";
 import IconButton from "../../../../components-dev/IconButton";
 import ConfirmModal from "../../../../components-dev/ConfirmModal";
@@ -91,25 +97,68 @@ const BaseGroupDetail = ({
       .catch((err: JsonError) => toast.error(err.message));
   };
 
-  const handleAssign = (ids: number[]) => {
-    assignStoreToBaseGroup(ctx.url, ctx.token, ids, group.id)
-      .then((resp) => {
-        const j = resp.data;
-        if (j.error === 0) onRefetchStores();
-        else toast.error(j.msg || "Could not assign stores");
-      })
-      .catch((err: JsonError) => toast.error(err.message));
+  const [moving, setMoving] = useState(false);
+
+  /**
+   * Move a selection in or out, one store per call.
+   *
+   * The `groups/` endpoints take one store and do the real work with it —
+   * handing it to everyone holding the group as `all`, or taking it back off
+   * everyone nothing else accounts for. The older `stores/*_link` pair this
+   * replaced wrote `store_base_group_link` and stopped, so a store added to a
+   * group reached nobody who held it.
+   *
+   * `allSettled`, because a dual-list move is several independent writes with
+   * no transaction around them: the first refusal must not hide the ones that
+   * worked. The refetch afterwards means the lists show what the server holds
+   * rather than what was asked of it.
+   */
+  const moveStores = async (
+    ids: number[],
+    direction: "in" | "out",
+  ): Promise<void> => {
+    if (ids.length === 0) return;
+    setMoving(true);
+
+    const settled = await Promise.allSettled(
+      ids.map((storeid) =>
+        direction === "in"
+          ? assignStoreToBaseGroups(ctx.url, ctx.token, storeid, [group.id])
+          : unassignStoreFromBaseGroup(ctx.url, ctx.token, storeid, group.id),
+      ),
+    );
+
+    const outcomes: StoreOutcome[] = settled.map((res, i) => {
+      const storeid = ids[i];
+      if (res.status === "rejected") {
+        return { storeid, ok: false, reason: callReason(res.reason) };
+      }
+      const j = res.value.data;
+      if (j.error !== 0) {
+        return { storeid, ok: false, reason: j.msg ?? "The server refused it." };
+      }
+      return {
+        storeid,
+        ok: true,
+        granted: j.granted_to_users,
+        skippedSingleStore: j.skipped_single_store_users,
+        revoked: j.revoked_from_users,
+      };
+    });
+
+    const summary =
+      direction === "in"
+        ? summarizeAssign(outcomes, group.name)
+        : summarizeUnassign(outcomes, group.name);
+
+    setMoving(false);
+    onRefetchStores();
+    if (summary.tone === "success") toast.success(summary.text);
+    else toast.error(summary.text);
   };
 
-  const handleUnassign = (ids: number[]) => {
-    unAssignStoreToBaseGroup(ctx.url, ctx.token, ids, group.id)
-      .then((resp) => {
-        const j = resp.data;
-        if (j.error === 0) onRefetchStores();
-        else toast.error(j.msg || "Could not unassign stores");
-      })
-      .catch((err: JsonError) => toast.error(err.message));
-  };
+  const handleAssign = (ids: number[]) => void moveStores(ids, "in");
+  const handleUnassign = (ids: number[]) => void moveStores(ids, "out");
 
   const assigned = stores?.assigned ?? [];
   const unassigned = stores?.unassigned ?? [];
@@ -169,9 +218,20 @@ const BaseGroupDetail = ({
 
       {subTab === "stores" &&
         (!stores ? (
-          <div className="text-[11.5px] text-content/60">Loading…</div>
+          <div className="text-[11.5px] text-content/85">Loading…</div>
         ) : (
           <div className="w-full">
+            {/* A move is one call per store and hands the stores out to every
+                user holding this group automatically, so it is neither
+                instant nor only about this screen. Saying so beats a list
+                that sits still. */}
+            <div className="h-4 mb-1">
+              {moving && (
+                <span className="text-[11px] font-semibold text-content/85">
+                  Moving stores, and updating who can see them…
+                </span>
+              )}
+            </div>
             <AssignPanel
               leftTitle="Unassigned"
               rightTitle="Assigned"

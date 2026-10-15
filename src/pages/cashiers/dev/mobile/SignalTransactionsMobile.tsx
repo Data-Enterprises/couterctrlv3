@@ -1,15 +1,18 @@
-import { useEffect, useMemo, useRef } from "react";
-import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
+import { useEffect, useMemo, useRef, type ReactNode } from "react";
+import { ChevronRightIcon } from "@heroicons/react/20/solid";
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
 import { setExplorerReceipt } from "../../../../features/dev/devCashiersSlice";
 import { formatCurrency2 } from "../../../../utils";
 import BottomSheet from "../../../../components-dev/BottomSheet";
+import MobilePerfDetail from "../../../../components-dev/mobile/MobilePerfDetail";
 import Transaction from "../../../../components-dev/transactions/Transaction";
 import {
   describeSignal,
   groupSignalByTransaction,
   formatClock,
+  lensListLabel,
   receiptLinesFor,
+  transactionLabel,
 } from "../explorer/lensUtils";
 import { useCashierSignals } from "../useCashierSignals";
 
@@ -19,13 +22,41 @@ import { useCashierSignals } from "../useCashierSignals";
  *
  * A screen rather than a sheet, matching Loss Prevention: the receipt itself is
  * the sheet, and stacking one inside another is the thing that pattern exists
- * to avoid.
+ * to avoid. It wears `MobilePerfDetail`, the same wrapper every other mobile
+ * Performance drill uses, rather than its own navy bar — the back control, the
+ * scope line and the start-at-the-top behaviour all come with it.
+ *
+ * One tab. `MobilePerfDetail` renders no tab row for a single entry, which is
+ * what this wants: there is one breakdown of a signal and a lone tab would be
+ * a label pretending to be a control.
  *
  * The band under the header is `describeSignal()` — the explorer's own reading
  * of what the signal means ("…likely an unmapped item rather than cashier
  * behavior"). It is the most useful thing the desktop produces and had no
  * mobile home before this.
  */
+
+/**
+ * One labelled figure on a row's second line.
+ *
+ * The label is the quieter half — it is there so the number can be read
+ * without counting positions, not to compete with it. It gets there on case
+ * and letter-spacing rather than opacity, which is the caption treatment the
+ * rest of these screens use and the only one left now the text floor is /95:
+ * dimming a label to subordinate it is exactly what that floor forbids.
+ */
+const Meta = ({
+  label,
+  children,
+}: {
+  label: string;
+  children: ReactNode;
+}) => (
+  <>
+    <span className="uppercase tracking-wider">{label}</span>{" "}
+    <span className="font-semibold text-content">{children}</span>
+  </>
+);
 
 const SignalTransactionsMobile = ({ onBack }: { onBack: () => void }) => {
   const {
@@ -67,111 +98,86 @@ const SignalTransactionsMobile = ({ onBack }: { onBack: () => void }) => {
 
   return (
     <>
-      <div className="flex flex-col h-[calc(100dvh-3rem)] bg-gray-50 overflow-hidden">
-        <div className="bg-brand_navy px-3 pt-2 pb-2.5 flex items-start gap-3 flex-shrink-0">
-          <button
-            onClick={onBack}
-            aria-label="Back to signals"
-            className="text-custom-white/85 mt-0.5 flex-shrink-0"
-          >
-            <ChevronLeftIcon className="w-5 h-5" />
-          </button>
-          <div className="flex-1 min-w-0">
-            <div className="text-[13px] font-semibold text-custom-white truncate">
-              {signal.label}
-            </div>
-            <div className="text-[11px] mt-0.5 text-custom-white/85 truncate">
-              {explorerFetchedException} · {signal.sublabel}
-            </div>
-          </div>
-        </div>
-
-        <div className="px-3 py-2 bg-custom-white border-b border-brand_navy/15 flex-shrink-0">
-          <p className="text-[11px] leading-relaxed text-content/85">
+      <MobilePerfDetail
+        tabs={[{ key: "transactions" as const, label: "Transactions" }]}
+        active="transactions"
+        onTab={() => {}}
+        scopeName={signal.label}
+        when={`${explorerFetchedException} · ${signal.sublabel}`}
+        backLabel={`Back to ${lensListLabel(explorerLens)}`}
+        onBack={onBack}
+        levelKey={`signal|${signal.key}`}
+      >
+        <section className="overflow-hidden rounded-2xl border border-gray-200 bg-custom-white shadow-md">
+          <p className="border-b border-brand_line px-3.5 py-2.5 text-[12px] leading-relaxed text-content/95">
             {describeSignal(signal, explorerLens)}
           </p>
-        </div>
 
-        <div className="grid grid-cols-3 divide-x divide-gray-100 bg-custom-white border-b border-brand_navy/15 flex-shrink-0">
-          <div className="px-3 py-2">
-            <div className="text-[10px] font-medium uppercase tracking-wide text-content/85">
-              Trans
-            </div>
-            <div className="text-[12px] font-semibold text-content mt-0.5 tabular-nums">
-              {signal.transactions.toLocaleString()}
-            </div>
+          <div className="grid grid-cols-3 gap-x-4 gap-y-2.5 border-b border-brand_line px-3.5 py-2.5">
+            {(
+              [
+                ["Trans", signal.transactions.toLocaleString()],
+                ["Lines", signal.count.toLocaleString()],
+                ["Total", formatCurrency2(signal.amount)],
+              ] as [string, string][]
+            ).map(([k, v]) => (
+              <div key={k} className="flex flex-col items-center text-center">
+                <span className="font-mono text-[9.5px] uppercase tracking-wider text-content/95">
+                  {k}
+                </span>
+                <span className="font-display text-[15px] font-bold tabular-nums text-content">
+                  {v}
+                </span>
+              </div>
+            ))}
           </div>
-          <div className="px-3 py-2">
-            <div className="text-[10px] font-medium uppercase tracking-wide text-content/85">
-              Lines
-            </div>
-            <div className="text-[12px] font-semibold text-content mt-0.5 tabular-nums">
-              {signal.count.toLocaleString()}
-            </div>
-          </div>
-          <div className="px-3 py-2">
-            <div className="text-[10px] font-medium uppercase tracking-wide text-content/85">
-              Total
-            </div>
-            <div className="text-[12px] font-semibold text-content mt-0.5 tabular-nums">
-              {formatCurrency2(signal.amount)}
-            </div>
-          </div>
-        </div>
 
-        <div className="flex items-center justify-between px-3 py-1.5 bg-gray-100 border-b border-brand_navy/15 flex-shrink-0 text-[10px] font-medium uppercase tracking-wide text-content/85">
-          <span>Transaction · cashier</span>
-          <span>Lines · qty · amount</span>
-        </div>
-
-        {/* pb-14 clears the fixed bottom tab bar. */}
-        <div className="flex-1 overflow-y-auto pb-14">
           {rows.map((r) => (
             <button
               key={r.saleId}
+              type="button"
               onClick={() => dispatch(setExplorerReceipt(r.saleId))}
-              className="w-full px-3 py-2.5 bg-custom-white border-b border-brand_navy/15 even:bg-row_stripe text-left active:bg-gray-50"
+              className="block w-full border-t border-brand_line px-3.5 py-3 text-left first:border-t-0 active:bg-bkg"
             >
-              <div className="flex items-center gap-2">
-                <span className="text-[12px] font-medium text-content">
-                  #{r.saleId}
+              <div className="flex items-baseline gap-2">
+                <span className="flex-none font-display text-[13.5px] font-semibold text-content">
+                  #{transactionLabel(r.saleId)}
                 </span>
                 {/* The cashier is the answer on every lens except Cashier —
                     on Store, Item and Terminal it is exactly who you are
                     trying to identify. */}
-                <span className="flex-1 text-[12px] text-content/85 truncate">
+                <span className="min-w-0 flex-1 truncate text-[12.5px] text-content/95">
                   {r.cashierName}
                 </span>
-                <span className="text-[12px] font-semibold text-content tabular-nums">
+                <span className="flex-none font-display text-[13px] font-bold tabular-nums text-content">
                   {formatCurrency2(r.amount)}
                 </span>
-                <ChevronRightIcon className="w-4 h-4 text-content/85 flex-shrink-0" />
+                <ChevronRightIcon className="h-4 w-4 flex-none self-center text-content/95" />
               </div>
-              <div className="flex items-center gap-2 mt-1">
-                <span className="flex-1 text-[11px] text-content/85 tabular-nums truncate">
-                  {r.saleDate.split("T")[0].slice(5).replace("-", "/")}
-                  {r.startTime ? ` · ${formatClock(r.startTime)}` : ""}
-                </span>
-                {/* "1 of 2 · last" — position in the receipt, and whether the
-                    exception was the final line. Voiding the last line is the
-                    classic tell, and desktop calls it out in its own summary,
-                    so it cannot be dropped on mobile. */}
-                <span className="text-[11px] text-content/85 tabular-nums">
-                  {r.lineCount} of {r.totalLines}
-                </span>
-                {r.hasLastLine && (
-                  <span className="text-[11px] font-semibold px-1.5 py-0.5 rounded bg-amber-100 text-amber-800">
-                    last
-                  </span>
-                )}
-                <span className="text-[11px] text-content/85 tabular-nums">
-                  {r.qty} qty
+              {/* Each figure carries its own label rather than sitting under
+                  a column band that scrolls away on the second row. Date and
+                  time especially: "10/14 · 16:12" is two unlabelled numbers,
+                  and on a refund row beside a quantity it is not obvious
+                  which is which. */}
+              <div className="mt-1 flex items-center gap-2">
+                <span className="min-w-0 truncate font-mono text-[12px] tabular-nums text-content/95">
+                  <Meta label="Date">
+                    {r.saleDate.split("T")[0].slice(5).replace("-", "/")}
+                  </Meta>
+                  {r.startTime && (
+                    <>
+                      {" · "}
+                      <Meta label="Time">{formatClock(r.startTime)}</Meta>
+                    </>
+                  )}
+                  {" · "}
+                  <Meta label="Qty">{r.qty}</Meta>
                 </span>
               </div>
             </button>
           ))}
-        </div>
-      </div>
+        </section>
+      </MobilePerfDetail>
 
       {receipt.length > 0 && (
         <BottomSheet

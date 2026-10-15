@@ -74,7 +74,7 @@ const PerfCardHeader = ({
         type="button"
         onClick={onSearch}
         aria-label="New search"
-        className="flex h-7 w-7 flex-none items-center justify-center rounded border border-gray-200 text-content/85 active:bg-bkg"
+        className="flex h-7 w-7 flex-none items-center justify-center rounded border border-gray-200 text-content/95 active:bg-bkg"
       >
         <MagnifyingGlassIcon className="h-3.5 w-3.5" />
       </button>
@@ -87,7 +87,7 @@ const PerfCardHeader = ({
           <span className="min-w-0 truncate font-display text-[14px] font-bold text-content underline decoration-content/40 underline-offset-[3px]">
             {title}
           </span>
-          <ChevronDownIcon className="h-4 w-4 flex-none text-content/85" />
+          <ChevronDownIcon className="h-4 w-4 flex-none text-content/95" />
         </button>
       ) : (
         <span className="min-w-0 truncate font-display text-[14px] font-bold text-content">
@@ -95,7 +95,7 @@ const PerfCardHeader = ({
         </span>
       )}
       {note && (
-        <span className="flex-none text-[12px] text-content/85">{note}</span>
+        <span className="flex-none text-[12px] text-content/95">{note}</span>
       )}
       {onInfo && (
         // Same solid 20px mark as the desktop headers' "?".
@@ -103,7 +103,7 @@ const PerfCardHeader = ({
           type="button"
           onClick={onInfo}
           aria-label="What this page shows"
-          className="-mr-1 ml-auto flex h-7 w-7 flex-none items-center justify-center rounded-full text-content/85 active:bg-bkg"
+          className="-mr-1 ml-auto flex h-7 w-7 flex-none items-center justify-center rounded-full text-content/95 active:bg-bkg"
         >
           <QuestionMarkCircleIcon className="h-5 w-5" />
         </button>
@@ -119,17 +119,17 @@ const PerfCardHeader = ({
         aria-expanded={open}
         className="flex w-full items-center gap-2 px-4 pt-2 text-left active:bg-bkg"
       >
-        <span className="min-w-0 flex-1 truncate font-mono text-[10px] uppercase tracking-wider text-content/85">
+        <span className="min-w-0 flex-1 truncate font-mono text-[10px] uppercase tracking-wider text-content/95">
           {[label, when].filter(Boolean).join(" · ")}
         </span>
         {open ? (
-          <ChevronDownIcon className="h-4 w-4 flex-none text-content/85" />
+          <ChevronDownIcon className="h-4 w-4 flex-none text-content/95" />
         ) : (
-          <ChevronRightIcon className="h-4 w-4 flex-none text-content/85" />
+          <ChevronRightIcon className="h-4 w-4 flex-none text-content/95" />
         )}
       </button>
     ) : (
-      <div className="truncate px-4 pt-2 font-mono text-[10px] uppercase tracking-wider text-content/85">
+      <div className="truncate px-4 pt-2 font-mono text-[10px] uppercase tracking-wider text-content/95">
         {/* Either part can be empty — no store selected leaves only the dates —
             so join what's there rather than leading with a stray dot. */}
         {[label, when].filter(Boolean).join(" · ")}

@@ -70,9 +70,17 @@ const BaseGroupUsersTab = ({ group }: Props) => {
   const handleAssign = (ids: number[]) => {
     Promise.all(
       ids.map((userid) =>
-        assignBaseGroupToUser(ctx.url, ctx.token, userid, [group.id]).then(
-          (resp) => ({ userid, ok: resp.data.error === 0 }),
-        ),
+        // "all": the whole group, which is what assigning a base group to a
+        // person has always meant here — there is no store picker on this
+        // screen. Explicit because the argument is required: the server's
+        // default is "selected", and "selected" with no storeids is refused.
+        assignBaseGroupToUser(
+          ctx.url,
+          ctx.token,
+          userid,
+          [group.id],
+          "all",
+        ).then((resp) => ({ userid, ok: resp.data.error === 0 })),
       ),
     )
       .then((results) => {

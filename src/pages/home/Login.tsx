@@ -190,11 +190,13 @@ const Login = () => {
         if (j.error == 0) {
           dispatch(setToken(j.access_token));
           // Login runs against `context.url`, so this token belongs to
-          // whichever environment `apiEnv` currently points at. It has to be
-          // filed under that one specifically: `useDevApi`
-          // (AccountSetupModal) reads `devToken` directly, and if the dev slot
-          // is empty it carries an empty string and 401s for everyone below
-          // role 9.
+          // whichever environment `apiEnv` currently points at, and has to be
+          // filed under that one specifically. `useDevApi` reads `devToken`
+          // directly, and an empty slot there means `Bearer ` with nothing
+          // after it: Export Builder, Invoices and the Inventory pages all
+          // take that route. (AccountSetupModal used to and no longer does —
+          // it follows the signed-in environment now, since both share one
+          // RDS.)
           dispatch(
             context.apiEnv === "dev"
               ? setDevToken(j.access_token)
@@ -212,8 +214,6 @@ const Login = () => {
           // is worth prefilling next time.
           if (remember) saveRememberedUsername(state.username);
           setUseImpersonation(0);
-          // The other environment's token, purely so the LIVE/PREVIEW switch
-          // works the instant it's offered. Skipped entirely while
           // The other environment's token, fetched up front because the
           // dropdown switch is a pointer swap between two held credentials
           // rather than a re-auth — flipping with an empty slot just 401s.

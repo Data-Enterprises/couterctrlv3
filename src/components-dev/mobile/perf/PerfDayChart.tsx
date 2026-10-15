@@ -73,7 +73,7 @@ const PerfDayChart = ({ days, selected, onToggle }: Props) => {
               {col(d.ly, LY_COLOR)}
             </span>
             <span
-              className={`text-[11.5px] ${isSel ? "font-bold text-content" : "font-medium text-content/85"}`}
+              className={`text-[11.5px] ${isSel ? "font-bold text-content" : "font-medium text-content/95"}`}
             >
               {d.label}
             </span>

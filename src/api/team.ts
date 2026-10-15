@@ -1,7 +1,20 @@
 import axios from "axios";
 import type { UserData } from "../features/usersSlice";
+import type { GrantMode } from "../interfaces";
 
-// groups/base_groups_assigned_to_user
+/**
+ * Every base group in the user's companies, split by whether they hold it.
+ *
+ * Returns `{ active, inactive }` — **not** `{ groups }`. The name and the old
+ * comment both said `base_groups_assigned_to_user`, which is a real endpoint
+ * returning the other shape, and three callers read `j.groups` off this one
+ * and silently got `undefined`. It calls the `_split` twin; the name is left
+ * alone because four other callers already read it correctly.
+ *
+ * `active` rows are the ones the user holds, each carrying its `mode` —
+ * `all` or `selected`. That is the whole list Edit user needs: no filtering,
+ * because the split already did it.
+ */
 export const getBaseGroupsAssignedToUser = async (
   url: string,
   token: string,
@@ -22,11 +35,37 @@ export const getBaseGroupsAssignedToUser = async (
 };
 
 // groups/assign_base_group_to_user
+/**
+ * Grant base groups to a user, in one mode.
+ *
+ * `all` hands over the whole group and whatever is added to it later; the
+ * endpoint writes the roster into `assigned` and records no provenance,
+ * because the group itself is the reason.
+ *
+ * `selected` hands over `storeids` only, and they must already be in the
+ * group — the endpoint drops any that are not rather than granting a store
+ * the group does not contain. Those picks are recorded in `assigned_via`, so
+ * revoking the group later removes exactly them and leaves alone any store
+ * another group still accounts for.
+ *
+ * One mode per call, so a user holding East as `all` and South as `selected`
+ * is two calls. See `useAccessSave`.
+ *
+ * **`mode` is required, deliberately.** There is no safe default to fall back
+ * on: the server's own is `'selected'`, and `'selected'` with no storeids is
+ * refused outright — so a caller that omits it does not get the old
+ * behaviour, it gets a 400. Defaulting to `'all'` here instead would be worse
+ * in a different way, silently handing over a whole group and every store
+ * later added to it. Required means the question gets answered at each call
+ * site, and a new caller that forgets will not compile.
+ */
 export const assignBaseGroupToUser = async (
   url: string,
   token: string,
   userid: number,
   groupid: number[],
+  mode: GrantMode,
+  storeids?: number[],
 ) => {
   const json = await axios({
     method: "POST",
@@ -38,7 +77,36 @@ export const assignBaseGroupToUser = async (
     data: {
       userid,
       groupid,
+      mode,
+      ...(mode === "selected" ? { storeids: storeids ?? [] } : {}),
     },
+  });
+  return json;
+};
+
+/**
+ * Which stores a user picked, and through which group.
+ *
+ * The other half of `mode`: that says a group is held as `selected`, this
+ * says which stores were selected in it. A group held as `all` has no rows
+ * here at all, and its absence is the answer rather than a gap.
+ *
+ * Replaces the guess the access panel used to make — a store from
+ * `users/stores` carried no group, so it was tagged with group 0.
+ */
+export const getUserGroupPicks = async (
+  url: string,
+  token: string,
+  userid: number,
+) => {
+  const json = await axios({
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    url: url + "groups/user_group_picks",
+    params: { userid },
   });
   return json;
 };

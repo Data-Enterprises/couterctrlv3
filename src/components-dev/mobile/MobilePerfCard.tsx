@@ -9,9 +9,11 @@ import {
 interface Props {
   /** What this row is — a store, a sub department, a vendor, a category. */
   label: string;
-  /** The figure beside the name, preformatted. Neutral: no grading on mobile
-   *  Performance, so this is information and never a verdict. */
-  change: string;
+  /** The figure beside the name, already formatted and already coloured —
+   *  callers pass `PerfChange`, which greens a rise, reds a fall and leaves
+   *  an exactly-flat week plain. A direction flag, not a grade: nothing here
+   *  is measured against a threshold. */
+  change: ReactNode;
   /** A flag on the change, e.g. a short comparison period. */
   flagged?: boolean;
   flagNote?: string;
@@ -87,12 +89,12 @@ const MobilePerfCard = ({
               type="button"
               onClick={onSearch}
               aria-label="New search"
-              className="flex h-7 w-7 flex-none items-center justify-center rounded border border-gray-200 text-content/85 active:bg-bkg"
+              className="flex h-7 w-7 flex-none items-center justify-center rounded border border-gray-200 text-content/95 active:bg-bkg"
             >
               <MagnifyingGlassIcon className="h-3.5 w-3.5" />
             </button>
           )}
-          <span className="min-w-0 flex-1 truncate font-mono text-[10px] uppercase tracking-wider text-content/85">
+          <span className="min-w-0 flex-1 truncate font-mono text-[10px] uppercase tracking-wider text-content/95">
             {when}
           </span>
           {onInfo && (
@@ -100,7 +102,7 @@ const MobilePerfCard = ({
               type="button"
               onClick={onInfo}
               aria-label="What this page shows"
-              className="-mr-1 flex h-7 w-7 flex-none items-center justify-center rounded-full text-content/85 active:bg-bkg"
+              className="-mr-1 flex h-7 w-7 flex-none items-center justify-center rounded-full text-content/95 active:bg-bkg"
             >
               <QuestionMarkCircleIcon className="h-5 w-5" />
             </button>
@@ -128,21 +130,21 @@ const MobilePerfCard = ({
             className={`flex-none text-[12px] font-semibold ${
               flagged
                 ? "rounded bg-gray-200 px-1.5 text-content"
-                : "text-content/85"
+                : "text-content/95"
             }`}
           >
             {change}
           </span>
           {onToggle &&
             (open ? (
-              <ChevronDownIcon className="h-4 w-4 flex-none self-center text-content/85" />
+              <ChevronDownIcon className="h-4 w-4 flex-none self-center text-content/95" />
             ) : (
-              <ChevronRightIcon className="h-4 w-4 flex-none self-center text-content/85" />
+              <ChevronRightIcon className="h-4 w-4 flex-none self-center text-content/95" />
             ))}
         </div>
 
         {flagged && !minimised && flagNote && (
-          <div className="text-[11px] text-content/85">{flagNote}</div>
+          <div className="text-[11px] text-content/95">{flagNote}</div>
         )}
 
         {/* The comparison belongs to the collapsed row; inside an open card it

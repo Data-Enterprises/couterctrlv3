@@ -20,7 +20,7 @@ const CpnSortToggle = ({ value, onChange }: Props) => (
         className={`px-2 text-[10px] font-medium transition-colors ${
           value === m
             ? "bg-custom-white/20 text-custom-white"
-            : "text-custom-white/75 hover:text-custom-white"
+            : "text-custom-white/95 hover:text-custom-white"
         }`}
       >
         {m === "amount" ? "Amt" : "Qty"}

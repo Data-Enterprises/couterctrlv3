@@ -55,12 +55,23 @@ const PerfDelta = ({
   // `format`: the callers pass currency, count and percentage formatters that
   // each punctuate a negative their own way, and a headline reading
   // "+-$1,672.38" is the kind of thing that ships.
-  const label = `${delta >= 0 ? "+" : "-"}${format(Math.abs(delta))}`;
+  // No sign and no colour at exactly zero: a week that landed on the figure
+  // it is measured against did not go either way, and "+$0.00" in green
+  // invents a direction the number does not have. Same rule as PerfChange, so
+  // the percentage and the money agree on what counts as a move.
+  const sign = delta > 0 ? "+" : delta < 0 ? "-" : "";
+  const label = `${sign}${format(Math.abs(delta))}`;
 
   return (
     <span
       className={`font-display text-[15px] font-bold leading-none tracking-tight ${className}`}
-      style={{ color: delta >= 0 ? UP_COLOR : DOWN_COLOR }}
+      style={
+        delta > 0
+          ? { color: UP_COLOR }
+          : delta < 0
+            ? { color: DOWN_COLOR }
+            : undefined
+      }
     >
       {label}
     </span>

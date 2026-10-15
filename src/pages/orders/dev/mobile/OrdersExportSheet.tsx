@@ -220,7 +220,7 @@ const OrdersExportSheet = ({
       <div className="flex items-center justify-between px-4 pb-3 border-b border-gray-100">
         <div className="min-w-0">
           <div className="text-[13px] font-bold text-content">Export CSV</div>
-          <div className="text-[10px] text-content/85 mt-0.5 truncate">
+          <div className="text-[10px] text-content/95 mt-0.5 truncate">
             {storeLabel} — {orderType}
           </div>
         </div>
@@ -230,7 +230,7 @@ const OrdersExportSheet = ({
               key={m}
               onClick={() => setMode(m)}
               className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors ${
-                mode === m ? "bg-brand_navy text-custom-white" : "text-content/85"
+                mode === m ? "bg-brand_navy text-custom-white" : "text-content/95"
               }`}
             >
               {m === "presets" ? "Presets" : "Custom"}
@@ -250,7 +250,7 @@ const OrdersExportSheet = ({
             />
             <div>
               <div className="text-[13px] font-medium text-content">All Orders</div>
-              <div className="text-[11px] text-content/85 mt-0.5">
+              <div className="text-[11px] text-content/95 mt-0.5">
                 All {allOrders.length} line items for {storeLabel} — {orderType} on {dateLabel}
               </div>
             </div>
@@ -268,7 +268,7 @@ const OrdersExportSheet = ({
               <div className="text-[13px] font-medium text-content">
                 Selected Order {selectedOrder ? `#${selectedOrder.orderId}` : ""}
               </div>
-              <div className="text-[11px] text-content/85 mt-0.5">
+              <div className="text-[11px] text-content/95 mt-0.5">
                 {hasSelected ? `${selectedOrderItems.length} line items for order #${selectedOrder?.orderId}` : "Select an order from the list to enable"}
               </div>
             </div>
@@ -301,7 +301,7 @@ const OrdersExportSheet = ({
                     >
                       All
                     </button>
-                    <span className="text-[10px] text-content/40">·</span>
+                    <span className="text-[10px] text-content/95">·</span>
                     <button
                       onClick={(e) => { e.preventDefault(); applyPresetSubDepts(new Set()); }}
                       disabled={noPresetSubDeptsSelected}
@@ -311,7 +311,7 @@ const OrdersExportSheet = ({
                     </button>
                   </div>
                 </div>
-                <div className="text-[11px] text-content/85 mt-0.5">
+                <div className="text-[11px] text-content/95 mt-0.5">
                   {presetSubDeptFilteredOrders.length} line items across {presetSubDepts.size} of {uniqueSubDepts.length} sub depts
                 </div>
                 <div className="flex flex-wrap gap-1.5 mt-2">
@@ -338,7 +338,7 @@ const OrdersExportSheet = ({
           {isMultiSubDept && (
             <div>
               <div className="flex items-center justify-between mb-2">
-                <div className="text-[10px] font-semibold uppercase tracking-wide text-content/85">Sub Depts</div>
+                <div className="text-[10px] font-semibold uppercase tracking-wide text-content/95">Sub Depts</div>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setCustomSubDepts(new Set(uniqueSubDepts.map((s) => s.id)))}
@@ -347,7 +347,7 @@ const OrdersExportSheet = ({
                   >
                     All
                   </button>
-                  <span className="text-[10px] text-content/40">·</span>
+                  <span className="text-[10px] text-content/95">·</span>
                   <button
                     onClick={() => setCustomSubDepts(new Set())}
                     disabled={noSubDeptsSelected}
@@ -367,7 +367,7 @@ const OrdersExportSheet = ({
                       className="accent-brand_navy h-3.5 w-3.5 rounded flex-shrink-0"
                     />
                     <span className="text-[12px] text-content truncate flex-1">{s.id}</span>
-                    <span className="text-[10px] text-content/85 flex-shrink-0">{s.count} ln</span>
+                    <span className="text-[10px] text-content/95 flex-shrink-0">{s.count} ln</span>
                   </label>
                 ))}
               </div>
@@ -375,7 +375,7 @@ const OrdersExportSheet = ({
           )}
 
           <div>
-            <div className="text-[10px] font-semibold uppercase tracking-wide text-content/85 mb-2">Group By</div>
+            <div className="text-[10px] font-semibold uppercase tracking-wide text-content/95 mb-2">Group By</div>
             <div className="space-y-2">
               {DIMS.map((d) => (
                 <label key={d.key} className="flex items-center gap-2">
@@ -392,7 +392,7 @@ const OrdersExportSheet = ({
           </div>
 
           <div>
-            <div className="text-[10px] font-semibold uppercase tracking-wide text-content/85 mb-2">Metrics</div>
+            <div className="text-[10px] font-semibold uppercase tracking-wide text-content/95 mb-2">Metrics</div>
             <div className="space-y-2">
               {METRICS.map((m) => {
                 const sel = metrics.get(m.key)!;
@@ -404,7 +404,7 @@ const OrdersExportSheet = ({
                       onChange={() => toggleMetric(m.key)}
                       className="accent-brand_navy h-3.5 w-3.5 rounded flex-shrink-0"
                     />
-                    <span className={`text-[12px] flex-1 ${sel.enabled ? "text-content" : "text-content/85"}`}>{m.label}</span>
+                    <span className={`text-[12px] flex-1 ${sel.enabled ? "text-content" : "text-content/95"}`}>{m.label}</span>
                     <select
                       value={sel.fn}
                       disabled={!sel.enabled}
@@ -423,7 +423,7 @@ const OrdersExportSheet = ({
             </div>
           </div>
 
-          <div className="text-[10px] text-content/85">
+          <div className="text-[10px] text-content/95">
             Working on {customFilteredOrders.length} of {allOrders.length} line items
             {isMultiSubDept ? ` · ${customSubDepts.size} of ${uniqueSubDepts.length} sub depts` : ""} for {orderType} on {dateLabel}.
           </div>
@@ -431,7 +431,7 @@ const OrdersExportSheet = ({
       )}
 
       <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
-        <button onClick={onClose} className="text-[12px] text-content/85">
+        <button onClick={onClose} className="text-[12px] text-content/95">
           Cancel
         </button>
         <button
