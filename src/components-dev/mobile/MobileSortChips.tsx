@@ -49,7 +49,7 @@ const MobileSortChips = <K extends string>({
     role="radiogroup"
     // Named for a screen reader whether or not it is named on screen.
     aria-label={label ?? "Sort by"}
-    className="flex items-center gap-2 overflow-x-auto border-b border-gray-100 py-2 pl-3.5"
+    className="flex items-center gap-2 overflow-x-auto border-b border-brand_line py-2 pl-3.5"
   >
     {label && (
       <span className="flex-shrink-0 font-mono text-[10px] uppercase tracking-wider text-content/85">

@@ -7,54 +7,88 @@ import {
 import MobileSortChips, {
   type SortOption,
 } from "../../../../../components-dev/mobile/MobileSortChips";
-import { formatCurrency2 } from "../../../../../utils";
-import { LY_COLOR, TY_COLOR } from "../../../../../components-dev/mobile/perf/perfColors";
-import { fmtChange, pairChangePct, type PerfPair, type PairSort } from "./perfData";
+import PairedBars from "../../../../../components-dev/mobile/perf/PairedBars";
+import { TY_COLOR } from "../../../../../components-dev/mobile/perf/perfColors";
+import {
+  cmpLabels,
+  cmpShort,
+  cmpWord,
+  fmtChange,
+  pairChangePct,
+  type CmpBasis,
+  type PerfPair,
+  type PairSort,
+} from "./perfData";
 import type { PerfDrill } from "../../../../../features/dev/devSalesPerfSlice";
 
 /** What each drill can sort by. Hours adds the time of day, which is also its
- *  default — a day reads as a timeline first. */
-const SUB_SORTS: SortOption<PairSort>[] = [
+ *  default — a day reads as a timeline first.
+ *
+ *  No sort by name. These lists are read for where the money went, and
+ *  alphabetical order answers a question nobody brought to a Performance
+ *  page; `PairSort` keeps the "name" case because the store list still sorts
+ *  by store number, which is an identifier rather than a name. */
+const subSorts = (basis: CmpBasis): SortOption<PairSort>[] => [
   { key: "sales", label: "Sales" },
-  { key: "change", label: "Change vs LY" },
-  { key: "name", label: "Name" },
+  { key: "change", label: `Change vs ${cmpShort(basis)}` },
 ];
 
-const HOUR_SORTS: SortOption<PairSort>[] = [
+const hourSorts = (basis: CmpBasis): SortOption<PairSort>[] => [
   { key: "time", label: "Time" },
   { key: "sales", label: "Sales" },
-  { key: "change", label: "Change vs LY" },
+  { key: "change", label: `Change vs ${cmpShort(basis)}` },
 ];
 
-const ITEM_SORTS: SortOption<PairSort>[] = [
+const itemSorts = (basis: CmpBasis): SortOption<PairSort>[] => [
   { key: "sales", label: "Sales" },
-  { key: "change", label: "Change vs LY" },
-  { key: "name", label: "Name" },
+  { key: "change", label: `Change vs ${cmpShort(basis)}` },
 ];
 
 
 /**
- * This year and last on one line, under the row's name.
+ * This year against last year, under the row's name.
  *
- * These lists are read by scanning names, so a row is two tight lines rather
- * than the three a pair of bars needs — at twenty sub departments the bars
- * turned a list into a scroll. The comparison still has to be here, though:
- * a change of −12.4% means nothing without the size it is 12.4% of.
+ * Was two lines of mono figures, on the reasoning that these lists are read by
+ * scanning names and twenty sub departments of bars turn a list into a scroll.
+ * The scroll is real and the rows are taller for it, but figures alone made
+ * every row its own puzzle: $32,676.83 against $34,115.27 is a subtraction the
+ * reader has to perform, and a list of twenty is twenty subtractions. Bars are
+ * the comparison, pre-done, and the figures ride along in their value column —
+ * so this costs a line per row and gives back the reason the list exists.
+ * Asked for by a client, on all three drills.
+ *
+ * `max` is the list's own largest figure, never the row's, so a $200
+ * department and a $20,000 one are not drawn the same width.
  */
-const Figures = ({ ty, ly, noLy }: { ty: number; ly: number; noLy?: boolean }) => (
-  <div className="mt-0.5 flex items-baseline gap-3 font-mono text-[11px]">
-    <span className="text-content/85">
-      <span style={{ color: TY_COLOR }}>TY</span>{" "}
-      <span className="font-semibold text-content">{formatCurrency2(ty)}</span>
-    </span>
-    <span className="text-content/85">
-      <span style={{ color: LY_COLOR }}>LY</span>{" "}
-      <span className="font-semibold text-content">
-        {noLy ? "no history" : formatCurrency2(ly)}
-      </span>
-    </span>
+const Bars = ({
+  ty,
+  ly,
+  noLy,
+  max,
+  basis,
+}: {
+  ty: number;
+  ly: number;
+  noLy?: boolean;
+  max: number;
+  basis: CmpBasis;
+}) => (
+  <div className="mt-1.5">
+    <PairedBars
+      ty={ty}
+      ly={ly}
+      max={max}
+      labels={cmpLabels(basis)}
+      lyUnavailable={noLy}
+      compact
+    />
   </div>
 );
+
+/** The scale every row in one drill shares. 1 floors it so an all-zero list
+ *  divides by something. */
+const scaleOf = (pairs: PerfPair[]) =>
+  Math.max(...pairs.map((p) => Math.max(p.ty, p.noLy ? 0 : p.ly)), 1);
 
 interface ItemProps {
   pairs: PerfPair[];
@@ -67,6 +101,8 @@ interface ItemProps {
   onQuery: (q: string) => void;
   partial: boolean;
   note: string;
+  /** Which period these items are drawn against. */
+  basis: CmpBasis;
   /** Nothing sold this week — the rows on screen are last year's, at $0.00. */
   noTy: boolean;
 }
@@ -79,6 +115,8 @@ interface Props {
   onSort: (s: PairSort) => void;
   listPartial: boolean;
   listNote: string;
+  /** Which period the sub-department and hour rows are drawn against. */
+  basis: CmpBasis;
   shownDay: string | null;
   /** The store's bundle is still in flight. */
   loading: boolean;
@@ -111,6 +149,7 @@ const PerfDrillList = ({
   onSort,
   listPartial,
   listNote,
+  basis,
   shownDay,
   loading,
   storeName,
@@ -139,7 +178,7 @@ const PerfDrillList = ({
   if (showingItems && openSubDept) {
     return (
       <div>
-        <div className="border-b border-gray-100 px-3.5 pb-2.5 pt-2">
+        <div className="border-b border-brand_line px-3.5 pb-2.5 pt-2">
           <button
             type="button"
             onClick={() => onOpenSubDept(null)}
@@ -163,7 +202,7 @@ const PerfDrillList = ({
           </div>
         </div>
 
-        <div className="border-b border-gray-100 px-3.5 py-2">
+        <div className="border-b border-brand_line px-3.5 py-2">
           <div className="flex items-center gap-2 rounded-lg bg-bkg px-3">
             <MagnifyingGlassIcon className="h-4 w-4 flex-none text-content/85" />
             <input
@@ -195,21 +234,21 @@ const PerfDrillList = ({
         </div>
 
         <MobileSortChips
-          options={ITEM_SORTS}
+          options={itemSorts(items.basis)}
           value={items.sort}
           dir={items.sortDir}
           onChange={items.onSort}
         />
 
         {!shownDay && items.noTy && (
-          <p className="border-b border-gray-100 bg-gray-100 px-3.5 py-2 text-[11.5px] font-semibold text-content">
+          <p className="border-b border-brand_line bg-gray-100 px-3.5 py-2 text-[11.5px] font-semibold text-content">
             Nothing sold this week. Showing last year's items.
           </p>
         )}
 
         {!shownDay && items.partial && (
-          <p className="border-b border-gray-100 bg-gray-100 px-3.5 py-2 text-[11.5px] font-semibold text-content">
-            Last year: {items.note}
+          <p className="border-b border-brand_line bg-gray-100 px-3.5 py-2 text-[11.5px] font-semibold text-content">
+            {cmpWord(items.basis)}: {items.note}
           </p>
         )}
 
@@ -228,12 +267,15 @@ const PerfDrillList = ({
               : `No items sold ${shownDay ? "on this day" : "this week or last year"}.`}
           </div>
         ) : (
+          // One scale for the whole item list, computed once rather than per
+          // row — see `scaleOf`.
+          ((itemMax) =>
           items.pairs.map((p) => {
             const change = pairChangePct(p);
             return (
               <div
                 key={p.key}
-                className="border-t border-gray-100 px-3.5 py-3 first:border-t-0"
+                className="border-t border-brand_line px-3.5 py-3 first:border-t-0"
               >
                 <div className="flex items-baseline gap-2">
                   <span className="min-w-0 flex-1 truncate font-display text-[13.5px] font-semibold text-content">
@@ -246,10 +288,10 @@ const PerfDrillList = ({
                 <div className="font-mono text-[10px] tracking-wider text-content/85">
                   {p.key}
                 </div>
-                <Figures ty={p.ty} ly={p.ly} noLy={p.noLy} />
+                <Bars ty={p.ty} ly={p.ly} noLy={p.noLy} max={itemMax} basis={items.basis} />
               </div>
             );
-          })
+          }))(scaleOf(items.pairs))
         )}
       </div>
     );
@@ -258,7 +300,7 @@ const PerfDrillList = ({
   return (
     <div>
       <MobileSortChips
-        options={opensItems ? SUB_SORTS : HOUR_SORTS}
+        options={opensItems ? subSorts(basis) : hourSorts(basis)}
         value={sort}
         dir={sortDir}
         onChange={onSort}
@@ -269,14 +311,14 @@ const PerfDrillList = ({
           and on the group card, where rows lead nowhere, its absence is the
           honest signal. */}
       {opensItems && (
-        <p className="border-b border-gray-100 px-3.5 py-2.5 text-[12px] text-content/85">
+        <p className="border-b border-brand_line px-3.5 py-2.5 text-[12px] text-content/85">
           Open a sub department to see its items.
         </p>
       )}
 
       {listPartial && (
-        <p className="border-b border-gray-100 bg-gray-100 px-3.5 py-2 text-[11.5px] font-semibold text-content">
-          Last year: {listNote}
+        <p className="border-b border-brand_line bg-gray-100 px-3.5 py-2 text-[11.5px] font-semibold text-content">
+          {cmpWord(basis)}: {listNote}
         </p>
       )}
 
@@ -285,6 +327,7 @@ const PerfDrillList = ({
           Nothing recorded for this selection.
         </div>
       ) : (
+        ((listMax) =>
         pairs.map((p) => {
           const change = pairChangePct(p);
           const Row = opensItems ? "button" : "div";
@@ -298,7 +341,7 @@ const PerfDrillList = ({
                       onOpenSubDept({ id: Number(p.key), label: p.label }),
                   }
                 : {})}
-              className={`block w-full border-t border-gray-100 px-3.5 py-3 text-left first:border-t-0 ${
+              className={`block w-full border-t border-brand_line px-3.5 py-3 text-left first:border-t-0 ${
                 opensItems ? "active:bg-bkg" : ""
               }`}
             >
@@ -316,10 +359,10 @@ const PerfDrillList = ({
                   <ChevronRightIcon className="h-4 w-4 flex-none self-center text-content/85" />
                 )}
               </div>
-              <Figures ty={p.ty} ly={p.ly} noLy={p.noLy} />
+              <Bars ty={p.ty} ly={p.ly} noLy={p.noLy} max={listMax} basis={basis} />
             </Row>
           );
-        })
+        }))(scaleOf(pairs))
       )}
     </div>
   );

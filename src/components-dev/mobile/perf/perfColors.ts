@@ -93,16 +93,33 @@ export const UNSCOPED_OPACITY = 0.2;
  * The four coupon channels, as one ramp rather than four hues.
  *
  * These are four slices of a single figure, not four unrelated things, so
- * giving each its own colour would imply a categorical difference that does
- * not exist. Taken straight off the theme's secondary ramp
- * (--color-secondary-a10 through a40), darkest to lightest, matching the order
- * they stack and list in.
+ * giving each its own hue would imply a categorical difference that does not
+ * exist. One ordered family, darkest to lightest, in the order they stack and
+ * list in.
+ *
+ * WHY THE RAMP MOVED
+ * It used to be four ADJACENT stops of the secondary ramp (a10 through a40),
+ * which spanned 1.54:1 end to end — about 1.15:1 between neighbours. That is
+ * a gradient, not a ramp: the steps were below the threshold at which a stacked
+ * bar reads as segments and an 8px legend dot reads as anything at all.
+ *
+ * Now it crosses both blue ramps, primary-a40 down to secondary-a30, for a
+ * 5.9:1 span with roughly even steps (1.99, 1.87, 1.58). Same family, same
+ * ordering, same argument — the execution was simply too narrow to carry it.
+ *
+ * primary-a10 (#178ec6) is skipped deliberately: it is TY_COLOR, and a coupon
+ * slice in the exact blue the this-year bars wear invites the one reading
+ * these colours must not support.
  */
 export const COUPON_COLORS = {
-  digital: "#52b5ee",
-  elecStore: "#78c1f1",
-  elecInstore: "#97cdf4",
-  store: "#b2d9f7",
+  /** --color-primary-a40 */
+  digital: "#1d465e",
+  /** --color-primary-a20 */
+  elecStore: "#1d76a2",
+  /** --color-secondary-a0 */
+  elecInstore: "#00a8eb",
+  /** --color-secondary-a30 */
+  store: "#97cdf4",
 } as const;
 
 export const COUPON_LABELS: Record<keyof typeof COUPON_COLORS, string> = {

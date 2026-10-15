@@ -10,7 +10,12 @@ import type {
   SubSale,
   WeeklySale,
 } from "../../interfaces";
-import { cycleSort, type PairSort, type SortState } from "../../utils/perfPairs";
+import {
+  cycleSort,
+  type CmpBasis,
+  type PairSort,
+  type SortState,
+} from "../../utils/perfPairs";
 
 /** Which list a sort preference belongs to. The store list is the screen;
  *  subs and hours are drills inside an expanded card. All three render the
@@ -54,12 +59,22 @@ export interface PerfBundle {
   subsLy: SubSale[];
   hourlyTy: HourlySale[];
   hourlyLy: HourlySale[];
+  /** Which period `subsLy`/`hourlyLy` actually came from. A bundle is always
+   *  one scope, so one answer covers it.
+   *
+   *  Optional, and absent from `emptyBundle`: the dev and prod slices must
+   *  start every shared field identically — `sliceIsolation` enforces it — and
+   *  an unfetched bundle has no comparison to describe anyway. Read it with a
+   *  default rather than assuming it is set. */
+  basis?: CmpBasis;
 }
 
 /** One sub department's item rows for one store, both periods. */
 export interface PerfItems {
   ty: SubDeptMargin[];
+  /** Resolved: last year, or last week re-dated into its slots. */
   ly: SubDeptMargin[];
+  basis: CmpBasis;
 }
 
 export const emptyBundle = (): PerfBundle => ({
@@ -92,7 +107,12 @@ interface SalesPerfState {
    * store list, the day chart, and the sales and tax figures at any scope.
    */
   weekTy: WeeklySale[];
+  /** The resolved comparison: last year where a store has one, last week
+   *  where it does not. Re-dated into last year's slots either way, so
+   *  everything downstream matches it without knowing which it is. */
   weekLy: WeeklySale[];
+  /** Which period each store's comparison came from, keyed by `storeKeyOf`. */
+  cmpBasis: Record<string, CmpBasis>;
 
   /** Sub-department and hourly rows for the whole search, aggregated across
    *  every store. Cannot be filtered by store — a group response does not say
@@ -207,6 +227,7 @@ const initialState: SalesPerfState = {
   loading: false,
   weekTy: [],
   weekLy: [],
+  cmpBasis: {},
   groupData: emptyBundle(),
   storeData: {},
   storeLoading: null,
@@ -240,10 +261,15 @@ const salesPerfSlice = createSlice({
     },
     setPerfWeek: (
       state,
-      action: PayloadAction<{ ty: WeeklySale[]; ly: WeeklySale[] }>,
+      action: PayloadAction<{
+        ty: WeeklySale[];
+        ly: WeeklySale[];
+        basis: Record<string, CmpBasis>;
+      }>,
     ) => {
       state.weekTy = action.payload.ty;
       state.weekLy = action.payload.ly;
+      state.cmpBasis = action.payload.basis;
     },
     setPerfGroupData: (state, action: PayloadAction<PerfBundle>) => {
       state.groupData = action.payload;

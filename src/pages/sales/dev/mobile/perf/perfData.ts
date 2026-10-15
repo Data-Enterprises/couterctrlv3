@@ -10,6 +10,8 @@ import {
   inScope,
   lyDateFor,
   matchWeek,
+  pickComparison,
+  type CmpBasis,
   netOf,
   pairBy,
   storeKeyOf,
@@ -20,6 +22,63 @@ import {
 } from "../../../../../utils/perfPairs";
 
 export { lyDateFor, storeKeyOf };
+export { pickComparison, type CmpBasis } from "../../../../../utils/perfPairs";
+
+/**
+ * Last year per store, falling back to last week for the stores without one.
+ *
+ * Done per store rather than per search because that is the shape of the
+ * problem: a group onboards one shop this year, and the other nine still have
+ * a last year worth reading. Resolving for the whole group would throw their
+ * history away to accommodate the newcomer.
+ *
+ * The resolved rows go on to be the screen's `weekLy` and are matched, paired
+ * and totalled exactly as last year's were — see `asLastYearSlots` for why
+ * that works and what it costs.
+ */
+/**
+ * What to call the comparison on screen.
+ *
+ * The bar, the chip and the note all have to agree: a figure drawn from last
+ * week that says "LY" is worse than no label, because the reader has no way
+ * to tell and every reason to trust it.
+ */
+export const cmpShort = (basis: CmpBasis) => (basis === "lw" ? "LW" : "LY");
+export const cmpWord = (basis: CmpBasis) =>
+  basis === "lw" ? "Last week" : "Last year";
+/** The pair of captions `PairedBars` takes. */
+export const cmpLabels = (basis: CmpBasis): [string, string] => [
+  "TY",
+  cmpShort(basis),
+];
+
+export const resolveWeekComparison = (
+  ty: WeeklySale[],
+  ly: WeeklySale[],
+  lw: WeeklySale[],
+): { rows: WeeklySale[]; basis: Record<string, CmpBasis> } => {
+  const bucket = (rows: WeeklySale[]) => {
+    const m = new Map<string, WeeklySale[]>();
+    for (const r of rows) {
+      const k = storeKeyOf(r);
+      const got = m.get(k);
+      if (got) got.push(r);
+      else m.set(k, [r]);
+    }
+    return m;
+  };
+  const lyBy = bucket(ly);
+  const lwBy = bucket(lw);
+
+  const rows: WeeklySale[] = [];
+  const basis: Record<string, CmpBasis> = {};
+  for (const key of new Set(ty.map(storeKeyOf))) {
+    const picked = pickComparison(lyBy.get(key) ?? [], lwBy.get(key) ?? []);
+    rows.push(...picked.rows);
+    basis[key] = picked.basis;
+  }
+  return { rows, basis };
+};
 export {
   dirOf,
   isPartialMatch,

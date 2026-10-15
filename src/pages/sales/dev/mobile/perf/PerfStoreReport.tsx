@@ -1,5 +1,6 @@
 import { ChevronRightIcon } from "@heroicons/react/20/solid";
 import { formatCurrency2 } from "../../../../../utils";
+import { cmpLabels, cmpWord, type CmpBasis } from "./perfData";
 import type { PerfDay, PerfTotals } from "./perfData";
 import PairedBars from "../../../../../components-dev/mobile/perf/PairedBars";
 import PerfDayChart from "../../../../../components-dev/mobile/perf/PerfDayChart";
@@ -16,6 +17,10 @@ interface Props {
   /** Nothing on file last year for this store — drawn as "no history" rather
    *  than a $0.00 bar. */
   noLy: boolean;
+  /** Which period this store's comparison came from. A store onboarded this
+   *  year has no last year, so its card reads against last week instead and
+   *  has to say so. */
+  basis: CmpBasis;
   totals: PerfTotals;
   /** The store's own bundle is still in flight, so the four figures it owns
    *  are placeholders rather than zeroes nobody measured. */
@@ -48,13 +53,14 @@ const PerfStoreReport = ({
   selectedDay,
   onToggleDay,
   noLy,
+  basis,
   totals,
   bundleLoading,
   totalsPartial,
   totalsNote,
   onViewDetails,
 }: Props) => (
-  <div className="border-t border-gray-100">
+  <div className="border-t border-brand_line">
     {/* ── the week ───────────────────────────────────────────────── */}
     <div className="px-3.5 pb-1 pt-2.5">
       <PerfDayChart
@@ -77,7 +83,7 @@ const PerfStoreReport = ({
           />
           {/* No record isn't a zero — the columns can't say so, the legend
               can. */}
-          {noLy ? "Last year: no history" : "Last year"}
+          {noLy ? `${cmpWord(basis)}: no history` : cmpWord(basis)}
         </span>
       </div>
       <p className="px-1 pt-1 text-[12px] text-content/85">
@@ -110,17 +116,18 @@ const PerfStoreReport = ({
           ly={totals.salesLy}
           max={Math.max(totals.sales, totals.salesLy)}
           compact
+          labels={cmpLabels(basis)}
           lyUnavailable={noLy}
         />
         {totalsPartial && (
           <p className="mt-1.5 inline-block rounded bg-gray-200 px-1.5 py-0.5 text-[11px] font-semibold text-content">
-            Last year: {totalsNote}
+            {cmpWord(basis)}: {totalsNote}
           </p>
         )}
       </div>
 
       {/* ── what made it up ─────────────────────────────────────── */}
-      <div className="mt-2.5 grid grid-cols-2 gap-x-4 gap-y-2 border-t border-gray-100 pt-2">
+      <div className="mt-2.5 grid grid-cols-2 gap-x-4 gap-y-2 border-t border-brand_line pt-2">
         {/* Tax is on the weekly rows already loaded. The other three come from
             the store's own fetch, so until it lands they show a placeholder —
             not a zero nobody measured. */}
@@ -159,7 +166,7 @@ const PerfStoreReport = ({
           masked. Hiding the block outright made the card jump a row taller the
           moment the bundle landed. */}
       {bundleLoading && (
-        <div className="mt-2.5 border-t border-gray-100 pt-2">
+        <div className="mt-2.5 border-t border-brand_line pt-2">
           <span
             aria-label="Loading"
             className="block h-2 w-full animate-pulse rounded-full bg-gray-200"
@@ -187,7 +194,7 @@ const PerfStoreReport = ({
           channel is zero, because "this store takes no store coupons" is
           itself worth seeing. */}
       {!bundleLoading && totals.coupons > 0 && (
-        <div className="mt-2.5 border-t border-gray-100 pt-2">
+        <div className="mt-2.5 border-t border-brand_line pt-2">
           <div className="flex h-2 overflow-hidden rounded-full bg-bkg">
             {COUPON_KEYS.map((k) => (
               <span
@@ -227,7 +234,7 @@ const PerfStoreReport = ({
         type="button"
         disabled={bundleLoading}
         onClick={onViewDetails}
-        className={`mt-3 flex w-full items-center justify-center gap-1 rounded-lg border-t border-gray-100 py-2.5 text-[12.5px] font-bold transition-colors ${
+        className={`mt-3 flex w-full items-center justify-center gap-1 rounded-lg border-t border-brand_line py-2.5 text-[12.5px] font-bold transition-colors ${
           bundleLoading
             ? "bg-bkg text-content/85"
             : "bg-brand_navy text-custom-white active:bg-[#2a3a62]"
