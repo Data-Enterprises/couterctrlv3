@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { XMarkIcon, ChevronRightIcon, ChevronDownIcon } from "@heroicons/react/20/solid";
 import { useHelpHighlight } from "./useHelpHighlight";
 import type { HelpAnchor, HelpContent, HelpFix, HelpGuide } from "./helpTypes";
@@ -7,6 +7,9 @@ interface HelpPanelProps {
   content: HelpContent;
   onClose: () => void;
 }
+
+/** Kept in step with `duration-200` on the aside below. */
+const SLIDE_MS = 200;
 
 type View =
   | { mode: "home" }
@@ -30,6 +33,24 @@ const matches = (needle: string, ...hay: string[]) =>
  * used to be — a cross-origin frame cannot see the page behind it.
  */
 const HelpPanel = ({ content, onClose }: HelpPanelProps) => {
+  /**
+   * Off-screen for one frame, so the browser has a starting transform to
+   * animate from — mounting straight into the open position gives it nothing
+   * to move between and the panel simply appears. Closing runs the same thing
+   * backwards and tells the caller when the slide has finished, which is why
+   * `onClose` is deferred rather than called on the click.
+   */
+  const [shown, setShown] = useState(false);
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setShown(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
+
+  const close = () => {
+    setShown(false);
+    window.setTimeout(onClose, SLIDE_MS);
+  };
+
   const [view, setView] = useState<View>({ mode: "home" });
   const [search, setSearch] = useState("");
   const [openTerm, setOpenTerm] = useState<string | null>(null);
@@ -131,7 +152,9 @@ const HelpPanel = ({ content, onClose }: HelpPanelProps) => {
 
       <aside
         aria-label="Help"
-        className="fixed top-12 right-0 bottom-0 z-[70] w-[600px] max-w-full bg-bkg border-l border-brand_line flex flex-col shadow-[-24px_0_48px_-16px_rgb(var(--color-brand-navy)/0.28)]"
+        className={`fixed top-12 right-0 bottom-0 z-[70] w-[600px] max-w-full bg-bkg border-l border-brand_line flex flex-col shadow-[-24px_0_48px_-16px_rgb(var(--color-brand-navy)/0.28)] transition-transform duration-200 ease-out motion-reduce:transition-none ${
+          shown ? "translate-x-0" : "translate-x-full"
+        }`}
       >
         {/* ── header ───────────────────────────────────────────────────── */}
         <div className="bg-custom-white px-5 pt-4 pb-3 border-b border-brand_line flex-shrink-0">
@@ -164,7 +187,7 @@ const HelpPanel = ({ content, onClose }: HelpPanelProps) => {
               )}
             </div>
             <button
-              onClick={onClose}
+              onClick={close}
               aria-label="Close help"
               className="w-8 h-8 flex items-center justify-center text-content/85 flex-shrink-0"
             >
@@ -200,7 +223,10 @@ const HelpPanel = ({ content, onClose }: HelpPanelProps) => {
         </div>
 
         {/* ── body ─────────────────────────────────────────────────────── */}
-        <div className="flex-1 overflow-auto thin-scrollbar px-5 py-4">
+        {/* `min-h-0` is load-bearing: a flex child defaults to min-height
+            auto, so this grows to fit its content instead of scrolling, and
+            the overflow rule above it never gets a chance to apply. */}
+        <div className="flex-1 min-h-0 overflow-auto thin-scrollbar px-5 py-4">
           {view.mode === "home" && (
             <>
               <p className="text-[13px] text-content/85 mb-4">{content.purpose}</p>
@@ -326,6 +352,11 @@ const HelpPanel = ({ content, onClose }: HelpPanelProps) => {
             <>
               <ol className="list-none m-0 p-0 flex flex-col gap-2">
                 {guide.steps.map((s, i) => {
+                  // Every step shows its instruction. Folding all but one
+                  // hid what the guide is before anyone had agreed to start
+                  // it — four titles say nothing about whether this is the
+                  // right guide. `current` is now only which step the panel
+                  // is pointing at on screen.
                   const current = i === view.step;
                   return (
                     <li
@@ -354,8 +385,7 @@ const HelpPanel = ({ content, onClose }: HelpPanelProps) => {
                           {s.title}
                         </span>
                       </button>
-                      {current && (
-                        <div className="pl-[52px] pr-3.5 pb-3.5">
+                      <div className="pl-[52px] pr-3.5 pb-3.5">
                           <p className="text-[13.5px] text-content/85">
                             {s.pre}
                             {s.chip && (
@@ -370,15 +400,14 @@ const HelpPanel = ({ content, onClose }: HelpPanelProps) => {
                               <strong>You'll see:</strong> {s.see}
                             </p>
                           )}
-                          {s.anchor && (
-                            <p className="mt-2 text-[12px] font-semibold text-brand_navy">
-                              {pointingAtNothing
-                                ? "Not on screen right now"
-                                : "← Highlighted on the screen"}
-                            </p>
-                          )}
-                        </div>
-                      )}
+                        {s.anchor && current && (
+                          <p className="mt-2 text-[12px] font-semibold text-brand_navy">
+                            {pointingAtNothing
+                              ? "Not on screen right now"
+                              : "← Highlighted on the screen"}
+                          </p>
+                        )}
+                      </div>
                     </li>
                   );
                 })}
