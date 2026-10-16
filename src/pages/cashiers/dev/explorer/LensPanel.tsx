@@ -42,7 +42,7 @@ const LensPanel = ({
 }: LensPanelProps) => {
   return (
     <div className="w-[42%] flex-shrink-0 flex flex-col min-h-0 border-r border-gray-100">
-      <div className="flex gap-1 p-2 border-b border-gray-100 flex-shrink-0">
+      <div data-help="grouping" className="flex gap-1 p-2 border-b border-gray-100 flex-shrink-0">
         {LENSES.map((l) => (
           <button
             key={l.key}

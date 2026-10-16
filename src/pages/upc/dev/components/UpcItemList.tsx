@@ -66,7 +66,7 @@ const UpcItemList = () => {
       </div>
 
       {/* list */}
-      <div className="flex-1 overflow-y-auto thin-scrollbar min-h-0">
+      <div data-help="item-list" className="flex-1 overflow-y-auto thin-scrollbar min-h-0">
         {visible.length === 0 ? (
           <div className="flex items-center justify-center h-16 text-[10px] text-content/85">
             {ctx.filterText ? "No matches" : "No items"}

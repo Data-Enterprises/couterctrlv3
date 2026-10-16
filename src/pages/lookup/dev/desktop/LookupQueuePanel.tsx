@@ -70,7 +70,7 @@ const LookupQueuePanel = ({
           </div>
         </div>
         <div className="flex items-center gap-2 pt-1.5 mt-1 border-t border-custom-white/[0.08]">
-          <button
+          <button data-help="search"
             onClick={onOpenSearch}
             className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/60 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
             aria-label="New search"
@@ -93,7 +93,7 @@ const LookupQueuePanel = ({
         onChange={onStoreNumberChange}
       />
 
-      <div className="flex-1 overflow-y-auto thin-scrollbar">
+      <div data-help="item-list" className="flex-1 overflow-y-auto thin-scrollbar">
         {queue.map((item) => {
           if (item.status === "loaded") {
             const isSelected = item.upc === selectedUpc;

@@ -596,7 +596,7 @@ const CouponDetailPanel = ({
         </div>
         {totalCoupons > 0 && (
           <div className="flex items-center gap-3 mt-0.5">
-            <button
+            <button data-help="export"
               onClick={() => setExportOpen(true)}
               title="Export CSV"
               className="text-custom-white/60 hover:text-custom-white transition-colors"
@@ -618,7 +618,7 @@ const CouponDetailPanel = ({
 
       {/* KPI strip */}
       {!state.isFetching && totalCoupons > 0 && (
-        <div className="grid grid-cols-6 divide-x divide-gray-100 border-b border-gray-100 bg-gray-50 flex-shrink-0">
+        <div data-help="kpis" className="grid grid-cols-6 divide-x divide-gray-100 border-b border-gray-100 bg-gray-50 flex-shrink-0">
           {[
             { label: "Coupons", value: String(totalCoupons) },
             { label: "Total amt", value: formatCurrency2(totalAmount) },
@@ -646,7 +646,7 @@ const CouponDetailPanel = ({
       {!state.isFetching && (
         <>
           {/* Tab bar — full width row */}
-          <div className="flex items-center border-b border-gray-100 flex-shrink-0">
+          <div data-help="tabs" className="flex items-center border-b border-gray-100 flex-shrink-0">
             {GROUP_TABS.map((t) => (
               <button
                 key={t.key}
@@ -974,7 +974,7 @@ const CouponDetailPanel = ({
                     </div>
                   ) : (
                     <div className="flex-1 overflow-auto thin-scrollbar">
-                      <table className="w-full border-collapse text-[12px]">
+                      <table data-help="products" className="w-full border-collapse text-[12px]">
                         <thead>
                           <tr className="sticky top-0 bg-gray-100 border-b border-gray-100 z-10">
                             <th

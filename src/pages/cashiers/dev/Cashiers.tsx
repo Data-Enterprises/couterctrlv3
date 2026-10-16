@@ -294,7 +294,7 @@ const Cashiers = () => {
               capped — {truncated} older transactions not loaded
             </span>
           )}
-          <button
+          <button data-help="search"
             onClick={() => setSearchOpen(true)}
             title="New search"
             className="w-[20px] h-[20px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/60 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
@@ -310,7 +310,7 @@ const Cashiers = () => {
           </button>
         </div>
 
-        <div className="grid grid-cols-6 border-b border-gray-100 flex-shrink-0">
+        <div data-help="kpis" className="grid grid-cols-6 border-b border-gray-100 flex-shrink-0">
           {[
             {
               label: "Exception lines",

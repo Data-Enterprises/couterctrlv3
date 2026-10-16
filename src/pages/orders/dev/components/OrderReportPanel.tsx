@@ -112,7 +112,7 @@ const OrderReportPanel = ({
         </span>
         <div className="flex-1" />
         {!loading && visible.length > 0 && (
-          <button
+          <button data-help="export"
             onClick={onExport}
             title="Export CSV"
             className="text-custom-white/85 hover:text-custom-white transition-colors flex-shrink-0"
@@ -143,7 +143,7 @@ const OrderReportPanel = ({
           </div>
 
           <div className="flex-1 overflow-auto thin-scrollbar min-h-0">
-            <table className="w-full text-[11px] border-collapse">
+            <table data-help="lines" className="w-full text-[11px] border-collapse">
               <thead className="sticky top-0 z-10 bg-custom-white">
                 <tr className="border-b border-b-brand_navy/15">
                   {numHead("order", "Order #", 90)}

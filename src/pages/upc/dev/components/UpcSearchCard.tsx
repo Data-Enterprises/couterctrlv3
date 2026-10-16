@@ -141,7 +141,7 @@ const UpcSearchCard = ({ onSearch, onClose }: Props) => {
             className="basic-input bg-custom-white w-full mt-1 py-2 px-2.5 text-[13px] resize-none"
             style={{ outline: "none", boxShadow: "none" }}
           />
-          <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+          <div data-help="upc-input" className="flex items-center gap-2 mt-1.5 flex-wrap">
             <button
               onClick={handleParseText}
               className="px-3 py-1 text-[11px] font-medium rounded border border-content/20 text-content/85 hover:text-content hover:border-content/35 transition-colors"

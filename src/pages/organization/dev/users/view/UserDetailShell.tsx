@@ -108,7 +108,7 @@ const UserDetailShell = ({ onBack }: UserDetailShellProps) => {
       {/* Left-aligned and sized to their words. Stretched across the panel
           they read as a segmented control -- two halves of one thing rather
           than two places to go. */}
-      <div className="flex gap-6 border-b border-gray-100 mb-4 flex-shrink-0">
+      <div data-help="tabs" className="flex gap-6 border-b border-gray-100 mb-4 flex-shrink-0">
         {TABS.map((t) => (
           <button
             key={t.id}

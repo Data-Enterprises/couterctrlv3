@@ -57,7 +57,7 @@ const ReceiverDetailPanel = () => {
         </div>
         {hasDetails && (
           <div className="flex items-center gap-3 mt-0.5">
-            <button
+            <button data-help="export"
               onClick={() => setExportOpen(true)}
               title="Export CSV"
               className="text-custom-white/60 hover:text-custom-white transition-colors flex-shrink-0"
@@ -173,7 +173,7 @@ const ReceiverDetailPanel = () => {
 
           {/* Table */}
           <div className="flex-1 overflow-auto thin-scrollbar">
-            <table className="w-full border-collapse text-[12px]">
+            <table data-help="lines" className="w-full border-collapse text-[12px]">
               <thead>
                 <tr className="sticky top-0 bg-gray-50 border-b border-gray-100 z-10">
                   <th className="text-right px-3 py-2 text-[10px] font-semibold uppercase tracking-wide text-content/85">
