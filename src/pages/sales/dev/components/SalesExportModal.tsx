@@ -769,10 +769,8 @@ const SalesExportModal = ({
               Select data to include
             </p>
             {presetDatasets.map(({ id, label, description }) => (
-              <label
-                key={id}
-                className="flex items-start gap-3 cursor-pointer group"
-              >
+              <div key={id}>
+                <label className="flex items-start gap-3 cursor-pointer group">
                 <input
                   type="checkbox"
                   checked={selected.has(id)}
@@ -792,17 +790,22 @@ const SalesExportModal = ({
                   <p className="text-[11px] text-content mt-0.5">
                     {description}
                   </p>
+                </div>
+                </label>
 
-                  {/* Financials is the only preset that fetches, so it is the
+                {/* Financials is the only preset that fetches, so it is the
                       only one that can answer for dates and stores the page is
                       not showing. The controls live under it rather than in
                       the header for exactly that reason — they narrow this
-                      one dataset, not the export. */}
-                  {id === "financials" && selected.has("financials") && (
-                    <div
-                      className="mt-2 rounded-lg bg-bkg shadow-card-sm px-3 py-2.5 animate-nb-drop motion-reduce:animate-none"
-                      onClick={(e) => e.preventDefault()}
-                    >
+                      one dataset, not the export.
+
+                      Shown whether or not the row is ticked. Revealing them on
+                      the tick hid the whole point of the option: somebody
+                      looking for a date range does not find it by checking a
+                      box to see what happens, they decide the export cannot do
+                      it and go back to asking for a query. */}
+                {id === "financials" && (
+                  <div className="ml-[26px] mt-2 rounded-lg bg-bkg shadow-card-sm px-3 py-2.5">
                       <div className="flex items-end gap-2 flex-wrap">
                         <div className="flex flex-col gap-1">
                           <span className="text-[9px] font-bold uppercase tracking-wide text-content/85">
@@ -901,10 +904,9 @@ const SalesExportModal = ({
                           )}
                         </div>
                       )}
-                    </div>
-                  )}
-                </div>
-              </label>
+                  </div>
+                )}
+              </div>
             ))}
 
             {hasItems && (
