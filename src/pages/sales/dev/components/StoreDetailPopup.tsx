@@ -5,6 +5,7 @@ import {
   useCanSeeComingSoon,
 } from "../../../../hooks";
 // import { useSalesState } from "../hooks/useSalesState";
+import { isGroupSearch } from "../../../../features/searchSlice";
 import { getSubs, getHourly /* , getCats */ } from "../../../../api/sales";
 import SalesExportModal from "./SalesExportModal";
 import {
@@ -658,6 +659,21 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
           days={selection.days}
           subDeptItems={exportSubDeptItems}
           subDeptName={exportSubDeptName}
+          storeId={selection.storeId}
+          startDate={twStart}
+          endDate={twEnd}
+          // Only when the ledger actually searched a group. Financials is the
+          // one export that can answer wider than this popup, and the endpoint
+          // needs a groupid to do it.
+          group={
+            isGroupSearch(search.type) && search.selectedGroup?.id
+              ? {
+                  id: search.selectedGroup.id,
+                  name: search.selectedGroup.group_name,
+                }
+              : null
+          }
+          stores={groupRows}
         />
       )}
 
