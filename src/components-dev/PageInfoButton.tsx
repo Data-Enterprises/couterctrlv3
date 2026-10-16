@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useAppSelector } from "../hooks";
 import InfoButton from "./InfoButton";
 import InfoModal from "./InfoModal";
 import HelpPanel from "./help/HelpPanel";
@@ -25,11 +26,16 @@ interface PageInfoButtonProps {
  * something a page has no opinion about. Here a call site is one line and the
  * only thing it says is which page it is.
  *
- * It also decides which help a page gets. A screen whose content has been
- * written opens the panel, which can point at the controls it describes;
- * every other screen keeps opening its S3 document until its turn comes. The
- * call sites say nothing about either, so converting a page is one entry in
- * `help/content`, not a change here and a change there.
+ * It also decides which help a page gets.
+ *
+ * **Desktop** opens the panel, which can point at the controls it describes.
+ * **A phone keeps the document**, and deliberately: the panel is a 600px
+ * drawer beside the screen it annotates, and there is no beside on a phone —
+ * pointing at a control the drawer is covering helps nobody. The phone help
+ * is also written for the phone's own layout, which is a separate tree. Until
+ * there is a mobile design for this, the `-mobile` documents stay.
+ *
+ * Either way the call sites say nothing about it.
  */
 const PageInfoButton = ({
   page,
@@ -39,7 +45,8 @@ const PageInfoButton = ({
   className,
 }: PageInfoButtonProps) => {
   const [open, setOpen] = useState(false);
-  const content = helpContentFor(page);
+  const isMobile = useAppSelector((state) => state.app.isMobile);
+  const content = isMobile ? undefined : helpContentFor(page);
 
   return (
     <>
