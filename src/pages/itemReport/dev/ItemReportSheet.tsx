@@ -344,26 +344,25 @@ const ItemReportSheet = ({
                 {noReceiverOpen ? "Hide" : "Show them"}
               </span>
             </button>
-            {noReceiverOpen && (
-              <DetailPopover
-                onClose={() => setNoReceiverOpen(false)}
-                className="bg-severity_watch_bg text-severity_watch_text"
-              >
-                {noReceiverItems.map((it) => (
-                  <div
-                    key={it.productCode}
-                    className="px-4 py-1.5 border-b border-current/10 last:border-b-0"
-                  >
-                    <div className="text-[11.5px] font-semibold truncate">
-                      {it.description}
-                    </div>
-                    <div className="text-[11px] opacity-90 truncate">
-                      {it.productCode} · {it.department} · {it.vendorName}
-                    </div>
+            <DetailPopover
+              open={noReceiverOpen}
+              onClose={() => setNoReceiverOpen(false)}
+              className="bg-severity_watch_bg text-severity_watch_text"
+            >
+              {noReceiverItems.map((it) => (
+                <div
+                  key={it.productCode}
+                  className="px-4 py-1.5 border-b border-current/10 last:border-b-0"
+                >
+                  <div className="text-[11.5px] font-semibold truncate">
+                    {it.description}
                   </div>
-                ))}
-              </DetailPopover>
-            )}
+                  <div className="text-[11px] opacity-90 truncate">
+                    {it.productCode} · {it.department} · {it.vendorName}
+                  </div>
+                </div>
+              ))}
+            </DetailPopover>
           </div>
         )}
 
@@ -538,7 +537,6 @@ const ItemReportSheet = ({
           })}
         </div>
       </div>
-
     </div>
   );
 };

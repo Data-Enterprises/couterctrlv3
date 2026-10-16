@@ -281,6 +281,14 @@ export default {
           "0%": { transform: "translateY(-8px)", opacity: 0 },
           "100%": { transform: "translateY(0)", opacity: 1 },
         },
+        // The exact reverse of slidedown, for a panel retracting into the
+        // control it dropped out of. Deliberately not nbLeave: that one exits
+        // DOWNWARD, which reads as falling away -- right for something being
+        // dismissed, wrong for something folding back where it came from.
+        slideup: {
+          "0%": { transform: "translateY(0)", opacity: 1 },
+          "100%": { transform: "translateY(-8px)", opacity: 0 },
+        },
       },
 
       animation: {
@@ -304,6 +312,9 @@ export default {
         slideleft: "slideleft 0.5s ease-in-out forwards",
         slideright: "slideright 0.5s ease-in-out forwards",
         slidedown: "slidedown 0.15s ease-out forwards",
+        // Matches slidedown's duration, with the easing mirrored too: out of
+        // the ease on the way in, into it on the way out.
+        slideup: "slideup 0.15s ease-in forwards",
       },
       textShadow: {
         custom: "1px 1px 4px var(--tw-shadow-color)",

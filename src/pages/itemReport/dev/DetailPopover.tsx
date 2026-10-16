@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { XMarkIcon } from "@heroicons/react/16/solid";
 
 /**
@@ -16,10 +16,19 @@ import { XMarkIcon } from "@heroicons/react/16/solid";
  *
  * Anchors to the nearest positioned ancestor — the trigger's wrapper needs
  * `relative`.
+ *
+ * Takes `open` rather than being mounted conditionally, because a card that is
+ * unmounted the instant it closes cannot animate on the way out. It keeps
+ * itself on screen for the length of the leave and then removes itself.
  */
+/** How long the leave runs. Must match `animate-slideup` in tailwind.config —
+ *  too short and the card vanishes mid-slide, too long and it sits invisible
+ *  over the content beneath it. */
+const LEAVE_MS = 150;
 const DetailPopover = ({
   title,
   subtitle,
+  open,
   onClose,
   className,
   children,
@@ -36,14 +45,37 @@ const DetailPopover = ({
   /** One line under the title, for the caveat that belongs to the whole card
    *  rather than to any row inside it. */
   subtitle?: string;
+  /** False starts the leave; the card removes itself when it finishes. */
+  open: boolean;
   onClose: () => void;
   /** Background and text colour, e.g. `bg-amber-50 text-amber-900`. */
   className?: string;
   children: React.ReactNode;
 }) => {
   const ref = useRef<HTMLDivElement>(null);
+  /** On screen — true through the whole leave, not just while `open`. */
+  const [mounted, setMounted] = useState(open);
+  const [leaving, setLeaving] = useState(false);
 
   useEffect(() => {
+    if (open) {
+      setMounted(true);
+      setLeaving(false);
+      return;
+    }
+    if (!mounted) return;
+    setLeaving(true);
+    const t = setTimeout(() => {
+      setMounted(false);
+      setLeaving(false);
+    }, LEAVE_MS);
+    return () => clearTimeout(t);
+  }, [open, mounted]);
+
+  useEffect(() => {
+    // Only while genuinely open. During the leave the card is on its way out
+    // already, and a stray outside click asking it to close again is noise.
+    if (!open) return;
     /**
      * "Outside" means outside the WRAPPER, not outside this card.
      *
@@ -69,12 +101,19 @@ const DetailPopover = ({
     };
     document.addEventListener("mousedown", onOutside);
     return () => document.removeEventListener("mousedown", onOutside);
-  }, [onClose]);
+  }, [onClose, open]);
+
+  if (!mounted) return null;
 
   return (
     <div
       ref={ref}
-      className={`absolute top-full left-0 right-0 rounded-b-lg shadow-xl overflow-hidden z-50 animate-slidedown ${className ?? ""}`}
+      // `pointer-events-none` while leaving: it is still on screen but no
+      // longer a thing to click, and a card catching a click on its way out is
+      // how you end up reopening what you just closed.
+      className={`absolute top-full left-0 right-0 rounded-b-lg shadow-xl overflow-hidden z-50 motion-reduce:animate-none ${
+        leaving ? "animate-slideup pointer-events-none" : "animate-slidedown"
+      } ${className ?? ""}`}
     >
       {(title || subtitle) && (
         <div className="px-4 py-2.5 flex items-start justify-between gap-3 flex-shrink-0 border-b border-current/15">
