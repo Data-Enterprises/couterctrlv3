@@ -843,9 +843,13 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
         ) : tab === "topitems" ? (
           <PopupTopItems
             storeId={selection.storeId}
-            storeName={headerStoreName}
             start={twStart}
             end={twEnd}
+            lwStart={lwStart}
+            lwEnd={lwEnd}
+            lyStart={lyStart}
+            lyEnd={lyEnd}
+            threshold={itemThreshold}
           />
         ) : tab === "subdept" ? (
           /* With a counterpart chosen in Stores, this tab IS the comparison;

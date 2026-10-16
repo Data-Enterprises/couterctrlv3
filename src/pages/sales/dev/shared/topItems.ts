@@ -11,15 +11,28 @@ import type {
  * different lists of two hundred items, not a display detail.
  */
 
+/**
+ * A nullable count as a number.
+ *
+ * The four `qty_*` fields are `SUM(qty) FILTER (WHERE …)`, and Postgres
+ * returns NULL rather than 0 when nothing matches — so an item that only ever
+ * sold at regular price arrives with `qty_promo: null`. Null and zero mean
+ * the same thing here (no units rang that way), so they collapse, but every
+ * read has to go through this: a raw `.toLocaleString()` on one of them
+ * crashes the panel.
+ */
+export const count = (n: number | null | undefined): number => n ?? 0;
+
 /** Units sold at a price the POS did not call regular. */
-export const promoUnits = (r: TopItemRow) => r.qty_promo;
+export const promoUnits = (r: TopItemRow) => count(r.qty_promo);
 
 /** The share of an item's units that moved off regular price, 0–1. Deal items
  *  count: for the stores that sell them, the deal IS the item. */
 export const promoShare = (r: TopItemRow): number => {
-  const known = r.qty_regular + r.qty_promo + r.qty_deal_item;
+  const known =
+    count(r.qty_regular) + count(r.qty_promo) + count(r.qty_deal_item);
   if (known <= 0) return 0;
-  return (r.qty_promo + r.qty_deal_item) / known;
+  return (count(r.qty_promo) + count(r.qty_deal_item)) / known;
 };
 
 /**
@@ -35,7 +48,7 @@ export const avgPrice = (r: TopItemRow): number | null =>
 /** Sales less cost. Null when the cost is not trustworthy, on the same rule
  *  the server uses to null the margin. */
 export const grossProfit = (r: TopItemRow): number | null =>
-  r.margin === null ? null : r.total_sales - r.ext_cost;
+  r.margin === null ? null : r.total_sales - count(r.ext_cost);
 
 /**
  * The top `shown` items by sales.
@@ -115,7 +128,7 @@ export const topItemInsight = (
   const share = promoShare(r);
   const avg = avgPrice(r);
   const gp = grossProfit(r);
-  const unitCost = r.qty > 0 ? r.ext_cost / r.qty : null;
+  const unitCost = r.qty > 0 ? count(r.ext_cost) / r.qty : null;
 
   if (r.margin === null) {
     const cov = r.cost_coverage === null ? null : Math.round(r.cost_coverage);
@@ -178,3 +191,68 @@ export const topItemInsight = (
       (share > 0 ? `, ${pct(share)} of them off regular price.` : "."),
   };
 };
+
+/** One item, with its two baselines beside it. */
+export interface TopItemCompared {
+  ty: TopItemRow;
+  lw: TopItemRow | null;
+  ly: TopItemRow | null;
+  /** Percent change in SALES, the metric the list ranks on. Null when the
+   *  baseline sold none — a rise from nothing is not a percentage. */
+  vsLW: number | null;
+  vsLY: number | null;
+}
+
+const pctChange = (now: number, before: number | undefined | null) =>
+  before === undefined || before === null || before === 0
+    ? null
+    : ((now - before) / Math.abs(before)) * 100;
+
+/**
+ * Join the three windows on product code.
+ *
+ * `topitems` answers one window, so the tab asks three times and lines them
+ * up here. Keyed on product code alone: a single-store call returns one row
+ * per code, and the baselines are the same store by construction.
+ *
+ * An item absent from a baseline is a real answer — it did not sell that week
+ * — and stays null rather than becoming a zero, because a zero would compute
+ * a percentage and claim the item collapsed when it simply did not exist.
+ */
+export const compareWindows = (
+  ty: TopItemRow[],
+  lw: TopItemRow[],
+  ly: TopItemRow[],
+): TopItemCompared[] => {
+  const byCode = (rows: TopItemRow[]) =>
+    new Map(rows.map((r) => [r.product_code, r]));
+  const lwBy = byCode(lw);
+  const lyBy = byCode(ly);
+  return ty.map((row) => {
+    const l = lwBy.get(row.product_code) ?? null;
+    const y = lyBy.get(row.product_code) ?? null;
+    return {
+      ty: row,
+      lw: l,
+      ly: y,
+      vsLW: pctChange(row.total_sales, l?.total_sales),
+      vsLY: pctChange(row.total_sales, y?.total_sales),
+    };
+  });
+};
+
+/** Percent change between two numbers, for the supporting table. Exposed so
+ *  the component does not re-implement the null rule. */
+export const deltaPct = (
+  now: number | null,
+  before: number | null | undefined,
+): number | null =>
+  now === null ? null : pctChange(now, before);
+
+/** Margin moves in points, not percent: 22% to 11% is 11 points down, and
+ *  calling it "-50%" invites someone to read it as half the sales. */
+export const deltaPoints = (
+  now: number | null,
+  before: number | null | undefined,
+): number | null =>
+  now === null || before === null || before === undefined ? null : now - before;
