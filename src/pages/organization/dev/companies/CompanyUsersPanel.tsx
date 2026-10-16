@@ -4,7 +4,11 @@ import { useToast } from "../../../../components/toasts/hooks/useToast";
 import { assignUserToCompany } from "../../../../api/user";
 import type { JsonError, User } from "../../../../interfaces";
 import AssignPanel from "../../../../components-dev/AssignPanel";
-import SelectFilter from "../../../../components-dev/filters/SelectFilter";
+import CompanyFilterSelect from "../users/CompanyFilterSelect";
+import {
+  useCompanyFilterOptions,
+  useCompanyFilterPredicate,
+} from "../users/companyFilter";
 import {
   planAdd,
   planRemove,
@@ -13,10 +17,6 @@ import {
   type MemberUser,
   type UserOutcome,
 } from "./companyMembership";
-
-/** The "holds nothing at all" option. A string because the select deals in
- *  strings, and a company id can never collide with it. */
-const NO_COMPANY = "none";
 
 /**
  * Who holds one company.
@@ -74,45 +74,13 @@ const CompanyUsersPanel = ({
   );
 
   /**
-   * The companies the left column can be narrowed by.
-   *
-   * Built from the companies the unassigned users actually hold, not from
-   * every company on the system: an option that can only ever return nothing
-   * is a dead end, and this list is for finding people, not for browsing.
-   *
-   * Onboarding is the job this exists for — a new company is usually staffed
-   * by people who already hold a neighbouring one, so "show me everybody in
-   * Houchens" turns a hunt through 405 names into a dozen.
-   */
-  const companyOptions = useMemo(() => {
-    const seen = new Map<number, string>();
-    unassigned.forEach((u) =>
-      (u.companies ?? []).forEach((c) => {
-        if (c.company !== company.id && !seen.has(c.company)) {
-          seen.set(c.company, c.name);
-        }
-      }),
-    );
-    const options = [...seen.entries()]
-      .map(([id, name]) => ({ value: String(id), label: name }))
-      .sort((a, b) => a.label.localeCompare(b.label));
-    // Worth its own option: somebody holding nothing at all is invisible to
-    // every other filter here, and during onboarding they are exactly who is
-    // being looked for.
-    const orphans = unassigned.filter((u) => (u.companies ?? []).length === 0);
-    return orphans.length > 0
-      ? [{ value: NO_COMPANY, label: `No company (${orphans.length})` }, ...options]
-      : options;
-  }, [unassigned, company.id]);
-
-  /**
    * An email domain actually present in the left column, for the search hint.
    *
    * A made-up example teaches nothing — somebody reads "@example.com", takes
    * it as filler and types a name anyway. Naming the commonest domain in the
-   * list they are looking at makes it a thing to try rather than an
-   * illustration. Falls back to no example when the addresses have nothing in
-   * common, which is its own answer: there is no domain worth suggesting.
+   * list they are looking at makes it a thing to try. Falls back to no
+   * example when the addresses have nothing in common, which is its own
+   * answer: there is no domain worth suggesting.
    */
   const commonDomain = useMemo(() => {
     const counts = new Map<string, number>();
@@ -129,17 +97,13 @@ const CompanyUsersPanel = ({
     return best && best[1] > 1 ? best[0] : null;
   }, [unassigned]);
 
-  /** Applied inside AssignPanel beside its search box, so the heading can go
-   *  on counting the whole column — "12 of 405" rather than "12 of 12". */
-  const heldPredicate = useMemo(() => {
-    if (!heldFilter) return undefined;
-    return (item: { id: number }) => {
-      const held = byId.get(item.id)?.companies ?? [];
-      return heldFilter === NO_COMPANY
-        ? held.length === 0
-        : held.some((c) => c.company === Number(heldFilter));
-    };
-  }, [heldFilter, byId]);
+  const unassignedIds = useMemo(() => unassigned.map((u) => u.id), [unassigned]);
+  const companyOptions = useCompanyFilterOptions(
+    reachable,
+    unassignedIds,
+    company.id,
+  );
+  const heldPredicate = useCompanyFilterPredicate(reachable, heldFilter);
 
   /**
    * Send a plan.
@@ -249,15 +213,11 @@ const CompanyUsersPanel = ({
           </>
         }
         leftFilters={
-          companyOptions.length > 0 ? (
-            <SelectFilter
-              value={heldFilter}
-              onChange={setHeldFilter}
-              options={companyOptions}
-              placeholder="Any company"
-              searchable={companyOptions.length > 8}
-            />
-          ) : undefined
+          <CompanyFilterSelect
+            value={heldFilter}
+            onChange={setHeldFilter}
+            options={companyOptions}
+          />
         }
       />
     </div>

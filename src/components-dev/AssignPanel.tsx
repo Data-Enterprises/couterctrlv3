@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { FunnelIcon } from "@heroicons/react/20/solid";
 import TextFilter from "./filters/TextFilter";
 
 interface AssignPanelItem {
@@ -31,10 +30,14 @@ interface AssignPanelProps {
   // What the buttons call the action. Defaults to Assign / Unassign; a panel
   // whose action isn't an assignment says what it does (Shared Groups: Share).
   verbs?: { assign: string; unassign: string };
-  // Extra controls for the left column, behind the funnel beside its search
-  // box. Only the caller knows what else there is to filter by -- the
-  // Companies tab offers "already in company X", which means nothing to the
-  // panel that assigns stores to a base group.
+  // An extra control beside the left search box. Only the caller knows what
+  // else there is to filter by -- "already in company X" is the useful one
+  // for a user list and means nothing to a list of stores.
+  //
+  // Rendered in the open, not behind a disclosure. It sat behind a funnel
+  // first and that was wrong twice over: nobody finds a filter by clicking an
+  // unlabelled icon, and a column narrowed by a control you cannot see just
+  // looks like a short column.
   leftFilters?: ReactNode;
   // Applied alongside the left search box. It narrows what is LISTED without
   // changing `leftItems`, so the heading can still say "12 of 405" -- a
@@ -111,7 +114,6 @@ const AssignPanel = ({
 }: AssignPanelProps) => {
   const [leftFilter, setLeftFilter] = useState("");
   const [rightFilter, setRightFilter] = useState("");
-  const [showFilters, setShowFilters] = useState(false);
   const [staged, setStaged] = useState<Set<number>>(new Set());
   const [unstaged, setUnstaged] = useState<Set<number>>(new Set());
 
@@ -144,13 +146,6 @@ const AssignPanel = ({
     (i) => (leftPredicate?.(i) ?? true) && matches(i, leftFilter),
   );
 
-  // Whether the caller's filter is actually holding anything back. The funnel
-  // wears the active state while it is, even when the controls are collapsed
-  // — a short list under a plain button looks like a short column, and the
-  // reason it is short has to stay visible.
-  const filtersNarrowing = leftPredicate
-    ? leftItems.some((i) => !leftPredicate(i))
-    : false;
   const filteredRight = rightItems.filter((i) => matches(i, rightFilter));
 
   // The count says what the column shows: while a search narrows it, "4 of 17".
@@ -200,26 +195,8 @@ const AssignPanel = ({
             }
             className="flex-1 min-w-0"
           />
-          {leftFilters && (
-            <button
-              onClick={() => setShowFilters((v) => !v)}
-              aria-expanded={showFilters}
-              title={showFilters ? "Hide filters" : "More filters"}
-              className={`w-[26px] h-[26px] flex items-center justify-center rounded-md border flex-shrink-0 transition-colors ${
-                showFilters || filtersNarrowing
-                  ? "bg-brand_navy border-brand_navy text-custom-white"
-                  : "bg-custom-white border-gray-200 text-content/85 hover:bg-gray-50"
-              }`}
-            >
-              <FunnelIcon className="w-3.5 h-3.5" />
-            </button>
-          )}
+          {leftFilters && <div className="flex-shrink-0">{leftFilters}</div>}
         </div>
-        {leftFilters && showFilters && (
-          <div className="mb-1.5 animate-nb-drop motion-reduce:animate-none">
-            {leftFilters}
-          </div>
-        )}
         {searchHint && (
           <p className="text-[10px] text-content/85 leading-snug mb-1">
             {searchHint}
