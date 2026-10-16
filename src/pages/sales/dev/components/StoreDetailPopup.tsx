@@ -790,7 +790,7 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center border-b border-gray-100 px-3 flex-shrink-0">
+      <div data-help="store-tabs" className="flex items-center border-b border-gray-100 px-3 flex-shrink-0">
         {/* Sub depts leads: it is the tab that answers the question the
             page was opened with, and it reads the same whether or not a
             counterpart has been chosen. Stores sits beside it as the place

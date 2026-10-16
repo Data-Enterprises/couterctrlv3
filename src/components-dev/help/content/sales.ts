@@ -69,6 +69,50 @@ export const SALES_HELP: HelpContent = {
         },
       ],
     },
+    {
+      id: "top-items",
+      title: "See which items earned the week",
+      desc: "The 200 biggest sellers, and what each one cost you",
+      steps: [
+        {
+          title: "Open Top 200",
+          pre: "With a store open, choose the",
+          chip: "Top 200",
+          post: "tab.",
+          anchor: "store-tabs",
+          see: "The store's 200 biggest items for the week, biggest sales first. The number under each name is how many units that took.",
+        },
+        {
+          title: "Pick an item",
+          pre: "Click a row. The right side opens with a sentence saying what the figures add up to, then the numbers behind it.",
+          see: "Sales and units, margin and profit, the average price a unit fetched and what a unit cost you.",
+        },
+        {
+          title: "Check how it rang",
+          pre: "How it rang lists every price the item actually sold at this week, with the units and sales at each one.",
+          see: "One price usually. Two means part of the week was on promotion, and the split tells you how much went out at each.",
+        },
+        {
+          title: "Check what you are paying",
+          pre: "What it costs you compares the price on your last invoice against the cheapest you have paid in 120 days, and the invoices are listed underneath.",
+          see: "A paid price in green is an allowance — you paid under the vendor's list price on that delivery.",
+        },
+      ],
+      issues: [
+        {
+          q: "An item I expected is not in the list",
+          a: "The list is the top 200 by sales for that store and week. An item that sold very little will not be there. Excluded sub departments — lottery, money orders, stamps — are left out entirely, the same as everywhere else on this page.",
+        },
+        {
+          q: "A margin shows a dash",
+          a: "Too few of that item's lines carried a cost to work out a margin worth trusting. The sales, units and prices are unaffected; only the margin and profit are withheld. Cost coverage on the right tells you what share of lines had one.",
+        },
+        {
+          q: "There is no cost history",
+          a: "Nothing was bought on an invoice in the last 120 days. The item still sold — it just has no purchase to compare today's price against.",
+        },
+      ],
+    },
   ],
 
   fixes: [
@@ -142,6 +186,31 @@ export const SALES_HELP: HelpContent = {
     {
       term: "Inactive items",
       def: "Items that sold last week or last year but have not sold this week. On the Sub dept tab they are behind their own filter.",
+    },
+    {
+      term: "Top 200",
+      anchor: "store-tabs",
+      def: "The store's 200 biggest items by sales for the week shown. Ranked on money, not units, so an expensive item that sells a few still appears. Excluded sub departments are left out, so it agrees with the rest of the page.",
+    },
+    {
+      term: "Average price",
+      def: "Sales divided by units — what a unit really fetched once promotions are counted in. It is not the shelf price, and on an item that was half on promotion it will sit between the two. How it rang lists the actual prices.",
+    },
+    {
+      term: "Unit cost",
+      def: "What the week's sales cost you to buy, per unit, from the same cost the margin is worked out on. Not the price on your last invoice — that is under What it costs you.",
+    },
+    {
+      term: "Cost coverage",
+      def: "The share of an item's sales lines that carried a cost. Below about half, the margin is hidden: with all the sales and only some of the costs it would read far too high, and it is safer to show nothing than a number somebody acts on.",
+    },
+    {
+      term: "Off regular",
+      def: "The share of units that rang at anything other than the regular price — a promotion, a markdown, or a deal item. Units the register sent no price type for are left out of the share rather than counted as regular.",
+    },
+    {
+      term: "Allowance",
+      def: "The gap between a vendor's list price and what you actually paid on a delivery. Shown by a paid price in green on the invoice list.",
     },
   ],
 };
