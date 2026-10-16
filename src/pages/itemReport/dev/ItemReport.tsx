@@ -32,6 +32,7 @@ import ItemReportExportModal from "./ItemReportExportModal";
 import { useReceivingWalk } from "./useReceivingWalk";
 import {
   fetchAllItemRows,
+  fetchItemRowsForCodes,
   fetchItemRowsWithPricePoints,
   lwWindow,
   lyWindow,
@@ -197,17 +198,43 @@ const ItemReport = () => {
        * so the split costs no extra aggregate — and each response is smaller
        * than the span's was.
        */
+      /**
+       * Ask for the uploaded items, or for the whole store.
+       *
+       * `buildReport` keeps only the uploaded list — `for (const code of
+       * wanted)` — so on the upload path every other item in the store was
+       * fetched, paged, transferred and discarded. `subs/item_actions` pushes
+       * the codes into the query instead: 100 rows in 109ms against 11,799 in
+       * 781ms, and the narrowed answer fits in one page, so the count and the
+       * concurrent page burst stop happening rather than getting cheaper.
+       *
+       * The grade path cannot use it. Arriving with a threshold instead of a
+       * list, the page has no codes yet — `collectCriticalItems` derives them
+       * FROM the store's rows below — so it still reads the whole store.
+       */
+      const narrowed = !preloaded?.grade && upcs.length > 0;
+
       const [tyResult, lw, ly] = await Promise.all([
-        useSubsPricePoints
-          ? fetchItemRowsWithPricePoints(next, {
-              start: next.start,
-              end: next.end,
-            })
-          : fetchAllItemRows(next, { start: next.start, end: next.end }).then(
-              (rows) => ({ rows, pricePoints: [] as SubsPricePoint[] }),
-            ),
-        fetchAllItemRows(next, lwWindow(next)),
-        fetchAllItemRows(next, lyWindow(next)),
+        narrowed
+          ? fetchItemRowsForCodes(
+              next,
+              { start: next.start, end: next.end },
+              upcs,
+            )
+          : useSubsPricePoints
+            ? fetchItemRowsWithPricePoints(next, {
+                start: next.start,
+                end: next.end,
+              })
+            : fetchAllItemRows(next, { start: next.start, end: next.end }).then(
+                (rows) => ({ rows, pricePoints: [] as SubsPricePoint[] }),
+              ),
+        narrowed
+          ? fetchItemRowsForCodes(next, lwWindow(next), upcs).then((r) => r.rows)
+          : fetchAllItemRows(next, lwWindow(next)),
+        narrowed
+          ? fetchItemRowsForCodes(next, lyWindow(next), upcs).then((r) => r.rows)
+          : fetchAllItemRows(next, lyWindow(next)),
       ]);
 
       const ty = tyResult.rows;

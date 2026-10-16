@@ -334,7 +334,7 @@ const ItemReportSheet = ({
           <div className="relative flex-shrink-0">
             <button
               onClick={() => setNoReceiverOpen((o) => !o)}
-              className="w-full text-left px-4 py-1.5 bg-amber-50 text-[11px] text-amber-900 hover:bg-amber-100 transition-colors"
+              className="w-full text-left px-4 py-1.5 bg-severity_watch_bg text-[11px] text-severity_watch_text hover:brightness-95 transition-all"
             >
               {receivingAvailable
                 ? `No receiver invoice on file for ${noReceiverCount} of ${itemCount} item${itemCount === 1 ? "" : "s"} in the last 90 days`
