@@ -4,6 +4,7 @@ import { useToast } from "../../../../components/toasts/hooks/useToast";
 import { assignUserToCompany } from "../../../../api/user";
 import type { JsonError, User } from "../../../../interfaces";
 import AssignPanel from "../../../../components-dev/AssignPanel";
+import SelectFilter from "../../../../components-dev/filters/SelectFilter";
 import {
   planAdd,
   planRemove,
@@ -12,6 +13,10 @@ import {
   type MemberUser,
   type UserOutcome,
 } from "./companyMembership";
+
+/** The "holds nothing at all" option. A string because the select deals in
+ *  strings, and a company id can never collide with it. */
+const NO_COMPANY = "none";
 
 /**
  * Who holds one company.
@@ -41,6 +46,9 @@ const CompanyUsersPanel = ({
   const ctx = useBaseGroupsCtx();
   const toast = useToast();
   const [moving, setMoving] = useState(false);
+  /** Narrows the left column to people who already hold another company —
+   *  empty means no narrowing. See `companyOptions`. */
+  const [heldFilter, setHeldFilter] = useState("");
 
   const reachable = useMemo(
     () => users.filter((u) => u.user_level <= ctx.userLevel),
@@ -64,6 +72,50 @@ const CompanyUsersPanel = ({
     () => new Map(reachable.map((u) => [u.id, u])),
     [reachable],
   );
+
+  /**
+   * The companies the left column can be narrowed by.
+   *
+   * Built from the companies the unassigned users actually hold, not from
+   * every company on the system: an option that can only ever return nothing
+   * is a dead end, and this list is for finding people, not for browsing.
+   *
+   * Onboarding is the job this exists for — a new company is usually staffed
+   * by people who already hold a neighbouring one, so "show me everybody in
+   * Houchens" turns a hunt through 405 names into a dozen.
+   */
+  const companyOptions = useMemo(() => {
+    const seen = new Map<number, string>();
+    unassigned.forEach((u) =>
+      (u.companies ?? []).forEach((c) => {
+        if (c.company !== company.id && !seen.has(c.company)) {
+          seen.set(c.company, c.name);
+        }
+      }),
+    );
+    const options = [...seen.entries()]
+      .map(([id, name]) => ({ value: String(id), label: name }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+    // Worth its own option: somebody holding nothing at all is invisible to
+    // every other filter here, and during onboarding they are exactly who is
+    // being looked for.
+    const orphans = unassigned.filter((u) => (u.companies ?? []).length === 0);
+    return orphans.length > 0
+      ? [{ value: NO_COMPANY, label: `No company (${orphans.length})` }, ...options]
+      : options;
+  }, [unassigned, company.id]);
+
+  /** Applied inside AssignPanel beside its search box, so the heading can go
+   *  on counting the whole column — "12 of 405" rather than "12 of 12". */
+  const heldPredicate = useMemo(() => {
+    if (!heldFilter) return undefined;
+    return (item: { id: number }) => {
+      const held = byId.get(item.id)?.companies ?? [];
+      return heldFilter === NO_COMPANY
+        ? held.length === 0
+        : held.some((c) => c.company === Number(heldFilter));
+    };
+  }, [heldFilter, byId]);
 
   /**
    * Send a plan.
@@ -154,6 +206,18 @@ const CompanyUsersPanel = ({
         onAssign={handleAssign}
         onUnassign={handleUnassign}
         assignAllScope="global"
+        leftPredicate={heldPredicate}
+        leftFilters={
+          companyOptions.length > 0 ? (
+            <SelectFilter
+              value={heldFilter}
+              onChange={setHeldFilter}
+              options={companyOptions}
+              placeholder="Any company"
+              searchable={companyOptions.length > 8}
+            />
+          ) : undefined
+        }
       />
     </div>
   );

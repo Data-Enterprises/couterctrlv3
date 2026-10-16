@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { FunnelIcon } from "@heroicons/react/20/solid";
 import TextFilter from "./filters/TextFilter";
 
 interface AssignPanelItem {
@@ -30,7 +31,60 @@ interface AssignPanelProps {
   // What the buttons call the action. Defaults to Assign / Unassign; a panel
   // whose action isn't an assignment says what it does (Shared Groups: Share).
   verbs?: { assign: string; unassign: string };
+  // Extra controls for the left column, behind the funnel beside its search
+  // box. Only the caller knows what else there is to filter by -- the
+  // Companies tab offers "already in company X", which means nothing to the
+  // panel that assigns stores to a base group.
+  leftFilters?: ReactNode;
+  // Applied alongside the left search box. It narrows what is LISTED without
+  // changing `leftItems`, so the heading can still say "12 of 405" -- a
+  // caller that pre-filtered its own array would have thrown that 405 away.
+  leftPredicate?: (item: AssignPanelItem) => boolean;
 }
+
+/**
+ * Stage or clear every row the column is currently showing.
+ *
+ * The complaint these filters came from was the clicking, and narrowing 405
+ * users down to 12 is no help if all twelve still have to be clicked one at a
+ * time. This acts on what is SHOWN and never on the hidden rest -- `Assign
+ * all` is the button that ignores the search, and it does so deliberately.
+ *
+ * Selecting ADDS to what is already staged rather than replacing it, so a
+ * selection can be built across several searches: narrow to one company, take
+ * all of them, narrow to the next, take those too, then assign once. The
+ * running count is there because that only makes sense if you can see it.
+ */
+const SelectShown = ({
+  shown,
+  selected,
+  onSelectAll,
+  onClear,
+}: {
+  shown: number;
+  selected: number;
+  onSelectAll: () => void;
+  onClear: () => void;
+}) => (
+  <div className="flex items-center gap-2 mb-1 text-[10px] text-content/85">
+    <button
+      onClick={onSelectAll}
+      disabled={shown === 0}
+      className="font-semibold hover:underline disabled:opacity-50 disabled:no-underline disabled:cursor-not-allowed"
+    >
+      Select all {shown} shown
+    </button>
+    {selected > 0 && (
+      <>
+        <span aria-hidden="true">·</span>
+        <span className="font-semibold text-content">{selected} selected</span>
+        <button onClick={onClear} className="hover:underline">
+          Clear
+        </button>
+      </>
+    )}
+  </div>
+);
 
 // Shared staged dual-column assign/unassign control — used by the create-user
 // wizard's Assignments step, the user profile's Companies/Base groups/Stores
@@ -46,9 +100,12 @@ const AssignPanel = ({
   assignAllScope = "filtered",
   onRightSelectionChange,
   rightSelectionResetKey,
+  leftFilters,
+  leftPredicate,
 }: AssignPanelProps) => {
   const [leftFilter, setLeftFilter] = useState("");
   const [rightFilter, setRightFilter] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
   const [staged, setStaged] = useState<Set<number>>(new Set());
   const [unstaged, setUnstaged] = useState<Set<number>>(new Set());
 
@@ -65,12 +122,30 @@ const AssignPanel = ({
     setUnstaged(new Set());
   }, [rightSelectionResetKey]);
 
-  const filteredLeft = leftItems.filter((i) =>
-    i.label.toLowerCase().includes(leftFilter.toLowerCase()),
+  // The sublabel is searched as well as the label, because it is the email,
+  // and "who is on houchens.com" is a question people actually arrive with.
+  // Searching only the username made the address visible but not findable.
+  const matches = (i: AssignPanelItem, query: string) => {
+    const q = query.trim().toLowerCase();
+    if (!q) return true;
+    return (
+      i.label.toLowerCase().includes(q) ||
+      (i.sublabel?.toLowerCase().includes(q) ?? false)
+    );
+  };
+
+  const filteredLeft = leftItems.filter(
+    (i) => (leftPredicate?.(i) ?? true) && matches(i, leftFilter),
   );
-  const filteredRight = rightItems.filter((i) =>
-    i.label.toLowerCase().includes(rightFilter.toLowerCase()),
-  );
+
+  // Whether the caller's filter is actually holding anything back. The funnel
+  // wears the active state while it is, even when the controls are collapsed
+  // — a short list under a plain button looks like a short column, and the
+  // reason it is short has to stay visible.
+  const filtersNarrowing = leftPredicate
+    ? leftItems.some((i) => !leftPredicate(i))
+    : false;
+  const filteredRight = rightItems.filter((i) => matches(i, rightFilter));
 
   // The count says what the column shows: while a search narrows it, "4 of 17".
   const countLabel = (shown: number, total: number) =>
@@ -108,13 +183,48 @@ const AssignPanel = ({
         <div className="text-[9px] font-bold uppercase tracking-wide text-content mb-1.5">
           {leftTitle} ({countLabel(filteredLeft.length, leftItems.length)})
         </div>
-        <div className="mb-1.5">
+        <div className="mb-1.5 flex items-center gap-1.5">
           <TextFilter
             value={leftFilter}
             onChange={setLeftFilter}
-            placeholder="Search…"
+            placeholder={
+              leftItems.some((i) => i.sublabel)
+                ? "Search name or email…"
+                : "Search…"
+            }
+            className="flex-1 min-w-0"
           />
+          {leftFilters && (
+            <button
+              onClick={() => setShowFilters((v) => !v)}
+              aria-expanded={showFilters}
+              title={showFilters ? "Hide filters" : "More filters"}
+              className={`w-[26px] h-[26px] flex items-center justify-center rounded-md border flex-shrink-0 transition-colors ${
+                showFilters || filtersNarrowing
+                  ? "bg-brand_navy border-brand_navy text-custom-white"
+                  : "bg-custom-white border-gray-200 text-content/85 hover:bg-gray-50"
+              }`}
+            >
+              <FunnelIcon className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
+        {leftFilters && showFilters && (
+          <div className="mb-1.5 animate-nb-drop motion-reduce:animate-none">
+            {leftFilters}
+          </div>
+        )}
+        <SelectShown
+          shown={filteredLeft.length}
+          selected={staged.size}
+          onSelectAll={() =>
+            setStaged(
+              (prev) =>
+                new Set([...prev, ...filteredLeft.map((i) => i.id)]),
+            )
+          }
+          onClear={() => setStaged(new Set())}
+        />
         <div className="h-[17.8rem] overflow-y-auto thin-scrollbar border border-gray-100">
           {filteredLeft.map((item) => (
             <div
@@ -172,9 +282,24 @@ const AssignPanel = ({
           <TextFilter
             value={rightFilter}
             onChange={setRightFilter}
-            placeholder="Search…"
+            placeholder={
+              rightItems.some((i) => i.sublabel)
+                ? "Search name or email…"
+                : "Search…"
+            }
           />
         </div>
+        <SelectShown
+          shown={filteredRight.length}
+          selected={unstaged.size}
+          onSelectAll={() =>
+            setUnstaged(
+              (prev) =>
+                new Set([...prev, ...filteredRight.map((i) => i.id)]),
+            )
+          }
+          onClear={() => setUnstaged(new Set())}
+        />
         <div className="h-[17.8rem] overflow-y-auto thin-scrollbar border border-gray-100">
           {filteredRight.map((item) => (
             <div
