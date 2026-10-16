@@ -40,6 +40,11 @@ interface AssignPanelProps {
   // changing `leftItems`, so the heading can still say "12 of 405" -- a
   // caller that pre-filtered its own array would have thrown that 405 away.
   leftPredicate?: (item: AssignPanelItem) => boolean;
+  // One line under the left search box saying what is worth typing into it.
+  // A placeholder can say "name or email"; it has no room to say that an
+  // email DOMAIN pulls back a whole company at once, which is the thing
+  // nobody guesses and the thing that saves the most work.
+  searchHint?: ReactNode;
 }
 
 /**
@@ -102,6 +107,7 @@ const AssignPanel = ({
   rightSelectionResetKey,
   leftFilters,
   leftPredicate,
+  searchHint,
 }: AssignPanelProps) => {
   const [leftFilter, setLeftFilter] = useState("");
   const [rightFilter, setRightFilter] = useState("");
@@ -213,6 +219,11 @@ const AssignPanel = ({
           <div className="mb-1.5 animate-nb-drop motion-reduce:animate-none">
             {leftFilters}
           </div>
+        )}
+        {searchHint && (
+          <p className="text-[10px] text-content/85 leading-snug mb-1">
+            {searchHint}
+          </p>
         )}
         <SelectShown
           shown={filteredLeft.length}

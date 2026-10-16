@@ -105,6 +105,30 @@ const CompanyUsersPanel = ({
       : options;
   }, [unassigned, company.id]);
 
+  /**
+   * An email domain actually present in the left column, for the search hint.
+   *
+   * A made-up example teaches nothing — somebody reads "@example.com", takes
+   * it as filler and types a name anyway. Naming the commonest domain in the
+   * list they are looking at makes it a thing to try rather than an
+   * illustration. Falls back to no example when the addresses have nothing in
+   * common, which is its own answer: there is no domain worth suggesting.
+   */
+  const commonDomain = useMemo(() => {
+    const counts = new Map<string, number>();
+    unassigned.forEach((u) => {
+      const at = (u.email ?? "").lastIndexOf("@");
+      if (at < 0) return;
+      const domain = u.email.slice(at).toLowerCase();
+      counts.set(domain, (counts.get(domain) ?? 0) + 1);
+    });
+    const best = [...counts.entries()].sort(
+      (a, b) => b[1] - a[1] || a[0].localeCompare(b[0]),
+    )[0];
+    // One lone address proves nothing about the list; two is a pattern.
+    return best && best[1] > 1 ? best[0] : null;
+  }, [unassigned]);
+
   /** Applied inside AssignPanel beside its search box, so the heading can go
    *  on counting the whole column — "12 of 405" rather than "12 of 12". */
   const heldPredicate = useMemo(() => {
@@ -207,6 +231,23 @@ const CompanyUsersPanel = ({
         onUnassign={handleUnassign}
         assignAllScope="global"
         leftPredicate={heldPredicate}
+        searchHint={
+          <>
+            Searches usernames <span className="font-semibold">and emails</span>
+            {commonDomain ? (
+              <>
+                {" "}
+                — type{" "}
+                <span className="font-semibold text-content">
+                  {commonDomain}
+                </span>{" "}
+                to pull back everyone on it.
+              </>
+            ) : (
+              "."
+            )}
+          </>
+        }
         leftFilters={
           companyOptions.length > 0 ? (
             <SelectFilter
