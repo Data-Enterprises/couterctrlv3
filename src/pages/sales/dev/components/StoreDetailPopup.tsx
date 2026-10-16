@@ -8,6 +8,7 @@ import {
 import { isGroupSearch } from "../../../../features/searchSlice";
 import { getSubs, getHourly /* , getCats */ } from "../../../../api/sales";
 import SalesExportModal from "./SalesExportModal";
+import PopupTopItems from "./PopupTopItems";
 import {
   setSubSales,
   setHourlySales,
@@ -77,7 +78,11 @@ interface StoreDetailPopupProps {
 // Category tab (and its cat_sales fetch below) is commented out for now —
 // uncomment this, the getCats-related imports above, and the marked blocks
 // below to bring it back.
-type PopupTab = "subdept" | "hourly" | "comparison" /* | "category" */;
+type PopupTab =
+  | "subdept"
+  | "hourly"
+  | "comparison"
+  | "topitems" /* | "category" */;
 
 const fmtDate = (d: string) =>
   new Date(d + "T12:00:00").toLocaleDateString("en-US", {
@@ -795,8 +800,8 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
             single-store search has no reference set, so the tab is not
             offered rather than opening on an empty one. */}
         {((hasGroup
-          ? ["subdept", "comparison", "hourly"]
-          : ["subdept", "hourly"]) as PopupTab[]).map((t) => (
+          ? ["subdept", "comparison", "hourly", "topitems"]
+          : ["subdept", "hourly", "topitems"]) as PopupTab[]).map((t) => (
           <button
             key={t}
             onClick={() => dispatch(setLedgerTab(t))}
@@ -806,7 +811,13 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
                 : "border-transparent text-content"
             }`}
           >
-            {t === "subdept" ? "Sub depts" : t === "hourly" ? "Hourly" : "Stores"}
+            {t === "subdept"
+              ? "Sub depts"
+              : t === "hourly"
+                ? "Hourly"
+                : t === "topitems"
+                  ? "Top 200"
+                  : "Stores"}
           </button>
         ))}
       </div>
@@ -829,6 +840,13 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
               openStoreName={headerStoreName}
             />
           ) : null
+        ) : tab === "topitems" ? (
+          <PopupTopItems
+            storeId={selection.storeId}
+            storeName={headerStoreName}
+            start={twStart}
+            end={twEnd}
+          />
         ) : tab === "subdept" ? (
           /* With a counterpart chosen in Stores, this tab IS the comparison;
              without one it is the store's own departments, graded, exactly as

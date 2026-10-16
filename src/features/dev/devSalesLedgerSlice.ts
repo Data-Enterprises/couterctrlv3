@@ -6,6 +6,10 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { FinancialsRow } from "../../api/financials";
 import type {
+  TopItemRow,
+  TopItemPricePoint,
+} from "../../api/topItems";
+import type {
   CatSale,
   HourlySale,
   StoreSelection,
@@ -15,7 +19,12 @@ import type {
 
 export type GradingMetric = "sales" | "qty";
 
-export type LedgerTab = "subdept" | "hourly" | "comparison" | "category";
+export type LedgerTab =
+  | "subdept"
+  | "hourly"
+  | "comparison"
+  | "category"
+  | "topitems";
 
 /**
  * The store the open one is being measured against.
@@ -148,6 +157,20 @@ interface SalesLedgerState {
   financialsTruncated: boolean;
   financialsLoading: boolean;
 
+  /**
+   * The Top items tab's rows, and the prices behind them.
+   *
+   * Held on the page rather than inside the tab because the tab unmounts when
+   * you switch away from it, and a store's biggest sellers do not change while
+   * you look at Hourly. `topItemsKey` is the store and window they were
+   * fetched for, so coming back to the tab reuses them and changing the search
+   * does not.
+   */
+  topItems: TopItemRow[];
+  topItemPoints: TopItemPricePoint[];
+  topItemsKey: string | null;
+  topItemsLoading: boolean;
+
   // Raw API data (shared desktop + mobile)
   rawSubs: SubSale[];
   rawLWSubs: SubSale[];
@@ -211,6 +234,10 @@ const initialState: SalesLedgerState = {
   reportLoading: false,
   top10Loading: false,
   lastFetchedStoreKey: null,
+  topItems: [],
+  topItemPoints: [],
+  topItemsKey: null,
+  topItemsLoading: false,
   financials: [],
   financialsWindow: null,
   financialsTruncated: false,
@@ -314,6 +341,21 @@ const salesLedgerSlice = createSlice({
       state.financials = action.payload.rows;
       state.financialsWindow = action.payload.window;
       state.financialsTruncated = action.payload.truncated;
+    },
+    setTopItems: (
+      state,
+      action: PayloadAction<{
+        rows: TopItemRow[];
+        points: TopItemPricePoint[];
+        key: string;
+      }>,
+    ) => {
+      state.topItems = action.payload.rows;
+      state.topItemPoints = action.payload.points;
+      state.topItemsKey = action.payload.key;
+    },
+    setTopItemsLoading: (state, action: PayloadAction<boolean>) => {
+      state.topItemsLoading = action.payload;
     },
     setFinancialsLoading: (state, action: PayloadAction<boolean>) => {
       state.financialsLoading = action.payload;
@@ -433,6 +475,9 @@ const salesLedgerSlice = createSlice({
       Object.assign(state, initialState);
     },
     reQueryLedger: (state) => {
+      state.topItems = [];
+      state.topItemPoints = [];
+      state.topItemsKey = null;
       state.financials = [];
       state.financialsWindow = null;
       state.financialsTruncated = false;
@@ -498,6 +543,8 @@ export const {
   setLedgerLoading,
   setFinancials,
   setFinancialsLoading,
+  setTopItems,
+  setTopItemsLoading,
   setReportLoading,
   setTop10Loading,
   setLastFetchedStoreKey,
