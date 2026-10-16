@@ -95,6 +95,50 @@ describe("promoShare", () => {
   });
 });
 
+describe("null counts", () => {
+  // SUM(qty) FILTER (WHERE ...) returns NULL, not 0, when nothing matches --
+  // so an item that only ever sold at regular price arrives with
+  // qty_promo: null. Reading one of these raw crashed the whole panel.
+  const onlyRegular = row({
+    qty: 46,
+    qty_regular: 46,
+    qty_promo: null,
+    qty_deal_item: null,
+    qty_unknown: null,
+  });
+
+  it("treats a null count as none rather than throwing", () => {
+    expect(promoShare(onlyRegular)).toBe(0);
+  });
+
+  it("still divides by the counts that did come back", () => {
+    expect(
+      promoShare(
+        row({ qty_regular: 30, qty_promo: 10, qty_deal_item: null, qty_unknown: null }),
+      ),
+    ).toBe(0.25);
+  });
+
+  it("survives every count being null", () => {
+    expect(
+      promoShare(
+        row({ qty_regular: null, qty_promo: null, qty_deal_item: null, qty_unknown: null }),
+      ),
+    ).toBe(0);
+  });
+
+  it("reads a null ext_cost as no cost, not NaN", () => {
+    const got = grossProfit(row({ total_sales: 100, ext_cost: null, margin: 100 }));
+    expect(got).toBe(100);
+    expect(Number.isNaN(got)).toBe(false);
+  });
+
+  it("builds an insight for an item with null counts", () => {
+    const got = topItemInsight(onlyRegular, []);
+    expect(got.detail).not.toContain("NaN");
+  });
+});
+
 describe("avgPrice and grossProfit", () => {
   it("averages what a unit fetched", () => {
     expect(avgPrice(row({ total_sales: 439.5, qty: 46 }))?.toFixed(2)).toBe(

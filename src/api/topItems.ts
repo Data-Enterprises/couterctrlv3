@@ -19,7 +19,8 @@ export interface TopItemRow {
   product_description: string;
   qty: number;
   total_sales: number;
-  ext_cost: number;
+  /** Null when no line carried a cost at all. */
+  ext_cost: number | null;
   /** Percent of lines that carried a cost. */
   cost_coverage: number | null;
   /**
@@ -30,11 +31,18 @@ export interface TopItemRow {
    * never a zero.
    */
   margin: number | null;
-  /** Units by how they rang. The four sum to `qty`. */
-  qty_regular: number;
-  qty_promo: number;
-  qty_deal_item: number;
-  qty_unknown: number;
+  /**
+   * Units by how they rang. The four sum to `qty`.
+   *
+   * Every one is nullable, and most rows have at least one null: these are
+   * `SUM(qty) FILTER (WHERE …)` and Postgres returns NULL rather than 0 when
+   * nothing matches the filter. An item that only ever sold at regular price
+   * comes back with `qty_promo: null`, not zero.
+   */
+  qty_regular: number | null;
+  qty_promo: number | null;
+  qty_deal_item: number | null;
+  qty_unknown: number | null;
 }
 
 /** One price an item actually rang at, and what went through at it. */
@@ -67,11 +75,11 @@ export interface ItemDetailStore {
   store_name: string | null;
   qty: number;
   total_sales: number;
-  ext_cost: number;
+  ext_cost: number | null;
   cost_coverage: number | null;
   margin: number | null;
-  qty_regular: number;
-  qty_deal_item: number;
+  qty_regular: number | null;
+  qty_deal_item: number | null;
   pct_of_total: number | null;
 }
 
