@@ -256,3 +256,76 @@ export const deltaPoints = (
   before: number | null | undefined,
 ): number | null =>
   now === null || before === null || before === undefined ? null : now - before;
+
+/** What the Top items list can be ordered by. */
+export type TopItemSortCol = "item" | "sales" | "vsLW" | "vsLY";
+export interface TopItemSort {
+  column: TopItemSortCol;
+  direction: "asc" | "desc";
+}
+
+/** The list's resting order: biggest sales first, the way it arrives. */
+export const DEFAULT_TOP_ITEM_SORT: TopItemSort = {
+  column: "sales",
+  direction: "desc",
+};
+
+/**
+ * Clicking a column header.
+ *
+ * A new column starts descending — on every one of these, "most" is the
+ * question being asked, and starting ascending would open on the smallest
+ * numbers and read as broken. Clicking the column already sorted flips it.
+ * `item` is the exception: a name sorts A–Z first.
+ */
+export const nextTopItemSort = (
+  current: TopItemSort,
+  column: TopItemSortCol,
+): TopItemSort =>
+  current.column === column
+    ? { column, direction: current.direction === "desc" ? "asc" : "desc" }
+    : { column, direction: column === "item" ? "asc" : "desc" };
+
+/**
+ * Sort the compared rows.
+ *
+ * A null comparison is not a small one: an item with no last year has not
+ * fallen, it has no baseline. So nulls sink to the bottom in BOTH directions
+ * rather than crowding whichever end the sort happens to be pointing at.
+ */
+export const sortTopItems = (
+  rows: TopItemCompared[],
+  sort: TopItemSort,
+): TopItemCompared[] => {
+  const dir = sort.direction === "asc" ? 1 : -1;
+  const value = (r: TopItemCompared): number | null => {
+    switch (sort.column) {
+      case "sales":
+        return r.ty.total_sales;
+      case "vsLW":
+        return r.vsLW;
+      case "vsLY":
+        return r.vsLY;
+      default:
+        return null;
+    }
+  };
+  return [...rows].sort((a, b) => {
+    if (sort.column === "item") {
+      return (
+        dir *
+        a.ty.product_description.localeCompare(b.ty.product_description)
+      );
+    }
+    const av = value(a);
+    const bv = value(b);
+    if (av === null && bv === null) {
+      return a.ty.product_code.localeCompare(b.ty.product_code);
+    }
+    if (av === null) return 1;
+    if (bv === null) return -1;
+    return (
+      dir * (av - bv) || a.ty.product_code.localeCompare(b.ty.product_code)
+    );
+  });
+};

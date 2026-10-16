@@ -1,6 +1,9 @@
 import { describe, it, expect } from "vitest";
 import {
   avgPrice,
+  DEFAULT_TOP_ITEM_SORT,
+  nextTopItemSort,
+  sortTopItems,
   grossProfit,
   pointsFor,
   promoShare,
@@ -188,6 +191,70 @@ describe("pointsFor", () => {
 
   it("is empty for an item with no points, not undefined", () => {
     expect(pointsFor(points, "nope")).toEqual([]);
+  });
+});
+
+describe("sorting", () => {
+  const compared = (
+    code: string,
+    sales: number,
+    vsLW: number | null,
+    vsLY: number | null,
+    desc = code,
+  ) => ({
+    ty: row({ product_code: code, product_description: desc, total_sales: sales }),
+    lw: null,
+    ly: null,
+    vsLW,
+    vsLY,
+  });
+
+  const rows = [
+    compared("A", 100, 5, null, "Apples"),
+    compared("B", 300, -20, 10, "Bread"),
+    compared("C", 200, null, -4, "Cheese"),
+  ];
+
+  it("rests on biggest sales first", () => {
+    expect(DEFAULT_TOP_ITEM_SORT).toEqual({ column: "sales", direction: "desc" });
+    expect(
+      sortTopItems(rows, DEFAULT_TOP_ITEM_SORT).map((r) => r.ty.product_code),
+    ).toEqual(["B", "C", "A"]);
+  });
+
+  it("opens a number column on descending — 'most' is the question", () => {
+    expect(nextTopItemSort(DEFAULT_TOP_ITEM_SORT, "vsLY").direction).toBe("desc");
+  });
+
+  it("opens the name column A to Z instead", () => {
+    expect(nextTopItemSort(DEFAULT_TOP_ITEM_SORT, "item").direction).toBe("asc");
+  });
+
+  it("flips the column already in force", () => {
+    expect(nextTopItemSort(DEFAULT_TOP_ITEM_SORT, "sales").direction).toBe("asc");
+  });
+
+  it("sinks a missing comparison in BOTH directions", () => {
+    // No last year is not a fall of 100%: the item has no baseline, and
+    // letting it sort as a number would put it top of the losers.
+    const desc = sortTopItems(rows, { column: "vsLY", direction: "desc" });
+    const asc = sortTopItems(rows, { column: "vsLY", direction: "asc" });
+    expect(desc[desc.length - 1].ty.product_code).toBe("A");
+    expect(asc[asc.length - 1].ty.product_code).toBe("A");
+  });
+
+  it("sorts names when asked", () => {
+    expect(
+      sortTopItems(rows, { column: "item", direction: "asc" }).map(
+        (r) => r.ty.product_description,
+      ),
+    ).toEqual(["Apples", "Bread", "Cheese"]);
+  });
+
+  it("leaves the caller's array alone", () => {
+    const before = rows.map((r) => r.ty.product_code);
+    sortTopItems(rows, { column: "vsLW", direction: "asc" });
+    expect(rows.map((r) => r.ty.product_code)).toEqual(before);
   });
 });
 
