@@ -118,6 +118,7 @@ const LedgerHeader = ({
       <div className="flex items-center gap-2 pt-1.5 mt-1 border-t border-custom-white/[0.08]">
         {/* Search */}
         <button
+          data-help="search"
           onClick={onOpenSearch}
           className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/60 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
           aria-label="Search stores"
@@ -129,6 +130,7 @@ const LedgerHeader = ({
 
         {/* Grading metric toggle */}
         <div
+          data-help="metric"
           className="flex items-center flex-shrink-0 rounded overflow-hidden"
           style={{ height: 22 }}
         >
@@ -154,7 +156,7 @@ const LedgerHeader = ({
         {/* Threshold — slider for exploring, numeric input for committing to
             an exact figure. Both write the same value; the slider is capped at
             a range that's meaningful for grading rather than 0-100. */}
-        <div className="flex items-center gap-1.5 flex-shrink-0">
+        <div data-help="threshold" className="flex items-center gap-1.5 flex-shrink-0">
           <span className="text-[11px] text-custom-white font-medium">
             Store Threshold
           </span>

@@ -301,6 +301,7 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: Props) => {
         {/* Row 2: search btn + store | metric toggle | threshold | help btn */}
         <div className="flex items-center gap-2 pt-1.5 mt-1 border-t border-custom-white/[0.08]">
           <button
+            data-help="search"
             className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/60 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
             onClick={onSearchOpen}
             title="Search"
@@ -313,7 +314,7 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: Props) => {
           <div className="flex-1" />
 
           {/* Margin / Sales grading toggle */}
-          <div className="flex items-center flex-shrink-0 rounded overflow-hidden" style={{ height: 22 }}>
+          <div data-help="metric" className="flex items-center flex-shrink-0 rounded overflow-hidden" style={{ height: 22 }}>
             {TOGGLE_OPTS.map(({ key, label }) => {
               const active = gradingMetric === key;
               return (
@@ -334,7 +335,7 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: Props) => {
           <div className="w-px h-4 bg-custom-white/15 flex-shrink-0" />
 
           {/* Threshold input */}
-          <div className="flex items-center gap-1.5 flex-shrink-0">
+          <div data-help="threshold" className="flex items-center gap-1.5 flex-shrink-0">
             <span className="text-[11px] text-custom-white font-medium">Threshold</span>
             <ThresholdFilter
               value={threshValue}
@@ -360,7 +361,7 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: Props) => {
 
       {/* Tier filter chips + text filter */}
       <div className="flex items-center justify-between gap-1.5 px-4 py-2 bg-custom-white border-x border-gray-100">
-        <div className="flex items-center gap-1.5">
+        <div data-help="severity-chips" className="flex items-center gap-1.5">
           <button
             onClick={() => setSevFilter((f) => (f === "critical" ? "all" : "critical"))}
             className={`text-[12px] font-semibold px-2 py-1 rounded-full bg-severity_critical_bg text-severity_critical_text transition-shadow ${
@@ -408,7 +409,7 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: Props) => {
               <span className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-1">
                 Sub Dept
               </span>
-              <div className="flex items-center gap-[14px]">
+              <div data-help="sort" className="flex items-center gap-[14px]">
                 <span
                   className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-shrink-0 text-center"
                   style={{ width: 48 }}
@@ -442,7 +443,7 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: Props) => {
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto thin-scrollbar">
+            <div data-help="list" className="flex-1 overflow-y-auto thin-scrollbar">
               {visibleRows.length === 0 ? (
                 <div className="flex items-center justify-center h-24 text-[11px] text-content/40">
                   None this week

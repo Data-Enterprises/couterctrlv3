@@ -530,7 +530,7 @@ const SalesLedger = () => {
 
             {/* Tier summary pills — click to filter the list below */}
             <div className="flex items-center justify-between px-4 py-2 bg-custom-white border-x border-gray-100">
-              <div className="flex items-center gap-1.5">
+              <div data-help="severity-chips" className="flex items-center gap-1.5">
                 <button
                   onClick={() =>
                     setSevFilter((f) => (f === "critical" ? "all" : "critical"))
@@ -604,7 +604,7 @@ const SalesLedger = () => {
                   />
                 </div>
               </div>
-              <div className="flex-1 overflow-y-auto thin-scrollbar">
+              <div data-help="list" className="flex-1 overflow-y-auto thin-scrollbar">
                 {visibleRows.map((row) => (
                   <LedgerRow
                     key={`${row.storeid}__${row.store_number}`}
