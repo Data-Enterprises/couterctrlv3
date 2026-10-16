@@ -8,6 +8,19 @@ interface SingleStoreSearchCardProps {
   title: string;
   description: string;
   buttonLabel?: string;
+  /**
+   * A second requirement, in the caller's words.
+   *
+   * Set while something other than the store is still missing: the button
+   * goes disabled and says this instead of `buttonLabel`, the same way the
+   * card already names a missing store. Undefined means nothing is in the
+   * way.
+   *
+   * A label rather than a boolean, because "disabled" on its own is the
+   * failure this card exists to avoid — a greyed button with no reason beside
+   * it is a dead end the reader has to guess their way out of.
+   */
+  blockedLabel?: string;
   stores: Store[];
   selectedStoreId: number;
   onStoreSelect: (id: number) => void;
@@ -34,6 +47,7 @@ interface SingleStoreSearchCardProps {
 const SingleStoreSearchCard = ({
   title,
   description,
+  blockedLabel,
   buttonLabel = "Search",
   stores,
   selectedStoreId,
@@ -135,12 +149,18 @@ const SingleStoreSearchCard = ({
 
           <button
             onClick={onSearch}
-            disabled={selectedStoreId === 0 || loading}
+            disabled={selectedStoreId === 0 || !!blockedLabel || loading}
             className="w-full py-2 text-sm font-semibold text-custom-white rounded-lg bg-brand_navy hover:bg-brand_navy_hover transition-colors cursor-pointer select-none disabled:opacity-50"
           >
             {/* Names the missing step while it is disabled — see SearchCard.
-                Always a store here; this card never takes a group. */}
-            {selectedStoreId === 0 ? "Select Store" : buttonLabel}
+                Always a store here; this card never takes a group.
+                The store comes first: it is the one requirement every card
+                has, and naming the caller's extra step while the store is
+                also empty would point the reader at the second thing they
+                need while the first is still missing. */}
+            {selectedStoreId === 0
+              ? "Select Store"
+              : (blockedLabel ?? buttonLabel)}
           </button>
 
           {onBack && (

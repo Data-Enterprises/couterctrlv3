@@ -113,6 +113,11 @@ const ItemReportEntry = ({
       selectedStoreId={storeId}
       onStoreSelect={onStoreSelect}
       onSearch={() => onRun(upcs, departments)}
+      // A list is required, not optional. The report answers for the codes it
+      // is given and nothing else, and the fetch now asks the API for exactly
+      // those — so without one there is no question to ask. It used to read
+      // the whole store and then keep none of it.
+      blockedLabel={upcs.length === 0 ? "Add a UPC list" : undefined}
       loading={loading}
       loadingMessage={loadingMessage}
       datePicker={
