@@ -386,6 +386,13 @@ const SalesExportModal = ({
   const hasItems = !!subDeptItems && subDeptItems.length > 0;
   const toast = useToast();
   const { url, token } = useAppSelector((state) => state.app);
+  /** Fetched with the search — see SalesLedger's fetchLedger. */
+  const {
+    financials: searchedRows,
+    financialsWindow,
+    financialsTruncated,
+    financialsLoading,
+  } = useAppSelector((state) => state.dev.salesLedger);
 
   // ── Preset state — no default selections ──
   const [mode, setMode] = useState<ModalMode>("presets");
@@ -569,7 +576,28 @@ const SalesExportModal = ({
    * The only part of an export that can fail — the other presets are built
    * from data already on the page.
    */
+  /**
+   * The rows the search already brought back, when they answer the question
+   * being asked. Null when the dates have been moved off the searched week,
+   * which is the one case this has to go and ask.
+   */
+  const searchedAnswers =
+    financialsWindow &&
+    financialsWindow.start === finFrom &&
+    financialsWindow.end === finTo;
+
   const fetchFinancials = async (): Promise<FinancialsResponse | null> => {
+    if (searchedAnswers) {
+      return {
+        error: 0,
+        success: true,
+        record_count: searchedRows.length,
+        truncated: financialsTruncated,
+        maxRows: 0,
+        storeids: [],
+        data: searchedRows.filter((r) => finStores.has(r.storeid)),
+      };
+    }
     // The endpoint takes one store OR one group, never an arbitrary set. So a
     // subset is fetched at group scope and cut down here: one call either way,
     // where asking per store would be a call each.
@@ -634,15 +662,18 @@ const SalesExportModal = ({
         // with no idea a cap was involved, and a short CSV looks exactly like
         // a complete one.
         const note = fin.truncated
-          ? ` — INCOMPLETE: capped at ${fin.maxRows.toLocaleString()} rows, narrow the dates or pick fewer stores`
+          ? " — INCOMPLETE: the row cap bit, narrow the dates or pick fewer stores"
           : "";
         sections.push(
           `Financials — ${scopeLabel}, ${finFrom} to ${finTo}${note}\n${buildFinancialsCsv(fin.data)}`,
         );
         if (fin.truncated) {
           toast.warn(
-            `Financials hit the ${fin.maxRows.toLocaleString()} row cap — the file is incomplete`,
+            "Financials hit the row cap — the file is incomplete",
           );
+        }
+        if (fin.data.length === 0) {
+          toast.warn("No financials rows for those stores and dates");
         }
       }
     }
@@ -806,6 +837,15 @@ const SalesExportModal = ({
                       it and go back to asking for a query. */}
                 {id === "financials" && (
                   <div className="ml-[26px] mt-2 rounded-lg bg-bkg shadow-card-sm px-3 py-2.5">
+                      <p className="text-[10px] text-content/85 leading-snug mb-2">
+                        {financialsLoading
+                          ? "Reading the records for this search…"
+                          : searchedAnswers
+                            ? `${searchedRows.length.toLocaleString()} records in hand for this week${
+                                financialsTruncated ? " (capped)" : ""
+                              }`
+                            : "These dates are outside the search — they will be fetched on download."}
+                      </p>
                       <div className="flex items-end gap-2 flex-wrap">
                         <div className="flex flex-col gap-1">
                           <span className="text-[9px] font-bold uppercase tracking-wide text-content/85">

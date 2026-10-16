@@ -4,6 +4,7 @@
  * promoted, it replaces the prod slice. See src/store/devReducers.ts.
  */
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import type { FinancialsRow } from "../../api/financials";
 import type {
   CatSale,
   HourlySale,
@@ -130,6 +131,23 @@ interface SalesLedgerState {
   // the second.
   lastFetchedStoreKey: string | null;
 
+  /**
+   * Financials — the daily per-bin POS records, for the export.
+   *
+   * Fetched with the search like everything else on this page, rather than
+   * when the export modal opens. The other four exports read data the search
+   * already brought back, and an export that goes to the network while
+   * somebody is waiting on a download is the odd one out.
+   *
+   * Empty until the search lands, and empty again on a re-query. The window
+   * it was fetched for travels with it, so the export can tell whether the
+   * dates it is being asked for are the ones in hand.
+   */
+  financials: FinancialsRow[];
+  financialsWindow: { start: string; end: string } | null;
+  financialsTruncated: boolean;
+  financialsLoading: boolean;
+
   // Raw API data (shared desktop + mobile)
   rawSubs: SubSale[];
   rawLWSubs: SubSale[];
@@ -193,6 +211,10 @@ const initialState: SalesLedgerState = {
   reportLoading: false,
   top10Loading: false,
   lastFetchedStoreKey: null,
+  financials: [],
+  financialsWindow: null,
+  financialsTruncated: false,
+  financialsLoading: false,
   rawSubs: [],
   rawLWSubs: [],
   rawLYSubs: [],
@@ -280,6 +302,21 @@ const salesLedgerSlice = createSlice({
     },
     setLedgerLoading: (state, action: PayloadAction<boolean>) => {
       state.ledgerLoading = action.payload;
+    },
+    setFinancials: (
+      state,
+      action: PayloadAction<{
+        rows: FinancialsRow[];
+        window: { start: string; end: string };
+        truncated: boolean;
+      }>,
+    ) => {
+      state.financials = action.payload.rows;
+      state.financialsWindow = action.payload.window;
+      state.financialsTruncated = action.payload.truncated;
+    },
+    setFinancialsLoading: (state, action: PayloadAction<boolean>) => {
+      state.financialsLoading = action.payload;
     },
     setReportLoading: (state, action: PayloadAction<boolean>) => {
       state.reportLoading = action.payload;
@@ -396,6 +433,9 @@ const salesLedgerSlice = createSlice({
       Object.assign(state, initialState);
     },
     reQueryLedger: (state) => {
+      state.financials = [];
+      state.financialsWindow = null;
+      state.financialsTruncated = false;
       state.selection = null;
       state.selectedDate = null;
       state.lastFetchedStoreKey = null;
@@ -456,6 +496,8 @@ export const {
   setMatrixOpen,
   setLedgerSelectedDate,
   setLedgerLoading,
+  setFinancials,
+  setFinancialsLoading,
   setReportLoading,
   setTop10Loading,
   setLastFetchedStoreKey,

@@ -2,6 +2,7 @@ import { useSalesState } from "./hooks/useSalesState";
 import { useState, useRef, useMemo, useCallback } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { getWeekly } from "../../../api/sales";
+import { getFinancials } from "../../../api/financials";
 import { getStoresAssignedToUserGroup } from "../../../api/groups";
 import { addDays, formatGoliathDate, sameWeekDayLastYear } from "../../../utils";
 import { buildLedgerRows, regradeLedgerRows } from "./shared/ledgerUtils";
@@ -18,6 +19,8 @@ import {
 import {
   setHasSearched,
   setLedgerLoading,
+  setFinancials,
+  setFinancialsLoading,
   setLedgerSelection,
   setLedgerTab,
   type LedgerTab,
@@ -179,6 +182,42 @@ const SalesLedger = () => {
     dispatch(reQueryLedger());
     setSearchModalOpen(false);
     setFetchFailed(false);
+
+    /**
+     * Financials, for the export.
+     *
+     * Fired with the search, alongside everything else this page fetches, so
+     * the export reads data already in hand like its four neighbours do.
+     *
+     * Deliberately not awaited. It is wanted by one optional export and the
+     * ledger is what the searcher is waiting to see — a slow or missing
+     * financials call must not hold up the page, and a failed one must not
+     * fail the search. The export says so itself if the rows never arrived.
+     */
+    dispatch(setFinancialsLoading(true));
+    getFinancials(
+      context.url,
+      context.token,
+      twStart,
+      twEnd,
+      searchValue,
+      useGroups as 0 | 1,
+    )
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error !== 0) return;
+        dispatch(
+          setFinancials({
+            rows: j.data ?? [],
+            window: { start: twStart, end: twEnd },
+            truncated: !!j.truncated,
+          }),
+        );
+      })
+      .catch(() => {
+        /* the export reports it; the ledger does not care */
+      })
+      .finally(() => dispatch(setFinancialsLoading(false)));
 
     // Large group path: >30 stores → per-store calls, collect progressively
     if (isGroup) {
