@@ -44,8 +44,28 @@ const DetailPopover = ({
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    /**
+     * "Outside" means outside the WRAPPER, not outside this card.
+     *
+     * The trigger is a sibling of this element, so measuring against the card
+     * alone made the trigger count as outside — and clicking it to close ran
+     * both halves of the toggle:
+     *
+     *   mousedown on the trigger -> onClose()            -> false
+     *   click on the trigger     -> setOpen((o) => !o)   -> back to true
+     *
+     * React batches the pair, so the functional update saw the pending false
+     * and flipped it straight back. The card shut and reopened under the
+     * cursor, and no amount of clicking would close it.
+     *
+     * The parent is the positioned wrapper this card anchors to — the one the
+     * docblock above already requires to be `relative` — and it holds the
+     * trigger too. Measuring against it leaves the trigger's own handler as
+     * the only thing that runs, which is the one that knows what to do.
+     */
     const onOutside = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) onClose();
+      const root = ref.current?.parentElement ?? ref.current;
+      if (root && !root.contains(e.target as Node)) onClose();
     };
     document.addEventListener("mousedown", onOutside);
     return () => document.removeEventListener("mousedown", onOutside);

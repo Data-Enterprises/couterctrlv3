@@ -347,7 +347,7 @@ const ItemReportSheet = ({
             {noReceiverOpen && (
               <DetailPopover
                 onClose={() => setNoReceiverOpen(false)}
-                className="bg-amber-50 text-amber-900"
+                className="bg-severity_watch_bg text-severity_watch_text"
               >
                 {noReceiverItems.map((it) => (
                   <div
