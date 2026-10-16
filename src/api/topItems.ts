@@ -137,6 +137,17 @@ export const TOP_ITEMS_FETCH = 500;
 /** How many the tab shows once they are ranked by sales. */
 export const TOP_ITEMS_SHOWN = 200;
 
+/**
+ * How far back the cost history reaches.
+ *
+ * Long enough to say whether today's price is a good one — a week cannot, and
+ * a slow mover on a monthly cycle needs more than one delivery to compare
+ * against. Short enough that the invoice list stays a list: at 120 days a
+ * weekly-delivered item ran to seventeen rows, which is a scroll rather than
+ * an answer.
+ */
+export const COST_HISTORY_DAYS = 60;
+
 export const getTopItems = async (
   url: string,
   token: string,

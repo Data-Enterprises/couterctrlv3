@@ -1,4 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
+import {
+  ChevronDownIcon,
+  ChevronUpIcon,
+  ChevronRightIcon,
+  ExclamationTriangleIcon,
+  ExclamationCircleIcon,
+  CheckCircleIcon,
+} from "@heroicons/react/20/solid";
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 import {
@@ -8,6 +16,7 @@ import {
 import {
   getItemDetail,
   getTopItems,
+  COST_HISTORY_DAYS,
   TOP_ITEMS_FETCH,
   TOP_ITEMS_SHOWN,
   type ItemDetailResponse,
@@ -23,7 +32,12 @@ import {
   pointsFor,
   promoShare,
   rankBySales,
+  sortTopItems,
+  nextTopItemSort,
+  DEFAULT_TOP_ITEM_SORT,
   topItemInsight,
+  type TopItemSort,
+  type TopItemSortCol,
   type ItemTone,
   type TopItemCompared,
 } from "../shared/topItems";
@@ -58,16 +72,28 @@ import { formatCurrency2 } from "../../../../utils";
  */
 
 /**
- * The tab's tones, off the shared severity map.
- *
- * `unknown` is this tab's own and is not a severity: an item whose margin the
- * server withheld has not been graded badly, it has not been graded. It takes
- * a neutral grey rather than a colour that reads as a verdict.
+ * The CTA palette for an ungraded row: no verdict, so no severity colour.
+ * Same definition the Sub dept tab uses, for the same reason.
  */
-const ctaTone = (tone: ItemTone) =>
-  tone === "unknown"
-    ? { bg: "bg-bkg", text: "text-content" }
-    : CTA_SEVERITY_CLASSES[tone as Severity];
+const NEUTRAL_CTA = {
+  border: "border-gray-200",
+  bg: "bg-gray-50",
+  hoverBg: "hover:bg-gray-100",
+  text: "text-content",
+};
+
+/** `unknown` is this tab's own and is not a severity: an item whose margin
+ *  the server withheld has not been graded badly, it has not been graded. */
+const ctaClasses = (tone: ItemTone) =>
+  tone === "unknown" ? NEUTRAL_CTA : CTA_SEVERITY_CLASSES[tone as Severity];
+
+const CtaIcon = ({ tone, cls }: { tone: ItemTone; cls: string }) => {
+  if (tone === "critical")
+    return <ExclamationTriangleIcon className={cls} />;
+  if (tone === "watch") return <ExclamationCircleIcon className={cls} />;
+  if (tone === "healthy") return <CheckCircleIcon className={cls} />;
+  return null;
+};
 
 const dotClass = (tone: ItemTone) =>
   tone === "unknown" ? "bg-gray-400" : severityDotClass[tone as Severity];
@@ -117,6 +143,22 @@ const PopupTopItems = ({
     useAppSelector((state) => state.dev.salesLedger);
 
   const [search, setSearch] = useState("");
+  const [sort, setSort] = useState<TopItemSort>(DEFAULT_TOP_ITEM_SORT);
+  /**
+   * Collapsed sections, by id.
+   *
+   * The sections start open — the panel is the answer, and folding it by
+   * default would hide the thing just asked for. The CTA starts CLOSED, the
+   * way the Sub dept tab's does: its label already says the verdict, and the
+   * sentence is the working behind it.
+   */
+  const [folded, setFolded] = useState<Set<string>>(() => new Set(["cta"]));
+  const fold = (id: string) =>
+    setFolded((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
   const [selectedCode, setSelectedCode] = useState<string | null>(null);
   const [detail, setDetail] = useState<ItemDetailResponse | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
@@ -197,7 +239,15 @@ const PopupTopItems = ({
     let live = true;
     setDetailLoading(true);
     setDetail(null);
-    getItemDetail(url, token, storeId, selectedCode, start, end)
+    getItemDetail(
+      url,
+      token,
+      storeId,
+      selectedCode,
+      start,
+      end,
+      COST_HISTORY_DAYS,
+    )
       .then((resp) => {
         if (!live) return;
         const j: ItemDetailResponse = resp.data;
@@ -222,13 +272,15 @@ const PopupTopItems = ({
 
   const shown = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return ranked;
-    return ranked.filter(
-      (r) =>
-        r.ty.product_description.toLowerCase().includes(q) ||
-        r.ty.product_code.includes(q),
-    );
-  }, [ranked, search]);
+    const matched = q
+      ? ranked.filter(
+          (r) =>
+            r.ty.product_description.toLowerCase().includes(q) ||
+            r.ty.product_code.includes(q),
+        )
+      : ranked;
+    return sortTopItems(matched, sort);
+  }, [ranked, search, sort]);
 
   const selected =
     ranked.find((r) => r.ty.product_code === selectedCode) ?? null;
@@ -328,6 +380,70 @@ const PopupTopItems = ({
       })()
     : null;
 
+  /** A column heading that sorts. Chevron only on the column in force, the
+   *  way every other grid on this page marks it. */
+  const SortHead = ({
+    col,
+    className,
+    children,
+  }: {
+    col: TopItemSortCol;
+    className: string;
+    children: React.ReactNode;
+  }) => (
+    <button
+      onClick={() => setSort((cur) => nextTopItemSort(cur, col))}
+      className={`flex items-center gap-0.5 text-[11.5px] font-semibold uppercase tracking-wide text-content/80 hover:text-content flex-shrink-0 ${className}`}
+    >
+      {children}
+      {sort.column === col &&
+        (sort.direction === "desc" ? (
+          <ChevronDownIcon className="w-3 h-3" />
+        ) : (
+          <ChevronUpIcon className="w-3 h-3" />
+        ))}
+    </button>
+  );
+
+  /** A section that folds. The heading is the whole hit area — a 12px chevron
+   *  in a panel this narrow is a miss waiting to happen. */
+  const Section = ({
+    id,
+    label,
+    note,
+    children,
+  }: {
+    id: string;
+    label: string;
+    note?: React.ReactNode;
+    children: React.ReactNode;
+  }) => {
+    const shut = folded.has(id);
+    return (
+      <div className="px-4 py-2.5 border-b border-brand_navy/15">
+        <div
+          onClick={() => fold(id)}
+          className={`flex items-baseline justify-between gap-2 cursor-pointer select-none ${shut ? "" : "mb-1.5"}`}
+        >
+          <span className="flex items-center gap-1 min-w-0">
+            <ChevronRightIcon
+              className={`w-3.5 h-3.5 text-content flex-shrink-0 transition-transform ${shut ? "" : "rotate-90"}`}
+            />
+            <span className="text-[11.5px] font-medium uppercase tracking-wide text-content truncate">
+              {label}
+            </span>
+          </span>
+          {note && (
+            <span className="text-[11px] text-content/85 flex-shrink-0">
+              {note}
+            </span>
+          )}
+        </div>
+        {!shut && children}
+      </div>
+    );
+  };
+
   return (
     <div className="flex h-full">
       {/* The ranked list */}
@@ -347,18 +463,18 @@ const PopupTopItems = ({
 
         <div className="flex items-center gap-2.5 px-3 py-1.5 border-b border-gray-100 flex-shrink-0">
           <span className="w-2.5 flex-shrink-0" />
-          <span className="flex-1 min-w-0 text-[11.5px] font-semibold uppercase tracking-wide text-content/80">
+          <SortHead col="item" className="flex-1 min-w-0 justify-start">
             Item
-          </span>
-          <span className="w-[68px] text-right text-[11.5px] font-semibold uppercase tracking-wide text-content/80 pl-2.5">
+          </SortHead>
+          <SortHead col="sales" className="w-[68px] justify-end pl-2.5">
             Sales
-          </span>
-          <span className="w-[56px] text-center text-[11.5px] font-semibold uppercase tracking-wide text-content/80">
+          </SortHead>
+          <SortHead col="vsLW" className="w-[56px] justify-center">
             vs LW
-          </span>
-          <span className="w-[56px] text-center text-[11.5px] font-semibold uppercase tracking-wide text-content/80">
+          </SortHead>
+          <SortHead col="vsLY" className="w-[56px] justify-center">
             vs LY
-          </span>
+          </SortHead>
         </div>
 
         <div className="overflow-y-auto thin-scrollbar flex-1">
@@ -424,27 +540,53 @@ const PopupTopItems = ({
           </div>
         ) : (
           <>
+            {/* The Sub dept tab's strip, to the letter: icon, name, the
+                word for what it is, a chevron, and the sentence as an overlay
+                rather than inline — so opening it cannot push the cards
+                below out from under the reader's cursor. */}
             <div
-              className={`flex-shrink-0 px-4 py-2.5 border-b border-gray-100 ${ctaTone(insight.tone).bg}`}
+              className={`relative flex-shrink-0 border-b ${ctaClasses(insight.tone).border}`}
             >
-              <div
-                className={`flex items-baseline justify-between gap-3 ${ctaTone(insight.tone).text}`}
+              <button
+                onClick={() => fold("cta")}
+                className={`w-full flex items-center gap-1.5 px-3 py-1.5 ${ctaClasses(insight.tone).bg} ${ctaClasses(insight.tone).hoverBg} transition-colors`}
               >
-                <span className="text-[12px] font-semibold truncate">
+                <CtaIcon
+                  tone={insight.tone}
+                  cls={`w-3.5 h-3.5 ${ctaClasses(insight.tone).text} flex-shrink-0`}
+                />
+                <span
+                  className={`text-[12px] font-semibold truncate ${ctaClasses(insight.tone).text}`}
+                >
                   {selected.ty.product_description}
-                  <span className="font-normal tabular-nums opacity-90 ml-1.5">
-                    {selected.ty.product_code}
-                  </span>
                 </span>
-                <span className="text-[11px] font-semibold uppercase tracking-wide flex-shrink-0">
+                <span
+                  className={`text-[12px] font-semibold flex-shrink-0 ${ctaClasses(insight.tone).text}`}
+                >
                   {insight.label}
                 </span>
-              </div>
-              <p
-                className={`text-[11px] leading-relaxed mt-1 ${ctaTone(insight.tone).text}`}
-              >
-                {insight.detail}
-              </p>
+                <span className="flex-1" />
+                {folded.has("cta") ? (
+                  <ChevronDownIcon
+                    className={`w-3 h-3 flex-shrink-0 ${ctaClasses(insight.tone).text}`}
+                  />
+                ) : (
+                  <ChevronUpIcon
+                    className={`w-3 h-3 flex-shrink-0 ${ctaClasses(insight.tone).text}`}
+                  />
+                )}
+              </button>
+              {!folded.has("cta") && (
+                <div
+                  className={`absolute top-full left-0 right-0 z-20 px-3 py-2 border-b shadow-lg ${ctaClasses(insight.tone).bg} ${ctaClasses(insight.tone).border}`}
+                >
+                  <span
+                    className={`text-[11px] leading-relaxed ${ctaClasses(insight.tone).text}`}
+                  >
+                    {insight.detail}
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* Lead card + supporting metrics, 40/60 */}
@@ -526,17 +668,11 @@ const PopupTopItems = ({
 
             <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar">
               {/* How it rang */}
-              <div className="px-4 py-2.5 border-b border-brand_navy/15">
-                <div className="flex items-baseline justify-between mb-1.5">
-                  <span className="text-[11.5px] font-medium uppercase tracking-wide text-content">
-                    How it rang
-                  </span>
-                  <span className="text-[11px] text-content/85">
-                    {points.length} price point
-                    {points.length === 1 ? "" : "s"}
-                  </span>
-                </div>
-
+              <Section
+                id="rang"
+                label="How it rang"
+                note={`${points.length} price point${points.length === 1 ? "" : "s"}`}
+              >
                 {mix && (
                   <>
                     <div className="flex h-2.5 rounded-sm overflow-hidden bg-bkg">
@@ -597,23 +733,20 @@ const PopupTopItems = ({
                     </div>
                   ))
                 )}
-              </div>
+              </Section>
 
               {/* What it costs you */}
-              <div className="px-4 py-2.5 border-b border-brand_navy/15">
-                <div className="flex items-baseline justify-between mb-1.5">
-                  <span className="text-[11.5px] font-medium uppercase tracking-wide text-content">
-                    What it costs you
-                  </span>
-                  {detail?.cost_summary && (
-                    <span className="text-[11px] text-content/85">
-                      {detail.cost_summary.purchases} purchase
-                      {detail.cost_summary.purchases === 1 ? "" : "s"} ·{" "}
-                      {detail.cost_summary.days} days
-                    </span>
-                  )}
-                </div>
-
+              <Section
+                id="cost"
+                label="What it costs you"
+                note={
+                  detail?.cost_summary
+                    ? `${detail.cost_summary.purchases} purchase${
+                        detail.cost_summary.purchases === 1 ? "" : "s"
+                      } · ${detail.cost_summary.days} days`
+                    : undefined
+                }
+              >
                 {detailLoading && (
                   <p className="text-[11px] text-content/85">
                     Reading what you have paid&hellip;
@@ -655,14 +788,15 @@ const PopupTopItems = ({
                     </div>
                   </div>
                 )}
-              </div>
+              </Section>
 
               {/* The invoices */}
               {detail && detail.cost_history.length > 0 && (
-                <div className="px-4 py-2.5">
-                  <div className="text-[11.5px] font-medium uppercase tracking-wide text-content mb-1.5">
-                    What you have paid
-                  </div>
+                <Section
+                  id="paid"
+                  label="What you have paid"
+                  note={`${detail.cost_history.length} invoice${detail.cost_history.length === 1 ? "" : "s"}`}
+                >
                   <div className="grid grid-cols-[86px_1fr_68px_68px] gap-2 pb-1 border-b border-brand_navy/15 text-[11px] font-semibold uppercase tracking-wide text-content/85">
                     <span>Invoice</span>
                     <span>Vendor</span>
@@ -707,7 +841,7 @@ const PopupTopItems = ({
                     further than the sales week on purpose: a week cannot say
                     whether today&rsquo;s price is a good one.
                   </p>
-                </div>
+                </Section>
               )}
             </div>
           </>
