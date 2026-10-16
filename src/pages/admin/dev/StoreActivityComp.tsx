@@ -101,8 +101,14 @@ const StoreActivityComp = ({
           className="border-r border-gray-100 p-3 flex-shrink-0"
           style={{ width: "220px" }}
         >
-          <DatePickers showBtn={false} stacked />
+          {/* `data-help` is what the help panel points at. It names the
+              control, not its markup, so neither can quietly stop matching
+              the other — see components-dev/help/helpTypes.ts. */}
+          <div data-help="dates">
+            <DatePickers showBtn={false} stacked />
+          </div>
           <button
+            data-help="search"
             onClick={fetchStoreActivity}
             disabled={context.companyForm.id === 0}
             className={`mt-2 w-full text-[12px] font-medium py-1.5 rounded-md transition-colors text-custom-white ${
@@ -115,6 +121,7 @@ const StoreActivityComp = ({
           </button>
         </div>
         <CompanyPicker
+          helpAnchor="company"
           companies={context.companies}
           mode="select"
           selectedId={context.companyForm.id}
@@ -143,6 +150,7 @@ const StoreActivityComp = ({
                 placeholder="Search stores…"
               />
               <button
+                data-help="missing-filter"
                 onClick={handleMissingClick}
                 className="text-[10px] font-medium text-brand_navy border border-gray-200 rounded-md px-2.5 py-1.5 flex-shrink-0"
               >
@@ -156,7 +164,10 @@ const StoreActivityComp = ({
               </button>
             </div>
 
-            <div className="grid grid-cols-[0.6fr_2fr_1fr_1fr_1fr] px-4 py-2 bg-gray-50 text-[9px] font-bold uppercase tracking-wide text-content flex-shrink-0">
+            <div
+              data-help="activity-grid"
+              className="grid grid-cols-[0.6fr_2fr_1fr_1fr_1fr] px-4 py-2 bg-gray-50 text-[9px] font-bold uppercase tracking-wide text-content flex-shrink-0"
+            >
               <div>ID</div>
               <div>Store name</div>
               <div className="text-right">Total days</div>

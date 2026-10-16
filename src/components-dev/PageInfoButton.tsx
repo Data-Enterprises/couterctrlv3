@@ -1,6 +1,8 @@
 import { useState } from "react";
 import InfoButton from "./InfoButton";
 import InfoModal from "./InfoModal";
+import HelpPanel from "./help/HelpPanel";
+import { helpContentFor } from "./help/content";
 import type { HelpPage } from "../constants/helpPages";
 
 interface PageInfoButtonProps {
@@ -22,6 +24,12 @@ interface PageInfoButtonProps {
  * `InfoButton`, render the popover — which is a lot of identical state for
  * something a page has no opinion about. Here a call site is one line and the
  * only thing it says is which page it is.
+ *
+ * It also decides which help a page gets. A screen whose content has been
+ * written opens the panel, which can point at the controls it describes;
+ * every other screen keeps opening its S3 document until its turn comes. The
+ * call sites say nothing about either, so converting a page is one entry in
+ * `help/content`, not a change here and a change there.
  */
 const PageInfoButton = ({
   page,
@@ -31,6 +39,7 @@ const PageInfoButton = ({
   className,
 }: PageInfoButtonProps) => {
   const [open, setOpen] = useState(false);
+  const content = helpContentFor(page);
 
   return (
     <>
@@ -40,12 +49,16 @@ const PageInfoButton = ({
         title={title}
         className={className}
       />
-      <InfoModal
-        page={page}
-        section={section}
-        isOpen={open}
-        onClose={() => setOpen(false)}
-      />
+      {content ? (
+        open && <HelpPanel content={content} onClose={() => setOpen(false)} />
+      ) : (
+        <InfoModal
+          page={page}
+          section={section}
+          isOpen={open}
+          onClose={() => setOpen(false)}
+        />
+      )}
     </>
   );
 };

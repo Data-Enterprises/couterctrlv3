@@ -162,6 +162,7 @@ const Admin = () => {
                 {missingCount}
               </span>
               <button
+                data-help="export"
                 onClick={() => setExportOpen(true)}
                 disabled={context.companyStoresActivity.length === 0}
                 title="Export CSV"
