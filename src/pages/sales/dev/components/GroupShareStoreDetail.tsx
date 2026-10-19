@@ -113,13 +113,11 @@ interface Props {
 const QuestionCard = ({
   question,
   answer,
-  sub,
   figure,
   onClick,
 }: {
   question: string;
   answer: ReactNode;
-  sub: ReactNode;
   figure?: ReactNode;
   onClick: () => void;
 }) => (
@@ -129,13 +127,8 @@ const QuestionCard = ({
   >
     <div className="text-[12px] text-content/85">{question}</div>
     <div className="flex items-center gap-2 mt-0.5">
-      <div className="min-w-0 flex-1">
-        <div className="text-[13.5px] font-bold text-content leading-snug">
-          {answer}
-        </div>
-        <div className="text-[12px] text-content/85 leading-snug mt-0.5">
-          {sub}
-        </div>
+      <div className="min-w-0 flex-1 text-[13.5px] font-bold text-content leading-snug">
+        {answer}
       </div>
       {figure && <div className="flex-shrink-0">{figure}</div>}
     </div>
@@ -239,8 +232,8 @@ const GroupShareStoreDetail = ({
           </span>
         </div>
 
-        <div className="text-[12.5px] font-semibold text-content mt-2 mb-1.5 flex-shrink-0">
-          Here&rsquo;s what the report will tell you:
+        <div className="text-[12px] text-content/85 mt-2 mb-1.5 flex-shrink-0">
+          What the report goes further on
         </div>
 
         <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar space-y-2 pr-0.5">
@@ -251,25 +244,14 @@ const GroupShareStoreDetail = ({
             question="Is this new?"
             answer={
               trend.lwPct === null ? (
-                "No last week to compare"
+                "No last week on file"
               ) : trend.running ? (
-                <>
-                  No &mdash; {fell ? "under" : "over"} its usual share last week
-                  too
-                </>
+                <>Second week {fell ? "under" : "over"} usual</>
               ) : trend.vsLw === "level" ? (
-                <>Held level &mdash; {pct1(trend.lwPct)} last week as well</>
+                <>Level &mdash; {pct1(trend.lwPct)} last week too</>
               ) : (
-                <>
-                  Yes &mdash; {trend.vsLw === "down" ? "down" : "up"} from{" "}
-                  {pct1(trend.lwPct)} last week
-                </>
+                <>New &mdash; {pct1(trend.lwPct)} last week</>
               )
-            }
-            sub={
-              trend.lyPct === null
-                ? "Same week last year: nothing on file"
-                : `Same week last year: ${pct1(trend.lyPct)}`
             }
             figure={
               points.length > 1 && (
@@ -324,18 +306,6 @@ const GroupShareStoreDetail = ({
                 "Level across the week"
               )
             }
-            sub={
-              note.worst
-                ? [
-                    note.worstIsBiggestDay ? "The group's biggest day" : null,
-                    note.below > 0
-                      ? `${note.below} of ${days.length} days under usual`
-                      : null,
-                  ]
-                    .filter(Boolean)
-                    .join(" · ")
-                : "No single day carries it"
-            }
             figure={
               dayMax > 0 && (
                 <span className="flex items-end gap-[2px] h-[30px] w-14">
@@ -365,8 +335,7 @@ const GroupShareStoreDetail = ({
               card carries the question and no invented answer. */}
           <QuestionCard
             question="Which departments?"
-            answer="Open the department breakdown"
-            sub="Every sub department, this week against last week and last year"
+            answer="In the report"
             onClick={onOpenReport}
           />
 
@@ -377,16 +346,11 @@ const GroupShareStoreDetail = ({
             answer={
               other ? (
                 <>
-                  Store {other.storeNumber} {signedValue(other.money)}
+                  Store {other.storeNumber}, {signedValue(other.money)}
                 </>
               ) : (
                 "Nobody moved the other way"
               )
-            }
-            sub={
-              other
-                ? `Almost exactly what ${row.storeNumber} ${fell ? "lost" : "gained"}`
-                : "Every counted store moved the same way"
             }
             figure={
               other && (
