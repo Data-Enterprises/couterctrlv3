@@ -53,6 +53,7 @@ export interface Investigation {
  *  whether the answer is in. */
 const NO_ORDERS: OrdersWave = {
   ok: true,
+  inWindow: 0,
   mine: [],
   theirs: [],
   allMine: [],
@@ -170,7 +171,7 @@ export const useDeptInvestigation = (args: Args): Investigation => {
       // Orders and receipts both resolve empty on failure rather than
       // throwing — a thinner answer, not a wrong one, and not worth taking
       // the grid away for.
-      const ordersWave = await fetchOrders(scope);
+      const ordersWave = await fetchOrders(scope, codesIn(salesWave));
       if (!live()) return;
       setOrders(ordersWave);
       setStage("receipts");

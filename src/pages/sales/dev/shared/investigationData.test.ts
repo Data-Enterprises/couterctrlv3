@@ -260,6 +260,7 @@ describe("fetchOrders", () => {
     getAllOrders.mockRejectedValue(new Error("network"));
     await expect(fetchOrders(scope)).resolves.toEqual({
       ok: false,
+      inWindow: 0,
       mine: [],
       theirs: [],
       allMine: [],
@@ -271,11 +272,45 @@ describe("fetchOrders", () => {
     getAllOrders.mockResolvedValue({ data: { error: 1, msg: "nope" } });
     await expect(fetchOrders(scope)).resolves.toEqual({
       ok: false,
+      inWindow: 0,
       mine: [],
       theirs: [],
       allMine: [],
       allTheirs: [],
     });
+  });
+
+  /** The receipts search finds this department by product code and was
+   *  returning deliveries on windows where the department filter alone
+   *  returned no orders at all. An order line's `sub_department` comes off
+   *  the item master at order time; the sales rows' comes off the
+   *  transaction, and the two can disagree about the same item. */
+  it("claims an order line by product code when the department disagrees", async () => {
+    getAllOrders.mockResolvedValue({
+      data: {
+        error: 0,
+        orders: [order({ product_code: "A", sub_department: 999 })],
+      },
+    });
+    const out = await fetchOrders(scope, ["A"]);
+    expect(out.mine).toHaveLength(1);
+  });
+
+  /** Plenty came back and none of it is this department: a different answer
+   *  from nothing coming back, and the panel says a different thing. */
+  it("counts what came back before the department filter", async () => {
+    getAllOrders.mockResolvedValue({
+      data: {
+        error: 0,
+        orders: [
+          order({ product_code: "Z", sub_department: 999 }),
+          order({ product_code: "Y", sub_department: 999 }),
+        ],
+      },
+    });
+    const out = await fetchOrders(scope, ["A"]);
+    expect(out.inWindow).toBe(2);
+    expect(out.mine).toEqual([]);
   });
 
   /** An empty window and a window that could not be read are different
@@ -284,6 +319,7 @@ describe("fetchOrders", () => {
     getAllOrders.mockResolvedValue({ data: { error: 0, orders: [] } });
     const out = await fetchOrders(scope);
     expect(out.ok).toBe(true);
+    expect(out.inWindow).toBe(0);
     expect(out.mine).toEqual([]);
   });
 
