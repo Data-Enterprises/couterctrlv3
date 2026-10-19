@@ -25,7 +25,11 @@ import TrackerEntryCard from "./TrackerEntryCard";
 import TrackerHeader from "./TrackerHeader";
 import SubDeptRow from "./SubDeptRow";
 import TrackerDetail from "./TrackerDetail";
-import { fetchSubSales, fetchTrackerWindow } from "./trackerData";
+import {
+  fetchLySubSales,
+  fetchSubSales,
+  fetchTrackerWindow,
+} from "./trackerData";
 import { buildWindowPlan, isoToDisplay, shiftDays } from "./trackerWeeks";
 import {
   buildSubDeptTotals,
@@ -171,7 +175,7 @@ const SalesTracker = () => {
             gap.tyStart,
             gap.tyEnd,
           ),
-          fetchSubSales(
+          fetchLySubSales(
             context.url,
             context.token,
             useGroups,
@@ -287,7 +291,7 @@ const SalesTracker = () => {
             plan.tyStart,
             plan.tyEnd,
           ),
-          fetchSubSales(
+          fetchLySubSales(
             context.url,
             context.token,
             useGroups,
