@@ -90,8 +90,9 @@ The right-hand panel asks the questions somebody asks next, instead of
 repeating the row they just clicked. Is this new -- this week's slice against
 last week's, so a one-off week reads differently from a slide that has been
 running. When did it happen -- the day that carries the move, and whether it
-was the group's biggest. Which departments. Who picked it up. Clicking any of
-them opens the store report.
+was the group's biggest. Which departments. Who picked it up. Each is a
+question, an answer and a small drawing, and the one button in the panel
+opens the store report.
 
 The right-hand panel is drawings rather than sentences. The store's shortfall
 is one bar -- what it took, the slice it missed beside it, and a tick where
