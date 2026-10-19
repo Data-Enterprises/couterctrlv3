@@ -90,7 +90,7 @@ const CtaStrip = ({
         <div
           className={`absolute top-full left-0 right-0 z-20 px-3 py-2 border-b shadow-lg ${tone.bg} ${tone.border}`}
         >
-          <span className={`text-[11px] leading-relaxed ${tone.text}`}>
+          <span className={`text-[12.5px] leading-relaxed ${tone.text}`}>
             {detail}
           </span>
         </div>

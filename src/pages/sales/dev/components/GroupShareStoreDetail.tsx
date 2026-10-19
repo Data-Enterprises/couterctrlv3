@@ -90,12 +90,6 @@ const CTA_ICON: Record<ShareStanding, typeof ArrowTrendingDownIcon> = {
   rising: ArrowTrendingUpIcon,
 };
 
-const LABEL: Record<ShareStanding, string> = {
-  falling: "Falling",
-  consistent: "Consistent",
-  rising: "Rising",
-};
-
 const pct1 = (n: number) => `${n.toFixed(1)}%`;
 
 interface Props {
@@ -108,38 +102,33 @@ interface Props {
   onOpenReport: () => void;
 }
 
-/** A question and its answer. Clicking any of them opens the store report,
- *  which is where the answer goes further. */
-const QuestionCard = ({
+/** A question and its answer. Reading, not a control -- the report at the
+ *  bottom is the only thing in the rail that goes anywhere. */
+const QuestionSection = ({
   question,
   answer,
   sub,
   figure,
-  onClick,
 }: {
   question: string;
   answer: ReactNode;
   sub: ReactNode;
   figure?: ReactNode;
-  onClick: () => void;
 }) => (
-  <button
-    onClick={onClick}
-    className="w-full text-left rounded-md border border-gray-200 bg-custom-white px-2.5 py-2 hover:bg-gray-50 hover:border-brand_navy/25 transition-colors"
-  >
-    <div className="text-[12px] text-content/85">{question}</div>
+  <div className="py-2.5 border-b border-gray-100 last:border-b-0">
+    <div className="text-[13px] text-content/85">{question}</div>
     <div className="flex items-center gap-2 mt-0.5">
       <div className="min-w-0 flex-1">
-        <div className="text-[13.5px] font-bold text-content leading-snug">
+        <div className="text-[14.5px] font-bold text-content leading-snug">
           {answer}
         </div>
-        <div className="text-[12px] text-content/85 leading-snug mt-0.5">
+        <div className="text-[13px] text-content/85 leading-snug mt-0.5">
           {sub}
         </div>
       </div>
       {figure && <div className="flex-shrink-0">{figure}</div>}
     </div>
-  </button>
+  </div>
 );
 
 const GroupShareStoreDetail = ({
@@ -164,8 +153,8 @@ const GroupShareStoreDetail = ({
 
   if (!row || !trend) {
     return (
-      <aside className="w-[313px] flex-shrink-0 border-l border-gray-100 px-3 pt-2.5">
-        <p className="text-[12.5px] text-content/85 leading-snug">
+      <aside className="w-[313px] flex-shrink-0 border-l border-brand_navy/15 px-3 pt-2.5">
+        <p className="text-[13px] text-content/85 leading-snug">
           Pick a store on the left to see whether its move is new, when in the
           week it happened, and which store took the other side of it.
         </p>
@@ -197,7 +186,7 @@ const GroupShareStoreDetail = ({
   const dayMax = Math.max(0, ...days.map((d) => Math.abs(d.money ?? 0)));
 
   return (
-    <aside className="w-[313px] flex-shrink-0 border-l border-gray-100 flex flex-col min-h-0">
+    <aside className="w-[313px] flex-shrink-0 border-l border-brand_navy/15 flex flex-col min-h-0">
       {/* The panel's header row IS the strip, the way Sub depts and Top 200
           carry theirs: the name, the word for what it is, a chevron, and the
           working behind it as an overlay. */}
@@ -209,7 +198,6 @@ const GroupShareStoreDetail = ({
           />
         }
         label={name}
-        trailing={LABEL[row.standing]}
         detail={
           <>
             It took <span className="font-bold">{pct1(row.sharePct)}</span> of
@@ -229,25 +217,12 @@ const GroupShareStoreDetail = ({
         }
       />
 
-      <div className="px-3 pt-2.5 pb-3 flex-1 min-h-0 flex flex-col">
-        <div className="flex items-baseline gap-2 flex-shrink-0">
-          <span className={`text-[25px] font-bold leading-none ${tone.text}`}>
-            {signedValue(row.money)}
-          </span>
-          <span className="text-[12px] text-content/85">
-            vs its usual share
-          </span>
-        </div>
-
-        <div className="text-[12.5px] font-semibold text-content mt-2 mb-1.5 flex-shrink-0">
-          Here&rsquo;s what the report will tell you:
-        </div>
-
-        <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar space-y-2 pr-0.5">
+      <div className="px-3 pt-1 pb-3 flex-1 min-h-0 flex flex-col">
+        <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar pr-0.5">
           {/* Is the slide new, or has it been running? The row cannot say:
               it holds this week against the usual week and nothing in
               between. */}
-          <QuestionCard
+          <QuestionSection
             question="Is this new?"
             answer={
               trend.lwPct === null ? (
@@ -308,11 +283,10 @@ const GroupShareStoreDetail = ({
                 </svg>
               )
             }
-            onClick={onOpenReport}
           />
 
           {/* Which day of the week it happened on. */}
-          <QuestionCard
+          <QuestionSection
             question="When did it happen?"
             answer={
               note.worst ? (
@@ -357,22 +331,20 @@ const GroupShareStoreDetail = ({
                 </span>
               )
             }
-            onClick={onOpenReport}
           />
 
           {/* The one question the panel cannot answer from what it holds:
               that would take this store's departments, which is a fetch. The
               card carries the question and no invented answer. */}
-          <QuestionCard
+          <QuestionSection
             question="Which departments?"
             answer="Open the department breakdown"
             sub="Every sub department, this week against last week and last year"
-            onClick={onOpenReport}
           />
 
           {/* Shares total 100%, so the money went somewhere, and this names
               where. */}
-          <QuestionCard
+          <QuestionSection
             question="Who picked it up?"
             answer={
               other ? (
@@ -399,7 +371,6 @@ const GroupShareStoreDetail = ({
                 </span>
               )
             }
-            onClick={onOpenReport}
           />
         </div>
 
