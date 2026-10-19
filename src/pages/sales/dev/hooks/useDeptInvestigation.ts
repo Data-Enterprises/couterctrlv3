@@ -48,7 +48,11 @@ export interface Investigation {
   problem: string | null;
 }
 
+/** The resting state, before the orders wave lands. `ok` is true because
+ *  nothing has failed yet — the panel reads it alongside `allIn`, which says
+ *  whether the answer is in. */
 const NO_ORDERS: OrdersWave = {
+  ok: true,
   mine: [],
   theirs: [],
   allMine: [],

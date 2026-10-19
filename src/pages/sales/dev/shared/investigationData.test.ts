@@ -259,6 +259,7 @@ describe("fetchOrders", () => {
   it("resolves empty rather than throwing, so the grid survives", async () => {
     getAllOrders.mockRejectedValue(new Error("network"));
     await expect(fetchOrders(scope)).resolves.toEqual({
+      ok: false,
       mine: [],
       theirs: [],
       allMine: [],
@@ -269,11 +270,37 @@ describe("fetchOrders", () => {
   it("treats error 1 the same way", async () => {
     getAllOrders.mockResolvedValue({ data: { error: 1, msg: "nope" } });
     await expect(fetchOrders(scope)).resolves.toEqual({
+      ok: false,
       mine: [],
       theirs: [],
       allMine: [],
       allTheirs: [],
     });
+  });
+
+  /** An empty window and a window that could not be read are different
+   *  answers, and the panel says different things about them. */
+  it("marks a window that answered with nothing in it as read", async () => {
+    getAllOrders.mockResolvedValue({ data: { error: 0, orders: [] } });
+    const out = await fetchOrders(scope);
+    expect(out.ok).toBe(true);
+    expect(out.mine).toEqual([]);
+  });
+
+  /** `sub_department` is typed as a number and the payload does not always
+   *  agree. A strict === against a string dropped every order in the
+   *  department, and the panel then reported that neither store ordered. */
+  it("matches the department whether it arrives as a number or a string", async () => {
+    getAllOrders.mockResolvedValue({
+      data: {
+        error: 0,
+        orders: [
+          order({ sub_department: String(scope.subDept) as unknown as number }),
+        ],
+      },
+    });
+    const out = await fetchOrders(scope);
+    expect(out.mine).toHaveLength(1);
   });
 });
 
