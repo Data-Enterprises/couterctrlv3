@@ -5,7 +5,12 @@ import {
 } from "../../../api/receivers";
 import { normalizeProductCode } from "../../../utils/productCode";
 import { fetchSubDeptRowsSafe } from "../../../utils/marginRows";
-import { getSubMarginsWithPricePoints } from "../../../api/subMargins";
+import {
+  getItemActions,
+  getSubMarginsWithPricePoints,
+  ITEM_ACTIONS_MAX_CODES,
+  type ItemActionsResp,
+} from "../../../api/subMargins";
 import { fetchAllPages } from "../../../utils/paging";
 import { LW_OFFSET, shiftIso } from "../../../utils/grading";
 import { getLYDate, WINDOW_DAYS, weekEnding } from "../../../utils/dates";
@@ -272,6 +277,66 @@ export const fetchItemRowsWithPricePoints = async (
       throw e;
     return { rows: [], pricePoints: [] };
   }
+};
+
+/**
+ * The same rows, for a known list of codes, from `subs/item_actions`.
+ *
+ * The whole-store reads above fetch every item the store sold, page them at
+ * four thousand, and then `buildReport` keeps only the uploaded list — so on
+ * the upload path everything outside that list was fetched, paged,
+ * transferred and thrown away. Measured on the busiest store over a week:
+ * 11,799 rows in 781ms against 100 rows in 109ms, and the narrowed answer
+ * fits in one page, so the count and the concurrent page burst stop happening
+ * rather than getting cheaper.
+ *
+ * NOT for the grade path. Arriving from another page with a threshold instead
+ * of a list, the page has no codes yet — `collectCriticalItems` works them out
+ * FROM the store's rows, so that path genuinely needs the whole store and
+ * keeps `fetchAllItemRows`.
+ *
+ * Batched at the endpoint's ceiling. Batches hold disjoint codes, so their
+ * rows are disjoint too and the concatenation needs no de-duplicating. Price
+ * points come back per batch and are concatenated the same way: they are keyed
+ * by item, and no item appears in two batches.
+ *
+ * A batch that fails throws rather than resolving empty — same rule as the
+ * paged read. Rows missing for part of the list would read as "these items did
+ * not sell", which is a real verdict this page hands over, and a wrong one is
+ * worse than a refusal.
+ */
+export const fetchItemRowsForCodes = async (
+  scope: ReportScope,
+  window: { start: string; end: string },
+  codes: string[],
+): Promise<{ rows: SubDeptMargin[]; pricePoints: SubsPricePoint[] }> => {
+  if (codes.length === 0) return { rows: [], pricePoints: [] };
+
+  const batches = inBatches(codes, ITEM_ACTIONS_MAX_CODES);
+  const results = await Promise.all(
+    batches.map(async (batch) => {
+      const resp = await getItemActions(
+        scope.url,
+        scope.token,
+        window.start,
+        window.end,
+        USE_GROUPS,
+        scope.storeid,
+        SINGLE_STORE,
+        batch,
+      );
+      const body: ItemActionsResp = resp.data;
+      if (body.error !== 0) {
+        throw new Error(body.msg ?? "Sales could not be read for those items");
+      }
+      return body;
+    }),
+  );
+
+  return {
+    rows: results.flatMap((r) => r.data ?? []),
+    pricePoints: results.flatMap((r) => r.price_points ?? []),
+  };
 };
 
 /* --------------------------------------------------------------- receiving */

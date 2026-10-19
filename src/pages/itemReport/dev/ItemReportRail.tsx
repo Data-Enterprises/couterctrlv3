@@ -399,7 +399,9 @@ const ItemReportRail = ({
   evidence,
 }: Props) => {
   const dispatch = useAppDispatch();
-  const expandedReceipt = useAppSelector((s) => s.dev.itemReport.expandedReceipt);
+  const expandedReceipt = useAppSelector(
+    (s) => s.dev.itemReport.expandedReceipt,
+  );
   /** Which price row is open, or null. Local: a transient overlay over one
    *  selected item that closes on its own — the route-change argument that put
    *  the rest of this page in Redux doesn't apply. */
@@ -583,16 +585,15 @@ const ItemReportRail = ({
                 {actionOpen ? "Hide" : "Why"}
               </span>
             </button>
-            {actionOpen && (
-              <DetailPopover
-                onClose={() => setActionOpen(false)}
-                className={`${ACTION_TONE[action].row} ${ACTION_TONE[action].text}`}
-              >
-                <div className="px-4 py-2.5 text-[13px] leading-relaxed">
-                  {evidence}
-                </div>
-              </DetailPopover>
-            )}
+            <DetailPopover
+              open={actionOpen}
+              onClose={() => setActionOpen(false)}
+              className={`${ACTION_TONE[action].row} ${ACTION_TONE[action].text}`}
+            >
+              <div className="px-4 py-2.5 text-[13px] leading-relaxed">
+                {evidence}
+              </div>
+            </DetailPopover>
           </div>
         )}
 
