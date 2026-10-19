@@ -17,6 +17,18 @@ export interface TopItemRow {
   store_name: string | null;
   product_code: string;
   product_description: string;
+  /**
+   * Where the item is filed, and how many ways.
+   *
+   * Aggregated rather than grouped on: filing is a property OF the item, so a
+   * code filed two ways stays one row instead of splitting and halving its
+   * own sales. `sub_department` is therefore the COMMONEST filing in scope,
+   * not an assertion that every store agrees — `sub_department_count` says
+   * whether they do, and is always 1 for a single store.
+   */
+  sub_department: number | null;
+  sub_department_description: string | null;
+  sub_department_count: number;
   qty: number;
   total_sales: number;
   /** Null when no line carried a cost at all. */
@@ -26,9 +38,11 @@ export interface TopItemRow {
   /**
    * Null when too few lines carried a cost to trust it.
    *
-   * Deliberate server-side: a margin off partial cost reads near 100%,
-   * because the sales are all there and the cost is not. Render the absence,
-   * never a zero.
+   * Withheld below 90% coverage — not a half. A margin off partial cost
+   * reads near 100% because the sales all count and the uncosted rows' cost
+   * does not, and DSD vendors like Pepsi routinely send no cost at all, so
+   * the inflation lands on exactly the fast movers this list is about.
+   * Render the absence, never a zero.
    */
   margin: number | null;
   /**

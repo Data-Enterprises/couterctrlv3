@@ -27,6 +27,8 @@ import {
   avgPrice,
   compareWindows,
   count,
+  deptName,
+  deptOptions,
   deltaPct,
   deltaPoints,
   pointsFor,
@@ -144,6 +146,7 @@ const PopupTopItems = ({
 
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<TopItemSort>(DEFAULT_TOP_ITEM_SORT);
+  const [dept, setDept] = useState("");
   /**
    * Collapsed sections, by id.
    *
@@ -229,6 +232,7 @@ const PopupTopItems = ({
   useEffect(() => {
     setSelectedCode(null);
     setDetail(null);
+    setDept("");
   }, [key]);
 
   useEffect(() => {
@@ -270,17 +274,20 @@ const PopupTopItems = ({
     return compareWindows(top, baselines?.lw ?? [], baselines?.ly ?? []);
   }, [topItems, haveRows, baselines]);
 
+  const depts = useMemo(() => deptOptions(ranked), [ranked]);
+
   const shown = useMemo(() => {
     const q = search.trim().toLowerCase();
-    const matched = q
-      ? ranked.filter(
-          (r) =>
-            r.ty.product_description.toLowerCase().includes(q) ||
-            r.ty.product_code.includes(q),
-        )
-      : ranked;
+    const matched = ranked.filter((r) => {
+      if (dept && deptName(r.ty) !== dept) return false;
+      if (!q) return true;
+      return (
+        r.ty.product_description.toLowerCase().includes(q) ||
+        r.ty.product_code.includes(q)
+      );
+    });
     return sortTopItems(matched, sort);
-  }, [ranked, search, sort]);
+  }, [ranked, search, sort, dept]);
 
   const selected =
     ranked.find((r) => r.ty.product_code === selectedCode) ?? null;
@@ -456,8 +463,25 @@ const PopupTopItems = ({
             aria-label="Search items"
             className="flex-1 min-w-0 text-[11.5px] px-2 py-1 rounded-md border border-gray-200 bg-custom-white text-content"
           />
+          {depts.length > 1 && (
+            <select
+              value={dept}
+              onChange={(e) => setDept(e.target.value)}
+              aria-label="Filter by sub department"
+              className="text-[11.5px] px-1.5 py-1 rounded-md border border-gray-200 bg-custom-white text-content max-w-[130px]"
+            >
+              <option value="">All sub depts</option>
+              {depts.map((d) => (
+                <option key={d.value} value={d.value}>
+                  {d.label}
+                </option>
+              ))}
+            </select>
+          )}
           <span className="text-[10px] font-semibold text-content/85 whitespace-nowrap">
-            Top {Math.min(ranked.length, TOP_ITEMS_SHOWN)} by sales
+            {shown.length === ranked.length
+              ? `Top ${Math.min(ranked.length, TOP_ITEMS_SHOWN)} by sales`
+              : `${shown.length} of ${ranked.length}`}
           </span>
         </div>
 
@@ -505,7 +529,8 @@ const PopupTopItems = ({
                     {r.ty.product_description}
                   </span>
                   <span className="block text-[10.5px] text-content/85 tabular-nums">
-                    {r.ty.product_code} · {r.ty.qty.toLocaleString()} units
+                    {r.ty.product_code} · {deptName(r.ty)} ·{" "}
+                    {r.ty.qty.toLocaleString()} units
                   </span>
                 </span>
                 <span className="w-[68px] text-right text-[12px] font-semibold text-content tabular-nums flex-shrink-0 pl-2.5">
@@ -601,6 +626,9 @@ const PopupTopItems = ({
                   </div>
                   <div className="text-[11.5px] font-semibold text-content/85 tabular-nums">
                     {selected.ty.qty.toLocaleString()} units
+                  </div>
+                  <div className="text-[11px] text-content/85 truncate">
+                    {deptName(selected.ty)}
                   </div>
                   <div className="grid grid-cols-2 gap-1.5 mt-1.5 pt-1.5 border-t border-gray-200">
                     {(
