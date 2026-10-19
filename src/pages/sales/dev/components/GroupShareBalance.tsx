@@ -38,29 +38,24 @@ const BAR_CEILING_PCT = 25;
  * grading a figure against a threshold, which is a different question and
  * belongs to the dots.
  */
-const TONE: Record<
-  ShareStanding,
-  { pill: string; text: string; bar: string; rule: string }
-> = {
-  falling: {
-    pill: "bg-delta_negative_bg text-delta_negative_text",
-    text: "text-delta_negative_text",
-    bar: "bg-delta_negative_text",
-    rule: "border-delta_negative_bg",
-  },
-  consistent: {
-    pill: "bg-gray-100 text-content/85",
-    text: "text-content",
-    bar: "bg-brand_navy",
-    rule: "border-gray-200",
-  },
-  rising: {
-    pill: "bg-delta_positive_bg text-delta_positive_text",
-    text: "text-delta_positive_text",
-    bar: "bg-delta_positive_text",
-    rule: "border-delta_positive_bg",
-  },
-};
+const TONE: Record<ShareStanding, { pill: string; text: string; bar: string }> =
+  {
+    falling: {
+      pill: "bg-delta_negative_bg text-delta_negative_text",
+      text: "text-delta_negative_text",
+      bar: "bg-delta_negative_text",
+    },
+    consistent: {
+      pill: "bg-gray-100 text-content/85",
+      text: "text-content",
+      bar: "bg-brand_navy",
+    },
+    rising: {
+      pill: "bg-delta_positive_bg text-delta_positive_text",
+      text: "text-delta_positive_text",
+      bar: "bg-delta_positive_text",
+    },
+  };
 
 const BAND_WHY: Record<ShareStanding, string> = {
   falling: `lost more than ${SHARE_BAND_PCT}% of the group`,
@@ -77,6 +72,10 @@ const BAND_LABEL: Record<ShareStanding, string> = {
 const stores = (n: number) => `${n} store${n === 1 ? "" : "s"}`;
 
 const ORDER: ShareStanding[] = ["falling", "consistent", "rising"];
+
+/** Shared by the column heads and every row — two copies of this is a column
+ *  that slides out from under its own name. */
+const COLS = "minmax(0,164px) minmax(0,1fr) 46px 48px 64px";
 
 /** Points of the group, written as a percentage because that is what the
  *  column beside it is. */
@@ -191,27 +190,51 @@ const GroupShareBalance = ({
       <div className="px-4 pb-3 flex-1 min-h-0 flex flex-col">
         <div className="flex gap-3 flex-1 min-h-0">
           <div className="flex-1 min-w-0 flex flex-col">
+            <div
+              className="grid items-end gap-2 px-1 pb-1 flex-shrink-0 border-b border-brand_navy/15 text-[10px] font-bold uppercase tracking-wide text-content/85"
+              style={{ gridTemplateColumns: COLS }}
+            >
+              <span>Store</span>
+              <span className="text-[9.5px] normal-case tracking-normal font-semibold">
+                share against usual
+              </span>
+              <span
+                className="text-right"
+                title="This store's share of the group this week."
+              >
+                Share
+              </span>
+              <span
+                className="text-right"
+                title="How much of the group it gained or lost against the share it usually takes, in percentage points."
+              >
+                Change
+              </span>
+              <span
+                className="text-right"
+                title="That change priced at the group's week — the money the store is above or below its usual slice."
+              >
+                Worth
+              </span>
+            </div>
+
             <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar">
               {ORDER.filter((s) => banded[s].length > 0).map((standing) => {
                 const band = banded[standing];
                 const total = band.reduce((n, r) => n + r.money, 0);
                 return (
-                  <div key={standing} className="mb-3 last:mb-0">
+                  <div key={standing} className="mt-2 mb-3 last:mb-0">
                     <div
-                      className={`flex items-baseline gap-2 pb-1 border-b-2 ${TONE[standing].rule}`}
+                      className={`flex items-baseline gap-2 px-2 py-1 rounded-sm ${TONE[standing].pill}`}
                     >
-                      <span
-                        className={`text-[11.5px] font-semibold px-2 py-0.5 rounded-full ${TONE[standing].pill}`}
-                      >
+                      <span className="text-[11.5px] font-bold">
                         {BAND_LABEL[standing]} ({band.length})
                       </span>
-                      <span className="text-[11px] text-content/85">
+                      <span className="text-[11px] opacity-80">
                         {BAND_WHY[standing]}
                       </span>
                       <span className="flex-1" />
-                      <span
-                        className={`text-[12px] font-semibold tabular-nums ${TONE[standing].text}`}
-                      >
+                      <span className="text-[12px] font-bold tabular-nums">
                         {money(total)}
                       </span>
                     </div>
@@ -227,10 +250,7 @@ const GroupShareBalance = ({
                               ? "bg-row_selected border-row_selected_border"
                               : "border-transparent hover:bg-gray-50"
                           }`}
-                          style={{
-                            gridTemplateColumns:
-                              "minmax(0,164px) minmax(0,1fr) 46px 48px 64px",
-                          }}
+                          style={{ gridTemplateColumns: COLS }}
                         >
                           <span className="min-w-0">
                             {/* Co-located stores share one storeid, so the

@@ -66,9 +66,13 @@ store that was level until Thursday and gave the week away on Friday reads
 differently from one that was light all week. **View store report** opens the
 store's own report from there.
 
-The share figures moved out of the bars and into their own column. The tick
-marking the usual share used to strike through the number printed on top of
-it, which made some rows hard to read.
+The share figures moved out of the bars and into their own column, under
+column headings -- Share, Change and Worth -- so the numbers say what they
+are. The tick marking the usual share used to strike through the number
+printed on top of it, which made some rows hard to read.
+
+Falling, Consistent and Rising are full-width coloured headings carrying their
+own counts, the way Crit, Watch and OK do on the left.
 
 ### Two stores in the title bar
 
