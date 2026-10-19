@@ -74,8 +74,6 @@ const BAND_LABEL: Record<ShareStanding, string> = {
   rising: "Rising",
 };
 
-const stores = (n: number) => `${n} store${n === 1 ? "" : "s"}`;
-
 const ORDER: ShareStanding[] = ["falling", "consistent", "rising"];
 
 /** The three figures a reader might want the list ordered by. The bar is a
@@ -124,10 +122,6 @@ const GroupShareBalance = ({
   const { sort, handleSort, applySort } = useTriStateSort<Col>();
 
   const isQty = gradingMetric === "qty";
-  const plain = (n: number) =>
-    isQty
-      ? formatBigNumber(Math.abs(n), 0)
-      : formatCurrencyCompact(Math.abs(n));
   const money = (n: number) =>
     `${n > 0 ? "+" : n < 0 ? "−" : ""}${
       isQty
@@ -182,8 +176,6 @@ const GroupShareBalance = ({
 
   if (shareRows.length < 2) return null;
 
-  const moved = Math.abs(balance.lostTotal);
-
   return (
     <div data-help="share-balance" className="flex-1 min-h-0 flex flex-col">
       <div className="flex items-center gap-2 px-4 py-2 flex-shrink-0">
@@ -209,19 +201,6 @@ const GroupShareBalance = ({
       </div>
 
       <div className="px-4 pb-3 flex-1 min-h-0 flex flex-col">
-        <p className="text-[12.5px] text-content/85 leading-snug mb-2 flex-shrink-0">
-          <span className="font-semibold text-content">{plain(moved)}</span> of
-          the group&rsquo;s week moved from {stores(balance.lost.length)} to{" "}
-          {stores(balance.gained.length)} that took more than usual.
-          {Math.abs(balance.imbalance) > 1 && (
-            <span className="text-severity_watch_text font-semibold">
-              {" "}
-              {plain(Math.abs(balance.imbalance))} of it does not cancel — these
-              stores are not all graded on the same period.
-            </span>
-          )}
-        </p>
-
         <div className="flex gap-3 flex-1 min-h-0">
           <div className="flex-1 min-w-0 flex flex-col">
             <div

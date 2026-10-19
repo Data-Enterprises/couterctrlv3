@@ -40,7 +40,7 @@ item they clicked. "View details" brings it back.
 The group view gets a **share of group sales** panel under the day-of-week
 cards. Shares always total 100%, so a store can only gain ground by taking it
 from the others: the panel names the stores that gave ground, the stores that
-took it, and says how much money changed hands between them.
+took it, and prices each move against the group's week.
 
 Each store is measured against the slice it **usually** takes, not an even
 split, so a store that is always 8% of its group is not marked down for it.
@@ -70,6 +70,10 @@ The share figures moved out of the bars and into their own column, under
 column headings -- Share, Change and Worth -- so the numbers say what they
 are. The tick marking the usual share used to strike through the number
 printed on top of it, which made some rows hard to read.
+
+The summary line above the list is gone -- the pills took its place rather
+than sitting on top of it, and the **Worth** column already prices every
+store's move.
 
 Falling, Consistent and Rising sit beside the panel's title as counted pills,
 the way Crit, Watch and OK do on the left, and clicking one narrows the list
