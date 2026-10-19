@@ -20,18 +20,13 @@ import {
   setLedgerTab,
   setCounterpart,
   setLedgerSelectedDate,
-  setRawSubs,
-  setRawLWSubs,
-  setRawLYSubs,
-  setRawHourly,
-  setRawLWHourly,
-  setRawLYHourly,
   // setRawCats,
   // setRawLWCats,
   // setRawLYCats,
   // setCategoryThreshold,
-  setLastFetchedStoreKey,
   clearPopupSelections,
+  cacheStoreData,
+  restoreStoreData,
 } from "../../../../features/dev/devSalesLedgerSlice";
 import {
   addDays,
@@ -111,6 +106,7 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
     exportSubDeptItems,
     exportSubDeptName,
     lastFetchedStoreKey,
+    storeCache,
     gradingMetric,
     counterpart,
   } = useAppSelector((state) => state.dev.salesLedger);
@@ -326,6 +322,15 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
     // has it, only the component tree was torn down.
     const storeKey = `${selection.storeId}__${selection.storeNumber}`;
     if (lastFetchedStoreKey === storeKey) return;
+    // Held from an earlier visit: six calls saved, and the panel paints on
+    // this tick rather than after a round trip. Clients hop between stores --
+    // that is what the counterpart is for -- so this is the common path, not
+    // a clever one.
+    if (storeCache[storeKey]) {
+      dispatch(clearPopupSelections());
+      dispatch(restoreStoreData(storeKey));
+      return;
+    }
     dispatch(clearPopupSelections());
     const scopeToStore = <T extends { store_number: string }>(rows: T[]) =>
       scopeToStoreNumber(rows, selection.storeNumber);
@@ -395,47 +400,40 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
             1,
           ),
         ]);
+        // One dispatch, not seven. The six arrays are a single answer, and
+        // caching them separately would let a store keep its own subs beside
+        // somebody else's hourly.
         dispatch(
-          setRawSubs(
-            subsResp.data.error === 0 ? scopeToStore(subsResp.data.subs) : [],
-          ),
+          cacheStoreData({
+            key: storeKey,
+            data: {
+              rawSubs:
+                subsResp.data.error === 0
+                  ? scopeToStore(subsResp.data.subs)
+                  : [],
+              rawLWSubs:
+                lwSubsResp.data.error === 0
+                  ? scopeToStore(lwSubsResp.data.subs)
+                  : [],
+              rawLYSubs:
+                lySubsResp.data.error === 0
+                  ? scopeToStore(lySubsResp.data.subs)
+                  : [],
+              rawHourly:
+                hourlyResp.data.error === 0
+                  ? scopeToStore(hourlyResp.data.subs)
+                  : [],
+              rawLWHourly:
+                lwHourlyResp.data.error === 0
+                  ? scopeToStore(lwHourlyResp.data.subs)
+                  : [],
+              rawLYHourly:
+                lyHourlyResp.data.error === 0
+                  ? scopeToStore(lyHourlyResp.data.subs)
+                  : [],
+            },
+          }),
         );
-        dispatch(
-          setRawLWSubs(
-            lwSubsResp.data.error === 0
-              ? scopeToStore(lwSubsResp.data.subs)
-              : [],
-          ),
-        );
-        dispatch(
-          setRawLYSubs(
-            lySubsResp.data.error === 0
-              ? scopeToStore(lySubsResp.data.subs)
-              : [],
-          ),
-        );
-        dispatch(
-          setRawHourly(
-            hourlyResp.data.error === 0
-              ? scopeToStore(hourlyResp.data.subs)
-              : [],
-          ),
-        );
-        dispatch(
-          setRawLWHourly(
-            lwHourlyResp.data.error === 0
-              ? scopeToStore(lwHourlyResp.data.subs)
-              : [],
-          ),
-        );
-        dispatch(
-          setRawLYHourly(
-            lyHourlyResp.data.error === 0
-              ? scopeToStore(lyHourlyResp.data.subs)
-              : [],
-          ),
-        );
-        dispatch(setLastFetchedStoreKey(storeKey));
       } finally {
         setLoading(false);
       }
