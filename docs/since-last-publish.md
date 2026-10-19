@@ -21,9 +21,12 @@ PR #50, published from master.
 Clicking a row opens that item's evidence again, and clicking it a second time
 closes it. Double-click is gone.
 
-Row selection and copying are out entirely — the shift and ctrl selecting, the
-ctrl-C and ctrl-A keys, the "copy selected rows" menu item, and the hint in the
-strip under the grid that advertised them.
+Copying a selection is out — the ctrl-C and ctrl-A keys, the "copy selected
+rows" menu item, and the hint in the strip under the grid that advertised them.
+
+Shift and ctrl selecting stayed. They build a set without opening anything, so
+choosing nine items does not throw the panel open nine times, and the set is
+what "Find in orders and deliveries" works from.
 
 The evidence panel now opens with its cause strip **closed**. The strip lays
 over the sections beneath it, so opening with it down covered the first thing
