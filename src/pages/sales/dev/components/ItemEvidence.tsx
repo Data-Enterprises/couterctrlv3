@@ -491,6 +491,11 @@ const Rung = ({
       saying nothing.
     */}
     <span
+      title={
+        weighed
+          ? "Average pounds of this item in a basket that carried it, at this price"
+          : "Average units of this item in a basket that carried it, at this price"
+      }
       className={`flex-shrink-0 text-right text-[12px] tabular-nums ${
         (perBasket(p, weighed, rate) ?? 0) >= 1.5
           ? "font-bold text-delta_positive_text"
@@ -499,8 +504,8 @@ const Rung = ({
     >
       {perBasket(p, weighed, rate) === null
         ? "—"
-        : `${(perBasket(p, weighed, rate) as number).toFixed(2)}${
-            weighed ? " lb" : ""
+        : `avg ${(perBasket(p, weighed, rate) as number).toFixed(2)} ${
+            weighed ? "lb" : "ea"
           } per basket`}
     </span>
   </div>

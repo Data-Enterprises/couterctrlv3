@@ -291,6 +291,11 @@ export const SALES_INVESTIGATE_HELP: HelpContent = {
       anchor: "evidence",
     },
     {
+      term: "Avg per basket",
+      def: "How much of the item a customer who bought it carried out — units, or pounds on a scale item. It is an average over the baskets that held it at that price, not a total, so 2.20 ea means the typical buyer took two. A store level on units can still be behind here, which says the shoppers differ rather than the shelf does.",
+      anchor: "evidence",
+    },
+    {
       term: "Dept lines",
       def: "How many lines on that order or receipt belong to this department, not how many are on the whole document. An invoice carrying one of our items and ninety of somebody else's shows 1.",
     },
