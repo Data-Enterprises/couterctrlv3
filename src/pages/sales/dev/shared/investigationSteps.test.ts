@@ -383,7 +383,7 @@ describe("supply · the proof behind the labels", () => {
       { mine: [order(1, "a", 359)], theirs: [order(2, "a", 8904)] },
       { mine: [], theirs: [] },
     );
-    expect(r.lead).toBe("Both stores ordered. Neither took a delivery in the window.");
+    expect(r.lead).toBe("Both stores ordered. Neither received anything in the window.");
     expect(r.tail).toContain("003 ordered 8,904 units on 1 order.");
     expect(r.tail).toContain("002 ordered 359 on 1 order.");
   });
@@ -392,13 +392,13 @@ describe("supply · the proof behind the labels", () => {
    *  that said "both" would bury it under two counts. */
   it("names the store when only one of them ordered", () => {
     const r = says({ mine: [], theirs: [order(2, "a", 50)] }, { mine: [], theirs: [] });
-    expect(r.lead).toBe("Only 003 ordered. Neither took a delivery in the window.");
+    expect(r.lead).toBe("Only 003 ordered. Neither received anything in the window.");
   });
 
   it("says so when neither store ordered at all", () => {
     const r = says({ mine: [], theirs: [] }, { mine: [], theirs: [] });
     expect(r.lead).toBe(
-      "Neither store ordered this department. Neither took a delivery in the window.",
+      "Neither store ordered this department. Neither received anything in the window.",
     );
     expect(r.tail).toBe("");
   });
