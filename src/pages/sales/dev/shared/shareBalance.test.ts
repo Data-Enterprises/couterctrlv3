@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
 import {
-  balanceSegments,
   shareBalanceOf,
   shareRowsOf,
   shareStandingCounts,
@@ -107,6 +106,7 @@ describe("shareBalanceOf", () => {
     storeid,
     storeName: `Store ${storeid}`,
     storeNumber: String(storeid),
+    storeNumbersForId: [String(storeid)],
     sharePct: 10,
     usualPct: 10 - changePct,
     changePct,
@@ -154,82 +154,13 @@ describe("shareBalanceOf", () => {
   });
 });
 
-describe("balanceSegments", () => {
-  const row = (
-    storeid: number,
-    money: number,
-    standing: ShareRow["standing"],
-  ): ShareRow => ({
-    storeid,
-    storeName: `Store ${storeid}`,
-    storeNumber: String(storeid),
-    sharePct: 10,
-    usualPct: 10,
-    changePct: 0,
-    money,
-    standing,
-    ownPct: 0,
-  });
-
-  it("names the biggest few and rolls up the rest", () => {
-    const segs = balanceSegments(
-      [
-        row(1, 500, "rising"),
-        row(2, 300, "consistent"),
-        row(3, 100, "consistent"),
-        row(4, 60, "consistent"),
-        row(5, 40, "consistent"),
-      ],
-      3,
-    );
-    expect(segs.map((s) => s.label)).toEqual(["1", "2", "3", "+2 more"]);
-  });
-
-  it("keeps the same shape at fifty stores as at five", () => {
-    const many = Array.from({ length: 50 }, (_, i) =>
-      row(i + 1, 50 - i, "consistent"),
-    );
-    expect(balanceSegments(many, 3)).toHaveLength(4);
-  });
-
-  it("adds nothing when there is no tail", () => {
-    const segs = balanceSegments([row(1, 10, "rising"), row(2, 5, "consistent")], 3);
-    expect(segs).toHaveLength(2);
-    expect(segs.some((s) => s.rest)).toBe(false);
-  });
-
-  it("widths are each segment's share of its own side", () => {
-    const segs = balanceSegments([row(1, 75, "rising"), row(2, 25, "consistent")], 3);
-    expect(segs[0].width).toBe("75%");
-    expect(segs[1].width).toBe("25%");
-  });
-
-  it("colours a segment by its standing, not by which side it is on", () => {
-    // A Consistent store that drifted a tenth of a point must not be painted
-    // red just for sitting on the losing side -- that is what the band is for.
-    const segs = balanceSegments([row(1, -900, "falling"), row(2, -100, "consistent")], 3);
-    expect(segs.map((s) => s.standing)).toEqual(["falling", "consistent"]);
-  });
-
-  it("gives the rolled-up tail the neutral tone", () => {
-    const segs = balanceSegments(
-      [row(1, 50, "rising"), row(2, 40, "rising"), row(3, 30, "rising"), row(4, 20, "rising")],
-      3,
-    );
-    expect(segs[3].standing).toBe("consistent");
-  });
-
-  it("is empty for a side with nothing on it", () => {
-    expect(balanceSegments([], 3)).toEqual([]);
-  });
-});
-
 describe("shareStandingCounts", () => {
   it("counts the bands for the headings", () => {
     const mk = (standing: ShareRow["standing"]): ShareRow => ({
       storeid: 1,
       storeName: "x",
       storeNumber: "1",
+      storeNumbersForId: ["1"],
       sharePct: 1,
       usualPct: 1,
       changePct: 0,

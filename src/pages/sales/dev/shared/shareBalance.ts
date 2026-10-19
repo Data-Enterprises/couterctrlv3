@@ -42,6 +42,10 @@ export interface ShareRow {
   storeid: number;
   storeName: string;
   storeNumber: string;
+  /** Every store_number this storeid returned. Carried because co-located
+   *  stores share one id: the name resolves identically for both and only
+   *  the number tells them apart. */
+  storeNumbersForId: string[];
   /** Share of the group this week, as a percentage. */
   sharePct: number;
   /** The share its basis says it usually takes, as a percentage. */
@@ -88,6 +92,7 @@ export const shareRowsOf = (
         storeid: r.storeid,
         storeName: r.storeName,
         storeNumber: r.storeNumber,
+        storeNumbersForId: r.storeNumbersForId,
         sharePct,
         usualPct,
         changePct,
@@ -135,66 +140,6 @@ export const shareBalanceOf = (rows: ShareRow[]): ShareBalance => {
     gainedTotal,
     imbalance: gainedTotal + lostTotal,
   };
-};
-
-export interface BalanceSegment {
-  key: string;
-  label: string;
-  /** Share of its own side, as a CSS width. */
-  width: string;
-  standing: ShareStanding;
-  /** True for the rolled-up tail. */
-  rest: boolean;
-  money: number;
-}
-
-/**
- * One side of the balance bar, with the tail rolled up.
- *
- * A segment per store is unreadable past a dozen, and a group search can hold
- * fifty. Naming the biggest few and collapsing the rest keeps the bar the same
- * shape at any group size, and the big ones are the only ones anybody reads a
- * label off anyway.
- *
- * Coloured by STANDING, not by which side it is on. The side already says
- * whether share was lost or gained; colouring by side as well would paint a
- * Consistent store red for drifting a tenth of a point, which is the opposite
- * of what the band is for.
- */
-export const balanceSegments = (
-  side: ShareRow[],
-  maxNamed: number = 3,
-): BalanceSegment[] => {
-  const total = side.reduce((n, r) => n + Math.abs(r.money), 0);
-  if (total <= 0) return [];
-
-  const named = side.slice(0, maxNamed);
-  const rest = side.slice(maxNamed);
-  const pct = (n: number) => `${(Math.abs(n) / total) * 100}%`;
-
-  const out: BalanceSegment[] = named.map((r) => ({
-    key: String(r.storeid) + r.storeNumber,
-    label: r.storeNumber,
-    width: pct(r.money),
-    standing: r.standing,
-    rest: false,
-    money: r.money,
-  }));
-
-  if (rest.length > 0) {
-    const restMoney = rest.reduce((n, r) => n + r.money, 0);
-    out.push({
-      key: "rest",
-      label: `+${rest.length} more`,
-      width: pct(restMoney),
-      // The tail is never a finding: it is whatever did not make the top few,
-      // so it takes the neutral tone whatever the stores in it were graded.
-      standing: "consistent",
-      rest: true,
-      money: restMoney,
-    });
-  }
-  return out;
 };
 
 /** How many stores sit at each standing, for the band headings. */
