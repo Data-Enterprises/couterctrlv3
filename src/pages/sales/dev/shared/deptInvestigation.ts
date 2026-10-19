@@ -61,10 +61,11 @@ export const DEFAULT_BANDS: Bands = { price: 0.08, cost: 0.05, floor: 5 };
 /** One item's week at both stores, with the open store's supply events.
  *
  *  `orderedQty` and `receivedUnits` are deliberately NOT comparable to each
- *  other: orders carry `qty` with a separate `casesize`, receipts carry
- *  `units` already multiplied out. Nothing here divides one by the other —
- *  only whether each is present is ever asked, and sell-through uses units
- *  sold against units received, which are both real unit counts. */
+ *  other: an order's `qty` is cases with a separate `casesize`, a receipt's
+ *  `qty` is the selling units those cases came to. Nothing here divides one
+ *  by the other — only whether each is present is ever asked, and
+ *  sell-through uses units sold against units received, which are both real
+ *  unit counts. */
 export interface ItemFacts {
   productCode: string;
   description: string;
@@ -528,7 +529,13 @@ export const buildFacts = (input: InvestigationInput): ItemVerdict[] => {
   // each carries the lines that matched.
   const receivedBy = input.receivers.reduce<Record<string, number>>((acc, r) => {
     r.lines.forEach((l) => {
-      acc[l.product_code] = (acc[l.product_code] ?? 0) + l.units;
+      // `qty`, not `units`. On this endpoint's lines `qty` is the selling-unit
+      // count and `cases` is how many cases they came in -- which is why Item
+      // Actions derives its case size as qty / cases. `units` carries a
+      // different thing depending on how the vendor billed, and on a
+      // case-billed invoice it comes back 0, which read here as a delivery
+      // that never arrived.
+      acc[l.product_code] = (acc[l.product_code] ?? 0) + l.qty;
     });
     return acc;
   }, {});
@@ -847,7 +854,10 @@ export const supplyTimeline = (
         out.push({
           date: day(r.invoice_date),
           kind: "received",
-          amount: l.units,
+          // `qty`, not `units` -- this is the line that had every RECEIVED
+          // badge in the evidence rail reading "0 units" against invoices
+          // that plainly delivered something.
+          amount: l.qty,
           unit: "units",
           detail: [r.vendor_name, `inv ${r.invoiceid}`].filter(Boolean).join(" · "),
         }),

@@ -262,8 +262,8 @@ describe("supply · the proof behind the labels", () => {
     invoiceid: id,
     invoice_date,
     vendor_name: vendor,
-    lines: lines.map(([product_code, units, ext_cost, item_return]) => ({
-      product_code, units, ext_cost, item_return,
+    lines: lines.map(([product_code, qty, ext_cost, item_return]) => ({
+      product_code, qty, ext_cost, item_return,
     })),
   });
   const of = (code: string) => item({ productCode: code, theirsTy: 10, theirsUnits: 1 });
