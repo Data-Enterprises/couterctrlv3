@@ -86,6 +86,14 @@ mover inside each. **Share**, **Change** and **Worth** are sortable column
 headings on top of that -- click once for high to low, again for low to high,
 a third time to put the Falling-first order back.
 
+The right-hand panel is drawings rather than sentences. The store's shortfall
+is one bar -- what it took, the slice it missed beside it, and a tick where
+its usual share sits -- and the store on the other side of the move is a pair
+of chips. The week is drawn **in money**, each day above or below a line that
+is the usual share, so the day that cost the most is simply the tallest bar;
+only that day carries a figure. The reasoning behind it all sits in the strip
+at the top, closed until asked for.
+
 Store rows are a single line. The second line under each name repeated the
 usual share, which the tick on the bar and the Change column already carry.
 

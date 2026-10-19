@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import {
+  ArrowRightIcon,
   ArrowTrendingDownIcon,
   ArrowTrendingUpIcon,
   MinusIcon,
@@ -29,24 +30,29 @@ import { severityDotClass } from "../../../../utils/severity";
 
 /** Tone, not grade: which way share moved. The severity family grades a
  *  figure against a threshold, which is a different question. */
-const TONE: Record<ShareStanding, { text: string; bar: string; card: string }> =
-  {
-    falling: {
-      text: "text-delta_negative_text",
-      bar: severityDotClass.critical,
-      card: "bg-delta_negative_bg",
-    },
-    consistent: {
-      text: "text-content",
-      bar: "bg-brand_navy",
-      card: "bg-gray-50",
-    },
-    rising: {
-      text: "text-delta_positive_text",
-      bar: severityDotClass.healthy,
-      card: "bg-delta_positive_bg",
-    },
-  };
+const TONE: Record<
+  ShareStanding,
+  { pill: string; text: string; bar: string; card: string }
+> = {
+  falling: {
+    pill: "bg-delta_negative_bg text-delta_negative_text",
+    text: "text-delta_negative_text",
+    bar: severityDotClass.critical,
+    card: "bg-delta_negative_bg",
+  },
+  consistent: {
+    pill: "bg-gray-200 text-content",
+    text: "text-content",
+    bar: "bg-brand_navy",
+    card: "bg-gray-50",
+  },
+  rising: {
+    pill: "bg-delta_positive_bg text-delta_positive_text",
+    text: "text-delta_positive_text",
+    bar: severityDotClass.healthy,
+    card: "bg-delta_positive_bg",
+  },
+};
 
 /** What the house strip wants, in the delta family: this says which way
  *  share moved, so it is not graded and cannot use CTA_SEVERITY_CLASSES. */
@@ -130,6 +136,18 @@ const GroupShareStoreDetail = ({
     );
   }
 
+  // The share bar runs 0 to a bit past whichever of the two slices is
+  // bigger: a fixed 0-25% would draw a 7% store as a stub and hide the very
+  // gap the panel is about.
+  const barCeiling = Math.max(row.sharePct, row.usualPct) * 1.25;
+  const barPct = (pct: number) =>
+    `${barCeiling > 0 ? Math.min(100, (pct / barCeiling) * 100) : 0}%`;
+
+  // The day chart is in money, around a zero line that IS the usual share.
+  const dayMax = Math.max(0, ...days.map((d) => Math.abs(d.money ?? 0)));
+  const dayHeight = (m: number) =>
+    `${dayMax > 0 ? (Math.abs(m) / dayMax) * 50 : 0}%`;
+
   const tone = TONE[row.standing];
   const Icon = CTA_ICON[row.standing];
   const name = applyStoreNumberToName(
@@ -137,13 +155,6 @@ const GroupShareStoreDetail = ({
     row.storeNumber,
     row.storeNumbersForId,
   );
-
-  // The bars and the usual line share one scale, so the line reads against
-  // every bar rather than only the tall ones.
-  const ceiling =
-    Math.max(row.usualPct, ...days.map((d) => d.sharePct ?? 0)) * 1.18;
-  const heightOf = (pct: number) =>
-    `${ceiling > 0 ? Math.min(100, (pct / ceiling) * 100) : 0}%`;
 
   return (
     <aside className="w-[288px] flex-shrink-0 border-l border-gray-100 flex flex-col overflow-y-auto thin-scrollbar">
@@ -180,49 +191,74 @@ const GroupShareStoreDetail = ({
       />
 
       <div className="px-3 pt-2.5 flex flex-col">
-        <div className="grid grid-cols-2 gap-2">
-          <div className="rounded-md bg-gray-50 px-2.5 py-2">
-            <div className="text-[9.5px] font-bold uppercase tracking-wide text-content/85">
-              Share this week
-            </div>
-            <div className="text-[15px] font-bold text-content tabular-nums">
-              {pct1(row.sharePct)}
-            </div>
-            <div className="text-[10px] text-content/85 tabular-nums">
-              usually {pct1(row.usualPct)}
-            </div>
-          </div>
-          <div className={`rounded-md px-2.5 py-2 ${tone.card}`}>
-            <div className="text-[9.5px] font-bold uppercase tracking-wide text-content/85">
-              Vs usual share
-            </div>
-            <div className={`text-[15px] font-bold tabular-nums ${tone.text}`}>
-              {signedValue(row.money)}
-            </div>
-            <div className="text-[10px] text-content/85 tabular-nums">
-              {signedPct(row.changePct)} of the group
-            </div>
-          </div>
+        {/* The gap, drawn once. Fill is the slice it took, the pale run
+            beside it is the slice it missed (or took on top), and the tick
+            is where usual sits. One picture for what was two tiles and a
+            sentence. */}
+        <div className="flex items-baseline gap-1.5">
+          <span className={`text-[22px] font-bold leading-none ${tone.text}`}>
+            {signedValue(row.money)}
+          </span>
+          <span className={`text-[12.5px] font-semibold ${tone.text}`}>
+            {signedPct(row.changePct)}
+          </span>
         </div>
 
-        {days.length > 1 && (
+        <div className="relative h-5 rounded bg-bkg mt-2">
+          <span
+            className={`absolute left-0 top-0 bottom-0 rounded-l ${tone.bar}`}
+            style={{ width: barPct(Math.min(row.sharePct, row.usualPct)) }}
+          />
+          <span
+            className={`absolute top-0 bottom-0 ${tone.bar} opacity-30`}
+            style={{
+              left: barPct(Math.min(row.sharePct, row.usualPct)),
+              width: barPct(Math.abs(row.changePct)),
+            }}
+          />
+          <span
+            className="absolute -top-0.5 -bottom-0.5 w-0.5 bg-content"
+            style={{ left: barPct(row.usualPct) }}
+          />
+        </div>
+        <div className="flex justify-between text-[11px] text-content/85 tabular-nums mt-0.5">
+          <span>{pct1(row.sharePct)} this week</span>
+          <span>usually {pct1(row.usualPct)}</span>
+        </div>
+
+        {/* The other side of the balance, as two chips rather than a clause.
+            Shares total 100%, so this store's move is that one's. */}
+        {other && (
+          <div className="flex items-center gap-1.5 mt-2.5 text-[11.5px] font-semibold">
+            <span
+              className={`px-1.5 py-1 rounded whitespace-nowrap ${tone.pill}`}
+            >
+              {row.storeNumber} {signedValue(row.money)}
+            </span>
+            <ArrowRightIcon className="w-3 h-3 flex-shrink-0 text-content/85" />
+            <span
+              className={`px-1.5 py-1 rounded whitespace-nowrap ${TONE[other.standing].pill}`}
+            >
+              {other.storeNumber} {signedValue(other.money)}
+            </span>
+          </div>
+        )}
+
+        {days.length > 1 && dayMax > 0 && (
           <div className="mt-3">
             <div className="text-[10px] font-bold uppercase tracking-wide text-content/85">
-              Share by day
-            </div>
-            <div className="text-[10.5px] text-content/85 leading-snug mb-1.5">
-              Where the week went, rather than only that it did.
+              By day, in {isQty ? "units" : "money"}
             </div>
 
-            <div className="relative h-[58px] flex items-end gap-1">
-              {/* The slice it usually takes, across every day on one scale. A
-                bar under this line is a day the store came up light. */}
-              <span
-                className="absolute left-0 right-0 border-t border-dashed border-content/60 z-10 pointer-events-none"
-                style={{ bottom: heightOf(row.usualPct) }}
-              />
+            {/* Above the line is a day it took more of the group than usual,
+                below is a day it took less, and the height is what the day
+                was worth. The zero line IS the usual share, so the week's
+                shape says what a sentence under it used to. */}
+            <div className="relative h-[72px] mt-1.5 flex items-stretch gap-1">
+              <span className="absolute left-0 right-0 top-1/2 border-t border-gray-300" />
               {days.map((d) => {
-                const under = (d.changePct ?? 0) < 0;
+                const worst = note.worst?.date === d.date;
+                const m = d.money ?? 0;
                 return (
                   <span
                     key={d.date}
@@ -231,53 +267,52 @@ const GroupShareStoreDetail = ({
                     } of the group${
                       d.money === null ? "" : ` · ${signedValue(d.money)}`
                     }`}
-                    className="flex-1 relative h-full rounded-t bg-bkg"
+                    className="flex-1 relative"
                   >
                     <span
-                      className={`absolute left-0 right-0 bottom-0 rounded-t ${
-                        under ? TONE.falling.bar : "bg-brand_navy"
-                      }`}
-                      style={{ height: heightOf(d.sharePct ?? 0) }}
+                      className={`absolute left-0 right-0 ${
+                        m < 0
+                          ? `top-1/2 rounded-b ${TONE.falling.bar}`
+                          : `bottom-1/2 rounded-t ${TONE.rising.bar}`
+                      } ${worst ? "" : "opacity-70"}`}
+                      style={{ height: dayHeight(m) }}
                     />
                   </span>
                 );
               })}
             </div>
+
             <div className="flex gap-1 mt-0.5">
-              {days.map((d) => (
-                <span
-                  key={d.date}
-                  className="flex-1 text-center text-[9.5px] text-content/85"
-                >
-                  {d.label}
-                </span>
-              ))}
-            </div>
-            <div className="text-[9.5px] text-content/85 text-right mt-0.5 tabular-nums">
-              dashed line: usually {pct1(row.usualPct)}
+              {days.map((d) => {
+                const worst = note.worst?.date === d.date;
+                return (
+                  <span
+                    key={d.date}
+                    className={`flex-1 text-center text-[10px] tabular-nums ${
+                      worst
+                        ? `font-bold ${TONE.falling.text}`
+                        : "text-content/85"
+                    }`}
+                  >
+                    {d.label}
+                  </span>
+                );
+              })}
             </div>
 
+            {/* Only the day that cost the most carries a figure. */}
             {note.worst && (
-              <p className="text-[11px] text-content/85 leading-snug mt-1.5 rounded-md bg-gray-50 px-2.5 py-2">
-                {note.runFrom && note.runFrom.date !== note.worst.date ? (
-                  <>
-                    Under its usual share from {note.runFrom.label} on, worst
-                    on{" "}
-                  </>
-                ) : (
-                  <>Lightest on </>
+              <div
+                className={`text-[11px] font-semibold tabular-nums text-center mt-0.5 ${TONE.falling.text}`}
+              >
+                {note.worst.label} {signedValue(note.worst.money as number)}
+                {note.worstIsBiggestDay && (
+                  <span className="text-content/85 font-normal">
+                    {" "}
+                    · the group&rsquo;s biggest day
+                  </span>
                 )}
-                <span className="font-semibold text-content">
-                  {note.worst.label}
-                </span>
-                {note.worstIsBiggestDay && " — the group's biggest day"} at{" "}
-                <span className="font-semibold text-content">
-                  {signedValue(note.worst.money as number)}
-                </span>
-                {note.below > 1 &&
-                  `, ${note.below} days of the week under usual`}
-                .
-              </p>
+              </div>
             )}
           </div>
         )}
