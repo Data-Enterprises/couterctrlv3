@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Modal from "../../../components-dev/Modal";
 import Checkbox from "../../../components-dev/Checkbox";
 import SelectFilter from "../../../components-dev/filters/SelectFilter";
 import TextField from "../../../components-dev/inputs/TextField";
 import { useDevApi } from "../../../hooks/useDevApi";
+import { nextTechCode } from "./techCodes";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import {
   createTicketTech,
@@ -271,6 +272,7 @@ const TechsModal = ({ canManageTechs, onClose, onChanged }: Props) => {
       {mode.kind === "adding" && (
         <AddTech
           candidates={candidates}
+          techs={techs ?? []}
           working={working}
           onCancel={() => setMode({ kind: "list" })}
           onConfirm={(body) => {
@@ -415,11 +417,15 @@ const StandDown = ({
  */
 const AddTech = ({
   candidates,
+  techs,
   working,
   onCancel,
   onConfirm,
 }: {
   candidates: TechCandidate[];
+  /** Every tech on the desk, stood down ones included -- the codes already
+   *  taken, which is what makes the next one knowable. */
+  techs: TicketTech[];
   working: boolean;
   onCancel: () => void;
   onConfirm: (body: {
@@ -431,7 +437,19 @@ const AddTech = ({
   const [userid, setUserid] = useState("");
   const [shownAs, setShownAs] = useState("");
   const [code, setCode] = useState("");
+  /** Until somebody edits the field it follows the pick, which is what lets a
+   *  returning tech's own code replace the next one without a race between
+   *  two bits of state. */
+  const [codeEdited, setCodeEdited] = useState(false);
   const picked = candidates.find((c) => String(c.userid) === userid);
+
+  const nextCode = useMemo(() => nextTechCode(techs), [techs]);
+  // A returning tech keeps the row they had, so the code that comes back is
+  // theirs -- offering them the next one would read as a renumbering.
+  const suggested = picked?.was_a_tech
+    ? (picked.previous_tech_code ?? "")
+    : (nextCode ?? "");
+  const codeValue = codeEdited ? code : suggested;
 
   return (
     <>
@@ -478,9 +496,12 @@ const AddTech = ({
           <div className="flex-1">
             <TextField
               label="Code"
-              value={code}
+              value={codeValue}
               placeholder={picked?.previous_tech_code ?? "the next one"}
-              onChange={setCode}
+              onChange={(v) => {
+                setCodeEdited(true);
+                setCode(v);
+              }}
             />
           </div>
         </div>
@@ -514,7 +535,7 @@ const AddTech = ({
             onConfirm({
               userid: picked.userid,
               ...(shownAs.trim() ? { display_name: shownAs.trim() } : {}),
-              ...(code.trim() ? { tech_code: code.trim() } : {}),
+              ...(codeValue.trim() ? { tech_code: codeValue.trim() } : {}),
             })
           }
           className="rounded-lg bg-brand_navy px-4 py-1.5 text-[12.5px] font-semibold text-custom-white transition-colors hover:bg-brand_navy_hover disabled:opacity-40"
