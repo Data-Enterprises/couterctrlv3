@@ -1,4 +1,5 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import type { TicketTech } from "../api/tickets";
 import type { Store, UserCompany } from "../interfaces";
 
 export interface NewQuestion {
@@ -20,6 +21,19 @@ export interface UserState {
   username: string;
   password: string;
   userLevel: number;
+  /**
+   * Their row on the ticket desk, or null.
+   *
+   * Null is the normal case — most users are clients and will never have one.
+   *
+   * It is NOT a permission. What a caller may do is still only the flags the
+   * ticket endpoints return, computed from this row server-side at the time
+   * of the call; a row held here could be stale, and acting on it would be
+   * acting on a guess. It is here so the nav can show the page to somebody
+   * who is on the desk regardless of their level, which is the whole point of
+   * membership being the gate.
+   */
+  ticketTech: TicketTech | null;
   email: string;
   firstName: string;
   lastName: string;
@@ -40,6 +54,7 @@ export const initialState: UserState = {
   username: "",
   password: "",
   userLevel: 0,
+  ticketTech: null,
   firstName: "",
   lastName: "",
   resetPassword: 0,
@@ -70,6 +85,9 @@ export const userSlice = createSlice({
     },
     setResetPassword: (state, action: PayloadAction<number>) => {
       state.resetPassword = action.payload;
+    },
+    setTicketTech: (state, action: PayloadAction<TicketTech | null>) => {
+      state.ticketTech = action.payload;
     },
     setUserLevel: (state, action: PayloadAction<number>) => {
       state.userLevel = action.payload;
@@ -120,6 +138,7 @@ export const {
   setCompany,
   setResetPassword,
   setUserLevel,
+  setTicketTech,
   setUserId,
   setFirstName,
   setLastName,

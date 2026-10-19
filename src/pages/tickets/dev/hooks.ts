@@ -67,6 +67,9 @@ export const useTicketsCtx = () => {
    */
   const isTech = tickets.caps.canViewAll;
   const canManage = tickets.caps.canManage;
+  // The roster. Level 9 and nothing less, so that a desk nobody is on is
+  // always fixable by somebody.
+  const canManageTechs = tickets.caps.canManageTechs;
 
   const rows = useMemo(
     () =>
@@ -111,7 +114,11 @@ export const useTicketsCtx = () => {
         dispatch(
           setTickets({
             tickets: j.tickets ?? [],
-            caps: { canViewAll: j.canViewAll, canManage: j.canManage },
+            caps: {
+              canViewAll: j.canViewAll,
+              canManage: j.canManage,
+              canManageTechs: j.canManageTechs,
+            },
           }),
         );
       })
@@ -171,7 +178,11 @@ export const useTicketsCtx = () => {
             ticket: j.ticket,
             comments: j.comments ?? [],
             attachments: j.attachments ?? [],
-            caps: { canViewAll: j.canViewAll, canManage: j.canManage },
+            caps: {
+              canViewAll: j.canViewAll,
+              canManage: j.canManage,
+              canManageTechs: j.canManageTechs,
+            },
           }),
         );
       })
@@ -430,6 +441,7 @@ export const useTicketsCtx = () => {
     userid,
     isTech,
     canManage,
+    canManageTechs,
     rows,
     counts,
     load,
