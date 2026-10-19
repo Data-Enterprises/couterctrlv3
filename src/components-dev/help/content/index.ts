@@ -12,6 +12,7 @@ import { ORDERS_HELP } from "./orders";
 import { RECEIVERS_HELP } from "./receivers";
 import { SALES_HELP } from "./sales";
 import { SALES_EXPORT_HELP } from "./salesExport";
+import { SALES_INVESTIGATE_HELP } from "./salesInvestigate";
 import { STORE_GROUPS_HELP } from "./storeGroups";
 import { SUB_DEPT_MARGINS_HELP } from "./subDeptMargins";
 import { UPC_LIST_HELP } from "./upcList";
@@ -43,6 +44,7 @@ export const HELP_CONTENT: Record<HelpPage, HelpContent> = {
   receivers: RECEIVERS_HELP,
   sales: SALES_HELP,
   "sales-export": SALES_EXPORT_HELP,
+  "sales-investigate": SALES_INVESTIGATE_HELP,
   "store-groups": STORE_GROUPS_HELP,
   "sub-dept-margins": SUB_DEPT_MARGINS_HELP,
   "upc-list": UPC_LIST_HELP,
