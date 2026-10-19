@@ -88,7 +88,7 @@ const GroupShareStoreDetail = ({
 
   if (!row) {
     return (
-      <aside className="w-[256px] flex-shrink-0 border-l border-gray-100 pl-3 pt-1">
+      <aside className="w-[282px] flex-shrink-0 border-l border-gray-100 pl-3 pt-1">
         <div className="text-[10px] font-bold uppercase tracking-wide text-content/85">
           Selected store
         </div>
@@ -115,7 +115,7 @@ const GroupShareStoreDetail = ({
     `${ceiling > 0 ? Math.min(100, (pct / ceiling) * 100) : 0}%`;
 
   return (
-    <aside className="w-[256px] flex-shrink-0 border-l border-gray-100 pl-3 flex flex-col overflow-y-auto thin-scrollbar">
+    <aside className="w-[282px] flex-shrink-0 border-l border-gray-100 pl-3 flex flex-col overflow-y-auto thin-scrollbar">
       <div className="text-[10px] font-bold uppercase tracking-wide text-content/85">
         Selected store
       </div>

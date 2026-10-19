@@ -74,6 +74,9 @@ printed on top of it, which made some rows hard to read.
 Falling, Consistent and Rising are full-width coloured headings carrying their
 own counts, the way Crit, Watch and OK do on the left.
 
+Store rows are a single line. The second line under each name repeated the
+usual share, which the tick on the bar and the Change column already carry.
+
 ### Two stores in the title bar
 
 `sales_top_items`

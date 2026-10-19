@@ -46,7 +46,7 @@ const TONE: Record<ShareStanding, { pill: string; text: string; bar: string }> =
       bar: "bg-delta_negative_text",
     },
     consistent: {
-      pill: "bg-gray-100 text-content/85",
+      pill: "bg-gray-200 text-content",
       text: "text-content",
       bar: "bg-brand_navy",
     },
@@ -252,23 +252,16 @@ const GroupShareBalance = ({
                           }`}
                           style={{ gridTemplateColumns: COLS }}
                         >
-                          <span className="min-w-0">
-                            {/* Co-located stores share one storeid, so the
-                                  name resolves identically for both and only
-                                  the NUMBER tells them apart. Without this the
-                                  falling store wore its neighbour's name. */}
-                            <span className="block text-[12px] font-medium text-content truncate">
-                              {applyStoreNumberToName(
-                                r.storeName,
-                                r.storeNumber,
-                                r.storeNumbersForId,
-                              )}
-                            </span>
-                            <span className="block text-[11.5px] text-content/85 tabular-nums">
-                              usually {r.usualPct.toFixed(1)}%
-                              {r.ownPct !== null &&
-                                ` · own ${changeText(r.ownPct)}`}
-                            </span>
+                          {/* Co-located stores share one storeid, so the
+                            name resolves identically for both and only the
+                            NUMBER tells them apart. Without this the falling
+                            store wore its neighbour's name. */}
+                          <span className="min-w-0 text-[12px] font-medium text-content truncate">
+                            {applyStoreNumberToName(
+                              r.storeName,
+                              r.storeNumber,
+                              r.storeNumbersForId,
+                            )}
                           </span>
 
                           {/* The tick is the slice it usually takes, on the
