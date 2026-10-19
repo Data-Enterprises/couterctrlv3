@@ -106,7 +106,9 @@ const GroupComparisonPanel = ({
       <div className="text-[14px] font-bold text-content truncate mt-0.5">
         {value}
       </div>
-      {sub && <div className="text-[10.5px] text-content/85 truncate">{sub}</div>}
+      {sub && (
+        <div className="text-[10.5px] text-content/85 truncate">{sub}</div>
+      )}
     </div>
   );
 
@@ -117,7 +119,9 @@ const GroupComparisonPanel = ({
           the question, so the tabs went -- the header did not. */}
       <div className="flex items-center justify-center px-4 py-3 flex-shrink-0 bg-brand_navy">
         <span className="text-custom-white text-[13px] font-semibold truncate">
-          {groupName ? `${groupName} — share of sales` : "Share of group sales"}
+          {groupName
+            ? `${groupName} share of group sales`
+            : "Share of group sales"}
         </span>
       </div>
 
@@ -138,7 +142,9 @@ const GroupComparisonPanel = ({
         {tile(
           "Stores counted",
           String(group.counted),
-          excludedTotal ? `${excludedTotal} set aside · ${excludedReasons}` : "all comparable",
+          excludedTotal
+            ? `${excludedTotal} set aside · ${excludedReasons}`
+            : "all comparable",
           excludedTotal
             ? "A store missing from either window would shift every other store's usual contribution by its own weight."
             : undefined,

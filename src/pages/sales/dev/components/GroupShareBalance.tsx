@@ -83,7 +83,7 @@ type Col = "share" | "change" | "worth";
 
 /** Shared by the column heads and every row — two copies of this is a column
  *  that slides out from under its own name. */
-const COLS = "minmax(0,150px) minmax(0,1fr) 58px 62px 64px";
+const COLS = "minmax(0,142px) minmax(0,1fr) 58px 62px 74px";
 
 /** Points of the group, written as a percentage because that is what the
  *  column beside it is. */
@@ -289,10 +289,12 @@ const GroupShareBalance = ({
                         {changeText(r.changePct)}
                       </span>
                     </span>
-                    <span
-                      className={`text-right text-[12.5px] font-semibold tabular-nums ${TONE[r.standing].text}`}
-                    >
-                      {money(r.money)}
+                    <span className="flex justify-end">
+                      <span
+                        className={`text-[12.5px] font-semibold px-1.5 py-1 rounded text-center whitespace-nowrap tabular-nums ${TONE[r.standing].pill}`}
+                      >
+                        {money(r.money)}
+                      </span>
                     </span>
                   </button>
                 );
