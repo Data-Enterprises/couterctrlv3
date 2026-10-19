@@ -94,7 +94,7 @@ export const initialState: TicketsState = {
   loading: false,
   error: null,
   tickets: [],
-  caps: { canViewAll: false, canManage: false },
+  caps: { canViewAll: false, canManage: false, canManageTechs: false },
   lookups: null,
   assignees: [],
   selectedId: null,

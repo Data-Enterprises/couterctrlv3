@@ -176,15 +176,32 @@ const TitleBar = () => {
     c.pages.some((p) => p.href === currentPath),
   );
 
-  const canSee = (userLevels: string[]) =>
-    userLevels.includes(user.userLevel.toString()) || userLevels.includes("*");
+  /**
+   * Whether a page shows in the nav.
+   *
+   * Level, with one exception. Tickets gates on being ON THE DESK rather than
+   * on a level — the server computes `canViewAll` from the ticket_techs row,
+   * so a support person at any level can work the queue. The nav knew nothing
+   * about that, which made the page unreachable for exactly the techs the
+   * membership model exists to serve: no entry, and the route only findable
+   * by typing it.
+   *
+   * It does not grant anything. Every call the page makes is still answered
+   * against the row server-side; this only stops the door being invisible.
+   */
+  const onTheDesk = Boolean(user.ticketTech?.is_active);
+
+  const canSee = (userLevels: string[], href?: string) =>
+    userLevels.includes(user.userLevel.toString()) ||
+    userLevels.includes("*") ||
+    (href === "tickets" && onTheDesk);
 
   // Coming Soon pages only exist on the dev API; on prod (what clients see)
   // the category is not offered at all.
   const visibleCategories = categories.filter(
     (cat) =>
       (cat.name !== COMING_SOON_CATEGORY || context.apiEnv === "dev") &&
-      cat.pages.some((p) => canSee(p.userLevels)),
+      cat.pages.some((p) => canSee(p.userLevels, p.href)),
   );
 
   // Persist last route whenever it changes
@@ -523,7 +540,7 @@ const TitleBar = () => {
               const isActive = activeCategory?.name === cat.name;
               const isOpen = openCategory === cat.name;
               const visiblePages = cat.pages.filter(
-                (p) => canSee(p.userLevels) && p.isVisible,
+                (p) => canSee(p.userLevels, p.href) && p.isVisible,
               );
               return (
                 <div
@@ -628,6 +645,8 @@ const TitleBar = () => {
                 (c) => c.name === openCategory,
               );
               if (!cat) return null;
+              // No href passed, so no desk exception: Tickets is
+              // `mobile: false` and this list drops it either way.
               const visiblePages = cat.pages.filter(
                 (p) => canSee(p.userLevels) && p.mobile,
               );

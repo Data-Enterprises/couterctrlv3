@@ -102,16 +102,18 @@ export interface TicketLookups {
 }
 
 /**
- * The two capability flags, on every list and detail response.
+ * The capability flags, on every list and detail response.
  *
  * `canViewAll` sees every company's queue and reads internal notes;
- * `canManage` assigns, edits, changes status and writes internal notes. Gate
- * the UI on these rather than on user levels: the rule lives server-side and
- * the two would otherwise drift.
+ * `canManage` assigns, edits, changes status and writes internal notes;
+ * `canManageTechs` changes the roster, which is the programmer level and
+ * nothing less. Gate the UI on these rather than on user levels: the rule
+ * lives server-side and the two would otherwise drift.
  */
 export interface TicketCaps {
   canViewAll: boolean;
   canManage: boolean;
+  canManageTechs: boolean;
 }
 
 interface Answered {
@@ -361,4 +363,136 @@ export const getAttachmentUrl = (
     method: "GET",
     headers: headers(token),
     url: url + "tickets/" + id + "/attachments/" + attachmentId + "/url",
+  });
+
+/* ───────────────────────────────────────────────────────────────────────
+ * The roster.
+ *
+ * Who tickets can be assigned to. Reading it needs the desk; changing it
+ * needs the programmer level — `canManageTechs`, which arrives beside the
+ * other two flags on every list and detail response.
+ * ─────────────────────────────────────────────────────────────────────── */
+
+export interface TicketTech {
+  tech_id: number;
+  /** The users.id. What `/assign` and `reassign_to` both take. */
+  userid: number;
+  tech_code: string | null;
+  display_name: string | null;
+  is_active: boolean;
+  created_at: string;
+  username: string;
+  user_level: number | null;
+  /** The account behind the row. A tech can be on the desk with a disabled
+   *  login, which is the one failure the roster cannot fix itself. */
+  user_active: number | null;
+  /** display_name, else the user's full name, else the username. The sheet
+   *  leads with `username` instead and keeps this as the second line. */
+  name: string;
+  /** Open tickets only. Matches what a stand-down reports, so the roster and
+   *  the confirmation cannot disagree. */
+  ticket_count: number;
+}
+
+export interface TicketTechsResp extends TicketCaps {
+  error: number;
+  success: boolean;
+  count: number;
+  techs: TicketTech[];
+}
+
+/** Somebody who could be put on the desk: active, on the support domain, and
+ *  not already there. */
+export interface TechCandidate {
+  userid: number;
+  username: string;
+  email: string;
+  user_level: number | null;
+  name: string;
+  /** Has a stood-down row. Adding them is a reactivation — same row, same id,
+   *  so every ticket already pointing at it keeps pointing at it. */
+  was_a_tech: boolean;
+  previous_tech_code: string | null;
+}
+
+export interface TechCandidatesResp {
+  error: number;
+  success: boolean;
+  count: number;
+  candidates: TechCandidate[];
+}
+
+export interface TechWriteResp {
+  error: number;
+  success: boolean;
+  tech?: TicketTech;
+  /** POST: which of the two things just happened. */
+  created?: boolean;
+  reactivated?: boolean;
+  /** PATCH: what became of the work. Zero once a reassignment has run. */
+  open_tickets_still_assigned?: number;
+  reassigned?: number;
+  reassigned_to?: number | null;
+  msg?: string;
+}
+
+/** The management list: inactive techs included, because bringing one back is
+ *  half the job. The assignee picker wants `getTicketAssignees` instead. */
+export const listTicketTechs = (url: string, token: string) =>
+  axios({
+    method: "GET",
+    headers: headers(token),
+    url: url + "tickets/techs",
+  });
+
+export const listTechCandidates = (url: string, token: string) =>
+  axios({
+    method: "GET",
+    headers: headers(token),
+    url: url + "tickets/techs/candidates",
+  });
+
+/**
+ * Put somebody on the desk.
+ *
+ * One row per user, so this upserts: adding somebody who has a stood-down row
+ * brings that row back rather than failing on the constraint. `created` and
+ * `reactivated` in the response say which happened.
+ */
+export const createTicketTech = (
+  url: string,
+  token: string,
+  body: { userid: number; display_name?: string; tech_code?: string },
+) =>
+  axios({
+    method: "POST",
+    headers: headers(token),
+    url: url + "tickets/techs",
+    data: body,
+  });
+
+/**
+ * Rename one, or take one off the desk.
+ *
+ * `is_active: false` is the removal — there is no delete, because the row is
+ * what every ticket that tech ever held points at. `reassign_to` hands their
+ * OPEN tickets to another tech in the same transaction; without it the work
+ * stays with somebody who can no longer see the queue.
+ */
+export const updateTicketTech = (
+  url: string,
+  token: string,
+  techId: number,
+  body: {
+    display_name?: string;
+    tech_code?: string;
+    is_active?: boolean;
+    reassign_to?: number;
+  },
+) =>
+  axios({
+    method: "PATCH",
+    headers: headers(token),
+    url: url + "tickets/techs/" + techId,
+    data: body,
   });

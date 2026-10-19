@@ -51,7 +51,7 @@ const opened = () =>
       ticket: ticket(),
       comments: [comment(21), comment(22)],
       attachments: [],
-      caps: { canViewAll: true, canManage: true },
+      caps: { canViewAll: true, canManage: true, canManageTechs: true },
     }),
   );
 
@@ -106,7 +106,7 @@ describe("the queue is offered, not applied", () => {
     initialState,
     setTickets({
       tickets: [ticket({ id: 1 }), ticket({ id: 2 })],
-      caps: { canViewAll: true, canManage: true },
+      caps: { canViewAll: true, canManage: true, canManageTechs: true },
     }),
   );
 
@@ -145,7 +145,7 @@ describe("the queue is offered, not applied", () => {
       held,
       setTickets({
         tickets: [ticket({ id: 3 }), ticket({ id: 1 })],
-        caps: { canViewAll: true, canManage: true },
+        caps: { canViewAll: true, canManage: true, canManageTechs: true },
       }),
     );
     expect(refreshed.pending).toBeNull();
@@ -197,7 +197,7 @@ describe("a file that arrives with no comment to announce it", () => {
         ticket: ticket(),
         comments: [comment(21)],
         attachments: [attachment(1)],
-        caps: { canViewAll: true, canManage: true },
+        caps: { canViewAll: true, canManage: true, canManageTechs: true },
       }),
     );
     expect(loaded.attachments).toHaveLength(1);

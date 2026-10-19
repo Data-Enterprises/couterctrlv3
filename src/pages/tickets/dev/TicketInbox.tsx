@@ -46,6 +46,8 @@ interface Props {
   onRefresh: () => void;
   /** Filing is the client's action; a tech has no button (see Tickets.tsx). */
   onNew?: () => void;
+  /** The roster. Absent on the client view, which has no desk to look at. */
+  onTechs?: () => void;
   error: string | null;
 }
 
@@ -119,6 +121,7 @@ const TicketInbox = ({
   pending,
   onRefresh,
   onNew,
+  onTechs,
   error,
 }: Props) => {
   const narrowed = filters.status.length > 0 || filters.priority.length > 0;
@@ -132,6 +135,19 @@ const TicketInbox = ({
         <span className="flex-shrink-0 text-[13px] font-semibold text-custom-white">
           {isTech ? "Queue" : "Your tickets"}
         </span>
+        {/* Up here rather than beside Refresh: who is on the desk is a
+            standing fact about the queue, not something you do to the list
+            you are looking at. */}
+        {onTechs && (
+          <button
+            type="button"
+            onClick={onTechs}
+            title="Who tickets can be assigned to"
+            className="flex-shrink-0 rounded-md border border-custom-white/25 px-2 py-[3px] text-[11px] font-medium text-custom-white/85 transition-colors hover:border-custom-white hover:text-custom-white"
+          >
+            Techs
+          </button>
+        )}
         <div className="flex-1" />
         <div className="flex flex-shrink-0 items-baseline gap-1">
           <span className="text-[10px] uppercase tracking-wide text-custom-white/85">
