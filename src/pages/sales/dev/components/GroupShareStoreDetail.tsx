@@ -1,4 +1,11 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import {
+  ArrowTrendingDownIcon,
+  ArrowTrendingUpIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+  MinusIcon,
+} from "@heroicons/react/16/solid";
 import { formatBigNumber, formatCurrencyCompact } from "../../../../utils";
 import { applyStoreNumberToName } from "../shared/ledgerUtils";
 import {
@@ -24,26 +31,37 @@ import { shareDayNoteOf, type ShareDay } from "../shared/shareByDay";
  *  figure against a threshold, which is a different question. */
 const TONE: Record<
   ShareStanding,
-  { pill: string; text: string; bar: string; card: string }
+  { pill: string; text: string; bar: string; card: string; hover: string }
 > = {
   falling: {
     pill: "bg-delta_negative_bg text-delta_negative_text",
     text: "text-delta_negative_text",
     bar: "bg-delta_negative_text",
     card: "bg-delta_negative_bg",
+    hover: "hover:bg-delta_negative_text/10",
   },
   consistent: {
-    pill: "bg-gray-100 text-content/85",
+    pill: "bg-gray-200 text-content",
     text: "text-content",
     bar: "bg-brand_navy",
     card: "bg-gray-50",
+    hover: "hover:bg-gray-100",
   },
   rising: {
     pill: "bg-delta_positive_bg text-delta_positive_text",
     text: "text-delta_positive_text",
     bar: "bg-delta_positive_text",
     card: "bg-delta_positive_bg",
+    hover: "hover:bg-delta_positive_text/10",
   },
+};
+
+/** The strip's icon, by which way share moved — the same slot the Sub dept
+ *  and Top 200 strips give their severity icon. */
+const CTA_ICON: Record<ShareStanding, typeof ArrowTrendingDownIcon> = {
+  falling: ArrowTrendingDownIcon,
+  consistent: MinusIcon,
+  rising: ArrowTrendingUpIcon,
 };
 
 const LABEL: Record<ShareStanding, string> = {
@@ -80,6 +98,7 @@ const GroupShareStoreDetail = ({
     [row, rows],
   );
   const note = useMemo(() => shareDayNoteOf(days), [days]);
+  const [ctaOpen, setCtaOpen] = useState(false);
 
   const value = (n: number) =>
     isQty ? formatBigNumber(n, 0) : formatCurrencyCompact(n);
@@ -101,6 +120,7 @@ const GroupShareStoreDetail = ({
   }
 
   const tone = TONE[row.standing];
+  const Icon = CTA_ICON[row.standing];
   const name = applyStoreNumberToName(
     row.storeName,
     row.storeNumber,
@@ -130,23 +150,47 @@ const GroupShareStoreDetail = ({
         </span>
       </div>
 
-      {/* What the move was worth, and who is on the other side of it. */}
-      <div className={`rounded-md px-2.5 py-2 ${tone.card}`}>
-        <p className="text-[11.5px] text-content leading-snug">
-          It took <span className="font-bold">{pct1(row.sharePct)}</span> of the
-          group this week against the{" "}
-          <span className="font-bold">{pct1(row.usualPct)}</span> it usually
-          takes. On {value(groupTotal)} that is{" "}
-          <span className="font-bold">{signedValue(row.money)}</span>
-          {other && (
-            <>
-              {" "}
-              — and {other.storeNumber} went the other way by{" "}
-              <span className="font-bold">{signedValue(other.money)}</span>
-            </>
+      {/* The house CTA strip, to the letter: icon, what it is, a chevron,
+          and the sentence as an overlay rather than inline — opening it
+          cannot push the tiles below out from under the reader's cursor.
+          Closed on arrival, like every other one. */}
+      <div className={`relative flex-shrink-0 rounded-md ${tone.card}`}>
+        <button
+          onClick={() => setCtaOpen((v) => !v)}
+          className={`w-full flex items-center gap-1.5 px-2.5 py-1.5 rounded-md ${tone.hover} transition-colors`}
+        >
+          <Icon className={`w-3.5 h-3.5 flex-shrink-0 ${tone.text}`} />
+          <span className={`text-[12px] font-semibold ${tone.text}`}>
+            What moved, and who took it
+          </span>
+          <span className="flex-1" />
+          {ctaOpen ? (
+            <ChevronUpIcon className={`w-3 h-3 flex-shrink-0 ${tone.text}`} />
+          ) : (
+            <ChevronDownIcon className={`w-3 h-3 flex-shrink-0 ${tone.text}`} />
           )}
-          .
-        </p>
+        </button>
+        {ctaOpen && (
+          <div
+            className={`absolute top-full left-0 right-0 z-20 px-2.5 py-2 rounded-b-md shadow-lg ${tone.card}`}
+          >
+            <p className="text-[11px] text-content leading-relaxed">
+              It took <span className="font-bold">{pct1(row.sharePct)}</span> of
+              the group this week against the{" "}
+              <span className="font-bold">{pct1(row.usualPct)}</span> it usually
+              takes. On {value(groupTotal)} that is{" "}
+              <span className="font-bold">{signedValue(row.money)}</span>
+              {other && (
+                <>
+                  {" "}
+                  — and {other.storeNumber} went the other way by{" "}
+                  <span className="font-bold">{signedValue(other.money)}</span>
+                </>
+              )}
+              .
+            </p>
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-2 gap-2 mt-2">
