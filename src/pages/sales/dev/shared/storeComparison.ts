@@ -108,6 +108,16 @@ export interface GroupComparison {
   groupLy: number;
   /** The group against last year, as a sum of sums — never a mean of rates. */
   groupVsLyPct: number | null;
+  /** The same against last week. */
+  groupVsLwPct: number | null;
+  /**
+   * Which of the two the group has, LY first.
+   *
+   * The same rule each store grades by, applied to the group so the header
+   * cannot claim a period the stores are not being measured against. Null
+   * when neither exists, which is a group with no history at all.
+   */
+  groupBasis: GradeBasis;
   counted: number;
   /** Stores set aside, by reason, so the KPI tile can say why. */
   excludedBy: Record<Excluded, number>;
@@ -277,6 +287,13 @@ export const compareStores = (
   // group's figure.
   const groupVsLyPct =
     groupLy > 0 ? ((groupTy - groupLy) / groupLy) * 100 : null;
+  const groupVsLwPct =
+    groupLw > 0 ? ((groupTy - groupLw) / groupLw) * 100 : null;
+  // Last year first, last week otherwise -- the rule every row grades by. A
+  // group of stores with no last year was reading "— vs LY" while every one
+  // of them was being measured against last week.
+  const groupBasis: GradeBasis =
+    groupVsLyPct !== null ? "LY" : groupVsLwPct !== null ? "LW" : null;
 
   // Rank runs over counted stores by the active metric, biggest first.
   const order = [...counted].sort((a, b) => b.ty - a.ty);
@@ -353,6 +370,8 @@ export const compareStores = (
     groupLw,
     groupLy,
     groupVsLyPct,
+    groupVsLwPct,
+    groupBasis,
     counted: counted.length,
     excludedBy,
     low: tys.length ? tys[0] : null,

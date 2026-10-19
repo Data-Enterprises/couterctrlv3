@@ -565,11 +565,13 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
             : "bg-brand_navy"
         }`}
       >
-        <p className="text-custom-white text-[13px] font-bold leading-tight justify-self-start">
+        <p className="text-custom-white text-[14px] font-bold leading-tight justify-self-start">
           {headerStoreName}
         </p>
-        <span className="text-custom-white text-[13px] font-bold justify-self-center">
-          Sales Performance · {staticTwDate}
+        <span className="text-custom-white text-[14px] font-bold justify-self-center truncate">
+          {counterpart
+            ? `${headerStoreName} vs ${counterpart.storeName}`
+            : "Weekly Performance"}
         </span>
         <div className="flex items-center gap-3 justify-self-end">
           {/* {!loading && gapCount > 0 && (
@@ -778,10 +780,10 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
       <div data-help="store-tabs" className="flex items-center border-b border-gray-100 px-3 flex-shrink-0">
         {/* Sub depts leads: it is the tab that answers the question the
             page was opened with, and it reads the same whether or not a
-            counterpart has been chosen. Stores sits beside it as the place
-            that chooses one.
+            counterpart has been chosen. Compare sits beside it as the
+            place that chooses one.
 
-            Stores shows only when there are siblings to compare with — a
+            Compare shows only when there are siblings to compare with — a
             single-store search has no reference set, so the tab is not
             offered rather than opening on an empty one. */}
         {((hasGroup
@@ -802,7 +804,7 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
                 ? "Hourly"
                 : t === "topitems"
                   ? "Top 200"
-                  : "Stores"}
+                  : "Compare"}
           </button>
         ))}
       </div>
