@@ -204,6 +204,12 @@ export const useDeptInvestigation = (args: Args): Investigation => {
             orders: orders.mine,
             receivers: receipts.mine,
             metric,
+            // Not `orders.mine.length`: a department this store genuinely
+            // never ordered is exactly the finding "never ordered" is for.
+            // What disqualifies the claim is the WINDOW coming back with no
+            // orders for either store, which is a department delivered
+            // straight off the vendor's truck.
+            ordersKnown: orders.ok && orders.inWindow > 0,
           })
         : [],
     [sales, orders, receipts, metric],

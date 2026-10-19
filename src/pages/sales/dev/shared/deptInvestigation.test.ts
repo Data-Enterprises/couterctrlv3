@@ -112,6 +112,23 @@ describe("causeOf", () => {
     expect(causeOf(facts({ mineTy: 500, theirsTy: 100 }))).toBe("ahead");
   });
 
+  /** "Never ordered" rests on `orderedQty === 0` being a fact about the
+   *  item. When the window returned no orders at all -- a department
+   *  delivered off the vendor's truck -- every item sits at nought and the
+   *  claim is an absence of evidence, not evidence of absence. */
+  it("will not call an item never ordered with no order history to go on", () => {
+    const f = facts({ mineTy: 0, theirsTy: 400, orderedQty: 0, receivedUnits: 0 });
+    expect(causeOf(f)).toBe("never-ordered");
+    expect(causeOf(f, DEFAULT_BANDS, false)).toBe("not-carried");
+  });
+
+  /** The weaker claim is only for the case that earned it: an item this
+   *  store did sell is not "not carried", whatever the order history. */
+  it("leaves every other cause alone when orders are unknown", () => {
+    const sold = facts({ mineTy: 100, theirsTy: 400, mineUnits: 10, theirsUnits: 40, receivedUnits: 5 });
+    expect(causeOf(sold, DEFAULT_BANDS, false)).toBe(causeOf(sold));
+  });
+
   it("calls an exact tie streamlined, not ahead", () => {
     expect(causeOf(facts({ mineTy: 100, theirsTy: 100 }))).toBe("streamlined");
   });

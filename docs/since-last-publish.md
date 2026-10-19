@@ -131,6 +131,33 @@ with the other store. Nothing to chase."
 
 ---
 
+### A department nobody orders
+
+`sales_top_items`
+
+Some departments arrive without a purchase order ever being raised — the
+vendor's driver turns up and writes the invoice. Beer at 369 and 365 is one:
+31 deliveries over the window, no orders at all.
+
+The investigation was reading that as a buying failure. **Never ordered**
+rests on an item having no order behind it, and when the whole window has no
+orders every item qualifies, so fifty-one items went to the buyer as missed
+orders on the strength of no evidence either way.
+
+Those items now read **Not carried here** — the other store sells it, nothing
+here says we ever had it, and nothing says whether it was asked for. It is
+still the buyer's list and still worth working; it just no longer claims
+somebody missed an order. Where orders DO come back for the window, **Never
+ordered** means what it always meant.
+
+The Supply tab says which of three things happened rather than printing the
+most confident one: the orders could not be read, nothing was ordered over
+the window, or orders came back and none of them touch this department.
+Orders also find the department by product code now, the same way deliveries
+always have.
+
+---
+
 ---
 
 ## Tickets
