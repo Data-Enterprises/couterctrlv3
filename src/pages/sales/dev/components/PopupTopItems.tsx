@@ -51,6 +51,7 @@ import {
   type Severity,
 } from "../../../../utils/severity";
 import { formatCurrency2 } from "../../../../utils";
+import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
 
 /**
  * The store's biggest sellers, and one of them drilled into.
@@ -301,8 +302,8 @@ const PopupTopItems = ({
 
   if (topItemsLoading && !haveRows) {
     return (
-      <div className="flex items-center justify-center h-32 text-content text-sm">
-        Reading this store&rsquo;s top items&hellip;
+      <div className="relative h-full">
+        <LoadingIndicator message="Loading top items" />
       </div>
     );
   }
@@ -528,7 +529,10 @@ const PopupTopItems = ({
                   >
                     {r.ty.product_description}
                   </span>
-                  <span className="block text-[10.5px] text-content/85 tabular-nums">
+                  <span
+                    className="block text-[10.5px] text-content/85 tabular-nums truncate"
+                    title={`${r.ty.product_code} · ${deptName(r.ty)} · ${r.ty.qty.toLocaleString()} units`}
+                  >
                     {r.ty.product_code} · {deptName(r.ty)} ·{" "}
                     {r.ty.qty.toLocaleString()} units
                   </span>
@@ -776,9 +780,9 @@ const PopupTopItems = ({
                 }
               >
                 {detailLoading && (
-                  <p className="text-[11px] text-content/85">
-                    Reading what you have paid&hellip;
-                  </p>
+                  <div className="relative h-20">
+                    <LoadingIndicator message="Loading cost history" />
+                  </div>
                 )}
 
                 {!detailLoading && !detail?.cost_summary && (
