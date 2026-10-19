@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { formatBigNumber, formatCurrencyCompact } from "../../../../utils";
 import { applyStoreNumberToName } from "../shared/ledgerUtils";
+import { severityDotClass } from "../../../../utils/severity";
 import {
   byStanding,
   shareBalanceOf,
@@ -48,7 +49,7 @@ const TONE: Record<ShareStanding, { pill: string; text: string; bar: string }> =
     falling: {
       pill: "bg-delta_negative_bg text-delta_negative_text",
       text: "text-delta_negative_text",
-      bar: "bg-delta_negative_text",
+      bar: severityDotClass.critical,
     },
     consistent: {
       pill: "bg-gray-200 text-content",
@@ -58,7 +59,7 @@ const TONE: Record<ShareStanding, { pill: string; text: string; bar: string }> =
     rising: {
       pill: "bg-delta_positive_bg text-delta_positive_text",
       text: "text-delta_positive_text",
-      bar: "bg-delta_positive_text",
+      bar: severityDotClass.healthy,
     },
   };
 
@@ -82,7 +83,7 @@ type Col = "share" | "change" | "worth";
 
 /** Shared by the column heads and every row — two copies of this is a column
  *  that slides out from under its own name. */
-const COLS = "minmax(0,164px) minmax(0,1fr) 46px 48px 64px";
+const COLS = "minmax(0,150px) minmax(0,1fr) 58px 62px 64px";
 
 /** Points of the group, written as a percentage because that is what the
  *  column beside it is. */
@@ -276,13 +277,17 @@ const GroupShareBalance = ({
                       />
                     </span>
 
-                    <span className="text-right text-[12.5px] font-semibold text-content tabular-nums">
-                      {r.sharePct.toFixed(1)}%
+                    <span className="flex justify-end">
+                      <span className="text-[12.5px] font-semibold px-1.5 py-1 rounded text-center whitespace-nowrap tabular-nums bg-gray-100 text-content">
+                        {r.sharePct.toFixed(1)}%
+                      </span>
                     </span>
-                    <span
-                      className={`text-right text-[12.5px] font-semibold tabular-nums ${TONE[r.standing].text}`}
-                    >
-                      {changeText(r.changePct)}
+                    <span className="flex justify-end">
+                      <span
+                        className={`text-[12.5px] font-semibold px-1.5 py-1 rounded text-center whitespace-nowrap tabular-nums ${TONE[r.standing].pill}`}
+                      >
+                        {changeText(r.changePct)}
+                      </span>
                     </span>
                     <span
                       className={`text-right text-[12.5px] font-semibold tabular-nums ${TONE[r.standing].text}`}

@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { useAppSelector } from "../../../../hooks";
 import { formatCurrencyCompact, formatBigNumber } from "../../../../utils";
 import { applyStoreNumberToName } from "../shared/ledgerUtils";
 import {
@@ -57,6 +58,12 @@ const GroupComparisonPanel = ({
   onSelectDay,
   onSelectStore,
 }: Props) => {
+  // The panel's title names the group it is reading, because "By store" did
+  // not say which stores.
+  const groupName = useAppSelector(
+    (state) => state.search.selectedGroup?.group_name,
+  );
+
   const isQty = gradingMetric === "qty";
 
   const fmt = (v: number | null) =>
@@ -108,9 +115,9 @@ const GroupComparisonPanel = ({
       {/* The panel's own bar. By store and By department were two readings
           of one group and the share panel below is the reading that answers
           the question, so the tabs went -- the header did not. */}
-      <div className="flex items-center gap-1 px-4 py-3 flex-shrink-0 bg-brand_navy">
-        <span className="text-custom-white text-[12px] font-semibold">
-          By store
+      <div className="flex items-center justify-center px-4 py-3 flex-shrink-0 bg-brand_navy">
+        <span className="text-custom-white text-[13px] font-semibold truncate">
+          {groupName ? `${groupName} — share of sales` : "Share of group sales"}
         </span>
       </div>
 

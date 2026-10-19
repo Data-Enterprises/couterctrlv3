@@ -13,6 +13,7 @@ import {
   type ShareStanding,
 } from "../shared/shareBalance";
 import { shareDayNoteOf, type ShareDay } from "../shared/shareByDay";
+import { severityDotClass } from "../../../../utils/severity";
 
 /**
  * One store out of the balance, read on its own.
@@ -28,32 +29,24 @@ import { shareDayNoteOf, type ShareDay } from "../shared/shareByDay";
 
 /** Tone, not grade: which way share moved. The severity family grades a
  *  figure against a threshold, which is a different question. */
-const TONE: Record<
-  ShareStanding,
-  { pill: string; text: string; bar: string; card: string; hover: string }
-> = {
-  falling: {
-    pill: "bg-delta_negative_bg text-delta_negative_text",
-    text: "text-delta_negative_text",
-    bar: "bg-delta_negative_text",
-    card: "bg-delta_negative_bg",
-    hover: "hover:bg-delta_negative_text/10",
-  },
-  consistent: {
-    pill: "bg-gray-200 text-content",
-    text: "text-content",
-    bar: "bg-brand_navy",
-    card: "bg-gray-50",
-    hover: "hover:bg-gray-100",
-  },
-  rising: {
-    pill: "bg-delta_positive_bg text-delta_positive_text",
-    text: "text-delta_positive_text",
-    bar: "bg-delta_positive_text",
-    card: "bg-delta_positive_bg",
-    hover: "hover:bg-delta_positive_text/10",
-  },
-};
+const TONE: Record<ShareStanding, { text: string; bar: string; card: string }> =
+  {
+    falling: {
+      text: "text-delta_negative_text",
+      bar: severityDotClass.critical,
+      card: "bg-delta_negative_bg",
+    },
+    consistent: {
+      text: "text-content",
+      bar: "bg-brand_navy",
+      card: "bg-gray-50",
+    },
+    rising: {
+      text: "text-delta_positive_text",
+      bar: severityDotClass.healthy,
+      card: "bg-delta_positive_bg",
+    },
+  };
 
 /** What the house strip wants, in the delta family: this says which way
  *  share moved, so it is not graded and cannot use CTA_SEVERITY_CLASSES. */
