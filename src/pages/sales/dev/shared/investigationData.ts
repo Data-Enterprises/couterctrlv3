@@ -215,6 +215,25 @@ export const fetchSales = async (scope: Scope): Promise<SalesWave> => {
 /* ------------------------------------------------------------------ */
 
 export interface OrdersWave {
+  /**
+   * Whether the orders actually came back.
+   *
+   * Four different things used to arrive here as one empty array: the call
+   * threw, the API answered with an error, the window held no orders, and
+   * the department had none. The panel then said "neither store placed an
+   * order -- that is the finding, not a gap in the data", which is a claim
+   * only the last two support.
+   */
+  ok: boolean;
+  /**
+   * Order lines that came back for these two stores over the window, before
+   * the department filter.
+   *
+   * The difference between "nothing came back" and "plenty came back, none
+   * of it this department" is the whole diagnosis, and the panel could not
+   * tell them apart.
+   */
+  inWindow: number;
   /** This department's lines, which is what every figure is built from. */
   mine: AllOrder[];
   theirs: AllOrder[];
@@ -242,8 +261,20 @@ export interface OrdersWave {
  * simply loses the never-ordered/not-received distinction and falls back to
  * the causes sales alone can support. That is a thinner answer, not a wrong
  * one, and it should not take the screen down.
+ *
+ * `codes` are the department's product codes, from the sales wave that has
+ * already landed. An order line joins this department if it carries one of
+ * them OR if its own `sub_department` says so — the receipts search matches
+ * by code and finds deliveries where the department filter alone found no
+ * orders at all, and an order line's `sub_department` comes off the item
+ * master at order time while the sales rows' comes off the transaction, so
+ * the two can disagree about the same item.
  */
-export const fetchOrders = async (scope: Scope): Promise<OrdersWave> => {
+export const fetchOrders = async (
+  scope: Scope,
+  codes: string[] = [],
+): Promise<OrdersWave> => {
+  const wanted = new Set(codes);
   const supply = supplyWindow(scope.tw);
   const ids = [...new Set([scope.mine.storeid, scope.theirs.storeid])];
 
@@ -256,10 +287,33 @@ export const fetchOrders = async (scope: Scope): Promise<OrdersWave> => {
       ids,
     );
     const j: AllOrderResp = resp.data;
-    if (j.error !== 0) return { mine: [], theirs: [], allMine: [], allTheirs: [] };
+    if (j.error !== 0)
+      return {
+        ok: false,
+        inWindow: 0,
+        mine: [],
+        theirs: [],
+        allMine: [],
+        allTheirs: [],
+      };
 
     const all = j.orders ?? [];
-    const inDept = all.filter((o) => o.sub_department === scope.subDept);
+    // Two ways in, because one of them was not enough.
+    //
+    // By code first: that is how the receipts search finds the department,
+    // and it was finding deliveries on windows where this filter found no
+    // orders whatsoever.
+    //
+    // By sub_department second, COERCED rather than compared strictly. The
+    // field is TYPED as a number and this payload does not always agree --
+    // the same lesson `codesIn` below learned about `product_code`. A string
+    // "45" against a number 45 drops every order in the department, and the
+    // panel then reports, confidently, that neither store ordered anything.
+    const inDept = all.filter(
+      (o) =>
+        wanted.has(String(o.product_code ?? "").trim()) ||
+        Number(o.sub_department) === Number(scope.subDept),
+    );
     // `AllOrder` spells it `storenumber`, with no underscore.
     const forStore = (rows: AllOrder[]) => (s: Store) =>
       scopeRowsToStore(
@@ -271,13 +325,22 @@ export const fetchOrders = async (scope: Scope): Promise<OrdersWave> => {
     const whole = forStore(all);
 
     return {
+      ok: true,
+      inWindow: all.length,
       mine: dept(scope.mine),
       theirs: dept(scope.theirs),
       allMine: whole(scope.mine),
       allTheirs: whole(scope.theirs),
     };
   } catch {
-    return { mine: [], theirs: [], allMine: [], allTheirs: [] };
+    return {
+      ok: false,
+      inWindow: 0,
+      mine: [],
+      theirs: [],
+      allMine: [],
+      allTheirs: [],
+    };
   }
 };
 

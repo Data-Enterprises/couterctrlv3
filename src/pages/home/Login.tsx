@@ -23,6 +23,7 @@ import {
   setLastName,
   setRole,
   setUserLevel,
+  setTicketTech,
   setResetPassword,
   setSecurityQuestionId,
   setEmail,
@@ -207,6 +208,10 @@ const Login = () => {
           dispatch(setEmail(j.email));
           dispatch(setRole(j.role));
           dispatch(setUserLevel(j.user_level));
+          // Null for everybody who is not on the ticket desk, which is most
+          // people. Carried from here rather than fetched, so a page nobody
+          // opens costs no call.
+          dispatch(setTicketTech(j.ticket_tech ?? null));
           dispatch(setResetPassword(j.password_change_needed));
           dispatch(setSecurityQuestionId(j.security_question_id));
           dispatch(setCompanies(j.companies));

@@ -203,11 +203,15 @@ export const OWNER_LABEL: Record<Exclude<Owner, null>, string> = {
  */
 const DESK: Record<Cause, Owner> = {
   "never-ordered": "buyer",
+  // The buyer's, and a real list: the other store sells these and this one
+  // does not. What it does NOT claim is that somebody missed an order --
+  // there is no order history in the window to miss.
+  "not-carried": "buyer",
   "not-received": "vendor",
   cost: "buyer",
   "price-mix": "price",
   "not-moving": null,
-  unclassified: null,
+  streamlined: null,
   ahead: null,
 };
 
@@ -224,6 +228,8 @@ export interface Desk {
 const SAYS: Record<Cause, (n: number, money: string) => string> = {
   "never-ordered": (n, m) =>
     `${n.toLocaleString("en-US")} items with no order here in the window, worth ${m} at the other store.`,
+  "not-carried": (n, m) =>
+    `${n.toLocaleString("en-US")} items the other store sells and this one shows no sign of, worth ${m} there. No orders came back for either store over the window, so nothing here says whether they were ever asked for.`,
   "not-received": (n, m) =>
     `${n.toLocaleString("en-US")} items ordered here that never arrived, worth ${m}.`,
   cost: (n, m) =>
@@ -232,8 +238,8 @@ const SAYS: Record<Cause, (n: number, money: string) => string> = {
     `${n.toLocaleString("en-US")} items that sold here but took less per unit, worth ${m}.`,
   "not-moving": (n, m) =>
     `${n.toLocaleString("en-US")} items on the shelf here that sold less than there, worth ${m}. Nothing in this data says why.`,
-  unclassified: (n, m) =>
-    `${m} across ${n.toLocaleString("en-US")} items with no cause this data can support.`,
+  streamlined: (n, m) =>
+    `${n.toLocaleString("en-US")} items level with the other store, worth ${m}. Nothing to chase.`,
   ahead: (n, m) => `${n.toLocaleString("en-US")} items ahead, worth ${m}.`,
 };
 
@@ -400,7 +406,10 @@ interface OrderLine {
 
 interface ReceiptLine {
   product_code: string;
-  units: number;
+  /** The selling-unit count. `units` on the same line means something else
+   *  depending on how the vendor billed and is 0 on a case-billed invoice,
+   *  so nothing here reads it — see the note in `vitalsOf`. */
+  qty: number;
   ext_cost: number;
   item_return: number;
 }
@@ -434,7 +443,13 @@ const sideOf = (
     for (const l of mine) {
       // A return is not a delivery, and counting one as units arriving
       // would close a gap that is still open.
-      const units = l.item_return ? -l.units : l.units;
+      // `qty`, not `units`. On this endpoint's lines `qty` is the selling-unit
+      // count and `cases` is how many cases they came in -- which is why Item
+      // Actions derives its case size as qty / cases. `units` carries a
+      // different thing depending on how the vendor billed, and on a
+      // case-billed invoice it comes back 0, which read here as a delivery
+      // that never arrived.
+      const units = l.item_return ? -l.qty : l.qty;
       at.units += units;
       at.cost += l.ext_cost;
       receivedUnits += units;
@@ -501,10 +516,9 @@ const deliveryRecords = (
         date: r.invoice_date,
         vendor: r.vendor_name || "Unknown vendor",
         lines: lines.length,
-        units: lines.reduce(
-          (t, l) => t + (l.item_return ? -l.units : l.units),
-          0,
-        ),
+        // `qty` is the selling-unit count on these lines; `units` comes
+        // back 0 on a case-billed invoice. See the note in vitalsOf.
+        units: lines.reduce((t, l) => t + (l.item_return ? -l.qty : l.qty), 0),
         cost: lines.reduce((t, l) => t + l.ext_cost, 0),
         status: null,
         mine,
@@ -549,12 +563,12 @@ export const supplySays = (
 
   const took =
     m.deliveries > 0 && t.deliveries > 0
-      ? "Both took deliveries."
+      ? "Both received."
       : m.deliveries > 0
-        ? `Only ${us} took a delivery.`
+        ? `Only ${us} received.`
         : t.deliveries > 0
-          ? `Only ${them} took a delivery.`
-          : "Neither took a delivery in the window.";
+          ? `Only ${them} received.`
+          : "Neither received anything in the window.";
 
   const counts = [
     t.orders > 0

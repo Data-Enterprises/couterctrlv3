@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   clearFilters,
   openNew,
@@ -13,6 +13,7 @@ import TicketDetail from "./TicketDetail";
 import TicketSidebar from "./TicketSidebar";
 import NewTicketModal from "./NewTicketModal";
 import CloseTicketModal from "./CloseTicketModal";
+import TechsModal from "./TechsModal";
 
 /**
  * The Client Help Desk — one page, two views.
@@ -46,6 +47,9 @@ import CloseTicketModal from "./CloseTicketModal";
  */
 const Tickets = () => {
   const ctx = useTicketsCtx();
+  // Local, not in the slice: it is a sheet somebody opened, not a fact about
+  // the queue, and nothing else on the page needs to know it is up.
+  const [techsOpen, setTechsOpen] = useState(false);
 
   useEffect(() => {
     // Once, on open: the queue and the pickers. Reloading is explicit.
@@ -91,6 +95,15 @@ const Tickets = () => {
          * misfile rather than a way to help, so a tech does not get one.
          */
         onNew={ctx.isTech ? undefined : () => ctx.dispatch(openNew(true))}
+        /*
+         * The roster is the desk's own business.
+         *
+         * A client has no use for it and no right to it — the endpoint
+         * refuses them anyway, so a button would only be a 403 with a label.
+         * Changing it still needs the programmer level; the sheet reads
+         * `canManageTechs` and wears the right face.
+         */
+        onTechs={ctx.isTech ? () => setTechsOpen(true) : undefined}
         error={ctx.error}
       />
 
@@ -108,6 +121,15 @@ const Tickets = () => {
         </div>
       )}
 
+      {techsOpen && (
+        <TechsModal
+          canManageTechs={ctx.canManageTechs}
+          onClose={() => setTechsOpen(false)}
+          /* The assignee picker is a list of active techs, so it is wrong
+             the moment the roster changes. */
+          onChanged={ctx.loadAssignees}
+        />
+      )}
       {ctx.newOpen && <NewTicketModal ctx={ctx} />}
       {ctx.closingOpen && <CloseTicketModal ctx={ctx} />}
     </div>

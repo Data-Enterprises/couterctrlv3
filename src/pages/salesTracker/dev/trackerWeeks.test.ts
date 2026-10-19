@@ -220,3 +220,29 @@ describe("window totals", () => {
     expect(w?.dollarChange).toBe(1400);
   });
 });
+
+describe("buildWindowPlan on the last-week basis", () => {
+  it("pairs each day with the same weekday seven days back", () => {
+    const plan = buildWindowPlan("2026-09-21", "2026-09-27", "LW");
+    expect(plan.basis).toBe("LW");
+    expect(plan.byTyDate.get("2026-09-21")?.lyDate).toBe("2026-09-14");
+    expect(plan.byTyDate.get("2026-09-27")?.lyDate).toBe("2026-09-20");
+  });
+
+  it("covers the week before the window and nothing else", () => {
+    const plan = buildWindowPlan("2026-09-21", "2026-10-18", "LW");
+    expect(plan.lyStart).toBe("2026-09-14");
+    expect(plan.lyEnd).toBe("2026-10-11");
+  });
+
+  it("cannot collide, because seven days back is one-to-one", () => {
+    // The last-year pairing snaps holidays and can land two TY days on one
+    // LY date. A plain shift never can.
+    const plan = buildWindowPlan("2026-11-23", "2026-11-29", "LW");
+    expect(plan.collisions).toEqual([]);
+  });
+
+  it("still defaults to last year", () => {
+    expect(buildWindowPlan("2026-09-21", "2026-09-27").basis).toBe("LY");
+  });
+});

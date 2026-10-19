@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { XMarkIcon, ChevronRightIcon, ChevronDownIcon } from "@heroicons/react/20/solid";
 import { useHelpHighlight } from "./useHelpHighlight";
 import type { HelpAnchor, HelpContent, HelpFix, HelpGuide } from "./helpTypes";
@@ -134,7 +135,19 @@ const HelpPanel = ({ content, onClose }: HelpPanelProps) => {
         ? "bg-brand_danger_bg text-brand_danger"
         : "bg-severity_watch_bg text-severity_watch_text";
 
-  return (
+  /*
+   * Both layers go to the body, not to wherever the "?" happened to be
+   * rendered.
+   *
+   * A fixed overlay is only fixed to the viewport while no ancestor carries a
+   * transform, a filter or containment -- any of those make it the containing
+   * block instead, and trap the panel's z-index inside that ancestor's
+   * stacking context. The Sales header has neither, so the panel behaved
+   * there; the investigation mounts its "?" inside an animated bar, which is
+   * exactly the case that breaks. A portal makes where the button lives
+   * irrelevant, which is what it should have been from the start.
+   */
+  return createPortal(
     <>
       {box && (
         <div
@@ -550,7 +563,8 @@ const HelpPanel = ({ content, onClose }: HelpPanelProps) => {
           </p>
         </div>
       </aside>
-    </>
+    </>,
+    document.body,
   );
 };
 
