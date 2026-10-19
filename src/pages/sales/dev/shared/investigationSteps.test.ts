@@ -190,7 +190,7 @@ describe("5 · who fixes it", () => {
     const desks = desksOf([...sitting(2), ...weaker(2, 40, 90)], money);
     expect(desks.map((d) => d.cause)).toContain("not-moving");
     for (const d of desks) {
-      if (d.cause === "not-moving" || d.cause === "unclassified") {
+      if (d.cause === "not-moving" || d.cause === "streamlined") {
         expect(d.owner).toBeNull();
         expect(d.actionable).toBe(false);
       }

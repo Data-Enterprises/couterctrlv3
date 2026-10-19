@@ -109,12 +109,19 @@ describe("causeOf", () => {
     expect(causeOf(facts({ mineTy: 500, theirsTy: 100 }))).toBe("ahead");
   });
 
-  it("treats an exact tie as ahead rather than inventing a cause", () => {
-    expect(causeOf(facts({ mineTy: 100, theirsTy: 100 }))).toBe("ahead");
+  it("calls an exact tie streamlined, not ahead", () => {
+    expect(causeOf(facts({ mineTy: 100, theirsTy: 100 }))).toBe("streamlined");
+  });
+
+  it("wants a real gap before it calls a store ahead", () => {
+    // Inside the floor either way is level, whichever side it falls on.
+    expect(causeOf(facts({ mineTy: 103, theirsTy: 100 }))).toBe("streamlined");
+    expect(causeOf(facts({ mineTy: 100, theirsTy: 103 }))).toBe("streamlined");
+    expect(causeOf(facts({ mineTy: 120, theirsTy: 100 }))).toBe("ahead");
   });
 
   it("ignores a gap under the floor", () => {
-    expect(causeOf(facts({ mineTy: 98, theirsTy: 100 }))).toBe("unclassified");
+    expect(causeOf(facts({ mineTy: 98, theirsTy: 100 }))).toBe("streamlined");
   });
 
   it("names an item with no order and no sale 'never-ordered'", () => {

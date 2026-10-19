@@ -33,6 +33,24 @@ over the sections beneath it, so opening with it down covered the first thing
 the panel had to show, and anybody who just clicked an item already knows which
 item they clicked. "View details" brings it back.
 
+### Level is not ahead
+
+`sales_top_items`
+
+**We're ahead** was counting every item the two stores agreed on. An item that
+rang $19.17 at both stores has a gap of nothing, and the pile was reading as
+224 wins worth $3,071.99 when most of it was the same week rung twice.
+
+An item now has to be ahead by more than the $5 floor to count as ahead.
+Anything inside that floor either way is level.
+
+**No cause found** is now **Streamlined** -- the items where the two stores
+are level, or where nothing in the data separates them. It is the department's
+quiet majority, not a list of mysteries, and the hand-off says so: "items level
+with the other store. Nothing to chase."
+
+---
+
 ---
 
 ## Tickets
