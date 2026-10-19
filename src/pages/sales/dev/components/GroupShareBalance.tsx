@@ -108,7 +108,7 @@ const GroupShareBalance = ({
   const moved = Math.abs(balance.lostTotal);
 
   return (
-    <div className="flex-shrink-0 border-b border-gray-100">
+    <div data-help="share-balance" className="flex-shrink-0 border-b border-gray-100">
       <button
         onClick={() => setOpen((v) => !v)}
         className="w-full flex items-baseline gap-2.5 px-4 py-2 text-left hover:bg-gray-50 transition-colors"
@@ -128,24 +128,17 @@ const GroupShareBalance = ({
 
       {open && (
         <div className="px-4 pb-3">
-          <p className="text-[11.5px] text-content/85 leading-snug mb-2.5 max-w-[88ch]">
-            Measured against the slice each store{" "}
-            <span className="font-semibold text-content">usually</span> takes,
-            not an even split. Shares total 100%, so whatever one store loses
-            the others gain:{" "}
+          <p className="text-[11.5px] text-content/85 leading-snug mb-2.5">
             <span className="font-semibold text-content">
               {moneyText(moved)}
             </span>{" "}
             changed hands between {balance.lost.length} and{" "}
             {balance.gained.length} stores this week.
             {Math.abs(balance.imbalance) > 1 && (
-              <span
-                className="text-severity_watch_text font-semibold"
-                title="Stores graded on different periods do not cancel exactly — last year's shares and last week's each total 100% on their own."
-              >
+              <span className="text-severity_watch_text font-semibold">
                 {" "}
-                {moneyText(balance.imbalance)} of it does not cancel, because
-                these stores are not all graded on the same period.
+                {moneyText(balance.imbalance)} of it does not cancel — these
+                stores are not all graded on the same period.
               </span>
             )}
           </p>

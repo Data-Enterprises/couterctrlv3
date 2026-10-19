@@ -184,6 +184,29 @@ export const SALES_HELP: HelpContent = {
       anchor: "severity-chips",
     },
     {
+      term: "Share of group sales",
+      anchor: "share-balance",
+      def: "How big a slice each store took this week, against the slice it usually takes. Measured against its own usual size, not an even split — a store that is always 8% of its group is not failing for not being a twelfth of it.",
+    },
+    {
+      term: "Why it balances",
+      anchor: "share-balance",
+      def: "Shares always total 100%, so a store can only gain ground by taking it from the others. Whatever one store gives up, the rest pick up between them — which is why a Falling store always has a Rising one somewhere, and why the two totals match.",
+    },
+    {
+      term: "Falling, Consistent, Rising",
+      anchor: "share-balance",
+      def: "Falling lost more than half a percent of the group, Rising gained more than half, Consistent is everything in between. Half a percent is the rounding of a normal week; below it the money is real but it is not a finding.",
+    },
+    {
+      term: "Lost share while sales grew",
+      def: "Normal, and the point of the panel. If the group grew 9% and a store grew 4%, it took a smaller slice than usual even though it sold more. Sales up and share down is a store being outpaced, not a store in trouble.",
+    },
+    {
+      term: "Does not cancel",
+      def: "Shown when the two sides are not equal. It happens when some stores are measured against last year and others against last week — each set of shares totals 100% on its own, so mixing them leaves a remainder. The figure says how much.",
+    },
+    {
       term: "Store Threshold",
       def: "How far sales have to drop before a store is marked Crit. Drag the slider or type a number. The Sub dept and Hourly tabs keep their own thresholds, so changing one does not change the others.",
       anchor: "threshold",

@@ -33,6 +33,32 @@ over the sections beneath it, so opening with it down covered the first thing
 the panel had to show, and anybody who just clicked an item already knows which
 item they clicked. "View details" brings it back.
 
+### Who is picking up the slack, below the day cards
+
+`bbc2cd8a` `e6c56ec8` &middot; `sales_top_items`
+
+The group view gets a **share of group sales** panel under the day-of-week
+cards. Shares always total 100%, so a store can only gain ground by taking it
+from the others: the panel names the stores that gave ground, the stores that
+took it, and says how much money changed hands between them.
+
+Each store is measured against the slice it **usually** takes, not an even
+split, so a store that is always 8% of its group is not marked down for it.
+Last year is the yardstick when it covers the whole week; last week otherwise.
+Movement under half a percent of the group reads as **Consistent** -- real
+money, but the rounding of a normal week rather than a finding.
+
+The old by-store grid and the By department tab are gone. They were two more
+readings of the same group, and this is the reading that answers the question.
+The group total tile now rounds to a whole percent, and falls back to vs LW for
+groups with no last year on file.
+
+The explanation lives in the `?` panel: five new Sales terms cover share of
+group sales, why it balances, the three standings, why a store can lose share
+in a week its sales grew, and what the "does not cancel" figure means.
+
+---
+
 ---
 
 ## Tickets
