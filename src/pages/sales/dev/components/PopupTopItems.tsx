@@ -10,6 +10,7 @@ import {
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 import {
+  restoreTopItems,
   setTopItems,
   setTopItemsLoading,
 } from "../../../../features/dev/devSalesLedgerSlice";
@@ -20,7 +21,6 @@ import {
   TOP_ITEMS_FETCH,
   TOP_ITEMS_SHOWN,
   type ItemDetailResponse,
-  type TopItemRow,
   type TopItemsResponse,
 } from "../../../../api/topItems";
 import {
@@ -147,8 +147,15 @@ const PopupTopItems = ({
   const dispatch = useAppDispatch();
   const toast = useToast();
   const { url, token } = useAppSelector((state) => state.app);
-  const { topItems, topItemPoints, topItemsKey, topItemsLoading } =
-    useAppSelector((state) => state.dev.salesLedger);
+  const {
+    topItems,
+    topItemPoints,
+    topItemsLW,
+    topItemsLY,
+    topItemsKey,
+    topItemsLoading,
+    topItemsCache,
+  } = useAppSelector((state) => state.dev.salesLedger);
 
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<TopItemSort>(DEFAULT_TOP_ITEM_SORT);
@@ -173,15 +180,8 @@ const PopupTopItems = ({
   const [selectedCode, setSelectedCode] = useState<string | null>(null);
   const [detail, setDetail] = useState<ItemDetailResponse | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
-  const [baselines, setBaselines] = useState<{
-    key: string;
-    lw: TopItemRow[];
-    ly: TopItemRow[];
-  } | null>(null);
-
   const key = `${storeId}__${start}__${end}`;
   const haveRows = topItemsKey === key;
-  const haveBase = baselines?.key === key;
 
   /**
    * All three windows at once.
@@ -191,7 +191,15 @@ const PopupTopItems = ({
    * ever two columns on this tab.
    */
   useEffect(() => {
-    if ((haveRows && haveBase) || topItemsLoading) return;
+    if (haveRows || topItemsLoading) return;
+    // Held from an earlier visit to this store and week: three calls saved,
+    // and the tab paints on this tick rather than after three round trips.
+    // The baselines ride in the same entry, so a hit serves the comparisons
+    // too -- restoring the rows alone would send all three out again.
+    if (topItemsCache[key]) {
+      dispatch(restoreTopItems(key));
+      return;
+    }
     let live = true;
     dispatch(setTopItemsLoading(true));
     Promise.all([
@@ -218,23 +226,22 @@ const PopupTopItems = ({
         }
         dispatch(
           setTopItems({
-            rows: ty.items ?? [],
-            points: ty.price_points ?? [],
             key,
+            data: {
+              rows: ty.items ?? [],
+              points: ty.price_points ?? [],
+              lw: lw.error === 0 ? (lw.items ?? []) : [],
+              ly: ly.error === 0 ? (ly.items ?? []) : [],
+            },
           }),
         );
-        setBaselines({
-          key,
-          lw: lw.error === 0 ? (lw.items ?? []) : [],
-          ly: ly.error === 0 ? (ly.items ?? []) : [],
-        });
       })
       .catch((err: JsonError) => live && toast.error(err.message))
       .finally(() => live && dispatch(setTopItemsLoading(false)));
     return () => {
       live = false;
     };
-  }, [key, haveRows, haveBase]);
+  }, [key, haveRows]);
 
   // A code from the last store is not a code in this one.
   useEffect(() => {
@@ -280,8 +287,8 @@ const PopupTopItems = ({
   const ranked: TopItemCompared[] = useMemo(() => {
     if (!haveRows) return [];
     const top = rankBySales(topItems, TOP_ITEMS_SHOWN);
-    return compareWindows(top, baselines?.lw ?? [], baselines?.ly ?? []);
-  }, [topItems, haveRows, baselines]);
+    return compareWindows(top, topItemsLW, topItemsLY);
+  }, [topItems, haveRows, topItemsLW, topItemsLY]);
 
   const depts = useMemo(() => deptOptions(ranked), [ranked]);
 
