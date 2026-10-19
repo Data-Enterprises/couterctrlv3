@@ -30,7 +30,13 @@ import {
   fetchSubSales,
   fetchTrackerWindow,
 } from "./trackerData";
-import { buildWindowPlan, isoToDisplay, shiftDays } from "./trackerWeeks";
+import {
+  basisWord,
+  buildWindowPlan,
+  isoToDisplay,
+  shiftDays,
+  type TrackerBasis,
+} from "./trackerWeeks";
 import {
   buildSubDeptTotals,
   allDeptsTotal,
@@ -68,6 +74,7 @@ const SalesTracker = () => {
     scopeLabel,
     ty,
     ly,
+    basis,
     selectedSubDept,
     subFilter,
     loadedFrom,
@@ -118,8 +125,9 @@ const SalesTracker = () => {
       buildWindowPlan(
         formatGoliathDate(search.startDate),
         formatGoliathDate(search.endDate),
+        basis,
       ),
-    [search.startDate, search.endDate],
+    [search.startDate, search.endDate, basis],
   );
 
   /**
@@ -152,6 +160,7 @@ const SalesTracker = () => {
     const gap = buildWindowPlan(
       newStart,
       shiftDays(loadedFrom ?? plan.tyStart, -1),
+      basis,
     );
 
     dispatch(setAddingWeek(true));
@@ -303,15 +312,53 @@ const SalesTracker = () => {
         ]);
       }
 
+      /*
+       * No last year, so read the window against last week instead.
+       *
+       * Asked for only when the first answer is empty, so a store with
+       * history pays nothing for the fallback. One basis for the whole
+       * window, never a mix: the column names what it holds, and a column
+       * headed LY carrying last week on some rows is a column that lies.
+       *
+       * If last week is empty too, the basis stays LY — there is nothing to
+       * compare against either way, and saying LW would promise a comparison
+       * that is not there.
+       */
+      let used: TrackerBasis = "LY";
+      if (tyRows.length > 0 && lyRows.length === 0) {
+        const lwPlan = buildWindowPlan(
+          formatGoliathDate(search.startDate),
+          formatGoliathDate(search.endDate),
+          "LW",
+        );
+        const lwRows = await fetchLySubSales(
+          context.url,
+          context.token,
+          useGroups,
+          searchValue,
+          singleStore,
+          lwPlan.lyStart,
+          lwPlan.lyEnd,
+        );
+        if (lwRows.length > 0) {
+          lyRows = lwRows;
+          used = "LW";
+        }
+      }
+
       if (tyRows.length === 0) setFetchFailed(true);
-      dispatch(setRows({ ty: tyRows, ly: lyRows, from: plan.tyStart }));
+      dispatch(
+        setRows({ ty: tyRows, ly: lyRows, from: plan.tyStart, basis: used }),
+      );
     } catch (err) {
       setFetchFailed(true);
       setProgress("");
       toast.error(
         err instanceof Error ? err.message : "Could not load the tracker",
       );
-      dispatch(setRows({ ty: [], ly: [], from: plan.tyStart }));
+      dispatch(
+        setRows({ ty: [], ly: [], from: plan.tyStart, basis: "LY" }),
+      );
     } finally {
       dispatch(setLoading(false));
     }
@@ -380,6 +427,7 @@ const SalesTracker = () => {
             style={{ flexBasis: "52%", flexShrink: 0 }}
           >
             <TrackerHeader
+              basis={basis}
               windowLabel={windowLabel}
               scopeLabel={scopeLabel}
               weeks={plan.weeks.length}
@@ -400,7 +448,7 @@ const SalesTracker = () => {
             <div className="flex items-center justify-between gap-3 px-4 py-2 bg-custom-white border-x border-gray-100">
               <span className="text-[11px] font-medium text-content">
                 {sort === null
-                  ? "Ranked by size of change vs last year"
+                  ? `Ranked by size of change vs ${basisWord(basis)}`
                   : "Sorted by column"}
               </span>
               <TextFilter
@@ -438,7 +486,7 @@ const SalesTracker = () => {
                 />
                 <SortHeader
                   col="ly"
-                  label="LY Sales"
+                  label={`${basis} Sales`}
                   sort={sort}
                   onSort={handleSort}
                   className={`${PERF_SORT_HEADER} justify-end`}
@@ -455,7 +503,7 @@ const SalesTracker = () => {
                     ten-dollar department is not the biggest mover. */}
                 <SortHeader
                   col="dollar"
-                  label="vs LY"
+                  label={`vs ${basis}`}
                   sort={sort}
                   onSort={handleSort}
                   className={`${PERF_SORT_HEADER} justify-end`}
@@ -503,6 +551,7 @@ const SalesTracker = () => {
                     {orDash(groupTotal.ats, formatCurrency2)}
                   </span>
                   <VsLy
+                  basis={basis}
                     dollarChange={groupTotal.dollarChange}
                     pctChange={groupTotal.pctChange}
                   />

@@ -5,6 +5,7 @@
  */
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { SubSale } from "../../interfaces";
+import type { TrackerBasis } from "../../pages/salesTracker/dev/trackerWeeks";
 
 /**
  * Sales Tracker page state.
@@ -37,6 +38,16 @@ interface SalesTrackerState {
   scopeLabel: string;
   ty: SubSale[];
   ly: SubSale[];
+  /**
+   * What `ly` actually holds.
+   *
+   * Last year unless the store has none, in which case the window is read
+   * against last week instead and every column that names the comparison
+   * renames itself. Held here rather than worked out from the rows, because
+   * "no rows came back" and "we asked for a different period" are different
+   * facts and only one of them is a fallback.
+   */
+  basis: TrackerBasis;
   /** Sub-department id, or null while nothing is picked. */
   selectedSubDept: number | null;
   subFilter: string;
@@ -56,6 +67,7 @@ const initialState: SalesTrackerState = {
   scopeLabel: "",
   ty: [],
   ly: [],
+  basis: "LY",
   selectedSubDept: null,
   subFilter: "",
   expandedWeeks: [],
@@ -81,10 +93,16 @@ const salesTrackerSlice = createSlice({
     },
     setRows: (
       state,
-      action: PayloadAction<{ ty: SubSale[]; ly: SubSale[]; from: string }>,
+      action: PayloadAction<{
+        ty: SubSale[];
+        ly: SubSale[];
+        from: string;
+        basis: TrackerBasis;
+      }>,
     ) => {
       state.ty = action.payload.ty;
       state.ly = action.payload.ly;
+      state.basis = action.payload.basis;
       state.loadedFrom = action.payload.from;
     },
     /** One week's rows onto the front of what is already held. The window
@@ -115,10 +133,12 @@ const salesTrackerSlice = createSlice({
       state.expandedWeeks = action.payload;
     },
     /** Clears results for a re-search. The window length survives — it is a
-     *  preference, not a result. */
+     *  preference, not a result, and so does nothing about the basis: the
+     *  next load decides that from what comes back. */
     reQueryTracker: (state) => {
       state.ty = [];
       state.ly = [];
+      state.basis = "LY";
       state.selectedSubDept = null;
       state.subFilter = "";
       state.expandedWeeks = [];

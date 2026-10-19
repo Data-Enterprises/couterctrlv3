@@ -23,6 +23,8 @@ interface TrackerDetailProps {
  * no severity to tint it with.
  */
 const TrackerDetail = ({ row, plan, scopeLabel }: TrackerDetailProps) => {
+  // The plan knows which period it paired against; nothing else needs to.
+  const basis = plan.basis;
   const dispatch = useAppDispatch();
   const expandedWeeks = useAppSelector((s) => s.dev.salesTracker.expandedWeeks);
 
@@ -75,7 +77,7 @@ const TrackerDetail = ({ row, plan, scopeLabel }: TrackerDetailProps) => {
 
         <div className="px-3 pt-2.5 pb-2 text-center">
           <div className="text-[10px] font-bold uppercase tracking-wide text-content">
-            LY Sales
+            {basis} Sales
           </div>
           <div className="text-[10px] font-bold text-content mb-0.5">
             {md(plan.lyStart)} – {shortYear(plan.lyEnd)}
@@ -102,7 +104,7 @@ const TrackerDetail = ({ row, plan, scopeLabel }: TrackerDetailProps) => {
 
         <div className="px-3 pt-2.5 pb-2 text-center">
           <div className="text-[10px] font-bold uppercase tracking-wide text-content">
-            $ vs LY
+            $ vs {basis}
           </div>
           <div className="text-[10px] font-bold text-content mb-0.5">
             {plan.weeks.length} weeks
@@ -116,7 +118,7 @@ const TrackerDetail = ({ row, plan, scopeLabel }: TrackerDetailProps) => {
 
         <div className="px-3 pt-2.5 pb-2 text-center">
           <div className="text-[10px] font-bold uppercase tracking-wide text-content">
-            % vs LY
+            % vs {basis}
           </div>
           {/* Names how many weeks the comparison actually rests on, which is
               not always the window length — weeks with no last-year partner sit
@@ -155,6 +157,7 @@ const TrackerDetail = ({ row, plan, scopeLabel }: TrackerDetailProps) => {
             expanded={expandedWeeks.includes(w.index)}
             onToggle={(i) => dispatch(toggleWeek(i))}
             collisions={collisions}
+            basis={basis}
           />
         ))}
       </div>

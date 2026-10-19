@@ -1,4 +1,5 @@
 import { formatCurrency2 } from "../../../utils";
+import { basisWord, type TrackerBasis } from "./trackerWeeks";
 import { changeTone, signed, signedPct } from "./trackerTone";
 import { NUM } from "./trackerColumns";
 
@@ -24,6 +25,8 @@ interface VsLyProps {
    * band of dead space and the sales figure looked stranded.
    */
   variant?: "plain" | "pill";
+  /** What the figure is measured against. Names the pill and the tooltip. */
+  basis?: TrackerBasis;
 }
 
 /**
@@ -51,6 +54,7 @@ const VsLy = ({
   size = "sub",
   colored = true,
   variant = "plain",
+  basis = "LY",
 }: VsLyProps) => {
   const big = size === "sub" ? "text-[13.5px]" : "text-[12px]";
   const small = size === "sub" ? "text-[12px]" : "text-[11px]";
@@ -68,7 +72,7 @@ const VsLy = ({
         className={`inline-flex items-baseline gap-1.5 px-2 py-0.5 rounded-full bg-gray-100 ml-auto ${NUM}`}
       >
         <span className="text-[10px] font-bold uppercase tracking-wide text-content">
-          LY
+          {basis}
         </span>
         <span className={`${big} font-semibold text-content`}>—</span>
       </span>
@@ -87,11 +91,11 @@ const VsLy = ({
             "inline-flex px-2 py-0.5 rounded-full ml-auto"
           : "flex justify-end"
       }`}
-      title="Change against the same period last year"
+      title={`Change against the same period ${basisWord(basis)}`}
     >
       {isPill && (
         <span className="text-[10px] font-bold uppercase tracking-wide opacity-80">
-          LY
+          {basis}
         </span>
       )}
       <span className={`${big} font-semibold`}>
