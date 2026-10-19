@@ -4,7 +4,6 @@ import { applyStoreNumberToName } from "../shared/ledgerUtils";
 import {
   shareBalanceOf,
   shareRowsOf,
-  shareStandingCounts,
   SHARE_BAND_PCT,
   type ShareRow,
   type ShareStanding,
@@ -65,9 +64,17 @@ const TONE: Record<
 
 const BAND_WHY: Record<ShareStanding, string> = {
   falling: `lost more than ${SHARE_BAND_PCT}% of the group`,
-  consistent: `within ${SHARE_BAND_PCT}% of usual — too small to act on`,
+  consistent: `within ${SHARE_BAND_PCT}% of usual`,
   rising: `gained more than ${SHARE_BAND_PCT}% of the group`,
 };
+
+const BAND_LABEL: Record<ShareStanding, string> = {
+  falling: "Falling",
+  consistent: "Consistent",
+  rising: "Rising",
+};
+
+const stores = (n: number) => `${n} store${n === 1 ? "" : "s"}`;
 
 const ORDER: ShareStanding[] = ["falling", "consistent", "rising"];
 
@@ -104,10 +111,13 @@ const GroupShareBalance = ({
   gradingMetric,
   onOpenStore,
 }: Props) => {
-  const [open, setOpen] = useState(true);
   const [pickedKey, setPickedKey] = useState<string | null>(null);
 
   const isQty = gradingMetric === "qty";
+  const plain = (n: number) =>
+    isQty
+      ? formatBigNumber(Math.abs(n), 0)
+      : formatCurrencyCompact(Math.abs(n));
   const money = (n: number) =>
     `${n > 0 ? "+" : n < 0 ? "−" : ""}${
       isQty
@@ -117,7 +127,6 @@ const GroupShareBalance = ({
 
   const shareRows = useMemo(() => shareRowsOf(rows), [rows]);
   const balance = useMemo(() => shareBalanceOf(shareRows), [shareRows]);
-  const counts = useMemo(() => shareStandingCounts(shareRows), [shareRows]);
 
   const banded = useMemo(() => {
     const by: Record<ShareStanding, ShareRow[]> = {
@@ -139,10 +148,7 @@ const GroupShareBalance = ({
 
   // The denominator has to be the set the weekly share was worked out over,
   // or the day shares will not sit around the weekly one.
-  const countedKeys = useMemo(
-    () => new Set(shareRows.map(keyOf)),
-    [shareRows],
-  );
+  const countedKeys = useMemo(() => new Set(shareRows.map(keyOf)), [shareRows]);
 
   const days = useMemo(
     () =>
@@ -163,172 +169,151 @@ const GroupShareBalance = ({
   const moved = Math.abs(balance.lostTotal);
 
   return (
-    <div
-      data-help="share-balance"
-      className="flex-shrink-0 border-b border-gray-100"
-    >
-      <button
-        onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-baseline gap-2.5 px-4 py-2 text-left hover:bg-gray-50 transition-colors"
-      >
-        <span className="text-[13px] font-semibold text-content">
+    <div data-help="share-balance" className="flex-1 min-h-0 flex flex-col">
+      <div className="flex items-baseline gap-2.5 px-4 py-2 flex-shrink-0">
+        <span className="text-[13px] font-semibold text-content flex-shrink-0">
           Each store&rsquo;s share of group sales
         </span>
-        <span className="text-[11px] text-content/85">
-          {counts.falling} falling · {counts.consistent} consistent ·{" "}
-          {counts.rising} rising
+        <span className="text-[11.5px] text-content/85 leading-snug">
+          <span className="font-semibold text-content">{plain(moved)}</span> of
+          the group&rsquo;s week moved from {stores(balance.lost.length)} to{" "}
+          {stores(balance.gained.length)} that took more than usual.
+          {Math.abs(balance.imbalance) > 1 && (
+            <span className="text-severity_watch_text font-semibold">
+              {" "}
+              {plain(Math.abs(balance.imbalance))} of it does not cancel — these
+              stores are not all graded on the same period.
+            </span>
+          )}
         </span>
-        <span className="flex-1" />
-        <span className="text-[11px] font-semibold text-content/85">
-          {open ? "Hide" : "Show"}
-        </span>
-      </button>
+      </div>
 
-      {open && (
-        <div className="px-4 pb-3">
-          <p className="text-[11.5px] text-content/85 leading-snug mb-2.5">
-            <span className="font-semibold text-content">{money(moved)}</span>{" "}
-            changed hands between {balance.lost.length} and{" "}
-            {balance.gained.length} stores this week.
-            {Math.abs(balance.imbalance) > 1 && (
-              <span className="text-severity_watch_text font-semibold">
-                {" "}
-                {money(balance.imbalance)} of it does not cancel — these stores
-                are not all graded on the same period.
-              </span>
-            )}
-          </p>
-
-          <div className="flex gap-3">
-            <div className="flex-1 min-w-0">
-              <div className="max-h-[340px] overflow-y-auto thin-scrollbar">
-                {ORDER.filter((s) => banded[s].length > 0).map((standing) => {
-                  const band = banded[standing];
-                  const total = band.reduce((n, r) => n + r.money, 0);
-                  return (
-                    <div key={standing} className="mb-3 last:mb-0">
-                      <div
-                        className={`flex items-baseline gap-2 pb-1 border-b-2 ${TONE[standing].rule}`}
+      <div className="px-4 pb-3 flex-1 min-h-0 flex flex-col">
+        <div className="flex gap-3 flex-1 min-h-0">
+          <div className="flex-1 min-w-0 flex flex-col">
+            <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar">
+              {ORDER.filter((s) => banded[s].length > 0).map((standing) => {
+                const band = banded[standing];
+                const total = band.reduce((n, r) => n + r.money, 0);
+                return (
+                  <div key={standing} className="mb-3 last:mb-0">
+                    <div
+                      className={`flex items-baseline gap-2 pb-1 border-b-2 ${TONE[standing].rule}`}
+                    >
+                      <span
+                        className={`text-[11.5px] font-semibold px-2 py-0.5 rounded-full ${TONE[standing].pill}`}
                       >
-                        <span
-                          className={`text-[11.5px] font-semibold px-2 py-0.5 rounded-full ${TONE[standing].pill}`}
-                        >
-                          {standing === "falling"
-                            ? "Falling"
-                            : standing === "rising"
-                              ? "Rising"
-                              : "Consistent"}
-                        </span>
-                        <span className="text-[11px] text-content/85">
-                          {BAND_WHY[standing]}
-                        </span>
-                        <span className="flex-1" />
-                        <span
-                          className={`text-[12px] font-semibold tabular-nums ${TONE[standing].text}`}
-                        >
-                          {money(total)}
-                        </span>
-                      </div>
+                        {BAND_LABEL[standing]} ({band.length})
+                      </span>
+                      <span className="text-[11px] text-content/85">
+                        {BAND_WHY[standing]}
+                      </span>
+                      <span className="flex-1" />
+                      <span
+                        className={`text-[12px] font-semibold tabular-nums ${TONE[standing].text}`}
+                      >
+                        {money(total)}
+                      </span>
+                    </div>
 
-                      {band.map((r) => {
-                        const sel = picked !== null && keyOf(picked) === keyOf(r);
-                        return (
-                          <button
-                            key={keyOf(r)}
-                            onClick={() => setPickedKey(keyOf(r))}
-                            className={`w-full grid items-center gap-2 px-1 py-1.5 border-l-2 border-b border-b-gray-100 text-left transition-colors ${
-                              sel
-                                ? "bg-row_selected border-row_selected_border"
-                                : "border-transparent hover:bg-gray-50"
-                            }`}
-                            style={{
-                              gridTemplateColumns:
-                                "minmax(0,1fr) 22% 44px 44px 60px",
-                            }}
-                          >
-                            <span className="min-w-0">
-                              {/* Co-located stores share one storeid, so the
+                    {band.map((r) => {
+                      const sel = picked !== null && keyOf(picked) === keyOf(r);
+                      return (
+                        <button
+                          key={keyOf(r)}
+                          onClick={() => setPickedKey(keyOf(r))}
+                          className={`w-full grid items-center gap-2 px-1 py-1.5 border-l-2 border-b border-b-gray-100 text-left transition-colors ${
+                            sel
+                              ? "bg-row_selected border-row_selected_border"
+                              : "border-transparent hover:bg-gray-50"
+                          }`}
+                          style={{
+                            gridTemplateColumns:
+                              "minmax(0,164px) minmax(0,1fr) 46px 48px 64px",
+                          }}
+                        >
+                          <span className="min-w-0">
+                            {/* Co-located stores share one storeid, so the
                                   name resolves identically for both and only
                                   the NUMBER tells them apart. Without this the
                                   falling store wore its neighbour's name. */}
-                              <span className="block text-[12px] font-medium text-content truncate">
-                                {applyStoreNumberToName(
-                                  r.storeName,
-                                  r.storeNumber,
-                                  r.storeNumbersForId,
-                                )}
-                              </span>
-                              <span className="block text-[10.5px] text-content/85 tabular-nums">
-                                usually {r.usualPct.toFixed(1)}%
-                                {r.ownPct !== null &&
-                                  ` · own ${changeText(r.ownPct)}`}
-                              </span>
+                            <span className="block text-[12px] font-medium text-content truncate">
+                              {applyStoreNumberToName(
+                                r.storeName,
+                                r.storeNumber,
+                                r.storeNumbersForId,
+                              )}
                             </span>
+                            <span className="block text-[11.5px] text-content/85 tabular-nums">
+                              usually {r.usualPct.toFixed(1)}%
+                              {r.ownPct !== null &&
+                                ` · own ${changeText(r.ownPct)}`}
+                            </span>
+                          </span>
 
-                            {/* The tick is the slice it usually takes, on the
+                          {/* The tick is the slice it usually takes, on the
                                 same scale. The gap between bar end and tick IS
                                 the change, before anybody reads a number — so
                                 the number sits beside the bar rather than on
                                 top of it, where the tick used to strike
                                 through it. */}
-                            <span className="relative h-3.5 rounded bg-bkg block">
-                              <span
-                                className={`absolute left-0 top-0 bottom-0 rounded-l ${TONE[r.standing].bar}`}
-                                style={{ width: widthOf(r.sharePct) }}
-                              />
-                              <span
-                                className="absolute -top-0.5 -bottom-0.5 w-0.5 bg-content"
-                                style={{ left: widthOf(r.usualPct) }}
-                              />
-                            </span>
-
-                            <span className="text-right text-[11.5px] font-semibold text-content tabular-nums">
-                              {r.sharePct.toFixed(1)}%
-                            </span>
+                          <span className="relative h-3.5 rounded bg-bkg block">
                             <span
-                              className={`text-right text-[11.5px] font-semibold tabular-nums ${TONE[r.standing].text}`}
-                            >
-                              {changeText(r.changePct)}
-                            </span>
+                              className={`absolute left-0 top-0 bottom-0 rounded-l ${TONE[r.standing].bar}`}
+                              style={{ width: widthOf(r.sharePct) }}
+                            />
                             <span
-                              className={`text-right text-[11.5px] font-semibold tabular-nums ${TONE[r.standing].text}`}
-                            >
-                              {money(r.money)}
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  );
-                })}
-              </div>
+                              className="absolute -top-0.5 -bottom-0.5 w-0.5 bg-content"
+                              style={{ left: widthOf(r.usualPct) }}
+                            />
+                          </span>
 
-              <div className="flex items-center gap-3.5 pt-2 text-[10.5px] text-content/85">
-                <span className="flex items-center gap-1.5">
-                  <span className="w-3.5 h-2 rounded-sm bg-brand_navy" />
-                  share this week
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <span className="w-0.5 h-3 bg-content" />
-                  the slice it usually takes
-                </span>
-                <span>bars run 0–{BAR_CEILING_PCT}% of group sales</span>
-              </div>
+                          <span className="text-right text-[11.5px] font-semibold text-content tabular-nums">
+                            {r.sharePct.toFixed(1)}%
+                          </span>
+                          <span
+                            className={`text-right text-[11.5px] font-semibold tabular-nums ${TONE[r.standing].text}`}
+                          >
+                            {changeText(r.changePct)}
+                          </span>
+                          <span
+                            className={`text-right text-[11.5px] font-semibold tabular-nums ${TONE[r.standing].text}`}
+                          >
+                            {money(r.money)}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                );
+              })}
             </div>
 
-            {/* One store out of the balance: what its move was worth, who took
-                the other side, and which days it happened on. */}
-            <GroupShareStoreDetail
-              row={picked}
-              rows={shareRows}
-              groupTotal={groupTotal}
-              days={days}
-              isQty={isQty}
-              onOpenReport={() => picked && onOpenStore(picked.storeid)}
-            />
+            <div className="flex items-center gap-3.5 pt-2 flex-shrink-0 text-[10.5px] text-content/85">
+              <span className="flex items-center gap-1.5">
+                <span className="w-3.5 h-2 rounded-sm bg-brand_navy" />
+                share this week
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-0.5 h-3 bg-content" />
+                the slice it usually takes
+              </span>
+              <span>bars run 0–{BAR_CEILING_PCT}% of group sales</span>
+            </div>
           </div>
+
+          {/* One store out of the balance: what its move was worth, who took
+                the other side, and which days it happened on. */}
+          <GroupShareStoreDetail
+            row={picked}
+            rows={shareRows}
+            groupTotal={groupTotal}
+            days={days}
+            isQty={isQty}
+            onOpenReport={() => picked && onOpenStore(picked.storeid)}
+          />
         </div>
-      )}
+      </div>
     </div>
   );
 };

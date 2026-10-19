@@ -88,7 +88,7 @@ const GroupShareStoreDetail = ({
 
   if (!row) {
     return (
-      <aside className="w-[244px] flex-shrink-0 border-l border-gray-100 pl-3 pt-1">
+      <aside className="w-[256px] flex-shrink-0 border-l border-gray-100 pl-3 pt-1">
         <div className="text-[10px] font-bold uppercase tracking-wide text-content/85">
           Selected store
         </div>
@@ -115,7 +115,7 @@ const GroupShareStoreDetail = ({
     `${ceiling > 0 ? Math.min(100, (pct / ceiling) * 100) : 0}%`;
 
   return (
-    <aside className="w-[244px] flex-shrink-0 border-l border-gray-100 pl-3 flex flex-col">
+    <aside className="w-[256px] flex-shrink-0 border-l border-gray-100 pl-3 flex flex-col overflow-y-auto thin-scrollbar">
       <div className="text-[10px] font-bold uppercase tracking-wide text-content/85">
         Selected store
       </div>
@@ -133,8 +133,8 @@ const GroupShareStoreDetail = ({
       {/* What the move was worth, and who is on the other side of it. */}
       <div className={`rounded-md px-2.5 py-2 ${tone.card}`}>
         <p className="text-[11.5px] text-content leading-snug">
-          It took <span className="font-bold">{pct1(row.sharePct)}</span> of
-          the group this week against the{" "}
+          It took <span className="font-bold">{pct1(row.sharePct)}</span> of the
+          group this week against the{" "}
           <span className="font-bold">{pct1(row.usualPct)}</span> it usually
           takes. On {value(groupTotal)} that is{" "}
           <span className="font-bold">{signedValue(row.money)}</span>
@@ -229,7 +229,10 @@ const GroupShareStoreDetail = ({
           {note.worst && (
             <p className="text-[11px] text-content/85 leading-snug mt-1.5 rounded-md bg-gray-50 px-2.5 py-2">
               {note.runFrom && note.runFrom.date !== note.worst.date ? (
-                <>Under its usual share from {note.runFrom.label} on, worst on </>
+                <>
+                  Under its usual share from {note.runFrom.label} on, worst
+                  on{" "}
+                </>
               ) : (
                 <>Lightest on </>
               )}

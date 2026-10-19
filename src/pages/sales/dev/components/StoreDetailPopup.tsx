@@ -565,19 +565,14 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
             : "bg-brand_navy"
         }`}
       >
-        <p className="text-custom-white text-[13px] font-bold leading-tight justify-self-start">
+        <p className="text-custom-white text-[14px] font-bold leading-tight justify-self-start">
           {headerStoreName}
         </p>
-        <div className="justify-self-center text-center min-w-0">
-          <div className="text-custom-white text-[13px] font-bold truncate">
-            {counterpart
-              ? `${headerStoreName} vs ${counterpart.storeName}`
-              : "Sales Performance"}
-          </div>
-          <div className="text-custom-white/85 text-[10px] font-semibold">
-            {counterpart ? `Sales Performance · ${staticTwDate}` : staticTwDate}
-          </div>
-        </div>
+        <span className="text-custom-white text-[14px] font-bold justify-self-center truncate">
+          {counterpart
+            ? `${headerStoreName} vs ${counterpart.storeName}`
+            : "Weekly Performance"}
+        </span>
         <div className="flex items-center gap-3 justify-self-end">
           {/* {!loading && gapCount > 0 && (
             <button

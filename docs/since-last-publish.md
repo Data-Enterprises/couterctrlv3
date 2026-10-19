@@ -78,6 +78,10 @@ The **Stores** tab in a store's report is now called **Compare**, which is what
 it is for. With a store picked there, the title bar says which two stores are
 being compared instead of repeating the page name.
 
+The title bar reads **Weekly Performance** and has dropped the small date range
+under it -- the week is already written across the day strip and both
+comparison tiles below it.
+
 ---
 
 ---
