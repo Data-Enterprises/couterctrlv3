@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
+  counterweightOf,
   shareBalanceOf,
   shareRowsOf,
   shareStandingCounts,
@@ -176,5 +177,53 @@ describe("shareStandingCounts", () => {
         mk("rising"),
       ]),
     ).toEqual({ falling: 1, consistent: 2, rising: 1 });
+  });
+});
+
+describe("counterweightOf", () => {
+  const row = (storeid: number, money: number): ShareRow => ({
+    storeid,
+    storeName: `Store ${storeid}`,
+    storeNumber: String(storeid),
+    storeNumbersForId: [String(storeid)],
+    sharePct: 10,
+    usualPct: 10,
+    changePct: money / 1000,
+    money,
+    standing: shareStandingOf(money / 1000),
+    ownPct: 0,
+  });
+
+  it("pairs a faller with the riser closest to its size", () => {
+    const fell = row(370, -11_900);
+    const rows = [fell, row(365, 11_800), row(368, 1_000)];
+    expect(counterweightOf(fell, rows)?.storeid).toBe(365);
+  });
+
+  it("pairs a riser with a faller, the other way round", () => {
+    const rose = row(365, 11_800);
+    const rows = [row(370, -11_900), rose, row(368, -200)];
+    expect(counterweightOf(rose, rows)?.storeid).toBe(370);
+  });
+
+  it("never pairs a store with itself", () => {
+    const fell = row(370, -500);
+    expect(counterweightOf(fell, [fell])).toBeNull();
+  });
+
+  it("tells co-located stores apart by their number", () => {
+    const a: ShareRow = { ...row(370, -500), storeNumber: "370" };
+    const b: ShareRow = { ...row(370, 500), storeNumber: "371" };
+    expect(counterweightOf(a, [a, b])?.storeNumber).toBe("371");
+  });
+
+  it("has nobody to pair a store that did not move", () => {
+    const flat = row(368, 0);
+    expect(counterweightOf(flat, [flat, row(365, 900)])).toBeNull();
+  });
+
+  it("has nobody to pair when the whole group went one way", () => {
+    const fell = row(370, -500);
+    expect(counterweightOf(fell, [fell, row(365, -900)])).toBeNull();
   });
 });

@@ -4,6 +4,7 @@ import { applyStoreNumberToName } from "../shared/ledgerUtils";
 import {
   compareForView,
   groupDays,
+  scopeToDay,
   type Excluded,
 } from "../shared/storeComparison";
 import PopupDaySidebar from "./PopupDaySidebar";
@@ -62,6 +63,14 @@ const GroupComparisonPanel = ({
     v === null ? "—" : isQty ? formatBigNumber(v, 0) : formatCurrencyCompact(v);
 
   const days = useMemo(() => groupDays(rows), [rows]);
+
+  // The same narrowing compareForView applies, in the open, so the share
+  // panel's day strip covers the window its figures do. On a selected day it
+  // carries one day, and the strip stands itself down.
+  const scoped = useMemo(
+    () => (selectedDate ? scopeToDay(rows, selectedDate) : rows),
+    [rows, selectedDate],
+  );
 
   // A day selection narrows the rows before any of the comparison runs, so
   // every contribution, expectation and verdict below belongs to that day alone —
@@ -173,8 +182,10 @@ const GroupComparisonPanel = ({
           fetch and cannot drift from the grid beside it. */}
       <GroupShareBalance
         rows={group.rows}
-        selectedStoreId={null}
-        onSelectStore={(storeid) => {
+        ledgerRows={scoped}
+        groupTotal={group.groupTy}
+        gradingMetric={gradingMetric}
+        onOpenStore={(storeid) => {
           const original = rows.find((x) => x.storeid === storeid);
           if (original) onSelectStore(original);
         }}

@@ -154,3 +154,34 @@ export const shareStandingCounts = (
   rows.forEach((r) => (out[r.standing] += 1));
   return out;
 };
+
+/**
+ * The store on the other side of the balance that most nearly matches this
+ * one's move.
+ *
+ * Shares total 100%, so a store that gave up ground gave it to somebody. This
+ * names the likeliest counterpart — the opposite mover closest in size — and
+ * nothing more: it is an arithmetic pairing, not a claim that one store's
+ * customers walked to the other.
+ *
+ * Null for a store that held its ground, which has nothing to pair with.
+ */
+export const counterweightOf = (
+  row: ShareRow,
+  rows: ShareRow[],
+): ShareRow | null => {
+  if (row.money === 0) return null;
+  const wanted = Math.abs(row.money);
+  const others = rows.filter(
+    (r) =>
+      !(r.storeid === row.storeid && r.storeNumber === row.storeNumber) &&
+      Math.sign(r.money) === -Math.sign(row.money),
+  );
+  if (!others.length) return null;
+  return others.reduce((best, r) =>
+    Math.abs(Math.abs(r.money) - wanted) <
+    Math.abs(Math.abs(best.money) - wanted)
+      ? r
+      : best,
+  );
+};

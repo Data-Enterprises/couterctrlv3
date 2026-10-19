@@ -53,9 +53,30 @@ readings of the same group, and this is the reading that answers the question.
 The group total tile now rounds to a whole percent, and falls back to vs LW for
 groups with no last year on file.
 
-The explanation lives in the `?` panel: five new Sales terms cover share of
+The explanation lives in the `?` panel: seven new Sales terms cover share of
 group sales, why it balances, the three standings, why a store can lose share
-in a week its sales grew, and what the "does not cancel" figure means.
+in a week its sales grew, what the "does not cancel" figure means, the day
+strip and the store named on the other side of a move.
+
+Clicking a store in the list opens a panel beside it rather than leaving the
+page. It says what that store's move was worth against the group's week, names
+the store that went the other way by about the same amount, and breaks the
+week into days with a dashed line at the share the store usually takes -- so a
+store that was level until Thursday and gave the week away on Friday reads
+differently from one that was light all week. **View store report** opens the
+store's own report from there.
+
+The share figures moved out of the bars and into their own column. The tick
+marking the usual share used to strike through the number printed on top of
+it, which made some rows hard to read.
+
+### Two stores in the title bar
+
+`sales_top_items`
+
+The **Stores** tab in a store's report is now called **Compare**, which is what
+it is for. With a store picked there, the title bar says which two stores are
+being compared instead of repeating the page name.
 
 ---
 

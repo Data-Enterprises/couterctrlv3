@@ -207,6 +207,16 @@ export const SALES_HELP: HelpContent = {
       def: "Shown when the two sides are not equal. It happens when some stores are measured against last year and others against last week — each set of shares totals 100% on its own, so mixing them leaves a remainder. The figure says how much.",
     },
     {
+      term: "Share by day",
+      anchor: "share-balance",
+      def: "The selected store's share of the group on each day of the week, with the dashed line at the share it usually takes. A bar under the line is a day it came up light. Losing ground on the week's biggest day costs more than losing it on a Tuesday, and the weekly figure cannot tell you which happened.",
+    },
+    {
+      term: "The other side of it",
+      anchor: "share-balance",
+      def: "The store named beside the selected one moved the opposite way by about the same amount. Shares total 100%, so the pairing is arithmetic — it says the money is accounted for, not that one store's customers drove to the other.",
+    },
+    {
       term: "Store Threshold",
       def: "How far sales have to drop before a store is marked Crit. Drag the slider or type a number. The Sub dept and Hourly tabs keep their own thresholds, so changing one does not change the others.",
       anchor: "threshold",
