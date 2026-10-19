@@ -12,6 +12,7 @@ import {
 } from "../shared/storeComparison";
 import PopupDaySidebar from "./PopupDaySidebar";
 import StoreColFilter from "./StoreColFilter";
+import GroupShareBalance from "./GroupShareBalance";
 import SortHeader, { PERF_SORT_HEADER } from "../../../../components-dev/SortHeader";
 import { useTriStateSort } from "../../../../utils/useTriStateSort";
 import type { LedgerRowData } from "./LedgerRow";
@@ -254,6 +255,20 @@ const GroupComparisonPanel = ({
           onSelect={onSelectDay}
         />
       </div>
+
+      {/* Share of the group, as a balance. Below the day cards and above
+          the grid: it answers "who picked up what this store dropped", which
+          is the question the grid's own standing column prompts and cannot
+          answer on a single row. Draws from the same rows, so it costs no
+          fetch and cannot drift from the grid beside it. */}
+      <GroupShareBalance
+        rows={group.rows}
+        selectedStoreId={null}
+        onSelectStore={(storeid) => {
+          const original = rows.find((x) => x.storeid === storeid);
+          if (original) onSelectStore(original);
+        }}
+      />
 
       <div className="flex-1 min-h-0 flex overflow-hidden">
         <div className="flex-1 min-w-0 overflow-auto thin-scrollbar">
