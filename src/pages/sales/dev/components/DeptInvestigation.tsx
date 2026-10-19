@@ -2155,9 +2155,11 @@ const SupplyPanel = ({
               >
                 {!orders.ok
                   ? "The orders did not come back for this window, so this panel cannot say whether either store ordered. Deliveries below are unaffected — they are read separately."
-                  : supply.orders.length === 0
-                    ? "Neither store placed an order in this department over the window. That is the finding, not a gap in the data."
-                    : "No order in the window carries any of those codes."}
+                  : supply.orders.length > 0
+                    ? "No order in the window carries any of those codes."
+                    : orders.inWindow === 0
+                      ? "Neither store placed an order of any kind over the window. That is the finding, not a gap in the data."
+                      : `${orders.inWindow.toLocaleString("en-US")} order lines came back for these two stores over the window and none of them is in this department — by product code or by the department the order itself names.`}
               </p>
             )}
           </div>
