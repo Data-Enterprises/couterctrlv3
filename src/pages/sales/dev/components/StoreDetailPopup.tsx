@@ -65,7 +65,6 @@ import { useCriticalReport } from "../../../../hooks/useCriticalReport";
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
 import type { StoreSelection } from "./LedgerRow";
 import { formatPct, pillClass, severityHeaderBgClass } from "./utils";
-import GhostFlames from "./GhostFlames";
 
 interface StoreDetailPopupProps {
   selection: StoreSelection;
@@ -122,7 +121,6 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
   const [loading, setLoading] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
   // const [gapReportOpen, setGapReportOpen] = useState(false);
-  const [showFlames, setShowFlames] = useState(false);
   const openCriticalReport = useCriticalReport();
   // The same item threshold the sub-dept list grades against, so the button's
   // definition of critical is the one already on screen.
@@ -130,16 +128,6 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
     useAppSelector((state) => state.dev.salesLedger.itemThreshold) ?? 9;
   // const [catLoading, setCatLoading] = useState(false);
   // const [catFetchedFor, setCatFetchedFor] = useState<number | null>(null);
-
-  useEffect(() => {
-    if (selection.severity !== "critical") {
-      setShowFlames(false);
-      return;
-    }
-    setShowFlames(true);
-    const timer = setTimeout(() => setShowFlames(false), 5000);
-    return () => clearTimeout(timer);
-  }, [selection.storeId, selection.severity]);
 
   const twStart = addDays(search.singleDate, -6).toISOString().split("T")[0];
   const twEnd = formatGoliathDate(search.singleDate);
@@ -579,7 +567,6 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
             : "bg-brand_navy"
         }`}
       >
-        {showFlames && <GhostFlames />}
         <p className="text-custom-white text-[13px] font-bold leading-tight justify-self-start">
           {headerStoreName}
         </p>
