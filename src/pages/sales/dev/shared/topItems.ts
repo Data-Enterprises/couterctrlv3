@@ -523,3 +523,29 @@ export const topItemsTotals = (rows: TopItemCompared[]) => {
     vsLY: anyLy && ly !== 0 ? ((ty - ly) / Math.abs(ly)) * 100 : null,
   };
 };
+
+/**
+ * What share of a period's net sales the top 200 carried.
+ *
+ * The figure the three tiles are really about. Comparing the top 200's
+ * DOLLARS across periods says as much about how the store's week went as
+ * about the items: a week up 10% lifts the top 200 with it and the tile
+ * reads as a change in the list when nothing about the list changed. The
+ * contribution divides that out — it asks how much of the week these items
+ * carried, which is a fact about the list.
+ *
+ * Null when the period has no sales to be a share of. Not zero: a period
+ * with nothing on file has no contribution, and 0% would read as a week the
+ * top 200 sold nothing in.
+ */
+export const contributionOf = (
+  top: number | null,
+  net: number | null,
+): number | null =>
+  top === null || net === null || net <= 0 ? null : (top / net) * 100;
+
+/** Two contributions, in points. Null unless both sides have one. */
+export const contributionGap = (
+  now: number | null,
+  then: number | null,
+): number | null => (now === null || then === null ? null : now - then);

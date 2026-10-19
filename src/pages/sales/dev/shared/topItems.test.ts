@@ -1,5 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
+  contributionGap,
+  contributionOf,
   avgPrice,
   deptRollups,
   deptSeverity,
@@ -496,5 +498,33 @@ describe("topItemInsight", () => {
     // as a double negative.
     const got = topItemInsight(row(), [{ price: 8.99, units: 46 }]);
     expect(got.detail).not.toContain("-$");
+  });
+});
+
+describe("contributionOf", () => {
+  it("is the share of the period's net sales", () => {
+    expect(contributionOf(47_426.29, 116_555.61)).toBeCloseTo(40.69, 2);
+  });
+
+  it("has no answer without a period to be a share of", () => {
+    expect(contributionOf(1000, 0)).toBeNull();
+    expect(contributionOf(1000, null)).toBeNull();
+    expect(contributionOf(null, 1000)).toBeNull();
+  });
+
+  it("refuses a negative denominator rather than flipping the sign", () => {
+    expect(contributionOf(1000, -500)).toBeNull();
+  });
+});
+
+describe("contributionGap", () => {
+  it("is the difference in points", () => {
+    expect(contributionGap(41, 38)).toBe(3);
+    expect(contributionGap(38, 41)).toBe(-3);
+  });
+
+  it("needs both sides", () => {
+    expect(contributionGap(41, null)).toBeNull();
+    expect(contributionGap(null, 38)).toBeNull();
   });
 });

@@ -835,6 +835,15 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
           <PopupTopItems
             storeId={selection.storeId}
             locations={selection.storeNumbersForId}
+            /* The whole week at this store, never the day-scoped header
+               figures: the Top 200 is always the week, so a share worked out
+               against one selected day would be a fraction of the wrong
+               denominator. */
+            netSales={{
+              ty: weekTotals.twTotal,
+              lw: weekTotals.hasLW ? weekTotals.lwTotal : null,
+              ly: weekTotals.hasLY ? weekTotals.lyTotal : null,
+            }}
             start={twStart}
             end={twEnd}
             lwStart={lwStart}

@@ -236,6 +236,11 @@ export const SALES_HELP: HelpContent = {
       def: "The store's 200 biggest items by sales for the week shown. Ranked on money, not units, so an expensive item that sells a few still appears. Excluded sub departments are left out, so it agrees with the rest of the page.",
     },
     {
+      term: "% of net sales",
+      def: "How much of the store's week these 200 items carried. The three tiles compare that share rather than the dollars: a week up 10% lifts the top 200 with it, and comparing dollars then reads as a change in the list when nothing about the list moved. The pill is the difference in those shares.",
+      anchor: "store-tabs",
+    },
+    {
       term: "Both locations",
       def: "Some stores share one store id — two operations at one site, told apart only by their store number. The Top 200 reads by store id, so on those it answers for both at once and says so above the list. Every other tab narrows to the one location, which is why its total can be smaller than the Top 200's.",
       anchor: "store-tabs",

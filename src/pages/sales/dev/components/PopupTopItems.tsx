@@ -32,6 +32,8 @@ import {
   deptRollups,
   deptSeverity,
   deptSeverityCounts,
+  contributionGap,
+  contributionOf,
   topItemsTotals,
   deltaPct,
   deltaPoints,
@@ -140,6 +142,7 @@ const inFlight = new Set<string>();
 const PopupTopItems = ({
   storeId,
   locations,
+  netSales,
   start,
   end,
   lwStart,
@@ -152,6 +155,15 @@ const PopupTopItems = ({
   /** Every store_number under this storeid. More than one means co-located
    *  stores, which this endpoint cannot tell apart. */
   locations: string[];
+  /**
+   * The store's own net sales for each of the three periods, whole week.
+   *
+   * The tiles report the top 200 as a SHARE of these rather than comparing
+   * their dollars: a week up 10% lifts the top 200 with it, and a tile that
+   * says +10% then reads as a change in the list when nothing about the list
+   * moved.
+   */
+  netSales: { ty: number; lw: number | null; ly: number | null };
   /** yyyy-mm-dd. The week the popup is showing, and its two baselines. */
   start: string;
   end: string;
@@ -316,6 +328,16 @@ const PopupTopItems = ({
    *  call and cannot disagree with the list beside it. */
   const rollups = useMemo(() => deptRollups(ranked), [ranked]);
   const totals = useMemo(() => topItemsTotals(ranked), [ranked]);
+
+  /** The share of each period's week these items carried. */
+  const share = useMemo(
+    () => ({
+      ty: contributionOf(totals.ty, netSales.ty),
+      lw: contributionOf(totals.lw, netSales.lw),
+      ly: contributionOf(totals.ly, netSales.ly),
+    }),
+    [totals, netSales],
+  );
   const sevCounts = useMemo(
     () => deptSeverityCounts(rollups, threshold),
     [rollups, threshold],
@@ -652,10 +674,12 @@ const PopupTopItems = ({
                     {dayText(start)} &ndash; {dayText(end)}
                   </div>
                   <div className="text-[14px] font-bold text-content tabular-nums">
-                    {money(totals.ty)}{" "}
-                    <span className="text-[11px] text-content/85">
-                      {totals.tyUnits.toLocaleString()} u
-                    </span>
+                    {money(totals.ty)}
+                  </div>
+                  <div className="text-[10.5px] text-content/85 tabular-nums">
+                    {share.ty === null
+                      ? "—"
+                      : `${share.ty.toFixed(1)}% of net sales`}
                   </div>
                 </div>
                 {(
@@ -665,19 +689,19 @@ const PopupTopItems = ({
                       lwStart,
                       lwEnd,
                       totals.lw,
-                      totals.lwUnits,
-                      totals.vsLW,
+                      share.lw,
+                      contributionGap(share.ty, share.lw),
                     ],
                     [
                       "vs Last Year",
                       lyStart,
                       lyEnd,
                       totals.ly,
-                      totals.lyUnits,
-                      totals.vsLY,
+                      share.ly,
+                      contributionGap(share.ty, share.ly),
                     ],
                   ] as const
-                ).map(([label, from, to, value, units, pct]) => (
+                ).map(([label, from, to, value, pct, gap]) => (
                   <div key={label} className="px-4 pt-2.5 pb-2 text-center">
                     <div className="text-[10px] font-bold uppercase tracking-wide text-content">
                       {label}
@@ -687,20 +711,30 @@ const PopupTopItems = ({
                     </div>
                     <div className="flex items-baseline justify-center gap-2">
                       <span className="text-[14px] font-bold text-content tabular-nums">
-                        {money(value)}{" "}
-                        {units !== null && (
-                          <span className="text-[11px] text-content/85">
-                            {units.toLocaleString()} u
-                          </span>
-                        )}
+                        {money(value)}
                       </span>
-                      {pct !== null && (
+                      {/* Points of contribution, not a change in dollars. It
+                          is a direction, not a grade: a threshold built for a
+                          sales percentage would call three points of share a
+                          rounding error. */}
+                      {gap !== null && (
                         <span
-                          className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${pillClass(pct, threshold)}`}
+                          className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${
+                            gap > 0
+                              ? "bg-delta_positive_bg text-delta_positive_text"
+                              : gap < 0
+                                ? "bg-delta_negative_bg text-delta_negative_text"
+                                : "bg-gray-100 text-content"
+                          }`}
                         >
-                          {pctText(pct)}
+                          {`${gap > 0 ? "+" : gap < 0 ? "−" : ""}${Math.abs(gap).toFixed(1)}%`}
                         </span>
                       )}
+                    </div>
+                    <div className="text-[10.5px] text-content/85 tabular-nums">
+                      {pct === null
+                        ? "—"
+                        : `${pct.toFixed(1)}% of net sales`}
                     </div>
                   </div>
                 ))}
