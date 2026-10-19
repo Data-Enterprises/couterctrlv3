@@ -51,6 +51,27 @@ with the other store. Nothing to chase."
 
 ---
 
+### The investigation gets a header and a help panel
+
+`sales_top_items`
+
+The header is three zones. The way out, the department and the week it reads
+on the left; the two stores in the middle, in bold, because that is the only
+part that differs between two open investigations; the lamps, the export and
+the **?** on the right.
+
+The week is written **10/12/2026 – 10/18/2026** rather than "week ending",
+and Export CSV is a download icon. Disabled, it says why: nothing to export
+yet.
+
+The **?** opens help written for this report rather than borrowed from Sales:
+how the four tabs are meant to be worked, every cause including the two new
+ones, the difference between Ordered and Received, and why the supply window
+is longer than the sales week. It can point at the tabs, the cause chips, the
+date range and the export button on the screen itself.
+
+---
+
 ### A department nobody orders
 
 `sales_top_items`
