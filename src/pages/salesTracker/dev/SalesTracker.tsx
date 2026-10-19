@@ -90,20 +90,21 @@ const SalesTracker = () => {
   const searchValue = isGroup ? search.lastGroup : search.lastStore;
 
   /**
-   * `subs/sales_tracker` instead of two paged `subs/sub_sales` reads.
+   * EXPERIMENT, PARKED. `subs/sales_tracker` instead of two paged
+   * `subs/sub_sales` reads.
    *
-   * On dev only, because that is where the endpoint is. Prod would 404, and
-   * the API toggle is reachable by anyone at level 7, so the flag has to ask
-   * which backend is selected rather than assume.
+   * Off outright rather than gated on `apiEnv`, because the endpoint is not on
+   * the API yet — on dev it would 404, and the API toggle is reachable by
+   * anyone at level 7. A hard `false` means the branch is publish-safe no
+   * matter which backend is selected.
    *
-   * What it buys: 5 stores over 12 weeks went from ~52s across two paged
-   * reads to ~7s across 12 pooled requests, on the same ~1.15MB — the cost
-   * was query time, never payload.
-   *
-   * Delete the flag and the `fetchSubSales` path once the endpoint ships to
-   * prod as well.
+   * To resume the comparison, change this to `context.apiEnv === "dev"`. The
+   * measurements it produced: 5 stores over 12 weeks went from ~52s across two
+   * paged reads to ~7s across 12 pooled requests, on the same ~1.15MB — the
+   * cost was query time, never payload. Delete the flag and the `fetchSubSales`
+   * path once the endpoint ships for good.
    */
-  const useTrackerEndpoint = context.apiEnv === "dev";
+  const useTrackerEndpoint = false;
   const scope = {
     url: context.url,
     token: context.token,
