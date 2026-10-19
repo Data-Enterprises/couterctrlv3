@@ -9,7 +9,7 @@ import { useAppSelector, useAppDispatch } from "../../hooks";
 import { categoriesFor } from "./utils";
 import { legacyEntryPath } from "../../constants/legacyPages";
 import { COMING_SOON_CATEGORY } from "../../utils/comingSoon";
-import { resetNav, setIsNavOpen, setLastRoute } from "../../features/navSlice";
+import { setIsNavOpen, setLastRoute } from "../../features/navSlice";
 import {
   openReportIssue,
   resetAppSlice,
@@ -17,28 +17,6 @@ import {
   setUiMode,
   SHOW_API_ENV_SWITCH,
 } from "../../features/appSlice";
-import { resetUserSlice } from "../../features/userSlice";
-import { resetSalesSlice } from "../../features/salesSlice";
-import { resetStoreSlice } from "../../features/storeSlice";
-import { resetGroupState } from "../../features/groupSlice";
-import { resetGroupsPageState } from "../../features/groupsPageSlice";
-import { resetUsersSlice } from "../../features/usersSlice";
-import { resetUpcState } from "../../features/upcSlice";
-import { resetSearchSlice } from "../../features/searchSlice";
-import { resetForgotPasswordSlice } from "../../features/forgotPasswordSlice";
-import { resetCashierSlice } from "../../features/lossPreventionSlice";
-import { resetLookupSlice } from "../../features/itemLookupSlice";
-import { resetQsSlice } from "../../features/qsSlice";
-import { resetForecastSlice } from "../../features/forecastSlice";
-import { resetUpcsSlice } from "../../features/upcUploadSlice";
-import { resetReceiverSlice } from "../../features/receiversSlice";
-import { resetCouponsSlice } from "../../features/couponSlice";
-import { resetLedger } from "../../features/salesLedgerSlice";
-import { resetOrdersState } from "../../features/ordersSlice";
-import { resetCashierState } from "../../features/cashiersSlice";
-import { resetSalesPerf } from "../../features/salesPerfSlice";
-import { resetItemPerf } from "../../features/itemPerfSlice";
-import { resetEventPerf } from "../../features/eventPerfSlice";
 import { setUserPrefs } from "../../api/user";
 import { useToast } from "../toasts/hooks/useToast";
 import type { JsonError } from "../../interfaces";
@@ -218,36 +196,20 @@ const TitleBar = () => {
     });
   }, [nav.lastRoute]);
 
+  /**
+   * One action empties the store — see the root reducer in `store/index.ts`.
+   *
+   * This was twenty-five dispatches naming slices by hand, and it had already
+   * drifted: `resetUserSlice` appeared twice, and every slice added after the
+   * list was written was simply absent from it. The same list in the same
+   * shape is what left prod's page slices holding the previous user's rows.
+   * Nothing here needs to know which slices exist.
+   *
+   * The username survives, and only the username.
+   */
   const handleSignOut = () => {
     navigate("/");
-    dispatch(resetGroupState());
-    dispatch(resetGroupsPageState());
-    dispatch(resetUserSlice());
-    dispatch(resetUsersSlice());
-    dispatch(resetSalesSlice());
-    dispatch(resetStoreSlice());
-    dispatch(resetUserSlice());
-    dispatch(resetNav());
-    dispatch(resetUpcState());
     dispatch(resetAppSlice());
-    dispatch(resetSearchSlice());
-    dispatch(resetForecastSlice());
-    dispatch(resetUpcsSlice());
-    dispatch(resetReceiverSlice());
-    dispatch(resetCouponsSlice());
-    dispatch(resetQsSlice());
-    dispatch(resetLookupSlice());
-    dispatch(resetCashierSlice());
-    dispatch(resetForgotPasswordSlice());
-    dispatch(resetLedger());
-    dispatch(resetOrdersState());
-    // The mobile Performance screens and the Cashiers explorer hold a whole
-    // search's rows and where you were in them — the next person to sign in
-    // on this device must not land there.
-    dispatch(resetCashierState());
-    dispatch(resetSalesPerf());
-    dispatch(resetItemPerf());
-    dispatch(resetEventPerf());
   };
 
   const handleMobileNavClick = (href: string) => {
