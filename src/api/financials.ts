@@ -11,6 +11,22 @@ import axios from "axios";
  * group — so the export follows whatever the Sales page has searched.
  */
 
+/**
+ * Whether the export is offered at all.
+ *
+ * `financials/export` lives on a backend branch that is not deployed to dev
+ * or prod, so everything below would answer 404. The UI is finished and the
+ * shape is settled; only the router is missing.
+ *
+ * Off means two things: the preset is not in the export's list, so there is
+ * nothing to pick, and the Sales search does not fetch the rows — otherwise
+ * every search fires a request that fails silently into the catch, which is
+ * noise nobody would see until they went looking for it.
+ *
+ * Flip to `true` the day the router ships. Nothing else has to change.
+ */
+export const FINANCIALS_READY = false;
+
 export interface FinancialsRow {
   storeid: number;
   /** A timestamp column, but every row sits at midnight. */

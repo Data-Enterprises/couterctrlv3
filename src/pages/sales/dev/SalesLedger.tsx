@@ -2,7 +2,7 @@ import { useSalesState } from "./hooks/useSalesState";
 import { useState, useRef, useMemo, useCallback } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { getWeekly } from "../../../api/sales";
-import { getFinancials } from "../../../api/financials";
+import { FINANCIALS_READY, getFinancials } from "../../../api/financials";
 import { getStoresAssignedToUserGroup } from "../../../api/groups";
 import { addDays, formatGoliathDate, sameWeekDayLastYear } from "../../../utils";
 import { buildLedgerRows, regradeLedgerRows } from "./shared/ledgerUtils";
@@ -194,6 +194,9 @@ const SalesLedger = () => {
      * financials call must not hold up the page, and a failed one must not
      * fail the search. The export says so itself if the rows never arrived.
      */
+    // Skipped while the router is undeployed — see FINANCIALS_READY. Without
+    // this every search fires a request that 404s into the catch below.
+    if (FINANCIALS_READY) {
     dispatch(setFinancialsLoading(true));
     getFinancials(
       context.url,
@@ -218,6 +221,7 @@ const SalesLedger = () => {
         /* the export reports it; the ledger does not care */
       })
       .finally(() => dispatch(setFinancialsLoading(false)));
+    }
 
     // Large group path: >30 stores → per-store calls, collect progressively
     if (isGroup) {

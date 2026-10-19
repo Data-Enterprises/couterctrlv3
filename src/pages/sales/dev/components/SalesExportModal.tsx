@@ -12,6 +12,7 @@ import {
 } from "../../../../utils/csvExport";
 import type { AggFn, AggRow } from "../../../../utils/csvExport";
 import {
+  FINANCIALS_READY,
   getFinancials,
   type FinancialsResponse,
   type FinancialsRow,
@@ -725,12 +726,18 @@ const SalesExportModal = ({
       description:
         "Hourly net sales, basket size, and avg item price (TY / LW / LY)",
     },
-    {
-      id: "financials",
-      label: "Financials",
-      description:
-        "Daily POS records by bin — qty, weight and sales, exactly as the register holds them",
-    },
+    // Offered only once the router is deployed — see FINANCIALS_READY. The
+    // code around it stays, so turning it on is one constant.
+    ...(FINANCIALS_READY
+      ? [
+          {
+            id: "financials" as const,
+            label: "Financials",
+            description:
+              "Daily POS records by bin — qty, weight and sales, exactly as the register holds them",
+          },
+        ]
+      : []),
   ];
 
   const SEV_CHIP: { sev: ItemSev; label: string; activeClass: string }[] = [
