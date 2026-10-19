@@ -83,6 +83,11 @@ export const SALES_HELP: HelpContent = {
           see: "The store's 200 biggest items for the week, biggest sales first. The number under each name is how many units that took.",
         },
         {
+          title: "Read the landing report",
+          pre: "Before you pick anything, the right side shows where the week's money came from: each sub department the top 200 sits in, graded, with this week against last week and last year.",
+          see: "Click a department to narrow the list to it. Its total will not match the Sub depts tab — that one is the whole week, this is the top 200's share of it.",
+        },
+        {
           title: "Narrow it down",
           pre: "Search by name or UPC, filter to one sub department, or click Sales, vs LW or vs LY to sort by it.",
           see: "The heading says how many of the 200 are showing once anything is narrowing them.",

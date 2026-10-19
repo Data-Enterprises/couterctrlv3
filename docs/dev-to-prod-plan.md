@@ -1,128 +1,110 @@
-# Dev → production: what is actually waiting
+# Dev → production: the full list
 
-Audited 2026-10-16 against `master_publish`. Coming Soon pages are **out of
-scope** — nothing in the Coming Soon category is going to production in this
-move. This covers only the pages clients already have, where the dev tree has
-drifted ahead of the prod tree.
+Re-audited **2026-10-19** against the working tree on `sales_top_items`
+(`master_publish` + 5 Top 200 commits, 3 files uncommitted). Supersedes the
+2026-10-16 pass, which is now wrong in one important way — see *What changed*.
 
 Method: `node scripts/check-split.mjs <page>` section 1 (MIRROR) for every page
-with a real prod tree, which is the authoritative list because it normalizes the
-legitimate dev/prod swaps (`state.dev`, `components-dev/`, the forked slice
-spellings, the tree's own name in comments). The two `shared/` units and the
-component libraries are not pages, so those were diffed by hand with the same
-normalization.
+with a real prod tree. That is authoritative because it normalizes the
+legitimate dev/prod swaps. The two `shared/` perf units and the component
+libraries aren't pages, so those were diffed by hand with the same
+normalization. Counts below are changed lines (added + removed) per file.
 
 ---
 
-## The two patterns that run through nearly everything
+## What changed since the 16th
 
-**1. The help swap.** Every prod page still carries its own `<page>Info.ts`
-constant plus the old `InfoButton` + `InfoPopover` state, and the dev tree has
-replaced all of it with one line:
+**Help is no longer an S3 iframe on desktop.** The 10-16 audit called the S3
+`prod/` uploads the gate on everything. That's been rebuilt since:
+`components-dev/help/` now holds `HelpPanel`, `helpTypes.ts`,
+`useHelpHighlight.ts` and **16 typed content modules** covering all 17 names in
+`constants/helpPages.ts`. The panel renders inside the app and can point at the
+control it's describing via `data-help` anchors — which the cross-origin frame
+could never do.
 
-```
--  <InfoButton onClick={() => setInfoOpen((p) => !p)} />
--  {infoOpen && <InfoPopover title={…} purpose={…} glossary={…} … />}
-+  <PageInfoButton page="forecasting" />
-```
+`PageInfoButton` now splits by device: **desktop gets the panel, a phone keeps
+the S3 document.** So S3 still matters, but only for the 12 `-mobile` pages, not
+for 17 desktop ones. That is a much smaller surface than it was three days ago.
 
-On mobile the same change is `info={RECEIVERS_INFO}` → `helpPage="receivers"`.
-This is the single most widespread delta — **13 pages** use `PageInfoButton` in
-dev: admin, categories, couponSales, coupons, forecast, lookup, lossPrevention,
-organization, receivers, sales, subDepts, upc, vendors. It accounts for the
-recurring ~15-line diff on each list panel and the deletion of each
-`<page>Info.ts`.
-
-**2. A mobile contrast bump.** `text-content/85` → `text-content/95` on the
-mobile files he touched. Pure Tailwind, no logic. It is what inflates the
-coupons and receivers mobile diffs past the help swap.
-
-Neither pattern changes a request, a number, or a layout.
+The knock-on is that nearly every page picked up small anchor edits — the
+`data-help` attributes the panel looks for. That's what the new 2-to-6-line
+diffs on `UpcItemList`, `CouponDetailPanel`, `ReceiverDetailPanel`,
+`ForecastEntry`, `CpnSalesDetailPanel`, `LensPanel`, `SignalDetail`,
+`CompanyPicker` and `StoreActivityComp` are.
 
 ---
 
-## What the help swap depends on
+## Client-facing pages
 
-`PageInfoButton` → `InfoModal` → `useHelpPageUrl`, and that hook is currently on
-the **public S3 bucket**, not the API — `VITE_HELP_PAGES_URL_PROD` is already
-set in `.env.production`. So promoting help does **not** wait on the backend.
+### Help swap + anchors only — cosmetic, promote in any order
 
-What it does wait on: the `prod/` folder in that bucket has to hold the built
-HTML for every name in `src/constants/helpPages.ts` (17 pages, 12 with a
-`-mobile` twin). A missing key answers **403, not 404**, and a sandboxed
-cross-origin iframe can't read the status — so a page that isn't uploaded shows
-S3's error XML inside the modal and the app never hears about it. There is no
-graceful degradation here. **Verify the uploads before promoting any page that
-uses `PageInfoButton`.**
-
----
-
-## Component library
-
-`src/components-dev/` holds 10 components that `src/components/` does not. Only
-these matter for the non-Coming-Soon promote:
-
-| Component | Needed by |
-|---|---|
-| `PageInfoButton`, `InfoModal` | 13 pages (above) — the help swap |
-| `Checkbox` | admin, organization |
-| `AssignPanel` | organization |
-| `mobile/perf/PerfChange`, `mobile/perf/PerfDelta` | sales, shared perf |
-
-(`ComingSoonHelp`, `ConfirmDelete`, `inputs/TextField`, `charts/TrendLine` are
-used only by Coming Soon pages — leave them.)
-
-21 components exist in both libraries but differ. The substantial ones are
-`filters/MultiSelectFilter` (+118/−32), `filters/SelectFilter` (+108/−25),
-`mobile/perf/perfColors` (+85/−13), `mobile/MobilePerfHeader` (+16/−36),
-`SearchCard` (+15), `SingleStoreSearchCard` (+13). **These are shared**, so
-promoting one page's panel can drag a filter change onto every page that uses
-it. Promote library components deliberately, not as a side effect.
-
----
-
-## Per page
-
-Ordered by how much is actually moving. Line counts are changed lines
-(added + removed) after normalization.
-
-### Help swap and styling only — safe, and safe in any order
-
-| Page | Files | Size | Notes |
+| Page | Files | Lines | Notes |
 |---|---|---|---|
-| **forecast** | `ForecastListPanel` | 15 | delete `forecastInfo.ts` |
-| **categories** | `CategoryListPanel`, `Categories.tsx` | 19 | delete `categoriesInfo.ts` |
-| **lossPrevention** | `LPStorePanel`, `LossPrevention.tsx` | 18 | delete `lpInfo.ts` |
-| **receivers** | `ReceiverListPanel`, `mobile/RcvReceiverList` | 44 | delete `receiversInfo.ts`; rest is the /85→/95 bump |
-| **coupons** | `CouponListPanel` + 5 mobile files | 104 | delete `couponsInfo.ts`; rest is the bump |
+| **lossPrevention** | `LossPrevention`, `LPStorePanel` | 30 | delete `lpInfo.ts` (34) |
+| **receivers** | `ReceiverListPanel`, `ReceiverDetailPanel`, `mobile/RcvReceiverList` | 54 | delete `receiversInfo.ts`; mobile part is the `/85`→`/95` contrast bump |
+| **categories** | `CategoryListPanel` | 27 | delete `categoriesInfo.ts` (69) |
+| **coupons** | `CouponListPanel`, `CouponDetailPanel` + 6 mobile | 120 | delete `couponsInfo.ts`; mobile is the contrast bump |
+| **forecast** | `ForecastListPanel`, `ForecastRowsTable`, `ForecastEntry` | 27 | delete `forecastInfo.ts` (151) |
 
 ### Real changes, page-local
 
-| Page | What moves |
-|---|---|
-| **couponSales** | Help swap, plus a genuine mobile fix: the week's coupon lines moved from a `useRef` to module scope. The ref died with the component, so coming back to the page repainted the list from the slice while the receipt resolved against an empty array — every sale said "No lines came back" over a row showing its amount. 44 lines. |
-| **upc** | Help swap (`UpcLeftPanel`, and `moduleInfo.ts` + `ModuleInfoPopover.tsx` get deleted), plus `useUpcDevCtx.ts` — **promoting flips `fixes` from `false` to `true`**, which turns the UPC List fixes on for clients. That is a product decision, not a merge. |
-| **cashiers** | Help swap, plus `explorer/lensUtils.ts` gains `lensListLabel` (Back reads "back to stores", not "back to signals") and `transactionLabel` (shows the receipt number out of the compound `sale_id` instead of the whole string). Mobile signal list and transactions rebuilt, 332 + 176 lines. |
-| **vendors** | Help swap plus `VendorDetailPanel` (+81), `vendorsUtils` (+29), `VendorListPanel`, `VendorExportModal`. 155 lines. |
-| **subDepts** | Help swap plus the margin perf panels — `MarginPerfRightPanel` (67), `MarginPerfLeftPanel` (57), `index.ts` (55). 186 lines. |
-| **lookup** | **Option A.** Promoting swaps `LookupResultScreen` for `LookupItemReport`: prod's `LookupResultScreen.tsx` + `DailyBreakdown.tsx` are deleted, dev's `LookupItemReport.tsx` (492), `LookupDayRows.tsx`, `lookupReport.ts`, `ItemDayChart.tsx` come in. The entry point and queue panel change with it. This is a visible rewrite of what a lookup returns. |
-| **orders** | The largest single-page rebuild. `OrderReportPanel` (1041), `OrdersExportModal` (772), `Orders.tsx` (328), `index.ts` (285), 3 mobile files. prod's `AvailableOrdersPanel.tsx` is deleted; dev's `OrdersConfigPanel.tsx`, `ordersRows.ts`, `ordersExportColumns.ts` come in. Net the desktop page gets *smaller* — it was consolidated, not extended. |
-| **sales** | Biggest by volume. The promotable part is `Sales.tsx` (395), `SalesExportModal` (340), `SalesLedger` (247), `StoreDetailPopup` (143), `PopupSubDeptList` (92), `LedgerRow`/`LedgerHeader`, and the mobile perf set (`SalesPerfMobile` 183, `PerfDrillList` 166, `perfData` 59, `PerfStoreReport` 52). **Plus ~9,000 lines of dev-only investigation code** — `DeptInvestigation` (3021), `deptInvestigation` (941), `DeptReport` (874), `ItemEvidence` (776), `investigationSteps` (607), `deptReport` (520), `storeComparison` (512), `HourlySideBySide`, `GroupComparisonPanel`, `DeptMatrixPanel`, and the rest. That is unfinished work, not a promote. **Sales needs a decision about what to leave behind before it can be split into a promote.** |
+| Page | Lines | What moves |
+|---|---|---|
+| **upc** | 29 + 70 deleted | Help swap (`moduleInfo.ts` + `ModuleInfoPopover` go), and `useUpcDevCtx.ts` — **promoting flips `fixes` from `false` to `true`**, turning the UPC List fixes on for clients. That's a product call, not a merge. |
+| **couponSales** | 55 | Help swap plus a real fix: the week's coupon lines moved from a `useRef` to module scope. The ref died with the component, so returning to the page resolved every receipt against an empty array — "No lines came back" over a row showing its amount. |
+| **vendors** | 146 | `VendorDetailPanel` (81), `vendorsUtils` (29), `VendorListPanel` (27), `VendorExportModal` (9). |
+| **subDepts** | 197 | `MarginPerfLeftPanel` (68), `MarginPerfRightPanel` (67), `index.ts` (55). |
+| **cashiers** | 545 | `mobile/SignalListMobile` (332) and `mobile/SignalTransactionsMobile` (176) rebuilt; `explorer/lensUtils` (27) gains `lensListLabel` (Back reads "back to stores", not "back to signals") and `transactionLabel` (shows the receipt number out of the compound `sale_id`). |
+| **lookup** | 1,160 | **Option A.** `LookupResultScreen` (211) + `DailyBreakdown` (160) deleted; `LookupItemReport` (470), `LookupDayRows` (117), `lookupReport.ts` (86), `ItemDayChart` (71) come in. Visible rewrite of what a lookup returns — promote it alone so it can be reverted alone. |
+| **orders** | 3,093 | Largest finished rebuild. `OrderReportPanel` (1041), `OrdersExportModal` (772), `Orders.tsx` (328), `index.ts` (285); `AvailableOrdersPanel` (269) out, `OrdersConfigPanel` (232) + `ordersRows` + `ordersExportColumns` in. The desktop page gets *smaller* — consolidated, not extended. |
+| **groups** | 373 | `Groups.tsx` (200), `GroupsList` (81), `GroupDetail` (72) + 3 mobile. Same 9 files in both trees. See the hold note below. |
+| **shared/itemPerf** | 409 | `ItemPerfMobile` (329), delete `itemPerfInfo.ts` (80). Used by categories, vendors, subDepts — promoting any of them touches this. |
+| **shared/eventPerf** | 155 | `EventPerfMobile` (121), `EventStoreReport` (24), `EventDrillList` (10). Used by couponSales, coupons. |
 
-### Shared units
+### Needs a decision before it can be promoted
 
-| Unit | What moves |
-|---|---|
-| `shared/itemPerf` | `ItemPerfMobile` +241/−88, delete `itemPerfInfo.ts`. Pulled in by categories, vendors, subDepts — promoting any of them touches this. |
-| `shared/eventPerf` | `EventPerfMobile` +83/−44, `EventStoreReport` +16/−8, `EventDrillList` +5/−5. Pulled in by couponSales, coupons. |
+**sales — 12,275 lines.** The promotable part is real and finished:
+`Sales.tsx` (395), `SalesExportModal` (340), `SalesLedger` (251),
+`StoreDetailPopup` (180), `PopupSubDeptList` (92), `LedgerRow` (73),
+`LedgerHeader` (21), and the mobile perf set — `SalesPerfMobile` (183),
+`PerfDrillList` (166), `perfData` (59), `PerfStoreReport` (52).
 
-### Not ready — hold
+Sitting beside it is **~10,000 lines of dev-only work in varying states**:
+`DeptInvestigation` (2850), `deptInvestigation` (856), `PopupTopItems` (842),
+`DeptReport` (824), `ItemEvidence` (730), `investigationSteps` (549),
+`deptReport` (474), `storeComparison` (470), `HourlySideBySide` (419),
+`DeptMatrixPanel` (348), `investigationData` (345), `topItems` (327),
+`deptMatrix` (263), `PopupComparisonList` (241), plus the hooks and
+`treemapLayout`.
 
-| Page | Why |
-|---|---|
-| **organization** | This is the User & Store Access rewrite. 20 dev-only files (`users/access/*`, `sharedGroups/*`, `companies/*`, `stores/StoresTab`, `scoping.ts`, `panelFit.ts`), 7 prod-only files deleted (`AssignPanel`, `StoresDirectory`, `StepAssignments`, `StepUserInfo`, `BaseGroupsTab`, `CompaniesTab`, `StoresTab`), and 12 differing including `CreateUserWizard` (544) and `StepReview` (404). It is a different page. It also depends on backend endpoints that are **dev-only**: `users/user_group_picks`, `stores/store_users`, `stores/assign_store_to_users`, `stores/unassign_store_from_users`. |
-| **groups** | `Groups.tsx` (200), `GroupsList` (77), `GroupDetail` (70), 3 mobile files. Same file names in both trees, but this is the groups half of the same access rewrite and the plan is for the three group types to move off User Management onto their own Config page. Promoting it now ships a shape that is about to change again. |
-| **admin** | `SubDeptExclusions.tsx` (591) + `shared/subDeptExclusions.ts` (310), `StoreRecords.tsx` (378), `StoreFormModal.tsx` (174), `storeStatus.ts` (94) are all dev-only; `NewStoreName.tsx` is deleted; `Admin.tsx` and `CompanyGrid.tsx` differ. Depends on backend endpoints that are **dev-only**: `stores/sub_department_catalog`, `stores/sub_department_exclusions`, `stores/add_sub_department_exclusion`, `stores/remove_sub_department_exclusion`. |
+Top 200 (`PopupTopItems`, `topItems.ts`) is being actively worked on right now
+and has uncommitted changes. **Sales can't be promoted until you say which of
+this stays in dev.** Everything else on the list can go without it.
+
+### Hold — backend-gated
+
+**organization — 7,255 lines.** This is the User & Store Access rewrite, and
+it's a different page, not a changed one: 20 dev-only files
+(`users/access/*`, `sharedGroups/*`, `companies/*`, `stores/StoresTab`,
+`scoping.ts`, `panelFit.ts`), 7 prod files deleted (`AssignPanel`,
+`StoresDirectory`, `StepAssignments`, `StepUserInfo`, `BaseGroupsTab`,
+`CompaniesTab`, `StoresTab`), and 12 differing including `CreateUserWizard`
+(544), `StepReview` (404), `BaseGroupUsersTab` (277).
+
+**admin — 1,815 lines.** `SubDeptExclusions` (559) + `shared/subDeptExclusions`
+(288), `StoreRecords` (350), `StoreFormModal` (160), `storeStatus` (84) all
+new; `NewStoreName` (206) deleted; `CompanyGrid` (78), `Admin.tsx` (54).
+
+Both call endpoints that are **dev-only on the backend**:
+`users/user_group_picks`, `stores/store_users`, `stores/assign_store_to_users`,
+`stores/unassign_store_from_users`, and the four `sub_department_exclusion`
+routes. Backend `dev` is 37 commits ahead of `prod` and carries all of them, so
+these unblock when that deploy lands — but not before.
+
+**groups** is the groups half of the same access rewrite, and the plan is for
+the three group types to leave User Management for their own Config page.
+Technically promotable on its own; promoting it ships a shape that's about to
+change again.
 
 ### Already level
 
@@ -130,46 +112,116 @@ Ordered by how much is actually moving. Line counts are changed lines
 
 ---
 
-## Hard gate: the backend has to land first
+## Item Actions and Sales Tracker
 
-The backend `dev` branch is **37 commits ahead of `prod`**. Every endpoint the
-dev frontend calls exists in the repo, but four clusters are dev-only:
-`users/user_group_picks`, `stores/store_users` +
-`assign_store_to_users` / `unassign_store_from_users`, the four
-`sub_department_exclusion` routes, and `help/page_url` (not needed — help is on
-the public bucket today).
+Both are Coming Soon today, desktop-only, and both are **frontend-only
+promotes — no backend work needed.** I checked every endpoint.
 
-So: **nothing in organization, groups or admin can go to production until the
-backend dev→prod deploy lands.** Everything else on this page is frontend-only
-and does not wait on it.
+**Item Actions** (`pages/itemReport`, `href: "item-report"`, 13 dev files,
+~6,200 lines). Calls `subs/subs`, `receivers/details`,
+`receivers/item_search`, `cashiers/transaction_list` — all four are on backend
+`prod` already. Has its own CSV upload path (`parseUpload.ts`). Currently level
+7–9.
+
+**Sales Tracker** (`pages/salesTracker`, `href: "sales-tracker"`, 13 dev files,
+~2,200 lines). Reads `subs/sub_sales`, which is on `prod`. It also imports
+`getSalesTracker` → `subs/sales_tracker`, and **that endpoint does not exist on
+any backend branch** — but `useTrackerEndpoint` is a hard `false` with a
+docblock explaining exactly why ("the endpoint is not on the API yet — on dev
+it would 404, and the API toggle is reachable by anyone at level 7"). So the
+page is publish-safe as written. Leave the flag alone; if it gets flipped the
+page breaks on both APIs.
+
+**What promoting either one involves**, beyond `promote:page`:
+- Remove the entry from `COMING_SOON_CATEGORY` in `navigation/utils.tsx` and
+  restore `userLevels: ["*"]`.
+- Add it to the **flat list** at the top of that file — the one feeding the
+  Settings nav editor. Easy to miss; LP Actions and Sales Tracker are both
+  absent from it today.
+- Delete the dev-API gate in the page switcher (`pages/<page>/<Name>.tsx`),
+  which currently returns `DevOnlyNotice` unless `apiEnv === "dev"` **and** the
+  URL is really `DEV_API_URL`.
+- Replace `ComingSoonHelp` with real help, or accept the placeholder. Neither
+  page has a `help/content` module and neither is in `HELP_PAGES`.
+- `salesTracker` also needs `charts/TrendLine` copied into `components/`.
 
 ---
 
-## Suggested order
+## Component library
 
-1. **Verify the S3 `prod/` help uploads.** Everything downstream depends on it
-   and the failure mode is silent.
-2. **Promote the library** — `PageInfoButton` + `InfoModal` into `components/`,
-   and only those. Hold the shared filter and perf-card changes.
-3. **The five help-only pages** — forecast, categories, lossPrevention,
-   receivers, coupons. Smallest possible first publish that proves the help
-   path works for clients.
-4. **The two shared perf units**, then the pages that depend on them —
-   couponSales, cashiers, vendors, subDepts, categories.
-5. **Decide on UPC List `fixes`** before promoting upc. It is a yes/no, not a
-   merge.
-6. **Item Lookup Option A** on its own, because it changes what the page
-   returns and should be publishable and revertable by itself.
-7. **Orders** on its own, same reason, bigger.
-8. **Sales** last, after deciding what of the investigation work is staying in
-   dev.
-9. **organization / groups / admin** only after the backend is on prod, and
-   only after the access and Groups-Config-page decisions are settled.
+`components-dev/` has 32 files `components/` doesn't. Only these are needed by
+non-Coming-Soon pages:
 
-## Known limit of this audit
+| Component | Needed by |
+|---|---|
+| `help/` — `HelpPanel`, `helpTypes`, `useHelpHighlight`, 16 content modules | every page with a "?" |
+| `PageInfoButton`, `InfoModal` | the same |
+| `Checkbox` | admin, organization |
+| `AssignPanel` | organization |
+| `mobile/perf/PerfChange`, `mobile/perf/PerfDelta` | sales, shared perf |
+| `charts/TrendLine` | salesTracker (if promoted) |
 
-`check-split.mjs` compares normalized text, so it catches every textual
-difference in the mirrored files. What it does not tell you is whether a
-differing file *behaves* differently — a 15-line help swap and a 15-line logic
-change look the same in the counts. The classifications above come from reading
-the diffs, not from the sizes.
+23 components exist in both libraries and differ. The ones worth knowing about:
+`filters/MultiSelectFilter` (150), `filters/SelectFilter` (133),
+`mobile/perf/perfColors` (98), `mobile/MobilePerfHeader` (52),
+`mobile/perf/PairedBars` (40), `mobile/perf/PerfDayChart` (24),
+`mobile/MobilePerfCard` (22), `filters/ThresholdFilter` (18),
+`SearchCard` (16), `storePicker/SearchType` (16),
+`mobile/perf/PerfCardHeader` (16), `SingleStoreSearchCard` (13),
+`filters/FilterBar` (12), `storePicker/SelectGroup` (11).
+
+I read the two big filter diffs: both are **additive and
+backward-compatible** — new optional props (`plain`, `searchable`) that default
+to current behaviour, plus dropdowns that open upward when there's no room
+below. Low risk. But they're shared, so promoting one page's panel can pull a
+filter change onto every page using it. Promote library components
+deliberately, not as a side effect of a page.
+
+---
+
+## Backend
+
+`goliath-platform` `dev` is **37 commits ahead of `prod`**. Already verified
+safe for the current prod frontend (every prod-called endpoint present, request
+models byte-identical, response envelopes identical, the `sale_id` concat alias
+preserved). Two documented behaviour changes ride along: the trend
+`average_qty` divisor correction and `ILIKE` description matching in place of
+pandas `str.contains`. `CORS_ORIGINS` is the only non-code risk.
+
+Dev-only endpoint clusters, and who needs them: `users/user_group_picks` /
+`stores/store_users` / the two store-assign routes → **organization**; the four
+`sub_department_exclusion` routes → **admin**; `subs/daily` → not used by
+anything being promoted; `help/page_url` → not needed, help is on the public
+bucket.
+
+**Land the backend first, or simultaneously.** Frontend ahead of backend means
+organization and admin 404 in the gap.
+
+---
+
+## Order
+
+1. **Backend dev → prod.**
+2. **Library**: `help/` + `PageInfoButton` + `InfoModal` into `components/`.
+   Hold the shared filter and perf-card changes for their own step.
+3. **The five cosmetic pages** — lossPrevention, receivers, categories,
+   coupons, forecast. Smallest publish that proves the help panel works for
+   clients.
+4. **The two shared perf units**, then the pages depending on them —
+   couponSales, cashiers, vendors, subDepts.
+5. **Decide UPC List `fixes`**, then promote upc.
+6. **Item Lookup** (Option A) on its own.
+7. **Orders** on its own.
+8. **Item Actions** and **Sales Tracker** — both clean, both frontend-only.
+   Don't touch `useTrackerEndpoint`.
+9. **organization** and **admin**, once the backend is live and the access
+   decisions are settled. **groups** with them, not before.
+10. **Sales** last, after the call on the investigation and Top 200 work.
+
+## Limits of this audit
+
+`check-split.mjs` compares normalized text, so it finds every textual
+difference in the mirrored files — but a 20-line help swap and a 20-line logic
+change look identical in the counts. The classifications above come from
+reading the diffs. Sales is a moving target: Top 200 has uncommitted changes
+and a deleted `GhostFlames.tsx` in the working tree as of this audit.

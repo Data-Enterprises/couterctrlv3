@@ -2,6 +2,10 @@ import type {
   TopItemRow,
   TopItemPricePoint,
 } from "../../../../api/topItems";
+import {
+  gradeSeverity,
+  type Severity,
+} from "../../../../utils/severity";
 
 /**
  * Top items — the arithmetic, with no React in it.
@@ -354,4 +358,168 @@ export const deptOptions = (
   return [...counts.entries()]
     .map(([name, n]) => ({ value: name, label: `${name} (${n})` }))
     .sort((a, b) => a.value.localeCompare(b.value));
+};
+
+/* ------------------------------------------------------- the landing report */
+
+/** One sub department, rolled up out of the top items filed under it. */
+export interface DeptRollup {
+  name: string;
+  items: number;
+  ty: number;
+  tyUnits: number;
+  /** Null when the department sold nothing that week — not zero. An absent
+   *  baseline is a different statement from a baseline of nothing. */
+  lw: number | null;
+  lwUnits: number | null;
+  ly: number | null;
+  lyUnits: number | null;
+  vsLW: number | null;
+  vsLY: number | null;
+  /** Share of units that rang off regular price, 0–1. */
+  offRegular: number;
+}
+
+/**
+ * The week's money, by where it was filed.
+ *
+ * Rolled up from the items already on screen rather than fetched: the sub
+ * department rides on every top item, so this costs nothing and is guaranteed
+ * to agree with the list beside it.
+ *
+ * It will NOT agree with the Sub depts tab, and should not — that one is the
+ * store's whole week and this is the top two hundred's share of it.
+ */
+export const deptRollups = (rows: TopItemCompared[]): DeptRollup[] => {
+  const acc = new Map<
+    string,
+    {
+      items: number;
+      ty: number;
+      tyUnits: number;
+      lw: number;
+      lwUnits: number;
+      lwSeen: boolean;
+      ly: number;
+      lyUnits: number;
+      lySeen: boolean;
+      offUnits: number;
+      knownUnits: number;
+    }
+  >();
+
+  rows.forEach((r) => {
+    const name = deptName(r.ty);
+    const a =
+      acc.get(name) ??
+      {
+        items: 0,
+        ty: 0,
+        tyUnits: 0,
+        lw: 0,
+        lwUnits: 0,
+        lwSeen: false,
+        ly: 0,
+        lyUnits: 0,
+        lySeen: false,
+        offUnits: 0,
+        knownUnits: 0,
+      };
+
+    a.items += 1;
+    a.ty += r.ty.total_sales;
+    a.tyUnits += r.ty.qty;
+
+    const reg = count(r.ty.qty_regular);
+    const promo = count(r.ty.qty_promo);
+    const deal = count(r.ty.qty_deal_item);
+    a.offUnits += promo + deal;
+    a.knownUnits += reg + promo + deal;
+
+    if (r.lw) {
+      a.lwSeen = true;
+      a.lw += r.lw.total_sales;
+      a.lwUnits += r.lw.qty;
+    }
+    if (r.ly) {
+      a.lySeen = true;
+      a.ly += r.ly.total_sales;
+      a.lyUnits += r.ly.qty;
+    }
+    acc.set(name, a);
+  });
+
+  const pct = (now: number, before: number) =>
+    before === 0 ? null : ((now - before) / Math.abs(before)) * 100;
+
+  return [...acc.entries()]
+    .map(([name, a]) => ({
+      name,
+      items: a.items,
+      ty: a.ty,
+      tyUnits: a.tyUnits,
+      lw: a.lwSeen ? a.lw : null,
+      lwUnits: a.lwSeen ? a.lwUnits : null,
+      ly: a.lySeen ? a.ly : null,
+      lyUnits: a.lySeen ? a.lyUnits : null,
+      vsLW: a.lwSeen ? pct(a.ty, a.lw) : null,
+      vsLY: a.lySeen ? pct(a.ty, a.ly) : null,
+      offRegular: a.knownUnits > 0 ? a.offUnits / a.knownUnits : 0,
+    }))
+    .sort((x, y) => y.ty - x.ty);
+};
+
+/**
+ * How a department grades.
+ *
+ * Last year first, last week second. A year is the longer view and the one
+ * that catches a seasonal collapse last week would call normal; last week is
+ * the fallback for a department with no history, not a second opinion. Null
+ * when neither baseline exists — ungraded is not healthy, and a department
+ * nobody can compare has earned no verdict.
+ */
+export const deptSeverity = (
+  d: DeptRollup,
+  threshold: number,
+): Severity | null => {
+  const basis = d.vsLY ?? d.vsLW;
+  return basis === null ? null : gradeSeverity(basis, threshold);
+};
+
+/** How many departments sit at each grade, for the chips. */
+export const deptSeverityCounts = (
+  depts: DeptRollup[],
+  threshold: number,
+): Record<Severity, number> => {
+  const out: Record<Severity, number> = {
+    critical: 0,
+    watch: 0,
+    healthy: 0,
+  };
+  depts.forEach((d) => {
+    const sev = deptSeverity(d, threshold);
+    if (sev) out[sev] += 1;
+  });
+  return out;
+};
+
+/** The three figures over the whole top-200 set, for the KPI strip. */
+export const topItemsTotals = (rows: TopItemCompared[]) => {
+  const sum = (pick: (r: TopItemCompared) => number) =>
+    rows.reduce((n, r) => n + pick(r), 0);
+  const ty = sum((r) => r.ty.total_sales);
+  const lw = sum((r) => r.lw?.total_sales ?? 0);
+  const ly = sum((r) => r.ly?.total_sales ?? 0);
+  const anyLw = rows.some((r) => r.lw);
+  const anyLy = rows.some((r) => r.ly);
+  return {
+    ty,
+    tyUnits: sum((r) => r.ty.qty),
+    lw: anyLw ? lw : null,
+    lwUnits: anyLw ? sum((r) => r.lw?.qty ?? 0) : null,
+    ly: anyLy ? ly : null,
+    lyUnits: anyLy ? sum((r) => r.ly?.qty ?? 0) : null,
+    vsLW: anyLw && lw !== 0 ? ((ty - lw) / Math.abs(lw)) * 100 : null,
+    vsLY: anyLy && ly !== 0 ? ((ty - ly) / Math.abs(ly)) * 100 : null,
+  };
 };

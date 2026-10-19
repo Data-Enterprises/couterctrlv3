@@ -1,6 +1,11 @@
 import { describe, it, expect } from "vitest";
 import {
   avgPrice,
+  deptRollups,
+  deptSeverity,
+  deptSeverityCounts,
+  topItemsTotals,
+  type DeptRollup,
   deptName,
   deptOptions,
   DEFAULT_TOP_ITEM_SORT,
@@ -304,6 +309,139 @@ describe("sorting", () => {
     const before = rows.map((r) => r.ty.product_code);
     sortTopItems(rows, { column: "vsLW", direction: "asc" });
     expect(rows.map((r) => r.ty.product_code)).toEqual(before);
+  });
+});
+
+describe("deptRollups", () => {
+  const cmp = (
+    dept: string,
+    ty: number,
+    tyQty: number,
+    lw: number | null,
+    ly: number | null,
+    promo = 0,
+    regular = 0,
+  ) => ({
+    ty: row({
+      product_code: `${dept}-${ty}`,
+      sub_department_description: dept,
+      total_sales: ty,
+      qty: tyQty,
+      qty_regular: regular,
+      qty_promo: promo,
+      qty_deal_item: null,
+      qty_unknown: null,
+    }),
+    lw: lw === null ? null : row({ total_sales: lw, qty: 10 }),
+    ly: ly === null ? null : row({ total_sales: ly, qty: 12 }),
+    vsLW: null,
+    vsLY: null,
+  });
+
+  it("adds the items filed under each department", () => {
+    const got = deptRollups([
+      cmp("Meat", 100, 5, null, null),
+      cmp("Meat", 50, 3, null, null),
+      cmp("Grocery", 70, 7, null, null),
+    ]);
+    expect(got.map((d) => [d.name, d.ty, d.items, d.tyUnits])).toEqual([
+      ["Meat", 150, 2, 8],
+      ["Grocery", 70, 1, 7],
+    ]);
+  });
+
+  it("ranks on sales", () => {
+    const got = deptRollups([
+      cmp("Small", 10, 1, null, null),
+      cmp("Big", 900, 2, null, null),
+    ]);
+    expect(got[0].name).toBe("Big");
+  });
+
+  it("leaves a baseline null when no item had one", () => {
+    // Absent is not zero: a department with no last year has not collapsed,
+    // it has nothing to be compared against.
+    const [d] = deptRollups([cmp("Meat", 100, 5, null, null)]);
+    expect(d.ly).toBeNull();
+    expect(d.vsLY).toBeNull();
+  });
+
+  it("compares against the items that DID have a baseline", () => {
+    const [d] = deptRollups([
+      cmp("Meat", 100, 5, 80, null),
+      cmp("Meat", 100, 5, null, null),
+    ]);
+    expect(d.lw).toBe(80);
+    expect(d.vsLW).toBeCloseTo(150, 5);
+  });
+
+  it("works out the off-regular share across the department", () => {
+    const got = deptRollups([
+      cmp("Meat", 100, 10, null, null, 6, 4),
+      cmp("Meat", 100, 10, null, null, 0, 10),
+    ]);
+    expect(got[0].offRegular).toBeCloseTo(6 / 20, 5);
+  });
+});
+
+describe("deptSeverity", () => {
+  const dept = (vsLW: number | null, vsLY: number | null): DeptRollup => ({
+    name: "Meat",
+    items: 1,
+    ty: 100,
+    tyUnits: 10,
+    lw: vsLW === null ? null : 90,
+    lwUnits: null,
+    ly: vsLY === null ? null : 90,
+    lyUnits: null,
+    vsLW,
+    vsLY,
+    offRegular: 0,
+  });
+
+  it("grades on last year when there is one", () => {
+    // LY is the longer view and catches a seasonal collapse LW calls normal.
+    expect(deptSeverity(dept(5, -30), 9)).toBe("critical");
+  });
+
+  it("falls back to last week when there is no last year", () => {
+    expect(deptSeverity(dept(-30, null), 9)).toBe("critical");
+  });
+
+  it("refuses a verdict when neither baseline exists", () => {
+    // Ungraded is not healthy: nobody can compare it.
+    expect(deptSeverity(dept(null, null), 9)).toBeNull();
+  });
+
+  it("counts only the graded ones in the chips", () => {
+    const counts = deptSeverityCounts(
+      [dept(null, -30), dept(null, -2), dept(null, 10), dept(null, null)],
+      9,
+    );
+    expect(counts).toEqual({ critical: 1, watch: 1, healthy: 1 });
+  });
+});
+
+describe("topItemsTotals", () => {
+  const cmp = (ty: number, lw: number | null, ly: number | null) => ({
+    ty: row({ total_sales: ty, qty: 1 }),
+    lw: lw === null ? null : row({ total_sales: lw, qty: 1 }),
+    ly: ly === null ? null : row({ total_sales: ly, qty: 1 }),
+    vsLW: null,
+    vsLY: null,
+  });
+
+  it("totals the set and both baselines", () => {
+    const t = topItemsTotals([cmp(100, 80, 50), cmp(100, 20, 50)]);
+    expect([t.ty, t.lw, t.ly]).toEqual([200, 100, 100]);
+    expect(t.vsLW).toBeCloseTo(100, 5);
+    expect(t.vsLY).toBeCloseTo(100, 5);
+  });
+
+  it("leaves a baseline null when nothing had one, not zero", () => {
+    const t = topItemsTotals([cmp(100, null, null)]);
+    expect(t.lw).toBeNull();
+    expect(t.vsLY).toBeNull();
   });
 });
 
