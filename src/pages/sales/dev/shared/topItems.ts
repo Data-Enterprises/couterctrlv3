@@ -329,3 +329,29 @@ export const sortTopItems = (
     );
   });
 };
+
+/** How an item's filing reads. Unknown rather than blank when the POS sent
+ *  none: a nameless department is a real state, not a missing one. */
+export const deptName = (r: TopItemRow): string =>
+  r.sub_department_description?.trim() ||
+  (r.sub_department === null ? "No department" : `Dept ${r.sub_department}`);
+
+/**
+ * The departments present in a list, for the filter.
+ *
+ * Built from the items actually on screen rather than the store's whole
+ * catalogue: an option that can only ever empty the list is a dead end, and
+ * this list is already cut to two hundred.
+ */
+export const deptOptions = (
+  rows: TopItemCompared[],
+): { value: string; label: string }[] => {
+  const counts = new Map<string, number>();
+  rows.forEach((r) => {
+    const name = deptName(r.ty);
+    counts.set(name, (counts.get(name) ?? 0) + 1);
+  });
+  return [...counts.entries()]
+    .map(([name, n]) => ({ value: name, label: `${name} (${n})` }))
+    .sort((a, b) => a.value.localeCompare(b.value));
+};

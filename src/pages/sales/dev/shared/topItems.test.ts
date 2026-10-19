@@ -1,6 +1,8 @@
 import { describe, it, expect } from "vitest";
 import {
   avgPrice,
+  deptName,
+  deptOptions,
   DEFAULT_TOP_ITEM_SORT,
   nextTopItemSort,
   sortTopItems,
@@ -18,6 +20,9 @@ const row = (over: Partial<TopItemRow> = {}): TopItemRow => ({
   store_name: "IGA GLASGOW KY",
   product_code: "7800004110",
   product_description: "RC 24 PK",
+  sub_department: 21,
+  sub_department_description: "Soft Drinks",
+  sub_department_count: 1,
   qty: 46,
   total_sales: 439.5,
   ext_cost: 478.3,
@@ -191,6 +196,50 @@ describe("pointsFor", () => {
 
   it("is empty for an item with no points, not undefined", () => {
     expect(pointsFor(points, "nope")).toEqual([]);
+  });
+});
+
+describe("deptName and deptOptions", () => {
+  it("uses the description the POS sent", () => {
+    expect(deptName(row())).toBe("Soft Drinks");
+  });
+
+  it("falls back to the number when the description is blank", () => {
+    expect(
+      deptName(row({ sub_department: 14, sub_department_description: "  " })),
+    ).toBe("Dept 14");
+  });
+
+  it("calls a filing-less item what it is, rather than leaving a gap", () => {
+    expect(
+      deptName(row({ sub_department: null, sub_department_description: null })),
+    ).toBe("No department");
+  });
+
+  it("counts the items in each department", () => {
+    const rows = [
+      { ty: row({ product_code: "A" }), lw: null, ly: null, vsLW: null, vsLY: null },
+      { ty: row({ product_code: "B" }), lw: null, ly: null, vsLW: null, vsLY: null },
+      {
+        ty: row({
+          product_code: "C",
+          sub_department: 7,
+          sub_department_description: "Meat",
+        }),
+        lw: null,
+        ly: null,
+        vsLW: null,
+        vsLY: null,
+      },
+    ];
+    expect(deptOptions(rows).map((o) => o.label)).toEqual([
+      "Meat (1)",
+      "Soft Drinks (2)",
+    ]);
+  });
+
+  it("offers nothing for an empty list rather than an empty option", () => {
+    expect(deptOptions([])).toEqual([]);
   });
 });
 

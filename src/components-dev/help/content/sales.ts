@@ -83,6 +83,11 @@ export const SALES_HELP: HelpContent = {
           see: "The store's 200 biggest items for the week, biggest sales first. The number under each name is how many units that took.",
         },
         {
+          title: "Narrow it down",
+          pre: "Search by name or UPC, filter to one sub department, or click Sales, vs LW or vs LY to sort by it.",
+          see: "The heading says how many of the 200 are showing once anything is narrowing them.",
+        },
+        {
           title: "Pick an item",
           pre: "Click a row. The right side opens with a sentence saying what the figures add up to, then the numbers behind it.",
           see: "Sales and units, margin and profit, the average price a unit fetched and what a unit cost you.",
@@ -202,7 +207,7 @@ export const SALES_HELP: HelpContent = {
     },
     {
       term: "Cost coverage",
-      def: "The share of an item's sales lines that carried a cost. Below about half, the margin is hidden: with all the sales and only some of the costs it would read far too high, and it is safer to show nothing than a number somebody acts on.",
+      def: "The share of an item's sales lines that carried a cost. Below 90% the margin is hidden: with all the sales and only some of the costs it would read far too high, and it is safer to show nothing than a number somebody acts on. Some vendors deliver direct to the store and send no cost at all, which is why this bites most on fast movers.",
     },
     {
       term: "Off regular",
