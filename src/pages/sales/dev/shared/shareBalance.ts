@@ -103,6 +103,27 @@ export const shareRowsOf = (
     })
     .sort((a, b) => b.sharePct - a.sharePct);
 
+/**
+ * The list's own order: the band that needs attention first, and inside each
+ * band the biggest mover first.
+ *
+ * Falling leads because it is the only band anybody opened the panel for.
+ * Rising is the answer to it and sits at the bottom, where it reads as the
+ * other side of the same money rather than as a league table.
+ */
+export const STANDING_ORDER: Record<ShareStanding, number> = {
+  falling: 0,
+  consistent: 1,
+  rising: 2,
+};
+
+export const byStanding = (rows: ShareRow[]): ShareRow[] =>
+  [...rows].sort(
+    (a, b) =>
+      STANDING_ORDER[a.standing] - STANDING_ORDER[b.standing] ||
+      Math.abs(b.money) - Math.abs(a.money),
+  );
+
 export interface ShareBalance {
   /** Lost share, worst first. */
   lost: ShareRow[];

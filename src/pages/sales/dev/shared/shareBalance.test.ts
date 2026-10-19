@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
+  byStanding,
   counterweightOf,
   shareBalanceOf,
   shareRowsOf,
@@ -225,5 +226,48 @@ describe("counterweightOf", () => {
   it("has nobody to pair when the whole group went one way", () => {
     const fell = row(370, -500);
     expect(counterweightOf(fell, [fell, row(365, -900)])).toBeNull();
+  });
+});
+
+describe("byStanding", () => {
+  const row = (storeid: number, money: number, changePct: number): ShareRow => ({
+    storeid,
+    storeName: `Store ${storeid}`,
+    storeNumber: String(storeid),
+    storeNumbersForId: [String(storeid)],
+    sharePct: 10,
+    usualPct: 10 - changePct,
+    changePct,
+    money,
+    standing: shareStandingOf(changePct),
+    ownPct: 0,
+  });
+
+  it("leads with falling, then consistent, then rising", () => {
+    const out = byStanding([
+      row(365, 11_800, 0.9),
+      row(368, 113, 0.1),
+      row(370, -11_900, -0.9),
+    ]);
+    expect(out.map((r) => r.standing)).toEqual([
+      "falling",
+      "consistent",
+      "rising",
+    ]);
+  });
+
+  it("puts the biggest mover first inside a band", () => {
+    const out = byStanding([
+      row(1, -200, -0.9),
+      row(2, -9_000, -1.4),
+      row(3, -50, -0.6),
+    ]);
+    expect(out.map((r) => r.storeid)).toEqual([2, 1, 3]);
+  });
+
+  it("leaves the caller's list alone", () => {
+    const given = [row(365, 11_800, 0.9), row(370, -11_900, -0.9)];
+    byStanding(given);
+    expect(given.map((r) => r.storeid)).toEqual([365, 370]);
   });
 });
