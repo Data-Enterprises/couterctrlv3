@@ -73,10 +73,7 @@ interface StoreDetailPopupProps {
 // uncomment this, the getCats-related imports above, and the marked blocks
 // below to bring it back.
 type PopupTab =
-  | "subdept"
-  | "hourly"
-  | "comparison"
-  | "topitems" /* | "category" */;
+  "subdept" | "hourly" | "comparison" | "topitems" /* | "category" */;
 
 const fmtDate = (d: string) =>
   new Date(d + "T12:00:00").toLocaleDateString("en-US", {
@@ -728,7 +725,9 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
             {/* Not one day of the week has a matching date on file. $0.00
                 would read as a store that sold nothing; the store simply has
                 no history there. */}
-            <span className={`text-[14px] font-bold ${noLyHistory ? "text-content/85" : "text-content"}`}>
+            <span
+              className={`text-[14px] font-bold ${noLyHistory ? "text-content/85" : "text-content"}`}
+            >
               {noLyHistory
                 ? "No history"
                 : headerLyTotal !== null
@@ -777,7 +776,10 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
       </div>
 
       {/* Tabs */}
-      <div data-help="store-tabs" className="flex items-center border-b border-gray-100 px-3 flex-shrink-0">
+      <div
+        data-help="store-tabs"
+        className="flex items-center border-b border-gray-100 px-3 flex-shrink-0"
+      >
         {/* Sub depts leads: it is the tab that answers the question the
             page was opened with, and it reads the same whether or not a
             counterpart has been chosen. Compare sits beside it as the
@@ -786,9 +788,11 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
             Compare shows only when there are siblings to compare with — a
             single-store search has no reference set, so the tab is not
             offered rather than opening on an empty one. */}
-        {((hasGroup
-          ? ["subdept", "comparison", "hourly", "topitems"]
-          : ["subdept", "hourly", "topitems"]) as PopupTab[]).map((t) => (
+        {(
+          (hasGroup
+            ? ["subdept", "comparison", "hourly", "topitems"]
+            : ["subdept", "hourly", "topitems"]) as PopupTab[]
+        ).map((t) => (
           <button
             key={t}
             onClick={() => dispatch(setLedgerTab(t))}
@@ -830,6 +834,7 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
         ) : tab === "topitems" ? (
           <PopupTopItems
             storeId={selection.storeId}
+            locations={selection.storeNumbersForId}
             start={twStart}
             end={twEnd}
             lwStart={lwStart}
@@ -865,15 +870,15 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
               onBack={() => dispatch(setCounterpart(null))}
             />
           ) : (
-          <PopupSubDeptList
-            twDateLabel={twDateLabel}
-            lwDateLabel={lwDateLabel}
-            lyDateLabel={lyDateLabel}
-            storeId={selection.storeId}
-            storeNumber={selection.storeNumber}
-            selectedDate={selectedDate}
-            twRealDates={twRealDates}
-          />
+            <PopupSubDeptList
+              twDateLabel={twDateLabel}
+              lwDateLabel={lwDateLabel}
+              lyDateLabel={lyDateLabel}
+              storeId={selection.storeId}
+              storeNumber={selection.storeNumber}
+              selectedDate={selectedDate}
+              twRealDates={twRealDates}
+            />
           )
         ) : counterpart ? (
           /* Hourly answers to the same counterpart as Sub depts: one choice,
