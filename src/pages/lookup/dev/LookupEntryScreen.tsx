@@ -3,7 +3,9 @@ import { useAppDispatch, useAppSelector } from "../../../hooks";
 import { CameraIcon, ExclamationTriangleIcon } from "@heroicons/react/20/solid";
 import SingleStoreSearchCard from "../../../components-dev/SingleStoreSearchCard";
 import { setSelectedStore } from "../../../features/dev/devItemLookupSlice";
-import DevUpcScanner from "./DevUpcScanner";
+import { setError } from "../../../features/itemScanSlice";
+import ScannerView from "../../../components-dev/scanner/ScannerView";
+import { useScanGun } from "../../../components-dev/scanner/useScanGun";
 import RecentLookupsStrip from "./RecentLookupsStrip";
 import RecentLookupsCard from "./RecentLookupsCard";
 
@@ -50,6 +52,19 @@ const LookupEntryScreen = ({
     onSearch(upc);
   };
 
+  // A scan gun trigger pull is a camera read: already normalized, it searches
+  // at once. With no store picked there is nothing to search against yet, so
+  // the code waits in the field (the camera button is disabled for the same
+  // reason) and Search runs it once a store is chosen.
+  const gun = useScanGun((upc) => {
+    if (!hasStore) {
+      setManualUpc(upc);
+      return;
+    }
+    setManualUpc("");
+    handleScan(upc);
+  });
+
   return (
     // pb-14 clears the fixed bottom tab bar — 56px, outside document flow, so
     // nothing reserves space for it and the last recent row sits underneath it.
@@ -79,6 +94,8 @@ const LookupEntryScreen = ({
 
           <input
             type="text"
+            ref={gun.ref}
+            inputMode={gun.inputMode}
             value={manualUpc}
             onChange={(e) => setManualUpc(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleManualSearch()}
@@ -89,7 +106,16 @@ const LookupEntryScreen = ({
           <div className="relative">
             {cameraOpen ? (
               <>
-                <DevUpcScanner handleScan={handleScan} retryKey={retryKey} />
+                {/* The shared camera. This screen answers one question, so it
+                    stops on the read, and it keeps its own error panel below —
+                    passing `onError` is what tells the component not to print
+                    the message a second time inside the frame. */}
+                <ScannerView
+                  onDetected={handleScan}
+                  stopOnRead
+                  retryKey={retryKey}
+                  onError={(message) => dispatch(setError(message))}
+                />
                 <button
                   className="mt-1.5 text-[11.5px] text-content/85 underline"
                   onClick={() => setCameraOpen(false)}
