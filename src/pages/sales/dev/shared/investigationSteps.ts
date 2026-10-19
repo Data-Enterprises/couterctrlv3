@@ -203,6 +203,10 @@ export const OWNER_LABEL: Record<Exclude<Owner, null>, string> = {
  */
 const DESK: Record<Cause, Owner> = {
   "never-ordered": "buyer",
+  // The buyer's, and a real list: the other store sells these and this one
+  // does not. What it does NOT claim is that somebody missed an order --
+  // there is no order history in the window to miss.
+  "not-carried": "buyer",
   "not-received": "vendor",
   cost: "buyer",
   "price-mix": "price",
@@ -224,6 +228,8 @@ export interface Desk {
 const SAYS: Record<Cause, (n: number, money: string) => string> = {
   "never-ordered": (n, m) =>
     `${n.toLocaleString("en-US")} items with no order here in the window, worth ${m} at the other store.`,
+  "not-carried": (n, m) =>
+    `${n.toLocaleString("en-US")} items the other store sells and this one shows no sign of, worth ${m} there. No orders came back for either store over the window, so nothing here says whether they were ever asked for.`,
   "not-received": (n, m) =>
     `${n.toLocaleString("en-US")} items ordered here that never arrived, worth ${m}.`,
   cost: (n, m) =>

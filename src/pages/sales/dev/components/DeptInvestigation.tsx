@@ -437,8 +437,8 @@ const TabSkeleton = ({
  * grid would hide that disagreement instead of showing it.
  */
 const SUGGESTED: Record<string, Cause[]> = {
-  ringing: ["never-ordered"],
-  orders: ["never-ordered", "not-received"],
+  ringing: ["never-ordered", "not-carried"],
+  orders: ["never-ordered", "not-carried", "not-received"],
   price: ["price-mix"],
   mix: ["price-mix"],
 };
@@ -2158,7 +2158,9 @@ const SupplyPanel = ({
                   : supply.orders.length > 0
                     ? "No order in the window carries any of those codes."
                     : orders.inWindow === 0
-                      ? "Neither store placed an order of any kind over the window. That is the finding, not a gap in the data."
+                      ? supply.deliveries.length > 0
+                        ? "No order of any kind came back for either store over the window, and the deliveries below arrived anyway — which is what a department delivered straight off the vendor's truck looks like. Nothing here can say an item was never ordered, so those items are listed as not carried instead."
+                        : "Neither store placed an order of any kind over the window. That is the finding, not a gap in the data."
                       : `${orders.inWindow.toLocaleString("en-US")} order lines came back for these two stores over the window and none of them is in this department — by product code or by the department the order itself names.`}
               </p>
             )}

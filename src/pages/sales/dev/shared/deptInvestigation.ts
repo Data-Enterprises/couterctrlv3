@@ -32,6 +32,7 @@ import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice
  */
 export type Cause =
   | "never-ordered"
+  | "not-carried"
   | "not-received"
   | "cost"
   | "not-moving"
@@ -204,7 +205,22 @@ const costsMore = (f: ItemFacts, bands: Bands): boolean => {
  * after all of that is named `streamlined` rather than guessed at -- the two
  * stores are level on it, or nothing in this data separates them.
  */
-export const causeOf = (f: ItemFacts, bands: Bands = DEFAULT_BANDS): Cause => {
+export const causeOf = (
+  f: ItemFacts,
+  bands: Bands = DEFAULT_BANDS,
+  /**
+   * Whether there is any order history to reason from.
+   *
+   * False when the window returned no orders at all for either store, which
+   * is what a department delivered straight off the vendor's truck looks
+   * like: invoices arrive, no purchase order is ever raised. "Never ordered"
+   * rests on `orderedQty === 0` being a fact ABOUT THE ITEM, and when every
+   * item in the window is at nought that is an absence of evidence rather
+   * than evidence of absence -- the page was handing a buyer fifty items it
+   * had no order data for and calling it a missed order.
+   */
+  ordersKnown: boolean = true,
+): Cause => {
   const gap = f.mineTy - f.theirsTy;
   const ordered = f.orderedQty > 0;
   const received = f.receivedUnits > 0;
@@ -213,7 +229,9 @@ export const causeOf = (f: ItemFacts, bands: Bands = DEFAULT_BANDS): Cause => {
   // that never reached the shelf cannot be explained by what it cost or what
   // it was priced at.
   if (!ordered && !received && f.mineTy === 0 && f.theirsTy > 0)
-    return "never-ordered";
+    return ordersKnown ? "never-ordered" : "not-carried";
+  // Ordered-but-not-arrived needs an order to have been placed, so it cannot
+  // fire at all without order history.
   if (ordered && !received && gap < 0) return "not-received";
 
   // Then buying terms — BEFORE "ahead", and that order is the point. An item
@@ -260,6 +278,7 @@ export const ratiosOf = (f: ItemFacts): Ratios => {
 
 export const CAUSE_LABEL: Record<Cause, string> = {
   "never-ordered": "Never ordered",
+  "not-carried": "Not carried here",
   "not-received": "Didn't arrive",
   cost: "Costing more",
   "not-moving": "Not moving",
@@ -272,6 +291,7 @@ export const CAUSE_LABEL: Record<Cause, string> = {
  *  they go to three different people. */
 export const CAUSE_OWNER: Record<Cause, string> = {
   "never-ordered": "buyer",
+  "not-carried": "nothing on file either way",
   "not-received": "vendor",
   cost: "buying terms",
   "not-moving": "merchandising",
@@ -297,6 +317,14 @@ export const CAUSE_TONE: Record<Cause, { chip: string; ring: string }> = {
   "never-ordered": {
     chip: "bg-severity_critical_bg text-severity_critical_text",
     ring: "ring-severity_critical_text/40",
+  },
+  // Indigo, not the critical red "never ordered" wears. The finding is the
+  // same shape -- they sell it, we do not -- but the claim is weaker, and a
+  // department with no purchase orders at all would otherwise light up red
+  // every week for doing nothing wrong.
+  "not-carried": {
+    chip: "bg-indigo-50 text-indigo-900",
+    ring: "ring-indigo-900/40",
   },
   "not-received": {
     chip: "bg-severity_watch_bg text-severity_watch_text",
@@ -414,6 +442,8 @@ export const evidenceSays = (
         ? `Both stores sold it, and ${us} buys it for more.`
         : `Both stores sold it. ${us} buys it for ${cash(per)} more a unit, which cost ${cash(item.margins.costPenalty ?? 0)} on the units it sold.`;
     }
+    case "not-carried":
+      return `Nothing here says ${us} ever had it, and no orders came back for the window to say whether it was ever asked for. ${theirs}`;
     case "price-mix":
       return `${us} sold it and took ${cash(item.mineSales)} against ${cash(item.theirsSales)} — less per unit, not fewer of them.`;
     case "not-moving":
@@ -425,10 +455,14 @@ export const evidenceSays = (
   }
 };
 
-export const judge = (f: ItemFacts, bands: Bands = DEFAULT_BANDS): ItemVerdict => ({
+export const judge = (
+  f: ItemFacts,
+  bands: Bands = DEFAULT_BANDS,
+  ordersKnown: boolean = true,
+): ItemVerdict => ({
   ...f,
   gap: f.mineTy - f.theirsTy,
-  cause: causeOf(f, bands),
+  cause: causeOf(f, bands, ordersKnown),
   ratios: ratiosOf(f),
   margins: marginsOf(f),
 });
@@ -510,6 +544,10 @@ export interface InvestigationInput {
   receivers: ReceiverItemSearchReceiver[];
   metric: GradingMetric;
   bands?: Bands;
+  /** False when the window returned no orders for either store — see
+   *  `causeOf`. Defaults to true, which is the state every caller with
+   *  orders in hand is in. */
+  ordersKnown?: boolean;
 }
 
 export const buildFacts = (input: InvestigationInput): ItemVerdict[] => {
@@ -585,6 +623,7 @@ export const buildFacts = (input: InvestigationInput): ItemVerdict[] => {
           receivedUnits: receivedBy[c] ?? 0,
         },
         input.bands,
+        input.ordersKnown ?? true,
       ),
     )
     .sort((a, b) => a.gap - b.gap);
@@ -617,6 +656,7 @@ export interface Summary {
 
 const CAUSE_ORDER: Cause[] = [
   "never-ordered",
+  "not-carried",
   "not-received",
   "cost",
   "not-moving",
