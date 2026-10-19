@@ -400,7 +400,10 @@ interface OrderLine {
 
 interface ReceiptLine {
   product_code: string;
-  units: number;
+  /** The selling-unit count. `units` on the same line means something else
+   *  depending on how the vendor billed and is 0 on a case-billed invoice,
+   *  so nothing here reads it — see the note in `vitalsOf`. */
+  qty: number;
   ext_cost: number;
   item_return: number;
 }
@@ -434,7 +437,13 @@ const sideOf = (
     for (const l of mine) {
       // A return is not a delivery, and counting one as units arriving
       // would close a gap that is still open.
-      const units = l.item_return ? -l.units : l.units;
+      // `qty`, not `units`. On this endpoint's lines `qty` is the selling-unit
+      // count and `cases` is how many cases they came in -- which is why Item
+      // Actions derives its case size as qty / cases. `units` carries a
+      // different thing depending on how the vendor billed, and on a
+      // case-billed invoice it comes back 0, which read here as a delivery
+      // that never arrived.
+      const units = l.item_return ? -l.qty : l.qty;
       at.units += units;
       at.cost += l.ext_cost;
       receivedUnits += units;
@@ -501,10 +510,9 @@ const deliveryRecords = (
         date: r.invoice_date,
         vendor: r.vendor_name || "Unknown vendor",
         lines: lines.length,
-        units: lines.reduce(
-          (t, l) => t + (l.item_return ? -l.units : l.units),
-          0,
-        ),
+        // `qty` is the selling-unit count on these lines; `units` comes
+        // back 0 on a case-billed invoice. See the note in vitalsOf.
+        units: lines.reduce((t, l) => t + (l.item_return ? -l.qty : l.qty), 0),
         cost: lines.reduce((t, l) => t + l.ext_cost, 0),
         status: null,
         mine,

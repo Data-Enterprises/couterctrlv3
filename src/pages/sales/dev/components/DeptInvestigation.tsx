@@ -1485,7 +1485,9 @@ const SupplyPanel = ({
         r.lines.map((l) => ({
           code: String(l.product_code),
           description: l.product_description,
-          units: l.item_return ? -l.units : l.units,
+          // `qty` is the selling-unit count on a receiver line, the same
+          // field the order side above reads. See the note in vitalsOf.
+          units: l.item_return ? -l.qty : l.qty,
           cost: l.ext_cost,
         })),
       );

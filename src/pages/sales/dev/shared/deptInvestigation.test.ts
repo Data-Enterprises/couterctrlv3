@@ -82,7 +82,10 @@ const receiver = (
   over: Partial<ReceiverItemSearchReceiver> = {},
 ) =>
   ({
-    lines: lines.map(([product_code, units]) => ({ product_code, units })),
+    // `qty` is the selling-unit count on a receiver line; `units` means
+    // something else depending on how the vendor billed and comes back 0 on
+    // a case-billed invoice.
+    lines: lines.map(([product_code, qty]) => ({ product_code, qty })),
     ...over,
   }) as ReceiverItemSearchReceiver;
 
