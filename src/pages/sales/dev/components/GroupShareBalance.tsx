@@ -150,8 +150,8 @@ const GroupShareBalance = ({
     return applySort(byStanding(kept), (r, col) =>
       col === "share" ? r.sharePct : col === "change" ? r.changePct : r.money,
     );
-    // applySort is rebuilt every render; `sort` is what actually changes it.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // `sort` is what actually changes applySort, which is rebuilt every
+    // render and cannot be a dependency.
   }, [shareRows, band, sort]);
 
   // The store the rail reads. Nothing picked lands on the biggest faller,
@@ -187,7 +187,7 @@ const GroupShareBalance = ({
   return (
     <div data-help="share-balance" className="flex-1 min-h-0 flex flex-col">
       <div className="flex items-center gap-2 px-4 py-2 flex-shrink-0">
-        <span className="text-[13px] font-semibold text-content flex-shrink-0">
+        <span className="text-[14px] font-semibold text-content flex-shrink-0">
           Each store&rsquo;s share of group sales
         </span>
         {/* The three bands, the way the left panel carries Crit, Watch and
@@ -199,7 +199,7 @@ const GroupShareBalance = ({
             key={st}
             onClick={() => setBand((b) => (b === st ? null : st))}
             title={BAND_WHY[st]}
-            className={`text-[11px] font-semibold px-2 py-0.5 rounded-full transition-shadow ${
+            className={`text-[12px] font-semibold px-2.5 py-0.5 rounded-full transition-shadow ${
               TONE[st].pill
             } ${band === st ? "ring-2 ring-content/25 shadow-sm" : ""}`}
           >
@@ -209,7 +209,7 @@ const GroupShareBalance = ({
       </div>
 
       <div className="px-4 pb-3 flex-1 min-h-0 flex flex-col">
-        <p className="text-[11.5px] text-content/85 leading-snug mb-1.5 flex-shrink-0">
+        <p className="text-[12.5px] text-content/85 leading-snug mb-2 flex-shrink-0">
           <span className="font-semibold text-content">{plain(moved)}</span> of
           the group&rsquo;s week moved from {stores(balance.lost.length)} to{" "}
           {stores(balance.gained.length)} that took more than usual.
@@ -229,7 +229,7 @@ const GroupShareBalance = ({
               style={{ gridTemplateColumns: COLS }}
             >
               <span className={PERF_SORT_HEADER}>Store</span>
-              <span className="text-[10px] font-semibold text-content/80 truncate">
+              <span className="text-[11px] font-semibold text-content/80 truncate">
                 share against usual
               </span>
               <SortHeader
@@ -262,7 +262,7 @@ const GroupShareBalance = ({
                   <button
                     key={keyOf(r)}
                     onClick={() => setPickedKey(keyOf(r))}
-                    className={`w-full grid items-center gap-2 px-1 py-1.5 border-l-2 border-b border-b-gray-100 text-left transition-colors ${
+                    className={`w-full grid items-center gap-2 px-1 py-2.5 border-l-2 border-b border-b-gray-100 text-left transition-colors ${
                       sel
                         ? "bg-row_selected border-row_selected_border"
                         : "border-transparent hover:bg-gray-50"
@@ -273,7 +273,7 @@ const GroupShareBalance = ({
                         resolves identically for both and only the NUMBER
                         tells them apart. Without this the falling store wore
                         its neighbour's name. */}
-                    <span className="min-w-0 text-[12px] font-medium text-content truncate">
+                    <span className="min-w-0 text-[13px] font-medium text-content truncate">
                       {applyStoreNumberToName(
                         r.storeName,
                         r.storeNumber,
@@ -286,7 +286,7 @@ const GroupShareBalance = ({
                         before anybody reads a number — and the bar's colour
                         is the band, which is what the section headings used
                         to say. */}
-                    <span className="relative h-3.5 rounded bg-bkg block">
+                    <span className="relative h-4 rounded bg-bkg block">
                       <span
                         className={`absolute left-0 top-0 bottom-0 rounded-l ${TONE[r.standing].bar}`}
                         style={{ width: widthOf(r.sharePct) }}
@@ -297,16 +297,16 @@ const GroupShareBalance = ({
                       />
                     </span>
 
-                    <span className="text-right text-[11.5px] font-semibold text-content tabular-nums">
+                    <span className="text-right text-[12.5px] font-semibold text-content tabular-nums">
                       {r.sharePct.toFixed(1)}%
                     </span>
                     <span
-                      className={`text-right text-[11.5px] font-semibold tabular-nums ${TONE[r.standing].text}`}
+                      className={`text-right text-[12.5px] font-semibold tabular-nums ${TONE[r.standing].text}`}
                     >
                       {changeText(r.changePct)}
                     </span>
                     <span
-                      className={`text-right text-[11.5px] font-semibold tabular-nums ${TONE[r.standing].text}`}
+                      className={`text-right text-[12.5px] font-semibold tabular-nums ${TONE[r.standing].text}`}
                     >
                       {money(r.money)}
                     </span>
@@ -315,7 +315,7 @@ const GroupShareBalance = ({
               })}
             </div>
 
-            <div className="flex items-center gap-3.5 pt-2 flex-shrink-0 text-[10.5px] text-content/85">
+            <div className="flex items-center gap-3.5 pt-2 flex-shrink-0 text-[11px] text-content/85">
               <span className="flex items-center gap-1.5">
                 <span className="w-3.5 h-2 rounded-sm bg-brand_navy" />
                 share this week

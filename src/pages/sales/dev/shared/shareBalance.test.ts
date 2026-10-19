@@ -271,3 +271,50 @@ describe("byStanding", () => {
     expect(given.map((r) => r.storeid)).toEqual([365, 370]);
   });
 });
+
+describe("byStanding", () => {
+  const row = (
+    storeid: number,
+    standing: ShareRow["standing"],
+    money: number,
+  ): ShareRow => ({
+    storeid,
+    storeName: `Store ${storeid}`,
+    storeNumber: String(storeid),
+    storeNumbersForId: [String(storeid)],
+    sharePct: 10,
+    usualPct: 10,
+    changePct: 0,
+    money,
+    standing,
+    ownPct: null,
+  });
+
+  it("leads with Falling and ends with Rising", () => {
+    const out = byStanding([
+      row(1, "rising", 500),
+      row(2, "consistent", 10),
+      row(3, "falling", -500),
+    ]);
+    expect(out.map((r) => r.standing)).toEqual([
+      "falling",
+      "consistent",
+      "rising",
+    ]);
+  });
+
+  it("puts the biggest mover first inside a band", () => {
+    const out = byStanding([
+      row(1, "falling", -200),
+      row(2, "falling", -900),
+      row(3, "falling", -500),
+    ]);
+    expect(out.map((r) => r.storeid)).toEqual([2, 3, 1]);
+  });
+
+  it("leaves the rows it was handed alone", () => {
+    const rows = [row(1, "rising", 500), row(2, "falling", -500)];
+    byStanding(rows);
+    expect(rows.map((r) => r.storeid)).toEqual([1, 2]);
+  });
+});
