@@ -7,6 +7,11 @@ import type { HelpContent } from "../helpTypes";
  * comparison report already holding a symptom, and everything here is about
  * turning that symptom into something somebody can act on. The Sales panel
  * describes the page you came from.
+ *
+ * Written the way the Sales guides are: one guide per thing somebody came
+ * here to do, each step naming the control it is about so the panel can point
+ * at it, and each step saying what the screen does once it is done. A guide
+ * that walks the four tabs in order is a tour; these are tasks.
  */
 export const SALES_INVESTIGATE_HELP: HelpContent = {
   screen: "Sub department investigation",
@@ -15,31 +20,28 @@ export const SALES_INVESTIGATE_HELP: HelpContent = {
 
   guides: [
     {
-      id: "four-tabs",
-      title: "Work a department",
-      desc: "Four tabs, in the order the question gets answered",
+      id: "is-it-real",
+      title: "Find out whether the gap is real",
+      desc: "Start on Summary — a department can be down with nothing behind it",
       steps: [
         {
-          title: "Start on Summary",
-          pre: "It says whether the department-level shape holds up once the items are read. A department can be down overall and have no item behind it worth chasing, and that is a finding.",
-          see: "The tab itself carries the verdict — Holds or Doesn't hold — so you can read it without opening it.",
+          title: "Read the verdict on the tab",
+          pre: "You land on",
+          chip: "Summary",
+          post: ". The tab carries its own answer — Holds or Doesn't hold — so you can read it without opening anything.",
+          see: "Holds means the department's shortfall is still there once the items are read. Doesn't hold means it is not, and that is a finding: there is nothing here to chase.",
           anchor: "tabs",
         },
         {
-          title: "Items names the causes",
-          pre: "Every item in the department, both stores, biggest difference first. The chips above the grid are the causes, each with how many items and what they are worth.",
-          see: "Clicking a chip narrows the grid to that cause. Clicking a row opens its evidence on the right — what it sold for at each store, what it cost, and every order and receipt that touched it.",
-          anchor: "causes",
+          title: "Check the week it covers",
+          pre: "The header carries the department and the sales week beside it.",
+          see: "Every sales figure on this screen is that week at both stores, matched day for day.",
+          anchor: "supply-window",
         },
         {
-          title: "Supply shows the documents",
-          pre: "What each store ordered and what it received, over a longer window than the sales week. Orders first, then receipts, with the lines on each.",
-          anchor: "tabs",
-        },
-        {
-          title: "Hand-off is the list you send",
-          pre: "The causes grouped by who owns the fix. A buyer's list, a vendor's list and the ones nothing in this data can name.",
-          see: "Lists nobody owns are still shown rather than dropped — a shortfall that quietly vanishes is one somebody finds again next week.",
+          title: "Follow the summary into the items",
+          pre: "The cards on Summary are clickable. Picking a vendor, an item or Show all moves you to the Items tab already filtered to it.",
+          see: "The Items tab opens with the filter applied, rather than on the whole department.",
           anchor: "tabs",
         },
       ],
@@ -54,9 +56,183 @@ export const SALES_INVESTIGATE_HELP: HelpContent = {
         },
       ],
     },
+
+    {
+      id: "find-the-items",
+      title: "Find the items behind it",
+      desc: "Narrow by cause, then read one item's evidence",
+      steps: [
+        {
+          title: "Pick a cause",
+          pre: "The chips above the grid are the causes, each with how many items it holds and what they are worth.",
+          chip: "Never ordered",
+          post: "and the rest narrow the grid to themselves. Click the lit one again to clear it.",
+          see: "The chip lights and the grid below shows only that cause.",
+          anchor: "causes",
+        },
+        {
+          title: "Read the grid",
+          pre: "Every item in the department, both stores, biggest difference first. Search by UPC or description, or filter the vendor and cause columns.",
+          see: "This store's week, the other store's week, and the difference between them — with the margin gap beside it once the costs are in.",
+          anchor: "grid",
+        },
+        {
+          title: "Open one item's evidence",
+          pre: "Click a row. The rail opens on the right with everything the cause was built from.",
+          see: "What it sold for at each store, what each store paid for it, and every order and receipt that touched it in the window.",
+          anchor: "evidence",
+        },
+        {
+          title: "Take the list with you",
+          pre: "Press",
+          chip: "Export CSV",
+          post: "to take what the grid is showing.",
+          see: "The filter and the sort travel with it — what you export is what you were looking at, not the whole department.",
+          anchor: "export",
+        },
+      ],
+      issues: [
+        {
+          q: "A cause looks wrong on an item",
+          a: "Open its evidence. The rail shows the orders, the receipts and both stores' prices — the three things every cause is decided from. If the documents disagree with the label, that is worth reporting.",
+        },
+        {
+          q: "The grid is empty",
+          a: "A chip is still lit, or a search is still in the box. Click the lit chip again, or clear the search, to get the whole department back.",
+        },
+      ],
+    },
+
+    {
+      id: "supply",
+      title: "Check what was ordered and what arrived",
+      desc: "The documents behind the shortfall, over a longer window",
+      steps: [
+        {
+          title: "Open Supply",
+          pre: "Choose the",
+          chip: "Supply",
+          post: "tab. Ordered comes first, then Received, each with the lines on every document.",
+          see: "One line per order or receipt, with how many of its lines belong to this department.",
+          anchor: "tabs",
+        },
+        {
+          title: "Mind the window",
+          pre: "Orders and receipts are read over 42 days, not over the sales week — a delivery three weeks ago is what explains an empty shelf today.",
+          see: "The header carries the sales week. The supply window is wider on purpose, which is why it can never explain the LW or LY columns.",
+          anchor: "supply-window",
+        },
+        {
+          title: "Trace specific items",
+          pre: "Paste UPCs into the box above the lists to see only the documents carrying them.",
+          see: "Both lists narrow to the orders and receipts that touched those codes.",
+        },
+      ],
+      issues: [
+        {
+          q: "It says neither store ordered anything",
+          a: "That is a real answer, not a gap: some departments are delivered straight off the vendor's truck and never carry an order. When it happens, Never ordered is withheld and those items read as Not carried here instead — the shape without the claim.",
+        },
+      ],
+    },
+
+    {
+      id: "hand-off",
+      title: "Hand it to the person who can fix it",
+      desc: "The causes grouped by who owns them",
+      steps: [
+        {
+          title: "Open Hand-off",
+          pre: "Choose the",
+          chip: "Hand-off",
+          post: "tab. The causes are grouped into the buyer's list, the vendor's list, and the ones nothing in this data can name.",
+          see: "Each list carries its item count and what it is worth, with a line you can send as it stands.",
+          anchor: "tabs",
+        },
+        {
+          title: "Check a list before you send it",
+          pre: "Show in grid takes you back to Items with that cause already filtered, so you can read the evidence behind any line on it.",
+          anchor: "causes",
+        },
+        {
+          title: "Send it",
+          pre: "Each list exports on its own, so the buyer gets the buyer's items and nobody else's.",
+          anchor: "export",
+        },
+      ],
+      issues: [
+        {
+          q: "A list has no owner",
+          a: "It is still shown rather than dropped. A shortfall that quietly vanishes is one somebody finds again next week.",
+        },
+      ],
+    },
   ],
 
-  fixes: [],
+  fixes: [
+    {
+      id: "cause-looks-wrong",
+      title: "An item's cause does not look right",
+      questions: [
+        {
+          id: "which",
+          title: "Which cause is it wearing?",
+          options: [
+            { label: "We're ahead, but the two look level", result: "floor" },
+            { label: "Streamlined, and I expected a cause", result: "streamlined" },
+            { label: "Not carried here, but we do carry it", result: "no-orders" },
+            { label: "Never ordered, but it was ordered", result: "window" },
+          ],
+        },
+      ],
+      results: [
+        {
+          id: "floor",
+          tone: "ok",
+          badge: "Working as intended",
+          title: "Ahead means ahead by more than $5",
+          why: "An exact tie is the same week rung twice, not a win. Anything inside $5 either way is level and sits in Streamlined, so We're ahead is only items this store genuinely sold more of.",
+          todo: [
+            "Open the item's evidence and compare the two Sold for figures.",
+            "If the difference is under $5, it is level and the label is right.",
+          ],
+        },
+        {
+          id: "streamlined",
+          tone: "ok",
+          badge: "Working as intended",
+          title: "Streamlined is the quiet majority",
+          why: "It holds the items the two stores are level on, plus the tail nothing in this data separates. It is not a list of mysteries somebody owes an answer for — it is everything with nothing to chase.",
+          todo: [
+            "Open the item's evidence. If both stores sold it at a similar price for similar money, there is no cause to find.",
+            "If the evidence shows a real difference, report it — that is a cause that should have been named.",
+          ],
+        },
+        {
+          id: "no-orders",
+          tone: "ok",
+          badge: "Working as intended",
+          title: "No orders came back for either store",
+          why: "Not carried here is Never ordered without the claim. When the whole window holds no orders for either store — a department delivered off the truck, say — every item would otherwise read as a missed order, so the claim is withheld.",
+          todo: [
+            "Open Supply and check whether either store has any order at all in the window.",
+            "If both are empty, the label is doing its job.",
+          ],
+        },
+        {
+          id: "window",
+          tone: "warn",
+          badge: "Check the window",
+          title: "The order may be outside the 42 days",
+          why: "Orders are read over 42 days back from the end of the sales week. A slow category ordered monthly or less can have its last order fall outside that, and the item then reads as never ordered.",
+          todo: [
+            "Open Supply and look for the item in the Ordered list.",
+            "If it is not there, the order is older than the window — worth saying so rather than treating it as a buyer's miss.",
+          ],
+        },
+      ],
+    },
+  ],
 
   terms: [
     {
@@ -108,6 +284,11 @@ export const SALES_INVESTIGATE_HELP: HelpContent = {
       term: "We're ahead",
       def: "This store sold more of it, by more than the $5 floor. An exact tie is not ahead — it is the same week rung twice, and it sits in Streamlined.",
       anchor: "causes",
+    },
+    {
+      term: "The evidence rail",
+      def: "What one item's cause was built from: both stores' prices, both stores' costs, and every order and receipt that touched it. If a label looks wrong, this is where to check it.",
+      anchor: "evidence",
     },
     {
       term: "Dept lines",

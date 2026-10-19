@@ -3122,7 +3122,10 @@ const DeptInvestigation = ({
               rail is the other. Left as siblings of the rail the pager
               became a SECOND column — the grid shrank to its own width and
               the pager floated in the middle of the space beside it. */}
-              <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
+              <div
+                data-help="grid"
+                className="flex-1 min-w-0 flex flex-col overflow-hidden"
+              >
                 <div className="flex-1 min-h-0 overflow-auto thin-scrollbar">
                   <table className="border-collapse font-mono text-[11px] w-max">
                     <thead>
@@ -3411,6 +3414,7 @@ const DeptInvestigation = ({
             panel reads as a hole in it.
           */}
               <div
+                data-help="evidence"
                 className={`absolute top-0 right-0 bottom-0 z-20 w-[520px] shadow-rail transition-transform duration-200 ease-out motion-reduce:transition-none ${
                   pickedItem ? "translate-x-0" : "translate-x-full"
                 }`}
