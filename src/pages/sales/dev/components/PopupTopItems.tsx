@@ -123,6 +123,21 @@ const dayText = (iso: string | null | undefined) => {
   return `${Number(m)}/${Number(d)}/${y}`;
 };
 
+/**
+ * Keys with a request already in the air.
+ *
+ * The slice's loading flag cannot do this job. It is read from the render
+ * that scheduled the effect, so a second run scheduled from that same render
+ * sees the value it had BEFORE the first run dispatched — and development
+ * does exactly that: StrictMode mounts, unmounts and mounts again, so the tab
+ * asked for all three windows twice on every open.
+ *
+ * It lives outside React because it has to survive the remount it exists to
+ * absorb, and it is keyed by store-and-week so two different stores still
+ * fetch independently.
+ */
+const inFlight = new Set<string>();
+
 const PopupTopItems = ({
   storeId,
   start,
@@ -191,7 +206,7 @@ const PopupTopItems = ({
    * ever two columns on this tab.
    */
   useEffect(() => {
-    if (haveRows || topItemsLoading) return;
+    if (haveRows || inFlight.has(key)) return;
     // Held from an earlier visit to this store and week: three calls saved,
     // and the tab paints on this tick rather than after three round trips.
     // The baselines ride in the same entry, so a hit serves the comparisons
@@ -200,7 +215,7 @@ const PopupTopItems = ({
       dispatch(restoreTopItems(key));
       return;
     }
-    let live = true;
+    inFlight.add(key);
     dispatch(setTopItemsLoading(true));
     Promise.all([
       getTopItems(url, token, storeId, start, end, TOP_ITEMS_FETCH),
@@ -208,7 +223,6 @@ const PopupTopItems = ({
       getTopItems(url, token, storeId, lyStart, lyEnd, TOP_ITEMS_FETCH),
     ])
       .then(([tyResp, lwResp, lyResp]) => {
-        if (!live) return;
         const ty: TopItemsResponse = tyResp.data;
         if (ty.error !== 0) {
           toast.error(ty.msg || "Could not read this store's top items");
@@ -236,11 +250,14 @@ const PopupTopItems = ({
           }),
         );
       })
-      .catch((err: JsonError) => live && toast.error(err.message))
-      .finally(() => live && dispatch(setTopItemsLoading(false)));
-    return () => {
-      live = false;
-    };
+      .catch((err: JsonError) => toast.error(err.message))
+      // The result is written to the slice under its own key, so it stays
+      // useful whether or not this tab is still mounted -- which is what
+      // lets the request outlive a remount instead of being abandoned by it.
+      .finally(() => {
+        inFlight.delete(key);
+        dispatch(setTopItemsLoading(false));
+      });
   }, [key, haveRows]);
 
   // A code from the last store is not a code in this one.
