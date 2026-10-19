@@ -46,11 +46,15 @@ import type {
 
 interface Props {
   item: ItemVerdict;
-  /** The names, not the numbers. Both halves of the rail are two columns of
-   *  figures and a bare "15" over one of them is a legend the reader has to
-   *  go and find; the name already carries the number. */
+  /** The names, not the numbers alone. Both halves of the rail are two
+   *  columns of figures and a bare "15" over one of them is a legend the
+   *  reader has to go and find. The number comes down beside it so the
+   *  header can set it on its own line rather than let it run off the end
+   *  of the column -- see `splitStore`. */
   openStoreName: string;
+  openStoreNumber: string;
   compareStoreName: string;
+  compareStoreNumber: string;
   mineOrders: AllOrder[];
   theirsOrders: AllOrder[];
   mineReceipts: ReceiverItemSearchReceiver[];
@@ -68,6 +72,21 @@ interface Props {
   onClose: () => void;
 }
 
+/**
+ * The name without the store number it already carries.
+ *
+ * A column this narrow cannot hold "Bruces Foodland 369" on one line, and
+ * what it was dropping was the front of it -- three stores all reading
+ * "OODLAND 36_". The number goes on its own line underneath, where it is
+ * the part that tells the two apart.
+ */
+const splitStore = (name: string, number: string) => {
+  const full = name.trim();
+  if (!number || !full.endsWith(number)) return full;
+  const head = full.slice(0, -number.length).replace(/[\s\-·,]+$/, "");
+  return head || full;
+};
+
 const money = (v: number) => formatCurrency2(v);
 const count = (v: number) => formatBigNumber(v, 0);
 
@@ -84,6 +103,40 @@ const count = (v: number) => formatBigNumber(v, 0);
 const NONE = "—";
 
 /**
+ * A store over a money column: the name, then the number under it.
+ *
+ * One line could not hold both, and the way it failed was the worst
+ * available — `justify-end` on a flex row pushes the overflow off the LEFT,
+ * so a truncate that was meant to add an ellipsis instead silently ate the
+ * front of the name and three stores all read "OODLAND 36_".
+ */
+const StoreHead = ({
+  name,
+  number,
+  dot,
+}: {
+  name: string;
+  number: string;
+  dot: string;
+}) => (
+  <span className="min-w-0" title={number ? `${name} ${number}` : name}>
+    <span className="flex items-center justify-end gap-1.5 min-w-0">
+      <span className={`w-2 h-2 rounded-full flex-shrink-0 ${dot}`} />
+      {/* normal-case: the names are long and uppercase is wider still, and
+          the column is 96px. */}
+      <span className="min-w-0 truncate normal-case">
+        {splitStore(name, number)}
+      </span>
+    </span>
+    {number && (
+      <span className="block text-right tabular-nums text-[11.5px] font-bold text-content">
+        {number}
+      </span>
+    )}
+  </span>
+);
+
+/**
  * The item, both stores, one table.
  *
  * It used to be three pairs of tinted boxes stacked down the panel: six
@@ -94,11 +147,15 @@ const NONE = "—";
 const SideBySide = ({
   item,
   mine,
+  mineNumber,
   theirs,
+  theirsNumber,
 }: {
   item: ItemVerdict;
   mine: string;
+  mineNumber: string;
   theirs: string;
+  theirsNumber: string;
 }) => {
   const m = item.margins;
   const noCost = item.mineCogs === 0 && item.theirsCogs === 0;
@@ -137,25 +194,19 @@ const SideBySide = ({
     <div className="rounded-lg bg-custom-white shadow-card-sm overflow-hidden">
       <div
         className="grid gap-x-3 px-3 pt-2.5 pb-1.5 border-b border-brand_navy/15 text-[11.5px] font-bold uppercase tracking-wide text-content/85"
-        style={{ gridTemplateColumns: "minmax(0,1fr) 84px 84px 84px" }}
+        style={{ gridTemplateColumns: "minmax(0,1fr) 96px 96px 96px" }}
       >
         <span />
-        <span className="flex items-center justify-end gap-1.5 truncate">
-          <span className="w-2 h-2 rounded-full bg-store_open flex-shrink-0" />
-          {mine}
-        </span>
-        <span className="flex items-center justify-end gap-1.5 truncate">
-          <span className="w-2 h-2 rounded-full bg-store_compare flex-shrink-0" />
-          {theirs}
-        </span>
-        <span className="text-right">Gap</span>
+        <StoreHead name={mine} number={mineNumber} dot="bg-store_open" />
+        <StoreHead name={theirs} number={theirsNumber} dot="bg-store_compare" />
+        <span className="text-right self-end">Gap</span>
       </div>
 
       {rows.map((r) => (
         <div
           key={r.label}
           className="grid gap-x-3 px-3 py-2 border-b border-brand_navy/15 last:border-b-0 text-[13.5px]"
-          style={{ gridTemplateColumns: "minmax(0,1fr) 84px 84px 84px" }}
+          style={{ gridTemplateColumns: "minmax(0,1fr) 96px 96px 96px" }}
         >
           <span className="text-content/85 truncate">{r.label}</span>
           <span className="text-right tabular-nums font-semibold text-content bg-store_open_tint/50 -my-2 py-2 px-1">
@@ -177,7 +228,8 @@ const SideBySide = ({
           >
             {r.gap === null
               ? NONE
-              : (r.gap < 0 ? "−" : r.gap > 0 ? "+" : "") + money(Math.abs(r.gap))}
+              : (r.gap < 0 ? "−" : r.gap > 0 ? "+" : "") +
+                money(Math.abs(r.gap))}
           </span>
         </div>
       ))}
@@ -209,7 +261,9 @@ const Timeline = ({
   label: string;
 }) => (
   <div className="min-w-0">
-    <div className={`text-[13px] font-semibold uppercase tracking-wide text-content/85 pb-1.5 border-b-2 leading-tight ${tint}`}>
+    <div
+      className={`text-[13px] font-semibold uppercase tracking-wide text-content/85 pb-1.5 border-b-2 leading-tight ${tint}`}
+    >
       {label}
     </div>
 
@@ -235,7 +289,9 @@ const Timeline = ({
             <span className="text-[12.5px] font-semibold uppercase tracking-wide text-brand_slate w-[52px] flex-shrink-0">
               {e.date.slice(5)}
             </span>
-            <span className={`text-[12px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded ${EVENT_CLASS[e.kind]}`}>
+            <span
+              className={`text-[12px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded ${EVENT_CLASS[e.kind]}`}
+            >
               {e.kind}
             </span>
             <span className="ml-auto text-[12.5px] font-semibold tabular-nums text-content">
@@ -243,7 +299,10 @@ const Timeline = ({
             </span>
           </div>
           {e.detail && (
-            <div className="text-[13px] text-content/85 mt-1 ml-[60px] truncate" title={e.detail}>
+            <div
+              className="text-[13px] text-content/85 mt-1 ml-[60px] truncate"
+              title={e.detail}
+            >
               {e.detail}
             </div>
           )}
@@ -301,7 +360,7 @@ const PriceChart = ({
   const base = H - 18;
   const span = Math.max(0.1, hi - lo);
   const at = (p: number) => ((p - lo) / span) * W;
-  const bw = Math.max(3, (W / (span * 10)) - 2);
+  const bw = Math.max(3, W / (span * 10) - 2);
 
   /* Four marks across, whatever the span: a tick a bin would be forty of
      them on a department that rings in cents. */
@@ -314,7 +373,13 @@ const PriceChart = ({
       role="img"
       aria-label={`Units sold at each price, in ten-cent steps. Most at ${money(widest.price)}.`}
     >
-      <line x1={0} x2={W} y1={base} y2={base} className="stroke-brand_navy/20" />
+      <line
+        x1={0}
+        x2={W}
+        y1={base}
+        y2={base}
+        className="stroke-brand_navy/20"
+      />
       {keys.map((k) => {
         const u = bins.get(k) ?? 0;
         const h = Math.max(2, (u / tallest) * (base - 6));
@@ -519,7 +584,9 @@ const Ladder = ({
       </div>
 
       {says && (
-        <p className="text-[12.5px] leading-snug text-content/85 mt-1.5">{says}</p>
+        <p className="text-[12.5px] leading-snug text-content/85 mt-1.5">
+          {says}
+        </p>
       )}
 
       <div className="mt-2">
@@ -541,9 +608,7 @@ const Ladder = ({
           onClick={() => setAll((v) => !v)}
           className="mt-1.5 text-[12px] font-bold text-brand_navy_hover hover:underline"
         >
-          {all
-            ? "Show fewer"
-            : `Show all ${byUnits.length} prices`}
+          {all ? "Show fewer" : `Show all ${byUnits.length} prices`}
         </button>
       )}
 
@@ -552,7 +617,9 @@ const Ladder = ({
       {ladder.points.length > 1 && ladder.blended !== null && (
         <p className="mt-2 rounded-md bg-severity_watch_bg text-severity_watch_text px-2.5 py-1.5 text-[12px] leading-snug">
           An average would call it{" "}
-          <span className="font-bold tabular-nums">{money(ladder.blended)}</span>{" "}
+          <span className="font-bold tabular-nums">
+            {money(ladder.blended)}
+          </span>{" "}
           — a price no customer paid.
         </p>
       )}
@@ -567,13 +634,7 @@ const Ladder = ({
  * not scroll past the other three every time. Open by default: a panel of
  * shut drawers makes somebody open all four to find out what is in them.
  */
-const Fold = ({
-  title,
-  children,
-}: {
-  title: string;
-  children: ReactNode;
-}) => {
+const Fold = ({ title, children }: { title: string; children: ReactNode }) => {
   const [open, setOpen] = useState(true);
   return (
     /* A seam between sections, not a frame around them: at /15 and above
@@ -599,7 +660,9 @@ const Fold = ({
 const ItemEvidence = ({
   item,
   openStoreName,
+  openStoreNumber,
   compareStoreName,
+  compareStoreNumber,
   mineOrders,
   theirsOrders,
   mineReceipts,
@@ -626,8 +689,7 @@ const ItemEvidence = ({
   /* Money over pounds, each store's own. `mineSales` rather than `mineTy`
      because the page's Qty mode makes `mineTy` a unit count, and a rate of
      pounds per pound is not a rate. */
-  const mineRate =
-    item.mineUnits > 0 ? item.mineSales / item.mineUnits : null;
+  const mineRate = item.mineUnits > 0 ? item.mineSales / item.mineUnits : null;
   const theirsRate =
     item.theirsUnits > 0 ? item.theirsSales / item.theirsUnits : null;
 
@@ -663,34 +725,34 @@ const ItemEvidence = ({
               count says which pile that is. */}
           <div className="ml-auto flex flex-col items-end gap-1 flex-shrink-0">
             <div className="flex items-center gap-1">
-            <span className="text-[12px] opacity-80 tabular-nums whitespace-nowrap mr-1">
-              {position.at + 1} of {position.of.toLocaleString("en-US")}
-            </span>
-            {/* Borders and hovers off the inherited ink, so the controls
+              <span className="text-[12px] opacity-80 tabular-nums whitespace-nowrap mr-1">
+                {position.at + 1} of {position.of.toLocaleString("en-US")}
+              </span>
+              {/* Borders and hovers off the inherited ink, so the controls
                 belong to whichever colour the cause brought with it. */}
-            <button
-              onClick={() => onStep(-1)}
-              disabled={position.at <= 0}
-              aria-label="Previous item"
-              className="w-7 h-7 rounded border border-current/25 hover:bg-current/10 disabled:opacity-40 transition-colors"
-            >
-              &lsaquo;
-            </button>
-            <button
-              onClick={() => onStep(1)}
-              disabled={position.at >= position.of - 1}
-              aria-label="Next item"
-              className="w-7 h-7 rounded border border-current/25 hover:bg-current/10 disabled:opacity-40 transition-colors"
-            >
-              &rsaquo;
-            </button>
-            <button
-              onClick={onClose}
-              aria-label="Close"
-              className="w-7 h-7 rounded text-[12px] font-semibold hover:bg-current/10 transition-colors"
-            >
-              ✕
-            </button>
+              <button
+                onClick={() => onStep(-1)}
+                disabled={position.at <= 0}
+                aria-label="Previous item"
+                className="w-7 h-7 rounded border border-current/25 hover:bg-current/10 disabled:opacity-40 transition-colors"
+              >
+                &lsaquo;
+              </button>
+              <button
+                onClick={() => onStep(1)}
+                disabled={position.at >= position.of - 1}
+                aria-label="Next item"
+                className="w-7 h-7 rounded border border-current/25 hover:bg-current/10 disabled:opacity-40 transition-colors"
+              >
+                &rsaquo;
+              </button>
+              <button
+                onClick={onClose}
+                aria-label="Close"
+                className="w-7 h-7 rounded text-[12px] font-semibold hover:bg-current/10 transition-colors"
+              >
+                ✕
+              </button>
             </div>
 
             {/* Words, not a chevron. A caret beside a close button is one
@@ -727,14 +789,22 @@ const ItemEvidence = ({
 
       <div className="flex-1 min-h-0 overflow-auto thin-scrollbar px-4 pb-4">
         <Fold title="Side by side">
-          <SideBySide item={item} mine={openStoreName} theirs={compareStoreName} />
+          <SideBySide
+            item={item}
+            mine={openStoreName}
+            mineNumber={openStoreNumber}
+            theirs={compareStoreName}
+            theirsNumber={compareStoreNumber}
+          />
         </Fold>
 
         <Fold title="Ordered, then received">
           {/* One line when there is nothing on either side. Two empty
               timelines side by side took a third of the panel to say
               nothing twice. */}
-          {supplyReady && mineEvents.length === 0 && theirEvents.length === 0 ? (
+          {supplyReady &&
+          mineEvents.length === 0 &&
+          theirEvents.length === 0 ? (
             <p className="text-[13px] leading-relaxed text-content/85 rounded-lg bg-bkg px-3.5 py-3">
               <span className="font-semibold text-content">
                 Neither store ordered or received it
@@ -743,8 +813,18 @@ const ItemEvidence = ({
             </p>
           ) : (
             <div className="grid grid-cols-2 gap-4">
-              <Timeline events={mineEvents} ready={supplyReady} tint={MINE} label={openStoreName} />
-              <Timeline events={theirEvents} ready={supplyReady} tint={THEIRS} label={compareStoreName} />
+              <Timeline
+                events={mineEvents}
+                ready={supplyReady}
+                tint={MINE}
+                label={openStoreName}
+              />
+              <Timeline
+                events={theirEvents}
+                ready={supplyReady}
+                tint={THEIRS}
+                label={compareStoreName}
+              />
             </div>
           )}
         </Fold>

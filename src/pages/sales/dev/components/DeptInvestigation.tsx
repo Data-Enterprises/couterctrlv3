@@ -1663,16 +1663,24 @@ const SupplyPanel = ({
                 body: (
                   <div
                     className="grid gap-x-3 text-[13px]"
-                    style={{ gridTemplateColumns: "minmax(0,1fr) 108px 108px" }}
+                    style={{ gridTemplateColumns: "minmax(0,1fr) 120px 120px" }}
                   >
                     <span className="pb-1.5 border-b border-brand_navy/15" />
-                    <span className="flex items-center justify-end gap-1.5 pb-1.5 border-b border-brand_navy/15 text-[11.5px] font-bold uppercase tracking-wide text-content/85 truncate">
+                    {/* min-w-0 on the TEXT, not on the flex row around it:
+                        justify-end pushes the overflow off the left, so a
+                        truncate up here ate the front of the name instead of
+                        putting an ellipsis on the end of it. */}
+                    <span className="flex items-center justify-end gap-1.5 min-w-0 pb-1.5 border-b border-brand_navy/15 text-[11.5px] font-bold uppercase tracking-wide text-content/85">
                       <span className="w-2 h-2 rounded-full bg-store_open flex-shrink-0" />
-                      {us}
+                      <span className="min-w-0 truncate normal-case" title={us}>
+                        {us}
+                      </span>
                     </span>
-                    <span className="flex items-center justify-end gap-1.5 pb-1.5 border-b border-brand_navy/15 text-[11.5px] font-bold uppercase tracking-wide text-content/85 truncate">
+                    <span className="flex items-center justify-end gap-1.5 min-w-0 pb-1.5 border-b border-brand_navy/15 text-[11.5px] font-bold uppercase tracking-wide text-content/85">
                       <span className="w-2 h-2 rounded-full bg-store_compare flex-shrink-0" />
-                      {them}
+                      <span className="min-w-0 truncate normal-case" title={them}>
+                        {them}
+                      </span>
                     </span>
 
                     {sides.map((row) => (
@@ -2961,7 +2969,9 @@ const DeptInvestigation = ({
             <ItemEvidence
               item={evidence}
               openStoreName={target.storeName}
+              openStoreNumber={target.storeNumber}
               compareStoreName={target.compareStoreName}
+              compareStoreNumber={target.compareStoreNumber}
               mineOrders={orders.mine}
               theirsOrders={orders.theirs}
               mineReceipts={receipts.mine}
