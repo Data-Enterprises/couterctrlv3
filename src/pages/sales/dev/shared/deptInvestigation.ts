@@ -37,7 +37,7 @@ export type Cause =
   | "not-moving"
   | "price-mix"
   | "ahead"
-  | "unclassified";
+  | "streamlined";
 
 export interface Bands {
   /** How far a realised price has to move before it is the explanation.
@@ -200,7 +200,8 @@ const costsMore = (f: ItemFacts, bands: Bands): boolean => {
  * reached the shelf cannot be explained by its price — running the price test
  * first would label a missing delivery a merchandising problem. Only an item
  * that was genuinely on sale all week is asked about price, and what is left
- * after all of that is named `unclassified` rather than guessed at.
+ * after all of that is named `streamlined` rather than guessed at -- the two
+ * stores are level on it, or nothing in this data separates them.
  */
 export const causeOf = (f: ItemFacts, bands: Bands = DEFAULT_BANDS): Cause => {
   const gap = f.mineTy - f.theirsTy;
@@ -219,8 +220,11 @@ export const causeOf = (f: ItemFacts, bands: Bands = DEFAULT_BANDS): Cause => {
   // Settling "ahead" on the sales gap alone called that a win.
   if (costsMore(f, bands)) return "cost";
 
-  if (gap >= 0) return "ahead";
-  if (Math.abs(gap) < bands.floor) return "unclassified";
+  // Level first, and that order is the point. An item that rang the same
+  // money at both stores has not won anything -- "ahead" was swallowing every
+  // item the two stores agreed on, which is most of a department.
+  if (Math.abs(gap) < bands.floor) return "streamlined";
+  if (gap > 0) return "ahead";
 
   const mine = realised(f.mineTy, f.mineUnits);
   const theirs = realised(f.theirsTy, f.theirsUnits);
@@ -231,7 +235,7 @@ export const causeOf = (f: ItemFacts, bands: Bands = DEFAULT_BANDS): Cause => {
   // It was here, it was priced like theirs, and it still did not sell.
   if (received || f.mineUnits > 0) return "not-moving";
 
-  return "unclassified";
+  return "streamlined";
 };
 
 export const ratiosOf = (f: ItemFacts): Ratios => {
@@ -260,7 +264,7 @@ export const CAUSE_LABEL: Record<Cause, string> = {
   "not-moving": "Not moving",
   "price-mix": "Price / mix",
   ahead: "We're ahead",
-  unclassified: "No cause found",
+  streamlined: "Streamlined",
 };
 
 /** Who owns the fix. The whole reason the causes are named separately is that
@@ -272,7 +276,7 @@ export const CAUSE_OWNER: Record<Cause, string> = {
   "not-moving": "merchandising",
   "price-mix": "same units, less money",
   ahead: "ours to keep",
-  unclassified: "worth a look",
+  streamlined: "nothing to chase",
 };
 
 /**
@@ -306,9 +310,10 @@ export const CAUSE_TONE: Record<Cause, { chip: string; ring: string }> = {
     chip: "bg-delta_positive_bg text-delta_positive_text",
     ring: "ring-delta_positive_text/40",
   },
-  // Grey is the honest colour for "we could not say". Giving it a hue would
-  // put it on the same footing as the five findings that mean something.
-  unclassified: { chip: "bg-gray-100 text-content/85", ring: "ring-content/30" },
+  // Grey is the honest colour for a department's quiet majority. Giving it a
+  // hue would put it on the same footing as the five findings that mean
+  // something, and there is nothing here to act on.
+  streamlined: { chip: "bg-gray-100 text-content/85", ring: "ring-content/30" },
 };
 
 /**
@@ -609,7 +614,7 @@ const CAUSE_ORDER: Cause[] = [
   "cost",
   "not-moving",
   "price-mix",
-  "unclassified",
+  "streamlined",
   "ahead",
 ];
 

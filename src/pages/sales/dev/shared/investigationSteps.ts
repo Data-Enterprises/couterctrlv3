@@ -207,7 +207,7 @@ const DESK: Record<Cause, Owner> = {
   cost: "buyer",
   "price-mix": "price",
   "not-moving": null,
-  unclassified: null,
+  streamlined: null,
   ahead: null,
 };
 
@@ -232,8 +232,8 @@ const SAYS: Record<Cause, (n: number, money: string) => string> = {
     `${n.toLocaleString("en-US")} items that sold here but took less per unit, worth ${m}.`,
   "not-moving": (n, m) =>
     `${n.toLocaleString("en-US")} items on the shelf here that sold less than there, worth ${m}. Nothing in this data says why.`,
-  unclassified: (n, m) =>
-    `${m} across ${n.toLocaleString("en-US")} items with no cause this data can support.`,
+  streamlined: (n, m) =>
+    `${n.toLocaleString("en-US")} items level with the other store, worth ${m}. Nothing to chase.`,
   ahead: (n, m) => `${n.toLocaleString("en-US")} items ahead, worth ${m}.`,
 };
 

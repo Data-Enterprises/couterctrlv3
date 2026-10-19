@@ -414,7 +414,7 @@ const CAUSE_ORDER: Cause[] = [
   "cost",
   "not-moving",
   "price-mix",
-  "unclassified",
+  "streamlined",
   "ahead",
 ];
 
