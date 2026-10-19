@@ -400,7 +400,7 @@ const PriceChart = ({
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
                   })} lb`
-                : `${count(u)} ea`}
+                : `${count(u)} qty`}
             </title>
           </rect>
         );
@@ -479,7 +479,7 @@ const Rung = ({
       {money(p.price)}
     </span>
     <span className="min-w-0 flex-1 text-[12px] text-content/85 tabular-nums truncate">
-      {weighed ? weightLabel(p, rate) : `${count(p.units)} ea`} · {p.days}d ·{" "}
+      {weighed ? weightLabel(p, rate) : `${count(p.units)} qty`} · {p.days}d ·{" "}
       {count(p.transactions)} baskets
     </span>
     {/*
@@ -505,7 +505,7 @@ const Rung = ({
       {perBasket(p, weighed, rate) === null
         ? "—"
         : `avg ${(perBasket(p, weighed, rate) as number).toFixed(2)} ${
-            weighed ? "lb" : "ea"
+            weighed ? "lb" : "qty"
           } per basket`}
     </span>
   </div>
