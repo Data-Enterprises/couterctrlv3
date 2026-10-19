@@ -113,7 +113,7 @@ const STAGE_NOTE: Record<Stage, string | null> = {
   orders:
     "Reading orders — until they land, nothing can be called never ordered.",
   receipts:
-    "Reading deliveries — until they land, a vendor's miss cannot be told from a merchandising one.",
+    "Reading what was received — until it lands, a vendor's miss cannot be told from a merchandising one.",
   done: null,
   failed: null,
 };
@@ -285,7 +285,7 @@ const Waves = ({ sales, all }: { sales: boolean; all: boolean }) => {
   const lamps = [
     { label: "Sales", lit: sales },
     { label: "Orders", lit: all },
-    { label: "Deliveries", lit: all },
+    { label: "Received", lit: all },
   ];
   return (
     <span
@@ -356,7 +356,7 @@ const TabSkeleton = ({
         ) : (
           <>
             <span className="font-bold text-content">
-              Reading orders and deliveries.
+              Reading orders and receipts.
             </span>{" "}
             Until they land a vendor&rsquo;s miss cannot be told from a
             merchandising one, so this stays masked rather than changing under
@@ -1454,7 +1454,7 @@ const Timeline = ({
       tone: "bg-store_compare",
       rows: orders.filter((o) => !o.mine),
     },
-    { label: "Delivered", tone: "", rows: deliveries },
+    { label: "Received", tone: "", rows: deliveries },
   ];
 
   const ticks = [0, 25, 50, 75, 100];
@@ -1795,7 +1795,9 @@ const SupplyPanel = ({
       fmt: n,
     },
     {
-      label: "Deliveries",
+      // The document count, beside the units and the cost on them. Receipts
+      // to the orders above it -- you order, you receive.
+      label: "Receipts",
       m: supply.mine.deliveries,
       t: supply.theirs.deliveries,
       fmt: n,
@@ -1874,7 +1876,7 @@ const SupplyPanel = ({
                 {
                   tone: "",
                   label: "Received at either store",
-                  count: `${supply.mine.deliveries + supply.theirs.deliveries} deliveries`,
+                  count: `${supply.mine.deliveries + supply.theirs.deliveries} receipts`,
                   value: cash(
                     supply.mine.receivedCost + supply.theirs.receivedCost,
                   ),
@@ -2015,7 +2017,7 @@ const SupplyPanel = ({
               ...(vendorRows.length > 0
                 ? [
                     {
-                      label: "Who delivered",
+                      label: "Vendors",
                       count: vendorRows.length,
                       body: (
                         <div
@@ -2077,7 +2079,7 @@ const SupplyPanel = ({
                 ? `, all still ${states[0]!.toLowerCase()}`
                 : ""}
               {supply.deliveries.length === 0
-                ? " — none of them delivered."
+                ? " — nothing received against them."
                 : "."}
             </p>
           </div>
@@ -2115,8 +2117,11 @@ const SupplyPanel = ({
             </p>
           )}
 
+          <div className="text-[11px] font-bold uppercase tracking-wide text-content/85 mt-4">
+            Ordered
+          </div>
           <div
-            className="grid gap-3 mt-3 pb-1.5 border-b border-brand_navy/15 text-[11px] font-bold uppercase tracking-wide text-content/85"
+            className="grid gap-3 mt-1 pb-1.5 border-b border-brand_navy/15 text-[11px] font-bold uppercase tracking-wide text-content/85"
             style={{
               gridTemplateColumns:
                 "62px 16px minmax(0,1fr) 88px minmax(0,110px) 62px 76px",
@@ -2154,12 +2159,12 @@ const SupplyPanel = ({
                 }`}
               >
                 {!orders.ok
-                  ? "The orders did not come back for this window, so this panel cannot say whether either store ordered. Deliveries below are unaffected — they are read separately."
+                  ? "The orders did not come back for this window, so this panel cannot say whether either store ordered. What was received below is unaffected — it is read separately."
                   : supply.orders.length > 0
                     ? "No order in the window carries any of those codes."
                     : orders.inWindow === 0
                       ? supply.deliveries.length > 0
-                        ? "No order of any kind came back for either store over the window, and the deliveries below arrived anyway — which is what a department delivered straight off the vendor's truck looks like. Nothing here can say an item was never ordered, so those items are listed as not carried instead."
+                        ? "No order of any kind came back for either store over the window, and the receipts below arrived anyway — which is what a department delivered straight off the vendor's truck looks like. Nothing here can say an item was never ordered, so those items are listed as not carried instead."
                         : "Neither store placed an order of any kind over the window. That is the finding, not a gap in the data."
                       : `${orders.inWindow.toLocaleString("en-US")} order lines came back for these two stores over the window and none of them is in this department — by product code or by the department the order itself names.`}
               </p>
@@ -2169,7 +2174,7 @@ const SupplyPanel = ({
           {supply.deliveries.length > 0 && (
             <>
               <div className="text-[11px] font-bold uppercase tracking-wide text-content/85 mt-4">
-                Deliveries
+                Received
               </div>
               {/* Its own headings. These rows carry an INVOICE and its COST,
                   and they were being read under the orders' Order and Status
@@ -2217,7 +2222,7 @@ const SupplyPanel = ({
           {supply.deliveries.length === 0 && (
             <div className="rounded-md border border-dashed border-brand_navy/25 px-3.5 py-2.5 mt-4">
               <div className="text-[11px] font-bold uppercase tracking-wide text-content/85">
-                Deliveries &middot; 0
+                Received &middot; 0
               </div>
               <p className="text-[12.5px] text-content/85 leading-snug mt-0.5">
                 No invoice carried an item from this department, at either
@@ -3067,7 +3072,7 @@ const DeptInvestigation = ({
                 letting the grid imply every column is diagnosed. */}
               <p className="text-[13px] text-content/85 mt-2.5">
                 Causes explain this week against {target.compareStoreName}.
-                Orders and deliveries are read over {SUPPLY_LOOKBACK_DAYS} days
+                Orders and receipts are read over {SUPPLY_LOOKBACK_DAYS} days
                 ({supply_.start} to {supply_.end}) — they cannot account for the
                 LW or LY columns.
                 {STAGE_NOTE[stage] && (
@@ -3424,7 +3429,7 @@ const DeptInvestigation = ({
                            is "was it ever on an order at all" — which is
                            two tabs away and, until now, a UPC retyped by
                            hand. */
-                        label: `Find ${chosen.size} in orders and deliveries`,
+                        label: `Find ${chosen.size} in orders and receipts`,
                         onClick: () => {
                           setSupplyUpcs([...chosen].join(" "));
                           setTab("supply");

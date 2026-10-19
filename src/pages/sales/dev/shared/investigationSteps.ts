@@ -563,12 +563,12 @@ export const supplySays = (
 
   const took =
     m.deliveries > 0 && t.deliveries > 0
-      ? "Both took deliveries."
+      ? "Both received."
       : m.deliveries > 0
-        ? `Only ${us} took a delivery.`
+        ? `Only ${us} received.`
         : t.deliveries > 0
-          ? `Only ${them} took a delivery.`
-          : "Neither took a delivery in the window.";
+          ? `Only ${them} received.`
+          : "Neither received anything in the window.";
 
   const counts = [
     t.orders > 0
