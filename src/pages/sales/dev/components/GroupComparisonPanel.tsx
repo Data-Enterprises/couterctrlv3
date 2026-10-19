@@ -1,5 +1,9 @@
 import { useMemo } from "react";
-import { useAppSelector } from "../../../../hooks";
+import { useAppDispatch, useAppSelector } from "../../../../hooks";
+import {
+  setCounterpart,
+  setLedgerTab,
+} from "../../../../features/dev/devSalesLedgerSlice";
 import { formatCurrencyCompact, formatBigNumber } from "../../../../utils";
 import { applyStoreNumberToName } from "../shared/ledgerUtils";
 import {
@@ -60,6 +64,7 @@ const GroupComparisonPanel = ({
 }: Props) => {
   // The panel's title names the group it is reading, because "By store" did
   // not say which stores.
+  const dispatch = useAppDispatch();
   const groupName = useAppSelector(
     (state) => state.search.selectedGroup?.group_name,
   );
@@ -198,9 +203,15 @@ const GroupComparisonPanel = ({
         ledgerRows={scoped}
         groupTotal={group.groupTy}
         gradingMetric={gradingMetric}
-        onOpenStore={(storeid) => {
+        onOpenStore={(storeid, intent) => {
           const original = rows.find((x) => x.storeid === storeid);
-          if (original) onSelectStore(original);
+          if (!original) return;
+          // The report opens where the question was asked. Both of these are
+          // page state the popup reads on mount, so they have to be set
+          // before the selection that mounts it.
+          dispatch(setCounterpart(intent.counterpart ?? null));
+          dispatch(setLedgerTab(intent.tab ?? "subdept"));
+          onSelectStore(original);
         }}
       />
 

@@ -52,6 +52,11 @@ export interface ShareRow {
   usualPct: number;
   /** `sharePct - usualPct`. Points of the group, written as % on screen. */
   changePct: number;
+  /** The slice it took in each comparison period, whether or not that is the
+   *  one it is graded against. Carried so the panel can answer "is this new"
+   *  without re-deriving a share the comparison already worked out. */
+  shareLwPct: number | null;
+  shareLyPct: number | null;
   /** That change priced at the group's week — the row's `gapValue`. */
   money: number;
   standing: ShareStanding;
@@ -96,6 +101,8 @@ export const shareRowsOf = (
         sharePct,
         usualPct,
         changePct,
+        shareLwPct: r.shareLw === null ? null : r.shareLw * 100,
+        shareLyPct: r.shareLy === null ? null : r.shareLy * 100,
         money: r.gapValue!,
         standing: shareStandingOf(changePct, band),
         ownPct: r.ownPct,

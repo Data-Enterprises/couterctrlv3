@@ -1,8 +1,8 @@
-import { useMemo } from "react";
+import { useMemo, type ReactNode } from "react";
 import {
-  ArrowRightIcon,
   ArrowTrendingDownIcon,
   ArrowTrendingUpIcon,
+  ChevronRightIcon,
   MinusIcon,
 } from "@heroicons/react/16/solid";
 import CtaStrip, { type CtaTone } from "../../../../components-dev/CtaStrip";
@@ -14,15 +14,22 @@ import {
   type ShareStanding,
 } from "../shared/shareBalance";
 import { shareDayNoteOf, type ShareDay } from "../shared/shareByDay";
+import { shareTrendOf, trendPoints } from "../shared/shareQuestions";
 import { severityDotClass } from "../../../../utils/severity";
+import type { LedgerTab } from "../../../../features/dev/devSalesLedgerSlice";
 
 /**
- * One store out of the balance, read on its own.
+ * One store out of the balance, as the questions it raises.
  *
- * The list beside this says which stores moved and by how much. This says
- * what the move was worth, which store took the other side of it, and which
- * days of the week it happened on — the three things somebody asks next and
- * had to open the store report to find out.
+ * The list beside this says which stores moved and by how much. Restating
+ * that here — the share, the usual share, the money again — was the rail's
+ * first draft, and it told a reader nothing they had not just clicked on.
+ *
+ * So this asks what they would ask next. Is it new. When in the week. Which
+ * departments. Who took it. Three of the four are answered here from figures
+ * the panel already holds; every one of them is a door into the section of
+ * the store report that goes further, which is what makes the button at the
+ * bottom something other than a dead end.
  *
  * Draws only. Every figure is handed to it already worked out, so it cannot
  * disagree with the list beside it.
@@ -93,8 +100,18 @@ const LABEL: Record<ShareStanding, string> = {
 
 const pct1 = (n: number) => `${n.toFixed(1)}%`;
 
-const signedPct = (n: number) =>
-  `${n > 0 ? "+" : n < 0 ? "−" : ""}${Math.abs(n).toFixed(1)}%`;
+/**
+ * Where a card sends the reader.
+ *
+ * The report has the answer in full; the card has the headline. Landing on
+ * the tab that goes further is the difference between a panel that hands
+ * over and one that makes somebody find the tab themselves.
+ */
+export interface ReportIntent {
+  tab?: LedgerTab;
+  /** Opens the report already comparing against this store. */
+  counterpart?: { storeid: number; storeNumber: string; storeName: string };
+}
 
 interface Props {
   row: ShareRow | null;
@@ -103,8 +120,42 @@ interface Props {
   groupTotal: number;
   days: ShareDay[];
   isQty: boolean;
-  onOpenReport: () => void;
+  onOpenReport: (intent: ReportIntent) => void;
 }
+
+/** A question, its answer, and the door to the rest of it. */
+const QuestionCard = ({
+  question,
+  answer,
+  sub,
+  figure,
+  onClick,
+}: {
+  question: string;
+  answer: ReactNode;
+  sub: ReactNode;
+  figure?: ReactNode;
+  onClick: () => void;
+}) => (
+  <button
+    onClick={onClick}
+    className="w-full text-left rounded-md border border-gray-200 bg-custom-white px-2.5 py-2 hover:bg-gray-50 hover:border-brand_navy/25 transition-colors"
+  >
+    <div className="text-[12px] text-content/85">{question}</div>
+    <div className="flex items-center gap-2 mt-0.5">
+      <div className="min-w-0 flex-1">
+        <div className="text-[13.5px] font-bold text-content leading-snug">
+          {answer}
+        </div>
+        <div className="text-[12px] text-content/85 leading-snug mt-0.5">
+          {sub}
+        </div>
+      </div>
+      {figure && <div className="flex-shrink-0">{figure}</div>}
+      <ChevronRightIcon className="w-4 h-4 flex-shrink-0 text-content/85" />
+    </div>
+  </button>
+);
 
 const GroupShareStoreDetail = ({
   row,
@@ -119,34 +170,23 @@ const GroupShareStoreDetail = ({
     [row, rows],
   );
   const note = useMemo(() => shareDayNoteOf(days), [days]);
+  const trend = useMemo(() => (row ? shareTrendOf(row) : null), [row]);
 
   const value = (n: number) =>
     isQty ? formatBigNumber(n, 0) : formatCurrencyCompact(n);
   const signedValue = (n: number) =>
     `${n > 0 ? "+" : n < 0 ? "−" : ""}${value(Math.abs(n))}`;
 
-  if (!row) {
+  if (!row || !trend) {
     return (
-      <aside className="w-[288px] flex-shrink-0 border-l border-gray-100 px-3 pt-2.5">
-        <p className="text-[11.5px] text-content/85 leading-snug">
-          Pick a store on the left to see what its move was worth, which store
-          took the other side of it, and which days of the week it happened on.
+      <aside className="w-[310px] flex-shrink-0 border-l border-gray-100 px-3 pt-2.5">
+        <p className="text-[12.5px] text-content/85 leading-snug">
+          Pick a store on the left to see whether its move is new, when in the
+          week it happened, and which store took the other side of it.
         </p>
       </aside>
     );
   }
-
-  // The share bar runs 0 to a bit past whichever of the two slices is
-  // bigger: a fixed 0-25% would draw a 7% store as a stub and hide the very
-  // gap the panel is about.
-  const barCeiling = Math.max(row.sharePct, row.usualPct) * 1.25;
-  const barPct = (pct: number) =>
-    `${barCeiling > 0 ? Math.min(100, (pct / barCeiling) * 100) : 0}%`;
-
-  // The day chart is in money, around a zero line that IS the usual share.
-  const dayMax = Math.max(0, ...days.map((d) => Math.abs(d.money ?? 0)));
-  const dayHeight = (m: number) =>
-    `${dayMax > 0 ? (Math.abs(m) / dayMax) * 50 : 0}%`;
 
   const tone = TONE[row.standing];
   const Icon = CTA_ICON[row.standing];
@@ -156,12 +196,26 @@ const GroupShareStoreDetail = ({
     row.storeNumbersForId,
   );
 
+  const points = trendPoints(trend);
+  const fell = row.changePct < 0;
+
+  // The sparkline and the day strip each scale to themselves. A shared scale
+  // across three periods of one store would flatten a half-point move, which
+  // is the whole size of the finding.
+  const trendLo = Math.min(...points.map((p) => p.pct));
+  const trendHi = Math.max(...points.map((p) => p.pct));
+  const trendY = (pct: number) =>
+    trendHi - trendLo < 0.01
+      ? 11
+      : 20 - ((pct - trendLo) / (trendHi - trendLo)) * 16;
+
+  const dayMax = Math.max(0, ...days.map((d) => Math.abs(d.money ?? 0)));
+
   return (
-    <aside className="w-[288px] flex-shrink-0 border-l border-gray-100 flex flex-col overflow-y-auto thin-scrollbar">
+    <aside className="w-[310px] flex-shrink-0 border-l border-gray-100 flex flex-col min-h-0">
       {/* The panel's header row IS the strip, the way Sub depts and Top 200
           carry theirs: the name, the word for what it is, a chevron, and the
-          working behind it as an overlay. "Selected store" above the name was
-          a label for a thing the strip already says. */}
+          working behind it as an overlay. */}
       <CtaStrip
         tone={CTA_TONE[row.standing]}
         icon={
@@ -190,139 +244,206 @@ const GroupShareStoreDetail = ({
         }
       />
 
-      <div className="px-3 pt-2.5 flex flex-col">
-        {/* The gap, drawn once. Fill is the slice it took, the pale run
-            beside it is the slice it missed (or took on top), and the tick
-            is where usual sits. One picture for what was two tiles and a
-            sentence. */}
-        <div className="flex items-baseline gap-1.5">
-          <span className={`text-[22px] font-bold leading-none ${tone.text}`}>
+      <div className="px-3 pt-2.5 pb-3 flex-1 min-h-0 flex flex-col">
+        <div className="flex items-baseline gap-2 flex-shrink-0">
+          <span className={`text-[25px] font-bold leading-none ${tone.text}`}>
             {signedValue(row.money)}
           </span>
-          <span className={`text-[12.5px] font-semibold ${tone.text}`}>
-            {signedPct(row.changePct)}
+          <span className="text-[12px] text-content/85">
+            vs its usual share
           </span>
         </div>
 
-        <div className="relative h-5 rounded bg-bkg mt-2">
-          <span
-            className={`absolute left-0 top-0 bottom-0 rounded-l ${tone.bar}`}
-            style={{ width: barPct(Math.min(row.sharePct, row.usualPct)) }}
-          />
-          <span
-            className={`absolute top-0 bottom-0 ${tone.bar} opacity-30`}
-            style={{
-              left: barPct(Math.min(row.sharePct, row.usualPct)),
-              width: barPct(Math.abs(row.changePct)),
-            }}
-          />
-          <span
-            className="absolute -top-0.5 -bottom-0.5 w-0.5 bg-content"
-            style={{ left: barPct(row.usualPct) }}
-          />
-        </div>
-        <div className="flex justify-between text-[11px] text-content/85 tabular-nums mt-0.5">
-          <span>{pct1(row.sharePct)} this week</span>
-          <span>usually {pct1(row.usualPct)}</span>
+        <div className="text-[12.5px] font-semibold text-content mt-2 mb-1.5 flex-shrink-0">
+          Here&rsquo;s what the report will tell you:
         </div>
 
-        {/* The other side of the balance, as two chips rather than a clause.
-            Shares total 100%, so this store's move is that one's. */}
-        {other && (
-          <div className="flex items-center gap-1.5 mt-2.5 text-[11.5px] font-semibold">
-            <span
-              className={`px-1.5 py-1 rounded whitespace-nowrap ${tone.pill}`}
-            >
-              {row.storeNumber} {signedValue(row.money)}
-            </span>
-            <ArrowRightIcon className="w-3 h-3 flex-shrink-0 text-content/85" />
-            <span
-              className={`px-1.5 py-1 rounded whitespace-nowrap ${TONE[other.standing].pill}`}
-            >
-              {other.storeNumber} {signedValue(other.money)}
-            </span>
-          </div>
-        )}
-
-        {days.length > 1 && dayMax > 0 && (
-          <div className="mt-3">
-            <div className="text-[10px] font-bold uppercase tracking-wide text-content/85">
-              By day, in {isQty ? "units" : "money"}
-            </div>
-
-            {/* Above the line is a day it took more of the group than usual,
-                below is a day it took less, and the height is what the day
-                was worth. The zero line IS the usual share, so the week's
-                shape says what a sentence under it used to. */}
-            <div className="relative h-[72px] mt-1.5 flex items-stretch gap-1">
-              <span className="absolute left-0 right-0 top-1/2 border-t border-gray-300" />
-              {days.map((d) => {
-                const worst = note.worst?.date === d.date;
-                const m = d.money ?? 0;
-                return (
-                  <span
-                    key={d.date}
-                    title={`${d.label}: ${
-                      d.sharePct === null ? "no sales" : pct1(d.sharePct)
-                    } of the group${
-                      d.money === null ? "" : ` · ${signedValue(d.money)}`
-                    }`}
-                    className="flex-1 relative"
-                  >
-                    <span
-                      className={`absolute left-0 right-0 ${
-                        m < 0
-                          ? `top-1/2 rounded-b ${TONE.falling.bar}`
-                          : `bottom-1/2 rounded-t ${TONE.rising.bar}`
-                      } ${worst ? "" : "opacity-70"}`}
-                      style={{ height: dayHeight(m) }}
+        <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar space-y-2 pr-0.5">
+          {/* Is the slide new, or has it been running? The row cannot say:
+              it holds this week against the usual week and nothing in
+              between. */}
+          <QuestionCard
+            question="Is this new?"
+            answer={
+              trend.lwPct === null ? (
+                "No last week to compare"
+              ) : trend.running ? (
+                <>
+                  No &mdash; {fell ? "under" : "over"} its usual share last week
+                  too
+                </>
+              ) : trend.vsLw === "level" ? (
+                <>Held level &mdash; {pct1(trend.lwPct)} last week as well</>
+              ) : (
+                <>
+                  Yes &mdash; {trend.vsLw === "down" ? "down" : "up"} from{" "}
+                  {pct1(trend.lwPct)} last week
+                </>
+              )
+            }
+            sub={
+              trend.lyPct === null
+                ? "Same week last year: nothing on file"
+                : `Same week last year: ${pct1(trend.lyPct)}`
+            }
+            figure={
+              points.length > 1 && (
+                <svg viewBox="0 0 56 30" className="w-14 h-[30px]">
+                  <polyline
+                    points={points
+                      .map(
+                        (p, i) =>
+                          `${6 + i * (44 / (points.length - 1))},${trendY(p.pct)}`,
+                      )
+                      .join(" ")}
+                    fill="none"
+                    strokeWidth="1.5"
+                    className={`${fell ? "stroke-delta_negative_text" : "stroke-delta_positive_text"}`}
+                  />
+                  {points.map((p, i) => (
+                    <circle
+                      key={p.label}
+                      cx={6 + i * (44 / (points.length - 1))}
+                      cy={trendY(p.pct)}
+                      r={i === points.length - 1 ? 2.6 : 1.8}
+                      className={`${fell ? "fill-delta_negative_text" : "fill-delta_positive_text"}`}
                     />
-                  </span>
-                );
-              })}
-            </div>
+                  ))}
+                  {points.map((p, i) => (
+                    <text
+                      key={`t${p.label}`}
+                      x={6 + i * (44 / (points.length - 1))}
+                      y={29}
+                      textAnchor="middle"
+                      className="fill-content/70 text-[8px]"
+                    >
+                      {p.label}
+                    </text>
+                  ))}
+                </svg>
+              )
+            }
+            onClick={() => onOpenReport({})}
+          />
 
-            <div className="flex gap-1 mt-0.5">
-              {days.map((d) => {
-                const worst = note.worst?.date === d.date;
-                return (
-                  <span
-                    key={d.date}
-                    className={`flex-1 text-center text-[10px] tabular-nums ${
-                      worst
-                        ? `font-bold ${TONE.falling.text}`
-                        : "text-content/85"
-                    }`}
-                  >
-                    {d.label}
-                  </span>
-                );
-              })}
-            </div>
+          {/* Which day of the week it happened on. Hourly is where that day
+              gets broken down further, so that is where this lands. */}
+          <QuestionCard
+            question="When did it happen?"
+            answer={
+              note.worst ? (
+                <>
+                  Mostly {note.worst.label},{" "}
+                  {signedValue(note.worst.money as number)}
+                </>
+              ) : (
+                "Level across the week"
+              )
+            }
+            sub={
+              note.worst
+                ? [
+                    note.worstIsBiggestDay ? "The group's biggest day" : null,
+                    note.below > 0
+                      ? `${note.below} of ${days.length} days under usual`
+                      : null,
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")
+                : "No single day carries it"
+            }
+            figure={
+              dayMax > 0 && (
+                <span className="flex items-end gap-[2px] h-[30px] w-14">
+                  {days.map((d) => {
+                    const m = d.money ?? 0;
+                    return (
+                      <span key={d.date} className="flex-1 relative h-full">
+                        <span
+                          className={`absolute left-0 right-0 ${
+                            m < 0
+                              ? `top-1/2 rounded-b ${TONE.falling.bar}`
+                              : `bottom-1/2 rounded-t ${TONE.rising.bar}`
+                          } ${note.worst?.date === d.date ? "" : "opacity-50"}`}
+                          style={{ height: `${(Math.abs(m) / dayMax) * 50}%` }}
+                        />
+                      </span>
+                    );
+                  })}
+                </span>
+              )
+            }
+            onClick={() => onOpenReport({ tab: "hourly" })}
+          />
 
-            {/* Only the day that cost the most carries a figure. */}
-            {note.worst && (
-              <div
-                className={`text-[11px] font-semibold tabular-nums text-center mt-0.5 ${TONE.falling.text}`}
-              >
-                {note.worst.label} {signedValue(note.worst.money as number)}
-                {note.worstIsBiggestDay && (
-                  <span className="text-content/85 font-normal">
-                    {" "}
-                    · the group&rsquo;s biggest day
+          {/* The one question the panel cannot answer from what it holds: it
+              would take this store's departments, which is a fetch. The card
+              still earns its place by opening the tab that has them. */}
+          <QuestionCard
+            question="Which departments?"
+            answer="Open the department breakdown"
+            sub="Every sub department, this week against last week and last year"
+            onClick={() => onOpenReport({ tab: "subdept" })}
+          />
+
+          {/* Shares total 100%, so the money went somewhere. Landing with the
+              counterpart already chosen means the report opens on the two
+              stores side by side rather than on a picker. */}
+          <QuestionCard
+            question="Who picked it up?"
+            answer={
+              other ? (
+                <>
+                  Store {other.storeNumber} {signedValue(other.money)}
+                </>
+              ) : (
+                "Nobody moved the other way"
+              )
+            }
+            sub={
+              other
+                ? `Almost exactly what ${row.storeNumber} ${fell ? "lost" : "gained"}`
+                : "Every counted store moved the same way"
+            }
+            figure={
+              other && (
+                <span className="flex items-center gap-1 text-[11.5px] font-semibold">
+                  <span className={tone.text}>{row.storeNumber}</span>
+                  <span className="text-content/85">&rarr;</span>
+                  <span className={TONE[other.standing].text}>
+                    {other.storeNumber}
                   </span>
-                )}
-              </div>
-            )}
-          </div>
-        )}
+                </span>
+              )
+            }
+            onClick={() =>
+              onOpenReport({
+                tab: "subdept",
+                counterpart: other
+                  ? {
+                      storeid: other.storeid,
+                      storeNumber: other.storeNumber,
+                      storeName: applyStoreNumberToName(
+                        other.storeName,
+                        other.storeNumber,
+                        other.storeNumbersForId,
+                      ),
+                    }
+                  : undefined,
+              })
+            }
+          />
+        </div>
 
         <button
-          onClick={onOpenReport}
-          className="mt-3 mb-1 w-full rounded-md bg-brand_navy text-custom-white text-[12px] font-semibold py-2 hover:opacity-90 transition-opacity"
+          onClick={() => onOpenReport({})}
+          className="mt-2.5 flex-shrink-0 w-full rounded-md bg-brand_navy text-custom-white text-[12.5px] font-semibold py-2.5 hover:opacity-90 transition-opacity"
         >
-          View store report
+          Open the full store report &rarr;
         </button>
+        <div className="text-[11.5px] text-content/85 text-center mt-1 flex-shrink-0">
+          Each question opens the report at that section
+        </div>
       </div>
     </aside>
   );

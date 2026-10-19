@@ -15,7 +15,9 @@ import SortHeader, {
   PERF_SORT_HEADER,
 } from "../../../../components-dev/SortHeader";
 import { useTriStateSort } from "../../../../utils/useTriStateSort";
-import GroupShareStoreDetail from "./GroupShareStoreDetail";
+import GroupShareStoreDetail, {
+  type ReportIntent,
+} from "./GroupShareStoreDetail";
 import type { ComparisonRow } from "../shared/storeComparison";
 import type { LedgerRowData } from "./LedgerRow";
 import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice";
@@ -108,7 +110,7 @@ interface Props {
   groupTotal: number;
   gradingMetric: GradingMetric;
   /** Opens the store's own report — the panel the ledger row opens. */
-  onOpenStore: (storeid: number) => void;
+  onOpenStore: (storeid: number, intent: ReportIntent) => void;
 }
 
 const GroupShareBalance = ({
@@ -322,7 +324,9 @@ const GroupShareBalance = ({
             groupTotal={groupTotal}
             days={days}
             isQty={isQty}
-            onOpenReport={() => picked && onOpenStore(picked.storeid)}
+            onOpenReport={(intent) =>
+              picked && onOpenStore(picked.storeid, intent)
+            }
           />
         </div>
       </div>

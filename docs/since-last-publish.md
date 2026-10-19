@@ -86,6 +86,14 @@ mover inside each. **Share**, **Change** and **Worth** are sortable column
 headings on top of that -- click once for high to low, again for low to high,
 a third time to put the Falling-first order back.
 
+The right-hand panel asks the questions somebody asks next, instead of
+repeating the row they just clicked. Is this new -- this week's slice against
+last week's, so a one-off week reads differently from a slide that has been
+running. When did it happen -- the day that carries the move, and whether it
+was the group's biggest. Which departments. Who picked it up. Each one opens
+the store report at the section that goes further, and "who picked it up"
+opens it already comparing against that store.
+
 The right-hand panel is drawings rather than sentences. The store's shortfall
 is one bar -- what it took, the slice it missed beside it, and a tick where
 its usual share sits -- and the store on the other side of the move is a pair
