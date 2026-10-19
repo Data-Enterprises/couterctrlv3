@@ -186,7 +186,7 @@ const GroupShareStoreDetail = ({
   const dayMax = Math.max(0, ...days.map((d) => Math.abs(d.money ?? 0)));
 
   return (
-    <aside className="w-[313px] flex-shrink-0 border-l border-brand_navy/15 flex flex-col min-h-0">
+    <aside className="w-[313px] flex-shrink-0 border-l border-brand_navy/15 flex flex-col min-h-0 overflow-y-auto thin-scrollbar">
       {/* The panel's header row IS the strip, the way Sub depts and Top 200
           carry theirs: the name, the word for what it is, a chevron, and the
           working behind it as an overlay. */}
@@ -217,8 +217,8 @@ const GroupShareStoreDetail = ({
         }
       />
 
-      <div className="px-3 pt-1 pb-3 flex-1 min-h-0 flex flex-col">
-        <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar pr-0.5">
+      <div className="px-3 pt-1 pb-3 flex-1 flex flex-col">
+        <div className="flex-1">
           {/* Is the slide new, or has it been running? The row cannot say:
               it holds this week against the usual week and nothing in
               between. */}
@@ -376,7 +376,7 @@ const GroupShareStoreDetail = ({
 
         <button
           onClick={onOpenReport}
-          className="mt-2.5 flex-shrink-0 w-full rounded-md bg-brand_navy text-custom-white text-[12.5px] font-semibold py-2.5 hover:opacity-90 transition-opacity"
+          className="mt-3 flex-shrink-0 w-full rounded-md bg-brand_navy text-custom-white text-[12.5px] font-semibold py-2.5 hover:opacity-90 transition-opacity"
         >
           Open the full store report &rarr;
         </button>

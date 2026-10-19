@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import Modal from "../../../components-dev/Modal";
 import Checkbox from "../../../components-dev/Checkbox";
 import SelectFilter from "../../../components-dev/filters/SelectFilter";
+import TextFilter from "../../../components-dev/filters/TextFilter";
 import TextField from "../../../components-dev/inputs/TextField";
 import { useDevApi } from "../../../hooks/useDevApi";
 import { nextTechCode } from "./techCodes";
@@ -50,6 +51,10 @@ type Mode =
  * so nothing here implies. The display name keeps the second line, where
  * recognising a colleague still works.
  */
+/** The roster gets a search box past this many. A desk of three is a list
+ *  somebody can read; a box above it is one more thing to look at. */
+const SEARCHABLE_FROM = 5;
+
 const TechsModal = ({ canManageTechs, onClose, onChanged }: Props) => {
   const { url, token } = useDevApi();
   const toast = useToast();
@@ -58,6 +63,7 @@ const TechsModal = ({ canManageTechs, onClose, onChanged }: Props) => {
   const [candidates, setCandidates] = useState<TechCandidate[]>([]);
   const [mode, setMode] = useState<Mode>({ kind: "list" });
   const [working, setWorking] = useState(false);
+  const [query, setQuery] = useState("");
   const [problem, setProblem] = useState<string | null>(null);
 
   const load = () => {
@@ -92,7 +98,18 @@ const TechsModal = ({ canManageTechs, onClose, onChanged }: Props) => {
   const active = (techs ?? []).filter((t) => t.is_active);
   // A tech reads the desk as it is. A programmer maintains it, and that
   // includes the people currently off it.
-  const shown = canManageTechs ? (techs ?? []) : active;
+  const roster = canManageTechs ? (techs ?? []) : active;
+
+  // Username, display name and code, because any of the three is what
+  // somebody has in their head when they come looking for a tech.
+  const needle = query.trim().toLowerCase();
+  const shown = needle
+    ? roster.filter((t) =>
+        [t.username, t.display_name, t.name, t.tech_code]
+          .filter(Boolean)
+          .some((v) => String(v).toLowerCase().includes(needle)),
+      )
+    : roster;
 
   const after = (j: TechWriteResp, said: string) => {
     toast.success(said);
@@ -123,6 +140,19 @@ const TechsModal = ({ canManageTechs, onClose, onChanged }: Props) => {
             </p>
           </div>
 
+          {/* Worth a search once the desk is past a handful. Below that the
+              box is one more thing to read above a list you can already
+              see all of. */}
+          {roster.length > SEARCHABLE_FROM && (
+            <div className="flex-shrink-0 px-4 pb-2">
+              <TextFilter
+                value={query}
+                onChange={setQuery}
+                placeholder="Find a tech by name or code…"
+              />
+            </div>
+          )}
+
           <div className="flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto thin-scrollbar px-4 pb-4">
             {problem && (
               <div className="rounded-lg border border-severity_watch_text/25 bg-severity_watch_bg px-3 py-2 text-[12px] text-severity_watch_text">
@@ -138,7 +168,9 @@ const TechsModal = ({ canManageTechs, onClose, onChanged }: Props) => {
 
             {techs !== null && shown.length === 0 && (
               <p className="py-6 text-center text-[12.5px] text-content/85">
-                Nobody is on the desk.
+                {needle
+                  ? `Nobody on the desk matches “${query.trim()}”.`
+                  : "Nobody is on the desk."}
               </p>
             )}
 
