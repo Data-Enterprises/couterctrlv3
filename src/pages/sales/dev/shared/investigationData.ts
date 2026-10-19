@@ -215,6 +215,16 @@ export const fetchSales = async (scope: Scope): Promise<SalesWave> => {
 /* ------------------------------------------------------------------ */
 
 export interface OrdersWave {
+  /**
+   * Whether the orders actually came back.
+   *
+   * Four different things used to arrive here as one empty array: the call
+   * threw, the API answered with an error, the window held no orders, and
+   * the department had none. The panel then said "neither store placed an
+   * order -- that is the finding, not a gap in the data", which is a claim
+   * only the last two support.
+   */
+  ok: boolean;
   /** This department's lines, which is what every figure is built from. */
   mine: AllOrder[];
   theirs: AllOrder[];
@@ -256,10 +266,18 @@ export const fetchOrders = async (scope: Scope): Promise<OrdersWave> => {
       ids,
     );
     const j: AllOrderResp = resp.data;
-    if (j.error !== 0) return { mine: [], theirs: [], allMine: [], allTheirs: [] };
+    if (j.error !== 0)
+      return { ok: false, mine: [], theirs: [], allMine: [], allTheirs: [] };
 
     const all = j.orders ?? [];
-    const inDept = all.filter((o) => o.sub_department === scope.subDept);
+    // Coerced, not compared strictly. `sub_department` is TYPED as a number
+    // and this payload does not always agree -- the same lesson `codesIn`
+    // below learned about `product_code`. A strict === against a string
+    // "45" drops every order in the department and the panel then reports,
+    // confidently, that neither store ordered anything.
+    const inDept = all.filter(
+      (o) => Number(o.sub_department) === Number(scope.subDept),
+    );
     // `AllOrder` spells it `storenumber`, with no underscore.
     const forStore = (rows: AllOrder[]) => (s: Store) =>
       scopeRowsToStore(
@@ -271,13 +289,14 @@ export const fetchOrders = async (scope: Scope): Promise<OrdersWave> => {
     const whole = forStore(all);
 
     return {
+      ok: true,
       mine: dept(scope.mine),
       theirs: dept(scope.theirs),
       allMine: whole(scope.mine),
       allTheirs: whole(scope.theirs),
     };
   } catch {
-    return { mine: [], theirs: [], allMine: [], allTheirs: [] };
+    return { ok: false, mine: [], theirs: [], allMine: [], allTheirs: [] };
   }
 };
 
