@@ -2,7 +2,6 @@ import { useMemo, type ReactNode } from "react";
 import {
   ArrowTrendingDownIcon,
   ArrowTrendingUpIcon,
-  ChevronRightIcon,
   MinusIcon,
 } from "@heroicons/react/16/solid";
 import CtaStrip, { type CtaTone } from "../../../../components-dev/CtaStrip";
@@ -16,7 +15,6 @@ import {
 import { shareDayNoteOf, type ShareDay } from "../shared/shareByDay";
 import { shareTrendOf, trendPoints } from "../shared/shareQuestions";
 import { severityDotClass } from "../../../../utils/severity";
-import type { LedgerTab } from "../../../../features/dev/devSalesLedgerSlice";
 
 /**
  * One store out of the balance, as the questions it raises.
@@ -100,19 +98,6 @@ const LABEL: Record<ShareStanding, string> = {
 
 const pct1 = (n: number) => `${n.toFixed(1)}%`;
 
-/**
- * Where a card sends the reader.
- *
- * The report has the answer in full; the card has the headline. Landing on
- * the tab that goes further is the difference between a panel that hands
- * over and one that makes somebody find the tab themselves.
- */
-export interface ReportIntent {
-  tab?: LedgerTab;
-  /** Opens the report already comparing against this store. */
-  counterpart?: { storeid: number; storeNumber: string; storeName: string };
-}
-
 interface Props {
   row: ShareRow | null;
   rows: ShareRow[];
@@ -120,10 +105,11 @@ interface Props {
   groupTotal: number;
   days: ShareDay[];
   isQty: boolean;
-  onOpenReport: (intent: ReportIntent) => void;
+  onOpenReport: () => void;
 }
 
-/** A question, its answer, and the door to the rest of it. */
+/** A question and its answer. Clicking any of them opens the store report,
+ *  which is where the answer goes further. */
 const QuestionCard = ({
   question,
   answer,
@@ -152,7 +138,6 @@ const QuestionCard = ({
         </div>
       </div>
       {figure && <div className="flex-shrink-0">{figure}</div>}
-      <ChevronRightIcon className="w-4 h-4 flex-shrink-0 text-content/85" />
     </div>
   </button>
 );
@@ -179,7 +164,7 @@ const GroupShareStoreDetail = ({
 
   if (!row || !trend) {
     return (
-      <aside className="w-[310px] flex-shrink-0 border-l border-gray-100 px-3 pt-2.5">
+      <aside className="w-[313px] flex-shrink-0 border-l border-gray-100 px-3 pt-2.5">
         <p className="text-[12.5px] text-content/85 leading-snug">
           Pick a store on the left to see whether its move is new, when in the
           week it happened, and which store took the other side of it.
@@ -212,7 +197,7 @@ const GroupShareStoreDetail = ({
   const dayMax = Math.max(0, ...days.map((d) => Math.abs(d.money ?? 0)));
 
   return (
-    <aside className="w-[310px] flex-shrink-0 border-l border-gray-100 flex flex-col min-h-0">
+    <aside className="w-[313px] flex-shrink-0 border-l border-gray-100 flex flex-col min-h-0">
       {/* The panel's header row IS the strip, the way Sub depts and Top 200
           carry theirs: the name, the word for what it is, a chevron, and the
           working behind it as an overlay. */}
@@ -323,11 +308,10 @@ const GroupShareStoreDetail = ({
                 </svg>
               )
             }
-            onClick={() => onOpenReport({})}
+            onClick={onOpenReport}
           />
 
-          {/* Which day of the week it happened on. Hourly is where that day
-              gets broken down further, so that is where this lands. */}
+          {/* Which day of the week it happened on. */}
           <QuestionCard
             question="When did it happen?"
             answer={
@@ -373,22 +357,21 @@ const GroupShareStoreDetail = ({
                 </span>
               )
             }
-            onClick={() => onOpenReport({ tab: "hourly" })}
+            onClick={onOpenReport}
           />
 
-          {/* The one question the panel cannot answer from what it holds: it
-              would take this store's departments, which is a fetch. The card
-              still earns its place by opening the tab that has them. */}
+          {/* The one question the panel cannot answer from what it holds:
+              that would take this store's departments, which is a fetch. The
+              card carries the question and no invented answer. */}
           <QuestionCard
             question="Which departments?"
             answer="Open the department breakdown"
             sub="Every sub department, this week against last week and last year"
-            onClick={() => onOpenReport({ tab: "subdept" })}
+            onClick={onOpenReport}
           />
 
-          {/* Shares total 100%, so the money went somewhere. Landing with the
-              counterpart already chosen means the report opens on the two
-              stores side by side rather than on a picker. */}
+          {/* Shares total 100%, so the money went somewhere, and this names
+              where. */}
           <QuestionCard
             question="Who picked it up?"
             answer={
@@ -416,34 +399,16 @@ const GroupShareStoreDetail = ({
                 </span>
               )
             }
-            onClick={() =>
-              onOpenReport({
-                tab: "subdept",
-                counterpart: other
-                  ? {
-                      storeid: other.storeid,
-                      storeNumber: other.storeNumber,
-                      storeName: applyStoreNumberToName(
-                        other.storeName,
-                        other.storeNumber,
-                        other.storeNumbersForId,
-                      ),
-                    }
-                  : undefined,
-              })
-            }
+            onClick={onOpenReport}
           />
         </div>
 
         <button
-          onClick={() => onOpenReport({})}
+          onClick={onOpenReport}
           className="mt-2.5 flex-shrink-0 w-full rounded-md bg-brand_navy text-custom-white text-[12.5px] font-semibold py-2.5 hover:opacity-90 transition-opacity"
         >
           Open the full store report &rarr;
         </button>
-        <div className="text-[11.5px] text-content/85 text-center mt-1 flex-shrink-0">
-          Each question opens the report at that section
-        </div>
       </div>
     </aside>
   );
