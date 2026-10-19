@@ -37,10 +37,14 @@ export const COMING_SOON_LEVELS = ["7", "8", "9"];
  * Coming Soon is not one audience. Some pages are held back because they are
  * unfinished but usable — an owner running one against real data is the point
  * of the gate. Others are held back because they are not yet answerable to a
- * client at all: LP Actions, Invoices and both Price Opt pages either depend on
- * backend decisions that are still open or would invite questions nobody can
- * answer yet. Showing those to an owner is not early access, it is a support
+ * client at all: LP Actions and Invoices depend on backend decisions that are
+ * still open. Showing those to an owner is not early access, it is a support
  * call.
+ *
+ * The two Price Opt pages were here and have moved down to owner: support ran
+ * Price Opt Sub Dept against real onboarding work and it answered, which is
+ * the case the wider gate exists for. The question a page has to pass is
+ * whether somebody could act on it, not whether it is finished.
  *
  * So the category carries two levels rather than one. A page listed here is
  * invisible to 7 and 8; a page on `COMING_SOON_LEVELS` behaves as before. If
@@ -53,9 +57,9 @@ export const COMING_SOON_LEVELS = ["7", "8", "9"];
  * no reason to move together.
  *
  * No numeric twin here, unlike `COMING_SOON_MIN_LEVEL` above: none of these
- * four pages has an entry point anywhere else in the app, so nothing outside
- * the nav needs to ask the question. Item Actions is the page with entry
- * points, and it stays on the wider gate.
+ * pages has an entry point anywhere else in the app, so nothing outside the
+ * nav needs to ask the question. Item Actions is the page with entry points,
+ * and it stays on the wider gate.
  */
 export const PROGRAMMER_ONLY_LEVELS = ["9"];
 
