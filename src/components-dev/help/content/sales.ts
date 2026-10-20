@@ -247,7 +247,7 @@ export const SALES_HELP: HelpContent = {
     },
     {
       term: "Invoices",
-      def: "Every delivery of that item in the last 60 days, in a panel that slides over the item from the right. Nothing is fetched to open it — the invoices arrive with the item. A paid price in green is an allowance: you paid under the vendor's list price on that delivery.",
+      def: "Every delivery of that item in the last 60 days, in a panel that slides over the item from the right. Nothing is fetched to open it — the invoices arrive with the item. Cases are what the invoice was written in, not units sold; turning one into the other needs a case size this does not carry. A paid price in green is an allowance: you paid under the vendor's list price on that delivery.",
       anchor: "store-tabs",
     },
     {

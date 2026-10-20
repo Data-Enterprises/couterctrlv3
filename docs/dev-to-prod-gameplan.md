@@ -253,18 +253,50 @@ switchers.
       again: the tracker endpoint is not on dev"). Until it is `true` the page
       ships on the old two-paged-read path no matter what the API has. The
       measured difference was ~52s → ~7s for 5 stores over 12 weeks.
-- [ ] Contract checked end to end, it matches:
-      - request — frontend sends `{dates, useGroups, searchValue,
-        singleStore}`; `SalesTrackerRequest` takes exactly those, with
-        `singleStore` defaulted
-      - dates — frontend produces ISO `YYYY-MM-DD` via
-        `toISOString().split("T")[0]`; Pydantic `list[date]` parses that
-      - success — route returns `{error: 0, total_records, subs}`;
-        `trackerCall` checks `error !== 0` then reads `subs`
-      - over-budget — route raises 400 with a structured detail
-        (`reason: "store_days_exceeded"`, `store_days`, `max_store_days`,
-        `msg`); `trackerError` reads `response.data.detail` and handles both a
-        string and an object with `msg`
+- [x] **Functional parity with `sub_sales` checked line by line — it holds.**
+      The tracker reads only six fields (`sale_date`, `sub_department`,
+      `sub_department_description`, `total_sales`, `total_tax`,
+      `transaction_count`) and all six come out the same on both paths:
+      - `total_sales` = `SUM(total_sales x sign) + swap_store - swap_instore
+        + tax`, and `net_sales` the same minus tax — identical formulas
+      - same row filters: sale_type allow-list
+        `('sale','refunded','modified','refund')`, `void_flag = 0`, the ring
+        filter with the company-6 carve-out, dept-transfer exclusion, and the
+        untendered-modified-basket rule. The `candidate`/`excluded` CTE rewrite
+        is logically equivalent to `sub_sales`' `bool_or(...) OVER basket`: a
+        basket absent from `excluded` is provably either tendered or free of
+        modified rows, which is what the `COALESCE(x.tendered, true)` default
+        asserts.
+      - same company-4 weight scaling, same coupon re-pointing gated to
+        `CPN_REALLOCATE_COMPANIES`, same `COUPON_SWAP_SCOPE`
+      - `transaction_count`: `sub_sales` counts
+        `DISTINCT storeid-sale_id-terminal-date`; the new one counts `COUNT(*)`
+        over `per_basket`, which groups by the basket key inside the same
+        output dimensions. Equivalent.
+      - group mode drops `storeid` / `store_name` / `store_number` in **both**
+        — `get_sub_sales` does the same `if not useGroups` — so it is not a new
+        behaviour, and the tracker reads none of them
+- [x] Request/response contract:
+      - frontend sends `{dates, useGroups, searchValue, singleStore}`;
+        `SalesTrackerRequest` takes exactly those, `singleStore` defaulted
+      - dates are ISO `YYYY-MM-DD` from `toISOString().split("T")[0]`;
+        Pydantic `list[date]` parses them
+      - success returns `{error: 0, success, store_count, date_count,
+        total_records, subs}`; `trackerCall` checks `error !== 0` then reads
+        `subs`. The extra keys are ignored.
+      - 400s carry a structured detail (`store_days_exceeded` or
+        `group_too_large`); `trackerError` reads `response.data.detail` and
+        handles both a bare string and an object with `msg`
+      - an unexpected exception returns 200 `{error: 1, msg}`; `trackerCall`
+        throws on it
+- [x] Harmless differences: `qty` rounds to 3dp here vs 2dp in `sub_sales`
+      (the tracker never reads `qty`), and `sale_date` may serialize as
+      `"2026-10-14"` rather than pandas' timestamp — `trackerTotals.ts:132`
+      already does `.split("T")[0]`, so both parse
+- [ ] Not a blocker, worth knowing: the endpoint is built to take TY and LY
+      days in one call ("the response is keyed by `sale_date`, so the caller
+      pairs them"), but `fetchTrackerWindow` still queues `ty` and `ly` as
+      separate jobs. 12 calls where 6 would do. Works either way.
 - [ ] `MAX_TRACKER_STORE_DAYS` env var, default 1200. Requests batch 2 weeks at
       a time, so a 5-store search is 5 × 14 = 70 store-days per call — far
       under. Nothing to set unless a very large group needs headroom.

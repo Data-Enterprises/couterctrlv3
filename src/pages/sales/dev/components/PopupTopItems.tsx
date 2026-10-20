@@ -616,7 +616,7 @@ const PopupTopItems = ({
 
       <div className="flex flex-1 min-h-0">
         {/* The ranked list */}
-        <div className="w-[420px] flex-shrink-0 flex flex-col border-r border-gray-100">
+        <div className="w-[446px] flex-shrink-0 flex flex-col border-r border-gray-100">
           <div className="flex items-center gap-2 px-2.5 py-1.5 bg-gray-100 border-b border-gray-100 flex-shrink-0">
             <input
               value={search}
@@ -1259,7 +1259,7 @@ const PopupTopItems = ({
                     </span>
                   </div>
                   {grossProfit(selected.ty) === null && (
-                    <p className="text-[11px] text-content/85 mt-1 leading-snug">
+                    <p className="text-[13px] text-content/85 mt-1 leading-snug">
                       Too few lines carried a cost to work out a margin worth
                       trusting, so the profit is withheld rather than guessed.
                     </p>
@@ -1289,7 +1289,7 @@ const PopupTopItems = ({
                   )}
 
                   {!detailLoading && !detail?.cost_summary && (
-                    <p className="text-[11.5px] text-content/85 leading-snug mt-1.5">
+                    <p className="text-[13px] text-content/85 leading-snug mt-1.5">
                       Nothing bought in the last {COST_HISTORY_DAYS} days, so
                       there is no cost history to compare against.
                     </p>
@@ -1409,7 +1409,7 @@ const PopupTopItems = ({
                   {/* The gap, named. Deliveries are a different endpoint and
                       this tab does not call it; saying so beats a bar that
                       cannot be drawn. */}
-                  <p className="text-[11px] text-content/85 mt-1.5 leading-snug">
+                  <p className="text-[13px] text-content/85 mt-1.5 leading-snug">
                     What arrived this week is not read here &mdash; the
                     department investigation reads ordering against sales.
                   </p>
@@ -1458,7 +1458,7 @@ const PopupTopItems = ({
                       </div>
                     ))}
                   </div>
-                  <p className="text-[11px] text-content/85 mt-1.5 leading-snug">
+                  <p className="text-[13px] text-content/85 mt-1.5 leading-snug">
                     Nothing here says what is on display today &mdash; that one
                     needs a look in the store.
                   </p>
@@ -1528,22 +1528,30 @@ const PopupTopItems = ({
                 seventeen rows, which is what drove the cost window down from
                 120 days in the first place. */}
             <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar px-3 py-2">
-              <div className="grid grid-cols-[86px_1fr_68px_68px] gap-2 pb-1 border-b border-brand_navy/15 text-[11px] font-semibold uppercase tracking-wide text-content/85">
+              <div className="grid grid-cols-[78px_1fr_54px_62px_62px] gap-2 pb-1 border-b border-brand_navy/15 text-[11px] font-semibold uppercase tracking-wide text-content/85">
                 <span>Invoice</span>
                 <span>Vendor</span>
+                {/* Cases, because that is the unit the invoice is written in.
+                    It is NOT units sold: converting one to the other needs a
+                    case size this endpoint does not return, and a number that
+                    looks comparable but is not would be worse than none. */}
+                <span className="text-right">Cases</span>
                 <span className="text-right">List</span>
                 <span className="text-right">Paid</span>
               </div>
               {[...(detail?.cost_history ?? [])].reverse().map((h) => (
                 <div
                   key={h.invoice_date}
-                  className="grid grid-cols-[86px_1fr_68px_68px] gap-2 items-center py-1 border-b border-brand_navy/15 text-[11.5px] text-content even:bg-row_stripe"
+                  className="grid grid-cols-[78px_1fr_54px_62px_62px] gap-2 items-center py-1 border-b border-brand_navy/15 text-[12px] text-content even:bg-row_stripe"
                 >
                   <span className="tabular-nums">
                     {dayText(h.invoice_date)}
                   </span>
                   <span className="truncate text-content/85">
                     {h.vendor_name ?? "—"}
+                  </span>
+                  <span className="text-right tabular-nums text-content/85">
+                    {h.cases > 0 ? h.cases.toLocaleString() : "—"}
                   </span>
                   <span className="text-right tabular-nums text-content/85">
                     {money(h.list_unit)}
@@ -1567,7 +1575,7 @@ const PopupTopItems = ({
                   </span>
                 </div>
               ))}
-              <p className="text-[11px] text-content/85 mt-1.5 leading-snug">
+              <p className="text-[13px] text-content/85 mt-1.5 leading-snug">
                 Green is an allowance — paid under list. Cost reaches back
                 further than the sales week on purpose: a week cannot say
                 whether today&rsquo;s price is a good one.
