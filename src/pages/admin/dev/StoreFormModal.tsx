@@ -7,13 +7,14 @@ import type { Store } from "../../../interfaces";
  * New store, or a rename of one that exists.
  *
  * The same modal serves both, as CompanyFormModal does — but the two are not
- * symmetrical, and the form says so. Creating takes a number, a name and a
- * company; editing takes the NAME only, because `stores/change_store_name` is
+ * symmetrical, and the form says so. Creating takes an ID, a number, a name
+ * and a company; editing takes the NAME only, because `stores/change_store_name` is
  * the only edit the backend offers. The number and company are shown on an
  * edit so the reader knows which store they have, and are plainly not fields.
  */
 
 export interface StoreForm {
+  storeid: number;
   store_number: string;
   store_name: string;
   company: number;
@@ -25,6 +26,8 @@ interface Props {
   companies: { value: string; label: string }[];
   /** Every number already on file, lower-cased by the caller. */
   existingNumbers: string[];
+  /** Every storeid already on file. */
+  existingIds: number[];
   saving: boolean;
   onSave: (form: StoreForm) => void;
   onClose: () => void;
@@ -34,17 +37,30 @@ const StoreFormModal = ({
   initial,
   companies,
   existingNumbers,
+  existingIds,
   saving,
   onSave,
   onClose,
 }: Props) => {
   const isCreate = !initial;
+  const [storeId, setStoreId] = useState(
+    initial ? String(initial.storeid) : "",
+  );
   const [storeNumber, setStoreNumber] = useState(initial?.store_number ?? "");
   const [storeName, setStoreName] = useState(initial?.store_name ?? "");
   const [company, setCompany] = useState(
     initial ? String(initial.company) : "",
   );
 
+  const trimmedId = storeId.trim();
+  const parsedId = Number(trimmedId);
+  /** The insert writes the ID as given, so it has to be a whole number. */
+  const idInvalid =
+    !!trimmedId && (!/^\d+$/.test(trimmedId) || !Number.isSafeInteger(parsedId));
+  /** storeid is the key every other table joins on; a duplicate fails the
+   *  insert anyway, but this says why before the round trip. */
+  const idTaken =
+    isCreate && !!trimmedId && !idInvalid && existingIds.includes(parsedId);
   const trimmedNumber = storeNumber.trim();
   const trimmedName = storeName.trim();
 
@@ -58,7 +74,14 @@ const StoreFormModal = ({
     existingNumbers.includes(trimmedNumber.toLowerCase());
 
   const canSubmit = isCreate
-    ? !!trimmedNumber && !!trimmedName && !!company && !numberTaken && !saving
+    ? !!trimmedId &&
+      !idInvalid &&
+      !idTaken &&
+      !!trimmedNumber &&
+      !!trimmedName &&
+      !!company &&
+      !numberTaken &&
+      !saving
     : !!trimmedName &&
       trimmedName.toLowerCase() !== (initial?.store_name ?? "").toLowerCase() &&
       !saving;
@@ -72,6 +95,25 @@ const StoreFormModal = ({
 
         {isCreate ? (
           <div className="grid gap-3 mb-4">
+            <div>
+              <Input
+                label="Store ID"
+                value={storeId}
+                setValue={setStoreId}
+                className="py-1.5 text-[13px]"
+              />
+              {idInvalid && (
+                <div className="text-[12px] text-brand_danger mt-1 leading-snug">
+                  Store ID must be a whole number.
+                </div>
+              )}
+              {idTaken && (
+                <div className="text-[12px] text-brand_danger mt-1 leading-snug">
+                  Store ID {trimmedId} is already in use.
+                </div>
+              )}
+            </div>
+
             <div>
               <Input
                 label="Store number"
@@ -115,6 +157,12 @@ const StoreFormModal = ({
                 either, and an input that cannot be saved is worse than text. */}
             <div className="rounded-md bg-bkg px-3 py-2 flex items-baseline gap-3">
               <span className="text-[12px] text-content/85">
+                ID{" "}
+                <span className="font-semibold text-content">
+                  {initial.storeid}
+                </span>
+              </span>
+              <span className="text-[12px] text-content/85">
                 Number{" "}
                 <span className="font-semibold text-content">
                   {initial.store_number}
@@ -147,6 +195,7 @@ const StoreFormModal = ({
           <button
             onClick={() =>
               onSave({
+                storeid: parsedId,
                 store_number: trimmedNumber,
                 store_name: trimmedName,
                 company: Number(company),
