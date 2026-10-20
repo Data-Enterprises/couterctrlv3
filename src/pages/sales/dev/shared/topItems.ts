@@ -84,6 +84,17 @@ export const amountText = (r: TopItemRow): string =>
 export const weighed = (r: { qty: number; weight: number }): boolean =>
   r.weight > 0;
 
+/**
+ * What one of it cost to buy — per pound on a weighed row.
+ *
+ * Divides by the same amount the price divides by, so the two sit against
+ * each other. Null when nothing sold, or when no line carried a cost.
+ */
+export const unitCost = (r: TopItemRow): number | null => {
+  const amount = amountOf(r);
+  return amount > 0 && r.ext_cost !== null ? r.ext_cost / amount : null;
+};
+
 /** Sales less cost. Null when the cost is not trustworthy, on the same rule
  *  the server uses to null the margin. */
 export const grossProfit = (r: TopItemRow): number | null =>

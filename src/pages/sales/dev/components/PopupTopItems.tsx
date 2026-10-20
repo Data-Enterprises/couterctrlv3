@@ -28,7 +28,6 @@ import {
 import {
   avgPrice,
   compareWindows,
-  count,
   deptName,
   deptOptions,
   deptRollups,
@@ -44,7 +43,8 @@ import {
   deltaPct,
   deltaPoints,
   pointsFor,
-  promoShare,
+  grossProfit,
+  unitCost,
   rankBySales,
   sortTopItems,
   nextTopItemSort,
@@ -423,10 +423,16 @@ const PopupTopItems = ({
     );
   }
 
-  /** The supporting metrics: every row TY, LW, LY. */
+  /** The supporting metrics: every row TY, and against each baseline. */
   const metricRows = !selected
     ? []
     : [
+        {
+          label: "Sales",
+          ty: money(selected.ty.total_sales),
+          lw: pctText(selected.vsLW),
+          ly: pctText(selected.vsLY),
+        },
         {
           label: weighed(selected.ty) ? "Pounds" : "Units",
           ty: amountText(selected.ty),
@@ -444,16 +450,7 @@ const PopupTopItems = ({
           ),
         },
         {
-          label: "Margin",
-          ty:
-            selected.ty.margin === null
-              ? "—"
-              : `${selected.ty.margin.toFixed(1)}%`,
-          lw: pointsText(deltaPoints(selected.ty.margin, selected.lw?.margin)),
-          ly: pointsText(deltaPoints(selected.ty.margin, selected.ly?.margin)),
-        },
-        {
-          label: "Avg price",
+          label: weighed(selected.ty) ? "Price per lb" : "Avg price",
           ty: money(avgPrice(selected.ty)),
           lw: pctText(
             deltaPct(
@@ -469,41 +466,62 @@ const PopupTopItems = ({
           ),
         },
         {
-          label: "On promo",
-          ty: `${Math.round(promoShare(selected.ty) * 100)}%`,
-          lw: pointsText(
-            selected.lw
-              ? (promoShare(selected.ty) - promoShare(selected.lw)) * 100
-              : null,
+          label: "Margin",
+          ty:
+            selected.ty.margin === null
+              ? "—"
+              : `${selected.ty.margin.toFixed(1)}%`,
+          lw: pointsText(deltaPoints(selected.ty.margin, selected.lw?.margin)),
+          ly: pointsText(deltaPoints(selected.ty.margin, selected.ly?.margin)),
+        },
+        {
+          label: "Gross profit",
+          ty: money(grossProfit(selected.ty)),
+          lw: pctText(
+            deltaPct(
+              grossProfit(selected.ty),
+              selected.lw ? grossProfit(selected.lw) : null,
+            ),
           ),
-          ly: pointsText(
-            selected.ly
-              ? (promoShare(selected.ty) - promoShare(selected.ly)) * 100
-              : null,
+          ly: pctText(
+            deltaPct(
+              grossProfit(selected.ty),
+              selected.ly ? grossProfit(selected.ly) : null,
+            ),
           ),
         },
       ];
 
-  /** The price-mix bar. Every count goes through `count` — these arrive null
-   *  rather than zero whenever an item never rang that way. */
-  const mix = selected
-    ? (() => {
-        const r = selected.ty;
-        const regular = count(r.qty_regular);
-        const promo = count(r.qty_promo);
-        const deal = count(r.qty_deal_item);
-        const known = regular + promo + deal;
-        const w = (n: number) => (known > 0 ? `${(n / known) * 100}%` : "0%");
-        return {
-          regular: w(regular),
-          promo: w(promo),
-          deal: w(deal),
-          regularN: regular,
-          promoN: promo,
-          dealN: deal,
-        };
-      })()
-    : null;
+  /** Where it sits in the list, and how much of the list it is. */
+  const rank = selected
+    ? ranked.findIndex((r) => r.ty.product_code === selected.ty.product_code) +
+      1
+    : 0;
+  const shareOfTop =
+    selected && totals.ty > 0
+      ? (selected.ty.total_sales / totals.ty) * 100
+      : null;
+
+  /*
+   * The headline price.
+   *
+   * One price point IS the price — read it off the row rather than dividing
+   * sales by amount, which only lands on the same number when nothing moved
+   * all week. With several, the blended average is the honest single figure
+   * and the ladder below shows what it is blending.
+   */
+  const headlinePrice =
+    points.length === 1
+      ? points[0].price
+      : selected
+        ? avgPrice(selected.ty)
+        : null;
+
+  const perUnitCost = selected ? unitCost(selected.ty) : null;
+  const perUnitMargin =
+    headlinePrice !== null && perUnitCost !== null
+      ? headlinePrice - perUnitCost
+      : null;
 
   /** A column heading that sorts. Chevron only on the column in force, the
    *  way every other grid on this page marks it. */
@@ -964,84 +982,172 @@ const PopupTopItems = ({
                 )}
               </div>
 
-              {/* Lead card + supporting metrics, 40/60 */}
-              <div className="flex-shrink-0 px-4 py-2.5 border-b border-gray-100">
-                <div className="grid grid-cols-[40%_1fr] gap-2">
-                  <div className="rounded-md border border-brand_navy/15 shadow-sm bg-gray-50 p-2.5 text-center flex flex-col justify-center">
-                    <div className="text-[11px] font-semibold text-content">
-                      Sales
-                    </div>
-                    <div className="text-[18px] font-semibold text-content leading-tight">
-                      {money(selected.ty.total_sales)}
-                    </div>
-                    <div className="text-[11.5px] font-semibold text-content/85 tabular-nums">
-                      {amountText(selected.ty)}
-                    </div>
-                    <div className="text-[11px] text-content/85 truncate">
-                      {deptName(selected.ty)}
-                    </div>
-                    <div className="grid grid-cols-2 gap-1.5 mt-1.5 pt-1.5 border-t border-gray-200">
-                      {(
-                        [
-                          [
-                            "vs LW",
-                            selected.lw?.total_sales ?? null,
-                            selected.vsLW,
-                          ],
-                          [
-                            "vs LY",
-                            selected.ly?.total_sales ?? null,
-                            selected.vsLY,
-                          ],
-                        ] as const
-                      ).map(([label, prior, pct]) => (
-                        <div key={label}>
-                          <div className="text-[11px] font-semibold uppercase tracking-wide text-content">
-                            {label}
-                          </div>
-                          <div className="text-[12px] font-semibold text-content tabular-nums">
-                            {money(prior)}
-                          </div>
-                          <div className="flex justify-center mt-0.5">
-                            <span
-                              className={`text-[11px] font-semibold px-1.5 py-0.5 rounded ${pillClass(pct, threshold)}`}
-                            >
-                              {pctText(pct)}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+              {/* Where it sits in the list. The strip above says what the
+                  item is; this says how much of the week it carried. */}
+              <div className="flex-shrink-0 flex items-baseline gap-2 px-4 pt-2 pb-1 text-[11.5px] text-content/85">
+                <span className="tabular-nums">{selected.ty.product_code}</span>
+                <span>&middot;</span>
+                <span className="truncate">{deptName(selected.ty)}</span>
+                <span>&middot;</span>
+                <span className="font-semibold text-content tabular-nums flex-shrink-0">
+                  #{rank} of {ranked.length}
+                </span>
+              </div>
 
-                  <div className="rounded-md border border-brand_navy/15 shadow-sm bg-gray-50 px-2.5 py-1 flex flex-col justify-center">
-                    <div className="grid grid-cols-[1fr_56px_55px_55px] gap-1.5 pb-0.5 text-[11px] font-semibold uppercase tracking-wide text-content">
-                      <span />
-                      <span className="text-right">TY</span>
-                      <span className="text-right">LW</span>
-                      <span className="text-right">LY</span>
-                    </div>
-                    {metricRows.map((m) => (
-                      <div
-                        key={m.label}
-                        className="grid grid-cols-[1fr_56px_55px_55px] gap-1.5 items-center py-1 border-t border-gray-200 text-[11.5px]"
-                      >
-                        <span className="font-semibold text-content truncate">
-                          {m.label}
-                        </span>
-                        <span className="text-[12px] font-semibold text-content text-right tabular-nums">
-                          {m.ty}
-                        </span>
-                        <span className="text-[12px] font-semibold text-content text-right tabular-nums">
-                          {m.lw}
-                        </span>
-                        <span className="text-[12px] font-semibold text-content text-right tabular-nums">
-                          {m.ly}
-                        </span>
-                      </div>
-                    ))}
+              {/* Price, cost, and what share of the list it is. Three figures
+                  answering three questions, so three tiles rather than one
+                  card with a column of numbers down it. */}
+              <div className="flex-shrink-0 grid grid-cols-3 divide-x divide-gray-100 border-y border-gray-100 bg-gray-50">
+                <div className="px-3 py-2 min-w-0">
+                  <div className="text-[10px] font-bold uppercase tracking-wide text-content/85">
+                    Price
+                  </div>
+                  <div className="text-[17px] font-bold text-content tabular-nums leading-tight">
+                    {money(headlinePrice)}
+                    {weighed(selected.ty) && headlinePrice !== null && (
+                      <span className="text-[11.5px] font-semibold text-content/85">
+                        {" "}
+                        /lb
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-[11px] text-content/85 truncate">
+                    {points.length === 0
+                      ? "no price on file"
+                      : points.length === 1
+                        ? "1 price point"
+                        : `blended over ${points.length} prices`}
                   </div>
                 </div>
+
+                <div className="px-3 py-2 min-w-0">
+                  <div className="text-[10px] font-bold uppercase tracking-wide text-content/85">
+                    Cost
+                  </div>
+                  <div className="text-[17px] font-bold text-content tabular-nums leading-tight">
+                    {money(perUnitCost)}
+                    {weighed(selected.ty) && perUnitCost !== null && (
+                      <span className="text-[11.5px] font-semibold text-content/85">
+                        {" "}
+                        /lb
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-[11px] text-content/85 truncate">
+                    {detail?.cost_summary
+                      ? `last paid ${dayText(detail.cost_summary.last_bought_on)}`
+                      : selected.ty.cost_coverage === null
+                        ? "no line carried a cost"
+                        : `${Math.round(selected.ty.cost_coverage)}% of lines costed`}
+                  </div>
+                </div>
+
+                <div className="px-3 py-2 min-w-0">
+                  <div className="text-[10px] font-bold uppercase tracking-wide text-content/85">
+                    Contribution
+                  </div>
+                  <div className="text-[17px] font-bold text-content tabular-nums leading-tight">
+                    {shareOfTop === null
+                      ? "\u2014"
+                      : `${shareOfTop.toFixed(1)}%`}
+                  </div>
+                  <div className="text-[11px] text-content/85 truncate">
+                    {money(selected.ty.total_sales)} of {money(totals.ty)}
+                  </div>
+                  <span className="block h-1 rounded bg-bkg mt-1">
+                    <span
+                      className="block h-full rounded bg-brand_navy"
+                      style={{ width: `${Math.min(100, shareOfTop ?? 0)}%` }}
+                    />
+                  </span>
+                </div>
+              </div>
+
+              {/* Cost against price, once. The margin percentage is in the
+                  table below; this is the same fact in money, which is the
+                  form somebody repricing an item works in. */}
+              {perUnitCost !== null && headlinePrice !== null && (
+                <div className="flex-shrink-0 px-4 py-2.5 border-b border-gray-100">
+                  <div className="flex items-baseline justify-between gap-2">
+                    <span className="text-[12px] font-semibold text-content">
+                      Each {weighed(selected.ty) ? "pound" : "one"} sold
+                    </span>
+                    <span
+                      className={`text-[12px] font-semibold text-right ${
+                        (perUnitMargin ?? 0) < 0
+                          ? "text-severity_critical_text"
+                          : "text-severity_healthy_text"
+                      }`}
+                    >
+                      {(perUnitMargin ?? 0) < 0 ? "Loses " : "Makes "}
+                      {money(Math.abs(perUnitMargin ?? 0))}
+                      {selected.ty.margin !== null &&
+                        ` \u00b7 ${selected.ty.margin.toFixed(1)}% margin`}
+                    </span>
+                  </div>
+
+                  {/* Cost first, then whatever sits on top of it. A loss runs
+                      past the price and is drawn as the overhang it is. */}
+                  <span className="flex h-4 rounded overflow-hidden bg-bkg mt-1.5">
+                    <span
+                      className="bg-brand_navy"
+                      style={{
+                        width: `${Math.min(100, (perUnitCost / Math.max(perUnitCost, headlinePrice)) * 100)}%`,
+                      }}
+                    />
+                    <span
+                      className={
+                        (perUnitMargin ?? 0) < 0
+                          ? "bg-severity_critical_text"
+                          : "bg-severity_healthy_text"
+                      }
+                      style={{
+                        width: `${Math.min(100, (Math.abs(perUnitMargin ?? 0) / Math.max(perUnitCost, headlinePrice)) * 100)}%`,
+                      }}
+                    />
+                  </span>
+                  <div className="flex justify-between gap-2 text-[11px] text-content/85 tabular-nums mt-1">
+                    <span>Cost {money(perUnitCost)}</span>
+                    <span className="truncate">
+                      {money(grossProfit(selected.ty))} over{" "}
+                      {amountText(selected.ty)}
+                    </span>
+                    <span>Price {money(headlinePrice)}</span>
+                  </div>
+                </div>
+              )}
+
+              {/* This week against each baseline. */}
+              <div className="flex-shrink-0 px-4 py-2 border-b border-gray-100">
+                <div className="grid grid-cols-[1fr_84px_62px_62px] gap-1.5 pb-1 text-[10px] font-bold uppercase tracking-wide text-content/85">
+                  <span />
+                  <span className="text-right">This week</span>
+                  <span className="text-right">vs LW</span>
+                  <span className="text-right">vs LY</span>
+                </div>
+                {metricRows.map((m) => (
+                  <div
+                    key={m.label}
+                    className="grid grid-cols-[1fr_84px_62px_62px] gap-1.5 items-center py-1 border-t border-gray-100 text-[11.5px]"
+                  >
+                    <span className="text-content/85 truncate">{m.label}</span>
+                    <span className="text-[12.5px] font-semibold text-content text-right tabular-nums">
+                      {m.ty}
+                    </span>
+                    <span className="text-[12px] font-semibold text-content text-right tabular-nums">
+                      {m.lw}
+                    </span>
+                    <span className="text-[12px] font-semibold text-content text-right tabular-nums">
+                      {m.ly}
+                    </span>
+                  </div>
+                ))}
+                {!selected.lw && !selected.ly && (
+                  <p className="text-[11px] text-content/85 mt-1.5 leading-snug">
+                    Not sold last week or the same week last year &mdash; new or
+                    returning this week.
+                  </p>
+                )}
               </div>
 
               <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar">
@@ -1051,42 +1157,11 @@ const PopupTopItems = ({
                   label="How it rang"
                   note={`${points.length} price point${points.length === 1 ? "" : "s"}`}
                 >
-                  {mix && (
-                    <>
-                      <div className="flex h-2.5 rounded-sm overflow-hidden bg-bkg">
-                        <span
-                          className="bg-brand_navy"
-                          style={{ width: mix.regular }}
-                        />
-                        <span
-                          className="bg-severity_watch_text"
-                          style={{ width: mix.promo }}
-                        />
-                        <span
-                          className="bg-severity_healthy_text"
-                          style={{ width: mix.deal }}
-                        />
-                      </div>
-                      <div className="flex gap-4 mt-1.5 text-[11.5px] text-content">
-                        <span className="flex items-center gap-1.5">
-                          <span className="w-2.5 h-2.5 rounded-sm bg-brand_navy" />
-                          Regular {mix.regularN.toLocaleString()}
-                        </span>
-                        <span className="flex items-center gap-1.5">
-                          <span className="w-2.5 h-2.5 rounded-sm bg-severity_watch_text" />
-                          Promo {mix.promoN.toLocaleString()}
-                        </span>
-                        <span className="flex items-center gap-1.5">
-                          <span className="w-2.5 h-2.5 rounded-sm bg-severity_healthy_text" />
-                          Deal {mix.dealN.toLocaleString()}
-                        </span>
-                      </div>
-                    </>
-                  )}
-
-                  <div className="grid grid-cols-[1fr_64px_80px] gap-2 mt-2.5 pb-1 border-b border-brand_navy/15 text-[11px] font-semibold uppercase tracking-wide text-content/85">
+                  <div className="grid grid-cols-[1fr_64px_80px] gap-2 pb-1 border-b border-brand_navy/15 text-[11px] font-semibold uppercase tracking-wide text-content/85">
                     <span>Rang at</span>
-                    <span className="text-right">Units</span>
+                    <span className="text-right">
+                      {selected && weighed(selected.ty) ? "Pounds" : "Units"}
+                    </span>
                     <span className="text-right">Sales</span>
                   </div>
                   {points.length === 0 ? (
