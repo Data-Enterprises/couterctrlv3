@@ -236,6 +236,16 @@ export const SALES_HELP: HelpContent = {
       def: "The store's 200 biggest items by sales for the week shown. Ranked on money, not units, so an expensive item that sells a few still appears. Excluded sub departments are left out, so it agrees with the rest of the page.",
     },
     {
+      term: "What it rang at",
+      def: "Every price the item sold at this week, on one axis with what it costs you. Dot size is how much went out at each price; anything in the tinted band sold for less than it cost. An item can average out below cost while most of its sales were fine — this says which price is doing it.",
+      anchor: "store-tabs",
+    },
+    {
+      term: "What it earns",
+      def: "Price less cost, times how much sold. Read down: the selling price, the cost, what is left of one after the other, the amount that went out, and the week's gross profit. A margin that could not be trusted leaves the profit withheld rather than guessed.",
+      anchor: "store-tabs",
+    },
+    {
       term: "Invoices",
       def: "Every delivery of that item in the last 60 days, in a panel that slides over the item from the right. Nothing is fetched to open it — the invoices arrive with the item. A paid price in green is an allowance: you paid under the vendor's list price on that delivery.",
       anchor: "store-tabs",

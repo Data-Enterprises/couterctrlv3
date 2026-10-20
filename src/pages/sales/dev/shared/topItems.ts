@@ -619,3 +619,86 @@ export const deptAmountText = (d: {
     );
   return parts.length ? parts.join(" · ") : "—";
 };
+
+export interface ScaleDot {
+  price: number;
+  /** How much sold at this price, in the item's own unit. */
+  amount: number;
+  amountText: string;
+  /** Left edge as a CSS percentage. */
+  at: string;
+  /** Dot diameter in px, by amount. */
+  size: number;
+  under: boolean;
+}
+
+export interface PriceScale {
+  dots: ScaleDot[];
+  /** Where cost sits on the axis, or null when it is not known. */
+  costAt: string | null;
+  /** How much of the item sold below cost. Zero when cost is unknown. */
+  underAmount: number;
+}
+
+/**
+ * The prices an item rang at, on one axis with its cost.
+ *
+ * The two were separate readings -- a ladder of prices, and a bar comparing
+ * an average price against cost -- and neither could say the thing they say
+ * together: WHICH price is doing the losing. An item averaging $3.49 against
+ * a $4.20 cost reads as uniformly under water, when in practice one price
+ * point is usually carrying all of it and the rest are fine.
+ *
+ * Null below two prices. One dot and a cost line is not a chart, and a scale
+ * item posts a single per-pound price, so that is the common case rather than
+ * an edge one -- the caller says it in a sentence instead.
+ *
+ * Dot area, not diameter, tracks the amount: area is what the eye reads as
+ * quantity, and a 187-unit dot beside a 3-unit one would otherwise be sixty
+ * times too wide to fit. Floored at 8px so a one-unit price is still visible,
+ * which is deliberate -- a price that rang once is exactly the kind a buyer
+ * wants to see.
+ */
+export const priceScale = (
+  points: { price: number; units: number; netSales: number }[],
+  cost: number | null,
+  isWeighedItem: boolean,
+  amountAt: (p: { price: number; units: number; netSales: number }) => number,
+): PriceScale | null => {
+  if (points.length < 2) return null;
+
+  const prices = points.map((p) => p.price);
+  const lo = Math.min(...prices, cost ?? Infinity);
+  const hi = Math.max(...prices, cost ?? -Infinity);
+  // A flat axis would stack every dot on one spot; pad it so the ends have
+  // somewhere to sit.
+  const pad = (hi - lo) * 0.12 || Math.max(hi * 0.05, 0.1);
+  const from = lo - pad;
+  const span = hi + pad - from;
+  const at = (v: number) => `${((v - from) / span) * 100}%`;
+
+  const amounts = points.map(amountAt);
+  const biggest = Math.max(...amounts, 1);
+
+  const dots = points
+    .map((p, i) => {
+      const amount = amounts[i];
+      return {
+        price: p.price,
+        amount,
+        amountText: isWeighedItem
+          ? `${amount.toLocaleString(undefined, { maximumFractionDigits: 1 })} lb`
+          : amount.toLocaleString(),
+        at: at(p.price),
+        size: Math.max(8, Math.round(Math.sqrt(amount / biggest) * 30)),
+        under: cost !== null && p.price < cost,
+      };
+    })
+    .sort((a, b) => a.price - b.price);
+
+  return {
+    dots,
+    costAt: cost === null ? null : at(cost),
+    underAmount: dots.filter((d) => d.under).reduce((n, d) => n + d.amount, 0),
+  };
+};

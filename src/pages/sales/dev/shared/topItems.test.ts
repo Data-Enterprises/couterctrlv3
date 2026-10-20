@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
+  priceScale,
   amountOf,
   amountText,
   amountUnit,
@@ -586,5 +587,72 @@ describe("deptAmountText", () => {
 
   it("prints a dash rather than a nought", () => {
     expect(deptAmountText({ tyUnits: 0, tyWeight: 0 })).toBe("—");
+  });
+});
+
+describe("priceScale", () => {
+  const pt = (price: number, units: number) => ({
+    price,
+    units,
+    netSales: price * units,
+  });
+  const byUnits = (x: { units: number }) => x.units;
+
+  it("is null below two prices, which is the normal case on a scale item", () => {
+    expect(priceScale([pt(3.39, 187)], 4.2, false, byUnits)).toBeNull();
+    expect(priceScale([], 4.2, false, byUnits)).toBeNull();
+  });
+
+  it("marks the prices that sold below cost", () => {
+    const scale = priceScale(
+      [pt(3.39, 187), pt(4.69, 10), pt(5.49, 3)],
+      4.2,
+      false,
+      byUnits,
+    );
+    expect(scale?.dots.map((d) => d.under)).toEqual([true, false, false]);
+    expect(scale?.underAmount).toBe(187);
+  });
+
+  it("runs the axis low price to high, whatever order they arrive in", () => {
+    const scale = priceScale(
+      [pt(5.49, 3), pt(3.39, 187), pt(4.69, 10)],
+      4.2,
+      false,
+      byUnits,
+    );
+    expect(scale?.dots.map((d) => d.price)).toEqual([3.39, 4.69, 5.49]);
+  });
+
+  it("sizes by area, so the big seller does not swamp the axis", () => {
+    const scale = priceScale([pt(1, 10000), pt(2, 1)], null, false, byUnits);
+    const [small, big] = [scale!.dots[1], scale!.dots[0]];
+    expect(big.size).toBe(30);
+    // Diameter, not area: a hundredth of the amount is a tenth of the width.
+    expect(small.size).toBe(8);
+  });
+
+  it("draws no cost line when the cost is not known", () => {
+    const scale = priceScale([pt(3.39, 187), pt(4.69, 10)], null, false, byUnits);
+    expect(scale?.costAt).toBeNull();
+    expect(scale?.underAmount).toBe(0);
+    expect(scale?.dots.every((d) => !d.under)).toBe(true);
+  });
+
+  it("keeps the cost inside the axis when it sits past every price", () => {
+    const scale = priceScale([pt(1, 5), pt(2, 5)], 9, false, byUnits);
+    const pct = Number(scale!.costAt!.replace("%", ""));
+    expect(pct).toBeGreaterThan(0);
+    expect(pct).toBeLessThan(100);
+  });
+
+  it("reads a weighed item in pounds", () => {
+    const scale = priceScale(
+      [pt(11.79, 160), pt(9.99, 40)],
+      8.44,
+      true,
+      (x) => x.netSales / x.price,
+    );
+    expect(scale?.dots.map((d) => d.amountText)).toEqual(["40 lb", "160 lb"]);
   });
 });

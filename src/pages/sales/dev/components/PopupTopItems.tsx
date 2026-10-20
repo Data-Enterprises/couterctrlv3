@@ -44,6 +44,7 @@ import {
   deltaPoints,
   pointsFor,
   grossProfit,
+  priceScale,
   unitCost,
   rankBySales,
   sortTopItems,
@@ -518,6 +519,25 @@ const PopupTopItems = ({
         : null;
 
   const perUnitCost = selected ? unitCost(selected.ty) : null;
+
+  /*
+   * The price axis, with cost on it.
+   *
+   * A price point's `units` is rings on a weighed line, so the amount shown
+   * at each price is its own sales over its own price -- pounds, on the same
+   * basis the item's total is on. Null below two prices.
+   */
+  const scale = useMemo(
+    () =>
+      selected
+        ? priceScale(points, perUnitCost, weighed(selected.ty), (pt) =>
+            weighed(selected.ty) && pt.price > 0
+              ? pt.netSales / pt.price
+              : pt.units,
+          )
+        : null,
+    [points, perUnitCost, selected],
+  );
   const perUnitMargin =
     headlinePrice !== null && perUnitCost !== null
       ? headlinePrice - perUnitCost
@@ -982,176 +1002,319 @@ const PopupTopItems = ({
                 )}
               </div>
 
-              {/* Where it sits in the list. The strip above says what the
-                  item is; this says how much of the week it carried. */}
-              <div className="flex-shrink-0 flex items-baseline gap-2 px-4 pt-2 pb-1 text-[11.5px] text-content/85">
-                <span className="tabular-nums">{selected.ty.product_code}</span>
-                <span>&middot;</span>
-                <span className="truncate">{deptName(selected.ty)}</span>
-                <span>&middot;</span>
-                <span className="font-semibold text-content tabular-nums flex-shrink-0">
-                  #{rank} of {ranked.length}
-                </span>
-              </div>
-
-              {/* Price, cost, and what share of the list it is. Three figures
-                  answering three questions, so three tiles rather than one
-                  card with a column of numbers down it. */}
-              <div className="flex-shrink-0 grid grid-cols-3 divide-x divide-gray-100 border-y border-gray-100 bg-gray-50">
-                <div className="px-3 py-2 min-w-0">
-                  <div className="text-[10px] font-bold uppercase tracking-wide text-content/85">
-                    Price
+              {/* The whole report scrolls as one. The sections below answer
+                  different questions and a reader works down them; pinning
+                  the top three and scrolling the rest only moved the seam. */}
+              <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar">
+                {/* Identity, and how much of the list this is. Contribution
+                    sits here rather than in a tile of its own: the figure,
+                    the money and the bar fit on one line, and a third tile
+                    would have cost a quarter of the panel. */}
+                <div className="flex items-center gap-3 px-4 py-2 border-b border-gray-100">
+                  <div className="min-w-0 flex-1 text-[11.5px] text-content/85 truncate">
+                    <span className="tabular-nums">
+                      {selected.ty.product_code}
+                    </span>{" "}
+                    &middot; {deptName(selected.ty)} &middot;{" "}
+                    <span className="font-semibold text-content tabular-nums">
+                      #{rank} of {ranked.length}
+                    </span>
                   </div>
-                  <div className="text-[17px] font-bold text-content tabular-nums leading-tight">
-                    {money(headlinePrice)}
-                    {weighed(selected.ty) && headlinePrice !== null && (
-                      <span className="text-[11.5px] font-semibold text-content/85">
+                  <div className="flex-shrink-0 text-right">
+                    <div className="text-[13.5px] font-bold text-content tabular-nums leading-tight">
+                      {shareOfTop === null
+                        ? "\u2014"
+                        : `${shareOfTop.toFixed(1)}%`}
+                      <span className="text-[11px] font-normal text-content/85">
                         {" "}
-                        /lb
+                        of top 200
                       </span>
-                    )}
-                  </div>
-                  <div className="text-[11px] text-content/85 truncate">
-                    {points.length === 0
-                      ? "no price on file"
-                      : points.length === 1
-                        ? "1 price point"
-                        : `blended over ${points.length} prices`}
+                    </div>
+                    <span className="block w-[120px] h-[3px] rounded bg-bkg mt-0.5">
+                      <span
+                        className="block h-full rounded bg-brand_navy"
+                        style={{ width: `${Math.min(100, shareOfTop ?? 0)}%` }}
+                      />
+                    </span>
                   </div>
                 </div>
 
-                <div className="px-3 py-2 min-w-0">
-                  <div className="text-[10px] font-bold uppercase tracking-wide text-content/85">
-                    Cost
+                {/* What it earns, read top to bottom. Price and cost, what is
+                    left of one after the other, how much of it sold, and the
+                    week's money -- in the order that explains the last figure
+                    rather than four tiles that each assert one. */}
+                <div className="px-4 py-2.5 border-b border-gray-100">
+                  <div className="text-[10px] font-bold uppercase tracking-wide text-content/85 mb-1">
+                    What it earns
                   </div>
-                  <div className="text-[17px] font-bold text-content tabular-nums leading-tight">
-                    {money(perUnitCost)}
-                    {weighed(selected.ty) && perUnitCost !== null && (
-                      <span className="text-[11.5px] font-semibold text-content/85">
+
+                  <div className="flex items-baseline justify-between gap-2 py-1">
+                    <span className="text-[12.5px] text-content truncate">
+                      Selling price
+                      <span className="text-[11px] text-content/85">
                         {" "}
-                        /lb
+                        &middot;{" "}
+                        {weighed(selected.ty)
+                          ? "per lb"
+                          : points.length === 1
+                            ? "1 price"
+                            : `${points.length} prices`}
                       </span>
-                    )}
+                    </span>
+                    <span className="text-[14px] font-semibold text-content tabular-nums flex-shrink-0">
+                      {money(headlinePrice)}
+                    </span>
                   </div>
-                  <div className="text-[11px] text-content/85 truncate">
-                    {detail?.cost_summary
-                      ? `last paid ${dayText(detail.cost_summary.last_bought_on)}`
-                      : selected.ty.cost_coverage === null
-                        ? "no line carried a cost"
-                        : `${Math.round(selected.ty.cost_coverage)}% of lines costed`}
-                  </div>
-                </div>
 
-                <div className="px-3 py-2 min-w-0">
-                  <div className="text-[10px] font-bold uppercase tracking-wide text-content/85">
-                    Contribution
+                  <div className="flex items-baseline justify-between gap-2 py-1 border-b-2 border-brand_navy/25">
+                    <span className="text-[12.5px] text-content truncate">
+                      Cost
+                      <span className="text-[11px] text-content/85">
+                        {" "}
+                        &middot;{" "}
+                        {selected.ty.cost_coverage === null
+                          ? "no line carried a cost"
+                          : `${Math.round(selected.ty.cost_coverage)}% of lines costed`}
+                      </span>
+                    </span>
+                    <span className="text-[14px] font-semibold text-content tabular-nums flex-shrink-0">
+                      {perUnitCost === null
+                        ? "\u2014"
+                        : `\u2212 ${money(perUnitCost)}`}
+                    </span>
                   </div>
-                  <div className="text-[17px] font-bold text-content tabular-nums leading-tight">
-                    {shareOfTop === null
-                      ? "\u2014"
-                      : `${shareOfTop.toFixed(1)}%`}
-                  </div>
-                  <div className="text-[11px] text-content/85 truncate">
-                    {money(selected.ty.total_sales)} of {money(totals.ty)}
-                  </div>
-                  <span className="block h-1 rounded bg-bkg mt-1">
-                    <span
-                      className="block h-full rounded bg-brand_navy"
-                      style={{ width: `${Math.min(100, shareOfTop ?? 0)}%` }}
-                    />
-                  </span>
-                </div>
-              </div>
 
-              {/* Cost against price, once. The margin percentage is in the
-                  table below; this is the same fact in money, which is the
-                  form somebody repricing an item works in. */}
-              {perUnitCost !== null && headlinePrice !== null && (
-                <div className="flex-shrink-0 px-4 py-2.5 border-b border-gray-100">
-                  <div className="flex items-baseline justify-between gap-2">
-                    <span className="text-[12px] font-semibold text-content">
-                      Each {weighed(selected.ty) ? "pound" : "one"} sold
+                  <div className="flex items-baseline justify-between gap-2 py-1">
+                    <span className="text-[12.5px] text-content">
+                      Per {weighed(selected.ty) ? "pound" : "unit"}
                     </span>
                     <span
-                      className={`text-[12px] font-semibold text-right ${
-                        (perUnitMargin ?? 0) < 0
-                          ? "text-severity_critical_text"
-                          : "text-severity_healthy_text"
+                      className={`text-[14px] font-semibold tabular-nums flex-shrink-0 ${
+                        perUnitMargin === null
+                          ? "text-content"
+                          : perUnitMargin < 0
+                            ? "text-severity_critical_text"
+                            : "text-severity_healthy_text"
                       }`}
                     >
-                      {(perUnitMargin ?? 0) < 0 ? "Loses " : "Makes "}
-                      {money(Math.abs(perUnitMargin ?? 0))}
-                      {selected.ty.margin !== null &&
-                        ` \u00b7 ${selected.ty.margin.toFixed(1)}% margin`}
+                      {perUnitMargin === null
+                        ? "\u2014"
+                        : `${perUnitMargin < 0 ? "\u2212" : "+"}${money(Math.abs(perUnitMargin))}`}
                     </span>
                   </div>
 
-                  {/* Cost first, then whatever sits on top of it. A loss runs
-                      past the price and is drawn as the overhang it is. */}
-                  <span className="flex h-4 rounded overflow-hidden bg-bkg mt-1.5">
-                    <span
-                      className="bg-brand_navy"
-                      style={{
-                        width: `${Math.min(100, (perUnitCost / Math.max(perUnitCost, headlinePrice)) * 100)}%`,
-                      }}
-                    />
-                    <span
-                      className={
-                        (perUnitMargin ?? 0) < 0
-                          ? "bg-severity_critical_text"
-                          : "bg-severity_healthy_text"
-                      }
-                      style={{
-                        width: `${Math.min(100, (Math.abs(perUnitMargin ?? 0) / Math.max(perUnitCost, headlinePrice)) * 100)}%`,
-                      }}
-                    />
-                  </span>
-                  <div className="flex justify-between gap-2 text-[11px] text-content/85 tabular-nums mt-1">
-                    <span>Cost {money(perUnitCost)}</span>
-                    <span className="truncate">
-                      {money(grossProfit(selected.ty))} over{" "}
-                      {amountText(selected.ty)}
+                  <div className="flex items-baseline justify-between gap-2 py-1 border-b-2 border-brand_navy/25">
+                    <span className="text-[12.5px] text-content">
+                      {weighed(selected.ty) ? "Pounds" : "Units"} sold
                     </span>
-                    <span>Price {money(headlinePrice)}</span>
+                    <span className="text-[14px] font-semibold text-content tabular-nums flex-shrink-0">
+                      &times; {amountText(selected.ty)}
+                    </span>
                   </div>
-                </div>
-              )}
 
-              {/* This week against each baseline. */}
-              <div className="flex-shrink-0 px-4 py-2 border-b border-gray-100">
-                <div className="grid grid-cols-[1fr_84px_62px_62px] gap-1.5 pb-1 text-[10px] font-bold uppercase tracking-wide text-content/85">
-                  <span />
-                  <span className="text-right">This week</span>
-                  <span className="text-right">vs LW</span>
-                  <span className="text-right">vs LY</span>
-                </div>
-                {metricRows.map((m) => (
+                  {/* The week's money, which is the line the four above add
+                      up to. Tinted when it is known -- a withheld margin
+                      leaves it grey rather than claiming a nought. */}
                   <div
-                    key={m.label}
-                    className="grid grid-cols-[1fr_84px_62px_62px] gap-1.5 items-center py-1 border-t border-gray-100 text-[11.5px]"
+                    className={`flex items-center justify-between gap-2 mt-2 px-3 py-2 rounded-md ${
+                      grossProfit(selected.ty) === null
+                        ? "bg-gray-100"
+                        : (grossProfit(selected.ty) as number) < 0
+                          ? "bg-severity_critical_bg"
+                          : "bg-severity_healthy_bg"
+                    }`}
                   >
-                    <span className="text-content/85 truncate">{m.label}</span>
-                    <span className="text-[12.5px] font-semibold text-content text-right tabular-nums">
-                      {m.ty}
+                    <span
+                      className={`text-[12.5px] font-semibold truncate ${
+                        grossProfit(selected.ty) === null
+                          ? "text-content"
+                          : (grossProfit(selected.ty) as number) < 0
+                            ? "text-severity_critical_text"
+                            : "text-severity_healthy_text"
+                      }`}
+                    >
+                      Gross profit
+                      {selected.ty.margin !== null && (
+                        <span className="font-normal">
+                          {" "}
+                          &middot; {selected.ty.margin.toFixed(1)}% margin
+                        </span>
+                      )}
                     </span>
-                    <span className="text-[12px] font-semibold text-content text-right tabular-nums">
-                      {m.lw}
-                    </span>
-                    <span className="text-[12px] font-semibold text-content text-right tabular-nums">
-                      {m.ly}
+                    <span
+                      className={`text-[17px] font-bold tabular-nums flex-shrink-0 ${
+                        grossProfit(selected.ty) === null
+                          ? "text-content"
+                          : (grossProfit(selected.ty) as number) < 0
+                            ? "text-severity_critical_text"
+                            : "text-severity_healthy_text"
+                      }`}
+                    >
+                      {money(grossProfit(selected.ty))}
                     </span>
                   </div>
-                ))}
-                {!selected.lw && !selected.ly && (
-                  <p className="text-[11px] text-content/85 mt-1.5 leading-snug">
-                    Not sold last week or the same week last year &mdash; new or
-                    returning this week.
-                  </p>
-                )}
-              </div>
+                  {grossProfit(selected.ty) === null && (
+                    <p className="text-[11px] text-content/85 mt-1 leading-snug">
+                      Too few lines carried a cost to work out a margin worth
+                      trusting, so the profit is withheld rather than guessed.
+                    </p>
+                  )}
+                </div>
 
-              <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar">
-                {/* How it rang */}
+                {/* What it rang at, with the cost drawn on the same axis.
+                    This was two sections -- a price ladder and a cost bar --
+                    and neither could say the thing they say together: which
+                    of the prices is doing the losing. An average of $3.49
+                    against $4.20 reads as an item uniformly under water when
+                    one price point is usually carrying all of it. */}
+                <div className="px-4 py-2.5 border-b border-gray-100">
+                  <div className="flex items-baseline justify-between gap-2">
+                    <span className="text-[10px] font-bold uppercase tracking-wide text-content/85">
+                      What it rang at
+                    </span>
+                    {scale && scale.underAmount > 0 && (
+                      <span className="text-[11.5px] font-semibold text-severity_critical_text text-right">
+                        {weighed(selected.ty)
+                          ? `${scale.underAmount.toLocaleString(undefined, { maximumFractionDigits: 1 })} lb`
+                          : scale.underAmount.toLocaleString()}{" "}
+                        of {amountText(selected.ty)} rang below cost
+                      </span>
+                    )}
+                  </div>
+
+                  {points.length === 0 ? (
+                    <p className="text-[12px] text-content/85 mt-1.5 leading-snug">
+                      No price came back for this item.
+                    </p>
+                  ) : scale === null ? (
+                    <>
+                      <p className="text-[12.5px] text-content mt-1.5 leading-snug">
+                        One price all week &mdash;{" "}
+                        <span className="font-semibold">
+                          {money(points[0].price)}
+                          {weighed(selected.ty) && " /lb"}
+                        </span>{" "}
+                        across {amountText(selected.ty)}.
+                      </p>
+                      {weighed(selected.ty) && (
+                        <p className="text-[11px] text-content/85 mt-0.5 leading-snug">
+                          A scale item posts a per-pound price, so it rarely
+                          rings at more than one.
+                        </p>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <div className="relative h-[92px] mx-3 mt-2.5">
+                        {/* Everything to the left of cost sold for less than
+                            it cost. Drawn only when the cost is known. */}
+                        {scale.costAt !== null && (
+                          <>
+                            <span
+                              className="absolute left-0 top-3.5 bottom-9 rounded-l bg-severity_critical_bg"
+                              style={{ width: scale.costAt }}
+                            />
+                            <span
+                              className="absolute top-1.5 bottom-9 w-0.5 bg-content"
+                              style={{ left: scale.costAt }}
+                            />
+                            <span
+                              className="absolute -top-1 text-[11.5px] font-semibold text-content whitespace-nowrap bg-custom-white px-1"
+                              style={{
+                                left: scale.costAt,
+                                transform: "translateX(-50%)",
+                              }}
+                            >
+                              Cost {money(perUnitCost)}
+                            </span>
+                          </>
+                        )}
+
+                        <span className="absolute left-0 right-0 top-11 h-0.5 bg-brand_navy/25" />
+
+                        {scale.dots.map((d) => (
+                          <span key={d.price}>
+                            <span
+                              className={`absolute rounded-full ${
+                                d.under
+                                  ? "bg-severity_critical_text"
+                                  : "bg-severity_healthy_text"
+                              }`}
+                              style={{
+                                left: d.at,
+                                top: `${44 - d.size / 2}px`,
+                                width: d.size,
+                                height: d.size,
+                                marginLeft: -d.size / 2,
+                              }}
+                            />
+                            <span
+                              className={`absolute top-16 text-[11px] whitespace-nowrap tabular-nums ${
+                                d.under
+                                  ? "text-severity_critical_text"
+                                  : "text-content/85"
+                              }`}
+                              style={{
+                                left: d.at,
+                                transform: "translateX(-50%)",
+                              }}
+                            >
+                              <span className="font-semibold">
+                                {money(d.price)}
+                              </span>{" "}
+                              &times; {d.amountText}
+                            </span>
+                          </span>
+                        ))}
+                      </div>
+                      <p className="text-[11px] text-content/85 mt-1 leading-snug">
+                        {scale.costAt === null
+                          ? "Dot size is how much sold at that price. Cost is not known for this item, so there is no line to compare them against."
+                          : "Dot size is how much sold at that price. Anything in the tinted band sold for less than it cost."}
+                      </p>
+                    </>
+                  )}
+                </div>
+
+                {/* This week against each baseline. The receipt above is this
+                    week alone; the trend lives here. */}
+                <div className="px-4 py-2 border-b border-gray-100">
+                  <div className="text-[10px] font-bold uppercase tracking-wide text-content/85 mb-1">
+                    This week against last week and last year
+                  </div>
+                  <div className="grid grid-cols-[1fr_84px_62px_62px] gap-1.5 pb-1 text-[10px] font-bold uppercase tracking-wide text-content/85">
+                    <span />
+                    <span className="text-right">This week</span>
+                    <span className="text-right">vs LW</span>
+                    <span className="text-right">vs LY</span>
+                  </div>
+                  {metricRows.map((m) => (
+                    <div
+                      key={m.label}
+                      className="grid grid-cols-[1fr_84px_62px_62px] gap-1.5 items-center py-1 border-t border-gray-100 text-[11.5px]"
+                    >
+                      <span className="text-content/85 truncate">
+                        {m.label}
+                      </span>
+                      <span className="text-[12.5px] font-semibold text-content text-right tabular-nums">
+                        {m.ty}
+                      </span>
+                      <span className="text-[12px] font-semibold text-content text-right tabular-nums">
+                        {m.lw}
+                      </span>
+                      <span className="text-[12px] font-semibold text-content text-right tabular-nums">
+                        {m.ly}
+                      </span>
+                    </div>
+                  ))}
+                  {!selected.lw && !selected.ly && (
+                    <p className="text-[11px] text-content/85 mt-1.5 leading-snug">
+                      Not sold last week or the same week last year &mdash; new
+                      or returning this week.
+                    </p>
+                  )}
+                </div>
+
                 <Section
                   id="rang"
                   label="How it rang"
