@@ -5,7 +5,10 @@
  */
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
-import type { InvoiceEdit } from "../../pages/invoices/dev/vendors/awg/applyEdit";
+import {
+  lastMergeIndex,
+  type InvoiceEdit,
+} from "../../pages/invoices/dev/vendors/awg/applyEdit";
 
 /**
  * AWG Invoices page state.
@@ -115,8 +118,12 @@ const invoicesSlice = createSlice({
      */
     editInvoiceField: (state, action: PayloadAction<InvoiceEdit>) => {
       const next = action.payload;
+      // Only edits since the invoice's last merge share this one's row
+      // numbering, so only those can be the same field.
+      const floor = lastMergeIndex(state.edits, next.docId);
       const at = state.edits.findIndex(
-        (edit) =>
+        (edit, index) =>
+          index > floor &&
           edit.docId === next.docId &&
           edit.kind === next.kind &&
           edit.field === next.field &&
@@ -137,8 +144,10 @@ const invoicesSlice = createSlice({
       action: PayloadAction<Omit<InvoiceEdit, "value">>,
     ) => {
       const target = action.payload;
+      const floor = lastMergeIndex(state.edits, target.docId);
       state.edits = state.edits.filter(
-        (edit) =>
+        (edit, index) =>
+          index <= floor ||
           !(
             edit.docId === target.docId &&
             edit.kind === target.kind &&
@@ -146,6 +155,27 @@ const invoicesSlice = createSlice({
             edit.rowIndex === target.rowIndex
           ),
       );
+      state.sentAt = null;
+    },
+
+    /** Collapse one group of repeated lines — see `findMergeGroups`. Undone
+     *  only with the rest, because the edits after it are numbered against the
+     *  merged lines. */
+    mergeInvoiceLines: (
+      state,
+      action: PayloadAction<{
+        docId: string;
+        itemCode: string;
+        retailPrice: string;
+      }>,
+    ) => {
+      const { docId, itemCode, retailPrice } = action.payload;
+      state.edits.push({
+        docId,
+        kind: "merge",
+        field: itemCode,
+        value: retailPrice,
+      });
       state.sentAt = null;
     },
 
@@ -197,6 +227,7 @@ export const {
   setInvoicesFile,
   editInvoiceField,
   revertInvoiceField,
+  mergeInvoiceLines,
   clearInvoiceEdits,
   setInvoiceExpanded,
   setInvoiceFailedOnly,

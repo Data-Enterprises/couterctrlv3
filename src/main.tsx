@@ -104,6 +104,9 @@ createRoot(document.getElementById("root")!).render(
                     path left that expects it to answer. ReleaseNotes.tsx is
                     untouched; restoring it is this route and the row in
                     TitleBar. */}
+                {/* A last_route saved in user prefs can name a page that no
+                    longer exists; land on Sales rather than a blank outlet. */}
+                <Route path="*" element={<Navigate to="/sales" replace />} />
               </Route>
             </Routes>
           </ToastProvider>

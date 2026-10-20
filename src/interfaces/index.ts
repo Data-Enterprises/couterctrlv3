@@ -2657,6 +2657,17 @@ export interface InvoiceRow {
     difference: string;
   }[];
   lines: InvoiceLineRow[];
+  /** Repeated random-weight lines that can be collapsed into one. Empty when
+   *  the invoice reconciles — a merge is only offered as a fix. */
+  mergeGroups: {
+    itemCode: string;
+    retailPrice: string;
+    description: string;
+    lineCount: number;
+    cases: string;
+    extCost: string;
+    extRetail: string;
+  }[];
 }
 
 export interface InvoiceLineRow {

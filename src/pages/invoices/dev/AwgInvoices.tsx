@@ -1,5 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowUpTrayIcon, MagnifyingGlassIcon } from "@heroicons/react/20/solid";
+import {
+  ArrowDownTrayIcon,
+  ArrowUpTrayIcon,
+  MagnifyingGlassIcon,
+} from "@heroicons/react/20/solid";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
 import { useDevApi } from "../../../hooks/useDevApi";
 import { useToast } from "../../../components/toasts/hooks/useToast";
@@ -7,6 +11,7 @@ import ComingSoonHelp from "../../../components-dev/ComingSoonHelp";
 import {
   clearInvoiceEdits,
   editInvoiceField,
+  mergeInvoiceLines,
   revertInvoiceField,
   setInvoiceExpanded,
   setInvoiceFailedOnly,
@@ -27,7 +32,9 @@ import InvoicesEntry from "./InvoicesEntry";
 import InvoiceCard from "./InvoiceCard";
 import { useAwgInvoices } from "./useAwgInvoices";
 import { parseAwgFile } from "./vendors/awg";
-import type { InvoiceEdit } from "./vendors/awg/applyEdit";
+import { awgRecordsToCsv } from "./vendors/awg/exportCsv";
+import { downloadCsv } from "../../../utils/csvExport";
+import { lastMergeIndex, type InvoiceEdit } from "./vendors/awg/applyEdit";
 
 /**
  * AWG Invoices — a vendor's electronic invoice file, decoded, corrected and sent.
@@ -83,13 +90,16 @@ const AwgInvoices = () => {
   /** Corrections on the open invoice, as the keys the card marks cells with. */
   const editedByDoc = useMemo(() => {
     const map = new Map<string, Set<string>>();
-    for (const edit of edits) {
+    edits.forEach((edit, index) => {
+      // Edits from before a merge point at rows that have since moved.
+      if (edit.kind === "merge") return;
+      if (index < lastMergeIndex(edits, edit.docId)) return;
       const key =
         edit.kind === "header" ? edit.field : `${edit.rowIndex}:${edit.field}`;
       const held = map.get(edit.docId) ?? new Set<string>();
       held.add(key);
       map.set(edit.docId, held);
-    }
+    });
     return map;
   }, [edits]);
 
@@ -147,6 +157,12 @@ const AwgInvoices = () => {
       bytes[i] = fileText.charCodeAt(i) & 0xff;
     }
     return new File([bytes], fileName);
+  };
+
+  /** The file's records as decoded — no sums, no corrections. */
+  const handleExport = () => {
+    const base = fileName.replace(/\.[^.]*$/, "") || "awg_invoices";
+    downloadCsv(awgRecordsToCsv(fileText), `${base}_raw.csv`);
   };
 
   const handleSend = async () => {
@@ -276,6 +292,16 @@ const AwgInvoices = () => {
 
             <button
               type="button"
+              onClick={handleExport}
+              title="Download every record as decoded, without totals or corrections"
+              className="flex flex-none items-center gap-1.5 rounded-lg border border-gray-200 bg-custom-white px-3.5 py-2 font-display text-[13px] font-semibold text-content hover:bg-bkg"
+            >
+              <ArrowDownTrayIcon className="h-4 w-4" />
+              Export CSV
+            </button>
+
+            <button
+              type="button"
               onClick={handleSend}
               disabled={sending || !storeid}
               title={
@@ -336,6 +362,9 @@ const AwgInvoices = () => {
             }
             onRevert={(key) =>
               dispatch(revertInvoiceField({ ...key, docId: row.id }))
+            }
+            onMerge={(group) =>
+              dispatch(mergeInvoiceLines({ ...group, docId: row.id }))
             }
           />
         ))}

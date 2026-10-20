@@ -1,4 +1,4 @@
-import { Decimal } from "../../core/Decimal";
+import { Decimal, sumDecimals } from "../../core/Decimal";
 import type { FieldSpec, ParsedRecord } from "../../core/types";
 import type { AwgInvoice } from "./group";
 import { AWG_FILE_SPEC, AWG_RECORD } from "./schema";
@@ -14,7 +14,10 @@ import { AWG_FILE_SPEC, AWG_RECORD } from "./schema";
 export interface InvoiceEdit {
   /** `${storeNbr}-${invoiceNbr}`, matching `InvoiceRow.id`. */
   docId: string;
-  kind: "header" | "line";
+  /** `merge` collapses a group of repeated lines into one — see
+   *  `findMergeGroups`. It carries the group's AWG code in `field` and its
+   *  retail price in `value`. */
+  kind: "header" | "line" | "merge";
   /** The schema field name, e.g. `case_qty_billed`. */
   field: string;
   /** Always the raw text the user typed. Coercion happens on apply, so a
@@ -109,6 +112,140 @@ const editLine = (
 };
 
 /**
+ * Lines that are one item billed several times over.
+ *
+ * Random-weight product (ground beef, pork butts) arrives as one `01` per
+ * piece: the same AWG code, no UPC, and each piece's own cost — but every one
+ * of them repeating the *group's* extended retail. Summed line by line, that
+ * retail is counted once per piece, and the invoice reports a retail total the
+ * pieces' count times too high.
+ *
+ * A group qualifies only when all of it agrees: same AWG code, a UPC of all
+ * zeros, and the same retail price and extended retail on every line. Anything
+ * less and the lines are not provably one item, so they are left alone.
+ */
+export interface MergeGroup {
+  itemCode: string;
+  retailPrice: string;
+  description: string;
+  lineCount: number;
+  /** What the merged line will carry. */
+  cases: string;
+  extCost: string;
+  extRetail: string;
+}
+
+const NO_UPC = /^0+$/;
+
+const fieldText = (value: unknown): string =>
+  value === null || value === undefined ? "" : String(value);
+
+const asDecimal = (value: unknown, decimals: number): Decimal =>
+  value instanceof Decimal ? value : Decimal.zero(decimals);
+
+const groupKey = (record: ParsedRecord): string | null =>
+  NO_UPC.test(fieldText(record.fields.upc_code))
+    ? `${fieldText(record.fields.item_code_bil)}\0${fieldText(
+        record.fields.retail_price,
+      )}`
+    : null;
+
+const mergeable = (lines: ParsedRecord[]): boolean =>
+  lines.length > 1 &&
+  lines.every(
+    (line) =>
+      fieldText(line.fields.ba_retail_ext) ===
+      fieldText(lines[0].fields.ba_retail_ext),
+  );
+
+const linesOf = (
+  invoice: AwgInvoice,
+  itemCode: string,
+  retailPrice: string,
+): ParsedRecord[] =>
+  invoice.lineItems.filter(
+    (line) => groupKey(line) === `${itemCode}\0${retailPrice}`,
+  );
+
+export const findMergeGroups = (invoice: AwgInvoice): MergeGroup[] => {
+  const groups = new Map<string, ParsedRecord[]>();
+  for (const line of invoice.lineItems) {
+    const key = groupKey(line);
+    if (key === null) continue;
+    groups.set(key, [...(groups.get(key) ?? []), line]);
+  }
+
+  return [...groups.values()].filter(mergeable).map((lines) => ({
+    itemCode: fieldText(lines[0].fields.item_code_bil),
+    retailPrice: fieldText(lines[0].fields.retail_price),
+    description: fieldText(lines[0].fields.item_desc),
+    lineCount: lines.length,
+    cases: sumDecimals(
+      lines.map((line) => asDecimal(line.fields.case_qty_billed, 0)),
+      0,
+    ).toString(),
+    extCost: sumDecimals(
+      lines.map((line) => asDecimal(line.fields.cost_ext, 2)),
+      2,
+    ).toString(),
+    extRetail: fieldText(lines[0].fields.ba_retail_ext),
+  }));
+};
+
+/**
+ * The group, as one line where its first line stood: costs and quantities
+ * added up, the shared extended retail taken once. Every other field is the
+ * first line's. A group that no longer qualifies — a correction made since
+ * changed one of its lines — is left as it is.
+ */
+const mergeLines = (
+  invoice: AwgInvoice,
+  itemCode: string,
+  retailPrice: string,
+): AwgInvoice => {
+  const lines = linesOf(invoice, itemCode, retailPrice);
+  if (!mergeable(lines)) return invoice;
+
+  const first = lines[0];
+  const merged: ParsedRecord = {
+    ...first,
+    fields: {
+      ...first.fields,
+      cost_ext: sumDecimals(
+        lines.map((line) => asDecimal(line.fields.cost_ext, 2)),
+        2,
+      ),
+      case_qty_billed: sumDecimals(
+        lines.map((line) => asDecimal(line.fields.case_qty_billed, 0)),
+        0,
+      ),
+    },
+  };
+
+  const absorbed = new Set(lines.slice(1));
+  return {
+    ...invoice,
+    lineItems: invoice.lineItems
+      .filter((line) => !absorbed.has(line))
+      .map((line) => (line === first ? merged : line)),
+  };
+};
+
+/**
+ * Where the latest merge on an invoice sits in the edit list, or -1.
+ *
+ * A merge renumbers the lines after it, so a line edit's `rowIndex` means
+ * something different either side of one. Edits before it are settled: they
+ * are replayed, but not matched, replaced or reverted by anything after.
+ */
+export const lastMergeIndex = (edits: InvoiceEdit[], docId: string): number => {
+  for (let i = edits.length - 1; i >= 0; i -= 1) {
+    if (edits[i].docId === docId && edits[i].kind === "merge") return i;
+  }
+  return -1;
+};
+
+/**
  * Every correction, applied over the freshly parsed file.
  *
  * Nothing is recomputed across fields. Changing Qty does **not** re-derive Ext
@@ -142,7 +279,9 @@ export const applyEdits = (
       const next =
         edit.kind === "header"
           ? editHeader(current, edit.field, edit.value)
-          : editLine(current, edit.rowIndex ?? -1, edit.field, edit.value);
+          : edit.kind === "merge"
+            ? mergeLines(current, edit.field, edit.value)
+            : editLine(current, edit.rowIndex ?? -1, edit.field, edit.value);
       byId.set(edit.docId, next);
     } catch {
       // Unreadable value — leave the invoice as it was.

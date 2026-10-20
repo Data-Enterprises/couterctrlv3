@@ -2,6 +2,7 @@ import { formatDateSimple } from "../../../utils";
 import { Decimal, sumDecimals } from "./core/Decimal";
 import type { AwgInvoice } from "./vendors/awg";
 import type { ReconcileResult } from "./vendors/awg";
+import { findMergeGroups } from "./vendors/awg/applyEdit";
 import type { InvoiceRow, InvoiceLineRow } from "../../../interfaces";
 // Defined in src/interfaces — Invoices. Re-exported for this page's files.
 export type { InvoiceRow, InvoiceLineRow } from "../../../interfaces";
@@ -143,6 +144,7 @@ export const presentInvoices = (
         difference: check.difference.toString(),
       })),
       lines: presentLines(invoice),
+      mergeGroups: result && !result.ok ? findMergeGroups(invoice) : [],
     };
   });
 };

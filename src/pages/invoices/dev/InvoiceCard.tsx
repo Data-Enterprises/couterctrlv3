@@ -22,6 +22,7 @@ interface Props {
   editedKeys: Set<string>;
   onEdit: (edit: Omit<InvoiceEdit, "docId">) => void;
   onRevert: (key: Omit<InvoiceEdit, "docId" | "value">) => void;
+  onMerge: (group: { itemCode: string; retailPrice: string }) => void;
 }
 
 const Figure = ({ label, value }: { label: string; value: string }) => (
@@ -53,6 +54,7 @@ const InvoiceCard = ({
   editedKeys,
   onEdit,
   onRevert,
+  onMerge,
 }: Props) => {
   const Chevron = open ? ChevronDownIcon : ChevronRightIcon;
 
@@ -183,6 +185,35 @@ const InvoiceCard = ({
                 </div>
               ))}
             </div>
+
+            {/* Repeated random-weight lines each carry the group's extended
+                retail, so the derived retail counts it once per line. One
+                line per group is how the vendor's total reads it. */}
+            {row.mergeGroups.map((group) => (
+              <div
+                key={`${group.itemCode}-${group.retailPrice}`}
+                className="mt-2 flex items-center gap-3 rounded bg-severity_watch_bg px-2 py-1.5 text-[12px] text-severity_watch_text"
+              >
+                <span className="min-w-0 flex-1">
+                  {group.lineCount} lines of {group.itemCode}{" "}
+                  {group.description} repeat the same ext retail. Combined:
+                  qty {group.cases}, ext cost ${group.extCost}, ext retail $
+                  {group.extRetail}.
+                </span>
+                <button
+                  type="button"
+                  onClick={() =>
+                    onMerge({
+                      itemCode: group.itemCode,
+                      retailPrice: group.retailPrice,
+                    })
+                  }
+                  className="flex-none rounded-md bg-brand_navy px-2.5 py-1 text-[11px] font-semibold text-custom-white hover:bg-brand_navy_hover"
+                >
+                  Combine lines
+                </button>
+              </div>
+            ))}
           </div>
 
           {/* ── the lines ──────────────────────────────────────────── */}
