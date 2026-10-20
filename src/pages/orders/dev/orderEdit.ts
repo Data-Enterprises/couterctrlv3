@@ -298,9 +298,10 @@ export const blankLine = (draft: OrderDraft): DraftLine | null => {
     weight: 0,
     scalable: 0,
     tpr: 0,
-    // Not ours to set: it is already on every row and what reads it is on the
-    // import side, not here.
-    edited: sibling.edited,
+    // `edited` marks an existing line that was changed, so a line that was
+    // never on the order starts without it rather than inheriting the flag
+    // from whichever line it was copied from.
+    edited: null,
     original: null,
   });
 };
@@ -425,10 +426,19 @@ export const canSubmit = (draft: OrderDraft) =>
  * `source_file_uri`, `source_file_etag`, `source_file_version_ts` — ride along
  * untouched. The model ignores extras, and hand-building line objects is what
  * loses a column.
+ *
+ * `edited` is set to 1 on an existing line whose values were changed, which is
+ * what the column is for. It is worked out here rather than written as
+ * somebody types, so that putting a line back also puts its flag back — a
+ * line that was edited and then reverted is not an edited line. A line that
+ * arrived already flagged keeps the flag: clearing it is the import's
+ * business, not ours, and we do not know what reads it next.
  */
 export const buildPayload = (draft: OrderDraft) => ({
   storeid: draft.doc.storeid,
-  lines: draft.lines.map(({ original: _original, ...line }) => line),
+  lines: draft.lines.map(({ original: _original, ...line }) =>
+    isEdited({ ...line, original: _original }) ? { ...line, edited: 1 } : line,
+  ),
 });
 
 /**

@@ -373,9 +373,32 @@ describe("buildPayload", () => {
     expect(payload.lines[0].cogs).toBe(40);
   });
 
-  it("does not touch the edited column", () => {
+  it("flags the line that was edited, and only that one", () => {
     const payload = buildPayload(applyField(draftOf(), 1, "qty", 20));
-    expect(payload.lines[0].edited).toBeNull();
+    expect(payload.lines[0].edited).toBe(1);
+    expect(payload.lines[1].edited).toBeNull();
+    expect(payload.lines[2].edited).toBeNull();
+  });
+
+  it("takes the flag back off a line that was put back", () => {
+    const there = applyField(draftOf(), 1, "qty", 20);
+    const back = revertLine(there, 1);
+    expect(buildPayload(back).lines[0].edited).toBeNull();
+  });
+
+  it("leaves a flag that arrived on the line alone", () => {
+    const already = startDraft(docs[0], [
+      line({ line_number: 1, edited: 1 }),
+      line({ line_number: 2 }),
+    ]);
+    const payload = buildPayload(applyField(already, 2, "qty", 20));
+    expect(payload.lines[0].edited).toBe(1);
+    expect(payload.lines[1].edited).toBe(1);
+  });
+
+  it("does not flag an added line, which was never edited", () => {
+    const d = appendLine(draftOf(), fill(blankLine(draftOf())!, ITEM));
+    expect(buildPayload(d).lines[3].edited).toBeNull();
   });
 });
 
