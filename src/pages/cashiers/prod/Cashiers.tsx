@@ -394,7 +394,7 @@ const Cashiers = () => {
       )}
 
       {searchOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35">
+        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
           <ExplorerSearch
             saleTypes={explorerSaleTypes}
             exception={explorerException}

@@ -124,6 +124,30 @@ Four exceptions, all of which the audit already skips:
 Fills and borders may go below 85% freely — `border-brand_navy/15`,
 `bg-brand_navy/[0.06]` are all normal.
 
+### Modal backdrops blur, they do not darken
+
+A modal separates itself by blurring what is behind it, never by dropping a
+black sheet over the page.
+
+```jsx
+fixed inset-0 backdrop-blur-sm     ✓
+fixed inset-0 bg-black/40          ✗
+fixed inset-0 bg-black/35          ✗
+fixed inset-0 bg-black bg-opacity-50 ✗
+```
+
+Darkening costs the page its own colours — a severity tint, a navy header,
+a red figure all read as muddy versions of themselves while the modal is up,
+and the reader is usually opening the modal BECAUSE of something on the page
+behind it. A blur keeps the colours and takes away only the detail that
+competes for attention.
+
+Those four spellings were all in use at once before this rule, which is the
+other half of the reason for it: one backdrop, one class.
+
+Legacy keeps its dark sheets. It is being replaced and clients cannot reach
+it, so it is not worth the churn.
+
 ---
 
 ## 4. Mobile (the dev tree)

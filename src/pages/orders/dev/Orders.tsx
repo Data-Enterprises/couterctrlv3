@@ -211,7 +211,7 @@ const Orders = () => {
 
       {searchModalOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
           onClick={() => setSearchModalOpen(false)}
         >
           <div className="w-full max-w-sm mx-4" onClick={(e) => e.stopPropagation()}>

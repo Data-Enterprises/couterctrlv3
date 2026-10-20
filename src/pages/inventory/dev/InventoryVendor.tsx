@@ -162,7 +162,7 @@ const InventoryVendor = () => {
           prevents. */}
       {searchOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
           onClick={() => setSearchOpen(false)}
         >
           <div onClick={(e) => e.stopPropagation()}>{entry}</div>

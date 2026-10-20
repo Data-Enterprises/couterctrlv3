@@ -160,7 +160,7 @@ const AccountSetupModal = () => {
 
   return (
     <div
-      className="fixed inset-0 flex items-center justify-center bg-black/35"
+      className="fixed inset-0 flex items-center justify-center backdrop-blur-sm"
       style={{ zIndex: 5000 }}
     >
       <div className="bg-custom-white rounded-xl shadow-2xl w-[462px] max-w-[92vw] overflow-hidden">

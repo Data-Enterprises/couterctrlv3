@@ -89,7 +89,7 @@ const NavSheet = ({
 
   return (
     <div className="fixed inset-0 z-50" style={{ top: 48, bottom: 56 }}>
-      <div className="absolute inset-0 bg-black/25" onClick={slideDown} />
+      <div className="absolute inset-0 backdrop-blur-sm" onClick={slideDown} />
       <div
         ref={sheetRef}
         className="absolute bottom-0 left-0 right-0 bg-custom-white rounded-t-2xl"
