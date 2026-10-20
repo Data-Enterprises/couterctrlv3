@@ -11,6 +11,14 @@ import {
   aggregateRows,
 } from "../../../../utils/csvExport";
 import type { AggFn, AggRow } from "../../../../utils/csvExport";
+import {
+  FINANCIALS_READY,
+  getFinancials,
+  type FinancialsResponse,
+  type FinancialsRow,
+} from "../../../../api/financials";
+import { useToast } from "../../../../components/toasts/hooks/useToast";
+import { useAppSelector } from "../../../../hooks";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -27,9 +35,29 @@ interface SalesExportModalProps {
   days: DayDot[];
   subDeptItems?: ExportSubDeptItem[];
   subDeptName?: string;
+  /** The store this popup is about, and the week it is showing. The Financials
+   *  option is the only one that fetches, so it is the only one that needs
+   *  them. */
+  storeId: number;
+  startDate: string;
+  endDate: string;
+  /** The group the ledger searched, when it searched one. Lets Financials
+   *  offer the whole chain rather than just the store being looked at. */
+  group?: { id: number; name: string } | null;
+  /** Every store the ledger returned, so Financials can be narrowed to some
+   *  of them. */
+  stores?: { storeid: number; store_number: string; store_name: string }[];
 }
 
-type ExportDataset = "subdept" | "deptgrid" | "hourly" | "summary" | "items";
+type ExportDataset =
+  | "subdept"
+  | "deptgrid"
+  | "hourly"
+  | "summary"
+  | "items"
+  | "financials";
+
+
 type ItemSev = "critical" | "watch" | "healthy";
 type ModalMode = "presets" | "custom";
 type CustomSource = "subdept" | "hourly";
@@ -63,6 +91,44 @@ const fmtHour = (h: number) => {
 };
 
 // ─── Preset CSV builders ──────────────────────────────────────────────────────
+
+/**
+ * Financials, as the POS holds them.
+ *
+ * Deliberately unformatted: no rounding, no derived columns, no totals. This
+ * is the one export that exists because a customer asked for the records
+ * themselves, and a figure tidied on the way out is a figure that disagrees
+ * with whatever they are reconciling against.
+ *
+ * `weight` is null on anything not sold by weight, which becomes an empty
+ * cell rather than a nought — nought pounds and not-weighed are different
+ * facts and a spreadsheet will happily average the first.
+ */
+const buildFinancialsCsv = (rows: FinancialsRow[]) => {
+  const headers = [
+    "Store #",
+    "Store",
+    "Date",
+    "Bin",
+    "Description",
+    "Qty",
+    "Weight",
+    "Sales",
+  ];
+  return rowsToCsv(
+    headers,
+    rows.map((r) => [
+      r.store_number,
+      r.store_name ?? "",
+      fmtDate(r.sale_date.split("T")[0]),
+      r.bin,
+      r.description,
+      r.qty,
+      r.weight ?? "",
+      r.sales,
+    ]),
+  );
+};
 
 const buildSubDeptCsv = (ty: SubSale[], lw: SubSale[], ly: SubSale[]) => {
   const headers = [
@@ -312,13 +378,45 @@ const SalesExportModal = ({
   days,
   subDeptItems,
   subDeptName,
+  storeId,
+  startDate,
+  endDate,
+  group,
+  stores,
 }: SalesExportModalProps) => {
   const hasItems = !!subDeptItems && subDeptItems.length > 0;
+  const toast = useToast();
+  const { url, token } = useAppSelector((state) => state.app);
+  /** Fetched with the search — see SalesLedger's fetchLedger. */
+  const {
+    financials: searchedRows,
+    financialsWindow,
+    financialsTruncated,
+    financialsLoading,
+  } = useAppSelector((state) => state.dev.salesLedger);
 
   // ── Preset state — no default selections ──
   const [mode, setMode] = useState<ModalMode>("presets");
   const [selected, setSelected] = useState<Set<ExportDataset>>(new Set());
   const [itemSevs, setItemSevs] = useState<Set<ItemSev>>(new Set());
+  // Defaults to the store being looked at, even when a group was searched:
+  // this popup is about one store, and the wider answer should be asked for
+  // rather than assumed.
+  const [fetching, setFetching] = useState(false);
+  // Its own dates, defaulting to the week on screen. Financials is the only
+  // export that can answer for a range the page is not showing, and a month
+  // of records is the usual ask.
+  const [finFrom, setFinFrom] = useState(startDate);
+  const [finTo, setFinTo] = useState(endDate);
+  // Starts on the store being looked at. A whole group's records should be
+  // asked for rather than arrive by default.
+  const [finStores, setFinStores] = useState<Set<number>>(
+    () => new Set([storeId]),
+  );
+
+  /** Narrowing by store needs a group to fetch and more than one store in it. */
+  const canFilterStores = !!group && !!stores && stores.length > 1;
+  const finTicked = [...finStores];
 
   // Selecting a severity chip activates the "Sub Dept Items" preset (and
   // clearing them all back out deactivates it), so the two stay in sync.
@@ -473,8 +571,65 @@ const SalesExportModal = ({
     return { aggRows: display, columns };
   }, [flatRows, groupBy, metrics, dims, mDefs]);
 
+  /**
+   * Fetch the financials rows, or null if the call failed.
+   *
+   * The only part of an export that can fail — the other presets are built
+   * from data already on the page.
+   */
+  /**
+   * The rows the search already brought back, when they answer the question
+   * being asked. Null when the dates have been moved off the searched week,
+   * which is the one case this has to go and ask.
+   */
+  const searchedAnswers =
+    financialsWindow &&
+    financialsWindow.start === finFrom &&
+    financialsWindow.end === finTo;
+
+  const fetchFinancials = async (): Promise<FinancialsResponse | null> => {
+    if (searchedAnswers) {
+      return {
+        error: 0,
+        success: true,
+        record_count: searchedRows.length,
+        truncated: financialsTruncated,
+        maxRows: 0,
+        storeids: [],
+        data: searchedRows.filter((r) => finStores.has(r.storeid)),
+      };
+    }
+    // The endpoint takes one store OR one group, never an arbitrary set. So a
+    // subset is fetched at group scope and cut down here: one call either way,
+    // where asking per store would be a call each.
+    const asGroup = finTicked.length !== 1 && canFilterStores;
+    try {
+      const resp = await getFinancials(
+        url,
+        token,
+        finFrom,
+        finTo,
+        asGroup ? group!.id : (finTicked[0] ?? storeId),
+        asGroup ? 1 : 0,
+      );
+      const j: FinancialsResponse = resp.data;
+      if (j.error !== 0) {
+        toast.error(j.msg || "Could not read the financials");
+        return null;
+      }
+      return asGroup
+        ? { ...j, data: j.data.filter((r) => finStores.has(r.storeid)) }
+        : j;
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Could not read the financials",
+      );
+      return null;
+    }
+  };
+
   // ── Preset download ──
-  const handlePresetDownload = () => {
+  const handlePresetDownload = async () => {
     const sections: string[] = [];
     if (selected.has("summary"))
       sections.push(`Weekly Summary\n${buildSummaryCsv(days)}`);
@@ -494,6 +649,36 @@ const SalesExportModal = ({
       const label = subDeptName ? `Items — ${subDeptName}` : "Sub Dept Items";
       sections.push(`${label}\n${buildItemsCsv(subDeptItems, itemSevs)}`);
     }
+    // Last, and the only one that goes to the network. A failure here must
+    // not lose the sections already built, so a null answer simply leaves
+    // Financials out of a file that still carries everything else.
+    if (selected.has("financials")) {
+      setFetching(true);
+      const fin = await fetchFinancials();
+      setFetching(false);
+      if (fin) {
+        const scopeLabel =
+          finTicked.length === 1 ? storeName : `${finTicked.length} stores`;
+        // The caveat belongs IN the file. Somebody opens this a week later
+        // with no idea a cap was involved, and a short CSV looks exactly like
+        // a complete one.
+        const note = fin.truncated
+          ? " — INCOMPLETE: the row cap bit, narrow the dates or pick fewer stores"
+          : "";
+        sections.push(
+          `Financials — ${scopeLabel}, ${finFrom} to ${finTo}${note}\n${buildFinancialsCsv(fin.data)}`,
+        );
+        if (fin.truncated) {
+          toast.warn(
+            "Financials hit the row cap — the file is incomplete",
+          );
+        }
+        if (fin.data.length === 0) {
+          toast.warn("No financials rows for those stores and dates");
+        }
+      }
+    }
+
     if (!sections.length) return;
     const safeName = storeName.replace(/[^a-z0-9]/gi, "_");
     downloadCsv(sections.join("\n\n"), `${safeName}_${dateLabel}.csv`);
@@ -541,6 +726,18 @@ const SalesExportModal = ({
       description:
         "Hourly net sales, basket size, and avg item price (TY / LW / LY)",
     },
+    // Offered only once the router is deployed — see FINANCIALS_READY. The
+    // code around it stays, so turning it on is one constant.
+    ...(FINANCIALS_READY
+      ? [
+          {
+            id: "financials" as const,
+            label: "Financials",
+            description:
+              "Daily POS records by bin — qty, weight and sales, exactly as the register holds them",
+          },
+        ]
+      : []),
   ];
 
   const SEV_CHIP: { sev: ItemSev; label: string; activeClass: string }[] = [
@@ -610,10 +807,8 @@ const SalesExportModal = ({
               Select data to include
             </p>
             {presetDatasets.map(({ id, label, description }) => (
-              <label
-                key={id}
-                className="flex items-start gap-3 cursor-pointer group"
-              >
+              <div key={id}>
+                <label className="flex items-start gap-3 cursor-pointer group">
                 <input
                   type="checkbox"
                   checked={selected.has(id)}
@@ -634,7 +829,131 @@ const SalesExportModal = ({
                     {description}
                   </p>
                 </div>
-              </label>
+                </label>
+
+                {/* Financials is the only preset that fetches, so it is the
+                      only one that can answer for dates and stores the page is
+                      not showing. The controls live under it rather than in
+                      the header for exactly that reason — they narrow this
+                      one dataset, not the export.
+
+                      Shown whether or not the row is ticked. Revealing them on
+                      the tick hid the whole point of the option: somebody
+                      looking for a date range does not find it by checking a
+                      box to see what happens, they decide the export cannot do
+                      it and go back to asking for a query. */}
+                {id === "financials" && (
+                  <div className="ml-[26px] mt-2 rounded-lg bg-bkg shadow-card-sm px-3 py-2.5">
+                      <p className="text-[10px] text-content/85 leading-snug mb-2">
+                        {financialsLoading
+                          ? "Reading the records for this search…"
+                          : searchedAnswers
+                            ? `${searchedRows.length.toLocaleString()} records in hand for this week${
+                                financialsTruncated ? " (capped)" : ""
+                              }`
+                            : "These dates are outside the search — they will be fetched on download."}
+                      </p>
+                      <div className="flex items-end gap-2 flex-wrap">
+                        <div className="flex flex-col gap-1">
+                          <span className="text-[9px] font-bold uppercase tracking-wide text-content/85">
+                            From
+                          </span>
+                          <input
+                            type="date"
+                            value={finFrom}
+                            max={finTo}
+                            onChange={(e) => setFinFrom(e.target.value)}
+                            className="text-[11.5px] px-2 py-1 rounded-md border border-gray-200 text-content bg-custom-white"
+                          />
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <span className="text-[9px] font-bold uppercase tracking-wide text-content/85">
+                            To
+                          </span>
+                          <input
+                            type="date"
+                            value={finTo}
+                            min={finFrom}
+                            onChange={(e) => setFinTo(e.target.value)}
+                            className="text-[11.5px] px-2 py-1 rounded-md border border-gray-200 text-content bg-custom-white"
+                          />
+                        </div>
+                        <button
+                          onClick={() => {
+                            setFinFrom(startDate);
+                            setFinTo(endDate);
+                          }}
+                          className="text-[11px] font-semibold text-content/85 hover:underline pb-1.5"
+                        >
+                          This week
+                        </button>
+                      </div>
+
+                      {canFilterStores && (
+                        <div className="mt-2.5">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-[9px] font-bold uppercase tracking-wide text-content/85">
+                              Stores
+                            </span>
+                            <span className="text-[10px] font-semibold text-content">
+                              {finTicked.length} of {stores!.length}
+                            </span>
+                            <button
+                              onClick={() =>
+                                setFinStores(
+                                  new Set(stores!.map((st) => st.storeid)),
+                                )
+                              }
+                              className="text-[10px] font-semibold text-content/85 hover:underline"
+                            >
+                              All
+                            </button>
+                            <button
+                              onClick={() => setFinStores(new Set([storeId]))}
+                              className="text-[10px] font-semibold text-content/85 hover:underline"
+                            >
+                              Just this one
+                            </button>
+                          </div>
+                          <div className="max-h-[132px] overflow-y-auto thin-scrollbar rounded-md border border-gray-100 bg-custom-white">
+                            {stores!.map((st) => (
+                              <label
+                                key={st.storeid}
+                                className="flex items-center gap-2 px-2 py-1 text-[11.5px] text-content cursor-pointer hover:bg-gray-50"
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={finStores.has(st.storeid)}
+                                  onChange={() =>
+                                    setFinStores((prev) => {
+                                      const n = new Set(prev);
+                                      n.has(st.storeid)
+                                        ? n.delete(st.storeid)
+                                        : n.add(st.storeid);
+                                      return n;
+                                    })
+                                  }
+                                  className="h-3.5 w-3.5 rounded border-gray-300 accent-brand_navy cursor-pointer flex-shrink-0"
+                                />
+                                <span className="tabular-nums font-semibold w-[46px] flex-shrink-0">
+                                  {st.store_number}
+                                </span>
+                                <span className="truncate">
+                                  {st.store_name}
+                                </span>
+                              </label>
+                            ))}
+                          </div>
+                          {finTicked.length === 0 && (
+                            <p className="text-[10.5px] font-semibold text-severity_watch_text mt-1">
+                              Pick at least one store.
+                            </p>
+                          )}
+                        </div>
+                      )}
+                  </div>
+                )}
+              </div>
             ))}
 
             {hasItems && (
@@ -699,12 +1018,20 @@ const SalesExportModal = ({
               Cancel
             </button>
             <button
-              onClick={handlePresetDownload}
-              disabled={selected.size === 0}
+              onClick={() => void handlePresetDownload()}
+              disabled={
+                selected.size === 0 ||
+                fetching ||
+                // Financials with nothing ticked would fall back to the one
+                // store, which is not what an empty list means.
+                (selected.has("financials") &&
+                  canFilterStores &&
+                  finTicked.length === 0)
+              }
               className="flex items-center gap-1.5 bg-brand_navy hover:bg-brand_navy/85 disabled:opacity-40 text-custom-white text-[12px] font-medium px-3 py-1.5 rounded-md transition-colors"
             >
               <ArrowDownTrayIcon className="w-3.5 h-3.5" />
-              Download CSV
+              {fetching ? "Fetching financials…" : "Download CSV"}
             </button>
           </div>
         </>

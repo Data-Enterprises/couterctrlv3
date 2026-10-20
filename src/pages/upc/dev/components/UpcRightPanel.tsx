@@ -40,7 +40,7 @@ const UpcRightPanel = () => {
 
         {/* Tabs — above the KPI strip, since the strip's content is now
             tab-contextual rather than one fixed shape */}
-        <div className="flex items-center border-b border-gray-100 px-3 flex-shrink-0 overflow-x-auto thin-scrollbar">
+        <div data-help="tabs" className="flex items-center border-b border-gray-100 px-3 flex-shrink-0 overflow-x-auto thin-scrollbar">
           {UPC_DEV_TABS.map((tab) => (
             <button
               key={tab.id}

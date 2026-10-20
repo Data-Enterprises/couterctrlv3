@@ -3,11 +3,14 @@ import {
   MinusIcon,
   PlusIcon,
 } from "@heroicons/react/20/solid";
+import type { TrackerBasis } from "./trackerWeeks";
 import { formatCurrencyCompact } from "../../../utils";
 import ComingSoonHelp from "../../../components-dev/ComingSoonHelp";
 import { signedPct } from "./trackerTone";
 
 interface TrackerHeaderProps {
+  /** What the comparison figures are measured against. */
+  basis: TrackerBasis;
   windowLabel: string;
   scopeLabel: string;
   weeks: number;
@@ -31,6 +34,7 @@ interface TrackerHeaderProps {
  * would promise a behaviour the page does not have.
  */
 const TrackerHeader = ({
+  basis,
   windowLabel,
   scopeLabel,
   weeks,
@@ -62,7 +66,7 @@ const TrackerHeader = ({
                 : "bg-red-300/15 text-red-300"
             }`}
           >
-            LY {signedPct(pctChange)}
+            {basis} {signedPct(pctChange)}
           </span>
         )}
       </div>

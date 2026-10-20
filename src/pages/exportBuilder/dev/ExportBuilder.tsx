@@ -80,6 +80,7 @@ const ExportBuilder = () => {
               : ""
           } ${configOpen ? "w-[340px]" : "w-0 -mr-3"}`}
           aria-hidden={!configOpen}
+          data-help="config"
         >
           <ConfigPanel />
         </div>
@@ -109,7 +110,9 @@ const ExportBuilder = () => {
           ) : (
             <CsvPreview />
           )}
-          <ExportBar />
+          <div data-help="build">
+            <ExportBar />
+          </div>
           <SqlModal />
           {ctx.buildsOpen && <DownloadsModal />}
           {ctx.savedOpen && <SavedExportsModal />}

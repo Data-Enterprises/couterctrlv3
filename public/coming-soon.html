@@ -73,6 +73,7 @@
     </p>
     <nav class="toc" aria-label="Pages">
       <a href="#item-actions">Item Actions</a>
+      <a href="#upc-scanner">Upc Scanner</a>
       <a href="#sales-tracker">Sales Tracker</a>
       <a href="#help-desk">Client Help Desk</a>
       <a href="#sales-export">Sales Export</a>
@@ -149,6 +150,45 @@
         <p><strong>It cannot see stock on hand.</strong> Nothing in the data reports an opening count, and shrink,
         damage and transfers are invisible to it, so the delivery column reads as a change rather than a count. The
         page states that rather than implying an inventory it does not have.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="upc-scanner">
+    <div class="sec-head">
+      <h2>Upc Scanner</h2>
+      <span class="where">Phone or handheld scanner &middot; one store</span>
+    </div>
+    <div class="row">
+      <span class="label">What it does</span>
+      <p>Collects the shelf tags you need printed by scanning them, instead of typing each UPC by hand. Scan the aisle,
+      check the list, send it &mdash; and your tag printer picks the batch up from there.</p>
+    </div>
+    <div class="row">
+      <span class="label">How you use it</span>
+      <p>Pick the store, then scan. On a handheld scanner the trigger does it; on a phone the camera does, and it stays
+      on so you can work straight down the shelf. Each code lands at the top of the list with the item's name beside it.
+      Tap any row to correct the digits or drop it, then send the batch.</p>
+    </div>
+    <div class="row">
+      <span class="label">What gets sent</span>
+      <p><strong>The UPCs and the store, and nothing else.</strong> Item names are looked up for your eyes only &mdash;
+      they are how you catch a tag scanned off the wrong shelf &mdash; and they are not part of what goes out. Nothing
+      on this page changes a price or touches an item.</p>
+    </div>
+    <div class="row">
+      <span class="label">Why it works this way</span>
+      <div>
+        <p><strong>A name beside the code is the check.</strong> A scanner will not hand over garbled digits; it will
+        quite happily hand over the right digits off the wrong tag. Reading "Borden Whole Milk 1 gal" while you are
+        standing at the milk is what catches that, and it catches it here rather than on a printed label.</p>
+        <p><strong>No name does not mean something is wrong.</strong> The name comes from what the item has sold, so
+        something brand new has none to show &mdash; and new items are exactly what tags get made for. Those rows are
+        marked unverified and send normally; it is a note, not a problem.</p>
+        <p><strong>Scanning the same tag twice does not add it twice.</strong> One tag is one row, so a repeat lifts the
+        row you already have and says so, rather than quietly doing nothing and leaving you to scan it a third time.</p>
+        <p><strong>The batch belongs to one store.</strong> Every code carries that store with it, so switching stores
+        starts a new batch rather than mixing two stores' shelves into one set of tags.</p>
       </div>
     </div>
   </section>

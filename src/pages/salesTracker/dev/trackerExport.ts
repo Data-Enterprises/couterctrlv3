@@ -1,5 +1,5 @@
 import type { SubDeptTotal } from "./trackerTotals";
-import type { WindowPlan } from "./trackerWeeks";
+import { basisWord, type WindowPlan } from "./trackerWeeks";
 
 interface ExportArgs {
   row: SubDeptTotal;
@@ -26,7 +26,9 @@ export const exportTracker = ({ row, scopeLabel, plan }: ExportArgs) => {
   lines.push(`Sales Tracker,${esc(scopeLabel)}`);
   lines.push(`Sub department,${esc(row.desc)}`);
   lines.push(`Window,${plan.tyStart} to ${plan.tyEnd}`);
-  lines.push(`Compared to,${plan.lyStart} to ${plan.lyEnd}`);
+  lines.push(
+    `Compared to,${plan.lyStart} to ${plan.lyEnd} (${basisWord(plan.basis)})`,
+  );
   lines.push("");
 
   const header = [
@@ -35,11 +37,11 @@ export const exportTracker = ({ row, scopeLabel, plan }: ExportArgs) => {
     "Start",
     "End",
     "TY Sales",
-    "LY Sales",
+    `${plan.basis} Sales`,
     "Transactions",
     "ATS Sales",
-    "$ vs LY",
-    "% vs LY",
+    `$ vs ${plan.basis}`,
+    `% vs ${plan.basis}`,
   ];
   lines.push(header.join(","));
 

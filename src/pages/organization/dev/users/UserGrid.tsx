@@ -315,7 +315,7 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
 
   return (
     <div className="flex-1 flex flex-col min-h-0 p-4 w-full">
-      <div className="flex flex-wrap items-center gap-2 mb-3">
+      <div data-help="filters" className="flex flex-wrap items-center gap-2 mb-3">
         <SelectFilter
           options={companyOptions}
           value={companyFilter}
@@ -426,7 +426,7 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
             <div>Last visited</div>
             <div></div>
           </div>
-          <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar divide-y divide-brand_navy/15">
+          <div data-help="grid" className="flex-1 min-h-0 overflow-y-auto thin-scrollbar divide-y divide-brand_navy/15">
             {filtered.map((u) => {
               const outranked = isOutranked(u.user_level);
               return (

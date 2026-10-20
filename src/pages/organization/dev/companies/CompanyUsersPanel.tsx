@@ -4,6 +4,11 @@ import { useToast } from "../../../../components/toasts/hooks/useToast";
 import { assignUserToCompany } from "../../../../api/user";
 import type { JsonError, User } from "../../../../interfaces";
 import AssignPanel from "../../../../components-dev/AssignPanel";
+import CompanyFilterSelect from "../users/CompanyFilterSelect";
+import {
+  useCompanyFilterOptions,
+  useCompanyFilterPredicate,
+} from "../users/companyFilter";
 import {
   planAdd,
   planRemove,
@@ -41,6 +46,9 @@ const CompanyUsersPanel = ({
   const ctx = useBaseGroupsCtx();
   const toast = useToast();
   const [moving, setMoving] = useState(false);
+  /** Narrows the left column to people who already hold another company —
+   *  empty means no narrowing. See `companyOptions`. */
+  const [heldFilter, setHeldFilter] = useState("");
 
   const reachable = useMemo(
     () => users.filter((u) => u.user_level <= ctx.userLevel),
@@ -64,6 +72,38 @@ const CompanyUsersPanel = ({
     () => new Map(reachable.map((u) => [u.id, u])),
     [reachable],
   );
+
+  /**
+   * An email domain actually present in the left column, for the search hint.
+   *
+   * A made-up example teaches nothing — somebody reads "@example.com", takes
+   * it as filler and types a name anyway. Naming the commonest domain in the
+   * list they are looking at makes it a thing to try. Falls back to no
+   * example when the addresses have nothing in common, which is its own
+   * answer: there is no domain worth suggesting.
+   */
+  const commonDomain = useMemo(() => {
+    const counts = new Map<string, number>();
+    unassigned.forEach((u) => {
+      const at = (u.email ?? "").lastIndexOf("@");
+      if (at < 0) return;
+      const domain = u.email.slice(at).toLowerCase();
+      counts.set(domain, (counts.get(domain) ?? 0) + 1);
+    });
+    const best = [...counts.entries()].sort(
+      (a, b) => b[1] - a[1] || a[0].localeCompare(b[0]),
+    )[0];
+    // One lone address proves nothing about the list; two is a pattern.
+    return best && best[1] > 1 ? best[0] : null;
+  }, [unassigned]);
+
+  const unassignedIds = useMemo(() => unassigned.map((u) => u.id), [unassigned]);
+  const companyOptions = useCompanyFilterOptions(
+    reachable,
+    unassignedIds,
+    company.id,
+  );
+  const heldPredicate = useCompanyFilterPredicate(reachable, heldFilter);
 
   /**
    * Send a plan.
@@ -154,6 +194,31 @@ const CompanyUsersPanel = ({
         onAssign={handleAssign}
         onUnassign={handleUnassign}
         assignAllScope="global"
+        leftPredicate={heldPredicate}
+        searchHint={
+          <>
+            Searches usernames <span className="font-semibold">and emails</span>
+            {commonDomain ? (
+              <>
+                {" "}
+                — type{" "}
+                <span className="font-semibold text-content">
+                  {commonDomain}
+                </span>{" "}
+                to pull back everyone on it.
+              </>
+            ) : (
+              "."
+            )}
+          </>
+        }
+        leftFilters={
+          <CompanyFilterSelect
+            value={heldFilter}
+            onChange={setHeldFilter}
+            options={companyOptions}
+          />
+        }
       />
     </div>
   );

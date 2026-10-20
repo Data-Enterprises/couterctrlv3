@@ -119,7 +119,7 @@ const CpnSalesStorePanel = ({ rows, totals, rangeLabel, onOpenSearch }: Props) =
 
         {/* Row 2: search | threshold */}
         <div className="flex items-center gap-2 pt-1.5 mt-1 border-t border-custom-white/[0.08]">
-          <button
+          <button data-help="search"
             onClick={onOpenSearch}
             className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/60 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
             aria-label="New search"
@@ -134,6 +134,7 @@ const CpnSalesStorePanel = ({ rows, totals, rangeLabel, onOpenSearch }: Props) =
               different units: a percentage move against the baseline, or a
               flat dollar line with no baseline in play. */}
           <div
+            data-help="metric"
             className="flex items-center flex-shrink-0 rounded overflow-hidden"
             style={{ height: 22 }}
           >
@@ -219,7 +220,7 @@ const CpnSalesStorePanel = ({ rows, totals, rangeLabel, onOpenSearch }: Props) =
 
       {/* ── Tier chips + text filter ───────────────────────────────────── */}
       <div className="flex items-center justify-between gap-1.5 px-4 py-2 bg-custom-white border-x border-gray-100 flex-shrink-0">
-        <div className="flex items-center gap-1.5">
+        <div data-help="severity-chips" className="flex items-center gap-1.5">
           <button
             onClick={() => toggleTier("critical")}
             className={`text-[12px] font-semibold px-2 py-1 rounded-full bg-severity_critical_bg text-severity_critical_text transition-shadow ${
@@ -270,7 +271,7 @@ const CpnSalesStorePanel = ({ rows, totals, rangeLabel, onOpenSearch }: Props) =
         <span className="flex-1 text-[10px] font-bold uppercase tracking-wide text-content">
           Store
         </span>
-        <div className="flex items-center gap-[14px]">
+        <div data-help="sort" className="flex items-center gap-[14px]">
           <SortHeader
             col="amount"
             label="Amount"
@@ -308,7 +309,7 @@ const CpnSalesStorePanel = ({ rows, totals, rangeLabel, onOpenSearch }: Props) =
       </div>
 
       {/* ── Rows ───────────────────────────────────────────────────────── */}
-      <div className="flex-1 overflow-y-auto thin-scrollbar bg-custom-white border-x border-b border-gray-100 rounded-b-xl">
+      <div data-help="store-list" className="flex-1 overflow-y-auto thin-scrollbar bg-custom-white border-x border-b border-gray-100 rounded-b-xl">
         {visible.length === 0 ? (
           <div className="flex items-center justify-center h-24 text-[12px] text-content/60">
             No stores match

@@ -14,6 +14,11 @@ import type {
   User,
 } from "../../../../interfaces";
 import AssignPanel from "../../../../components-dev/AssignPanel";
+import CompanyFilterSelect from "../users/CompanyFilterSelect";
+import {
+  useCompanyFilterOptions,
+  useCompanyFilterPredicate,
+} from "../users/companyFilter";
 import { callReason } from "./storeMembership";
 
 interface Props {
@@ -166,6 +171,18 @@ const BaseGroupUsersTab = ({ group, users }: Props) => {
     sublabel: r.email ?? undefined,
   });
 
+  // A base group belongs to one company, and the people who should be in it
+  // nearly always already hold that company — so the same narrowing that
+  // serves the Companies tab serves this one. Fed the reachable candidates
+  // only, so it can hide rows but never reveal any.
+  const [heldFilter, setHeldFilter] = useState("");
+  const candidateIds = useMemo(
+    () => unassigned.filter(withinReach).map((r) => r.userid),
+    [unassigned, withinReach],
+  );
+  const companyOptions = useCompanyFilterOptions(users, candidateIds);
+  const heldPredicate = useCompanyFilterPredicate(users, heldFilter);
+
   return (
     <div className="w-full">
       {((loading && assigned.length + unassigned.length === 0) ||
@@ -179,6 +196,14 @@ const BaseGroupUsersTab = ({ group, users }: Props) => {
         rightItems={assigned.filter(withinReach).map(toItem)}
         onAssign={handleAssign}
         onUnassign={handleUnassign}
+        leftPredicate={heldPredicate}
+        leftFilters={
+          <CompanyFilterSelect
+            value={heldFilter}
+            onChange={setHeldFilter}
+            options={companyOptions}
+          />
+        }
       />
     </div>
   );

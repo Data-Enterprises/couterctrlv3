@@ -505,7 +505,7 @@ const ConfigPanel = () => {
         >
           <ArrowPathIcon className="w-3.5 h-3.5" />
         </button>
-        <button
+        <button data-help="search"
           type="button"
           onClick={() => ctx.dispatch(resetExportBuilder())}
           title="New search — clears this configuration"

@@ -52,6 +52,37 @@ export const isoToDisplay = (iso: string) => {
   return `${m}/${d}/${y}`;
 };
 
+/**
+ * Which period the window is measured against.
+ *
+ * Last year is the default and the better comparison: it carries the season
+ * with it. Last week is the fallback for a store that has no last year — one
+ * that opened this year, or changed system — because a tracker with an empty
+ * comparison column is a tracker with nothing to say.
+ *
+ * It is one basis for the whole window, never a mix. A column headed LY whose
+ * rows are sometimes last week is a column that lies, and the figure it holds
+ * cannot be read without checking which row it came from.
+ */
+export type TrackerBasis = "LY" | "LW";
+
+/** The same thing in prose. The label itself is the basis — "LY Sales",
+ *  "vs LW" — so only sentences need this. */
+export const basisWord = (basis: TrackerBasis) =>
+  basis === "LW" ? "last week" : "last year";
+
+/**
+ * How a TY day finds its partner.
+ *
+ * Last year snaps a holiday to its real date last year rather than shifting
+ * by weekday — Thanksgiving against Thanksgiving, not against the fourth
+ * Thursday's calendar neighbour. Last week has no such rule to apply: it
+ * means the same weekday seven days ago and nothing else, which is also why
+ * it can never collide.
+ */
+const partnerOf = (tyDate: string, basis: TrackerBasis) =>
+  basis === "LW" ? shiftDays(tyDate, -7) : sameWeekDayLastYear(tyDate).date;
+
 export type WeekBucket = {
   index: number;
   start: string;
@@ -62,6 +93,8 @@ export type WeekBucket = {
 
 export type DayPair = {
   tyDate: string;
+  /** The day this one is compared against — last year's partner, or last
+   *  week's, depending on the plan's basis. */
   lyDate: string;
   weekIndex: number;
   /** 0-6 within the bucket. Fixed at build time so the Days grid keeps a
@@ -70,6 +103,8 @@ export type DayPair = {
 };
 
 export type WindowPlan = {
+  /** What `lyDate`, `lyStart` and `lyEnd` mean on this plan. */
+  basis: TrackerBasis;
   weeks: WeekBucket[];
   pairs: DayPair[];
   tyStart: string;
@@ -151,6 +186,7 @@ export const buildWeekBuckets = (
 export const buildWindowPlan = (
   startDate: string,
   endDate: string,
+  basis: TrackerBasis = "LY",
 ): WindowPlan => {
   const buckets = buildWeekBuckets(startDate, endDate);
 
@@ -162,7 +198,7 @@ export const buildWindowPlan = (
     bucket.dates.forEach((tyDate, slot) => {
       const pair: DayPair = {
         tyDate,
-        lyDate: sameWeekDayLastYear(tyDate).date,
+        lyDate: partnerOf(tyDate, basis),
         weekIndex: bucket.index,
         slot,
       };
@@ -181,6 +217,7 @@ export const buildWindowPlan = (
   const lyDates = [...byLyDate.keys()].sort();
 
   return {
+    basis,
     weeks: buckets,
     pairs,
     tyStart: buckets[0].start,

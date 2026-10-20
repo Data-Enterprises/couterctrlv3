@@ -5,8 +5,10 @@ import {
   useCanSeeComingSoon,
 } from "../../../../hooks";
 // import { useSalesState } from "../hooks/useSalesState";
+import { isGroupSearch } from "../../../../features/searchSlice";
 import { getSubs, getHourly /* , getCats */ } from "../../../../api/sales";
 import SalesExportModal from "./SalesExportModal";
+import PopupTopItems from "./PopupTopItems";
 import {
   setSubSales,
   setHourlySales,
@@ -18,18 +20,13 @@ import {
   setLedgerTab,
   setCounterpart,
   setLedgerSelectedDate,
-  setRawSubs,
-  setRawLWSubs,
-  setRawLYSubs,
-  setRawHourly,
-  setRawLWHourly,
-  setRawLYHourly,
   // setRawCats,
   // setRawLWCats,
   // setRawLYCats,
   // setCategoryThreshold,
-  setLastFetchedStoreKey,
   clearPopupSelections,
+  cacheStoreData,
+  restoreStoreData,
 } from "../../../../features/dev/devSalesLedgerSlice";
 import {
   addDays,
@@ -63,7 +60,6 @@ import { useCriticalReport } from "../../../../hooks/useCriticalReport";
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
 import type { StoreSelection } from "./LedgerRow";
 import { formatPct, pillClass, severityHeaderBgClass } from "./utils";
-import GhostFlames from "./GhostFlames";
 
 interface StoreDetailPopupProps {
   selection: StoreSelection;
@@ -76,7 +72,8 @@ interface StoreDetailPopupProps {
 // Category tab (and its cat_sales fetch below) is commented out for now —
 // uncomment this, the getCats-related imports above, and the marked blocks
 // below to bring it back.
-type PopupTab = "subdept" | "hourly" | "comparison" /* | "category" */;
+type PopupTab =
+  "subdept" | "hourly" | "comparison" | "topitems" /* | "category" */;
 
 const fmtDate = (d: string) =>
   new Date(d + "T12:00:00").toLocaleDateString("en-US", {
@@ -106,6 +103,7 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
     exportSubDeptItems,
     exportSubDeptName,
     lastFetchedStoreKey,
+    storeCache,
     gradingMetric,
     counterpart,
   } = useAppSelector((state) => state.dev.salesLedger);
@@ -116,7 +114,6 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
   const [loading, setLoading] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
   // const [gapReportOpen, setGapReportOpen] = useState(false);
-  const [showFlames, setShowFlames] = useState(false);
   const openCriticalReport = useCriticalReport();
   // The same item threshold the sub-dept list grades against, so the button's
   // definition of critical is the one already on screen.
@@ -124,16 +121,6 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
     useAppSelector((state) => state.dev.salesLedger.itemThreshold) ?? 9;
   // const [catLoading, setCatLoading] = useState(false);
   // const [catFetchedFor, setCatFetchedFor] = useState<number | null>(null);
-
-  useEffect(() => {
-    if (selection.severity !== "critical") {
-      setShowFlames(false);
-      return;
-    }
-    setShowFlames(true);
-    const timer = setTimeout(() => setShowFlames(false), 5000);
-    return () => clearTimeout(timer);
-  }, [selection.storeId, selection.severity]);
 
   const twStart = addDays(search.singleDate, -6).toISOString().split("T")[0];
   const twEnd = formatGoliathDate(search.singleDate);
@@ -332,6 +319,15 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
     // has it, only the component tree was torn down.
     const storeKey = `${selection.storeId}__${selection.storeNumber}`;
     if (lastFetchedStoreKey === storeKey) return;
+    // Held from an earlier visit: six calls saved, and the panel paints on
+    // this tick rather than after a round trip. Clients hop between stores --
+    // that is what the counterpart is for -- so this is the common path, not
+    // a clever one.
+    if (storeCache[storeKey]) {
+      dispatch(clearPopupSelections());
+      dispatch(restoreStoreData(storeKey));
+      return;
+    }
     dispatch(clearPopupSelections());
     const scopeToStore = <T extends { store_number: string }>(rows: T[]) =>
       scopeToStoreNumber(rows, selection.storeNumber);
@@ -401,47 +397,40 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
             1,
           ),
         ]);
+        // One dispatch, not seven. The six arrays are a single answer, and
+        // caching them separately would let a store keep its own subs beside
+        // somebody else's hourly.
         dispatch(
-          setRawSubs(
-            subsResp.data.error === 0 ? scopeToStore(subsResp.data.subs) : [],
-          ),
+          cacheStoreData({
+            key: storeKey,
+            data: {
+              rawSubs:
+                subsResp.data.error === 0
+                  ? scopeToStore(subsResp.data.subs)
+                  : [],
+              rawLWSubs:
+                lwSubsResp.data.error === 0
+                  ? scopeToStore(lwSubsResp.data.subs)
+                  : [],
+              rawLYSubs:
+                lySubsResp.data.error === 0
+                  ? scopeToStore(lySubsResp.data.subs)
+                  : [],
+              rawHourly:
+                hourlyResp.data.error === 0
+                  ? scopeToStore(hourlyResp.data.subs)
+                  : [],
+              rawLWHourly:
+                lwHourlyResp.data.error === 0
+                  ? scopeToStore(lwHourlyResp.data.subs)
+                  : [],
+              rawLYHourly:
+                lyHourlyResp.data.error === 0
+                  ? scopeToStore(lyHourlyResp.data.subs)
+                  : [],
+            },
+          }),
         );
-        dispatch(
-          setRawLWSubs(
-            lwSubsResp.data.error === 0
-              ? scopeToStore(lwSubsResp.data.subs)
-              : [],
-          ),
-        );
-        dispatch(
-          setRawLYSubs(
-            lySubsResp.data.error === 0
-              ? scopeToStore(lySubsResp.data.subs)
-              : [],
-          ),
-        );
-        dispatch(
-          setRawHourly(
-            hourlyResp.data.error === 0
-              ? scopeToStore(hourlyResp.data.subs)
-              : [],
-          ),
-        );
-        dispatch(
-          setRawLWHourly(
-            lwHourlyResp.data.error === 0
-              ? scopeToStore(lwHourlyResp.data.subs)
-              : [],
-          ),
-        );
-        dispatch(
-          setRawLYHourly(
-            lyHourlyResp.data.error === 0
-              ? scopeToStore(lyHourlyResp.data.subs)
-              : [],
-          ),
-        );
-        dispatch(setLastFetchedStoreKey(storeKey));
       } finally {
         setLoading(false);
       }
@@ -573,12 +562,13 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
             : "bg-brand_navy"
         }`}
       >
-        {showFlames && <GhostFlames />}
-        <p className="text-custom-white text-[13px] font-bold leading-tight justify-self-start">
+        <p className="text-custom-white text-[14px] font-bold leading-tight justify-self-start">
           {headerStoreName}
         </p>
-        <span className="text-custom-white text-[13px] font-bold justify-self-center">
-          Sales Performance · {staticTwDate}
+        <span className="text-custom-white text-[14px] font-bold justify-self-center truncate">
+          {counterpart
+            ? `${headerStoreName} vs ${counterpart.storeName}`
+            : "Weekly Performance"}
         </span>
         <div className="flex items-center gap-3 justify-self-end">
           {/* {!loading && gapCount > 0 && (
@@ -658,6 +648,21 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
           days={selection.days}
           subDeptItems={exportSubDeptItems}
           subDeptName={exportSubDeptName}
+          storeId={selection.storeId}
+          startDate={twStart}
+          endDate={twEnd}
+          // Only when the ledger actually searched a group. Financials is the
+          // one export that can answer wider than this popup, and the endpoint
+          // needs a groupid to do it.
+          group={
+            isGroupSearch(search.type) && search.selectedGroup?.id
+              ? {
+                  id: search.selectedGroup.id,
+                  name: search.selectedGroup.group_name,
+                }
+              : null
+          }
+          stores={groupRows}
         />
       )}
 
@@ -720,7 +725,9 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
             {/* Not one day of the week has a matching date on file. $0.00
                 would read as a store that sold nothing; the store simply has
                 no history there. */}
-            <span className={`text-[14px] font-bold ${noLyHistory ? "text-content/85" : "text-content"}`}>
+            <span
+              className={`text-[14px] font-bold ${noLyHistory ? "text-content/85" : "text-content"}`}
+            >
               {noLyHistory
                 ? "No history"
                 : headerLyTotal !== null
@@ -769,18 +776,23 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center border-b border-gray-100 px-3 flex-shrink-0">
+      <div
+        data-help="store-tabs"
+        className="flex items-center border-b border-gray-100 px-3 flex-shrink-0"
+      >
         {/* Sub depts leads: it is the tab that answers the question the
             page was opened with, and it reads the same whether or not a
-            counterpart has been chosen. Stores sits beside it as the place
-            that chooses one.
+            counterpart has been chosen. Compare sits beside it as the
+            place that chooses one.
 
-            Stores shows only when there are siblings to compare with — a
+            Compare shows only when there are siblings to compare with — a
             single-store search has no reference set, so the tab is not
             offered rather than opening on an empty one. */}
-        {((hasGroup
-          ? ["subdept", "comparison", "hourly"]
-          : ["subdept", "hourly"]) as PopupTab[]).map((t) => (
+        {(
+          (hasGroup
+            ? ["subdept", "comparison", "hourly", "topitems"]
+            : ["subdept", "hourly", "topitems"]) as PopupTab[]
+        ).map((t) => (
           <button
             key={t}
             onClick={() => dispatch(setLedgerTab(t))}
@@ -790,7 +802,13 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
                 : "border-transparent text-content"
             }`}
           >
-            {t === "subdept" ? "Sub depts" : t === "hourly" ? "Hourly" : "Stores"}
+            {t === "subdept"
+              ? "Sub depts"
+              : t === "hourly"
+                ? "Hourly"
+                : t === "topitems"
+                  ? "Top 200"
+                  : "Compare"}
           </button>
         ))}
       </div>
@@ -813,6 +831,27 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
               openStoreName={headerStoreName}
             />
           ) : null
+        ) : tab === "topitems" ? (
+          <PopupTopItems
+            storeId={selection.storeId}
+            locations={selection.storeNumbersForId}
+            /* The whole week at this store, never the day-scoped header
+               figures: the Top 200 is always the week, so a share worked out
+               against one selected day would be a fraction of the wrong
+               denominator. */
+            netSales={{
+              ty: weekTotals.twTotal,
+              lw: weekTotals.hasLW ? weekTotals.lwTotal : null,
+              ly: weekTotals.hasLY ? weekTotals.lyTotal : null,
+            }}
+            start={twStart}
+            end={twEnd}
+            lwStart={lwStart}
+            lwEnd={lwEnd}
+            lyStart={lyStart}
+            lyEnd={lyEnd}
+            threshold={itemThreshold}
+          />
         ) : tab === "subdept" ? (
           /* With a counterpart chosen in Stores, this tab IS the comparison;
              without one it is the store's own departments, graded, exactly as
@@ -840,15 +879,15 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
               onBack={() => dispatch(setCounterpart(null))}
             />
           ) : (
-          <PopupSubDeptList
-            twDateLabel={twDateLabel}
-            lwDateLabel={lwDateLabel}
-            lyDateLabel={lyDateLabel}
-            storeId={selection.storeId}
-            storeNumber={selection.storeNumber}
-            selectedDate={selectedDate}
-            twRealDates={twRealDates}
-          />
+            <PopupSubDeptList
+              twDateLabel={twDateLabel}
+              lwDateLabel={lwDateLabel}
+              lyDateLabel={lyDateLabel}
+              storeId={selection.storeId}
+              storeNumber={selection.storeNumber}
+              selectedDate={selectedDate}
+              twRealDates={twRealDates}
+            />
           )
         ) : counterpart ? (
           /* Hourly answers to the same counterpart as Sub depts: one choice,

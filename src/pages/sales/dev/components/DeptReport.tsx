@@ -6,7 +6,11 @@ import {
   ExclamationCircleIcon,
   ExclamationTriangleIcon,
 } from "@heroicons/react/20/solid";
-import { CTA_SEVERITY_CLASSES, type Severity } from "../../../../utils/severity";
+import {
+  CTA_SEVERITY_CLASSES,
+  severityDotClass,
+  type Severity,
+} from "../../../../utils/severity";
 import { getSubs } from "../../../../api/sales";
 import { formatCurrency2 } from "../../../../utils";
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
@@ -54,8 +58,22 @@ const signed = (v: number) =>
   (v >= 0 ? "+" : "−") + formatCurrency2(Math.abs(v));
 
 const WORDS = [
-  "No", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight",
-  "Nine", "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen",
+  "No",
+  "One",
+  "Two",
+  "Three",
+  "Four",
+  "Five",
+  "Six",
+  "Seven",
+  "Eight",
+  "Nine",
+  "Ten",
+  "Eleven",
+  "Twelve",
+  "Thirteen",
+  "Fourteen",
+  "Fifteen",
 ];
 const word = (n: number) => WORDS[n] ?? String(n);
 
@@ -284,7 +302,8 @@ const Measure = ({
   better: "more" | "less";
 }) => {
   const widest = Math.max(Math.abs(mine), Math.abs(theirs), 1);
-  const pct = theirs === 0 ? null : Math.round(Math.abs(mine / theirs - 1) * 100);
+  const pct =
+    theirs === 0 ? null : Math.round(Math.abs(mine / theirs - 1) * 100);
   const up = mine > theirs;
   const good = better === "more" ? up : !up;
 
@@ -322,20 +341,27 @@ const Measure = ({
           {
             label: us,
             v: mine,
-            tone: pct === null || pct === 0
-              ? "bg-store_compare"
-              : good
-                ? "bg-emerald-500"
-                : "bg-red-500",
+            tone:
+              pct === null || pct === 0
+                ? "bg-store_compare"
+                : good
+                  ? "bg-emerald-500"
+                  : "bg-red-500",
             /* The figure matches its own bar: two marks for one reading,
                and a black number beside a red bar reads as a correction. */
-            ink: pct === null || pct === 0
-              ? "text-content"
-              : good
-                ? "text-delta_positive_text"
-                : "text-delta_negative_text",
+            ink:
+              pct === null || pct === 0
+                ? "text-content"
+                : good
+                  ? "text-delta_positive_text"
+                  : "text-delta_negative_text",
           },
-          { label: them, v: theirs, tone: "bg-store_compare", ink: "text-content" },
+          {
+            label: them,
+            v: theirs,
+            tone: "bg-store_compare",
+            ink: "text-content",
+          },
         ].map((b) => (
           <span key={b.label} className="flex items-center gap-2.5 text-[13px]">
             <span
@@ -350,7 +376,9 @@ const Measure = ({
                 style={{ width: `${(Math.abs(b.v) / widest) * 100}%` }}
               />
             </span>
-            <span className={`w-[104px] flex-shrink-0 text-right tabular-nums font-semibold whitespace-nowrap ${b.ink}`}>
+            <span
+              className={`w-[104px] flex-shrink-0 text-right tabular-nums font-semibold whitespace-nowrap ${b.ink}`}
+            >
               {fmt(b.v)}
             </span>
           </span>
@@ -384,8 +412,6 @@ const Detail = ({
      our rate. One bar, because they are two halves of one figure. */
   const split = row.split;
   const splitSize = split ? Math.abs(split.volume) + Math.abs(split.rate) : 0;
-
-
 
   /** Wider or narrower, not bigger or smaller: a gap is a distance. */
   const againstWeek = (when: string, then: number) => {
@@ -440,13 +466,19 @@ const Detail = ({
           <Mark_ className={`w-4 h-4 flex-shrink-0 ${cta.text}`} />
           {/* The name alone. The gap is the first tile under this strip,
               and twice on one screen is once too many. */}
-          <span className={`min-w-0 flex-1 truncate text-[14px] font-semibold ${cta.text}`}>
+          <span
+            className={`min-w-0 flex-1 truncate text-[14px] font-semibold ${cta.text}`}
+          >
             {row.name}
           </span>
           {open ? (
-            <ChevronUpIcon className={`w-3.5 h-3.5 flex-shrink-0 ${cta.text}`} />
+            <ChevronUpIcon
+              className={`w-3.5 h-3.5 flex-shrink-0 ${cta.text}`}
+            />
           ) : (
-            <ChevronDownIcon className={`w-3.5 h-3.5 flex-shrink-0 ${cta.text}`} />
+            <ChevronDownIcon
+              className={`w-3.5 h-3.5 flex-shrink-0 ${cta.text}`}
+            />
           )}
         </button>
 
@@ -472,14 +504,20 @@ const Detail = ({
                 <span className="flex h-[8.4px] rounded-sm overflow-hidden bg-custom-white/60 mt-2">
                   <span
                     className={`block ${split.volume < 0 ? "bg-red-500" : "bg-emerald-500"}`}
-                    style={{ width: `${(Math.abs(split.volume) / splitSize) * 100}%` }}
+                    style={{
+                      width: `${(Math.abs(split.volume) / splitSize) * 100}%`,
+                    }}
                   />
                   <span
                     className={`block ${split.rate < 0 ? "bg-red-500" : "bg-emerald-500"}`}
-                    style={{ width: `${(Math.abs(split.rate) / splitSize) * 100}%` }}
+                    style={{
+                      width: `${(Math.abs(split.rate) / splitSize) * 100}%`,
+                    }}
                   />
                 </span>
-                <div className={`flex justify-between gap-4 text-[11.5px] mt-1 ${cta.text}`}>
+                <div
+                  className={`flex justify-between gap-4 text-[11.5px] mt-1 ${cta.text}`}
+                >
                   <span>
                     {row.weighed ? "Weight" : "Units"}{" "}
                     <span className="font-bold tabular-nums">
@@ -509,60 +547,58 @@ const Detail = ({
       </div>
 
       <div className="flex-1 min-h-0 overflow-auto thin-scrollbar px-4 py-3 flex flex-col">
-
-      {/* Three checks in order, and the first one to fail is the finding.
+        {/* Three checks in order, and the first one to fail is the finding.
           A green tick says only that this check was not the problem — a
           department can pass "rung" by ringing anything at all and still be
           five thousand down, which is exactly what the row's own red is
           about. The heading is here so the two colours are plainly
           answering different questions. */}
-      <Block
-        title="Where it breaks down"
-        action={
-          /* At the top, beside the first thing the panel says. Pinned to the
+        <Block
+          title="Where it breaks down"
+          action={
+            /* At the top, beside the first thing the panel says. Pinned to the
              bottom it sat under four cards, which on a short panel is fine
              and on a long one is a scroll away from every reason to press
              it. The chain's own wording survives as the title: the button
              is one word, and hovering says which way it is pointing. */
-          <button
-            onClick={() => onInvestigate(row)}
-            title={row.chain.cta}
-            className="px-3 py-1.5 rounded-md bg-brand_navy hover:bg-brand_navy_hover text-custom-white text-[12px] font-bold transition-colors whitespace-nowrap"
-          >
-            Investigate
-          </button>
-        }
-      >
-        <div className="grid grid-cols-3 gap-2.5">
-          {row.chain.gates.map((g) => (
-            <Tile key={g.name} gate={g} />
-          ))}
-        </div>
-      </Block>
+            <button
+              onClick={() => onInvestigate(row)}
+              title={row.chain.cta}
+              className="px-3 py-1.5 rounded-md bg-brand_navy hover:bg-brand_navy_hover text-custom-white text-[12px] font-bold transition-colors whitespace-nowrap"
+            >
+              Investigate
+            </button>
+          }
+        >
+          <div className="grid grid-cols-3 gap-2.5">
+            {row.chain.gates.map((g) => (
+              <Tile key={g.name} gate={g} />
+            ))}
+          </div>
+        </Block>
 
-      <Block title={`This week against ${them}`}>
-        <div className="flex flex-col gap-2.5">
-          <Measure
-            title="Sales"
-            mine={row.mine}
-            theirs={row.theirs}
-            us={us}
-            them={them}
-            fmt={money}
-            better="more"
-          />
-          <Measure
-            title={row.weighed ? "Weight" : "Units"}
-            mine={row.mineUnits}
-            theirs={row.theirsUnits}
-            us={us}
-            them={them}
-            fmt={whole}
-            better="more"
-          />
-        </div>
-      </Block>
-
+        <Block title={`This week against ${them}`}>
+          <div className="flex flex-col gap-2.5">
+            <Measure
+              title="Sales"
+              mine={row.mine}
+              theirs={row.theirs}
+              us={us}
+              them={them}
+              fmt={money}
+              better="more"
+            />
+            <Measure
+              title={row.weighed ? "Weight" : "Units"}
+              mine={row.mineUnits}
+              theirs={row.theirsUnits}
+              us={us}
+              them={them}
+              fmt={whole}
+              better="more"
+            />
+          </div>
+        </Block>
       </div>
     </div>
   );
@@ -614,8 +650,14 @@ const DeptReport = ({
   /** No local copy: the cache IS the state, so coming back from an
    *  investigation does not re-ask for three weeks that have not changed. */
   const cacheKey = [
-    compareStoreId, compareStoreNumber,
-    twStart, twEnd, lwStart, lwEnd, lyStart, lyEnd,
+    compareStoreId,
+    compareStoreNumber,
+    twStart,
+    twEnd,
+    lwStart,
+    lwEnd,
+    lyStart,
+    lyEnd,
   ].join("|");
   const theirs = useAppSelector(
     (state) => state.dev.salesCache.counterpart[cacheKey],
@@ -653,9 +695,19 @@ const DeptReport = ({
       live = false;
     };
   }, [
-    context.url, context.token,
-    twStart, twEnd, lwStart, lwEnd, lyStart, lyEnd,
-    compareStoreId, compareStoreNumber, cacheKey, theirs, dispatch,
+    context.url,
+    context.token,
+    twStart,
+    twEnd,
+    lwStart,
+    lwEnd,
+    lyStart,
+    lyEnd,
+    compareStoreId,
+    compareStoreNumber,
+    cacheKey,
+    theirs,
+    dispatch,
   ]);
 
   const report = useMemo(() => {
@@ -705,8 +757,7 @@ const DeptReport = ({
     );
   }
 
-  const { shown, folded, underTotal, overTotal, over, netGap, shownShare } =
-    report;
+  const { shown, folded, underTotal, overTotal, over, netGap } = report;
 
   /**
    * Every department, worst first.
@@ -737,18 +788,30 @@ const DeptReport = ({
             {"‹"}
           </button>
 
+          {/* The net first. It is the figure the Stores tab sent the reader
+              here with, and it used to arrive third in a row of three, in the
+              smallest type on the screen -- under a headline about a
+              shortfall the reader had not been shown the size of. A store
+              $118K behind in one set of departments and $117K ahead in
+              another is NOT $73K down, and the old headline read as though
+              it were. */}
           <p className="min-w-0 flex-1 text-[16.5px] font-bold leading-snug text-content truncate">
-            {shown.length === 0 ? (
-              <>Nothing is under {compareStoreName}.</>
-            ) : (
+            {netGap < 0 ? (
               <>
-                {word(shown.length)}{" "}
-                {shown.length === 1 ? "department holds" : "departments hold"}{" "}
+                Behind by{" "}
                 <span className="text-delta_negative_text">
-                  {money(shown.reduce((t, r) => t - r.gap, 0))}
-                </span>{" "}
-                of the shortfall
+                  {money(-netGap)}
+                </span>
               </>
+            ) : netGap > 0 ? (
+              <>
+                Ahead by{" "}
+                <span className="text-delta_positive_text">
+                  {money(netGap)}
+                </span>
+              </>
+            ) : (
+              <>Level with {compareStoreName}</>
             )}
           </p>
 
@@ -766,58 +829,47 @@ const DeptReport = ({
 
         {underTotal > 0 && (
           <>
-            {/* Two parts, each saying what it is. Fifteen slivers down an
-                opacity ladder showed the same split and left the reader to
-                work out where the headline's three ended. */}
+            {/* The two piles the net is made of, both written where they
+                are drawn. One bar split into "5 departments / 21 others" was
+                a share of the behind pile -- a percentage of a figure the
+                reader had not been given. */}
             <span className="flex h-6 rounded-md overflow-hidden bg-bkg mt-2.5 text-[11.5px] font-semibold">
               <span
-                className="flex items-center px-2.5 bg-red-500 text-custom-white whitespace-nowrap overflow-hidden"
-                style={{ width: `${Math.max(8, shownShare * 100)}%` }}
+                className={`flex items-center px-2.5 text-custom-white whitespace-nowrap overflow-hidden ${severityDotClass.critical}`}
+                style={{
+                  width: `${Math.max(12, (underTotal / (underTotal + overTotal)) * 100)}%`,
+                }}
               >
-                <span className="truncate">
-                  {shown.length}{" "}
-                  {shown.length === 1 ? "department" : "departments"} &middot;{" "}
-                  {Math.round(shownShare * 100)}%
-                </span>
+                <span className="truncate">{money(underTotal)} behind</span>
               </span>
-              {folded.length > 0 && (
-                <span className="flex items-center px-2.5 text-content/85 whitespace-nowrap overflow-hidden">
-                  <span className="truncate">
-                    {folded.length} others &middot;{" "}
-                    {Math.round((1 - shownShare) * 100)}%
-                  </span>
+              {overTotal > 0 && (
+                <span
+                  className={`flex items-center px-2.5 text-custom-white whitespace-nowrap overflow-hidden flex-1 ${severityDotClass.healthy}`}
+                >
+                  <span className="truncate">{money(overTotal)} ahead</span>
                 </span>
               )}
             </span>
 
-            <div className="flex items-baseline gap-5 flex-wrap mt-1.5 text-[11.5px] text-content/85">
-              <span>
+            {shown.length > 0 && (
+              <div className="mt-1.5 text-[11.5px] text-content/85">
+                {word(shown.length)}{" "}
+                {shown.length === 1 ? "department holds" : "departments hold"}{" "}
                 <span className="font-bold tabular-nums text-delta_negative_text">
-                  {signed(-underTotal)}
+                  {money(shown.reduce((t, r) => t - r.gap, 0))}
                 </span>{" "}
-                under
-              </span>
-              {over.length > 0 && (
-                <span>
-                  <span className="font-bold tabular-nums text-delta_positive_text">
-                    {signed(overTotal)}
-                  </span>{" "}
-                  ahead
-                </span>
-              )}
-              <span>
-                <span
-                  className={`font-bold tabular-nums ${
-                    netGap < 0
-                      ? "text-delta_negative_text"
-                      : "text-delta_positive_text"
-                  }`}
-                >
-                  {signed(netGap)}
-                </span>{" "}
-                net
-              </span>
-            </div>
+                of the {money(underTotal)} behind
+                {folded.length > 0 && (
+                  <>
+                    {" "}
+                    &middot; {folded.length}{" "}
+                    {folded.length === 1 ? "other holds" : "others hold"} the
+                    rest
+                  </>
+                )}
+                .
+              </div>
+            )}
           </>
         )}
       </div>

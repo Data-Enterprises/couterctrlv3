@@ -1,4 +1,8 @@
 import axios from "axios";
+import type {
+  SubDeptMargin,
+  SubsPricePoint,
+} from "../interfaces";
 
 export const getSubDepts = async (
   url: string,
@@ -123,6 +127,81 @@ export const getSubMargins = async (
       singleStore,
       page,
       download,
+    },
+  });
+  return json;
+};
+
+/**
+ * The response from `subs/item_actions`.
+ *
+ * Note `data`, not `subs` — the key differs from `subs/subs` and reading the
+ * wrong one yields an empty report rather than an error.
+ */
+export interface ItemActionsResp {
+  error: number;
+  success: boolean;
+  msg?: string;
+  store_count: number;
+  storeids: number[];
+  requested_codes: number;
+  found_codes: number;
+  /** Codes that sold nothing in the window. A real answer, not a failure. */
+  missing_codes: string[];
+  total_records: number;
+  data: SubDeptMargin[];
+  price_point_count: number;
+  price_points: SubsPricePoint[];
+}
+
+/** The endpoint's ceiling on `product_codes` per request. */
+export const ITEM_ACTIONS_MAX_CODES = 2000;
+
+/**
+ * `subs/subs` for a known list of items.
+ *
+ * The same numbers, narrowed to the codes asked about by pushing them into the
+ * base CTE before the grouping. Measured on the busiest store over a week:
+ * 11,799 rows in 781ms for the whole store against 100 rows in 109ms for 100
+ * codes — and 100 rows sits inside one page, so the count, the OFFSET and the
+ * concurrent page burst stop happening rather than merely getting cheaper.
+ *
+ * Unpaged by design: the code cap is what bounds the response, so there is no
+ * page argument and no `total_pages` to follow.
+ *
+ * Price points always come back — there is no flag. Over a whole store they
+ * are a second expensive query and `subs/subs` still gates them; narrowed they
+ * are 111 rows in 94ms, so the switch would only be something to get wrong.
+ *
+ * Codes go out as they are held. The backend matches the column raw rather
+ * than through `replace(product_code, '.0', '')`, having verified the suffix
+ * is gone from `sales_partitioned` — and this page normalises on the way in
+ * anyway, so both sides are already on the bare form.
+ */
+export const getItemActions = async (
+  url: string,
+  token: string,
+  startDate: string,
+  endDate: string,
+  useGroups: number,
+  searchValue: number,
+  singleStore: number,
+  product_codes: string[],
+) => {
+  const json = await axios({
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    url: url + "subs/item_actions",
+    data: {
+      startDate,
+      endDate,
+      useGroups,
+      searchValue,
+      singleStore,
+      product_codes,
     },
   });
   return json;

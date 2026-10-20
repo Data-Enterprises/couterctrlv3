@@ -20,6 +20,7 @@ import Invoices from "./pages/invoices/Invoices.tsx";
 import LpActions from "./pages/lpActions/LpActions.tsx";
 import SalesTracker from "./pages/salesTracker/SalesTracker.tsx";
 import ExportBuilder from "./pages/exportBuilder/ExportBuilder.tsx";
+import UpcScanner from "./pages/upcScanner/UpcScanner.tsx";
 // Suggested Weight — commented out for publish; dev-API only (see navigation/utils.tsx)
 // import Suggested from "./pages/suggested/Suggested.tsx";
 import {
@@ -79,6 +80,7 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="lp-actions" element={<LpActions />} />
                 <Route path="sales-tracker" element={<SalesTracker />} />
                 <Route path="sales-export" element={<ExportBuilder />} />
+                <Route path="upc-scanner" element={<UpcScanner />} />
                 {/* <Route path="suggested-weight" element={<Suggested />} /> */}
                 <Route path="forecasting" element={<ForecastPage />} />
                 <Route path="quicksight" element={<Dashboard />} />

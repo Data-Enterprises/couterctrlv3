@@ -57,6 +57,42 @@ export const fetchSubSales = async (
 };
 
 /**
+ * The last-year leg, which is allowed to come back with nothing.
+ *
+ * A store that opened this year has no last year, and the endpoint says so
+ * with `error: 1` and a message rather than an empty list — which the fetch
+ * above turns into a throw. Both legs run in one `Promise.all`, so that threw
+ * away THIS year's rows as well: a new store loaded nothing at all and was
+ * told "no LY records" over an empty screen.
+ *
+ * Nothing downstream needs last year to exist. Every column that reads it
+ * already draws a dash when it is missing, which is the same thing the ledger
+ * does for a store with no history.
+ *
+ * It swallows a genuine LY failure too, and deliberately: the tracker is a
+ * this-year view with last year beside it, and losing the comparison is worth
+ * less than losing the week.
+ */
+export const fetchLySubSales = (
+  url: string,
+  token: string,
+  useGroups: number,
+  searchValue: number,
+  singleStore: number,
+  start: string,
+  end: string,
+): Promise<SubSale[]> =>
+  fetchSubSales(
+    url,
+    token,
+    useGroups,
+    searchValue,
+    singleStore,
+    start,
+    end,
+  ).catch(() => []);
+
+/**
  * EXPERIMENT, dev only. `subs/sales_tracker` against `subs/sub_sales`.
  *
  * `sub_sales` answers a whole window in two paged requests, and on a 12-week,
@@ -184,15 +220,23 @@ export const fetchTrackerWindow = async (
 
   try {
     const results = await Promise.all(
-      jobs.map((job) =>
-        trackerQueue
-          .enqueue(job.key, () => trackerCall(scope, job.dates))
-          .then((rows) => {
-            done += 1;
-            onProgress?.(done, jobs.length);
-            return { period: job.period, rows };
-          }),
-      ),
+      jobs.map((job) => {
+        const call = trackerQueue.enqueue(job.key, () =>
+          trackerCall(scope, job.dates),
+        );
+        // A last-year batch that comes back empty-handed is a store with no
+        // last year, which is not a reason to lose the window. A this-year
+        // batch failing still is.
+        const leg =
+          job.period === "ly"
+            ? call.catch((): SubSale[] => [])
+            : call;
+        return leg.then((rows) => {
+          done += 1;
+          onProgress?.(done, jobs.length);
+          return { period: job.period, rows };
+        });
+      }),
     );
 
     // A null anywhere means this window was superseded mid-flight. Returning

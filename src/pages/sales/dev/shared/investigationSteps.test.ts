@@ -190,7 +190,7 @@ describe("5 · who fixes it", () => {
     const desks = desksOf([...sitting(2), ...weaker(2, 40, 90)], money);
     expect(desks.map((d) => d.cause)).toContain("not-moving");
     for (const d of desks) {
-      if (d.cause === "not-moving" || d.cause === "unclassified") {
+      if (d.cause === "not-moving" || d.cause === "streamlined") {
         expect(d.owner).toBeNull();
         expect(d.actionable).toBe(false);
       }
@@ -262,8 +262,8 @@ describe("supply · the proof behind the labels", () => {
     invoiceid: id,
     invoice_date,
     vendor_name: vendor,
-    lines: lines.map(([product_code, units, ext_cost, item_return]) => ({
-      product_code, units, ext_cost, item_return,
+    lines: lines.map(([product_code, qty, ext_cost, item_return]) => ({
+      product_code, qty, ext_cost, item_return,
     })),
   });
   const of = (code: string) => item({ productCode: code, theirsTy: 10, theirsUnits: 1 });
@@ -383,7 +383,7 @@ describe("supply · the proof behind the labels", () => {
       { mine: [order(1, "a", 359)], theirs: [order(2, "a", 8904)] },
       { mine: [], theirs: [] },
     );
-    expect(r.lead).toBe("Both stores ordered. Neither took a delivery in the window.");
+    expect(r.lead).toBe("Both stores ordered. Neither received anything in the window.");
     expect(r.tail).toContain("003 ordered 8,904 units on 1 order.");
     expect(r.tail).toContain("002 ordered 359 on 1 order.");
   });
@@ -392,13 +392,13 @@ describe("supply · the proof behind the labels", () => {
    *  that said "both" would bury it under two counts. */
   it("names the store when only one of them ordered", () => {
     const r = says({ mine: [], theirs: [order(2, "a", 50)] }, { mine: [], theirs: [] });
-    expect(r.lead).toBe("Only 003 ordered. Neither took a delivery in the window.");
+    expect(r.lead).toBe("Only 003 ordered. Neither received anything in the window.");
   });
 
   it("says so when neither store ordered at all", () => {
     const r = says({ mine: [], theirs: [] }, { mine: [], theirs: [] });
     expect(r.lead).toBe(
-      "Neither store ordered this department. Neither took a delivery in the window.",
+      "Neither store ordered this department. Neither received anything in the window.",
     );
     expect(r.tail).toBe("");
   });

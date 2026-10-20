@@ -126,7 +126,7 @@ const OrdersConfigPanel = ({
           <span className="text-custom-white font-medium text-[13px] flex-1 truncate">
             Configuration
           </span>
-          <button
+          <button data-help="search"
             onClick={onOpenSearch}
             title="New search"
             className="text-custom-white/85 hover:text-custom-white transition-colors flex-shrink-0"
@@ -156,7 +156,7 @@ const OrdersConfigPanel = ({
         </div>
       ) : (
         <>
-          <div className="flex-1 overflow-y-auto thin-scrollbar p-3 flex flex-col gap-3">
+          <div data-help="orders-list" className="flex-1 overflow-y-auto thin-scrollbar p-3 flex flex-col gap-3">
             <Field label="Order types">
               <MultiSelectFilter
                 options={options.types}

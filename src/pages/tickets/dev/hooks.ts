@@ -67,6 +67,9 @@ export const useTicketsCtx = () => {
    */
   const isTech = tickets.caps.canViewAll;
   const canManage = tickets.caps.canManage;
+  // The roster. Level 9 and nothing less, so that a desk nobody is on is
+  // always fixable by somebody.
+  const canManageTechs = tickets.caps.canManageTechs;
 
   const rows = useMemo(
     () =>
@@ -111,13 +114,28 @@ export const useTicketsCtx = () => {
         dispatch(
           setTickets({
             tickets: j.tickets ?? [],
-            caps: { canViewAll: j.canViewAll, canManage: j.canManage },
+            caps: {
+              canViewAll: j.canViewAll,
+              canManage: j.canManage,
+              canManageTechs: j.canManageTechs,
+            },
           }),
         );
       })
       .catch(failed("Could not read the tickets"));
 
     loadLookups();
+    // The third of the three. It was written, exported and never called, so
+    // `assignees` stayed empty for everyone and the assign picker could only
+    // ever offer Unassigned — which is exactly what a tech sees when they try
+    // to hand a ticket over.
+    //
+    // Not gated on `canManage`: that arrives with the list above, and waiting
+    // for it would make this the one call that depends on another. The
+    // endpoint is a tech's to begin with, a client gets a 403, and the catch
+    // inside already leaves assignment unavailable — which is the same place
+    // a client ends up either way, since the picker is not rendered for them.
+    loadAssignees();
   };
 
   /**
@@ -171,7 +189,11 @@ export const useTicketsCtx = () => {
             ticket: j.ticket,
             comments: j.comments ?? [],
             attachments: j.attachments ?? [],
-            caps: { canViewAll: j.canViewAll, canManage: j.canManage },
+            caps: {
+              canViewAll: j.canViewAll,
+              canManage: j.canManage,
+              canManageTechs: j.canManageTechs,
+            },
           }),
         );
       })
@@ -430,6 +452,7 @@ export const useTicketsCtx = () => {
     userid,
     isTech,
     canManage,
+    canManageTechs,
     rows,
     counts,
     load,

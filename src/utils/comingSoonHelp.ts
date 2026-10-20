@@ -23,6 +23,7 @@ export const COMING_SOON_HELP_SECTIONS: Readonly<Record<string, string>> = {
   "inventory-vendor": "price-opt",
   invoices: "invoices",
   "lp-actions": "lp-actions",
+  "upc-scanner": "upc-scanner",
 };
 
 /** The document's own section for a route, or null where it has none. */

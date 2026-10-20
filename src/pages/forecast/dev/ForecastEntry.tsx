@@ -239,7 +239,7 @@ const ForecastEntry = ({
               </div>
 
               {upcs.length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-1.5 max-h-24 overflow-y-auto thin-scrollbar">
+                <div data-help="upc-input" className="mt-2 flex flex-wrap gap-1.5 max-h-24 overflow-y-auto thin-scrollbar">
                   {upcs.map((upc) => (
                     <span
                       key={upc}

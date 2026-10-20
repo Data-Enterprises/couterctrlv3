@@ -70,7 +70,7 @@ const GroupsList = ({
           placeholder="Search groups…"
           className="flex-1"
         />
-        <button
+        <button data-help="create"
           onClick={onOpenCreate}
           title="New group"
           aria-label="New group"
@@ -102,7 +102,7 @@ const GroupsList = ({
         ))}
       </div>
 
-      <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar">
+      <div data-help="group-list" className="flex-1 min-h-0 overflow-y-auto thin-scrollbar">
         {visible.length === 0 && (
           <div className="p-4 text-[11px] text-content text-center">{empty}</div>
         )}

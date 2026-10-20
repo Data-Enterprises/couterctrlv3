@@ -4,6 +4,15 @@
  * promoted, it replaces the prod slice. See src/store/devReducers.ts.
  */
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import type { FinancialsRow } from "../../api/financials";
+import type {
+  TopItemRow,
+  TopItemPricePoint,
+} from "../../api/topItems";
+import {
+  lruPut,
+  lruTouch,
+} from "../../pages/sales/dev/shared/storeCache";
 import type {
   CatSale,
   HourlySale,
@@ -14,7 +23,12 @@ import type {
 
 export type GradingMetric = "sales" | "qty";
 
-export type LedgerTab = "subdept" | "hourly" | "comparison" | "category";
+export type LedgerTab =
+  | "subdept"
+  | "hourly"
+  | "comparison"
+  | "category"
+  | "topitems";
 
 /**
  * The store the open one is being measured against.
@@ -95,6 +109,30 @@ export interface InvestigationTarget {
   focus?: "ringing" | "orders" | "price" | "mix" | "unknown";
 }
 
+/**
+ * One store-week's top items, all three windows.
+ *
+ * The baselines are held WITH the rows rather than beside them: a hit that
+ * restored this week but not last week would send all three calls out again,
+ * which is the whole cost the cache exists to avoid.
+ */
+export interface TopItemsEntry {
+  rows: TopItemRow[];
+  points: TopItemPricePoint[];
+  lw: TopItemRow[];
+  ly: TopItemRow[];
+}
+
+/** One store's popup rows, as the six calls return them. */
+export interface PopupStoreData {
+  rawSubs: SubSale[];
+  rawLWSubs: SubSale[];
+  rawLYSubs: SubSale[];
+  rawHourly: HourlySale[];
+  rawLWHourly: HourlySale[];
+  rawLYHourly: HourlySale[];
+}
+
 interface SalesLedgerState {
   // Navigation (shared desktop + mobile)
   hasSearched: boolean;
@@ -129,6 +167,59 @@ interface SalesLedgerState {
   // share one id, and keying on the id would serve the first one's data to
   // the second.
   lastFetchedStoreKey: string | null;
+
+  /**
+   * The last few stores' raw rows, so hopping between them is free.
+   *
+   * `lastFetchedStoreKey` alone remembered ONE store: 018, 020, back to 018
+   * refetched 018 from scratch, which is nine calls a bounce once Top items
+   * joined the six the popup already fires. Comparing two stores is most of
+   * what the counterpart feature is for, so that bounce is the normal case
+   * rather than an edge one.
+   *
+   * Bounded, because the thing held is six arrays of raw rows per store and a
+   * group search can hold a hundred stores. `storeCacheOrder` is most recent
+   * first; see `lruPut`.
+   */
+  storeCache: Record<string, PopupStoreData>;
+  storeCacheOrder: string[];
+
+  /**
+   * Financials — the daily per-bin POS records, for the export.
+   *
+   * Fetched with the search like everything else on this page, rather than
+   * when the export modal opens. The other four exports read data the search
+   * already brought back, and an export that goes to the network while
+   * somebody is waiting on a download is the odd one out.
+   *
+   * Empty until the search lands, and empty again on a re-query. The window
+   * it was fetched for travels with it, so the export can tell whether the
+   * dates it is being asked for are the ones in hand.
+   */
+  financials: FinancialsRow[];
+  financialsWindow: { start: string; end: string } | null;
+  financialsTruncated: boolean;
+  financialsLoading: boolean;
+
+  /**
+   * The Top items tab's rows, and the prices behind them.
+   *
+   * Held on the page rather than inside the tab because the tab unmounts when
+   * you switch away from it, and a store's biggest sellers do not change while
+   * you look at Hourly. `topItemsKey` is the store and window they were
+   * fetched for, so coming back to the tab reuses them and changing the search
+   * does not.
+   */
+  topItems: TopItemRow[];
+  topItemPoints: TopItemPricePoint[];
+  topItemsLW: TopItemRow[];
+  topItemsLY: TopItemRow[];
+  topItemsKey: string | null;
+  topItemsLoading: boolean;
+  /** Held per store and week, on the same bound and for the same reason as
+   *  `storeCache`: three more calls per bounce otherwise. */
+  topItemsCache: Record<string, TopItemsEntry>;
+  topItemsCacheOrder: string[];
 
   // Raw API data (shared desktop + mobile)
   rawSubs: SubSale[];
@@ -193,6 +284,20 @@ const initialState: SalesLedgerState = {
   reportLoading: false,
   top10Loading: false,
   lastFetchedStoreKey: null,
+  storeCache: {},
+  storeCacheOrder: [],
+  topItems: [],
+  topItemPoints: [],
+  topItemsLW: [],
+  topItemsLY: [],
+  topItemsKey: null,
+  topItemsLoading: false,
+  topItemsCache: {},
+  topItemsCacheOrder: [],
+  financials: [],
+  financialsWindow: null,
+  financialsTruncated: false,
+  financialsLoading: false,
   rawSubs: [],
   rawLWSubs: [],
   rawLYSubs: [],
@@ -281,12 +386,99 @@ const salesLedgerSlice = createSlice({
     setLedgerLoading: (state, action: PayloadAction<boolean>) => {
       state.ledgerLoading = action.payload;
     },
+    setFinancials: (
+      state,
+      action: PayloadAction<{
+        rows: FinancialsRow[];
+        window: { start: string; end: string };
+        truncated: boolean;
+      }>,
+    ) => {
+      state.financials = action.payload.rows;
+      state.financialsWindow = action.payload.window;
+      state.financialsTruncated = action.payload.truncated;
+    },
+    setTopItems: (
+      state,
+      action: PayloadAction<{ key: string; data: TopItemsEntry }>,
+    ) => {
+      const { key, data } = action.payload;
+      state.topItems = data.rows;
+      state.topItemPoints = data.points;
+      state.topItemsLW = data.lw;
+      state.topItemsLY = data.ly;
+      state.topItemsKey = key;
+      state.topItemsCache[key] = data;
+      const put = lruPut(state.topItemsCacheOrder, key);
+      put.evicted.forEach((k) => delete state.topItemsCache[k]);
+      state.topItemsCacheOrder = put.order;
+    },
+    /** Serve a store-week already held. */
+    restoreTopItems: (state, action: PayloadAction<string>) => {
+      const held = state.topItemsCache[action.payload];
+      if (!held) return;
+      state.topItems = held.rows;
+      state.topItemPoints = held.points;
+      state.topItemsLW = held.lw;
+      state.topItemsLY = held.ly;
+      state.topItemsKey = action.payload;
+      state.topItemsCacheOrder = lruTouch(
+        state.topItemsCacheOrder,
+        action.payload,
+      );
+    },
+    setTopItemsLoading: (state, action: PayloadAction<boolean>) => {
+      state.topItemsLoading = action.payload;
+    },
+    setFinancialsLoading: (state, action: PayloadAction<boolean>) => {
+      state.financialsLoading = action.payload;
+    },
     setReportLoading: (state, action: PayloadAction<boolean>) => {
       state.reportLoading = action.payload;
     },
     setTop10Loading: (state, action: PayloadAction<boolean>) => {
       state.top10Loading = action.payload;
     },
+    /**
+     * Take one store's six arrays in, and remember them under its key.
+     *
+     * One action rather than six, because the six are one answer: a partial
+     * cache entry would serve a store its subs and somebody else's hourly.
+     */
+    cacheStoreData: (
+      state,
+      action: PayloadAction<{ key: string; data: PopupStoreData }>,
+    ) => {
+      const { key, data } = action.payload;
+      state.rawSubs = data.rawSubs;
+      state.rawLWSubs = data.rawLWSubs;
+      state.rawLYSubs = data.rawLYSubs;
+      state.rawHourly = data.rawHourly;
+      state.rawLWHourly = data.rawLWHourly;
+      state.rawLYHourly = data.rawLYHourly;
+      state.lastFetchedStoreKey = key;
+
+      state.storeCache[key] = data;
+      const { order, evicted } = lruPut(state.storeCacheOrder, key);
+      evicted.forEach((k) => delete state.storeCache[k]);
+      state.storeCacheOrder = order;
+    },
+
+    /** Serve a store already held, without going to the network. A read is a
+     *  use, so it goes to the front of the queue too. */
+    restoreStoreData: (state, action: PayloadAction<string>) => {
+      const held = state.storeCache[action.payload];
+      if (!held) return;
+      state.rawSubs = held.rawSubs;
+      state.rawLWSubs = held.rawLWSubs;
+      state.rawLYSubs = held.rawLYSubs;
+      state.rawHourly = held.rawHourly;
+      state.rawLWHourly = held.rawLWHourly;
+      state.rawLYHourly = held.rawLYHourly;
+      state.lastFetchedStoreKey = action.payload;
+      state.storeCacheOrder = lruTouch(state.storeCacheOrder, action.payload);
+    },
+
     setLastFetchedStoreKey: (state, action: PayloadAction<string | null>) => {
       state.lastFetchedStoreKey = action.payload;
     },
@@ -396,6 +588,21 @@ const salesLedgerSlice = createSlice({
       Object.assign(state, initialState);
     },
     reQueryLedger: (state) => {
+      // The cache is keyed on the store, not the week, so a new search has to
+      // empty it: the same store's rows for a different week are the one
+      // thing that would be served wrongly and look perfectly normal.
+      state.storeCache = {};
+      state.storeCacheOrder = [];
+      state.topItems = [];
+      state.topItemPoints = [];
+      state.topItemsLW = [];
+      state.topItemsLY = [];
+      state.topItemsKey = null;
+      state.topItemsCache = {};
+      state.topItemsCacheOrder = [];
+      state.financials = [];
+      state.financialsWindow = null;
+      state.financialsTruncated = false;
       state.selection = null;
       state.selectedDate = null;
       state.lastFetchedStoreKey = null;
@@ -456,8 +663,15 @@ export const {
   setMatrixOpen,
   setLedgerSelectedDate,
   setLedgerLoading,
+  setFinancials,
+  setFinancialsLoading,
+  setTopItems,
+  setTopItemsLoading,
+  restoreTopItems,
   setReportLoading,
   setTop10Loading,
+  cacheStoreData,
+  restoreStoreData,
   setLastFetchedStoreKey,
   setRawSubs,
   setRawLWSubs,

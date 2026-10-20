@@ -6,14 +6,22 @@ interface CompanyPickerProps {
   selectedId?: number;
   collisionName?: string;
   onSelect?: (id: number) => void;
+  /**
+   * What the help panel points at, as a named prop rather than a loose
+   * `data-help` on the tag: this component forwards nothing, and TypeScript
+   * lets a hyphenated attribute through on any element without checking that
+   * it is accepted — so the attribute would have been dropped in silence and
+   * the help would have said the control was not on screen.
+   */
+  helpAnchor?: string;
 }
 
-const CompanyPicker = ({ companies, mode, selectedId, collisionName, onSelect }: CompanyPickerProps) => {
+const CompanyPicker = ({ companies, mode, selectedId, collisionName, onSelect, helpAnchor }: CompanyPickerProps) => {
   const collides = (name: string) =>
     !!collisionName && collisionName.trim().length > 0 && name.toLowerCase() === collisionName.trim().toLowerCase();
 
   return (
-    <div className="flex flex-col border-r border-gray-100 flex-shrink-0" style={{ width: "220px" }}>
+    <div data-help={helpAnchor} className="flex flex-col border-r border-gray-100 flex-shrink-0" style={{ width: "220px" }}>
       <div className="px-3 py-2.5 border-b border-gray-100 flex-shrink-0">
         <span className="text-[9px] font-bold uppercase tracking-wide text-content">
           {mode === "reference" ? "Existing companies" : "Companies"}

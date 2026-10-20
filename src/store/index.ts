@@ -4,6 +4,7 @@ import { sessionReducers } from "./sessionReducers";
 import { prodReducer } from "./pageReducers";
 import { devReducer } from "./devReducers";
 import { legacyReducer } from "./legacyReducers";
+import { resetAppSlice } from "../features/appSlice";
 
 /**
  * The store, in four parts.
@@ -28,15 +29,43 @@ import { legacyReducer } from "./legacyReducers";
  * `state.legacy.<slice>` for its tree — never a bare `state.<slice>`: page slices are not mounted at the root. (They
  * were, twice over, while the pages moved to their trees one at a time.)
  */
-export const setupStore = () =>
-  configureStore({
-    reducer: combineReducers({
-      ...sessionReducers,
-      prod: prodReducer,
-      dev: devReducer,
-      legacy: legacyReducer,
-    }),
-  });
+const combined = combineReducers({
+  ...sessionReducers,
+  prod: prodReducer,
+  dev: devReducer,
+  legacy: legacyReducer,
+});
+
+type State = ReturnType<typeof combined>;
+
+/**
+ * Sign-out empties the whole store, and keeps the username.
+ *
+ * The three page namespaces already reset whole, keyed to `resetAppSlice`.
+ * The session slices did not: they were reset one at a time from a list in
+ * `TitleBar`, which is the same arrangement that left prod's pages holding the
+ * last user's rows until it was fixed the same way. A list like that is only
+ * ever correct on the day it is written — every slice added afterwards is
+ * missing from it, and nothing fails loudly when one is.
+ *
+ * So the reset happens here instead. `undefined` makes every reducer return
+ * its own initial state, which covers every slice that exists now and every
+ * one added later without anybody remembering to come back.
+ *
+ * The username survives on purpose: it is who just signed out, and the sign-in
+ * screen and the account-setup modal both still want it. It is also the only
+ * thing that survives — a token, a store list or a page of somebody's sales
+ * outliving the session is exactly what this is for.
+ */
+const rootReducer: typeof combined = (state, action) => {
+  if (action.type !== resetAppSlice.type) return combined(state, action);
+
+  const username = (state as State | undefined)?.user.username ?? "";
+  const fresh = combined(undefined, action);
+  return { ...fresh, user: { ...fresh.user, username } };
+};
+
+export const setupStore = () => configureStore({ reducer: rootReducer });
 
 export type RootState = ReturnType<ReturnType<typeof setupStore>["getState"]>;
 export type AppDispatch = ReturnType<typeof setupStore>["dispatch"];

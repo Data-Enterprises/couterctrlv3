@@ -299,7 +299,7 @@ const ForecastRowsTable = ({
         {/* Contribution tiers. Not a grade — A items are simply the ones the
             ad's numbers rest on. The coverage line is the point of the whole
             thing on a list of any real size. */}
-        <div className="flex items-center gap-1.5 px-3 py-2 bg-custom-white border-b border-gray-100 flex-shrink-0">
+        <div data-help="bands" className="flex items-center gap-1.5 px-3 py-2 bg-custom-white border-b border-gray-100 flex-shrink-0">
           {(
             [
               ["A", counts.A],
@@ -342,7 +342,7 @@ const ForecastRowsTable = ({
         </div>
 
         {/* batch setter — writes to every ticked row, so the count is named */}
-        <div className="flex items-center gap-1.5 px-3 py-2 bg-gray-50 border-b border-gray-100 flex-shrink-0">
+        <div data-help="toolbar" className="flex items-center gap-1.5 px-3 py-2 bg-gray-50 border-b border-gray-100 flex-shrink-0">
           <span className="text-[11px] font-semibold uppercase tracking-wide text-content/85">
             Set for {searched.length}
             {searched.length === rows.length ? " selected" : " shown"}
@@ -470,7 +470,7 @@ const ForecastRowsTable = ({
         )}
 
         {/* rows */}
-        <div className="flex-1 overflow-y-auto thin-scrollbar min-h-0">
+        <div data-help="grid" className="flex-1 overflow-y-auto thin-scrollbar min-h-0">
           <div className={HEAD} style={{ gridTemplateColumns: COLS }}>
             {/* Same construction as ItemMarginsTable's header: the column
                 name, then the two filter labels beside it. */}

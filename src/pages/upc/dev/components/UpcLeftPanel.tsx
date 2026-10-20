@@ -47,7 +47,7 @@ const UpcLeftPanel = ({ onReSearch }: Props) => {
 
         {/* Row 2: search icon + location label + ? icon */}
         <div className="flex items-center gap-1.5 pt-1.5 mt-1 text-custom-white">
-          <button
+          <button data-help="search"
             onClick={onReSearch}
             title="Search again"
             className="flex items-center justify-center w-[22px] h-[22px] rounded border text-custom-white hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"

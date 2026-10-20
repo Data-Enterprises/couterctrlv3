@@ -259,6 +259,8 @@ describe("fetchOrders", () => {
   it("resolves empty rather than throwing, so the grid survives", async () => {
     getAllOrders.mockRejectedValue(new Error("network"));
     await expect(fetchOrders(scope)).resolves.toEqual({
+      ok: false,
+      inWindow: 0,
       mine: [],
       theirs: [],
       allMine: [],
@@ -269,11 +271,72 @@ describe("fetchOrders", () => {
   it("treats error 1 the same way", async () => {
     getAllOrders.mockResolvedValue({ data: { error: 1, msg: "nope" } });
     await expect(fetchOrders(scope)).resolves.toEqual({
+      ok: false,
+      inWindow: 0,
       mine: [],
       theirs: [],
       allMine: [],
       allTheirs: [],
     });
+  });
+
+  /** The receipts search finds this department by product code and was
+   *  returning deliveries on windows where the department filter alone
+   *  returned no orders at all. An order line's `sub_department` comes off
+   *  the item master at order time; the sales rows' comes off the
+   *  transaction, and the two can disagree about the same item. */
+  it("claims an order line by product code when the department disagrees", async () => {
+    getAllOrders.mockResolvedValue({
+      data: {
+        error: 0,
+        orders: [order({ product_code: "A", sub_department: 999 })],
+      },
+    });
+    const out = await fetchOrders(scope, ["A"]);
+    expect(out.mine).toHaveLength(1);
+  });
+
+  /** Plenty came back and none of it is this department: a different answer
+   *  from nothing coming back, and the panel says a different thing. */
+  it("counts what came back before the department filter", async () => {
+    getAllOrders.mockResolvedValue({
+      data: {
+        error: 0,
+        orders: [
+          order({ product_code: "Z", sub_department: 999 }),
+          order({ product_code: "Y", sub_department: 999 }),
+        ],
+      },
+    });
+    const out = await fetchOrders(scope, ["A"]);
+    expect(out.inWindow).toBe(2);
+    expect(out.mine).toEqual([]);
+  });
+
+  /** An empty window and a window that could not be read are different
+   *  answers, and the panel says different things about them. */
+  it("marks a window that answered with nothing in it as read", async () => {
+    getAllOrders.mockResolvedValue({ data: { error: 0, orders: [] } });
+    const out = await fetchOrders(scope);
+    expect(out.ok).toBe(true);
+    expect(out.inWindow).toBe(0);
+    expect(out.mine).toEqual([]);
+  });
+
+  /** `sub_department` is typed as a number and the payload does not always
+   *  agree. A strict === against a string dropped every order in the
+   *  department, and the panel then reported that neither store ordered. */
+  it("matches the department whether it arrives as a number or a string", async () => {
+    getAllOrders.mockResolvedValue({
+      data: {
+        error: 0,
+        orders: [
+          order({ sub_department: String(scope.subDept) as unknown as number }),
+        ],
+      },
+    });
+    const out = await fetchOrders(scope);
+    expect(out.mine).toHaveLength(1);
   });
 });
 

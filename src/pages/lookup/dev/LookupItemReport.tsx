@@ -179,7 +179,7 @@ const LookupItemReport = ({
       {/* pb-14 clears the fixed bottom tab bar — 56px, outside document
           flow, so nothing reserves space for it. Same fix and same
           value as SalesPerfMobile. */}
-      <div className="min-h-0 flex-1 overflow-y-auto pb-14">
+      <div data-help="report" className="min-h-0 flex-1 overflow-y-auto pb-14">
         <div className="flex flex-col gap-2.5 p-2.5">
         {/* ── what is being read, and through which lens ─────────── */}
         <section

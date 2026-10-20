@@ -201,7 +201,7 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch, 
 
         {/* Row 2: search left | legend right */}
         <div className="flex items-center gap-2 pt-1.5 mt-1 border-t border-custom-white/[0.08]">
-          <button
+          <button data-help="search"
             onClick={onOpenSearch}
             className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/60 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
             aria-label="Search stores"
@@ -217,7 +217,7 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch, 
       </div>
 
       {/* Exception type tabs — Description and Tender excluded until further notice */}
-      <div className="flex flex-shrink-0 border-b border-gray-100 overflow-x-auto no-scrollbar">
+      <div data-help="type-tabs" className="flex flex-shrink-0 border-b border-gray-100 overflow-x-auto no-scrollbar">
         {saleTypes.filter((st) => st.sale_type !== "Description" && st.sale_type !== "Tender").map((st) => (
           <button
             key={st.sale_type}
@@ -235,7 +235,7 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch, 
 
       {/* Severity filter chips + text filter */}
       <div className="flex items-center justify-between gap-1.5 px-3 py-2 bg-custom-white border-b border-gray-100">
-        <div className="flex items-center gap-1.5">
+        <div data-help="severity-chips" className="flex items-center gap-1.5">
           <button
             onClick={() => setSevFilter((f) => (f === "critical" ? "all" : "critical"))}
             className={`text-[12px] font-semibold px-2 py-1 rounded-full bg-severity_critical_bg text-severity_critical_text transition-shadow ${
@@ -261,7 +261,7 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch, 
             OK ({healthyCount})
           </button>
         </div>
-        <div className="flex items-center gap-1.5 flex-shrink-0">
+        <div data-help="day-select" className="flex items-center gap-1.5 flex-shrink-0">
           {/* Day filter — narrows the rows to one day and re-bases their
               grading to the same weekday in the baseline weeks. */}
           <SelectFilter
@@ -299,7 +299,7 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch, 
               <span className="text-[11.5px] font-semibold uppercase tracking-wide text-content/80 flex-1">
                 Store
               </span>
-              <div className="flex items-center gap-[14px]">
+              <div data-help="sort" className="flex items-center gap-[14px]">
                 <SortHeader
                   col="trans"
                   label="Trans"
@@ -339,7 +339,7 @@ const LPStorePanel = ({ loading, onSaleTypeSelect, onStoreSelect, onOpenSearch, 
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto thin-scrollbar">
+            <div data-help="store-list" className="flex-1 overflow-y-auto thin-scrollbar">
               {visibleStores.length === 0 ? (
                 <div className="flex items-center justify-center h-24 text-[11px] text-content/40">
                   No stores match

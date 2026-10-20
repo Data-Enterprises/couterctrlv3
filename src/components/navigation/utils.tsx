@@ -21,6 +21,7 @@ import {
   ShieldExclamationIcon,
   DocumentArrowUpIcon,
   TicketIcon,
+  QrCodeIcon,
 } from "@heroicons/react/16/solid";
 import {
   COMING_SOON_CATEGORY,
@@ -159,7 +160,7 @@ export const navigation: Navigation[] = [
     mobile: false,
     children: [],
     childOpen: false,
-    userLevels: PROGRAMMER_ONLY_LEVELS,
+    userLevels: COMING_SOON_LEVELS,
     isHovering: false,
     isVisible: true,
   },
@@ -170,7 +171,7 @@ export const navigation: Navigation[] = [
     mobile: false,
     children: [],
     childOpen: false,
-    userLevels: PROGRAMMER_ONLY_LEVELS,
+    userLevels: COMING_SOON_LEVELS,
     isHovering: false,
     isVisible: true,
   },
@@ -575,6 +576,21 @@ export const categories: NavCategory[] = [
         isVisible: true,
       },
       {
+        name: "Upc Scanner",
+        href: "upc-scanner",
+        icon: QrCodeIcon,
+        // The first mobile-only page in here. Scanning needs a scanner, so the
+        // desktop route renders a notice rather than a second build of it.
+        mobile: true,
+        children: [],
+        childOpen: false,
+        // Level 9 while the file format is open: a send writes a real file a
+        // client's tag printer picks up. Same reasoning as Sales Export.
+        userLevels: PROGRAMMER_ONLY_LEVELS,
+        isHovering: false,
+        isVisible: true,
+      },
+      {
         name: "Sales Tracker",
         href: "sales-tracker",
         icon: ArrowTrendingUpIcon,
@@ -594,7 +610,7 @@ export const categories: NavCategory[] = [
         mobile: false,
         children: [],
         childOpen: false,
-        userLevels: PROGRAMMER_ONLY_LEVELS,
+        userLevels: COMING_SOON_LEVELS,
         isHovering: false,
         isVisible: true,
       },
@@ -605,7 +621,7 @@ export const categories: NavCategory[] = [
         mobile: false,
         children: [],
         childOpen: false,
-        userLevels: PROGRAMMER_ONLY_LEVELS,
+        userLevels: COMING_SOON_LEVELS,
         isHovering: false,
         isVisible: true,
       },

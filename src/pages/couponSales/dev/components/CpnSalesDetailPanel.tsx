@@ -412,7 +412,7 @@ const CpnSalesDetailPanel = ({
       />
 
       {/* ── Breakdown tabs — choose what the left column lists ─────────── */}
-      <div className="flex items-center border-b border-gray-100 px-3 flex-shrink-0">
+      <div data-help="tabs" className="flex items-center border-b border-gray-100 px-3 flex-shrink-0">
         {TABS.map((t) => (
           <button
             key={t.key}

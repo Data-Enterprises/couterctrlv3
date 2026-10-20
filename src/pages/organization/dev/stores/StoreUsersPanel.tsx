@@ -10,6 +10,11 @@ import {
 } from "../../../../api/storeAccess";
 import type { JsonError, Store, User } from "../../../../interfaces";
 import AssignPanel from "../../../../components-dev/AssignPanel";
+import CompanyFilterSelect from "../users/CompanyFilterSelect";
+import {
+  useCompanyFilterOptions,
+  useCompanyFilterPredicate,
+} from "../users/companyFilter";
 import {
   summarizeAssign,
   summarizeUnassign,
@@ -143,6 +148,18 @@ const StoreUsersPanel = ({
     sublabel: `${viaLabel(r.via)}${r.email ? ` · ${r.email}` : ""}`,
   }));
 
+  // A store belongs to a company, and whoever should reach it almost always
+  // holds that company already. Same narrowing as the other two assign tabs,
+  // over the reachable candidates only -- it hides rows, it never reveals
+  // any.
+  const [heldFilter, setHeldFilter] = useState("");
+  const candidateIds = useMemo(
+    () => unassigned.filter(withinReach).map((r) => r.userid),
+    [unassigned, withinReach],
+  );
+  const companyOptions = useCompanyFilterOptions(users, candidateIds);
+  const heldPredicate = useCompanyFilterPredicate(users, heldFilter);
+
   const unassignedItems = unassigned.filter(withinReach).map((r) => ({
     id: r.userid,
     label: r.username,
@@ -195,6 +212,14 @@ const StoreUsersPanel = ({
         onAssign={(ids) => void run(ids, "in")}
         onUnassign={(ids) => void run(ids, "out")}
         assignAllScope="global"
+        leftPredicate={heldPredicate}
+        leftFilters={
+          <CompanyFilterSelect
+            value={heldFilter}
+            onChange={setHeldFilter}
+            options={companyOptions}
+          />
+        }
       />
     </div>
   );

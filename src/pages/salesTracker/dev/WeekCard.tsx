@@ -4,6 +4,7 @@ import { orDash, changeTone, signedPct } from "./trackerTone";
 import { WEEK_GRID, DAY_GRID, NUM } from "./trackerColumns";
 import TrendLine, { type TrendSeries } from "../../../components-dev/charts/TrendLine";
 import VsLy from "./VsLy";
+import { basisWord, type TrackerBasis } from "./trackerWeeks";
 import type { WeekTotal } from "./trackerTotals";
 
 interface WeekCardProps {
@@ -13,6 +14,8 @@ interface WeekCardProps {
   onToggle: (index: number) => void;
   /** TY dates whose last-year partner is shared with another day. */
   collisions: Set<string>;
+  /** What the comparison column and the dashed line are. */
+  basis: TrackerBasis;
 }
 
 const shortDate = (d: string) => {
@@ -52,6 +55,7 @@ const WeekCard = ({
   expanded,
   onToggle,
   collisions,
+  basis,
 }: WeekCardProps) => {
   const incompleteDays = week.days.filter((d) => d.noSales).length;
 
@@ -65,7 +69,7 @@ const WeekCard = ({
       // Dashed, not merely lighter. Two shades of the same hue stop being
       // distinguishable exactly where the lines cross, which is the point on
       // the chart most worth reading.
-      id: "Last year",
+      id: basis === "LW" ? "Last week" : "Last year",
       color: LY_COLOR,
       dashed: true,
       points: week.days.map((d) => d.salesLy),
@@ -116,6 +120,7 @@ const WeekCard = ({
             dollarChange={week.dollarChange}
             pctChange={week.pctChange}
             variant="pill"
+            basis={basis}
           />
         </span>
       </button>
@@ -127,7 +132,9 @@ const WeekCard = ({
               you are already looking at that week. */}
           <span className="flex items-baseline gap-2 px-3.5 py-2 text-[12px] border-t border-gray-100 bg-gray-50">
             {week.comparedDays === 0 ? (
-              <span className="text-content">No last-year comparison</span>
+              <span className="text-content">
+                No {basisWord(basis)} comparison
+              </span>
             ) : (
               <>
                 <span className="font-semibold text-severity_healthy_text">
@@ -190,9 +197,9 @@ const WeekCard = ({
           >
             <span className={HEAD}>Day</span>
             <span className={`${HEAD} text-right`}>TY sales</span>
-            <span className={`${HEAD} text-right`}>LY sales</span>
+            <span className={`${HEAD} text-right`}>{basis} sales</span>
             <span className={`${HEAD} text-right`}>ATS</span>
-            <span className={`${HEAD} text-right`}>vs LY</span>
+            <span className={`${HEAD} text-right`}>vs {basis}</span>
           </div>
 
           {week.days.map((d) => (

@@ -48,7 +48,12 @@ export interface Investigation {
   problem: string | null;
 }
 
+/** The resting state, before the orders wave lands. `ok` is true because
+ *  nothing has failed yet — the panel reads it alongside `allIn`, which says
+ *  whether the answer is in. */
 const NO_ORDERS: OrdersWave = {
+  ok: true,
+  inWindow: 0,
   mine: [],
   theirs: [],
   allMine: [],
@@ -166,7 +171,7 @@ export const useDeptInvestigation = (args: Args): Investigation => {
       // Orders and receipts both resolve empty on failure rather than
       // throwing — a thinner answer, not a wrong one, and not worth taking
       // the grid away for.
-      const ordersWave = await fetchOrders(scope);
+      const ordersWave = await fetchOrders(scope, codesIn(salesWave));
       if (!live()) return;
       setOrders(ordersWave);
       setStage("receipts");
@@ -199,6 +204,12 @@ export const useDeptInvestigation = (args: Args): Investigation => {
             orders: orders.mine,
             receivers: receipts.mine,
             metric,
+            // Not `orders.mine.length`: a department this store genuinely
+            // never ordered is exactly the finding "never ordered" is for.
+            // What disqualifies the claim is the WINDOW coming back with no
+            // orders for either store, which is a department delivered
+            // straight off the vendor's truck.
+            ordersKnown: orders.ok && orders.inWindow > 0,
           })
         : [],
     [sales, orders, receipts, metric],

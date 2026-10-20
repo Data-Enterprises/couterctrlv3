@@ -1,10 +1,20 @@
-import { Fragment, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import {
+  Fragment,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
 import {
   setInvestigation,
   type InvestigationTarget,
 } from "../../../../features/dev/devSalesLedgerSlice";
-import { useDeptInvestigation, type Stage } from "../hooks/useDeptInvestigation";
+import {
+  useDeptInvestigation,
+  type Stage,
+} from "../hooks/useDeptInvestigation";
 import type { AllOrder } from "../../../../interfaces";
 import {
   SUPPLY_LOOKBACK_DAYS,
@@ -22,6 +32,8 @@ import {
 } from "../shared/deptInvestigation";
 import { formatCurrency2, formatBigNumber } from "../../../../utils";
 import SortHeader from "../../../../components-dev/SortHeader";
+import PageInfoButton from "../../../../components-dev/PageInfoButton";
+import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
 import ColFilter from "../../../../components-dev/filters/ColFilterPopover";
 import { colInputStyle } from "../../../../components-dev/filters/colFilterStyles";
 import UpcContextMenu from "../../../../components-dev/UpcContextMenu";
@@ -63,11 +75,23 @@ import type { GradingMetric } from "../../../../features/dev/devSalesLedgerSlice
  */
 
 type Col =
-  | "mine" | "theirs" | "gap"
-  | "mineLw" | "theirsLw" | "mineLy" | "theirsLy"
-  | "mineUnits" | "theirsUnits"
-  | "mineCost" | "theirsCost" | "costPenalty" | "marginDiff"
-  | "price" | "sellThrough" | "ordered" | "received";
+  | "mine"
+  | "theirs"
+  | "gap"
+  | "mineLw"
+  | "theirsLw"
+  | "mineLy"
+  | "theirsLy"
+  | "mineUnits"
+  | "theirsUnits"
+  | "mineCost"
+  | "theirsCost"
+  | "costPenalty"
+  | "marginDiff"
+  | "price"
+  | "sellThrough"
+  | "ordered"
+  | "received";
 
 /**
  * How many rows a page holds.
@@ -84,13 +108,23 @@ type Col =
  */
 const PAGE_ROWS = 50;
 
+/** mm/dd/yyyy. Noon, so a bare yyyy-mm-dd is not pulled back a day by the
+ *  browser's timezone. */
+const usDate = (d: string) =>
+  new Date(`${d}T12:00:00`).toLocaleDateString("en-US", {
+    month: "2-digit",
+    day: "2-digit",
+    year: "numeric",
+  });
+
 /** What is still outstanding, and what the screen cannot say yet because of
  *  it. A cause that sharpens as data lands has to explain itself. */
 const STAGE_NOTE: Record<Stage, string | null> = {
   sales: "Loading this department's items…",
-  orders: "Reading orders — until they land, nothing can be called never ordered.",
+  orders:
+    "Reading orders — until they land, nothing can be called never ordered.",
   receipts:
-    "Reading deliveries — until they land, a vendor's miss cannot be told from a merchandising one.",
+    "Reading what was received — until it lands, a vendor's miss cannot be told from a merchandising one.",
   done: null,
   failed: null,
 };
@@ -262,7 +296,7 @@ const Waves = ({ sales, all }: { sales: boolean; all: boolean }) => {
   const lamps = [
     { label: "Sales", lit: sales },
     { label: "Orders", lit: all },
-    { label: "Deliveries", lit: all },
+    { label: "Received", lit: all },
   ];
   return (
     <span
@@ -274,7 +308,9 @@ const Waves = ({ sales, all }: { sales: boolean; all: boolean }) => {
         <span key={l.label} className="flex items-center gap-1.5">
           <span
             className={`w-2 h-2 rounded-full ${
-              l.lit ? "bg-severity_ok_text" : "bg-severity_watch_text animate-pulse"
+              l.lit
+                ? "bg-severity_ok_text"
+                : "bg-severity_watch_text animate-pulse"
             }`}
           />
           <span className="text-[11.5px] text-custom-white/85">{l.label}</span>
@@ -313,7 +349,11 @@ const SkCard = ({ rows = 4 }: { rows?: number }) => (
  * be worse than one that waited, because the reader would have acted on the
  * first version.
  */
-const TabSkeleton = ({ tab }: { tab: "holds" | "items" | "supply" | "act" }) => (
+const TabSkeleton = ({
+  tab,
+}: {
+  tab: "holds" | "items" | "supply" | "act";
+}) => (
   <div className="flex-1 min-h-0 overflow-auto thin-scrollbar bg-custom-white px-4 py-5">
     <div className="flex flex-col gap-4" role="status">
       <LoadNote>
@@ -327,11 +367,11 @@ const TabSkeleton = ({ tab }: { tab: "holds" | "items" | "supply" | "act" }) => 
         ) : (
           <>
             <span className="font-bold text-content">
-              Reading orders and deliveries.
+              Reading orders and receipts.
             </span>{" "}
             Until they land a vendor&rsquo;s miss cannot be told from a
-            merchandising one, so this stays masked rather than changing
-            under you.
+            merchandising one, so this stays masked rather than changing under
+            you.
           </>
         )}
       </LoadNote>
@@ -341,7 +381,9 @@ const TabSkeleton = ({ tab }: { tab: "holds" | "items" | "supply" | "act" }) => 
           <Bar w="64%" h={22} />
           <div
             className="grid gap-4"
-            style={{ gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))" }}
+            style={{
+              gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))",
+            }}
           >
             <SkCard rows={3} />
             <SkCard rows={3} />
@@ -367,7 +409,9 @@ const TabSkeleton = ({ tab }: { tab: "holds" | "items" | "supply" | "act" }) => 
           <Bar w="58%" h={22} />
           <div
             className="grid gap-4"
-            style={{ gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))" }}
+            style={{
+              gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))",
+            }}
           >
             <SkCard rows={5} />
             <SkCard rows={5} />
@@ -381,7 +425,9 @@ const TabSkeleton = ({ tab }: { tab: "holds" | "items" | "supply" | "act" }) => 
           <Bar w="52%" h={22} />
           <div
             className="grid gap-4"
-            style={{ gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))" }}
+            style={{
+              gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))",
+            }}
           >
             <SkCard rows={5} />
             <SkCard rows={4} />
@@ -402,8 +448,8 @@ const TabSkeleton = ({ tab }: { tab: "holds" | "items" | "supply" | "act" }) => 
  * grid would hide that disagreement instead of showing it.
  */
 const SUGGESTED: Record<string, Cause[]> = {
-  ringing: ["never-ordered"],
-  orders: ["never-ordered", "not-received"],
+  ringing: ["never-ordered", "not-carried"],
+  orders: ["never-ordered", "not-carried", "not-received"],
   price: ["price-mix"],
   mix: ["price-mix"],
 };
@@ -414,10 +460,9 @@ const CAUSE_ORDER: Cause[] = [
   "cost",
   "not-moving",
   "price-mix",
-  "unclassified",
+  "streamlined",
   "ahead",
 ];
-
 
 /* ------------------------------------------------------------------ */
 /* The columns                                                         */
@@ -475,7 +520,9 @@ const ruleOf = (c: ColumnDef) =>
       : "border-t-2 border-t-transparent";
 
 const label = (c: ColumnDef, t: InvestigationTarget) =>
-  c.label.replace("{mine}", t.storeNumber).replace("{theirs}", t.compareStoreNumber);
+  c.label
+    .replace("{mine}", t.storeNumber)
+    .replace("{theirs}", t.compareStoreNumber);
 
 /** A ratio reads as a multiple, which is how somebody says it out loud —
  *  "we did two fifths of their units". Null stays a dash: there is no ratio
@@ -492,7 +539,8 @@ const mult = (v: number | null) => (v === null ? "—" : `${v.toFixed(2)}×`);
  */
 const cash = (v: number) => formatCurrency2(v);
 
-const pct = (v: number | null) => (v === null ? "—" : `${Math.round(v * 100)}%`);
+const pct = (v: number | null) =>
+  v === null ? "—" : `${Math.round(v * 100)}%`;
 
 const sum = (rows: ItemVerdict[], pick: (r: ItemVerdict) => number | null) =>
   rows.reduce((a, r) => a + (pick(r) ?? 0), 0);
@@ -519,7 +567,8 @@ const signedWith =
               : "bg-delta_negative_bg text-delta_negative_text"
         }`}
       >
-        {v >= 0 ? "+" : "−"}{show(Math.abs(v))}
+        {v >= 0 ? "+" : "−"}
+        {show(Math.abs(v))}
       </span>
     );
   };
@@ -530,29 +579,45 @@ const signedCash = (pick: (r: ItemVerdict) => number | null) =>
   signedWith(pick, (v) => formatCurrency2(v));
 
 /** A count, which is a count whichever metric the page is in. */
-const counted =
-  (pick: (r: ItemVerdict) => number) => (rows: ItemVerdict[]) =>
-    sum(rows, pick).toLocaleString("en-US");
+const counted = (pick: (r: ItemVerdict) => number) => (rows: ItemVerdict[]) =>
+  sum(rows, pick).toLocaleString("en-US");
 
 const sortValue = (r: ItemVerdict, col: Col): number | null => {
   switch (col) {
-    case "mine": return r.mineTy;
-    case "theirs": return r.theirsTy;
-    case "gap": return r.gap;
-    case "mineLw": return r.mineLw;
-    case "theirsLw": return r.theirsLw;
-    case "mineLy": return r.mineLy;
-    case "theirsLy": return r.theirsLy;
-    case "mineUnits": return r.mineUnits;
-    case "theirsUnits": return r.theirsUnits;
-    case "mineCost": return r.margins.minePerUnit;
-    case "theirsCost": return r.margins.theirsPerUnit;
-    case "costPenalty": return r.margins.costPenalty;
-    case "marginDiff": return r.margins.diff;
-    case "price": return r.ratios.price;
-    case "sellThrough": return r.ratios.sellThrough;
-    case "ordered": return r.orderedQty;
-    case "received": return r.receivedUnits;
+    case "mine":
+      return r.mineTy;
+    case "theirs":
+      return r.theirsTy;
+    case "gap":
+      return r.gap;
+    case "mineLw":
+      return r.mineLw;
+    case "theirsLw":
+      return r.theirsLw;
+    case "mineLy":
+      return r.mineLy;
+    case "theirsLy":
+      return r.theirsLy;
+    case "mineUnits":
+      return r.mineUnits;
+    case "theirsUnits":
+      return r.theirsUnits;
+    case "mineCost":
+      return r.margins.minePerUnit;
+    case "theirsCost":
+      return r.margins.theirsPerUnit;
+    case "costPenalty":
+      return r.margins.costPenalty;
+    case "marginDiff":
+      return r.margins.diff;
+    case "price":
+      return r.ratios.price;
+    case "sellThrough":
+      return r.ratios.sellThrough;
+    case "ordered":
+      return r.orderedQty;
+    case "received":
+      return r.receivedUnits;
   }
 };
 
@@ -567,31 +632,73 @@ const sortValue = (r: ItemVerdict, col: Col): number | null => {
  * wrong in a way nobody could see.
  */
 const CSV_HEADERS = [
-  "item", "upc", "vendor", "cause", "cause_owner",
-  "mine_ty", "theirs_ty", "difference",
-  "mine_lw", "theirs_lw", "mine_ly", "theirs_ly",
-  "mine_units", "theirs_units",
-  "mine_cogs", "theirs_cogs", "mine_cost_per_unit", "theirs_cost_per_unit",
-  "cost_gap", "mine_margin", "theirs_margin", "margin_difference",
-  "units_ratio", "dollars_ratio", "price_ratio", "sell_through",
-  "ordered_qty", "received_units",
+  "item",
+  "upc",
+  "vendor",
+  "cause",
+  "cause_owner",
+  "mine_ty",
+  "theirs_ty",
+  "difference",
+  "mine_lw",
+  "theirs_lw",
+  "mine_ly",
+  "theirs_ly",
+  "mine_units",
+  "theirs_units",
+  "mine_cogs",
+  "theirs_cogs",
+  "mine_cost_per_unit",
+  "theirs_cost_per_unit",
+  "cost_gap",
+  "mine_margin",
+  "theirs_margin",
+  "margin_difference",
+  "units_ratio",
+  "dollars_ratio",
+  "price_ratio",
+  "sell_through",
+  "ordered_qty",
+  "received_units",
 ];
 
 const csvRow = (r: ItemVerdict) => [
-  r.description, r.productCode, r.vendorName,
-  CAUSE_LABEL[r.cause], CAUSE_OWNER[r.cause],
-  r.mineTy, r.theirsTy, r.gap,
-  r.mineLw, r.theirsLw, r.mineLy, r.theirsLy,
-  r.mineUnits, r.theirsUnits,
-  r.mineCogs, r.theirsCogs, r.margins.minePerUnit, r.margins.theirsPerUnit,
-  r.margins.costPenalty, r.margins.mine, r.margins.theirs, r.margins.diff,
-  r.ratios.units, r.ratios.dollars, r.ratios.price, r.ratios.sellThrough,
-  r.orderedQty, r.receivedUnits,
+  r.description,
+  r.productCode,
+  r.vendorName,
+  CAUSE_LABEL[r.cause],
+  CAUSE_OWNER[r.cause],
+  r.mineTy,
+  r.theirsTy,
+  r.gap,
+  r.mineLw,
+  r.theirsLw,
+  r.mineLy,
+  r.theirsLy,
+  r.mineUnits,
+  r.theirsUnits,
+  r.mineCogs,
+  r.theirsCogs,
+  r.margins.minePerUnit,
+  r.margins.theirsPerUnit,
+  r.margins.costPenalty,
+  r.margins.mine,
+  r.margins.theirs,
+  r.margins.diff,
+  r.ratios.units,
+  r.ratios.dollars,
+  r.ratios.price,
+  r.ratios.sellThrough,
+  r.orderedQty,
+  r.receivedUnits,
 ];
 
 const COLUMNS: ColumnDef[] = [
   {
-    key: "item", label: "Item", width: 250, filter: "item",
+    key: "item",
+    label: "Item",
+    width: 250,
+    filter: "item",
     render: (r) => <span className="font-semibold">{r.description}</span>,
     foot: (rows) => (
       <span className="uppercase tracking-wide">
@@ -600,13 +707,25 @@ const COLUMNS: ColumnDef[] = [
       </span>
     ),
   },
-  { key: "upc", label: "UPC", width: 120, filter: "upc", render: (r) => r.productCode },
   {
-    key: "vendor", label: "Vendor", width: 150, filter: "vendor",
+    key: "upc",
+    label: "UPC",
+    width: 120,
+    filter: "upc",
+    render: (r) => r.productCode,
+  },
+  {
+    key: "vendor",
+    label: "Vendor",
+    width: 150,
+    filter: "vendor",
     render: (r) => r.vendorName || <span className="text-content/85">—</span>,
   },
   {
-    key: "cause", label: "Cause", width: 118, filter: "cause",
+    key: "cause",
+    label: "Cause",
+    width: 118,
+    filter: "cause",
     render: (r) => (
       <span
         className={`inline-block px-1.5 py-0.5 rounded font-semibold ${CAUSE_TONE[r.cause].chip}`}
@@ -617,18 +736,32 @@ const COLUMNS: ColumnDef[] = [
     ),
   },
   {
-    key: "mineTy", of: "open", label: "{mine} TY", width: 92, right: true, sort: "mine",
+    key: "mineTy",
+    of: "open",
+    label: "{mine} TY",
+    width: 92,
+    right: true,
+    sort: "mine",
     foot: money((r) => r.mineTy),
     render: (r, fmt) => <span className="font-semibold">{fmt(r.mineTy)}</span>,
   },
   {
-    key: "theirsTy", of: "compare", label: "{theirs} TY", width: 92, right: true, sort: "theirs",
+    key: "theirsTy",
+    of: "compare",
+    label: "{theirs} TY",
+    width: 92,
+    right: true,
+    sort: "theirs",
     foot: money((r) => r.theirsTy),
     render: (r, fmt) => fmt(r.theirsTy),
   },
   {
-    key: "marginDiff", label: "Margin diff", width: 104, right: true,
-    sort: "marginDiff", foot: signedCash((r) => r.margins.diff),
+    key: "marginDiff",
+    label: "Margin diff",
+    width: 104,
+    right: true,
+    sort: "marginDiff",
+    foot: signedCash((r) => r.margins.diff),
     // Direction only, through the delta tokens. Margin is NOT graded: two
     // stores are not a baseline for each other, so there is no threshold
     // this could be measured against — green is up, red is down, nothing
@@ -643,12 +776,17 @@ const COLUMNS: ColumnDef[] = [
               : "bg-delta_negative_bg text-delta_negative_text"
         }`}
       >
-        {r.margins.diff >= 0 ? "+" : "−"}{cash(Math.abs(r.margins.diff))}
+        {r.margins.diff >= 0 ? "+" : "−"}
+        {cash(Math.abs(r.margins.diff))}
       </span>
     ),
   },
   {
-    key: "gap", label: "Difference", width: 104, right: true, sort: "gap",
+    key: "gap",
+    label: "Difference",
+    width: 104,
+    right: true,
+    sort: "gap",
     foot: signed((r) => r.gap),
     // The ledger's pill, sized for a dense row: the comparison styling is
     // the same everywhere on this page, and a graded figure that changes
@@ -663,41 +801,100 @@ const COLUMNS: ColumnDef[] = [
               : "bg-delta_negative_bg text-delta_negative_text"
         }`}
       >
-        {r.gap >= 0 ? "+" : "−"}{fmt(Math.abs(r.gap))}
+        {r.gap >= 0 ? "+" : "−"}
+        {fmt(Math.abs(r.gap))}
       </span>
     ),
   },
-  { key: "mineLw", of: "open", label: "{mine} LW", width: 90, right: true, sort: "mineLw", render: (r, fmt) => fmt(r.mineLw), foot: money((r) => r.mineLw) },
-  { key: "theirsLw", of: "compare", label: "{theirs} LW", width: 90, right: true, sort: "theirsLw", render: (r, fmt) => fmt(r.theirsLw), foot: money((r) => r.theirsLw) },
-  { key: "mineLy", of: "open", label: "{mine} LY", width: 90, right: true, sort: "mineLy", render: (r, fmt) => fmt(r.mineLy), foot: money((r) => r.mineLy) },
-  { key: "theirsLy", of: "compare", label: "{theirs} LY", width: 90, right: true, sort: "theirsLy", render: (r, fmt) => fmt(r.theirsLy), foot: money((r) => r.theirsLy) },
   {
-    key: "mineUnits", of: "open", label: "{mine} units", width: 88, right: true, sort: "mineUnits",
+    key: "mineLw",
+    of: "open",
+    label: "{mine} LW",
+    width: 90,
+    right: true,
+    sort: "mineLw",
+    render: (r, fmt) => fmt(r.mineLw),
+    foot: money((r) => r.mineLw),
+  },
+  {
+    key: "theirsLw",
+    of: "compare",
+    label: "{theirs} LW",
+    width: 90,
+    right: true,
+    sort: "theirsLw",
+    render: (r, fmt) => fmt(r.theirsLw),
+    foot: money((r) => r.theirsLw),
+  },
+  {
+    key: "mineLy",
+    of: "open",
+    label: "{mine} LY",
+    width: 90,
+    right: true,
+    sort: "mineLy",
+    render: (r, fmt) => fmt(r.mineLy),
+    foot: money((r) => r.mineLy),
+  },
+  {
+    key: "theirsLy",
+    of: "compare",
+    label: "{theirs} LY",
+    width: 90,
+    right: true,
+    sort: "theirsLy",
+    render: (r, fmt) => fmt(r.theirsLy),
+    foot: money((r) => r.theirsLy),
+  },
+  {
+    key: "mineUnits",
+    of: "open",
+    label: "{mine} units",
+    width: 88,
+    right: true,
+    sort: "mineUnits",
     render: (r) => r.mineUnits.toLocaleString("en-US"),
     foot: counted((r) => r.mineUnits),
   },
   {
-    key: "theirsUnits", of: "compare", label: "{theirs} units", width: 88, right: true, sort: "theirsUnits",
+    key: "theirsUnits",
+    of: "compare",
+    label: "{theirs} units",
+    width: 88,
+    right: true,
+    sort: "theirsUnits",
     render: (r) => r.theirsUnits.toLocaleString("en-US"),
     foot: counted((r) => r.theirsUnits),
   },
   {
-    key: "mineCost", of: "open", label: "{mine} cost/u", width: 92, right: true,
+    key: "mineCost",
+    of: "open",
+    label: "{mine} cost/u",
+    width: 92,
+    right: true,
     sort: "mineCost",
     render: (r) =>
       r.margins.minePerUnit === null ? "—" : cash(r.margins.minePerUnit),
   },
   {
-    key: "theirsCost", of: "compare", label: "{theirs} cost/u", width: 92,
-    right: true, sort: "theirsCost",
+    key: "theirsCost",
+    of: "compare",
+    label: "{theirs} cost/u",
+    width: 92,
+    right: true,
+    sort: "theirsCost",
     render: (r) =>
       r.margins.theirsPerUnit === null ? "—" : cash(r.margins.theirsPerUnit),
   },
   {
     // What the per-unit difference took on the units WE sold. Money, not a
     // ratio: "$112 on 488 units" is the sentence somebody acts on.
-    key: "costPenalty", label: "Cost gap", width: 98, right: true,
-    sort: "costPenalty", foot: signedCash((r) => r.margins.costPenalty),
+    key: "costPenalty",
+    label: "Cost gap",
+    width: 98,
+    right: true,
+    sort: "costPenalty",
+    foot: signedCash((r) => r.margins.costPenalty),
     render: (r) => {
       const v = r.margins.costPenalty;
       if (v === null || Math.abs(v) < 0.005) return "—";
@@ -709,7 +906,8 @@ const COLUMNS: ColumnDef[] = [
               : "bg-delta_negative_bg text-delta_negative_text"
           }`}
         >
-          {v >= 0 ? "+" : "−"}{cash(Math.abs(v))}
+          {v >= 0 ? "+" : "−"}
+          {cash(Math.abs(v))}
         </span>
       );
     },
@@ -717,27 +915,50 @@ const COLUMNS: ColumnDef[] = [
   {
     // Units and dollars moving apart is what names a price problem, so the
     // realised-price ratio earns a column of its own.
-    key: "price", label: "Price vs", width: 82, right: true, sort: "price",
+    key: "price",
+    label: "Price vs",
+    width: 82,
+    right: true,
+    sort: "price",
     render: (r) => mult(r.ratios.price),
   },
   {
-    key: "ordered", label: "Ordered", width: 78, right: true, sort: "ordered",
+    key: "ordered",
+    label: "Ordered",
+    width: 78,
+    right: true,
+    sort: "ordered",
     foot: counted((r) => r.orderedQty),
     render: (r) =>
-      r.orderedQty > 0 ? r.orderedQty.toLocaleString("en-US") : <span className="text-content/85">none</span>,
+      r.orderedQty > 0 ? (
+        r.orderedQty.toLocaleString("en-US")
+      ) : (
+        <span className="text-content/85">none</span>
+      ),
   },
   {
-    key: "received", label: "Received", width: 84, right: true, sort: "received",
+    key: "received",
+    label: "Received",
+    width: 84,
+    right: true,
+    sort: "received",
     foot: counted((r) => r.receivedUnits),
     render: (r) =>
-      r.receivedUnits > 0 ? r.receivedUnits.toLocaleString("en-US") : <span className="text-content/85">none</span>,
+      r.receivedUnits > 0 ? (
+        r.receivedUnits.toLocaleString("en-US")
+      ) : (
+        <span className="text-content/85">none</span>
+      ),
   },
   {
-    key: "sellThrough", label: "Sell-thru", width: 84, right: true, sort: "sellThrough",
+    key: "sellThrough",
+    label: "Sell-thru",
+    width: 84,
+    right: true,
+    sort: "sellThrough",
     render: (r) => pct(r.ratios.sellThrough),
   },
 ];
-
 
 /* ------------------------------------------------------------------ */
 /* Summary · does it hold, and where is it                               */
@@ -761,7 +982,9 @@ const Weeks = ({
         <div key={w.label} className="flex flex-col">
           <div
             className={`text-[12.5px] font-bold tabular-nums text-center whitespace-nowrap ${
-              w.gap >= 0 ? "text-delta_positive_text" : "text-delta_negative_text"
+              w.gap >= 0
+                ? "text-delta_positive_text"
+                : "text-delta_negative_text"
             }`}
           >
             {w.gap >= 0 ? "+" : "−"}
@@ -772,7 +995,9 @@ const Weeks = ({
               className={`block w-full rounded-t-sm ${
                 w.gap >= 0 ? "bg-emerald-500" : "bg-red-500"
               }`}
-              style={{ height: `${Math.max(3, (Math.abs(w.gap) / tallest) * 56)}px` }}
+              style={{
+                height: `${Math.max(3, (Math.abs(w.gap) / tallest) * 56)}px`,
+              }}
             />
           </div>
           <div className="h-px bg-brand_navy/15" />
@@ -826,7 +1051,9 @@ const Index = ({
                 className={`absolute left-0 top-0 h-[10.5px] rounded-sm ${
                   over ? "bg-emerald-500" : "bg-red-500"
                 }`}
-                style={{ width: `${Math.min(100, ((m.pct ?? 0) / 150) * 100)}%` }}
+                style={{
+                  width: `${Math.min(100, ((m.pct ?? 0) / 150) * 100)}%`,
+                }}
               />
               <span
                 className="absolute -top-1 w-px h-[18px] bg-brand_navy/40"
@@ -879,9 +1106,17 @@ const HoldsPanel = ({
   onSeeAll: () => void;
 }) => {
   const buckets = [
-    { label: `Rang at ${them}, not here`, b: holds.onlyTheirs, tone: "bg-red-500" },
+    {
+      label: `Rang at ${them}, not here`,
+      b: holds.onlyTheirs,
+      tone: "bg-red-500",
+    },
     { label: "Rang at both, less here", b: holds.bothLess, tone: "bg-red-500" },
-    { label: "Rang at both, more here", b: holds.bothMore, tone: "bg-emerald-500" },
+    {
+      label: "Rang at both, more here",
+      b: holds.bothMore,
+      tone: "bg-emerald-500",
+    },
   ];
   const moved = buckets.reduce((t, x) => t + Math.abs(x.b.dollars), 0);
   /** The one row with money in it leads. Three rows where two are zero makes
@@ -896,11 +1131,9 @@ const HoldsPanel = ({
   const vendors = spread.byVendor.slice(0, 6);
   const widestVendor = Math.max(1, Math.abs(vendors[0]?.dollars ?? 0));
 
-
   return (
     <div className="flex-1 min-h-0 overflow-auto thin-scrollbar bg-custom-white px-4 py-5">
       <div className="flex flex-col gap-5">
-
         {/* The finding first, across the width, then the evidence under it:
             the hero on the left and the three supporting cards beside it.
             The carousel sat above all of this for a while, which put three
@@ -914,260 +1147,268 @@ const HoldsPanel = ({
           style={{ gridTemplateColumns: "minmax(0,0.85fr) minmax(0,1fr)" }}
         >
           <div className="flex flex-col gap-5 min-w-0">
-          <div className="rounded-lg bg-custom-white shadow-card px-5 py-4 min-w-0">
-            <div className="flex flex-col gap-4 min-w-0">
-              {/* The finding and the figure that carries it, on one tint —
+            <div className="rounded-lg bg-custom-white shadow-card px-5 py-4 min-w-0">
+              <div className="flex flex-col gap-4 min-w-0">
+                {/* The finding and the figure that carries it, on one tint —
                   the same block the caveats sit in at the foot of the card.
                   Between them the card has its claim and its size; what
                   follows is the working. */}
-              <div className="rounded-md bg-bkg px-3.5 py-3 flex flex-col gap-2.5">
-                <p className="text-[18px] font-semibold leading-snug text-content">
-                  <span
-                    className={
-                      holds.verdict === "holds"
-                        ? "text-delta_positive_text"
-                        : "text-severity_watch_text"
-                    }
-                  >
-                    {holds.verdict === "holds"
-                      ? "It holds."
-                      : "Not as the report put it."}
-                  </span>{" "}
-                  {holds.says}
-                </p>
-
-                <div className="flex items-baseline gap-3 flex-wrap">
-                  <span
-                    className={`text-[34px] font-bold tabular-nums leading-none ${
-                      lead.b.dollars >= 0
-                        ? "text-delta_positive_text"
-                        : "text-delta_negative_text"
-                    }`}
-                  >
-                    {lead.b.dollars >= 0 ? "+" : "−"}
-                    {cash(Math.abs(lead.b.dollars))}
-                  </span>
-                  <span className="text-[13.5px] text-content/85 min-w-0">
-                    <span className="font-semibold text-content">
-                      {lead.b.items.toLocaleString("en-US")} items
+                <div className="rounded-md bg-bkg px-3.5 py-3 flex flex-col gap-2.5">
+                  <p className="text-[18px] font-semibold leading-snug text-content">
+                    <span
+                      className={
+                        holds.verdict === "holds"
+                          ? "text-delta_positive_text"
+                          : "text-severity_watch_text"
+                      }
+                    >
+                      {holds.verdict === "holds"
+                        ? "It holds."
+                        : "Not as the report put it."}
                     </span>{" "}
-                    {lead.label.toLowerCase()}
-                  </span>
-                </div>
-              </div>
+                    {holds.says}
+                  </p>
 
-            {moved > 0 && (
-              <span className="flex h-[8.4px] rounded-sm overflow-hidden bg-bkg">
-                {buckets.map((x) => (
-                  <span
-                    key={x.label}
-                    className={`block h-2 ${x.tone}`}
-                    style={{ width: `${(Math.abs(x.b.dollars) / moved) * 100}%` }}
-                    title={`${x.label} · ${cash(Math.abs(x.b.dollars))}`}
-                  />
-                ))}
-              </span>
-            )}
-
-            <div className="flex flex-col">
-              {buckets.map((x) => (
-                <div
-                  key={x.label}
-                  className="flex items-baseline gap-2.5 py-1.5 border-b border-brand_navy/15 last:border-b-0"
-                >
-                  <span
-                    className={`w-2.5 h-2.5 rounded-full flex-shrink-0 self-center ${
-                      x.b.items === 0 ? "bg-bkg" : x.tone
-                    }`}
-                  />
-                  <span className="text-[13px] text-content/85 min-w-0">
-                    {x.label}
-                  </span>
-                  <span className="ml-auto text-[12.5px] text-content/85 tabular-nums whitespace-nowrap">
-                    {x.b.items.toLocaleString("en-US")} items
-                  </span>
-                  <span
-                    className={`w-[96px] text-right text-[13px] font-bold tabular-nums whitespace-nowrap ${
-                      x.b.items === 0
-                        ? "text-content/85"
-                        : x.b.dollars >= 0
+                  <div className="flex items-baseline gap-3 flex-wrap">
+                    <span
+                      className={`text-[34px] font-bold tabular-nums leading-none ${
+                        lead.b.dollars >= 0
                           ? "text-delta_positive_text"
                           : "text-delta_negative_text"
-                    }`}
-                  >
-                    {x.b.dollars >= 0 ? "+" : "−"}
-                    {cash(Math.abs(x.b.dollars))}
-                  </span>
+                      }`}
+                    >
+                      {lead.b.dollars >= 0 ? "+" : "−"}
+                      {cash(Math.abs(lead.b.dollars))}
+                    </span>
+                    <span className="text-[13.5px] text-content/85 min-w-0">
+                      <span className="font-semibold text-content">
+                        {lead.b.items.toLocaleString("en-US")} items
+                      </span>{" "}
+                      {lead.label.toLowerCase()}
+                    </span>
+                  </div>
                 </div>
-              ))}
-            </div>
 
-            {/* Only when there is a cost penalty to report. The block is
+                {moved > 0 && (
+                  <span className="flex h-[8.4px] rounded-sm overflow-hidden bg-bkg">
+                    {buckets.map((x) => (
+                      <span
+                        key={x.label}
+                        className={`block h-2 ${x.tone}`}
+                        style={{
+                          width: `${(Math.abs(x.b.dollars) / moved) * 100}%`,
+                        }}
+                        title={`${x.label} · ${cash(Math.abs(x.b.dollars))}`}
+                      />
+                    ))}
+                  </span>
+                )}
+
+                <div className="flex flex-col">
+                  {buckets.map((x) => (
+                    <div
+                      key={x.label}
+                      className="flex items-baseline gap-2.5 py-1.5 border-b border-brand_navy/15 last:border-b-0"
+                    >
+                      <span
+                        className={`w-2.5 h-2.5 rounded-full flex-shrink-0 self-center ${
+                          x.b.items === 0 ? "bg-bkg" : x.tone
+                        }`}
+                      />
+                      <span className="text-[13px] text-content/85 min-w-0">
+                        {x.label}
+                      </span>
+                      <span className="ml-auto text-[12.5px] text-content/85 tabular-nums whitespace-nowrap">
+                        {x.b.items.toLocaleString("en-US")} items
+                      </span>
+                      <span
+                        className={`w-[96px] text-right text-[13px] font-bold tabular-nums whitespace-nowrap ${
+                          x.b.items === 0
+                            ? "text-content/85"
+                            : x.b.dollars >= 0
+                              ? "text-delta_positive_text"
+                              : "text-delta_negative_text"
+                        }`}
+                      >
+                        {x.b.dollars >= 0 ? "+" : "−"}
+                        {cash(Math.abs(x.b.dollars))}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Only when there is a cost penalty to report. The block is
                 the note, so with nothing to note there is no block. */}
-            {costPenalty < 0 && summary.gap < 0 && (
-              <p className="text-[13.5px] text-content/85 leading-relaxed rounded-md bg-bkg px-3.5 py-3">
-                Buying the same goods for more took another{" "}
-                <span className="font-semibold text-content">
-                  {cash(Math.abs(costPenalty))}
-                </span>{" "}
-                of margin on top of the sales gap.
-              </p>
-            )}
+                {costPenalty < 0 && summary.gap < 0 && (
+                  <p className="text-[13.5px] text-content/85 leading-relaxed rounded-md bg-bkg px-3.5 py-3">
+                    Buying the same goods for more took another{" "}
+                    <span className="font-semibold text-content">
+                      {cash(Math.abs(costPenalty))}
+                    </span>{" "}
+                    of margin on top of the sales gap.
+                  </p>
+                )}
 
-            {summary.gap >= 0 && marginGap < 0 && (
-              <p className="text-[13px] leading-relaxed rounded-md bg-severity_watch_bg text-severity_watch_text px-3 py-2">
-                <span className="font-bold">Ahead on sales, behind on margin.</span>{" "}
-                This department took {cash(summary.gap)} more and kept{" "}
-                {cash(Math.abs(marginGap))} less, because it buys the same goods
-                for more.
-              </p>
-            )}
+                {summary.gap >= 0 && marginGap < 0 && (
+                  <p className="text-[13px] leading-relaxed rounded-md bg-severity_watch_bg text-severity_watch_text px-3 py-2">
+                    <span className="font-bold">
+                      Ahead on sales, behind on margin.
+                    </span>{" "}
+                    This department took {cash(summary.gap)} more and kept{" "}
+                    {cash(Math.abs(marginGap))} less, because it buys the same
+                    goods for more.
+                  </p>
+                )}
+              </div>
             </div>
-          </div>
 
-        {/* Three ways of asking the same question, so they are peers and
+            {/* Three ways of asking the same question, so they are peers and
             share one frame. Across a row they were three cards none of them
             was wide enough for; down a rail the third went unread. */}
-        <Carousel
-          slides={[
-            {
-              label: "Week by week",
-              body: (
-                <>
-                  <p className="text-[12px] text-content/85 leading-snug mb-2.5">
-                    Against itself: a standing difference, or something that
-                    broke this week.
-                  </p>
-                  <Weeks vitals={vitals} cash={cash} />
-                </>
-              ),
-            },
-            {
-              label: `Against ${shortStore(them)}`,
-              body: (
-                <>
-                  <p className="text-[12px] text-content/85 leading-snug mb-2.5">
-                    One rule for all three, so measures that disagree are seen
-                    to.
-                  </p>
-                  <Index vitals={vitals} them={them} cash={cash} />
-                </>
-              ),
-            },
-            ...(vendors.length > 0
-              ? [
-                  {
-                    label: "Who supplies it",
-                    count: vendors.length,
-                    body: (
-                      <>
-                        <p className="text-[12px] text-content/85 leading-snug mb-2.5">
-                          The shortfall by vendor. Pick one to narrow the
-                          items.
-                        </p>
-                        <div className="flex flex-col gap-1.5">
-                          {vendors.map((v) => (
-                            <button
-                              key={v.vendorName}
-                              onClick={() => onVendor(v.vendorName)}
-                              className="flex items-center gap-2.5 text-left rounded px-1 py-0.5 hover:bg-bkg transition-colors"
-                            >
-                              <span className="w-[120px] flex-shrink-0 truncate text-[12.5px] text-content">
-                                {v.vendorName}
-                              </span>
-                              <span className="flex-1 min-w-0 h-[8.4px] rounded-sm bg-bkg">
-                                <span
-                                  className="block h-[8.4px] rounded-sm bg-red-500"
-                                  style={{
-                                    width: `${(Math.abs(v.dollars) / widestVendor) * 100}%`,
-                                  }}
-                                />
-                              </span>
-                              <span className="w-[80px] flex-shrink-0 text-right text-[12.5px] font-bold tabular-nums text-delta_negative_text">
-                                {"−"}
-                                {cash(Math.abs(v.dollars))}
-                              </span>
-                            </button>
-                          ))}
-                        </div>
-                      </>
-                    ),
-                  },
-                ]
-              : []),
-          ]}
-        />
+            <Carousel
+              slides={[
+                {
+                  label: "Week by week",
+                  body: (
+                    <>
+                      <p className="text-[12px] text-content/85 leading-snug mb-2.5">
+                        Against itself: a standing difference, or something that
+                        broke this week.
+                      </p>
+                      <Weeks vitals={vitals} cash={cash} />
+                    </>
+                  ),
+                },
+                {
+                  label: `Against ${shortStore(them)}`,
+                  body: (
+                    <>
+                      <p className="text-[12px] text-content/85 leading-snug mb-2.5">
+                        One rule for all three, so measures that disagree are
+                        seen to.
+                      </p>
+                      <Index vitals={vitals} them={them} cash={cash} />
+                    </>
+                  ),
+                },
+                ...(vendors.length > 0
+                  ? [
+                      {
+                        label: "Who supplies it",
+                        count: vendors.length,
+                        body: (
+                          <>
+                            <p className="text-[12px] text-content/85 leading-snug mb-2.5">
+                              The shortfall by vendor. Pick one to narrow the
+                              items.
+                            </p>
+                            <div className="flex flex-col gap-1.5">
+                              {vendors.map((v) => (
+                                <button
+                                  key={v.vendorName}
+                                  onClick={() => onVendor(v.vendorName)}
+                                  className="flex items-center gap-2.5 text-left rounded px-1 py-0.5 hover:bg-bkg transition-colors"
+                                >
+                                  <span className="w-[120px] flex-shrink-0 truncate text-[12.5px] text-content">
+                                    {v.vendorName}
+                                  </span>
+                                  <span className="flex-1 min-w-0 h-[8.4px] rounded-sm bg-bkg">
+                                    <span
+                                      className="block h-[8.4px] rounded-sm bg-red-500"
+                                      style={{
+                                        width: `${(Math.abs(v.dollars) / widestVendor) * 100}%`,
+                                      }}
+                                    />
+                                  </span>
+                                  <span className="w-[80px] flex-shrink-0 text-right text-[12.5px] font-bold tabular-nums text-delta_negative_text">
+                                    {"−"}
+                                    {cash(Math.abs(v.dollars))}
+                                  </span>
+                                </button>
+                              ))}
+                            </div>
+                          </>
+                        ),
+                      },
+                    ]
+                  : []),
+              ]}
+            />
           </div>
 
           <div className="rounded-lg bg-custom-white shadow-card px-5 py-4 min-w-0">
-          <div className="flex flex-col gap-4 min-w-0">
-            <p className="text-[18px] font-semibold leading-snug text-content">
-              {spread.says}
-            </p>
-
-            <span className="flex h-[8.4px] rounded-sm overflow-hidden bg-bkg">
-              <span
-                className="block h-[8.4px] bg-red-500"
-                style={{ width: `${Math.max(4, spread.topTenShare * 100)}%` }}
-              />
-            </span>
-
-            <div className="flex flex-col">
-              {top.map((i, ix) => (
-                <div key={i.productCode}>
-                  <button
-                    onClick={() => onPickItem(i.productCode)}
-                    className="w-full grid gap-3 items-center px-1.5 py-1.5 border-b border-brand_navy/15 hover:bg-bkg rounded text-left"
-                    style={{ gridTemplateColumns: "22px minmax(0,1fr) 120px 96px" }}
-                  >
-                    <span className="text-[12px] text-content/85 tabular-nums">
-                      {ix + 1}
-                    </span>
-                    <span className="min-w-0 truncate text-[12.5px] font-mono text-content">
-                      {i.description}
-                    </span>
-                    <span className="h-[8.4px] rounded-sm bg-bkg">
-                      <span
-                        className="block h-[8.4px] rounded-sm bg-red-500"
-                        style={{ width: `${(Math.abs(i.gap) / widest) * 100}%` }}
-                      />
-                    </span>
-                    <span className="text-right text-[12.5px] font-bold tabular-nums text-delta_negative_text">
-                      {"−"}
-                      {cash(Math.abs(i.gap))}
-                    </span>
-                  </button>
-                  {/* The conclusion drawn in the list it is about, rather
-                      than only stated above it. */}
-                  {spread.toHalf > 0 && ix === spread.toHalf - 1 && (
-                    <div className="flex items-center gap-2 py-1">
-                      <span className="h-px flex-1 bg-red-500/50" />
-                      <span className="text-[11.5px] font-bold uppercase tracking-wide text-delta_negative_text whitespace-nowrap">
-                        half the shortfall
-                      </span>
-                      <span className="h-px flex-1 bg-red-500/50" />
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-
-            {/* The list is the ten biggest; the way to the rest belongs
-                beside the sentence that says so, not three tabs away. */}
-            <div className="flex items-center gap-4 flex-wrap">
-              <p className="text-[12.5px] text-content/85 leading-relaxed">
-                {spread.ranked.length.toLocaleString("en-US")} items behind ·
-                ordered by the biggest difference · click one for its evidence
-                · {cash(shortfall)} in all
+            <div className="flex flex-col gap-4 min-w-0">
+              <p className="text-[18px] font-semibold leading-snug text-content">
+                {spread.says}
               </p>
-              <button
-                onClick={onSeeAll}
-                className="ml-auto flex-shrink-0 text-[12px] font-bold px-3 py-1.5 rounded-md border border-brand_navy/25 text-content hover:bg-bkg transition-colors whitespace-nowrap"
-              >
-                See every item &rarr;
-              </button>
+
+              <span className="flex h-[8.4px] rounded-sm overflow-hidden bg-bkg">
+                <span
+                  className="block h-[8.4px] bg-red-500"
+                  style={{ width: `${Math.max(4, spread.topTenShare * 100)}%` }}
+                />
+              </span>
+
+              <div className="flex flex-col">
+                {top.map((i, ix) => (
+                  <div key={i.productCode}>
+                    <button
+                      onClick={() => onPickItem(i.productCode)}
+                      className="w-full grid gap-3 items-center px-1.5 py-1.5 border-b border-brand_navy/15 hover:bg-bkg rounded text-left"
+                      style={{
+                        gridTemplateColumns: "22px minmax(0,1fr) 120px 96px",
+                      }}
+                    >
+                      <span className="text-[12px] text-content/85 tabular-nums">
+                        {ix + 1}
+                      </span>
+                      <span className="min-w-0 truncate text-[12.5px] font-mono text-content">
+                        {i.description}
+                      </span>
+                      <span className="h-[8.4px] rounded-sm bg-bkg">
+                        <span
+                          className="block h-[8.4px] rounded-sm bg-red-500"
+                          style={{
+                            width: `${(Math.abs(i.gap) / widest) * 100}%`,
+                          }}
+                        />
+                      </span>
+                      <span className="text-right text-[12.5px] font-bold tabular-nums text-delta_negative_text">
+                        {"−"}
+                        {cash(Math.abs(i.gap))}
+                      </span>
+                    </button>
+                    {/* The conclusion drawn in the list it is about, rather
+                      than only stated above it. */}
+                    {spread.toHalf > 0 && ix === spread.toHalf - 1 && (
+                      <div className="flex items-center gap-2 py-1">
+                        <span className="h-px flex-1 bg-red-500/50" />
+                        <span className="text-[11.5px] font-bold uppercase tracking-wide text-delta_negative_text whitespace-nowrap">
+                          half the shortfall
+                        </span>
+                        <span className="h-px flex-1 bg-red-500/50" />
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* The list is the ten biggest; the way to the rest belongs
+                beside the sentence that says so, not three tabs away. */}
+              <div className="flex items-center gap-4 flex-wrap">
+                <p className="text-[12.5px] text-content/85 leading-relaxed">
+                  {spread.ranked.length.toLocaleString("en-US")} items behind ·
+                  ordered by the biggest difference · click one for its evidence
+                  · {cash(shortfall)} in all
+                </p>
+                <button
+                  onClick={onSeeAll}
+                  className="ml-auto flex-shrink-0 text-[12px] font-bold px-3 py-1.5 rounded-md border border-brand_navy/25 text-content hover:bg-bkg transition-colors whitespace-nowrap"
+                >
+                  See every item &rarr;
+                </button>
+              </div>
             </div>
-          </div>
           </div>
         </div>
       </div>
@@ -1219,8 +1460,12 @@ const Timeline = ({
 
   const lanes = [
     { label: us, tone: "bg-store_open", rows: orders.filter((o) => o.mine) },
-    { label: them, tone: "bg-store_compare", rows: orders.filter((o) => !o.mine) },
-    { label: "Delivered", tone: "", rows: deliveries },
+    {
+      label: them,
+      tone: "bg-store_compare",
+      rows: orders.filter((o) => !o.mine),
+    },
+    { label: "Received", tone: "", rows: deliveries },
   ];
 
   const ticks = [0, 25, 50, 75, 100];
@@ -1252,7 +1497,8 @@ const Timeline = ({
                 >
                   <span
                     className={`block rounded-full ${
-                      lane.tone || (r.mine ? "bg-store_open" : "bg-store_compare")
+                      lane.tone ||
+                      (r.mine ? "bg-store_open" : "bg-store_compare")
                     }`}
                     style={{ width: size(r.units), height: size(r.units) }}
                   />
@@ -1330,7 +1576,10 @@ const Document = ({
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         className="w-full grid gap-3 items-center px-1.5 py-2 text-left hover:bg-bkg rounded transition-colors"
-        style={{ gridTemplateColumns: "62px 16px minmax(0,1fr) 88px minmax(0,110px) 62px 76px" }}
+        style={{
+          gridTemplateColumns:
+            "62px 16px minmax(0,1fr) 88px minmax(0,110px) 62px 76px",
+        }}
       >
         <span className="text-[12px] text-content/85 whitespace-nowrap">
           {onDay(rec.date)}
@@ -1351,7 +1600,7 @@ const Document = ({
           #{rec.id}
         </span>
         <span className="text-[11.5px] text-content/85 truncate">
-          {isOrder ? rec.status ?? "—" : cash(rec.cost)}
+          {isOrder ? (rec.status ?? "—") : cash(rec.cost)}
         </span>
         <span className="text-right text-[11.5px] text-content/85 tabular-nums">
           {rec.lines}
@@ -1404,7 +1653,9 @@ const Document = ({
                 className="grid gap-3 items-center px-2 py-1 text-[12px] border-t border-brand_navy/10"
                 style={{ gridTemplateColumns: "110px minmax(0,1fr) 76px 86px" }}
               >
-                <span className="font-mono text-content/85 truncate">{l.code}</span>
+                <span className="font-mono text-content/85 truncate">
+                  {l.code}
+                </span>
                 <span className="min-w-0 truncate text-content">
                   {l.description}
                 </span>
@@ -1457,7 +1708,10 @@ const SupplyPanel = ({
   /* The codes the reader is asking about, if any. Commas, spaces or new
      lines, because all three are what a paste brings with it. */
   const wanted = new Set(
-    upcQuery.split(/[\s,]+/).map((x) => x.trim()).filter(Boolean),
+    upcQuery
+      .split(/[\s,]+/)
+      .map((x) => x.trim())
+      .filter(Boolean),
   );
 
   const asLines = (rows: AllOrder[]): DocLine[] =>
@@ -1470,12 +1724,16 @@ const SupplyPanel = ({
 
   /** An order's lines in this department. */
   const orderLines = (id: number, mine: boolean) =>
-    asLines((mine ? orders.mine : orders.theirs).filter((o) => o.order_id === id));
+    asLines(
+      (mine ? orders.mine : orders.theirs).filter((o) => o.order_id === id),
+    );
 
   /** And the same order entire, which came down with the same request. */
   const wholeOrder = (id: number, mine: boolean) =>
     asLines(
-      (mine ? orders.allMine : orders.allTheirs).filter((o) => o.order_id === id),
+      (mine ? orders.allMine : orders.allTheirs).filter(
+        (o) => o.order_id === id,
+      ),
     );
 
   const invoiceLines = (id: number, mine: boolean) =>
@@ -1485,7 +1743,9 @@ const SupplyPanel = ({
         r.lines.map((l) => ({
           code: String(l.product_code),
           description: l.product_description,
-          units: l.item_return ? -l.units : l.units,
+          // `qty` is the selling-unit count on a receiver line, the same
+          // field the order side above reads. See the note in vitalsOf.
+          units: l.item_return ? -l.qty : l.qty,
           cost: l.ext_cost,
         })),
       );
@@ -1493,14 +1753,18 @@ const SupplyPanel = ({
   /* A document matches when any of its lines carries a code asked for. */
   const matches = (rec: SupplyRecord, isOrder: boolean) =>
     wanted.size === 0 ||
-    (isOrder ? orderLines(rec.id, rec.mine) : invoiceLines(rec.id, rec.mine))
-      .some((l) => wanted.has(l.code));
+    (isOrder
+      ? orderLines(rec.id, rec.mine)
+      : invoiceLines(rec.id, rec.mine)
+    ).some((l) => wanted.has(l.code));
 
   const shownOrders = supply.orders.filter((r) => matches(r, true));
   const shownDeliveries = supply.deliveries.filter((r) => matches(r, false));
 
   const orderedTotal = supply.mine.orderedUnits + supply.theirs.orderedUnits;
-  const states = [...new Set(supply.orders.map((o) => o.status).filter(Boolean))];
+  const states = [
+    ...new Set(supply.orders.map((o) => o.status).filter(Boolean)),
+  ];
 
   // Every vendor either store took a delivery from, biggest first.
   const names = [
@@ -1517,17 +1781,50 @@ const SupplyPanel = ({
     }))
     .sort(
       (x, y) =>
-        (y.theirs?.units ?? 0) + (y.mine?.units ?? 0) -
+        (y.theirs?.units ?? 0) +
+        (y.mine?.units ?? 0) -
         ((x.theirs?.units ?? 0) + (x.mine?.units ?? 0)),
     );
 
   const sides = [
-    { label: "Orders placed", m: supply.mine.orders, t: supply.theirs.orders, fmt: n },
-    { label: "Lines on them", m: supply.mine.orderLines, t: supply.theirs.orderLines, fmt: n },
-    { label: "Units ordered", m: supply.mine.orderedUnits, t: supply.theirs.orderedUnits, fmt: n },
-    { label: "Deliveries", m: supply.mine.deliveries, t: supply.theirs.deliveries, fmt: n },
-    { label: "Units received", m: supply.mine.receivedUnits, t: supply.theirs.receivedUnits, fmt: n },
-    { label: "Cost received", m: supply.mine.receivedCost, t: supply.theirs.receivedCost, fmt: cash },
+    {
+      label: "Orders placed",
+      m: supply.mine.orders,
+      t: supply.theirs.orders,
+      fmt: n,
+    },
+    {
+      label: "Lines on them",
+      m: supply.mine.orderLines,
+      t: supply.theirs.orderLines,
+      fmt: n,
+    },
+    {
+      label: "Units ordered",
+      m: supply.mine.orderedUnits,
+      t: supply.theirs.orderedUnits,
+      fmt: n,
+    },
+    {
+      // The document count, beside the units and the cost on them. Receipts
+      // to the orders above it -- you order, you receive.
+      label: "Receipts",
+      m: supply.mine.deliveries,
+      t: supply.theirs.deliveries,
+      fmt: n,
+    },
+    {
+      label: "Units received",
+      m: supply.mine.receivedUnits,
+      t: supply.theirs.receivedUnits,
+      fmt: n,
+    },
+    {
+      label: "Cost received",
+      m: supply.mine.receivedCost,
+      t: supply.theirs.receivedCost,
+      fmt: cash,
+    },
   ];
 
   return (
@@ -1560,24 +1857,40 @@ const SupplyPanel = ({
               <span className="flex h-[9.2px] rounded-sm overflow-hidden bg-bkg mt-3">
                 <span
                   className="block bg-store_open"
-                  style={{ width: `${(supply.mine.orderedUnits / orderedTotal) * 100}%` }}
+                  style={{
+                    width: `${(supply.mine.orderedUnits / orderedTotal) * 100}%`,
+                  }}
                 />
                 <span
                   className="block bg-store_compare"
-                  style={{ width: `${(supply.theirs.orderedUnits / orderedTotal) * 100}%` }}
+                  style={{
+                    width: `${(supply.theirs.orderedUnits / orderedTotal) * 100}%`,
+                  }}
                 />
               </span>
             )}
 
             <div className="flex flex-col mt-2">
               {[
-                { tone: "bg-store_open", label: `Ordered at ${us}`, count: `${supply.mine.orders} orders`, value: `${n(supply.mine.orderedUnits)} units` },
-                { tone: "bg-store_compare", label: `Ordered at ${them}`, count: `${supply.theirs.orders} orders`, value: `${n(supply.theirs.orderedUnits)} units` },
+                {
+                  tone: "bg-store_open",
+                  label: `Ordered at ${us}`,
+                  count: `${supply.mine.orders} orders`,
+                  value: `${n(supply.mine.orderedUnits)} units`,
+                },
+                {
+                  tone: "bg-store_compare",
+                  label: `Ordered at ${them}`,
+                  count: `${supply.theirs.orders} orders`,
+                  value: `${n(supply.theirs.orderedUnits)} units`,
+                },
                 {
                   tone: "",
                   label: "Received at either store",
-                  count: `${supply.mine.deliveries + supply.theirs.deliveries} deliveries`,
-                  value: cash(supply.mine.receivedCost + supply.theirs.receivedCost),
+                  count: `${supply.mine.deliveries + supply.theirs.deliveries} receipts`,
+                  value: cash(
+                    supply.mine.receivedCost + supply.theirs.receivedCost,
+                  ),
                 },
               ].map((r) => (
                 <div
@@ -1613,9 +1926,9 @@ const SupplyPanel = ({
                 </>
               )}
               Read over {SUPPLY_LOOKBACK_DAYS} days ({window.start} to{" "}
-              {window.end}), which does not line up with the sales week — so
-              it explains this week and says nothing about last week or last
-              year. A return is taken back off what arrived.
+              {window.end}), which does not line up with the sales week — so it
+              explains this week and says nothing about last week or last year.
+              A return is taken back off what arrived.
             </p>
           </div>
 
@@ -1661,16 +1974,27 @@ const SupplyPanel = ({
                 body: (
                   <div
                     className="grid gap-x-3 text-[13px]"
-                    style={{ gridTemplateColumns: "minmax(0,1fr) 108px 108px" }}
+                    style={{ gridTemplateColumns: "minmax(0,1fr) 120px 120px" }}
                   >
                     <span className="pb-1.5 border-b border-brand_navy/15" />
-                    <span className="flex items-center justify-end gap-1.5 pb-1.5 border-b border-brand_navy/15 text-[11.5px] font-bold uppercase tracking-wide text-content/85 truncate">
+                    {/* min-w-0 on the TEXT, not on the flex row around it:
+                        justify-end pushes the overflow off the left, so a
+                        truncate up here ate the front of the name instead of
+                        putting an ellipsis on the end of it. */}
+                    <span className="flex items-center justify-end gap-1.5 min-w-0 pb-1.5 border-b border-brand_navy/15 text-[11.5px] font-bold uppercase tracking-wide text-content/85">
                       <span className="w-2 h-2 rounded-full bg-store_open flex-shrink-0" />
-                      {us}
+                      <span className="min-w-0 truncate normal-case" title={us}>
+                        {us}
+                      </span>
                     </span>
-                    <span className="flex items-center justify-end gap-1.5 pb-1.5 border-b border-brand_navy/15 text-[11.5px] font-bold uppercase tracking-wide text-content/85 truncate">
+                    <span className="flex items-center justify-end gap-1.5 min-w-0 pb-1.5 border-b border-brand_navy/15 text-[11.5px] font-bold uppercase tracking-wide text-content/85">
                       <span className="w-2 h-2 rounded-full bg-store_compare flex-shrink-0" />
-                      {them}
+                      <span
+                        className="min-w-0 truncate normal-case"
+                        title={them}
+                      >
+                        {them}
+                      </span>
                     </span>
 
                     {sides.map((row) => (
@@ -1680,14 +2004,18 @@ const SupplyPanel = ({
                         </span>
                         <span
                           className={`text-right tabular-nums py-1.5 border-b border-brand_navy/15 ${
-                            row.m === 0 ? "text-content/85" : "font-bold text-content"
+                            row.m === 0
+                              ? "text-content/85"
+                              : "font-bold text-content"
                           }`}
                         >
                           {row.fmt(row.m)}
                         </span>
                         <span
                           className={`text-right tabular-nums py-1.5 border-b border-brand_navy/15 ${
-                            row.t === 0 ? "text-content/85" : "font-semibold text-content"
+                            row.t === 0
+                              ? "text-content/85"
+                              : "font-semibold text-content"
                           }`}
                         >
                           {row.fmt(row.t)}
@@ -1700,23 +2028,27 @@ const SupplyPanel = ({
               ...(vendorRows.length > 0
                 ? [
                     {
-                      label: "Who delivered",
+                      label: "Vendors",
                       count: vendorRows.length,
                       body: (
                         <div
                           className="grid gap-x-4 text-[12.5px]"
-                          style={{ gridTemplateColumns: "minmax(0,1fr) 84px 84px 84px" }}
+                          style={{
+                            gridTemplateColumns: "minmax(0,1fr) 84px 84px 84px",
+                          }}
                         >
-                          {["Vendor", "Here", "There", "Cost here"].map((h, i) => (
-                            <span
-                              key={h}
-                              className={`text-[11.5px] font-bold uppercase tracking-wide text-content/85 pb-1.5 border-b border-brand_navy/15 ${
-                                i > 0 ? "text-right" : ""
-                              }`}
-                            >
-                              {h}
-                            </span>
-                          ))}
+                          {["Vendor", "Here", "There", "Cost here"].map(
+                            (h, i) => (
+                              <span
+                                key={h}
+                                className={`text-[11.5px] font-bold uppercase tracking-wide text-content/85 pb-1.5 border-b border-brand_navy/15 ${
+                                  i > 0 ? "text-right" : ""
+                                }`}
+                              >
+                                {h}
+                              </span>
+                            ),
+                          )}
                           {vendorRows.map((r) => (
                             <Fragment key={r.name}>
                               <span className="min-w-0 truncate py-1.5 border-b border-brand_navy/15 text-content">
@@ -1724,7 +2056,9 @@ const SupplyPanel = ({
                               </span>
                               <span
                                 className={`text-right tabular-nums py-1.5 border-b border-brand_navy/15 ${
-                                  r.mine ? "font-semibold text-content" : "text-delta_negative_text"
+                                  r.mine
+                                    ? "font-semibold text-content"
+                                    : "text-delta_negative_text"
                                 }`}
                               >
                                 {r.mine ? n(r.mine.units) : "none"}
@@ -1752,8 +2086,12 @@ const SupplyPanel = ({
             <p className="text-[18px] font-semibold leading-snug text-content min-w-0">
               {supply.orders.length}{" "}
               {supply.orders.length === 1 ? "order" : "orders"}
-              {states.length === 1 ? `, all still ${states[0]!.toLowerCase()}` : ""}
-              {supply.deliveries.length === 0 ? " — none of them delivered." : "."}
+              {states.length === 1
+                ? `, all still ${states[0]!.toLowerCase()}`
+                : ""}
+              {supply.deliveries.length === 0
+                ? " — nothing received against them."
+                : "."}
             </p>
           </div>
 
@@ -1783,20 +2121,32 @@ const SupplyPanel = ({
               {shownOrders.length} of {supply.orders.length}{" "}
               {supply.orders.length === 1 ? "order" : "orders"} and{" "}
               {shownDeliveries.length} of {supply.deliveries.length} carry
-              {shownOrders.length + shownDeliveries.length === 1 ? "s" : ""} them.
+              {shownOrders.length + shownDeliveries.length === 1
+                ? "s"
+                : ""}{" "}
+              them.
             </p>
           )}
 
+          <div className="text-[11px] font-bold uppercase tracking-wide text-content/85 mt-4">
+            Ordered
+          </div>
           <div
-            className="grid gap-3 mt-3 pb-1.5 border-b border-brand_navy/15 text-[11px] font-bold uppercase tracking-wide text-content/85"
-            style={{ gridTemplateColumns: "62px 16px minmax(0,1fr) 88px minmax(0,110px) 62px 76px" }}
+            className="grid gap-3 mt-1 pb-1.5 border-b border-brand_navy/15 text-[11px] font-bold uppercase tracking-wide text-content/85"
+            style={{
+              gridTemplateColumns:
+                "62px 16px minmax(0,1fr) 88px minmax(0,110px) 62px 76px",
+            }}
           >
             <span>Date</span>
             <span />
             <span>Vendor</span>
             <span>Order</span>
             <span>Status</span>
-            <span className="text-right" title="Lines in this department, not on the whole order">
+            <span
+              className="text-right"
+              title="Lines in this department, not on the whole order"
+            >
               Dept lines
             </span>
             <span className="text-right">Units</span>
@@ -1814,20 +2164,54 @@ const SupplyPanel = ({
               />
             ))}
             {shownOrders.length === 0 && (
-              <p className="text-[13px] text-content/85 leading-relaxed py-3">
-                {supply.orders.length === 0
-                  ? "Neither store placed an order in this department over the window. That is the finding, not a gap in the data."
-                  : "No order in the window carries any of those codes."}
+              <p
+                className={`text-[13px] leading-relaxed py-3 ${
+                  orders.ok ? "text-content/85" : "text-severity_watch_text"
+                }`}
+              >
+                {!orders.ok
+                  ? "The orders did not come back for this window, so this panel cannot say whether either store ordered. What was received below is unaffected — it is read separately."
+                  : supply.orders.length > 0
+                    ? "No order in the window carries any of those codes."
+                    : orders.inWindow === 0
+                      ? supply.deliveries.length > 0
+                        ? "No order of any kind came back for either store over the window, and the receipts below arrived anyway — which is what a department delivered straight off the vendor's truck looks like. Nothing here can say an item was never ordered, so those items are listed as not carried instead."
+                        : "Neither store placed an order of any kind over the window. That is the finding, not a gap in the data."
+                      : `${orders.inWindow.toLocaleString("en-US")} order lines came back for these two stores over the window and none of them is in this department — by product code or by the department the order itself names.`}
               </p>
             )}
           </div>
 
           {supply.deliveries.length > 0 && (
             <>
-              <div className="text-[11px] font-bold uppercase tracking-wide text-content/85 mt-4 mb-1">
-                Deliveries
+              <div className="text-[11px] font-bold uppercase tracking-wide text-content/85 mt-4">
+                Received
               </div>
-              <div>
+              {/* Its own headings. These rows carry an INVOICE and its COST,
+                  and they were being read under the orders' Order and Status
+                  columns above — which is a dollar amount sitting under the
+                  word Status. */}
+              <div
+                className="grid gap-3 mt-1 pb-1.5 border-b border-brand_navy/15 text-[11px] font-bold uppercase tracking-wide text-content/85"
+                style={{
+                  gridTemplateColumns:
+                    "62px 16px minmax(0,1fr) 88px minmax(0,110px) 62px 76px",
+                }}
+              >
+                <span>Date</span>
+                <span />
+                <span>Vendor</span>
+                <span>Invoice</span>
+                <span>Cost</span>
+                <span
+                  className="text-right"
+                  title="Lines in this department, not on the whole invoice"
+                >
+                  Dept lines
+                </span>
+                <span className="text-right">Units</span>
+              </div>
+              <div className="mt-0.5">
                 {shownDeliveries.map((r) => (
                   <Document
                     key={`d${r.mine ? "m" : "t"}-${r.id}`}
@@ -1849,7 +2233,7 @@ const SupplyPanel = ({
           {supply.deliveries.length === 0 && (
             <div className="rounded-md border border-dashed border-brand_navy/25 px-3.5 py-2.5 mt-4">
               <div className="text-[11px] font-bold uppercase tracking-wide text-content/85">
-                Deliveries &middot; 0
+                Received &middot; 0
               </div>
               <p className="text-[12.5px] text-content/85 leading-snug mt-0.5">
                 No invoice carried an item from this department, at either
@@ -1915,7 +2299,10 @@ const ActPanel = ({
           </div>
         ))}
 
-        <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))" }}>
+        <div
+          className="grid gap-3"
+          style={{ gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))" }}
+        >
           {owned.map((d) => (
             <div
               key={d.cause}
@@ -1930,7 +2317,9 @@ const ActPanel = ({
               <span className="text-[15px] font-bold text-content">
                 {"→"} {OWNER_LABEL[d.owner as "buyer" | "vendor" | "price"]}
               </span>
-              <p className="text-[13px] leading-relaxed text-content/85">{d.says}</p>
+              <p className="text-[13px] leading-relaxed text-content/85">
+                {d.says}
+              </p>
 
               <ul className="flex flex-col gap-1">
                 {d.items.slice(0, 4).map((i) => (
@@ -1942,7 +2331,8 @@ const ActPanel = ({
                       {i.description}
                     </button>
                     <span className="ml-auto text-[12px] tabular-nums text-delta_negative_text whitespace-nowrap">
-                      {"−"}{formatCurrency2(Math.abs(i.gap))}
+                      {"−"}
+                      {formatCurrency2(Math.abs(i.gap))}
                     </span>
                   </li>
                 ))}
@@ -1980,7 +2370,6 @@ const ActPanel = ({
             </div>
           ))}
         </div>
-
       </div>
     </div>
   );
@@ -2014,7 +2403,9 @@ const DeptInvestigation = ({
   const [upcQ, setUpcQ] = useState("");
   const [upcDraft, setUpcDraft] = useState("");
   const [vendorQ, setVendorQ] = useState("");
-  const [ctx, setCtx] = useState<{ x: number; y: number; upc: string } | null>(null);
+  const [ctx, setCtx] = useState<{ x: number; y: number; upc: string } | null>(
+    null,
+  );
   /** Which item's evidence is open. Held here rather than in the slice: it
    *  belongs to this screen and means nothing once you leave it. */
   const [picked, setPicked] = useState<string | null>(null);
@@ -2033,7 +2424,8 @@ const DeptInvestigation = ({
   const [tab, setTab] = useState<"holds" | "items" | "supply" | "act">("holds");
 
   const isQty = gradingMetric === "qty";
-  const fmt = (v: number) => (isQty ? formatBigNumber(v, 0) : formatCurrency2(v));
+  const fmt = (v: number) =>
+    isQty ? formatBigNumber(v, 0) : formatCurrency2(v);
 
   const args = useMemo(
     () => ({
@@ -2108,7 +2500,10 @@ const DeptInvestigation = ({
    * page, so a range that crosses a page boundary is still a range; what is
    * off-screen is still selected and still copies.
    */
-  const pickRow = (e: { shiftKey: boolean; ctrlKey: boolean; metaKey: boolean }, code: string) => {
+  const pickRow = (
+    e: { shiftKey: boolean; ctrlKey: boolean; metaKey: boolean },
+    code: string,
+  ) => {
     const add = e.ctrlKey || e.metaKey;
     if (e.shiftKey && anchor.current) {
       const a = sorted.findIndex((r) => r.productCode === anchor.current);
@@ -2178,9 +2573,12 @@ const DeptInvestigation = ({
   const evidence = pickedItem ?? lastEvidence.current;
 
   const filterActive = (k: FilterKind) =>
-    k === "item" ? !!itemQ
-      : k === "upc" ? !!upcQ
-        : k === "vendor" ? !!vendorQ
+    k === "item"
+      ? !!itemQ
+      : k === "upc"
+        ? !!upcQ
+        : k === "vendor"
+          ? !!vendorQ
           : only !== null;
 
   /** Text filters commit on Apply; the two pickers have already committed by
@@ -2191,8 +2589,14 @@ const DeptInvestigation = ({
   };
 
   const clearFilter = (k: FilterKind) => {
-    if (k === "item") { setItemQ(""); setItemDraft(""); }
-    if (k === "upc") { setUpcQ(""); setUpcDraft(""); }
+    if (k === "item") {
+      setItemQ("");
+      setItemDraft("");
+    }
+    if (k === "upc") {
+      setUpcQ("");
+      setUpcDraft("");
+    }
     if (k === "vendor") setVendorQ("");
     if (k === "cause") setOnly(null);
   };
@@ -2233,7 +2637,10 @@ const DeptInvestigation = ({
    * Over the FILTERED set, so what gets copied is what is on screen.
    */
   const copyActions = CAUSE_ORDER.filter((c) => c !== "ahead")
-    .map((c) => ({ cause: c, upcs: shown.filter((i) => i.cause === c).map((i) => i.productCode) }))
+    .map((c) => ({
+      cause: c,
+      upcs: shown.filter((i) => i.cause === c).map((i) => i.productCode),
+    }))
     .filter((g) => g.upcs.length > 0)
     .map((g) => ({
       label: `Copy ${CAUSE_LABEL[g.cause].toLowerCase()} UPCs · ${g.upcs.length}`,
@@ -2387,7 +2794,9 @@ const DeptInvestigation = ({
       title: "Items",
       needsAll: true,
       answer: () => {
-        const lead = summary.byCause.find((c) => c.cause !== "ahead" && c.dollars < 0);
+        const lead = summary.byCause.find(
+          (c) => c.cause !== "ahead" && c.dollars < 0,
+        );
         return lead ? CAUSE_LABEL[lead.cause] : "Nothing behind";
       },
     },
@@ -2395,8 +2804,7 @@ const DeptInvestigation = ({
       key: "supply" as const,
       title: "Supply",
       needsAll: true,
-      answer: () =>
-        `${supply.mine.orders} vs ${supply.theirs.orders} orders`,
+      answer: () => `${supply.mine.orders} vs ${supply.theirs.orders} orders`,
     },
     {
       key: "act" as const,
@@ -2417,57 +2825,76 @@ const DeptInvestigation = ({
         leaving ? "animate-nb-leave" : ""
       }`}
     >
-
       {/* The chrome arrives before the contents, top down: the header says
           where you are, the tabs say what is here, and the panel fills in
           under them. Arriving all at once read as a page swap. */}
-      <div className="flex-shrink-0 flex items-center gap-3 px-4 py-2.5 bg-brand_navy animate-nb-drop motion-reduce:animate-none">
-        {/* The department is what the notebook is about, so it leads. Then
-            who against whom, then when — and the way out says where it
-            goes once, not in six words every time. */}
-        <button
-          ref={backRef}
-          onClick={close}
-          title="Back to the comparison"
-          className="flex-shrink-0 text-custom-white text-[12.5px] font-semibold hover:underline rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-custom-white/70"
-        >
-          ‹ Back
-        </button>
-
-        <span className="flex items-center gap-2 min-w-0 text-[12.5px] text-custom-white/85">
-          <span className="font-semibold text-custom-white truncate">
+      <div className="flex-shrink-0 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 px-4 py-2.5 bg-brand_navy animate-nb-drop motion-reduce:animate-none">
+        {/* Where you came from: the way out, the department, and the week
+            it is read over. */}
+        <span className="flex items-center gap-2.5 min-w-0 justify-self-start">
+          <button
+            ref={backRef}
+            onClick={close}
+            title="Back to the comparison"
+            className="flex-shrink-0 text-custom-white text-[12.5px] font-semibold hover:underline rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-custom-white/70"
+          >
+            ‹ Back
+          </button>
+          <span className="flex-shrink-0 text-[12.5px] text-custom-white/50">
+            |
+          </span>
+          <span className="text-[12.5px] font-semibold text-custom-white truncate">
             {target.subDeptName}
           </span>
-          <span className="flex-shrink-0 opacity-50">|</span>
-          <span className="flex items-center gap-1.5 min-w-0">
-            <span className="w-2.5 h-2.5 rounded-full bg-store_open flex-shrink-0" />
-            <span className="font-semibold text-custom-white truncate">
-              {target.storeName}
-            </span>
-          </span>
-          <span className="flex-shrink-0">vs</span>
-          <span className="flex items-center gap-1.5 min-w-0">
-            <span className="w-2.5 h-2.5 rounded-full bg-store_compare flex-shrink-0" />
-            <span className="font-semibold text-custom-white truncate">
-              {target.compareStoreName}
-            </span>
-          </span>
-          <span className="hidden xl:inline flex-shrink-0 whitespace-nowrap">
-            {" · week ending "}{twEnd}
+          <span
+            data-help="supply-window"
+            className="hidden lg:inline flex-shrink-0 text-[12.5px] font-semibold text-custom-white/85 whitespace-nowrap tabular-nums"
+          >
+            {usDate(twStart)} &ndash; {usDate(twEnd)}
           </span>
         </span>
 
-        {/* Only while something is still coming. Three lit lamps said
-            nothing, forever, in the busiest strip on the page. */}
-        {!allIn && <Waves sales={salesIn} all={allIn} />}
-        <button
-          onClick={exportCsv}
-          disabled={sorted.length === 0}
-          title="Every filtered row, as a CSV"
-          className="ml-auto flex-shrink-0 text-custom-white text-[12px] font-semibold px-2.5 py-1 rounded border border-custom-white/30 hover:bg-custom-white/10 disabled:opacity-40 transition-colors"
-        >
-          Export CSV
-        </button>
+        {/* What you are reading. The only part that differs between two open
+            investigations, so it takes the middle -- and the only part in
+            bold, where the rest of the bar is semibold. */}
+        <span className="flex items-center gap-2 min-w-0 justify-self-center text-[13px]">
+          <span className="w-2.5 h-2.5 rounded-full bg-store_open flex-shrink-0" />
+          <span className="font-bold text-custom-white truncate">
+            {target.storeName}
+          </span>
+          <span className="flex-shrink-0 font-semibold text-custom-white/85">
+            vs
+          </span>
+          <span className="w-2.5 h-2.5 rounded-full bg-store_compare flex-shrink-0" />
+          <span className="font-bold text-custom-white truncate">
+            {target.compareStoreName}
+          </span>
+        </span>
+
+        <span className="flex items-center gap-3 justify-self-end">
+          {/* Only while something is still coming. Three lit lamps said
+              nothing, forever, in the busiest strip on the page. */}
+          {!allIn && <Waves sales={salesIn} all={allIn} />}
+          <button
+            data-help="export"
+            onClick={exportCsv}
+            disabled={sorted.length === 0}
+            title={
+              sorted.length === 0
+                ? "Nothing to export yet"
+                : "Every filtered row, as a CSV"
+            }
+            aria-label="Export CSV"
+            className="flex-shrink-0 text-custom-white hover:text-custom-white/80 disabled:opacity-40 disabled:hover:text-custom-white transition-colors rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-custom-white/70"
+          >
+            <ArrowDownTrayIcon className="w-[18px] h-[18px]" />
+          </button>
+          <PageInfoButton
+            page="sales-investigate"
+            variant="navy"
+            title="How this report works"
+          />
+        </span>
       </div>
 
       {/*
@@ -2483,6 +2910,7 @@ const DeptInvestigation = ({
         summary of the whole notebook and not just a way to move around it.
       */}
       <div
+        data-help="tabs"
         className="flex-shrink-0 grid grid-cols-4 border-b border-brand_navy/15 animate-nb-drop motion-reduce:animate-none"
         style={{ animationDelay: "70ms" }}
       >
@@ -2531,7 +2959,6 @@ const DeptInvestigation = ({
           );
         })}
       </div>
-
 
       {problem ? (
         <div className="flex-1 flex items-center justify-center px-6 text-center text-[13px] text-content/85">
@@ -2625,318 +3052,356 @@ const DeptInvestigation = ({
                 : ""
             }
           >
-          <div className="flex-shrink-0 px-4 py-2.5 border-b border-brand_navy/15">
-            <div className="flex flex-wrap items-center gap-2">
-              <button
-                onClick={() => setOnly(null)}
-                className={`text-[12px] font-semibold px-2.5 py-1 rounded-full border transition-shadow ${
-                  only === null
-                    ? "bg-filter_active border-filter_active_border text-content ring-2 ring-filter_active_border shadow-card-sm"
-                    : "bg-custom-white border-brand_line text-content hover:bg-gray-50"
-                }`}
-              >
-                All {items.length} items
-              </button>
-              {!allIn &&
-                [120, 148, 132].map((w) => (
-                  <span key={w} className="py-1">
-                    <Bar w={`${w}px`} h={22} />
-                  </span>
-                ))}
-              {allIn &&
-                CAUSE_ORDER.filter((c) => byCause.has(c)).map((c) => {
-                const t = byCause.get(c);
-                return (
-                  <button
-                    key={c}
-                    onClick={() => setOnly(only === c ? null : c)}
-                    title={
-                      suggested.includes(c)
-                        ? `${CAUSE_OWNER[c]} — where this department's shape points`
-                        : CAUSE_OWNER[c]
-                    }
-                    className={`text-[12px] font-semibold px-2.5 py-1 rounded-full border transition-shadow ${
-                      CAUSE_TONE[c].chip
-                    } ${
-                      suggested.includes(c)
-                        ? "border-dashed border-content/40"
-                        : "border-transparent"
-                    } ${only === c ? `ring-2 shadow-card-sm ${CAUSE_TONE[c].ring}` : ""}`}
-                  >
-                    {CAUSE_LABEL[c]}
-                    <span className="ml-1.5 font-normal tabular-nums">
-                      {t?.items} · {fmt(Math.abs(t?.dollars ?? 0))}
+            <div
+              data-help="causes"
+              className="flex-shrink-0 px-4 py-2.5 border-b border-brand_navy/15"
+            >
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  onClick={() => setOnly(null)}
+                  className={`text-[12px] font-semibold px-2.5 py-1 rounded-full border transition-shadow ${
+                    only === null
+                      ? "bg-filter_active border-filter_active_border text-content ring-2 ring-filter_active_border shadow-card-sm"
+                      : "bg-custom-white border-brand_line text-content hover:bg-gray-50"
+                  }`}
+                >
+                  All {items.length} items
+                </button>
+                {!allIn &&
+                  [120, 148, 132].map((w) => (
+                    <span key={w} className="py-1">
+                      <Bar w={`${w}px`} h={22} />
                     </span>
-                  </button>
-                  );
-                })}
+                  ))}
+                {allIn &&
+                  CAUSE_ORDER.filter((c) => byCause.has(c)).map((c) => {
+                    const t = byCause.get(c);
+                    return (
+                      <button
+                        key={c}
+                        onClick={() => setOnly(only === c ? null : c)}
+                        title={
+                          suggested.includes(c)
+                            ? `${CAUSE_OWNER[c]} — where this department's shape points`
+                            : CAUSE_OWNER[c]
+                        }
+                        className={`text-[12px] font-semibold px-2.5 py-1 rounded-full border transition-shadow ${
+                          CAUSE_TONE[c].chip
+                        } ${
+                          suggested.includes(c)
+                            ? "border-dashed border-content/40"
+                            : "border-transparent"
+                        } ${only === c ? `ring-2 shadow-card-sm ${CAUSE_TONE[c].ring}` : ""}`}
+                      >
+                        {CAUSE_LABEL[c]}
+                        <span className="ml-1.5 font-normal tabular-nums">
+                          {t?.items} · {fmt(Math.abs(t?.dollars ?? 0))}
+                        </span>
+                      </button>
+                    );
+                  })}
+              </div>
+
+              {/* The windows do not line up, and the screen says so rather than
+                letting the grid imply every column is diagnosed. */}
+              <p className="text-[13px] text-content/85 mt-2.5">
+                Causes explain this week against {target.compareStoreName}.
+                Orders and receipts are read over {SUPPLY_LOOKBACK_DAYS} days (
+                {supply_.start} to {supply_.end}) — they cannot account for the
+                LW or LY columns.
+                {STAGE_NOTE[stage] && (
+                  <span className="ml-1.5 font-semibold">
+                    {STAGE_NOTE[stage]}
+                  </span>
+                )}
+              </p>
             </div>
 
-            {/* The windows do not line up, and the screen says so rather than
-                letting the grid imply every column is diagnosed. */}
-            <p className="text-[13px] text-content/85 mt-2.5">
-              Causes explain this week against {target.compareStoreName}.
-              Orders and deliveries are read over {SUPPLY_LOOKBACK_DAYS} days
-              ({supply_.start} to {supply_.end}) — they cannot account for
-              the LW or LY columns.
-              {STAGE_NOTE[stage] && (
-                <span className="ml-1.5 font-semibold">{STAGE_NOTE[stage]}</span>
-              )}
-            </p>
-          </div>
-
-          <div className="relative flex-1 min-h-0 flex overflow-hidden">
-          {/* The grid and the strip under it are one column of the row; the
+            <div className="relative flex-1 min-h-0 flex overflow-hidden">
+              {/* The grid and the strip under it are one column of the row; the
               rail is the other. Left as siblings of the rail the pager
               became a SECOND column — the grid shrank to its own width and
               the pager floated in the middle of the space beside it. */}
-          <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
-          <div className="flex-1 min-h-0 overflow-auto thin-scrollbar">
-            <table className="border-collapse font-mono text-[11px] w-max">
-              <thead>
-                <tr>
-                  <th className="sticky top-0 left-0 z-30 w-[44px] bg-bkg border-b border-brand_line_2 border-r border-brand_line px-2 py-1.5"></th>
-                  {COLUMNS.map((c) => (
-                    <th
-                      key={c.key}
-                      style={{ minWidth: c.width }}
-                      className={`sticky top-0 z-10 border-b border-brand_line_2 border-r border-brand_line px-2.5 py-1.5 text-left font-semibold whitespace-nowrap ${ruleOf(c)} ${tintOf(c) || "bg-custom-white"}`}
-                    >
-                      {c.filter ? (
-                        <ColFilter
-                          label={label(c, target)}
-                          labelSize="text-[11px]"
-                          active={filterActive(c.filter)}
-                          onApply={() => applyFilter(c.filter as FilterKind)}
-                          onClear={() => clearFilter(c.filter as FilterKind)}
-                        >
-                          {c.filter === "item" && (
-                            <input
-                              autoFocus
-                              style={colInputStyle}
-                              placeholder="Search item…"
-                              value={itemDraft}
-                              onChange={(e) => setItemDraft(e.target.value)}
-                            />
-                          )}
-                          {c.filter === "upc" && (
-                            <input
-                              autoFocus
-                              style={colInputStyle}
-                              placeholder="Search UPC…"
-                              value={upcDraft}
-                              onChange={(e) => setUpcDraft(e.target.value)}
-                            />
-                          )}
-                          {/* Vendor and cause are both closed sets, so they
+              <div
+                data-help="grid"
+                className="flex-1 min-w-0 flex flex-col overflow-hidden"
+              >
+                <div className="flex-1 min-h-0 overflow-auto thin-scrollbar">
+                  <table className="border-collapse font-mono text-[11px] w-max">
+                    <thead>
+                      <tr>
+                        <th className="sticky top-0 left-0 z-30 w-[44px] bg-bkg border-b border-brand_line_2 border-r border-brand_line px-2 py-1.5"></th>
+                        {COLUMNS.map((c) => (
+                          <th
+                            key={c.key}
+                            style={{ minWidth: c.width }}
+                            className={`sticky top-0 z-10 border-b border-brand_line_2 border-r border-brand_line px-2.5 py-1.5 text-left font-semibold whitespace-nowrap ${ruleOf(c)} ${tintOf(c) || "bg-custom-white"}`}
+                          >
+                            {c.filter ? (
+                              <ColFilter
+                                label={label(c, target)}
+                                labelSize="text-[11px]"
+                                active={filterActive(c.filter)}
+                                onApply={() =>
+                                  applyFilter(c.filter as FilterKind)
+                                }
+                                onClear={() =>
+                                  clearFilter(c.filter as FilterKind)
+                                }
+                              >
+                                {c.filter === "item" && (
+                                  <input
+                                    autoFocus
+                                    style={colInputStyle}
+                                    placeholder="Search item…"
+                                    value={itemDraft}
+                                    onChange={(e) =>
+                                      setItemDraft(e.target.value)
+                                    }
+                                  />
+                                )}
+                                {c.filter === "upc" && (
+                                  <input
+                                    autoFocus
+                                    style={colInputStyle}
+                                    placeholder="Search UPC…"
+                                    value={upcDraft}
+                                    onChange={(e) =>
+                                      setUpcDraft(e.target.value)
+                                    }
+                                  />
+                                )}
+                                {/* Vendor and cause are both closed sets, so they
                               are picked rather than typed — a vendor name is
                               not something anyone spells from memory. They
                               apply on change, since there is nothing to
                               finish typing. */}
-                          {c.filter === "vendor" && (
-                            <select
-                              style={colInputStyle}
-                              value={vendorQ}
-                              onChange={(e) => setVendorQ(e.target.value)}
-                            >
-                              <option value="">Every vendor</option>
-                              {vendors.map((v) => (
-                                <option key={v} value={v}>{v}</option>
-                              ))}
-                            </select>
-                          )}
-                          {c.filter === "cause" && (
-                            <select
-                              style={colInputStyle}
-                              value={only ?? ""}
-                              onChange={(e) =>
-                                setOnly((e.target.value || null) as Cause | null)
-                              }
-                            >
-                              <option value="">Every cause</option>
-                              {CAUSE_ORDER.filter((x) => byCause.has(x)).map((x) => (
-                                <option key={x} value={x}>{CAUSE_LABEL[x]}</option>
-                              ))}
-                            </select>
-                          )}
-                        </ColFilter>
-                      ) : c.sort ? (
-                        <SortHeader
-                          col={c.sort}
-                          label={label(c, target)}
-                          sort={sort}
-                          onSort={handleSort}
-                          className="text-[11px] font-semibold uppercase tracking-wide text-content/85 hover:text-content"
-                        />
-                      ) : (
-                        <span className="uppercase tracking-wide text-content/85">
-                          {label(c, target)}
-                        </span>
-                      )}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              {/* No zebra stripe: every cell is ruled, which is what
+                                {c.filter === "vendor" && (
+                                  <select
+                                    style={colInputStyle}
+                                    value={vendorQ}
+                                    onChange={(e) => setVendorQ(e.target.value)}
+                                  >
+                                    <option value="">Every vendor</option>
+                                    {vendors.map((v) => (
+                                      <option key={v} value={v}>
+                                        {v}
+                                      </option>
+                                    ))}
+                                  </select>
+                                )}
+                                {c.filter === "cause" && (
+                                  <select
+                                    style={colInputStyle}
+                                    value={only ?? ""}
+                                    onChange={(e) =>
+                                      setOnly(
+                                        (e.target.value ||
+                                          null) as Cause | null,
+                                      )
+                                    }
+                                  >
+                                    <option value="">Every cause</option>
+                                    {CAUSE_ORDER.filter((x) =>
+                                      byCause.has(x),
+                                    ).map((x) => (
+                                      <option key={x} value={x}>
+                                        {CAUSE_LABEL[x]}
+                                      </option>
+                                    ))}
+                                  </select>
+                                )}
+                              </ColFilter>
+                            ) : c.sort ? (
+                              <SortHeader
+                                col={c.sort}
+                                label={label(c, target)}
+                                sort={sort}
+                                onSort={handleSort}
+                                className="text-[11px] font-semibold uppercase tracking-wide text-content/85 hover:text-content"
+                              />
+                            ) : (
+                              <span className="uppercase tracking-wide text-content/85">
+                                {label(c, target)}
+                              </span>
+                            )}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    {/* No zebra stripe: every cell is ruled, which is what
                   separates the rows here, and the sticky number column is
                   opaque white — a stripe would stop dead under it. */}
-              <tbody>
-                {capped.map((r, i) => (
-                  <tr
-                    key={r.productCode}
-                    onClick={(e) => pickRow(e, r.productCode)}
-                    className="cursor-pointer select-none"
-                    onContextMenu={(e) => {
-                      e.preventDefault();
-                      /* Right-clicking outside the selection selects that
+                    <tbody>
+                      {capped.map((r, i) => (
+                        <tr
+                          key={r.productCode}
+                          onClick={(e) => pickRow(e, r.productCode)}
+                          className="cursor-pointer select-none"
+                          onContextMenu={(e) => {
+                            e.preventDefault();
+                            /* Right-clicking outside the selection selects that
                          row first, the way a grid does: otherwise the menu
                          offers to copy nine rows that are nowhere near the
                          one under the cursor. Inside it, the selection
                          stands. */
-                      if (!chosen.has(r.productCode)) {
-                        anchor.current = r.productCode;
-                        setChosen(new Set([r.productCode]));
-                      }
-                      setCtx({ x: e.clientX, y: e.clientY, upc: r.productCode });
-                    }}
-                  >
-                    {/* The whole row, not just the gutter. The store
+                            if (!chosen.has(r.productCode)) {
+                              anchor.current = r.productCode;
+                              setChosen(new Set([r.productCode]));
+                            }
+                            setCtx({
+                              x: e.clientX,
+                              y: e.clientY,
+                              upc: r.productCode,
+                            });
+                          }}
+                        >
+                          {/* The whole row, not just the gutter. The store
                         columns paint their own tint, so a selected row used
                         to show the fill on the index alone and nowhere else
                         — the fill wins over the tint while the row is
                         picked out, and the tints come back when it is not. */}
-                    <td
-                      className={`sticky left-0 z-10 border-r border-brand_line border-b border-brand_line px-2 py-1.5 text-right ${
-                        isOn(r.productCode)
-                          ? "bg-row_selected border-row_selected_border border-l-2 font-bold text-content"
-                          : "bg-custom-white text-content/85"
-                      }`}
-                    >
-                      {i + 1}
-                    </td>
-                    {COLUMNS.map((c) => (
-                      <td
-                        key={c.key}
-                        className={`border-r border-b border-brand_line px-2.5 py-1.5 whitespace-nowrap ${c.right ? "text-right" : ""} ${
-                          isOn(r.productCode) ? "bg-row_selected" : tintOf(c)
-                        }`}
-                      >
-                        {/* Masked until the orders and deliveries are in.
+                          <td
+                            className={`sticky left-0 z-10 border-r border-brand_line border-b border-brand_line px-2 py-1.5 text-right ${
+                              isOn(r.productCode)
+                                ? "bg-row_selected border-row_selected_border border-l-2 font-bold text-content"
+                                : "bg-custom-white text-content/85"
+                            }`}
+                          >
+                            {i + 1}
+                          </td>
+                          {COLUMNS.map((c) => (
+                            <td
+                              key={c.key}
+                              className={`border-r border-b border-brand_line px-2.5 py-1.5 whitespace-nowrap ${c.right ? "text-right" : ""} ${
+                                isOn(r.productCode)
+                                  ? "bg-row_selected"
+                                  : tintOf(c)
+                              }`}
+                            >
+                              {/* Masked until the orders and deliveries are in.
                             Every item reads "not moving" on sales alone,
                             which is a different accusation from the one it
                             will carry a second later — and the reader may
                             have acted on it by then. */}
-                        {c.key === "cause" && !allIn ? (
-                          <Bar w="88%" h={14} />
-                        ) : (
-                          c.render(r, fmt)
-                        )}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
+                              {c.key === "cause" && !allIn ? (
+                                <Bar w="88%" h={14} />
+                              ) : (
+                                c.render(r, fmt)
+                              )}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
 
-              {/* Sticky to the bottom of the scroller, so the totals are
+                    {/* Sticky to the bottom of the scroller, so the totals are
                   readable from the first row as well as the last. Over the
                   whole filtered set rather than this page: a total of fifty
                   rows is not a total of anything anybody asked about. */}
-              {capped.length > 0 && (
-                <tfoot>
-                  <tr>
-                    <td className="sticky bottom-0 left-0 z-30 bg-bkg border-t-2 border-t-brand_line_2 border-r border-brand_line px-2 py-1.5" />
-                    {COLUMNS.map((c) => (
-                      <td
-                        key={c.key}
-                        className={`sticky bottom-0 z-20 border-t-2 border-t-brand_line_2 border-r border-brand_line px-2.5 py-1.5 font-bold whitespace-nowrap ${
-                          c.right ? "text-right" : ""
-                        } ${tintOf(c) || "bg-bkg"}`}
-                      >
-                        {c.foot ? c.foot(shown, fmt) : null}
-                      </td>
-                    ))}
-                  </tr>
-                </tfoot>
-              )}
-            </table>
+                    {capped.length > 0 && (
+                      <tfoot>
+                        <tr>
+                          <td className="sticky bottom-0 left-0 z-30 bg-bkg border-t-2 border-t-brand_line_2 border-r border-brand_line px-2 py-1.5" />
+                          {COLUMNS.map((c) => (
+                            <td
+                              key={c.key}
+                              className={`sticky bottom-0 z-20 border-t-2 border-t-brand_line_2 border-r border-brand_line px-2.5 py-1.5 font-bold whitespace-nowrap ${
+                                c.right ? "text-right" : ""
+                              } ${tintOf(c) || "bg-bkg"}`}
+                            >
+                              {c.foot ? c.foot(shown, fmt) : null}
+                            </td>
+                          ))}
+                        </tr>
+                      </tfoot>
+                    )}
+                  </table>
 
-            {capped.length === 0 && stage !== "sales" && (
-              <div className="px-4 py-8 text-center text-[12.5px] text-content/85">
-                Nothing in this department to compare.
-              </div>
-            )}
-          </div>
+                  {capped.length === 0 && stage !== "sales" && (
+                    <div className="px-4 py-8 text-center text-[12.5px] text-content/85">
+                      Nothing in this department to compare.
+                    </div>
+                  )}
+                </div>
 
-          {/* Outside the scroller, so it stays put while the rows move. The
+                {/* Outside the scroller, so it stays put while the rows move. The
               totals row above it is over the whole filtered set, not this
               page — which is the figure anybody reading totals wants. */}
-          {sorted.length > 0 && (
-            <div className="flex-shrink-0 flex items-center gap-3 flex-wrap px-4 py-2 border-t border-brand_line bg-custom-white text-[12.5px] text-content/85">
-              <span>
-                <span className="font-semibold text-content tabular-nums">
-                  {(from + 1).toLocaleString("en-US")}–{Math.min(from + PAGE_ROWS, sorted.length).toLocaleString("en-US")}
-                </span>{" "}
-                of {sorted.length.toLocaleString("en-US")}
-                {sorted.length !== items.length &&
-                  ` filtered from ${items.length.toLocaleString("en-US")}`}{" "}
-                &middot; ordered by the biggest difference &middot;{" "}
-                {chosen.size > 0 ? (
-                  <span className="font-semibold text-content">
-                    {chosen.size.toLocaleString("en-US")} selected
-                  </span>
-                ) : (
-                  "click a row for its evidence"
-                )}
-              </span>
+                {sorted.length > 0 && (
+                  <div className="flex-shrink-0 flex items-center gap-3 flex-wrap px-4 py-2 border-t border-brand_line bg-custom-white text-[12.5px] text-content/85">
+                    <span>
+                      <span className="font-semibold text-content tabular-nums">
+                        {(from + 1).toLocaleString("en-US")}–
+                        {Math.min(
+                          from + PAGE_ROWS,
+                          sorted.length,
+                        ).toLocaleString("en-US")}
+                      </span>{" "}
+                      of {sorted.length.toLocaleString("en-US")}
+                      {sorted.length !== items.length &&
+                        ` filtered from ${items.length.toLocaleString("en-US")}`}{" "}
+                      &middot; ordered by the biggest difference &middot;{" "}
+                      {chosen.size > 0 ? (
+                        <span className="font-semibold text-content">
+                          {chosen.size.toLocaleString("en-US")} selected
+                        </span>
+                      ) : (
+                        "click a row for its evidence"
+                      )}
+                    </span>
 
-              {pages > 1 && (
-                <span className="ml-auto flex items-center gap-1">
-                  <button
-                    onClick={() => setPage(Math.max(0, at_ - 1))}
-                    disabled={at_ === 0}
-                    className="px-2.5 py-1 rounded-md font-semibold hover:bg-bkg disabled:opacity-35 disabled:hover:bg-transparent transition-colors"
-                  >
-                    {"‹"} Prev
-                  </button>
+                    {pages > 1 && (
+                      <span className="ml-auto flex items-center gap-1">
+                        <button
+                          onClick={() => setPage(Math.max(0, at_ - 1))}
+                          disabled={at_ === 0}
+                          className="px-2.5 py-1 rounded-md font-semibold hover:bg-bkg disabled:opacity-35 disabled:hover:bg-transparent transition-colors"
+                        >
+                          {"‹"} Prev
+                        </button>
 
-                  {/* Numbered, in a window around where you are. Prev and
+                        {/* Numbered, in a window around where you are. Prev and
                       Next alone made page 5 of 5 four presses away and gave
                       no sense of how much was behind the page in view. */}
-                  {pageWindow.map((p, i) =>
-                    p === null ? (
-                      <span key={`gap${i}`} className="px-1 text-content/85">
-                        &hellip;
+                        {pageWindow.map((p, i) =>
+                          p === null ? (
+                            <span
+                              key={`gap${i}`}
+                              className="px-1 text-content/85"
+                            >
+                              &hellip;
+                            </span>
+                          ) : (
+                            <button
+                              key={p}
+                              onClick={() => setPage(p)}
+                              aria-current={p === at_}
+                              className={`min-w-[28px] px-2 py-1 rounded-md font-semibold tabular-nums transition-colors ${
+                                p === at_
+                                  ? "bg-brand_navy text-custom-white"
+                                  : "hover:bg-bkg text-content"
+                              }`}
+                            >
+                              {p + 1}
+                            </button>
+                          ),
+                        )}
+
+                        <button
+                          onClick={() => setPage(Math.min(pages - 1, at_ + 1))}
+                          disabled={at_ >= pages - 1}
+                          className="px-2.5 py-1 rounded-md font-semibold hover:bg-bkg disabled:opacity-35 disabled:hover:bg-transparent transition-colors"
+                        >
+                          Next {"›"}
+                        </button>
                       </span>
-                    ) : (
-                      <button
-                        key={p}
-                        onClick={() => setPage(p)}
-                        aria-current={p === at_}
-                        className={`min-w-[28px] px-2 py-1 rounded-md font-semibold tabular-nums transition-colors ${
-                          p === at_
-                            ? "bg-brand_navy text-custom-white"
-                            : "hover:bg-bkg text-content"
-                        }`}
-                      >
-                        {p + 1}
-                      </button>
-                    ),
-                  )}
+                    )}
+                  </div>
+                )}
+              </div>
 
-                  <button
-                    onClick={() => setPage(Math.min(pages - 1, at_ + 1))}
-                    disabled={at_ >= pages - 1}
-                    className="px-2.5 py-1 rounded-md font-semibold hover:bg-bkg disabled:opacity-35 disabled:hover:bg-transparent transition-colors"
-                  >
-                    Next {"›"}
-                  </button>
-                </span>
-              )}
-            </div>
-          )}
-          </div>
-
-          {/*
+              {/*
             The rail lays OVER the grid rather than beside it.
 
             Taking its 520px out of the row reflowed every column underneath
@@ -2948,37 +3413,40 @@ const DeptInvestigation = ({
             enough to read as a layer — against a dense grid a plain white
             panel reads as a hole in it.
           */}
-          <div
-            className={`absolute top-0 right-0 bottom-0 z-20 w-[520px] shadow-rail transition-transform duration-200 ease-out motion-reduce:transition-none ${
-              pickedItem ? "translate-x-0" : "translate-x-full"
-            }`}
-            aria-hidden={!pickedItem}
-          >
-           <div className="w-[520px] h-full border-l-2 border-brand_navy/25">
-            {evidence && target && (
-            <ItemEvidence
-              item={evidence}
-              openStoreName={target.storeName}
-              compareStoreName={target.compareStoreName}
-              mineOrders={orders.mine}
-              theirsOrders={orders.theirs}
-              mineReceipts={receipts.mine}
-              theirsReceipts={receipts.theirs}
-              minePoints={sales?.minePoints ?? []}
-              theirsPoints={sales?.theirsPoints ?? []}
-              supplyReady={stage === "done"}
-              position={{
-                at: Math.max(0, at),
-                of: sorted.length,
-                within: only ? CAUSE_LABEL[only] : null,
-              }}
-              onStep={stepItem}
-              onClose={() => setPicked(null)}
-            />
-            )}
-           </div>
-          </div>
-          </div>
+              <div
+                data-help="evidence"
+                className={`absolute top-0 right-0 bottom-0 z-20 w-[520px] shadow-rail transition-transform duration-200 ease-out motion-reduce:transition-none ${
+                  pickedItem ? "translate-x-0" : "translate-x-full"
+                }`}
+                aria-hidden={!pickedItem}
+              >
+                <div className="w-[520px] h-full border-l-2 border-brand_navy/25">
+                  {evidence && target && (
+                    <ItemEvidence
+                      item={evidence}
+                      openStoreName={target.storeName}
+                      openStoreNumber={target.storeNumber}
+                      compareStoreName={target.compareStoreName}
+                      compareStoreNumber={target.compareStoreNumber}
+                      mineOrders={orders.mine}
+                      theirsOrders={orders.theirs}
+                      mineReceipts={receipts.mine}
+                      theirsReceipts={receipts.theirs}
+                      minePoints={sales?.minePoints ?? []}
+                      theirsPoints={sales?.theirsPoints ?? []}
+                      supplyReady={stage === "done"}
+                      position={{
+                        at: Math.max(0, at),
+                        of: sorted.length,
+                        within: only ? CAUSE_LABEL[only] : null,
+                      }}
+                      onStep={stepItem}
+                      onClose={() => setPicked(null)}
+                    />
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
 
           {ctx && (
@@ -2999,7 +3467,7 @@ const DeptInvestigation = ({
                            is "was it ever on an order at all" — which is
                            two tabs away and, until now, a UPC retyped by
                            hand. */
-                        label: `Find ${chosen.size} in orders and deliveries`,
+                        label: `Find ${chosen.size} in orders and receipts`,
                         onClick: () => {
                           setSupplyUpcs([...chosen].join(" "));
                           setTab("supply");

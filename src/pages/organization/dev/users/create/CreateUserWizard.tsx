@@ -263,7 +263,7 @@ const CreateUserWizard = ({ onComplete, onCancel }: CreateUserWizardProps) => {
         Add user
       </h2>
 
-      <div className="flex-shrink-0 mb-4">
+      <div data-help="wizard" className="flex-shrink-0 mb-4">
         <Stepper current={step} furthest={furthest} onGoTo={goTo} />
       </div>
 

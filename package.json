@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:mobile": "node scripts/dev-mobile.mjs",
     "test": "vitest --ui --api 9527",
     "lint": "eslint .",
     "preview": "vite preview",

@@ -2,6 +2,7 @@ import { useSalesState } from "./hooks/useSalesState";
 import { useState, useRef, useMemo, useCallback } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { getWeekly } from "../../../api/sales";
+import { FINANCIALS_READY, getFinancials } from "../../../api/financials";
 import { getStoresAssignedToUserGroup } from "../../../api/groups";
 import { addDays, formatGoliathDate, sameWeekDayLastYear } from "../../../utils";
 import { buildLedgerRows, regradeLedgerRows } from "./shared/ledgerUtils";
@@ -18,6 +19,8 @@ import {
 import {
   setHasSearched,
   setLedgerLoading,
+  setFinancials,
+  setFinancialsLoading,
   setLedgerSelection,
   setLedgerTab,
   type LedgerTab,
@@ -68,7 +71,6 @@ const SalesLedger = () => {
     // is still the day you meant when you open a store.
     selectedDate,
     investigation,
-    groupView,
     matrixOpen,
   } = useAppSelector((state) => state.dev.salesLedger);
   const { assignedStores } = useAppSelector((state) => state.user);
@@ -179,6 +181,46 @@ const SalesLedger = () => {
     dispatch(reQueryLedger());
     setSearchModalOpen(false);
     setFetchFailed(false);
+
+    /**
+     * Financials, for the export.
+     *
+     * Fired with the search, alongside everything else this page fetches, so
+     * the export reads data already in hand like its four neighbours do.
+     *
+     * Deliberately not awaited. It is wanted by one optional export and the
+     * ledger is what the searcher is waiting to see — a slow or missing
+     * financials call must not hold up the page, and a failed one must not
+     * fail the search. The export says so itself if the rows never arrived.
+     */
+    // Skipped while the router is undeployed — see FINANCIALS_READY. Without
+    // this every search fires a request that 404s into the catch below.
+    if (FINANCIALS_READY) {
+    dispatch(setFinancialsLoading(true));
+    getFinancials(
+      context.url,
+      context.token,
+      twStart,
+      twEnd,
+      searchValue,
+      useGroups as 0 | 1,
+    )
+      .then((resp) => {
+        const j = resp.data;
+        if (j.error !== 0) return;
+        dispatch(
+          setFinancials({
+            rows: j.data ?? [],
+            window: { start: twStart, end: twEnd },
+            truncated: !!j.truncated,
+          }),
+        );
+      })
+      .catch(() => {
+        /* the export reports it; the ledger does not care */
+      })
+      .finally(() => dispatch(setFinancialsLoading(false)));
+    }
 
     // Large group path: >30 stores → per-store calls, collect progressively
     if (isGroup) {
@@ -491,7 +533,7 @@ const SalesLedger = () => {
 
             {/* Tier summary pills — click to filter the list below */}
             <div className="flex items-center justify-between px-4 py-2 bg-custom-white border-x border-gray-100">
-              <div className="flex items-center gap-1.5">
+              <div data-help="severity-chips" className="flex items-center gap-1.5">
                 <button
                   onClick={() =>
                     setSevFilter((f) => (f === "critical" ? "all" : "critical"))
@@ -565,7 +607,7 @@ const SalesLedger = () => {
                   />
                 </div>
               </div>
-              <div className="flex-1 overflow-y-auto thin-scrollbar">
+              <div data-help="list" className="flex-1 overflow-y-auto thin-scrollbar">
                 {visibleRows.map((row) => (
                   <LedgerRow
                     key={`${row.storeid}__${row.store_number}`}
@@ -595,14 +637,6 @@ const SalesLedger = () => {
                 selection={selection}
                 onClose={handlePopupClose}
                 groupRows={ledgerRows}
-              />
-            ) : ledgerRows.length > 1 && groupView === "departments" ? (
-              <DeptMatrixPanel
-                stores={matrixStores}
-                gradingMetric={gradingMetric}
-                threshold={activeThreshold}
-                expanded={false}
-                {...getDateRanges()}
               />
             ) : ledgerRows.length > 1 ? (
               /* The panel's resting state on a group search. The reference is
