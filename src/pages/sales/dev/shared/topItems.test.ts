@@ -1,6 +1,12 @@
 import { describe, it, expect } from "vitest";
 import {
-  priceScale,
+  displayVerdict,
+  marginAt,
+  rankHistory,
+  rankIn,
+  retailMix,
+  retailSays,
+  topPriceOf,
   amountOf,
   amountText,
   amountUnit,
@@ -590,69 +596,161 @@ describe("deptAmountText", () => {
   });
 });
 
-describe("priceScale", () => {
-  const pt = (price: number, units: number) => ({
-    price,
-    units,
-    netSales: price * units,
-  });
-  const byUnits = (x: { units: number }) => x.units;
-
-  it("is null below two prices, which is the normal case on a scale item", () => {
-    expect(priceScale([pt(3.39, 187)], 4.2, false, byUnits)).toBeNull();
-    expect(priceScale([], 4.2, false, byUnits)).toBeNull();
+describe("retailMix", () => {
+  it("splits the week over the three kinds of retail", () => {
+    const m = retailMix(row({ qty_regular: 30, qty_promo: 60, qty_deal_item: 10 }));
+    expect(m?.regularPct).toBe(30);
+    expect(m?.adPct).toBe(60);
+    expect(m?.tprPct).toBe(10);
   });
 
-  it("marks the prices that sold below cost", () => {
-    const scale = priceScale(
-      [pt(3.39, 187), pt(4.69, 10), pt(5.49, 3)],
-      4.2,
-      false,
-      byUnits,
+  it("leaves unclassified lines out of the denominator", () => {
+    // A fourth bar for "we don't know" would take attention from the three
+    // that decide the margin.
+    const m = retailMix(
+      row({ qty_regular: 50, qty_promo: 50, qty_deal_item: null, qty_unknown: 900 }),
     );
-    expect(scale?.dots.map((d) => d.under)).toEqual([true, false, false]);
-    expect(scale?.underAmount).toBe(187);
+    expect(m?.known).toBe(100);
+    expect(m?.regularPct).toBe(50);
   });
 
-  it("runs the axis low price to high, whatever order they arrive in", () => {
-    const scale = priceScale(
-      [pt(5.49, 3), pt(3.39, 187), pt(4.69, 10)],
-      4.2,
-      false,
-      byUnits,
+  it("has no answer when nothing was classified", () => {
+    expect(
+      retailMix(row({ qty_regular: null, qty_promo: null, qty_deal_item: null })),
+    ).toBeNull();
+  });
+});
+
+describe("retailSays", () => {
+  const m = (n: number) => `$${n.toFixed(2)}`;
+  const pts = [{ price: 11.99, units: 18 }];
+
+  it("calls out a week sold entirely on ad", () => {
+    const mix = retailMix(row({ qty_regular: null, qty_promo: 18, qty_deal_item: null }));
+    expect(retailSays(mix, pts, m)).toBe("All on ad at $11.99");
+  });
+
+  it("calls out a week sold at regular price", () => {
+    const mix = retailMix(row({ qty_regular: 18, qty_promo: null, qty_deal_item: null }));
+    expect(retailSays(mix, pts, m)).toBe("All at regular price at $11.99");
+  });
+
+  it("says how much went out reduced when it is a mix", () => {
+    const mix = retailMix(row({ qty_regular: 40, qty_promo: 60, qty_deal_item: null }));
+    expect(retailSays(mix, pts, m)).toBe("60% sold on a reduced price at $11.99");
+  });
+
+  it("names the price the most sold at, not the highest", () => {
+    const mix = retailMix(row({ qty_regular: null, qty_promo: 18, qty_deal_item: null }));
+    const many = [
+      { price: 15.99, units: 2 },
+      { price: 11.99, units: 18 },
+    ];
+    expect(retailSays(mix, many, m)).toBe("All on ad at $11.99");
+  });
+});
+
+describe("topPriceOf and marginAt", () => {
+  it("has no top price when it only rang at one", () => {
+    expect(topPriceOf([{ price: 11.99, units: 18 }])).toBeNull();
+  });
+
+  it("is the highest of several", () => {
+    expect(
+      topPriceOf([
+        { price: 11.99, units: 18 },
+        { price: 15.99, units: 2 },
+      ]),
+    ).toBe(15.99);
+  });
+
+  it("works the margin at a given price", () => {
+    expect(marginAt(15.99, 13.7)).toBeCloseTo(14.32, 2);
+    expect(marginAt(11.99, 13.7)).toBeCloseTo(-14.26, 2);
+  });
+
+  it("has no margin without both sides", () => {
+    expect(marginAt(null, 13.7)).toBeNull();
+    expect(marginAt(15.99, null)).toBeNull();
+    expect(marginAt(0, 13.7)).toBeNull();
+  });
+});
+
+describe("rankIn", () => {
+  const list = [
+    row({ product_code: "A", total_sales: 300 }),
+    row({ product_code: "B", total_sales: 200 }),
+    row({ product_code: "C", total_sales: 100 }),
+  ];
+
+  it("is the item's place in that week's ranked list", () => {
+    expect(rankIn(list, "B", 200)).toBe(2);
+  });
+
+  it("is null for an item that week did not carry", () => {
+    expect(rankIn(list, "ZZZ", 200)).toBeNull();
+  });
+
+  it("is null for an item outside the shown cut", () => {
+    expect(rankIn(list, "C", 2)).toBeNull();
+  });
+});
+
+describe("rankHistory", () => {
+  it("calls an item in neither baseline new", () => {
+    expect(rankHistory(38, null, null).says).toBe("New to your top 200 this week");
+  });
+
+  it("knows a return from one week out", () => {
+    expect(rankHistory(38, null, 40).says).toBe(
+      "Back in the top 200 after a week out",
     );
-    expect(scale?.dots.map((d) => d.price)).toEqual([3.39, 4.69, 5.49]);
   });
 
-  it("sizes by area, so the big seller does not swamp the axis", () => {
-    const scale = priceScale([pt(1, 10000), pt(2, 1)], null, false, byUnits);
-    const [small, big] = [scale!.dots[1], scale!.dots[0]];
-    expect(big.size).toBe(30);
-    // Diameter, not area: a hundredth of the amount is a tenth of the width.
-    expect(small.size).toBe(8);
+  it("names a real climb and a real fall", () => {
+    expect(rankHistory(10, 80, 90).says).toBe("Up from #80 last week");
+    expect(rankHistory(80, 10, 9).says).toBe("Down from #10 last week");
   });
 
-  it("draws no cost line when the cost is not known", () => {
-    const scale = priceScale([pt(3.39, 187), pt(4.69, 10)], null, false, byUnits);
-    expect(scale?.costAt).toBeNull();
-    expect(scale?.underAmount).toBe(0);
-    expect(scale?.dots.every((d) => !d.under)).toBe(true);
+  it("calls a small move holding, not news", () => {
+    expect(rankHistory(38, 42, 40).says).toBe("Holding around #38");
+  });
+});
+
+describe("displayVerdict", () => {
+  const pct = (n: number | null) => (n === null ? "—" : `${n}%`);
+
+  it("refuses an item that loses money, however well it sells", () => {
+    const v = displayVerdict(38, -14.3, 12, false, pct);
+    expect(v.worth).toBe(false);
+    expect(v.says).toBe("Not a display pick — it loses money");
   });
 
-  it("keeps the cost inside the axis when it sits past every price", () => {
-    const scale = priceScale([pt(1, 5), pt(2, 5)], 9, false, byUnits);
-    const pct = Number(scale!.costAt!.replace("%", ""));
-    expect(pct).toBeGreaterThan(0);
-    expect(pct).toBeLessThan(100);
+  it("backs one that passes every reading it can make", () => {
+    const v = displayVerdict(12, 28.4, 9, false, pct);
+    expect(v.worth).toBe(true);
+    expect(v.says).toBe("Worth a display");
   });
 
-  it("reads a weighed item in pounds", () => {
-    const scale = priceScale(
-      [pt(11.79, 160), pt(9.99, 40)],
-      8.44,
-      true,
-      (x) => x.netSales / x.price,
-    );
-    expect(scale?.dots.map((d) => d.amountText)).toEqual(["40 lb", "160 lb"]);
+  it("never lets the display check itself pass", () => {
+    // Nothing in this data says what is on an end cap today, and three ticks
+    // must not read as a yes when it may already be out there.
+    const v = displayVerdict(12, 28.4, 9, false, pct);
+    const onDisplay = v.checks.find((c) => c.label === "Not already on display");
+    expect(onDisplay?.state).toBe("unknown");
+    expect(onDisplay?.detail).toBe("check in store");
+  });
+
+  it("does not call a new item's growth a failure", () => {
+    const v = displayVerdict(12, 28.4, null, true, pct);
+    const growth = v.checks.find((c) => c.label === "Growing vs last week");
+    expect(growth?.state).toBe("unknown");
+    expect(growth?.detail).toBe("new");
+    expect(v.worth).toBe(true);
+  });
+
+  it("says which reading failed when it is not the margin", () => {
+    const v = displayVerdict(180, 28.4, 9, false, pct);
+    expect(v.says).toBe("Not a display pick — top 50 seller fails");
   });
 });

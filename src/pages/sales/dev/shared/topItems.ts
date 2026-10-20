@@ -620,85 +620,216 @@ export const deptAmountText = (d: {
   return parts.length ? parts.join(" · ") : "—";
 };
 
-export interface ScaleDot {
-  price: number;
-  /** How much sold at this price, in the item's own unit. */
-  amount: number;
-  amountText: string;
-  /** Left edge as a CSS percentage. */
-  at: string;
-  /** Dot diameter in px, by amount. */
-  size: number;
-  under: boolean;
+/* ------------------------------------------------------------------ */
+
+/**
+ * How the week's units split across the kinds of retail.
+ *
+ * `qty_unknown` is left out of the denominator rather than shown: it is lines
+ * the POS did not classify, and a fourth bar for "we don't know" would take
+ * attention from the three that decide the margin.
+ *
+ * Null when nothing was classified at all, which is honest — the bar would
+ * otherwise draw three empty thirds and read as an even split.
+ */
+export interface RetailMix {
+  regular: number;
+  ad: number;
+  tpr: number;
+  known: number;
+  regularPct: number;
+  adPct: number;
+  tprPct: number;
 }
 
-export interface PriceScale {
-  dots: ScaleDot[];
-  /** Where cost sits on the axis, or null when it is not known. */
-  costAt: string | null;
-  /** How much of the item sold below cost. Zero when cost is unknown. */
-  underAmount: number;
+export const retailMix = (r: TopItemRow): RetailMix | null => {
+  const regular = count(r.qty_regular);
+  const ad = count(r.qty_promo);
+  const tpr = count(r.qty_deal_item);
+  const known = regular + ad + tpr;
+  if (known <= 0) return null;
+  return {
+    regular,
+    ad,
+    tpr,
+    known,
+    regularPct: (regular / known) * 100,
+    adPct: (ad / known) * 100,
+    tprPct: (tpr / known) * 100,
+  };
+};
+
+/**
+ * What is actually selling the item, as a sentence.
+ *
+ * Leads the retail block, because "all on ad at $11.99" is the reason a
+ * margin is negative far more often than the cost is.
+ */
+export const retailSays = (
+  mix: RetailMix | null,
+  points: { price: number; units: number }[],
+  moneyFmt: (n: number) => string,
+): string => {
+  const top = points.length
+    ? points.reduce((m, p) => (p.units > m.units ? p : m))
+    : null;
+  const at = top ? ` at ${moneyFmt(top.price)}` : "";
+  if (!mix)
+    return points.length === 1 ? `One price all week${at}` : "Mixed retail";
+  if (mix.adPct >= 95) return `All on ad${at}`;
+  if (mix.regularPct >= 95) return `All at regular price${at}`;
+  if (mix.tprPct >= 95) return `All on a temporary reduction${at}`;
+  const off = mix.adPct + mix.tprPct;
+  if (off >= 50) return `${Math.round(off)}% sold on a reduced price${at}`;
+  return `Mostly at regular price${at}`;
+};
+
+/**
+ * The item's highest price this week, which is the nearest thing to its
+ * regular retail that this endpoint can show.
+ *
+ * It is NOT asserted to be the shelf price: a mid-week increase makes the
+ * highest price the new regular, and an item that only ever rang on ad has
+ * no higher price to find. Null below two prices, so the comparison it feeds
+ * simply does not appear rather than comparing a price with itself.
+ */
+export const topPriceOf = (
+  points: { price: number; units: number }[],
+): number | null =>
+  points.length < 2 ? null : Math.max(...points.map((p) => p.price));
+
+/** Margin at a given price, against the same cost. */
+export const marginAt = (
+  price: number | null,
+  cost: number | null,
+): number | null =>
+  price === null || cost === null || price <= 0
+    ? null
+    : ((price - cost) / price) * 100;
+
+/** Where a product code sits in a week's ranked list, 1-based. Null when it
+ *  is not in it at all, which is a finding rather than a missing value. */
+export const rankIn = (
+  rows: TopItemRow[],
+  productCode: string,
+  shown: number,
+): number | null => {
+  const i = rankBySales(rows, shown).findIndex(
+    (r) => r.product_code === productCode,
+  );
+  return i === -1 ? null : i + 1;
+};
+
+export interface RankHistory {
+  ly: number | null;
+  lw: number | null;
+  ty: number | null;
+  says: string;
 }
 
 /**
- * The prices an item rang at, on one axis with its cost.
+ * Whether the item being here is news.
  *
- * The two were separate readings -- a ladder of prices, and a bar comparing
- * an average price against cost -- and neither could say the thing they say
- * together: WHICH price is doing the losing. An item averaging $3.49 against
- * a $4.20 cost reads as uniformly under water, when in practice one price
- * point is usually carrying all of it and the rest are fine.
- *
- * Null below two prices. One dot and a cost line is not a chart, and a scale
- * item posts a single per-pound price, so that is the common case rather than
- * an edge one -- the caller says it in a sentence instead.
- *
- * Dot area, not diameter, tracks the amount: area is what the eye reads as
- * quantity, and a 187-unit dot beside a 3-unit one would otherwise be sixty
- * times too wide to fit. Floored at 8px so a one-unit price is still visible,
- * which is deliberate -- a price that rang once is exactly the kind a buyer
- * wants to see.
+ * An item that was not in the list last week is a different conversation
+ * from one that has sat at #40 all year, and the panel should say which
+ * before anybody reads a margin.
  */
-export const priceScale = (
-  points: { price: number; units: number; netSales: number }[],
-  cost: number | null,
-  isWeighedItem: boolean,
-  amountAt: (p: { price: number; units: number; netSales: number }) => number,
-): PriceScale | null => {
-  if (points.length < 2) return null;
+export const rankHistory = (
+  ty: number | null,
+  lw: number | null,
+  ly: number | null,
+): RankHistory => {
+  let says: string;
+  if (ty === null) says = "Not in the top 200 this week";
+  else if (lw === null && ly === null) says = "New to your top 200 this week";
+  else if (lw === null) says = "Back in the top 200 after a week out";
+  else if (lw - ty >= 20) says = `Up from #${lw} last week`;
+  else if (ty - lw >= 20) says = `Down from #${lw} last week`;
+  else says = `Holding around #${ty}`;
+  return { ly, lw, ty, says };
+};
 
-  const prices = points.map((p) => p.price);
-  const lo = Math.min(...prices, cost ?? Infinity);
-  const hi = Math.max(...prices, cost ?? -Infinity);
-  // A flat axis would stack every dot on one spot; pad it so the ends have
-  // somewhere to sit.
-  const pad = (hi - lo) * 0.12 || Math.max(hi * 0.05, 0.1);
-  const from = lo - pad;
-  const span = hi + pad - from;
-  const at = (v: number) => `${((v - from) / span) * 100}%`;
+/* The cuts the display check grades on.
+ *
+ * Starting values, not measured ones -- the same footing the comparison
+ * bands are on. A quarter of the list is where "a big seller" stops meaning
+ * anything, and 20% is the margin below which a display is giving volume
+ * away rather than buying it. Both want a real number from somebody who
+ * merchandises for a living. */
+export const DISPLAY_RANK_CUT = 50;
+export const DISPLAY_MARGIN_CUT = 20;
 
-  const amounts = points.map(amountAt);
-  const biggest = Math.max(...amounts, 1);
+export type CheckState = "pass" | "fail" | "unknown";
 
-  const dots = points
-    .map((p, i) => {
-      const amount = amounts[i];
-      return {
-        price: p.price,
-        amount,
-        amountText: isWeighedItem
-          ? `${amount.toLocaleString(undefined, { maximumFractionDigits: 1 })} lb`
-          : amount.toLocaleString(),
-        at: at(p.price),
-        size: Math.max(8, Math.round(Math.sqrt(amount / biggest) * 30)),
-        under: cost !== null && p.price < cost,
-      };
-    })
-    .sort((a, b) => a.price - b.price);
+export interface DisplayCheck {
+  label: string;
+  state: CheckState;
+  detail: string;
+}
 
-  return {
-    dots,
-    costAt: cost === null ? null : at(cost),
-    underAmount: dots.filter((d) => d.under).reduce((n, d) => n + d.amount, 0),
-  };
+export interface DisplayVerdict {
+  checks: DisplayCheck[];
+  says: string;
+  worth: boolean;
+}
+
+/**
+ * Whether the item is worth putting on display.
+ *
+ * Three readings it can make and one it cannot: nothing in this data says
+ * what is on display today. That check stays on the list as an open
+ * question rather than being dropped, because dropping it would let three
+ * ticks read as a yes when the thing may already be on an end cap.
+ */
+export const displayVerdict = (
+  rank: number | null,
+  margin: number | null,
+  vsLwPct: number | null,
+  isNew: boolean,
+  pctFmt: (n: number | null) => string,
+): DisplayVerdict => {
+  const checks: DisplayCheck[] = [
+    {
+      label: `Top ${DISPLAY_RANK_CUT} seller`,
+      state:
+        rank === null ? "unknown" : rank <= DISPLAY_RANK_CUT ? "pass" : "fail",
+      detail: rank === null ? "not ranked" : `#${rank}`,
+    },
+    {
+      label: `${DISPLAY_MARGIN_CUT}%+ margin`,
+      state:
+        margin === null
+          ? "unknown"
+          : margin >= DISPLAY_MARGIN_CUT
+            ? "pass"
+            : "fail",
+      detail: margin === null ? "cost not known" : `${margin.toFixed(1)}%`,
+    },
+    {
+      label: "Growing vs last week",
+      state: isNew
+        ? "unknown"
+        : vsLwPct === null
+          ? "unknown"
+          : vsLwPct > 0
+            ? "pass"
+            : "fail",
+      detail: isNew ? "new" : pctFmt(vsLwPct),
+    },
+    {
+      label: "Not already on display",
+      state: "unknown",
+      detail: "check in store",
+    },
+  ];
+
+  const failed = checks.filter((c) => c.state === "fail");
+  const worth = failed.length === 0;
+  const says = worth
+    ? "Worth a display"
+    : failed.some((c) => c.label.endsWith("margin"))
+      ? "Not a display pick — it loses money"
+      : `Not a display pick — ${failed[0].label.toLowerCase()} fails`;
+
+  return { checks, says, worth };
 };
