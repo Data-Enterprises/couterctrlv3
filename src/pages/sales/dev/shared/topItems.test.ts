@@ -562,7 +562,9 @@ describe("weighed items", () => {
   it("reports the amount in the unit the item has", () => {
     expect(amountOf(scale())).toBe(507.23);
     expect(amountUnit(scale())).toBe("lb");
-    expect(amountText(scale())).toBe("507.2 lb");
+    // Two decimals, the shared rule's: pounds are what the invoice is
+    // denominated in, and the second decimal is money.
+    expect(amountText(scale())).toBe("507.23 lb");
     expect(amountText(row({ qty: 1988, weight: 0 }))).toBe("1,988 units");
   });
 });

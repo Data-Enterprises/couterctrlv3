@@ -1,11 +1,10 @@
-import type {
-  TopItemRow,
-  TopItemPricePoint,
-} from "../../../../api/topItems";
 import {
-  gradeSeverity,
-  type Severity,
-} from "../../../../utils/severity";
+  formatPricedUnits,
+  isWeighted,
+  pricedUnits,
+} from "../../../../utils/pricedUnits";
+import type { TopItemRow, TopItemPricePoint } from "../../../../api/topItems";
+import { gradeSeverity, type Severity } from "../../../../utils/severity";
 
 /**
  * Top items — the arithmetic, with no React in it.
@@ -60,29 +59,28 @@ export const avgPrice = (r: TopItemRow): number | null =>
  * together or compare them: 507 pounds of ribeye and 507 bags of crisps are
  * not the same size of anything.
  */
-export const amountOf = (r: TopItemRow): number =>
-  weighed(r) ? r.weight : r.qty;
+export const amountOf = (r: TopItemRow): number => pricedUnits(r.qty, r.weight);
 
-/** `lb` or `units`, for whatever `amountOf` just returned. */
+/** `lb` or `units`, for whatever `amountOf` just returned. Spelled out
+ *  rather than `ea`, because this labels a total and not a rate. */
 export const amountUnit = (r: TopItemRow): "lb" | "units" =>
-  weighed(r) ? "lb" : "units";
+  isWeighted(r.weight) ? "lb" : "units";
 
-/** The amount with its unit, for a sentence. 1,213.5 lb, or 567 units. */
+/** The amount with its unit, for a sentence: 506.03 lb, or 567 units. */
 export const amountText = (r: TopItemRow): string =>
-  weighed(r)
-    ? `${r.weight.toLocaleString(undefined, { maximumFractionDigits: 1 })} lb`
-    : `${r.qty.toLocaleString()} units`;
+  isWeighted(r.weight)
+    ? formatPricedUnits(r.qty, r.weight)
+    : `${formatPricedUnits(r.qty, r.weight)} units`;
 
 /**
  * Whether this row sold by weight.
  *
- * The weight column decides it, not the department and not a flag: an item
- * filed in Produce that rang as a packaged bag has no weight on the row, and
- * a weighed one always does. Food Giant's scale rows carry `qty: 0` with the
- * amount in `weight`, so asking `qty` would call them empty.
+ * `isWeighted` is the shared rule, and the shared rule is the point: the Cost
+ * grid and the item report had already drifted apart on it once, which is why
+ * it lives in utils rather than beside either caller.
  */
 export const weighed = (r: { qty: number; weight: number }): boolean =>
-  r.weight > 0;
+  isWeighted(r.weight);
 
 /**
  * What one of it cost to buy — per pound on a weighed row.
@@ -299,8 +297,7 @@ export const compareWindows = (
 export const deltaPct = (
   now: number | null,
   before: number | null | undefined,
-): number | null =>
-  now === null ? null : pctChange(now, before);
+): number | null => (now === null ? null : pctChange(now, before));
 
 /** Margin moves in points, not percent: 22% to 11% is 11 points down, and
  *  calling it "-50%" invites someone to read it as half the sales. */
@@ -366,8 +363,7 @@ export const sortTopItems = (
   return [...rows].sort((a, b) => {
     if (sort.column === "item") {
       return (
-        dir *
-        a.ty.product_description.localeCompare(b.ty.product_description)
+        dir * a.ty.product_description.localeCompare(b.ty.product_description)
       );
     }
     const av = value(a);
@@ -463,22 +459,20 @@ export const deptRollups = (rows: TopItemCompared[]): DeptRollup[] => {
 
   rows.forEach((r) => {
     const name = deptName(r.ty);
-    const a =
-      acc.get(name) ??
-      {
-        items: 0,
-        ty: 0,
-        tyUnits: 0,
-        tyWeight: 0,
-        lw: 0,
-        lwUnits: 0,
-        lwSeen: false,
-        ly: 0,
-        lyUnits: 0,
-        lySeen: false,
-        offUnits: 0,
-        knownUnits: 0,
-      };
+    const a = acc.get(name) ?? {
+      items: 0,
+      ty: 0,
+      tyUnits: 0,
+      tyWeight: 0,
+      lw: 0,
+      lwUnits: 0,
+      lwSeen: false,
+      ly: 0,
+      lyUnits: 0,
+      lySeen: false,
+      offUnits: 0,
+      knownUnits: 0,
+    };
 
     a.items += 1;
     a.ty += r.ty.total_sales;
@@ -619,7 +613,7 @@ export const deptAmountText = (d: {
 }): string => {
   const parts: string[] = [];
   if (d.tyUnits > 0) parts.push(`${d.tyUnits.toLocaleString()} u`);
-  if (d.tyWeight > 0)
+  if (isWeighted(d.tyWeight))
     parts.push(
       `${d.tyWeight.toLocaleString(undefined, { maximumFractionDigits: 0 })} lb`,
     );
