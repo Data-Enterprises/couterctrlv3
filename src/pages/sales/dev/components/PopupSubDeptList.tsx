@@ -204,6 +204,10 @@ interface PopupSubDeptListProps {
   twRealDates: string[];
 }
 
+/** Sub departments whose item fetch is already in the air. Outside React
+ *  because it has to survive the remount it exists to absorb. */
+const inFlightItems = new Set<string>();
+
 const PopupSubDeptList = ({
   twDateLabel,
   lwDateLabel,
@@ -324,6 +328,11 @@ const PopupSubDeptList = ({
     // request — Redux still has it, only the component tree was torn down.
     const itemsKey = `${storeId}__${storeNumber}_${selectedId}_${selectedDate ?? "all"}`;
     if (lastFetchedItemsKey === itemsKey) return;
+    // The guard above lands only once the three calls have come back, so
+    // StrictMode's second mount read the state the first had not written yet
+    // and asked for all three again.
+    if (inFlightItems.has(itemsKey)) return;
+    inFlightItems.add(itemsKey);
 
     const twEnd = formatGoliathDate(search.singleDate);
     const twStart = addDays(search.singleDate, -6).toISOString().split("T")[0];
@@ -497,6 +506,7 @@ const PopupSubDeptList = ({
         );
         dispatch(setLastFetchedItemsKey(itemsKey));
       } finally {
+        inFlightItems.delete(itemsKey);
         if (!cancelled) setItemsLoading(false);
       }
     };
