@@ -120,6 +120,7 @@ const StoreRecords = () => {
     createNewStore(
       context.url,
       context.token,
+      form.storeid,
       form.store_number,
       form.store_name,
       form.company,
@@ -353,6 +354,7 @@ const StoreRecords = () => {
           existingNumbers={(stores ?? []).map((s) =>
             s.store_number.toLowerCase(),
           )}
+          existingIds={(stores ?? []).map((s) => s.storeid)}
           saving={saving}
           onSave={editing ? handleRename : handleCreate}
           onClose={() => {
