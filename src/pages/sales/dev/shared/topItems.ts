@@ -47,7 +47,42 @@ export const promoShare = (r: TopItemRow): number => {
  * individual prices are in `price_points` and the panel shows those too.
  */
 export const avgPrice = (r: TopItemRow): number | null =>
-  r.qty > 0 ? r.total_sales / r.qty : null;
+  weighed(r)
+    ? r.total_sales / r.weight
+    : r.qty > 0
+      ? r.total_sales / r.qty
+      : null;
+
+/**
+ * How much of the item sold, in whatever unit the item has.
+ *
+ * Pounds on a scale item, units on a packaged one. Nothing may add the two
+ * together or compare them: 507 pounds of ribeye and 507 bags of crisps are
+ * not the same size of anything.
+ */
+export const amountOf = (r: TopItemRow): number =>
+  weighed(r) ? r.weight : r.qty;
+
+/** `lb` or `units`, for whatever `amountOf` just returned. */
+export const amountUnit = (r: TopItemRow): "lb" | "units" =>
+  weighed(r) ? "lb" : "units";
+
+/** The amount with its unit, for a sentence. 1,213.5 lb, or 567 units. */
+export const amountText = (r: TopItemRow): string =>
+  weighed(r)
+    ? `${r.weight.toLocaleString(undefined, { maximumFractionDigits: 1 })} lb`
+    : `${r.qty.toLocaleString()} units`;
+
+/**
+ * Whether this row sold by weight.
+ *
+ * The weight column decides it, not the department and not a flag: an item
+ * filed in Produce that rang as a packaged bag has no weight on the row, and
+ * a weighed one always does. Food Giant's scale rows carry `qty: 0` with the
+ * amount in `weight`, so asking `qty` would call them empty.
+ */
+export const weighed = (r: { qty: number; weight: number }): boolean =>
+  r.weight > 0;
 
 /** Sales less cost. Null when the cost is not trustworthy, on the same rule
  *  the server uses to null the margin. */
@@ -132,7 +167,10 @@ export const topItemInsight = (
   const share = promoShare(r);
   const avg = avgPrice(r);
   const gp = grossProfit(r);
-  const unitCost = r.qty > 0 ? count(r.ext_cost) / r.qty : null;
+  // Per pound on a weighed row, so it sits against a per-pound price rather
+  // than against the cost of an average basket.
+  const amount = amountOf(r);
+  const unitCost = amount > 0 ? count(r.ext_cost) / amount : null;
 
   if (r.margin === null) {
     const cov = r.cost_coverage === null ? null : Math.round(r.cost_coverage);
@@ -140,7 +178,7 @@ export const topItemInsight = (
       tone: "unknown",
       label: "Margin not known",
       detail:
-        `${money(r.total_sales)} across ${r.qty.toLocaleString()} units, but ` +
+        `${money(r.total_sales)} across ${amountText(r)}, but ` +
         (cov === null
           ? "no line carried a cost"
           : `only ${cov}% of lines carried a cost`) +
@@ -168,7 +206,7 @@ export const topItemInsight = (
       label: "Selling below cost",
       detail:
         `An average ${money(avg)} against a ${money(unitCost)} cost, about ` +
-        `${money(gp ?? 0)} down over ${r.qty.toLocaleString()} units. Only ` +
+        `${money(gp ?? 0)} down over ${amountText(r)}. Only ` +
         `${pct(share)} of them were off regular price, so this is the cost ` +
         `rather than a promotion.`,
     };
@@ -191,7 +229,7 @@ export const topItemInsight = (
     label: "Holding up",
     detail:
       `${money(r.total_sales)} at ${r.margin.toFixed(1)}% over ` +
-      `${r.qty.toLocaleString()} units` +
+      `${amountText(r)}` +
       (share > 0 ? `, ${pct(share)} of them off regular price.` : "."),
   };
 };
@@ -368,6 +406,9 @@ export interface DeptRollup {
   items: number;
   ty: number;
   tyUnits: number;
+  /** Pounds in the department, summed separately. A department can hold both
+   *  kinds of item and the two never add together. */
+  tyWeight: number;
   /** Null when the department sold nothing that week — not zero. An absent
    *  baseline is a different statement from a baseline of nothing. */
   lw: number | null;
@@ -397,6 +438,7 @@ export const deptRollups = (rows: TopItemCompared[]): DeptRollup[] => {
       items: number;
       ty: number;
       tyUnits: number;
+      tyWeight: number;
       lw: number;
       lwUnits: number;
       lwSeen: boolean;
@@ -416,6 +458,7 @@ export const deptRollups = (rows: TopItemCompared[]): DeptRollup[] => {
         items: 0,
         ty: 0,
         tyUnits: 0,
+        tyWeight: 0,
         lw: 0,
         lwUnits: 0,
         lwSeen: false,
@@ -429,6 +472,7 @@ export const deptRollups = (rows: TopItemCompared[]): DeptRollup[] => {
     a.items += 1;
     a.ty += r.ty.total_sales;
     a.tyUnits += r.ty.qty;
+    a.tyWeight += r.ty.weight;
 
     const reg = count(r.ty.qty_regular);
     const promo = count(r.ty.qty_promo);
@@ -458,6 +502,7 @@ export const deptRollups = (rows: TopItemCompared[]): DeptRollup[] => {
       items: a.items,
       ty: a.ty,
       tyUnits: a.tyUnits,
+      tyWeight: a.tyWeight,
       lw: a.lwSeen ? a.lw : null,
       lwUnits: a.lwSeen ? a.lwUnits : null,
       ly: a.lySeen ? a.ly : null,
@@ -549,3 +594,23 @@ export const contributionGap = (
   now: number | null,
   then: number | null,
 ): number | null => (now === null || then === null ? null : now - then);
+
+/**
+ * A department's amount, in whichever units it actually has.
+ *
+ * Both when it holds both. A department of Food Giant scale items rolls up
+ * to nought rings, so printing units alone would put "0 u" under a five
+ * figure sales line.
+ */
+export const deptAmountText = (d: {
+  tyUnits: number;
+  tyWeight: number;
+}): string => {
+  const parts: string[] = [];
+  if (d.tyUnits > 0) parts.push(`${d.tyUnits.toLocaleString()} u`);
+  if (d.tyWeight > 0)
+    parts.push(
+      `${d.tyWeight.toLocaleString(undefined, { maximumFractionDigits: 0 })} lb`,
+    );
+  return parts.length ? parts.join(" · ") : "—";
+};

@@ -32,8 +32,12 @@ import {
   deptRollups,
   deptSeverity,
   deptSeverityCounts,
+  amountOf,
+  amountText,
   contributionGap,
+  deptAmountText,
   contributionOf,
+  weighed,
   topItemsTotals,
   deltaPct,
   deltaPoints,
@@ -394,10 +398,20 @@ const PopupTopItems = ({
     ? []
     : [
         {
-          label: "Units",
-          ty: selected.ty.qty.toLocaleString(),
-          lw: pctText(deltaPct(selected.ty.qty, selected.lw?.qty)),
-          ly: pctText(deltaPct(selected.ty.qty, selected.ly?.qty)),
+          label: weighed(selected.ty) ? "Pounds" : "Units",
+          ty: amountText(selected.ty),
+          lw: pctText(
+            deltaPct(
+              amountOf(selected.ty),
+              selected.lw ? amountOf(selected.lw) : undefined,
+            ),
+          ),
+          ly: pctText(
+            deltaPct(
+              amountOf(selected.ty),
+              selected.ly ? amountOf(selected.ly) : undefined,
+            ),
+          ),
         },
         {
           label: "Margin",
@@ -628,10 +642,10 @@ const PopupTopItems = ({
                     </span>
                     <span
                       className="block text-[10.5px] text-content/85 tabular-nums truncate"
-                      title={`${r.ty.product_code} · ${deptName(r.ty)} · ${r.ty.qty.toLocaleString()} units`}
+                      title={`${r.ty.product_code} · ${deptName(r.ty)} · ${amountText(r.ty)}`}
                     >
                       {r.ty.product_code} · {deptName(r.ty)} ·{" "}
-                      {r.ty.qty.toLocaleString()} units
+                      {amountText(r.ty)}
                     </span>
                   </span>
                   <span className="w-[68px] text-right text-[12px] font-semibold text-content tabular-nums flex-shrink-0 pl-2.5">
@@ -830,7 +844,7 @@ const PopupTopItems = ({
                           {money(d.ty)}
                         </span>
                         <span className="block text-[11px] tabular-nums">
-                          {d.tyUnits.toLocaleString()} u
+                          {deptAmountText(d)}
                         </span>
                       </span>
                       {(
@@ -933,7 +947,7 @@ const PopupTopItems = ({
                       {money(selected.ty.total_sales)}
                     </div>
                     <div className="text-[11.5px] font-semibold text-content/85 tabular-nums">
-                      {selected.ty.qty.toLocaleString()} units
+                      {amountText(selected.ty)}
                     </div>
                     <div className="text-[11px] text-content/85 truncate">
                       {deptName(selected.ty)}

@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest";
 import {
+  amountOf,
+  amountText,
+  amountUnit,
+  deptAmountText,
+  weighed,
   contributionGap,
   contributionOf,
   avgPrice,
@@ -27,6 +32,7 @@ const row = (over: Partial<TopItemRow> = {}): TopItemRow => ({
   store_name: "IGA GLASGOW KY",
   product_code: "7800004110",
   product_description: "RC 24 PK",
+  weight: 0,
   sub_department: 21,
   sub_department_description: "Soft Drinks",
   sub_department_count: 1,
@@ -180,10 +186,10 @@ describe("avgPrice and grossProfit", () => {
 
 describe("pointsFor", () => {
   const points: TopItemPricePoint[] = [
-    { storeid: 1, product_code: "A", product_description: "x", price: 8.99, units: 46, net_sales: 413.54 },
-    { storeid: 1, product_code: "A", product_description: "x", price: 15.99, units: 2, net_sales: 31.98 },
-    { storeid: 2, product_code: "A", product_description: "x", price: 8.99, units: 4, net_sales: 35.96 },
-    { storeid: 1, product_code: "B", product_description: "y", price: 1.0, units: 9, net_sales: 9 },
+    { storeid: 1, product_code: "A", product_description: "x", price: 8.99, units: 46, weight: 0, net_sales: 413.54 },
+    { storeid: 1, product_code: "A", product_description: "x", price: 15.99, units: 2, weight: 0, net_sales: 31.98 },
+    { storeid: 2, product_code: "A", product_description: "x", price: 8.99, units: 4, weight: 0, net_sales: 35.96 },
+    { storeid: 1, product_code: "B", product_description: "y", price: 1.0, units: 9, weight: 0, net_sales: 9 },
   ];
 
   it("takes only the item asked for", () => {
@@ -392,6 +398,7 @@ describe("deptSeverity", () => {
     items: 1,
     ty: 100,
     tyUnits: 10,
+    tyWeight: 0,
     lw: vsLW === null ? null : 90,
     lwUnits: null,
     ly: vsLY === null ? null : 90,
@@ -526,5 +533,56 @@ describe("contributionGap", () => {
   it("needs both sides", () => {
     expect(contributionGap(41, null)).toBeNull();
     expect(contributionGap(null, 38)).toBeNull();
+  });
+});
+
+describe("weighed items", () => {
+  const scale = (over: Partial<TopItemRow> = {}) =>
+    row({ qty: 0, weight: 507.23, total_sales: 5981.29, ...over });
+
+  it("knows a row by its weight, not by its qty", () => {
+    expect(weighed(scale())).toBe(true);
+    expect(weighed(row({ qty: 265, weight: 0 }))).toBe(false);
+  });
+
+  it("prices a weighed row per pound", () => {
+    // Food Giant rings every scale item at qty 0, so dividing by qty gave
+    // null and dividing by rings elsewhere gave the price of a basket.
+    expect(avgPrice(scale())).toBeCloseTo(11.79, 2);
+  });
+
+  it("still prices a packaged row per unit", () => {
+    expect(avgPrice(row({ qty: 100, weight: 0, total_sales: 250 }))).toBe(2.5);
+  });
+
+  it("has no price for a row that sold nothing either way", () => {
+    expect(avgPrice(row({ qty: 0, weight: 0, total_sales: 0 }))).toBeNull();
+  });
+
+  it("reports the amount in the unit the item has", () => {
+    expect(amountOf(scale())).toBe(507.23);
+    expect(amountUnit(scale())).toBe("lb");
+    expect(amountText(scale())).toBe("507.2 lb");
+    expect(amountText(row({ qty: 1988, weight: 0 }))).toBe("1,988 units");
+  });
+});
+
+describe("deptAmountText", () => {
+  it("prints both when a department holds both", () => {
+    expect(deptAmountText({ tyUnits: 1200, tyWeight: 507.2 })).toBe(
+      "1,200 u · 507 lb",
+    );
+  });
+
+  it("prints pounds alone for a department of scale items", () => {
+    expect(deptAmountText({ tyUnits: 0, tyWeight: 507.2 })).toBe("507 lb");
+  });
+
+  it("prints units alone for a packaged department", () => {
+    expect(deptAmountText({ tyUnits: 1200, tyWeight: 0 })).toBe("1,200 u");
+  });
+
+  it("prints a dash rather than a nought", () => {
+    expect(deptAmountText({ tyUnits: 0, tyWeight: 0 })).toBe("—");
   });
 });
