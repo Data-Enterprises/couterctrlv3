@@ -413,6 +413,69 @@ const PopupTopItems = ({
 
   const insight = selected ? topItemInsight(selected.ty, points) : null;
 
+  /** Where it sits in the list, and how much of the list it is. */
+  const rank = selected
+    ? ranked.findIndex((r) => r.ty.product_code === selected.ty.product_code) +
+      1
+    : 0;
+  const shareOfTop =
+    selected && totals.ty > 0
+      ? (selected.ty.total_sales / totals.ty) * 100
+      : null;
+
+  /*
+   * The headline price.
+   *
+   * One price point IS the price — read it off the row rather than dividing
+   * sales by amount, which only lands on the same number when nothing moved
+   * all week. With several, the blended average is the honest single figure
+   * and the ladder below shows what it is blending.
+   */
+  const headlinePrice =
+    points.length === 1
+      ? points[0].price
+      : selected
+        ? avgPrice(selected.ty)
+        : null;
+
+  const perUnitCost = selected ? unitCost(selected.ty) : null;
+
+  /** What kind of retail sold it, this week's rank history, and whether it
+   *  is worth a display. All of it off rows already in hand. */
+  const mix = useMemo(
+    () => (selected ? retailMix(selected.ty) : null),
+    [selected],
+  );
+  const topPrice = useMemo(() => topPriceOf(points), [points]);
+  const topMargin = useMemo(
+    () => marginAt(topPrice, perUnitCost),
+    [topPrice, perUnitCost],
+  );
+
+  const history = useMemo(() => {
+    if (!selected) return rankHistory(null, null, null);
+    const code = selected.ty.product_code;
+    return rankHistory(
+      rank || null,
+      rankIn(topItemsLW, code, TOP_ITEMS_SHOWN),
+      rankIn(topItemsLY, code, TOP_ITEMS_SHOWN),
+    );
+  }, [selected, rank, topItemsLW, topItemsLY]);
+
+  const display = useMemo(
+    () =>
+      selected
+        ? displayVerdict(
+            rank || null,
+            selected.ty.margin,
+            selected.vsLW,
+            !selected.lw,
+            pctText,
+          )
+        : displayVerdict(null, null, null, false, pctText),
+    [selected, rank],
+  );
+
   if (topItemsLoading && !haveRows) {
     return (
       <div className="relative h-full">
@@ -497,69 +560,6 @@ const PopupTopItems = ({
           ),
         },
       ];
-
-  /** Where it sits in the list, and how much of the list it is. */
-  const rank = selected
-    ? ranked.findIndex((r) => r.ty.product_code === selected.ty.product_code) +
-      1
-    : 0;
-  const shareOfTop =
-    selected && totals.ty > 0
-      ? (selected.ty.total_sales / totals.ty) * 100
-      : null;
-
-  /*
-   * The headline price.
-   *
-   * One price point IS the price — read it off the row rather than dividing
-   * sales by amount, which only lands on the same number when nothing moved
-   * all week. With several, the blended average is the honest single figure
-   * and the ladder below shows what it is blending.
-   */
-  const headlinePrice =
-    points.length === 1
-      ? points[0].price
-      : selected
-        ? avgPrice(selected.ty)
-        : null;
-
-  const perUnitCost = selected ? unitCost(selected.ty) : null;
-
-  /** What kind of retail sold it, this week's rank history, and whether it
-   *  is worth a display. All of it off rows already in hand. */
-  const mix = useMemo(
-    () => (selected ? retailMix(selected.ty) : null),
-    [selected],
-  );
-  const topPrice = useMemo(() => topPriceOf(points), [points]);
-  const topMargin = useMemo(
-    () => marginAt(topPrice, perUnitCost),
-    [topPrice, perUnitCost],
-  );
-
-  const history = useMemo(() => {
-    if (!selected) return rankHistory(null, null, null);
-    const code = selected.ty.product_code;
-    return rankHistory(
-      rank || null,
-      rankIn(topItemsLW, code, TOP_ITEMS_SHOWN),
-      rankIn(topItemsLY, code, TOP_ITEMS_SHOWN),
-    );
-  }, [selected, rank, topItemsLW, topItemsLY]);
-
-  const display = useMemo(
-    () =>
-      selected
-        ? displayVerdict(
-            rank || null,
-            selected.ty.margin,
-            selected.vsLW,
-            !selected.lw,
-            pctText,
-          )
-        : displayVerdict(null, null, null, false, pctText),
-    [selected, rank],
-  );
 
   const perUnitMargin =
     headlinePrice !== null && perUnitCost !== null
@@ -1266,123 +1266,9 @@ const PopupTopItems = ({
                   )}
                 </div>
 
-                {/* 3 — is any of this new. An item that has sat at #40 all
-                    year is a different conversation from one that arrived
-                    this week, and that has to be said before anybody reads
-                    the margin above. */}
+                {/* What it costs to buy, with the cost it compares
+                    against directly above it. */}
                 <div className="px-4 py-2.5 border-b border-gray-100">
-                  <div className="text-[14px] font-bold text-content leading-snug">
-                    {history.says}
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-2 mt-2">
-                    {(
-                      [
-                        ["Last year", history.ly],
-                        ["Last week", history.lw],
-                        ["This week", history.ty],
-                      ] as const
-                    ).map(([label, at], i) => (
-                      <div
-                        key={label}
-                        className={`rounded-md px-2.5 py-2 ${i === 2 ? "bg-row_selected border border-row_selected_border" : "bg-bkg"}`}
-                      >
-                        <div className="text-[11px] text-content/85">
-                          {label}
-                        </div>
-                        <div className="text-[13.5px] font-semibold text-content tabular-nums">
-                          {at === null ? "not in top 200" : `#${at}`}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="grid grid-cols-[1fr_84px_62px_62px] gap-1.5 mt-2.5 pb-1 text-[10px] font-bold uppercase tracking-wide text-content/85">
-                    <span />
-                    <span className="text-right">This week</span>
-                    <span className="text-right">vs LW</span>
-                    <span className="text-right">vs LY</span>
-                  </div>
-                  {metricRows.map((m) => (
-                    <div
-                      key={m.label}
-                      className="grid grid-cols-[1fr_84px_62px_62px] gap-1.5 items-center py-1 border-t border-gray-100 text-[11.5px]"
-                    >
-                      <span className="text-content/85 truncate">
-                        {m.label}
-                      </span>
-                      <span className="text-[12.5px] font-semibold text-content text-right tabular-nums">
-                        {m.ty}
-                      </span>
-                      <span className="text-[12px] font-semibold text-content text-right tabular-nums">
-                        {m.lw}
-                      </span>
-                      <span className="text-[12px] font-semibold text-content text-right tabular-nums">
-                        {m.ly}
-                      </span>
-                    </div>
-                  ))}
-
-                  {/* The gap, named. Deliveries are a different endpoint and
-                      this tab does not call it; saying so beats a bar that
-                      cannot be drawn. */}
-                  <p className="text-[11px] text-content/85 mt-1.5 leading-snug">
-                    What arrived this week is not read here &mdash; the
-                    department investigation reads ordering against sales.
-                  </p>
-                </div>
-
-                {/* 4 — should it be on display. Three readings it can make
-                    and one it cannot. */}
-                <div className="px-4 py-2.5 border-b border-gray-100">
-                  <div
-                    className={`text-[14px] font-bold leading-snug ${
-                      display.worth
-                        ? "text-severity_healthy_text"
-                        : "text-severity_critical_text"
-                    }`}
-                  >
-                    {display.says}
-                  </div>
-                  <div className="mt-1.5">
-                    {display.checks.map((c) => (
-                      <div
-                        key={c.label}
-                        className="flex items-center gap-2 py-1 border-b border-gray-100 last:border-b-0 text-[12.5px]"
-                      >
-                        <span
-                          className={`w-4 h-4 rounded-full flex-shrink-0 flex items-center justify-center text-[10px] font-bold ${
-                            c.state === "pass"
-                              ? "bg-severity_healthy_bg text-severity_healthy_text"
-                              : c.state === "fail"
-                                ? "bg-severity_critical_bg text-severity_critical_text"
-                                : "bg-gray-100 text-content/85"
-                          }`}
-                          aria-hidden="true"
-                        >
-                          {c.state === "pass"
-                            ? "\u2713"
-                            : c.state === "fail"
-                              ? "\u2715"
-                              : "?"}
-                        </span>
-                        <span className="min-w-0 flex-1 truncate text-content">
-                          {c.label}
-                        </span>
-                        <span className="flex-shrink-0 text-content/85 tabular-nums">
-                          {c.detail}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                  <p className="text-[11px] text-content/85 mt-1.5 leading-snug">
-                    Nothing here says what is on display today &mdash; that one
-                    needs a look in the store.
-                  </p>
-                </div>
-
-                {/* What it costs to buy. */}
-                <div className="px-4 py-2.5">
                   <div className="flex items-baseline justify-between gap-2">
                     <span className="text-[10px] font-bold uppercase tracking-wide text-content/85">
                       What it costs to buy
@@ -1461,6 +1347,121 @@ const PopupTopItems = ({
                       </div>
                     </div>
                   )}
+                </div>
+
+                {/* 3 — is any of this new. An item that has sat at #40 all
+                    year is a different conversation from one that arrived
+                    this week, and that has to be said before anybody reads
+                    the margin above. */}
+                <div className="px-4 py-2.5 border-b border-gray-100">
+                  <div className="text-[14px] font-bold text-content leading-snug">
+                    {history.says}
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2 mt-2">
+                    {(
+                      [
+                        ["Last year", history.ly],
+                        ["Last week", history.lw],
+                        ["This week", history.ty],
+                      ] as const
+                    ).map(([label, at], i) => (
+                      <div
+                        key={label}
+                        className={`rounded-md px-2.5 py-2 ${i === 2 ? "bg-row_selected border border-row_selected_border" : "bg-bkg"}`}
+                      >
+                        <div className="text-[11px] text-content/85">
+                          {label}
+                        </div>
+                        <div className="text-[13.5px] font-semibold text-content tabular-nums">
+                          {at === null ? "not in top 200" : `#${at}`}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="grid grid-cols-[1fr_84px_62px_62px] gap-1.5 mt-2.5 pb-1 text-[10px] font-bold uppercase tracking-wide text-content/85">
+                    <span />
+                    <span className="text-right">This week</span>
+                    <span className="text-right">vs LW</span>
+                    <span className="text-right">vs LY</span>
+                  </div>
+                  {metricRows.map((m) => (
+                    <div
+                      key={m.label}
+                      className="grid grid-cols-[1fr_84px_62px_62px] gap-1.5 items-center py-1 border-t border-gray-100 text-[11.5px]"
+                    >
+                      <span className="text-content/85 truncate">
+                        {m.label}
+                      </span>
+                      <span className="text-[12.5px] font-semibold text-content text-right tabular-nums">
+                        {m.ty}
+                      </span>
+                      <span className="text-[12px] font-semibold text-content text-right tabular-nums">
+                        {m.lw}
+                      </span>
+                      <span className="text-[12px] font-semibold text-content text-right tabular-nums">
+                        {m.ly}
+                      </span>
+                    </div>
+                  ))}
+
+                  {/* The gap, named. Deliveries are a different endpoint and
+                      this tab does not call it; saying so beats a bar that
+                      cannot be drawn. */}
+                  <p className="text-[11px] text-content/85 mt-1.5 leading-snug">
+                    What arrived this week is not read here &mdash; the
+                    department investigation reads ordering against sales.
+                  </p>
+                </div>
+
+                {/* 4 — should it be on display. Three readings it can make
+                    and one it cannot. */}
+                <div className="px-4 py-2.5">
+                  <div
+                    className={`text-[14px] font-bold leading-snug ${
+                      display.worth
+                        ? "text-severity_healthy_text"
+                        : "text-severity_critical_text"
+                    }`}
+                  >
+                    {display.says}
+                  </div>
+                  <div className="mt-1.5">
+                    {display.checks.map((c) => (
+                      <div
+                        key={c.label}
+                        className="flex items-center gap-2 py-1 border-b border-gray-100 last:border-b-0 text-[12.5px]"
+                      >
+                        <span
+                          className={`w-4 h-4 rounded-full flex-shrink-0 flex items-center justify-center text-[10px] font-bold ${
+                            c.state === "pass"
+                              ? "bg-severity_healthy_bg text-severity_healthy_text"
+                              : c.state === "fail"
+                                ? "bg-severity_critical_bg text-severity_critical_text"
+                                : "bg-gray-100 text-content/85"
+                          }`}
+                          aria-hidden="true"
+                        >
+                          {c.state === "pass"
+                            ? "\u2713"
+                            : c.state === "fail"
+                              ? "\u2715"
+                              : "?"}
+                        </span>
+                        <span className="min-w-0 flex-1 truncate text-content">
+                          {c.label}
+                        </span>
+                        <span className="flex-shrink-0 text-content/85 tabular-nums">
+                          {c.detail}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-[11px] text-content/85 mt-1.5 leading-snug">
+                    Nothing here says what is on display today &mdash; that one
+                    needs a look in the store.
+                  </p>
                 </div>
 
                 {/* The way into the invoices. They were a folded section

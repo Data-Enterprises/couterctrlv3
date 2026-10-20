@@ -87,8 +87,12 @@ Needed by non-Coming-Soon pages:
 - [ ] `mobile/perf/PerfDelta.tsx` — sales, shared/itemPerf, shared/eventPerf
 - [ ] `charts/TrendLine.tsx` — salesTracker only
 
-Leave behind (Coming Soon only): `ComingSoonHelp`, `ConfirmDelete`,
-`inputs/TextField`.
+Also needed once the Coming Soon releases go (Step 8):
+
+- [ ] `ComingSoonHelp.tsx` — Item Actions, Sales Tracker
+- [ ] `inputs/TextField.tsx` — Tickets
+
+Leave behind: `ConfirmDelete` (exportBuilder only, staying in Coming Soon).
 
 `scanner/` already exists in both libraries and is identical — nothing to do,
 and `lookup/prod/DevUpcScanner.tsx` already imports the prod one.
@@ -203,22 +207,114 @@ keep `info=` working — more work than promoting them together.
 - [ ] Delete `lookupInfo.ts`
 - [ ] Alone so it can be reverted alone — it changes what the page returns
 
-### Step 8 — Item Actions + Sales Tracker
-Both frontend-only. No backend work — every endpoint is already on prod.
-- [ ] `promote:page itemReport`, `promote:page salesTracker`
-- [ ] Remove both from `COMING_SOON_CATEGORY` in `navigation/utils.tsx`,
-      restore `userLevels: ["*"]`
-- [ ] Add both to the **flat list** at the top of that file (the Settings nav
-      editor source) — both are absent from it today
-- [ ] Delete the `DevOnlyNotice` gate in `pages/itemReport/ItemReport.tsx` and
-      `pages/salesTracker/SalesTracker.tsx`
-- [ ] Replace `ComingSoonHelp` with real help, or copy `ComingSoonHelp` across
-      and accept the placeholder. Neither page is in `HELP_PAGES`.
-- [ ] `charts/TrendLine` → `components/` for salesTracker
-- [ ] Components: `SingleStoreSearchCard`, `filters/MultiSelectFilter`,
-      `filters/SelectFilter`, `SearchCard`, `SortHeader`
-- [ ] **Leave `useTrackerEndpoint = false` alone.** `subs/sales_tracker` exists
-      on no backend branch; flipping it 404s on both APIs.
+### Step 8 — Coming Soon releases
+
+Four page trees, five nav entries. Verified 2026-10-20: all four pass
+`check:split` in full (mirror, isolation, state, dev-only gating, imports,
+dead code), **96 tests across 7 files pass**, and `npx tsc -b` is clean.
+
+All five are `mobile: false` and none has any mobile code — nothing to trash.
+None is in `HELP_PAGES`.
+
+#### 8a. Price Opt Sub Dept + Price Opt Vendor — cleanest, no backend dependency
+One tree (`pages/inventory`, 7 files, 1,955 lines), two nav entries, two
+switchers.
+- [ ] `promote:page inventory`
+- [ ] Calls `subs/sub_sales` only — **already on backend prod**. This one can
+      ship without waiting for the API deploy.
+- [ ] Components: `SingleStoreSearchCard` (39)
+- [ ] Both already in the flat nav list — only the Coming Soon entries and
+      `userLevels` need changing
+- [ ] Delete the `DevOnlyNotice` gate in `InventorySubDept.tsx` and
+      `InventoryVendor.tsx` (two switchers, not one)
+- [ ] No help of any kind today
+
+#### 8b. Item Actions — the optimized query is real
+`pages/itemReport`, 13 files, 6,340 lines.
+- [ ] `promote:page itemReport`
+- [ ] Endpoints: **`subs/item_actions`** (the optimized query — on backend
+      `dev`, **not** prod, so this waits on Step 0), plus `subs/subs`,
+      `receivers/`, `receivers/details`, `receivers/item_search`,
+      `cashiers/transaction_list`, all already on prod
+- [ ] Batches through `ITEM_ACTIONS_MAX_CODES`
+- [ ] Components: `ComingSoonHelp` (new), `SingleStoreSearchCard` (39),
+      `filters/MultiSelectFilter` (150), `filters/SelectFilter` (133)
+- [ ] Already in the flat nav list
+- [ ] Uses `ComingSoonHelp` in 2 places — replace or carry the placeholder
+
+#### 8c. Sales Tracker — endpoint exists, but it is uncommitted
+`pages/salesTracker`, 13 files, 2,352 lines.
+- [ ] **Backend: commit it.** `/subs/sales_tracker` is in the working tree of
+      `branch_10_20_2026` — 454 uncommitted lines in `api/routers/subs.py`. It
+      is on no ref, so it is not on `dev` and not on `prod`. Commit → merge to
+      `dev` → it rides Step 0.
+- [ ] **Frontend: flip the flag.** `useTrackerEndpoint` in
+      `SalesTracker.tsx:114` is a hard `false` (commit `cb3e3236`, "sub_sales
+      again: the tracker endpoint is not on dev"). Until it is `true` the page
+      ships on the old two-paged-read path no matter what the API has. The
+      measured difference was ~52s → ~7s for 5 stores over 12 weeks.
+- [ ] Contract checked end to end, it matches:
+      - request — frontend sends `{dates, useGroups, searchValue,
+        singleStore}`; `SalesTrackerRequest` takes exactly those, with
+        `singleStore` defaulted
+      - dates — frontend produces ISO `YYYY-MM-DD` via
+        `toISOString().split("T")[0]`; Pydantic `list[date]` parses that
+      - success — route returns `{error: 0, total_records, subs}`;
+        `trackerCall` checks `error !== 0` then reads `subs`
+      - over-budget — route raises 400 with a structured detail
+        (`reason: "store_days_exceeded"`, `store_days`, `max_store_days`,
+        `msg`); `trackerError` reads `response.data.detail` and handles both a
+        string and an object with `msg`
+- [ ] `MAX_TRACKER_STORE_DAYS` env var, default 1200. Requests batch 2 weeks at
+      a time, so a 5-store search is 5 × 14 = 70 store-days per call — far
+      under. Nothing to set unless a very large group needs headroom.
+- [ ] `subs/sub_sales` (the fallback path) is already on prod
+- [ ] Components: `ComingSoonHelp` (new), `charts/TrendLine` (new),
+      `SearchCard` (16), `SortHeader` (6)
+- [ ] **Missing from the flat nav list** — add it
+- [ ] Uses `ComingSoonHelp` in 1 place
+
+#### 8d. Tickets — most prerequisites, and they are not all code
+`pages/tickets`, 12 files (+5 test files), 3,405 lines.
+- [ ] `promote:page tickets`
+- [ ] Backend: the whole `/tickets` router is **dev-only** (routes `/`,
+      `/assignees`, `/lookups`, `/techs`, `/techs/candidates`,
+      `/techs/{id}`, `/{id}`, `/{id}/comments`). Ships with Step 0.
+      `groups/stores_assigned_to_user_group` is already on prod.
+- [ ] **Database:** `db/ticket_workflow.sql` exists only on backend `dev`. It
+      ALTERs `public.tickets`, creates `ticket_products` and two indexes.
+      Confirm whether the prod stage points at the same database as dev — the
+      DB is chosen by `DB_HOST`/`DB_NAME`/`DB_SECRET_NAME` env vars, so the
+      repo cannot answer it. If it is a separate database, run that SQL first
+      or every ticket call fails.
+- [ ] **Env on the prod stage** (`api/ticket_notify.py`):
+      - `TICKET_EMAIL_ENABLED` — unset means mail silently never sends
+      - `TICKET_APP_URL` — blank means notification mails carry no link
+      - `TICKET_EMAIL_REDIRECT_TO` — **must be unset on prod.** If the prod
+        stage inherits dev's value, every client's ticket mail goes to that
+        one address.
+- [ ] **`src/App.tsx:152`** renders `ReportIssueModal` behind
+      `context.apiEnv === "dev"`. That is outside the page tree, so
+      `check:split` does not see it. Decide whether "Report an issue" goes
+      live with Tickets, and change that line deliberately.
+- [ ] Components: `Checkbox` (new), `inputs/TextField` (new), `Modal` (6),
+      `filters/MultiSelectFilter` (150), `filters/SelectFilter` (133)
+- [ ] **Missing from the flat nav list** — add it
+- [ ] No help of any kind today
+
+#### Common to all four
+- [ ] Remove each entry from `COMING_SOON_CATEGORY` in `navigation/utils.tsx`
+      and restore `userLevels: ["*"]` (all five sit at `COMING_SOON_LEVELS`
+      today)
+- [ ] Delete the `apiEnv !== "dev" || url !== DEV_API_URL → DevOnlyNotice`
+      gate in each switcher
+- [ ] `inputs/TextField` and `ComingSoonHelp` were on the "leave behind" list
+      in the component section — Tickets and Item Actions/Sales Tracker pull
+      them into prod. Update that list.
+
+#### Staying in Coming Soon
+LP Actions, Sales Export, AWG Invoices, Upc Scanner (all
+`PROGRAMMER_ONLY_LEVELS`), and Suggested Weight (commented out).
 
 ### Step 9 — organization + admin + groups
 Backend must be live first.
