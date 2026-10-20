@@ -2649,6 +2649,8 @@ export interface InvoiceRow {
   reconciled: boolean;
   /** Set when the invoice couldn't be checked at all — no total record. */
   note?: string;
+  /** Allowance on the vendor's total that no record in the file carries. */
+  unitemizedAllowance: string | null;
   checks: {
     label: string;
     derived: string;

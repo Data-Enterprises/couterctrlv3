@@ -31,6 +31,16 @@ export interface ReconcileResult {
   ok: boolean;
   /** Set when the invoice couldn't be checked at all, rather than failing. */
   note?: string;
+  /**
+   * Allowance the `19` total nets that no detail record carries.
+   *
+   * Set only when the cost and allowance checks both miss by this same amount,
+   * which is the signature of it: meat invoices carry flat allowances of a few
+   * dollars on the total alone. It is reported, not added in — the file gives
+   * no record of it, so counting it would pass the invoice on nothing but its
+   * own total.
+   */
+  unitemizedAllowance?: Decimal;
 }
 
 /** Sums one signed field across records, skipping any that didn't decode to a
@@ -74,15 +84,25 @@ export const reconcileInvoice = (invoice: AwgInvoice): ReconcileResult => {
 
   const totals = invoice.total.fields;
 
+  // Pallet allowances come on their own `03` records and are not netted into
+  // any line, but the vendor's total counts them in both its cost and its
+  // allowances. Left out, every invoice with one fails both checks by exactly
+  // its amount.
+  const palletAllowances = sumField(
+    invoice.palletAllowances,
+    "ba_retail_ext",
+    2,
+  );
+
   const checks: ReconcileCheck[] = [
     // Delivery charges are billed on their own record type but included in the
     // invoice's cost total, so the derived side has to add them or every
     // invoice carrying a delivery fee reports a mismatch.
     check(
-      "Total cost (line items + delivery fees)",
-      sumField(invoice.lineItems, "cost_ext", 2).add(
-        sumField(invoice.deliveryCharges, "cost_ext", 2),
-      ),
+      "Total cost (line items + delivery fees − pallet allowances)",
+      sumField(invoice.lineItems, "cost_ext", 2)
+        .add(sumField(invoice.deliveryCharges, "cost_ext", 2))
+        .subtract(palletAllowances),
       reported(totals.cost_ext, 2),
     ),
     check(
@@ -92,7 +112,7 @@ export const reconcileInvoice = (invoice: AwgInvoice): ReconcileResult => {
     ),
     check(
       "Total allowances",
-      sumField(invoice.deals, "deal_amount", 2),
+      sumField(invoice.deals, "deal_amount", 2).add(palletAllowances),
       reported(totals.deal_amount, 2),
     ),
     // Whole cases, so scale 0 — comparing this at scale 2 would still be
@@ -104,10 +124,19 @@ export const reconcileInvoice = (invoice: AwgInvoice): ReconcileResult => {
     ),
   ];
 
+  const [cost, , allowances] = checks;
+  const missing = allowances.reported.subtract(allowances.derived);
+  const unitemized =
+    !cost.ok &&
+    !allowances.ok &&
+    missing.units > 0n &&
+    cost.derived.subtract(cost.reported).equals(missing);
+
   return {
     invoiceNbr: invoice.invoiceNbr,
     checks,
     ok: checks.every((entry) => entry.ok),
+    ...(unitemized ? { unitemizedAllowance: missing } : {}),
   };
 };
 

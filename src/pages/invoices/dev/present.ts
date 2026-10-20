@@ -109,6 +109,12 @@ export const presentInvoices = (
     const deliveryCosts = invoice.deliveryCharges.map((r) =>
       money(r.fields.cost_ext),
     );
+    // The same netting reconciliation does, so the figures above the checks
+    // agree with the derived side of them.
+    const palletAllowances = sumDecimals(
+      invoice.palletAllowances.map((r) => money(r.fields.ba_retail_ext)),
+      2,
+    );
 
     return {
       id: `${invoice.storeNbr}-${invoice.invoiceNbr}`,
@@ -121,7 +127,9 @@ export const presentInvoices = (
         ? formatDateSimple(invoice.deliveryDate)
         : null,
       lineCount: invoice.lineItems.length,
-      totalCost: sumDecimals([...lineCosts, ...deliveryCosts], 2).toString(),
+      totalCost: sumDecimals([...lineCosts, ...deliveryCosts], 2)
+        .subtract(palletAllowances)
+        .toString(),
       totalRetail: sumDecimals(
         invoice.lineItems.map((r) => money(r.fields.ba_retail_ext)),
         2,
@@ -129,13 +137,16 @@ export const presentInvoices = (
       totalAllowances: sumDecimals(
         invoice.deals.map((r) => money(r.fields.deal_amount)),
         2,
-      ).toString(),
+      )
+        .add(palletAllowances)
+        .toString(),
       totalCases: sumDecimals(
         invoice.lineItems.map((r) => count(r.fields.case_qty_billed)),
         0,
       ).toString(),
       reconciled: result?.ok ?? false,
       note: result?.note,
+      unitemizedAllowance: result?.unitemizedAllowance?.toString() ?? null,
       checks: (result?.checks ?? []).map((check) => ({
         label: check.label,
         derived: check.derived.toString(),

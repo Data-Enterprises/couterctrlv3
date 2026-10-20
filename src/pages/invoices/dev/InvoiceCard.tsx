@@ -186,6 +186,14 @@ const InvoiceCard = ({
               ))}
             </div>
 
+            {row.unitemizedAllowance && (
+              <p className="mt-2 rounded bg-severity_watch_bg px-2 py-1.5 text-[12px] text-severity_watch_text">
+                The vendor&rsquo;s total includes ${row.unitemizedAllowance} of
+                allowances that no deal record in the file carries. Cost and
+                allowances both differ by exactly that amount.
+              </p>
+            )}
+
             {/* Repeated random-weight lines each carry the group's extended
                 retail, so the derived retail counts it once per line. One
                 line per group is how the vendor's total reads it. */}
