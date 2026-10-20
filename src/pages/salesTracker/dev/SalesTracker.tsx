@@ -97,21 +97,27 @@ const SalesTracker = () => {
   const searchValue = isGroup ? search.lastGroup : search.lastStore;
 
   /**
-   * EXPERIMENT, PARKED. `subs/sales_tracker` instead of two paged
-   * `subs/sub_sales` reads.
+   * `subs/sales_tracker` instead of two paged `subs/sub_sales` reads.
    *
-   * Off outright rather than gated on `apiEnv`, because the endpoint is not on
-   * the API yet — on dev it would 404, and the API toggle is reachable by
-   * anyone at level 7. A hard `false` means the branch is publish-safe no
-   * matter which backend is selected.
+   * On for dev, because that is where the endpoint is. It is not on prod yet,
+   * and the API toggle is reachable by anyone at level 7, so gating on the
+   * selected backend — not on a hard `true` — is what keeps the branch
+   * publish-safe: a prod session takes the `fetchSubSales` path and never asks
+   * for a route that would 404.
    *
-   * To resume the comparison, change this to `context.apiEnv === "dev"`. The
-   * measurements it produced: 5 stores over 12 weeks went from ~52s across two
-   * paged reads to ~7s across 12 pooled requests, on the same ~1.15MB — the
-   * cost was query time, never payload. Delete the flag and the `fetchSubSales`
-   * path once the endpoint ships for good.
+   * The two paths agree. Same `total_sales` and `net_sales` expressions, same
+   * sale_type allow-list, `void_flag`, ring filter, dept-transfer and
+   * untendered-modified rules, same company-4 weight scaling and coupon
+   * re-pointing; `transaction_count` is a per-basket `COUNT(*)` against
+   * `get_sub_sales`'s `COUNT(DISTINCT ...)` over the same dimensions. Of the
+   * six fields this page reads, none differs.
+   *
+   * What it buys: 5 stores over 12 weeks went from ~52s across two paged reads
+   * to ~7s across 12 pooled requests, on the same ~1.15MB — the cost was query
+   * time, never payload. Drop the flag and the `fetchSubSales` path once the
+   * endpoint is on prod too.
    */
-  const useTrackerEndpoint = false;
+  const useTrackerEndpoint = context.apiEnv === "dev";
   const scope = {
     url: context.url,
     token: context.token,

@@ -36,7 +36,6 @@ import {
   amountOf,
   amountText,
   contributionGap,
-  deptAmountText,
   contributionOf,
   weighed,
   topItemsTotals,
@@ -69,7 +68,6 @@ import {
   severityDotClass,
   type Severity,
 } from "../../../../utils/severity";
-import SeverityBadge from "../../../../components-dev/SeverityBadge";
 import { formatCurrency2 } from "../../../../utils";
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
 
@@ -152,6 +150,18 @@ const dayText = (iso: string | null | undefined) => {
  */
 const inFlight = new Set<string>();
 
+/** Name, the share bar, the week, and one comparison. */
+const LANDING_COLS = "minmax(0,1fr) minmax(0,1.35fr) 86px 64px";
+
+/**
+ * Departments printed in full before the tail is rolled into one line.
+ *
+ * Nine is where the list stops being read: below it the rows are a few
+ * hundred dollars each and the eye has already stopped. The money still
+ * adds up, because the tail keeps its total.
+ */
+const LANDING_SHOWN = 9;
+
 const PopupTopItems = ({
   storeId,
   locations,
@@ -205,6 +215,9 @@ const PopupTopItems = ({
   const [dept, setDept] = useState("");
   /** The landing report's own chip filter, over departments. */
   const [deptSev, setDeptSev] = useState<Severity | "all">("all");
+  /** Which comparison the landing report's one delta column shows. Last week
+   *  by default: it is the one every store has. */
+  const [landingBasis, setLandingBasis] = useState<"LW" | "LY">("LW");
   /**
    * The CTA strip's open state, and nothing else now that the report has no
    * folding sections.
@@ -382,13 +395,24 @@ const PopupTopItems = ({
     () => deptSeverityCounts(rollups, threshold),
     [rollups, threshold],
   );
-  const shownDepts = useMemo(
-    () =>
+  const landing = useMemo(() => {
+    const kept =
       deptSev === "all"
         ? rollups
-        : rollups.filter((d) => deptSeverity(d, threshold) === deptSev),
-    [rollups, deptSev, threshold],
-  );
+        : rollups.filter((d) => deptSeverity(d, threshold) === deptSev);
+    const byMoney = [...kept].sort((a, b) => b.ty - a.ty);
+    const shown = byMoney.slice(0, LANDING_SHOWN);
+    const rest = byMoney.slice(LANDING_SHOWN);
+    return {
+      shown,
+      rest,
+      restTotal: rest.reduce((n, d) => n + d.ty, 0),
+      // The bar runs against the biggest department, not against the whole
+      // list: scaled to the total, nine of the ten bars would be stubs.
+      top: shown.length ? shown[0].ty : 0,
+      total: byMoney.reduce((n, d) => n + d.ty, 0),
+    };
+  }, [rollups, deptSev, threshold]);
 
   const shown = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -804,9 +828,10 @@ const PopupTopItems = ({
                 ))}
               </div>
 
-              {/* Chips count DEPARTMENTS, not items. This report is about where
-                the money sat; item grades are already the dots down the
-                left. */}
+              {/* Chips count DEPARTMENTS, not items. This report is about
+                  where the money sat, and each department's grade is the
+                  colour of its own bar below -- a dot beside a coloured bar
+                  was one fact drawn twice. */}
               <div className="flex flex-wrap items-center gap-1.5 px-2.5 py-2 bg-gray-100 border-b border-gray-100 flex-shrink-0">
                 {(
                   [
@@ -841,98 +866,121 @@ const PopupTopItems = ({
                   </button>
                 ))}
                 <span className="flex-1" />
+                {/* One comparison column, and a switch for which. Two columns
+                    of percentages beside a bar and a dollar figure was four
+                    numbers a row, and the eye reads none of them. */}
+                <span className="flex rounded-md border border-brand_navy/15 overflow-hidden flex-shrink-0">
+                  {(["LW", "LY"] as const).map((b) => (
+                    <button
+                      key={b}
+                      onClick={() => setLandingBasis(b)}
+                      className={`px-2 py-0.5 text-[11.5px] font-semibold transition-colors ${
+                        landingBasis === b
+                          ? "bg-brand_navy text-custom-white"
+                          : "bg-custom-white text-content/85 hover:bg-gray-50"
+                      }`}
+                    >
+                      vs {b}
+                    </button>
+                  ))}
+                </span>
+                <span className="flex-1" />
                 <span className="text-[10px] font-semibold text-content/85">
                   {rollups.length} sub department
                   {rollups.length === 1 ? "" : "s"}
                 </span>
               </div>
 
-              <div className="flex items-center gap-2.5 px-3 py-1.5 border-b border-gray-100 flex-shrink-0">
-                <span className="w-[18px] flex-shrink-0" />
-                <span className="flex-1 min-w-0 text-[11px] font-bold uppercase tracking-wide text-content/85">
-                  Where the week&rsquo;s money came from
-                </span>
-                <span className="w-[86px] text-center text-[11px] font-bold uppercase tracking-wide text-content/85">
-                  TY
-                </span>
-                <span className="w-[78px] text-center text-[11px] font-bold uppercase tracking-wide text-content/85">
-                  LW
-                </span>
-                <span className="w-[78px] text-center text-[11px] font-bold uppercase tracking-wide text-content/85">
-                  LY
-                </span>
+              <div
+                className="grid items-end gap-2 px-3 py-1.5 border-b border-gray-100 flex-shrink-0 text-[11px] font-bold uppercase tracking-wide text-content/85"
+                style={{ gridTemplateColumns: LANDING_COLS }}
+              >
+                <span>Sub dept</span>
+                <span>Share of top 200</span>
+                <span className="text-right">This week</span>
+                <span className="text-right">vs {landingBasis}</span>
               </div>
 
               <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar">
-                {shownDepts.map((d) => {
+                {landing.shown.map((d) => {
                   const sev = deptSeverity(d, threshold);
+                  const pct =
+                    landing.top > 0 ? (d.ty / landing.total) * 100 : 0;
                   return (
                     <button
                       key={d.name}
                       onClick={() => setDept(d.name)}
                       title={`Narrow the list to ${d.name}`}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 text-left border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                      className="w-full grid items-center gap-2 px-3 py-2 text-left border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                      style={{ gridTemplateColumns: LANDING_COLS }}
                     >
-                      <SeverityBadge severity={sev} />
-                      <span className="flex-1 min-w-0">
-                        <span className="block text-[13px] font-medium text-content truncate">
-                          {d.name}
+                      <span className="min-w-0 text-[13px] font-medium text-content truncate">
+                        {d.name}
+                      </span>
+
+                      {/* The bar carries the grade, which is what the dot
+                          beside it used to do twice over -- a coloured dot
+                          and a coloured bar saying one thing. */}
+                      <span className="flex items-center gap-2 min-w-0">
+                        <span className="flex-1 h-3 rounded bg-bkg min-w-0">
+                          <span
+                            className={`block h-full rounded ${
+                              sev ? severityDotClass[sev] : "bg-gray-300"
+                            }`}
+                            style={{
+                              width: `${landing.top > 0 ? Math.max(2, (d.ty / landing.top) * 100) : 0}%`,
+                            }}
+                          />
                         </span>
-                        <span className="block text-[11px] text-content/85 tabular-nums truncate">
-                          {d.items} item{d.items === 1 ? "" : "s"} &middot;{" "}
-                          {Math.round(d.offRegular * 100)}% off regular
+                        <span className="w-[42px] flex-shrink-0 text-right text-[11.5px] text-content/85 tabular-nums">
+                          {pct.toFixed(1)}%
                         </span>
                       </span>
-                      <span
-                        className={`w-[86px] flex-shrink-0 text-center px-1 py-0.5 rounded ${
-                          sev
-                            ? pillClass(d.vsLY ?? d.vsLW, threshold)
-                            : "bg-gray-100 text-gray-500"
-                        }`}
-                      >
-                        <span className="block text-[13px] font-semibold tabular-nums">
-                          {money(d.ty)}
-                        </span>
-                        <span className="block text-[11px] tabular-nums">
-                          {deptAmountText(d)}
-                        </span>
+
+                      <span className="text-right text-[13px] font-semibold text-content tabular-nums">
+                        {money(d.ty)}
                       </span>
-                      {(
-                        [
-                          [d.lw, d.lwUnits],
-                          [d.ly, d.lyUnits],
-                        ] as const
-                      ).map(([value, units], i) => (
+
+                      <span className="flex justify-end">
                         <span
-                          key={i}
-                          className="w-[78px] flex-shrink-0 text-center text-content"
+                          className={`text-[12px] font-semibold px-1.5 py-0.5 rounded text-center whitespace-nowrap tabular-nums ${pillClass(
+                            landingBasis === "LW" ? d.vsLW : d.vsLY,
+                            threshold,
+                          )}`}
                         >
-                          <span className="block text-[12px] font-semibold tabular-nums">
-                            {money(value)}
-                          </span>
-                          <span className="block text-[11px] text-content/85 tabular-nums">
-                            {units === null
-                              ? "—"
-                              : `${units.toLocaleString()} u`}
-                          </span>
+                          {pctText(landingBasis === "LW" ? d.vsLW : d.vsLY)}
                         </span>
-                      ))}
+                      </span>
                     </button>
                   );
                 })}
-                {shownDepts.length === 0 && (
+
+                {/* The tail as one line. Fifteen departments down to a few
+                    hundred dollars is a list nobody reads to the end of, and
+                    the money still has to add up. */}
+                {landing.rest.length > 0 && (
+                  <div
+                    className="grid items-center gap-2 px-3 py-2 border-b border-gray-100 text-[12px] text-content/85"
+                    style={{ gridTemplateColumns: LANDING_COLS }}
+                  >
+                    <span className="truncate">{landing.rest.length} more</span>
+                    <span />
+                    <span className="text-right tabular-nums">
+                      {money(landing.restTotal)}
+                    </span>
+                    <span />
+                  </div>
+                )}
+
+                {landing.shown.length === 0 && (
                   <div className="flex items-center justify-center py-8 text-[12px] text-content">
                     No departments at that grade
                   </div>
                 )}
               </div>
 
-              <p className="flex-shrink-0 px-3 py-1.5 border-t border-gray-100 text-[10.5px] leading-snug text-content/85">
-                Graded on the same threshold as the rest of the page, against
-                last year where there is one and last week otherwise. These are
-                the top 200&rsquo;s departments, not the store&rsquo;s whole
-                week &mdash; Sub depts is that tab. Click one to narrow the list
-                to it.
+              <p className="flex-shrink-0 px-3 py-1.5 border-t border-gray-100 text-[12px] leading-snug text-content/85">
+                Click a sub department for last week, last year and its items.
               </p>
             </div>
           ) : (
