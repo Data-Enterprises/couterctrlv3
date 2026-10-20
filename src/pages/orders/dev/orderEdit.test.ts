@@ -1,7 +1,9 @@
 import { describe, it, expect } from "vitest";
 import {
-  addLine,
   addedLines,
+  appendLine,
+  applyField,
+  blankLine,
   blankLines,
   buildDocs,
   buildPayload,
@@ -12,13 +14,16 @@ import {
   editedLines,
   isAdded,
   isEdited,
-  applyField,
-  resolveLine,
+  nextSeq,
+  patchLine,
+  recompute,
   revertAll,
   revertLine,
   startDraft,
   validate,
   visibleLines,
+  type DraftLine,
+  type LinePatch,
 } from "./orderEdit";
 import type { AllOrder } from "../../../interfaces";
 
@@ -114,6 +119,7 @@ describe("startDraft", () => {
     const d = draftOf();
     expect(d.lines[0].original).toEqual({
       qty: 10,
+      weight: 0,
       base_cost: 24,
       active_retail_price: 5,
     });
@@ -121,8 +127,8 @@ describe("startDraft", () => {
     expect(isAdded(d.lines[0])).toBe(false);
   });
 
-  it("starts the next line number past the highest", () => {
-    expect(draftOf().nextLineNumber).toBe(4);
+  it("puts the next line one past the highest", () => {
+    expect(nextSeq(draftOf())).toBe(4);
   });
 });
 
@@ -164,7 +170,10 @@ describe("revert", () => {
 
   it("undoes every edit and drops what was added", () => {
     const edited = applyField(draftOf(), 1, "qty", 99);
-    const { draft: withNew } = addLine(edited);
+    const withNew = appendLine(
+      edited,
+      recompute({ ...blankLine(edited)!, product_code: "1", vendor_id: "V" }),
+    );
     const d = revertAll(withNew);
     expect(d.lines).toHaveLength(3);
     expect(editedLines(d)).toHaveLength(0);
@@ -172,80 +181,101 @@ describe("revert", () => {
   });
 });
 
-describe("added lines", () => {
-  it("takes the next line number and the order's identity", () => {
-    const { draft, lineNumber } = addLine(draftOf());
-    const fresh = draft.lines.find((l) => l.line_number === lineNumber)!;
-    expect(lineNumber).toBe(4);
+/** The line being composed, filled in the way the panel fills it. */
+const fill = (line: DraftLine, patch: LinePatch): DraftLine =>
+  recompute({ ...line, ...patch });
+
+const ITEM: LinePatch = {
+  product_code: "002800000913",
+  description: "ORANGE JUICE 52OZ",
+  base_cost: 27.92,
+  active_retail_price: 4.99,
+  casesize: 8,
+  vendor_id: "DRY-11",
+  vendor_name: "Dairy Co",
+};
+
+describe("a line being added", () => {
+  it("copies the order's identity and carries no number yet", () => {
+    const fresh = blankLine(draftOf())!;
     expect(fresh.order_id).toBe(48213);
     expect(fresh.storeid).toBe(1008);
     expect(fresh.order_date).toBe("2026-10-12T00:00:00");
     expect(fresh.order_type).toBe("SMS");
+    expect(fresh.line_number).toBe(0);
     expect(isAdded(fresh)).toBe(true);
   });
 
-  it("carries no item, and holds the save back until it does", () => {
-    const { draft } = addLine(draftOf());
-    expect(blankLines(draft)).toHaveLength(1);
-    expect(validate(draft).find((c) => c.id === "items")!.ok).toBe(false);
-    expect(canSubmit(draft)).toBe(false);
+  it("does not take its sub department from the line beside it", () => {
+    expect(blankLine(draftOf())!.sub_department).toBe(0);
   });
 
-  it("is a line once the item and the vendor are on it", () => {
-    const { draft, lineNumber } = addLine(draftOf());
-    const d = resolveLine(
-      draft,
-      lineNumber!,
-      {
-        product_code: "002800000913",
-        description: "ORANGE JUICE 52OZ",
-        base_cost: 27.92,
-        active_retail_price: 4.99,
-        casesize: 8,
-        vendor_id: "DRY-11",
-        vendor_name: "Dairy Co",
-      },
-      true,
-    );
-    const fresh = d.lines.find((l) => l.line_number === lineNumber)!;
-    expect(fresh.resolved).toBe(true);
-    expect(blankLines(d)).toHaveLength(0);
+  it("is not on the order until it is added", () => {
+    const d = draftOf();
+    blankLine(d);
+    expect(d.lines).toHaveLength(3);
+    expect(addedLines(d)).toHaveLength(0);
+    expect(canSubmit(d)).toBe(false);
+  });
+
+  it("lands on the end of the order, one past the last line", () => {
+    const d = appendLine(draftOf(), fill(blankLine(draftOf())!, ITEM));
+    expect(d.lines).toHaveLength(4);
+    expect(d.lines[3].line_number).toBe(4);
     expect(canSubmit(d)).toBe(true);
-    // 27.92 a case of 8 is 3.49 a unit, one case ordered.
+  });
+
+  it("is always one past the last, however many were discarded", () => {
+    // Open one, throw it away, open another: the second is still line 4.
+    const d = draftOf();
+    blankLine(d);
+    blankLine(d);
+    expect(nextSeq(d)).toBe(4);
+
+    const added = appendLine(d, fill(blankLine(d)!, ITEM));
+    expect(nextSeq(added)).toBe(5);
+
+    const gone = dropLine(added, 4);
+    expect(nextSeq(gone)).toBe(4);
+  });
+
+  it("costs what the item and the quantity say", () => {
+    const d = appendLine(draftOf(), fill(blankLine(draftOf())!, ITEM));
+    const fresh = d.lines[3];
+    // 27.92 a case of 8 is 3.49 a unit, one unit on the line.
     expect(fresh.cogs).toBeCloseTo(3.49, 2);
     expect(fresh.e_ret).toBeCloseTo(4.99, 2);
   });
 
-  it("is still not a line with the item but no vendor", () => {
-    const { draft, lineNumber } = addLine(draftOf());
-    const d = resolveLine(
-      draft,
-      lineNumber!,
-      { product_code: "002800000913", description: "ORANGE JUICE 52OZ" },
-      true,
-    );
+  it("is not a line with an item and no vendor", () => {
+    const half = fill(blankLine(draftOf())!, {
+      product_code: "002800000913",
+      description: "ORANGE JUICE 52OZ",
+    });
+    const d = appendLine(draftOf(), half);
     expect(blankLines(d)).toHaveLength(1);
     expect(validate(d).find((c) => c.id === "items")!.ok).toBe(false);
     expect(canSubmit(d)).toBe(false);
   });
 
-  it("will not add a line to a draft with nothing to copy from", () => {
-    const empty = { ...draftOf(), lines: [] };
-    const { draft, lineNumber } = addLine(empty);
-    expect(lineNumber).toBeNull();
-    expect(draft.lines).toHaveLength(0);
+  it("is not a line with a vendor and no item", () => {
+    const half = fill(blankLine(draftOf())!, { vendor_id: "DRY-11" });
+    const d = appendLine(draftOf(), half);
+    expect(blankLines(d)).toHaveLength(1);
+    expect(canSubmit(d)).toBe(false);
   });
 
-  it("never hands a dropped line's number back", () => {
-    const first = addLine(draftOf());
-    const gone = dropLine(first.draft, first.lineNumber!);
-    expect(gone.lines).toHaveLength(3);
-    expect(addLine(gone).lineNumber).toBe(5);
+  it("can be dropped, because it never existed", () => {
+    const d = appendLine(draftOf(), fill(blankLine(draftOf())!, ITEM));
+    expect(dropLine(d, 4).lines).toHaveLength(3);
   });
 
   it("will not drop a line the order really has", () => {
-    const d = dropLine(draftOf(), 1);
-    expect(d.lines).toHaveLength(3);
+    expect(dropLine(draftOf(), 1).lines).toHaveLength(3);
+  });
+
+  it("has nothing to copy from on an order with no lines", () => {
+    expect(blankLine({ ...draftOf(), lines: [] })).toBeNull();
   });
 });
 
@@ -262,9 +292,13 @@ describe("resetNonce", () => {
   });
 
   it("moves when the lookup writes a cost into a line", () => {
-    const { draft, lineNumber } = addLine(draftOf());
-    const d = resolveLine(draft, lineNumber!, { base_cost: 10 }, true);
+    const d = patchLine(draftOf(), 1, { base_cost: 10 }, true);
     expect(d.resetNonce).toBe(1);
+  });
+
+  it("stays put for a patch the field itself made", () => {
+    const d = patchLine(draftOf(), 1, { description: "typed" });
+    expect(d.resetNonce).toBe(0);
   });
 });
 
@@ -364,10 +398,13 @@ describe("visibleLines", () => {
     expect(out.map((l) => l.line_number)).toEqual([3]);
   });
 
-  it("shows an added line whatever the search says", () => {
-    const { draft } = addLine(draftOf());
-    const out = visibleLines(draft, { ...opts, desc: "cola" });
-    expect(out.map((l) => l.line_number)).toEqual([4, 2]);
+  it("shows an added line whatever the search says, in sequence", () => {
+    const d = appendLine(
+      draftOf(),
+      recompute({ ...blankLine(draftOf())!, ...ITEM }),
+    );
+    const out = visibleLines(d, { ...opts, desc: "cola" });
+    expect(out.map((l) => l.line_number)).toEqual([2, 4]);
   });
 });
 
@@ -381,20 +418,31 @@ describe("costSwing", () => {
   });
 
   it("counts an added line in the after only", () => {
-    const { draft, lineNumber } = addLine(draftOf());
-    const d = resolveLine(
-      draft,
-      lineNumber!,
-      {
+    const d = appendLine(
+      draftOf(),
+      recompute({
+        ...blankLine(draftOf())!,
         base_cost: 24,
         casesize: 12,
         active_retail_price: 5,
         vendor_id: "ACE-21",
-      },
-      true,
+        product_code: "002800000913",
+      }),
     );
     const { before, after } = costSwing(d);
     expect(before).toBe(60);
     expect(after).toBe(62);
+  });
+
+  it("costs an edited weight against the weight that arrived", () => {
+    // A scale item: the money follows the weight, not the quantity.
+    const scale = startDraft(docs[0], [
+      line({ scalable: 1, weight: 10, base_cost: 24, casesize: 12 }),
+    ]);
+    const heavier = applyField(scale, 1, "weight", 20);
+    const { before, after, gap } = costSwing(heavier);
+    expect(before).toBe(20);
+    expect(after).toBe(40);
+    expect(gap).toBe(20);
   });
 });

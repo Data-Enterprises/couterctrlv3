@@ -10,8 +10,10 @@ interface Props {
   onPick: (doc: OrderDoc) => void;
   storeNumber: string;
   orderDate: string;
+  orderType: string;
   onStore: (value: string) => void;
   onDate: (value: string) => void;
+  onType: (value: string) => void;
   onClear: () => void;
   onOpenSearch: () => void;
   /** Held while a draft has unsaved changes, so a click cannot discard them. */
@@ -49,8 +51,10 @@ const OrderPickerPanel = ({
   onPick,
   storeNumber,
   orderDate,
+  orderType,
   onStore,
   onDate,
+  onType,
   onClear,
   onOpenSearch,
   blocked,
@@ -58,35 +62,54 @@ const OrderPickerPanel = ({
   endDate,
   scopeLabel,
 }: Props) => {
+  /**
+   * What each filter offers, narrowed by the other two.
+   *
+   * A store that did not order on the chosen date is not offered, and neither
+   * is a date that store has nothing on — so no combination of the three can
+   * be picked that leaves the list empty.
+   */
+  const matches = (
+    d: OrderDoc,
+    skip: "store" | "date" | "type" | null,
+  ) => {
+    if (skip !== "store" && storeNumber && d.storenumber !== storeNumber)
+      return false;
+    if (skip !== "date" && orderDate && d.order_date !== orderDate) return false;
+    if (skip !== "type" && orderType && d.order_type !== orderType) return false;
+    return true;
+  };
+
   const stores = useMemo(() => {
     const seen = new Map<string, string>();
-    for (const d of docs) if (!seen.has(d.storenumber)) seen.set(d.storenumber, d.storename);
+    for (const d of docs) {
+      if (matches(d, "store") && !seen.has(d.storenumber)) {
+        seen.set(d.storenumber, d.storename);
+      }
+    }
     return [...seen.entries()].sort(([a], [b]) => a.localeCompare(b));
-  }, [docs]);
+  }, [docs, orderDate, orderType]);
 
-  /** Dates for the chosen store, so the pair of filters always has an answer. */
   const dates = useMemo(() => {
-    const pool = storeNumber
-      ? docs.filter((d) => d.storenumber === storeNumber)
-      : docs;
-    return [...new Set(pool.map((d) => d.order_date))].sort((a, b) =>
-      b.localeCompare(a),
-    );
-  }, [docs, storeNumber]);
+    const seen = new Set<string>();
+    for (const d of docs) if (matches(d, "date")) seen.add(d.order_date);
+    return [...seen].sort((a, b) => b.localeCompare(a));
+  }, [docs, storeNumber, orderType]);
+
+  const types = useMemo(() => {
+    const seen = new Set<string>();
+    for (const d of docs) if (matches(d, "type")) seen.add(d.order_type);
+    return [...seen].sort();
+  }, [docs, storeNumber, orderDate]);
 
   const shown = useMemo(
-    () =>
-      docs.filter((d) => {
-        if (storeNumber && d.storenumber !== storeNumber) return false;
-        if (orderDate && d.order_date !== orderDate) return false;
-        return true;
-      }),
-    [docs, storeNumber, orderDate],
+    () => docs.filter((d) => matches(d, null)),
+    [docs, storeNumber, orderDate, orderType],
   );
 
   const open = docs.find((d) => d.key === openKey) ?? null;
   const openIsHidden = open !== null && !shown.some((d) => d.key === open.key);
-  const filtered = storeNumber !== "" || orderDate !== "";
+  const filtered = storeNumber !== "" || orderDate !== "" || orderType !== "";
 
   return (
     <div
@@ -156,6 +179,26 @@ const OrderPickerPanel = ({
             ))}
           </select>
         </Field>
+
+        <Field label="Order type">
+          <select
+            value={orderType}
+            onChange={(e) => onType(e.target.value)}
+            className={`w-full rounded-md border px-2 py-1 text-[12px] text-content transition-colors ${
+              orderType
+                ? "border-filter_active_border bg-filter_active font-semibold"
+                : "border-content/20 bg-custom-white"
+            }`}
+            style={{ outline: "none" }}
+          >
+            <option value="">Every type ({types.length})</option>
+            {types.map((v) => (
+              <option key={v} value={v}>
+                {v}
+              </option>
+            ))}
+          </select>
+        </Field>
       </div>
 
       <div className="flex items-center gap-2 px-3 pb-2 flex-shrink-0">
@@ -169,7 +212,7 @@ const OrderPickerPanel = ({
             onClick={onClear}
             className="text-[11px] font-medium text-content/95 underline hover:text-content"
           >
-            Clear both
+            Clear all
           </button>
         )}
       </div>
@@ -198,17 +241,21 @@ const OrderPickerPanel = ({
                     : "border-brand_line border-l-[3px] border-l-brand_line_2 hover:border-row_selected_border hover:bg-row_selected"
                 }`}
               >
+                {/* The order number leads, because a store that ordered three
+                    times in a day gives three cards that are otherwise the
+                    same line of text. */}
                 <span className="flex items-baseline gap-1.5">
                   <span className="text-[12.5px] font-bold text-content tabular-nums truncate">
-                    {padStoreNumber(d.storenumber)} — {d.storename}
+                    Order {d.order_id}
                   </span>
                   <span className="ml-auto flex-shrink-0 text-[9.5px] font-bold uppercase tracking-wide text-content/95">
                     {d.order_type}
                   </span>
                 </span>
-                <span className="block text-[11px] text-content/95 tabular-nums">
-                  {fmtOrderDate(d.order_date)} · order {d.order_id} ·{" "}
-                  {d.lineCount.toLocaleString()} lines
+                <span className="block text-[11px] text-content/95 tabular-nums truncate">
+                  {padStoreNumber(d.storenumber)} — {d.storename} ·{" "}
+                  {fmtOrderDate(d.order_date)} · {d.lineCount.toLocaleString()}{" "}
+                  lines
                 </span>
               </button>
             );

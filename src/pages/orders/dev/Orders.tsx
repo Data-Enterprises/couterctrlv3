@@ -3,6 +3,7 @@ import { useOrdersCtx } from "./hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { getAllOrders, updateOrderFile } from "../../../api/orders";
 import { getItemLookupSingleStore } from "../../../api/itemLookup";
+import { getSubDeptCatalog } from "../../../api/subDeptExclusions";
 import { getStoresAssignedToUserGroup } from "../../../api/groups";
 import {
   setAllOrders,
@@ -28,19 +29,24 @@ import type { SortKey } from "./ordersRows";
 import { formatGoliathDate } from "../../../utils";
 
 import {
-  addLine,
   addedLines,
+  appendLine,
   applyField,
+  blankLine,
   buildDocs,
   buildPayload,
   changedLines,
   dropLine,
   editedLines,
-  resolveLine,
+  nextSeq,
+  patchLine,
+  recompute,
   revertAll,
   revertLine,
   startDraft,
+  type DraftLine,
   type EditableField,
+  type LinePatch,
   type OrderDoc,
   type OrderDraft,
 } from "./orderEdit";
@@ -49,6 +55,7 @@ import SearchCard from "../../../components-dev/SearchCard";
 import OrderPickerPanel from "./components/OrderPickerPanel";
 import OrderEditPanel, {
   type EditSearch,
+  type SubDeptOption,
 } from "./components/OrderEditPanel";
 import SubmitReceipt from "./components/SubmitReceipt";
 import OrdersExportModal from "./components/OrdersExportModal";
@@ -100,9 +107,35 @@ const Orders = () => {
   });
   const [pickStore, setPickStore] = useState("");
   const [pickDate, setPickDate] = useState("");
+  const [pickType, setPickType] = useState("");
+  /**
+   * The line being filled in, which is not on the order yet.
+   *
+   * Held here rather than in the draft so that a half-filled row is never one
+   * of the order's lines: it takes its sequence number when it is added, not
+   * when the form opens, so opening one and discarding it leaves no gap.
+   */
+  const [pending, setPending] = useState<DraftLine | null>(null);
+  /**
+   * The composing line's own reset counter, for the same reason the draft has
+   * one: its cost and retail boxes are uncontrolled, so a lookup writing into
+   * them has to say so.
+   */
+  const [pendingNonce, setPendingNonce] = useState(0);
   const [lookingUp, setLookingUp] = useState<number | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [receipt, setReceipt] = useState<UpdateFileResp | null>(null);
+  /**
+   * The sub departments each store has, by storeid.
+   *
+   * Asked for once per store and kept, because the answer does not change
+   * while somebody edits an order and the catalog is a grouped scan of
+   * `sales_partitioned` — not a thing to re-ask on every added line.
+   */
+  const [subDeptsByStore, setSubDeptsByStore] = useState<
+    Record<number, SubDeptOption[]>
+  >({});
+  const [loadingSubDepts, setLoadingSubDepts] = useState(false);
   /**
    * The grid's sort lives here rather than in the panel.
    *
@@ -220,16 +253,22 @@ const Orders = () => {
       if (o.storeid !== draft.doc.storeid || !o.vendor_id) continue;
       if (!seen.has(o.vendor_id)) seen.set(o.vendor_id, o.vendor_name ?? o.vendor_id);
     }
+    // By name, which is what the column and the picker show — an id is how
+    // the row stores a vendor, not how anybody looks one up.
     return [...seen.entries()]
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([id, name]) => ({ id, name }));
+      .map(([id, name]) => ({ id, name }))
+      .sort((a, b) => a.name.localeCompare(b.name));
   }, [ctx.allOrders, draft]);
 
-  const dirty = draft !== null && changedLines(draft).length > 0 && receipt === null;
+  const dirty =
+    draft !== null &&
+    (changedLines(draft).length > 0 || pending !== null) &&
+    receipt === null;
 
   const handlePick = (doc: OrderDoc) => {
     if (doc.key === draft?.doc.key) return;
     setDraft(startDraft(doc, ctx.allOrders));
+    setPending(null);
     setReceipt(null);
     setEditSearch({ code: "", desc: "", onlyChanged: false });
   };
@@ -240,28 +279,92 @@ const Orders = () => {
     value: number,
   ) => setDraft((d) => (d ? applyField(d, lineNumber, field, value) : d));
 
-  const handleAddLine = () =>
-    setDraft((d) => (d ? addLine(d).draft : d));
+  /**
+   * Which sub departments this store has, for an added line.
+   *
+   * Fetched when the first line is added rather than when an order is opened:
+   * most editing never adds a line, and this is the one call edit mode makes
+   * that the page did not already have an answer for.
+   */
+  const loadSubDepts = (storeid: number) => {
+    if (subDeptsByStore[storeid] || loadingSubDepts) return;
+    setLoadingSubDepts(true);
+
+    getSubDeptCatalog(ctx.url, ctx.token, [storeid])
+      .then((rows) => {
+        const seen = new Map<number, string>();
+        for (const r of rows) {
+          if (!seen.has(r.sub_department)) {
+            seen.set(r.sub_department, r.sub_department_description);
+          }
+        }
+        setSubDeptsByStore((prev) => ({
+          ...prev,
+          [storeid]: [...seen.entries()]
+            .map(([id, name]) => ({ id, name }))
+            .sort((a, b) => a.name.localeCompare(b.name)),
+        }));
+      })
+      .catch((err: JsonError) => toast.error(err.message))
+      .finally(() => setLoadingSubDepts(false));
+  };
+
+  const handleAddLine = () => {
+    if (!draft || pending) return;
+    loadSubDepts(draft.doc.storeid);
+    const fresh = blankLine(draft);
+    if (!fresh) {
+      toast.warn("There is no line on this order to copy the order from.");
+      return;
+    }
+    setPending(fresh);
+    setPendingNonce((n) => n + 1);
+  };
+
+  /** The composing line is edited the same way, into its own state. */
+  const handlePendingField = (field: EditableField, value: number) =>
+    setPending((l) =>
+      l ? recompute({ ...l, [field]: field === "qty" ? Math.round(value) : value }) : l,
+    );
+
+  const handlePendingPatch = (patch: LinePatch) =>
+    setPending((l) => (l ? recompute({ ...l, ...patch }) : l));
+
+  /** Onto the end of the order, taking the next sequence number there. */
+  const handleConfirmPending = () => {
+    if (!draft || !pending) return;
+    setDraft(appendLine(draft, pending));
+    setPending(null);
+  };
+
+  /** Everything typed or picked on an added line comes through here. */
+  const handlePatch = (lineNumber: number, patch: LinePatch) =>
+    setDraft((d) => (d ? patchLine(d, lineNumber, patch) : d));
 
   /**
-   * A UPC on an added line, against this order's store.
+   * What the item lookup can fill in from a UPC.
    *
-   * The lookup gives the item and what the store last paid for it; it does not
-   * give a case size, so that is derived from the two costs it does return —
-   * `net_cost` is per case and `casecost` per unit, so their ratio is the case
-   * size. Both zero means no invoice history, and 0 is read as a case of one.
+   * A head start, not a gate: nothing on a desktop scans, so every field on an
+   * added line can be typed, and a code the lookup does not know leaves what
+   * was typed alone rather than clearing it.
+   *
+   * The lookup does not return a case size, so that is derived from the two
+   * costs it does return — `net_cost` is per case and `casecost` per unit, so
+   * their ratio is the case size. Both zero means no invoice history, and 0 is
+   * read as a case of one.
    */
   const handleLookup = (lineNumber: number, upc: string) => {
     if (!draft) return;
+    // 0 is the line being composed: it has no sequence number until it is
+    // added, so that is what the panel sends for it.
     setLookingUp(lineNumber);
 
     getItemLookupSingleStore(ctx.url, ctx.token, upc, draft.doc.storeid, 14)
       .then((resp) => {
         const j = resp.data;
         if (j.error !== 0 || !j.product_code) {
-          toast.warn(`No item at this store for ${upc}.`);
-          setDraft((d) =>
-            d ? resolveLine(d, lineNumber, { product_code: upc }, false) : d,
+          toast.warn(
+            `No item at this store for ${upc}. Fill the line in by hand.`,
           );
           return;
         }
@@ -281,42 +384,26 @@ const Orders = () => {
         const casesize =
           perCase > 0 && perUnit > 0 ? Math.round(perCase / perUnit) : 0;
 
-        setDraft((d) =>
-          d
-            ? resolveLine(
-                d,
-                lineNumber,
-                {
-                  product_code: j.product_code,
-                  description: j.description ?? "",
-                  base_cost: perCase > 0 ? perCase : perUnit,
-                  active_retail_price: latest?.price ?? 0,
-                  casesize,
-                },
-                true,
-              )
-            : d,
-        );
+        const found: LinePatch = {
+          product_code: j.product_code,
+          description: j.description ?? "",
+          base_cost: perCase > 0 ? perCase : perUnit,
+          active_retail_price: latest?.price ?? 0,
+          casesize,
+        };
+
+        if (lineNumber === 0) {
+          setPending((l) => (l ? recompute({ ...l, ...found }) : l));
+          setPendingNonce((n) => n + 1);
+          return;
+        }
+
+        // Written from outside the boxes, so the boxes are told.
+        setDraft((d) => (d ? patchLine(d, lineNumber, found, true) : d));
       })
       .catch((err: JsonError) => toast.error(err.message))
       .finally(() => setLookingUp(null));
   };
-
-  const handleVendor = (lineNumber: number, vendorId: string) =>
-    setDraft((d) =>
-      d
-        ? resolveLine(
-            d,
-            lineNumber,
-            {
-              vendor_id: vendorId,
-              vendor_name:
-                vendors.find((v) => v.id === vendorId)?.name ?? vendorId,
-            },
-            true,
-          )
-        : d,
-    );
 
   /**
    * Build the file and submit it.
@@ -328,6 +415,10 @@ const Orders = () => {
    */
   const handleSubmit = () => {
     if (!draft || submitting || receipt) return;
+    if (pending) {
+      toast.warn("Add the line you are filling in, or discard it, first.");
+      return;
+    }
     const payload = buildPayload(draft);
     setSubmitting(true);
 
@@ -389,11 +480,14 @@ const Orders = () => {
             onPick={handlePick}
             storeNumber={pickStore}
             orderDate={pickDate}
+            orderType={pickType}
             onStore={setPickStore}
             onDate={setPickDate}
+            onType={setPickType}
             onClear={() => {
               setPickStore("");
               setPickDate("");
+              setPickType("");
             }}
             onOpenSearch={() => setSearchModalOpen(true)}
             blocked={dirty}
@@ -417,10 +511,19 @@ const Orders = () => {
               onRevertAll={() => setDraft((d) => (d ? revertAll(d) : d))}
               onAddLine={handleAddLine}
               onDropLine={(ln) => setDraft((d) => (d ? dropLine(d, ln) : d))}
+              pending={pending}
+              onPendingField={handlePendingField}
+              onPendingPatch={handlePendingPatch}
+              onConfirmPending={handleConfirmPending}
+              onCancelPending={() => setPending(null)}
+              pendingSeq={draft ? nextSeq(draft) : 1}
+              pendingNonce={pendingNonce}
               onLookup={handleLookup}
-              onVendor={handleVendor}
+              onPatch={handlePatch}
               lookingUp={lookingUp}
               vendors={vendors}
+              subDepts={draft ? (subDeptsByStore[draft.doc.storeid] ?? []) : []}
+              loadingSubDepts={loadingSubDepts}
               onSubmit={handleSubmit}
               submitting={submitting}
               submitted={receipt !== null}
@@ -443,6 +546,7 @@ const Orders = () => {
               onClose={() => setReceipt(null)}
               onEditAgain={() => {
                 setReceipt(null);
+                setPending(null);
                 if (draft) setDraft(startDraft(draft.doc, ctx.allOrders));
               }}
             />

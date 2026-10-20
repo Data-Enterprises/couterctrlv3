@@ -1,5 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { PlusIcon, XMarkIcon, ArrowUturnLeftIcon } from "@heroicons/react/16/solid";
+import { useEffect, useMemo, useRef } from "react";
+import {
+  PlusIcon,
+  XMarkIcon,
+  CheckIcon,
+  ArrowUturnLeftIcon,
+} from "@heroicons/react/16/solid";
 import EmptyPrompt from "../../../../components-dev/EmptyPrompt";
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
 import { formatCurrency2 } from "../../../../utils";
@@ -12,16 +17,19 @@ import {
   costSwing,
   editedLines,
   isAdded,
+  isBlank,
   isEdited,
   validate,
   visibleLines,
   type DraftLine,
   type EditableField,
+  type LinePatch,
   type OrderDraft,
 } from "../orderEdit";
 
 export type EditSearch = { code: string; desc: string; onlyChanged: boolean };
 export type VendorOption = { id: string; name: string };
+export type SubDeptOption = { id: number; name: string };
 
 interface Props {
   draft: OrderDraft | null;
@@ -33,12 +41,29 @@ interface Props {
   onRevertAll: () => void;
   onAddLine: () => void;
   onDropLine: (lineNumber: number) => void;
-  /** The UPC typed on an added line, looked up against this order's store. */
+  /**
+   * The line being filled in, which is not on the order yet. Held apart from
+   * the draft so a half-filled row is never one of the order's lines.
+   */
+  pending: DraftLine | null;
+  onPendingField: (field: EditableField, value: number) => void;
+  onPendingPatch: (patch: LinePatch) => void;
+  onConfirmPending: () => void;
+  onCancelPending: () => void;
+  /** What sequence number the pending line will take. */
+  pendingSeq: number;
+  /** Bumped when the lookup writes into the pending line's own boxes. */
+  pendingNonce: number;
+  /** Any field on an added line: typed, picked, or filled by the lookup. */
+  onPatch: (lineNumber: number, patch: LinePatch) => void;
+  /** Ask the item lookup to fill the rest in from a UPC. */
   onLookup: (lineNumber: number, upc: string) => void;
-  onVendor: (lineNumber: number, vendorId: string) => void;
   lookingUp: number | null;
   /** The vendors already on this store's orders, for an added line. */
   vendors: VendorOption[];
+  /** The sub departments this store has, fetched when the first line is added. */
+  subDepts: SubDeptOption[];
+  loadingSubDepts: boolean;
   onSubmit: () => void;
   submitting: boolean;
   /** Set once the file is in the bucket: the draft goes read-only. */
@@ -78,10 +103,19 @@ const OrderEditPanel = ({
   onRevertAll,
   onAddLine,
   onDropLine,
+  pending,
+  onPendingField,
+  onPendingPatch,
+  onConfirmPending,
+  onCancelPending,
+  pendingSeq,
+  pendingNonce,
+  onPatch,
   onLookup,
-  onVendor,
   lookingUp,
   vendors,
+  subDepts,
+  loadingSubDepts,
   onSubmit,
   submitting,
   submitted,
@@ -92,18 +126,22 @@ const OrderEditPanel = ({
     [draft, search],
   );
 
-  const totals = useMemo(() => {
-    if (!draft) return null;
-    let qty = 0;
-    let cogs = 0;
-    let eRet = 0;
-    for (const l of draft.lines) {
-      qty += l.qty;
-      cogs += l.cogs ?? 0;
-      eRet += l.e_ret ?? 0;
+  /** The grid's own scroller, so adding a line can bring it into view. */
+  const scroller = useRef<HTMLDivElement | null>(null);
+  const wasPending = useRef(false);
+
+  useEffect(() => {
+    const open = pending !== null;
+    if (open && !wasPending.current && scroller.current) {
+      // The new line goes on the end of the order, so the end is where to
+      // look. After paint, or the row it should land on is not there yet.
+      window.requestAnimationFrame(() => {
+        const el = scroller.current;
+        if (el) el.scrollTop = el.scrollHeight;
+      });
     }
-    return { qty, cogs, eRet };
-  }, [draft]);
+    wasPending.current = open;
+  }, [pending]);
 
   const checks = draft ? validate(draft) : [];
   const changed = draft ? changedLines(draft) : [];
@@ -236,7 +274,13 @@ const OrderEditPanel = ({
         {!locked && (
           <button
             onClick={onAddLine}
-            className="flex items-center gap-1 rounded-full border border-brand_green px-2.5 py-0.5 text-[11px] font-semibold text-brand_green_darker transition-colors hover:bg-brand_green_tint"
+            disabled={pending !== null}
+            title={
+              pending !== null
+                ? "Finish the line you are adding first"
+                : "Add a line to the end of this order"
+            }
+            className="flex items-center gap-1 rounded-full border border-brand_green px-2.5 py-0.5 text-[11px] font-semibold text-brand_green_darker transition-colors hover:bg-brand_green_tint disabled:opacity-45"
           >
             <PlusIcon className="w-3 h-3" />
             Add line
@@ -253,52 +297,17 @@ const OrderEditPanel = ({
         )}
       </div>
 
-      <div className="grid grid-cols-6 divide-x divide-brand_navy/15 border-b border-gray-100 bg-custom-white flex-shrink-0">
-        <Kpi
-          label="Lines"
-          value={draft.lines.length.toLocaleString()}
-          note={added.length > 0 ? `+${added.length} added` : undefined}
-        />
-        <Kpi
-          label="Changed"
-          value={changed.length.toLocaleString()}
-          note={changed.length > 0 ? `of ${draft.lines.length}` : undefined}
-        />
-        <Kpi label="Qty" value={totals?.qty.toLocaleString() ?? "—"} />
-        <Kpi
-          label="Ext cost"
-          value={formatCurrency2(totals?.cogs ?? 0)}
-          note={
-            swing && Math.abs(swing.gap) > 0.004
-              ? `was ${formatCurrency2(swing.before)}`
-              : undefined
-          }
-        />
-        <Kpi label="Ext retail" value={formatCurrency2(totals?.eRet ?? 0)} />
-        <Kpi
-          label="Margin"
-          value={
-            totals && totals.eRet > 0
-              ? `${(((totals.eRet - totals.cogs) / totals.eRet) * 100).toFixed(1)}%`
-              : "—"
-          }
-        />
-      </div>
-
-      <div className="flex-1 overflow-auto thin-scrollbar min-h-0">
+      <div ref={scroller} className="flex-1 overflow-auto thin-scrollbar min-h-0">
         <table className="w-full text-[11px] border-collapse font-mono">
           <thead className="sticky top-0 z-10 bg-custom-white">
             <tr className="border-b border-b-brand_line_2">
-              <th
-                className="sticky left-0 z-30 bg-bkg border-r border-brand_line_2"
-                style={{ width: 38 }}
-              />
-              <Head label="Seq #" width={60} align="right" />
+              <Head label="Seq #" width={78} align="right" />
               <Head label="UPC" width={140} />
               <Head label="Description" width={220} />
               <Head label="Sub dept" width={120} />
-              <Head label="Vendor" width={110} />
+              <Head label="Vendor" width={150} />
               <Head label="Qty" width={76} align="right" editable />
+              <Head label="Weight" width={82} align="right" editable />
               <Head label="Case cost" width={92} align="right" editable />
               <Head label="Retail" width={86} align="right" editable />
               <Head label="Ext cost" width={92} align="right" />
@@ -326,13 +335,37 @@ const OrderEditPanel = ({
                   lookingUp={lookingUp === l.line_number}
                   resetNonce={draft.resetNonce}
                   vendors={vendors}
+                  subDepts={subDepts}
+                  loadingSubDepts={loadingSubDepts}
                   onField={onField}
                   onRevertLine={onRevertLine}
                   onDropLine={onDropLine}
                   onLookup={onLookup}
-                  onVendor={onVendor}
+                  onPatch={onPatch}
                 />
               ))
+            )}
+
+            {/* Last, because that is where its sequence number puts it once
+                it is added. */}
+            {pending && !locked && (
+              <Row
+                key="pending"
+                line={pending}
+                pendingSeq={pendingSeq}
+                locked={false}
+                lookingUp={lookingUp === 0}
+                resetNonce={pendingNonce}
+                vendors={vendors}
+                subDepts={subDepts}
+                loadingSubDepts={loadingSubDepts}
+                onField={(_ln, field, value) => onPendingField(field, value)}
+                onRevertLine={() => {}}
+                onDropLine={onCancelPending}
+                onConfirm={onConfirmPending}
+                onLookup={onLookup}
+                onPatch={(_ln, patch) => onPendingPatch(patch)}
+              />
             )}
           </tbody>
         </table>
@@ -451,23 +484,34 @@ const Row = ({
   onField,
   onRevertLine,
   onDropLine,
+  onConfirm,
   onLookup,
-  onVendor,
+  onPatch,
   vendors,
+  subDepts,
+  loadingSubDepts,
+  pendingSeq,
 }: {
   line: DraftLine;
+  /** Set on the line being composed: it shows a tick instead of a number. */
+  pendingSeq?: number;
+  onConfirm?: () => void;
   locked: boolean;
   lookingUp: boolean;
   resetNonce: number;
   vendors: VendorOption[];
+  subDepts: SubDeptOption[];
+  loadingSubDepts: boolean;
   onField: (lineNumber: number, field: EditableField, value: number) => void;
   onRevertLine: (lineNumber: number) => void;
   onDropLine: (lineNumber: number) => void;
   onLookup: (lineNumber: number, upc: string) => void;
-  onVendor: (lineNumber: number, vendorId: string) => void;
+  onPatch: (lineNumber: number, patch: LinePatch) => void;
 }) => {
+  const composing = pendingSeq !== undefined;
   const fresh = isAdded(line);
   const edited = isEdited(line);
+  const ready = composing && !isBlank(line);
   const margin =
     (line.e_ret ?? 0) > 0
       ? (((line.e_ret ?? 0) - (line.cogs ?? 0)) / (line.e_ret ?? 1)) * 100
@@ -489,39 +533,58 @@ const Row = ({
             : "even:bg-row_stripe"
       }`}
     >
-      <td
-        className="sticky left-0 z-20 bg-bkg border-r border-brand_line_2 text-center"
-        style={{ width: 38 }}
-      >
-        {fresh && !locked && (
-          <button
-            onClick={() => onDropLine(line.line_number)}
-            title="Remove this added line"
-            className="text-brand_green_darker transition-colors hover:text-brand_danger"
-          >
-            <XMarkIcon className="w-3.5 h-3.5" />
-          </button>
-        )}
-        {edited && !locked && (
-          <button
-            onClick={() => onRevertLine(line.line_number)}
-            title="Put this line back"
-            className="text-content transition-colors hover:text-brand_danger"
-          >
-            <ArrowUturnLeftIcon className="w-3 h-3" />
-          </button>
-        )}
-        {(fresh || edited) && locked && (
-          <span
-            className={`inline-block w-2 h-2 rounded-full ${
-              fresh ? "bg-brand_green" : "bg-severity_watch_text"
-            }`}
-          />
-        )}
-      </td>
-
+      {/* The undo and the remove live here rather than in a column of their
+          own: a gutter that is empty on every unchanged line is a grey band
+          down the left of a grid where nothing has been touched yet. */}
       <td className="px-2.5 py-1 text-right tabular-nums text-content border-r border-brand_line">
-        {line.line_number}
+        <span className="flex items-center justify-end gap-1.5">
+          {composing && (
+            <button
+              onClick={onConfirm}
+              disabled={!ready}
+              title={
+                ready
+                  ? `Add this to the order as line ${pendingSeq}`
+                  : "A UPC and a vendor make it a line"
+              }
+              className="rounded border border-brand_green bg-brand_green px-1 py-px text-custom-white transition-opacity hover:opacity-90 disabled:opacity-35"
+            >
+              <CheckIcon className="w-3 h-3" />
+            </button>
+          )}
+          {fresh && !locked && (
+            <button
+              onClick={() => onDropLine(line.line_number)}
+              title={
+                composing ? "Discard this line" : "Remove this added line"
+              }
+              className="text-brand_green_darker transition-colors hover:text-brand_danger"
+            >
+              <XMarkIcon className="w-3.5 h-3.5" />
+            </button>
+          )}
+          {edited && !locked && (
+            <button
+              onClick={() => onRevertLine(line.line_number)}
+              title="Put this line back"
+              className="text-content transition-colors hover:text-brand_danger"
+            >
+              <ArrowUturnLeftIcon className="w-3 h-3" />
+            </button>
+          )}
+          {(fresh || edited) && locked && (
+            <span
+              className={`inline-block w-2 h-2 rounded-full ${
+                fresh ? "bg-brand_green" : "bg-severity_watch_text"
+              }`}
+            />
+          )}
+          {composing ? (
+            <span className="text-brand_green_darker">{pendingSeq}</span>
+          ) : (
+            line.line_number
+          )}
+        </span>
       </td>
 
       <td className="px-2.5 py-1 tabular-nums text-content whitespace-nowrap border-r border-brand_line">
@@ -529,8 +592,8 @@ const Row = ({
           <UpcField
             lineNumber={line.line_number}
             value={line.product_code}
-            resolved={line.resolved}
             busy={lookingUp}
+            onType={(product_code) => onPatch(line.line_number, { product_code })}
             onLookup={onLookup}
           />
         ) : (
@@ -538,25 +601,61 @@ const Row = ({
         )}
       </td>
 
-      <td className="px-2.5 py-1 font-medium text-content max-w-0 truncate border-r border-brand_line">
-        {fresh && !line.resolved ? (
-          <span className="font-sans italic text-brand_green_darker">
-            {lookingUp ? "Looking it up…" : "The item fills this in"}
+      {/* An added line is filled in by hand as readily as by the lookup:
+          there is nothing to scan with on a desktop, so every one of these is
+          a field, and the lookup is a head start rather than the way in. */}
+      <td className="px-2.5 py-1 font-medium text-content max-w-0 border-r border-brand_line">
+        {fresh && !locked ? (
+          <span className="flex items-center gap-1.5">
+            <span className="flex-shrink-0 rounded bg-brand_green px-1 py-px font-sans text-[9px] font-bold uppercase tracking-wide text-custom-white">
+              New
+            </span>
+            <input
+              type="text"
+              autoComplete="off"
+              value={line.description ?? ""}
+              placeholder={lookingUp ? "Looking it up…" : "Description"}
+              aria-label={`Description on line ${line.line_number}`}
+              onChange={(e) =>
+                onPatch(line.line_number, { description: e.target.value })
+              }
+              className="w-full min-w-0 rounded-[5px] border border-brand_line_2 bg-custom-white px-1.5 py-0.5 font-mono text-[11px] text-content placeholder:text-brand_placeholder"
+              style={{ outline: "none" }}
+            />
           </span>
         ) : (
-          <>
-            {fresh && (
-              <span className="mr-1.5 rounded bg-brand_green px-1 py-px font-sans text-[9px] font-bold uppercase tracking-wide text-custom-white">
-                New
-              </span>
-            )}
-            {line.description}
-          </>
+          <span className="block truncate">{line.description}</span>
         )}
       </td>
 
       <td className="px-2.5 py-1 text-content whitespace-nowrap border-r border-brand_line">
-        {line.sub_department_description || "—"}
+        {fresh && !locked ? (
+          <select
+            value={line.sub_department || ""}
+            aria-label={`Sub department on line ${line.line_number}`}
+            onChange={(e) => {
+              const id = Number(e.target.value);
+              onPatch(line.line_number, {
+                sub_department: id,
+                sub_department_description:
+                  subDepts.find((s) => s.id === id)?.name ?? "",
+              });
+            }}
+            className="w-[150px] rounded-[5px] border border-brand_line_2 bg-custom-white px-1 py-0.5 text-[11px] text-content"
+            style={{ outline: "none" }}
+          >
+            <option value="">
+              {loadingSubDepts ? "Loading…" : "Sub dept…"}
+            </option>
+            {subDepts.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.name}
+              </option>
+            ))}
+          </select>
+        ) : (
+          line.sub_department_description || "—"
+        )}
       </td>
 
       <td className="px-2.5 py-1 text-content whitespace-nowrap border-r border-brand_line">
@@ -564,11 +663,18 @@ const Row = ({
           <VendorField
             value={line.vendor_id}
             vendors={vendors}
-            onChange={(vendorId) => onVendor(line.line_number, vendorId)}
-            disabled={!line.resolved}
+            onChange={(vendorId) =>
+              onPatch(line.line_number, {
+                vendor_id: vendorId,
+                vendor_name:
+                  vendors.find((v) => v.id === vendorId)?.name ?? vendorId,
+              })
+            }
           />
         ) : (
-          line.vendor_id || "—"
+          <span title={line.vendor_id || undefined}>
+            {line.vendor_name || line.vendor_id || "—"}
+          </span>
         )}
       </td>
 
@@ -579,7 +685,11 @@ const Row = ({
           line={line}
           tint={cellTint}
           resetNonce={resetNonce}
-          disabled={locked || (fresh && !line.resolved)}
+          // Weight is what the money is worked out from on a scale item and
+          // is ignored on everything else, so it is only offered where it
+          // does something. A typed weight that changed no figure would read
+          // as the grid being broken.
+          disabled={locked || (field === "weight" && !line.scalable)}
           onField={onField}
         />
       ))}
@@ -642,6 +752,11 @@ const EditCell = ({
         defaultValue={value}
         disabled={disabled}
         aria-label={`${FIELD_LABEL[field]} on line ${line.line_number}`}
+        title={
+          disabled && field === "weight"
+            ? "Weight is only used on scale items"
+            : undefined
+        }
         onChange={(e) => {
           const next = e.target.value === "" ? 0 : Number(e.target.value);
           if (!Number.isFinite(next) || next < 0) return;
@@ -674,30 +789,24 @@ const EditCell = ({
 const UpcField = ({
   lineNumber,
   value,
-  resolved,
   busy,
+  onType,
   onLookup,
 }: {
   lineNumber: number;
   value: string;
-  resolved: boolean;
   busy: boolean;
+  onType: (upc: string) => void;
   onLookup: (lineNumber: number, upc: string) => void;
 }) => {
-  const [draft, setDraft] = useState(value);
-  const seen = useRef(value);
-
-  useEffect(() => {
-    if (value !== seen.current) {
-      seen.current = value;
-      setDraft(value);
-    }
-  }, [value]);
+  // What was last sent to the lookup, so leaving the field twice does not ask
+  // the same question twice.
+  const asked = useRef("");
 
   const fire = () => {
-    const code = draft.trim();
-    if (code === "" || code === seen.current) return;
-    seen.current = code;
+    const code = value.trim();
+    if (code === "" || code === asked.current) return;
+    asked.current = code;
     onLookup(lineNumber, code);
   };
 
@@ -706,18 +815,19 @@ const UpcField = ({
       type="text"
       inputMode="numeric"
       autoComplete="off"
-      autoFocus={!resolved && value === ""}
-      placeholder="Scan or type UPC"
-      value={draft}
+      autoFocus={value === ""}
+      placeholder="UPC"
+      value={value}
       disabled={busy}
-      aria-label="UPC for the added line"
-      onChange={(e) => setDraft(e.target.value)}
+      aria-label={`UPC on line ${lineNumber}`}
+      onChange={(e) => onType(e.target.value)}
       onBlur={fire}
       onKeyDown={(e) => {
         if (e.key === "Enter") fire();
       }}
-      className={`w-[128px] rounded-[5px] border bg-custom-white px-1.5 py-0.5 text-[11px] tabular-nums text-content ${
-        resolved ? "border-brand_green" : "border-brand_line_2"
+      title="Leave the field or press Enter to fill the rest in from the item"
+      className={`w-[128px] rounded-[5px] border bg-custom-white px-1.5 py-0.5 text-[11px] tabular-nums text-content placeholder:text-brand_placeholder ${
+        value.trim() ? "border-brand_green" : "border-brand_line_2"
       }`}
       style={{ outline: "none" }}
     />
@@ -736,50 +846,27 @@ const VendorField = ({
   value,
   vendors,
   onChange,
-  disabled,
 }: {
   value: string;
   vendors: VendorOption[];
   onChange: (vendorId: string) => void;
-  disabled: boolean;
 }) => (
     <select
       value={value}
-      disabled={disabled}
       aria-label="Vendor for the added line"
       onChange={(e) => onChange(e.target.value)}
-      className={`w-[104px] rounded-[5px] border bg-custom-white px-1 py-0.5 font-mono text-[11px] text-content disabled:border-transparent disabled:bg-transparent ${
+      className={`w-[142px] rounded-[5px] border bg-custom-white px-1 py-0.5 text-[11px] text-content ${
         value ? "border-brand_green" : "border-brand_line_2"
       }`}
       style={{ outline: "none" }}
     >
       <option value="">Vendor…</option>
       {vendors.map((v) => (
-        <option key={v.id} value={v.id} title={v.name}>
-          {v.id}
+        <option key={v.id} value={v.id} title={v.id}>
+          {v.name}
         </option>
       ))}
     </select>
-);
-
-const Kpi = ({
-  label,
-  value,
-  note,
-}: {
-  label: string;
-  value: string;
-  note?: string;
-}) => (
-  <div className="px-4 pt-2.5 pb-2 text-center min-w-0">
-    <div className="text-[10px] font-bold uppercase tracking-wide text-content">
-      {label}
-    </div>
-    <div className="text-[13px] font-bold text-content truncate">{value}</div>
-    <div className="h-[13px] text-[10px] font-semibold text-severity_watch_text truncate">
-      {note ?? ""}
-    </div>
-  </div>
 );
 
 const SeekField = ({

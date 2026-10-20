@@ -20,12 +20,26 @@ import { getCogs, getERet } from ".";
  * true by construction instead of by validation.
  */
 
-/** The three fields an edit may touch. Everything else rides along. */
-export const EDITABLE = ["qty", "base_cost", "active_retail_price"] as const;
+/**
+ * The fields an edit may touch. Everything else rides along.
+ *
+ * Weight is one of them because on a scalable item it is what the money is
+ * worked out from: `getCogs` and `getERet` both multiply by weight rather
+ * than by qty when `scalable` is set, so an editable qty with a fixed weight
+ * would leave the ext columns refusing to move on half the lines in a meat
+ * order.
+ */
+export const EDITABLE = [
+  "qty",
+  "weight",
+  "base_cost",
+  "active_retail_price",
+] as const;
 export type EditableField = (typeof EDITABLE)[number];
 
 export const FIELD_LABEL: Record<EditableField, string> = {
   qty: "Qty",
+  weight: "Weight",
   base_cost: "Case cost",
   active_retail_price: "Retail",
 };
@@ -49,15 +63,11 @@ export type DraftLine = AllOrder & {
    * note. Null on a line added here, which has nothing to go back to.
    */
   original: Pick<AllOrder, EditableField> | null;
-  /** An added line is not a line until a UPC resolves against the store. */
-  resolved: boolean;
 };
 
 export type OrderDraft = {
   doc: OrderDoc;
   lines: DraftLine[];
-  /** Assigned, never reused: a dropped line does not hand its number back. */
-  nextLineNumber: number;
   /**
    * Bumped when a value is replaced from outside the field it lives in — a
    * revert, or the lookup filling an added line.
@@ -86,15 +96,17 @@ export const changedLines = (d: OrderDraft) => d.lines.filter(isChanged);
 /**
  * Added lines that are not lines yet — what holds the save back.
  *
- * The vendor counts as much as the item: `vendor_id` is `NOT NULL` on the
- * order, and `resolved` only says the item lookup answered. Checking the
- * fields rather than the flag means a line cannot reach the file with an
- * empty vendor on it.
+ * Read off the fields rather than off a "the lookup answered" flag, because
+ * an added line is filled in by hand as often as it is looked up: on a
+ * desktop there is nothing to scan with, and the lookup is a head start, not
+ * the way in. The two that have to be there are the item and the vendor —
+ * `vendor_id` is `NOT NULL` on the order, and a line with no product code is
+ * not a line at all.
  */
-export const blankLines = (d: OrderDraft) =>
-  d.lines.filter(
-    (l) => isAdded(l) && (!l.resolved || !l.product_code || !l.vendor_id),
-  );
+export const isBlank = (l: DraftLine) =>
+  isAdded(l) && (!String(l.product_code).trim() || !String(l.vendor_id).trim());
+
+export const blankLines = (d: OrderDraft) => d.lines.filter(isBlank);
 
 /**
  * Which order a line belongs to.
@@ -171,21 +183,26 @@ export const startDraft = (doc: OrderDoc, lines: AllOrder[]): OrderDraft => {
         ...o,
         original: {
           qty: o.qty,
+          weight: o.weight,
           base_cost: o.base_cost,
           active_retail_price: o.active_retail_price,
         },
-        resolved: true,
       }),
     );
 
-  return {
-    doc,
-    lines: mine,
-    nextLineNumber:
-      mine.reduce((max, l) => Math.max(max, l.line_number), 0) + 1,
-    resetNonce: 0,
-  };
+  return { doc, lines: mine, resetNonce: 0 };
 };
+
+/**
+ * The sequence number a new line would take: one past the last one on the
+ * order, worked out from the lines that are actually there.
+ *
+ * Counted rather than counted-up. A stored counter left gaps — add a line,
+ * drop it, add another, and the order went 18, 21 with nothing between them,
+ * which reads like two lines went missing.
+ */
+export const nextSeq = (draft: OrderDraft) =>
+  draft.lines.reduce((max, l) => Math.max(max, l.line_number), 0) + 1;
 
 const mapLine = (
   draft: OrderDraft,
@@ -237,21 +254,25 @@ export const revertAll = (draft: OrderDraft): OrderDraft => ({
  * `items/itemlookup` does not return either and inventing a `vendor_id` would
  * put a line on the file against a vendor who does not stock it.
  */
-export const addLine = (
-  draft: OrderDraft,
-): { draft: OrderDraft; lineNumber: number | null } => {
+/**
+ * An empty line to fill in, which is not on the order yet.
+ *
+ * It is held beside the draft rather than in it until somebody says it is
+ * finished: a half-filled row sitting among the real lines is in the order as
+ * far as anything reading the grid can tell, and it had already taken a
+ * sequence number it might not keep.
+ *
+ * Its number is 0 until it is added, because the number is decided then.
+ */
+export const blankLine = (draft: OrderDraft): DraftLine | null => {
   // Every NOT NULL field on a new line is copied off an existing one, so
-  // there has to be one. A draft always has lines — it was built from them —
-  // but a reverted-to-empty draft would otherwise produce a line with no
-  // order number on it.
+  // there has to be one.
   const sibling = draft.lines.find((l) => !isAdded(l)) ?? draft.lines[0];
-  if (!sibling) return { draft, lineNumber: null };
+  if (!sibling) return null;
 
-  const lineNumber = draft.nextLineNumber;
-
-  const fresh: DraftLine = recompute({
+  return recompute({
     ...sibling,
-    line_number: lineNumber,
+    line_number: 0,
     product_code: "",
     description: "",
     // Left unset rather than inherited from the sibling: a different item is
@@ -281,41 +302,62 @@ export const addLine = (
     // import side, not here.
     edited: sibling.edited,
     original: null,
-    resolved: false,
   });
-
-  return {
-    draft: {
-      ...draft,
-      lines: [...draft.lines, fresh],
-      nextLineNumber: lineNumber + 1,
-    },
-    lineNumber,
-  };
 };
 
-/** What the item lookup and the two asked-for fields put on an added line. */
-export type ResolvedItem = {
-  product_code: string;
-  description: string;
-  base_cost: number;
-  active_retail_price: number;
-  casesize: number;
-  vendor_id: string;
-  vendor_name: string;
-  scalable: number;
-};
+/** The filled-in line, onto the end of the order. */
+export const appendLine = (
+  draft: OrderDraft,
+  line: DraftLine,
+): OrderDraft => ({
+  ...draft,
+  lines: [
+    ...draft.lines,
+    recompute({ ...line, line_number: nextSeq(draft), original: null }),
+  ],
+});
 
-export const resolveLine = (
+/**
+ * What can be written onto an added line.
+ *
+ * Everything on it is typed or picked: the UPC, the description, the sub
+ * department and the vendor. The item lookup fills the same fields when it
+ * finds the code, which is why this is one shape rather than a lookup path
+ * and a manual one that could drift apart.
+ */
+export type LinePatch = Partial<
+  Pick<
+    AllOrder,
+    | "product_code"
+    | "description"
+    | "sub_department"
+    | "sub_department_description"
+    | "vendor_id"
+    | "vendor_name"
+    | "base_cost"
+    | "net_cost"
+    | "active_retail_price"
+    | "casesize"
+    | "scalable"
+  >
+>;
+
+/**
+ * Write fields onto a line.
+ *
+ * `bumpReset` is for a write the fields themselves did not make — the lookup
+ * landing a cost into a box somebody is not typing in. A patch from the box
+ * itself leaves the nonce alone, or every keystroke would remount the input
+ * it came from.
+ */
+export const patchLine = (
   draft: OrderDraft,
   lineNumber: number,
-  item: Partial<ResolvedItem>,
-  resolved: boolean,
+  patch: LinePatch,
+  bumpReset = false,
 ): OrderDraft => ({
-  ...mapLine(draft, lineNumber, (l) => recompute({ ...l, ...item, resolved })),
-  // The lookup writes the cost and the retail, so the fields showing them
-  // have to be told.
-  resetNonce: draft.resetNonce + 1,
+  ...mapLine(draft, lineNumber, (l) => recompute({ ...l, ...patch })),
+  resetNonce: draft.resetNonce + (bumpReset ? 1 : 0),
 });
 
 /** An added line can go, because it never existed. An existing one cannot. */
@@ -386,15 +428,15 @@ export const canSubmit = (draft: OrderDraft) =>
  */
 export const buildPayload = (draft: OrderDraft) => ({
   storeid: draft.doc.storeid,
-  lines: draft.lines.map(({ original: _original, resolved: _resolved, ...line }) => line),
+  lines: draft.lines.map(({ original: _original, ...line }) => line),
 });
 
 /**
- * The lines the grid draws.
+ * The lines the grid draws, in sequence order.
  *
- * Added lines sit at the top and ignore the search: a half-filled line that a
- * search had hidden would hold the save back with nothing on screen to
- * explain it.
+ * An added line ignores the search rather than being hidden by it — it is the
+ * thing being worked on — and its number puts it at the end of the order,
+ * which is where it was added.
  */
 export const visibleLines = (
   draft: OrderDraft,
@@ -411,10 +453,7 @@ export const visibleLines = (
       if (opts.onlyChanged && !isChanged(l)) return false;
       return true;
     })
-    .sort(
-      (a, b) =>
-        Number(isAdded(b)) - Number(isAdded(a)) || a.line_number - b.line_number,
-    );
+    .sort((a, b) => a.line_number - b.line_number);
 };
 
 /** Ext cost for the whole order, as it arrived and as it stands. */
@@ -428,7 +467,7 @@ export const costSwing = (draft: OrderDraft) => {
         l.original.base_cost,
         l.original.qty,
         l.scalable,
-        l.weight,
+        l.original.weight,
         l.casesize,
       );
     }
