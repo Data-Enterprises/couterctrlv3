@@ -1157,8 +1157,12 @@ export interface SubsPricePoint {
   store_name: string;
   product_code: string;
   product_description: string;
+  /** Per POUND on a weighed line, read off the row. A weighed item returns
+   *  one price point now rather than a scatter, one per basket size. */
   price: number;
   units: number;
+  /** Pounds at this price. Zero on a packaged line. */
+  weight: number;
   transactions: number;
   net_sales: number;
   first_sold: string;
