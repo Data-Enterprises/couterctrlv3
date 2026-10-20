@@ -236,6 +236,16 @@ export const SALES_HELP: HelpContent = {
       def: "The store's 200 biggest items by sales for the week shown. Ranked on money, not units, so an expensive item that sells a few still appears. Excluded sub departments are left out, so it agrees with the rest of the page.",
     },
     {
+      term: "Invoices",
+      def: "Every delivery of that item in the last 60 days, in a panel that slides over the item from the right. Nothing is fetched to open it — the invoices arrive with the item. A paid price in green is an allowance: you paid under the vendor's list price on that delivery.",
+      anchor: "store-tabs",
+    },
+    {
+      term: "Pounds, not units",
+      def: "A scale item sells by weight, so the panel reads it in pounds and prices it per pound. Its unit count is a count of weighings, and at some companies the feed sends none at all — a row showing 0 units beside 507 lb is accurate, not broken.",
+      anchor: "store-tabs",
+    },
+    {
       term: "% of net sales",
       def: "How much of the store's week these 200 items carried. The three tiles compare that share rather than the dollars: a week up 10% lifts the top 200 with it, and comparing dollars then reads as a change in the list when nothing about the list moved. The pill is the difference in those shares.",
       anchor: "store-tabs",

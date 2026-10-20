@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   ChevronDownIcon,
-  ChevronUpIcon,
+  ChevronLeftIcon,
   ChevronRightIcon,
+  ChevronUpIcon,
+  DocumentTextIcon,
   ExclamationTriangleIcon,
   ExclamationCircleIcon,
   CheckCircleIcon,
@@ -212,6 +214,10 @@ const PopupTopItems = ({
       return next;
     });
   const [selectedCode, setSelectedCode] = useState<string | null>(null);
+  /** The invoices rail. Closed on arrival and on every change of item: a
+   *  different item's invoices are a different list, and leaving it open
+   *  would show new rows under a heading opened for the old one. */
+  const [invoicesOpen, setInvoicesOpen] = useState(false);
   const [detail, setDetail] = useState<ItemDetailResponse | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const key = `${storeId}__${start}__${end}`;
@@ -278,6 +284,30 @@ const PopupTopItems = ({
         dispatch(setTopItemsLoading(false));
       });
   }, [key, haveRows]);
+
+  /*
+   * The rail closes when the item changes, and on Escape.
+   *
+   * A different item's invoices are a different list. Leaving it open would
+   * put the new item's rows under a heading the reader opened for the old
+   * one, which is worse than closing something they wanted open.
+   */
+  useEffect(() => {
+    setInvoicesOpen(false);
+  }, [selectedCode]);
+
+  useEffect(() => {
+    if (!invoicesOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      // The popup behind this closes on Escape too, and the reader means the
+      // thing in front of them.
+      e.stopPropagation();
+      setInvoicesOpen(false);
+    };
+    window.addEventListener("keydown", onKey, true);
+    return () => window.removeEventListener("keydown", onKey, true);
+  }, [invoicesOpen]);
 
   // A code from the last store is not a code in this one.
   useEffect(() => {
@@ -673,7 +703,7 @@ const PopupTopItems = ({
         </div>
 
         {/* The selected item */}
-        <div className="flex-1 min-w-0 flex flex-col">
+        <div className="relative flex-1 min-w-0 flex flex-col overflow-hidden">
           {!selected || !insight ? (
             /* Nothing picked: where the week's money came from, by department.
              Rolled up from the rows already on screen, so it costs no call
@@ -746,9 +776,7 @@ const PopupTopItems = ({
                       )}
                     </div>
                     <div className="text-[11.5px] text-content/85 tabular-nums">
-                      {pct === null
-                        ? "—"
-                        : `${pct.toFixed(1)}% of net sales`}
+                      {pct === null ? "—" : `${pct.toFixed(1)}% of net sales`}
                     </div>
                   </div>
                 ))}
@@ -1140,62 +1168,116 @@ const PopupTopItems = ({
                   )}
                 </Section>
 
-                {/* The invoices */}
+                {/* The way into the invoices. They were a folded section
+                    under the cost cards; seventeen rows of a weekly-delivered
+                    item pushed everything above them off the panel, and the
+                    reader opening it is asking a different question from the
+                    one the panel answers. */}
                 {detail && detail.cost_history.length > 0 && (
-                  <Section
-                    id="paid"
-                    label="What you have paid"
-                    note={`${detail.cost_history.length} invoice${detail.cost_history.length === 1 ? "" : "s"}`}
+                  <button
+                    onClick={() => setInvoicesOpen(true)}
+                    className="flex items-center gap-2 w-full mx-4 mb-3 px-3 py-2 rounded-md border border-brand_navy/15 bg-custom-white hover:bg-gray-50 transition-colors text-left"
+                    style={{ width: "calc(100% - 2rem)" }}
                   >
-                    <div className="grid grid-cols-[86px_1fr_68px_68px] gap-2 pb-1 border-b border-brand_navy/15 text-[11px] font-semibold uppercase tracking-wide text-content/85">
-                      <span>Invoice</span>
-                      <span>Vendor</span>
-                      <span className="text-right">List</span>
-                      <span className="text-right">Paid</span>
-                    </div>
-                    {[...detail.cost_history].reverse().map((h) => (
-                      <div
-                        key={h.invoice_date}
-                        className="grid grid-cols-[86px_1fr_68px_68px] gap-2 items-center py-1 border-b border-brand_navy/15 text-[11.5px] text-content even:bg-row_stripe"
-                      >
-                        <span className="tabular-nums">
-                          {dayText(h.invoice_date)}
-                        </span>
-                        <span className="truncate text-content/85">
-                          {h.vendor_name ?? "—"}
-                        </span>
-                        <span className="text-right tabular-nums text-content/85">
-                          {money(h.list_unit)}
-                        </span>
-                        {/* Green is the allowance. The endpoint returns it as its
-                          own field, but it IS list minus paid, so a third
-                          column would say the same thing twice. */}
-                        <span
-                          className={`text-right tabular-nums font-semibold ${
-                            h.allowance > 0.0001
-                              ? "text-severity_healthy_text"
-                              : "text-content"
-                          }`}
-                          title={
-                            h.allowance > 0.0001
-                              ? `${money(h.allowance)} allowance`
-                              : undefined
-                          }
-                        >
-                          {money(h.paid_unit)}
-                        </span>
-                      </div>
-                    ))}
-                    <p className="text-[11px] text-content/85 mt-1.5 leading-snug">
-                      Green is an allowance — paid under list. Cost reaches back
-                      further than the sales week on purpose: a week cannot say
-                      whether today&rsquo;s price is a good one.
-                    </p>
-                  </Section>
+                    <DocumentTextIcon className="w-4 h-4 flex-shrink-0 text-content/85" />
+                    <span className="text-[12.5px] font-semibold text-content">
+                      Invoices
+                    </span>
+                    <span className="text-[11.5px] text-content/85 truncate">
+                      {detail.cost_history.length} deliver
+                      {detail.cost_history.length === 1 ? "y" : "ies"} ·{" "}
+                      {dayText(
+                        detail.cost_history[detail.cost_history.length - 1]
+                          ?.invoice_date,
+                      )}{" "}
+                      most recent
+                    </span>
+                    <span className="flex-1" />
+                    <ChevronRightIcon className="w-4 h-4 flex-shrink-0 text-content/85" />
+                  </button>
                 )}
               </div>
             </>
           )}
+
+          {/* The invoices, over the panel rather than inside it.
+              Mounted whether or not it is open, so it slides instead of
+              appearing -- and inert while closed, so tabbing cannot land in
+              a panel nobody can see. */}
+          <div
+            aria-hidden={!invoicesOpen}
+            className={`absolute inset-y-0 right-0 w-full z-30 flex flex-col bg-custom-white border-l-2 border-brand_navy/25 shadow-rail transition-transform duration-200 ease-out motion-reduce:transition-none ${
+              invoicesOpen ? "translate-x-0" : "translate-x-full"
+            }`}
+          >
+            <button
+              onClick={() => setInvoicesOpen(false)}
+              tabIndex={invoicesOpen ? 0 : -1}
+              className="flex-shrink-0 flex items-center gap-2 px-3 py-2 border-b border-brand_navy/15 bg-gray-50 hover:bg-gray-100 transition-colors text-left"
+            >
+              <ChevronLeftIcon className="w-4 h-4 flex-shrink-0 text-content/85" />
+              <span className="text-[12.5px] font-semibold text-content">
+                Invoices
+              </span>
+              <span className="text-[11.5px] text-content/85 truncate">
+                {selected?.ty.product_description}
+              </span>
+              <span className="flex-1" />
+              <span className="text-[11.5px] font-semibold text-content/85">
+                {detail?.cost_history.length ?? 0}
+              </span>
+            </button>
+
+            {/* Its own scroll: sixty days of a weekly-delivered item is
+                seventeen rows, which is what drove the cost window down from
+                120 days in the first place. */}
+            <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar px-3 py-2">
+              <div className="grid grid-cols-[86px_1fr_68px_68px] gap-2 pb-1 border-b border-brand_navy/15 text-[11px] font-semibold uppercase tracking-wide text-content/85">
+                <span>Invoice</span>
+                <span>Vendor</span>
+                <span className="text-right">List</span>
+                <span className="text-right">Paid</span>
+              </div>
+              {[...(detail?.cost_history ?? [])].reverse().map((h) => (
+                <div
+                  key={h.invoice_date}
+                  className="grid grid-cols-[86px_1fr_68px_68px] gap-2 items-center py-1 border-b border-brand_navy/15 text-[11.5px] text-content even:bg-row_stripe"
+                >
+                  <span className="tabular-nums">
+                    {dayText(h.invoice_date)}
+                  </span>
+                  <span className="truncate text-content/85">
+                    {h.vendor_name ?? "—"}
+                  </span>
+                  <span className="text-right tabular-nums text-content/85">
+                    {money(h.list_unit)}
+                  </span>
+                  {/* Green is the allowance. The endpoint returns it as its
+                          own field, but it IS list minus paid, so a third
+                          column would say the same thing twice. */}
+                  <span
+                    className={`text-right tabular-nums font-semibold ${
+                      h.allowance > 0.0001
+                        ? "text-severity_healthy_text"
+                        : "text-content"
+                    }`}
+                    title={
+                      h.allowance > 0.0001
+                        ? `${money(h.allowance)} allowance`
+                        : undefined
+                    }
+                  >
+                    {money(h.paid_unit)}
+                  </span>
+                </div>
+              ))}
+              <p className="text-[11px] text-content/85 mt-1.5 leading-snug">
+                Green is an allowance — paid under list. Cost reaches back
+                further than the sales week on purpose: a week cannot say
+                whether today&rsquo;s price is a good one.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
