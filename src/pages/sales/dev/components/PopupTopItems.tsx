@@ -640,21 +640,21 @@ const PopupTopItems = ({
 
       <div className="flex flex-1 min-h-0">
         {/* The ranked list */}
-        <div className="w-[446px] flex-shrink-0 flex flex-col border-r border-gray-100">
+        <div className="w-[471px] flex-shrink-0 flex flex-col border-r border-gray-100">
           <div className="flex items-center gap-2 px-2.5 py-1.5 bg-gray-100 border-b border-gray-100 flex-shrink-0">
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search item or UPC…"
               aria-label="Search items"
-              className="flex-1 min-w-0 text-[11.5px] px-2 py-1 rounded-md border border-gray-200 bg-custom-white text-content"
+              className="flex-1 min-w-[90px] text-[11.5px] px-2 py-1 rounded-md border border-gray-200 bg-custom-white text-content"
             />
             {depts.length > 1 && (
               <select
                 value={dept}
                 onChange={(e) => setDept(e.target.value)}
                 aria-label="Filter by sub department"
-                className="text-[11.5px] px-1.5 py-1 rounded-md border border-gray-200 bg-custom-white text-content max-w-[130px]"
+                className="flex-shrink-0 max-w-[170px] text-[11.5px] pl-1.5 pr-5 py-1 rounded-md border border-gray-200 bg-custom-white text-content"
               >
                 <option value="">All sub depts</option>
                 {depts.map((d) => (
@@ -664,7 +664,7 @@ const PopupTopItems = ({
                 ))}
               </select>
             )}
-            <span className="text-[10px] font-semibold text-content/85 whitespace-nowrap">
+            <span className="flex-shrink-0 text-[10px] font-semibold text-content/85 whitespace-nowrap">
               {shown.length === ranked.length
                 ? `Top ${Math.min(ranked.length, TOP_ITEMS_SHOWN)} by sales`
                 : `${shown.length} of ${ranked.length}`}
@@ -720,8 +720,8 @@ const PopupTopItems = ({
                       className="block text-[10.5px] text-content/85 tabular-nums truncate"
                       title={`${r.ty.product_code} · ${deptName(r.ty)} · ${amountText(r.ty)}`}
                     >
-                      {r.ty.product_code} · {deptName(r.ty)} ·{" "}
-                      {amountText(r.ty)}
+                      <span className="font-semibold">{r.ty.product_code}</span>{" "}
+                      · <span className="font-semibold">{deptName(r.ty)}</span>
                     </span>
                   </span>
                   <span className="w-[68px] text-right text-[12px] font-semibold text-content tabular-nums flex-shrink-0 pl-2.5">
@@ -909,12 +909,30 @@ const PopupTopItems = ({
                   return (
                     <button
                       key={d.name}
-                      onClick={() => setDept(d.name)}
-                      title={`Narrow the list to ${d.name}`}
-                      className="w-full grid items-center gap-2 px-3 py-2 text-left border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                      /* Clicking the row it is already filtered by clears
+                         the filter: the row is the control, so it has to be
+                         able to undo what it did. */
+                      onClick={() => setDept(dept === d.name ? "" : d.name)}
+                      title={
+                        dept === d.name
+                          ? "Show every department again"
+                          : `Narrow the list to ${d.name}`
+                      }
+                      aria-pressed={dept === d.name}
+                      className={`w-full grid items-center gap-2 px-3 py-2 text-left border-b border-b-gray-100 border-l-2 transition-colors ${
+                        dept === d.name
+                          ? "bg-row_selected border-row_selected_border"
+                          : "border-transparent hover:bg-gray-50"
+                      }`}
                       style={{ gridTemplateColumns: LANDING_COLS }}
                     >
-                      <span className="min-w-0 text-[13px] font-medium text-content truncate">
+                      <span
+                        className={`min-w-0 text-[13px] truncate ${
+                          dept === d.name
+                            ? "font-bold text-content"
+                            : "font-medium text-content"
+                        }`}
+                      >
                         {d.name}
                       </span>
 
@@ -1219,7 +1237,7 @@ const PopupTopItems = ({
                       }`}
                     >
                       <div
-                        className={`text-[11px] ${
+                        className={`text-[11.5px] font-semibold ${
                           selected.ty.margin === null
                             ? "text-content/85"
                             : selected.ty.margin < 0
@@ -1255,7 +1273,7 @@ const PopupTopItems = ({
                         worse answer than none. */}
                     {topPrice !== null && topMargin !== null && (
                       <div className="rounded-md px-2.5 py-2 bg-severity_watch_bg">
-                        <div className="text-[11px] text-severity_watch_text truncate">
+                        <div className="text-[11.5px] font-semibold text-severity_watch_text truncate">
                           At its top price {money(topPrice)}
                         </div>
                         <div className="text-[18px] font-bold tabular-nums leading-tight text-severity_watch_text">
@@ -1437,18 +1455,16 @@ const PopupTopItems = ({
                   {metricRows.map((m) => (
                     <div
                       key={m.label}
-                      className="grid grid-cols-[1fr_84px_62px_62px] gap-1.5 items-center py-1 border-t border-gray-100 text-[11.5px]"
+                      className="grid grid-cols-[1fr_84px_62px_62px] gap-1.5 items-center py-1.5 border-t border-gray-100 text-[13px]"
                     >
-                      <span className="text-content/85 truncate">
-                        {m.label}
-                      </span>
-                      <span className="text-[12.5px] font-semibold text-content text-right tabular-nums">
+                      <span className="text-content truncate">{m.label}</span>
+                      <span className="text-[13px] font-semibold text-content text-right tabular-nums">
                         {m.ty}
                       </span>
-                      <span className="text-[12px] font-semibold text-content text-right tabular-nums">
+                      <span className="text-[13px] font-semibold text-content text-right tabular-nums">
                         {m.lw}
                       </span>
-                      <span className="text-[12px] font-semibold text-content text-right tabular-nums">
+                      <span className="text-[13px] font-semibold text-content text-right tabular-nums">
                         {m.ly}
                       </span>
                     </div>
@@ -1479,10 +1495,10 @@ const PopupTopItems = ({
                     {display.checks.map((c) => (
                       <div
                         key={c.label}
-                        className="flex items-center gap-2 py-1 border-b border-gray-100 last:border-b-0 text-[12.5px]"
+                        className="flex items-center gap-2.5 py-1.5 border-b border-gray-100 last:border-b-0 text-[13.5px]"
                       >
                         <span
-                          className={`w-4 h-4 rounded-full flex-shrink-0 flex items-center justify-center text-[10px] font-bold ${
+                          className={`w-[18px] h-[18px] rounded-full flex-shrink-0 flex items-center justify-center text-[11px] font-bold ${
                             c.state === "pass"
                               ? "bg-severity_healthy_bg text-severity_healthy_text"
                               : c.state === "fail"
@@ -1500,7 +1516,7 @@ const PopupTopItems = ({
                         <span className="min-w-0 flex-1 truncate text-content">
                           {c.label}
                         </span>
-                        <span className="flex-shrink-0 text-content/85 tabular-nums">
+                        <span className="flex-shrink-0 font-semibold text-content tabular-nums">
                           {c.detail}
                         </span>
                       </div>
