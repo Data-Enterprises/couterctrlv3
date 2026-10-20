@@ -200,12 +200,11 @@ const PopupTopItems = ({
   /** The landing report's own chip filter, over departments. */
   const [deptSev, setDeptSev] = useState<Severity | "all">("all");
   /**
-   * Collapsed sections, by id.
+   * The CTA strip's open state, and nothing else now that the report has no
+   * folding sections.
    *
-   * The sections start open — the panel is the answer, and folding it by
-   * default would hide the thing just asked for. The CTA starts CLOSED, the
-   * way the Sub dept tab's does: its label already says the verdict, and the
-   * sentence is the working behind it.
+   * It starts CLOSED, the way the Sub dept tab's does: its label already
+   * says the verdict, and the sentence is the working behind it.
    */
   const [folded, setFolded] = useState<Set<string>>(() => new Set(["cta"]));
   const fold = (id: string) =>
@@ -567,45 +566,6 @@ const PopupTopItems = ({
         ))}
     </button>
   );
-
-  /** A section that folds. The heading is the whole hit area — a 12px chevron
-   *  in a panel this narrow is a miss waiting to happen. */
-  const Section = ({
-    id,
-    label,
-    note,
-    children,
-  }: {
-    id: string;
-    label: string;
-    note?: React.ReactNode;
-    children: React.ReactNode;
-  }) => {
-    const shut = folded.has(id);
-    return (
-      <div className="px-4 py-2.5 border-b border-brand_navy/15">
-        <div
-          onClick={() => fold(id)}
-          className={`flex items-baseline justify-between gap-2 cursor-pointer select-none ${shut ? "" : "mb-1.5"}`}
-        >
-          <span className="flex items-center gap-1 min-w-0">
-            <ChevronRightIcon
-              className={`w-3.5 h-3.5 text-content flex-shrink-0 transition-transform ${shut ? "" : "rotate-90"}`}
-            />
-            <span className="text-[11.5px] font-medium uppercase tracking-wide text-content truncate">
-              {label}
-            </span>
-          </span>
-          {note && (
-            <span className="text-[11px] text-content/85 flex-shrink-0">
-              {note}
-            </span>
-          )}
-        </div>
-        {!shut && children}
-      </div>
-    );
-  };
 
   return (
     <div className="flex h-full flex-col">
@@ -1315,54 +1275,20 @@ const PopupTopItems = ({
                   )}
                 </div>
 
-                <Section
-                  id="rang"
-                  label="How it rang"
-                  note={`${points.length} price point${points.length === 1 ? "" : "s"}`}
-                >
-                  <div className="grid grid-cols-[1fr_64px_80px] gap-2 pb-1 border-b border-brand_navy/15 text-[11px] font-semibold uppercase tracking-wide text-content/85">
-                    <span>Rang at</span>
-                    <span className="text-right">
-                      {selected && weighed(selected.ty) ? "Pounds" : "Units"}
+                <div className="px-4 py-2.5">
+                  <div className="flex items-baseline justify-between gap-2">
+                    <span className="text-[10px] font-bold uppercase tracking-wide text-content/85">
+                      What it costs to buy
                     </span>
-                    <span className="text-right">Sales</span>
+                    {detail?.cost_summary && (
+                      <span className="text-[11.5px] text-content/85">
+                        {detail.cost_summary.purchases} purchase
+                        {detail.cost_summary.purchases === 1 ? "" : "s"}{" "}
+                        &middot; {COST_HISTORY_DAYS} days
+                      </span>
+                    )}
                   </div>
-                  {points.length === 0 ? (
-                    <p className="text-[11px] text-content/85 pt-1.5">
-                      No price came back for this item.
-                    </p>
-                  ) : (
-                    points.map((p) => (
-                      <div
-                        key={p.price}
-                        className="grid grid-cols-[1fr_64px_80px] gap-2 items-center py-1 border-b border-brand_navy/15 last:border-b-0 text-[11.5px] text-content"
-                      >
-                        <span className="text-[13px] font-semibold tabular-nums">
-                          {money(p.price)}
-                        </span>
-                        <span className="text-right font-semibold tabular-nums">
-                          {p.units.toLocaleString()}
-                        </span>
-                        <span className="text-right tabular-nums">
-                          {money(p.netSales)}
-                        </span>
-                      </div>
-                    ))
-                  )}
-                </Section>
 
-                {/* What it costs you */}
-                <Section
-                  id="cost"
-                  label="What it costs you"
-                  note={
-                    detail?.cost_summary
-                      ? `${detail.cost_summary.purchases} purchase${
-                          detail.cost_summary.purchases === 1 ? "" : "s"
-                        } · ${detail.cost_summary.days} days`
-                      : undefined
-                  }
-                >
                   {detailLoading && (
                     <div className="relative h-20">
                       <LoadingIndicator message="Loading cost history" />
@@ -1370,41 +1296,65 @@ const PopupTopItems = ({
                   )}
 
                   {!detailLoading && !detail?.cost_summary && (
-                    <p className="text-[11px] text-content/85 leading-snug">
-                      Nothing bought in the last 120 days, so there is no cost
-                      history to compare against.
+                    <p className="text-[11.5px] text-content/85 leading-snug mt-1.5">
+                      Nothing bought in the last {COST_HISTORY_DAYS} days, so
+                      there is no cost history to compare against.
                     </p>
                   )}
 
                   {detail?.cost_summary && (
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-3 gap-2 mt-2">
                       <div className="rounded-md bg-bkg px-2.5 py-2">
-                        <div className="text-[11px] font-semibold uppercase text-content/85">
+                        <div className="text-[11px] text-content/85">
                           Paying now
                         </div>
-                        <div className="text-[15px] font-semibold text-content tabular-nums">
+                        <div className="text-[14.5px] font-semibold text-content tabular-nums">
                           {money(detail.cost_summary.paying_now)}
                         </div>
                       </div>
-                      <div className="rounded-md bg-severity_healthy_bg px-2.5 py-2">
-                        <div className="text-[11px] font-semibold uppercase text-severity_healthy_text">
-                          Best seen
+                      <div className="rounded-md bg-bkg px-2.5 py-2">
+                        <div className="text-[11px] text-content/85 truncate">
+                          Best seen &middot;{" "}
+                          {dayText(detail.cost_summary.best_seen_on)}
                         </div>
-                        <div className="text-[15px] font-semibold text-severity_healthy_text tabular-nums">
+                        <div className="text-[14.5px] font-semibold text-content tabular-nums">
                           {money(detail.cost_summary.best_seen)}
                         </div>
                       </div>
-                      <div className="rounded-md bg-severity_watch_bg px-2.5 py-2">
-                        <div className="text-[11px] font-semibold uppercase text-severity_watch_text">
-                          Waiting worth
+                      {/* Amber only when waiting is worth something. A nought
+                          in a warning tint reads as a problem that is not
+                          there. */}
+                      <div
+                        className={`rounded-md px-2.5 py-2 ${
+                          detail.cost_summary.gap > 0.0001
+                            ? "bg-severity_watch_bg"
+                            : "bg-bkg"
+                        }`}
+                      >
+                        <div
+                          className={`text-[11px] truncate ${
+                            detail.cost_summary.gap > 0.0001
+                              ? "text-severity_watch_text"
+                              : "text-content/85"
+                          }`}
+                        >
+                          {detail.cost_summary.gap > 0.0001
+                            ? "Waiting could save"
+                            : "At the best price seen"}
                         </div>
-                        <div className="text-[15px] font-semibold text-severity_watch_text tabular-nums">
+                        <div
+                          className={`text-[14.5px] font-semibold tabular-nums ${
+                            detail.cost_summary.gap > 0.0001
+                              ? "text-severity_watch_text"
+                              : "text-content"
+                          }`}
+                        >
                           {money(detail.cost_summary.gap)}
                         </div>
                       </div>
                     </div>
                   )}
-                </Section>
+                </div>
 
                 {/* The way into the invoices. They were a folded section
                     under the cost cards; seventeen rows of a weekly-delivered
