@@ -1,0 +1,564 @@
+<title>CounterCtrl Issue Response</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:wght@500;600&display=swap">
+<style>
+/* Companion to issue-drafts-2026-10-21.html. Same tokens and same reading
+   column, so the two sit side by side: summary table up top, then one sheet
+   per issue carrying the verdict, the mechanism and the change. */
+:root{
+  --ground:#f5f8fb; --paper:#ffffff; --paper-2:#eef3f8;
+  --head:#08203f; --ink:#0c1a2e; --body:#3d5372; --muted:#6b809d; --faint:#93a5bd;
+  --line:#d9e2ed; --line-2:#e9eef5;
+  --accent:#0b4f9e; --accent-soft:#e8f0fb; --accent-bd:#c2d8f2;
+  --ok:#166b45; --ok-bg:#e7f4ed; --ok-bd:#bfe0cd;
+  --warn:#8a5806; --warn-bg:#fdf3e2; --warn-bd:#eed9b0;
+  --stop:#a3231c; --stop-bg:#fcecea; --stop-bd:#f0c8c5;
+  --code-bg:#0f2138; --code-fg:#dbe7f6; --code-key:#9cc4f5;
+  --shadow:rgba(8,32,63,.08);
+  --f-display:"IBM Plex Serif",Georgia,serif;
+  --f-body:"IBM Plex Sans",-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#070f1c; --paper:#0e1b2d; --paper-2:#13243a;
+    --head:#eaf1fb; --ink:#dfe8f5; --body:#b0c2da; --muted:#8b9fbb; --faint:#71859f;
+    --line:#1e3350; --line-2:#182a44;
+    --accent:#5aa2f0; --accent-soft:#12294a; --accent-bd:#25446e;
+    --ok:#6fce9f; --ok-bg:#0f2a1e; --ok-bd:#255c40;
+    --warn:#e8b45f; --warn-bg:#2a2010; --warn-bd:#5c4519;
+    --stop:#f08a82; --stop-bg:#2c1512; --stop-bd:#5f2b26;
+    --code-bg:#050c17; --code-fg:#d3e1f3; --code-key:#7fb6f2;
+    --shadow:rgba(0,0,0,.5);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#070f1c; --paper:#0e1b2d; --paper-2:#13243a;
+  --head:#eaf1fb; --ink:#dfe8f5; --body:#b0c2da; --muted:#8b9fbb; --faint:#71859f;
+  --line:#1e3350; --line-2:#182a44;
+  --accent:#5aa2f0; --accent-soft:#12294a; --accent-bd:#25446e;
+  --ok:#6fce9f; --ok-bg:#0f2a1e; --ok-bd:#255c40;
+  --warn:#e8b45f; --warn-bg:#2a2010; --warn-bd:#5c4519;
+  --stop:#f08a82; --stop-bg:#2c1512; --stop-bd:#5f2b26;
+  --code-bg:#050c17; --code-fg:#d3e1f3; --code-key:#7fb6f2;
+  --shadow:rgba(0,0,0,.5);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--body);font-family:var(--f-body);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1040px;margin:0 auto;padding-block:28px 72px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:28px}
+h1,h2,h3{font-family:var(--f-display);color:var(--head);text-wrap:balance;margin:0;font-weight:600}
+h1{font-size:30px;line-height:1.15;letter-spacing:-.01em}
+h2{font-size:21px;line-height:1.25}
+h3{font-size:16px}
+p{margin:0}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.eyebrow{font-family:var(--f-mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted)}
+a{color:var(--accent)}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.masthead{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-end;justify-content:space-between;padding-bottom:18px;border-bottom:2px solid var(--head)}
+.masthead .lead{display:grid;gap:8px;min-width:0}
+.masthead .sub{color:var(--muted);font-size:14px;max-width:62ch}
+.status{display:grid;gap:4px;background:var(--paper);border:1px solid var(--accent-bd);border-radius:8px;padding:10px 14px;font-size:13px;max-width:34ch}
+.status b{color:var(--accent)}
+
+.chip{display:inline-block;font:600 11px/1 var(--f-mono);letter-spacing:.04em;padding:5px 8px;border-radius:999px;border:1px solid;white-space:nowrap}
+.chip.crit{color:var(--stop);background:var(--stop-bg);border-color:var(--stop-bd)}
+.chip.watch{color:var(--warn);background:var(--warn-bg);border-color:var(--warn-bd)}
+.chip.review{color:var(--accent);background:var(--accent-soft);border-color:var(--accent-bd)}
+.chip.ok{color:var(--ok);background:var(--ok-bg);border-color:var(--ok-bd)}
+.chip.ghost{color:var(--muted);background:var(--paper-2);border-color:var(--line)}
+.chip.fixed{color:var(--ok);background:var(--ok-bg);border-color:var(--ok-bd)}
+.chip.fixed::before{content:"\2713\00a0"}
+.commit{font-family:var(--f-mono);font-size:12.5px;color:var(--ok);background:var(--ok-bg);border:1px solid var(--ok-bd);border-radius:4px;padding:1px 6px;white-space:nowrap}
+.verify{border:1px solid var(--ok-bd);border-radius:8px;background:var(--ok-bg);padding:12px 14px;display:grid;gap:6px}
+.verify h4{margin:0;font:600 11px/1.3 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ok)}
+.verify ol{padding-left:18px;gap:3px}
+.verify, .verify li{color:var(--ink);font-size:13.5px}
+
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--paper)}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{padding:9px 12px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line-2)}
+tr:last-child td{border-bottom:0}
+th{font:600 11px/1.3 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:var(--paper-2)}
+td.num,th.num{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+td code,p code,li code,dd code{font-family:var(--f-mono);font-size:12.5px;background:var(--paper-2);border:1px solid var(--line-2);border-radius:4px;padding:1px 5px;color:var(--ink);word-break:break-word}
+.summary td:first-child{font-family:var(--f-mono);color:var(--muted);width:2.5em}
+.summary a{font-weight:600;text-decoration:none;color:var(--head)}
+.summary a:hover{text-decoration:underline}
+tr.total td{font-weight:600;color:var(--ink);background:var(--paper-2)}
+
+.issue{background:var(--paper);border:1px solid var(--line);border-radius:10px;box-shadow:0 1px 2px var(--shadow);padding:22px 22px 24px;display:grid;gap:18px;scroll-margin-top:16px;min-width:0}
+.issue-head{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;align-items:baseline}
+.issue-num{font:600 26px/1 var(--f-display);color:var(--faint);grid-row:span 2}
+.issue-head .verdict{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13.5px;color:var(--muted)}
+.facts{display:grid;grid-template-columns:max-content 1fr;gap:6px 18px;font-size:14px;margin:0;padding:14px 16px;background:var(--paper-2);border-radius:8px}
+.facts dt{font:600 11px/1.6 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.facts dd{margin:0;color:var(--ink);min-width:0;overflow-wrap:anywhere}
+.block{display:grid;gap:8px;min-width:0}
+.block>h3{font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
+ol,ul{margin:0;padding-left:20px;display:grid;gap:5px}
+.callout{border-left:3px solid var(--accent);padding:2px 0 2px 12px;color:var(--ink)}
+.callout.warn{border-color:var(--warn)}
+.callout.stop{border-color:var(--stop)}
+.callout.ok{border-color:var(--ok)}
+
+/* said / found pairs */
+.sf{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.sf div{border:1px solid var(--line);border-radius:8px;padding:12px 14px;display:grid;gap:4px}
+.sf .said{border-color:var(--line)}
+.sf .found{border-color:var(--accent-bd)}
+.sf b{font:600 11px/1.3 var(--f-mono);letter-spacing:.1em;text-transform:uppercase}
+.sf .said b{color:var(--muted)}
+.sf .found b{color:var(--accent)}
+
+/* code citation */
+.cite{border-radius:8px;overflow:hidden;border:1px solid var(--line);min-width:0}
+.cite-head{background:var(--paper-2);padding:8px 12px;border-bottom:1px solid var(--line);font-family:var(--f-mono);font-size:12.5px;color:var(--ink);overflow-wrap:anywhere}
+pre{margin:0;padding:12px 14px;background:var(--code-bg);color:var(--code-fg);font:12.5px/1.6 var(--f-mono);overflow-x:auto;white-space:pre}
+pre .c{color:var(--faint)}
+pre .k{color:var(--code-key)}
+
+.note{font-size:13.5px;color:var(--muted)}
+.obs{display:grid;gap:14px}
+.obs>li{padding-left:2px}
+.ask{display:grid;gap:10px}
+.ask .row{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;border:1px solid var(--line);border-radius:8px;padding:12px 14px;background:var(--paper)}
+.ask .n{font:600 13px/1.4 var(--f-mono);color:var(--accent)}
+footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:14px}
+
+@media (max-width:560px){
+  h1{font-size:25px}
+  .issue{padding:16px}
+  .facts{grid-template-columns:1fr;gap:2px 0}
+  .facts dd{margin-bottom:8px}
+  .ask .row{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+
+<header class="masthead">
+  <div class="lead">
+    <div class="eyebrow">CounterCtrl dev &middot; Response</div>
+    <h1>Response to the Issue Drafts, 21 Oct 2026</h1>
+    <p class="sub">Four of the issues are fixed and committed; the detail below is what each one turned out to be and how to check the fix. Two of the five findings are not what the draft concluded, and what is left to do needs the server.</p>
+  </div>
+  <div class="status">
+    <span><b>4 fixed</b>, 1 not a defect, 1 backend. 4 commits on <span class="mono">next_publish_10_20_2026</span>.</span>
+    <span class="mono">tested build index-o8g_iBNS.js &middot; 10/12/2026</span>
+  </div>
+</header>
+
+<section class="block" aria-labelledby="sum-h">
+  <h2 id="sum-h">Where each one lands</h2>
+  <div class="scroll">
+    <table class="summary">
+      <thead><tr><th>#</th><th>Issue</th><th>Graded</th><th>What it was</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td><a href="#r1">Sub-department names disappear below 1200&nbsp;px</a></td><td><span class="chip crit">Crit</span></td><td>Confirmed</td><td><span class="chip fixed">Fixed</span> <span class="commit">03844b4d</span></td></tr>
+        <tr><td>2</td><td><a href="#r2">Sales drill re-fetches hourly data</a></td><td><span class="chip watch">Watch</span></td><td>Confirmed, and worse</td><td><span class="chip fixed">Fixed</span> <span class="commit">8fefe4d8</span></td></tr>
+        <tr><td>5b</td><td><a href="#r5b">Store margin: Sub Dept Margins vs Vendors</a></td><td><span class="chip review">Review</span></td><td>Real defect. Vendors was right</td><td><span class="chip fixed">Fixed</span> <span class="commit">b5595d61</span></td></tr>
+        <tr><td>&mdash;</td><td><a href="#obs-h">Receivers' second "Search" control</a></td><td><span class="chip ghost">Obs 4</span></td><td>Hidden element, every page</td><td><span class="chip fixed">Fixed</span> <span class="commit">c0a5a5e7</span></td></tr>
+        <tr><td>5a</td><td><a href="#r5a">Last-week sales: Sales vs Categories</a></td><td><span class="chip review">Review</span></td><td>Two different comparisons &mdash; both right</td><td><span class="chip ok">Nothing to fix</span></td></tr>
+        <tr><td>4</td><td><a href="#r4">Store list differs between pages</a></td><td><span class="chip review">Review</span></td><td>One list, two renderings</td><td><span class="chip review">Backend (access)</span></td></tr>
+        <tr class="total"><td>3</td><td><a href="#r3">13&nbsp;MB paged download for one store-week</a></td><td><span class="chip watch">Watch</span></td><td>Confirmed &mdash; already the reduced shape</td><td><span class="chip review">Backend</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="block" aria-labelledby="first-h">
+  <h2 id="first-h">Three things before the detail</h2>
+  <ul>
+    <li><b>No figure the API returned is wrong.</b> Every defect here was in the browser. Both halves of issue&nbsp;5 came from the front end: one was two different and defensible comparisons, the other was one line of arithmetic that should have been weighted and was not.</li>
+    <li><b>Three findings turn on the difference between the DOM and the screen</b>, and the run landed on both sides of it: issue&nbsp;1 is text present and invisible, while the Receivers "Search" control and the one-store picker are markup the browser never paints. One rule in the harness keeps the first and drops the other two &mdash; see <a href="#harness">On the harness</a>.</li>
+    <li><b>One number will look like a regression.</b> Sub Dept Margins' store margin drops from 31.91% to about 27.04% on the store-week you tested. That is the fix, not a fault &mdash; the old figure was overstated. Full reasoning in <a href="#r5b">5b</a>.</li>
+  </ul>
+</section>
+
+<!-- 1 -->
+<article class="issue" id="r1" aria-labelledby="r1-h">
+  <div class="issue-head">
+    <span class="issue-num">1</span>
+    <h2 id="r1-h">Sub-department names disappear below about 1200&nbsp;px</h2>
+    <div class="verdict"><span class="chip fixed">Fixed</span> <span class="commit">03844b4d</span> The name was the only column that could give way, so it gave all of it.</div>
+  </div>
+  <dl class="facts">
+    <dt>File</dt><dd><code>PopupSubDeptList.tsx</code> &mdash; the name cell, the column heads and the list panel</dd>
+    <dt>Trees</dt><dd>Both. The markup was identical in dev, and both are fixed.</dd>
+    <dt>Verdict</dt><dd>Real, and Crit is the right grade. Nothing about the data was involved.</dd>
+  </dl>
+
+  <div class="block"><h3>Why the name is what vanishes</h3>
+    <p>Three nested widths decide how much room the name gets, and only the last of them is flexible:</p>
+    <ul>
+      <li>The report panel is <b>52%</b> of the content area (<code>SalesLedger.tsx</code>).</li>
+      <li>The signal list inside it is <b>39.5%</b> of the panel (<code>PopupSubDeptList.tsx</code>). So the sub-department rows live in roughly a fifth of the window.</li>
+      <li>Inside the row, the numbers are fixed: TY at 64&nbsp;px, the two comparison pills at <code>PCT_COL_W</code> = 72&nbsp;px each (<code>src/utils/severity.ts:22</code>), two 14&nbsp;px gaps and a 10&nbsp;px lead. About <b>246&nbsp;px that cannot shrink</b>.</li>
+    </ul>
+    <p>The name cell is the only item in the row with <code>flex-1</code> and <code>min-w-0</code>. The number group has no <code>min-w-0</code> and children marked <code>flex-shrink-0</code>, so its minimum size is its content, and it holds. CSS therefore has exactly one place to take the missing pixels from.</p>
+    <p>246&nbsp;px of fixed column inside a fifth of the window needs roughly 1,200&nbsp;px of content area before the name gets its first pixel &mdash; which is the threshold the run measured, from the other side.</p>
+    <div class="cite">
+      <div class="cite-head">PopupSubDeptList.tsx:1013 &mdash; the one flexible cell</div>
+<pre>&lt;span
+  title={r.desc}
+  className=<span class="k">"text-[12px] font-medium text-content truncate flex-1"</span>
+&gt;
+  {r.desc}
+&lt;/span&gt;</pre>
+    </div>
+  </div>
+
+  <div class="block"><h3>What changed</h3>
+    <p>Three things, so no single one has to carry it:</p>
+    <ol>
+      <li>A <b>floor on the name cell</b>, so it is no longer the only column that yields. A window too narrow for the row now clips its right edge, which a reader can recover from by widening the window. A blank name column is not recoverable &mdash; nothing on screen tells you what you are missing.</li>
+      <li>A <b>floor on the signal list</b>, so it is no longer a pure percentage of a percentage and the detail side of the drill gives ground first.</li>
+      <li><b>vs LY hides under 1200&nbsp;px</b>, on a named breakpoint set at the threshold the run measured. It is the weaker of the two comparisons, and on a store with no history on file &mdash; like the 695 this was found on &mdash; it is a dash on every row anyway.</li>
+    </ol>
+    <div class="verify">
+      <h4>How to check it</h4>
+      <ol>
+        <li>Sales &rsaquo; store 361 &rsaquo; click the row, Sub dept tab, as before.</li>
+        <li>Narrow to 1024, 1080, 1120, 1160. Expect <b>0 names hidden</b> at every width, against 27, 27, 27 and 26 before.</li>
+        <li>Below 1200&nbsp;px the <b>vs LY</b> column should be absent &mdash; header and cells together, no half-aligned row.</li>
+        <li>At 1200 and above, all three number columns return.</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="block"><h3>Where else the pattern sits</h3>
+    <p>The same <code>truncate flex-1</code> name against fixed number columns appears in <code>PopupHourlyView.tsx:609</code>, <code>CategoryDetailPanel.tsx:529</code> and <code>LPStorePanel.tsx:374</code>. We left those alone: only the sub-department list actually breaks, because it is the one pairing long labels with a narrow panel, and a floor on a column that was never squeezed is a change with no evidence behind it. Worth a look in the next run &mdash; narrow the Categories and Loss Prevention panels and see whether anything there gives way too.</p>
+  </div>
+</article>
+
+<!-- 2 -->
+<article class="issue" id="r2" aria-labelledby="r2-h">
+  <div class="issue-head">
+    <span class="issue-num">2</span>
+    <h2 id="r2-h">Sales drill re-fetches hourly data &mdash; and the first copy was never used</h2>
+    <div class="verdict"><span class="chip fixed">Fixed</span> <span class="commit">8fefe4d8</span> Not a cache the drill ignored &mdash; nothing read those calls at all.</div>
+  </div>
+  <dl class="facts">
+    <dt>Ledger calls</dt><dd><code>src/pages/sales/prod/SalesLedger.tsx</code> &mdash; three, and per store on a large group. Removed.</dd>
+    <dt>Drill calls</dt><dd><code>src/pages/sales/prod/components/StoreDetailPopup.tsx:355, 364, 373</code></dd>
+    <dt>Only consumer</dt><dd><code>src/pages/sales/prod/components/PopupHourlyView.tsx:200</code></dd>
+    <dt>Verdict</dt><dd>Real. The fix was a deletion, not a cache.</dd>
+  </dl>
+
+  <div class="block"><h3>What we found that the run could not see</h3>
+    <p>The draft reads this as the drill ignoring data the ledger already holds. The call graph says something simpler: <b>the ledger's copy is dead on arrival</b>.</p>
+    <ul>
+      <li>The ledger fetches <code>hourly/hourly</code> for three windows into <code>hourlySales</code>.</li>
+      <li>The ledger never reads it. The three selectors were commented out in its own destructure, and no ledger row, header or chart touches the slice.</li>
+      <li>The only consumer is <code>PopupHourlyView</code>, which opens inside the drill. And the drill, before that panel renders, <b>overwrites the slice with its own per-store fetch</b> (<code>StoreDetailPopup.tsx:485&ndash;495</code>, <code>dispatch(setHourlySales(rawHourly))</code>).</li>
+    </ul>
+    <p>So the three calls on Load Stores produce data that is written to Redux, read by nobody, and replaced the moment anyone could have read it. They can be removed outright. No caching layer, no lazy-on-tab-open, no behaviour change on screen.</p>
+  </div>
+
+  <div class="block"><h3>One correction to the shape of it</h3>
+    <div class="sf">
+      <div class="said"><b>Draft</b><span>"With Type = Group it repeats per store, the pattern behind the 60-store slowness."</span></div>
+      <div class="found"><b>Found</b><span>Right for a large group, for a different reason. Two separate paths exist, and only one produces byte-identical repeats.</span></div>
+    </div>
+    <div class="scroll"><table>
+      <thead><tr><th>Search</th><th>Ledger fetches hourly</th><th>Drill fetches</th><th class="num">Wasted calls</th></tr></thead>
+      <tbody>
+        <tr><td>One store</td><td>Once, at store scope</td><td>Same body again</td><td class="num">3</td></tr>
+        <tr><td>Group, 30 stores or fewer</td><td>Once, at <i>group</i> scope</td><td>Per store &mdash; not a repeat</td><td class="num">3</td></tr>
+        <tr class="total"><td>Group, more than 30 stores</td><td><b>Per store</b>, 3 &times; N</td><td>Same body again</td><td class="num">3 &times; N</td></tr>
+      </tbody>
+    </table></div>
+    <p>On the 60-store group behind the 11&nbsp;Sep report, that is <b>180 calls</b> of hourly data that nothing will ever read, fired alongside the 180 weekly calls that the screen does need. That is the part of the 60-store problem this issue actually accounts for.</p>
+  </div>
+
+  <div class="block"><h3>What changed</h3>
+    <p><code>getHourly</code> is gone from both paths in <code>SalesLedger.tsx</code>, along with the three <code>concatHourly*</code> dispatches and the three <code>setHourly*</code> ones. The drill keeps its own fetch, which was already the one feeding the screen. A note sits where the calls were, so the next person to want an hour on the ledger knows why there isn't one.</p>
+    <p>One correction to our own first reading: we said this was live in both trees. It was not &mdash; <b>the dev ledger had already dropped these calls</b>, and only prod still had them. This brings prod level rather than fixing both.</p>
+    <div class="verify">
+      <h4>How to check it</h4>
+      <ol>
+        <li>Sales &rsaquo; store 361 &rsaquo; Load Stores. Expect <b>no <code>hourly/hourly</code> at all</b> &mdash; previously three.</li>
+        <li>Click the store row. Expect <b>exactly three</b>, the drill's own, where there were six across the two steps.</li>
+        <li>Open the Hourly tab. The hour table should read exactly as it did before: it was always drawn from the drill's copy.</li>
+        <li>Worth one group run too: on a group of more than 30 stores, Load Stores should now issue 3 calls per store rather than 6.</li>
+      </ol>
+    </div>
+    <p class="callout ok">Worth saying plainly: your run found this by watching the wire, and watching the wire is the only way it could have been found. Nothing on screen changes when the calls go, which is exactly why it survived this long.</p>
+  </div>
+</article>
+
+<!-- 3 -->
+<article class="issue" id="r3" aria-labelledby="r3-h">
+  <div class="issue-head">
+    <span class="issue-num">3</span>
+    <h2 id="r3-h">13&nbsp;MB in five pages for one store-week</h2>
+    <div class="verdict"><span class="chip watch">Confirmed</span> Accurate, and it is already the reduced shape. What is left needs the server.</div>
+  </div>
+  <dl class="facts">
+    <dt>Files</dt><dd><code>src/pages/vendors/prod/vendorsData.ts</code>, <code>src/pages/subDepts/prod/SubDeptMargins.tsx:67&ndash;114</code>, shared paging in <code>src/utils/marginRows.ts</code></dd>
+    <dt>Verdict</dt><dd>Real. One frontend win available now; the rest is a backend ask.</dd>
+  </dl>
+
+  <div class="block"><h3>Context the numbers deserve</h3>
+    <p>The two-request shape the run measured is the result of an earlier pass at exactly this problem. It used to be <code>subs/sub_sales</code> to learn which departments exist, then <code>subs/subs</code> once per department per period &mdash; <code>1 + (departments &times; 3)</code> paginated calls, all firing at once, which made Vendors the most expensive page in the app to open. Two changes removed that: <code>sub_department: 0</code> asks for every department in one read, and because last week is this week shifted seven days, one contiguous 14-day range covers both.</p>
+    <p>So 13&nbsp;MB is what is left <i>after</i> the obvious reduction. The payload is large because these are item-level pages: the drill-down, the day grid, the price points and the cost analysis all read individual lines. "Return one small payload per window" on its own would take those features with it.</p>
+  </div>
+
+  <div class="block"><h3>The one thing we can fix without the server &mdash; and why it is not in this batch</h3>
+    <p>Sub Dept Margins and Vendors send <b>identical</b> bodies and build different views from the same rows; your own measurement proves it. There is no cache between them, so opening one and then the other downloads 13&nbsp;MB twice. A cache keyed on the request arguments inside <code>src/utils/marginRows.ts</code> would fix that in one file for every page that reads item rows &mdash; Vendors, Sales' sub-dept drill, Item Report, Inventory and the item-performance panels all go through it.</p>
+    <p class="callout warn"><b>Deliberately not shipped with the other four.</b> Caching paged reads means deciding when they go stale, and the failure mode of getting that wrong is showing somebody last week's numbers under this week's dates &mdash; quieter and worse than the problem it solves. It wants its own pass, not a tail-end-of-the-day one. The four fixes above are all deletions, floors and arithmetic; this is the one with a way to be subtly wrong.</p>
+    <p>Smaller note for whoever takes it: <code>SubDeptMargins.tsx</code> carries its own copy of the paging loop rather than using the shared helper, so it would miss the cache. That copy should go first.</p>
+  </div>
+
+  <div class="block"><h3>What we would ask the server for</h3>
+    <p>Not a replacement for <code>subs/subs</code> &mdash; a companion to it. One aggregate read per window, grouped by sub department and by vendor, carrying net, COGS, units and weight. That lands the page, grades the list and draws the header off a payload in the kilobytes. Line rows then load on a drill, for the one department or vendor someone actually opened, which is a hundredth of the data for the same screen.</p>
+    <p>Until that exists, a group search on these pages multiplies the download by the number of stores, which is the 60-store failure in the 11&nbsp;Sep report. We would not call the current shape safe for groups.</p>
+  </div>
+</article>
+
+<!-- 4 -->
+<article class="issue" id="r4" aria-labelledby="r4-h">
+  <div class="issue-head">
+    <span class="issue-num">4</span>
+    <h2 id="r4-h">The store list does not actually differ between pages</h2>
+    <div class="verdict"><span class="chip review">Reclassified</span> One list, two renderings. The access question underneath it is real and separate.</div>
+  </div>
+  <dl class="facts">
+    <dt>Source of both lists</dt><dd><code>src/components/UserDataLoader.tsx:118&ndash;147</code> &mdash; one call, <code>stores/unassigned_stores?userid=649</code></dd>
+    <dt>7-store picker</dt><dd><code>SingleStoreSearchCard</code>, fed <code>user.assignedStores</code> (e.g. <code>Vendors.tsx:37</code>, <code>Categories.tsx:52</code>, <code>Receivers.tsx:103</code>)</dd>
+    <dt>1-store picker</dt><dd><code>src/components/storePicker/SearchStore.tsx</code>, reads the same <code>assignedStores</code></dd>
+  </dl>
+
+  <div class="block"><h3>Both pickers read the same array</h3>
+    <p>There is one store fetch in the app, on sign-in, and it populates one slice. Every picker on both lists reads <code>user.assignedStores</code> from it. The app has no mechanism by which one page could be scoped differently from another &mdash; so the draft's two candidate causes ("the 7-store picker is not filtered to assigned stores, or the assignment is wrong") cannot be what is happening.</p>
+    <p>What differs is the control. <code>SearchStore</code> is a typeahead, and its input holds the restored store's name after sign-in. That name is then applied as a filter over the list:</p>
+    <div class="cite">
+      <div class="cite-head">SearchStore.tsx:46 &mdash; the selected store's own name, used as a query</div>
+<pre>useEffect(() =&gt; {
+  <span class="c">// no query: show everything</span>
+  if (!context.selectedStore || (!query.length &amp;&amp; context.selectedStore)) {
+    setFilteredStores(context.assignedStores);
+  } else if (context.selectedStore &amp;&amp; query.length &gt; 0) {
+    <span class="c">// query is "Bruces Foodland 361" -&gt; exactly one match</span>
+    const filtered = context.assignedStores.filter((store) =&gt;
+      store.store_name.toLowerCase().includes(query.toLowerCase())
+    );
+    setFilteredStores(filtered);
+  }
+}, [query]);</pre>
+    </div>
+    <p>So on a page the user lands on with a store already restored, the list rendered into the DOM holds one row: the store whose name is sitting in the box. Clicking the box clears the query (<code>SearchStore.tsx:70</code>) and all seven come back. The draft says the lists were "read from the picker's own data on the page", which is consistent with reading a closed typeahead whose query had not been cleared yet.</p>
+    <p class="callout">Thirty-second check for the next run: open Sales, click into the Store box, and count. We expect seven.</p>
+  </div>
+
+  <div class="block"><h3>The real finding, which survives</h3>
+    <p>Strip the rendering away and a genuine question is left, and it is the more important one: <code>assigned_stores</code> returns <b>seven stores for an account set up for one</b>. Both pickers show seven because the backend says seven. That is not a display bug, and it is worth a separate ticket.</p>
+    <p>It also lands on work already in flight. We are moving store and user access from <code>assigned</code> rows to computed access, precisely because an assignment row is not a reliable statement of what somebody should reach. Your test account is a clean example of the gap, so please keep it as it is &mdash; we would rather fix it against a live case than a contrived one.</p>
+  </div>
+
+  <div class="block"><h3>Also worth flagging</h3>
+    <p>If the next run reaches past store 695, be careful with <b>685 / #369</b>. That storeid is co-located: 685 serves store numbers 369 and 370, and endpoints keyed on <code>storeid</code> alone return both. Most screens scope by store number afterwards, but <code>sales/topitems</code> takes <code>storeid</code> only and its top-200 cut already spans the pair &mdash; so the Top 200 panel for #369 shows a combined figure that cannot be scoped back down in the browser. We have an open request with the backend for a store-number parameter there. Treat anything that pair reports as suspect until it lands.</p>
+  </div>
+</article>
+
+<!-- 5a -->
+<article class="issue" id="r5a" aria-labelledby="r5a-h">
+  <div class="issue-head">
+    <span class="issue-num">5a</span>
+    <h2 id="r5a-h">Sales and Categories disagree on last week because they are not comparing the same thing</h2>
+    <div class="verdict"><span class="chip ok">Not a defect</span> Both figures are right. The implied $93.7K is a denominator neither page used.</div>
+  </div>
+  <dl class="facts">
+    <dt>Sales</dt><dd><code>src/pages/sales/prod/shared/ledgerUtils.ts:314&ndash;350</code> &mdash; day-matched at store level</dd>
+    <dt>Categories</dt><dd><code>src/pages/categories/prod/categoriesUtils.ts:168&ndash;190</code> &mdash; paired per category, per day</dd>
+    <dt>Verdict</dt><dd>Two defensible comparisons. The fix is to say which is on screen.</dd>
+  </dl>
+
+  <div class="block"><h3>The two comparisons</h3>
+    <p><b>Sales</b> compares the store's week against the store's last week, matching day for day. A store that traded all seven days in both weeks gets the plain figure: $100.4K against $90.3K is +11.23%, and the page prints the $90.3K because it is a real total.</p>
+    <p><b>Categories</b> pairs at a finer grain. For each category, each day is matched to the same weekday last week, and <b>a category-day with no last-week row is dropped from both sides</b> &mdash; comment at <code>categoriesUtils.ts:105&ndash;109</code>, the arithmetic at <code>:168&ndash;190</code>. The percentage is therefore <code>twNetForLW</code> against <code>lwNet</code>, and <code>twNetForLW</code> is not the $100.4K in the header. A category that sold this week and did not exist last week contributes to the header and to neither side of the comparison.</p>
+  </div>
+
+  <div class="block"><h3>The numbers agree once you use the right denominator</h3>
+    <p>Back-solving $100.4K &divide; 1.0715 = $93.7K assumes Categories compared against the full week. It did not. Run it the other way instead, with Sales' $90.3K as the last-week total:</p>
+    <div class="scroll"><table>
+      <thead><tr><th>Step</th><th class="num">Figure</th></tr></thead>
+      <tbody>
+        <tr><td>Last week, as both pages hold it</td><td class="num">$90.3K</td></tr>
+        <tr><td>&times; Categories' +7.15%</td><td class="num">$96.8K</td></tr>
+        <tr class="total"><td>This week inside paired category-days</td><td class="num">$96.8K of the $100.4K</td></tr>
+        <tr><td>This week in category-days with no last-week match</td><td class="num">about $3.6K</td></tr>
+      </tbody>
+    </table></div>
+    <p>About $3.6K of this week sits in categories that had nothing last week &mdash; which is the same order as the $2,910.71 in 15 uncategorised buckets the run noted, and in the same direction. Nothing here needs tying out against the store report: the two pages are consistent, and the discrepancy is in the back-calculation.</p>
+  </div>
+
+  <div class="block"><h3>What we are not changing, and the one thing we are</h3>
+    <p>The arithmetic stands. Keeping the paired form is deliberate: counting a category that did not exist last week as a fall to zero would turn every new line in the store into a loss.</p>
+    <p>What is wrong is that the Categories header shows a percentage whose base is invisible, which is what let a careful reader derive a last-week total the page never used. Printing the comparison base on that header &mdash; the way the Sales page prints its "LW $90.3K" &mdash; is a wording decision rather than a code one, so it is sitting with Steve rather than shipped with the other four. It is the only item on this list we have left open deliberately.</p>
+  </div>
+</article>
+
+<!-- 5b -->
+<article class="issue" id="r5b" aria-labelledby="r5b-h">
+  <div class="issue-head">
+    <span class="issue-num">5b</span>
+    <h2 id="r5b-h">Store margin: Sub Dept Margins averages percentages, Vendors weights them</h2>
+    <div class="verdict"><span class="chip fixed">Fixed</span> <span class="commit">b5595d61</span> Vendors' 27.04% was the store's margin. 31.91% was a mean of means.</div>
+  </div>
+  <dl class="facts">
+    <dt>Was wrong</dt><dd><code>MarginPerfLeftPanel.tsx</code>, both trees &mdash; the unweighted mean</dd>
+    <dt>Was right</dt><dd><code>src/pages/vendors/prod/VendorListPanel.tsx:219&ndash;223</code></dd>
+    <dt>Now</dt><dd><code>storeMarginPctOf</code> / <code>storeMarginDeltaOf</code> in <code>src/pages/subDepts/{prod,dev}/index.ts</code>, with 11 tests in <code>storeMargin.test.ts</code></dd>
+    <dt>Verdict</dt><dd>Real, and the run's instinct was exactly right: same rows in, one answer out, so one of them had to be wrong.</dd>
+  </dl>
+
+  <div class="block"><h3>One line apart</h3>
+    <p>The draft is exactly right that both screens receive the same data and differ in the browser. Here is the difference, side by side:</p>
+    <div class="cite">
+      <div class="cite-head">MarginPerfLeftPanel.tsx:157 &mdash; unweighted mean of department percentages</div>
+<pre>const avgMarginPct = grades.length
+  ? grades.reduce((acc, g) =&gt; acc + g.grade.tyMarginPct, <span class="k">0</span>) / grades.length
+  : null;</pre>
+    </div>
+    <div class="cite">
+      <div class="cite-head">VendorListPanel.tsx:219 &mdash; dollars over dollars</div>
+<pre><span class="c">// Store margin is WEIGHTED -- dollars over dollars, not a mean of the</span>
+<span class="c">// vendors' percentages, which would let a $5 supplier count as much as</span>
+<span class="c">// the wholesaler behind half the shelves.</span>
+tw: isMargin ? marginPct(twNet, twCogs) : twNet,</pre>
+    </div>
+    <p>Sub Dept Margins gives floral the same vote as grocery. A handful of small, high-margin departments pull the figure up, which is exactly the 4.87 points between the two screens and the direction of it. The same mistake is in the delta: <code>avgLwDelta</code> averages each department's point move rather than weighting it, which is where &minus;5.29 and &minus;5.39 come from.</p>
+    <p>The dev tree has had one pass at this already &mdash; it now averages only over departments that <i>have</i> a comparison, so a department with no last week stopped contributing a zero. The weighting itself was not addressed, in either tree.</p>
+  </div>
+
+  <div class="block"><h3>What changed</h3>
+    <p>The dollars behind the rate were being thrown away after the division. They now come out of the day-matching as a <code>MarginDollars</code> figure on every department's grade, so the store margin sums net, sums COGS, and divides once.</p>
+    <ul>
+      <li>Every department in the week is graded, so that sum is the store's whole net and COGS &mdash; the same totals Vendors reaches by grouping the same rows by supplier. <b>The two headline margins now match to the cent.</b></li>
+      <li>Both points deltas are weighted the same way, each side scoped to the days it matched. Where a side has no sales they read as a <b>dash</b> rather than 0.00, which claimed the margin had held flat.</li>
+      <li><code>marginPct</code> had three private copies and now has one, in <code>utils/grading</code>. Two implementations of a four-line function is the shape that let the screens drift in the first place.</li>
+      <li>The rule moved out of the component into the page helpers, so it is under test rather than buried in a render.</li>
+    </ul>
+    <div class="verify">
+      <h4>How to check it &mdash; and a check worth keeping</h4>
+      <ol>
+        <li>Load Sub Dept Margins and Vendors for store 361, week ending 10/20/2026, in margin mode.</li>
+        <li>The two header margins should now be <b>the same number</b>. Expect about <b>27.04%</b> on both, where Sub Dept Margins said 31.91%.</li>
+        <li>This is worth a permanent assertion in the harness: both screens are built from one endpoint, so any future disagreement between those two headers is a bug by definition and needs no judgement call to spot.</li>
+      </ol>
+    </div>
+    <p class="callout warn"><b>The number on screen drops.</b> 31.91% to about 27.04% on that store-week, and similarly elsewhere. It will read as a regression to anyone watching the header, so it is going in the release notes as what it is: the margin was overstated, and this is the store's real one.</p>
+  </div>
+</article>
+
+<section class="block" aria-labelledby="obs-h">
+  <h2 id="obs-h">The seven observations, answered</h2>
+  <ol class="obs">
+    <li><b>Orders returned nothing for store 695.</b> <span class="chip ghost">Data question</span><br>
+      The request is the right one &mdash; <code>orders/available_order</code> with <code>storeids: [695]</code> is exactly what the page sends, and an empty 242&nbsp;B body is how the endpoint says "no orders in this window". So this is a question about company 3's order data, not about the page.
+      <br><br>One thing to know before you test ordering on this account: <b>order editing is not on the published build at all.</b> It lives in the dev tree and is gated to companies 1, 4, 5, 6, 17 and 21 &mdash; manager level and above on any day, owner level and above on Thursdays only, programmer unrestricted. Company 3 is not in that rollout, so even once orders exist, this account will see browse and not edit. That is the gate working, not a fault.</li>
+
+    <li><b>No last-year data for store 695.</b> <span class="chip ghost">Data question</span><br>
+      Confirmed, and it has consequences worth knowing while you read other screens: every grade on this store falls back to last week, every vs LY pill is a dash, and the Sales Tracker on this store has nothing to track against. We have already made the Tracker default to last week where there is no last year, so it loads instead of coming up empty. If 695 is meant to have history, it is a backfill question; if it is not, it is a fine store to test the no-history paths on and a poor one to test comparisons on.</li>
+
+    <li><b>Week definition.</b> <span class="chip ok">Correct</span><br>
+      Exactly right, and it is one constant in one place: <code>src/utils/grading.ts</code> holds <code>LW_OFFSET = -7</code> and <code>LY_OFFSET = -364</code>. 364 rather than 365 is deliberate &mdash; it is 52 whole weeks, so a Wednesday always meets a Wednesday. For the week ending 10/20/2026, last year is 10/15 to 10/21/2025, which is what the run captured.</li>
+
+    <li><b>Receivers has two actions.</b> <span class="chip fixed">Fixed</span> <span class="commit">c0a5a5e7</span><br>
+      There was only ever one. The "Search" control under the dates came from the shared <code>DatePickers</code> component, which Receivers mounts with <code>showBtn={false}</code> &mdash; and that rendered the element with <code>display: none</code> rather than not rendering it. In the markup, never painted.
+      <br><br>This one was worth more than Receivers. <b>Nearly every caller passes <code>showBtn={false}</code></b>, because their own card owns the search button: both SearchCards, Cashiers, Coupons, Inventory, Admin and Receivers. So that phantom control was sitting in the DOM across most of the app, for a screen reader as much as for your agent. It is no longer rendered when it is off.
+      <br><br>Expect "Load Receivers" to be the only search control the next run finds &mdash; on that page and on the others.</li>
+
+    <li><b>Cashiers: "VOIDED" and "Voided" are two choices.</b> <span class="chip watch">Real, needs a decision</span><br>
+      Confirmed. The list is not ours &mdash; it is the distinct <code>sale_type</code> strings the POS wrote in that window, passed straight through with only "Tender" removed (<code>src/pages/cashiers/prod/useCashierExplorer.ts:136&ndash;140</code>). Two casings in the data become two rows in the list, and picking one finds only half the voids, which is the part that actually matters.
+      <br><br>Merging them in the browser is not free: <code>cashiers/transaction_list</code> takes a single <code>sale_type</code> (<code>src/api/lossPrevention.ts:247</code>), so one merged choice means two reads stitched together. Cleaner is to normalise case where the strings are written or read. Our preference is the backend fix; tell us if you would rather we stitch in the client meanwhile.</li>
+
+    <li><b>Pages keep their last result.</b> <span class="chip ok">Deliberate</span><br>
+      Intended. Coming back to a page you were working on and finding it blank, with the search to run again, was the behaviour we moved away from. The result stays and the search sits behind a button.</li>
+
+    <li><b>Last page restored at sign-in.</b> <span class="chip ok">Deliberate</span><br>
+      Intended, and narrower than it looks: the restore only fires when you have just signed in <i>and</i> are sitting on <code>/</code> (<code>src/components/UserDataLoader.tsx:106</code>). The guard is there because the effect re-runs whenever the token changes &mdash; switching API environment, for instance &mdash; and without it you would be thrown off the page you were on, mid-session, for no reason you could see.</li>
+  </ol>
+</section>
+
+<section class="issue" id="harness" aria-labelledby="harness-h">
+  <div class="issue-head">
+    <span class="issue-num">&#9881;</span>
+    <h2 id="harness-h">On the harness: the DOM is not the screen</h2>
+    <div class="verdict"><span class="chip review">One change, three findings</span></div>
+  </div>
+  <div class="block">
+    <p>Three of this run's findings turn on the same distinction, and the run landed on both sides of it:</p>
+    <div class="scroll"><table>
+      <thead><tr><th>Finding</th><th>In the DOM</th><th>On screen</th><th>Verdict</th></tr></thead>
+      <tbody>
+        <tr><td>Issue 1 &mdash; sub-dept names</td><td>Yes</td><td><b>No</b></td><td>Real bug, correctly caught</td></tr>
+        <tr><td>Issue 4 &mdash; one-store picker</td><td>One row</td><td>Seven, once opened</td><td>False positive</td></tr>
+        <tr><td>Receivers "Search"</td><td>Yes</td><td><b>No</b> &mdash; <code>display:none</code></td><td>False positive, and worth fixing anyway</td></tr>
+      </tbody>
+    </table></div>
+    <p>Issue 1 is the valuable half. It was caught because the run measured rendered width and screenshotted it, which is the only way that bug is findable &mdash; the text is all there in the markup, and a reader cannot see a word of it.</p>
+    <p>The other two came from reading markup as though it were the page. We have fixed the Receivers one at the source &mdash; a hidden control is worth removing whoever is reading it &mdash; but the picker is not a bug, and the next run will meet more of these. Both would have been filtered out by one rule:</p>
+    <p class="callout"><b>Suggested rule:</b> before reporting what an element contains, check that it is painted &mdash; a non-zero client rect, and no <code>display:none</code>, <code>visibility:hidden</code> or zero-size ancestor. Then report <b>"in the DOM, not visible"</b> as a finding type of its own rather than as absence or presence. Had that category existed, issue 1 would have been found the same way and the two false positives would have been found as what they are: markup we should clean up, not behaviour a user can see.</p>
+    <p>A second thing that would raise the signal: for a typeahead, open it before reading its list. A closed one shows the filter, not the options &mdash; which is the whole of issue 4.</p>
+  </div>
+</section>
+
+<section class="block" aria-labelledby="ask-h">
+  <h2 id="ask-h">What we are asking the backend for</h2>
+  <p class="note">Pulled together from the above, worst first. Everything else in this document is ours, and four of those are done.</p>
+  <div class="ask">
+    <div class="row"><span class="n">1</span><div><b>An aggregate companion to <code>subs/subs</code></b> &mdash; one read per window, grouped by sub department and by vendor, with net, COGS, units and weight. This is the 13&nbsp;MB and the 60-store failure. Line rows stay as they are, for drills. <span class="mono">(issue 3)</span></div></div>
+    <div class="row"><span class="n">2</span><div><b>Why <code>assigned_stores</code> returns seven stores for a one-store account.</b> Both pickers show what the endpoint says, so this is the whole of what is left of issue 4 &mdash; and it is the live case for the computed-access work. <span class="mono">(issue 4)</span></div></div>
+    <div class="row"><span class="n">3</span><div><b>A store-number parameter on <code>sales/topitems</code>.</b> Already requested. Until it exists, co-located pairs like 685 (#369 and #370) report combined figures the browser cannot scope down. <span class="mono">(issue 4, next run)</span></div></div>
+    <div class="row"><span class="n">4</span><div><b>Whether store 695 should have last-year data.</b> If yes, a backfill; if no, we will stop treating it as a gap. <span class="mono">(observation 2)</span></div></div>
+    <div class="row"><span class="n">5</span><div><b>Case normalisation on <code>sale_type</code></b>, or a <code>sale_type</code> that accepts a list. Either closes the VOIDED / Voided split properly. <span class="mono">(observation 5)</span></div></div>
+  </div>
+</section>
+
+<section class="block" aria-labelledby="ours-h">
+  <h2 id="ours-h">What shipped</h2>
+  <p class="note">Four commits on <span class="mono">next_publish_10_20_2026</span>, in the order they were made. Each one is on its own so it can ride the next publish without dragging anything experimental with it.</p>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Commit</th><th>Change</th><th>Trees</th><th>Visible?</th></tr></thead>
+      <tbody>
+        <tr><td><span class="commit">8fefe4d8</span></td><td>The ledger stops fetching an hour it never shows</td><td>prod (dev already had it)</td><td>No &mdash; 3 to 3&nbsp;&times;&nbsp;N fewer calls</td></tr>
+        <tr><td><span class="commit">b5595d61</span></td><td>The store's margin is weighted, not averaged</td><td>both</td><td><b>Yes</b> &mdash; the number drops</td></tr>
+        <tr><td><span class="commit">c0a5a5e7</span></td><td>A hidden Search button stops being in the page</td><td>both</td><td>No &mdash; it was never painted</td></tr>
+        <tr><td><span class="commit">03844b4d</span></td><td>Sub-department names stop being the column that gives way</td><td>both</td><td><b>Yes</b> &mdash; names return under 1200&nbsp;px</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Verified together: typecheck, <b>1,160 tests</b> (18 new, covering the margin weighting), the theme audit and a production build, all clean. The new breakpoint is in the built CSS.</p>
+  <p class="callout ok">Three of the four are deletions or floors &mdash; no new behaviour to go wrong. The fourth changes a number on screen, which is the one to look at first.</p>
+</section>
+
+<section class="block" aria-labelledby="left-h">
+  <h2 id="left-h">What is left, and why</h2>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Item</th><th>Why it is not done</th></tr></thead>
+      <tbody>
+        <tr><td>Print the comparison base on the Categories header <span class="mono">(5a)</span></td><td>A wording decision, not a code one. Sitting with Steve.</td></tr>
+        <tr><td>Cache the paged item reads <span class="mono">(3)</span></td><td>Staleness has a quiet failure mode. Wants its own pass, not this batch.</td></tr>
+        <tr><td>Drop <code>SubDeptMargins.tsx</code>'s private paging loop <span class="mono">(3)</span></td><td>Goes with the cache; on its own it changes nothing.</td></tr>
+        <tr><td>Everything in <a href="#ask-h">the backend list</a></td><td>Not ours. None of it gates us, except the group-search question in issue&nbsp;3.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<footer>
+  Responds to <span class="mono">issue-drafts-2026-10-21</span>. Four fixes committed on <span class="mono">next_publish_10_20_2026</span>, <span class="mono">8fefe4d8</span> through <span class="mono">03844b4d</span>, and logged in <span class="mono">docs/since-last-publish.md</span> for the release notes. The run tested the published 10/12 build; none of the findings had moved before these commits. Figures quoted from the drafts are the harness's own, not re-measured &mdash; the fixes were verified by typecheck, tests, theme audit and build, not in a browser, so the "how to check it" steps are yours to run.
+</footer>
+
+</div>

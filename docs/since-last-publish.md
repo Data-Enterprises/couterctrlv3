@@ -234,3 +234,72 @@ active ticket_techs row, at any level.
 That is a door, not a key: every call the page makes is still answered against
 the row server-side.
 
+
+## From the test-user agent run
+
+Tommy's test-user agent ran the deployed 10/12 build against store 361 and
+filed five issues and seven observations (`issue-drafts-2026-10-21.html`). The
+four that were ours to fix are below; the response that went back is
+`docs/issue-response-2026-10-21.html`.
+
+### The sub-department names stop being the column that gives way
+
+`03844b4d`
+
+On a window under about 1200px every sub-department name in the Sales drill
+shrank to nothing. The amounts and percentages stayed, and which department
+they belonged to did not.
+
+Three nested widths caused it: the report panel is 52% of the content area, the
+signal list 39.5% of that, and inside the row the numbers are fixed at 246px.
+The name cell was the only item in the row that could shrink, so it absorbed
+every missing pixel.
+
+The name cell and the signal list both have a floor now, and **vs LY hides
+under 1200px** -- the weaker of the two comparisons, and a dash on every row
+anyway on a store with no history on file.
+
+### The ledger stops fetching an hour it never shows
+
+`8fefe4d8`
+
+Sales fetched `hourly/hourly` for three windows on every search, and per store
+on a group of more than 30. Nothing read a row of it: the ledger shows no hour,
+and the drill's Hourly tab fetches the same three windows scoped to the store
+you clicked and dispatches them over the top.
+
+On the 60-store group behind the 11 Sep performance report that was 180
+requests whose results were written to Redux, read by nobody, and replaced. The
+dev ledger had already dropped them; this brings prod level.
+
+### The store's margin is weighted, not averaged
+
+`b5595d61`
+
+Sub Dept Margins built its header margin by averaging the departments'
+percentages, so a $1,000 floral counter at 70% counted as much as a $90,000
+grocery department at 25% and the figure read about five points high. The run
+found it by loading this screen and Vendors for the same store-week: 31.91%
+against 27.04%, from the same `subs/subs` rows. Vendors has always weighted and
+was right.
+
+Net and COGS now come out of the day-matching as `MarginDollars` instead of
+being discarded after the division, so the store figure sums them and divides
+once. Both points deltas are weighted the same way, each side scoped to the
+days it matched, and read as a dash rather than 0.00 where a side has no sales.
+
+`marginPct` had three private copies and now has one, in `utils/grading`.
+
+**The number on screen will drop**, about 31.9% to about 27.0% on that
+store-week. It will look like a regression and it is the opposite.
+
+### A hidden Search button stops being in the page
+
+`c0a5a5e7`
+
+`DatePickers` rendered its Search control with `display: none` whenever
+`showBtn` was false, which is nearly every caller -- both SearchCards,
+Cashiers, Coupons, Inventory, Admin and Receivers all own their own search
+button. An element in the markup that is never painted reads as a real control
+to a screen reader or a test agent, which is why the run reported Receivers as
+having two search controls. It is no longer rendered when it is off.
