@@ -147,10 +147,10 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
   <div class="lead">
     <div class="eyebrow">CounterCtrl dev &middot; Response</div>
     <h1>Response to the Issue Drafts, 21 Oct 2026</h1>
-    <p class="sub">Four of the issues are fixed and committed; the detail below is what each one turned out to be and how to check the fix. Two of the five findings are not what the draft concluded, and what is left to do needs the server.</p>
+    <p class="sub">Six fixes committed; the detail below is what each finding turned out to be and how to check it. Two of the five are not what the draft concluded &mdash; and chasing one of those down turned up a bug nobody had reported, on two pages.</p>
   </div>
   <div class="status">
-    <span><b>4 fixed</b>, 1 not a defect, 1 backend. 4 commits on <span class="mono">next_publish_10_20_2026</span>.</span>
+    <span><b>6 fixed</b>, 1 not a defect, 1 backend. 6 commits on <span class="mono">next_publish_10_20_2026</span>.</span>
     <span class="mono">tested build index-o8g_iBNS.js &middot; 10/12/2026</span>
   </div>
 </header>
@@ -167,7 +167,8 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
         <tr><td>&mdash;</td><td><a href="#obs-h">Receivers' second "Search" control</a></td><td><span class="chip ghost">Obs 4</span></td><td>Hidden element, every page</td><td><span class="chip fixed">Fixed</span> <span class="commit">c0a5a5e7</span></td></tr>
         <tr><td>5a</td><td><a href="#r5a">Last-week sales: Sales vs Categories</a></td><td><span class="chip review">Review</span></td><td>Two different comparisons &mdash; both right</td><td><span class="chip ok">Nothing to fix</span></td></tr>
         <tr><td>4</td><td><a href="#r4">Store list differs between pages</a></td><td><span class="chip review">Review</span></td><td>One list, two renderings</td><td><span class="chip review">Backend (access)</span></td></tr>
-        <tr class="total"><td>3</td><td><a href="#r3">13&nbsp;MB paged download for one store-week</a></td><td><span class="chip watch">Watch</span></td><td>Confirmed &mdash; already the reduced shape</td><td><span class="chip review">Backend</span></td></tr>
+        <tr><td>3</td><td><a href="#r3">13&nbsp;MB paged download for one store-week</a></td><td><span class="chip watch">Watch</span></td><td>Confirmed &mdash; already the reduced shape</td><td><span class="chip review">Backend</span></td></tr>
+        <tr class="total"><td>&mdash;</td><td><a href="#r6">Vendors and Categories add two stores together</a></td><td><span class="chip ghost">Not filed</span></td><td>Found while checking issue 4</td><td><span class="chip fixed">Fixed</span> <span class="commit">f157e3bb</span> <span class="commit">98ab447a</span></td></tr>
       </tbody>
     </table>
   </div>
@@ -358,13 +359,25 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
     <p class="callout">Thirty-second check for the next run: open Sales, click into the Store box, and count. We expect seven.</p>
   </div>
 
+  <div class="block"><h3>What sorts the two groups, since it is not access</h3>
+    <p>The draft's own evidence names the cause. The two testids it recorded are two different components, and the page lists line up with them exactly:</p>
+    <div class="scroll"><table>
+      <thead><tr><th>Draft's group</th><th>Pages</th><th>Component</th></tr></thead>
+      <tbody>
+        <tr><td>7 stores</td><td>Categories, Vendors, Sub Dept Margins, Receivers</td><td><code>SingleStoreSearchCard</code> &rarr; <code>SingleSelect</code></td></tr>
+        <tr><td>1 store</td><td>Sales, Loss Prevention, Cashiers, Orders, Coupon Sales, Coupons</td><td><code>SearchCard</code> &rarr; <code>StorePicker</code></td></tr>
+      </tbody>
+    </table></div>
+    <p>Nothing else predicts it. The 7-store group spans three endpoints &mdash; <code>receivers/</code>, <code>cat_sales</code> and <code>subs/subs</code> &mdash; and Sales sits in the other group while using <code>sales/weekly</code>. So the split is the picker, and only the picker.</p>
+  </div>
+
   <div class="block"><h3>The real finding, which survives</h3>
     <p>Strip the rendering away and a genuine question is left, and it is the more important one: <code>assigned_stores</code> returns <b>seven stores for an account set up for one</b>. Both pickers show seven because the backend says seven. That is not a display bug, and it is worth a separate ticket.</p>
     <p>It also lands on work already in flight. We are moving store and user access from <code>assigned</code> rows to computed access, precisely because an assignment row is not a reliable statement of what somebody should reach. Your test account is a clean example of the gap, so please keep it as it is &mdash; we would rather fix it against a live case than a contrived one.</p>
   </div>
 
-  <div class="block"><h3>Also worth flagging</h3>
-    <p>If the next run reaches past store 695, be careful with <b>685 / #369</b>. That storeid is co-located: 685 serves store numbers 369 and 370, and endpoints keyed on <code>storeid</code> alone return both. Most screens scope by store number afterwards, but <code>sales/topitems</code> takes <code>storeid</code> only and its top-200 cut already spans the pair &mdash; so the Top 200 panel for #369 shows a combined figure that cannot be scoped back down in the browser. We have an open request with the backend for a store-number parameter there. Treat anything that pair reports as suspect until it lands.</p>
+  <div class="block"><h3>And chasing it turned up a real bug</h3>
+    <p>Checking whether the pages could be scoped differently meant reading how each one handles <b>685 / #369</b> &mdash; a storeid that serves two physical stores, 369 and 370. Four of them split the pair and two did not. That is <a href="#r6">below</a>, and it is the most consequential thing in this document that nobody had reported.</p>
   </div>
 </article>
 
@@ -459,6 +472,50 @@ tw: isMargin ? marginPct(twNet, twCogs) : twNet,</pre>
   </div>
 </article>
 
+<!-- new finding -->
+<article class="issue" id="r6" aria-labelledby="r6-h">
+  <div class="issue-head">
+    <span class="issue-num">&#43;</span>
+    <h2 id="r6-h">Vendors and Categories were adding two stores together</h2>
+    <div class="verdict"><span class="chip fixed">Fixed</span> <span class="commit">f157e3bb</span> <span class="commit">98ab447a</span> Not in the drafts. Found while establishing that issue&nbsp;4 was not an access problem.</div>
+  </div>
+  <dl class="facts">
+    <dt>Store</dt><dd>Any co-located id. In your own 7-store list that is <b>685</b>, which serves store numbers <b>369 and 370</b></dd>
+    <dt>Pages</dt><dd>Vendors and Categories, desktop. Mobile already scoped.</dd>
+    <dt>Already correct</dt><dd>Sales, Sub Dept Margins, Receivers, Item Lookup, Item Report</dd>
+    <dt>Verdict</dt><dd>Real, silent, and wrong in a way no one on the page could see.</dd>
+  </dl>
+
+  <div class="block"><h3>What was happening</h3>
+    <p>A handful of storeids cover two physical stores. Every single-store page fetches by <code>storeid</code>, so those responses come back with both locations added together, and each page has to split them. Four pages do. Vendors and Categories did not.</p>
+    <p>So on 685, every vendor figure and every category figure was two stores at once &mdash; sales, COGS, margin, the day strip, the item drill. Nothing on screen said so, and no total looked impossible. It is the same shape as the <code>sales/topitems</code> problem we already have an ask in for, except this one was fixable in the browser.</p>
+    <p class="callout">Worth being plain about why this was not in your report: nobody had opened 369. Your run stayed on 695 / #361, which is an ordinary single-location store, so every number it saw was right. This is the bug your <b>next</b> run would have found.</p>
+  </div>
+
+  <div class="block"><h3>What changed</h3>
+    <p>Both pages now do what their siblings do: take the locations from the rows, land on the first one rather than the combined view, and offer the same <b>LocationTabs</b> switcher. The raw rows stay whole, so switching location re-presents what is already loaded rather than asking for the same paginated read again. The header names the location you are on &mdash; <code>storeName</code> resolves by storeid, so it would otherwise keep naming the other store while every figure moved.</p>
+    <p>Categories narrows its per-category drills too: items and hourly are also fetched by storeid, and without that the right-hand panel would describe a different store from the row that was clicked.</p>
+  </div>
+
+  <div class="block"><h3>The quieter half, which was in a page you did test</h3>
+    <p>Writing the test for Vendors turned up a second defect, in <b>Sub Dept Margins</b> &mdash; one of the pages that was supposedly already correct.</p>
+    <p>The scoping helper, <code>scopeToStoreNumber</code>, leaves an array alone when it holds fewer than two store numbers. That is the right answer to "does this response need splitting at all". It is the wrong answer to "which location is the reader looking at" &mdash; and a co-located store can easily have a period only one of its locations traded in. A last year that 370 has no history for and 369 does. In that case the guard handed <b>369's rows to somebody sitting on the 370 tab</b>, and reported it as that location's last year.</p>
+    <p>There is now a strict variant beside it, <code>onlyStoreNumber</code>, documented against its sibling so the next person picks deliberately. Sub Dept Margins moves to it.</p>
+    <div class="verify">
+      <h4>How to check it</h4>
+      <ol>
+        <li>Open <b>Vendors</b> on store <b>369</b> (storeid 685), any week. Expect a <b>369 / 370 / Both</b> tab strip above the filter row, and the header to read 369.</li>
+        <li>Switch to <b>370</b>. Every figure should change, the header should say 370, and <b>no new request should go out</b> &mdash; it is a rebuild.</li>
+        <li><b>Both</b> should give you the combined figures the page used to show unprompted.</li>
+        <li>Repeat on <b>Categories</b>. See the note below if the tabs do not appear.</li>
+        <li>On <b>Sub Dept Margins</b> for the same store, check a period only one location traded in &mdash; a last year with history on one side only. The location without it should read as no comparison, not as the other location's number.</li>
+        <li>On an ordinary store like 361, nothing should change anywhere: the tabs render nothing below two locations.</li>
+      </ol>
+    </div>
+    <p class="callout warn"><b>One thing we cannot check from here.</b> Whether Categories shows the tabs at all depends on <code>cat_sales</code> returning a per-location <code>store_number</code>. The type declares the column, but a declared field is not a populated one. If every row carries the same number, the tabs render nothing and the page behaves exactly as it does today &mdash; so the change is inert until the rows support it, and correct the moment they do. Step 4 above is the test: if Categories shows no tabs on 369 while Vendors does, that is the endpoint, and it becomes a sixth backend ask.</p>
+  </div>
+</article>
+
 <section class="block" aria-labelledby="obs-h">
   <h2 id="obs-h">The seven observations, answered</h2>
   <ol class="obs">
@@ -535,11 +592,13 @@ tw: isMargin ? marginPct(twNet, twCogs) : twNet,</pre>
         <tr><td><span class="commit">b5595d61</span></td><td>The store's margin is weighted, not averaged</td><td>both</td><td><b>Yes</b> &mdash; the number drops</td></tr>
         <tr><td><span class="commit">c0a5a5e7</span></td><td>A hidden Search button stops being in the page</td><td>both</td><td>No &mdash; it was never painted</td></tr>
         <tr><td><span class="commit">03844b4d</span></td><td>Sub-department names stop being the column that gives way</td><td>both</td><td><b>Yes</b> &mdash; names return under 1200&nbsp;px</td></tr>
+        <tr><td><span class="commit">f157e3bb</span></td><td>Vendors splits co-located stores, and the split got stricter</td><td>both, + Sub Dept Margins</td><td><b>Yes</b> &mdash; on co-located stores only</td></tr>
+        <tr><td><span class="commit">98ab447a</span></td><td>Categories splits co-located stores too</td><td>both</td><td><b>Yes</b>, if the rows carry it</td></tr>
       </tbody>
     </table>
   </div>
-  <p>Verified together: typecheck, <b>1,160 tests</b> (18 new, covering the margin weighting), the theme audit and a production build, all clean. The new breakpoint is in the built CSS.</p>
-  <p class="callout ok">Three of the four are deletions or floors &mdash; no new behaviour to go wrong. The fourth changes a number on screen, which is the one to look at first.</p>
+  <p>Verified together: typecheck, <b>1,173 tests</b> (31 new &mdash; the margin weighting and the two location splits), the theme audit and a production build, all clean. The new breakpoint is in the built CSS.</p>
+  <p class="callout ok">Three of the six are deletions or floors, with no new behaviour to go wrong. The three to look at first are the ones that change a figure: the margin on Sub Dept Margins, and the two location splits.</p>
 </section>
 
 <section class="block" aria-labelledby="left-h">
@@ -551,6 +610,7 @@ tw: isMargin ? marginPct(twNet, twCogs) : twNet,</pre>
         <tr><td>Print the comparison base on the Categories header <span class="mono">(5a)</span></td><td>A wording decision, not a code one. Sitting with Steve.</td></tr>
         <tr><td>Cache the paged item reads <span class="mono">(3)</span></td><td>Staleness has a quiet failure mode. Wants its own pass, not this batch.</td></tr>
         <tr><td>Drop <code>SubDeptMargins.tsx</code>'s private paging loop <span class="mono">(3)</span></td><td>Goes with the cache; on its own it changes nothing.</td></tr>
+        <tr><td>Width floors on the other three panels <span class="mono">(1)</span></td><td>Same markup shape, no evidence any of them squeezes. Your next run can settle it in a minute.</td></tr>
         <tr><td>Everything in <a href="#ask-h">the backend list</a></td><td>Not ours. None of it gates us, except the group-search question in issue&nbsp;3.</td></tr>
       </tbody>
     </table>

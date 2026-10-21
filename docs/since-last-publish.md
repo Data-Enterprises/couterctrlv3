@@ -303,3 +303,41 @@ Cashiers, Coupons, Inventory, Admin and Receivers all own their own search
 button. An element in the markup that is never painted reads as a real control
 to a screen reader or a test agent, which is why the run reported Receivers as
 having two search controls. It is no longer rendered when it is off.
+
+### Co-located stores split on Vendors and Categories
+
+`f157e3bb` `98ab447a`
+
+A handful of storeids cover two physical stores, and these pages fetch by
+storeid, so their responses arrive with both locations added together. Sales,
+Sub Dept Margins, Receivers and Item Lookup have always split them; Vendors and
+Categories never did. On 685 -- store numbers 369 and 370 -- every vendor and
+category figure on those two pages was two stores at once, with nothing on
+screen saying so.
+
+Both pages now take the locations from the rows, land on the first rather than
+the combined view, and offer the same **LocationTabs** the others do. The raw
+rows stay whole so switching is a rebuild, not another paginated read, and the
+header names the location you are on rather than whichever number the
+assignedStores record happened to embed.
+
+Categories narrows its per-category drills as well -- items and hourly are
+fetched by storeid too -- and switching location closes the open category,
+since its rows belong to the one before it.
+
+**The split also got stricter, which fixes a quieter bug in Sub Dept Margins.**
+Scoping went through `scopeToStoreNumber`, which leaves an array alone when it
+holds fewer than two numbers. That guard answers "does this response need
+splitting"; the question when a reader has picked a location is "which location
+is this", and a co-located store can easily have a period only one of its
+locations traded in -- a last year 370 has no history for and 369 does. The
+guarded form handed 369's rows to somebody on the 370 tab. `onlyStoreNumber`
+joins it in `utils/storeIdentity`, strict and documented against its sibling,
+and Sub Dept Margins moves to it.
+
+Mobile already scoped by store number, so this is desktop only.
+
+Whether Categories shows tabs at all depends on `cat_sales` returning a
+per-location `store_number`. If every row carries the same number the tabs
+render nothing and the page behaves as it does today -- inert until the rows
+support it, correct the moment they do.
