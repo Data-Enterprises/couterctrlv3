@@ -381,3 +381,30 @@ anybody can administer it, and nothing will say so.
 **Still open:** the Stores and Base Groups tabs take their candidate lists from
 the server rather than building them here, so whether those are company-scoped
 is a question for the endpoints, not for this fix.
+
+### The company filter offers what you hold, and Assign all obeys it
+
+`0917a0af`
+
+Two faults in the same dropdown.
+
+**It listed companies outside the viewer's reach.** The candidates were gated,
+but the options were still built from every company each candidate holds -- and
+somebody can hold two. A person in both Houchens and B and T is yours to work
+with through Houchens; listing "B and T (1)" offered a filter for a company you
+have no business in and named its headcount while doing it. Options now drop
+anything outside reach. **No company** never drops. A viewer who sees
+everything keeps the whole list.
+
+**Assign all ignored the filter entirely.** The Companies and Stores tabs pass
+`assignAllScope="global"`, which read the raw unfiltered array -- so the
+heading said "1 of 372" and the button beside it would have assigned 372
+people, on a tab whose whole job is company membership, through a write that
+takes a bare userid.
+
+"global" now means it steps over the **search box**, which is the parity it was
+added for and still right: somebody typing to find one person has not decided
+to narrow the write. It does not step over the caller's scope. The button
+disables when that scope leaves nobody, rather than staying lit and lying.
+
+Five tests on `AssignPanel` hold the distinction.
