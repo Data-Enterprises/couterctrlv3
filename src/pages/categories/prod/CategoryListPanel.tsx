@@ -1,3 +1,5 @@
+import LocationTabs from "../../../components/filters/LocationTabs";
+import { applyStoreNumberToName } from "../../../utils/storeIdentity";
 import InfoButton from "../../../components/InfoButton";
 import CategoryRow from "./CategoryRow";
 import { useMemo, useState, useCallback } from "react";
@@ -76,9 +78,15 @@ type ListSortCol = "ty" | "lw" | "ly";
 
 interface Props {
   onSearchOpen: () => void;
+  /** Re-presents the cached search as one co-located location, or all of
+   *  them combined. No refetch — see useCategoryData. */
+  onStoreNumberChange: (storeNumber: string | null) => void;
 }
 
-const CategoryListPanel = ({ onSearchOpen }: Props) => {
+const CategoryListPanel = ({
+  onSearchOpen,
+  onStoreNumberChange,
+}: Props) => {
   const dispatch = useAppDispatch();
   const [infoOpen, setInfoOpen] = useState(false);
   const { sort, handleSort, applySort } = useTriStateSort<ListSortCol>();
@@ -87,6 +95,23 @@ const CategoryListPanel = ({ onSearchOpen }: Props) => {
 
   // Null threshold means the input is mid-edit; grade against the default
   // rather than 0, which would make every decline critical as you type.
+  /**
+   * The name says which location is on screen.
+   *
+   * `storeName` is resolved from the assignedStores record, which is keyed on
+   * storeid, so a co-located pair embeds only one of its two numbers -- the
+   * tabs would move every figure on the page while the header still named the
+   * other store. Same helper Sales, Sub Dept Margins and Vendors use, so all
+   * four label these stores identically.
+   */
+  const locationName = cats.selectedStoreNumber
+    ? applyStoreNumberToName(
+        cats.storeName,
+        cats.selectedStoreNumber,
+        cats.availableStoreNumbers,
+      )
+    : cats.storeName;
+
   const activeThreshold = threshold ?? CATEGORY_THRESHOLD_DEFAULT;
 
   // Same split Sales uses (SalesLedger.tsx:326). Everything that doesn't depend
@@ -290,7 +315,7 @@ const CategoryListPanel = ({ onSearchOpen }: Props) => {
           </button>
 
           <span className="text-[11px] font-medium text-custom-white truncate min-w-0">
-            {cats.storeName}
+            {locationName}
           </span>
 
           <div className="flex-1" />
@@ -343,6 +368,14 @@ const CategoryListPanel = ({ onSearchOpen }: Props) => {
           </div>
         </div>
       </div>
+
+      {/* Renders nothing unless this storeid covers two locations, so an
+          ordinary store sees no change to the layout. */}
+      <LocationTabs
+        numbers={cats.availableStoreNumbers}
+        selected={cats.selectedStoreNumber}
+        onChange={onStoreNumberChange}
+      />
 
       {/* Filter row */}
       <div className="flex items-center justify-between gap-1.5 px-4 py-2 bg-custom-white border-x border-gray-100">

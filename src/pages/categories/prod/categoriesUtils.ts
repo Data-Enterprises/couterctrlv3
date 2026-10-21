@@ -1,3 +1,4 @@
+import { onlyStoreNumber } from "../../../utils/storeIdentity";
 import { coverageOf, gradeBasis } from "../../../utils/grading";
 import type { CatSalesDaily, CategoryMetric, CategoryTier, CategoryRow, CategoryDay, DayDetail } from "../../../interfaces";
 // Defined in src/interfaces — Categories. Re-exported for this page's files.
@@ -108,6 +109,29 @@ const buildLabels = (...sets: CatSalesDaily[][]) => {
  * no row on a given prior date gets `null` for that day rather than 0, and the
  * matched totals then skip it on both sides.
  */
+/** The three periods, narrowed to one co-located location.
+ *
+ *  `cat_sales` is fetched by storeid, and a few storeids cover two physical
+ *  stores, so those responses arrive with both locations added together --
+ *  the same split Sales, Sub Dept Margins and Vendors make on their own
+ *  endpoints. Null is the combined view, a real question but not a safe
+ *  default.
+ *
+ *  Strict rather than `scopeToStoreNumber`: a location can have a period the
+ *  other one did not trade in, and the guarded form would hand those rows
+ *  over rather than reporting no comparison. */
+export const scopePeriods = (
+  raw: { tw: CatSalesDaily[]; lw: CatSalesDaily[]; ly: CatSalesDaily[] },
+  storeNumber: string | null,
+) =>
+  storeNumber === null
+    ? raw
+    : {
+        tw: onlyStoreNumber(raw.tw, storeNumber),
+        lw: onlyStoreNumber(raw.lw, storeNumber),
+        ly: onlyStoreNumber(raw.ly, storeNumber),
+      };
+
 export const buildCategoryRows = (
   tw: CatSalesDaily[],
   lw: CatSalesDaily[],

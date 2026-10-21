@@ -27,7 +27,7 @@ const Categories = () => {
   // Called exactly once per mounted page — it installs the item-loading
   // effect, and the mobile layout receives these as props rather than
   // calling the hook again.
-  const { runSearch, loadHourly } = useCategoryData();
+  const { runSearch, loadHourly, applyLocation } = useCategoryData();
 
   const [searchOpen, setSearchOpen] = useState(false);
   const [storeId, setStoreId] = useState(search.lastStore || 0);
@@ -95,7 +95,10 @@ const Categories = () => {
       )}
 
       <div className="flex gap-4 h-[calc(100vh-5rem)]">
-        <CategoryListPanel onSearchOpen={() => setSearchOpen(true)} />
+        <CategoryListPanel
+          onSearchOpen={() => setSearchOpen(true)}
+          onStoreNumberChange={applyLocation}
+        />
         <CategoryDetailPanel onLoadHourly={loadHourly} />
       </div>
     </div>

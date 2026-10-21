@@ -1,8 +1,13 @@
+import { onlyStoreNumber, storeNumbersIn } from "../../../utils/storeIdentity";
 import { useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { formatGoliathDate, getStoreName } from "../../../utils";
 import {
+  setAvailableStoreNumbers,
+  setSelectedStoreNumber,
+  setRaw,
+  setSelectedCategory,
   setRows,
   setLoading,
   setLoadingMessage,
@@ -19,7 +24,7 @@ import {
   fetchCatItemPeriods,
   fetchHourlyPeriods,
 } from "./categoriesData";
-import { buildCategoryRows } from "./categoriesUtils";
+import { buildCategoryRows, scopePeriods } from "./categoriesUtils";
 
 /**
  * Every fetch the Categories page makes, in one place: the week search, the
@@ -30,6 +35,21 @@ import { buildCategoryRows } from "./categoriesUtils";
  * would fire every item fetch twice. The desktop container calls it and hands
  * the two functions to whichever layout renders.
  */
+/** One location's rows across all three periods, for the per-category drill
+ *  loads. They are fetched by storeid, so a co-located pair arrives as both
+ *  stores; the list beside them is showing one. */
+const scopeStoreNumber = <T extends { store_number: string }>(
+  rows: { tw: T[]; lw: T[]; ly: T[] },
+  storeNumber: string | null,
+) =>
+  storeNumber === null
+    ? rows
+    : {
+        tw: onlyStoreNumber(rows.tw, storeNumber),
+        lw: onlyStoreNumber(rows.lw, storeNumber),
+        ly: onlyStoreNumber(rows.ly, storeNumber),
+      };
+
 export const useCategoryData = () => {
   const dispatch = useAppDispatch();
   const toast = useToast();
@@ -71,7 +91,21 @@ export const useCategoryData = () => {
         end,
       );
 
-      const rows = buildCategoryRows(tw, lw, ly, twDates);
+      // A storeid can cover two physical stores and cat_sales is fetched by
+      // storeid, so both arrive added together. Establish the locations from
+      // the rows and land on the first rather than the combined view --
+      // combined is a real question somebody can ask, but it is the wrong
+      // thing to show without being asked.
+      const numbers = storeNumbersIn(tw);
+      dispatch(setAvailableStoreNumbers(numbers));
+      const landing = numbers.length > 1 ? numbers[0] : null;
+      dispatch(setSelectedStoreNumber(landing));
+
+      // Raw stays whole, so switching location is a rebuild rather than
+      // another ten pages per period.
+      dispatch(setRaw({ raw: { tw, lw, ly }, twDates }));
+      const scoped = scopePeriods({ tw, lw, ly }, landing);
+      const rows = buildCategoryRows(scoped.tw, scoped.lw, scoped.ly, twDates);
       dispatch(setRows(rows));
 
       if (rows.length === 0) {
@@ -100,7 +134,14 @@ export const useCategoryData = () => {
         cats.twEnd,
         cats.selectedCategory,
       );
-      dispatch(setHourly(rows));
+      // Fetched by storeid like everything else here, so a co-located pair
+      // comes back as both stores. Narrow it to the location the list is
+      // showing, or the hours contradict the row that was clicked.
+      dispatch(
+        setHourly(
+          scopeStoreNumber(rows, cats.selectedStoreNumber),
+        ),
+      );
     } catch {
       toast.error("Couldn't load the hourly breakdown.");
     } finally {
@@ -131,7 +172,9 @@ export const useCategoryData = () => {
           cats.twEnd,
           category,
         );
-        if (!cancelled) dispatch(setItems(rows));
+        // Same narrowing as the hourly load: one location, the one on screen.
+        if (!cancelled)
+          dispatch(setItems(scopeStoreNumber(rows, cats.selectedStoreNumber)));
       } catch {
         if (!cancelled) toast.error("Couldn't load items for that category.");
       } finally {
@@ -154,5 +197,22 @@ export const useCategoryData = () => {
     context.token,
   ]);
 
-  return { runSearch, loadHourly };
+  /**
+   * Re-present the search already in the store as one location, or combined.
+   *
+   * The open category closes with it. Its items and hourly rows were fetched
+   * by storeid for the previous location and `setSelectedCategory` clears
+   * both, so closing it is what stops the right-hand panel describing a
+   * different store from the list beside it.
+   */
+  const applyLocation = (storeNumber: string | null) => {
+    dispatch(setSelectedStoreNumber(storeNumber));
+    dispatch(setSelectedCategory(null));
+    const scoped = scopePeriods(cats.raw, storeNumber);
+    dispatch(
+      setRows(buildCategoryRows(scoped.tw, scoped.lw, scoped.ly, cats.twDates)),
+    );
+  };
+
+  return { runSearch, loadHourly, applyLocation };
 };
