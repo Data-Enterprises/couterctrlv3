@@ -196,6 +196,7 @@ const InventoryVendor = () => {
 
       <div className="flex gap-4 h-[calc(100vh-5rem)]">
         <InventoryTreePanel
+          helpPage="price-opt-vendor"
           title="Price Opt — Vendor"
           storeName={storeName}
           dateLabel={`${formatDate(scope.start)} – ${formatDate(scope.end)}`}

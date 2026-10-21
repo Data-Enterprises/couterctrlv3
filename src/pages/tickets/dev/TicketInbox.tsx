@@ -1,4 +1,5 @@
 import MultiSelectFilter from "../../../components-dev/filters/MultiSelectFilter";
+import PageInfoButton from "../../../components-dev/PageInfoButton";
 import type { Ticket, TicketStatus } from "../../../api/tickets";
 import type {
   QueueTab,
@@ -149,6 +150,9 @@ const TicketInbox = ({
           </button>
         )}
         <div className="flex-1" />
+        <div className="relative flex-shrink-0">
+          <PageInfoButton page="help-desk" />
+        </div>
         <div className="flex flex-shrink-0 items-baseline gap-1">
           <span className="text-[10px] uppercase tracking-wide text-custom-white/85">
             Showing
@@ -167,6 +171,7 @@ const TicketInbox = ({
             divide the same width evenly instead of leaving half the row
             empty. */}
         <div
+          data-help="queue-tabs"
           role="tablist"
           className="-mx-2.5 -mt-2.5 mb-2.5 grid auto-cols-fr grid-flow-col border-b border-brand_line px-2.5"
         >
@@ -235,6 +240,7 @@ const TicketInbox = ({
             Search tickets
           </label>
           <input
+            data-help="search"
             id="ticket-search"
             type="search"
             value={search}
@@ -283,6 +289,7 @@ const TicketInbox = ({
 
         {onNew && (
           <button
+            data-help="new-ticket"
             type="button"
             onClick={onNew}
             className="mt-2 w-full rounded-lg bg-brand_navy px-4 py-2 text-[12.5px] font-semibold text-custom-white transition-colors hover:bg-brand_navy_hover"

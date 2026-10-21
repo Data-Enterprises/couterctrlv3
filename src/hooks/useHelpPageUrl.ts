@@ -1,16 +1,19 @@
 import { useCallback, useMemo } from "react";
 import { useAppSelector } from ".";
-import type { HelpKind } from "../api/helpPages";
 
 /**
- * The URL of one help page or release note.
+ * The URL of one help page.
  *
- * TEMPORARY: back on the public bucket, built from `VITE_HELP_PAGES_URL_*`,
- * until `help/page_url` is deployed. The signed-URL version is in git — see
- * "Help pages come from the API, signed, on the click" — and the whole of it
- * lives in this file, so turning it back on is restoring one module. The hook's
- * shape is deliberately unchanged for that reason: callers keep `src`,
- * `problem` and `retry` and do not know which way the URL arrived.
+ * TEMPORARY, and now the last thing in the app reading from the bucket: the
+ * PHONE help only. Desktop help is data in `components-dev/help/content`, and
+ * release notes are data in `content/releaseNotes` — neither comes through
+ * here any more. What is left is the twelve `-mobile` documents, which stay
+ * until the panel has a design that works on a small screen.
+ *
+ * Built from `VITE_HELP_PAGES_URL_*`. The signed-URL version is in git — see
+ * "Help pages come from the API, signed, on the click" — but restoring it is
+ * no longer the plan: the remaining documents are meant to become content
+ * modules like the rest, and then this file goes.
  *
  * The bucket grants anonymous `s3:GetObject` on `dev/` and `prod/`, which is
  * what makes this possible at all — the frame is sandboxed without
@@ -32,12 +35,10 @@ const baseFor = (apiEnv: string) =>
 
 export const useHelpPageUrl = ({
   name,
-  kind = "help",
   section,
   enabled,
 }: {
   name: string;
-  kind?: HelpKind;
   section?: string;
   enabled: boolean;
 }) => {
@@ -51,22 +52,15 @@ export const useHelpPageUrl = ({
     const base = baseFor(apiEnv);
     if (!base) return "";
 
-    // `release/{env}/{name}.html`, against `{env}/{name}.html` for help. Built
-    // from the same env var by dropping the folder off the end, because the
-    // release notes sit beside the two help folders rather than inside one.
-    //
-    // This will 403: the release prefix is NOT public the way dev/ and prod/
-    // are, so a release note cannot be read this way at all. The route is
-    // unmounted for exactly that reason and nothing reaches this branch today
-    // — it is written out so that restoring the route does not also quietly
-    // restore a wrong URL.
-    const url =
-      kind === "release"
-        ? `${base.replace(/\/(dev|prod)$/, "")}/release/${apiEnv}/${name}.html`
-        : `${base}/${name}.html`;
+    // Help only. The `release` kind used to build
+    // `release/{env}/{name}.html` here and always 403'd — that prefix is not
+    // public the way dev/ and prod/ are — which is why release notes moved
+    // into the repo rather than being signed. Nothing asks for a release URL
+    // now, and nothing should.
+    const url = `${base}/${name}.html`;
 
     return section ? `${url}#${section}` : url;
-  }, [enabled, name, kind, section, apiEnv]);
+  }, [enabled, name, section, apiEnv]);
 
   // Kept so callers do not change shape. There is no request to retry: the
   // frame owns the load, and re-navigating it is what the `key` on the iframe

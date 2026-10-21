@@ -131,7 +131,7 @@ const ItemReportEntry = ({
         </div>
       }
     >
-      <div>
+      <div data-help="upc-input">
         <div className="flex items-baseline justify-between gap-2">
           <label className="text-[11px] font-medium text-content/85 ml-0.5">
             UPCs

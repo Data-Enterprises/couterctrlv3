@@ -54,34 +54,14 @@ export const getHelpPageUrl = (
     params,
   });
 
-export interface HelpRelease {
-  name: string;
-  bytes: number;
-  last_modified: string;
-}
+/* `help/releases` and the release-note shapes lived here. Release notes are
+   data in `content/releaseNotes` now — in the repo, shipped with the build —
+   so nothing lists them over the wire. The endpoint is still on the API and
+   is harmless; it simply has no caller.
 
-export interface HelpReleasesResp {
-  error: number;
-  success: boolean;
-  env: HelpEnv;
-  count: number;
-  releases: HelpRelease[];
-}
-
-/**
- * Every release note in that environment, newest first.
- *
- * Already sorted by name, which is why the files are named by date. Do not
- * re-sort on `last_modified`: that is when the file was uploaded, so a note
- * corrected in November would claim to be the newest release.
- */
-export const listHelpReleases = (url: string, token: string, env: HelpEnv) =>
-  axios({
-    method: "GET",
-    headers: headers(token),
-    url: url + "help/releases",
-    params: { env },
-  });
+   `help/page_url` above is kept for the same reason the phone still reads
+   documents from the bucket: the twelve `-mobile` pages have not been written
+   as content modules yet. When they are, this file goes with them. */
 
 /** The house convention: an unexpected failure comes back as HTTP 200 with
  *  `error: 1`, so the status line alone is not an answer. */

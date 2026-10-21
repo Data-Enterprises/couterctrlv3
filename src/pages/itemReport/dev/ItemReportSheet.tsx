@@ -18,7 +18,7 @@ import { colInputStyle } from "../../../components-dev/filters/colFilterStyles";
 import SelectFilter from "../../../components-dev/filters/SelectFilter";
 import HeaderIconButton from "../../../components-dev/HeaderIconButton";
 import { ACTION_TONE } from "./actionTone";
-import ComingSoonHelp from "../../../components-dev/ComingSoonHelp";
+import PageInfoButton from "../../../components-dev/PageInfoButton";
 import DetailPopover from "./DetailPopover";
 import {
   ACTION_LABEL,
@@ -230,7 +230,7 @@ const ItemReportSheet = ({
             <span className="text-custom-white font-semibold text-[13px] justify-self-center truncate">
               {centreLabel}
             </span>
-            <div className="flex items-center gap-2 justify-self-end">
+            <div data-help="export" className="flex items-center gap-2 justify-self-end">
               <span className="text-[14px] font-semibold text-custom-white tabular-nums">
                 {rows.length} items
               </span>
@@ -260,7 +260,7 @@ const ItemReportSheet = ({
             <div className="w-px h-4 bg-custom-white/15 flex-shrink-0" />
 
             <div className="relative flex-shrink-0">
-              <ComingSoonHelp />
+              <PageInfoButton page="item-actions" />
             </div>
           </div>
         </div>
@@ -268,7 +268,10 @@ const ItemReportSheet = ({
         {/* The piles. Clicking one narrows the sheet, but the sheet is already
             complete — this is for working one kind of problem at a time. The
             complete — this is for working one kind of problem at a time. */}
-        <div className="flex-shrink-0 px-3 py-2 border-b border-gray-100 flex items-center gap-1.5 flex-wrap">
+        <div
+          data-help="piles"
+          className="flex-shrink-0 px-3 py-2 border-b border-gray-100 flex items-center gap-1.5 flex-wrap"
+        >
           {ORDER.map((action) => (
             <button
               key={action}

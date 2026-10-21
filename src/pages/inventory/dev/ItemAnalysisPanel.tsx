@@ -170,7 +170,7 @@ const ItemAnalysisPanel = ({ product, actual }: Props) => {
         {/* The page's headline now that its job is optimisation. Sits above the
             pattern line because it's the answer; the pattern is the caveat. */}
         {suggestion && (
-          <div className="px-4 pt-3 flex-shrink-0">
+          <div data-help="suggestion" className="px-4 pt-3 flex-shrink-0">
             <div className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2.5">
               <div className="flex items-center gap-2 flex-wrap">
                 <ArrowTrendingUpIcon className="w-4 h-4 text-blue-800 flex-shrink-0" />
@@ -264,7 +264,10 @@ const ItemAnalysisPanel = ({ product, actual }: Props) => {
 
         <div className="flex-1 min-h-0 grid grid-cols-2 divide-x divide-gray-100 overflow-hidden">
           {/* Estimated */}
-          <div className="min-h-0 overflow-y-auto thin-scrollbar px-4 py-3">
+          <div
+            data-help="estimated"
+            className="min-h-0 overflow-y-auto thin-scrollbar px-4 py-3"
+          >
             <div className="flex items-baseline gap-2 mb-2">
               <span className="text-[11px] font-semibold text-content">
                 Estimated
@@ -316,7 +319,10 @@ const ItemAnalysisPanel = ({ product, actual }: Props) => {
           </div>
 
           {/* Actual — holds its column whatever state it's in. */}
-          <div className="min-h-0 overflow-y-auto thin-scrollbar px-4 py-3">
+          <div
+            data-help="actual"
+            className="min-h-0 overflow-y-auto thin-scrollbar px-4 py-3"
+          >
             <div className="flex items-baseline gap-2 mb-2">
               <span className="text-[11px] font-semibold text-content">
                 Actual

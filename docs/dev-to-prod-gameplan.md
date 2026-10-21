@@ -313,12 +313,8 @@ switchers.
       `/assignees`, `/lookups`, `/techs`, `/techs/candidates`,
       `/techs/{id}`, `/{id}`, `/{id}/comments`). Ships with Step 0.
       `groups/stores_assigned_to_user_group` is already on prod.
-- [ ] **Database:** `db/ticket_workflow.sql` exists only on backend `dev`. It
-      ALTERs `public.tickets`, creates `ticket_products` and two indexes.
-      Confirm whether the prod stage points at the same database as dev — the
-      DB is chosen by `DB_HOST`/`DB_NAME`/`DB_SECRET_NAME` env vars, so the
-      repo cannot answer it. If it is a separate database, run that SQL first
-      or every ticket call fails.
+- [x] **Database: nothing to do.** Dev and prod are the same database, so
+      `db/ticket_workflow.sql` is already applied.
 - [ ] **Env on the prod stage** (`api/ticket_notify.py`):
       - `TICKET_EMAIL_ENABLED` — unset means mail silently never sends
       - `TICKET_APP_URL` — blank means notification mails carry no link

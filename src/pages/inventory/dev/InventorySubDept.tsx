@@ -212,6 +212,7 @@ const InventorySubDept = () => {
 
       <div className="flex gap-4 h-[calc(100vh-5rem)]">
         <InventoryTreePanel
+          helpPage="price-opt-sub-dept"
           title="Price Opt — Sub Department"
           storeName={storeName}
           dateLabel={`${formatDate(scope.start)} – ${formatDate(scope.end)}`}

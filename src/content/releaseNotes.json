@@ -1,0 +1,88 @@
+[
+ {
+  "date": "2026-10-20",
+  "summary": "Five new modules, a rebuilt User Management, and help that points at the screen it is describing.",
+  "entries": [
+   {
+    "kind": "new",
+    "area": "Client Help Desk",
+    "text": "Raise a support ticket from inside CounterCtrl and follow the conversation on it without leaving the app. Your tickets, their status and every reply live on one page."
+   },
+   {
+    "kind": "new",
+    "area": "Item Actions",
+    "text": "A list of the items that need attention, with the answer already on the page. Each item is measured against both last week and last year, so a seasonal dip is not mistaken for a problem and an item already recovering is not flagged. Underneath sits the receiving history: when it last arrived, what it cost, and whether enough came in to explain what sold."
+   },
+   {
+    "kind": "new",
+    "area": "Sales Tracker",
+    "text": "Sub-department sales week by week against the same weeks last year, with holidays matched to the real holiday date rather than the same calendar day. It reports the movement and leaves the judgement to you — no thresholds, no severity, no ranking."
+   },
+   {
+    "kind": "new",
+    "area": "Price Opt — Sub Department",
+    "text": "Open a department, pick an item, and see where its price actually sits against where it was estimated to be."
+   },
+   {
+    "kind": "new",
+    "area": "Price Opt — Vendor",
+    "text": "The same price comparison, reached by vendor instead of by department, for when you are working a supplier rather than a category."
+   },
+   {
+    "kind": "improved",
+    "area": "Help",
+    "text": "The \"?\" on every screen now opens a panel beside your work that highlights the control it is talking about, instead of a separate document that could only describe it. Search it, or walk a guide step by step."
+   },
+   {
+    "kind": "new",
+    "area": "Sales — store investigation",
+    "text": "Ask why one store is behind another in a department and get the answer with the evidence behind it. The grid is readable as soon as the sales land and each cause sharpens in behind it, so you are not waiting on the whole thing to load before you can start reading."
+   },
+   {
+    "kind": "new",
+    "area": "Sales — Top 200 items",
+    "text": "A store's biggest sellers ranked by sales value rather than units. A sixteen-dollar item selling five copies never appears in a units ranking and usually belongs near the top of this one."
+   },
+   {
+    "kind": "improved",
+    "area": "User Management",
+    "text": "Rebuilt around the question it exists to answer: who can see what. Companies, base groups, stores and shared groups each get their own view, and adding someone is now a guided flow that shows exactly what access they will have before anything is saved."
+   },
+   {
+    "kind": "new",
+    "area": "Admin — sub-department exclusions",
+    "text": "Choose which sub departments are left out of net sales, for one store or a whole company. Lottery, money orders and stamps are money handed straight back out, and counting them inside net sales overstates it — this is the first time that can be set from inside the product."
+   },
+   {
+    "kind": "improved",
+    "area": "Admin — store records",
+    "text": "Stores are one grid now. Create, edit, rename and retire all happen in the same place instead of needing the same store found twice."
+   },
+   {
+    "kind": "improved",
+    "area": "Orders",
+    "text": "The desktop page has been rebuilt as one screen. The report, the configuration and the export sit together rather than in separate places that grew apart."
+   },
+   {
+    "kind": "improved",
+    "area": "Item Lookup",
+    "text": "A lookup now returns a single item report you scroll, with a day-by-day chart, in place of the old result screen and its separate daily breakdown."
+   },
+   {
+    "kind": "improved",
+    "area": "Cashiers on a phone",
+    "text": "Rebuilt for the smaller screen. Navigation now says where it is going — \"back to stores\" rather than \"back to signals\" — and a transaction shows the receipt number you can look up at the till instead of the full internal reference."
+   },
+   {
+    "kind": "improved",
+    "area": "Sub Dept Margins, Vendors, UPC List and User Groups",
+    "text": "Refinements across all four, carried along with the work above."
+   },
+   {
+    "kind": "fixed",
+    "area": "Coupon Sales on a phone",
+    "text": "Leaving the page and coming back made every sale report that no lines came back, while the row above it was still showing an amount. Receipts open correctly now however you got to them."
+   }
+  ]
+ }
+]

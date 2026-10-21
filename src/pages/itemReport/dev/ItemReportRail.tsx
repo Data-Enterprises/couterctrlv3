@@ -6,7 +6,7 @@ import {
   toggleItemReportSection,
 } from "../../../features/dev/devItemReportSlice";
 import { ChevronDownIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
-import ComingSoonHelp from "../../../components-dev/ComingSoonHelp";
+import PageInfoButton from "../../../components-dev/PageInfoButton";
 import { formatCurrency2, formatDateSimple } from "../../../utils";
 import { formatPct, pillClass } from "../../../utils/severity";
 import { actualPricePoints, unitPrice } from "../../../utils/pricePoints";
@@ -550,7 +550,7 @@ const ItemReportRail = ({
               things the left panel's "?" was explaining from across the page,
               or not at all. */}
           <div className="relative flex-shrink-0">
-            <ComingSoonHelp />
+            <PageInfoButton page="item-actions" />
           </div>
         </div>
 
@@ -568,6 +568,7 @@ const ItemReportRail = ({
             behind it, and on a Reprice that runs to three lines. */}
         {action && evidence && (
           <div
+            data-help="verdict"
             className={`relative flex-shrink-0 border-b border-brand_navy/15 ${ACTION_TONE[action].row}`}
           >
             <button

@@ -50,7 +50,7 @@ const TrackerDetail = ({ row, plan, scopeLabel }: TrackerDetailProps) => {
         <span className="text-custom-white text-[13px] font-bold justify-self-center">
           By week · oldest first
         </span>
-        <div className="flex items-center gap-3 justify-self-end">
+        <div data-help="export" className="flex items-center gap-3 justify-self-end">
           <button
             onClick={() => exportTracker({ row, scopeLabel, plan })}
             title="Export CSV"

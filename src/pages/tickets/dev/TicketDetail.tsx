@@ -430,7 +430,7 @@ const TicketDetail = ({ ctx }: { ctx: TicketsCtx }) => {
           }
           className="w-full border border-brand_line rounded-lg px-3 py-2 text-[13.5px] resize-none bg-custom-white"
         />
-        <div className="flex items-center gap-3 flex-wrap">
+        <div data-help="reply" className="flex items-center gap-3 flex-wrap">
           {ctx.canManage && (
             <CheckBox
               id={2}

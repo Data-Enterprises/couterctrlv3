@@ -1,3 +1,4 @@
+import PageInfoButton from "../../../components-dev/PageInfoButton";
 import {
   MagnifyingGlassIcon,
   MinusIcon,
@@ -58,6 +59,9 @@ const TrackerHeader = ({
         <span className="text-[14px] font-semibold text-custom-white">
           {formatCurrencyCompact(salesTy)}
         </span>
+        <div className="relative flex-shrink-0">
+          <PageInfoButton page="sales-tracker" />
+        </div>
         {pctChange !== null && (
           <span
             className={`text-[12px] font-semibold px-2 py-0.5 rounded-full ${
@@ -71,7 +75,10 @@ const TrackerHeader = ({
         )}
       </div>
 
-      <div className="flex items-center gap-2 pt-1.5 mt-1 border-t border-custom-white/[0.08]">
+      <div
+        data-help="scope"
+        className="flex items-center gap-2 pt-1.5 mt-1 border-t border-custom-white/[0.08]"
+      >
         <button
           onClick={onOpenSearch}
           className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/60 hover:text-custom-white hover:border-custom-white/40 transition-colors flex-shrink-0"
@@ -92,7 +99,7 @@ const TrackerHeader = ({
             Minus is free — the rows stay held and the window simply narrows,
             so a week that comes back off a later plus costs no request. Plus
             fetches only the week being added. */}
-        <div className="flex items-center gap-1 flex-shrink-0">
+        <div data-help="window" className="flex items-center gap-1 flex-shrink-0">
           <button
             type="button"
             onClick={onDropWeek}

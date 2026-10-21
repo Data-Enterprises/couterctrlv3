@@ -718,13 +718,19 @@ export const isComingSoonRoute = (route: string): boolean => {
  * Routes that exist on the dev API only, whether or not the menu offers them.
  *
  * The Coming Soon pages render `DevOnlyNotice` on prod; Release Notes would
- * render perfectly well, which is the more dangerous case — its avatar entry
- * is dev-gated because the notes name unreleased work, but the route itself
- * is reachable by typing it, and nothing about the page says it should not
- * have been.
+ * render perfectly well, which is the more dangerous case — the route is
+ * reachable by typing it, and nothing about the page says it should not have
+ * been.
  *
  * Release Notes is named here rather than read off the nav because it is
  * deliberately not in the nav at all.
+ *
+ * It is closed for a different reason than it used to be. The notes were our
+ * own and named unreleased work; they are the client set now, written for the
+ * people using the product and shipped with the build. What keeps the route
+ * shut is timing — nothing about this release is announced to clients until
+ * the switchover. Opening it is one line here and one in TitleBar, and both
+ * say so.
  */
 const DEV_ONLY_ROUTES = new Set(["release-notes"]);
 

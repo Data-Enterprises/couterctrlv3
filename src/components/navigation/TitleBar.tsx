@@ -363,24 +363,23 @@ const TitleBar = () => {
                 </div>
               </div>
             ) : null}
-            {/* What went out and what is waiting, straight from the bucket the
-                help pages come from. Dev mode only: these are our notes, they
-                name unreleased work, and the row would mean nothing to a
-                client sitting on prod. Under View because it describes the
+            {/* What went out, and when. Under View because it describes the
                 app those switches move you around in.
 
-                HIDDEN until `help/releases` and `help/page_url` are deployed.
-                The page needs the API to list the notes AND to sign each one:
-                the files sit under `release/{env}/{name}.html` in the help
-                bucket, and unlike `dev/` and `prod/` that prefix is not
-                public — anonymous GETs answer AccessDenied, and the frame is
-                anonymous. So the row would open a page that can only report
-                it cannot read anything.
+                The page works now. It used to be commented out entirely: the
+                notes were HTML under `release/{env}/` in the help bucket, a
+                prefix that is not public the way `dev/` and `prod/` are, so an
+                anonymous frame got AccessDenied and the row opened a page that
+                could only report it could not read anything. The notes are
+                data in `content/releaseNotes` now — nothing to fetch, nothing
+                to sign — and they are the client set, written for the people
+                using the product rather than for us.
 
-                Uncomment as-is once the endpoint is up; nothing else about
-                the page changed. The route stays mounted, so the URL still
-                works for testing it. */}
-            {/*
+                Still dev only, for timing rather than content: nothing about
+                this release is announced to clients until the switchover.
+                Drop the `apiEnv` check here and take "release-notes" out of
+                DEV_ONLY_ROUTES in navigation/utils when it is theirs to
+                read. */}
             {context.apiEnv === "dev" ? (
               <button
                 onClick={() => {
@@ -390,10 +389,9 @@ const TitleBar = () => {
                 className="w-full text-left px-4 py-2.5 text-[13px] font-medium text-content hover:bg-gray-50 transition-colors border-b border-gray-100 flex items-center gap-2"
               >
                 <span className="flex-1">Release Notes</span>
-                <span className="text-[11px] text-content/85">every release</span>
+                <span className="text-[11px] text-content/95">every release</span>
               </button>
             ) : null}
-            */}
             {/* File a ticket about the page you are on.
 
                 Raises a flag rather than navigating: sending somebody to the

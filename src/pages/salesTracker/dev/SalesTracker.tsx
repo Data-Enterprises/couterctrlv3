@@ -451,7 +451,10 @@ const SalesTracker = () => {
                 the totals row at the foot of this list and the KPI strip on the
                 right — three copies of one answer. The totals row is the one
                 that foots its own columns, so it is the one that survives. */}
-            <div className="flex items-center justify-between gap-3 px-4 py-2 bg-custom-white border-x border-gray-100">
+            <div
+              data-help="sub-filter"
+              className="flex items-center justify-between gap-3 px-4 py-2 bg-custom-white border-x border-gray-100"
+            >
               <span className="text-[11px] font-medium text-content">
                 {sort === null
                   ? `Ranked by size of change vs ${basisWord(basis)}`
@@ -471,6 +474,7 @@ const SalesTracker = () => {
                 right-aligned figure out of line with the header above it. */}
             <div className="flex-1 overflow-y-auto thin-scrollbar bg-custom-white rounded-b-xl shadow-sm border border-t-0 border-gray-100">
               <div
+                data-help="columns"
                 className="grid items-center gap-3.5 px-4 py-2 border-b border-gray-100 sticky top-0 z-10 bg-custom-white"
                 style={{ gridTemplateColumns: SUB_GRID }}
               >
@@ -566,7 +570,7 @@ const SalesTracker = () => {
             </div>
           </div>
 
-          <div className="flex-1 min-w-0 shadow-lg">
+          <div data-help="weeks" className="flex-1 min-w-0 shadow-lg">
             {(selectedRow ?? groupTotal) !== null ? (
               <TrackerDetail
                 row={(selectedRow ?? groupTotal) as SubDeptTotal}
