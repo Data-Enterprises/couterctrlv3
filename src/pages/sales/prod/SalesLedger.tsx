@@ -1,7 +1,7 @@
 import { useSalesState } from "./hooks/useSalesState";
 import { useState, useRef, useMemo, useCallback } from "react";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
-import { getWeekly, getHourly } from "../../../api/sales";
+import { getWeekly } from "../../../api/sales";
 import { getStoresAssignedToUserGroup } from "../../../api/groups";
 import { addDays, formatGoliathDate, sameWeekDayLastYear } from "../../../utils";
 import { buildLedgerRows, regradeLedgerRows } from "./shared/ledgerUtils";
@@ -10,15 +10,9 @@ import {
   setWeeklySales,
   setWeeklySalesLastWeek,
   setWeeklySalesLastYear,
-  setHourlySales,
-  setHourlySalesLastWeek,
-  setHourlySalesLastYear,
   concatWeeklySales,
   concatWeeklySalesLastWeek,
   concatWeeklySalesLastYear,
-  concatHourlySales,
-  concatHourlySalesLastWeek,
-  concatHourlySalesLastYear,
   reQuery,
 } from "../../../features/salesSlice";
 import {
@@ -53,9 +47,6 @@ const SalesLedger = () => {
     weeklySales = [],
     weeklySalesLastWeek = [],
     weeklySalesLastYear = [],
-    // hourlySales = [],
-    // hourlySalesLastWeek = [],
-    // hourlySalesLastYear = [],
   } = useSalesState();
   const {
     hasSearched,
@@ -186,47 +177,14 @@ const SalesLedger = () => {
                   store.storeid,
                   1,
                 ),
-                getHourly(
-                  context.url,
-                  context.token,
-                  twStart,
-                  twEnd,
-                  0,
-                  store.storeid,
-                  1,
-                ),
-                getHourly(
-                  context.url,
-                  context.token,
-                  lwStart,
-                  lwEnd,
-                  0,
-                  store.storeid,
-                  1,
-                ),
-                getHourly(
-                  context.url,
-                  context.token,
-                  lyStart,
-                  lyEnd,
-                  0,
-                  store.storeid,
-                  1,
-                ),
               ])
-                .then(([tw, lw, ly, h, lh, lhy]) => {
+                .then(([tw, lw, ly]) => {
                   if (tw.data.error === 0)
                     dispatch(concatWeeklySales(tw.data.sales));
                   if (lw.data.error === 0)
                     dispatch(concatWeeklySalesLastWeek(lw.data.sales));
                   if (ly.data.error === 0)
                     dispatch(concatWeeklySalesLastYear(ly.data.sales));
-                  if (h.data.error === 0)
-                    dispatch(concatHourlySales(h.data.subs));
-                  if (lh.data.error === 0)
-                    dispatch(concatHourlySalesLastWeek(lh.data.subs));
-                  if (lhy.data.error === 0)
-                    dispatch(concatHourlySalesLastYear(lhy.data.subs));
                 })
                 .catch(() => {}),
             ),
@@ -241,8 +199,7 @@ const SalesLedger = () => {
 
     // Standard path: single store or small group
     try {
-      const [twResp, lwResp, lyResp, hourlyResp, lwHourlyResp, lyHourlyResp] =
-        await Promise.all([
+      const [twResp, lwResp, lyResp] = await Promise.all([
           getWeekly(
             context.url,
             context.token,
@@ -270,45 +227,12 @@ const SalesLedger = () => {
             searchValue,
             singleStore,
           ),
-          getHourly(
-            context.url,
-            context.token,
-            twStart,
-            twEnd,
-            useGroups,
-            searchValue,
-            singleStore,
-          ),
-          getHourly(
-            context.url,
-            context.token,
-            lwStart,
-            lwEnd,
-            useGroups,
-            searchValue,
-            singleStore,
-          ),
-          getHourly(
-            context.url,
-            context.token,
-            lyStart,
-            lyEnd,
-            useGroups,
-            searchValue,
-            singleStore,
-          ),
-        ]);
+      ]);
       if (twResp.data.error === 0) dispatch(setWeeklySales(twResp.data.sales));
       if (lwResp.data.error === 0)
         dispatch(setWeeklySalesLastWeek(lwResp.data.sales));
       if (lyResp.data.error === 0)
         dispatch(setWeeklySalesLastYear(lyResp.data.sales));
-      if (hourlyResp.data.error === 0)
-        dispatch(setHourlySales(hourlyResp.data.subs));
-      if (lwHourlyResp.data.error === 0)
-        dispatch(setHourlySalesLastWeek(lwHourlyResp.data.subs));
-      if (lyHourlyResp.data.error === 0)
-        dispatch(setHourlySalesLastYear(lyHourlyResp.data.subs));
     } catch (err: any) {
       toast.error(err.message);
       setFetchFailed(true);
@@ -316,6 +240,25 @@ const SalesLedger = () => {
       dispatch(setLedgerLoading(false));
     }
   };
+
+  /**
+   * Why there is no `hourly/hourly` read on this page.
+   *
+   * There was one, for three windows, and on a group of more than 30 stores
+   * it ran per store — 3 x N calls. Nothing here read a row of it. The ledger
+   * does not show an hour, and the only consumer of `hourlySales` is the
+   * drill's Hourly tab, which fetches the same three windows **scoped to the
+   * store that was clicked** and dispatches them over the top of whatever
+   * this page had put there (`StoreDetailPopup`, `setHourlySales(rawHourly)`).
+   *
+   * So the reads here were written to the store, read by nobody, and replaced
+   * the moment anyone could have read them. On the 60-store group behind the
+   * 11 Sep performance report that was 180 wasted requests fired alongside
+   * the 180 the screen needs.
+   *
+   * If this page ever shows an hour of its own, fetch it here then. Until it
+   * does, the drill owns hourly.
+   */
 
   // Regrouping every store across TW/LW/LY is the expensive half and doesn't
   // depend on the threshold, so it's memoized on the data alone. The threshold
