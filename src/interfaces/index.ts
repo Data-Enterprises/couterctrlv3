@@ -1446,6 +1446,27 @@ export interface AllOrderResp {
   orders: AllOrder[];
 }
 
+/**
+ * What `orders/update_file` answers with.
+ *
+ * `key` is the file it dropped in `bucket`, and the handle for tracing the
+ * submission in `table_update_log` — worth surfacing rather than leaving in
+ * the console.
+ *
+ * `logged` is the audit insert, which is independent of the drop: the file can
+ * land while that insert fails, and `success` is still true. It is not a
+ * failed save.
+ */
+export interface UpdateFileResp {
+  error: number;
+  success: boolean;
+  msg: string;
+  bucket: string;
+  key: string;
+  line_count: number;
+  logged: boolean;
+}
+
 /* ── categories/cat_sales ──────────────────────────────────────────────────
    One endpoint, three row shapes, chosen by the `consolidated` and
    `displayHourly` flags. Fields common to all three sit in the base. */
