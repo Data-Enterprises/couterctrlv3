@@ -5,10 +5,7 @@
  */
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
-import {
-  lastMergeIndex,
-  type InvoiceEdit,
-} from "../../pages/invoices/dev/vendors/awg/applyEdit";
+import type { InvoiceEdit } from "../../pages/invoices/dev/vendors/awg/applyEdit";
 
 /**
  * AWG Invoices page state.
@@ -38,6 +35,9 @@ export interface InvoicesState {
   expandedId: string | null;
   /** Narrows the list to invoices that failed reconciliation. */
   failedOnly: boolean;
+  /** Narrows the list to invoices a check misses by more than 10¢ — past
+   *  the vendor's penny rounding, so worth a look. */
+  overTenCentsOnly: boolean;
   /** Narrows the list on store, invoice number or department. */
   textFilter: string;
   parsing: boolean;
@@ -61,6 +61,7 @@ const initialState: InvoicesState = {
   edits: [],
   expandedId: null,
   failedOnly: false,
+  overTenCentsOnly: false,
   textFilter: "",
   parsing: false,
   error: null,
@@ -99,6 +100,7 @@ const invoicesSlice = createSlice({
       state.edits = [];
       state.expandedId = null;
       state.failedOnly = false;
+      state.overTenCentsOnly = false;
       state.textFilter = "";
       state.parsing = false;
       state.error = null;
@@ -118,19 +120,17 @@ const invoicesSlice = createSlice({
      */
     editInvoiceField: (state, action: PayloadAction<InvoiceEdit>) => {
       const next = action.payload;
-      // Only edits since the invoice's last merge share this one's row
-      // numbering, so only those can be the same field.
-      const floor = lastMergeIndex(state.edits, next.docId);
       const at = state.edits.findIndex(
-        (edit, index) =>
-          index > floor &&
+        (edit) =>
           edit.docId === next.docId &&
           edit.kind === next.kind &&
           edit.field === next.field &&
           edit.rowIndex === next.rowIndex,
       );
-      if (at === -1) state.edits.push(next);
-      else state.edits[at] = next;
+      // Replaced at the end, not in place: a retail split made since would
+      // otherwise be replayed over it.
+      if (at !== -1) state.edits.splice(at, 1);
+      state.edits.push(next);
       // A correction invalidates the last send: what is on the server is no
       // longer what is on screen.
       state.sentAt = null;
@@ -144,10 +144,8 @@ const invoicesSlice = createSlice({
       action: PayloadAction<Omit<InvoiceEdit, "value">>,
     ) => {
       const target = action.payload;
-      const floor = lastMergeIndex(state.edits, target.docId);
       state.edits = state.edits.filter(
-        (edit, index) =>
-          index <= floor ||
+        (edit) =>
           !(
             edit.docId === target.docId &&
             edit.kind === target.kind &&
@@ -158,25 +156,50 @@ const invoicesSlice = createSlice({
       state.sentAt = null;
     },
 
-    /** Collapse one group of repeated lines — see `findMergeGroups`. Undone
-     *  only with the rest, because the edits after it are numbered against the
-     *  merged lines. */
-    mergeInvoiceLines: (
+    /** Share one random-weight item's repeated retail across its lines — see
+     *  `findRetailSplits`. Undone with the rest of the corrections. */
+    splitInvoiceRetail: (
       state,
       action: PayloadAction<{
         docId: string;
+        rowIndex: number;
         itemCode: string;
-        retailPrice: string;
+        extRetail: string;
       }>,
     ) => {
-      const { docId, itemCode, retailPrice } = action.payload;
+      const { docId, rowIndex, itemCode, extRetail } = action.payload;
       state.edits.push({
         docId,
-        kind: "merge",
+        kind: "splitRetail",
         field: itemCode,
-        value: retailPrice,
+        value: extRetail,
+        rowIndex,
       });
       state.sentAt = null;
+    },
+
+    /** Every split currently offered, across the whole file, in one go. */
+    splitAllInvoiceRetail: (
+      state,
+      action: PayloadAction<
+        {
+          docId: string;
+          rowIndex: number;
+          itemCode: string;
+          extRetail: string;
+        }[]
+      >,
+    ) => {
+      for (const { docId, rowIndex, itemCode, extRetail } of action.payload) {
+        state.edits.push({
+          docId,
+          kind: "splitRetail",
+          field: itemCode,
+          value: extRetail,
+          rowIndex,
+        });
+      }
+      if (action.payload.length > 0) state.sentAt = null;
     },
 
     clearInvoiceEdits: (state) => {
@@ -190,6 +213,10 @@ const invoicesSlice = createSlice({
 
     setInvoiceFailedOnly: (state, action: PayloadAction<boolean>) => {
       state.failedOnly = action.payload;
+    },
+
+    setInvoiceOverTenCentsOnly: (state, action: PayloadAction<boolean>) => {
+      state.overTenCentsOnly = action.payload;
     },
 
     setInvoiceTextFilter: (state, action: PayloadAction<string>) => {
@@ -227,10 +254,12 @@ export const {
   setInvoicesFile,
   editInvoiceField,
   revertInvoiceField,
-  mergeInvoiceLines,
+  splitInvoiceRetail,
+  splitAllInvoiceRetail,
   clearInvoiceEdits,
   setInvoiceExpanded,
   setInvoiceFailedOnly,
+  setInvoiceOverTenCentsOnly,
   setInvoiceTextFilter,
   setInvoicesSending,
   setInvoicesSendError,

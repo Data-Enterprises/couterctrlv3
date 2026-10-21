@@ -11,10 +11,12 @@ import ComingSoonHelp from "../../../components-dev/ComingSoonHelp";
 import {
   clearInvoiceEdits,
   editInvoiceField,
-  mergeInvoiceLines,
+  splitInvoiceRetail,
+  splitAllInvoiceRetail,
   revertInvoiceField,
   setInvoiceExpanded,
   setInvoiceFailedOnly,
+  setInvoiceOverTenCentsOnly,
   setInvoicesError,
   setInvoicesFile,
   setInvoicesParsing,
@@ -34,7 +36,7 @@ import { useAwgInvoices } from "./useAwgInvoices";
 import { parseAwgFile } from "./vendors/awg";
 import { awgRecordsToCsv } from "./vendors/awg/exportCsv";
 import { downloadCsv } from "../../../utils/csvExport";
-import { lastMergeIndex, type InvoiceEdit } from "./vendors/awg/applyEdit";
+import type { InvoiceEdit } from "./vendors/awg/applyEdit";
 
 /**
  * AWG Invoices — a vendor's electronic invoice file, decoded, corrected and sent.
@@ -65,6 +67,9 @@ const AwgInvoices = () => {
   const edits = useAppSelector((s) => s.dev.invoices.edits);
   const expandedId = useAppSelector((s) => s.dev.invoices.expandedId);
   const failedOnly = useAppSelector((s) => s.dev.invoices.failedOnly);
+  const overTenCentsOnly = useAppSelector(
+    (s) => s.dev.invoices.overTenCentsOnly,
+  );
   const textFilter = useAppSelector((s) => s.dev.invoices.textFilter);
   const error = useAppSelector((s) => s.dev.invoices.error);
   const sending = useAppSelector((s) => s.dev.invoices.sending);
@@ -90,23 +95,42 @@ const AwgInvoices = () => {
   /** Corrections on the open invoice, as the keys the card marks cells with. */
   const editedByDoc = useMemo(() => {
     const map = new Map<string, Set<string>>();
-    edits.forEach((edit, index) => {
-      // Edits from before a merge point at rows that have since moved.
-      if (edit.kind === "merge") return;
-      if (index < lastMergeIndex(edits, edit.docId)) return;
+    for (const edit of edits) {
+      if (edit.kind === "splitRetail") continue;
       const key =
         edit.kind === "header" ? edit.field : `${edit.rowIndex}:${edit.field}`;
       const held = map.get(edit.docId) ?? new Set<string>();
       held.add(key);
       map.set(edit.docId, held);
-    });
+    }
     return map;
   }, [edits]);
+
+  /** Every split on offer across the file, for the one button that takes
+   *  them all. */
+  const allSplits = useMemo(
+    () =>
+      rows.flatMap((row) =>
+        row.retailSplits.map((split) => ({
+          docId: row.id,
+          rowIndex: split.rowIndex,
+          itemCode: split.itemCode,
+          extRetail: split.extRetail,
+        })),
+      ),
+    [rows],
+  );
+
+  const overTenCentsCount = useMemo(
+    () => rows.filter((row) => row.overTenCents).length,
+    [rows],
+  );
 
   const visible = useMemo(() => {
     const needle = textFilter.trim().toLowerCase();
     return rows.filter((row) => {
       if (failedOnly && row.reconciled) return false;
+      if (overTenCentsOnly && !row.overTenCents) return false;
       if (!needle) return true;
       return (
         row.invoiceNbr.toLowerCase().includes(needle) ||
@@ -114,7 +138,7 @@ const AwgInvoices = () => {
         row.retailDept.toLowerCase().includes(needle)
       );
     });
-  }, [rows, failedOnly, textFilter]);
+  }, [rows, failedOnly, overTenCentsOnly, textFilter]);
 
   const handleFile = (text: string, name: string) => {
     dispatch(setInvoicesParsing(true));
@@ -280,6 +304,33 @@ const AwgInvoices = () => {
               To check{failedCount > 0 ? ` (${failedCount})` : ""}
             </button>
 
+            <button
+              type="button"
+              onClick={() =>
+                dispatch(setInvoiceOverTenCentsOnly(!overTenCentsOnly))
+              }
+              aria-pressed={overTenCentsOnly}
+              title="Invoices a check misses by more than 10¢ — past the vendor's penny rounding"
+              className={`flex-none rounded-full border px-3 py-1.5 text-[11px] font-medium ${
+                overTenCentsOnly
+                  ? "border-brand_navy bg-brand_navy text-custom-white"
+                  : "border-gray-200 bg-custom-white text-content/85"
+              }`}
+            >
+              Over 10¢{overTenCentsCount > 0 ? ` (${overTenCentsCount})` : ""}
+            </button>
+
+            {allSplits.length > 0 && (
+              <button
+                type="button"
+                onClick={() => dispatch(splitAllInvoiceRetail(allSplits))}
+                title="Split retail on every random-weight run offered in this file"
+                className="flex-none rounded-full border border-gray-200 bg-custom-white px-3 py-1.5 text-[11px] font-medium text-content/85 hover:bg-bkg"
+              >
+                Split retail on all ({allSplits.length})
+              </button>
+            )}
+
             {edits.length > 0 && (
               <button
                 type="button"
@@ -363,17 +414,19 @@ const AwgInvoices = () => {
             onRevert={(key) =>
               dispatch(revertInvoiceField({ ...key, docId: row.id }))
             }
-            onMerge={(group) =>
-              dispatch(mergeInvoiceLines({ ...group, docId: row.id }))
+            onSplitRetail={(group) =>
+              dispatch(splitInvoiceRetail({ ...group, docId: row.id }))
             }
           />
         ))}
 
         {visible.length === 0 && (
           <p className="rounded-xl border border-gray-200 bg-custom-white px-4 py-8 text-center text-[13px] text-content/85">
-            {failedOnly
-              ? "Every invoice in this file reconciles."
-              : "No invoice matches that filter."}
+            {overTenCentsOnly
+              ? "No invoice in this file misses by more than 10¢."
+              : failedOnly
+                ? "Every invoice in this file reconciles."
+                : "No invoice matches that filter."}
           </p>
         )}
           </div>

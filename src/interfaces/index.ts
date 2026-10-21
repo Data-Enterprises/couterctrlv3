@@ -2651,6 +2651,8 @@ export interface InvoiceRow {
   note?: string;
   /** Allowance on the vendor's total that no record in the file carries. */
   unitemizedAllowance: string | null;
+  /** A money check misses by more than 10¢, or the cases miss at all. */
+  overTenCents: boolean;
   checks: {
     label: string;
     derived: string;
@@ -2659,15 +2661,15 @@ export interface InvoiceRow {
     difference: string;
   }[];
   lines: InvoiceLineRow[];
-  /** Repeated random-weight lines that can be collapsed into one. Empty when
-   *  the invoice reconciles — a merge is only offered as a fix. */
-  mergeGroups: {
+  /** Runs of random-weight lines that each repeat the run's extended retail,
+   *  which can be shared out across them. Empty when the invoice reconciles —
+   *  a split is only offered as a fix. */
+  retailSplits: {
+    rowIndex: number;
+    firstLine: number;
     itemCode: string;
-    retailPrice: string;
     description: string;
     lineCount: number;
-    cases: string;
-    extCost: string;
     extRetail: string;
   }[];
 }

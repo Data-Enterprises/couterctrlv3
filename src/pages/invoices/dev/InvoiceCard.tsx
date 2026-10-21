@@ -22,7 +22,11 @@ interface Props {
   editedKeys: Set<string>;
   onEdit: (edit: Omit<InvoiceEdit, "docId">) => void;
   onRevert: (key: Omit<InvoiceEdit, "docId" | "value">) => void;
-  onMerge: (group: { itemCode: string; retailPrice: string }) => void;
+  onSplitRetail: (group: {
+    rowIndex: number;
+    itemCode: string;
+    extRetail: string;
+  }) => void;
 }
 
 const Figure = ({ label, value }: { label: string; value: string }) => (
@@ -54,7 +58,7 @@ const InvoiceCard = ({
   editedKeys,
   onEdit,
   onRevert,
-  onMerge,
+  onSplitRetail,
 }: Props) => {
   const Chevron = open ? ChevronDownIcon : ChevronRightIcon;
 
@@ -194,31 +198,32 @@ const InvoiceCard = ({
               </p>
             )}
 
-            {/* Repeated random-weight lines each carry the group's extended
-                retail, so the derived retail counts it once per line. One
-                line per group is how the vendor's total reads it. */}
-            {row.mergeGroups.map((group) => (
+            {/* Random-weight lines in a run each carry the run's extended
+                retail, so the derived retail counts it once per line. Shared
+                out by weight, the lines add back to the vendor's figure. */}
+            {row.retailSplits.map((group) => (
               <div
-                key={`${group.itemCode}-${group.retailPrice}`}
+                key={group.rowIndex}
                 className="mt-2 flex items-center gap-3 rounded bg-severity_watch_bg px-2 py-1.5 text-[12px] text-severity_watch_text"
               >
                 <span className="min-w-0 flex-1">
-                  {group.lineCount} lines of {group.itemCode}{" "}
-                  {group.description} repeat the same ext retail. Combined:
-                  qty {group.cases}, ext cost ${group.extCost}, ext retail $
-                  {group.extRetail}.
+                  {group.lineCount} random-weight lines of {group.itemCode}{" "}
+                  {group.description}, from line {group.firstLine}, each repeat
+                  the same ext retail of ${group.extRetail}. Splitting shares it
+                  across them by weight.
                 </span>
                 <button
                   type="button"
                   onClick={() =>
-                    onMerge({
+                    onSplitRetail({
+                      rowIndex: group.rowIndex,
                       itemCode: group.itemCode,
-                      retailPrice: group.retailPrice,
+                      extRetail: group.extRetail,
                     })
                   }
                   className="flex-none rounded-md bg-brand_navy px-2.5 py-1 text-[11px] font-semibold text-custom-white hover:bg-brand_navy_hover"
                 >
-                  Combine lines
+                  Split retail
                 </button>
               </div>
             ))}

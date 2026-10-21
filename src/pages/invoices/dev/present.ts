@@ -2,7 +2,7 @@ import { formatDateSimple } from "../../../utils";
 import { Decimal, sumDecimals } from "./core/Decimal";
 import type { AwgInvoice } from "./vendors/awg";
 import type { ReconcileResult } from "./vendors/awg";
-import { findMergeGroups } from "./vendors/awg/applyEdit";
+import { findRetailSplits } from "./vendors/awg/applyEdit";
 import type { InvoiceRow, InvoiceLineRow } from "../../../interfaces";
 // Defined in src/interfaces — Invoices. Re-exported for this page's files.
 export type { InvoiceRow, InvoiceLineRow } from "../../../interfaces";
@@ -66,6 +66,10 @@ const presentRetail = (price: Decimal, pricingUnit: Decimal): string => {
  * precision the shelf price it sits against doesn't have.
  */
 const UNIT_COST_PLACES = 2;
+
+/** Past the vendor's penny rounding — the line between "AWG's arithmetic" and
+ *  "something on this invoice is wrong". */
+const TEN_CENTS = new Decimal(10n, 2);
 
 const presentLines = (invoice: AwgInvoice): InvoiceLineRow[] =>
   invoice.lineItems.map((record, index) => {
@@ -147,6 +151,11 @@ export const presentInvoices = (
       reconciled: result?.ok ?? false,
       note: result?.note,
       unitemizedAllowance: result?.unitemizedAllowance?.toString() ?? null,
+      overTenCents: (result?.checks ?? []).some((check) =>
+        check.difference.decimals === 0
+          ? !check.difference.isZero()
+          : check.difference.compare(TEN_CENTS) > 0,
+      ),
       checks: (result?.checks ?? []).map((check) => ({
         label: check.label,
         derived: check.derived.toString(),
@@ -155,7 +164,7 @@ export const presentInvoices = (
         difference: check.difference.toString(),
       })),
       lines: presentLines(invoice),
-      mergeGroups: result && !result.ok ? findMergeGroups(invoice) : [],
+      retailSplits: result && !result.ok ? findRetailSplits(invoice) : [],
     };
   });
 };

@@ -1,4 +1,4 @@
-import { Decimal, sumDecimals } from "../../core/Decimal";
+import { Decimal } from "../../core/Decimal";
 import type { FieldSpec, ParsedRecord } from "../../core/types";
 import type { AwgInvoice } from "./group";
 import { AWG_FILE_SPEC, AWG_RECORD } from "./schema";
@@ -14,10 +14,11 @@ import { AWG_FILE_SPEC, AWG_RECORD } from "./schema";
 export interface InvoiceEdit {
   /** `${storeNbr}-${invoiceNbr}`, matching `InvoiceRow.id`. */
   docId: string;
-  /** `merge` collapses a group of repeated lines into one — see
-   *  `findMergeGroups`. It carries the group's AWG code in `field` and its
-   *  retail price in `value`. */
-  kind: "header" | "line" | "merge";
+  /** `splitRetail` shares a run of random-weight lines' repeated extended
+   *  retail out across them — see `findRetailSplits`. It carries the run's
+   *  first line in `rowIndex`, its AWG code in `field` and its extended retail
+   *  in `value`, so a run that has since changed is recognised and skipped. */
+  kind: "header" | "line" | "splitRetail";
   /** The schema field name, e.g. `case_qty_billed`. */
   field: string;
   /** Always the raw text the user typed. Coercion happens on apply, so a
@@ -112,30 +113,33 @@ const editLine = (
 };
 
 /**
- * Lines that are one item billed several times over.
+ * Random-weight pieces whose lines share one extended retail.
  *
- * Random-weight product (ground beef, pork butts) arrives as one `01` per
- * piece: the same AWG code, no UPC, and each piece's own cost — but every one
- * of them repeating the *group's* extended retail. Summed line by line, that
- * retail is counted once per piece, and the invoice reports a retail total the
- * pieces' count times too high.
+ * Catch-weight product (ground beef, pork butts) arrives as one `01` per piece
+ * with `rwi = "Y"`, each with its own cost and weight. The extended retail is
+ * not always the piece's own: a run of consecutive pieces can each carry the
+ * retail of the whole run, and one item can hold several runs side by side —
+ * a ribeye at 231.65 on its own, then eight lines all at 1888.74. Summed line
+ * by line, a run's retail is counted once per piece.
  *
- * A group qualifies only when all of it agrees: same AWG code, a UPC of all
- * zeros, and the same retail price and extended retail on every line. Anything
- * less and the lines are not provably one item, so they are left alone.
+ * A run is consecutive lines with the same AWG code, retail price and extended
+ * retail. Equal values alone do not say where a run ends: two runs of five
+ * ground-beef cases at 650.88 sit back to back as ten identical lines, and two
+ * 80 lb cases each truly at 129.60 look like a run of two. The weights do —
+ * see `runLengths` — and a "run" of one piece is a line carrying its own
+ * retail, which is left alone.
  */
-export interface MergeGroup {
+export interface RetailSplitGroup {
+  /** Index into `lineItems` of the run's first line — how the edit finds it. */
+  rowIndex: number;
+  /** The `#` the card shows on the run's first line. */
+  firstLine: number;
   itemCode: string;
-  retailPrice: string;
   description: string;
   lineCount: number;
-  /** What the merged line will carry. */
-  cases: string;
-  extCost: string;
+  /** The run's extended retail, as every line in it repeats it. */
   extRetail: string;
 }
-
-const NO_UPC = /^0+$/;
 
 const fieldText = (value: unknown): string =>
   value === null || value === undefined ? "" : String(value);
@@ -143,106 +147,160 @@ const fieldText = (value: unknown): string =>
 const asDecimal = (value: unknown, decimals: number): Decimal =>
   value instanceof Decimal ? value : Decimal.zero(decimals);
 
-const groupKey = (record: ParsedRecord): string | null =>
-  NO_UPC.test(fieldText(record.fields.upc_code))
-    ? `${fieldText(record.fields.item_code_bil)}\0${fieldText(
+const runKey = (record: ParsedRecord): string | null =>
+  record.fields.rwi === "Y"
+    ? [
+        record.fields.item_code_bil,
         record.fields.retail_price,
-      )}`
+        record.fields.ba_retail_ext,
+      ]
+        .map(fieldText)
+        .join("\0")
     : null;
 
-const mergeable = (lines: ParsedRecord[]): boolean =>
-  lines.length > 1 &&
-  lines.every(
-    (line) =>
-      fieldText(line.fields.ba_retail_ext) ===
-      fieldText(lines[0].fields.ba_retail_ext),
-  );
-
-const linesOf = (
-  invoice: AwgInvoice,
-  itemCode: string,
-  retailPrice: string,
-): ParsedRecord[] =>
-  invoice.lineItems.filter(
-    (line) => groupKey(line) === `${itemCode}\0${retailPrice}`,
-  );
-
-export const findMergeGroups = (invoice: AwgInvoice): MergeGroup[] => {
-  const groups = new Map<string, ParsedRecord[]>();
-  for (const line of invoice.lineItems) {
-    const key = groupKey(line);
-    if (key === null) continue;
-    groups.set(key, [...(groups.get(key) ?? []), line]);
-  }
-
-  return [...groups.values()].filter(mergeable).map((lines) => ({
-    itemCode: fieldText(lines[0].fields.item_code_bil),
-    retailPrice: fieldText(lines[0].fields.retail_price),
-    description: fieldText(lines[0].fields.item_desc),
-    lineCount: lines.length,
-    cases: sumDecimals(
-      lines.map((line) => asDecimal(line.fields.case_qty_billed, 0)),
-      0,
-    ).toString(),
-    extCost: sumDecimals(
-      lines.map((line) => asDecimal(line.fields.cost_ext, 2)),
-      2,
-    ).toString(),
-    extRetail: fieldText(lines[0].fields.ba_retail_ext),
-  }));
+/** The line at `start` and every line straight after it with the same key —
+ *  one run or several, which `runLengths` tells apart. */
+const runAt = (lines: ParsedRecord[], start: number): ParsedRecord[] => {
+  const key = runKey(lines[start]);
+  if (key === null) return [];
+  let end = start + 1;
+  while (end < lines.length && runKey(lines[end]) === key) end += 1;
+  return lines.slice(start, end);
 };
 
 /**
- * The group, as one line where its first line stood: costs and quantities
- * added up, the shared extended retail taken once. Every other field is the
- * first line's. A group that no longer qualifies — a correction made since
- * changed one of its lines — is left as it is.
+ * Lines of equal figures, cut into the runs the figure belongs to.
+ *
+ * From the first line, pieces are taken while price × their combined weight
+ * keeps getting nearer the figure; the nearest is one run, and the next starts
+ * after it. Price × weight is only approximate here — the weight field is not
+ * the exact catch weight — which is why it only decides where runs end and is
+ * never used as a value. With no weight to go on, nothing is cut.
  */
-const mergeLines = (
+const runLengths = (lines: ParsedRecord[]): number[] => {
+  const price = asDecimal(lines[0].fields.retail_price, 2).units;
+  const ext = asDecimal(lines[0].fields.ba_retail_ext, 2).units * 100n;
+  const weights = lines.map((line) => asDecimal(line.fields.pallet_weight, 2).units);
+  if (price === 0n || weights.some((w) => w === 0n)) return lines.map(() => 1);
+
+  const distance = (a: bigint, b: bigint) => (a > b ? a - b : b - a);
+  const lengths: number[] = [];
+  let start = 0;
+  while (start < lines.length) {
+    let weight = weights[start];
+    let best = distance(ext, price * weight);
+    let length = 1;
+    while (start + length < lines.length) {
+      const next = distance(ext, price * (weight + weights[start + length]));
+      if (next >= best) break;
+      weight += weights[start + length];
+      best = next;
+      length += 1;
+    }
+    lengths.push(length);
+    start += length;
+  }
+  return lengths;
+};
+
+export const findRetailSplits = (invoice: AwgInvoice): RetailSplitGroup[] => {
+  const lines = invoice.lineItems;
+  const groups: RetailSplitGroup[] = [];
+  let index = 0;
+  while (index < lines.length) {
+    const same = runAt(lines, index);
+    if (same.length === 0) {
+      index += 1;
+      continue;
+    }
+    let at = index;
+    for (const length of runLengths(same)) {
+      if (length > 1) {
+        groups.push({
+          rowIndex: at,
+          firstLine: at + 1,
+          itemCode: fieldText(lines[at].fields.item_code_bil),
+          description: fieldText(lines[at].fields.item_desc),
+          lineCount: length,
+          extRetail: fieldText(lines[at].fields.ba_retail_ext),
+        });
+      }
+      at += length;
+    }
+    index += same.length;
+  }
+  return groups;
+};
+
+/**
+ * `total` cents shared out in proportion to `weights`, adding back to exactly
+ * `total`.
+ *
+ * Each share is floored, and the cents that leaves over go one each to the
+ * largest remainders, earliest line first on a tie. Price × weight per line
+ * would be the obvious rule, but the weight field is not the exact catch
+ * weight — on the sample it reproduces the vendor's figure for one item in
+ * thirteen — so the vendor's own total is what gets divided. All weights zero
+ * splits evenly.
+ */
+const apportion = (total: bigint, weights: bigint[]): bigint[] => {
+  const basis = weights.some((w) => w > 0n) ? weights : weights.map(() => 1n);
+  const sum = basis.reduce((a, b) => a + b, 0n);
+  const shares = basis.map((w) => (total * w) / sum);
+  const remainders = basis.map((w, i) => ({ i, r: (total * w) % sum }));
+  let left = total - shares.reduce((a, b) => a + b, 0n);
+  remainders.sort((a, b) => (a.r === b.r ? a.i - b.i : a.r > b.r ? -1 : 1));
+  for (const { i } of remainders) {
+    if (left === 0n) break;
+    shares[i] += 1n;
+    left -= 1n;
+  }
+  return shares;
+};
+
+/**
+ * The run's extended retail, split across its lines by weight in place of the
+ * copy each one carries. Lines, quantities and costs are untouched. The run is
+ * found again rather than trusted from when it was offered, so one that no
+ * longer exists — a correction made since changed it — is left as it is.
+ */
+const splitRetail = (
   invoice: AwgInvoice,
+  rowIndex: number,
   itemCode: string,
-  retailPrice: string,
+  extRetail: string,
 ): AwgInvoice => {
-  const lines = linesOf(invoice, itemCode, retailPrice);
-  if (!mergeable(lines)) return invoice;
+  const group = findRetailSplits(invoice).find(
+    (candidate) =>
+      candidate.rowIndex === rowIndex &&
+      candidate.itemCode === itemCode &&
+      candidate.extRetail === extRetail,
+  );
+  if (!group) return invoice;
 
-  const first = lines[0];
-  const merged: ParsedRecord = {
-    ...first,
-    fields: {
-      ...first.fields,
-      cost_ext: sumDecimals(
-        lines.map((line) => asDecimal(line.fields.cost_ext, 2)),
-        2,
-      ),
-      case_qty_billed: sumDecimals(
-        lines.map((line) => asDecimal(line.fields.case_qty_billed, 0)),
-        0,
-      ),
-    },
-  };
+  const lines = invoice.lineItems;
+  const run = lines.slice(rowIndex, rowIndex + group.lineCount);
+  const total = asDecimal(run[0].fields.ba_retail_ext, 2);
+  const shares = apportion(
+    total.units,
+    run.map((line) => asDecimal(line.fields.pallet_weight, 2).units),
+  );
 
-  const absorbed = new Set(lines.slice(1));
   return {
     ...invoice,
-    lineItems: invoice.lineItems
-      .filter((line) => !absorbed.has(line))
-      .map((line) => (line === first ? merged : line)),
+    lineItems: lines.map((line, index) => {
+      const at = index - rowIndex;
+      return at >= 0 && at < run.length
+        ? ({
+            ...line,
+            fields: {
+              ...line.fields,
+              ba_retail_ext: new Decimal(shares[at], total.decimals),
+            },
+          } as ParsedRecord)
+        : line;
+    }),
   };
-};
-
-/**
- * Where the latest merge on an invoice sits in the edit list, or -1.
- *
- * A merge renumbers the lines after it, so a line edit's `rowIndex` means
- * something different either side of one. Edits before it are settled: they
- * are replayed, but not matched, replaced or reverted by anything after.
- */
-export const lastMergeIndex = (edits: InvoiceEdit[], docId: string): number => {
-  for (let i = edits.length - 1; i >= 0; i -= 1) {
-    if (edits[i].docId === docId && edits[i].kind === "merge") return i;
-  }
-  return -1;
 };
 
 /**
@@ -279,8 +337,13 @@ export const applyEdits = (
       const next =
         edit.kind === "header"
           ? editHeader(current, edit.field, edit.value)
-          : edit.kind === "merge"
-            ? mergeLines(current, edit.field, edit.value)
+          : edit.kind === "splitRetail"
+            ? splitRetail(
+                current,
+                edit.rowIndex ?? -1,
+                edit.field,
+                edit.value,
+              )
             : editLine(current, edit.rowIndex ?? -1, edit.field, edit.value);
       byId.set(edit.docId, next);
     } catch {
