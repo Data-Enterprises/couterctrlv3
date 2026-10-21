@@ -129,6 +129,9 @@ const CompanyUsersPanel = ({
     reachable,
     unassignedIds,
     company.id,
+    // Undefined for somebody who sees everything, so the list stays whole for
+    // them rather than being narrowed by companies they happen to hold.
+    ctx.canSeeAllCompanies ? undefined : reach,
   );
   const heldPredicate = useCompanyFilterPredicate(reachable, heldFilter);
 
