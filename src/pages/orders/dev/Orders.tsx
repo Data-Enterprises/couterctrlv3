@@ -45,6 +45,7 @@ import {
   revertLine,
   startDraft,
   type DraftLine,
+  canEditOrders,
   type EditableField,
   type LinePatch,
   type OrderDoc,
@@ -88,6 +89,10 @@ const Orders = () => {
   const ctx = useOrdersCtx();
   const toast = useToast();
   const [searchModalOpen, setSearchModalOpen] = useState(false);
+  /* Who may edit, worked out once a render. `new Date()` rather than a
+     memo: the answer turns over at midnight and a memo keyed on nothing
+     would hold Wednesday's answer into Thursday. */
+  const canEdit = canEditOrders(ctx.userLevel, ctx.companyIds, new Date());
   const [notice, setNotice] = useState<string | undefined>(undefined);
 
   /**
@@ -472,7 +477,10 @@ const Orders = () => {
         />
       )}
 
-      {editing ? (
+      {/* `canEdit` as well as `editing`: the day turns over while a tab is
+          open, and an owner who entered on Thursday should not still be in
+          edit mode on Friday morning. */}
+      {editing && canEdit ? (
         <>
           <OrderPickerPanel
             docs={docs}
@@ -576,6 +584,7 @@ const Orders = () => {
         loading={ctx.loadingAllOrders}
         onExport={() => ctx.dispatch(setOrdersExportModalOpen(true))}
         onEnterEdit={() => setEditing(true)}
+        canEdit={canEdit}
       />
         </>
       )}

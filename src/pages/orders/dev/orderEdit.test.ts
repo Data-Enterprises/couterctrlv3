@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
+  canEditOrders,
   addedLines,
   appendLine,
   applyField,
@@ -467,5 +468,52 @@ describe("costSwing", () => {
     expect(before).toBe(20);
     expect(after).toBe(40);
     expect(gap).toBe(20);
+  });
+});
+
+describe("canEditOrders", () => {
+  const THURS = new Date("2026-10-22T10:00:00");
+  const FRI = new Date("2026-10-23T10:00:00");
+  const HELD = [4];
+  const OTHER = [2, 99];
+
+  it("is the day it says it is", () => {
+    expect(THURS.getDay()).toBe(4);
+    expect(FRI.getDay()).toBe(5);
+  });
+
+  it("lets a manager in on any day", () => {
+    expect(canEditOrders(5, HELD, FRI)).toBe(true);
+    expect(canEditOrders(5, HELD, THURS)).toBe(true);
+  });
+
+  it("holds an owner to Thursday", () => {
+    // The ladder inverts on purpose: owners are the client side, and order
+    // day is when an order is still worth changing.
+    expect(canEditOrders(7, HELD, THURS)).toBe(true);
+    expect(canEditOrders(7, HELD, FRI)).toBe(false);
+    expect(canEditOrders(8, HELD, FRI)).toBe(false);
+  });
+
+  it("lets a programmer in on any day, holding no company at all", () => {
+    expect(canEditOrders(9, [], FRI)).toBe(true);
+  });
+
+  it("refuses a company that is not in the rollout", () => {
+    expect(canEditOrders(5, OTHER, FRI)).toBe(false);
+    expect(canEditOrders(7, OTHER, THURS)).toBe(false);
+  });
+
+  it("takes one held company out of several", () => {
+    expect(canEditOrders(5, [99, 21, 2], FRI)).toBe(true);
+  });
+
+  it("refuses below manager, company or no company", () => {
+    expect(canEditOrders(2, HELD, THURS)).toBe(false);
+    expect(canEditOrders(1, HELD, THURS)).toBe(false);
+  });
+
+  it("refuses somebody holding nothing", () => {
+    expect(canEditOrders(5, [], THURS)).toBe(false);
   });
 });

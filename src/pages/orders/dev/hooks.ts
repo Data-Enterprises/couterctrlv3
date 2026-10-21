@@ -6,7 +6,8 @@ export const useOrdersCtx = () => {
   const { startDate, endDate, type, lastStore, lastGroup, selectedGroup, selectedStore } = useAppSelector(
     (state) => state.search,
   );
-  const { assignedStores, userid, selectedGroupStores } = useAppSelector((state) => state.user);
+  const { assignedStores, userid, selectedGroupStores, userLevel, companies } =
+    useAppSelector((state) => state.user);
   const ordersState = useAppSelector((state) => state.dev.orders);
   const {
     availableOrders,
@@ -34,6 +35,10 @@ export const useOrdersCtx = () => {
 
   return {
     dispatch,
+    userLevel,
+    /** The company ids the signed-in user holds. `company` is the company,
+     *  `id` is the link row — the Admin grid reads it the same way. */
+    companyIds: companies.map((c) => c.company),
     assignedStores,
     selectedGroup,
     selectedGroupStores,

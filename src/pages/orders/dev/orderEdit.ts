@@ -484,3 +484,53 @@ export const costSwing = (draft: OrderDraft) => {
   }
   return { before, after, gap: after - before };
 };
+
+/* ------------------------------------------------------------------ */
+/* Who may edit an order                                               */
+/* ------------------------------------------------------------------ */
+
+/**
+ * The companies whose orders may be edited from here at all.
+ *
+ * A list rather than a flag on the company record because it is a rollout,
+ * not a property of the business: these are the clients who have agreed to
+ * edit orders in CounterCtrl. It moves when that list moves.
+ */
+export const EDIT_COMPANY_IDS = [1, 4, 5, 6, 17, 21];
+
+/** Levels run 1 basic, 2 user, 5 manager, 7 owner, 9 programmer. */
+export const EDIT_MIN_LEVEL = 5;
+export const EDIT_THURSDAY_FROM_LEVEL = 7;
+export const PROGRAMMER_LEVEL = 9;
+
+/** Thursday, by the clock of whoever is looking — the only clock a button
+ *  has. A store in another timezone sees its own Thursday. */
+export const isThursday = (now: Date) => now.getDay() === 4;
+
+/**
+ * Whether the Edit button shows.
+ *
+ * Three rules, and the middle one inverts the usual ladder on purpose.
+ *
+ * - The person must hold one of the rollout companies. A programmer holds
+ *   none of them by design — they set companies up rather than belong to one
+ *   — so level 9 skips both this and the day.
+ * - Manager and up may edit.
+ * - Owner and up may edit **only on Thursday**. Owners are the client side,
+ *   and order day is when an order is still worth changing; a manager needs
+ *   it whenever something has to be corrected.
+ *
+ * Visibility only. It hides a button and stops nobody who knows the route,
+ * so if the day matters to the data rather than to the screen, the endpoint
+ * has to say so too.
+ */
+export const canEditOrders = (
+  userLevel: number,
+  companyIds: number[],
+  now: Date,
+): boolean => {
+  if (userLevel >= PROGRAMMER_LEVEL) return true;
+  if (userLevel < EDIT_MIN_LEVEL) return false;
+  if (!companyIds.some((id) => EDIT_COMPANY_IDS.includes(id))) return false;
+  return userLevel < EDIT_THURSDAY_FROM_LEVEL || isThursday(now);
+};

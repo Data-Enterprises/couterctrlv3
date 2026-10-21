@@ -16,6 +16,10 @@ interface Props {
   onExport: () => void;
   /** Hands the page over to edit mode, which scopes itself to one order. */
   onEnterEdit: () => void;
+  /** False hides the Edit half of the toggle outright. A disabled control
+   *  here would advertise a mode the person cannot reach and say nothing
+   *  useful about why. */
+  canEdit: boolean;
 }
 
 /**
@@ -40,6 +44,7 @@ const OrderReportPanel = ({
   loading,
   onExport,
   onEnterEdit,
+  canEdit,
 }: Props) => {
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(500);
@@ -112,18 +117,20 @@ const OrderReportPanel = ({
       <div className="bg-brand_navy px-3 pt-2 pb-2.5 flex-shrink-0 flex items-center gap-3">
         {/* Browse narrows every line in the range; Edit scopes to one order,
             because the save takes one store and one date and nothing else. */}
-        <div className="flex rounded-md bg-custom-white/10 p-0.5 gap-0.5 flex-shrink-0">
-          <span className="rounded bg-custom-white px-2.5 py-0.5 text-[11.5px] font-bold text-brand_navy">
-            Browse
-          </span>
-          <button
-            onClick={onEnterEdit}
-            title="Edit one order's lines"
-            className="rounded px-2.5 py-0.5 text-[11.5px] font-bold text-custom-white/95 transition-colors hover:text-custom-white"
-          >
-            Edit
-          </button>
-        </div>
+        {canEdit && (
+          <div className="flex rounded-md bg-custom-white/10 p-0.5 gap-0.5 flex-shrink-0">
+            <span className="rounded bg-custom-white px-2.5 py-0.5 text-[11.5px] font-bold text-brand_navy">
+              Browse
+            </span>
+            <button
+              onClick={onEnterEdit}
+              title="Edit one order's lines"
+              className="rounded px-2.5 py-0.5 text-[11.5px] font-bold text-custom-white/95 transition-colors hover:text-custom-white"
+            >
+              Edit
+            </button>
+          </div>
+        )}
         <span className="text-custom-white font-medium text-[13px]">
           Order lines
         </span>
