@@ -1,6 +1,7 @@
 import { Decimal } from "../../core/Decimal";
 import type { FieldSpec, ParsedRecord } from "../../core/types";
 import type { AwgInvoice } from "./group";
+import { RETAIL_CORRECTED } from "./retail";
 import { AWG_FILE_SPEC, AWG_RECORD } from "./schema";
 
 /**
@@ -106,7 +107,12 @@ const editLine = (
       ? record
       : ({
           ...record,
-          fields: { ...record.fields, [field]: coerced },
+          fields: {
+            ...record.fields,
+            [field]: coerced,
+            // A typed retail is taken as typed, not re-derived over.
+            ...(field === "ba_retail_ext" ? { [RETAIL_CORRECTED]: "Y" } : {}),
+          },
         } as ParsedRecord),
   );
   return { ...invoice, lineItems };

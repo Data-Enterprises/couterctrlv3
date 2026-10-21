@@ -1,6 +1,7 @@
 import { Decimal, sumDecimals } from "../../core/Decimal";
 import type { ParsedRecord } from "../../core/types";
 import type { AwgInvoice } from "./group";
+import { sumRetail } from "./retail";
 
 /**
  * The correctness gate.
@@ -107,7 +108,7 @@ export const reconcileInvoice = (invoice: AwgInvoice): ReconcileResult => {
     ),
     check(
       "Extended retail",
-      sumField(invoice.lineItems, "ba_retail_ext", 2),
+      sumRetail(invoice.lineItems),
       reported(totals.total_retail, 2),
     ),
     check(

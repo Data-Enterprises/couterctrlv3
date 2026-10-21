@@ -3,6 +3,7 @@ import { Decimal, sumDecimals } from "./core/Decimal";
 import type { AwgInvoice } from "./vendors/awg";
 import type { ReconcileResult } from "./vendors/awg";
 import { findRetailSplits } from "./vendors/awg/applyEdit";
+import { lineRetail, sumRetail } from "./vendors/awg/retail";
 import type { InvoiceRow, InvoiceLineRow } from "../../../interfaces";
 // Defined in src/interfaces — Invoices. Re-exported for this page's files.
 export type { InvoiceRow, InvoiceLineRow } from "../../../interfaces";
@@ -74,7 +75,7 @@ const TEN_CENTS = new Decimal(10n, 2);
 const presentLines = (invoice: AwgInvoice): InvoiceLineRow[] =>
   invoice.lineItems.map((record, index) => {
     const extCost = money(record.fields.cost_ext);
-    const extRetail = money(record.fields.ba_retail_ext);
+    const extRetail = lineRetail(record);
     const billedUnits =
       count(record.fields.case_qty_billed).units *
       count(record.fields.pack).units;
@@ -134,10 +135,7 @@ export const presentInvoices = (
       totalCost: sumDecimals([...lineCosts, ...deliveryCosts], 2)
         .subtract(palletAllowances)
         .toString(),
-      totalRetail: sumDecimals(
-        invoice.lineItems.map((r) => money(r.fields.ba_retail_ext)),
-        2,
-      ).toString(),
+      totalRetail: sumRetail(invoice.lineItems).toString(),
       totalAllowances: sumDecimals(
         invoice.deals.map((r) => money(r.fields.deal_amount)),
         2,
