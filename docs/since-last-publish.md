@@ -341,3 +341,43 @@ Whether Categories shows tabs at all depends on `cat_sales` returning a
 per-location `store_number`. If every row carries the same number the tabs
 render nothing and the page behaves as it does today -- inert until the rows
 support it, correct the moment they do.
+
+## User Management
+
+### A manager is only offered their own people to assign
+
+`31690c22`
+
+The Companies tab built its candidate column from every user the server
+returns, which is every user on the system. A Bruces manager was offered 391
+people to add to Bruces, Houchens staff among them -- and
+`assign_user_to_company` takes a bare userid with no ownership check, so the
+offer was real.
+
+Three ways into that column now: you see everything (level 9 or DCR support),
+the person holds **no company at all**, or the person is inside your **reach**.
+
+Reach is your own companies plus the rest of any family one of them belongs to.
+**Houchens is five companies on the books** -- Houchens 1, Food Giant 4, Sonic
+6, Ace 17, Brooks 21 -- and one organisation in practice, so a manager at any
+of them administers staff across all five. Bruces, Grocery Basket, S&C Foods
+and B and T each stand alone.
+
+**DCR (5) is deliberately not in the family.** It sits beside those ids in the
+Orders edit gate, which is Houchens plus ourselves -- a different question with
+a coincidentally similar list.
+
+Somebody holding no company stays available to anyone: a new account belongs to
+nobody, and putting it somewhere is the whole of onboarding.
+
+Only the left column narrows. Anyone already in the company on screen holds it,
+so they are in your reach by definition. A line under the heading says what the
+narrowing is, so a short list does not read as a broken search.
+
+**The hardcoded family wants to be a `parent_company_id` on the company
+record.** Add a sixth Houchens company and this file has to be edited before
+anybody can administer it, and nothing will say so.
+
+**Still open:** the Stores and Base Groups tabs take their candidate lists from
+the server rather than building them here, so whether those are company-scoped
+is a question for the endpoints, not for this fix.
