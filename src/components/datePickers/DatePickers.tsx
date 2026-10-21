@@ -35,14 +35,21 @@ const DatePickers = ({
         <StartDatePicker />
         <EndDatePicker />
       </div>
-      <div
-        data-testid="date-picker-search-btn"
-        className={`btn-themeBlue w-full text-center col-span-2 mt-2 text-[13px] xl:text-[14px] ${btnPadding}`}
-        onClick={handleClick}
-        style={{ display: showBtn ? "block" : "none" }}
-      >
-        Search
-      </div>
+      {/* Not display:none when it is off. Most callers pass showBtn={false}
+          because their own card owns the search button, and a hidden one left
+          in the markup reads as a second action to anything that goes by the
+          DOM rather than by what is painted -- a screen reader, or a test
+          agent. Tommy's run reported Receivers as having two search controls
+          for exactly this reason. */}
+      {showBtn && (
+        <div
+          data-testid="date-picker-search-btn"
+          className={`btn-themeBlue w-full text-center col-span-2 mt-2 text-[13px] xl:text-[14px] ${btnPadding}`}
+          onClick={handleClick}
+        >
+          Search
+        </div>
+      )}
     </div>
   );
 };
