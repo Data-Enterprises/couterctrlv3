@@ -233,6 +233,7 @@ const computeSubDeptGrade = (
     lwMarginPct: m.lwMarginPct,
     lwPtsDelta: m.lwPtsDelta,
     noCostCount,
+    dollars: m.dollars,
     tySales: sales.tySales,
     lySales: sales.lySales,
     lwSales: sales.lwSales,

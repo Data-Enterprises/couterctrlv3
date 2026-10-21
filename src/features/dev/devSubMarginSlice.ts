@@ -3,7 +3,7 @@
  * by `pages/subDepts/dev`. Edit this one while changing dev subDepts; when dev is
  * promoted, it replaces the prod slice. See src/store/devReducers.ts.
  */
-import type { Coverage } from "../../utils/grading";
+import type { Coverage, MarginDollars } from "../../utils/grading";
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { SubDeptMargin, SubDept, SubDeptCost } from "../../interfaces";
 import type { ItemRow, ItemRowMobile } from "../../interfaces";
@@ -54,6 +54,9 @@ export type SubDeptGrade = {
   lwMarginPct: number | null;
   lwPtsDelta: number | null;
   vsLWSalesPct: number;
+  /** Net and COGS behind the rates above, so the store header can weight
+   *  the departments instead of averaging their percentages. */
+  dollars: MarginDollars;
   tyWeekOneMargins: SubDeptMargin[];
   lyWeekOneMargins: SubDeptMargin[];
   lwWeekOneMargins: SubDeptMargin[];

@@ -1,3 +1,4 @@
+import { marginPct } from "../../../utils/grading";
 import type { SubDeptMargin } from "../../../interfaces";
 import { calculateCogs } from "../../../utils/cogs";
 import {
@@ -14,11 +15,10 @@ import type { VendorMetric, VendorRow, VendorDay, VendorTier } from "../../../in
 // Defined in src/interfaces — Vendors. Re-exported for this page's files.
 export type { VendorMetric, VendorRow, VendorDay, VendorTier } from "../../../interfaces";
 
-/** Margin percentage from a net/COGS pair. Zero net means there is nothing to
- *  take a margin on — 0 rather than a divide-by-zero, matching Sub Dept
- *  Margins. */
-export const marginPct = (net: number, cogs: number) =>
-  net > 0 ? ((net - cogs) / net) * 100 : 0;
+/** Margin percentage from a net/COGS pair. Re-exported rather than defined:
+ *  this page and Sub Dept Margins read the same rows, and the one definition
+ *  lives in utils/grading so they cannot disagree again. */
+export { marginPct };
 
 /** Rows with no supplier — coupon (CPN) lines and anything else the POS books
  *  without a vendor — collect here rather than being dropped.

@@ -7,7 +7,12 @@ import { formatDate } from "../widgets";
 import { formatCurrency2, formatCurrencyCompact } from "../../../../../utils";
 import { applyStoreNumberToName } from "../../../../../utils/storeIdentity";
 import { setDates } from "../../../../../utils/dates";
-import { getTier, getGradeDelta } from "../..";
+import {
+  getTier,
+  getGradeDelta,
+  storeMarginPctOf,
+  storeMarginDeltaOf,
+} from "../..";
 import {
   setGradingThreshold,
   setGradingMetric,
@@ -151,24 +156,19 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: Props) => {
   const watchCount = grades.filter((g) => g.tier === "watch").length;
   const healthyCount = grades.filter((g) => g.tier === "healthy").length;
 
-  const avgMarginPct = grades.length
-    ? grades.reduce((acc, g) => acc + g.grade.tyMarginPct, 0) / grades.length
-    : null;
   /**
-   * Averaged over the departments that HAVE the comparison, not over all of
-   * them. A department with nothing to compare used to contribute a zero,
-   * which is a real margin somebody earned and pulled the store average
-   * toward flat.
+   * The store's margin and its two deltas, WEIGHTED -- dollars over dollars.
+   *
+   * This averaged the departments' percentages, which gives floral the same
+   * vote as grocery and read about five points high on a real store-week.
+   * Tommy's test run caught it by loading this screen and Vendors for the
+   * same store-week and finding 31.91% against 27.04%: both read the same
+   * `subs/subs` rows, so one had to be wrong, and it was this one. The rule
+   * lives in the page helpers now, where it is under test.
    */
-  const avgOf = (pick: (g: (typeof grades)[number]) => number | null) => {
-    const values = grades
-      .map(pick)
-      .filter((v): v is number => v !== null);
-    return values.length
-      ? values.reduce((acc, v) => acc + v, 0) / values.length
-      : null;
-  };
-  const avgDelta = avgOf((g) => g.grade.ptsDelta);
+  const dollars = grades.map((g) => g.grade.dollars);
+  const storeMarginPct = storeMarginPctOf(dollars);
+  const storeLyDelta = storeMarginDeltaOf(dollars, "ly");
   // Store-level figures come from sales/weekly (day-matched), matching the
   // Sales page header exactly. Summing the sub-dept grades is a different
   // quantity — it also compared a partial TY week against a full LW one — so
@@ -190,7 +190,7 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: Props) => {
     storeSalesTotals && storeSalesTotals.lwSales > 0
       ? storeSalesTotals.vsLWSalesPct
       : totalLwSales > 0 ? ((totalTySales - totalLwSales) / totalLwSales) * 100 : null;
-  const avgLwDelta = avgOf((g) => g.grade.lwPtsDelta);
+  const storeLwDelta = storeMarginDeltaOf(dollars, "lw");
 
   const threshValue = rawGradingThreshold === null ? null : { op: "gt" as const, amount: rawGradingThreshold };
 
@@ -261,37 +261,37 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: Props) => {
             <>
               <span className="text-[14px] font-semibold text-custom-white">
                 {gradingMetric === "margin"
-                  ? avgMarginPct !== null
-                    ? `${avgMarginPct.toFixed(2)}%`
+                  ? storeMarginPct !== null
+                    ? `${storeMarginPct.toFixed(2)}%`
                     : "—"
                   : formatCurrencyCompact(totalTySales)}
               </span>
-              {(gradingMetric === "margin" ? avgLwDelta : vsLWSalesPct) !== null && (
+              {(gradingMetric === "margin" ? storeLwDelta : vsLWSalesPct) !== null && (
                 <span
-                  title={headerDeltaPill((gradingMetric === "margin" ? avgLwDelta! : vsLWSalesPct!), headerCov.lwDayCount, headerCov.dayCount, "last week").title}
+                  title={headerDeltaPill((gradingMetric === "margin" ? storeLwDelta! : vsLWSalesPct!), headerCov.lwDayCount, headerCov.dayCount, "last week").title}
                   className={`text-[12px] font-semibold px-2 py-0.5 rounded-full ${
-                    headerDeltaPill((gradingMetric === "margin" ? avgLwDelta! : vsLWSalesPct!), headerCov.lwDayCount, headerCov.dayCount, "last week").cls
+                    headerDeltaPill((gradingMetric === "margin" ? storeLwDelta! : vsLWSalesPct!), headerCov.lwDayCount, headerCov.dayCount, "last week").cls
                   }`}
                 >
                   LW{" "}
                   {gradingMetric === "margin"
-                    ? `${avgLwDelta! >= 0 ? "+" : ""}${avgLwDelta!.toFixed(2)} pts`
+                    ? `${storeLwDelta! >= 0 ? "+" : ""}${storeLwDelta!.toFixed(2)} pts`
                     : `${vsLWSalesPct! >= 0 ? "+" : ""}${vsLWSalesPct!.toFixed(2)}%`}
-                  {headerDeltaPill((gradingMetric === "margin" ? avgLwDelta! : vsLWSalesPct!), headerCov.lwDayCount, headerCov.dayCount, "last week").note}
+                  {headerDeltaPill((gradingMetric === "margin" ? storeLwDelta! : vsLWSalesPct!), headerCov.lwDayCount, headerCov.dayCount, "last week").note}
                 </span>
               )}
-              {totalLySales > 0 && (gradingMetric === "margin" ? avgDelta : vsLYSalesPct) !== null && (
+              {totalLySales > 0 && (gradingMetric === "margin" ? storeLyDelta : vsLYSalesPct) !== null && (
                 <span
-                  title={headerDeltaPill((gradingMetric === "margin" ? avgDelta! : vsLYSalesPct!), headerCov.lyDayCount, headerCov.dayCount, "last year").title}
+                  title={headerDeltaPill((gradingMetric === "margin" ? storeLyDelta! : vsLYSalesPct!), headerCov.lyDayCount, headerCov.dayCount, "last year").title}
                   className={`text-[12px] font-semibold px-2 py-0.5 rounded-full ${
-                    headerDeltaPill((gradingMetric === "margin" ? avgDelta! : vsLYSalesPct!), headerCov.lyDayCount, headerCov.dayCount, "last year").cls
+                    headerDeltaPill((gradingMetric === "margin" ? storeLyDelta! : vsLYSalesPct!), headerCov.lyDayCount, headerCov.dayCount, "last year").cls
                   }`}
                 >
                   LY{" "}
                   {gradingMetric === "margin"
-                    ? `${avgDelta! >= 0 ? "+" : ""}${avgDelta!.toFixed(2)} pts`
+                    ? `${storeLyDelta! >= 0 ? "+" : ""}${storeLyDelta!.toFixed(2)} pts`
                     : `${vsLYSalesPct! >= 0 ? "+" : ""}${vsLYSalesPct!.toFixed(2)}%`}
-                  {headerDeltaPill((gradingMetric === "margin" ? avgDelta! : vsLYSalesPct!), headerCov.lyDayCount, headerCov.dayCount, "last year").note}
+                  {headerDeltaPill((gradingMetric === "margin" ? storeLyDelta! : vsLYSalesPct!), headerCov.lyDayCount, headerCov.dayCount, "last year").note}
                 </span>
               )}
             </>
