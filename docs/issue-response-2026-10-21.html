@@ -314,7 +314,7 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
 
   <div class="block"><h3>The one thing we can fix without the server &mdash; and why it is not in this batch</h3>
     <p>Sub Dept Margins and Vendors send <b>identical</b> bodies and build different views from the same rows; your own measurement proves it. There is no cache between them, so opening one and then the other downloads 13&nbsp;MB twice. A cache keyed on the request arguments inside <code>src/utils/marginRows.ts</code> would fix that in one file for every page that reads item rows &mdash; Vendors, Sales' sub-dept drill, Item Report, Inventory and the item-performance panels all go through it.</p>
-    <p class="callout warn"><b>Deliberately not shipped with the other four.</b> Caching paged reads means deciding when they go stale, and the failure mode of getting that wrong is showing somebody last week's numbers under this week's dates &mdash; quieter and worse than the problem it solves. It wants its own pass, not a tail-end-of-the-day one. The four fixes above are all deletions, floors and arithmetic; this is the one with a way to be subtly wrong.</p>
+    <p class="callout warn"><b>Deliberately not shipped with the other six.</b> Caching paged reads means deciding when they go stale, and the failure mode of getting that wrong is showing somebody last week's numbers under this week's dates &mdash; quieter and worse than the problem it solves. It wants its own pass, not a tail-end-of-the-day one. The six fixes above are deletions, floors, arithmetic and a narrowing; this is the one with a way to be subtly wrong.</p>
     <p>Smaller note for whoever takes it: <code>SubDeptMargins.tsx</code> carries its own copy of the paging loop rather than using the shared helper, so it would miss the cache. That copy should go first.</p>
   </div>
 
@@ -415,7 +415,7 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
 
   <div class="block"><h3>What we are not changing, and the one thing we are</h3>
     <p>The arithmetic stands. Keeping the paired form is deliberate: counting a category that did not exist last week as a fall to zero would turn every new line in the store into a loss.</p>
-    <p>What is wrong is that the Categories header shows a percentage whose base is invisible, which is what let a careful reader derive a last-week total the page never used. Printing the comparison base on that header &mdash; the way the Sales page prints its "LW $90.3K" &mdash; is a wording decision rather than a code one, so it is sitting with Steve rather than shipped with the other four. It is the only item on this list we have left open deliberately.</p>
+    <p>What is wrong is that the Categories header shows a percentage whose base is invisible, which is what let a careful reader derive a last-week total the page never used. Printing the comparison base on that header &mdash; the way the Sales page prints its "LW $90.3K" &mdash; is a wording decision rather than a code one, so it is sitting with Steve rather than shipped with the others.</p>
   </div>
 </article>
 
@@ -597,7 +597,7 @@ tw: isMargin ? marginPct(twNet, twCogs) : twNet,</pre>
       </tbody>
     </table>
   </div>
-  <p>Verified together: typecheck, <b>1,173 tests</b> (31 new &mdash; the margin weighting and the two location splits), the theme audit and a production build, all clean. The new breakpoint is in the built CSS.</p>
+  <p>Verified together: typecheck, the full test suite with <b>31 new tests</b> (the margin weighting and the two location splits), the theme audit and a production build, all clean. The new breakpoint is in the built CSS.</p>
   <p class="callout ok">Three of the six are deletions or floors, with no new behaviour to go wrong. The three to look at first are the ones that change a figure: the margin on Sub Dept Margins, and the two location splits.</p>
 </section>
 
@@ -618,7 +618,7 @@ tw: isMargin ? marginPct(twNet, twCogs) : twNet,</pre>
 </section>
 
 <footer>
-  Responds to <span class="mono">issue-drafts-2026-10-21</span>. Four fixes committed on <span class="mono">next_publish_10_20_2026</span>, <span class="mono">8fefe4d8</span> through <span class="mono">03844b4d</span>, and logged in <span class="mono">docs/since-last-publish.md</span> for the release notes. The run tested the published 10/12 build; none of the findings had moved before these commits. Figures quoted from the drafts are the harness's own, not re-measured &mdash; the fixes were verified by typecheck, tests, theme audit and build, not in a browser, so the "how to check it" steps are yours to run.
+  Responds to <span class="mono">issue-drafts-2026-10-21</span>. Six fixes committed on <span class="mono">next_publish_10_20_2026</span>, <span class="mono">8fefe4d8</span> through <span class="mono">98ab447a</span>, and logged in <span class="mono">docs/since-last-publish.md</span> for the release notes. The run tested the published 10/12 build; none of the findings had moved before these commits. Figures quoted from the drafts are the harness's own, not re-measured &mdash; the fixes were verified by typecheck, tests, theme audit and build, not in a browser, so the "how to check it" steps are yours to run.
 </footer>
 
 </div>
