@@ -24,6 +24,26 @@ export const scopeToStoreNumber = <T extends { store_number: string }>(
 ): T[] => scopeRowsToStore(rows, storeNumber, (r) => r.store_number);
 
 /**
+ * One location's rows, with no escape hatch.
+ *
+ * `scopeToStoreNumber` leaves an array alone when it holds fewer than two
+ * numbers, which is right when the question is "does this response need
+ * splitting at all" and wrong when the question is "which location is the
+ * reader looking at". A co-located store can easily have a period only one of
+ * its locations traded in -- a last year where 370 has no history and 369
+ * does -- and the guarded form then hands 369's rows back to somebody on the
+ * 370 tab, which is the error the split exists to prevent.
+ *
+ * So: use `scopeToStoreNumber` to narrow a response that may or may not need
+ * it, and this when a location has been chosen and the answer must be that
+ * location or nothing.
+ */
+export const onlyStoreNumber = <T extends { store_number: string }>(
+  rows: T[],
+  storeNumber: string,
+): T[] => rows.filter((r) => r.store_number === storeNumber);
+
+/**
  * Same as scopeToStoreNumber, for row types that spell the field differently
  * (Orders' AllOrder uses `storenumber`, no underscore).
  */

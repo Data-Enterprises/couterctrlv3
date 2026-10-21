@@ -1,3 +1,4 @@
+import { onlyStoreNumber } from "../../../utils/storeIdentity";
 import { marginPct } from "../../../utils/grading";
 import type { SubDeptMargin } from "../../../interfaces";
 import { calculateCogs } from "../../../utils/cogs";
@@ -34,6 +35,32 @@ export const NO_VENDOR_LABEL = "No vendor";
  *  is also on the row but is coupon-adjusted as well, so it isn't the same
  *  figure the other Performance pages compare on. */
 const netOf = (m: SubDeptMargin) => m.total_sales - m.total_tax;
+
+/** The three periods, narrowed to one co-located location.
+ *
+ *  `subs/subs` is fetched by storeid, and a handful of storeids cover two
+ *  physical stores, so those responses arrive with both locations added
+ *  together. Sub Dept Margins reads the same endpoint and has always split
+ *  them; this page did not, so on a co-located id every vendor figure here was
+ *  two stores at once with nothing on screen saying so.
+ *
+ *  Null means the combined view, which is a legitimate thing to ask for -- it
+ *  is just not a safe default.
+ *
+ *  Strict, not `scopeToStoreNumber`: a location can have a period the other
+ *  one did not trade in, and the guarded form would hand those rows over
+ *  rather than reporting no comparison. */
+export const scopePeriods = (
+  raw: { tw: SubDeptMargin[]; lw: SubDeptMargin[]; ly: SubDeptMargin[] },
+  storeNumber: string | null,
+) =>
+  storeNumber === null
+    ? raw
+    : {
+        tw: onlyStoreNumber(raw.tw, storeNumber),
+        lw: onlyStoreNumber(raw.lw, storeNumber),
+        ly: onlyStoreNumber(raw.ly, storeNumber),
+      };
 
 interface Bucket {
   net: number;

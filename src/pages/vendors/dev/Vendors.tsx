@@ -24,7 +24,7 @@ const Vendors = () => {
   const search = useAppSelector((s) => s.search);
   const user = useAppSelector((s) => s.user);
   const vend = useAppSelector((s) => s.dev.vendors);
-  const { runSearch } = useVendorSearch();
+  const { runSearch, applyLocation } = useVendorSearch();
 
   const [searchOpen, setSearchOpen] = useState(false);
   const [storeId, setStoreId] = useState(search.lastStore || 0);
@@ -93,7 +93,10 @@ const Vendors = () => {
       )}
 
       <div className="flex gap-4 h-[calc(100vh-5rem)]">
-        <VendorListPanel onSearchOpen={() => setSearchOpen(true)} />
+        <VendorListPanel
+          onSearchOpen={() => setSearchOpen(true)}
+          onStoreNumberChange={applyLocation}
+        />
         <VendorDetailPanel />
       </div>
     </div>

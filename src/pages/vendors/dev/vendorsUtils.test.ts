@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { buildVendorRows, vendorDelta, getVendorTier } from "./vendorsUtils";
+import {
+  buildVendorRows,
+  vendorDelta,
+  getVendorTier,
+  scopePeriods,
+} from "./vendorsUtils";
 import type { SubDeptMargin } from "../../../interfaces";
 
 /**
@@ -116,5 +121,54 @@ describe("the numbers the detail panel derives", () => {
   it("keeps the week's own margin, which is real", () => {
     expect(row.tyMarginPct).toBeCloseTo(24, 2);
     expect(row.twNetForLW).toBe(0);
+  });
+});
+
+describe("scopePeriods", () => {
+  // 685 serves store numbers 369 and 370. subs/subs is fetched by storeid, so
+  // one response carries both and every vendor figure was two stores at once.
+  const at = (num: string, sales: number): SubDeptMargin =>
+    ({ ...line("2026-10-14", sales, 0), store_number: num }) as SubDeptMargin;
+
+  const raw = {
+    tw: [at("369", 100), at("370", 40)],
+    lw: [at("369", 90), at("370", 30)],
+    ly: [at("369", 80)],
+  };
+
+  it("keeps one location across all three periods", () => {
+    const s = scopePeriods(raw, "369");
+    expect(s.tw.map((r) => r.total_sales)).toEqual([100]);
+    expect(s.lw.map((r) => r.total_sales)).toEqual([90]);
+    expect(s.ly.map((r) => r.total_sales)).toEqual([80]);
+  });
+
+  it("returns the rows untouched for the combined view", () => {
+    // Null is a real question -- what did this storeid do altogether -- and
+    // the same object comes back so nothing downstream re-renders for it.
+    expect(scopePeriods(raw, null)).toBe(raw);
+  });
+
+  it("leaves an ordinary store alone, because nothing is selected for one", () => {
+    // An ordinary store never gets a selection: reQuery clears it on every
+    // search and useVendorSearch only lands on a number when the response
+    // carries more than one. So the combined path is the one it takes.
+    const single = { tw: [at("361", 10)], lw: [at("361", 9)], ly: [] };
+    expect(scopePeriods(single, null).tw).toHaveLength(1);
+  });
+
+  it("is strict once a location is named", () => {
+    // Deliberately not scopeToStoreNumber, which leaves an array alone when it
+    // holds fewer than two numbers. That guard answers "does this response
+    // need splitting"; here the question is "which location is the reader on",
+    // and the answer has to be that location or nothing.
+    const only369 = { tw: [at("369", 10)], lw: [], ly: [] };
+    expect(scopePeriods(only369, "370").tw).toHaveLength(0);
+  });
+
+  it("gives back nothing for a period the location did not trade", () => {
+    // 370 has no last year here. An empty array is right -- buildVendorRows
+    // reads that as no comparison, not as a collapse to zero.
+    expect(scopePeriods(raw, "370").ly).toHaveLength(0);
   });
 });

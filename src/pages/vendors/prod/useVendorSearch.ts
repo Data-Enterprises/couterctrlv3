@@ -7,11 +7,14 @@ import {
   setLoading,
   setLoadingMessage,
   setStore,
+  setAvailableStoreNumbers,
+  setSelectedStoreNumber,
   setRange,
   reQuery,
 } from "../../../features/vendorsSlice";
 import { fetchVendorPeriods } from "./vendorsData";
-import { buildVendorRows, datesOf } from "./vendorsUtils";
+import { buildVendorRows, datesOf, scopePeriods } from "./vendorsUtils";
+import { storeNumbersIn } from "../../../utils/storeIdentity";
 
 /**
  * The Vendors search, shared by the desktop container and the mobile
@@ -31,6 +34,9 @@ export const useVendorSearch = () => {
   const context = useAppSelector((s) => s.app);
   const search = useAppSelector((s) => s.search);
   const user = useAppSelector((s) => s.user);
+  // Narrow on purpose: re-presenting a cached search needs the rows, and this
+  // hook should not re-render its caller on every filter change.
+  const raw = useAppSelector((s) => s.prod.vendors.raw);
 
   /** Resolves once the rows are in the store. Returns the row count so a
    *  caller can tell "found nothing" from "never ran" without reading state
@@ -75,8 +81,26 @@ export const useVendorSearch = () => {
         return 0;
       }
 
+      // A storeid can cover two physical stores, and `subs/subs` is
+      // fetched by storeid, so both arrive added together. Establish the
+      // locations from the rows and land on the first one rather than the
+      // combined view -- combined is a real question somebody can ask, but
+      // it is the wrong thing to show without being asked.
+      const numbers = storeNumbersIn(tw);
+      dispatch(setAvailableStoreNumbers(numbers));
+      const landing = numbers.length > 1 ? numbers[0] : null;
+      dispatch(setSelectedStoreNumber(landing));
+
+      // Raw stays whole. Switching location re-presents what is already here
+      // rather than asking the server for the same 13MB again.
       dispatch(setRaw({ tw, lw, ly }));
-      const rows = buildVendorRows(tw, lw, ly, datesOf(tw));
+      const scoped = scopePeriods({ tw, lw, ly }, landing);
+      const rows = buildVendorRows(
+        scoped.tw,
+        scoped.lw,
+        scoped.ly,
+        datesOf(scoped.tw),
+      );
       dispatch(setRows(rows));
 
       if (rows.length === 0) {
@@ -92,5 +116,22 @@ export const useVendorSearch = () => {
     }
   };
 
-  return { runSearch };
+  /**
+   * Re-present the search already in the store as one location, or combined.
+   *
+   * No refetch: the raw rows for every location are kept, so this is a filter
+   * and a rebuild. The grading, the totals and the day strip all follow from
+   * the rows, so rebuilding them is the whole of the change.
+   */
+  const applyLocation = (storeNumber: string | null) => {
+    dispatch(setSelectedStoreNumber(storeNumber));
+    const scoped = scopePeriods(raw, storeNumber);
+    dispatch(
+      setRows(
+        buildVendorRows(scoped.tw, scoped.lw, scoped.ly, datesOf(scoped.tw)),
+      ),
+    );
+  };
+
+  return { runSearch, applyLocation };
 };
