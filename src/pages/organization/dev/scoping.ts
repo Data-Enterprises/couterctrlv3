@@ -18,6 +18,86 @@ export const seesEverything = (userLevel: number, email: string) =>
   userLevel === 9 || isSupportUser(email);
 
 /**
+ * Companies that administer each other, because one owner holds them all.
+ *
+ * Houchens is five companies on the books -- Houchens (1), Food Giant (4),
+ * Sonic (6), Ace (17) and Brooks (21) -- and one organisation in practice, so
+ * somebody administering any of them administers the staff of all five.
+ * Everybody else stands alone: Bruces Foodland (3), Grocery Basket (2), S&C
+ * Foods (15) and B and T (20) each reach only their own people.
+ *
+ * DCR (5) is deliberately NOT here. It appears alongside these ids in the
+ * Orders edit gate, which is Houchens plus ourselves -- a different question
+ * with a coincidentally similar list. DCR staff reach everyone through
+ * `seesEverything`, not through a family.
+ *
+ * A hardcoded list is the wrong long-term home for this, the same way an
+ * email allowlist is the wrong home for support users: add a sixth Houchens
+ * company and this file has to be edited before anybody can administer it,
+ * and nothing will say so. It wants a `parent_company_id` on the company
+ * record. Until there is one, this is the honest version -- one list, named,
+ * in the file that already answers "who may administer what".
+ */
+export const COMPANY_FAMILIES: readonly (readonly number[])[] = [
+  [1, 4, 6, 17, 21],
+];
+
+/**
+ * Every company the viewer administers through, given what they hold.
+ *
+ * Their own, plus the rest of any family one of theirs belongs to. Holding
+ * Food Giant reaches Sonic; holding Bruces reaches Bruces.
+ */
+export const companyReach = (viewerCompanyIds: number[]): Set<number> => {
+  const reach = new Set(viewerCompanyIds);
+  COMPANY_FAMILIES.forEach((family) => {
+    if (viewerCompanyIds.some((id) => family.includes(id)))
+      family.forEach((id) => reach.add(id));
+  });
+  return reach;
+};
+
+/**
+ * Whether the signed-in user may administer this person at all.
+ *
+ * The Companies tab builds its candidate column from every user the server
+ * returns, which is every user on the system. A Bruces manager was therefore
+ * offered four hundred people to add to Bruces, Houchens staff among them --
+ * and `assign_user_to_company` takes a bare userid with no ownership check, so
+ * the offer was real. Somebody could pull a person out of a company they have
+ * nothing to do with.
+ *
+ * Three ways in, and no others:
+ *
+ *  - **Sees everything.** Level 9 and DCR support, by the same rule the rest
+ *    of this file uses. A programmer setting up a tenancy holds none of it.
+ *  - **Holds no company.** A new account belongs to nobody yet, and putting it
+ *    somewhere is the whole of onboarding. Nobody loses anything when it moves,
+ *    which is what makes it safe for any manager to pick up.
+ *  - **Is inside the viewer's reach.** Their own companies and any family
+ *    those belong to -- see `companyReach`. Not the company on screen: one
+ *    person can administer several, and a Houchens manager works across the
+ *    five.
+ *
+ * The level guard is separate and still applies: this says which people are
+ * yours to touch, `user_level <= ctx.userLevel` says you cannot reach above
+ * yourself. Both have to pass.
+ *
+ * Note what this does NOT narrow: the right-hand column. Somebody already in
+ * the company you are looking at holds it, so they are in your reach by
+ * definition -- the gate can only ever shorten the candidate list.
+ */
+export const canAdministerUser = (
+  candidateCompanyIds: number[],
+  reach: Set<number>,
+  canSeeAll: boolean,
+): boolean => {
+  if (canSeeAll) return true;
+  if (candidateCompanyIds.length === 0) return true;
+  return candidateCompanyIds.some((id) => reach.has(id));
+};
+
+/**
  * The base groups somebody may administer.
  *
  * `base_groups_assigned_to_user` returns every group in the person's
