@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { availableOptions, markAvailability } from "../orderFilters";
 import { ArrowPathIcon, MagnifyingGlassIcon } from "@heroicons/react/16/solid";
 import MultiSelectFilter from "../../../../components-dev/filters/MultiSelectFilter";
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
@@ -72,11 +73,16 @@ const OrdersConfigPanel = ({
 
     for (const o of lines) {
       if (o.order_type) types.add(o.order_type);
-      if (o.storenumber) stores.set(o.storenumber, o.storename ?? o.storenumber);
+      if (o.storenumber)
+        stores.set(o.storenumber, o.storename ?? o.storenumber);
       if (o.order_date) dates.add(o.order_date);
       if (o.sub_department != null)
-        subs.set(o.sub_department, o.sub_department_description ?? "No department");
-      if (o.product_code) items.set(String(o.product_code), o.description ?? "");
+        subs.set(
+          o.sub_department,
+          o.sub_department_description ?? "No department",
+        );
+      if (o.product_code)
+        items.set(String(o.product_code), o.description ?? "");
       if (o.order_id != null) orderIds.add(o.order_id);
     }
 
@@ -106,6 +112,52 @@ const OrdersConfigPanel = ({
     };
   }, [lines]);
 
+  /**
+   * What each filter can still offer, given the other five.
+   *
+   * The lists above are every value in the result; this says which of them
+   * still has a row behind it. Picking PER should leave the dates PER orders
+   * were placed on, not the whole range -- and the same in every direction,
+   * which is why it is one pass per filter rather than one pass over what
+   * survives them all.
+   */
+  const reachable = useMemo(
+    () => availableOptions(lines, filters),
+    [lines, filters],
+  );
+
+  const live = useMemo(
+    () => ({
+      types: markAvailability(
+        options.types,
+        reachable.orderTypes,
+        filters.orderTypes,
+      ),
+      stores: markAvailability(
+        options.stores,
+        reachable.storeNumbers,
+        filters.storeNumbers,
+      ),
+      dates: markAvailability(options.dates, reachable.dates, filters.dates),
+      subs: markAvailability(
+        options.subs,
+        reachable.subIds,
+        filters.subIds.map(String),
+      ),
+      items: markAvailability(
+        options.items,
+        reachable.productCodes,
+        filters.productCodes,
+      ),
+      orderIds: markAvailability(
+        options.orderIds,
+        reachable.orderIds,
+        filters.orderIds.map(String),
+      ),
+    }),
+    [options, reachable, filters],
+  );
+
   const active =
     filters.orderTypes.length +
     filters.storeNumbers.length +
@@ -114,7 +166,8 @@ const OrdersConfigPanel = ({
     filters.productCodes.length +
     filters.orderIds.length;
 
-  const asNumbers = (values: (string | number)[]) => values.map((v) => Number(v));
+  const asNumbers = (values: (string | number)[]) =>
+    values.map((v) => Number(v));
 
   return (
     <div
@@ -126,7 +179,8 @@ const OrdersConfigPanel = ({
           <span className="text-custom-white font-medium text-[13px] flex-1 truncate">
             Configuration
           </span>
-          <button data-help="search"
+          <button
+            data-help="search"
             onClick={onOpenSearch}
             title="New search"
             className="text-custom-white/85 hover:text-custom-white transition-colors flex-shrink-0"
@@ -156,10 +210,13 @@ const OrdersConfigPanel = ({
         </div>
       ) : (
         <>
-          <div data-help="orders-list" className="flex-1 overflow-y-auto thin-scrollbar p-3 flex flex-col gap-3">
+          <div
+            data-help="orders-list"
+            className="flex-1 overflow-y-auto thin-scrollbar p-3 flex flex-col gap-3"
+          >
             <Field label="Order types">
               <MultiSelectFilter
-                options={options.types}
+                options={live.types}
                 values={filters.orderTypes}
                 onChange={(v) => onChange("orderTypes", v)}
                 placeholder="All order types"
@@ -169,7 +226,7 @@ const OrdersConfigPanel = ({
 
             <Field label="Stores">
               <MultiSelectFilter
-                options={options.stores}
+                options={live.stores}
                 values={filters.storeNumbers}
                 onChange={(v) => onChange("storeNumbers", v)}
                 placeholder="All stores"
@@ -179,7 +236,7 @@ const OrdersConfigPanel = ({
 
             <Field label="Order dates">
               <MultiSelectFilter
-                options={options.dates}
+                options={live.dates}
                 values={filters.dates}
                 onChange={(v) => onChange("dates", v)}
                 placeholder="All dates"
@@ -189,7 +246,7 @@ const OrdersConfigPanel = ({
 
             <Field label="Sub departments">
               <MultiSelectFilter
-                options={options.subs}
+                options={live.subs}
                 values={filters.subIds.map(String)}
                 onChange={(v) => onChange("subIds", asNumbers(v))}
                 placeholder="All sub departments"
@@ -199,7 +256,7 @@ const OrdersConfigPanel = ({
 
             <Field label="Items">
               <MultiSelectFilter
-                options={options.items}
+                options={live.items}
                 values={filters.productCodes}
                 onChange={(v) => onChange("productCodes", v)}
                 placeholder="All items"
@@ -209,7 +266,7 @@ const OrdersConfigPanel = ({
 
             <Field label="Order numbers">
               <MultiSelectFilter
-                options={options.orderIds}
+                options={live.orderIds}
                 values={filters.orderIds.map(String)}
                 onChange={(v) => onChange("orderIds", asNumbers(v))}
                 placeholder="All orders"
@@ -220,7 +277,8 @@ const OrdersConfigPanel = ({
 
           <div className="flex items-center gap-2 border-t border-gray-100 px-3 py-2 flex-shrink-0">
             <span className="text-[11px] text-content/85 flex-1">
-              {matched.toLocaleString()} of {lines.length.toLocaleString()} lines
+              {matched.toLocaleString()} of {lines.length.toLocaleString()}{" "}
+              lines
             </span>
             <button
               onClick={onClear}
@@ -238,7 +296,13 @@ const OrdersConfigPanel = ({
   );
 };
 
-const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
+const Field = ({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) => (
   <div>
     <span className="block text-[10px] font-semibold uppercase tracking-wide text-content/85 mb-1">
       {label}
