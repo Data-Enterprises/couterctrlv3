@@ -12,6 +12,7 @@ import {
   mixedPriceInsight,
   classifyPattern,
   suggestPrice,
+  suggestionWithheld,
 } from "../../../utils/pricePoints";
 import ActualPriceRow, { ACT_COLS } from "./ActualPriceRow";
 import { itemCostStats, type ProductSummary, isUnweighedPacks } from "./inventoryData";
@@ -108,6 +109,7 @@ const ItemAnalysisPanel = ({ product, actual, invoice }: Props) => {
    */
   const unweighedPacks = isUnweighedPacks(lines.length, act.isWeighted, product.rows);
   const suggestion = unweighedPacks ? null : rawSuggestion;
+  const withheld = unweighedPacks ? null : suggestionWithheld(act);
 
   const totals = useMemo(
     () => ({
@@ -118,7 +120,8 @@ const ItemAnalysisPanel = ({ product, actual, invoice }: Props) => {
       // Counts prices actually rung, not inferred ones — the tile has to agree
       // with the table the suggestion comes from.
       prices: act.exact.length + act.averaged.length,
-      trans: act.exactCount + act.averagedCount,
+      // Receipts, once each, even when one sits in both tables.
+      trans: act.receiptCount,
     }),
     [product, stats, act],
   );
@@ -229,6 +232,15 @@ const ItemAnalysisPanel = ({ product, actual, invoice }: Props) => {
                 prices on the right are pack totals, and can't be compared per
                 pound with the estimated prices or the cost.
               </p>
+            </div>
+          </div>
+        )}
+
+        {withheld && (
+          <div className="px-4 pt-3 flex-shrink-0">
+            <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 flex gap-2 items-start">
+              <InformationCircleIcon className="w-4 h-4 text-content/60 flex-shrink-0 mt-px" />
+              <p className="text-[12px] text-content leading-snug">{withheld}</p>
             </div>
           </div>
         )}

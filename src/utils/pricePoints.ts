@@ -139,6 +139,19 @@ export const estimatedPricePoints = (
  */
 const isFractional = (qty: number) => !Number.isInteger(qty);
 
+/**
+ * The receipt a register line is on.
+ *
+ * Transactions are receipts, not lines. A customer who rings the same item
+ * three times is one transaction, and counting lines made Price Opt's TRANS
+ * read 375 for Ground Beef when 203 receipts were behind it (dev board review,
+ * finding C). Item Actions already counted this way on its own; this puts the
+ * rule where both read it.
+ */
+const receiptOf = (t: TransactionListItem) => t.sale_id || t.transaction_id;
+const receiptsIn = (lines: TransactionListItem[]) =>
+  new Set(lines.map(receiptOf)).size;
+
 export interface ActualPricePoint {
   price: number;
   priceType: string;
@@ -173,8 +186,12 @@ export interface ActualPricePoints {
   /** Multi-unit rings, `netSales / qty`. A $2-off-3 deal shows up here and
    *  nowhere else. */
   averaged: ActualPricePoint[];
+  /** Receipts behind each table. A receipt can sit in both, when an item was
+   *  rung once alone and once in a multiple on the same sale. */
   exactCount: number;
   averagedCount: number;
+  /** Distinct receipts across both tables: the item's transaction count. */
+  receiptCount: number;
   isWeighted: boolean;
 }
 
@@ -183,6 +200,7 @@ const emptyActual: ActualPricePoints = {
   averaged: [],
   exactCount: 0,
   averagedCount: 0,
+  receiptCount: 0,
   isWeighted: false,
 };
 
@@ -218,6 +236,57 @@ export const unitPrice = (t: TransactionListItem) =>
  * "what would this price have earned per unit", not "what did this exact
  * receipt earn" — close enough to rank prices by, and the only cost there is.
  */
+/**
+ * Fold prices a cent apart into one.
+ *
+ * A multi-buy splits its total across lines to the penny: three for $10 rings
+ * as $3.33, $3.33 and $3.34. Those are one price, but bucketed by the cent
+ * they read as two -- COKE 6PK showed "PRICES 7" and a "moves fastest at
+ * $3.34" over a twin of $3.33 (dev board review, finding B). Nobody sets two
+ * shelf prices a cent apart, so a pair that close, under the same price type,
+ * is folded into whichever of the two more receipts rang at.
+ */
+const mergePennyTwins = <
+  T extends {
+    price: number;
+    priceType: string;
+    qty: number;
+    sales: number;
+    dates: Set<string>;
+    receipts: Set<string>;
+    lines: TransactionListItem[];
+    trans: number;
+  },
+>(
+  points: T[],
+): T[] => {
+  const sorted = [...points].sort(
+    (a, b) => a.priceType.localeCompare(b.priceType) || a.price - b.price,
+  );
+  const out: T[] = [];
+  for (const p of sorted) {
+    const prev = out[out.length - 1];
+    if (
+      prev &&
+      prev.priceType === p.priceType &&
+      Math.abs(p.price - prev.price) <= 0.011
+    ) {
+      const keep = p.receipts.size > prev.receipts.size ? p : prev;
+      const fold = keep === p ? prev : p;
+      fold.dates.forEach((d) => keep.dates.add(d));
+      fold.receipts.forEach((r) => keep.receipts.add(r));
+      keep.qty += fold.qty;
+      keep.sales += fold.sales;
+      keep.lines.push(...fold.lines);
+      keep.trans = keep.receipts.size;
+      out[out.length - 1] = keep;
+    } else {
+      out.push(p);
+    }
+  }
+  return out;
+};
+
 export const actualPricePoints = (
   lines: TransactionListItem[],
   unitCost: number,
@@ -233,6 +302,7 @@ export const actualPricePoints = (
   const bucket = (rows: TransactionListItem[], divide: boolean) => {
     interface B extends Omit<ActualPricePoint, "daysSeen" | "lastSeen"> {
       dates: Set<string>;
+      receipts: Set<string>;
     }
     const map = new Map<string, B>();
     rows.forEach((t) => {
@@ -244,7 +314,8 @@ export const actualPricePoints = (
       const date = t.sale_date.slice(0, 10);
       const found = map.get(key);
       if (found) {
-        found.trans += 1;
+        found.receipts.add(receiptOf(t));
+        found.trans = found.receipts.size;
         found.qty += qty;
         found.sales += t.net_sales;
         found.dates.add(date);
@@ -259,12 +330,13 @@ export const actualPricePoints = (
           marginPerUnit: price - unitCost,
           marginPct: price > 0 ? ((price - unitCost) / price) * 100 : 0,
           dates: new Set([date]),
+          receipts: new Set([receiptOf(t)]),
           lines: [t],
         });
       }
     });
-    return [...map.values()]
-      .map(({ dates, ...rest }) => ({
+    return mergePennyTwins([...map.values()])
+      .map(({ dates, receipts: _receipts, ...rest }) => ({
         ...rest,
         daysSeen: dates.size,
         lastSeen: [...dates].sort().at(-1) ?? "",
@@ -280,8 +352,9 @@ export const actualPricePoints = (
   return {
     exact: bucket(exactRows, false),
     averaged: bucket(avgRows, true),
-    exactCount: exactRows.length,
-    averagedCount: avgRows.length,
+    exactCount: receiptsIn(exactRows),
+    averagedCount: receiptsIn(avgRows),
+    receiptCount: receiptsIn(sold),
     isWeighted,
   };
 };
@@ -344,15 +417,49 @@ const perf = (p: ActualPricePoint): PricePointPerformance => {
  * visible next to it — moving 40% more units at a 30% worse margin is a
  * decision, not an improvement, and the reader gets to make it.
  */
+/**
+ * How much a price needs behind it before it can be called the best.
+ *
+ * "Moves fastest" ranks by units a day while a price was live, and a price
+ * seen on one busy day wins that against a price that sold all week: COKE
+ * 6PK's $3.34 was 26 sales on one day, Ground Beef's $11.94 was 11 packs on
+ * one (dev board review, finding B). A price has to have been rung on at least
+ * this many days, on at least this many receipts, to be a candidate.
+ *
+ * Starting values, picked rather than measured: three days is under half a
+ * week, so a price on the shelf all week qualifies easily and a one-day spike
+ * can't. Tune them against real stores.
+ */
+export const MIN_SUGGESTION_DAYS = 3;
+export const MIN_SUGGESTION_RECEIPTS = 5;
+
+const hasEvidence = (p: ActualPricePoint) =>
+  p.daysSeen >= MIN_SUGGESTION_DAYS && p.trans >= MIN_SUGGESTION_RECEIPTS;
+
+/**
+ * Why there is no suggestion, when the item rang at several prices but none
+ * had enough history. Null when there is a suggestion, or when there was only
+ * ever one price, which needs no explaining.
+ */
+export const suggestionWithheld = (actual: ActualPricePoints) =>
+  actual.exact.length >= 2 && actual.exact.filter(hasEvidence).length < 2
+    ? `Not enough history to suggest a price: a price needs ${MIN_SUGGESTION_DAYS} days and ${MIN_SUGGESTION_RECEIPTS} receipts behind it, and fewer than two do.`
+    : null;
+
 export const suggestPrice = (
   actual: ActualPricePoints,
 ): PriceSuggestion | null => {
   const points = actual.exact;
   // One price is not a comparison, and inventing one would be noise.
   if (points.length < 2) return null;
+  // The candidates must each have stood for a while; see MIN_SUGGESTION_DAYS.
+  const eligible = points.filter(hasEvidence);
+  if (eligible.length < 2) return null;
 
   const ranked = points.map(perf);
-  const best = ranked.reduce((a, b) => (b.velocity > a.velocity ? b : a));
+  const best = eligible
+    .map(perf)
+    .reduce((a, b) => (b.velocity > a.velocity ? b : a));
 
   // "Current" is the most recently rung price, not the best-selling one — the
   // baseline a suggestion is measured against is what's on the shelf today.

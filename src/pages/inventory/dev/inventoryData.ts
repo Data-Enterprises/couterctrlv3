@@ -258,39 +258,42 @@ export interface VendorSummary {
 }
 
 /**
+ * The `sub_department` argument that asks `subs/subs` for every department in
+ * one read. As a request argument 0 means "all"; as a row value it is a real
+ * department, which is why it is named rather than written as a bare 0.
+ */
+const ALL_SUB_DEPTS = 0;
+
+/**
  * Every vendor that sold in the window, with their items.
  *
- * `vendor_id` lives only on item rows, and item rows come one department at a
- * time — so unlike the department page, this cannot be lazy. Naming a single
- * vendor requires having walked all of them, which is why this loads up front
- * behind a two-step message rather than expanding on click.
+ * `vendor_id` lives only on item rows, so naming a single vendor needs every
+ * item row in the window, which is why this loads up front rather than
+ * expanding on click.
  *
- * Departments go out together; serialising would multiply latency by the
- * department count for no benefit. A department that fails resolves to no rows
- * rather than taking down the search — losing one department understates a
- * vendor, losing the page helps nobody.
+ * One paged read of every department, the way the Vendors page reads it. This
+ * used to ask for the department list first and then fire one `subs/subs` per
+ * department, all at once: 27 calls and up to 26 in flight for one store-week
+ * (dev board review, finding I). The rows that come back are the same rows;
+ * only the number of requests changes. The download is still every item row,
+ * and cutting that needs a vendor rollup on the server.
  */
 export const fetchVendors = async (
   scope: InventoryScope,
-  subDeptIds: number[],
 ): Promise<VendorSummary[]> => {
-  const results = await Promise.all(
-    subDeptIds.map((id) =>
-      fetchSubDeptRowsSafe(
-        scope.url,
-        scope.token,
-        id,
-        scope.start,
-        scope.end,
-        USE_GROUPS,
-        scope.storeid,
-        SINGLE_STORE,
-      ),
-    ),
+  const rows = await fetchSubDeptRowsSafe(
+    scope.url,
+    scope.token,
+    ALL_SUB_DEPTS,
+    scope.start,
+    scope.end,
+    USE_GROUPS,
+    scope.storeid,
+    SINGLE_STORE,
   );
 
   const byVendor = new Map<string, VendorSummary>();
-  results.flat().forEach((r) => {
+  rows.forEach((r) => {
     // Rows with no vendor are real — DSD and miscellaneous departments both
     // produce them — and bucketing them together under one heading is more
     // honest than dropping the sales out of the page entirely.

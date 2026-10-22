@@ -1,5 +1,10 @@
-import { useRef, useState } from "react";
-import { useAppSelector, useStoreName } from "../../../hooks";
+import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  useAppDispatch,
+  useAppSelector,
+  useStoreName,
+} from "../../../hooks";
+import { patchSubDeptView } from "../../../features/dev/devPriceOptSlice";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { formatGoliathDate, formatDate } from "../../../utils";
 import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
@@ -36,15 +41,38 @@ const InventorySubDept = () => {
   const { startDate, endDate, lastStore } = useAppSelector((s) => s.search);
   const { assignedStores } = useAppSelector((s) => s.user);
 
+  const dispatch = useAppDispatch();
   const [storeId, setStoreId] = useState(lastStore || 0);
-  const [scope, setScope] = useState<InventoryScope | null>(null);
-  const [subDepts, setSubDepts] = useState<SubDeptSummary[]>([]);
+  // Kept in the slice so a return visit lands on the last result instead of an
+  // empty form (dev board review, finding K). The slice holds the store and
+  // dates; the token comes from the session each render, so a re-login can't
+  // leave a stale one behind.
+  const view = useAppSelector((s) => s.dev.priceOpt.subDept);
+  const scope = useMemo<InventoryScope | null>(
+    () => (view.window ? { url, token, ...view.window } : null),
+    [view.window, url, token],
+  );
+  const subDepts = view.subDepts;
+  const openSubDept = view.openSubDept;
+  const products = view.products;
+  const setScope = (next: InventoryScope | null) =>
+    dispatch(
+      patchSubDeptView({
+        window: next
+          ? { storeid: next.storeid, start: next.start, end: next.end }
+          : null,
+      }),
+    );
+  const setSubDepts = (next: SubDeptSummary[]) =>
+    dispatch(patchSubDeptView({ subDepts: next }));
+  const setOpenSubDept = (next: number | null) =>
+    dispatch(patchSubDeptView({ openSubDept: next }));
+  const setProducts = (next: ProductSummary[]) =>
+    dispatch(patchSubDeptView({ products: next }));
   const [loading, setLoading] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
 
-  const [openSubDept, setOpenSubDept] = useState<number | null>(null);
-  const [products, setProducts] = useState<ProductSummary[]>([]);
   const [productsLoading, setProductsLoading] = useState(false);
   const [selected, setSelected] = useState<ProductSummary | null>(null);
 
@@ -57,6 +85,14 @@ const InventorySubDept = () => {
    *  a small one would otherwise leave the small one's name above the big one's
    *  items, since the small request resolves first. */
   const wantedSubDept = useRef<number | null>(null);
+
+  // A department left open with no items means its fetch was still in flight
+  // when the page was left, and that answer is gone with the old page. Close
+  // it rather than show an open department that reads as empty.
+  useEffect(() => {
+    if (openSubDept !== null && products.length === 0) setOpenSubDept(null);
+    // Once, on arrival: this is about what the slice kept, not what changes.
+  }, []);
 
   const runSearch = async () => {
     if (!storeId) {

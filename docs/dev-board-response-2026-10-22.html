@@ -118,7 +118,7 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
     <p class="sub">What was done about each finding in <span class="mono">dev-board-review-2026-10-21.md</span>. Fixes land in the dev tree; prod gets them when dev is promoted. This page is updated and committed after each phase.</p>
   </div>
   <div class="status">
-    <span><b>Phase 3 of 6 done.</b> Small and independent.</span>
+    <span><b>Phase 4 of 6 done.</b> Price Opt behaviour.</span>
     <span class="mono">branch next_publish_10_20_2026</span>
   </div>
 </header>
@@ -139,11 +139,11 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
       <tr><td class="id">1</td><td>"+13.1%" on Top 200 is points</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 3</span></td></tr>
       <tr><td class="id">AI, AL</td><td>"New" vs "Add user"; role shows as "1"</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 3</span></td></tr>
       <tr><td class="id">Y</td><td>Item Lookup: Enter doesn't search; unclear not-found</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 3</span></td></tr>
-      <tr><td class="id">I</td><td>Price Opt Vendor fires 26 calls at once</td><td class="st"><span class="chip next">Phase 4</span> <span class="chip both">Then backend</span></td></tr>
-      <tr><td class="id">K</td><td>Price Opt doesn't keep its result</td><td class="st"><span class="chip next">Phase 4</span></td></tr>
-      <tr><td class="id">J</td><td>Filter doesn't search items</td><td class="st"><span class="chip next">Phase 4</span></td></tr>
-      <tr><td class="id">C</td><td>TRANS counts item lines, not receipts</td><td class="st"><span class="chip next">Phase 4</span></td></tr>
-      <tr><td class="id">B, G</td><td>One-day recommendations; mixed money formats</td><td class="st"><span class="chip next">Phase 4</span></td></tr>
+      <tr><td class="id">I</td><td>Price Opt Vendor fires 26 calls at once</td><td class="st"><span class="chip fixed">Calls fixed &middot; Phase 4</span> <span class="chip both">Size: backend</span></td></tr>
+      <tr><td class="id">K</td><td>Price Opt doesn't keep its result</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 4</span></td></tr>
+      <tr><td class="id">J</td><td>Filter doesn't search items</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 4</span></td></tr>
+      <tr><td class="id">C</td><td>TRANS counts item lines, not receipts</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 4</span></td></tr>
+      <tr><td class="id">B, G</td><td>One-day recommendations; mixed money formats</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 4</span></td></tr>
       <tr><td class="id">P</td><td>65.9% margin on Breast Tenders</td><td class="st"><span class="chip next">Phase 5 (check first)</span></td></tr>
       <tr><td class="id">L, M, N, T</td><td>Item Actions judges deliveries unfairly</td><td class="st"><span class="chip next">Phase 5</span></td></tr>
       <tr><td class="id">Q, R, S</td><td>Item Actions labels and controls</td><td class="st"><span class="chip next">Phase 5</span></td></tr>
@@ -344,7 +344,7 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
 
 <!-- ============================================================ PHASE 3 -->
 <section class="block" aria-labelledby="p3-h">
-  <div class="phase-head"><h2 id="p3-h">Phase 3 &middot; Small and independent</h2><span class="commit" id="p3-commit">this commit</span></div>
+  <div class="phase-head"><h2 id="p3-h">Phase 3 &middot; Small and independent</h2><span class="commit">98ccd8ce</span></div>
 </section>
 
 <article class="issue" id="AO" aria-labelledby="ao-h">
@@ -462,8 +462,148 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
   </div>
 </article>
 
+<!-- ============================================================ PHASE 4 -->
+<section class="block" aria-labelledby="p4-h">
+  <div class="phase-head"><h2 id="p4-h">Phase 4 &middot; Price Opt behaviour</h2><span class="commit" id="p4-commit">this commit</span></div>
+</section>
+
+<article class="issue" id="I" aria-labelledby="i-h">
+  <div class="issue-head">
+    <span class="issue-num">I</span>
+    <h2 id="i-h">Load vendors is one paged read, not 27 calls</h2>
+    <div class="verdict"><span class="chip fixed">Calls fixed</span> <span class="chip both">Download size needs the backend</span></div>
+  </div>
+  <dl class="facts">
+    <dt>Found</dt><dd>Load vendors made 27 calls, up to 26 in flight at once, 6.6 MB, for one store and one week.</dd>
+    <dt>Cause</dt><dd>It asked for the department list, then fired one <code>subs/subs</code> per department, all together. The Vendors page reads every department in one paged call with <code>sub_department: 0</code>.</dd>
+    <dt>Files</dt><dd><code>pages/inventory/dev/inventoryData.ts</code> (<code>fetchVendors</code>), <code>InventoryVendor.tsx</code></dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li>One paged read of every department, the way Vendors does it. The separate department-list call is gone too, since the vendor page never showed departments.</li>
+      <li>The loading message is now a single step: "Reading every department…".</li>
+    </ul>
+  </div>
+  <p class="callout warn">This fixes the flood of calls, not the size. The download is still every item row in the window, because vendor lives only on item rows. Cutting that needs the server-side vendor rollup in the backend plan.</p>
+  <div class="verify">
+    <h4>How to check it</h4>
+    <ol>
+      <li>Price Opt Vendor, store 695, week ending 10/20, Load vendors, network tab open.</li>
+      <li>Expect a handful of <code>subs/subs</code> calls with <code>"sub_department":0</code>, one per page, and no <code>subs/sub_sales</code>. Previously 27.</li>
+      <li>The vendor list should match what it was: 33 vendors, Mitchell Grocery first.</li>
+    </ol>
+  </div>
+</article>
+
+<article class="issue" id="K" aria-labelledby="k-h">
+  <div class="issue-head">
+    <span class="issue-num">K</span>
+    <h2 id="k-h">Price Opt keeps its result when you leave and come back</h2>
+    <div class="verdict"><span class="chip fixed">Fixed</span> Both Price Opt pages.</div>
+  </div>
+  <dl class="facts">
+    <dt>Found</dt><dd>Leaving Price Opt and coming back showed the empty form. On Vendor that meant another 2.5 seconds and every item row again.</dd>
+    <dt>Cause</dt><dd>Results lived in the page's own state, which goes when the page does.</dd>
+    <dt>Files</dt><dd>New <code>features/dev/devPriceOptSlice.ts</code>; <code>InventoryVendor.tsx</code>, <code>InventorySubDept.tsx</code>, <code>store/devReducers.ts</code></dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li>The search window, the list, the open vendor or department and its items are kept in a dev-only slice, like the older pages keep theirs.</li>
+      <li>The slice holds the store and dates, never the API token. The page rebuilds its scope from the session on each render, so a re-login can't leave a stale token behind.</li>
+      <li>The selected item isn't kept. Its receipts and invoice cost belong to the page that fetched them, and picking it again costs one small request.</li>
+      <li>A department left open mid-load closes on return, rather than reading as empty.</li>
+    </ul>
+  </div>
+  <div class="verify">
+    <h4>How to check it</h4>
+    <ol>
+      <li>Load vendors, open Coke, go to another page, come back: the vendor list is there with Coke open, and no new <code>subs/subs</code> call goes out.</li>
+      <li>Same on Sub Department with a department open.</li>
+    </ol>
+  </div>
+</article>
+
+<article class="issue" id="J" aria-labelledby="j-h">
+  <div class="issue-head">
+    <span class="issue-num">J</span>
+    <h2 id="j-h">The vendor filter finds items</h2>
+    <div class="verdict"><span class="chip fixed">Fixed</span> Vendor page.</div>
+  </div>
+  <dl class="facts">
+    <dt>Found</dt><dd>With no vendor open, "COKE 6PK", "GROUND BEEF", "beef" and the UPC found nothing.</dd>
+    <dt>Cause</dt><dd>The filter matched vendor names and the open vendor's items only, though every item was already loaded.</dd>
+    <dt>Files</dt><dd><code>pages/inventory/dev/InventoryTreePanel.tsx</code>, <code>InventoryVendor.tsx</code></dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li>Typing an item name or UPC keeps every vendor that sells a match. Open one and the same text narrows its items.</li>
+    </ul>
+  </div>
+  <p class="callout">Sub Department can't do this. Its items load one department at a time, so an unopened department's items aren't there to search. That is by design: it's what keeps Sub Department fast.</p>
+  <div class="verify">
+    <h4>How to check it</h4>
+    <ol>
+      <li>Price Opt Vendor, no vendor open, type "beef": Mitchell Grocery and any other vendor selling beef stay in the list.</li>
+    </ol>
+  </div>
+</article>
+
+<article class="issue" id="C" aria-labelledby="c-h">
+  <div class="issue-head">
+    <span class="issue-num">C</span>
+    <h2 id="c-h">TRANS counts receipts</h2>
+    <div class="verdict"><span class="chip fixed">Fixed</span> Price Opt and Item Actions now count the same way.</div>
+  </div>
+  <dl class="facts">
+    <dt>Found</dt><dd>Ground Beef showed TRANS 375 with 203 receipts behind it. COKE's $3.34 row listed receipt 333237 three times.</dd>
+    <dt>Cause</dt><dd>Every register line added one to the count. Item Actions had already worked around this on its own.</dd>
+    <dt>Files</dt><dd><code>utils/pricePoints.ts</code> (shared, dev callers only), <code>ItemAnalysisPanel.tsx</code></dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li>Each price counts distinct receipts. A receipt carrying the item three times is one transaction.</li>
+      <li>The header's TRANS counts each receipt once, even if it appears in both the single-unit and multi-unit tables.</li>
+      <li>The only callers of this code are Price Opt and Item Actions, both in the dev tree.</li>
+    </ul>
+  </div>
+  <div class="verify">
+    <h4>How to check it</h4>
+    <ol>
+      <li>Price Opt, Ground Beef Fam Pak: TRANS should read about 203, not 375.</li>
+    </ol>
+  </div>
+</article>
+
+<article class="issue" id="B" aria-labelledby="b-h">
+  <div class="issue-head">
+    <span class="issue-num">B G</span>
+    <h2 id="b-h">"Moves fastest" needs history behind it, and the tree uses one money format</h2>
+    <div class="verdict"><span class="chip fixed">Fixed</span> Two thresholds to tune, below.</div>
+  </div>
+  <dl class="facts">
+    <dt>Found</dt><dd>COKE's "moves fastest at $3.34" was 26 sales on one day, and $3.33 and $3.34 counted as two prices. Ground Beef's $11.94 was 11 packs on one day. The tree mixed "$25.1K", "$758.3" and "$674".</dd>
+    <dt>Cause</dt><dd>"Moves fastest" ranks by units a day while a price was live, so one busy day beats a price that sold all week. A multi-buy splits its total to the penny, so three for $10 rings as $3.33, $3.33, $3.34. The shared compact formatter keeps up to one decimal.</dd>
+    <dt>Files</dt><dd><code>utils/pricePoints.ts</code>, <code>ItemAnalysisPanel.tsx</code>, <code>InventoryTreePanel.tsx</code></dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li>A price can only be "moves fastest" if it rang on at least <b>3 days</b> and <b>5 receipts</b>. With fewer than two such prices there's no suggestion, and the panel says so: "Not enough history to suggest a price…".</li>
+      <li>Prices one cent apart under the same price type fold into one, kept at whichever price more receipts rang at. Nobody sets two shelf prices a cent apart.</li>
+      <li>The tree shows whole dollars under $1,000 and one decimal above: "$758", "$674", "$25.1K". This is local to Price Opt; the shared formatter is used by 23 other screens and is unchanged.</li>
+    </ul>
+  </div>
+  <p class="callout warn">3 days and 5 receipts are starting values I picked, not measured ones. Three days is under half a week, so a price that stood all week qualifies easily and a one-day spike can't. They're named constants (<code>MIN_SUGGESTION_DAYS</code>, <code>MIN_SUGGESTION_RECEIPTS</code>) and worth tuning against real stores.</p>
+  <div class="verify">
+    <h4>How to check it</h4>
+    <ol>
+      <li>Price Opt, COKE 6PK: $3.33 and $3.34 are one row. If only one price has stood for 3 days, the grey "Not enough history" note shows instead of the blue strip.</li>
+      <li>The department tree's amounts all read whole dollars or one decimal of a thousand.</li>
+    </ol>
+  </div>
+</article>
+
 <footer>
-  Verified for Phase 3: typecheck, 1,221 tests (6 new this phase, 30 across all three), theme audit, eslint and a production build, all clean. Checked by tests, not in a browser, so the "how to check it" steps are yours to run.
+  Verified for Phase 4: typecheck, 1,234 tests (13 new this phase, 43 across all four), theme audit, eslint and a production build, all clean. Checked by tests, not in a browser, so the "how to check it" steps are yours to run.
 </footer>
 
 </div>

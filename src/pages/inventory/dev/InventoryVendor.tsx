@@ -1,5 +1,10 @@
-import { useState } from "react";
-import { useAppSelector, useStoreName } from "../../../hooks";
+import { useMemo, useState } from "react";
+import {
+  useAppDispatch,
+  useAppSelector,
+  useStoreName,
+} from "../../../hooks";
+import { patchVendorView } from "../../../features/dev/devPriceOptSlice";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { formatGoliathDate, formatDate } from "../../../utils";
 import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
@@ -11,7 +16,6 @@ import ItemAnalysisPanel from "./ItemAnalysisPanel";
 import { useActualPricePoints } from "../../../hooks/useActualPricePoints";
 import { useInvoiceCost } from "./useInvoiceCost";
 import {
-  fetchSubDepts,
   fetchVendors,
   groupProducts,
   type InventoryScope,
@@ -42,16 +46,61 @@ const InventoryVendor = () => {
   const { startDate, endDate, lastStore } = useAppSelector((s) => s.search);
   const { assignedStores } = useAppSelector((s) => s.user);
 
+  const dispatch = useAppDispatch();
   const [storeId, setStoreId] = useState(lastStore || 0);
-  const [scope, setScope] = useState<InventoryScope | null>(null);
-  const [vendors, setVendors] = useState<VendorSummary[]>([]);
+  // Kept in the slice so a return visit lands on the last result instead of an
+  // empty form (dev board review, finding K). The slice holds the store and
+  // dates; the token comes from the session each render, so a re-login can't
+  // leave a stale one behind.
+  const view = useAppSelector((s) => s.dev.priceOpt.vendor);
+  const scope = useMemo<InventoryScope | null>(
+    () => (view.window ? { url, token, ...view.window } : null),
+    [view.window, url, token],
+  );
+  const vendors = view.vendors;
+  const openVendor = view.openVendor;
+  const setScope = (next: InventoryScope | null) =>
+    dispatch(
+      patchVendorView({
+        window: next
+          ? { storeid: next.storeid, start: next.start, end: next.end }
+          : null,
+      }),
+    );
+  const setVendors = (next: VendorSummary[]) =>
+    dispatch(patchVendorView({ vendors: next }));
+  const setOpenVendor = (next: string | null) =>
+    dispatch(patchVendorView({ openVendor: next }));
   const [loading, setLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
 
-  const [openVendor, setOpenVendor] = useState<string | null>(null);
   const [selected, setSelected] = useState<ProductSummary | null>(null);
+
+  /**
+   * Every item's name and UPC, per vendor, for the filter.
+   *
+   * "Filter vendors and items" found nothing for an item name with no vendor
+   * open, though every item row was already loaded (dev board review, finding
+   * J). One lowercased string per vendor makes each keystroke a substring test
+   * per vendor rather than a walk over thousands of rows.
+   */
+  const itemText = useMemo(
+    () =>
+      new Map(
+        vendors.map((v) => [
+          v.vendorId,
+          v.rows
+            .map((r) => `${r.product_description} ${r.product_code}`)
+            .join(" | ")
+            .toLowerCase(),
+        ]),
+      ),
+    [vendors],
+  );
+  const groupHasItem = (id: string, term: string) =>
+    itemText.get(id)?.includes(term) ?? false;
 
   const { actual, loadActual, resetActual } = useActualPricePoints();
   const { invoice, loadInvoiceCost, resetInvoiceCost } = useInvoiceCost();
@@ -76,20 +125,10 @@ const InventoryVendor = () => {
     resetActual();
     resetInvoiceCost();
     try {
-      // Named steps rather than one undifferentiated spinner — the second is
-      // one call per department and is where the wait actually is.
-      setLoadingMessage("Finding departments…");
-      const depts = await fetchSubDepts(next);
-      if (depts.length === 0) {
-        toast.warn("No departments sold in that window");
-        setVendors([]);
-        return;
-      }
-      setLoadingMessage(`Reading ${depts.length} departments…`);
-      const found = await fetchVendors(
-        next,
-        depts.map((d) => d.id),
-      );
+      // One read of every department now, so one message. There used to be a
+      // department list to fetch first and a call per department after it.
+      setLoadingMessage("Reading every department…");
+      const found = await fetchVendors(next);
       if (found.length === 0) toast.warn("No vendors sold in that window");
       setVendors(found);
       setScope(next);
@@ -226,6 +265,7 @@ const InventoryVendor = () => {
           onSelectProduct={selectProduct}
           onSearchOpen={() => setSearchOpen(true)}
           onExportOpen={() => setExportOpen(true)}
+          groupHasItem={groupHasItem}
         />
 
         {selected ? (

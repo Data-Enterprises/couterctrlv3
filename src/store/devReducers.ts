@@ -34,6 +34,7 @@ import devSuggestedReducer from "../features/dev/devSuggestedSlice";
 import devTicketsReducer from "../features/dev/devTicketsSlice";
 import devExportBuilderReducer from "../features/dev/devExportBuilderSlice";
 import devUpcScannerReducer from "../features/dev/devUpcScannerSlice";
+import devPriceOptReducer from "../features/dev/devPriceOptSlice";
 
 /**
  * The dev tree's own copy of every page slice that has been forked.
@@ -87,6 +88,7 @@ export const devReducers = {
   tickets: devTicketsReducer,
   exportBuilder: devExportBuilderReducer,
   upcScanner: devUpcScannerReducer,
+  priceOpt: devPriceOptReducer,
 } satisfies Record<string, Reducer>;
 
 type DevState = { [K in keyof typeof devReducers]: ReturnType<(typeof devReducers)[K]> };
