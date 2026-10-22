@@ -472,48 +472,75 @@ describe("costSwing", () => {
 });
 
 describe("canEditOrders", () => {
+  // Monday the 19th through Sunday the 25th of October 2026, so every branch
+  // of the cut-off is a real date rather than a mocked getDay.
+  const MON = new Date("2026-10-19T10:00:00");
+  const WED = new Date("2026-10-21T10:00:00");
   const THURS = new Date("2026-10-22T10:00:00");
   const FRI = new Date("2026-10-23T10:00:00");
+  const SAT = new Date("2026-10-24T10:00:00");
+  const SUN = new Date("2026-10-25T10:00:00");
+  const OPEN = [MON, WED];
+  const CLOSED = [THURS, FRI, SAT, SUN];
   const HELD = [4];
   const OTHER = [2, 99];
 
-  it("is the day it says it is", () => {
-    expect(THURS.getDay()).toBe(4);
-    expect(FRI.getDay()).toBe(5);
+  it("is the week it says it is", () => {
+    expect([MON, WED, THURS, FRI, SAT, SUN].map((d) => d.getDay())).toEqual([
+      1, 3, 4, 5, 6, 0,
+    ]);
   });
 
-  it("lets a manager in on any day", () => {
-    expect(canEditOrders(5, HELD, FRI)).toBe(true);
-    expect(canEditOrders(5, HELD, THURS)).toBe(true);
+  it("lets a manager edit up to the cut-off", () => {
+    OPEN.forEach((d) => expect(canEditOrders(5, HELD, d)).toBe(true));
   });
 
-  it("holds an owner to Thursday", () => {
-    // The ladder inverts on purpose: owners are the client side, and order
-    // day is when an order is still worth changing.
-    expect(canEditOrders(7, HELD, THURS)).toBe(true);
-    expect(canEditOrders(7, HELD, FRI)).toBe(false);
-    expect(canEditOrders(8, HELD, FRI)).toBe(false);
+  it("closes on a manager from Thursday through Sunday", () => {
+    // Orders go out by Thursday. After that the vendor is working from a file
+    // this no longer changes, and a manager cannot ring them about it.
+    CLOSED.forEach((d) => expect(canEditOrders(5, HELD, d)).toBe(false));
+    CLOSED.forEach((d) => expect(canEditOrders(6, HELD, d)).toBe(false));
+  });
+
+  it("does not hold an owner to the cut-off", () => {
+    // Owners can ring the vendor about an order that has already gone, so the
+    // day stops mattering to them. This is the half that was backwards: it
+    // used to let owners in ONLY on Thursday.
+    [...OPEN, ...CLOSED].forEach((d) => {
+      expect(canEditOrders(7, HELD, d)).toBe(true);
+      expect(canEditOrders(8, HELD, d)).toBe(true);
+    });
   });
 
   it("lets a programmer in on any day, holding no company at all", () => {
-    expect(canEditOrders(9, [], FRI)).toBe(true);
+    [...OPEN, ...CLOSED].forEach((d) =>
+      expect(canEditOrders(9, [], d)).toBe(true),
+    );
   });
 
-  it("refuses a company that is not in the rollout", () => {
-    expect(canEditOrders(5, OTHER, FRI)).toBe(false);
-    expect(canEditOrders(7, OTHER, THURS)).toBe(false);
+  it("refuses a company that is not in the rollout, at any level or day", () => {
+    expect(canEditOrders(5, OTHER, MON)).toBe(false);
+    expect(canEditOrders(7, OTHER, MON)).toBe(false);
+    expect(canEditOrders(8, OTHER, THURS)).toBe(false);
   });
 
   it("takes one held company out of several", () => {
-    expect(canEditOrders(5, [99, 21, 2], FRI)).toBe(true);
+    expect(canEditOrders(5, [99, 21, 2], MON)).toBe(true);
+  });
+
+  it("keeps DCR in the rollout, because that is us", () => {
+    // DCR (5) is a POS company with no stores. It is in EDIT_COMPANY_IDS so
+    // our own people can work the feature, which is why that list and the
+    // Houchens family differ by exactly this id.
+    expect(canEditOrders(5, [5], MON)).toBe(true);
   });
 
   it("refuses below manager, company or no company", () => {
-    expect(canEditOrders(2, HELD, THURS)).toBe(false);
-    expect(canEditOrders(1, HELD, THURS)).toBe(false);
+    expect(canEditOrders(2, HELD, MON)).toBe(false);
+    expect(canEditOrders(1, HELD, MON)).toBe(false);
   });
 
   it("refuses somebody holding nothing", () => {
-    expect(canEditOrders(5, [], THURS)).toBe(false);
+    expect(canEditOrders(5, [], MON)).toBe(false);
   });
 });

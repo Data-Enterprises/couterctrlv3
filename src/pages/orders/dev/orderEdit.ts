@@ -500,34 +500,54 @@ export const costSwing = (draft: OrderDraft) => {
  * A list rather than a flag on the company record because it is a rollout,
  * not a property of the business: these are the clients who have agreed to
  * edit orders in CounterCtrl. It moves when that list moves.
+ *
+ * It is the five Houchens companies — 1 Houchens, 4 Food Giant, 6 Sonic,
+ * 17 Ace, 21 Brooks — plus **5, DCR, which is us**. DCR is a POS company with
+ * no stores of its own, so it is here to let our own people work the feature
+ * rather than because it has orders to edit. That is why this list and
+ * `COMPANY_FAMILIES` in `pages/organization/dev/scoping` differ by exactly
+ * one id: anyone reconciling the two should stop at that and not "fix" it.
  */
 export const EDIT_COMPANY_IDS = [1, 4, 5, 6, 17, 21];
 
 /** Levels run 1 basic, 2 user, 5 manager, 7 owner, 9 programmer. */
 export const EDIT_MIN_LEVEL = 5;
-export const EDIT_THURSDAY_FROM_LEVEL = 7;
+/** Owner and up are not held to the cut-off; see `canEditOrders`. */
+export const EDIT_ANY_DAY_FROM_LEVEL = 7;
 export const PROGRAMMER_LEVEL = 9;
 
-/** Thursday, by the clock of whoever is looking — the only clock a button
- *  has. A store in another timezone sees its own Thursday. */
-export const isThursday = (now: Date) => now.getDay() === 4;
+/**
+ * Past the point in the week where an edit still reaches the vendor.
+ *
+ * Orders are submitted by Thursday, so from Thursday on this week's order has
+ * already gone out and changing it in CounterCtrl changes a file that is no
+ * longer the one the vendor is working from. Monday to Wednesday is the
+ * window; Thursday through Sunday is closed.
+ *
+ * By the clock of whoever is looking, which is the only clock a button has —
+ * a store in another timezone gets its own Thursday.
+ */
+export const isAfterOrderCutoff = (now: Date) => {
+  const day = now.getDay(); // 0 Sun … 6 Sat
+  return day === 0 || day >= 4;
+};
 
 /**
  * Whether the Edit button shows.
  *
- * Three rules, and the middle one inverts the usual ladder on purpose.
- *
  * - The person must hold one of the rollout companies. A programmer holds
  *   none of them by design — they set companies up rather than belong to one
- *   — so level 9 skips both this and the day.
- * - Manager and up may edit.
- * - Owner and up may edit **only on Thursday**. Owners are the client side,
- *   and order day is when an order is still worth changing; a manager needs
- *   it whenever something has to be corrected.
+ *   — so level 9 skips this and the cut-off both.
+ * - Manager and up may edit, Monday to Wednesday. After that the order is
+ *   with the vendor and the button goes.
+ * - **Owner and up are not held to the cut-off.** They are the people who can
+ *   ring the vendor about an order that has already gone; a manager cannot,
+ *   so for a manager an edit after Thursday is a change to a file nobody
+ *   reads.
  *
- * Visibility only. It hides a button and stops nobody who knows the route,
- * so if the day matters to the data rather than to the screen, the endpoint
- * has to say so too.
+ * Visibility only. It hides a button and stops nobody who knows the route, so
+ * the day matters to the data as much as to the screen — `orders/update_file`
+ * takes a bare storeid and checks none of this, and should.
  */
 export const canEditOrders = (
   userLevel: number,
@@ -537,5 +557,5 @@ export const canEditOrders = (
   if (userLevel >= PROGRAMMER_LEVEL) return true;
   if (userLevel < EDIT_MIN_LEVEL) return false;
   if (!companyIds.some((id) => EDIT_COMPANY_IDS.includes(id))) return false;
-  return userLevel < EDIT_THURSDAY_FROM_LEVEL || isThursday(now);
+  return userLevel >= EDIT_ANY_DAY_FROM_LEVEL || !isAfterOrderCutoff(now);
 };
