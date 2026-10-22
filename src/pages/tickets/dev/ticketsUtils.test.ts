@@ -6,6 +6,7 @@ import {
   onTab,
   resolutionLabel,
   tabCounts,
+  ticketsInScope,
   visibleTickets,
   whenText,
 } from "./ticketsUtils";
@@ -207,5 +208,41 @@ describe("what kind of fix closed it", () => {
 
   it("says nothing when the ticket carries no such label", () => {
     expect(resolutionLabel(ticket({ labels: [] }))).toBeNull();
+  });
+});
+
+describe("ticketsInScope", () => {
+  // The dev review's case: user 649 holds Bruces (3), and a DCR user who holds
+  // Houchens (1) and Bruces opens tickets that report company 1.
+  const BRUCES = [3];
+  const mine = ticket({ id: 35, opened_by: 649, company: 3 });
+  const houchens = ticket({ id: 30, opened_by: 12, company: 1 });
+  const bruces = ticket({ id: 31, opened_by: 40, company: 3 });
+
+  it("keeps a customer to their own company's tickets", () => {
+    const seen = ticketsInScope([mine, houchens, bruces], false, BRUCES, 649);
+    expect(seen.map((t) => t.id)).toEqual([35, 31]);
+  });
+
+  it("always shows a ticket the reader opened", () => {
+    // A user with no company at all would otherwise see an empty page.
+    const orphan = ticket({ id: 36, opened_by: 649, company: null });
+    expect(ticketsInScope([orphan], false, [], 649)).toHaveLength(1);
+  });
+
+  it("hides a ticket with no company that somebody else opened", () => {
+    const stray = ticket({ id: 37, opened_by: 40, company: null });
+    expect(ticketsInScope([stray], false, BRUCES, 649)).toHaveLength(0);
+  });
+
+  it("lets a tech see everything", () => {
+    expect(ticketsInScope([mine, houchens, bruces], true, [], 1)).toHaveLength(3);
+  });
+
+  it("counts only what is in scope", () => {
+    // Tab counts read the scoped list, so "Open 14" can't include tickets
+    // the customer will never be shown.
+    const scoped = ticketsInScope([mine, houchens, bruces], false, BRUCES, 649);
+    expect(tabCounts(scoped, 649).all).toBe(2);
   });
 });

@@ -10,6 +10,13 @@ interface InputProps {
   validateEmail?: () => void;
   availableText?: string;
   textColor?: string;
+  /**
+   * What the browser may fill this field with. Unset leaves the browser's own
+   * judgement, which is right for a search box and wrong on a form that
+   * creates or changes an account: Chrome takes a username field next to a
+   * password field for a sign-in and fills in whoever is signed in.
+   */
+  autoComplete?: string;
 }
 
 const Input = ({
@@ -24,6 +31,7 @@ const Input = ({
   validateUsername,
   availableText = "",
   textColor = "",
+  autoComplete,
 }: InputProps) => {
   const testId = `input-${label.toLowerCase().replace(/\s+/g, "-")}`;
 
@@ -68,6 +76,7 @@ const Input = ({
         value={value}
         onChange={(e) => setValue(e.target.value)}
         onKeyDown={handleKeyDown}
+        autoComplete={autoComplete}
         className={`basic-input focus:border w-full bg-custom-white ${className}`}
       />
     </div>

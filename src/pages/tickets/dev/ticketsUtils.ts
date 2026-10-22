@@ -119,6 +119,36 @@ export const matchesFilters = (ticket: Ticket, filters: TicketFilters) => {
   return true;
 };
 
+/**
+ * The tickets a customer may see, whatever the server sent.
+ *
+ * `GET tickets/` scopes a customer by "the opener shares a company with me",
+ * and a ticket has no company of its own -- it belongs to every company its
+ * opener holds. DCR staff hold several, so a ticket one of them opened under
+ * Houchens reached a Bruces customer: the dev review saw 15 company-1 tickets
+ * on a company-3 account with `canViewAll: false`.
+ *
+ * The server is the real fix. This is the backstop, on the same rule the
+ * backend should move to: a customer sees what they opened, and what is filed
+ * under a company they hold. `company` here is the one the row reports -- the
+ * opener's lowest company id -- so a multi-company opener's ticket shows under
+ * exactly one company instead of all of them. A tech sees everything, as the
+ * server intends.
+ */
+export const ticketsInScope = (
+  tickets: Ticket[],
+  canViewAll: boolean,
+  viewerCompanyIds: number[],
+  userid: number,
+) =>
+  canViewAll
+    ? tickets
+    : tickets.filter(
+        (t) =>
+          t.opened_by === userid ||
+          (t.company !== null && viewerCompanyIds.includes(t.company)),
+      );
+
 export const visibleTickets = (
   tickets: Ticket[],
   tab: QueueTab,

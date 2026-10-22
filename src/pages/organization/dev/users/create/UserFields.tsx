@@ -213,6 +213,7 @@ const UserFields = ({ onValidityChange }: UserFieldsProps) => {
         <Section title="Identity" desc="How they sign in. Both must be unique.">
           <Input
             label="Username"
+            autoComplete="off"
             value={ctx.userInfo.username}
             setValue={(v) =>
               ctx.dispatch(setUserInfo({ key: "username", value: v }))
@@ -224,6 +225,7 @@ const UserFields = ({ onValidityChange }: UserFieldsProps) => {
           />
           <Input
             label="Email"
+            autoComplete="off"
             value={ctx.userInfo.email}
             setValue={(v) =>
               ctx.dispatch(setUserInfo({ key: "email", value: v }))
@@ -262,6 +264,7 @@ const UserFields = ({ onValidityChange }: UserFieldsProps) => {
           <PasswordInput
             label="Password"
             name="password"
+            autoComplete="new-password"
             text={ctx.userInfo.password}
             setText={(v) =>
               ctx.dispatch(setUserInfo({ key: "password", value: v }))
@@ -273,6 +276,7 @@ const UserFields = ({ onValidityChange }: UserFieldsProps) => {
           <PasswordInput
             label="Confirm password"
             name="confirm_password"
+            autoComplete="new-password"
             text={ctx.userInfo.confirm_password}
             setText={(v) =>
               ctx.dispatch(setUserInfo({ key: "confirm_password", value: v }))

@@ -10,6 +10,13 @@ interface PasswrodInputProps {
   className?: string;
   leftCompare?: string;
   rightCompare?: string;
+  /**
+   * What the browser may fill this field with. Unset leaves the browser's own
+   * judgement, which is right for a search box and wrong on a form that
+   * creates or changes an account: Chrome takes a username field next to a
+   * password field for a sign-in and fills in whoever is signed in.
+   */
+  autoComplete?: string;
 }
 
 const PasswordInput = ({
@@ -20,6 +27,7 @@ const PasswordInput = ({
   className,
   leftCompare,
   rightCompare,
+  autoComplete,
 }: PasswrodInputProps) => {
   const [inputType, setInputType] = useState<string>("password");
   const [encrypted, setEncrypted] = useState(inputType === "password");
@@ -119,6 +127,7 @@ const PasswordInput = ({
           type={inputType}
           value={text}
           onChange={handleTextChange}
+          autoComplete={autoComplete}
           className={`basic-input focus:border bg-custom-white ${className}`}
         />
         <Eye

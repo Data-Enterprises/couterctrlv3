@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dev Board Response</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:wght@500;600&display=swap">
+<style>
+/* Companion to dev-board-review-2026-10-21.md. One status table for all 47
+   findings, then one sheet per fix, grouped by the phase that shipped it. */
+:root{
+  --ground:#f5f8fb; --paper:#ffffff; --paper-2:#eef3f8;
+  --head:#08203f; --ink:#0c1a2e; --body:#3d5372; --muted:#6b809d; --faint:#93a5bd;
+  --line:#d9e2ed; --line-2:#e9eef5;
+  --accent:#0b4f9e; --accent-soft:#e8f0fb; --accent-bd:#c2d8f2;
+  --ok:#166b45; --ok-bg:#e7f4ed; --ok-bd:#bfe0cd;
+  --warn:#8a5806; --warn-bg:#fdf3e2; --warn-bd:#eed9b0;
+  --stop:#a3231c; --stop-bg:#fcecea; --stop-bd:#f0c8c5;
+  --be:#4b3f8f; --be-bg:#eeebf8; --be-bd:#cfc8ec;
+  --shadow:rgba(8,32,63,.08);
+  --f-display:"IBM Plex Serif",Georgia,serif;
+  --f-body:"IBM Plex Sans",-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ground:#070f1c; --paper:#0e1b2d; --paper-2:#13243a;
+  --head:#eaf1fb; --ink:#dfe8f5; --body:#b0c2da; --muted:#8b9fbb; --faint:#71859f;
+  --line:#1e3350; --line-2:#182a44;
+  --accent:#5aa2f0; --accent-soft:#12294a; --accent-bd:#25446e;
+  --ok:#6fce9f; --ok-bg:#0f2a1e; --ok-bd:#255c40;
+  --warn:#e8b45f; --warn-bg:#2a2010; --warn-bd:#5c4519;
+  --stop:#f08a82; --stop-bg:#2c1512; --stop-bd:#5f2b26;
+  --be:#b4a8f0; --be-bg:#1d1a33; --be-bd:#3c3570;
+  --shadow:rgba(0,0,0,.5); color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --ground:#070f1c; --paper:#0e1b2d; --paper-2:#13243a;
+  --head:#eaf1fb; --ink:#dfe8f5; --body:#b0c2da; --muted:#8b9fbb; --faint:#71859f;
+  --line:#1e3350; --line-2:#182a44;
+  --accent:#5aa2f0; --accent-soft:#12294a; --accent-bd:#25446e;
+  --ok:#6fce9f; --ok-bg:#0f2a1e; --ok-bd:#255c40;
+  --warn:#e8b45f; --warn-bg:#2a2010; --warn-bd:#5c4519;
+  --stop:#f08a82; --stop-bg:#2c1512; --stop-bd:#5f2b26;
+  --be:#b4a8f0; --be-bg:#1d1a33; --be-bd:#3c3570;
+  --shadow:rgba(0,0,0,.5); color-scheme:dark;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--body);font:15px/1.55 var(--f-body);-webkit-font-smoothing:antialiased}
+.wrap{max-width:1040px;margin:0 auto;padding-block:28px 72px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:28px}
+h1,h2,h3{font-family:var(--f-display);color:var(--head);margin:0;font-weight:600;text-wrap:balance}
+h1{font-size:30px;line-height:1.15}
+h2{font-size:21px;line-height:1.25}
+h3{font-size:16px}
+p{margin:0}
+code,.mono{font-family:var(--f-mono);font-size:.87em}
+code{background:var(--paper-2);border:1px solid var(--line-2);border-radius:4px;padding:1px 5px;color:var(--ink);overflow-wrap:anywhere}
+.eyebrow{font:600 11px/1.3 var(--f-mono);letter-spacing:.13em;text-transform:uppercase;color:var(--muted)}
+a{color:var(--accent)}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.masthead{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-end;justify-content:space-between;padding-bottom:18px;border-bottom:2px solid var(--head)}
+.masthead .lead{display:grid;gap:8px;min-width:0;max-width:66ch}
+.masthead .sub{color:var(--muted);font-size:14px}
+.status{display:grid;gap:4px;background:var(--paper);border:1px solid var(--accent-bd);border-radius:8px;padding:10px 14px;font-size:13px}
+.status b{color:var(--accent)}
+
+.chip{display:inline-block;font:600 11px/1 var(--f-mono);letter-spacing:.03em;padding:5px 8px;border-radius:999px;border:1px solid;white-space:nowrap}
+.chip.fixed{color:var(--ok);background:var(--ok-bg);border-color:var(--ok-bd)}
+.chip.next{color:var(--accent);background:var(--accent-soft);border-color:var(--accent-bd)}
+.chip.both{color:var(--warn);background:var(--warn-bg);border-color:var(--warn-bd)}
+.chip.be{color:var(--be);background:var(--be-bg);border-color:var(--be-bd)}
+.chip.none{color:var(--muted);background:var(--paper-2);border-color:var(--line)}
+.commit{font:500 12px var(--f-mono);color:var(--ok);background:var(--ok-bg);border:1px solid var(--ok-bd);border-radius:4px;padding:1px 6px;white-space:nowrap}
+
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--paper)}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{padding:8px 12px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line-2)}
+tr:last-child td{border-bottom:0}
+th{font:600 11px/1.3 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:var(--paper-2)}
+td.id{font-family:var(--f-mono);color:var(--muted);white-space:nowrap;width:4.5em}
+td.st{white-space:nowrap}
+
+.phase-head{display:flex;flex-wrap:wrap;gap:10px;align-items:baseline}
+.issue{background:var(--paper);border:1px solid var(--line);border-radius:10px;box-shadow:0 1px 2px var(--shadow);padding:20px 22px;display:grid;gap:14px;scroll-margin-top:16px;min-width:0}
+.issue-head{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;align-items:baseline}
+.issue-num{font:600 22px/1 var(--f-display);color:var(--faint);grid-row:span 2}
+.issue-head .verdict{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13.5px;color:var(--muted)}
+.facts{display:grid;grid-template-columns:max-content 1fr;gap:6px 18px;font-size:14px;margin:0;padding:12px 14px;background:var(--paper-2);border-radius:8px}
+.facts dt{font:600 11px/1.6 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.facts dd{margin:0;color:var(--ink);min-width:0;overflow-wrap:anywhere}
+.block{display:grid;gap:8px;min-width:0}
+.block>h3{font:600 11px/1.3 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+ol,ul{margin:0;padding-left:20px;display:grid;gap:4px}
+.verify{border:1px solid var(--ok-bd);border-radius:8px;background:var(--ok-bg);padding:12px 14px;display:grid;gap:6px}
+.verify h4{margin:0;font:600 11px/1.3 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ok)}
+.verify ol{padding-left:18px}
+.verify,.verify li{color:var(--ink);font-size:13.5px}
+.callout{border-left:3px solid var(--accent);padding:2px 0 2px 12px;color:var(--ink)}
+.callout.warn{border-color:var(--warn)}
+footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:14px}
+
+@media (max-width:560px){
+  h1{font-size:25px}
+  .issue{padding:16px}
+  .facts{grid-template-columns:1fr;gap:2px 0}
+  .facts dd{margin-bottom:8px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="masthead">
+  <div class="lead">
+    <div class="eyebrow">CounterCtrl dev &middot; Response to the dev board review</div>
+    <h1>Dev Board Response, 22 Oct 2026</h1>
+    <p class="sub">What was done about each finding in <span class="mono">dev-board-review-2026-10-21.md</span>. Fixes land in the dev tree; prod gets them when dev is promoted. This page is updated and committed after each phase.</p>
+  </div>
+  <div class="status">
+    <span><b>Phase 1 of 6 done.</b> Safety.</span>
+    <span class="mono">branch next_publish_10_20_2026</span>
+  </div>
+</header>
+
+<section class="block" aria-labelledby="status-h">
+  <h2 id="status-h">Every finding, where it stands</h2>
+  <div class="scroll"><table>
+    <thead><tr><th>#</th><th>Finding</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td class="id">AG</td><td>Add user autofills the admin's own login</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 1</span></td></tr>
+      <tr><td class="id">AN</td><td>Customers see other companies' tickets</td><td class="st"><span class="chip fixed">Backstop &middot; Phase 1</span> <span class="chip be">Backend</span></td></tr>
+      <tr><td class="id">E, X</td><td>Price Opt sales 6–7% higher than Top 200</td><td class="st"><span class="chip next">Phase 2</span></td></tr>
+      <tr><td class="id">A</td><td>By-weight items priced per package</td><td class="st"><span class="chip next">Phase 2 stop-gap</span> <span class="chip both">Then backend</span></td></tr>
+      <tr><td class="id">H</td><td>Switching vendor keeps the previous item</td><td class="st"><span class="chip next">Phase 2</span></td></tr>
+      <tr><td class="id">O, W</td><td>Price Opt cost is the stale item-file cost</td><td class="st"><span class="chip next">Phase 2</span></td></tr>
+      <tr><td class="id">AO</td><td>Ticket times 5 hours ahead</td><td class="st"><span class="chip next">Phase 3</span></td></tr>
+      <tr><td class="id">AQ</td><td><code>tickets/assignees</code> 403 on every load</td><td class="st"><span class="chip next">Phase 3</span></td></tr>
+      <tr><td class="id">1</td><td>"+13.1%" on Top 200 is points</td><td class="st"><span class="chip next">Phase 3</span></td></tr>
+      <tr><td class="id">AI, AL</td><td>"New" vs "Add user"; role shows as "1"</td><td class="st"><span class="chip next">Phase 3</span></td></tr>
+      <tr><td class="id">Y</td><td>Item Lookup: Enter doesn't search; unclear not-found</td><td class="st"><span class="chip next">Phase 3</span></td></tr>
+      <tr><td class="id">I</td><td>Price Opt Vendor fires 26 calls at once</td><td class="st"><span class="chip next">Phase 4</span> <span class="chip both">Then backend</span></td></tr>
+      <tr><td class="id">K</td><td>Price Opt doesn't keep its result</td><td class="st"><span class="chip next">Phase 4</span></td></tr>
+      <tr><td class="id">J</td><td>Filter doesn't search items</td><td class="st"><span class="chip next">Phase 4</span></td></tr>
+      <tr><td class="id">C</td><td>TRANS counts item lines, not receipts</td><td class="st"><span class="chip next">Phase 4</span></td></tr>
+      <tr><td class="id">B, G</td><td>One-day recommendations; mixed money formats</td><td class="st"><span class="chip next">Phase 4</span></td></tr>
+      <tr><td class="id">P</td><td>65.9% margin on Breast Tenders</td><td class="st"><span class="chip next">Phase 5 (check first)</span></td></tr>
+      <tr><td class="id">L, M, N, T</td><td>Item Actions judges deliveries unfairly</td><td class="st"><span class="chip next">Phase 5</span></td></tr>
+      <tr><td class="id">Q, R, S</td><td>Item Actions labels and controls</td><td class="st"><span class="chip next">Phase 5</span></td></tr>
+      <tr><td class="id">AK, 2</td><td>Add user half-ticked state; Top 200 names cut off</td><td class="st"><span class="chip next">Phase 6</span></td></tr>
+      <tr><td class="id">AE, AD, AF</td><td>New pages on old help; guide steps; Show me gaps</td><td class="st"><span class="chip next">Phase 6</span></td></tr>
+      <tr><td class="id">3, D, AJ</td><td>Over-fetching and <code>users/</code> scope</td><td class="st"><span class="chip both">Backend, then frontend</span></td></tr>
+      <tr><td class="id">AP</td><td>Nobody notified of a new ticket</td><td class="st"><span class="chip be">Backend</span></td></tr>
+      <tr><td class="id">F, AB, U, Z, AA</td><td>Board wording, training and release notes</td><td class="st"><span class="chip none">No code</span></td></tr>
+      <tr><td class="id">V, AC, AH, AM, AR</td><td>Reference, withdrawn, or working well</td><td class="st"><span class="chip none">Settled</span></td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ============================================================ PHASE 1 -->
+<section class="block" aria-labelledby="p1-h">
+  <div class="phase-head"><h2 id="p1-h">Phase 1 &middot; Safety</h2><span class="commit" id="p1-commit">pending commit</span></div>
+</section>
+
+<article class="issue" id="AG" aria-labelledby="ag-h">
+  <div class="issue-head">
+    <span class="issue-num">AG</span>
+    <h2 id="ag-h">Add user no longer fills in the admin's own login</h2>
+    <div class="verdict"><span class="chip fixed">Fixed</span> Dev tree. Prod gets it on promotion.</div>
+  </div>
+  <dl class="facts">
+    <dt>Found</dt><dd>Opening New on Users showed the test account's username and its saved password in the new user's fields.</dd>
+    <dt>Cause</dt><dd>Neither shared input passed <code>autoComplete</code> through to the field, so Chrome read the form as a sign-in and filled in whoever was signed in.</dd>
+    <dt>Files</dt><dd><code>components-dev/inputs/Input.tsx</code>, <code>PasswordInput.tsx</code>, <code>organization/dev/users/create/UserFields.tsx</code>, <code>organization/dev/users/view/SecurityTab.tsx</code></dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li>Both input components take an optional <code>autoComplete</code> and pass it to the field. Callers that don't set it behave exactly as before, so search boxes and filters are untouched.</li>
+      <li>On Add user, username and email are <code>autoComplete="off"</code>. Password and confirm are <code>"new-password"</code>, which tells Chrome this is an account being created, not one signing in.</li>
+      <li>The Security tab's password fields get <code>"new-password"</code> too, since changing a password has the same risk.</li>
+      <li>Three tests pin the attribute so a later refactor can't drop it.</li>
+    </ul>
+  </div>
+  <div class="verify">
+    <h4>How to check it</h4>
+    <ol>
+      <li>DEV mode, User Management, Users, press New, in a browser with a saved CounterCtrl password.</li>
+      <li>Username, Email, Password and Confirm should all be empty. Chrome may offer to suggest a strong password, which is expected.</li>
+      <li>Open a user, Security tab: the password fields should also be empty.</li>
+    </ol>
+  </div>
+</article>
+
+<article class="issue" id="AN" aria-labelledby="an-h">
+  <div class="issue-head">
+    <span class="issue-num">AN</span>
+    <h2 id="an-h">A customer sees only their own company's tickets</h2>
+    <div class="verdict"><span class="chip fixed">Backstop in place</span> <span class="chip be">Real fix is backend</span></div>
+  </div>
+  <dl class="facts">
+    <dt>Found</dt><dd>User 649 (Bruces, <code>canViewAll: false</code>) was shown 16 tickets: their own TCK-35 and 15 from company 1, opened by 3 other users.</dd>
+    <dt>Cause</dt><dd>Tickets have no company of their own. The server scopes a customer by "the opener shares a company with me", so a ticket opened by DCR staff who hold both Houchens and Bruces reaches customers at both. The page then showed whatever arrived; the list filter had no company check.</dd>
+    <dt>Files</dt><dd><code>pages/tickets/dev/ticketsUtils.ts</code> (<code>ticketsInScope</code>), <code>pages/tickets/dev/hooks.ts</code></dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li>New rule, applied before every tab and search: a customer sees tickets they opened, plus tickets filed under a company they hold. A ticket's company is the one the row reports, the opener's lowest company id, so a multi-company opener's ticket counts under one company instead of all of them.</li>
+      <li>Techs see everything, as before.</li>
+      <li>The tab counts read the same filtered list, so "Open" can't count tickets the customer will never see.</li>
+      <li>Five tests cover the review's exact case, a customer with no company, and the tech view.</li>
+    </ul>
+  </div>
+  <p class="callout warn">This is a backstop in the page. The server still sends the other companies' tickets, and a ticket could still be opened by its address. The backend fix is to scope on the ticket's company in <code>_SCOPE</code> (<code>api/routers/tickets.py</code>), and properly by adding a <code>tickets.company</code> column. Both are in the backend plan.</p>
+  <div class="verify">
+    <h4>How to check it</h4>
+    <ol>
+      <li>Sign in as user 649 in DEV mode, Coming Soon, Tickets.</li>
+      <li>"Your tickets" should list TCK-35 and no company-1 tickets. The Open count should match the rows shown.</li>
+      <li>Sign in as a tech: every ticket should still be there.</li>
+    </ol>
+  </div>
+</article>
+
+<footer>
+  Verified for Phase 1: typecheck, 1,199 tests (8 new), theme audit, eslint and a production build, all clean. Checked by tests, not in a browser, so the "how to check it" steps are yours to run.
+</footer>
+
+</div>
+</body>
+</html>

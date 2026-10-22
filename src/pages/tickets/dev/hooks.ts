@@ -42,7 +42,7 @@ import {
   startWork,
   upsertTicket,
 } from "../../../features/dev/devTicketsSlice";
-import { visibleTickets, tabCounts } from "./ticketsUtils";
+import { ticketsInScope, visibleTickets, tabCounts } from "./ticketsUtils";
 
 /**
  * Everything the Client Help Desk needs, in one hook.
@@ -57,6 +57,7 @@ export const useTicketsCtx = () => {
   const toast = useToast();
   const tickets = useAppSelector((state) => state.dev.tickets);
   const userid = useAppSelector((state) => state.user.userid);
+  const userCompanies = useAppSelector((state) => state.user.companies);
 
   /**
    * Which view this is.
@@ -71,21 +72,31 @@ export const useTicketsCtx = () => {
   // always fixable by somebody.
   const canManageTechs = tickets.caps.canManageTechs;
 
+  /** What this reader may see at all, before any tab or search narrows it.
+   *  Counts read from it too, so a tab can't count tickets it won't show. */
+  const scoped = useMemo(
+    () =>
+      ticketsInScope(
+        tickets.tickets,
+        isTech,
+        userCompanies.map((c) => c.company),
+        userid,
+      ),
+    [tickets.tickets, isTech, userCompanies, userid],
+  );
+
   const rows = useMemo(
     () =>
       visibleTickets(
-        tickets.tickets,
+        scoped,
         tickets.tab,
         tickets.search,
         userid,
         tickets.filters,
       ),
-    [tickets.tickets, tickets.tab, tickets.search, userid, tickets.filters],
+    [scoped, tickets.tab, tickets.search, userid, tickets.filters],
   );
-  const counts = useMemo(
-    () => tabCounts(tickets.tickets, userid),
-    [tickets.tickets, userid],
-  );
+  const counts = useMemo(() => tabCounts(scoped, userid), [scoped, userid]);
 
   const failed = (what: string) => (err: JsonError) => {
     const status = (err as { status?: number }).status;

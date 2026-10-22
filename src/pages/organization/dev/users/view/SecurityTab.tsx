@@ -74,6 +74,7 @@ const SecurityTab = ({ user }: SecurityTabProps) => {
         <PasswordInput
           label="Password"
           name="password"
+          autoComplete="new-password"
           text={pw}
           setText={setPw}
           leftCompare={pw}
@@ -83,6 +84,7 @@ const SecurityTab = ({ user }: SecurityTabProps) => {
         <PasswordInput
           label="Confirm password"
           name="confirm_password"
+          autoComplete="new-password"
           text={confirmPw}
           setText={setConfirmPw}
           leftCompare={pw}
