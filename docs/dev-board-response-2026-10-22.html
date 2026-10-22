@@ -118,7 +118,7 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
     <p class="sub">What was done about each finding in <span class="mono">dev-board-review-2026-10-21.md</span>. Fixes land in the dev tree; prod gets them when dev is promoted. This page is updated and committed after each phase.</p>
   </div>
   <div class="status">
-    <span><b>Backend done (not deployed).</b> Frontend follow-ups: phase 9 of 10 done.</span>
+    <span><b>Backend done (not deployed).</b> Frontend follow-ups: phases 7&ndash;9 done; phase 10 waits on one decision.</span>
     <span class="mono">branch next_publish_10_20_2026</span>
   </div>
 </header>
@@ -972,7 +972,7 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
 
 <!-- ============================================================ PHASE 9 -->
 <section class="block" aria-labelledby="p9-h">
-  <div class="phase-head"><h2 id="p9-h">Phase 9 &middot; Price Opt reads prices from the server</h2><span class="commit" id="p9-commit">this commit</span></div>
+  <div class="phase-head"><h2 id="p9-h">Phase 9 &middot; Price Opt reads prices from the server</h2><span class="commit">ba150ec3</span></div>
 </section>
 
 <article class="issue" id="D" aria-labelledby="d-h">
@@ -1028,7 +1028,7 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
   <div class="scroll"><table>
     <thead><tr><th>#</th><th>What's needed</th><th>Who</th></tr></thead>
     <tbody>
-      <tr><td class="id">I</td><td>Vendors, Sub Dept Margins and Price Opt Vendor on <code>subs/rollup</code>.</td><td>Phase 10</td></tr>
+      <tr><td class="id">I</td><td>Vendors, Sub Dept Margins and Price Opt Vendor on <code>subs/rollup</code>. The lists can come from the rollup, but <code>subs/subs</code> has no vendor filter, so the item rows behind an opened vendor still mean the full download. Price Opt Vendor's item search (J) and the multi-department export need every item row too.</td><td>Decision, then phase 10</td></tr>
       <tr><td class="id">D</td><td>"Package deal" back on Price Opt: a count of receipts carrying the item at more than one price, on <code>price_points</code>.</td><td>Backend, optional</td></tr>
       <tr><td class="id">P</td><td>Fam Pak Breast Tenders: are its Item Actions units whole numbers or pounds? That decides the fix.</td><td>One look</td></tr>
       <tr><td class="id">B</td><td>Tune the 3-day, 5-receipt minimum for "moves fastest" against real stores.</td><td>Steve / Tommy</td></tr>
