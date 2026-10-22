@@ -118,7 +118,7 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
     <p class="sub">What was done about each finding in <span class="mono">dev-board-review-2026-10-21.md</span>. Fixes land in the dev tree; prod gets them when dev is promoted. This page is updated and committed after each phase.</p>
   </div>
   <div class="status">
-    <span><b>All 6 frontend phases done.</b> Backend next.</span>
+    <span><b>Backend done (not deployed).</b> Frontend follow-ups: phase 7 of 10 done.</span>
     <span class="mono">branch next_publish_10_20_2026</span>
   </div>
 </header>
@@ -129,12 +129,12 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
     <thead><tr><th>#</th><th>Finding</th><th>Status</th></tr></thead>
     <tbody>
       <tr><td class="id">AG</td><td>Add user autofills the admin's own login</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 1</span></td></tr>
-      <tr><td class="id">AN</td><td>Customers see other companies' tickets</td><td class="st"><span class="chip fixed">Backstop &middot; Phase 1</span> <span class="chip be">Backend</span></td></tr>
+      <tr><td class="id">AN</td><td>Customers see other companies' tickets</td><td class="st"><span class="chip fixed">Backstop &middot; Phase 1</span> <span class="chip fixed">Backend fixed</span> <span class="chip fixed">No-company message &middot; Phase 7</span></td></tr>
       <tr><td class="id">E, X</td><td>Price Opt sales 6–7% higher than Top 200</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 2</span></td></tr>
       <tr><td class="id">A</td><td>By-weight items priced per package</td><td class="st"><span class="chip fixed">Stop-gap &middot; Phase 2</span> <span class="chip both">Then backend</span></td></tr>
       <tr><td class="id">H</td><td>Switching vendor keeps the previous item</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 2</span></td></tr>
       <tr><td class="id">O, W</td><td>Price Opt cost is the stale item-file cost</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 2</span></td></tr>
-      <tr><td class="id">AO</td><td>Ticket times 5 hours ahead</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 3</span></td></tr>
+      <tr><td class="id">AO</td><td>Ticket times 5 hours ahead</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 3</span> <span class="chip fixed">Backend sends the zone</span></td></tr>
       <tr><td class="id">AQ</td><td><code>tickets/assignees</code> 403 on every load</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 3</span></td></tr>
       <tr><td class="id">1</td><td>"+13.1%" on Top 200 is points</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 3</span></td></tr>
       <tr><td class="id">AI, AL</td><td>"New" vs "Add user"; role shows as "1"</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 3</span></td></tr>
@@ -150,7 +150,8 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
       <tr><td class="id">AK, 2</td><td>Add user half-ticked state; Top 200 names cut off</td><td class="st"><span class="chip fixed">AK fixed &middot; Phase 6</span> <span class="chip none">2: already changed</span></td></tr>
       <tr><td class="id">AE, AD, AF</td><td>New pages on old help; guide steps; Show me gaps</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 6</span></td></tr>
       <tr><td class="id">3, D, AJ</td><td>Over-fetching and <code>users/</code> scope</td><td class="st"><span class="chip both">Backend, then frontend</span></td></tr>
-      <tr><td class="id">AP</td><td>Nobody notified of a new ticket</td><td class="st"><span class="chip be">Backend</span></td></tr>
+      <tr><td class="id">AP</td><td>Nobody notified of a new ticket</td><td class="st"><span class="chip none">Settled &middot; ticket email is on and works</span></td></tr>
+      <tr><td class="id">S1, S2</td><td>Found while planning: sign-in override; <code>users/</code> sent password hashes</td><td class="st"><span class="chip fixed">Backend fixed</span> <span class="chip fixed">Frontend &middot; Phase 7</span></td></tr>
       <tr><td class="id">F, AB, U, Z, AA</td><td>Board wording, training and release notes</td><td class="st"><span class="chip none">No code</span></td></tr>
       <tr><td class="id">V, AC, AH, AM, AR</td><td>Reference, withdrawn, or working well</td><td class="st"><span class="chip none">Settled</span></td></tr>
     </tbody>
@@ -824,27 +825,134 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
   </div>
 </article>
 
+<!-- ============================================================ PHASE 7 -->
+<section class="block" aria-labelledby="p7-h">
+  <div class="phase-head"><h2 id="p7-h">Phase 7 &middot; Sign-in and accounts, after the backend</h2><span class="commit" id="p7-commit">this commit</span></div>
+  <p>Phases 7 to 10 are the frontend's half of the backend changes on <code>branch_10_20_2026</code> in goliath-platform. That branch is committed but <b>not deployed</b>. Everything below is written against the contracts in the backend's response, so it shows on screen only once that branch is on dev.</p>
+  <p class="callout">The sign-in page, the account menu and the account-setup modal are shared, not forked. The backend change reaches both trees, so these changes do too. Each one says where.</p>
+</section>
+
+<article class="issue" id="S1" aria-labelledby="s1-h">
+  <div class="issue-head">
+    <span class="issue-num">S1</span>
+    <h2 id="s1-h">The sign-in override is gone, and a refused sign-in says so</h2>
+    <div class="verdict"><span class="chip fixed">Fixed</span> Shared: the sign-in page serves both trees.</div>
+  </div>
+  <dl class="facts">
+    <dt>Found</dt><dd>While planning the backend work. <code>/auth/login</code> handed out a working token for any username, with any password, when the body carried <code>"ov": 1</code>. The frontend sent <code>ov</code> once a username and password written into <code>Login.tsx</code> were typed in. Both shipped in every build, so anyone reading the JavaScript had them.</dd>
+    <dt>Backend</dt><dd><code>1b49e96</code>: the password check is unconditional, the token is no longer logged, and a wrong password is now <b>HTTP 401</b>, not a 200 carrying <code>error: 1</code>.</dd>
+    <dt>Why the frontend had to move</dt><dd>axios rejects a 401. The page treated every rejection as an outage, so after the deploy a mistyped password would have read "We couldn't reach the server", with a red toast.</dd>
+    <dt>Files</dt><dd><code>pages/home/Login.tsx</code>, <code>portal/SignInRail.tsx</code>, <code>api/login.ts</code>, new <code>utils/session.ts</code></dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li>The hardcoded username and password, the "Impersonate user" checkbox and the <code>ov</code> flag are deleted. The password string is no longer in the built bundle (checked in <code>dist/</code>).</li>
+      <li>Any 4xx from sign-in reads as a wrong username or password. Only no response or a 5xx reads as the server being down. The old 200-with-<code>error</code> answer still reads as refused, because an inactive user still gets it, and so does an API without the change.</li>
+      <li>The success dispatches moved into one <code>applySession</code>, so "Sign in as" below sets up a session the same way a real sign-in does.</li>
+    </ul>
+  </div>
+  <div class="verify">
+    <h4>How to check it (after the backend deploy)</h4>
+    <ol>
+      <li>Sign in with a wrong password: "That username and password don't match", no toast.</li>
+      <li>The impersonate checkbox never appears, whatever is typed.</li>
+    </ol>
+  </div>
+  <p class="callout">The username and password that unlocked the checkbox are still in git history. If <code>otkim</code> is a real account, change its password.</p>
+</article>
+
+<article class="issue" id="S1b" aria-labelledby="s1b-h">
+  <div class="issue-head">
+    <span class="issue-num">S1</span>
+    <h2 id="s1b-h">"Sign in as" for level 9, in the account menu</h2>
+    <div class="verdict"><span class="chip fixed">Built</span> Dev only, level 9 only.</div>
+  </div>
+  <dl class="facts">
+    <dt>Backend</dt><dd><code>POST /auth/impersonate {username}</code> from a level 9 session. The level is read from the database, not the token. The response is identical to a sign-in for the person named. Its token carries <code>imp</code> naming the caller and lasts 60 minutes.</dd>
+    <dt>Files</dt><dd>new <code>components-dev/SignInAsModal.tsx</code>; <code>components/navigation/TitleBar.tsx</code> and <code>components/accountSetup/AccountSetupModal.tsx</code> (shared)</dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li>The account menu has "Sign in as..." for level 9 on dev. It asks for a username, and failures come back in words: no such user, inactive, not level 9, or your own session has run out.</li>
+      <li>On success it does a sign-out and then a sign-in as them, not a token swap. The store is emptied the way Sign out empties it, so none of your searches or page rows carry into their session. Their stores, groups and last page then load as they would for them.</li>
+      <li>While signed in as someone, the menu says "Signed in as them by C5m7b4. Sign out to return.", read from the token's <code>imp</code>.</li>
+      <li>The account-setup modal stays shut in an impersonated session. Otherwise opening as someone due a password change would have had support choosing their password and security answer.</li>
+      <li>The session is on dev and holds no prod or legacy token. Mode has nothing to switch to while you are them.</li>
+    </ul>
+  </div>
+  <div class="verify">
+    <h4>How to check it (after the backend deploy)</h4>
+    <ol>
+      <li>As a level 9 on DEV: account menu, Sign in as..., a client username. You land on their last page with their stores, and the menu names you as the one behind it.</li>
+      <li>Try a made-up username: "There is no user named ...".</li>
+      <li>Sign out, sign back in as yourself.</li>
+    </ol>
+  </div>
+</article>
+
+<article class="issue" id="S2" aria-labelledby="s2-h">
+  <div class="issue-head">
+    <span class="issue-num">S2</span>
+    <h2 id="s2-h">The user list no longer carries passwords, and the edit form stops copying one</h2>
+    <div class="verdict"><span class="chip fixed">Fixed</span></div>
+  </div>
+  <dl class="facts">
+    <dt>Backend</dt><dd><code>e491947</code>: <code>users/</code> names its columns. No <code>password</code> (an unsalted SHA-1), <code>security_answer</code> or <code>security_question_id</code>.</dd>
+    <dt>Found on the way</dt><dd>Selecting a user copied that hash into the edit form's password and confirm fields. Checked on the backend: <code>users/update_user</code> has no password field and never wrote it, so nothing was ever saved from it. It was just a hash sitting in a form.</dd>
+    <dt>Files</dt><dd><code>interfaces/index.ts</code> (and <code>legacy/</code>), <code>features/dev/devUsersSlice.ts</code>; <code>features/usersSlice.ts</code> and <code>legacy/features/usersSlice.ts</code> only so they compile, with no change in behaviour</dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li>The three fields are off the <code>User</code> type. They stay on the request types that send them (password reset, security question).</li>
+      <li>Selecting a user leaves the form's password fields blank.</li>
+    </ul>
+  </div>
+</article>
+
+<article class="issue" id="AN2" aria-labelledby="an2-h">
+  <div class="issue-head">
+    <span class="issue-num">AN</span>
+    <h2 id="an2-h">A user with no company is told why their ticket did not send</h2>
+    <div class="verdict"><span class="chip fixed">Fixed</span> And the ticket scoping itself is fixed on the backend.</div>
+  </div>
+  <dl class="facts">
+    <dt>Backend</dt><dd><code>344672f</code>, <code>52a35d6</code>: a customer sees a ticket they opened or one filed under their company, by list or by id (404 otherwise). <code>tickets.company</code> is now a required column, so a user with no company gets a 400 explaining that a manager has to assign one.</dd>
+    <dt>Found on the way</dt><dd>A failed send was set as the page's error. On the help desk that sat behind the open form. Filed from another page through Report an issue, it showed nowhere.</dd>
+    <dt>Files</dt><dd><code>pages/tickets/dev/hooks.ts</code>, <code>NewTicketModal.tsx</code>, <code>ticketsUtils.ts</code> (<code>sendFailureText</code>)</dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li>The form says why it did not send, next to its own Send button, and stays open with everything typed.</li>
+      <li>A 400's <code>detail</code> is shown as the server wrote it. Other failures read "That did not send: ...".</li>
+    </ul>
+  </div>
+  <div class="verify">
+    <h4>How to check it (after the backend deploy)</h4>
+    <ol>
+      <li>As one of the migrated no-company users, Report an issue, Send it: the message names the missing company and a manager.</li>
+      <li>As taBruces: the help desk lists TCK-35 only.</li>
+    </ol>
+  </div>
+</article>
+
 <section class="block" aria-labelledby="left-h">
   <h2 id="left-h">What the frontend can't do alone</h2>
   <div class="scroll"><table>
     <thead><tr><th>#</th><th>What's needed</th><th>Who</th></tr></thead>
     <tbody>
-      <tr><td class="id">AN</td><td>Scope <code>GET tickets/</code> by the ticket's company (<code>_SCOPE</code> in <code>api/routers/tickets.py</code>), and properly with a <code>tickets.company</code> column. The page backstop is in place.</td><td>Backend</td></tr>
       <tr><td class="id">A</td><td>Per-pound actual prices for random-weight packs: <code>transaction_list</code> already returns <code>weight</code> on the backend branch, but without the company-4 divide-by-1,000 that <code>topitems</code> applies. Then the frontend prices those lines per pound and the notice goes.</td><td>Backend, then frontend</td></tr>
       <tr><td class="id">3, D, I</td><td><code>topitems</code> ranking by sales is on the backend branch and needs deploying, then the frontend asks for 200. A server-side price-point aggregate (D) and a vendor rollup (I) cut the downloads.</td><td>Backend, then frontend</td></tr>
       <tr><td class="id">AJ</td><td>Scope <code>users/</code> to the caller, after a <code>parent_company_id</code> keeps the Houchens family together.</td><td>Backend, then frontend</td></tr>
-      <tr><td class="id">AO</td><td>Ticket timestamps with a zone. The page already handles both.</td><td>Backend (optional)</td></tr>
-      <tr><td class="id">AP</td><td>Who is notified of a new ticket.</td><td>Decision, then backend</td></tr>
       <tr><td class="id">P</td><td>Fam Pak Breast Tenders: are its Item Actions units whole numbers or pounds? That decides the fix.</td><td>One look</td></tr>
       <tr><td class="id">B</td><td>Tune the 3-day, 5-receipt minimum for "moves fastest" against real stores.</td><td>Steve / Tommy</td></tr>
       <tr><td class="id">F, AB, U, Z, AA</td><td>Board wording, Groups training card, Item Lookup on a phone, release notes for the Vendors Crit count and the Sub Dept Margins headline.</td><td>No code</td></tr>
     </tbody>
   </table></div>
-  <p class="callout">Redeploy dev before the next review run. Several findings (2, AE, and everything in phases 1–6) only show on the new build.</p>
+  <p class="callout">Two deploys before the next review run: the frontend, for everything in phases 1–7, and the backend branch, which phases 7–10 are built against. AN, AO and AP are off this list: the backend fixed AN and AO, and ticket email is on and works.</p>
 </section>
 
 <footer>
-  Verified for Phase 6: typecheck, 1,251 tests (5 new this phase), theme audit, eslint and a production build, all clean. Checked by tests, not in a browser, so the "how to check it" steps are yours to run.
+  Verified for Phase 7: typecheck, 1,262 tests (11 new this phase), theme audit, eslint and a production build, all clean. Checked by tests, not in a browser, so the "how to check it" steps are yours to run.
 </footer>
 
 </div>

@@ -20,6 +20,8 @@ import {
 import { setUserPrefs } from "../../api/user";
 import { useToast } from "../toasts/hooks/useToast";
 import type { JsonError } from "../../interfaces";
+import SignInAsModal from "../../components-dev/SignInAsModal";
+import { impersonatedBy } from "../../utils/session";
 
 interface NavSheetProps {
   cat: { name: string; pages: any[] };
@@ -169,6 +171,9 @@ const TitleBar = () => {
     categoryCloseTimer.current = setTimeout(() => setOpenCategory(null), 80);
   };
   const [avatarOpen, setAvatarOpen] = useState(false);
+  const [signInAsOpen, setSignInAsOpen] = useState(false);
+  /** Who is really behind this session, when it is someone else's. */
+  const realUser = impersonatedBy(context.token);
 
   const currentPath = location.pathname.replace(/^\//, "");
   const categories = categoriesFor(context.apiEnv);
@@ -283,6 +288,14 @@ const TitleBar = () => {
               {user.email && (
                 <div className="text-[11px] text-content/50 mt-0.5">
                   {user.email}
+                </div>
+              )}
+              {/* Said plainly, because nothing else on screen would: an
+                  impersonated session looks exactly like theirs. The name
+                  comes from the token's `imp` claim. */}
+              {realUser && (
+                <div className="text-[11px] font-medium text-amber-900 mt-1.5">
+                  Signed in as them by {realUser}. Sign out to return.
                 </div>
               )}
             </div>
@@ -422,6 +435,22 @@ const TitleBar = () => {
                 <span className="text-[11px] text-content/85">
                   from this page
                 </span>
+              </button>
+            ) : null}
+            {/* Sign in as someone. Level 9 only, which the server checks
+                again from the database, and dev only, because the endpoint
+                is on the dev API alone so far. Replaced the impersonate
+                checkbox on the sign-in page. */}
+            {context.apiEnv === "dev" && user.userLevel === 9 ? (
+              <button
+                onClick={() => {
+                  setAvatarOpen(false);
+                  setSignInAsOpen(true);
+                }}
+                className="w-full text-left px-4 py-2.5 text-[13px] font-medium text-content hover:bg-gray-50 transition-colors border-b border-gray-100 flex items-center gap-2"
+              >
+                <span className="flex-1">Sign in as...</span>
+                <span className="text-[11px] text-content/85">level 9</span>
               </button>
             ) : null}
             {SHOW_API_ENV_SWITCH && user.userLevel >= 7 ? (
@@ -687,6 +716,9 @@ const TitleBar = () => {
         </>
       )}
 
+      {signInAsOpen && (
+        <SignInAsModal onClose={() => setSignInAsOpen(false)} />
+      )}
     </>
   );
 };

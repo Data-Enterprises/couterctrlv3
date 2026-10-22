@@ -8,7 +8,6 @@ import {
   setIsMobile,
   setIsTablet,
   setIsDesktop,
-  setToken,
   setForgotPassword,
   setFetchingCredentials,
   setProdToken,
@@ -16,19 +15,8 @@ import {
   setLegacyToken,
   SHOW_API_ENV_SWITCH,
 } from "../../features/appSlice";
-import {
-  setUsername,
-  setPassword,
-  setFirstName,
-  setLastName,
-  setRole,
-  setUserLevel,
-  setTicketTech,
-  setResetPassword,
-  setSecurityQuestionId,
-  setEmail,
-  setCompanies,
-} from "../../features/userSlice";
+import { setUsername, setPassword } from "../../features/userSlice";
+import { applySession, signInRefused } from "../../utils/session";
 import ForgotPassword from "./forgot/ForgotPassword";
 
 import SignInRail from "./portal/SignInRail";
@@ -61,10 +49,14 @@ const BLOG_API = import.meta.env.VITE_API_URL_DEV;
  * design handoff (since removed from the repo — see git history, and
  * handoff-DEV-NOTES.md / handoff-PORTAL-README.md at the root).
  *
- * The authentication path below is unchanged from the pre-redesign page: the
- * impersonation credentials, the cross-environment token login, every success
- * dispatch and the device-detection effect are all carried over verbatim.
- * Only the presentation was replaced.
+ * The authentication path below is the pre-redesign page's: the
+ * cross-environment token login, every success dispatch and the
+ * device-detection effect were carried over verbatim. Only the presentation
+ * was replaced. The one later change is that impersonation left this page
+ * (22 Oct): it was a username and password written into this file that
+ * unlocked an `ov` flag, and the backend honoured `ov` for anyone who sent it.
+ * Signing in as someone is now "Sign in as" in the account menu, behind a
+ * level 9 session.
  *
  * Four slide-over panels are wired through `handleNavigate` — About, Field
  * Notes, Book a walkthrough, and Terms and Conditions. The first three open
@@ -79,7 +71,6 @@ const Login = () => {
   const context = useAppSelector((state) => state.app);
   const dispatch = useAppDispatch();
   const toast = useToast();
-  const [useImpersonation, setUseImpersonation] = useState<number>(0);
 
   useEffect(() => {
     const userAgent = navigator.userAgent.toLowerCase();
@@ -176,49 +167,24 @@ const Login = () => {
       return;
     }
 
-    if (state.username == "otkim" && state.password == "!@#6Mikto6!@#") {
-      setUseImpersonation(1);
-      return;
-    }
     handleLogin();
   };
 
   const handleLogin = () => {
     dispatch(setFetchingCredentials(true));
-    login(context.url, state.username, state.password, useImpersonation ? 1 : 0)
+    login(context.url, state.username, state.password)
       .then((resp) => {
         const j = resp.data;
         if (j.error == 0) {
-          dispatch(setToken(j.access_token));
-          // Login runs against `context.url`, so this token belongs to
-          // whichever environment `apiEnv` currently points at, and has to be
-          // filed under that one specifically. `useDevApi` reads `devToken`
-          // directly, and an empty slot there means `Bearer ` with nothing
-          // after it: Export Builder, Invoices and the Inventory pages all
-          // take that route. (AccountSetupModal used to and no longer does —
-          // it follows the signed-in environment now, since both share one
-          // RDS.)
-          dispatch(
-            context.apiEnv === "dev"
-              ? setDevToken(j.access_token)
-              : setProdToken(j.access_token),
-          );
-          dispatch(setFirstName(j.first_name));
-          dispatch(setLastName(j.last_name));
-          dispatch(setEmail(j.email));
-          dispatch(setRole(j.role));
-          dispatch(setUserLevel(j.user_level));
-          // Null for everybody who is not on the ticket desk, which is most
-          // people. Carried from here rather than fetched, so a page nobody
-          // opens costs no call.
-          dispatch(setTicketTech(j.ticket_tech ?? null));
-          dispatch(setResetPassword(j.password_change_needed));
-          dispatch(setSecurityQuestionId(j.security_question_id));
-          dispatch(setCompanies(j.companies));
+          // Login runs against `context.url`, so the token is filed under
+          // whichever environment `apiEnv` currently points at.
+          // (AccountSetupModal used to read devToken directly and no longer
+          // does — it follows the signed-in environment now, since both share
+          // one RDS.)
+          applySession(dispatch, j, context.apiEnv);
           // Saved here, not on change: only a username that actually signed in
           // is worth prefilling next time.
           if (remember) saveRememberedUsername(state.username);
-          setUseImpersonation(0);
           // The other environment's token, fetched up front because the
           // dropdown switch is a pointer swap between two held credentials
           // rather than a re-auth — flipping with an empty slot just 401s.
@@ -232,7 +198,7 @@ const Login = () => {
               context.apiEnv === "dev"
                 ? import.meta.env.VITE_API_URL_PROD
                 : import.meta.env.VITE_API_URL_DEV;
-            login(otherUrl, state.username, state.password, 0)
+            login(otherUrl, state.username, state.password)
               .then((otherResp) => {
                 if (otherResp.data.error === 0) {
                   dispatch(
@@ -251,7 +217,7 @@ const Login = () => {
             // is a pointer swap between credentials already in hand, so the
             // token is fetched now and never mid-session. Non-fatal in the
             // same way — legacy being down must not stop anyone signing in.
-            login(import.meta.env.VITE_API_URL_LEGACY, state.username, state.password, 0)
+            login(import.meta.env.VITE_API_URL_LEGACY, state.username, state.password)
               .then((legacyResp) => {
                 if (legacyResp.data.error === 0) {
                   dispatch(setLegacyToken(legacyResp.data.access_token));
@@ -262,26 +228,28 @@ const Login = () => {
               });
           }
         } else {
-          dispatch(setFetchingCredentials(false));
-          setAuthError(
-            "That username and password don't match. Check them and try again.",
-          );
-          dispatch(setPassword(""));
+          // Still the answer for an inactive user, and from an API that has
+          // not had the 401 change deployed.
+          refuse();
         }
       })
       .catch((err: JsonError) => {
+        if (signInRefused(err)) {
+          refuse();
+          return;
+        }
         toast.error(`Login failed: ${err.message}`);
         setAuthError("We couldn't reach the server. Try again in a moment.");
         dispatch(setFetchingCredentials(false));
       });
   };
 
-  const handleImpersonate = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.checked) {
-      dispatch(setUsername(""));
-      dispatch(setPassword(""));
-      setUseImpersonation(1);
-    }
+  const refuse = () => {
+    dispatch(setFetchingCredentials(false));
+    setAuthError(
+      "That username and password don't match. Check them and try again.",
+    );
+    dispatch(setPassword(""));
   };
 
   /** Which slide-over is up, and the button that opened it — the panel hands
@@ -332,8 +300,6 @@ const Login = () => {
         onRememberChange={handleRememberChange}
         error={authError}
         invalidField={invalidField}
-        showImpersonate={!!useImpersonation}
-        onImpersonate={handleImpersonate}
         version={VERSION}
         onTerms={(t) => handleNavigate("terms", t)}
         onPrivacy={(t) => handleNavigate("privacy", t)}

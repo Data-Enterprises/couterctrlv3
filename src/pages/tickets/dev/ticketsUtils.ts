@@ -192,6 +192,28 @@ export const parseServerTime = (iso: string): number => {
 };
 
 /**
+ * Why a new ticket did not send, in words the sender can act on.
+ *
+ * A ticket is filed under a company (`tickets.company` is NOT NULL since 22
+ * Oct), so somebody with no company has nowhere to file one. The server
+ * answers 400 with a `detail` that says so and says what to do — ask a
+ * manager to assign one — and that sentence is shown as written. It is about
+ * their account, not the form, so it is the one failure worth reading out
+ * word for word. Anything else is ours, and reads as such.
+ */
+export const sendFailureText = (err: unknown): string => {
+  const resp = (
+    err as { response?: { status?: number; data?: { detail?: unknown } } }
+  )?.response;
+  const detail = resp?.data?.detail;
+  if (resp?.status === 400 && typeof detail === "string" && detail.trim()) {
+    return detail;
+  }
+  const message = (err as { message?: string })?.message;
+  return message ? `That did not send: ${message}` : "That did not send.";
+};
+
+/**
  * When something happened, in the reader's own time.
  *
  * Recent things read better as an age than as a clock time — "12m" answers

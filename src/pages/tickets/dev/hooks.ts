@@ -42,7 +42,12 @@ import {
   startWork,
   upsertTicket,
 } from "../../../features/dev/devTicketsSlice";
-import { ticketsInScope, visibleTickets, tabCounts } from "./ticketsUtils";
+import {
+  sendFailureText,
+  ticketsInScope,
+  visibleTickets,
+  tabCounts,
+} from "./ticketsUtils";
 
 /**
  * Everything the Client Help Desk needs, in one hook.
@@ -291,21 +296,22 @@ export const useTicketsCtx = () => {
      * caller closes its own modal instead.
      */
     after?: (ticket: Ticket) => void,
-  ) => {
+  ): Promise<string | null> => {
+    // Returns why it did not send, or null once it has. The form says why
+    // under its own Send button: a failure set on the page sat behind the
+    // modal on the help desk, and filed from another page it showed nowhere.
     dispatch(startWork());
     let ticket: Ticket;
     try {
       const resp = await createTicket(url, token, body);
       if (ticketFailed(resp.data) || !resp.data.ticket) {
-        dispatch(failLoad("That did not send."));
         dispatch(endWork());
-        return;
+        return "That did not send.";
       }
       ticket = resp.data.ticket as Ticket;
     } catch (err) {
       dispatch(endWork());
-      failed("That did not send")(err as JsonError);
-      return;
+      return sendFailureText(err);
     }
 
     const missed: string[] = [];
@@ -330,6 +336,7 @@ export const useTicketsCtx = () => {
     // Opened last, so the pane shows the files already on it.
     if (after) after(ticket);
     else open(ticket.id);
+    return null;
   };
 
   const reply = (comment: string, internal: boolean) => {

@@ -16,10 +16,6 @@ interface Props {
   error: string | null;
   /** Which field submit rejected, so it can be outlined. */
   invalidField: "username" | "password" | null;
-  /** Only surfaced once the impersonation credentials are entered — see
-   *  handleSubmit in Login.tsx. */
-  showImpersonate: boolean;
-  onImpersonate: (e: React.ChangeEvent<HTMLInputElement>) => void;
   version: string;
   /** Opens the Terms panel. Passes its own element up so focus returns
    *  here on close, same contract as the stage buttons. */
@@ -57,8 +53,6 @@ const SignInRail = ({
   onRememberChange,
   error,
   invalidField,
-  showImpersonate,
-  onImpersonate,
   version,
   onTerms,
   onPrivacy,
@@ -139,21 +133,6 @@ const SignInRail = ({
             {SIGN_IN_COPY.forgot}
           </button>
         </div>
-
-        {showImpersonate && (
-          <div className="flex items-center gap-2 mb-4 px-2.5 py-2 rounded-lg bg-bkg border border-brand_line">
-            <input
-              data-testid="impersonate-checkbox"
-              id="impersonate"
-              type="checkbox"
-              className="w-[15px] h-[15px] accent-brand_green cursor-pointer"
-              onChange={onImpersonate}
-            />
-            <label htmlFor="impersonate" className="text-[13.5px] text-brand_slate cursor-pointer">
-              Impersonate user
-            </label>
-          </div>
-        )}
 
         <button
           data-testid="sign-in"

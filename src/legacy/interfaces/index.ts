@@ -194,10 +194,18 @@ export interface UserCompany {
   username: string;
 }
 
+/**
+ * A row of `users/`.
+ *
+ * No `password`, `security_answer` or `security_question_id`: `users/` stopped
+ * sending them on 22 Oct (it had been returning every account's password hash
+ * to any signed-in caller). The request types that SEND them, in
+ * api/password.ts and api/security.ts, keep them. The sign-in response still
+ * carries `security_question_id`, which is a different shape.
+ */
 export interface User {
   id: number;
   username: string;
-  password: string;
   user_level: number;
   last_visit: string | null;
   join_date: string | null;
@@ -212,8 +220,6 @@ export interface User {
   role: number | null;
   password_change_needed: number;
   logged_in: boolean | null;
-  security_question_id: number;
-  security_answer: string;
 }
 
 export interface BaseGroup {

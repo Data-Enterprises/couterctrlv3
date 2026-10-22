@@ -163,7 +163,6 @@ export const usersSlice = createSlice({
         last_name,
         user_level,
         role,
-        password,
         companies,
       } = action.payload;
       state.userInfo = {
@@ -174,8 +173,11 @@ export const usersSlice = createSlice({
         last_name,
         user_level,
         role: role === null ? 0 : role,
-        password: password,
-        confirm_password: password,
+        // Blank, not the user's own. This used to copy the password hash that
+        // `users/` sent with every row into the form; `users/` stopped
+        // sending it on 22 Oct, and `users/update_user` never read it.
+        password: "",
+        confirm_password: "",
       };
       state.userCompanyIds = companies.map((c) => c.company);
     },

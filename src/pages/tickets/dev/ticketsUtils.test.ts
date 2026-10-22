@@ -6,6 +6,7 @@ import {
   onTab,
   parseServerTime,
   resolutionLabel,
+  sendFailureText,
   tabCounts,
   ticketsInScope,
   visibleTickets,
@@ -272,5 +273,32 @@ describe("parseServerTime", () => {
     // Before the fix this read as five hours in the future, shown "just now".
     const now = Date.parse("2026-10-21T22:37:11Z");
     expect(whenText(sent, now)).toBe("5m");
+  });
+});
+
+describe("sendFailureText", () => {
+  const NO_COMPANY =
+    "Your account is not assigned to a company yet, so a ticket has nowhere to be filed. Ask a manager to assign one.";
+
+  it("shows a no-company user the server's own sentence", () => {
+    const err = { response: { status: 400, data: { detail: NO_COMPANY } } };
+    expect(sendFailureText(err)).toBe(NO_COMPANY);
+  });
+
+  it("does not read out a detail from anything but a 400", () => {
+    const err = {
+      message: "Request failed with status code 500",
+      response: { status: 500, data: { detail: "Traceback (most recent call last)" } },
+    };
+    expect(sendFailureText(err)).toBe(
+      "That did not send: Request failed with status code 500",
+    );
+  });
+
+  it("falls back when there is nothing to say", () => {
+    expect(sendFailureText({ response: { status: 400, data: {} } })).toBe(
+      "That did not send.",
+    );
+    expect(sendFailureText(undefined)).toBe("That did not send.");
   });
 });

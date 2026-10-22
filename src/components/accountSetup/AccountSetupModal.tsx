@@ -14,6 +14,7 @@ import type { JsonError, Question } from "../../interfaces";
 import PasswordInput from "../inputs/PasswordInput";
 import SingleSelect from "../SingleSelect";
 import Input from "../inputs/Input";
+import { impersonatedBy } from "../../utils/session";
 
 type Step = "password" | "security";
 
@@ -68,8 +69,12 @@ const AccountSetupModal = () => {
   // landed. Deriving this live would shrink the list mid-flow — finishing the
   // password step dispatches setResetPassword(0), which would renumber the
   // header and drop the user out of the sequence before step 2 renders.
+  //
+  // Never while signed in as someone else: their password and their security
+  // answer are theirs to set, and an impersonated session that opened this
+  // would have support choosing both.
   const planRef = useRef<Step[] | null>(null);
-  if (planRef.current === null && token) {
+  if (planRef.current === null && token && !impersonatedBy(token)) {
     const plan: Step[] = [];
     if (user.resetPassword === 1) plan.push("password");
     if (user.securityQuestionId === 0) plan.push("security");
