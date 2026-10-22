@@ -497,7 +497,11 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: Props) => {
                       <div className="flex items-center gap-[14px]">
                         <div className="flex-shrink-0 flex items-center justify-center" style={{ width: 48 }}>
                           <Sparkline
-                            values={dailySeries(grade.tyWeekOneMargins)}
+                            values={
+                              grade.tyDaily
+                                ? weekDates.map((d) => grade.tyDaily?.[d] ?? 0)
+                                : dailySeries(grade.tyWeekOneMargins)
+                            }
                             stroke={TIER_STROKE[tier]}
                           />
                         </div>

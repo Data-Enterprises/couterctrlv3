@@ -60,6 +60,10 @@ export type SubDeptGrade = {
   tyWeekOneMargins: SubDeptMargin[];
   lyWeekOneMargins: SubDeptMargin[];
   lwWeekOneMargins: SubDeptMargin[];
+  /** Net by day, set on a grade built from the rollup before the item rows
+   *  land, so the list's sparkline has something to draw. The item arrays
+   *  above are empty on such a grade; the full grade replaces it. */
+  tyDaily?: Record<string, number>;
   /** The STORE's coverage for the week, the same on every department. A
    *  comparison grades only when it covers every day; see utils/grading. */
   coverage: Coverage;

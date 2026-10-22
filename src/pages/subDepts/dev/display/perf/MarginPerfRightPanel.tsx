@@ -619,7 +619,14 @@ const MarginPerfRightPanel = () => {
 
         {/* ── Items / Cost / No Cost grid ── */}
         <div className="flex-1 overflow-hidden flex flex-col min-h-0">
-          {ctx.subDeptGridView === "item" ? (
+          {/* The list grades from the department totals; the item rows land
+              after it. An empty table here would read as a department with no
+              items. */}
+          {loadingGrades ? (
+            <div className="flex items-center justify-center h-24 text-[11px] text-content">
+              Loading this week's items…
+            </div>
+          ) : ctx.subDeptGridView === "item" ? (
             <MarginPerfItemsTable
               coverage={selectedGrade?.coverage}
               tyMargins={ctx.weekOneMargins}
