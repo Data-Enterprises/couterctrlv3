@@ -371,10 +371,12 @@ const VendorDetailPanel = () => {
               <ClipboardDocumentListIcon className="h-4 w-4" />
             </button>
           )}
+          {/* The export is mostly item rows, which land after the list. */}
           <button
             onClick={() => setExportOpen(true)}
-            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/85 hover:text-custom-white hover:border-custom-white/40 transition-colors"
-            title="Export"
+            disabled={vend.itemsLoading || !!vend.itemsError}
+            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/85 hover:text-custom-white hover:border-custom-white/40 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            title={vend.itemsLoading ? "Export — items still loading" : "Export"}
           >
             <ArrowDownTrayIcon className="h-4 w-4" />
           </button>
@@ -431,6 +433,16 @@ const VendorDetailPanel = () => {
       {/* Items are the only report here — the table brings its own toolbar,
           so a one-tab strip above it would be decoration. Sub-department
           breakdowns live on Sub Dept Margins, not repeated per vendor. */}
+      {/* The list came from the vendor totals; the item rows follow them. Said
+          in place of the table, so an empty table never reads as a vendor
+          with no items. */}
+      {vend.itemsLoading || vend.itemsError ? (
+        <div className="flex-1 flex items-center justify-center p-6">
+          <span className="text-[11.5px] text-content/70">
+            {vend.itemsError ?? "Loading this week's items…"}
+          </span>
+        </div>
+      ) : (
       <ItemMarginsTable
         coverage={row.coverage}
         items={vendorRaw}
@@ -440,6 +452,7 @@ const VendorDetailPanel = () => {
         onThresholdChange={(v) => dispatch(setItemThreshold(v))}
         selectedDay={selectedDay}
       />
+      )}
     </div>
   );
 };

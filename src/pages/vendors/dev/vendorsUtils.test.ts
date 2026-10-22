@@ -6,6 +6,7 @@ import {
   scopePeriods,
 } from "./vendorsUtils";
 import type { SubDeptMargin } from "../../../interfaces";
+import type { RollupRow } from "../../../api/rollup";
 
 /**
  * H&W Farms at 005 BT Glennville, 9/16–9/22/2026, as support reported it.
@@ -170,5 +171,57 @@ describe("scopePeriods", () => {
     // 370 has no last year here. An empty array is right -- buildVendorRows
     // reads that as no comparison, not as a collapse to zero.
     expect(scopePeriods(raw, "370").ly).toHaveLength(0);
+  });
+});
+
+describe("the list is the same built from rollup rows", () => {
+  /** What `subs/rollup` returns for the same rows: summed per vendor per
+   *  location per day, costed per item row the way calculateCogs does. */
+  const rolled = (rows: SubDeptMargin[]): RollupRow[] => {
+    const by = new Map<string, RollupRow>();
+    for (const r of rows) {
+      const k = `${String(r.vendor_id).trim()}|${r.sale_date}`;
+      const found = by.get(k);
+      const cogs = (r.net_cost / r.case_size) * r.qty;
+      if (found) {
+        found.net_sales += r.total_sales - r.total_tax;
+        found.cogs += cogs;
+        found.qty += r.qty;
+      } else {
+        by.set(k, {
+          key: String(r.vendor_id).trim(),
+          name: r.vendor_name,
+          storeid: r.storeid,
+          store_number: "5",
+          sale_date: r.sale_date,
+          net_sales: r.total_sales - r.total_tax,
+          cogs,
+          qty: r.qty,
+          weight: 0,
+          item_count: 1,
+        });
+      }
+    }
+    return [...by.values()];
+  };
+
+  it("grades the same vendor identically", () => {
+    const tw = [...TW, line("2026-09-22", 10, 6)];
+    const fromItems = buildVendorRows(tw, LW, [], DATES);
+    const fromRollup = buildVendorRows(rolled(tw), rolled(LW), [], DATES);
+    expect(fromRollup).toEqual(fromItems);
+  });
+
+  it("files a rollup row with no vendor under No vendor", () => {
+    const coupon = { ...line("2026-09-22", -2, 0), vendor_id: "0" } as SubDeptMargin;
+    const fromItems = buildVendorRows([coupon], [], [], DATES);
+    const fromRollup = buildVendorRows(
+      [{ ...rolled([coupon])[0], key: "", name: "" }],
+      [],
+      [],
+      DATES,
+    );
+    expect(fromRollup[0].vendorName).toBe("No vendor");
+    expect(fromRollup[0].vendorId).toBe(fromItems[0].vendorId);
   });
 });
