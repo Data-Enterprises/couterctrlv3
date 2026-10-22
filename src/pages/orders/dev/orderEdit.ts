@@ -415,11 +415,15 @@ export const canSubmit = (draft: OrderDraft) =>
 /**
  * What goes up.
  *
- * Every line of the order, not only the changed ones. Whether the import
- * replaces the order or upserts by `(order_id, line_number)` is not in this
- * repo, and a full-file replace fed a partial file would delete the lines
- * left out — far worse than resending rows nobody touched. If it turns out to
- * upsert, this is the one place that changes.
+ * Every line of the order, not only the changed ones.
+ *
+ * The import **upserts** (Dylan, 22 Oct 2026), so a partial file would be
+ * safe — it would not delete the lines left out. Sending the whole order
+ * anyway is a deliberate choice, not a leftover: a full file is idempotent
+ * and says what the order IS, where a partial one is only correct for as long
+ * as the upsert key stays `(order_id, line_number)`. The cost is resending
+ * rows nobody touched, which is bytes. If that ever matters, this is the one
+ * place that changes.
  *
  * The rows go back as they arrived with the edited fields overwritten, so the
  * columns `all_orders` returns and `AllOrder` does not declare —
@@ -428,7 +432,8 @@ export const canSubmit = (draft: OrderDraft) =>
  * loses a column.
  *
  * `edited` is set to 1 on an existing line whose values were changed, which is
- * what the column is for. It is worked out here rather than written as
+ * what the column is for — it marks the ROW, not the order (Dylan, 22 Oct
+ * 2026), which is what this already does. It is worked out here rather than written as
  * somebody types, so that putting a line back also puts its flag back — a
  * line that was edited and then reverted is not an edited line. A line that
  * arrived already flagged keeps the flag: clearing it is the import's
