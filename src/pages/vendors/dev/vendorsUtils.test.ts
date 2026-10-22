@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { buildVendorRows, vendorDelta, getVendorTier } from "./vendorsUtils";
+import {
+  buildVendorRows,
+  vendorDelta,
+  getVendorTier,
+  scopePeriods,
+} from "./vendorsUtils";
 import type { SubDeptMargin } from "../../../interfaces";
+import type { RollupRow } from "../../../api/rollup";
 
 /**
  * H&W Farms at 005 BT Glennville, 9/16–9/22/2026, as support reported it.
@@ -116,5 +122,106 @@ describe("the numbers the detail panel derives", () => {
   it("keeps the week's own margin, which is real", () => {
     expect(row.tyMarginPct).toBeCloseTo(24, 2);
     expect(row.twNetForLW).toBe(0);
+  });
+});
+
+describe("scopePeriods", () => {
+  // 685 serves store numbers 369 and 370. subs/subs is fetched by storeid, so
+  // one response carries both and every vendor figure was two stores at once.
+  const at = (num: string, sales: number): SubDeptMargin =>
+    ({ ...line("2026-10-14", sales, 0), store_number: num }) as SubDeptMargin;
+
+  const raw = {
+    tw: [at("369", 100), at("370", 40)],
+    lw: [at("369", 90), at("370", 30)],
+    ly: [at("369", 80)],
+  };
+
+  it("keeps one location across all three periods", () => {
+    const s = scopePeriods(raw, "369");
+    expect(s.tw.map((r) => r.total_sales)).toEqual([100]);
+    expect(s.lw.map((r) => r.total_sales)).toEqual([90]);
+    expect(s.ly.map((r) => r.total_sales)).toEqual([80]);
+  });
+
+  it("returns the rows untouched for the combined view", () => {
+    // Null is a real question -- what did this storeid do altogether -- and
+    // the same object comes back so nothing downstream re-renders for it.
+    expect(scopePeriods(raw, null)).toBe(raw);
+  });
+
+  it("leaves an ordinary store alone, because nothing is selected for one", () => {
+    // An ordinary store never gets a selection: reQuery clears it on every
+    // search and useVendorSearch only lands on a number when the response
+    // carries more than one. So the combined path is the one it takes.
+    const single = { tw: [at("361", 10)], lw: [at("361", 9)], ly: [] };
+    expect(scopePeriods(single, null).tw).toHaveLength(1);
+  });
+
+  it("is strict once a location is named", () => {
+    // Deliberately not scopeToStoreNumber, which leaves an array alone when it
+    // holds fewer than two numbers. That guard answers "does this response
+    // need splitting"; here the question is "which location is the reader on",
+    // and the answer has to be that location or nothing.
+    const only369 = { tw: [at("369", 10)], lw: [], ly: [] };
+    expect(scopePeriods(only369, "370").tw).toHaveLength(0);
+  });
+
+  it("gives back nothing for a period the location did not trade", () => {
+    // 370 has no last year here. An empty array is right -- buildVendorRows
+    // reads that as no comparison, not as a collapse to zero.
+    expect(scopePeriods(raw, "370").ly).toHaveLength(0);
+  });
+});
+
+describe("the list is the same built from rollup rows", () => {
+  /** What `subs/rollup` returns for the same rows: summed per vendor per
+   *  location per day, costed per item row the way calculateCogs does. */
+  const rolled = (rows: SubDeptMargin[]): RollupRow[] => {
+    const by = new Map<string, RollupRow>();
+    for (const r of rows) {
+      const k = `${String(r.vendor_id).trim()}|${r.sale_date}`;
+      const found = by.get(k);
+      const cogs = (r.net_cost / r.case_size) * r.qty;
+      if (found) {
+        found.net_sales += r.total_sales - r.total_tax;
+        found.cogs += cogs;
+        found.qty += r.qty;
+      } else {
+        by.set(k, {
+          key: String(r.vendor_id).trim(),
+          name: r.vendor_name,
+          storeid: r.storeid,
+          store_number: "5",
+          sale_date: r.sale_date,
+          net_sales: r.total_sales - r.total_tax,
+          cogs,
+          qty: r.qty,
+          weight: 0,
+          item_count: 1,
+        });
+      }
+    }
+    return [...by.values()];
+  };
+
+  it("grades the same vendor identically", () => {
+    const tw = [...TW, line("2026-09-22", 10, 6)];
+    const fromItems = buildVendorRows(tw, LW, [], DATES);
+    const fromRollup = buildVendorRows(rolled(tw), rolled(LW), [], DATES);
+    expect(fromRollup).toEqual(fromItems);
+  });
+
+  it("files a rollup row with no vendor under No vendor", () => {
+    const coupon = { ...line("2026-09-22", -2, 0), vendor_id: "0" } as SubDeptMargin;
+    const fromItems = buildVendorRows([coupon], [], [], DATES);
+    const fromRollup = buildVendorRows(
+      [{ ...rolled([coupon])[0], key: "", name: "" }],
+      [],
+      [],
+      DATES,
+    );
+    expect(fromRollup[0].vendorName).toBe("No vendor");
+    expect(fromRollup[0].vendorId).toBe(fromItems[0].vendorId);
   });
 });

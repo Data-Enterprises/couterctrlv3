@@ -26,6 +26,8 @@ export const useBaseGroupsCtx = () => {
      *  Defined once in `../scoping`, because three tabs ask it. */
     canSeeAllCompanies: seesEverything(userLevel, email),
     ownCompanies: companies.map((c) => ({ id: c.company, name: c.name })),
+    /** The same companies as membership rows, which carry the family. */
+    ownMemberships: companies,
   };
 };
 

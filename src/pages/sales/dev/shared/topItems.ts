@@ -1,11 +1,10 @@
-import type {
-  TopItemRow,
-  TopItemPricePoint,
-} from "../../../../api/topItems";
 import {
-  gradeSeverity,
-  type Severity,
-} from "../../../../utils/severity";
+  formatPricedUnits,
+  isWeighted,
+  pricedUnits,
+} from "../../../../utils/pricedUnits";
+import type { TopItemRow, TopItemPricePoint } from "../../../../api/topItems";
+import { gradeSeverity, type Severity } from "../../../../utils/severity";
 
 /**
  * Top items — the arithmetic, with no React in it.
@@ -47,7 +46,52 @@ export const promoShare = (r: TopItemRow): number => {
  * individual prices are in `price_points` and the panel shows those too.
  */
 export const avgPrice = (r: TopItemRow): number | null =>
-  r.qty > 0 ? r.total_sales / r.qty : null;
+  weighed(r)
+    ? r.total_sales / r.weight
+    : r.qty > 0
+      ? r.total_sales / r.qty
+      : null;
+
+/**
+ * How much of the item sold, in whatever unit the item has.
+ *
+ * Pounds on a scale item, units on a packaged one. Nothing may add the two
+ * together or compare them: 507 pounds of ribeye and 507 bags of crisps are
+ * not the same size of anything.
+ */
+export const amountOf = (r: TopItemRow): number => pricedUnits(r.qty, r.weight);
+
+/** `lb` or `units`, for whatever `amountOf` just returned. Spelled out
+ *  rather than `ea`, because this labels a total and not a rate. */
+export const amountUnit = (r: TopItemRow): "lb" | "units" =>
+  isWeighted(r.weight) ? "lb" : "units";
+
+/** The amount with its unit, for a sentence: 506.03 lb, or 567 units. */
+export const amountText = (r: TopItemRow): string =>
+  isWeighted(r.weight)
+    ? formatPricedUnits(r.qty, r.weight)
+    : `${formatPricedUnits(r.qty, r.weight)} units`;
+
+/**
+ * Whether this row sold by weight.
+ *
+ * `isWeighted` is the shared rule, and the shared rule is the point: the Cost
+ * grid and the item report had already drifted apart on it once, which is why
+ * it lives in utils rather than beside either caller.
+ */
+export const weighed = (r: { qty: number; weight: number }): boolean =>
+  isWeighted(r.weight);
+
+/**
+ * What one of it cost to buy — per pound on a weighed row.
+ *
+ * Divides by the same amount the price divides by, so the two sit against
+ * each other. Null when nothing sold, or when no line carried a cost.
+ */
+export const unitCost = (r: TopItemRow): number | null => {
+  const amount = amountOf(r);
+  return amount > 0 && r.ext_cost !== null ? r.ext_cost / amount : null;
+};
 
 /** Sales less cost. Null when the cost is not trustworthy, on the same rule
  *  the server uses to null the margin. */
@@ -132,7 +176,10 @@ export const topItemInsight = (
   const share = promoShare(r);
   const avg = avgPrice(r);
   const gp = grossProfit(r);
-  const unitCost = r.qty > 0 ? count(r.ext_cost) / r.qty : null;
+  // Per pound on a weighed row, so it sits against a per-pound price rather
+  // than against the cost of an average basket.
+  const amount = amountOf(r);
+  const unitCost = amount > 0 ? count(r.ext_cost) / amount : null;
 
   if (r.margin === null) {
     const cov = r.cost_coverage === null ? null : Math.round(r.cost_coverage);
@@ -140,7 +187,7 @@ export const topItemInsight = (
       tone: "unknown",
       label: "Margin not known",
       detail:
-        `${money(r.total_sales)} across ${r.qty.toLocaleString()} units, but ` +
+        `${money(r.total_sales)} across ${amountText(r)}, but ` +
         (cov === null
           ? "no line carried a cost"
           : `only ${cov}% of lines carried a cost`) +
@@ -168,7 +215,7 @@ export const topItemInsight = (
       label: "Selling below cost",
       detail:
         `An average ${money(avg)} against a ${money(unitCost)} cost, about ` +
-        `${money(gp ?? 0)} down over ${r.qty.toLocaleString()} units. Only ` +
+        `${money(gp ?? 0)} down over ${amountText(r)}. Only ` +
         `${pct(share)} of them were off regular price, so this is the cost ` +
         `rather than a promotion.`,
     };
@@ -191,7 +238,7 @@ export const topItemInsight = (
     label: "Holding up",
     detail:
       `${money(r.total_sales)} at ${r.margin.toFixed(1)}% over ` +
-      `${r.qty.toLocaleString()} units` +
+      `${amountText(r)}` +
       (share > 0 ? `, ${pct(share)} of them off regular price.` : "."),
   };
 };
@@ -250,8 +297,7 @@ export const compareWindows = (
 export const deltaPct = (
   now: number | null,
   before: number | null | undefined,
-): number | null =>
-  now === null ? null : pctChange(now, before);
+): number | null => (now === null ? null : pctChange(now, before));
 
 /** Margin moves in points, not percent: 22% to 11% is 11 points down, and
  *  calling it "-50%" invites someone to read it as half the sales. */
@@ -317,8 +363,7 @@ export const sortTopItems = (
   return [...rows].sort((a, b) => {
     if (sort.column === "item") {
       return (
-        dir *
-        a.ty.product_description.localeCompare(b.ty.product_description)
+        dir * a.ty.product_description.localeCompare(b.ty.product_description)
       );
     }
     const av = value(a);
@@ -368,6 +413,9 @@ export interface DeptRollup {
   items: number;
   ty: number;
   tyUnits: number;
+  /** Pounds in the department, summed separately. A department can hold both
+   *  kinds of item and the two never add together. */
+  tyWeight: number;
   /** Null when the department sold nothing that week — not zero. An absent
    *  baseline is a different statement from a baseline of nothing. */
   lw: number | null;
@@ -397,6 +445,7 @@ export const deptRollups = (rows: TopItemCompared[]): DeptRollup[] => {
       items: number;
       ty: number;
       tyUnits: number;
+      tyWeight: number;
       lw: number;
       lwUnits: number;
       lwSeen: boolean;
@@ -410,25 +459,25 @@ export const deptRollups = (rows: TopItemCompared[]): DeptRollup[] => {
 
   rows.forEach((r) => {
     const name = deptName(r.ty);
-    const a =
-      acc.get(name) ??
-      {
-        items: 0,
-        ty: 0,
-        tyUnits: 0,
-        lw: 0,
-        lwUnits: 0,
-        lwSeen: false,
-        ly: 0,
-        lyUnits: 0,
-        lySeen: false,
-        offUnits: 0,
-        knownUnits: 0,
-      };
+    const a = acc.get(name) ?? {
+      items: 0,
+      ty: 0,
+      tyUnits: 0,
+      tyWeight: 0,
+      lw: 0,
+      lwUnits: 0,
+      lwSeen: false,
+      ly: 0,
+      lyUnits: 0,
+      lySeen: false,
+      offUnits: 0,
+      knownUnits: 0,
+    };
 
     a.items += 1;
     a.ty += r.ty.total_sales;
     a.tyUnits += r.ty.qty;
+    a.tyWeight += r.ty.weight;
 
     const reg = count(r.ty.qty_regular);
     const promo = count(r.ty.qty_promo);
@@ -458,6 +507,7 @@ export const deptRollups = (rows: TopItemCompared[]): DeptRollup[] => {
       items: a.items,
       ty: a.ty,
       tyUnits: a.tyUnits,
+      tyWeight: a.tyWeight,
       lw: a.lwSeen ? a.lw : null,
       lwUnits: a.lwSeen ? a.lwUnits : null,
       ly: a.lySeen ? a.ly : null,
@@ -549,3 +599,237 @@ export const contributionGap = (
   now: number | null,
   then: number | null,
 ): number | null => (now === null || then === null ? null : now - then);
+
+/**
+ * A department's amount, in whichever units it actually has.
+ *
+ * Both when it holds both. A department of Food Giant scale items rolls up
+ * to nought rings, so printing units alone would put "0 u" under a five
+ * figure sales line.
+ */
+export const deptAmountText = (d: {
+  tyUnits: number;
+  tyWeight: number;
+}): string => {
+  const parts: string[] = [];
+  if (d.tyUnits > 0) parts.push(`${d.tyUnits.toLocaleString()} u`);
+  if (isWeighted(d.tyWeight))
+    parts.push(
+      `${d.tyWeight.toLocaleString(undefined, { maximumFractionDigits: 0 })} lb`,
+    );
+  return parts.length ? parts.join(" · ") : "—";
+};
+
+/* ------------------------------------------------------------------ */
+
+/**
+ * How the week's units split across the kinds of retail.
+ *
+ * `qty_unknown` is left out of the denominator rather than shown: it is lines
+ * the POS did not classify, and a fourth bar for "we don't know" would take
+ * attention from the three that decide the margin.
+ *
+ * Null when nothing was classified at all, which is honest — the bar would
+ * otherwise draw three empty thirds and read as an even split.
+ */
+export interface RetailMix {
+  regular: number;
+  ad: number;
+  tpr: number;
+  known: number;
+  regularPct: number;
+  adPct: number;
+  tprPct: number;
+}
+
+export const retailMix = (r: TopItemRow): RetailMix | null => {
+  const regular = count(r.qty_regular);
+  const ad = count(r.qty_promo);
+  const tpr = count(r.qty_deal_item);
+  const known = regular + ad + tpr;
+  if (known <= 0) return null;
+  return {
+    regular,
+    ad,
+    tpr,
+    known,
+    regularPct: (regular / known) * 100,
+    adPct: (ad / known) * 100,
+    tprPct: (tpr / known) * 100,
+  };
+};
+
+/**
+ * What is actually selling the item, as a sentence.
+ *
+ * Leads the retail block, because "all on ad at $11.99" is the reason a
+ * margin is negative far more often than the cost is.
+ */
+export const retailSays = (
+  mix: RetailMix | null,
+  points: { price: number; units: number }[],
+  moneyFmt: (n: number) => string,
+): string => {
+  const top = points.length
+    ? points.reduce((m, p) => (p.units > m.units ? p : m))
+    : null;
+  const at = top ? ` at ${moneyFmt(top.price)}` : "";
+  if (!mix)
+    return points.length === 1 ? `One price all week${at}` : "Mixed retail";
+  if (mix.adPct >= 95) return `All on ad${at}`;
+  if (mix.regularPct >= 95) return `All at regular price${at}`;
+  if (mix.tprPct >= 95) return `All on a temporary reduction${at}`;
+  const off = mix.adPct + mix.tprPct;
+  if (off >= 50) return `${Math.round(off)}% sold on a reduced price${at}`;
+  return `Mostly at regular price${at}`;
+};
+
+/**
+ * The item's highest price this week, which is the nearest thing to its
+ * regular retail that this endpoint can show.
+ *
+ * It is NOT asserted to be the shelf price: a mid-week increase makes the
+ * highest price the new regular, and an item that only ever rang on ad has
+ * no higher price to find. Null below two prices, so the comparison it feeds
+ * simply does not appear rather than comparing a price with itself.
+ */
+export const topPriceOf = (
+  points: { price: number; units: number }[],
+): number | null =>
+  points.length < 2 ? null : Math.max(...points.map((p) => p.price));
+
+/** Margin at a given price, against the same cost. */
+export const marginAt = (
+  price: number | null,
+  cost: number | null,
+): number | null =>
+  price === null || cost === null || price <= 0
+    ? null
+    : ((price - cost) / price) * 100;
+
+/** Where a product code sits in a week's ranked list, 1-based. Null when it
+ *  is not in it at all, which is a finding rather than a missing value. */
+export const rankIn = (
+  rows: TopItemRow[],
+  productCode: string,
+  shown: number,
+): number | null => {
+  const i = rankBySales(rows, shown).findIndex(
+    (r) => r.product_code === productCode,
+  );
+  return i === -1 ? null : i + 1;
+};
+
+export interface RankHistory {
+  ly: number | null;
+  lw: number | null;
+  ty: number | null;
+  says: string;
+}
+
+/**
+ * Whether the item being here is news.
+ *
+ * An item that was not in the list last week is a different conversation
+ * from one that has sat at #40 all year, and the panel should say which
+ * before anybody reads a margin.
+ */
+export const rankHistory = (
+  ty: number | null,
+  lw: number | null,
+  ly: number | null,
+): RankHistory => {
+  let says: string;
+  if (ty === null) says = "Not in the top 200 this week";
+  else if (lw === null && ly === null) says = "New to your top 200 this week";
+  else if (lw === null) says = "Back in the top 200 after a week out";
+  else if (lw - ty >= 20) says = `Up from #${lw} last week`;
+  else if (ty - lw >= 20) says = `Down from #${lw} last week`;
+  else says = `Holding around #${ty}`;
+  return { ly, lw, ty, says };
+};
+
+/* The cuts the display check grades on.
+ *
+ * Starting values, not measured ones -- the same footing the comparison
+ * bands are on. A quarter of the list is where "a big seller" stops meaning
+ * anything, and 20% is the margin below which a display is giving volume
+ * away rather than buying it. Both want a real number from somebody who
+ * merchandises for a living. */
+export const DISPLAY_RANK_CUT = 50;
+export const DISPLAY_MARGIN_CUT = 20;
+
+export type CheckState = "pass" | "fail" | "unknown";
+
+export interface DisplayCheck {
+  label: string;
+  state: CheckState;
+  detail: string;
+}
+
+export interface DisplayVerdict {
+  checks: DisplayCheck[];
+  says: string;
+  worth: boolean;
+}
+
+/**
+ * Whether the item is worth putting on display.
+ *
+ * Three readings it can make and one it cannot: nothing in this data says
+ * what is on display today. That check stays on the list as an open
+ * question rather than being dropped, because dropping it would let three
+ * ticks read as a yes when the thing may already be on an end cap.
+ */
+export const displayVerdict = (
+  rank: number | null,
+  margin: number | null,
+  vsLwPct: number | null,
+  isNew: boolean,
+  pctFmt: (n: number | null) => string,
+): DisplayVerdict => {
+  const checks: DisplayCheck[] = [
+    {
+      label: `Top ${DISPLAY_RANK_CUT} seller`,
+      state:
+        rank === null ? "unknown" : rank <= DISPLAY_RANK_CUT ? "pass" : "fail",
+      detail: rank === null ? "not ranked" : `#${rank}`,
+    },
+    {
+      label: `${DISPLAY_MARGIN_CUT}%+ margin`,
+      state:
+        margin === null
+          ? "unknown"
+          : margin >= DISPLAY_MARGIN_CUT
+            ? "pass"
+            : "fail",
+      detail: margin === null ? "cost not known" : `${margin.toFixed(1)}%`,
+    },
+    {
+      label: "Growing vs last week",
+      state: isNew
+        ? "unknown"
+        : vsLwPct === null
+          ? "unknown"
+          : vsLwPct > 0
+            ? "pass"
+            : "fail",
+      detail: isNew ? "new" : pctFmt(vsLwPct),
+    },
+    {
+      label: "Not already on display",
+      state: "unknown",
+      detail: "check in store",
+    },
+  ];
+
+  const failed = checks.filter((c) => c.state === "fail");
+  const worth = failed.length === 0;
+  const says = worth
+    ? "Worth a display"
+    : failed.some((c) => c.label.endsWith("margin"))
+      ? "Not a display pick — it loses money"
+      : `Not a display pick — ${failed[0].label.toLowerCase()} fails`;
+
+  return { checks, says, worth };
+};

@@ -1,4 +1,5 @@
 import { fetchSubDeptRowsSafe } from "../../../utils/marginRows";
+import { getRollup, type RollupRow } from "../../../api/rollup";
 import { LW_OFFSET, LY_OFFSET, shiftIso } from "../../../utils/grading";
 import type { SubDeptMargin } from "../../../interfaces";
 
@@ -22,6 +23,12 @@ import type { SubDeptMargin } from "../../../interfaces";
  * last week is this week shifted seven days, so the two spans are contiguous
  * and one range covers both — on a 28-day window that is 35 days of rows rather
  * than 56, fewer calls and a smaller download at once.
+ *
+ * The list itself comes first and from `subs/rollup` (`fetchVendorRollup`),
+ * the same item rows summed by vendor per day on the server: ~40 KB, so the
+ * list paints in a moment. The item rows still come down whole behind it.
+ * The detail panel and the export read them, and keeping every field the
+ * endpoint returns leaves room for the page to grow.
  *
  * Two flags are fixed and never exposed: `useGroups: 0`, `singleStore: 1`.
  * Vendors is examined one store at a time, like Sub Dept Margins and
@@ -114,4 +121,41 @@ export const fetchVendorPeriods = async (
   );
 
   return { tw, lw, ly, subDeptIds };
+};
+
+/** One rollup read, unpaged. Throws on a failed answer, as the item reads do
+ *  through their safe wrapper's caller. */
+const fetchRollupRange = async (scope: VendorScope, range: PeriodRange) => {
+  const resp = await getRollup(scope.url, scope.token, {
+    by: "vendor",
+    startDate: range.start,
+    endDate: range.end,
+    useGroups: USE_GROUPS,
+    singleStore: SINGLE_STORE,
+    searchValue: scope.storeid,
+  });
+  if (resp.data.error !== 0) {
+    throw new Error(resp.data.msg ?? "Could not read the vendor totals");
+  }
+  return resp.data.rows ?? [];
+};
+
+/**
+ * The vendor list's totals for the search: the same three periods as
+ * `fetchVendorPeriods`, read the same way (one span for this week and last,
+ * one for last year), summed per vendor per location per day.
+ */
+export const fetchVendorRollup = async (
+  scope: VendorScope,
+  twStart: string,
+  twEnd: string,
+): Promise<{ tw: RollupRow[]; lw: RollupRow[]; ly: RollupRow[] }> => {
+  const ranges = periodRanges(twStart, twEnd);
+  const [span, ly] = await Promise.all([
+    fetchRollupRange(scope, { start: ranges.lw.start, end: ranges.tw.end }),
+    fetchRollupRange(scope, ranges.ly),
+  ]);
+  const within = (rows: RollupRow[], r: PeriodRange) =>
+    rows.filter((x) => x.sale_date >= r.start && x.sale_date <= r.end);
+  return { tw: within(span, ranges.tw), lw: within(span, ranges.lw), ly };
 };

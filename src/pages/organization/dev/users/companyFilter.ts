@@ -32,11 +32,19 @@ const companiesOf = (u: User | undefined) => u?.companies ?? [];
  * `exclude` drops the company the screen is already about — on the Companies
  * tab every candidate is by definition not in it, so offering it would be a
  * filter that matches nobody.
+ *
+ * `reach` drops companies the viewer does not administer. A candidate can hold
+ * two companies, only one of which is yours — somebody in both Houchens and
+ * B and T is yours to work with through Houchens, and listing "B and T (1)"
+ * offered a filter for a company the viewer has no business in and named its
+ * headcount while doing it. Omit it for a viewer who sees everything; there is
+ * nothing to narrow then.
  */
 export const useCompanyFilterOptions = (
   users: User[],
   candidateIds: number[],
   exclude?: number,
+  reach?: Set<number>,
 ) =>
   useMemo(() => {
     const byId = new Map(users.map((u) => [u.id, u]));
@@ -52,6 +60,7 @@ export const useCompanyFilterOptions = (
       }
       held.forEach((c) => {
         if (c.company === exclude) return;
+        if (reach && !reach.has(c.company)) return;
         const seen = counts.get(c.company);
         if (seen) seen.n += 1;
         else counts.set(c.company, { name: c.name, n: 1 });
@@ -64,10 +73,12 @@ export const useCompanyFilterOptions = (
 
     // Its own option, because somebody holding nothing is invisible to every
     // other filter here and is exactly who an onboarding pass is looking for.
+    // Never dropped by `reach`: an account belonging to nobody is everybody's
+    // to pick up.
     return orphans > 0
       ? [{ value: NO_COMPANY, label: `No company (${orphans})` }, ...options]
       : options;
-  }, [users, candidateIds, exclude]);
+  }, [users, candidateIds, exclude, reach]);
 
 /**
  * The predicate for `AssignPanel`'s `leftPredicate`.

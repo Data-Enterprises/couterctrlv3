@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useBaseGroupsCtx } from "../baseGroups/hooks";
+import { canAdministerUser, companyReach } from "../scoping";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 import { assignUserToCompany } from "../../../../api/user";
 import type { JsonError, User } from "../../../../interfaces";
@@ -50,9 +51,30 @@ const CompanyUsersPanel = ({
    *  empty means no narrowing. See `companyOptions`. */
   const [heldFilter, setHeldFilter] = useState("");
 
+  /** The families the viewer administers through, read from each of their
+   *  companies' `parent_company_id`. */
+  const reach = useMemo(
+    () => companyReach(ctx.ownMemberships),
+    [ctx.ownMemberships],
+  );
+
+  /**
+   * Who this person may move at all.
+   *
+   * Two guards, and both have to pass: the level one stops a 7 rearranging a
+   * 9, and the company one stops a manager at one company handing themselves
+   * somebody from another. Before the second, this column listed every user on
+   * the system -- a Bruces manager was offered Houchens staff, and the write
+   * behind the button would have gone through.
+   */
   const reachable = useMemo(
-    () => users.filter((u) => u.user_level <= ctx.userLevel),
-    [users, ctx.userLevel],
+    () =>
+      users.filter(
+        (u) =>
+          u.user_level <= ctx.userLevel &&
+          canAdministerUser(u.companies ?? [], reach, ctx.canSeeAllCompanies),
+      ),
+    [users, ctx.userLevel, reach, ctx.canSeeAllCompanies],
   );
 
   /** `UserCompany.company` is the company id; `.id` is the link row, which is
@@ -102,6 +124,9 @@ const CompanyUsersPanel = ({
     reachable,
     unassignedIds,
     company.id,
+    // Undefined for somebody who sees everything, so the list stays whole for
+    // them rather than being narrowed by companies they happen to hold.
+    ctx.canSeeAllCompanies ? undefined : reach,
   );
   const heldPredicate = useCompanyFilterPredicate(reachable, heldFilter);
 
@@ -185,6 +210,18 @@ const CompanyUsersPanel = ({
         hold — so taking this away hides their groups in it, and the stores
         those granted.
       </p>
+
+      {/* Says why the left column is short before somebody decides the search
+          is broken. Only for people it actually narrows — a programmer sees
+          everyone and would read this as a limit that is not there. */}
+      {!ctx.canSeeAllCompanies && (
+        <p className="text-[11.5px] text-content/85 leading-snug mb-2 max-w-[680px]">
+          You can add people from{" "}
+          <span className="font-semibold">your own companies</span> and people
+          who hold no company yet. Somebody in a company you do not hold has to
+          be added by an administrator there.
+        </p>
+      )}
 
       <AssignPanel
         leftTitle="Not in this company"

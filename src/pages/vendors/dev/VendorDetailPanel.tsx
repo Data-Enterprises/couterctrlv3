@@ -1,3 +1,4 @@
+import { applyStoreNumberToName } from "../../../utils/storeIdentity";
 import { useMemo, useState } from "react";
 import {
   ArrowDownTrayIcon,
@@ -37,7 +38,7 @@ import {
   VENDOR_THRESHOLD_DEFAULT,
   VENDOR_ITEM_THRESHOLD_DEFAULT,
 } from "../../../features/dev/devVendorsSlice";
-import { getVendorTier, rowsForVendor, marginPct } from "./vendorsUtils";
+import { getVendorTier, rowsForVendor, marginPct, scopePeriods } from "./vendorsUtils";
 
 /** Ungraded has no severity colour of its own, so the header falls back to the
  *  navy every other panel uses rather than borrowing a verdict colour. */
@@ -100,13 +101,27 @@ const VendorDetailPanel = () => {
   const canSeeComingSoon = useCanSeeComingSoon();
   const {
     rows,
-    raw,
+    raw: rawAll,
     metric,
     threshold,
     selectedVendor,
     selectedDay,
     itemThreshold,
   } = vend;
+
+  /**
+   * Everything below reads one location.
+   *
+   * `subs/subs` is fetched by storeid and a few storeids cover two physical
+   * stores, so the response holds both. The list panel's tabs choose which
+   * one, and the item rows, the day strip and the export have to follow the
+   * same choice or the right-hand panel describes a different store from the
+   * row that was clicked.
+   */
+  const raw = useMemo(
+    () => scopePeriods(rawAll, vend.selectedStoreNumber),
+    [rawAll, vend.selectedStoreNumber],
+  );
 
   const [exportOpen, setExportOpen] = useState(false);
   const openCriticalReport = useCriticalReport();
@@ -294,7 +309,15 @@ const VendorDetailPanel = () => {
       {exportOpen && (
         <VendorExportModal
           onClose={() => setExportOpen(false)}
-          storeName={vend.storeName}
+          storeName={
+            vend.selectedStoreNumber
+              ? applyStoreNumberToName(
+                  vend.storeName,
+                  vend.selectedStoreNumber,
+                  vend.availableStoreNumbers,
+                )
+              : vend.storeName
+          }
           vendorName={row.vendorName}
           dateRange={fmtRangeLabel(vend.twStart, vend.twEnd)}
           rows={rows}
@@ -348,10 +371,12 @@ const VendorDetailPanel = () => {
               <ClipboardDocumentListIcon className="h-4 w-4" />
             </button>
           )}
+          {/* The export is mostly item rows, which land after the list. */}
           <button
             onClick={() => setExportOpen(true)}
-            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/85 hover:text-custom-white hover:border-custom-white/40 transition-colors"
-            title="Export"
+            disabled={vend.itemsLoading || !!vend.itemsError}
+            className="w-[22px] h-[22px] flex items-center justify-center rounded border border-custom-white/20 text-custom-white/85 hover:text-custom-white hover:border-custom-white/40 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            title={vend.itemsLoading ? "Export — items still loading" : "Export"}
           >
             <ArrowDownTrayIcon className="h-4 w-4" />
           </button>
@@ -408,6 +433,16 @@ const VendorDetailPanel = () => {
       {/* Items are the only report here — the table brings its own toolbar,
           so a one-tab strip above it would be decoration. Sub-department
           breakdowns live on Sub Dept Margins, not repeated per vendor. */}
+      {/* The list came from the vendor totals; the item rows follow them. Said
+          in place of the table, so an empty table never reads as a vendor
+          with no items. */}
+      {vend.itemsLoading || vend.itemsError ? (
+        <div className="flex-1 flex items-center justify-center p-6">
+          <span className="text-[11.5px] text-content/70">
+            {vend.itemsError ?? "Loading this week's items…"}
+          </span>
+        </div>
+      ) : (
       <ItemMarginsTable
         coverage={row.coverage}
         items={vendorRaw}
@@ -417,6 +452,7 @@ const VendorDetailPanel = () => {
         onThresholdChange={(v) => dispatch(setItemThreshold(v))}
         selectedDay={selectedDay}
       />
+      )}
     </div>
   );
 };

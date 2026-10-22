@@ -181,6 +181,7 @@ const NewTicketModal = ({
   };
 
   const close = () => (onClose ? onClose() : ctx.dispatch(openNew(false)));
+  const [sendError, setSendError] = useState<string | null>(null);
   const ready = title.trim() !== "" && description.trim() !== "";
 
   const priorities = (ctx.lookups?.priorities ?? [
@@ -460,10 +461,16 @@ const NewTicketModal = ({
           >
             Cancel
           </button>
+          {sendError && (
+            <p role="alert" className="mr-auto text-[11.5px] text-red-700 m-0">
+              {sendError}
+            </p>
+          )}
           <button
             type="button"
-            onClick={() =>
-              void ctx.file(
+            onClick={async () => {
+              setSendError(null);
+              const why = await ctx.file(
                 {
                   title,
                   /*
@@ -513,8 +520,11 @@ ${storeLine(pickedStore)}`
                 // Filed from another page: there is no pane here to open it
                 // into, so the form closes and the toast is the receipt.
                 onClose,
-              )
-            }
+              );
+              // A user with no company is told why, and that a manager can
+              // fix it (the server's own words).
+              if (why) setSendError(why);
+            }}
             disabled={!ready || ctx.working}
             className="text-[12.5px] font-semibold px-5 py-1.5 rounded-lg bg-brand_navy text-custom-white hover:bg-brand_navy_hover transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >

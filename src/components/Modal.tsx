@@ -51,7 +51,7 @@ const Modal = ({
   return (
     <div
       data-testid="modal"
-      className={`fixed ${className} inset-0 bg-black bg-opacity-50 flex items-center justify-center `}
+      className={`fixed ${className} inset-0 backdrop-blur-sm flex items-center justify-center `}
       style={{ zIndex: 5000 }}
     >
       <div

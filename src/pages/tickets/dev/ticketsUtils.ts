@@ -119,6 +119,36 @@ export const matchesFilters = (ticket: Ticket, filters: TicketFilters) => {
   return true;
 };
 
+/**
+ * The tickets a customer may see, whatever the server sent.
+ *
+ * `GET tickets/` scopes a customer by "the opener shares a company with me",
+ * and a ticket has no company of its own -- it belongs to every company its
+ * opener holds. DCR staff hold several, so a ticket one of them opened under
+ * Houchens reached a Bruces customer: the dev review saw 15 company-1 tickets
+ * on a company-3 account with `canViewAll: false`.
+ *
+ * The server is the real fix. This is the backstop, on the same rule the
+ * backend should move to: a customer sees what they opened, and what is filed
+ * under a company they hold. `company` here is the one the row reports -- the
+ * opener's lowest company id -- so a multi-company opener's ticket shows under
+ * exactly one company instead of all of them. A tech sees everything, as the
+ * server intends.
+ */
+export const ticketsInScope = (
+  tickets: Ticket[],
+  canViewAll: boolean,
+  viewerCompanyIds: number[],
+  userid: number,
+) =>
+  canViewAll
+    ? tickets
+    : tickets.filter(
+        (t) =>
+          t.opened_by === userid ||
+          (t.company !== null && viewerCompanyIds.includes(t.company)),
+      );
+
 export const visibleTickets = (
   tickets: Ticket[],
   tab: QueueTab,
@@ -145,6 +175,45 @@ export const tabCounts = (tickets: Ticket[], userid: number) => ({
 });
 
 /**
+ * A server timestamp, as a moment.
+ *
+ * The tickets API sends UTC with no zone on it (`2026-10-21T22:32:10.299190`),
+ * and JavaScript reads a zone-less date-time as LOCAL time. So every ticket
+ * read five hours ahead in Central -- TCK-35, sent at 5:32 PM, showed 10:32
+ * PM -- and anything from the last five hours sat in the future, which
+ * `whenText` reports as "just now" (dev board review, finding AO).
+ *
+ * A stamp that already carries `Z` or an offset is left alone, so this keeps
+ * working once the API starts sending one.
+ */
+export const parseServerTime = (iso: string): number => {
+  const zoned = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(iso.trim());
+  return Date.parse(zoned ? iso : `${iso}Z`);
+};
+
+/**
+ * Why a new ticket did not send, in words the sender can act on.
+ *
+ * A ticket is filed under a company (`tickets.company` is NOT NULL since 22
+ * Oct), so somebody with no company has nowhere to file one. The server
+ * answers 400 with a `detail` that says so and says what to do — ask a
+ * manager to assign one — and that sentence is shown as written. It is about
+ * their account, not the form, so it is the one failure worth reading out
+ * word for word. Anything else is ours, and reads as such.
+ */
+export const sendFailureText = (err: unknown): string => {
+  const resp = (
+    err as { response?: { status?: number; data?: { detail?: unknown } } }
+  )?.response;
+  const detail = resp?.data?.detail;
+  if (resp?.status === 400 && typeof detail === "string" && detail.trim()) {
+    return detail;
+  }
+  const message = (err as { message?: string })?.message;
+  return message ? `That did not send: ${message}` : "That did not send.";
+};
+
+/**
  * When something happened, in the reader's own time.
  *
  * Recent things read better as an age than as a clock time — "12m" answers
@@ -152,7 +221,7 @@ export const tabCounts = (tickets: Ticket[], userid: number) => ({
  * a date, because "31h" is not how people think.
  */
 export const whenText = (iso: string, now = Date.now()) => {
-  const at = new Date(iso).getTime();
+  const at = parseServerTime(iso);
   if (Number.isNaN(at)) return "";
   const mins = Math.floor((now - at) / 60000);
   if (mins < 1) return "just now";
@@ -169,7 +238,7 @@ export const whenText = (iso: string, now = Date.now()) => {
 
 /** A full stamp, for the places a thread needs one. */
 export const stampText = (iso: string) => {
-  const at = new Date(iso);
+  const at = new Date(parseServerTime(iso));
   return Number.isNaN(at.getTime())
     ? ""
     : at.toLocaleString(undefined, {

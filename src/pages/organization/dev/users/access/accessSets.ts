@@ -121,8 +121,15 @@ export const picksInGroup = (picks: AccessPicks, groupid: number): Store[] =>
  * A group counts as held when it was ticked in its own right, OR when a store
  * was ticked inside it — ticking stores in East and never ticking East itself
  * still means East, held as `selected`.
+ *
+ * Exported because every screen that DESCRIBES the access has to count the
+ * same groups this saves. The panel's counter and summary and the review step
+ * counted ticked groups only, so a store ticked in an unticked group read
+ * "0 base groups" and "This person will not see any stores" while Create
+ * would have saved the group with that store (dev board review, finding AK).
+ * Ticked groups come first, in the order they were ticked.
  */
-const heldGroupIds = (picks: AccessPicks) =>
+export const heldGroupIds = (picks: AccessPicks) =>
   uniq([...picks.baseGroups, ...picks.stores.map((s) => s.base_group)]);
 
 /**

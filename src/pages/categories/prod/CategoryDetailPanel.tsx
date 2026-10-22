@@ -1,3 +1,4 @@
+import { applyStoreNumberToName } from "../../../utils/storeIdentity";
 import { useMemo, useRef, useState, useEffect } from "react";
 import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
 import { useAppSelector, useAppDispatch } from "../../../hooks";
@@ -353,7 +354,15 @@ const CategoryDetailPanel = ({ onLoadHourly }: Props) => {
       {exportOpen && (
         <CategoryExportModal
           onClose={() => setExportOpen(false)}
-          storeName={cats.storeName}
+          storeName={
+            cats.selectedStoreNumber
+              ? applyStoreNumberToName(
+                  cats.storeName,
+                  cats.selectedStoreNumber,
+                  cats.availableStoreNumbers,
+                )
+              : cats.storeName
+          }
           categoryName={row.description ?? "Uncategorized"}
           // The week, not twLabel — twLabel narrows to the selected day, and the
           // modal needs the week to label its "All week" option.

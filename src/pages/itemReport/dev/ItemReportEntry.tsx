@@ -49,6 +49,14 @@ const ItemReportEntry = ({
   const toast = useToast();
   const fileRef = useRef<HTMLInputElement>(null);
   const upcs = useAppSelector((s) => s.dev.itemReport.pendingUpcs);
+  /** The codes the last Build ran on. A pending list that still holds them is
+   *  being carried into the next Build, and adding to it extends that list
+   *  rather than starting a new one: 24 kept plus 49 added built 67 in the
+   *  review (finding S). Clear all was already there; nothing said it was
+   *  needed. */
+  const lastBuilt = useAppSelector((s) => s.dev.itemReport.upcs);
+  const carried =
+    lastBuilt.length > 0 && upcs.some((u) => lastBuilt.includes(u));
   const departments = useAppSelector((s) => s.dev.itemReport.pendingDepartments);
   const fileName = useAppSelector((s) => s.dev.itemReport.pendingFileName);
   const upcText = useAppSelector((s) => s.dev.itemReport.pendingUpcText);
@@ -131,7 +139,7 @@ const ItemReportEntry = ({
         </div>
       }
     >
-      <div>
+      <div data-help="upc-input">
         <div className="flex items-baseline justify-between gap-2">
           <label className="text-[11px] font-medium text-content/85 ml-0.5">
             UPCs
@@ -188,6 +196,11 @@ const ItemReportEntry = ({
             {departments.length > 0
               ? ` · ${departments.length} departments named, so only those are read`
               : " · no department column, so every department is read"}
+            {carried && (
+              <span className="block mt-0.5 font-medium text-content">
+                Includes the list from your last build. Clear all to start a new one.
+              </span>
+            )}
           </div>
         )}
 

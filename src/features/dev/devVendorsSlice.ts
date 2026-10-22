@@ -5,6 +5,7 @@
  */
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { SubDeptMargin } from "../../interfaces";
+import type { RollupRow } from "../../api/rollup";
 import type { VendorMetric, VendorRow, VendorTier } from "../../interfaces";
 
 /** Vendors (Performance).
@@ -30,12 +31,24 @@ interface VendorsState {
   rows: VendorRow[];
   /** Item rows for all three periods, the source for both right-panel tabs. */
   raw: { tw: SubDeptMargin[]; lw: SubDeptMargin[]; ly: SubDeptMargin[] };
+  /** The vendor totals the list is built from (`subs/rollup`). Kept unscoped,
+   *  like `raw`, so switching location rebuilds the list without a call. */
+  rollup: { tw: RollupRow[]; lw: RollupRow[]; ly: RollupRow[] };
+  /** The item rows arrive after the list. True from the search until they
+   *  land, so the detail panel can say so rather than show an empty table. */
+  itemsLoading: boolean;
+  itemsError: string | null;
   loading: boolean;
   /** Named rather than a bare spinner — this page walks every sub department
    *  three times, so an unexplained wait reads as a stall. */
   loadingMessage: string;
   storeid: number;
   storeName: string;
+  /** Every store_number the search came back with. More than one means the
+   *  storeid covers two physical locations — see utils/storeIdentity. */
+  availableStoreNumbers: string[];
+  /** Which location is on screen; null is every location combined. */
+  selectedStoreNumber: string | null;
   /** This week's range, kept so the day strip and the panel can rebuild the
    *  same periods without recomputing from search state. */
   twStart: string;
@@ -57,10 +70,15 @@ interface VendorsState {
 const initialState: VendorsState = {
   rows: [],
   raw: { tw: [], lw: [], ly: [] },
+  rollup: { tw: [], lw: [], ly: [] },
+  itemsLoading: false,
+  itemsError: null,
   loading: false,
   loadingMessage: "",
   storeid: 0,
   storeName: "",
+  availableStoreNumbers: [],
+  selectedStoreNumber: null,
   twStart: "",
   twEnd: "",
   metric: "margin",
@@ -91,6 +109,20 @@ const vendorsSlice = createSlice({
     ) => {
       state.raw = action.payload;
     },
+    setRollup: (
+      state,
+      action: PayloadAction<{ tw: RollupRow[]; lw: RollupRow[]; ly: RollupRow[] }>,
+    ) => {
+      state.rollup = action.payload;
+    },
+    setItemsLoading: (state, action: PayloadAction<boolean>) => {
+      state.itemsLoading = action.payload;
+      if (action.payload) state.itemsError = null;
+    },
+    setItemsError: (state, action: PayloadAction<string | null>) => {
+      state.itemsError = action.payload;
+      state.itemsLoading = false;
+    },
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload;
     },
@@ -100,6 +132,12 @@ const vendorsSlice = createSlice({
     setStore: (state, action: PayloadAction<{ storeid: number; storeName: string }>) => {
       state.storeid = action.payload.storeid;
       state.storeName = action.payload.storeName;
+    },
+    setAvailableStoreNumbers: (state, action: PayloadAction<string[]>) => {
+      state.availableStoreNumbers = action.payload;
+    },
+    setSelectedStoreNumber: (state, action: PayloadAction<string | null>) => {
+      state.selectedStoreNumber = action.payload;
     },
     setRange: (state, action: PayloadAction<{ start: string; end: string }>) => {
       state.twStart = action.payload.start;
@@ -132,6 +170,11 @@ const vendorsSlice = createSlice({
     reQuery: (state) => {
       state.rows = [];
       state.raw = { tw: [], lw: [], ly: [] };
+      state.rollup = { tw: [], lw: [], ly: [] };
+      state.itemsLoading = false;
+      state.itemsError = null;
+      state.availableStoreNumbers = [];
+      state.selectedStoreNumber = null;
       state.selectedVendor = null;
       state.selectedDay = null;
       state.textFilter = "";
@@ -143,9 +186,14 @@ const vendorsSlice = createSlice({
 export const {
   setRows,
   setRaw,
+  setRollup,
+  setItemsLoading,
+  setItemsError,
   setLoading,
   setLoadingMessage,
   setStore,
+  setAvailableStoreNumbers,
+  setSelectedStoreNumber,
   setRange,
   setMetric,
   setThreshold,

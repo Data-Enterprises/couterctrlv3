@@ -19,7 +19,12 @@ import type { ProductLookupResp, TransactionListItem } from "../interfaces";
 
 /** Receipts are opened by id, and the id list travels in the request body.
  *  A fast-moving item over a fortnight can run to thousands, so this caps the
- *  walk and the page says how many it dropped rather than quietly lying. */
+ *  walk and the page says how many it dropped rather than quietly lying.
+ *
+ *  The default, which Item Actions uses. Price Opt passes no cap: it reads its
+ *  price table from `cashiers/price_points` now, and fetches receipts only
+ *  when somebody opens a price, at which point a sample would hide the very
+ *  rings they asked to see. */
 const MAX_TRANSACTIONS = 400;
 
 const USE_GROUPS = 0;
@@ -53,7 +58,13 @@ export const useActualPricePoints = () => {
   const requestId = useRef(0);
 
   const run = useCallback(
-    async (upc: string, storeid: number, start: string, end: string) => {
+    async (
+      upc: string,
+      storeid: number,
+      start: string,
+      end: string,
+      maxReceipts: number = MAX_TRANSACTIONS,
+    ) => {
       const id = ++requestId.current;
       setState({ ...initial, upc, loading: true });
 
@@ -96,9 +107,9 @@ export const useActualPricePoints = () => {
         let saleIds = [...new Set(lookup.transaction_ids ?? [])];
 
         let truncated = 0;
-        if (saleIds.length > MAX_TRANSACTIONS) {
-          truncated = saleIds.length - MAX_TRANSACTIONS;
-          saleIds = saleIds.slice(0, MAX_TRANSACTIONS);
+        if (saleIds.length > maxReceipts) {
+          truncated = saleIds.length - maxReceipts;
+          saleIds = saleIds.slice(0, maxReceipts);
         }
         if (saleIds.length === 0) {
           // Empty, not null — the panel says "no register data" rather than

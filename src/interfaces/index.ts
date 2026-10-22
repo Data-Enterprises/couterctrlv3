@@ -205,12 +205,25 @@ export interface UserCompany {
   userid: number;
   company: number;
   username: string;
+  /** The company this one belongs under, or null when it stands alone. On the
+   *  sign-in response's `companies` and on each user's `companies` from
+   *  `users/` since 22 Oct. Optional because an API without the change sends
+   *  nothing. */
+  parent_company_id?: number | null;
 }
 
+/**
+ * A row of `users/`.
+ *
+ * No `password`, `security_answer` or `security_question_id`: `users/` stopped
+ * sending them on 22 Oct (it had been returning every account's password hash
+ * to any signed-in caller). The request types that SEND them, in
+ * api/password.ts and api/security.ts, keep them. The sign-in response still
+ * carries `security_question_id`, which is a different shape.
+ */
 export interface User {
   id: number;
   username: string;
-  password: string;
   user_level: number;
   last_visit: string | null;
   join_date: string | null;
@@ -225,8 +238,6 @@ export interface User {
   role: number | null;
   password_change_needed: number;
   logged_in: boolean | null;
-  security_question_id: number;
-  security_answer: string;
 }
 
 /**
@@ -402,6 +413,10 @@ export interface TransactionListItem {
   wic: number;
   scalable: number;
   qty?: number;
+  /** Pounds, on a weighed line; 0 when not weighed, negative on a refund.
+   *  Food Giant's thousandths are scaled on the server since 22 Oct. Optional
+   *  because an API without the change sends none. */
+  weight?: number;
 }
 
 //////////////////////////////////////////////////////////////
@@ -1157,8 +1172,12 @@ export interface SubsPricePoint {
   store_name: string;
   product_code: string;
   product_description: string;
+  /** Per POUND on a weighed line, read off the row. A weighed item returns
+   *  one price point now rather than a scatter, one per basket size. */
   price: number;
   units: number;
+  /** Pounds at this price. Zero on a packaged line. */
+  weight: number;
   transactions: number;
   net_sales: number;
   first_sold: string;
@@ -1440,6 +1459,27 @@ export interface AllOrderResp {
   success: boolean;
   msg: string;
   orders: AllOrder[];
+}
+
+/**
+ * What `orders/update_file` answers with.
+ *
+ * `key` is the file it dropped in `bucket`, and the handle for tracing the
+ * submission in `table_update_log` — worth surfacing rather than leaving in
+ * the console.
+ *
+ * `logged` is the audit insert, which is independent of the drop: the file can
+ * land while that insert fails, and `success` is still true. It is not a
+ * failed save.
+ */
+export interface UpdateFileResp {
+  error: number;
+  success: boolean;
+  msg: string;
+  bucket: string;
+  key: string;
+  line_count: number;
+  logged: boolean;
 }
 
 /* ── categories/cat_sales ──────────────────────────────────────────────────

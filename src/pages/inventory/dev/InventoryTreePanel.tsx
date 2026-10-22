@@ -1,4 +1,6 @@
 import { useMemo, useState } from "react";
+import PageInfoButton from "../../../components-dev/PageInfoButton";
+import type { HelpPage } from "../../../constants/helpPages";
 import {
   ChevronRightIcon,
   ChevronDownIcon,
@@ -29,6 +31,20 @@ import type { ProductSummary } from "./inventoryData";
  * have drifted the first time either page changed.
  */
 
+/**
+ * One way of writing money down the tree.
+ *
+ * The shared compact formatter keeps up to one decimal, so the same column read
+ * "$25.1K", "$758.3" and "$674" (dev board review, finding G). Whole dollars
+ * below a thousand, one decimal of a thousand above it, so every row reads the
+ * same way. Local rather than a change to the shared formatter, which 23 other
+ * screens use.
+ */
+const treeMoney = (n: number) =>
+  Math.abs(n) < 1000
+    ? `${n < 0 ? "-" : ""}$${Math.round(Math.abs(n))}`
+    : formatCurrencyCompact(n);
+
 export interface TreeGroup {
   id: string;
   label: string;
@@ -41,6 +57,10 @@ export interface TreeGroup {
 
 interface Props {
   title: string;
+  /** Which of the two Price Opt help pages the "?" opens — the pages are
+   *  siblings and differ only in how the tree groups, so the panel is told
+   *  rather than guessing from the title. */
+  helpPage: HelpPage;
   storeName: string;
   dateLabel: string;
   filterPlaceholder: string;
@@ -53,10 +73,16 @@ interface Props {
   onSelectProduct: (p: ProductSummary) => void;
   onSearchOpen: () => void;
   onExportOpen: () => void;
+  /** Whether a group holds an item matching the filter, for a page that
+   *  already has every item in hand. The Vendor page does, so typing an item
+   *  name finds the vendors that sell it; the department page loads items one
+   *  department at a time, so it can't, and passes nothing. */
+  groupHasItem?: (groupId: string, term: string) => boolean;
 }
 
 const InventoryTreePanel = ({
   title,
+  helpPage,
   storeName,
   dateLabel,
   filterPlaceholder,
@@ -69,6 +95,7 @@ const InventoryTreePanel = ({
   onSelectProduct,
   onSearchOpen,
   onExportOpen,
+  groupHasItem,
 }: Props) => {
   const [filter, setFilter] = useState("");
 
@@ -79,10 +106,13 @@ const InventoryTreePanel = ({
     () =>
       term
         ? groups.filter(
-            (g) => g.label.toLowerCase().includes(term) || g.id === openGroup,
+            (g) =>
+              g.label.toLowerCase().includes(term) ||
+              g.id === openGroup ||
+              (groupHasItem?.(g.id, term) ?? false),
           )
         : groups,
-    [groups, term, openGroup],
+    [groups, term, openGroup, groupHasItem],
   );
   const visibleProducts = useMemo(
     () =>
@@ -111,7 +141,8 @@ const InventoryTreePanel = ({
               {storeName} · {dateLabel}
             </div>
           </div>
-          <div className="flex items-center gap-1.5 flex-shrink-0">
+          <div data-help="scope" className="flex items-center gap-1.5 flex-shrink-0">
+            <PageInfoButton page={helpPage} />
             <HeaderIconButton onClick={onExportOpen} title="Export CSV">
               <ArrowDownTrayIcon className="h-3 w-3" />
             </HeaderIconButton>
@@ -129,7 +160,7 @@ const InventoryTreePanel = ({
           />
         </div>
 
-        <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar">
+        <div data-help="tree" className="flex-1 min-h-0 overflow-y-auto thin-scrollbar">
           {visibleGroups.map((g) => {
             const isOpen = g.id === openGroup;
             return (
@@ -156,7 +187,7 @@ const InventoryTreePanel = ({
                     </span>
                   )}
                   <span className="text-[10px] text-content/60 tabular-nums flex-shrink-0">
-                    {formatCurrencyCompact(g.sales)}
+                    {treeMoney(g.sales)}
                   </span>
                 </button>
 
@@ -198,7 +229,7 @@ const InventoryTreePanel = ({
                               isSel ? "text-blue-900" : "text-content/60"
                             }`}
                           >
-                            {formatCurrencyCompact(p.sales)}
+                            {treeMoney(p.sales)}
                           </span>
                         </button>
                       );

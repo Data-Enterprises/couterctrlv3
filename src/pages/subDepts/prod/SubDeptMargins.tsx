@@ -20,7 +20,7 @@ import type {
   SubMarginsJsonResp,
   SubDeptMargin,
 } from "../../../interfaces";
-import { scopeToStoreNumber, storeNumbersIn } from "../../../utils/storeIdentity";
+import { onlyStoreNumber, storeNumbersIn } from "../../../utils/storeIdentity";
 import {
   setSubDeptGrade,
   setLoadingGrades,
@@ -233,6 +233,7 @@ const computeSubDeptGrade = (
     lwMarginPct: m.lwMarginPct,
     lwPtsDelta: m.lwPtsDelta,
     noCostCount,
+    dollars: m.dollars,
     tySales: sales.tySales,
     lySales: sales.lySales,
     lwSales: sales.lwSales,
@@ -266,8 +267,14 @@ const SubDeptMargins = () => {
   scopeRef.current = selectedStoreNumber;
 
   // null = show every location combined ("Both").
+  //
+  // Strict once a location is chosen. This used scopeToStoreNumber, which
+  // leaves an array alone when it holds fewer than two numbers -- so a period
+  // only one location traded in (a last year 370 has no history for and 369
+  // does) came back as the OTHER location's rows rather than as no
+  // comparison. Found while giving Vendors the same split.
   const scoped = <T extends { store_number: string }>(rows: T[]): T[] =>
-    scopeRef.current ? scopeToStoreNumber(rows, scopeRef.current) : rows;
+    scopeRef.current ? onlyStoreNumber(rows, scopeRef.current) : rows;
 
   // The weekly and sub_sales chains run in parallel and both carry
   // store_number, so either can be first back. Whichever it is establishes the

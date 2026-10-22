@@ -10,8 +10,7 @@ import {
   dayUnitCost,
   findGaps,
   itemDescription,
-  rowsOfSaleType,
-} from "./lookupMetrics";
+  rowsOfSaleType, lookupFailureText } from "./lookupMetrics";
 
 // UPC 70417 (Picadeli Salad Bar) at store 545, as returned on 9/15/2026: a
 // scale item that rings qty 0, with no cost on file and a blank description
@@ -179,5 +178,31 @@ describe("itemDescription", () => {
 
   it("is blank when nothing is named", () => {
     expect(itemDescription("", [HISTORY[0]])).toBe("");
+  });
+});
+
+describe("lookupFailureText", () => {
+  it("says an item with no recent sales has no recent sales", () => {
+    // The endpoint's own words for it, which the page used to hide behind
+    // "There was an issue finding this item".
+    expect(
+      lookupFailureText("no sales for upc 0000 at store 695 in the last 14 days"),
+    ).toBe("No sales of this UPC at this store in the last 14 days");
+  });
+
+  it("keeps the window the server reports", () => {
+    expect(
+      lookupFailureText("no sales for upc 1 at store 2 in the last 30 days"),
+    ).toMatch(/last 30 days/);
+  });
+
+  it("still calls a real failure a failure", () => {
+    // A Python KeyError leaking through is not an answer about the item.
+    expect(lookupFailureText("'product_code'")).toBe(
+      "There was an issue finding this item",
+    );
+    expect(lookupFailureText(undefined)).toBe(
+      "There was an issue finding this item",
+    );
   });
 });

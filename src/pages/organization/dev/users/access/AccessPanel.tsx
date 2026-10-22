@@ -12,7 +12,7 @@ import type {
   Store,
 } from "../../../../../interfaces";
 import type { SelectableStore } from "../../types";
-import { modeOf, type AccessPicks, NO_PICKS } from "./accessSets";
+import { modeOf, type AccessPicks, NO_PICKS, heldGroupIds } from "./accessSets";
 import TextFilter from "../../../../../components-dev/filters/TextFilter";
 import SelectFilter from "../../../../../components-dev/filters/SelectFilter";
 import Checkbox from "../../../../../components-dev/Checkbox";
@@ -114,6 +114,10 @@ const AccessPanel = ({
   const companyList = ctx.isProgrammer
     ? ctx.allCompanies.map((c) => ({ id: c.id, name: c.name }))
     : ctx.companies.map((c) => ({ id: c.company, name: c.name }));
+
+  // Ticked groups plus any a ticked store implies: what Create saves.
+
+  const held = heldGroupIds(picks);
 
   const selectedStores = picks.stores;
   const onChange = (stores: SelectableStore[]) =>
@@ -673,8 +677,8 @@ const AccessPanel = ({
             {/* No company tally: a held group carries its own company now, so
                 a count of ticks would read 0 beside a group that plainly has
                 one. Review shows what is actually written. */}
-            {picks.baseGroups.length} base group
-            {picks.baseGroups.length === 1 ? "" : "s"}, {selectedStores.length}{" "}
+            {held.length} base group
+            {held.length === 1 ? "" : "s"}, {selectedStores.length}{" "}
             store{selectedStores.length === 1 ? "" : "s"} picked
           </span>
           <button
@@ -684,13 +688,13 @@ const AccessPanel = ({
             Clear all
           </button>
         </div>
-        {picks.baseGroups.length === 0 ? (
+        {held.length === 0 ? (
           <div className="text-[11.5px] text-content/85">
             Nothing selected yet
           </div>
         ) : (
           <div className="text-[11.5px] text-content/85 leading-relaxed max-h-[60px] overflow-y-auto thin-scrollbar">
-            {picks.baseGroups.map((id, i) => {
+            {held.map((id, i) => {
               const group = groupsById[id];
               const mode = modeOf(picks, id);
               const count = selectedStores.filter(

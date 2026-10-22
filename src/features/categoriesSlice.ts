@@ -1,6 +1,6 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { CategoryMetric, CategoryRow, CategoryTier } from "../interfaces";
-import type { CatItem, CatSalesHourly } from "../interfaces";
+import type { CatItem, CatSalesDaily, CatSalesHourly } from "../interfaces";
 
 /** Categories (Performance).
  *
@@ -31,6 +31,18 @@ interface CategoriesState {
   loadingMessage: string;
   storeid: number;
   storeName: string;
+  /** Every store_number the search came back with. More than one means the
+   *  storeid covers two physical locations -- see utils/storeIdentity. */
+  availableStoreNumbers: string[];
+  /** Which location is on screen; null is every location combined. */
+  selectedStoreNumber: string | null;
+  /** The category rows as fetched, every location. `rows` is this folded and
+   *  narrowed to the chosen location, so switching location re-presents what
+   *  is already here instead of asking for the pages again. */
+  raw: { tw: CatSalesDaily[]; lw: CatSalesDaily[]; ly: CatSalesDaily[] };
+  /** This week's days, the spine every comparison is aligned onto. Kept with
+   *  the raw rows because rebuilding needs both. */
+  twDates: string[];
   /** This week's range, kept so the day strip and the hourly drill-down can
    *  rebuild the same periods without recomputing from search state. */
   twStart: string;
@@ -73,6 +85,10 @@ const initialState: CategoriesState = {
   loadingMessage: "",
   storeid: 0,
   storeName: "",
+  availableStoreNumbers: [],
+  selectedStoreNumber: null,
+  raw: { tw: [], lw: [], ly: [] },
+  twDates: [],
   twStart: "",
   twEnd: "",
   metric: "sales",
@@ -100,6 +116,22 @@ const categoriesSlice = createSlice({
     },
     setLoadingMessage: (state, action: PayloadAction<string>) => {
       state.loadingMessage = action.payload;
+    },
+    setAvailableStoreNumbers: (state, action: PayloadAction<string[]>) => {
+      state.availableStoreNumbers = action.payload;
+    },
+    setSelectedStoreNumber: (state, action: PayloadAction<string | null>) => {
+      state.selectedStoreNumber = action.payload;
+    },
+    setRaw: (
+      state,
+      action: PayloadAction<{
+        raw: { tw: CatSalesDaily[]; lw: CatSalesDaily[]; ly: CatSalesDaily[] };
+        twDates: string[];
+      }>,
+    ) => {
+      state.raw = action.payload.raw;
+      state.twDates = action.payload.twDates;
     },
     setStore: (state, action: PayloadAction<{ storeid: number; storeName: string }>) => {
       state.storeid = action.payload.storeid;
@@ -157,6 +189,10 @@ const categoriesSlice = createSlice({
      *  be an irritation, and neither depends on which store is loaded. */
     reQuery: (state) => {
       state.rows = [];
+      state.raw = { tw: [], lw: [], ly: [] };
+      state.twDates = [];
+      state.availableStoreNumbers = [];
+      state.selectedStoreNumber = null;
       state.selectedCategory = null;
       state.selectedDay = null;
       state.hourly = { tw: [], lw: [], ly: [] };
@@ -169,6 +205,9 @@ const categoriesSlice = createSlice({
 
 export const {
   setRows,
+  setAvailableStoreNumbers,
+  setSelectedStoreNumber,
+  setRaw,
   setLoading,
   setLoadingMessage,
   setStore,

@@ -29,7 +29,23 @@ export interface TopItemRow {
   sub_department: number | null;
   sub_department_description: string | null;
   sub_department_count: number;
+  /**
+   * Rings, not amount sold.
+   *
+   * On a scale item this counts how many times something was weighed, and at
+   * Food Giant it is 0 on every weighed row — the feed sends no ring count
+   * and nothing in the data can derive one. `weight` is the amount on those
+   * rows, and `qty: 0` beside `weight: 507.230` is accurate rather than
+   * broken.
+   */
   qty: number;
+  /**
+   * Pounds, to three decimals. Zero on a packaged item.
+   *
+   * Its own column rather than a stand-in for `qty`: the two mean different
+   * things and a row can carry both.
+   */
+  weight: number;
   total_sales: number;
   /** Null when no line carried a cost at all. */
   ext_cost: number | null;
@@ -59,13 +75,21 @@ export interface TopItemRow {
   qty_unknown: number | null;
 }
 
-/** One price an item actually rang at, and what went through at it. */
+/**
+ * One price an item actually rang at, and what went through at it.
+ *
+ * On a weighed line `price` is the posted per-pound price, read off the row
+ * rather than divided out of it — so a weighed item returns ONE price point
+ * where it used to return a scatter, one per basket size.
+ */
 export interface TopItemPricePoint {
   storeid: number;
   product_code: string;
   product_description: string;
   price: number;
   units: number;
+  /** Pounds at this price. Zero on a packaged item. */
+  weight: number;
   net_sales: number;
 }
 
@@ -88,6 +112,8 @@ export interface ItemDetailStore {
   store_number: string | null;
   store_name: string | null;
   qty: number;
+  /** Pounds, to three decimals. Zero on a packaged item. */
+  weight: number;
   total_sales: number;
   ext_cost: number | null;
   cost_coverage: number | null;
@@ -135,18 +161,17 @@ export interface ItemDetailResponse {
 /**
  * How many items to ask for.
  *
- * The list is shown ranked by SALES, and the endpoint ranks by units — so the
- * top 200 by sales is not the 200 it returns. A $16 item selling five makes
- * one list and misses the other, and no amount of re-sorting here recovers a
- * row that never came back.
+ * The endpoint ranks by SALES now, which is what the list is ranked by, so
+ * the 200 it returns are the 200 shown. This asked for 500 and took the top
+ * 200 out of them while the endpoint still ranked on units — a mitigation
+ * for a list that could not otherwise contain the right rows, and 60% of a
+ * payload that was thrown away.
  *
- * So ask for the endpoint's ceiling and take the top 200 by sales out of it.
- * That is a mitigation, not a fix: an item outside the top 500 by units but
- * inside the top 200 by sales is still missed, which takes roughly a £90
- * single-unit sale to arrange. The fix is `ORDER BY total_sales` on the
- * endpoint, and this constant goes back to `SHOWN` when it lands.
+ * Units could never order a mixed list anyway: on a scale item `qty` counts
+ * weighings, on a packaged one it counts units, and at Food Giant it is 0 on
+ * every weighed row. Dollars mean the same thing on every row.
  */
-export const TOP_ITEMS_FETCH = 500;
+export const TOP_ITEMS_FETCH = 200;
 
 /** How many the tab shows once they are ranked by sales. */
 export const TOP_ITEMS_SHOWN = 200;

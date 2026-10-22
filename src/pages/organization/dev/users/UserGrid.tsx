@@ -363,7 +363,9 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
           className="flex items-center gap-1 text-[11.5px] font-medium px-3 py-1.5 rounded-md text-custom-white bg-brand_navy hover:bg-brand_navy/85 flex-shrink-0"
         >
           <PlusIcon className="w-3.5 h-3.5" />
-          New
+          {/* Named for what it opens -- the form is titled "Add user", and so
+              is the step in the board and the training (finding AI). */}
+          Add user
         </button>
       </div>
 
@@ -500,7 +502,7 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
       )}
 
       {securityUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35">
+        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
           <div className="bg-custom-white rounded-xl p-5 w-[480px] shadow-2xl">
             <div className="flex items-center justify-between">
               <div className="text-[14px] font-medium text-content">

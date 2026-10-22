@@ -29,6 +29,12 @@ export default {
         // Height matters as much as width here: the stage is a full-viewport
         // layout with fixed vertical offsets, so a short laptop window clips
         // before a narrow one does.
+        // A Performance drill's signal list is 39.5% of a panel that is 52% of
+        // the content area, so its rows get about a fifth of the window while
+        // their number columns need a fixed 246px. Under 1200px there is no
+        // room for three of them beside a readable name -- measured, and it
+        // matches where the names were being squeezed to nothing.
+        perf_narrow: { max: "1199px" },
         portal_short: { raw: "(max-height: 820px)" },
         portal_shorter: { raw: "(max-height: 700px)" },
       },

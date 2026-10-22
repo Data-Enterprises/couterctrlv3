@@ -48,7 +48,7 @@ const CompanyFormModal = ({
     !alreadyExists;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35">
+    <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
       <div className="bg-custom-white rounded-xl p-5 w-[440px] shadow-2xl">
         <div className="text-[14px] font-medium text-content mb-3">
           {isCreate ? "New company" : `Edit ${initial.name}`}

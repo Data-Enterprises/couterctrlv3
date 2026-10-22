@@ -1,4 +1,7 @@
+import { onlyStoreNumber } from "../../../utils/storeIdentity";
+import { marginPct } from "../../../utils/grading";
 import type { SubDeptMargin } from "../../../interfaces";
+import type { RollupRow } from "../../../api/rollup";
 import { calculateCogs } from "../../../utils/cogs";
 import {
   LW_OFFSET,
@@ -14,11 +17,10 @@ import type { VendorMetric, VendorRow, VendorDay, VendorTier } from "../../../in
 // Defined in src/interfaces — Vendors. Re-exported for this page's files.
 export type { VendorMetric, VendorRow, VendorDay, VendorTier } from "../../../interfaces";
 
-/** Margin percentage from a net/COGS pair. Zero net means there is nothing to
- *  take a margin on — 0 rather than a divide-by-zero, matching Sub Dept
- *  Margins. */
-export const marginPct = (net: number, cogs: number) =>
-  net > 0 ? ((net - cogs) / net) * 100 : 0;
+/** Margin percentage from a net/COGS pair. Re-exported rather than defined:
+ *  this page and Sub Dept Margins read the same rows, and the one definition
+ *  lives in utils/grading so they cannot disagree again. */
+export { marginPct };
 
 /** Rows with no supplier — coupon (CPN) lines and anything else the POS books
  *  without a vendor — collect here rather than being dropped.
@@ -34,6 +36,32 @@ export const NO_VENDOR_LABEL = "No vendor";
  *  is also on the row but is coupon-adjusted as well, so it isn't the same
  *  figure the other Performance pages compare on. */
 const netOf = (m: SubDeptMargin) => m.total_sales - m.total_tax;
+
+/** The three periods, narrowed to one co-located location.
+ *
+ *  `subs/subs` is fetched by storeid, and a handful of storeids cover two
+ *  physical stores, so those responses arrive with both locations added
+ *  together. Sub Dept Margins reads the same endpoint and has always split
+ *  them; this page did not, so on a co-located id every vendor figure here was
+ *  two stores at once with nothing on screen saying so.
+ *
+ *  Null means the combined view, which is a legitimate thing to ask for -- it
+ *  is just not a safe default.
+ *
+ *  Strict, not `scopeToStoreNumber`: a location can have a period the other
+ *  one did not trade in, and the guarded form would hand those rows over
+ *  rather than reporting no comparison. */
+export const scopePeriods = <T extends { store_number: string }>(
+  raw: { tw: T[]; lw: T[]; ly: T[] },
+  storeNumber: string | null,
+) =>
+  storeNumber === null
+    ? raw
+    : {
+        tw: onlyStoreNumber(raw.tw, storeNumber),
+        lw: onlyStoreNumber(raw.lw, storeNumber),
+        ly: onlyStoreNumber(raw.ly, storeNumber),
+      };
 
 interface Bucket {
   net: number;
@@ -58,14 +86,42 @@ const asText = (v: unknown) => (v === null || v === undefined ? "" : String(v)).
  *  numerically 50, so it never lands here. */
 const isNoVendor = (id: string) => id === "" || /^0+$/.test(id);
 
-const collect = (rows: SubDeptMargin[]) => {
+/**
+ * What the vendor list reads off one row: whose, which day, and the three sums.
+ *
+ * Two kinds of row carry it. Item rows from `subs/subs`, which the detail
+ * panel and the export need, and `subs/rollup` rows, which are those same item
+ * rows summed by vendor per location per day on the server. The list is built
+ * from the rollup so it paints from ~40 KB while the item rows are still
+ * coming, and it comes out the same either way: the rollup's ids are the item
+ * rows' `vendor_id` as trimmed text, and its cogs is `calculateCogs` applied
+ * per item row.
+ */
+type VendorSource = SubDeptMargin | RollupRow;
+
+const factOf = (m: VendorSource) =>
+  "key" in m
+    ? { rawId: m.key, name: m.name, net: m.net_sales, qty: m.qty, cogs: m.cogs }
+    : {
+        rawId: asText(m.vendor_id),
+        name: asText(m.vendor_name),
+        net: netOf(m),
+        qty: m.qty,
+        // The canonical helper — net_cost before cost, weight before qty.
+        // Costing a promoted item at list, or a scale item by scan count, is
+        // what it exists to prevent; see the note on calculateCogs.
+        cogs: calculateCogs(m.net_cost, m.cost, m.case_size, m.qty, m.weight),
+      };
+
+const collect = (rows: VendorSource[]) => {
   const map = new Map<string, VendorAgg>();
   for (const m of rows) {
-    const rawId = asText(m.vendor_id);
+    const f = factOf(m);
+    const rawId = asText(f.rawId);
     const id = isNoVendor(rawId) ? NO_VENDOR_ID : rawId;
     let v = map.get(id);
     if (!v) {
-      const name = asText(m.vendor_name);
+      const name = asText(f.name);
       v = {
         name:
           id === NO_VENDOR_ID
@@ -79,12 +135,9 @@ const collect = (rows: SubDeptMargin[]) => {
     }
     const d = isoOf(m.sale_date);
     const b = v.byDate.get(d) ?? empty();
-    b.net += netOf(m);
-    b.qty += m.qty;
-    // The canonical helper — net_cost before cost, weight before qty. Costing a
-    // promoted item at list, or a scale item by scan count, is what it exists
-    // to prevent; see the note on calculateCogs.
-    b.cogs += calculateCogs(m.net_cost, m.cost, m.case_size, m.qty, m.weight);
+    b.net += f.net;
+    b.qty += f.qty;
+    b.cogs += f.cogs;
     v.byDate.set(d, b);
   }
   return map;
@@ -99,9 +152,9 @@ const collect = (rows: SubDeptMargin[]) => {
  * week is part of what the panel shows.
  */
 export const buildVendorRows = (
-  tw: SubDeptMargin[],
-  lw: SubDeptMargin[],
-  ly: SubDeptMargin[],
+  tw: VendorSource[],
+  lw: VendorSource[],
+  ly: VendorSource[],
   twDates: string[],
 ): VendorRow[] => {
   const twMap = collect(tw);
@@ -256,5 +309,5 @@ export const rowsForVendor = (rows: SubDeptMargin[], vendorId: string) =>
   });
 
 /** Every TW date in the search, sorted — the spine day-matching aligns onto. */
-export const datesOf = (rows: SubDeptMargin[]): string[] =>
+export const datesOf = (rows: { sale_date: string }[]): string[] =>
   [...new Set(rows.map((m) => isoOf(m.sale_date)))].sort();

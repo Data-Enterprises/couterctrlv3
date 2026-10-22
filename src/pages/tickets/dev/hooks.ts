@@ -42,7 +42,12 @@ import {
   startWork,
   upsertTicket,
 } from "../../../features/dev/devTicketsSlice";
-import { visibleTickets, tabCounts } from "./ticketsUtils";
+import {
+  sendFailureText,
+  ticketsInScope,
+  visibleTickets,
+  tabCounts,
+} from "./ticketsUtils";
 
 /**
  * Everything the Client Help Desk needs, in one hook.
@@ -57,6 +62,7 @@ export const useTicketsCtx = () => {
   const toast = useToast();
   const tickets = useAppSelector((state) => state.dev.tickets);
   const userid = useAppSelector((state) => state.user.userid);
+  const userCompanies = useAppSelector((state) => state.user.companies);
 
   /**
    * Which view this is.
@@ -71,21 +77,31 @@ export const useTicketsCtx = () => {
   // always fixable by somebody.
   const canManageTechs = tickets.caps.canManageTechs;
 
+  /** What this reader may see at all, before any tab or search narrows it.
+   *  Counts read from it too, so a tab can't count tickets it won't show. */
+  const scoped = useMemo(
+    () =>
+      ticketsInScope(
+        tickets.tickets,
+        isTech,
+        userCompanies.map((c) => c.company),
+        userid,
+      ),
+    [tickets.tickets, isTech, userCompanies, userid],
+  );
+
   const rows = useMemo(
     () =>
       visibleTickets(
-        tickets.tickets,
+        scoped,
         tickets.tab,
         tickets.search,
         userid,
         tickets.filters,
       ),
-    [tickets.tickets, tickets.tab, tickets.search, userid, tickets.filters],
+    [scoped, tickets.tab, tickets.search, userid, tickets.filters],
   );
-  const counts = useMemo(
-    () => tabCounts(tickets.tickets, userid),
-    [tickets.tickets, userid],
-  );
+  const counts = useMemo(() => tabCounts(scoped, userid), [scoped, userid]);
 
   const failed = (what: string) => (err: JsonError) => {
     const status = (err as { status?: number }).status;
@@ -100,8 +116,8 @@ export const useTicketsCtx = () => {
     );
   };
 
-  /** The queue, and the pickers behind it. Three calls, none waiting on
-   *  another. */
+  /** The queue, and the pickers behind it. The list and the lookups go out
+   *  together; the assignees wait for the list to say who is asking. */
   const load = () => {
     dispatch(startLoad());
     listTickets(url, token, tickets.company ? { company: tickets.company } : {})
@@ -121,21 +137,14 @@ export const useTicketsCtx = () => {
             },
           }),
         );
+        // Only someone who can assign has anyone to assign to. Asking anyway
+        // cost every customer a 403 and a console error on every load (dev
+        // board review, finding AQ), so this now waits on the list's answer.
+        if (j.canManage) loadAssignees();
       })
       .catch(failed("Could not read the tickets"));
 
     loadLookups();
-    // The third of the three. It was written, exported and never called, so
-    // `assignees` stayed empty for everyone and the assign picker could only
-    // ever offer Unassigned — which is exactly what a tech sees when they try
-    // to hand a ticket over.
-    //
-    // Not gated on `canManage`: that arrives with the list above, and waiting
-    // for it would make this the one call that depends on another. The
-    // endpoint is a tech's to begin with, a client gets a 403, and the catch
-    // inside already leaves assignment unavailable — which is the same place
-    // a client ends up either way, since the picker is not rendered for them.
-    loadAssignees();
   };
 
   /**
@@ -287,21 +296,22 @@ export const useTicketsCtx = () => {
      * caller closes its own modal instead.
      */
     after?: (ticket: Ticket) => void,
-  ) => {
+  ): Promise<string | null> => {
+    // Returns why it did not send, or null once it has. The form says why
+    // under its own Send button: a failure set on the page sat behind the
+    // modal on the help desk, and filed from another page it showed nowhere.
     dispatch(startWork());
     let ticket: Ticket;
     try {
       const resp = await createTicket(url, token, body);
       if (ticketFailed(resp.data) || !resp.data.ticket) {
-        dispatch(failLoad("That did not send."));
         dispatch(endWork());
-        return;
+        return "That did not send.";
       }
       ticket = resp.data.ticket as Ticket;
     } catch (err) {
       dispatch(endWork());
-      failed("That did not send")(err as JsonError);
-      return;
+      return sendFailureText(err);
     }
 
     const missed: string[] = [];
@@ -326,6 +336,7 @@ export const useTicketsCtx = () => {
     // Opened last, so the pane shows the files already on it.
     if (after) after(ticket);
     else open(ticket.id);
+    return null;
   };
 
   const reply = (comment: string, internal: boolean) => {

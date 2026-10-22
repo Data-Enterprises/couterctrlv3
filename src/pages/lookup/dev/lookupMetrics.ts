@@ -292,3 +292,23 @@ export const computeActiveGap = (buckets: DayBucket[]): number => {
   }
   return days;
 };
+
+/**
+ * What to tell the reader when a lookup comes back with `error: 1`.
+ *
+ * `items/itemlookup/{storeid}` answers an item with no sales in the window the
+ * same way it answers a failure: `error: 1`, with a message that says which it
+ * was -- "no sales for upc 123 at store 695 in the last 14 days". Showing "There
+ * was an issue finding this item" for that read as a fault when it was an
+ * answer (dev board review, finding Y).
+ *
+ * The endpoint can't tell an unknown UPC from one that hasn't sold lately, so
+ * the message is about sales, not about whether the item exists. Anything else
+ * is still a fault and stays worded as one.
+ */
+export const lookupFailureText = (msg: string | null | undefined) => {
+  const m = /^no sales for upc .* in the last (\d+) days/i.exec(msg ?? "");
+  return m
+    ? `No sales of this UPC at this store in the last ${m[1]} days`
+    : "There was an issue finding this item";
+};

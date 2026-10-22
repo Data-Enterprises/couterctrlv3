@@ -46,6 +46,9 @@ const DEV_ONLY_SLICES = new Set([
   // The Upc Scanner batch. The page is dev-only — Coming Soon, no prod tree —
   // so there is no prod slice for it to be a twin of.
   "upcScanner",
+  // Price Opt's kept results. Both Price Opt pages are Coming Soon, dev only,
+  // with no prod tree to be a twin of.
+  "priceOpt",
   // Tickets joined these when its mock was replaced: the prod slice held
   // seeded fake rows and nothing read it, since the page never renders on
   // the prod API at all.

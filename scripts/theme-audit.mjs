@@ -155,6 +155,12 @@ const RULES = [
     re: /^\s*const (pillClass|severityDotClass|formatPct|chipClass|severityHeaderBgClass)\s*[=:]/gm,
   },
   {
+    id: "darkened-backdrop",
+    scope: ALL,
+    why: "a modal blurs what is behind it (backdrop-blur-sm); a black sheet costs the page the colours the reader opened the modal about",
+    re: /\bbg-black(?:\/\d+| bg-opacity-\d+)/g,
+  },
+  {
     id: "perf-row-selection",
     scope: (f) => f.family === "Performance" && DESKTOP(f) && /bg-row_selected/.test(f.src),
     why: "graded rows pair bg-row_selected with border-row_selected_border",

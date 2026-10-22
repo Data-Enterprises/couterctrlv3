@@ -30,6 +30,39 @@ export const TIER_RANK: Record<Tier, number> = {
    than 365: a Monday must compare to a Monday, and grocery weeks are not
    calendar-aligned. */
 
+/**
+ * Margin percentage from a net/COGS pair.
+ *
+ * One definition, because Sub Dept Margins and Vendors read the same
+ * `subs/subs` rows and have to land on the same number -- they did not, and
+ * three private copies of this four-line function is the shape that let them
+ * drift. Zero net means there is nothing to take a margin on, so 0 rather
+ * than a divide-by-zero.
+ */
+export const marginPct = (net: number, cogs: number) =>
+  net > 0 ? ((net - cogs) / net) * 100 : 0;
+
+/**
+ * The dollars behind a margin percentage, per comparison side.
+ *
+ * Lives here beside `Coverage` because a margin is a rate, and rates do not
+ * add up: a STORE figure built from department or vendor rates has to weight
+ * them by the money each one took, or floral counts as much as grocery.
+ * Anything that reports a weighted margin needs the numerator and the
+ * denominator, not just the quotient, so whatever computes the rate carries
+ * these out rather than throwing them away.
+ *
+ * `net`/`cogs` are the whole period. The `lw`/`ly` pairs are scoped to the
+ * days that side matched, which is the only basis on which a points delta
+ * means anything.
+ */
+export interface MarginDollars {
+  net: number;
+  cogs: number;
+  lw: { tyNet: number; tyCogs: number; refNet: number; refCogs: number };
+  ly: { tyNet: number; tyCogs: number; refNet: number; refCogs: number };
+}
+
 export const LW_OFFSET = -7;
 export const LY_OFFSET = -364;
 

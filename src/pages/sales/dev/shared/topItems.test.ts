@@ -1,5 +1,17 @@
 import { describe, it, expect } from "vitest";
 import {
+  displayVerdict,
+  marginAt,
+  rankHistory,
+  rankIn,
+  retailMix,
+  retailSays,
+  topPriceOf,
+  amountOf,
+  amountText,
+  amountUnit,
+  deptAmountText,
+  weighed,
   contributionGap,
   contributionOf,
   avgPrice,
@@ -27,6 +39,7 @@ const row = (over: Partial<TopItemRow> = {}): TopItemRow => ({
   store_name: "IGA GLASGOW KY",
   product_code: "7800004110",
   product_description: "RC 24 PK",
+  weight: 0,
   sub_department: 21,
   sub_department_description: "Soft Drinks",
   sub_department_count: 1,
@@ -180,10 +193,10 @@ describe("avgPrice and grossProfit", () => {
 
 describe("pointsFor", () => {
   const points: TopItemPricePoint[] = [
-    { storeid: 1, product_code: "A", product_description: "x", price: 8.99, units: 46, net_sales: 413.54 },
-    { storeid: 1, product_code: "A", product_description: "x", price: 15.99, units: 2, net_sales: 31.98 },
-    { storeid: 2, product_code: "A", product_description: "x", price: 8.99, units: 4, net_sales: 35.96 },
-    { storeid: 1, product_code: "B", product_description: "y", price: 1.0, units: 9, net_sales: 9 },
+    { storeid: 1, product_code: "A", product_description: "x", price: 8.99, units: 46, weight: 0, net_sales: 413.54 },
+    { storeid: 1, product_code: "A", product_description: "x", price: 15.99, units: 2, weight: 0, net_sales: 31.98 },
+    { storeid: 2, product_code: "A", product_description: "x", price: 8.99, units: 4, weight: 0, net_sales: 35.96 },
+    { storeid: 1, product_code: "B", product_description: "y", price: 1.0, units: 9, weight: 0, net_sales: 9 },
   ];
 
   it("takes only the item asked for", () => {
@@ -392,6 +405,7 @@ describe("deptSeverity", () => {
     items: 1,
     ty: 100,
     tyUnits: 10,
+    tyWeight: 0,
     lw: vsLW === null ? null : 90,
     lwUnits: null,
     ly: vsLY === null ? null : 90,
@@ -526,5 +540,217 @@ describe("contributionGap", () => {
   it("needs both sides", () => {
     expect(contributionGap(41, null)).toBeNull();
     expect(contributionGap(null, 38)).toBeNull();
+  });
+});
+
+describe("weighed items", () => {
+  const scale = (over: Partial<TopItemRow> = {}) =>
+    row({ qty: 0, weight: 507.23, total_sales: 5981.29, ...over });
+
+  it("knows a row by its weight, not by its qty", () => {
+    expect(weighed(scale())).toBe(true);
+    expect(weighed(row({ qty: 265, weight: 0 }))).toBe(false);
+  });
+
+  it("prices a weighed row per pound", () => {
+    // Food Giant rings every scale item at qty 0, so dividing by qty gave
+    // null and dividing by rings elsewhere gave the price of a basket.
+    expect(avgPrice(scale())).toBeCloseTo(11.79, 2);
+  });
+
+  it("still prices a packaged row per unit", () => {
+    expect(avgPrice(row({ qty: 100, weight: 0, total_sales: 250 }))).toBe(2.5);
+  });
+
+  it("has no price for a row that sold nothing either way", () => {
+    expect(avgPrice(row({ qty: 0, weight: 0, total_sales: 0 }))).toBeNull();
+  });
+
+  it("reports the amount in the unit the item has", () => {
+    expect(amountOf(scale())).toBe(507.23);
+    expect(amountUnit(scale())).toBe("lb");
+    // Two decimals, the shared rule's: pounds are what the invoice is
+    // denominated in, and the second decimal is money.
+    expect(amountText(scale())).toBe("507.23 lb");
+    expect(amountText(row({ qty: 1988, weight: 0 }))).toBe("1,988 units");
+  });
+});
+
+describe("deptAmountText", () => {
+  it("prints both when a department holds both", () => {
+    expect(deptAmountText({ tyUnits: 1200, tyWeight: 507.2 })).toBe(
+      "1,200 u · 507 lb",
+    );
+  });
+
+  it("prints pounds alone for a department of scale items", () => {
+    expect(deptAmountText({ tyUnits: 0, tyWeight: 507.2 })).toBe("507 lb");
+  });
+
+  it("prints units alone for a packaged department", () => {
+    expect(deptAmountText({ tyUnits: 1200, tyWeight: 0 })).toBe("1,200 u");
+  });
+
+  it("prints a dash rather than a nought", () => {
+    expect(deptAmountText({ tyUnits: 0, tyWeight: 0 })).toBe("—");
+  });
+});
+
+describe("retailMix", () => {
+  it("splits the week over the three kinds of retail", () => {
+    const m = retailMix(row({ qty_regular: 30, qty_promo: 60, qty_deal_item: 10 }));
+    expect(m?.regularPct).toBe(30);
+    expect(m?.adPct).toBe(60);
+    expect(m?.tprPct).toBe(10);
+  });
+
+  it("leaves unclassified lines out of the denominator", () => {
+    // A fourth bar for "we don't know" would take attention from the three
+    // that decide the margin.
+    const m = retailMix(
+      row({ qty_regular: 50, qty_promo: 50, qty_deal_item: null, qty_unknown: 900 }),
+    );
+    expect(m?.known).toBe(100);
+    expect(m?.regularPct).toBe(50);
+  });
+
+  it("has no answer when nothing was classified", () => {
+    expect(
+      retailMix(row({ qty_regular: null, qty_promo: null, qty_deal_item: null })),
+    ).toBeNull();
+  });
+});
+
+describe("retailSays", () => {
+  const m = (n: number) => `$${n.toFixed(2)}`;
+  const pts = [{ price: 11.99, units: 18 }];
+
+  it("calls out a week sold entirely on ad", () => {
+    const mix = retailMix(row({ qty_regular: null, qty_promo: 18, qty_deal_item: null }));
+    expect(retailSays(mix, pts, m)).toBe("All on ad at $11.99");
+  });
+
+  it("calls out a week sold at regular price", () => {
+    const mix = retailMix(row({ qty_regular: 18, qty_promo: null, qty_deal_item: null }));
+    expect(retailSays(mix, pts, m)).toBe("All at regular price at $11.99");
+  });
+
+  it("says how much went out reduced when it is a mix", () => {
+    const mix = retailMix(row({ qty_regular: 40, qty_promo: 60, qty_deal_item: null }));
+    expect(retailSays(mix, pts, m)).toBe("60% sold on a reduced price at $11.99");
+  });
+
+  it("names the price the most sold at, not the highest", () => {
+    const mix = retailMix(row({ qty_regular: null, qty_promo: 18, qty_deal_item: null }));
+    const many = [
+      { price: 15.99, units: 2 },
+      { price: 11.99, units: 18 },
+    ];
+    expect(retailSays(mix, many, m)).toBe("All on ad at $11.99");
+  });
+});
+
+describe("topPriceOf and marginAt", () => {
+  it("has no top price when it only rang at one", () => {
+    expect(topPriceOf([{ price: 11.99, units: 18 }])).toBeNull();
+  });
+
+  it("is the highest of several", () => {
+    expect(
+      topPriceOf([
+        { price: 11.99, units: 18 },
+        { price: 15.99, units: 2 },
+      ]),
+    ).toBe(15.99);
+  });
+
+  it("works the margin at a given price", () => {
+    expect(marginAt(15.99, 13.7)).toBeCloseTo(14.32, 2);
+    expect(marginAt(11.99, 13.7)).toBeCloseTo(-14.26, 2);
+  });
+
+  it("has no margin without both sides", () => {
+    expect(marginAt(null, 13.7)).toBeNull();
+    expect(marginAt(15.99, null)).toBeNull();
+    expect(marginAt(0, 13.7)).toBeNull();
+  });
+});
+
+describe("rankIn", () => {
+  const list = [
+    row({ product_code: "A", total_sales: 300 }),
+    row({ product_code: "B", total_sales: 200 }),
+    row({ product_code: "C", total_sales: 100 }),
+  ];
+
+  it("is the item's place in that week's ranked list", () => {
+    expect(rankIn(list, "B", 200)).toBe(2);
+  });
+
+  it("is null for an item that week did not carry", () => {
+    expect(rankIn(list, "ZZZ", 200)).toBeNull();
+  });
+
+  it("is null for an item outside the shown cut", () => {
+    expect(rankIn(list, "C", 2)).toBeNull();
+  });
+});
+
+describe("rankHistory", () => {
+  it("calls an item in neither baseline new", () => {
+    expect(rankHistory(38, null, null).says).toBe("New to your top 200 this week");
+  });
+
+  it("knows a return from one week out", () => {
+    expect(rankHistory(38, null, 40).says).toBe(
+      "Back in the top 200 after a week out",
+    );
+  });
+
+  it("names a real climb and a real fall", () => {
+    expect(rankHistory(10, 80, 90).says).toBe("Up from #80 last week");
+    expect(rankHistory(80, 10, 9).says).toBe("Down from #10 last week");
+  });
+
+  it("calls a small move holding, not news", () => {
+    expect(rankHistory(38, 42, 40).says).toBe("Holding around #38");
+  });
+});
+
+describe("displayVerdict", () => {
+  const pct = (n: number | null) => (n === null ? "—" : `${n}%`);
+
+  it("refuses an item that loses money, however well it sells", () => {
+    const v = displayVerdict(38, -14.3, 12, false, pct);
+    expect(v.worth).toBe(false);
+    expect(v.says).toBe("Not a display pick — it loses money");
+  });
+
+  it("backs one that passes every reading it can make", () => {
+    const v = displayVerdict(12, 28.4, 9, false, pct);
+    expect(v.worth).toBe(true);
+    expect(v.says).toBe("Worth a display");
+  });
+
+  it("never lets the display check itself pass", () => {
+    // Nothing in this data says what is on an end cap today, and three ticks
+    // must not read as a yes when it may already be out there.
+    const v = displayVerdict(12, 28.4, 9, false, pct);
+    const onDisplay = v.checks.find((c) => c.label === "Not already on display");
+    expect(onDisplay?.state).toBe("unknown");
+    expect(onDisplay?.detail).toBe("check in store");
+  });
+
+  it("does not call a new item's growth a failure", () => {
+    const v = displayVerdict(12, 28.4, null, true, pct);
+    const growth = v.checks.find((c) => c.label === "Growing vs last week");
+    expect(growth?.state).toBe("unknown");
+    expect(growth?.detail).toBe("new");
+    expect(v.worth).toBe(true);
+  });
+
+  it("says which reading failed when it is not the margin", () => {
+    const v = displayVerdict(180, 28.4, 9, false, pct);
+    expect(v.says).toBe("Not a display pick — top 50 seller fails");
   });
 });

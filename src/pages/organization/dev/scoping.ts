@@ -18,6 +18,83 @@ export const seesEverything = (userLevel: number, email: string) =>
   userLevel === 9 || isSupportUser(email);
 
 /**
+ * A company as a membership row carries it: its id, and what it belongs under.
+ *
+ * `UserCompany` has both, on the signed-in user (from the sign-in response)
+ * and on every user `users/` returns.
+ */
+export interface CompanyRef {
+  company: number;
+  parent_company_id?: number | null;
+}
+
+/**
+ * Which family a company is in: its parent's id, or its own when it has none.
+ *
+ * The same rule the backend scopes `users/` by, `coalesce(parent_company_id,
+ * id)`. Houchens is five companies on the books -- Houchens (1), Food Giant
+ * (4), Sonic (6), Ace (17) and Brooks (21) -- and one organisation in
+ * practice: the other four point at 1, so all five are family 1. Everybody
+ * else stands alone. DCR (5) is not in it: DCR staff reach everyone through
+ * `seesEverything`, not through a family.
+ *
+ * This replaced a hardcoded `COMPANY_FAMILIES` list (22 Oct), which needed
+ * editing before anybody could administer a sixth Houchens company. A missing
+ * `parent_company_id` -- an API without the change -- reads as standing
+ * alone, which narrows rather than widens.
+ */
+export const familyOf = (c: CompanyRef): number => c.parent_company_id ?? c.company;
+
+/**
+ * The families the viewer administers through, given the companies they hold.
+ *
+ * Holding Food Giant reaches Sonic, because both are family 1; holding Bruces
+ * reaches Bruces.
+ */
+export const companyReach = (viewerCompanies: CompanyRef[]): Set<number> =>
+  new Set(viewerCompanies.map(familyOf));
+
+/**
+ * Whether the signed-in user may administer this person at all.
+ *
+ * The Companies tab builds its candidate column from every user the server
+ * returns, which is every user on the system. A Bruces manager was therefore
+ * offered four hundred people to add to Bruces, Houchens staff among them --
+ * and `assign_user_to_company` takes a bare userid with no ownership check, so
+ * the offer was real. Somebody could pull a person out of a company they have
+ * nothing to do with.
+ *
+ * Three ways in, and no others:
+ *
+ *  - **Sees everything.** Level 9 and DCR support, by the same rule the rest
+ *    of this file uses. A programmer setting up a tenancy holds none of it.
+ *  - **Holds no company.** A new account belongs to nobody yet, and putting it
+ *    somewhere is the whole of onboarding. Nobody loses anything when it moves,
+ *    which is what makes it safe for any manager to pick up.
+ *  - **Is inside the viewer's reach.** In a family one of the viewer's
+ *    companies is in -- see `companyReach`. Not the company on screen: one
+ *    person can administer several, and a Houchens manager works across the
+ *    five.
+ *
+ * The level guard is separate and still applies: this says which people are
+ * yours to touch, `user_level <= ctx.userLevel` says you cannot reach above
+ * yourself. Both have to pass.
+ *
+ * Note what this does NOT narrow: the right-hand column. Somebody already in
+ * the company you are looking at holds it, so they are in your reach by
+ * definition -- the gate can only ever shorten the candidate list.
+ */
+export const canAdministerUser = (
+  candidateCompanies: CompanyRef[],
+  reach: Set<number>,
+  canSeeAll: boolean,
+): boolean => {
+  if (canSeeAll) return true;
+  if (candidateCompanies.length === 0) return true;
+  return candidateCompanies.some((c) => reach.has(familyOf(c)));
+};
+
+/**
  * The base groups somebody may administer.
  *
  * `base_groups_assigned_to_user` returns every group in the person's

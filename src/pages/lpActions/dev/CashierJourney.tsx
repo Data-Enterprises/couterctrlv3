@@ -144,7 +144,7 @@ const CashierJourney = () => {
 
   return (
     <div
-      className="fixed inset-0 z-[5000] flex items-center justify-center bg-black/40 p-4"
+      className="fixed inset-0 z-[5000] flex items-center justify-center backdrop-blur-sm p-4"
       onMouseDown={close}
     >
       <div

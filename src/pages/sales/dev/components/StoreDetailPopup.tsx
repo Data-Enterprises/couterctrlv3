@@ -81,6 +81,15 @@ const fmtDate = (d: string) =>
     day: "numeric",
   });
 
+/**
+ * Stores whose six calls are already in the air.
+ *
+ * Outside the component because it has to survive a remount — which is the
+ * whole case it exists for. Keyed by store AND number: co-located stores
+ * share an id and are two different answers.
+ */
+const inFlightStores = new Set<string>();
+
 const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
   // A search of one store has no reference set, so there is nothing to
   // compare against and the tab is never offered.
@@ -319,6 +328,11 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
     // has it, only the component tree was torn down.
     const storeKey = `${selection.storeId}__${selection.storeNumber}`;
     if (lastFetchedStoreKey === storeKey) return;
+    // Both of the guards above land only once the six calls have come back.
+    // StrictMode mounts, unmounts and mounts again in development, so the
+    // second run read the state the first had not written yet and sent all
+    // six a second time.
+    if (inFlightStores.has(storeKey)) return;
     // Held from an earlier visit: six calls saved, and the panel paints on
     // this tick rather than after a round trip. Clients hop between stores --
     // that is what the counterpart is for -- so this is the common path, not
@@ -331,6 +345,7 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
     dispatch(clearPopupSelections());
     const scopeToStore = <T extends { store_number: string }>(rows: T[]) =>
       scopeToStoreNumber(rows, selection.storeNumber);
+    inFlightStores.add(storeKey);
     const fetch = async () => {
       setLoading(true);
       try {
@@ -432,6 +447,7 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
           }),
         );
       } finally {
+        inFlightStores.delete(storeKey);
         setLoading(false);
       }
     };

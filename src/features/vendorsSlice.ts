@@ -31,6 +31,11 @@ interface VendorsState {
   loadingMessage: string;
   storeid: number;
   storeName: string;
+  /** Every store_number the search came back with. More than one means the
+   *  storeid covers two physical locations — see utils/storeIdentity. */
+  availableStoreNumbers: string[];
+  /** Which location is on screen; null is every location combined. */
+  selectedStoreNumber: string | null;
   /** This week's range, kept so the day strip and the panel can rebuild the
    *  same periods without recomputing from search state. */
   twStart: string;
@@ -56,6 +61,8 @@ const initialState: VendorsState = {
   loadingMessage: "",
   storeid: 0,
   storeName: "",
+  availableStoreNumbers: [],
+  selectedStoreNumber: null,
   twStart: "",
   twEnd: "",
   metric: "margin",
@@ -94,6 +101,12 @@ const vendorsSlice = createSlice({
       state.storeid = action.payload.storeid;
       state.storeName = action.payload.storeName;
     },
+    setAvailableStoreNumbers: (state, action: PayloadAction<string[]>) => {
+      state.availableStoreNumbers = action.payload;
+    },
+    setSelectedStoreNumber: (state, action: PayloadAction<string | null>) => {
+      state.selectedStoreNumber = action.payload;
+    },
     setRange: (state, action: PayloadAction<{ start: string; end: string }>) => {
       state.twStart = action.payload.start;
       state.twEnd = action.payload.end;
@@ -125,6 +138,8 @@ const vendorsSlice = createSlice({
     reQuery: (state) => {
       state.rows = [];
       state.raw = { tw: [], lw: [], ly: [] };
+      state.availableStoreNumbers = [];
+      state.selectedStoreNumber = null;
       state.selectedVendor = null;
       state.selectedDay = null;
       state.textFilter = "";
@@ -139,6 +154,8 @@ export const {
   setLoading,
   setLoadingMessage,
   setStore,
+  setAvailableStoreNumbers,
+  setSelectedStoreNumber,
   setRange,
   setMetric,
   setThreshold,

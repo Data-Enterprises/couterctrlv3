@@ -34,6 +34,9 @@ describe("isDevOnlyRoute", () => {
     expect(comingSoonHrefs.filter((h) => !isDevOnlyRoute(h))).toEqual([]);
   });
 
+  // Named explicitly rather than read off the nav, because Release Notes is
+  // not in the nav at all. Closed for timing now rather than for content — the
+  // notes are the client set, but nothing is announced before the switchover.
   it("covers Release Notes, which is not in the nav at all", () => {
     expect(isComingSoonRoute("release-notes")).toBe(false);
     expect(isDevOnlyRoute("release-notes")).toBe(true);

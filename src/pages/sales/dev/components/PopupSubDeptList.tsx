@@ -204,6 +204,10 @@ interface PopupSubDeptListProps {
   twRealDates: string[];
 }
 
+/** Sub departments whose item fetch is already in the air. Outside React
+ *  because it has to survive the remount it exists to absorb. */
+const inFlightItems = new Set<string>();
+
 const PopupSubDeptList = ({
   twDateLabel,
   lwDateLabel,
@@ -324,6 +328,11 @@ const PopupSubDeptList = ({
     // request — Redux still has it, only the component tree was torn down.
     const itemsKey = `${storeId}__${storeNumber}_${selectedId}_${selectedDate ?? "all"}`;
     if (lastFetchedItemsKey === itemsKey) return;
+    // The guard above lands only once the three calls have come back, so
+    // StrictMode's second mount read the state the first had not written yet
+    // and asked for all three again.
+    if (inFlightItems.has(itemsKey)) return;
+    inFlightItems.add(itemsKey);
 
     const twEnd = formatGoliathDate(search.singleDate);
     const twStart = addDays(search.singleDate, -6).toISOString().split("T")[0];
@@ -497,6 +506,7 @@ const PopupSubDeptList = ({
         );
         dispatch(setLastFetchedItemsKey(itemsKey));
       } finally {
+        inFlightItems.delete(itemsKey);
         if (!cancelled) setItemsLoading(false);
       }
     };
@@ -900,9 +910,14 @@ const PopupSubDeptList = ({
   return (
     <>
       <div className="flex h-full">
-        {/* Left panel — signal list */}
+        {/* Left panel — signal list.
+            A floor as well as a percentage. 39.5% of a panel that is itself
+            52% of the content area leaves these rows about a fifth of the
+            window, and their number columns need a fixed 246px of it, so on a
+            window under about 1200px the percentage alone left nothing for
+            the sub-department names. The detail side gives ground first now. */}
         <div
-          className="flex flex-col border-r border-gray-100"
+          className="flex flex-col border-r border-gray-100 min-w-[310px]"
           style={{ width: "39.5%" }}
         >
           {/* Filter chips + threshold */}
@@ -984,9 +999,15 @@ const PopupSubDeptList = ({
 
           <div className="flex items-center gap-2.5 px-3 py-1.5 border-b border-gray-100 flex-shrink-0">
             <span className="w-2.5 flex-shrink-0" />
+            {/* min-w: this was the only cell in the row with min-w-0 against
+                number columns that cannot shrink, so CSS had exactly one place
+                to take missing pixels from and the names went to 0px while
+                every figure stayed. A floor means a window too narrow for the
+                row clips its right edge instead, which is recoverable --
+                losing which department a number belongs to is not. */}
             <button
               onClick={() => handleDeptSortClick("dept")}
-              className="flex items-center gap-0.5 text-[11.5px] font-semibold uppercase tracking-wide text-content/80 hover:text-content flex-1 min-w-0"
+              className="flex items-center gap-0.5 text-[11.5px] font-semibold uppercase tracking-wide text-content/80 hover:text-content flex-1 min-w-[88px]"
             >
               Sub Dept
               {deptSort?.column === "dept" &&
@@ -1023,9 +1044,12 @@ const PopupSubDeptList = ({
                     <ChevronUpIcon className="w-3 h-3" />
                   ))}
               </button>
+              {/* vs LY is the column that goes when the row runs out of room:
+                  it is the weaker of the two comparisons, and on a store with
+                  no history on file it is a dash on every row. */}
               <button
                 onClick={() => handleDeptSortClick("vsLY")}
-                className="flex items-center justify-center gap-0.5 text-[11.5px] font-semibold uppercase tracking-wide text-content/80 hover:text-content flex-shrink-0"
+                className="perf_narrow:hidden flex items-center justify-center gap-0.5 text-[11.5px] font-semibold uppercase tracking-wide text-content/80 hover:text-content flex-shrink-0"
                 style={{ width: PCT_COL_W }}
               >
                 vs LY
@@ -1072,7 +1096,7 @@ const PopupSubDeptList = ({
                   />
                   <span
                     title={r.desc}
-                    className="text-[12px] font-medium text-content truncate flex-1"
+                    className="text-[12px] font-medium text-content truncate flex-1 min-w-[88px]"
                   >
                     {r.desc}
                   </span>
@@ -1101,7 +1125,7 @@ const PopupSubDeptList = ({
                       {r.hasLW ? formatPct(rowVsLWPct) : "—"}
                     </span>
                     <span
-                      className={`text-[12px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${
+                      className={`perf_narrow:hidden text-[12px] font-semibold px-1.5 py-1 rounded text-center flex-shrink-0 whitespace-nowrap ${
                         r.hasLY
                           ? comparisonPillClass(rowVsLYPct, lyComplete, threshold)
                           : "bg-gray-100 text-gray-400"
@@ -1355,6 +1379,7 @@ const PopupSubDeptList = ({
                           placeholder="UPC/Desc"
                         />
                       </div>
+                      <div data-help="inactive-filter">
                       <SelectFilter
                         options={[
                           { label: "Active", value: "active" },
@@ -1368,6 +1393,7 @@ const PopupSubDeptList = ({
                         placeholder="All items"
                         className="w-[110px]"
                       />
+                      </div>
                     </div>
                   </div>
 

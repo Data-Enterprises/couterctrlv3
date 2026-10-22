@@ -31,8 +31,7 @@ import {
   buildDayBuckets,
   computeMargin,
   computeTrend,
-  itemDescription,
-} from "./lookupMetrics";
+  itemDescription, lookupFailureText } from "./lookupMetrics";
 import { isSaleRow } from "../../../utils/saleType";
 
 const ItemLookupMobile = () => {
@@ -161,8 +160,8 @@ const ItemLookupMobile = () => {
           // in inventory, sending people to hunt a stocking problem that may not
           // exist. The toast carries whatever the server said; the panel stays
           // deliberately vague, because vague and true beats specific and wrong.
-          toast.error(j.msg || "There was an issue finding this item");
-          dispatch(setError("There was an issue finding this item"));
+          toast.error(lookupFailureText(j.msg));
+          dispatch(setError(lookupFailureText(j.msg)));
           dispatch(setItemsLoaded(false));
           dispatch(reQueryUpc({ isResettingUpcCode: true }));
           dispatch(setPause(true));

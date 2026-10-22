@@ -90,6 +90,7 @@ const receiver = (
   }) as ReceiverItemSearchReceiver;
 
 const point = (over: Partial<SubsPricePoint> = {}): SubsPricePoint => ({
+  weight: 0,
   storeid: 1,
   store_number: "010",
   store_name: "Leitchfield",
@@ -860,6 +861,7 @@ describe("ladderSays", () => {
   ) => ({
     price,
     units,
+    weight: 0,
     transactions,
     netSales: price * units,
     days,
@@ -916,6 +918,7 @@ describe("a ladder for an item sold by weight", () => {
     price,
     units,
     transactions,
+    weight: 0,
     net_sales: price * units,
     first_sold: "2026-10-01",
     last_sold: "2026-10-01",

@@ -20,6 +20,8 @@ import {
 import { setUserPrefs } from "../../api/user";
 import { useToast } from "../toasts/hooks/useToast";
 import type { JsonError } from "../../interfaces";
+import SignInAsModal from "../../components-dev/SignInAsModal";
+import { impersonatedBy } from "../../utils/session";
 
 interface NavSheetProps {
   cat: { name: string; pages: any[] };
@@ -89,7 +91,7 @@ const NavSheet = ({
 
   return (
     <div className="fixed inset-0 z-50" style={{ top: 48, bottom: 56 }}>
-      <div className="absolute inset-0 bg-black/25" onClick={slideDown} />
+      <div className="absolute inset-0 backdrop-blur-sm" onClick={slideDown} />
       <div
         ref={sheetRef}
         className="absolute bottom-0 left-0 right-0 bg-custom-white rounded-t-2xl"
@@ -169,6 +171,9 @@ const TitleBar = () => {
     categoryCloseTimer.current = setTimeout(() => setOpenCategory(null), 80);
   };
   const [avatarOpen, setAvatarOpen] = useState(false);
+  const [signInAsOpen, setSignInAsOpen] = useState(false);
+  /** Who is really behind this session, when it is someone else's. */
+  const realUser = impersonatedBy(context.token);
 
   const currentPath = location.pathname.replace(/^\//, "");
   const categories = categoriesFor(context.apiEnv);
@@ -285,6 +290,14 @@ const TitleBar = () => {
                   {user.email}
                 </div>
               )}
+              {/* Said plainly, because nothing else on screen would: an
+                  impersonated session looks exactly like theirs. The name
+                  comes from the token's `imp` claim. */}
+              {realUser && (
+                <div className="text-[11px] font-medium text-amber-900 mt-1.5">
+                  Signed in as them by {realUser}. Sign out to return.
+                </div>
+              )}
             </div>
             {/* Client Help Desk — parked 2026-08-19, not deleted. The
                 /tickets route and its page are untouched, so restoring this is
@@ -363,24 +376,23 @@ const TitleBar = () => {
                 </div>
               </div>
             ) : null}
-            {/* What went out and what is waiting, straight from the bucket the
-                help pages come from. Dev mode only: these are our notes, they
-                name unreleased work, and the row would mean nothing to a
-                client sitting on prod. Under View because it describes the
+            {/* What went out, and when. Under View because it describes the
                 app those switches move you around in.
 
-                HIDDEN until `help/releases` and `help/page_url` are deployed.
-                The page needs the API to list the notes AND to sign each one:
-                the files sit under `release/{env}/{name}.html` in the help
-                bucket, and unlike `dev/` and `prod/` that prefix is not
-                public — anonymous GETs answer AccessDenied, and the frame is
-                anonymous. So the row would open a page that can only report
-                it cannot read anything.
+                The page works now. It used to be commented out entirely: the
+                notes were HTML under `release/{env}/` in the help bucket, a
+                prefix that is not public the way `dev/` and `prod/` are, so an
+                anonymous frame got AccessDenied and the row opened a page that
+                could only report it could not read anything. The notes are
+                data in `content/releaseNotes` now — nothing to fetch, nothing
+                to sign — and they are the client set, written for the people
+                using the product rather than for us.
 
-                Uncomment as-is once the endpoint is up; nothing else about
-                the page changed. The route stays mounted, so the URL still
-                works for testing it. */}
-            {/*
+                Still dev only, for timing rather than content: nothing about
+                this release is announced to clients until the switchover.
+                Drop the `apiEnv` check here and take "release-notes" out of
+                DEV_ONLY_ROUTES in navigation/utils when it is theirs to
+                read. */}
             {context.apiEnv === "dev" ? (
               <button
                 onClick={() => {
@@ -390,10 +402,9 @@ const TitleBar = () => {
                 className="w-full text-left px-4 py-2.5 text-[13px] font-medium text-content hover:bg-gray-50 transition-colors border-b border-gray-100 flex items-center gap-2"
               >
                 <span className="flex-1">Release Notes</span>
-                <span className="text-[11px] text-content/85">every release</span>
+                <span className="text-[11px] text-content/95">every release</span>
               </button>
             ) : null}
-            */}
             {/* File a ticket about the page you are on.
 
                 Raises a flag rather than navigating: sending somebody to the
@@ -424,6 +435,22 @@ const TitleBar = () => {
                 <span className="text-[11px] text-content/85">
                   from this page
                 </span>
+              </button>
+            ) : null}
+            {/* Sign in as someone. Level 9 only, which the server checks
+                again from the database, and dev only, because the endpoint
+                is on the dev API alone so far. Replaced the impersonate
+                checkbox on the sign-in page. */}
+            {context.apiEnv === "dev" && user.userLevel === 9 ? (
+              <button
+                onClick={() => {
+                  setAvatarOpen(false);
+                  setSignInAsOpen(true);
+                }}
+                className="w-full text-left px-4 py-2.5 text-[13px] font-medium text-content hover:bg-gray-50 transition-colors border-b border-gray-100 flex items-center gap-2"
+              >
+                <span className="flex-1">Sign in as...</span>
+                <span className="text-[11px] text-content/85">level 9</span>
               </button>
             ) : null}
             {SHOW_API_ENV_SWITCH && user.userLevel >= 7 ? (
@@ -689,6 +716,9 @@ const TitleBar = () => {
         </>
       )}
 
+      {signInAsOpen && (
+        <SignInAsModal onClose={() => setSignInAsOpen(false)} />
+      )}
     </>
   );
 };

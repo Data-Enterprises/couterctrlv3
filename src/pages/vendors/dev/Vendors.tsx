@@ -24,7 +24,7 @@ const Vendors = () => {
   const search = useAppSelector((s) => s.search);
   const user = useAppSelector((s) => s.user);
   const vend = useAppSelector((s) => s.dev.vendors);
-  const { runSearch } = useVendorSearch();
+  const { runSearch, applyLocation } = useVendorSearch();
 
   const [searchOpen, setSearchOpen] = useState(false);
   const [storeId, setStoreId] = useState(search.lastStore || 0);
@@ -85,7 +85,7 @@ const Vendors = () => {
           to prevent. */}
       {searchOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
           onClick={() => setSearchOpen(false)}
         >
           <div onClick={(e) => e.stopPropagation()}>{entry}</div>
@@ -93,7 +93,10 @@ const Vendors = () => {
       )}
 
       <div className="flex gap-4 h-[calc(100vh-5rem)]">
-        <VendorListPanel onSearchOpen={() => setSearchOpen(true)} />
+        <VendorListPanel
+          onSearchOpen={() => setSearchOpen(true)}
+          onStoreNumberChange={applyLocation}
+        />
         <VendorDetailPanel />
       </div>
     </div>

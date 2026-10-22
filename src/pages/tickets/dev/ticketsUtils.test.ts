@@ -4,8 +4,11 @@ import {
   isMine,
   matchesFilters,
   onTab,
+  parseServerTime,
   resolutionLabel,
+  sendFailureText,
   tabCounts,
+  ticketsInScope,
   visibleTickets,
   whenText,
 } from "./ticketsUtils";
@@ -207,5 +210,95 @@ describe("what kind of fix closed it", () => {
 
   it("says nothing when the ticket carries no such label", () => {
     expect(resolutionLabel(ticket({ labels: [] }))).toBeNull();
+  });
+});
+
+describe("ticketsInScope", () => {
+  // The dev review's case: user 649 holds Bruces (3), and a DCR user who holds
+  // Houchens (1) and Bruces opens tickets that report company 1.
+  const BRUCES = [3];
+  const mine = ticket({ id: 35, opened_by: 649, company: 3 });
+  const houchens = ticket({ id: 30, opened_by: 12, company: 1 });
+  const bruces = ticket({ id: 31, opened_by: 40, company: 3 });
+
+  it("keeps a customer to their own company's tickets", () => {
+    const seen = ticketsInScope([mine, houchens, bruces], false, BRUCES, 649);
+    expect(seen.map((t) => t.id)).toEqual([35, 31]);
+  });
+
+  it("always shows a ticket the reader opened", () => {
+    // A user with no company at all would otherwise see an empty page.
+    const orphan = ticket({ id: 36, opened_by: 649, company: null });
+    expect(ticketsInScope([orphan], false, [], 649)).toHaveLength(1);
+  });
+
+  it("hides a ticket with no company that somebody else opened", () => {
+    const stray = ticket({ id: 37, opened_by: 40, company: null });
+    expect(ticketsInScope([stray], false, BRUCES, 649)).toHaveLength(0);
+  });
+
+  it("lets a tech see everything", () => {
+    expect(ticketsInScope([mine, houchens, bruces], true, [], 1)).toHaveLength(3);
+  });
+
+  it("counts only what is in scope", () => {
+    // Tab counts read the scoped list, so "Open 14" can't include tickets
+    // the customer will never be shown.
+    const scoped = ticketsInScope([mine, houchens, bruces], false, BRUCES, 649);
+    expect(tabCounts(scoped, 649).all).toBe(2);
+  });
+});
+
+describe("parseServerTime", () => {
+  // TCK-35: sent 5:32 PM CDT, which is 22:32 UTC. The API sends the UTC clock
+  // time with no zone, and it used to be read as local -- five hours ahead.
+  const sent = "2026-10-21T22:32:10.299190";
+
+  it("reads a zone-less stamp as UTC", () => {
+    expect(new Date(parseServerTime(sent)).toISOString()).toBe(
+      "2026-10-21T22:32:10.299Z",
+    );
+  });
+
+  it("leaves a stamp that names its zone alone", () => {
+    expect(parseServerTime("2026-10-21T22:32:10Z")).toBe(
+      Date.parse("2026-10-21T22:32:10Z"),
+    );
+    expect(parseServerTime("2026-10-21T17:32:10-05:00")).toBe(
+      Date.parse("2026-10-21T22:32:10Z"),
+    );
+  });
+
+  it("puts a ticket from five minutes ago five minutes ago", () => {
+    // Before the fix this read as five hours in the future, shown "just now".
+    const now = Date.parse("2026-10-21T22:37:11Z");
+    expect(whenText(sent, now)).toBe("5m");
+  });
+});
+
+describe("sendFailureText", () => {
+  const NO_COMPANY =
+    "Your account is not assigned to a company yet, so a ticket has nowhere to be filed. Ask a manager to assign one.";
+
+  it("shows a no-company user the server's own sentence", () => {
+    const err = { response: { status: 400, data: { detail: NO_COMPANY } } };
+    expect(sendFailureText(err)).toBe(NO_COMPANY);
+  });
+
+  it("does not read out a detail from anything but a 400", () => {
+    const err = {
+      message: "Request failed with status code 500",
+      response: { status: 500, data: { detail: "Traceback (most recent call last)" } },
+    };
+    expect(sendFailureText(err)).toBe(
+      "That did not send: Request failed with status code 500",
+    );
+  });
+
+  it("falls back when there is nothing to say", () => {
+    expect(sendFailureText({ response: { status: 400, data: {} } })).toBe(
+      "That did not send.",
+    );
+    expect(sendFailureText(undefined)).toBe("That did not send.");
   });
 });

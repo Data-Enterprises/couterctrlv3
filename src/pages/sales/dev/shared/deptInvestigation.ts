@@ -914,8 +914,13 @@ export const supplyTimeline = (
 /* ------------------------------------------------------------------ */
 
 export interface PricePoint {
+  /** Per pound on a weighed line. */
   price: number;
   units: number;
+  /** Pounds at this price, straight off the row. It used to be divided out
+   *  of sales by the week's rate, which drifted whenever the price moved
+   *  mid-week. */
+  weight: number;
   transactions: number;
   netSales: number;
   days: number;
@@ -967,6 +972,7 @@ export const ladderFor = (
     .map((p) => ({
       price: p.price,
       units: p.units,
+      weight: p.weight,
       transactions: p.transactions,
       netSales: p.net_sales,
       days: p.days,

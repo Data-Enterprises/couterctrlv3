@@ -16,6 +16,7 @@ import TextFilter from "../../../components-dev/filters/TextFilter";
 import IconButton from "../../../components-dev/IconButton";
 import ConfirmModal from "../../../components-dev/ConfirmModal";
 import CompanyFormModal from "./CompanyFormModal";
+import type { CompanyRecord } from "./companyFamily";
 
 // Collapses the old separate Create/Update/Delete tabs into one grid with
 // icon actions — mirrors how Organization's UserGrid replaced legacy Team's
@@ -24,7 +25,15 @@ const CompanyGrid = () => {
   const toast = useToast();
   const context = useAdminPageCtx();
   const [search, setSearch] = useState("");
-  const [editingCompany, setEditingCompany] = useState<Company | null>(null);
+  const [editingCompany, setEditingCompany] = useState<CompanyRecord | null>(
+    null,
+  );
+  /** `get_companies` carries each company's parent since 22 Oct. */
+  const records = context.companies as CompanyRecord[];
+  const nameOf = useMemo(
+    () => new Map(records.map((c) => [c.id, c.name])),
+    [records],
+  );
   const [creating, setCreating] = useState(false);
   const [deletingCompany, setDeletingCompany] = useState<Company | null>(null);
 
@@ -47,31 +56,40 @@ const CompanyGrid = () => {
    * the whole set travels or the rest are silently dropped off the most
    * privileged account on the system.
    *
-   * The id comes from a re-read rather than the response: `create_company`
-   * answers with `error`/`success` and no id. The new company is the one that
-   * was not there a moment ago; where two appear at once, because somebody
-   * else was creating at the same time, the name settles it. If neither finds
-   * it, the company is still created and the grid still refreshes — only the
+   * The id is `new_id` on the response, since the 22 Oct backend change.
+   * Before that `create_company` answered with no id, so an API without it
+   * falls back to a re-read: the new company is the one that was not there a
+   * moment ago, and where two appear at once, because somebody else was
+   * creating at the same time, the name settles it. If neither finds it, the
+   * company is still created and the grid still refreshes — only the
    * assignment is skipped, and it says so rather than claiming otherwise.
    */
-  const claimNewCompany = async (before: Set<number>, name: string) => {
-    const resp = await getCompanies(context.url, context.token);
-    const j: CompanyJsonResp = resp.data;
-    if (j.error !== 0) return false;
+  const claimNewCompany = async (
+    before: Set<number>,
+    name: string,
+    newId: number | undefined,
+  ) => {
+    let createdId = newId;
+    if (!createdId) {
+      const resp = await getCompanies(context.url, context.token);
+      const j: CompanyJsonResp = resp.data;
+      if (j.error !== 0) return false;
 
-    const appeared = j.companies.filter((c) => !before.has(c.id));
-    const created =
-      appeared.length === 1
-        ? appeared[0]
-        : appeared.find((c) => c.name === name);
-    if (!created) return false;
+      const appeared = j.companies.filter((c) => !before.has(c.id));
+      const created =
+        appeared.length === 1
+          ? appeared[0]
+          : appeared.find((c) => c.name === name);
+      if (!created) return false;
+      createdId = created.id;
+    }
 
     const mine = context.userCompanies.map((c) => c.company);
     const assigned = await assignUserToCompany(
       context.url,
       context.token,
       context.userid,
-      [...mine, created.id],
+      [...mine, createdId],
     );
     if (assigned.data.error !== 0) return false;
     // The login response seeded `user.companies` and this just changed it.
@@ -81,38 +99,51 @@ const CompanyGrid = () => {
     return true;
   };
 
-  const handleCreate = (form: Company) => {
+  const handleCreate = (form: Company, parent: number | null) => {
     // Read before the create, so what appears after it can be told apart.
     const before = new Set(context.companies.map((c) => c.id));
-    createCompany(context.url, context.token, form)
+    createCompany(context.url, context.token, form, parent)
       .then(async (resp) => {
         const j = resp.data;
-        if (j.error !== 0) return;
+        if (j.error !== 0) {
+          toast.error(j.msg ?? "The company was not created");
+          return;
+        }
         setCreating(false);
         context.dispatch(setRefresh(true));
-        const claimed = await claimNewCompany(before, form.name).catch(
-          () => false,
-        );
+        const claimed = await claimNewCompany(
+          before,
+          form.name,
+          typeof j.new_id === "number" ? j.new_id : undefined,
+        ).catch(() => false);
         toast.success(
           claimed
             ? "Company created and assigned to you"
             : "Company created — assign it to yourself in User Management",
         );
       })
-      .catch((err: JsonError) => toast.error(err.message));
+      .catch((err: JsonError & { response?: { data?: { detail?: string } } }) =>
+        toast.error(err.response?.data?.detail ?? err.message),
+      );
   };
 
-  const handleUpdate = (form: Company) => {
-    updateCompany(context.url, context.token, form)
+  const handleUpdate = (form: Company, parent: number | null) => {
+    updateCompany(context.url, context.token, form, parent)
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
           toast.success("Company updated successfully");
           setEditingCompany(null);
           context.dispatch(setRefresh(true));
+        } else {
+          toast.error(j.msg ?? "The company was not updated");
         }
       })
-      .catch((err: JsonError) => toast.error(err.message));
+      // The backend refuses a parent that would make a family two deep; its
+      // reason is in `detail`.
+      .catch((err: JsonError & { response?: { data?: { detail?: string } } }) =>
+        toast.error(err.response?.data?.detail ?? err.message),
+      );
   };
 
   const handleDeleteConfirm = () => {
@@ -126,7 +157,11 @@ const CompanyGrid = () => {
           context.dispatch(setRefresh(true));
         }
       })
-      .catch((err: JsonError) => toast.error(err.message));
+      // A company others belong under can't be deleted until they move; the
+      // backend says so in `detail`.
+      .catch((err: JsonError & { response?: { data?: { detail?: string } } }) =>
+        toast.error(err.response?.data?.detail ?? err.message),
+      );
   };
 
   return (
@@ -162,7 +197,17 @@ const CompanyGrid = () => {
               key={c.id}
               className="grid grid-cols-[22%_18%_10%_16%_24%_10%] px-3 py-2 text-[12px] items-center text-content even:bg-row_stripe hover:bg-gray-50"
             >
-              <div className="truncate">{c.name}</div>
+              <div className="truncate">
+                {c.name}
+                {(c as CompanyRecord).parent_company_id ? (
+                  <span className="text-[10.5px] text-content/85">
+                    {" "}
+                    · under{" "}
+                    {nameOf.get((c as CompanyRecord).parent_company_id!) ??
+                      `#${(c as CompanyRecord).parent_company_id}`}
+                  </span>
+                ) : null}
+              </div>
               <div className="truncate">{c.city}</div>
               <div className="truncate">{c.state}</div>
               <div className="truncate">{c.phone}</div>
@@ -194,6 +239,7 @@ const CompanyGrid = () => {
         <CompanyFormModal
           initial={editingCompany}
           existingNames={context.companies.map((c) => c.name)}
+          companies={records}
           onSave={editingCompany ? handleUpdate : handleCreate}
           onClose={() => {
             setCreating(false);

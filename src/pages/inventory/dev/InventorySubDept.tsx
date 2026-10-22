@@ -1,5 +1,10 @@
-import { useRef, useState } from "react";
-import { useAppSelector, useStoreName } from "../../../hooks";
+import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  useAppDispatch,
+  useAppSelector,
+  useStoreName,
+} from "../../../hooks";
+import { patchSubDeptView } from "../../../features/dev/devPriceOptSlice";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { formatGoliathDate, formatDate } from "../../../utils";
 import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
@@ -8,7 +13,8 @@ import DatePickers from "../../../components-dev/datePickers/DatePickers";
 import InventoryTreePanel, { type TreeGroup } from "./InventoryTreePanel";
 import InventoryExportModal from "./InventoryExportModal";
 import ItemAnalysisPanel from "./ItemAnalysisPanel";
-import { useActualPricePoints } from "../../../hooks/useActualPricePoints";
+import { usePricePoints } from "./usePricePoints";
+import { useInvoiceCost } from "./useInvoiceCost";
 import {
   fetchSubDepts,
   fetchProducts,
@@ -35,19 +41,44 @@ const InventorySubDept = () => {
   const { startDate, endDate, lastStore } = useAppSelector((s) => s.search);
   const { assignedStores } = useAppSelector((s) => s.user);
 
+  const dispatch = useAppDispatch();
   const [storeId, setStoreId] = useState(lastStore || 0);
-  const [scope, setScope] = useState<InventoryScope | null>(null);
-  const [subDepts, setSubDepts] = useState<SubDeptSummary[]>([]);
+  // Kept in the slice so a return visit lands on the last result instead of an
+  // empty form (dev board review, finding K). The slice holds the store and
+  // dates; the token comes from the session each render, so a re-login can't
+  // leave a stale one behind.
+  const view = useAppSelector((s) => s.dev.priceOpt.subDept);
+  const scope = useMemo<InventoryScope | null>(
+    () => (view.window ? { url, token, ...view.window } : null),
+    [view.window, url, token],
+  );
+  const subDepts = view.subDepts;
+  const openSubDept = view.openSubDept;
+  const products = view.products;
+  const setScope = (next: InventoryScope | null) =>
+    dispatch(
+      patchSubDeptView({
+        window: next
+          ? { storeid: next.storeid, start: next.start, end: next.end }
+          : null,
+      }),
+    );
+  const setSubDepts = (next: SubDeptSummary[]) =>
+    dispatch(patchSubDeptView({ subDepts: next }));
+  const setOpenSubDept = (next: number | null) =>
+    dispatch(patchSubDeptView({ openSubDept: next }));
+  const setProducts = (next: ProductSummary[]) =>
+    dispatch(patchSubDeptView({ products: next }));
   const [loading, setLoading] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
 
-  const [openSubDept, setOpenSubDept] = useState<number | null>(null);
-  const [products, setProducts] = useState<ProductSummary[]>([]);
   const [productsLoading, setProductsLoading] = useState(false);
   const [selected, setSelected] = useState<ProductSummary | null>(null);
 
-  const { actual, loadActual, resetActual } = useActualPricePoints();
+  const { prices, loadPrices, resetPrices, receipts, loadReceipts } =
+    usePricePoints();
+  const { invoice, loadInvoiceCost, resetInvoiceCost } = useInvoiceCost();
   const storeName = useStoreName(scope?.storeid ?? storeId);
 
   /** The department whose items are wanted on screen. A response that no longer
@@ -55,6 +86,14 @@ const InventorySubDept = () => {
    *  a small one would otherwise leave the small one's name above the big one's
    *  items, since the small request resolves first. */
   const wantedSubDept = useRef<number | null>(null);
+
+  // A department left open with no items means its fetch was still in flight
+  // when the page was left, and that answer is gone with the old page. Close
+  // it rather than show an open department that reads as empty.
+  useEffect(() => {
+    if (openSubDept !== null && products.length === 0) setOpenSubDept(null);
+    // Once, on arrival: this is about what the slice kept, not what changes.
+  }, []);
 
   const runSearch = async () => {
     if (!storeId) {
@@ -76,7 +115,8 @@ const InventorySubDept = () => {
     setOpenSubDept(null);
     setProducts([]);
     setSelected(null);
-    resetActual();
+    resetPrices();
+    resetInvoiceCost();
     try {
       const depts = await fetchSubDepts(next);
       if (depts.length === 0) toast.warn("No departments sold in that window");
@@ -99,6 +139,13 @@ const InventorySubDept = () => {
       setProducts([]);
       return;
     }
+    // A different one opening takes the item panel with it: the item belongs
+    // to the list it was picked from, and leaving it up read as the new
+    // list's item (dev board review, finding H). Collapsing the open one
+    // keeps it.
+    setSelected(null);
+    resetPrices();
+    resetInvoiceCost();
     wantedSubDept.current = id;
     setOpenSubDept(id);
     setProducts([]);
@@ -124,7 +171,8 @@ const InventorySubDept = () => {
     setSelected(p);
     // Description, not UPC — that is the only search `cashier_table` offers.
     // The over-match it causes is filtered out again on product_code.
-    loadActual(p.productCode, scope.storeid, scope.start, scope.end);
+    loadPrices(p.productCode, scope.storeid, scope.start, scope.end);
+    loadInvoiceCost(scope, p.productCode);
   };
 
   const groups: TreeGroup[] = subDepts.map((d) => ({
@@ -171,7 +219,7 @@ const InventorySubDept = () => {
           the loaded window to change one field is what that pattern prevents. */}
       {searchOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
           onClick={() => setSearchOpen(false)}
         >
           <div onClick={(e) => e.stopPropagation()}>{entry}</div>
@@ -204,14 +252,19 @@ const InventorySubDept = () => {
           selected={selected}
           // Same staleness guard the panel applies — a response for the
           // previously-clicked UPC must not be exported under this one's name.
+          invoice={invoice}
+          prices={
+            selected && prices.upc === selected.productCode ? prices.rows : []
+          }
           lines={
-            selected && actual.upc === selected.productCode ? actual.lines : []
+            selected && receipts.upc === selected.productCode ? receipts.lines : []
           }
         />
       )}
 
       <div className="flex gap-4 h-[calc(100vh-5rem)]">
         <InventoryTreePanel
+          helpPage="price-opt-sub-dept"
           title="Price Opt — Sub Department"
           storeName={storeName}
           dateLabel={`${formatDate(scope.start)} – ${formatDate(scope.end)}`}
@@ -228,7 +281,13 @@ const InventorySubDept = () => {
         />
 
         {selected ? (
-          <ItemAnalysisPanel product={selected} actual={actual} />
+          <ItemAnalysisPanel
+            product={selected}
+            prices={prices}
+            receipts={receipts}
+            onLoadReceipts={loadReceipts}
+            invoice={invoice}
+          />
         ) : (
           <div className="flex-1 min-w-0 shadow-lg">
             <div className="bg-custom-white rounded-xl shadow-sm overflow-hidden flex flex-col h-full items-center justify-center">

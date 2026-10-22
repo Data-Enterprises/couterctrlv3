@@ -1,5 +1,10 @@
-import { useState } from "react";
-import { useAppSelector, useStoreName } from "../../../hooks";
+import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  useAppDispatch,
+  useAppSelector,
+  useStoreName,
+} from "../../../hooks";
+import { patchVendorView } from "../../../features/dev/devPriceOptSlice";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { formatGoliathDate, formatDate } from "../../../utils";
 import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
@@ -8,10 +13,11 @@ import DatePickers from "../../../components-dev/datePickers/DatePickers";
 import InventoryTreePanel, { type TreeGroup } from "./InventoryTreePanel";
 import InventoryExportModal from "./InventoryExportModal";
 import ItemAnalysisPanel from "./ItemAnalysisPanel";
-import { useActualPricePoints } from "../../../hooks/useActualPricePoints";
+import { usePricePoints } from "./usePricePoints";
+import { useInvoiceCost } from "./useInvoiceCost";
 import {
-  fetchSubDepts,
   fetchVendors,
+  fetchVendorTotals,
   groupProducts,
   type InventoryScope,
   type ProductSummary,
@@ -41,18 +47,96 @@ const InventoryVendor = () => {
   const { startDate, endDate, lastStore } = useAppSelector((s) => s.search);
   const { assignedStores } = useAppSelector((s) => s.user);
 
+  const dispatch = useAppDispatch();
   const [storeId, setStoreId] = useState(lastStore || 0);
-  const [scope, setScope] = useState<InventoryScope | null>(null);
-  const [vendors, setVendors] = useState<VendorSummary[]>([]);
+  // Kept in the slice so a return visit lands on the last result instead of an
+  // empty form (dev board review, finding K). The slice holds the store and
+  // dates; the token comes from the session each render, so a re-login can't
+  // leave a stale one behind.
+  const view = useAppSelector((s) => s.dev.priceOpt.vendor);
+  const scope = useMemo<InventoryScope | null>(
+    () => (view.window ? { url, token, ...view.window } : null),
+    [view.window, url, token],
+  );
+  const vendors = view.vendors;
+  const openVendor = view.openVendor;
+  const setScope = (next: InventoryScope | null) =>
+    dispatch(
+      patchVendorView({
+        window: next
+          ? { storeid: next.storeid, start: next.start, end: next.end }
+          : null,
+      }),
+    );
+  const setVendors = (next: VendorSummary[]) =>
+    dispatch(patchVendorView({ vendors: next }));
+  const setOpenVendor = (next: string | null) =>
+    dispatch(patchVendorView({ openVendor: next }));
   const [loading, setLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
+  /** The item rows, read behind the vendor totals. */
+  const [itemsLoading, setItemsLoading] = useState(false);
+  const itemsSeq = useRef(0);
+  /** The vendors have names and sales but no items yet: the totals landed and
+   *  the item rows did not, or the page was left before they did. */
+  const itemsMissing = vendors.length > 0 && vendors.every((v) => v.itemCount === null);
+
+  /** Read the item rows for the search on screen and fill the tree in. */
+  const loadItems = (forScope: InventoryScope) => {
+    const seq = ++itemsSeq.current;
+    setItemsLoading(true);
+    fetchVendors(forScope)
+      .then((found) => {
+        if (seq !== itemsSeq.current) return;
+        setVendors(found);
+      })
+      .catch(() => {
+        if (seq !== itemsSeq.current) return;
+        toast.error("Couldn't load the items. Search again to retry.");
+      })
+      .finally(() => {
+        if (seq === itemsSeq.current) setItemsLoading(false);
+      });
+  };
+
+  // A return visit to a search whose items never landed reads them now, so a
+  // vendor never opens onto nothing.
+  useEffect(() => {
+    if (scope && itemsMissing && !itemsLoading) loadItems(scope);
+    // Mount only: the search itself starts the read every other time.
+  }, []);
   const [searchOpen, setSearchOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
 
-  const [openVendor, setOpenVendor] = useState<string | null>(null);
   const [selected, setSelected] = useState<ProductSummary | null>(null);
 
-  const { actual, loadActual, resetActual } = useActualPricePoints();
+  /**
+   * Every item's name and UPC, per vendor, for the filter.
+   *
+   * "Filter vendors and items" found nothing for an item name with no vendor
+   * open, though every item row was already loaded (dev board review, finding
+   * J). One lowercased string per vendor makes each keystroke a substring test
+   * per vendor rather than a walk over thousands of rows.
+   */
+  const itemText = useMemo(
+    () =>
+      new Map(
+        vendors.map((v) => [
+          v.vendorId,
+          v.rows
+            .map((r) => `${r.product_description} ${r.product_code}`)
+            .join(" | ")
+            .toLowerCase(),
+        ]),
+      ),
+    [vendors],
+  );
+  const groupHasItem = (id: string, term: string) =>
+    itemText.get(id)?.includes(term) ?? false;
+
+  const { prices, loadPrices, resetPrices, receipts, loadReceipts } =
+    usePricePoints();
+  const { invoice, loadInvoiceCost, resetInvoiceCost } = useInvoiceCost();
   const storeName = useStoreName(scope?.storeid ?? storeId);
 
   const runSearch = async () => {
@@ -71,25 +155,18 @@ const InventoryVendor = () => {
     setLoading(true);
     setOpenVendor(null);
     setSelected(null);
-    resetActual();
+    resetPrices();
+    resetInvoiceCost();
     try {
-      // Named steps rather than one undifferentiated spinner — the second is
-      // one call per department and is where the wait actually is.
-      setLoadingMessage("Finding departments…");
-      const depts = await fetchSubDepts(next);
-      if (depts.length === 0) {
-        toast.warn("No departments sold in that window");
-        setVendors([]);
-        return;
-      }
-      setLoadingMessage(`Reading ${depts.length} departments…`);
-      const found = await fetchVendors(
-        next,
-        depts.map((d) => d.id),
-      );
+      // The vendor totals first, from `subs/rollup`, so the tree draws in a
+      // moment; the item rows follow behind it.
+      setLoadingMessage("Finding vendors…");
+      itemsSeq.current++;
+      const found = await fetchVendorTotals(next);
       if (found.length === 0) toast.warn("No vendors sold in that window");
       setVendors(found);
       setScope(next);
+      if (found.length > 0) loadItems(next);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not load vendors");
     } finally {
@@ -98,14 +175,25 @@ const InventoryVendor = () => {
     }
   };
 
-  // Every row is already held, so opening a vendor is a regroup rather than a
-  // fetch — no loading state and no race to guard.
+  // Once the item rows are in, opening a vendor is a regroup rather than a
+  // fetch. Until then the tree says the items are loading.
   const products = openVendor
     ? groupProducts(vendors.find((v) => v.vendorId === openVendor)?.rows ?? [])
     : [];
 
   const toggleVendor = (id: string) => {
-    setOpenVendor(id === openVendor ? null : id);
+    if (id === openVendor) {
+      setOpenVendor(null);
+      return;
+    }
+    // A different one opening takes the item panel with it: the item belongs
+    // to the list it was picked from, and leaving it up read as the new
+    // list's item (dev board review, finding H). Collapsing the open one
+    // keeps it.
+    setSelected(null);
+    resetPrices();
+    resetInvoiceCost();
+    setOpenVendor(id);
   };
 
   const selectProduct = (p: ProductSummary) => {
@@ -113,7 +201,8 @@ const InventoryVendor = () => {
     setSelected(p);
     // Description, not UPC — that is the only search `cashier_table` offers.
     // The over-match it causes is filtered out again on product_code.
-    loadActual(p.productCode, scope.storeid, scope.start, scope.end);
+    loadPrices(p.productCode, scope.storeid, scope.start, scope.end);
+    loadInvoiceCost(scope, p.productCode);
   };
 
   const groups: TreeGroup[] = vendors.map((v) => ({
@@ -162,7 +251,7 @@ const InventoryVendor = () => {
           prevents. */}
       {searchOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
           onClick={() => setSearchOpen(false)}
         >
           <div onClick={(e) => e.stopPropagation()}>{entry}</div>
@@ -188,14 +277,19 @@ const InventoryVendor = () => {
           selected={selected}
           // Same staleness guard the panel applies — a response for the
           // previously-clicked UPC must not be exported under this one's name.
+          invoice={invoice}
+          prices={
+            selected && prices.upc === selected.productCode ? prices.rows : []
+          }
           lines={
-            selected && actual.upc === selected.productCode ? actual.lines : []
+            selected && receipts.upc === selected.productCode ? receipts.lines : []
           }
         />
       )}
 
       <div className="flex gap-4 h-[calc(100vh-5rem)]">
         <InventoryTreePanel
+          helpPage="price-opt-vendor"
           title="Price Opt — Vendor"
           storeName={storeName}
           dateLabel={`${formatDate(scope.start)} – ${formatDate(scope.end)}`}
@@ -203,16 +297,23 @@ const InventoryVendor = () => {
           groups={groups}
           openGroup={openVendor}
           products={products}
-          productsLoading={false}
+          productsLoading={itemsLoading && !!openVendor}
           selectedUpc={selected?.productCode ?? null}
           onToggleGroup={toggleVendor}
           onSelectProduct={selectProduct}
           onSearchOpen={() => setSearchOpen(true)}
           onExportOpen={() => setExportOpen(true)}
+          groupHasItem={groupHasItem}
         />
 
         {selected ? (
-          <ItemAnalysisPanel product={selected} actual={actual} />
+          <ItemAnalysisPanel
+            product={selected}
+            prices={prices}
+            receipts={receipts}
+            onLoadReceipts={loadReceipts}
+            invoice={invoice}
+          />
         ) : (
           <div className="flex-1 min-w-0 shadow-lg">
             <div className="bg-custom-white rounded-xl shadow-sm overflow-hidden flex flex-col h-full items-center justify-center">

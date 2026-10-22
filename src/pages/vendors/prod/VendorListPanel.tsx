@@ -1,3 +1,5 @@
+import { applyStoreNumberToName } from "../../../utils/storeIdentity";
+import LocationTabs from "../../../components/filters/LocationTabs";
 import InfoButton from "../../../components/InfoButton";
 import VendorRow from "./VendorRow";
 import { useMemo, useState, useCallback } from "react";
@@ -79,14 +81,34 @@ type ListSortCol = "ty" | "lw" | "ly";
 
 interface Props {
   onSearchOpen: () => void;
+  /** Re-presents the cached search as one co-located location, or all of
+   *  them combined. No refetch — see useVendorSearch. */
+  onStoreNumberChange: (storeNumber: string | null) => void;
 }
 
-const VendorListPanel = ({ onSearchOpen }: Props) => {
+const VendorListPanel = ({ onSearchOpen, onStoreNumberChange }: Props) => {
   const dispatch = useAppDispatch();
   const [infoOpen, setInfoOpen] = useState(false);
   const { sort, handleSort, applySort } = useTriStateSort<ListSortCol>();
   const vend = useAppSelector((s) => s.prod.vendors);
   const { rows, metric, threshold, tierFilter, textFilter, selectedVendor } = vend;
+
+  /**
+   * The name says which location is on screen.
+   *
+   * `storeName` is resolved from the assignedStores record, which is keyed on
+   * storeid, so a co-located pair embeds only one of its two numbers -- the
+   * tabs would move every figure on the page while the header still named the
+   * other store. Same helper Sales and Sub Dept Margins use, so all three
+   * label these stores identically.
+   */
+  const locationName = vend.selectedStoreNumber
+    ? applyStoreNumberToName(
+        vend.storeName,
+        vend.selectedStoreNumber,
+        vend.availableStoreNumbers,
+      )
+    : vend.storeName;
 
   // Null threshold means the input is mid-edit; grade against the default
   // rather than 0, which would make every decline critical as you type.
@@ -337,7 +359,7 @@ const VendorListPanel = ({ onSearchOpen }: Props) => {
           </button>
 
           <span className="text-[11px] font-medium text-custom-white truncate min-w-0">
-            {vend.storeName}
+            {locationName}
           </span>
 
           <div className="flex-1" />
@@ -390,6 +412,14 @@ const VendorListPanel = ({ onSearchOpen }: Props) => {
           </div>
         </div>
       </div>
+
+      {/* Renders nothing unless this storeid covers two locations, so an
+          ordinary store sees no change to the layout. */}
+      <LocationTabs
+        numbers={vend.availableStoreNumbers}
+        selected={vend.selectedStoreNumber}
+        onChange={onStoreNumberChange}
+      />
 
       {/* Filter row */}
       <div className="flex items-center justify-between gap-1.5 px-4 py-2 bg-custom-white border-x border-gray-100">

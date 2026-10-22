@@ -4,10 +4,16 @@ import ResizableModalShell from "../../../components-dev/modals/ResizableModalSh
 import { rowsToCsv, downloadCsv } from "../../../utils/csvExport";
 import {
   estimatedPricePoints,
-  actualPricePoints,
+  pricePointsFromServer,
   suggestPrice,
 } from "../../../utils/pricePoints";
-import { itemCostStats, type ProductSummary } from "./inventoryData";
+import type { ServerPricePoint } from "../../../api/pricePoints";
+import {
+  itemCostStats,
+  type ProductSummary,
+} from "./inventoryData";
+import { resolveUnitCost } from "./invoiceCost";
+import type { InvoiceCostState } from "./useInvoiceCost";
 import type { TreeGroup } from "./InventoryTreePanel";
 import type { TransactionListItem } from "../../../interfaces";
 
@@ -53,9 +59,15 @@ interface Props {
   itemGroups: ItemGroup[];
   /** The item on screen, whose registers have been read. */
   selected: ProductSummary | null;
-  /** Register lines for `selected`. Empty while loading, or when the fetch
-   *  belongs to a previously-clicked item. */
+  /** The server's price table for `selected`. Empty while loading, or when
+   *  the fetch belongs to a previously-clicked item. */
+  prices: ServerPricePoint[];
+  /** Register lines for `selected`, read once a price has been opened on the
+   *  page; empty until then. */
   lines: TransactionListItem[];
+  /** The invoice cost lookup for `selected`, so the file holds its prices
+   *  against the same cost as the screen. */
+  invoice: InvoiceCostState;
 }
 
 /** Rows are pre-formatted string/number maps rather than typed records, so one
@@ -166,14 +178,24 @@ const buildItemRows = (itemGroups: ItemGroup[]): Row[] =>
 
 const buildPriceRows = (
   product: ProductSummary,
-  lines: TransactionListItem[],
+  prices: ServerPricePoint[],
+  invoice: InvoiceCostState,
 ): Row[] => {
-  const { unitCost } = itemCostStats(product);
-  const act = actualPricePoints(lines, unitCost ?? 0);
+  // The same resolution the panel makes, so the file and the screen agree on
+  // cost, margin and which price, if any, is suggested.
+  const weighed = product.rows.some((r) => r.weight > 0);
+  const cost = resolveUnitCost(
+    itemCostStats(product).unitCost,
+    invoice.upc === product.productCode ? invoice.cost : null,
+    weighed,
+  );
+  const override = cost.source === "invoice" ? cost.unitCost : null;
+  const { unitCost } = itemCostStats(product, override);
+  const act = pricePointsFromServer(prices, unitCost ?? 0);
   const suggestion = suggestPrice(act);
   const best = suggestion?.best.point ?? null;
 
-  const rows: Row[] = estimatedPricePoints(product.rows).map((p) => {
+  const rows: Row[] = estimatedPricePoints(product.rows, override).map((p) => {
     const perDay = p.daysSeen > 0 ? p.units / p.daysSeen : 0;
     return {
       source: "Estimated",
@@ -245,7 +267,14 @@ const buildTxnRows = (lines: TransactionListItem[]): Row[] =>
         terminal: t.terminal,
         cashier: t.cashier_name,
         qty: num(qty),
-        unitPrice: money(qty > 0 ? t.net_sales / qty : t.net_sales),
+        // Per pound on a weighed line, as the price table reads it.
+        unitPrice: money(
+          t.weight
+            ? t.net_sales / t.weight
+            : qty > 0
+              ? t.net_sales / qty
+              : t.net_sales,
+        ),
         netSales: money(t.net_sales),
         priceType: t.price_type || "REG",
       };
@@ -262,13 +291,15 @@ const InventoryExportModal = ({
   groups,
   itemGroups,
   selected,
+  prices,
   lines,
+  invoice,
 }: Props) => {
   const groupRows = useMemo(() => buildGroupRows(groups), [groups]);
   const itemRows = useMemo(() => buildItemRows(itemGroups), [itemGroups]);
   const priceRows = useMemo(
-    () => (selected ? buildPriceRows(selected, lines) : []),
-    [selected, lines],
+    () => (selected ? buildPriceRows(selected, prices, invoice) : []),
+    [selected, prices, invoice],
   );
   const txnRows = useMemo(() => buildTxnRows(lines), [lines]);
 
@@ -344,7 +375,7 @@ const InventoryExportModal = ({
       title: "Current item — transactions",
       caption: available.transactions
         ? `${txnRows.length} rows · every register line behind the actual prices`
-        : "No register lines read for this item",
+        : "Open a price's transactions on the page to read them first",
     },
   ];
 

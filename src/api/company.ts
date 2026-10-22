@@ -13,10 +13,25 @@ export const getCompanies = async (url: string, token: string) => {
   return json;
 };
 
+/**
+ * The company a company belongs under, as create and update send it.
+ *
+ * `undefined` sends nothing, which is what the prod form does: it has no such
+ * field, so its saves must leave a parent alone rather than clear it. `null`
+ * is "stands alone" and a number is the parent's id; only the dev form sends
+ * either. Families are one level deep, the rule `familyOf` in
+ * pages/organization/dev/scoping reads.
+ */
+type ParentChoice = number | null | undefined;
+
+const parentField = (parent: ParentChoice) =>
+  parent === undefined ? {} : { parent_company_id: parent };
+
 export const createCompany = async (
   url: string,
   token: string,
   data: Company,
+  parent?: ParentChoice,
 ) => {
   const json = await axios({
     method: "POST",
@@ -33,6 +48,7 @@ export const createCompany = async (
       zip: data.zip,
       phone: data.phone,
       contact_email: data.contact_email,
+      ...parentField(parent),
     },
   });
   return json;
@@ -42,6 +58,7 @@ export const updateCompany = async (
   url: string,
   token: string,
   data: Company,
+  parent?: ParentChoice,
 ) => {
   const json = await axios({
     method: "PUT",
@@ -59,6 +76,7 @@ export const updateCompany = async (
       zip: data.zip,
       phone: data.phone,
       contact_email: data.contact_email,
+      ...parentField(parent),
     },
   });
   return json;

@@ -1,6 +1,9 @@
 import { calculateCogs } from "../../../utils/cogs";
+import type { RollupRow } from "../../../api/rollup";
 import { getLYDate, setDates } from "../../../utils/dates";
 import { coverageOf, gradeBasis, type Coverage } from "../../../utils/grading";
+import type { MarginDollars } from "../../../utils/grading";
+import { marginPct } from "../../../utils/grading";
 import type { MarginTier, SubDeptGrade, GradingMetric } from "../../../features/dev/devSubMarginSlice";
 import type { SubDeptMargin } from "../../../interfaces";
 
@@ -100,30 +103,89 @@ type DayBucket = { net: number; cogs: number };
 
 const dayKey = (saleDate: string) => saleDate.split("T")[0];
 
-const bucketByDay = (rows: SubDeptMargin[]): Record<string, DayBucket> => {
+/**
+ * Rows a margin can be summed from: item rows from `subs/subs`, or the same
+ * rows summed per department per day by `subs/rollup`, whose net is
+ * `total_sales - total_tax` and whose cogs is `calculateCogs` per item row.
+ * Either gives the same day buckets, so the list can grade from the rollup
+ * while the item rows are still loading.
+ */
+export type MarginRow = SubDeptMargin | RollupRow;
+
+const bucketByDay = (rows: MarginRow[]): Record<string, DayBucket> => {
   const out: Record<string, DayBucket> = {};
   for (const m of rows) {
     const key = dayKey(m.sale_date);
     const bucket = out[key] ?? { net: 0, cogs: 0 };
-    bucket.net += m.total_sales - m.total_tax;
-    bucket.cogs += calculateCogs(m.net_cost, m.cost, m.case_size, m.qty, m.weight);
+    if ("key" in m) {
+      bucket.net += m.net_sales;
+      bucket.cogs += m.cogs;
+    } else {
+      bucket.net += m.total_sales - m.total_tax;
+      bucket.cogs += calculateCogs(m.net_cost, m.cost, m.case_size, m.qty, m.weight);
+    }
     out[key] = bucket;
   }
   return out;
 };
 
-const marginPct = (net: number, cogs: number) =>
-  net > 0 ? ((net - cogs) / net) * 100 : 0;
+/**
+ * The STORE's margin from its departments' dollars.
+ *
+ * Weighted -- net summed, COGS summed, divided once. Averaging the
+ * departments' percentages gives floral the same vote as grocery and read
+ * about five points high on a real store-week; Vendors has always weighted,
+ * so the two screens disagreed by that much while reading the same rows.
+ *
+ * Every department in the week gets a grade, so this sums to the store's
+ * whole net and COGS -- the same totals Vendors reaches by grouping the same
+ * rows by supplier. The two headline margins must now match to the cent.
+ *
+ * Takes dollars rather than grades so Vendors can call it too, and so the
+ * rule can be tested without building a grade.
+ */
+export const storeMarginPctOf = (dollars: MarginDollars[]): number | null => {
+  if (dollars.length === 0) return null;
+  const net = dollars.reduce((acc, d) => acc + d.net, 0);
+  if (net <= 0) return null;
+  return marginPct(net, dollars.reduce((acc, d) => acc + d.cogs, 0));
+};
+
+/**
+ * A store-level margin points delta, weighted the same way.
+ *
+ * Both sides are already scoped to the days that side matched, so this
+ * compares two rates measured over the same days. A department with nothing
+ * to compare contributes nothing to either side, which is right: it has no
+ * delta, not a delta of zero.
+ *
+ * Null when either side has no sales -- there is no rate to compare, and a
+ * dash says that where a 0.00 would claim the margin held.
+ */
+export const storeMarginDeltaOf = (
+  dollars: MarginDollars[],
+  side: "lw" | "ly",
+): number | null => {
+  const tyNet = dollars.reduce((acc, d) => acc + d[side].tyNet, 0);
+  const refNet = dollars.reduce((acc, d) => acc + d[side].refNet, 0);
+  if (tyNet <= 0 || refNet <= 0) return null;
+  const tyCogs = dollars.reduce((acc, d) => acc + d[side].tyCogs, 0);
+  const refCogs = dollars.reduce((acc, d) => acc + d[side].refCogs, 0);
+  return marginPct(tyNet, tyCogs) - marginPct(refNet, refCogs);
+};
 
 export type SubDeptSalesTotals = { net: number; qty: number };
 
-type NetRow = { sale_date: string; total_sales: number; total_tax: number };
+type NetRow =
+  | { sale_date: string; total_sales: number; total_tax: number }
+  | RollupRow;
 
-const netByDay = (rows: NetRow[]): Record<string, number> => {
+export const netByDay = (rows: NetRow[]): Record<string, number> => {
   const out: Record<string, number> = {};
   for (const r of rows) {
     const k = r.sale_date.split("T")[0];
-    out[k] = (out[k] ?? 0) + (r.total_sales - r.total_tax);
+    out[k] =
+      (out[k] ?? 0) + ("key" in r ? r.net_sales : r.total_sales - r.total_tax);
   }
   return out;
 };
@@ -264,6 +326,7 @@ export interface MarginDayMatchedTotals {
    *  compare rather than a collapse to report. */
   ptsDelta: number | null;
   lwPtsDelta: number | null;
+  dollars: MarginDollars;
 }
 
 /** Margin-side equivalent of computeDayMatchedTotals in
@@ -279,9 +342,9 @@ export interface MarginDayMatchedTotals {
  *  - The headline tySales stays unmatched (the true period total) — only the
  *    comparison figures are scoped. */
 export const computeMarginDayMatched = (
-  tyRows: SubDeptMargin[],
-  lwRows: SubDeptMargin[],
-  lyRows: SubDeptMargin[],
+  tyRows: MarginRow[],
+  lwRows: MarginRow[],
+  lyRows: MarginRow[],
 ): MarginDayMatchedTotals => {
   const ty = bucketByDay(tyRows);
   const lw = bucketByDay(lwRows);
@@ -316,6 +379,22 @@ export const computeMarginDayMatched = (
   return {
     tySales,
     tyMarginPct: marginPct(tySales, tyCogsAll),
+    dollars: {
+      net: tySales,
+      cogs: tyCogsAll,
+      lw: {
+        tyNet: lwMatch.tyNet,
+        tyCogs: lwMatch.tyCogs,
+        refNet: lwMatch.refNet,
+        refCogs: lwMatch.refCogs,
+      },
+      ly: {
+        tyNet: lyMatch.tyNet,
+        tyCogs: lyMatch.tyCogs,
+        refNet: lyMatch.refNet,
+        refCogs: lyMatch.refCogs,
+      },
+    },
     lwSales: lwMatch.refNet,
     lwMarginPct: hasLW ? marginPct(lwMatch.refNet, lwMatch.refCogs) : null,
     lySales: lyMatch.refNet,

@@ -2,6 +2,11 @@ import { getSubDepts } from "../../../api/subMargins";
 import { fetchAllPages } from "../../../utils/paging";
 import { fetchSubDeptRows, fetchSubDeptRowsSafe } from "../../../utils/marginRows";
 import { calculateCogs } from "../../../utils/cogs";
+// Net of tax, the basis every other Sales surface reconciles on. Price Opt
+// summed raw total_sales and read 6-7% above Top 200 and Item Lookup for
+// the same item and week (dev board review, finding E).
+import { netOf } from "../../../utils/perfPairs";
+import { getRollup } from "../../../api/rollup";
 import type {
   SubDeptMargin,
   SubSale,
@@ -102,12 +107,12 @@ export const fetchSubDepts = async (
   all.forEach((s: SubSale) => {
     const found = byId.get(s.sub_department);
     if (found) {
-      found.sales += s.total_sales;
+      found.sales += netOf(s);
     } else {
       byId.set(s.sub_department, {
         id: s.sub_department,
         description: s.sub_department_description,
-        sales: s.total_sales,
+        sales: netOf(s),
         itemCount: null,
       });
     }
@@ -140,7 +145,7 @@ export const groupProducts = (rows: SubDeptMargin[]): ProductSummary[] => {
     const code = String(r.product_code);
     const found = byCode.get(code);
     if (found) {
-      found.sales += r.total_sales;
+      found.sales += netOf(r);
       found.qty += r.qty;
       found.units += pricedUnits(r);
       found.rows.push(r);
@@ -148,7 +153,7 @@ export const groupProducts = (rows: SubDeptMargin[]): ProductSummary[] => {
       byCode.set(code, {
         productCode: code,
         description: r.product_description,
-        sales: r.total_sales,
+        sales: netOf(r),
         qty: r.qty,
         units: pricedUnits(r),
         rows: [r],
@@ -178,17 +183,29 @@ export interface ItemCostStats {
  * suggestion and the export all have to agree on. It lives here rather than in
  * the panel so the export can't compute it a second, subtly different way.
  */
-export const itemCostStats = (p: ProductSummary): ItemCostStats => {
-  const cogs = p.rows.reduce(
-    (s, r) =>
-      s + calculateCogs(r.net_cost, r.cost, r.case_size, r.qty, r.weight),
-    0,
-  );
+export const itemCostStats = (
+  p: ProductSummary,
+  /** The latest invoice cost, when there is one to use. See invoiceCost.ts. */
+  unitCostOverride?: number | null,
+): ItemCostStats => {
+  const cogs =
+    unitCostOverride != null
+      ? p.units * unitCostOverride
+      : p.rows.reduce(
+          (s, r) =>
+            s + calculateCogs(r.net_cost, r.cost, r.case_size, r.qty, r.weight),
+          0,
+        );
   const netSales = p.rows.reduce((s, r) => s + r.net_sales, 0);
   return {
     cogs,
     netSales,
-    unitCost: p.units > 0 ? cogs / p.units : null,
+    unitCost:
+      unitCostOverride != null
+        ? unitCostOverride
+        : p.units > 0
+          ? cogs / p.units
+          : null,
     marginPct: netSales > 0 ? ((netSales - cogs) / netSales) * 100 : null,
   };
 };
@@ -218,60 +235,121 @@ export interface VendorSummary {
   vendorId: string;
   vendorName: string;
   sales: number;
-  /** Known immediately, unlike a department's — every row is already in hand
-   *  by the time a vendor exists at all. */
-  itemCount: number;
-  /** Every item row this vendor supplied, so opening it costs nothing. */
+  /** Distinct items. Null while the vendor comes from the rollup alone: its
+   *  item counts are per day, and a week's distinct count can't be added up
+   *  from them. Filled in when the item rows land. */
+  itemCount: number | null;
+  /** Every item row this vendor supplied, so opening it costs nothing. Empty
+   *  until the item rows land. */
   rows: SubDeptMargin[];
 }
+
+/** Rows with no vendor are real — DSD and miscellaneous departments both
+ *  produce them — and bucketing them together under one heading is more
+ *  honest than dropping the sales out of the page entirely. */
+const NO_VENDOR = "—";
+
+/**
+ * One vendor id, whichever kind of row it came from.
+ *
+ * The rollup's key is the item rows' `vendor_id` as trimmed text, so the two
+ * agree on every real vendor. Nothing at all, or all zeros (coupon lines send
+ * the number 0), is no vendor, the same rule the Vendors page uses. Without
+ * one rule here, a vendor from the rollup and the same vendor from the item
+ * rows would be two different groups.
+ */
+const vendorKey = (raw: unknown): string => {
+  const id = (raw === null || raw === undefined ? "" : String(raw)).trim();
+  return id === "" || /^0+$/.test(id) ? NO_VENDOR : id;
+};
+
+/**
+ * Every vendor that sold in the window, from `subs/rollup`: names and sales,
+ * no item rows. ~40 KB, so the tree draws at once; `fetchVendors` brings the
+ * items behind it.
+ */
+export const fetchVendorTotals = async (
+  scope: InventoryScope,
+): Promise<VendorSummary[]> => {
+  const resp = await getRollup(scope.url, scope.token, {
+    by: "vendor",
+    startDate: scope.start,
+    endDate: scope.end,
+    useGroups: USE_GROUPS,
+    singleStore: SINGLE_STORE,
+    searchValue: scope.storeid,
+  });
+  if (resp.data.error !== 0) {
+    throw new Error(resp.data.msg ?? "Could not read the vendor totals");
+  }
+  const byVendor = new Map<string, VendorSummary>();
+  for (const r of resp.data.rows ?? []) {
+    const id = vendorKey(r.key);
+    const found = byVendor.get(id);
+    if (found) found.sales += r.net_sales;
+    else
+      byVendor.set(id, {
+        vendorId: id,
+        vendorName: id === NO_VENDOR ? "No vendor" : r.name || id,
+        sales: r.net_sales,
+        itemCount: null,
+        rows: [],
+      });
+  }
+  return [...byVendor.values()].sort((a, b) => b.sales - a.sales);
+};
+
+/**
+ * The `sub_department` argument that asks `subs/subs` for every department in
+ * one read. As a request argument 0 means "all"; as a row value it is a real
+ * department, which is why it is named rather than written as a bare 0.
+ */
+const ALL_SUB_DEPTS = 0;
 
 /**
  * Every vendor that sold in the window, with their items.
  *
- * `vendor_id` lives only on item rows, and item rows come one department at a
- * time — so unlike the department page, this cannot be lazy. Naming a single
- * vendor requires having walked all of them, which is why this loads up front
- * behind a two-step message rather than expanding on click.
+ * `vendor_id` lives only on item rows, so naming a single vendor needs every
+ * item row in the window, which is why this loads up front rather than
+ * expanding on click.
  *
- * Departments go out together; serialising would multiply latency by the
- * department count for no benefit. A department that fails resolves to no rows
- * rather than taking down the search — losing one department understates a
- * vendor, losing the page helps nobody.
+ * One paged read of every department, the way the Vendors page reads it. This
+ * used to ask for the department list first and then fire one `subs/subs` per
+ * department, all at once: 27 calls and up to 26 in flight for one store-week
+ * (dev board review, finding I). The rows that come back are the same rows;
+ * only the number of requests changes.
+ *
+ * Read behind `fetchVendorTotals` now, which draws the tree first. Still every
+ * item row, deliberately: opening a vendor and the item filter both read
+ * them, and every field `subs/subs` returns stays in hand.
  */
 export const fetchVendors = async (
   scope: InventoryScope,
-  subDeptIds: number[],
 ): Promise<VendorSummary[]> => {
-  const results = await Promise.all(
-    subDeptIds.map((id) =>
-      fetchSubDeptRowsSafe(
-        scope.url,
-        scope.token,
-        id,
-        scope.start,
-        scope.end,
-        USE_GROUPS,
-        scope.storeid,
-        SINGLE_STORE,
-      ),
-    ),
+  const rows = await fetchSubDeptRowsSafe(
+    scope.url,
+    scope.token,
+    ALL_SUB_DEPTS,
+    scope.start,
+    scope.end,
+    USE_GROUPS,
+    scope.storeid,
+    SINGLE_STORE,
   );
 
   const byVendor = new Map<string, VendorSummary>();
-  results.flat().forEach((r) => {
-    // Rows with no vendor are real — DSD and miscellaneous departments both
-    // produce them — and bucketing them together under one heading is more
-    // honest than dropping the sales out of the page entirely.
-    const id = r.vendor_id || "—";
+  rows.forEach((r) => {
+    const id = vendorKey(r.vendor_id);
     const found = byVendor.get(id);
     if (found) {
-      found.sales += r.total_sales;
+      found.sales += netOf(r);
       found.rows.push(r);
     } else {
       byVendor.set(id, {
         vendorId: id,
-        vendorName: r.vendor_name || "No vendor",
-        sales: r.total_sales,
+        vendorName:
+          id === NO_VENDOR ? "No vendor" : r.vendor_name || id,
+        sales: netOf(r),
         itemCount: 0,
         rows: [r],
       });

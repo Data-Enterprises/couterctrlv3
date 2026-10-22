@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   ChevronDownIcon,
-  ChevronUpIcon,
+  ChevronLeftIcon,
   ChevronRightIcon,
+  ChevronUpIcon,
+  DocumentTextIcon,
   ExclamationTriangleIcon,
   ExclamationCircleIcon,
   CheckCircleIcon,
@@ -26,19 +28,29 @@ import {
 import {
   avgPrice,
   compareWindows,
-  count,
   deptName,
   deptOptions,
   deptRollups,
   deptSeverity,
   deptSeverityCounts,
+  amountOf,
+  amountText,
   contributionGap,
   contributionOf,
+  weighed,
   topItemsTotals,
   deltaPct,
   deltaPoints,
   pointsFor,
-  promoShare,
+  displayVerdict,
+  grossProfit,
+  marginAt,
+  rankHistory,
+  rankIn,
+  retailMix,
+  retailSays,
+  topPriceOf,
+  unitCost,
   rankBySales,
   sortTopItems,
   nextTopItemSort,
@@ -56,7 +68,6 @@ import {
   severityDotClass,
   type Severity,
 } from "../../../../utils/severity";
-import SeverityBadge from "../../../../components-dev/SeverityBadge";
 import { formatCurrency2 } from "../../../../utils";
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
 
@@ -139,6 +150,18 @@ const dayText = (iso: string | null | undefined) => {
  */
 const inFlight = new Set<string>();
 
+/** Name, the share bar, the week, and one comparison. */
+const LANDING_COLS = "minmax(0,1fr) minmax(0,1.35fr) 86px 64px";
+
+/**
+ * Departments printed in full before the tail is rolled into one line.
+ *
+ * Nine is where the list stops being read: below it the rows are a few
+ * hundred dollars each and the eye has already stopped. The money still
+ * adds up, because the tail keeps its total.
+ */
+const LANDING_SHOWN = 9;
+
 const PopupTopItems = ({
   storeId,
   locations,
@@ -192,13 +215,15 @@ const PopupTopItems = ({
   const [dept, setDept] = useState("");
   /** The landing report's own chip filter, over departments. */
   const [deptSev, setDeptSev] = useState<Severity | "all">("all");
+  /** Which comparison the landing report's one delta column shows. Last week
+   *  by default: it is the one every store has. */
+  const [landingBasis, setLandingBasis] = useState<"LW" | "LY">("LW");
   /**
-   * Collapsed sections, by id.
+   * The CTA strip's open state, and nothing else now that the report has no
+   * folding sections.
    *
-   * The sections start open — the panel is the answer, and folding it by
-   * default would hide the thing just asked for. The CTA starts CLOSED, the
-   * way the Sub dept tab's does: its label already says the verdict, and the
-   * sentence is the working behind it.
+   * It starts CLOSED, the way the Sub dept tab's does: its label already
+   * says the verdict, and the sentence is the working behind it.
    */
   const [folded, setFolded] = useState<Set<string>>(() => new Set(["cta"]));
   const fold = (id: string) =>
@@ -208,6 +233,10 @@ const PopupTopItems = ({
       return next;
     });
   const [selectedCode, setSelectedCode] = useState<string | null>(null);
+  /** The invoices rail. Closed on arrival and on every change of item: a
+   *  different item's invoices are a different list, and leaving it open
+   *  would show new rows under a heading opened for the old one. */
+  const [invoicesOpen, setInvoicesOpen] = useState(false);
   const [detail, setDetail] = useState<ItemDetailResponse | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const key = `${storeId}__${start}__${end}`;
@@ -274,6 +303,30 @@ const PopupTopItems = ({
         dispatch(setTopItemsLoading(false));
       });
   }, [key, haveRows]);
+
+  /*
+   * The rail closes when the item changes, and on Escape.
+   *
+   * A different item's invoices are a different list. Leaving it open would
+   * put the new item's rows under a heading the reader opened for the old
+   * one, which is worse than closing something they wanted open.
+   */
+  useEffect(() => {
+    setInvoicesOpen(false);
+  }, [selectedCode]);
+
+  useEffect(() => {
+    if (!invoicesOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      // The popup behind this closes on Escape too, and the reader means the
+      // thing in front of them.
+      e.stopPropagation();
+      setInvoicesOpen(false);
+    };
+    window.addEventListener("keydown", onKey, true);
+    return () => window.removeEventListener("keydown", onKey, true);
+  }, [invoicesOpen]);
 
   // A code from the last store is not a code in this one.
   useEffect(() => {
@@ -342,13 +395,24 @@ const PopupTopItems = ({
     () => deptSeverityCounts(rollups, threshold),
     [rollups, threshold],
   );
-  const shownDepts = useMemo(
-    () =>
+  const landing = useMemo(() => {
+    const kept =
       deptSev === "all"
         ? rollups
-        : rollups.filter((d) => deptSeverity(d, threshold) === deptSev),
-    [rollups, deptSev, threshold],
-  );
+        : rollups.filter((d) => deptSeverity(d, threshold) === deptSev);
+    const byMoney = [...kept].sort((a, b) => b.ty - a.ty);
+    const shown = byMoney.slice(0, LANDING_SHOWN);
+    const rest = byMoney.slice(LANDING_SHOWN);
+    return {
+      shown,
+      rest,
+      restTotal: rest.reduce((n, d) => n + d.ty, 0),
+      // The bar runs against the biggest department, not against the whole
+      // list: scaled to the total, nine of the ten bars would be stubs.
+      top: shown.length ? shown[0].ty : 0,
+      total: byMoney.reduce((n, d) => n + d.ty, 0),
+    };
+  }, [rollups, deptSev, threshold]);
 
   const shown = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -373,6 +437,69 @@ const PopupTopItems = ({
 
   const insight = selected ? topItemInsight(selected.ty, points) : null;
 
+  /** Where it sits in the list, and how much of the list it is. */
+  const rank = selected
+    ? ranked.findIndex((r) => r.ty.product_code === selected.ty.product_code) +
+      1
+    : 0;
+  const shareOfTop =
+    selected && totals.ty > 0
+      ? (selected.ty.total_sales / totals.ty) * 100
+      : null;
+
+  /*
+   * The headline price.
+   *
+   * One price point IS the price — read it off the row rather than dividing
+   * sales by amount, which only lands on the same number when nothing moved
+   * all week. With several, the blended average is the honest single figure
+   * and the ladder below shows what it is blending.
+   */
+  const headlinePrice =
+    points.length === 1
+      ? points[0].price
+      : selected
+        ? avgPrice(selected.ty)
+        : null;
+
+  const perUnitCost = selected ? unitCost(selected.ty) : null;
+
+  /** What kind of retail sold it, this week's rank history, and whether it
+   *  is worth a display. All of it off rows already in hand. */
+  const mix = useMemo(
+    () => (selected ? retailMix(selected.ty) : null),
+    [selected],
+  );
+  const topPrice = useMemo(() => topPriceOf(points), [points]);
+  const topMargin = useMemo(
+    () => marginAt(topPrice, perUnitCost),
+    [topPrice, perUnitCost],
+  );
+
+  const history = useMemo(() => {
+    if (!selected) return rankHistory(null, null, null);
+    const code = selected.ty.product_code;
+    return rankHistory(
+      rank || null,
+      rankIn(topItemsLW, code, TOP_ITEMS_SHOWN),
+      rankIn(topItemsLY, code, TOP_ITEMS_SHOWN),
+    );
+  }, [selected, rank, topItemsLW, topItemsLY]);
+
+  const display = useMemo(
+    () =>
+      selected
+        ? displayVerdict(
+            rank || null,
+            selected.ty.margin,
+            selected.vsLW,
+            !selected.lw,
+            pctText,
+          )
+        : displayVerdict(null, null, null, false, pctText),
+    [selected, rank],
+  );
+
   if (topItemsLoading && !haveRows) {
     return (
       <div className="relative h-full">
@@ -389,27 +516,34 @@ const PopupTopItems = ({
     );
   }
 
-  /** The supporting metrics: every row TY, LW, LY. */
+  /** The supporting metrics: every row TY, and against each baseline. */
   const metricRows = !selected
     ? []
     : [
         {
-          label: "Units",
-          ty: selected.ty.qty.toLocaleString(),
-          lw: pctText(deltaPct(selected.ty.qty, selected.lw?.qty)),
-          ly: pctText(deltaPct(selected.ty.qty, selected.ly?.qty)),
+          label: "Sales",
+          ty: money(selected.ty.total_sales),
+          lw: pctText(selected.vsLW),
+          ly: pctText(selected.vsLY),
         },
         {
-          label: "Margin",
-          ty:
-            selected.ty.margin === null
-              ? "—"
-              : `${selected.ty.margin.toFixed(1)}%`,
-          lw: pointsText(deltaPoints(selected.ty.margin, selected.lw?.margin)),
-          ly: pointsText(deltaPoints(selected.ty.margin, selected.ly?.margin)),
+          label: weighed(selected.ty) ? "Pounds" : "Units",
+          ty: amountText(selected.ty),
+          lw: pctText(
+            deltaPct(
+              amountOf(selected.ty),
+              selected.lw ? amountOf(selected.lw) : undefined,
+            ),
+          ),
+          ly: pctText(
+            deltaPct(
+              amountOf(selected.ty),
+              selected.ly ? amountOf(selected.ly) : undefined,
+            ),
+          ),
         },
         {
-          label: "Avg price",
+          label: weighed(selected.ty) ? "Price per lb" : "Avg price",
           ty: money(avgPrice(selected.ty)),
           lw: pctText(
             deltaPct(
@@ -425,41 +559,36 @@ const PopupTopItems = ({
           ),
         },
         {
-          label: "On promo",
-          ty: `${Math.round(promoShare(selected.ty) * 100)}%`,
-          lw: pointsText(
-            selected.lw
-              ? (promoShare(selected.ty) - promoShare(selected.lw)) * 100
-              : null,
+          label: "Margin",
+          ty:
+            selected.ty.margin === null
+              ? "—"
+              : `${selected.ty.margin.toFixed(1)}%`,
+          lw: pointsText(deltaPoints(selected.ty.margin, selected.lw?.margin)),
+          ly: pointsText(deltaPoints(selected.ty.margin, selected.ly?.margin)),
+        },
+        {
+          label: "Gross profit",
+          ty: money(grossProfit(selected.ty)),
+          lw: pctText(
+            deltaPct(
+              grossProfit(selected.ty),
+              selected.lw ? grossProfit(selected.lw) : null,
+            ),
           ),
-          ly: pointsText(
-            selected.ly
-              ? (promoShare(selected.ty) - promoShare(selected.ly)) * 100
-              : null,
+          ly: pctText(
+            deltaPct(
+              grossProfit(selected.ty),
+              selected.ly ? grossProfit(selected.ly) : null,
+            ),
           ),
         },
       ];
 
-  /** The price-mix bar. Every count goes through `count` — these arrive null
-   *  rather than zero whenever an item never rang that way. */
-  const mix = selected
-    ? (() => {
-        const r = selected.ty;
-        const regular = count(r.qty_regular);
-        const promo = count(r.qty_promo);
-        const deal = count(r.qty_deal_item);
-        const known = regular + promo + deal;
-        const w = (n: number) => (known > 0 ? `${(n / known) * 100}%` : "0%");
-        return {
-          regular: w(regular),
-          promo: w(promo),
-          deal: w(deal),
-          regularN: regular,
-          promoN: promo,
-          dealN: deal,
-        };
-      })()
-    : null;
+  const perUnitMargin =
+    headlinePrice !== null && perUnitCost !== null
+      ? headlinePrice - perUnitCost
+      : null;
 
   /** A column heading that sorts. Chevron only on the column in force, the
    *  way every other grid on this page marks it. */
@@ -486,45 +615,6 @@ const PopupTopItems = ({
     </button>
   );
 
-  /** A section that folds. The heading is the whole hit area — a 12px chevron
-   *  in a panel this narrow is a miss waiting to happen. */
-  const Section = ({
-    id,
-    label,
-    note,
-    children,
-  }: {
-    id: string;
-    label: string;
-    note?: React.ReactNode;
-    children: React.ReactNode;
-  }) => {
-    const shut = folded.has(id);
-    return (
-      <div className="px-4 py-2.5 border-b border-brand_navy/15">
-        <div
-          onClick={() => fold(id)}
-          className={`flex items-baseline justify-between gap-2 cursor-pointer select-none ${shut ? "" : "mb-1.5"}`}
-        >
-          <span className="flex items-center gap-1 min-w-0">
-            <ChevronRightIcon
-              className={`w-3.5 h-3.5 text-content flex-shrink-0 transition-transform ${shut ? "" : "rotate-90"}`}
-            />
-            <span className="text-[11.5px] font-medium uppercase tracking-wide text-content truncate">
-              {label}
-            </span>
-          </span>
-          {note && (
-            <span className="text-[11px] text-content/85 flex-shrink-0">
-              {note}
-            </span>
-          )}
-        </div>
-        {!shut && children}
-      </div>
-    );
-  };
-
   return (
     <div className="flex h-full flex-col">
       {/*
@@ -550,21 +640,21 @@ const PopupTopItems = ({
 
       <div className="flex flex-1 min-h-0">
         {/* The ranked list */}
-        <div className="w-[420px] flex-shrink-0 flex flex-col border-r border-gray-100">
+        <div className="w-[471px] flex-shrink-0 flex flex-col border-r border-gray-100">
           <div className="flex items-center gap-2 px-2.5 py-1.5 bg-gray-100 border-b border-gray-100 flex-shrink-0">
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search item or UPC…"
               aria-label="Search items"
-              className="flex-1 min-w-0 text-[11.5px] px-2 py-1 rounded-md border border-gray-200 bg-custom-white text-content"
+              className="flex-1 min-w-[90px] text-[11.5px] px-2 py-1 rounded-md border border-gray-200 bg-custom-white text-content"
             />
             {depts.length > 1 && (
               <select
                 value={dept}
                 onChange={(e) => setDept(e.target.value)}
                 aria-label="Filter by sub department"
-                className="text-[11.5px] px-1.5 py-1 rounded-md border border-gray-200 bg-custom-white text-content max-w-[130px]"
+                className="flex-shrink-0 max-w-[170px] text-[11.5px] pl-1.5 pr-5 py-1 rounded-md border border-gray-200 bg-custom-white text-content"
               >
                 <option value="">All sub depts</option>
                 {depts.map((d) => (
@@ -574,7 +664,7 @@ const PopupTopItems = ({
                 ))}
               </select>
             )}
-            <span className="text-[10px] font-semibold text-content/85 whitespace-nowrap">
+            <span className="flex-shrink-0 text-[10px] font-semibold text-content/85 whitespace-nowrap">
               {shown.length === ranked.length
                 ? `Top ${Math.min(ranked.length, TOP_ITEMS_SHOWN)} by sales`
                 : `${shown.length} of ${ranked.length}`}
@@ -628,10 +718,10 @@ const PopupTopItems = ({
                     </span>
                     <span
                       className="block text-[10.5px] text-content/85 tabular-nums truncate"
-                      title={`${r.ty.product_code} · ${deptName(r.ty)} · ${r.ty.qty.toLocaleString()} units`}
+                      title={`${r.ty.product_code} · ${deptName(r.ty)} · ${amountText(r.ty)}`}
                     >
-                      {r.ty.product_code} · {deptName(r.ty)} ·{" "}
-                      {r.ty.qty.toLocaleString()} units
+                      <span className="font-semibold">{r.ty.product_code}</span>{" "}
+                      · <span className="font-semibold">{deptName(r.ty)}</span>
                     </span>
                   </span>
                   <span className="w-[68px] text-right text-[12px] font-semibold text-content tabular-nums flex-shrink-0 pl-2.5">
@@ -659,7 +749,7 @@ const PopupTopItems = ({
         </div>
 
         {/* The selected item */}
-        <div className="flex-1 min-w-0 flex flex-col">
+        <div className="relative flex-1 min-w-0 flex flex-col overflow-hidden">
           {!selected || !insight ? (
             /* Nothing picked: where the week's money came from, by department.
              Rolled up from the rows already on screen, so it costs no call
@@ -727,22 +817,25 @@ const PopupTopItems = ({
                                 : "bg-gray-100 text-content"
                           }`}
                         >
-                          {`${gap > 0 ? "+" : gap < 0 ? "−" : ""}${Math.abs(gap).toFixed(1)}%`}
+                          {/* "pts", not "%": 43.3% of net sales against 30.2%
+                              is 13.1 points. Read as "+13.1%" it said sales
+                              rose 13%, when they rose 59.5% (dev board review,
+                              finding 1). */}
+                          {`${gap > 0 ? "+" : gap < 0 ? "−" : ""}${Math.abs(gap).toFixed(1)} pts`}
                         </span>
                       )}
                     </div>
                     <div className="text-[11.5px] text-content/85 tabular-nums">
-                      {pct === null
-                        ? "—"
-                        : `${pct.toFixed(1)}% of net sales`}
+                      {pct === null ? "—" : `${pct.toFixed(1)}% of net sales`}
                     </div>
                   </div>
                 ))}
               </div>
 
-              {/* Chips count DEPARTMENTS, not items. This report is about where
-                the money sat; item grades are already the dots down the
-                left. */}
+              {/* Chips count DEPARTMENTS, not items. This report is about
+                  where the money sat, and each department's grade is the
+                  colour of its own bar below -- a dot beside a coloured bar
+                  was one fact drawn twice. */}
               <div className="flex flex-wrap items-center gap-1.5 px-2.5 py-2 bg-gray-100 border-b border-gray-100 flex-shrink-0">
                 {(
                   [
@@ -777,98 +870,139 @@ const PopupTopItems = ({
                   </button>
                 ))}
                 <span className="flex-1" />
+                {/* One comparison column, and a switch for which. Two columns
+                    of percentages beside a bar and a dollar figure was four
+                    numbers a row, and the eye reads none of them. */}
+                <span className="flex rounded-md border border-brand_navy/15 overflow-hidden flex-shrink-0">
+                  {(["LW", "LY"] as const).map((b) => (
+                    <button
+                      key={b}
+                      onClick={() => setLandingBasis(b)}
+                      className={`px-2 py-0.5 text-[11.5px] font-semibold transition-colors ${
+                        landingBasis === b
+                          ? "bg-brand_navy text-custom-white"
+                          : "bg-custom-white text-content/85 hover:bg-gray-50"
+                      }`}
+                    >
+                      vs {b}
+                    </button>
+                  ))}
+                </span>
+                <span className="flex-1" />
                 <span className="text-[10px] font-semibold text-content/85">
                   {rollups.length} sub department
                   {rollups.length === 1 ? "" : "s"}
                 </span>
               </div>
 
-              <div className="flex items-center gap-2.5 px-3 py-1.5 border-b border-gray-100 flex-shrink-0">
-                <span className="w-[18px] flex-shrink-0" />
-                <span className="flex-1 min-w-0 text-[11px] font-bold uppercase tracking-wide text-content/85">
-                  Where the week&rsquo;s money came from
-                </span>
-                <span className="w-[86px] text-center text-[11px] font-bold uppercase tracking-wide text-content/85">
-                  TY
-                </span>
-                <span className="w-[78px] text-center text-[11px] font-bold uppercase tracking-wide text-content/85">
-                  LW
-                </span>
-                <span className="w-[78px] text-center text-[11px] font-bold uppercase tracking-wide text-content/85">
-                  LY
-                </span>
+              <div
+                className="grid items-end gap-2 px-3 py-1.5 border-b border-gray-100 flex-shrink-0 text-[11px] font-bold uppercase tracking-wide text-content/85"
+                style={{ gridTemplateColumns: LANDING_COLS }}
+              >
+                <span>Sub dept</span>
+                <span>Share of top 200</span>
+                <span className="text-right">This week</span>
+                <span className="text-right">vs {landingBasis}</span>
               </div>
 
               <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar">
-                {shownDepts.map((d) => {
+                {landing.shown.map((d) => {
                   const sev = deptSeverity(d, threshold);
+                  const pct =
+                    landing.top > 0 ? (d.ty / landing.total) * 100 : 0;
                   return (
                     <button
                       key={d.name}
-                      onClick={() => setDept(d.name)}
-                      title={`Narrow the list to ${d.name}`}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 text-left border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                      /* Clicking the row it is already filtered by clears
+                         the filter: the row is the control, so it has to be
+                         able to undo what it did. */
+                      onClick={() => setDept(dept === d.name ? "" : d.name)}
+                      title={
+                        dept === d.name
+                          ? "Show every department again"
+                          : `Narrow the list to ${d.name}`
+                      }
+                      aria-pressed={dept === d.name}
+                      className={`w-full grid items-center gap-2 px-3 py-2 text-left border-b border-b-gray-100 border-l-2 transition-colors ${
+                        dept === d.name
+                          ? "bg-row_selected border-row_selected_border"
+                          : "border-transparent hover:bg-gray-50"
+                      }`}
+                      style={{ gridTemplateColumns: LANDING_COLS }}
                     >
-                      <SeverityBadge severity={sev} />
-                      <span className="flex-1 min-w-0">
-                        <span className="block text-[13px] font-medium text-content truncate">
-                          {d.name}
-                        </span>
-                        <span className="block text-[11px] text-content/85 tabular-nums truncate">
-                          {d.items} item{d.items === 1 ? "" : "s"} &middot;{" "}
-                          {Math.round(d.offRegular * 100)}% off regular
-                        </span>
-                      </span>
                       <span
-                        className={`w-[86px] flex-shrink-0 text-center px-1 py-0.5 rounded ${
-                          sev
-                            ? pillClass(d.vsLY ?? d.vsLW, threshold)
-                            : "bg-gray-100 text-gray-500"
+                        className={`min-w-0 text-[13px] truncate ${
+                          dept === d.name
+                            ? "font-bold text-content"
+                            : "font-medium text-content"
                         }`}
                       >
-                        <span className="block text-[13px] font-semibold tabular-nums">
-                          {money(d.ty)}
+                        {d.name}
+                      </span>
+
+                      {/* The bar carries the grade, which is what the dot
+                          beside it used to do twice over -- a coloured dot
+                          and a coloured bar saying one thing. */}
+                      <span className="flex items-center gap-2 min-w-0">
+                        <span className="flex-1 h-3 rounded bg-bkg min-w-0">
+                          <span
+                            className={`block h-full rounded ${
+                              sev ? severityDotClass[sev] : "bg-gray-300"
+                            }`}
+                            style={{
+                              width: `${landing.top > 0 ? Math.max(2, (d.ty / landing.top) * 100) : 0}%`,
+                            }}
+                          />
                         </span>
-                        <span className="block text-[11px] tabular-nums">
-                          {d.tyUnits.toLocaleString()} u
+                        <span className="w-[42px] flex-shrink-0 text-right text-[11.5px] text-content/85 tabular-nums">
+                          {pct.toFixed(1)}%
                         </span>
                       </span>
-                      {(
-                        [
-                          [d.lw, d.lwUnits],
-                          [d.ly, d.lyUnits],
-                        ] as const
-                      ).map(([value, units], i) => (
+
+                      <span className="text-right text-[13px] font-semibold text-content tabular-nums">
+                        {money(d.ty)}
+                      </span>
+
+                      <span className="flex justify-end">
                         <span
-                          key={i}
-                          className="w-[78px] flex-shrink-0 text-center text-content"
+                          className={`text-[12px] font-semibold px-1.5 py-0.5 rounded text-center whitespace-nowrap tabular-nums ${pillClass(
+                            landingBasis === "LW" ? d.vsLW : d.vsLY,
+                            threshold,
+                          )}`}
                         >
-                          <span className="block text-[12px] font-semibold tabular-nums">
-                            {money(value)}
-                          </span>
-                          <span className="block text-[11px] text-content/85 tabular-nums">
-                            {units === null
-                              ? "—"
-                              : `${units.toLocaleString()} u`}
-                          </span>
+                          {pctText(landingBasis === "LW" ? d.vsLW : d.vsLY)}
                         </span>
-                      ))}
+                      </span>
                     </button>
                   );
                 })}
-                {shownDepts.length === 0 && (
+
+                {/* The tail as one line. Fifteen departments down to a few
+                    hundred dollars is a list nobody reads to the end of, and
+                    the money still has to add up. */}
+                {landing.rest.length > 0 && (
+                  <div
+                    className="grid items-center gap-2 px-3 py-2 border-b border-gray-100 text-[12px] text-content/85"
+                    style={{ gridTemplateColumns: LANDING_COLS }}
+                  >
+                    <span className="truncate">{landing.rest.length} more</span>
+                    <span />
+                    <span className="text-right tabular-nums">
+                      {money(landing.restTotal)}
+                    </span>
+                    <span />
+                  </div>
+                )}
+
+                {landing.shown.length === 0 && (
                   <div className="flex items-center justify-center py-8 text-[12px] text-content">
                     No departments at that grade
                   </div>
                 )}
               </div>
 
-              <p className="flex-shrink-0 px-3 py-1.5 border-t border-gray-100 text-[10.5px] leading-snug text-content/85">
-                Graded on the same threshold as the rest of the page, against
-                last year where there is one and last week otherwise. These are
-                the top 200&rsquo;s departments, not the store&rsquo;s whole
-                week &mdash; Sub depts is that tab. Click one to narrow the list
-                to it.
+              <p className="flex-shrink-0 px-3 py-1.5 border-t border-gray-100 text-[12px] leading-snug text-content/85">
+                Click a sub department for last week, last year and its items.
               </p>
             </div>
           ) : (
@@ -922,167 +1056,311 @@ const PopupTopItems = ({
                 )}
               </div>
 
-              {/* Lead card + supporting metrics, 40/60 */}
-              <div className="flex-shrink-0 px-4 py-2.5 border-b border-gray-100">
-                <div className="grid grid-cols-[40%_1fr] gap-2">
-                  <div className="rounded-md border border-brand_navy/15 shadow-sm bg-gray-50 p-2.5 text-center flex flex-col justify-center">
-                    <div className="text-[11px] font-semibold text-content">
-                      Sales
-                    </div>
-                    <div className="text-[18px] font-semibold text-content leading-tight">
-                      {money(selected.ty.total_sales)}
-                    </div>
-                    <div className="text-[11.5px] font-semibold text-content/85 tabular-nums">
-                      {selected.ty.qty.toLocaleString()} units
-                    </div>
-                    <div className="text-[11px] text-content/85 truncate">
-                      {deptName(selected.ty)}
-                    </div>
-                    <div className="grid grid-cols-2 gap-1.5 mt-1.5 pt-1.5 border-t border-gray-200">
-                      {(
-                        [
-                          [
-                            "vs LW",
-                            selected.lw?.total_sales ?? null,
-                            selected.vsLW,
-                          ],
-                          [
-                            "vs LY",
-                            selected.ly?.total_sales ?? null,
-                            selected.vsLY,
-                          ],
-                        ] as const
-                      ).map(([label, prior, pct]) => (
-                        <div key={label}>
-                          <div className="text-[11px] font-semibold uppercase tracking-wide text-content">
-                            {label}
-                          </div>
-                          <div className="text-[12px] font-semibold text-content tabular-nums">
-                            {money(prior)}
-                          </div>
-                          <div className="flex justify-center mt-0.5">
-                            <span
-                              className={`text-[11px] font-semibold px-1.5 py-0.5 rounded ${pillClass(pct, threshold)}`}
-                            >
-                              {pctText(pct)}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+              {/* The whole report scrolls as one. The sections below answer
+                  different questions and a reader works down them; pinning
+                  the top three and scrolling the rest only moved the seam. */}
+              <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar">
+                {/* Identity, and how much of the list this is. Contribution
+                    sits here rather than in a tile of its own: the figure,
+                    the money and the bar fit on one line, and a third tile
+                    would have cost a quarter of the panel. */}
+                <div className="flex items-center gap-3 px-4 py-2 border-b border-gray-100">
+                  <div className="min-w-0 flex-1 text-[11.5px] text-content/85 truncate">
+                    <span className="tabular-nums">
+                      {selected.ty.product_code}
+                    </span>{" "}
+                    &middot; {deptName(selected.ty)} &middot;{" "}
+                    <span className="font-semibold text-content tabular-nums">
+                      #{rank} of {ranked.length}
+                    </span>
                   </div>
-
-                  <div className="rounded-md border border-brand_navy/15 shadow-sm bg-gray-50 px-2.5 py-1 flex flex-col justify-center">
-                    <div className="grid grid-cols-[1fr_56px_55px_55px] gap-1.5 pb-0.5 text-[11px] font-semibold uppercase tracking-wide text-content">
-                      <span />
-                      <span className="text-right">TY</span>
-                      <span className="text-right">LW</span>
-                      <span className="text-right">LY</span>
+                  <div className="flex-shrink-0 text-right">
+                    <div className="text-[13.5px] font-bold text-content tabular-nums leading-tight">
+                      {shareOfTop === null
+                        ? "\u2014"
+                        : `${shareOfTop.toFixed(1)}%`}
+                      <span className="text-[11px] font-normal text-content/85">
+                        {" "}
+                        of top 200
+                      </span>
                     </div>
-                    {metricRows.map((m) => (
-                      <div
-                        key={m.label}
-                        className="grid grid-cols-[1fr_56px_55px_55px] gap-1.5 items-center py-1 border-t border-gray-200 text-[11.5px]"
-                      >
-                        <span className="font-semibold text-content truncate">
-                          {m.label}
-                        </span>
-                        <span className="text-[12px] font-semibold text-content text-right tabular-nums">
-                          {m.ty}
-                        </span>
-                        <span className="text-[12px] font-semibold text-content text-right tabular-nums">
-                          {m.lw}
-                        </span>
-                        <span className="text-[12px] font-semibold text-content text-right tabular-nums">
-                          {m.ly}
-                        </span>
-                      </div>
-                    ))}
+                    <span className="block w-[120px] h-[3px] rounded bg-bkg mt-0.5">
+                      <span
+                        className="block h-full rounded bg-brand_navy"
+                        style={{ width: `${Math.min(100, shareOfTop ?? 0)}%` }}
+                      />
+                    </span>
                   </div>
                 </div>
-              </div>
 
-              <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar">
-                {/* How it rang */}
-                <Section
-                  id="rang"
-                  label="How it rang"
-                  note={`${points.length} price point${points.length === 1 ? "" : "s"}`}
+                {/* 1 — what retail is actually selling it. First because
+                    "all on ad at $11.99" explains a negative margin far more
+                    often than the cost does. */}
+                <div
+                  data-help="item-retail"
+                  className="px-4 py-2.5 border-b border-gray-100"
                 >
+                  <div className="text-[14px] font-bold text-content leading-snug">
+                    {retailSays(mix, points, money)}
+                  </div>
+
                   {mix && (
                     <>
-                      <div className="flex h-2.5 rounded-sm overflow-hidden bg-bkg">
+                      <span className="flex h-2.5 rounded-sm overflow-hidden bg-bkg mt-2">
                         <span
                           className="bg-brand_navy"
-                          style={{ width: mix.regular }}
+                          style={{ width: `${mix.regularPct}%` }}
                         />
                         <span
                           className="bg-severity_watch_text"
-                          style={{ width: mix.promo }}
+                          style={{ width: `${mix.adPct}%` }}
                         />
                         <span
                           className="bg-severity_healthy_text"
-                          style={{ width: mix.deal }}
+                          style={{ width: `${mix.tprPct}%` }}
                         />
-                      </div>
-                      <div className="flex gap-4 mt-1.5 text-[11.5px] text-content">
+                      </span>
+                      <div className="flex flex-wrap gap-x-3.5 gap-y-1 mt-1.5 text-[11.5px] text-content">
                         <span className="flex items-center gap-1.5">
                           <span className="w-2.5 h-2.5 rounded-sm bg-brand_navy" />
-                          Regular {mix.regularN.toLocaleString()}
+                          Reg {Math.round(mix.regularPct)}%
                         </span>
                         <span className="flex items-center gap-1.5">
                           <span className="w-2.5 h-2.5 rounded-sm bg-severity_watch_text" />
-                          Promo {mix.promoN.toLocaleString()}
+                          Ad {Math.round(mix.adPct)}%
                         </span>
                         <span className="flex items-center gap-1.5">
                           <span className="w-2.5 h-2.5 rounded-sm bg-severity_healthy_text" />
-                          Deal {mix.dealN.toLocaleString()}
+                          TPR {Math.round(mix.tprPct)}%
                         </span>
                       </div>
                     </>
                   )}
 
-                  <div className="grid grid-cols-[1fr_64px_80px] gap-2 mt-2.5 pb-1 border-b border-brand_navy/15 text-[11px] font-semibold uppercase tracking-wide text-content/85">
+                  <div className="grid grid-cols-[1fr_74px_84px] gap-2 mt-2.5 pb-1 border-b border-brand_navy/15 text-[10px] font-bold uppercase tracking-wide text-content/85">
                     <span>Rang at</span>
-                    <span className="text-right">Units</span>
+                    <span className="text-right">
+                      {weighed(selected.ty) ? "Pounds" : "Units"}
+                    </span>
                     <span className="text-right">Sales</span>
                   </div>
                   {points.length === 0 ? (
-                    <p className="text-[11px] text-content/85 pt-1.5">
+                    <p className="text-[11.5px] text-content/85 pt-1.5">
                       No price came back for this item.
                     </p>
                   ) : (
-                    points.map((p) => (
+                    points.map((pt) => (
                       <div
-                        key={p.price}
-                        className="grid grid-cols-[1fr_64px_80px] gap-2 items-center py-1 border-b border-brand_navy/15 last:border-b-0 text-[11.5px] text-content"
+                        key={pt.price}
+                        className="grid grid-cols-[1fr_74px_84px] gap-2 items-center py-1 border-b border-brand_navy/15 last:border-b-0 text-[11.5px] text-content tabular-nums"
                       >
-                        <span className="text-[13px] font-semibold tabular-nums">
-                          {money(p.price)}
+                        <span className="text-[13px] font-semibold">
+                          {money(pt.price)}
+                          {weighed(selected.ty) && (
+                            <span className="text-[11px] font-normal text-content/85">
+                              {" "}
+                              /lb
+                            </span>
+                          )}
                         </span>
-                        <span className="text-right font-semibold tabular-nums">
-                          {p.units.toLocaleString()}
+                        <span className="text-right">
+                          {weighed(selected.ty) && pt.price > 0
+                            ? (pt.netSales / pt.price).toLocaleString(
+                                undefined,
+                                { maximumFractionDigits: 1 },
+                              )
+                            : pt.units.toLocaleString()}
                         </span>
-                        <span className="text-right tabular-nums">
-                          {money(p.netSales)}
-                        </span>
+                        <span className="text-right">{money(pt.netSales)}</span>
                       </div>
                     ))
                   )}
-                </Section>
+                  {topPrice !== null && (
+                    <div className="text-[11.5px] text-content/85 mt-1.5">
+                      Its highest price this week:{" "}
+                      <span className="font-semibold text-content">
+                        {money(topPrice)}
+                      </span>
+                    </div>
+                  )}
+                </div>
 
-                {/* What it costs you */}
-                <Section
-                  id="cost"
-                  label="What it costs you"
-                  note={
-                    detail?.cost_summary
-                      ? `${detail.cost_summary.purchases} purchase${
-                          detail.cost_summary.purchases === 1 ? "" : "s"
-                        } · ${detail.cost_summary.days} days`
-                      : undefined
-                  }
+                {/* 2 — is the cost and the retail right. */}
+                <div
+                  data-help="item-cost"
+                  className="px-4 py-2.5 border-b border-gray-100"
                 >
+                  <div
+                    className={`text-[14px] font-bold leading-snug ${
+                      perUnitMargin !== null && perUnitMargin < 0
+                        ? "text-severity_critical_text"
+                        : "text-content"
+                    }`}
+                  >
+                    {perUnitMargin === null
+                      ? "Cost is not known for this item"
+                      : perUnitMargin < 0
+                        ? `Selling at a loss \u2014 ${money(Math.abs(perUnitMargin))} on every ${weighed(selected.ty) ? "pound" : "unit"}`
+                        : `Makes ${money(perUnitMargin)} a ${weighed(selected.ty) ? "pound" : "unit"}`}
+                  </div>
+
+                  <div className="flex items-baseline justify-between gap-2 mt-2 py-1">
+                    <span className="text-[12.5px] text-content truncate">
+                      Selling at
+                      {mix && mix.adPct >= 50 && (
+                        <span className="text-[11px] text-content/85">
+                          {" "}
+                          (on ad)
+                        </span>
+                      )}
+                    </span>
+                    <span className="text-[14px] font-semibold text-content tabular-nums flex-shrink-0">
+                      {money(headlinePrice)}
+                    </span>
+                  </div>
+                  <div className="flex items-baseline justify-between gap-2 py-1 border-b border-brand_navy/15">
+                    <span className="text-[12.5px] text-content truncate">
+                      Cost
+                      <span className="text-[11px] text-content/85">
+                        {" "}
+                        &middot;{" "}
+                        {detail?.cost_summary
+                          ? `last invoice ${dayText(detail.cost_summary.last_bought_on)}`
+                          : selected.ty.cost_coverage === null
+                            ? "no line carried a cost"
+                            : `${Math.round(selected.ty.cost_coverage)}% of lines costed`}
+                      </span>
+                    </span>
+                    <span className="text-[14px] font-semibold text-content tabular-nums flex-shrink-0">
+                      {money(perUnitCost)}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 mt-2">
+                    <div
+                      className={`rounded-md px-2.5 py-2 ${
+                        selected.ty.margin === null
+                          ? "bg-gray-100"
+                          : selected.ty.margin < 0
+                            ? "bg-severity_critical_bg"
+                            : "bg-severity_healthy_bg"
+                      }`}
+                    >
+                      <div
+                        className={`text-[11.5px] font-semibold ${
+                          selected.ty.margin === null
+                            ? "text-content/85"
+                            : selected.ty.margin < 0
+                              ? "text-severity_critical_text"
+                              : "text-severity_healthy_text"
+                        }`}
+                      >
+                        Margin now
+                      </div>
+                      <div
+                        className={`text-[18px] font-bold tabular-nums leading-tight ${
+                          selected.ty.margin === null
+                            ? "text-content"
+                            : selected.ty.margin < 0
+                              ? "text-severity_critical_text"
+                              : "text-severity_healthy_text"
+                        }`}
+                      >
+                        {selected.ty.margin === null
+                          ? "\u2014"
+                          : `${selected.ty.margin.toFixed(1)}%`}
+                      </div>
+                      <div className="text-[11px] text-content/85">
+                        {perUnitMargin === null
+                          ? "no cost to compare"
+                          : `${perUnitMargin < 0 ? "loses" : "makes"} ${money(Math.abs(perUnitMargin))} per ${weighed(selected.ty) ? "lb" : "unit"}`}
+                      </div>
+                    </div>
+
+                    {/* Only when it rang at more than one price. With a single
+                        price there is no higher one to compare against, and
+                        inventing a shelf price it never charged would be a
+                        worse answer than none. */}
+                    {topPrice !== null && topMargin !== null && (
+                      <div className="rounded-md px-2.5 py-2 bg-severity_watch_bg">
+                        <div className="text-[11.5px] font-semibold text-severity_watch_text truncate">
+                          At its top price {money(topPrice)}
+                        </div>
+                        <div className="text-[18px] font-bold tabular-nums leading-tight text-severity_watch_text">
+                          {topMargin.toFixed(1)}%
+                        </div>
+                        <div className="text-[11px] text-content/85">
+                          {perUnitCost === null
+                            ? ""
+                            : `makes ${money(topPrice - perUnitCost)} per ${weighed(selected.ty) ? "lb" : "unit"}`}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div
+                    className={`flex items-center justify-between gap-2 mt-2 px-3 py-2 rounded-md ${
+                      grossProfit(selected.ty) === null
+                        ? "bg-gray-100"
+                        : (grossProfit(selected.ty) as number) < 0
+                          ? "bg-severity_critical_bg"
+                          : "bg-severity_healthy_bg"
+                    }`}
+                  >
+                    <span
+                      className={`text-[12.5px] font-semibold truncate ${
+                        grossProfit(selected.ty) === null
+                          ? "text-content"
+                          : (grossProfit(selected.ty) as number) < 0
+                            ? "text-severity_critical_text"
+                            : "text-severity_healthy_text"
+                      }`}
+                    >
+                      Gross profit
+                      <span className="font-normal">
+                        {" "}
+                        &middot; {amountText(selected.ty)} sold
+                      </span>
+                    </span>
+                    <span
+                      className={`text-[17px] font-bold tabular-nums flex-shrink-0 ${
+                        grossProfit(selected.ty) === null
+                          ? "text-content"
+                          : (grossProfit(selected.ty) as number) < 0
+                            ? "text-severity_critical_text"
+                            : "text-severity_healthy_text"
+                      }`}
+                    >
+                      {money(grossProfit(selected.ty))}
+                    </span>
+                  </div>
+                  {grossProfit(selected.ty) === null && (
+                    <p className="text-[13px] text-content/85 mt-1 leading-snug">
+                      Too few lines carried a cost to work out a margin worth
+                      trusting, so the profit is withheld rather than guessed.
+                    </p>
+                  )}
+                </div>
+
+                {/* What it costs to buy, with the cost it compares
+                    against directly above it. */}
+                <div
+                  data-help="item-buy"
+                  className="px-4 py-2.5 border-b border-gray-100"
+                >
+                  <div className="flex items-baseline justify-between gap-2">
+                    <span className="text-[10px] font-bold uppercase tracking-wide text-content/85">
+                      What it costs to buy
+                    </span>
+                    {detail?.cost_summary && (
+                      <span className="text-[11.5px] text-content/85">
+                        {detail.cost_summary.purchases} purchase
+                        {detail.cost_summary.purchases === 1 ? "" : "s"}{" "}
+                        &middot; {COST_HISTORY_DAYS} days
+                      </span>
+                    )}
+                  </div>
+
                   {detailLoading && (
                     <div className="relative h-20">
                       <LoadingIndicator message="Loading cost history" />
@@ -1090,98 +1368,297 @@ const PopupTopItems = ({
                   )}
 
                   {!detailLoading && !detail?.cost_summary && (
-                    <p className="text-[11px] text-content/85 leading-snug">
-                      Nothing bought in the last 120 days, so there is no cost
-                      history to compare against.
+                    <p className="text-[13px] text-content/85 leading-snug mt-1.5">
+                      Nothing bought in the last {COST_HISTORY_DAYS} days, so
+                      there is no cost history to compare against.
                     </p>
                   )}
 
                   {detail?.cost_summary && (
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-3 gap-2 mt-2">
                       <div className="rounded-md bg-bkg px-2.5 py-2">
-                        <div className="text-[11px] font-semibold uppercase text-content/85">
+                        <div className="text-[11px] text-content/85">
                           Paying now
                         </div>
-                        <div className="text-[15px] font-semibold text-content tabular-nums">
+                        <div className="text-[14.5px] font-semibold text-content tabular-nums">
                           {money(detail.cost_summary.paying_now)}
                         </div>
                       </div>
-                      <div className="rounded-md bg-severity_healthy_bg px-2.5 py-2">
-                        <div className="text-[11px] font-semibold uppercase text-severity_healthy_text">
-                          Best seen
+                      <div className="rounded-md bg-bkg px-2.5 py-2">
+                        <div className="text-[11px] text-content/85 truncate">
+                          Best seen &middot;{" "}
+                          {dayText(detail.cost_summary.best_seen_on)}
                         </div>
-                        <div className="text-[15px] font-semibold text-severity_healthy_text tabular-nums">
+                        <div className="text-[14.5px] font-semibold text-content tabular-nums">
                           {money(detail.cost_summary.best_seen)}
                         </div>
                       </div>
-                      <div className="rounded-md bg-severity_watch_bg px-2.5 py-2">
-                        <div className="text-[11px] font-semibold uppercase text-severity_watch_text">
-                          Waiting worth
+                      {/* Amber only when waiting is worth something: a nought
+                          in a warning tint reads as a problem that is not
+                          there. */}
+                      <div
+                        className={`rounded-md px-2.5 py-2 ${
+                          detail.cost_summary.gap > 0.0001
+                            ? "bg-severity_watch_bg"
+                            : "bg-bkg"
+                        }`}
+                      >
+                        <div
+                          className={`text-[11px] truncate ${
+                            detail.cost_summary.gap > 0.0001
+                              ? "text-severity_watch_text"
+                              : "text-content/85"
+                          }`}
+                        >
+                          {detail.cost_summary.gap > 0.0001
+                            ? "Waiting could save"
+                            : "At the best price seen"}
                         </div>
-                        <div className="text-[15px] font-semibold text-severity_watch_text tabular-nums">
+                        <div
+                          className={`text-[14.5px] font-semibold tabular-nums ${
+                            detail.cost_summary.gap > 0.0001
+                              ? "text-severity_watch_text"
+                              : "text-content"
+                          }`}
+                        >
                           {money(detail.cost_summary.gap)}
                         </div>
                       </div>
                     </div>
                   )}
-                </Section>
+                </div>
 
-                {/* The invoices */}
-                {detail && detail.cost_history.length > 0 && (
-                  <Section
-                    id="paid"
-                    label="What you have paid"
-                    note={`${detail.cost_history.length} invoice${detail.cost_history.length === 1 ? "" : "s"}`}
-                  >
-                    <div className="grid grid-cols-[86px_1fr_68px_68px] gap-2 pb-1 border-b border-brand_navy/15 text-[11px] font-semibold uppercase tracking-wide text-content/85">
-                      <span>Invoice</span>
-                      <span>Vendor</span>
-                      <span className="text-right">List</span>
-                      <span className="text-right">Paid</span>
-                    </div>
-                    {[...detail.cost_history].reverse().map((h) => (
+                {/* 3 — is any of this new. An item that has sat at #40 all
+                    year is a different conversation from one that arrived
+                    this week, and that has to be said before anybody reads
+                    the margin above. */}
+                <div className="px-4 py-2.5 border-b border-gray-100">
+                  <div className="text-[14px] font-bold text-content leading-snug">
+                    {history.says}
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2 mt-2">
+                    {(
+                      [
+                        ["Last year", history.ly],
+                        ["Last week", history.lw],
+                        ["This week", history.ty],
+                      ] as const
+                    ).map(([label, at], i) => (
                       <div
-                        key={h.invoice_date}
-                        className="grid grid-cols-[86px_1fr_68px_68px] gap-2 items-center py-1 border-b border-brand_navy/15 text-[11.5px] text-content even:bg-row_stripe"
+                        key={label}
+                        className={`rounded-md px-2.5 py-2 ${i === 2 ? "bg-row_selected border border-row_selected_border" : "bg-bkg"}`}
                       >
-                        <span className="tabular-nums">
-                          {dayText(h.invoice_date)}
-                        </span>
-                        <span className="truncate text-content/85">
-                          {h.vendor_name ?? "—"}
-                        </span>
-                        <span className="text-right tabular-nums text-content/85">
-                          {money(h.list_unit)}
-                        </span>
-                        {/* Green is the allowance. The endpoint returns it as its
-                          own field, but it IS list minus paid, so a third
-                          column would say the same thing twice. */}
+                        <div className="text-[11px] text-content/85">
+                          {label}
+                        </div>
+                        <div className="text-[13.5px] font-semibold text-content tabular-nums">
+                          {at === null ? "not in top 200" : `#${at}`}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="grid grid-cols-[1fr_84px_62px_62px] gap-1.5 mt-2.5 pb-1 text-[10px] font-bold uppercase tracking-wide text-content/85">
+                    <span />
+                    <span className="text-right">This week</span>
+                    <span className="text-right">vs LW</span>
+                    <span className="text-right">vs LY</span>
+                  </div>
+                  {metricRows.map((m) => (
+                    <div
+                      key={m.label}
+                      className="grid grid-cols-[1fr_84px_62px_62px] gap-1.5 items-center py-1.5 border-t border-gray-100 text-[13px]"
+                    >
+                      <span className="text-content truncate">{m.label}</span>
+                      <span className="text-[13px] font-semibold text-content text-right tabular-nums">
+                        {m.ty}
+                      </span>
+                      <span className="text-[13px] font-semibold text-content text-right tabular-nums">
+                        {m.lw}
+                      </span>
+                      <span className="text-[13px] font-semibold text-content text-right tabular-nums">
+                        {m.ly}
+                      </span>
+                    </div>
+                  ))}
+
+                  {/* The gap, named. Deliveries are a different endpoint and
+                      this tab does not call it; saying so beats a bar that
+                      cannot be drawn. */}
+                  <p className="text-[13px] text-content/85 mt-1.5 leading-snug">
+                    What arrived this week is not read here &mdash; the
+                    department investigation reads ordering against sales.
+                  </p>
+                </div>
+
+                {/* 4 — should it be on display. Three readings it can make
+                    and one it cannot. */}
+                <div className="px-4 py-2.5">
+                  <div
+                    className={`text-[14px] font-bold leading-snug ${
+                      display.worth
+                        ? "text-severity_healthy_text"
+                        : "text-severity_critical_text"
+                    }`}
+                  >
+                    {display.says}
+                  </div>
+                  <div className="mt-1.5">
+                    {display.checks.map((c) => (
+                      <div
+                        key={c.label}
+                        className="flex items-center gap-2.5 py-1.5 border-b border-gray-100 last:border-b-0 text-[13.5px]"
+                      >
                         <span
-                          className={`text-right tabular-nums font-semibold ${
-                            h.allowance > 0.0001
-                              ? "text-severity_healthy_text"
-                              : "text-content"
+                          className={`w-[18px] h-[18px] rounded-full flex-shrink-0 flex items-center justify-center text-[11px] font-bold ${
+                            c.state === "pass"
+                              ? "bg-severity_healthy_bg text-severity_healthy_text"
+                              : c.state === "fail"
+                                ? "bg-severity_critical_bg text-severity_critical_text"
+                                : "bg-gray-100 text-content/85"
                           }`}
-                          title={
-                            h.allowance > 0.0001
-                              ? `${money(h.allowance)} allowance`
-                              : undefined
-                          }
+                          aria-hidden="true"
                         >
-                          {money(h.paid_unit)}
+                          {c.state === "pass"
+                            ? "\u2713"
+                            : c.state === "fail"
+                              ? "\u2715"
+                              : "?"}
+                        </span>
+                        <span className="min-w-0 flex-1 truncate text-content">
+                          {c.label}
+                        </span>
+                        <span className="flex-shrink-0 font-semibold text-content tabular-nums">
+                          {c.detail}
                         </span>
                       </div>
                     ))}
-                    <p className="text-[11px] text-content/85 mt-1.5 leading-snug">
-                      Green is an allowance — paid under list. Cost reaches back
-                      further than the sales week on purpose: a week cannot say
-                      whether today&rsquo;s price is a good one.
-                    </p>
-                  </Section>
+                  </div>
+                  <p className="text-[13px] text-content/85 mt-1.5 leading-snug">
+                    Nothing here says what is on display today &mdash; that one
+                    needs a look in the store.
+                  </p>
+                </div>
+
+                {/* The way into the invoices. They were a folded section
+                    under the cost cards; seventeen rows of a weekly-delivered
+                    item pushed everything above them off the panel, and the
+                    reader opening it is asking a different question from the
+                    one the panel answers. */}
+                {detail && detail.cost_history.length > 0 && (
+                  <button
+                    onClick={() => setInvoicesOpen(true)}
+                    className="flex items-center gap-2 w-full mx-4 mb-3 px-3 py-2 rounded-md border border-brand_navy/15 bg-custom-white hover:bg-gray-50 transition-colors text-left"
+                    style={{ width: "calc(100% - 2rem)" }}
+                  >
+                    <DocumentTextIcon className="w-4 h-4 flex-shrink-0 text-content/85" />
+                    <span className="text-[12.5px] font-semibold text-content">
+                      Invoices
+                    </span>
+                    <span className="text-[11.5px] text-content/85 truncate">
+                      {detail.cost_history.length} deliver
+                      {detail.cost_history.length === 1 ? "y" : "ies"} ·{" "}
+                      {dayText(
+                        detail.cost_history[detail.cost_history.length - 1]
+                          ?.invoice_date,
+                      )}{" "}
+                      most recent
+                    </span>
+                    <span className="flex-1" />
+                    <ChevronRightIcon className="w-4 h-4 flex-shrink-0 text-content/85" />
+                  </button>
                 )}
               </div>
             </>
           )}
+
+          {/* The invoices, over the panel rather than inside it.
+              Mounted whether or not it is open, so it slides instead of
+              appearing -- and inert while closed, so tabbing cannot land in
+              a panel nobody can see. */}
+          <div
+            aria-hidden={!invoicesOpen}
+            className={`absolute inset-y-0 right-0 w-full z-30 flex flex-col bg-custom-white border-l-2 border-brand_navy/25 shadow-rail transition-transform duration-200 ease-out motion-reduce:transition-none ${
+              invoicesOpen ? "translate-x-0" : "translate-x-full"
+            }`}
+          >
+            <button
+              onClick={() => setInvoicesOpen(false)}
+              tabIndex={invoicesOpen ? 0 : -1}
+              className="flex-shrink-0 flex items-center gap-2 px-3 py-2 border-b border-brand_navy/15 bg-gray-50 hover:bg-gray-100 transition-colors text-left"
+            >
+              <ChevronLeftIcon className="w-4 h-4 flex-shrink-0 text-content/85" />
+              <span className="text-[12.5px] font-semibold text-content">
+                Invoices
+              </span>
+              <span className="text-[11.5px] text-content/85 truncate">
+                {selected?.ty.product_description}
+              </span>
+              <span className="flex-1" />
+              <span className="text-[11.5px] font-semibold text-content/85">
+                {detail?.cost_history.length ?? 0}
+              </span>
+            </button>
+
+            {/* Its own scroll: sixty days of a weekly-delivered item is
+                seventeen rows, which is what drove the cost window down from
+                120 days in the first place. */}
+            <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar px-3 py-2">
+              <div className="grid grid-cols-[78px_1fr_54px_62px_62px] gap-2 pb-1 border-b border-brand_navy/15 text-[11px] font-semibold uppercase tracking-wide text-content/85">
+                <span>Invoice</span>
+                <span>Vendor</span>
+                {/* Cases, because that is the unit the invoice is written in.
+                    It is NOT units sold: converting one to the other needs a
+                    case size this endpoint does not return, and a number that
+                    looks comparable but is not would be worse than none. */}
+                <span className="text-right">Cases</span>
+                <span className="text-right">List</span>
+                <span className="text-right">Paid</span>
+              </div>
+              {[...(detail?.cost_history ?? [])].reverse().map((h) => (
+                <div
+                  key={h.invoice_date}
+                  className="grid grid-cols-[78px_1fr_54px_62px_62px] gap-2 items-center py-1 border-b border-brand_navy/15 text-[12px] text-content even:bg-row_stripe"
+                >
+                  <span className="tabular-nums">
+                    {dayText(h.invoice_date)}
+                  </span>
+                  <span className="truncate text-content/85">
+                    {h.vendor_name ?? "—"}
+                  </span>
+                  <span className="text-right tabular-nums text-content/85">
+                    {h.cases > 0 ? h.cases.toLocaleString() : "—"}
+                  </span>
+                  <span className="text-right tabular-nums text-content/85">
+                    {money(h.list_unit)}
+                  </span>
+                  {/* Green is the allowance. The endpoint returns it as its
+                          own field, but it IS list minus paid, so a third
+                          column would say the same thing twice. */}
+                  <span
+                    className={`text-right tabular-nums font-semibold ${
+                      h.allowance > 0.0001
+                        ? "text-severity_healthy_text"
+                        : "text-content"
+                    }`}
+                    title={
+                      h.allowance > 0.0001
+                        ? `${money(h.allowance)} allowance`
+                        : undefined
+                    }
+                  >
+                    {money(h.paid_unit)}
+                  </span>
+                </div>
+              ))}
+              <p className="text-[13px] text-content/85 mt-1.5 leading-snug">
+                Green is an allowance — paid under list. Cost reaches back
+                further than the sales week on purpose: a week cannot say
+                whether today&rsquo;s price is a good one.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </div>

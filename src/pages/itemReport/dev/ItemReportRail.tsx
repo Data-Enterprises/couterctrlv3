@@ -6,7 +6,7 @@ import {
   toggleItemReportSection,
 } from "../../../features/dev/devItemReportSlice";
 import { ChevronDownIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
-import ComingSoonHelp from "../../../components-dev/ComingSoonHelp";
+import PageInfoButton from "../../../components-dev/PageInfoButton";
 import { formatCurrency2, formatDateSimple } from "../../../utils";
 import { formatPct, pillClass } from "../../../utils/severity";
 import { actualPricePoints, unitPrice } from "../../../utils/pricePoints";
@@ -15,6 +15,7 @@ import {
   ACTION_LABEL,
   buildPriceEras,
   daysSince,
+  deliveryGap,
   type ActionKind,
   type ReportItem,
 } from "./itemReportMetrics";
@@ -493,16 +494,10 @@ const ItemReportRail = ({
    * says that better than a dozen unlabelled annotations down the rows, each of
    * which needed explaining.
    */
-  const avgGap = useMemo(() => {
-    if (receipts.length < 2) return null;
-    const day = (d: string) =>
-      new Date(`${d.split("T")[0]}T12:00:00`).getTime() / 86400000;
-    // Newest first, so each gap is this delivery less the one before it.
-    let total = 0;
-    for (let i = 0; i < receipts.length - 1; i++)
-      total += day(receipts[i].date) - day(receipts[i + 1].date);
-    return Math.max(1, Math.round(total / (receipts.length - 1)));
-  }, [receipts]);
+  // From the metrics, not computed here: the verdict now holds an item to this
+  // same interval before zero sales count against it, and a second copy of the
+  // arithmetic would have drifted the first time either side changed.
+  const avgGap = useMemo(() => deliveryGap(receipts), [receipts]);
 
   if (!item) {
     return (
@@ -550,7 +545,7 @@ const ItemReportRail = ({
               things the left panel's "?" was explaining from across the page,
               or not at all. */}
           <div className="relative flex-shrink-0">
-            <ComingSoonHelp />
+            <PageInfoButton page="item-actions" />
           </div>
         </div>
 
@@ -568,6 +563,7 @@ const ItemReportRail = ({
             behind it, and on a Reprice that runs to three lines. */}
         {action && evidence && (
           <div
+            data-help="verdict"
             className={`relative flex-shrink-0 border-b border-brand_navy/15 ${ACTION_TONE[action].row}`}
           >
             <button
@@ -623,7 +619,7 @@ const ItemReportRail = ({
                 : // Reads as a sentence rather than two abbreviations: "every
                   // 8" had no unit at all, and "16d ago" never said ago from
                   // what. The second figure inherits "days" from the first.
-                  `Last received ${lastDays} days ago${
+                  `Last received ${lastDays === 0 ? "today" : `${lastDays} day${lastDays === 1 ? "" : "s"} ago`}${
                     avgGap === null ? "" : ` · usually every ${avgGap}`
                   }`
             }
@@ -667,7 +663,15 @@ const ItemReportRail = ({
                               // exist.
                               text: `${open ? "▾" : adjusted ? "•" : "›"} ${formatDateSimple(r.date)}`,
                             },
-                            { text: String(r.sellingUnits) },
+                            // Cases beside units: Receivers shows the
+                            // invoice in cases (56), this showed units (224),
+                            // and nothing joined the two (finding R).
+                            {
+                              text:
+                                r.cases > 0
+                                  ? `${r.sellingUnits} · ${r.cases}cs`
+                                  : String(r.sellingUnits),
+                            },
                             { text: formatCurrency2(r.unitCost) },
                             {
                               text:

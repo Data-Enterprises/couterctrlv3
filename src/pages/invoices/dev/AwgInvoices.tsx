@@ -356,7 +356,7 @@ const AwgInvoices = () => {
           leaves the card's full-page centring to stretch the result. */}
       {readOpen && (
         <div
-          className="fixed inset-0 z-[5000] flex items-center justify-center bg-black/35 p-4"
+          className="fixed inset-0 z-[5000] flex items-center justify-center backdrop-blur-sm p-4"
           onMouseDown={() => setReadOpen(false)}
         >
           <div

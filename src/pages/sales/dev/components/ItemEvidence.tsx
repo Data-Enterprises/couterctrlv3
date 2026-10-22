@@ -326,11 +326,9 @@ const Timeline = ({
 const PriceChart = ({
   points,
   weighed,
-  rate,
 }: {
   points: PricePoint[];
   weighed: boolean;
-  rate: number | null;
 }) => {
   if (points.length < 2) return null;
 
@@ -338,7 +336,7 @@ const PriceChart = ({
      derived the same way the rows are — a bar counting rings would say four
      packages were four of something, when one of them was three times another. */
   const amount = (pt: PricePoint) =>
-    weighed ? (poundsAt(pt.netSales, rate) ?? pt.units) : pt.units;
+    weighed ? (pt.weight > 0 ? pt.weight : pt.units) : pt.units;
 
   const bins = new Map<number, number>();
   for (const p of points) {
@@ -421,40 +419,22 @@ const PriceChart = ({
 };
 
 /**
- * The pounds behind one price point.
- *
- * The price-points endpoint carries no weight column, so this is derived:
- * the money that rang at this price, over what the item took per pound across
- * the week. On a scale item that is the figure the reader is actually after —
- * $9.59 of sirloin is a package, and the question is how much sirloin.
- *
- * Exact while the shelf rate held, which is the normal case. It drifts in
- * proportion to a mid-week price change, and the per-pound rate it divides by
- * is printed above the ladder so the arithmetic is in view rather than hidden.
- *
- * Null when the rate is unknowable — a store that rang none of it has no rate
- * to divide by, and a guess there would be a number with nothing behind it.
- */
-const poundsAt = (netSales: number, ratePerUnit: number | null) =>
-  ratePerUnit === null || ratePerUnit <= 0 ? null : netSales / ratePerUnit;
-
-/**
  * What one basket carried away at this price.
  *
  * Pounds over baskets on a scale item, units over baskets otherwise. Falls
  * back to the endpoint's own figure when there is no rate, which is the same
  * thing for an item sold by the each.
  */
-const perBasket = (p: PricePoint, weighed: boolean, rate: number | null) => {
+const perBasket = (p: PricePoint, weighed: boolean) => {
   if (!weighed) return p.unitsPerBasket;
-  const lb = poundsAt(p.netSales, rate);
+  const lb = p.weight > 0 ? p.weight : null;
   if (lb === null || p.transactions <= 0) return p.unitsPerBasket;
   return lb / p.transactions;
 };
 
-/** "12.47 lb", or the ring count when there is no rate to divide by. */
-const weightLabel = (p: PricePoint, rate: number | null) => {
-  const lb = poundsAt(p.netSales, rate);
+/** "12.47 lb", or the ring count on a line that came back with no weight. */
+const weightLabel = (p: PricePoint) => {
+  const lb = p.weight > 0 ? p.weight : null;
   if (lb === null)
     return `${count(p.units)} ${p.units === 1 ? "ring" : "rings"}`;
   return `${lb.toLocaleString(undefined, {
@@ -464,22 +444,19 @@ const weightLabel = (p: PricePoint, rate: number | null) => {
 };
 
 /** One price, and what went out at it. */
-const Rung = ({
-  p,
-  weighed,
-  rate,
-}: {
-  p: PricePoint;
-  weighed: boolean;
-  /** What the item took per pound this week, for deriving the weight. */
-  rate: number | null;
-}) => (
+const Rung = ({ p, weighed }: { p: PricePoint; weighed: boolean }) => (
   <div className="flex items-baseline gap-2.5 py-1.5 border-b border-brand_navy/15 last:border-b-0">
-    <span className="w-[62px] flex-shrink-0 text-[15px] font-bold tabular-nums text-content">
+    {/* Per pound on a scale item, which is what the shelf says. It used to
+        be sales divided by scans -- the price of an average package, which
+        nobody ever paid and which moved with the size of the packages. */}
+    <span className="w-[78px] flex-shrink-0 text-[15px] font-bold tabular-nums text-content">
       {money(p.price)}
+      {weighed && (
+        <span className="text-[11px] font-semibold text-content/85">/lb</span>
+      )}
     </span>
     <span className="min-w-0 flex-1 text-[12px] text-content/85 tabular-nums truncate">
-      {weighed ? weightLabel(p, rate) : `${count(p.units)} qty`} · {p.days}d ·{" "}
+      {weighed ? weightLabel(p) : `${count(p.units)} qty`} · {p.days}d ·{" "}
       {count(p.transactions)} baskets
     </span>
     {/*
@@ -497,14 +474,14 @@ const Rung = ({
           : "Average units of this item in a basket that carried it, at this price"
       }
       className={`flex-shrink-0 text-right text-[12px] tabular-nums ${
-        (perBasket(p, weighed, rate) ?? 0) >= 1.5
+        (perBasket(p, weighed) ?? 0) >= 1.5
           ? "font-bold text-delta_positive_text"
           : "text-content/85"
       }`}
     >
-      {perBasket(p, weighed, rate) === null
+      {perBasket(p, weighed) === null
         ? "—"
-        : `avg ${(perBasket(p, weighed, rate) as number).toFixed(2)} ${
+        : `avg ${(perBasket(p, weighed) as number).toFixed(2)} ${
             weighed ? "lb" : "qty"
           } per basket`}
     </span>
@@ -518,13 +495,10 @@ const Ladder = ({
   ladder,
   label,
   mine,
-  rate,
 }: {
   ladder: PriceLadder;
   label: string;
   mine: boolean;
-  /** This store's take per pound across the week. Null when it rang none. */
-  rate: number | null;
 }) => {
   const [all, setAll] = useState(false);
 
@@ -557,7 +531,7 @@ const Ladder = ({
   /* Biggest first, by what the rows actually print: on a scale item the
      price that moved the most POUNDS leads, not the one scanned most often. */
   const weightOf = (pt: PricePoint) =>
-    ladder.weighted ? (poundsAt(pt.netSales, rate) ?? pt.units) : pt.units;
+    ladder.weighted ? (pt.weight > 0 ? pt.weight : pt.units) : pt.units;
   const byUnits = [...ladder.points].sort((x, y) => weightOf(y) - weightOf(x));
   const shown = all ? byUnits : byUnits.slice(0, LADDER_SHOWN);
   const says = ladderSays(ladder);
@@ -595,16 +569,12 @@ const Ladder = ({
       )}
 
       <div className="mt-2">
-        <PriceChart
-          points={ladder.points}
-          weighed={ladder.weighted}
-          rate={rate}
-        />
+        <PriceChart points={ladder.points} weighed={ladder.weighted} />
       </div>
 
       <div className="mt-1">
         {shown.map((p) => (
-          <Rung key={p.price} p={p} weighed={ladder.weighted} rate={rate} />
+          <Rung key={p.price} p={p} weighed={ladder.weighted} />
         ))}
       </div>
 
@@ -691,13 +661,6 @@ const ItemEvidence = ({
      divides money by scan count, which is 1 on a scale item, so each "price"
      is what one package totalled. The flag stops the ladder claiming
      otherwise and stops every scale item flagging a promotion. */
-  /* Money over pounds, each store's own. `mineSales` rather than `mineTy`
-     because the page's Qty mode makes `mineTy` a unit count, and a rate of
-     pounds per pound is not a rate. */
-  const mineRate = item.mineUnits > 0 ? item.mineSales / item.mineUnits : null;
-  const theirsRate =
-    item.theirsUnits > 0 ? item.theirsSales / item.theirsUnits : null;
-
   const mineLadder = ladderFor(minePoints, code, undefined, item.weighted);
   const theirLadder = ladderFor(theirsPoints, code, undefined, item.weighted);
 
@@ -839,17 +802,11 @@ const ItemEvidence = ({
               panel for a chart, a ladder and a sentence, and the store
               that rang nothing still took its half to say so. */}
           <div className="flex flex-col gap-3">
-            <Ladder
-              ladder={mineLadder}
-              label={openStoreName}
-              mine
-              rate={mineRate}
-            />
+            <Ladder ladder={mineLadder} label={openStoreName} mine />
             <Ladder
               ladder={theirLadder}
               label={compareStoreName}
               mine={false}
-              rate={theirsRate}
             />
           </div>
         </Fold>

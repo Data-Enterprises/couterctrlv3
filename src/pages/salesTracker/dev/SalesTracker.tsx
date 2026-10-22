@@ -97,21 +97,27 @@ const SalesTracker = () => {
   const searchValue = isGroup ? search.lastGroup : search.lastStore;
 
   /**
-   * EXPERIMENT, PARKED. `subs/sales_tracker` instead of two paged
-   * `subs/sub_sales` reads.
+   * `subs/sales_tracker` instead of two paged `subs/sub_sales` reads.
    *
-   * Off outright rather than gated on `apiEnv`, because the endpoint is not on
-   * the API yet — on dev it would 404, and the API toggle is reachable by
-   * anyone at level 7. A hard `false` means the branch is publish-safe no
-   * matter which backend is selected.
+   * On for dev, because that is where the endpoint is. It is not on prod yet,
+   * and the API toggle is reachable by anyone at level 7, so gating on the
+   * selected backend — not on a hard `true` — is what keeps the branch
+   * publish-safe: a prod session takes the `fetchSubSales` path and never asks
+   * for a route that would 404.
    *
-   * To resume the comparison, change this to `context.apiEnv === "dev"`. The
-   * measurements it produced: 5 stores over 12 weeks went from ~52s across two
-   * paged reads to ~7s across 12 pooled requests, on the same ~1.15MB — the
-   * cost was query time, never payload. Delete the flag and the `fetchSubSales`
-   * path once the endpoint ships for good.
+   * The two paths agree. Same `total_sales` and `net_sales` expressions, same
+   * sale_type allow-list, `void_flag`, ring filter, dept-transfer and
+   * untendered-modified rules, same company-4 weight scaling and coupon
+   * re-pointing; `transaction_count` is a per-basket `COUNT(*)` against
+   * `get_sub_sales`'s `COUNT(DISTINCT ...)` over the same dimensions. Of the
+   * six fields this page reads, none differs.
+   *
+   * What it buys: 5 stores over 12 weeks went from ~52s across two paged reads
+   * to ~7s across 12 pooled requests, on the same ~1.15MB — the cost was query
+   * time, never payload. Drop the flag and the `fetchSubSales` path once the
+   * endpoint is on prod too.
    */
-  const useTrackerEndpoint = false;
+  const useTrackerEndpoint = context.apiEnv === "dev";
   const scope = {
     url: context.url,
     token: context.token,
@@ -445,7 +451,10 @@ const SalesTracker = () => {
                 the totals row at the foot of this list and the KPI strip on the
                 right — three copies of one answer. The totals row is the one
                 that foots its own columns, so it is the one that survives. */}
-            <div className="flex items-center justify-between gap-3 px-4 py-2 bg-custom-white border-x border-gray-100">
+            <div
+              data-help="sub-filter"
+              className="flex items-center justify-between gap-3 px-4 py-2 bg-custom-white border-x border-gray-100"
+            >
               <span className="text-[11px] font-medium text-content">
                 {sort === null
                   ? `Ranked by size of change vs ${basisWord(basis)}`
@@ -465,6 +474,7 @@ const SalesTracker = () => {
                 right-aligned figure out of line with the header above it. */}
             <div className="flex-1 overflow-y-auto thin-scrollbar bg-custom-white rounded-b-xl shadow-sm border border-t-0 border-gray-100">
               <div
+                data-help="columns"
                 className="grid items-center gap-3.5 px-4 py-2 border-b border-gray-100 sticky top-0 z-10 bg-custom-white"
                 style={{ gridTemplateColumns: SUB_GRID }}
               >
@@ -560,7 +570,7 @@ const SalesTracker = () => {
             </div>
           </div>
 
-          <div className="flex-1 min-w-0 shadow-lg">
+          <div data-help="weeks" className="flex-1 min-w-0 shadow-lg">
             {(selectedRow ?? groupTotal) !== null ? (
               <TrackerDetail
                 row={(selectedRow ?? groupTotal) as SubDeptTotal}
@@ -579,7 +589,7 @@ const SalesTracker = () => {
 
       {searchModalOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
           onClick={() => setSearchModalOpen(false)}
         >
           <div

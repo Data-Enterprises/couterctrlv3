@@ -1,3 +1,4 @@
+import { roles } from "../../constants";
 import { useMemo } from "react";
 import { InformationCircleIcon } from "@heroicons/react/20/solid";
 import type { CompanyBaseGroup, Store } from "../../../../../interfaces";
@@ -6,8 +7,7 @@ import {
   effectiveStores,
   modeOf,
   picksInGroup,
-  type AccessPicks,
-} from "../access/accessSets";
+  type AccessPicks, heldGroupIds } from "../access/accessSets";
 import GrantModeChip from "../access/GrantModeChip";
 import type { WizardStep } from "./wizardSteps";
 
@@ -63,12 +63,12 @@ const StepReview = ({
     [picks, groupStores],
   );
 
-  const autoGroups = picks.baseGroups.filter(
-    (id) => modeOf(picks, id) === "all",
-  );
-  const fixedGroups = picks.baseGroups.filter(
-    (id) => modeOf(picks, id) !== "all",
-  );
+  // What Create saves: ticked groups plus any a ticked store implies. The
+  // review counted ticked groups only, so a store picked inside an unticked
+  // group read "No base groups" here while it would have been saved (AK).
+  const held = heldGroupIds(picks);
+  const autoGroups = held.filter((id) => modeOf(picks, id) === "all");
+  const fixedGroups = held.filter((id) => modeOf(picks, id) !== "all");
 
   /** True while any auto group's roster is still arriving — the count below
    *  would read low, and reading low is worse than reading "…". */
@@ -77,7 +77,12 @@ const StepReview = ({
   const name = `${info.first_name} ${info.last_name}`.trim() || info.username;
   const initials =
     `${info.first_name?.charAt(0) ?? ""}${info.last_name?.charAt(0) ?? ""}`.toUpperCase();
-  const roleLevel = [info.role, ctx.userLevels.find((l) => l.id === info.user_level)?.name]
+  // `role` is stored as its option value ("1"), so the review showed
+  // "1 · Basic User". Read it back through the same list the picker offers
+  // (finding AL).
+  const roleName =
+    roles.find((r) => r.value === String(info.role))?.label ?? info.role;
+  const roleLevel = [roleName, ctx.userLevels.find((l) => l.id === info.user_level)?.name]
     .filter(Boolean)
     .join(" · ");
 
@@ -132,9 +137,9 @@ const StepReview = ({
         <Section
           title="Access type"
           onEdit={() => onGoTo("type")}
-          empty={picks.baseGroups.length === 0 ? "Nothing picked yet" : null}
+          empty={held.length === 0 ? "Nothing picked yet" : null}
         >
-          {picks.baseGroups.length > 0 && (
+          {held.length > 0 && (
             <Row
               value={autoGroups.length > 0 ? "By group" : "By store"}
               meta={
@@ -151,12 +156,12 @@ const StepReview = ({
           title="Base groups"
           onEdit={() => onGoTo("assignments")}
           empty={
-            picks.baseGroups.length === 0
+            held.length === 0
               ? "No base groups. This person will not see any stores."
               : null
           }
         >
-          {picks.baseGroups.map((id) => {
+          {held.map((id) => {
             const group = groupsById[id];
             const mode = modeOf(picks, id);
             const total = groupStores[id]?.length;

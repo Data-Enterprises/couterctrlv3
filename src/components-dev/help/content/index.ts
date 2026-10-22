@@ -6,13 +6,20 @@ import { CATEGORIES_HELP } from "./categories";
 import { COUPON_SALES_HELP } from "./couponSales";
 import { COUPONS_HELP } from "./coupons";
 import { FORECASTING_HELP } from "./forecasting";
+import { HELP_DESK_HELP } from "./helpDesk";
+import { ITEM_ACTIONS_HELP } from "./itemActions";
 import { ITEM_LOOKUP_HELP } from "./itemLookup";
 import { LOSS_PREVENTION_HELP } from "./lossPrevention";
 import { ORDERS_HELP } from "./orders";
+import {
+  PRICE_OPT_SUB_DEPT_HELP,
+  PRICE_OPT_VENDOR_HELP,
+} from "./priceOpt";
 import { RECEIVERS_HELP } from "./receivers";
 import { SALES_HELP } from "./sales";
 import { SALES_EXPORT_HELP } from "./salesExport";
 import { SALES_INVESTIGATE_HELP } from "./salesInvestigate";
+import { SALES_TRACKER_HELP } from "./salesTracker";
 import { STORE_GROUPS_HELP } from "./storeGroups";
 import { SUB_DEPT_MARGINS_HELP } from "./subDeptMargins";
 import { UPC_LIST_HELP } from "./upcList";
@@ -38,13 +45,18 @@ export const HELP_CONTENT: Record<HelpPage, HelpContent> = {
   "coupon-sales": COUPON_SALES_HELP,
   coupons: COUPONS_HELP,
   forecasting: FORECASTING_HELP,
+  "help-desk": HELP_DESK_HELP,
+  "item-actions": ITEM_ACTIONS_HELP,
   "item-lookup": ITEM_LOOKUP_HELP,
   "loss-prevention": LOSS_PREVENTION_HELP,
   orders: ORDERS_HELP,
+  "price-opt-sub-dept": PRICE_OPT_SUB_DEPT_HELP,
+  "price-opt-vendor": PRICE_OPT_VENDOR_HELP,
   receivers: RECEIVERS_HELP,
   sales: SALES_HELP,
   "sales-export": SALES_EXPORT_HELP,
   "sales-investigate": SALES_INVESTIGATE_HELP,
+  "sales-tracker": SALES_TRACKER_HELP,
   "store-groups": STORE_GROUPS_HELP,
   "sub-dept-margins": SUB_DEPT_MARGINS_HELP,
   "upc-list": UPC_LIST_HELP,

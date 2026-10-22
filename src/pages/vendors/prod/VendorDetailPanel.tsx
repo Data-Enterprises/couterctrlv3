@@ -1,3 +1,4 @@
+import { applyStoreNumberToName } from "../../../utils/storeIdentity";
 import { useMemo, useState } from "react";
 import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
 import {
@@ -30,7 +31,7 @@ import {
   VENDOR_THRESHOLD_DEFAULT,
   VENDOR_ITEM_THRESHOLD_DEFAULT,
 } from "../../../features/vendorsSlice";
-import { getVendorTier, rowsForVendor, marginPct } from "./vendorsUtils";
+import { getVendorTier, rowsForVendor, marginPct, scopePeriods } from "./vendorsUtils";
 
 /** Ungraded has no severity colour of its own, so the header falls back to the
  *  navy every other panel uses rather than borrowing a verdict colour. */
@@ -92,13 +93,27 @@ const VendorDetailPanel = () => {
   // navigates somewhere the nav says does not exist is worse than no button.
   const {
     rows,
-    raw,
+    raw: rawAll,
     metric,
     threshold,
     selectedVendor,
     selectedDay,
     itemThreshold,
   } = vend;
+
+  /**
+   * Everything below reads one location.
+   *
+   * `subs/subs` is fetched by storeid and a few storeids cover two physical
+   * stores, so the response holds both. The list panel's tabs choose which
+   * one, and the item rows, the day strip and the export have to follow the
+   * same choice or the right-hand panel describes a different store from the
+   * row that was clicked.
+   */
+  const raw = useMemo(
+    () => scopePeriods(rawAll, vend.selectedStoreNumber),
+    [rawAll, vend.selectedStoreNumber],
+  );
 
   const [exportOpen, setExportOpen] = useState(false);
 
@@ -253,7 +268,15 @@ const VendorDetailPanel = () => {
       {exportOpen && (
         <VendorExportModal
           onClose={() => setExportOpen(false)}
-          storeName={vend.storeName}
+          storeName={
+            vend.selectedStoreNumber
+              ? applyStoreNumberToName(
+                  vend.storeName,
+                  vend.selectedStoreNumber,
+                  vend.availableStoreNumbers,
+                )
+              : vend.storeName
+          }
           vendorName={row.vendorName}
           dateRange={fmtRangeLabel(vend.twStart, vend.twEnd)}
           rows={rows}

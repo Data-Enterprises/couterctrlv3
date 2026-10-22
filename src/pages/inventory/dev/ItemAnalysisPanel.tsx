@@ -1,3 +1,4 @@
+import { netOf } from "../../../utils/perfPairs";
 import { useMemo } from "react";
 import {
   ExclamationTriangleIcon,
@@ -7,22 +8,29 @@ import {
 import { formatCurrency2 } from "../../../utils";
 import {
   estimatedPricePoints,
-  actualPricePoints,
+  pricePointsFromServer,
+  linesAtPrice,
   mixedPriceInsight,
   classifyPattern,
   suggestPrice,
+  suggestionWithheld,
+  type ActualPricePoint,
 } from "../../../utils/pricePoints";
 import ActualPriceRow, { ACT_COLS } from "./ActualPriceRow";
 import { itemCostStats, type ProductSummary } from "./inventoryData";
 import type { ActualFetchState } from "../../../hooks/useActualPricePoints";
+import type { PricePointsState } from "./usePricePoints";
+import { resolveUnitCost } from "./invoiceCost";
+import type { InvoiceCostState } from "./useInvoiceCost";
 
 /**
  * One item, read two ways — and only one of them gets a vote.
  *
  * Estimated on the left from daily roll-ups already in hand, actual on the
- * right from register lines fetched behind it. The two tables share their first
- * two columns so a reader's eye can run across, and the gap between them is the
- * finding: a price on the left with no counterpart on the right never existed.
+ * right from `cashiers/price_points`, which buckets every receipt line on the
+ * server. The two tables share their first two columns so a reader's eye can
+ * run across, and the gap between them is the finding: a price on the left
+ * with no counterpart on the right never existed.
  *
  * The suggestion reads the **actual** side only. Estimated divides a day's
  * dollars by a day's units, so nineteen rings at $13.99 and one at $12.99
@@ -39,47 +47,95 @@ import type { ActualFetchState } from "../../../hooks/useActualPricePoints";
 
 interface Props {
   product: ProductSummary;
-  actual: ActualFetchState;
+  /** The price table, for whichever item `prices.upc` names. */
+  prices: PricePointsState;
+  /** The item's receipt lines, read only once a price is opened. */
+  receipts: ActualFetchState;
+  onLoadReceipts: () => void;
+  /** The latest invoice cost lookup for the item on screen. */
+  invoice: InvoiceCostState;
 }
 
 const EST_COLS = "1fr 46px 42px 52px 34px";
+const NO_ROWS: PricePointsState["rows"] = [];
 const dash = "—";
 
-const ItemAnalysisPanel = ({ product, actual }: Props) => {
-  const estimated = useMemo(
-    () => estimatedPricePoints(product.rows),
-    [product.rows],
-  );
-
+const ItemAnalysisPanel = ({
+  product,
+  prices,
+  receipts,
+  onLoadReceipts,
+  invoice,
+}: Props) => {
   // Only ever read when the fetch belongs to the item on screen. A response
   // for the previously-clicked UPC is dropped rather than rendered.
-  const isCurrent = actual.upc === product.productCode;
-  const lines = isCurrent ? actual.lines : [];
+  const isCurrent = prices.upc === product.productCode;
+  const rows = isCurrent ? prices.rows : NO_ROWS;
+  // The panel's loading and error states are the price table's. The receipts
+  // only ever load under an opened row, and say so there.
+  const actual = prices;
+  const receiptsHere = receipts.upc === product.productCode;
 
-  // Register lines carry no cost, so the item's blended unit cost has to reach
-  // them from the `subs/subs` rows before any actual-side margin can exist.
-  // Shared with the export, which has to hold prices against the same floor.
-  const stats = useMemo(() => itemCostStats(product), [product]);
+  // Register lines carry no cost, so a unit cost has to reach them before any
+  // actual-side margin can exist. The latest invoice cost when there is one,
+  // the item-file cost off the `subs/subs` rows otherwise -- one figure, held
+  // under both tables and the header, so no two margins on screen disagree.
+  const itemFile = useMemo(() => itemCostStats(product), [product]);
+  const weighed = useMemo(
+    () => product.rows.some((r) => r.weight > 0),
+    [product.rows],
+  );
+  const invoiceForThis =
+    invoice.upc === product.productCode ? invoice.cost : null;
+  const cost = useMemo(
+    () => resolveUnitCost(itemFile.unitCost, invoiceForThis, weighed),
+    [itemFile.unitCost, invoiceForThis, weighed],
+  );
+  const override = cost.source === "invoice" ? cost.unitCost : null;
+  const stats = useMemo(
+    () => itemCostStats(product, override),
+    [product, override],
+  );
   const unitCost = stats.unitCost ?? 0;
+  const estimated = useMemo(
+    () => estimatedPricePoints(product.rows, override),
+    [product.rows, override],
+  );
 
   const act = useMemo(
-    () => actualPricePoints(lines, unitCost),
-    [lines, unitCost],
+    () => pricePointsFromServer(rows, unitCost),
+    [rows, unitCost],
   );
-  const mixed = useMemo(() => mixedPriceInsight(lines), [lines]);
-  const pattern = useMemo(() => classifyPattern(act, mixed), [act, mixed]);
+  // "Package deal" reads each receipt for the item at two prices, and the
+  // server's table counts receipts without naming them. Until it reports
+  // that count, the pattern is judged without it rather than from a download
+  // of every receipt, which is what the table replaced.
+  const pattern = useMemo(
+    () => classifyPattern(act, mixedPriceInsight([])),
+    [act],
+  );
+  // Weighed items have per-pound prices on both sides now, so the notice that
+  // withheld their suggestion (finding A's stop-gap) is gone.
   const suggestion = useMemo(() => suggestPrice(act), [act]);
+  const withheld = suggestionWithheld(act);
+
+  /** The receipts behind one price, or null until they have been read. */
+  const linesFor = (p: ActualPricePoint, averaged: boolean) =>
+    receiptsHere && !receipts.loading && !receipts.error
+      ? linesAtPrice(receipts.lines, p, { weighed: act.isWeighted, averaged })
+      : null;
 
   const totals = useMemo(
     () => ({
-      sales: product.rows.reduce((s, r) => s + r.total_sales, 0),
+      sales: product.rows.reduce((s, r) => s + netOf(r), 0),
       units: product.units,
       marginPct: stats.marginPct,
       unitCost: stats.unitCost,
       // Counts prices actually rung, not inferred ones — the tile has to agree
       // with the table the suggestion comes from.
       prices: act.exact.length + act.averaged.length,
-      trans: act.exactCount + act.averagedCount,
+      // Receipts, once each, even when one sits in both tables.
+      trans: act.receiptCount,
     }),
     [product, stats, act],
   );
@@ -117,6 +173,16 @@ const ItemAnalysisPanel = ({ product, actual }: Props) => {
               {totals.unitCost !== null
                 ? formatCurrency2(totals.unitCost)
                 : dash}
+            </div>
+            {/* Where the figure came from, because the two sources can differ
+                by a dollar a unit and a reader checking an invoice needs to
+                know which one this is. */}
+            <div className="text-[10px] text-content/70 leading-tight mt-0.5">
+              {cost.source === "invoice" && cost.invoice
+                ? `invoice ${cost.invoice.date.slice(5).replace("-", "/")}`
+                : invoice.loading && invoice.upc === product.productCode
+                  ? "checking invoices…"
+                  : "item file"}
             </div>
           </div>
           <div className="px-3 pt-2.5 pb-1.5 text-center">
@@ -169,8 +235,17 @@ const ItemAnalysisPanel = ({ product, actual }: Props) => {
 
         {/* The page's headline now that its job is optimisation. Sits above the
             pattern line because it's the answer; the pattern is the caveat. */}
-        {suggestion && (
+        {withheld && (
           <div className="px-4 pt-3 flex-shrink-0">
+            <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 flex gap-2 items-start">
+              <InformationCircleIcon className="w-4 h-4 text-content/60 flex-shrink-0 mt-px" />
+              <p className="text-[12px] text-content leading-snug">{withheld}</p>
+            </div>
+          </div>
+        )}
+
+        {suggestion && (
+          <div data-help="suggestion" className="px-4 pt-3 flex-shrink-0">
             <div className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2.5">
               <div className="flex items-center gap-2 flex-wrap">
                 <ArrowTrendingUpIcon className="w-4 h-4 text-blue-800 flex-shrink-0" />
@@ -264,7 +339,10 @@ const ItemAnalysisPanel = ({ product, actual }: Props) => {
 
         <div className="flex-1 min-h-0 grid grid-cols-2 divide-x divide-gray-100 overflow-hidden">
           {/* Estimated */}
-          <div className="min-h-0 overflow-y-auto thin-scrollbar px-4 py-3">
+          <div
+            data-help="estimated"
+            className="min-h-0 overflow-y-auto thin-scrollbar px-4 py-3"
+          >
             <div className="flex items-baseline gap-2 mb-2">
               <span className="text-[11px] font-semibold text-content">
                 Estimated
@@ -316,7 +394,10 @@ const ItemAnalysisPanel = ({ product, actual }: Props) => {
           </div>
 
           {/* Actual — holds its column whatever state it's in. */}
-          <div className="min-h-0 overflow-y-auto thin-scrollbar px-4 py-3">
+          <div
+            data-help="actual"
+            className="min-h-0 overflow-y-auto thin-scrollbar px-4 py-3"
+          >
             <div className="flex items-baseline gap-2 mb-2">
               <span className="text-[11px] font-semibold text-content">
                 Actual
@@ -372,6 +453,10 @@ const ItemAnalysisPanel = ({ product, actual }: Props) => {
                         // The band names a price; this is that price in the
                         // table. Without the tie the reader has to scan for it.
                         isBest={p === suggestion?.best.point}
+                        lines={linesFor(p, false)}
+                        receiptsLoading={receiptsHere && receipts.loading}
+                        receiptsError={receiptsHere ? receipts.error : null}
+                        onOpen={onLoadReceipts}
                       />
                     ))}
                   </>
@@ -403,16 +488,13 @@ const ItemAnalysisPanel = ({ product, actual }: Props) => {
                       <ActualPriceRow
                         key={`a-${p.price}-${p.priceType}`}
                         point={p}
+                        lines={linesFor(p, true)}
+                        receiptsLoading={receiptsHere && receipts.loading}
+                        receiptsError={receiptsHere ? receipts.error : null}
+                        onOpen={onLoadReceipts}
                       />
                     ))}
                   </>
-                )}
-
-                {actual.truncated > 0 && (
-                  <div className="mt-3 text-[10px] text-content/60">
-                    {actual.truncated} further receipts not read — this item
-                    exceeds the per-search cap.
-                  </div>
                 )}
               </>
             )}

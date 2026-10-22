@@ -30,6 +30,15 @@ import {
 export interface MultiSelectOption {
   label: string;
   value: string;
+  /**
+   * No row left that carries this value, once the OTHER filters are applied.
+   *
+   * Dropped from the list, so everything left in it is something that
+   * returns rows -- UNLESS it is selected, in which case it is kept and said
+   * so. A pick that quietly vanished would leave the screen empty with the
+   * reason nowhere on it, and nothing to click to undo.
+   */
+  unavailable?: boolean;
 }
 
 interface Props {
@@ -70,25 +79,53 @@ const MultiSelectFilter = ({
   const isActive = values.length > 0;
   const showSearch = searchable ?? options.length > 8;
 
-  /** Matches the label or the value, so a UPC can be typed as well as read. */
+  /**
+   * What the list draws: the search, over what is still reachable.
+   *
+   * An unavailable option is left out unless it is selected. Keeping the
+   * dead ones would bury the pickable ones -- the items list runs to
+   * thousands -- and the one a reader has to find is the pick of their own
+   * that went dead, which is why that one stays and leads.
+   */
   const shown = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return options;
-    return options.filter(
-      (o) =>
-        o.label.toLowerCase().includes(q) || o.value.toLowerCase().includes(q),
+    const live = options.filter(
+      (o) => !o.unavailable || values.includes(o.value),
     );
-  }, [options, query]);
+    const matched = !q
+      ? live
+      : live.filter(
+          (o) =>
+            o.label.toLowerCase().includes(q) ||
+            o.value.toLowerCase().includes(q),
+        );
+    const dead = matched.filter(
+      (o) => o.unavailable && values.includes(o.value),
+    );
+    if (dead.length === 0) return matched;
+    return [...dead, ...matched.filter((o) => !dead.includes(o))];
+  }, [options, query, values]);
+
+  /** How many the other filters have taken off this list, for the line at
+   *  the foot of it. Silence would read as a short list, not a narrowed one. */
+  const hiddenCount = useMemo(
+    () =>
+      options.filter((o) => o.unavailable && !values.includes(o.value)).length,
+    [options, values],
+  );
 
   /** Every match at once — the reason to search a list this long. */
+  /** Over what can actually be picked: "select all" must not add back an
+   *  option that returns nothing. */
+  const pickable = useMemo(() => shown.filter((o) => !o.unavailable), [shown]);
   const allShownOn =
-    shown.length > 0 && shown.every((o) => values.includes(o.value));
+    pickable.length > 0 && pickable.every((o) => values.includes(o.value));
   const toggleShown = () => {
-    const inShown = new Set(shown.map((o) => o.value));
+    const inShown = new Set(pickable.map((o) => o.value));
     onChange(
       allShownOn
         ? values.filter((v) => !inShown.has(v))
-        : [...new Set([...values, ...shown.map((o) => o.value)])],
+        : [...new Set([...values, ...pickable.map((o) => o.value)])],
     );
   };
   const label = !isActive
@@ -230,7 +267,9 @@ const MultiSelectFilter = ({
           <div className="flex-1 overflow-y-auto thin-scrollbar">
             {shown.length === 0 ? (
               <div className="px-3 py-3 text-[12px] text-content/85">
-                Nothing matches &ldquo;{query.trim()}&rdquo;.
+                {query.trim()
+                  ? `Nothing matches “${query.trim()}”.`
+                  : "Nothing here is left by the other filters."}
               </div>
             ) : (
               shown.map((o) => {
@@ -248,12 +287,26 @@ const MultiSelectFilter = ({
                           : "bg-custom-white border-gray-300"
                       }`}
                     >
-                      {on && <CheckIcon className="w-3 h-3 text-custom-white" />}
+                      {on && (
+                        <CheckIcon className="w-3 h-3 text-custom-white" />
+                      )}
                     </span>
                     <span className="truncate">{o.label}</span>
+                    {o.unavailable && (
+                      <span className="ml-auto flex-shrink-0 text-[10.5px] font-semibold text-severity_watch_text">
+                        no rows &mdash; pick another
+                      </span>
+                    )}
                   </button>
                 );
               })
+            )}
+            {hiddenCount > 0 && (
+              <div className="px-3 py-2 border-t border-gray-100 text-[11px] text-content/85">
+                {hiddenCount} more{" "}
+                {hiddenCount === 1 ? "option has" : "options have"} nothing left
+                once the other filters are applied.
+              </div>
             )}
           </div>
         </div>

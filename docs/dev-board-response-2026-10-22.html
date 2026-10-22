@@ -1,0 +1,1082 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dev Board Response</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:wght@500;600&display=swap">
+<style>
+/* Companion to dev-board-review-2026-10-21.md. One status table for all 47
+   findings, then one sheet per fix, grouped by the phase that shipped it. */
+:root{
+  --ground:#f5f8fb; --paper:#ffffff; --paper-2:#eef3f8;
+  --head:#08203f; --ink:#0c1a2e; --body:#3d5372; --muted:#6b809d; --faint:#93a5bd;
+  --line:#d9e2ed; --line-2:#e9eef5;
+  --accent:#0b4f9e; --accent-soft:#e8f0fb; --accent-bd:#c2d8f2;
+  --ok:#166b45; --ok-bg:#e7f4ed; --ok-bd:#bfe0cd;
+  --warn:#8a5806; --warn-bg:#fdf3e2; --warn-bd:#eed9b0;
+  --stop:#a3231c; --stop-bg:#fcecea; --stop-bd:#f0c8c5;
+  --be:#4b3f8f; --be-bg:#eeebf8; --be-bd:#cfc8ec;
+  --shadow:rgba(8,32,63,.08);
+  --f-display:"IBM Plex Serif",Georgia,serif;
+  --f-body:"IBM Plex Sans",-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ground:#070f1c; --paper:#0e1b2d; --paper-2:#13243a;
+  --head:#eaf1fb; --ink:#dfe8f5; --body:#b0c2da; --muted:#8b9fbb; --faint:#71859f;
+  --line:#1e3350; --line-2:#182a44;
+  --accent:#5aa2f0; --accent-soft:#12294a; --accent-bd:#25446e;
+  --ok:#6fce9f; --ok-bg:#0f2a1e; --ok-bd:#255c40;
+  --warn:#e8b45f; --warn-bg:#2a2010; --warn-bd:#5c4519;
+  --stop:#f08a82; --stop-bg:#2c1512; --stop-bd:#5f2b26;
+  --be:#b4a8f0; --be-bg:#1d1a33; --be-bd:#3c3570;
+  --shadow:rgba(0,0,0,.5); color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --ground:#070f1c; --paper:#0e1b2d; --paper-2:#13243a;
+  --head:#eaf1fb; --ink:#dfe8f5; --body:#b0c2da; --muted:#8b9fbb; --faint:#71859f;
+  --line:#1e3350; --line-2:#182a44;
+  --accent:#5aa2f0; --accent-soft:#12294a; --accent-bd:#25446e;
+  --ok:#6fce9f; --ok-bg:#0f2a1e; --ok-bd:#255c40;
+  --warn:#e8b45f; --warn-bg:#2a2010; --warn-bd:#5c4519;
+  --stop:#f08a82; --stop-bg:#2c1512; --stop-bd:#5f2b26;
+  --be:#b4a8f0; --be-bg:#1d1a33; --be-bd:#3c3570;
+  --shadow:rgba(0,0,0,.5); color-scheme:dark;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--body);font:15px/1.55 var(--f-body);-webkit-font-smoothing:antialiased}
+.wrap{max-width:1040px;margin:0 auto;padding-block:28px 72px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:28px}
+h1,h2,h3{font-family:var(--f-display);color:var(--head);margin:0;font-weight:600;text-wrap:balance}
+h1{font-size:30px;line-height:1.15}
+h2{font-size:21px;line-height:1.25}
+h3{font-size:16px}
+p{margin:0}
+code,.mono{font-family:var(--f-mono);font-size:.87em}
+code{background:var(--paper-2);border:1px solid var(--line-2);border-radius:4px;padding:1px 5px;color:var(--ink);overflow-wrap:anywhere}
+.eyebrow{font:600 11px/1.3 var(--f-mono);letter-spacing:.13em;text-transform:uppercase;color:var(--muted)}
+a{color:var(--accent)}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.masthead{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-end;justify-content:space-between;padding-bottom:18px;border-bottom:2px solid var(--head)}
+.masthead .lead{display:grid;gap:8px;min-width:0;max-width:66ch}
+.masthead .sub{color:var(--muted);font-size:14px}
+.status{display:grid;gap:4px;background:var(--paper);border:1px solid var(--accent-bd);border-radius:8px;padding:10px 14px;font-size:13px}
+.status b{color:var(--accent)}
+
+.chip{display:inline-block;font:600 11px/1 var(--f-mono);letter-spacing:.03em;padding:5px 8px;border-radius:999px;border:1px solid;white-space:nowrap}
+.chip.fixed{color:var(--ok);background:var(--ok-bg);border-color:var(--ok-bd)}
+.chip.next{color:var(--accent);background:var(--accent-soft);border-color:var(--accent-bd)}
+.chip.both{color:var(--warn);background:var(--warn-bg);border-color:var(--warn-bd)}
+.chip.be{color:var(--be);background:var(--be-bg);border-color:var(--be-bd)}
+.chip.none{color:var(--muted);background:var(--paper-2);border-color:var(--line)}
+.commit{font:500 12px var(--f-mono);color:var(--ok);background:var(--ok-bg);border:1px solid var(--ok-bd);border-radius:4px;padding:1px 6px;white-space:nowrap}
+
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--paper)}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{padding:8px 12px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line-2)}
+tr:last-child td{border-bottom:0}
+th{font:600 11px/1.3 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:var(--paper-2)}
+td.id{font-family:var(--f-mono);color:var(--muted);white-space:nowrap;width:4.5em}
+td.st{white-space:nowrap}
+
+.phase-head{display:flex;flex-wrap:wrap;gap:10px;align-items:baseline}
+.issue{background:var(--paper);border:1px solid var(--line);border-radius:10px;box-shadow:0 1px 2px var(--shadow);padding:20px 22px;display:grid;gap:14px;scroll-margin-top:16px;min-width:0}
+.issue-head{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;align-items:baseline}
+.issue-num{font:600 22px/1 var(--f-display);color:var(--faint);grid-row:span 2}
+.issue-head .verdict{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13.5px;color:var(--muted)}
+.facts{display:grid;grid-template-columns:max-content 1fr;gap:6px 18px;font-size:14px;margin:0;padding:12px 14px;background:var(--paper-2);border-radius:8px}
+.facts dt{font:600 11px/1.6 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.facts dd{margin:0;color:var(--ink);min-width:0;overflow-wrap:anywhere}
+.block{display:grid;gap:8px;min-width:0}
+.block>h3{font:600 11px/1.3 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+ol,ul{margin:0;padding-left:20px;display:grid;gap:4px}
+.verify{border:1px solid var(--ok-bd);border-radius:8px;background:var(--ok-bg);padding:12px 14px;display:grid;gap:6px}
+.verify h4{margin:0;font:600 11px/1.3 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ok)}
+.verify ol{padding-left:18px}
+.verify,.verify li{color:var(--ink);font-size:13.5px}
+.callout{border-left:3px solid var(--accent);padding:2px 0 2px 12px;color:var(--ink)}
+.callout.warn{border-color:var(--warn)}
+footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:14px}
+
+@media (max-width:560px){
+  h1{font-size:25px}
+  .issue{padding:16px}
+  .facts{grid-template-columns:1fr;gap:2px 0}
+  .facts dd{margin-bottom:8px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="masthead">
+  <div class="lead">
+    <div class="eyebrow">CounterCtrl dev &middot; Response to the dev board review</div>
+    <h1>Dev Board Response, 22 Oct 2026</h1>
+    <p class="sub">What was done about each finding in <span class="mono">dev-board-review-2026-10-21.md</span>. Fixes land in the dev tree; prod gets them when dev is promoted. This page is updated and committed after each phase.</p>
+  </div>
+  <div class="status">
+    <span><b>Backend done (not deployed).</b> All 10 frontend phases done. Deploy both, then review.</span>
+    <span class="mono">branch fixes_10_22_2026</span>
+  </div>
+</header>
+
+<section class="block" aria-labelledby="status-h">
+  <h2 id="status-h">Every finding, where it stands</h2>
+  <div class="scroll"><table>
+    <thead><tr><th>#</th><th>Finding</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td class="id">AG</td><td>Add user autofills the admin's own login</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 1</span></td></tr>
+      <tr><td class="id">AN</td><td>Customers see other companies' tickets</td><td class="st"><span class="chip fixed">Backstop &middot; Phase 1</span> <span class="chip fixed">Backend fixed</span> <span class="chip fixed">No-company message &middot; Phase 7</span></td></tr>
+      <tr><td class="id">E, X</td><td>Price Opt sales 6–7% higher than Top 200</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 2</span></td></tr>
+      <tr><td class="id">A</td><td>By-weight items priced per package</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 9</span> <span class="chip none">Phase 2 stop-gap removed</span></td></tr>
+      <tr><td class="id">H</td><td>Switching vendor keeps the previous item</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 2</span></td></tr>
+      <tr><td class="id">O, W</td><td>Price Opt cost is the stale item-file cost</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 2</span></td></tr>
+      <tr><td class="id">AO</td><td>Ticket times 5 hours ahead</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 3</span> <span class="chip fixed">Backend sends the zone</span></td></tr>
+      <tr><td class="id">AQ</td><td><code>tickets/assignees</code> 403 on every load</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 3</span></td></tr>
+      <tr><td class="id">1</td><td>"+13.1%" on Top 200 is points</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 3</span></td></tr>
+      <tr><td class="id">AI, AL</td><td>"New" vs "Add user"; role shows as "1"</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 3</span></td></tr>
+      <tr><td class="id">Y</td><td>Item Lookup: Enter doesn't search; unclear not-found</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 3</span></td></tr>
+      <tr><td class="id">I</td><td>Price Opt Vendor fires 26 calls at once</td><td class="st"><span class="chip fixed">Calls fixed &middot; Phase 4</span> <span class="chip fixed">Lists from the rollup &middot; Phase 10</span></td></tr>
+      <tr><td class="id">K</td><td>Price Opt doesn't keep its result</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 4</span></td></tr>
+      <tr><td class="id">J</td><td>Filter doesn't search items</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 4</span></td></tr>
+      <tr><td class="id">C</td><td>TRANS counts item lines, not receipts</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 4</span></td></tr>
+      <tr><td class="id">B, G</td><td>One-day recommendations; mixed money formats</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 4</span></td></tr>
+      <tr><td class="id">P</td><td>65.9% margin on Breast Tenders</td><td class="st"><span class="chip none">Checked &middot; needs one look</span></td></tr>
+      <tr><td class="id">L, M, N, T</td><td>Item Actions judges deliveries unfairly</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 5</span></td></tr>
+      <tr><td class="id">Q, R, S</td><td>Item Actions labels and controls</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 5</span></td></tr>
+      <tr><td class="id">AK, 2</td><td>Add user half-ticked state; Top 200 names cut off</td><td class="st"><span class="chip fixed">AK fixed &middot; Phase 6</span> <span class="chip none">2: already changed</span></td></tr>
+      <tr><td class="id">AE, AD, AF</td><td>New pages on old help; guide steps; Show me gaps</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 6</span></td></tr>
+      <tr><td class="id">3, D</td><td>Over-fetching</td><td class="st"><span class="chip fixed">Backend fixed</span> <span class="chip fixed">Frontend &middot; Phase 9</span></td></tr>
+      <tr><td class="id">AJ</td><td><code>users/</code> scope; company families</td><td class="st"><span class="chip fixed">Backend fixed</span> <span class="chip fixed">Frontend &middot; Phase 8</span></td></tr>
+      <tr><td class="id">AP</td><td>Nobody notified of a new ticket</td><td class="st"><span class="chip none">Settled &middot; ticket email is on and works</span></td></tr>
+      <tr><td class="id">S1, S2</td><td>Found while planning: sign-in override; <code>users/</code> sent password hashes</td><td class="st"><span class="chip fixed">Backend fixed</span> <span class="chip fixed">Frontend &middot; Phase 7</span></td></tr>
+      <tr><td class="id">F, AB, U, Z, AA</td><td>Board wording, training and release notes</td><td class="st"><span class="chip none">No code</span></td></tr>
+      <tr><td class="id">V, AC, AH, AM, AR</td><td>Reference, withdrawn, or working well</td><td class="st"><span class="chip none">Settled</span></td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ============================================================ PHASE 1 -->
+<section class="block" aria-labelledby="p1-h">
+  <div class="phase-head"><h2 id="p1-h">Phase 1 &middot; Safety</h2><span class="commit">accda939</span></div>
+</section>
+
+<article class="issue" id="AG" aria-labelledby="ag-h">
+  <div class="issue-head">
+    <span class="issue-num">AG</span>
+    <h2 id="ag-h">Add user no longer fills in the admin's own login</h2>
+    <div class="verdict"><span class="chip fixed">Fixed</span> Dev tree. Prod gets it on promotion.</div>
+  </div>
+  <dl class="facts">
+    <dt>Found</dt><dd>Opening New on Users showed the test account's username and its saved password in the new user's fields.</dd>
+    <dt>Cause</dt><dd>Neither shared input passed <code>autoComplete</code> through to the field, so Chrome read the form as a sign-in and filled in whoever was signed in.</dd>
+    <dt>Files</dt><dd><code>components-dev/inputs/Input.tsx</code>, <code>PasswordInput.tsx</code>, <code>organization/dev/users/create/UserFields.tsx</code>, <code>organization/dev/users/view/SecurityTab.tsx</code></dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li>Both input components take an optional <code>autoComplete</code> and pass it to the field. Callers that don't set it behave exactly as before, so search boxes and filters are untouched.</li>
+      <li>On Add user, username and email are <code>autoComplete="off"</code>. Password and confirm are <code>"new-password"</code>, which tells Chrome this is an account being created, not one signing in.</li>
+      <li>The Security tab's password fields get <code>"new-password"</code> too, since changing a password has the same risk.</li>
+      <li>Three tests pin the attribute so a later refactor can't drop it.</li>
+    </ul>
+  </div>
+  <div class="verify">
+    <h4>How to check it</h4>
+    <ol>
+      <li>DEV mode, User Management, Users, press New, in a browser with a saved CounterCtrl password.</li>
+      <li>Username, Email, Password and Confirm should all be empty. Chrome may offer to suggest a strong password, which is expected.</li>
+      <li>Open a user, Security tab: the password fields should also be empty.</li>
+    </ol>
+  </div>
+</article>
+
+<article class="issue" id="AN" aria-labelledby="an-h">
+  <div class="issue-head">
+    <span class="issue-num">AN</span>
+    <h2 id="an-h">A customer sees only their own company's tickets</h2>
+    <div class="verdict"><span class="chip fixed">Backstop in place</span> <span class="chip be">Real fix is backend</span></div>
+  </div>
+  <dl class="facts">
+    <dt>Found</dt><dd>User 649 (Bruces, <code>canViewAll: false</code>) was shown 16 tickets: their own TCK-35 and 15 from company 1, opened by 3 other users.</dd>
+    <dt>Cause</dt><dd>Tickets have no company of their own. The server scopes a customer by "the opener shares a company with me", so a ticket opened by DCR staff who hold both Houchens and Bruces reaches customers at both. The page then showed whatever arrived; the list filter had no company check.</dd>
+    <dt>Files</dt><dd><code>pages/tickets/dev/ticketsUtils.ts</code> (<code>ticketsInScope</code>), <code>pages/tickets/dev/hooks.ts</code></dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li>New rule, applied before every tab and search: a customer sees tickets they opened, plus tickets filed under a company they hold. A ticket's company is the one the row reports, the opener's lowest company id, so a multi-company opener's ticket counts under one company instead of all of them.</li>
+      <li>Techs see everything, as before.</li>
+      <li>The tab counts read the same filtered list, so "Open" can't count tickets the customer will never see.</li>
+      <li>Five tests cover the review's exact case, a customer with no company, and the tech view.</li>
+    </ul>
+  </div>
+  <p class="callout warn">This is a backstop in the page. The server still sends the other companies' tickets, and a ticket could still be opened by its address. The backend fix is to scope on the ticket's company in <code>_SCOPE</code> (<code>api/routers/tickets.py</code>), and properly by adding a <code>tickets.company</code> column. Both are in the backend plan.</p>
+  <div class="verify">
+    <h4>How to check it</h4>
+    <ol>
+      <li>Sign in as user 649 in DEV mode, Coming Soon, Tickets.</li>
+      <li>"Your tickets" should list TCK-35 and no company-1 tickets. The Open count should match the rows shown.</li>
+      <li>Sign in as a tech: every ticket should still be there.</li>
+    </ol>
+  </div>
+</article>
+
+<!-- ============================================================ PHASE 2 -->
+<section class="block" aria-labelledby="p2-h">
+  <div class="phase-head"><h2 id="p2-h">Phase 2 &middot; Numbers that were wrong</h2><span class="commit">33080edb</span></div>
+  <p>All four are on Price Opt, the page a pricing user acts on.</p>
+</section>
+
+<article class="issue" id="E" aria-labelledby="e-h">
+  <div class="issue-head">
+    <span class="issue-num">E</span>
+    <h2 id="e-h">Price Opt's sales are net of tax, like every other page</h2>
+    <div class="verdict"><span class="chip fixed">Fixed</span> Also settles X.</div>
+  </div>
+  <dl class="facts">
+    <dt>Found</dt><dd>Ground Beef Fam Pak $5,295.84 and COKE 6PK $927.98 on Price Opt, against $4,980.58 and $868.66 on Top 200 and Item Lookup, which agree with each other. About 6–7% high.</dd>
+    <dt>Cause</dt><dd>Price Opt added up raw <code>total_sales</code>. Sub Dept Margins and Vendors read the same <code>subs/subs</code> rows and use <code>total_sales − total_tax</code>, the basis every Sales surface reconciles on. The gap was the tax.</dd>
+    <dt>Files</dt><dd><code>pages/inventory/dev/inventoryData.ts</code>, <code>ItemAnalysisPanel.tsx</code></dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li>All five sales sums on the two Price Opt pages use the shared <code>netOf</code> from <code>utils/perfPairs.ts</code>: the department tree, the vendor list, each item's total, and the item header.</li>
+      <li>Items now rank by net sales, so an order can shift where two items were close.</li>
+      <li>The group export reads the same sums, so it moves too.</li>
+    </ul>
+  </div>
+  <div class="verify">
+    <h4>How to check it</h4>
+    <ol>
+      <li>Price Opt Sub Department, store 695, week ending 10/20, Beef - Variable, Ground Beef Fam Pak.</li>
+      <li>The header's Sales should read $4,980.58, the same as Top 200. COKE 6PK should read $868.66.</li>
+      <li>If either still differs, the cause is something other than tax. Tell me the two figures.</li>
+    </ol>
+  </div>
+</article>
+
+<article class="issue" id="A" aria-labelledby="a-h">
+  <div class="issue-head">
+    <span class="issue-num">A</span>
+    <h2 id="a-h">No suggested price for random-weight packs, and the page says why</h2>
+    <div class="verdict"><span class="chip fixed">Stop-gap</span> <span class="chip both">Full fix needs the backend</span></div>
+  </div>
+  <dl class="facts">
+    <dt>Found</dt><dd>Ground Beef Fam Pak showed per-pound prices on the left ($3.49, $6.49) and 146 package totals on the right, then recommended "Moves fastest at $11.94 · 75.3% GM". Its real margin is about 24%.</dd>
+    <dt>Cause</dt><dd>The two tables decide "sold by weight" differently. The left reads the sales rows, which carry weight. The right reads the receipts, which carry none, and treats a fractional quantity as the sign of a scale sale. Prepacked random-weight meat (UPC prefix 2, price in the barcode) rings as quantity 1 per pack at the pack's total, so it slipped through and every pack became a "price", held against a per-pound cost.</dd>
+    <dt>Files</dt><dd><code>pages/inventory/dev/inventoryData.ts</code> (<code>isUnweighedPacks</code>), <code>ItemAnalysisPanel.tsx</code>, <code>InventoryExportModal.tsx</code></dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li>When the sales rows say an item is weighed but its receipts read as whole packs, the "Moves fastest" strip is withheld. In its place: "No suggested price for this item. It sells by weight in random-weight packs, and the receipts record each pack at its own total, not its weight…"</li>
+      <li>The export withholds the suggested price for the same items, so the file can't recommend what the screen won't.</li>
+      <li>Items weighed at the till, and each-priced items, are unchanged.</li>
+    </ul>
+  </div>
+  <p class="callout warn">This stops a wrong number being acted on; it doesn't produce the right one. A per-pound price needs each receipt line's weight. Your backend branch already returns <code>weight</code> on <code>transaction_list</code>, but without the divide-by-1,000 rule <code>topitems</code> applies for company 4. Once that's in and deployed, the frontend can price these per pound and this notice goes.</p>
+  <div class="verify">
+    <h4>How to check it</h4>
+    <ol>
+      <li>Price Opt, Ground Beef Fam Pak (20000300000): the blue strip is gone and the amber notice is in its place.</li>
+      <li>COKE 6PK: the strip is still there.</li>
+    </ol>
+  </div>
+</article>
+
+<article class="issue" id="H" aria-labelledby="h-h">
+  <div class="issue-head">
+    <span class="issue-num">H</span>
+    <h2 id="h-h">Opening a different vendor clears the item</h2>
+    <div class="verdict"><span class="chip fixed">Fixed</span> Board check now passes. Sub Department gets the same rule.</div>
+  </div>
+  <dl class="facts">
+    <dt>Found</dt><dd>Open Coke, pick COKE 6PK, then open Frito Lay: COKE 6PK stayed in the right panel.</dd>
+    <dt>Cause</dt><dd>Opening a vendor changed which list was open but left the selected item and its receipts in place.</dd>
+    <dt>Decision</dt><dd>Clear the item when a different vendor is selected (Steve, 22 Oct).</dd>
+    <dt>Files</dt><dd><code>pages/inventory/dev/InventoryVendor.tsx</code>, <code>InventorySubDept.tsx</code></dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li>Opening a different vendor clears the selected item, its receipts and its invoice cost. Collapsing the vendor that's already open keeps the item.</li>
+      <li>Price Opt Sub Department had the same gap when moving between departments. It now follows the same rule, so the two pages behave alike.</li>
+    </ul>
+  </div>
+  <div class="verify">
+    <h4>How to check it</h4>
+    <ol>
+      <li>Price Opt Vendor: open Coke, pick COKE 6PK, open Frito Lay. The right panel should go back to "Open a vendor and pick an item".</li>
+      <li>Open Coke, pick COKE 6PK, collapse Coke: COKE 6PK stays.</li>
+    </ol>
+  </div>
+</article>
+
+<article class="issue" id="O" aria-labelledby="o-h">
+  <div class="issue-head">
+    <span class="issue-num">O</span>
+    <h2 id="o-h">Price Opt uses what the store paid, from the latest invoice</h2>
+    <div class="verdict"><span class="chip fixed">Fixed</span> Also settles W.</div>
+  </div>
+  <dl class="facts">
+    <dt>Found</dt><dd>COKE 6PK showed a cost of $4.91 and flagged the $3.33 sale "Below cost" at −47%. The 10/16 Coke invoice says $3.13 a unit, and Item Actions already showed $3.13.</dd>
+    <dt>Cause</dt><dd>Price Opt used the item-file cost carried on the sales rows, and the item file was out of date ($4.50 until 10/12, $4.91 after).</dd>
+    <dt>Decision</dt><dd>The invoice cost is what they paid, so it wins. Fall back to the item file when there's no invoice (Steve, 22 Oct).</dd>
+    <dt>Files</dt><dd>New <code>pages/inventory/dev/invoiceCost.ts</code> and <code>useInvoiceCost.ts</code>; <code>inventoryData.ts</code>, <code>ItemAnalysisPanel.tsx</code>, <code>InventoryExportModal.tsx</code>, both page containers; <code>utils/pricePoints.ts</code> (shared, see below)</dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li>Picking an item now also looks up its deliveries over the last 90 days, using the same <code>receivers/item_search</code> call as Item Actions, so the two pages agree. The latest invoice on or before the window's end supplies the unit cost.</li>
+      <li>That one cost sits under everything on the item: the Cost / unit tile, the header margin, both tables' margins, and the suggestion. Swapping only some of them would have put two costs on one screen.</li>
+      <li>Under the Cost / unit tile, a small line says where the figure came from: "invoice 10/16", "item file", or "checking invoices…" while it loads.</li>
+      <li>Weighed items stay on the item-file cost. Their sales count pounds, and an invoice line can be billed per case or per pack, which would repeat finding A's mix-up.</li>
+      <li>If the invoice lookup fails, the page falls back to the item file, which is what it showed before.</li>
+    </ul>
+  </div>
+  <p class="callout">Two limits. The group export (every item in a department or vendor) still uses item-file cost, because an invoice lookup per row would cost a request per item. The selected item's export uses the invoice cost, matching the screen. <code>estimatedPricePoints</code> in the shared <code>utils/pricePoints.ts</code> gained an optional cost parameter. Omitted, it behaves exactly as before, and only Price Opt passes it.</p>
+  <div class="verify">
+    <h4>How to check it</h4>
+    <ol>
+      <li>Price Opt, store 695, week ending 10/20, COKE 6PK: Cost / unit should read $3.13 with "invoice 10/16" under it, matching Item Actions.</li>
+      <li>The $3.33 row should no longer say "Below cost".</li>
+      <li>Pick an item with no delivery in 90 days: "item file" under the tile.</li>
+    </ol>
+  </div>
+</article>
+
+<!-- ============================================================ PHASE 3 -->
+<section class="block" aria-labelledby="p3-h">
+  <div class="phase-head"><h2 id="p3-h">Phase 3 &middot; Small and independent</h2><span class="commit">98ccd8ce</span></div>
+</section>
+
+<article class="issue" id="AO" aria-labelledby="ao-h">
+  <div class="issue-head">
+    <span class="issue-num">AO</span>
+    <h2 id="ao-h">Ticket times show in the reader's own time</h2>
+    <div class="verdict"><span class="chip fixed">Fixed</span> Works now; keeps working when the API adds a zone.</div>
+  </div>
+  <dl class="facts">
+    <dt>Found</dt><dd>TCK-35, sent 5:32 PM CDT, showed "Oct 21, 10:32 PM". Tickets from the last five hours showed "just now".</dd>
+    <dt>Cause</dt><dd>The API sends UTC with no zone (<code>2026-10-21T22:32:10.299190</code>). JavaScript reads a date-time with no zone as local time, so every stamp moved five hours forward in Central. Anything from the last five hours then sat in the future, which the age display shows as "just now".</dd>
+    <dt>Files</dt><dd><code>pages/tickets/dev/ticketsUtils.ts</code> (<code>parseServerTime</code>)</dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li>One helper reads a stamp with no zone as UTC. A stamp that already ends in <code>Z</code> or an offset is left alone, so nothing needs undoing when the backend starts sending one.</li>
+      <li>Both places that show a ticket time, the age ("12m", "5h") and the full date, go through it. They were the only two.</li>
+      <li>Three tests, including TCK-35's actual stamp.</li>
+    </ul>
+  </div>
+  <div class="verify">
+    <h4>How to check it</h4>
+    <ol>
+      <li>Tickets in DEV mode: TCK-35 should read Oct 21, 5:32 PM.</li>
+      <li>A ticket opened a few minutes ago should read "2m" or similar, not "just now" for hours.</li>
+    </ol>
+  </div>
+</article>
+
+<article class="issue" id="AQ" aria-labelledby="aq-h">
+  <div class="issue-head">
+    <span class="issue-num">AQ</span>
+    <h2 id="aq-h">Customers no longer ask for the assignee list</h2>
+    <div class="verdict"><span class="chip fixed">Fixed</span></div>
+  </div>
+  <dl class="facts">
+    <dt>Found</dt><dd><code>tickets/assignees</code> returned 403 on every page load for a customer, with a console error each time.</dd>
+    <dt>Cause</dt><dd>The call went out alongside the list so it wouldn't wait on it. Only a tech can assign, so for a customer it could only ever fail.</dd>
+    <dt>Files</dt><dd><code>pages/tickets/dev/hooks.ts</code></dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li>The assignee list is now requested after the ticket list comes back, and only when it says <code>canManage</code>. For a tech this adds one short wait before the assign picker fills; for a customer the call never happens.</li>
+    </ul>
+  </div>
+  <div class="verify">
+    <h4>How to check it</h4>
+    <ol>
+      <li>As user 649, open Tickets with the network tab open: no <code>tickets/assignees</code> request, no console error.</li>
+      <li>As a tech: the request is there and the assign picker lists the techs.</li>
+    </ol>
+  </div>
+</article>
+
+<article class="issue" id="F1" aria-labelledby="f1-h">
+  <div class="issue-head">
+    <span class="issue-num">1</span>
+    <h2 id="f1-h">Top 200's share change is labelled in points</h2>
+    <div class="verdict"><span class="chip fixed">Fixed</span></div>
+  </div>
+  <dl class="facts">
+    <dt>Found</dt><dd>"vs last week $27,283.86 (30.2% of net sales) <b>+13.1%</b>". Sales actually rose 59.5%. The 13.1 is the change in share, 43.3 minus 30.2.</dd>
+    <dt>Files</dt><dd><code>pages/sales/dev/components/PopupTopItems.tsx</code></dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li>The pill on both the last-week and last-year tiles now reads "+13.1 pts". The code comment beside it already said "points of contribution"; only the label was wrong.</li>
+    </ul>
+  </div>
+</article>
+
+<article class="issue" id="AI" aria-labelledby="ai-h">
+  <div class="issue-head">
+    <span class="issue-num">AI AL</span>
+    <h2 id="ai-h">"Add user" on the button, and the role by name on the review</h2>
+    <div class="verdict"><span class="chip fixed">Fixed</span></div>
+  </div>
+  <dl class="facts">
+    <dt>Found</dt><dd>The button said "New" while the form and the board say "Add user". The review step showed "1 · Basic User" for the role.</dd>
+    <dt>Cause</dt><dd>The role is stored as its option value, "1", and the review printed that value.</dd>
+    <dt>Files</dt><dd><code>organization/dev/users/UserGrid.tsx</code>, <code>organization/dev/users/create/StepReview.tsx</code></dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li>The button reads "Add user".</li>
+      <li>The review looks the role up in the same list the picker offers, so it reads "Single Store · Basic User".</li>
+    </ul>
+  </div>
+</article>
+
+<article class="issue" id="Y" aria-labelledby="y-h">
+  <div class="issue-head">
+    <span class="issue-num">Y</span>
+    <h2 id="y-h">Item Lookup: Enter searches, and "not found" says what it means</h2>
+    <div class="verdict"><span class="chip fixed">Fixed</span> One trade-off, below.</div>
+  </div>
+  <dl class="facts">
+    <dt>Found</dt><dd>A scanner types the digits and presses Enter, and Enter added a new line, so Search had to be clicked. A UPC with nothing to show said "There was an issue finding this item".</dd>
+    <dt>Cause</dt><dd>The UPC box takes several UPCs, one per line, so Enter was a line break. For the message, the endpoint answers "no sales in the window" the same way it answers a failure (<code>error: 1</code>), and the page treated both as a failure.</dd>
+    <dt>Files</dt><dd><code>pages/lookup/dev/desktop/LookupDesktopEntry.tsx</code>, <code>desktop/useLookupQueue.ts</code>, <code>ItemLookupMobile.tsx</code>, <code>lookupMetrics.ts</code> (<code>lookupFailureText</code>)</dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li>Enter searches. Shift+Enter adds a line for typing several by hand, and the hint says so. Pasting a list is unaffected.</li>
+      <li>When the server says there were no sales, the row reads "No sales of this UPC at this store in the last 14 days". Real failures still say "There was an issue finding this item". Phone and desktop use the same wording.</li>
+    </ul>
+  </div>
+  <p class="callout warn">Two things to know. The review suggested "No item with that UPC at this store", but the endpoint can't tell an unknown UPC from one that hasn't sold recently, so the message only claims what's known. And scanning several items in a row, then searching once, no longer works: each scan's Enter now searches straight away. Paste a list, or use Shift+Enter, to look up several.</p>
+  <div class="verify">
+    <h4>How to check it</h4>
+    <ol>
+      <li>Item Lookup (desktop, DEV), store 695: type 4900002468 and press Enter. COKE 6PK loads.</li>
+      <li>Type a made-up UPC and press Enter: "No sales of this UPC at this store in the last 14 days".</li>
+    </ol>
+  </div>
+</article>
+
+<!-- ============================================================ PHASE 4 -->
+<section class="block" aria-labelledby="p4-h">
+  <div class="phase-head"><h2 id="p4-h">Phase 4 &middot; Price Opt behaviour</h2><span class="commit">46f6d398</span></div>
+</section>
+
+<article class="issue" id="I" aria-labelledby="i-h">
+  <div class="issue-head">
+    <span class="issue-num">I</span>
+    <h2 id="i-h">Load vendors is one paged read, not 27 calls</h2>
+    <div class="verdict"><span class="chip fixed">Calls fixed</span> <span class="chip both">Download size needs the backend</span></div>
+  </div>
+  <dl class="facts">
+    <dt>Found</dt><dd>Load vendors made 27 calls, up to 26 in flight at once, 6.6 MB, for one store and one week.</dd>
+    <dt>Cause</dt><dd>It asked for the department list, then fired one <code>subs/subs</code> per department, all together. The Vendors page reads every department in one paged call with <code>sub_department: 0</code>.</dd>
+    <dt>Files</dt><dd><code>pages/inventory/dev/inventoryData.ts</code> (<code>fetchVendors</code>), <code>InventoryVendor.tsx</code></dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li>One paged read of every department, the way Vendors does it. The separate department-list call is gone too, since the vendor page never showed departments.</li>
+      <li>The loading message is now a single step: "Reading every department…".</li>
+    </ul>
+  </div>
+  <p class="callout warn">This fixes the flood of calls, not the size. The download is still every item row in the window, because vendor lives only on item rows. Cutting that needs the server-side vendor rollup in the backend plan.</p>
+  <div class="verify">
+    <h4>How to check it</h4>
+    <ol>
+      <li>Price Opt Vendor, store 695, week ending 10/20, Load vendors, network tab open.</li>
+      <li>Expect a handful of <code>subs/subs</code> calls with <code>"sub_department":0</code>, one per page, and no <code>subs/sub_sales</code>. Previously 27.</li>
+      <li>The vendor list should match what it was: 33 vendors, Mitchell Grocery first.</li>
+    </ol>
+  </div>
+</article>
+
+<article class="issue" id="K" aria-labelledby="k-h">
+  <div class="issue-head">
+    <span class="issue-num">K</span>
+    <h2 id="k-h">Price Opt keeps its result when you leave and come back</h2>
+    <div class="verdict"><span class="chip fixed">Fixed</span> Both Price Opt pages.</div>
+  </div>
+  <dl class="facts">
+    <dt>Found</dt><dd>Leaving Price Opt and coming back showed the empty form. On Vendor that meant another 2.5 seconds and every item row again.</dd>
+    <dt>Cause</dt><dd>Results lived in the page's own state, which goes when the page does.</dd>
+    <dt>Files</dt><dd>New <code>features/dev/devPriceOptSlice.ts</code>; <code>InventoryVendor.tsx</code>, <code>InventorySubDept.tsx</code>, <code>store/devReducers.ts</code></dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li>The search window, the list, the open vendor or department and its items are kept in a dev-only slice, like the older pages keep theirs.</li>
+      <li>The slice holds the store and dates, never the API token. The page rebuilds its scope from the session on each render, so a re-login can't leave a stale token behind.</li>
+      <li>The selected item isn't kept. Its receipts and invoice cost belong to the page that fetched them, and picking it again costs one small request.</li>
+      <li>A department left open mid-load closes on return, rather than reading as empty.</li>
+    </ul>
+  </div>
+  <div class="verify">
+    <h4>How to check it</h4>
+    <ol>
+      <li>Load vendors, open Coke, go to another page, come back: the vendor list is there with Coke open, and no new <code>subs/subs</code> call goes out.</li>
+      <li>Same on Sub Department with a department open.</li>
+    </ol>
+  </div>
+</article>
+
+<article class="issue" id="J" aria-labelledby="j-h">
+  <div class="issue-head">
+    <span class="issue-num">J</span>
+    <h2 id="j-h">The vendor filter finds items</h2>
+    <div class="verdict"><span class="chip fixed">Fixed</span> Vendor page.</div>
+  </div>
+  <dl class="facts">
+    <dt>Found</dt><dd>With no vendor open, "COKE 6PK", "GROUND BEEF", "beef" and the UPC found nothing.</dd>
+    <dt>Cause</dt><dd>The filter matched vendor names and the open vendor's items only, though every item was already loaded.</dd>
+    <dt>Files</dt><dd><code>pages/inventory/dev/InventoryTreePanel.tsx</code>, <code>InventoryVendor.tsx</code></dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li>Typing an item name or UPC keeps every vendor that sells a match. Open one and the same text narrows its items.</li>
+    </ul>
+  </div>
+  <p class="callout">Sub Department can't do this. Its items load one department at a time, so an unopened department's items aren't there to search. That is by design: it's what keeps Sub Department fast.</p>
+  <div class="verify">
+    <h4>How to check it</h4>
+    <ol>
+      <li>Price Opt Vendor, no vendor open, type "beef": Mitchell Grocery and any other vendor selling beef stay in the list.</li>
+    </ol>
+  </div>
+</article>
+
+<article class="issue" id="C" aria-labelledby="c-h">
+  <div class="issue-head">
+    <span class="issue-num">C</span>
+    <h2 id="c-h">TRANS counts receipts</h2>
+    <div class="verdict"><span class="chip fixed">Fixed</span> Price Opt and Item Actions now count the same way.</div>
+  </div>
+  <dl class="facts">
+    <dt>Found</dt><dd>Ground Beef showed TRANS 375 with 203 receipts behind it. COKE's $3.34 row listed receipt 333237 three times.</dd>
+    <dt>Cause</dt><dd>Every register line added one to the count. Item Actions had already worked around this on its own.</dd>
+    <dt>Files</dt><dd><code>utils/pricePoints.ts</code> (shared, dev callers only), <code>ItemAnalysisPanel.tsx</code></dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li>Each price counts distinct receipts. A receipt carrying the item three times is one transaction.</li>
+      <li>The header's TRANS counts each receipt once, even if it appears in both the single-unit and multi-unit tables.</li>
+      <li>The only callers of this code are Price Opt and Item Actions, both in the dev tree.</li>
+    </ul>
+  </div>
+  <div class="verify">
+    <h4>How to check it</h4>
+    <ol>
+      <li>Price Opt, Ground Beef Fam Pak: TRANS should read about 203, not 375.</li>
+    </ol>
+  </div>
+</article>
+
+<article class="issue" id="B" aria-labelledby="b-h">
+  <div class="issue-head">
+    <span class="issue-num">B G</span>
+    <h2 id="b-h">"Moves fastest" needs history behind it, and the tree uses one money format</h2>
+    <div class="verdict"><span class="chip fixed">Fixed</span> Two thresholds to tune, below.</div>
+  </div>
+  <dl class="facts">
+    <dt>Found</dt><dd>COKE's "moves fastest at $3.34" was 26 sales on one day, and $3.33 and $3.34 counted as two prices. Ground Beef's $11.94 was 11 packs on one day. The tree mixed "$25.1K", "$758.3" and "$674".</dd>
+    <dt>Cause</dt><dd>"Moves fastest" ranks by units a day while a price was live, so one busy day beats a price that sold all week. A multi-buy splits its total to the penny, so three for $10 rings as $3.33, $3.33, $3.34. The shared compact formatter keeps up to one decimal.</dd>
+    <dt>Files</dt><dd><code>utils/pricePoints.ts</code>, <code>ItemAnalysisPanel.tsx</code>, <code>InventoryTreePanel.tsx</code></dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li>A price can only be "moves fastest" if it rang on at least <b>3 days</b> and <b>5 receipts</b>. With fewer than two such prices there's no suggestion, and the panel says so: "Not enough history to suggest a price…".</li>
+      <li>Prices one cent apart under the same price type fold into one, kept at whichever price more receipts rang at. Nobody sets two shelf prices a cent apart.</li>
+      <li>The tree shows whole dollars under $1,000 and one decimal above: "$758", "$674", "$25.1K". This is local to Price Opt; the shared formatter is used by 23 other screens and is unchanged.</li>
+    </ul>
+  </div>
+  <p class="callout warn">3 days and 5 receipts are starting values I picked, not measured ones. Three days is under half a week, so a price that stood all week qualifies easily and a one-day spike can't. They're named constants (<code>MIN_SUGGESTION_DAYS</code>, <code>MIN_SUGGESTION_RECEIPTS</code>) and worth tuning against real stores.</p>
+  <div class="verify">
+    <h4>How to check it</h4>
+    <ol>
+      <li>Price Opt, COKE 6PK: $3.33 and $3.34 are one row. If only one price has stood for 3 days, the grey "Not enough history" note shows instead of the blue strip.</li>
+      <li>The department tree's amounts all read whole dollars or one decimal of a thousand.</li>
+    </ol>
+  </div>
+</article>
+
+<!-- ============================================================ PHASE 5 -->
+<section class="block" aria-labelledby="p5-h">
+  <div class="phase-head"><h2 id="p5-h">Phase 5 &middot; Item Actions rules</h2><span class="commit">3aefac46</span></div>
+  <p>These change what Item Actions concludes, not just how it looks, so each one is tied to the item the review named.</p>
+</section>
+
+<article class="issue" id="L" aria-labelledby="l-h">
+  <div class="issue-head">
+    <span class="issue-num">L</span>
+    <h2 id="l-h">A delivery at the end of the window isn't called dead</h2>
+    <div class="verdict"><span class="chip fixed">Fixed</span> Board check now passes.</div>
+  </div>
+  <dl class="facts">
+    <dt>Found</dt><dd>Five items delivered on 10/20, for a week ending 10/20, were Investigate. Thomas English Muffins: "3 units delivered, none scanned since".</dd>
+    <dt>Cause</dt><dd>Zero sales waited for a full week only when an item had no history. With last week's sales on file, a delivery from the window's last day was judged straight away. And "days since delivery" counts from today, not from the end of the window, so it couldn't see that the delivery had no time inside the window.</dd>
+    <dt>Files</dt><dd><code>pages/itemReport/dev/itemReportMetrics.ts</code> (<code>verdictFor</code>)</dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li>A delivery that landed in the last two days of the window, with nothing sold in the window, is no longer judged. It becomes <b>Insufficient</b>, worded: "Delivered 10/20, at the end of the window, so the new stock hasn't had time to sell. Nothing sold earlier in the window, against 4 last week, which looks like an empty shelf until this delivery. Check again next week."</li>
+      <li>Freshness is measured against the window's end, so the verdict is the same whichever day the report is run.</li>
+      <li>A delivery that has had time is judged exactly as before.</li>
+      <li><b>Extended in <span class="commit">7298995e</span>:</b> "had time" is now the item's own delivery interval (the "usually every 4" the rail shows), with a two-day minimum and a week as the fallback, instead of a flat week. When Investigate still stands for a recent delivery, the reason names the flat days before it arrived instead of "none scanned since".</li>
+    </ul>
+  </div>
+  <p class="callout">On Body Armor, the review thought Investigate might still be right, since it also sold nothing in the week before. That week is what this wording now names: the shelf looks empty until the delivery. Next week's run judges the new stock on its own sales.</p>
+  <div class="verify">
+    <h4>How to check it</h4>
+    <ol>
+      <li>Item Actions, store 695, 10/20, with the 49 UPCs received on 10/20.</li>
+      <li>Thomas English Muffins and Body Armor 16oz: Insufficient, with the "Check again next week" reason. Previously Investigate.</li>
+    </ol>
+  </div>
+</article>
+
+<article class="issue" id="N" aria-labelledby="n-h">
+  <div class="issue-head">
+    <span class="issue-num">N</span>
+    <h2 id="n-h">"Nothing left" accounts for earlier stock</h2>
+    <div class="verdict"><span class="chip fixed">Fixed</span></div>
+  </div>
+  <dl class="facts">
+    <dt>Found</dt><dd>White Wheat Round Top was Reorder one day after delivery, "2 delivered, 2 sold since", while its own row showed NET +7.</dd>
+    <dt>Cause</dt><dd>"Left of the last delivery" can't see stock from earlier deliveries. The code even noted this blind spot.</dd>
+    <dt>Files</dt><dd><code>pages/itemReport/dev/itemReportMetrics.ts</code></dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li>When two or more deliveries landed in the span and the span's net is positive, the shelf filled over the span rather than emptied, so "nothing left of the last delivery" no longer calls a reorder.</li>
+      <li>With only one delivery in the span, the span figure is unreliable (it counts sales from before that delivery), so it doesn't overrule anything.</li>
+    </ul>
+  </div>
+  <div class="verify">
+    <h4>How to check it</h4>
+    <ol>
+      <li>Item Actions, White Wheat Round Top: no longer Reorder. It falls through to the price and trend checks.</li>
+    </ol>
+  </div>
+</article>
+
+<article class="issue" id="M" aria-labelledby="m-h">
+  <div class="issue-head">
+    <span class="issue-num">M T</span>
+    <h2 id="m-h">The banners say what is actually true</h2>
+    <div class="verdict"><span class="chip fixed">Fixed</span></div>
+  </div>
+  <dl class="facts">
+    <dt>Found</dt><dd>"Reorder and Call vendor can't be judged" for items with no invoice, beside T-Bone marked Reorder. And with no last-year data for store 695, trends quietly compared against last week only.</dd>
+    <dt>Files</dt><dd><code>pages/itemReport/dev/ItemReportSheet.tsx</code></dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li>The invoice banner now reads "Call vendor can't be judged for those, and Reorder only from sales stopping." T-Bone's reorder comes from its sales stopping mid-week, which needs no invoice.</li>
+      <li>When nothing in the list has last-year sales, a grey line says so once: "No last-year sales on file for this store, so trends compare against last week only. A seasonal dip can read as a problem."</li>
+    </ul>
+  </div>
+</article>
+
+<article class="issue" id="Q" aria-labelledby="q-h">
+  <div class="issue-head">
+    <span class="issue-num">Q R S</span>
+    <h2 id="q-h">Labels, the Insufficient pile, cases, and the carried-over list</h2>
+    <div class="verdict"><span class="chip fixed">Fixed</span></div>
+  </div>
+  <dl class="facts">
+    <dt>Found</dt><dd>"VS LW" meant units here and dollars on Top 200. Insufficient items couldn't be filtered to. "Last received 1 days ago". Receivers shows cases (56), Item Actions showed units (224). A second Build kept the first list and added to it.</dd>
+    <dt>Files</dt><dd><code>ItemReportSheet.tsx</code>, <code>ItemReportRail.tsx</code>, <code>ItemReportEntry.tsx</code></dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li><b>Q:</b> the columns read "Units vs LW" and "Units vs LY".</li>
+      <li><b>R:</b> Insufficient is now a pile, last and in grey. It had been left out on purpose, as "no conclusion, no work to batch", but since L it holds a real batch to come back to.</li>
+      <li><b>R:</b> "Last received 1 day ago", and "today" for zero.</li>
+      <li><b>R:</b> each delivery row in the rail shows cases beside units: "224 · 56cs".</li>
+      <li><b>S:</b> Build adding to the list is deliberate: it copies the UPC List card, where lists are built up. Clear all was already there. What was missing was any sign the list had carried over, so the count line now says "Includes the list from your last build. Clear all to start a new one."</li>
+    </ul>
+  </div>
+</article>
+
+<article class="issue" id="P" aria-labelledby="p-h">
+  <div class="issue-head">
+    <span class="issue-num">P</span>
+    <h2 id="p-h">65.9% on Fam Pak Breast Tenders: checked, not changed</h2>
+    <div class="verdict"><span class="chip none">Needs one look at the item</span></div>
+  </div>
+  <dl class="facts">
+    <dt>Found</dt><dd>Fam Pak Breast Tenders: No action, "Trend −85%, cost steady, margin 65.9%". The review suspected the same per-pack vs per-pound mix-up as finding A.</dd>
+    <dt>Checked</dt><dd>It isn't the same bug. Item Actions already costs weighed items by weight (<code>calculateCogs</code> uses weight before quantity), and Ground Beef's units there are pounds, so the per-pound path works.</dd>
+  </dl>
+  <div class="block"><h3>Why nothing changed yet</h3>
+    <p>Two causes fit 65.9%, and which one it is shows on the screen:</p>
+    <ul>
+      <li>If its <b>Units</b> column shows whole numbers, the rows came back with weight 0. Cost is then units × a per-pound cost, understated by each pack's weight.</li>
+      <li>If Units shows pounds, the case cost and case size on its rows don't describe the same unit as the sales.</li>
+    </ul>
+    <p>Changing the cost rule without knowing which would risk breaking items that are right today.</p>
+  </div>
+  <div class="verify">
+    <h4>What to look at</h4>
+    <ol>
+      <li>Item Actions, store 695, Fam Pak Breast Tenders: whole numbers or pounds in the Units column? Tell me which, and the fix follows.</li>
+    </ol>
+  </div>
+</article>
+
+<!-- ============================================================ PHASE 6 -->
+<section class="block" aria-labelledby="p6-h">
+  <div class="phase-head"><h2 id="p6-h">Phase 6 &middot; Forms, layout and help</h2><span class="commit">00c847ee</span></div>
+</section>
+
+<article class="issue" id="AK" aria-labelledby="ak-h">
+  <div class="issue-head">
+    <span class="issue-num">AK</span>
+    <h2 id="ak-h">Add user counts the groups it will actually save</h2>
+    <div class="verdict"><span class="chip fixed">Fixed</span> And Create was already saving the right thing.</div>
+  </div>
+  <dl class="facts">
+    <dt>Found</dt><dd>By store, All Stores opened by its name, Bruces Foodland 361 ticked, the All Stores checkbox left unticked. The counter said "0 base groups, 1 store picked", the summary "Nothing selected yet", and the review "No base groups. This person will not see any stores", all with Continue enabled.</dd>
+    <dt>Cause</dt><dd>The save already treats a store ticked inside a group as holding that group (as "selected", with that store), so Create would have granted All Stores with store 361. Only the counter, the summary and the review counted ticked groups and ignored the ones a store implies. Continue was right to be enabled; the descriptions were wrong.</dd>
+    <dt>Files</dt><dd><code>organization/dev/users/access/accessSets.ts</code> (<code>heldGroupIds</code>, now exported), <code>AccessPanel.tsx</code>, <code>create/StepReview.tsx</code></dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li>The counter, the summary and every part of the review read the same list of groups the save uses: ticked groups, plus any a ticked store implies.</li>
+      <li>In the review's case it now reads "1 base group, 1 store picked", and the review lists "Bruces Foodland · All Stores, 1 stores, FIXED", which is what Create writes.</li>
+      <li>Nothing about what gets saved changed. Three tests pin that the description and the save agree.</li>
+    </ul>
+  </div>
+  <div class="verify">
+    <h4>How to check it</h4>
+    <ol>
+      <li>DEV, Add user, By store, open All Stores by its name, tick 361, leave the group's checkbox alone, Continue.</li>
+      <li>The review should show All Stores with 1 store, not "No base groups".</li>
+    </ol>
+  </div>
+</article>
+
+<article class="issue" id="F2" aria-labelledby="f2-h">
+  <div class="issue-head">
+    <span class="issue-num">2</span>
+    <h2 id="f2-h">Top 200's cut-off names: already changed since the tested build</h2>
+    <div class="verdict"><span class="chip none">No change needed; confirm on redeploy</span></div>
+  </div>
+  <dl class="facts">
+    <dt>Found</dt><dd>With the item panel open, names and the second line were cut off ("GROUND CHUCK FAM PA…", "Beef - Variable · …"), and the unit count disappeared.</dd>
+    <dt>Checked</dt><dd>The row the review saw has since changed. On 10/20 the list became a fixed 471px, and the units came off the second line at your request, which now reads only "UPC · sub department". The name gets about 225px in every state, which holds "GROUND CHUCK FAM PACK" with room to spare. Neither change has been deployed to dev yet.</dd>
+  </dl>
+  <div class="verify">
+    <h4>How to check it after redeploy</h4>
+    <ol>
+      <li>Top 200 at 1707px with an item open: names and sub departments read in full.</li>
+    </ol>
+  </div>
+</article>
+
+<article class="issue" id="AE" aria-labelledby="ae-h">
+  <div class="issue-head">
+    <span class="issue-num">AE</span>
+    <h2 id="ae-h">The new pages use the new help, and it matches the screen</h2>
+    <div class="verdict"><span class="chip fixed">Fixed</span></div>
+  </div>
+  <dl class="facts">
+    <dt>Found</dt><dd>Item Actions and Price Opt opened "About the Coming Soon pages", a separate document. It said the suggested price "sits underneath" (it is at the top), and that a left price with no right counterpart never existed, which is wrong for by-weight items.</dd>
+    <dt>Checked</dt><dd>Both pages had already moved to the new help panel on this branch, which the tested build predates. But the new Price Opt help repeated the "never existed" line, twice, and predates this week's fixes.</dd>
+    <dt>Files</dt><dd><code>components-dev/help/content/priceOpt.ts</code>, <code>itemActions.ts</code></dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li>Price Opt: both "never existed" passages now name the random-weight exception. "There is no suggestion" lists all three reasons (one price, not enough history, random-weight packs). "Moves fastest at" states the 3 days and 5 receipts. "Trans" says receipts. A new "Cost / unit" term explains invoice versus item file.</li>
+      <li>Item Actions: "Insufficient" points at its new pile. "vs LW / vs LY" is now "Units vs LW / LY" and says it is units, not Top 200's dollars.</li>
+    </ul>
+  </div>
+</article>
+
+<article class="issue" id="AD" aria-labelledby="ad-h">
+  <div class="issue-head">
+    <span class="issue-num">AD AF</span>
+    <h2 id="ad-h">Guide steps point at the right control, and every Show me has a target</h2>
+    <div class="verdict"><span class="chip fixed">Fixed</span> With a test that keeps it that way.</div>
+  </div>
+  <dl class="facts">
+    <dt>Found</dt><dd>With results showing, "Pick a store… in the search card" lit up the dark header, since the card was closed. Eight Sales glossary terms had no Show me.</dd>
+    <dt>Cause</dt><dd>The steps used the magnifying-glass anchor, because the card had none of its own. Of the eight terms, three describe things that are on screen but had no anchor. Four describe the Top 200 item report as it was before the rebuild ("How it rang", "What it costs you", "120 days"), and "Off regular" left the screen with the promotion split.</dd>
+    <dt>Files</dt><dd><code>components-dev/SearchCard.tsx</code>, <code>help/content/sales.ts</code>, <code>PopupTopItems.tsx</code>, <code>PopupSubDeptList.tsx</code>, new <code>help/helpAnchors.test.ts</code></dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li><b>AD:</b> the search card has its own anchor. Steps 1 and 2 light it up, and step 1 says to click the magnifying glass first if results are showing.</li>
+      <li><b>AF:</b> "Lost share while sales grew" and "Does not cancel" point at the share panel. "Inactive items" points at the Sub dept tab's filter. "Average price", "Unit cost", "Cost coverage" and "Allowance" point at the item report's sections, and their wording now names those sections as they are. "Off regular" is removed.</li>
+      <li>The "See which items earned the week" guide's last two steps describe the current report, and the cost history reads 60 days.</li>
+      <li>New test: every anchor named anywhere in the help must exist as <code>data-help</code> on some page. It passes now (58 anchors), and it failed when a dead anchor was planted on purpose.</li>
+    </ul>
+  </div>
+  <div class="verify">
+    <h4>How to check it</h4>
+    <ol>
+      <li>Sales with results showing, "?", Load a week's sales, step 1: it tells you to open the card. Open it, and step 1 lights the card.</li>
+      <li>Glossary, "Unit cost", Show me, with an item open in Top 200: the cost section lights up.</li>
+    </ol>
+  </div>
+</article>
+
+<!-- ============================================================ PHASE 7 -->
+<section class="block" aria-labelledby="p7-h">
+  <div class="phase-head"><h2 id="p7-h">Phase 7 &middot; Sign-in and accounts, after the backend</h2><span class="commit">cd1ae278</span></div>
+  <p>Phases 7 to 10 are the frontend's half of the backend changes on <code>branch_10_20_2026</code> in goliath-platform. That branch is committed but <b>not deployed</b>. Everything below is written against the contracts in the backend's response, so it shows on screen only once that branch is on dev.</p>
+  <p class="callout">The sign-in page, the account menu and the account-setup modal are shared, not forked. The backend change reaches both trees, so these changes do too. Each one says where.</p>
+</section>
+
+<article class="issue" id="S1" aria-labelledby="s1-h">
+  <div class="issue-head">
+    <span class="issue-num">S1</span>
+    <h2 id="s1-h">The sign-in override is gone, and a refused sign-in says so</h2>
+    <div class="verdict"><span class="chip fixed">Fixed</span> Shared: the sign-in page serves both trees.</div>
+  </div>
+  <dl class="facts">
+    <dt>Found</dt><dd>While planning the backend work. <code>/auth/login</code> handed out a working token for any username, with any password, when the body carried <code>"ov": 1</code>. The frontend sent <code>ov</code> once a username and password written into <code>Login.tsx</code> were typed in. Both shipped in every build, so anyone reading the JavaScript had them.</dd>
+    <dt>Backend</dt><dd><code>1b49e96</code>: the password check is unconditional, the token is no longer logged, and a wrong password is now <b>HTTP 401</b>, not a 200 carrying <code>error: 1</code>.</dd>
+    <dt>Why the frontend had to move</dt><dd>axios rejects a 401. The page treated every rejection as an outage, so after the deploy a mistyped password would have read "We couldn't reach the server", with a red toast.</dd>
+    <dt>Files</dt><dd><code>pages/home/Login.tsx</code>, <code>portal/SignInRail.tsx</code>, <code>api/login.ts</code>, new <code>utils/session.ts</code></dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li>The hardcoded username and password, the "Impersonate user" checkbox and the <code>ov</code> flag are deleted. The password string is no longer in the built bundle (checked in <code>dist/</code>).</li>
+      <li>Any 4xx from sign-in reads as a wrong username or password. Only no response or a 5xx reads as the server being down. The old 200-with-<code>error</code> answer still reads as refused, because an inactive user still gets it, and so does an API without the change.</li>
+      <li>The success dispatches moved into one <code>applySession</code>, so "Sign in as" below sets up a session the same way a real sign-in does.</li>
+    </ul>
+  </div>
+  <div class="verify">
+    <h4>How to check it (after the backend deploy)</h4>
+    <ol>
+      <li>Sign in with a wrong password: "That username and password don't match", no toast.</li>
+      <li>The impersonate checkbox never appears, whatever is typed.</li>
+    </ol>
+  </div>
+  <p class="callout">The username and password that unlocked the checkbox are still in git history. If <code>otkim</code> is a real account, change its password.</p>
+</article>
+
+<article class="issue" id="S1b" aria-labelledby="s1b-h">
+  <div class="issue-head">
+    <span class="issue-num">S1</span>
+    <h2 id="s1b-h">"Sign in as" for level 9, in the account menu</h2>
+    <div class="verdict"><span class="chip fixed">Built</span> Dev only, level 9 only.</div>
+  </div>
+  <dl class="facts">
+    <dt>Backend</dt><dd><code>POST /auth/impersonate {username}</code> from a level 9 session. The level is read from the database, not the token. The response is identical to a sign-in for the person named. Its token carries <code>imp</code> naming the caller and lasts 60 minutes.</dd>
+    <dt>Files</dt><dd>new <code>components-dev/SignInAsModal.tsx</code>; <code>components/navigation/TitleBar.tsx</code> and <code>components/accountSetup/AccountSetupModal.tsx</code> (shared)</dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li>The account menu has "Sign in as..." for level 9 on dev. It asks for a username, and failures come back in words: no such user, inactive, not level 9, or your own session has run out.</li>
+      <li>On success it does a sign-out and then a sign-in as them, not a token swap. The store is emptied the way Sign out empties it, so none of your searches or page rows carry into their session. Their stores, groups and last page then load as they would for them.</li>
+      <li>While signed in as someone, the menu says "Signed in as them by C5m7b4. Sign out to return.", read from the token's <code>imp</code>.</li>
+      <li>The account-setup modal stays shut in an impersonated session. Otherwise opening as someone due a password change would have had support choosing their password and security answer.</li>
+      <li>The session is on dev and holds no prod or legacy token. Mode has nothing to switch to while you are them.</li>
+    </ul>
+  </div>
+  <div class="verify">
+    <h4>How to check it (after the backend deploy)</h4>
+    <ol>
+      <li>As a level 9 on DEV: account menu, Sign in as..., a client username. You land on their last page with their stores, and the menu names you as the one behind it.</li>
+      <li>Try a made-up username: "There is no user named ...".</li>
+      <li>Sign out, sign back in as yourself.</li>
+    </ol>
+  </div>
+</article>
+
+<article class="issue" id="S2" aria-labelledby="s2-h">
+  <div class="issue-head">
+    <span class="issue-num">S2</span>
+    <h2 id="s2-h">The user list no longer carries passwords, and the edit form stops copying one</h2>
+    <div class="verdict"><span class="chip fixed">Fixed</span></div>
+  </div>
+  <dl class="facts">
+    <dt>Backend</dt><dd><code>e491947</code>: <code>users/</code> names its columns. No <code>password</code> (an unsalted SHA-1), <code>security_answer</code> or <code>security_question_id</code>.</dd>
+    <dt>Found on the way</dt><dd>Selecting a user copied that hash into the edit form's password and confirm fields. Checked on the backend: <code>users/update_user</code> has no password field and never wrote it, so nothing was ever saved from it. It was just a hash sitting in a form.</dd>
+    <dt>Files</dt><dd><code>interfaces/index.ts</code> (and <code>legacy/</code>), <code>features/dev/devUsersSlice.ts</code>; <code>features/usersSlice.ts</code> and <code>legacy/features/usersSlice.ts</code> only so they compile, with no change in behaviour</dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li>The three fields are off the <code>User</code> type. They stay on the request types that send them (password reset, security question).</li>
+      <li>Selecting a user leaves the form's password fields blank.</li>
+    </ul>
+  </div>
+</article>
+
+<article class="issue" id="AN2" aria-labelledby="an2-h">
+  <div class="issue-head">
+    <span class="issue-num">AN</span>
+    <h2 id="an2-h">A user with no company is told why their ticket did not send</h2>
+    <div class="verdict"><span class="chip fixed">Fixed</span> And the ticket scoping itself is fixed on the backend.</div>
+  </div>
+  <dl class="facts">
+    <dt>Backend</dt><dd><code>344672f</code>, <code>52a35d6</code>: a customer sees a ticket they opened or one filed under their company, by list or by id (404 otherwise). <code>tickets.company</code> is now a required column, so a user with no company gets a 400 explaining that a manager has to assign one.</dd>
+    <dt>Found on the way</dt><dd>A failed send was set as the page's error. On the help desk that sat behind the open form. Filed from another page through Report an issue, it showed nowhere.</dd>
+    <dt>Files</dt><dd><code>pages/tickets/dev/hooks.ts</code>, <code>NewTicketModal.tsx</code>, <code>ticketsUtils.ts</code> (<code>sendFailureText</code>)</dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li>The form says why it did not send, next to its own Send button, and stays open with everything typed.</li>
+      <li>A 400's <code>detail</code> is shown as the server wrote it. Other failures read "That did not send: ...".</li>
+    </ul>
+  </div>
+  <div class="verify">
+    <h4>How to check it (after the backend deploy)</h4>
+    <ol>
+      <li>As one of the migrated no-company users, Report an issue, Send it: the message names the missing company and a manager.</li>
+      <li>As taBruces: the help desk lists TCK-35 only.</li>
+    </ol>
+  </div>
+</article>
+
+<!-- ============================================================ PHASE 8 -->
+<section class="block" aria-labelledby="p8-h">
+  <div class="phase-head"><h2 id="p8-h">Phase 8 &middot; Company families from the record</h2><span class="commit">a1660978</span></div>
+</section>
+
+<article class="issue" id="AJ" aria-labelledby="aj-h">
+  <div class="issue-head">
+    <span class="issue-num">AJ</span>
+    <h2 id="aj-h">The Houchens family comes from the company record, not a list in the code</h2>
+    <div class="verdict"><span class="chip fixed">Fixed</span> And <code>users/</code> is scoped on the server.</div>
+  </div>
+  <dl class="facts">
+    <dt>Backend</dt><dd><code>fd927bc</code>, <code>a082b38</code>: <code>companies.parent_company_id</code> exists, and Food Giant, Sonic, Ace and Brooks point at Houchens. It is on every company in the sign-in response and on every user's companies from <code>users/</code>. <code>users/</code> now returns the caller's family plus everyone with no company (the 316 migrated accounts). Level 9 and the two support accounts get all 487.</dd>
+    <dt>Before</dt><dd>The family was <code>COMPANY_FAMILIES = [[1, 4, 6, 17, 21]]</code> in <code>scoping.ts</code>. A sixth Houchens company would have needed a code change before anyone could administer it, and nothing would have said so.</dd>
+    <dt>Files</dt><dd><code>organization/dev/scoping.ts</code>, <code>baseGroups/hooks.ts</code>, <code>companies/CompanyUsersPanel.tsx</code>, <code>interfaces/index.ts</code> (<code>UserCompany.parent_company_id</code>)</dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li><code>COMPANY_FAMILIES</code> is deleted. A company's family is its <code>parent_company_id</code>, or its own id when it has none. That is the backend's own rule, <code>coalesce(parent_company_id, id)</code>.</li>
+      <li>The Companies tab compares families directly: yours, read from your companies at sign-in, and each candidate's, from their companies in <code>users/</code>. No extra call.</li>
+      <li>The level guard is unchanged and still applies on top. Support (level 7) sees everyone but cannot edit the 8 users above level 7.</li>
+      <li>Without <code>parent_company_id</code> (an API before the deploy), each company stands alone. A Food Giant manager would briefly lose Sonic's staff, rather than anyone gaining people. The no-company accounts are offered to every manager either way.</li>
+      <li>Tests run against the companies as RDS holds them. One adds a sixth company pointing at Houchens and checks it is reached with no code change.</li>
+    </ul>
+  </div>
+  <div class="verify">
+    <h4>How to check it (after the backend deploy)</h4>
+    <ol>
+      <li>As a Food Giant manager: Organization, Companies, Sonic. Sonic's people are offered, Bruces' are not.</li>
+      <li>As taBruces: the user list is Bruces plus the no-company accounts (345).</li>
+    </ol>
+  </div>
+</article>
+
+<!-- ============================================================ PHASE 9 -->
+<section class="block" aria-labelledby="p9-h">
+  <div class="phase-head"><h2 id="p9-h">Phase 9 &middot; Price Opt reads prices from the server</h2><span class="commit">ba150ec3</span></div>
+</section>
+
+<article class="issue" id="D" aria-labelledby="d-h">
+  <div class="issue-head">
+    <span class="issue-num">D A</span>
+    <h2 id="d-h">The actual table comes from <code>cashiers/price_points</code>, and weighed items are per pound</h2>
+    <div class="verdict"><span class="chip fixed">Fixed</span> Finding A's stop-gap notice is gone.</div>
+  </div>
+  <dl class="facts">
+    <dt>Backend</dt><dd><code>586ba24</code> adds the endpoint and <code>0201b78</code> scales weights to pounds. It reads every receipt line for the item with no cap and returns one row per price. A weighed line is priced per pound. If it rang at the shelf price within what rounding explains, it reports the shelf price exactly. It reproduced the browser's own buckets on COKE and DR PEPPER, apart from one half-cent the browser rounded wrong.</dd>
+    <dt>Before</dt><dd>Clicking an item downloaded up to 400 receipts (<code>product_lookup</code> then every page of <code>transaction_list</code>) and bucketed them in the browser. Random-weight packs rang as qty 1 at their own totals, so Ground Beef Fam Pak showed 146 "prices". Phase 2 could only withhold the suggestion and say why. Food Giant's scale items, rung at qty 0, had no price points at all.</dd>
+    <dt>Files</dt><dd>new <code>api/pricePoints.ts</code> (shared layer); new <code>inventory/dev/usePricePoints.ts</code>; <code>ItemAnalysisPanel.tsx</code>, <code>ActualPriceRow.tsx</code>, <code>InventoryExportModal.tsx</code>, <code>InventoryVendor.tsx</code>, <code>InventorySubDept.tsx</code>, <code>inventoryData.ts</code>; shared <code>utils/pricePoints.ts</code> (additions only), <code>hooks/useActualPricePoints.ts</code> (an optional cap argument), <code>interfaces</code> (<code>weight</code> on a receipt line); help <code>priceOpt.ts</code></dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li>Clicking an item makes one small call. The table, the suggestion, Prices and Trans are all built from it. The 400 cap and its "further receipts not read" line are gone, because nothing is sampled.</li>
+      <li>Weighed items read <b>$/lb</b> with pounds in Qty, so velocity is pounds a day and the margin is held against a per-pound cost. The "No suggested price for this item" notice and the check behind it (<code>isUnweighedPacks</code>) are deleted.</li>
+      <li>The penny-twin fold still runs on the server's rows, as the backend advised. 2 for $6.67 still arrives as $3.34 and $3.33.</li>
+      <li><b>Receipts load when you open a price.</b> The first Trans count you click reads the item's receipts once, in full, and each price lists the lines that match it by the server's own rule. Weighed lines show their pounds. Closing and opening others costs nothing more.</li>
+      <li>The export uses the same table. Its "transactions" preset is there once a price has been opened on the page. Before that it says to open one, rather than fetching thousands of rows unasked.</li>
+    </ul>
+  </div>
+  <div class="block"><h3>Two things it gives up, said plainly</h3>
+    <ul>
+      <li><b>"Package deal" can't be detected.</b> That pattern counts receipts carrying the item at two prices, which needs each receipt, and the endpoint counts receipts without naming them. The other patterns are unaffected. Asking the backend for one more count, receipts at more than one price, brings it back.</li>
+      <li><b>Two counts are sums, not distinct receipts.</b> Folding a penny twin adds its receipts, and Trans adds the two tables. Either can count a receipt twice, only when that receipt carried the item at two prices.</li>
+    </ul>
+  </div>
+  <div class="verify">
+    <h4>How to check it (after the backend deploy)</h4>
+    <ol>
+      <li>Price Opt, store 695, Ground Beef: the actual table reads $/lb, with $3.49 SALE, $6.49 REG and one $6.16. No random-weight notice, and a suggestion if the history is there.</li>
+      <li>Click a Trans count: "Reading the receipts…", then the lines, with pounds. Open another price: instant.</li>
+      <li>A fast mover that used to say "further receipts not read" no longer does, and its Trans is the full count.</li>
+    </ol>
+  </div>
+</article>
+
+<article class="issue" id="F3" aria-labelledby="f3-h">
+  <div class="issue-head">
+    <span class="issue-num">3</span>
+    <h2 id="f3-h">Top 200 asks for 200</h2>
+    <div class="verdict"><span class="chip none">Already done</span> In <code>37935f32</code>, before this review.</div>
+  </div>
+  <dl class="facts">
+    <dt>Checked</dt><dd><code>TOP_ITEMS_FETCH</code> has been 200 since <code>37935f32</code>. That is correct only once the backend ranks <code>topitems</code> by sales, which is on <code>branch_10_20_2026</code> and not deployed. Until the deploy, dev's Top 200 is the top 200 by units, re-ranked by sales.</dd>
+    <dt>Worth knowing</dt><dd>The backend notes that deploying the branch for this also deploys its other number changes: weighed items per pound, weight beside qty, and <code>cat_sales</code>, <code>hourly</code> and <code>weekly</code> reconciled to <code>sub_sales</code>.</dd>
+  </dl>
+</article>
+
+<!-- ============================================================ PHASE 10 -->
+<section class="block" aria-labelledby="p10-h">
+  <div class="phase-head"><h2 id="p10-h">Phase 10 &middot; Lists from <code>subs/rollup</code>, items behind them</h2><span class="commit">6fc2a4ac &middot; dd7a0758 &middot; 21a43aee</span></div>
+</section>
+
+<article class="issue" id="I" aria-labelledby="i-h">
+  <div class="issue-head">
+    <span class="issue-num">I</span>
+    <h2 id="i-h">Vendors, Price Opt Vendor and Sub Dept Margins draw their lists from the rollup</h2>
+    <div class="verdict"><span class="chip fixed">Fixed</span> One commit per page.</div>
+  </div>
+  <dl class="facts">
+    <dt>Backend</dt><dd><code>081d89c</code>: <code>POST /subs/rollup</code> returns the item rows <code>subs/subs</code> serves, summed by vendor or department per location per day. It is about 40 KB for a store-week instead of 13 MB. The backend checked it against the pages' own arithmetic: 0 mismatched rows across six store/key combinations.</dd>
+    <dt>Decided 22 Oct</dt><dd>The item rows still come down whole. Every field <code>subs/subs</code> returns stays in hand, because these pages may grow, and the rows carry vendor and department so the pages filter them themselves. So the rollup buys a fast first screen. The total download is the same.</dd>
+    <dt>Files</dt><dd>new <code>api/rollup.ts</code> (shared layer); <code>vendors/dev/</code> (<code>vendorsData</code>, <code>vendorsUtils</code>, <code>useVendorSearch</code>, <code>VendorDetailPanel</code>), <code>features/dev/devVendorsSlice.ts</code>; <code>inventory/dev/inventoryData.ts</code>, <code>InventoryVendor.tsx</code>; <code>subDepts/dev/</code> (<code>SubDeptMargins.tsx</code>, <code>index.ts</code>, both perf panels), <code>features/dev/devSubMarginSlice.ts</code></dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li><b>Vendors:</b> the search waits only for the rollup. The list, grades, KPIs and day strip are built from it, and the page is usable as soon as it lands. The item rows follow, and until they do the Items area reads "Loading this week's items…" and Export waits. One function builds the list from either kind of row. A test pins that both give an identical list.</li>
+      <li><b>Price Opt Vendor:</b> the tree draws from the rollup. Item counts fill in, opening a vendor works and the item filter searches items once the rows land. Until then an opened vendor shows "Loading items…". Both sources now go through one vendor-id rule, where blank or all zeros means No vendor, so a vendor is the same group either way.</li>
+      <li><b>Sub Dept Margins:</b> the department list, grades, store header and sparklines draw from the rollup by department. The item reads run alongside, unchanged. When they land they replace each grade with the full one: the same figures, plus the items and no-cost counts. The right panel and the export say items are still loading until then. A test pins that the day-matched margins, deltas and sales agree from either source.</li>
+      <li>If the item rows fail after the list has drawn, the list stays, and a message says to search again.</li>
+      <li>The mobile Performance screens have their own fetch and are unchanged.</li>
+    </ul>
+  </div>
+  <div class="verify">
+    <h4>How to check it (after the backend deploy)</h4>
+    <ol>
+      <li>Vendors, a big store: the list appears in a moment, and a vendor's Items say they are loading for a few seconds before the table fills.</li>
+      <li>Sub Dept Margins, same store: the list and header appear first and match what they show after the items land. Open a department early: "Loading this week's items…", then the items.</li>
+      <li>Price Opt Vendor: the tree appears with blank item counts, which fill in. Filter by an item name once they do.</li>
+      <li>Store 685: the 369/370 split works on all three before and after the items land.</li>
+    </ol>
+  </div>
+</article>
+
+<section class="block" aria-labelledby="left-h">
+  <h2 id="left-h">What the frontend can't do alone</h2>
+  <div class="scroll"><table>
+    <thead><tr><th>#</th><th>What's needed</th><th>Who</th></tr></thead>
+    <tbody>
+      <tr><td class="id">D</td><td>"Package deal" back on Price Opt: a count of receipts carrying the item at more than one price, on <code>price_points</code>.</td><td>Backend, optional</td></tr>
+      <tr><td class="id">P</td><td>Fam Pak Breast Tenders: are its Item Actions units whole numbers or pounds? That decides the fix.</td><td>One look</td></tr>
+      <tr><td class="id">B</td><td>Tune the 3-day, 5-receipt minimum for "moves fastest" against real stores.</td><td>Steve / Tommy</td></tr>
+      <tr><td class="id">F, AB, U, Z, AA</td><td>Board wording, Groups training card, Item Lookup on a phone, release notes for the Vendors Crit count and the Sub Dept Margins headline.</td><td>No code</td></tr>
+    </tbody>
+  </table></div>
+  <p class="callout">Two deploys before the next review run: the frontend, for everything in phases 1–10, and the backend branch, which phases 7–10 are built against. AN, AO and AP are off this list: the backend fixed AN and AO, and ticket email is on and works.</p>
+</section>
+
+<footer>
+  Verified for Phase 10: typecheck, 1,276 tests (5 new this phase), theme audit, eslint and a production build, all clean. Checked by tests, not in a browser, so the "how to check it" steps are yours to run.
+</footer>
+
+</div>
+</body>
+</html>

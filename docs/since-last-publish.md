@@ -234,3 +234,177 @@ active ticket_techs row, at any level.
 That is a door, not a key: every call the page makes is still answered against
 the row server-side.
 
+
+## From the test-user agent run
+
+Tommy's test-user agent ran the deployed 10/12 build against store 361 and
+filed five issues and seven observations (`issue-drafts-2026-10-21.html`). The
+four that were ours to fix are below; the response that went back is
+`docs/issue-response-2026-10-21.html`.
+
+### The sub-department names stop being the column that gives way
+
+`03844b4d`
+
+On a window under about 1200px every sub-department name in the Sales drill
+shrank to nothing. The amounts and percentages stayed, and which department
+they belonged to did not.
+
+Three nested widths caused it: the report panel is 52% of the content area, the
+signal list 39.5% of that, and inside the row the numbers are fixed at 246px.
+The name cell was the only item in the row that could shrink, so it absorbed
+every missing pixel.
+
+The name cell and the signal list both have a floor now, and **vs LY hides
+under 1200px** -- the weaker of the two comparisons, and a dash on every row
+anyway on a store with no history on file.
+
+### The ledger stops fetching an hour it never shows
+
+`8fefe4d8`
+
+Sales fetched `hourly/hourly` for three windows on every search, and per store
+on a group of more than 30. Nothing read a row of it: the ledger shows no hour,
+and the drill's Hourly tab fetches the same three windows scoped to the store
+you clicked and dispatches them over the top.
+
+On the 60-store group behind the 11 Sep performance report that was 180
+requests whose results were written to Redux, read by nobody, and replaced. The
+dev ledger had already dropped them; this brings prod level.
+
+### The store's margin is weighted, not averaged
+
+`b5595d61`
+
+Sub Dept Margins built its header margin by averaging the departments'
+percentages, so a $1,000 floral counter at 70% counted as much as a $90,000
+grocery department at 25% and the figure read about five points high. The run
+found it by loading this screen and Vendors for the same store-week: 31.91%
+against 27.04%, from the same `subs/subs` rows. Vendors has always weighted and
+was right.
+
+Net and COGS now come out of the day-matching as `MarginDollars` instead of
+being discarded after the division, so the store figure sums them and divides
+once. Both points deltas are weighted the same way, each side scoped to the
+days it matched, and read as a dash rather than 0.00 where a side has no sales.
+
+`marginPct` had three private copies and now has one, in `utils/grading`.
+
+**The number on screen will drop**, about 31.9% to about 27.0% on that
+store-week. It will look like a regression and it is the opposite.
+
+### A hidden Search button stops being in the page
+
+`c0a5a5e7`
+
+`DatePickers` rendered its Search control with `display: none` whenever
+`showBtn` was false, which is nearly every caller -- both SearchCards,
+Cashiers, Coupons, Inventory, Admin and Receivers all own their own search
+button. An element in the markup that is never painted reads as a real control
+to a screen reader or a test agent, which is why the run reported Receivers as
+having two search controls. It is no longer rendered when it is off.
+
+### Co-located stores split on Vendors and Categories
+
+`f157e3bb` `98ab447a`
+
+A handful of storeids cover two physical stores, and these pages fetch by
+storeid, so their responses arrive with both locations added together. Sales,
+Sub Dept Margins, Receivers and Item Lookup have always split them; Vendors and
+Categories never did. On 685 -- store numbers 369 and 370 -- every vendor and
+category figure on those two pages was two stores at once, with nothing on
+screen saying so.
+
+Both pages now take the locations from the rows, land on the first rather than
+the combined view, and offer the same **LocationTabs** the others do. The raw
+rows stay whole so switching is a rebuild, not another paginated read, and the
+header names the location you are on rather than whichever number the
+assignedStores record happened to embed.
+
+Categories narrows its per-category drills as well -- items and hourly are
+fetched by storeid too -- and switching location closes the open category,
+since its rows belong to the one before it.
+
+**The split also got stricter, which fixes a quieter bug in Sub Dept Margins.**
+Scoping went through `scopeToStoreNumber`, which leaves an array alone when it
+holds fewer than two numbers. That guard answers "does this response need
+splitting"; the question when a reader has picked a location is "which location
+is this", and a co-located store can easily have a period only one of its
+locations traded in -- a last year 370 has no history for and 369 does. The
+guarded form handed 369's rows to somebody on the 370 tab. `onlyStoreNumber`
+joins it in `utils/storeIdentity`, strict and documented against its sibling,
+and Sub Dept Margins moves to it.
+
+Mobile already scoped by store number, so this is desktop only.
+
+Whether Categories shows tabs at all depends on `cat_sales` returning a
+per-location `store_number`. If every row carries the same number the tabs
+render nothing and the page behaves as it does today -- inert until the rows
+support it, correct the moment they do.
+
+## User Management
+
+### A manager is only offered their own people to assign
+
+`31690c22`
+
+The Companies tab built its candidate column from every user the server
+returns, which is every user on the system. A Bruces manager was offered 391
+people to add to Bruces, Houchens staff among them -- and
+`assign_user_to_company` takes a bare userid with no ownership check, so the
+offer was real.
+
+Three ways into that column now: you see everything (level 9 or DCR support),
+the person holds **no company at all**, or the person is inside your **reach**.
+
+Reach is your own companies plus the rest of any family one of them belongs to.
+**Houchens is five companies on the books** -- Houchens 1, Food Giant 4, Sonic
+6, Ace 17, Brooks 21 -- and one organisation in practice, so a manager at any
+of them administers staff across all five. Bruces, Grocery Basket, S&C Foods
+and B and T each stand alone.
+
+**DCR (5) is deliberately not in the family.** It sits beside those ids in the
+Orders edit gate, which is Houchens plus ourselves -- a different question with
+a coincidentally similar list.
+
+Somebody holding no company stays available to anyone: a new account belongs to
+nobody, and putting it somewhere is the whole of onboarding.
+
+Only the left column narrows. Anyone already in the company on screen holds it,
+so they are in your reach by definition. A line under the heading says what the
+narrowing is, so a short list does not read as a broken search.
+
+**The hardcoded family wants to be a `parent_company_id` on the company
+record.** Add a sixth Houchens company and this file has to be edited before
+anybody can administer it, and nothing will say so.
+
+**Still open:** the Stores and Base Groups tabs take their candidate lists from
+the server rather than building them here, so whether those are company-scoped
+is a question for the endpoints, not for this fix.
+
+### The company filter offers what you hold, and Assign all obeys it
+
+`0917a0af`
+
+Two faults in the same dropdown.
+
+**It listed companies outside the viewer's reach.** The candidates were gated,
+but the options were still built from every company each candidate holds -- and
+somebody can hold two. A person in both Houchens and B and T is yours to work
+with through Houchens; listing "B and T (1)" offered a filter for a company you
+have no business in and named its headcount while doing it. Options now drop
+anything outside reach. **No company** never drops. A viewer who sees
+everything keeps the whole list.
+
+**Assign all ignored the filter entirely.** The Companies and Stores tabs pass
+`assignAllScope="global"`, which read the raw unfiltered array -- so the
+heading said "1 of 372" and the button beside it would have assigned 372
+people, on a tab whose whole job is company membership, through a write that
+takes a bare userid.
+
+"global" now means it steps over the **search box**, which is the parity it was
+added for and still right: somebody typing to find one person has not decided
+to narrow the write. It does not step over the caller's scope. The button
+disables when that scope leaves nobody, rather than staying lit and lying.
+
+Five tests on `AssignPanel` hold the distinction.

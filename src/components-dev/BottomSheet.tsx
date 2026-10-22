@@ -67,7 +67,7 @@ const BottomSheet = ({ children, onClose, closeRef }: BottomSheetProps) => {
 
   return (
     <div className="fixed inset-0 z-50">
-      <div className="absolute inset-0 bg-black/35" onClick={slideDown} />
+      <div className="absolute inset-0 backdrop-blur-sm" onClick={slideDown} />
       <div
         ref={sheetRef}
         className="absolute bottom-0 left-0 right-0 bg-custom-white rounded-t-2xl max-h-[92vh] flex flex-col"

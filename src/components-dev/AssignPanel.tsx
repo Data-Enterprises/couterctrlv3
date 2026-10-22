@@ -18,6 +18,11 @@ interface AssignPanelProps {
   // box currently shows — matches legacy's Stores assign flow. Companies and
   // Base Groups tabs pass "global" since legacy's assign_all/unassign_all
   // there always recomputed from the full unfiltered list, ignoring search.
+  //
+  // "global" ignores the SEARCH BOX. It does not ignore `leftPredicate`: that
+  // is a scoping control, not a find-as-you-type, and a button that assigns
+  // 372 people while the column above it says 1 is not a parity decision, it
+  // is a mass write nobody asked for.
   assignAllScope?: "filtered" | "global";
   // Optional: reports the right column's current selection to the parent, so a
   // caller can offer an action over the selected rows without this component
@@ -142,9 +147,13 @@ const AssignPanel = ({
     );
   };
 
-  const filteredLeft = leftItems.filter(
-    (i) => (leftPredicate?.(i) ?? true) && matches(i, leftFilter),
-  );
+  // Two stages, because "Assign all" needs the middle one. The predicate is
+  // the caller's scope and always applies; the search box is the reader's and
+  // "global" steps over it.
+  const scopedLeft = leftItems.filter((i) => leftPredicate?.(i) ?? true);
+  const filteredLeft = scopedLeft.filter((i) => matches(i, leftFilter));
+  const assignAllLeft =
+    assignAllScope === "global" ? scopedLeft : filteredLeft;
 
   const filteredRight = rightItems.filter((i) => matches(i, rightFilter));
 
@@ -247,14 +256,8 @@ const AssignPanel = ({
             {verbs.assign}
           </button>
           <button
-            onClick={() =>
-              handleAssign(
-                (assignAllScope === "global" ? leftItems : filteredLeft).map(
-                  (i) => i.id,
-                ),
-              )
-            }
-            disabled={leftItems.length === 0}
+            onClick={() => handleAssign(assignAllLeft.map((i) => i.id))}
+            disabled={assignAllLeft.length === 0}
             className="flex-1 text-[11px] font-medium py-1.5 rounded-md text-custom-white bg-brand_navy hover:bg-brand_navy/85 disabled:bg-gray-300 disabled:cursor-not-allowed"
           >
             {verbs.assign} all
