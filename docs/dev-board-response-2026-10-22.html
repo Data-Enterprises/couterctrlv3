@@ -118,7 +118,7 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
     <p class="sub">What was done about each finding in <span class="mono">dev-board-review-2026-10-21.md</span>. Fixes land in the dev tree; prod gets them when dev is promoted. This page is updated and committed after each phase.</p>
   </div>
   <div class="status">
-    <span><b>Backend done (not deployed).</b> Frontend follow-ups: phases 7&ndash;9 done; phase 10 waits on one decision.</span>
+    <span><b>Backend done (not deployed).</b> All 10 frontend phases done. Deploy both, then review.</span>
     <span class="mono">branch next_publish_10_20_2026</span>
   </div>
 </header>
@@ -139,7 +139,7 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
       <tr><td class="id">1</td><td>"+13.1%" on Top 200 is points</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 3</span></td></tr>
       <tr><td class="id">AI, AL</td><td>"New" vs "Add user"; role shows as "1"</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 3</span></td></tr>
       <tr><td class="id">Y</td><td>Item Lookup: Enter doesn't search; unclear not-found</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 3</span></td></tr>
-      <tr><td class="id">I</td><td>Price Opt Vendor fires 26 calls at once</td><td class="st"><span class="chip fixed">Calls fixed &middot; Phase 4</span> <span class="chip fixed">Backend fixed</span> <span class="chip next">Phase 10</span></td></tr>
+      <tr><td class="id">I</td><td>Price Opt Vendor fires 26 calls at once</td><td class="st"><span class="chip fixed">Calls fixed &middot; Phase 4</span> <span class="chip fixed">Lists from the rollup &middot; Phase 10</span></td></tr>
       <tr><td class="id">K</td><td>Price Opt doesn't keep its result</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 4</span></td></tr>
       <tr><td class="id">J</td><td>Filter doesn't search items</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 4</span></td></tr>
       <tr><td class="id">C</td><td>TRANS counts item lines, not receipts</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 4</span></td></tr>
@@ -1023,23 +1023,58 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
   </dl>
 </article>
 
+<!-- ============================================================ PHASE 10 -->
+<section class="block" aria-labelledby="p10-h">
+  <div class="phase-head"><h2 id="p10-h">Phase 10 &middot; Lists from <code>subs/rollup</code>, items behind them</h2><span class="commit">6fc2a4ac &middot; dd7a0758 &middot; 21a43aee</span></div>
+</section>
+
+<article class="issue" id="I" aria-labelledby="i-h">
+  <div class="issue-head">
+    <span class="issue-num">I</span>
+    <h2 id="i-h">Vendors, Price Opt Vendor and Sub Dept Margins draw their lists from the rollup</h2>
+    <div class="verdict"><span class="chip fixed">Fixed</span> One commit per page.</div>
+  </div>
+  <dl class="facts">
+    <dt>Backend</dt><dd><code>081d89c</code>: <code>POST /subs/rollup</code> returns the item rows <code>subs/subs</code> serves, summed by vendor or department per location per day. It is about 40 KB for a store-week instead of 13 MB. The backend checked it against the pages' own arithmetic: 0 mismatched rows across six store/key combinations.</dd>
+    <dt>Decided 22 Oct</dt><dd>The item rows still come down whole. Every field <code>subs/subs</code> returns stays in hand, because these pages may grow, and the rows carry vendor and department so the pages filter them themselves. So the rollup buys a fast first screen. The total download is the same.</dd>
+    <dt>Files</dt><dd>new <code>api/rollup.ts</code> (shared layer); <code>vendors/dev/</code> (<code>vendorsData</code>, <code>vendorsUtils</code>, <code>useVendorSearch</code>, <code>VendorDetailPanel</code>), <code>features/dev/devVendorsSlice.ts</code>; <code>inventory/dev/inventoryData.ts</code>, <code>InventoryVendor.tsx</code>; <code>subDepts/dev/</code> (<code>SubDeptMargins.tsx</code>, <code>index.ts</code>, both perf panels), <code>features/dev/devSubMarginSlice.ts</code></dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li><b>Vendors:</b> the search waits only for the rollup. The list, grades, KPIs and day strip are built from it, and the page is usable as soon as it lands. The item rows follow, and until they do the Items area reads "Loading this week's items…" and Export waits. One function builds the list from either kind of row. A test pins that both give an identical list.</li>
+      <li><b>Price Opt Vendor:</b> the tree draws from the rollup. Item counts fill in, opening a vendor works and the item filter searches items once the rows land. Until then an opened vendor shows "Loading items…". Both sources now go through one vendor-id rule, where blank or all zeros means No vendor, so a vendor is the same group either way.</li>
+      <li><b>Sub Dept Margins:</b> the department list, grades, store header and sparklines draw from the rollup by department. The item reads run alongside, unchanged. When they land they replace each grade with the full one: the same figures, plus the items and no-cost counts. The right panel and the export say items are still loading until then. A test pins that the day-matched margins, deltas and sales agree from either source.</li>
+      <li>If the item rows fail after the list has drawn, the list stays, and a message says to search again.</li>
+      <li>The mobile Performance screens have their own fetch and are unchanged.</li>
+    </ul>
+  </div>
+  <div class="verify">
+    <h4>How to check it (after the backend deploy)</h4>
+    <ol>
+      <li>Vendors, a big store: the list appears in a moment, and a vendor's Items say they are loading for a few seconds before the table fills.</li>
+      <li>Sub Dept Margins, same store: the list and header appear first and match what they show after the items land. Open a department early: "Loading this week's items…", then the items.</li>
+      <li>Price Opt Vendor: the tree appears with blank item counts, which fill in. Filter by an item name once they do.</li>
+      <li>Store 685: the 369/370 split works on all three before and after the items land.</li>
+    </ol>
+  </div>
+</article>
+
 <section class="block" aria-labelledby="left-h">
   <h2 id="left-h">What the frontend can't do alone</h2>
   <div class="scroll"><table>
     <thead><tr><th>#</th><th>What's needed</th><th>Who</th></tr></thead>
     <tbody>
-      <tr><td class="id">I</td><td>Vendors, Sub Dept Margins and Price Opt Vendor on <code>subs/rollup</code>. The lists can come from the rollup, but <code>subs/subs</code> has no vendor filter, so the item rows behind an opened vendor still mean the full download. Price Opt Vendor's item search (J) and the multi-department export need every item row too.</td><td>Decision, then phase 10</td></tr>
       <tr><td class="id">D</td><td>"Package deal" back on Price Opt: a count of receipts carrying the item at more than one price, on <code>price_points</code>.</td><td>Backend, optional</td></tr>
       <tr><td class="id">P</td><td>Fam Pak Breast Tenders: are its Item Actions units whole numbers or pounds? That decides the fix.</td><td>One look</td></tr>
       <tr><td class="id">B</td><td>Tune the 3-day, 5-receipt minimum for "moves fastest" against real stores.</td><td>Steve / Tommy</td></tr>
       <tr><td class="id">F, AB, U, Z, AA</td><td>Board wording, Groups training card, Item Lookup on a phone, release notes for the Vendors Crit count and the Sub Dept Margins headline.</td><td>No code</td></tr>
     </tbody>
   </table></div>
-  <p class="callout">Two deploys before the next review run: the frontend, for everything in phases 1–9, and the backend branch, which phases 7–10 are built against. AN, AO and AP are off this list: the backend fixed AN and AO, and ticket email is on and works.</p>
+  <p class="callout">Two deploys before the next review run: the frontend, for everything in phases 1–10, and the backend branch, which phases 7–10 are built against. AN, AO and AP are off this list: the backend fixed AN and AO, and ticket email is on and works.</p>
 </section>
 
 <footer>
-  Verified for Phase 9: typecheck, 1,271 tests (10 new this phase, 4 removed with the stop-gap), theme audit, eslint and a production build, all clean. Checked by tests, not in a browser, so the "how to check it" steps are yours to run.
+  Verified for Phase 10: typecheck, 1,276 tests (5 new this phase), theme audit, eslint and a production build, all clean. Checked by tests, not in a browser, so the "how to check it" steps are yours to run.
 </footer>
 
 </div>
