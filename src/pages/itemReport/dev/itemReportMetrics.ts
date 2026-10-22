@@ -955,6 +955,51 @@ export const ACTION_RANK: Record<ActionKind, number> = {
 };
 
 /**
+ * How often this item usually arrives, in days.
+ *
+ * The rail has always shown it — "usually every 4" beside the last delivery —
+ * and the verdict ignored it, holding every item to a flat week before zero
+ * sales counted as evidence. An item delivered every four days has had its
+ * chance on day five; one delivered monthly has not had it on day eight. Null
+ * when there are fewer than two deliveries to measure between, which is the
+ * honest answer rather than a default dressed up as a measurement.
+ *
+ * Exported so the rail reads the same number it displays. The two were
+ * computed separately and would have drifted the first time either changed.
+ */
+export const deliveryGap = (receipts: { date: string }[]): number | null => {
+  if (receipts.length < 2) return null;
+  const day = (d: string) =>
+    new Date(`${d.split("T")[0]}T12:00:00`).getTime() / 86400000;
+  // Newest first, so each gap is this delivery less the one before it.
+  let total = 0;
+  for (let i = 0; i < receipts.length - 1; i++)
+    total += day(receipts[i].date) - day(receipts[i + 1].date);
+  return Math.max(1, Math.round(total / (receipts.length - 1)));
+};
+
+/**
+ * Days at the end of a run with no sales, counting back from a date.
+ *
+ * What makes an item worth investigating even though it was just delivered:
+ * the silence BEFORE the delivery. Body Armor had seven flat days and then a
+ * delivery, and saying "nothing scanned since the delivery" named the wrong
+ * week — the delivery is the one thing that might fix it.
+ */
+export const flatDaysBefore = (
+  series: { date: string; units: number }[],
+  before: string,
+): number => {
+  const prior = series.filter((d) => d.date < before);
+  let flat = 0;
+  for (let i = prior.length - 1; i >= 0; i--) {
+    if (prior[i].units > 0) break;
+    flat += 1;
+  }
+  return flat;
+};
+
+/**
  * One item's call to action, and the sentence backing it.
  *
  * Receipt date branches first. Everything under "no recent delivery" is an
@@ -1354,11 +1399,20 @@ export const verdictFor = (
      * Zero sales is only evidence once the item has had a chance.
      *
      * A delivery two days ago with nothing scanned yet was being ranked worst
-     * in the list, ahead of items genuinely off the shelf. Either it has sat a
-     * full week, or it sold in one of the comparison periods so we know it
+     * in the list, ahead of items genuinely off the shelf. Either it has sat
+     * long enough, or it sold in one of the comparison periods so we know it
      * normally moves — without one of those there is nothing to explain yet.
+     *
+     * "Long enough" is the item's own delivery interval rather than a flat
+     * week (finding L): an item that arrives every four days has had its
+     * chance by day five, and holding it to seven called a working shelf
+     * Investigate. Floored at two days, because a delivery yesterday has told
+     * us nothing whatever its cadence, and backed by a week when there are too
+     * few deliveries to measure a cadence from.
      */
-    const hadTime = (lastDays ?? 0) >= 7;
+    const gap = deliveryGap(receipts);
+    const chanceDays = Math.max(FRESH_DELIVERY_DAYS, gap ?? 7);
+    const hadTime = (lastDays ?? 0) >= chanceDays;
     const hasBaseline = Boolean(item.lw || item.ly);
     if (!hadTime && !hasBaseline) {
       return {
@@ -1382,9 +1436,25 @@ export const verdictFor = (
       sd && sd.received > 0 && rulingCost !== null
         ? ` About ${money(round2(sd.received * rulingCost))} of stock at cost${costBasis}.`
         : "";
+
+    /**
+     * Name the right silence.
+     *
+     * When the delivery is newer than the item's own cadence, "nothing scanned
+     * since" points at a delivery that has barely had a day — and the real
+     * evidence is the run of flat days that came BEFORE it. Body Armor earned
+     * Investigate on seven of those, and was told it had earned it on a
+     * delivery from yesterday (finding L).
+     */
+    const flatBefore = lastDate ? flatDaysBefore(item.series, lastDate) : 0;
+    const reason =
+      lastDays !== null && gap !== null && lastDays < gap && flatBefore >= 2
+        ? ` Nothing sold for ${flatBefore} days before it arrived, and nothing since.`
+        : held;
+
     return {
       action: "investigate",
-      evidence: `${inStock}${held}${atCost}`,
+      evidence: `${inStock}${reason}${atCost}`,
       unaccounted,
     };
   }

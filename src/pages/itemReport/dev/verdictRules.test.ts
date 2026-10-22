@@ -1,5 +1,10 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import { verdictFor, type ReportItem } from "./itemReportMetrics";
+import {
+  deliveryGap,
+  flatDaysBefore,
+  verdictFor,
+  type ReportItem,
+} from "./itemReportMetrics";
 import type { ReceiptLine } from "./itemReportData";
 
 /**
@@ -129,5 +134,70 @@ describe("nothing left of the last delivery", () => {
       [receipt("2026-10-19", 2), receipt("2026-10-10", 2)],
     );
     expect(v.action).toBe("reorder");
+  });
+});
+
+describe("deliveryGap", () => {
+  const at = (d: string) => ({ date: d });
+
+  it("is null with nothing to measure between", () => {
+    // One delivery is an event, not a rhythm. Null rather than a default,
+    // because the verdict falls back to a week and should know it is doing so.
+    expect(deliveryGap([])).toBeNull();
+    expect(deliveryGap([at("2026-10-20")])).toBeNull();
+  });
+
+  it("averages the gaps, newest first", () => {
+    // 20th, 16th, 12th -> two gaps of 4.
+    expect(
+      deliveryGap([at("2026-10-20"), at("2026-10-16"), at("2026-10-12")]),
+    ).toBe(4);
+  });
+
+  it("never reports less than a day", () => {
+    // Two deliveries on one date would otherwise round to 0 and make every
+    // item instantly overdue.
+    expect(deliveryGap([at("2026-10-20"), at("2026-10-20")])).toBe(1);
+  });
+
+  it("reads the date out of a timestamp", () => {
+    expect(
+      deliveryGap([at("2026-10-20T14:03:00"), at("2026-10-13T02:00:00")]),
+    ).toBe(7);
+  });
+});
+
+describe("flatDaysBefore", () => {
+  const day = (date: string, units: number) => ({ date, units });
+
+  it("counts the silence running up to the date", () => {
+    const series = [
+      day("2026-10-14", 3),
+      day("2026-10-15", 0),
+      day("2026-10-16", 0),
+      day("2026-10-17", 0),
+      day("2026-10-18", 5),
+    ];
+    expect(flatDaysBefore(series, "2026-10-18")).toBe(3);
+  });
+
+  it("is 0 when it sold the day before", () => {
+    expect(
+      flatDaysBefore([day("2026-10-16", 1), day("2026-10-17", 2)], "2026-10-18"),
+    ).toBe(0);
+  });
+
+  it("ignores everything on or after the date", () => {
+    // The delivery day itself is not part of the silence before it.
+    const series = [
+      day("2026-10-16", 0),
+      day("2026-10-17", 0),
+      day("2026-10-18", 0),
+    ];
+    expect(flatDaysBefore(series, "2026-10-17")).toBe(1);
+  });
+
+  it("is 0 with nothing before the date at all", () => {
+    expect(flatDaysBefore([day("2026-10-20", 4)], "2026-10-18")).toBe(0);
   });
 });

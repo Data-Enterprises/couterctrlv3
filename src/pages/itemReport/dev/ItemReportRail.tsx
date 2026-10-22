@@ -15,6 +15,7 @@ import {
   ACTION_LABEL,
   buildPriceEras,
   daysSince,
+  deliveryGap,
   type ActionKind,
   type ReportItem,
 } from "./itemReportMetrics";
@@ -493,16 +494,10 @@ const ItemReportRail = ({
    * says that better than a dozen unlabelled annotations down the rows, each of
    * which needed explaining.
    */
-  const avgGap = useMemo(() => {
-    if (receipts.length < 2) return null;
-    const day = (d: string) =>
-      new Date(`${d.split("T")[0]}T12:00:00`).getTime() / 86400000;
-    // Newest first, so each gap is this delivery less the one before it.
-    let total = 0;
-    for (let i = 0; i < receipts.length - 1; i++)
-      total += day(receipts[i].date) - day(receipts[i + 1].date);
-    return Math.max(1, Math.round(total / (receipts.length - 1)));
-  }, [receipts]);
+  // From the metrics, not computed here: the verdict now holds an item to this
+  // same interval before zero sales count against it, and a second copy of the
+  // arithmetic would have drifted the first time either side changed.
+  const avgGap = useMemo(() => deliveryGap(receipts), [receipts]);
 
   if (!item) {
     return (
