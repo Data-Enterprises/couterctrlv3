@@ -7,6 +7,7 @@ import {
   emptySelectedGroupIds,
   groupCompanies,
   hasChanges,
+  heldGroupIds,
   modeOf,
   NO_PICKS,
   revokedGroupIds,
@@ -356,5 +357,26 @@ describe("a held group brings its company", () => {
     );
     expect(sets.companyIds).toEqual([7]);
     expect(sets.grants).toHaveLength(2);
+  });
+});
+
+describe("heldGroupIds", () => {
+  it("counts a group a ticked store implies, as Create saves it (AK)", () => {
+    // By store, All Stores (54) left unticked, store 695 ticked inside it.
+    // The counter read "0 base groups" and the review "This person will not
+    // see any stores", while the save would have granted All Stores.
+    const p = picks({ stores: [store(695, 54, 3)] });
+    expect(heldGroupIds(p)).toEqual([54]);
+    expect(accessSets(p).grants.map((g) => g.groupid)).toEqual([54]);
+  });
+
+  it("lists ticked groups first, in the order they were ticked", () => {
+    const p = picks({ baseGroups: [9, 4], stores: [store(1, 2)] });
+    expect(heldGroupIds(p)).toEqual([9, 4, 2]);
+  });
+
+  it("counts a group once when it is both ticked and implied", () => {
+    const p = picks({ baseGroups: [54], stores: [store(695, 54, 3)] });
+    expect(heldGroupIds(p)).toEqual([54]);
   });
 });

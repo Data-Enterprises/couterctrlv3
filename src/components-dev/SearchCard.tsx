@@ -103,7 +103,14 @@ const SearchCard = ({
           : "flex items-center justify-center min-h-[calc(100vh-3rem)] overflow-hidden mx-4 pb-12 md:pb-8"
       }
     >
-      <div className="bg-custom-white rounded-2xl shadow-lg p-6 w-full max-w-sm flex flex-col gap-3">
+      {/* The card's own help anchor. "search" is the magnifying glass that
+          reopens it, which is a different thing: a guide step about picking a
+          store pointed there while the card was closed and lit up the dark
+          header instead (dev board review, finding AD). */}
+      <div
+        data-help="search-card"
+        className="bg-custom-white rounded-2xl shadow-lg p-6 w-full max-w-sm flex flex-col gap-3"
+      >
         <div>
           <h2 className="text-base font-semibold text-content">{title}</h2>
           <p className="text-[12px] text-content/50 mt-1">{description}</p>

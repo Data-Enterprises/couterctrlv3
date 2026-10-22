@@ -1096,7 +1096,10 @@ const PopupTopItems = ({
                 {/* 1 — what retail is actually selling it. First because
                     "all on ad at $11.99" explains a negative margin far more
                     often than the cost does. */}
-                <div className="px-4 py-2.5 border-b border-gray-100">
+                <div
+                  data-help="item-retail"
+                  className="px-4 py-2.5 border-b border-gray-100"
+                >
                   <div className="text-[14px] font-bold text-content leading-snug">
                     {retailSays(mix, points, money)}
                   </div>
@@ -1183,7 +1186,10 @@ const PopupTopItems = ({
                 </div>
 
                 {/* 2 — is the cost and the retail right. */}
-                <div className="px-4 py-2.5 border-b border-gray-100">
+                <div
+                  data-help="item-cost"
+                  className="px-4 py-2.5 border-b border-gray-100"
+                >
                   <div
                     className={`text-[14px] font-bold leading-snug ${
                       perUnitMargin !== null && perUnitMargin < 0
@@ -1338,7 +1344,10 @@ const PopupTopItems = ({
 
                 {/* What it costs to buy, with the cost it compares
                     against directly above it. */}
-                <div className="px-4 py-2.5 border-b border-gray-100">
+                <div
+                  data-help="item-buy"
+                  className="px-4 py-2.5 border-b border-gray-100"
+                >
                   <div className="flex items-baseline justify-between gap-2">
                     <span className="text-[10px] font-bold uppercase tracking-wide text-content/85">
                       What it costs to buy

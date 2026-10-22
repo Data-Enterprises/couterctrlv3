@@ -14,16 +14,16 @@ export const SALES_HELP: HelpContent = {
       steps: [
         {
           title: "Pick a store or a group",
-          pre: "Choose one in the search card. The button reads",
+          pre: "Choose one in the search card. If results are already showing, the card is closed: click the magnifying glass in the dark header to open it. The button reads",
           chip: "Select Store",
           post: "or Select Group until you have picked one.",
-          anchor: "search",
+          anchor: "search-card",
         },
         {
           title: "Pick the week",
-          pre: "Choose a week-ending date. You always get the seven days ending on that date.",
+          pre: "Choose a week-ending date in the same card. You always get the seven days ending on that date.",
           see: "Nothing yet — the dates are read when you load.",
-          anchor: "search",
+          anchor: "search-card",
         },
         {
           title: "Load",
@@ -98,14 +98,16 @@ export const SALES_HELP: HelpContent = {
           see: "Sales and units, margin and profit, the average price a unit fetched and what a unit cost you.",
         },
         {
-          title: "Check how it rang",
-          pre: "How it rang lists every price the item actually sold at this week, with the units and sales at each one.",
-          see: "One price usually. Two means part of the week was on promotion, and the split tells you how much went out at each.",
+          title: "Check what retail is selling it at",
+          pre: "The first section says how the item rang this week — all at regular, all on ad, or a mix — and at what price.",
+          see: "All on ad usually explains a thin margin before the cost does.",
+          anchor: "item-retail",
         },
         {
-          title: "Check what you are paying",
-          pre: "What it costs you compares the price on your last invoice against the cheapest you have paid in 120 days, and the invoices are listed underneath.",
-          see: "A paid price in green is an allowance — you paid under the vendor's list price on that delivery.",
+          title: "Check the cost",
+          pre: "The next section holds the price against the cost, at today's price and at its top price. What it costs to buy compares your last invoice with the cheapest you have paid in the last 60 days; the invoices open from the right.",
+          see: "A paid price in green on the invoice list is an allowance — you paid under the vendor's list price on that delivery.",
+          anchor: "item-buy",
         },
       ],
       issues: [
@@ -119,7 +121,7 @@ export const SALES_HELP: HelpContent = {
         },
         {
           q: "There is no cost history",
-          a: "Nothing was bought on an invoice in the last 120 days. The item still sold — it just has no purchase to compare today's price against.",
+          a: "Nothing was bought on an invoice in the last 60 days. The item still sold — it just has no purchase to compare today's price against.",
         },
       ],
     },
@@ -201,10 +203,12 @@ export const SALES_HELP: HelpContent = {
     {
       term: "Lost share while sales grew",
       def: "Normal, and the point of the panel. If the group grew 9% and a store grew 4%, it took a smaller slice than usual even though it sold more. Sales up and share down is a store being outpaced, not a store in trouble.",
+      anchor: "share-balance",
     },
     {
       term: "Does not cancel",
       def: "Shown when the two sides are not equal. It happens when some stores are measured against last year and others against last week — each set of shares totals 100% on its own, so mixing them leaves a remainder. The figure says how much.",
+      anchor: "share-balance",
     },
     {
       term: "Share by day",
@@ -229,6 +233,7 @@ export const SALES_HELP: HelpContent = {
     {
       term: "Inactive items",
       def: "Items that sold last week or last year but have not sold this week. On the Sub dept tab they are behind their own filter.",
+      anchor: "inactive-filter",
     },
     {
       term: "Top 200",
@@ -267,23 +272,23 @@ export const SALES_HELP: HelpContent = {
     },
     {
       term: "Average price",
-      def: "Sales divided by units — what a unit really fetched once promotions are counted in. It is not the shelf price, and on an item that was half on promotion it will sit between the two. How it rang lists the actual prices.",
+      def: "Sales divided by units — what a unit really fetched once promotions are counted in. It is not the shelf price, and on an item that was half on promotion it will sit between the two. The first section of the item report names the prices it actually rang at.",
+      anchor: "item-retail",
     },
     {
       term: "Unit cost",
-      def: "What the week's sales cost you to buy, per unit, from the same cost the margin is worked out on. Not the price on your last invoice — that is under What it costs you.",
+      def: "What the week's sales cost you to buy, per unit, from the same cost the margin is worked out on. Not the price on your last invoice — that is under What it costs to buy.",
+      anchor: "item-cost",
     },
     {
       term: "Cost coverage",
       def: "The share of an item's sales lines that carried a cost. Below 90% the margin is hidden: with all the sales and only some of the costs it would read far too high, and it is safer to show nothing than a number somebody acts on. Some vendors deliver direct to the store and send no cost at all, which is why this bites most on fast movers.",
-    },
-    {
-      term: "Off regular",
-      def: "The share of units that rang at anything other than the regular price — a promotion, a markdown, or a deal item. Units the register sent no price type for are left out of the share rather than counted as regular.",
+      anchor: "item-cost",
     },
     {
       term: "Allowance",
       def: "The gap between a vendor's list price and what you actually paid on a delivery. Shown by a paid price in green on the invoice list.",
+      anchor: "item-buy",
     },
   ],
 };

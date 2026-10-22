@@ -118,7 +118,7 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
     <p class="sub">What was done about each finding in <span class="mono">dev-board-review-2026-10-21.md</span>. Fixes land in the dev tree; prod gets them when dev is promoted. This page is updated and committed after each phase.</p>
   </div>
   <div class="status">
-    <span><b>Phase 5 of 6 done.</b> Item Actions rules.</span>
+    <span><b>All 6 frontend phases done.</b> Backend next.</span>
     <span class="mono">branch next_publish_10_20_2026</span>
   </div>
 </header>
@@ -147,8 +147,8 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
       <tr><td class="id">P</td><td>65.9% margin on Breast Tenders</td><td class="st"><span class="chip none">Checked &middot; needs one look</span></td></tr>
       <tr><td class="id">L, M, N, T</td><td>Item Actions judges deliveries unfairly</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 5</span></td></tr>
       <tr><td class="id">Q, R, S</td><td>Item Actions labels and controls</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 5</span></td></tr>
-      <tr><td class="id">AK, 2</td><td>Add user half-ticked state; Top 200 names cut off</td><td class="st"><span class="chip next">Phase 6</span></td></tr>
-      <tr><td class="id">AE, AD, AF</td><td>New pages on old help; guide steps; Show me gaps</td><td class="st"><span class="chip next">Phase 6</span></td></tr>
+      <tr><td class="id">AK, 2</td><td>Add user half-ticked state; Top 200 names cut off</td><td class="st"><span class="chip fixed">AK fixed &middot; Phase 6</span> <span class="chip none">2: already changed</span></td></tr>
+      <tr><td class="id">AE, AD, AF</td><td>New pages on old help; guide steps; Show me gaps</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 6</span></td></tr>
       <tr><td class="id">3, D, AJ</td><td>Over-fetching and <code>users/</code> scope</td><td class="st"><span class="chip both">Backend, then frontend</span></td></tr>
       <tr><td class="id">AP</td><td>Nobody notified of a new ticket</td><td class="st"><span class="chip be">Backend</span></td></tr>
       <tr><td class="id">F, AB, U, Z, AA</td><td>Board wording, training and release notes</td><td class="st"><span class="chip none">No code</span></td></tr>
@@ -604,7 +604,7 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
 
 <!-- ============================================================ PHASE 5 -->
 <section class="block" aria-labelledby="p5-h">
-  <div class="phase-head"><h2 id="p5-h">Phase 5 &middot; Item Actions rules</h2><span class="commit" id="p5-commit">this commit</span></div>
+  <div class="phase-head"><h2 id="p5-h">Phase 5 &middot; Item Actions rules</h2><span class="commit">3aefac46</span></div>
   <p>These change what Item Actions concludes, not just how it looks, so each one is tied to the item the review named.</p>
 </section>
 
@@ -726,8 +726,124 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
   </div>
 </article>
 
+<!-- ============================================================ PHASE 6 -->
+<section class="block" aria-labelledby="p6-h">
+  <div class="phase-head"><h2 id="p6-h">Phase 6 &middot; Forms, layout and help</h2><span class="commit" id="p6-commit">this commit</span></div>
+</section>
+
+<article class="issue" id="AK" aria-labelledby="ak-h">
+  <div class="issue-head">
+    <span class="issue-num">AK</span>
+    <h2 id="ak-h">Add user counts the groups it will actually save</h2>
+    <div class="verdict"><span class="chip fixed">Fixed</span> And Create was already saving the right thing.</div>
+  </div>
+  <dl class="facts">
+    <dt>Found</dt><dd>By store, All Stores opened by its name, Bruces Foodland 361 ticked, the All Stores checkbox left unticked. The counter said "0 base groups, 1 store picked", the summary "Nothing selected yet", and the review "No base groups. This person will not see any stores", all with Continue enabled.</dd>
+    <dt>Cause</dt><dd>The save already treats a store ticked inside a group as holding that group (as "selected", with that store), so Create would have granted All Stores with store 361. Only the counter, the summary and the review counted ticked groups and ignored the ones a store implies. Continue was right to be enabled; the descriptions were wrong.</dd>
+    <dt>Files</dt><dd><code>organization/dev/users/access/accessSets.ts</code> (<code>heldGroupIds</code>, now exported), <code>AccessPanel.tsx</code>, <code>create/StepReview.tsx</code></dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li>The counter, the summary and every part of the review read the same list of groups the save uses: ticked groups, plus any a ticked store implies.</li>
+      <li>In the review's case it now reads "1 base group, 1 store picked", and the review lists "Bruces Foodland · All Stores, 1 stores, FIXED", which is what Create writes.</li>
+      <li>Nothing about what gets saved changed. Three tests pin that the description and the save agree.</li>
+    </ul>
+  </div>
+  <div class="verify">
+    <h4>How to check it</h4>
+    <ol>
+      <li>DEV, Add user, By store, open All Stores by its name, tick 361, leave the group's checkbox alone, Continue.</li>
+      <li>The review should show All Stores with 1 store, not "No base groups".</li>
+    </ol>
+  </div>
+</article>
+
+<article class="issue" id="F2" aria-labelledby="f2-h">
+  <div class="issue-head">
+    <span class="issue-num">2</span>
+    <h2 id="f2-h">Top 200's cut-off names: already changed since the tested build</h2>
+    <div class="verdict"><span class="chip none">No change needed; confirm on redeploy</span></div>
+  </div>
+  <dl class="facts">
+    <dt>Found</dt><dd>With the item panel open, names and the second line were cut off ("GROUND CHUCK FAM PA…", "Beef - Variable · …"), and the unit count disappeared.</dd>
+    <dt>Checked</dt><dd>The row the review saw has since changed. On 10/20 the list became a fixed 471px, and the units came off the second line at your request, which now reads only "UPC · sub department". The name gets about 225px in every state, which holds "GROUND CHUCK FAM PACK" with room to spare. Neither change has been deployed to dev yet.</dd>
+  </dl>
+  <div class="verify">
+    <h4>How to check it after redeploy</h4>
+    <ol>
+      <li>Top 200 at 1707px with an item open: names and sub departments read in full.</li>
+    </ol>
+  </div>
+</article>
+
+<article class="issue" id="AE" aria-labelledby="ae-h">
+  <div class="issue-head">
+    <span class="issue-num">AE</span>
+    <h2 id="ae-h">The new pages use the new help, and it matches the screen</h2>
+    <div class="verdict"><span class="chip fixed">Fixed</span></div>
+  </div>
+  <dl class="facts">
+    <dt>Found</dt><dd>Item Actions and Price Opt opened "About the Coming Soon pages", a separate document. It said the suggested price "sits underneath" (it is at the top), and that a left price with no right counterpart never existed, which is wrong for by-weight items.</dd>
+    <dt>Checked</dt><dd>Both pages had already moved to the new help panel on this branch, which the tested build predates. But the new Price Opt help repeated the "never existed" line, twice, and predates this week's fixes.</dd>
+    <dt>Files</dt><dd><code>components-dev/help/content/priceOpt.ts</code>, <code>itemActions.ts</code></dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li>Price Opt: both "never existed" passages now name the random-weight exception. "There is no suggestion" lists all three reasons (one price, not enough history, random-weight packs). "Moves fastest at" states the 3 days and 5 receipts. "Trans" says receipts. A new "Cost / unit" term explains invoice versus item file.</li>
+      <li>Item Actions: "Insufficient" points at its new pile. "vs LW / vs LY" is now "Units vs LW / LY" and says it is units, not Top 200's dollars.</li>
+    </ul>
+  </div>
+</article>
+
+<article class="issue" id="AD" aria-labelledby="ad-h">
+  <div class="issue-head">
+    <span class="issue-num">AD AF</span>
+    <h2 id="ad-h">Guide steps point at the right control, and every Show me has a target</h2>
+    <div class="verdict"><span class="chip fixed">Fixed</span> With a test that keeps it that way.</div>
+  </div>
+  <dl class="facts">
+    <dt>Found</dt><dd>With results showing, "Pick a store… in the search card" lit up the dark header, since the card was closed. Eight Sales glossary terms had no Show me.</dd>
+    <dt>Cause</dt><dd>The steps used the magnifying-glass anchor, because the card had none of its own. Of the eight terms, three describe things that are on screen but had no anchor. Four describe the Top 200 item report as it was before the rebuild ("How it rang", "What it costs you", "120 days"), and "Off regular" left the screen with the promotion split.</dd>
+    <dt>Files</dt><dd><code>components-dev/SearchCard.tsx</code>, <code>help/content/sales.ts</code>, <code>PopupTopItems.tsx</code>, <code>PopupSubDeptList.tsx</code>, new <code>help/helpAnchors.test.ts</code></dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li><b>AD:</b> the search card has its own anchor. Steps 1 and 2 light it up, and step 1 says to click the magnifying glass first if results are showing.</li>
+      <li><b>AF:</b> "Lost share while sales grew" and "Does not cancel" point at the share panel. "Inactive items" points at the Sub dept tab's filter. "Average price", "Unit cost", "Cost coverage" and "Allowance" point at the item report's sections, and their wording now names those sections as they are. "Off regular" is removed.</li>
+      <li>The "See which items earned the week" guide's last two steps describe the current report, and the cost history reads 60 days.</li>
+      <li>New test: every anchor named anywhere in the help must exist as <code>data-help</code> on some page. It passes now (58 anchors), and it failed when a dead anchor was planted on purpose.</li>
+    </ul>
+  </div>
+  <div class="verify">
+    <h4>How to check it</h4>
+    <ol>
+      <li>Sales with results showing, "?", Load a week's sales, step 1: it tells you to open the card. Open it, and step 1 lights the card.</li>
+      <li>Glossary, "Unit cost", Show me, with an item open in Top 200: the cost section lights up.</li>
+    </ol>
+  </div>
+</article>
+
+<section class="block" aria-labelledby="left-h">
+  <h2 id="left-h">What the frontend can't do alone</h2>
+  <div class="scroll"><table>
+    <thead><tr><th>#</th><th>What's needed</th><th>Who</th></tr></thead>
+    <tbody>
+      <tr><td class="id">AN</td><td>Scope <code>GET tickets/</code> by the ticket's company (<code>_SCOPE</code> in <code>api/routers/tickets.py</code>), and properly with a <code>tickets.company</code> column. The page backstop is in place.</td><td>Backend</td></tr>
+      <tr><td class="id">A</td><td>Per-pound actual prices for random-weight packs: <code>transaction_list</code> already returns <code>weight</code> on the backend branch, but without the company-4 divide-by-1,000 that <code>topitems</code> applies. Then the frontend prices those lines per pound and the notice goes.</td><td>Backend, then frontend</td></tr>
+      <tr><td class="id">3, D, I</td><td><code>topitems</code> ranking by sales is on the backend branch and needs deploying, then the frontend asks for 200. A server-side price-point aggregate (D) and a vendor rollup (I) cut the downloads.</td><td>Backend, then frontend</td></tr>
+      <tr><td class="id">AJ</td><td>Scope <code>users/</code> to the caller, after a <code>parent_company_id</code> keeps the Houchens family together.</td><td>Backend, then frontend</td></tr>
+      <tr><td class="id">AO</td><td>Ticket timestamps with a zone. The page already handles both.</td><td>Backend (optional)</td></tr>
+      <tr><td class="id">AP</td><td>Who is notified of a new ticket.</td><td>Decision, then backend</td></tr>
+      <tr><td class="id">P</td><td>Fam Pak Breast Tenders: are its Item Actions units whole numbers or pounds? That decides the fix.</td><td>One look</td></tr>
+      <tr><td class="id">B</td><td>Tune the 3-day, 5-receipt minimum for "moves fastest" against real stores.</td><td>Steve / Tommy</td></tr>
+      <tr><td class="id">F, AB, U, Z, AA</td><td>Board wording, Groups training card, Item Lookup on a phone, release notes for the Vendors Crit count and the Sub Dept Margins headline.</td><td>No code</td></tr>
+    </tbody>
+  </table></div>
+  <p class="callout">Redeploy dev before the next review run. Several findings (2, AE, and everything in phases 1–6) only show on the new build.</p>
+</section>
+
 <footer>
-  Verified for Phase 5: typecheck, 1,238 tests (4 new this phase, 47 across all five), theme audit, eslint and a production build, all clean. Checked by tests, not in a browser, so the "how to check it" steps are yours to run.
+  Verified for Phase 6: typecheck, 1,251 tests (5 new this phase), theme audit, eslint and a production build, all clean. Checked by tests, not in a browser, so the "how to check it" steps are yours to run.
 </footer>
 
 </div>

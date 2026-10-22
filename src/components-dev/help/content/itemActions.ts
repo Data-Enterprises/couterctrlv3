@@ -234,7 +234,7 @@ export const ITEM_ACTIONS_HELP: HelpContent = {
     },
     {
       term: "Insufficient",
-      def: "Not enough has happened yet to judge. An item delivered two days ago with nothing scanned is not a dead item.",
+      def: "Not enough has happened yet to judge. An item delivered at the end of the window with nothing scanned is not a dead item. Filter to them with the Insufficient chip and look again next week.",
       anchor: "piles",
     },
     {
@@ -243,8 +243,8 @@ export const ITEM_ACTIONS_HELP: HelpContent = {
       anchor: "piles",
     },
     {
-      term: "vs LW / vs LY",
-      def: "The same window last week and last year. Both are shown because neither is enough alone — last year catches a seasonal collapse last week would call normal, and last week catches a recovery last year would still condemn.",
+      term: "Units vs LW / LY",
+      def: "The change in units sold against the same window last week and last year. Units, not dollars: Top 200's vs LW is sales. Both are shown because neither is enough alone — last year catches a seasonal collapse last week would call normal, and last week catches a recovery last year would still condemn.",
     },
     {
       term: "Left over",

@@ -1379,6 +1379,7 @@ const PopupSubDeptList = ({
                           placeholder="UPC/Desc"
                         />
                       </div>
+                      <div data-help="inactive-filter">
                       <SelectFilter
                         options={[
                           { label: "Active", value: "active" },
@@ -1392,6 +1393,7 @@ const PopupSubDeptList = ({
                         placeholder="All items"
                         className="w-[110px]"
                       />
+                      </div>
                     </div>
                   </div>
 
