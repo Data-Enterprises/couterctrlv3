@@ -6,6 +6,7 @@ import { calculateCogs } from "../../../utils/cogs";
 // summed raw total_sales and read 6-7% above Top 200 and Item Lookup for
 // the same item and week (dev board review, finding E).
 import { netOf } from "../../../utils/perfPairs";
+import { getRollup } from "../../../api/rollup";
 import type {
   SubDeptMargin,
   SubSale,
@@ -234,12 +235,69 @@ export interface VendorSummary {
   vendorId: string;
   vendorName: string;
   sales: number;
-  /** Known immediately, unlike a department's — every row is already in hand
-   *  by the time a vendor exists at all. */
-  itemCount: number;
-  /** Every item row this vendor supplied, so opening it costs nothing. */
+  /** Distinct items. Null while the vendor comes from the rollup alone: its
+   *  item counts are per day, and a week's distinct count can't be added up
+   *  from them. Filled in when the item rows land. */
+  itemCount: number | null;
+  /** Every item row this vendor supplied, so opening it costs nothing. Empty
+   *  until the item rows land. */
   rows: SubDeptMargin[];
 }
+
+/** Rows with no vendor are real — DSD and miscellaneous departments both
+ *  produce them — and bucketing them together under one heading is more
+ *  honest than dropping the sales out of the page entirely. */
+const NO_VENDOR = "—";
+
+/**
+ * One vendor id, whichever kind of row it came from.
+ *
+ * The rollup's key is the item rows' `vendor_id` as trimmed text, so the two
+ * agree on every real vendor. Nothing at all, or all zeros (coupon lines send
+ * the number 0), is no vendor, the same rule the Vendors page uses. Without
+ * one rule here, a vendor from the rollup and the same vendor from the item
+ * rows would be two different groups.
+ */
+const vendorKey = (raw: unknown): string => {
+  const id = (raw === null || raw === undefined ? "" : String(raw)).trim();
+  return id === "" || /^0+$/.test(id) ? NO_VENDOR : id;
+};
+
+/**
+ * Every vendor that sold in the window, from `subs/rollup`: names and sales,
+ * no item rows. ~40 KB, so the tree draws at once; `fetchVendors` brings the
+ * items behind it.
+ */
+export const fetchVendorTotals = async (
+  scope: InventoryScope,
+): Promise<VendorSummary[]> => {
+  const resp = await getRollup(scope.url, scope.token, {
+    by: "vendor",
+    startDate: scope.start,
+    endDate: scope.end,
+    useGroups: USE_GROUPS,
+    singleStore: SINGLE_STORE,
+    searchValue: scope.storeid,
+  });
+  if (resp.data.error !== 0) {
+    throw new Error(resp.data.msg ?? "Could not read the vendor totals");
+  }
+  const byVendor = new Map<string, VendorSummary>();
+  for (const r of resp.data.rows ?? []) {
+    const id = vendorKey(r.key);
+    const found = byVendor.get(id);
+    if (found) found.sales += r.net_sales;
+    else
+      byVendor.set(id, {
+        vendorId: id,
+        vendorName: id === NO_VENDOR ? "No vendor" : r.name || id,
+        sales: r.net_sales,
+        itemCount: null,
+        rows: [],
+      });
+  }
+  return [...byVendor.values()].sort((a, b) => b.sales - a.sales);
+};
 
 /**
  * The `sub_department` argument that asks `subs/subs` for every department in
@@ -259,8 +317,11 @@ const ALL_SUB_DEPTS = 0;
  * used to ask for the department list first and then fire one `subs/subs` per
  * department, all at once: 27 calls and up to 26 in flight for one store-week
  * (dev board review, finding I). The rows that come back are the same rows;
- * only the number of requests changes. The download is still every item row,
- * and cutting that needs a vendor rollup on the server.
+ * only the number of requests changes.
+ *
+ * Read behind `fetchVendorTotals` now, which draws the tree first. Still every
+ * item row, deliberately: opening a vendor and the item filter both read
+ * them, and every field `subs/subs` returns stays in hand.
  */
 export const fetchVendors = async (
   scope: InventoryScope,
@@ -278,10 +339,7 @@ export const fetchVendors = async (
 
   const byVendor = new Map<string, VendorSummary>();
   rows.forEach((r) => {
-    // Rows with no vendor are real — DSD and miscellaneous departments both
-    // produce them — and bucketing them together under one heading is more
-    // honest than dropping the sales out of the page entirely.
-    const id = r.vendor_id || "—";
+    const id = vendorKey(r.vendor_id);
     const found = byVendor.get(id);
     if (found) {
       found.sales += netOf(r);
@@ -289,7 +347,8 @@ export const fetchVendors = async (
     } else {
       byVendor.set(id, {
         vendorId: id,
-        vendorName: r.vendor_name || "No vendor",
+        vendorName:
+          id === NO_VENDOR ? "No vendor" : r.vendor_name || id,
         sales: netOf(r),
         itemCount: 0,
         rows: [r],

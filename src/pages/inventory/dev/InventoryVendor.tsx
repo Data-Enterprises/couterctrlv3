@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   useAppDispatch,
   useAppSelector,
@@ -17,6 +17,7 @@ import { usePricePoints } from "./usePricePoints";
 import { useInvoiceCost } from "./useInvoiceCost";
 import {
   fetchVendors,
+  fetchVendorTotals,
   groupProducts,
   type InventoryScope,
   type ProductSummary,
@@ -73,6 +74,37 @@ const InventoryVendor = () => {
     dispatch(patchVendorView({ openVendor: next }));
   const [loading, setLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
+  /** The item rows, read behind the vendor totals. */
+  const [itemsLoading, setItemsLoading] = useState(false);
+  const itemsSeq = useRef(0);
+  /** The vendors have names and sales but no items yet: the totals landed and
+   *  the item rows did not, or the page was left before they did. */
+  const itemsMissing = vendors.length > 0 && vendors.every((v) => v.itemCount === null);
+
+  /** Read the item rows for the search on screen and fill the tree in. */
+  const loadItems = (forScope: InventoryScope) => {
+    const seq = ++itemsSeq.current;
+    setItemsLoading(true);
+    fetchVendors(forScope)
+      .then((found) => {
+        if (seq !== itemsSeq.current) return;
+        setVendors(found);
+      })
+      .catch(() => {
+        if (seq !== itemsSeq.current) return;
+        toast.error("Couldn't load the items. Search again to retry.");
+      })
+      .finally(() => {
+        if (seq === itemsSeq.current) setItemsLoading(false);
+      });
+  };
+
+  // A return visit to a search whose items never landed reads them now, so a
+  // vendor never opens onto nothing.
+  useEffect(() => {
+    if (scope && itemsMissing && !itemsLoading) loadItems(scope);
+    // Mount only: the search itself starts the read every other time.
+  }, []);
   const [searchOpen, setSearchOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
 
@@ -126,13 +158,15 @@ const InventoryVendor = () => {
     resetPrices();
     resetInvoiceCost();
     try {
-      // One read of every department now, so one message. There used to be a
-      // department list to fetch first and a call per department after it.
-      setLoadingMessage("Reading every department…");
-      const found = await fetchVendors(next);
+      // The vendor totals first, from `subs/rollup`, so the tree draws in a
+      // moment; the item rows follow behind it.
+      setLoadingMessage("Finding vendors…");
+      itemsSeq.current++;
+      const found = await fetchVendorTotals(next);
       if (found.length === 0) toast.warn("No vendors sold in that window");
       setVendors(found);
       setScope(next);
+      if (found.length > 0) loadItems(next);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not load vendors");
     } finally {
@@ -141,8 +175,8 @@ const InventoryVendor = () => {
     }
   };
 
-  // Every row is already held, so opening a vendor is a regroup rather than a
-  // fetch — no loading state and no race to guard.
+  // Once the item rows are in, opening a vendor is a regroup rather than a
+  // fetch. Until then the tree says the items are loading.
   const products = openVendor
     ? groupProducts(vendors.find((v) => v.vendorId === openVendor)?.rows ?? [])
     : [];
@@ -263,7 +297,7 @@ const InventoryVendor = () => {
           groups={groups}
           openGroup={openVendor}
           products={products}
-          productsLoading={false}
+          productsLoading={itemsLoading && !!openVendor}
           selectedUpc={selected?.productCode ?? null}
           onToggleGroup={toggleVendor}
           onSelectProduct={selectProduct}
