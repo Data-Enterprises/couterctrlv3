@@ -2,8 +2,7 @@ import { formatDateSimple } from "../../../utils";
 import { Decimal, sumDecimals } from "./core/Decimal";
 import type { AwgInvoice } from "./vendors/awg";
 import type { ReconcileResult } from "./vendors/awg";
-import { findRetailSplits } from "./vendors/awg/applyEdit";
-import { lineRetail, sumRetail } from "./vendors/awg/retail";
+import { invoiceTotals } from "./vendors/awg/totals";
 import type { InvoiceRow, InvoiceLineRow } from "../../../interfaces";
 // Defined in src/interfaces — Invoices. Re-exported for this page's files.
 export type { InvoiceRow, InvoiceLineRow } from "../../../interfaces";
@@ -72,10 +71,13 @@ const UNIT_COST_PLACES = 2;
  *  "something on this invoice is wrong". */
 const TEN_CENTS = new Decimal(10n, 2);
 
-const presentLines = (invoice: AwgInvoice): InvoiceLineRow[] =>
+const presentLines = (
+  invoice: AwgInvoice,
+  retails: Decimal[],
+): InvoiceLineRow[] =>
   invoice.lineItems.map((record, index) => {
     const extCost = money(record.fields.cost_ext);
-    const extRetail = lineRetail(record);
+    const extRetail = retails[index];
     const billedUnits =
       count(record.fields.case_qty_billed).units *
       count(record.fields.pack).units;
@@ -110,16 +112,8 @@ export const presentInvoices = (
 
   return invoices.map((invoice) => {
     const result = byInvoice.get(invoice.invoiceNbr);
-    const lineCosts = invoice.lineItems.map((r) => money(r.fields.cost_ext));
-    const deliveryCosts = invoice.deliveryCharges.map((r) =>
-      money(r.fields.cost_ext),
-    );
-    // The same netting reconciliation does, so the figures above the checks
-    // agree with the derived side of them.
-    const palletAllowances = sumDecimals(
-      invoice.palletAllowances.map((r) => money(r.fields.ba_retail_ext)),
-      2,
-    );
+    // The derived side of the checks, so the figures above them agree.
+    const figures = invoiceTotals(invoice);
 
     return {
       id: `${invoice.storeNbr}-${invoice.invoiceNbr}`,
@@ -132,22 +126,24 @@ export const presentInvoices = (
         ? formatDateSimple(invoice.deliveryDate)
         : null,
       lineCount: invoice.lineItems.length,
-      totalCost: sumDecimals([...lineCosts, ...deliveryCosts], 2)
-        .subtract(palletAllowances)
-        .toString(),
-      totalRetail: sumRetail(invoice.lineItems).toString(),
-      totalAllowances: sumDecimals(
-        invoice.deals.map((r) => money(r.fields.deal_amount)),
-        2,
-      )
-        .add(palletAllowances)
-        .toString(),
+      totalCost: figures.totalCost.toString(),
+      totalRetail: figures.totalRetail.toString(),
+      totalAllowances: figures.totalAllowances.toString(),
+      lineItemsCost: figures.lineItemsCost.toString(),
+      deliveryFees: figures.deliveryFees.toString(),
+      palletAllowances: figures.palletAllowances.toString(),
       totalCases: sumDecimals(
         invoice.lineItems.map((r) => count(r.fields.case_qty_billed)),
         0,
       ).toString(),
       reconciled: result?.ok ?? false,
+      status: result?.status ?? "checked",
       note: result?.note,
+      exceptions: invoice.exceptions.map((record) => ({
+        itemCode: text(record.fields.item_code_bil),
+        description: text(record.fields.item_desc),
+        reason: text(record.fields.excpt_desc),
+      })),
       unitemizedAllowance: result?.unitemizedAllowance?.toString() ?? null,
       overTenCents: (result?.checks ?? []).some((check) =>
         check.difference.decimals === 0
@@ -161,8 +157,9 @@ export const presentInvoices = (
         ok: check.ok,
         difference: check.difference.toString(),
       })),
-      lines: presentLines(invoice),
-      retailSplits: result && !result.ok ? findRetailSplits(invoice) : [],
+      // Judged across the lines, not one at a time: a random-weight line's
+      // retail depends on the lines beside it — see `vendors/awg/retail`.
+      lines: presentLines(invoice, figures.lineRetails),
     };
   });
 };

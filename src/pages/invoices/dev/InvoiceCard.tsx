@@ -22,11 +22,6 @@ interface Props {
   editedKeys: Set<string>;
   onEdit: (edit: Omit<InvoiceEdit, "docId">) => void;
   onRevert: (key: Omit<InvoiceEdit, "docId" | "value">) => void;
-  onSplitRetail: (group: {
-    rowIndex: number;
-    itemCode: string;
-    extRetail: string;
-  }) => void;
 }
 
 const Figure = ({ label, value }: { label: string; value: string }) => (
@@ -58,7 +53,6 @@ const InvoiceCard = ({
   editedKeys,
   onEdit,
   onRevert,
-  onSplitRetail,
 }: Props) => {
   const Chevron = open ? ChevronDownIcon : ChevronRightIcon;
 
@@ -107,12 +101,20 @@ const InvoiceCard = ({
           </span>
           <span
             className={`mt-0.5 inline-block rounded px-1.5 py-0.5 text-[10px] font-bold ${
-              row.reconciled
-                ? "bg-severity_healthy_bg text-severity_healthy_text"
-                : "bg-severity_critical_bg text-severity_critical_text"
+              row.status === "nothingBilled"
+                ? "bg-bkg text-content/85"
+                : row.reconciled
+                  ? "bg-severity_healthy_bg text-severity_healthy_text"
+                  : "bg-severity_critical_bg text-severity_critical_text"
             }`}
           >
-            {row.reconciled ? "Reconciled" : "Check"}
+            {row.status === "nothingBilled"
+              ? "Nothing billed"
+              : row.status === "noTotal"
+                ? "No total row"
+                : row.reconciled
+                  ? "Reconciled"
+                  : "Check"}
           </span>
         </span>
       </button>
@@ -120,12 +122,22 @@ const InvoiceCard = ({
       {open && (
         <div className="border-t border-gray-100">
           {/* ── what the invoice says about itself ─────────────────── */}
-          <div className="grid grid-cols-2 gap-x-4 gap-y-3 px-3.5 py-3 sm:grid-cols-4">
-            <Figure label="Total cost" value={`$${row.totalCost}`} />
-            <Figure label="Total retail" value={`$${row.totalRetail}`} />
-            <Figure label="Allowances" value={`$${row.totalAllowances}`} />
-            <Figure label="Cases" value={row.totalCases} />
-          </div>
+          {/* The cost and what it is made of first — line items plus
+              delivery, less pallet allowances — then the rest. */}
+          {row.status !== "nothingBilled" && (
+            <div className="grid grid-cols-2 gap-x-4 gap-y-3 px-3.5 py-3 sm:grid-cols-4 lg:grid-cols-7">
+              <Figure label="Total cost" value={`$${row.totalCost}`} />
+              <Figure label="Line items" value={`$${row.lineItemsCost}`} />
+              <Figure label="Delivery fees" value={`$${row.deliveryFees}`} />
+              <Figure
+                label="Pallet allowances"
+                value={`$${row.palletAllowances}`}
+              />
+              <Figure label="Allowances" value={`$${row.totalAllowances}`} />
+              <Figure label="Total retail" value={`$${row.totalRetail}`} />
+              <Figure label="Cases" value={row.totalCases} />
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-x-4 gap-y-3 border-t border-gray-100 px-3.5 py-3">
             <div className="min-w-0">
@@ -148,47 +160,61 @@ const InvoiceCard = ({
               Reconciliation
             </div>
             {row.note && (
-              <p className="mb-2 rounded bg-severity_watch_bg px-2 py-1.5 text-[12px] text-severity_watch_text">
+              <p
+                className={`mb-2 rounded px-2 py-1.5 text-[12px] ${
+                  row.status === "noTotal"
+                    ? "bg-severity_critical_bg font-semibold text-severity_critical_text"
+                    : row.status === "nothingBilled"
+                      ? "bg-bkg text-content"
+                      : "bg-severity_watch_bg text-severity_watch_text"
+                }`}
+              >
                 {row.note}
               </p>
             )}
-            <div className="overflow-hidden rounded border border-gray-200">
-              <div className="grid grid-cols-[1fr_84px_84px_80px] gap-2 border-b border-gray-200 bg-gray-50 px-2 py-1.5 font-mono text-[9.5px] uppercase tracking-wider text-content/85">
-                <span>Check</span>
-                <span className="text-right">Derived</span>
-                <span className="text-right">Reported</span>
-                <span className="text-right">Difference</span>
-              </div>
-              {row.checks.map((check) => (
-                <div
-                  key={check.label}
-                  className={`grid grid-cols-[1fr_84px_84px_80px] gap-2 px-2 py-1.5 text-[12px] tabular-nums ${
-                    check.ok ? "" : "bg-severity_critical_bg"
-                  }`}
-                >
-                  <span
-                    className={
-                      check.ok
-                        ? "text-content"
-                        : "font-semibold text-severity_critical_text"
-                    }
-                  >
-                    {check.label}
-                  </span>
-                  <span className="text-right text-content">{check.derived}</span>
-                  <span className="text-right text-content">{check.reported}</span>
-                  <span
-                    className={`text-right ${
-                      check.ok
-                        ? "text-content/85"
-                        : "font-semibold text-severity_critical_text"
+            {row.checks.length > 0 && (
+              <div className="overflow-hidden rounded border border-gray-200">
+                <div className="grid grid-cols-[1fr_84px_84px_80px] gap-2 border-b border-gray-200 bg-gray-50 px-2 py-1.5 font-mono text-[9.5px] uppercase tracking-wider text-content/85">
+                  <span>Check</span>
+                  <span className="text-right">Derived</span>
+                  <span className="text-right">Reported</span>
+                  <span className="text-right">Difference</span>
+                </div>
+                {row.checks.map((check) => (
+                  <div
+                    key={check.label}
+                    className={`grid grid-cols-[1fr_84px_84px_80px] gap-2 px-2 py-1.5 text-[12px] tabular-nums ${
+                      check.ok ? "" : "bg-severity_critical_bg"
                     }`}
                   >
-                    {check.ok ? "—" : check.difference}
-                  </span>
-                </div>
-              ))}
-            </div>
+                    <span
+                      className={
+                        check.ok
+                          ? "text-content"
+                          : "font-semibold text-severity_critical_text"
+                      }
+                    >
+                      {check.label}
+                    </span>
+                    <span className="text-right text-content">
+                      {check.derived}
+                    </span>
+                    <span className="text-right text-content">
+                      {check.reported}
+                    </span>
+                    <span
+                      className={`text-right ${
+                        check.ok
+                          ? "text-content/85"
+                          : "font-semibold text-severity_critical_text"
+                      }`}
+                    >
+                      {check.ok ? "—" : check.difference}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
 
             {row.unitemizedAllowance && (
               <p className="mt-2 rounded bg-severity_watch_bg px-2 py-1.5 text-[12px] text-severity_watch_text">
@@ -197,118 +223,143 @@ const InvoiceCard = ({
                 allowances both differ by exactly that amount.
               </p>
             )}
-
-            {/* Random-weight lines in a run each carry the run's extended
-                retail, so the derived retail counts it once per line. Shared
-                out by weight, the lines add back to the vendor's figure. */}
-            {row.retailSplits.map((group) => (
-              <div
-                key={group.rowIndex}
-                className="mt-2 flex items-center gap-3 rounded bg-severity_watch_bg px-2 py-1.5 text-[12px] text-severity_watch_text"
-              >
-                <span className="min-w-0 flex-1">
-                  {group.lineCount} random-weight lines of {group.itemCode}{" "}
-                  {group.description}, from line {group.firstLine}, each repeat
-                  the same ext retail of ${group.extRetail}. Splitting shares it
-                  across them by weight.
-                </span>
-                <button
-                  type="button"
-                  onClick={() =>
-                    onSplitRetail({
-                      rowIndex: group.rowIndex,
-                      itemCode: group.itemCode,
-                      extRetail: group.extRetail,
-                    })
-                  }
-                  className="flex-none rounded-md bg-brand_navy px-2.5 py-1 text-[11px] font-semibold text-custom-white hover:bg-brand_navy_hover"
-                >
-                  Split retail
-                </button>
-              </div>
-            ))}
           </div>
+
+          {/* ── what did not ship ───────────────────────────────────── */}
+          {row.status === "nothingBilled" && row.exceptions.length > 0 && (
+            <div className="border-t border-gray-100 px-3.5 py-3">
+              <div className="mb-1.5 font-mono text-[9.5px] uppercase tracking-wider text-content/85">
+                Exceptions
+              </div>
+              <div className="overflow-hidden rounded border border-gray-200">
+                {row.exceptions.map((exception, index) => (
+                  <div
+                    key={index}
+                    className="grid grid-cols-[72px_minmax(0,1fr)_minmax(0,1fr)] gap-2.5 border-b border-gray-100 px-2 py-1.5 text-[12px] last:border-b-0"
+                  >
+                    <span className="font-mono text-content/85">
+                      {exception.itemCode}
+                    </span>
+                    <span className="truncate text-content">
+                      {exception.description}
+                    </span>
+                    <span className="truncate text-content/85">
+                      {exception.reason}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* ── the lines ──────────────────────────────────────────── */}
-          <div className="border-t border-gray-100 px-3.5 py-3">
-            <div className="mb-1.5 flex items-baseline justify-between gap-2">
-              <span className="font-mono text-[9.5px] uppercase tracking-wider text-content/85">
-                Lines
-              </span>
-              <span className="text-[11px] text-content/85">
-                Click a value to correct it
-              </span>
-            </div>
+          {row.status !== "nothingBilled" && (
+            <div className="border-t border-gray-100 px-3.5 py-3">
+              <div className="mb-1.5 flex items-baseline justify-between gap-2">
+                <span className="font-mono text-[9.5px] uppercase tracking-wider text-content/85">
+                  Lines
+                </span>
+                <span className="text-[11px] text-content/85">
+                  Click a value to correct it
+                </span>
+              </div>
 
-            <div className="overflow-x-auto">
-              <div className="min-w-[760px]">
-                <div
-                  className="grid gap-2.5 border-b border-gray-200 pb-1.5 font-mono text-[9.5px] uppercase tracking-wider text-content/85"
-                  style={{ gridTemplateColumns: LINE_COLS }}
-                >
-                  <span>#</span>
-                  <span>Item</span>
-                  <span>UPC</span>
-                  <span>AWG code</span>
-                  <span>Size</span>
-                  <span className="text-right">Qty</span>
-                  <span className="text-right">Unit cost</span>
-                  <span className="text-right">Ext cost</span>
-                  <span className="text-right">Ext retail</span>
+              <div className="overflow-x-auto">
+                <div className="min-w-[760px]">
+                  <div
+                    className="grid gap-2.5 border-b border-gray-200 pb-1.5 font-mono text-[9.5px] uppercase tracking-wider text-content/85"
+                    style={{ gridTemplateColumns: LINE_COLS }}
+                  >
+                    <span>#</span>
+                    <span>Item</span>
+                    <span>UPC</span>
+                    <span>AWG code</span>
+                    <span>Size</span>
+                    <span className="text-right">Qty</span>
+                    <span className="text-right">Unit cost</span>
+                    <span className="text-right">Ext cost</span>
+                    <span className="text-right">Ext retail</span>
+                  </div>
+
+                  {row.lines.map((line, index) => {
+                    const cell = (
+                      field: string,
+                      label: string,
+                      value: string,
+                      align: "left" | "right" = "left",
+                      mono = false,
+                    ) => (
+                      <EditableCell
+                        label={`Line ${line.lineNumber} ${label}`}
+                        value={value}
+                        field={field}
+                        align={align}
+                        mono={mono}
+                        edited={editedKeys.has(`${index}:${field}`)}
+                        onCommit={(next) =>
+                          onEdit({
+                            kind: "line",
+                            field,
+                            value: next,
+                            rowIndex: index,
+                          })
+                        }
+                        onRevert={() =>
+                          onRevert({ kind: "line", field, rowIndex: index })
+                        }
+                      />
+                    );
+
+                    return (
+                      <div
+                        key={line.lineNumber}
+                        className="grid items-center gap-2.5 border-b border-gray-100 py-0.5 odd:bg-row_stripe"
+                        style={{ gridTemplateColumns: LINE_COLS }}
+                      >
+                        <span className="px-1 text-[11px] tabular-nums text-content/85">
+                          {line.lineNumber}
+                        </span>
+                        {cell("item_desc", "item", line.description)}
+                        {cell("upc_code", "UPC", line.upc, "left", true)}
+                        {cell(
+                          "item_code_bil",
+                          "AWG code",
+                          line.awgCode,
+                          "left",
+                          true,
+                        )}
+                        {cell("size", "size", line.size)}
+                        {cell(
+                          "case_qty_billed",
+                          "quantity",
+                          line.cases,
+                          "right",
+                        )}
+                        {cell(
+                          "mbr_case_cost",
+                          "unit cost",
+                          line.caseCost,
+                          "right",
+                        )}
+                        {cell(
+                          "cost_ext",
+                          "extended cost",
+                          line.extCost,
+                          "right",
+                        )}
+                        {cell(
+                          "ba_retail_ext",
+                          "extended retail",
+                          line.extRetail,
+                          "right",
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
-
-                {row.lines.map((line, index) => {
-                  const cell = (
-                    field: string,
-                    label: string,
-                    value: string,
-                    align: "left" | "right" = "left",
-                    mono = false,
-                  ) => (
-                    <EditableCell
-                      label={`Line ${line.lineNumber} ${label}`}
-                      value={value}
-                      field={field}
-                      align={align}
-                      mono={mono}
-                      edited={editedKeys.has(`${index}:${field}`)}
-                      onCommit={(next) =>
-                        onEdit({
-                          kind: "line",
-                          field,
-                          value: next,
-                          rowIndex: index,
-                        })
-                      }
-                      onRevert={() =>
-                        onRevert({ kind: "line", field, rowIndex: index })
-                      }
-                    />
-                  );
-
-                  return (
-                    <div
-                      key={line.lineNumber}
-                      className="grid items-center gap-2.5 border-b border-gray-100 py-0.5 odd:bg-row_stripe"
-                      style={{ gridTemplateColumns: LINE_COLS }}
-                    >
-                      <span className="px-1 text-[11px] tabular-nums text-content/85">
-                        {line.lineNumber}
-                      </span>
-                      {cell("item_desc", "item", line.description)}
-                      {cell("upc_code", "UPC", line.upc, "left", true)}
-                      {cell("item_code_bil", "AWG code", line.awgCode, "left", true)}
-                      {cell("size", "size", line.size)}
-                      {cell("case_qty_billed", "quantity", line.cases, "right")}
-                      {cell("mbr_case_cost", "unit cost", line.caseCost, "right")}
-                      {cell("cost_ext", "extended cost", line.extCost, "right")}
-                      {cell("ba_retail_ext", "extended retail", line.extRetail, "right")}
-                    </div>
-                  );
-                })}
               </div>
             </div>
-          </div>
+          )}
         </div>
       )}
     </section>

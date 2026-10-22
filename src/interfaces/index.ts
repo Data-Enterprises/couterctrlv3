@@ -2645,10 +2645,24 @@ export interface InvoiceRow {
   totalCost: string;
   totalRetail: string;
   totalAllowances: string;
+  /** The billed lines' extended cost alone, before delivery and pallet
+   *  allowances. */
+  lineItemsCost: string;
+  /** The `11` delivery charges, which the total cost includes. */
+  deliveryFees: string;
+  /** The `03` pallet allowances — netted out of the total cost, and part of
+   *  `totalAllowances`. */
+  palletAllowances: string;
   totalCases: string;
   reconciled: boolean;
-  /** Set when the invoice couldn't be checked at all — no total record. */
+  /** `checked` against a `19` total; without one, `nothingBilled` when only
+   *  exceptions came through, `noTotal` when billed lines did. */
+  status: "checked" | "noTotal" | "nothingBilled";
+  /** Why the invoice could not be checked. */
   note?: string;
+  /** Items that did not ship, from the `05` records, with the vendor's
+   *  reason. */
+  exceptions: { itemCode: string; description: string; reason: string }[];
   /** Allowance on the vendor's total that no record in the file carries. */
   unitemizedAllowance: string | null;
   /** A money check misses by more than 10¢, or the cases miss at all. */
@@ -2661,17 +2675,6 @@ export interface InvoiceRow {
     difference: string;
   }[];
   lines: InvoiceLineRow[];
-  /** Runs of random-weight lines that each repeat the run's extended retail,
-   *  which can be shared out across them. Empty when the invoice reconciles —
-   *  a split is only offered as a fix. */
-  retailSplits: {
-    rowIndex: number;
-    firstLine: number;
-    itemCode: string;
-    description: string;
-    lineCount: number;
-    extRetail: string;
-  }[];
 }
 
 export interface InvoiceLineRow {

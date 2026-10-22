@@ -145,13 +145,27 @@ describe("applyEdits", () => {
   it("applies header edits, and reads a blank date as no date", () => {
     const [dept] = applyEdits(
       [invoice()],
-      [edit({ kind: "header", field: "retail_dept", value: "07", rowIndex: undefined })],
+      [
+        edit({
+          kind: "header",
+          field: "retail_dept",
+          value: "07",
+          rowIndex: undefined,
+        }),
+      ],
     );
     expect(dept.retailDept).toBe("07");
 
     const [cleared] = applyEdits(
       [invoice()],
-      [edit({ kind: "header", field: "delv_date", value: "   ", rowIndex: undefined })],
+      [
+        edit({
+          kind: "header",
+          field: "delv_date",
+          value: "   ",
+          rowIndex: undefined,
+        }),
+      ],
     );
     expect(cleared.deliveryDate).toBeNull();
   });

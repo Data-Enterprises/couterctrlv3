@@ -25,7 +25,7 @@ const SUMMED: ReadonlySet<string> = new Set([
 /** Signed fields decode to `Decimal`, whose `toString` is the exact canonical
  *  form — never routed through a float. */
 const cell = (value: FieldValue | undefined): string | number | null =>
-  value !== null && typeof value === "object" ? String(value) : value ?? null;
+  value !== null && typeof value === "object" ? String(value) : (value ?? null);
 
 export const awgRecordsToCsv = (text: string): string => {
   const schemas = Object.values(AWG_FILE_SPEC.schemas).filter(
@@ -49,5 +49,8 @@ export const awgRecordsToCsv = (text: string): string => {
       ...columns.map((name) => cell(record.fields[name])),
     ]);
 
-  return rowsToCsv(["line_number", "record_type", "record_name", ...columns], rows);
+  return rowsToCsv(
+    ["line_number", "record_type", "record_name", ...columns],
+    rows,
+  );
 };

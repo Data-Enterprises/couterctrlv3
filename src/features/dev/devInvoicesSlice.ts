@@ -5,7 +5,10 @@
  */
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
-import type { InvoiceEdit } from "../../pages/invoices/dev/vendors/awg/applyEdit";
+import {
+  ALL_INVOICES,
+  type InvoiceEdit,
+} from "../../pages/invoices/dev/vendors/awg/applyEdit";
 
 /**
  * AWG Invoices page state.
@@ -38,6 +41,8 @@ export interface InvoicesState {
   /** Narrows the list to invoices a check misses by more than 10¢ — past
    *  the vendor's penny rounding, so worth a look. */
   overTenCentsOnly: boolean;
+  /** Narrows the list to invoices that billed nothing — exceptions only. */
+  nothingBilledOnly: boolean;
   /** Narrows the list on store, invoice number or department. */
   textFilter: string;
   parsing: boolean;
@@ -62,6 +67,7 @@ const initialState: InvoicesState = {
   expandedId: null,
   failedOnly: false,
   overTenCentsOnly: false,
+  nothingBilledOnly: false,
   textFilter: "",
   parsing: false,
   error: null,
@@ -101,6 +107,7 @@ const invoicesSlice = createSlice({
       state.expandedId = null;
       state.failedOnly = false;
       state.overTenCentsOnly = false;
+      state.nothingBilledOnly = false;
       state.textFilter = "";
       state.parsing = false;
       state.error = null;
@@ -127,8 +134,8 @@ const invoicesSlice = createSlice({
           edit.field === next.field &&
           edit.rowIndex === next.rowIndex,
       );
-      // Replaced at the end, not in place: a retail split made since would
-      // otherwise be replayed over it.
+      // Replaced at the end, not in place: suggested corrections applied since
+      // would otherwise be replayed over it.
       if (at !== -1) state.edits.splice(at, 1);
       state.edits.push(next);
       // A correction invalidates the last send: what is on the server is no
@@ -156,50 +163,17 @@ const invoicesSlice = createSlice({
       state.sentAt = null;
     },
 
-    /** Share one random-weight item's repeated retail across its lines — see
-     *  `findRetailSplits`. Undone with the rest of the corrections. */
-    splitInvoiceRetail: (
-      state,
-      action: PayloadAction<{
-        docId: string;
-        rowIndex: number;
-        itemCode: string;
-        extRetail: string;
-      }>,
-    ) => {
-      const { docId, rowIndex, itemCode, extRetail } = action.payload;
+    /** Every suggested correction, across the whole file, as one entry —
+     *  undone with the rest. Applying twice is a no-op. */
+    applySuggestedCorrections: (state) => {
+      if (state.edits.some((edit) => edit.kind === "suggested")) return;
       state.edits.push({
-        docId,
-        kind: "splitRetail",
-        field: itemCode,
-        value: extRetail,
-        rowIndex,
+        docId: ALL_INVOICES,
+        kind: "suggested",
+        field: "",
+        value: "",
       });
       state.sentAt = null;
-    },
-
-    /** Every split currently offered, across the whole file, in one go. */
-    splitAllInvoiceRetail: (
-      state,
-      action: PayloadAction<
-        {
-          docId: string;
-          rowIndex: number;
-          itemCode: string;
-          extRetail: string;
-        }[]
-      >,
-    ) => {
-      for (const { docId, rowIndex, itemCode, extRetail } of action.payload) {
-        state.edits.push({
-          docId,
-          kind: "splitRetail",
-          field: itemCode,
-          value: extRetail,
-          rowIndex,
-        });
-      }
-      if (action.payload.length > 0) state.sentAt = null;
     },
 
     clearInvoiceEdits: (state) => {
@@ -217,6 +191,10 @@ const invoicesSlice = createSlice({
 
     setInvoiceOverTenCentsOnly: (state, action: PayloadAction<boolean>) => {
       state.overTenCentsOnly = action.payload;
+    },
+
+    setInvoiceNothingBilledOnly: (state, action: PayloadAction<boolean>) => {
+      state.nothingBilledOnly = action.payload;
     },
 
     setInvoiceTextFilter: (state, action: PayloadAction<string>) => {
@@ -254,12 +232,12 @@ export const {
   setInvoicesFile,
   editInvoiceField,
   revertInvoiceField,
-  splitInvoiceRetail,
-  splitAllInvoiceRetail,
+  applySuggestedCorrections,
   clearInvoiceEdits,
   setInvoiceExpanded,
   setInvoiceFailedOnly,
   setInvoiceOverTenCentsOnly,
+  setInvoiceNothingBilledOnly,
   setInvoiceTextFilter,
   setInvoicesSending,
   setInvoicesSendError,

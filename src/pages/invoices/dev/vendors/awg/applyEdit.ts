@@ -1,6 +1,7 @@
 import { Decimal } from "../../core/Decimal";
 import type { FieldSpec, ParsedRecord } from "../../core/types";
 import type { AwgInvoice } from "./group";
+import { COST_CORRECTED } from "./cost";
 import { RETAIL_CORRECTED } from "./retail";
 import { AWG_FILE_SPEC, AWG_RECORD } from "./schema";
 
@@ -12,14 +13,15 @@ import { AWG_FILE_SPEC, AWG_RECORD } from "./schema";
  * they carry `Decimal` instances — which is why the page keeps the file text
  * and the edits, and re-derives everything else from the pair.
  */
+/** The `docId` of an edit that applies to the whole file. */
+export const ALL_INVOICES = "*";
+
 export interface InvoiceEdit {
   /** `${storeNbr}-${invoiceNbr}`, matching `InvoiceRow.id`. */
   docId: string;
-  /** `splitRetail` shares a run of random-weight lines' repeated extended
-   *  retail out across them — see `findRetailSplits`. It carries the run's
-   *  first line in `rowIndex`, its AWG code in `field` and its extended retail
-   *  in `value`, so a run that has since changed is recognised and skipped. */
-  kind: "header" | "line" | "splitRetail";
+  /** `suggested` applies every suggested correction to every invoice in the
+   *  file at once — see `applySuggested`. Its `docId` is `ALL_INVOICES`. */
+  kind: "header" | "line" | "suggested";
   /** The schema field name, e.g. `case_qty_billed`. */
   field: string;
   /** Always the raw text the user typed. Coercion happens on apply, so a
@@ -86,7 +88,10 @@ const editHeader = (
 ): AwgInvoice => {
   switch (field) {
     case "delv_date":
-      return { ...invoice, deliveryDate: value.trim() === "" ? null : value.trim() };
+      return {
+        ...invoice,
+        deliveryDate: value.trim() === "" ? null : value.trim(),
+      };
     case "retail_dept":
       return { ...invoice, retailDept: value };
     default:
@@ -112,6 +117,7 @@ const editLine = (
             [field]: coerced,
             // A typed retail is taken as typed, not re-derived over.
             ...(field === "ba_retail_ext" ? { [RETAIL_CORRECTED]: "Y" } : {}),
+            ...(field === "cost_ext" ? { [COST_CORRECTED]: "Y" } : {}),
           },
         } as ParsedRecord),
   );
@@ -186,7 +192,9 @@ const runAt = (lines: ParsedRecord[], start: number): ParsedRecord[] => {
 const runLengths = (lines: ParsedRecord[]): number[] => {
   const price = asDecimal(lines[0].fields.retail_price, 2).units;
   const ext = asDecimal(lines[0].fields.ba_retail_ext, 2).units * 100n;
-  const weights = lines.map((line) => asDecimal(line.fields.pallet_weight, 2).units);
+  const weights = lines.map(
+    (line) => asDecimal(line.fields.pallet_weight, 2).units,
+  );
   if (price === 0n || weights.some((w) => w === 0n)) return lines.map(() => 1);
 
   const distance = (a: bigint, b: bigint) => (a > b ? a - b : b - a);
@@ -310,6 +318,22 @@ const splitRetail = (
 };
 
 /**
+ * Every suggested correction, on one invoice.
+ *
+ * Splits each random-weight run's repeated retail across its lines, then marks
+ * the invoice so its figures are computed rather than read — retail by weight,
+ * per-pound cost and deals, single rounding; see `totals`. All of it is
+ * derived from the file rather than in it, which is why it waits for the user.
+ */
+const applySuggested = (invoice: AwgInvoice): AwgInvoice => {
+  let next = invoice;
+  for (const group of findRetailSplits(invoice)) {
+    next = splitRetail(next, group.rowIndex, group.itemCode, group.extRetail);
+  }
+  return { ...next, suggested: true };
+};
+
+/**
  * Every correction, applied over the freshly parsed file.
  *
  * Nothing is recomputed across fields. Changing Qty does **not** re-derive Ext
@@ -337,20 +361,17 @@ export const applyEdits = (
   );
 
   for (const edit of edits) {
+    if (edit.kind === "suggested") {
+      for (const [id, invoice] of byId) byId.set(id, applySuggested(invoice));
+      continue;
+    }
     const current = byId.get(edit.docId);
     if (!current) continue;
     try {
       const next =
         edit.kind === "header"
           ? editHeader(current, edit.field, edit.value)
-          : edit.kind === "splitRetail"
-            ? splitRetail(
-                current,
-                edit.rowIndex ?? -1,
-                edit.field,
-                edit.value,
-              )
-            : editLine(current, edit.rowIndex ?? -1, edit.field, edit.value);
+          : editLine(current, edit.rowIndex ?? -1, edit.field, edit.value);
       byId.set(edit.docId, next);
     } catch {
       // Unreadable value — leave the invoice as it was.

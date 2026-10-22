@@ -11,12 +11,12 @@ import ComingSoonHelp from "../../../components-dev/ComingSoonHelp";
 import {
   clearInvoiceEdits,
   editInvoiceField,
-  splitInvoiceRetail,
-  splitAllInvoiceRetail,
+  applySuggestedCorrections,
   revertInvoiceField,
   setInvoiceExpanded,
   setInvoiceFailedOnly,
   setInvoiceOverTenCentsOnly,
+  setInvoiceNothingBilledOnly,
   setInvoicesError,
   setInvoicesFile,
   setInvoicesParsing,
@@ -70,6 +70,9 @@ const AwgInvoices = () => {
   const overTenCentsOnly = useAppSelector(
     (s) => s.dev.invoices.overTenCentsOnly,
   );
+  const nothingBilledOnly = useAppSelector(
+    (s) => s.dev.invoices.nothingBilledOnly,
+  );
   const textFilter = useAppSelector((s) => s.dev.invoices.textFilter);
   const error = useAppSelector((s) => s.dev.invoices.error);
   const sending = useAppSelector((s) => s.dev.invoices.sending);
@@ -79,7 +82,20 @@ const AwgInvoices = () => {
 
   const [readOpen, setReadOpen] = useState(false);
 
-  const { rows, allReconciled, failedCount, warnings } = useAwgInvoices();
+  const { rows, allReconciled, failedCount, warnings, trailer } =
+    useAwgInvoices();
+
+  /** Why the file may not be whole, or null when its trailers agree. */
+  const trailerProblem = useMemo(() => {
+    if (!trailer || trailer.ok) return null;
+    if (trailer.trailers === 0) {
+      return "This file has no trailer record, so there is no way to confirm it arrived whole.";
+    }
+    const gap = trailer.expected - trailer.found;
+    return gap > 0
+      ? `The trailer counts say this file holds ${trailer.expected} records, but it holds ${trailer.found} — ${gap} missing. The file may be incomplete.`
+      : `The trailer counts say this file holds ${trailer.expected} records, but it holds ${trailer.found} — ${-gap} more than any trailer accounts for.`;
+  }, [trailer]);
 
   // Escape closes the re-read overlay. The page behind it is still readable, so
   // an overlay you can only leave by aiming at a button is the wrong trade.
@@ -96,7 +112,7 @@ const AwgInvoices = () => {
   const editedByDoc = useMemo(() => {
     const map = new Map<string, Set<string>>();
     for (const edit of edits) {
-      if (edit.kind === "splitRetail") continue;
+      if (edit.kind === "suggested") continue;
       const key =
         edit.kind === "header" ? edit.field : `${edit.rowIndex}:${edit.field}`;
       const held = map.get(edit.docId) ?? new Set<string>();
@@ -106,23 +122,18 @@ const AwgInvoices = () => {
     return map;
   }, [edits]);
 
-  /** Every split on offer across the file, for the one button that takes
-   *  them all. */
-  const allSplits = useMemo(
-    () =>
-      rows.flatMap((row) =>
-        row.retailSplits.map((split) => ({
-          docId: row.id,
-          rowIndex: split.rowIndex,
-          itemCode: split.itemCode,
-          extRetail: split.extRetail,
-        })),
-      ),
-    [rows],
+  const suggestedApplied = useMemo(
+    () => edits.some((edit) => edit.kind === "suggested"),
+    [edits],
   );
 
   const overTenCentsCount = useMemo(
     () => rows.filter((row) => row.overTenCents).length,
+    [rows],
+  );
+
+  const nothingBilledCount = useMemo(
+    () => rows.filter((row) => row.status === "nothingBilled").length,
     [rows],
   );
 
@@ -131,6 +142,7 @@ const AwgInvoices = () => {
     return rows.filter((row) => {
       if (failedOnly && row.reconciled) return false;
       if (overTenCentsOnly && !row.overTenCents) return false;
+      if (nothingBilledOnly && row.status !== "nothingBilled") return false;
       if (!needle) return true;
       return (
         row.invoiceNbr.toLowerCase().includes(needle) ||
@@ -138,7 +150,7 @@ const AwgInvoices = () => {
         row.retailDept.toLowerCase().includes(needle)
       );
     });
-  }, [rows, failedOnly, overTenCentsOnly, textFilter]);
+  }, [rows, failedOnly, overTenCentsOnly, nothingBilledOnly, textFilter]);
 
   const handleFile = (text: string, name: string) => {
     dispatch(setInvoicesParsing(true));
@@ -261,9 +273,7 @@ const AwgInvoices = () => {
 
           <div className="px-3.5 pt-2 font-mono text-[10px] uppercase tracking-wider text-content/85">
             {rows.length} {rows.length === 1 ? "invoice" : "invoices"} ·{" "}
-            {failedCount === 0
-              ? "all reconciled"
-              : `${failedCount} to check`}
+            {failedCount === 0 ? "all reconciled" : `${failedCount} to check`}
             {edits.length > 0
               ? ` · ${edits.length} ${
                   edits.length === 1 ? "correction" : "corrections"
@@ -320,16 +330,48 @@ const AwgInvoices = () => {
               Over 10¢{overTenCentsCount > 0 ? ` (${overTenCentsCount})` : ""}
             </button>
 
-            {allSplits.length > 0 && (
+            {/* Only when the file has any: a chip that can only ever show an
+                empty list is noise. */}
+            {nothingBilledCount > 0 && (
               <button
                 type="button"
-                onClick={() => dispatch(splitAllInvoiceRetail(allSplits))}
-                title="Split retail on every random-weight run offered in this file"
-                className="flex-none rounded-full border border-gray-200 bg-custom-white px-3 py-1.5 text-[11px] font-medium text-content/85 hover:bg-bkg"
+                onClick={() =>
+                  dispatch(setInvoiceNothingBilledOnly(!nothingBilledOnly))
+                }
+                aria-pressed={nothingBilledOnly}
+                title="Invoices with no billed lines — only exceptions for items that did not ship"
+                className={`flex-none rounded-full border px-3 py-1.5 text-[11px] font-medium ${
+                  nothingBilledOnly
+                    ? "border-brand_navy bg-brand_navy text-custom-white"
+                    : "border-gray-200 bg-custom-white text-content/85"
+                }`}
               >
-                Split retail on all ({allSplits.length})
+                Nothing billed ({nothingBilledCount})
               </button>
             )}
+
+            {/* Everything computed rather than read — retail by weight,
+                split runs, per-pound cost and deals — waits behind this, so
+                the page shows the file as it is until asked. */}
+            <button
+              type="button"
+              onClick={() => dispatch(applySuggestedCorrections())}
+              disabled={suggestedApplied}
+              title={
+                suggestedApplied
+                  ? "Suggested corrections are applied — Undo all corrections takes them back"
+                  : "Recompute retail, cost and allowances the way AWG builds its totals: split repeated random-weight retail, price random-weight lines by weight, use the multi-buy formula, cost and discount random-weight lines per pound, and round once"
+              }
+              className={`flex-none rounded-full border px-3 py-1.5 text-[11px] font-medium ${
+                suggestedApplied
+                  ? "border-gray-200 bg-bkg text-content/85"
+                  : "border-brand_navy bg-custom-white text-brand_navy hover:bg-bkg"
+              }`}
+            >
+              {suggestedApplied
+                ? "Suggested corrections applied"
+                : "Apply suggested corrections"}
+            </button>
 
             {edits.length > 0 && (
               <button
@@ -367,6 +409,13 @@ const AwgInvoices = () => {
             </button>
           </div>
 
+          {/* A file cut off between two invoices still reconciles invoice by
+              invoice, so the trailer counts are the only sign it is short. */}
+          {trailerProblem && (
+            <p className="border-t border-gray-100 bg-severity_critical_bg px-3.5 py-2 text-[12px] text-severity_critical_text">
+              {trailerProblem}
+            </p>
+          )}
           {/* Sending a file that does not balance is the one thing this page
               exists to prevent, so the reason sits under the control rather
               than only in its tooltip. */}
@@ -399,36 +448,39 @@ const AwgInvoices = () => {
         {/* ── the invoices ───────────────────────────────────────── */}
         <div className="thin-scrollbar min-h-0 flex-1 overflow-y-auto pr-0.5">
           <div className="flex flex-col gap-3 pb-1">
-        {visible.map((row) => (
-          <InvoiceCard
-            key={row.id}
-            row={row}
-            open={expandedId === row.id}
-            onToggle={() =>
-              dispatch(setInvoiceExpanded(expandedId === row.id ? null : row.id))
-            }
-            editedKeys={editedByDoc.get(row.id) ?? new Set()}
-            onEdit={(edit) =>
-              dispatch(editInvoiceField({ ...edit, docId: row.id } as InvoiceEdit))
-            }
-            onRevert={(key) =>
-              dispatch(revertInvoiceField({ ...key, docId: row.id }))
-            }
-            onSplitRetail={(group) =>
-              dispatch(splitInvoiceRetail({ ...group, docId: row.id }))
-            }
-          />
-        ))}
+            {visible.map((row) => (
+              <InvoiceCard
+                key={row.id}
+                row={row}
+                open={expandedId === row.id}
+                onToggle={() =>
+                  dispatch(
+                    setInvoiceExpanded(expandedId === row.id ? null : row.id),
+                  )
+                }
+                editedKeys={editedByDoc.get(row.id) ?? new Set()}
+                onEdit={(edit) =>
+                  dispatch(
+                    editInvoiceField({ ...edit, docId: row.id } as InvoiceEdit),
+                  )
+                }
+                onRevert={(key) =>
+                  dispatch(revertInvoiceField({ ...key, docId: row.id }))
+                }
+              />
+            ))}
 
-        {visible.length === 0 && (
-          <p className="rounded-xl border border-gray-200 bg-custom-white px-4 py-8 text-center text-[13px] text-content/85">
-            {overTenCentsOnly
-              ? "No invoice in this file misses by more than 10¢."
-              : failedOnly
-                ? "Every invoice in this file reconciles."
-                : "No invoice matches that filter."}
-          </p>
-        )}
+            {visible.length === 0 && (
+              <p className="rounded-xl border border-gray-200 bg-custom-white px-4 py-8 text-center text-[13px] text-content/85">
+                {nothingBilledOnly && (failedOnly || overTenCentsOnly)
+                  ? "Invoices that billed nothing have nothing to check."
+                  : overTenCentsOnly
+                    ? "No invoice in this file misses by more than 10¢."
+                    : failedOnly
+                      ? "Every invoice in this file reconciles."
+                      : "No invoice matches that filter."}
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -453,7 +505,6 @@ const AwgInvoices = () => {
           </div>
         </div>
       )}
-
     </div>
   );
 };

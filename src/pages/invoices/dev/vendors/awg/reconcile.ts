@@ -1,7 +1,7 @@
 import { Decimal, sumDecimals } from "../../core/Decimal";
 import type { ParsedRecord } from "../../core/types";
 import type { AwgInvoice } from "./group";
-import { sumRetail } from "./retail";
+import { invoiceTotals } from "./totals";
 
 /**
  * The correctness gate.
@@ -30,7 +30,14 @@ export interface ReconcileResult {
   invoiceNbr: string;
   checks: ReconcileCheck[];
   ok: boolean;
-  /** Set when the invoice couldn't be checked at all, rather than failing. */
+  /**
+   * `checked` when there is a `19` total to check against. Without one,
+   * `nothingBilled` when the invoice carries only `05` exceptions — nothing
+   * shipped, so there is nothing to total and nothing wrong — and `noTotal`
+   * when it carries billed records the file gives no total for.
+   */
+  status: "checked" | "noTotal" | "nothingBilled";
+  /** Why the invoice could not be checked. */
   note?: string;
   /**
    * Allowance the `19` total nets that no detail record carries.
@@ -75,45 +82,60 @@ const check = (
 
 export const reconcileInvoice = (invoice: AwgInvoice): ReconcileResult => {
   if (!invoice.total) {
+    const billed =
+      invoice.lineItems.length +
+      invoice.deals.length +
+      invoice.palletAllowances.length +
+      invoice.deliveryCharges.length +
+      invoice.taxes.length +
+      invoice.shipperComponents.length;
+    if (billed === 0) {
+      const n = invoice.exceptions.length;
+      return {
+        invoiceNbr: invoice.invoiceNbr,
+        checks: [],
+        ok: true,
+        status: "nothingBilled",
+        note: `Nothing was billed on this invoice — only ${n} ${
+          n === 1 ? "exception" : "exceptions"
+        } for items that did not ship, so there is no total to check.`,
+      };
+    }
+    const lines = invoice.lineItems.length;
     return {
       invoiceNbr: invoice.invoiceNbr,
       checks: [],
       ok: false,
-      note: "no invoice-total record for this invoice",
+      status: "noTotal",
+      note: `No total row. This invoice bills ${lines} ${
+        lines === 1 ? "line" : "lines"
+      }, but the file carries no 19 total record for it, so none of it can be checked against the vendor's figures.`,
     };
   }
 
   const totals = invoice.total.fields;
 
-  // Pallet allowances come on their own `03` records and are not netted into
-  // any line, but the vendor's total counts them in both its cost and its
-  // allowances. Left out, every invoice with one fails both checks by exactly
-  // its amount.
-  const palletAllowances = sumField(
-    invoice.palletAllowances,
-    "ba_retail_ext",
-    2,
-  );
+  // Pallet allowances and delivery charges come on their own records, and
+  // the vendor's total counts both — see `totals`, which also holds the
+  // suggested corrections when they are applied.
+  const figures = invoiceTotals(invoice);
 
   const checks: ReconcileCheck[] = [
-    // Delivery charges are billed on their own record type but included in the
-    // invoice's cost total, so the derived side has to add them or every
-    // invoice carrying a delivery fee reports a mismatch.
     check(
-      "Total cost (line items + delivery fees − pallet allowances)",
-      sumField(invoice.lineItems, "cost_ext", 2)
-        .add(sumField(invoice.deliveryCharges, "cost_ext", 2))
-        .subtract(palletAllowances),
+      invoice.suggested
+        ? "Total cost (line items + delivery fees − pallet allowances − per-lb deals)"
+        : "Total cost (line items + delivery fees − pallet allowances)",
+      figures.totalCost,
       reported(totals.cost_ext, 2),
     ),
     check(
       "Extended retail",
-      sumRetail(invoice.lineItems),
+      figures.totalRetail,
       reported(totals.total_retail, 2),
     ),
     check(
       "Total allowances",
-      sumField(invoice.deals, "deal_amount", 2).add(palletAllowances),
+      figures.totalAllowances,
       reported(totals.deal_amount, 2),
     ),
     // Whole cases, so scale 0 — comparing this at scale 2 would still be
@@ -137,6 +159,7 @@ export const reconcileInvoice = (invoice: AwgInvoice): ReconcileResult => {
     invoiceNbr: invoice.invoiceNbr,
     checks,
     ok: checks.every((entry) => entry.ok),
+    status: "checked",
     ...(unitemized ? { unitemizedAllowance: missing } : {}),
   };
 };
