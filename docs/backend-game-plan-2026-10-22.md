@@ -48,14 +48,12 @@ been on `origin/prod` since the initial commit (50a3b28, May 2026).
 - Support still needs "sign in as". Add it as its own endpoint that requires
   an existing session:
   `POST /auth/impersonate` with body `{ "username": "<target>" }` and the
-  caller's bearer token. Allowed only when the caller is level 9 (see the
-  decision below). Returns exactly what `/auth/login` returns, for the
+  caller's bearer token. Allowed only when the caller is level 9. Returns exactly what `/auth/login` returns, for the
   target user. Logs who impersonated whom, without the token.
 
-**Decision for Steve before this ships:** who may impersonate. The
-recommendation is level 9 only. The frontend also lets "DCR support" (an
-email allowlist) see every company; if they need impersonation too, say so
-and use the same list.
+**Decided (Steve, 22 Oct): level 9 only.** DCR support does not get
+impersonation, even though the frontend lets them see every company. A caller
+below level 9 gets 403.
 
 **Ship both changes together.** Removing `ov` alone takes away support's
 sign-in-as with nothing to replace it.
@@ -332,7 +330,7 @@ table.
 
 | # | Item | Commit | On dev? | Response shape / notes |
 |---|---|---|---|---|
-| 1 | Login override removed, `/auth/impersonate` added | | | Who may impersonate: |
+| 1 | Login override removed, `/auth/impersonate` added | | | Level 9 only (decided) |
 | 2 | `users/` without password, security answer, question id | | | |
 | 3a | Ticket scope by shown company | | | |
 | 3b | `tickets.company` finished and used | | | |
