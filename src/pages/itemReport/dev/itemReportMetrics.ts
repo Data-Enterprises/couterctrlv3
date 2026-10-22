@@ -455,6 +455,13 @@ const readPrices = (
   };
 };
 
+/** Midnight UTC of a yyyy-mm-dd, for whole-day differences with no timezone
+ *  to slip a day on. */
+const utcDay = (iso: string) => {
+  const [y, m, d] = iso.split("-").map(Number);
+  return Date.UTC(y, m - 1, d);
+};
+
 /** mm/dd from a yyyy-mm-dd. Enough to place an event without spending the width
  *  a full date costs inside a sentence. */
 const shortDate = (iso: string) => {
@@ -1252,7 +1259,26 @@ export const verdictFor = (
    * read empty when a few units remain. The sentence prints both figures rather
    * than only the conclusion, so the reader can see what it is claiming.
    */
-  const runOut = item.sinceDelivery !== null && item.sinceDelivery.left <= 0;
+  /**
+   * Earlier deliveries still on the shelf.
+   *
+   * "Left of the last delivery" can't see stock from before it, so an item that
+   * sold through a two-unit delivery read empty the next day while its own row
+   * showed NET +7 for the span (White Wheat Round Top, dev board review,
+   * finding N). When two or more deliveries landed in the span, the span's net
+   * movement does see that stock, and a positive net means the shelf filled
+   * over the span rather than emptied. With only one delivery the span figure
+   * charges pre-delivery sales against it (see StockMovement), so it can't
+   * overrule the anchored one there.
+   */
+  const earlierStockLeft =
+    item.movement !== null &&
+    item.movement.deliveries >= 2 &&
+    item.movement.net > 0;
+  const runOut =
+    item.sinceDelivery !== null &&
+    item.sinceDelivery.left <= 0 &&
+    !earlierStockLeft;
 
   // `last &&` matters: without a receipt `isRecent` is false, and an unguarded
   // `!isRecent` would call every no-invoice item off the shelf — the same
@@ -1286,6 +1312,44 @@ export const verdictFor = (
 
   if (sold === 0) {
     const sd = item.sinceDelivery;
+
+    /**
+     * A delivery that landed at the very end of the window.
+     *
+     * Measured against the window's end, not against today: a delivery on the
+     * window's last day had no time to sell INSIDE it, however long ago that
+     * day now is. Five items delivered on 10/20, for a week ending 10/20, were
+     * called Investigate for "3 units delivered, none scanned since" (dev
+     * board review, finding L). The delivery hadn't had a day to sell.
+     *
+     * Nothing sold earlier in the window either, so the likely story is that
+     * the shelf was empty until this delivery refilled it. That's not
+     * Investigate, and it's too soon for anything else, so it says so and
+     * names when to look again.
+     */
+    const FRESH_DELIVERY_DAYS = 2;
+    const lastDate = last ? last.date.slice(0, 10) : null;
+    const daysToWindowEnd =
+      lastDate && windowEnd
+        ? Math.round((utcDay(windowEnd) - utcDay(lastDate)) / 86400000)
+        : null;
+    if (
+      daysToWindowEnd !== null &&
+      daysToWindowEnd >= 0 &&
+      daysToWindowEnd < FRESH_DELIVERY_DAYS
+    ) {
+      const before = item.lw
+        ? `, against ${round1(item.lw.units)} last week`
+        : item.ly
+          ? `, against ${round1(item.ly.units)} the same week last year`
+          : "";
+      return {
+        action: "insufficient",
+        evidence: `${inStock} Delivered ${shortDate(lastDate as string)}, at the end of the window, so the new stock hasn't had time to sell. Nothing sold earlier in the window${before}, which looks like an empty shelf until this delivery. Check again next week.`,
+        unaccounted,
+      };
+    }
+
     /**
      * Zero sales is only evidence once the item has had a chance.
      *

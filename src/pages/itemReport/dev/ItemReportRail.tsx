@@ -624,7 +624,7 @@ const ItemReportRail = ({
                 : // Reads as a sentence rather than two abbreviations: "every
                   // 8" had no unit at all, and "16d ago" never said ago from
                   // what. The second figure inherits "days" from the first.
-                  `Last received ${lastDays} days ago${
+                  `Last received ${lastDays === 0 ? "today" : `${lastDays} day${lastDays === 1 ? "" : "s"} ago`}${
                     avgGap === null ? "" : ` · usually every ${avgGap}`
                   }`
             }
@@ -668,7 +668,15 @@ const ItemReportRail = ({
                               // exist.
                               text: `${open ? "▾" : adjusted ? "•" : "›"} ${formatDateSimple(r.date)}`,
                             },
-                            { text: String(r.sellingUnits) },
+                            // Cases beside units: Receivers shows the
+                            // invoice in cases (56), this showed units (224),
+                            // and nothing joined the two (finding R).
+                            {
+                              text:
+                                r.cases > 0
+                                  ? `${r.sellingUnits} · ${r.cases}cs`
+                                  : String(r.sellingUnits),
+                            },
                             { text: formatCurrency2(r.unitCost) },
                             {
                               text:

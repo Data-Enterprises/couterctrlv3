@@ -90,16 +90,20 @@ interface Props {
  * Two actions are deliberately absent. "pending" is not a pile anyone works
  * through, and a chip for it would invite filtering to a set that empties
  * itself a few seconds later — the progress strip below already says that.
- * "insufficient" is not a pile either: it means the data could not reach a
- * conclusion, so there is no work to batch. Both still appear in the Action
- * column, and both still export; they just are not offered as a way to spend
- * an afternoon. */
+ * It still appears in the Action column and still exports.
+ *
+ * "insufficient" was left out too, on the grounds that no conclusion means no
+ * work to batch. The dev board review found the gap (finding R): an item there
+ * couldn't be filtered to at all. And since finding L it holds a real batch --
+ * deliveries that landed too late in the window to judge, each one saying
+ * "check again next week". So it is a pile now, last and in grey. */
 const ORDER: ActionKind[] = [
   "investigate",
   "reorder",
   "reprice",
   "vendor",
   "none",
+  "insufficient",
 ];
 
 /**
@@ -215,6 +219,8 @@ const ItemReportSheet = ({
         b.item.ty.sales - a.item.ty.sales,
     );
   }, [rows, only, upcQ, descQ, dept, vendor]);
+
+  const noLastYear = rows.length > 0 && rows.every((r) => !r.item.ly);
 
   return (
     <div className="flex-1 min-w-0 shadow-lg">
@@ -333,6 +339,16 @@ const ItemReportSheet = ({
             and this one decides whether two whole actions can fire — the shape
             of the list is the finding: a whole vendor missing reads very
             differently from a scattered handful. */}
+        {/* Said once when nothing in the list has a last year. Each verdict then
+            falls back to last week without saying so, and "a seasonal dip is
+            not mistaken for a problem" can't hold for this store (finding T). */}
+        {noLastYear && (
+          <div className="flex-shrink-0 px-4 py-1.5 bg-gray-100 text-[11px] text-content">
+            No last-year sales on file for this store, so trends compare against
+            last week only. A seasonal dip can read as a problem.
+          </div>
+        )}
+
         {receivingComplete && noReceiverCount > 0 && (
           <div className="relative flex-shrink-0">
             <button
@@ -342,7 +358,10 @@ const ItemReportSheet = ({
               {receivingAvailable
                 ? `No receiver invoice on file for ${noReceiverCount} of ${itemCount} item${itemCount === 1 ? "" : "s"} in the last 90 days`
                 : "No received orders on file for this store in the last 90 days"}
-              {" — Reorder and Call vendor can't be judged for those. Price and trend are unaffected."}
+              {/* Reorder can still fire for these, from sales stopping
+                  mid-week (T-Bone, in the review). The banner used to say it
+                  couldn't, beside a row that had (finding M). */}
+              {" — Call vendor can't be judged for those, and Reorder only from sales stopping. Price and trend are unaffected."}
               <span className="underline ml-1">
                 {noReceiverOpen ? "Hide" : "Show them"}
               </span>
@@ -414,8 +433,15 @@ const ItemReportSheet = ({
             </ColFilter>
           </span>
           <span className="text-right">Units</span>
-          <span className="text-right">vs LW</span>
-          <span className="text-right">vs LY</span>
+          {/* Units, not dollars: Top 200's "vs LW" is sales, and the same
+              label meaning two things read as two answers for one item
+              (finding Q). */}
+          <span className="text-right" title="Change in units sold against last week">
+            Units vs LW
+          </span>
+          <span className="text-right" title="Change in units sold against the same week last year">
+            Units vs LY
+          </span>
           <span
             className="text-right"
             title="Selling units received, last 14 days"

@@ -118,7 +118,7 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
     <p class="sub">What was done about each finding in <span class="mono">dev-board-review-2026-10-21.md</span>. Fixes land in the dev tree; prod gets them when dev is promoted. This page is updated and committed after each phase.</p>
   </div>
   <div class="status">
-    <span><b>Phase 4 of 6 done.</b> Price Opt behaviour.</span>
+    <span><b>Phase 5 of 6 done.</b> Item Actions rules.</span>
     <span class="mono">branch next_publish_10_20_2026</span>
   </div>
 </header>
@@ -144,9 +144,9 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
       <tr><td class="id">J</td><td>Filter doesn't search items</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 4</span></td></tr>
       <tr><td class="id">C</td><td>TRANS counts item lines, not receipts</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 4</span></td></tr>
       <tr><td class="id">B, G</td><td>One-day recommendations; mixed money formats</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 4</span></td></tr>
-      <tr><td class="id">P</td><td>65.9% margin on Breast Tenders</td><td class="st"><span class="chip next">Phase 5 (check first)</span></td></tr>
-      <tr><td class="id">L, M, N, T</td><td>Item Actions judges deliveries unfairly</td><td class="st"><span class="chip next">Phase 5</span></td></tr>
-      <tr><td class="id">Q, R, S</td><td>Item Actions labels and controls</td><td class="st"><span class="chip next">Phase 5</span></td></tr>
+      <tr><td class="id">P</td><td>65.9% margin on Breast Tenders</td><td class="st"><span class="chip none">Checked &middot; needs one look</span></td></tr>
+      <tr><td class="id">L, M, N, T</td><td>Item Actions judges deliveries unfairly</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 5</span></td></tr>
+      <tr><td class="id">Q, R, S</td><td>Item Actions labels and controls</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 5</span></td></tr>
       <tr><td class="id">AK, 2</td><td>Add user half-ticked state; Top 200 names cut off</td><td class="st"><span class="chip next">Phase 6</span></td></tr>
       <tr><td class="id">AE, AD, AF</td><td>New pages on old help; guide steps; Show me gaps</td><td class="st"><span class="chip next">Phase 6</span></td></tr>
       <tr><td class="id">3, D, AJ</td><td>Over-fetching and <code>users/</code> scope</td><td class="st"><span class="chip both">Backend, then frontend</span></td></tr>
@@ -464,7 +464,7 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
 
 <!-- ============================================================ PHASE 4 -->
 <section class="block" aria-labelledby="p4-h">
-  <div class="phase-head"><h2 id="p4-h">Phase 4 &middot; Price Opt behaviour</h2><span class="commit" id="p4-commit">this commit</span></div>
+  <div class="phase-head"><h2 id="p4-h">Phase 4 &middot; Price Opt behaviour</h2><span class="commit">46f6d398</span></div>
 </section>
 
 <article class="issue" id="I" aria-labelledby="i-h">
@@ -602,8 +602,132 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
   </div>
 </article>
 
+<!-- ============================================================ PHASE 5 -->
+<section class="block" aria-labelledby="p5-h">
+  <div class="phase-head"><h2 id="p5-h">Phase 5 &middot; Item Actions rules</h2><span class="commit" id="p5-commit">this commit</span></div>
+  <p>These change what Item Actions concludes, not just how it looks, so each one is tied to the item the review named.</p>
+</section>
+
+<article class="issue" id="L" aria-labelledby="l-h">
+  <div class="issue-head">
+    <span class="issue-num">L</span>
+    <h2 id="l-h">A delivery at the end of the window isn't called dead</h2>
+    <div class="verdict"><span class="chip fixed">Fixed</span> Board check now passes.</div>
+  </div>
+  <dl class="facts">
+    <dt>Found</dt><dd>Five items delivered on 10/20, for a week ending 10/20, were Investigate. Thomas English Muffins: "3 units delivered, none scanned since".</dd>
+    <dt>Cause</dt><dd>Zero sales waited for a full week only when an item had no history. With last week's sales on file, a delivery from the window's last day was judged straight away. And "days since delivery" counts from today, not from the end of the window, so it couldn't see that the delivery had no time inside the window.</dd>
+    <dt>Files</dt><dd><code>pages/itemReport/dev/itemReportMetrics.ts</code> (<code>verdictFor</code>)</dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li>A delivery that landed in the last two days of the window, with nothing sold in the window, is no longer judged. It becomes <b>Insufficient</b>, worded: "Delivered 10/20, at the end of the window, so the new stock hasn't had time to sell. Nothing sold earlier in the window, against 4 last week, which looks like an empty shelf until this delivery. Check again next week."</li>
+      <li>Freshness is measured against the window's end, so the verdict is the same whichever day the report is run.</li>
+      <li>A delivery that has had time is judged exactly as before.</li>
+    </ul>
+  </div>
+  <p class="callout">On Body Armor, the review thought Investigate might still be right, since it also sold nothing in the week before. That week is what this wording now names: the shelf looks empty until the delivery. Next week's run judges the new stock on its own sales.</p>
+  <div class="verify">
+    <h4>How to check it</h4>
+    <ol>
+      <li>Item Actions, store 695, 10/20, with the 49 UPCs received on 10/20.</li>
+      <li>Thomas English Muffins and Body Armor 16oz: Insufficient, with the "Check again next week" reason. Previously Investigate.</li>
+    </ol>
+  </div>
+</article>
+
+<article class="issue" id="N" aria-labelledby="n-h">
+  <div class="issue-head">
+    <span class="issue-num">N</span>
+    <h2 id="n-h">"Nothing left" accounts for earlier stock</h2>
+    <div class="verdict"><span class="chip fixed">Fixed</span></div>
+  </div>
+  <dl class="facts">
+    <dt>Found</dt><dd>White Wheat Round Top was Reorder one day after delivery, "2 delivered, 2 sold since", while its own row showed NET +7.</dd>
+    <dt>Cause</dt><dd>"Left of the last delivery" can't see stock from earlier deliveries. The code even noted this blind spot.</dd>
+    <dt>Files</dt><dd><code>pages/itemReport/dev/itemReportMetrics.ts</code></dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li>When two or more deliveries landed in the span and the span's net is positive, the shelf filled over the span rather than emptied, so "nothing left of the last delivery" no longer calls a reorder.</li>
+      <li>With only one delivery in the span, the span figure is unreliable (it counts sales from before that delivery), so it doesn't overrule anything.</li>
+    </ul>
+  </div>
+  <div class="verify">
+    <h4>How to check it</h4>
+    <ol>
+      <li>Item Actions, White Wheat Round Top: no longer Reorder. It falls through to the price and trend checks.</li>
+    </ol>
+  </div>
+</article>
+
+<article class="issue" id="M" aria-labelledby="m-h">
+  <div class="issue-head">
+    <span class="issue-num">M T</span>
+    <h2 id="m-h">The banners say what is actually true</h2>
+    <div class="verdict"><span class="chip fixed">Fixed</span></div>
+  </div>
+  <dl class="facts">
+    <dt>Found</dt><dd>"Reorder and Call vendor can't be judged" for items with no invoice, beside T-Bone marked Reorder. And with no last-year data for store 695, trends quietly compared against last week only.</dd>
+    <dt>Files</dt><dd><code>pages/itemReport/dev/ItemReportSheet.tsx</code></dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li>The invoice banner now reads "Call vendor can't be judged for those, and Reorder only from sales stopping." T-Bone's reorder comes from its sales stopping mid-week, which needs no invoice.</li>
+      <li>When nothing in the list has last-year sales, a grey line says so once: "No last-year sales on file for this store, so trends compare against last week only. A seasonal dip can read as a problem."</li>
+    </ul>
+  </div>
+</article>
+
+<article class="issue" id="Q" aria-labelledby="q-h">
+  <div class="issue-head">
+    <span class="issue-num">Q R S</span>
+    <h2 id="q-h">Labels, the Insufficient pile, cases, and the carried-over list</h2>
+    <div class="verdict"><span class="chip fixed">Fixed</span></div>
+  </div>
+  <dl class="facts">
+    <dt>Found</dt><dd>"VS LW" meant units here and dollars on Top 200. Insufficient items couldn't be filtered to. "Last received 1 days ago". Receivers shows cases (56), Item Actions showed units (224). A second Build kept the first list and added to it.</dd>
+    <dt>Files</dt><dd><code>ItemReportSheet.tsx</code>, <code>ItemReportRail.tsx</code>, <code>ItemReportEntry.tsx</code></dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li><b>Q:</b> the columns read "Units vs LW" and "Units vs LY".</li>
+      <li><b>R:</b> Insufficient is now a pile, last and in grey. It had been left out on purpose, as "no conclusion, no work to batch", but since L it holds a real batch to come back to.</li>
+      <li><b>R:</b> "Last received 1 day ago", and "today" for zero.</li>
+      <li><b>R:</b> each delivery row in the rail shows cases beside units: "224 · 56cs".</li>
+      <li><b>S:</b> Build adding to the list is deliberate: it copies the UPC List card, where lists are built up. Clear all was already there. What was missing was any sign the list had carried over, so the count line now says "Includes the list from your last build. Clear all to start a new one."</li>
+    </ul>
+  </div>
+</article>
+
+<article class="issue" id="P" aria-labelledby="p-h">
+  <div class="issue-head">
+    <span class="issue-num">P</span>
+    <h2 id="p-h">65.9% on Fam Pak Breast Tenders: checked, not changed</h2>
+    <div class="verdict"><span class="chip none">Needs one look at the item</span></div>
+  </div>
+  <dl class="facts">
+    <dt>Found</dt><dd>Fam Pak Breast Tenders: No action, "Trend −85%, cost steady, margin 65.9%". The review suspected the same per-pack vs per-pound mix-up as finding A.</dd>
+    <dt>Checked</dt><dd>It isn't the same bug. Item Actions already costs weighed items by weight (<code>calculateCogs</code> uses weight before quantity), and Ground Beef's units there are pounds, so the per-pound path works.</dd>
+  </dl>
+  <div class="block"><h3>Why nothing changed yet</h3>
+    <p>Two causes fit 65.9%, and which one it is shows on the screen:</p>
+    <ul>
+      <li>If its <b>Units</b> column shows whole numbers, the rows came back with weight 0. Cost is then units × a per-pound cost, understated by each pack's weight.</li>
+      <li>If Units shows pounds, the case cost and case size on its rows don't describe the same unit as the sales.</li>
+    </ul>
+    <p>Changing the cost rule without knowing which would risk breaking items that are right today.</p>
+  </div>
+  <div class="verify">
+    <h4>What to look at</h4>
+    <ol>
+      <li>Item Actions, store 695, Fam Pak Breast Tenders: whole numbers or pounds in the Units column? Tell me which, and the fix follows.</li>
+    </ol>
+  </div>
+</article>
+
 <footer>
-  Verified for Phase 4: typecheck, 1,234 tests (13 new this phase, 43 across all four), theme audit, eslint and a production build, all clean. Checked by tests, not in a browser, so the "how to check it" steps are yours to run.
+  Verified for Phase 5: typecheck, 1,238 tests (4 new this phase, 47 across all five), theme audit, eslint and a production build, all clean. Checked by tests, not in a browser, so the "how to check it" steps are yours to run.
 </footer>
 
 </div>
