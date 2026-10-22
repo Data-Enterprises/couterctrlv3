@@ -51,6 +51,11 @@ export interface EstimatedPricePoint {
  */
 export const estimatedPricePoints = (
   rows: SubDeptMargin[],
+  /** A per-unit cost to hold every price against instead of each row's own.
+   *  Price Opt passes the latest invoice cost here, so the left table's
+   *  margins agree with the right table's and the header. Omitted, each row
+   *  is costed from its own fields as before. */
+  unitCostOverride?: number | null,
 ): EstimatedPricePoint[] => {
   const sales = rows.filter(
     (r) => r.sale_type === "Sale" && r.total_sales >= 0,
@@ -72,13 +77,10 @@ export const estimatedPricePoints = (
     const priceType = r.price_type || "REG";
     const key = `${price}|${priceType}`;
 
-    const cogs = calculateCogs(
-      r.net_cost,
-      r.cost,
-      r.case_size,
-      r.qty,
-      r.weight,
-    );
+    const cogs =
+      unitCostOverride != null
+        ? units * unitCostOverride
+        : calculateCogs(r.net_cost, r.cost, r.case_size, r.qty, r.weight);
     const found = buckets.get(key);
     if (found) {
       found.qty += r.qty;

@@ -7,7 +7,13 @@ import {
   actualPricePoints,
   suggestPrice,
 } from "../../../utils/pricePoints";
-import { itemCostStats, type ProductSummary } from "./inventoryData";
+import {
+  isUnweighedPacks,
+  itemCostStats,
+  type ProductSummary,
+} from "./inventoryData";
+import { resolveUnitCost } from "./invoiceCost";
+import type { InvoiceCostState } from "./useInvoiceCost";
 import type { TreeGroup } from "./InventoryTreePanel";
 import type { TransactionListItem } from "../../../interfaces";
 
@@ -56,6 +62,9 @@ interface Props {
   /** Register lines for `selected`. Empty while loading, or when the fetch
    *  belongs to a previously-clicked item. */
   lines: TransactionListItem[];
+  /** The invoice cost lookup for `selected`, so the file holds its prices
+   *  against the same cost as the screen. */
+  invoice: InvoiceCostState;
 }
 
 /** Rows are pre-formatted string/number maps rather than typed records, so one
@@ -167,13 +176,27 @@ const buildItemRows = (itemGroups: ItemGroup[]): Row[] =>
 const buildPriceRows = (
   product: ProductSummary,
   lines: TransactionListItem[],
+  invoice: InvoiceCostState,
 ): Row[] => {
-  const { unitCost } = itemCostStats(product);
+  // The same resolution the panel makes, so the file and the screen agree on
+  // cost, margin and which price, if any, is suggested.
+  const weighed = product.rows.some((r) => r.weight > 0);
+  const cost = resolveUnitCost(
+    itemCostStats(product).unitCost,
+    invoice.upc === product.productCode ? invoice.cost : null,
+    weighed,
+  );
+  const override = cost.source === "invoice" ? cost.unitCost : null;
+  const { unitCost } = itemCostStats(product, override);
   const act = actualPricePoints(lines, unitCost ?? 0);
-  const suggestion = suggestPrice(act);
+  // Withheld for random-weight packs, as on screen: their receipts are pack
+  // totals, and a pack total is not a price to set.
+  const suggestion = isUnweighedPacks(lines.length, act.isWeighted, product.rows)
+    ? null
+    : suggestPrice(act);
   const best = suggestion?.best.point ?? null;
 
-  const rows: Row[] = estimatedPricePoints(product.rows).map((p) => {
+  const rows: Row[] = estimatedPricePoints(product.rows, override).map((p) => {
     const perDay = p.daysSeen > 0 ? p.units / p.daysSeen : 0;
     return {
       source: "Estimated",
@@ -263,12 +286,13 @@ const InventoryExportModal = ({
   itemGroups,
   selected,
   lines,
+  invoice,
 }: Props) => {
   const groupRows = useMemo(() => buildGroupRows(groups), [groups]);
   const itemRows = useMemo(() => buildItemRows(itemGroups), [itemGroups]);
   const priceRows = useMemo(
-    () => (selected ? buildPriceRows(selected, lines) : []),
-    [selected, lines],
+    () => (selected ? buildPriceRows(selected, lines, invoice) : []),
+    [selected, lines, invoice],
   );
   const txnRows = useMemo(() => buildTxnRows(lines), [lines]);
 

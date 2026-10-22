@@ -118,7 +118,7 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
     <p class="sub">What was done about each finding in <span class="mono">dev-board-review-2026-10-21.md</span>. Fixes land in the dev tree; prod gets them when dev is promoted. This page is updated and committed after each phase.</p>
   </div>
   <div class="status">
-    <span><b>Phase 1 of 6 done.</b> Safety.</span>
+    <span><b>Phase 2 of 6 done.</b> Numbers that were wrong.</span>
     <span class="mono">branch next_publish_10_20_2026</span>
   </div>
 </header>
@@ -130,10 +130,10 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
     <tbody>
       <tr><td class="id">AG</td><td>Add user autofills the admin's own login</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 1</span></td></tr>
       <tr><td class="id">AN</td><td>Customers see other companies' tickets</td><td class="st"><span class="chip fixed">Backstop &middot; Phase 1</span> <span class="chip be">Backend</span></td></tr>
-      <tr><td class="id">E, X</td><td>Price Opt sales 6–7% higher than Top 200</td><td class="st"><span class="chip next">Phase 2</span></td></tr>
-      <tr><td class="id">A</td><td>By-weight items priced per package</td><td class="st"><span class="chip next">Phase 2 stop-gap</span> <span class="chip both">Then backend</span></td></tr>
-      <tr><td class="id">H</td><td>Switching vendor keeps the previous item</td><td class="st"><span class="chip next">Phase 2</span></td></tr>
-      <tr><td class="id">O, W</td><td>Price Opt cost is the stale item-file cost</td><td class="st"><span class="chip next">Phase 2</span></td></tr>
+      <tr><td class="id">E, X</td><td>Price Opt sales 6–7% higher than Top 200</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 2</span></td></tr>
+      <tr><td class="id">A</td><td>By-weight items priced per package</td><td class="st"><span class="chip fixed">Stop-gap &middot; Phase 2</span> <span class="chip both">Then backend</span></td></tr>
+      <tr><td class="id">H</td><td>Switching vendor keeps the previous item</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 2</span></td></tr>
+      <tr><td class="id">O, W</td><td>Price Opt cost is the stale item-file cost</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 2</span></td></tr>
       <tr><td class="id">AO</td><td>Ticket times 5 hours ahead</td><td class="st"><span class="chip next">Phase 3</span></td></tr>
       <tr><td class="id">AQ</td><td><code>tickets/assignees</code> 403 on every load</td><td class="st"><span class="chip next">Phase 3</span></td></tr>
       <tr><td class="id">1</td><td>"+13.1%" on Top 200 is points</td><td class="st"><span class="chip next">Phase 3</span></td></tr>
@@ -159,7 +159,7 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
 
 <!-- ============================================================ PHASE 1 -->
 <section class="block" aria-labelledby="p1-h">
-  <div class="phase-head"><h2 id="p1-h">Phase 1 &middot; Safety</h2><span class="commit" id="p1-commit">pending commit</span></div>
+  <div class="phase-head"><h2 id="p1-h">Phase 1 &middot; Safety</h2><span class="commit">accda939</span></div>
 </section>
 
 <article class="issue" id="AG" aria-labelledby="ag-h">
@@ -221,8 +221,129 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
   </div>
 </article>
 
+<!-- ============================================================ PHASE 2 -->
+<section class="block" aria-labelledby="p2-h">
+  <div class="phase-head"><h2 id="p2-h">Phase 2 &middot; Numbers that were wrong</h2><span class="commit" id="p2-commit">this commit</span></div>
+  <p>All four are on Price Opt, the page a pricing user acts on.</p>
+</section>
+
+<article class="issue" id="E" aria-labelledby="e-h">
+  <div class="issue-head">
+    <span class="issue-num">E</span>
+    <h2 id="e-h">Price Opt's sales are net of tax, like every other page</h2>
+    <div class="verdict"><span class="chip fixed">Fixed</span> Also settles X.</div>
+  </div>
+  <dl class="facts">
+    <dt>Found</dt><dd>Ground Beef Fam Pak $5,295.84 and COKE 6PK $927.98 on Price Opt, against $4,980.58 and $868.66 on Top 200 and Item Lookup, which agree with each other. About 6–7% high.</dd>
+    <dt>Cause</dt><dd>Price Opt added up raw <code>total_sales</code>. Sub Dept Margins and Vendors read the same <code>subs/subs</code> rows and use <code>total_sales − total_tax</code>, the basis every Sales surface reconciles on. The gap was the tax.</dd>
+    <dt>Files</dt><dd><code>pages/inventory/dev/inventoryData.ts</code>, <code>ItemAnalysisPanel.tsx</code></dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li>All five sales sums on the two Price Opt pages use the shared <code>netOf</code> from <code>utils/perfPairs.ts</code>: the department tree, the vendor list, each item's total, and the item header.</li>
+      <li>Items now rank by net sales, so an order can shift where two items were close.</li>
+      <li>The group export reads the same sums, so it moves too.</li>
+    </ul>
+  </div>
+  <div class="verify">
+    <h4>How to check it</h4>
+    <ol>
+      <li>Price Opt Sub Department, store 695, week ending 10/20, Beef - Variable, Ground Beef Fam Pak.</li>
+      <li>The header's Sales should read $4,980.58, the same as Top 200. COKE 6PK should read $868.66.</li>
+      <li>If either still differs, the cause is something other than tax. Tell me the two figures.</li>
+    </ol>
+  </div>
+</article>
+
+<article class="issue" id="A" aria-labelledby="a-h">
+  <div class="issue-head">
+    <span class="issue-num">A</span>
+    <h2 id="a-h">No suggested price for random-weight packs, and the page says why</h2>
+    <div class="verdict"><span class="chip fixed">Stop-gap</span> <span class="chip both">Full fix needs the backend</span></div>
+  </div>
+  <dl class="facts">
+    <dt>Found</dt><dd>Ground Beef Fam Pak showed per-pound prices on the left ($3.49, $6.49) and 146 package totals on the right, then recommended "Moves fastest at $11.94 · 75.3% GM". Its real margin is about 24%.</dd>
+    <dt>Cause</dt><dd>The two tables decide "sold by weight" differently. The left reads the sales rows, which carry weight. The right reads the receipts, which carry none, and treats a fractional quantity as the sign of a scale sale. Prepacked random-weight meat (UPC prefix 2, price in the barcode) rings as quantity 1 per pack at the pack's total, so it slipped through and every pack became a "price", held against a per-pound cost.</dd>
+    <dt>Files</dt><dd><code>pages/inventory/dev/inventoryData.ts</code> (<code>isUnweighedPacks</code>), <code>ItemAnalysisPanel.tsx</code>, <code>InventoryExportModal.tsx</code></dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li>When the sales rows say an item is weighed but its receipts read as whole packs, the "Moves fastest" strip is withheld. In its place: "No suggested price for this item. It sells by weight in random-weight packs, and the receipts record each pack at its own total, not its weight…"</li>
+      <li>The export withholds the suggested price for the same items, so the file can't recommend what the screen won't.</li>
+      <li>Items weighed at the till, and each-priced items, are unchanged.</li>
+    </ul>
+  </div>
+  <p class="callout warn">This stops a wrong number being acted on; it doesn't produce the right one. A per-pound price needs each receipt line's weight. Your backend branch already returns <code>weight</code> on <code>transaction_list</code>, but without the divide-by-1,000 rule <code>topitems</code> applies for company 4. Once that's in and deployed, the frontend can price these per pound and this notice goes.</p>
+  <div class="verify">
+    <h4>How to check it</h4>
+    <ol>
+      <li>Price Opt, Ground Beef Fam Pak (20000300000): the blue strip is gone and the amber notice is in its place.</li>
+      <li>COKE 6PK: the strip is still there.</li>
+    </ol>
+  </div>
+</article>
+
+<article class="issue" id="H" aria-labelledby="h-h">
+  <div class="issue-head">
+    <span class="issue-num">H</span>
+    <h2 id="h-h">Opening a different vendor clears the item</h2>
+    <div class="verdict"><span class="chip fixed">Fixed</span> Board check now passes. Sub Department gets the same rule.</div>
+  </div>
+  <dl class="facts">
+    <dt>Found</dt><dd>Open Coke, pick COKE 6PK, then open Frito Lay: COKE 6PK stayed in the right panel.</dd>
+    <dt>Cause</dt><dd>Opening a vendor changed which list was open but left the selected item and its receipts in place.</dd>
+    <dt>Decision</dt><dd>Clear the item when a different vendor is selected (Steve, 22 Oct).</dd>
+    <dt>Files</dt><dd><code>pages/inventory/dev/InventoryVendor.tsx</code>, <code>InventorySubDept.tsx</code></dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li>Opening a different vendor clears the selected item, its receipts and its invoice cost. Collapsing the vendor that's already open keeps the item.</li>
+      <li>Price Opt Sub Department had the same gap when moving between departments. It now follows the same rule, so the two pages behave alike.</li>
+    </ul>
+  </div>
+  <div class="verify">
+    <h4>How to check it</h4>
+    <ol>
+      <li>Price Opt Vendor: open Coke, pick COKE 6PK, open Frito Lay. The right panel should go back to "Open a vendor and pick an item".</li>
+      <li>Open Coke, pick COKE 6PK, collapse Coke: COKE 6PK stays.</li>
+    </ol>
+  </div>
+</article>
+
+<article class="issue" id="O" aria-labelledby="o-h">
+  <div class="issue-head">
+    <span class="issue-num">O</span>
+    <h2 id="o-h">Price Opt uses what the store paid, from the latest invoice</h2>
+    <div class="verdict"><span class="chip fixed">Fixed</span> Also settles W.</div>
+  </div>
+  <dl class="facts">
+    <dt>Found</dt><dd>COKE 6PK showed a cost of $4.91 and flagged the $3.33 sale "Below cost" at −47%. The 10/16 Coke invoice says $3.13 a unit, and Item Actions already showed $3.13.</dd>
+    <dt>Cause</dt><dd>Price Opt used the item-file cost carried on the sales rows, and the item file was out of date ($4.50 until 10/12, $4.91 after).</dd>
+    <dt>Decision</dt><dd>The invoice cost is what they paid, so it wins. Fall back to the item file when there's no invoice (Steve, 22 Oct).</dd>
+    <dt>Files</dt><dd>New <code>pages/inventory/dev/invoiceCost.ts</code> and <code>useInvoiceCost.ts</code>; <code>inventoryData.ts</code>, <code>ItemAnalysisPanel.tsx</code>, <code>InventoryExportModal.tsx</code>, both page containers; <code>utils/pricePoints.ts</code> (shared, see below)</dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li>Picking an item now also looks up its deliveries over the last 90 days, using the same <code>receivers/item_search</code> call as Item Actions, so the two pages agree. The latest invoice on or before the window's end supplies the unit cost.</li>
+      <li>That one cost sits under everything on the item: the Cost / unit tile, the header margin, both tables' margins, and the suggestion. Swapping only some of them would have put two costs on one screen.</li>
+      <li>Under the Cost / unit tile, a small line says where the figure came from: "invoice 10/16", "item file", or "checking invoices…" while it loads.</li>
+      <li>Weighed items stay on the item-file cost. Their sales count pounds, and an invoice line can be billed per case or per pack, which would repeat finding A's mix-up.</li>
+      <li>If the invoice lookup fails, the page falls back to the item file, which is what it showed before.</li>
+    </ul>
+  </div>
+  <p class="callout">Two limits. The group export (every item in a department or vendor) still uses item-file cost, because an invoice lookup per row would cost a request per item. The selected item's export uses the invoice cost, matching the screen. <code>estimatedPricePoints</code> in the shared <code>utils/pricePoints.ts</code> gained an optional cost parameter. Omitted, it behaves exactly as before, and only Price Opt passes it.</p>
+  <div class="verify">
+    <h4>How to check it</h4>
+    <ol>
+      <li>Price Opt, store 695, week ending 10/20, COKE 6PK: Cost / unit should read $3.13 with "invoice 10/16" under it, matching Item Actions.</li>
+      <li>The $3.33 row should no longer say "Below cost".</li>
+      <li>Pick an item with no delivery in 90 days: "item file" under the tile.</li>
+    </ol>
+  </div>
+</article>
+
 <footer>
-  Verified for Phase 1: typecheck, 1,199 tests (8 new), theme audit, eslint and a production build, all clean. Checked by tests, not in a browser, so the "how to check it" steps are yours to run.
+  Verified for Phase 2: typecheck, 1,215 tests (16 new this phase, 24 across both), theme audit, eslint and a production build, all clean. Checked by tests, not in a browser, so the "how to check it" steps are yours to run.
 </footer>
 
 </div>

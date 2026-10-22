@@ -9,6 +9,7 @@ import InventoryTreePanel, { type TreeGroup } from "./InventoryTreePanel";
 import InventoryExportModal from "./InventoryExportModal";
 import ItemAnalysisPanel from "./ItemAnalysisPanel";
 import { useActualPricePoints } from "../../../hooks/useActualPricePoints";
+import { useInvoiceCost } from "./useInvoiceCost";
 import {
   fetchSubDepts,
   fetchProducts,
@@ -48,6 +49,7 @@ const InventorySubDept = () => {
   const [selected, setSelected] = useState<ProductSummary | null>(null);
 
   const { actual, loadActual, resetActual } = useActualPricePoints();
+  const { invoice, loadInvoiceCost, resetInvoiceCost } = useInvoiceCost();
   const storeName = useStoreName(scope?.storeid ?? storeId);
 
   /** The department whose items are wanted on screen. A response that no longer
@@ -77,6 +79,7 @@ const InventorySubDept = () => {
     setProducts([]);
     setSelected(null);
     resetActual();
+    resetInvoiceCost();
     try {
       const depts = await fetchSubDepts(next);
       if (depts.length === 0) toast.warn("No departments sold in that window");
@@ -99,6 +102,13 @@ const InventorySubDept = () => {
       setProducts([]);
       return;
     }
+    // A different one opening takes the item panel with it: the item belongs
+    // to the list it was picked from, and leaving it up read as the new
+    // list's item (dev board review, finding H). Collapsing the open one
+    // keeps it.
+    setSelected(null);
+    resetActual();
+    resetInvoiceCost();
     wantedSubDept.current = id;
     setOpenSubDept(id);
     setProducts([]);
@@ -125,6 +135,7 @@ const InventorySubDept = () => {
     // Description, not UPC — that is the only search `cashier_table` offers.
     // The over-match it causes is filtered out again on product_code.
     loadActual(p.productCode, scope.storeid, scope.start, scope.end);
+    loadInvoiceCost(scope, p.productCode);
   };
 
   const groups: TreeGroup[] = subDepts.map((d) => ({
@@ -204,6 +215,7 @@ const InventorySubDept = () => {
           selected={selected}
           // Same staleness guard the panel applies — a response for the
           // previously-clicked UPC must not be exported under this one's name.
+          invoice={invoice}
           lines={
             selected && actual.upc === selected.productCode ? actual.lines : []
           }
@@ -229,7 +241,11 @@ const InventorySubDept = () => {
         />
 
         {selected ? (
-          <ItemAnalysisPanel product={selected} actual={actual} />
+          <ItemAnalysisPanel
+            product={selected}
+            actual={actual}
+            invoice={invoice}
+          />
         ) : (
           <div className="flex-1 min-w-0 shadow-lg">
             <div className="bg-custom-white rounded-xl shadow-sm overflow-hidden flex flex-col h-full items-center justify-center">

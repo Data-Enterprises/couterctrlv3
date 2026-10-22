@@ -2,6 +2,10 @@ import { getSubDepts } from "../../../api/subMargins";
 import { fetchAllPages } from "../../../utils/paging";
 import { fetchSubDeptRows, fetchSubDeptRowsSafe } from "../../../utils/marginRows";
 import { calculateCogs } from "../../../utils/cogs";
+// Net of tax, the basis every other Sales surface reconciles on. Price Opt
+// summed raw total_sales and read 6-7% above Top 200 and Item Lookup for
+// the same item and week (dev board review, finding E).
+import { netOf } from "../../../utils/perfPairs";
 import type {
   SubDeptMargin,
   SubSale,
@@ -102,12 +106,12 @@ export const fetchSubDepts = async (
   all.forEach((s: SubSale) => {
     const found = byId.get(s.sub_department);
     if (found) {
-      found.sales += s.total_sales;
+      found.sales += netOf(s);
     } else {
       byId.set(s.sub_department, {
         id: s.sub_department,
         description: s.sub_department_description,
-        sales: s.total_sales,
+        sales: netOf(s),
         itemCount: null,
       });
     }
@@ -115,6 +119,22 @@ export const fetchSubDepts = async (
 
   return [...byId.values()].sort((a, b) => b.sales - a.sales);
 };
+
+/**
+ * An item sold by weight whose register lines carry no weight.
+ *
+ * Prepacked random-weight items (UPC prefix 2, price in the barcode) ring as
+ * quantity 1 per pack at the pack's total. The `subs/subs` rows know they are
+ * weighed; the register lines don't, so the actual side reads every pack total
+ * as a separate price. See ItemAnalysisPanel for what the page does about it.
+ *
+ * `lineCount` 0 means the receipts haven't arrived, which is not a verdict.
+ */
+export const isUnweighedPacks = (
+  lineCount: number,
+  actualIsWeighted: boolean,
+  rows: { weight: number }[],
+) => lineCount > 0 && !actualIsWeighted && rows.some((r) => r.weight > 0);
 
 /** Priced units for an item row. `qty` counts rings; `weight` is what the
  *  customer was charged for, and comes back 0 on an each-priced item — the same
@@ -140,7 +160,7 @@ export const groupProducts = (rows: SubDeptMargin[]): ProductSummary[] => {
     const code = String(r.product_code);
     const found = byCode.get(code);
     if (found) {
-      found.sales += r.total_sales;
+      found.sales += netOf(r);
       found.qty += r.qty;
       found.units += pricedUnits(r);
       found.rows.push(r);
@@ -148,7 +168,7 @@ export const groupProducts = (rows: SubDeptMargin[]): ProductSummary[] => {
       byCode.set(code, {
         productCode: code,
         description: r.product_description,
-        sales: r.total_sales,
+        sales: netOf(r),
         qty: r.qty,
         units: pricedUnits(r),
         rows: [r],
@@ -178,17 +198,29 @@ export interface ItemCostStats {
  * suggestion and the export all have to agree on. It lives here rather than in
  * the panel so the export can't compute it a second, subtly different way.
  */
-export const itemCostStats = (p: ProductSummary): ItemCostStats => {
-  const cogs = p.rows.reduce(
-    (s, r) =>
-      s + calculateCogs(r.net_cost, r.cost, r.case_size, r.qty, r.weight),
-    0,
-  );
+export const itemCostStats = (
+  p: ProductSummary,
+  /** The latest invoice cost, when there is one to use. See invoiceCost.ts. */
+  unitCostOverride?: number | null,
+): ItemCostStats => {
+  const cogs =
+    unitCostOverride != null
+      ? p.units * unitCostOverride
+      : p.rows.reduce(
+          (s, r) =>
+            s + calculateCogs(r.net_cost, r.cost, r.case_size, r.qty, r.weight),
+          0,
+        );
   const netSales = p.rows.reduce((s, r) => s + r.net_sales, 0);
   return {
     cogs,
     netSales,
-    unitCost: p.units > 0 ? cogs / p.units : null,
+    unitCost:
+      unitCostOverride != null
+        ? unitCostOverride
+        : p.units > 0
+          ? cogs / p.units
+          : null,
     marginPct: netSales > 0 ? ((netSales - cogs) / netSales) * 100 : null,
   };
 };
@@ -265,13 +297,13 @@ export const fetchVendors = async (
     const id = r.vendor_id || "—";
     const found = byVendor.get(id);
     if (found) {
-      found.sales += r.total_sales;
+      found.sales += netOf(r);
       found.rows.push(r);
     } else {
       byVendor.set(id, {
         vendorId: id,
         vendorName: r.vendor_name || "No vendor",
-        sales: r.total_sales,
+        sales: netOf(r),
         itemCount: 0,
         rows: [r],
       });

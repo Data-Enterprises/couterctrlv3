@@ -1,3 +1,4 @@
+import { netOf } from "../../../utils/perfPairs";
 import { useMemo } from "react";
 import {
   ExclamationTriangleIcon,
@@ -13,8 +14,10 @@ import {
   suggestPrice,
 } from "../../../utils/pricePoints";
 import ActualPriceRow, { ACT_COLS } from "./ActualPriceRow";
-import { itemCostStats, type ProductSummary } from "./inventoryData";
+import { itemCostStats, type ProductSummary, isUnweighedPacks } from "./inventoryData";
 import type { ActualFetchState } from "../../../hooks/useActualPricePoints";
+import { resolveUnitCost } from "./invoiceCost";
+import type { InvoiceCostState } from "./useInvoiceCost";
 
 /**
  * One item, read two ways — and only one of them gets a vote.
@@ -40,27 +43,44 @@ import type { ActualFetchState } from "../../../hooks/useActualPricePoints";
 interface Props {
   product: ProductSummary;
   actual: ActualFetchState;
+  /** The latest invoice cost lookup for the item on screen. */
+  invoice: InvoiceCostState;
 }
 
 const EST_COLS = "1fr 46px 42px 52px 34px";
 const dash = "—";
 
-const ItemAnalysisPanel = ({ product, actual }: Props) => {
-  const estimated = useMemo(
-    () => estimatedPricePoints(product.rows),
-    [product.rows],
-  );
-
+const ItemAnalysisPanel = ({ product, actual, invoice }: Props) => {
   // Only ever read when the fetch belongs to the item on screen. A response
   // for the previously-clicked UPC is dropped rather than rendered.
   const isCurrent = actual.upc === product.productCode;
   const lines = isCurrent ? actual.lines : [];
 
-  // Register lines carry no cost, so the item's blended unit cost has to reach
-  // them from the `subs/subs` rows before any actual-side margin can exist.
-  // Shared with the export, which has to hold prices against the same floor.
-  const stats = useMemo(() => itemCostStats(product), [product]);
+  // Register lines carry no cost, so a unit cost has to reach them before any
+  // actual-side margin can exist. The latest invoice cost when there is one,
+  // the item-file cost off the `subs/subs` rows otherwise -- one figure, held
+  // under both tables and the header, so no two margins on screen disagree.
+  const itemFile = useMemo(() => itemCostStats(product), [product]);
+  const weighed = useMemo(
+    () => product.rows.some((r) => r.weight > 0),
+    [product.rows],
+  );
+  const invoiceForThis =
+    invoice.upc === product.productCode ? invoice.cost : null;
+  const cost = useMemo(
+    () => resolveUnitCost(itemFile.unitCost, invoiceForThis, weighed),
+    [itemFile.unitCost, invoiceForThis, weighed],
+  );
+  const override = cost.source === "invoice" ? cost.unitCost : null;
+  const stats = useMemo(
+    () => itemCostStats(product, override),
+    [product, override],
+  );
   const unitCost = stats.unitCost ?? 0;
+  const estimated = useMemo(
+    () => estimatedPricePoints(product.rows, override),
+    [product.rows, override],
+  );
 
   const act = useMemo(
     () => actualPricePoints(lines, unitCost),
@@ -68,11 +88,30 @@ const ItemAnalysisPanel = ({ product, actual }: Props) => {
   );
   const mixed = useMemo(() => mixedPriceInsight(lines), [lines]);
   const pattern = useMemo(() => classifyPattern(act, mixed), [act, mixed]);
-  const suggestion = useMemo(() => suggestPrice(act), [act]);
+  const rawSuggestion = useMemo(() => suggestPrice(act), [act]);
+
+  /**
+   * Sold by weight, but rung as whole packs.
+   *
+   * The two sides of this page decide "weighed" differently. Estimated reads
+   * the `subs/subs` rows, which carry weight. Actual reads the register lines,
+   * which carry none, and treats a fractional quantity as the sign of a scale
+   * sale. That catches items weighed at the till and misses prepacked
+   * random-weight meat (UPC prefix 2, price in the barcode): each pack rings as
+   * quantity 1 at its own total, so every pack becomes its own "price" and is
+   * held against a per-pound cost. Ground Beef Fam Pak showed 146 prices and a
+   * 75% margin that way (dev board review, finding A).
+   *
+   * Until the register lines carry a weight there is no per-pound price on the
+   * actual side to recommend, so the recommendation is withheld and the panel
+   * says why, rather than offering a number someone would price from.
+   */
+  const unweighedPacks = isUnweighedPacks(lines.length, act.isWeighted, product.rows);
+  const suggestion = unweighedPacks ? null : rawSuggestion;
 
   const totals = useMemo(
     () => ({
-      sales: product.rows.reduce((s, r) => s + r.total_sales, 0),
+      sales: product.rows.reduce((s, r) => s + netOf(r), 0),
       units: product.units,
       marginPct: stats.marginPct,
       unitCost: stats.unitCost,
@@ -117,6 +156,16 @@ const ItemAnalysisPanel = ({ product, actual }: Props) => {
               {totals.unitCost !== null
                 ? formatCurrency2(totals.unitCost)
                 : dash}
+            </div>
+            {/* Where the figure came from, because the two sources can differ
+                by a dollar a unit and a reader checking an invoice needs to
+                know which one this is. */}
+            <div className="text-[10px] text-content/70 leading-tight mt-0.5">
+              {cost.source === "invoice" && cost.invoice
+                ? `invoice ${cost.invoice.date.slice(5).replace("-", "/")}`
+                : invoice.loading && invoice.upc === product.productCode
+                  ? "checking invoices…"
+                  : "item file"}
             </div>
           </div>
           <div className="px-3 pt-2.5 pb-1.5 text-center">
@@ -169,6 +218,21 @@ const ItemAnalysisPanel = ({ product, actual }: Props) => {
 
         {/* The page's headline now that its job is optimisation. Sits above the
             pattern line because it's the answer; the pattern is the caveat. */}
+        {unweighedPacks && (
+          <div className="px-4 pt-3 flex-shrink-0">
+            <div className="rounded-lg border border-severity_watch_text/30 bg-severity_watch_bg px-3 py-2.5 flex gap-2 items-start">
+              <InformationCircleIcon className="w-4 h-4 text-severity_watch_text flex-shrink-0 mt-px" />
+              <p className="text-[12px] text-content leading-snug">
+                <span className="font-semibold">No suggested price for this item.</span>{" "}
+                It sells by weight in random-weight packs, and the receipts
+                record each pack at its own total, not its weight. So the
+                prices on the right are pack totals, and can't be compared per
+                pound with the estimated prices or the cost.
+              </p>
+            </div>
+          </div>
+        )}
+
         {suggestion && (
           <div data-help="suggestion" className="px-4 pt-3 flex-shrink-0">
             <div className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2.5">
