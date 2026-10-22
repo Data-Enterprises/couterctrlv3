@@ -120,22 +120,6 @@ export const fetchSubDepts = async (
   return [...byId.values()].sort((a, b) => b.sales - a.sales);
 };
 
-/**
- * An item sold by weight whose register lines carry no weight.
- *
- * Prepacked random-weight items (UPC prefix 2, price in the barcode) ring as
- * quantity 1 per pack at the pack's total. The `subs/subs` rows know they are
- * weighed; the register lines don't, so the actual side reads every pack total
- * as a separate price. See ItemAnalysisPanel for what the page does about it.
- *
- * `lineCount` 0 means the receipts haven't arrived, which is not a verdict.
- */
-export const isUnweighedPacks = (
-  lineCount: number,
-  actualIsWeighted: boolean,
-  rows: { weight: number }[],
-) => lineCount > 0 && !actualIsWeighted && rows.some((r) => r.weight > 0);
-
 /** Priced units for an item row. `qty` counts rings; `weight` is what the
  *  customer was charged for, and comes back 0 on an each-priced item — the same
  *  discriminator Item Lookup uses. */

@@ -1,5 +1,6 @@
 import { calculateCogs } from "./cogs";
 import type { SubDeptMargin, TransactionListItem } from "../interfaces";
+import type { ServerPricePoint } from "../api/pricePoints";
 
 /**
  * Estimated vs actual price points for one item.
@@ -246,6 +247,33 @@ export const unitPrice = (t: TransactionListItem) =>
  * shelf prices a cent apart, so a pair that close, under the same price type,
  * is folded into whichever of the two more receipts rang at.
  */
+const foldPennyTwins = <T extends { price: number; priceType: string }>(
+  points: T[],
+  /** Which of two twins is the real price: the one more receipts rang at. */
+  size: (p: T) => number,
+  fold: (keep: T, other: T) => void,
+): T[] => {
+  const sorted = [...points].sort(
+    (a, b) => a.priceType.localeCompare(b.priceType) || a.price - b.price,
+  );
+  const out: T[] = [];
+  for (const p of sorted) {
+    const prev = out[out.length - 1];
+    if (
+      prev &&
+      prev.priceType === p.priceType &&
+      Math.abs(p.price - prev.price) <= 0.011
+    ) {
+      const keep = size(p) > size(prev) ? p : prev;
+      fold(keep, keep === p ? prev : p);
+      out[out.length - 1] = keep;
+    } else {
+      out.push(p);
+    }
+  }
+  return out;
+};
+
 const mergePennyTwins = <
   T extends {
     price: number;
@@ -259,33 +287,19 @@ const mergePennyTwins = <
   },
 >(
   points: T[],
-): T[] => {
-  const sorted = [...points].sort(
-    (a, b) => a.priceType.localeCompare(b.priceType) || a.price - b.price,
-  );
-  const out: T[] = [];
-  for (const p of sorted) {
-    const prev = out[out.length - 1];
-    if (
-      prev &&
-      prev.priceType === p.priceType &&
-      Math.abs(p.price - prev.price) <= 0.011
-    ) {
-      const keep = p.receipts.size > prev.receipts.size ? p : prev;
-      const fold = keep === p ? prev : p;
+): T[] =>
+  foldPennyTwins(
+    points,
+    (p) => p.receipts.size,
+    (keep, fold) => {
       fold.dates.forEach((d) => keep.dates.add(d));
       fold.receipts.forEach((r) => keep.receipts.add(r));
       keep.qty += fold.qty;
       keep.sales += fold.sales;
       keep.lines.push(...fold.lines);
       keep.trans = keep.receipts.size;
-      out[out.length - 1] = keep;
-    } else {
-      out.push(p);
-    }
-  }
-  return out;
-};
+    },
+  );
 
 export const actualPricePoints = (
   lines: TransactionListItem[],
@@ -358,6 +372,114 @@ export const actualPricePoints = (
     isWeighted,
   };
 };
+
+/**
+ * The same tables from `cashiers/price_points`, which buckets on the server.
+ *
+ * Price Opt reads this since 22 Oct rather than downloading receipts. Three
+ * things it does that the browser's buckets could not:
+ *
+ *  - **Weighed items are priced per pound.** The receipts carried no weight,
+ *    so a random-weight pack rang as qty 1 at its own total and became its
+ *    own price (Ground Beef Fam Pak showed 146 of them; dev board review,
+ *    finding A). Food Giant's scale items, rung at qty 0, fell out entirely.
+ *    `qty` here is pounds on a weighed row, so velocity is pounds a day and
+ *    the margin is held against a per-pound cost.
+ *  - **Every receipt is read.** There was a 400-receipt cap.
+ *  - **Half-cents round correctly.** 2 for $6.67 is $3.34 on the server and
+ *    was $3.33 in floating point. The penny-twin fold still runs, because a
+ *    multi-buy split to the penny still arrives as two prices.
+ *
+ * What it cannot do is name the receipts, so `lines` is empty on every point:
+ * opening a price fetches them then (see `linesAtPrice`). Two counts are sums
+ * where the browser had distinct receipts: folding a twin adds its receipts,
+ * and `receiptCount` adds the two tables. Each can count one receipt twice,
+ * only when it carried the item at two prices.
+ */
+export const pricePointsFromServer = (
+  rows: ServerPricePoint[],
+  unitCost: number,
+): ActualPricePoints => {
+  // Refund-only and zero buckets are not prices anyone set, as before.
+  const sold = rows.filter((r) => r.sales > 0 && r.unit_price > 0);
+  if (sold.length === 0) return emptyActual;
+
+  const isWeighted = sold.some((r) => r.weighed);
+  // A weighed row is per pound already, so it has no averaged form.
+  const exactRows = sold.filter((r) => r.weighed || !r.multi);
+  const avgRows = sold.filter((r) => !r.weighed && r.multi);
+
+  const toPoint = (r: ServerPricePoint): ActualPricePoint => ({
+    price: r.unit_price,
+    priceType: r.price_type || "REG",
+    trans: r.receipts,
+    qty: r.weighed ? r.weight : r.units,
+    sales: r.sales,
+    daysSeen: r.days_seen,
+    lastSeen: r.last_seen,
+    marginPerUnit: r.unit_price - unitCost,
+    marginPct:
+      r.unit_price > 0 ? ((r.unit_price - unitCost) / r.unit_price) * 100 : 0,
+    lines: [],
+  });
+
+  const table = (rs: ServerPricePoint[]) =>
+    foldPennyTwins(
+      rs.map(toPoint),
+      (p) => p.trans,
+      (keep, fold) => {
+        keep.trans += fold.trans;
+        keep.qty += fold.qty;
+        keep.sales += fold.sales;
+        // Days can overlap between twins, so the larger is the honest floor;
+        // adding them could pass the 3-day minimum on one day twice.
+        keep.daysSeen = Math.max(keep.daysSeen, fold.daysSeen);
+        if (fold.lastSeen > keep.lastSeen) keep.lastSeen = fold.lastSeen;
+      },
+    ).sort((a, b) => b.trans - a.trans);
+
+  const receiptsOf = (rs: ServerPricePoint[]) =>
+    rs.reduce((s, r) => s + r.receipts, 0);
+
+  return {
+    exact: table(exactRows),
+    averaged: table(avgRows),
+    exactCount: receiptsOf(exactRows),
+    averagedCount: receiptsOf(avgRows),
+    receiptCount: receiptsOf(sold),
+    isWeighted,
+  };
+};
+
+/**
+ * The receipt lines behind one server price point.
+ *
+ * Fetched only when somebody opens a price, then matched here by the rule the
+ * server bucketed on: same price type, same single or multiple ring, and the
+ * same price. A weighed line matches when its total is the price times its
+ * weight within what the two roundings explain (the server's own window), so
+ * a pack that rang at the shelf price lands under it. Anything else matches
+ * to the cent, with a cent's slack for the penny-twin fold.
+ */
+export const linesAtPrice = (
+  lines: TransactionListItem[],
+  point: ActualPricePoint,
+  opts: { weighed: boolean; averaged: boolean },
+): TransactionListItem[] =>
+  lines
+    .filter((t) => {
+      if ((t.price_type || "REG") !== point.priceType) return false;
+      const w = t.weight ?? 0;
+      if (opts.weighed && w !== 0) {
+        const slack = point.price * 0.005 + 0.005 + 0.011 * Math.abs(w);
+        return Math.abs(t.net_sales - point.price * w) <= slack;
+      }
+      const q = lineQty(t);
+      if (q === 0) return false;
+      if (!opts.weighed && Math.abs(q) > 1 !== opts.averaged) return false;
+      return Math.abs(t.net_sales / q - point.price) <= 0.011;
+    })
+    .sort((a, b) => b.sale_date.localeCompare(a.sale_date));
 
 /* --------------------------------------------------------------- suggestion */
 

@@ -13,7 +13,7 @@ import DatePickers from "../../../components-dev/datePickers/DatePickers";
 import InventoryTreePanel, { type TreeGroup } from "./InventoryTreePanel";
 import InventoryExportModal from "./InventoryExportModal";
 import ItemAnalysisPanel from "./ItemAnalysisPanel";
-import { useActualPricePoints } from "../../../hooks/useActualPricePoints";
+import { usePricePoints } from "./usePricePoints";
 import { useInvoiceCost } from "./useInvoiceCost";
 import {
   fetchVendors,
@@ -102,7 +102,8 @@ const InventoryVendor = () => {
   const groupHasItem = (id: string, term: string) =>
     itemText.get(id)?.includes(term) ?? false;
 
-  const { actual, loadActual, resetActual } = useActualPricePoints();
+  const { prices, loadPrices, resetPrices, receipts, loadReceipts } =
+    usePricePoints();
   const { invoice, loadInvoiceCost, resetInvoiceCost } = useInvoiceCost();
   const storeName = useStoreName(scope?.storeid ?? storeId);
 
@@ -122,7 +123,7 @@ const InventoryVendor = () => {
     setLoading(true);
     setOpenVendor(null);
     setSelected(null);
-    resetActual();
+    resetPrices();
     resetInvoiceCost();
     try {
       // One read of every department now, so one message. There used to be a
@@ -156,7 +157,7 @@ const InventoryVendor = () => {
     // list's item (dev board review, finding H). Collapsing the open one
     // keeps it.
     setSelected(null);
-    resetActual();
+    resetPrices();
     resetInvoiceCost();
     setOpenVendor(id);
   };
@@ -166,7 +167,7 @@ const InventoryVendor = () => {
     setSelected(p);
     // Description, not UPC — that is the only search `cashier_table` offers.
     // The over-match it causes is filtered out again on product_code.
-    loadActual(p.productCode, scope.storeid, scope.start, scope.end);
+    loadPrices(p.productCode, scope.storeid, scope.start, scope.end);
     loadInvoiceCost(scope, p.productCode);
   };
 
@@ -243,8 +244,11 @@ const InventoryVendor = () => {
           // Same staleness guard the panel applies — a response for the
           // previously-clicked UPC must not be exported under this one's name.
           invoice={invoice}
+          prices={
+            selected && prices.upc === selected.productCode ? prices.rows : []
+          }
           lines={
-            selected && actual.upc === selected.productCode ? actual.lines : []
+            selected && receipts.upc === selected.productCode ? receipts.lines : []
           }
         />
       )}
@@ -271,7 +275,9 @@ const InventoryVendor = () => {
         {selected ? (
           <ItemAnalysisPanel
             product={selected}
-            actual={actual}
+            prices={prices}
+            receipts={receipts}
+            onLoadReceipts={loadReceipts}
             invoice={invoice}
           />
         ) : (

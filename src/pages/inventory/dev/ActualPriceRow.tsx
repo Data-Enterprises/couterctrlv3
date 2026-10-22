@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ChevronRightIcon, ChevronDownIcon } from "@heroicons/react/20/solid";
 import { formatCurrency2, formatDate } from "../../../utils";
 import type { ActualPricePoint } from "../../../utils/pricePoints";
+import type { TransactionListItem } from "../../../interfaces";
 
 /**
  * One actual price point, and the receipts behind it on demand.
@@ -14,6 +15,10 @@ import type { ActualPricePoint } from "../../../utils/pricePoints";
  * Shared by the exact and averaged tables rather than written twice. The two
  * differ only in which bucket they were built from, and a second copy of this
  * would drift the first time either table changed.
+ *
+ * The point comes from the server's price table, which counts receipts but
+ * does not list them. So opening a price is what reads them: `onOpen` asks for
+ * the item's receipts, and `lines` stays null until they are in.
  */
 
 export const ACT_COLS = "1fr 40px 44px 36px 46px 32px 58px";
@@ -23,6 +28,12 @@ interface Props {
   point: ActualPricePoint;
   /** The price the suggestion band is naming. Tinted so the two tie together. */
   isBest?: boolean;
+  /** The receipt lines at this price, or null while they have not been read. */
+  lines: TransactionListItem[] | null;
+  receiptsLoading: boolean;
+  receiptsError: string | null;
+  /** Read the item's receipts. Called on every open; a no-op once they are in. */
+  onOpen: () => void;
 }
 
 /** Receipts read "STORE-123456"; the half before the dash is the store, which
@@ -33,7 +44,14 @@ const transactionLabel = (saleId: string) => saleId.split("-")[1] ?? saleId;
  *  any — "1" reads better than "1.00" nineteen times over. */
 const fmtQty = (q: number) => (Number.isInteger(q) ? String(q) : q.toFixed(2));
 
-const ActualPriceRow = ({ point, isBest = false }: Props) => {
+const ActualPriceRow = ({
+  point,
+  isBest = false,
+  lines,
+  receiptsLoading,
+  receiptsError,
+  onOpen,
+}: Props) => {
   const [open, setOpen] = useState(false);
 
   return (
@@ -52,7 +70,10 @@ const ActualPriceRow = ({ point, isBest = false }: Props) => {
         {/* The count is the control — it's the number you'd point at when
             asking "which nineteen?". */}
         <button
-          onClick={() => setOpen((v) => !v)}
+          onClick={() => {
+            if (!open) onOpen();
+            setOpen((v) => !v);
+          }}
           className="flex items-center justify-end gap-0.5 text-right tabular-nums text-blue-700 hover:text-blue-900 hover:underline transition-colors"
           title={open ? "Hide transactions" : "Show transactions"}
           aria-expanded={open}
@@ -93,7 +114,21 @@ const ActualPriceRow = ({ point, isBest = false }: Props) => {
             <span className="text-right">Qty</span>
             <span className="text-right">Amount</span>
           </div>
-          {point.lines.map((t) => (
+          {lines === null && (
+            <div className="py-1.5 text-[11.5px] text-content/70">
+              {receiptsError
+                ? `Could not read the receipts: ${receiptsError}`
+                : receiptsLoading
+                  ? "Reading the receipts…"
+                  : "Not read yet."}
+            </div>
+          )}
+          {lines !== null && lines.length === 0 && (
+            <div className="py-1.5 text-[11.5px] text-content/70">
+              No receipt line matched this price exactly.
+            </div>
+          )}
+          {(lines ?? []).map((t) => (
             <div
               key={`${t.sale_id}-${t.line_number}`}
               className="grid py-1 text-[12px]"
@@ -112,8 +147,10 @@ const ActualPriceRow = ({ point, isBest = false }: Props) => {
               >
                 {t.cashier_name || t.cashier_number}
               </span>
+              {/* Pounds on a weighed line: the quantity on a random-weight
+                  pack is 1, which says nothing about what it was priced on. */}
               <span className="text-right tabular-nums text-content">
-                {fmtQty(t.qty ?? 1)}
+                {t.weight ? `${t.weight.toFixed(2)} lb` : fmtQty(t.qty ?? 1)}
               </span>
               <span className="text-right tabular-nums text-content font-medium">
                 {formatCurrency2(t.net_sales)}

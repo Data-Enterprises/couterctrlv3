@@ -118,7 +118,7 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
     <p class="sub">What was done about each finding in <span class="mono">dev-board-review-2026-10-21.md</span>. Fixes land in the dev tree; prod gets them when dev is promoted. This page is updated and committed after each phase.</p>
   </div>
   <div class="status">
-    <span><b>Backend done (not deployed).</b> Frontend follow-ups: phase 8 of 10 done.</span>
+    <span><b>Backend done (not deployed).</b> Frontend follow-ups: phase 9 of 10 done.</span>
     <span class="mono">branch next_publish_10_20_2026</span>
   </div>
 </header>
@@ -131,7 +131,7 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
       <tr><td class="id">AG</td><td>Add user autofills the admin's own login</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 1</span></td></tr>
       <tr><td class="id">AN</td><td>Customers see other companies' tickets</td><td class="st"><span class="chip fixed">Backstop &middot; Phase 1</span> <span class="chip fixed">Backend fixed</span> <span class="chip fixed">No-company message &middot; Phase 7</span></td></tr>
       <tr><td class="id">E, X</td><td>Price Opt sales 6–7% higher than Top 200</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 2</span></td></tr>
-      <tr><td class="id">A</td><td>By-weight items priced per package</td><td class="st"><span class="chip fixed">Stop-gap &middot; Phase 2</span> <span class="chip both">Then backend</span></td></tr>
+      <tr><td class="id">A</td><td>By-weight items priced per package</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 9</span> <span class="chip none">Phase 2 stop-gap removed</span></td></tr>
       <tr><td class="id">H</td><td>Switching vendor keeps the previous item</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 2</span></td></tr>
       <tr><td class="id">O, W</td><td>Price Opt cost is the stale item-file cost</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 2</span></td></tr>
       <tr><td class="id">AO</td><td>Ticket times 5 hours ahead</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 3</span> <span class="chip fixed">Backend sends the zone</span></td></tr>
@@ -139,7 +139,7 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
       <tr><td class="id">1</td><td>"+13.1%" on Top 200 is points</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 3</span></td></tr>
       <tr><td class="id">AI, AL</td><td>"New" vs "Add user"; role shows as "1"</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 3</span></td></tr>
       <tr><td class="id">Y</td><td>Item Lookup: Enter doesn't search; unclear not-found</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 3</span></td></tr>
-      <tr><td class="id">I</td><td>Price Opt Vendor fires 26 calls at once</td><td class="st"><span class="chip fixed">Calls fixed &middot; Phase 4</span> <span class="chip both">Size: backend</span></td></tr>
+      <tr><td class="id">I</td><td>Price Opt Vendor fires 26 calls at once</td><td class="st"><span class="chip fixed">Calls fixed &middot; Phase 4</span> <span class="chip fixed">Backend fixed</span> <span class="chip next">Phase 10</span></td></tr>
       <tr><td class="id">K</td><td>Price Opt doesn't keep its result</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 4</span></td></tr>
       <tr><td class="id">J</td><td>Filter doesn't search items</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 4</span></td></tr>
       <tr><td class="id">C</td><td>TRANS counts item lines, not receipts</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 4</span></td></tr>
@@ -149,7 +149,7 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
       <tr><td class="id">Q, R, S</td><td>Item Actions labels and controls</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 5</span></td></tr>
       <tr><td class="id">AK, 2</td><td>Add user half-ticked state; Top 200 names cut off</td><td class="st"><span class="chip fixed">AK fixed &middot; Phase 6</span> <span class="chip none">2: already changed</span></td></tr>
       <tr><td class="id">AE, AD, AF</td><td>New pages on old help; guide steps; Show me gaps</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 6</span></td></tr>
-      <tr><td class="id">3, D</td><td>Over-fetching</td><td class="st"><span class="chip fixed">Backend fixed</span> <span class="chip next">Phase 9</span></td></tr>
+      <tr><td class="id">3, D</td><td>Over-fetching</td><td class="st"><span class="chip fixed">Backend fixed</span> <span class="chip fixed">Frontend &middot; Phase 9</span></td></tr>
       <tr><td class="id">AJ</td><td><code>users/</code> scope; company families</td><td class="st"><span class="chip fixed">Backend fixed</span> <span class="chip fixed">Frontend &middot; Phase 8</span></td></tr>
       <tr><td class="id">AP</td><td>Nobody notified of a new ticket</td><td class="st"><span class="chip none">Settled &middot; ticket email is on and works</span></td></tr>
       <tr><td class="id">S1, S2</td><td>Found while planning: sign-in override; <code>users/</code> sent password hashes</td><td class="st"><span class="chip fixed">Backend fixed</span> <span class="chip fixed">Frontend &middot; Phase 7</span></td></tr>
@@ -938,7 +938,7 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
 
 <!-- ============================================================ PHASE 8 -->
 <section class="block" aria-labelledby="p8-h">
-  <div class="phase-head"><h2 id="p8-h">Phase 8 &middot; Company families from the record</h2><span class="commit" id="p8-commit">this commit</span></div>
+  <div class="phase-head"><h2 id="p8-h">Phase 8 &middot; Company families from the record</h2><span class="commit">a1660978</span></div>
 </section>
 
 <article class="issue" id="AJ" aria-labelledby="aj-h">
@@ -970,23 +970,76 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
   </div>
 </article>
 
+<!-- ============================================================ PHASE 9 -->
+<section class="block" aria-labelledby="p9-h">
+  <div class="phase-head"><h2 id="p9-h">Phase 9 &middot; Price Opt reads prices from the server</h2><span class="commit" id="p9-commit">this commit</span></div>
+</section>
+
+<article class="issue" id="D" aria-labelledby="d-h">
+  <div class="issue-head">
+    <span class="issue-num">D A</span>
+    <h2 id="d-h">The actual table comes from <code>cashiers/price_points</code>, and weighed items are per pound</h2>
+    <div class="verdict"><span class="chip fixed">Fixed</span> Finding A's stop-gap notice is gone.</div>
+  </div>
+  <dl class="facts">
+    <dt>Backend</dt><dd><code>586ba24</code> adds the endpoint and <code>0201b78</code> scales weights to pounds. It reads every receipt line for the item with no cap and returns one row per price. A weighed line is priced per pound. If it rang at the shelf price within what rounding explains, it reports the shelf price exactly. It reproduced the browser's own buckets on COKE and DR PEPPER, apart from one half-cent the browser rounded wrong.</dd>
+    <dt>Before</dt><dd>Clicking an item downloaded up to 400 receipts (<code>product_lookup</code> then every page of <code>transaction_list</code>) and bucketed them in the browser. Random-weight packs rang as qty 1 at their own totals, so Ground Beef Fam Pak showed 146 "prices". Phase 2 could only withhold the suggestion and say why. Food Giant's scale items, rung at qty 0, had no price points at all.</dd>
+    <dt>Files</dt><dd>new <code>api/pricePoints.ts</code> (shared layer); new <code>inventory/dev/usePricePoints.ts</code>; <code>ItemAnalysisPanel.tsx</code>, <code>ActualPriceRow.tsx</code>, <code>InventoryExportModal.tsx</code>, <code>InventoryVendor.tsx</code>, <code>InventorySubDept.tsx</code>, <code>inventoryData.ts</code>; shared <code>utils/pricePoints.ts</code> (additions only), <code>hooks/useActualPricePoints.ts</code> (an optional cap argument), <code>interfaces</code> (<code>weight</code> on a receipt line); help <code>priceOpt.ts</code></dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li>Clicking an item makes one small call. The table, the suggestion, Prices and Trans are all built from it. The 400 cap and its "further receipts not read" line are gone, because nothing is sampled.</li>
+      <li>Weighed items read <b>$/lb</b> with pounds in Qty, so velocity is pounds a day and the margin is held against a per-pound cost. The "No suggested price for this item" notice and the check behind it (<code>isUnweighedPacks</code>) are deleted.</li>
+      <li>The penny-twin fold still runs on the server's rows, as the backend advised. 2 for $6.67 still arrives as $3.34 and $3.33.</li>
+      <li><b>Receipts load when you open a price.</b> The first Trans count you click reads the item's receipts once, in full, and each price lists the lines that match it by the server's own rule. Weighed lines show their pounds. Closing and opening others costs nothing more.</li>
+      <li>The export uses the same table. Its "transactions" preset is there once a price has been opened on the page. Before that it says to open one, rather than fetching thousands of rows unasked.</li>
+    </ul>
+  </div>
+  <div class="block"><h3>Two things it gives up, said plainly</h3>
+    <ul>
+      <li><b>"Package deal" can't be detected.</b> That pattern counts receipts carrying the item at two prices, which needs each receipt, and the endpoint counts receipts without naming them. The other patterns are unaffected. Asking the backend for one more count, receipts at more than one price, brings it back.</li>
+      <li><b>Two counts are sums, not distinct receipts.</b> Folding a penny twin adds its receipts, and Trans adds the two tables. Either can count a receipt twice, only when that receipt carried the item at two prices.</li>
+    </ul>
+  </div>
+  <div class="verify">
+    <h4>How to check it (after the backend deploy)</h4>
+    <ol>
+      <li>Price Opt, store 695, Ground Beef: the actual table reads $/lb, with $3.49 SALE, $6.49 REG and one $6.16. No random-weight notice, and a suggestion if the history is there.</li>
+      <li>Click a Trans count: "Reading the receipts…", then the lines, with pounds. Open another price: instant.</li>
+      <li>A fast mover that used to say "further receipts not read" no longer does, and its Trans is the full count.</li>
+    </ol>
+  </div>
+</article>
+
+<article class="issue" id="F3" aria-labelledby="f3-h">
+  <div class="issue-head">
+    <span class="issue-num">3</span>
+    <h2 id="f3-h">Top 200 asks for 200</h2>
+    <div class="verdict"><span class="chip none">Already done</span> In <code>37935f32</code>, before this review.</div>
+  </div>
+  <dl class="facts">
+    <dt>Checked</dt><dd><code>TOP_ITEMS_FETCH</code> has been 200 since <code>37935f32</code>. That is correct only once the backend ranks <code>topitems</code> by sales, which is on <code>branch_10_20_2026</code> and not deployed. Until the deploy, dev's Top 200 is the top 200 by units, re-ranked by sales.</dd>
+    <dt>Worth knowing</dt><dd>The backend notes that deploying the branch for this also deploys its other number changes: weighed items per pound, weight beside qty, and <code>cat_sales</code>, <code>hourly</code> and <code>weekly</code> reconciled to <code>sub_sales</code>.</dd>
+  </dl>
+</article>
+
 <section class="block" aria-labelledby="left-h">
   <h2 id="left-h">What the frontend can't do alone</h2>
   <div class="scroll"><table>
     <thead><tr><th>#</th><th>What's needed</th><th>Who</th></tr></thead>
     <tbody>
-      <tr><td class="id">A</td><td>Per-pound actual prices for random-weight packs: <code>transaction_list</code> already returns <code>weight</code> on the backend branch, but without the company-4 divide-by-1,000 that <code>topitems</code> applies. Then the frontend prices those lines per pound and the notice goes.</td><td>Backend, then frontend</td></tr>
-      <tr><td class="id">3, D, I</td><td><code>topitems</code> ranking by sales is on the backend branch and needs deploying, then the frontend asks for 200. A server-side price-point aggregate (D) and a vendor rollup (I) cut the downloads.</td><td>Backend, then frontend</td></tr>
+      <tr><td class="id">I</td><td>Vendors, Sub Dept Margins and Price Opt Vendor on <code>subs/rollup</code>.</td><td>Phase 10</td></tr>
+      <tr><td class="id">D</td><td>"Package deal" back on Price Opt: a count of receipts carrying the item at more than one price, on <code>price_points</code>.</td><td>Backend, optional</td></tr>
       <tr><td class="id">P</td><td>Fam Pak Breast Tenders: are its Item Actions units whole numbers or pounds? That decides the fix.</td><td>One look</td></tr>
       <tr><td class="id">B</td><td>Tune the 3-day, 5-receipt minimum for "moves fastest" against real stores.</td><td>Steve / Tommy</td></tr>
       <tr><td class="id">F, AB, U, Z, AA</td><td>Board wording, Groups training card, Item Lookup on a phone, release notes for the Vendors Crit count and the Sub Dept Margins headline.</td><td>No code</td></tr>
     </tbody>
   </table></div>
-  <p class="callout">Two deploys before the next review run: the frontend, for everything in phases 1–8, and the backend branch, which phases 7–10 are built against. AN, AO and AP are off this list: the backend fixed AN and AO, and ticket email is on and works.</p>
+  <p class="callout">Two deploys before the next review run: the frontend, for everything in phases 1–9, and the backend branch, which phases 7–10 are built against. AN, AO and AP are off this list: the backend fixed AN and AO, and ticket email is on and works.</p>
 </section>
 
 <footer>
-  Verified for Phase 8: typecheck, 1,265 tests (3 new this phase, the family tests rewritten), theme audit, eslint and a production build, all clean. Checked by tests, not in a browser, so the "how to check it" steps are yours to run.
+  Verified for Phase 9: typecheck, 1,271 tests (10 new this phase, 4 removed with the stop-gap), theme audit, eslint and a production build, all clean. Checked by tests, not in a browser, so the "how to check it" steps are yours to run.
 </footer>
 
 </div>

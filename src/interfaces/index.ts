@@ -413,6 +413,10 @@ export interface TransactionListItem {
   wic: number;
   scalable: number;
   qty?: number;
+  /** Pounds, on a weighed line; 0 when not weighed, negative on a refund.
+   *  Food Giant's thousandths are scaled on the server since 22 Oct. Optional
+   *  because an API without the change sends none. */
+  weight?: number;
 }
 
 //////////////////////////////////////////////////////////////

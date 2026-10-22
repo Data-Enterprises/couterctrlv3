@@ -8,15 +8,18 @@ import {
 import { formatCurrency2 } from "../../../utils";
 import {
   estimatedPricePoints,
-  actualPricePoints,
+  pricePointsFromServer,
+  linesAtPrice,
   mixedPriceInsight,
   classifyPattern,
   suggestPrice,
   suggestionWithheld,
+  type ActualPricePoint,
 } from "../../../utils/pricePoints";
 import ActualPriceRow, { ACT_COLS } from "./ActualPriceRow";
-import { itemCostStats, type ProductSummary, isUnweighedPacks } from "./inventoryData";
+import { itemCostStats, type ProductSummary } from "./inventoryData";
 import type { ActualFetchState } from "../../../hooks/useActualPricePoints";
+import type { PricePointsState } from "./usePricePoints";
 import { resolveUnitCost } from "./invoiceCost";
 import type { InvoiceCostState } from "./useInvoiceCost";
 
@@ -24,9 +27,10 @@ import type { InvoiceCostState } from "./useInvoiceCost";
  * One item, read two ways — and only one of them gets a vote.
  *
  * Estimated on the left from daily roll-ups already in hand, actual on the
- * right from register lines fetched behind it. The two tables share their first
- * two columns so a reader's eye can run across, and the gap between them is the
- * finding: a price on the left with no counterpart on the right never existed.
+ * right from `cashiers/price_points`, which buckets every receipt line on the
+ * server. The two tables share their first two columns so a reader's eye can
+ * run across, and the gap between them is the finding: a price on the left
+ * with no counterpart on the right never existed.
  *
  * The suggestion reads the **actual** side only. Estimated divides a day's
  * dollars by a day's units, so nineteen rings at $13.99 and one at $12.99
@@ -43,19 +47,34 @@ import type { InvoiceCostState } from "./useInvoiceCost";
 
 interface Props {
   product: ProductSummary;
-  actual: ActualFetchState;
+  /** The price table, for whichever item `prices.upc` names. */
+  prices: PricePointsState;
+  /** The item's receipt lines, read only once a price is opened. */
+  receipts: ActualFetchState;
+  onLoadReceipts: () => void;
   /** The latest invoice cost lookup for the item on screen. */
   invoice: InvoiceCostState;
 }
 
 const EST_COLS = "1fr 46px 42px 52px 34px";
+const NO_ROWS: PricePointsState["rows"] = [];
 const dash = "—";
 
-const ItemAnalysisPanel = ({ product, actual, invoice }: Props) => {
+const ItemAnalysisPanel = ({
+  product,
+  prices,
+  receipts,
+  onLoadReceipts,
+  invoice,
+}: Props) => {
   // Only ever read when the fetch belongs to the item on screen. A response
   // for the previously-clicked UPC is dropped rather than rendered.
-  const isCurrent = actual.upc === product.productCode;
-  const lines = isCurrent ? actual.lines : [];
+  const isCurrent = prices.upc === product.productCode;
+  const rows = isCurrent ? prices.rows : NO_ROWS;
+  // The panel's loading and error states are the price table's. The receipts
+  // only ever load under an opened row, and say so there.
+  const actual = prices;
+  const receiptsHere = receipts.upc === product.productCode;
 
   // Register lines carry no cost, so a unit cost has to reach them before any
   // actual-side margin can exist. The latest invoice cost when there is one,
@@ -84,32 +103,27 @@ const ItemAnalysisPanel = ({ product, actual, invoice }: Props) => {
   );
 
   const act = useMemo(
-    () => actualPricePoints(lines, unitCost),
-    [lines, unitCost],
+    () => pricePointsFromServer(rows, unitCost),
+    [rows, unitCost],
   );
-  const mixed = useMemo(() => mixedPriceInsight(lines), [lines]);
-  const pattern = useMemo(() => classifyPattern(act, mixed), [act, mixed]);
-  const rawSuggestion = useMemo(() => suggestPrice(act), [act]);
+  // "Package deal" reads each receipt for the item at two prices, and the
+  // server's table counts receipts without naming them. Until it reports
+  // that count, the pattern is judged without it rather than from a download
+  // of every receipt, which is what the table replaced.
+  const pattern = useMemo(
+    () => classifyPattern(act, mixedPriceInsight([])),
+    [act],
+  );
+  // Weighed items have per-pound prices on both sides now, so the notice that
+  // withheld their suggestion (finding A's stop-gap) is gone.
+  const suggestion = useMemo(() => suggestPrice(act), [act]);
+  const withheld = suggestionWithheld(act);
 
-  /**
-   * Sold by weight, but rung as whole packs.
-   *
-   * The two sides of this page decide "weighed" differently. Estimated reads
-   * the `subs/subs` rows, which carry weight. Actual reads the register lines,
-   * which carry none, and treats a fractional quantity as the sign of a scale
-   * sale. That catches items weighed at the till and misses prepacked
-   * random-weight meat (UPC prefix 2, price in the barcode): each pack rings as
-   * quantity 1 at its own total, so every pack becomes its own "price" and is
-   * held against a per-pound cost. Ground Beef Fam Pak showed 146 prices and a
-   * 75% margin that way (dev board review, finding A).
-   *
-   * Until the register lines carry a weight there is no per-pound price on the
-   * actual side to recommend, so the recommendation is withheld and the panel
-   * says why, rather than offering a number someone would price from.
-   */
-  const unweighedPacks = isUnweighedPacks(lines.length, act.isWeighted, product.rows);
-  const suggestion = unweighedPacks ? null : rawSuggestion;
-  const withheld = unweighedPacks ? null : suggestionWithheld(act);
+  /** The receipts behind one price, or null until they have been read. */
+  const linesFor = (p: ActualPricePoint, averaged: boolean) =>
+    receiptsHere && !receipts.loading && !receipts.error
+      ? linesAtPrice(receipts.lines, p, { weighed: act.isWeighted, averaged })
+      : null;
 
   const totals = useMemo(
     () => ({
@@ -221,21 +235,6 @@ const ItemAnalysisPanel = ({ product, actual, invoice }: Props) => {
 
         {/* The page's headline now that its job is optimisation. Sits above the
             pattern line because it's the answer; the pattern is the caveat. */}
-        {unweighedPacks && (
-          <div className="px-4 pt-3 flex-shrink-0">
-            <div className="rounded-lg border border-severity_watch_text/30 bg-severity_watch_bg px-3 py-2.5 flex gap-2 items-start">
-              <InformationCircleIcon className="w-4 h-4 text-severity_watch_text flex-shrink-0 mt-px" />
-              <p className="text-[12px] text-content leading-snug">
-                <span className="font-semibold">No suggested price for this item.</span>{" "}
-                It sells by weight in random-weight packs, and the receipts
-                record each pack at its own total, not its weight. So the
-                prices on the right are pack totals, and can't be compared per
-                pound with the estimated prices or the cost.
-              </p>
-            </div>
-          </div>
-        )}
-
         {withheld && (
           <div className="px-4 pt-3 flex-shrink-0">
             <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 flex gap-2 items-start">
@@ -454,6 +453,10 @@ const ItemAnalysisPanel = ({ product, actual, invoice }: Props) => {
                         // The band names a price; this is that price in the
                         // table. Without the tie the reader has to scan for it.
                         isBest={p === suggestion?.best.point}
+                        lines={linesFor(p, false)}
+                        receiptsLoading={receiptsHere && receipts.loading}
+                        receiptsError={receiptsHere ? receipts.error : null}
+                        onOpen={onLoadReceipts}
                       />
                     ))}
                   </>
@@ -485,16 +488,13 @@ const ItemAnalysisPanel = ({ product, actual, invoice }: Props) => {
                       <ActualPriceRow
                         key={`a-${p.price}-${p.priceType}`}
                         point={p}
+                        lines={linesFor(p, true)}
+                        receiptsLoading={receiptsHere && receipts.loading}
+                        receiptsError={receiptsHere ? receipts.error : null}
+                        onOpen={onLoadReceipts}
                       />
                     ))}
                   </>
-                )}
-
-                {actual.truncated > 0 && (
-                  <div className="mt-3 text-[10px] text-content/60">
-                    {actual.truncated} further receipts not read — this item
-                    exceeds the per-search cap.
-                  </div>
                 )}
               </>
             )}

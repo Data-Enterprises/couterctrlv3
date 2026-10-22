@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { groupProducts, isUnweighedPacks } from "./inventoryData";
+import { groupProducts } from "./inventoryData";
 import type { SubDeptMargin } from "../../../interfaces";
 
 const row = (over: Partial<SubDeptMargin>): SubDeptMargin =>
@@ -32,29 +32,5 @@ describe("groupProducts", () => {
     ]);
     // Gross would put A first; net puts B first.
     expect(out.map((p) => p.productCode)).toEqual(["B", "A"]);
-  });
-});
-
-describe("isUnweighedPacks", () => {
-  const weighed = [row({ weight: 2.7 })];
-  const each = [row({ weight: 0 })];
-
-  it("flags a weighed item whose receipts read as whole packs", () => {
-    // Ground Beef Fam Pak: the sales rows carry weight, the register lines are
-    // quantity 1 at each pack's total.
-    expect(isUnweighedPacks(203, false, weighed)).toBe(true);
-  });
-
-  it("leaves an item weighed at the till alone", () => {
-    // Fractional quantities on the receipts: actual already prices per pound.
-    expect(isUnweighedPacks(40, true, weighed)).toBe(false);
-  });
-
-  it("leaves an each-priced item alone", () => {
-    expect(isUnweighedPacks(26, false, each)).toBe(false);
-  });
-
-  it("does not decide before the receipts have arrived", () => {
-    expect(isUnweighedPacks(0, false, weighed)).toBe(false);
   });
 });

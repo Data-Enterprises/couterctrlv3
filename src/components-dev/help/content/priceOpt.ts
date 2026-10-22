@@ -66,7 +66,7 @@ const SHARED_GUIDES: HelpGuide[] = [
       },
       {
         title: "Read the gap between them",
-        pre: "The two tables share their first columns so your eye can run across. A price on the left with no counterpart on the right was never charged — except on an item sold by weight in random-weight packs, where the left is per pound and the right is per pack, and the two never line up.",
+        pre: "The two tables share their first columns so your eye can run across. A price on the left with no counterpart on the right was never charged. On an item sold by weight both sides are per pound.",
         see: "That gap is usually the finding.",
       },
     ],
@@ -94,7 +94,7 @@ const SHARED_GUIDES: HelpGuide[] = [
     issues: [
       {
         q: "There is no suggestion",
-        a: "One of three things. The item sold at one price all period, so there is nothing to compare. Or no two prices have enough behind them: a price needs at least 3 days and 5 receipts to be a candidate, so a one-day spike can't win. Or it sells by weight in random-weight packs, where the receipts record pack totals and not weights — the panel says so in place of the suggestion.",
+        a: "One of two things. The item sold at one price all period, so there is nothing to compare. Or no two prices have enough behind them: a price needs at least 3 days and 5 receipts to be a candidate, so a one-day spike can't win.",
       },
       {
         q: "The suggestion is lower than I would like",
@@ -113,7 +113,7 @@ const SHARED_GUIDES: HelpGuide[] = [
         chip: "Show transactions",
         post: "on a price row.",
         anchor: "actual",
-        see: "Every sale at that price — date, cashier, terminal, quantity and amount.",
+        see: "Every sale at that price — date, cashier, terminal, quantity (pounds on a weighed item) and amount. They are read when you first open one, so the first takes a moment.",
       },
       {
         title: "Look for the explanation",
@@ -144,7 +144,7 @@ const SHARED_FIXES: HelpFix[] = [
         badge: "Expected",
         tone: "ok",
         title: "That price was never charged",
-        why: "The estimated side is an average of a day's takings over a day's units, so it invents prices that sit between the real ones. A left-hand price with no counterpart on the right is usually exactly that. The exception is an item sold by weight in random-weight packs: the left is per pound, the right is per pack, and none of them will match.",
+        why: "The estimated side is an average of a day's takings over a day's units, so it invents prices that sit between the real ones. A left-hand price with no counterpart on the right is exactly that.",
         todo: [
           "Ignore it and work from the right-hand table.",
           "If it is the only price on the left, the item sold at several prices that day.",
@@ -191,7 +191,7 @@ const SHARED_TERMS: HelpTerm[] = [
   },
   {
     term: "Trans",
-    def: "How many separate receipts carried that price. A receipt that rang the item three times counts once. Two is a coincidence; two hundred is a pattern.",
+    def: "How many separate receipts carried that price, counted over every receipt in the period. A receipt that rang the item three times counts once. Two is a coincidence; two hundred is a pattern.",
     anchor: "actual",
   },
   {

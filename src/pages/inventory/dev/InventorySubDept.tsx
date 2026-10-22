@@ -13,7 +13,7 @@ import DatePickers from "../../../components-dev/datePickers/DatePickers";
 import InventoryTreePanel, { type TreeGroup } from "./InventoryTreePanel";
 import InventoryExportModal from "./InventoryExportModal";
 import ItemAnalysisPanel from "./ItemAnalysisPanel";
-import { useActualPricePoints } from "../../../hooks/useActualPricePoints";
+import { usePricePoints } from "./usePricePoints";
 import { useInvoiceCost } from "./useInvoiceCost";
 import {
   fetchSubDepts,
@@ -76,7 +76,8 @@ const InventorySubDept = () => {
   const [productsLoading, setProductsLoading] = useState(false);
   const [selected, setSelected] = useState<ProductSummary | null>(null);
 
-  const { actual, loadActual, resetActual } = useActualPricePoints();
+  const { prices, loadPrices, resetPrices, receipts, loadReceipts } =
+    usePricePoints();
   const { invoice, loadInvoiceCost, resetInvoiceCost } = useInvoiceCost();
   const storeName = useStoreName(scope?.storeid ?? storeId);
 
@@ -114,7 +115,7 @@ const InventorySubDept = () => {
     setOpenSubDept(null);
     setProducts([]);
     setSelected(null);
-    resetActual();
+    resetPrices();
     resetInvoiceCost();
     try {
       const depts = await fetchSubDepts(next);
@@ -143,7 +144,7 @@ const InventorySubDept = () => {
     // list's item (dev board review, finding H). Collapsing the open one
     // keeps it.
     setSelected(null);
-    resetActual();
+    resetPrices();
     resetInvoiceCost();
     wantedSubDept.current = id;
     setOpenSubDept(id);
@@ -170,7 +171,7 @@ const InventorySubDept = () => {
     setSelected(p);
     // Description, not UPC — that is the only search `cashier_table` offers.
     // The over-match it causes is filtered out again on product_code.
-    loadActual(p.productCode, scope.storeid, scope.start, scope.end);
+    loadPrices(p.productCode, scope.storeid, scope.start, scope.end);
     loadInvoiceCost(scope, p.productCode);
   };
 
@@ -252,8 +253,11 @@ const InventorySubDept = () => {
           // Same staleness guard the panel applies — a response for the
           // previously-clicked UPC must not be exported under this one's name.
           invoice={invoice}
+          prices={
+            selected && prices.upc === selected.productCode ? prices.rows : []
+          }
           lines={
-            selected && actual.upc === selected.productCode ? actual.lines : []
+            selected && receipts.upc === selected.productCode ? receipts.lines : []
           }
         />
       )}
@@ -279,7 +283,9 @@ const InventorySubDept = () => {
         {selected ? (
           <ItemAnalysisPanel
             product={selected}
-            actual={actual}
+            prices={prices}
+            receipts={receipts}
+            onLoadReceipts={loadReceipts}
             invoice={invoice}
           />
         ) : (
