@@ -118,7 +118,7 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
     <p class="sub">What was done about each finding in <span class="mono">dev-board-review-2026-10-21.md</span>. Fixes land in the dev tree; prod gets them when dev is promoted. This page is updated and committed after each phase.</p>
   </div>
   <div class="status">
-    <span><b>Phase 2 of 6 done.</b> Numbers that were wrong.</span>
+    <span><b>Phase 3 of 6 done.</b> Small and independent.</span>
     <span class="mono">branch next_publish_10_20_2026</span>
   </div>
 </header>
@@ -134,11 +134,11 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
       <tr><td class="id">A</td><td>By-weight items priced per package</td><td class="st"><span class="chip fixed">Stop-gap &middot; Phase 2</span> <span class="chip both">Then backend</span></td></tr>
       <tr><td class="id">H</td><td>Switching vendor keeps the previous item</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 2</span></td></tr>
       <tr><td class="id">O, W</td><td>Price Opt cost is the stale item-file cost</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 2</span></td></tr>
-      <tr><td class="id">AO</td><td>Ticket times 5 hours ahead</td><td class="st"><span class="chip next">Phase 3</span></td></tr>
-      <tr><td class="id">AQ</td><td><code>tickets/assignees</code> 403 on every load</td><td class="st"><span class="chip next">Phase 3</span></td></tr>
-      <tr><td class="id">1</td><td>"+13.1%" on Top 200 is points</td><td class="st"><span class="chip next">Phase 3</span></td></tr>
-      <tr><td class="id">AI, AL</td><td>"New" vs "Add user"; role shows as "1"</td><td class="st"><span class="chip next">Phase 3</span></td></tr>
-      <tr><td class="id">Y</td><td>Item Lookup: Enter doesn't search; unclear not-found</td><td class="st"><span class="chip next">Phase 3</span></td></tr>
+      <tr><td class="id">AO</td><td>Ticket times 5 hours ahead</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 3</span></td></tr>
+      <tr><td class="id">AQ</td><td><code>tickets/assignees</code> 403 on every load</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 3</span></td></tr>
+      <tr><td class="id">1</td><td>"+13.1%" on Top 200 is points</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 3</span></td></tr>
+      <tr><td class="id">AI, AL</td><td>"New" vs "Add user"; role shows as "1"</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 3</span></td></tr>
+      <tr><td class="id">Y</td><td>Item Lookup: Enter doesn't search; unclear not-found</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 3</span></td></tr>
       <tr><td class="id">I</td><td>Price Opt Vendor fires 26 calls at once</td><td class="st"><span class="chip next">Phase 4</span> <span class="chip both">Then backend</span></td></tr>
       <tr><td class="id">K</td><td>Price Opt doesn't keep its result</td><td class="st"><span class="chip next">Phase 4</span></td></tr>
       <tr><td class="id">J</td><td>Filter doesn't search items</td><td class="st"><span class="chip next">Phase 4</span></td></tr>
@@ -223,7 +223,7 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
 
 <!-- ============================================================ PHASE 2 -->
 <section class="block" aria-labelledby="p2-h">
-  <div class="phase-head"><h2 id="p2-h">Phase 2 &middot; Numbers that were wrong</h2><span class="commit" id="p2-commit">this commit</span></div>
+  <div class="phase-head"><h2 id="p2-h">Phase 2 &middot; Numbers that were wrong</h2><span class="commit">33080edb</span></div>
   <p>All four are on Price Opt, the page a pricing user acts on.</p>
 </section>
 
@@ -342,8 +342,128 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
   </div>
 </article>
 
+<!-- ============================================================ PHASE 3 -->
+<section class="block" aria-labelledby="p3-h">
+  <div class="phase-head"><h2 id="p3-h">Phase 3 &middot; Small and independent</h2><span class="commit" id="p3-commit">this commit</span></div>
+</section>
+
+<article class="issue" id="AO" aria-labelledby="ao-h">
+  <div class="issue-head">
+    <span class="issue-num">AO</span>
+    <h2 id="ao-h">Ticket times show in the reader's own time</h2>
+    <div class="verdict"><span class="chip fixed">Fixed</span> Works now; keeps working when the API adds a zone.</div>
+  </div>
+  <dl class="facts">
+    <dt>Found</dt><dd>TCK-35, sent 5:32 PM CDT, showed "Oct 21, 10:32 PM". Tickets from the last five hours showed "just now".</dd>
+    <dt>Cause</dt><dd>The API sends UTC with no zone (<code>2026-10-21T22:32:10.299190</code>). JavaScript reads a date-time with no zone as local time, so every stamp moved five hours forward in Central. Anything from the last five hours then sat in the future, which the age display shows as "just now".</dd>
+    <dt>Files</dt><dd><code>pages/tickets/dev/ticketsUtils.ts</code> (<code>parseServerTime</code>)</dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li>One helper reads a stamp with no zone as UTC. A stamp that already ends in <code>Z</code> or an offset is left alone, so nothing needs undoing when the backend starts sending one.</li>
+      <li>Both places that show a ticket time, the age ("12m", "5h") and the full date, go through it. They were the only two.</li>
+      <li>Three tests, including TCK-35's actual stamp.</li>
+    </ul>
+  </div>
+  <div class="verify">
+    <h4>How to check it</h4>
+    <ol>
+      <li>Tickets in DEV mode: TCK-35 should read Oct 21, 5:32 PM.</li>
+      <li>A ticket opened a few minutes ago should read "2m" or similar, not "just now" for hours.</li>
+    </ol>
+  </div>
+</article>
+
+<article class="issue" id="AQ" aria-labelledby="aq-h">
+  <div class="issue-head">
+    <span class="issue-num">AQ</span>
+    <h2 id="aq-h">Customers no longer ask for the assignee list</h2>
+    <div class="verdict"><span class="chip fixed">Fixed</span></div>
+  </div>
+  <dl class="facts">
+    <dt>Found</dt><dd><code>tickets/assignees</code> returned 403 on every page load for a customer, with a console error each time.</dd>
+    <dt>Cause</dt><dd>The call went out alongside the list so it wouldn't wait on it. Only a tech can assign, so for a customer it could only ever fail.</dd>
+    <dt>Files</dt><dd><code>pages/tickets/dev/hooks.ts</code></dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li>The assignee list is now requested after the ticket list comes back, and only when it says <code>canManage</code>. For a tech this adds one short wait before the assign picker fills; for a customer the call never happens.</li>
+    </ul>
+  </div>
+  <div class="verify">
+    <h4>How to check it</h4>
+    <ol>
+      <li>As user 649, open Tickets with the network tab open: no <code>tickets/assignees</code> request, no console error.</li>
+      <li>As a tech: the request is there and the assign picker lists the techs.</li>
+    </ol>
+  </div>
+</article>
+
+<article class="issue" id="F1" aria-labelledby="f1-h">
+  <div class="issue-head">
+    <span class="issue-num">1</span>
+    <h2 id="f1-h">Top 200's share change is labelled in points</h2>
+    <div class="verdict"><span class="chip fixed">Fixed</span></div>
+  </div>
+  <dl class="facts">
+    <dt>Found</dt><dd>"vs last week $27,283.86 (30.2% of net sales) <b>+13.1%</b>". Sales actually rose 59.5%. The 13.1 is the change in share, 43.3 minus 30.2.</dd>
+    <dt>Files</dt><dd><code>pages/sales/dev/components/PopupTopItems.tsx</code></dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li>The pill on both the last-week and last-year tiles now reads "+13.1 pts". The code comment beside it already said "points of contribution"; only the label was wrong.</li>
+    </ul>
+  </div>
+</article>
+
+<article class="issue" id="AI" aria-labelledby="ai-h">
+  <div class="issue-head">
+    <span class="issue-num">AI AL</span>
+    <h2 id="ai-h">"Add user" on the button, and the role by name on the review</h2>
+    <div class="verdict"><span class="chip fixed">Fixed</span></div>
+  </div>
+  <dl class="facts">
+    <dt>Found</dt><dd>The button said "New" while the form and the board say "Add user". The review step showed "1 · Basic User" for the role.</dd>
+    <dt>Cause</dt><dd>The role is stored as its option value, "1", and the review printed that value.</dd>
+    <dt>Files</dt><dd><code>organization/dev/users/UserGrid.tsx</code>, <code>organization/dev/users/create/StepReview.tsx</code></dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li>The button reads "Add user".</li>
+      <li>The review looks the role up in the same list the picker offers, so it reads "Single Store · Basic User".</li>
+    </ul>
+  </div>
+</article>
+
+<article class="issue" id="Y" aria-labelledby="y-h">
+  <div class="issue-head">
+    <span class="issue-num">Y</span>
+    <h2 id="y-h">Item Lookup: Enter searches, and "not found" says what it means</h2>
+    <div class="verdict"><span class="chip fixed">Fixed</span> One trade-off, below.</div>
+  </div>
+  <dl class="facts">
+    <dt>Found</dt><dd>A scanner types the digits and presses Enter, and Enter added a new line, so Search had to be clicked. A UPC with nothing to show said "There was an issue finding this item".</dd>
+    <dt>Cause</dt><dd>The UPC box takes several UPCs, one per line, so Enter was a line break. For the message, the endpoint answers "no sales in the window" the same way it answers a failure (<code>error: 1</code>), and the page treated both as a failure.</dd>
+    <dt>Files</dt><dd><code>pages/lookup/dev/desktop/LookupDesktopEntry.tsx</code>, <code>desktop/useLookupQueue.ts</code>, <code>ItemLookupMobile.tsx</code>, <code>lookupMetrics.ts</code> (<code>lookupFailureText</code>)</dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li>Enter searches. Shift+Enter adds a line for typing several by hand, and the hint says so. Pasting a list is unaffected.</li>
+      <li>When the server says there were no sales, the row reads "No sales of this UPC at this store in the last 14 days". Real failures still say "There was an issue finding this item". Phone and desktop use the same wording.</li>
+    </ul>
+  </div>
+  <p class="callout warn">Two things to know. The review suggested "No item with that UPC at this store", but the endpoint can't tell an unknown UPC from one that hasn't sold recently, so the message only claims what's known. And scanning several items in a row, then searching once, no longer works: each scan's Enter now searches straight away. Paste a list, or use Shift+Enter, to look up several.</p>
+  <div class="verify">
+    <h4>How to check it</h4>
+    <ol>
+      <li>Item Lookup (desktop, DEV), store 695: type 4900002468 and press Enter. COKE 6PK loads.</li>
+      <li>Type a made-up UPC and press Enter: "No sales of this UPC at this store in the last 14 days".</li>
+    </ol>
+  </div>
+</article>
+
 <footer>
-  Verified for Phase 2: typecheck, 1,215 tests (16 new this phase, 24 across both), theme audit, eslint and a production build, all clean. Checked by tests, not in a browser, so the "how to check it" steps are yours to run.
+  Verified for Phase 3: typecheck, 1,221 tests (6 new this phase, 30 across all three), theme audit, eslint and a production build, all clean. Checked by tests, not in a browser, so the "how to check it" steps are yours to run.
 </footer>
 
 </div>

@@ -4,6 +4,7 @@ import {
   isMine,
   matchesFilters,
   onTab,
+  parseServerTime,
   resolutionLabel,
   tabCounts,
   ticketsInScope,
@@ -244,5 +245,32 @@ describe("ticketsInScope", () => {
     // the customer will never be shown.
     const scoped = ticketsInScope([mine, houchens, bruces], false, BRUCES, 649);
     expect(tabCounts(scoped, 649).all).toBe(2);
+  });
+});
+
+describe("parseServerTime", () => {
+  // TCK-35: sent 5:32 PM CDT, which is 22:32 UTC. The API sends the UTC clock
+  // time with no zone, and it used to be read as local -- five hours ahead.
+  const sent = "2026-10-21T22:32:10.299190";
+
+  it("reads a zone-less stamp as UTC", () => {
+    expect(new Date(parseServerTime(sent)).toISOString()).toBe(
+      "2026-10-21T22:32:10.299Z",
+    );
+  });
+
+  it("leaves a stamp that names its zone alone", () => {
+    expect(parseServerTime("2026-10-21T22:32:10Z")).toBe(
+      Date.parse("2026-10-21T22:32:10Z"),
+    );
+    expect(parseServerTime("2026-10-21T17:32:10-05:00")).toBe(
+      Date.parse("2026-10-21T22:32:10Z"),
+    );
+  });
+
+  it("puts a ticket from five minutes ago five minutes ago", () => {
+    // Before the fix this read as five hours in the future, shown "just now".
+    const now = Date.parse("2026-10-21T22:37:11Z");
+    expect(whenText(sent, now)).toBe("5m");
   });
 });

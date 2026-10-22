@@ -62,12 +62,22 @@ const LookupDesktopEntry = ({ onSearch }: LookupDesktopEntryProps) => {
             UPCs
           </label>
           <span className="text-[10.5px] text-content/60">
-            Separate by comma or new lines
+            Comma or Shift+Enter between UPCs
           </span>
         </div>
         <textarea
           value={rawUpcs}
           onChange={(e) => setRawUpcs(e.target.value)}
+          onKeyDown={(e) => {
+            // A scanner types the digits and presses Enter, and expects a
+            // result. Enter used to add a line, so a scan sat waiting for a
+            // click (dev board review, finding Y). Shift+Enter still adds a
+            // line for typing several by hand; pasting a list is unaffected.
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              handleSubmit();
+            }
+          }}
           placeholder="Paste one or more UPCs"
           rows={4}
           className="basic-input bg-custom-white w-full mt-1 py-2 px-2.5 text-[13px] resize-none"

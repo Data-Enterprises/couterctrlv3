@@ -111,8 +111,8 @@ export const useTicketsCtx = () => {
     );
   };
 
-  /** The queue, and the pickers behind it. Three calls, none waiting on
-   *  another. */
+  /** The queue, and the pickers behind it. The list and the lookups go out
+   *  together; the assignees wait for the list to say who is asking. */
   const load = () => {
     dispatch(startLoad());
     listTickets(url, token, tickets.company ? { company: tickets.company } : {})
@@ -132,21 +132,14 @@ export const useTicketsCtx = () => {
             },
           }),
         );
+        // Only someone who can assign has anyone to assign to. Asking anyway
+        // cost every customer a 403 and a console error on every load (dev
+        // board review, finding AQ), so this now waits on the list's answer.
+        if (j.canManage) loadAssignees();
       })
       .catch(failed("Could not read the tickets"));
 
     loadLookups();
-    // The third of the three. It was written, exported and never called, so
-    // `assignees` stayed empty for everyone and the assign picker could only
-    // ever offer Unassigned — which is exactly what a tech sees when they try
-    // to hand a ticket over.
-    //
-    // Not gated on `canManage`: that arrives with the list above, and waiting
-    // for it would make this the one call that depends on another. The
-    // endpoint is a tech's to begin with, a client gets a 403, and the catch
-    // inside already leaves assignment unavailable — which is the same place
-    // a client ends up either way, since the picker is not rendered for them.
-    loadAssignees();
   };
 
   /**

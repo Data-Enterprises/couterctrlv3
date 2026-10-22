@@ -10,7 +10,7 @@ import {
   setLookupStoreNumbers,
   setLookupSelectedStoreNumber,
 } from "../../../../features/dev/devItemLookupSlice";
-import { computeMargin, itemDescription } from "../lookupMetrics";
+import { computeMargin, itemDescription, lookupFailureText } from "../lookupMetrics";
 import { isSaleRow } from "../../../../utils/saleType";
 import {
   scopeToStoreNumber,
@@ -153,7 +153,7 @@ export const useLookupQueue = () => {
                 upc,
                 patch: {
                   status: "error",
-                  errorMessage: "There was an issue finding this item",
+                  errorMessage: lookupFailureText(j.msg),
                 },
               }),
             );

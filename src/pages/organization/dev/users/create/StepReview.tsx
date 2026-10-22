@@ -1,3 +1,4 @@
+import { roles } from "../../constants";
 import { useMemo } from "react";
 import { InformationCircleIcon } from "@heroicons/react/20/solid";
 import type { CompanyBaseGroup, Store } from "../../../../../interfaces";
@@ -77,7 +78,12 @@ const StepReview = ({
   const name = `${info.first_name} ${info.last_name}`.trim() || info.username;
   const initials =
     `${info.first_name?.charAt(0) ?? ""}${info.last_name?.charAt(0) ?? ""}`.toUpperCase();
-  const roleLevel = [info.role, ctx.userLevels.find((l) => l.id === info.user_level)?.name]
+  // `role` is stored as its option value ("1"), so the review showed
+  // "1 · Basic User". Read it back through the same list the picker offers
+  // (finding AL).
+  const roleName =
+    roles.find((r) => r.value === String(info.role))?.label ?? info.role;
+  const roleLevel = [roleName, ctx.userLevels.find((l) => l.id === info.user_level)?.name]
     .filter(Boolean)
     .join(" · ");
 

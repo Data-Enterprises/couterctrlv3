@@ -817,7 +817,11 @@ const PopupTopItems = ({
                                 : "bg-gray-100 text-content"
                           }`}
                         >
-                          {`${gap > 0 ? "+" : gap < 0 ? "−" : ""}${Math.abs(gap).toFixed(1)}%`}
+                          {/* "pts", not "%": 43.3% of net sales against 30.2%
+                              is 13.1 points. Read as "+13.1%" it said sales
+                              rose 13%, when they rose 59.5% (dev board review,
+                              finding 1). */}
+                          {`${gap > 0 ? "+" : gap < 0 ? "−" : ""}${Math.abs(gap).toFixed(1)} pts`}
                         </span>
                       )}
                     </div>

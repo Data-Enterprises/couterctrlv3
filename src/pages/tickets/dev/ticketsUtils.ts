@@ -175,6 +175,23 @@ export const tabCounts = (tickets: Ticket[], userid: number) => ({
 });
 
 /**
+ * A server timestamp, as a moment.
+ *
+ * The tickets API sends UTC with no zone on it (`2026-10-21T22:32:10.299190`),
+ * and JavaScript reads a zone-less date-time as LOCAL time. So every ticket
+ * read five hours ahead in Central -- TCK-35, sent at 5:32 PM, showed 10:32
+ * PM -- and anything from the last five hours sat in the future, which
+ * `whenText` reports as "just now" (dev board review, finding AO).
+ *
+ * A stamp that already carries `Z` or an offset is left alone, so this keeps
+ * working once the API starts sending one.
+ */
+export const parseServerTime = (iso: string): number => {
+  const zoned = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(iso.trim());
+  return Date.parse(zoned ? iso : `${iso}Z`);
+};
+
+/**
  * When something happened, in the reader's own time.
  *
  * Recent things read better as an age than as a clock time — "12m" answers
@@ -182,7 +199,7 @@ export const tabCounts = (tickets: Ticket[], userid: number) => ({
  * a date, because "31h" is not how people think.
  */
 export const whenText = (iso: string, now = Date.now()) => {
-  const at = new Date(iso).getTime();
+  const at = parseServerTime(iso);
   if (Number.isNaN(at)) return "";
   const mins = Math.floor((now - at) / 60000);
   if (mins < 1) return "just now";
@@ -199,7 +216,7 @@ export const whenText = (iso: string, now = Date.now()) => {
 
 /** A full stamp, for the places a thread needs one. */
 export const stampText = (iso: string) => {
-  const at = new Date(iso);
+  const at = new Date(parseServerTime(iso));
   return Number.isNaN(at.getTime())
     ? ""
     : at.toLocaleString(undefined, {
