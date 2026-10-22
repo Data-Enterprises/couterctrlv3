@@ -205,6 +205,11 @@ export interface UserCompany {
   userid: number;
   company: number;
   username: string;
+  /** The company this one belongs under, or null when it stands alone. On the
+   *  sign-in response's `companies` and on each user's `companies` from
+   *  `users/` since 22 Oct. Optional because an API without the change sends
+   *  nothing. */
+  parent_company_id?: number | null;
 }
 
 /**

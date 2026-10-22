@@ -118,7 +118,7 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
     <p class="sub">What was done about each finding in <span class="mono">dev-board-review-2026-10-21.md</span>. Fixes land in the dev tree; prod gets them when dev is promoted. This page is updated and committed after each phase.</p>
   </div>
   <div class="status">
-    <span><b>Backend done (not deployed).</b> Frontend follow-ups: phase 7 of 10 done.</span>
+    <span><b>Backend done (not deployed).</b> Frontend follow-ups: phase 8 of 10 done.</span>
     <span class="mono">branch next_publish_10_20_2026</span>
   </div>
 </header>
@@ -149,7 +149,8 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
       <tr><td class="id">Q, R, S</td><td>Item Actions labels and controls</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 5</span></td></tr>
       <tr><td class="id">AK, 2</td><td>Add user half-ticked state; Top 200 names cut off</td><td class="st"><span class="chip fixed">AK fixed &middot; Phase 6</span> <span class="chip none">2: already changed</span></td></tr>
       <tr><td class="id">AE, AD, AF</td><td>New pages on old help; guide steps; Show me gaps</td><td class="st"><span class="chip fixed">Fixed &middot; Phase 6</span></td></tr>
-      <tr><td class="id">3, D, AJ</td><td>Over-fetching and <code>users/</code> scope</td><td class="st"><span class="chip both">Backend, then frontend</span></td></tr>
+      <tr><td class="id">3, D</td><td>Over-fetching</td><td class="st"><span class="chip fixed">Backend fixed</span> <span class="chip next">Phase 9</span></td></tr>
+      <tr><td class="id">AJ</td><td><code>users/</code> scope; company families</td><td class="st"><span class="chip fixed">Backend fixed</span> <span class="chip fixed">Frontend &middot; Phase 8</span></td></tr>
       <tr><td class="id">AP</td><td>Nobody notified of a new ticket</td><td class="st"><span class="chip none">Settled &middot; ticket email is on and works</span></td></tr>
       <tr><td class="id">S1, S2</td><td>Found while planning: sign-in override; <code>users/</code> sent password hashes</td><td class="st"><span class="chip fixed">Backend fixed</span> <span class="chip fixed">Frontend &middot; Phase 7</span></td></tr>
       <tr><td class="id">F, AB, U, Z, AA</td><td>Board wording, training and release notes</td><td class="st"><span class="chip none">No code</span></td></tr>
@@ -827,7 +828,7 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
 
 <!-- ============================================================ PHASE 7 -->
 <section class="block" aria-labelledby="p7-h">
-  <div class="phase-head"><h2 id="p7-h">Phase 7 &middot; Sign-in and accounts, after the backend</h2><span class="commit" id="p7-commit">this commit</span></div>
+  <div class="phase-head"><h2 id="p7-h">Phase 7 &middot; Sign-in and accounts, after the backend</h2><span class="commit">cd1ae278</span></div>
   <p>Phases 7 to 10 are the frontend's half of the backend changes on <code>branch_10_20_2026</code> in goliath-platform. That branch is committed but <b>not deployed</b>. Everything below is written against the contracts in the backend's response, so it shows on screen only once that branch is on dev.</p>
   <p class="callout">The sign-in page, the account menu and the account-setup modal are shared, not forked. The backend change reaches both trees, so these changes do too. Each one says where.</p>
 </section>
@@ -935,6 +936,40 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
   </div>
 </article>
 
+<!-- ============================================================ PHASE 8 -->
+<section class="block" aria-labelledby="p8-h">
+  <div class="phase-head"><h2 id="p8-h">Phase 8 &middot; Company families from the record</h2><span class="commit" id="p8-commit">this commit</span></div>
+</section>
+
+<article class="issue" id="AJ" aria-labelledby="aj-h">
+  <div class="issue-head">
+    <span class="issue-num">AJ</span>
+    <h2 id="aj-h">The Houchens family comes from the company record, not a list in the code</h2>
+    <div class="verdict"><span class="chip fixed">Fixed</span> And <code>users/</code> is scoped on the server.</div>
+  </div>
+  <dl class="facts">
+    <dt>Backend</dt><dd><code>fd927bc</code>, <code>a082b38</code>: <code>companies.parent_company_id</code> exists, and Food Giant, Sonic, Ace and Brooks point at Houchens. It is on every company in the sign-in response and on every user's companies from <code>users/</code>. <code>users/</code> now returns the caller's family plus everyone with no company (the 316 migrated accounts). Level 9 and the two support accounts get all 487.</dd>
+    <dt>Before</dt><dd>The family was <code>COMPANY_FAMILIES = [[1, 4, 6, 17, 21]]</code> in <code>scoping.ts</code>. A sixth Houchens company would have needed a code change before anyone could administer it, and nothing would have said so.</dd>
+    <dt>Files</dt><dd><code>organization/dev/scoping.ts</code>, <code>baseGroups/hooks.ts</code>, <code>companies/CompanyUsersPanel.tsx</code>, <code>interfaces/index.ts</code> (<code>UserCompany.parent_company_id</code>)</dd>
+  </dl>
+  <div class="block"><h3>What changed</h3>
+    <ul>
+      <li><code>COMPANY_FAMILIES</code> is deleted. A company's family is its <code>parent_company_id</code>, or its own id when it has none. That is the backend's own rule, <code>coalesce(parent_company_id, id)</code>.</li>
+      <li>The Companies tab compares families directly: yours, read from your companies at sign-in, and each candidate's, from their companies in <code>users/</code>. No extra call.</li>
+      <li>The level guard is unchanged and still applies on top. Support (level 7) sees everyone but cannot edit the 8 users above level 7.</li>
+      <li>Without <code>parent_company_id</code> (an API before the deploy), each company stands alone. A Food Giant manager would briefly lose Sonic's staff, rather than anyone gaining people. The no-company accounts are offered to every manager either way.</li>
+      <li>Tests run against the companies as RDS holds them. One adds a sixth company pointing at Houchens and checks it is reached with no code change.</li>
+    </ul>
+  </div>
+  <div class="verify">
+    <h4>How to check it (after the backend deploy)</h4>
+    <ol>
+      <li>As a Food Giant manager: Organization, Companies, Sonic. Sonic's people are offered, Bruces' are not.</li>
+      <li>As taBruces: the user list is Bruces plus the no-company accounts (345).</li>
+    </ol>
+  </div>
+</article>
+
 <section class="block" aria-labelledby="left-h">
   <h2 id="left-h">What the frontend can't do alone</h2>
   <div class="scroll"><table>
@@ -942,17 +977,16 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
     <tbody>
       <tr><td class="id">A</td><td>Per-pound actual prices for random-weight packs: <code>transaction_list</code> already returns <code>weight</code> on the backend branch, but without the company-4 divide-by-1,000 that <code>topitems</code> applies. Then the frontend prices those lines per pound and the notice goes.</td><td>Backend, then frontend</td></tr>
       <tr><td class="id">3, D, I</td><td><code>topitems</code> ranking by sales is on the backend branch and needs deploying, then the frontend asks for 200. A server-side price-point aggregate (D) and a vendor rollup (I) cut the downloads.</td><td>Backend, then frontend</td></tr>
-      <tr><td class="id">AJ</td><td>Scope <code>users/</code> to the caller, after a <code>parent_company_id</code> keeps the Houchens family together.</td><td>Backend, then frontend</td></tr>
       <tr><td class="id">P</td><td>Fam Pak Breast Tenders: are its Item Actions units whole numbers or pounds? That decides the fix.</td><td>One look</td></tr>
       <tr><td class="id">B</td><td>Tune the 3-day, 5-receipt minimum for "moves fastest" against real stores.</td><td>Steve / Tommy</td></tr>
       <tr><td class="id">F, AB, U, Z, AA</td><td>Board wording, Groups training card, Item Lookup on a phone, release notes for the Vendors Crit count and the Sub Dept Margins headline.</td><td>No code</td></tr>
     </tbody>
   </table></div>
-  <p class="callout">Two deploys before the next review run: the frontend, for everything in phases 1–7, and the backend branch, which phases 7–10 are built against. AN, AO and AP are off this list: the backend fixed AN and AO, and ticket email is on and works.</p>
+  <p class="callout">Two deploys before the next review run: the frontend, for everything in phases 1–8, and the backend branch, which phases 7–10 are built against. AN, AO and AP are off this list: the backend fixed AN and AO, and ticket email is on and works.</p>
 </section>
 
 <footer>
-  Verified for Phase 7: typecheck, 1,262 tests (11 new this phase), theme audit, eslint and a production build, all clean. Checked by tests, not in a browser, so the "how to check it" steps are yours to run.
+  Verified for Phase 8: typecheck, 1,265 tests (3 new this phase, the family tests rewritten), theme audit, eslint and a production build, all clean. Checked by tests, not in a browser, so the "how to check it" steps are yours to run.
 </footer>
 
 </div>

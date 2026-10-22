@@ -51,12 +51,11 @@ const CompanyUsersPanel = ({
    *  empty means no narrowing. See `companyOptions`. */
   const [heldFilter, setHeldFilter] = useState("");
 
-  /** Everything the viewer administers through: their own companies, plus the
-   *  rest of any family one of them belongs to. `UserCompany.company` is the
-   *  company id; `.id` is the link row, and the one easy to grab by mistake. */
+  /** The families the viewer administers through, read from each of their
+   *  companies' `parent_company_id`. */
   const reach = useMemo(
-    () => companyReach(ctx.ownCompanies.map((c) => c.id)),
-    [ctx.ownCompanies],
+    () => companyReach(ctx.ownMemberships),
+    [ctx.ownMemberships],
   );
 
   /**
@@ -73,11 +72,7 @@ const CompanyUsersPanel = ({
       users.filter(
         (u) =>
           u.user_level <= ctx.userLevel &&
-          canAdministerUser(
-            (u.companies ?? []).map((c) => c.company),
-            reach,
-            ctx.canSeeAllCompanies,
-          ),
+          canAdministerUser(u.companies ?? [], reach, ctx.canSeeAllCompanies),
       ),
     [users, ctx.userLevel, reach, ctx.canSeeAllCompanies],
   );

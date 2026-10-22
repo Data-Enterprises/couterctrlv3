@@ -2,11 +2,13 @@ import { describe, it, expect } from "vitest";
 import {
   canAdministerUser,
   companyReach,
+  familyOf,
   companiesWithHeldGroups,
   heldGroupIds,
   seesEverything,
   visibleCompanyList,
   visibleGroups,
+  type CompanyRef,
 } from "./scoping";
 import type { BaseGroup } from "../../../interfaces";
 
@@ -121,41 +123,75 @@ const ACE = 17;
 const BT = 20;
 const BROOKS = 21;
 
+/**
+ * The companies as RDS holds them since 22 Oct: Food Giant, Sonic, Ace and
+ * Brooks point at Houchens; everyone else has no parent.
+ */
+const PARENT: Record<number, number> = {
+  [FOOD_GIANT]: HOUCHENS,
+  [SONIC]: HOUCHENS,
+  [ACE]: HOUCHENS,
+  [BROOKS]: HOUCHENS,
+};
+const co = (id: number): CompanyRef => ({
+  company: id,
+  parent_company_id: PARENT[id] ?? null,
+});
+const cos = (...ids: number[]) => ids.map(co);
+const HOUCHENS_FIVE = [HOUCHENS, FOOD_GIANT, SONIC, ACE, BROOKS];
+
+describe("familyOf", () => {
+  it("is the parent for a company that has one, its own id otherwise", () => {
+    expect(familyOf(co(FOOD_GIANT))).toBe(HOUCHENS);
+    expect(familyOf(co(HOUCHENS))).toBe(HOUCHENS);
+    expect(familyOf(co(BRUCES))).toBe(BRUCES);
+  });
+
+  it("reads a company with no parent_company_id at all as standing alone", () => {
+    // An API without the change. Narrower than the family, never wider.
+    expect(familyOf({ company: FOOD_GIANT })).toBe(FOOD_GIANT);
+  });
+});
+
 describe("companyReach", () => {
+  const reaches = (viewer: number[], candidate: number) =>
+    canAdministerUser([co(candidate)], companyReach(cos(...viewer)), false);
+
   it("gives a standalone company only itself", () => {
-    expect([...companyReach([BRUCES])]).toEqual([BRUCES]);
-    expect([...companyReach([BT])]).toEqual([BT]);
+    expect(reaches([BRUCES], BRUCES)).toBe(true);
+    expect(reaches([BT], BT)).toBe(true);
+    expect(reaches([BT], BRUCES)).toBe(false);
   });
 
   it("opens the whole family to anyone holding one of it", () => {
     // Food Giant is a Houchens company, so its manager administers Sonic's
     // people too -- one organisation, five rows on the books.
-    const reach = companyReach([FOOD_GIANT]);
-    [HOUCHENS, FOOD_GIANT, SONIC, ACE, BROOKS].forEach((id) =>
-      expect(reach.has(id)).toBe(true),
-    );
+    HOUCHENS_FIVE.forEach((id) => expect(reaches([FOOD_GIANT], id)).toBe(true));
   });
 
   it("does not leak the family to a neighbour", () => {
-    const reach = companyReach([BRUCES]);
-    [HOUCHENS, FOOD_GIANT, SONIC, ACE, BROOKS].forEach((id) =>
-      expect(reach.has(id)).toBe(false),
-    );
+    HOUCHENS_FIVE.forEach((id) => expect(reaches([BRUCES], id)).toBe(false));
   });
 
   it("leaves DCR out of the family", () => {
     // DCR sits beside these ids in the Orders edit gate, which is Houchens
     // plus ourselves. Different question, coincidentally similar list. DCR
     // staff reach everyone through seesEverything instead.
-    expect(companyReach([DCR]).has(HOUCHENS)).toBe(false);
-    expect(companyReach([HOUCHENS]).has(DCR)).toBe(false);
+    expect(reaches([DCR], HOUCHENS)).toBe(false);
+    expect(reaches([HOUCHENS], DCR)).toBe(false);
   });
 
   it("adds up across several companies held at once", () => {
-    const reach = companyReach([BRUCES, SONIC]);
-    expect(reach.has(BRUCES)).toBe(true);
-    expect(reach.has(ACE)).toBe(true);
-    expect(reach.has(BT)).toBe(false);
+    expect(reaches([BRUCES, SONIC], BRUCES)).toBe(true);
+    expect(reaches([BRUCES, SONIC], ACE)).toBe(true);
+    expect(reaches([BRUCES, SONIC], BT)).toBe(false);
+  });
+
+  it("takes in a new family member with no code change", () => {
+    // What the hardcoded list could not do: a sixth Houchens company is
+    // reachable the moment its record points at Houchens.
+    const sixth: CompanyRef = { company: 99, parent_company_id: HOUCHENS };
+    expect(canAdministerUser([sixth], companyReach(cos(SONIC)), false)).toBe(true);
   });
 
   it("is empty for somebody holding nothing", () => {
@@ -164,51 +200,51 @@ describe("companyReach", () => {
 });
 
 describe("canAdministerUser", () => {
-  const bruces = companyReach([BRUCES]);
-  const houchens = companyReach([HOUCHENS]);
+  const bruces = companyReach(cos(BRUCES));
+  const houchens = companyReach(cos(HOUCHENS));
 
   it("keeps a manager out of another company's people", () => {
     // The report that started this: a Bruces manager was offered Houchens
     // staff in the candidate column, and assign_user_to_company takes a bare
     // userid, so the button would have worked.
-    expect(canAdministerUser([HOUCHENS], bruces, false)).toBe(false);
-    expect(canAdministerUser([BT], bruces, false)).toBe(false);
-    expect(canAdministerUser([SC_FOODS], bruces, false)).toBe(false);
+    expect(canAdministerUser(cos(HOUCHENS), bruces, false)).toBe(false);
+    expect(canAdministerUser(cos(BT), bruces, false)).toBe(false);
+    expect(canAdministerUser(cos(SC_FOODS), bruces, false)).toBe(false);
   });
 
   it("lets a manager administer their own", () => {
-    expect(canAdministerUser([BRUCES], bruces, false)).toBe(true);
+    expect(canAdministerUser(cos(BRUCES), bruces, false)).toBe(true);
   });
 
   it("lets a Houchens manager administer across the five", () => {
-    [HOUCHENS, FOOD_GIANT, SONIC, ACE, BROOKS].forEach((id) =>
-      expect(canAdministerUser([id], houchens, false)).toBe(true),
+    HOUCHENS_FIVE.forEach((id) =>
+      expect(canAdministerUser(cos(id), houchens, false)).toBe(true),
     );
-    expect(canAdministerUser([BRUCES], houchens, false)).toBe(false);
-    expect(canAdministerUser([GROCERY_BASKET], houchens, false)).toBe(false);
+    expect(canAdministerUser(cos(BRUCES), houchens, false)).toBe(false);
+    expect(canAdministerUser(cos(GROCERY_BASKET), houchens, false)).toBe(false);
   });
 
   it("offers somebody who holds nothing to anyone", () => {
     // A new account belongs to nobody, and putting it somewhere is the whole
     // of onboarding. Nothing is taken from anyone when it moves.
     expect(canAdministerUser([], bruces, false)).toBe(true);
-    expect(canAdministerUser([], companyReach([BT]), false)).toBe(true);
+    expect(canAdministerUser([], companyReach(cos(BT)), false)).toBe(true);
   });
 
   it("needs only one company in common", () => {
     // Somebody in two companies, one of them shared. Overlap is enough: the
     // viewer already administers them somewhere.
-    expect(canAdministerUser([BT, BRUCES], bruces, false)).toBe(true);
+    expect(canAdministerUser(cos(BT, BRUCES), bruces, false)).toBe(true);
   });
 
   it("does not let holding nothing stand in for seeing everything", () => {
     const nothing = companyReach([]);
-    expect(canAdministerUser([BRUCES], nothing, false)).toBe(false);
+    expect(canAdministerUser(cos(BRUCES), nothing, false)).toBe(false);
     expect(canAdministerUser([], nothing, false)).toBe(true);
   });
 
   it("gives a programmer or DCR support everyone", () => {
-    expect(canAdministerUser([HOUCHENS], bruces, true)).toBe(true);
-    expect(canAdministerUser([BT, ACE], companyReach([]), true)).toBe(true);
+    expect(canAdministerUser(cos(HOUCHENS), bruces, true)).toBe(true);
+    expect(canAdministerUser(cos(BT, ACE), companyReach([]), true)).toBe(true);
   });
 });

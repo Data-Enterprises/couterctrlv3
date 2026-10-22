@@ -18,44 +18,41 @@ export const seesEverything = (userLevel: number, email: string) =>
   userLevel === 9 || isSupportUser(email);
 
 /**
- * Companies that administer each other, because one owner holds them all.
+ * A company as a membership row carries it: its id, and what it belongs under.
  *
- * Houchens is five companies on the books -- Houchens (1), Food Giant (4),
- * Sonic (6), Ace (17) and Brooks (21) -- and one organisation in practice, so
- * somebody administering any of them administers the staff of all five.
- * Everybody else stands alone: Bruces Foodland (3), Grocery Basket (2), S&C
- * Foods (15) and B and T (20) each reach only their own people.
- *
- * DCR (5) is deliberately NOT here. It appears alongside these ids in the
- * Orders edit gate, which is Houchens plus ourselves -- a different question
- * with a coincidentally similar list. DCR staff reach everyone through
- * `seesEverything`, not through a family.
- *
- * A hardcoded list is the wrong long-term home for this, the same way an
- * email allowlist is the wrong home for support users: add a sixth Houchens
- * company and this file has to be edited before anybody can administer it,
- * and nothing will say so. It wants a `parent_company_id` on the company
- * record. Until there is one, this is the honest version -- one list, named,
- * in the file that already answers "who may administer what".
+ * `UserCompany` has both, on the signed-in user (from the sign-in response)
+ * and on every user `users/` returns.
  */
-export const COMPANY_FAMILIES: readonly (readonly number[])[] = [
-  [1, 4, 6, 17, 21],
-];
+export interface CompanyRef {
+  company: number;
+  parent_company_id?: number | null;
+}
 
 /**
- * Every company the viewer administers through, given what they hold.
+ * Which family a company is in: its parent's id, or its own when it has none.
  *
- * Their own, plus the rest of any family one of theirs belongs to. Holding
- * Food Giant reaches Sonic; holding Bruces reaches Bruces.
+ * The same rule the backend scopes `users/` by, `coalesce(parent_company_id,
+ * id)`. Houchens is five companies on the books -- Houchens (1), Food Giant
+ * (4), Sonic (6), Ace (17) and Brooks (21) -- and one organisation in
+ * practice: the other four point at 1, so all five are family 1. Everybody
+ * else stands alone. DCR (5) is not in it: DCR staff reach everyone through
+ * `seesEverything`, not through a family.
+ *
+ * This replaced a hardcoded `COMPANY_FAMILIES` list (22 Oct), which needed
+ * editing before anybody could administer a sixth Houchens company. A missing
+ * `parent_company_id` -- an API without the change -- reads as standing
+ * alone, which narrows rather than widens.
  */
-export const companyReach = (viewerCompanyIds: number[]): Set<number> => {
-  const reach = new Set(viewerCompanyIds);
-  COMPANY_FAMILIES.forEach((family) => {
-    if (viewerCompanyIds.some((id) => family.includes(id)))
-      family.forEach((id) => reach.add(id));
-  });
-  return reach;
-};
+export const familyOf = (c: CompanyRef): number => c.parent_company_id ?? c.company;
+
+/**
+ * The families the viewer administers through, given the companies they hold.
+ *
+ * Holding Food Giant reaches Sonic, because both are family 1; holding Bruces
+ * reaches Bruces.
+ */
+export const companyReach = (viewerCompanies: CompanyRef[]): Set<number> =>
+  new Set(viewerCompanies.map(familyOf));
 
 /**
  * Whether the signed-in user may administer this person at all.
@@ -74,8 +71,8 @@ export const companyReach = (viewerCompanyIds: number[]): Set<number> => {
  *  - **Holds no company.** A new account belongs to nobody yet, and putting it
  *    somewhere is the whole of onboarding. Nobody loses anything when it moves,
  *    which is what makes it safe for any manager to pick up.
- *  - **Is inside the viewer's reach.** Their own companies and any family
- *    those belong to -- see `companyReach`. Not the company on screen: one
+ *  - **Is inside the viewer's reach.** In a family one of the viewer's
+ *    companies is in -- see `companyReach`. Not the company on screen: one
  *    person can administer several, and a Houchens manager works across the
  *    five.
  *
@@ -88,13 +85,13 @@ export const companyReach = (viewerCompanyIds: number[]): Set<number> => {
  * definition -- the gate can only ever shorten the candidate list.
  */
 export const canAdministerUser = (
-  candidateCompanyIds: number[],
+  candidateCompanies: CompanyRef[],
   reach: Set<number>,
   canSeeAll: boolean,
 ): boolean => {
   if (canSeeAll) return true;
-  if (candidateCompanyIds.length === 0) return true;
-  return candidateCompanyIds.some((id) => reach.has(id));
+  if (candidateCompanies.length === 0) return true;
+  return candidateCompanies.some((c) => reach.has(familyOf(c)));
 };
 
 /**
