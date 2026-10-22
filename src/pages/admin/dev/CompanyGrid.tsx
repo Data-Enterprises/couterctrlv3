@@ -16,6 +16,7 @@ import TextFilter from "../../../components-dev/filters/TextFilter";
 import IconButton from "../../../components-dev/IconButton";
 import ConfirmModal from "../../../components-dev/ConfirmModal";
 import CompanyFormModal from "./CompanyFormModal";
+import type { CompanyRecord } from "./companyFamily";
 
 // Collapses the old separate Create/Update/Delete tabs into one grid with
 // icon actions — mirrors how Organization's UserGrid replaced legacy Team's
@@ -24,7 +25,15 @@ const CompanyGrid = () => {
   const toast = useToast();
   const context = useAdminPageCtx();
   const [search, setSearch] = useState("");
-  const [editingCompany, setEditingCompany] = useState<Company | null>(null);
+  const [editingCompany, setEditingCompany] = useState<CompanyRecord | null>(
+    null,
+  );
+  /** `get_companies` carries each company's parent since 22 Oct. */
+  const records = context.companies as CompanyRecord[];
+  const nameOf = useMemo(
+    () => new Map(records.map((c) => [c.id, c.name])),
+    [records],
+  );
   const [creating, setCreating] = useState(false);
   const [deletingCompany, setDeletingCompany] = useState<Company | null>(null);
 
@@ -81,13 +90,16 @@ const CompanyGrid = () => {
     return true;
   };
 
-  const handleCreate = (form: Company) => {
+  const handleCreate = (form: Company, parent: number | null) => {
     // Read before the create, so what appears after it can be told apart.
     const before = new Set(context.companies.map((c) => c.id));
-    createCompany(context.url, context.token, form)
+    createCompany(context.url, context.token, form, parent)
       .then(async (resp) => {
         const j = resp.data;
-        if (j.error !== 0) return;
+        if (j.error !== 0) {
+          toast.error(j.msg ?? "The company was not created");
+          return;
+        }
         setCreating(false);
         context.dispatch(setRefresh(true));
         const claimed = await claimNewCompany(before, form.name).catch(
@@ -99,20 +111,28 @@ const CompanyGrid = () => {
             : "Company created — assign it to yourself in User Management",
         );
       })
-      .catch((err: JsonError) => toast.error(err.message));
+      .catch((err: JsonError & { response?: { data?: { detail?: string } } }) =>
+        toast.error(err.response?.data?.detail ?? err.message),
+      );
   };
 
-  const handleUpdate = (form: Company) => {
-    updateCompany(context.url, context.token, form)
+  const handleUpdate = (form: Company, parent: number | null) => {
+    updateCompany(context.url, context.token, form, parent)
       .then((resp) => {
         const j = resp.data;
         if (j.error === 0) {
           toast.success("Company updated successfully");
           setEditingCompany(null);
           context.dispatch(setRefresh(true));
+        } else {
+          toast.error(j.msg ?? "The company was not updated");
         }
       })
-      .catch((err: JsonError) => toast.error(err.message));
+      // The backend refuses a parent that would make a family two deep; its
+      // reason is in `detail`.
+      .catch((err: JsonError & { response?: { data?: { detail?: string } } }) =>
+        toast.error(err.response?.data?.detail ?? err.message),
+      );
   };
 
   const handleDeleteConfirm = () => {
@@ -162,7 +182,17 @@ const CompanyGrid = () => {
               key={c.id}
               className="grid grid-cols-[22%_18%_10%_16%_24%_10%] px-3 py-2 text-[12px] items-center text-content even:bg-row_stripe hover:bg-gray-50"
             >
-              <div className="truncate">{c.name}</div>
+              <div className="truncate">
+                {c.name}
+                {(c as CompanyRecord).parent_company_id ? (
+                  <span className="text-[10.5px] text-content/85">
+                    {" "}
+                    · under{" "}
+                    {nameOf.get((c as CompanyRecord).parent_company_id!) ??
+                      `#${(c as CompanyRecord).parent_company_id}`}
+                  </span>
+                ) : null}
+              </div>
               <div className="truncate">{c.city}</div>
               <div className="truncate">{c.state}</div>
               <div className="truncate">{c.phone}</div>
@@ -194,6 +224,7 @@ const CompanyGrid = () => {
         <CompanyFormModal
           initial={editingCompany}
           existingNames={context.companies.map((c) => c.name)}
+          companies={records}
           onSave={editingCompany ? handleUpdate : handleCreate}
           onClose={() => {
             setCreating(false);
