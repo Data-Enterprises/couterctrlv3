@@ -128,11 +128,11 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
   <div class="lead">
     <div class="eyebrow">CounterCtrl dev &middot; Response to the re-check</div>
     <h1>Response to the 23 Oct re-check</h1>
-    <p class="sub">Four of the five new findings we are taking, one we would fix differently from how it reads, and P and O are now answered from the rows &mdash; the margin on that chicken is the real one. Plus two issues Wayne raised separately. <b>Every finding is now closed</b> except AW, which is a scheduling call rather than a fix.</p>
+    <p class="sub">Four of the five new findings we are taking, one we would fix differently from how it reads, and P and O are now answered from the rows &mdash; the margin on that chicken is the real one. Plus two issues Wayne raised separately. <b>Every finding is closed</b> &mdash; fixed in code or decided, with nothing waiting on either side.</p>
   </div>
   <div class="status">
     <span><b>All phases done</b> &middot; AS, AT, AU, AV, D, G and 5a fixed</span>
-    <span>2 of Wayne&rsquo;s fixed &middot; <b>P and O</b> closed, no code change &middot; <b>D</b> closed with the backend &middot; only <b>AW</b> is left</span>
+    <span>2 of Wayne&rsquo;s fixed &middot; <b>P and O</b> closed, no code change &middot; <b>D</b> closed with the backend &middot; <b>AW</b> decided</span>
   </div>
 </header>
 
@@ -289,7 +289,7 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
       <tr><td class="tags">3</td><td><b>Done</b> &mdash; Price Opt&rsquo;s two counts <span class="commit">d7eb5c45</span></td><td class="tags">AT, G</td><td>&mdash;</td><td>&mdash;</td></tr>
       <tr><td class="tags">4</td><td><b>Done</b> &mdash; hash flag across four more pages <span class="commit">8ee9b005</span></td><td class="tags">&mdash;</td><td>&mdash;</td><td>&mdash;</td></tr>
       <tr><td class="tags">5</td><td><b>Done</b> &mdash; the Categories pill names its base <span class="commit">2779e4b2</span></td><td class="tags">5a</td><td>&mdash;</td><td>&mdash;</td></tr>
-      <tr class="total"><td class="tags">6</td><td>Backend &mdash; <b>D done</b> <span class="commit">fc0daa04</span>, AW outstanding</td><td class="tags">AW, D</td><td>&mdash;</td><td><b>Decisions 4&ndash;5</b></td></tr>
+      <tr class="total"><td class="tags">6</td><td>Backend &mdash; <b>D done</b> <span class="commit">fc0daa04</span>, <b>AW decided no</b></td><td class="tags">AW, D</td><td>&mdash;</td><td><b>Decisions 4&ndash;5</b></td></tr>
     </tbody>
   </table></div>
 
@@ -329,7 +329,7 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
   <p><b>P</b> and <b>O</b> closed with no code change once the rows came in, and <b>B</b>&rsquo;s two constants stay as they are by decision 2. <b>5a</b> is done: the pill now names the base it compared, so the figure cannot be back-solved into a last-week total the page never used.</p>
 
   <h3>Phase 6 &middot; Backend <span class="chip review">not ours</span></h3>
-  <p><b>D</b>&rsquo;s multi-price receipt count landed the same day it was specced and is closed above <span class="commit">fc0daa04</span>. <b>AW</b>&rsquo;s server-side aggregate is the only thing left, and it is a scheduling call rather than a fix.</p>
+  <p>Both are settled. <b>D</b>&rsquo;s multi-price receipt count landed the same day it was specced and is closed above <span class="commit">fc0daa04</span>. <b>AW</b>&rsquo;s server-side aggregate is a <b>no</b> by decision 4 &mdash; those are item rows the pages use, and the group multiplication that would have made the size matter cannot happen, because both pages hardcode a single store. Nothing here is waiting on anybody.</p>
 </section>
 
 <section class="block" aria-labelledby="dec-h">
