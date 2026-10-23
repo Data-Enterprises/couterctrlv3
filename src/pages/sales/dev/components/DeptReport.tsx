@@ -663,8 +663,9 @@ const DeptReport = ({
     (state) => state.dev.salesCache.counterpart[cacheKey],
   );
   const [failed, setFailed] = useState(false);
-  /** The department the panel is showing, by id. */
-  const [picked, setPicked] = useState<number | null>(null);
+  /** The department the panel is showing, by its matched key — not by a
+   *  store's own number, which means different things at each store. */
+  const [picked, setPicked] = useState<string | null>(null);
 
   useEffect(() => {
     if (theirs) return;
@@ -736,7 +737,7 @@ const DeptReport = ({
         compareStoreid: compareStoreId,
         compareStoreNumber,
         compareStoreName,
-        subDept: row.id,
+        subDept: row.mineId ?? 0,
         subDeptName: row.name,
         focus: row.chain.focus,
       }),
@@ -757,7 +758,18 @@ const DeptReport = ({
     );
   }
 
-  const { shown, folded, underTotal, overTotal, over, netGap } = report;
+  const {
+    shown,
+    folded,
+    underTotal,
+    overTotal,
+    over,
+    netGap,
+    onlyMine,
+    onlyTheirs,
+    onlyMineTotal,
+    onlyTheirsTotal,
+  } = report;
 
   /**
    * Every department, worst first.
@@ -771,7 +783,7 @@ const DeptReport = ({
 
   /** The first row until somebody picks another, so the panel is never
    *  empty and never opens on a department nobody chose. */
-  const selected = rows.find((r) => r.id === picked) ?? rows[0] ?? null;
+  const selected = rows.find((r) => r.key === picked) ?? rows[0] ?? null;
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
@@ -872,6 +884,44 @@ const DeptReport = ({
             )}
           </>
         )}
+
+        {/* What neither pile can hold.
+            A department only one store carries has no counterpart to be
+            behind, so it is not in the bar above -- but its money is real and
+            it is most of why the two stores differ at all. Naming it here
+            keeps the three parts adding up: the bar, this, and the headline. */}
+        {(onlyMine.length > 0 || onlyTheirs.length > 0) && (
+          <div className="mt-1.5 text-[11.5px] text-content/85 leading-snug">
+            Not compared &mdash; departments only one store carries:{" "}
+            {onlyMine.length > 0 && (
+              <>
+                <span className="font-semibold">{onlyMine.length}</span> only
+                here worth{" "}
+                <span className="font-bold tabular-nums text-delta_positive_text">
+                  {money(onlyMineTotal)}
+                </span>
+              </>
+            )}
+            {onlyMine.length > 0 && onlyTheirs.length > 0 && <> &middot; </>}
+            {onlyTheirs.length > 0 && (
+              <>
+                <span className="font-semibold">{onlyTheirs.length}</span> only
+                at {compareStoreName} worth{" "}
+                <span className="font-bold tabular-nums text-delta_negative_text">
+                  {money(onlyTheirsTotal)}
+                </span>
+              </>
+            )}
+            .{" "}
+            <span className="text-content/70">
+              {onlyTheirs
+                .slice(0, 3)
+                .map((r) => r.name)
+                .join(", ")}
+              {onlyTheirs.length > 3 ? " and others" : ""}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* The same two panels the single-store tab uses: a list to scan, and
@@ -897,10 +947,10 @@ const DeptReport = ({
           <div className="flex-1 min-h-0 overflow-auto thin-scrollbar">
             {rows.map((r) => (
               <ListRow
-                key={r.id}
+                key={r.key}
                 row={r}
-                selected={selected?.id === r.id}
-                onSelect={() => setPicked(r.id)}
+                selected={selected?.key === r.key}
+                onSelect={() => setPicked(r.key)}
               />
             ))}
           </div>
