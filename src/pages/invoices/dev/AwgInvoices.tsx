@@ -12,7 +12,7 @@ import ComingSoonHelp from "../../../components-dev/ComingSoonHelp";
 import {
   clearInvoiceEdits,
   editInvoiceField,
-  applySuggestedCorrections,
+  toggleSuggestedCorrections,
   revertInvoiceField,
   setInvoiceExpanded,
   setInvoiceFailedOnly,
@@ -126,6 +126,14 @@ const AwgInvoices = () => {
 
   const suggestedApplied = useMemo(
     () => edits.some((edit) => edit.kind === "suggested"),
+    [edits],
+  );
+
+  /** Corrections somebody typed, as against the suggested ones. Only these
+   *  are worth an "undo everything" — the suggested set has its own toggle,
+   *  and offering both made two controls for one state. */
+  const handEditCount = useMemo(
+    () => edits.filter((edit) => edit.kind !== "suggested").length,
     [edits],
   );
 
@@ -446,33 +454,38 @@ const AwgInvoices = () => {
             {/* Everything computed rather than read — retail by weight,
                 split runs, per-pound cost and deals — waits behind this, so
                 the page shows the file as it is until asked. */}
+            {/* One pill, two states, like the two beside it. It used to be
+                a button that greyed out once pressed and read "Suggested
+                corrections applied" — a sentence where its neighbours have a
+                name — with "Undo all corrections" appearing next to it as
+                the only way back. Two controls for one piece of state, and
+                the way back also threw away every figure typed by hand. */}
             <button
               type="button"
-              onClick={() => dispatch(applySuggestedCorrections())}
-              disabled={suggestedApplied}
-              title={
-                suggestedApplied
-                  ? "Suggested corrections are applied — Undo all corrections takes them back"
-                  : "Recompute retail, cost and allowances the way AWG builds its totals: split repeated random-weight retail, price random-weight lines by weight, use the multi-buy formula, cost and discount random-weight lines per pound, and round once"
-              }
+              onClick={() => dispatch(toggleSuggestedCorrections())}
+              aria-pressed={suggestedApplied}
+              title="Recompute retail, cost and allowances the way AWG builds its totals: split repeated random-weight retail, price random-weight lines by weight, use the multi-buy formula, cost and discount random-weight lines per pound, and round once"
               className={`flex-none rounded-full border px-3 py-1.5 text-[11px] font-medium ${
                 suggestedApplied
-                  ? "border-gray-200 bg-bkg text-content/85"
-                  : "border-brand_navy bg-custom-white text-brand_navy hover:bg-bkg"
+                  ? "border-brand_navy bg-brand_navy text-custom-white"
+                  : "border-gray-200 bg-custom-white text-content/85"
               }`}
             >
-              {suggestedApplied
-                ? "Suggested corrections applied"
-                : "Apply suggested corrections"}
+              Suggested corrections
             </button>
 
-            {edits.length > 0 && (
+            {/* Only for corrections somebody typed. It appeared whenever any
+                edit existed, so turning the suggestions on summoned an
+                "undo everything" for a state that now has its own switch. */}
+            {handEditCount > 0 && (
               <button
                 type="button"
                 onClick={() => dispatch(clearInvoiceEdits())}
+                title="Discard every figure typed by hand on this file"
                 className="flex-none rounded-full border border-gray-200 bg-custom-white px-3 py-1.5 text-[11px] font-medium text-content/85 hover:bg-bkg"
               >
-                Undo all corrections
+                Undo {handEditCount}{" "}
+                {handEditCount === 1 ? "correction" : "corrections"}
               </button>
             )}
 

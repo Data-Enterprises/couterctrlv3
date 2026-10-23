@@ -165,14 +165,25 @@ const invoicesSlice = createSlice({
 
     /** Every suggested correction, across the whole file, as one entry —
      *  undone with the rest. Applying twice is a no-op. */
-    applySuggestedCorrections: (state) => {
-      if (state.edits.some((edit) => edit.kind === "suggested")) return;
-      state.edits.push({
-        docId: ALL_INVOICES,
-        kind: "suggested",
-        field: "",
-        value: "",
-      });
+    /**
+     * Suggested corrections on or off.
+     *
+     * It only went on before, and taking it back meant "Undo all
+     * corrections" — which also threw away every figure the user had typed
+     * by hand. Two different intentions on one button.
+     */
+    toggleSuggestedCorrections: (state) => {
+      const at = state.edits.findIndex((edit) => edit.kind === "suggested");
+      if (at >= 0) {
+        state.edits.splice(at, 1);
+      } else {
+        state.edits.push({
+          docId: ALL_INVOICES,
+          kind: "suggested",
+          field: "",
+          value: "",
+        });
+      }
       state.sentAt = null;
     },
 
@@ -232,7 +243,7 @@ export const {
   setInvoicesFile,
   editInvoiceField,
   revertInvoiceField,
-  applySuggestedCorrections,
+  toggleSuggestedCorrections,
   clearInvoiceEdits,
   setInvoiceExpanded,
   setInvoiceFailedOnly,
