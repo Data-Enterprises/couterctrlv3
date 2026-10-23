@@ -24,11 +24,7 @@ import {
   fetchCatItemPeriods,
   fetchHourlyPeriods,
 } from "./categoriesData";
-import {
-  buildCategoryRows,
-  countedCatRows,
-  scopePeriods,
-} from "./categoriesUtils";
+import { buildCategoryRows, scopePeriods } from "./categoriesUtils";
 
 /**
  * Every fetch the Categories page makes, in one place: the week search, the
@@ -108,14 +104,7 @@ export const useCategoryData = () => {
       // Raw stays whole, so switching location is a rebuild rather than
       // another ten pages per period.
       dispatch(setRaw({ raw: { tw, lw, ly }, twDates }));
-      const scoped = scopePeriods(
-        {
-          tw: countedCatRows(tw),
-          lw: countedCatRows(lw),
-          ly: countedCatRows(ly),
-        },
-        landing,
-      );
+      const scoped = scopePeriods({ tw, lw, ly }, landing);
       const rows = buildCategoryRows(scoped.tw, scoped.lw, scoped.ly, twDates);
       dispatch(setRows(rows));
 

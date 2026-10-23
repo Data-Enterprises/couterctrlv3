@@ -203,7 +203,7 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
     <div class="find-head"><span class="find-tag">AV</span><h3>The &ldquo;Both&rdquo; tab keeps 369 in the header</h3>
       <div class="verdict"><span class="chip ok">Fixed</span> <span class="commit">81fa1f3e</span></div></div>
     <p>Our bug exactly. The header rewrites the store name to whichever location is selected, and on <b>Both</b> nothing is selected, so it falls through to the stored name &mdash; which has 369 baked into it. The figure is the pair; the name is one of them.</p>
-    <div class="do"><b>Done.</b> &ldquo;Bruces Foodland 369 + 370&rdquo; on the combined view, your wording. It swaps the embedded number rather than appending, so the rest of the name survives &mdash; &ldquo;Foodland 369 (Hwy 431)&rdquo; becomes &ldquo;Foodland 369 + 370 (Hwy 431)&rdquo;. Categories, Vendors and Sub Dept Margins share the helper, in both trees.</div>
+    <div class="do"><b>Done.</b> &ldquo;Bruces Foodland 369 + 370&rdquo; on the combined view, your wording. It swaps the embedded number rather than appending, so the rest of the name survives &mdash; &ldquo;Foodland 369 (Hwy 431)&rdquo; becomes &ldquo;Foodland 369 + 370 (Hwy 431)&rdquo;. Categories, Vendors and Sub Dept Margins share the helper.</div>
     <div class="verify">
       <h4>How to check it</h4>
       <ol>
@@ -377,7 +377,8 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
 </section>
 
 <footer>
-  <span>Responds to <span class="mono">recheck-reply-2026-10-23</span>, and to two issues Wayne raised separately. Commits named here are on <span class="mono">master_publish</span> except the store comparison set, which is committed and not yet merged.</span>
+  <span>Responds to <span class="mono">recheck-reply-2026-10-23</span>, and to two issues Wayne raised separately. Every commit named here is on <span class="mono">price_opt_weight_labels</span>, committed and not yet merged &mdash; so none of it is in a deployed build yet.</span>
+  <span><b>All of it is in the DEV tree only.</b> The prod UI is deliberately untouched &mdash; this round is about getting dev ready to move over, so check these in DEV mode.</span>
   <span>Verified by typecheck, the full test suite, the theme audit and a production build. Not verified in a browser &mdash; that is what your runs are for.</span>
 </footer>
 

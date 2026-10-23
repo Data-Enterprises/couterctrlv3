@@ -1,5 +1,3 @@
-import { countedRows } from "../../../../../utils/hashSubs";
-import { storeMarginDelta } from "../../../../../utils/storeMarginDelta";
 import InfoButton from "../../../../../components/InfoButton";
 import { useRef, useState } from "react";
 import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
@@ -7,15 +5,13 @@ import { useAppDispatch, useAppSelector } from "../../../../../hooks";
 import { useSubMarginCtx } from "../../hooks";
 import { formatDate } from "../widgets";
 import { formatCurrency2, formatCurrencyCompact } from "../../../../../utils";
-import {
-  applyStoreNumberToName,
-  combinedStoreName,
-} from "../../../../../utils/storeIdentity";
+import { applyStoreNumberToName } from "../../../../../utils/storeIdentity";
 import { setDates } from "../../../../../utils/dates";
 import {
   getTier,
   getGradeDelta,
   storeMarginPctOf,
+  storeMarginDeltaOf,
 } from "../..";
 import {
   setGradingThreshold,
@@ -121,11 +117,12 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: Props) => {
   // both pages label these stores identically.
   const rawStoreName = ctx.assignedStores.find((s) => s.storeid === ctx.searchValue)?.store_name ?? "";
   const storeName = selectedStoreNumber
-    ? applyStoreNumberToName(rawStoreName, selectedStoreNumber, availableStoreNumbers)
-    // The combined tab is both locations, so it says both. The stored name
-    // carries one of the two numbers and would otherwise head the pair's
-    // total with one store's number.
-    : combinedStoreName(rawStoreName, availableStoreNumbers);
+    ? applyStoreNumberToName(
+        rawStoreName,
+        selectedStoreNumber,
+        availableStoreNumbers,
+      )
+    : rawStoreName;
 
   const periodEnd = ctx.singleDate ? formatDate(setDates(new Date(ctx.singleDate), 0)) : "";
   const periodStart = ctx.singleDate ? formatDate(setDates(new Date(ctx.singleDate), 6)) : "";
@@ -172,35 +169,9 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: Props) => {
    * `subs/subs` rows, so one had to be wrong, and it was this one. The rule
    * lives in the page helpers now, where it is under test.
    */
-  /**
-   * The store header counts what the store counts.
-   *
-   * Fuel, lottery and cash accounts are in `subs/subs` on purpose -- the
-   * list below should show a store its own fuel -- and `sales/weekly` leaves
-   * them out. This header sits beside those store figures, so a margin built
-   * over every department describes a different store from the one named
-   * above it. The LIST is untouched: a department is still listed, graded and
-   * drillable, it just does not move the store's own number.
-   */
-  const counted = grades.filter(
-    (g) => countedRows(g.grade.tyWeekOneMargins).length > 0,
-  );
-  const dollars = counted.map((g) => g.grade.dollars);
-  /**
-   * Every row the store rang, for the header's own day matching.
-   *
-   * The deltas below used to sum each DEPARTMENT's matched days. Vendors sums
-   * each VENDOR's. A Tuesday one vendor missed is still a Tuesday its
-   * department worked, so the two headers landed 0.03 points apart on an
-   * identical week. The store figure matches days once, over everything.
-   */
-  const storeRows = {
-    tw: countedRows(grades.flatMap((g) => g.grade.tyWeekOneMargins)),
-    lw: countedRows(grades.flatMap((g) => g.grade.lwWeekOneMargins)),
-    ly: countedRows(grades.flatMap((g) => g.grade.lyWeekOneMargins)),
-  };
+  const dollars = grades.map((g) => g.grade.dollars);
   const storeMarginPct = storeMarginPctOf(dollars);
-  const storeLyDelta = storeMarginDelta(storeRows.tw, storeRows.ly, "ly");
+  const storeLyDelta = storeMarginDeltaOf(dollars, "ly");
   // Store-level figures come from sales/weekly (day-matched), matching the
   // Sales page header exactly. Summing the sub-dept grades is a different
   // quantity — it also compared a partial TY week against a full LW one — so
@@ -222,7 +193,7 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: Props) => {
     storeSalesTotals && storeSalesTotals.lwSales > 0
       ? storeSalesTotals.vsLWSalesPct
       : totalLwSales > 0 ? ((totalTySales - totalLwSales) / totalLwSales) * 100 : null;
-  const storeLwDelta = storeMarginDelta(storeRows.tw, storeRows.lw, "lw");
+  const storeLwDelta = storeMarginDeltaOf(dollars, "lw");
 
   const threshValue = rawGradingThreshold === null ? null : { op: "gt" as const, amount: rawGradingThreshold };
 
