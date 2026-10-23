@@ -1,0 +1,384 @@
+<title>Re-check Response</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:wght@500;600&display=swap">
+<style>
+/* Companion to recheck-reply-2026-10-23. Same tokens and reading column as the
+   issue drafts, the board review and both earlier dev responses. */
+:root{
+  --ground:#f5f8fb; --paper:#ffffff; --paper-2:#eef3f8;
+  --head:#08203f; --ink:#0c1a2e; --body:#3d5372; --muted:#6b809d; --faint:#93a5bd;
+  --line:#d9e2ed; --line-2:#e9eef5;
+  --accent:#0b4f9e; --accent-soft:#e8f0fb; --accent-bd:#c2d8f2;
+  --ok:#166b45; --ok-bg:#e7f4ed; --ok-bd:#bfe0cd;
+  --warn:#8a5806; --warn-bg:#fdf3e2; --warn-bd:#eed9b0;
+  --stop:#a3231c; --stop-bg:#fcecea; --stop-bd:#f0c8c5;
+  --code-bg:#0f2138; --code-fg:#dbe7f6; --code-key:#9cc4f5; --code-dim:#8ea3bf;
+  --shadow:rgba(8,32,63,.08);
+  --f-display:"IBM Plex Serif",Georgia,serif;
+  --f-body:"IBM Plex Sans",-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#070f1c; --paper:#0e1b2d; --paper-2:#13243a;
+    --head:#eaf1fb; --ink:#dfe8f5; --body:#b0c2da; --muted:#8b9fbb; --faint:#71859f;
+    --line:#1e3350; --line-2:#182a44;
+    --accent:#5aa2f0; --accent-soft:#12294a; --accent-bd:#25446e;
+    --ok:#6fce9f; --ok-bg:#0f2a1e; --ok-bd:#255c40;
+    --warn:#e8b45f; --warn-bg:#2a2010; --warn-bd:#5c4519;
+    --stop:#f08a82; --stop-bg:#2c1512; --stop-bd:#5f2b26;
+    --code-bg:#050c17; --code-fg:#d3e1f3; --code-key:#7fb6f2; --code-dim:#6f86a6;
+    --shadow:rgba(0,0,0,.5);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#070f1c; --paper:#0e1b2d; --paper-2:#13243a;
+  --head:#eaf1fb; --ink:#dfe8f5; --body:#b0c2da; --muted:#8b9fbb; --faint:#71859f;
+  --line:#1e3350; --line-2:#182a44;
+  --accent:#5aa2f0; --accent-soft:#12294a; --accent-bd:#25446e;
+  --ok:#6fce9f; --ok-bg:#0f2a1e; --ok-bd:#255c40;
+  --warn:#e8b45f; --warn-bg:#2a2010; --warn-bd:#5c4519;
+  --stop:#f08a82; --stop-bg:#2c1512; --stop-bd:#5f2b26;
+  --code-bg:#050c17; --code-fg:#d3e1f3; --code-key:#7fb6f2; --code-dim:#6f86a6;
+  --shadow:rgba(0,0,0,.5);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--body);font-family:var(--f-body);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1040px;margin:0 auto;padding-block:28px 72px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:28px}
+h1,h2,h3{font-family:var(--f-display);color:var(--head);text-wrap:balance;margin:0;font-weight:600}
+h1{font-size:30px;line-height:1.15;letter-spacing:-.01em}
+h2{font-size:21px;line-height:1.25}
+h3{font-size:16px}
+p{margin:0;max-width:76ch}
+b{color:var(--ink);font-weight:600}
+a{color:var(--accent)}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.eyebrow{font-family:var(--f-mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted)}
+code{font-family:var(--f-mono);font-size:12.5px;background:var(--paper-2);border:1px solid var(--line-2);border-radius:4px;padding:1px 5px;color:var(--ink);overflow-wrap:anywhere}
+.note{font-size:13.5px;color:var(--muted)}
+.commit{font-family:var(--f-mono);font-size:12.5px;color:var(--ok);background:var(--ok-bg);border:1px solid var(--ok-bd);border-radius:4px;padding:1px 6px;white-space:nowrap}
+
+.masthead{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-end;justify-content:space-between;padding-bottom:18px;border-bottom:2px solid var(--head)}
+.masthead .lead{display:grid;gap:8px;min-width:0;flex:1 1 420px}
+.masthead .sub{color:var(--muted);font-size:14px;max-width:64ch}
+.status{display:grid;gap:4px;background:var(--paper);border:1px solid var(--accent-bd);border-radius:8px;padding:10px 14px;font-size:13px;max-width:36ch}
+.status b{color:var(--accent)}
+
+.block{display:grid;gap:12px;min-width:0}
+.chip{display:inline-block;font:600 11px/1 var(--f-mono);letter-spacing:.03em;padding:5px 8px;border-radius:999px;border:1px solid;white-space:nowrap}
+.chip.ok{color:var(--ok);background:var(--ok-bg);border-color:var(--ok-bd)}
+.chip.watch{color:var(--warn);background:var(--warn-bg);border-color:var(--warn-bd)}
+.chip.review{color:var(--accent);background:var(--accent-soft);border-color:var(--accent-bd)}
+.chip.ghost{color:var(--muted);background:var(--paper-2);border-color:var(--line)}
+.chip.stop{color:var(--stop);background:var(--stop-bg);border-color:var(--stop-bd)}
+
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--paper);min-width:0}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{padding:9px 12px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line-2)}
+tr:last-child td{border-bottom:0}
+th{font:600 10.5px/1.35 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:var(--paper-2)}
+td.tags{font-family:var(--f-mono);font-size:12.5px;color:var(--accent);white-space:nowrap}
+td.state{white-space:nowrap}
+tr.total td{background:var(--paper-2);font-weight:600;color:var(--ink)}
+
+.find{background:var(--paper);border:1px solid var(--line);border-radius:10px;box-shadow:0 1px 2px var(--shadow);padding:18px 20px 20px;display:grid;gap:12px;min-width:0;scroll-margin-top:16px}
+.find-head{display:grid;grid-template-columns:auto 1fr;gap:2px 14px;align-items:baseline}
+.find-tag{font:600 22px/1 var(--f-display);color:var(--accent);grid-row:span 2}
+.find-head .verdict{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13.5px;color:var(--muted)}
+.facts{display:grid;grid-template-columns:max-content 1fr;gap:6px 18px;font-size:13.5px;margin:0;padding:12px 14px;background:var(--paper-2);border-radius:8px}
+.facts dt{font:600 10.5px/1.7 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.facts dd{margin:0;color:var(--ink);min-width:0;overflow-wrap:anywhere}
+pre{margin:0;padding:11px 14px;background:var(--code-bg);color:var(--code-fg);font:12px/1.65 var(--f-mono);overflow-x:auto;white-space:pre;border-radius:8px;max-width:100%}
+pre .k{color:var(--code-key);font-weight:600}
+pre .c{color:var(--code-dim)}
+ol,ul{margin:0;padding-left:20px;display:grid;gap:5px}
+.callout{border-left:3px solid var(--accent);padding:2px 0 2px 12px;color:var(--ink)}
+.callout.warn{border-color:var(--warn)}
+.callout.ok{border-color:var(--ok)}
+.do{background:var(--ok-bg);border:1px solid var(--ok-bd);border-radius:8px;padding:11px 14px;font-size:13.5px;color:var(--ink)}
+.do b{color:var(--ok)}
+.verify{border:1px solid var(--ok-bd);border-radius:8px;background:var(--ok-bg);padding:11px 14px;display:grid;gap:6px}
+.verify h4{margin:0;font:600 10.5px/1.4 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ok)}
+.verify ol{padding-left:18px;gap:3px}
+.verify,.verify li{color:var(--ink);font-size:13.5px}
+
+.ask{display:grid;gap:10px}
+.ask .row{display:grid;grid-template-columns:2.4em 1fr;gap:12px;align-items:start;border:1px solid var(--line);border-radius:8px;padding:12px 14px;background:var(--paper)}
+.ask .n{font:600 13px/1.4 var(--f-mono);color:var(--accent)}
+footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:14px;display:grid;gap:6px}
+
+@media (max-width:560px){
+  h1{font-size:25px}
+  .find{padding:14px}
+  .facts{grid-template-columns:1fr;gap:2px 0}
+  .facts dd{margin-bottom:8px}
+  .ask .row{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+
+<header class="masthead">
+  <div class="lead">
+    <div class="eyebrow">CounterCtrl dev &middot; Response to the re-check</div>
+    <h1>Response to the 23 Oct re-check</h1>
+    <p class="sub">Four of the five new findings we are taking, one we would fix differently from how it reads, and your answer on P settles a question that was blocking two things. Plus two issues Wayne raised separately, both already fixed.</p>
+  </div>
+  <div class="status">
+    <span><b>Phases 1&ndash;4 done</b> &middot; AS, AT, AU, AV, D and G fixed</span>
+    <span>2 of Wayne&rsquo;s fixed &middot; <b>P and O</b> are the last open question</span>
+  </div>
+</header>
+
+<section class="block" aria-labelledby="first-h">
+  <h2 id="first-h">Two things before the detail</h2>
+  <ul>
+    <li><b>The store comparison fixes are not in the bundle you tested.</b> Three commits &mdash; <span class="commit">a95a4cf8</span> <span class="commit">f2587121</span> <span class="commit">22aef959</span> &mdash; are committed but unmerged, so the 22 Oct build could not have them. They answer a separate report from Wayne and they change the Sub depts tab substantially. Worth a pass once they land rather than re-checking the old behaviour.</li>
+    <li><b>Your re-check caught something our own testing structurally cannot.</b> Every one of these came from using the screens as a person, against real store data, which is the half we do not have. The two that matter most &mdash; AS and AU &mdash; are both cases where a number looked reasonable and was not.</li>
+  </ul>
+</section>
+
+<section class="block" aria-labelledby="new-h">
+  <h2 id="new-h">The five new findings</h2>
+
+  <article class="find" id="as">
+    <div class="find-head"><span class="find-tag">AS</span><h3>Item Actions lists random-weight packs at package prices</h3>
+      <div class="verdict"><span class="chip ok">Fixed</span> <span class="commit">582e452e</span> With D, which was the same bug</div></div>
+    <p>Right on both counts, and your suggestion is the fix. Price Opt reads <code>cashiers/price_points</code>; Item Actions still builds that table by walking receipt lines, which is why it shows $6.14 and $6.94 next to a $3.99 per-pound figure.</p>
+    <p><b>D is the same change.</b> The 700&nbsp;KB on opening a row and the 1.8&nbsp;MB on the first Trans click are the receipt walk &mdash; the thing that produces the wrong prices is the thing that downloads everything. Pointing this table at <code>price_points</code> deletes the walk rather than optimising it, so both close together.</p>
+    <div class="do"><b>Done.</b> The table comes from <code>cashiers/price_points</code>, where <code>unit_price</code> is per pound on a weighed item and the amount beside it is pounds to match &mdash; the column heads read &ldquo;Price / lb&rdquo; and &ldquo;Lb&rdquo; when that is what they are. Receipts load when somebody opens a price, which is the only thing that needs them. The walk is deleted rather than trimmed.</div>
+    <div class="verify">
+      <h4>How to check it</h4>
+      <ol>
+        <li>Item Actions, store 695, Fam Pak Breast Tenders (20016900000).</li>
+        <li>Price points reads <b>per pound</b> against the $3.99 shelf price, not $6.14 / $6.94 / $6.86.</li>
+        <li>Selecting the row makes <b>one</b> small <code>price_points</code> call &mdash; no <code>product_lookup</code>, no <code>transaction_list</code>.</li>
+        <li>Open a price and the receipts load then, once, for that item.</li>
+      </ol>
+    </div>
+  </article>
+
+  <article class="find" id="at">
+    <div class="find-head"><span class="find-tag">AT</span><h3>One sale shows as $3.34 and $3.33</h3>
+      <div class="verdict"><span class="chip ok">Fixed</span> <span class="commit">d7eb5c45</span> Two faults in one row</div></div>
+    <p>The penny fold landed inside each table and not across them, so a 2-for-$6.67 sale divides to $3.34 in one and $3.33 in the other and reads as two prices.</p>
+    <p>The second half is the one we would have missed: <b>the PRICES tile says 5 and the note says 4</b>. Two counts of the same thing, disagreeing, on the same screen. Whatever the fold does, those two have to be the same number &mdash; and if they are computed in two places, that is the actual defect.</p>
+    <div class="do"><b>Done.</b> The averaged twin folds into the single-ring price &mdash; what a customer actually paid, rather than a division &mdash; carrying its receipts, units and sales. Only within a price type: REG $3.34 and SALE $3.34 are two prices somebody set, and reading them as one is how a promotion disappears. The multi-buy share is untouched, because those transactions were still multiples.
+    <br><br>And there is one count now. Rows is the better of the two definitions that were in play: a set of price values cannot tell REG $3.34 from SALE $3.34. Both the tile and the note read it, and both the server table and the receipt walk behind it get the same fold, so the two sources cannot disagree about what a price is.</div>
+    <div class="verify">
+      <h4>How to check it</h4>
+      <ol>
+        <li>Price Opt Sub Department, store 695, week ending 10/20, COKE 6PK .5LT (4900002468).</li>
+        <li>The $3.34 / $3.33 pair is <b>one row</b>, in the Exact table at $3.34, with the two transaction counts added.</li>
+        <li>The <b>PRICES tile and the note underneath agree</b> &mdash; they read 5 and &ldquo;4 prices&rdquo; before. We have not predicted what the number lands on, only that it is one number in both places.</li>
+        <li>An item whose prices are genuinely apart should be unchanged: nothing a penny apart, nothing folded.</li>
+      </ol>
+    </div>
+  </article>
+
+  <article class="find" id="au">
+    <div class="find-head"><span class="find-tag">AU</span><h3>Sub Dept Margins and Vendors differ by 0.03 pts on last week</h3>
+      <div class="verdict"><span class="chip ok">Fixed</span> <span class="commit">81fa1f3e</span> Not by re-weighting</div></div>
+    <p>You are right that the rule should hold, and the headline figure does &mdash; both read 27.04% because that is a whole-period number. The delta cannot agree, and weighting is not why.</p>
+    <p><b>Each page day-matches at its own grouping.</b> Vendors drops a day from the comparison when <i>that vendor</i> did not trade in both weeks; Sub Dept Margins drops it when <i>that department</i> did not. A Tuesday a vendor missed is still a Tuesday its department worked, so the two sums cover slightly different sets of rows. Same data, same arithmetic, 0.03 pts apart.</p>
+    <p>So the fix is not to re-weight anything. The <b>store header delta</b> should day-match at <b>store level</b> on both pages, which makes them equal by construction rather than by coincidence. Each row keeps its own matched days, because for a single vendor or a single department that is the correct comparison.</p>
+    <div class="do"><b>Done.</b> Both store header deltas come from store-level matched days, in one shared helper. The two headers now agree on every figure, not only the margin. The sales delta is untouched &mdash; it is a total rather than a rate, so the grouping never changed it.</div>
+    <div class="verify">
+      <h4>How to check it</h4>
+      <ol>
+        <li>Sub Dept Margins and Vendors, store 695, week ending 10/20, margin mode.</li>
+        <li>Both headers: <b>27.04%</b>, as before, and now <b>the same LW change</b> on each &mdash; where they read &minus;5.36 and &minus;5.39.</li>
+        <li>Worth keeping as a standing assertion: the two are built from one endpoint, so any future disagreement between those headers is a bug by definition.</li>
+      </ol>
+    </div>
+  </article>
+
+  <article class="find" id="av">
+    <div class="find-head"><span class="find-tag">AV</span><h3>The &ldquo;Both&rdquo; tab keeps 369 in the header</h3>
+      <div class="verdict"><span class="chip ok">Fixed</span> <span class="commit">81fa1f3e</span></div></div>
+    <p>Our bug exactly. The header rewrites the store name to whichever location is selected, and on <b>Both</b> nothing is selected, so it falls through to the stored name &mdash; which has 369 baked into it. The figure is the pair; the name is one of them.</p>
+    <div class="do"><b>Done.</b> &ldquo;Bruces Foodland 369 + 370&rdquo; on the combined view, your wording. It swaps the embedded number rather than appending, so the rest of the name survives &mdash; &ldquo;Foodland 369 (Hwy 431)&rdquo; becomes &ldquo;Foodland 369 + 370 (Hwy 431)&rdquo;. Categories, Vendors and Sub Dept Margins share the helper, in both trees.</div>
+    <div class="verify">
+      <h4>How to check it</h4>
+      <ol>
+        <li>Store 685 on Categories, Vendors or Sub Dept Margins, then the <b>Both</b> tab.</li>
+        <li>Header reads <b>Bruces Foodland 369 + 370</b>. The 369 and 370 tabs are unchanged.</li>
+        <li>On an ordinary store nothing changes: one number is nothing to combine.</li>
+      </ol>
+    </div>
+  </article>
+
+  <article class="find" id="aw">
+    <div class="find-head"><span class="find-tag">AW</span><h3>The item rows still download in full behind the rollup</h3>
+      <div class="verdict"><span class="chip ghost">Closed</span> The group case cannot arise on these pages</div></div>
+    <p>This is the decision taken on 22 Oct rather than something that slipped, and you have it filed correctly. What is new is the size you measured on a second store: <b>31&nbsp;MB across 11 pages, 17.4&nbsp;s on Vendors for store 685</b>. The earlier decision was taken against 13&nbsp;MB on one store.</p>
+    <p class="callout">On the group worry: <b>Vendors and Sub Dept Margins cannot do a group search.</b> <code>useGroups: 0</code> and <code>singleStore: 1</code> are hardcoded on both, and deliberately &mdash; group response times on this data are too long, which is a backend question rather than a page one. So the multiplication cannot happen here. Steve has closed the aggregate ask on that basis: <code>subs/subs</code> is item data these pages genuinely use, and the rollup already puts the list on screen before the rows land.</p>
+    <div class="do"><b>Nothing to do.</b> The rows are already behind the rollup and the screen is usable sooner, which was the whole of the frontend half.</div>
+  </article>
+</section>
+
+<section class="block" aria-labelledby="p-h">
+  <h2 id="p-h">Your answer on P, and what it unblocks</h2>
+  <p>That settles it, and it rules out what we had been looking for. <b>Units reads 166.2 for the week</b> &mdash; that is pounds, so the page is weight-aware and the rows are not arriving with a zero weight. We had thought that was the likely cause and it is not.</p>
+  <p>Which leaves your second cause, and the figures agree with it: <b>66.2% margin, no invoice in 90 days</b>. With no invoice the cost comes off the sales rows, where <code>cost</code> and <code>case_size</code> describe a package while the units are pounds. Divide a package cost by a package count and multiply it by pounds and the cost comes out low, which is exactly the shape of a margin that high on chicken.</p>
+  <p class="callout"><b>This is the same question as O.</b> What cost should a variable-weight item use when there is no invoice on file? Both findings are waiting on one answer, and it is a judgement about the business rather than about the code &mdash; which is why we are not picking it ourselves.</p>
+</section>
+
+<section class="block" aria-labelledby="wayne-h">
+  <h2 id="wayne-h">Reported separately by Wayne</h2>
+  <p class="note">Neither of these came through the test runs, and neither was reachable by the test account &mdash; worth knowing for the next pass.</p>
+
+  <article class="find" id="w1">
+    <div class="find-head"><span class="find-tag">W1</span><h3>A manager was offered every user on the system to add to their company</h3>
+      <div class="verdict"><span class="chip ok">Fixed</span> <span class="commit">31690c22</span> <span class="commit">0917a0af</span> Live on <span class="mono">master_publish</span></div></div>
+    <p>User Management&rsquo;s Companies tab built its candidate column from every user the server returns. A Bruces manager was offered 391 people, Houchens staff among them &mdash; and <code>assign_user_to_company</code> takes a bare userid with no ownership check, so the offer was real.</p>
+    <p>Three ways into that column now: you see everything (level 9 or DCR support), the person holds no company at all, or the person is inside your reach. Reach is your own companies plus the rest of any family one belongs to &mdash; <b>Houchens is five companies on the books</b> (1, 4, 6, 17, 21) and one organisation in practice, so a manager at any of them works across all five. Bruces, Grocery Basket, S&amp;C Foods and B and T each stand alone.</p>
+    <p>Somebody holding <b>no company</b> stays available to anyone, deliberately: a new account belongs to nobody and putting it somewhere is the whole of onboarding.</p>
+    <p>A second fault came out of the same screen: <b>Assign all ignored the company filter.</b> The heading said &ldquo;1 of 372&rdquo; and the button beside it would have written 372 rows. It now honours the filter while still stepping over the search box, which is the behaviour it was built for.</p>
+    <div class="do"><b>For the next run:</b> this is dev-tree only and needs a manager-level account holding one company. The test account could not have found it.</div>
+  </article>
+
+  <article class="find" id="w2">
+    <div class="find-head"><span class="find-tag">W2</span><h3>&ldquo;Behind by&rdquo; disagreed with the Compare tab by $82,277.95</h3>
+      <div class="verdict"><span class="chip ok">Fixed</span> <span class="commit">a95a4cf8</span> <span class="commit">f2587121</span> <span class="commit">22aef959</span> Not yet merged</div></div>
+    <p>Comparing Brooks Chapel Hill against Tupelo, the Sub depts header read <b>$136,036.51 behind</b> while the Compare tab read <b>$53,758.56</b>. Two faults, and they had to be separated before either could be fixed.</p>
+    <dl class="facts">
+      <dt>The total</dt><dd>Fuel, lottery and cash accounts are in <code>subs/sub_sales</code> on purpose, and <code>sales/weekly</code> leaves them out. A total built from every row therefore disagreed with the figure it was set beside &mdash; by Tupelo&rsquo;s <b>$79,943.00</b> of fuel plus Chapel Hill&rsquo;s <b>&minus;$2,334.95</b> of cash accounts and lottery. Dylan&rsquo;s new <code>is_hash</code> flag names those rows and the headline now nets to <b>&minus;$53,758.56</b>, matching the Compare tab.</dd>
+      <dt>Every row</dt><dd>Departments were paired across the two stores <b>by number</b>, and numbering is a per-store setup. Chapel Hill&rsquo;s 10 is Tobacco; Tupelo&rsquo;s 10 is Deli/Bakery. The table reported the store <b>$65,828.85 behind on cigarettes</b>, which was $243.72 of tobacco against $66,072.57 of somebody else&rsquo;s deli. Of the 13 numbers the two stores share, <b>3 are the same department</b>. They pair on the name now &mdash; 11 pairs instead of 3 &mdash; and a department only one store carries is no longer counted as a shortfall.</dd>
+      <dt>The drill behind it</dt><dd>Carried one department number for both stores, so Investigate on Tobacco asked Chapel Hill about tobacco and Tupelo about its bakery. Each store is asked for its own number now.</dd>
+    </dl>
+    <p class="callout">Worth knowing for the next run: <b>this only shows on stores that number their departments differently</b>, which is why it has sat unnoticed. Any company whose stores were set up independently will have it. 695 / #361 against another Bruces store will not show it; Brooks will.</p>
+  </article>
+</section>
+
+<section class="block" aria-labelledby="plan-h">
+  <h2 id="plan-h">The plan, in phases</h2>
+  <p class="note">Grouped by what can move together rather than by which finding is largest. Sizes are a working estimate, not a commitment &mdash; the ones with a decision attached cannot be sized until the decision is made.</p>
+
+  <div class="scroll"><table>
+    <thead><tr><th>Phase</th><th>What</th><th>Closes</th><th>Load</th><th>Waiting on</th></tr></thead>
+    <tbody>
+      <tr><td class="tags">0</td><td>Merge the store comparison work to dev</td><td class="tags">W2</td><td>Merge only</td><td>&mdash;</td></tr>
+      <tr><td class="tags">1</td><td><b>Done</b> &mdash; two small corrections <span class="commit">81fa1f3e</span></td><td class="tags">AU, AV</td><td>&mdash;</td><td>&mdash;</td></tr>
+      <tr><td class="tags">2</td><td><b>Done</b> &mdash; Item Actions on <code>price_points</code> <span class="commit">582e452e</span></td><td class="tags">AS, D</td><td>&mdash;</td><td>&mdash;</td></tr>
+      <tr><td class="tags">3</td><td><b>Done</b> &mdash; Price Opt&rsquo;s two counts <span class="commit">d7eb5c45</span></td><td class="tags">AT, G</td><td>&mdash;</td><td>&mdash;</td></tr>
+      <tr><td class="tags">4</td><td><b>Done</b> &mdash; hash flag across four more pages <span class="commit">8ee9b005</span></td><td class="tags">&mdash;</td><td>&mdash;</td><td>&mdash;</td></tr>
+      <tr><td class="tags">5</td><td>The decided ones</td><td class="tags">P, O, B, 5a</td><td>Small each</td><td><b>Decisions 1&ndash;3</b></td></tr>
+      <tr class="total"><td class="tags">6</td><td>Backend</td><td class="tags">AW, D</td><td>Not ours</td><td><b>Decisions 4&ndash;5</b></td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Phase 0 &middot; Merge, before anything else</h3>
+  <p>The store comparison fixes are committed and unmerged. Until they reach dev, a re-check of the Sub depts tab is reading behaviour we have already replaced. No work, just sequencing &mdash; but it should go first so your next run is looking at the right screen.</p>
+
+  <h3>Phase 1 &middot; Two small corrections <span class="chip ok">done</span> <span class="commit">81fa1f3e</span></h3>
+  <p><b>AV</b> is a fallback that picks the wrong name on the combined view &mdash; one helper, three panels that already share it. <b>AU</b> is moving one calculation from per-group matched days to store-level matched days on two headers. Neither adds behaviour, neither can be argued about, and both are things a re-check can confirm in a minute.</p>
+  <p class="callout ok">Done first precisely because they are dull. Two findings off the board without touching anything the other phases depend on.</p>
+
+  <h3>Phase 2 &middot; Item Actions on <code>price_points</code> <span class="chip ok">done</span> <span class="commit">582e452e</span></h3>
+  <p>The largest single piece, and the only one where a reader could act on a wrong number. The table changed source rather than shape, and the receipts turned out to be needed only behind an opened price &mdash; so they load there and nowhere else.</p>
+  <p>One thing came out of it worth recording: <code>usePricePoints</code> has moved into the shared hooks. Price Opt and Item Actions ask the same question, and a second copy is how the two would have drifted apart &mdash; which is the shape of several findings in your first report.</p>
+
+  <h3>Phase 3 &middot; Price Opt&rsquo;s two counts <span class="chip ok">done</span> <span class="commit">d7eb5c45</span></h3>
+  <p>The penny fold was the smaller half. The larger half was that the PRICES tile and the note counted the same thing in two places and disagreed &mdash; and the archaeology was worth it, because the two definitions were not equally good. One counted rows and the other counted price values; a set of values cannot tell a regular price from a sale at the same figure, so it was the one to drop.</p>
+
+  <h3>Phase 4 &middot; Hash flag across four more pages <span class="chip ok">done</span> <span class="commit">8ee9b005</span></h3>
+  <p>Not in your report, and worth flagging because it will change figures you check. The <code>is_hash</code> flag closed the store comparison headline; the same disagreement exists elsewhere and has simply never been totalled against anything:</p>
+  <ul>
+    <li><b>Categories</b> &mdash; its header sums <code>cat_sales</code> rows, so on any store with a hash department it already disagrees with the Sales header.</li>
+    <li><b>Sub Dept Margins and Vendors</b> &mdash; header from <code>sales/weekly</code>, which excludes; rows from <code>subs/subs</code>, which do not.</li>
+    <li><b>Sales Tracker</b> &mdash; week against week over rows that include fuel, under a header that does not.</li>
+  </ul>
+  <p>Done in one pass, so the rule is applied the same way in each. <b>Sub Dept Margins and Vendors</b>: the store header margin and both points deltas count non-hash rows only &mdash; the lists are untouched, so a department or a vendor is still listed, graded and drillable, it just does not move the store&rsquo;s own number. <b>Sales Tracker</b>: dropped at the fetch, because it sums these rows in several places and one would eventually be missed. <b>Categories</b>: its header is summed from <code>cat_sales</code>, and the flag landed on that endpoint the same day, so this is live rather than waiting.</p>
+  <div class="verify">
+    <h4>How to check it</h4>
+    <ol>
+      <li>Store 695 has four hash departments &mdash; Lottery, Cash Acct, RSA and Default &mdash; worth about &minus;$2,334.95 together, so its figures should barely move.</li>
+      <li>A store with <b>fuel</b> is the one to look at. Its Sub Dept Margins and Vendors headers, its Categories header and its Sales Tracker totals should now agree with the Sales header, where they were over by the fuel.</li>
+      <li>The department and vendor <b>lists are unchanged</b> &mdash; fuel is still there to drill into.</li>
+      <li>On a store with no hash departments, nothing should move at all.</li>
+    </ol>
+  </div>
+
+  <h3>Phase 5 &middot; The decided ones <span class="chip review">blocked</span></h3>
+  <p>Small changes each, none of which can start. <b>P</b> and <b>O</b> are one decision about cost basis; <b>B</b> is two named constants; <b>5a</b> is a sentence. Listed as a phase rather than scattered, because they will all land in an afternoon once the three answers exist.</p>
+
+  <h3>Phase 6 &middot; Backend <span class="chip review">not ours</span></h3>
+  <p><b>AW</b>&rsquo;s server-side aggregate and <b>D</b>&rsquo;s multi-price receipt count. Both are scheduling calls for Steve and Dylan. Nothing in phases 0&ndash;5 waits on either.</p>
+</section>
+
+<section class="block" aria-labelledby="dec-h">
+  <h2 id="dec-h">Decisions, and where they landed</h2>
+  <div class="scroll"><table>
+    <thead><tr><th>#</th><th>Question</th><th>Answer</th></tr></thead>
+    <tbody>
+      <tr><td class="tags">1</td><td>Cost basis for a variable-weight item with no invoice</td><td><b>The sales row is right.</b> It carries the cost at the time the item rang. So the source was never the problem &mdash; what is left is the UNIT, and that is below.</td></tr>
+      <tr><td class="tags">2</td><td>The 3-day, 5-receipt minimum for &ldquo;moves fastest&rdquo;</td><td><b>Left as it stands.</b> Nothing in the re-check suggests they are wrong, and tuning without evidence is guessing twice. Named constants, so one line when there is a reason.</td></tr>
+      <tr><td class="tags">3</td><td>Categories header wording</td><td><b>Agreed.</b> The header will print the base it actually compared, so the percentage cannot be back-solved into a last-week total the page never used. In phase 5.</td></tr>
+      <tr><td class="tags">4</td><td>Server-side aggregate for <code>subs/subs</code></td><td><b>No.</b> Those are item rows the pages use, and the group case cannot arise &mdash; see <a href="#aw">AW</a>.</td></tr>
+      <tr><td class="tags">5</td><td>The multi-price receipt count for Package deal</td><td><b>Asking for it.</b> See below.</td></tr>
+      <tr class="total"><td class="tags">6</td><td>Hash flag across the remaining pages</td><td><b>Done</b> <span class="commit">8ee9b005</span></td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="block" aria-labelledby="open-h">
+  <h2 id="open-h">What is still open</h2>
+
+  <article class="find" id="p-open">
+    <div class="find-head"><span class="find-tag">P</span><h3>Which unit the cost is in, on a random-weight pack</h3>
+      <div class="verdict"><span class="chip watch">Needs one look at the rows</span> With O</div></div>
+    <p>Steve has settled the source: the cost on a sales row is what the item cost at the moment it rang, so nothing is wrong with where it comes from. What is left is narrower and answerable from data.</p>
+    <p>There are two kinds of weighed item and they do not cost the same way. A <b>true scale item</b> &mdash; bananas &mdash; has a per-pound cost, and pounds are the right multiplier. A <b>random-weight pack</b> like Fam Pak Breast Tenders has a per-package cost, and the right multiplier is the number of packs. We multiply by pounds in both cases, which on the second understates the cost and is the shape of a 66.2% margin on chicken.</p>
+    <p class="callout"><b>What would settle it:</b> <code>subs/subs</code> for 20016900000 at store 695 for the week. <code>cost</code>, <code>net_cost</code>, <code>case_size</code>, <code>qty</code> and <code>weight</code> together say which convention those rows follow &mdash; and whether there is anything on the row that tells the two kinds apart, which is what decides if this can be fixed in the browser at all.</p>
+  </article>
+
+  <article class="find" id="d-open">
+    <div class="find-head"><span class="find-tag">D</span><h3>Package deal cannot fire without a count of mixed-price receipts</h3>
+      <div class="verdict"><span class="chip review">Backend ask</span></div></div>
+    <p>Package deal is the pattern where the <b>same receipt</b> has the item at two different prices &mdash; a BOGO, or a 2-for where one rings full and one discounted. Detecting it needs the number of receipts on which the item rang at more than one price.</p>
+    <p>The old code got that by downloading every receipt and checking each one. The table comes from the server now, that count is not in it, and the pattern is judged without it &mdash; so <b>Package deal never fires</b>. One number on the same query restores it.</p>
+  </article>
+
+  <article class="find" id="cat-open">
+    <div class="find-head"><span class="find-tag">5a</span><h3>Categories header wording</h3>
+      <div class="verdict"><span class="chip ok">Agreed, in phase 5</span></div></div>
+    <p>Categories pairs per category per day, and drops a category-day with no last-week counterpart from both sides. So the percentage&rsquo;s base is &ldquo;this week&rsquo;s sales in the category-days that had a last week&rdquo; &mdash; not the headline. On the original example the header read $100.4K and +7.15%, but the figure compared was about <b>$96.8K against $90.3K</b>. The missing $3.6K is categories that sold this week and did not exist last week.</p>
+    <p>The header will print that base, so nobody can derive a last-week total the page never used.</p>
+  </article>
+</section>
+
+<section class="block" aria-labelledby="closed-h">
+  <h2 id="closed-h">Closed deliberately</h2>
+  <div class="scroll"><table>
+    <thead><tr><th>Item</th><th>Decision</th></tr></thead>
+    <tbody>
+      <tr><td><b>Hash filtering on <code>sales/export</code></b></td><td><b>Not wanted.</b> The export is raw data by design &mdash; fuel, lottery and cash accounts belong in it, and anyone who does not want them filters in the left-panel config before exporting. The <code>isHash</code> parameter can stay on the endpoint unused; we will not apply it.</td></tr>
+      <tr><td><b>Add user: Single Store skips to Assignments</b></td><td>Intended, as you read it. A single-store role has no group step to show.</td></tr>
+      <tr><td><b>AW as a frontend task</b></td><td>The rollup already puts the list on screen before the rows land, which was the frontend half. The rest is the server-side aggregate in decision 4.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="block" aria-labelledby="nc-h">
+  <h2 id="nc-h">On what you could not check</h2>
+  <ul>
+    <li><b>Sub Dept Margins&rsquo; stricter location split</b> &mdash; correct that 685 has no last year, so the case cannot arise there. The guard is for a period only one location traded in; a store with history on one number and not the other is what would exercise it. Not worth manufacturing.</li>
+    <li><b>Three hourly calls per store on large groups</b> &mdash; a group over thirty stores is the trigger. If no test account has one, this stays unverified by the harness and that is the honest state of it.</li>
+    <li><b>Help highlights</b> &mdash; wording confirmed, highlight not. Fine to leave: a wrong highlight is visible the moment anybody uses the guide.</li>
+    <li><b>S1 and Sign in as</b> &mdash; both need credentials rather than code. The <span class="mono">otkim</span> account is with Steve.</li>
+  </ul>
+</section>
+
+<footer>
+  <span>Responds to <span class="mono">recheck-reply-2026-10-23</span>, and to two issues Wayne raised separately. Commits named here are on <span class="mono">master_publish</span> except the store comparison set, which is committed and not yet merged.</span>
+  <span>Verified by typecheck, the full test suite, the theme audit and a production build. Not verified in a browser &mdash; that is what your runs are for.</span>
+</footer>
+
+</div>
