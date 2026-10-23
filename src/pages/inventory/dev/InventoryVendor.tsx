@@ -13,7 +13,7 @@ import DatePickers from "../../../components-dev/datePickers/DatePickers";
 import InventoryTreePanel, { type TreeGroup } from "./InventoryTreePanel";
 import InventoryExportModal from "./InventoryExportModal";
 import ItemAnalysisPanel from "./ItemAnalysisPanel";
-import { usePricePoints } from "./usePricePoints";
+import { usePricePoints } from "../../../hooks/usePricePoints";
 import { useInvoiceCost } from "./useInvoiceCost";
 import {
   fetchVendors,

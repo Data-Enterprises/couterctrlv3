@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
   deliveryGap,
+  mergePricePoints,
   flatDaysBefore,
   verdictFor,
   type ReportItem,
@@ -199,5 +200,78 @@ describe("flatDaysBefore", () => {
 
   it("is 0 with nothing before the date at all", () => {
     expect(flatDaysBefore([day("2026-10-20", 4)], "2026-10-18")).toBe(0);
+  });
+});
+
+/**
+ * Fam Pak Breast Tenders, store 695, week to 10/20/2026. Item Actions listed
+ * $6.14, $6.94 and $6.86 against a shelf price of $3.99 a pound, because it
+ * built this table by walking receipts and a receipt line carries what the
+ * PACKAGE came to. `cashiers/price_points` answers per pound.
+ */
+describe("mergePricePoints", () => {
+  const at = (
+    unit_price: number,
+    units: number,
+    receipts: number,
+    over: Partial<Parameters<typeof mergePricePoints>[0][number]> = {},
+  ) =>
+    ({
+      price_type: "REG",
+      multi: false,
+      unit_price,
+      receipts,
+      units,
+      weight: 0,
+      sales: unit_price * units,
+      days_seen: 1,
+      last_seen: "2026-10-20",
+      weighed: false,
+      ...over,
+    }) as Parameters<typeof mergePricePoints>[0][number];
+
+  it("reports pounds against a per-pound price", () => {
+    // 42.5 lb at $3.99, not 20 packages at whatever each came to.
+    const out = mergePricePoints([
+      at(3.99, 20, 18, { weighed: true, weight: 42.5 }),
+    ]);
+    expect(out[0].price).toBe(3.99);
+    expect(out[0].qty).toBeCloseTo(42.5, 2);
+    expect(out[0].weighed).toBe(true);
+  });
+
+  it("counts rings on an item that is not weighed", () => {
+    const out = mergePricePoints([at(6.49, 20, 18)]);
+    expect(out[0].qty).toBe(20);
+    expect(out[0].weighed).toBe(false);
+  });
+
+  it("merges the price types that share a price", () => {
+    // The server splits REG from SALE and single from multi. This section has
+    // no column for why a price happened, so two rows reading $10.99 would be
+    // two rows with no way to tell them apart.
+    const out = mergePricePoints([
+      at(10.99, 4, 4),
+      at(10.99, 6, 5, { price_type: "SALE" }),
+      at(10.99, 2, 2, { multi: true }),
+    ]);
+    expect(out).toHaveLength(1);
+    expect(out[0].qty).toBe(12);
+    expect(out[0].receipts).toBe(11);
+  });
+
+  it("keeps different prices apart", () => {
+    const out = mergePricePoints([at(6.49, 3, 3), at(3.49, 9, 7)]);
+    expect(out.map((r) => r.price)).toEqual([3.49, 6.49]);
+  });
+
+  it("ranks by what sold, not by price", () => {
+    // The biggest seller leads, which is what the five-row cut shows.
+    const out = mergePricePoints([at(9.99, 2, 2), at(4.99, 40, 30), at(6.99, 11, 9)]);
+    expect(out.map((r) => r.price)).toEqual([4.99, 6.99, 9.99]);
+  });
+
+  it("is empty for an item with no prices", () => {
+    expect(mergePricePoints([])).toEqual([]);
   });
 });

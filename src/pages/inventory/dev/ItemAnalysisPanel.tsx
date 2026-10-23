@@ -19,7 +19,7 @@ import {
 import ActualPriceRow, { ACT_COLS } from "./ActualPriceRow";
 import { itemCostStats, type ProductSummary } from "./inventoryData";
 import type { ActualFetchState } from "../../../hooks/useActualPricePoints";
-import type { PricePointsState } from "./usePricePoints";
+import type { PricePointsState } from "../../../hooks/usePricePoints";
 import { resolveUnitCost } from "./invoiceCost";
 import type { InvoiceCostState } from "./useInvoiceCost";
 

@@ -1,11 +1,15 @@
 import { useCallback, useRef, useState } from "react";
-import { useAppSelector } from "../../../hooks";
-import { useActualPricePoints } from "../../../hooks/useActualPricePoints";
-import { getPricePoints, type ServerPricePoint } from "../../../api/pricePoints";
+import { useAppSelector } from ".";
+import { useActualPricePoints } from "./useActualPricePoints";
+import { getPricePoints, type ServerPricePoint } from "../api/pricePoints";
 
 /**
- * Price Opt's actual side: the price table from the server, the receipts only
- * on request.
+ * The price table from the server, the receipts only on request.
+ *
+ * Shared, because Price Opt and Item Actions ask the same question. Item
+ * Actions used to build its own table by walking receipts, which is how it
+ * came to list a random-weight item at package prices -- $6.14 and $6.94 on
+ * a line whose shelf price is $3.99 a pound (finding AS).
  *
  * The table comes from `cashiers/price_points`, one small response. It used
  * to be built from up to 400 receipts downloaded through `product_lookup` and

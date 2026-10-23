@@ -1,3 +1,4 @@
+import type { ServerPricePoint } from "../../../api/pricePoints";
 import { calculateCogs } from "../../../utils/cogs";
 import { shiftIso } from "../../../utils/grading";
 // The weight-before-qty rule, from utils rather than the Inventory page.
@@ -997,6 +998,53 @@ export const flatDaysBefore = (
     flat += 1;
   }
   return flat;
+};
+
+/**
+ * The price table, merged by price.
+ *
+ * `cashiers/price_points` splits on price type and on whether the item rang
+ * as a multiple, which matters to Price Opt -- it cares how a price was
+ * arrived at. Here, what the item rang at is the whole question and why is a
+ * column this section does not have.
+ *
+ * `unit_price` is per pound where the item is weighed, and the amount beside
+ * it has to be pounds to match. This table used to be built by walking every
+ * receipt, and a receipt line carries what the PACKAGE came to -- which is
+ * how Fam Pak Breast Tenders came to list $6.14, $6.94 and $6.86 against a
+ * shelf price of $3.99 a pound (finding AS).
+ */
+export interface MergedPrice {
+  price: number;
+  /** Pounds where `weighed`, a ring count otherwise. */
+  qty: number;
+  receipts: number;
+  weighed: boolean;
+}
+
+export const mergePricePoints = (rows: ServerPricePoint[]): MergedPrice[] => {
+  const byPrice = new Map<number, MergedPrice>();
+  for (const r of rows) {
+    const amount = r.weighed ? r.weight : r.units;
+    const found = byPrice.get(r.unit_price);
+    if (found) {
+      found.qty += amount;
+      // Summed across the price types sharing a price. The server counts
+      // distinct receipts per row, so a receipt holding the item at one price
+      // under two price types counts twice here -- rare enough to be worth
+      // saying rather than worth another read of every receipt.
+      found.receipts += r.receipts;
+      found.weighed = found.weighed || r.weighed;
+    } else {
+      byPrice.set(r.unit_price, {
+        price: r.unit_price,
+        qty: amount,
+        receipts: r.receipts,
+        weighed: r.weighed,
+      });
+    }
+  }
+  return [...byPrice.values()].sort((a, b) => b.qty - a.qty);
 };
 
 /**
