@@ -1,4 +1,6 @@
 import { rowsToCsv } from "../../../../../utils/csvExport";
+import { COST_CORRECTED } from "./cost";
+import { RETAIL_CORRECTED } from "./retail";
 import {
   ZERO,
   description,
@@ -24,9 +26,30 @@ import type { AwgInvoice } from "./group";
  * code — the one identifier every line has, including random-weight meat
  * that carries no UPC. `scalable` marks those sold by weight.
  *
- * The store's own catalogue columns (category, sub-department) and its ids
- * are left blank; an AWG file knows nothing about them.
+ * The store's catalogue columns -- category and sub-department -- stay
+ * blank; an AWG file knows nothing about them. The store does NOT: an orders
+ * file with no `storeid` is not a partial answer, it is an unusable one, so
+ * the caller supplies it.
+ *
+ * `vendor_id` is also blank, deliberately. There is no vendor anywhere in the
+ * AWG line schema -- the whole file is AWG, and what varies between invoices
+ * is the retail department, not the supplier. So `vendor_name` goes out as
+ * AWG and the pipeline reconciles the id from it. Asking the person exporting
+ * for a code would be asking them to supply something the file never had.
  */
+
+/** Who the file is for. */
+export interface OrdersTarget {
+  storeid: number;
+  storeName: string;
+}
+
+/** An invoice whose delivery date could not be read, so the caller can say so
+ *  rather than let a blank `order_date` leave quietly. */
+export interface OrdersExport {
+  csv: string;
+  undatedInvoices: string[];
+}
 
 export const ORDER_COLUMNS = [
   "storeid",
@@ -65,11 +88,13 @@ export const ORDER_COLUMNS = [
 type Column = (typeof ORDER_COLUMNS)[number];
 type Row = Partial<Record<Column, string | number>>;
 
-const lineRow = (line: ExportLine): Row => {
+const lineRow = (line: ExportLine, target: OrdersTarget): Row => {
   const { invoice, record } = line;
   return {
+    storeid: target.storeid,
+    storename: target.storeName,
     order_id: invoice.invoiceNbr,
-    order_date: layoutDate(invoice.deliveryDate),
+    order_date: layoutDate(invoice.deliveryDate) ?? "",
     storenumber: invoice.storeNbr,
     status: "OPEN",
     record_count: invoice.lineItems.length,
@@ -90,14 +115,41 @@ const lineRow = (line: ExportLine): Row => {
     active_retail_price: four(line.retailPrice),
     casesize: line.pack.toString(),
     scalable: line.randomWeight ? 1 : 0,
+    // The layout has a column for it and the markers are on the record, so a
+    // hand-corrected line says so. A SUGGESTED correction does not count: it
+    // changes the figure, but nobody typed it, and which reading the file
+    // came from is said in the filename instead.
+    edited:
+      record.fields[COST_CORRECTED] === "Y" ||
+      record.fields[RETAIL_CORRECTED] === "Y"
+        ? 1
+        : 0,
   };
 };
 
-export const awgInvoicesToOrdersCsv = (invoices: AwgInvoice[]): string =>
-  rowsToCsv(
-    [...ORDER_COLUMNS],
-    exportLines(invoices).map((line) => {
-      const row = lineRow(line);
-      return ORDER_COLUMNS.map((column) => row[column] ?? "");
-    }),
-  );
+export const awgInvoicesToOrdersCsv = (
+  invoices: AwgInvoice[],
+  target: OrdersTarget,
+): OrdersExport => {
+  const lines = exportLines(invoices);
+
+  // Named once each, in order, rather than once per line.
+  const undated: string[] = [];
+  for (const invoice of invoices) {
+    if (invoice.lineItems.length === 0) continue;
+    if (layoutDate(invoice.deliveryDate) === null) {
+      undated.push(invoice.invoiceNbr);
+    }
+  }
+
+  return {
+    csv: rowsToCsv(
+      [...ORDER_COLUMNS],
+      lines.map((line) => {
+        const row = lineRow(line, target);
+        return ORDER_COLUMNS.map((column) => row[column] ?? "");
+      }),
+    ),
+    undatedInvoices: undated,
+  };
+};

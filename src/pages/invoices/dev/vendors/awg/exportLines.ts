@@ -55,10 +55,55 @@ export const ZERO = "0.0000";
 export const four = (value: Decimal): string =>
   value.divideBy(1n, 4).toString();
 
-/** `2020-08-31` → `8/31/2020 12:00:00 AM`, the layouts' date format. */
-export const layoutDate = (iso: unknown): string => {
-  if (typeof iso !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return "";
-  const [year, month, day] = iso.split("-").map(Number);
+/**
+ * A delivery date into `8/31/2020 12:00:00 AM`, the layouts' format.
+ *
+ * The file writes `2020-08-31`, but this does not only see the file: the
+ * delivery date is one of the two header fields a user can correct, and it is
+ * stored as whatever they typed. Taking only the ISO form meant somebody
+ * correcting a date to `08/31/2020` -- the very format this writes back out,
+ * and the one anybody would type -- got an EMPTY `order_date` and no warning
+ * anywhere.
+ *
+ * So the common forms are read, and anything else returns null. Null, not "":
+ * the caller has to decide what to do about a date it cannot read, and
+ * silently writing a blank is what this is fixing.
+ */
+export const layoutDate = (value: unknown): string | null => {
+  if (typeof value !== "string") return null;
+  const text = value.trim();
+  if (text === "") return null;
+
+  let year: number;
+  let month: number;
+  let day: number;
+
+  // Year first: 2020-08-31, 2020/08/31.
+  const ymd = /^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/.exec(text);
+  // Month first: 8/31/2020, 08-31-2020. American order, which is what the
+  // layout itself writes and therefore what gets typed back in.
+  const mdy = /^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/.exec(text);
+
+  if (ymd) {
+    [, year, month, day] = ymd.map(Number) as [number, number, number, number];
+  } else if (mdy) {
+    [, month, day, year] = mdy.map(Number) as [number, number, number, number];
+  } else {
+    return null;
+  }
+
+  // A real day, not just a plausible shape. `31/04/2020` is neither a date
+  // nor a typo worth guessing at.
+  if (month < 1 || month > 12 || day < 1 || day > 31) return null;
+  const made = new Date(Date.UTC(year, month - 1, day));
+  if (
+    made.getUTCFullYear() !== year ||
+    made.getUTCMonth() !== month - 1 ||
+    made.getUTCDate() !== day
+  ) {
+    return null;
+  }
+
   return `${month}/${day}/${year} 12:00:00 AM`;
 };
 

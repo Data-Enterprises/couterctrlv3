@@ -36,6 +36,9 @@ import { useAwgInvoices } from "./useAwgInvoices";
 import { parseAwgFile } from "./vendors/awg";
 import { awgRecordsToCsv } from "./vendors/awg/exportCsv";
 import { awgInvoicesToOrdersCsv } from "./vendors/awg/exportOrders";
+import SingleSelect from "../../../components-dev/SingleSelect";
+import { setSelectedStore, setLastStore } from "../../../features/searchSlice";
+import type { Store } from "../../../interfaces";
 import { applyEdits } from "./vendors/awg/applyEdit";
 import { downloadCsv } from "../../../utils/csvExport";
 import type { InvoiceEdit } from "./vendors/awg/applyEdit";
@@ -81,6 +84,10 @@ const AwgInvoices = () => {
   const sentAt = useAppSelector((s) => s.dev.invoices.sentAt);
   const serverWarnings = useAppSelector((s) => s.dev.invoices.serverWarnings);
   const storeid = useAppSelector((s) => s.search.selectedStore?.storeid);
+  const storeName = useAppSelector(
+    (s) => s.search.selectedStore?.store_name ?? "",
+  );
+  const assignedStores = useAppSelector((s) => s.user.assignedStores);
 
   const [readOpen, setReadOpen] = useState(false);
 
@@ -203,12 +210,46 @@ const AwgInvoices = () => {
     downloadCsv(awgRecordsToCsv(fileText), `${base}_raw.csv`);
   };
 
-  /** The invoices as the page has them — corrections and suggested
-   *  corrections included — in the order layout. */
+  /**
+   * The invoices as the page has them — corrections and suggested
+   * corrections included — in the order layout.
+   *
+   * Gated on the store for the same reason Send is: the layout's first column
+   * is `storeid`, and a file without one cannot be loaded by anything.
+   */
   const handleOrdersExport = () => {
+    if (!storeid) {
+      toast.warn("Choose a store before exporting orders.");
+      return;
+    }
     const base = fileName.replace(/\.[^.]*$/, "") || "awg_invoices";
     const invoices = applyEdits(parseAwgFile(fileText).invoices, edits);
-    downloadCsv(awgInvoicesToOrdersCsv(invoices), `${base}_orders.csv`);
+    const { csv, undatedInvoices } = awgInvoicesToOrdersCsv(invoices, {
+      storeid,
+      storeName,
+    });
+
+    // A delivery date that could not be read leaves `order_date` blank, and a
+    // blank date in a loaded order is the kind of thing nobody notices until
+    // it matters. Named here rather than left to the file.
+    if (undatedInvoices.length > 0) {
+      toast.warn(
+        `No delivery date on ${undatedInvoices.length} invoice${
+          undatedInvoices.length === 1 ? "" : "s"
+        } — ${undatedInvoices.slice(0, 5).join(", ")}${
+          undatedInvoices.length > 5 ? " and others" : ""
+        }. Those rows export with an empty order_date.`,
+      );
+    }
+
+    // Which reading it came from, in the name. The same invoices export
+    // materially different costs with suggested corrections applied, and two
+    // files called the same thing are indistinguishable once downloaded.
+    const corrected = invoices.some((invoice) => invoice.suggested === true);
+    downloadCsv(
+      csv,
+      `${base}_orders${corrected ? "_corrected" : ""}.csv`,
+    );
   };
 
   const handleSend = async () => {
@@ -392,6 +433,39 @@ const AwgInvoices = () => {
                 Undo all corrections
               </button>
             )}
+
+            {/* The store, where the export that needs it is. `storeid` is
+                the layout's first column and it went out blank on every
+                row. */}
+            <SingleSelect<Store>
+              label={
+                storeid ? (
+                  "Store"
+                ) : (
+                  <>
+                    Store{" "}
+                    <span className="font-semibold text-brand_danger">
+                      — not selected
+                    </span>
+                  </>
+                )
+              }
+              data={assignedStores}
+              displayKey="store_name"
+              valueKey="storeid"
+              value={storeid}
+              defaultQuery={storeName}
+              resetQuery
+              onSelect={(id) => {
+                const store = assignedStores.find(
+                  (candidate) => candidate.storeid === Number(id),
+                );
+                if (!store) return;
+                dispatch(setSelectedStore(store));
+                dispatch(setLastStore(store.storeid));
+              }}
+              className="w-[220px] flex-none"
+            />
 
             <button
               type="button"
