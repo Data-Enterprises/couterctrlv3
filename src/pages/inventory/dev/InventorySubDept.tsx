@@ -4,7 +4,10 @@ import {
   useAppSelector,
   useStoreName,
 } from "../../../hooks";
-import { patchSubDeptView } from "../../../features/dev/devPriceOptSlice";
+import {
+  patchSubDeptView,
+  cacheSubDeptProducts,
+} from "../../../features/dev/devPriceOptSlice";
 import { useToast } from "../../../components/toasts/hooks/useToast";
 import { formatGoliathDate, formatDate } from "../../../utils";
 import LoadingIndicator from "../../../components-dev/loading/LoadingIndicator";
@@ -54,7 +57,15 @@ const InventorySubDept = () => {
   );
   const subDepts = view.subDepts;
   const openSubDept = view.openSubDept;
-  const products = view.products;
+  /** The open department's items, out of the cache. Derived rather than held
+   *  beside it so the list on screen is always the one that was cached. */
+  const products = useMemo(
+    () =>
+      openSubDept === null
+        ? []
+        : (view.productsBySubDept[openSubDept] ?? []),
+    [openSubDept, view.productsBySubDept],
+  );
   const setScope = (next: InventoryScope | null) =>
     dispatch(
       patchSubDeptView({
@@ -67,8 +78,6 @@ const InventorySubDept = () => {
     dispatch(patchSubDeptView({ subDepts: next }));
   const setOpenSubDept = (next: number | null) =>
     dispatch(patchSubDeptView({ openSubDept: next }));
-  const setProducts = (next: ProductSummary[]) =>
-    dispatch(patchSubDeptView({ products: next }));
   const [loading, setLoading] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
@@ -91,7 +100,11 @@ const InventorySubDept = () => {
   // when the page was left, and that answer is gone with the old page. Close
   // it rather than show an open department that reads as empty.
   useEffect(() => {
-    if (openSubDept !== null && products.length === 0) setOpenSubDept(null);
+    // Nothing cached for it means the fetch was still in flight, not that the
+    // department is empty -- a cached empty department keeps its entry.
+    if (openSubDept !== null && !(openSubDept in view.productsBySubDept)) {
+      setOpenSubDept(null);
+    }
     // Once, on arrival: this is about what the slice kept, not what changes.
   }, []);
 
@@ -112,8 +125,11 @@ const InventorySubDept = () => {
     // A new window invalidates everything below it, including any register
     // fetch still in flight for an item from the old one.
     wantedSubDept.current = null;
-    setOpenSubDept(null);
-    setProducts([]);
+    // The cache belongs to the window it was read in, so a new search empties
+    // it rather than letting a previous store's items answer for this one.
+    dispatch(
+      patchSubDeptView({ openSubDept: null, productsBySubDept: {} }),
+    );
     setSelected(null);
     resetPrices();
     resetInvoiceCost();
@@ -136,7 +152,6 @@ const InventorySubDept = () => {
     if (id === openSubDept) {
       wantedSubDept.current = null;
       setOpenSubDept(null);
-      setProducts([]);
       return;
     }
     // A different one opening takes the item panel with it: the item belongs
@@ -148,16 +163,21 @@ const InventorySubDept = () => {
     resetInvoiceCost();
     wantedSubDept.current = id;
     setOpenSubDept(id);
-    setProducts([]);
+
+    // Already read in this window. The items of a department cannot change
+    // inside a fixed store and date range, so reopening one is a render, not
+    // a request -- no spinner either, because there is nothing to wait for.
+    if (id in view.productsBySubDept) return;
+
     setProductsLoading(true);
     try {
       const rows = await fetchProducts(scope, id);
       if (wantedSubDept.current !== id) return;
-      setProducts(rows);
+      dispatch(cacheSubDeptProducts({ subDept: id, products: rows }));
     } catch (e) {
       if (wantedSubDept.current !== id) return;
+      // Left out of the cache deliberately, so reopening it tries again.
       toast.error(e instanceof Error ? e.message : "Could not load items");
-      setProducts([]);
     } finally {
       // Only the winner clears the spinner; a loser doing so would uncover an
       // empty list while the department the user actually wants is still in
