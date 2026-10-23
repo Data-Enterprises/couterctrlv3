@@ -5,7 +5,10 @@
  */
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
-import type { InvoiceEdit } from "../../pages/invoices/dev/vendors/awg/applyEdit";
+import {
+  ALL_INVOICES,
+  type InvoiceEdit,
+} from "../../pages/invoices/dev/vendors/awg/applyEdit";
 
 /**
  * AWG Invoices page state.
@@ -35,6 +38,11 @@ export interface InvoicesState {
   expandedId: string | null;
   /** Narrows the list to invoices that failed reconciliation. */
   failedOnly: boolean;
+  /** Narrows the list to invoices a check misses by more than 10¢ — past
+   *  the vendor's penny rounding, so worth a look. */
+  overTenCentsOnly: boolean;
+  /** Narrows the list to invoices that billed nothing — exceptions only. */
+  nothingBilledOnly: boolean;
   /** Narrows the list on store, invoice number or department. */
   textFilter: string;
   parsing: boolean;
@@ -58,6 +66,8 @@ const initialState: InvoicesState = {
   edits: [],
   expandedId: null,
   failedOnly: false,
+  overTenCentsOnly: false,
+  nothingBilledOnly: false,
   textFilter: "",
   parsing: false,
   error: null,
@@ -96,6 +106,8 @@ const invoicesSlice = createSlice({
       state.edits = [];
       state.expandedId = null;
       state.failedOnly = false;
+      state.overTenCentsOnly = false;
+      state.nothingBilledOnly = false;
       state.textFilter = "";
       state.parsing = false;
       state.error = null;
@@ -122,8 +134,10 @@ const invoicesSlice = createSlice({
           edit.field === next.field &&
           edit.rowIndex === next.rowIndex,
       );
-      if (at === -1) state.edits.push(next);
-      else state.edits[at] = next;
+      // Replaced at the end, not in place: suggested corrections applied since
+      // would otherwise be replayed over it.
+      if (at !== -1) state.edits.splice(at, 1);
+      state.edits.push(next);
       // A correction invalidates the last send: what is on the server is no
       // longer what is on screen.
       state.sentAt = null;
@@ -149,6 +163,19 @@ const invoicesSlice = createSlice({
       state.sentAt = null;
     },
 
+    /** Every suggested correction, across the whole file, as one entry —
+     *  undone with the rest. Applying twice is a no-op. */
+    applySuggestedCorrections: (state) => {
+      if (state.edits.some((edit) => edit.kind === "suggested")) return;
+      state.edits.push({
+        docId: ALL_INVOICES,
+        kind: "suggested",
+        field: "",
+        value: "",
+      });
+      state.sentAt = null;
+    },
+
     clearInvoiceEdits: (state) => {
       state.edits = [];
       state.sentAt = null;
@@ -160,6 +187,14 @@ const invoicesSlice = createSlice({
 
     setInvoiceFailedOnly: (state, action: PayloadAction<boolean>) => {
       state.failedOnly = action.payload;
+    },
+
+    setInvoiceOverTenCentsOnly: (state, action: PayloadAction<boolean>) => {
+      state.overTenCentsOnly = action.payload;
+    },
+
+    setInvoiceNothingBilledOnly: (state, action: PayloadAction<boolean>) => {
+      state.nothingBilledOnly = action.payload;
     },
 
     setInvoiceTextFilter: (state, action: PayloadAction<string>) => {
@@ -197,9 +232,12 @@ export const {
   setInvoicesFile,
   editInvoiceField,
   revertInvoiceField,
+  applySuggestedCorrections,
   clearInvoiceEdits,
   setInvoiceExpanded,
   setInvoiceFailedOnly,
+  setInvoiceOverTenCentsOnly,
+  setInvoiceNothingBilledOnly,
   setInvoiceTextFilter,
   setInvoicesSending,
   setInvoicesSendError,

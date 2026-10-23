@@ -2685,16 +2685,40 @@ export interface InvoiceRow {
   totalCost: string;
   totalRetail: string;
   totalAllowances: string;
+  /** The billed lines' extended cost alone, before delivery and pallet
+   *  allowances. */
+  lineItemsCost: string;
+  /** The `11` delivery charges, which the total cost includes. */
+  deliveryFees: string;
+  /** The `03` pallet allowances — netted out of the total cost, and part of
+   *  `totalAllowances`. */
+  palletAllowances: string;
+  /** The part of per-pound deals no line took off, which the total cost
+   *  subtracts. Null until suggested corrections are applied. */
+  perLbDeals: string | null;
   totalCases: string;
   reconciled: boolean;
-  /** Set when the invoice couldn't be checked at all — no total record. */
+  /** `checked` against a `19` total; without one, `nothingBilled` when only
+   *  exceptions came through, `noTotal` when billed lines did. */
+  status: "checked" | "noTotal" | "nothingBilled";
+  /** Why the invoice could not be checked. */
   note?: string;
+  /** Items that did not ship, from the `05` records, with the vendor's
+   *  reason. */
+  exceptions: { itemCode: string; description: string; reason: string }[];
+  /** Allowance on the vendor's total that no record in the file carries. */
+  unitemizedAllowance: string | null;
+  /** A money check misses by more than 10¢, or the cases miss at all. */
+  overTenCents: boolean;
   checks: {
+    id: "cost" | "retail" | "allowances" | "cases";
     label: string;
     derived: string;
     reported: string;
     ok: boolean;
     difference: string;
+    /** Derived less reported, signed: "+0.05" when ours is higher. */
+    offBy: string;
   }[];
   lines: InvoiceLineRow[];
 }

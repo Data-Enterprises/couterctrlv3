@@ -3,6 +3,7 @@ import type { ParseWarning } from "../../core/types";
 import { groupInvoices, type AwgInvoice } from "./group";
 import { reconcileAll, type ReconcileResult } from "./reconcile";
 import { AWG_FILE_SPEC } from "./schema";
+import { checkTrailers, type TrailerCheck } from "./trailer";
 
 /**
  * The AWG vendor module: text in, invoices and their reconciliation out.
@@ -23,6 +24,8 @@ export interface AwgParseResult {
   /** True when every invoice in the file reconciled — the one figure that says
    *  whether this file is safe to send onward. */
   allReconciled: boolean;
+  /** Whether the trailer counts say the file is whole. */
+  trailer: TrailerCheck;
 }
 
 export const parseAwgFile = (text: string): AwgParseResult => {
@@ -40,9 +43,11 @@ export const parseAwgFile = (text: string): AwgParseResult => {
     countsByType,
     allReconciled:
       reconciliation.length > 0 && reconciliation.every((entry) => entry.ok),
+    trailer: checkTrailers(records),
   };
 };
 
 export { AWG_FILE_SPEC, AWG_RECORD } from "./schema";
 export type { AwgInvoice } from "./group";
 export type { ReconcileCheck, ReconcileResult } from "./reconcile";
+export type { TrailerCheck } from "./trailer";

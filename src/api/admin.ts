@@ -47,12 +47,14 @@ export const getStoresMissingSales = async (
  * A store record that did not exist before.
  *
  * `company` is the company ID, the same number `Store.company` carries — not
- * the name beside it. The row is created active: `deactivated_at` is left
- * null by the insert.
+ * the name beside it. `storeid` is chosen by the caller, not generated: the
+ * insert writes it as given. The row is created active: `deactivated_at` is
+ * left null by the insert.
  */
 export const createNewStore = async (
   url: string,
   token: string,
+  storeid: number,
   store_number: string,
   store_name: string,
   company: number,
@@ -64,7 +66,7 @@ export const createNewStore = async (
       Authorization: `Bearer ${token}`,
     },
     url: url + "stores/create_new_store",
-    data: { store_number, store_name, company },
+    data: { storeid, store_number, store_name, company },
   });
   return json;
 };
