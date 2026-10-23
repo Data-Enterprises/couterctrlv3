@@ -2,6 +2,10 @@ import { useCallback, useRef, useState } from "react";
 import { useAppSelector } from ".";
 import { useActualPricePoints } from "./useActualPricePoints";
 import { getPricePoints, type ServerPricePoint } from "../api/pricePoints";
+import {
+  mixedPriceFromServer,
+  type MixedPriceInsight,
+} from "../utils/pricePoints";
 
 /**
  * The price table from the server, the receipts only on request.
@@ -21,6 +25,10 @@ import { getPricePoints, type ServerPricePoint } from "../api/pricePoints";
 
 export interface PricePointsState {
   rows: ServerPricePoint[];
+  /** The receipt counts behind Package deal, or null when the server did not
+   *  give them -- an older API, or a weighed item, where the question does
+   *  not apply. Null means the pattern is judged without it. */
+  mixed: MixedPriceInsight | null;
   /** Which UPC `rows` belongs to. Read before anything else, for the same
    *  reason as `ActualFetchState.upc`: a slow answer for the last item must
    *  not render under this one. */
@@ -31,6 +39,7 @@ export interface PricePointsState {
 
 const initial: PricePointsState = {
   rows: [],
+  mixed: null,
   upc: null,
   loading: false,
   error: null,
@@ -76,7 +85,13 @@ export const usePricePoints = () => {
           });
           return;
         }
-        setPrices({ rows: j.price_points ?? [], upc, loading: false, error: null });
+        setPrices({
+          rows: j.price_points ?? [],
+          mixed: mixedPriceFromServer(j),
+          upc,
+          loading: false,
+          error: null,
+        });
       } catch (e) {
         if (stale()) return;
         setPrices({

@@ -671,44 +671,54 @@ export const suggestPrice = (
 /* --------------------------------------------------------------- mixed price */
 
 export interface MixedPriceInsight {
-  /** Receipts carrying this item at more than one price. */
+  /** Receipts carrying the item at more than one price. */
   mixedTxns: number;
+  /** Distinct receipts the item appeared on at all -- the denominator. */
   uniqueTxns: number;
-  /** The widest spread seen within a single receipt, in dollars. */
+  /** Widest gap inside one such receipt. Printed, not decided on. */
   maxSpread: number;
 }
 
 /**
- * Spec §5.3's `mixedPriceInsight`. The same item at two prices on one receipt
- * is the signature of a package deal or a break — two rung at $3.49 and a third
- * at $0.02 to make three-for-$6.99.
+ * The receipt counts, from the server's own count of them.
+ *
+ * This was computed here by walking every receipt for the item and grouping
+ * its lines by price. The walk is gone -- it was slow, capped at 400
+ * receipts, and priced weighed lines by qty, which is 1 on a random-weight
+ * pack (findings AS and D). The server counts the same receipts over the
+ * same lines, with no cap.
+ *
+ * `null` whenever the question cannot be answered, which the caller must
+ * treat as "no package deal" rather than "none found":
+ *
+ *  - a weighed item, where the server sends null because two packs in one
+ *    basket compute to different prices per pound from rounding alone, and a
+ *    BOGO is rung on packages anyway;
+ *  - an older API that does not send the fields at all.
+ *
+ * The server counts two prices as two only when they are more than a CENT
+ * apart, matching `foldPennyTwins` and `foldAcrossTables` here: a 3-for-$10
+ * rings $3.33, $3.33, $3.34, and on raw distinct prices three in every four
+ * "package deals" at store 695 were that rounding. If one side of that rule
+ * ever changes, the other has to change with it.
  */
-export const mixedPriceInsight = (
-  lines: TransactionListItem[],
-): MixedPriceInsight => {
-  const bySale = new Map<string, number[]>();
-  lines
-    .filter((t) => t.net_sales > 0)
-    .forEach((t) => {
-      const price = round2(t.net_sales / lineQty(t));
-      const found = bySale.get(t.sale_id);
-      if (found) found.push(price);
-      else bySale.set(t.sale_id, [price]);
-    });
-
-  let mixedTxns = 0;
-  let maxSpread = 0;
-  bySale.forEach((prices) => {
-    if (new Set(prices).size > 1) {
-      mixedTxns += 1;
-      maxSpread = Math.max(
-        maxSpread,
-        Math.max(...prices) - Math.min(...prices),
-      );
-    }
-  });
-
-  return { mixedTxns, uniqueTxns: bySale.size, maxSpread: round2(maxSpread) };
+export const mixedPriceFromServer = (resp: {
+  receipts_total?: number;
+  multi_price_receipts?: number | null;
+  max_price_spread?: number | null;
+}): MixedPriceInsight | null => {
+  const { receipts_total, multi_price_receipts, max_price_spread } = resp;
+  if (
+    typeof receipts_total !== "number" ||
+    typeof multi_price_receipts !== "number"
+  ) {
+    return null;
+  }
+  return {
+    mixedTxns: multi_price_receipts,
+    uniqueTxns: receipts_total,
+    maxSpread: typeof max_price_spread === "number" ? max_price_spread : 0,
+  };
 };
 
 /* ----------------------------------------------------------- classification */
@@ -758,7 +768,7 @@ export interface PricingPattern {
  */
 export const classifyPattern = (
   actual: ActualPricePoints,
-  mixed: MixedPriceInsight,
+  mixed: MixedPriceInsight | null,
 ): PricingPattern => {
   const totalTrans = actual.exactCount + actual.averagedCount;
   if (totalTrans === 0) {
@@ -774,8 +784,14 @@ export const classifyPattern = (
   // disagreed on screen -- 5 against 4 on COKE 6PK (finding AT).
   const distinctPrices = actual.priceCount;
   const volatilityPct = (distinctPrices / totalTrans) * 100;
+  // Null is "not answerable", not "none found" -- see mixedPriceFromServer.
+  // Package deal cannot fire from it, which is the honest outcome: on a
+  // weighed item the pattern does not apply, and on an older API we do not
+  // know.
   const mixedPct =
-    mixed.uniqueTxns > 0 ? (mixed.mixedTxns / mixed.uniqueTxns) * 100 : 0;
+    mixed && mixed.uniqueTxns > 0
+      ? (mixed.mixedTxns / mixed.uniqueTxns) * 100
+      : 0;
   const multiQtyPct = (actual.averagedCount / totalTrans) * 100;
   // Across both tables. Reading `exact` alone made this 0 for any item that
   // only ever sells in multiples — which is precisely the shape multi-buy is
@@ -787,7 +803,7 @@ export const classifyPattern = (
   );
   const topPricePct = ((topPoint?.trans ?? 0) / totalTrans) * 100;
 
-  if (mixedPct >= 30 && mixed.mixedTxns > 0) {
+  if (mixed && mixedPct >= 30 && mixed.mixedTxns > 0) {
     return {
       kind: "package",
       title: "Package deal",

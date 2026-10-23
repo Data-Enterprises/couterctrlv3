@@ -10,7 +10,6 @@ import {
   estimatedPricePoints,
   pricePointsFromServer,
   linesAtPrice,
-  mixedPriceInsight,
   classifyPattern,
   suggestPrice,
   suggestionWithheld,
@@ -71,6 +70,9 @@ const ItemAnalysisPanel = ({
   // for the previously-clicked UPC is dropped rather than rendered.
   const isCurrent = prices.upc === product.productCode;
   const rows = isCurrent ? prices.rows : NO_ROWS;
+  /** Same staleness gate as the rows: counts for the last item must not
+   *  be read against this one. */
+  const mixed = isCurrent ? prices.mixed : null;
   // The panel's loading and error states are the price table's. The receipts
   // only ever load under an opened row, and say so there.
   const actual = prices;
@@ -106,13 +108,13 @@ const ItemAnalysisPanel = ({
     () => pricePointsFromServer(rows, unitCost),
     [rows, unitCost],
   );
-  // "Package deal" reads each receipt for the item at two prices, and the
-  // server's table counts receipts without naming them. Until it reports
-  // that count, the pattern is judged without it rather than from a download
-  // of every receipt, which is what the table replaced.
+  // "Package deal" reads each receipt for the item at two prices. The server
+  // reports that count now (finding D), so the pattern is judged from it
+  // rather than from a download of every receipt. Null on a weighed item or
+  // an older API, and the pattern then stays quiet.
   const pattern = useMemo(
-    () => classifyPattern(act, mixedPriceInsight([])),
-    [act],
+    () => classifyPattern(act, mixed),
+    [act, mixed],
   );
   // Weighed items have per-pound prices on both sides now, so the notice that
   // withheld their suggestion (finding A's stop-gap) is gone.

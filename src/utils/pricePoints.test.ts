@@ -6,6 +6,8 @@ import {
   suggestPrice,
   suggestionWithheld,
   MIN_SUGGESTION_DAYS,
+  mixedPriceFromServer,
+  classifyPattern,
 } from "./pricePoints";
 import type { TransactionListItem } from "../interfaces";
 import type { ServerPricePoint } from "../api/pricePoints";
@@ -370,5 +372,112 @@ describe("one promotion across the two tables", () => {
     expect(out.exact).toHaveLength(1);
     expect(out.averaged).toHaveLength(1);
     expect(out.priceCount).toBe(2);
+  });
+});
+
+
+/**
+ * The receipt counts behind Package deal, from the server (finding D).
+ *
+ * Figures are the backend's own, store 695, 14-20 Oct.
+ */
+describe("the multi-price receipt counts", () => {
+  const point = (over: Partial<ServerPricePoint>): ServerPricePoint => ({
+    price_type: "REG",
+    multi: false,
+    unit_price: 3.49,
+    receipts: 40,
+    units: 40,
+    weight: 0,
+    sales: 139.6,
+    days_seen: 6,
+    last_seen: "2026-10-20",
+    weighed: false,
+    ...over,
+  });
+
+  const patternFor = (
+    resp: Parameters<typeof mixedPriceFromServer>[0],
+    points = [point({}), point({ unit_price: 2.99, receipts: 40 })],
+  ) =>
+    classifyPattern(
+      pricePointsFromServer(points, 1),
+      mixedPriceFromServer(resp),
+    );
+
+  describe("reading them off the response", () => {
+    it("is null when the API does not send them", () => {
+      // An older deploy. The pattern is judged without them, as before.
+      expect(mixedPriceFromServer({})).toBeNull();
+    });
+
+    it("is null on a weighed item, where the server sends null", () => {
+      // Fam Pak Breast Tenders: receipts_total is real, the counts are not.
+      expect(
+        mixedPriceFromServer({
+          receipts_total: 70,
+          multi_price_receipts: null,
+          max_price_spread: null,
+        }),
+      ).toBeNull();
+    });
+
+    it("carries the numbers through when they are there", () => {
+      expect(
+        mixedPriceFromServer({
+          receipts_total: 69,
+          multi_price_receipts: 12,
+          max_price_spread: 2,
+        }),
+      ).toEqual({ mixedTxns: 12, uniqueTxns: 69, maxSpread: 2 });
+    });
+
+    it("treats a missing spread as zero rather than dropping the counts", () => {
+      expect(
+        mixedPriceFromServer({ receipts_total: 69, multi_price_receipts: 12 }),
+      ).toEqual({ mixedTxns: 12, uniqueTxns: 69, maxSpread: 0 });
+    });
+  });
+
+  describe("what the pattern does with them", () => {
+    it("cannot fire without them", () => {
+      // The bug: judged with no count at all, so it never fired.
+      expect(patternFor({}).kind).not.toBe("package");
+    });
+
+    it("does not fire on COKE 6PK, whose two-price receipts were rounding", () => {
+      // receipts_total 73, multi_price_receipts 0 -- all 11 two-price
+      // receipts were $3.33 + $3.34, which is 3-for-$10 and not a deal.
+      const p = patternFor({
+        receipts_total: 73,
+        multi_price_receipts: 0,
+        max_price_spread: 0,
+      });
+      expect(p.kind).not.toBe("package");
+    });
+
+    it("does not fire below the threshold", () => {
+      // Reduced packaged meat: 12 of 69 is 17%, under the 30% the pattern
+      // asks for. Real mixed pricing, still not the store's normal way of
+      // selling it.
+      expect(
+        patternFor({
+          receipts_total: 69,
+          multi_price_receipts: 12,
+          max_price_spread: 2,
+        }).kind,
+      ).not.toBe("package");
+    });
+
+    it("fires once enough receipts carry two prices, and names the spread", () => {
+      const p = patternFor({
+        receipts_total: 80,
+        multi_price_receipts: 40,
+        max_price_spread: 1.5,
+      });
+      expect(p.kind).toBe("package");
+      expect(p.detail).toContain("50%");
+      expect(p.detail).toContain("1.50");
+    });
   });
 });
