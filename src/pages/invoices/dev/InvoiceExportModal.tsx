@@ -5,6 +5,7 @@ import {
   XMarkIcon,
 } from "@heroicons/react/20/solid";
 import ResizableModalShell from "../../../components-dev/modals/ResizableModalShell";
+import Checkbox from "../../../components-dev/Checkbox";
 
 /**
  * The three things you can do with a read file, side by side.
@@ -16,10 +17,18 @@ import ResizableModalShell from "../../../components-dev/modals/ResizableModalSh
  * different rows about different things. None of that fits on a button.
  *
  * Built like every other export modal on the dev tree — the resizable shell,
- * the navy header bar, a radio list, one action at the foot — because an
+ * the navy header bar, a list of choices, one action at the foot — because an
  * export modal that looks like itself is one the reader has already learned.
  * What differs here is that the choices need explaining rather than listing,
- * so each carries a line always and its detail when it is the one selected.
+ * so every one shows what it carries, all the time. Revealing that only for
+ * the selected one meant clicking each in turn to compare them, which is the
+ * one thing a reader opens this to do.
+ *
+ * The house `Checkbox`, not a native radio. These are mutually exclusive and
+ * a radio group is the stricter semantic, but the native control looks like
+ * the operating system rather than like this app, and its focus ring was
+ * being clipped by the list's own scroll box. Exclusivity lives in the
+ * handler instead: picking one is picking one.
  */
 
 type Choice = "raw" | "orders" | "send";
@@ -130,7 +139,7 @@ const InvoiceExportModal = ({
       onClose={onClose}
       storageKey="export-modal:awg-invoices:v1"
       defaultWidth={560}
-      defaultHeight={520}
+      defaultHeight={640}
     >
       <div className="flex items-center gap-3 bg-brand_navy px-4 py-3">
         <div className="min-w-0 flex-1">
@@ -155,46 +164,41 @@ const InvoiceExportModal = ({
           Select what to take
         </p>
 
-        <div className="min-h-0 flex-1 overflow-y-auto">
+        {/* px-1 so a focus ring is not shaved off by the scroll box --
+            the ring sits outside the control's own 15px. */}
+        <div className="min-h-0 flex-1 overflow-y-auto px-1">
           {OPTIONS.map((option) => (
-            <label
+            <div
               key={option.id}
-              className="flex cursor-pointer items-start gap-2.5 border-b border-gray-100 py-2.5 last:border-b-0"
+              className="border-b border-gray-100 py-2.5 last:border-b-0"
             >
-              <input
-                type="radio"
+              {/* The box pairs with the title, so it lines up with the thing
+                  it names rather than floating against the middle of a
+                  paragraph. */}
+              <Checkbox
                 checked={choice === option.id}
                 onChange={() => setChoice(option.id)}
-                className="mt-0.5"
+                label={
+                  <span className="text-[13px] font-medium text-content">
+                    {option.title}
+                  </span>
+                }
               />
-              <div className="min-w-0 flex-1">
-                <p className="text-[13px] font-medium text-content">
-                  {option.title}
-                </p>
-                <p className="mt-0.5 text-[11px] text-content/95">
-                  {option.caption}
-                </p>
-
-                {/* The detail belongs to the one being chosen. All three sets
-                    at once was a wall of prose on a modal whose job is a
-                    choice. */}
-                {choice === option.id && (
-                  <ul className="mt-1.5 space-y-1">
-                    {option.points.map((point) => (
-                      <li
-                        key={point}
-                        className="flex gap-1.5 text-[11.5px] leading-snug text-content"
-                      >
-                        <span className="flex-none text-content/95">
-                          &middot;
-                        </span>
-                        <span>{point}</span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            </label>
+              <p className="ml-[23px] mt-0.5 text-[11px] text-content/95">
+                {option.caption}
+              </p>
+              <ul className="ml-[23px] mt-1.5 space-y-1">
+                {option.points.map((point) => (
+                  <li
+                    key={point}
+                    className="flex gap-1.5 text-[11.5px] leading-snug text-content"
+                  >
+                    <span className="flex-none text-content/95">&middot;</span>
+                    <span>{point}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           ))}
         </div>
 
