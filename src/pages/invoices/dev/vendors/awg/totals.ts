@@ -26,6 +26,10 @@ export interface InvoiceTotals {
   lineItemsCost: Decimal;
   deliveryFees: Decimal;
   palletAllowances: Decimal;
+  /** The part of per-pound deals no line took off — rate × weight, less the
+   *  rate the line was netted by. Computed, so null until suggested
+   *  corrections are applied; see `allowances`. */
+  perLbDeals: Decimal | null;
   /** Line items + delivery − pallet allowances, less per-pound deals the
    *  lines did not take off when corrections are applied. */
   totalCost: Decimal;
@@ -55,6 +59,7 @@ export const invoiceTotals = (invoice: AwgInvoice): InvoiceTotals => {
       lineItemsCost,
       deliveryFees,
       palletAllowances,
+      perLbDeals: null,
       totalCost: lineItemsCost.add(deliveryFees).subtract(palletAllowances),
       totalRetail: sumMoney(invoice.lineItems, "ba_retail_ext"),
       totalAllowances: sumMoney(invoice.deals, "deal_amount").add(
@@ -72,6 +77,7 @@ export const invoiceTotals = (invoice: AwgInvoice): InvoiceTotals => {
     lineItemsCost: lineCost.divideBy(1n, 2),
     deliveryFees,
     palletAllowances,
+    perLbDeals: deals.unnetted.divideBy(1n, 2),
     totalCost: lineCost
       .add(deliveryFees)
       .subtract(palletAllowances)

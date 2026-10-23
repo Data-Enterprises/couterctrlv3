@@ -18,6 +18,9 @@ import { invoiceTotals } from "./totals";
  * check that should stand between a parse and an upload.
  */
 export interface ReconcileCheck {
+  /** Which figure is checked, so a figure shown elsewhere can find its check
+   *  without matching on the label. */
+  id: "cost" | "retail" | "allowances" | "cases";
   label: string;
   derived: Decimal;
   reported: Decimal;
@@ -69,10 +72,12 @@ const reported = (value: unknown, decimals: number): Decimal =>
   value instanceof Decimal ? value : Decimal.zero(decimals);
 
 const check = (
+  id: ReconcileCheck["id"],
   label: string,
   derived: Decimal,
   against: Decimal,
 ): ReconcileCheck => ({
+  id,
   label,
   derived,
   reported: against,
@@ -122,6 +127,7 @@ export const reconcileInvoice = (invoice: AwgInvoice): ReconcileResult => {
 
   const checks: ReconcileCheck[] = [
     check(
+      "cost",
       invoice.suggested
         ? "Total cost (line items + delivery fees − pallet allowances − per-lb deals)"
         : "Total cost (line items + delivery fees − pallet allowances)",
@@ -129,11 +135,13 @@ export const reconcileInvoice = (invoice: AwgInvoice): ReconcileResult => {
       reported(totals.cost_ext, 2),
     ),
     check(
+      "retail",
       "Extended retail",
       figures.totalRetail,
       reported(totals.total_retail, 2),
     ),
     check(
+      "allowances",
       "Total allowances",
       figures.totalAllowances,
       reported(totals.deal_amount, 2),
@@ -141,6 +149,7 @@ export const reconcileInvoice = (invoice: AwgInvoice): ReconcileResult => {
     // Whole cases, so scale 0 — comparing this at scale 2 would still be
     // correct arithmetically but would print "24.00 cases".
     check(
+      "cases",
       "Total cases",
       sumField(invoice.lineItems, "case_qty_billed", 0),
       reported(totals.case_qty_billed, 0),

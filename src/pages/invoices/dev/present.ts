@@ -67,6 +67,11 @@ const presentRetail = (price: Decimal, pricingUnit: Decimal): string => {
  */
 const UNIT_COST_PLACES = 2;
 
+/** A difference with its sign written out, so "+0.05" and "-0.05" read as
+ *  which side is higher. */
+const signed = (value: Decimal): string =>
+  value.isNegative() ? value.toString() : `+${value.toString()}`;
+
 /** Past the vendor's penny rounding — the line between "AWG's arithmetic" and
  *  "something on this invoice is wrong". */
 const TEN_CENTS = new Decimal(10n, 2);
@@ -132,6 +137,7 @@ export const presentInvoices = (
       lineItemsCost: figures.lineItemsCost.toString(),
       deliveryFees: figures.deliveryFees.toString(),
       palletAllowances: figures.palletAllowances.toString(),
+      perLbDeals: figures.perLbDeals?.toString() ?? null,
       totalCases: sumDecimals(
         invoice.lineItems.map((r) => count(r.fields.case_qty_billed)),
         0,
@@ -151,11 +157,13 @@ export const presentInvoices = (
           : check.difference.compare(TEN_CENTS) > 0,
       ),
       checks: (result?.checks ?? []).map((check) => ({
+        id: check.id,
         label: check.label,
         derived: check.derived.toString(),
         reported: check.reported.toString(),
         ok: check.ok,
         difference: check.difference.toString(),
+        offBy: signed(check.derived.subtract(check.reported)),
       })),
       // Judged across the lines, not one at a time: a random-weight line's
       // retail depends on the lines beside it — see `vendors/awg/retail`.

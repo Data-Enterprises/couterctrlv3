@@ -10,8 +10,12 @@ import type { InvoiceEdit } from "./vendors/awg/applyEdit";
  * line number in front. Right-aligned numbers get a wider gutter than the 8px
  * the app uses elsewhere: four money columns side by side with no gap read as
  * one long number. The Item column absorbs the difference.
+ *
+ * The UPC column fits a whole 15-digit UPC at the cell's 12px monospace —
+ * every UPC on the file is that long, and a truncated one cannot be read off
+ * against a label.
  */
-const LINE_COLS = "26px minmax(0,1.6fr) 96px 72px 62px 44px 72px 78px 78px";
+const LINE_COLS = "26px minmax(0,1.6fr) 124px 72px 62px 44px 72px 78px 78px";
 
 interface Props {
   row: InvoiceRow;
@@ -24,23 +28,63 @@ interface Props {
   onRevert: (key: Omit<InvoiceEdit, "docId" | "value">) => void;
 }
 
-const Figure = ({ label, value }: { label: string; value: string }) => (
-  <div className="min-w-0">
-    <div className="font-mono text-[9.5px] uppercase tracking-wider text-content/85">
-      {label}
-    </div>
-    <div className="truncate font-display text-[14px] font-bold text-content">
-      {value}
-    </div>
-  </div>
-);
+type Check = InvoiceRow["checks"][number];
+
+/**
+ * One figure, and — for the four the vendor's total checks — whether it
+ * agrees. A figure that is off reads red with its difference under it, so a
+ * miss is visible on the card without opening the checks.
+ */
+const Figure = ({
+  label,
+  value,
+  check,
+  money = true,
+  title,
+}: {
+  label: string;
+  value: string;
+  check?: Check;
+  money?: boolean;
+  /** Hover text explaining the figure. */
+  title?: string;
+}) => {
+  const off = check && !check.ok;
+  const prefix = money ? "$" : "";
+  return (
+    <span className="block min-w-0" title={title}>
+      <span className="block font-mono text-[9.5px] uppercase tracking-wider text-content/85">
+        {label}
+      </span>
+      <span
+        className={`block truncate font-display text-[14px] font-bold ${
+          off ? "text-severity_critical_text" : "text-content"
+        }`}
+      >
+        {prefix}
+        {value}
+      </span>
+      {off && (
+        <span
+          className="block truncate text-[10.5px] font-semibold text-severity_critical_text"
+          title={`AWG reports ${prefix}${check.reported}`}
+        >
+          {check.offBy.startsWith("-") ? "-" : "+"}
+          {prefix}
+          {check.offBy.replace(/^[+-]/, "")} vs AWG
+        </span>
+      )}
+    </span>
+  );
+};
 
 /**
  * One invoice, opening where it sits.
  *
  * Collapsed it carries the answer the file was opened for: does this invoice
  * balance. A file holds ten of them and the first question is which one does
- * not, so every card states its verdict without being opened.
+ * not, so every card states its verdict without being opened — and its
+ * figures, cost through cases, so reading them is not a click per invoice.
  *
  * Open, the four checks come first and the lines second. The checks are the
  * only thing here that says whether to believe the rest — a hundred and fifty
@@ -55,6 +99,8 @@ const InvoiceCard = ({
   onRevert,
 }: Props) => {
   const Chevron = open ? ChevronDownIcon : ChevronRightIcon;
+  const checkFor = (id: Check["id"]) =>
+    row.checks.find((check) => check.id === id);
 
   const headerCell = (
     field: "delv_date" | "retail_dept",
@@ -77,69 +123,101 @@ const InvoiceCard = ({
         open ? "border-gray-300" : "border-gray-200"
       }`}
     >
+      {/* The whole visible card opens it — header and figures — not just
+          the title row: the figures are most of what is on screen, and a
+          click on them should not be a miss. */}
       <button
         type="button"
         onClick={onToggle}
         aria-expanded={open}
-        className="flex w-full items-center gap-3 px-3.5 py-2.5 text-left hover:bg-bkg"
+        className="block w-full text-left hover:bg-bkg"
       >
-        <Chevron className="h-4 w-4 flex-none text-content/85" />
-        <span className="min-w-0 flex-1">
-          <span className="block truncate font-display text-[13.5px] font-bold text-content">
-            Invoice {row.invoiceNbr}
+        <span className="flex items-center gap-3 px-3.5 py-2.5">
+          <Chevron className="h-4 w-4 flex-none text-content/85" />
+          <span className="min-w-0 flex-1">
+            <span className="block truncate font-display text-[13.5px] font-bold text-content">
+              Invoice {row.invoiceNbr}
+            </span>
+            <span className="block truncate font-mono text-[10px] uppercase tracking-wider text-content/85">
+              Store {row.storeNbr}
+              {row.deliveryDate ? ` · ${row.deliveryDate}` : ""}
+              {row.retailDept ? ` · dept ${row.retailDept}` : ""} ·{" "}
+              {row.lineCount} {row.lineCount === 1 ? "line" : "lines"}
+            </span>
           </span>
-          <span className="block truncate font-mono text-[10px] uppercase tracking-wider text-content/85">
-            Store {row.storeNbr}
-            {row.deliveryDate ? ` · ${row.deliveryDate}` : ""}
-            {row.retailDept ? ` · dept ${row.retailDept}` : ""} ·{" "}
-            {row.lineCount} {row.lineCount === 1 ? "line" : "lines"}
+          <span className="flex-none text-right">
+            <span
+              className={`inline-block rounded px-1.5 py-0.5 text-[10px] font-bold ${
+                row.status === "nothingBilled"
+                  ? "bg-bkg text-content/85"
+                  : row.reconciled
+                    ? "bg-severity_healthy_bg text-severity_healthy_text"
+                    : "bg-severity_critical_bg text-severity_critical_text"
+              }`}
+            >
+              {row.status === "nothingBilled"
+                ? "Nothing billed"
+                : row.status === "noTotal"
+                  ? "No total row"
+                  : row.reconciled
+                    ? "Reconciled"
+                    : "Check"}
+            </span>
           </span>
         </span>
-        <span className="flex-none text-right">
-          <span className="block font-display text-[14px] font-bold text-content">
-            ${row.totalCost}
+
+        {/* ── what the invoice says about itself ─────────────────────
+          On the card itself, open or closed: these are what a file is
+          scanned for, and opening each invoice to read them is a click per
+          invoice. The cost and what it is made of first — line items plus
+          delivery, less pallet allowances — then the rest. An invoice that
+          billed nothing has no figures to show. */}
+        {row.status !== "nothingBilled" && (
+          <span className="grid grid-cols-2 gap-x-4 gap-y-2 border-t border-gray-100 px-3.5 py-2 sm:grid-cols-4 lg:grid-cols-8">
+            <Figure
+              label="Total cost"
+              value={row.totalCost}
+              check={checkFor("cost")}
+            />
+            <Figure label="Total line item cost" value={row.lineItemsCost} />
+            <Figure label="Delivery fees" value={row.deliveryFees} />
+            <Figure label="Pallet allowances" value={row.palletAllowances} />
+            {/* Computed — rate × weight on per-pound deals, less what the line
+              already took off — so a dash until suggested corrections are
+              applied, rather than a zero that reads as "none". */}
+            <Figure
+              label="Per-lb deals"
+              value={row.perLbDeals ?? "—"}
+              money={row.perLbDeals !== null}
+              title={
+                row.perLbDeals === null
+                  ? "Apply suggested corrections to read per-pound deals"
+                  : "Per-pound deals at rate × weight, less the rate the lines already took off"
+              }
+            />
+            <Figure
+              label="Allowances"
+              value={row.totalAllowances}
+              check={checkFor("allowances")}
+            />
+            <Figure
+              label="Total retail"
+              value={row.totalRetail}
+              check={checkFor("retail")}
+            />
+            <Figure
+              label="Cases"
+              value={row.totalCases}
+              check={checkFor("cases")}
+              money={false}
+            />
           </span>
-          <span
-            className={`mt-0.5 inline-block rounded px-1.5 py-0.5 text-[10px] font-bold ${
-              row.status === "nothingBilled"
-                ? "bg-bkg text-content/85"
-                : row.reconciled
-                  ? "bg-severity_healthy_bg text-severity_healthy_text"
-                  : "bg-severity_critical_bg text-severity_critical_text"
-            }`}
-          >
-            {row.status === "nothingBilled"
-              ? "Nothing billed"
-              : row.status === "noTotal"
-                ? "No total row"
-                : row.reconciled
-                  ? "Reconciled"
-                  : "Check"}
-          </span>
-        </span>
+        )}
       </button>
 
       {open && (
         <div className="border-t border-gray-100">
-          {/* ── what the invoice says about itself ─────────────────── */}
-          {/* The cost and what it is made of first — line items plus
-              delivery, less pallet allowances — then the rest. */}
-          {row.status !== "nothingBilled" && (
-            <div className="grid grid-cols-2 gap-x-4 gap-y-3 px-3.5 py-3 sm:grid-cols-4 lg:grid-cols-7">
-              <Figure label="Total cost" value={`$${row.totalCost}`} />
-              <Figure label="Line items" value={`$${row.lineItemsCost}`} />
-              <Figure label="Delivery fees" value={`$${row.deliveryFees}`} />
-              <Figure
-                label="Pallet allowances"
-                value={`$${row.palletAllowances}`}
-              />
-              <Figure label="Allowances" value={`$${row.totalAllowances}`} />
-              <Figure label="Total retail" value={`$${row.totalRetail}`} />
-              <Figure label="Cases" value={row.totalCases} />
-            </div>
-          )}
-
-          <div className="grid grid-cols-2 gap-x-4 gap-y-3 border-t border-gray-100 px-3.5 py-3">
+          <div className="grid grid-cols-2 gap-x-4 gap-y-3 px-3.5 py-3">
             <div className="min-w-0">
               <div className="mb-0.5 font-mono text-[9.5px] uppercase tracking-wider text-content/85">
                 Invoice date
@@ -265,7 +343,7 @@ const InvoiceCard = ({
               </div>
 
               <div className="overflow-x-auto">
-                <div className="min-w-[760px]">
+                <div className="min-w-[788px]">
                   <div
                     className="grid gap-2.5 border-b border-gray-200 pb-1.5 font-mono text-[9.5px] uppercase tracking-wider text-content/85"
                     style={{ gridTemplateColumns: LINE_COLS }}

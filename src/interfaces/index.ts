@@ -2653,6 +2653,9 @@ export interface InvoiceRow {
   /** The `03` pallet allowances — netted out of the total cost, and part of
    *  `totalAllowances`. */
   palletAllowances: string;
+  /** The part of per-pound deals no line took off, which the total cost
+   *  subtracts. Null until suggested corrections are applied. */
+  perLbDeals: string | null;
   totalCases: string;
   reconciled: boolean;
   /** `checked` against a `19` total; without one, `nothingBilled` when only
@@ -2668,11 +2671,14 @@ export interface InvoiceRow {
   /** A money check misses by more than 10¢, or the cases miss at all. */
   overTenCents: boolean;
   checks: {
+    id: "cost" | "retail" | "allowances" | "cases";
     label: string;
     derived: string;
     reported: string;
     ok: boolean;
     difference: string;
+    /** Derived less reported, signed: "+0.05" when ours is higher. */
+    offBy: string;
   }[];
   lines: InvoiceLineRow[];
 }
