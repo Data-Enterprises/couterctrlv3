@@ -38,9 +38,8 @@ import { useAwgInvoices } from "./useAwgInvoices";
 import { parseAwgFile } from "./vendors/awg";
 import { awgRecordsToCsv } from "./vendors/awg/exportCsv";
 import { awgInvoicesToOrdersCsv } from "./vendors/awg/exportOrders";
-import SingleSelect from "../../../components-dev/SingleSelect";
+import SelectFilter from "../../../components-dev/filters/SelectFilter";
 import { setSelectedStore, setLastStore } from "../../../features/searchSlice";
-import type { Store } from "../../../interfaces";
 import { applyEdits } from "./vendors/awg/applyEdit";
 import { downloadCsv } from "../../../utils/csvExport";
 import type { InvoiceEdit } from "./vendors/awg/applyEdit";
@@ -154,6 +153,17 @@ const AwgInvoices = () => {
       );
     });
   }, [rows, failedOnly, overTenCentsOnly, nothingBilledOnly, textFilter]);
+
+  /** The store list as the chooser wants it: number first, because that is
+   *  what anybody reading an invoice has in their head. */
+  const storeOptions = useMemo(
+    () =>
+      assignedStores.map((store) => ({
+        value: String(store.storeid),
+        label: `${store.store_number} \u2014 ${store.store_name}`,
+      })),
+    [assignedStores],
+  );
 
   const handleFile = (text: string, name: string) => {
     dispatch(setInvoicesParsing(true));
@@ -351,7 +361,7 @@ const AwgInvoices = () => {
             </div>
           </div>
 
-          <div className="px-3.5 pt-2 font-mono text-[10px] uppercase tracking-wider text-content/85">
+          <div className="px-3.5 pt-2 font-mono text-[11px] uppercase tracking-wider text-content">
             {rows.length} {rows.length === 1 ? "invoice" : "invoices"} ·{" "}
             {failedCount === 0 ? "all reconciled" : `${failedCount} to check`}
             {edits.length > 0
@@ -367,7 +377,10 @@ const AwgInvoices = () => {
           </div>
 
           <div className="flex flex-wrap items-center gap-2 border-t border-gray-100 px-3.5 py-2.5">
-            <div className="flex min-w-[180px] flex-1 items-center gap-2 rounded-lg bg-bkg px-3">
+            {/* Wide enough for its own placeholder. At 180 the row ran out
+                of room once the store chooser arrived and it read
+                "Invoice, store or departr". */}
+            <div className="flex min-w-[232px] flex-1 items-center gap-2 rounded-lg bg-bkg px-3">
               <MagnifyingGlassIcon className="h-4 w-4 flex-none text-content/85" />
               <input
                 id="awg-invoice-filter"
@@ -463,57 +476,60 @@ const AwgInvoices = () => {
               </button>
             )}
 
-            {/* The store, where the export that needs it is. `storeid` is
-                the layout's first column and it went out blank on every
-                row. */}
-            <SingleSelect<Store>
-              label={
-                storeid ? (
-                  "Store"
-                ) : (
-                  <>
-                    Store{" "}
-                    <span className="font-semibold text-brand_danger">
-                      — not selected
-                    </span>
-                  </>
-                )
-              }
-              data={assignedStores}
-              displayKey="store_name"
-              valueKey="storeid"
-              value={storeid}
-              defaultQuery={storeName}
-              resetQuery
-              onSelect={(id) => {
+            {/* Filters to the left of this, actions to the right. The row
+                was one undifferentiated run of seven controls. */}
+            <span className="mx-0.5 h-6 w-px flex-none bg-gray-200" />
+
+            {/* The store, beside the exports that need it. `storeid` is the
+                order layout's first column and it went out blank on every
+                row.
+
+                SelectFilter, not SingleSelect: it is the house chooser on a
+                filter row, 24px like the chips beside it, and it carries its
+                label in the placeholder instead of stacking one above and
+                breaking the row's height. `plain` because this chooses
+                rather than filters -- the active ring reads as "narrowing a
+                list", which a field that should always hold a value would
+                wear permanently and stop meaning anything. */}
+            <SelectFilter
+              plain
+              searchable
+              placeholder="Choose a store"
+              searchPlaceholder="Type a store name..."
+              options={storeOptions}
+              value={storeid ? String(storeid) : ""}
+              onChange={(id) => {
                 const store = assignedStores.find(
-                  (candidate) => candidate.storeid === Number(id),
+                  (candidate) => String(candidate.storeid) === id,
                 );
                 if (!store) return;
                 dispatch(setSelectedStore(store));
                 dispatch(setLastStore(store.storeid));
               }}
-              className="w-[220px] flex-none"
+              className="w-[190px]"
             />
 
             <button
               type="button"
               onClick={handleExport}
-              title="Download every record as decoded, without totals or corrections"
+              title="Every record as decoded — no totals, no corrections. What the file says."
               className="flex flex-none items-center gap-1.5 rounded-lg border border-gray-200 bg-custom-white px-3.5 py-2 font-display text-[13px] font-semibold text-content hover:bg-bkg"
             >
               <ArrowDownTrayIcon className="h-4 w-4" />
-              Export CSV
+              {/* Named by what it holds, not by the verb. Both of these
+                  exported a CSV, so "Export CSV" beside "Export as orders"
+                  told you which was which only by reading the second one. */}
+              Raw CSV
             </button>
 
             <button
               type="button"
               onClick={handleOrdersExport}
-              title="Download the invoices in the order layout, one row per billed line, with every correction on the page applied"
+              title="The order layout, one row per billed line, with every correction on the page applied"
               className="flex flex-none items-center gap-1.5 rounded-lg border border-gray-200 bg-custom-white px-3.5 py-2 font-display text-[13px] font-semibold text-content hover:bg-bkg"
             >
               <ArrowDownTrayIcon className="h-4 w-4" />
-              Export as orders
+              Orders CSV
             </button>
 
             <button

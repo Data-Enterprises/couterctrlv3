@@ -53,7 +53,7 @@ const Figure = ({
   const prefix = money ? "$" : "";
   return (
     <span className="block min-w-0" title={title}>
-      <span className="block font-mono text-[9.5px] uppercase tracking-wider text-content/85">
+      <span className="block font-mono text-[11px] uppercase tracking-wider text-content">
         {label}
       </span>
       <span
@@ -138,7 +138,7 @@ const InvoiceCard = ({
             <span className="block truncate font-display text-[13.5px] font-bold text-content">
               Invoice {row.invoiceNbr}
             </span>
-            <span className="block truncate font-mono text-[10px] uppercase tracking-wider text-content/85">
+            <span className="block truncate font-mono text-[11px] uppercase tracking-wider text-content">
               Store {row.storeNbr}
               {row.deliveryDate ? ` · ${row.deliveryDate}` : ""}
               {row.retailDept ? ` · dept ${row.retailDept}` : ""} ·{" "}
@@ -147,7 +147,7 @@ const InvoiceCard = ({
           </span>
           <span className="flex-none text-right">
             <span
-              className={`inline-block rounded px-1.5 py-0.5 text-[10px] font-bold ${
+              className={`inline-block whitespace-nowrap rounded px-2 py-1 text-[11px] font-bold ${
                 row.status === "nothingBilled"
                   ? "bg-bkg text-content/85"
                   : row.reconciled
@@ -219,13 +219,13 @@ const InvoiceCard = ({
         <div className="border-t border-gray-100">
           <div className="grid grid-cols-2 gap-x-4 gap-y-3 px-3.5 py-3">
             <div className="min-w-0">
-              <div className="mb-0.5 font-mono text-[9.5px] uppercase tracking-wider text-content/85">
+              <div className="mb-0.5 font-mono text-[11px] uppercase tracking-wider text-content">
                 Invoice date
               </div>
               {headerCell("delv_date", "Invoice date", row.deliveryDate ?? "")}
             </div>
             <div className="min-w-0">
-              <div className="mb-0.5 font-mono text-[9.5px] uppercase tracking-wider text-content/85">
+              <div className="mb-0.5 font-mono text-[11px] uppercase tracking-wider text-content">
                 Department
               </div>
               {headerCell("retail_dept", "Department", row.retailDept)}
@@ -234,7 +234,7 @@ const InvoiceCard = ({
 
           {/* ── the checks ─────────────────────────────────────────── */}
           <div className="border-t border-gray-100 px-3.5 py-3">
-            <div className="mb-1.5 font-mono text-[9.5px] uppercase tracking-wider text-content/85">
+            <div className="mb-1.5 font-mono text-[11px] uppercase tracking-wider text-content">
               Reconciliation
             </div>
             {row.note && (
@@ -252,7 +252,7 @@ const InvoiceCard = ({
             )}
             {row.checks.length > 0 && (
               <div className="overflow-hidden rounded border border-gray-200">
-                <div className="grid grid-cols-[1fr_84px_84px_80px] gap-2 border-b border-gray-200 bg-gray-50 px-2 py-1.5 font-mono text-[9.5px] uppercase tracking-wider text-content/85">
+                <div className="grid grid-cols-[1fr_84px_84px_80px] gap-2 border-b border-gray-200 bg-gray-50 px-2 py-1.5 font-mono text-[11px] uppercase tracking-wider text-content">
                   <span>Check</span>
                   <span className="text-right">Derived</span>
                   <span className="text-right">Reported</span>
@@ -306,7 +306,7 @@ const InvoiceCard = ({
           {/* ── what did not ship ───────────────────────────────────── */}
           {row.status === "nothingBilled" && row.exceptions.length > 0 && (
             <div className="border-t border-gray-100 px-3.5 py-3">
-              <div className="mb-1.5 font-mono text-[9.5px] uppercase tracking-wider text-content/85">
+              <div className="mb-1.5 font-mono text-[11px] uppercase tracking-wider text-content">
                 Exceptions
               </div>
               <div className="overflow-hidden rounded border border-gray-200">
@@ -334,7 +334,7 @@ const InvoiceCard = ({
           {row.status !== "nothingBilled" && (
             <div className="border-t border-gray-100 px-3.5 py-3">
               <div className="mb-1.5 flex items-baseline justify-between gap-2">
-                <span className="font-mono text-[9.5px] uppercase tracking-wider text-content/85">
+                <span className="font-mono text-[11px] uppercase tracking-wider text-content">
                   Lines
                 </span>
                 <span className="text-[11px] text-content/85">
@@ -345,7 +345,7 @@ const InvoiceCard = ({
               <div className="overflow-x-auto">
                 <div className="min-w-[788px]">
                   <div
-                    className="grid gap-2.5 border-b border-gray-200 pb-1.5 font-mono text-[9.5px] uppercase tracking-wider text-content/85"
+                    className="grid gap-2.5 border-b border-gray-200 pb-1.5 font-mono text-[11px] uppercase tracking-wider text-content"
                     style={{ gridTemplateColumns: LINE_COLS }}
                   >
                     <span>#</span>
