@@ -196,6 +196,16 @@ export interface ActualPricePoints {
   averagedCount: number;
   /** Distinct receipts across both tables: the item's transaction count. */
   receiptCount: number;
+  /**
+   * How many prices this item rang at, counted once.
+   *
+   * One number, because there were two. The tile counted rows across both
+   * tables and the pattern note counted distinct price VALUES, so COKE 6PK
+   * read "5" beside "4 prices across 84 transactions" (finding AT). Rows is
+   * the better definition of the two: REG $3.34 and SALE $3.34 are two prices
+   * somebody set, and a set of values cannot tell them apart.
+   */
+  priceCount: number;
   isWeighted: boolean;
 }
 
@@ -205,6 +215,7 @@ const emptyActual: ActualPricePoints = {
   exactCount: 0,
   averagedCount: 0,
   receiptCount: 0,
+  priceCount: 0,
   isWeighted: false,
 };
 
@@ -250,6 +261,52 @@ export const unitPrice = (t: TransactionListItem) =>
  * shelf prices a cent apart, so a pair that close, under the same price type,
  * is folded into whichever of the two more receipts rang at.
  */
+/**
+ * The same price, split across the two tables.
+ *
+ * `foldPennyTwins` works inside one table, which leaves the case it exists to
+ * catch: a 2-for-$6.67 sale rings $3.34 as a single and averages to $3.33 as
+ * a pair, so one promotion appears once in Exact and once in Avg, a penny
+ * apart, reading as two prices (finding AT).
+ *
+ * The single-ring price is the one kept -- it is what a customer actually
+ * paid rather than a division -- and the averaged row's receipts, units and
+ * sales fold into it. `averagedCount` is untouched: those transactions were
+ * still multi-buys, and the multi-buy share of the week is what decides
+ * whether a pattern is a package deal.
+ *
+ * Only within a price type. REG $3.34 and SALE $3.34 are two prices somebody
+ * set, and reading them as one is how a promotion disappears.
+ */
+const foldAcrossTables = (
+  exact: ActualPricePoint[],
+  averaged: ActualPricePoint[],
+): { exact: ActualPricePoint[]; averaged: ActualPricePoint[] } => {
+  const keptAveraged: ActualPricePoint[] = [];
+  for (const avg of averaged) {
+    const twin = exact.find(
+      (e) =>
+        e.priceType === avg.priceType && Math.abs(e.price - avg.price) <= 0.011,
+    );
+    if (!twin) {
+      keptAveraged.push(avg);
+      continue;
+    }
+    twin.trans += avg.trans;
+    twin.qty += avg.qty;
+    twin.sales += avg.sales;
+    // Days overlap between the two forms of one promotion, so the larger is
+    // the honest floor -- adding them could clear the three-day minimum on a
+    // single day counted twice.
+    twin.daysSeen = Math.max(twin.daysSeen, avg.daysSeen);
+    if (avg.lastSeen > twin.lastSeen) twin.lastSeen = avg.lastSeen;
+  }
+  return {
+    exact: [...exact].sort((a, b) => b.trans - a.trans),
+    averaged: keptAveraged,
+  };
+};
+
 const foldPennyTwins = <T extends { price: number; priceType: string }>(
   points: T[],
   /** Which of two twins is the real price: the one more receipts rang at. */
@@ -366,12 +423,17 @@ export const actualPricePoints = (
       .sort((a, b) => b.trans - a.trans);
   };
 
+  // The same cross-table fold the server path gets: a promotion that rings
+  // as a single and averages as a pair is one price in either source.
+  const folded = foldAcrossTables(bucket(exactRows, false), bucket(avgRows, true));
+
   return {
-    exact: bucket(exactRows, false),
-    averaged: bucket(avgRows, true),
+    exact: folded.exact,
+    averaged: folded.averaged,
     exactCount: receiptsIn(exactRows),
     averagedCount: receiptsIn(avgRows),
     receiptCount: receiptsIn(sold),
+    priceCount: folded.exact.length + folded.averaged.length,
     isWeighted,
   };
 };
@@ -444,12 +506,15 @@ export const pricePointsFromServer = (
   const receiptsOf = (rs: ServerPricePoint[]) =>
     rs.reduce((s, r) => s + r.receipts, 0);
 
+  const { exact, averaged } = foldAcrossTables(table(exactRows), table(avgRows));
+
   return {
-    exact: table(exactRows),
-    averaged: table(avgRows),
+    exact,
+    averaged,
     exactCount: receiptsOf(exactRows),
     averagedCount: receiptsOf(avgRows),
     receiptCount: receiptsOf(sold),
+    priceCount: exact.length + averaged.length,
     isWeighted,
   };
 };
@@ -705,9 +770,9 @@ export const classifyPattern = (
     };
   }
 
-  const distinctPrices = new Set(
-    [...actual.exact, ...actual.averaged].map((p) => p.price),
-  ).size;
+  // The same count the tile shows. These were computed separately and
+  // disagreed on screen -- 5 against 4 on COKE 6PK (finding AT).
+  const distinctPrices = actual.priceCount;
   const volatilityPct = (distinctPrices / totalTrans) * 100;
   const mixedPct =
     mixed.uniqueTxns > 0 ? (mixed.mixedTxns / mixed.uniqueTxns) * 100 : 0;

@@ -131,9 +131,10 @@ const ItemAnalysisPanel = ({
       units: product.units,
       marginPct: stats.marginPct,
       unitCost: stats.unitCost,
-      // Counts prices actually rung, not inferred ones — the tile has to agree
-      // with the table the suggestion comes from.
-      prices: act.exact.length + act.averaged.length,
+      // One count, shared with the pattern note under it. These were computed
+      // separately and disagreed on screen — 5 here against "4 prices across
+      // 84 transactions" below (finding AT).
+      prices: act.priceCount,
       // Receipts, once each, even when one sits in both tables.
       trans: act.receiptCount,
     }),

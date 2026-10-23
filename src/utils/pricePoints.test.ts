@@ -290,3 +290,85 @@ describe("linesAtPrice", () => {
     ).toEqual([]);
   });
 });
+
+/**
+ * COKE 6PK .5LT, store 695, week to 10/20/2026. A 2-for-$6.67 sale rang
+ * $3.34 as a single and averaged $3.33 as a pair, so one promotion showed in
+ * both tables a penny apart and read as two prices. The tile said 5 and the
+ * note under it said "4 prices across 84 transactions" (finding AT).
+ */
+describe("one promotion across the two tables", () => {
+  const sp = (over: Partial<ServerPricePoint>): ServerPricePoint => ({
+    price_type: "SALE",
+    multi: false,
+    unit_price: 3.34,
+    receipts: 34,
+    units: 34,
+    weight: 0,
+    sales: 113.56,
+    days_seen: 5,
+    last_seen: "2026-10-18",
+    weighed: false,
+    ...over,
+  });
+
+  it("folds the averaged twin into the single-ring price", () => {
+    const out = pricePointsFromServer(
+      [
+        sp({}),
+        sp({ multi: true, unit_price: 3.33, receipts: 33, units: 66, sales: 219.78 }),
+      ],
+      2,
+    );
+    expect(out.exact).toHaveLength(1);
+    expect(out.averaged).toHaveLength(0);
+    // The price a customer actually paid is kept, not the division.
+    expect(out.exact[0].price).toBe(3.34);
+    expect(out.exact[0].trans).toBe(67);
+    expect(out.exact[0].qty).toBe(100);
+  });
+
+  it("counts it once, and the tile and the note read that count", () => {
+    const out = pricePointsFromServer(
+      [
+        sp({}),
+        sp({ multi: true, unit_price: 3.33, receipts: 33 }),
+        sp({ price_type: "REG", unit_price: 4.29, receipts: 17 }),
+      ],
+      2,
+    );
+    expect(out.priceCount).toBe(2);
+    expect(out.exact.length + out.averaged.length).toBe(out.priceCount);
+  });
+
+  it("keeps two price types a penny apart as two prices", () => {
+    // REG $3.34 and SALE $3.34 are two prices somebody set. Reading them as
+    // one is how a promotion disappears.
+    const out = pricePointsFromServer(
+      [sp({ price_type: "REG" }), sp({ price_type: "SALE", multi: true })],
+      2,
+    );
+    expect(out.priceCount).toBe(2);
+  });
+
+  it("leaves the multi-buy share alone", () => {
+    // Those transactions were still multiples, and the multi share is what
+    // decides whether a pattern is a package deal.
+    const out = pricePointsFromServer(
+      [sp({}), sp({ multi: true, unit_price: 3.33, receipts: 33 })],
+      2,
+    );
+    expect(out.averagedCount).toBe(33);
+    expect(out.exactCount).toBe(34);
+  });
+
+  it("does not fold prices that are genuinely apart", () => {
+    const out = pricePointsFromServer(
+      [sp({}), sp({ multi: true, unit_price: 2.99, receipts: 10 })],
+      2,
+    );
+    expect(out.exact).toHaveLength(1);
+    expect(out.averaged).toHaveLength(1);
+    expect(out.priceCount).toBe(2);
+  });
+});
