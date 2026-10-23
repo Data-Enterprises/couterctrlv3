@@ -128,11 +128,11 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
   <div class="lead">
     <div class="eyebrow">CounterCtrl dev &middot; Response to the re-check</div>
     <h1>Response to the 23 Oct re-check</h1>
-    <p class="sub">Four of the five new findings we are taking, one we would fix differently from how it reads, and P and O are now answered from the rows &mdash; the margin on that chicken is the real one. Plus two issues Wayne raised separately. Everything on our side is fixed; what is left is two asks for the backend.</p>
+    <p class="sub">Four of the five new findings we are taking, one we would fix differently from how it reads, and P and O are now answered from the rows &mdash; the margin on that chicken is the real one. Plus two issues Wayne raised separately. <b>Every finding is now closed</b> except AW, which is a scheduling call rather than a fix.</p>
   </div>
   <div class="status">
     <span><b>All phases done</b> &middot; AS, AT, AU, AV, D, G and 5a fixed</span>
-    <span>2 of Wayne&rsquo;s fixed &middot; <b>P and O</b> closed, no code change &middot; only the two backend asks remain</span>
+    <span>2 of Wayne&rsquo;s fixed &middot; <b>P and O</b> closed, no code change &middot; <b>D</b> closed with the backend &middot; only <b>AW</b> is left</span>
   </div>
 </header>
 
@@ -289,7 +289,7 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
       <tr><td class="tags">3</td><td><b>Done</b> &mdash; Price Opt&rsquo;s two counts <span class="commit">d7eb5c45</span></td><td class="tags">AT, G</td><td>&mdash;</td><td>&mdash;</td></tr>
       <tr><td class="tags">4</td><td><b>Done</b> &mdash; hash flag across four more pages <span class="commit">8ee9b005</span></td><td class="tags">&mdash;</td><td>&mdash;</td><td>&mdash;</td></tr>
       <tr><td class="tags">5</td><td><b>Done</b> &mdash; the Categories pill names its base <span class="commit">2779e4b2</span></td><td class="tags">5a</td><td>&mdash;</td><td>&mdash;</td></tr>
-      <tr class="total"><td class="tags">6</td><td>Backend</td><td class="tags">AW, D</td><td>Not ours</td><td><b>Decisions 4&ndash;5</b></td></tr>
+      <tr class="total"><td class="tags">6</td><td>Backend &mdash; <b>D done</b> <span class="commit">fc0daa04</span>, AW outstanding</td><td class="tags">AW, D</td><td>&mdash;</td><td><b>Decisions 4&ndash;5</b></td></tr>
     </tbody>
   </table></div>
 
@@ -329,7 +329,7 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
   <p><b>P</b> and <b>O</b> closed with no code change once the rows came in, and <b>B</b>&rsquo;s two constants stay as they are by decision 2. <b>5a</b> is done: the pill now names the base it compared, so the figure cannot be back-solved into a last-week total the page never used.</p>
 
   <h3>Phase 6 &middot; Backend <span class="chip review">not ours</span></h3>
-  <p><b>AW</b>&rsquo;s server-side aggregate and <b>D</b>&rsquo;s multi-price receipt count. Both are scheduling calls for Steve and Dylan. Nothing in phases 0&ndash;5 waits on either.</p>
+  <p><b>D</b>&rsquo;s multi-price receipt count landed the same day it was specced and is closed above <span class="commit">fc0daa04</span>. <b>AW</b>&rsquo;s server-side aggregate is the only thing left, and it is a scheduling call rather than a fix.</p>
 </section>
 
 <section class="block" aria-labelledby="dec-h">
@@ -366,17 +366,31 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
 </section>
 
 <section class="block" aria-labelledby="open-h">
-  <h2 id="open-h">What is still open</h2>
-  <p>One item, and it is a backend ask rather than a frontend fix.</p>
+  <h2 id="open-h">D, closed on the day</h2>
 
   <article class="find" id="d-open">
-    <div class="find-head"><span class="find-tag">D</span><h3>Package deal cannot fire without a count of mixed-price receipts</h3>
-      <div class="verdict"><span class="chip review">Backend ask</span></div></div>
-    <p>Package deal is the pattern where the <b>same receipt</b> has the item at two different prices &mdash; a BOGO, or a 2-for where one rings full and one discounted. Detecting it needs the number of receipts on which the item rang at more than one price.</p>
-    <p>The old code got that by downloading every receipt and checking each one. The table comes from the server now, that count is not in it, and the pattern is judged without it &mdash; so <b>Package deal never fires</b>. One number on the same query restores it.</p>
+    <div class="find-head"><span class="find-tag">D</span><h3>Package deal could not fire without a count of mixed-price receipts</h3>
+      <div class="verdict"><span class="chip ok">Fixed</span> <span class="commit">fc0daa04</span> Backend + frontend</div></div>
+    <p>Package deal is the pattern where the <b>same receipt</b> has the item at two different prices &mdash; a BOGO, or a 2-for where one rings full and one discounted. It is the one pattern a price list cannot show, because the signal is not which prices exist but which ones land in a basket together. Detecting it needs the number of receipts carrying more than one price, the old code got that by downloading every receipt, and the walk went when the server table replaced it. So the pattern was being judged with nothing, and <b>never fired</b>.</p>
+    <div class="do"><b>Done, both halves.</b> The backend added the counts to <code>cashiers/price_points</code> on the same query &mdash; one read, <code>price_points</code> itself unchanged. The browser reads them. They are optional on our side, so the order these deploy in does not matter: without them the pattern simply stays quiet, which is today&rsquo;s behaviour.</div>
+
+    <p><b>Two things worth knowing, because neither is obvious.</b></p>
+
+    <p><b>The denominator could not be worked out here.</b> Summing <code>receipts</code> across the price points double-counts precisely the receipts this is about &mdash; a receipt holding two prices sits in both rows. On COKE 6PK that sum is 84 against a true 73. So the total had to come from the server too.</p>
+
+    <p><b>Two prices means more than a cent apart</b> &mdash; a rule the backend added that we had not asked for, and the right call. A 3-for-$10 rings $3.33, $3.33, $3.34. Counting raw distinct prices, <b>64 of the 85 two-price receipts</b> at storeid 695 that week were that rounding: three in every four &ldquo;package deals&rdquo; would have been false. The price list already folds penny twins, so the two sides now use one rule.</p>
+
+    <p><b>Weighed items return null</b> rather than a number. Two packs of chicken in one basket usually compute to different prices per pound because the total is rounded to the cent and the weight to the hundredth of a pound &mdash; and a BOGO is rung on packages, not pounds. Null reads as &ldquo;not answerable&rdquo; here, never as &ldquo;none found&rdquo;, so the pattern is not offered for those items at all.</p>
+
+    <div class="verify">
+      <h4>How to check it</h4>
+      <ol>
+        <li><b>COKE 6PK .5LT</b> (4900002468), storeid 695 (#361), 10/14&ndash;10/20. The panel should read <b>Consistent pricing</b>, not Package deal: all 11 of its two-price receipts were the 3-for-$10 rounding.</li>
+        <li><b>Fam Pak Breast Tenders</b> (20016900000), same store. Weighed, so Package deal is never offered whatever the baskets look like.</li>
+        <li>An item with genuine two-price baskets &mdash; reduced packaged meat, produce by count, reduced bakery are the three the backend verified &mdash; carries the count. Note that it still needs <b>30% of receipts</b> before the pattern claims anything, and reduced packaged meat is 12 of 69, so it stays quiet too. That threshold is a judgement we have not changed; say the word if it should come down.</li>
+      </ol>
+    </div>
   </article>
-
-
 </section>
 
 <section class="block" aria-labelledby="closed-h">

@@ -572,3 +572,34 @@ entry, or it would re-ask forever.
 Vendors needs none of this -- its item lists come from rows the page has
 already read.
 
+### Package deal reads the server's receipt counts
+
+`fc0daa04`
+
+**D, closed.** The pattern is "the same receipt rang this item at two prices",
+and it had not fired since the receipt walk was deleted -- the panel called
+`classifyPattern` with an empty placeholder because there was no count to give
+it. The backend added one on the same query; the browser reads it.
+
+Three optional fields on `cashiers/price_points`: `receipts_total`,
+`multi_price_receipts`, `max_price_spread`. Optional on purpose, so the order
+the two halves deploy in does not matter -- without them the pattern stays
+quiet, which is the current behaviour.
+
+`receipts_total` is not the sum of `receipts` across the price points. One
+receipt can sit in two of those rows, so that sum over-counts by exactly the
+receipts this is about: 84 against a true 73 on COKE 6PK.
+
+**Two prices means more than a cent apart** -- a rule the backend added and the
+right one. A 3-for-$10 rings $3.33, $3.33, $3.34; on raw distinct prices 64 of
+85 two-price receipts at store 695 were that rounding. `foldPennyTwins` already
+applies it to the price list, so the two sides share one rule and have to move
+together.
+
+**Weighed items return null**, and null reads as "not answerable" rather than
+"none found" -- two packs of chicken in one basket compute to different prices
+per pound from rounding alone, and a BOGO is rung on packages.
+
+`mixedPriceInsight` is deleted. It walked receipt lines and divided by qty,
+which is 1 on a random-weight pack -- the arithmetic findings AS and D were
+both about.
