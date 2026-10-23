@@ -1,0 +1,268 @@
+<title>Backend Ask &mdash; Multi-price Receipt Count</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:wght@500;600&display=swap">
+<style>
+/* Companion to recheck-reply-2026-10-23. Same tokens and reading column as the
+   issue drafts, the board review and both earlier dev responses. */
+:root{
+  --ground:#f5f8fb; --paper:#ffffff; --paper-2:#eef3f8;
+  --head:#08203f; --ink:#0c1a2e; --body:#3d5372; --muted:#6b809d; --faint:#93a5bd;
+  --line:#d9e2ed; --line-2:#e9eef5;
+  --accent:#0b4f9e; --accent-soft:#e8f0fb; --accent-bd:#c2d8f2;
+  --ok:#166b45; --ok-bg:#e7f4ed; --ok-bd:#bfe0cd;
+  --warn:#8a5806; --warn-bg:#fdf3e2; --warn-bd:#eed9b0;
+  --stop:#a3231c; --stop-bg:#fcecea; --stop-bd:#f0c8c5;
+  --code-bg:#0f2138; --code-fg:#dbe7f6; --code-key:#9cc4f5; --code-dim:#8ea3bf;
+  --shadow:rgba(8,32,63,.08);
+  --f-display:"IBM Plex Serif",Georgia,serif;
+  --f-body:"IBM Plex Sans",-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#070f1c; --paper:#0e1b2d; --paper-2:#13243a;
+    --head:#eaf1fb; --ink:#dfe8f5; --body:#b0c2da; --muted:#8b9fbb; --faint:#71859f;
+    --line:#1e3350; --line-2:#182a44;
+    --accent:#5aa2f0; --accent-soft:#12294a; --accent-bd:#25446e;
+    --ok:#6fce9f; --ok-bg:#0f2a1e; --ok-bd:#255c40;
+    --warn:#e8b45f; --warn-bg:#2a2010; --warn-bd:#5c4519;
+    --stop:#f08a82; --stop-bg:#2c1512; --stop-bd:#5f2b26;
+    --code-bg:#050c17; --code-fg:#d3e1f3; --code-key:#7fb6f2; --code-dim:#6f86a6;
+    --shadow:rgba(0,0,0,.5);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#070f1c; --paper:#0e1b2d; --paper-2:#13243a;
+  --head:#eaf1fb; --ink:#dfe8f5; --body:#b0c2da; --muted:#8b9fbb; --faint:#71859f;
+  --line:#1e3350; --line-2:#182a44;
+  --accent:#5aa2f0; --accent-soft:#12294a; --accent-bd:#25446e;
+  --ok:#6fce9f; --ok-bg:#0f2a1e; --ok-bd:#255c40;
+  --warn:#e8b45f; --warn-bg:#2a2010; --warn-bd:#5c4519;
+  --stop:#f08a82; --stop-bg:#2c1512; --stop-bd:#5f2b26;
+  --code-bg:#050c17; --code-fg:#d3e1f3; --code-key:#7fb6f2; --code-dim:#6f86a6;
+  --shadow:rgba(0,0,0,.5);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--body);font-family:var(--f-body);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1040px;margin:0 auto;padding-block:28px 72px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:28px}
+h1,h2,h3{font-family:var(--f-display);color:var(--head);text-wrap:balance;margin:0;font-weight:600}
+h1{font-size:30px;line-height:1.15;letter-spacing:-.01em}
+h2{font-size:21px;line-height:1.25}
+h3{font-size:16px}
+p{margin:0;max-width:76ch}
+b{color:var(--ink);font-weight:600}
+a{color:var(--accent)}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.eyebrow{font-family:var(--f-mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted)}
+code{font-family:var(--f-mono);font-size:12.5px;background:var(--paper-2);border:1px solid var(--line-2);border-radius:4px;padding:1px 5px;color:var(--ink);overflow-wrap:anywhere}
+.note{font-size:13.5px;color:var(--muted)}
+.commit{font-family:var(--f-mono);font-size:12.5px;color:var(--ok);background:var(--ok-bg);border:1px solid var(--ok-bd);border-radius:4px;padding:1px 6px;white-space:nowrap}
+
+.masthead{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-end;justify-content:space-between;padding-bottom:18px;border-bottom:2px solid var(--head)}
+.masthead .lead{display:grid;gap:8px;min-width:0;flex:1 1 420px}
+.masthead .sub{color:var(--muted);font-size:14px;max-width:64ch}
+.status{display:grid;gap:4px;background:var(--paper);border:1px solid var(--accent-bd);border-radius:8px;padding:10px 14px;font-size:13px;max-width:36ch}
+.status b{color:var(--accent)}
+
+.block{display:grid;gap:12px;min-width:0}
+.chip{display:inline-block;font:600 11px/1 var(--f-mono);letter-spacing:.03em;padding:5px 8px;border-radius:999px;border:1px solid;white-space:nowrap}
+.chip.ok{color:var(--ok);background:var(--ok-bg);border-color:var(--ok-bd)}
+.chip.watch{color:var(--warn);background:var(--warn-bg);border-color:var(--warn-bd)}
+.chip.review{color:var(--accent);background:var(--accent-soft);border-color:var(--accent-bd)}
+.chip.ghost{color:var(--muted);background:var(--paper-2);border-color:var(--line)}
+.chip.stop{color:var(--stop);background:var(--stop-bg);border-color:var(--stop-bd)}
+
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--paper);min-width:0}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{padding:9px 12px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line-2)}
+tr:last-child td{border-bottom:0}
+th{font:600 10.5px/1.35 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:var(--paper-2)}
+td.tags{font-family:var(--f-mono);font-size:12.5px;color:var(--accent);white-space:nowrap}
+td.state{white-space:nowrap}
+tr.total td{background:var(--paper-2);font-weight:600;color:var(--ink)}
+
+.find{background:var(--paper);border:1px solid var(--line);border-radius:10px;box-shadow:0 1px 2px var(--shadow);padding:18px 20px 20px;display:grid;gap:12px;min-width:0;scroll-margin-top:16px}
+.find-head{display:grid;grid-template-columns:auto 1fr;gap:2px 14px;align-items:baseline}
+.find-tag{font:600 22px/1 var(--f-display);color:var(--accent);grid-row:span 2}
+.find-head .verdict{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13.5px;color:var(--muted)}
+.facts{display:grid;grid-template-columns:max-content 1fr;gap:6px 18px;font-size:13.5px;margin:0;padding:12px 14px;background:var(--paper-2);border-radius:8px}
+.facts dt{font:600 10.5px/1.7 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.facts dd{margin:0;color:var(--ink);min-width:0;overflow-wrap:anywhere}
+pre{margin:0;padding:11px 14px;background:var(--code-bg);color:var(--code-fg);font:12px/1.65 var(--f-mono);overflow-x:auto;white-space:pre;border-radius:8px;max-width:100%}
+pre .k{color:var(--code-key);font-weight:600}
+pre .c{color:var(--code-dim)}
+ol,ul{margin:0;padding-left:20px;display:grid;gap:5px}
+.callout{border-left:3px solid var(--accent);padding:2px 0 2px 12px;color:var(--ink)}
+.callout.warn{border-color:var(--warn)}
+.callout.ok{border-color:var(--ok)}
+.do{background:var(--ok-bg);border:1px solid var(--ok-bd);border-radius:8px;padding:11px 14px;font-size:13.5px;color:var(--ink)}
+.do b{color:var(--ok)}
+.verify{border:1px solid var(--ok-bd);border-radius:8px;background:var(--ok-bg);padding:11px 14px;display:grid;gap:6px}
+.verify h4{margin:0;font:600 10.5px/1.4 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ok)}
+.verify ol{padding-left:18px;gap:3px}
+.verify,.verify li{color:var(--ink);font-size:13.5px}
+
+.ask{display:grid;gap:10px}
+.ask .row{display:grid;grid-template-columns:2.4em 1fr;gap:12px;align-items:start;border:1px solid var(--line);border-radius:8px;padding:12px 14px;background:var(--paper)}
+.ask .n{font:600 13px/1.4 var(--f-mono);color:var(--accent)}
+footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:14px;display:grid;gap:6px}
+
+@media (max-width:560px){
+  h1{font-size:25px}
+  .find{padding:14px}
+  .facts{grid-template-columns:1fr;gap:2px 0}
+  .facts dd{margin-bottom:8px}
+  .ask .row{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+
+<header class="masthead">
+  <div class="lead">
+    <div class="eyebrow">CounterCtrl dev &middot; For the backend</div>
+    <h1>The multi-price receipt count</h1>
+    <p class="sub">Finding D from the 23 Oct re-check. Three numbers on a query that already reads exactly the right rows. Without them the <b>Package deal</b> pattern cannot fire at all, and it has not fired since the receipt walk was deleted on 22 Oct.</p>
+  </div>
+  <div class="status">
+    <span><b>Endpoint:</b> <span class="mono">POST /cashiers/price_points</span></span>
+    <span>No new table, no new index, no extra read of <span class="mono">sales_partitioned</span></span>
+  </div>
+</header>
+
+<section class="block" aria-labelledby="why-h">
+  <h2 id="why-h">What it is for</h2>
+  <p><b>Package deal</b> is the pattern where the <b>same receipt</b> rings the item at two different prices &mdash; a BOGO, or a 2-for where one unit rings full and the other discounted. It is the one pricing pattern that cannot be seen in a price list, because the signal is not which prices exist but which ones land in one basket together.</p>
+  <p>The browser used to get it by downloading every receipt for the item and checking each one. That walk was deleted when <code>price_points</code> took over &mdash; rightly: it was slow, capped at 400 receipts, and priced weighed items wrong. But the count went with it, and the pattern has been judged without it ever since, so <b>Package deal never fires</b>.</p>
+  <p class="callout">Nothing else is missing. Every other pattern &mdash; Multi-buy, volatility, the stable cases &mdash; already reads what the endpoint returns today.</p>
+</section>
+
+<section class="block" aria-labelledby="what-h">
+  <h2 id="what-h">The three numbers</h2>
+  <dl class="facts">
+    <dt>multi_price_receipts</dt><dd>Receipts on which the item rang at <b>more than one price</b>.</dd>
+    <dt>receipts_total</dt><dd>Distinct receipts the item appeared on at all. The denominator.</dd>
+    <dt>max_price_spread</dt><dd>The widest <span class="mono">max &minus; min</span> inside a single multi-price receipt. Used in the sentence the panel prints, not in the decision.</dd>
+  </dl>
+
+  <p class="callout"><b><span class="mono">receipts_total</span> cannot be worked out from the rows you already return.</b> Summing <code>receipts</code> across the price points double-counts precisely the receipts this feature is about: a receipt that bought the item at two prices is counted once in each of those two rows. That is why the denominator has to come from the server as well, rather than being added up in the browser.</p>
+
+  <p>What the browser does with them, so the definitions are pinned to a use:</p>
+  <pre><span class="c">// fires when at least 30% of receipts carry more than one price</span>
+mixedPct = multi_price_receipts / receipts_total * 100
+&rarr; "47% of receipts ring this item at more than one price, spread up to $1.50."</pre>
+  <p class="note">Prices compare by <b>amount</b>, not by price type. REG&nbsp;$3.34 and SALE&nbsp;$3.34 are one price here &mdash; the customer paid the same money twice, which is not a package deal.</p>
+</section>
+
+<section class="block" aria-labelledby="sql-h">
+  <h2 id="sql-h">The change</h2>
+  <p>The <code>line</code> and <code>sold</code> CTEs are untouched. <code>unit_price</code> moves out of the final select into a CTE of its own, so the existing output and the new count share one definition of a price rather than carrying two copies that can drift.</p>
+  <pre>priced as (
+    select
+        receipt,
+        coalesce(nullif(trim(price_type), &#x27;&#x27;), &#x27;REG&#x27;) as price_type,
+        (not weighed and qty &gt; 1) as multi,
+        -- Unchanged. Lifted out of the final select so both outputs below
+        -- share one definition of &quot;a price&quot; and cannot drift apart.
+        case
+            when lbs &gt; 0 and coalesce(price, 0) &gt; 0
+                 and abs(net - price * lbs) &lt;= price * 0.005 + 0.005
+                then round(price::numeric, 2)
+            else round((net / case when lbs &gt; 0 then lbs else qty end)::numeric, 2)
+        end as unit_price,
+        day, qty, lbs, net, weighed
+    from sold
+)</pre>
+
+  <p>The existing output then reads it instead of recomputing it. Same rows, same order &mdash; <code>price_points</code> in the response does not change:</p>
+  <pre>-- The existing output, now reading unit_price instead of recomputing it.
+select
+    price_type,
+    multi,
+    unit_price,
+    count(distinct receipt)::int         as receipts,
+    sum(qty)::float8                     as units,
+    round(sum(lbs)::numeric, 3)::float8  as weight,
+    round(sum(net)::numeric, 2)::float8  as sales,
+    count(distinct day)::int             as days_seen,
+    max(day)                             as last_seen,
+    bool_or(weighed)                     as weighed
+from priced
+group by price_type, multi, unit_price
+order by receipts desc, unit_price desc</pre>
+
+  <p>And the new aggregate:</p>
+  <pre>-- The new one. Same CTEs, one more pass over a set already in memory.
+per_receipt as (
+    select receipt,
+           count(distinct unit_price)        as prices,
+           max(unit_price) - min(unit_price) as spread,
+           bool_or(weighed)                  as weighed
+      from priced
+     group by receipt
+)
+select
+    count(*)::int                            as receipts_total,
+    count(*) filter (where prices &gt; 1)::int  as multi_price_receipts,
+    coalesce(max(spread) filter (where prices &gt; 1), 0)::float8
+                                             as max_price_spread,
+    bool_or(weighed)                         as weighed
+from per_receipt</pre>
+
+  <p class="note">Two statements or one &mdash; your call. If two, the <code>line</code> / <code>sold</code> / <code>priced</code> text is worth hoisting into a single module-level string, so there is one definition of a price in the file rather than two that have to be edited together.</p>
+</section>
+
+<section class="block" aria-labelledby="trap-h">
+  <h2 id="trap-h">The weighed-item trap</h2>
+  <p>This is the part worth deciding before anything is written, because the obvious implementation is wrong on scale items.</p>
+  <p>Two packs of chicken in one basket will usually compute to two <i>different</i> prices per pound, for the reason already documented in that query: the total is rounded to the cent and the weight to the hundredth of a pound before either reaches us. The shelf-price clamp collapses that when the line is within what the rounding can explain &mdash; but a line outside it reports what was paid, and two such lines make the receipt look mixed when nothing was discounted.</p>
+  <p><b>And a package deal on a scale item is not a real pattern.</b> A BOGO is rung on packages, not on pounds.</p>
+  <div class="ask">
+    <div class="row"><div class="n">A</div><div><b>Recommended.</b> Return <code>multi_price_receipts</code> and <code>max_price_spread</code> as <b>null</b> when the item is weighed. One rule, in one place, and nothing downstream can misread the number because there is no number to misread. <code>receipts_total</code> stays a real count &mdash; it is right either way and useful on its own.</div></div>
+    <div class="row"><div class="n">B</div><div>Return them always, and the browser suppresses Package deal when <code>weighed</code> is true. Works, but then the rule lives on our side of the wire while the trap lives on yours.</div></div>
+  </div>
+  <p class="note">Either is fine &mdash; say which and the frontend will match it. If nothing is said we will build for A.</p>
+</section>
+
+<section class="block" aria-labelledby="shape-h">
+  <h2 id="shape-h">Response shape</h2>
+  <pre>{
+  &quot;error&quot;: 0,
+  &quot;success&quot;: true,
+  &quot;count&quot;: 3,
+  &quot;price_points&quot;: [ ... unchanged ... ],
+
+  &quot;receipts_total&quot;:       84,    // distinct receipts the item appeared on
+  &quot;multi_price_receipts&quot;: 39,    // of those, how many carried two or more prices
+  &quot;max_price_spread&quot;:     1.50   // widest gap inside one such receipt
+}</pre>
+  <p>Three new top-level fields beside <code>price_points</code>, which is unchanged. <b>The browser will treat all three as optional</b>, so a dev deploy where the API is still the old one keeps rendering exactly as it does today &mdash; Package deal simply stays quiet, which is the current behaviour anyway. Nothing has to ship in a particular order.</p>
+</section>
+
+<section class="block" aria-labelledby="cost-h">
+  <h2 id="cost-h">What it costs</h2>
+  <p>Nothing meaningful. The same lines are already selected, filtered and materialised for the output that exists; this is one more aggregate over that set. No new table, no new index, no second read of <span class="mono">sales_partitioned</span>, and the expensive part of the endpoint &mdash; the partitioned scan on storeid, date and product code &mdash; is untouched.</p>
+</section>
+
+<section class="block" aria-labelledby="check-h">
+  <h2 id="check-h">How we will check it</h2>
+  <ol>
+    <li><b>COKE 6PK .5LT</b> (4900002468), storeid 695 (#361), 10/14&ndash;10/20. It rings 84 transactions across three prices &mdash; $3.34 SALE, $4.00 STOR, $6.49 REG. Any basket holding the sale price and one of the others should land in <code>multi_price_receipts</code>.</li>
+    <li>A single-price item over the same week returns <code>multi_price_receipts</code> 0, and the panel&rsquo;s pattern note stays off rather than reading &ldquo;0% of receipts&rdquo;.</li>
+    <li><b>Fam Pak Breast Tenders</b> (20016900000), same store &mdash; weighed, so under option A both counts come back null and Package deal is never offered for it.</li>
+    <li><code>receipts_total</code> is less than or equal to the sum of <code>receipts</code> across the price points, and strictly less whenever <code>multi_price_receipts</code> is above zero. That one inequality is the whole bug this fixes.</li>
+  </ol>
+</section>
+
+<footer>
+  <span>Finding D of <span class="mono">recheck-reply-2026-10-23</span>. The frontend half &mdash; pointing Item Actions at <span class="mono">price_points</span> and deleting the receipt walk &mdash; is done and on <span class="mono">price_opt_weight_labels</span>; this is the only piece outstanding.</span>
+  <span>Written against <span class="mono">api/routers/cashiers.py</span> as it stands today: <span class="mono">POST /price_points</span>, backend 22 Oct.</span>
+</footer>
+
+</div>
