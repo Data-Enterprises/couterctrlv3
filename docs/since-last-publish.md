@@ -663,7 +663,7 @@ its chevron.
 
 ### Every not-compared department is named
 
-`461aee5f`
+`a60b12fb`
 
 The strip listed three department names and "and others", and only ever named
 the counterpart store's -- so on the biggest unexplained figure on the screen a
