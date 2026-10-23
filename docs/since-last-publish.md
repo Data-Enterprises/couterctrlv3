@@ -660,3 +660,20 @@ call site: a chevron alone says there is more without saying it can be opened.
 
 The back button on the comparison drill-down carries the word **Back** beside
 its chevron.
+
+### Every not-compared department is named
+
+`461aee5f`
+
+The strip listed three department names and "and others", and only ever named
+the counterpart store's -- so on the biggest unexplained figure on the screen a
+reader was told there was something they were not being shown, and never saw
+this store's side at all.
+
+Both sides are named in full now, one line per store: "Only here: ..." and
+"Only at <store>: ...". The hash departments are listed in full too, where it
+was the same three-and-others.
+
+The overlay caps at 45vh and scrolls, since naming every department can run
+long on a pair of stores that share little and it must not reach past the panel
+it is laid over.

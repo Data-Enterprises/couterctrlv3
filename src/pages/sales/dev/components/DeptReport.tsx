@@ -958,7 +958,10 @@ const DeptReport = ({
             }
             trailing={notComparedShown ? "Not compared" : "Breakdown"}
             detail={
-              <span className="flex flex-col gap-2 text-[13px] leading-snug">
+              /* Capped and scrollable: naming every department means this can
+                 run long on a pair of stores that share little, and the
+                 overlay must not reach past the panel it is laid over. */
+              <span className="flex flex-col gap-2 text-[13px] leading-snug max-h-[45vh] overflow-y-auto">
                 {concentrated && (
                   <span>
                     {word(shown.length)}{" "}
@@ -1014,13 +1017,28 @@ const DeptReport = ({
                         </span>
                       </>
                     )}
-                    .{" "}
-                    <span className="text-content/85">
-                      {onlyTheirs
-                        .slice(0, 3)
-                        .map((r) => r.name)
-                        .join(", ")}
-                      {onlyTheirs.length > 3 ? " and others" : ""}
+                    .
+                    {/* Every one of them, by name, on its own line per
+                        store. These were three names and "and others" --
+                        which told a reader there was something they were not
+                        being shown about the biggest unexplained figure on
+                        the screen. The strip overlays now, so the room to
+                        name them exists. */}
+                    <span className="mt-1 flex flex-col gap-0.5 text-content/85">
+                      {onlyMine.length > 0 && (
+                        <span>
+                          <span className="font-semibold">Only here:</span>{" "}
+                          {onlyMine.map((r) => r.name).join(", ")}
+                        </span>
+                      )}
+                      {onlyTheirs.length > 0 && (
+                        <span>
+                          <span className="font-semibold">
+                            Only at {compareStoreName}:
+                          </span>{" "}
+                          {onlyTheirs.map((r) => r.name).join(", ")}
+                        </span>
+                      )}
                     </span>
                   </span>
                 )}
@@ -1041,8 +1059,7 @@ const DeptReport = ({
                     {hash.names.length > 0 && (
                       <span className="text-content/85">
                         {" "}
-                        ({hash.names.slice(0, 3).join(", ")}
-                        {hash.names.length > 3 ? " and others" : ""})
+                        ({hash.names.join(", ")})
                       </span>
                     )}
                     {hash.mine !== 0 && (
