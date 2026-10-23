@@ -35,6 +35,8 @@ import InvoiceCard from "./InvoiceCard";
 import { useAwgInvoices } from "./useAwgInvoices";
 import { parseAwgFile } from "./vendors/awg";
 import { awgRecordsToCsv } from "./vendors/awg/exportCsv";
+import { awgInvoicesToOrdersCsv } from "./vendors/awg/exportOrders";
+import { applyEdits } from "./vendors/awg/applyEdit";
 import { downloadCsv } from "../../../utils/csvExport";
 import type { InvoiceEdit } from "./vendors/awg/applyEdit";
 
@@ -199,6 +201,14 @@ const AwgInvoices = () => {
   const handleExport = () => {
     const base = fileName.replace(/\.[^.]*$/, "") || "awg_invoices";
     downloadCsv(awgRecordsToCsv(fileText), `${base}_raw.csv`);
+  };
+
+  /** The invoices as the page has them — corrections and suggested
+   *  corrections included — in the order layout. */
+  const handleOrdersExport = () => {
+    const base = fileName.replace(/\.[^.]*$/, "") || "awg_invoices";
+    const invoices = applyEdits(parseAwgFile(fileText).invoices, edits);
+    downloadCsv(awgInvoicesToOrdersCsv(invoices), `${base}_orders.csv`);
   };
 
   const handleSend = async () => {
@@ -391,6 +401,16 @@ const AwgInvoices = () => {
             >
               <ArrowDownTrayIcon className="h-4 w-4" />
               Export CSV
+            </button>
+
+            <button
+              type="button"
+              onClick={handleOrdersExport}
+              title="Download the invoices in the order layout, one row per billed line, with every correction on the page applied"
+              className="flex flex-none items-center gap-1.5 rounded-lg border border-gray-200 bg-custom-white px-3.5 py-2 font-display text-[13px] font-semibold text-content hover:bg-bkg"
+            >
+              <ArrowDownTrayIcon className="h-4 w-4" />
+              Export as orders
             </button>
 
             <button
