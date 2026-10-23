@@ -1,4 +1,5 @@
 import type { SubSale } from "../../../../interfaces";
+import { countedRows, hashRows } from "../../../../utils/hashSubs";
 
 /**
  * The sub-department comparison, as a report.
@@ -442,11 +443,15 @@ export const buildReport = (
    * not lost from the report -- it is counted below, on its own side.
    */
   const rows = all.filter((r) => r.matched);
+  // Which SIDE has it, not whether it made money. Cash Acct, RSA and the
+  // 60 Plus Club are all negative departments, and testing `mine > 0` lost
+  // them from both lists and from the net -- so the three figures on screen
+  // stopped adding up, by exactly the amount of the negative ones.
   const onlyMine = all
-    .filter((r) => !r.matched && r.mine > 0)
+    .filter((r) => !r.matched && r.mineId !== null)
     .sort((a, b) => b.mine - a.mine);
   const onlyTheirs = all
-    .filter((r) => !r.matched && r.theirs > 0)
+    .filter((r) => !r.matched && r.theirsId !== null)
     .sort((a, b) => b.theirs - a.theirs);
   const onlyMineTotal = onlyMine.reduce((t, r) => t + r.mine, 0);
   const onlyTheirsTotal = onlyTheirs.reduce((t, r) => t + r.theirs, 0);
@@ -573,7 +578,44 @@ export interface Periods {
   theirsLy: SubSale[];
 }
 
+/**
+ * The money each store leaves out of its own net sales, this week.
+ *
+ * Reported rather than silently dropped: the comparison below skips fuel and
+ * lottery so its total can agree with the store figures in the Stores tab,
+ * and a reader looking at a store with $79,943 of fuel is owed that number
+ * somewhere on the screen.
+ */
+export const hashTotals = (p: Periods) => ({
+  mine: hashRows(p.mineTw).reduce((t, r) => t + r.total_sales - r.total_tax, 0),
+  theirs: hashRows(p.theirsTw).reduce(
+    (t, r) => t + r.total_sales - r.total_tax,
+    0,
+  ),
+  names: [
+    ...new Set(hashRows(p.theirsTw).map((r) => r.sub_department_description)),
+  ],
+});
+
+/**
+ * One row per department, both stores' figures on it.
+ *
+ * Hash departments are dropped on the way in. They are in these responses on
+ * purpose -- a store's own drill-down should show its fuel -- but a total
+ * built from every row disagrees with `sales/weekly`, which leaves them out,
+ * and this report's headline is set beside exactly that figure. Tupelo's
+ * $79,943 of fuel and Chapel Hill's -$2,334.95 of cash accounts were the
+ * whole $82,277.95 by which the two disagreed.
+ */
 export const totalsFrom = (p: Periods): DeptTotals[] => {
+  p = {
+    mineTw: countedRows(p.mineTw),
+    mineLw: countedRows(p.mineLw),
+    mineLy: countedRows(p.mineLy),
+    theirsTw: countedRows(p.theirsTw),
+    theirsLw: countedRows(p.theirsLw),
+    theirsLy: countedRows(p.theirsLy),
+  };
   const mTw = sidesBySubDept(p.mineTw);
   const mLw = sidesBySubDept(p.mineLw);
   const mLy = sidesBySubDept(p.mineLy);

@@ -22,6 +22,7 @@ import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicato
 import PageInfoButton from "../../../../components-dev/PageInfoButton";
 import {
   buildReport,
+  hashTotals,
   totalsFrom,
   type Finding,
   type Gate,
@@ -711,6 +712,22 @@ const DeptReport = ({
     dispatch,
   ]);
 
+  /** What both stores leave out of net sales, for the note under the bar. */
+  const hash = useMemo(
+    () =>
+      theirs
+        ? hashTotals({
+            mineTw: subSales,
+            mineLw: subSalesWk2,
+            mineLy: subSalesWk3,
+            theirsTw: theirs.tw,
+            theirsLw: theirs.lw,
+            theirsLy: theirs.ly,
+          })
+        : null,
+    [theirs, subSales, subSalesWk2, subSalesWk3],
+  );
+
   const report = useMemo(() => {
     if (!theirs) return null;
     return buildReport(
@@ -920,6 +937,39 @@ const DeptReport = ({
                 .join(", ")}
               {onlyTheirs.length > 3 ? " and others" : ""}
             </span>
+          </div>
+        )}
+
+        {/* Fuel, lottery, cash accounts.
+            The store leaves these out of its own net sales, so the Stores tab
+            figure this headline is set beside leaves them out too, and the
+            comparison has to as well or the two disagree. Named because a
+            reader who knows Tupelo sells fuel will look for it. */}
+        {hash !== null && (hash.mine !== 0 || hash.theirs !== 0) && (
+          <div className="mt-1.5 text-[11.5px] text-content/85 leading-snug">
+            Outside net sales at both stores, so not compared:{" "}
+            <span className="font-bold tabular-nums">
+              {money(hash.theirs)}
+            </span>{" "}
+            at {compareStoreName}
+            {hash.names.length > 0 && (
+              <span className="text-content/70">
+                {" "}
+                ({hash.names.slice(0, 3).join(", ")}
+                {hash.names.length > 3 ? " and others" : ""})
+              </span>
+            )}
+            {hash.mine !== 0 && (
+              <>
+                {" "}
+                &middot;{" "}
+                <span className="font-bold tabular-nums">
+                  {money(hash.mine)}
+                </span>{" "}
+                here
+              </>
+            )}
+            .
           </div>
         )}
       </div>

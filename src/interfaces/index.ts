@@ -153,6 +153,24 @@ export type SubSale = {
   digital_coupons: number;
   store_coupon: number;
   transaction_count: number;
+  /**
+   * This line is in a sub department its store leaves out of net sales.
+   *
+   * Fuel, lottery, cash accounts — "hash" departments. The store sets them
+   * per store in `sub_department_exclusions`: Tupelo excludes its five fuel
+   * departments, Chapel Hill excludes Lottery, Cash Acct, RSA and Default,
+   * and neither list resembles the other.
+   *
+   * `sales/weekly` and `sales/daily` drop these rows, so a store total built
+   * from `sub_sales` disagrees with the header above it — by $79,943 at
+   * Tupelo for the week to 10/22/2026. The flag is how a caller gets either
+   * answer; see `utils/hashSubs`.
+   *
+   * Optional because it arrived after this type. A response without it reads
+   * as "not known to be hash", which keeps every existing screen on the
+   * behaviour it had.
+   */
+  is_hash?: boolean;
 };
 
 export type SubGridRow = SubSale & {

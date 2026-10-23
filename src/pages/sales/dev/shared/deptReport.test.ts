@@ -4,6 +4,7 @@ import {
   chainFor,
   NOT_CHECKED,
   splitGap,
+  hashTotals,
   totalsFrom,
   type Bands,
   type DeptTotals,
@@ -538,3 +539,91 @@ describe("the sold gate's percentage", () => {
     expect(soldValue(150, 100)).toBe("50% more units");
   });
 });
+
+/**
+ * The reconciliation the whole thing was for.
+ *
+ * Brooks Chapel Hill (1105) and Tupelo (1521), week to 10/22/2026, as the
+ * rows actually come back:
+ *
+ *   sub_sales            Chapel Hill $220,855.15   Tupelo $356,891.66
+ *   of which hash                    -$2,334.95           $79,943.00
+ *   sales/weekly                    $223,190.10          $276,948.66
+ *
+ * The Stores tab says Chapel Hill is $53,758.56 behind. The Sub depts
+ * headline said $136,036.51, which is the same subtraction over rows that
+ * include fuel and cash accounts. Dropping the hash rows is what closes the
+ * $82,277.95 between them.
+ */
+describe("the headline against the Stores tab", () => {
+  const at = (sub: number, name: string, sales: number, hash = false) =>
+    row({
+      sub_department: sub,
+      sub_department_description: name,
+      total_sales: sales,
+      total_tax: 0,
+      qty: 1,
+      is_hash: hash,
+    });
+
+  // Standing in for each store's week: what it counts, and what it doesn't.
+  const periods = {
+    mineTw: [
+      at(1, "Grocery", 223190.1),
+      at(27, "Cash Acct", -2334.95, true),
+    ],
+    theirsTw: [
+      at(1, "Grocery", 276948.66),
+      at(97, "UNLEADED", 79943.0, true),
+    ],
+    mineLw: [], mineLy: [], theirsLw: [], theirsLy: [],
+  };
+
+  it("nets to what the Stores tab shows", () => {
+    const r = buildReport(totalsFrom(periods));
+    expect(r.netGap).toBeCloseTo(-53758.56, 2);
+  });
+
+  it("was out by the hash departments before", () => {
+    // The same rows with the flag stripped -- the shape the endpoint returned
+    // until `is_hash` landed.
+    const unflagged = {
+      ...periods,
+      mineTw: periods.mineTw.map(({ is_hash: _h, ...r }) => r),
+      theirsTw: periods.theirsTw.map(({ is_hash: _h, ...r }) => r),
+    };
+    const r = buildReport(totalsFrom(unflagged));
+    expect(r.netGap).toBeCloseTo(-136036.51, 2);
+    // And the difference between the two readings is the hash money.
+    expect(-53758.56 - -136036.51).toBeCloseTo(82277.95, 2);
+  });
+
+  it("keeps the hash money for the note rather than discarding it", () => {
+    const h = hashTotals(periods);
+    expect(h.theirs).toBeCloseTo(79943.0, 2);
+    expect(h.mine).toBeCloseTo(-2334.95, 2);
+    expect(h.names).toEqual(["UNLEADED"]);
+  });
+
+  it("leaves hash departments out of the rows entirely", () => {
+    const out = totalsFrom(periods);
+    expect(out.map((d) => d.name)).toEqual(["Grocery"]);
+  });
+
+  it("keeps a negative department in the total", () => {
+    // Cash Acct, RSA and the 60 Plus Club are all negative. Picking the two
+    // lists by "made money" rather than by "which store has it" dropped them
+    // from both, and the headline silently stopped matching the rows.
+    const r = buildReport(
+      totalsFrom({
+        mineTw: [at(1, "Grocery", 1000), at(27, "Cash Acct", -300)],
+        theirsTw: [at(1, "Grocery", 1000)],
+        mineLw: [], mineLy: [], theirsLw: [], theirsLy: [],
+      }),
+    );
+    expect(r.onlyMine.map((x) => x.name)).toEqual(["Cash Acct"]);
+    expect(r.onlyMineTotal).toBe(-300);
+    expect(r.netGap).toBe(-300);
+  });
+});
+
