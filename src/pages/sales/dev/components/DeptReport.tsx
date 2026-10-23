@@ -19,6 +19,7 @@ import { rememberCounterpart } from "../../../../features/dev/devSalesCacheSlice
 import { useSalesState } from "../hooks/useSalesState";
 import { scopeToStoreNumber } from "../shared/ledgerUtils";
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
+import CtaStrip, { type CtaTone } from "../../../../components-dev/CtaStrip";
 import PageInfoButton from "../../../../components-dev/PageInfoButton";
 import {
   buildReport,
@@ -627,6 +628,16 @@ interface Props {
   onBack: () => void;
 }
 
+/** Informational, not a grade. The strip under the split bar explains what
+ *  the bar leaves out; nothing in it is a verdict on the store, so it takes
+ *  the neutral tone rather than borrowing a severity colour. */
+const COMPARE_NOTE_TONE: CtaTone = {
+  border: "border-gray-200",
+  bg: "bg-gray-50",
+  hoverBg: "hover:bg-gray-100",
+  text: "text-content",
+};
+
 const DeptReport = ({
   openStoreName,
   openStoreId,
@@ -805,6 +816,13 @@ const DeptReport = ({
    *  empty and never opens on a department nobody chose. */
   const selected = rows.find((r) => r.key === picked) ?? rows[0] ?? null;
 
+  /** The three things the strip under the bar can say. Named here because the
+   *  strip has to know whether it has anything to say at all before it
+   *  decides what to put on its own label. */
+  const concentrated = underTotal > 0 && shown.length > 0;
+  const notComparedShown = onlyMine.length > 0 || onlyTheirs.length > 0;
+  const hashShown = hash !== null && (hash.mine !== 0 || hash.theirs !== 0);
+
   return (
     <div className="h-full flex flex-col overflow-hidden">
       {/* Back, the headline and the counterpart on one line. They were two
@@ -860,120 +878,185 @@ const DeptReport = ({
         </div>
 
         {underTotal > 0 && (
-          <>
-            {/* The two piles the net is made of, both written where they
-                are drawn. One bar split into "5 departments / 21 others" was
-                a share of the behind pile -- a percentage of a figure the
-                reader had not been given. */}
-            <span className="flex h-6 rounded-md overflow-hidden bg-bkg mt-2.5 text-[11.5px] font-semibold">
+          /* The two piles the net is made of, both written where they are
+             drawn. One bar split into "5 departments / 21 others" was a share
+             of the behind pile -- a percentage of a figure the reader had not
+             been given. */
+          <span className="flex h-6 rounded-md overflow-hidden bg-bkg mt-2.5 text-[11.5px] font-semibold">
+            <span
+              className={`flex items-center px-2.5 text-custom-white whitespace-nowrap overflow-hidden ${severityDotClass.critical}`}
+              style={{
+                width: `${Math.max(12, (underTotal / (underTotal + overTotal)) * 100)}%`,
+              }}
+            >
+              <span className="truncate">{money(underTotal)} behind</span>
+            </span>
+            {overTotal > 0 && (
               <span
-                className={`flex items-center px-2.5 text-custom-white whitespace-nowrap overflow-hidden ${severityDotClass.critical}`}
-                style={{
-                  width: `${Math.max(12, (underTotal / (underTotal + overTotal)) * 100)}%`,
-                }}
+                className={`flex items-center px-2.5 text-custom-white whitespace-nowrap overflow-hidden flex-1 ${severityDotClass.healthy}`}
               >
-                <span className="truncate">{money(underTotal)} behind</span>
+                <span className="truncate">{money(overTotal)} ahead</span>
               </span>
-              {overTotal > 0 && (
-                <span
-                  className={`flex items-center px-2.5 text-custom-white whitespace-nowrap overflow-hidden flex-1 ${severityDotClass.healthy}`}
-                >
-                  <span className="truncate">{money(overTotal)} ahead</span>
-                </span>
-              )}
-            </span>
+            )}
+          </span>
+        )}
 
-            {shown.length > 0 && (
-              <div className="mt-1.5 text-[11.5px] text-content/85">
-                {word(shown.length)}{" "}
-                {shown.length === 1 ? "department holds" : "departments hold"}{" "}
-                <span className="font-bold tabular-nums text-delta_negative_text">
-                  {money(shown.reduce((t, r) => t - r.gap, 0))}
-                </span>{" "}
-                of the {money(underTotal)} behind
-                {folded.length > 0 && (
-                  <>
-                    {" "}
-                    &middot; {folded.length}{" "}
-                    {folded.length === 1 ? "other holds" : "others hold"} the
-                    rest
-                  </>
+        {/*
+          Everything the bar cannot say, behind one strip.
+
+          These were three stacked sentences under the bar. Together they ran
+          to four lines of 11.5px type and pushed the two panels below them
+          down the screen -- so the list a reader came here to scan started
+          lower the more there was to explain, and the explanation was set in
+          the smallest type on the page.
+
+          As a CtaStrip it lays OVER the panels instead of moving them, which
+          is the house rule for these, and the sentences get a size worth
+          reading because the room is no longer rationed.
+
+          Closed by default, per the same rule. The bar above already carries
+          the finding; this is the working behind it.
+        */}
+        {(concentrated || notComparedShown || hashShown) && (
+          <CtaStrip
+            tone={COMPARE_NOTE_TONE}
+            className="mt-1.5 rounded-md border"
+            label={
+              notComparedShown ? (
+                /* Counted, not totalled. Adding onlyMine to onlyTheirs makes
+                   a figure that is nobody's sales and no kind of gap -- one
+                   pile is this store's, the other is the counterpart's --
+                   and set under "Behind by $53,758.56" it read as money
+                   missing from that. It is not, and it never included the
+                   hash departments either. The count is exact and the detail
+                   has both figures with their stores attached. */
+                <>
+                  <span className="font-bold tabular-nums">
+                    {onlyMine.length + onlyTheirs.length}
+                  </span>{" "}
+                  {onlyMine.length + onlyTheirs.length === 1
+                    ? "department is"
+                    : "departments are"}{" "}
+                  carried by only one of the two stores
+                </>
+              ) : concentrated ? (
+                <>
+                  {word(shown.length)}{" "}
+                  {shown.length === 1 ? "department holds" : "departments hold"}{" "}
+                  <span className="font-bold tabular-nums">
+                    {money(shown.reduce((t, r) => t - r.gap, 0))}
+                  </span>{" "}
+                  of the gap
+                </>
+              ) : (
+                <>Some sales are outside net sales at both stores</>
+              )
+            }
+            trailing={notComparedShown ? "Not compared" : "Breakdown"}
+            detail={
+              <span className="flex flex-col gap-2 text-[13px] leading-snug">
+                {concentrated && (
+                  <span>
+                    {word(shown.length)}{" "}
+                    {shown.length === 1
+                      ? "department holds"
+                      : "departments hold"}{" "}
+                    <span className="font-bold tabular-nums text-delta_negative_text">
+                      {money(shown.reduce((t, r) => t - r.gap, 0))}
+                    </span>{" "}
+                    of the {money(underTotal)} behind
+                    {folded.length > 0 && (
+                      <>
+                        {" "}
+                        &middot; {folded.length}{" "}
+                        {folded.length === 1 ? "other holds" : "others hold"}{" "}
+                        the rest
+                      </>
+                    )}
+                    .
+                  </span>
                 )}
-                .
-              </div>
-            )}
-          </>
-        )}
 
-        {/* What neither pile can hold.
-            A department only one store carries has no counterpart to be
-            behind, so it is not in the bar above -- but its money is real and
-            it is most of why the two stores differ at all. Naming it here
-            keeps the three parts adding up: the bar, this, and the headline. */}
-        {(onlyMine.length > 0 || onlyTheirs.length > 0) && (
-          <div className="mt-1.5 text-[11.5px] text-content/85 leading-snug">
-            Not compared &mdash; departments only one store carries:{" "}
-            {onlyMine.length > 0 && (
-              <>
-                <span className="font-semibold">{onlyMine.length}</span> only
-                here worth{" "}
-                <span className="font-bold tabular-nums text-delta_positive_text">
-                  {money(onlyMineTotal)}
-                </span>
-              </>
-            )}
-            {onlyMine.length > 0 && onlyTheirs.length > 0 && <> &middot; </>}
-            {onlyTheirs.length > 0 && (
-              <>
-                <span className="font-semibold">{onlyTheirs.length}</span> only
-                at {compareStoreName} worth{" "}
-                <span className="font-bold tabular-nums text-delta_negative_text">
-                  {money(onlyTheirsTotal)}
-                </span>
-              </>
-            )}
-            .{" "}
-            <span className="text-content/70">
-              {onlyTheirs
-                .slice(0, 3)
-                .map((r) => r.name)
-                .join(", ")}
-              {onlyTheirs.length > 3 ? " and others" : ""}
-            </span>
-          </div>
-        )}
+                {/* A department only one store carries has no counterpart to
+                    be behind, so it is not in the bar above -- but its money
+                    is real and it is most of why the two stores differ at
+                    all. Naming it keeps the three parts adding up: the bar,
+                    this, and the headline. */}
+                {notComparedShown && (
+                  <span>
+                    Not compared &mdash; departments only one store carries:{" "}
+                    {onlyMine.length > 0 && (
+                      <>
+                        <span className="font-semibold">
+                          {onlyMine.length}
+                        </span>{" "}
+                        only here worth{" "}
+                        <span className="font-bold tabular-nums text-delta_positive_text">
+                          {money(onlyMineTotal)}
+                        </span>
+                      </>
+                    )}
+                    {onlyMine.length > 0 && onlyTheirs.length > 0 && (
+                      <> &middot; </>
+                    )}
+                    {onlyTheirs.length > 0 && (
+                      <>
+                        <span className="font-semibold">
+                          {onlyTheirs.length}
+                        </span>{" "}
+                        only at {compareStoreName} worth{" "}
+                        <span className="font-bold tabular-nums text-delta_negative_text">
+                          {money(onlyTheirsTotal)}
+                        </span>
+                      </>
+                    )}
+                    .{" "}
+                    <span className="text-content/85">
+                      {onlyTheirs
+                        .slice(0, 3)
+                        .map((r) => r.name)
+                        .join(", ")}
+                      {onlyTheirs.length > 3 ? " and others" : ""}
+                    </span>
+                  </span>
+                )}
 
-        {/* Fuel, lottery, cash accounts.
-            The store leaves these out of its own net sales, so the Stores tab
-            figure this headline is set beside leaves them out too, and the
-            comparison has to as well or the two disagree. Named because a
-            reader who knows Tupelo sells fuel will look for it. */}
-        {hash !== null && (hash.mine !== 0 || hash.theirs !== 0) && (
-          <div className="mt-1.5 text-[11.5px] text-content/85 leading-snug">
-            Outside net sales at both stores, so not compared:{" "}
-            <span className="font-bold tabular-nums">
-              {money(hash.theirs)}
-            </span>{" "}
-            at {compareStoreName}
-            {hash.names.length > 0 && (
-              <span className="text-content/70">
-                {" "}
-                ({hash.names.slice(0, 3).join(", ")}
-                {hash.names.length > 3 ? " and others" : ""})
+                {/* Fuel, lottery, cash accounts. The store leaves these out
+                    of its own net sales, so the Stores tab figure this
+                    headline is set beside leaves them out too, and the
+                    comparison has to as well or the two disagree. Named
+                    because a reader who knows Tupelo sells fuel will look
+                    for it. */}
+                {hashShown && (
+                  <span>
+                    Outside net sales at both stores, so not compared:{" "}
+                    <span className="font-bold tabular-nums">
+                      {money(hash.theirs)}
+                    </span>{" "}
+                    at {compareStoreName}
+                    {hash.names.length > 0 && (
+                      <span className="text-content/85">
+                        {" "}
+                        ({hash.names.slice(0, 3).join(", ")}
+                        {hash.names.length > 3 ? " and others" : ""})
+                      </span>
+                    )}
+                    {hash.mine !== 0 && (
+                      <>
+                        {" "}
+                        &middot;{" "}
+                        <span className="font-bold tabular-nums">
+                          {money(hash.mine)}
+                        </span>{" "}
+                        here
+                      </>
+                    )}
+                    .
+                  </span>
+                )}
               </span>
-            )}
-            {hash.mine !== 0 && (
-              <>
-                {" "}
-                &middot;{" "}
-                <span className="font-bold tabular-nums">
-                  {money(hash.mine)}
-                </span>{" "}
-                here
-              </>
-            )}
-            .
-          </div>
+            }
+          />
         )}
       </div>
 
