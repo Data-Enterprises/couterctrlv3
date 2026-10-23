@@ -137,9 +137,12 @@ const InvoiceExportModal = ({
   return (
     <ResizableModalShell
       onClose={onClose}
-      storageKey="export-modal:awg-invoices:v1"
-      defaultWidth={560}
-      defaultHeight={640}
+      // v2: the default grew when nothing collapsed any more. The key
+      // carries the version because a stored size wins over a default, so
+      // anyone who had opened the old one would never see the new height.
+      storageKey="export-modal:awg-invoices:v2"
+      defaultWidth={620}
+      defaultHeight={820}
     >
       <div className="flex items-center gap-3 bg-brand_navy px-4 py-3">
         <div className="min-w-0 flex-1">
