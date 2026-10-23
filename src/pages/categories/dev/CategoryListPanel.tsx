@@ -213,6 +213,14 @@ const CategoryListPanel = ({
       tw,
       lwPct: lw > 0 ? pctChange(twLW, lw) : null,
       lyPct: ly > 0 ? pctChange(twLY, ly) : null,
+      // The two sides the percentages were actually taken over. Categories
+      // pairs per category per day and drops a category-day with no
+      // counterpart from BOTH sides, so these are smaller than `tw` whenever
+      // a category traded this week and not in the compared one.
+      twForLW: twLW,
+      lwPaired: lw,
+      twForLY: twLY,
+      lyPaired: ly,
     };
   }, [graded, metric]);
 
@@ -231,6 +239,34 @@ const CategoryListPanel = ({
    *  crowd the pills beside it, matching Sales. Rows keep the exact amount. */
   const fmtHeader = (n: number) =>
     metric === "qty" ? formatBigNumber(n, 0) : formatCurrencyCompact(n);
+
+  /**
+   * What the percentage beside the total was actually taken over.
+   *
+   * The header total is the whole week. The percentage is not: a category-day
+   * with no counterpart in the compared period leaves both sides, so the base
+   * is "this week, in the category-days that also exist back then". On the
+   * reported example the header read $100.4K and +7.15% while the figures
+   * compared were about $96.8K against $90.3K -- close enough to look like the
+   * headline, so a reader back-solves a last-week total the page never used.
+   *
+   * Only said when the two differ. When nothing was dropped the base IS the
+   * headline and the sentence would be noise.
+   */
+  const comparedBasis = (
+    twPaired: number,
+    prior: number,
+    period: string,
+  ): string => {
+    if (Math.abs(twPaired - totals.tw) < 0.005) return "";
+    return `Compares ${fmt(twPaired)} this week against ${fmt(prior)} ${period} — the categories trading in both periods. The ${fmtHeader(totals.tw)} beside it is the whole week.`;
+  };
+
+  /** Built once each rather than three times inline, as the Sales header does. */
+  const lwPill = headerDeltaPill(totals.lwPct ?? 0, headerCov.lwDayCount, headerCov.dayCount, "last week");
+  const lyPill = headerDeltaPill(totals.lyPct ?? 0, headerCov.lyDayCount, headerCov.dayCount, "last year");
+  const pillTitle = (basis: string, note: string | undefined) =>
+    [basis, note].filter(Boolean).join(" ") || undefined;
 
   const dateRange =
     cats.twStart && cats.twEnd ? fmtCompactRange(cats.twStart, cats.twEnd) : "";
@@ -279,24 +315,26 @@ const CategoryListPanel = ({
               </span>
               {totals.lwPct !== null && (
                 <span
-                  title={headerDeltaPill(totals.lwPct, headerCov.lwDayCount, headerCov.dayCount, "last week").title}
-                  className={`text-[12px] font-semibold px-2 py-0.5 rounded-full ${
-                    headerDeltaPill(totals.lwPct, headerCov.lwDayCount, headerCov.dayCount, "last week").cls
-                  }`}
+                  title={pillTitle(
+                    comparedBasis(totals.twForLW, totals.lwPaired, "last week"),
+                    lwPill.title,
+                  )}
+                  className={`text-[12px] font-semibold px-2 py-0.5 rounded-full ${lwPill.cls}`}
                 >
                   LW {formatPct(totals.lwPct)}
-                  {headerDeltaPill(totals.lwPct, headerCov.lwDayCount, headerCov.dayCount, "last week").note}
+                  {lwPill.note}
                 </span>
               )}
               {totals.lyPct !== null && (
                 <span
-                  title={headerDeltaPill(totals.lyPct, headerCov.lyDayCount, headerCov.dayCount, "last year").title}
-                  className={`text-[12px] font-semibold px-2 py-0.5 rounded-full ${
-                    headerDeltaPill(totals.lyPct, headerCov.lyDayCount, headerCov.dayCount, "last year").cls
-                  }`}
+                  title={pillTitle(
+                    comparedBasis(totals.twForLY, totals.lyPaired, "last year"),
+                    lyPill.title,
+                  )}
+                  className={`text-[12px] font-semibold px-2 py-0.5 rounded-full ${lyPill.cls}`}
                 >
                   LY {formatPct(totals.lyPct)}
-                  {headerDeltaPill(totals.lyPct, headerCov.lyDayCount, headerCov.dayCount, "last year").note}
+                  {lyPill.note}
                 </span>
               )}
             </>

@@ -128,11 +128,11 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
   <div class="lead">
     <div class="eyebrow">CounterCtrl dev &middot; Response to the re-check</div>
     <h1>Response to the 23 Oct re-check</h1>
-    <p class="sub">Four of the five new findings we are taking, one we would fix differently from how it reads, and P and O are now answered from the rows &mdash; the margin on that chicken is the real one. Plus two issues Wayne raised separately, both already fixed.</p>
+    <p class="sub">Four of the five new findings we are taking, one we would fix differently from how it reads, and P and O are now answered from the rows &mdash; the margin on that chicken is the real one. Plus two issues Wayne raised separately. Everything on our side is fixed; what is left is two asks for the backend.</p>
   </div>
   <div class="status">
-    <span><b>Phases 1&ndash;4 done</b> &middot; AS, AT, AU, AV, D and G fixed</span>
-    <span>2 of Wayne&rsquo;s fixed &middot; <b>P and O</b> closed, no code change &middot; <b>5a</b> is all that is left</span>
+    <span><b>All phases done</b> &middot; AS, AT, AU, AV, D, G and 5a fixed</span>
+    <span>2 of Wayne&rsquo;s fixed &middot; <b>P and O</b> closed, no code change &middot; only the two backend asks remain</span>
   </div>
 </header>
 
@@ -285,7 +285,7 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
       <tr><td class="tags">2</td><td><b>Done</b> &mdash; Item Actions on <code>price_points</code> <span class="commit">582e452e</span></td><td class="tags">AS, D</td><td>&mdash;</td><td>&mdash;</td></tr>
       <tr><td class="tags">3</td><td><b>Done</b> &mdash; Price Opt&rsquo;s two counts <span class="commit">d7eb5c45</span></td><td class="tags">AT, G</td><td>&mdash;</td><td>&mdash;</td></tr>
       <tr><td class="tags">4</td><td><b>Done</b> &mdash; hash flag across four more pages <span class="commit">8ee9b005</span></td><td class="tags">&mdash;</td><td>&mdash;</td><td>&mdash;</td></tr>
-      <tr><td class="tags">5</td><td>The Categories header&rsquo;s compared base</td><td class="tags">5a</td><td>A sentence</td><td>&mdash;</td></tr>
+      <tr><td class="tags">5</td><td><b>Done</b> &mdash; the Categories pill names its base <span class="commit">PHASE5SHA</span></td><td class="tags">5a</td><td>&mdash;</td><td>&mdash;</td></tr>
       <tr class="total"><td class="tags">6</td><td>Backend</td><td class="tags">AW, D</td><td>Not ours</td><td><b>Decisions 4&ndash;5</b></td></tr>
     </tbody>
   </table></div>
@@ -322,8 +322,8 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
     </ol>
   </div>
 
-  <h3>Phase 5 &middot; The Categories header <span class="chip ok">ready</span></h3>
-  <p>Down to one item. <b>P</b> and <b>O</b> closed with no code change once the rows came in, and <b>B</b>&rsquo;s two constants stay as they are by decision 2. That leaves <b>5a</b>: print the base Categories actually compared beside the paired percentage, so the figure cannot be back-solved into a last-week total the page never used.</p>
+  <h3>Phase 5 &middot; The Categories header <span class="chip ok">done</span></h3>
+  <p><b>P</b> and <b>O</b> closed with no code change once the rows came in, and <b>B</b>&rsquo;s two constants stay as they are by decision 2. <b>5a</b> is done: the pill now names the base it compared, so the figure cannot be back-solved into a last-week total the page never used.</p>
 
   <h3>Phase 6 &middot; Backend <span class="chip review">not ours</span></h3>
   <p><b>AW</b>&rsquo;s server-side aggregate and <b>D</b>&rsquo;s multi-price receipt count. Both are scheduling calls for Steve and Dylan. Nothing in phases 0&ndash;5 waits on either.</p>
@@ -344,8 +344,27 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
   </table></div>
 </section>
 
+<section class="block" aria-labelledby="cat-h">
+  <h2 id="cat-h">The one decision that needed code</h2>
+  <article class="find" id="cat-open">
+    <div class="find-head"><span class="find-tag">5a</span><h3>Categories header wording</h3>
+      <div class="verdict"><span class="chip ok">Fixed</span> <span class="commit">PHASE5SHA</span></div></div>
+    <p>Categories pairs per category per day, and drops a category-day with no last-week counterpart from both sides. So the percentage&rsquo;s base is &ldquo;this week&rsquo;s sales in the category-days that had a last week&rdquo; &mdash; not the headline. On the original example the header read $100.4K and +7.15%, but the figure compared was about <b>$96.8K against $90.3K</b>. The missing $3.6K is categories that sold this week and did not exist last week.</p>
+    <div class="do"><b>Done.</b> Hovering the LW or LY pill now says which two figures it took: &ldquo;Compares $96,841.22 this week against $90,377.03 last week &mdash; the categories trading in both periods. The $100.4K beside it is the whole week.&rdquo; Said only when the two differ; when nothing was dropped the base IS the headline and the sentence would be noise. It joins the existing partial-days note rather than replacing it.</div>
+    <div class="how"><b>How to check it:</b>
+    <ol>
+      <li>Categories, any store, in <b>DEV</b>. Hover the green <b>LW</b> pill beside the store total.</li>
+      <li>On a store where some category traded this week and not last, the tooltip names both figures and the first is <b>smaller</b> than the total shown beside it.</li>
+      <li>Take the two figures in the tooltip, work out the percentage between them, and it is the percentage on the pill.</li>
+      <li>On a store with nothing dropped, there is no such sentence &mdash; only the partial-days note, if that applies.</li>
+    </ol>
+    </div>
+  </article>
+</section>
+
 <section class="block" aria-labelledby="open-h">
   <h2 id="open-h">What is still open</h2>
+  <p>One item, and it is a backend ask rather than a frontend fix.</p>
 
   <article class="find" id="d-open">
     <div class="find-head"><span class="find-tag">D</span><h3>Package deal cannot fire without a count of mixed-price receipts</h3>
@@ -354,12 +373,7 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
     <p>The old code got that by downloading every receipt and checking each one. The table comes from the server now, that count is not in it, and the pattern is judged without it &mdash; so <b>Package deal never fires</b>. One number on the same query restores it.</p>
   </article>
 
-  <article class="find" id="cat-open">
-    <div class="find-head"><span class="find-tag">5a</span><h3>Categories header wording</h3>
-      <div class="verdict"><span class="chip ok">Agreed &mdash; phase 5, unblocked</span></div></div>
-    <p>Categories pairs per category per day, and drops a category-day with no last-week counterpart from both sides. So the percentage&rsquo;s base is &ldquo;this week&rsquo;s sales in the category-days that had a last week&rdquo; &mdash; not the headline. On the original example the header read $100.4K and +7.15%, but the figure compared was about <b>$96.8K against $90.3K</b>. The missing $3.6K is categories that sold this week and did not exist last week.</p>
-    <p>The header will print that base, so nobody can derive a last-week total the page never used.</p>
-  </article>
+
 </section>
 
 <section class="block" aria-labelledby="closed-h">
