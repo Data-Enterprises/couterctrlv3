@@ -344,11 +344,15 @@ const ItemAnalysisPanel = ({
             className="min-h-0 overflow-y-auto thin-scrollbar px-4 py-3"
           >
             <div className="flex items-baseline gap-2 mb-2">
+              {/* "Estimated" read as approximate-but-right, which is the one
+                  thing this side is not. Naming the arithmetic is the warning:
+                  a reader who knows it is an average already knows not to
+                  quote a figure from it. */}
               <span className="text-[11px] font-semibold text-content">
-                Estimated
+                Daily average
               </span>
               <span className="text-[10px] text-content/60">
-                daily roll-ups
+                a day&rsquo;s sales &divide; its units
               </span>
             </div>
             <div
@@ -399,8 +403,10 @@ const ItemAnalysisPanel = ({
             className="min-h-0 overflow-y-auto thin-scrollbar px-4 py-3"
           >
             <div className="flex items-baseline gap-2 mb-2">
+              {/* Paired with "Daily average" so the two headers contrast on
+                  the thing that matters: one is worked out, this one happened. */}
               <span className="text-[11px] font-semibold text-content">
-                Actual
+                Actually charged
               </span>
               {isCurrent && !actual.loading && act.exactCount > 0 && (
                 <span className="text-[10px] px-1.5 py-px rounded bg-blue-50 text-blue-800">

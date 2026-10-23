@@ -126,19 +126,22 @@ export const estimatedPricePoints = (
 /**
  * Whether a register line is a weighed sale.
  *
- * The spec tests `weight > 0`, but `transaction_list` doesn't return a weight
- * column — scale items come back as a **fractional qty** instead, which is
- * documented on the Cashiers explorer. So the discriminator is integer-ness.
+ * `transaction_list` returns `weight` in pounds since 22 Oct, with Food
+ * Giant's thousandths already divided on the server, so this reads the column
+ * the spec always meant.
  *
- * This is weaker than the spec's, in one specific way worth knowing: an item
- * that happens to weigh exactly 1.00 lb reads as a single each-priced unit and
- * lands in the exact table. That is the right *price* either way — one pound at
- * $/lb is the same arithmetic — so the number on screen is never wrong; only
- * the exact/averaged split can misfile a row. A whole item is judged weighed by
- * whether *any* of its lines is fractional, so a genuine scale item with one
- * round ring still classifies correctly.
+ * It used to infer the answer from a fractional `qty`, because the column was
+ * not there. That had one hole: an item weighing exactly 1.00 lb read as a
+ * single each-priced unit and landed in the exact table. The price was right
+ * either way — one pound at $/lb is the same arithmetic — but the exact and
+ * averaged split could misfile a row. Reading the weight closes it.
+ *
+ * `weight` is optional on the type: an API that predates the change sends
+ * none, and against one of those every line reports unweighed, which is what
+ * the old code did for a round-quantity scale item anyway. A refund carries a
+ * negative weight, so this tests for a non-zero magnitude rather than > 0.
  */
-const isFractional = (qty: number) => !Number.isInteger(qty);
+const isWeighedLine = (t: TransactionListItem) => Math.abs(t.weight ?? 0) > 0;
 
 /**
  * The receipt a register line is on.
@@ -307,7 +310,7 @@ export const actualPricePoints = (
 ): ActualPricePoints => {
   if (lines.length === 0) return emptyActual;
 
-  const isWeighted = lines.some((t) => isFractional(lineQty(t)));
+  const isWeighted = lines.some(isWeighedLine);
   const sold = lines.filter((t) => t.net_sales > 0);
 
   const exactRows = isWeighted ? sold : sold.filter((t) => lineQty(t) === 1);

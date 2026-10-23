@@ -54,6 +54,45 @@ describe("actualPricePoints counts receipts, not lines", () => {
   });
 });
 
+describe("a weighed line is read from its weight, not guessed", () => {
+  /** A scale line: `transaction_list` returns pounds since 22 Oct. */
+  const scale = (net: number, lb: number, receipt: string, qty = 1) =>
+    ({ ...line(net, receipt, "2026-10-14", qty), weight: lb }) as TransactionListItem;
+
+  it("treats an item with any weighed line as weighed", () => {
+    const act = actualPricePoints(
+      [scale(12.21, 3.5, "A"), scale(6.98, 2, "B")],
+      3.13,
+    );
+    expect(act.isWeighted).toBe(true);
+    // A weighed item has no averaged table: every line is already $/lb.
+    expect(act.averaged).toHaveLength(0);
+    expect(act.exactCount).toBe(2);
+  });
+
+  it("reads a pack weighing exactly one pound as weighed", () => {
+    // The hole in the old guess. Quantity is a whole 1, so inferring from
+    // integer-ness filed this as an each-priced unit; the weight says scale.
+    const act = actualPricePoints([scale(3.49, 1, "A")], 3.13);
+    expect(act.isWeighted).toBe(true);
+    expect(act.averaged).toHaveLength(0);
+  });
+
+  it("counts a refund's negative weight as weighed", () => {
+    const act = actualPricePoints(
+      [scale(10.47, 3, "A"), scale(-3.49, -1, "B")],
+      3.13,
+    );
+    expect(act.isWeighted).toBe(true);
+  });
+
+  it("reports unweighed when no line carries a weight", () => {
+    // An each-priced item, and an API old enough to send no weight column.
+    const act = actualPricePoints([line(3.49, "A"), line(3.49, "B")], 3.13);
+    expect(act.isWeighted).toBe(false);
+  });
+});
+
 describe("one-cent twins fold together", () => {
   it("reads three-for-$10 as one price", () => {
     // $3.33, $3.33, $3.34: a multi-buy split to the penny (finding B).
