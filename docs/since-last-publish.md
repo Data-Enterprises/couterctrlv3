@@ -538,3 +538,37 @@ counterpart from both sides, so the percentage's base is not the headline --
 $96.8K against $90.3K behind a header reading $100.4K and +7.15%. Hovering the
 LW or LY pill now names both figures and repeats the headline. Said only when
 they differ.
+
+### The price table counts pounds, like the rest of the panel
+
+`f2b8b2f7`
+
+**AS, a second pass.** Fam Pak Breast Tenders had three figures for the same
+week in one panel: the header 180.7, the transactions table 180.68, and the
+price points table 97 under a column headed "Units". 97 is the ring count.
+
+`erasFromPoints` read `units` off the price point while `weight` -- 180.674 --
+sat on the same row, and `src/utils/pricedUnits` already holds the
+weight-before-rings rule the header and `calculateCogs` follow. It follows it
+too now, and the columns read "Price / lb" and "Lb" so the figure carries its
+unit. A packaged item is unchanged. The export prints the same eras and
+follows.
+
+### Price Opt remembers the departments it already read
+
+`f2f6ea8a`
+
+Opening a department fetched its items, and the slice held one list for
+whichever was open -- so walking a store and coming back to a department read
+it from the server again. Items cannot change inside a fixed store and date
+range, so the second read never said anything new.
+
+Kept per department for the life of the search window now. Reopening one is a
+render: no request, no spinner. Cleared when a new search is committed from the
+popup card, which is the only thing that can invalidate it. A failed load is
+left out so reopening retries; a department that really is empty keeps its
+entry, or it would re-ask forever.
+
+Vendors needs none of this -- its item lists come from rows the page has
+already read.
+

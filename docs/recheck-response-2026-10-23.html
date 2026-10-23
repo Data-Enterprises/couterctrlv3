@@ -149,17 +149,20 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
 
   <article class="find" id="as">
     <div class="find-head"><span class="find-tag">AS</span><h3>Item Actions lists random-weight packs at package prices</h3>
-      <div class="verdict"><span class="chip ok">Fixed</span> <span class="commit">582e452e</span> With D, which was the same bug</div></div>
+      <div class="verdict"><span class="chip ok">Fixed</span> <span class="commit">582e452e</span> <span class="commit">f2b8b2f7</span> With D, which was the same bug</div></div>
     <p>Right on both counts, and your suggestion is the fix. Price Opt reads <code>cashiers/price_points</code>; Item Actions still builds that table by walking receipt lines, which is why it shows $6.14 and $6.94 next to a $3.99 per-pound figure.</p>
     <p><b>D is the same change.</b> The 700&nbsp;KB on opening a row and the 1.8&nbsp;MB on the first Trans click are the receipt walk &mdash; the thing that produces the wrong prices is the thing that downloads everything. Pointing this table at <code>price_points</code> deletes the walk rather than optimising it, so both close together.</p>
     <div class="do"><b>Done.</b> The table comes from <code>cashiers/price_points</code>, where <code>unit_price</code> is per pound on a weighed item and the amount beside it is pounds to match &mdash; the column heads read &ldquo;Price / lb&rdquo; and &ldquo;Lb&rdquo; when that is what they are. Receipts load when somebody opens a price, which is the only thing that needs them. The walk is deleted rather than trimmed.</div>
+    <div class="do"><b>A second pass, from Steve&rsquo;s screenshot.</b> The panel still had three figures for the same week and one of them was in packages: the header read 180.7, the transactions table totalled 180.68, and the price points table read <b>97</b> under a column headed &ldquo;Units&rdquo;. 97 is the ring count. The eras were built from <code>units</code> on the price point while <code>weight</code> &mdash; 180.674 &mdash; sat on the same row, and the page already has a weight-before-rings rule that the header and the cost arithmetic both follow. That table follows it now, and its columns say &ldquo;Price / lb&rdquo; and &ldquo;Lb&rdquo; so the figure carries its unit. The export prints the same eras and follows. <span class="commit">f2b8b2f7</span></div>
     <div class="verify">
       <h4>How to check it</h4>
       <ol>
         <li>Item Actions, storeid 695 (#361), Fam Pak Breast Tenders (20016900000).</li>
         <li>Price points reads <b>per pound</b> against the $3.99 shelf price, not $6.14 / $6.94 / $6.86.</li>
+        <li><b>All three figures in the panel agree.</b> The header, the price points table and the transactions table all read about <b>180.7</b>. None of them says 97.</li>
         <li>Selecting the row makes <b>one</b> small <code>price_points</code> call &mdash; no <code>product_lookup</code>, no <code>transaction_list</code>.</li>
         <li>Open a price and the receipts load then, once, for that item.</li>
+        <li>On a packaged item the same table still reads &ldquo;Price&rdquo; and &ldquo;Units&rdquo;, and still counts rings.</li>
       </ol>
     </div>
   </article>
@@ -399,9 +402,9 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
 </section>
 
 <footer>
-  <span>Responds to <span class="mono">recheck-reply-2026-10-23</span>, and to two issues Wayne raised separately. Every commit named here is on <span class="mono">price_opt_weight_labels</span>, committed and not yet merged &mdash; so none of it is in a deployed build yet.</span>
+  <span>Responds to <span class="mono">recheck-reply-2026-10-23</span>, and to two issues Wayne raised separately. Every commit named here goes to dev together, alongside the backend changes it depends on &mdash; the <code>is_hash</code> flag these pages read is part of the same push, so there is no window where one is there without the other.</span>
   <span><b>All of it is in the DEV tree only.</b> The prod UI is deliberately untouched &mdash; this round is about getting dev ready to move over, so check these in DEV mode.</span>
-  <span>Verified by typecheck, the full test suite, the theme audit and a production build. Not verified in a browser &mdash; that is what your runs are for.</span>
+  <span>Verified by typecheck, 1,339 tests, the theme audit and a production build. Steve also ran several of these in the UI before sending: the combined tab, the two margin headers and Price Opt&rsquo;s price count all checked out, and his screenshot of Fam Pak Breast Tenders is what found the second half of AS.</span>
 </footer>
 
 </div>
