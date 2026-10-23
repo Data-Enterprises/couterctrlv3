@@ -64,7 +64,6 @@ const NO_RECEIPTS: ReceiptsWave = { mine: [], theirs: [] };
 export interface Args {
   mine: Store;
   theirs: Store;
-  subDept: number;
   tw: Window;
   lw: Window;
   ly: Window;
@@ -90,9 +89,9 @@ export const useDeptInvestigation = (args: Args): Investigation => {
   // Primitives in the dependency list, because a Scope object rebuilt every
   // render would restart the whole cascade on every keystroke elsewhere.
   const {
-    subDept, metric, enabled,
-    mine: { storeid: mineId, storeNumber: mineNo },
-    theirs: { storeid: theirsId, storeNumber: theirsNo },
+    metric, enabled,
+    mine: { storeid: mineId, storeNumber: mineNo, subDept: mineDept },
+    theirs: { storeid: theirsId, storeNumber: theirsNo, subDept: theirsDept },
     tw, lw, ly,
   } = args;
 
@@ -101,16 +100,26 @@ export const useDeptInvestigation = (args: Args): Investigation => {
 
   const scope = useMemo<Scope>(
     () => ({
-      url, token, subDept,
-      mine: { storeid: mineId, storeNumber: mineNo, name: mineName },
-      theirs: { storeid: theirsId, storeNumber: theirsNo, name: theirsName },
+      url, token,
+      mine: {
+        storeid: mineId,
+        storeNumber: mineNo,
+        name: mineName,
+        subDept: mineDept,
+      },
+      theirs: {
+        storeid: theirsId,
+        storeNumber: theirsNo,
+        name: theirsName,
+        subDept: theirsDept,
+      },
       tw: { start: tw.start, end: tw.end },
       lw: { start: lw.start, end: lw.end },
       ly: { start: ly.start, end: ly.end },
     }),
     [
       // No `metric`: it is applied over the rows, not asked for — see Scope.
-      url, token, subDept,
+      url, token, mineDept, theirsDept,
       mineId, mineNo, mineName, theirsId, theirsNo, theirsName,
       tw.start, tw.end, lw.start, lw.end, ly.start, ly.end,
     ],

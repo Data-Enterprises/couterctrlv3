@@ -96,7 +96,15 @@ export interface InvestigationTarget {
   compareStoreid: number;
   compareStoreNumber: string;
   compareStoreName: string;
+  /** The department's number at the OPEN store. */
   subDept: number;
+  /**
+   * And at the counterpart, which is a different number.
+   *
+   * Brooks Chapel Hill's 10 is Tobacco; Tupelo's 10 is Deli/Bakery. Carrying
+   * one number for both asked each store about a different department.
+   */
+  compareSubDept: number;
   subDeptName: string;
   /**
    * Which pile the department-level shape points at, carried through from

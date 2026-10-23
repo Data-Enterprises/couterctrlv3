@@ -755,6 +755,9 @@ const DeptReport = ({
         compareStoreNumber,
         compareStoreName,
         subDept: row.mineId ?? 0,
+        // The counterpart's own number for the same department. The two
+        // stores do not agree on it; the report paired them by name.
+        compareSubDept: row.theirsId ?? 0,
         subDeptName: row.name,
         focus: row.chain.focus,
       }),
