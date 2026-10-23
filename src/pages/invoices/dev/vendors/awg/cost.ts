@@ -41,6 +41,11 @@ const byWeight = (record: ParsedRecord): bigint | null => {
   return (2n * exact + 100n) / 200n === cost ? exact : null;
 };
 
+/** One line's cost, unrounded where the per-pound rate is recovered — four
+ *  places. */
+export const lineCost = (record: ParsedRecord): Decimal =>
+  new Decimal(byWeight(record) ?? units(record.fields.cost_ext) * 100n, 4);
+
 /** The lines' cost together, unrounded — four places, for the caller to
  *  round once at the total. */
 export const sumLineCost = (records: ParsedRecord[]): Decimal => {

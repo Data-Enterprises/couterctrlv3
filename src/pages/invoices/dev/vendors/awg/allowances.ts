@@ -41,29 +41,72 @@ export interface DealAllowances {
   unnetted: Decimal;
 }
 
-export const dealAllowances = (invoice: AwgInvoice): DealAllowances => {
+/** One line's deals, and what they come to. */
+export interface LineDeals {
+  deals: ParsedRecord[];
+  /** What the vendor's total counts them as. */
+  total: Decimal;
+  /** What the line itself was netted by. */
+  netted: Decimal;
+}
+
+/**
+ * Every deal, grouped under the line it belongs to.
+ *
+ * `perPound` reads a random-weight line's deal as rate × weight — the
+ * suggested correction. Without it every deal is taken at face value, as
+ * printed. A deal whose line cannot be found is left out.
+ */
+export const dealsByLine = (
+  invoice: AwgInvoice,
+  perPound = true,
+): Map<ParsedRecord, LineDeals> => {
   const bySeq = new Map<string, ParsedRecord>();
   for (const line of invoice.lineItems) {
     bySeq.set(String(line.fields.deal_seqnum ?? ""), line);
   }
 
+  const out = new Map<ParsedRecord, LineDeals>();
+  for (const deal of invoice.deals) {
+    const line = bySeq.get(lineSeq(deal));
+    if (!line) continue;
+    const amount = units(deal.fields.deal_amount);
+    const held = out.get(line) ?? {
+      deals: [],
+      total: Decimal.zero(6),
+      netted: Decimal.zero(6),
+    };
+    held.deals.push(deal);
+    if (perPound && line.fields.rwi === "Y") {
+      // Rate at four places × weight at two: millionths of a dollar. The
+      // line was netted by the rate read as dollars and cents.
+      held.total = held.total.add(
+        new Decimal(amount * units(line.fields.pallet_weight), 6),
+      );
+      held.netted = held.netted.add(new Decimal(amount, 4));
+    } else {
+      const face = new Decimal(amount, 2);
+      held.total = held.total.add(face);
+      held.netted = held.netted.add(face);
+    }
+    out.set(line, held);
+  }
+  return out;
+};
+
+export const dealAllowances = (invoice: AwgInvoice): DealAllowances => {
+  const lines = [...dealsByLine(invoice).values()];
+  const placed = new Set(lines.flatMap((line) => line.deals));
   let total = Decimal.zero(6);
   let unnetted = Decimal.zero(6);
+  for (const line of lines) {
+    total = total.add(line.total);
+    unnetted = unnetted.add(line.total.subtract(line.netted));
+  }
+  // A deal whose line is missing still counts toward the total, at face value.
   for (const deal of invoice.deals) {
-    const amount = units(deal.fields.deal_amount);
-    const line = bySeq.get(lineSeq(deal));
-    if (line?.fields.rwi === "Y") {
-      // Rate at four places × weight at two: millionths of a dollar.
-      const byWeight = new Decimal(
-        amount * units(line.fields.pallet_weight),
-        6,
-      );
-      // The line was netted by the rate read as dollars and cents.
-      const netted = new Decimal(amount, 4);
-      total = total.add(byWeight);
-      unnetted = unnetted.add(byWeight.subtract(netted));
-    } else {
-      total = total.add(new Decimal(amount, 2));
+    if (!placed.has(deal)) {
+      total = total.add(new Decimal(units(deal.fields.deal_amount), 2));
     }
   }
   return { total, unnetted };
