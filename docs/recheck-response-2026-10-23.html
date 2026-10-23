@@ -285,7 +285,7 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
       <tr><td class="tags">2</td><td><b>Done</b> &mdash; Item Actions on <code>price_points</code> <span class="commit">582e452e</span></td><td class="tags">AS, D</td><td>&mdash;</td><td>&mdash;</td></tr>
       <tr><td class="tags">3</td><td><b>Done</b> &mdash; Price Opt&rsquo;s two counts <span class="commit">d7eb5c45</span></td><td class="tags">AT, G</td><td>&mdash;</td><td>&mdash;</td></tr>
       <tr><td class="tags">4</td><td><b>Done</b> &mdash; hash flag across four more pages <span class="commit">8ee9b005</span></td><td class="tags">&mdash;</td><td>&mdash;</td><td>&mdash;</td></tr>
-      <tr><td class="tags">5</td><td><b>Done</b> &mdash; the Categories pill names its base <span class="commit">PHASE5SHA</span></td><td class="tags">5a</td><td>&mdash;</td><td>&mdash;</td></tr>
+      <tr><td class="tags">5</td><td><b>Done</b> &mdash; the Categories pill names its base <span class="commit">2779e4b2</span></td><td class="tags">5a</td><td>&mdash;</td><td>&mdash;</td></tr>
       <tr class="total"><td class="tags">6</td><td>Backend</td><td class="tags">AW, D</td><td>Not ours</td><td><b>Decisions 4&ndash;5</b></td></tr>
     </tbody>
   </table></div>
@@ -348,7 +348,7 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
   <h2 id="cat-h">The one decision that needed code</h2>
   <article class="find" id="cat-open">
     <div class="find-head"><span class="find-tag">5a</span><h3>Categories header wording</h3>
-      <div class="verdict"><span class="chip ok">Fixed</span> <span class="commit">PHASE5SHA</span></div></div>
+      <div class="verdict"><span class="chip ok">Fixed</span> <span class="commit">2779e4b2</span></div></div>
     <p>Categories pairs per category per day, and drops a category-day with no last-week counterpart from both sides. So the percentage&rsquo;s base is &ldquo;this week&rsquo;s sales in the category-days that had a last week&rdquo; &mdash; not the headline. On the original example the header read $100.4K and +7.15%, but the figure compared was about <b>$96.8K against $90.3K</b>. The missing $3.6K is categories that sold this week and did not exist last week.</p>
     <div class="do"><b>Done.</b> Hovering the LW or LY pill now says which two figures it took: &ldquo;Compares $96,841.22 this week against $90,377.03 last week &mdash; the categories trading in both periods. The $100.4K beside it is the whole week.&rdquo; Said only when the two differ; when nothing was dropped the base IS the headline and the sentence would be noise. It joins the existing partial-days note rather than replacing it.</div>
     <div class="how"><b>How to check it:</b>

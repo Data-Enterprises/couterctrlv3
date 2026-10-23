@@ -408,3 +408,133 @@ to narrow the write. It does not step over the caller's scope. The button
 disables when that scope leaves nobody, rather than staying lit and lying.
 
 Five tests on `AssignPanel` hold the distinction.
+
+---
+
+## Store comparison, for Brooks
+
+Two faults on the same screen, each owning a different part of it. Reconciled
+to the cent against the store's own JSON before anything was changed.
+
+### The comparison pairs departments by name, because the numbers are per store
+
+`a95a4cf8`
+
+Sub-department numbers are assigned per store. Chapel Hill's 5 is Fresh Meat
+and Tupelo's 5 is Tobacco, and there is no department master anywhere to say
+otherwise. Pairing the two stores on the number compared Chapel Hill's Tobacco
+($243.72) against Tupelo's Deli/Bakery ($66,072.57) and called the difference a
+tobacco gap of $65,828.85.
+
+Pairing is on the description now, case-folded and tolerant of a trailing s. A
+department only one store has is listed on its own side rather than silently
+matched to whatever shares its number.
+
+**This moved every row on the page.** It is the fix, not a regression.
+
+### The comparison headline leaves out what the store leaves out
+
+`f2587121`
+
+`sales/weekly` drops a store's hash sub departments -- fuel, lottery, cash
+accounts -- and the sub-department endpoints return them. The headline was
+summed from the endpoints that keep them, so it carried $82,277.95 the store's
+own figures never counted: $79,943.00 of Tupelo fuel and $2,334.95 of Chapel
+Hill lottery, cash accounts and RSA. That is exactly the distance between the
+$136,036.51 the page showed and the $53,758.56 the Compare tab did.
+
+The new `is_hash` flag is the whole rule, read through `src/utils/hashSubs.ts`
+so there is one place it lives.
+
+### The drill asks each store for its own department number
+
+`22aef959`
+
+Following a department into the item list narrowed on the department first and
+the store second, so a drill on Fresh Meat fetched whatever each store happened
+to number 5. Narrowed to the store first now, then that store's department.
+
+---
+
+## Responding to the 23 Oct re-check
+
+Everything below is **DEV tree only** -- this round is about getting dev ready
+to move to prod, so the prod UI is deliberately untouched.
+
+### The combined tab names both stores, and the two margin headers agree
+
+`81fa1f3e`
+
+**AV.** With no location selected, the combined tab fell through to the stored
+store name, which has one of the two numbers baked in -- so "Both $424.4K" sat
+under "Bruces Foodland 369". It reads "369 + 370" now, swapped in place so the
+rest of the name survives.
+
+**AU.** Sub Dept Margins summed each department's matched days and Vendors
+summed each vendor's, so the same store and week came out 0.03 points apart. A
+Tuesday one vendor missed is still a Tuesday its department worked. Both now
+match days once, store-wide, through `src/utils/storeMarginDelta.ts`.
+
+### Item Actions reads its prices from the server, not from receipts
+
+`582e452e`
+
+**AS and D are one change.** The price table was built by downloading every
+receipt and walking it -- 700 KB on opening a row, 1.8 MB on the first Trans
+click -- and the walk is also what produced the wrong prices. Pointing the
+table at `price_points` deletes the walk rather than optimising it. The hook
+moved to `src/hooks/usePricePoints.ts`, shared with Price Opt.
+
+### One promotion is one price, and one count says so
+
+`d7eb5c45`
+
+**AT and G.** A 2-for-$6.67 rings $3.34 as a single and averages to $3.33 as a
+pair, so one promotion appeared once in Exact and once in Avg, a penny apart,
+reading as two prices. They fold within a price type -- REG $3.34 and SALE
+$3.34 stay two prices, because they are. The tile and the pattern note also
+counted differently (5 against 4 on COKE 6PK); there is one count now.
+
+### Four more pages count what the store counts
+
+`8ee9b005`
+
+Categories, Sales Tracker, Vendors and Sub Dept Margins put their store headers
+beside figures from `sales/weekly`, which leaves hash departments out. Those
+headers now drop them too.
+
+**Store margin and sales headers move on any store with fuel, lottery or cash
+accounts.** The lists are untouched -- a department is still listed, graded and
+drillable, it just no longer moves the store's own number.
+
+### Keeping this round in the dev tree
+
+`7f783a76`
+
+Phases 1 and 4 had edited prod alongside dev. Reverted in five files across
+Categories, Vendors and Sub Dept Margins. The shared utils stay shared and are
+safe as they are: `storeIdentity` only gained an export, `csvExport` only
+widened a type, and `src/utils/pricePoints.ts` has no prod importer at all.
+
+### P and O close: the chicken margin was right
+
+`c40d53a6`
+
+No code change. The rows for 20016900000 say the item is priced per pound --
+net sales over weight is $3.99 on all seven days -- and `calculateCogs` already
+multiplies by weight, so 66.1% is the honest figure. The theory that we were
+dividing a package cost by a package count was wrong: `case_size` is 1.
+
+Documented the `margin` field on `SubDeptMargin`, which reports ~99% because
+the server computes `(total_sales - cost) / total_sales`: one unit's cost
+against a whole tax-inclusive day. Nothing consumes it. Comment only.
+
+### The Categories pill says which two figures it compared
+
+`2779e4b2`
+
+**5a.** Categories pairs per category per day and drops a category-day with no
+counterpart from both sides, so the percentage's base is not the headline --
+$96.8K against $90.3K behind a header reading $100.4K and +7.15%. Hovering the
+LW or LY pill now names both figures and repeats the headline. Said only when
+they differ.
