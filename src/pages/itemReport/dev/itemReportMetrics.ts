@@ -2,7 +2,11 @@ import type { ServerPricePoint } from "../../../api/pricePoints";
 import { calculateCogs } from "../../../utils/cogs";
 import { shiftIso } from "../../../utils/grading";
 // The weight-before-qty rule, from utils rather than the Inventory page.
-import { rowPricedUnits as pricedUnits } from "../../../utils/pricedUnits";
+import {
+  rowPricedUnits as pricedUnits,
+  pricedUnits as unitsOrWeight,
+  isWeighted,
+} from "../../../utils/pricedUnits";
 import type { SubsPricePoint } from "../../../interfaces";
 import type { ReceiptLine } from "./itemReportData";
 import { normalizeProductCode } from "../../../utils/productCode";
@@ -792,7 +796,11 @@ export interface PriceEra {
   start: string;
   end: string;
   days: number;
+  /** Pounds on a weighed item, a ring count otherwise -- the same rule the
+   *  rest of the panel follows. `weighed` says which, because the column
+   *  silently changes meaning without it. */
   units: number;
+  weighed: boolean;
   unitsPerDay: number;
   unitCost: number | null;
   marginPct: number | null;
@@ -824,11 +832,18 @@ const erasFromPoints = (points: SubsPricePoint[]): PriceEra[] => {
     const days = [...(pp.days_sold ?? [])].sort();
     if (days.length === 0) continue;
 
-    // Units are only known for the point as a whole, so a point that ran in
-    // two stretches splits them by how many days each stretch holds. It is an
+    // Pounds where the item is weighed. `units` on a price point is a ring
+    // count, and on a variable-weight item that is a different quantity from
+    // the one the rest of the panel shows -- Fam Pak Breast Tenders read 97
+    // here beside a header of 180.7 lb and a transactions table of 180.68,
+    // all three in one panel, the middle one in packages (finding AS).
+    const measure = unitsOrWeight(pp.units, pp.weight);
+
+    // Only known for the point as a whole, so a point that ran in two
+    // stretches splits it by how many days each stretch holds. It is an
     // apportionment rather than a measurement, which is why it is not used to
     // decide anything — only shown.
-    const perDay = pp.units / days.length;
+    const perDay = measure / days.length;
 
     let start = days[0];
     let run = 1;
@@ -845,6 +860,7 @@ const erasFromPoints = (points: SubsPricePoint[]): PriceEra[] => {
         end: prev,
         days: run,
         units: round1(perDay * run),
+        weighed: isWeighted(pp.weight),
         unitsPerDay: 0,
         unitCost: null,
         marginPct: null,
@@ -867,6 +883,10 @@ export const buildPriceEras = (
     item.points.length > 0 ? erasFromPoints(item.points) : [];
   if (eras.length > 0) return withEraCost(eras, item, receipts);
 
+  // The day walk already counts in pounds -- `item.series` is summed through
+  // the same rule -- so only the label has to be worked out here.
+  const weighed = item.rows.some((r) => isWeighted(r.weight));
+
   // No points for this code — the day walk, which is what every era was built
   // from before the endpoint returned real ones.
   for (const day of item.series) {
@@ -882,6 +902,7 @@ export const buildPriceEras = (
         end: day.date,
         days: 1,
         units: day.units,
+        weighed,
         unitsPerDay: 0,
         unitCost: null,
         marginPct: null,

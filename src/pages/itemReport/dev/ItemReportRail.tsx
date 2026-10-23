@@ -761,7 +761,17 @@ const ItemReportRail = ({
             {eras.length === 0 ? (
               <div className="text-[12px] text-content">No sales rows</div>
             ) : (
-              <Head cols={["Price", "Units", "Days"]} />
+              // Named, not left as "Units". On a weighed item the figure is
+              // pounds and the price is per pound, which is what the
+              // transactions table below already says -- the two sections sat
+              // in one panel disagreeing about the word (finding AS).
+              <Head
+                cols={
+                  eras[0]?.weighed
+                    ? ["Price / lb", "Lb", "Days"]
+                    : ["Price", "Units", "Days"]
+                }
+              />
             )}
             {eras.length > 0 &&
               (isAll("prices") ? [...eras] : eras.slice(-4))

@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
+  buildPriceEras,
   deliveryGap,
   mergePricePoints,
   flatDaysBefore,
@@ -273,5 +274,63 @@ describe("mergePricePoints", () => {
 
   it("is empty for an item with no prices", () => {
     expect(mergePricePoints([])).toEqual([]);
+  });
+});
+
+/**
+ * Price eras count in the unit the rest of the panel counts in.
+ *
+ * Fam Pak Breast Tenders, storeid 695, 10/16-10/22. The real row: one price
+ * point, $3.99, 97 rings over 180.674 lb across all seven days. The panel
+ * header reads 180.7 lb and the transactions table totals 180.68, so a price
+ * table reading 97 was the one section in packages (finding AS).
+ */
+describe("price eras on a variable-weight item", () => {
+  const WEEK = [
+    "2026-10-16",
+    "2026-10-17",
+    "2026-10-18",
+    "2026-10-19",
+    "2026-10-20",
+    "2026-10-21",
+    "2026-10-22",
+  ];
+
+  const tenders = (weight: number) =>
+    item({
+      productCode: "20016900000",
+      points: [
+        {
+          price: 3.99,
+          units: 97,
+          weight,
+          transactions: 79,
+          net_sales: 720.19,
+          first_sold: WEEK[0],
+          last_sold: WEEK[6],
+          days: 7,
+          days_sold: WEEK,
+        },
+      ],
+    } as Partial<ReportItem>);
+
+  it("counts pounds, not rings", () => {
+    const [era] = buildPriceEras(tenders(180.674), []);
+    expect(era.units).toBe(180.7);
+    expect(era.weighed).toBe(true);
+  });
+
+  it("still counts rings on a packaged item", () => {
+    const [era] = buildPriceEras(tenders(0), []);
+    expect(era.units).toBe(97);
+    expect(era.weighed).toBe(false);
+  });
+
+  it("agrees with the header the panel prints beside it", () => {
+    // The header sums pricedUnits across the rows; one price point covering
+    // the whole week has to land on the same figure.
+    const [era] = buildPriceEras(tenders(180.674), []);
+    expect(era.units).toBeCloseTo(180.674, 0);
+    expect(era.days).toBe(7);
   });
 });
