@@ -415,10 +415,10 @@ const AwgInvoices = () => {
           </div>
 
           <div className="flex flex-wrap items-center gap-2 border-t border-gray-100 px-3.5 py-2.5">
-            {/* Wide enough for its own placeholder. At 180 the row ran out
-                of room once the store chooser arrived and it read
-                "Invoice, store or departr". */}
-            <div className="flex min-w-[232px] flex-1 items-center gap-2 rounded-lg bg-bkg px-3">
+            {/* Fixed, not flex-1. Growing to fill the row took width the
+                store chooser needed more -- a store name is longer than
+                anything typed in here. 280 fits its own placeholder. */}
+            <div className="flex w-[280px] flex-none items-center gap-2 rounded-lg bg-bkg px-3">
               <MagnifyingGlassIcon className="h-4 w-4 flex-none text-content/85" />
               <input
                 id="awg-invoice-filter"
@@ -520,7 +520,9 @@ const AwgInvoices = () => {
             )}
 
             {/* Filters to the left of this, actions to the right. The row
-                was one undifferentiated run of seven controls. */}
+                was one undifferentiated run of seven controls. The slack the
+                search box used to swallow sits here instead. */}
+            <span className="flex-1" />
             <span className="mx-0.5 h-6 w-px flex-none bg-gray-200" />
 
             {/* The store, beside the exports that need it. `storeid` is the
@@ -549,7 +551,7 @@ const AwgInvoices = () => {
                 dispatch(setSelectedStore(store));
                 dispatch(setLastStore(store.storeid));
               }}
-              className="w-[190px]"
+              className="w-[280px]"
             />
 
             {/* One door. Three buttons said what each one did and nothing
