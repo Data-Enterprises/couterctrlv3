@@ -603,3 +603,60 @@ per pound from rounding alone, and a BOGO is rung on packages.
 `mixedPriceInsight` is deleted. It walked receipt lines and divided by qty,
 which is 1 on a random-weight pack -- the arithmetic findings AS and D were
 both about.
+
+---
+
+## Readability
+
+### Price Opt reads easier
+
+`2bacd309`
+
+Type up one point across the whole Price Opt screen -- the department tree, the
+item panel, both price tables and the page shells. 9 to 10 through 15 to 16, so
+the hierarchy that was there survives and only the floor moves.
+
+`ACT_COLS`, `TXN_COLS` and `EST_COLS` widened with it. Those columns are fixed
+px sized to their widest real value, so a point of font has to be paid for in
+px or `$1,332.63` clips its own column. The `1fr` price column absorbs it.
+
+Text opacity floored at 85%: `/40`, `/50`, `/60` and `/70` all to `/85`. The
+dimmest were captions and column heads -- the text that was hardest to read at
+9 and 10 px.
+
+### The gap split's three sentences become one CTA strip
+
+`a6aead0e`
+
+On the store comparison, the bar was followed by three stacked sentences: where
+the gap concentrates, which departments only one store carries, and what sits
+outside net sales at both. Four lines of 11.5px type, and they pushed the list
+and the evidence panel down the screen -- so the thing a reader came to scan
+started lower the more there was to explain.
+
+It is a `CtaStrip` now. It lays over the panels instead of moving them, which
+is the house rule, and the sentences get 13px because the room is no longer
+rationed. Closed by default: the bar carries the finding, this is the working
+behind it. Neutral tone -- nothing in it is a verdict on the store.
+
+The label **counts** the unmatched departments rather than totalling them. A
+first draft read "$160,124.21 sits outside this comparison", which added one
+store's unmatched sales to the other's -- a figure that is nobody's sales and
+no kind of gap, and under "Behind by $53,758.56" it read as money missing from
+that. It also left out the hash departments, which are equally outside the
+comparison. Both figures are still in the detail with their stores attached.
+
+### The strip says Show, the back button says Back
+
+`16af1f07`
+
+The CTA strip takes a theme border instead of raw grays -- `brand_navy/25` over
+`bkg` with a `brand_navy/5` hover, the same token as the rule under the header
+beside it -- so it reads as a thing you can open.
+
+The chevron is labelled **Show / Hide**, in `CtaStrip` itself rather than at one
+call site: a chevron alone says there is more without saying it can be opened.
+**This also changes the group share rail**, the component's other caller.
+
+The back button on the comparison drill-down carries the word **Back** beside
+its chevron.
