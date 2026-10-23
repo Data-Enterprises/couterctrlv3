@@ -643,26 +643,30 @@ const AwgInvoices = () => {
         </div>
       </div>
 
-      <InvoiceExportModal
-        isOpen={exportOpen}
-        onClose={() => setExportOpen(false)}
-        onRaw={() => {
-          setExportOpen(false);
-          handleExport();
-        }}
-        onOrders={() => {
-          setExportOpen(false);
-          handleOrdersExport();
-        }}
-        onSend={() => {
-          setExportOpen(false);
-          void handleSend();
-        }}
-        sending={sending}
-        storeChosen={!!storeid}
-        handEditCount={handEditCount}
-        suggestedApplied={suggestedApplied}
-      />
+      {/* Mounted only while open: the shell is the house one, which owns its
+          own backdrop and size. */}
+      {exportOpen && (
+        <InvoiceExportModal
+          onClose={() => setExportOpen(false)}
+          onRaw={() => {
+            setExportOpen(false);
+            handleExport();
+          }}
+          onOrders={() => {
+            setExportOpen(false);
+            handleOrdersExport();
+          }}
+          onSend={() => {
+            setExportOpen(false);
+            void handleSend();
+          }}
+          sending={sending}
+          fileName={fileName}
+          storeChosen={!!storeid}
+          handEditCount={handEditCount}
+          suggestedApplied={suggestedApplied}
+        />
+      )}
 
       {/* Said, because the page gives no other sign a drop is allowed —
           the dashed box that used to say it is only on the first read now. */}

@@ -1,118 +1,61 @@
+import { useState } from "react";
 import {
   ArrowDownTrayIcon,
   ArrowUpTrayIcon,
-  DocumentTextIcon,
+  XMarkIcon,
 } from "@heroicons/react/20/solid";
-import Modal from "../../../components-dev/Modal";
+import ResizableModalShell from "../../../components-dev/modals/ResizableModalShell";
 
 /**
  * The three things you can do with a read file, side by side.
  *
  * They were three buttons on the toolbar — "Export CSV", "Export as orders",
  * "Send" — which said what each one *did* and nothing about how they differ.
- * They differ a lot: two of them ignore every correction on the page and one
- * does not, two produce a file and one talks to the server, and they carry
- * different rows about different things.
+ * They differ a lot: two ignore every correction on the page and one does
+ * not, two produce a file and one talks to the server, and they carry
+ * different rows about different things. None of that fits on a button.
  *
- * None of that fits in a button. It fits here, where the choice is being
- * made, so nobody has to learn it once and remember it.
+ * Built like every other export modal on the dev tree — the resizable shell,
+ * the navy header bar, a radio list, one action at the foot — because an
+ * export modal that looks like itself is one the reader has already learned.
+ * What differs here is that the choices need explaining rather than listing,
+ * so each carries a line always and its detail when it is the one selected.
  */
 
+type Choice = "raw" | "orders" | "send";
+
 interface Props {
-  isOpen: boolean;
   onClose: () => void;
   /** The file's own records, as decoded. */
   onRaw: () => void;
   /** The POS order layout, corrections applied. */
   onOrders: () => void;
-  /** Upload for decoding and archiving. */
+  /** Upload for decoding and archiving, corrections written in. */
   onSend: () => void;
   sending: boolean;
+  fileName: string;
   /** Both the orders export and the send are per store. */
   storeChosen: boolean;
-  /** How many figures have been typed by hand, and whether the suggested set
-   *  is on — named on the two choices that carry them and the one that
-   *  does not. */
   handEditCount: number;
   suggestedApplied: boolean;
 }
 
-const Choice = ({
-  icon,
-  name,
-  what,
-  points,
-  action,
-  onClick,
-  disabled,
-  disabledWhy,
-  primary = false,
-}: {
-  icon: React.ReactNode;
-  name: string;
-  what: string;
-  points: string[];
-  action: string;
-  onClick: () => void;
-  disabled?: boolean;
-  disabledWhy?: string;
-  primary?: boolean;
-}) => (
-  <div className="rounded-lg border border-gray-200 bg-custom-white p-3.5">
-    <div className="flex items-start gap-2.5">
-      <span className="mt-0.5 flex-none text-brand_navy">{icon}</span>
-      <div className="min-w-0 flex-1">
-        <p className="font-display text-[14px] font-bold text-content">
-          {name}
-        </p>
-        <p className="mt-0.5 text-[12.5px] leading-snug text-content">{what}</p>
-        <ul className="mt-1.5 space-y-0.5">
-          {points.map((point) => (
-            <li
-              key={point}
-              className="flex gap-1.5 text-[12px] leading-snug text-content"
-            >
-              <span className="flex-none text-content/85">&middot;</span>
-              <span>{point}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </div>
-    <div className="mt-3 flex items-center justify-end gap-2">
-      {disabled && disabledWhy && (
-        <span className="text-[11.5px] text-brand_danger">{disabledWhy}</span>
-      )}
-      <button
-        type="button"
-        onClick={onClick}
-        disabled={disabled}
-        className={`flex-none rounded-lg px-3.5 py-2 font-display text-[13px] font-semibold disabled:opacity-50 ${
-          primary
-            ? "bg-brand_navy text-custom-white hover:bg-brand_navy_hover"
-            : "border border-gray-200 bg-custom-white text-content hover:bg-bkg"
-        }`}
-      >
-        {action}
-      </button>
-    </div>
-  </div>
-);
-
 const InvoiceExportModal = ({
-  isOpen,
   onClose,
   onRaw,
   onOrders,
   onSend,
   sending,
+  fileName,
   storeChosen,
   handEditCount,
   suggestedApplied,
 }: Props) => {
+  const [choice, setChoice] = useState<Choice>("orders");
+
   /** What the corrected choices are carrying, in words, or null when there is
-   *  nothing to carry — in which case saying "with corrections applied" would
-   *  be promising something that does not exist. */
+   *  nothing to carry — in which case "corrections applied" would be
+   *  promising something that does not exist. */
   const carrying = (() => {
     const parts: string[] = [];
     if (handEditCount > 0) {
@@ -124,76 +67,159 @@ const InvoiceExportModal = ({
     return parts.length > 0 ? parts.join(" and ") : null;
   })();
 
-  const noStore = "Choose a store first";
+  const OPTIONS: {
+    id: Choice;
+    title: string;
+    caption: string;
+    points: string[];
+    needsStore?: boolean;
+  }[] = [
+    {
+      id: "raw",
+      title: "Raw CSV",
+      caption: "Every record in the file, exactly as decoded",
+      points: [
+        "One row per record — lines, deals, allowances, taxes, the lot",
+        "Nothing summed and nothing derived",
+        "Corrections are NOT applied. This is what the file says, which is the thing to compare a corrected invoice against.",
+      ],
+    },
+    {
+      id: "orders",
+      title: "Orders CSV",
+      caption: "The invoices in the POS order layout, ready to load",
+      points: [
+        "One row per billed line, one order per invoice",
+        "Costs worked out per case, money at four places",
+        carrying
+          ? `Corrections ARE applied — ${carrying}`
+          : "Corrections are applied, when there are any",
+        "Named _orders_corrected.csv when the suggested set is on, so two downloads are never mistaken for each other",
+      ],
+      needsStore: true,
+    },
+    {
+      id: "send",
+      title: "Send",
+      caption: "Upload the file for the server to decode and archive",
+      points: [
+        "Goes to invoices/parse_edi against the chosen store",
+        carrying
+          ? `Corrections ARE applied — the file is rebuilt with ${carrying} written into it`
+          : "Corrections are written into the file when there are any",
+        "The server decodes what it receives, so what it archives is what you corrected",
+      ],
+      needsStore: true,
+    },
+  ];
+
+  const selected = OPTIONS.find((o) => o.id === choice)!;
+  const blocked = selected.needsStore && !storeChosen;
+  const canGo = !blocked && !sending;
+
+  const run = () => {
+    if (choice === "raw") onRaw();
+    else if (choice === "orders") onOrders();
+    else onSend();
+  };
 
   return (
-    <Modal
-      isOpen={isOpen}
+    <ResizableModalShell
       onClose={onClose}
-      modalClassName="bg-bkg w-full max-w-[600px]"
+      storageKey="export-modal:awg-invoices:v1"
+      defaultWidth={560}
+      defaultHeight={520}
     >
-      <div className="flex flex-col gap-2.5">
-        <div>
-          <p className="font-display text-[16px] font-bold text-content">
+      <div className="flex items-center gap-3 bg-brand_navy px-4 py-3">
+        <div className="min-w-0 flex-1">
+          <p className="text-[13px] font-semibold text-custom-white">
             Export or send
           </p>
-          <p className="mt-0.5 text-[12.5px] text-content">
-            {carrying
-              ? `This file carries ${carrying}. Only two of these three take them.`
-              : "Nothing has been corrected on this file, so all three describe the same figures."}
+          <p className="truncate text-[10px] text-custom-white/95">
+            {fileName}
+            {carrying ? ` · carries ${carrying}` : " · nothing corrected"}
           </p>
         </div>
-
-        <Choice
-          icon={<DocumentTextIcon className="h-5 w-5" />}
-          name="Raw CSV"
-          what="Every record in the file, exactly as decoded."
-          points={[
-            "One row per record — lines, deals, allowances, taxes, the lot",
-            "Nothing summed and nothing derived",
-            "Corrections are NOT applied — this is what the file says, which is the thing to compare a corrected invoice against",
-          ]}
-          action="Download"
-          onClick={onRaw}
-        />
-
-        <Choice
-          icon={<ArrowDownTrayIcon className="h-5 w-5" />}
-          name="Orders CSV"
-          what="The invoices in the POS order layout, ready to load."
-          points={[
-            "One row per billed line, one order per invoice",
-            "Costs worked out per case, money at four places",
-            carrying
-              ? `Corrections ARE applied — ${carrying}`
-              : "Corrections are applied, when there are any",
-            "Named _orders_corrected.csv when the suggested set is on, so two downloads are never mistaken for each other",
-          ]}
-          action="Download"
-          onClick={onOrders}
-          disabled={!storeChosen}
-          disabledWhy={noStore}
-        />
-
-        <Choice
-          icon={<ArrowUpTrayIcon className="h-5 w-5" />}
-          name="Send"
-          what="Upload the file for the server to decode and archive."
-          points={[
-            "Goes to invoices/parse_edi against the chosen store",
-            carrying
-              ? `Corrections ARE applied — the file is rebuilt with ${carrying} written into it`
-              : "Corrections are written into the file when there are any",
-            "The server decodes what it receives, so what it archives is what you corrected",
-          ]}
-          action={sending ? "Sending…" : "Send"}
-          onClick={onSend}
-          disabled={sending || !storeChosen}
-          disabledWhy={!storeChosen ? noStore : undefined}
-          primary
-        />
+        <button
+          onClick={onClose}
+          className="text-custom-white/95 transition-colors hover:text-custom-white"
+        >
+          <XMarkIcon className="h-4 w-4" />
+        </button>
       </div>
-    </Modal>
+
+      <div className="flex min-h-0 flex-1 flex-col p-4">
+        <p className="mb-2 text-[11px] font-medium uppercase tracking-wide text-content/95">
+          Select what to take
+        </p>
+
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          {OPTIONS.map((option) => (
+            <label
+              key={option.id}
+              className="flex cursor-pointer items-start gap-2.5 border-b border-gray-100 py-2.5 last:border-b-0"
+            >
+              <input
+                type="radio"
+                checked={choice === option.id}
+                onChange={() => setChoice(option.id)}
+                className="mt-0.5"
+              />
+              <div className="min-w-0 flex-1">
+                <p className="text-[13px] font-medium text-content">
+                  {option.title}
+                </p>
+                <p className="mt-0.5 text-[11px] text-content/95">
+                  {option.caption}
+                </p>
+
+                {/* The detail belongs to the one being chosen. All three sets
+                    at once was a wall of prose on a modal whose job is a
+                    choice. */}
+                {choice === option.id && (
+                  <ul className="mt-1.5 space-y-1">
+                    {option.points.map((point) => (
+                      <li
+                        key={point}
+                        className="flex gap-1.5 text-[11.5px] leading-snug text-content"
+                      >
+                        <span className="flex-none text-content/95">
+                          &middot;
+                        </span>
+                        <span>{point}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </label>
+          ))}
+        </div>
+
+        <div className="mt-3 flex items-center justify-between gap-3">
+          <span className="text-[11.5px] text-brand_danger">
+            {blocked ? "Choose a store first" : ""}
+          </span>
+          <button
+            onClick={run}
+            disabled={!canGo}
+            className="flex flex-none items-center gap-1.5 rounded-md bg-brand_navy px-3 py-1.5 text-[12px] font-medium text-custom-white transition-colors hover:bg-brand_navy/85 disabled:opacity-40"
+          >
+            {choice === "send" ? (
+              <>
+                <ArrowUpTrayIcon className="h-3.5 w-3.5" />
+                {sending ? "Sending…" : "Send"}
+              </>
+            ) : (
+              <>
+                <ArrowDownTrayIcon className="h-3.5 w-3.5" />
+                Download CSV
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+    </ResizableModalShell>
   );
 };
 
