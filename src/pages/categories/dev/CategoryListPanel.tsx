@@ -1,5 +1,8 @@
 import LocationTabs from "../../../components/filters/LocationTabs";
-import { applyStoreNumberToName } from "../../../utils/storeIdentity";
+import {
+  applyStoreNumberToName,
+  combinedStoreName,
+} from "../../../utils/storeIdentity";
 import PageInfoButton from "../../../components-dev/PageInfoButton";
 import CategoryRow from "./CategoryRow";
 import { useMemo, useCallback } from "react";
@@ -102,12 +105,11 @@ const CategoryListPanel = ({
    * four label these stores identically.
    */
   const locationName = cats.selectedStoreNumber
-    ? applyStoreNumberToName(
-        cats.storeName,
-        cats.selectedStoreNumber,
-        cats.availableStoreNumbers,
-      )
-    : cats.storeName;
+    ? applyStoreNumberToName(cats.storeName, cats.selectedStoreNumber, cats.availableStoreNumbers)
+    // No location picked is the combined tab, which is both of them. Falling
+    // through to the stored name put one store's number over a figure that is
+    // the pair's -- 369 $303.2K, 370 $121.2K, Both $424.4K under "369".
+    : combinedStoreName(cats.storeName, cats.availableStoreNumbers);
 
   const activeThreshold = threshold ?? CATEGORY_THRESHOLD_DEFAULT;
 
