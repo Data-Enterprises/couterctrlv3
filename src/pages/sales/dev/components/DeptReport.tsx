@@ -632,9 +632,9 @@ interface Props {
  *  the bar leaves out; nothing in it is a verdict on the store, so it takes
  *  the neutral tone rather than borrowing a severity colour. */
 const COMPARE_NOTE_TONE: CtaTone = {
-  border: "border-gray-200",
-  bg: "bg-gray-50",
-  hoverBg: "hover:bg-gray-100",
+  border: "border-brand_navy/25",
+  bg: "bg-bkg",
+  hoverBg: "hover:bg-brand_navy/5",
   text: "text-content",
 };
 
@@ -830,12 +830,16 @@ const DeptReport = ({
           question mark — most of it whitespace nobody was reading. */}
       <div className="flex-shrink-0 px-4 pt-2.5 pb-3 border-b-2 border-brand_navy/20">
         <div className="flex items-center gap-2.5">
+          {/* Named, not just pointed. A bare chevron is a direction, and the
+              one question a reader has on a drill-down is what going back
+              lands them on. */}
           <button
             onClick={onBack}
             title="Back to all stores"
-            className="flex-shrink-0 w-6 h-6 rounded-md border border-brand_navy/25 text-[13px] font-bold text-content hover:bg-bkg transition-colors"
+            className="flex-shrink-0 h-6 px-2 inline-flex items-center gap-1 rounded-md border border-brand_navy/25 text-[12px] font-bold text-content hover:bg-bkg transition-colors"
           >
-            {"‹"}
+            <span className="text-[13px] leading-none">{"‹"}</span>
+            Back
           </button>
 
           {/* The net first. It is the figure the Stores tab sent the reader
