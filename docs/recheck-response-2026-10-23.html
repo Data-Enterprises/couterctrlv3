@@ -156,7 +156,7 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
     <div class="verify">
       <h4>How to check it</h4>
       <ol>
-        <li>Item Actions, store 695, Fam Pak Breast Tenders (20016900000).</li>
+        <li>Item Actions, storeid 695 (#361), Fam Pak Breast Tenders (20016900000).</li>
         <li>Price points reads <b>per pound</b> against the $3.99 shelf price, not $6.14 / $6.94 / $6.86.</li>
         <li>Selecting the row makes <b>one</b> small <code>price_points</code> call &mdash; no <code>product_lookup</code>, no <code>transaction_list</code>.</li>
         <li>Open a price and the receipts load then, once, for that item.</li>
@@ -174,7 +174,7 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
     <div class="verify">
       <h4>How to check it</h4>
       <ol>
-        <li>Price Opt Sub Department, store 695, week ending 10/20, COKE 6PK .5LT (4900002468).</li>
+        <li>Price Opt Sub Department, storeid 695 (#361), week ending 10/20, COKE 6PK .5LT (4900002468).</li>
         <li>The $3.34 / $3.33 pair is <b>one row</b>, in the Exact table at $3.34, with the two transaction counts added.</li>
         <li>The <b>PRICES tile and the note underneath agree</b> &mdash; they read 5 and &ldquo;4 prices&rdquo; before. We have not predicted what the number lands on, only that it is one number in both places.</li>
         <li>An item whose prices are genuinely apart should be unchanged: nothing a penny apart, nothing folded.</li>
@@ -192,7 +192,7 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
     <div class="verify">
       <h4>How to check it</h4>
       <ol>
-        <li>Sub Dept Margins and Vendors, store 695, week ending 10/20, margin mode.</li>
+        <li>Sub Dept Margins and Vendors, storeid 695 (#361), week ending 10/20, margin mode.</li>
         <li>Both headers: <b>27.04%</b>, as before, and now <b>the same LW change</b> on each &mdash; where they read &minus;5.36 and &minus;5.39.</li>
         <li>Worth keeping as a standing assertion: the two are built from one endpoint, so any future disagreement between those headers is a bug by definition.</li>
       </ol>
@@ -207,7 +207,7 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
     <div class="verify">
       <h4>How to check it</h4>
       <ol>
-        <li>Store 685 on Categories, Vendors or Sub Dept Margins, then the <b>Both</b> tab.</li>
+        <li>Storeid 685 (#369 and #370) on Categories, Vendors or Sub Dept Margins, then the <b>Both</b> tab.</li>
         <li>Header reads <b>Bruces Foodland 369 + 370</b>. The 369 and 370 tabs are unchanged.</li>
         <li>On an ordinary store nothing changes: one number is nothing to combine.</li>
       </ol>
@@ -217,7 +217,7 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
   <article class="find" id="aw">
     <div class="find-head"><span class="find-tag">AW</span><h3>The item rows still download in full behind the rollup</h3>
       <div class="verdict"><span class="chip ghost">Closed</span> The group case cannot arise on these pages</div></div>
-    <p>This is the decision taken on 22 Oct rather than something that slipped, and you have it filed correctly. What is new is the size you measured on a second store: <b>31&nbsp;MB across 11 pages, 17.4&nbsp;s on Vendors for store 685</b>. The earlier decision was taken against 13&nbsp;MB on one store.</p>
+    <p>This is the decision taken on 22 Oct rather than something that slipped, and you have it filed correctly. What is new is the size you measured on a second store: <b>31&nbsp;MB across 11 pages, 17.4&nbsp;s on Vendors for storeid 685</b>. The earlier decision was taken against 13&nbsp;MB on one store.</p>
     <p class="callout">On the group worry: <b>Vendors and Sub Dept Margins cannot do a group search.</b> <code>useGroups: 0</code> and <code>singleStore: 1</code> are hardcoded on both, and deliberately &mdash; group response times on this data are too long, which is a backend question rather than a page one. So the multiplication cannot happen here. Steve has closed the aggregate ask on that basis: <code>subs/subs</code> is item data these pages genuinely use, and the rollup already puts the list on screen before the rows land.</p>
     <div class="do"><b>Nothing to do.</b> The rows are already behind the rollup and the screen is usable sooner, which was the whole of the frontend half.</div>
   </article>
@@ -299,7 +299,7 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
   <div class="verify">
     <h4>How to check it</h4>
     <ol>
-      <li>Store 695 has four hash departments &mdash; Lottery, Cash Acct, RSA and Default &mdash; worth about &minus;$2,334.95 together, so its figures should barely move.</li>
+      <li>Storeid 695 (#361) has four hash departments &mdash; Lottery, Cash Acct, RSA and Default &mdash; worth about &minus;$2,334.95 together, so its figures should barely move.</li>
       <li>A store with <b>fuel</b> is the one to look at. Its Sub Dept Margins and Vendors headers, its Categories header and its Sales Tracker totals should now agree with the Sales header, where they were over by the fuel.</li>
       <li>The department and vendor <b>lists are unchanged</b> &mdash; fuel is still there to drill into.</li>
       <li>On a store with no hash departments, nothing should move at all.</li>
@@ -336,7 +336,7 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
       <div class="verdict"><span class="chip watch">Needs one look at the rows</span> With O</div></div>
     <p>Steve has settled the source: the cost on a sales row is what the item cost at the moment it rang, so nothing is wrong with where it comes from. What is left is narrower and answerable from data.</p>
     <p>There are two kinds of weighed item and they do not cost the same way. A <b>true scale item</b> &mdash; bananas &mdash; has a per-pound cost, and pounds are the right multiplier. A <b>random-weight pack</b> like Fam Pak Breast Tenders has a per-package cost, and the right multiplier is the number of packs. We multiply by pounds in both cases, which on the second understates the cost and is the shape of a 66.2% margin on chicken.</p>
-    <p class="callout"><b>What would settle it:</b> <code>subs/subs</code> for 20016900000 at store 695 for the week. <code>cost</code>, <code>net_cost</code>, <code>case_size</code>, <code>qty</code> and <code>weight</code> together say which convention those rows follow &mdash; and whether there is anything on the row that tells the two kinds apart, which is what decides if this can be fixed in the browser at all.</p>
+    <p class="callout"><b>What would settle it:</b> <code>subs/subs</code> for 20016900000 at storeid 695 (#361) for the week. <code>cost</code>, <code>net_cost</code>, <code>case_size</code>, <code>qty</code> and <code>weight</code> together say which convention those rows follow &mdash; and whether there is anything on the row that tells the two kinds apart, which is what decides if this can be fixed in the browser at all.</p>
   </article>
 
   <article class="find" id="d-open">
