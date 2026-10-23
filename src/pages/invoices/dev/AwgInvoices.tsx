@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   ArrowDownTrayIcon,
+  DocumentArrowUpIcon,
   ArrowUpTrayIcon,
   MagnifyingGlassIcon,
 } from "@heroicons/react/20/solid";
@@ -31,6 +32,7 @@ import {
   type InvoiceParseResp,
 } from "../../../api/invoices";
 import InvoicesEntry from "./InvoicesEntry";
+import { readInvoiceFile } from "./readInvoiceFile";
 import InvoiceCard from "./InvoiceCard";
 import { useAwgInvoices } from "./useAwgInvoices";
 import { parseAwgFile } from "./vendors/awg";
@@ -89,7 +91,10 @@ const AwgInvoices = () => {
   );
   const assignedStores = useAppSelector((s) => s.user.assignedStores);
 
-  const [readOpen, setReadOpen] = useState(false);
+  /** The toolbar button opens this rather than an overlay holding a drop
+   *  zone — see the drop handlers on the frame below. */
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [draggingFile, setDraggingFile] = useState(false);
 
   const { rows, allReconciled, failedCount, warnings, trailer } =
     useAwgInvoices();
@@ -105,17 +110,6 @@ const AwgInvoices = () => {
       ? `The trailer counts say this file holds ${trailer.expected} records, but it holds ${trailer.found} — ${gap} missing. The file may be incomplete.`
       : `The trailer counts say this file holds ${trailer.expected} records, but it holds ${trailer.found} — ${-gap} more than any trailer accounts for.`;
   }, [trailer]);
-
-  // Escape closes the re-read overlay. The page behind it is still readable, so
-  // an overlay you can only leave by aiming at a button is the wrong trade.
-  useEffect(() => {
-    if (!readOpen) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setReadOpen(false);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [readOpen]);
 
   /** Corrections on the open invoice, as the keys the card marks cells with. */
   const editedByDoc = useMemo(() => {
@@ -176,7 +170,6 @@ const AwgInvoices = () => {
         return;
       }
       dispatch(setInvoicesFile({ fileName: name, fileText: text }));
-      setReadOpen(false);
     } catch (e) {
       // A decode error names the field it failed on, which is the one thing
       // that makes a malformed file diagnosable.
@@ -301,19 +294,55 @@ const AwgInvoices = () => {
   }
 
   return (
-    <div className="h-[calc(100vh-3rem)] w-full select-none overflow-hidden p-4">
+    /* The page takes the file, so the drop zone is wherever the reader is
+       looking. It used to live inside an overlay, which meant clicking a
+       button to reach the thing you drag onto. `dragover` has to be
+       cancelled or the browser navigates to the file instead. */
+    <div
+      className="h-[calc(100vh-3rem)] w-full select-none overflow-hidden p-4"
+      onDragOver={(e) => {
+        e.preventDefault();
+        setDraggingFile(true);
+      }}
+      onDragLeave={(e) => {
+        // Only when the pointer leaves the page, not on every child it
+        // crosses on the way in.
+        if (e.currentTarget.contains(e.relatedTarget as Node)) return;
+        setDraggingFile(false);
+      }}
+      onDrop={(e) => {
+        e.preventDefault();
+        setDraggingFile(false);
+        const file = e.dataTransfer.files?.[0];
+        if (file) readInvoiceFile(file, handleFile);
+      }}
+    >
       <div className="mx-auto flex h-full max-w-[1180px] flex-col gap-3">
         {/* ── the file, and what to do with it ───────────────────── */}
         <section className="flex-none overflow-hidden rounded-xl border border-gray-200 bg-custom-white shadow-sm">
           <div className="flex items-center gap-2 px-3.5 pt-3">
+            {/* A document, not a magnifier: this loads a file, it does not
+                search for one. */}
             <button
               type="button"
-              onClick={() => setReadOpen(true)}
+              onClick={() => fileInputRef.current?.click()}
               aria-label="Read another file"
+              title="Read another file — or drop one anywhere on this page"
               className="flex h-7 w-7 flex-none items-center justify-center rounded border border-gray-200 text-content/85 hover:bg-bkg"
             >
-              <MagnifyingGlassIcon className="h-3.5 w-3.5" />
+              <DocumentArrowUpIcon className="h-3.5 w-3.5" />
             </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) readInvoiceFile(file, handleFile);
+                // Cleared so re-picking the same file still fires.
+                e.target.value = "";
+              }}
+            />
             <span className="min-w-0 flex-1 truncate font-display text-[14px] font-bold text-content">
               {fileName}
             </span>
@@ -579,24 +608,13 @@ const AwgInvoices = () => {
         </div>
       </div>
 
-      {/* The card itself, on a dimmed page — not wrapped in the generic modal
-          shell, which boxes a 560px card inside its own narrower frame and
-          leaves the card's full-page centring to stretch the result. */}
-      {readOpen && (
-        <div
-          className="fixed inset-0 z-[5000] flex items-center justify-center backdrop-blur-sm p-4"
-          onMouseDown={() => setReadOpen(false)}
-        >
-          <div
-            className="w-full max-w-[560px]"
-            onMouseDown={(e) => e.stopPropagation()}
-          >
-            <InvoicesEntry
-              onFile={handleFile}
-              error={error}
-              onClose={() => setReadOpen(false)}
-            />
-          </div>
+      {/* Said, because the page gives no other sign a drop is allowed —
+          the dashed box that used to say it is only on the first read now. */}
+      {draggingFile && (
+        <div className="pointer-events-none fixed inset-0 z-[5000] flex items-center justify-center bg-brand_navy/10">
+          <span className="rounded-lg border-2 border-dashed border-brand_navy bg-custom-white px-5 py-3 font-display text-[14px] font-semibold text-content shadow-lg">
+            Drop an AWG file to read it
+          </span>
         </div>
       )}
     </div>
