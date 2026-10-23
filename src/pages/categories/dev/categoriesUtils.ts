@@ -1,4 +1,5 @@
 import { onlyStoreNumber } from "../../../utils/storeIdentity";
+import { countedRows } from "../../../utils/hashSubs";
 import { coverageOf, gradeBasis } from "../../../utils/grading";
 import type { CatSalesDaily, CategoryMetric, CategoryTier, CategoryRow, CategoryDay, DayDetail } from "../../../interfaces";
 // Defined in src/interfaces — Categories. Re-exported for this page's files.
@@ -120,6 +121,20 @@ const buildLabels = (...sets: CatSalesDaily[][]) => {
  *  Strict rather than `scopeToStoreNumber`: a location can have a period the
  *  other one did not trade in, and the guarded form would hand those rows
  *  over rather than reporting no comparison. */
+/**
+ * The rows a store counts, for everything that totals them.
+ *
+ * `categories/cat_sales` returns hash sub departments -- fuel, lottery, cash
+ * accounts -- and `sales/weekly` leaves them out. The Categories header is
+ * summed from these rows and set beside the Sales header, so on a store with
+ * any hash department the two already disagree. Dropped on the way in, like
+ * the store comparison and the tracker.
+ *
+ * A row without the flag reads as "not known to be hash", so a response from
+ * an older deploy behaves as it did rather than silently dropping every row.
+ */
+export const countedCatRows = countedRows;
+
 export const scopePeriods = (
   raw: { tw: CatSalesDaily[]; lw: CatSalesDaily[]; ly: CatSalesDaily[] },
   storeNumber: string | null,

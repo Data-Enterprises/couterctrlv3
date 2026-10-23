@@ -1155,6 +1155,16 @@ export type SubDeptMargin = {
   price?: number;
   price_split?: number;
   avg_unit_price?: number;
+  /**
+   * In a sub department this store leaves out of its own net sales.
+   *
+   * Same flag `subs/sub_sales` carries, on the item rows. `sales/weekly`
+   * drops these, so anything summing these rows to set beside a store figure
+   * has to drop them too -- see `utils/hashSubs`. Optional because it arrived
+   * after this type; absent reads as "not known to be hash", which keeps
+   * every screen that has not been changed on the behaviour it had.
+   */
+  is_hash?: boolean;
 };
 
 export type SubMarginsJsonResp = {
@@ -1505,6 +1515,14 @@ export interface UpdateFileResp {
    `displayHourly` flags. Fields common to all three sit in the base. */
 
 export interface CatSalesBase {
+  /**
+   * In a sub department this store leaves out of its own net sales.
+   *
+   * On `categories/cat_sales` since 23 Oct. Optional because it arrived
+   * after this type: absent reads as "not known to be hash", which is what
+   * keeps a response from an older deploy behaving as it did.
+   */
+  is_hash?: boolean;
   storeid: number;
   store_name: string;
   store_number: string;

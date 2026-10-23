@@ -1,3 +1,4 @@
+import { countedRows } from "../../../../../utils/hashSubs";
 import { storeMarginDelta } from "../../../../../utils/storeMarginDelta";
 import PageInfoButton from "../../../../../components-dev/PageInfoButton";
 import { useRef, useState } from "react";
@@ -168,7 +169,20 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: Props) => {
    * `subs/subs` rows, so one had to be wrong, and it was this one. The rule
    * lives in the page helpers now, where it is under test.
    */
-  const dollars = grades.map((g) => g.grade.dollars);
+  /**
+   * The store header counts what the store counts.
+   *
+   * Fuel, lottery and cash accounts are in `subs/subs` on purpose -- the
+   * list below should show a store its own fuel -- and `sales/weekly` leaves
+   * them out. This header sits beside those store figures, so a margin built
+   * over every department describes a different store from the one named
+   * above it. The LIST is untouched: a department is still listed, graded and
+   * drillable, it just does not move the store's own number.
+   */
+  const counted = grades.filter(
+    (g) => countedRows(g.grade.tyWeekOneMargins).length > 0,
+  );
+  const dollars = counted.map((g) => g.grade.dollars);
   /**
    * Every row the store rang, for the header's own day matching.
    *
@@ -178,9 +192,9 @@ const MarginPerfLeftPanel = ({ onSearchOpen, onStoreNumberChange }: Props) => {
    * identical week. The store figure matches days once, over everything.
    */
   const storeRows = {
-    tw: grades.flatMap((g) => g.grade.tyWeekOneMargins),
-    lw: grades.flatMap((g) => g.grade.lwWeekOneMargins),
-    ly: grades.flatMap((g) => g.grade.lyWeekOneMargins),
+    tw: countedRows(grades.flatMap((g) => g.grade.tyWeekOneMargins)),
+    lw: countedRows(grades.flatMap((g) => g.grade.lwWeekOneMargins)),
+    ly: countedRows(grades.flatMap((g) => g.grade.lyWeekOneMargins)),
   };
   const storeMarginPct = storeMarginPctOf(dollars);
   const storeLyDelta = storeMarginDelta(storeRows.tw, storeRows.ly, "ly");

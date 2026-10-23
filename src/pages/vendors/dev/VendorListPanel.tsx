@@ -1,3 +1,4 @@
+import { countedRows } from "../../../utils/hashSubs";
 import { storeMarginDelta } from "../../../utils/storeMarginDelta";
 import {
   applyStoreNumberToName,
@@ -246,13 +247,21 @@ const VendorListPanel = ({ onSearchOpen, onStoreNumberChange }: Props) => {
       // grouping does not change it.
       lwPct:
         isMargin
-          ? storeMarginDelta(vend.raw.tw, vend.raw.lw, "lw")
+          ? storeMarginDelta(
+              countedRows(vend.raw.tw),
+              countedRows(vend.raw.lw),
+              "lw",
+            )
           : lwNet > 0
             ? pctChange(twNetLW, lwNet)
             : null,
       lyPct:
         isMargin
-          ? storeMarginDelta(vend.raw.tw, vend.raw.ly, "ly")
+          ? storeMarginDelta(
+              countedRows(vend.raw.tw),
+              countedRows(vend.raw.ly),
+              "ly",
+            )
           : lyNet > 0
             ? pctChange(twNetLY, lyNet)
             : null,
