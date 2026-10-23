@@ -2,7 +2,6 @@ import { useMemo, useRef, useState } from "react";
 import {
   ArrowDownTrayIcon,
   DocumentArrowUpIcon,
-  ArrowUpTrayIcon,
   MagnifyingGlassIcon,
 } from "@heroicons/react/20/solid";
 import { useAppDispatch, useAppSelector } from "../../../hooks";
@@ -33,6 +32,8 @@ import {
 } from "../../../api/invoices";
 import InvoicesEntry from "./InvoicesEntry";
 import { readInvoiceFile } from "./readInvoiceFile";
+import InvoiceExportModal from "./InvoiceExportModal";
+import { rebuildAwgFile } from "./vendors/awg/rebuildFile";
 import InvoiceCard from "./InvoiceCard";
 import { useAwgInvoices } from "./useAwgInvoices";
 import { parseAwgFile } from "./vendors/awg";
@@ -94,6 +95,7 @@ const AwgInvoices = () => {
    *  zone — see the drop handlers on the frame below. */
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [draggingFile, setDraggingFile] = useState(false);
+  const [exportOpen, setExportOpen] = useState(false);
 
   const { rows, allReconciled, failedCount, warnings, trailer } =
     useAwgInvoices();
@@ -173,6 +175,12 @@ const AwgInvoices = () => {
     [assignedStores],
   );
 
+  /** The invoices as the page has them: parsed fresh, every correction
+   *  replayed. Three things want this — both exports and the send — and all
+   *  three were deriving it separately. */
+  const correctedInvoices = () =>
+    applyEdits(parseAwgFile(fileText).invoices, edits);
+
   const handleFile = (text: string, name: string) => {
     dispatch(setInvoicesParsing(true));
     try {
@@ -207,10 +215,12 @@ const AwgInvoices = () => {
    * column after the first byte above 0x7F — the same failure the reader
    * exists to avoid.
    */
-  const fileBytes = () => {
-    const bytes = new Uint8Array(fileText.length);
-    for (let i = 0; i < fileText.length; i += 1) {
-      bytes[i] = fileText.charCodeAt(i) & 0xff;
+  /** Text back to the bytes it was read from. ISO-8859-1 round trip: every
+   *  code point came from one byte, so one byte is what it goes back as. */
+  const fileBytes = (text: string) => {
+    const bytes = new Uint8Array(text.length);
+    for (let i = 0; i < text.length; i += 1) {
+      bytes[i] = text.charCodeAt(i) & 0xff;
     }
     return new File([bytes], fileName);
   };
@@ -234,7 +244,7 @@ const AwgInvoices = () => {
       return;
     }
     const base = fileName.replace(/\.[^.]*$/, "") || "awg_invoices";
-    const invoices = applyEdits(parseAwgFile(fileText).invoices, edits);
+    const invoices = correctedInvoices();
     const { csv, undatedInvoices } = awgInvoicesToOrdersCsv(invoices, {
       storeid,
       storeName,
@@ -268,9 +278,29 @@ const AwgInvoices = () => {
       toast.warn("Choose a store before sending.");
       return;
     }
+    // The whole point of being able to edit: what the server decodes is
+    // what is on screen. This used to upload the file exactly as it arrived,
+    // so ten corrections and a send archived the file as if none had been
+    // made -- and nothing said so.
+    const rebuilt = rebuildAwgFile(fileText, correctedInvoices());
+    if (rebuilt.refused.length > 0) {
+      // A value that will not fit its column cannot be sent. Saying which is
+      // the difference between a refusal and a silent revert.
+      toast.warn(
+        `${rebuilt.refused.length} correction${
+          rebuilt.refused.length === 1 ? "" : "s"
+        } will not fit the file's own columns and cannot be sent — ${rebuilt.refused
+          .slice(0, 3)
+          .join(", ")}${rebuilt.refused.length > 3 ? " and others" : ""}.`,
+      );
+      return;
+    }
+
     dispatch(setInvoicesSending(true));
     try {
-      const res = await parseEdiInvoices(url, token, storeid, [fileBytes()]);
+      const res = await parseEdiInvoices(url, token, storeid, [
+        fileBytes(rebuilt.text),
+      ]);
       const body = res.data as InvoiceParseResp;
       if (invoiceFailed(body)) {
         dispatch(setInvoicesSendError(body.msg || "The send was refused."));
@@ -522,42 +552,18 @@ const AwgInvoices = () => {
               className="w-[190px]"
             />
 
+            {/* One door. Three buttons said what each one did and nothing
+                about how they differ, and they differ a lot: two ignore every
+                correction on the page and one does not, two make a file and
+                one talks to the server. That does not fit on a button. */}
             <button
               type="button"
-              onClick={handleExport}
-              title="Every record as decoded — no totals, no corrections. What the file says."
-              className="flex flex-none items-center gap-1.5 rounded-lg border border-gray-200 bg-custom-white px-3.5 py-2 font-display text-[13px] font-semibold text-content hover:bg-bkg"
+              onClick={() => setExportOpen(true)}
+              title="Download the records, download the order layout, or send the file to be decoded"
+              className="flex flex-none items-center gap-1.5 rounded-lg bg-brand_navy px-3.5 py-2 font-display text-[13px] font-semibold text-custom-white hover:bg-brand_navy_hover"
             >
               <ArrowDownTrayIcon className="h-4 w-4" />
-              {/* Named by what it holds, not by the verb. Both of these
-                  exported a CSV, so "Export CSV" beside "Export as orders"
-                  told you which was which only by reading the second one. */}
-              Raw CSV
-            </button>
-
-            <button
-              type="button"
-              onClick={handleOrdersExport}
-              title="The order layout, one row per billed line, with every correction on the page applied"
-              className="flex flex-none items-center gap-1.5 rounded-lg border border-gray-200 bg-custom-white px-3.5 py-2 font-display text-[13px] font-semibold text-content hover:bg-bkg"
-            >
-              <ArrowDownTrayIcon className="h-4 w-4" />
-              Orders CSV
-            </button>
-
-            <button
-              type="button"
-              onClick={handleSend}
-              disabled={sending || !storeid}
-              title={
-                storeid
-                  ? "Send this file to be decoded and archived"
-                  : "Choose a store first"
-              }
-              className="flex flex-none items-center gap-1.5 rounded-lg bg-brand_navy px-3.5 py-2 font-display text-[13px] font-semibold text-custom-white hover:bg-brand_navy_hover disabled:opacity-50"
-            >
-              <ArrowUpTrayIcon className="h-4 w-4" />
-              {sending ? "Sending…" : "Send"}
+              Export or send
             </button>
           </div>
 
@@ -636,6 +642,27 @@ const AwgInvoices = () => {
           </div>
         </div>
       </div>
+
+      <InvoiceExportModal
+        isOpen={exportOpen}
+        onClose={() => setExportOpen(false)}
+        onRaw={() => {
+          setExportOpen(false);
+          handleExport();
+        }}
+        onOrders={() => {
+          setExportOpen(false);
+          handleOrdersExport();
+        }}
+        onSend={() => {
+          setExportOpen(false);
+          void handleSend();
+        }}
+        sending={sending}
+        storeChosen={!!storeid}
+        handEditCount={handEditCount}
+        suggestedApplied={suggestedApplied}
+      />
 
       {/* Said, because the page gives no other sign a drop is allowed —
           the dashed box that used to say it is only on the first read now. */}
