@@ -128,11 +128,11 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
   <div class="lead">
     <div class="eyebrow">CounterCtrl dev &middot; Response to the re-check</div>
     <h1>Response to the 23 Oct re-check</h1>
-    <p class="sub">Four of the five new findings we are taking, one we would fix differently from how it reads, and your answer on P settles a question that was blocking two things. Plus two issues Wayne raised separately, both already fixed.</p>
+    <p class="sub">Four of the five new findings we are taking, one we would fix differently from how it reads, and P and O are now answered from the rows &mdash; the margin on that chicken is the real one. Plus two issues Wayne raised separately, both already fixed.</p>
   </div>
   <div class="status">
     <span><b>Phases 1&ndash;4 done</b> &middot; AS, AT, AU, AV, D and G fixed</span>
-    <span>2 of Wayne&rsquo;s fixed &middot; <b>P and O</b> are the last open question</span>
+    <span>2 of Wayne&rsquo;s fixed &middot; <b>P and O</b> closed, no code change &middot; <b>5a</b> is all that is left</span>
   </div>
 </header>
 
@@ -224,10 +224,26 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
 </section>
 
 <section class="block" aria-labelledby="p-h">
-  <h2 id="p-h">Your answer on P, and what it unblocks</h2>
-  <p>That settles it, and it rules out what we had been looking for. <b>Units reads 166.2 for the week</b> &mdash; that is pounds, so the page is weight-aware and the rows are not arriving with a zero weight. We had thought that was the likely cause and it is not.</p>
-  <p>Which leaves your second cause, and the figures agree with it: <b>66.2% margin, no invoice in 90 days</b>. With no invoice the cost comes off the sales rows, where <code>cost</code> and <code>case_size</code> describe a package while the units are pounds. Divide a package cost by a package count and multiply it by pounds and the cost comes out low, which is exactly the shape of a margin that high on chicken.</p>
-  <p class="callout"><b>This is the same question as O.</b> What cost should a variable-weight item use when there is no invoice on file? Both findings are waiting on one answer, and it is a judgement about the business rather than about the code &mdash; which is why we are not picking it ourselves.</p>
+  <h2 id="p-h">P and O, settled from the rows</h2>
+  <p>Steve pulled <code>subs/subs</code> for 20016900000 at storeid 695 (#361) for the week. It answers both, and it <b>rules out the cause we proposed</b> &mdash; worth saying plainly, because the theory in the last draft was wrong.</p>
+
+  <p><b>The item is priced per pound, and we already cost it per pound.</b> Net sales divided by weight comes to $3.99 on every one of the seven days, which is the shelf price. Per package it would be $7.42, which is not a price anybody set. We had guessed <code>cost</code> and <code>case_size</code> described a package while units were pounds; in fact <code>case_size</code> is 1 and nothing is divided. Our COGS multiplies cost by weight whenever weight is present, so the page is already using the per-pound reading.</p>
+
+  <div class="scroll"><table>
+    <thead><tr><th>Reading</th><th>COGS on the week</th><th>Margin</th><th>Implied cost per lb</th></tr></thead>
+    <tbody>
+      <tr class="total"><td><b>Per pound</b> &mdash; what we do</td><td>180.674 lb &times; $1.35 = <b>$243.91</b></td><td><b>66.1%</b></td><td>$1.35</td></tr>
+      <tr><td>Per package</td><td>97 packs &times; $1.35 = $130.95</td><td>81.8%</td><td>$0.72</td></tr>
+    </tbody>
+  </table></div>
+
+  <p><b>So the 66.2% the run flagged is the real number</b>, on $720.19 of net sales. It is high for chicken, and it is what $3.99 against $1.35 comes to. The other reading needs a $0.72/lb cost on boneless tenders, which is not a chicken price.</p>
+
+  <p class="callout"><b>What the rows cannot say is which unit <code>cost</code> is in.</b> The price declares itself &mdash; <code>avg_unit_price</code> is net sales over weight &mdash; and there is no matching field for cost. So the per-pound reading is the consistent one and the plausible one, but only the invoices prove it, and Steve is checking them. If they come back per-package it is a cost-unit problem at the source, not a multiplier to flip here, because nothing on the row tells a true scale item from a random-weight pack.</p>
+
+  <p><b>One thing for the next run:</b> do not read the <code>margin</code> field on <code>subs/subs</code>. It reports about 99% on every row &mdash; the server computes it as <code>(total_sales &minus; cost) / total_sales</code>, which is one unit&rsquo;s cost set against a whole day, on sales that still include tax. It reproduces to seven decimal places on all seven days. Our own interfaces already carry a note not to consume it, and nothing in the live tree does, so this is a warning rather than a fix.</p>
+
+  <div class="do"><b>Nothing to change.</b> P and O close here. The margin was right, and the invoices are the only thing that could move it.</div>
 </section>
 
 <section class="block" aria-labelledby="wayne-h">
@@ -269,7 +285,7 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
       <tr><td class="tags">2</td><td><b>Done</b> &mdash; Item Actions on <code>price_points</code> <span class="commit">582e452e</span></td><td class="tags">AS, D</td><td>&mdash;</td><td>&mdash;</td></tr>
       <tr><td class="tags">3</td><td><b>Done</b> &mdash; Price Opt&rsquo;s two counts <span class="commit">d7eb5c45</span></td><td class="tags">AT, G</td><td>&mdash;</td><td>&mdash;</td></tr>
       <tr><td class="tags">4</td><td><b>Done</b> &mdash; hash flag across four more pages <span class="commit">8ee9b005</span></td><td class="tags">&mdash;</td><td>&mdash;</td><td>&mdash;</td></tr>
-      <tr><td class="tags">5</td><td>The decided ones</td><td class="tags">P, O, B, 5a</td><td>Small each</td><td><b>Decisions 1&ndash;3</b></td></tr>
+      <tr><td class="tags">5</td><td>The Categories header&rsquo;s compared base</td><td class="tags">5a</td><td>A sentence</td><td>&mdash;</td></tr>
       <tr class="total"><td class="tags">6</td><td>Backend</td><td class="tags">AW, D</td><td>Not ours</td><td><b>Decisions 4&ndash;5</b></td></tr>
     </tbody>
   </table></div>
@@ -306,8 +322,8 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
     </ol>
   </div>
 
-  <h3>Phase 5 &middot; The decided ones <span class="chip review">blocked</span></h3>
-  <p>Small changes each, none of which can start. <b>P</b> and <b>O</b> are one decision about cost basis; <b>B</b> is two named constants; <b>5a</b> is a sentence. Listed as a phase rather than scattered, because they will all land in an afternoon once the three answers exist.</p>
+  <h3>Phase 5 &middot; The Categories header <span class="chip ok">ready</span></h3>
+  <p>Down to one item. <b>P</b> and <b>O</b> closed with no code change once the rows came in, and <b>B</b>&rsquo;s two constants stay as they are by decision 2. That leaves <b>5a</b>: print the base Categories actually compared beside the paired percentage, so the figure cannot be back-solved into a last-week total the page never used.</p>
 
   <h3>Phase 6 &middot; Backend <span class="chip review">not ours</span></h3>
   <p><b>AW</b>&rsquo;s server-side aggregate and <b>D</b>&rsquo;s multi-price receipt count. Both are scheduling calls for Steve and Dylan. Nothing in phases 0&ndash;5 waits on either.</p>
@@ -331,14 +347,6 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
 <section class="block" aria-labelledby="open-h">
   <h2 id="open-h">What is still open</h2>
 
-  <article class="find" id="p-open">
-    <div class="find-head"><span class="find-tag">P</span><h3>Which unit the cost is in, on a random-weight pack</h3>
-      <div class="verdict"><span class="chip watch">Needs one look at the rows</span> With O</div></div>
-    <p>Steve has settled the source: the cost on a sales row is what the item cost at the moment it rang, so nothing is wrong with where it comes from. What is left is narrower and answerable from data.</p>
-    <p>There are two kinds of weighed item and they do not cost the same way. A <b>true scale item</b> &mdash; bananas &mdash; has a per-pound cost, and pounds are the right multiplier. A <b>random-weight pack</b> like Fam Pak Breast Tenders has a per-package cost, and the right multiplier is the number of packs. We multiply by pounds in both cases, which on the second understates the cost and is the shape of a 66.2% margin on chicken.</p>
-    <p class="callout"><b>What would settle it:</b> <code>subs/subs</code> for 20016900000 at storeid 695 (#361) for the week. <code>cost</code>, <code>net_cost</code>, <code>case_size</code>, <code>qty</code> and <code>weight</code> together say which convention those rows follow &mdash; and whether there is anything on the row that tells the two kinds apart, which is what decides if this can be fixed in the browser at all.</p>
-  </article>
-
   <article class="find" id="d-open">
     <div class="find-head"><span class="find-tag">D</span><h3>Package deal cannot fire without a count of mixed-price receipts</h3>
       <div class="verdict"><span class="chip review">Backend ask</span></div></div>
@@ -348,7 +356,7 @@ footer{font-size:13px;color:var(--muted);border-top:1px solid var(--line);paddin
 
   <article class="find" id="cat-open">
     <div class="find-head"><span class="find-tag">5a</span><h3>Categories header wording</h3>
-      <div class="verdict"><span class="chip ok">Agreed, in phase 5</span></div></div>
+      <div class="verdict"><span class="chip ok">Agreed &mdash; phase 5, unblocked</span></div></div>
     <p>Categories pairs per category per day, and drops a category-day with no last-week counterpart from both sides. So the percentage&rsquo;s base is &ldquo;this week&rsquo;s sales in the category-days that had a last week&rdquo; &mdash; not the headline. On the original example the header read $100.4K and +7.15%, but the figure compared was about <b>$96.8K against $90.3K</b>. The missing $3.6K is categories that sold this week and did not exist last week.</p>
     <p>The header will print that base, so nobody can derive a last-week total the page never used.</p>
   </article>

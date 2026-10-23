@@ -1136,6 +1136,18 @@ export type SubDeptMargin = {
   cost: number;
   case_size: number;
   calculated_cost: number;
+  /**
+   * Server-computed and NOT to be consumed. Use `calculateCogs`.
+   *
+   * It is `(total_sales - cost) / total_sales`: one unit's cost set against a
+   * whole day of sales, on a base that still includes tax. So it reads near
+   * 100% on anything that sells more than a couple of units -- 99.0% on a week
+   * of Fam Pak Breast Tenders whose real margin is 66.1%. Reproduced to seven
+   * decimal places on all seven days of storeid 695, 2026-10-16..22.
+   *
+   * The same warning is on `CatItem`, which is this type with the grouping
+   * column swapped. It lives here too because this is where it is read first.
+   */
   margin: number;
   cost_fees: number;
   net_cost: number;
