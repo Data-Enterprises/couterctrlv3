@@ -34,7 +34,9 @@ interface Props {
   onSend: () => void;
   sending: boolean;
   fileName: string;
-  /** Both the orders export and the send are per store. */
+  /** Only the send is per store -- the endpoint takes one. The orders export
+   *  does not ask, because a file carries several AWG stores and the
+   *  pipeline maps them off `storenumber`. */
   storeChosen: boolean;
   handEditCount: number;
   suggestedApplied: boolean;
@@ -91,12 +93,12 @@ const InvoiceExportModal = ({
       points: [
         "One row per billed line, one order per invoice",
         "Costs worked out per case, money at four places",
+        "storeid and vendor_id are left for the pipeline — the file carries AWG's own store number per invoice, and a file can hold several stores",
         carrying
           ? `Corrections ARE applied — ${carrying}`
           : "Corrections are applied, when there are any",
         "Named _orders_corrected.csv when the suggested set is on, so two downloads are never mistaken for each other",
       ],
-      needsStore: true,
     },
     {
       id: "send",

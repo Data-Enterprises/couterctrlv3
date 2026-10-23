@@ -39,8 +39,6 @@ import { useAwgInvoices } from "./useAwgInvoices";
 import { parseAwgFile } from "./vendors/awg";
 import { awgRecordsToCsv } from "./vendors/awg/exportCsv";
 import { awgInvoicesToOrdersCsv } from "./vendors/awg/exportOrders";
-import SelectFilter from "../../../components-dev/filters/SelectFilter";
-import { setSelectedStore, setLastStore } from "../../../features/searchSlice";
 import { applyEdits } from "./vendors/awg/applyEdit";
 import { downloadCsv } from "../../../utils/csvExport";
 import type { InvoiceEdit } from "./vendors/awg/applyEdit";
@@ -64,6 +62,22 @@ import type { InvoiceEdit } from "./vendors/awg/applyEdit";
  * What there is instead is a failure state, because a file in the wrong format
  * produces nothing rather than something wrong.
  */
+/**
+ * The filter row's pills, in the house filter dress.
+ *
+ * They wore `border-gray-200`, which reads as no border at all beside the
+ * controls in `components-dev/filters` -- those carry a navy hairline idle
+ * and the `filter_active` tint with a ring when they are narrowing something.
+ * Same tokens here, so the row looks like every other filter row.
+ *
+ * Navy fill is left to the primary action, which is the one thing on this row
+ * that does something rather than narrows something.
+ */
+const PILL_IDLE =
+  "border-brand_navy/75 bg-custom-white text-content hover:border-brand_navy/50";
+const PILL_ON =
+  "border-filter_active_border bg-filter_active text-content ring-2 ring-filter_active_border/30";
+
 const AwgInvoices = () => {
   const dispatch = useAppDispatch();
   const toast = useToast();
@@ -86,10 +100,6 @@ const AwgInvoices = () => {
   const sentAt = useAppSelector((s) => s.dev.invoices.sentAt);
   const serverWarnings = useAppSelector((s) => s.dev.invoices.serverWarnings);
   const storeid = useAppSelector((s) => s.search.selectedStore?.storeid);
-  const storeName = useAppSelector(
-    (s) => s.search.selectedStore?.store_name ?? "",
-  );
-  const assignedStores = useAppSelector((s) => s.user.assignedStores);
 
   /** The toolbar button opens this rather than an overlay holding a drop
    *  zone — see the drop handlers on the frame below. */
@@ -164,17 +174,6 @@ const AwgInvoices = () => {
     });
   }, [rows, failedOnly, overTenCentsOnly, nothingBilledOnly, textFilter]);
 
-  /** The store list as the chooser wants it: number first, because that is
-   *  what anybody reading an invoice has in their head. */
-  const storeOptions = useMemo(
-    () =>
-      assignedStores.map((store) => ({
-        value: String(store.storeid),
-        label: `${store.store_number} \u2014 ${store.store_name}`,
-      })),
-    [assignedStores],
-  );
-
   /** The invoices as the page has them: parsed fresh, every correction
    *  replayed. Three things want this — both exports and the send — and all
    *  three were deriving it separately. */
@@ -235,20 +234,15 @@ const AwgInvoices = () => {
    * The invoices as the page has them — corrections and suggested
    * corrections included — in the order layout.
    *
-   * Gated on the store for the same reason Send is: the layout's first column
-   * is `storeid`, and a file without one cannot be loaded by anything.
+   * No store is asked for. A file carries several AWG stores -- the sample
+   * holds ten invoices across two -- so one chosen on screen would stamp the
+   * same id on all of them. `storenumber` goes out per invoice, from the
+   * file, and the pipeline maps it.
    */
   const handleOrdersExport = () => {
-    if (!storeid) {
-      toast.warn("Choose a store before exporting orders.");
-      return;
-    }
     const base = fileName.replace(/\.[^.]*$/, "") || "awg_invoices";
     const invoices = correctedInvoices();
-    const { csv, undatedInvoices } = awgInvoicesToOrdersCsv(invoices, {
-      storeid,
-      storeName,
-    });
+    const { csv, undatedInvoices } = awgInvoicesToOrdersCsv(invoices);
 
     // A delivery date that could not be read leaves `order_date` blank, and a
     // blank date in a loaded order is the kind of thing nobody notices until
@@ -436,10 +430,8 @@ const AwgInvoices = () => {
               type="button"
               onClick={() => dispatch(setInvoiceFailedOnly(!failedOnly))}
               aria-pressed={failedOnly}
-              className={`flex-none rounded-full border px-3 py-1.5 text-[11px] font-medium ${
-                failedOnly
-                  ? "border-brand_navy bg-brand_navy text-custom-white"
-                  : "border-gray-200 bg-custom-white text-content/85"
+              className={`flex-none rounded-full border px-3 py-1.5 text-[11px] font-medium transition-colors ${
+                failedOnly ? PILL_ON : PILL_IDLE
               }`}
             >
               To check{failedCount > 0 ? ` (${failedCount})` : ""}
@@ -452,10 +444,8 @@ const AwgInvoices = () => {
               }
               aria-pressed={overTenCentsOnly}
               title="Invoices a check misses by more than 10¢ — past the vendor's penny rounding"
-              className={`flex-none rounded-full border px-3 py-1.5 text-[11px] font-medium ${
-                overTenCentsOnly
-                  ? "border-brand_navy bg-brand_navy text-custom-white"
-                  : "border-gray-200 bg-custom-white text-content/85"
+              className={`flex-none rounded-full border px-3 py-1.5 text-[11px] font-medium transition-colors ${
+                overTenCentsOnly ? PILL_ON : PILL_IDLE
               }`}
             >
               Over 10¢{overTenCentsCount > 0 ? ` (${overTenCentsCount})` : ""}
@@ -495,10 +485,8 @@ const AwgInvoices = () => {
               onClick={() => dispatch(toggleSuggestedCorrections())}
               aria-pressed={suggestedApplied}
               title="Recompute retail, cost and allowances the way AWG builds its totals: split repeated random-weight retail, price random-weight lines by weight, use the multi-buy formula, cost and discount random-weight lines per pound, and round once"
-              className={`flex-none rounded-full border px-3 py-1.5 text-[11px] font-medium ${
-                suggestedApplied
-                  ? "border-brand_navy bg-brand_navy text-custom-white"
-                  : "border-gray-200 bg-custom-white text-content/85"
+              className={`flex-none rounded-full border px-3 py-1.5 text-[11px] font-medium transition-colors ${
+                suggestedApplied ? PILL_ON : PILL_IDLE
               }`}
             >
               Suggested corrections
@@ -512,47 +500,12 @@ const AwgInvoices = () => {
                 type="button"
                 onClick={() => dispatch(clearInvoiceEdits())}
                 title="Discard every figure typed by hand on this file"
-                className="flex-none rounded-full border border-gray-200 bg-custom-white px-3 py-1.5 text-[11px] font-medium text-content/85 hover:bg-bkg"
+                className={`flex-none rounded-full border px-3 py-1.5 text-[11px] font-medium transition-colors ${PILL_IDLE}`}
               >
                 Undo {handEditCount}{" "}
                 {handEditCount === 1 ? "correction" : "corrections"}
               </button>
             )}
-
-            {/* Filters to the left of this, actions to the right. The row
-                was one undifferentiated run of seven controls. The slack the
-                search box used to swallow sits here instead. */}
-            <span className="flex-1" />
-            <span className="mx-0.5 h-6 w-px flex-none bg-gray-200" />
-
-            {/* The store, beside the exports that need it. `storeid` is the
-                order layout's first column and it went out blank on every
-                row.
-
-                SelectFilter, not SingleSelect: it is the house chooser on a
-                filter row, 24px like the chips beside it, and it carries its
-                label in the placeholder instead of stacking one above and
-                breaking the row's height. `plain` because this chooses
-                rather than filters -- the active ring reads as "narrowing a
-                list", which a field that should always hold a value would
-                wear permanently and stop meaning anything. */}
-            <SelectFilter
-              plain
-              searchable
-              placeholder="Choose a store"
-              searchPlaceholder="Type a store name..."
-              options={storeOptions}
-              value={storeid ? String(storeid) : ""}
-              onChange={(id) => {
-                const store = assignedStores.find(
-                  (candidate) => String(candidate.storeid) === id,
-                );
-                if (!store) return;
-                dispatch(setSelectedStore(store));
-                dispatch(setLastStore(store.storeid));
-              }}
-              className="w-[280px]"
-            />
 
             {/* One door. Three buttons said what each one did and nothing
                 about how they differ, and they differ a lot: two ignore every
@@ -567,6 +520,10 @@ const AwgInvoices = () => {
               <ArrowDownTrayIcon className="h-4 w-4" />
               Export or send
             </button>
+
+            <span className="flex-1" />
+
+
           </div>
 
           {/* A file cut off between two invoices still reconciles invoice by

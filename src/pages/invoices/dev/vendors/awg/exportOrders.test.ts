@@ -24,8 +24,6 @@ const record = (
 const line = (fields: Record<string, unknown>) => record("01", fields);
 const deal = (fields: Record<string, unknown>) => record("02", fields);
 
-const TARGET = { storeid: 695, storeName: "BRUCES FOODLAND 361" };
-
 const invoiceOf = (over: Partial<AwgInvoice> = {}): AwgInvoice => ({
   storeNbr: "5401",
   invoiceNbr: "0087755",
@@ -70,41 +68,30 @@ describe("the orders export", () => {
   it("writes the header, then one row per billed line", () => {
     const { csv } = awgInvoicesToOrdersCsv(
       [invoiceOf({ lineItems: [casedLine(), casedLine()] })],
-      TARGET,
     );
     const lines = csv.split("\n");
     expect(lines[0]).toBe(ORDER_COLUMNS.join(","));
     expect(lines).toHaveLength(3);
   });
 
-  it("carries the store on every row", () => {
-    // storeid went out blank before, on a layout whose first column it is.
-    const { csv } = awgInvoicesToOrdersCsv(
-      [invoiceOf({ lineItems: [casedLine()] })],
-      TARGET,
-    );
+  it("leaves storeid and vendor_id to the pipeline", () => {
+    // Neither is in the file and neither can be asked for honestly: a file
+    // carries several AWG stores, and there is no vendor in the line schema
+    // at all. `storenumber` and `vendor_name` are what the file does know.
+    const { csv } = awgInvoicesToOrdersCsv([
+      invoiceOf({ lineItems: [casedLine()] }),
+    ]);
     const row = cells(csv, 1);
-    expect(row.storeid).toBe("695");
-    expect(row.storename).toBe("BRUCES FOODLAND 361");
-  });
-
-  it("names AWG and leaves the id for the pipeline", () => {
-    // There is no vendor in the AWG line schema -- the whole file is AWG --
-    // so the name is what the pipeline reconciles the id from.
-    const { csv } = awgInvoicesToOrdersCsv(
-      [invoiceOf({ lineItems: [casedLine()] })],
-      TARGET,
-    );
-    const row = cells(csv, 1);
-    expect(row.vendor_name).toBe("AWG");
+    expect(row.storeid).toBe("");
+    expect(row.storename).toBe("");
     expect(row.vendor_id).toBe("");
+    expect(row.storenumber).toBe("5401");
+    expect(row.vendor_name).toBe("AWG");
   });
 
   it("divides cost by the cases, at four places", () => {
     const { csv } = awgInvoicesToOrdersCsv(
-      [invoiceOf({ lineItems: [casedLine()] })],
-      TARGET,
-    );
+      [invoiceOf({ lineItems: [casedLine()] })]);
     const row = cells(csv, 1);
     expect(row.qty).toBe("10");
     expect(row.casesize).toBe("12");
@@ -115,7 +102,6 @@ describe("the orders export", () => {
   it("marks an invoice's own line count and type", () => {
     const { csv } = awgInvoicesToOrdersCsv(
       [invoiceOf({ lineItems: [casedLine(), casedLine()] })],
-      TARGET,
     );
     const row = cells(csv, 1);
     expect(row.record_count).toBe("2");
@@ -128,7 +114,6 @@ describe("the orders export", () => {
   it("skips an invoice that billed nothing", () => {
     const { csv } = awgInvoicesToOrdersCsv(
       [invoiceOf({ lineItems: [] }), invoiceOf({ lineItems: [casedLine()] })],
-      TARGET,
     );
     expect(csv.split("\n")).toHaveLength(2);
   });
@@ -175,7 +160,6 @@ describe("the delivery date", () => {
         invoiceOf({ invoiceNbr: "111", deliveryDate: "nonsense", lineItems: [casedLine()] }),
         invoiceOf({ invoiceNbr: "222", lineItems: [casedLine()] }),
       ],
-      TARGET,
     );
     expect(undatedInvoices).toEqual(["111"]);
     expect(cells(csv, 1).order_date).toBe("");
