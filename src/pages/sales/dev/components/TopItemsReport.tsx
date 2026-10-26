@@ -314,11 +314,10 @@ const TopItemsReport = ({
                 {totals.both} in both · {money(totals.sharedMineSales)}
               </span>
             </span>
-            {/* The two remainders are TINTS with dark text, not translucent
-                navy with white. White on a translucent navy over a light track is
-                a grey-on-grey that cannot be read -- the fill was chosen to
-                echo the row bars and the text was never checked against it.
-                Three weights: solid, a quarter, a tenth. */}
+            {/* Three weights of one colour: solid, a quarter, a tenth, all
+                with dark text on the two tints. The piles are COUNTS of
+                items, not the stores themselves -- the row bars are where a
+                store wears its own colour. */}
             {totals.onlyMine > 0 && (
               <span
                 className="flex items-center px-2.5 text-content whitespace-nowrap overflow-hidden bg-brand_navy/25"
@@ -332,7 +331,7 @@ const TopItemsReport = ({
               </span>
             )}
             {totals.onlyTheirs > 0 && (
-              <span className="flex items-center px-2.5 flex-1 text-custom-white whitespace-nowrap overflow-hidden bg-store_compare">
+              <span className="flex items-center px-2.5 flex-1 text-content whitespace-nowrap overflow-hidden bg-brand_navy/10">
                 <span className="truncate">
                   {totals.onlyTheirs} only {compareStoreName}
                 </span>
