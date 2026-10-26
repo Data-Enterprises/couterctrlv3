@@ -251,7 +251,10 @@ const TopItemsReport = ({
         </div>
 
         {/* The three piles, written where they are drawn. */}
-        <span className="flex h-6 rounded-md overflow-hidden bg-bkg mt-2.5 text-[11.5px] font-semibold">
+        <span
+          data-help="top200-piles"
+          className="flex h-6 rounded-md overflow-hidden bg-bkg mt-2.5 text-[11.5px] font-semibold"
+        >
           <span
             className="flex items-center px-2.5 text-custom-white whitespace-nowrap overflow-hidden bg-brand_navy"
             style={{ width: `${Math.max(12, (totals.both / pileTotal) * 100)}%` }}
@@ -283,6 +286,7 @@ const TopItemsReport = ({
           <CtaStrip
             tone={OUTLINE_TONE}
             className="mt-1.5 rounded-md border"
+            data-help="top200-outline"
             label={
               <>
                 The difference sits in{" "}
@@ -318,7 +322,10 @@ const TopItemsReport = ({
       </div>
 
       {/* Filters */}
-      <div className="flex-shrink-0 flex items-center gap-1.5 px-4 py-2 border-b border-gray-100">
+      <div
+        data-help="top200-compare-filters"
+        className="flex-shrink-0 flex items-center gap-1.5 px-4 py-2 border-b border-gray-100"
+      >
         <div className="flex w-[200px] flex-none items-center gap-2 rounded-lg bg-bkg px-3">
           <label htmlFor="top200-find" className="sr-only">
             Find an item
@@ -394,7 +401,10 @@ const TopItemsReport = ({
             </span>
           </div>
 
-          <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar">
+          <div
+            data-help="top200-compare-list"
+            className="flex-1 min-h-0 overflow-y-auto thin-scrollbar"
+          >
             {shown.map((r) => (
               <Row
                 key={r.code}
@@ -612,7 +622,10 @@ const Rail = ({
         </p>
       </div>
 
-      <div className="flex-1 min-h-0 overflow-y-auto thin-scrollbar px-3.5 py-3 flex flex-col gap-3">
+      <div
+        data-help="top200-compare-rail"
+        className="flex-1 min-h-0 overflow-y-auto thin-scrollbar px-3.5 py-3 flex flex-col gap-3"
+      >
         {/* The claim, on a one-sided row. Resolved on selection, no button. */}
         {row.only !== null && (
           <div className="rounded-lg border border-brand_line_2 bg-brand_paper px-3 py-2.5">
