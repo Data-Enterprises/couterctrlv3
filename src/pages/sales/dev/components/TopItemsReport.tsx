@@ -15,6 +15,11 @@ import {
 } from "../../../../api/topItems";
 import { avgPrice } from "../shared/topItems";
 import {
+  gradeSeverity,
+  pillClass,
+  severityDotClass,
+} from "../../../../utils/severity";
+import {
   amountTextOf,
   compareTopItems,
   compareTotals,
@@ -75,6 +80,10 @@ interface Props {
   compareStoreName: string;
   twStart: string;
   twEnd: string;
+  /** The page's item threshold, in points. Graded the way Sub Dept Margins
+   *  grades margin points: anything ahead is healthy, behind but inside the
+   *  threshold is watch, past it is critical. */
+  threshold: number;
   onBack: () => void;
 }
 
@@ -90,6 +99,7 @@ const TopItemsReport = ({
   compareStoreName,
   twStart,
   twEnd,
+  threshold,
   onBack,
 }: Props) => {
   const { url, token } = useAppSelector((s) => s.app);
@@ -100,7 +110,11 @@ const TopItemsReport = ({
   const [theirs, setTheirs] = useState<Side | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const [filter, setFilter] = useState<CompareFilter>("all");
+  /** Both on arrival: "are these two lists the same" is the question the
+   *  screen was asked for, and it is answered among the items both stores
+   *  carry. The one-sided piles are a click away and counted on their
+   *  pills. */
+  const [filter, setFilter] = useState<CompareFilter>("both");
   const [sort, setSort] = useState<CompareSort>("divergence");
   const [text, setText] = useState("");
   const [picked, setPicked] = useState<string | null>(null);
@@ -230,63 +244,66 @@ const TopItemsReport = ({
       {/* Headline — the shape DeptReport uses, so the two comparisons read
           as one feature rather than two. */}
       <div className="flex-shrink-0 px-4 pt-2.5 pb-3 border-b-2 border-brand_navy/20">
-        <div className="flex items-center gap-2.5">
+        {/*
+          Back and the bar on one row, and no headline sentence.
+          It read "202 of 301 differ", where 301 was the UNION of the two
+          lists -- a number nobody asked for, and one that cannot be "of 200"
+          because the list holds items from both stores. The bar's own three
+          labels say it exactly: 99 in both, 101 only at one, 101 only at the
+          other, and 99 + 101 is each store's 200. The counterpart is named
+          inside its own segment, so the "vs store" line went with it.
+        */}
+        <div className="flex items-stretch gap-2.5">
           <button
             onClick={onBack}
             title="Back to all stores"
-            className="flex-shrink-0 h-6 px-2 inline-flex items-center gap-1 rounded-md border border-brand_navy/25 text-[12px] font-bold text-content hover:bg-bkg transition-colors"
+            className="flex-shrink-0 px-2.5 inline-flex items-center gap-1.5 rounded-md border border-brand_navy/25 text-[12px] font-bold text-content hover:bg-bkg transition-colors"
           >
-            <span className="text-[13px] leading-none">{"‹"}</span>
+            <span className="text-[14px] leading-none">{"‹"}</span>
             Back
           </button>
 
-          <p className="min-w-0 flex-1 text-[16.5px] font-bold leading-snug text-content truncate">
-            <span className="tabular-nums">{differ}</span> of {rows.length}{" "}
-            differ
-          </p>
-
-          <span className="flex-shrink-0 text-[11.5px] text-content truncate max-w-[220px]">
-            vs {compareStoreName}
+          <span
+            data-help="top200-piles"
+            className="flex-1 flex h-[30px] rounded-md overflow-hidden bg-bkg text-[12px] font-semibold"
+          >
+            <span
+              className="flex items-center px-2.5 text-custom-white whitespace-nowrap overflow-hidden bg-brand_navy"
+              style={{ width: `${Math.max(12, (totals.both / pileTotal) * 100)}%` }}
+            >
+              <span className="truncate">
+                {totals.both} in both · {money(totals.sharedMineSales)}
+              </span>
+            </span>
+            {totals.onlyMine > 0 && (
+              <span
+                className="flex items-center px-2.5 text-custom-white whitespace-nowrap overflow-hidden bg-brand_navy/62"
+                style={{
+                  width: `${Math.max(10, (totals.onlyMine / pileTotal) * 100)}%`,
+                }}
+              >
+                <span className="truncate">
+                  {totals.onlyMine} only {openStoreName}
+                </span>
+              </span>
+            )}
+            {totals.onlyTheirs > 0 && (
+              <span className="flex items-center px-2.5 flex-1 text-content whitespace-nowrap overflow-hidden bg-brand_line_2/60">
+                <span className="truncate">
+                  {totals.onlyTheirs} only {compareStoreName}
+                </span>
+              </span>
+            )}
           </span>
         </div>
 
-        {/* The three piles, written where they are drawn. */}
-        <span
-          data-help="top200-piles"
-          className="flex h-6 rounded-md overflow-hidden bg-bkg mt-2.5 text-[11.5px] font-semibold"
-        >
-          <span
-            className="flex items-center px-2.5 text-custom-white whitespace-nowrap overflow-hidden bg-brand_navy"
-            style={{ width: `${Math.max(12, (totals.both / pileTotal) * 100)}%` }}
-          >
-            <span className="truncate">
-              {totals.both} in both · {money(totals.sharedMineSales)}
-            </span>
-          </span>
-          {totals.onlyMine > 0 && (
-            <span
-              className="flex items-center px-2.5 text-custom-white whitespace-nowrap overflow-hidden bg-brand_navy/55"
-              style={{
-                width: `${Math.max(10, (totals.onlyMine / pileTotal) * 100)}%`,
-              }}
-            >
-              <span className="truncate">{totals.onlyMine} only here</span>
-            </span>
-          )}
-          {totals.onlyTheirs > 0 && (
-            <span className="flex items-center px-2.5 flex-1 text-content whitespace-nowrap overflow-hidden bg-brand_line_2/60">
-              <span className="truncate">
-                {totals.onlyTheirs} only at {compareStoreName}
-              </span>
-            </span>
-          )}
-        </span>
-
+        {/* The anchor lives on a wrapper: CtaStrip takes no `data-help` and
+            would drop it, leaving the help panel pointing at nothing. */}
         {byDept.length > 0 && (
+          <div data-help="top200-outline" className="mt-2.5">
           <CtaStrip
             tone={OUTLINE_TONE}
-            className="mt-1.5 rounded-md border"
-            data-help="top200-outline"
+            className="rounded-md border"
             label={
               <>
                 The difference sits in{" "}
@@ -318,6 +335,7 @@ const TopItemsReport = ({
               </span>
             }
           />
+          </div>
         )}
       </div>
 
@@ -344,8 +362,8 @@ const TopItemsReport = ({
         {(
           [
             ["both", `Both ${totals.both}`],
-            ["mine", `Only here ${totals.onlyMine}`],
-            ["theirs", `Only there ${totals.onlyTheirs}`],
+            ["mine", `Only ${openStoreName} ${totals.onlyMine}`],
+            ["theirs", `Only ${compareStoreName} ${totals.onlyTheirs}`],
           ] as [CompareFilter, string][]
         ).map(([id, label]) => (
           <button
@@ -353,7 +371,7 @@ const TopItemsReport = ({
             type="button"
             aria-pressed={filter === id}
             onClick={() => setFilter((f) => (f === id ? "all" : id))}
-            className={`flex-none rounded-full border px-3 py-1.5 text-[11px] font-medium transition-colors ${
+            className={`flex-none max-w-[180px] truncate rounded-full border px-3 py-1.5 text-[11px] font-medium transition-colors ${
               filter === id ? PILL_ON : PILL_IDLE
             }`}
           >
@@ -386,17 +404,23 @@ const TopItemsReport = ({
       {/* List and rail — the split this tab already has */}
       <div className="flex-1 min-h-0 flex">
         <div className="w-[471px] flex-shrink-0 border-r border-gray-100 flex flex-col min-h-0">
-          <div className="flex-shrink-0 flex items-center gap-3 px-3.5 py-1.5 border-b border-gray-100 bg-brand_paper flex-wrap">
+          {/* The ledger's own dots, so the two halves of the page grade in
+              one language: ahead, behind, and behind past the threshold. */}
+          <div className="flex-shrink-0 flex items-center gap-3 px-3.5 py-1.5 border-b border-brand_line_2 bg-brand_paper flex-wrap">
             <span className="inline-flex items-center gap-1.5 text-[11px] text-content">
-              <span className="w-2.5 h-2.5 rounded-sm bg-delta_positive_mid" />
-              {openStoreName} ahead
+              <span className={`w-2.5 h-2.5 rounded-sm ${severityDotClass.healthy}`} />
+              ahead
             </span>
             <span className="inline-flex items-center gap-1.5 text-[11px] text-content">
-              <span className="w-2.5 h-2.5 rounded-sm bg-delta_negative_text" />
+              <span className={`w-2.5 h-2.5 rounded-sm ${severityDotClass.watch}`} />
               behind
             </span>
             <span className="inline-flex items-center gap-1.5 text-[11px] text-content">
-              <span className="w-2.5 h-2.5 rounded-sm bg-brand_navy/55" />
+              <span className={`w-2.5 h-2.5 rounded-sm ${severityDotClass.critical}`} />
+              behind by over {threshold}
+            </span>
+            <span className="inline-flex items-center gap-1.5 text-[11px] text-content">
+              <span className="w-2.5 h-2.5 rounded-sm bg-brand_navy/62" />
               {compareStoreName}
             </span>
           </div>
@@ -410,6 +434,7 @@ const TopItemsReport = ({
                 key={r.code}
                 row={r}
                 widest={widest}
+                threshold={threshold}
                 selected={selected?.code === r.code}
                 onPick={() => setPicked(r.code)}
               />
@@ -424,6 +449,7 @@ const TopItemsReport = ({
 
         <Rail
           row={selected}
+          threshold={threshold}
           openStoreName={openStoreName}
           compareStoreName={compareStoreName}
           minePoints={mine?.points ?? []}
@@ -452,43 +478,50 @@ const TopItemsReport = ({
 const Row = ({
   row,
   widest,
+  threshold,
   selected,
   onPick,
 }: {
   row: ComparedTopItem;
   widest: number;
+  threshold: number;
   selected: boolean;
   onPick: () => void;
 }) => {
   const signed = divergenceSigned(row);
-  const ahead = signed >= 0;
+  // The ledger's grading, in the ledger's colours: `gradeSeverity` reads a
+  // signed figure against the threshold, which is what Sub Dept Margins
+  // already does with margin POINTS. Share points grade the same way.
+  const sev = gradeSeverity(signed, threshold);
   const minePct = row.pair > 0 ? (row.mineSales / row.pair) * 100 : 0;
   const theirsPct = row.pair > 0 ? (row.theirsSales / row.pair) * 100 : 0;
 
   return (
     <button
       onClick={onPick}
-      className={`w-full text-left px-3.5 py-2 border-b transition-colors ${
+      // A heavier rule and more room: at border-gray-100 and py-2 the rows
+      // ran together into one grey block and the bars read as a texture
+      // rather than as figures.
+      className={`w-full text-left px-3.5 py-2.5 border-b transition-colors ${
         selected
           ? // Always the pair: the tint alone reads as a stripe rather than
             // a selection, which is why the audit asks for both.
             "bg-row_selected border-row_selected_border"
           : row.only
-            ? "border-gray-100 bg-brand_paper hover:bg-bkg"
-            : "border-gray-100 hover:bg-bkg"
+            ? "border-brand_line_2 bg-brand_paper hover:bg-bkg"
+            : "border-brand_line_2 hover:bg-bkg"
       }`}
     >
       <span className="flex items-baseline gap-2">
-        <span className="min-w-0 flex-1 text-[13px] font-semibold text-content truncate">
+        <span className="min-w-0 flex-1 text-[13.5px] font-semibold text-content truncate">
           {row.description}
         </span>
         <span className="flex-none text-[11px] text-content">{row.dept}</span>
         <span
-          className={`flex-none tabular-nums text-[11.5px] font-bold px-1.5 py-px rounded ${
-            ahead
-              ? "bg-delta_positive_bg text-delta_positive_text"
-              : "bg-delta_negative_bg text-delta_negative_text"
-          }`}
+          className={`flex-none tabular-nums text-[11.5px] font-bold px-1.5 py-px rounded ${pillClass(
+            signed,
+            threshold,
+          )}`}
           title={
             row.shareGap === null
               ? "At least this far apart — the other store's share is unknown"
@@ -500,13 +533,17 @@ const Row = ({
         </span>
       </span>
 
-      <span className="block mt-1.5 h-[13px] rounded bg-bkg overflow-hidden flex">
+      <span className="block mt-2 h-[15px] rounded bg-bkg overflow-hidden flex">
         <span className="h-full flex" style={{ width: `${(row.pair / Math.max(1, widest)) * 100}%` }}>
+          {/* delta_positive_TEXT, not _mid. `delta_positive_mid` is a CSS
+              variable that was never added to the Tailwind config, so the
+              class produced nothing and every "ahead" segment rendered
+              invisible — only the counterpart's navy showed. */}
           <span
-            className={ahead ? "bg-delta_positive_mid" : "bg-delta_negative_text"}
+            className={severityDotClass[sev]}
             style={{ width: `${minePct}%` }}
           />
-          <span className="bg-brand_navy/55" style={{ width: `${theirsPct}%` }} />
+          <span className="bg-brand_navy/62" style={{ width: `${theirsPct}%` }} />
         </span>
         {row.only !== null && (
           <span
@@ -520,14 +557,28 @@ const Row = ({
         )}
       </span>
 
-      <span className="block mt-1.5 tabular-nums text-[11px] text-content">
-        {row.mine
-          ? `${money(row.mineSales)} · ${pct(row.mineShare)}`
-          : "—"}
-        {"   |   "}
-        {row.theirs
-          ? `${money(row.theirsSales)} · ${pct(row.theirsShare)}`
-          : "not in top 200"}
+      {/* A swatch against each figure, tying it to its own half of the bar.
+          The two used to sit either side of a "|", which left the reader
+          working out which number belonged to which store. */}
+      <span className="flex items-center gap-3.5 mt-2">
+        <span className="inline-flex items-center gap-1.5 min-w-0">
+          <span
+            className={`w-2 h-2 rounded-sm flex-none ${severityDotClass[sev]}`}
+          />
+          <span className="tabular-nums text-[12px] text-content whitespace-nowrap">
+            {row.mine
+              ? `${money(row.mineSales)} · ${pct(row.mineShare)}`
+              : "not in top 200"}
+          </span>
+        </span>
+        <span className="inline-flex items-center gap-1.5 min-w-0">
+          <span className="w-2 h-2 rounded-sm flex-none bg-brand_navy/62" />
+          <span className="tabular-nums text-[12px] text-content whitespace-nowrap">
+            {row.theirs
+              ? `${money(row.theirsSales)} · ${pct(row.theirsShare)}`
+              : "not in top 200"}
+          </span>
+        </span>
       </span>
     </button>
   );
@@ -568,6 +619,7 @@ const priceLines = (
 
 const Rail = ({
   row,
+  threshold,
   openStoreName,
   compareStoreName,
   minePoints,
@@ -576,6 +628,7 @@ const Rail = ({
   absentLoading,
 }: {
   row: ComparedTopItem | null;
+  threshold: number;
   openStoreName: string;
   compareStoreName: string;
   minePoints: TopItemPricePoint[];
@@ -594,6 +647,9 @@ const Rail = ({
   }
 
   const lines = priceLines(row.code, minePoints, theirsPoints);
+  // The same grade the row wears, so the rail and the list never disagree
+  // about how this item is doing.
+  const sev = gradeSeverity(divergenceSigned(row), threshold);
   const missingName =
     row.only === "mine" ? compareStoreName : openStoreName;
   const sold = absent?.stores?.[0] ?? null;
@@ -663,18 +719,25 @@ const Rail = ({
           </div>
         )}
 
+        {/* "Comparison" sits ON the header row with the two store names
+            rather than above it, and each name carries its bar swatch so the
+            rail and the list agree about which store is which. The columns
+            are 132px: at 96 a store name clipped to "002 - IGA IRV…". */}
         <div>
-          <p className="font-mono text-[11px] uppercase tracking-wider text-content mb-1.5">
-            Side by side
-          </p>
-          <div className="grid grid-cols-[1fr_96px_96px] gap-x-2.5 gap-y-1 text-[12px] text-content">
-            <span />
-            <span className="text-right font-mono text-[10.5px] uppercase tracking-wider truncate">
-              {openStoreName}
+          <div className="grid grid-cols-[1fr_132px_132px] gap-x-2.5 gap-y-1 text-[12.5px] text-content items-baseline">
+            <span className="font-mono text-[10.5px] uppercase tracking-wider">
+              Comparison
             </span>
-            <span className="text-right font-mono text-[10.5px] uppercase tracking-wider truncate">
-              {compareStoreName}
+            <span className="text-right text-[11px] font-bold inline-flex items-center justify-end gap-1.5 truncate">
+              <span className={`w-2 h-2 rounded-sm flex-none ${severityDotClass[sev]}`} />
+              <span className="truncate">{openStoreName}</span>
             </span>
+            <span className="text-right text-[11px] font-bold inline-flex items-center justify-end gap-1.5 truncate">
+              <span className="w-2 h-2 rounded-sm flex-none bg-brand_navy/62" />
+              <span className="truncate">{compareStoreName}</span>
+            </span>
+
+            <span className="col-span-3 h-px bg-brand_line my-0.5" />
 
             {figure(
               "Sales",
@@ -715,16 +778,20 @@ const Rail = ({
             <p className="font-mono text-[11px] uppercase tracking-wider text-content mb-1.5">
               What it rang at, and where
             </p>
-            <div className="grid grid-cols-[62px_1fr_1fr] gap-x-2 gap-y-1 text-[11.5px] text-content items-center">
+            <div className="grid grid-cols-[70px_1fr_1fr] gap-x-2.5 gap-y-1 text-[12px] text-content items-baseline">
               <span className="font-mono text-[10.5px] uppercase tracking-wider">
                 Price
               </span>
-              <span className="text-right font-mono text-[10.5px] uppercase tracking-wider truncate">
-                {openStoreName}
+              <span className="text-right text-[11px] font-bold inline-flex items-center justify-end gap-1.5 truncate">
+                <span className={`w-2 h-2 rounded-sm flex-none ${severityDotClass[sev]}`} />
+                <span className="truncate">{openStoreName}</span>
               </span>
-              <span className="text-right font-mono text-[10.5px] uppercase tracking-wider truncate">
-                {compareStoreName}
+              <span className="text-right text-[11px] font-bold inline-flex items-center justify-end gap-1.5 truncate">
+                <span className="w-2 h-2 rounded-sm flex-none bg-brand_navy/62" />
+                <span className="truncate">{compareStoreName}</span>
               </span>
+
+              <span className="col-span-3 h-px bg-brand_line my-0.5" />
 
               {lines.map((l) => (
                 <PriceRow key={l.price} line={l} />
