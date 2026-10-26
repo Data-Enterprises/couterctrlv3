@@ -5,7 +5,7 @@ import { cacheTopItemsTy } from "../../../../features/dev/devSalesLedgerSlice";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
 import CtaStrip, { type CtaTone } from "../../../../components-dev/CtaStrip";
-import { Block, Measure } from "./CompareBlocks";
+import { Block } from "./CompareBlocks";
 import {
   ChevronDownIcon,
   ChevronUpIcon,
@@ -25,7 +25,7 @@ import {
   type TopItemRow,
   type TopItemsResponse,
 } from "../../../../api/topItems";
-import { amountOf, avgPrice, weighed } from "../shared/topItems";
+import { avgPrice } from "../shared/topItems";
 import { severityDotClass } from "../../../../utils/severity";
 import {
   amountTextOf,
@@ -467,7 +467,7 @@ const TopItemsReport = ({
               behind
             </span>
             <span className="inline-flex items-center gap-1.5 text-[11px] text-content">
-              <span className="w-2.5 h-2.5 rounded-sm bg-store_compare" />
+              <span className="w-2.5 h-2.5 rounded-sm bg-brand_navy/15 border border-brand_navy/25" />
               {compareStoreName}
             </span>
           </div>
@@ -587,7 +587,7 @@ const Row = ({
             className={severityDotClass[sev]}
             style={{ width: `${minePct}%` }}
           />
-          <span className="bg-store_compare" style={{ width: `${theirsPct}%` }} />
+          <span className="bg-brand_navy/15" style={{ width: `${theirsPct}%` }} />
         </span>
         {row.only !== null && (
           <span
@@ -616,7 +616,7 @@ const Row = ({
           </span>
         </span>
         <span className="inline-flex items-center gap-1.5 min-w-0">
-          <span className="w-2 h-2 rounded-sm flex-none bg-store_compare" />
+          <span className="w-2 h-2 rounded-sm flex-none bg-brand_navy/15 border border-brand_navy/25" />
           <span className="tabular-nums text-[12px] font-semibold text-content whitespace-nowrap">
             {row.theirs
               ? `${money(row.theirsSales)} · ${pct(row.theirsShare)}`
@@ -788,36 +788,7 @@ const Rail = ({
         data-help="top200-compare-rail"
         className="flex-1 min-h-0 overflow-y-auto thin-scrollbar px-3.5 py-3 flex flex-col"
       >
-        <Block title={`This week against ${compareStoreName}`}>
-          <div className="flex flex-col gap-2.5">
-            <Measure
-              title="Sales"
-              mine={row.mineSales}
-              theirs={row.theirsSales}
-              us={openStoreName}
-              them={compareStoreName}
-              fmt={money}
-              better="more"
-            />
-            {/* Only where both sides count the same thing. Pounds against
-                packages is not a comparison, and a bar pair would draw one. */}
-            {!row.unitsDisagree && (
-              <Measure
-                title={row.mine && weighed(row.mine) ? "Weight" : "Units"}
-                mine={row.mine ? amountOf(row.mine) : 0}
-                theirs={row.theirs ? amountOf(row.theirs) : 0}
-                us={openStoreName}
-                them={compareStoreName}
-                fmt={(v) =>
-                  v.toLocaleString(undefined, { maximumFractionDigits: 1 })
-                }
-                better="more"
-              />
-            )}
-          </div>
-        </Block>
-
-        <Block title="Share of each store's top 200">
+        <Block title={`Against ${compareStoreName}`}>
           <div className="grid grid-cols-[1fr_120px_120px] gap-x-3 gap-y-1.5 text-[13px] text-content items-baseline">
             <span />
             <span className="text-right text-[11.5px] font-bold inline-flex items-center justify-end gap-1.5 truncate">
@@ -825,13 +796,21 @@ const Rail = ({
               <span className="truncate">{openStoreName}</span>
             </span>
             <span className="text-right text-[11.5px] font-bold inline-flex items-center justify-end gap-1.5 truncate">
-              <span className="w-2 h-2 rounded-sm flex-none bg-store_compare" />
+              <span className="w-2 h-2 rounded-sm flex-none bg-brand_navy/15 border border-brand_navy/25" />
               <span className="truncate">{compareStoreName}</span>
             </span>
 
             <span className="col-span-3 h-px bg-brand_line my-0.5" />
 
-            <span className="font-semibold">Share</span>
+            <span className="font-semibold">Sales</span>
+            <span className="text-right tabular-nums font-bold">
+              {row.mine ? money(row.mineSales) : "—"}
+            </span>
+            <span className="text-right tabular-nums font-bold">
+              {row.theirs ? money(row.theirsSales) : "—"}
+            </span>
+
+            <span className="font-semibold">Share of top 200</span>
             <span className="text-right tabular-nums font-bold">
               {pct(row.mineShare)}
             </span>
@@ -883,7 +862,7 @@ const Rail = ({
                 <span className="truncate">{openStoreName}</span>
               </span>
               <span className="text-right text-[11.5px] font-bold inline-flex items-center justify-end gap-1.5 truncate">
-                <span className="w-2 h-2 rounded-sm flex-none bg-store_compare" />
+                <span className="w-2 h-2 rounded-sm flex-none bg-brand_navy/15 border border-brand_navy/25" />
                 <span className="truncate">{compareStoreName}</span>
               </span>
 
