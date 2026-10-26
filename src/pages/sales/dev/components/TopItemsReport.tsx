@@ -321,7 +321,7 @@ const TopItemsReport = ({
                 Three weights: solid, a quarter, a tenth. */}
             {totals.onlyMine > 0 && (
               <span
-                className="flex items-center px-2.5 text-content whitespace-nowrap overflow-hidden bg-store_compare_tint"
+                className="flex items-center px-2.5 text-content whitespace-nowrap overflow-hidden bg-brand_navy/25"
                 style={{
                   width: `${Math.max(10, (totals.onlyMine / pileTotal) * 100)}%`,
                 }}
