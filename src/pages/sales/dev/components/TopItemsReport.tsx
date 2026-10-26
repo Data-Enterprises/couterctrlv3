@@ -458,15 +458,15 @@ const TopItemsReport = ({
               one language: ahead, behind, and behind past the threshold. */}
           <div className="flex-shrink-0 flex items-center gap-3 px-3.5 py-1.5 border-b border-brand_line_2 bg-brand_paper flex-wrap">
             <span className="inline-flex items-center gap-1.5 text-[11px] text-content">
-              <span className={`w-2.5 h-2.5 rounded-sm ${severityDotClass.healthy}`} />
+              <span className={`w-2.5 h-2.5 rounded-full ${severityDotClass.healthy}`} />
               ahead
             </span>
             <span className="inline-flex items-center gap-1.5 text-[11px] text-content">
-              <span className={`w-2.5 h-2.5 rounded-sm ${severityDotClass.critical}`} />
+              <span className={`w-2.5 h-2.5 rounded-full ${severityDotClass.critical}`} />
               behind
             </span>
             <span className="inline-flex items-center gap-1.5 text-[11px] text-content">
-              <span className="w-2.5 h-2.5 rounded-sm bg-brand_navy/15 border border-brand_navy/25" />
+              <span className="w-2.5 h-2.5 rounded-full bg-brand_navy/15 border border-brand_navy/25" />
               {compareStoreName}
             </span>
           </div>
@@ -606,7 +606,7 @@ const Row = ({
       <span className="flex items-center gap-3.5 mt-2">
         <span className="inline-flex items-center gap-1.5 min-w-0">
           <span
-            className={`w-2 h-2 rounded-sm flex-none ${severityDotClass[sev]}`}
+            className={`w-2 h-2 rounded-full flex-none ${severityDotClass[sev]}`}
           />
           <span className="tabular-nums text-[12px] font-semibold text-content whitespace-nowrap">
             {row.mine
@@ -615,7 +615,7 @@ const Row = ({
           </span>
         </span>
         <span className="inline-flex items-center gap-1.5 min-w-0">
-          <span className="w-2 h-2 rounded-sm flex-none bg-brand_navy/15 border border-brand_navy/25" />
+          <span className="w-2 h-2 rounded-full flex-none bg-brand_navy/15 border border-brand_navy/25" />
           <span className="tabular-nums text-[12px] font-semibold text-content whitespace-nowrap">
             {row.theirs
               ? `${money(row.theirsSales)} · ${pct(row.theirsShare)}`
@@ -736,15 +736,9 @@ const Rail = ({
         >
           <Mark_ className={`w-4 h-4 flex-shrink-0 ${cta.text}`} />
           <span
-            className={`min-w-0 flex-1 truncate text-[14px] font-semibold ${cta.text}`}
+            className={`min-w-0 flex-1 truncate text-[13px] font-semibold ${cta.text}`}
           >
             {row.description}
-          </span>
-          <span
-            className={`flex-none tabular-nums text-[12px] font-bold ${cta.text}`}
-          >
-            {row.shareGap === null ? "≥ " : ""}
-            {pts(divergenceSigned(row))} pts
           </span>
           {open ? (
             <ChevronUpIcon className={`w-3.5 h-3.5 flex-shrink-0 ${cta.text}`} />
@@ -757,8 +751,16 @@ const Rail = ({
           <div
             className={`absolute top-full left-0 right-0 z-20 px-3.5 py-2.5 border-b shadow-lg ${cta.bg} ${cta.border}`}
           >
+            {/* The points live here, not on the strip: the row the reader
+                just clicked already carries the same figure, and twice on one
+                screen is once too many. */}
             <p className={`text-[12.5px] leading-snug ${cta.text}`}>
-              <span className="font-bold tabular-nums">{row.code}</span>
+              <span className="font-bold tabular-nums">
+                {row.shareGap === null ? "≥ " : ""}
+                {pts(divergenceSigned(row))} pts
+              </span>
+              {" · "}
+              <span className="tabular-nums">{row.code}</span>
               {" · "}
               {row.dept}
               {row.only === null && " · carried by both"}
@@ -797,23 +799,23 @@ const Rail = ({
 
       <div
         data-help="top200-compare-rail"
-        className="flex-1 min-h-0 overflow-y-auto thin-scrollbar px-3.5 py-3 flex flex-col"
+        className="flex-1 min-h-0 overflow-y-auto thin-scrollbar px-3.5 py-3 flex flex-col gap-6"
       >
         {/* "Comparison" sits ON the header row with the two store names
             rather than above it, and each name carries its bar swatch so the
             rail and the list agree about which store is which. The columns
             are 132px: at 96 a store name clipped to "002 - IGA IRV…". */}
         <div>
-          <div className="grid grid-cols-[1fr_132px_132px] gap-x-3 gap-y-1.5 text-[13.5px] text-content items-baseline">
+          <div className="grid grid-cols-[1fr_128px_128px] gap-x-5 gap-y-1.5 text-[13.5px] text-content items-baseline">
             <span className="font-mono text-[11px] uppercase tracking-wider">
               Comparison
             </span>
             <span className="text-right text-[11.5px] font-bold inline-flex items-center justify-end gap-1.5 truncate">
-              <span className={`w-2 h-2 rounded-sm flex-none ${severityDotClass[sev]}`} />
+              <span className={`w-2 h-2 rounded-full flex-none ${severityDotClass[sev]}`} />
               <span className="truncate">{openStoreName}</span>
             </span>
             <span className="text-right text-[11.5px] font-bold inline-flex items-center justify-end gap-1.5 truncate">
-              <span className="w-2 h-2 rounded-sm flex-none bg-brand_navy/15 border border-brand_navy/25" />
+              <span className="w-2 h-2 rounded-full flex-none bg-brand_navy/15 border border-brand_navy/25" />
               <span className="truncate">{compareStoreName}</span>
             </span>
 
@@ -857,16 +859,16 @@ const Rail = ({
           <div>
             {/* No heading: "Price" over the first column with a store over
                 each of the others already says what this is. */}
-            <div className="grid grid-cols-[76px_1fr_1fr] gap-x-3 gap-y-1.5 text-[13px] text-content items-baseline">
+            <div className="grid grid-cols-[76px_1fr_1fr] gap-x-5 gap-y-1.5 text-[13px] text-content items-baseline">
               <span className="font-mono text-[11px] uppercase tracking-wider">
                 Price
               </span>
               <span className="text-right text-[11.5px] font-bold inline-flex items-center justify-end gap-1.5 truncate">
-                <span className={`w-2 h-2 rounded-sm flex-none ${severityDotClass[sev]}`} />
+                <span className={`w-2 h-2 rounded-full flex-none ${severityDotClass[sev]}`} />
                 <span className="truncate">{openStoreName}</span>
               </span>
               <span className="text-right text-[11.5px] font-bold inline-flex items-center justify-end gap-1.5 truncate">
-                <span className="w-2 h-2 rounded-sm flex-none bg-brand_navy/15 border border-brand_navy/25" />
+                <span className="w-2 h-2 rounded-full flex-none bg-brand_navy/15 border border-brand_navy/25" />
                 <span className="truncate">{compareStoreName}</span>
               </span>
 
