@@ -238,15 +238,42 @@ export const deptsPresent = (
     .sort((a, b) => b.count - a.count || a.dept.localeCompare(b.dept));
 };
 
-export type CompareSort = "divergence" | "sales";
+/**
+ * Which difference the row reports: points of share, or dollars.
+ *
+ * Two readings of one question. Share compares a big store with a small one
+ * fairly; dollars say what the difference is actually worth. Neither is the
+ * right one for every reader, so it is a choice rather than a decision.
+ */
+export type CompareMetric = "share" | "sales";
 
+/** Signed, positive where this store is bigger. */
+export const metricSigned = (
+  r: ComparedTopItem,
+  metric: CompareMetric,
+): number =>
+  metric === "sales" ? r.mineSales - r.theirsSales : divergenceSigned(r);
+
+/**
+ * How far apart, for ordering.
+ *
+ * On a one-sided row this is a LOWER BOUND whichever metric is chosen: the
+ * other store's figure is unknown, not nought, so the true gap is at least
+ * this. Honest to sort on, not honest to print without the `≥` the caller
+ * adds.
+ */
+export const metricSize = (
+  r: ComparedTopItem,
+  metric: CompareMetric,
+): number => Math.abs(metricSigned(r, metric));
+
+/** The list's own order: furthest apart first, on whichever metric is shown.
+ *  A column sort is a temporary lens over this, never a replacement. */
 export const sortCompared = (
   rows: ComparedTopItem[],
-  sort: CompareSort,
+  metric: CompareMetric,
 ): ComparedTopItem[] =>
-  [...rows].sort((a, b) =>
-    sort === "sales" ? b.pair - a.pair : divergence(b) - divergence(a),
-  );
+  [...rows].sort((a, b) => metricSize(b, metric) - metricSize(a, metric));
 
 /**
  * Where the difference concentrates, by department.

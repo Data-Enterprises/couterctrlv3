@@ -26,18 +26,20 @@ import {
 } from "../../../../api/topItems";
 import { avgPrice } from "../shared/topItems";
 import { severityDotClass } from "../../../../utils/severity";
+import SortHeader from "../../../../components-dev/SortHeader";
+import { useTriStateSort } from "../../../../utils/useTriStateSort";
 import {
   amountTextOf,
   compareTopItems,
   compareTotals,
   deptsPresent,
   divergenceByDept,
-  divergenceSigned,
+  metricSigned,
   filterCompared,
   sortCompared,
   type ComparedTopItem,
   type CompareFilter,
-  type CompareSort,
+  type CompareMetric,
 } from "../shared/topItemsCompare";
 
 /**
@@ -63,6 +65,10 @@ const money = (v: number) => formatCurrency2(v);
 
 /** Points, signed, two places. */
 const pts = (v: number) => (v >= 0 ? "+" : "−") + Math.abs(v).toFixed(2);
+
+/** Signed dollars, for a gap rather than an amount. */
+const signedMoney = (v: number) =>
+  (v >= 0 ? "+" : "−") + formatCurrency2(Math.abs(v));
 
 const pct = (v: number | null) => (v === null ? "—" : `${v.toFixed(2)}%`);
 
@@ -125,7 +131,12 @@ const TopItemsReport = ({
    *  carry. The one-sided piles are a click away and counted on their
    *  pills. */
   const [filter, setFilter] = useState<CompareFilter>("both");
-  const [sort, setSort] = useState<CompareSort>("divergence");
+  /** What a row reports, and what the list is ordered by when nothing
+   *  else is. */
+  const [metric, setMetric] = useState<CompareMetric>("share");
+  /** The house tri-state over that: desc, asc, then back to the list's own
+   *  order. A column sort here is a lens, not a new permanent ordering. */
+  const { sort, handleSort, applySort } = useTriStateSort<"metric">();
   const [text, setText] = useState("");
   const [picked, setPicked] = useState<string | null>(null);
   const [depts, setDepts] = useState<string[]>([]);
@@ -199,8 +210,14 @@ const TopItemsReport = ({
   const byDept = useMemo(() => divergenceByDept(rows), [rows]);
 
   const shown = useMemo(
-    () => sortCompared(filterCompared(rows, filter, text, depts), sort),
-    [rows, filter, text, depts, sort],
+    () =>
+      applySort(
+        sortCompared(filterCompared(rows, filter, text, depts), metric),
+        (r) => metricSigned(r, metric),
+      ),
+    // `applySort` is rebuilt each render; the sort state it closes over is
+    // what actually changes.
+    [rows, filter, text, depts, metric, sort],
   );
 
   /**
@@ -434,20 +451,20 @@ const TopItemsReport = ({
           className="w-[170px] flex-none"
         />
 
-        {/* No "Sort" label: the two choices name themselves, and the word
-            was the only text on the row that was not a control.
-            `plain`, because this always holds a value — the active ring says
-            "narrowing a list", which a sort never does. */}
+        {/* What a row REPORTS, not how the list is ordered -- the order
+            follows it. `plain`, because this always holds a value: the
+            active ring says "narrowing a list", which a choice of unit
+            never does. */}
         <SelectFilter
           plain
           options={[
             { value: "", label: "Share gap" },
-            { value: "sales", label: "Sales" },
+            { value: "sales", label: "Sales gap" },
           ]}
-          value={sort === "sales" ? "sales" : ""}
-          onChange={(v) => setSort(v === "sales" ? "sales" : "divergence")}
+          value={metric === "sales" ? "sales" : ""}
+          onChange={(v) => setMetric(v === "sales" ? "sales" : "share")}
           placeholder="Share gap"
-          className="w-[110px] flex-none"
+          className="w-[120px] flex-none"
         />
       </div>
 
@@ -469,6 +486,18 @@ const TopItemsReport = ({
               <span className="w-2.5 h-2.5 rounded-full bg-brand_navy/15 border border-brand_navy/25" />
               {compareStoreName}
             </span>
+
+            <span className="flex-1" />
+
+            {/* Sorts by whatever the row is reporting, so the control and
+                the figure beside it can never name different things. */}
+            <SortHeader
+              col="metric"
+              label={metric === "sales" ? "Sales gap" : "Share gap"}
+              sort={sort}
+              onSort={handleSort}
+              className="text-[11px] font-semibold text-content"
+            />
           </div>
 
           <div
@@ -480,6 +509,7 @@ const TopItemsReport = ({
                 key={r.code}
                 row={r}
                 widest={widest}
+                metric={metric}
                 selected={selected?.code === r.code}
                 onPick={() => setPicked(r.code)}
               />
@@ -494,6 +524,7 @@ const TopItemsReport = ({
 
         <Rail
           row={selected}
+          metric={metric}
           openStoreName={openStoreName}
           compareStoreName={compareStoreName}
           minePoints={mine?.points ?? []}
@@ -522,15 +553,17 @@ const TopItemsReport = ({
 const Row = ({
   row,
   widest,
+  metric,
   selected,
   onPick,
 }: {
   row: ComparedTopItem;
   widest: number;
+  metric: CompareMetric;
   selected: boolean;
   onPick: () => void;
 }) => {
-  const signed = divergenceSigned(row);
+  const signed = metricSigned(row, metric);
   // Ahead or behind, in the ledger's own two colours. No threshold: a
   // third band would have to be "close", and nothing on this screen asks
   // how close two stores are -- only which way.
@@ -562,7 +595,7 @@ const Row = ({
         <span
           className={`flex-none tabular-nums text-[11.5px] font-bold px-1.5 py-px rounded ${TONE_PILL[sev]}`}
           title={
-            row.shareGap === null
+            row.only !== null
               ? `At least ${pts(signed)} points apart — this item is outside the other store's top 200, so their share is unknown`
               : `This store takes ${pct(
                   row.mineShare,
@@ -571,8 +604,8 @@ const Row = ({
                 )} at the other — ${pts(signed)} points apart. Not the sales difference: share, so the two stores compare whatever their size.`
           }
         >
-          {row.shareGap === null ? "≥ " : ""}
-          {pts(signed)} pts
+          {row.only !== null ? "≥ " : ""}
+          {metric === "sales" ? signedMoney(signed) : `${pts(signed)} pts`}
         </span>
       </span>
 
@@ -662,6 +695,7 @@ const priceLines = (
 
 const Rail = ({
   row,
+  metric,
   openStoreName,
   compareStoreName,
   minePoints,
@@ -670,6 +704,7 @@ const Rail = ({
   absentLoading,
 }: {
   row: ComparedTopItem | null;
+  metric: CompareMetric;
   openStoreName: string;
   compareStoreName: string;
   minePoints: TopItemPricePoint[];
@@ -693,7 +728,7 @@ const Rail = ({
   const lines = priceLines(row.code, minePoints, theirsPoints);
   // The same tone the row wears, so the rail and the list never disagree
   // about which way this item goes.
-  const sev = toneOf(divergenceSigned(row));
+  const sev = toneOf(metricSigned(row, metric));
   const cta = CTA_SEVERITY_CLASSES[sev];
   const Mark_ = sev === "critical" ? ExclamationCircleIcon : CheckCircleIcon;
 
@@ -756,8 +791,10 @@ const Rail = ({
                 screen is once too many. */}
             <p className={`text-[12.5px] leading-snug ${cta.text}`}>
               <span className="font-bold tabular-nums">
-                {row.shareGap === null ? "≥ " : ""}
-                {pts(divergenceSigned(row))} pts
+                {row.only !== null ? "≥ " : ""}
+                {metric === "sales"
+                  ? signedMoney(metricSigned(row, metric))
+                  : `${pts(metricSigned(row, metric))} pts`}
               </span>
               {" · "}
               <span className="tabular-nums">{row.code}</span>

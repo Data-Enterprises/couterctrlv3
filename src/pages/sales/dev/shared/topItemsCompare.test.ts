@@ -145,9 +145,10 @@ describe("divergence, for sorting and for the chip", () => {
         row({ product_code: "BULK", total_sales: 1000 }),
       ],
     );
-    expect(sortCompared(rows, "divergence")[0].code).toBe("APART");
-    // Sales ranks on the pair's combined size, which is a different order.
-    expect(sortCompared(rows, "sales")[0].code).toBe("BULK");
+    expect(sortCompared(rows, "share")[0].code).toBe("APART");
+    // On sales it is the dollars that are furthest apart, which on these
+    // figures is still APART -- 500 against 50 beats 1000 against 1000.
+    expect(sortCompared(rows, "sales")[0].code).toBe("APART");
   });
 });
 
