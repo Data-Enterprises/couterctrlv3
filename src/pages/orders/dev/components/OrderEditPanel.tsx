@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { Fragment, useEffect, useMemo, useRef } from "react";
 import {
   PlusIcon,
   XMarkIcon,
@@ -10,6 +10,8 @@ import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicato
 import { formatCurrency2 } from "../../../../utils";
 import {
   EDITABLE,
+  perCase,
+  unitCostOf,
   FIELD_LABEL,
   addedLines,
   blankLines,
@@ -37,6 +39,7 @@ interface Props {
   search: EditSearch;
   onSearch: (next: EditSearch) => void;
   onField: (lineNumber: number, field: EditableField, value: number) => void;
+  onUnitCost: (lineNumber: number, unit: number) => void;
   onRevertLine: (lineNumber: number) => void;
   onRevertAll: () => void;
   onAddLine: () => void;
@@ -99,6 +102,7 @@ const OrderEditPanel = ({
   search,
   onSearch,
   onField,
+  onUnitCost,
   onRevertLine,
   onRevertAll,
   onAddLine,
@@ -308,6 +312,7 @@ const OrderEditPanel = ({
               <Head label="Vendor" width={150} />
               <Head label="Qty" width={76} align="right" editable />
               <Head label="Weight" width={82} align="right" editable />
+              <Head label="Unit cost" width={92} align="right" editable />
               <Head label="Case cost" width={92} align="right" editable />
               <Head label="Retail" width={86} align="right" editable />
               <Head label="Ext cost" width={92} align="right" />
@@ -319,7 +324,7 @@ const OrderEditPanel = ({
             {rows.length === 0 ? (
               <tr>
                 <td
-                  colSpan={12}
+                  colSpan={13}
                   className="px-3 py-5 text-center text-[12px] font-sans text-content"
                 >
                   No line matches that search. The save still carries all{" "}
@@ -338,6 +343,7 @@ const OrderEditPanel = ({
                   subDepts={subDepts}
                   loadingSubDepts={loadingSubDepts}
                   onField={onField}
+                  onUnitCost={onUnitCost}
                   onRevertLine={onRevertLine}
                   onDropLine={onDropLine}
                   onLookup={onLookup}
@@ -360,6 +366,9 @@ const OrderEditPanel = ({
                 subDepts={subDepts}
                 loadingSubDepts={loadingSubDepts}
                 onField={(_ln, field, value) => onPendingField(field, value)}
+                onUnitCost={(_ln, unit) =>
+                  onPendingField("base_cost", unit * perCase(pending))
+                }
                 onRevertLine={() => {}}
                 onDropLine={onCancelPending}
                 onConfirm={onConfirmPending}
@@ -482,6 +491,7 @@ const Row = ({
   lookingUp,
   resetNonce,
   onField,
+  onUnitCost,
   onRevertLine,
   onDropLine,
   onConfirm,
@@ -503,6 +513,7 @@ const Row = ({
   subDepts: SubDeptOption[];
   loadingSubDepts: boolean;
   onField: (lineNumber: number, field: EditableField, value: number) => void;
+  onUnitCost: (lineNumber: number, unit: number) => void;
   onRevertLine: (lineNumber: number) => void;
   onDropLine: (lineNumber: number) => void;
   onLookup: (lineNumber: number, upc: string) => void;
@@ -679,19 +690,32 @@ const Row = ({
       </td>
 
       {EDITABLE.map((field) => (
-        <EditCell
-          key={field}
-          field={field}
-          line={line}
-          tint={cellTint}
-          resetNonce={resetNonce}
-          // Weight is what the money is worked out from on a scale item and
-          // is ignored on everything else, so it is only offered where it
-          // does something. A typed weight that changed no figure would read
-          // as the grid being broken.
-          disabled={locked || (field === "weight" && !line.scalable)}
-          onField={onField}
-        />
+        <Fragment key={field}>
+          {/* Unit cost sits immediately before the case cost it writes, so
+              typing one and watching the other move is the whole
+              explanation of what it does. */}
+          {field === "base_cost" && (
+            <UnitCostCell
+              line={line}
+              tint={cellTint}
+              resetNonce={resetNonce}
+              disabled={locked}
+              onUnitCost={onUnitCost}
+            />
+          )}
+          <EditCell
+            field={field}
+            line={line}
+            tint={cellTint}
+            resetNonce={resetNonce}
+            // Weight is what the money is worked out from on a scale item and
+            // is ignored on everything else, so it is only offered where it
+            // does something. A typed weight that changed no figure would read
+            // as the grid being broken.
+            disabled={locked || (field === "weight" && !line.scalable)}
+            onField={onField}
+          />
+        </Fragment>
       ))}
 
       <td className="px-2.5 py-1 text-right tabular-nums text-content border-r border-brand_line">
@@ -708,6 +732,74 @@ const Row = ({
         {margin === null ? "—" : `${margin.toFixed(1)}%`}
       </td>
     </tr>
+  );
+};
+
+/**
+ * Unit cost — typed here, stored as the case cost it implies.
+ *
+ * Four decimals rather than two: $26.32 over a case of 12 is $2.1933, and a
+ * value rounded to the cent and multiplied back gives $26.32 or $26.31
+ * depending on which way it went. The field people quote should not be the
+ * lossy one.
+ *
+ * A line with no case size has nothing to divide by, so unit and case are the
+ * same number — it is still typable, it just writes the same value through.
+ */
+const UnitCostCell = ({
+  line,
+  tint,
+  resetNonce,
+  disabled,
+  onUnitCost,
+}: {
+  line: DraftLine;
+  tint: string;
+  resetNonce: number;
+  disabled: boolean;
+  onUnitCost: (lineNumber: number, unit: number) => void;
+}) => {
+  const original = line.original;
+  const changed = original !== null && line.base_cost !== original.base_cost;
+  const value = unitCostOf(line).toFixed(4);
+  const wasUnit =
+    original === null
+      ? null
+      : (original.base_cost ?? 0) / perCase(line);
+
+  return (
+    <td
+      className={`px-2 py-1 align-top border-r border-brand_line ${tint || "bg-severity_watch_bg/[0.18]"}`}
+    >
+      <input
+        key={`${line.line_number}-unit_cost-${resetNonce}`}
+        type="number"
+        min={0}
+        step={0.0001}
+        defaultValue={value}
+        disabled={disabled}
+        aria-label={`Unit cost on line ${line.line_number}`}
+        title={
+          line.casesize > 0
+            ? `Case of ${line.casesize}`
+            : "No case size — unit and case cost are the same"
+        }
+        onChange={(e) => {
+          const next = e.target.value === "" ? 0 : Number(e.target.value);
+          if (!Number.isFinite(next) || next < 0) return;
+          onUnitCost(line.line_number, next);
+        }}
+        className={`w-full rounded-[5px] border px-1.5 py-0.5 text-right tabular-nums text-[11px] transition-colors disabled:border-transparent disabled:bg-transparent disabled:text-content ${
+          changed
+            ? "border-severity_watch_text bg-custom-white font-bold text-severity_watch_text"
+            : "border-brand_line_2 bg-custom-white text-content hover:border-severity_watch_text/60"
+        }`}
+        style={{ outline: "none" }}
+      />
+      <span className="block h-[11px] text-right text-[9px] leading-[11px] tabular-nums text-severity_watch_text overflow-hidden">
+        {changed && wasUnit !== null ? `was ${wasUnit.toFixed(4)}` : ""}
+      </span>
+    </td>
   );
 };
 

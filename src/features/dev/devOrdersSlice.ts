@@ -25,6 +25,16 @@ export type UniqueSub = {
  * Stores are keyed by storenumber rather than storeid — a few storeids cover
  * two physical locations, and those are separate stores.
  */
+/**
+ * The cost problems a line can carry.
+ *
+ * Derived from the line, never stored: they are a reading of the data rather
+ * than a field in it, and a stored copy would be wrong the moment a cost is
+ * edited.
+ */
+export const ORDER_FLAGS = ["missingCost", "noCaseSize", "highMargin"] as const;
+export type OrderFlag = (typeof ORDER_FLAGS)[number];
+
 export type OrdersFilters = {
   orderTypes: string[];
   storeNumbers: string[];
@@ -32,6 +42,10 @@ export type OrdersFilters = {
   subIds: number[];
   productCodes: string[];
   orderIds: number[];
+  flags: OrderFlag[];
+  /** Percent. What counts as a suspiciously high margin is the user's call,
+   *  the same way the Performance pages ask. */
+  marginOver: number | null;
 };
 
 export const EMPTY_ORDERS_FILTERS: OrdersFilters = {
@@ -41,6 +55,8 @@ export const EMPTY_ORDERS_FILTERS: OrdersFilters = {
   subIds: [],
   productCodes: [],
   orderIds: [],
+  flags: [],
+  marginOver: 60,
 };
 
 export type GroupedOrderStore = {
@@ -224,6 +240,9 @@ const ordersSlice = createSlice({
       (state.filters[action.payload.key] as (string | number)[]) =
         action.payload.values;
     },
+    setOrdersMarginOver: (state, action: PayloadAction<number | null>) => {
+      state.filters.marginOver = action.payload;
+    },
     clearOrdersFilters: (state) => {
       state.filters = EMPTY_ORDERS_FILTERS;
     },
@@ -254,6 +273,7 @@ export const {
   setSubIdsFilter,
   setUniqueSubs,
   setOrdersFilter,
+  setOrdersMarginOver,
   clearOrdersFilters,
 } = ordersSlice.actions;
 export default ordersSlice.reducer;

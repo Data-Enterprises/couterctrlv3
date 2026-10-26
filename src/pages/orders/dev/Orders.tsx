@@ -11,6 +11,7 @@ import {
   setOrdersExportModalOpen,
   setOrdersFilter,
   clearOrdersFilters,
+  setOrdersMarginOver,
   setUniqueSubs,
   type OrdersFilters,
   type UniqueSub,
@@ -32,6 +33,8 @@ import {
   addedLines,
   appendLine,
   applyField,
+  applyUnitCost,
+  withBulkApplied,
   blankLine,
   buildDocs,
   buildPayload,
@@ -60,6 +63,7 @@ import OrderEditPanel, {
 } from "./components/OrderEditPanel";
 import SubmitReceipt from "./components/SubmitReceipt";
 import OrdersExportModal from "./components/OrdersExportModal";
+import FixCostModal from "./components/FixCostModal";
 import OrdersConfigPanel from "./components/OrdersConfigPanel";
 import OrderReportPanel from "./components/OrderReportPanel";
 import OrdersMobile from "./mobile/OrdersMobile";
@@ -93,6 +97,7 @@ const Orders = () => {
      memo: the answer turns over at midnight and a memo keyed on nothing
      would hold Wednesday's answer into Thursday. */
   const canEdit = canEditOrders(ctx.userLevel, ctx.companyIds, new Date());
+  const [fixCostOpen, setFixCostOpen] = useState(false);
   const [notice, setNotice] = useState<string | undefined>(undefined);
 
   /**
@@ -284,6 +289,10 @@ const Orders = () => {
     value: number,
   ) => setDraft((d) => (d ? applyField(d, lineNumber, field, value) : d));
 
+  /** A typed unit cost, stored as the case cost it implies. */
+  const handleUnitCost = (lineNumber: number, unit: number) =>
+    setDraft((d) => (d ? applyUnitCost(d, lineNumber, unit) : d));
+
   /**
    * Which sub departments this store has, for an added line.
    *
@@ -465,6 +474,22 @@ const Orders = () => {
 
   return (
     <div className="h-[calc(100vh-3rem)] overflow-hidden p-4 flex gap-3">
+      {fixCostOpen && canEdit && (
+        <FixCostModal
+          rows={gridRows}
+          all={ctx.allOrders}
+          url={ctx.url}
+          token={ctx.token}
+          // The saved orders' new costs go straight onto the lines already
+          // held, so the grid, the flags and the totals move now rather than
+          // after the import has run.
+          onApplied={(saved) =>
+            ctx.dispatch(setAllOrders(withBulkApplied(ctx.allOrders, saved)))
+          }
+          onClose={() => setFixCostOpen(false)}
+        />
+      )}
+
       {ctx.ordersExportModalOpen && (
         <OrdersExportModal
           lines={ctx.allOrders}
@@ -513,6 +538,7 @@ const Orders = () => {
               search={editSearch}
               onSearch={setEditSearch}
               onField={handleField}
+              onUnitCost={handleUnitCost}
               onRevertLine={(ln) =>
                 setDraft((d) => (d ? revertLine(d, ln) : d))
               }
@@ -568,6 +594,7 @@ const Orders = () => {
         onChange={(key: keyof OrdersFilters, values) =>
           ctx.dispatch(setOrdersFilter({ key, values }))
         }
+        onMarginOver={(v) => ctx.dispatch(setOrdersMarginOver(v))}
         onClear={() => ctx.dispatch(clearOrdersFilters())}
         loading={ctx.loadingAllOrders}
         matched={gridRows.length}
@@ -580,9 +607,11 @@ const Orders = () => {
       <OrderReportPanel
         rows={gridRows}
         sort={sort}
+        marginOver={ctx.filters.marginOver}
         onSort={handleSort}
         loading={ctx.loadingAllOrders}
         onExport={() => ctx.dispatch(setOrdersExportModalOpen(true))}
+        onFixCost={() => setFixCostOpen(true)}
         onEnterEdit={() => setEditing(true)}
         canEdit={canEdit}
       />

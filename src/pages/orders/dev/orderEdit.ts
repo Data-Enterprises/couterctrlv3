@@ -231,6 +231,38 @@ export const applyField = (
     recompute({ ...l, [field]: field === "qty" ? Math.round(value) : value }),
   );
 
+/**
+ * Case size, or 1 where there is none.
+ *
+ * A line carrying casesize 0 is not cased, so its case cost IS its unit cost
+ * and the two fields move together. Same guard `getCogs` makes, for the same
+ * reason — dividing by the zero the data actually holds produced Infinity.
+ */
+export const perCase = (l: Pick<AllOrder, "casesize">) =>
+  l.casesize > 0 ? l.casesize : 1;
+
+/** What one unit costs, derived from the case cost that is actually stored. */
+export const unitCostOf = (l: Pick<AllOrder, "base_cost" | "casesize">) =>
+  (l.base_cost ?? 0) / perCase(l);
+
+/**
+ * A typed unit cost, stored as the case cost it implies.
+ *
+ * Nothing new reaches the payload: the file carries case cost, which is what
+ * the vendor reads, and this only changes which end of the division somebody
+ * types. It is the end people quote, and on a bulk edit across stores it is
+ * the only end that means the same thing twice — case size differs per store,
+ * so one case cost pushed to two stores is two different unit costs.
+ */
+export const applyUnitCost = (
+  draft: OrderDraft,
+  lineNumber: number,
+  unit: number,
+): OrderDraft =>
+  mapLine(draft, lineNumber, (l) =>
+    recompute({ ...l, base_cost: unit * perCase(l) }),
+  );
+
 export const revertLine = (draft: OrderDraft, lineNumber: number): OrderDraft => ({
   ...mapLine(draft, lineNumber, (l) =>
     l.original === null ? l : recompute({ ...l, ...l.original }),
@@ -566,4 +598,103 @@ export const canEditOrders = (
   if (userLevel < EDIT_MIN_LEVEL) return false;
   if (!companyIds.some((id) => EDIT_COMPANY_IDS.includes(id))) return false;
   return userLevel >= EDIT_ANY_DAY_FROM_LEVEL || !isAfterOrderCutoff(now);
+};
+
+/* ── one cost, every store ─────────────────────────────────────────────── */
+
+/** One order the bulk fix will rewrite, and what it will become. */
+export type BulkTarget = {
+  doc: OrderDoc;
+  /** The lines of this order carrying the item — usually one. */
+  lineNumbers: number[];
+  /** The typed unit cost — each line derives its own case cost from it. */
+  unit: number;
+  casesize: number;
+  /** What the case cost becomes at the typed unit cost. */
+  newCaseCost: number;
+  /** The whole file, ready for `updateOrderFile`. */
+  payload: ReturnType<typeof buildPayload>;
+};
+
+/**
+ * The orders a bulk unit-cost fix touches, and the file each one becomes.
+ *
+ * Drives the same per-order draft a single edit uses rather than a wider one:
+ * one `startDraft` per order, `applyUnitCost` on the item's lines, and the
+ * same `buildPayload`. That is what keeps a bulk save byte-for-byte what a
+ * person editing each order by hand would have sent — including the whole
+ * file, and `edited` on exactly the rows that changed.
+ *
+ * `rows` is what survives the configuration panel. `all` is every line the
+ * search returned, because a file has to carry the order's other lines too,
+ * and those were never in `rows` unless the filters happened to keep them.
+ *
+ * Grouped on `docKey`, which carries the storenumber — two locations sharing
+ * a storeid are two orders and two files.
+ */
+export const bulkTargets = (
+  rows: AllOrder[],
+  all: AllOrder[],
+  unit: number,
+): BulkTarget[] => {
+  const byDoc = new Map<string, number[]>();
+  for (const r of rows) {
+    const key = docKey(r);
+    const list = byDoc.get(key) ?? [];
+    list.push(r.line_number);
+    byDoc.set(key, list);
+  }
+
+  const docs = buildDocs(all);
+  const targets: BulkTarget[] = [];
+
+  for (const doc of docs) {
+    const lineNumbers = byDoc.get(doc.key);
+    if (!lineNumbers) continue;
+
+    let draft = startDraft(doc, all);
+    for (const ln of lineNumbers) draft = applyUnitCost(draft, ln, unit);
+
+    const first = draft.lines.find((l) => l.line_number === lineNumbers[0]);
+    if (!first) continue;
+
+    targets.push({
+      doc,
+      lineNumbers,
+      unit,
+      casesize: first.casesize,
+      newCaseCost: first.base_cost,
+      payload: buildPayload(draft),
+    });
+  }
+  return targets;
+};
+
+/**
+ * The search's lines with the saved orders' new costs on them.
+ *
+ * The single-edit save deliberately does not refetch: `all_orders` keeps
+ * returning the old figures until the import runs, which reads as the edit
+ * having been thrown away. A bulk fix has the same problem, so the saved
+ * values are put straight onto the lines already held — the grid, the flags
+ * and the totals all move, and only the orders that actually saved.
+ */
+export const withBulkApplied = (
+  all: AllOrder[],
+  saved: BulkTarget[],
+): AllOrder[] => {
+  const byDoc = new Map(saved.map((s) => [s.doc.key, s]));
+
+  return all.map((o) => {
+    const target = byDoc.get(docKey(o));
+    if (!target || !target.lineNumbers.includes(o.line_number)) return o;
+    // From the unit, per line — the same order can carry the item twice at
+    // two case sizes, and each takes the case cost its own size implies.
+    const { original: _o, ...fixed } = recompute({
+      ...o,
+      base_cost: target.unit * perCase(o),
+      original: null,
+    });
+    return fixed as AllOrder;
+  });
 };

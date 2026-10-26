@@ -5,15 +5,20 @@ import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicato
 import SortHeader from "../../../../components-dev/SortHeader";
 import { formatCurrency2 } from "../../../../utils";
 import type { AllOrder } from "../../../../interfaces";
-import type { GridSort, SortKey } from "../ordersRows";
+import { lineFlags, type GridSort, type SortKey } from "../ordersRows";
+import type { OrderFlag } from "../../../../features/dev/devOrdersSlice";
 
 interface Props {
   /** Already filtered, searched and sorted by the page. */
   rows: AllOrder[];
   sort: GridSort;
+  /** The threshold the high-margin flag is read against. */
+  marginOver: number | null;
   onSort: (col: SortKey) => void;
   loading: boolean;
   onExport: () => void;
+  /** Opens the bulk unit-cost fix over the rows on screen. */
+  onFixCost: () => void;
   /** Hands the page over to edit mode, which scopes itself to one order. */
   onEnterEdit: () => void;
   /** False hides the Edit half of the toggle outright. A disabled control
@@ -40,9 +45,11 @@ interface Props {
 const OrderReportPanel = ({
   rows,
   sort,
+  marginOver,
   onSort,
   loading,
   onExport,
+  onFixCost,
   onEnterEdit,
   canEdit,
 }: Props) => {
@@ -135,6 +142,16 @@ const OrderReportPanel = ({
           Order lines
         </span>
         <div className="flex-1" />
+        {/* Same gate as Edit: it writes order files. */}
+        {canEdit && !loading && visible.length > 0 && (
+          <button
+            onClick={onFixCost}
+            title="Set one unit cost on every line in this view"
+            className="flex-shrink-0 rounded bg-custom-white px-2.5 py-0.5 text-[11.5px] font-bold text-brand_navy transition-colors hover:bg-custom-white/90"
+          >
+            Fix cost…
+          </button>
+        )}
         {!loading && visible.length > 0 && (
           <button data-help="export"
             onClick={onExport}
@@ -170,6 +187,9 @@ const OrderReportPanel = ({
             <table data-help="lines" className="w-full text-[11px] border-collapse">
               <thead className="sticky top-0 z-10 bg-custom-white">
                 <tr className="border-b border-b-brand_navy/15">
+                  {/* Narrow and unlabelled: a line can carry two flags at
+                      once, and a tint across the row could only show one. */}
+                  <th style={{ width: 22 }} aria-label="Cost problems" />
                   {numHead("order", "Order #", 90)}
                   {numHead("seq", "Seq #", 70)}
                   <th
@@ -212,6 +232,17 @@ const OrderReportPanel = ({
                     key={`${o.storenumber}-${o.order_id}-${o.line_number}`}
                     className="border-b border-b-brand_navy/15 even:bg-row_stripe"
                   >
+                    <td className="pl-3 py-2">
+                      <span className="flex gap-[3px]">
+                        {lineFlags(o, marginOver).map((f) => (
+                          <span
+                            key={f}
+                            title={FLAG_TITLE[f]}
+                            className={`h-[7px] w-[7px] rounded-[2px] ${FLAG_DOT[f]}`}
+                          />
+                        ))}
+                      </span>
+                    </td>
                     <td className="px-3 py-2 text-right tabular-nums font-semibold text-content">
                       {o.order_id}
                     </td>
@@ -320,6 +351,19 @@ const OrderReportPanel = ({
       )}
     </div>
   );
+};
+
+/** Same reading as the panel's chips — red is wrong, amber is unknowable. */
+const FLAG_DOT: Record<OrderFlag, string> = {
+  missingCost: "bg-severity_critical_text",
+  noCaseSize: "bg-severity_watch_text",
+  highMargin: "bg-severity_watch_text/60",
+};
+
+const FLAG_TITLE: Record<OrderFlag, string> = {
+  missingCost: "No cost on this line — Ext cost and margin are wrong",
+  noCaseSize: "No case size — unit cost cannot be worked out",
+  highMargin: "Margin over the threshold, usually a wrong cost",
 };
 
 const PagerButton = ({

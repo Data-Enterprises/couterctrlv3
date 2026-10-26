@@ -4,6 +4,11 @@ import {
   addedLines,
   appendLine,
   applyField,
+  applyUnitCost,
+  bulkTargets,
+  withBulkApplied,
+  perCase,
+  unitCostOf,
   blankLine,
   blankLines,
   buildDocs,
@@ -584,5 +589,102 @@ describe("canEditOrders", () => {
 
   it("refuses somebody holding nothing", () => {
     expect(canEditOrders(5, [], MON)).toBe(false);
+  });
+});
+
+describe("unit cost", () => {
+  it("reads as case cost over case size", () => {
+    // base_cost 24 on a case of 12
+    expect(unitCostOf(ORDER[0])).toBe(2);
+  });
+
+  it("writes the case cost it implies, and recomputes ext cost", () => {
+    const next = applyUnitCost(draftOf(), 1, 2.5);
+    const l = next.lines.find((x) => x.line_number === 1)!;
+    expect(l.base_cost).toBe(30); // 2.50 × 12
+    // qty 10 on a case of 12: 30 / 12 × 10
+    expect(l.cogs).toBeCloseTo(25, 6);
+  });
+
+  it("keeps the case cost it started from as the original", () => {
+    const next = applyUnitCost(draftOf(), 1, 2.5);
+    const l = next.lines.find((x) => x.line_number === 1)!;
+    expect(l.original?.base_cost).toBe(24);
+  });
+
+  it("treats no case size as a case of one", () => {
+    const uncased = line({ casesize: 0, base_cost: 3 });
+    expect(perCase(uncased)).toBe(1);
+    expect(unitCostOf(uncased)).toBe(3);
+
+    const [doc] = buildDocs([uncased]);
+    const next = applyUnitCost(startDraft(doc, [uncased]), 1, 4);
+    expect(next.lines[0].base_cost).toBe(4);
+    expect(Number.isFinite(next.lines[0].cogs)).toBe(true);
+  });
+
+  it("touches only its own location when a storeid is shared", () => {
+    const [first] = buildDocs(CO_LOCATED);
+    const next = applyUnitCost(startDraft(first, CO_LOCATED), 1, 5);
+    expect(next.lines.filter((l) => l.base_cost === 60)).toHaveLength(1);
+    expect(next.lines.every((l) => l.storenumber === "369")).toBe(true);
+  });
+});
+
+describe("bulk unit cost", () => {
+  /** One item, three stores, two case sizes — the case that forced unit cost. */
+  const PIZZA = "004470036114";
+  const SPREAD = [
+    line({ storeid: 10, storenumber: "010", order_id: 1, line_number: 1, product_code: PIZZA, casesize: 12, base_cost: 0, qty: 18 }),
+    line({ storeid: 10, storenumber: "010", order_id: 1, line_number: 2, product_code: "OTHER", casesize: 6, base_cost: 9 }),
+    line({ storeid: 114, storenumber: "114", order_id: 2, line_number: 1, product_code: PIZZA, casesize: 24, base_cost: 0, qty: 6 }),
+    line({ storeid: 206, storenumber: "206", order_id: 3, line_number: 4, product_code: PIZZA, casesize: 12, base_cost: 0, qty: 9 }),
+  ];
+  const rows = SPREAD.filter((l) => l.product_code === PIZZA);
+
+  it("makes one target per order", () => {
+    expect(bulkTargets(rows, SPREAD, 2)).toHaveLength(3);
+  });
+
+  it("gives each store the case cost its own case size implies", () => {
+    const byStore = Object.fromEntries(
+      bulkTargets(rows, SPREAD, 2).map((t) => [t.doc.storenumber, t.newCaseCost]),
+    );
+    expect(byStore).toEqual({ "010": 24, "114": 48, "206": 24 });
+  });
+
+  it("sends the whole file, flagging only the line it changed", () => {
+    const store10 = bulkTargets(rows, SPREAD, 2).find((t) => t.doc.storenumber === "010")!;
+    expect(store10.payload.lines).toHaveLength(2);
+    const pizza = store10.payload.lines.find((l) => l.product_code === PIZZA)!;
+    const other = store10.payload.lines.find((l) => l.product_code === "OTHER")!;
+    expect(pizza.base_cost).toBe(24);
+    expect(pizza.edited).toBe(1);
+    expect(other.base_cost).toBe(9);
+    expect(other.edited).toBeNull();
+  });
+
+  it("puts the saved costs onto the held lines, and only the saved ones", () => {
+    const targets = bulkTargets(rows, SPREAD, 2);
+    const saved = targets.filter((t) => t.doc.storenumber !== "114");
+    const after = withBulkApplied(SPREAD, saved);
+
+    const cost = (sn: string, code: string) =>
+      after.find((l) => l.storenumber === sn && l.product_code === code)!.base_cost;
+    expect(cost("010", PIZZA)).toBe(24);
+    expect(cost("206", PIZZA)).toBe(24);
+    expect(cost("114", PIZZA)).toBe(0); // not saved, left alone
+    expect(cost("010", "OTHER")).toBe(9);
+    // ext cost followed: 24 / 12 × 18
+    expect(after.find((l) => l.storenumber === "010" && l.product_code === PIZZA)!.cogs).toBeCloseTo(36, 6);
+  });
+
+  it("keeps two locations of one storeid as two files", () => {
+    const shared = CO_LOCATED.map((l) => ({ ...l, product_code: PIZZA }));
+    const targets = bulkTargets(shared, shared, 2);
+    expect(targets).toHaveLength(2);
+    for (const t of targets) {
+      expect(new Set(t.payload.lines.map((l) => l.storenumber)).size).toBe(1);
+    }
   });
 });
