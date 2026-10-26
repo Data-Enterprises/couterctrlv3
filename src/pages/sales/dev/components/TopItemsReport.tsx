@@ -307,9 +307,14 @@ const TopItemsReport = ({
                 {totals.both} in both · {money(totals.sharedMineSales)}
               </span>
             </span>
+            {/* The two remainders are TINTS with dark text, not translucent
+                navy with white. White on brand_navy/60 over a light track is
+                a grey-on-grey that cannot be read -- the fill was chosen to
+                echo the row bars and the text was never checked against it.
+                Three weights: solid, a quarter, a tenth. */}
             {totals.onlyMine > 0 && (
               <span
-                className="flex items-center px-2.5 text-custom-white whitespace-nowrap overflow-hidden bg-brand_navy/62"
+                className="flex items-center px-2.5 text-content whitespace-nowrap overflow-hidden bg-brand_navy/25"
                 style={{
                   width: `${Math.max(10, (totals.onlyMine / pileTotal) * 100)}%`,
                 }}
@@ -320,7 +325,7 @@ const TopItemsReport = ({
               </span>
             )}
             {totals.onlyTheirs > 0 && (
-              <span className="flex items-center px-2.5 flex-1 text-content whitespace-nowrap overflow-hidden bg-brand_line_2/60">
+              <span className="flex items-center px-2.5 flex-1 text-content whitespace-nowrap overflow-hidden bg-brand_navy/10">
                 <span className="truncate">
                   {totals.onlyTheirs} only {compareStoreName}
                 </span>
@@ -452,7 +457,7 @@ const TopItemsReport = ({
               behind by over {threshold}
             </span>
             <span className="inline-flex items-center gap-1.5 text-[11px] text-content">
-              <span className="w-2.5 h-2.5 rounded-sm bg-brand_navy/62" />
+              <span className="w-2.5 h-2.5 rounded-sm bg-brand_navy/60" />
               {compareStoreName}
             </span>
           </div>
@@ -579,7 +584,7 @@ const Row = ({
             className={severityDotClass[sev]}
             style={{ width: `${minePct}%` }}
           />
-          <span className="bg-brand_navy/62" style={{ width: `${theirsPct}%` }} />
+          <span className="bg-brand_navy/60" style={{ width: `${theirsPct}%` }} />
         </span>
         {row.only !== null && (
           <span
@@ -608,7 +613,7 @@ const Row = ({
           </span>
         </span>
         <span className="inline-flex items-center gap-1.5 min-w-0">
-          <span className="w-2 h-2 rounded-sm flex-none bg-brand_navy/62" />
+          <span className="w-2 h-2 rounded-sm flex-none bg-brand_navy/60" />
           <span className="tabular-nums text-[12px] font-semibold text-content whitespace-nowrap">
             {row.theirs
               ? `${money(row.theirsSales)} · ${pct(row.theirsShare)}`
@@ -796,7 +801,7 @@ const Rail = ({
               <span className="truncate">{openStoreName}</span>
             </span>
             <span className="text-right text-[11.5px] font-bold inline-flex items-center justify-end gap-1.5 truncate">
-              <span className="w-2 h-2 rounded-sm flex-none bg-brand_navy/62" />
+              <span className="w-2 h-2 rounded-sm flex-none bg-brand_navy/60" />
               <span className="truncate">{compareStoreName}</span>
             </span>
 
@@ -850,7 +855,7 @@ const Rail = ({
                 <span className="truncate">{openStoreName}</span>
               </span>
               <span className="text-right text-[11.5px] font-bold inline-flex items-center justify-end gap-1.5 truncate">
-                <span className="w-2 h-2 rounded-sm flex-none bg-brand_navy/62" />
+                <span className="w-2 h-2 rounded-sm flex-none bg-brand_navy/60" />
                 <span className="truncate">{compareStoreName}</span>
               </span>
 
