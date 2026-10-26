@@ -228,6 +228,20 @@ interface SalesLedgerState {
    *  `storeCache`: three more calls per bounce otherwise. */
   topItemsCache: Record<string, TopItemsEntry>;
   topItemsCacheOrder: string[];
+  /**
+   * This week only, for the Top 200 comparison.
+   *
+   * Its own store rather than a lean entry in `topItemsCache`, and that is
+   * the point: `restoreTopItems` serves a cache entry whole, so an entry
+   * written with no `lw`/`ly` would leave the single-store tab showing no
+   * comparisons at all for a store-week the comparison happened to visit
+   * first. Nothing partial goes in the shared cache.
+   *
+   * The comparison still READS `topItemsCache` first — a full entry from a
+   * single-store visit answers it perfectly — and only writes here.
+   */
+  topItemsTyCache: Record<string, { rows: TopItemRow[]; points: TopItemPricePoint[] }>;
+  topItemsTyOrder: string[];
 
   // Raw API data (shared desktop + mobile)
   rawSubs: SubSale[];
@@ -302,6 +316,8 @@ const initialState: SalesLedgerState = {
   topItemsLoading: false,
   topItemsCache: {},
   topItemsCacheOrder: [],
+  topItemsTyCache: {},
+  topItemsTyOrder: [],
   financials: [],
   financialsWindow: null,
   financialsTruncated: false,
@@ -421,6 +437,28 @@ const salesLedgerSlice = createSlice({
       put.evicted.forEach((k) => delete state.topItemsCache[k]);
       state.topItemsCacheOrder = put.order;
     },
+    /**
+     * One store's week for the comparison, kept so switching tabs and coming
+     * back does not ask for it again.
+     *
+     * Deliberately does NOT touch `topItems` or `topItemsKey`: those are the
+     * open store's current rows, and the comparison reads a second store.
+     */
+    cacheTopItemsTy: (
+      state,
+      action: PayloadAction<{
+        key: string;
+        rows: TopItemRow[];
+        points: TopItemPricePoint[];
+      }>,
+    ) => {
+      const { key, rows, points } = action.payload;
+      state.topItemsTyCache[key] = { rows, points };
+      const put = lruPut(state.topItemsTyOrder, key);
+      put.evicted.forEach((k) => delete state.topItemsTyCache[k]);
+      state.topItemsTyOrder = put.order;
+    },
+
     /** Serve a store-week already held. */
     restoreTopItems: (state, action: PayloadAction<string>) => {
       const held = state.topItemsCache[action.payload];
@@ -676,6 +714,7 @@ export const {
   setTopItems,
   setTopItemsLoading,
   restoreTopItems,
+  cacheTopItemsTy,
   setReportLoading,
   setTop10Loading,
   cacheStoreData,

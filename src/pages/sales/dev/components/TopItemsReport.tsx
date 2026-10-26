@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { useAppSelector } from "../../../../hooks";
+import { useAppDispatch, useAppSelector } from "../../../../hooks";
+import { cacheTopItemsTy } from "../../../../features/dev/devSalesLedgerSlice";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
 import CtaStrip, { type CtaTone } from "../../../../components-dev/CtaStrip";
@@ -67,6 +68,27 @@ const OUTLINE_TONE: CtaTone = {
   text: "text-content",
 };
 
+/** The rail header's dress, per grade. Background and hairline only -- the
+ *  text stays `content`, because a severity text colour on a product name
+ *  would grade the NAME rather than the figure. */
+const SEV_HEAD: Record<
+  "critical" | "watch" | "healthy",
+  { bg: string; border: string }
+> = {
+  critical: {
+    bg: "bg-severity_critical_bg",
+    border: "border-severity_critical_text/25",
+  },
+  watch: {
+    bg: "bg-severity_watch_bg",
+    border: "border-severity_watch_text/25",
+  },
+  healthy: {
+    bg: "bg-severity_healthy_bg",
+    border: "border-severity_healthy_text/25",
+  },
+};
+
 /** One store's week, as this tab needs it. */
 interface Side {
   rows: TopItemRow[];
@@ -104,6 +126,8 @@ const TopItemsReport = ({
 }: Props) => {
   const { url, token } = useAppSelector((s) => s.app);
   const cache = useAppSelector((s) => s.dev.salesLedger.topItemsCache);
+  const tyCache = useAppSelector((s) => s.dev.salesLedger.topItemsTyCache);
+  const dispatch = useAppDispatch();
   const toast = useToast();
 
   const [mine, setMine] = useState<Side | null>(null);
@@ -131,9 +155,12 @@ const TopItemsReport = ({
    */
   useEffect(() => {
     let live = true;
+    /** The full entry a single-store visit leaves, or this tab's own. */
     const held = (k: string): Side | null => {
-      const entry = cache[k];
-      return entry ? { rows: entry.rows, points: entry.points } : null;
+      const full = cache[k];
+      if (full) return { rows: full.rows, points: full.points };
+      const ty = tyCache[k];
+      return ty ? { rows: ty.rows, points: ty.points } : null;
     };
 
     const want = (k: string, storeid: number): Promise<Side> => {
@@ -149,7 +176,12 @@ const TopItemsReport = ({
       ).then((resp) => {
         const j: TopItemsResponse = resp.data;
         if (j.error !== 0) throw new Error(j.msg || "Could not read top items");
-        return { rows: j.items ?? [], points: j.price_points ?? [] };
+        const side = { rows: j.items ?? [], points: j.price_points ?? [] };
+        // Kept, so leaving for Hourly and coming back is free. Written to
+        // the TY store, never the shared one: a partial entry there would
+        // leave the single-store tab with no vs LW or vs LY.
+        dispatch(cacheTopItemsTy({ key: k, ...side }));
+        return side;
       });
     };
 
@@ -383,7 +415,7 @@ const TopItemsReport = ({
 
         {(
           [
-            ["divergence", "Difference"],
+            ["divergence", "Share gap"],
             ["sales", "Sales"],
           ] as [CompareSort, string][]
         ).map(([id, label]) => (
@@ -524,16 +556,20 @@ const Row = ({
           )}`}
           title={
             row.shareGap === null
-              ? "At least this far apart — the other store's share is unknown"
-              : "Difference in share of each store's top 200"
+              ? `At least ${pts(signed)} points apart — this item is outside the other store's top 200, so their share is unknown`
+              : `This store takes ${pct(
+                  row.mineShare,
+                )} of its top 200 on this item against ${pct(
+                  row.theirsShare,
+                )} at the other — ${pts(signed)} points apart. Not the sales difference: share, so the two stores compare whatever their size.`
           }
         >
           {row.shareGap === null ? "≥ " : ""}
-          {pts(signed)}
+          {pts(signed)} pts
         </span>
       </span>
 
-      <span className="block mt-2 h-[15px] rounded bg-bkg overflow-hidden flex">
+      <span className="block mt-1.5 h-[9px] rounded-sm bg-bkg overflow-hidden flex">
         <span className="h-full flex" style={{ width: `${(row.pair / Math.max(1, widest)) * 100}%` }}>
           {/* delta_positive_TEXT, not _mid. `delta_positive_mid` is a CSS
               variable that was never added to the Tailwind config, so the
@@ -547,7 +583,7 @@ const Row = ({
         </span>
         {row.only !== null && (
           <span
-            className="w-4 flex-none border-l border-brand_line_2"
+            className="w-3.5 flex-none border-l border-brand_line_2"
             style={{
               background:
                 "repeating-linear-gradient(135deg, rgb(var(--color-brand-line-2)) 0 4px, rgb(var(--color-bkg)) 4px 8px)",
@@ -565,7 +601,7 @@ const Row = ({
           <span
             className={`w-2 h-2 rounded-sm flex-none ${severityDotClass[sev]}`}
           />
-          <span className="tabular-nums text-[12px] text-content whitespace-nowrap">
+          <span className="tabular-nums text-[12px] font-semibold text-content whitespace-nowrap">
             {row.mine
               ? `${money(row.mineSales)} · ${pct(row.mineShare)}`
               : "not in top 200"}
@@ -573,7 +609,7 @@ const Row = ({
         </span>
         <span className="inline-flex items-center gap-1.5 min-w-0">
           <span className="w-2 h-2 rounded-sm flex-none bg-brand_navy/62" />
-          <span className="tabular-nums text-[12px] text-content whitespace-nowrap">
+          <span className="tabular-nums text-[12px] font-semibold text-content whitespace-nowrap">
             {row.theirs
               ? `${money(row.theirsSales)} · ${pct(row.theirsShare)}`
               : "not in top 200"}
@@ -639,7 +675,7 @@ const Rail = ({
   if (!row) {
     return (
       <div className="flex-1 min-w-0 flex items-center justify-center px-4">
-        <p className="text-[12px] text-content text-center">
+        <p className="text-[13px] text-content text-center">
           Pick an item to compare it.
         </p>
       </div>
@@ -668,14 +704,41 @@ const Rail = ({
 
   return (
     <div className="flex-1 min-w-0 flex flex-col min-h-0">
-      <div className="flex-shrink-0 px-3.5 py-2.5 border-b border-gray-100">
-        <p className="text-[13.5px] font-bold text-content leading-snug">
-          {row.description}
-        </p>
-        <p className="tabular-nums text-[11px] text-content mt-px">
-          {row.code} · {row.dept}
-          {row.only === null ? " · carried by both" : ""}
-        </p>
+      {/*
+        Tinted by this item's own grade, the way the panel's own title bar is
+        tinted by the store's. Not a CtaStrip: a strip's job is to hold detail
+        BEHIND a chevron, and nothing here should be behind one -- the claim
+        under it is the most important sentence on the screen. So it takes the
+        severity dress without the folding.
+      */}
+      <div
+        className={`flex-shrink-0 px-3.5 py-3 border-b ${
+          SEV_HEAD[sev].bg
+        } ${SEV_HEAD[sev].border}`}
+      >
+        <div className="flex items-start gap-2.5">
+          <span
+            className={`mt-1 w-2.5 h-2.5 rounded-sm flex-none ${severityDotClass[sev]}`}
+          />
+          <div className="min-w-0 flex-1">
+            <p className="text-[14.5px] font-bold text-content leading-snug">
+              {row.description}
+            </p>
+            <p className="tabular-nums text-[12px] text-content mt-0.5">
+              {row.code} · {row.dept}
+              {row.only === null ? " · carried by both" : ""}
+            </p>
+          </div>
+          <span
+            className={`flex-none tabular-nums text-[12px] font-bold px-2 py-0.5 rounded ${pillClass(
+              divergenceSigned(row),
+              threshold,
+            )}`}
+          >
+            {row.shareGap === null ? "≥ " : ""}
+            {pts(divergenceSigned(row))} pts
+          </span>
+        </div>
       </div>
 
       <div
@@ -685,7 +748,7 @@ const Rail = ({
         {/* The claim, on a one-sided row. Resolved on selection, no button. */}
         {row.only !== null && (
           <div className="rounded-lg border border-brand_line_2 bg-brand_paper px-3 py-2.5">
-            <p className="text-[12.5px] text-content leading-snug">
+            <p className="text-[13.5px] text-content leading-snug">
               Not in <b>{missingName}&rsquo;s top 200</b>
               {absentLoading && " — asking…"}
               {!absentLoading && sold && (
@@ -702,7 +765,7 @@ const Rail = ({
                 </>
               )}
             </p>
-            <p className="text-[11px] text-content leading-snug mt-1.5">
+            <p className="text-[12px] text-content leading-snug mt-2">
               A sales answer, not a shelf one. A slow mover can be stocked and
               ring nothing in a week.
             </p>
@@ -711,7 +774,7 @@ const Rail = ({
 
         {row.unitsDisagree && (
           <div className="rounded-lg border border-brand_danger_line bg-brand_danger_bg px-3 py-2.5">
-            <p className="text-[12px] text-brand_danger leading-snug">
+            <p className="text-[12.5px] text-brand_danger leading-snug">
               These stores ring this code differently — one on the scale, one
               as a pack. The amounts below are not comparable. Sales and share
               still are.
@@ -724,15 +787,15 @@ const Rail = ({
             rail and the list agree about which store is which. The columns
             are 132px: at 96 a store name clipped to "002 - IGA IRV…". */}
         <div>
-          <div className="grid grid-cols-[1fr_132px_132px] gap-x-2.5 gap-y-1 text-[12.5px] text-content items-baseline">
-            <span className="font-mono text-[10.5px] uppercase tracking-wider">
+          <div className="grid grid-cols-[1fr_132px_132px] gap-x-3 gap-y-1.5 text-[13.5px] text-content items-baseline">
+            <span className="font-mono text-[11px] uppercase tracking-wider">
               Comparison
             </span>
-            <span className="text-right text-[11px] font-bold inline-flex items-center justify-end gap-1.5 truncate">
+            <span className="text-right text-[11.5px] font-bold inline-flex items-center justify-end gap-1.5 truncate">
               <span className={`w-2 h-2 rounded-sm flex-none ${severityDotClass[sev]}`} />
               <span className="truncate">{openStoreName}</span>
             </span>
-            <span className="text-right text-[11px] font-bold inline-flex items-center justify-end gap-1.5 truncate">
+            <span className="text-right text-[11.5px] font-bold inline-flex items-center justify-end gap-1.5 truncate">
               <span className="w-2 h-2 rounded-sm flex-none bg-brand_navy/62" />
               <span className="truncate">{compareStoreName}</span>
             </span>
@@ -778,15 +841,15 @@ const Rail = ({
             <p className="font-mono text-[11px] uppercase tracking-wider text-content mb-1.5">
               What it rang at, and where
             </p>
-            <div className="grid grid-cols-[70px_1fr_1fr] gap-x-2.5 gap-y-1 text-[12px] text-content items-baseline">
-              <span className="font-mono text-[10.5px] uppercase tracking-wider">
+            <div className="grid grid-cols-[76px_1fr_1fr] gap-x-3 gap-y-1.5 text-[13px] text-content items-baseline">
+              <span className="font-mono text-[11px] uppercase tracking-wider">
                 Price
               </span>
-              <span className="text-right text-[11px] font-bold inline-flex items-center justify-end gap-1.5 truncate">
+              <span className="text-right text-[11.5px] font-bold inline-flex items-center justify-end gap-1.5 truncate">
                 <span className={`w-2 h-2 rounded-sm flex-none ${severityDotClass[sev]}`} />
                 <span className="truncate">{openStoreName}</span>
               </span>
-              <span className="text-right text-[11px] font-bold inline-flex items-center justify-end gap-1.5 truncate">
+              <span className="text-right text-[11.5px] font-bold inline-flex items-center justify-end gap-1.5 truncate">
                 <span className="w-2 h-2 rounded-sm flex-none bg-brand_navy/62" />
                 <span className="truncate">{compareStoreName}</span>
               </span>
@@ -797,7 +860,7 @@ const Rail = ({
                 <PriceRow key={l.price} line={l} />
               ))}
             </div>
-            <p className="text-[11.5px] text-content leading-snug mt-2">
+            <p className="text-[12.5px] text-content leading-snug mt-2.5">
               Keyed on the price, so the rows line up and a blank cell is the
               finding: the other store never rang it at that.
             </p>
