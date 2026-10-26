@@ -159,10 +159,16 @@ export const SALES_HELP: HelpContent = {
           see: "Eighty-eight differing items is a list; \u201cmostly Meat and Beer\u201d is an answer. Items both stores carry are left out of this count — they are not where the two differ in stocking.",
         },
         {
-          title: "Narrow to the pile you want",
-          pre: "Both, Only here and Only there each filter the list. Difference sorts by how far apart the two stores are; Sales sorts by the pair's combined size.",
+          title: "Narrow it down",
+          pre: "The first dropdown picks which pile to show — all of them, the ones both stores sell, or the ones only one does. The second picks departments, as many as you like. The search box finds an item by name or code.",
           anchor: "top200-compare-filters",
-          see: "Difference is the default on purpose: most of the 200 match, and sorting by sales buries the handful that do not.",
+          see: "They stack: one store's own items, in Meat, with “ribeye” typed, is a legitimate way to ask. The item search does not look at departments — that is the dropdown's job.",
+        },
+        {
+          title: "Choose the order",
+          pre: "Share gap puts the items the two stores disagree about most at the top. Sales orders by the pair's combined size instead.",
+          anchor: "top200-compare-filters",
+          see: "Share gap is the default on purpose: most of the 200 match, and ordering by sales buries the handful that do not.",
         },
         {
           title: "Read a row",

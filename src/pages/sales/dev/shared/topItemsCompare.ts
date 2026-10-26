@@ -209,10 +209,13 @@ export const filterCompared = (
     if (filter === "mine" && r.only !== "mine") return false;
     if (filter === "theirs" && r.only !== "theirs") return false;
     if (!needle) return true;
+    // Description and code only. Department has its own picker, and matching
+    // it here too meant typing "meat" quietly did the dropdown's job -- two
+    // controls answering one question, neither showing what the other had
+    // done.
     return (
       r.description.toLowerCase().includes(needle) ||
-      r.code.toLowerCase().includes(needle) ||
-      r.dept.toLowerCase().includes(needle)
+      r.code.toLowerCase().includes(needle)
     );
   });
 };

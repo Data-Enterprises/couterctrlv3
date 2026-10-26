@@ -1,9 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
+import { CTA_SEVERITY_CLASSES } from "../../../../utils/severity";
 import { useAppDispatch, useAppSelector } from "../../../../hooks";
 import { cacheTopItemsTy } from "../../../../features/dev/devSalesLedgerSlice";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
 import CtaStrip, { type CtaTone } from "../../../../components-dev/CtaStrip";
+import { Block, Measure } from "./CompareBlocks";
+import {
+  ChevronDownIcon,
+  ChevronUpIcon,
+  ExclamationCircleIcon,
+  CheckCircleIcon,
+} from "@heroicons/react/20/solid";
 import MultiSelectFilter from "../../../../components-dev/filters/MultiSelectFilter";
 import SelectFilter from "../../../../components-dev/filters/SelectFilter";
 import TextFilter from "../../../../components-dev/filters/TextFilter";
@@ -17,7 +25,7 @@ import {
   type TopItemRow,
   type TopItemsResponse,
 } from "../../../../api/topItems";
-import { avgPrice } from "../shared/topItems";
+import { amountOf, avgPrice, weighed } from "../shared/topItems";
 import { severityDotClass } from "../../../../utils/severity";
 import {
   amountTextOf,
@@ -66,23 +74,6 @@ const OUTLINE_TONE: CtaTone = {
   bg: "bg-bkg",
   hoverBg: "hover:bg-brand_navy/5",
   text: "text-content",
-};
-
-/** The rail header's dress, per grade. Background and hairline only -- the
- *  text stays `content`, because a severity text colour on a product name
- *  would grade the NAME rather than the figure. */
-const SEV_HEAD: Record<
-  "critical" | "healthy",
-  { bg: string; border: string }
-> = {
-  critical: {
-    bg: "bg-severity_critical_bg",
-    border: "border-severity_critical_text/25",
-  },
-  healthy: {
-    bg: "bg-severity_healthy_bg",
-    border: "border-severity_healthy_text/25",
-  },
 };
 
 /** One store's week, as this tab needs it. */
@@ -324,13 +315,13 @@ const TopItemsReport = ({
               </span>
             </span>
             {/* The two remainders are TINTS with dark text, not translucent
-                navy with white. White on brand_navy/60 over a light track is
+                navy with white. White on a translucent navy over a light track is
                 a grey-on-grey that cannot be read -- the fill was chosen to
                 echo the row bars and the text was never checked against it.
                 Three weights: solid, a quarter, a tenth. */}
             {totals.onlyMine > 0 && (
               <span
-                className="flex items-center px-2.5 text-content whitespace-nowrap overflow-hidden bg-brand_navy/25"
+                className="flex items-center px-2.5 text-content whitespace-nowrap overflow-hidden bg-store_compare_tint"
                 style={{
                   width: `${Math.max(10, (totals.onlyMine / pileTotal) * 100)}%`,
                 }}
@@ -341,7 +332,7 @@ const TopItemsReport = ({
               </span>
             )}
             {totals.onlyTheirs > 0 && (
-              <span className="flex items-center px-2.5 flex-1 text-content whitespace-nowrap overflow-hidden bg-brand_navy/10">
+              <span className="flex items-center px-2.5 flex-1 text-custom-white whitespace-nowrap overflow-hidden bg-store_compare">
                 <span className="truncate">
                   {totals.onlyTheirs} only {compareStoreName}
                 </span>
@@ -403,7 +394,7 @@ const TopItemsReport = ({
         <TextFilter
           value={text}
           onChange={setText}
-          placeholder="Item, code or department"
+          placeholder="Item or code"
           className="w-[200px] flex-none"
         />
 
@@ -477,7 +468,7 @@ const TopItemsReport = ({
               behind
             </span>
             <span className="inline-flex items-center gap-1.5 text-[11px] text-content">
-              <span className="w-2.5 h-2.5 rounded-sm bg-brand_navy/60" />
+              <span className="w-2.5 h-2.5 rounded-sm bg-store_compare" />
               {compareStoreName}
             </span>
           </div>
@@ -597,7 +588,7 @@ const Row = ({
             className={severityDotClass[sev]}
             style={{ width: `${minePct}%` }}
           />
-          <span className="bg-brand_navy/60" style={{ width: `${theirsPct}%` }} />
+          <span className="bg-store_compare" style={{ width: `${theirsPct}%` }} />
         </span>
         {row.only !== null && (
           <span
@@ -626,7 +617,7 @@ const Row = ({
           </span>
         </span>
         <span className="inline-flex items-center gap-1.5 min-w-0">
-          <span className="w-2 h-2 rounded-sm flex-none bg-brand_navy/60" />
+          <span className="w-2 h-2 rounded-sm flex-none bg-store_compare" />
           <span className="tabular-nums text-[12px] font-semibold text-content whitespace-nowrap">
             {row.theirs
               ? `${money(row.theirsSales)} · ${pct(row.theirsShare)}`
@@ -688,6 +679,9 @@ const Rail = ({
   absent: ItemDetailResponse | null;
   absentLoading: boolean;
 }) => {
+  /** The strip opens closed, like every other one. */
+  const [open, setOpen] = useState(false);
+
   if (!row) {
     return (
       <div className="flex-1 min-w-0 flex items-center justify-center px-4">
@@ -702,21 +696,12 @@ const Rail = ({
   // The same tone the row wears, so the rail and the list never disagree
   // about which way this item goes.
   const sev = toneOf(divergenceSigned(row));
+  const cta = CTA_SEVERITY_CLASSES[sev];
+  const Mark_ = sev === "critical" ? ExclamationCircleIcon : CheckCircleIcon;
   const missingName =
     row.only === "mine" ? compareStoreName : openStoreName;
   const sold = absent?.stores?.[0] ?? null;
 
-  const figure = (label: string, a: string, b: string, bold = false) => (
-    <>
-      <span className={bold ? "font-semibold" : ""}>{label}</span>
-      <span className={`text-right tabular-nums ${bold ? "font-bold" : ""}`}>
-        {a}
-      </span>
-      <span className={`text-right tabular-nums ${bold ? "font-bold" : ""}`}>
-        {b}
-      </span>
-    </>
-  );
 
   return (
     <div className="flex-1 min-w-0 flex flex-col min-h-0">
@@ -727,127 +712,163 @@ const Rail = ({
         under it is the most important sentence on the screen. So it takes the
         severity dress without the folding.
       */}
-      <div
-        className={`flex-shrink-0 px-3.5 py-3 border-b ${
-          SEV_HEAD[sev].bg
-        } ${SEV_HEAD[sev].border}`}
-      >
-        <div className="flex items-start gap-2.5">
+      {/*
+        The same strip the department comparison opens with: the name, and the
+        finding folded behind it. Over the panel rather than above it, so
+        opening and closing never moves the blocks underneath — the reader
+        keeps their place in the thing the strip describes.
+      */}
+      <div className={`relative flex-shrink-0 border-b ${cta.border}`}>
+        <button
+          onClick={() => setOpen((v) => !v)}
+          aria-expanded={open}
+          className={`w-full flex items-center gap-2 px-3.5 py-2.5 text-left transition-colors ${cta.bg} ${cta.hoverBg}`}
+        >
+          <Mark_ className={`w-4 h-4 flex-shrink-0 ${cta.text}`} />
           <span
-            className={`mt-1 w-2.5 h-2.5 rounded-sm flex-none ${severityDotClass[sev]}`}
-          />
-          <div className="min-w-0 flex-1">
-            <p className="text-[14.5px] font-bold text-content leading-snug">
-              {row.description}
-            </p>
-            <p className="tabular-nums text-[12px] text-content mt-0.5">
-              {row.code} · {row.dept}
-              {row.only === null ? " · carried by both" : ""}
-            </p>
-          </div>
+            className={`min-w-0 flex-1 truncate text-[14px] font-semibold ${cta.text}`}
+          >
+            {row.description}
+          </span>
           <span
-            className={`flex-none tabular-nums text-[12px] font-bold px-2 py-0.5 rounded ${TONE_PILL[sev]}`}
+            className={`flex-none tabular-nums text-[12px] font-bold ${cta.text}`}
           >
             {row.shareGap === null ? "≥ " : ""}
             {pts(divergenceSigned(row))} pts
           </span>
-        </div>
+          {open ? (
+            <ChevronUpIcon className={`w-3.5 h-3.5 flex-shrink-0 ${cta.text}`} />
+          ) : (
+            <ChevronDownIcon className={`w-3.5 h-3.5 flex-shrink-0 ${cta.text}`} />
+          )}
+        </button>
+
+        {open && (
+          <div
+            className={`absolute top-full left-0 right-0 z-20 px-3.5 py-2.5 border-b shadow-lg ${cta.bg} ${cta.border}`}
+          >
+            <p className={`text-[12.5px] leading-snug ${cta.text}`}>
+              <span className="font-bold tabular-nums">{row.code}</span>
+              {" · "}
+              {row.dept}
+              {row.only === null && " · carried by both"}
+            </p>
+
+            {row.only !== null && (
+              <p className={`text-[12.5px] leading-snug mt-1.5 ${cta.text}`}>
+                Not in <b>{missingName}&rsquo;s top 200</b>
+                {absentLoading && " — asking…"}
+                {!absentLoading && sold && (
+                  <>
+                    {" "}
+                    — and they sold <b>{money(sold.total_sales)}</b> of it this
+                    week.
+                  </>
+                )}
+                {!absentLoading && absent && !sold && (
+                  <> — and they sold <b>none of it this week</b>.</>
+                )}
+                {" "}
+                A sales answer, not a shelf one: a slow mover can be stocked and
+                ring nothing in a week.
+              </p>
+            )}
+
+            {row.unitsDisagree && (
+              <p className={`text-[12.5px] leading-snug mt-1.5 ${cta.text}`}>
+                <b>These stores ring this code differently</b> — one on the
+                scale, one as a pack. The amounts are not comparable; sales
+                and share still are.
+              </p>
+            )}
+          </div>
+        )}
       </div>
 
       <div
         data-help="top200-compare-rail"
-        className="flex-1 min-h-0 overflow-y-auto thin-scrollbar px-3.5 py-3 flex flex-col gap-3"
+        className="flex-1 min-h-0 overflow-y-auto thin-scrollbar px-3.5 py-3 flex flex-col"
       >
-        {/* The claim, on a one-sided row. Resolved on selection, no button. */}
-        {row.only !== null && (
-          <div className="rounded-lg border border-brand_line_2 bg-brand_paper px-3 py-2.5">
-            <p className="text-[13.5px] text-content leading-snug">
-              Not in <b>{missingName}&rsquo;s top 200</b>
-              {absentLoading && " — asking…"}
-              {!absentLoading && sold && (
-                <>
-                  {" "}
-                  — and they sold <b>{money(sold.total_sales)}</b> of it this
-                  week.
-                </>
-              )}
-              {!absentLoading && absent && !sold && (
-                <>
-                  {" "}
-                  — and they sold <b>none of it this week</b>.
-                </>
-              )}
-            </p>
-            <p className="text-[12px] text-content leading-snug mt-2">
-              A sales answer, not a shelf one. A slow mover can be stocked and
-              ring nothing in a week.
-            </p>
+        <Block title={`This week against ${compareStoreName}`}>
+          <div className="flex flex-col gap-2.5">
+            <Measure
+              title="Sales"
+              mine={row.mineSales}
+              theirs={row.theirsSales}
+              us={openStoreName}
+              them={compareStoreName}
+              fmt={money}
+              better="more"
+            />
+            {/* Only where both sides count the same thing. Pounds against
+                packages is not a comparison, and a bar pair would draw one. */}
+            {!row.unitsDisagree && (
+              <Measure
+                title={row.mine && weighed(row.mine) ? "Weight" : "Units"}
+                mine={row.mine ? amountOf(row.mine) : 0}
+                theirs={row.theirs ? amountOf(row.theirs) : 0}
+                us={openStoreName}
+                them={compareStoreName}
+                fmt={(v) =>
+                  v.toLocaleString(undefined, { maximumFractionDigits: 1 })
+                }
+                better="more"
+              />
+            )}
           </div>
-        )}
+        </Block>
 
-        {row.unitsDisagree && (
-          <div className="rounded-lg border border-brand_danger_line bg-brand_danger_bg px-3 py-2.5">
-            <p className="text-[12.5px] text-brand_danger leading-snug">
-              These stores ring this code differently — one on the scale, one
-              as a pack. The amounts below are not comparable. Sales and share
-              still are.
-            </p>
-          </div>
-        )}
-
-        {/* "Comparison" sits ON the header row with the two store names
-            rather than above it, and each name carries its bar swatch so the
-            rail and the list agree about which store is which. The columns
-            are 132px: at 96 a store name clipped to "002 - IGA IRV…". */}
-        <div>
-          <div className="grid grid-cols-[1fr_132px_132px] gap-x-3 gap-y-1.5 text-[13.5px] text-content items-baseline">
-            <span className="font-mono text-[11px] uppercase tracking-wider">
-              Comparison
-            </span>
+        <Block title="Share of each store's top 200">
+          <div className="grid grid-cols-[1fr_120px_120px] gap-x-3 gap-y-1.5 text-[13px] text-content items-baseline">
+            <span />
             <span className="text-right text-[11.5px] font-bold inline-flex items-center justify-end gap-1.5 truncate">
               <span className={`w-2 h-2 rounded-sm flex-none ${severityDotClass[sev]}`} />
               <span className="truncate">{openStoreName}</span>
             </span>
             <span className="text-right text-[11.5px] font-bold inline-flex items-center justify-end gap-1.5 truncate">
-              <span className="w-2 h-2 rounded-sm flex-none bg-brand_navy/60" />
+              <span className="w-2 h-2 rounded-sm flex-none bg-store_compare" />
               <span className="truncate">{compareStoreName}</span>
             </span>
 
             <span className="col-span-3 h-px bg-brand_line my-0.5" />
 
-            {figure(
-              "Sales",
-              row.mine ? money(row.mineSales) : "—",
-              row.theirs ? money(row.theirsSales) : "—",
-              true,
-            )}
-            {figure(
-              "Amount",
-              amountTextOf(row.mine) ?? "—",
-              amountTextOf(row.theirs) ?? "—",
-            )}
-            {figure(
-              "Avg price",
-              row.mine ? (avgPrice(row.mine)?.toFixed(2) ?? "—") : "—",
-              row.theirs ? (avgPrice(row.theirs)?.toFixed(2) ?? "—") : "—",
-            )}
-            {figure(
-              "Margin",
-              row.mine?.margin !== null && row.mine !== null
+            <span className="font-semibold">Share</span>
+            <span className="text-right tabular-nums font-bold">
+              {pct(row.mineShare)}
+            </span>
+            <span className="text-right tabular-nums font-bold">
+              {pct(row.theirsShare)}
+            </span>
+
+            <span>Amount</span>
+            <span className="text-right tabular-nums">
+              {amountTextOf(row.mine) ?? "—"}
+            </span>
+            <span className="text-right tabular-nums">
+              {amountTextOf(row.theirs) ?? "—"}
+            </span>
+
+            <span>Avg price</span>
+            <span className="text-right tabular-nums">
+              {row.mine ? (avgPrice(row.mine)?.toFixed(2) ?? "—") : "—"}
+            </span>
+            <span className="text-right tabular-nums">
+              {row.theirs ? (avgPrice(row.theirs)?.toFixed(2) ?? "—") : "—"}
+            </span>
+
+            <span>Margin</span>
+            <span className="text-right tabular-nums">
+              {row.mine && row.mine.margin !== null
                 ? `${row.mine.margin.toFixed(1)}%`
-                : "—",
-              row.theirs?.margin !== null && row.theirs !== null
+                : "—"}
+            </span>
+            <span className="text-right tabular-nums">
+              {row.theirs && row.theirs.margin !== null
                 ? `${row.theirs.margin.toFixed(1)}%`
-                : "—",
-            )}
-            {figure(
-              "Share of top 200",
-              pct(row.mineShare),
-              pct(row.theirsShare),
-              true,
-            )}
+                : "—"}
+            </span>
           </div>
-        </div>
+        </Block>
 
         {lines.length > 0 && (
           <div>
@@ -863,7 +884,7 @@ const Rail = ({
                 <span className="truncate">{openStoreName}</span>
               </span>
               <span className="text-right text-[11.5px] font-bold inline-flex items-center justify-end gap-1.5 truncate">
-                <span className="w-2 h-2 rounded-sm flex-none bg-brand_navy/60" />
+                <span className="w-2 h-2 rounded-sm flex-none bg-store_compare" />
                 <span className="truncate">{compareStoreName}</span>
               </span>
 

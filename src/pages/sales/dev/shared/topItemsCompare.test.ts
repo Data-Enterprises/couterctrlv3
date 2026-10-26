@@ -224,11 +224,15 @@ describe("filtering", () => {
     expect(filterCompared(rows, "both", "").map((r) => r.code)).toEqual(["SHARED"]);
   });
 
-  it("searches description, code and department together", () => {
+  it("searches description and code", () => {
     expect(filterCompared(rows, "all", "banana")).toHaveLength(1);
     expect(filterCompared(rows, "all", "SHARED")).toHaveLength(1);
-    // Three rows, not four: SHARED is one row carrying both sides.
-    expect(filterCompared(rows, "all", "produce")).toHaveLength(3);
+  });
+
+  it("leaves department to the department picker", () => {
+    // Matching it here as well meant typing "produce" quietly did the
+    // dropdown's job, with neither control showing what the other had done.
+    expect(filterCompared(rows, "all", "produce")).toHaveLength(0);
   });
 });
 
