@@ -27,6 +27,7 @@ import {
 import { avgPrice } from "../shared/topItems";
 import { severityDotClass } from "../../../../utils/severity";
 import SortHeader from "../../../../components-dev/SortHeader";
+import UpcContextMenu from "../../../../components-dev/UpcContextMenu";
 import { useTriStateSort } from "../../../../utils/useTriStateSort";
 import {
   amountTextOf,
@@ -140,6 +141,13 @@ const TopItemsReport = ({
   const [text, setText] = useState("");
   const [picked, setPicked] = useState<string | null>(null);
   const [depts, setDepts] = useState<string[]>([]);
+  /** Right-click anywhere in the list. `upc: ""` means the click landed
+   *  between rows, where only the whole-list actions make sense. */
+  const [ctxMenu, setCtxMenu] = useState<{
+    x: number;
+    y: number;
+    upc: string;
+  } | null>(null);
 
   const key = `${openStoreId}__${twStart}__${twEnd}`;
   const theirKey = `${compareStoreId}__${twStart}__${twEnd}`;
@@ -242,6 +250,27 @@ const TopItemsReport = ({
   const selected = useMemo(
     () => shown.find((r) => r.code === picked) ?? shown[0] ?? null,
     [shown, picked],
+  );
+
+  /**
+   * What the menu can copy: the codes on screen, and the same codes split
+   * by which way they went.
+   *
+   * `watch` is empty because this screen grades in two -- ahead or behind --
+   * and an empty list is how the menu knows not to offer that line.
+   */
+  const allUpcs = useMemo(() => shown.map((r) => r.code), [shown]);
+  const severityUpcs = useMemo(
+    () => ({
+      critical: shown
+        .filter((r) => metricSigned(r, metric) < 0)
+        .map((r) => r.code),
+      watch: [],
+      healthy: shown
+        .filter((r) => metricSigned(r, metric) >= 0)
+        .map((r) => r.code),
+    }),
+    [shown, metric],
   );
 
   /**
@@ -503,6 +532,10 @@ const TopItemsReport = ({
           <div
             data-help="top200-compare-list"
             className="flex-1 min-h-0 overflow-y-auto thin-scrollbar"
+            onContextMenu={(e) => {
+              e.preventDefault();
+              setCtxMenu({ x: e.clientX, y: e.clientY, upc: "" });
+            }}
           >
             {shown.map((r) => (
               <Row
@@ -512,6 +545,7 @@ const TopItemsReport = ({
                 metric={metric}
                 selected={selected?.code === r.code}
                 onPick={() => setPicked(r.code)}
+                onContext={(x, y) => setCtxMenu({ x, y, upc: r.code })}
               />
             ))}
             {shown.length === 0 && (
@@ -533,6 +567,17 @@ const TopItemsReport = ({
           absentLoading={absentLoading}
         />
       </div>
+
+      {ctxMenu && (
+        <UpcContextMenu
+          x={ctxMenu.x}
+          y={ctxMenu.y}
+          upc={ctxMenu.upc}
+          allUpcs={allUpcs}
+          severityUpcs={severityUpcs}
+          onClose={() => setCtxMenu(null)}
+        />
+      )}
     </div>
   );
 };
@@ -556,12 +601,15 @@ const Row = ({
   metric,
   selected,
   onPick,
+  onContext,
 }: {
   row: ComparedTopItem;
   widest: number;
   metric: CompareMetric;
   selected: boolean;
   onPick: () => void;
+  /** Right-click, so the menu can offer this one code as well as the list. */
+  onContext: (x: number, y: number) => void;
 }) => {
   const signed = metricSigned(row, metric);
   // Ahead or behind, in the ledger's own two colours. No threshold: a
@@ -574,6 +622,11 @@ const Row = ({
   return (
     <button
       onClick={onPick}
+      onContextMenu={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        onContext(e.clientX, e.clientY);
+      }}
       // A heavier rule and more room: at border-gray-100 and py-2 the rows
       // ran together into one grey block and the bars read as a texture
       // rather than as figures.
