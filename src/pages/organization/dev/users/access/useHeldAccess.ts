@@ -73,7 +73,6 @@ export const useHeldAccess = (userid: number) => {
       );
     // `ctx` and `toast` are rebuilt every render; what the reads depend on is
     // who and where.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userid, ctx.url, ctx.token]);
 
   useEffect(reload, [reload]);

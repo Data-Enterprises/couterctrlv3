@@ -202,7 +202,6 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
       stores: source.stores,
     });
     // Runs once, on open. A duplicate is a starting point, not a binding.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // A role change after the fact has to drag the access with it, or the form

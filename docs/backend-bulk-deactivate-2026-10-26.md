@@ -211,6 +211,6 @@ behaviour. We'll fix our comment.
 
 | # | Item | Commit | Response shape as shipped | Notes |
 |---|------|--------|---------------------------|-------|
-| 1 | `POST /users/set_active` | | | |
-| 1c | Deactivation ends the session | | | separate commit if you prefer |
-| 2 | `access_mode` on `GET /users/` | | | optional |
+| 1 | `POST /users/set_active` | `c63b686` | `{ error, success, changed[], unchanged[], refused[{username, reason}], not_found[] }` — as planned | Strictly-above level. Also refuses a username shared by several accounts ("more than one account has that name"); max 500 names. Reach rule lifted into `_IN_REACH`, shared with `GET /users/`. |
+| 1c | Deactivation ends the session | `efd4cd6` | 401 `"This account is no longer active"` | Checked on every request; an impersonation token also needs its impersonator active. **Frontend has no global 401 handler yet** — a deactivated user sees failing calls, not a sign-out. |
+| 2 | `access_mode` on `GET /users/` | `59bb6cf` | `access_mode: "all" \| "selected" \| "mixed" \| null` on each user | Shown as the Access column in the dev users grid. |

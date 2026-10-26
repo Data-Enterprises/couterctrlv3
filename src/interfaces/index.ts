@@ -256,6 +256,13 @@ export interface User {
   role: number | null;
   password_change_needed: number;
   logged_in: boolean | null;
+  /**
+   * How they hold their base groups, rolled up by `GET /users/`: `all` (By
+   * group), `selected` (By store), `mixed` when their links disagree, null
+   * with no groups. `mixed` is a tell-tale for a stray legacy row — no screen
+   * creates one. Optional because only that list returns it.
+   */
+  access_mode?: GrantMode | "mixed" | null;
 }
 
 /**

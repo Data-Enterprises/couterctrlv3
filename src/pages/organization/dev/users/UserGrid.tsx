@@ -21,8 +21,6 @@ import {
   setUsersGridFilter,
 } from "../../../../features/dev/devOrganizationSlice";
 import {
-  deleteUser,
-  reactivateUser,
   getBaseGroupsAssignedToUser,
   getUserGroupPicks,
 } from "../../../../api/team";
@@ -38,7 +36,8 @@ import { roles } from "../constants";
 import SelectFilter from "../../../../components-dev/filters/SelectFilter";
 import TextFilter from "../../../../components-dev/filters/TextFilter";
 import IconButton from "../../../../components-dev/IconButton";
-import ConfirmModal from "../../../../components-dev/ConfirmModal";
+import Checkbox from "../../../../components-dev/Checkbox";
+import SetActiveModal from "./SetActiveModal";
 import SecurityTab from "./view/SecurityTab";
 import UsersExportModal from "./UsersExportModal";
 import ColFilter from "../../../../components-dev/filters/ColFilterPopover";
@@ -85,7 +84,19 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
     ctx.dispatch(setUsersGridFilter({ usernameFilter: v }));
   const setEmailFilter = (v: string) =>
     ctx.dispatch(setUsersGridFilter({ emailFilter: v }));
-  const [deletingUser, setDeletingUser] = useState<User | null>(null);
+  /**
+   * Who is ticked, by id. Kept across filter changes so narrowing the list
+   * and widening it again does not lose a selection — but only what is
+   * ticked AND on screen is ever acted on (`selectedShown`), so nobody a
+   * filter hid can ride along into a deactivation they were never shown in.
+   */
+  const [selected, setSelected] = useState<Set<number>>(new Set());
+  /** The confirmation, open: who it names and which way. One modal for one
+   *  row or fifty, so the single trash icon is as guarded as the bulk bar. */
+  const [settingActive, setSettingActive] = useState<{
+    users: User[];
+    active: 0 | 1;
+  } | null>(null);
   const [securityUser, setSecurityUser] = useState<User | null>(null);
   // Draft text for the Username/Email column-header filters — matches the
   // draft/applied split used by every other ColFilter consumer in the app
@@ -104,6 +115,11 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
   }, []);
 
   const isOutranked = (lvl: number) => lvl > ctx.userLevel;
+
+  /** Nobody may tick themselves or anyone above them — the server refuses
+   *  both, so the box is not offered rather than offered and then refused. */
+  const selectable = (u: User) =>
+    !isOutranked(u.user_level) && u.id !== ctx.userid;
 
   const renderRoleText = (role: number | null) =>
     roles.find((r) => r.value == role)?.label ?? "";
@@ -153,6 +169,52 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
     usernameFilter,
     emailFilter,
   ]);
+
+  // Active and inactive are different lists with opposite actions. A
+  // selection made in one means nothing in the other.
+  useEffect(() => {
+    setSelected(new Set());
+  }, [showInactive]);
+
+  const selectedShown = useMemo(
+    () => filtered.filter((u) => selected.has(u.id) && selectable(u)),
+    // `selectable` reads only the viewer's id and level.
+    [filtered, selected, ctx.userid, ctx.userLevel],
+  );
+  const selectableShown = useMemo(
+    () => filtered.filter(selectable),
+    [filtered, ctx.userid, ctx.userLevel],
+  );
+  const allShownSelected =
+    selectableShown.length > 0 &&
+    selectableShown.every((u) => selected.has(u.id));
+
+  const toggleOne = (id: number) =>
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+
+  /** The header box: every selectable row on screen, or none of them. Rows a
+   *  filter hides keep whatever state they had. */
+  const toggleAllShown = () =>
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (allShownSelected) selectableShown.forEach((u) => next.delete(u.id));
+      else selectableShown.forEach((u) => next.add(u.id));
+      return next;
+    });
+
+  const accessLabel = (mode: User["access_mode"]) =>
+    mode === "all"
+      ? "By group"
+      : mode === "selected"
+        ? "By store"
+        : mode === "mixed"
+          ? "Mixed"
+          : "—";
 
   const noCompanyCount = useMemo(
     () => sourceUsers.filter((u) => u.companies.length === 0).length,
@@ -288,38 +350,13 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
     }
   };
 
-  const handleDeleteConfirm = () => {
-    if (!deletingUser) return;
-    deleteUser(ctx.url, ctx.token, deletingUser.username)
-      .then((resp) => {
-        const j = resp.data;
-        if (j.error === 0) {
-          toast.success("User deleted successfully");
-          setDeletingUser(null);
-          ctx.dispatch(setRefresh(true));
-        } else {
-          toast.warn("Error deleting user: " + j.msg);
-        }
-      })
-      .catch((err: JsonError) =>
-        toast.error("Error deleting user: " + err.message),
-      );
-  };
-
-  const handleReactivate = (u: User) => {
-    reactivateUser(ctx.url, ctx.token, u.username)
-      .then((resp) => {
-        const j = resp.data;
-        if (j.error === 0) {
-          toast.success("User reactivated successfully");
-          ctx.dispatch(setRefresh(true));
-        } else {
-          toast.warn("Error reactivating user: " + j.msg);
-        }
-      })
-      .catch((err: JsonError) =>
-        toast.error("Error reactivating user: " + err.message),
-      );
+  const closeSetActive = (changed: boolean) => {
+    setSettingActive(null);
+    if (!changed) return;
+    // Whoever moved is now in the other list; the selection named them in
+    // this one.
+    setSelected(new Set());
+    ctx.dispatch(setRefresh(true));
   };
 
   return (
@@ -378,6 +415,38 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
         </button>
       </div>
 
+      {/* Only while something is ticked. It sits between the filters and the
+          grid so the count is read next to the rows it counts. */}
+      {selectedShown.length > 0 && (
+        <div className="flex items-center gap-3 mb-2 px-3 py-2 rounded-lg bg-filter_active border border-filter_active_border">
+          <span className="text-[12px] font-semibold text-brand_navy">
+            {selectedShown.length} selected
+          </span>
+          <button
+            onClick={() => setSelected(new Set())}
+            className="text-[11.5px] font-semibold text-brand_navy hover:underline"
+          >
+            Clear
+          </button>
+          <span className="flex-1" />
+          <button
+            onClick={() =>
+              setSettingActive({
+                users: selectedShown,
+                active: showInactive ? 1 : 0,
+              })
+            }
+            className={`text-[12px] font-medium px-3 py-1.5 rounded-md text-custom-white ${
+              showInactive
+                ? "bg-brand_navy hover:bg-brand_navy/85"
+                : "bg-red-600 hover:bg-red-600/85"
+            }`}
+          >
+            {showInactive ? "Reactivate" : "Deactivate"} {selectedShown.length}
+          </button>
+        </div>
+      )}
+
       {ctx.usersExportOpen && (
         <UsersExportModal
           onClose={() => ctx.dispatch(setUsersExportOpen(false))}
@@ -392,8 +461,14 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
         {/* min-w floors the columns: narrower than this the card scrolls
             rather than crushing cells into each other. Header and rows are
             separate grids, so they must share one scroller to stay aligned. */}
-        <div className="min-w-[900px] flex-1 min-h-0 flex flex-col">
-          <div className="grid grid-cols-[12%_12%_12%_22%_11%_10%_11%_7rem] px-3 py-2 bg-gray-50 text-[10px] font-semibold uppercase tracking-wide text-content flex-shrink-0">
+        <div className="min-w-[1000px] flex-1 min-h-0 flex flex-col">
+          <div className="grid grid-cols-[2rem_11%_10%_10%_19%_10%_9%_8%_9%_7rem] px-3 py-2 bg-gray-50 text-[10px] font-semibold uppercase tracking-wide text-content flex-shrink-0 items-center">
+            <Checkbox
+              checked={allShownSelected}
+              onChange={toggleAllShown}
+              disabled={selectableShown.length === 0}
+              ariaLabel="Select every user shown"
+            />
             <ColFilter
               label="Username"
               active={!!usernameFilter}
@@ -434,6 +509,9 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
             </ColFilter>
             <div>Role</div>
             <div>Level</div>
+            {/* By group or by store, rolled up by the users list itself so the
+                column costs no call per row. */}
+            <div>Access</div>
             <div>Last visited</div>
             <div></div>
           </div>
@@ -443,14 +521,33 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
               return (
                 <div
                   key={u.id}
-                  className={`grid grid-cols-[12%_12%_12%_22%_11%_10%_11%_7rem] px-3 py-2 text-[13px] items-center transition-colors [content-visibility:auto] [contain-intrinsic-size:0_40px] ${outranked ? "bg-gray-50 text-content/85" : "text-content even:bg-row_stripe hover:bg-gray-50"}`}
+                  className={`grid grid-cols-[2rem_11%_10%_10%_19%_10%_9%_8%_9%_7rem] px-3 py-2 text-[13px] items-center transition-colors [content-visibility:auto] [contain-intrinsic-size:0_40px] ${outranked ? "bg-gray-50 text-content/85" : "text-content even:bg-row_stripe hover:bg-gray-50"}`}
                 >
+                  <div className="flex items-center">
+                    {selectable(u) && (
+                      <Checkbox
+                        checked={selected.has(u.id)}
+                        onChange={() => toggleOne(u.id)}
+                        ariaLabel={`Select ${u.username}`}
+                      />
+                    )}
+                  </div>
                   <div className="truncate">{u.username}</div>
                   <div className="truncate">{u.first_name || "—"}</div>
                   <div className="truncate">{u.last_name || "—"}</div>
                   <div className="truncate">{u.email}</div>
                   <div className="truncate">{renderRoleText(u.role)}</div>
                   <div className="truncate">{renderLvlText(u.user_level)}</div>
+                  <div
+                    className="truncate"
+                    title={
+                      u.access_mode === "mixed"
+                        ? "Their base groups disagree — some by group, some by store. Editing them and saving sets one access type."
+                        : undefined
+                    }
+                  >
+                    {accessLabel(u.access_mode)}
+                  </div>
                   <div className="truncate">{formatDate(u.last_visit)}</div>
                   <div className="flex items-center justify-end gap-1">
                     {outranked ? (
@@ -461,7 +558,9 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
                       <IconButton
                         icon={ArrowPathIcon}
                         title="Reactivate"
-                        onClick={() => handleReactivate(u)}
+                        onClick={() =>
+                          setSettingActive({ users: [u], active: 1 })
+                        }
                       />
                     ) : (
                       <>
@@ -480,12 +579,21 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
                           title="Password & security"
                           onClick={() => setSecurityUser(u)}
                         />
-                        <IconButton
-                          icon={TrashIcon}
-                          title="Delete"
-                          variant="danger"
-                          onClick={() => setDeletingUser(u)}
-                        />
+                        {/* Deactivate, as it always was underneath — the old
+                            label said Delete and its confirm said "can't be
+                            undone", while the row it removed sat one filter
+                            away under Inactive with a Reactivate button.
+                            Hidden on your own row: the server refuses it. */}
+                        {u.id !== ctx.userid && (
+                          <IconButton
+                            icon={TrashIcon}
+                            title="Deactivate"
+                            variant="danger"
+                            onClick={() =>
+                              setSettingActive({ users: [u], active: 0 })
+                            }
+                          />
+                        )}
                       </>
                     )}
                   </div>
@@ -501,12 +609,11 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
         </div>
       </div>
 
-      {deletingUser && (
-        <ConfirmModal
-          title={`Delete ${deletingUser.username}?`}
-          message="This can't be undone."
-          onConfirm={handleDeleteConfirm}
-          onCancel={() => setDeletingUser(null)}
+      {settingActive && (
+        <SetActiveModal
+          users={settingActive.users}
+          active={settingActive.active}
+          onClose={closeSetActive}
         />
       )}
 
