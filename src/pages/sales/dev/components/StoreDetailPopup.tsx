@@ -9,6 +9,7 @@ import { isGroupSearch } from "../../../../features/searchSlice";
 import { getSubs, getHourly /* , getCats */ } from "../../../../api/sales";
 import SalesExportModal from "./SalesExportModal";
 import PopupTopItems from "./PopupTopItems";
+import TopItemsReport from "./TopItemsReport";
 import {
   setSubSales,
   setHourlySales,
@@ -848,6 +849,21 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
             />
           ) : null
         ) : tab === "topitems" ? (
+          /* Same rule as Sub depts above: with a counterpart chosen in
+             Stores, this tab IS the comparison. Without one it is the
+             store's own top 200, graded, exactly as it has always been --
+             the single-store tab is not touched by any of this. */
+          counterpart ? (
+            <TopItemsReport
+              openStoreName={headerStoreName}
+              openStoreId={selection.storeId}
+              compareStoreId={counterpart.storeid}
+              compareStoreName={counterpart.storeName}
+              twStart={twStart}
+              twEnd={twEnd}
+              onBack={() => dispatch(setCounterpart(null))}
+            />
+          ) : (
           <PopupTopItems
             storeId={selection.storeId}
             locations={selection.storeNumbersForId}
@@ -868,6 +884,7 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
             lyEnd={lyEnd}
             threshold={itemThreshold}
           />
+          )
         ) : tab === "subdept" ? (
           /* With a counterpart chosen in Stores, this tab IS the comparison;
              without one it is the store's own departments, graded, exactly as
