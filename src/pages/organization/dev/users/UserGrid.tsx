@@ -66,6 +66,7 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
     statusFilter,
     levelFilter,
     roleFilter,
+    accessFilter,
     searchText,
     usernameFilter,
     emailFilter,
@@ -78,6 +79,8 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
     ctx.dispatch(setUsersGridFilter({ levelFilter: v }));
   const setRoleFilter = (v: string) =>
     ctx.dispatch(setUsersGridFilter({ roleFilter: v }));
+  const setAccessFilter = (v: string) =>
+    ctx.dispatch(setUsersGridFilter({ accessFilter: v }));
   const setSearchText = (v: string) =>
     ctx.dispatch(setUsersGridFilter({ searchText: v }));
   const setUsernameFilter = (v: string) =>
@@ -140,6 +143,9 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
         ? u.user_level === Number(levelFilter)
         : true;
       const roleCheck = roleFilter ? u.role === Number(roleFilter) : true;
+      // Mixed and no-groups people match neither choice, only All: they are
+      // not By group or By store, and the column says so.
+      const accessCheck = accessFilter ? u.access_mode === accessFilter : true;
       const lowerText = searchText.toLowerCase();
       const firstName = (u.first_name ?? "").toLowerCase();
       const lastName = (u.last_name ?? "").toLowerCase();
@@ -157,7 +163,13 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
         ? (u.email ?? "").toLowerCase().includes(emailFilter.trim().toLowerCase())
         : true;
       return (
-        companyCheck && levelCheck && roleCheck && textCheck && usernameCheck && emailCheck
+        companyCheck &&
+        levelCheck &&
+        roleCheck &&
+        accessCheck &&
+        textCheck &&
+        usernameCheck &&
+        emailCheck
       );
     });
   }, [
@@ -165,6 +177,7 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
     companyFilter,
     levelFilter,
     roleFilter,
+    accessFilter,
     searchText,
     usernameFilter,
     emailFilter,
@@ -396,6 +409,16 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
           value={roleFilter}
           onChange={setRoleFilter}
           placeholder="All roles"
+          className="w-[120px] flex-shrink-0"
+        />
+        <SelectFilter
+          options={[
+            { value: "all", label: "By group" },
+            { value: "selected", label: "By store" },
+          ]}
+          value={accessFilter}
+          onChange={setAccessFilter}
+          placeholder="All access"
           className="w-[120px] flex-shrink-0"
         />
         <TextFilter

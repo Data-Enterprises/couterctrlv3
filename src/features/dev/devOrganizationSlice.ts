@@ -13,6 +13,9 @@ export interface UsersGridFilters {
   statusFilter: string;
   levelFilter: string;
   roleFilter: string;
+  /** "" for everyone, else `all` (By group) or `selected` (By store) — the
+   *  values `access_mode` carries, so the filter compares without mapping. */
+  accessFilter: string;
   searchText: string;
   usernameFilter: string;
   emailFilter: string;
@@ -23,6 +26,7 @@ const defaultUsersGridFilters: UsersGridFilters = {
   statusFilter: "",
   levelFilter: "",
   roleFilter: "",
+  accessFilter: "",
   searchText: "",
   usernameFilter: "",
   emailFilter: "",
