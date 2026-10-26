@@ -5,6 +5,7 @@ import { useToast } from "../../../../components/toasts/hooks/useToast";
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
 import CtaStrip, { type CtaTone } from "../../../../components-dev/CtaStrip";
 import MultiSelectFilter from "../../../../components-dev/filters/MultiSelectFilter";
+import SelectFilter from "../../../../components-dev/filters/SelectFilter";
 import { formatCurrency2 } from "../../../../utils";
 import {
   getItemDetail,
@@ -98,19 +99,6 @@ interface Props {
   twEnd: string;
   onBack: () => void;
 }
-
-/**
- * The ledger's own chip, in shape and in behaviour.
- *
- * These were dressed as filter-bar controls -- a navy hairline idle, the
- * filter_active tint with a ring when on -- which is right for the controls
- * in components-dev/filters and wrong beside the Crit / Watch / OK chips a
- * reader has just come from. Same geometry, same ring-and-shadow on press.
- */
-const CHIP = "flex-none rounded-full px-2.5 py-1 text-[12px] font-semibold transition-shadow";
-const CHIP_IDLE = "bg-bkg text-content hover:bg-brand_navy/5";
-const CHIP_ON =
-  "bg-filter_active text-content ring-2 ring-filter_active_border/40 shadow-sm";
 
 /** Ahead or behind. No threshold: there is no third state to grade into
  *  when the only question is which of two stores sells more of a thing. */
@@ -423,25 +411,34 @@ const TopItemsReport = ({
           />
         </div>
 
-        {(
-          [
-            ["both", `Both ${totals.both}`],
-            ["mine", `Only ${openStoreName} ${totals.onlyMine}`],
-            ["theirs", `Only ${compareStoreName} ${totals.onlyTheirs}`],
-          ] as [CompareFilter, string][]
-        ).map(([id, label]) => (
-          <button
-            key={id}
-            type="button"
-            aria-pressed={filter === id}
-            onClick={() => setFilter((f) => (f === id ? "all" : id))}
-            className={`${CHIP} max-w-[190px] truncate ${
-              filter === id ? CHIP_ON : CHIP_IDLE
-            }`}
-          >
-            {label}
-          </button>
-        ))}
+        {/*
+          Dropdowns, not pills. A pile's label carries a store name, so three
+          of them side by side ran to most of the row and truncated to
+          "Only 015 - IGA HODGENVILL…" -- the part that tells two stores
+          apart being the part that got cut. One control, four choices, and
+          the chosen one reads in full.
+
+          "" is the all-items value on purpose: SelectFilter adds its own
+          clear row only when no option already holds "", and a second way to
+          say the same thing is two answers to one question.
+        */}
+        <SelectFilter
+          options={[
+            { value: "both", label: `In both (${totals.both})` },
+            {
+              value: "mine",
+              label: `Only ${openStoreName} (${totals.onlyMine})`,
+            },
+            {
+              value: "theirs",
+              label: `Only ${compareStoreName} (${totals.onlyTheirs})`,
+            },
+          ]}
+          value={filter === "all" ? "" : filter}
+          onChange={(v) => setFilter((v || "all") as CompareFilter)}
+          placeholder={`All items (${rows.length})`}
+          className="w-[210px] flex-none"
+        />
 
         <MultiSelectFilter
           options={deptOpts}
@@ -454,22 +451,22 @@ const TopItemsReport = ({
 
         <span className="flex-1" />
 
-        {(
-          [
-            ["divergence", "Share gap"],
-            ["sales", "Sales"],
-          ] as [CompareSort, string][]
-        ).map(([id, label]) => (
-          <button
-            key={id}
-            type="button"
-            aria-pressed={sort === id}
-            onClick={() => setSort(id)}
-            className={`${CHIP} ${sort === id ? CHIP_ON : CHIP_IDLE}`}
-          >
-            {label}
-          </button>
-        ))}
+        <span className="font-mono text-[10.5px] uppercase tracking-wider text-content flex-none">
+          Sort
+        </span>
+        {/* `plain`, because this always holds a value: the active ring says
+            "narrowing a list", which a sort never does. */}
+        <SelectFilter
+          plain
+          options={[
+            { value: "", label: "Share gap" },
+            { value: "sales", label: "Sales" },
+          ]}
+          value={sort === "sales" ? "sales" : ""}
+          onChange={(v) => setSort(v === "sales" ? "sales" : "divergence")}
+          placeholder="Share gap"
+          className="w-[110px] flex-none"
+        />
       </div>
 
       {/* List and rail — the split this tab already has */}
