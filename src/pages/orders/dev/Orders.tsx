@@ -34,7 +34,7 @@ import {
   appendLine,
   applyField,
   applyUnitCost,
-  withBulkApplied,
+  stageUnitCost,
   blankLine,
   buildDocs,
   buildPayload,
@@ -109,15 +109,68 @@ const Orders = () => {
    * search reloads, because the lines it was built from are gone.
    */
   const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState<OrderDraft | null>(null);
+  /**
+   * A draft per order, and which one is open.
+   *
+   * It used to be one draft, because a save carries one order. Fix cost
+   * changes every order the filters hit, so those changes have to live
+   * somewhere until they are submitted — and switching to another order must
+   * not throw away the one you just changed. Each order keeps its own draft
+   * here; the edit panel shows whichever is open.
+   */
+  const [drafts, setDrafts] = useState<Record<string, OrderDraft>>({});
+  /** What the last Submit sent, for the receipt — it can be many orders. */
+  const [submittedCounts, setSubmittedCounts] = useState({
+    orders: 0,
+    edited: 0,
+    added: 0,
+  });
+  const [openKey, setOpenKey] = useState<string | null>(null);
+  const draft = openKey ? (drafts[openKey] ?? null) : null;
+
+  /**
+   * The open order's draft, with the signature the single-draft setter had,
+   * so every handler that edits a line is unchanged.
+   *
+   * A value opens that order (adding it if it is new); a function edits the
+   * open one; null drops them all, which is what a reloaded search needs.
+   */
+  const setDraft = (
+    next:
+      | OrderDraft
+      | null
+      | ((d: OrderDraft | null) => OrderDraft | null),
+  ) => {
+    if (next === null) {
+      setDrafts({});
+      setOpenKey(null);
+      return;
+    }
+    if (typeof next === "function") {
+      setDrafts((ds) => {
+        if (!openKey) return ds;
+        const updated = next(ds[openKey] ?? null);
+        return updated ? { ...ds, [openKey]: updated } : ds;
+      });
+      return;
+    }
+    setDrafts((ds) => ({ ...ds, [next.doc.key]: next }));
+    setOpenKey(next.doc.key);
+  };
+
+  /** Every order with something to send, open or not. */
+  const changedDrafts = Object.values(drafts).filter(
+    (d) => changedLines(d).length > 0,
+  );
+  const changedKeys = new Set(changedDrafts.map((d) => d.doc.key));
+  const [pickStore, setPickStore] = useState("");
+  const [pickDate, setPickDate] = useState("");
+  const [pickType, setPickType] = useState("");
   const [editSearch, setEditSearch] = useState<EditSearch>({
     code: "",
     desc: "",
     onlyChanged: false,
   });
-  const [pickStore, setPickStore] = useState("");
-  const [pickDate, setPickDate] = useState("");
-  const [pickType, setPickType] = useState("");
   /**
    * The line being filled in, which is not on the order yet.
    *
@@ -248,6 +301,7 @@ const Orders = () => {
   /** The orders in the result, for the picker. No call: see buildDocs. */
   const docs = useMemo(() => buildDocs(ctx.allOrders), [ctx.allOrders]);
 
+
   /**
    * The vendors already on this store's orders.
    *
@@ -271,13 +325,16 @@ const Orders = () => {
   }, [ctx.allOrders, draft]);
 
   const dirty =
-    draft !== null &&
-    (changedLines(draft).length > 0 || pending !== null) &&
-    receipt === null;
+    (changedDrafts.length > 0 || pending !== null) && receipt === null;
 
   const handlePick = (doc: OrderDoc) => {
-    if (doc.key === draft?.doc.key) return;
-    setDraft(startDraft(doc, ctx.allOrders));
+    if (doc.key === openKey) return;
+    // An order that already has changes — from an earlier visit or from Fix
+    // cost — opens with them rather than being started over.
+    setDrafts((ds) =>
+      ds[doc.key] ? ds : { ...ds, [doc.key]: startDraft(doc, ctx.allOrders) },
+    );
+    setOpenKey(doc.key);
     setPending(null);
     setReceipt(null);
     setEditSearch({ code: "", desc: "", onlyChanged: false });
@@ -427,27 +484,70 @@ const Orders = () => {
    * nothing is refetched afterwards — `all_orders` returns the old figures
    * until the import runs, which would read as the edit being thrown away.
    */
-  const handleSubmit = () => {
-    if (!draft || submitting || receipt) return;
+  const handleSubmit = async () => {
+    if (submitting || receipt) return;
     if (pending) {
       toast.warn("Add the line you are filling in, or discard it, first.");
       return;
     }
-    const payload = buildPayload(draft);
-    setSubmitting(true);
+    // The open order counts even untouched, so pressing Submit on it does
+    // what it always did; staged orders count only when they changed.
+    const toSend = changedDrafts.length
+      ? changedDrafts
+      : draft
+        ? [draft]
+        : [];
+    if (!toSend.length) return;
 
-    updateOrderFile(ctx.url, ctx.token, payload.storeid, payload.lines)
-      .then((resp) => {
+    setSubmitting(true);
+    let last: UpdateFileResp | null = null;
+    const failed: string[] = [];
+
+    // One order at a time: each is its own file for the import, and a burst
+    // of them is harder to read back than sending them by hand.
+    for (const d of toSend) {
+      const payload = buildPayload(d);
+      try {
+        const resp = await updateOrderFile(
+          ctx.url,
+          ctx.token,
+          payload.storeid,
+          payload.lines,
+        );
         const j: UpdateFileResp = resp.data;
         if (j.error !== 0) {
-          toast.warn(j.msg);
-          return;
+          failed.push(`${d.doc.storenumber} order ${d.doc.order_id}: ${j.msg}`);
+          continue;
         }
-        setReceipt(j);
-        toast.success("Order update submitted for import.");
-      })
-      .catch((err: JsonError) => toast.error(err.message))
-      .finally(() => setSubmitting(false));
+        last = j;
+        // Sent — so it is no longer a change waiting to go.
+        setDrafts((ds) => {
+          const { [d.doc.key]: _sent, ...rest } = ds;
+          return d.doc.key === openKey ? ds : rest;
+        });
+      } catch (err) {
+        failed.push(
+          `${d.doc.storenumber} order ${d.doc.order_id}: ${(err as JsonError).message}`,
+        );
+      }
+    }
+
+    setSubmitting(false);
+    setSubmittedCounts({
+      orders: toSend.length - failed.length,
+      edited: toSend.reduce((n, d) => n + editedLines(d).length, 0),
+      added: toSend.reduce((n, d) => n + addedLines(d).length, 0),
+    });
+    if (last) setReceipt(last);
+    if (failed.length) {
+      toast.warn(`Not sent — ${failed.join("; ")}`);
+    } else {
+      toast.success(
+        toSend.length === 1
+          ? "Order update submitted for import."
+          : `${toSend.length} order updates submitted for import.`,
+      );
+    }
   };
 
   const scopeLabel = isGroupSearch(ctx.type)
@@ -474,17 +574,13 @@ const Orders = () => {
 
   return (
     <div className="h-[calc(100vh-3rem)] overflow-hidden p-4 flex gap-3">
-      {fixCostOpen && canEdit && (
+      {/* Edit mode only: it stages into drafts, and Browse has none. */}
+      {fixCostOpen && editing && canEdit && (
         <FixCostModal
-          rows={gridRows}
+          scope={ctx.allOrders}
           all={ctx.allOrders}
-          url={ctx.url}
-          token={ctx.token}
-          // The saved orders' new costs go straight onto the lines already
-          // held, so the grid, the flags and the totals move now rather than
-          // after the import has run.
-          onApplied={(saved) =>
-            ctx.dispatch(setAllOrders(withBulkApplied(ctx.allOrders, saved)))
+          onStage={(itemRows, unit) =>
+            setDrafts((ds) => stageUnitCost(ds, itemRows, ctx.allOrders, unit))
           }
           onClose={() => setFixCostOpen(false)}
         />
@@ -509,8 +605,9 @@ const Orders = () => {
         <>
           <OrderPickerPanel
             docs={docs}
-            openKey={draft?.doc.key ?? null}
+            openKey={openKey}
             onPick={handlePick}
+            changedKeys={changedKeys}
             storeNumber={pickStore}
             orderDate={pickDate}
             orderType={pickType}
@@ -523,7 +620,9 @@ const Orders = () => {
               setPickType("");
             }}
             onOpenSearch={() => setSearchModalOpen(true)}
-            blocked={dirty}
+            // Only a half-filled new line blocks switching now: every other
+            // change stays with its own order's draft.
+            blocked={pending !== null}
             startDate={ctx.startDate}
             endDate={ctx.endDate}
             scopeLabel={scopeLabel}
@@ -559,6 +658,8 @@ const Orders = () => {
               subDepts={draft ? (subDeptsByStore[draft.doc.storeid] ?? []) : []}
               loadingSubDepts={loadingSubDepts}
               onSubmit={handleSubmit}
+              onFixCost={() => setFixCostOpen(true)}
+              stagedCount={changedDrafts.length}
               submitting={submitting}
               submitted={receipt !== null}
               onLeaveEdit={() => {
@@ -575,13 +676,15 @@ const Orders = () => {
 
             <SubmitReceipt
               receipt={receipt}
-              editedCount={draft ? editedLines(draft).length : 0}
-              addedCount={draft ? addedLines(draft).length : 0}
+              orderCount={submittedCounts.orders}
+              editedCount={submittedCounts.edited}
+              addedCount={submittedCounts.added}
               onClose={() => setReceipt(null)}
               onEditAgain={() => {
                 setReceipt(null);
                 setPending(null);
                 if (draft) setDraft(startDraft(draft.doc, ctx.allOrders));
+                setSubmittedCounts({ orders: 0, edited: 0, added: 0 });
               }}
             />
           </div>
@@ -611,7 +714,6 @@ const Orders = () => {
         onSort={handleSort}
         loading={ctx.loadingAllOrders}
         onExport={() => ctx.dispatch(setOrdersExportModalOpen(true))}
-        onFixCost={() => setFixCostOpen(true)}
         onEnterEdit={() => setEditing(true)}
         canEdit={canEdit}
       />

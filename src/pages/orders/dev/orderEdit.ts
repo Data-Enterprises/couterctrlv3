@@ -602,41 +602,18 @@ export const canEditOrders = (
 
 /* ── one cost, every store ─────────────────────────────────────────────── */
 
-/** One order the bulk fix will rewrite, and what it will become. */
-export type BulkTarget = {
+/** One order Fix cost would change, for the modal's per-store list. */
+export type StagePreview = {
   doc: OrderDoc;
-  /** The lines of this order carrying the item — usually one. */
+  /** The item's lines on this order — usually one. */
   lineNumbers: number[];
-  /** The typed unit cost — each line derives its own case cost from it. */
-  unit: number;
   casesize: number;
   /** What the case cost becomes at the typed unit cost. */
   newCaseCost: number;
-  /** The whole file, ready for `updateOrderFile`. */
-  payload: ReturnType<typeof buildPayload>;
 };
 
-/**
- * The orders a bulk unit-cost fix touches, and the file each one becomes.
- *
- * Drives the same per-order draft a single edit uses rather than a wider one:
- * one `startDraft` per order, `applyUnitCost` on the item's lines, and the
- * same `buildPayload`. That is what keeps a bulk save byte-for-byte what a
- * person editing each order by hand would have sent — including the whole
- * file, and `edited` on exactly the rows that changed.
- *
- * `rows` is what survives the configuration panel. `all` is every line the
- * search returned, because a file has to carry the order's other lines too,
- * and those were never in `rows` unless the filters happened to keep them.
- *
- * Grouped on `docKey`, which carries the storenumber — two locations sharing
- * a storeid are two orders and two files.
- */
-export const bulkTargets = (
-  rows: AllOrder[],
-  all: AllOrder[],
-  unit: number,
-): BulkTarget[] => {
+/** The item's lines, grouped by the order they belong to. */
+const linesByDoc = (rows: AllOrder[]) => {
   const byDoc = new Map<string, number[]>();
   for (const r of rows) {
     const key = docKey(r);
@@ -644,57 +621,65 @@ export const bulkTargets = (
     list.push(r.line_number);
     byDoc.set(key, list);
   }
-
-  const docs = buildDocs(all);
-  const targets: BulkTarget[] = [];
-
-  for (const doc of docs) {
-    const lineNumbers = byDoc.get(doc.key);
-    if (!lineNumbers) continue;
-
-    let draft = startDraft(doc, all);
-    for (const ln of lineNumbers) draft = applyUnitCost(draft, ln, unit);
-
-    const first = draft.lines.find((l) => l.line_number === lineNumbers[0]);
-    if (!first) continue;
-
-    targets.push({
-      doc,
-      lineNumbers,
-      unit,
-      casesize: first.casesize,
-      newCaseCost: first.base_cost,
-      payload: buildPayload(draft),
-    });
-  }
-  return targets;
+  return byDoc;
 };
 
 /**
- * The search's lines with the saved orders' new costs on them.
+ * What Fix cost would do, per order, before it does anything.
  *
- * The single-edit save deliberately does not refetch: `all_orders` keeps
- * returning the old figures until the import runs, which reads as the edit
- * having been thrown away. A bulk fix has the same problem, so the saved
- * values are put straight onto the lines already held — the grid, the flags
- * and the totals all move, and only the orders that actually saved.
+ * In unit cost because case size is per store: one store's case of 12 and
+ * another's case of 24 are the same item at the same unit price and two
+ * different case costs. This is the list that shows it.
+ *
+ * Grouped on `docKey`, which carries the storenumber — two locations sharing
+ * a storeid are two orders.
  */
-export const withBulkApplied = (
+export const stagePreview = (
+  rows: AllOrder[],
   all: AllOrder[],
-  saved: BulkTarget[],
-): AllOrder[] => {
-  const byDoc = new Map(saved.map((s) => [s.doc.key, s]));
-
-  return all.map((o) => {
-    const target = byDoc.get(docKey(o));
-    if (!target || !target.lineNumbers.includes(o.line_number)) return o;
-    // From the unit, per line — the same order can carry the item twice at
-    // two case sizes, and each takes the case cost its own size implies.
-    const { original: _o, ...fixed } = recompute({
-      ...o,
-      base_cost: target.unit * perCase(o),
-      original: null,
+  unit: number,
+): StagePreview[] => {
+  const byDoc = linesByDoc(rows);
+  return buildDocs(all)
+    .filter((doc) => byDoc.has(doc.key))
+    .map((doc) => {
+      const lineNumbers = byDoc.get(doc.key)!;
+      const first = rows.find(
+        (r) => docKey(r) === doc.key && r.line_number === lineNumbers[0],
+      )!;
+      return {
+        doc,
+        lineNumbers,
+        casesize: first.casesize,
+        newCaseCost: unit * perCase(first),
+      };
     });
-    return fixed as AllOrder;
-  });
+};
+
+/**
+ * The drafts with the unit cost staged into every order the item is on.
+ *
+ * Frontend only — nothing is sent. Each order takes the change into its own
+ * draft, on top of anything already there: an order you had opened and
+ * edited keeps those edits, and one never opened is started fresh. The
+ * changes go out when Submit is pressed, through the same `buildPayload` a
+ * hand edit uses, so a staged order is exactly what editing it by hand would
+ * have sent.
+ */
+export const stageUnitCost = (
+  drafts: Record<string, OrderDraft>,
+  rows: AllOrder[],
+  all: AllOrder[],
+  unit: number,
+): Record<string, OrderDraft> => {
+  const byDoc = linesByDoc(rows);
+  const next = { ...drafts };
+  for (const doc of buildDocs(all)) {
+    const lineNumbers = byDoc.get(doc.key);
+    if (!lineNumbers) continue;
+    let draft = next[doc.key] ?? startDraft(doc, all);
+    for (const ln of lineNumbers) draft = applyUnitCost(draft, ln, unit);
+    next[doc.key] = draft;
+  }
+  return next;
 };

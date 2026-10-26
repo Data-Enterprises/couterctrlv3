@@ -1,146 +1,95 @@
 import { useMemo, useState } from "react";
-import { XMarkIcon } from "@heroicons/react/16/solid";
-import { updateOrderFile } from "../../../../api/orders";
+import { MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/16/solid";
 import { formatCurrency2 } from "../../../../utils";
-import type { AllOrder, JsonError, UpdateFileResp } from "../../../../interfaces";
-import { bulkTargets, unitCostOf, type BulkTarget } from "../orderEdit";
+import type { AllOrder } from "../../../../interfaces";
+import { stagePreview, unitCostOf } from "../orderEdit";
 
 interface Props {
-  /** What survives the configuration panel — the scope of the fix. */
-  rows: AllOrder[];
-  /** Every line the search returned; a file carries the whole order. */
+  /** Every line loaded — the item is searched across all of them. */
+  scope: AllOrder[];
+  /** Every line the search returned; a draft holds the whole order. */
   all: AllOrder[];
-  url: string;
-  token: string;
-  /** The orders that saved, so the page can show their new cost. */
-  onApplied: (saved: BulkTarget[]) => void;
+  /** Stage the cost into the drafts. Nothing is sent from here. */
+  onStage: (itemRows: AllOrder[], unit: number) => void;
   onClose: () => void;
 }
 
-type Outcome = { target: BulkTarget; ok: boolean; msg?: string };
-
 /**
- * One unit cost, written to every order the configuration panel left.
+ * Find an item, set its unit cost on every loaded order that carries it.
  *
- * Ben's question was whether an owner can set the cost on one UPC for every
- * store that has it on its report. The panel already answers "which UPC" and
- * "which stores", so this asks only the number.
+ * **Changes the screen and nothing else.** It stages the cost into each
+ * order's draft and closes; the orders go out when Submit is pressed, like any
+ * other edit. A modal that wrote order files was a bigger action than it
+ * looked, and the Submit button is where that decision already lives.
  *
- * In unit cost, not case cost, because case size is per store: one store's
- * case of 12 and another's case of 24 are the same item at the same unit
- * price and two different case costs. The per-store list shows the case cost
- * each will get before anything is sent, because that is the number that
- * lands in the file and the only place a wrong case size would show.
+ * Opens only in Edit mode, which is where drafts exist to stage into.
  *
- * One item at a time. Every line here gets the same unit cost, so a scope
- * holding two different products would give both the same price — the modal
- * refuses that rather than doing it.
+ * The item is chosen here by search, and the orders follow from it: every
+ * loaded order carrying that item is listed before anything is staged, so you
+ * see exactly which orders the fix will touch.
  *
- * Each order is its own file and its own `updateOrderFile` call, sent one
- * after another. A refusal from one store does not undo the others: eleven
- * stores at the right cost beats fourteen at the old one. Retry sends only
- * what did not land.
+ * In unit cost because case size is per store: a case of 12 and a case of 24
+ * are the same item at the same unit price and two different case costs. The
+ * per-store list shows the case cost each order will carry before it is
+ * staged, since that is the number that lands in the file.
  */
-const FixCostModal = ({
-  rows: liveRows,
-  all: liveAll,
-  url,
-  token,
-  onApplied,
-  onClose,
-}: Props) => {
-  /**
-   * The scope as it was when the modal opened, held still.
-   *
-   * Saving changes the lines, and the lines decide what the panel lets
-   * through — fix every "Missing cost" line and none of them are missing a
-   * cost any more, so the filtered set the modal was opened on empties out
-   * from under it. The modal works on what it was asked about.
-   */
-  const [rows] = useState(liveRows);
-  const [all] = useState(liveAll);
-
+const FixCostModal = ({ scope, all, onStage, onClose }: Props) => {
+  /** Every item in scope, with how many orders carry it. */
   const items = useMemo(() => {
-    const m = new Map<string, string>();
-    for (const r of rows) m.set(String(r.product_code), r.description);
-    return m;
-  }, [rows]);
+    const m = new Map<string, { desc: string; orders: Set<string> }>();
+    for (const r of scope) {
+      const code = String(r.product_code);
+      const e = m.get(code) ?? { desc: r.description, orders: new Set() };
+      e.orders.add(`${r.storeid}|${r.storenumber}|${r.order_id}|${r.order_date}`);
+      m.set(code, e);
+    }
+    return [...m.entries()]
+      .map(([code, e]) => ({ code, desc: e.desc, orders: e.orders.size }))
+      .sort((a, b) => a.desc.localeCompare(b.desc));
+  }, [scope]);
 
-  const oneItem = items.size === 1;
-  const [code, desc] = oneItem ? [...items.entries()][0] : ["", ""];
+  // A scope that is already one item opens on it.
+  const [code, setCode] = useState(items.length === 1 ? items[0].code : "");
+  const [query, setQuery] = useState("");
+
+  const shown = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return items;
+    return items.filter(
+      (i) => i.code.toLowerCase().includes(q) || i.desc.toLowerCase().includes(q),
+    );
+  }, [items, query]);
+
+  const itemRows = useMemo(
+    () => scope.filter((r) => String(r.product_code) === code),
+    [scope, code],
+  );
+  const chosen = items.find((i) => i.code === code) ?? null;
 
   // Start on the cost already there when the stores agree on one, so a
   // correction is an edit rather than a retype.
   const current = useMemo(() => {
-    const costs = new Set(rows.filter((r) => r.base_cost).map((r) => unitCostOf(r).toFixed(4)));
-    return costs.size === 1 ? [...costs][0] : "";
-  }, [rows]);
-
-  const [unitText, setUnitText] = useState(current);
-  const unit = Number(unitText);
-  const valid = unitText.trim() !== "" && Number.isFinite(unit) && unit >= 0;
-
-  const targets = useMemo(
-    () => (oneItem && valid ? bulkTargets(rows, all, unit) : []),
-    [oneItem, valid, rows, all, unit],
-  );
-
-  const stores = new Set(targets.map((t) => t.doc.storenumber)).size;
-
-  const [running, setRunning] = useState(false);
-  const [done, setDone] = useState(0);
-  const [outcomes, setOutcomes] = useState<Outcome[] | null>(null);
-
-  /**
-   * Sent one at a time rather than all at once.
-   *
-   * Every call drops a file for the import to pick up, and a burst of them is
-   * the one thing that would make this harder to read back than doing it by
-   * hand. One at a time also means the count in the footer is true.
-   */
-  const run = async (list: BulkTarget[]) => {
-    setRunning(true);
-    setDone(0);
-    const results: Outcome[] = [];
-    for (const target of list) {
-      try {
-        const resp = await updateOrderFile(
-          url,
-          token,
-          target.payload.storeid,
-          target.payload.lines,
-        );
-        const j: UpdateFileResp = resp.data;
-        results.push(
-          j.error === 0
-            ? { target, ok: true }
-            : { target, ok: false, msg: j.msg },
-        );
-      } catch (err) {
-        results.push({ target, ok: false, msg: (err as JsonError).message });
-      }
-      setDone((n) => n + 1);
-    }
-    setRunning(false);
-
-    // A retry only sent the failures, so the earlier successes carry over.
-    const previous = (outcomes ?? []).filter(
-      (o) => o.ok && !list.some((t) => t.doc.key === o.target.doc.key),
+    const costs = new Set(
+      itemRows.filter((r) => r.base_cost).map((r) => unitCostOf(r).toFixed(2)),
     );
-    const merged = [...previous, ...results];
-    setOutcomes(merged);
+    return costs.size === 1 ? [...costs][0] : "";
+  }, [itemRows]);
 
-    const saved = results.filter((r) => r.ok).map((r) => r.target);
-    if (saved.length) onApplied(saved);
-  };
+  const [unitText, setUnitText] = useState<string | null>(null);
+  const shownUnit = unitText ?? current;
+  const unit = Number(shownUnit);
+  const valid = shownUnit.trim() !== "" && Number.isFinite(unit) && unit >= 0;
 
-  const saved = outcomes?.filter((o) => o.ok) ?? [];
-  const failed = outcomes?.filter((o) => !o.ok) ?? [];
+  const preview = useMemo(
+    () => (chosen && valid ? stagePreview(itemRows, all, unit) : []),
+    [chosen, valid, itemRows, all, unit],
+  );
+  const stores = new Set(preview.map((p) => p.doc.storenumber)).size;
 
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-      onClick={running ? undefined : onClose}
+      onClick={onClose}
     >
       <div
         className="flex max-h-[88vh] w-[560px] max-w-[94vw] flex-col overflow-hidden rounded-xl bg-custom-white shadow-xl"
@@ -148,87 +97,93 @@ const FixCostModal = ({
       >
         <div className="flex items-center gap-2 bg-brand_navy px-4 py-2.5 flex-shrink-0">
           <span className="flex-1 text-[13px] font-medium text-custom-white">
-            {outcomes
-              ? `Fix cost — ${saved.length} of ${saved.length + failed.length} saved`
-              : "Fix cost"}
+            Fix cost
           </span>
-          {!running && (
-            <button
-              onClick={onClose}
-              aria-label="Close"
-              className="text-custom-white/85 transition-colors hover:text-custom-white"
-            >
-              <XMarkIcon className="h-4 w-4" />
-            </button>
-          )}
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            className="text-custom-white/85 transition-colors hover:text-custom-white"
+          >
+            <XMarkIcon className="h-4 w-4" />
+          </button>
         </div>
 
         <div className="flex-1 overflow-y-auto thin-scrollbar p-4 flex flex-col gap-4">
-          {outcomes ? (
-            <>
-              {saved.length > 0 && (
-                <Section title="Saved">
-                  {saved.map(({ target }) => (
-                    <StoreRow
-                      key={target.doc.key}
-                      target={target}
-                      right={<Pill ok>saved</Pill>}
-                    />
-                  ))}
-                </Section>
-              )}
-              {failed.length > 0 && (
-                <Section title="Not saved" bad>
-                  {failed.map(({ target, msg }) => (
-                    <StoreRow
-                      key={target.doc.key}
-                      target={target}
-                      note={msg}
-                      right={<Pill>failed</Pill>}
-                    />
-                  ))}
-                </Section>
-              )}
-              {failed.length > 0 && saved.length > 0 && (
-                <p className="text-[12px] text-content/85">
-                  The {saved.length} saved are written and will not be sent
-                  again. Retry sends only the {failed.length}.
-                </p>
-              )}
-              {saved.length > 0 && (
-                <p className="text-[12px] text-content/85">
-                  The grid shows the new cost now. The order files are
-                  submitted for import, and the next fetch of these orders
-                  will match once the import has run.
-                </p>
-              )}
-            </>
-          ) : !oneItem ? (
-            <div className="rounded-lg border border-severity_watch_text/40 bg-severity_watch_bg px-3 py-2.5 text-[12.5px] leading-relaxed text-severity_watch_text">
-              <b className="font-semibold">Narrow Items to one UPC first.</b>{" "}
-              The grid holds {items.size.toLocaleString()} different items, and
-              this gives every line the same unit cost — doing that across
-              different products would price them all alike.
+          {!chosen ? (
+            <div className="flex flex-col gap-2">
+              <span className="text-[10px] font-semibold uppercase tracking-wide text-content/85">
+                Item
+              </span>
+              <div className="flex items-center gap-1.5 rounded border border-brand_navy/75 bg-custom-white px-2">
+                <MagnifyingGlassIcon className="h-3.5 w-3.5 flex-shrink-0 text-content/85" />
+                <input
+                  autoFocus
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Search description or UPC"
+                  className="min-w-0 flex-1 border-0 bg-transparent py-1.5 text-[13px] text-content placeholder:text-content/55"
+                  style={{ outline: "none", boxShadow: "none" }}
+                />
+              </div>
+              <div className="flex max-h-[320px] flex-col overflow-y-auto thin-scrollbar rounded-lg border border-gray-200">
+                {shown.length === 0 ? (
+                  <span className="px-3 py-3 text-[12px] text-content/85">
+                    No loaded order carries &ldquo;{query.trim()}&rdquo;.
+                  </span>
+                ) : (
+                  shown.map((i) => (
+                    <button
+                      key={i.code}
+                      onClick={() => setCode(i.code)}
+                      className="flex items-baseline gap-3 border-t border-gray-100 px-3 py-2 text-left first:border-t-0 hover:bg-row_selected"
+                    >
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-[12.5px] font-medium text-content">
+                          {i.desc}
+                        </span>
+                        <span className="block text-[11px] tabular-nums text-content/85">
+                          {i.code}
+                        </span>
+                      </span>
+                      <span className="flex-shrink-0 text-[11px] tabular-nums text-content/85">
+                        {i.orders} order{i.orders === 1 ? "" : "s"}
+                      </span>
+                    </button>
+                  ))
+                )}
+              </div>
+              <span className="text-[11.5px] text-content/85">
+                {items.length.toLocaleString()} items across every loaded
+                order.
+              </span>
             </div>
           ) : (
             <>
               <div className="rounded-lg border border-gray-200 px-3 py-2.5">
-                <div className="mb-1 font-display text-[12.5px] font-bold text-content">
-                  What this covers
-                </div>
-                <p className="text-[12.5px] leading-relaxed text-content">
-                  <b className="font-semibold">{desc}</b>{" "}
-                  <span className="text-content/85">· {code}</span>
-                  <br />
-                  {rows.length.toLocaleString()} line{rows.length === 1 ? "" : "s"}{" "}
-                  across {stores.toLocaleString()} store{stores === 1 ? "" : "s"} and{" "}
-                  {targets.length.toLocaleString()} order
-                  {targets.length === 1 ? "" : "s"}
-                  <br />
-                  <span className="text-content/85">
-                    Everything surviving the configuration panel.
+                <div className="flex items-baseline gap-2">
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate font-display text-[13px] font-bold text-content">
+                      {chosen.desc}
+                    </span>
+                    <span className="block text-[11px] tabular-nums text-content/85">
+                      {chosen.code} · {itemRows.length} line
+                      {itemRows.length === 1 ? "" : "s"} across {stores} store
+                      {stores === 1 ? "" : "s"} and {preview.length} order
+                      {preview.length === 1 ? "" : "s"}
+                    </span>
                   </span>
-                </p>
+                  {items.length > 1 && (
+                    <button
+                      onClick={() => {
+                        setCode("");
+                        setUnitText(null);
+                      }}
+                      className="flex-shrink-0 text-[11.5px] font-semibold text-brand_navy underline underline-offset-2"
+                    >
+                      Change
+                    </button>
+                  )}
+                </div>
               </div>
 
               <div>
@@ -241,33 +196,44 @@ const FixCostModal = ({
                     autoFocus
                     type="number"
                     min={0}
-                    step={0.0001}
-                    value={unitText}
+                    step={0.01}
+                    value={shownUnit}
                     onChange={(e) => setUnitText(e.target.value)}
-                    disabled={running}
                     className="min-w-0 flex-1 border-0 bg-transparent py-1.5 text-[13px] tabular-nums text-content"
                     style={{ outline: "none", boxShadow: "none" }}
                   />
                 </div>
               </div>
 
-              {targets.length > 0 && (
-                <Section title="Per store">
-                  {targets.map((t) => (
-                    <StoreRow
-                      key={t.doc.key}
-                      target={t}
-                      right={
-                        <span className="tabular-nums">
-                          <span className="text-content/85">
-                            case of {t.casesize > 0 ? t.casesize : "—"} →{" "}
-                          </span>
-                          <b className="font-semibold">{formatCurrency2(t.newCaseCost)}</b>
+              {preview.length > 0 && (
+                <div className="rounded-lg border border-gray-200 px-3 py-2">
+                  <div className="mb-1 font-display text-[12.5px] font-bold text-content">
+                    Per store
+                  </div>
+                  {preview.map((p) => (
+                    <div
+                      key={p.doc.key}
+                      className="flex items-baseline gap-3 border-t border-gray-100 py-1.5 text-[12px] first:border-t-0"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate text-content">
+                          {p.doc.storenumber} — {p.doc.storename}
+                        </div>
+                        <div className="text-[10.5px] text-content/85">
+                          Order {p.doc.order_id}
+                        </div>
+                      </div>
+                      <div className="flex-shrink-0 text-right tabular-nums">
+                        <span className="text-content/85">
+                          case of {p.casesize > 0 ? p.casesize : "—"} →{" "}
                         </span>
-                      }
-                    />
+                        <b className="font-semibold text-content">
+                          {formatCurrency2(p.newCaseCost)}
+                        </b>
+                      </div>
+                    </div>
                   ))}
-                </Section>
+                </div>
               )}
             </>
           )}
@@ -275,105 +241,30 @@ const FixCostModal = ({
 
         <div className="flex items-center gap-3 border-t border-gray-100 px-4 py-2.5 flex-shrink-0">
           <span className="flex-1 text-[12px] text-content/85">
-            {running
-              ? `Saving ${done} of ${outcomes ? failed.length : targets.length}…`
-              : !outcomes && targets.length > 0
-                ? `${targets.length} order${targets.length === 1 ? "" : "s"} will be saved, one call each.`
-                : ""}
+            {chosen && preview.length > 0
+              ? "Staged into each order — sent when you Submit."
+              : ""}
           </span>
-
-          {!running && (
-            <button
-              onClick={onClose}
-              className="rounded border border-content/20 px-3 py-1 text-[12px] font-medium text-content/85 transition-colors hover:border-content/35 hover:text-content"
-            >
-              {outcomes ? "Close" : "Cancel"}
-            </button>
-          )}
-
-          {!outcomes ? (
-            <button
-              onClick={() => run(targets)}
-              disabled={running || targets.length === 0}
-              className="rounded bg-brand_navy px-3 py-1 text-[12px] font-semibold text-custom-white transition-colors hover:bg-brand_navy_hover disabled:opacity-50"
-            >
-              Apply to {targets.length}
-            </button>
-          ) : (
-            failed.length > 0 && (
-              <button
-                onClick={() => run(failed.map((f) => f.target))}
-                disabled={running}
-                className="rounded bg-brand_navy px-3 py-1 text-[12px] font-semibold text-custom-white transition-colors hover:bg-brand_navy_hover disabled:opacity-50"
-              >
-                Retry {failed.length}
-              </button>
-            )
-          )}
+          <button
+            onClick={onClose}
+            className="rounded border border-content/20 px-3 py-1 text-[12px] font-medium text-content/85 transition-colors hover:border-content/35 hover:text-content"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => {
+              onStage(itemRows, unit);
+              onClose();
+            }}
+            disabled={!chosen || !valid || preview.length === 0}
+            className="rounded bg-brand_navy px-3 py-1 text-[12px] font-semibold text-custom-white transition-colors hover:bg-brand_navy_hover disabled:opacity-50"
+          >
+            Stage on {preview.length || ""} order{preview.length === 1 ? "" : "s"}
+          </button>
         </div>
       </div>
     </div>
   );
 };
-
-const Section = ({
-  title,
-  bad = false,
-  children,
-}: {
-  title: string;
-  bad?: boolean;
-  children: React.ReactNode;
-}) => (
-  <div
-    className={`rounded-lg border px-3 py-2 ${
-      bad ? "border-severity_critical_text/50" : "border-gray-200"
-    }`}
-  >
-    <div
-      className={`mb-1 font-display text-[12.5px] font-bold ${
-        bad ? "text-severity_critical_text" : "text-content"
-      }`}
-    >
-      {title}
-    </div>
-    {children}
-  </div>
-);
-
-const StoreRow = ({
-  target,
-  right,
-  note,
-}: {
-  target: BulkTarget;
-  right: React.ReactNode;
-  note?: string;
-}) => (
-  <div className="flex items-baseline gap-3 border-t border-gray-100 py-1.5 text-[12px] first:border-t-0">
-    <div className="min-w-0 flex-1">
-      <div className="truncate text-content">
-        {target.doc.storenumber} — {target.doc.storename}
-      </div>
-      <div className="text-[10.5px] text-content/85">
-        Order {target.doc.order_id}
-        {note ? ` · ${note}` : ""}
-      </div>
-    </div>
-    <div className="flex-shrink-0 text-right">{right}</div>
-  </div>
-);
-
-const Pill = ({ ok = false, children }: { ok?: boolean; children: React.ReactNode }) => (
-  <span
-    className={`rounded px-1.5 py-0.5 text-[10.5px] font-semibold ${
-      ok
-        ? "bg-severity_healthy_bg text-severity_healthy_text"
-        : "bg-severity_critical_bg text-severity_critical_text"
-    }`}
-  >
-    {children}
-  </span>
-);
 
 export default FixCostModal;

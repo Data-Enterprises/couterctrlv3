@@ -68,6 +68,13 @@ interface Props {
   subDepts: SubDeptOption[];
   loadingSubDepts: boolean;
   onSubmit: () => void;
+  /** Opens Fix cost, which stages a unit cost into every order it covers. */
+  onFixCost: () => void;
+  /**
+   * How many orders hold changes waiting to be sent — the open one and any
+   * Fix cost staged without opening. Submit sends all of them.
+   */
+  stagedCount: number;
   submitting: boolean;
   /** Set once the file is in the bucket: the draft goes read-only. */
   submitted: boolean;
@@ -121,12 +128,15 @@ const OrderEditPanel = ({
   subDepts,
   loadingSubDepts,
   onSubmit,
+  onFixCost,
+  stagedCount,
   submitting,
   submitted,
   onLeaveEdit,
 }: Props) => {
   const rows = useMemo(
-    () => (draft ? visibleLines(draft, search) : []),
+    () =>
+      draft ? visibleLines(draft, search) : [],
     [draft, search],
   );
 
@@ -170,9 +180,33 @@ const OrderEditPanel = ({
           <span className="text-custom-white font-medium text-[13px]">
             Edit an order
           </span>
-          <span className="text-custom-white/60 text-[11.5px]">
+          <span className="text-custom-white/85 text-[11.5px]">
             pick one on the left
           </span>
+          <div className="flex-1" />
+        <button
+          onClick={onFixCost}
+          title="Set one item's unit cost on every order the filters hit"
+          className="flex-shrink-0 rounded-md border border-custom-white/30 px-2 py-0.5 text-[11.5px] font-semibold text-custom-white/95 transition-colors hover:bg-custom-white/10 hover:border-custom-white/55"
+        >
+          Fix cost
+        </button>
+          {stagedCount > 0 && (
+            <button
+              onClick={onSubmit}
+              disabled={submitting}
+              title="Build each changed order's file and submit it for import"
+              className="flex-shrink-0 rounded-md bg-custom-white px-3 py-1 text-[11.5px] font-bold text-brand_navy transition-opacity hover:opacity-90 disabled:opacity-45"
+            >
+              {submitting
+            ? "Submitting…"
+            : submitted
+              ? "Submitted"
+              : stagedCount > 1
+                ? `Submit ${stagedCount} orders`
+                : "Submit order update"}
+            </button>
+          )}
         </Band>
         {loading ? (
           <div className="flex-1 relative">
@@ -180,8 +214,12 @@ const OrderEditPanel = ({
           </div>
         ) : (
           <EmptyPrompt
-            title="Pick an order to edit"
-            description="Choose a store and an order date on the left. One order is one editable document, and the grid holds the whole of it — not what the filters happen to be showing."
+            title={stagedCount > 0 ? "Changes staged" : "Pick an order to edit"}
+            description={
+              stagedCount > 0
+                ? `${stagedCount} order${stagedCount === 1 ? " holds" : "s hold"} changes waiting to be sent — they are marked on the left. Open one to check it, or Submit to send them all.`
+                : "Choose a store and an order date on the left, or use Fix cost to set one item's cost across every order that carries it."
+            }
           />
         )}
       </div>
@@ -229,8 +267,18 @@ const OrderEditPanel = ({
         )}
 
         <button
+          onClick={onFixCost}
+          title="Set one item's unit cost on every order the filters hit"
+          className="flex-shrink-0 rounded-md border border-custom-white/30 px-2 py-0.5 text-[11.5px] font-semibold text-custom-white/95 transition-colors hover:bg-custom-white/10 hover:border-custom-white/55"
+        >
+          Fix cost
+        </button>
+
+        <button
           onClick={onSubmit}
-          disabled={changed.length === 0 || blank.length > 0 || locked}
+          // Any order with changes, not just this one — Fix cost stages into
+          // orders that were never opened.
+          disabled={stagedCount === 0 || blank.length > 0 || locked}
           title={
             blank.length > 0
               ? "An added line still has no item on it"
@@ -242,7 +290,9 @@ const OrderEditPanel = ({
             ? "Submitting…"
             : submitted
               ? "Submitted"
-              : "Submit order update"}
+              : stagedCount > 1
+                ? `Submit ${stagedCount} orders`
+                : "Submit order update"}
         </button>
       </Band>
 
@@ -738,10 +788,9 @@ const Row = ({
 /**
  * Unit cost — typed here, stored as the case cost it implies.
  *
- * Four decimals rather than two: $26.32 over a case of 12 is $2.1933, and a
- * value rounded to the cent and multiplied back gives $26.32 or $26.31
- * depending on which way it went. The field people quote should not be the
- * lossy one.
+ * Money, so two decimals like every other price on the row. What is stored is
+ * the case cost the typed unit implies, so a unit of $2.19 on a case of 12 is
+ * a case of $26.28 — the case column shows exactly what will be sent.
  *
  * A line with no case size has nothing to divide by, so unit and case are the
  * same number — it is still typable, it just writes the same value through.
@@ -761,7 +810,7 @@ const UnitCostCell = ({
 }) => {
   const original = line.original;
   const changed = original !== null && line.base_cost !== original.base_cost;
-  const value = unitCostOf(line).toFixed(4);
+  const value = unitCostOf(line).toFixed(2);
   const wasUnit =
     original === null
       ? null
@@ -775,7 +824,7 @@ const UnitCostCell = ({
         key={`${line.line_number}-unit_cost-${resetNonce}`}
         type="number"
         min={0}
-        step={0.0001}
+        step={0.01}
         defaultValue={value}
         disabled={disabled}
         aria-label={`Unit cost on line ${line.line_number}`}
@@ -797,7 +846,7 @@ const UnitCostCell = ({
         style={{ outline: "none" }}
       />
       <span className="block h-[11px] text-right text-[9px] leading-[11px] tabular-nums text-severity_watch_text overflow-hidden">
-        {changed && wasUnit !== null ? `was ${wasUnit.toFixed(4)}` : ""}
+        {changed && wasUnit !== null ? `was ${wasUnit.toFixed(2)}` : ""}
       </span>
     </td>
   );

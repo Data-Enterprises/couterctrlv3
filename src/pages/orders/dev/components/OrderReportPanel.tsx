@@ -17,8 +17,6 @@ interface Props {
   onSort: (col: SortKey) => void;
   loading: boolean;
   onExport: () => void;
-  /** Opens the bulk unit-cost fix over the rows on screen. */
-  onFixCost: () => void;
   /** Hands the page over to edit mode, which scopes itself to one order. */
   onEnterEdit: () => void;
   /** False hides the Edit half of the toggle outright. A disabled control
@@ -49,7 +47,6 @@ const OrderReportPanel = ({
   onSort,
   loading,
   onExport,
-  onFixCost,
   onEnterEdit,
   canEdit,
 }: Props) => {
@@ -142,16 +139,6 @@ const OrderReportPanel = ({
           Order lines
         </span>
         <div className="flex-1" />
-        {/* Same gate as Edit: it writes order files. */}
-        {canEdit && !loading && visible.length > 0 && (
-          <button
-            onClick={onFixCost}
-            title="Set one unit cost on every line in this view"
-            className="flex-shrink-0 rounded bg-custom-white px-2.5 py-0.5 text-[11.5px] font-bold text-brand_navy transition-colors hover:bg-custom-white/90"
-          >
-            Fix cost…
-          </button>
-        )}
         {!loading && visible.length > 0 && (
           <button data-help="export"
             onClick={onExport}

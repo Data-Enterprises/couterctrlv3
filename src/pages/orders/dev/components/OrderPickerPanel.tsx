@@ -8,6 +8,12 @@ interface Props {
   /** The one being edited, if any. */
   openKey: string | null;
   onPick: (doc: OrderDoc) => void;
+  /**
+   * Orders holding changes not yet submitted. Fix cost stages a cost into
+   * every order carrying the item without opening any of them, so this is how
+   * you see which orders it touched.
+   */
+  changedKeys: Set<string>;
   storeNumber: string;
   orderDate: string;
   orderType: string;
@@ -16,7 +22,7 @@ interface Props {
   onType: (value: string) => void;
   onClear: () => void;
   onOpenSearch: () => void;
-  /** Held while a draft has unsaved changes, so a click cannot discard them. */
+  /** Held while a new line is half filled in, so a click cannot discard it. */
   blocked: boolean;
   startDate: string;
   endDate: string;
@@ -49,6 +55,7 @@ const OrderPickerPanel = ({
   docs,
   openKey,
   onPick,
+  changedKeys,
   storeNumber,
   orderDate,
   orderType,
@@ -207,6 +214,11 @@ const OrderPickerPanel = ({
             ? `${docs.length.toLocaleString()} orders in range`
             : `${shown.length.toLocaleString()} of ${docs.length.toLocaleString()} orders`}
         </span>
+        {changedKeys.size > 0 && (
+          <span className="flex-shrink-0 rounded bg-severity_watch_bg px-1.5 py-0.5 text-[10.5px] font-semibold text-severity_watch_text">
+            {changedKeys.size} changed
+          </span>
+        )}
         {filtered && (
           <button
             onClick={onClear}
@@ -232,7 +244,7 @@ const OrderPickerPanel = ({
                 disabled={blocked && !isOpen}
                 title={
                   blocked && !isOpen
-                    ? "Submit or undo the changes on this order first"
+                    ? "Add or discard the line you are filling in first"
                     : undefined
                 }
                 className={`text-left rounded-lg border bg-custom-white px-2.5 py-2 transition-colors disabled:opacity-45 ${
@@ -248,6 +260,12 @@ const OrderPickerPanel = ({
                   <span className="text-[12.5px] font-bold text-content tabular-nums truncate">
                     Order {d.order_id}
                   </span>
+                  {changedKeys.has(d.key) && (
+                    <span
+                      title="Changes not yet submitted"
+                      className="h-[7px] w-[7px] flex-shrink-0 self-center rounded-full bg-severity_watch_text"
+                    />
+                  )}
                   <span className="ml-auto flex-shrink-0 text-[9.5px] font-bold uppercase tracking-wide text-content/95">
                     {d.order_type}
                   </span>
@@ -272,8 +290,8 @@ const OrderPickerPanel = ({
 
       <div className="border-t border-gray-100 px-3 py-2 flex-shrink-0">
         <span className="block text-[11px] leading-snug text-content/95">
-          One order is one editable document. The save refuses a file that spans
-          two stores or two dates, so the list never offers one.
+          One order is one editable document. Orders marked with a dot have
+          changes waiting, and Submit sends every one of them.
         </span>
       </div>
     </div>

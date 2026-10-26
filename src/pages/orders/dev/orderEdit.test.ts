@@ -5,8 +5,9 @@ import {
   appendLine,
   applyField,
   applyUnitCost,
-  bulkTargets,
-  withBulkApplied,
+  stagePreview,
+  stageUnitCost,
+  changedLines,
   perCase,
   unitCostOf,
   blankLine,
@@ -631,7 +632,7 @@ describe("unit cost", () => {
   });
 });
 
-describe("bulk unit cost", () => {
+describe("staged unit cost", () => {
   /** One item, three stores, two case sizes — the case that forced unit cost. */
   const PIZZA = "004470036114";
   const SPREAD = [
@@ -640,51 +641,62 @@ describe("bulk unit cost", () => {
     line({ storeid: 114, storenumber: "114", order_id: 2, line_number: 1, product_code: PIZZA, casesize: 24, base_cost: 0, qty: 6 }),
     line({ storeid: 206, storenumber: "206", order_id: 3, line_number: 4, product_code: PIZZA, casesize: 12, base_cost: 0, qty: 9 }),
   ];
-  const rows = SPREAD.filter((l) => l.product_code === PIZZA);
+  const pizza = SPREAD.filter((l) => l.product_code === PIZZA);
 
-  it("makes one target per order", () => {
-    expect(bulkTargets(rows, SPREAD, 2)).toHaveLength(3);
+  it("previews one row per order", () => {
+    expect(stagePreview(pizza, SPREAD, 2)).toHaveLength(3);
   });
 
   it("gives each store the case cost its own case size implies", () => {
     const byStore = Object.fromEntries(
-      bulkTargets(rows, SPREAD, 2).map((t) => [t.doc.storenumber, t.newCaseCost]),
+      stagePreview(pizza, SPREAD, 2).map((p) => [p.doc.storenumber, p.newCaseCost]),
     );
     expect(byStore).toEqual({ "010": 24, "114": 48, "206": 24 });
   });
 
-  it("sends the whole file, flagging only the line it changed", () => {
-    const store10 = bulkTargets(rows, SPREAD, 2).find((t) => t.doc.storenumber === "010")!;
-    expect(store10.payload.lines).toHaveLength(2);
-    const pizza = store10.payload.lines.find((l) => l.product_code === PIZZA)!;
-    const other = store10.payload.lines.find((l) => l.product_code === "OTHER")!;
-    expect(pizza.base_cost).toBe(24);
-    expect(pizza.edited).toBe(1);
-    expect(other.base_cost).toBe(9);
-    expect(other.edited).toBeNull();
+  it("stages a draft per order, changing only the item's lines", () => {
+    const drafts = stageUnitCost({}, pizza, SPREAD, 2);
+    const all = Object.values(drafts);
+    expect(all).toHaveLength(3);
+
+    const store10 = all.find((d) => d.doc.storenumber === "010")!;
+    expect(store10.lines).toHaveLength(2); // the whole order, other line included
+    expect(changedLines(store10).map((l) => l.product_code)).toEqual([PIZZA]);
+    expect(store10.lines.find((l) => l.product_code === "OTHER")!.base_cost).toBe(9);
   });
 
-  it("puts the saved costs onto the held lines, and only the saved ones", () => {
-    const targets = bulkTargets(rows, SPREAD, 2);
-    const saved = targets.filter((t) => t.doc.storenumber !== "114");
-    const after = withBulkApplied(SPREAD, saved);
-
-    const cost = (sn: string, code: string) =>
-      after.find((l) => l.storenumber === sn && l.product_code === code)!.base_cost;
-    expect(cost("010", PIZZA)).toBe(24);
-    expect(cost("206", PIZZA)).toBe(24);
-    expect(cost("114", PIZZA)).toBe(0); // not saved, left alone
-    expect(cost("010", "OTHER")).toBe(9);
-    // ext cost followed: 24 / 12 × 18
-    expect(after.find((l) => l.storenumber === "010" && l.product_code === PIZZA)!.cogs).toBeCloseTo(36, 6);
+  it("keeps each line's own original for the was note", () => {
+    const drafts = stageUnitCost({}, pizza, SPREAD, 2);
+    const l = Object.values(drafts)
+      .find((d) => d.doc.storenumber === "114")!
+      .lines.find((x) => x.line_number === 1)!;
+    expect(l.base_cost).toBe(48);
+    expect(l.original?.base_cost).toBe(0);
   });
 
-  it("keeps two locations of one storeid as two files", () => {
+  it("stages on top of edits already made, rather than starting over", () => {
+    const [doc] = buildDocs(SPREAD).filter((d) => d.storenumber === "010");
+    // someone had already changed qty on the other line of this order
+    const edited = applyField(startDraft(doc, SPREAD), 2, "qty", 7);
+    const drafts = stageUnitCost({ [doc.key]: edited }, pizza, SPREAD, 2);
+
+    const after = drafts[doc.key];
+    expect(after.lines.find((l) => l.line_number === 2)!.qty).toBe(7);
+    expect(after.lines.find((l) => l.line_number === 1)!.base_cost).toBe(24);
+    expect(changedLines(after)).toHaveLength(2);
+  });
+
+  it("leaves orders that do not carry the item alone", () => {
+    const drafts = stageUnitCost({}, pizza, [...SPREAD, line({ storeid: 999, storenumber: "999", order_id: 9 })], 2);
+    expect(Object.values(drafts).some((d) => d.doc.storenumber === "999")).toBe(false);
+  });
+
+  it("keeps two locations of one storeid as two drafts", () => {
     const shared = CO_LOCATED.map((l) => ({ ...l, product_code: PIZZA }));
-    const targets = bulkTargets(shared, shared, 2);
-    expect(targets).toHaveLength(2);
-    for (const t of targets) {
-      expect(new Set(t.payload.lines.map((l) => l.storenumber)).size).toBe(1);
+    const drafts = Object.values(stageUnitCost({}, shared, shared, 2));
+    expect(drafts).toHaveLength(2);
+    for (const d of drafts) {
+      expect(new Set(d.lines.map((l) => l.storenumber)).size).toBe(1);
     }
   });
 });
