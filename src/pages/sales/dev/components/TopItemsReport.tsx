@@ -6,6 +6,7 @@ import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicato
 import CtaStrip, { type CtaTone } from "../../../../components-dev/CtaStrip";
 import MultiSelectFilter from "../../../../components-dev/filters/MultiSelectFilter";
 import SelectFilter from "../../../../components-dev/filters/SelectFilter";
+import TextFilter from "../../../../components-dev/filters/TextFilter";
 import { formatCurrency2 } from "../../../../utils";
 import {
   getItemDetail,
@@ -394,22 +395,17 @@ const TopItemsReport = ({
       {/* Filters */}
       <div
         data-help="top200-compare-filters"
-        className="flex-shrink-0 flex items-center gap-1.5 px-4 py-2 border-b border-gray-100"
+        className="flex-shrink-0 flex items-center gap-2 px-4 py-2.5 border-b border-gray-100"
       >
-        <div className="flex w-[200px] flex-none items-center gap-2 rounded-lg bg-bkg px-3">
-          <label htmlFor="top200-find" className="sr-only">
-            Find an item
-          </label>
-          <input
-            id="top200-find"
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder="Item, code or department"
-            inputMode="search"
-            className="min-w-0 flex-1 border-0 bg-transparent py-1.5 text-[12px] text-content placeholder:text-brand_placeholder"
-            style={{ outline: "none", boxShadow: "none" }}
-          />
-        </div>
+        {/* The house search, not a hand-rolled one: SelectFilter is a fixed
+            24px and this was a rounded-lg at py-1.5 with no border, so the
+            row never sat on one line. */}
+        <TextFilter
+          value={text}
+          onChange={setText}
+          placeholder="Item, code or department"
+          className="w-[200px] flex-none"
+        />
 
         {/*
           Dropdowns, not pills. A pile's label carries a store name, so three
@@ -451,10 +447,9 @@ const TopItemsReport = ({
 
         <span className="flex-1" />
 
-        <span className="font-mono text-[10.5px] uppercase tracking-wider text-content flex-none">
-          Sort
-        </span>
-        {/* `plain`, because this always holds a value: the active ring says
+        {/* No "Sort" label: the two choices name themselves, and the word
+            was the only text on the row that was not a control.
+            `plain`, because this always holds a value — the active ring says
             "narrowing a list", which a sort never does. */}
         <SelectFilter
           plain
