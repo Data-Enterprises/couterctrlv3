@@ -165,10 +165,16 @@ export const SALES_HELP: HelpContent = {
           see: "They stack: one store's own items, in Meat, with “ribeye” typed, is a legitimate way to ask. The item search does not look at departments — that is the dropdown's job.",
         },
         {
-          title: "Choose the order",
-          pre: "Share gap puts the items the two stores disagree about most at the top. Sales orders by the pair's combined size instead.",
+          title: "Choose what the rows report",
+          pre: "The last dropdown picks the figure on every row: \u201cShare gap\u201d in points, or \u201cSales gap\u201d in dollars. The list orders itself by whichever you choose \u2014 furthest apart first.",
           anchor: "top200-compare-filters",
-          see: "Share gap is the default on purpose: most of the 200 match, and ordering by sales buries the handful that do not.",
+          see: "Two readings of the same question. Share compares a big store with a small one fairly; dollars say what the difference is actually worth.",
+        },
+        {
+          title: "Sort, if you want a different order",
+          pre: "Above the list, on the right, is a sort that always names whatever the rows are reporting. Click once for biggest first, again for smallest first, and a third time to go back to the list's own order.",
+          anchor: "top200-compare-list",
+          see: "The third click matters: the list's own order is furthest-apart-first, which is the view this screen is for. A sort is a temporary lens over it.",
         },
         {
           title: "Read a row",
@@ -181,6 +187,18 @@ export const SALES_HELP: HelpContent = {
           pre: "Click a row. The panel puts both stores' figures side by side, and underneath, every price the item rang at and which store rang it.",
           anchor: "top200-compare-rail",
           see: "A blank cell in the price table is the finding: the other store never sold it at that price. A different shelf price explains a size difference far more often than anything about the shopper.",
+        },
+        {
+          title: "Read the strip at the top of the panel",
+          pre: "It is coloured by which way the item went and carries its name. Open it with the chevron for the code, the department, and \u2014 where only one store has the item \u2014 what the other store actually did with it.",
+          anchor: "top200-compare-rail",
+          see: "It lays over the panel rather than pushing it down, so opening and closing never moves the figures underneath.",
+        },
+        {
+          title: "Copy the codes out",
+          pre: "Right-click a row to copy that item's code, or anywhere else in the list to copy every code on screen.",
+          anchor: "top200-compare-list",
+          see: "What you copy is what you are looking at: narrow to one pile or one department first and the copy follows. The same menu as the sub department list and the investigation.",
         },
       ],
       issues: [
@@ -199,6 +217,14 @@ export const SALES_HELP: HelpContent = {
         {
           q: "A row says the amounts are not comparable",
           a: "The two stores ring that item differently — one weighs it, the other sells it as a pack. Pounds against packages is not a comparison, so the panel shows both with their own units and offers no difference. Sales and share are still comparable: money is money.",
+        },
+        {
+          q: "I sorted and now I cannot get the original order back",
+          a: "Click the sort a third time. It runs biggest-first, then smallest-first, then returns the list to its own order \u2014 furthest apart first on whichever figure the rows are reporting. That is the ordering this screen is built around, so there is always a way back to it without reloading.",
+        },
+        {
+          q: "Share gap or Sales gap \u2014 which should I be looking at?",
+          a: "Share, when the two stores are different sizes: it asks what proportion of each store's top 200 the item is, so a big store does not simply win everything. Dollars, when you want to know what the difference is worth. The two orders can disagree completely, and both are right about their own question.",
         },
         {
           q: "The totals do not match the single-store Top 200",
@@ -277,8 +303,18 @@ export const SALES_HELP: HelpContent = {
       anchor: "top200-compare-rail",
     },
     {
-      term: "Difference, in points",
-      def: "One store's share of its top 200 minus the other's. Points, not percent — the gap between 2.5% and 1.5% is one point, not forty.",
+      term: "Share gap",
+      def: "One store's share of its top 200 minus the other's, in POINTS — the gap between 2.5% and 1.5% is one point, not forty. The fair way to compare stores of different sizes.",
+      anchor: "top200-compare-list",
+    },
+    {
+      term: "Sales gap",
+      def: "The same comparison in dollars: this store's sales on the item minus the other's. Says what the difference is worth, where share says how much of each store the item is.",
+      anchor: "top200-compare-list",
+    },
+    {
+      term: "The ≥ on a figure",
+      def: "At least this far apart. The item is outside the other store's top 200, so their figure is unknown rather than nought — the real gap is this or more. A row both stores carry has no ≥, because both sides are known.",
       anchor: "top200-compare-list",
     },
     {
