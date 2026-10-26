@@ -1,11 +1,17 @@
 import { roles } from "../../constants";
 import { useMemo } from "react";
-import { InformationCircleIcon } from "@heroicons/react/20/solid";
-import type { CompanyBaseGroup, Store } from "../../../../../interfaces";
+import {
+  ExclamationTriangleIcon,
+  InformationCircleIcon,
+} from "@heroicons/react/20/solid";
+import type {
+  CompanyBaseGroup,
+  GrantMode,
+  Store,
+} from "../../../../../interfaces";
 import { useOrganizationCtx } from "../../hooks";
 import {
   effectiveStores,
-  modeOf,
   picksInGroup,
   type AccessPicks, heldGroupIds } from "../access/accessSets";
 import GrantModeChip from "../access/GrantModeChip";
@@ -29,6 +35,7 @@ const StepReview = ({
   companyGroups,
   groupStores,
   onGoTo,
+  modeBefore,
 }: {
   picks: AccessPicks;
   /** The companies that will actually be written — ticked ones plus the one
@@ -38,6 +45,13 @@ const StepReview = ({
   companyGroups: Record<number, CompanyBaseGroup[]>;
   groupStores: Record<number, Store[]>;
   onGoTo: (step: WizardStep) => void;
+  /**
+   * Edit only: how the person held their groups before this session. When it
+   * differs from `picks.mode` the save rewrites every group they hold, and
+   * this is where that gets said — once the groups are known, rather than
+   * the instant the card is clicked on the Access type step.
+   */
+  modeBefore?: GrantMode;
 }) => {
   const ctx = useOrganizationCtx();
   const info = ctx.userInfo;
@@ -67,8 +81,9 @@ const StepReview = ({
   // review counted ticked groups only, so a store picked inside an unticked
   // group read "No base groups" here while it would have been saved (AK).
   const held = heldGroupIds(picks);
-  const autoGroups = held.filter((id) => modeOf(picks, id) === "all");
-  const fixedGroups = held.filter((id) => modeOf(picks, id) !== "all");
+  // One mode for the person, so every held group lands in one of these.
+  const autoGroups = picks.mode === "all" ? held : [];
+  const fixedGroups = picks.mode === "all" ? [] : held;
 
   /** True while any auto group's roster is still arriving — the count below
    *  would read low, and reading low is worse than reading "…". */
@@ -96,8 +111,28 @@ const StepReview = ({
     },
   ];
 
+  const typeChanged =
+    modeBefore !== undefined && modeBefore !== picks.mode && held.length > 0;
+  const typeName = (m: GrantMode) => (m === "all" ? "By group" : "By store");
+
   return (
     <div className="max-w-[1000px] mx-auto">
+      {typeChanged && (
+        <div className="flex gap-2.5 items-start mb-3 px-3.5 py-3 rounded-lg bg-filter_active border border-filter_active_border">
+          <ExclamationTriangleIcon className="w-[18px] h-[18px] text-brand_navy flex-shrink-0 mt-px" />
+          <span className="text-[12px] text-content leading-snug">
+            <span className="font-semibold">
+              Access type changes from {typeName(modeBefore)} to{" "}
+              {typeName(picks.mode)}.
+            </span>{" "}
+            Saving rewrites all {held.length} base group
+            {held.length === 1 ? "" : "s"} this person holds.{" "}
+            {picks.mode === "all"
+              ? "They will get every store in each group, and any store added to one later."
+              : "They will keep only the stores ticked on the Assignments step, and stores added to a group later will not reach them."}
+          </span>
+        </div>
+      )}
       <div className="bg-custom-white rounded-lg shadow-card overflow-hidden">
         <div className="flex flex-wrap items-center justify-between gap-5 px-5 py-4 border-b border-gray-100">
           <div className="flex items-center gap-3.5 min-w-0">
@@ -163,7 +198,7 @@ const StepReview = ({
         >
           {held.map((id) => {
             const group = groupsById[id];
-            const mode = modeOf(picks, id);
+            const mode = picks.mode;
             const total = groupStores[id]?.length;
             const count = mode === "all" ? total : picksInGroup(picks, id).length;
             return (

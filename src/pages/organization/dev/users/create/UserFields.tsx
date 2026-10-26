@@ -21,6 +21,18 @@ interface UserFieldsProps {
    * one and to the access panel on step three.
    */
   onValidityChange?: (valid: boolean) => void;
+  /**
+   * Editing somebody who already exists. Three things change and nothing
+   * else, so Edit reads as the same form filled in:
+   *
+   * - **Username is fixed.** `update_user` finds the row by it, so it is the
+   *   one field that cannot be edited through that call.
+   * - **No Security section.** Edit does not set a password; the key icon in
+   *   the users list does, with its own rules and its own confirmation.
+   * - **Their own email is not "taken".** It is checked like any other
+   *   address, but an unchanged one says so instead of reporting itself.
+   */
+  editing?: { userid: number; email: string };
 }
 
 /**
@@ -71,13 +83,13 @@ const Rule = ({ met, children }: { met: boolean; children: ReactNode }) => (
   </div>
 );
 
-const NEXT_UP = [
+const nextUp = (editing: boolean) => [
   { t: "Access type", d: "by group or by store" },
   { t: "Assignments", d: "pick groups or stores" },
-  { t: "Review", d: "check and create" },
+  { t: "Review", d: editing ? "check and save" : "check and create" },
 ];
 
-const UserFields = ({ onValidityChange }: UserFieldsProps) => {
+const UserFields = ({ onValidityChange, editing }: UserFieldsProps) => {
   const toast = useToast();
   const ctx = useOrganizationCtx();
 
@@ -107,6 +119,19 @@ const UserFields = ({ onValidityChange }: UserFieldsProps) => {
 
   const handleEmailValidation = () => {
     if (ctx.userInfo.email.length === 0) return;
+    if (
+      editing &&
+      ctx.userInfo.email.trim().toLowerCase() ===
+        editing.email.trim().toLowerCase()
+    ) {
+      ctx.dispatch(
+        setAvailableEmailDetails({
+          availableEmailText: "- No change",
+          emailTextColor: "text-content",
+        }),
+      );
+      return;
+    }
     checkEmail(ctx.url, ctx.token, ctx.userInfo.email)
       .then((resp) => {
         const j = resp.data;
@@ -132,8 +157,9 @@ const UserFields = ({ onValidityChange }: UserFieldsProps) => {
     ctx.userInfo.email.trim() !== "" &&
     ctx.userInfo.first_name.trim() !== "" &&
     ctx.userInfo.last_name.trim() !== "" &&
-    ctx.userInfo.password.length > 0 &&
-    ctx.userInfo.password === ctx.userInfo.confirm_password &&
+    (editing !== undefined ||
+      (ctx.userInfo.password.length > 0 &&
+        ctx.userInfo.password === ctx.userInfo.confirm_password)) &&
     ctx.userInfo.role > 0 &&
     ctx.userInfo.user_level > 0;
 
@@ -211,18 +237,28 @@ const UserFields = ({ onValidityChange }: UserFieldsProps) => {
         </Section>
 
         <Section title="Identity" desc="How they sign in. Both must be unique.">
-          <Input
-            label="Username"
-            autoComplete="off"
-            value={ctx.userInfo.username}
-            setValue={(v) =>
-              ctx.dispatch(setUserInfo({ key: "username", value: v }))
-            }
-            className="py-2 text-[13px]"
-            validateUsername={handleUsernameValidation}
-            availableText={ctx.availableUsernameText}
-            textColor={ctx.usernameTextColor}
-          />
+          {editing ? (
+            <Input
+              label="Username"
+              autoComplete="off"
+              value={ctx.userInfo.username}
+              setValue={() => undefined}
+              className="py-2 text-[13px] bg-bkg pointer-events-none"
+            />
+          ) : (
+            <Input
+              label="Username"
+              autoComplete="off"
+              value={ctx.userInfo.username}
+              setValue={(v) =>
+                ctx.dispatch(setUserInfo({ key: "username", value: v }))
+              }
+              className="py-2 text-[13px]"
+              validateUsername={handleUsernameValidation}
+              availableText={ctx.availableUsernameText}
+              textColor={ctx.usernameTextColor}
+            />
+          )}
           <Input
             label="Email"
             autoComplete="off"
@@ -237,7 +273,11 @@ const UserFields = ({ onValidityChange }: UserFieldsProps) => {
           />
         </Section>
 
-        <Section title="Name" desc="Shown in lists and reports.">
+        <Section
+          title="Name"
+          desc="Shown in lists and reports."
+          last={editing !== undefined}
+        >
           <Input
             label="First name"
             value={ctx.userInfo.first_name}
@@ -256,6 +296,7 @@ const UserFields = ({ onValidityChange }: UserFieldsProps) => {
           />
         </Section>
 
+        {!editing && (
         <Section
           title="Security"
           desc="They can change it after first sign-in."
@@ -286,19 +327,22 @@ const UserFields = ({ onValidityChange }: UserFieldsProps) => {
             className="py-2"
           />
         </Section>
+        )}
       </form>
 
       <aside className="flex-1 min-w-[240px] flex flex-col gap-3">
-        <section className="bg-custom-white rounded-lg shadow-card px-5 py-4">
-          <h3 className="text-[12.5px] font-bold text-content m-0 mb-1.5">
-            Password rules
-          </h3>
-          {rules.map((r) => (
-            <Rule key={r.label} met={r.met}>
-              {r.label}
-            </Rule>
-          ))}
-        </section>
+        {!editing && (
+          <section className="bg-custom-white rounded-lg shadow-card px-5 py-4">
+            <h3 className="text-[12.5px] font-bold text-content m-0 mb-1.5">
+              Password rules
+            </h3>
+            {rules.map((r) => (
+              <Rule key={r.label} met={r.met}>
+                {r.label}
+              </Rule>
+            ))}
+          </section>
+        )}
 
         {/* What the next three steps are, so the wizard does not feel like a
             form that has been cut in half with no end in sight. */}
@@ -306,7 +350,7 @@ const UserFields = ({ onValidityChange }: UserFieldsProps) => {
           <h3 className="text-[12.5px] font-bold text-content m-0 mb-1.5">
             Next up
           </h3>
-          {NEXT_UP.map((n) => (
+          {nextUp(editing !== undefined).map((n) => (
             <div
               key={n.t}
               className="text-[12px] py-1.5 border-t border-gray-100 first:border-t-0"

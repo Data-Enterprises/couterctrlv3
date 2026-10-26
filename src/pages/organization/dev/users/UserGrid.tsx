@@ -20,10 +20,20 @@ import {
   setUsersExportOpen,
   setUsersGridFilter,
 } from "../../../../features/dev/devOrganizationSlice";
-import { deleteUser, reactivateUser, getBaseGroupsAssignedToUser } from "../../../../api/team";
-import { getUserStores } from "../../../../api/user";
-import { getAllStoresInBaseGroup } from "../../../../api/baseGroups";
-import type { BaseGroup, JsonError, Store, User } from "../../../../interfaces";
+import {
+  deleteUser,
+  reactivateUser,
+  getBaseGroupsAssignedToUser,
+  getUserGroupPicks,
+} from "../../../../api/team";
+import type {
+  BaseGroup,
+  JsonError,
+  Store,
+  User,
+  UserGroupPick,
+} from "../../../../interfaces";
+import { accessModeOf } from "./access/accessSets";
 import { roles } from "../constants";
 import SelectFilter from "../../../../components-dev/filters/SelectFilter";
 import TextFilter from "../../../../components-dev/filters/TextFilter";
@@ -190,76 +200,74 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
     ctx.dispatch(setSelectedUserForm("user_info"));
   };
 
-  // Duplicate: fetch the source user's base groups + stores (not present on
-  // the grid row itself), stash them for the create wizard to pre-fill, then
-  // open it. Only role/level/company/base-group/store data copies — identity
-  // fields (name/username/email/password) always stay blank.
+  /**
+   * Duplicate: read what the source actually holds, stash it for the wizard
+   * to pre-fill, then open it. Role, level, access type and assignments copy;
+   * identity (name, username, email, password) always stays blank.
+   *
+   * ### Read, not reconstructed
+   *
+   * This used to fetch every held group's whole roster — one call per group —
+   * and cross-reference the source's stores against them to GUESS which group
+   * each store came through. Then any store no roster explained was filed
+   * under "the first group in that store's company". Both guesses could hand
+   * the copy more than the source had: a store in two groups became two
+   * picks, and a direct assignment became an invented group pick nobody ever
+   * chose. And the access type was not copied at all, because guessing `all`
+   * would over-grant.
+   *
+   * None of that is a guess any more. `base_groups_assigned_to_user_split`
+   * carries each held group's mode, and `user_group_picks` says exactly which
+   * stores were picked and through which group. Two calls, whatever the
+   * number of groups.
+   *
+   * **Direct assignments do not copy.** A store no group explains was never
+   * granted by this screen and cannot be granted by it either — it has no
+   * group to travel in. That is a property of the source, not something a
+   * duplicate should manufacture.
+   */
   const handleDuplicate = async (u: User) => {
     try {
-      const [bgResp, storesResp] = await Promise.all([
+      const [bgResp, picksResp] = await Promise.all([
         getBaseGroupsAssignedToUser(ctx.url, ctx.token, u.id),
-        getUserStores(ctx.url, ctx.token, u.id),
+        getUserGroupPicks(ctx.url, ctx.token, u.id),
       ]);
       const bgJson = bgResp.data;
-      const storesJson = storesResp.data;
-      if (bgJson.error !== 0 || storesJson.error !== 0) {
+      const picksJson = picksResp.data;
+      if (bgJson.error !== 0 || picksJson.error !== 0) {
         toast.error("Could not load this user's assignments to duplicate");
         return;
       }
 
       // `active` is the held half of the split, which is what a duplicate
-      // copies. (This read `.active` all along and was right to; a previous
-      // pass "fixed" it to `.groups` on the mistaken belief that this call
-      // hits the unsplit endpoint. It does not.)
-      const groups = ((bgJson.active ?? []) as BaseGroup[]).map((g) => ({
+      // copies.
+      const held = (bgJson.active ?? []) as BaseGroup[];
+      const groups = held.map((g) => ({
         id: g.id,
         name: g.name,
         company: g.company,
       }));
-      const assignedStores: Store[] = storesJson.assigned_stores.filter(
-        (s: Store) => s.store_name != null,
-      );
+      const byId = new Map(held.map((g) => [g.id, g]));
+      const mode = accessModeOf(held);
 
-      // A company can have more than one base group, so tagging a store by
-      // "first group in the same company" silently merged every group's
-      // stores into whichever group happened to match first — cross-
-      // reference each group's own store roster against the source user's
-      // assigned stores to find which group(s) each store actually belongs
-      // to. A store can legitimately land under more than one group.
-      const rosterResults = await Promise.all(
-        groups.map((g) =>
-          getAllStoresInBaseGroup(ctx.url, ctx.token, g.id).then((resp) => ({
-            groupId: g.id,
-            storeIds: new Set(
-              (resp.data.assigned_stores as Store[]).map((s) => s.storeid),
-            ),
-          })),
-        ),
-      );
-
-      const taggedStores: (Store & { base_group: number })[] = [];
-      const taggedStoreIds = new Set<number>();
-      assignedStores.forEach((store) => {
-        const matches = rosterResults.filter((r) =>
-          r.storeIds.has(store.storeid),
-        );
-        matches.forEach((m) =>
-          taggedStores.push({ ...store, base_group: m.groupId }),
-        );
-        if (matches.length > 0) taggedStoreIds.add(store.storeid);
-      });
-
-      // A store assigned to the user directly (outside any of their groups)
-      // has no group to nest under in this wizard's store-picker model —
-      // fall back to the first group in that store's own company so it
-      // still submits, rather than silently dropping it.
-      assignedStores.forEach((store) => {
-        if (taggedStoreIds.has(store.storeid)) return;
-        const fallbackGroup = groups.find((g) => g.company === store.company);
-        if (fallbackGroup) {
-          taggedStores.push({ ...store, base_group: fallbackGroup.id });
-        }
-      });
+      // Picks only mean anything By store. A By group source has none, and
+      // its absence is the answer rather than a gap.
+      const stores: (Store & { base_group: number })[] =
+        mode === "all"
+          ? []
+          : ((picksJson.data ?? []) as UserGroupPick[])
+              .filter((p) => byId.has(p.groupid))
+              .map((p) => {
+                const g = byId.get(p.groupid)!;
+                return {
+                  storeid: p.storeid,
+                  store_number: p.store_number ?? "",
+                  store_name: p.store_name ?? "",
+                  company: g.company,
+                  company_name: g.company_name,
+                  base_group: p.groupid,
+                };
+              });
 
       ctx.dispatch(
         setDuplicateSource({
@@ -268,7 +276,8 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
           companyIds: u.companies.map((c) => c.company),
           baseGroupIds: groups.map((g) => g.id),
           groups,
-          stores: taggedStores,
+          mode,
+          stores,
         }),
       );
       onOpenCreate();

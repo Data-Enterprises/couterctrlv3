@@ -1,12 +1,12 @@
 import { useMemo } from "react";
 import { useOrganizationCtx } from "../../hooks";
-import type {
-  BaseGroup,
-  GrantMode,
-  UserGroupPick,
-} from "../../../../../interfaces";
+import type { BaseGroup, UserGroupPick } from "../../../../../interfaces";
 import type { SelectableStore } from "../../types";
-import type { AccessPicks, CarriedAccess } from "./accessSets";
+import {
+  accessModeOf,
+  type AccessPicks,
+  type CarriedAccess,
+} from "./accessSets";
 
 export interface ExistingAccess {
   /** What the panel may show and the editor may change. */
@@ -76,13 +76,9 @@ export const useExistingAccess = (
     const visibleGroups = heldGroups.filter((g) => seen(g.company));
     const heldIds = new Set(visibleGroups.map((g) => g.id));
 
-    const modes: Record<number, GrantMode> = {};
-    visibleGroups.forEach((g) => {
-      // `mode` is null only when the user does not hold the group, and these
-      // are the ones they hold — but the endpoint's default is the safe
-      // reading either way.
-      modes[g.id] = g.mode ?? "selected";
-    });
+    /** The person's one answer, read back from rows that each carry their
+     *  own. Shared with Duplicate, so the two cannot disagree. */
+    const mode = accessModeOf(visibleGroups);
 
     /** Only picks for groups this editor can see. A pick inside a company they
      *  cannot reach belongs to a group they cannot send, so showing it would
@@ -107,7 +103,7 @@ export const useExistingAccess = (
       picks: {
         companies: ctx.userCompanyIds.filter(seen),
         baseGroups: visibleGroups.map((g) => g.id),
-        modes,
+        mode,
         stores: pickedStores,
       },
       carried: {

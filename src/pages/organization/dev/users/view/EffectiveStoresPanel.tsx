@@ -95,7 +95,7 @@ const EffectiveStoresPanel = ({
   /** An Auto group whose roster has not arrived would make the count read
    *  low, and low is worse than honest. */
   const pending = picks.baseGroups.some(
-    (id) => picks.modes[id] === "all" && groupStores[id] === undefined,
+    (id) => picks.mode === "all" && groupStores[id] === undefined,
   );
 
   const q = filter.trim().toLowerCase();
