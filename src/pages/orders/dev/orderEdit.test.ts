@@ -91,6 +91,48 @@ const ALL = [...ORDER, ...OTHER];
 const docs = buildDocs(ALL);
 const draftOf = () => startDraft(docs[0], ALL);
 
+/**
+ * The same storeid at two physical locations — the case `storeIdentity` exists
+ * for, and the one that broke the "was" note: a merged draft holds two line 1s.
+ */
+const CO_LOCATED = [
+  line({ storenumber: "369", storename: "Bruces Foodland 369", line_number: 1, qty: 12 }),
+  line({ storenumber: "369", storename: "Bruces Foodland 369", line_number: 2, qty: 4 }),
+  line({ storenumber: "370", storename: "Bruces Foodland 370", line_number: 1, qty: 13 }),
+  line({ storenumber: "370", storename: "Bruces Foodland 370", line_number: 2, qty: 7 }),
+];
+
+describe("co-located stores", () => {
+  it("keeps the two locations as separate orders", () => {
+    expect(docKey(CO_LOCATED[0])).not.toBe(docKey(CO_LOCATED[2]));
+    expect(buildDocs(CO_LOCATED)).toHaveLength(2);
+  });
+
+  it("gives each draft only its own location's lines", () => {
+    const [first, second] = buildDocs(CO_LOCATED);
+    const a = startDraft(first, CO_LOCATED);
+    const b = startDraft(second, CO_LOCATED);
+
+    expect(a.lines).toHaveLength(2);
+    expect(b.lines).toHaveLength(2);
+    expect(a.lines.map((l) => l.storenumber)).toEqual(["369", "369"]);
+    expect(b.lines.map((l) => l.storenumber)).toEqual(["370", "370"]);
+  });
+
+  it("edits one location without touching the other, and keeps its own was", () => {
+    const [first] = buildDocs(CO_LOCATED);
+    const draft = startDraft(first, CO_LOCATED);
+    // 369 line 1 is qty 12; 370 line 1 is qty 13. Editing by line number
+    // alone used to hit both and report the wrong original.
+    const next = applyField(draft, 1, "qty", 9);
+
+    const edited = next.lines.find((l) => l.line_number === 1)!;
+    expect(edited.qty).toBe(9);
+    expect(edited.original?.qty).toBe(12);
+    expect(next.lines.filter((l) => l.qty === 9)).toHaveLength(1);
+  });
+});
+
 describe("buildDocs", () => {
   it("makes one document per store, order and date", () => {
     expect(docs).toHaveLength(2);

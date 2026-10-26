@@ -113,10 +113,17 @@ export const blankLines = (d: OrderDraft) => d.lines.filter(isBlank);
  *
  * The storeid is part of it because order numbers are only unique within a
  * store, and the date because the same number can come round again.
+ *
+ * `storenumber` is part of it because a few storeids cover two physical
+ * locations and those are two stores — the same thing `storeIdentity` exists
+ * for, and the same key every other list on this page is built on. Without it
+ * the two locations merged into one draft holding two line 1s, which
+ * `mapLine` then edited together and the "was" note reported from whichever
+ * of them React had reused the input for.
  */
 export const docKey = (
-  o: Pick<AllOrder, "storeid" | "order_id" | "order_date">,
-) => `${o.storeid}|${o.order_id}|${o.order_date}`;
+  o: Pick<AllOrder, "storeid" | "storenumber" | "order_id" | "order_date">,
+) => `${o.storeid}|${o.storenumber}|${o.order_id}|${o.order_date}`;
 
 /**
  * The orders in the result, for the picker.
