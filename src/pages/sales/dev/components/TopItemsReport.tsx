@@ -4,6 +4,7 @@ import { cacheTopItemsTy } from "../../../../features/dev/devSalesLedgerSlice";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
 import CtaStrip, { type CtaTone } from "../../../../components-dev/CtaStrip";
+import MultiSelectFilter from "../../../../components-dev/filters/MultiSelectFilter";
 import { formatCurrency2 } from "../../../../utils";
 import {
   getItemDetail,
@@ -15,15 +16,12 @@ import {
   type TopItemsResponse,
 } from "../../../../api/topItems";
 import { avgPrice } from "../shared/topItems";
-import {
-  gradeSeverity,
-  pillClass,
-  severityDotClass,
-} from "../../../../utils/severity";
+import { severityDotClass } from "../../../../utils/severity";
 import {
   amountTextOf,
   compareTopItems,
   compareTotals,
+  deptsPresent,
   divergenceByDept,
   divergenceSigned,
   filterCompared,
@@ -72,16 +70,12 @@ const OUTLINE_TONE: CtaTone = {
  *  text stays `content`, because a severity text colour on a product name
  *  would grade the NAME rather than the figure. */
 const SEV_HEAD: Record<
-  "critical" | "watch" | "healthy",
+  "critical" | "healthy",
   { bg: string; border: string }
 > = {
   critical: {
     bg: "bg-severity_critical_bg",
     border: "border-severity_critical_text/25",
-  },
-  watch: {
-    bg: "bg-severity_watch_bg",
-    border: "border-severity_watch_text/25",
   },
   healthy: {
     bg: "bg-severity_healthy_bg",
@@ -102,17 +96,31 @@ interface Props {
   compareStoreName: string;
   twStart: string;
   twEnd: string;
-  /** The page's item threshold, in points. Graded the way Sub Dept Margins
-   *  grades margin points: anything ahead is healthy, behind but inside the
-   *  threshold is watch, past it is critical. */
-  threshold: number;
   onBack: () => void;
 }
 
-const PILL_IDLE =
-  "border-brand_navy/75 bg-custom-white text-content hover:border-brand_navy/50";
-const PILL_ON =
-  "border-filter_active_border bg-filter_active text-content ring-2 ring-filter_active_border/30";
+/**
+ * The ledger's own chip, in shape and in behaviour.
+ *
+ * These were dressed as filter-bar controls -- a navy hairline idle, the
+ * filter_active tint with a ring when on -- which is right for the controls
+ * in components-dev/filters and wrong beside the Crit / Watch / OK chips a
+ * reader has just come from. Same geometry, same ring-and-shadow on press.
+ */
+const CHIP = "flex-none rounded-full px-2.5 py-1 text-[12px] font-semibold transition-shadow";
+const CHIP_IDLE = "bg-bkg text-content hover:bg-brand_navy/5";
+const CHIP_ON =
+  "bg-filter_active text-content ring-2 ring-filter_active_border/40 shadow-sm";
+
+/** Ahead or behind. No threshold: there is no third state to grade into
+ *  when the only question is which of two stores sells more of a thing. */
+const toneOf = (signed: number): "healthy" | "critical" =>
+  signed >= 0 ? "healthy" : "critical";
+
+const TONE_PILL: Record<"healthy" | "critical", string> = {
+  healthy: "bg-severity_healthy_bg text-severity_healthy_text",
+  critical: "bg-severity_critical_bg text-severity_critical_text",
+};
 
 const TopItemsReport = ({
   openStoreName,
@@ -121,7 +129,6 @@ const TopItemsReport = ({
   compareStoreName,
   twStart,
   twEnd,
-  threshold,
   onBack,
 }: Props) => {
   const { url, token } = useAppSelector((s) => s.app);
@@ -142,6 +149,7 @@ const TopItemsReport = ({
   const [sort, setSort] = useState<CompareSort>("divergence");
   const [text, setText] = useState("");
   const [picked, setPicked] = useState<string | null>(null);
+  const [depts, setDepts] = useState<string[]>([]);
 
   const key = `${openStoreId}__${twStart}__${twEnd}`;
   const theirKey = `${compareStoreId}__${twStart}__${twEnd}`;
@@ -212,9 +220,28 @@ const TopItemsReport = ({
   const byDept = useMemo(() => divergenceByDept(rows), [rows]);
 
   const shown = useMemo(
-    () => sortCompared(filterCompared(rows, filter, text), sort),
-    [rows, filter, text, sort],
+    () => sortCompared(filterCompared(rows, filter, text, depts), sort),
+    [rows, filter, text, depts, sort],
   );
+
+  /**
+   * The departments on offer, and which of them the OTHER filters have
+   * emptied.
+   *
+   * An option that would return nothing is marked rather than dropped when it
+   * is selected, so a pick never vanishes and leaves the screen blank with
+   * nothing to click to undo -- MultiSelectFilter's own rule.
+   */
+  const deptOpts = useMemo(() => {
+    const live = new Set(
+      filterCompared(rows, filter, text).map((r) => r.dept),
+    );
+    return deptsPresent(rows).map((d) => ({
+      value: d.dept,
+      label: `${d.dept} (${d.count})`,
+      unavailable: !live.has(d.dept),
+    }));
+  }, [rows, filter, text]);
 
   const selected = useMemo(
     () => shown.find((r) => r.code === picked) ?? shown[0] ?? null,
@@ -408,13 +435,22 @@ const TopItemsReport = ({
             type="button"
             aria-pressed={filter === id}
             onClick={() => setFilter((f) => (f === id ? "all" : id))}
-            className={`flex-none max-w-[180px] truncate rounded-full border px-3 py-1.5 text-[11px] font-medium transition-colors ${
-              filter === id ? PILL_ON : PILL_IDLE
+            className={`${CHIP} max-w-[190px] truncate ${
+              filter === id ? CHIP_ON : CHIP_IDLE
             }`}
           >
             {label}
           </button>
         ))}
+
+        <MultiSelectFilter
+          options={deptOpts}
+          values={depts}
+          onChange={setDepts}
+          placeholder="All departments"
+          noun="departments"
+          className="w-[170px] flex-none"
+        />
 
         <span className="flex-1" />
 
@@ -429,9 +465,7 @@ const TopItemsReport = ({
             type="button"
             aria-pressed={sort === id}
             onClick={() => setSort(id)}
-            className={`flex-none rounded-md border px-2.5 py-1.5 text-[11px] font-medium transition-colors ${
-              sort === id ? PILL_ON : PILL_IDLE
-            }`}
+            className={`${CHIP} ${sort === id ? CHIP_ON : CHIP_IDLE}`}
           >
             {label}
           </button>
@@ -449,12 +483,8 @@ const TopItemsReport = ({
               ahead
             </span>
             <span className="inline-flex items-center gap-1.5 text-[11px] text-content">
-              <span className={`w-2.5 h-2.5 rounded-sm ${severityDotClass.watch}`} />
-              behind
-            </span>
-            <span className="inline-flex items-center gap-1.5 text-[11px] text-content">
               <span className={`w-2.5 h-2.5 rounded-sm ${severityDotClass.critical}`} />
-              behind by over {threshold}
+              behind
             </span>
             <span className="inline-flex items-center gap-1.5 text-[11px] text-content">
               <span className="w-2.5 h-2.5 rounded-sm bg-brand_navy/60" />
@@ -471,7 +501,6 @@ const TopItemsReport = ({
                 key={r.code}
                 row={r}
                 widest={widest}
-                threshold={threshold}
                 selected={selected?.code === r.code}
                 onPick={() => setPicked(r.code)}
               />
@@ -486,7 +515,6 @@ const TopItemsReport = ({
 
         <Rail
           row={selected}
-          threshold={threshold}
           openStoreName={openStoreName}
           compareStoreName={compareStoreName}
           minePoints={mine?.points ?? []}
@@ -515,21 +543,19 @@ const TopItemsReport = ({
 const Row = ({
   row,
   widest,
-  threshold,
   selected,
   onPick,
 }: {
   row: ComparedTopItem;
   widest: number;
-  threshold: number;
   selected: boolean;
   onPick: () => void;
 }) => {
   const signed = divergenceSigned(row);
-  // The ledger's grading, in the ledger's colours: `gradeSeverity` reads a
-  // signed figure against the threshold, which is what Sub Dept Margins
-  // already does with margin POINTS. Share points grade the same way.
-  const sev = gradeSeverity(signed, threshold);
+  // Ahead or behind, in the ledger's own two colours. No threshold: a
+  // third band would have to be "close", and nothing on this screen asks
+  // how close two stores are -- only which way.
+  const sev = toneOf(signed);
   const minePct = row.pair > 0 ? (row.mineSales / row.pair) * 100 : 0;
   const theirsPct = row.pair > 0 ? (row.theirsSales / row.pair) * 100 : 0;
 
@@ -555,10 +581,7 @@ const Row = ({
         </span>
         <span className="flex-none text-[11px] text-content">{row.dept}</span>
         <span
-          className={`flex-none tabular-nums text-[11.5px] font-bold px-1.5 py-px rounded ${pillClass(
-            signed,
-            threshold,
-          )}`}
+          className={`flex-none tabular-nums text-[11.5px] font-bold px-1.5 py-px rounded ${TONE_PILL[sev]}`}
           title={
             row.shareGap === null
               ? `At least ${pts(signed)} points apart — this item is outside the other store's top 200, so their share is unknown`
@@ -660,7 +683,6 @@ const priceLines = (
 
 const Rail = ({
   row,
-  threshold,
   openStoreName,
   compareStoreName,
   minePoints,
@@ -669,7 +691,6 @@ const Rail = ({
   absentLoading,
 }: {
   row: ComparedTopItem | null;
-  threshold: number;
   openStoreName: string;
   compareStoreName: string;
   minePoints: TopItemPricePoint[];
@@ -688,9 +709,9 @@ const Rail = ({
   }
 
   const lines = priceLines(row.code, minePoints, theirsPoints);
-  // The same grade the row wears, so the rail and the list never disagree
-  // about how this item is doing.
-  const sev = gradeSeverity(divergenceSigned(row), threshold);
+  // The same tone the row wears, so the rail and the list never disagree
+  // about which way this item goes.
+  const sev = toneOf(divergenceSigned(row));
   const missingName =
     row.only === "mine" ? compareStoreName : openStoreName;
   const sold = absent?.stores?.[0] ?? null;
@@ -735,10 +756,7 @@ const Rail = ({
             </p>
           </div>
           <span
-            className={`flex-none tabular-nums text-[12px] font-bold px-2 py-0.5 rounded ${pillClass(
-              divergenceSigned(row),
-              threshold,
-            )}`}
+            className={`flex-none tabular-nums text-[12px] font-bold px-2 py-0.5 rounded ${TONE_PILL[sev]}`}
           >
             {row.shareGap === null ? "≥ " : ""}
             {pts(divergenceSigned(row))} pts

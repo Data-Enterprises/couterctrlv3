@@ -4,6 +4,7 @@ import {
   amountTextOf,
   compareTopItems,
   compareTotals,
+  deptsPresent,
   divergence,
   divergenceByDept,
   divergenceSigned,
@@ -228,5 +229,41 @@ describe("filtering", () => {
     expect(filterCompared(rows, "all", "SHARED")).toHaveLength(1);
     // Three rows, not four: SHARED is one row carrying both sides.
     expect(filterCompared(rows, "all", "produce")).toHaveLength(3);
+  });
+});
+
+describe("the department filter", () => {
+  const rows = compareTopItems(
+    [
+      row({ product_code: "A", sub_department_description: "Fresh Meat" }),
+      row({ product_code: "B", sub_department_description: "Beer" }),
+      row({ product_code: "SHARED", sub_department_description: "Fresh Meat" }),
+    ],
+    [row({ product_code: "SHARED", sub_department_description: "Fresh Meat" })],
+  );
+
+  it("offers every department in either list, commonest first", () => {
+    // All rows, not just one-sided ones: a department you can see has to be
+    // pickable even where the two stores agree about it.
+    expect(deptsPresent(rows)).toEqual([
+      { dept: "Fresh Meat", count: 2 },
+      { dept: "Beer", count: 1 },
+    ]);
+  });
+
+  it("keeps only the departments picked", () => {
+    expect(
+      filterCompared(rows, "all", "", ["Beer"]).map((r) => r.code),
+    ).toEqual(["B"]);
+  });
+
+  it("means every department when nothing is picked", () => {
+    expect(filterCompared(rows, "all", "", [])).toHaveLength(3);
+  });
+
+  it("stacks with the pile filter rather than replacing it", () => {
+    expect(
+      filterCompared(rows, "both", "", ["Fresh Meat"]).map((r) => r.code),
+    ).toEqual(["SHARED"]);
   });
 });

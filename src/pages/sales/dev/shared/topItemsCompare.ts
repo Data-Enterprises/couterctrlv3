@@ -198,9 +198,13 @@ export const filterCompared = (
   rows: ComparedTopItem[],
   filter: CompareFilter,
   text: string,
+  /** Departments to keep. Empty means every one, the way the control reads. */
+  depts: string[] = [],
 ): ComparedTopItem[] => {
   const needle = text.trim().toLowerCase();
+  const keep = new Set(depts);
   return rows.filter((r) => {
+    if (keep.size > 0 && !keep.has(r.dept)) return false;
     if (filter === "both" && r.only !== null) return false;
     if (filter === "mine" && r.only !== "mine") return false;
     if (filter === "theirs" && r.only !== "theirs") return false;
@@ -211,6 +215,24 @@ export const filterCompared = (
       r.dept.toLowerCase().includes(needle)
     );
   });
+};
+
+/**
+ * Every department present across both lists, commonest first.
+ *
+ * Counted over ALL rows, not just one-sided ones -- this feeds a filter, and
+ * a department you can see in the list has to be pickable even when the two
+ * stores agree about it. `divergenceByDept` is the other question and counts
+ * differently on purpose.
+ */
+export const deptsPresent = (
+  rows: ComparedTopItem[],
+): { dept: string; count: number }[] => {
+  const tally = new Map<string, number>();
+  for (const r of rows) tally.set(r.dept, (tally.get(r.dept) ?? 0) + 1);
+  return [...tally]
+    .map(([dept, count]) => ({ dept, count }))
+    .sort((a, b) => b.count - a.count || a.dept.localeCompare(b.dept));
 };
 
 export type CompareSort = "divergence" | "sales";

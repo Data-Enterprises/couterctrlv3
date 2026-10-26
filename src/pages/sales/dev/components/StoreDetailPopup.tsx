@@ -861,7 +861,6 @@ const StoreDetailPopup = ({ selection, groupRows }: StoreDetailPopupProps) => {
               compareStoreName={counterpart.storeName}
               twStart={twStart}
               twEnd={twEnd}
-              threshold={itemThreshold}
               onBack={() => dispatch(setCounterpart(null))}
             />
           ) : (
