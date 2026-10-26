@@ -732,3 +732,11 @@ fifteen hours later (backend, `efd4cd6`).
 
 The grid has an **Access** column: By group, By store, or Mixed for a stray
 older account whose groups disagree.
+
+### Filter users by access type
+
+`cb7ee37b`
+
+An **All access** filter beside the role filter narrows the grid to By group or
+By store. It is remembered with the other filters when you open someone and
+come back.
