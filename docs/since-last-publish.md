@@ -677,3 +677,58 @@ was the same three-and-others.
 The overlay caps at 45vh and scrolls, since naming every department can run
 long on a pair of stores that share little and it must not reach past the panel
 it is laid over.
+
+## User Management
+
+Dev tree only. Asked for by Amanda, who needs to edit people's access this way
+rather than blow out every Houchens user and start again.
+
+### One access type per person, and Edit is Add filled in
+
+`1f3a39d5`
+
+A person is now **By group** or **By store**, one answer for everything they
+hold. Each base group used to carry its own Auto / Pick stores toggle, so the
+question had no single answer and nothing on a finished screen showed it. The
+toggle is gone; the AUTO / FIXED chip stays and reports the person's type.
+
+Edit user is the same four steps as Add user, filled in: every step reachable
+straight away, the username fixed, no password section (the key icon in the
+list does that). Save sends only what changed.
+
+The access type can now be changed on an existing person. Switching to By store
+starts with **every store they currently have ticked**, so nothing is lost until
+somebody unticks. The review step warns that saving rewrites all of their base
+groups.
+
+For the single store role, By group is shown greyed with the reason on the
+card. It had never actually been greyed for anyone -- the check compared the
+role against the word "singlestore", and the role is stored as the number 1.
+
+Duplicate copies the access type, and copies exactly the stores the source
+picked and through which group. It used to fetch every group's store list and
+guess, which could give the copy more than the original had.
+
+### Deactivate several users at once
+
+`a079d912`
+
+Users get a checkbox, and the header a select-all for what is on screen. While
+anything is ticked a bar offers **Deactivate N** (or **Reactivate N** under
+Inactive). The confirmation lists every person by name, then becomes the
+result: deactivated, already inactive, refused with the reason, or not found.
+
+Refused: anyone outside your companies, yourself, anyone above your level, and
+a username shared by more than one account. Your own row and rows above you
+have no checkbox.
+
+The single trash icon now says **Deactivate** and goes through the same
+confirmation. It always only deactivated -- the old confirmation said "This
+can't be undone" -- and reactivating gives back the companies, groups and
+stores the person had.
+
+A deactivated person is signed out on their next click rather than up to
+fifteen hours later (backend, `efd4cd6`).
+
+The grid has an **Access** column: By group, By store, or Mixed for a stray
+older account whose groups disagree.
