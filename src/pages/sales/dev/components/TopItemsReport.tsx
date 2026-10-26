@@ -5,7 +5,6 @@ import { cacheTopItemsTy } from "../../../../features/dev/devSalesLedgerSlice";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
 import CtaStrip, { type CtaTone } from "../../../../components-dev/CtaStrip";
-import { Block } from "./CompareBlocks";
 import {
   ChevronDownIcon,
   ChevronUpIcon,
@@ -331,7 +330,7 @@ const TopItemsReport = ({
               </span>
             )}
             {totals.onlyTheirs > 0 && (
-              <span className="flex items-center px-2.5 flex-1 text-content whitespace-nowrap overflow-hidden bg-brand_navy/10">
+              <span className="flex items-center px-2.5 flex-1 text-content whitespace-nowrap overflow-hidden bg-brand_navy/15">
                 <span className="truncate">
                   {totals.onlyTheirs} only {compareStoreName}
                 </span>
@@ -697,6 +696,18 @@ const Rail = ({
   const sev = toneOf(divergenceSigned(row));
   const cta = CTA_SEVERITY_CLASSES[sev];
   const Mark_ = sev === "critical" ? ExclamationCircleIcon : CheckCircleIcon;
+
+  const figure = (label: string, a: string, b: string, bold = false) => (
+    <>
+      <span className={bold ? "font-semibold" : ""}>{label}</span>
+      <span className={`text-right tabular-nums ${bold ? "font-bold" : ""}`}>
+        {a}
+      </span>
+      <span className={`text-right tabular-nums ${bold ? "font-bold" : ""}`}>
+        {b}
+      </span>
+    </>
+  );
   const missingName =
     row.only === "mine" ? compareStoreName : openStoreName;
   const sold = absent?.stores?.[0] ?? null;
@@ -788,9 +799,15 @@ const Rail = ({
         data-help="top200-compare-rail"
         className="flex-1 min-h-0 overflow-y-auto thin-scrollbar px-3.5 py-3 flex flex-col"
       >
-        <Block title={`Against ${compareStoreName}`}>
-          <div className="grid grid-cols-[1fr_120px_120px] gap-x-3 gap-y-1.5 text-[13px] text-content items-baseline">
-            <span />
+        {/* "Comparison" sits ON the header row with the two store names
+            rather than above it, and each name carries its bar swatch so the
+            rail and the list agree about which store is which. The columns
+            are 132px: at 96 a store name clipped to "002 - IGA IRV…". */}
+        <div>
+          <div className="grid grid-cols-[1fr_132px_132px] gap-x-3 gap-y-1.5 text-[13.5px] text-content items-baseline">
+            <span className="font-mono text-[11px] uppercase tracking-wider">
+              Comparison
+            </span>
             <span className="text-right text-[11.5px] font-bold inline-flex items-center justify-end gap-1.5 truncate">
               <span className={`w-2 h-2 rounded-sm flex-none ${severityDotClass[sev]}`} />
               <span className="truncate">{openStoreName}</span>
@@ -802,57 +819,44 @@ const Rail = ({
 
             <span className="col-span-3 h-px bg-brand_line my-0.5" />
 
-            <span className="font-semibold">Sales</span>
-            <span className="text-right tabular-nums font-bold">
-              {row.mine ? money(row.mineSales) : "—"}
-            </span>
-            <span className="text-right tabular-nums font-bold">
-              {row.theirs ? money(row.theirsSales) : "—"}
-            </span>
-
-            <span className="font-semibold">Share of top 200</span>
-            <span className="text-right tabular-nums font-bold">
-              {pct(row.mineShare)}
-            </span>
-            <span className="text-right tabular-nums font-bold">
-              {pct(row.theirsShare)}
-            </span>
-
-            <span>Amount</span>
-            <span className="text-right tabular-nums">
-              {amountTextOf(row.mine) ?? "—"}
-            </span>
-            <span className="text-right tabular-nums">
-              {amountTextOf(row.theirs) ?? "—"}
-            </span>
-
-            <span>Avg price</span>
-            <span className="text-right tabular-nums">
-              {row.mine ? (avgPrice(row.mine)?.toFixed(2) ?? "—") : "—"}
-            </span>
-            <span className="text-right tabular-nums">
-              {row.theirs ? (avgPrice(row.theirs)?.toFixed(2) ?? "—") : "—"}
-            </span>
-
-            <span>Margin</span>
-            <span className="text-right tabular-nums">
-              {row.mine && row.mine.margin !== null
+            {figure(
+              "Sales",
+              row.mine ? money(row.mineSales) : "—",
+              row.theirs ? money(row.theirsSales) : "—",
+              true,
+            )}
+            {figure(
+              "Amount",
+              amountTextOf(row.mine) ?? "—",
+              amountTextOf(row.theirs) ?? "—",
+            )}
+            {figure(
+              "Avg price",
+              row.mine ? (avgPrice(row.mine)?.toFixed(2) ?? "—") : "—",
+              row.theirs ? (avgPrice(row.theirs)?.toFixed(2) ?? "—") : "—",
+            )}
+            {figure(
+              "Margin",
+              row.mine?.margin !== null && row.mine !== null
                 ? `${row.mine.margin.toFixed(1)}%`
-                : "—"}
-            </span>
-            <span className="text-right tabular-nums">
-              {row.theirs && row.theirs.margin !== null
+                : "—",
+              row.theirs?.margin !== null && row.theirs !== null
                 ? `${row.theirs.margin.toFixed(1)}%`
-                : "—"}
-            </span>
+                : "—",
+            )}
+            {figure(
+              "Share of top 200",
+              pct(row.mineShare),
+              pct(row.theirsShare),
+              true,
+            )}
           </div>
-        </Block>
+        </div>
 
         {lines.length > 0 && (
           <div>
-            <p className="font-mono text-[11px] uppercase tracking-wider text-content mb-1.5">
-              What it rang at, and where
-            </p>
+            {/* No heading: "Price" over the first column with a store over
+                each of the others already says what this is. */}
             <div className="grid grid-cols-[76px_1fr_1fr] gap-x-3 gap-y-1.5 text-[13px] text-content items-baseline">
               <span className="font-mono text-[11px] uppercase tracking-wider">
                 Price
