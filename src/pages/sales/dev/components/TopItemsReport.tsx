@@ -445,8 +445,6 @@ const TopItemsReport = ({
           className="w-[170px] flex-none"
         />
 
-        <span className="flex-1" />
-
         {/* No "Sort" label: the two choices name themselves, and the word
             was the only text on the row that was not a control.
             `plain`, because this always holds a value — the active ring says
