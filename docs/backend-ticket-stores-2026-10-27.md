@@ -326,7 +326,12 @@ Not for you to build. It's here so the API shape makes sense:
 
 | # | Item | Commit | Request / response shape as shipped | Notes |
 |---|------|--------|-------------------------------------|-------|
-| 1 | `ticket_store_link`, `storeids` on create, `stores[]` on every ticket | | | |
-| 2 | Three-tier scope, `scope` on the list response | | | |
-| 3 | `PUT /tickets/{id}/stores` | | | |
-| 4 | `storeid` filter on `GET /tickets/` (optional) | | | |
+| 1 | `ticket_store_link`, `storeids` on create, `stores[]` on every ticket | `1328b55` | `storeids: int[]` optional, default `[]`; every ticket has `stores: [{storeid, store_number, store_name}]`, numbered order, `[]` when none | Techs may file against any store; closed stores accepted. 400 `detail` names stores as `#27`. |
+| 2 | Three-tier scope, `scope` on the list response | `c93220d` | `scope: "own" \| "stores" \| "company" \| "all"` on list **and** detail | Owner tier also includes the Manager clauses: 65 managers hold stores outside their companies. One `_has_store` for every check. |
+| 3 | `PUT /tickets/{id}/stores` | `b71eb8b` | `{storeids: int[]}` required → `{error, success, changed, ticket}` | Also allows the opener's own stores. Writes an internal note on change. **Added:** `GET /tickets/store_options[?ticket_id=]` feeds every picker. |
+| 4 | `storeid` filter on `GET /tickets/` (optional) | `9f5175f` | `?storeid=361&storeid=364` | Narrows within scope. |
+
+Full handback, with their frontend plan (A–G):
+`C:\backend\goliath-platform\docs\ticket-stores-handback-2026-10-27.md`
+(branch `subs_exlusion_returns`). **Run `db/ticket_workflow.sql` before deploying
+that API**: every ticket query joins the new table.
