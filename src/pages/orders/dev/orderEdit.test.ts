@@ -19,6 +19,9 @@ import {
   docKey,
   dropLine,
   editedLines,
+  linesInPick,
+  matchesPick,
+  NO_PICK,
   isAdded,
   isEdited,
   nextSeq,
@@ -698,5 +701,46 @@ describe("staged unit cost", () => {
     for (const d of drafts) {
       expect(new Set(d.lines.map((l) => l.storenumber)).size).toBe(1);
     }
+  });
+});
+
+describe("Fix cost follows the left panel", () => {
+  const PIZZA = "004470036114";
+  const LINES = [
+    line({ storeid: 10, storenumber: "010", order_id: 1, product_code: PIZZA, order_date: "2026-10-20T00:00:00", order_type: "SMS" }),
+    line({ storeid: 114, storenumber: "114", order_id: 2, product_code: PIZZA, order_date: "2026-10-20T00:00:00", order_type: "SMS" }),
+    line({ storeid: 114, storenumber: "114", order_id: 3, product_code: PIZZA, order_date: "2026-10-21T00:00:00", order_type: "DSD" }),
+  ];
+
+  it("covers every loaded line when the panel is not narrowed", () => {
+    expect(linesInPick(LINES, NO_PICK)).toBe(LINES);
+  });
+
+  it("covers only the store the panel is narrowed to", () => {
+    const got = linesInPick(LINES, { ...NO_PICK, storeNumber: "114" });
+    expect(got.map((l) => l.order_id)).toEqual([2, 3]);
+  });
+
+  it("applies every filter the panel has set", () => {
+    const got = linesInPick(LINES, {
+      storeNumber: "114",
+      orderDate: "2026-10-21T00:00:00",
+      orderType: "DSD",
+    });
+    expect(got.map((l) => l.order_id)).toEqual([3]);
+  });
+
+  it("stages into the narrowed store only", () => {
+    // The bug: narrowed to 114, a fix reached 010 as well.
+    const scope = linesInPick(LINES, { ...NO_PICK, storeNumber: "114" });
+    const drafts = Object.values(stageUnitCost({}, scope, LINES, 2));
+    expect(drafts.map((d) => d.doc.storenumber).sort()).toEqual(["114", "114"]);
+  });
+
+  it("lets one filter be skipped, for what each dropdown offers", () => {
+    const d = { storenumber: "010", order_date: "2026-10-20T00:00:00", order_type: "SMS" };
+    const pick = { storeNumber: "114", orderDate: "", orderType: "" };
+    expect(matchesPick(d, pick)).toBe(false);
+    expect(matchesPick(d, pick, "store")).toBe(true);
   });
 });

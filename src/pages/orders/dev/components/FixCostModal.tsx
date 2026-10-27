@@ -5,8 +5,11 @@ import type { AllOrder } from "../../../../interfaces";
 import { stagePreview, unitCostOf } from "../orderEdit";
 
 interface Props {
-  /** Every line loaded — the item is searched across all of them. */
+  /** Every line on an order the left panel is showing — the item is searched
+   *  across these, and only these orders are staged into. */
   scope: AllOrder[];
+  /** The left panel's filters in words, or "" when it shows everything. */
+  scopeNote: string;
   /** Every line the search returned; a draft holds the whole order. */
   all: AllOrder[];
   /** Stage the cost into the drafts. Nothing is sent from here. */
@@ -25,15 +28,16 @@ interface Props {
  * Opens only in Edit mode, which is where drafts exist to stage into.
  *
  * The item is chosen here by search, and the orders follow from it: every
- * loaded order carrying that item is listed before anything is staged, so you
- * see exactly which orders the fix will touch.
+ * order the left panel is showing that carries the item is listed before
+ * anything is staged, so you see exactly which orders the fix will touch.
+ * Narrow the panel to one store and the fix reaches that store only.
  *
  * In unit cost because case size is per store: a case of 12 and a case of 24
  * are the same item at the same unit price and two different case costs. The
  * per-store list shows the case cost each order will carry before it is
  * staged, since that is the number that lands in the file.
  */
-const FixCostModal = ({ scope, all, onStage, onClose }: Props) => {
+const FixCostModal = ({ scope, scopeNote, all, onStage, onClose }: Props) => {
   /**
    * Every item in scope, with how many orders carry it.
    *
@@ -168,8 +172,10 @@ const FixCostModal = ({ scope, all, onStage, onClose }: Props) => {
                 )}
               </div>
               <span className="text-[11.5px] text-content/85">
-                {items.length.toLocaleString()} items across every loaded
-                order.
+                {items.length.toLocaleString()} items across{" "}
+                {scopeNote
+                  ? `the orders shown on the left (${scopeNote}).`
+                  : "every loaded order."}
               </span>
             </div>
           ) : (

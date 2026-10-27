@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
-import type { OrderDoc } from "../orderEdit";
+import { matchesPick, type OrderDoc } from "../orderEdit";
 
 interface Props {
   /** Every order in the range, newest first. */
@@ -79,13 +79,7 @@ const OrderPickerPanel = ({
   const matches = (
     d: OrderDoc,
     skip: "store" | "date" | "type" | null,
-  ) => {
-    if (skip !== "store" && storeNumber && d.storenumber !== storeNumber)
-      return false;
-    if (skip !== "date" && orderDate && d.order_date !== orderDate) return false;
-    if (skip !== "type" && orderType && d.order_type !== orderType) return false;
-    return true;
-  };
+  ) => matchesPick(d, { storeNumber, orderDate, orderType }, skip);
 
   const stores = useMemo(() => {
     const seen = new Map<string, string>();

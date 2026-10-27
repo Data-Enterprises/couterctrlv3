@@ -53,6 +53,7 @@ import {
   type LinePatch,
   type OrderDoc,
   type OrderDraft,
+  linesInPick,
 } from "./orderEdit";
 
 import SearchCard from "../../../components-dev/SearchCard";
@@ -166,6 +167,15 @@ const Orders = () => {
   const [pickStore, setPickStore] = useState("");
   const [pickDate, setPickDate] = useState("");
   const [pickType, setPickType] = useState("");
+
+  /** The left panel's filters in words, for Fix cost to say what it covers. */
+  const pickNote = [
+    pickStore && `store ${pickStore.padStart(3, "0")}`,
+    pickDate && `orders of ${pickDate.split("T")[0]}`,
+    pickType && `type ${pickType}`,
+  ]
+    .filter(Boolean)
+    .join(", ");
   const [editSearch, setEditSearch] = useState<EditSearch>({
     code: "",
     desc: "",
@@ -577,7 +587,15 @@ const Orders = () => {
       {/* Edit mode only: it stages into drafts, and Browse has none. */}
       {fixCostOpen && editing && canEdit && (
         <FixCostModal
-          scope={ctx.allOrders}
+          // What the left panel shows, not everything loaded: a fix reaches
+          // only the orders on screen. `all` stays whole because a draft
+          // holds a whole order, not just the lines carrying the item.
+          scope={linesInPick(ctx.allOrders, {
+            storeNumber: pickStore,
+            orderDate: pickDate,
+            orderType: pickType,
+          })}
+          scopeNote={pickNote}
           all={ctx.allOrders}
           onStage={(itemRows, unit) =>
             setDrafts((ds) => stageUnitCost(ds, itemRows, ctx.allOrders, unit))

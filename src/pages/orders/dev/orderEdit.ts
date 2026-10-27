@@ -126,6 +126,53 @@ export const docKey = (
 ) => `${o.storeid}|${o.storenumber}|${o.order_id}|${o.order_date}`;
 
 /**
+ * What the Edit-mode left panel is narrowed to. An empty string is "any".
+ */
+export interface OrderPick {
+  storeNumber: string;
+  orderDate: string;
+  orderType: string;
+}
+
+export const NO_PICK: OrderPick = { storeNumber: "", orderDate: "", orderType: "" };
+
+/**
+ * Whether an order passes the left panel's filters.
+ *
+ * `skip` leaves one filter out, which is how the panel works out what each
+ * dropdown may offer given the other two. Shared rather than kept in the
+ * panel because Fix cost has to agree with it exactly: the orders a fix
+ * stages into are the orders the panel is showing, and two copies of "which
+ * orders are showing" would drift.
+ */
+export const matchesPick = (
+  d: Pick<OrderDoc, "storenumber" | "order_date" | "order_type">,
+  pick: OrderPick,
+  skip: "store" | "date" | "type" | null = null,
+) => {
+  if (skip !== "store" && pick.storeNumber && d.storenumber !== pick.storeNumber)
+    return false;
+  if (skip !== "date" && pick.orderDate && d.order_date !== pick.orderDate)
+    return false;
+  if (skip !== "type" && pick.orderType && d.order_type !== pick.orderType)
+    return false;
+  return true;
+};
+
+/**
+ * Every line belonging to an order the left panel is showing.
+ *
+ * What Fix cost searches and stages into. It used to be every loaded line,
+ * so narrowing the panel to one store and fixing a cost wrote it into every
+ * other store's orders too — and the picker, filtered to that one store,
+ * hid the evidence.
+ */
+export const linesInPick = (lines: AllOrder[], pick: OrderPick): AllOrder[] =>
+  pick.storeNumber === "" && pick.orderDate === "" && pick.orderType === ""
+    ? lines
+    : lines.filter((o) => matchesPick(o, pick));
+
+/**
  * The orders in the result, for the picker.
  *
  * Read off the lines the page already holds rather than asked for: dev Orders
