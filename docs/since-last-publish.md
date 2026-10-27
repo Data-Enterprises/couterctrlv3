@@ -799,3 +799,28 @@ A ticket filed from User Management, Admin, Groups, Tickets, QuickSight or
 Settings printed whatever store was last searched on another page, as if the
 problem were about it. Erica's ticket about a B&T user read Grocery Basket.
 Those pages now record no store, group or dates on the ticket.
+
+### Tickets name their stores, and who sees them follows the stores
+
+dev mode only &middot; needs the goliath-platform ticket-store API (and
+`db/ticket_workflow.sql` run first) -- see
+`docs/backend-ticket-stores-2026-10-27.md`
+
+New Ticket and Report an issue now ask which stores a ticket is about, from the
+person's own stores, or "Not about a store". One of the two is required, and
+someone with only one store is not asked. From a store search that store is
+ticked already; from a group search the group's stores are listed first. A
+store they can only search through a shared group is never pre-ticked, since
+the ticket could not be filed against it. From User Management and Groups a
+hint says to tick the store of the person the access problem is about.
+
+Who sees a ticket now follows the stores: below Manager, your own; a Manager,
+also tickets about their stores and store-less ones from their stores' staff;
+an Owner, also everything for their companies. The inbox says which, rows show
+the store numbers, and the ticket header lists them in full. A store filter
+appears when the list spans more than one store.
+
+Techs get **Edit stores** under a ticket's title; the change is noted in the
+thread for the desk only. A ticket that leaves your view while it is open (its
+stores changed, or yours did) closes with "That ticket is no longer in your
+view" instead of failing on every poll.

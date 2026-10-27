@@ -1,6 +1,11 @@
 import MultiSelectFilter from "../../../components-dev/filters/MultiSelectFilter";
 import PageInfoButton from "../../../components-dev/PageInfoButton";
-import type { Ticket, TicketStatus } from "../../../api/tickets";
+import type {
+  Ticket,
+  TicketScope,
+  TicketStatus,
+  TicketStore,
+} from "../../../api/tickets";
 import type {
   QueueTab,
   TicketFilters,
@@ -15,6 +20,12 @@ import {
   visibleLabels,
   whenText,
 } from "./ticketsUtils";
+import {
+  SCOPE_HEADING,
+  SCOPE_TEXT,
+  storeChipText,
+  storesOf,
+} from "./ticketStores";
 
 interface Props {
   rows: Ticket[];
@@ -23,6 +34,13 @@ interface Props {
   /** Company and opener are a tech's to read. A client seeing "Bruces
    *  Foodland" on their own ticket learns nothing. */
   isTech: boolean;
+  /** Which tickets the server is showing this reader. Null from an API older
+   *  than the store tiers, which reads as before. */
+  scope: TicketScope | null;
+  /** Whose rows are whose: a Manager's list holds other people's tickets. */
+  userid: number;
+  /** Every store on the tickets in hand, for the store filter. */
+  storeOptions: TicketStore[];
   loading: boolean;
   tab: QueueTab;
   counts: {
@@ -108,6 +126,9 @@ const TicketInbox = ({
   selectedId,
   onSelect,
   isTech,
+  scope,
+  userid,
+  storeOptions,
   loading,
   tab,
   counts,
@@ -125,7 +146,10 @@ const TicketInbox = ({
   onTechs,
   error,
 }: Props) => {
-  const narrowed = filters.status.length > 0 || filters.priority.length > 0;
+  const narrowed =
+    filters.status.length > 0 ||
+    filters.priority.length > 0 ||
+    filters.stores.length > 0;
 
   return (
     <div className="flex h-full w-[379px] flex-none flex-col overflow-hidden rounded-xl bg-custom-white shadow-lg xl:w-[410px] 2xl:w-[460px]">
@@ -134,7 +158,7 @@ const TicketInbox = ({
           holding one button read as a header for a header. */}
       <div className="flex-shrink-0 rounded-t-xl bg-brand_navy px-4 py-2.5 flex items-end gap-3">
         <span className="flex-shrink-0 text-[13px] font-semibold text-custom-white">
-          {isTech ? "Queue" : "Your tickets"}
+          {isTech ? "Queue" : scope ? SCOPE_HEADING[scope] : "Your tickets"}
         </span>
         {/* Up here rather than beside Refresh: who is on the desk is a
             standing fact about the queue, not something you do to the list
@@ -235,6 +259,22 @@ const TicketInbox = ({
           )}
         </div>
 
+        {/* Only when there is a choice to make: one store on every ticket
+            is not a filter, it is a fact. */}
+        {storeOptions.length > 1 && (
+          <MultiSelectFilter
+            options={storeOptions.map((s) => ({
+              value: String(s.storeid),
+              label: `#${s.store_number} ${s.store_name}`,
+            }))}
+            values={filters.stores}
+            onChange={(values) => onFilters({ stores: values })}
+            placeholder="Any store"
+            noun="stores"
+            className="mt-2 w-full"
+          />
+        )}
+
         <div className="mt-2 flex items-center gap-1.5">
           <label htmlFor="ticket-search" className="sr-only">
             Search tickets
@@ -286,6 +326,15 @@ const TicketInbox = ({
             {loading ? "…" : pending ? "New" : "↻"}
           </button>
         </div>
+
+        {/* What this list is, from the server's answer. A manager who does
+            not see a coworker's ticket is told why, rather than left to
+            wonder whether it was filed. */}
+        {scope && scope !== "all" && (
+          <p className="m-0 mt-2 text-[11.5px] text-content/85">
+            {SCOPE_TEXT[scope]}
+          </p>
+        )}
 
         {onNew && (
           <button
@@ -361,9 +410,11 @@ const TicketInbox = ({
                 </span>
 
                 {/* Who to answer. A client already knows who they are, so
-                    their rows name the tech instead. */}
+                    their own rows name the tech instead. A manager's list
+                    also holds their staff's tickets, and those name who
+                    filed them. */}
                 <span className="mt-0.5 block truncate text-[11.5px] text-content/85">
-                  {isTech
+                  {isTech || t.opened_by !== userid
                     ? t.opened_by_name
                     : (t.assigned_tech ?? "Unassigned")}
                 </span>
@@ -385,6 +436,16 @@ const TicketInbox = ({
                       className={`rounded px-1.5 py-[1px] text-[10px] font-semibold ${PRIORITY_CLASS[t.priority]}`}
                     >
                       {t.priority}
+                    </span>
+                  )}
+                  {storesOf(t).length > 0 && (
+                    <span
+                      title={storesOf(t)
+                        .map((st) => `#${st.store_number} ${st.store_name}`)
+                        .join(", ")}
+                      className="rounded bg-bkg px-1.5 py-[1px] font-mono text-[10px] text-content/85"
+                    >
+                      {storeChipText(storesOf(t))}
                     </span>
                   )}
                   {isTech && t.company_name && (

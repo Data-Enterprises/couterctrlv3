@@ -6,6 +6,7 @@ import type {
   TicketCaps,
   TicketComment,
   TicketLookups,
+  TicketScope,
 } from "../../api/tickets";
 
 /**
@@ -26,6 +27,12 @@ export interface TicketsState {
   error: string | null;
   tickets: Ticket[];
   caps: TicketCaps;
+  /**
+   * Which tickets the server is showing this reader: their own, their
+   * stores', their companies', or all. Null until a response says, and from
+   * an API older than the store tiers.
+   */
+  scope: TicketScope | null;
   lookups: TicketLookups | null;
   assignees: TicketAssignee[];
 
@@ -79,6 +86,9 @@ export interface TicketFilters {
   company: string;
   openedBy: string;
   assignee: string;
+  /** Storeids as strings, the picker's currency. A ticket matches if it
+   *  names any of them. */
+  stores: string[];
 }
 
 export const noFilters: TicketFilters = {
@@ -88,6 +98,7 @@ export const noFilters: TicketFilters = {
   company: "",
   openedBy: "",
   assignee: "",
+  stores: [],
 };
 
 export const initialState: TicketsState = {
@@ -95,6 +106,7 @@ export const initialState: TicketsState = {
   error: null,
   tickets: [],
   caps: { canViewAll: false, canManage: false, canManageTechs: false },
+  scope: null,
   lookups: null,
   assignees: [],
   selectedId: null,
@@ -123,11 +135,16 @@ const devTicketsSlice = createSlice({
     },
     setTickets: (
       state,
-      action: PayloadAction<{ tickets: Ticket[]; caps: TicketCaps }>,
+      action: PayloadAction<{
+        tickets: Ticket[];
+        caps: TicketCaps;
+        scope?: TicketScope | null;
+      }>,
     ) => {
       state.loading = false;
       state.tickets = action.payload.tickets;
       state.caps = action.payload.caps;
+      state.scope = action.payload.scope ?? null;
       // This IS the up-to-date list, so there is nothing left to offer.
       state.pending = null;
     },
@@ -160,6 +177,7 @@ const devTicketsSlice = createSlice({
         comments: TicketComment[];
         attachments: TicketAttachment[];
         caps: TicketCaps;
+        scope?: TicketScope | null;
       }>,
     ) => {
       state.detailLoading = false;
@@ -172,6 +190,7 @@ const devTicketsSlice = createSlice({
       );
       // The detail carries the flags too, and it is the more recent answer.
       state.caps = action.payload.caps;
+      if (action.payload.scope) state.scope = action.payload.scope;
     },
     setAttachments: (state, action: PayloadAction<TicketAttachment[]>) => {
       state.attachments = action.payload;
@@ -179,6 +198,31 @@ const devTicketsSlice = createSlice({
     failDetail: (state, action: PayloadAction<string>) => {
       state.detailLoading = false;
       state.error = action.payload;
+    },
+    /**
+     * The open ticket answered 404: it has left this reader's view.
+     *
+     * New with the store tiers. A manager sees a ticket because it names one of
+     * their stores, so a tech changing its stores, or the manager losing the
+     * store, takes it away while it is open. That is not an error to retry:
+     * the pane closes, the row goes, and the page says why.
+     */
+    lostTicket: (state, action: PayloadAction<number>) => {
+      const id = action.payload;
+      state.tickets = state.tickets.filter((t) => t.id !== id);
+      if (state.pending) {
+        state.pending = state.pending.filter((t) => t.id !== id);
+      }
+      if (state.selectedId === id) {
+        state.selectedId = null;
+        state.detail = null;
+        state.comments = [];
+        state.attachments = [];
+        state.detailLoading = false;
+        state.lastCommentId = 0;
+      }
+      state.working = false;
+      state.error = "That ticket is no longer in your view.";
     },
 
     startWork: (state) => {
@@ -299,6 +343,7 @@ export const {
   setDetail,
   setAttachments,
   failDetail,
+  lostTicket,
   startWork,
   endWork,
   upsertTicket,

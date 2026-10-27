@@ -5,9 +5,9 @@ import axios from "axios";
  *
  * Ported from the old `ticket_api` service onto the main API, so it takes the
  * bearer token the app already has — no API key, and no `userid` parameter
- * anywhere in it. Scope is enforced in the SQL rather than in the route: you
- * see your company's tickets plus any you opened, and a ticket outside that is
- * a 404 rather than a 403, so nobody learns what they cannot see.
+ * anywhere in it. Scope is enforced in the SQL rather than in the route, by
+ * tier (see `TicketScope`), and a ticket outside it is a 404 rather than a
+ * 403, so nobody learns what they cannot see.
  */
 
 const headers = (token: string) => ({
@@ -24,6 +24,23 @@ export interface TicketLabel {
   name: string;
   color: string;
 }
+
+/** A store a ticket is about. */
+export interface TicketStore {
+  storeid: number;
+  store_number: string;
+  store_name: string;
+}
+
+/**
+ * Which tickets the server is showing this reader, by tier.
+ *
+ * `own` (below Manager): what they opened. `stores` (Manager): also tickets
+ * naming one of their stores, and store-less tickets their stores' staff
+ * filed. `company` (Owner): also every ticket for their companies. `all`: a
+ * tech on the roster, or level 9.
+ */
+export type TicketScope = "own" | "stores" | "company" | "all";
 
 export interface Ticket {
   id: number;
@@ -58,6 +75,12 @@ export interface Ticket {
   assignee_id: number | null;
   assigned_tech: string | null;
   labels: TicketLabel[];
+  /**
+   * The stores it is about, in store-number order. Empty means "Not about a
+   * store". Optional only until the API that sends it is deployed; read it
+   * through `storesOf`.
+   */
+  stores?: TicketStore[];
 }
 
 export interface TicketComment {
@@ -138,6 +161,8 @@ export interface TicketListResp extends TicketCaps {
   success: boolean;
   count: number;
   tickets: Ticket[];
+  /** On detail too. Absent from an API older than the store tiers. */
+  scope?: TicketScope;
 }
 
 /** Newest-updated first, so a ticket with a new reply or attachment rises. */
@@ -167,6 +192,7 @@ export interface TicketDetailResp extends TicketCaps {
    * most wants to see.
    */
   attachments: TicketAttachment[];
+  scope?: TicketScope;
 }
 
 /**
@@ -212,6 +238,9 @@ export const getTicketAssignees = (url: string, token: string) =>
  * message in the thread, so the tech reads the problem where the conversation
  * is. `company` must be the opener's own; anything else is a 400 rather than a
  * silent misfiling.
+ *
+ * `storeids` are the stores it is about; `[]` is "Not about a store". A store
+ * the opener does not have is a 400 whose `detail` names it (`#27`).
  */
 export const createTicket = (
   url: string,
@@ -224,6 +253,7 @@ export const createTicket = (
     category_id?: number | null;
     due_at?: string | null;
     label_ids?: number[];
+    storeids?: number[];
   },
 ) =>
   axios({
@@ -231,6 +261,62 @@ export const createTicket = (
     headers: headers(token),
     url: url + "tickets/",
     data: body,
+  });
+
+/** A store a picker may offer: exactly the set the server will accept. */
+export interface TicketStoreOption extends TicketStore {
+  company: number;
+  company_name: string;
+  deactivated: boolean;
+  /** With `ticket_id` only: on that ticket now. */
+  selected: boolean;
+}
+
+export interface TicketStoreOptionsResp {
+  error: number;
+  success: boolean;
+  count: number;
+  stores: TicketStoreOption[];
+}
+
+/**
+ * What a store picker offers, fed by the same rule as the guard behind it.
+ *
+ * Without `ticketId`: the stores this person can file against — their own
+ * assigned stores, or every store for a tech. With it (techs only, else 403):
+ * the stores that ticket may be given, with `selected` marking its current
+ * ones.
+ */
+export const getTicketStoreOptions = (
+  url: string,
+  token: string,
+  ticketId?: number,
+) =>
+  axios({
+    method: "GET",
+    headers: headers(token),
+    url: url + "tickets/store_options",
+    params: ticketId ? { ticket_id: ticketId } : {},
+  });
+
+/**
+ * Replace a ticket's stores. Techs only.
+ *
+ * The whole list, every time; `[]` is "Not about a store". The same set as now
+ * answers `changed: false` and writes nothing. A change writes an internal
+ * note, which arrives through the ordinary thread poll.
+ */
+export const setTicketStores = (
+  url: string,
+  token: string,
+  id: number,
+  storeids: number[],
+) =>
+  axios({
+    method: "PUT",
+    headers: headers(token),
+    url: url + "tickets/" + id + "/stores",
+    data: { storeids },
   });
 
 /** Only the fields sent change. Status and assignment are deliberately not

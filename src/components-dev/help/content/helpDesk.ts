@@ -26,10 +26,11 @@ export const HELP_DESK_HELP: HelpContent = {
           see: "The more specific the title, the faster it reaches the right person.",
         },
         {
-          title: "Say where",
-          pre: "Pick the store it is about. Leave it on",
-          chip: "Not about one store",
-          post: "if it affects everything rather than one site.",
+          title: "Say which stores",
+          pre: "Tick the stores it is about, as many as it affects, or tick",
+          chip: "Not about a store",
+          post: "if it is about something else, like signing in. One or the other is needed to send it.",
+          see: "If you have only one store, it is filled in for you.",
         },
         {
           title: "Set how urgent it is",
@@ -51,6 +52,10 @@ export const HELP_DESK_HELP: HelpContent = {
         {
           q: "I cannot find the store in the list",
           a: "The picker offers the stores you have access to. If one is missing, that is an access question rather than a ticket one — raise a ticket about it and say which store.",
+        },
+        {
+          q: "Who will see my ticket?",
+          a: "You, the support desk, the managers of the stores you ticked, and the owners of your company. A ticket not about a store reaches your own store's manager if you are not a manager yourself, and otherwise the owners.",
         },
       ],
     },
@@ -84,7 +89,7 @@ export const HELP_DESK_HELP: HelpContent = {
         },
         {
           q: "A ticket disappeared from my list",
-          a: "It was closed. Switch to the Closed tab to read it; closing does not delete anything.",
+          a: "Usually it was closed: switch to the Closed tab to read it, since closing deletes nothing. If it is not there either, its stores changed, or yours did, and it is no longer one of the tickets you can see.",
         },
       ],
     },
@@ -125,6 +130,13 @@ export const HELP_DESK_HELP: HelpContent = {
           pre: "The status and priority pickers narrow the pile you are on, and",
           chip: "Clear narrowing",
           post: "puts it back.",
+        },
+        {
+          title: "Correct the stores",
+          pre: "If a ticket names the wrong stores, press",
+          chip: "Edit stores",
+          post: "under its title. The stores decide which managers see it.",
+          see: "An internal note records the change in the thread.",
         },
         {
           title: "Leave an internal note",
@@ -259,6 +271,10 @@ export const HELP_DESK_HELP: HelpContent = {
       term: "Unassigned",
       def: "In the queue with nobody's name on it. The pile that needs somebody to take it.",
       anchor: "queue-tabs",
+    },
+    {
+      term: "Not about a store",
+      def: "A ticket about something other than a store, like signing in or setting up a user. Owners see it, and so does the store manager of whoever raised it, if they are not a manager themselves.",
     },
     {
       term: "Report an issue",

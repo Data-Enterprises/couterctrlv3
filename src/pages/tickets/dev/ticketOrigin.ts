@@ -343,46 +343,6 @@ export const scopeLine = (
   return [origin.page ?? origin.href, where, when].filter(Boolean).join(" · ");
 };
 
-/**
- * The same two, for a ticket filed from the help desk itself.
- *
- * No page and no search behind it, so there is a store and nothing else —
- * whichever one they picked out of their own assigned list. Kept beside
- * `scopeOf` so both shapes of ticket describe a store the same way and a tech
- * does not have to learn two.
- */
-export const storeScope = (store: {
-  storeid: number;
-  store_number: string;
-  store_name: string;
-  company: number;
-  company_name: string;
-}): Record<string, unknown> => ({
-  page: null,
-  area: null,
-  search_type: "Store",
-  store: {
-    storeid: store.storeid,
-    store_number: store.store_number,
-    store_name: store.store_name,
-    company: store.company,
-    company_name: store.company_name,
-  },
-});
-
-export const storeLine = (store: {
-  storeid: number;
-  store_number: string;
-  store_name: string;
-}): string =>
-  [
-    store.store_name,
-    store.store_number ? `#${store.store_number}` : null,
-    store.storeid ? `storeid ${store.storeid}` : null,
-  ]
-    .filter(Boolean)
-    .join(" · ");
-
 /** The title a page-filed ticket opens with, so it is never blank. */
 export const suggestedTitle = (origin: TicketOrigin) =>
   origin.page ? `Issue on ${origin.page}` : "";
