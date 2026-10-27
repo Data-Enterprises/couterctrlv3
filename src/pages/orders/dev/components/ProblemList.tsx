@@ -160,7 +160,9 @@ const ProblemList = ({
         <span className="text-[11px] text-content/95 tabular-nums flex-1">
           {query.trim()
             ? `${shown.length.toLocaleString()} matching`
-            : `${toDo.toLocaleString()} of ${flagged.length.toLocaleString()} still to look at`}
+            : only.size > 0
+              ? `${shown.length.toLocaleString()} of ${flagged.length.toLocaleString()} showing`
+              : `${toDo.toLocaleString()} of ${flagged.length.toLocaleString()} still to look at`}
         </span>
         {only.size > 0 && !query.trim() && (
           <button

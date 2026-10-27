@@ -35,14 +35,20 @@ export interface ProblemItem {
    * What is wrong with it, in reading order. Empty for an item that is only
    * here because a search found it.
    *
+   * High margin is read from lines that HAVE a cost. A line with no cost
+   * rings 100%, so on Browse every missing-cost line is a high-margin line
+   * too — and here that meant the High margin filter led with the same
+   * missing-cost items Missing cost did, sorted first at 100%, so clicking it
+   * appeared to change nothing. A missing cost is listed once, as what it is.
+   *
    * Read from the lines as loaded, not as staged: an item stays in the list
    * after it is fixed, marked as staged, so the session's work stays visible.
    */
   flags: OrderFlag[];
   stores: number;
   orders: number;
-  /** The highest margin any of its lines rings, for ordering the high-margin
-   *  items worst first. Null when no line has retail to measure against. */
+  /** The highest margin any of its costed lines rings, for ordering the
+   *  high-margin items worst first. Null when none has retail to measure. */
   topMargin: number | null;
   /** Orders of this item holding a cost change not yet submitted. */
   staged: number;
@@ -85,10 +91,13 @@ export const itemsInScope = (
       } as Acc);
     const desc = (o.description ?? "").trim();
     if (!acc.desc && desc) acc.desc = desc;
-    lineFlags(o, marginOver).forEach((f) => acc.flags.add(f));
+    const costed = Boolean(o.base_cost);
+    lineFlags(o, marginOver)
+      .filter((f) => costed || f !== "highMargin")
+      .forEach((f) => acc.flags.add(f));
     acc.stores.add(`${o.storeid}|${o.storenumber}`);
     acc.orders.add(docKey(o));
-    const m = marginOf(o.e_ret ?? 0, o.cogs ?? 0);
+    const m = costed ? marginOf(o.e_ret ?? 0, o.cogs ?? 0) : null;
     if (m !== null && (acc.topMargin === null || m > acc.topMargin)) {
       acc.topMargin = m;
     }

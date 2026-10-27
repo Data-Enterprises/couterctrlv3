@@ -64,10 +64,11 @@ const find = (items: ProblemItem[], code: string) =>
   items.find((i) => i.code === code)!;
 
 describe("itemsInScope", () => {
-  it("names what is wrong, cause first", () => {
-    // No cost rings 100% margin, so the pizza is both — cause first.
+  it("names a missing cost once, not again as a high margin", () => {
+    // No cost rings 100% margin. Counting that as high margin too made the
+    // High margin filter lead with the missing-cost items.
     const pizza = find(itemsInScope(LINES, {}, 60), PIZZA);
-    expect(pizza.flags).toEqual(["missingCost", "highMargin"]);
+    expect(pizza.flags).toEqual(["missingCost"]);
     expect(pizza.stores).toBe(3);
     expect(pizza.orders).toBe(3);
   });
@@ -91,6 +92,15 @@ describe("itemsInScope", () => {
     // Same unit cost it already has: 26.28 over a case of 12.
     const same = applyUnitCost(startDraft(doc, LINES), 1, 2.19);
     expect(find(itemsInScope(LINES, { [doc.key]: same }, 60), PIZZA).staged).toBe(0);
+  });
+
+  it("still flags a high margin at a store that has a cost", () => {
+    // Missing at 010; a wrong, too-low cost at 206 rings 92%.
+    const lines = [LINES[0], { ...LINES[2], cogs: 0.8 }];
+    expect(find(itemsInScope(lines, {}, 60), PIZZA).flags).toEqual([
+      "missingCost",
+      "highMargin",
+    ]);
   });
 
   it("uses the cutoff it is given", () => {
