@@ -190,18 +190,18 @@ const Orders = () => {
    * off screen would be scope nobody could see. Which stores a fix reaches is
    * decided on the item itself, by ticking or unticking each store's row.
    */
-  const pickScope = ctx.allOrders;
+  const problemScope = ctx.allOrders;
   const scopeStores = useMemo(
-    () => new Set(pickScope.map((o) => `${o.storeid}|${o.storenumber}`)).size,
-    [pickScope],
+    () => new Set(problemScope.map((o) => `${o.storeid}|${o.storenumber}`)).size,
+    [problemScope],
   );
   const scopeOrders = useMemo(
-    () => new Set(pickScope.map(docKey)).size,
-    [pickScope],
+    () => new Set(problemScope.map(docKey)).size,
+    [problemScope],
   );
   const problemItems = useMemo(
-    () => itemsInScope(pickScope, drafts, ctx.filters.marginOver),
-    [pickScope, drafts, ctx.filters.marginOver],
+    () => itemsInScope(problemScope, drafts, ctx.filters.marginOver),
+    [problemScope, drafts, ctx.filters.marginOver],
   );
   /** Still to do, in working order: what "next" walks and "3 of 57" counts. */
   const toDo = useMemo(
@@ -238,7 +238,7 @@ const Orders = () => {
   const handleStageItem = (keys: string[], unit: number) => {
     if (!problemCode) return;
     const keySet = new Set(keys);
-    const rows = pickScope.filter(
+    const rows = problemScope.filter(
       (o) => String(o.product_code) === problemCode && keySet.has(docKey(o)),
     );
     setDrafts((ds) => stageUnitCost(ds, rows, ctx.allOrders, unit));
@@ -741,7 +741,7 @@ const Orders = () => {
                 key={problemCode ?? "none"}
                 item={openProblem}
                 position={problemPosition}
-                scope={pickScope}
+                scope={problemScope}
                 all={ctx.allOrders}
                 drafts={drafts}
                 onStage={handleStageItem}
