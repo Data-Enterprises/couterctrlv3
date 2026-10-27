@@ -108,6 +108,26 @@ describe("dev and prod slices stay isolated", () => {
   });
 });
 
+/**
+ * The part of `a` that `b` also has, all the way down.
+ *
+ * The same allowance the slice-level check makes — dev may add a field —
+ * applied inside a field that holds an object. Dev's users grid filters gained
+ * `accessFilter`; prod's have not, and that is a dev addition, not drift.
+ * Keys both copies carry still have to start the same.
+ */
+const isPlain = (v: unknown): v is Record<string, unknown> =>
+  typeof v === "object" && v !== null && !Array.isArray(v);
+
+const shared = (a: unknown, b: unknown): unknown => {
+  if (!isPlain(a) || !isPlain(b)) return a;
+  return Object.fromEntries(
+    Object.keys(a)
+      .filter((k) => k in b)
+      .map((k) => [k, shared(a[k], b[k])]),
+  );
+};
+
 describe("the store layout", () => {
   it("mounts page slices under prod only, never at the root", () => {
     // Page code reads state.prod.<slice> or state.dev.<slice>; a bare
@@ -137,9 +157,10 @@ describe("the store layout", () => {
       expect(prod, `prod.${key}`).toBeDefined();
       for (const field of Object.keys(dev)) {
         if (!(field in prod)) continue;
-        expect(dev[field], `dev.${key}.${field} vs prod.${key}.${field}`).toEqual(
-          prod[field],
-        );
+        expect(
+          shared(dev[field], prod[field]),
+          `dev.${key}.${field} vs prod.${key}.${field}`,
+        ).toEqual(shared(prod[field], dev[field]));
       }
     }
   });
