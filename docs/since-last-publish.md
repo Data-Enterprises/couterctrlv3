@@ -733,6 +733,24 @@ fifteen hours later (backend, `efd4cd6`).
 The grid has an **Access** column: By group, By store, or Mixed for a stray
 older account whose groups disagree.
 
+### Users with no access type can have one set
+
+`7a2c1cf5`
+
+Users made through the prod wizard, or before access types existed, show
+**Not set** in the Access column, and the Access filter can narrow to them.
+Editing one says no access type is set yet; picking By group or By store and
+saving sets it for every base group they hold.
+
+### A deactivated user is signed out on their next click
+
+`ddc979e2` &middot; dev mode only until prod is promoted
+
+When the server refuses a session -- the account was deactivated, or the
+session ran out -- the app signs the person out and the sign-in screen says
+why, instead of every click failing with an error. A wrong password still
+just says so on the form.
+
 ### Filter users by access type
 
 `cb7ee37b`
