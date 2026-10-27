@@ -824,3 +824,8 @@ Techs get **Edit stores** under a ticket's title; the change is noted in the
 thread for the desk only. A ticket that leaves your view while it is open (its
 stores changed, or yours did) closes with "That ticket is no longer in your
 view" instead of failing on every poll.
+
+The Tickets entry in Coming Soon is open to every level now, not 7 and up:
+the server's tiers decide what each reader sees, and a level gate only hid the
+tickets someone had just filed through Report an issue. Coming Soon is still
+dev-only, so clients on prod do not see it.

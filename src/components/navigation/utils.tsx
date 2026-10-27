@@ -660,18 +660,19 @@ export const categories: NavCategory[] = [
         name: "Tickets",
         href: "tickets",
         icon: TicketIcon,
-        // Owner and up, so the client half can be tested by somebody who
-        // really is one: both capability flags trip at level 8, so a level-7
-        // account gets the client view from the server rather than from a
-        // preview switch. That is the only way to prove the internal-note
-        // filter, which has never been exercised by a non-tech.
+        // Every level. Who sees which tickets is the server's answer, by tier:
+        // below Manager their own, a Manager also their stores', an Owner
+        // also their companies'. Report an issue already files from any
+        // level in dev, so a level gate here only hid the tickets people had
+        // just filed, from the very readers the "own" tier exists for.
         //
         // Still Coming Soon: dev UI tree only, against the dev API, desktop
-        // only.
+        // only. The category is offered on the dev API alone, and only 7+
+        // can switch to it, so on prod no client sees this entry.
         mobile: false,
         children: [],
         childOpen: false,
-        userLevels: COMING_SOON_LEVELS,
+        userLevels: ["*"],
         isHovering: false,
         isVisible: true,
       },
