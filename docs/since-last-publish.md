@@ -740,3 +740,34 @@ older account whose groups disagree.
 An **All access** filter beside the role filter narrows the grid to By group or
 By store. It is remembered with the other filters when you open someone and
 come back.
+
+## Orders, for Ben
+
+### Fix cost becomes a Problems tab in Edit
+
+`76374f03`
+
+Edit's left panel has two tabs under its filters: **Orders**, as before, and
+**Problems**. Problems lists every item with a cost that looks wrong, one row
+per UPC: missing cost first, then high margin from the worst down, then no case
+size.
+
+Pick one and it opens on the right across every order the filters show. Each
+store's row has its case size and unit cost, and its case cost, Ext cost and
+margin now and at the new unit cost. Type the unit cost once and every store's
+case cost follows from its own case size. Where at least two stores already pay
+the same unit cost, it is offered with "use it".
+
+Every store starts ticked; untick one that pays something else on purpose.
+**Stage** writes the cost into each order and opens the next item; **Skip** sets
+it aside for this session. A fixed item stays in the list, marked staged.
+Nothing is sent until Submit.
+
+The high-margin cutoff can be changed in the tab, and it is the same setting
+Browse uses. An item with no case size is treated as ordered by the unit, so
+the unit cost goes into the case cost column as it is, and the item says so.
+
+After Submit, the sent costs show straight away: in Browse, in the Problems
+list, and when an order is opened again. Before, they went back to the old
+figures until the import ran.
+
