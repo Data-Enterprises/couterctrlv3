@@ -789,3 +789,13 @@ After Submit, the sent costs show straight away: in Browse, in the Problems
 list, and when an order is opened again. Before, they went back to the old
 figures until the import ran.
 
+## Tickets
+
+### A ticket from a page with no store search names no store
+
+`f9c981f0` &middot; TCK-44
+
+A ticket filed from User Management, Admin, Groups, Tickets, QuickSight or
+Settings printed whatever store was last searched on another page, as if the
+problem were about it. Erica's ticket about a B&T user read Grocery Basket.
+Those pages now record no store, group or dates on the ticket.
