@@ -96,7 +96,7 @@ const FixCostModal = ({ scope, all, onStage, onClose }: Props) => {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-2 bg-brand_navy px-4 py-2.5 flex-shrink-0">
-          <span className="flex-1 text-[13px] font-medium text-custom-white">
+          <span className="flex-1 text-[14px] font-medium text-custom-white">
             Fix cost
           </span>
           <button
@@ -111,7 +111,7 @@ const FixCostModal = ({ scope, all, onStage, onClose }: Props) => {
         <div className="flex-1 overflow-y-auto thin-scrollbar p-4 flex flex-col gap-4">
           {!chosen ? (
             <div className="flex flex-col gap-2">
-              <span className="text-[10px] font-semibold uppercase tracking-wide text-content/85">
+              <span className="text-[11px] font-semibold uppercase tracking-wide text-content/85">
                 Item
               </span>
               <div className="flex items-center gap-1.5 rounded border border-brand_navy/75 bg-custom-white px-2">
@@ -121,13 +121,13 @@ const FixCostModal = ({ scope, all, onStage, onClose }: Props) => {
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Search description or UPC"
-                  className="min-w-0 flex-1 border-0 bg-transparent py-1.5 text-[13px] text-content placeholder:text-content/55"
+                  className="min-w-0 flex-1 border-0 bg-transparent py-1.5 text-[14px] text-content placeholder:text-content/55"
                   style={{ outline: "none", boxShadow: "none" }}
                 />
               </div>
               <div className="flex max-h-[320px] flex-col overflow-y-auto thin-scrollbar rounded-lg border border-gray-200">
                 {shown.length === 0 ? (
-                  <span className="px-3 py-3 text-[12px] text-content/85">
+                  <span className="px-3 py-3 text-[13px] text-content/85">
                     No loaded order carries &ldquo;{query.trim()}&rdquo;.
                   </span>
                 ) : (
@@ -138,21 +138,21 @@ const FixCostModal = ({ scope, all, onStage, onClose }: Props) => {
                       className="flex items-baseline gap-3 border-t border-gray-100 px-3 py-2 text-left first:border-t-0 hover:bg-row_selected"
                     >
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate text-[12.5px] font-medium text-content">
+                        <span className="block truncate text-[13.5px] font-medium text-content">
                           {i.desc}
                         </span>
-                        <span className="block text-[11px] tabular-nums text-content/85">
+                        <span className="block text-[12px] tabular-nums text-content/85">
                           {i.code}
                         </span>
                       </span>
-                      <span className="flex-shrink-0 text-[11px] tabular-nums text-content/85">
+                      <span className="flex-shrink-0 text-[12px] tabular-nums text-content/85">
                         {i.orders} order{i.orders === 1 ? "" : "s"}
                       </span>
                     </button>
                   ))
                 )}
               </div>
-              <span className="text-[11.5px] text-content/85">
+              <span className="text-[12.5px] text-content/85">
                 {items.length.toLocaleString()} items across every loaded
                 order.
               </span>
@@ -162,10 +162,10 @@ const FixCostModal = ({ scope, all, onStage, onClose }: Props) => {
               <div className="rounded-lg border border-gray-200 px-3 py-2.5">
                 <div className="flex items-baseline gap-2">
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate font-display text-[13px] font-bold text-content">
+                    <span className="block truncate font-display text-[14px] font-bold text-content">
                       {chosen.desc}
                     </span>
-                    <span className="block text-[11px] tabular-nums text-content/85">
+                    <span className="block text-[12px] tabular-nums text-content/85">
                       {chosen.code} · {itemRows.length} line
                       {itemRows.length === 1 ? "" : "s"} across {stores} store
                       {stores === 1 ? "" : "s"} and {preview.length} order
@@ -178,7 +178,7 @@ const FixCostModal = ({ scope, all, onStage, onClose }: Props) => {
                         setCode("");
                         setUnitText(null);
                       }}
-                      className="flex-shrink-0 text-[11.5px] font-semibold text-brand_navy underline underline-offset-2"
+                      className="flex-shrink-0 text-[12.5px] font-semibold text-brand_navy underline underline-offset-2"
                     >
                       Change
                     </button>
@@ -187,11 +187,11 @@ const FixCostModal = ({ scope, all, onStage, onClose }: Props) => {
               </div>
 
               <div>
-                <span className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-content/85">
+                <span className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-content/85">
                   New unit cost
                 </span>
                 <div className="flex items-center gap-1 rounded border border-brand_navy/75 bg-custom-white px-2">
-                  <span className="text-[13px] text-content/85">$</span>
+                  <span className="text-[14px] text-content/85">$</span>
                   <input
                     autoFocus
                     type="number"
@@ -199,7 +199,7 @@ const FixCostModal = ({ scope, all, onStage, onClose }: Props) => {
                     step={0.01}
                     value={shownUnit}
                     onChange={(e) => setUnitText(e.target.value)}
-                    className="min-w-0 flex-1 border-0 bg-transparent py-1.5 text-[13px] tabular-nums text-content"
+                    className="min-w-0 flex-1 border-0 bg-transparent py-1.5 text-[14px] tabular-nums text-content"
                     style={{ outline: "none", boxShadow: "none" }}
                   />
                 </div>
@@ -207,19 +207,19 @@ const FixCostModal = ({ scope, all, onStage, onClose }: Props) => {
 
               {preview.length > 0 && (
                 <div className="rounded-lg border border-gray-200 px-3 py-2">
-                  <div className="mb-1 font-display text-[12.5px] font-bold text-content">
+                  <div className="mb-1 font-display text-[13.5px] font-bold text-content">
                     Per store
                   </div>
                   {preview.map((p) => (
                     <div
                       key={p.doc.key}
-                      className="flex items-baseline gap-3 border-t border-gray-100 py-1.5 text-[12px] first:border-t-0"
+                      className="flex items-baseline gap-3 border-t border-gray-100 py-1.5 text-[13px] first:border-t-0"
                     >
                       <div className="min-w-0 flex-1">
                         <div className="truncate text-content">
                           {p.doc.storenumber} — {p.doc.storename}
                         </div>
-                        <div className="text-[10.5px] text-content/85">
+                        <div className="text-[11.5px] text-content/85">
                           Order {p.doc.order_id}
                         </div>
                       </div>
@@ -240,14 +240,14 @@ const FixCostModal = ({ scope, all, onStage, onClose }: Props) => {
         </div>
 
         <div className="flex items-center gap-3 border-t border-gray-100 px-4 py-2.5 flex-shrink-0">
-          <span className="flex-1 text-[12px] text-content/85">
+          <span className="flex-1 text-[13px] text-content/85">
             {chosen && preview.length > 0
               ? "Staged into each order — sent when you Submit."
               : ""}
           </span>
           <button
             onClick={onClose}
-            className="rounded border border-content/20 px-3 py-1 text-[12px] font-medium text-content/85 transition-colors hover:border-content/35 hover:text-content"
+            className="rounded border border-content/20 px-3 py-1 text-[13px] font-medium text-content/85 transition-colors hover:border-content/35 hover:text-content"
           >
             Cancel
           </button>
@@ -257,7 +257,7 @@ const FixCostModal = ({ scope, all, onStage, onClose }: Props) => {
               onClose();
             }}
             disabled={!chosen || !valid || preview.length === 0}
-            className="rounded bg-brand_navy px-3 py-1 text-[12px] font-semibold text-custom-white transition-colors hover:bg-brand_navy_hover disabled:opacity-50"
+            className="rounded bg-brand_navy px-3 py-1 text-[13px] font-semibold text-custom-white transition-colors hover:bg-brand_navy_hover disabled:opacity-50"
           >
             Stage on {preview.length || ""} order{preview.length === 1 ? "" : "s"}
           </button>
