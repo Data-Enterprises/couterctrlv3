@@ -129,3 +129,29 @@ describe("a group search narrowed to stores", () => {
     expect(line).toContain("seen on IGA Irvington KY #002 (storeid 369)");
   });
 });
+
+describe("a page with no store search", () => {
+  // Erica's ticket from User Management named Grocery Basket, the last store
+  // searched elsewhere, while the problem was about a B&T user.
+  it("names no store in the line", () => {
+    const line = scopeLine(searching(), at("user-management"));
+    expect(line).not.toContain("IGA Irvington KY");
+    expect(line).not.toContain("storeid");
+  });
+
+  it("records no store, group or dates", () => {
+    const scope = scopeOf(searching(), at("user-management"));
+    expect(scope).not.toHaveProperty("store");
+    expect(scope).not.toHaveProperty("group");
+    expect(scope).not.toHaveProperty("dates");
+    expect(scope.search_type).toBeNull();
+  });
+
+  it("offers no last search to attach", () => {
+    expect(searchSummary(searching(), "user-management")).toBeNull();
+  });
+
+  it("still scopes a page that does search", () => {
+    expect(scopeLine(searching(), at("sales"))).toContain("storeid 369");
+  });
+});
