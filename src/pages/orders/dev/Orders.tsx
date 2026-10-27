@@ -53,7 +53,6 @@ import {
   type LinePatch,
   type OrderDoc,
   type OrderDraft,
-  linesInPick,
   applySent,
   docKey,
 } from "./orderEdit";
@@ -183,16 +182,15 @@ const Orders = () => {
   const [problemCode, setProblemCode] = useState<string | null>(null);
   const [skipped, setSkipped] = useState<Set<string>>(new Set());
 
-  /** The lines on the orders the left panel shows — what a fix may reach. */
-  const pickScope = useMemo(
-    () =>
-      linesInPick(ctx.allOrders, {
-        storeNumber: pickStore,
-        orderDate: pickDate,
-        orderType: pickType,
-      }),
-    [ctx.allOrders, pickStore, pickDate, pickType],
-  );
+  /**
+   * What the Problems tab works across: every loaded order.
+   *
+   * Store, order date and order type live on the Orders tab now, so they do
+   * not narrow this — a filter that still applied after its controls had gone
+   * off screen would be scope nobody could see. Which stores a fix reaches is
+   * decided on the item itself, by ticking or unticking each store's row.
+   */
+  const pickScope = ctx.allOrders;
   const scopeStores = useMemo(
     () => new Set(pickScope.map((o) => `${o.storeid}|${o.storenumber}`)).size,
     [pickScope],

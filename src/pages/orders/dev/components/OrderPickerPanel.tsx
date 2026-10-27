@@ -28,9 +28,10 @@ interface Props {
   endDate: string;
   scopeLabel: string;
   /**
-   * Orders, or the Problems tab. The filters above apply to both: they say
-   * which orders are in play, and the tab says whether you are picking an
-   * order to edit or an item to fix across them.
+   * Orders, or the Problems tab, at the top of the panel. Store, order date
+   * and order type belong to Orders — they narrow the list of orders to open.
+   * Problems has its own three flag rows and works across every loaded
+   * order; which stores a fix reaches is decided per item, by its ticks.
    */
   tab: "orders" | "problems";
   onTab: (tab: "orders" | "problems") => void;
@@ -135,7 +136,7 @@ const OrderPickerPanel = ({
       <div className="bg-brand_navy px-3 pt-2 pb-2.5 flex-shrink-0">
         <div className="flex items-center gap-2">
           <span className="text-custom-white font-medium text-[13px] flex-1 truncate">
-            Order to edit
+            {tab === "problems" ? "Cost problems" : "Order to edit"}
           </span>
           <button
             onClick={onOpenSearch}
@@ -155,6 +156,34 @@ const OrderPickerPanel = ({
         </div>
       </div>
 
+      <div className="flex flex-shrink-0 border-b border-brand_line" role="tablist">
+        {(
+          [
+            ["orders", "Orders", shown.length],
+            ["problems", "Problems", problemsToDo],
+          ] as const
+        ).map(([id, label, n]) => (
+          <button
+            key={id}
+            role="tab"
+            aria-selected={tab === id}
+            onClick={() => onTab(id)}
+            className={`flex-1 py-2 text-[12.5px] transition-colors ${
+              tab === id
+                ? "font-bold text-brand_navy shadow-[inset_0_-2px_0_rgb(var(--color-brand-navy))]"
+                : "font-medium text-content/95 hover:text-content"
+            }`}
+          >
+            {label}{" "}
+            <span className="tabular-nums">{n.toLocaleString()}</span>
+          </button>
+        ))}
+      </div>
+
+      {tab === "problems" ? (
+        problems
+      ) : (
+      <>
       <div className="flex-shrink-0 px-3 pt-3 pb-2 flex flex-col gap-2">
         <Field label="Store">
           <select
@@ -217,34 +246,6 @@ const OrderPickerPanel = ({
         </Field>
       </div>
 
-      <div className="flex flex-shrink-0 border-y border-brand_line mb-2" role="tablist">
-        {(
-          [
-            ["orders", "Orders", shown.length],
-            ["problems", "Problems", problemsToDo],
-          ] as const
-        ).map(([id, label, n]) => (
-          <button
-            key={id}
-            role="tab"
-            aria-selected={tab === id}
-            onClick={() => onTab(id)}
-            className={`flex-1 py-2 text-[12.5px] transition-colors ${
-              tab === id
-                ? "font-bold text-brand_navy shadow-[inset_0_-2px_0_rgb(var(--color-brand-navy))]"
-                : "font-medium text-content/95 hover:text-content"
-            }`}
-          >
-            {label}{" "}
-            <span className="tabular-nums">{n.toLocaleString()}</span>
-          </button>
-        ))}
-      </div>
-
-      {tab === "problems" ? (
-        problems
-      ) : (
-      <>
       <div className="flex items-center gap-2 px-3 pb-2 flex-shrink-0">
         <span className="text-[11px] text-content/95 tabular-nums flex-1">
           {shown.length === docs.length

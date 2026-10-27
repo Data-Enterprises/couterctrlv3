@@ -11,7 +11,7 @@ import { FLAG_DOT, FLAG_LABEL, FLAG_ON } from "./flagStyles";
 const ROWS: OrderFlag[] = ["missingCost", "highMargin", "noCaseSize"];
 
 interface Props {
-  /** Every item on the orders the filters above show, flagged or not. */
+  /** Every item on the loaded orders, flagged or not. */
   items: ProblemItem[];
   skipped: Set<string>;
   openCode: string | null;
@@ -86,7 +86,7 @@ const ProblemList = ({
 
   return (
     <>
-      <div className="flex-shrink-0 px-3 pb-2 flex flex-col gap-2">
+      <div className="flex-shrink-0 px-3 pt-3 pb-2 flex flex-col gap-2">
         {/* One row per flag, its count on the right. Chips wrapped onto two
             lines in a 300px panel, and the cutoff sat on a line of its own
             away from the flag it decides; here it is inside that row. A row
@@ -236,10 +236,10 @@ const ProblemList = ({
 
       <div className="border-t border-gray-100 px-3 py-2 flex-shrink-0">
         <span className="block text-[11px] leading-snug text-content/95">
-          Across the orders the filters above show —{" "}
-          {scopeOrders.toLocaleString()} order{scopeOrders === 1 ? "" : "s"},{" "}
-          {scopeStores.toLocaleString()} store{scopeStores === 1 ? "" : "s"}. A
-          fix reaches only these.
+          Across every loaded order — {scopeOrders.toLocaleString()} order
+          {scopeOrders === 1 ? "" : "s"}, {scopeStores.toLocaleString()} store
+          {scopeStores === 1 ? "" : "s"}. Untick a store on an item to leave it
+          out of the fix.
         </span>
       </div>
     </>

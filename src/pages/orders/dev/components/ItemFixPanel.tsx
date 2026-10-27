@@ -20,7 +20,7 @@ interface Props {
   item: ProblemItem | null;
   /** Where it sits in the still-to-do list, for "3 of 57". */
   position: { index: number; total: number } | null;
-  /** Lines on the orders the left panel shows — the fix reaches only these. */
+  /** Every loaded line. Which orders the fix reaches is the ticks'. */
   scope: AllOrder[];
   all: AllOrder[];
   drafts: Record<string, OrderDraft>;
