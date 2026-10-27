@@ -73,7 +73,11 @@ interface UserWizardProps {
  */
 const STEP_FIT: Record<WizardStep, PanelFit> = {
   identity: { width: 1180, height: 680 },
-  type: { width: 1020, height: 560 },
+  // 680, like User info. At 560 the page header, the step bar and the footer
+  // left about 250px for two cards that need 300, so they scrolled inside a
+  // short box and read as cut off -- worst in Edit, whose sentence under the
+  // heading wraps to two lines.
+  type: { width: 1020, height: 680 },
   assignments: { width: 1360, height: 700 },
   review: { width: 1100, height: 700 },
 };
