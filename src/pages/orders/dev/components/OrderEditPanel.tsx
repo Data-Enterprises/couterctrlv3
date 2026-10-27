@@ -187,7 +187,7 @@ const OrderEditPanel = ({
         <button
           onClick={onFixCost}
           title="Set one item's unit cost on every order the filters hit"
-          className="flex-shrink-0 rounded-md border border-custom-white/30 px-2 py-0.5 text-[11.5px] font-semibold text-custom-white/95 transition-colors hover:bg-custom-white/10 hover:border-custom-white/55"
+          className="flex-shrink-0 rounded-md border border-custom-white/30 px-2.5 py-1 text-[13px] font-semibold text-custom-white/95 transition-colors hover:bg-custom-white/10 hover:border-custom-white/55"
         >
           Fix cost
         </button>
@@ -269,7 +269,7 @@ const OrderEditPanel = ({
         <button
           onClick={onFixCost}
           title="Set one item's unit cost on every order the filters hit"
-          className="flex-shrink-0 rounded-md border border-custom-white/30 px-2 py-0.5 text-[11.5px] font-semibold text-custom-white/95 transition-colors hover:bg-custom-white/10 hover:border-custom-white/55"
+          className="flex-shrink-0 rounded-md border border-custom-white/30 px-2.5 py-1 text-[13px] font-semibold text-custom-white/95 transition-colors hover:bg-custom-white/10 hover:border-custom-white/55"
         >
           Fix cost
         </button>
