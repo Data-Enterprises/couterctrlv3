@@ -147,6 +147,19 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
 
   // ── What the person already holds (Edit) ──────────────────────────────
   const held = useHeldAccess(editing ? editUserId : 0);
+
+  /**
+   * A person with no access type recorded — made through prod's wizard, or
+   * before access types existed. `access_mode` comes back null for them.
+   *
+   * Edit still opens on its best reading, but that reading is not on file,
+   * so Save treats the type as unset: it sends every group in the type
+   * chosen here, even if nothing else was touched. Without this, opening one
+   * of these people and pressing Save did nothing — the screen already
+   * matched itself.
+   */
+  const typeUnset =
+    editing && ctx.users.find((u) => u.id === editUserId)?.access_mode === null;
   const existing = useExistingAccess(held.heldGroups, held.groupPicks);
 
   /**
@@ -235,13 +248,13 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
     return fromPanel;
   }, [companyGroups, held.heldGroups]);
 
-  const before = useMemo(
-    () =>
-      editing
-        ? accessSets(existing.picks, existing.carried, groupCompany)
-        : NOTHING_HELD,
-    [editing, existing, groupCompany],
-  );
+  const before = useMemo(() => {
+    if (!editing) return NOTHING_HELD;
+    const was = accessSets(existing.picks, existing.carried, groupCompany);
+    // No grants on file to compare against, so every group is written.
+    // Companies keep their real "before" — those are recorded either way.
+    return typeUnset ? { ...was, grants: [] } : was;
+  }, [editing, existing, groupCompany, typeUnset]);
   const sets = useMemo(
     () =>
       accessSets(picks, editing ? existing.carried : undefined, groupCompany),
@@ -492,6 +505,7 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
             who={displayName}
             singleStoreOnly={singleStoreOnly}
             editing={editing}
+            typeUnset={typeUnset}
           />
         )}
 
@@ -529,7 +543,8 @@ const UserWizard = ({ editUserId, onComplete, onCancel }: UserWizardProps) => {
             companyGroups={companyGroups}
             groupStores={groupStores}
             onGoTo={goTo}
-            modeBefore={editing ? existing.picks.mode : undefined}
+            modeBefore={editing && !typeUnset ? existing.picks.mode : undefined}
+            typeUnset={typeUnset}
           />
         )}
       </div>

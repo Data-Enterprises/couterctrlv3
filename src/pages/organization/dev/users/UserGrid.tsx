@@ -145,7 +145,11 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
       const roleCheck = roleFilter ? u.role === Number(roleFilter) : true;
       // Mixed and no-groups people match neither choice, only All: they are
       // not By group or By store, and the column says so.
-      const accessCheck = accessFilter ? u.access_mode === accessFilter : true;
+      const accessCheck = !accessFilter
+        ? true
+        : accessFilter === "none"
+          ? u.access_mode === null
+          : u.access_mode === accessFilter;
       const lowerText = searchText.toLowerCase();
       const firstName = (u.first_name ?? "").toLowerCase();
       const lastName = (u.last_name ?? "").toLowerCase();
@@ -227,7 +231,9 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
         ? "By store"
         : mode === "mixed"
           ? "Mixed"
-          : "—";
+          : mode === null
+            ? "Not set"
+            : "—";
 
   const noCompanyCount = useMemo(
     () => sourceUsers.filter((u) => u.companies.length === 0).length,
@@ -415,6 +421,8 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
           options={[
             { value: "all", label: "By group" },
             { value: "selected", label: "By store" },
+            // Made in prod, or before access types existed. Edit sets it.
+            { value: "none", label: "Not set" },
           ]}
           value={accessFilter}
           onChange={setAccessFilter}

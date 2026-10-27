@@ -64,6 +64,7 @@ const StepAccessType = ({
   who,
   singleStoreOnly,
   editing = false,
+  typeUnset = false,
 }: {
   value: GrantMode;
   onChange: (next: GrantMode) => void;
@@ -76,15 +77,20 @@ const StepAccessType = ({
   /** An existing person, whose access type is a change rather than a first
    *  answer. Only the sentence under the heading differs. */
   editing?: boolean;
+  /** Editing somebody with no access type on file — made in prod, or before
+   *  types existed. The choice here is a first answer, and saving records it. */
+  typeUnset?: boolean;
 }) => (
   <div className="max-w-[900px] mx-auto">
     <h2 className="text-[17px] font-bold text-content m-0">
       How should {who || "this user"} get their stores?
     </h2>
     <p className="text-[12.5px] text-content/85 mt-1 mb-4">
-      {editing
-        ? "Changing this rewrites every base group they hold. Switching to By store starts with all their current stores ticked."
-        : "You can change this later by editing them."}
+      {typeUnset
+        ? "No access type is set for this user yet. Pick one and save to set it for every base group they hold."
+        : editing
+          ? "Changing this rewrites every base group they hold. Switching to By store starts with all their current stores ticked."
+          : "You can change this later by editing them."}
     </p>
 
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

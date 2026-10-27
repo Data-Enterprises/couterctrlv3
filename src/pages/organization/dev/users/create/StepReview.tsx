@@ -36,6 +36,7 @@ const StepReview = ({
   groupStores,
   onGoTo,
   modeBefore,
+  typeUnset = false,
 }: {
   picks: AccessPicks;
   /** The companies that will actually be written — ticked ones plus the one
@@ -52,6 +53,8 @@ const StepReview = ({
    * the instant the card is clicked on the Access type step.
    */
   modeBefore?: GrantMode;
+  /** Edit only: the person had no access type on file, so this save sets it. */
+  typeUnset?: boolean;
 }) => {
   const ctx = useOrganizationCtx();
   const info = ctx.userInfo;
@@ -117,6 +120,18 @@ const StepReview = ({
 
   return (
     <div className="max-w-[1000px] mx-auto">
+      {typeUnset && held.length > 0 && (
+        <div className="flex gap-2.5 items-start mb-3 px-3.5 py-3 rounded-lg bg-filter_active border border-filter_active_border">
+          <InformationCircleIcon className="w-[18px] h-[18px] text-brand_navy flex-shrink-0 mt-px" />
+          <span className="text-[12px] text-content leading-snug">
+            <span className="font-semibold">
+              Sets access type to {picks.mode === "all" ? "By group" : "By store"}.
+            </span>{" "}
+            This user had none on file. Saving writes all {held.length} base
+            group{held.length === 1 ? "" : "s"} they hold that way.
+          </span>
+        </div>
+      )}
       {typeChanged && (
         <div className="flex gap-2.5 items-start mb-3 px-3.5 py-3 rounded-lg bg-filter_active border border-filter_active_border">
           <ExclamationTriangleIcon className="w-[18px] h-[18px] text-brand_navy flex-shrink-0 mt-px" />
