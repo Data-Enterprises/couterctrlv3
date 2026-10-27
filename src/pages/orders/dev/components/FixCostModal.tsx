@@ -34,18 +34,33 @@ interface Props {
  * staged, since that is the number that lands in the file.
  */
 const FixCostModal = ({ scope, all, onStage, onClose }: Props) => {
-  /** Every item in scope, with how many orders carry it. */
+  /**
+   * Every item in scope, with how many orders carry it.
+   *
+   * `description` is typed as a string and can arrive null — an order line
+   * for an item the catalog has no name for. Sorting on it crashed the whole
+   * page the moment this opened. So each item takes the first real
+   * description any of its lines carries, and one with none at all sorts
+   * last under its code rather than taking the page down.
+   */
   const items = useMemo(() => {
     const m = new Map<string, { desc: string; orders: Set<string> }>();
     for (const r of scope) {
       const code = String(r.product_code);
-      const e = m.get(code) ?? { desc: r.description, orders: new Set() };
+      const desc = (r.description ?? "").trim();
+      const e = m.get(code) ?? { desc: "", orders: new Set<string>() };
+      if (!e.desc && desc) e.desc = desc;
       e.orders.add(`${r.storeid}|${r.storenumber}|${r.order_id}|${r.order_date}`);
       m.set(code, e);
     }
     return [...m.entries()]
       .map(([code, e]) => ({ code, desc: e.desc, orders: e.orders.size }))
-      .sort((a, b) => a.desc.localeCompare(b.desc));
+      .sort(
+        (a, b) =>
+          Number(!a.desc) - Number(!b.desc) ||
+          a.desc.localeCompare(b.desc) ||
+          a.code.localeCompare(b.code),
+      );
   }, [scope]);
 
   // A scope that is already one item opens on it.
@@ -139,7 +154,7 @@ const FixCostModal = ({ scope, all, onStage, onClose }: Props) => {
                     >
                       <span className="min-w-0 flex-1">
                         <span className="block truncate text-[12.5px] font-medium text-content">
-                          {i.desc}
+                          {i.desc || "No description"}
                         </span>
                         <span className="block text-[11px] tabular-nums text-content/85">
                           {i.code}
@@ -163,7 +178,7 @@ const FixCostModal = ({ scope, all, onStage, onClose }: Props) => {
                 <div className="flex items-baseline gap-2">
                   <span className="min-w-0 flex-1">
                     <span className="block truncate font-display text-[13px] font-bold text-content">
-                      {chosen.desc}
+                      {chosen.desc || "No description"}
                     </span>
                     <span className="block text-[11px] tabular-nums text-content/85">
                       {chosen.code} · {itemRows.length} line
