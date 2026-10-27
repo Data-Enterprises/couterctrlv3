@@ -730,3 +730,29 @@ export const stageUnitCost = (
   }
   return next;
 };
+
+/**
+ * The loaded lines with one sent order's figures written onto them.
+ *
+ * `all_orders` returns the old figures until the import runs, and the page
+ * does not refetch. Without this, a submitted order went back to its old
+ * costs the moment its draft was dropped: the Browse grid kept showing the
+ * missing cost, the Problems tab listed the item as unfixed again, and "Edit
+ * again" on the receipt started from the pre-edit figures — so the next
+ * Submit would have sent them back.
+ *
+ * Lines that were on the order take the draft's version; lines added in the
+ * draft are appended. `original` is stripped, since it is draft bookkeeping
+ * and not part of a line.
+ */
+export const applySent = (all: AllOrder[], draft: OrderDraft): AllOrder[] => {
+  const strip = ({ original: _o, ...line }: DraftLine): AllOrder => line;
+  const byLine = new Map(draft.lines.map((l) => [l.line_number, l]));
+  const kept = all.map((o) => {
+    if (docKey(o) !== draft.doc.key) return o;
+    const sent = byLine.get(o.line_number);
+    return sent ? strip(sent) : o;
+  });
+  const added = draft.lines.filter(isAdded).map(strip);
+  return [...kept, ...added];
+};

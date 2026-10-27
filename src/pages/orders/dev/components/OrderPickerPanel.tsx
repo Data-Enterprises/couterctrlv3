@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, type ReactNode } from "react";
 import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
 import { matchesPick, type OrderDoc } from "../orderEdit";
 
@@ -27,6 +27,17 @@ interface Props {
   startDate: string;
   endDate: string;
   scopeLabel: string;
+  /**
+   * Orders, or the Problems tab. The filters above apply to both: they say
+   * which orders are in play, and the tab says whether you are picking an
+   * order to edit or an item to fix across them.
+   */
+  tab: "orders" | "problems";
+  onTab: (tab: "orders" | "problems") => void;
+  /** Flagged items not yet staged or skipped, for the tab's count. */
+  problemsToDo: number;
+  /** The Problems tab's content, built by the page that owns the drafts. */
+  problems: ReactNode;
 }
 
 /** The same three-digit pad the report panel uses. */
@@ -68,6 +79,10 @@ const OrderPickerPanel = ({
   startDate,
   endDate,
   scopeLabel,
+  tab,
+  onTab,
+  problemsToDo,
+  problems,
 }: Props) => {
   /**
    * What each filter offers, narrowed by the other two.
@@ -202,6 +217,34 @@ const OrderPickerPanel = ({
         </Field>
       </div>
 
+      <div className="flex flex-shrink-0 border-y border-brand_line mb-2" role="tablist">
+        {(
+          [
+            ["orders", "Orders", shown.length],
+            ["problems", "Problems", problemsToDo],
+          ] as const
+        ).map(([id, label, n]) => (
+          <button
+            key={id}
+            role="tab"
+            aria-selected={tab === id}
+            onClick={() => onTab(id)}
+            className={`flex-1 py-2 text-[12.5px] transition-colors ${
+              tab === id
+                ? "font-bold text-brand_navy shadow-[inset_0_-2px_0_rgb(var(--color-brand-navy))]"
+                : "font-medium text-content/95 hover:text-content"
+            }`}
+          >
+            {label}{" "}
+            <span className="tabular-nums">{n.toLocaleString()}</span>
+          </button>
+        ))}
+      </div>
+
+      {tab === "problems" ? (
+        problems
+      ) : (
+      <>
       <div className="flex items-center gap-2 px-3 pb-2 flex-shrink-0">
         <span className="text-[11px] text-content/95 tabular-nums flex-1">
           {shown.length === docs.length
@@ -288,6 +331,8 @@ const OrderPickerPanel = ({
           changes waiting, and Submit sends every one of them.
         </span>
       </div>
+      </>
+      )}
     </div>
   );
 };

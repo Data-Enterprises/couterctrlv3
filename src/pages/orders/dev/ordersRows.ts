@@ -18,9 +18,11 @@ export type GridSort = SortState<SortKey>;
  * counts them separately. Naming only the symptom would send somebody looking
  * for a pricing decision that was never made.
  *
- * `noCaseSize` is its own problem rather than a flavour of missing cost: the
- * case cost may be perfectly good, but unit cost cannot be worked out from it
- * and the line cannot take a bulk unit-cost edit.
+ * `noCaseSize` is its own flag rather than a flavour of missing cost. It
+ * usually means the item is ordered by the unit, so the case cost IS the unit
+ * cost — `perCase` reads it as a case of one, and a unit-cost fix writes the
+ * typed figure straight through. Flagged so somebody looks, not because it is
+ * necessarily wrong.
  */
 export const lineFlags = (o: AllOrder, marginOver: number | null): OrderFlag[] => {
   const flags: OrderFlag[] = [];

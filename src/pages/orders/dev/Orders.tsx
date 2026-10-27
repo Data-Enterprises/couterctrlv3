@@ -54,6 +54,8 @@ import {
   type OrderDoc,
   type OrderDraft,
   linesInPick,
+  applySent,
+  docKey,
 } from "./orderEdit";
 
 import SearchCard from "../../../components-dev/SearchCard";
@@ -64,7 +66,9 @@ import OrderEditPanel, {
 } from "./components/OrderEditPanel";
 import SubmitReceipt from "./components/SubmitReceipt";
 import OrdersExportModal from "./components/OrdersExportModal";
-import FixCostModal from "./components/FixCostModal";
+import ProblemList from "./components/ProblemList";
+import ItemFixPanel from "./components/ItemFixPanel";
+import { itemsInScope, workingOrder } from "./problemItems";
 import OrdersConfigPanel from "./components/OrdersConfigPanel";
 import OrderReportPanel from "./components/OrderReportPanel";
 import OrdersMobile from "./mobile/OrdersMobile";
@@ -98,7 +102,6 @@ const Orders = () => {
      memo: the answer turns over at midnight and a memo keyed on nothing
      would hold Wednesday's answer into Thursday. */
   const canEdit = canEditOrders(ctx.userLevel, ctx.companyIds, new Date());
-  const [fixCostOpen, setFixCostOpen] = useState(false);
   const [notice, setNotice] = useState<string | undefined>(undefined);
 
   /**
@@ -168,14 +171,88 @@ const Orders = () => {
   const [pickDate, setPickDate] = useState("");
   const [pickType, setPickType] = useState("");
 
-  /** The left panel's filters in words, for Fix cost to say what it covers. */
-  const pickNote = [
-    pickStore && `store ${pickStore.padStart(3, "0")}`,
-    pickDate && `orders of ${pickDate.split("T")[0]}`,
-    pickType && `type ${pickType}`,
-  ]
-    .filter(Boolean)
-    .join(", ");
+  /**
+   * The Problems tab.
+   *
+   * `problemCode` is the item open on the right while the tab is showing.
+   * `skipped` is session-only and never saved: a high margin is sometimes
+   * the real price, and Skip is how somebody says "looked, it's fine" without
+   * that becoming a rule anyone has to undo later.
+   */
+  const [leftTab, setLeftTab] = useState<"orders" | "problems">("orders");
+  const [problemCode, setProblemCode] = useState<string | null>(null);
+  const [skipped, setSkipped] = useState<Set<string>>(new Set());
+
+  /** The lines on the orders the left panel shows — what a fix may reach. */
+  const pickScope = useMemo(
+    () =>
+      linesInPick(ctx.allOrders, {
+        storeNumber: pickStore,
+        orderDate: pickDate,
+        orderType: pickType,
+      }),
+    [ctx.allOrders, pickStore, pickDate, pickType],
+  );
+  const scopeStores = useMemo(
+    () => new Set(pickScope.map((o) => `${o.storeid}|${o.storenumber}`)).size,
+    [pickScope],
+  );
+  const scopeOrders = useMemo(
+    () => new Set(pickScope.map(docKey)).size,
+    [pickScope],
+  );
+  const problemItems = useMemo(
+    () => itemsInScope(pickScope, drafts, ctx.filters.marginOver),
+    [pickScope, drafts, ctx.filters.marginOver],
+  );
+  /** Still to do, in working order: what "next" walks and "3 of 57" counts. */
+  const toDo = useMemo(
+    () =>
+      workingOrder(
+        problemItems.filter(
+          (i) => i.flags.length > 0 && i.staged === 0 && !skipped.has(i.code),
+        ),
+        skipped,
+      ),
+    [problemItems, skipped],
+  );
+  const openProblem =
+    problemCode === null
+      ? null
+      : (problemItems.find((i) => i.code === problemCode) ?? null);
+  const problemPosition =
+    openProblem === null
+      ? null
+      : (() => {
+          const at = toDo.findIndex((i) => i.code === openProblem.code);
+          return at < 0 ? null : { index: at + 1, total: toDo.length };
+        })();
+
+  /** The next item still to do after `code`, or the first one left. */
+  const nextAfter = (code: string, excluding: Set<string>) => {
+    const rest = toDo.filter((i) => !excluding.has(i.code));
+    const at = toDo.findIndex((i) => i.code === code);
+    return (
+      rest.find((i) => toDo.indexOf(i) > at) ?? rest[0] ?? null
+    )?.code ?? null;
+  };
+
+  const handleStageItem = (keys: string[], unit: number) => {
+    if (!problemCode) return;
+    const keySet = new Set(keys);
+    const rows = pickScope.filter(
+      (o) => String(o.product_code) === problemCode && keySet.has(docKey(o)),
+    );
+    setDrafts((ds) => stageUnitCost(ds, rows, ctx.allOrders, unit));
+    setProblemCode(nextAfter(problemCode, new Set([problemCode])));
+  };
+
+  const handleSkipItem = () => {
+    if (!problemCode) return;
+    const nextSkipped = new Set(skipped).add(problemCode);
+    setSkipped(nextSkipped);
+    setProblemCode(nextAfter(problemCode, new Set([problemCode])));
+  };
   const [editSearch, setEditSearch] = useState<EditSearch>({
     code: "",
     desc: "",
@@ -336,6 +413,17 @@ const Orders = () => {
 
   const dirty =
     (changedDrafts.length > 0 || pending !== null) && receipt === null;
+
+  const leaveEdit = () => {
+    if (dirty) {
+      toast.warn(
+        "Submit the order or undo the changes before leaving edit mode.",
+      );
+      return;
+    }
+    setEditing(false);
+    setReceipt(null);
+  };
 
   const handlePick = (doc: OrderDoc) => {
     if (doc.key === openKey) return;
@@ -512,6 +600,7 @@ const Orders = () => {
     setSubmitting(true);
     let last: UpdateFileResp | null = null;
     const failed: string[] = [];
+    let lines = ctx.allOrders;
 
     // One order at a time: each is its own file for the import, and a burst
     // of them is harder to read back than sending them by hand.
@@ -530,6 +619,10 @@ const Orders = () => {
           continue;
         }
         last = j;
+        // The import has not run, so `all_orders` would still return the old
+        // figures. Write the sent ones onto the lines held here, or the grid,
+        // the flags and "Edit again" all go back to the pre-edit costs.
+        lines = applySent(lines, d);
         // Sent — so it is no longer a change waiting to go.
         setDrafts((ds) => {
           const { [d.doc.key]: _sent, ...rest } = ds;
@@ -543,6 +636,7 @@ const Orders = () => {
     }
 
     setSubmitting(false);
+    if (lines !== ctx.allOrders) ctx.dispatch(setAllOrders(lines));
     setSubmittedCounts({
       orders: toSend.length - failed.length,
       edited: toSend.reduce((n, d) => n + editedLines(d).length, 0),
@@ -584,26 +678,6 @@ const Orders = () => {
 
   return (
     <div className="h-[calc(100vh-3rem)] overflow-hidden p-4 flex gap-3">
-      {/* Edit mode only: it stages into drafts, and Browse has none. */}
-      {fixCostOpen && editing && canEdit && (
-        <FixCostModal
-          // What the left panel shows, not everything loaded: a fix reaches
-          // only the orders on screen. `all` stays whole because a draft
-          // holds a whole order, not just the lines carrying the item.
-          scope={linesInPick(ctx.allOrders, {
-            storeNumber: pickStore,
-            orderDate: pickDate,
-            orderType: pickType,
-          })}
-          scopeNote={pickNote}
-          all={ctx.allOrders}
-          onStage={(itemRows, unit) =>
-            setDrafts((ds) => stageUnitCost(ds, itemRows, ctx.allOrders, unit))
-          }
-          onClose={() => setFixCostOpen(false)}
-        />
-      )}
-
       {ctx.ordersExportModalOpen && (
         <OrdersExportModal
           lines={ctx.allOrders}
@@ -644,11 +718,42 @@ const Orders = () => {
             startDate={ctx.startDate}
             endDate={ctx.endDate}
             scopeLabel={scopeLabel}
+            tab={leftTab}
+            onTab={setLeftTab}
+            problemsToDo={toDo.length}
+            problems={
+              <ProblemList
+                items={problemItems}
+                skipped={skipped}
+                openCode={problemCode}
+                onPick={setProblemCode}
+                marginOver={ctx.filters.marginOver}
+                onMarginOver={(v) => ctx.dispatch(setOrdersMarginOver(v))}
+                scopeOrders={scopeOrders}
+                scopeStores={scopeStores}
+              />
+            }
           />
 
           {/* The receipt is laid over this panel, so the two share a stacking
               context of their own rather than the whole page's. */}
           <div className="relative flex flex-1 min-w-0 overflow-hidden">
+            {leftTab === "problems" ? (
+              <ItemFixPanel
+                key={problemCode ?? "none"}
+                item={openProblem}
+                position={problemPosition}
+                scope={pickScope}
+                all={ctx.allOrders}
+                drafts={drafts}
+                onStage={handleStageItem}
+                onSkip={handleSkipItem}
+                onLeaveEdit={leaveEdit}
+                onSubmit={handleSubmit}
+                stagedCount={changedDrafts.length}
+                submitting={submitting}
+              />
+            ) : (
             <OrderEditPanel
               draft={draft}
               loading={ctx.loadingAllOrders}
@@ -676,21 +781,13 @@ const Orders = () => {
               subDepts={draft ? (subDeptsByStore[draft.doc.storeid] ?? []) : []}
               loadingSubDepts={loadingSubDepts}
               onSubmit={handleSubmit}
-              onFixCost={() => setFixCostOpen(true)}
+              onFixCost={() => setLeftTab("problems")}
               stagedCount={changedDrafts.length}
               submitting={submitting}
               submitted={receipt !== null}
-              onLeaveEdit={() => {
-                if (dirty) {
-                  toast.warn(
-                    "Submit the order or undo the changes before leaving edit mode.",
-                  );
-                  return;
-                }
-                setEditing(false);
-                setReceipt(null);
-              }}
+              onLeaveEdit={leaveEdit}
             />
+            )}
 
             <SubmitReceipt
               receipt={receipt}

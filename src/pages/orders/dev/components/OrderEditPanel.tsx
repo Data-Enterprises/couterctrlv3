@@ -68,7 +68,8 @@ interface Props {
   subDepts: SubDeptOption[];
   loadingSubDepts: boolean;
   onSubmit: () => void;
-  /** Opens Fix cost, which stages a unit cost into every order it covers. */
+  /** Opens the Problems tab, where one item's unit cost is fixed across
+   *  every order the left panel shows. */
   onFixCost: () => void;
   /**
    * How many orders hold changes waiting to be sent — the open one and any
@@ -186,7 +187,7 @@ const OrderEditPanel = ({
           <div className="flex-1" />
         <button
           onClick={onFixCost}
-          title="Set one item's unit cost on every order the filters hit"
+          title="Open the Problems tab: fix one item's unit cost on every order the left panel shows"
           className="flex-shrink-0 rounded-md border border-custom-white/30 px-2.5 py-1 text-[13px] font-semibold text-custom-white/95 transition-colors hover:bg-custom-white/10 hover:border-custom-white/55"
         >
           Fix cost
@@ -268,7 +269,7 @@ const OrderEditPanel = ({
 
         <button
           onClick={onFixCost}
-          title="Set one item's unit cost on every order the filters hit"
+          title="Open the Problems tab: fix one item's unit cost on every order the left panel shows"
           className="flex-shrink-0 rounded-md border border-custom-white/30 px-2.5 py-1 text-[13px] font-semibold text-custom-white/95 transition-colors hover:bg-custom-white/10 hover:border-custom-white/55"
         >
           Fix cost
@@ -477,7 +478,9 @@ const OrderEditPanel = ({
 };
 
 /** The navy band, with the way back to the read-only grid. */
-const Band = ({
+/** The navy band with the Browse / Edit switch. Shared with the Problems
+ *  tab's item view, so the two read as one screen in two states. */
+export const Band = ({
   children,
   onLeaveEdit,
 }: {

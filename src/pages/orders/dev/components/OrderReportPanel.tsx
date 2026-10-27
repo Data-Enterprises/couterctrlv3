@@ -6,7 +6,7 @@ import SortHeader from "../../../../components-dev/SortHeader";
 import { formatCurrency2 } from "../../../../utils";
 import type { AllOrder } from "../../../../interfaces";
 import { lineFlags, type GridSort, type SortKey } from "../ordersRows";
-import type { OrderFlag } from "../../../../features/dev/devOrdersSlice";
+import { FLAG_DOT, FLAG_TITLE } from "./flagStyles";
 
 interface Props {
   /** Already filtered, searched and sorted by the page. */
@@ -338,19 +338,6 @@ const OrderReportPanel = ({
       )}
     </div>
   );
-};
-
-/** Same reading as the panel's chips — red is wrong, amber is unknowable. */
-const FLAG_DOT: Record<OrderFlag, string> = {
-  missingCost: "bg-severity_critical_text",
-  noCaseSize: "bg-severity_watch_text",
-  highMargin: "bg-severity_watch_text/60",
-};
-
-const FLAG_TITLE: Record<OrderFlag, string> = {
-  missingCost: "No cost on this line — Ext cost and margin are wrong",
-  noCaseSize: "No case size — unit cost cannot be worked out",
-  highMargin: "Margin over the threshold, usually a wrong cost",
 };
 
 const PagerButton = ({

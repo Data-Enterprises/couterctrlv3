@@ -12,6 +12,7 @@ import {
 import { lineFlags } from "../ordersRows";
 import ThresholdFilter from "../../../../components-dev/filters/ThresholdFilter";
 
+import { FLAG_LABEL, FLAG_ON } from "./flagStyles";
 interface Props {
   /** Every line item in the search, before any filter. */
   lines: AllOrder[];
@@ -371,29 +372,6 @@ const OrdersConfigPanel = ({
       )}
     </div>
   );
-};
-
-/**
- * Red for a figure that is wrong, amber for one that cannot be worked out.
- *
- * A missing cost makes Ext cost a lie; no case size leaves the case cost
- * standing but makes unit cost unknowable. Different problems, so different
- * colours — severity tokens, because this grades the data rather than the
- * buyer.
- */
-const FLAG_LABEL: Record<OrderFlag, string> = {
-  missingCost: "Missing cost",
-  noCaseSize: "No case size",
-  highMargin: "High margin",
-};
-
-const FLAG_ON: Record<OrderFlag, string> = {
-  missingCost:
-    "border-severity_critical_text bg-severity_critical_bg text-severity_critical_text",
-  noCaseSize:
-    "border-severity_watch_text bg-severity_watch_bg text-severity_watch_text",
-  highMargin:
-    "border-severity_watch_text bg-severity_watch_bg text-severity_watch_text",
 };
 
 const Field = ({

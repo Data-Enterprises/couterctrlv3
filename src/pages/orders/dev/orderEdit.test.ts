@@ -3,6 +3,7 @@ import {
   canEditOrders,
   addedLines,
   appendLine,
+  applySent,
   applyField,
   applyUnitCost,
   stagePreview,
@@ -742,5 +743,41 @@ describe("Fix cost follows the left panel", () => {
     const pick = { storeNumber: "114", orderDate: "", orderType: "" };
     expect(matchesPick(d, pick)).toBe(false);
     expect(matchesPick(d, pick, "store")).toBe(true);
+  });
+});
+
+describe("applySent", () => {
+  const LINES = [
+    line({ storeid: 10, storenumber: "010", order_id: 1, line_number: 1, base_cost: 0 }),
+    line({ storeid: 10, storenumber: "010", order_id: 1, line_number: 2, base_cost: 9 }),
+    line({ storeid: 114, storenumber: "114", order_id: 2, line_number: 1, base_cost: 0 }),
+  ];
+  const [doc10] = buildDocs(LINES).filter((d) => d.storenumber === "010");
+
+  it("writes a sent order's figures onto the loaded lines", () => {
+    const sent = applyUnitCost(startDraft(doc10, LINES), 1, 2);
+    const got = applySent(LINES, sent);
+    expect(got.find((l) => l.storenumber === "010" && l.line_number === 1)!.base_cost).toBe(24);
+  });
+
+  it("leaves every other order alone", () => {
+    const sent = applyUnitCost(startDraft(doc10, LINES), 1, 2);
+    const got = applySent(LINES, sent);
+    expect(got.find((l) => l.storenumber === "114")).toBe(LINES[2]);
+  });
+
+  it("does not carry draft bookkeeping onto the line", () => {
+    const sent = applyUnitCost(startDraft(doc10, LINES), 1, 2);
+    const got = applySent(LINES, sent);
+    expect("original" in got[0]).toBe(false);
+  });
+
+  it("appends a line added in the draft", () => {
+    const draft = startDraft(doc10, LINES);
+    const fresh = blankLine(draft)!;
+    const sent = appendLine(draft, { ...fresh, product_code: "NEW" });
+    const got = applySent(LINES, sent);
+    expect(got).toHaveLength(4);
+    expect(got[3].product_code).toBe("NEW");
   });
 });
