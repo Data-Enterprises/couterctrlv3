@@ -119,11 +119,15 @@ none. `_row` already parses `labels` from JSON; `stores` needs the same.
 | Who | Sees |
 |---|---|
 | Below Manager (level < 5) | Only tickets they opened |
-| Manager (level 5–6) | Tickets they opened, **plus** any ticket with at least one store they have |
+| Manager (level 5–6) | Tickets they opened, **plus** any ticket with at least one store they have, **plus** store-less tickets opened by staff at one of their stores (the roll-up, below) |
 | Owner (level 7–8) | Tickets they opened, **plus** every ticket filed under a company they are in |
 | Tech on the roster, or level 9 | Everything (unchanged: `_can_view_all`) |
 
 Levels in this system: 1 basic, 2 user, 5 manager, 7 owner, 9 programmer.
+
+A ticket whose stores are all gone from a Manager's access drops out of their
+list. That's intended: visibility follows current access, like everything else
+in the app.
 
 Each tier sees everything the tier below it sees. An Owner does not need the
 Manager clause spelled out, because a store they hold is in a company they are
@@ -164,6 +168,17 @@ and (
         join assigned a on a.storeid = tsl.storeid and a.userid = :userid
         where tsl.ticket_id = t.id
     )
+    -- the roll-up: a store-less ticket from staff counts the opener's stores
+    or (
+        not exists (select 1 from ticket_store_link tsl where tsl.ticket_id = t.id)
+        and opener.user_level < :manager_level
+        and exists (
+            select 1 from assigned mine
+            join assigned theirs on theirs.storeid = mine.storeid
+            where mine.userid = :userid
+              and theirs.userid = t.created_by_userid
+        )
+    )
 )
 
 -- Owner
@@ -178,6 +193,29 @@ and (
     )
 )
 ```
+
+**The roll-up, and why it stops at staff.** A ticket filed as "Not about a
+store" has no store for the Manager clause to match. Without the roll-up, a
+cashier's "I can't sign in" would reach the Owners but never their own store
+manager, the person most likely to fix it. So for a store-less ticket, the
+opener's stores stand in, **but only when the opener is below Manager**:
+
+- Staff ticket with no store → the managers of the opener's stores, plus Owners.
+- Manager's or corporate user's ticket with no store → Owners only. Otherwise a
+  corporate user with 40 stores filing "Not about a store" would land in 40
+  managers' inboxes.
+
+Tickets roll up one level: staff to their store's manager, managers to the
+Owner. In practice, store-less tickets from User Management, User Groups and
+Shared Groups always go to Owners. Only Managers and up can open those pages,
+so the opener is never staff.
+
+`opener` is the `users` alias `_TICKET_SELECT` already joins
+(`left join users opener on opener.id = t.created_by_userid`). The opener's
+level is read **at query time**, not stamped on the ticket. That's fine: if the
+cashier is promoted, their old store-less tickets leave the managers' view,
+which matches who they now report to. Say so in the Handback if you'd rather
+stamp it.
 
 **Why the Owner rule has a third clause.** A ticket is filed under its opener's
 lowest company. When a multi-company opener ticks a store from another of their
