@@ -1,13 +1,14 @@
 import { useMemo, useState } from "react";
 import { CheckIcon } from "@heroicons/react/16/solid";
-import {
-  ORDER_FLAGS,
-  type OrderFlag,
-} from "../../../../features/dev/devOrdersSlice";
+import type { OrderFlag } from "../../../../features/dev/devOrdersSlice";
 import TextFilter from "../../../../components-dev/filters/TextFilter";
 import ThresholdFilter from "../../../../components-dev/filters/ThresholdFilter";
 import { workingOrder, type ProblemItem } from "../problemItems";
-import { FLAG_LABEL, FLAG_ON } from "./flagStyles";
+import { FLAG_DOT, FLAG_LABEL, FLAG_ON } from "./flagStyles";
+
+/** The order the list works in: the cause, its usual symptom, then the one
+ *  that is often fine. */
+const ROWS: OrderFlag[] = ["missingCost", "highMargin", "noCaseSize"];
 
 interface Props {
   /** Every item on the orders the filters above show, flagged or not. */
@@ -86,42 +87,67 @@ const ProblemList = ({
   return (
     <>
       <div className="flex-shrink-0 px-3 pb-2 flex flex-col gap-2">
-        <div className="flex flex-wrap gap-1.5">
-          {ORDER_FLAGS.map((f) => {
+        {/* One row per flag, its count on the right. Chips wrapped onto two
+            lines in a 300px panel, and the cutoff sat on a line of its own
+            away from the flag it decides; here it is inside that row. A row
+            is a toggle, several can be on, the same as the chips were. */}
+        <div className="flex flex-col gap-1">
+          {ROWS.map((f) => {
             const on = only.has(f);
+            const empty = counts[f] === 0;
             return (
-              <button
+              <div
                 key={f}
-                type="button"
-                onClick={() => toggle(f)}
-                disabled={counts[f] === 0}
-                className={`rounded-full border px-2.5 py-[3px] text-[11px] font-semibold transition-colors disabled:opacity-50 ${
+                role="button"
+                tabIndex={empty ? -1 : 0}
+                aria-pressed={on}
+                aria-disabled={empty}
+                onClick={() => !empty && toggle(f)}
+                onKeyDown={(e) => {
+                  if (empty || (e.key !== "Enter" && e.key !== " ")) return;
+                  e.preventDefault();
+                  toggle(f);
+                }}
+                className={`flex items-center gap-2 rounded-md border px-2.5 py-1.5 text-[12px] transition-colors ${
                   on
-                    ? FLAG_ON[f]
-                    : "border-gray-200 bg-custom-white text-content/95 hover:border-content/35"
+                    ? `${FLAG_ON[f]} font-semibold`
+                    : `border-transparent text-content ${
+                        empty ? "cursor-default" : "cursor-pointer hover:border-brand_line hover:bg-row_selected"
+                      }`
                 }`}
               >
-                {FLAG_LABEL[f]} {counts[f].toLocaleString()}
-              </button>
+                <span className={`h-2 w-2 flex-shrink-0 rounded-[2px] ${FLAG_DOT[f]}`} />
+                <span className={empty && !on ? "text-content/95" : ""}>
+                  {f === "highMargin" ? "High margin over" : FLAG_LABEL[f]}
+                </span>
+                {f === "highMargin" && (
+                  // Typing the cutoff must not also toggle the row.
+                  <span
+                    onClick={(e) => e.stopPropagation()}
+                    onKeyDown={(e) => e.stopPropagation()}
+                  >
+                    <ThresholdFilter
+                      value={
+                        marginOver === null
+                          ? null
+                          : { op: "gt", amount: marginOver }
+                      }
+                      onChange={(v) => onMarginOver(v === null ? null : v.amount)}
+                      showOp={false}
+                      suffix="%"
+                      placeholder="—"
+                      inputWidth={44}
+                      ariaLabel="High margin cutoff, in percent"
+                    />
+                  </span>
+                )}
+                <span className="ml-auto tabular-nums">
+                  {counts[f].toLocaleString()}
+                </span>
+              </div>
             );
           })}
         </div>
-
-        {/* The cutoff is part of the question "is this margin too high", so
-            it sits with the list it decides rather than back on Browse. Same
-            number Browse reads — change it here and Browse moves too. */}
-        <label className="flex items-center gap-2 text-[11.5px] text-content/95">
-          <span className="flex-shrink-0">High margin is over</span>
-          <ThresholdFilter
-            value={marginOver === null ? null : { op: "gt", amount: marginOver }}
-            onChange={(v) => onMarginOver(v === null ? null : v.amount)}
-            showOp={false}
-            suffix="%"
-            placeholder="—"
-            inputWidth={52}
-            ariaLabel="High margin cutoff, in percent"
-          />
-        </label>
 
         <TextFilter
           value={query}
