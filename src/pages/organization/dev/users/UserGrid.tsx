@@ -6,6 +6,8 @@ import {
   ArrowPathIcon,
   KeyIcon,
   DocumentDuplicateIcon,
+  UserMinusIcon,
+  UserPlusIcon,
 } from "@heroicons/react/20/solid";
 import { useOrganizationCtx } from "../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
@@ -94,6 +96,16 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
    * filter hid can ride along into a deactivation they were never shown in.
    */
   const [selected, setSelected] = useState<Set<number>>(new Set());
+  /**
+   * Picking people for a bulk deactivate (or reactivate), on purpose.
+   *
+   * The checkboxes only exist in this mode, and the mode is entered from a
+   * button that names the action. A checkbox column with no heading said what
+   * it was for only once something was ticked, so the grid read as if every
+   * row could be ticked for some unstated reason. Starting from the action
+   * means every box already means "this person".
+   */
+  const [selecting, setSelecting] = useState(false);
   /** The confirmation, open: who it names and which way. One modal for one
    *  row or fifty, so the single trash icon is as guarded as the bulk bar. */
   const [settingActive, setSettingActive] = useState<{
@@ -191,7 +203,24 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
   // selection made in one means nothing in the other.
   useEffect(() => {
     setSelected(new Set());
+    setSelecting(false);
   }, [showInactive]);
+
+  const stopSelecting = () => {
+    setSelecting(false);
+    setSelected(new Set());
+  };
+
+  // Escape backs out of picking, as it closes everything else in the app.
+  // Not while the confirmation is up: its own Escape belongs to it.
+  useEffect(() => {
+    if (!selecting || settingActive) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") stopSelecting();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [selecting, settingActive]);
 
   const selectedShown = useMemo(
     () => filtered.filter((u) => selected.has(u.id) && selectable(u)),
@@ -214,8 +243,8 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
       return next;
     });
 
-  /** The header box: every selectable row on screen, or none of them. Rows a
-   *  filter hides keep whatever state they had. */
+  /** "Select all shown": every selectable row on screen, or none of them.
+   *  Rows a filter hides keep whatever state they had. */
   const toggleAllShown = () =>
     setSelected((prev) => {
       const next = new Set(prev);
@@ -373,8 +402,8 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
     setSettingActive(null);
     if (!changed) return;
     // Whoever moved is now in the other list; the selection named them in
-    // this one.
-    setSelected(new Set());
+    // this one. Picking is over, too: the job it was opened for is done.
+    stopSelecting();
     ctx.dispatch(setRefresh(true));
   };
 
@@ -435,6 +464,24 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
           placeholder="Search name"
           className="flex-1 min-w-[100px]"
         />
+        {/* The way into picking, named for what picking is for. Gone while
+            picking: the bar below takes over and says the same thing. */}
+        {!selecting && (
+          <button
+            onClick={() => {
+              setSelected(new Set());
+              setSelecting(true);
+            }}
+            className="flex items-center gap-1 text-[11.5px] font-medium px-3 py-1.5 rounded-md border border-brand_line_2 text-content hover:border-brand_slate flex-shrink-0"
+          >
+            {showInactive ? (
+              <UserPlusIcon className="w-3.5 h-3.5" />
+            ) : (
+              <UserMinusIcon className="w-3.5 h-3.5" />
+            )}
+            {showInactive ? "Reactivate users" : "Deactivate users"}
+          </button>
+        )}
         <button
           onClick={onOpenCreate}
           className="flex items-center gap-1 text-[11.5px] font-medium px-3 py-1.5 rounded-md text-custom-white bg-brand_navy hover:bg-brand_navy/85 flex-shrink-0"
@@ -446,20 +493,35 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
         </button>
       </div>
 
-      {/* Only while something is ticked. It sits between the filters and the
-          grid so the count is read next to the rows it counts. */}
-      {selectedShown.length > 0 && (
-        <div className="flex items-center gap-3 mb-2 px-3 py-2 rounded-lg bg-filter_active border border-filter_active_border">
-          <span className="text-[12px] font-semibold text-brand_navy">
-            {selectedShown.length} selected
+      {/* While picking, from the first moment rather than the first tick: it
+          says what the boxes are for before anyone has to guess. It sits
+          between the filters and the grid so the count is read next to the
+          rows it counts. */}
+      {selecting && (
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 mb-2 px-3 py-2 rounded-lg bg-filter_active border border-filter_active_border">
+          <span className="text-[12.5px] font-semibold text-brand_navy">
+            {showInactive ? "Choose who to reactivate" : "Choose who to deactivate"}
           </span>
-          <button
-            onClick={() => setSelected(new Set())}
-            className="text-[11.5px] font-semibold text-brand_navy hover:underline"
-          >
-            Clear
-          </button>
+          <span className="text-[12px] tabular-nums text-content/95">
+            {selectedShown.length} of {selectableShown.length} picked
+          </span>
+          {selectableShown.length > 0 && (
+            <button
+              onClick={toggleAllShown}
+              className="text-[11.5px] font-semibold text-brand_navy underline underline-offset-2"
+            >
+              {allShownSelected
+                ? "Clear selection"
+                : `Select all ${selectableShown.length} shown`}
+            </button>
+          )}
           <span className="flex-1" />
+          <button
+            onClick={stopSelecting}
+            className="text-[12px] font-medium px-3 py-1.5 rounded-md border border-brand_line_2 bg-custom-white text-content hover:border-brand_slate"
+          >
+            Cancel
+          </button>
           <button
             onClick={() =>
               setSettingActive({
@@ -467,7 +529,8 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
                 active: showInactive ? 1 : 0,
               })
             }
-            className={`text-[12px] font-medium px-3 py-1.5 rounded-md text-custom-white ${
+            disabled={selectedShown.length === 0}
+            className={`text-[12px] font-medium px-3 py-1.5 rounded-md text-custom-white disabled:cursor-not-allowed disabled:opacity-40 ${
               showInactive
                 ? "bg-brand_navy hover:bg-brand_navy/85"
                 : "bg-red-600 hover:bg-red-600/85"
@@ -493,13 +556,15 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
             rather than crushing cells into each other. Header and rows are
             separate grids, so they must share one scroller to stay aligned. */}
         <div className="min-w-[1000px] flex-1 min-h-0 flex flex-col">
-          <div className="grid grid-cols-[2rem_11%_10%_10%_19%_10%_9%_8%_9%_7rem] px-3 py-2 bg-gray-50 text-[10px] font-semibold uppercase tracking-wide text-content flex-shrink-0 items-center">
-            <Checkbox
-              checked={allShownSelected}
-              onChange={toggleAllShown}
-              disabled={selectableShown.length === 0}
-              ariaLabel="Select every user shown"
-            />
+          <div
+            className={`grid ${
+              selecting
+                ? "grid-cols-[2rem_11%_10%_10%_19%_10%_9%_8%_9%_7rem]"
+                : "grid-cols-[11%_10%_10%_19%_10%_9%_8%_9%_7rem]"
+            } px-3 py-2 bg-gray-50 text-[10px] font-semibold uppercase tracking-wide text-content flex-shrink-0 items-center`}
+          >
+            {/* Select all lives in the bar, where it says so in words. */}
+            {selecting && <div />}
             <ColFilter
               label="Username"
               active={!!usernameFilter}
@@ -549,20 +614,41 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
           <div data-help="grid" className="flex-1 min-h-0 overflow-y-auto thin-scrollbar divide-y divide-brand_navy/15">
             {filtered.map((u) => {
               const outranked = isOutranked(u.user_level);
+              // While picking, the whole row is the target, not just the box.
+              const pickable = selecting && selectable(u);
+              const picked = pickable && selected.has(u.id);
               return (
                 <div
                   key={u.id}
-                  className={`grid grid-cols-[2rem_11%_10%_10%_19%_10%_9%_8%_9%_7rem] px-3 py-2 text-[13px] items-center transition-colors [content-visibility:auto] [contain-intrinsic-size:0_40px] ${outranked ? "bg-gray-50 text-content/85" : "text-content even:bg-row_stripe hover:bg-gray-50"}`}
+                  onClick={pickable ? () => toggleOne(u.id) : undefined}
+                  className={`grid ${
+                    selecting
+                      ? "grid-cols-[2rem_11%_10%_10%_19%_10%_9%_8%_9%_7rem] border-l-2"
+                      : "grid-cols-[11%_10%_10%_19%_10%_9%_8%_9%_7rem]"
+                  } px-3 py-2 text-[13px] items-center transition-colors [content-visibility:auto] [contain-intrinsic-size:0_40px] ${
+                    picked
+                      ? "bg-row_selected border-l-row_selected_border text-content"
+                      : outranked
+                        ? "bg-gray-50 text-content/85 border-l-transparent"
+                        : "text-content even:bg-row_stripe hover:bg-gray-50 border-l-transparent"
+                  } ${pickable ? "cursor-pointer" : ""}`}
                 >
-                  <div className="flex items-center">
-                    {selectable(u) && (
-                      <Checkbox
-                        checked={selected.has(u.id)}
-                        onChange={() => toggleOne(u.id)}
-                        ariaLabel={`Select ${u.username}`}
-                      />
-                    )}
-                  </div>
+                  {selecting && (
+                    // The box toggles through the row's own click, so its
+                    // change must not reach the row as a second one.
+                    <div
+                      className="flex items-center"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {pickable && (
+                        <Checkbox
+                          checked={picked}
+                          onChange={() => toggleOne(u.id)}
+                          ariaLabel={`Select ${u.username}`}
+                        />
+                      )}
+                    </div>
+                  )}
                   <div className="truncate">{u.username}</div>
                   <div className="truncate">{u.first_name || "—"}</div>
                   <div className="truncate">{u.last_name || "—"}</div>
@@ -581,7 +667,9 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
                   </div>
                   <div className="truncate">{formatDate(u.last_visit)}</div>
                   <div className="flex items-center justify-end gap-1">
-                    {outranked ? (
+                    {/* While picking, a click on a row only ticks it: nothing
+                        here that would open or change somebody instead. */}
+                    {selecting ? null : outranked ? (
                       <span className="text-[10px] italic text-content/85">
                         Unauthorized
                       </span>

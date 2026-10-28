@@ -884,3 +884,16 @@ a variable outside the store. That was so they would survive leaving the page,
 but it meant they also survived signing out. They are in the Coupon Sales slice
 now: leaving the page and coming back still opens receipts, and sign-out clears
 them with everything else. Nothing on screen changes.
+
+### Picking users to deactivate starts from the action
+
+dev mode only
+
+The users grid used to have a checkbox column with no heading, which only said
+what it was for once something was ticked. Now there are no checkboxes until
+you press **Deactivate users** in the toolbar (**Reactivate users** on the
+Inactive list). Pressing it shows a bar that says "Choose who to deactivate"
+before anything is ticked, with a count, "Select all N shown", Cancel, and the
+action button. Clicking anywhere on a row ticks it, and the row's own icons
+are hidden while picking. Escape or Cancel backs out. The single-row trash icon
+works as before.
