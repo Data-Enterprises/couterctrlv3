@@ -369,13 +369,14 @@ const ReleaseNotesModal = ({
                 {present.map((k) => {
                   const n = countOf(release, k);
                   const on = active === k;
+                  const { Icon, tile } = LOOK[k];
                   return (
                     <button
                       key={k}
                       type="button"
                       onClick={() => jumpTo(k)}
                       aria-current={on}
-                      className={`rounded-full border px-2.5 py-0.5 text-[11.5px] font-medium transition-colors ${
+                      className={`inline-flex items-center gap-1.5 rounded-full border py-0.5 pl-1 pr-2.5 text-[11.5px] font-medium transition-colors ${
                         LOOK[k].chip
                       } ${
                         on
@@ -383,8 +384,18 @@ const ReleaseNotesModal = ({
                           : "border-transparent hover:border-brand_line_2"
                       }`}
                     >
-                      {SECTION_TITLE[k]}{" "}
-                      <span className="tabular-nums">{n}</span>
+                      {/* The same tile the release list and the section
+                          headings use, so the pills double as their key. */}
+                      <span
+                        aria-hidden
+                        className={`flex h-[18px] w-[18px] flex-none items-center justify-center rounded-full ${tile}`}
+                      >
+                        <Icon className="h-3 w-3" />
+                      </span>
+                      <span>
+                        {SECTION_TITLE[k]}{" "}
+                        <span className="tabular-nums">{n}</span>
+                      </span>
                     </button>
                   );
                 })}
