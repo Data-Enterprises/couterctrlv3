@@ -1,0 +1,103 @@
+[
+  {
+    "date": "2026-11-02",
+    "platform": [
+      "Hash sales",
+      "Deactivated users are signed out on their next click"
+    ],
+    "nowAvailable": [
+      {
+        "page": "Performance → Item Actions",
+        "hrefs": ["item-report"],
+        "bullets": [
+          "Item Actions: a next step for each item that needs attention, such as reorder, reprice or call the vendor"
+        ]
+      }
+    ],
+    "updates": [
+      {
+        "page": "Config → User Management",
+        "hrefs": ["user-management"],
+        "bullets": [
+          "Access type: set each person to By group or By store",
+          "Edit user: works the same as Add user",
+          "Bulk deactivate: deactivate several users at once",
+          "Access filter: narrow the users list to By group, By store or Not set"
+        ]
+      },
+      {
+        "page": "Performance → Sales",
+        "hrefs": ["sales"],
+        "bullets": [
+          "Top 200 comparison: pick a second store to see what both sell, and what only one does",
+          "Sub dept exclusions: choose which sub departments to exclude. The Performance pages leave them out."
+        ]
+      },
+      {
+        "page": "Data → Orders",
+        "hrefs": ["orders"],
+        "bullets": [
+          "Problems: find missing costs, high margins and missing case sizes across every order",
+          "Unit cost: type it once and each store's case cost follows"
+        ]
+      }
+    ],
+    "fixes": [
+      {
+        "page": "Performance → Vendors, Sub Dept Margins",
+        "hrefs": ["vendors", "sub-dept-margins"],
+        "bullets": ["Store margin matches between the two pages"]
+      },
+      {
+        "page": "Performance → Sales",
+        "hrefs": ["sales"],
+        "bullets": ["Store comparison matches departments by name"]
+      },
+      {
+        "page": "Data → Orders",
+        "hrefs": ["orders"],
+        "bullets": [
+          "Submitted costs stay on screen",
+          "Two locations sharing a store ID keep separate orders"
+        ]
+      }
+    ]
+  },
+  {
+    "date": "2026-10-20",
+    "platform": [],
+    "nowAvailable": [],
+    "updates": [
+      {
+        "page": "Performance → Categories",
+        "hrefs": ["categories"],
+        "bullets": ["LW / LY pill: names the two figures it compares"]
+      },
+      {
+        "page": "Analytics → Item Lookup",
+        "hrefs": ["item-lookup"],
+        "bullets": ["Item report: one page you scroll, with a day-by-day chart"]
+      }
+    ],
+    "fixes": [
+      {
+        "page": "Performance → Coupon Sales",
+        "hrefs": ["coupon-sales"],
+        "bullets": ["Sales stay listed after you leave the page and come back"]
+      }
+    ]
+  },
+  {
+    "date": "2026-09-22",
+    "platform": ["Signing out clears everything from the device"],
+    "nowAvailable": [],
+    "updates": [],
+    "fixes": [
+      {
+        "page": "Analytics → Cashiers, Upc List, Forecasting; Data → Coupons",
+        "hrefs": ["cashiers", "upc-upload", "forecasting", "coupons"],
+        "bullets": ["Search: the button waits until a store or group is picked"]
+      }
+    ]
+  }
+]

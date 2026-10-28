@@ -98,12 +98,6 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="cashiers" element={<CashiersPage />} />
                 <Route path="orders" element={<OrdersPage />} />
                 <Route path="tickets" element={<Tickets />} />
-                {/* Release Notes was here. Parked for production: dev's
-                    release notes are the weekly meeting doc, and the in-app
-                    notes come back for clients when prod makes the shift.
-                    The page reads `content/releaseNotes.json` and needs no
-                    endpoint. ReleaseNotes.tsx is untouched; restoring it is
-                    this route plus the steps in TitleBar's parked block. */}
                 {/* A last_route saved in user prefs can name a page that no
                     longer exists; land on Sales rather than a blank outlet. */}
                 <Route path="*" element={<Navigate to="/sales" replace />} />

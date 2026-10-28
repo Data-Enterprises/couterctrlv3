@@ -715,27 +715,6 @@ export const isComingSoonRoute = (route: string): boolean => {
   );
 };
 
-/**
- * Routes that exist on the dev API only, whether or not the menu offers them.
- *
- * The Coming Soon pages render `DevOnlyNotice` on prod; Release Notes would
- * render perfectly well, which is the more dangerous case — the route is
- * reachable by typing it, and nothing about the page says it should not have
- * been.
- *
- * Release Notes is named here rather than read off the nav because it is
- * deliberately not in the nav at all.
- *
- * The notes are the client set, written for the people using the product, and
- * they are parked for production: dev's release notes are the weekly meeting
- * doc, so dev has no menu row either (2026-10-28). Kept here so the route
- * stays shut on prod until that shift is deliberate. Opening it is the steps
- * in TitleBar's parked block, and this line is one of them.
- */
-const DEV_ONLY_ROUTES = new Set(["release-notes"]);
-
 /** The test both the sign-in restore and the mode switch use. */
-export const isDevOnlyRoute = (route: string): boolean => {
-  const href = route.replace(/^\//, "");
-  return DEV_ONLY_ROUTES.has(href) || isComingSoonRoute(href);
-};
+export const isDevOnlyRoute = (route: string): boolean =>
+  isComingSoonRoute(route.replace(/^\//, ""));

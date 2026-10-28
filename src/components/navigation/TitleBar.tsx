@@ -21,6 +21,8 @@ import { setUserPrefs } from "../../api/user";
 import { useToast } from "../toasts/hooks/useToast";
 import type { JsonError } from "../../interfaces";
 import SignInAsModal from "../../components-dev/SignInAsModal";
+import ReleaseNotesModal from "../../components-dev/releaseNotes/ReleaseNotesModal";
+import { SAMPLE_RELEASES } from "../../content/releaseNotes";
 import { impersonatedBy } from "../../utils/session";
 
 interface NavSheetProps {
@@ -172,6 +174,7 @@ const TitleBar = () => {
   };
   const [avatarOpen, setAvatarOpen] = useState(false);
   const [signInAsOpen, setSignInAsOpen] = useState(false);
+  const [releaseNotesOpen, setReleaseNotesOpen] = useState(false);
   /** Who is really behind this session, when it is someone else's. */
   const realUser = impersonatedBy(context.token);
 
@@ -376,31 +379,25 @@ const TitleBar = () => {
                 </div>
               </div>
             ) : null}
-            {/* Release Notes — parked 2026-10-28, for production.
+            {/* Release Notes, as a window over the page you are on.
 
-                Dev has no row: the weekly meeting doc is the dev release notes,
-                written for the support team, and a second copy in the app only
-                drifts from it. The in-app notes are the client set and come
-                back when production makes the shift. Nothing was deleted:
-                `pages/releaseNotes/ReleaseNotes.tsx` and
-                `content/releaseNotes.json` are untouched.
-
-                To open it on prod: mount `release-notes` in main.tsx (the
-                route has been unmounted since 58556ef2, so a row alone lands
-                on Sales), take it out of DEV_ONLY_ROUTES in navigation/utils,
-                and restore the row here gated on `context.apiEnv === "prod"`:
-
+                Dev tree for now, and it moves to prod with the dev-to-prod
+                migration like any other page; the real notes are written then.
+                Until there are real ones it opens the sample set, so it is
+                level 9 only: support in dev mode would read a sample as news.
+                Dev's actual release notes are the weekly meeting doc. */}
+            {context.apiEnv === "dev" && user.userLevel === 9 ? (
               <button
                 onClick={() => {
                   setAvatarOpen(false);
-                  navigate("/release-notes");
+                  setReleaseNotesOpen(true);
                 }}
                 className="w-full text-left px-4 py-2.5 text-[13px] font-medium text-content hover:bg-gray-50 transition-colors border-b border-gray-100 flex items-center gap-2"
               >
                 <span className="flex-1">Release Notes</span>
-                <span className="text-[11px] text-content/95">every release</span>
+                <span className="text-[11px] text-content/95">sample</span>
               </button>
-            */}
+            ) : null}
             {/* File a ticket about the page you are on.
 
                 Raises a flag rather than navigating: sending somebody to the
@@ -712,6 +709,18 @@ const TitleBar = () => {
         </>
       )}
 
+      {releaseNotesOpen && (
+        <ReleaseNotesModal
+          releases={SAMPLE_RELEASES}
+          sample
+          href={currentPath}
+          pageName={
+            activeCategory?.pages.find((p) => p.href === currentPath)?.name ??
+            null
+          }
+          onClose={() => setReleaseNotesOpen(false)}
+        />
+      )}
       {signInAsOpen && (
         <SignInAsModal onClose={() => setSignInAsOpen(false)} />
       )}

@@ -841,3 +841,22 @@ is dev's release notes, written for the support team. The row was also broken:
 its route had been unmounted, so it landed on Sales. The page and the notes
 themselves are kept for clients, for when production makes the shift.
 TitleBar's parked block lists the three steps to open it on prod.
+
+### Release Notes come back as a window, in dev, with sample notes
+
+dev mode only, level 9 only
+
+**Release Notes** in the avatar menu opens a window over the page you are on,
+not a separate page. On the left is a list of release dates. On the right is
+that release's notes in up to four sections: Platform Updates, Now available,
+Updates and Fixes. Each section is a list of bullets under page headings, and
+empty sections are left out.
+
+It opens on the page you came from, with that page marked in every section
+it appears in. When the latest release does not touch the page, the window
+says so and links to the release that last did.
+
+The notes are a sample for trying the window, and the window says so. The real
+notes are prod-only and get written at the dev-to-prod migration, when this
+moves over like any other page. The old 20 October set is gone: it described
+pages that never reached prod. The old Release Notes page is in `trash/`.
