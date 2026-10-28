@@ -911,3 +911,18 @@ that sold last week or last year and nothing this week, down 100%, never made
 the list. Sales already counts those as critical in its Inactive list. They
 come through now, including ones from a department that sold nothing this
 week.
+
+## Coupons (Data → Coupons), on a phone
+
+### The phone screens read like the other mobile pages
+
+dev mode only
+
+The sort switch moves out of the navy header into an ordinary row of sort
+chips, the same ones every other mobile list uses, with Export at the end of
+that row. The store list, the overview and a section's detail share one totals
+card. Coupon value leads, and the count, products and average sit beneath it
+as tiles, instead of three copies of a four-column strip that gave every
+figure equal weight. A grouped row (a store, a sub department, a date, a
+cashier) labels its count and shows the average on its second line, instead
+of an unlabelled number that read as a second amount.

@@ -1,12 +1,11 @@
 import { useMemo, useState } from "react";
-import { ArrowDownTrayIcon } from "@heroicons/react/20/solid";
-import { formatCurrency2 } from "../../../../utils";
 import type { CouponItem } from "../../../../interfaces";
 import type { GroupTab } from "./CouponsMobile";
-import MobilePerfHeader from "../../../../components-dev/mobile/MobilePerfHeader";
-import HeaderIconButton from "../../../../components-dev/HeaderIconButton";
+import MobilePerfDetail from "../../../../components-dev/mobile/MobilePerfDetail";
 import CpnExportSheet from "./CpnExportSheet";
-import CpnSortToggle from "./CpnSortToggle";
+import CpnListControls from "./CpnListControls";
+import CpnSectionRow from "./CpnSectionRow";
+import CpnTotalsCard from "./CpnTotalsCard";
 import { sumCouponAmount } from "../../../../utils/couponValue";
 
 interface Props {
@@ -19,8 +18,11 @@ interface Props {
   selectedTab: GroupTab;
   onTabChange: (tab: GroupTab) => void;
   onSectionSelect: (key: string, label: string) => void;
+  /** The store list on a group search, the search card on a single store —
+   *  `CouponsMobile` decides which, the same way it decides whether a store
+   *  list exists at all. A drill has one way back, so there is no separate
+   *  search control here. */
   onBack: () => void;
-  onSearch: () => void;
 }
 
 const TABS: { key: GroupTab; label: string }[] = [
@@ -40,13 +42,8 @@ const CpnOverview = ({
   onTabChange,
   onSectionSelect,
   onBack,
-  onSearch,
 }: Props) => {
   const [exportOpen, setExportOpen] = useState(false);
-
-  const totalAmount = sumCouponAmount(coupons);
-  const avgPerCoupon = coupons.length > 0 ? totalAmount / coupons.length : 0;
-  const uniqueProducts = new Set(coupons.map((c) => c.product_code)).size;
 
   const sections = useMemo(() => {
     const build = (
@@ -104,103 +101,55 @@ const CpnOverview = ({
   }, [coupons, selectedTab, sortMetric]);
 
   return (
-    <div className="flex flex-col h-[calc(100dvh-3rem)] overflow-hidden">
-      <MobilePerfHeader
-        pageName="Coupons"
-        storeName={storeName}
-        dateRange={dateRangeLabel}
+    <>
+      {/* A drill level, so it wears the same wrapper every other mobile drill
+          does — the back control, the scope line and start-at-the-top all come
+          with it. The three group-bys ARE its tabs: Sub dept, Date and
+          Cashier are three readings of one week, which is exactly what this
+          component's tab row is for.
+
+          Back goes to the store list on a group search and to the search card
+          on a single store, because a single store has no list behind it —
+          the same fork `CouponsMobile` already makes to decide whether the
+          store list is shown at all. */}
+      <MobilePerfDetail
+        tabs={TABS}
+        active={selectedTab}
+        onTab={onTabChange}
+        scopeName={storeName}
+        when={dateRangeLabel}
+        backLabel={isGroup ? "Back to stores" : "Back to search"}
         onBack={onBack}
-        // Single-store searches have no store list behind them, so back already
-        // lands on the search card — a second button to the same place would
-        // just be noise.
-        onSearch={isGroup ? onSearch : undefined}
-        helpPage="coupons"
-        actions={
-          <>
-            <CpnSortToggle value={sortMetric} onChange={onSortMetric} />
-            <HeaderIconButton
-              onClick={() => setExportOpen(true)}
-              title="Export CSV"
-            >
-              <ArrowDownTrayIcon className="w-3.5 h-3.5" />
-            </HeaderIconButton>
-          </>
-        }
-      />
+        levelKey={`coupons|${storeName}|${selectedTab}`}
+      >
+        <div className="flex flex-col gap-3">
+          <CpnTotalsCard coupons={coupons} caption="Coupon value this week" />
 
-      {/* KPI strip */}
-      <div className="flex-shrink-0 grid grid-cols-4 bg-custom-white border-b border-gray-100">
-        {[
-          { label: "Coupons", value: String(coupons.length) },
-          { label: "Total", value: formatCurrency2(totalAmount) },
-          { label: "Avg", value: formatCurrency2(avgPerCoupon) },
-          { label: "Products", value: String(uniqueProducts) },
-        ].map(({ label, value }) => (
-          <div
-            key={label}
-            className="px-2.5 py-1.5 border-r border-gray-100 last:border-r-0"
-          >
-            <div className="text-[10px] font-semibold uppercase tracking-wide text-content/95">
-              {label}
-            </div>
-            <div className="text-[12px] font-bold text-content mt-0.5 tabular-nums">
-              {value}
-            </div>
-          </div>
-        ))}
-      </div>
+          <section className="overflow-hidden rounded-2xl border border-gray-200 bg-custom-white shadow-md">
+            <CpnListControls
+              value={sortMetric}
+              onChange={onSortMetric}
+              onExport={() => setExportOpen(true)}
+            />
 
-      {/* Tab bar */}
-      <div className="flex-shrink-0 flex bg-custom-white border-b border-gray-100">
-        {TABS.map((t) => (
-          <button
-            key={t.key}
-            onClick={() => onTabChange(t.key)}
-            className={`px-3 py-2 text-[11px] font-medium border-b-2 transition-colors ${
-              selectedTab === t.key
-                ? "border-brand_navy text-content font-semibold"
-                : "border-transparent text-content/95"
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Section list — pb-14 clears the fixed bottom tab bar. */}
-      <div className="flex-1 overflow-y-auto bg-gray-50 pb-14">
-        {sections.map(({ key, label, count, total }) => (
-          <button
-            key={key}
-            onClick={() => onSectionSelect(key, label)}
-            className="w-full flex items-center px-3 py-2.5 bg-custom-white border-b border-gray-100 text-left active:bg-gray-50 gap-3"
-          >
-            <span className="text-[12px] font-medium text-content flex-1 truncate">
-              {label}
-            </span>
-            <span className="text-[10px] text-content/95 flex-shrink-0">
-              {count}
-            </span>
-            <span className="text-[11px] font-semibold text-content flex-shrink-0 tabular-nums">
-              {formatCurrency2(total)}
-            </span>
-            <svg
-              className="w-4 h-4 text-content/95 flex-shrink-0"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-            >
-              <path d="M9 18l6-6-6-6" />
-            </svg>
-          </button>
-        ))}
-        {sections.length === 0 && (
-          <div className="flex items-center justify-center py-16 text-[12px] text-content/95">
-            No coupons to display
-          </div>
-        )}
-      </div>
+            {sections.length === 0 ? (
+              <div className="px-4 py-8 text-center text-[12.5px] text-content/95">
+                No coupons to display
+              </div>
+            ) : (
+              sections.map(({ key, label, count, total }) => (
+                <CpnSectionRow
+                  key={key}
+                  label={label}
+                  count={count}
+                  total={total}
+                  onClick={() => onSectionSelect(key, label)}
+                />
+              ))
+            )}
+          </section>
+        </div>
+      </MobilePerfDetail>
 
       {exportOpen && (
         <CpnExportSheet
@@ -210,7 +159,7 @@ const CpnOverview = ({
           rows={coupons}
         />
       )}
-    </div>
+    </>
   );
 };
 
