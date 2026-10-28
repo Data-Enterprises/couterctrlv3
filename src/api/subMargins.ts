@@ -187,6 +187,7 @@ export const getItemActions = async (
   searchValue: number,
   singleStore: number,
   product_codes: string[],
+  signal?: AbortSignal,
 ) => {
   const json = await axios({
     method: "POST",
@@ -195,6 +196,7 @@ export const getItemActions = async (
       Authorization: `Bearer ${token}`,
     },
     url: url + "subs/item_actions",
+    signal,
     data: {
       startDate,
       endDate,

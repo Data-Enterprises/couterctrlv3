@@ -4,9 +4,13 @@ import { getForecastKpis } from "../modules/forecast/ForecastKpis";
 import { getPriceOptKpis } from "../modules/priceOpt/PriceOptKpis";
 import { getTrendKpis } from "../modules/trend/TrendKpis";
 import { getAssociationKpis } from "../modules/association/AssociationKpis";
+import { getMovementKpis } from "../modules/movement/MovementKpis";
+import { movementStores } from "../modules/movement/movementStats";
+import { useMovementWindow } from "../modules/movement/useMovementWindow";
 
 const UpcKpiStrip = () => {
   const ctx = useUpcDevCtx();
+  const movementWindow = useMovementWindow();
 
   // No selected UPCs means nothing to summarize — every module's KPI
   // computation either produces meaningless placeholders or (Association)
@@ -18,6 +22,18 @@ const UpcKpiStrip = () => {
     switch (ctx.activeTab) {
       case "salesComp":
         return getSalesCompKpis(ctx.salesComp, ctx.salesCompLY, ctx.selectedUpcs, ctx.endDate);
+      case "movement":
+        return getMovementKpis(
+          ctx.movementRows,
+          ctx.searchedUpcs.filter((u) => ctx.selectedUpcs.includes(u)),
+          movementWindow.weeks,
+          movementWindow.endIso,
+          movementStores(
+            ctx.storeids.split(",").map(Number).filter((n) => Number.isFinite(n) && n > 0),
+            ctx.assignedStores,
+            ctx.movementRows,
+          ).length,
+        );
       case "forecast":
         return getForecastKpis(ctx.forecastQtyData, ctx.selectedUpcs);
       case "priceOpt":

@@ -15,15 +15,47 @@ import type {
   UpcTrend,
 } from "../../interfaces";
 
-export type UpcDevTab = "salesComp" | "forecast" | "priceOpt" | "trend" | "association";
+export type UpcDevTab =
+  | "salesComp"
+  | "movement"
+  | "forecast"
+  | "priceOpt"
+  | "trend"
+  | "association";
 
 // Forecast excluded — still inert, not a selectable landing tab.
 export const UPC_DEV_TABS: { id: UpcDevTab; label: string }[] = [
   { id: "salesComp", label: "Sales Comp" },
+  { id: "movement", label: "Movement" },
   { id: "priceOpt", label: "Price Opt" },
   { id: "trend", label: "Trend" },
   { id: "association", label: "Association" },
 ];
+
+/** One item's movement at one store for one week ending: units, and pounds
+ *  for a weighed item, refunds already taken off. See modules/movement. */
+export type MovementRow = {
+  storeid: number;
+  store_number: string;
+  store_name: string;
+  product_code: string;
+  description: string;
+  /** yyyy-mm-dd */
+  week_ending: string;
+  qty: number;
+  weight: number;
+};
+
+/** The store or group a search was made with, in the form the subs endpoints
+ *  take it. `storeids` is the same search resolved to ids, which is what the
+ *  marketing endpoints take; Movement reads `subs/item_actions`, which wants
+ *  this. Kept from the search itself because the search card's own selection
+ *  moves as soon as someone opens it again. */
+export type UpcSearchScope = {
+  singleStore: 0 | 1;
+  useGroups: 0 | 1;
+  searchValue: number;
+};
 
 export type UpcDevDisplayMode = "code" | "desc";
 export type UpcDevShowMode = "all" | "selected";
@@ -69,6 +101,7 @@ interface UpcDevState {
   // instead of re-fetching every module.
   searchedUpcs: string[];
   searchedScopeKey: string;
+  searchedScope: UpcSearchScope | null;
   upcItems: UpcItem[];
   selectedUpcs: string[];
   filterText: string;
@@ -92,6 +125,14 @@ interface UpcDevState {
   salesCompLY: UpcSalesComp[];
   salesCompLYCoverage: string[];
   salesCompLYLoading: boolean;
+  // Movement. Its own window of weeks, ending on the search's end date, so
+  // changing how many weeks it shows never re-runs another tab. Null weeks
+  // means "what the search's range covers". Coverage is for the current
+  // window only: changing the weeks empties it along with the rows.
+  movementWeeks: number | null;
+  movementCoverage: string[];
+  movementLoading: boolean;
+  movementRows: MovementRow[];
   // Forecast
   forecastLoaded: boolean;
   forecastLoading: boolean;
@@ -156,6 +197,7 @@ const initialState: UpcDevState = {
   searchVersion: 0,
   searchedUpcs: [],
   searchedScopeKey: "",
+  searchedScope: null,
   upcItems: [],
   selectedUpcs: [],
   filterText: "",
@@ -168,6 +210,11 @@ const initialState: UpcDevState = {
   salesCompLY: [],
   salesCompLYCoverage: [],
   salesCompLYLoading: false,
+  // Movement
+  movementWeeks: null,
+  movementCoverage: [],
+  movementLoading: false,
+  movementRows: [],
   // Forecast
   forecastLoaded: false,
   forecastLoading: false,
@@ -322,6 +369,22 @@ const upcDevSlice = createSlice({
       state.optBestPricesByUpc = mergeRows(state.optBestPricesByUpc, { rows: byUpc, codes });
       state.priceOptCoverage = extendCoverage(state.priceOptCoverage, codes);
     },
+    // Movement
+    /** A different number of weeks is a different question: the rows and
+     *  their coverage go, and the tab asks again for every UPC. */
+    setDevMovementWeeks(state, action: PayloadAction<number>) {
+      if (state.movementWeeks === action.payload) return;
+      state.movementWeeks = action.payload;
+      state.movementRows = [];
+      state.movementCoverage = [];
+    },
+    setDevMovementLoading(state, action: PayloadAction<boolean>) {
+      state.movementLoading = action.payload;
+    },
+    mergeDevMovement(state, action: PayloadAction<MergePayload<MovementRow>>) {
+      state.movementRows = mergeRows(state.movementRows, action.payload);
+      state.movementCoverage = extendCoverage(state.movementCoverage, action.payload.codes);
+    },
     // Trend
     setDevTrendLoading(state, action: PayloadAction<boolean>) {
       state.trendLoading = action.payload;
@@ -371,10 +434,11 @@ const upcDevSlice = createSlice({
      *  completed search, once, so the next search can diff against it. */
     setDevSearchSnapshot(
       state,
-      action: PayloadAction<{ upcs: string[]; scopeKey: string }>,
+      action: PayloadAction<{ upcs: string[]; scopeKey: string; scope: UpcSearchScope }>,
     ) {
       state.searchedUpcs = action.payload.upcs;
       state.searchedScopeKey = action.payload.scopeKey;
+      state.searchedScope = action.payload.scope;
     },
 
     /** Drop UPCs from every place their data lives, without re-fetching.
@@ -419,6 +483,7 @@ const upcDevSlice = createSlice({
       state.optBestPrices = keepRows(state.optBestPrices);
       state.optBestPricesByUpc = keepRows(state.optBestPricesByUpc);
       state.upcTrends = keepRows(state.upcTrends);
+      state.movementRows = keepRows(state.movementRows);
 
       // Coverage has to shrink with the data. A removed UPC that stayed in a
       // coverage list would be treated as already-fetched if the user added it
@@ -428,6 +493,7 @@ const upcDevSlice = createSlice({
       state.salesCompLYCoverage = keepCodes(state.salesCompLYCoverage);
       state.priceOptCoverage = keepCodes(state.priceOptCoverage);
       state.trendCoverage = keepCodes(state.trendCoverage);
+      state.movementCoverage = keepCodes(state.movementCoverage);
 
       // Forecast is parked rather than dead — the export modal still reads
       // these two — so it gets pruned like everything else.
@@ -464,9 +530,14 @@ const upcDevSlice = createSlice({
       state.dataLoaded = false;
       state.searchedUpcs = [];
       state.searchedScopeKey = "";
+      state.searchedScope = null;
       state.upcItems = [];
       state.selectedUpcs = [];
       state.filterText = "";
+      state.movementWeeks = null;
+      state.movementCoverage = [];
+      state.movementLoading = false;
+      state.movementRows = [];
       state.salesCompCoverage = [];
       state.salesCompLoading = false;
       state.salesComp = [];
@@ -531,6 +602,9 @@ export const {
   mergeDevPriceOpt,
   setDevTrendLoading,
   mergeDevTrends,
+  setDevMovementWeeks,
+  setDevMovementLoading,
+  mergeDevMovement,
   setDevAssociationSeedKey,
   setDevAssociationSeedLoaded,
   setDevAssociationSeedLoading,

@@ -7,6 +7,8 @@ import { computeUpcSalesCompStats, DAYS, DAY_SHORT } from "../modules/salesComp/
 import { getTrendStatus, impactUnits } from "../modules/trend/trendStats";
 import { pricePoints, elasticityFromPoints } from "../modules/priceOpt/priceOptStats";
 import { isWeighted, pricedUnits, pricedUnitLabel } from "../../../../utils/pricedUnits";
+import { movementCsv, movementStores } from "../modules/movement/movementStats";
+import { useMovementWindow } from "../modules/movement/useMovementWindow";
 import {
   getDisplayItems,
   getDepartmentBreakdown,
@@ -28,6 +30,10 @@ const SHAPES: { id: ExportShape; label: string }[] = [
 
 const PRESETS: Record<UpcDevTab, Preset[]> = {
   salesComp: [
+    { id: "all", label: "All UPCs" },
+    { id: "selected", label: "Selected UPCs" },
+  ],
+  movement: [
     { id: "all", label: "All UPCs" },
     { id: "selected", label: "Selected UPCs" },
   ],
@@ -56,6 +62,7 @@ const PRESETS: Record<UpcDevTab, Preset[]> = {
 
 const TAB_LABELS: Record<UpcDevTab, string> = {
   salesComp: "Sales Comp",
+  movement: "Movement",
   forecast: "Forecast",
   priceOpt: "Price Opt",
   trend: "Trend",
@@ -78,6 +85,7 @@ const download = (blob: Blob, filename: string) => {
 
 const UpcExportModal = ({ onClose }: Props) => {
   const ctx = useUpcDevCtx();
+  const movementWindow = useMovementWindow();
   // "New since pivot" is a status that only exists behind the flag, so on
   // prod the preset would filter to nothing.
   const presets = PRESETS[ctx.activeTab].filter((p) => ctx.fixes || p.id !== "new");
@@ -170,6 +178,29 @@ const UpcExportModal = ({ onClose }: Props) => {
         const headers = ["UPC", "Description", "Status", "Slope Before", "Slope After", "Slope Change", "Confidence", "Mean Before", "Mean After", "Pct Change Mean", "Impact Units"];
         const rows = src.map((t) => [t.product_code, t.product_description, getTrendStatus(t, ctx.fixes), String(t.slope_before), String(t.slope_after), String(t.slope_change), String(t["r2-after"]), String(t.mean_before), String(t.mean_after), String(t.pct_change_mean), ctx.fixes ? String(Math.round(impactUnits(t, ctx.fixes))) : String(t.impact_units)]);
         download(toBlobCsv(headers, rows), `trends_${sel}.csv`);
+        break;
+      }
+      case "movement": {
+        // The grid's shape: a line per UPC per store, a column per week
+        // ending. Every store in the search is in it for every UPC, blanks
+        // included, as on screen.
+        const codes = ctx.searchedUpcs.filter((u) => sel === "all" || isSelected(u));
+        const stores = movementStores(
+          ctx.storeids.split(",").map(Number).filter((n) => Number.isFinite(n) && n > 0),
+          ctx.assignedStores,
+          ctx.movementRows,
+        );
+        const { headers, lines } = movementCsv(
+          ctx.movementRows,
+          codes,
+          new Map(ctx.upcItems.map((i) => [i.product_code, i.description])),
+          stores,
+          movementWindow.weekEndings,
+        );
+        download(
+          toBlobCsv(headers, lines),
+          `movement_${movementWindow.weeks}wk_ending_${movementWindow.endIso}_${sel}.csv`,
+        );
         break;
       }
       case "association": {

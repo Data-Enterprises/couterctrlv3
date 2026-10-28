@@ -1,12 +1,43 @@
 import type { HelpContent } from "../helpTypes";
 
-/** Help for UPC List — a list of items studied four ways. */
+/** Help for UPC List — a list of items studied five ways. */
 export const UPC_LIST_HELP: HelpContent = {
   screen: "UPC List",
   purpose:
-    "A list of UPCs across a store or group and a date range: sales against last year, price history, trends, and what sells alongside them.",
+    "A list of UPCs across a store or group and a date range: sales against last year, movement by store and week, price history, trends, and what sells alongside them.",
 
   guides: [
+    {
+      id: "movement",
+      title: "Get movement by store and week",
+      desc: "One total per store per week ending, as a CSV",
+      steps: [
+        {
+          title: "Search the stores and the last week",
+          pre: "Pick the group of stores and add the UPCs. Set the end date to the last week ending you want — a Saturday gives Sunday-to-Saturday weeks — then Search.",
+          anchor: "search",
+        },
+        {
+          title: "Open Movement",
+          pre: "Open the",
+          chip: "Movement",
+          post: "tab and set Weeks to how many weeks back you want, up to 13.",
+          see: "Each item's stores down the side and its weeks across, with a total per store and per week. Weighed items are in pounds, everything else in units.",
+          anchor: "tabs",
+        },
+        {
+          title: "Download it",
+          pre: "Click the download icon at the top right and choose All UPCs or Selected UPCs.",
+          see: "A CSV with a line per UPC per store and a column per week ending.",
+        },
+      ],
+      issues: [
+        {
+          q: "A store shows dashes all the way across",
+          a: "It sold none of that item in those weeks. It stays in the list so you can see it was checked.",
+        },
+      ],
+    },
     {
       id: "search",
       title: "Set up a search",
@@ -59,6 +90,11 @@ export const UPC_LIST_HELP: HelpContent = {
     {
       term: "Sales Comp",
       def: "Sales for the ticked items this year against the same weeks last year. WoW trend compares each item's most recent full week with its average full week. Click an item for its sales day by day.",
+      anchor: "tabs",
+    },
+    {
+      term: "Movement",
+      def: "How much of each item every store moved, week by week: units, or pounds for an item sold by weight, with refunds taken off. The weeks end on the search's end date, and Weeks sets how many — changing it reloads only this tab.",
       anchor: "tabs",
     },
     {

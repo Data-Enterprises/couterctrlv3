@@ -987,3 +987,24 @@ The week view was already right. Found by Wayne.
 The panel beside the list now names the day too ("Fri, Oct 23 against …"
 rather than "This week against …"), and compares the gap with the same day
 last week and last year.
+## UPC List: a Movement tab (Amanda's request, 28 Oct)
+
+dev mode only
+
+A new **Movement** tab answers "how much of this item did each store move,
+week by week": units, or pounds for an item sold by weight, with refunds taken
+off. Each item shows its stores down the side and its weeks across, with a
+total for every store and every week. Stores in the search that sold none of it
+keep their row of dashes, so the list reads as checked rather than incomplete.
+
+The weeks end on the search's end date; pick a Saturday for Sunday-to-Saturday
+weeks. A **Weeks** control (1 to 13) sets how far back it goes, and changing it
+reloads only this tab, never Sales Comp or the others. The download icon
+exports it as a CSV with a line per UPC per store and a column per week ending,
+the shape a store's movement request asks for.
+
+It reads the Item Actions sales endpoint one week at a time, through the same
+one-at-a-time queue as the other tabs, and only when the tab is opened. A
+dedicated movement endpoint is planned
+(`docs/backend-movement-and-store-lists-2026-10-28.md`, part A); the tab can
+switch to it without changing what it shows.
