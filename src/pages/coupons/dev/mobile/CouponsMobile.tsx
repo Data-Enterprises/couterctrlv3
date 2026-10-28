@@ -243,7 +243,6 @@ const CouponsMobile = () => {
               }
             : handleReset
         }
-        onSearch={handleReset}
       />
     );
   }
@@ -263,7 +262,7 @@ const CouponsMobile = () => {
 
   // Entry screen
   return (
-    <div className="h-[calc(100dvh-3rem)] overflow-y-auto bg-gray-50">
+    <div className="h-[calc(100dvh-3rem)] overflow-y-auto bg-bkg">
       <div className="mx-4 pt-4 pb-2">
         <div className="bg-custom-white rounded-2xl shadow-lg p-4 flex flex-col gap-3">
           <div>
