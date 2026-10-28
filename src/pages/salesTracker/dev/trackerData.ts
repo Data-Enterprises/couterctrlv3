@@ -3,6 +3,7 @@ import { createRequestQueue } from "../../../utils/requestQueue";
 import type { WindowPlan } from "./trackerWeeks";
 import { fetchAllPages } from "../../../utils/paging";
 import type { SubSale, SubSalesJsonResp } from "../../../interfaces";
+import { countedRows } from "../../../utils/hashSubs";
 
 /**
  * Sub-department rows for one store or group over a window.
@@ -45,7 +46,7 @@ export const fetchSubSales = async (
   if (body.error !== 0)
     throw new Error(body.msg ?? "Failed to load sub departments");
 
-  return fetchAllPages(body, body.subs ?? [], async (page) => {
+  const rows = await fetchAllPages(body, body.subs ?? [], async (page) => {
     try {
       const r = await call(page);
       const j: SubSalesJsonResp = r.data;
@@ -54,6 +55,20 @@ export const fetchSubSales = async (
       return [];
     }
   });
+
+  /**
+   * Fuel, lottery and cash accounts come out here.
+   *
+   * The tracker totals these rows and sets the result against the store
+   * figures the Sales header shows, and `sales/weekly` leaves hash
+   * sub departments out. Keeping them would put a store's fuel into a week
+   * that the header beside it does not count -- the same disagreement the
+   * store comparison had, $79,943 of it on one Brooks store.
+   *
+   * Dropped at the fetch rather than at each total, because the tracker sums
+   * these rows in several places and one of them would eventually be missed.
+   */
+  return countedRows(rows);
 };
 
 /**

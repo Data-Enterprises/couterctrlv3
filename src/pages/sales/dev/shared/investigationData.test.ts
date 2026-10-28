@@ -28,9 +28,11 @@ const {
 const scope = {
   url: "u/",
   token: "t",
-  mine: { storeid: 1, storeNumber: "010", name: "Leitchfield" },
-  theirs: { storeid: 2, storeNumber: "440", name: "Mt Carmel" },
-  subDept: 7,
+  // Deliberately different numbers for the same department: that is the
+  // normal case, not an edge one. Leitchfield calls it 7, Mt Carmel calls
+  // it 21.
+  mine: { storeid: 1, storeNumber: "010", name: "Leitchfield", subDept: 7 },
+  theirs: { storeid: 2, storeNumber: "440", name: "Mt Carmel", subDept: 21 },
   tw: { start: "2026-09-28", end: "2026-10-04" },
   lw: { start: "2026-09-21", end: "2026-09-27" },
   ly: { start: "2025-09-29", end: "2025-10-05" },
@@ -233,7 +235,13 @@ describe("fetchOrders", () => {
         error: 0,
         orders: [
           order({ product_code: "mine", storeid: 1, storenumber: "010" }),
-          order({ product_code: "theirs", storeid: 2, storenumber: "440" }),
+          // Mt Carmel's number for the same department, not Leitchfield's.
+          order({
+            product_code: "theirs",
+            storeid: 2,
+            storenumber: "440",
+            sub_department: 21,
+          }),
         ],
       },
     });
@@ -331,12 +339,35 @@ describe("fetchOrders", () => {
       data: {
         error: 0,
         orders: [
-          order({ sub_department: String(scope.subDept) as unknown as number }),
+          order({
+            sub_department: String(scope.mine.subDept) as unknown as number,
+          }),
         ],
       },
     });
     const out = await fetchOrders(scope);
     expect(out.mine).toHaveLength(1);
+  });
+
+  /** Chapel Hill's 10 is Tobacco; Tupelo's 10 is Deli/Bakery. One number for
+   *  both asked each store about a different department, and the panel set
+   *  the two answers side by side as though they were the same shelf. */
+  it("asks each store for its own department number", async () => {
+    getAllOrders.mockResolvedValue({
+      data: {
+        error: 0,
+        orders: [
+          order({ storeid: 1, storenumber: "010", sub_department: 7 }),
+          order({ storeid: 2, storenumber: "440", sub_department: 21 }),
+          // Mt Carmel's 7 is some other department. It must not come back.
+          order({ storeid: 2, storenumber: "440", sub_department: 7 }),
+        ],
+      },
+    });
+    const out = await fetchOrders(scope);
+    expect(out.mine).toHaveLength(1);
+    expect(out.theirs).toHaveLength(1);
+    expect(out.theirs[0].sub_department).toBe(21);
   });
 });
 

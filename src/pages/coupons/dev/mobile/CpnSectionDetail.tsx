@@ -4,7 +4,8 @@ import {
   ChevronDownIcon,
   ArrowDownTrayIcon,
 } from "@heroicons/react/20/solid";
-import MobilePerfHeader from "../../../../components-dev/mobile/MobilePerfHeader";
+import MobilePerfDetail from "../../../../components-dev/mobile/MobilePerfDetail";
+import CpnTotalsCard from "./CpnTotalsCard";
 import { useAppSelector } from "../../../../hooks";
 import { useAppDispatch } from "../../../../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
@@ -13,7 +14,7 @@ import { getCashierTransaction } from "../../../../api/lossPrevention";
 import { setCouponReceiptLines } from "../../../../features/dev/devCouponSlice";
 import type { CouponItem, JsonError } from "../../../../interfaces";
 import BottomSheet from "../../../../components-dev/BottomSheet";
-import { couponValueOf, sumCouponAmount } from "../../../../utils/couponValue";
+import { couponValueOf } from "../../../../utils/couponValue";
 
 interface Props {
   coupons: CouponItem[];
@@ -64,9 +65,6 @@ const CpnSectionDetail = ({
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [selectedSaleId, setSelectedSaleId] = useState("");
 
-  const totalAmount = sumCouponAmount(coupons);
-  const avgPerCoupon = coupons.length > 0 ? totalAmount / coupons.length : 0;
-  const uniqueProducts = new Set(coupons.map((c) => c.product_code)).size;
 
   const aggRows = useMemo((): AggRow[] => {
     const map = new Map<string, AggRow>();
@@ -203,53 +201,40 @@ const CpnSectionDetail = ({
   const txNet = txGross - txCoupons;
   const txTotal = txNet + txTax;
 
+  // The deepest level, and the same wrapper the two above it use. One tab:
+  // MobilePerfDetail renders no tab row for a single entry, which is right —
+  // there is one reading of a section and a lone tab would be a label
+  // pretending to be a control. The tab it came FROM names the level, and the
+  // section itself is the scope.
   return (
-    <div className="flex flex-col h-[calc(100dvh-3rem)] overflow-hidden bg-gray-50">
-      {/* The section is the subject here, so it takes row one's slot; the tab
-          it came from is the "page" you are inside. */}
-      <MobilePerfHeader
-        pageName={tabLabel}
-        storeName={sectionLabel}
-        dateRange={dateRangeLabel}
-        onBack={onBack}
-        helpPage="coupons"
-      />
+    <>
+    <MobilePerfDetail
+      tabs={[{ key: "products" as const, label: tabLabel }]}
+      active="products"
+      onTab={() => {}}
+      scopeName={sectionLabel}
+      when={dateRangeLabel}
+      backLabel="Back to coupons"
+      onBack={onBack}
+      levelKey={`cpnSection|${sectionLabel}`}
+    >
+      <div className="flex flex-col gap-3">
+        <CpnTotalsCard coupons={coupons} caption={`${tabLabel} total`} />
 
-      {/* KPI strip */}
-      <div className="flex-shrink-0 grid grid-cols-4 bg-custom-white border-b border-gray-100">
-        {[
-          { label: "Coupons", value: String(coupons.length) },
-          { label: "Total", value: formatCurrency2(totalAmount) },
-          { label: "Avg", value: formatCurrency2(avgPerCoupon) },
-          { label: "Products", value: String(uniqueProducts) },
-        ].map(({ label, value }) => (
-          <div
-            key={label}
-            className="px-2.5 py-1.5 border-r border-gray-100 last:border-r-0"
-          >
-            <div className="text-[10px] font-semibold uppercase tracking-wide text-content/95">
-              {label}
-            </div>
-            <div className="text-[12px] font-bold text-content mt-0.5 tabular-nums">
-              {value}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Product rows — pb-14, not the safe-area inset: the inset reserves
-          about 34px, and the tab bar covering this list is 56px. */}
-      <div className="flex-1 overflow-y-auto pb-14">
+        <section className="overflow-hidden rounded-2xl border border-gray-200 bg-custom-white shadow-md">
+      {/* No scroll container and no pb-14 of its own: MobilePerfDetail owns
+          the scroll and already clears the fixed tab bar. */}
+      <div>
         {aggRows.map((agg) => {
           const isExp = expanded.has(agg.product_code);
           return (
             <div
               key={agg.product_code}
-              className="bg-custom-white border-b border-gray-100"
+              className="border-b border-brand_line last:border-b-0"
             >
               <button
                 onClick={() => toggleExpanded(agg.product_code)}
-                className="w-full flex items-center gap-2 px-3 py-2.5 text-left active:bg-gray-50"
+                className="w-full flex items-center gap-2 px-3.5 py-2.5 text-left active:bg-bkg"
               >
                 {isExp ? (
                   <ChevronDownIcon className="w-3.5 h-3.5 text-content/95 flex-shrink-0" />
@@ -270,8 +255,8 @@ const CpnSectionDetail = ({
                 </span>
               </button>
               {isExp && (
-                <div className="border-t border-gray-100">
-                  <div className="grid grid-cols-4 gap-2 px-3 py-1 bg-gray-50 border-b border-gray-100">
+                <div className="border-t border-brand_line">
+                  <div className="grid grid-cols-4 gap-2 px-3.5 py-1 bg-gray-100 border-b border-brand_line">
                     {["Cashier", "Date", "Trans #", "Amt"].map((h, i) => (
                       <div
                         key={h}
@@ -285,7 +270,7 @@ const CpnSectionDetail = ({
                     <button
                       key={use.sale_id}
                       onClick={() => handleUseClick(use)}
-                      className="w-full grid grid-cols-4 gap-2 px-3 py-2 bg-gray-50/60 border-b border-gray-100 last:border-0 text-left active:bg-blue-50/40"
+                      className="w-full grid grid-cols-4 gap-2 px-3.5 py-2 border-b border-brand_line last:border-0 text-left active:bg-bkg"
                     >
                       <span className="text-[10px] text-content/95 truncate">
                         {use.cashier_name}
@@ -307,6 +292,9 @@ const CpnSectionDetail = ({
           );
         })}
       </div>
+        </section>
+      </div>
+    </MobilePerfDetail>
 
       {/* Transaction bottom sheet */}
       {selectedSaleId && (
@@ -444,7 +432,7 @@ const CpnSectionDetail = ({
           <div className="h-4 flex-shrink-0" />
         </BottomSheet>
       )}
-    </div>
+    </>
   );
 };
 

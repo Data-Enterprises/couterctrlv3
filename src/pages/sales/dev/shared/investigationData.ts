@@ -71,6 +71,16 @@ export interface Store {
    *  by NUMBER as well or two locations come back merged. */
   storeNumber: string;
   name: string;
+  /**
+   * The department's number AT THIS STORE.
+   *
+   * On the scope rather than beside it, because the two stores do not agree
+   * on it. Chapel Hill's 10 is Tobacco and Tupelo's 10 is Deli/Bakery, so a
+   * single number asked one store about cigarettes and the other about its
+   * bakery and set the two side by side. The report pairs on the name and
+   * hands each side its own number; see `deptReport`.
+   */
+  subDept: number;
 }
 
 /**
@@ -87,7 +97,6 @@ export interface Scope {
   token: string;
   mine: Store;
   theirs: Store;
-  subDept: number;
   tw: Window;
   lw: Window;
   ly: Window;
@@ -107,7 +116,8 @@ export const scopeKey = (s: Scope) =>
     s.url,
     s.mine.storeid, s.mine.storeNumber,
     s.theirs.storeid, s.theirs.storeNumber,
-    s.subDept,
+    s.mine.subDept,
+    s.theirs.subDept,
     s.tw.start, s.tw.end,
     s.lw.start, s.lw.end,
     s.ly.start, s.ly.end,
@@ -149,7 +159,8 @@ const fetchPeriod = async (
     getSubMarginsWithPricePoints(
       scope.url,
       scope.token,
-      scope.subDept,
+      // The store's own number, not the scope's — see Store.subDept.
+      store.subDept,
       window.start,
       window.end,
       USE_GROUPS,
@@ -309,11 +320,6 @@ export const fetchOrders = async (
     // the same lesson `codesIn` below learned about `product_code`. A string
     // "45" against a number 45 drops every order in the department, and the
     // panel then reports, confidently, that neither store ordered anything.
-    const inDept = all.filter(
-      (o) =>
-        wanted.has(String(o.product_code ?? "").trim()) ||
-        Number(o.sub_department) === Number(scope.subDept),
-    );
     // `AllOrder` spells it `storenumber`, with no underscore.
     const forStore = (rows: AllOrder[]) => (s: Store) =>
       scopeRowsToStore(
@@ -321,7 +327,15 @@ export const fetchOrders = async (
         s.storeNumber,
         (o) => o.storenumber,
       );
-    const dept = forStore(inDept);
+    // Narrowed to the store FIRST, then to that store's own department
+    // number. One number for both would ask Tupelo for Chapel Hill's
+    // department, which at Brooks is a different department.
+    const dept = (s: Store) =>
+      forStore(all)(s).filter(
+        (o) =>
+          wanted.has(String(o.product_code ?? "").trim()) ||
+          Number(o.sub_department) === Number(s.subDept),
+      );
     const whole = forStore(all);
 
     return {

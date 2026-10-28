@@ -72,6 +72,17 @@ interface CouponSalesState {
   /** Lines of the receipt open in the detail panel; empty when none is. Was
    *  parked in LP's slice (transactionDrillDown) — Coupon Sales keeps its own. */
   receiptLines: TransactionListItem[];
+  /**
+   * The phone layout's week of coupon lines, every line of every sale, so
+   * opening a receipt is a filter, not a fetch.
+   *
+   * In the store rather than in the module: the sales they belong to live in
+   * the eventPerf slice and survive leaving the page, so the lines have to as
+   * well, or every receipt read "No lines came back" on the way back in. A
+   * module variable did that but also outlived sign-out, which left the last
+   * user's lines in memory. Here sign-out clears them with everything else.
+   */
+  mobileLines: CouponItem[];
 }
 
 const initialState: CouponSalesState = {
@@ -91,6 +102,7 @@ const initialState: CouponSalesState = {
   sectionFilter: "",
   exportOpen: false,
   receiptLines: [],
+  mobileLines: [],
 };
 
 const couponSalesSlice = createSlice({
@@ -156,6 +168,9 @@ const couponSalesSlice = createSlice({
     setCouponReceiptLines: (state, action: PayloadAction<TransactionListItem[]>) => {
       state.receiptLines = action.payload;
     },
+    setCouponMobileLines: (state, action: PayloadAction<CouponItem[]>) => {
+      state.mobileLines = action.payload;
+    },
     reQueryCouponSales: (state) => {
       state.coupons = [];
       state.noCouponsFound = false;
@@ -188,6 +203,7 @@ export const {
   setCouponSectionFilter,
   setCouponExportOpen,
   setCouponReceiptLines,
+  setCouponMobileLines,
   reQueryCouponSales,
   resetCouponSalesState,
 } = couponSalesSlice.actions;

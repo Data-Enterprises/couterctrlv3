@@ -1,7 +1,12 @@
+import type { ServerPricePoint } from "../../../api/pricePoints";
 import { calculateCogs } from "../../../utils/cogs";
 import { shiftIso } from "../../../utils/grading";
 // The weight-before-qty rule, from utils rather than the Inventory page.
-import { rowPricedUnits as pricedUnits } from "../../../utils/pricedUnits";
+import {
+  rowPricedUnits as pricedUnits,
+  pricedUnits as unitsOrWeight,
+  isWeighted,
+} from "../../../utils/pricedUnits";
 import type { SubsPricePoint } from "../../../interfaces";
 import type { ReceiptLine } from "./itemReportData";
 import { normalizeProductCode } from "../../../utils/productCode";
@@ -791,7 +796,11 @@ export interface PriceEra {
   start: string;
   end: string;
   days: number;
+  /** Pounds on a weighed item, a ring count otherwise -- the same rule the
+   *  rest of the panel follows. `weighed` says which, because the column
+   *  silently changes meaning without it. */
   units: number;
+  weighed: boolean;
   unitsPerDay: number;
   unitCost: number | null;
   marginPct: number | null;
@@ -823,11 +832,18 @@ const erasFromPoints = (points: SubsPricePoint[]): PriceEra[] => {
     const days = [...(pp.days_sold ?? [])].sort();
     if (days.length === 0) continue;
 
-    // Units are only known for the point as a whole, so a point that ran in
-    // two stretches splits them by how many days each stretch holds. It is an
+    // Pounds where the item is weighed. `units` on a price point is a ring
+    // count, and on a variable-weight item that is a different quantity from
+    // the one the rest of the panel shows -- Fam Pak Breast Tenders read 97
+    // here beside a header of 180.7 lb and a transactions table of 180.68,
+    // all three in one panel, the middle one in packages (finding AS).
+    const measure = unitsOrWeight(pp.units, pp.weight);
+
+    // Only known for the point as a whole, so a point that ran in two
+    // stretches splits it by how many days each stretch holds. It is an
     // apportionment rather than a measurement, which is why it is not used to
     // decide anything — only shown.
-    const perDay = pp.units / days.length;
+    const perDay = measure / days.length;
 
     let start = days[0];
     let run = 1;
@@ -844,6 +860,7 @@ const erasFromPoints = (points: SubsPricePoint[]): PriceEra[] => {
         end: prev,
         days: run,
         units: round1(perDay * run),
+        weighed: isWeighted(pp.weight),
         unitsPerDay: 0,
         unitCost: null,
         marginPct: null,
@@ -866,6 +883,10 @@ export const buildPriceEras = (
     item.points.length > 0 ? erasFromPoints(item.points) : [];
   if (eras.length > 0) return withEraCost(eras, item, receipts);
 
+  // The day walk already counts in pounds -- `item.series` is summed through
+  // the same rule -- so only the label has to be worked out here.
+  const weighed = item.rows.some((r) => isWeighted(r.weight));
+
   // No points for this code — the day walk, which is what every era was built
   // from before the endpoint returned real ones.
   for (const day of item.series) {
@@ -881,6 +902,7 @@ export const buildPriceEras = (
         end: day.date,
         days: 1,
         units: day.units,
+        weighed,
         unitsPerDay: 0,
         unitCost: null,
         marginPct: null,
@@ -997,6 +1019,53 @@ export const flatDaysBefore = (
     flat += 1;
   }
   return flat;
+};
+
+/**
+ * The price table, merged by price.
+ *
+ * `cashiers/price_points` splits on price type and on whether the item rang
+ * as a multiple, which matters to Price Opt -- it cares how a price was
+ * arrived at. Here, what the item rang at is the whole question and why is a
+ * column this section does not have.
+ *
+ * `unit_price` is per pound where the item is weighed, and the amount beside
+ * it has to be pounds to match. This table used to be built by walking every
+ * receipt, and a receipt line carries what the PACKAGE came to -- which is
+ * how Fam Pak Breast Tenders came to list $6.14, $6.94 and $6.86 against a
+ * shelf price of $3.99 a pound (finding AS).
+ */
+export interface MergedPrice {
+  price: number;
+  /** Pounds where `weighed`, a ring count otherwise. */
+  qty: number;
+  receipts: number;
+  weighed: boolean;
+}
+
+export const mergePricePoints = (rows: ServerPricePoint[]): MergedPrice[] => {
+  const byPrice = new Map<number, MergedPrice>();
+  for (const r of rows) {
+    const amount = r.weighed ? r.weight : r.units;
+    const found = byPrice.get(r.unit_price);
+    if (found) {
+      found.qty += amount;
+      // Summed across the price types sharing a price. The server counts
+      // distinct receipts per row, so a receipt holding the item at one price
+      // under two price types counts twice here -- rare enough to be worth
+      // saying rather than worth another read of every receipt.
+      found.receipts += r.receipts;
+      found.weighed = found.weighed || r.weighed;
+    } else {
+      byPrice.set(r.unit_price, {
+        price: r.unit_price,
+        qty: amount,
+        receipts: r.receipts,
+        weighed: r.weighed,
+      });
+    }
+  }
+  return [...byPrice.values()].sort((a, b) => b.qty - a.qty);
 };
 
 /**

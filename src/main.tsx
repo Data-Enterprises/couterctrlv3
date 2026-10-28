@@ -42,10 +42,14 @@ import Settings from "./pages/settings/Settings.tsx";
 import Dashboard from "./pages/quicksight/Dashboard.tsx";
 import Tickets from "./pages/tickets/Tickets.tsx";
 import { armPageCalls } from "./utils/pageCalls.ts";
+import { armSessionGuard } from "./utils/sessionGuard.ts";
 
 // Before the first render, so nothing is missed — a ticket filed about the
 // screen somebody is looking at wants every call that drew it.
 armPageCalls();
+// A 401 from our API means the session is over -- deactivated, or expired.
+// Sign out once, instead of letting every call on the page fail on its own.
+armSessionGuard(store);
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -94,16 +98,9 @@ createRoot(document.getElementById("root")!).render(
                 <Route path="cashiers" element={<CashiersPage />} />
                 <Route path="orders" element={<OrdersPage />} />
                 <Route path="tickets" element={<Tickets />} />
-                {/* Release Notes was here. Unmounted until the help endpoints
-                    are deployed: the page can neither list the notes nor sign
-                    a link to one without them, and the bucket prefix they
-                    live under is not public the way dev/ and prod/ are.
-
-                    Gone rather than redirected — nobody has it as their
-                    last_route, and it was never in the nav, so there is no
-                    path left that expects it to answer. ReleaseNotes.tsx is
-                    untouched; restoring it is this route and the row in
-                    TitleBar. */}
+                {/* A last_route saved in user prefs can name a page that no
+                    longer exists; land on Sales rather than a blank outlet. */}
+                <Route path="*" element={<Navigate to="/sales" replace />} />
               </Route>
             </Routes>
           </ToastProvider>

@@ -4,13 +4,21 @@ import { ArrowPathIcon, MagnifyingGlassIcon } from "@heroicons/react/16/solid";
 import MultiSelectFilter from "../../../../components-dev/filters/MultiSelectFilter";
 import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicator";
 import type { AllOrder } from "../../../../interfaces";
-import type { OrdersFilters } from "../../../../features/dev/devOrdersSlice";
+import {
+  ORDER_FLAGS,
+  type OrderFlag,
+  type OrdersFilters,
+} from "../../../../features/dev/devOrdersSlice";
+import { lineFlags } from "../ordersRows";
+import ThresholdFilter from "../../../../components-dev/filters/ThresholdFilter";
 
+import { FLAG_LABEL, FLAG_ON } from "./flagStyles";
 interface Props {
   /** Every line item in the search, before any filter. */
   lines: AllOrder[];
   filters: OrdersFilters;
   onChange: (key: keyof OrdersFilters, values: (string | number)[]) => void;
+  onMarginOver: (v: number | null) => void;
   onClear: () => void;
   loading: boolean;
   /** How many lines survive the current configuration. */
@@ -49,6 +57,7 @@ const OrdersConfigPanel = ({
   lines,
   filters,
   onChange,
+  onMarginOver,
   onClear,
   loading,
   matched,
@@ -158,13 +167,41 @@ const OrdersConfigPanel = ({
     [options, reachable, filters],
   );
 
+  /**
+   * How many lines each flag would show, counted against everything the
+   * search returned rather than what is already filtered.
+   *
+   * A count that moved as you narrowed would be answering a different
+   * question from the one the chip asks — "is this a problem here" — and
+   * would read as zero exactly when a filter had hidden the problem.
+   */
+  const flagCounts = useMemo(() => {
+    const counts: Record<OrderFlag, number> = {
+      missingCost: 0,
+      noCaseSize: 0,
+      highMargin: 0,
+    };
+    for (const o of lines)
+      for (const f of lineFlags(o, filters.marginOver)) counts[f] += 1;
+    return counts;
+  }, [lines, filters.marginOver]);
+
+  const toggleFlag = (flag: OrderFlag) =>
+    onChange(
+      "flags",
+      filters.flags.includes(flag)
+        ? filters.flags.filter((f) => f !== flag)
+        : [...filters.flags, flag],
+    );
+
   const active =
     filters.orderTypes.length +
     filters.storeNumbers.length +
     filters.dates.length +
     filters.subIds.length +
     filters.productCodes.length +
-    filters.orderIds.length;
+    filters.orderIds.length +
+    filters.flags.length;
 
   const asNumbers = (values: (string | number)[]) =>
     values.map((v) => Number(v));
@@ -261,6 +298,47 @@ const OrdersConfigPanel = ({
                 onChange={(v) => onChange("productCodes", v)}
                 placeholder="All items"
                 noun="items"
+              />
+            </Field>
+
+            <Field label="Cost problems">
+              <div className="flex flex-wrap gap-1.5">
+                {ORDER_FLAGS.map((flag) => {
+                  const on = filters.flags.includes(flag);
+                  const n = flagCounts[flag];
+                  return (
+                    <button
+                      key={flag}
+                      type="button"
+                      onClick={() => toggleFlag(flag)}
+                      // Nothing to show is still an answer, so the chip stays
+                      // rather than disappearing — it just cannot be picked.
+                      disabled={n === 0}
+                      className={`rounded-full border px-2.5 py-[3px] text-[10.5px] font-semibold transition-colors disabled:opacity-50 ${
+                        on
+                          ? FLAG_ON[flag]
+                          : "border-gray-200 bg-custom-white text-content/85 hover:border-content/35"
+                      }`}
+                    >
+                      {FLAG_LABEL[flag]} {n.toLocaleString()}
+                    </button>
+                  );
+                })}
+              </div>
+            </Field>
+
+            <Field label="High margin over">
+              <ThresholdFilter
+                value={
+                  filters.marginOver === null
+                    ? null
+                    : { op: "gt", amount: filters.marginOver }
+                }
+                onChange={(v) => onMarginOver(v === null ? null : v.amount)}
+                showOp={false}
+                suffix="%"
+                placeholder="Margin"
+                stretch
               />
             </Field>
 

@@ -6,8 +6,7 @@ import {
   setSelectedUserId,
 } from "../../../../features/dev/devUsersSlice";
 import UserGrid from "./UserGrid";
-import CreateUserWizard from "./create/CreateUserWizard";
-import UserDetailShell from "./view/UserDetailShell";
+import UserWizard from "./create/UserWizard";
 
 type View = "grid" | "create";
 
@@ -24,13 +23,25 @@ const Users = () => {
     ctx.dispatch(setSelectedUserForm(""));
   };
 
+  // Edit is Add, filled in — the same four steps. Somebody above your own
+  // level is not yours to edit, so their row opens nothing rather than a form
+  // whose every save the server would refuse.
   if (isDetail) {
-    return <UserDetailShell onBack={handleBack} />;
+    const target = ctx.users.find((u) => u.id === ctx.selectedUserId);
+    if (!target || target.user_level > ctx.userLevel) return null;
+    return (
+      <UserWizard
+        key={ctx.selectedUserId}
+        editUserId={ctx.selectedUserId}
+        onComplete={handleBack}
+        onCancel={handleBack}
+      />
+    );
   }
 
   if (view === "create") {
     return (
-      <CreateUserWizard
+      <UserWizard
         onComplete={() => setView("grid")}
         onCancel={() => setView("grid")}
       />

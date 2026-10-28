@@ -9,13 +9,15 @@ import { ChevronDownIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
 import PageInfoButton from "../../../components-dev/PageInfoButton";
 import { formatCurrency2, formatDateSimple } from "../../../utils";
 import { formatPct, pillClass } from "../../../utils/severity";
-import { actualPricePoints, unitPrice } from "../../../utils/pricePoints";
+import { unitPrice } from "../../../utils/pricePoints";
+import type { PricePointsState } from "../../../hooks/usePricePoints";
 import type { ActualFetchState } from "../../../hooks/useActualPricePoints";
 import {
   ACTION_LABEL,
   buildPriceEras,
   daysSince,
   deliveryGap,
+  mergePricePoints,
   type ActionKind,
   type ReportItem,
 } from "./itemReportMetrics";
@@ -62,6 +64,11 @@ interface Props {
   lookbackDays: number;
   periods: PeriodLabels;
   actual: ActualFetchState;
+  /** The price table, from `cashiers/price_points`. */
+  prices: PricePointsState;
+  /** Opening a price needs the receipts behind it, which are not fetched
+   *  until somebody asks. */
+  onOpenPrice: () => void;
   /** The selected item's suggested action, carried through to the basket view
    *  so its line there matches its chip on the sheet. */
   action?: ActionKind;
@@ -396,6 +403,8 @@ const ItemReportRail = ({
   lookbackDays,
   periods,
   actual,
+  prices,
+  onOpenPrice,
   action,
   evidence,
 }: Props) => {
@@ -437,53 +446,33 @@ const ItemReportRail = ({
     () => (item ? buildPriceEras(item, receipts) : []),
     [item, receipts],
   );
-  const isCurrent = !!item && actual.upc === item.productCode;
-  const act = useMemo(
-    () => actualPricePoints(isCurrent ? actual.lines : [], item?.unitCost ?? 0),
-    [isCurrent, actual.lines, item],
-  );
+  const isCurrent = !!item && prices.upc === item.productCode;
+  /** Receipts, for the modal behind a price. Loaded on demand now, so this is
+   *  empty until somebody opens one. */
+  const linesIn = !!item && actual.upc === item.productCode;
 
   /**
-   * Price points merged by price alone.
+   * Price points merged by price alone, from the server's table.
    *
-   * `actualPricePoints` splits on price *and* price type, which is right for
-   * Price Opt — it cares whether a price was promotional. Here it produced two
-   * rows both reading "$10.99" with no way to tell them apart, and a count that
-   * disagreed with the modal behind it. These are price points based on
-   * transactions: what the item rang at is the whole question, and why it rang
-   * there is a column this section doesn't have.
+   * This was built by walking every receipt the item appeared on, which is
+   * what made it wrong on a random-weight item: a receipt line carries what
+   * the package came to, so Fam Pak Breast Tenders listed $6.14, $6.94 and
+   * $6.86 beside a shelf price of $3.99 a pound (finding AS). It also meant
+   * opening any row downloaded about 700 KB of receipts nobody had asked for
+   * (finding D).
    *
-   * Merged locally rather than in `actualPricePoints`, which Price Opt shares.
+   * `cashiers/price_points` answers both: one small response, and
+   * `unit_price` is PER POUND where the item is weighed.
+   *
+   * Still merged by price. The server splits on price type and on whether the
+   * item rang as a multiple, which matters to Price Opt — it cares how a
+   * price was arrived at. Here, what the item rang at is the whole question
+   * and why is a column this section does not have.
    */
-  const mergedPrices = useMemo(() => {
-    const byPrice = new Map<
-      number,
-      { price: number; qty: number; sales: Set<string> }
-    >();
-    // Both buckets. The exact/averaged split matters to Price Opt, which cares
-    // how a price was arrived at; here they are the same price and the same
-    // units. Reading only `exact` dropped every multi-unit ring — one 24-pack
-    // basket at $78 disappeared rather than adding 24 units at $3.25.
-    for (const p of [...act.exact, ...act.averaged]) {
-      const found = byPrice.get(p.price);
-      if (found) found.qty += p.qty;
-      else
-        byPrice.set(p.price, { price: p.price, qty: p.qty, sales: new Set() });
-    }
-    // Distinct receipts per price, counted from the raw lines with the same
-    // match the modal uses — so the column and the modal it opens agree. A
-    // receipt carrying the item twice is one transaction, not two, which is
-    // exactly what the old line count got wrong.
-    // Matched on the line's per-unit price: comparing `net_sales` to the bucket
-    // price only ever held for a single-unit ring, so the consolidated rows
-    // missing from the qty above were missing from this count too.
-    for (const l of isCurrent ? actual.lines : []) {
-      for (const bucket of byPrice.values())
-        if (Math.abs(unitPrice(l) - bucket.price) < 0.005)
-          bucket.sales.add(l.sale_id);
-    }
-    return [...byPrice.values()].sort((a, b) => b.qty - a.qty);
-  }, [act.exact, act.averaged, isCurrent, actual.lines]);
+  const mergedPrices = useMemo(
+    () => mergePricePoints(isCurrent ? prices.rows : []),
+    [isCurrent, prices.rows],
+  );
 
   /**
    * How often this item normally arrives, across every delivery in the lookback
@@ -525,7 +514,7 @@ const ItemReportRail = ({
   const showMovement =
     item.movement === null ? !showSince : item.movement.deliveries !== 1;
 
-  const txnCount = act.exactCount + act.averagedCount;
+  const txnCount = mergedPrices.length;
 
   return (
     <div className="flex-shrink-0 shadow-lg" style={{ width: "38%" }}>
@@ -772,7 +761,17 @@ const ItemReportRail = ({
             {eras.length === 0 ? (
               <div className="text-[12px] text-content">No sales rows</div>
             ) : (
-              <Head cols={["Price", "Units", "Days"]} />
+              // Named, not left as "Units". On a weighed item the figure is
+              // pounds and the price is per pound, which is what the
+              // transactions table below already says -- the two sections sat
+              // in one panel disagreeing about the word (finding AS).
+              <Head
+                cols={
+                  eras[0]?.weighed
+                    ? ["Price / lb", "Lb", "Days"]
+                    : ["Price", "Units", "Days"]
+                }
+              />
             )}
             {eras.length > 0 &&
               (isAll("prices") ? [...eras] : eras.slice(-4))
@@ -830,7 +829,7 @@ const ItemReportRail = ({
             )}
           </Block>
 
-          {isCurrent && !actual.loading && (
+          {isCurrent && !prices.loading && (
             <Block
               {...fold("transactions")}
               // Two kinds of the same thing, named as such. "Price points" and
@@ -847,7 +846,11 @@ const ItemReportRail = ({
               ) : (
                 <>
                   <Head
-                    cols={["Price", "Qty", "Transactions"]}
+                    cols={[
+                      mergedPrices[0]?.weighed ? "Price / lb" : "Price",
+                      mergedPrices[0]?.weighed ? "Lb" : "Qty",
+                      "Transactions",
+                    ]}
                     template={TXN_COLS}
                   />
                   {(isAll("transactions")
@@ -857,11 +860,18 @@ const ItemReportRail = ({
                     <Line
                       key={p.price}
                       template={TXN_COLS}
-                      onClick={() => setOpenPrice(p.price)}
+                      onClick={() => {
+                        setOpenPrice(p.price);
+                        onOpenPrice();
+                      }}
                       cells={[
                         { text: formatCurrency2(p.price) },
-                        { text: String(p.qty) },
-                        { text: String(p.sales.size) },
+                        {
+                          text: p.weighed
+                            ? p.qty.toFixed(2)
+                            : String(Math.round(p.qty)),
+                        },
+                        { text: String(p.receipts) },
                       ]}
                     />
                   ))}
@@ -876,7 +886,7 @@ const ItemReportRail = ({
               )}
             </Block>
           )}
-          {isCurrent && actual.loading && (
+          {isCurrent && prices.loading && (
             <Block
               {...fold("transactions")}
               label="Price points (transactions)"
@@ -895,7 +905,7 @@ const ItemReportRail = ({
           action={action}
           // Same per-unit match the row above uses, so the modal and the
           // count that opened it can't disagree.
-          lines={actual.lines.filter(
+          lines={(linesIn ? actual.lines : []).filter(
             (l) => Math.abs(unitPrice(l) - openPrice) < 0.005,
           )}
           onClose={() => setOpenPrice(null)}

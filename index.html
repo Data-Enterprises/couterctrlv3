@@ -7,6 +7,19 @@
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Counter Ctrl</title>
+    <!-- Without these the search snippet and every pasted-link preview fall
+         back to whatever prose the crawler finds first, which was the privacy
+         policy's opening line. Same text twice on purpose: name= feeds Google,
+         property= feeds Teams, Slack and LinkedIn. Kept under 160 characters
+         so the snippet lands whole rather than truncated mid-sentence. -->
+    <meta
+      name="description"
+      content="CounterCtrl Cloud turns POS data into weekly sales performance, loss prevention, and order variance reporting for grocery and retail operators."
+    />
+    <meta
+      property="og:description"
+      content="CounterCtrl Cloud turns POS data into weekly sales performance, loss prevention, and order variance reporting for grocery and retail operators."
+    />
   </head>
   <body>
     <div id="root"></div>

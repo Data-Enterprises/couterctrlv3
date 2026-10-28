@@ -293,8 +293,11 @@ describe("adding a tech", () => {
     await user.click(screen.getByText("jlane · J Lane · was a tech"));
 
     expect(screen.getByText("jlane was a tech before.")).toBeTruthy();
-    expect(screen.getByText(/T7/)).toBeTruthy();
+    // Twice now, and both are the point: the Code field shows the row they are
+    // coming back to, and the notice says that is what the press will do.
+    expect(screen.getAllByText(/T7/)).toHaveLength(2);
     expect(screen.getByText(/rather than making a second one/)).toBeTruthy();
+    expect(screen.getByText("The code on their row")).toBeTruthy();
     // The button says which of the two things the press does.
     expect(screen.getByRole("button", { name: "Bring back" })).toBeTruthy();
   });
@@ -319,6 +322,24 @@ describe("adding a tech", () => {
     expect(vi.mocked(api.createTicketTech).mock.calls[0].slice(2)).toEqual([
       { userid: 45 },
     ]);
+  });
+
+  it("shows the next code rather than offering it to be typed", async () => {
+    const user = userEvent.setup();
+    // A desk numbered by hand, the way the live rows are.
+    show([tech({ tech_code: "1" }), tech({ tech_code: "7" })], {
+      canManageTechs: true,
+      candidates: [candidate({ userid: 45, username: "bkerr", name: "B Kerr" })],
+    });
+
+    await user.click(await screen.findByRole("button", { name: "Add a tech" }));
+    await user.click(screen.getByRole("button", { name: "Who" }));
+    await user.click(screen.getByText("bkerr · B Kerr"));
+
+    expect(screen.getByText("TECH-008")).toBeTruthy();
+    expect(screen.getByText("The next one")).toBeTruthy();
+    // Nobody chooses a tech's number, so there is nothing here to type into.
+    expect(screen.queryByDisplayValue("TECH-008")).toBeNull();
   });
 
   it("cannot be pressed before somebody is picked", async () => {

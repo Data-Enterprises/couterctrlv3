@@ -14,9 +14,23 @@ import GrantModeChip from "../access/GrantModeChip";
  * stores: show up automatically" against "must be added by hand" is the whole
  * difference, and it is what somebody is actually choosing between.
  *
- * This sets the **default** for each group as it is picked; the assignments
- * step still lets one group differ, which is the common real case — the whole
- * of East, plus two stores out of HC North.
+ * **It is the person's answer, not a default.** Every base group they hold is
+ * written in this mode; the assignments step has no per-group override. It
+ * used to — each group carried its own Auto / Pick stores toggle — and that
+ * made "is this person by group or by store" a question with no answer.
+ *
+ * In Edit, changing it rewrites every group the person holds. Switching to
+ * By store starts with every store they currently have ticked, so nothing is
+ * lost until somebody unticks; the review step says so before anything is
+ * saved.
+ *
+ * ### The single-store role
+ *
+ * By group is shown and greyed, never hidden. A card that silently goes
+ * missing for some people reads as a bug; one that says why it is
+ * unavailable answers the question before anyone asks it. The reason sits on
+ * the card itself, not in a note under the grid, so it is read where the eye
+ * already is.
  */
 const OPTIONS: {
   mode: GrantMode;
@@ -49,21 +63,34 @@ const StepAccessType = ({
   onChange,
   who,
   singleStoreOnly,
+  editing = false,
+  typeUnset = false,
 }: {
   value: GrantMode;
   onChange: (next: GrantMode) => void;
   /** The person being created, so the question names them. */
   who: string;
   /** The single-store role cannot hold a whole group — the server refuses it
-   *  outright — so By group is not offered rather than offered and rejected. */
+   *  outright — so By group is greyed with its reason rather than offered
+   *  and rejected. */
   singleStoreOnly: boolean;
+  /** An existing person, whose access type is a change rather than a first
+   *  answer. Only the sentence under the heading differs. */
+  editing?: boolean;
+  /** Editing somebody with no access type on file — made in prod, or before
+   *  types existed. The choice here is a first answer, and saving records it. */
+  typeUnset?: boolean;
 }) => (
   <div className="max-w-[900px] mx-auto">
     <h2 className="text-[17px] font-bold text-content m-0">
       How should {who || "this user"} get their stores?
     </h2>
     <p className="text-[12.5px] text-content/85 mt-1 mb-4">
-      You can change this later from their Access tab.
+      {typeUnset
+        ? "No access type is set for this user yet. Pick one and save to set it for every base group they hold."
+        : editing
+          ? "Changing this rewrites every base group they hold. Switching to By store starts with all their current stores ticked."
+          : "You can change this later by editing them."}
     </p>
 
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -77,8 +104,10 @@ const StepAccessType = ({
             disabled={disabled}
             aria-pressed={selected}
             className={`text-left rounded-xl p-5 transition-colors bg-custom-white ${
+              // Greyed by fading the parts, not the card: the reason is
+              // the one thing on it worth reading, so it keeps full contrast.
               disabled
-                ? "shadow-card-sm opacity-50 cursor-not-allowed"
+                ? "bg-bkg shadow-card-sm cursor-not-allowed"
                 : selected
                   ? "shadow-card ring-2 ring-brand_navy"
                   : "shadow-card-sm hover:bg-brand_paper"
@@ -96,19 +125,29 @@ const StepAccessType = ({
                 )}
               </span>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between gap-2">
+                <div
+                  className={`flex items-center justify-between gap-2 ${
+                    disabled ? "opacity-50" : ""
+                  }`}
+                >
                   <span className="text-[15px] font-bold text-content">
                     {opt.title}
                   </span>
                   <GrantModeChip mode={opt.mode} />
                 </div>
                 <p className="text-[12.5px] text-content/85 leading-snug mt-1.5">
-                  {opt.desc}
+                  {disabled
+                    ? "Not available for the single store role. A single-store account holds exactly one store, and a whole group grants every store in it, including ones added later."
+                    : opt.desc}
                 </p>
               </div>
             </div>
 
-            <dl className="grid grid-cols-[96px_minmax(0,1fr)] gap-y-2 gap-x-3 text-[12px] mt-4 pt-3.5 pl-[30px] border-t border-gray-100">
+            <dl
+              className={`grid grid-cols-[96px_minmax(0,1fr)] gap-y-2 gap-x-3 text-[12px] mt-4 pt-3.5 pl-[30px] border-t border-gray-100 ${
+                disabled ? "opacity-50" : ""
+              }`}
+            >
               <dt className="text-content/85">New stores</dt>
               <dd className="m-0 font-semibold text-content">
                 {opt.newStores}
@@ -123,14 +162,6 @@ const StepAccessType = ({
       })}
     </div>
 
-    {singleStoreOnly && (
-      <p className="text-[11.5px] text-content/85 leading-snug mt-3 px-3 py-2 rounded-lg bg-bkg shadow-card-sm">
-        <span className="font-semibold text-content">Single store role.</span>{" "}
-        By group is unavailable: a whole group grants an unbounded number of
-        stores and grows again every time one joins it. The next step allows
-        exactly one store, and the server holds to that too.
-      </p>
-    )}
   </div>
 );
 

@@ -5,6 +5,7 @@ import { applyEdits } from "./vendors/awg/applyEdit";
 import { reconcileAll } from "./vendors/awg/reconcile";
 import { presentInvoices, type InvoiceRow } from "./present";
 import type { ParseWarning } from "../../../interfaces";
+import type { TrailerCheck } from "./vendors/awg";
 
 export interface AwgInvoicesView {
   rows: InvoiceRow[];
@@ -15,6 +16,9 @@ export interface AwgInvoicesView {
   allReconciled: boolean;
   /** How many invoices currently fail, for the filter chip. */
   failedCount: number;
+  /** Whether the file's trailer counts say it arrived whole. Null before a
+   *  file is read. */
+  trailer: TrailerCheck | null;
 }
 
 const EMPTY: AwgInvoicesView = {
@@ -23,6 +27,7 @@ const EMPTY: AwgInvoicesView = {
   countsByType: {},
   allReconciled: false,
   failedCount: 0,
+  trailer: null,
 };
 
 /**
@@ -61,6 +66,7 @@ export const useAwgInvoices = (): AwgInvoicesView => {
       allReconciled:
         reconciliation.length > 0 && reconciliation.every((r) => r.ok),
       failedCount: reconciliation.filter((r) => !r.ok).length,
+      trailer: parsed.trailer,
     };
   }, [fileText, edits]);
 };

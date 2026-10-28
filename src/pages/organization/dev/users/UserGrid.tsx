@@ -6,6 +6,8 @@ import {
   ArrowPathIcon,
   KeyIcon,
   DocumentDuplicateIcon,
+  UserMinusIcon,
+  UserPlusIcon,
 } from "@heroicons/react/20/solid";
 import { useOrganizationCtx } from "../hooks";
 import { useToast } from "../../../../components/toasts/hooks/useToast";
@@ -20,15 +22,24 @@ import {
   setUsersExportOpen,
   setUsersGridFilter,
 } from "../../../../features/dev/devOrganizationSlice";
-import { deleteUser, reactivateUser, getBaseGroupsAssignedToUser } from "../../../../api/team";
-import { getUserStores } from "../../../../api/user";
-import { getAllStoresInBaseGroup } from "../../../../api/baseGroups";
-import type { BaseGroup, JsonError, Store, User } from "../../../../interfaces";
+import {
+  getBaseGroupsAssignedToUser,
+  getUserGroupPicks,
+} from "../../../../api/team";
+import type {
+  BaseGroup,
+  JsonError,
+  Store,
+  User,
+  UserGroupPick,
+} from "../../../../interfaces";
+import { accessModeOf } from "./access/accessSets";
 import { roles } from "../constants";
 import SelectFilter from "../../../../components-dev/filters/SelectFilter";
 import TextFilter from "../../../../components-dev/filters/TextFilter";
 import IconButton from "../../../../components-dev/IconButton";
-import ConfirmModal from "../../../../components-dev/ConfirmModal";
+import Checkbox from "../../../../components-dev/Checkbox";
+import SetActiveModal from "./SetActiveModal";
 import SecurityTab from "./view/SecurityTab";
 import UsersExportModal from "./UsersExportModal";
 import ColFilter from "../../../../components-dev/filters/ColFilterPopover";
@@ -57,6 +68,7 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
     statusFilter,
     levelFilter,
     roleFilter,
+    accessFilter,
     searchText,
     usernameFilter,
     emailFilter,
@@ -69,13 +81,37 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
     ctx.dispatch(setUsersGridFilter({ levelFilter: v }));
   const setRoleFilter = (v: string) =>
     ctx.dispatch(setUsersGridFilter({ roleFilter: v }));
+  const setAccessFilter = (v: string) =>
+    ctx.dispatch(setUsersGridFilter({ accessFilter: v }));
   const setSearchText = (v: string) =>
     ctx.dispatch(setUsersGridFilter({ searchText: v }));
   const setUsernameFilter = (v: string) =>
     ctx.dispatch(setUsersGridFilter({ usernameFilter: v }));
   const setEmailFilter = (v: string) =>
     ctx.dispatch(setUsersGridFilter({ emailFilter: v }));
-  const [deletingUser, setDeletingUser] = useState<User | null>(null);
+  /**
+   * Who is ticked, by id. Kept across filter changes so narrowing the list
+   * and widening it again does not lose a selection — but only what is
+   * ticked AND on screen is ever acted on (`selectedShown`), so nobody a
+   * filter hid can ride along into a deactivation they were never shown in.
+   */
+  const [selected, setSelected] = useState<Set<number>>(new Set());
+  /**
+   * Picking people for a bulk deactivate (or reactivate), on purpose.
+   *
+   * The checkboxes only exist in this mode, and the mode is entered from a
+   * button that names the action. A checkbox column with no heading said what
+   * it was for only once something was ticked, so the grid read as if every
+   * row could be ticked for some unstated reason. Starting from the action
+   * means every box already means "this person".
+   */
+  const [selecting, setSelecting] = useState(false);
+  /** The confirmation, open: who it names and which way. One modal for one
+   *  row or fifty, so the single trash icon is as guarded as the bulk bar. */
+  const [settingActive, setSettingActive] = useState<{
+    users: User[];
+    active: 0 | 1;
+  } | null>(null);
   const [securityUser, setSecurityUser] = useState<User | null>(null);
   // Draft text for the Username/Email column-header filters — matches the
   // draft/applied split used by every other ColFilter consumer in the app
@@ -94,6 +130,11 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
   }, []);
 
   const isOutranked = (lvl: number) => lvl > ctx.userLevel;
+
+  /** Nobody may tick themselves or anyone above them — the server refuses
+   *  both, so the box is not offered rather than offered and then refused. */
+  const selectable = (u: User) =>
+    !isOutranked(u.user_level) && u.id !== ctx.userid;
 
   const renderRoleText = (role: number | null) =>
     roles.find((r) => r.value == role)?.label ?? "";
@@ -114,6 +155,13 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
         ? u.user_level === Number(levelFilter)
         : true;
       const roleCheck = roleFilter ? u.role === Number(roleFilter) : true;
+      // Mixed and no-groups people match neither choice, only All: they are
+      // not By group or By store, and the column says so.
+      const accessCheck = !accessFilter
+        ? true
+        : accessFilter === "none"
+          ? u.access_mode === null
+          : u.access_mode === accessFilter;
       const lowerText = searchText.toLowerCase();
       const firstName = (u.first_name ?? "").toLowerCase();
       const lastName = (u.last_name ?? "").toLowerCase();
@@ -131,7 +179,13 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
         ? (u.email ?? "").toLowerCase().includes(emailFilter.trim().toLowerCase())
         : true;
       return (
-        companyCheck && levelCheck && roleCheck && textCheck && usernameCheck && emailCheck
+        companyCheck &&
+        levelCheck &&
+        roleCheck &&
+        accessCheck &&
+        textCheck &&
+        usernameCheck &&
+        emailCheck
       );
     });
   }, [
@@ -139,10 +193,76 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
     companyFilter,
     levelFilter,
     roleFilter,
+    accessFilter,
     searchText,
     usernameFilter,
     emailFilter,
   ]);
+
+  // Active and inactive are different lists with opposite actions. A
+  // selection made in one means nothing in the other.
+  useEffect(() => {
+    setSelected(new Set());
+    setSelecting(false);
+  }, [showInactive]);
+
+  const stopSelecting = () => {
+    setSelecting(false);
+    setSelected(new Set());
+  };
+
+  // Escape backs out of picking, as it closes everything else in the app.
+  // Not while the confirmation is up: its own Escape belongs to it.
+  useEffect(() => {
+    if (!selecting || settingActive) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") stopSelecting();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [selecting, settingActive]);
+
+  const selectedShown = useMemo(
+    () => filtered.filter((u) => selected.has(u.id) && selectable(u)),
+    // `selectable` reads only the viewer's id and level.
+    [filtered, selected, ctx.userid, ctx.userLevel],
+  );
+  const selectableShown = useMemo(
+    () => filtered.filter(selectable),
+    [filtered, ctx.userid, ctx.userLevel],
+  );
+  const allShownSelected =
+    selectableShown.length > 0 &&
+    selectableShown.every((u) => selected.has(u.id));
+
+  const toggleOne = (id: number) =>
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+
+  /** "Select all shown": every selectable row on screen, or none of them.
+   *  Rows a filter hides keep whatever state they had. */
+  const toggleAllShown = () =>
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (allShownSelected) selectableShown.forEach((u) => next.delete(u.id));
+      else selectableShown.forEach((u) => next.add(u.id));
+      return next;
+    });
+
+  const accessLabel = (mode: User["access_mode"]) =>
+    mode === "all"
+      ? "By group"
+      : mode === "selected"
+        ? "By store"
+        : mode === "mixed"
+          ? "Mixed"
+          : mode === null
+            ? "Not set"
+            : "—";
 
   const noCompanyCount = useMemo(
     () => sourceUsers.filter((u) => u.companies.length === 0).length,
@@ -190,76 +310,74 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
     ctx.dispatch(setSelectedUserForm("user_info"));
   };
 
-  // Duplicate: fetch the source user's base groups + stores (not present on
-  // the grid row itself), stash them for the create wizard to pre-fill, then
-  // open it. Only role/level/company/base-group/store data copies — identity
-  // fields (name/username/email/password) always stay blank.
+  /**
+   * Duplicate: read what the source actually holds, stash it for the wizard
+   * to pre-fill, then open it. Role, level, access type and assignments copy;
+   * identity (name, username, email, password) always stays blank.
+   *
+   * ### Read, not reconstructed
+   *
+   * This used to fetch every held group's whole roster — one call per group —
+   * and cross-reference the source's stores against them to GUESS which group
+   * each store came through. Then any store no roster explained was filed
+   * under "the first group in that store's company". Both guesses could hand
+   * the copy more than the source had: a store in two groups became two
+   * picks, and a direct assignment became an invented group pick nobody ever
+   * chose. And the access type was not copied at all, because guessing `all`
+   * would over-grant.
+   *
+   * None of that is a guess any more. `base_groups_assigned_to_user_split`
+   * carries each held group's mode, and `user_group_picks` says exactly which
+   * stores were picked and through which group. Two calls, whatever the
+   * number of groups.
+   *
+   * **Direct assignments do not copy.** A store no group explains was never
+   * granted by this screen and cannot be granted by it either — it has no
+   * group to travel in. That is a property of the source, not something a
+   * duplicate should manufacture.
+   */
   const handleDuplicate = async (u: User) => {
     try {
-      const [bgResp, storesResp] = await Promise.all([
+      const [bgResp, picksResp] = await Promise.all([
         getBaseGroupsAssignedToUser(ctx.url, ctx.token, u.id),
-        getUserStores(ctx.url, ctx.token, u.id),
+        getUserGroupPicks(ctx.url, ctx.token, u.id),
       ]);
       const bgJson = bgResp.data;
-      const storesJson = storesResp.data;
-      if (bgJson.error !== 0 || storesJson.error !== 0) {
+      const picksJson = picksResp.data;
+      if (bgJson.error !== 0 || picksJson.error !== 0) {
         toast.error("Could not load this user's assignments to duplicate");
         return;
       }
 
       // `active` is the held half of the split, which is what a duplicate
-      // copies. (This read `.active` all along and was right to; a previous
-      // pass "fixed" it to `.groups` on the mistaken belief that this call
-      // hits the unsplit endpoint. It does not.)
-      const groups = ((bgJson.active ?? []) as BaseGroup[]).map((g) => ({
+      // copies.
+      const held = (bgJson.active ?? []) as BaseGroup[];
+      const groups = held.map((g) => ({
         id: g.id,
         name: g.name,
         company: g.company,
       }));
-      const assignedStores: Store[] = storesJson.assigned_stores.filter(
-        (s: Store) => s.store_name != null,
-      );
+      const byId = new Map(held.map((g) => [g.id, g]));
+      const mode = accessModeOf(held);
 
-      // A company can have more than one base group, so tagging a store by
-      // "first group in the same company" silently merged every group's
-      // stores into whichever group happened to match first — cross-
-      // reference each group's own store roster against the source user's
-      // assigned stores to find which group(s) each store actually belongs
-      // to. A store can legitimately land under more than one group.
-      const rosterResults = await Promise.all(
-        groups.map((g) =>
-          getAllStoresInBaseGroup(ctx.url, ctx.token, g.id).then((resp) => ({
-            groupId: g.id,
-            storeIds: new Set(
-              (resp.data.assigned_stores as Store[]).map((s) => s.storeid),
-            ),
-          })),
-        ),
-      );
-
-      const taggedStores: (Store & { base_group: number })[] = [];
-      const taggedStoreIds = new Set<number>();
-      assignedStores.forEach((store) => {
-        const matches = rosterResults.filter((r) =>
-          r.storeIds.has(store.storeid),
-        );
-        matches.forEach((m) =>
-          taggedStores.push({ ...store, base_group: m.groupId }),
-        );
-        if (matches.length > 0) taggedStoreIds.add(store.storeid);
-      });
-
-      // A store assigned to the user directly (outside any of their groups)
-      // has no group to nest under in this wizard's store-picker model —
-      // fall back to the first group in that store's own company so it
-      // still submits, rather than silently dropping it.
-      assignedStores.forEach((store) => {
-        if (taggedStoreIds.has(store.storeid)) return;
-        const fallbackGroup = groups.find((g) => g.company === store.company);
-        if (fallbackGroup) {
-          taggedStores.push({ ...store, base_group: fallbackGroup.id });
-        }
-      });
+      // Picks only mean anything By store. A By group source has none, and
+      // its absence is the answer rather than a gap.
+      const stores: (Store & { base_group: number })[] =
+        mode === "all"
+          ? []
+          : ((picksJson.data ?? []) as UserGroupPick[])
+              .filter((p) => byId.has(p.groupid))
+              .map((p) => {
+                const g = byId.get(p.groupid)!;
+                return {
+                  storeid: p.storeid,
+                  store_number: p.store_number ?? "",
+                  store_name: p.store_name ?? "",
+                  company: g.company,
+                  company_name: g.company_name,
+                  base_group: p.groupid,
+                };
+              });
 
       ctx.dispatch(
         setDuplicateSource({
@@ -268,7 +386,8 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
           companyIds: u.companies.map((c) => c.company),
           baseGroupIds: groups.map((g) => g.id),
           groups,
-          stores: taggedStores,
+          mode,
+          stores,
         }),
       );
       onOpenCreate();
@@ -279,38 +398,13 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
     }
   };
 
-  const handleDeleteConfirm = () => {
-    if (!deletingUser) return;
-    deleteUser(ctx.url, ctx.token, deletingUser.username)
-      .then((resp) => {
-        const j = resp.data;
-        if (j.error === 0) {
-          toast.success("User deleted successfully");
-          setDeletingUser(null);
-          ctx.dispatch(setRefresh(true));
-        } else {
-          toast.warn("Error deleting user: " + j.msg);
-        }
-      })
-      .catch((err: JsonError) =>
-        toast.error("Error deleting user: " + err.message),
-      );
-  };
-
-  const handleReactivate = (u: User) => {
-    reactivateUser(ctx.url, ctx.token, u.username)
-      .then((resp) => {
-        const j = resp.data;
-        if (j.error === 0) {
-          toast.success("User reactivated successfully");
-          ctx.dispatch(setRefresh(true));
-        } else {
-          toast.warn("Error reactivating user: " + j.msg);
-        }
-      })
-      .catch((err: JsonError) =>
-        toast.error("Error reactivating user: " + err.message),
-      );
+  const closeSetActive = (changed: boolean) => {
+    setSettingActive(null);
+    if (!changed) return;
+    // Whoever moved is now in the other list; the selection named them in
+    // this one. Picking is over, too: the job it was opened for is done.
+    stopSelecting();
+    ctx.dispatch(setRefresh(true));
   };
 
   return (
@@ -352,12 +446,42 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
           placeholder="All roles"
           className="w-[120px] flex-shrink-0"
         />
+        <SelectFilter
+          options={[
+            { value: "all", label: "By group" },
+            { value: "selected", label: "By store" },
+            // Made in prod, or before access types existed. Edit sets it.
+            { value: "none", label: "Not set" },
+          ]}
+          value={accessFilter}
+          onChange={setAccessFilter}
+          placeholder="All access"
+          className="w-[120px] flex-shrink-0"
+        />
         <TextFilter
           value={searchText}
           onChange={setSearchText}
           placeholder="Search name"
           className="flex-1 min-w-[100px]"
         />
+        {/* The way into picking, named for what picking is for. Gone while
+            picking: the bar below takes over and says the same thing. */}
+        {!selecting && (
+          <button
+            onClick={() => {
+              setSelected(new Set());
+              setSelecting(true);
+            }}
+            className="flex items-center gap-1 text-[11.5px] font-medium px-3 py-1.5 rounded-md border border-brand_line_2 text-content hover:border-brand_slate flex-shrink-0"
+          >
+            {showInactive ? (
+              <UserPlusIcon className="w-3.5 h-3.5" />
+            ) : (
+              <UserMinusIcon className="w-3.5 h-3.5" />
+            )}
+            {showInactive ? "Reactivate users" : "Deactivate users"}
+          </button>
+        )}
         <button
           onClick={onOpenCreate}
           className="flex items-center gap-1 text-[11.5px] font-medium px-3 py-1.5 rounded-md text-custom-white bg-brand_navy hover:bg-brand_navy/85 flex-shrink-0"
@@ -368,6 +492,54 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
           Add user
         </button>
       </div>
+
+      {/* While picking, from the first moment rather than the first tick: it
+          says what the boxes are for before anyone has to guess. It sits
+          between the filters and the grid so the count is read next to the
+          rows it counts. */}
+      {selecting && (
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 mb-2 px-3 py-2 rounded-lg bg-filter_active border border-filter_active_border">
+          <span className="text-[12.5px] font-semibold text-brand_navy">
+            {showInactive ? "Choose who to reactivate" : "Choose who to deactivate"}
+          </span>
+          <span className="text-[12px] tabular-nums text-content/95">
+            {selectedShown.length} of {selectableShown.length} picked
+          </span>
+          {selectableShown.length > 0 && (
+            <button
+              onClick={toggleAllShown}
+              className="text-[11.5px] font-semibold text-brand_navy underline underline-offset-2"
+            >
+              {allShownSelected
+                ? "Clear selection"
+                : `Select all ${selectableShown.length} shown`}
+            </button>
+          )}
+          <span className="flex-1" />
+          <button
+            onClick={stopSelecting}
+            className="text-[12px] font-medium px-3 py-1.5 rounded-md border border-brand_line_2 bg-custom-white text-content hover:border-brand_slate"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() =>
+              setSettingActive({
+                users: selectedShown,
+                active: showInactive ? 1 : 0,
+              })
+            }
+            disabled={selectedShown.length === 0}
+            className={`text-[12px] font-medium px-3 py-1.5 rounded-md text-custom-white disabled:cursor-not-allowed disabled:opacity-40 ${
+              showInactive
+                ? "bg-brand_navy hover:bg-brand_navy/85"
+                : "bg-red-600 hover:bg-red-600/85"
+            }`}
+          >
+            {showInactive ? "Reactivate" : "Deactivate"} {selectedShown.length}
+          </button>
+        </div>
+      )}
 
       {ctx.usersExportOpen && (
         <UsersExportModal
@@ -383,8 +555,16 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
         {/* min-w floors the columns: narrower than this the card scrolls
             rather than crushing cells into each other. Header and rows are
             separate grids, so they must share one scroller to stay aligned. */}
-        <div className="min-w-[900px] flex-1 min-h-0 flex flex-col">
-          <div className="grid grid-cols-[12%_12%_12%_22%_11%_10%_11%_7rem] px-3 py-2 bg-gray-50 text-[10px] font-semibold uppercase tracking-wide text-content flex-shrink-0">
+        <div className="min-w-[1000px] flex-1 min-h-0 flex flex-col">
+          <div
+            className={`grid ${
+              selecting
+                ? "grid-cols-[2rem_11%_10%_10%_19%_10%_9%_8%_9%_7rem]"
+                : "grid-cols-[11%_10%_10%_19%_10%_9%_8%_9%_7rem]"
+            } px-3 py-2 bg-gray-50 text-[10px] font-semibold uppercase tracking-wide text-content flex-shrink-0 items-center`}
+          >
+            {/* Select all lives in the bar, where it says so in words. */}
+            {selecting && <div />}
             <ColFilter
               label="Username"
               active={!!usernameFilter}
@@ -425,26 +605,71 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
             </ColFilter>
             <div>Role</div>
             <div>Level</div>
+            {/* By group or by store, rolled up by the users list itself so the
+                column costs no call per row. */}
+            <div>Access</div>
             <div>Last visited</div>
             <div></div>
           </div>
           <div data-help="grid" className="flex-1 min-h-0 overflow-y-auto thin-scrollbar divide-y divide-brand_navy/15">
             {filtered.map((u) => {
               const outranked = isOutranked(u.user_level);
+              // While picking, the whole row is the target, not just the box.
+              const pickable = selecting && selectable(u);
+              const picked = pickable && selected.has(u.id);
               return (
                 <div
                   key={u.id}
-                  className={`grid grid-cols-[12%_12%_12%_22%_11%_10%_11%_7rem] px-3 py-2 text-[13px] items-center transition-colors [content-visibility:auto] [contain-intrinsic-size:0_40px] ${outranked ? "bg-gray-50 text-content/85" : "text-content even:bg-row_stripe hover:bg-gray-50"}`}
+                  onClick={pickable ? () => toggleOne(u.id) : undefined}
+                  className={`grid ${
+                    selecting
+                      ? "grid-cols-[2rem_11%_10%_10%_19%_10%_9%_8%_9%_7rem] border-l-2"
+                      : "grid-cols-[11%_10%_10%_19%_10%_9%_8%_9%_7rem]"
+                  } px-3 py-2 text-[13px] items-center transition-colors [content-visibility:auto] [contain-intrinsic-size:0_40px] ${
+                    picked
+                      ? "bg-row_selected border-l-row_selected_border text-content"
+                      : outranked
+                        ? "bg-gray-50 text-content/85 border-l-transparent"
+                        : "text-content even:bg-row_stripe hover:bg-gray-50 border-l-transparent"
+                  } ${pickable ? "cursor-pointer" : ""}`}
                 >
+                  {selecting && (
+                    // The box toggles through the row's own click, so its
+                    // change must not reach the row as a second one.
+                    <div
+                      className="flex items-center"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {pickable && (
+                        <Checkbox
+                          checked={picked}
+                          onChange={() => toggleOne(u.id)}
+                          ariaLabel={`Select ${u.username}`}
+                        />
+                      )}
+                    </div>
+                  )}
                   <div className="truncate">{u.username}</div>
                   <div className="truncate">{u.first_name || "—"}</div>
                   <div className="truncate">{u.last_name || "—"}</div>
                   <div className="truncate">{u.email}</div>
                   <div className="truncate">{renderRoleText(u.role)}</div>
                   <div className="truncate">{renderLvlText(u.user_level)}</div>
+                  <div
+                    className="truncate"
+                    title={
+                      u.access_mode === "mixed"
+                        ? "Their base groups disagree — some by group, some by store. Editing them and saving sets one access type."
+                        : undefined
+                    }
+                  >
+                    {accessLabel(u.access_mode)}
+                  </div>
                   <div className="truncate">{formatDate(u.last_visit)}</div>
                   <div className="flex items-center justify-end gap-1">
-                    {outranked ? (
+                    {/* While picking, a click on a row only ticks it: nothing
+                        here that would open or change somebody instead. */}
+                    {selecting ? null : outranked ? (
                       <span className="text-[10px] italic text-content/85">
                         Unauthorized
                       </span>
@@ -452,7 +677,9 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
                       <IconButton
                         icon={ArrowPathIcon}
                         title="Reactivate"
-                        onClick={() => handleReactivate(u)}
+                        onClick={() =>
+                          setSettingActive({ users: [u], active: 1 })
+                        }
                       />
                     ) : (
                       <>
@@ -471,12 +698,21 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
                           title="Password & security"
                           onClick={() => setSecurityUser(u)}
                         />
-                        <IconButton
-                          icon={TrashIcon}
-                          title="Delete"
-                          variant="danger"
-                          onClick={() => setDeletingUser(u)}
-                        />
+                        {/* Deactivate, as it always was underneath — the old
+                            label said Delete and its confirm said "can't be
+                            undone", while the row it removed sat one filter
+                            away under Inactive with a Reactivate button.
+                            Hidden on your own row: the server refuses it. */}
+                        {u.id !== ctx.userid && (
+                          <IconButton
+                            icon={TrashIcon}
+                            title="Deactivate"
+                            variant="danger"
+                            onClick={() =>
+                              setSettingActive({ users: [u], active: 0 })
+                            }
+                          />
+                        )}
                       </>
                     )}
                   </div>
@@ -492,12 +728,11 @@ const UserGrid = ({ onOpenCreate }: UserGridProps) => {
         </div>
       </div>
 
-      {deletingUser && (
-        <ConfirmModal
-          title={`Delete ${deletingUser.username}?`}
-          message="This can't be undone."
-          onConfirm={handleDeleteConfirm}
-          onCancel={() => setDeletingUser(null)}
+      {settingActive && (
+        <SetActiveModal
+          users={settingActive.users}
+          active={settingActive.active}
+          onClose={closeSetActive}
         />
       )}
 

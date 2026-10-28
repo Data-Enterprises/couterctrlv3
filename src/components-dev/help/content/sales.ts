@@ -125,6 +125,113 @@ export const SALES_HELP: HelpContent = {
         },
       ],
     },
+    {
+      id: "top-items-compare",
+      title: "Compare one store's top 200 with another's",
+      desc: "What both sell, what only one does, and where the two really differ",
+      steps: [
+        {
+          title: "Choose the store to compare against",
+          pre: "With a store open, go to the",
+          chip: "Compare",
+          post: "tab and pick a counterpart. That choice follows you across the tabs — it is not a setting you make twice.",
+          anchor: "store-tabs",
+          see: "Sub depts and Top 200 both turn into comparisons against that store. Back takes the counterpart off again.",
+        },
+        {
+          title: "Open Top 200",
+          pre: "Choose the",
+          chip: "Top 200",
+          post: "tab. With a counterpart chosen it opens as a comparison instead of the single store's list.",
+          anchor: "store-tabs",
+          see: "A heading saying how many of the items differ, and a bar underneath splitting them into three.",
+        },
+        {
+          title: "Read the three piles",
+          pre: "The bar is every item across both lists: the ones both stores sell, the ones only this store has in its top 200, and the ones only the other store does.",
+          anchor: "top200-piles",
+          see: "Widths are counts of items, not money. The shared pile carries this store's sales for those items so you can see how much of the week the overlap accounts for.",
+        },
+        {
+          title: "See where the difference sits",
+          pre: "The strip under the bar names the departments the one-sided items fall in. Open it for the full count.",
+          anchor: "top200-outline",
+          see: "Eighty-eight differing items is a list; \u201cmostly Meat and Beer\u201d is an answer. Items both stores carry are left out of this count — they are not where the two differ in stocking.",
+        },
+        {
+          title: "Narrow it down",
+          pre: "The first dropdown picks which pile to show — all of them, the ones both stores sell, or the ones only one does. The second picks departments, as many as you like. The search box finds an item by name or code.",
+          anchor: "top200-compare-filters",
+          see: "They stack: one store's own items, in Meat, with “ribeye” typed, is a legitimate way to ask. The item search does not look at departments — that is the dropdown's job.",
+        },
+        {
+          title: "Choose what the rows report",
+          pre: "The last dropdown picks the figure on every row: \u201cShare gap\u201d in points, or \u201cSales gap\u201d in dollars. The list orders itself by whichever you choose \u2014 furthest apart first.",
+          anchor: "top200-compare-filters",
+          see: "Two readings of the same question. Share compares a big store with a small one fairly; dollars say what the difference is actually worth.",
+        },
+        {
+          title: "Sort, if you want a different order",
+          pre: "Above the list, on the right, is a sort that always names whatever the rows are reporting. Click once for biggest first, again for smallest first, and a third time to go back to the list's own order.",
+          anchor: "top200-compare-list",
+          see: "The third click matters: the list's own order is furthest-apart-first, which is the view this screen is for. A sort is a temporary lens over it.",
+        },
+        {
+          title: "Read a row",
+          pre: "Each row carries one bar. Its length is this item against the biggest item on screen; inside it, this store's share of the pair is green when ahead and red when behind, and the other store's is navy.",
+          anchor: "top200-compare-list",
+          see: "A hatched cap on the end means the other store does not have it in their top 200. The figure in the corner is the gap in share, in points.",
+        },
+        {
+          title: "Open an item",
+          pre: "Click a row. The panel puts both stores' figures side by side, and underneath, every price the item rang at and which store rang it.",
+          anchor: "top200-compare-rail",
+          see: "A blank cell in the price table is the finding: the other store never sold it at that price. A different shelf price explains a size difference far more often than anything about the shopper.",
+        },
+        {
+          title: "Read the strip at the top of the panel",
+          pre: "It is coloured by which way the item went and carries its name. Open it with the chevron for the code, the department, and \u2014 where only one store has the item \u2014 what the other store actually did with it.",
+          anchor: "top200-compare-rail",
+          see: "It lays over the panel rather than pushing it down, so opening and closing never moves the figures underneath.",
+        },
+        {
+          title: "Copy the codes out",
+          pre: "Right-click a row to copy that item's code, or anywhere else in the list to copy every code on screen.",
+          anchor: "top200-compare-list",
+          see: "What you copy is what you are looking at: narrow to one pile or one department first and the copy follows. The same menu as the sub department list and the investigation.",
+        },
+      ],
+      issues: [
+        {
+          q: "It says an item is not in their top 200 — do they not sell it?",
+          a: "Not necessarily, and the screen is careful not to say so. Both lists are each store's own top 200 by sales, so an item missing from one could be their number 250. When you open the row the panel asks the other store directly and tells you what it finds: either they sold none of it that week, or how much they did sell. Even that is a sales answer — a slow mover can sit on the shelf and ring nothing in a week.",
+        },
+        {
+          q: "Why does the gap figure have a ≥ in front of it?",
+          a: "Because the other store's share is unknown on that row, not nought. All we know is that it is below their number 200, so the real gap is at least the figure shown. On a row both stores have, the gap is exact and there is no ≥.",
+        },
+        {
+          q: "The share percentages look small",
+          a: "Share is of each store's own top 200, not of its whole week. It is the fair way to compare one store with another when one is simply bigger — but it means the denominators differ in character, and a store whose top 200 covers more of its week will read lower throughout.",
+        },
+        {
+          q: "A row says the amounts are not comparable",
+          a: "The two stores ring that item differently — one weighs it, the other sells it as a pack. Pounds against packages is not a comparison, so the panel shows both with their own units and offers no difference. Sales and share are still comparable: money is money.",
+        },
+        {
+          q: "I sorted and now I cannot get the original order back",
+          a: "Click the sort a third time. It runs biggest-first, then smallest-first, then returns the list to its own order \u2014 furthest apart first on whichever figure the rows are reporting. That is the ordering this screen is built around, so there is always a way back to it without reloading.",
+        },
+        {
+          q: "Share gap or Sales gap \u2014 which should I be looking at?",
+          a: "Share, when the two stores are different sizes: it asks what proportion of each store's top 200 the item is, so a big store does not simply win everything. Dollars, when you want to know what the difference is worth. The two orders can disagree completely, and both are right about their own question.",
+        },
+        {
+          q: "The totals do not match the single-store Top 200",
+          a: "They are different lists. The comparison holds every item in either store's top 200, so it is longer than 200, and the sales shown for the shared pile are only the items both stores sell.",
+        },
+      ],
+    },
   ],
 
   fixes: [
@@ -175,6 +282,46 @@ export const SALES_HELP: HelpContent = {
   ],
 
   terms: [
+    {
+      term: "In both / Only here / Only there",
+      def: "The three piles the comparison splits every item into. \u201cOnly here\u201d means the item is in this store's top 200 and not in the other's — which is not the same as the other store not selling it.",
+      anchor: "top200-piles",
+    },
+    {
+      term: "Not in their top 200",
+      def: "The furthest a ranked list can go. The item did not make the other store's 200 biggest sellers that week; it may still be their 250th. Open the row and the panel asks that store directly.",
+      anchor: "top200-compare-list",
+    },
+    {
+      term: "Sold none this week",
+      def: "The answer after asking. The other store rang none of that item in the window — the closest the sales data comes to a distribution gap. It is not a shelf check: something stocked but slow can ring nothing in seven days.",
+      anchor: "top200-compare-rail",
+    },
+    {
+      term: "Share of top 200",
+      def: "What the item contributed to its own store's top 200, as a percentage. Comparable between a big store and a small one in a way raw dollars are not.",
+      anchor: "top200-compare-rail",
+    },
+    {
+      term: "Share gap",
+      def: "One store's share of its top 200 minus the other's, in POINTS — the gap between 2.5% and 1.5% is one point, not forty. The fair way to compare stores of different sizes.",
+      anchor: "top200-compare-list",
+    },
+    {
+      term: "Sales gap",
+      def: "The same comparison in dollars: this store's sales on the item minus the other's. Says what the difference is worth, where share says how much of each store the item is.",
+      anchor: "top200-compare-list",
+    },
+    {
+      term: "The ≥ on a figure",
+      def: "At least this far apart. The item is outside the other store's top 200, so their figure is unknown rather than nought — the real gap is this or more. A row both stores carry has no ≥, because both sides are known.",
+      anchor: "top200-compare-list",
+    },
+    {
+      term: "The hatched end of a bar",
+      def: "Unknown, not nought. It marks the side whose standing we do not have because the item is outside their top 200. It sits outside the measured bar so nothing inside the bar is anything but sales.",
+      anchor: "top200-compare-list",
+    },
     {
       term: "TY, LW, LY",
       def: "This week's total, with last week and last year underneath. vs LW and vs LY are the change as a percentage.",

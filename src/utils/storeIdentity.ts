@@ -88,6 +88,37 @@ export const applyStoreNumberToName = (
   );
 };
 
+/**
+ * The name for the combined view of a co-located pair.
+ *
+ * `applyStoreNumberToName` answers "which one of these am I looking at". This
+ * answers "both of them", which the combined tab had no way to say: with no
+ * location selected it fell through to the stored name, and that name has one
+ * of the two numbers baked into it. Categories showed 369 $303.2K, 370
+ * $121.2K and Both $424.4K — the last of those under the heading "Bruces
+ * Foodland 369".
+ *
+ * Built by swapping the embedded number for the joined list, so the rest of
+ * the name survives: "Foodland 369 (Hwy 431)" becomes "Foodland 369 + 370
+ * (Hwy 431)". Falls back to appending, same as its sibling, and no-ops for an
+ * ordinary store with nothing to combine.
+ */
+export const combinedStoreName = (
+  name: string,
+  numbersForId: string[],
+): string => {
+  if (numbersForId.length < 2) return name;
+  const joined = [...numbersForId].sort().join(" + ");
+  const known = new Set(numbersForId);
+  const match = [...name.matchAll(/\d+/g)].find((m) => known.has(m[0]));
+  if (!match || match.index === undefined) return `${name} ${joined}`;
+  return (
+    name.slice(0, match.index) +
+    joined +
+    name.slice(match.index + match[0].length)
+  );
+};
+
 /** Every distinct store_number present in a storeid-scoped response, sorted.
  *  Length > 1 means the storeid is co-located. */
 export const storeNumbersIn = (rows: { store_number: string }[]): string[] =>

@@ -7,12 +7,11 @@ import {
 } from "../../../../../api/baseGroups";
 import type {
   CompanyBaseGroup,
-  GrantMode,
   JsonError,
   Store,
 } from "../../../../../interfaces";
 import type { SelectableStore } from "../../types";
-import { modeOf, type AccessPicks, NO_PICKS, heldGroupIds } from "./accessSets";
+import { type AccessPicks, NO_PICKS, heldGroupIds } from "./accessSets";
 import TextFilter from "../../../../../components-dev/filters/TextFilter";
 import SelectFilter from "../../../../../components-dev/filters/SelectFilter";
 import Checkbox from "../../../../../components-dev/Checkbox";
@@ -28,14 +27,10 @@ interface AccessPanelProps {
       prev: Record<number, CompanyBaseGroup[]>,
     ) => Record<number, CompanyBaseGroup[]>,
   ) => void;
-  /** Locks every group to picking stores, and to one store in total. The
-   *  single-store role cannot hold a whole group — the server refuses it —
-   *  so the control that would ask is not offered. */
+  /** Locks the person to one store in total. The single-store role cannot
+   *  hold a whole group — the server refuses it — so the Access type step
+   *  greys By group out and this panel never sees `all` for one. */
   singleStoreOnly?: boolean;
-  /** The mode a group takes when it is first held, from the Access type step.
-   *  Per-group override still applies: the whole of East plus two stores out
-   *  of HC North is the common real case. */
-  defaultMode?: GrantMode;
   /**
    * Each group's full roster, lifted so a caller can count what `all` adds up
    * to — the grant itself names no stores in that mode, so the roster is the
@@ -75,19 +70,25 @@ interface AccessPanelProps {
  * stores. `companyGroups` stays lifted to the caller so Review can resolve
  * base group names too.
  *
- * ### What the middle column's mode control decides
+ * ### What `picks.mode` decides here
  *
- * A held group is held one of two ways, and the difference is the whole point
- * of the screen:
+ * It is the person's answer from the Access type step, and it applies to
+ * every group on the screen:
  *
- * - **Auto** — the whole group, and any store added to it later. The third
- *   column becomes a read-only preview, because there is nothing to pick:
- *   the answer is "all of them, including the ones that do not exist yet".
- * - **Pick stores** — only what is ticked. The third column gets checkboxes,
- *   and a store added to the group later does *not* reach this person.
+ * - **By group** (`all`) — the whole group, and any store added to it later.
+ *   The third column becomes a read-only preview, because there is nothing to
+ *   pick: the answer is "all of them, including the ones that do not exist
+ *   yet".
+ * - **By store** (`selected`) — only what is ticked. The third column gets
+ *   checkboxes, and a store added to the group later does *not* reach this
+ *   person.
  *
- * Switching to Auto leaves any ticks in place but stops sending them, so
- * switching back does not lose the picks someone just made.
+ * **There is no per-group control.** Each group used to carry its own Auto /
+ * Pick stores toggle beside its chip, on the reasoning that one group could
+ * differ from the rest. In practice it made the person's access type a
+ * question with no single answer, the choice was invisible on a finished
+ * screen, and the duplicate action had nothing it could safely copy. The chip
+ * stays — it says how this group is held — and the toggle is gone.
  */
 const AccessPanel = ({
   picks,
@@ -95,7 +96,6 @@ const AccessPanel = ({
   companyGroups,
   onCompanyGroupsChange,
   singleStoreOnly = false,
-  defaultMode = "selected",
   groupStores,
   onGroupStoresChange,
   rightColumn,
@@ -135,34 +135,31 @@ const AccessPanel = ({
   const toggleCompanyPick = (id: number) =>
     onPicksChange({ ...picks, companies: toggleIn(picks.companies, id) });
 
-  /** Unticking a group drops its ticked stores with it. Leaving them behind
-   *  would keep the group held, since a ticked store holds its own group. */
+  /**
+   * Unticking a group drops its ticked stores with it. Leaving them behind
+   * would keep the group held, since a ticked store holds its own group.
+   *
+   * Ticking one while the person is held By store ticks its whole roster
+   * with it, for the same reason the mode switch does: a held group with
+   * nothing picked grants nobody anything, and "I ticked East and East did
+   * not arrive" is not a state worth being able to reach by accident. A
+   * single-store person gets no roster — they may hold exactly one store, and
+   * which one is the next thing they pick.
+   */
   const toggleGroupPick = (id: number) => {
     const held = picks.baseGroups.includes(id);
+    const roster =
+      !held && picks.mode === "selected" && !singleStoreOnly
+        ? (groupStores[id] ?? []).map((s) => ({ ...s, base_group: id }))
+        : [];
     onPicksChange({
       ...picks,
       baseGroups: toggleIn(picks.baseGroups, id),
       stores: held
         ? picks.stores.filter((s) => s.base_group !== id)
-        : picks.stores,
-      // Newly held groups take the Access type step's answer. An existing
-      // mode is left alone, so re-ticking a group restores how it was held.
-      modes:
-        held || picks.modes[id] !== undefined
-          ? picks.modes
-          : { ...picks.modes, [id]: singleStoreOnly ? "selected" : defaultMode },
+        : [...picks.stores, ...roster],
     });
   };
-
-  const setMode = (id: number, mode: GrantMode) =>
-    onPicksChange({
-      ...picks,
-      // Holding a group is implied by choosing how to hold it.
-      baseGroups: picks.baseGroups.includes(id)
-        ? picks.baseGroups
-        : [...picks.baseGroups, id],
-      modes: { ...picks.modes, [id]: mode },
-    });
 
   const [activeCompany, setActiveCompany] = useState<number | null>(null);
   // Which groups are selected for viewing — drives the middle column's
@@ -333,7 +330,7 @@ const AccessPanel = ({
    *  400 for these, so they are named on screen before the save is tried. */
   const emptyPicks = picks.baseGroups.filter(
     (id) =>
-      modeOf(picks, id) === "selected" &&
+      picks.mode === "selected" &&
       !selectedStores.some((s) => s.base_group === id),
   );
 
@@ -425,7 +422,7 @@ const AccessPanel = ({
             {filteredGroups.map((group) => {
               const isOpen = expandedGroups.has(group.id);
               const held = picks.baseGroups.includes(group.id);
-              const mode = modeOf(picks, group.id);
+              const mode = picks.mode;
               const inGroup = selectedStores.filter(
                 (s) => s.base_group === group.id,
               ).length;
@@ -472,31 +469,10 @@ const AccessPanel = ({
                   </div>
 
                   {/* Only once the group is actually held — the question
-                      "how" has no meaning before "whether". */}
+                      "how" has no meaning before "whether". The chip reports
+                      the person's access type; it is not a control. */}
                   {held && (
                     <div className="flex items-center gap-1 mt-1.5 ml-6">
-                      {!singleStoreOnly && (
-                        <div className="inline-flex rounded-md overflow-hidden border border-brand_line_2">
-                          {(
-                            [
-                              ["all", "Auto"],
-                              ["selected", "Pick stores"],
-                            ] as [GrantMode, string][]
-                          ).map(([value, label]) => (
-                            <button
-                              key={value}
-                              onClick={() => setMode(group.id, value)}
-                              className={`text-[10px] font-semibold px-2 py-0.5 transition-colors ${
-                                mode === value
-                                  ? "bg-brand_navy text-custom-white"
-                                  : "bg-custom-white text-content hover:bg-gray-50"
-                              }`}
-                            >
-                              {label}
-                            </button>
-                          ))}
-                        </div>
-                      )}
                       <GrantModeChip mode={mode} />
                     </div>
                   )}
@@ -541,7 +517,7 @@ const AccessPanel = ({
             )}
             {openGroups.map((group) => {
               const held = picks.baseGroups.includes(group.id);
-              const mode = modeOf(picks, group.id);
+              const mode = picks.mode;
               const preview = held && mode === "all";
               const inGroup = selectedStores.filter(
                 (s) => s.base_group === group.id,
@@ -682,7 +658,9 @@ const AccessPanel = ({
             store{selectedStores.length === 1 ? "" : "s"} picked
           </span>
           <button
-            onClick={() => onPicksChange(NO_PICKS)}
+            // Clears the picks, not the answer: the access type was chosen
+            // on its own step and stays chosen.
+            onClick={() => onPicksChange({ ...NO_PICKS, mode: picks.mode })}
             className="text-[10.5px] text-brand_navy font-semibold hover:underline"
           >
             Clear all
@@ -696,7 +674,7 @@ const AccessPanel = ({
           <div className="text-[11.5px] text-content/85 leading-relaxed max-h-[60px] overflow-y-auto thin-scrollbar">
             {held.map((id, i) => {
               const group = groupsById[id];
-              const mode = modeOf(picks, id);
+              const mode = picks.mode;
               const count = selectedStores.filter(
                 (s) => s.base_group === id,
               ).length;

@@ -102,11 +102,6 @@ const App = () => {
   // by typing the URL"; the mode toggle was the exception it did not know
   // about.
   //
-  // Release Notes is the worse one, because it works. Its avatar entry is
-  // dev-gated — the notes name unreleased work — but the route is not, so a
-  // client switched to prod would sit there reading them with nothing on
-  // screen suggesting they should not.
-  //
   // Clients can reach dev, so this is a path somebody takes rather than a
   // developer's own mess.
   //

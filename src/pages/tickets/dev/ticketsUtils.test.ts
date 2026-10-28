@@ -3,12 +3,12 @@ import {
   attachmentProblem,
   isMine,
   matchesFilters,
+  matchesSearch,
   onTab,
   parseServerTime,
   resolutionLabel,
   sendFailureText,
   tabCounts,
-  ticketsInScope,
   visibleTickets,
   whenText,
 } from "./ticketsUtils";
@@ -213,42 +213,6 @@ describe("what kind of fix closed it", () => {
   });
 });
 
-describe("ticketsInScope", () => {
-  // The dev review's case: user 649 holds Bruces (3), and a DCR user who holds
-  // Houchens (1) and Bruces opens tickets that report company 1.
-  const BRUCES = [3];
-  const mine = ticket({ id: 35, opened_by: 649, company: 3 });
-  const houchens = ticket({ id: 30, opened_by: 12, company: 1 });
-  const bruces = ticket({ id: 31, opened_by: 40, company: 3 });
-
-  it("keeps a customer to their own company's tickets", () => {
-    const seen = ticketsInScope([mine, houchens, bruces], false, BRUCES, 649);
-    expect(seen.map((t) => t.id)).toEqual([35, 31]);
-  });
-
-  it("always shows a ticket the reader opened", () => {
-    // A user with no company at all would otherwise see an empty page.
-    const orphan = ticket({ id: 36, opened_by: 649, company: null });
-    expect(ticketsInScope([orphan], false, [], 649)).toHaveLength(1);
-  });
-
-  it("hides a ticket with no company that somebody else opened", () => {
-    const stray = ticket({ id: 37, opened_by: 40, company: null });
-    expect(ticketsInScope([stray], false, BRUCES, 649)).toHaveLength(0);
-  });
-
-  it("lets a tech see everything", () => {
-    expect(ticketsInScope([mine, houchens, bruces], true, [], 1)).toHaveLength(3);
-  });
-
-  it("counts only what is in scope", () => {
-    // Tab counts read the scoped list, so "Open 14" can't include tickets
-    // the customer will never be shown.
-    const scoped = ticketsInScope([mine, houchens, bruces], false, BRUCES, 649);
-    expect(tabCounts(scoped, 649).all).toBe(2);
-  });
-});
-
 describe("parseServerTime", () => {
   // TCK-35: sent 5:32 PM CDT, which is 22:32 UTC. The API sends the UTC clock
   // time with no zone, and it used to be read as local -- five hours ahead.
@@ -300,5 +264,32 @@ describe("sendFailureText", () => {
       "That did not send.",
     );
     expect(sendFailureText(undefined)).toBe("That did not send.");
+  });
+});
+
+describe("stores on a ticket", () => {
+  const at54 = ticket({
+    id: 50,
+    stores: [{ storeid: 533, store_number: "54", store_name: "S&C Foods 54" }],
+  });
+  const nowhere = ticket({ id: 51, stores: [] });
+  const older = ticket({ id: 52 }); // from an API that sends no stores
+
+  it("narrows to tickets naming a picked store", () => {
+    const f: TicketFilters = { ...noFilters, stores: ["533"] };
+    expect(matchesFilters(at54, f)).toBe(true);
+    expect(matchesFilters(nowhere, f)).toBe(false);
+    expect(matchesFilters(older, f)).toBe(false);
+  });
+
+  it("lets every ticket through when no store is picked", () => {
+    expect(matchesFilters(nowhere, noFilters)).toBe(true);
+    expect(matchesFilters(older, noFilters)).toBe(true);
+  });
+
+  it("finds a ticket by its store number or name", () => {
+    expect(matchesSearch(at54, "#54")).toBe(true);
+    expect(matchesSearch(at54, "s&c foods")).toBe(true);
+    expect(matchesSearch(nowhere, "#54")).toBe(false);
   });
 });

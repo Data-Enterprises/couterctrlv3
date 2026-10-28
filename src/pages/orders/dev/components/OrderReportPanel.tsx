@@ -5,12 +5,15 @@ import LoadingIndicator from "../../../../components-dev/loading/LoadingIndicato
 import SortHeader from "../../../../components-dev/SortHeader";
 import { formatCurrency2 } from "../../../../utils";
 import type { AllOrder } from "../../../../interfaces";
-import type { GridSort, SortKey } from "../ordersRows";
+import { lineFlags, type GridSort, type SortKey } from "../ordersRows";
+import { FLAG_DOT, FLAG_TITLE } from "./flagStyles";
 
 interface Props {
   /** Already filtered, searched and sorted by the page. */
   rows: AllOrder[];
   sort: GridSort;
+  /** The threshold the high-margin flag is read against. */
+  marginOver: number | null;
   onSort: (col: SortKey) => void;
   loading: boolean;
   onExport: () => void;
@@ -40,6 +43,7 @@ interface Props {
 const OrderReportPanel = ({
   rows,
   sort,
+  marginOver,
   onSort,
   loading,
   onExport,
@@ -170,6 +174,9 @@ const OrderReportPanel = ({
             <table data-help="lines" className="w-full text-[11px] border-collapse">
               <thead className="sticky top-0 z-10 bg-custom-white">
                 <tr className="border-b border-b-brand_navy/15">
+                  {/* Narrow and unlabelled: a line can carry two flags at
+                      once, and a tint across the row could only show one. */}
+                  <th style={{ width: 22 }} aria-label="Cost problems" />
                   {numHead("order", "Order #", 90)}
                   {numHead("seq", "Seq #", 70)}
                   <th
@@ -212,6 +219,17 @@ const OrderReportPanel = ({
                     key={`${o.storenumber}-${o.order_id}-${o.line_number}`}
                     className="border-b border-b-brand_navy/15 even:bg-row_stripe"
                   >
+                    <td className="pl-3 py-2">
+                      <span className="flex gap-[3px]">
+                        {lineFlags(o, marginOver).map((f) => (
+                          <span
+                            key={f}
+                            title={FLAG_TITLE[f]}
+                            className={`h-[7px] w-[7px] rounded-[2px] ${FLAG_DOT[f]}`}
+                          />
+                        ))}
+                      </span>
+                    </td>
                     <td className="px-3 py-2 text-right tabular-nums font-semibold text-content">
                       {o.order_id}
                     </td>

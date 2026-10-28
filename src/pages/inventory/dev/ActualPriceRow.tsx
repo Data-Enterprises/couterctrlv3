@@ -21,8 +21,11 @@ import type { TransactionListItem } from "../../../interfaces";
  * the item's receipts, and `lines` stays null until they are in.
  */
 
-export const ACT_COLS = "1fr 40px 44px 36px 46px 32px 58px";
-const TXN_COLS = "84px 1fr 86px 44px 58px";
+// Widened with the type (23 Oct). Every column here is sized to its
+// widest real value, so a point of font size has to be paid for in px or
+// $1,332.63 clips. The 1fr price column absorbs it.
+export const ACT_COLS = "1fr 44px 48px 40px 50px 36px 64px";
+const TXN_COLS = "90px 1fr 92px 48px 64px";
 
 interface Props {
   point: ActualPricePoint;
@@ -57,7 +60,7 @@ const ActualPriceRow = ({
   return (
     <div>
       <div
-        className={`grid px-1 py-2 text-[12px] border-b border-gray-50 ${isBest ? "bg-blue-50" : "even:bg-row_stripe"}`}
+        className={`grid px-1 py-2 text-[13px] border-b border-gray-50 ${isBest ? "bg-blue-50" : "even:bg-row_stripe"}`}
         style={{ gridTemplateColumns: ACT_COLS }}
       >
         <span
@@ -65,7 +68,7 @@ const ActualPriceRow = ({
         >
           {formatCurrency2(point.price)}
         </span>
-        <span className="text-content/70">{point.priceType}</span>
+        <span className="text-content/85">{point.priceType}</span>
 
         {/* The count is the control — it's the number you'd point at when
             asking "which nineteen?". */}
@@ -105,7 +108,7 @@ const ActualPriceRow = ({
       {open && (
         <div className="bg-brand_navy/[0.03] border-b border-gray-100 pl-5 pr-2 py-1.5">
           <div
-            className="grid py-1 text-[9px] font-medium uppercase tracking-wide text-content/60"
+            className="grid py-1 text-[10px] font-medium uppercase tracking-wide text-content/85"
             style={{ gridTemplateColumns: TXN_COLS }}
           >
             <span>Date</span>
@@ -115,7 +118,7 @@ const ActualPriceRow = ({
             <span className="text-right">Amount</span>
           </div>
           {lines === null && (
-            <div className="py-1.5 text-[11.5px] text-content/70">
+            <div className="py-1.5 text-[12.5px] text-content/85">
               {receiptsError
                 ? `Could not read the receipts: ${receiptsError}`
                 : receiptsLoading
@@ -124,25 +127,25 @@ const ActualPriceRow = ({
             </div>
           )}
           {lines !== null && lines.length === 0 && (
-            <div className="py-1.5 text-[11.5px] text-content/70">
+            <div className="py-1.5 text-[12.5px] text-content/85">
               No receipt line matched this price exactly.
             </div>
           )}
           {(lines ?? []).map((t) => (
             <div
               key={`${t.sale_id}-${t.line_number}`}
-              className="grid py-1 text-[12px]"
+              className="grid py-1 text-[13px]"
               style={{ gridTemplateColumns: TXN_COLS }}
             >
               <span className="text-content tabular-nums">
                 {formatDate(t.sale_date)}
               </span>
-              <span className="text-content/70 tabular-nums truncate pr-2">
+              <span className="text-content/85 tabular-nums truncate pr-2">
                 {transactionLabel(t.sale_id)}
                 {t.terminal ? ` · T${t.terminal}` : ""}
               </span>
               <span
-                className="text-content/70 truncate pr-2"
+                className="text-content/85 truncate pr-2"
                 title={t.cashier_name}
               >
                 {t.cashier_name || t.cashier_number}

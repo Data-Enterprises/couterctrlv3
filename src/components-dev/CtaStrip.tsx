@@ -18,6 +18,10 @@ import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/16/solid";
  * `CTA_SEVERITY_CLASSES[sev]` where there is a grade, delta tokens where the
  * question is direction rather than grade.
  *
+ * The chevron is labelled Show / Hide. A chevron alone says there is more
+ * without saying it can be opened, and on a strip whose whole value is what
+ * is behind it that is the one thing it has to say.
+ *
  * Written as one component because it had been written four times: the Sub
  * dept tab, Hourly, Top 200 and the share rail each carried their own copy,
  * and they had already drifted on which chevron, which z-index and whether
@@ -80,6 +84,11 @@ const CtaStrip = ({
           </span>
         )}
         <span className="flex-1" />
+        <span
+          className={`text-[11.5px] font-semibold flex-shrink-0 ${tone.text}`}
+        >
+          {open ? "Hide" : "Show"}
+        </span>
         {open ? (
           <ChevronUpIcon className={`w-3 h-3 flex-shrink-0 ${tone.text}`} />
         ) : (

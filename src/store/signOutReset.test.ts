@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { setupStore } from "./index";
+import { rootReducer, setupStore } from "./index";
 import { resetAppSlice } from "../features/appSlice";
 import { setUsername, setUserLevel } from "../features/userSlice";
 import { setLastRoute } from "../features/navSlice";
@@ -55,6 +55,43 @@ describe("sign-out", () => {
     expect(s.user.userLevel).toBe(0);
     expect(s.user.companies).toEqual([]);
     expect(s.user.assignedStores).toEqual([]);
+  });
+
+  it("leaves nothing of the last session in any slice, in any tree", () => {
+    // Every slice in the store, not a sample: each one is given a marker the
+    // last user "left behind", and after sign-out the whole state has to be a
+    // never-signed-in store's, username aside. A slice added later is in this
+    // check the day it is registered, with no change here.
+    type Tree = Record<string, Record<string, unknown>>;
+    const pristine = setupStore().getState() as unknown as Record<string, unknown>;
+    const TREES = ["prod", "dev", "legacy"];
+    let marked = 0;
+    const leftBehind = (slice: unknown) => {
+      marked += 1;
+      return { ...(slice as object), __lastSession: "previous user's data" };
+    };
+    const dirty = Object.fromEntries(
+      Object.entries(pristine).map(([key, value]) => [
+        key,
+        TREES.includes(key)
+          ? Object.fromEntries(
+              Object.entries(value as Tree).map(([k, v]) => [k, leftBehind(v)]),
+            )
+          : leftBehind(value),
+      ]),
+    ) as Record<string, Record<string, unknown>>;
+    dirty.user = { ...dirty.user, username: "snelson" };
+
+    const after = rootReducer(
+      dirty as unknown as Parameters<typeof rootReducer>[0],
+      resetAppSlice(),
+    );
+
+    expect(marked).toBeGreaterThan(40);
+    expect(after).toEqual({
+      ...pristine,
+      user: { ...(pristine.user as object), username: "snelson" },
+    });
   });
 
   it("covers a slice nobody remembered to name", () => {

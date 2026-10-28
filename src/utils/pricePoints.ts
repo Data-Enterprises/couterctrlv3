@@ -126,19 +126,22 @@ export const estimatedPricePoints = (
 /**
  * Whether a register line is a weighed sale.
  *
- * The spec tests `weight > 0`, but `transaction_list` doesn't return a weight
- * column — scale items come back as a **fractional qty** instead, which is
- * documented on the Cashiers explorer. So the discriminator is integer-ness.
+ * `transaction_list` returns `weight` in pounds since 22 Oct, with Food
+ * Giant's thousandths already divided on the server, so this reads the column
+ * the spec always meant.
  *
- * This is weaker than the spec's, in one specific way worth knowing: an item
- * that happens to weigh exactly 1.00 lb reads as a single each-priced unit and
- * lands in the exact table. That is the right *price* either way — one pound at
- * $/lb is the same arithmetic — so the number on screen is never wrong; only
- * the exact/averaged split can misfile a row. A whole item is judged weighed by
- * whether *any* of its lines is fractional, so a genuine scale item with one
- * round ring still classifies correctly.
+ * It used to infer the answer from a fractional `qty`, because the column was
+ * not there. That had one hole: an item weighing exactly 1.00 lb read as a
+ * single each-priced unit and landed in the exact table. The price was right
+ * either way — one pound at $/lb is the same arithmetic — but the exact and
+ * averaged split could misfile a row. Reading the weight closes it.
+ *
+ * `weight` is optional on the type: an API that predates the change sends
+ * none, and against one of those every line reports unweighed, which is what
+ * the old code did for a round-quantity scale item anyway. A refund carries a
+ * negative weight, so this tests for a non-zero magnitude rather than > 0.
  */
-const isFractional = (qty: number) => !Number.isInteger(qty);
+const isWeighedLine = (t: TransactionListItem) => Math.abs(t.weight ?? 0) > 0;
 
 /**
  * The receipt a register line is on.
@@ -193,6 +196,16 @@ export interface ActualPricePoints {
   averagedCount: number;
   /** Distinct receipts across both tables: the item's transaction count. */
   receiptCount: number;
+  /**
+   * How many prices this item rang at, counted once.
+   *
+   * One number, because there were two. The tile counted rows across both
+   * tables and the pattern note counted distinct price VALUES, so COKE 6PK
+   * read "5" beside "4 prices across 84 transactions" (finding AT). Rows is
+   * the better definition of the two: REG $3.34 and SALE $3.34 are two prices
+   * somebody set, and a set of values cannot tell them apart.
+   */
+  priceCount: number;
   isWeighted: boolean;
 }
 
@@ -202,6 +215,7 @@ const emptyActual: ActualPricePoints = {
   exactCount: 0,
   averagedCount: 0,
   receiptCount: 0,
+  priceCount: 0,
   isWeighted: false,
 };
 
@@ -247,6 +261,52 @@ export const unitPrice = (t: TransactionListItem) =>
  * shelf prices a cent apart, so a pair that close, under the same price type,
  * is folded into whichever of the two more receipts rang at.
  */
+/**
+ * The same price, split across the two tables.
+ *
+ * `foldPennyTwins` works inside one table, which leaves the case it exists to
+ * catch: a 2-for-$6.67 sale rings $3.34 as a single and averages to $3.33 as
+ * a pair, so one promotion appears once in Exact and once in Avg, a penny
+ * apart, reading as two prices (finding AT).
+ *
+ * The single-ring price is the one kept -- it is what a customer actually
+ * paid rather than a division -- and the averaged row's receipts, units and
+ * sales fold into it. `averagedCount` is untouched: those transactions were
+ * still multi-buys, and the multi-buy share of the week is what decides
+ * whether a pattern is a package deal.
+ *
+ * Only within a price type. REG $3.34 and SALE $3.34 are two prices somebody
+ * set, and reading them as one is how a promotion disappears.
+ */
+const foldAcrossTables = (
+  exact: ActualPricePoint[],
+  averaged: ActualPricePoint[],
+): { exact: ActualPricePoint[]; averaged: ActualPricePoint[] } => {
+  const keptAveraged: ActualPricePoint[] = [];
+  for (const avg of averaged) {
+    const twin = exact.find(
+      (e) =>
+        e.priceType === avg.priceType && Math.abs(e.price - avg.price) <= 0.011,
+    );
+    if (!twin) {
+      keptAveraged.push(avg);
+      continue;
+    }
+    twin.trans += avg.trans;
+    twin.qty += avg.qty;
+    twin.sales += avg.sales;
+    // Days overlap between the two forms of one promotion, so the larger is
+    // the honest floor -- adding them could clear the three-day minimum on a
+    // single day counted twice.
+    twin.daysSeen = Math.max(twin.daysSeen, avg.daysSeen);
+    if (avg.lastSeen > twin.lastSeen) twin.lastSeen = avg.lastSeen;
+  }
+  return {
+    exact: [...exact].sort((a, b) => b.trans - a.trans),
+    averaged: keptAveraged,
+  };
+};
+
 const foldPennyTwins = <T extends { price: number; priceType: string }>(
   points: T[],
   /** Which of two twins is the real price: the one more receipts rang at. */
@@ -307,7 +367,7 @@ export const actualPricePoints = (
 ): ActualPricePoints => {
   if (lines.length === 0) return emptyActual;
 
-  const isWeighted = lines.some((t) => isFractional(lineQty(t)));
+  const isWeighted = lines.some(isWeighedLine);
   const sold = lines.filter((t) => t.net_sales > 0);
 
   const exactRows = isWeighted ? sold : sold.filter((t) => lineQty(t) === 1);
@@ -363,12 +423,17 @@ export const actualPricePoints = (
       .sort((a, b) => b.trans - a.trans);
   };
 
+  // The same cross-table fold the server path gets: a promotion that rings
+  // as a single and averages as a pair is one price in either source.
+  const folded = foldAcrossTables(bucket(exactRows, false), bucket(avgRows, true));
+
   return {
-    exact: bucket(exactRows, false),
-    averaged: bucket(avgRows, true),
+    exact: folded.exact,
+    averaged: folded.averaged,
     exactCount: receiptsIn(exactRows),
     averagedCount: receiptsIn(avgRows),
     receiptCount: receiptsIn(sold),
+    priceCount: folded.exact.length + folded.averaged.length,
     isWeighted,
   };
 };
@@ -441,12 +506,15 @@ export const pricePointsFromServer = (
   const receiptsOf = (rs: ServerPricePoint[]) =>
     rs.reduce((s, r) => s + r.receipts, 0);
 
+  const { exact, averaged } = foldAcrossTables(table(exactRows), table(avgRows));
+
   return {
-    exact: table(exactRows),
-    averaged: table(avgRows),
+    exact,
+    averaged,
     exactCount: receiptsOf(exactRows),
     averagedCount: receiptsOf(avgRows),
     receiptCount: receiptsOf(sold),
+    priceCount: exact.length + averaged.length,
     isWeighted,
   };
 };
@@ -603,44 +671,54 @@ export const suggestPrice = (
 /* --------------------------------------------------------------- mixed price */
 
 export interface MixedPriceInsight {
-  /** Receipts carrying this item at more than one price. */
+  /** Receipts carrying the item at more than one price. */
   mixedTxns: number;
+  /** Distinct receipts the item appeared on at all -- the denominator. */
   uniqueTxns: number;
-  /** The widest spread seen within a single receipt, in dollars. */
+  /** Widest gap inside one such receipt. Printed, not decided on. */
   maxSpread: number;
 }
 
 /**
- * Spec §5.3's `mixedPriceInsight`. The same item at two prices on one receipt
- * is the signature of a package deal or a break — two rung at $3.49 and a third
- * at $0.02 to make three-for-$6.99.
+ * The receipt counts, from the server's own count of them.
+ *
+ * This was computed here by walking every receipt for the item and grouping
+ * its lines by price. The walk is gone -- it was slow, capped at 400
+ * receipts, and priced weighed lines by qty, which is 1 on a random-weight
+ * pack (findings AS and D). The server counts the same receipts over the
+ * same lines, with no cap.
+ *
+ * `null` whenever the question cannot be answered, which the caller must
+ * treat as "no package deal" rather than "none found":
+ *
+ *  - a weighed item, where the server sends null because two packs in one
+ *    basket compute to different prices per pound from rounding alone, and a
+ *    BOGO is rung on packages anyway;
+ *  - an older API that does not send the fields at all.
+ *
+ * The server counts two prices as two only when they are more than a CENT
+ * apart, matching `foldPennyTwins` and `foldAcrossTables` here: a 3-for-$10
+ * rings $3.33, $3.33, $3.34, and on raw distinct prices three in every four
+ * "package deals" at store 695 were that rounding. If one side of that rule
+ * ever changes, the other has to change with it.
  */
-export const mixedPriceInsight = (
-  lines: TransactionListItem[],
-): MixedPriceInsight => {
-  const bySale = new Map<string, number[]>();
-  lines
-    .filter((t) => t.net_sales > 0)
-    .forEach((t) => {
-      const price = round2(t.net_sales / lineQty(t));
-      const found = bySale.get(t.sale_id);
-      if (found) found.push(price);
-      else bySale.set(t.sale_id, [price]);
-    });
-
-  let mixedTxns = 0;
-  let maxSpread = 0;
-  bySale.forEach((prices) => {
-    if (new Set(prices).size > 1) {
-      mixedTxns += 1;
-      maxSpread = Math.max(
-        maxSpread,
-        Math.max(...prices) - Math.min(...prices),
-      );
-    }
-  });
-
-  return { mixedTxns, uniqueTxns: bySale.size, maxSpread: round2(maxSpread) };
+export const mixedPriceFromServer = (resp: {
+  receipts_total?: number;
+  multi_price_receipts?: number | null;
+  max_price_spread?: number | null;
+}): MixedPriceInsight | null => {
+  const { receipts_total, multi_price_receipts, max_price_spread } = resp;
+  if (
+    typeof receipts_total !== "number" ||
+    typeof multi_price_receipts !== "number"
+  ) {
+    return null;
+  }
+  return {
+    mixedTxns: multi_price_receipts,
+    uniqueTxns: receipts_total,
+    maxSpread: typeof max_price_spread === "number" ? max_price_spread : 0,
+  };
 };
 
 /* ----------------------------------------------------------- classification */
@@ -690,7 +768,7 @@ export interface PricingPattern {
  */
 export const classifyPattern = (
   actual: ActualPricePoints,
-  mixed: MixedPriceInsight,
+  mixed: MixedPriceInsight | null,
 ): PricingPattern => {
   const totalTrans = actual.exactCount + actual.averagedCount;
   if (totalTrans === 0) {
@@ -702,12 +780,18 @@ export const classifyPattern = (
     };
   }
 
-  const distinctPrices = new Set(
-    [...actual.exact, ...actual.averaged].map((p) => p.price),
-  ).size;
+  // The same count the tile shows. These were computed separately and
+  // disagreed on screen -- 5 against 4 on COKE 6PK (finding AT).
+  const distinctPrices = actual.priceCount;
   const volatilityPct = (distinctPrices / totalTrans) * 100;
+  // Null is "not answerable", not "none found" -- see mixedPriceFromServer.
+  // Package deal cannot fire from it, which is the honest outcome: on a
+  // weighed item the pattern does not apply, and on an older API we do not
+  // know.
   const mixedPct =
-    mixed.uniqueTxns > 0 ? (mixed.mixedTxns / mixed.uniqueTxns) * 100 : 0;
+    mixed && mixed.uniqueTxns > 0
+      ? (mixed.mixedTxns / mixed.uniqueTxns) * 100
+      : 0;
   const multiQtyPct = (actual.averagedCount / totalTrans) * 100;
   // Across both tables. Reading `exact` alone made this 0 for any item that
   // only ever sells in multiples — which is precisely the shape multi-buy is
@@ -719,7 +803,7 @@ export const classifyPattern = (
   );
   const topPricePct = ((topPoint?.trans ?? 0) / totalTrans) * 100;
 
-  if (mixedPct >= 30 && mixed.mixedTxns > 0) {
+  if (mixed && mixedPct >= 30 && mixed.mixedTxns > 0) {
     return {
       kind: "package",
       title: "Package deal",

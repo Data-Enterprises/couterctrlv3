@@ -1,6 +1,6 @@
-import { useMemo } from "react";
+import { useMemo, type ReactNode } from "react";
 import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
-import type { OrderDoc } from "../orderEdit";
+import { matchesPick, type OrderDoc } from "../orderEdit";
 
 interface Props {
   /** Every order in the range, newest first. */
@@ -8,6 +8,12 @@ interface Props {
   /** The one being edited, if any. */
   openKey: string | null;
   onPick: (doc: OrderDoc) => void;
+  /**
+   * Orders holding changes not yet submitted. Fix cost stages a cost into
+   * every order carrying the item without opening any of them, so this is how
+   * you see which orders it touched.
+   */
+  changedKeys: Set<string>;
   storeNumber: string;
   orderDate: string;
   orderType: string;
@@ -16,11 +22,23 @@ interface Props {
   onType: (value: string) => void;
   onClear: () => void;
   onOpenSearch: () => void;
-  /** Held while a draft has unsaved changes, so a click cannot discard them. */
+  /** Held while a new line is half filled in, so a click cannot discard it. */
   blocked: boolean;
   startDate: string;
   endDate: string;
   scopeLabel: string;
+  /**
+   * Orders, or the Problems tab, at the top of the panel. Store, order date
+   * and order type belong to Orders — they narrow the list of orders to open.
+   * Problems has its own three flag rows and works across every loaded
+   * order; which stores a fix reaches is decided per item, by its ticks.
+   */
+  tab: "orders" | "problems";
+  onTab: (tab: "orders" | "problems") => void;
+  /** Flagged items not yet staged or skipped, for the tab's count. */
+  problemsToDo: number;
+  /** The Problems tab's content, built by the page that owns the drafts. */
+  problems: ReactNode;
 }
 
 /** The same three-digit pad the report panel uses. */
@@ -49,6 +67,7 @@ const OrderPickerPanel = ({
   docs,
   openKey,
   onPick,
+  changedKeys,
   storeNumber,
   orderDate,
   orderType,
@@ -61,6 +80,10 @@ const OrderPickerPanel = ({
   startDate,
   endDate,
   scopeLabel,
+  tab,
+  onTab,
+  problemsToDo,
+  problems,
 }: Props) => {
   /**
    * What each filter offers, narrowed by the other two.
@@ -72,13 +95,7 @@ const OrderPickerPanel = ({
   const matches = (
     d: OrderDoc,
     skip: "store" | "date" | "type" | null,
-  ) => {
-    if (skip !== "store" && storeNumber && d.storenumber !== storeNumber)
-      return false;
-    if (skip !== "date" && orderDate && d.order_date !== orderDate) return false;
-    if (skip !== "type" && orderType && d.order_type !== orderType) return false;
-    return true;
-  };
+  ) => matchesPick(d, { storeNumber, orderDate, orderType }, skip);
 
   const stores = useMemo(() => {
     const seen = new Map<string, string>();
@@ -119,7 +136,7 @@ const OrderPickerPanel = ({
       <div className="bg-brand_navy px-3 pt-2 pb-2.5 flex-shrink-0">
         <div className="flex items-center gap-2">
           <span className="text-custom-white font-medium text-[13px] flex-1 truncate">
-            Order to edit
+            {tab === "problems" ? "Cost problems" : "Order to edit"}
           </span>
           <button
             onClick={onOpenSearch}
@@ -139,6 +156,34 @@ const OrderPickerPanel = ({
         </div>
       </div>
 
+      <div className="flex flex-shrink-0 border-b border-brand_line" role="tablist">
+        {(
+          [
+            ["orders", "Orders", shown.length],
+            ["problems", "Problems", problemsToDo],
+          ] as const
+        ).map(([id, label, n]) => (
+          <button
+            key={id}
+            role="tab"
+            aria-selected={tab === id}
+            onClick={() => onTab(id)}
+            className={`flex-1 py-2 text-[12.5px] transition-colors ${
+              tab === id
+                ? "font-bold text-brand_navy shadow-[inset_0_-2px_0_rgb(var(--color-brand-navy))]"
+                : "font-medium text-content/95 hover:text-content"
+            }`}
+          >
+            {label}{" "}
+            <span className="tabular-nums">{n.toLocaleString()}</span>
+          </button>
+        ))}
+      </div>
+
+      {tab === "problems" ? (
+        problems
+      ) : (
+      <>
       <div className="flex-shrink-0 px-3 pt-3 pb-2 flex flex-col gap-2">
         <Field label="Store">
           <select
@@ -207,6 +252,11 @@ const OrderPickerPanel = ({
             ? `${docs.length.toLocaleString()} orders in range`
             : `${shown.length.toLocaleString()} of ${docs.length.toLocaleString()} orders`}
         </span>
+        {changedKeys.size > 0 && (
+          <span className="flex-shrink-0 rounded bg-severity_watch_bg px-1.5 py-0.5 text-[10.5px] font-semibold text-severity_watch_text">
+            {changedKeys.size} changed
+          </span>
+        )}
         {filtered && (
           <button
             onClick={onClear}
@@ -232,7 +282,7 @@ const OrderPickerPanel = ({
                 disabled={blocked && !isOpen}
                 title={
                   blocked && !isOpen
-                    ? "Submit or undo the changes on this order first"
+                    ? "Add or discard the line you are filling in first"
                     : undefined
                 }
                 className={`text-left rounded-lg border bg-custom-white px-2.5 py-2 transition-colors disabled:opacity-45 ${
@@ -248,6 +298,12 @@ const OrderPickerPanel = ({
                   <span className="text-[12.5px] font-bold text-content tabular-nums truncate">
                     Order {d.order_id}
                   </span>
+                  {changedKeys.has(d.key) && (
+                    <span
+                      title="Changes not yet submitted"
+                      className="h-[7px] w-[7px] flex-shrink-0 self-center rounded-full bg-severity_watch_text"
+                    />
+                  )}
                   <span className="ml-auto flex-shrink-0 text-[9.5px] font-bold uppercase tracking-wide text-content/95">
                     {d.order_type}
                   </span>
@@ -272,10 +328,12 @@ const OrderPickerPanel = ({
 
       <div className="border-t border-gray-100 px-3 py-2 flex-shrink-0">
         <span className="block text-[11px] leading-snug text-content/95">
-          One order is one editable document. The save refuses a file that spans
-          two stores or two dates, so the list never offers one.
+          One order is one editable document. Orders marked with a dot have
+          changes waiting, and Submit sends every one of them.
         </span>
       </div>
+      </>
+      )}
     </div>
   );
 };

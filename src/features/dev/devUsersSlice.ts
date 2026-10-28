@@ -12,6 +12,7 @@ import type {
   UserCompany,
   UserLevel,
   Company,
+  GrantMode,
 } from "../../interfaces";
 
 export type UserData = {
@@ -60,15 +61,21 @@ type StoreFormOption = "assign" | "info" | "bg_assign" | "";
 type UserFilterType = "name" | "email";
 
 // Everything the create-wizard needs to pre-fill from a "Duplicate user"
-// click — role/level plus company/base-group/store assignments. Identity
-// fields (name/username/email/password) are deliberately excluded; those
-// always stay blank for the admin to fill in.
+// click — role/level, access type, and company/base-group/store assignments.
+// Identity fields (name/username/email/password) are deliberately excluded;
+// those always stay blank for the admin to fill in.
 export interface DuplicateSource {
   role: number;
   user_level: number;
   companyIds: number[];
   baseGroupIds: number[];
   groups: { id: number; name: string; company: number }[];
+  /** By group or by store, read from what the source holds. One answer per
+   *  person, so it copies rather than being asked again. */
+  mode: GrantMode;
+  /** Only the stores the source actually PICKED, each under the group it
+   *  was picked through — from `user_group_picks`, not inferred. Empty for a
+   *  By group source, whose groups name no stores. */
   stores: (Store & { base_group: number })[];
 }
 

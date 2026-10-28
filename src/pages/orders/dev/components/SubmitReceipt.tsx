@@ -2,6 +2,8 @@ import type { UpdateFileResp } from "../../../../interfaces";
 
 interface Props {
   receipt: UpdateFileResp | null;
+  /** How many order files the Submit sent. */
+  orderCount: number;
   editedCount: number;
   addedCount: number;
   onClose: () => void;
@@ -24,6 +26,7 @@ interface Props {
  */
 const SubmitReceipt = ({
   receipt,
+  orderCount,
   editedCount,
   addedCount,
   onClose,
@@ -50,7 +53,9 @@ const SubmitReceipt = ({
       <div className="flex-1 min-h-0 overflow-auto thin-scrollbar p-4 flex flex-col gap-3">
         <div className="flex flex-col gap-1">
           <span className="text-[15.5px] font-bold text-content">
-            Order update submitted
+            {orderCount > 1
+              ? `${orderCount} order updates submitted`
+              : "Order update submitted"}
           </span>
           <span className="text-[12px] leading-snug text-content">
             Changes appear in the grid after the next provider import. Loading
@@ -65,9 +70,18 @@ const SubmitReceipt = ({
         </div>
 
         <div className="flex flex-col gap-1.5">
+          {orderCount > 1 && (
+            <Row label="Orders sent" value={orderCount.toLocaleString()} />
+          )}
           <Row label="Bucket" value={receipt.bucket} />
-          <Row label="Key" value={receipt.key} />
-          <Row label="Lines sent" value={receipt.line_count.toLocaleString()} />
+          <Row
+            label={orderCount > 1 ? "Last key" : "Key"}
+            value={receipt.key}
+          />
+          <Row
+            label={orderCount > 1 ? "Lines in last file" : "Lines sent"}
+            value={receipt.line_count.toLocaleString()}
+          />
           <Row label="Of those, edited" value={String(editedCount)} />
           <Row label="Of those, new" value={String(addedCount)} />
           <Row label="Logged" value={receipt.logged ? "true" : "false"} />
