@@ -63,8 +63,18 @@ const LOOK: Record<
 };
 
 const MONTHS = [
-  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
 ];
 
 /** "Nov 2" and "2026" for the rail, from the string rather than a `Date`. */
@@ -172,6 +182,10 @@ const ReleaseNotesModal = ({
 }: Props) => {
   const [date, setDate] = useState(releases[0]?.date ?? "");
   const pane = useRef<HTMLDivElement>(null);
+  /** The pinned date and pills, measured so a jump lands below them. */
+  const head = useRef<HTMLDivElement>(null);
+  /** The section being read, which its pill shows. */
+  const [active, setActive] = useState<SectionKey | null>(null);
   const release = releases.find((r) => r.date === date) ?? releases[0];
   const latest = releases[0];
 
@@ -180,15 +194,49 @@ const ReleaseNotesModal = ({
     hits.some((h) => h.section === section && h.index === index);
   const last = lastChangedRelease(releases, href);
 
+  /** Where an element sits in the pane once the pinned head is allowed for.
+   *  The pane is `relative`, so `offsetTop` is measured from its top. */
+  const topOf = (el: HTMLElement) =>
+    Math.max(0, el.offsetTop - (head.current?.offsetHeight ?? 0) - 12);
+
+  /** Which section is at the top of what is showing. At the very bottom it is
+   *  the last one, which may be too short ever to reach the top. */
+  const readActive = () => {
+    const box = pane.current;
+    if (!box) return;
+    const sections = Array.from(
+      box.querySelectorAll<HTMLElement>("[data-section]"),
+    );
+    if (sections.length === 0) return setActive(null);
+    const atBottom = box.scrollTop + box.clientHeight >= box.scrollHeight - 4;
+    const passed = sections.filter((el) => topOf(el) <= box.scrollTop + 4);
+    const el = atBottom
+      ? sections[sections.length - 1]
+      : (passed[passed.length - 1] ?? sections[0]);
+    setActive(el.dataset.section as SectionKey);
+  };
+
+  /** A pill's jump. Smooth where the browser can; a plain set where it cannot. */
+  const jumpTo = (key: SectionKey) => {
+    const box = pane.current;
+    const el = box?.querySelector<HTMLElement>(`[data-section='${key}']`);
+    if (!box || !el) return;
+    setActive(key);
+    if (typeof box.scrollTo === "function") {
+      box.scrollTo({ top: topOf(el), behavior: "smooth" });
+    } else {
+      box.scrollTop = topOf(el);
+    }
+  };
+
   // Each release opens on this page's first card, or at the top when it has
   // none. Measured inside the pane, so the window itself never scrolls.
   useEffect(() => {
     const box = pane.current;
     if (!box) return;
     const first = box.querySelector<HTMLElement>("[data-this-page='true']");
-    box.scrollTop = first
-      ? Math.max(0, first.offsetTop - box.offsetTop - 48)
-      : 0;
+    box.scrollTop = first ? topOf(first) : 0;
+    readActive();
   }, [date]);
 
   const present: SectionKey[] = release
@@ -202,7 +250,7 @@ const ReleaseNotesModal = ({
       isOpen
       onClose={onClose}
       padded={false}
-      modalClassName="bg-card_bg w-[836px] max-w-[94vw] h-[80vh] flex flex-col overflow-hidden"
+      modalClassName="bg-card_bg w-[836px] max-w-[94vw] h-[90vh] flex flex-col overflow-hidden"
     >
       <div className="flex flex-shrink-0 items-center gap-3 rounded-t-xl bg-brand_navy px-5 py-3.5">
         <SparklesIcon className="h-5 w-5 flex-none text-custom-white/95" />
@@ -263,12 +311,16 @@ const ReleaseNotesModal = ({
                     <span className="flex items-baseline gap-1.5">
                       <span
                         className={`text-[14px] ${
-                          on ? "font-semibold text-content" : "font-medium text-content"
+                          on
+                            ? "font-semibold text-content"
+                            : "font-medium text-content"
                         }`}
                       >
                         {day}
                       </span>
-                      <span className="text-[11.5px] text-brand_slate">{year}</span>
+                      <span className="text-[11.5px] text-brand_slate">
+                        {year}
+                      </span>
                       {r === latest && (
                         <span className="ml-auto rounded-full bg-brand_navy px-1.5 py-[1px] text-[10px] font-semibold text-custom-white">
                           latest
@@ -297,70 +349,92 @@ const ReleaseNotesModal = ({
 
           <div
             ref={pane}
-            className="min-w-0 flex-1 overflow-y-auto thin-scrollbar bg-bkg px-6 py-5"
+            onScroll={readActive}
+            className="relative min-w-0 flex-1 overflow-y-auto thin-scrollbar bg-bkg"
           >
-            <h3 className="m-0 text-[20px] font-semibold text-content">
-              {release.dateText}
-            </h3>
-
-            {/* What is in this release before any of it is read. */}
-            <div className="mt-2 flex flex-wrap gap-1.5">
-              {present.map((k) => {
-                const n = countOf(release, k);
-                return (
-                  <span
-                    key={k}
-                    className={`rounded-full px-2.5 py-0.5 text-[11.5px] font-medium ${LOOK[k].chip}`}
-                  >
-                    {SECTION_TITLE[k]}{" "}
-                    <span className="tabular-nums">{n}</span>
-                  </span>
-                );
-              })}
+            {/* Pinned: the date says which release this is however far down
+                you are, and the pills are its contents — each one jumps to its
+                section, and the one being read is outlined. */}
+            <div
+              ref={head}
+              className="sticky top-0 z-10 border-b border-brand_line bg-bkg px-6 pb-3 pt-5"
+            >
+              <h3 className="m-0 text-[20px] font-semibold text-content">
+                {release.dateText}
+              </h3>
+              <nav
+                aria-label="Sections"
+                className="mt-2 flex flex-wrap gap-1.5"
+              >
+                {present.map((k) => {
+                  const n = countOf(release, k);
+                  const on = active === k;
+                  return (
+                    <button
+                      key={k}
+                      type="button"
+                      onClick={() => jumpTo(k)}
+                      aria-current={on}
+                      className={`rounded-full border px-2.5 py-0.5 text-[11.5px] font-medium transition-colors ${
+                        LOOK[k].chip
+                      } ${
+                        on
+                          ? "border-brand_navy"
+                          : "border-transparent hover:border-brand_line_2"
+                      }`}
+                    >
+                      {SECTION_TITLE[k]}{" "}
+                      <span className="tabular-nums">{n}</span>
+                    </button>
+                  );
+                })}
+              </nav>
             </div>
 
-            {/* Said rather than left to be inferred: the window opened from a
+            <div className="px-6 pb-6 pt-1">
+              {/* Said rather than left to be inferred: the window opened from a
                 page, so a release that does not touch it should say so. */}
-            {release === latest && pageName && hits.length === 0 && (
-              <p className="m-0 mt-3 rounded-lg border border-brand_line bg-custom-white px-3 py-2 text-[12.5px] text-content/95">
-                Nothing new on {pageName} this release.
-                {last && (
-                  <>
-                    {" "}
-                    <button
-                      type="button"
-                      onClick={() => setDate(last.date)}
-                      className="font-medium text-brand_navy_hover underline underline-offset-2"
-                    >
-                      Last changed {last.dateText}
-                    </button>
-                  </>
-                )}
-              </p>
-            )}
+              {release === latest && pageName && hits.length === 0 && (
+                <p className="m-0 mt-3 rounded-lg border border-brand_line bg-custom-white px-3 py-2 text-[12.5px] text-content/95">
+                  Nothing new on {pageName} this release.
+                  {last && (
+                    <>
+                      {" "}
+                      <button
+                        type="button"
+                        onClick={() => setDate(last.date)}
+                        className="font-medium text-brand_navy_hover underline underline-offset-2"
+                      >
+                        Last changed {last.dateText}
+                      </button>
+                    </>
+                  )}
+                </p>
+              )}
 
-            {release.platform.length > 0 && (
-              <section className="mt-6">
-                <SectionHeading
-                  sectionKey="platform"
-                  count={release.platform.length}
-                />
-                <div className="mt-2.5 rounded-xl border border-brand_line bg-custom-white px-4 py-3 shadow-sm">
-                  <Bullets items={release.platform} />
-                </div>
-              </section>
-            )}
+              {release.platform.length > 0 && (
+                <section data-section="platform" className="mt-5">
+                  <SectionHeading
+                    sectionKey="platform"
+                    count={release.platform.length}
+                  />
+                  <div className="mt-2.5 rounded-xl border border-brand_line bg-custom-white px-4 py-3 shadow-sm">
+                    <Bullets items={release.platform} />
+                  </div>
+                </section>
+              )}
 
-            {PAGE_SECTIONS.filter((s) => release[s].length > 0).map((s) => (
-              <section key={s} className="mt-6">
-                <SectionHeading sectionKey={s} count={release[s].length} />
-                <div className="mt-2.5 flex flex-col gap-2.5">
-                  {release[s].map((p, i) => (
-                    <PageCard key={p.page} p={p} mine={isHit(s, i)} />
-                  ))}
-                </div>
-              </section>
-            ))}
+              {PAGE_SECTIONS.filter((s) => release[s].length > 0).map((s) => (
+                <section key={s} data-section={s} className="mt-5">
+                  <SectionHeading sectionKey={s} count={release[s].length} />
+                  <div className="mt-2.5 flex flex-col gap-2.5">
+                    {release[s].map((p, i) => (
+                      <PageCard key={p.page} p={p} mine={isHit(s, i)} />
+                    ))}
+                  </div>
+                </section>
+              ))}
+            </div>
           </div>
         </div>
       )}

@@ -64,6 +64,16 @@ describe("ReleaseNotesModal", () => {
     expect(screen.getAllByText("This page")).toHaveLength(1);
   });
 
+  it("makes each pill a jump to its section, and marks the one chosen", async () => {
+    show("user-management", "User Management");
+    const pills = screen.getByRole("navigation", { name: "Sections" });
+    const fixes = Array.from(pills.querySelectorAll("button")).find((b) =>
+      b.textContent?.startsWith("Fixes"),
+    )!;
+    await userEvent.click(fixes);
+    expect(fixes.getAttribute("aria-current")).toBe("true");
+  });
+
   it("says it is a sample", () => {
     show("sales", "Sales");
     expect(screen.getByText("Sample notes, for trying the window")).toBeTruthy();
