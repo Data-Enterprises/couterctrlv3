@@ -57,7 +57,7 @@ type State = ReturnType<typeof combined>;
  * thing that survives — a token, a store list or a page of somebody's sales
  * outliving the session is exactly what this is for.
  */
-const rootReducer: typeof combined = (state, action) => {
+export const rootReducer: typeof combined = (state, action) => {
   if (action.type !== resetAppSlice.type) return combined(state, action);
 
   const username = (state as State | undefined)?.user.username ?? "";
