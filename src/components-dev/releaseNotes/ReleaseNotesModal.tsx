@@ -69,7 +69,7 @@ const ReleaseNotesModal = ({
       isOpen
       onClose={onClose}
       padded={false}
-      modalClassName="bg-card_bg w-[760px] max-w-[94vw] h-[80vh] flex flex-col overflow-hidden"
+      modalClassName="bg-card_bg w-[836px] max-w-[94vw] h-[80vh] flex flex-col overflow-hidden"
     >
       <div className="flex flex-shrink-0 items-center gap-3 rounded-t-xl bg-brand_navy px-4 py-3">
         <h2 className="m-0 flex-1 text-[15px] font-semibold text-custom-white">
