@@ -35,7 +35,9 @@ const inBatches = <T,>(xs: T[], size: number): T[][] =>
  * Movement: units, or pounds for a weighed item, per store per week ending.
  *
  * Asks `subs/item_actions` once per week for the searched UPCs, through the
- * page's queue like every other tab, and only when the tab is opened. The
+ * page's queue like every other tab, and only when the tab is opened. It sends
+ * the page's own resolved store list (the one every other tab sends), so a
+ * group means the same stores here as on Sales Comp: active ones only. The
  * weeks end on the search's end date; how many of them is this tab's own
  * setting, so asking for thirteen weeks here never re-runs Sales Comp or Trend
  * over thirteen weeks.
@@ -60,11 +62,18 @@ const MovementTab = () => {
 
   const missing = missingFrom(ctx.searchedUpcs, ctx.movementCoverage);
   const missingKey = missing.join(",");
-  const scope = ctx.searchedScope;
+  const scopeIds = useMemo(
+    () =>
+      ctx.storeids
+        .split(",")
+        .map(Number)
+        .filter((n) => Number.isFinite(n) && n > 0),
+    [ctx.storeids],
+  );
 
   useEffect(() => {
     if (ctx.activeTab !== "movement") return;
-    if (ctx.movementLoading || !scope || !missingKey || !windows.length) return;
+    if (ctx.movementLoading || !scopeIds.length || !missingKey || !windows.length) return;
 
     const codes = missing;
     const asked = windowKey;
@@ -83,8 +92,9 @@ const MovementTab = () => {
               (signal) =>
                 getItemActions(
                   ctx.url, ctx.token, w.start, w.end,
-                  scope.useGroups, scope.searchValue, scope.singleStore,
-                  batch, signal,
+                  // The list takes the place of a store or group search.
+                  0, 0, 0,
+                  batch, signal, scopeIds,
                 ),
             );
             // Superseded by a newer search: nothing of this one belongs.
@@ -119,8 +129,8 @@ const MovementTab = () => {
     };
 
     load();
-    // `missing`, `windows` and `scope` are read through their keys.
-  }, [ctx.activeTab, missingKey, ctx.movementLoading, windowKey, scope]);
+    // `missing`, `windows` and `scopeIds` are read through their keys.
+  }, [ctx.activeTab, missingKey, ctx.movementLoading, windowKey, ctx.storeids]);
 
   const codes = useMemo(
     () =>
@@ -136,16 +146,8 @@ const MovementTab = () => {
   );
 
   const stores = useMemo(
-    () =>
-      movementStores(
-        ctx.storeids
-          .split(",")
-          .map(Number)
-          .filter((n) => Number.isFinite(n) && n > 0),
-        ctx.assignedStores,
-        ctx.movementRows,
-      ),
-    [ctx.storeids, ctx.assignedStores, ctx.movementRows],
+    () => movementStores(scopeIds, ctx.assignedStores, ctx.movementRows),
+    [scopeIds, ctx.assignedStores, ctx.movementRows],
   );
 
   useEffect(() => {

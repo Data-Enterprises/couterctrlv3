@@ -1004,7 +1004,13 @@ exports it as a CSV with a line per UPC per store and a column per week ending,
 the shape a store's movement request asks for.
 
 It reads the Item Actions sales endpoint one week at a time, through the same
-one-at-a-time queue as the other tabs, and only when the tab is opened. A
+one-at-a-time queue as the other tabs, and only when the tab is opened. It sends
+the page's own list of stores, so a group means the same (active) stores here as
+on Sales Comp.
+
+**Needs the backend first:** goliath-platform `8250b38` ("item_actions: accept
+an explicit list of store ids") must be on the API before this publishes.
+Against an older API every week answers "No stores found". A
 dedicated movement endpoint is planned
 (`docs/backend-movement-and-store-lists-2026-10-28.md`, part A); the tab can
 switch to it without changing what it shows.

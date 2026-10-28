@@ -46,17 +46,6 @@ export type MovementRow = {
   weight: number;
 };
 
-/** The store or group a search was made with, in the form the subs endpoints
- *  take it. `storeids` is the same search resolved to ids, which is what the
- *  marketing endpoints take; Movement reads `subs/item_actions`, which wants
- *  this. Kept from the search itself because the search card's own selection
- *  moves as soon as someone opens it again. */
-export type UpcSearchScope = {
-  singleStore: 0 | 1;
-  useGroups: 0 | 1;
-  searchValue: number;
-};
-
 export type UpcDevDisplayMode = "code" | "desc";
 export type UpcDevShowMode = "all" | "selected";
 
@@ -101,7 +90,6 @@ interface UpcDevState {
   // instead of re-fetching every module.
   searchedUpcs: string[];
   searchedScopeKey: string;
-  searchedScope: UpcSearchScope | null;
   upcItems: UpcItem[];
   selectedUpcs: string[];
   filterText: string;
@@ -197,7 +185,6 @@ const initialState: UpcDevState = {
   searchVersion: 0,
   searchedUpcs: [],
   searchedScopeKey: "",
-  searchedScope: null,
   upcItems: [],
   selectedUpcs: [],
   filterText: "",
@@ -434,11 +421,10 @@ const upcDevSlice = createSlice({
      *  completed search, once, so the next search can diff against it. */
     setDevSearchSnapshot(
       state,
-      action: PayloadAction<{ upcs: string[]; scopeKey: string; scope: UpcSearchScope }>,
+      action: PayloadAction<{ upcs: string[]; scopeKey: string }>,
     ) {
       state.searchedUpcs = action.payload.upcs;
       state.searchedScopeKey = action.payload.scopeKey;
-      state.searchedScope = action.payload.scope;
     },
 
     /** Drop UPCs from every place their data lives, without re-fetching.
@@ -530,7 +516,6 @@ const upcDevSlice = createSlice({
       state.dataLoaded = false;
       state.searchedUpcs = [];
       state.searchedScopeKey = "";
-      state.searchedScope = null;
       state.upcItems = [];
       state.selectedUpcs = [];
       state.filterText = "";

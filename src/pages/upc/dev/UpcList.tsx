@@ -155,17 +155,7 @@ const UpcList = () => {
     // so the left panel is complete and stable from the moment the search
     // commits. Descriptions arrive as modules respond.
     dispatch(seedDevUpcItems(ctx.upcs));
-    dispatch(
-      setDevSearchSnapshot({
-        upcs: ctx.upcs,
-        scopeKey,
-        // The same search in the subs endpoints' terms, for Movement.
-        scope:
-          searchState.type === "Store"
-            ? { singleStore: 1, useGroups: 0, searchValue: searchState.selectedStore.storeid }
-            : { singleStore: 0, useGroups: 1, searchValue: searchState.selectedGroup.id },
-      }),
-    );
+    dispatch(setDevSearchSnapshot({ upcs: ctx.upcs, scopeKey }));
     dispatch(setDevDataLoaded(true));
     // No fetch here. Every module — Sales Comp included — asks for its own
     // delta when the user actually opens it. A search costs zero calls on its
