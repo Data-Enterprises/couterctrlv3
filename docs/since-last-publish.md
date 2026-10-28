@@ -829,3 +829,15 @@ The Tickets entry in Coming Soon is open to every level now, not 7 and up:
 the server's tiers decide what each reader sees, and a level gate only hid the
 tickets someone had just filed through Report an issue. Coming Soon is still
 dev-only, so clients on prod do not see it.
+
+## Release Notes
+
+### Release Notes leaves the dev menu, parked for production
+
+dev mode only
+
+The avatar menu's Release Notes row is gone from dev. The weekly meeting doc
+is dev's release notes, written for the support team. The row was also broken:
+its route had been unmounted, so it landed on Sales. The page and the notes
+themselves are kept for clients, for when production makes the shift.
+TitleBar's parked block lists the three steps to open it on prod.

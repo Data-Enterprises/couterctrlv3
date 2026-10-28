@@ -726,12 +726,11 @@ export const isComingSoonRoute = (route: string): boolean => {
  * Release Notes is named here rather than read off the nav because it is
  * deliberately not in the nav at all.
  *
- * It is closed for a different reason than it used to be. The notes were our
- * own and named unreleased work; they are the client set now, written for the
- * people using the product and shipped with the build. What keeps the route
- * shut is timing — nothing about this release is announced to clients until
- * the switchover. Opening it is one line here and one in TitleBar, and both
- * say so.
+ * The notes are the client set, written for the people using the product, and
+ * they are parked for production: dev's release notes are the weekly meeting
+ * doc, so dev has no menu row either (2026-10-28). Kept here so the route
+ * stays shut on prod until that shift is deliberate. Opening it is the steps
+ * in TitleBar's parked block, and this line is one of them.
  */
 const DEV_ONLY_ROUTES = new Set(["release-notes"]);
 

@@ -376,24 +376,20 @@ const TitleBar = () => {
                 </div>
               </div>
             ) : null}
-            {/* What went out, and when. Under View because it describes the
-                app those switches move you around in.
+            {/* Release Notes — parked 2026-10-28, for production.
 
-                The page works now. It used to be commented out entirely: the
-                notes were HTML under `release/{env}/` in the help bucket, a
-                prefix that is not public the way `dev/` and `prod/` are, so an
-                anonymous frame got AccessDenied and the row opened a page that
-                could only report it could not read anything. The notes are
-                data in `content/releaseNotes` now — nothing to fetch, nothing
-                to sign — and they are the client set, written for the people
-                using the product rather than for us.
+                Dev has no row: the weekly meeting doc is the dev release notes,
+                written for the support team, and a second copy in the app only
+                drifts from it. The in-app notes are the client set and come
+                back when production makes the shift. Nothing was deleted:
+                `pages/releaseNotes/ReleaseNotes.tsx` and
+                `content/releaseNotes.json` are untouched.
 
-                Still dev only, for timing rather than content: nothing about
-                this release is announced to clients until the switchover.
-                Drop the `apiEnv` check here and take "release-notes" out of
-                DEV_ONLY_ROUTES in navigation/utils when it is theirs to
-                read. */}
-            {context.apiEnv === "dev" ? (
+                To open it on prod: mount `release-notes` in main.tsx (the
+                route has been unmounted since 58556ef2, so a row alone lands
+                on Sales), take it out of DEV_ONLY_ROUTES in navigation/utils,
+                and restore the row here gated on `context.apiEnv === "prod"`:
+
               <button
                 onClick={() => {
                   setAvatarOpen(false);
@@ -404,7 +400,7 @@ const TitleBar = () => {
                 <span className="flex-1">Release Notes</span>
                 <span className="text-[11px] text-content/95">every release</span>
               </button>
-            ) : null}
+            */}
             {/* File a ticket about the page you are on.
 
                 Raises a flag rather than navigating: sending somebody to the
