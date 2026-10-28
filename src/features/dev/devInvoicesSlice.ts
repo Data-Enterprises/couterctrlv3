@@ -9,6 +9,7 @@ import {
   ALL_INVOICES,
   type InvoiceEdit,
 } from "../../pages/invoices/dev/vendors/awg/applyEdit";
+import type { DiscardedInvoice } from "../../api/invoices";
 
 /**
  * AWG Invoices page state.
@@ -58,6 +59,9 @@ export interface InvoicesState {
    *  memos among them. Money it saw and did not understand, so a run carrying
    *  these must not look like a clean one. */
   serverWarnings: string[];
+  /** Invoices the server read and would not save, with why. A send with any
+   *  of these is a partial one, whatever the toast said. */
+  serverDiscarded: DiscardedInvoice[];
 }
 
 const initialState: InvoicesState = {
@@ -76,6 +80,7 @@ const initialState: InvoicesState = {
   sentAt: null,
   runId: null,
   serverWarnings: [],
+  serverDiscarded: [],
 };
 
 const invoicesSlice = createSlice({
@@ -116,6 +121,7 @@ const invoicesSlice = createSlice({
       state.sentAt = null;
       state.runId = null;
       state.serverWarnings = [];
+      state.serverDiscarded = [];
     },
 
     /**
@@ -224,11 +230,16 @@ const invoicesSlice = createSlice({
 
     setInvoicesSent: (
       state,
-      action: PayloadAction<{ runId: string; warnings: string[] }>,
+      action: PayloadAction<{
+        runId: string;
+        warnings: string[];
+        discarded?: DiscardedInvoice[];
+      }>,
     ) => {
       state.sentAt = new Date().toISOString();
       state.runId = action.payload.runId;
       state.serverWarnings = action.payload.warnings;
+      state.serverDiscarded = action.payload.discarded ?? [];
       state.sending = false;
       state.sendError = null;
     },

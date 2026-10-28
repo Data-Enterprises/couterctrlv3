@@ -3,10 +3,11 @@ import axios from "axios";
 /**
  * Invoice parsing on the server — `api/routers/invoices.py`.
  *
- * One route per engine, all returning the same shape: `parse_bedrock` and
- * `parse_textract` read scanned images, `parse_edi` decodes AWG's fixed-width
- * electronic invoices. EDI has no OCR and no per-page cost, which is why its
- * file cap is 100 MB against the OCR engines' 20.
+ * One route per engine, both returning the same shape: `parse_bedrock` reads
+ * scanned images, `parse_edi` decodes AWG's fixed-width electronic invoices.
+ * EDI has no OCR and no per-page cost, which is why its file cap is 100 MB
+ * against the scanned engine's 20. (Textract was a third engine; the server
+ * removed it on 27 Oct 2026.)
  *
  * Money crosses as **strings**, already rounded to two places. Do not
  * `parseFloat` and re-round: the reconciliation below compares them as sent,
@@ -19,7 +20,7 @@ const authHeader = (token: string) => ({
 });
 
 /** Engines the invoice routes accept. `awg_edi` is this page's. */
-export type InvoiceEngine = "awg_edi" | "bedrock" | "textract";
+export type InvoiceEngine = "awg_edi" | "bedrock";
 
 export interface InvoiceLine {
   description: string;
@@ -102,7 +103,23 @@ export interface InvoiceFileReport {
   /** Every store the file mentions. One transmission can carry several, and
    *  they are not always the `storeid` that was posted. */
   storeNumbers?: string[];
+  /**
+   * Invoices the server read but would not save, each with why. They are not
+   * in `invoices` and not counted there, and the file has no `error`, so a
+   * send that only reads `error` reports them as sent. Absent from a server
+   * older than 27 Oct 2026.
+   */
+  discarded?: DiscardedInvoice[];
 }
+
+export interface DiscardedInvoice {
+  invoiceNumber: string | null;
+  error: string;
+}
+
+/** Every invoice a send's files had rejected, across all of them. */
+export const discardedIn = (files: InvoiceFileReport[]): DiscardedInvoice[] =>
+  files.flatMap((f) => f.discarded ?? []);
 
 export interface InvoiceParseResp {
   error: number;
@@ -174,7 +191,8 @@ export interface InvoiceHistoryResp {
     runId: string;
     engine: InvoiceEngine;
     storeid: number;
-    status: "success" | "partial" | "failed";
+    /** `pending` only for a scanned run started in the background. */
+    status: "pending" | "success" | "partial" | "failed";
     created_at: string;
     invoices: number;
   }[];

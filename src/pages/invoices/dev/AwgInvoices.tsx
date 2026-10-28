@@ -26,10 +26,12 @@ import {
   setInvoiceTextFilter,
 } from "../../../features/dev/devInvoicesSlice";
 import {
+  discardedIn,
   invoiceFailed,
   parseEdiInvoices,
   type InvoiceParseResp,
 } from "../../../api/invoices";
+import { discardedText } from "./present";
 import InvoicesEntry from "./InvoicesEntry";
 import { readInvoiceFile } from "./readInvoiceFile";
 import InvoiceExportModal from "./InvoiceExportModal";
@@ -99,6 +101,9 @@ const AwgInvoices = () => {
   const sending = useAppSelector((s) => s.dev.invoices.sending);
   const sentAt = useAppSelector((s) => s.dev.invoices.sentAt);
   const serverWarnings = useAppSelector((s) => s.dev.invoices.serverWarnings);
+  const serverDiscarded = useAppSelector(
+    (s) => s.dev.invoices.serverDiscarded,
+  );
   const storeid = useAppSelector((s) => s.search.selectedStore?.storeid);
 
   /** The toolbar button opens this rather than an overlay holding a drop
@@ -310,17 +315,24 @@ const AwgInvoices = () => {
         toast.warn(why);
         return;
       }
+      // Invoices the server read and would not save are not a file error, so
+      // without this a send that lost one still toasted as a clean one.
+      const discarded = discardedIn(body.files);
       dispatch(
         setInvoicesSent({
           runId: body.runId,
           warnings: body.files.flatMap((f) => f.warnings ?? []),
+          discarded,
         }),
       );
-      toast.success(
-        `Sent ${body.invoices.length} invoice${
-          body.invoices.length === 1 ? "" : "s"
-        }.`,
-      );
+      const saved = body.invoices.length;
+      if (discarded.length > 0) {
+        toast.warn(
+          `Sent ${saved} of ${saved + discarded.length} invoices. Not saved: ${discardedText(discarded)}.`,
+        );
+      } else {
+        toast.success(`Sent ${saved} invoice${saved === 1 ? "" : "s"}.`);
+      }
     } catch {
       dispatch(setInvoicesSendError("The send could not be completed."));
       toast.warn("The send could not be completed.");
@@ -544,9 +556,22 @@ const AwgInvoices = () => {
               disagreeing is worth knowing about.
             </p>
           )}
-          {sentAt && allReconciled && serverWarnings.length === 0 && (
+          {sentAt &&
+            allReconciled &&
+            serverWarnings.length === 0 &&
+            serverDiscarded.length === 0 && (
             <p className="border-t border-gray-100 bg-severity_healthy_bg px-3.5 py-2 text-[12px] text-severity_healthy_text">
               Sent. Any correction made from here replaces what was sent.
+            </p>
+          )}
+          {/* Invoices the server read and would not save. Named one by one,
+              with the server's reason, because each is an invoice that is
+              missing from the import until it is corrected and sent again. */}
+          {sentAt && serverDiscarded.length > 0 && (
+            <p className="border-t border-gray-100 bg-severity_critical_bg px-3.5 py-2 text-[12px] text-severity_critical_text">
+              Sent, but {serverDiscarded.length}{" "}
+              {serverDiscarded.length === 1 ? "invoice was" : "invoices were"}{" "}
+              not saved: {discardedText(serverDiscarded)}.
             </p>
           )}
           {/* Record types the decoder had no layout for — AWG's credit memos

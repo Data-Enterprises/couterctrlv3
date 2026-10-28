@@ -4,6 +4,7 @@ import type { AwgInvoice } from "./vendors/awg";
 import type { ReconcileResult } from "./vendors/awg";
 import { invoiceTotals } from "./vendors/awg/totals";
 import type { InvoiceRow, InvoiceLineRow } from "../../../interfaces";
+import type { DiscardedInvoice } from "../../../api/invoices";
 // Defined in src/interfaces — Invoices. Re-exported for this page's files.
 export type { InvoiceRow, InvoiceLineRow } from "../../../interfaces";
 
@@ -171,3 +172,15 @@ export const presentInvoices = (
     };
   });
 };
+
+/**
+ * Invoices the server would not save, in one line: each by number with the
+ * server's own reason, since the reason is what says how to fix it.
+ */
+export const discardedText = (list: DiscardedInvoice[]): string =>
+  list
+    .map(
+      (d) =>
+        `${d.invoiceNumber ? `invoice ${d.invoiceNumber}` : "an invoice with no number"} (${d.error})`,
+    )
+    .join("; ");

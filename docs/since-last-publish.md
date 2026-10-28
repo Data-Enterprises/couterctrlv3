@@ -860,3 +860,17 @@ The notes are a sample for trying the window, and the window says so. The real
 notes are prod-only and get written at the dev-to-prod migration, when this
 moves over like any other page. The old 20 October set is gone: it described
 pages that never reached prod. The old Release Notes page is in `trash/`.
+
+## AWG Invoices
+
+### A send says which invoices the server would not save
+
+dev mode only
+
+The server now reports invoices it read but would not save, each with a
+reason, beside each file it parsed (goliath-platform `8098e1e`). Send used to
+toast "Sent 5 invoices" even when one was dropped. It now says "Sent 4 of 5
+invoices", names the invoice that was not saved and the server's reason, and
+keeps a red line under the Send control instead of the green "Sent". The
+leftover references to Textract, an engine the server removed, are gone from
+the invoice API types.
